@@ -1,10 +1,33 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/perf: Export PERF_EVENT_CONFIG_EBB_SHIFT to userspace
-Date: Tue, 23 Jul 2013 18:07:45 +1000
-Message-Id: <1374566865-26207-1-git-send-email-michael@ellerman.id.au>
-Cc: azanella@linux.vnet.ibm.com
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E83AD2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 19:02:28 +1000 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Tue, 23 Jul 2013 14:24:28 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id DA0651258053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 14:31:43 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6N92GHT49020974
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 14:32:16 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6N92HqP009265
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 09:02:18 GMT
+Subject: [PATCH 0/3] cpuidle: (powernv) cpuidle driver. 
+To: linuxppc-dev@lists.ozlabs.org
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Date: Tue, 23 Jul 2013 14:31:22 +0530
+Message-ID: <20130723090111.7291.99479.stgit@deepthi.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -14,118 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We use bit 63 of the event code for userspace to request that the event
-be counted using EBB (Event Based Branches). Export this value, making
-it part of the API - though only on processors that support EBB.
+Following patch series ports the cpuidle framework for powernv
+platform and also implements a cpuidle back-end powernv 
+idle driver calling on to power7_nap and snooze idle states.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/include/asm/perf_event_server.h |  6 +-----
- arch/powerpc/include/uapi/asm/Kbuild         |  1 +
- arch/powerpc/include/uapi/asm/perf_event.h   | 18 ++++++++++++++++++
- arch/powerpc/perf/core-book3s.c              |  2 +-
- arch/powerpc/perf/power8-pmu.c               |  6 +++---
- 5 files changed, 24 insertions(+), 9 deletions(-)
- create mode 100644 arch/powerpc/include/uapi/asm/perf_event.h
+Moving the idle states over to cpuidle framework can take advantage 
+of advanced heuristics, tunables and features provided by cpuidle 
+framework. Additional idle states can be exploited using the cpuidle 
+framework. The statistics and tracing infrastructure provided by 
+the cpuidle framework also helps in enabling power management 
+related tools and help tune the system and applications.
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 2dd7bfc..8b24926 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -12,6 +12,7 @@
- #include <linux/types.h>
- #include <asm/hw_irq.h>
- #include <linux/device.h>
-+#include <uapi/asm/perf_event.h>
- 
- #define MAX_HWEVENTS		8
- #define MAX_EVENT_ALTERNATIVES	8
-@@ -69,11 +70,6 @@ struct power_pmu {
- #define PPMU_LIMITED_PMC_REQD	2	/* have to put this on a limited PMC */
- #define PPMU_ONLY_COUNT_RUN	4	/* only counting in run state */
- 
--/*
-- * We use the event config bit 63 as a flag to request EBB.
-- */
--#define EVENT_CONFIG_EBB_SHIFT	63
--
- extern int register_power_pmu(struct power_pmu *);
- 
- struct pt_regs;
-diff --git a/arch/powerpc/include/uapi/asm/Kbuild b/arch/powerpc/include/uapi/asm/Kbuild
-index 5182c86..48be855 100644
---- a/arch/powerpc/include/uapi/asm/Kbuild
-+++ b/arch/powerpc/include/uapi/asm/Kbuild
-@@ -20,6 +20,7 @@ header-y += mman.h
- header-y += msgbuf.h
- header-y += nvram.h
- header-y += param.h
-+header-y += perf_event.h
- header-y += poll.h
- header-y += posix_types.h
- header-y += ps3fb.h
-diff --git a/arch/powerpc/include/uapi/asm/perf_event.h b/arch/powerpc/include/uapi/asm/perf_event.h
-new file mode 100644
-index 0000000..80a4d40
---- /dev/null
-+++ b/arch/powerpc/include/uapi/asm/perf_event.h
-@@ -0,0 +1,18 @@
-+/*
-+ * Copyright 2013 Michael Ellerman, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2 of the
-+ * License.
-+ */
-+
-+#ifndef _UAPI_ASM_POWERPC_PERF_EVENT_H
-+#define _UAPI_ASM_POWERPC_PERF_EVENT_H
-+
-+/*
-+ * We use bit 63 of perf_event_attr.config as a flag to request EBB.
-+ */
-+#define PERF_EVENT_CONFIG_EBB_SHIFT	63
-+
-+#endif /* _UAPI_ASM_POWERPC_PERF_EVENT_H */
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index a3985ae..2981f73 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -484,7 +484,7 @@ static bool is_ebb_event(struct perf_event *event)
- 	 * use bit 63 of the event code for something else if they wish.
- 	 */
- 	return (ppmu->flags & PPMU_EBB) &&
--	       ((event->attr.config >> EVENT_CONFIG_EBB_SHIFT) & 1);
-+	       ((event->attr.config >> PERF_EVENT_CONFIG_EBB_SHIFT) & 1);
- }
- 
- static int ebb_event_check(struct perf_event *event)
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 96a64d6..5b49e78 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -118,7 +118,7 @@
- 	 (EVENT_UNIT_MASK      << EVENT_UNIT_SHIFT)		|	\
- 	 (EVENT_COMBINE_MASK   << EVENT_COMBINE_SHIFT)		|	\
- 	 (EVENT_MARKED_MASK    << EVENT_MARKED_SHIFT)		|	\
--	 (EVENT_EBB_MASK       << EVENT_CONFIG_EBB_SHIFT)	|	\
-+	 (EVENT_EBB_MASK       << PERF_EVENT_CONFIG_EBB_SHIFT)	|	\
- 	  EVENT_PSEL_MASK)
- 
- /* MMCRA IFM bits - POWER8 */
-@@ -233,10 +233,10 @@ static int power8_get_constraint(u64 event, unsigned long *maskp, unsigned long
- 	pmc   = (event >> EVENT_PMC_SHIFT)        & EVENT_PMC_MASK;
- 	unit  = (event >> EVENT_UNIT_SHIFT)       & EVENT_UNIT_MASK;
- 	cache = (event >> EVENT_CACHE_SEL_SHIFT)  & EVENT_CACHE_SEL_MASK;
--	ebb   = (event >> EVENT_CONFIG_EBB_SHIFT) & EVENT_EBB_MASK;
-+	ebb   = (event >> PERF_EVENT_CONFIG_EBB_SHIFT) & EVENT_EBB_MASK;
- 
- 	/* Clear the EBB bit in the event, so event checks work below */
--	event &= ~(EVENT_EBB_MASK << EVENT_CONFIG_EBB_SHIFT);
-+	event &= ~(EVENT_EBB_MASK << PERF_EVENT_CONFIG_EBB_SHIFT);
- 
- 	if (pmc) {
- 		if (pmc > 6)
--- 
-1.8.1.2
+This series aims to maintain compatibility and functionality to
+existing powernv idle cpu management code.  There are no new functions
+or idle states added as part of this series. This can be extended by 
+adding more states to this existing framework.
+
+With this patch series the powernv cpuidle functionalities
+are on-par with pSeries idle management.
+
+For POWERNV platform to hook into CPUIDLE framework, one
+needs to enable CONFIG_POWERNV_IDLE and disable
+CONFIG_PSERIES_IDLE 
+
+ Deepthi Dharwar (3):
+      cpuidle/powernv: cpuidle backend driver for powernv
+      cpuidle/powernv: Enable idle powernv cpu to call into the cpuidle framework.
+      cpuidle/powernv: Support smt-snooze-delay parameter in powernv idle.
+
+
+ arch/powerpc/include/asm/processor.h            |    2 
+ arch/powerpc/platforms/powernv/Kconfig          |    9 +
+ arch/powerpc/platforms/powernv/Makefile         |    1 
+ arch/powerpc/platforms/powernv/powernv.h        |    3 
+ arch/powerpc/platforms/powernv/processor_idle.c |  275 +++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/setup.c          |   12 +
+ 6 files changed, 300 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/processor_idle.c
+
+
+-- Deepthi
