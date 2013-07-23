@@ -1,31 +1,31 @@
 Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9C5052C0150
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 19:03:34 +1000 (EST)
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EFCEF2C00FE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 19:03:58 +1000 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Tue, 23 Jul 2013 14:25:31 +0530
+ Tue, 23 Jul 2013 14:26:50 +0530
 Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5CE9CE0054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 14:33:29 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 0DA20E0056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 14:33:53 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6N94HkJ29360192
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 14:34:17 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6N93Kwv005004
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 19:03:21 +1000
-Subject: [PATCH 2/3] cpuidle/powernv: Enable idle powernv cpu to call into
- the cpuidle framework.
+ r6N94kGq38273136
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 14:34:46 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6N93mk4018267
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 09:03:49 GMT
+Subject: [PATCH 3/3] cpuidle/powernv: Support smt-snooze-delay parameter in
+ powernv idle.
 To: linuxppc-dev@lists.ozlabs.org
 From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Tue, 23 Jul 2013 14:31:53 +0530
-Message-ID: <20130723090150.7291.89879.stgit@deepthi.in.ibm.com>
+Date: Tue, 23 Jul 2013 14:32:44 +0530
+Message-ID: <20130723090239.7291.59177.stgit@deepthi.in.ibm.com>
 In-Reply-To: <20130723090111.7291.99479.stgit@deepthi.in.ibm.com>
 References: <20130723090111.7291.99479.stgit@deepthi.in.ibm.com>
 MIME-Version: 1.0
@@ -40,49 +40,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables idle powernv cpu to hook on to the cpuidle
-framework, if available, else call on to default idle platform
-code.
+smt-snooze-delay is a tunable that is supported on
+powerpc platform to delay the entry to nap state.
+This can be set either via sysfs, kernel commandline
+or pp64_cpu util.
 
 Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/setup.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/processor.h            |    2 +
+ arch/powerpc/platforms/powernv/powernv.h        |    3 ++
+ arch/powerpc/platforms/powernv/processor_idle.c |   36 +++++++++++++++++++++++
+ 3 files changed, 40 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 84438af..97d0951 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -25,6 +25,7 @@
- #include <linux/of.h>
- #include <linux/interrupt.h>
- #include <linux/bug.h>
-+#include <linux/cpuidle.h>
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 47a35b0..5700c3c 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -426,7 +426,7 @@ enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+ extern void power7_nap(void);
  
+-#ifdef CONFIG_PSERIES_IDLE
++#if defined(CONFIG_PSERIES_IDLE) || defined(CONFIG_POWERNV_IDLE)
+ extern void update_smt_snooze_delay(int cpu, int residency);
+ #else
+ static inline void update_smt_snooze_delay(int cpu, int residency) {}
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index a1c6f83..558ee69 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -15,4 +15,7 @@ static inline void pnv_pci_init(void) { }
+ static inline void pnv_pci_shutdown(void) { }
+ #endif
+ 
++/* Idle variable */
++DECLARE_PER_CPU(long, smt_snooze_delay);
++
+ #endif /* _POWERNV_H */
+diff --git a/arch/powerpc/platforms/powernv/processor_idle.c b/arch/powerpc/platforms/powernv/processor_idle.c
+index f43ad91a..505fea4 100644
+--- a/arch/powerpc/platforms/powernv/processor_idle.c
++++ b/arch/powerpc/platforms/powernv/processor_idle.c
+@@ -13,6 +13,8 @@
  #include <asm/machdep.h>
- #include <asm/firmware.h>
-@@ -196,6 +197,15 @@ static int __init pnv_probe(void)
- 	return 1;
+ #include <asm/runlatch.h>
+ 
++#include "powernv.h"
++
+ struct cpuidle_driver powernv_idle_driver = {
+ 	.name =		"powernv_idle",
+ 	.owner =	THIS_MODULE,
+@@ -193,6 +195,38 @@ static int powernv_idle_probe(void)
+ 	return 0;
  }
  
-+void powernv_idle(void)
++void update_smt_snooze_delay(int cpu, int residency)
 +{
-+	/* Hook to cpuidle framework if available, else
-+	 * call on default platform idle code
-+	 */
-+	if (cpuidle_idle_call())
-+		power7_idle();
++	struct cpuidle_driver *drv = cpuidle_get_driver();
++	struct cpuidle_device *dev;
++
++	if (!drv)
++		return;
++
++	if (cpu == -1) {
++		if (residency < 0) {
++			/* Disable NAP on all cpus */
++			drv->states[1].disabled = true;
++		} else {
++			drv->states[1].target_residency = residency;
++			drv->states[1].disabled = false;
++		}
++		return;
++	}
++
++	dev = per_cpu(cpuidle_devices, cpu);
++	if (!dev)
++		return;
++
++	if (residency < 0)
++		dev->states_usage[1].disable = 1;
++	else {
++		drv->states[1].target_residency = residency;
++		drv->states[1].disabled = false;
++		dev->states_usage[1].disable = 0;
++	}
 +}
 +
- define_machine(powernv) {
- 	.name			= "PowerNV",
- 	.probe			= pnv_probe,
-@@ -205,7 +215,7 @@ define_machine(powernv) {
- 	.show_cpuinfo		= pnv_show_cpuinfo,
- 	.progress		= pnv_progress,
- 	.machine_shutdown	= pnv_shutdown,
--	.power_save             = power7_idle,
-+	.power_save             = powernv_idle,
- 	.calibrate_decr		= generic_calibrate_decr,
- #ifdef CONFIG_KEXEC
- 	.kexec_cpu_down		= pnv_kexec_cpu_down,
+ static int __init powernv_processor_idle_init(void)
+ {
+ 	int retval;
+@@ -208,6 +242,8 @@ static int __init powernv_processor_idle_init(void)
+ 		return retval;
+ 	}
+ 
++	update_smt_snooze_delay(-1, per_cpu(smt_snooze_delay, 0));
++
+ 	retval = powernv_idle_devices_init();
+ 	if (retval) {
+ 		powernv_idle_devices_uninit();
