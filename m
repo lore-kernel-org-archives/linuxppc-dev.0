@@ -1,15 +1,20 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Tue, 23 Jul 2013 23:42:19 +1000
+Date: Tue, 23 Jul 2013 23:44:31 +1000
 From: Michael Ellerman <michael@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Fix a typo in pSeries_lpar_hpte_insert()
-Message-ID: <20130723134219.GE31944@concordia>
-References: <1374470630-2106-1-git-send-email-kda@linux-powerpc.org>
- <874nbmobww.fsf@linux.vnet.ibm.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] powerpc: kernel: remove useless code which related
+ with 'max_cpus'
+Message-ID: <20130723134431.GF31944@concordia>
+References: <51ECCA10.7010709@asianux.com>
+ <51ECCEA8.5040406@linux.vnet.ibm.com>
+ <51ECD0BF.8080605@asianux.com> <51ECD3D4.9020405@asianux.com>
+ <51ECD664.7040708@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <874nbmobww.fsf@linux.vnet.ibm.com>
-Cc: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <51ECD664.7040708@linux.vnet.ibm.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Chen Gang <gang.chen@asianux.com>, "paulus@samba.org" <paulus@samba.org>,
+ chenhui.zhao@freescale.com, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,22 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 22, 2013 at 08:54:31PM +0530, Aneesh Kumar K.V wrote:
-> Denis Kirjanov <kda@linux-powerpc.org> writes:
+On Mon, Jul 22, 2013 at 12:21:16PM +0530, Srivatsa S. Bhat wrote:
+> On 07/22/2013 12:10 PM, Chen Gang wrote:
+> > Since not need 'max_cpus' after the related commit, the related code
+> > are useless too, need be removed.
+> > 
+> > The related commit:
+> > 
+> >   c1aa687 powerpc: Clean up obsolete code relating to decrementer and timebase
+> > 
+> > The related warning:
+> > 
+> >   arch/powerpc/kernel/smp.c:323:43: warning: parameter ‘max_cpus’ set but not used [-Wunused-but-set-parameter]
+> > 
+> > Signed-off-by: Chen Gang <gang.chen@asianux.com>
 > 
-> > Fix a typo in pSeries_lpar_hpte_insert()
-> >
-> > Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
-> 
-> looks good
-> 
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> We may want to add the commit that introduced the change ?
-> 
-> 801eb73f45371accc78ca9d6d22d647eeb722c11
+> This version looks good.
 
-Yes, as well as describe what the typo is, and what the implications
-are - ie. what was broken and is now fixed.
+Agreed.
+
+A good follow up patch, or actually series of patches, would be to
+change the prototype of smp_ops->probe() to return void, and fix all the
+implementations to no longer return anything.
 
 cheers
