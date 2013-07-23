@@ -1,18 +1,21 @@
-Return-Path: <aaro.koskinen@iki.fi>
-Received: from filtteri1.pp.htv.fi (filtteri1.pp.htv.fi [213.243.153.184])
- by ozlabs.org (Postfix) with ESMTP id 63D182C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 06:25:01 +1000 (EST)
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Nick Piggin <npiggin@suse.de>, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] cpufreq: pmac64: enable cpufreq on iMac G5 (iSight) model
-Date: Tue, 23 Jul 2013 23:24:39 +0300
-Message-Id: <1374611079-28091-3-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1374611079-28091-1-git-send-email-aaro.koskinen@iki.fi>
-References: <1374611079-28091-1-git-send-email-aaro.koskinen@iki.fi>
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
+Return-Path: <R58495@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 535DA2C00C7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 06:33:06 +1000 (EST)
+Message-ID: <51EEE873.8090002@freescale.com>
+Date: Tue, 23 Jul 2013 13:32:51 -0700
+From: York Sun <yorksun@freescale.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC] power/mpc85xx: Add delay after enabling I2C master
+References: <1374604984.15592.34@snotra>
+In-Reply-To: <1374604984.15592.34@snotra>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: albrecht.dress@arcor.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,26 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable cpufreq on iMac G5 (iSight) model. Tested with the 2.1 GHz version.
+On 07/23/2013 11:43 AM, Scott Wood wrote:
+>>
+>> Yes. The max divider from sys clock to i2c clcok is 32K.
+>> i2c->real_clk is the clock I2C controller pumps out, not its internal
+>> operation clock.
+> 
+> 32K is the max for all implementations?
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
----
- drivers/cpufreq/pmac64-cpufreq.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Yes, according to application note 2919 (published).
 
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-index f9e399b..1f352e5 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -399,7 +399,8 @@ static int __init g5_neo2_cpufreq_init(struct device_node *cpus)
- 	/* Check supported platforms */
- 	if (of_machine_is_compatible("PowerMac8,1") ||
- 	    of_machine_is_compatible("PowerMac8,2") ||
--	    of_machine_is_compatible("PowerMac9,1"))
-+	    of_machine_is_compatible("PowerMac9,1") ||
-+	    of_machine_is_compatible("PowerMac12,1"))
- 		use_volts_smu = 1;
- 	else if (of_machine_is_compatible("PowerMac11,2"))
- 		use_volts_vdnap = 1;
--- 
-1.8.3.2
+> 
+> BTW, Where does the "2000000" come from?  Shouldn't it be 1000000 if
+> you're converting to usec?  If you're trying to add some slack, say so
+> rather than having a comment suggest that the output of that formula is
+> 64K cycles.  Or is there an implicit assumption that i2c runs at half
+> the system frequency?  Is that assumption true for all implementations
+> that have this erratum?
+
+The clock source is half the sysclk. This erratum applies to selected
+85xx SoCs. I have confirmed with application team that it is safe to
+apply the delay to all 85xx.
+
+> 
+>> > In any case, you should send this patch to the i2c maintainer and list.
+>> >
+>>
+>> I don't have the name on top of my head. Is that
+>> linux-i2c@vger.kernel.org?
+> 
+> Yes, and Wolfram Sang <wsa@the-dreams.de> is the maintainer.  This is
+> listed in the MAINTAINERS file.
+> 
+
+I can resubmit this patch after the feedback is addressed.
+
+York
