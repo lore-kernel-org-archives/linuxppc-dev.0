@@ -2,32 +2,32 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 682E32C00C8
+ by ozlabs.org (Postfix) with ESMTPS id 65DAB2C00C6
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 21:11:10 +1000 (EST)
 Received: from /spool/local
  by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 23 Jul 2013 12:11:07 +0100
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 1272EC90041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:02 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6NBB3mY174624
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:03 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6NBB2wB028968
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:03 -0400
+ Tue, 23 Jul 2013 12:11:06 +0100
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 83CED38C8039
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:03 -0400 (EDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6NBB41f166240
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 07:11:04 -0400
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6NBB3SH029391
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 05:11:04 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 01/11] powerpc/eeh: Remove reference to PCI device
-Date: Tue, 23 Jul 2013 19:10:46 +0800
-Message-Id: <1374577856-1712-2-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 04/11] PCI/hotplug: Needn't remove EEH cache again
+Date: Tue, 23 Jul 2013 19:10:49 +0800
+Message-Id: <1374577856-1712-5-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1374577856-1712-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1374577856-1712-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,101 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We will rely on pcibios_release_device() to remove the EEH cache
-and unbind EEH device for the specific PCI device. So we shouldn't
-hold the reference to the PCI device from EEH cache and EEH device.
-Otherwise, pcibios_release_device() won't be called as we expected.
-The patch removes the reference to the PCI device in EEH core.
+Since pcibios_release_device() called by pci_stop_and_remove_bus_device()
+has removed the EEH cache, we needn't do that again.
 
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c       |    4 ----
- arch/powerpc/kernel/eeh_cache.c |   18 +++++-------------
- 2 files changed, 5 insertions(+), 17 deletions(-)
+ drivers/pci/hotplug/rpadlpar_core.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 39954fe..b5c425e 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -499,8 +499,6 @@ unsigned long eeh_check_failure(const volatile void __iomem *token, unsigned lon
- 	}
+diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+index b29e20b..bb7af78 100644
+--- a/drivers/pci/hotplug/rpadlpar_core.c
++++ b/drivers/pci/hotplug/rpadlpar_core.c
+@@ -388,7 +388,6 @@ int dlpar_remove_pci_slot(char *drc_name, struct device_node *dn)
+ 	/* Remove the EADS bridge device itself */
+ 	BUG_ON(!bus->self);
+ 	pr_debug("PCI: Now removing bridge device %s\n", pci_name(bus->self));
+-	eeh_remove_bus_device(bus->self, true);
+ 	pci_stop_and_remove_bus_device(bus->self);
  
- 	eeh_dev_check_failure(edev);
--
--	pci_dev_put(eeh_dev_to_pci_dev(edev));
- 	return val;
- }
- 
-@@ -904,7 +902,6 @@ static void eeh_add_device_late(struct pci_dev *dev)
- 	}
- 	WARN_ON(edev->pdev);
- 
--	pci_dev_get(dev);
- 	edev->pdev = dev;
- 	dev->dev.archdata.edev = edev;
- 
-@@ -992,7 +989,6 @@ static void eeh_remove_device(struct pci_dev *dev, int purge_pe)
- 	}
- 	edev->pdev = NULL;
- 	dev->dev.archdata.edev = NULL;
--	pci_dev_put(dev);
- 
- 	eeh_rmv_from_parent_pe(edev, purge_pe);
- 	eeh_addr_cache_rmv_dev(dev);
-diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
-index f9ac123..e8c9fd5 100644
---- a/arch/powerpc/kernel/eeh_cache.c
-+++ b/arch/powerpc/kernel/eeh_cache.c
-@@ -68,16 +68,12 @@ static inline struct eeh_dev *__eeh_addr_cache_get_device(unsigned long addr)
- 		struct pci_io_addr_range *piar;
- 		piar = rb_entry(n, struct pci_io_addr_range, rb_node);
- 
--		if (addr < piar->addr_lo) {
-+		if (addr < piar->addr_lo)
- 			n = n->rb_left;
--		} else {
--			if (addr > piar->addr_hi) {
--				n = n->rb_right;
--			} else {
--				pci_dev_get(piar->pcidev);
--				return piar->edev;
--			}
--		}
-+		else if (addr > piar->addr_hi)
-+			n = n->rb_right;
-+		else
-+			return piar->edev;
- 	}
- 
- 	return NULL;
-@@ -156,7 +152,6 @@ eeh_addr_cache_insert(struct pci_dev *dev, unsigned long alo,
- 	if (!piar)
- 		return NULL;
- 
--	pci_dev_get(dev);
- 	piar->addr_lo = alo;
- 	piar->addr_hi = ahi;
- 	piar->edev = pci_dev_to_eeh_dev(dev);
-@@ -250,7 +245,6 @@ restart:
- 
- 		if (piar->pcidev == dev) {
- 			rb_erase(n, &pci_io_addr_cache_root.rb_root);
--			pci_dev_put(piar->pcidev);
- 			kfree(piar);
- 			goto restart;
- 		}
-@@ -302,12 +296,10 @@ void eeh_addr_cache_build(void)
- 		if (!edev)
- 			continue;
- 
--		pci_dev_get(dev);  /* matching put is in eeh_remove_device() */
- 		dev->dev.archdata.edev = edev;
- 		edev->pdev = dev;
- 
- 		eeh_addr_cache_insert_dev(dev);
--
- 		eeh_sysfs_add_device(dev);
- 	}
- 
+ 	return 0;
 -- 
 1.7.5.4
