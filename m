@@ -1,40 +1,21 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 722472C027F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 02:22:40 +1000 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Wed, 24 Jul 2013 02:12:24 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 636F82BB004F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 02:22:34 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6NGMO8t4784506
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 02:22:24 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6NGMXuG027983
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 02:22:33 +1000
-Message-ID: <51EEAD93.8060300@linux.vnet.ibm.com>
-Date: Tue, 23 Jul 2013 21:51:39 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1A5E22C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 04:43:19 +1000 (EST)
+Date: Tue, 23 Jul 2013 13:43:04 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC] power/mpc85xx: Add delay after enabling I2C master
+To: York Sun <yorksun@freescale.com>
+In-Reply-To: <51EEA34A.9050400@freescale.com> (from yorksun@freescale.com on
+ Tue Jul 23 10:37:46 2013)
+Message-ID: <1374604984.15592.34@snotra>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: cpuidle/pseries: Fix kernel command line parameter
- smt-snooze-delay
-References: <51EE0C65.6020903@linux.vnet.ibm.com>
- <20130723140256.GH31944@concordia>
-In-Reply-To: <20130723140256.GH31944@concordia>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Preeti Murthy <preeti@linux.vnet.ibm.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: albrecht.dress@arcor.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,100 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/2013 07:32 PM, Michael Ellerman wrote:
-> On Tue, Jul 23, 2013 at 10:23:57AM +0530, Deepthi Dharwar wrote:
->> smt-snooze-delay is a tun-able provided currently on powerpc to delay the
->> entry of an idle cpu to NAP state. By default, the value is 100us,
->> which is entry criteria for NAP state i.e only if the idle period is
->> above 100us it would enter NAP. Value of -1 disables entry into NAP.
->> This value can be set either through sysfs, ppc64_cpu util or by
->> passing it via kernel command line. Currently this feature is broken
->> when the value is passed via the kernel command line.
-> 
-> Has it always been broken? Or just since some commit?
+On 07/23/2013 10:37:46 AM, York Sun wrote:
+> On 07/22/2013 05:33 PM, Scott Wood wrote:
+> > On Mon, May 13, 2013 at 02:27:08PM -0700, York Sun wrote:
+> >> Erratum A-006037 indicates I2C controller executes the write to =20
+> I2CCR only
+> >> after it sees SCL idle for 64K cycle of internal I2C controller =20
+> clocks. If
+> >> during this waiting period, I2C controller is disabled (I2CCR[MEN] =20
+> set to
+> >> 0), then the controller could end in bad state, and hang the =20
+> future access
+> >> to I2C register.
+> >>
+> >> The mpc_i2c_fixup() function tries to recover the bus from a =20
+> stalled state
+> >> where the 9th clock pulse wasn't generated. However, this =20
+> workaround
+> >> disables and enables I2C controller without meeting waiting =20
+> requirement of
+> >> this erratum.
+> >>
+> >> This erratum applies to some 85xx SoCs. It is safe to apply to all =20
+> of them
+> >> for mpc_i2c_fixup().
+> >>
+> >> Signed-off-by: York Sun <yorksun@freescale.com>
+> >>
+> >> ---
+> >> I'd like to get rid of the #ifdef if mpc5121 is OK with the longer =20
+> delay.
+> >
+> > Are mpc5121 and mpc85xx the only things that use this?
+>=20
+> No. 83xx and 86xx also uses this file. But I am only unsure if mpc52xx
+> is OK with this extended delay. I guess they are but I don't have a
+> proof, or someone to confirm.
+>=20
+> >
+> > Are you sure the delay always works out to be longer?  What is the
+> > relationship between fsl_get_sys_freq() and i2c->real_clk?
+>=20
+> Yes. The max divider from sys clock to i2c clcok is 32K.
+> i2c->real_clk is the clock I2C controller pumps out, not its internal =20
+> operation clock.
 
-Yes, it is broken since inclusion of pseries back-end driver, around 3.3
-kernel time-frame.
+32K is the max for all implementations?
 
->> This patch aims to fix this, by taking the appropriate action
->> based on the value after the pseries driver is registered.
->> This check is carried on in the back-end driver rather than
->> setup_smt_snooze_delay(), as one is not sure if the cpuidle driver
->> is even registered when setup routine is executed.
->> Also, this fixes re-enabling of NAP states by setting appropriate
->> value without having to reboot using smt-snooze-delay parameter.
->>
->> Also, to note is, smt-snooze-delay is per-cpu variable.
->> This can be used to enable/disable NAP on per-cpu
->> basis using sysfs but when this variable is passed
->> via kernel command line or using the smt-snooze-delay
->> it applies to all the cpus. Per-cpu tuning can
->> only be done via sysfs.
->>
->> Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/platforms/pseries/processor_idle.c |   34 ++++++++++++++++++-----
->>  1 file changed, 27 insertions(+), 7 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
->> index 4644efa0..8133f50 100644
->> --- a/arch/powerpc/platforms/pseries/processor_idle.c
->> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
->> @@ -170,18 +170,36 @@ static struct cpuidle_state shared_states[MAX_IDLE_STATE_COUNT] = {
->>  void update_smt_snooze_delay(int cpu, int residency)
->>  {
->>  	struct cpuidle_driver *drv = cpuidle_get_driver();
->> -	struct cpuidle_device *dev = per_cpu(cpuidle_devices, cpu);
->> +	struct cpuidle_device *dev;
->>  
->>  	if (cpuidle_state_table != dedicated_states)
->>  		return;
->>  
->> -	if (residency < 0) {
->> -		/* Disable the Nap state on that cpu */
->> -		if (dev)
->> -			dev->states_usage[1].disable = 1;
->> -	} else
->> -		if (drv)
->> +	if (!drv)
->> +		return;
->> +
->> +	if (cpu == -1) {
->> +		if (residency < 0) {
->> +			/* Disable NAP on all cpus */
->> +			drv->states[1].disabled = true;
->> +		} else {
->>  			drv->states[1].target_residency = residency;
->> +			drv->states[1].disabled = false;
->> +		}
->> +		return;
->> +	}
->> +
->> +	dev = per_cpu(cpuidle_devices, cpu);
->> +	if (!dev)
->> +		return;
->> +
->> +	if (residency < 0)
->> +		dev->states_usage[1].disable = 1;
->> +	else {
->> +		drv->states[1].target_residency = residency;
->> +		drv->states[1].disabled = false;
->> +		dev->states_usage[1].disable = 0;
-> 
-> Why are we indexing into all these array with '1' ?
+BTW, Where does the "2000000" come from?  Shouldn't it be 1000000 if =20
+you're converting to usec?  If you're trying to add some slack, say so =20
+rather than having a comment suggest that the output of that formula is =20
+64K cycles.  Or is there an implicit assumption that i2c runs at half =20
+the system frequency?  Is that assumption true for all implementations =20
+that have this erratum?
 
-We are disabling/enabling  NAP state, which indexes into pseries cpuidle
-state table array with index value of 1.
-smt-snooze-delay of -1, disables NAP state.
-Else, we need to set the residency of NAP state i.e minimum time CPU
-should spend in NAP state ( based on which menu governor takes a
-decision on selection of Idle state) there by delaying the entry to NAP
-state.
+> > In any case, you should send this patch to the i2c maintainer and =20
+> list.
+> >
+>=20
+> I don't have the name on top of my head. Is that =20
+> linux-i2c@vger.kernel.org?
 
-Thanks for the review.
+Yes, and Wolfram Sang <wsa@the-dreams.de> is the maintainer.  This is =20
+listed in the MAINTAINERS file.
 
-Regards,
-Deepthi
-
-> cheers
-> 
+-Scott=
