@@ -1,31 +1,38 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id B59AF2C0077
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 18:41:23 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 23159-10 for <linuxppc-dev@lists.ozlabs.org>;
- Wed, 24 Jul 2013 09:41:16 +0100 (BST)
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E66C52C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 19:59:57 +1000 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Wed, 24 Jul 2013 15:24:04 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 30BCEE004F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 15:29:49 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6OA0eix23396362
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 15:30:40 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6O9xh2j005669
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 09:59:44 GMT
+Message-ID: <51EFA559.9050601@linux.vnet.ibm.com>
+Date: Wed, 24 Jul 2013 15:28:49 +0530
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: Inbound PCI and Memory Corruption
-Date: Wed, 24 Jul 2013 09:40:50 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B72E5@saturn3.aculab.com>
-In-Reply-To: <CAN8Q1EeRWOD1ktGztsaY91VwDYTJmAgwo6XR2baQNb_f7p=FLA@mail.gmail.com>
-References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
- <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
- <1371945647.3944.106.camel@pasglop>
- <CAN8Q1EetHpVkWFmbDGCE-3J4H7oJm0zE66SAdJyvtDb7OBc-gg@mail.gmail.com>
- <1373492413.19894.29.camel@pasglop>
- <CAN8Q1EdVVw3ofg9O3o=WThsKpcfMBXe_C7JsSSx9DdRZULW17Q@mail.gmail.com>
- <CAN8Q1EeKCTCB30N50iA8-QB=0aoNtS1U3nNLGVoz7sHG-Qg26A@mail.gmail.com>
- <20130719134615.GR7080@book.gsilab.sittig.org>
- <CAN8Q1EeRWOD1ktGztsaY91VwDYTJmAgwo6XR2baQNb_f7p=FLA@mail.gmail.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Peter LaDow" <petela@gocougs.wsu.edu>,
- "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/3] cpuidle/powernv: cpuidle backend driver for powernv
+References: <20130723090111.7291.99479.stgit@deepthi.in.ibm.com>
+ <20130723090137.7291.36657.stgit@deepthi.in.ibm.com>
+ <20130723140645.GI31944@concordia>
+In-Reply-To: <20130723140645.GI31944@concordia>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,39 +42,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Fri, Jul 19, 2013 at 6:46 AM, Gerhard Sittig <gsi@denx.de> wrote:
-> > So:  No, not having to fiddle with DMA stuff when doing PCI need
-> > not be a problem, it's actually expected.  But since a DMA engine
-> > might be involved (that's just not under your command), the
-> > accompanying problems may arise.  You may need to flush CPU
-> > provided data upon write before telling an external entity to
-> > access it, and may need to invalidate caches (to have data
-> > re-fetched) before the CPU accesses what an external entity did
-> > manipulate.  And this applies to both payload data as well as
-> > management data (descriptors) if the latter apply to the former.
->=20
-> This is something I've been exploring today.  But what is unclear is
-> _how_ to flush/invalidate the caches'.  I was going to tweak the
-> driver to setup the descriptors, flush the cache, then enable the
-> hardware (and when taking the device down, disable the hardware, flush
-> the cache, then deallocate the descriptors).  But this is in the
-> network code and it isn't obvious how to make this happen.
+On 07/23/2013 07:36 PM, Michael Ellerman wrote:
+> On Tue, Jul 23, 2013 at 02:31:41PM +0530, Deepthi Dharwar wrote:
+>> This patch implements a back-end cpuidle driver for
+>> powernv calling power7_nap and snooze idle states.
+>> This can be extended by adding more idle states
+>> in the future to the existing framework.
+> 
+> Other than the state table and a few minor details this looks almost
+> identical to the pseries driver. Can we not have a single version in
+> sysdev and isolate just the differences?
+>
 
-FWIW it is almost impossible to code for non-coherent descriptors
-(even ignoring problems with speculative cache line reads).
-You don't even want to try to do it except for hardware where you
-can no choice.
+Hi Michael,
 
-The problem is that you have no control over the device writes
-into the descriptors. In order not to lose the device writes
-the cpu must not write to any cache lines that contain active
-descriptors.
+Yes, I was actually looking at consolidating and moving all the powerpc
+cpuidle driver code to drivers/cpuidle/. sysdev also seems fine. Let me
+redo and club the drivers and have a single version of the code in
+sysdev for both powerpc and powernv platforms.
 
-For the receive side this can be arranged by initialising cache
-line sized blocks of descriptors (if the cache line write isn't
-atomic you still have problems).
+Thanks !
+Deepthi
 
-The send side is much more tricky: you either have to setup a
-full cache line of descriptors or wait until the transmit is idle.
 
-	David
+> cheers
+> 
