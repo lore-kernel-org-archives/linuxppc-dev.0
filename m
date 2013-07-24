@@ -1,27 +1,25 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3DB922C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 12:10:35 +1000 (EST)
-Message-ID: <51EF375D.9060006@asianux.com>
-Date: Wed, 24 Jul 2013 10:09:33 +0800
-From: Chen Gang <gang.chen@asianux.com>
+Return-Path: <B40534@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D36FE2C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 12:17:53 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: RE: [PATCH 2/2] cpuidle: export cpuidle_idle_call symbol
+Date: Wed, 24 Jul 2013 02:17:17 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259FDCB0E@039-SN2MPN1-023.039d.mgd.msft.net>
+References: <1374571681-31911-1-git-send-email-dongsheng.wang@freescale.com>
+ <1374571681-31911-2-git-send-email-dongsheng.wang@freescale.com>
+ <16375354.KJ7QhjYo9F@vostro.rjw.lan>
+In-Reply-To: <16375354.KJ7QhjYo9F@vostro.rjw.lan>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc: kernel: remove useless code which related
- with 'max_cpus'
-References: <51ECCA10.7010709@asianux.com>
- <51ECCEA8.5040406@linux.vnet.ibm.com> <51ECD0BF.8080605@asianux.com>
- <51ECD3D4.9020405@asianux.com> <51ECD664.7040708@linux.vnet.ibm.com>
- <20130723134431.GF31944@concordia> <51EF1F97.3070409@asianux.com>
- <20130724011640.GA6042@concordia>
-In-Reply-To: <20130724011640.GA6042@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Thomas Gleixner <tglx@linutronix.de>, "paulus@samba.org" <paulus@samba.org>,
- chenhui.zhao@freescale.com,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,55 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/24/2013 09:16 AM, Michael Ellerman wrote:
-> On Wed, Jul 24, 2013 at 08:28:07AM +0800, Chen Gang wrote:
->> > On 07/23/2013 09:44 PM, Michael Ellerman wrote:
->>> > > On Mon, Jul 22, 2013 at 12:21:16PM +0530, Srivatsa S. Bhat wrote:
->>>> > >> On 07/22/2013 12:10 PM, Chen Gang wrote:
->>>>> > >>> Since not need 'max_cpus' after the related commit, the related code
->>>>> > >>> are useless too, need be removed.
->>>>> > >>>
->>>>> > >>> The related commit:
->>>>> > >>>
->>>>> > >>>   c1aa687 powerpc: Clean up obsolete code relating to decrementer and timebase
->>>>> > >>>
->>>>> > >>> The related warning:
->>>>> > >>>
->>>>> > >>>   arch/powerpc/kernel/smp.c:323:43: warning: parameter ‘max_cpus’ set but not used [-Wunused-but-set-parameter]
->>>>> > >>>
->>>>> > >>> Signed-off-by: Chen Gang <gang.chen@asianux.com>
->>>> > >>
->>>> > >> This version looks good.
->>> > > 
->>> > > Agreed.
->>> > > 
->>> > > A good follow up patch, or actually series of patches, would be to
->>> > > change the prototype of smp_ops->probe() to return void, and fix all the
->>> > > implementations to no longer return anything.
->>> > > 
->> > 
->> > Hmm... normally, a function need have a return value, it will make it
->> > more extensible (especially, it is an API which need be implemented in
->> > various sub modules).
-> A function doesn't need a return value, and if it needs one in future then
-> we'll add it then. We don't carry code around "just in case".
-> 
-
-But for API (also include the internal API), at least, better to always
-provide the return value which can indicate failure by negative number
-(if succeed can return the meanness value, e.g. the number of cpus).
-
-
->> > Even though the return value may be useless, now, if the performance is
->> > not quite important in our case, I still suggest to have it (especially
->> > each various original implementation already has it).
-> It's dead code, it should be removed.
-
-For API, if not cause the real world issue, better to keep compatible
-(especially, the return value still can indicate failure by negative
-number).
-
-
-Thanks.
--- 
-Chen Gang
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
+a2kgW21haWx0bzpyandAc2lzay5wbF0NCj4gU2VudDogV2VkbmVzZGF5LCBKdWx5IDI0LCAyMDEz
+IDU6MzMgQU0NCj4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogZGFuaWVsLmxlemNh
+bm9AbGluYXJvLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eHBwYy0NCj4gZGV2
+QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdIGNwdWlkbGU6IGV4
+cG9ydCBjcHVpZGxlX2lkbGVfY2FsbCBzeW1ib2wNCj4gDQo+IE9uIFR1ZXNkYXksIEp1bHkgMjMs
+IDIwMTMgMDU6Mjg6MDEgUE0gRG9uZ3NoZW5nIFdhbmcgd3JvdGU6DQo+ID4gRnJvbTogV2FuZyBE
+b25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4NCj4gPiBFeHBvcnQg
+Y3B1aWRsZV9pZGxlX2NhbGwgc3ltYm9sLCBtYWtlIHRoaXMgZnVuY3Rpb24gY2FuIGJlIGludm9r
+ZWQgaW4NCj4gPiB0aGUgbW9kdWxlLg0KPiANCj4gV2h5Pw0KPiANCk9uIHBvd2VycGMgcGxhdGZv
+cm0sIHRoZXJlIGlzIGFscmVhZHkgaGF2ZSBjcHUgaWRsZSBpbXBsZW1lbnRhdGlvbi4NCg0KSSB3
+YW50IHVzZSBjcHVpZGxlIGZyYW1ld29yayB0byBjb250cm9sIHZhcmlvdXMgbG93IHBvd2VyIG1v
+ZGVzLiBCdXQgbmVlZCB0bw0KYmUgY29tcGF0aWJsZSB3aXRoIHRoZSBjdXJyZW50IGltcGxlbWVu
+dGF0aW9uLiBBbmQgZHJpdmVyIHNob3VsZCBiZSBhcyBhIG1vZHVsZSwNClRoZSB1c2VyIGNhbiB1
+c2luZyB0aGlzIG1vZHVsZSBhdCBhbnkgdGltZS4NCg0KV2UgbmVlZCBjcHVpZGxlX2lkbGVfY2Fs
+bCB0byBkcml2ZSB0aGUgbmV3IGltcGxlbWVudGF0aW9uIGluIG1vZHVsZXMuDQoNClRoYW5rcy4N
+Ci0gZG9uZ3NoZW5nDQoNCj4gUmFmYWVsDQoNCg0K
