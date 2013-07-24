@@ -1,38 +1,21 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E66C52C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 19:59:57 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Wed, 24 Jul 2013 15:24:04 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 30BCEE004F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 15:29:49 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6OA0eix23396362
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 15:30:40 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6O9xh2j005669
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 09:59:44 GMT
-Message-ID: <51EFA559.9050601@linux.vnet.ibm.com>
-Date: Wed, 24 Jul 2013 15:28:49 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from filtteri6.pp.htv.fi (filtteri6.pp.htv.fi [213.243.153.189])
+ by ozlabs.org (Postfix) with ESMTP id 789A02C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 20:18:48 +1000 (EST)
+Date: Wed, 24 Jul 2013 13:18:32 +0300
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/3] cpufreq: pmac64: re-estimate G5 cpufreq transition
+ latency
+Message-ID: <20130724101832.GA26943@blackmetal.musicnaut.iki.fi>
+References: <1374611079-28091-1-git-send-email-aaro.koskinen@iki.fi>
+ <1374611079-28091-2-git-send-email-aaro.koskinen@iki.fi>
+ <CAKohpo=t0C63m_WuZA-dGiLDtBu8FbdM8tgJLNh_NSAALnf+fw@mail.gmail.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/3] cpuidle/powernv: cpuidle backend driver for powernv
-References: <20130723090111.7291.99479.stgit@deepthi.in.ibm.com>
- <20130723090137.7291.36657.stgit@deepthi.in.ibm.com>
- <20130723140645.GI31944@concordia>
-In-Reply-To: <20130723140645.GI31944@concordia>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAKohpo=t0C63m_WuZA-dGiLDtBu8FbdM8tgJLNh_NSAALnf+fw@mail.gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Nick Piggin <npiggin@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,28 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/2013 07:36 PM, Michael Ellerman wrote:
-> On Tue, Jul 23, 2013 at 02:31:41PM +0530, Deepthi Dharwar wrote:
->> This patch implements a back-end cpuidle driver for
->> powernv calling power7_nap and snooze idle states.
->> This can be extended by adding more idle states
->> in the future to the existing framework.
+Hi,
+
+On Wed, Jul 24, 2013 at 11:04:50AM +0530, Viresh Kumar wrote:
+> On 24 July 2013 01:54, Aaro Koskinen <aaro.koskinen@iki.fi> wrote:
+> > The patch also enables to use ondemand governor on the latter.
 > 
-> Other than the state table and a few minor details this looks almost
-> identical to the pseries driver. Can we not have a single version in
-> sysdev and isolate just the differences?
->
+> How? I can't see anything obvious here. :(
 
-Hi Michael,
+It replaces CPUFREQ_ETERNAL with a proper value on older PowerMacs.
+ondemand does not accept CPUFREQ_ETERNAL transition latency.
 
-Yes, I was actually looking at consolidating and moving all the powerpc
-cpuidle driver code to drivers/cpuidle/. sysdev also seems fine. Let me
-redo and club the drivers and have a single version of the code in
-sysdev for both powerpc and powernv platforms.
+A.
 
-Thanks !
-Deepthi
-
-
-> cheers
 > 
+> >
+> > Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+> > ---
+> >  drivers/cpufreq/pmac64-cpufreq.c | 5 ++---
+> >  1 file changed, 2 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+> > index 674807d..f9e399b 100644
+> > --- a/drivers/cpufreq/pmac64-cpufreq.c
+> > +++ b/drivers/cpufreq/pmac64-cpufreq.c
+> > @@ -85,7 +85,8 @@ static int (*g5_query_freq)(void);
+> >
+> >  static DEFINE_MUTEX(g5_switch_mutex);
+> >
+> > -static unsigned long transition_latency;
+> > +/* A conservative estimate, based on Xserve G5 and iMac G5 (iSight). */
+> > +static const unsigned long transition_latency = 10 * NSEC_PER_MSEC;
+> >
+> >  #ifdef CONFIG_PMAC_SMU
+> >
+> > @@ -499,7 +500,6 @@ static int __init g5_neo2_cpufreq_init(struct device_node *cpus)
+> >         g5_cpu_freqs[1].frequency = max_freq/2;
+> >
+> >         /* Set callbacks */
+> > -       transition_latency = 12000;
+> >         g5_switch_freq = g5_scom_switch_freq;
+> >         g5_query_freq = g5_scom_query_freq;
+> >         freq_method = "SCOM";
+> > @@ -675,7 +675,6 @@ static int __init g5_pm72_cpufreq_init(struct device_node *cpus)
+> >         g5_cpu_freqs[1].frequency = min_freq;
+> >
+> >         /* Set callbacks */
+> > -       transition_latency = CPUFREQ_ETERNAL;
+> >         g5_switch_volt = g5_pfunc_switch_volt;
+> >         g5_switch_freq = g5_pfunc_switch_freq;
+> >         g5_query_freq = g5_pfunc_query_freq;
+> > --
+> > 1.8.3.2
+> >
