@@ -1,18 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E90D72C0084
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 17:59:32 +1000 (EST)
-Message-ID: <1374652760.3916.124.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 24 Jul 2013 17:59:20 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id B59AF2C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 18:41:23 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 23159-10 for <linuxppc-dev@lists.ozlabs.org>;
+ Wed, 24 Jul 2013 09:41:16 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: Inbound PCI and Memory Corruption
+Date: Wed, 24 Jul 2013 09:40:50 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B72E5@saturn3.aculab.com>
+In-Reply-To: <CAN8Q1EeRWOD1ktGztsaY91VwDYTJmAgwo6XR2baQNb_f7p=FLA@mail.gmail.com>
+References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
+ <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
+ <1371945647.3944.106.camel@pasglop>
+ <CAN8Q1EetHpVkWFmbDGCE-3J4H7oJm0zE66SAdJyvtDb7OBc-gg@mail.gmail.com>
+ <1373492413.19894.29.camel@pasglop>
+ <CAN8Q1EdVVw3ofg9O3o=WThsKpcfMBXe_C7JsSSx9DdRZULW17Q@mail.gmail.com>
+ <CAN8Q1EeKCTCB30N50iA8-QB=0aoNtS1U3nNLGVoz7sHG-Qg26A@mail.gmail.com>
+ <20130719134615.GR7080@book.gsilab.sittig.org>
+ <CAN8Q1EeRWOD1ktGztsaY91VwDYTJmAgwo6XR2baQNb_f7p=FLA@mail.gmail.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Peter LaDow" <petela@gocougs.wsu.edu>,
+ "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,116 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+> On Fri, Jul 19, 2013 at 6:46 AM, Gerhard Sittig <gsi@denx.de> wrote:
+> > So:  No, not having to fiddle with DMA stuff when doing PCI need
+> > not be a problem, it's actually expected.  But since a DMA engine
+> > might be involved (that's just not under your command), the
+> > accompanying problems may arise.  You may need to flush CPU
+> > provided data upon write before telling an external entity to
+> > access it, and may need to invalidate caches (to have data
+> > re-fetched) before the CPU accesses what an external entity did
+> > manipulate.  And this applies to both payload data as well as
+> > management data (descriptors) if the latter apply to the former.
+>=20
+> This is something I've been exploring today.  But what is unclear is
+> _how_ to flush/invalidate the caches'.  I was going to tweak the
+> driver to setup the descriptors, flush the cache, then enable the
+> hardware (and when taking the device down, disable the hardware, flush
+> the cache, then deallocate the descriptors).  But this is in the
+> network code and it isn't obvious how to make this happen.
 
-Here is a series of powerpc fixes. It's a bit big, mostly because of the
-series of 11 "EEH" patches from Gavin. The EEH (Our IBM specific
-PCI/PCIe Enhanced Error Handling) code had been rotting for a while and
-this merge window saw a significant rework & fixing of it by Gavin Shan.
+FWIW it is almost impossible to code for non-coherent descriptors
+(even ignoring problems with speculative cache line reads).
+You don't even want to try to do it except for hardware where you
+can no choice.
 
-However, that wasn't complete and left some open issues. There were
-still a few corner cases that didn't work properly, for example in
-relation to hotplug and devices without explicit error handlers. We had
-some patches but they weren't quite good enough yet so I left them off
-the 3.11 merge window.
+The problem is that you have no control over the device writes
+into the descriptors. In order not to lose the device writes
+the cpu must not write to any cache lines that contain active
+descriptors.
 
-Gavin since then fixed it all up, we ran quite a few rounds of testing
-and it seems fairly solid (at least probably more than it has ever
-been). This should probably have made -rc1 but both Gavin and I took
-some vacation so it had to wait for -rc2.
+For the receive side this can be arranged by initialising cache
+line sized blocks of descriptors (if the cache line write isn't
+atomic you still have problems).
 
-The rest is more bug fixes, mostly to new features recently added, for
-example, we missed the cpu table entry for one of the two models of P8
-(we didn't realize they had different PVR [Processor Version Register]
-values), some module CRC issues, etc...
+The send side is much more tricky: you either have to setup a
+full cache line of descriptors or wait until the transmit is idle.
 
-Please apply,
-
-Cheers,
-Ben.
-
-The following changes since commit 3b2f64d00c46e1e4e9bd0bb9bb12619adac27a4b:
-
-  Linux 3.11-rc2 (2013-07-21 12:05:29 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to ff3d79dc12c2ed38483f6c1e0f26fde430f27c9d:
-
-  powerpc/perf: BHRB filter configuration should follow the task (2013-07-24 14:42:34 +1000)
-
-----------------------------------------------------------------
-Aneesh Kumar K.V (2):
-      powerpc/mm: Fix fallthrough bug in hpte_decode
-      powerpc/mm: Use the correct SLB(LLP) encoding in tlbie instruction
-
-Anshuman Khandual (2):
-      powerpc/perf: Ignore separate BHRB privilege state filter request
-      powerpc/perf: BHRB filter configuration should follow the task
-
-Anton Blanchard (1):
-      powerpc/modules: Module CRC relocation fix causes perf issues
-
-Bjorn Helgaas (1):
-      powerpc/powernv: Mark pnv_pci_init_ioda2_phb() as __init
-
-Denis Kirjanov (1):
-      powerpc/pseries: Fix a typo in pSeries_lpar_hpte_insert()
-
-Gavin Shan (11):
-      powerpc/eeh: Remove reference to PCI device
-      powerpc/eeh: Export functions for hotplug
-      powerpc/pci: Override pcibios_release_device()
-      powerpc/pci/hotplug: Don't need to remove from EEH cache twice
-      powerpc/eeh: Keep PE during hotplug
-      powerpc/eeh: Use safe list traversal when walking EEH devices
-      powerpc/pci: Partial tree hotplug support
-      powerpc/eeh: Use partial hotplug for EEH unaware drivers
-      powerpc/eeh: Don't use pci_dev during BAR restore
-      powerpc/eeh: Fix unbalanced enable for IRQ
-      powerpc/eeh: Introdce flag to protect sysfs
-
-Mahesh Salgaonkar (1):
-      powerpc: Fix the corrupt r3 error during MCE handling.
-
-Michael Ellerman (1):
-      powerpc/perf: Set PPC_FEATURE2_EBB when we register the power8 PMU
-
-Michael Neuling (1):
-      powerpc: Add second POWER8 PVR entry
-
-Paul Bolle (1):
-      powerpc/pseries: Drop "select HOTPLUG"
-
-Tiejun Chen (1):
-      powerpc: Access local paca after hard irq disabled
-
- arch/powerpc/include/asm/eeh.h               | 30 ++++++++---
- arch/powerpc/include/asm/hw_irq.h            |  7 +--
- arch/powerpc/include/asm/module.h            |  5 +-
- arch/powerpc/include/asm/pci-bridge.h        |  1 -
- arch/powerpc/include/asm/reg.h               |  3 +-
- arch/powerpc/kernel/cputable.c               | 20 +++++++-
- arch/powerpc/kernel/eeh.c                    | 70 ++++++++++++-------------
- arch/powerpc/kernel/eeh_cache.c              | 18 ++-----
- arch/powerpc/kernel/eeh_driver.c             | 77 ++++++++++++++++++++++++++--
- arch/powerpc/kernel/eeh_pe.c                 | 58 +++++++++------------
- arch/powerpc/kernel/eeh_sysfs.c              | 21 ++++++++
- arch/powerpc/kernel/pci-common.c             |  2 +
- arch/powerpc/kernel/pci-hotplug.c            | 49 +++++++++---------
- arch/powerpc/kernel/pci_of_scan.c            | 56 ++++++++++++++------
- arch/powerpc/kernel/prom_init.c              |  5 +-
- arch/powerpc/kernel/vmlinux.lds.S            |  3 --
- arch/powerpc/mm/hash_native_64.c             | 12 ++++-
- arch/powerpc/perf/core-book3s.c              |  5 +-
- arch/powerpc/perf/power8-pmu.c               | 24 +++++----
- arch/powerpc/platforms/powernv/eeh-powernv.c | 17 ++++--
- arch/powerpc/platforms/powernv/pci-ioda.c    |  2 +-
- arch/powerpc/platforms/pseries/Kconfig       |  1 -
- arch/powerpc/platforms/pseries/eeh_pseries.c | 67 ++++++++++++++++++++++--
- arch/powerpc/platforms/pseries/lpar.c        |  2 +-
- arch/powerpc/platforms/pseries/ras.c         |  3 ++
- drivers/pci/hotplug/rpadlpar_core.c          |  1 -
- 26 files changed, 390 insertions(+), 169 deletions(-)
+	David
