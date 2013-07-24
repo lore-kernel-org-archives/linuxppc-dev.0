@@ -1,33 +1,32 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6DBB22C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 04:44:35 +1000 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B98962C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 04:46:01 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Thu, 25 Jul 2013 00:08:41 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 178E0E0053
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 00:14:25 +0530 (IST)
+ Thu, 25 Jul 2013 00:07:57 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id C81C83940058
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 00:15:46 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6OIjGdi45088990
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 00:15:16 +0530
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6OIjm8725165948
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 00:15:48 +0530
 Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6OIiMKc002873
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 04:44:23 +1000
-Message-ID: <51F02083.7040700@linux.vnet.ibm.com>
-Date: Wed, 24 Jul 2013 13:44:19 -0500
+ r6OIjpXb007492
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 04:45:51 +1000
+Message-ID: <51F020DB.3090909@linux.vnet.ibm.com>
+Date: Wed, 24 Jul 2013 13:45:47 -0500
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 6/8] Update the powerpc arch specific memory add/remove
- handlers
+Subject: [PATCH 7/8]  Add memory hot add/remove notifier handlers for pwoerpc
 References: <51F01E06.6090800@linux.vnet.ibm.com>
 In-Reply-To: <51F01E06.6090800@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -41,145 +40,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to properly hot add and remove memory for powerpc the arch
-specific callouts need to now complete all of the required work to
-fully add or remove the memory.
+Add memory hot add/remove notifier handlers for powerpc/pseries.
 
-With this update we can also remove the handler for memory node add
-because the powerpc arch specific memory add handler will do all the
-work needed. We do still need the memory node remove handler because
-systems with memory specified in the memory@XXX nodes in the device tree
-we have to use the removal of the node to trigger memory hot remove.
+This patch allows the powerpc/pseries platforms to perform memory DLPAR
+int the kernel. The handlers for add and remove do the work of
+acquiring/releasing the memory to firmware and updating the device tree.
 
-For systems on newer firmware with memory specified in the
-ibm,dynamic-reconfiguration-memory node of the device tree this is not an
-issue.
+This is only used when memory is specified in the
+ibm,dynamic-reconfiguration-memory device tree node so the memory notifiers
+are registered contingent on its existence.
 
 Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/mem.c                           |   33 +++++++++++++++++++---
- arch/powerpc/platforms/pseries/hotplug-memory.c |   35 ------------------------
- 2 files changed, 29 insertions(+), 39 deletions(-)
+ arch/powerpc/platforms/pseries/dlpar.c |  103 +++++++++++++++++++++++++++++++++
+ 1 file changed, 103 insertions(+)
 
-Index: linux/arch/powerpc/mm/mem.c
+Index: linux/arch/powerpc/platforms/pseries/dlpar.c
 ===================================================================
---- linux.orig/arch/powerpc/mm/mem.c
-+++ linux/arch/powerpc/mm/mem.c
-@@ -35,6 +35,7 @@
- #include <linux/memblock.h>
- #include <linux/hugetlb.h>
+--- linux.orig/arch/powerpc/platforms/pseries/dlpar.c
++++ linux/arch/powerpc/platforms/pseries/dlpar.c
+@@ -15,6 +15,7 @@
+ #include <linux/notifier.h>
+ #include <linux/spinlock.h>
+ #include <linux/cpu.h>
++#include <linux/memory.h>
  #include <linux/slab.h>
-+#include <linux/vmalloc.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/prom.h>
-@@ -120,17 +121,24 @@ int arch_add_memory(int nid, u64 start,
- 	struct zone *zone;
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-+	u64 va_start;
-+	int ret;
- 
- 	pgdata = NODE_DATA(nid);
- 
--	start = (unsigned long)__va(start);
--	if (create_section_mapping(start, start + size))
-+	va_start = (unsigned long)__va(start);
-+	if (create_section_mapping(va_start, va_start + size))
- 		return -EINVAL;
- 
- 	/* this should work for most non-highmem platforms */
- 	zone = pgdata->node_zones;
- 
--	return __add_pages(nid, zone, start_pfn, nr_pages);
-+	ret = __add_pages(nid, zone, start_pfn, nr_pages);
-+	if (ret)
-+		return ret;
-+
-+	ret = memblock_add(start, size);
-+	return ret;
+ #include <linux/of.h>
+ #include "offline_states.h"
+@@ -531,11 +532,113 @@ out:
+ 	return rc ? rc : count;
  }
  
- #ifdef CONFIG_MEMORY_HOTREMOVE
-@@ -138,10 +146,27 @@ int arch_remove_memory(u64 start, u64 si
++static struct of_drconf_cell *dlpar_get_drconf_cell(struct device_node *dn,
++						    unsigned long phys_addr)
++{
++	struct of_drconf_cell *drmem;
++	u32 entries;
++	u32 *prop;
++	int i;
++
++	prop = (u32 *)of_get_property(dn, "ibm,dynamic-memory", NULL);
++	of_node_put(dn);
++	if (!prop)
++		return NULL;
++
++	entries = *prop++;
++	drmem = (struct of_drconf_cell *)prop;
++
++	for (i = 0; i < entries; i++) {
++		if (drmem[i].base_addr == phys_addr)
++			return &drmem[i];
++	}
++
++	return NULL;
++}
++
++static int dlpar_mem_probe(unsigned long phys_addr)
++{
++	struct device_node *dn;
++	struct of_drconf_cell *drmem;
++	int rc;
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		return -EINVAL;
++
++	drmem = dlpar_get_drconf_cell(dn, phys_addr);
++	of_node_put(dn);
++
++	if (!drmem)
++		return -EINVAL;
++
++	if (drmem->flags & DRCONF_MEM_ASSIGNED)
++		return 0;
++
++	drmem->flags |= DRCONF_MEM_ASSIGNED;
++
++	rc = dlpar_acquire_drc(drmem->drc_index);
++	return rc;
++}
++
++static int dlpar_mem_release(unsigned long phys_addr)
++{
++	struct device_node *dn;
++	struct of_drconf_cell *drmem;
++	int rc;
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		return -EINVAL;
++
++	drmem = dlpar_get_drconf_cell(dn, phys_addr);
++	of_node_put(dn);
++
++	if (!drmem)
++		return -EINVAL;
++
++	if (!drmem->flags & DRCONF_MEM_ASSIGNED)
++		return 0;
++
++	drmem->flags &= ~DRCONF_MEM_ASSIGNED;
++
++	rc = dlpar_release_drc(drmem->drc_index);
++	return rc;
++}
++
++static int pseries_dlpar_mem_callback(struct notifier_block *nb,
++				      unsigned long action, void *hp_arg)
++{
++	struct memory_notify *arg = hp_arg;
++	unsigned long phys_addr = arg->start_pfn << PAGE_SHIFT;
++	int rc = 0;
++
++
++	switch (action) {
++	case MEM_BEING_HOT_ADDED:
++		rc = dlpar_mem_probe(phys_addr);
++		break;
++	case MEM_HOT_REMOVED:
++		rc = dlpar_mem_release(phys_addr);
++		break;
++	}
++
++	return notifier_from_errno(rc);
++}
++
+ static int __init pseries_dlpar_init(void)
  {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-+	unsigned long va_addr;
- 	struct zone *zone;
-+	int ret;
++	struct device_node *dn;
++
+ 	ppc_md.cpu_probe = dlpar_cpu_probe;
+ 	ppc_md.cpu_release = dlpar_cpu_release;
  
- 	zone = page_zone(pfn_to_page(start_pfn));
--	return __remove_pages(zone, start_pfn, nr_pages);
-+	ret = __remove_pages(zone, start_pfn, nr_pages);
-+	if (ret)
-+		return ret;
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (dn) {
++		hotplug_memory_notifier(pseries_dlpar_mem_callback, 0);
++		of_node_put(dn);
++	}
 +
-+	memblock_remove(start, size);
-+
-+	/* remove htab bolted mappings */
-+	va_addr = (unsigned long)__va(start);
-+	ret = remove_section_mapping(va_addr, va_addr + size);
-+
-+	/* Ensure all vmalloc mappings are flushed in case they also
-+	 * hit that section of memory.
-+	 */
-+	vm_unmap_aliases();
-+
-+	return ret;
+ 	return 0;
  }
- #endif
- #endif /* CONFIG_MEMORY_HOTPLUG */
-Index: linux/arch/powerpc/platforms/pseries/hotplug-memory.c
-===================================================================
---- linux.orig/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ linux/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -166,38 +166,6 @@ static inline int pseries_remove_memory(
- }
- #endif /* CONFIG_MEMORY_HOTREMOVE */
- 
--static int pseries_add_memory(struct device_node *np)
--{
--	const char *type;
--	const unsigned int *regs;
--	unsigned long base;
--	unsigned int lmb_size;
--	int ret = -EINVAL;
--
--	/*
--	 * Check to see if we are actually adding memory
--	 */
--	type = of_get_property(np, "device_type", NULL);
--	if (type == NULL || strcmp(type, "memory") != 0)
--		return 0;
--
--	/*
--	 * Find the base and size of the memblock
--	 */
--	regs = of_get_property(np, "reg", NULL);
--	if (!regs)
--		return ret;
--
--	base = *(unsigned long *)regs;
--	lmb_size = regs[3];
--
--	/*
--	 * Update memory region to represent the memory add
--	 */
--	ret = memblock_add(base, lmb_size);
--	return (ret < 0) ? -EINVAL : 0;
--}
--
- static int pseries_update_drconf_memory(struct of_prop_reconfig *pr)
- {
- 	struct of_drconf_cell *new_drmem, *old_drmem;
-@@ -251,9 +219,6 @@ static int pseries_memory_notifier(struc
- 	int err = 0;
- 
- 	switch (action) {
--	case OF_RECONFIG_ATTACH_NODE:
--		err = pseries_add_memory(node);
--		break;
- 	case OF_RECONFIG_DETACH_NODE:
- 		err = pseries_remove_memory(node);
- 		break;
+ machine_device_initcall(pseries, pseries_dlpar_init);
