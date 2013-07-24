@@ -1,32 +1,29 @@
-Return-Path: <pladow@gmail.com>
-Received: from mail-la0-x230.google.com (mail-la0-x230.google.com
- [IPv6:2a00:1450:4010:c03::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4815E2C007B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 01:39:09 +1000 (EST)
-Received: by mail-la0-f48.google.com with SMTP id hi8so444259lab.21
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 08:39:02 -0700 (PDT)
+Return-Path: <B32721@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7E9542C00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 02:26:08 +1000 (EST)
+Received: from mail126-db9 (localhost [127.0.0.1])	by
+ mail126-db9-R.bigfish.com (Postfix) with ESMTP id 4E8AC4E0046	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 16:25:59 +0000 (UTC)
+Received: from DB9EHSMHS001.bigfish.com (unknown [10.174.16.229])	by
+ mail126-db9.bigfish.com (Postfix) with ESMTP id F31E4220046	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 16:25:56 +0000 (UTC)
+From: Udma Catalin-Dan-B32721 <B32721@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] Update compilation flags with core specific options
+Date: Wed, 24 Jul 2013 16:25:52 +0000
+Message-ID: <FE751157F0442848A159F3AB4CB1F55B3F83F1@039-SN1MPN1-001.039d.mgd.msft.net>
+References: <1372764004-18896-1-git-send-email-catalin.udma@freescale.com>
+ (from catalin.udma@freescale.com on Tue Jul  2 06:20:04 2013)
+ <1374624677.15592.48@snotra>
+In-Reply-To: <1374624677.15592.48@snotra>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Sender: pladow@gmail.com
-In-Reply-To: <1374640044.3916.109.camel@pasglop>
-References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
- <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
- <1371945647.3944.106.camel@pasglop>
- <CAN8Q1EetHpVkWFmbDGCE-3J4H7oJm0zE66SAdJyvtDb7OBc-gg@mail.gmail.com>
- <1373492413.19894.29.camel@pasglop>
- <CAN8Q1EdVVw3ofg9O3o=WThsKpcfMBXe_C7JsSSx9DdRZULW17Q@mail.gmail.com>
- <CAN8Q1EeKCTCB30N50iA8-QB=0aoNtS1U3nNLGVoz7sHG-Qg26A@mail.gmail.com>
- <20130719134615.GR7080@book.gsilab.sittig.org>
- <CAN8Q1EeRWOD1ktGztsaY91VwDYTJmAgwo6XR2baQNb_f7p=FLA@mail.gmail.com>
- <1374640044.3916.109.camel@pasglop>
-Date: Wed, 24 Jul 2013 08:39:02 -0700
-Message-ID: <CAN8Q1EdAA6ZfYSdTJ6ieZxjuqTF7Cr9Bt6fo2qejbtXoZ=ce6g@mail.gmail.com>
-Subject: Re: Inbound PCI and Memory Corruption
-From: Peter LaDow <petela@gocougs.wsu.edu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,37 +33,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 23, 2013 at 9:27 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> CONFIG_NOT_COHERENT_CACHE will do it for you (in
-> arch/powerpc/kernel/dma.c) provided the driver does the right things vs.
-> the DMA accessors but afaik e1000 does.
+> This breaks the vdso for e500v1/v2 (userspace dies with SIGILL), since
+> KBUILD_CFLAGS doesn't get used when building asm files, and the vdso
+> uses mftbu/mftbl which are not being assembled to the form that
+> e500v1/v2 support.
+>=20
+> We should be setting -mcpu=3Dwhatever and -msoft-float in both CFLAGS and
+> AFLAGS, since we don't call "as" directly, and target selection should
+> not differ based on whether we're building a C file or an asm file.
+>=20
+> -Scott
+[CU] Thank you, Scott. I'll update also AFLAGS.
 
-Well, when I went to make the changes I noted a few things.  First,
-the e1000 driver does a dma_unmap_single() prior to processing the
-descriptor.  So it would seem that the dma_sync_single_for_cpu() isn't
-necessary in that case.  And when allocating descriptors, it does
-dma_map_single() after setting up the descriptor, so
-dma_sync_single_for_device() probably isn't necessary either.
+I have some questions about how you reproduce the SIGILL issue.
+I tried to reproduce the issue looking to gettimeofday.S, that uses
+mftbu/mftbl. In my tests, I obtained the same output when compiling this fi=
+le
+for p1021rdb before and after this patch, and also after adding -mcpu to
+AFLAGS: "objdump -d arch/powerpc/kernel/vdso32/gettimeofday.o" looks the sa=
+me
+for the cases mentioned above:
+   "mftbu r3" from .S file is decoded to "mfspr   r3,269" in "objdump -d" o=
+utput
 
-But regardless, I put in the dma_sync_single_* calls and we still get
-the same behavior.  So, even with CONFIG_NOT_COHERENT_CACHE we are
-getting this error.
+Indeed, for -mcpu=3D601/power3, the "objdump -d" output is "mftbu r3" and a=
+ccording to
+powerISA this instruction would cause Illegal Instruction error handler to =
+be invoked
+and permits the sw to emulate the instruction.
 
-> If that helps, that might hint at either a missing barrier or some kind
-> of HW (or HW configuration) bug with cache coherency.
-
-And unfortunately it didn't help.  We have a few other things we are
-trying, but I'm not hopeful that any will change the behavior.
-
-A bit of history that may help.  We were using an e100 (an 82559)
-part, but Intel EOL'd that part so we picked up the 82540EP (which
-they have also recently EOL'd).  The e100 driver uses a different DMA
-model.  It uses pci_map_single/pci_unmap_single along with
-pci_dma_sync_single_for* calls (as well as other PCI calls).  The
-e1000 driver, however, does not use the pci_* calls.  We have never
-had a problem with the e100 parts.  I don't suppose the use of
-pci_map_* vs dma_map_* makes a difference does it?
-
-Thanks,
-Pete
+Regards,
+Catalin
