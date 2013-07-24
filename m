@@ -1,29 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 233DB2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 03:45:50 +1000 (EST)
-Received: from mail88-db8 (localhost [127.0.0.1])	by mail88-db8-R.bigfish.com
- (Postfix) with ESMTP id 4AE5E38014D	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,
- 24 Jul 2013 17:45:44 +0000 (UTC)
-Received: from DB8EHSMHS015.bigfish.com (unknown [10.174.8.234])	by
- mail88-db8.bigfish.com (Postfix) with ESMTP id A173DBC0046	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 17:45:42 +0000 (UTC)
-Date: Wed, 24 Jul 2013 12:45:36 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] Update compilation flags with core specific options
-To: Udma Catalin-Dan-B32721 <B32721@freescale.com>
-In-Reply-To: <FE751157F0442848A159F3AB4CB1F55B3F83F1@039-SN1MPN1-001.039d.mgd.msft.net>
- (from B32721@freescale.com on Wed Jul 24 11:25:52 2013)
-Message-ID: <1374687936.15592.55@snotra>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-oa0-x233.google.com (mail-oa0-x233.google.com
+ [IPv6:2607:f8b0:4003:c02::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 67F4C2C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 04:02:37 +1000 (EST)
+Received: by mail-oa0-f51.google.com with SMTP id i4so1750836oah.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 11:02:31 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1374632701-20972-5-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1374632701-20972-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1374632701-20972-5-git-send-email-shangw@linux.vnet.ibm.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 24 Jul 2013 12:02:11 -0600
+Message-ID: <CAErSpo7rXF9vf=BMT1LoLeHPRiyJxT2XWbroRjdt+DH8+4QOnA@mail.gmail.com>
+Subject: Re: [PATCH 04/11] PCI/hotplug: Needn't remove EEH cache again
+To: Gavin Shan <shangw@linux.vnet.ibm.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,40 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/24/2013 11:25:52 AM, Udma Catalin-Dan-B32721 wrote:
-> > This breaks the vdso for e500v1/v2 (userspace dies with SIGILL), =20
-> since
-> > KBUILD_CFLAGS doesn't get used when building asm files, and the vdso
-> > uses mftbu/mftbl which are not being assembled to the form that
-> > e500v1/v2 support.
-> >
-> > We should be setting -mcpu=3Dwhatever and -msoft-float in both CFLAGS =20
-> and
-> > AFLAGS, since we don't call "as" directly, and target selection =20
-> should
-> > not differ based on whether we're building a C file or an asm file.
-> >
-> > -Scott
-> [CU] Thank you, Scott. I'll update also AFLAGS.
->=20
-> I have some questions about how you reproduce the SIGILL issue.
-> I tried to reproduce the issue looking to gettimeofday.S, that uses
-> mftbu/mftbl. In my tests, I obtained the same output when compiling =20
-> this file
-> for p1021rdb before and after this patch, and also after adding -mcpu =20
-> to
-> AFLAGS: "objdump -d arch/powerpc/kernel/vdso32/gettimeofday.o" looks =20
-> the same
-> for the cases mentioned above:
->    "mftbu r3" from .S file is decoded to "mfspr   r3,269" in "objdump =20
-> -d" output
->=20
-> Indeed, for -mcpu=3D601/power3, the "objdump -d" output is "mftbu r3" =20
-> and according to
-> powerISA this instruction would cause Illegal Instruction error =20
-> handler to be invoked
-> and permits the sw to emulate the instruction.
+[+cc linux-pci]
 
-It probably depends on what the default is for your toolchain.
+On Tue, Jul 23, 2013 at 8:24 PM, Gavin Shan <shangw@linux.vnet.ibm.com> wrote:
+> Since pcibios_release_device() called by pci_stop_and_remove_bus_device()
+> has removed the EEH cache, we needn't do that again.
+>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 
--Scott=
+I'll be happy to merge this if you want, or since you have my Ack
+already, you can merge it with the rest of the series.  I didn't get
+the rest of the series, so I don't know if it depends on this.
+
+Just let me know what you want me to do.
+
+> ---
+>  drivers/pci/hotplug/rpadlpar_core.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+> index b29e20b..bb7af78 100644
+> --- a/drivers/pci/hotplug/rpadlpar_core.c
+> +++ b/drivers/pci/hotplug/rpadlpar_core.c
+> @@ -388,7 +388,6 @@ int dlpar_remove_pci_slot(char *drc_name, struct device_node *dn)
+>         /* Remove the EADS bridge device itself */
+>         BUG_ON(!bus->self);
+>         pr_debug("PCI: Now removing bridge device %s\n", pci_name(bus->self));
+> -       eeh_remove_bus_device(bus->self, true);
+>         pci_stop_and_remove_bus_device(bus->self);
+>
+>         return 0;
+> --
+> 1.7.5.4
+>
