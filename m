@@ -1,25 +1,21 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-ob0-f178.google.com (mail-ob0-f178.google.com
- [209.85.214.178])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E10342C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 15:34:52 +1000 (EST)
-Received: by mail-ob0-f178.google.com with SMTP id fb19so12267382obc.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2013 22:34:50 -0700 (PDT)
+Return-Path: <B45939@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C133A2C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 16:21:30 +1000 (EST)
+From: <hongbo.zhang@freescale.com>
+To: <vinod.koul@intel.com>, <djbw@fb.com>, <leoli@freescale.com>,
+ <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v5 0/4] DMA: Freescale: Add support for 8-channel DMA engine
+Date: Wed, 24 Jul 2013 14:21:05 +0800
+Message-ID: <1374646870-5162-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1374611079-28091-2-git-send-email-aaro.koskinen@iki.fi>
-References: <1374611079-28091-1-git-send-email-aaro.koskinen@iki.fi>
- <1374611079-28091-2-git-send-email-aaro.koskinen@iki.fi>
-Date: Wed, 24 Jul 2013 11:04:50 +0530
-Message-ID: <CAKohpo=t0C63m_WuZA-dGiLDtBu8FbdM8tgJLNh_NSAALnf+fw@mail.gmail.com>
-Subject: Re: [PATCH 2/3] cpufreq: pmac64: re-estimate G5 cpufreq transition
- latency
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Nick Piggin <npiggin@suse.de>
+Content-Type: text/plain
+Cc: Hongbo Zhang <hongbo.zhang@freescale.com>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24 July 2013 01:54, Aaro Koskinen <aaro.koskinen@iki.fi> wrote:
-> The patch also enables to use ondemand governor on the latter.
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-How? I can't see anything obvious here. :(
+Hi Vinod, Dan, Scott and Leo, please have a look at these V2 patches.
 
->
-> Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-> ---
->  drivers/cpufreq/pmac64-cpufreq.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-> index 674807d..f9e399b 100644
-> --- a/drivers/cpufreq/pmac64-cpufreq.c
-> +++ b/drivers/cpufreq/pmac64-cpufreq.c
-> @@ -85,7 +85,8 @@ static int (*g5_query_freq)(void);
->
->  static DEFINE_MUTEX(g5_switch_mutex);
->
-> -static unsigned long transition_latency;
-> +/* A conservative estimate, based on Xserve G5 and iMac G5 (iSight). */
-> +static const unsigned long transition_latency = 10 * NSEC_PER_MSEC;
->
->  #ifdef CONFIG_PMAC_SMU
->
-> @@ -499,7 +500,6 @@ static int __init g5_neo2_cpufreq_init(struct device_node *cpus)
->         g5_cpu_freqs[1].frequency = max_freq/2;
->
->         /* Set callbacks */
-> -       transition_latency = 12000;
->         g5_switch_freq = g5_scom_switch_freq;
->         g5_query_freq = g5_scom_query_freq;
->         freq_method = "SCOM";
-> @@ -675,7 +675,6 @@ static int __init g5_pm72_cpufreq_init(struct device_node *cpus)
->         g5_cpu_freqs[1].frequency = min_freq;
->
->         /* Set callbacks */
-> -       transition_latency = CPUFREQ_ETERNAL;
->         g5_switch_volt = g5_pfunc_switch_volt;
->         g5_switch_freq = g5_pfunc_switch_freq;
->         g5_query_freq = g5_pfunc_query_freq;
-> --
-> 1.8.3.2
->
+Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
+adds support this DMA engine.
+
+V4->V5 changes:
+- update description in the dt binding document, to make it more resonable
+- add new patch [4/4] to eliminate a compiling warning which already exists
+  for a long time
+
+V3->V4 changes:
+- introduce new patch [1/3] to revise the legacy dma binding document
+- and then add new paragraph to describe new dt node binding in [2/3]
+- rebase to latest kernel v3.11-rc1
+
+V2->V3 changes:
+- edit Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+- edit text string in Kconfig and the driver files, using "elo series" to
+  mention all the current "elo*"
+
+V1->V2 changes:
+- removed the codes handling the register dgsr1, since it isn't used corrently
+- renamed the DMA DT compatible to "fsl,elo3-dma"
+- renamed the new dts files to "elo3-dma-<n>.dtsi"
+
+Hongbo Zhang (4):
+  DMA: Freescale: revise device tree binding document
+  DMA: Freescale: Add new 8-channel DMA engine device tree nodes
+  DMA: Freescale: update driver to support 8-channel DMA engine
+  DMA: Freescale: eliminate a compiling warning
+
+ .../devicetree/bindings/powerpc/fsl/dma.txt        |  118 +++++++++++++++-----
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
+ arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   81 ++++++++++++++
+ arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   81 ++++++++++++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
+ drivers/dma/Kconfig                                |    9 +-
+ drivers/dma/fsldma.c                               |   11 +-
+ drivers/dma/fsldma.h                               |    2 +-
+ 8 files changed, 269 insertions(+), 41 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+
+-- 
+1.7.9.5
