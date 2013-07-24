@@ -1,17 +1,27 @@
-Return-Path: <anton@samba.org>
-Date: Thu, 25 Jul 2013 08:34:27 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] module: ppc64 module CRC relocation fix causes perf issues
-Message-ID: <20130725083427.56e36010@kryten>
-In-Reply-To: <1374274770.5357.33@snotra>
-References: <20130718140045.6794ecd5@kryten>
-	<1374274770.5357.33@snotra>
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 359872C00D4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 08:43:04 +1000 (EST)
+Date: Wed, 24 Jul 2013 15:43:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH 04/10] powerpc: Prepare to support kernel handling of
+ IOMMU map/unmap
+Message-Id: <20130724154301.2af75867c51870fc0c32819b@linux-foundation.org>
+In-Reply-To: <51EDE903.6010608@ozlabs.ru>
+References: <1373936045-22653-1-git-send-email-aik@ozlabs.ru>
+ <1373936045-22653-5-git-send-email-aik@ozlabs.ru>
+ <51EDE903.6010608@ozlabs.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Neil Horman <nhorman@tuxdriver.com>, Rusty Russell <rusty@rustcorp.com.au>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Andrea Arcangeli <aarcange@redhat.com>, kvm@vger.kernel.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,21 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 23 Jul 2013 12:22:59 +1000 Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-Hi Scott,
+> Ping, anyone, please?
 
-> I'm not really sure what it's supposed to look like when "perf  
-> annotate" works.  It spits a bunch of unreadable[1]
-> dark-blue-on-black assembly code at me, all with "0.00 :" in the left
-> column.
-> 
-> Oh, wait -- some lines have "100.00 : " on the left, in  
-> even-more-unreadable dark-red-on-black.
-> 
-> Apart from the annoying colors, is there anything specific I should
-> be looking for?  Some sort of error message, or output that actually
-> makes sense?
+ew, you top-posted.
 
-Thanks for testing! Ben, I think the patch is good to go.
+> Ben needs ack from any of MM people before proceeding with this patch. Thanks!
 
-Anton
+For what?  The three lines of comment in page-flags.h?   ack :)
+
+Manipulating page->_count directly is considered poor form.  Don't
+blame us if we break your code ;)
+
+Actually, the manipulation in realmode_get_page() duplicates the
+existing get_page_unless_zero() and the one in realmode_put_page()
+could perhaps be placed in mm.h with a suitable name and some
+documentation.  That would improve your form and might protect the code
+from getting broken later on.
