@@ -1,23 +1,45 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B10462C0085
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 07:48:05 +1000 (EST)
-Message-ID: <1374702465.6142.3.camel@pasglop>
-Subject: Re: [PATCH 04/11] PCI/hotplug: Needn't remove EEH cache again
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 25 Jul 2013 07:47:45 +1000
-In-Reply-To: <CAErSpo7rXF9vf=BMT1LoLeHPRiyJxT2XWbroRjdt+DH8+4QOnA@mail.gmail.com>
-References: <1374632701-20972-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1374632701-20972-5-git-send-email-shangw@linux.vnet.ibm.com>
- <CAErSpo7rXF9vf=BMT1LoLeHPRiyJxT2XWbroRjdt+DH8+4QOnA@mail.gmail.com>
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F034D2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 08:08:47 +1000 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Thu, 25 Jul 2013 19:04:01 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 006E83578052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 08:08:44 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6OLrJM78389072
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 07:53:19 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r6OM8hi4004518
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 08:08:43 +1000
+Message-ID: <1374703722.6142.5.camel@pasglop>
+Subject: Re: Inbound PCI and Memory Corruption
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Peter LaDow <petela@gocougs.wsu.edu>
+Date: Thu, 25 Jul 2013 08:08:42 +1000
+In-Reply-To: <CAN8Q1EdAA6ZfYSdTJ6ieZxjuqTF7Cr9Bt6fo2qejbtXoZ=ce6g@mail.gmail.com>
+References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
+ <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
+ <1371945647.3944.106.camel@pasglop>
+ <CAN8Q1EetHpVkWFmbDGCE-3J4H7oJm0zE66SAdJyvtDb7OBc-gg@mail.gmail.com>
+ <1373492413.19894.29.camel@pasglop>
+ <CAN8Q1EdVVw3ofg9O3o=WThsKpcfMBXe_C7JsSSx9DdRZULW17Q@mail.gmail.com>
+ <CAN8Q1EeKCTCB30N50iA8-QB=0aoNtS1U3nNLGVoz7sHG-Qg26A@mail.gmail.com>
+ <20130719134615.GR7080@book.gsilab.sittig.org>
+ <CAN8Q1EeRWOD1ktGztsaY91VwDYTJmAgwo6XR2baQNb_f7p=FLA@mail.gmail.com>
+ <1374640044.3916.109.camel@pasglop>
+ <CAN8Q1EdAA6ZfYSdTJ6ieZxjuqTF7Cr9Bt6fo2qejbtXoZ=ce6g@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Gavin Shan <shangw@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +49,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-07-24 at 12:02 -0600, Bjorn Helgaas wrote:
-> [+cc linux-pci]
-> 
-> On Tue, Jul 23, 2013 at 8:24 PM, Gavin Shan <shangw@linux.vnet.ibm.com> wrote:
-> > Since pcibios_release_device() called by pci_stop_and_remove_bus_device()
-> > has removed the EEH cache, we needn't do that again.
-> >
-> > Cc: Bjorn Helgaas <bhelgaas@google.com>
-> > Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-> > Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-> 
-> I'll be happy to merge this if you want, or since you have my Ack
-> already, you can merge it with the rest of the series.  I didn't get
-> the rest of the series, so I don't know if it depends on this.
-> 
-> Just let me know what you want me to do.
+On Wed, 2013-07-24 at 08:39 -0700, Peter LaDow wrote:
+> A bit of history that may help.  We were using an e100 (an 82559)
+> part, but Intel EOL'd that part so we picked up the 82540EP (which
+> they have also recently EOL'd).  The e100 driver uses a different DMA
+> model.  It uses pci_map_single/pci_unmap_single along with
+> pci_dma_sync_single_for* calls (as well as other PCI calls).  The
+> e1000 driver, however, does not use the pci_* calls.  We have never
+> had a problem with the e100 parts.  I don't suppose the use of
+> pci_map_* vs dma_map_* makes a difference does it?
 
-Already merged :-)
+No, they resolve to the same thing under the hood. Did you do other
+changes ? Could it be another unrelated kernel bug causing something
+like use-after-free of network buffer or similar oddity unrelated to the
+network driver ?
 
-Thanks !
+Have you tried with different kernel versions ?
 
 Cheers,
 Ben.
-
-> > ---
-> >  drivers/pci/hotplug/rpadlpar_core.c |    1 -
-> >  1 files changed, 0 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-> > index b29e20b..bb7af78 100644
-> > --- a/drivers/pci/hotplug/rpadlpar_core.c
-> > +++ b/drivers/pci/hotplug/rpadlpar_core.c
-> > @@ -388,7 +388,6 @@ int dlpar_remove_pci_slot(char *drc_name, struct device_node *dn)
-> >         /* Remove the EADS bridge device itself */
-> >         BUG_ON(!bus->self);
-> >         pr_debug("PCI: Now removing bridge device %s\n", pci_name(bus->self));
-> > -       eeh_remove_bus_device(bus->self, true);
-> >         pci_stop_and_remove_bus_device(bus->self);
-> >
-> >         return 0;
-> > --
-> > 1.7.5.4
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
