@@ -1,17 +1,19 @@
 Return-Path: <bhelgaas@google.com>
-Received: from mail-oa0-x236.google.com (mail-oa0-x236.google.com
- [IPv6:2607:f8b0:4003:c02::236])
+Received: from mail-ob0-x22d.google.com (mail-ob0-x22d.google.com
+ [IPv6:2607:f8b0:4003:c01::22d])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E20AB2C00DF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 03:57:18 +1000 (EST)
-Received: by mail-oa0-f54.google.com with SMTP id o6so5161578oag.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 10:57:15 -0700 (PDT)
-Subject: [PATCH 0/2] PCI: Convert hotplug core and pciehp to be builtin only
+ by ozlabs.org (Postfix) with ESMTPS id CE8502C0114
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 03:57:25 +1000 (EST)
+Received: by mail-ob0-f173.google.com with SMTP id er7so2223887obc.32
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 10:57:22 -0700 (PDT)
+Subject: [PATCH 1/2] PCI: hotplug: Convert to be builtin only, not modular
 To: linux-pci@vger.kernel.org
 From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 25 Jul 2013 11:57:12 -0600
-Message-ID: <20130725175242.6006.56007.stgit@bhelgaas-glaptop>
+Date: Thu, 25 Jul 2013 11:57:20 -0600
+Message-ID: <20130725175720.6006.96448.stgit@bhelgaas-glaptop>
+In-Reply-To: <20130725175242.6006.56007.stgit@bhelgaas-glaptop>
+References: <20130725175242.6006.56007.stgit@bhelgaas-glaptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
@@ -28,31 +30,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Yinghai is working on a regression fix ("PCI: Separate stop and remove
-devices in pciehp") that needs to go into v3.11, and his fix will be
-simpler if we remove the module option for pciehp in v3.11.  That will mean
-he won't have to export pci_stop_bus_device() and pci_remove_bus_device()
-for use by modules.
+Convert CONFIG_HOTPLUG_PCI from tristate to bool.  This only affects
+the hotplug core; several of the hotplug drivers can still be modules.
 
-So these two patches convert CONFIG_HOTPLUG_PCI and CONFIG_HOTPLUG_PCI_PCIE
-to be bool (not tristate) and update defconfig files that had
-CONFIG_HOTPLUG_PCI=m.
-
-The motivation was for CONFIG_HOTPLUG_PCI_PCIE, but I also converted
-CONFIG_HOTPLUG_PCI to bool because the CONFIG_HOTPLUG_PCI=m and
-CONFIG_HOTPLUG_PCI_PCIE=y combination was accepted by Kconfig and builds a
-kernel, but pciehp doesn't actually work in that case (pointed out by
-Yinghai, thanks!)
-
-These are intended for v3.11.
-
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
-
-Bjorn Helgaas (2):
-      PCI: hotplug: Convert to be builtin only, not modular
-      PCI: pciehp: Convert pciehp to be builtin only, not modular
-
-
  arch/ia64/configs/generic_defconfig    |    2 +-
  arch/ia64/configs/gensparse_defconfig  |    2 +-
  arch/ia64/configs/tiger_defconfig      |    2 +-
@@ -62,5 +44,131 @@ Bjorn Helgaas (2):
  arch/powerpc/configs/pseries_defconfig |    2 +-
  arch/sh/configs/sh03_defconfig         |    2 +-
  drivers/pci/hotplug/Kconfig            |    5 +----
- drivers/pci/pcie/Kconfig               |    5 +----
- 10 files changed, 10 insertions(+), 16 deletions(-)
+ 9 files changed, 9 insertions(+), 12 deletions(-)
+
+diff --git a/arch/ia64/configs/generic_defconfig b/arch/ia64/configs/generic_defconfig
+index 7913695..efbd292 100644
+--- a/arch/ia64/configs/generic_defconfig
++++ b/arch/ia64/configs/generic_defconfig
+@@ -31,7 +31,7 @@ CONFIG_ACPI_FAN=m
+ CONFIG_ACPI_DOCK=y
+ CONFIG_ACPI_PROCESSOR=m
+ CONFIG_ACPI_CONTAINER=m
+-CONFIG_HOTPLUG_PCI=m
++CONFIG_HOTPLUG_PCI=y
+ CONFIG_HOTPLUG_PCI_ACPI=m
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+diff --git a/arch/ia64/configs/gensparse_defconfig b/arch/ia64/configs/gensparse_defconfig
+index f8e9133..f64980d 100644
+--- a/arch/ia64/configs/gensparse_defconfig
++++ b/arch/ia64/configs/gensparse_defconfig
+@@ -25,7 +25,7 @@ CONFIG_ACPI_BUTTON=m
+ CONFIG_ACPI_FAN=m
+ CONFIG_ACPI_PROCESSOR=m
+ CONFIG_ACPI_CONTAINER=m
+-CONFIG_HOTPLUG_PCI=m
++CONFIG_HOTPLUG_PCI=y
+ CONFIG_HOTPLUG_PCI_ACPI=m
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+diff --git a/arch/ia64/configs/tiger_defconfig b/arch/ia64/configs/tiger_defconfig
+index a5a9e02..0f4e9e4 100644
+--- a/arch/ia64/configs/tiger_defconfig
++++ b/arch/ia64/configs/tiger_defconfig
+@@ -31,7 +31,7 @@ CONFIG_ACPI_BUTTON=m
+ CONFIG_ACPI_FAN=m
+ CONFIG_ACPI_PROCESSOR=m
+ CONFIG_ACPI_CONTAINER=m
+-CONFIG_HOTPLUG_PCI=m
++CONFIG_HOTPLUG_PCI=y
+ CONFIG_HOTPLUG_PCI_ACPI=m
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+diff --git a/arch/ia64/configs/xen_domu_defconfig b/arch/ia64/configs/xen_domu_defconfig
+index 37b9b42..b025acf 100644
+--- a/arch/ia64/configs/xen_domu_defconfig
++++ b/arch/ia64/configs/xen_domu_defconfig
+@@ -32,7 +32,7 @@ CONFIG_ACPI_BUTTON=m
+ CONFIG_ACPI_FAN=m
+ CONFIG_ACPI_PROCESSOR=m
+ CONFIG_ACPI_CONTAINER=m
+-CONFIG_HOTPLUG_PCI=m
++CONFIG_HOTPLUG_PCI=y
+ CONFIG_HOTPLUG_PCI_ACPI=m
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index c86fcb9..0e8cfd0 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -58,7 +58,7 @@ CONFIG_SCHED_SMT=y
+ CONFIG_PPC_DENORMALISATION=y
+ CONFIG_PCCARD=y
+ CONFIG_ELECTRA_CF=y
+-CONFIG_HOTPLUG_PCI=m
++CONFIG_HOTPLUG_PCI=y
+ CONFIG_HOTPLUG_PCI_RPA=m
+ CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
+ CONFIG_PACKET=y
+diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/ppc64e_defconfig
+index 4b20f76..0085dc4 100644
+--- a/arch/powerpc/configs/ppc64e_defconfig
++++ b/arch/powerpc/configs/ppc64e_defconfig
+@@ -32,7 +32,7 @@ CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_SPARSEMEM_MANUAL=y
+ CONFIG_PCI_MSI=y
+ CONFIG_PCCARD=y
+-CONFIG_HOTPLUG_PCI=m
++CONFIG_HOTPLUG_PCI=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+ CONFIG_XFRM_USER=m
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index bea8587..1d4b976 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -53,7 +53,7 @@ CONFIG_PPC_64K_PAGES=y
+ CONFIG_PPC_SUBPAGE_PROT=y
+ CONFIG_SCHED_SMT=y
+ CONFIG_PPC_DENORMALISATION=y
+-CONFIG_HOTPLUG_PCI=m
++CONFIG_HOTPLUG_PCI=y
+ CONFIG_HOTPLUG_PCI_RPA=m
+ CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
+ CONFIG_PACKET=y
+diff --git a/arch/sh/configs/sh03_defconfig b/arch/sh/configs/sh03_defconfig
+index 2051821..0cf4097 100644
+--- a/arch/sh/configs/sh03_defconfig
++++ b/arch/sh/configs/sh03_defconfig
+@@ -22,7 +22,7 @@ CONFIG_PREEMPT=y
+ CONFIG_CMDLINE_OVERWRITE=y
+ CONFIG_CMDLINE="console=ttySC1,115200 mem=64M root=/dev/nfs"
+ CONFIG_PCI=y
+-CONFIG_HOTPLUG_PCI=m
++CONFIG_HOTPLUG_PCI=y
+ CONFIG_BINFMT_MISC=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+diff --git a/drivers/pci/hotplug/Kconfig b/drivers/pci/hotplug/Kconfig
+index bb7ebb2..d85009d 100644
+--- a/drivers/pci/hotplug/Kconfig
++++ b/drivers/pci/hotplug/Kconfig
+@@ -3,16 +3,13 @@
+ #
+ 
+ menuconfig HOTPLUG_PCI
+-	tristate "Support for PCI Hotplug"
++	bool "Support for PCI Hotplug"
+ 	depends on PCI && SYSFS
+ 	---help---
+ 	  Say Y here if you have a motherboard with a PCI Hotplug controller.
+ 	  This allows you to add and remove PCI cards while the machine is
+ 	  powered up and running.
+ 
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called pci_hotplug.
+-
+ 	  When in doubt, say N.
+ 
+ if HOTPLUG_PCI
