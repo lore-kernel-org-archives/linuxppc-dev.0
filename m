@@ -1,29 +1,19 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pd0-x22d.google.com (mail-pd0-x22d.google.com
- [IPv6:2607:f8b0:400e:c02::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D2A752C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 07:58:13 +1000 (EST)
-Received: by mail-pd0-f173.google.com with SMTP id bv13so2176641pdb.32
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 14:58:10 -0700 (PDT)
+Return-Path: <afleming@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 697652C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 08:02:19 +1000 (EST)
+From: Andy Fleming <afleming@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc: Add smp_generic_cpu_bootable
+Date: Thu, 25 Jul 2013 17:02:05 -0500
+Message-ID: <1374789726-10633-1-git-send-email-afleming@freescale.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1326313337-24603-12-git-send-email-grant.likely@secretlab.ca>
-References: <1326313337-24603-1-git-send-email-grant.likely@secretlab.ca>
- <1326313337-24603-12-git-send-email-grant.likely@secretlab.ca>
-Date: Thu, 25 Jul 2013 23:58:10 +0200
-Message-ID: <CAMuHMdV=pSG+CtvGqr1c9nDKeHCU0cVQcFkfAo5iMMna2HOvZg@mail.gmail.com>
-Subject: Re: [RFC 11/14] powerpc: Eliminate NO_IRQ usage
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux-Arch <linux-arch@vger.kernel.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Russell King <linux@arm.linux.org.uk>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Rob Herring <rob.herring@calxeda.com>, Linux-Next <linux-next@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,42 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 11, 2012 at 9:22 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> NO_IRQ is evil.  Stop using it in arch/powerpc and powerpc device drivers
+Cell and PSeries both implemented their own versions of a
+cpu_bootable smp_op which do the same thing (well, the PSeries
+one has support for more than 2 threads). Copy the PSeries one
+to generic code, and rename it smp_generic_cpu_bootable.
 
-> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-> index 3e06696..55c6ff9 100644
-> --- a/sound/soc/fsl/fsl_ssi.c
-> +++ b/sound/soc/fsl/fsl_ssi.c
-> @@ -666,7 +666,7 @@ static int __devinit fsl_ssi_probe(struct platform_device *pdev)
->         ssi_private->ssi_phys = res.start;
->
->         ssi_private->irq = irq_of_parse_and_map(np, 0);
-> -       if (ssi_private->irq == NO_IRQ) {
-> +       if (!ssi_private->irq) {
->                 dev_err(&pdev->dev, "no irq for node %s\n", np->full_name);
->                 ret = -ENXIO;
->                 goto error_iomap;
+Signed-off-by: Andy Fleming <afleming@freescale.com>
+---
+ arch/powerpc/include/asm/smp.h |    2 ++
+ arch/powerpc/kernel/smp.c      |   23 +++++++++++++++++++++++
+ 2 files changed, 25 insertions(+)
 
-What's the plan with this patch?
-
-This is now failing on xtensa, as it's one of the architectures that doesn't
-define NO_IRQ. Only arm, c6x, mn10300, openrisc, parisc, powerpc, and sparc
-define it.
-
-sound/soc/fsl/fsl_ssi.c:705:26: error: 'NO_IRQ' undeclared (first use
-in this function)
-make[4]: *** [sound/soc/fsl/fsl_ssi.o] Error 1
-
-http://kisskb.ellerman.id.au/kisskb/buildresult/9187959/
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index ffbaabe..f2b5d41 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -182,6 +182,8 @@ extern int smt_enabled_at_boot;
+ extern int smp_mpic_probe(void);
+ extern void smp_mpic_setup_cpu(int cpu);
+ extern int smp_generic_kick_cpu(int nr);
++extern int smp_generic_cpu_bootable(unsigned int nr);
++
+ 
+ extern void smp_generic_give_timebase(void);
+ extern void smp_generic_take_timebase(void);
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 38b0ba6..3cd42aa 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -81,6 +81,29 @@ int smt_enabled_at_boot = 1;
+ 
+ static void (*crash_ipi_function_ptr)(struct pt_regs *) = NULL;
+ 
++/*
++ * Returns 1 if the specified cpu should be brought up during boot.
++ * Used to inhibit booting threads if they've been disabled or
++ * limited on the command line
++ */
++int smp_generic_cpu_bootable(unsigned int nr)
++{
++	/* Special case - we inhibit secondary thread startup
++	 * during boot if the user requests it.
++	 */
++	if (system_state == SYSTEM_BOOTING && cpu_has_feature(CPU_FTR_SMT)) {
++		if (!smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
++			return 0;
++		if (smt_enabled_at_boot
++		    && cpu_thread_in_core(nr) >= smt_enabled_at_boot)
++			return 0;
++	}
++
++	return 1;
++}
++EXPORT_SYMBOL(smp_generic_cpu_bootable);
++
++
+ #ifdef CONFIG_PPC64
+ int smp_generic_kick_cpu(int nr)
+ {
+-- 
+1.7.9.7
