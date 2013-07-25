@@ -1,43 +1,20 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C07442C022C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 19:06:14 +1000 (EST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Thu, 25 Jul 2013 14:29:19 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id C4952E0054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 14:36:12 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6P96Mpw4325606
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 14:36:23 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6P95KOD021248
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 09:05:26 GMT
-Subject: [RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are no
- arch-specific constraints
-To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org,
- shangw@linux.vnet.ibm.com, galak@kernel.crashing.org,
- fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au,
- arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org,
- rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de,
- chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com,
- geoff@infradead.org, linux-kernel@vger.kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com,
- svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Thu, 25 Jul 2013 14:33:02 +0530
-Message-ID: <20130725090302.12500.42998.stgit@preeti.in.ibm.com>
-In-Reply-To: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
-References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
+Return-Path: <B42378@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 375A72C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 19:32:27 +1000 (EST)
+From: Nicolin Chen <b42378@freescale.com>
+To: <shawn.guo@linaro.org>, <broonie@kernel.org>, <timur@tabi.org>
+Subject: [PATCH] ASoC: fsl: Set sdma peripheral type directly
+Date: Thu, 25 Jul 2013 17:41:41 +0800
+Message-ID: <1374745301-29508-1-git-send-email-b42378@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain
+Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,64 +24,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the current design of timer offload framework, the broadcast cpu should
-*not* go into tickless idle so as to avoid missed wakeups on CPUs in deep idle states.
+Let CPU DAI drivers set SDMA periperal type directly to support more
+dma types(SPDIF, ESAI) other than only two for SSI.
+This will easily allow some non-SSI drivers to use the imx-pcm-dma
+as well.
 
-Since we prevent the CPUs entering deep idle states from programming the lapic of the
-broadcast cpu for their respective next local events for reasons mentioned in
-PATCH[3/5], the broadcast CPU checks if there are any CPUs to be woken up during
-each of its timer interrupt programmed to its local events.
-
-With tickless idle, the broadcast CPU might not get a timer interrupt till after
-many ticks which can result in missed wakeups on CPUs in deep idle states. By
-disabling tickless idle, worst case, the tick_sched hrtimer will trigger a
-timer interrupt every period to check for broadcast.
-
-However the current setup of tickless idle does not let us make the choice
-of tickless on individual cpus. NOHZ_MODE_INACTIVE which disables tickless idle,
-is a system wide setting. Hence resort to an arch specific call to check if a cpu
-can go into tickless idle.
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Nicolin Chen <b42378@freescale.com>
 ---
+@Timur
+Compile-passed with mpc85xx_defconfig by using gcc-4.6.3-nolibc_powerpc-linux.
+---
+ sound/soc/fsl/fsl_ssi.c |    4 ++--
+ sound/soc/fsl/imx-pcm.h |    7 ++-----
+ sound/soc/fsl/imx-ssi.c |    4 ++--
+ 3 files changed, 6 insertions(+), 9 deletions(-)
 
- arch/powerpc/kernel/time.c |    5 +++++
- kernel/time/tick-sched.c   |    7 +++++++
- 2 files changed, 12 insertions(+)
-
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 8ed0fb3..68a636f 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -862,6 +862,11 @@ static void decrementer_timer_broadcast(const struct cpumask *mask)
- 	arch_send_tick_broadcast(mask);
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 11469fe..4d78df7 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -775,9 +775,9 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 			    "fsl,spba-bus");
+ 
+ 		imx_pcm_dma_params_init_data(&ssi_private->filter_data_tx,
+-			dma_events[0], shared);
++			dma_events[0], shared ? IMX_DMATYPE_SSI_SP : IMX_DMATYPE_SSI);
+ 		imx_pcm_dma_params_init_data(&ssi_private->filter_data_rx,
+-			dma_events[1], shared);
++			dma_events[1], shared ? IMX_DMATYPE_SSI_SP : IMX_DMATYPE_SSI);
+ 	}
+ 
+ 	/* Initialize the the device_attribute structure */
+diff --git a/sound/soc/fsl/imx-pcm.h b/sound/soc/fsl/imx-pcm.h
+index fd56cad..9136625 100644
+--- a/sound/soc/fsl/imx-pcm.h
++++ b/sound/soc/fsl/imx-pcm.h
+@@ -22,14 +22,11 @@
+ 
+ static inline void
+ imx_pcm_dma_params_init_data(struct imx_dma_data *dma_data,
+-	int dma, bool shared)
++	int dma, enum sdma_peripheral_type peripheral_type)
+ {
+ 	dma_data->dma_request = dma;
+ 	dma_data->priority = DMA_PRIO_HIGH;
+-	if (shared)
+-		dma_data->peripheral_type = IMX_DMATYPE_SSI_SP;
+-	else
+-		dma_data->peripheral_type = IMX_DMATYPE_SSI;
++	dma_data->peripheral_type = peripheral_type;
  }
  
-+int arch_can_stop_idle_tick(int cpu)
-+{
-+	return cpu != bc_cpu;
-+}
-+
- static void register_decrementer_clockevent(int cpu)
- {
- 	struct clock_event_device *dec = &per_cpu(decrementers, cpu);
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 6960172..e9ffa84 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -700,8 +700,15 @@ static void tick_nohz_full_stop_tick(struct tick_sched *ts)
- #endif
- }
+ struct imx_pcm_fiq_params {
+diff --git a/sound/soc/fsl/imx-ssi.c b/sound/soc/fsl/imx-ssi.c
+index f029e27..f58bcd8 100644
+--- a/sound/soc/fsl/imx-ssi.c
++++ b/sound/soc/fsl/imx-ssi.c
+@@ -571,13 +571,13 @@ static int imx_ssi_probe(struct platform_device *pdev)
+ 	res = platform_get_resource_byname(pdev, IORESOURCE_DMA, "tx0");
+ 	if (res) {
+ 		imx_pcm_dma_params_init_data(&ssi->filter_data_tx, res->start,
+-			false);
++			IMX_DMATYPE_SSI);
+ 	}
  
-+int __weak arch_can_stop_idle_tick(int cpu)
-+{
-+	return 1;
-+}
-+
- static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
- {
-+	if (!arch_can_stop_idle_tick(cpu))
-+		return false;
- 	/*
- 	 * If this cpu is offline and it is the one which updates
- 	 * jiffies, then give up the assignment and let it be taken by
+ 	res = platform_get_resource_byname(pdev, IORESOURCE_DMA, "rx0");
+ 	if (res) {
+ 		imx_pcm_dma_params_init_data(&ssi->filter_data_rx, res->start,
+-			false);
++			IMX_DMATYPE_SSI);
+ 	}
+ 
+ 	platform_set_drvdata(pdev, ssi);
+-- 
+1.7.1
