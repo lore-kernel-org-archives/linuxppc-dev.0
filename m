@@ -2,10 +2,10 @@ Return-Path: <gang.chen@asianux.com>
 Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C26DA2C00C9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 16:18:14 +1000 (EST)
-Message-ID: <51F0C2E8.3050005@asianux.com>
-Date: Thu, 25 Jul 2013 14:17:12 +0800
+ by ozlabs.org (Postfix) with ESMTPS id BE8E42C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 16:31:33 +1000 (EST)
+Message-ID: <51F0C606.9090702@asianux.com>
+Date: Thu, 25 Jul 2013 14:30:30 +0800
 From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -18,7 +18,8 @@ References: <51ECCA10.7010709@asianux.com>
  <20130724011640.GA6042@concordia> <51EF375D.9060006@asianux.com>
  <20130725031501.GA15673@concordia> <1374729381.6142.59.camel@pasglop>
  <51F0B68F.4000402@asianux.com> <1374731505.6142.64.camel@pasglop>
-In-Reply-To: <1374731505.6142.64.camel@pasglop>
+ <1374732225.6142.66.camel@pasglop>
+In-Reply-To: <1374732225.6142.66.camel@pasglop>
 Content-Type: text/plain; charset=UTF-8
 Cc: chenhui.zhao@freescale.com, "paulus@samba.org" <paulus@samba.org>,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
@@ -33,29 +34,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/25/2013 01:51 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-07-25 at 13:24 +0800, Chen Gang wrote:
->> For an extern function, if the performance is not sensible, better to
->> have the return value which can indicate the failure with the negative
->> number.
+On 07/25/2013 02:03 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-07-25 at 15:51 +1000, Benjamin Herrenschmidt wrote:
+>> On Thu, 2013-07-25 at 13:24 +0800, Chen Gang wrote:
+>>> For an extern function, if the performance is not sensible, better to
+>>> have the return value which can indicate the failure with the negative
+>>> number.
+>>
+>> The return value is meaningless.
+>>
+>> We don't have a good way to handle it. It has no defined semantics. What
+>> does "failure" means in that case ? Nothing !
+>>
+>> So just remove it.
 > 
-> The return value is meaningless.
-> 
-> We don't have a good way to handle it. It has no defined semantics. What
-> does "failure" means in that case ? Nothing !
-> 
-> So just remove it.
+> Note: If you want to create a concept of smp_ops->probe() failing, then
+> not only you need to check all the implementations, but *also* add
+> something sensible to do when it fails ... such as disabling bringup of
+> CPUs.
 > 
 
-Hmm... for an extern function (espeically have been implemented in
-various modules), normally, we can assume it may fail in some cases
-(although now, we don't know what cases can cause its failure).
+Hmm... if critical, use BUG(), else (none critical), just print a
+warning message ?
 
-If "we don't have a good way to handle the failure", "print the related
-warning message" is an executable choice (or "BUG_ON()", if it is critical).
+> In this case however, we have put the burden of doing whatever makes
+> sense in the probe() function itself. If can adjust the possible map if
+> it fails.
+> 
 
-So, if the performance is not sensible, I still suggest to let extern
-function have return value.
+Excuse me, my English is not quite well, I guss your meaning is: "it can
+be fail in internal implementation, but has no effect with the final
+result to caller", is it correct ?
+
+If what I understand is correct, it needn't let caller know about it.
 
 
 Thanks.
