@@ -1,22 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <rcj@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E9CB62C0129
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 09:14:37 +1000 (EST)
-Message-ID: <1374707665.6142.18.camel@pasglop>
-Subject: Re: [PATCH] module: ppc64 module CRC relocation fix causes perf issues
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Blanchard <anton@samba.org>
-Date: Thu, 25 Jul 2013 09:14:25 +1000
-In-Reply-To: <20130725083427.56e36010@kryten>
-References: <20130718140045.6794ecd5@kryten> <1374274770.5357.33@snotra>
- <20130725083427.56e36010@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Neil Horman <nhorman@tuxdriver.com>, Rusty Russell <rusty@rustcorp.com.au>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9B66D2C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 11:13:48 +1000 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rcj@linux.vnet.ibm.com>;
+ Thu, 25 Jul 2013 06:37:43 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1FA66E004F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 06:43:30 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6P1EHl029032622
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 06:44:22 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6P1DM4J000838
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 11:13:23 +1000
+Date: Wed, 24 Jul 2013 20:13:21 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Ellerman <michael@ellerman.id.au>,
+ Jan Stancek <jstancek@redhat.com>
+Subject: [PATCH v3] powerpc: VPHN topology change updates all siblings
+Message-ID: <20130725011321.GA3087@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,14 +41,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-07-25 at 08:34 +1000, Anton Blanchard wrote:
-> > Apart from the annoying colors, is there anything specific I should
-> > be looking for?  Some sort of error message, or output that actually
-> > makes sense?
-> 
-> Thanks for testing! Ben, I think the patch is good to go.
+When an associativity level change is found for one thread, the
+siblings threads need to be updated as well.  This is done today
+for PRRN in stage_topology_update() but is missing for VPHN in
+update_cpu_associativity_changes_mask().  This patch will correctly
+update all thread siblings during a topology change.
 
-Sent it yesterday to Linus, it's upstream already :-)
+Without this patch a topology update can result in a CPU in
+init_sched_groups_power() getting stuck indefinitely in a loop.
 
-Cheers,
-Ben.
+This loop is built in build_sched_groups(). As a result of the thread
+moving to a node separate from its siblings the struct sched_group will
+have its next pointer set to point to itself rather than the sched_group
+struct of the next thread.  This happens because we have a domain without
+the SD_OVERLAP flag, which is correct, and a topology that doesn't conform
+with reality (threads on the same core assigned to different numa nodes).
+When this list is traversed by init_sched_groups_power() it will reach
+the thread's sched_group structure and loop indefinitely; the cpu will
+be stuck at this point.
+
+The bug was exposed when VPHN was enabled in commit b7abef0 (v3.9).
+
+Cc: <stable@vger.kernel.org>
+Reported-by: Jan Stancek <jstancek@redhat.com>
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+---
+v2. cpu_sibling_mask is now defined for UP which fixes that build break.
+v3. Corrected with Cc:stable under singed-off-by and improved description
+    of impact of this issue.
+
+ - While re-enabled only in v3.9, hardware VPHN support was available
+ prior to this.  This could be a pervasive issue and should be considered
+ for the stable tree.
+---
+ arch/powerpc/include/asm/smp.h |  4 +++ arch/powerpc/mm/numa.c         |
+ 59 +++++++++++++++++++++++++++++++----------- 2 files changed, 48
+ insertions(+), 15 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index ffbaabe..48cfc85 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -145,6 +145,10 @@ extern void __cpu_die(unsigned int cpu);
+ #define smp_setup_cpu_maps()
+ static inline void inhibit_secondary_onlining(void) {}
+ static inline void uninhibit_secondary_onlining(void) {}
++static inline const struct cpumask *cpu_sibling_mask(int cpu)
++{
++	return cpumask_of(cpu);
++}
+ 
+ #endif /* CONFIG_SMP */
+ 
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 0839721..5850798 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -27,6 +27,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/uaccess.h>
+ #include <linux/slab.h>
++#include <asm/cputhreads.h>
+ #include <asm/sparsemem.h>
+ #include <asm/prom.h>
+ #include <asm/smp.h>
+@@ -1318,7 +1319,8 @@ static int update_cpu_associativity_changes_mask(void)
+ 			}
+ 		}
+ 		if (changed) {
+-			cpumask_set_cpu(cpu, changes);
++			cpumask_or(changes, changes, cpu_sibling_mask(cpu));
++			cpu = cpu_last_thread_sibling(cpu);
+ 		}
+ 	}
+ 
+@@ -1426,7 +1428,7 @@ static int update_cpu_topology(void *data)
+ 	if (!data)
+ 		return -EINVAL;
+ 
+-	cpu = get_cpu();
++	cpu = smp_processor_id();
+ 
+ 	for (update = data; update; update = update->next) {
+ 		if (cpu != update->cpu)
+@@ -1446,12 +1448,12 @@ static int update_cpu_topology(void *data)
+  */
+ int arch_update_cpu_topology(void)
+ {
+-	unsigned int cpu, changed = 0;
++	unsigned int cpu, sibling, changed = 0;
+ 	struct topology_update_data *updates, *ud;
+ 	unsigned int associativity[VPHN_ASSOC_BUFSIZE] = {0};
+ 	cpumask_t updated_cpus;
+ 	struct device *dev;
+-	int weight, i = 0;
++	int weight, new_nid, i = 0;
+ 
+ 	weight = cpumask_weight(&cpu_associativity_changes_mask);
+ 	if (!weight)
+@@ -1464,19 +1466,46 @@ int arch_update_cpu_topology(void)
+ 	cpumask_clear(&updated_cpus);
+ 
+ 	for_each_cpu(cpu, &cpu_associativity_changes_mask) {
+-		ud = &updates[i++];
+-		ud->cpu = cpu;
+-		vphn_get_associativity(cpu, associativity);
+-		ud->new_nid = associativity_to_nid(associativity);
+-
+-		if (ud->new_nid < 0 || !node_online(ud->new_nid))
+-			ud->new_nid = first_online_node;
++		/*
++		 * If siblings aren't flagged for changes, updates list
++		 * will be too short. Skip on this update and set for next
++		 * update.
++		 */
++		if (!cpumask_subset(cpu_sibling_mask(cpu),
++					&cpu_associativity_changes_mask)) {
++			pr_info("Sibling bits not set for associativity "
++					"change, cpu%d\n", cpu);
++			cpumask_or(&cpu_associativity_changes_mask,
++					&cpu_associativity_changes_mask,
++					cpu_sibling_mask(cpu));
++			cpu = cpu_last_thread_sibling(cpu);
++			continue;
++		}
+ 
+-		ud->old_nid = numa_cpu_lookup_table[cpu];
+-		cpumask_set_cpu(cpu, &updated_cpus);
++		/* Use associativity from first thread for all siblings */
++		vphn_get_associativity(cpu, associativity);
++		new_nid = associativity_to_nid(associativity);
++		if (new_nid < 0 || !node_online(new_nid))
++			new_nid = first_online_node;
++
++		if (new_nid == numa_cpu_lookup_table[cpu]) {
++			cpumask_andnot(&cpu_associativity_changes_mask,
++					&cpu_associativity_changes_mask,
++					cpu_sibling_mask(cpu));
++			cpu = cpu_last_thread_sibling(cpu);
++			continue;
++		}
+ 
+-		if (i < weight)
+-			ud->next = &updates[i];
++		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
++			ud = &updates[i++];
++			ud->cpu = sibling;
++			ud->new_nid = new_nid;
++			ud->old_nid = numa_cpu_lookup_table[sibling];
++			cpumask_set_cpu(sibling, &updated_cpus);
++			if (i < weight)
++				ud->next = &updates[i];
++		}
++		cpu = cpu_last_thread_sibling(cpu);
+ 	}
+ 
+ 	stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
+-- 
+1.8.1.2
