@@ -1,25 +1,43 @@
-Return-Path: <gleb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 3D3F42C00C9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 18:50:47 +1000 (EST)
-Date: Thu, 25 Jul 2013 11:50:42 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] kvm: powerpc: set cache coherency only for kernel
- managed pages
-Message-ID: <20130725085042.GJ16400@redhat.com>
-References: <03EEFDFE-4603-44FC-8449-2450607F2864@suse.de>
- <1374697969.15592.67@snotra>
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 87BC02C00CC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 19:05:39 +1000 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Thu, 25 Jul 2013 14:26:22 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 0B1A3E0060
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 14:35:15 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6P966Ie46465172
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 14:36:06 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6P954sh023824
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 19:05:12 +1000
+Subject: [RFC PATCH 1/5] powerpc: Free up the IPI message slot of ipi call
+ function (PPC_MSG_CALL_FUNC)
+To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org,
+ shangw@linux.vnet.ibm.com, galak@kernel.crashing.org,
+ fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au,
+ arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org,
+ rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de,
+ chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com,
+ geoff@infradead.org, linux-kernel@vger.kernel.org,
+ srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com,
+ svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Thu, 25 Jul 2013 14:32:46 +0530
+Message-ID: <20130725090246.12500.35232.stgit@preeti.in.ibm.com>
+In-Reply-To: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
+References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1374697969.15592.67@snotra>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "kvm@vger.kernel.org list" <kvm@vger.kernel.org>,
- Alexander Graf <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- =?cp1255?Q?=93tiejun=2Echen=94?= <tiejun.chen@windriver.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,58 +47,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 24, 2013 at 03:32:49PM -0500, Scott Wood wrote:
-> On 07/24/2013 04:39:59 AM, Alexander Graf wrote:
-> >
-> >On 24.07.2013, at 11:35, Gleb Natapov wrote:
-> >
-> >> On Wed, Jul 24, 2013 at 11:21:11AM +0200, Alexander Graf wrote:
-> >>>> Are not we going to use page_is_ram() from
-> >e500_shadow_mas2_attrib() as Scott commented?
-> >>>
-> >>> rWhy aren't we using page_is_ram() in kvm_is_mmio_pfn()?
-> >>>
-> >>>
-> >> Because it is much slower and, IIRC, actually used to build pfn
-> >map that allow
-> >> us to check quickly for valid pfn.
-> >
-> >Then why should we use page_is_ram()? :)
-> >
-> >I really don't want the e500 code to diverge too much from what
-> >the rest of the kvm code is doing.
-> 
-> I don't understand "actually used to build pfn map...".  What code
-> is this?  I don't see any calls to page_is_ram() in the KVM code, or
-> in generic mm code.  Is this a statement about what x86 does?
-It may be not page_is_ram() directly, but the same into page_is_ram() is
-using. On power both page_is_ram() and do_init_bootmem() walks some kind
-of memblock_region data structure. What important is that pfn_valid()
-does not mean that there is a memory behind page structure. See Andrea's
-reply.
+From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
-> 
-> On PPC page_is_ram() is only called (AFAICT) for determining what
-> attributes to set on mmaps.  We want to be sure that KVM always
-> makes the same decision.  While pfn_valid() seems like it should be
-> equivalent, it's not obvious from the PPC code that it is.
-> 
-Again pfn_valid() is not enough.
+The IPI handlers for both PPC_MSG_CALL_FUNC and PPC_MSG_CALL_FUNC_SINGLE
+map to a common implementation - generic_smp_call_function_single_interrupt().
+So, we can consolidate them and save one of the IPI message slots, (which are
+precious, since only 4 of those slots are available).
 
-> If pfn_valid() is better, why is that not used for mmap?  Why are
-> there two different names for the same thing?
-> 
-They are not the same thing. page_is_ram() tells you if phys address is
-ram backed. pfn_valid() tells you if there is struct page behind the
-pfn. PageReserved() tells if you a pfn is marked as reserved. All non
-ram pfns should be reserved, but ram pfns can be reserved too. Again,
-see Andrea's reply.
+So, implement the functionality of PPC_MSG_CALL_FUNC using
+PPC_MSG_CALL_FUNC_SINGLE itself and release its IPI message slot, so that it
+can be used for something else in the future, if desired.
 
-Why ppc uses page_is_ram() for mmap? How should I know? But looking at
-the function it does it only as a fallback if
-ppc_md.phys_mem_access_prot() is not provided. Making access to MMIO
-noncached as a safe fallback makes sense. It is also make sense to allow
-noncached access to reserved ram sometimes.
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
 
---
-			Gleb.
+ arch/powerpc/include/asm/smp.h          |    2 +-
+ arch/powerpc/kernel/smp.c               |   12 +++++-------
+ arch/powerpc/platforms/cell/interrupt.c |    2 +-
+ arch/powerpc/platforms/ps3/smp.c        |    2 +-
+ 4 files changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index ffbaabe..51bf017 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -117,7 +117,7 @@ extern int cpu_to_core_id(int cpu);
+  *
+  * Make sure this matches openpic_request_IPIs in open_pic.c, or what shows up
+  * in /proc/interrupts will be wrong!!! --Troy */
+-#define PPC_MSG_CALL_FUNCTION   0
++#define PPC_MSG_UNUSED		0
+ #define PPC_MSG_RESCHEDULE      1
+ #define PPC_MSG_CALL_FUNC_SINGLE	2
+ #define PPC_MSG_DEBUGGER_BREAK  3
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 38b0ba6..bc41e9f 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -111,9 +111,9 @@ int smp_generic_kick_cpu(int nr)
+ }
+ #endif /* CONFIG_PPC64 */
+ 
+-static irqreturn_t call_function_action(int irq, void *data)
++static irqreturn_t unused_action(int irq, void *data)
+ {
+-	generic_smp_call_function_interrupt();
++	/* This slot is unused and hence available for use, if needed */
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -144,14 +144,14 @@ static irqreturn_t debug_ipi_action(int irq, void *data)
+ }
+ 
+ static irq_handler_t smp_ipi_action[] = {
+-	[PPC_MSG_CALL_FUNCTION] =  call_function_action,
++	[PPC_MSG_UNUSED] =  unused_action, /* Slot available for future use */
+ 	[PPC_MSG_RESCHEDULE] = reschedule_action,
+ 	[PPC_MSG_CALL_FUNC_SINGLE] = call_function_single_action,
+ 	[PPC_MSG_DEBUGGER_BREAK] = debug_ipi_action,
+ };
+ 
+ const char *smp_ipi_name[] = {
+-	[PPC_MSG_CALL_FUNCTION] =  "ipi call function",
++	[PPC_MSG_UNUSED] =  "ipi unused",
+ 	[PPC_MSG_RESCHEDULE] = "ipi reschedule",
+ 	[PPC_MSG_CALL_FUNC_SINGLE] = "ipi call function single",
+ 	[PPC_MSG_DEBUGGER_BREAK] = "ipi debugger",
+@@ -221,8 +221,6 @@ irqreturn_t smp_ipi_demux(void)
+ 		all = xchg(&info->messages, 0);
+ 
+ #ifdef __BIG_ENDIAN
+-		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNCTION)))
+-			generic_smp_call_function_interrupt();
+ 		if (all & (1 << (24 - 8 * PPC_MSG_RESCHEDULE)))
+ 			scheduler_ipi();
+ 		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNC_SINGLE)))
+@@ -265,7 +263,7 @@ void arch_send_call_function_ipi_mask(const struct cpumask *mask)
+ 	unsigned int cpu;
+ 
+ 	for_each_cpu(cpu, mask)
+-		do_message_pass(cpu, PPC_MSG_CALL_FUNCTION);
++		do_message_pass(cpu, PPC_MSG_CALL_FUNC_SINGLE);
+ }
+ 
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 2d42f3b..28166e4 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -213,7 +213,7 @@ static void iic_request_ipi(int msg)
+ 
+ void iic_request_IPIs(void)
+ {
+-	iic_request_ipi(PPC_MSG_CALL_FUNCTION);
++	iic_request_ipi(PPC_MSG_UNUSED);
+ 	iic_request_ipi(PPC_MSG_RESCHEDULE);
+ 	iic_request_ipi(PPC_MSG_CALL_FUNC_SINGLE);
+ 	iic_request_ipi(PPC_MSG_DEBUGGER_BREAK);
+diff --git a/arch/powerpc/platforms/ps3/smp.c b/arch/powerpc/platforms/ps3/smp.c
+index 4b35166..488f069 100644
+--- a/arch/powerpc/platforms/ps3/smp.c
++++ b/arch/powerpc/platforms/ps3/smp.c
+@@ -74,7 +74,7 @@ static int __init ps3_smp_probe(void)
+ 		* to index needs to be setup.
+ 		*/
+ 
+-		BUILD_BUG_ON(PPC_MSG_CALL_FUNCTION    != 0);
++		BUILD_BUG_ON(PPC_MSG_UNUSED	      != 0);
+ 		BUILD_BUG_ON(PPC_MSG_RESCHEDULE       != 1);
+ 		BUILD_BUG_ON(PPC_MSG_CALL_FUNC_SINGLE != 2);
+ 		BUILD_BUG_ON(PPC_MSG_DEBUGGER_BREAK   != 3);
