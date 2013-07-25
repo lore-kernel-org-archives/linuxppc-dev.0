@@ -1,21 +1,22 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B16A32C00C6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 05:11:57 +1000 (EST)
-Date: Thu, 25 Jul 2013 20:11:48 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <b42378@freescale.com>
-Message-ID: <20130725191148.GP9858@sirena.org.uk>
-References: <1374745301-29508-1-git-send-email-b42378@freescale.com>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id 98FA02C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 05:24:24 +1000 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH 1/2] PCI: hotplug: Convert to be builtin only, not modular
+Date: Thu, 25 Jul 2013 21:34:26 +0200
+Message-ID: <1790250.TtZ9d6PaXM@vostro.rjw.lan>
+In-Reply-To: <20130725175720.6006.96448.stgit@bhelgaas-glaptop>
+References: <20130725175242.6006.56007.stgit@bhelgaas-glaptop>
+ <20130725175720.6006.96448.stgit@bhelgaas-glaptop>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="/iFx7UFBKvQAxELg"
-In-Reply-To: <1374745301-29508-1-git-send-email-b42378@freescale.com>
-Subject: Re: [PATCH] ASoC: fsl: Set sdma peripheral type directly
-Cc: fabio.estevam@freescale.com, alsa-devel@alsa-project.org,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org, timur@tabi.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
+ Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +26,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thursday, July 25, 2013 11:57:20 AM Bjorn Helgaas wrote:
+> Convert CONFIG_HOTPLUG_PCI from tristate to bool.  This only affects
+> the hotplug core; several of the hotplug drivers can still be modules.
+> 
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
---/iFx7UFBKvQAxELg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Thu, Jul 25, 2013 at 05:41:41PM +0800, Nicolin Chen wrote:
-> Let CPU DAI drivers set SDMA periperal type directly to support more
-> dma types(SPDIF, ESAI) other than only two for SSI.
-> This will easily allow some non-SSI drivers to use the imx-pcm-dma
-> as well.
-
-Applied, thanks.
-
---/iFx7UFBKvQAxELg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBAgAGBQJR8XhxAAoJELSic+t+oim9I4wP/0gVqoqMaLeA75LA/ggwrtpL
-iBbJdmVE4vPeYLmpYGgHvES1BDMpmgA/EXalVulhdoaCUa/V5MjQiMrU97sw8YQs
-GpUEg6pcVFB+iBZdnt43Tr5rQusZ2OAalURhW5atAGKFqEn3/2sbQtMbU57/B3Qz
-vZOiBS2hx7eIlN35wbcbFox70MB351fVolmD7NdLzYx08P5XNfss4B4lJ3OrblV/
-eEBSBwTiBftAkSMnb3KyQniACxHV2jKAyp7GDymHL+yl1/qQ5jFDurz/5co3BvzL
-+FufAU4/VA8i+jbHpmaep8NzW7xVWGYq+1nRNRvZ64/1TWFaSXV+3Idk61hHYLdh
-H49SnUfNOLhgLyMg6wCZ6xTIafOVnrccEU04zk/8WtxS4kHDGF8JN+Osq5nXLZJu
-/QQSVBkjVgH6/4eJ4cX1HFkgTHU5bncvjp+uz/ks1+o6MITyvbgAU+pYotzR/BiI
-/BPYPO91xfuqFkPVw15f0NTpj8a6wsy72yO+rcKOH+92AfYmRo1eOdTq41mj1ERz
-H8DoDml2yvtlnnucN0NgmqHBc0ayhAZXaTVVgG/xJFrLzLWu8qyeCM+NgbRZXn/G
-QAQQUKi7H7PUv4gflByhCS21EfmgnKzZX5nxF6PYxXyb/tELQUn3m8xOrl5Q8sMM
-bQPG1gFmMqL1/vDOKhzy
-=ygfU
------END PGP SIGNATURE-----
-
---/iFx7UFBKvQAxELg--
+> ---
+>  arch/ia64/configs/generic_defconfig    |    2 +-
+>  arch/ia64/configs/gensparse_defconfig  |    2 +-
+>  arch/ia64/configs/tiger_defconfig      |    2 +-
+>  arch/ia64/configs/xen_domu_defconfig   |    2 +-
+>  arch/powerpc/configs/ppc64_defconfig   |    2 +-
+>  arch/powerpc/configs/ppc64e_defconfig  |    2 +-
+>  arch/powerpc/configs/pseries_defconfig |    2 +-
+>  arch/sh/configs/sh03_defconfig         |    2 +-
+>  drivers/pci/hotplug/Kconfig            |    5 +----
+>  9 files changed, 9 insertions(+), 12 deletions(-)
+> 
+> diff --git a/arch/ia64/configs/generic_defconfig b/arch/ia64/configs/generic_defconfig
+> index 7913695..efbd292 100644
+> --- a/arch/ia64/configs/generic_defconfig
+> +++ b/arch/ia64/configs/generic_defconfig
+> @@ -31,7 +31,7 @@ CONFIG_ACPI_FAN=m
+>  CONFIG_ACPI_DOCK=y
+>  CONFIG_ACPI_PROCESSOR=m
+>  CONFIG_ACPI_CONTAINER=m
+> -CONFIG_HOTPLUG_PCI=m
+> +CONFIG_HOTPLUG_PCI=y
+>  CONFIG_HOTPLUG_PCI_ACPI=m
+>  CONFIG_PACKET=y
+>  CONFIG_UNIX=y
+> diff --git a/arch/ia64/configs/gensparse_defconfig b/arch/ia64/configs/gensparse_defconfig
+> index f8e9133..f64980d 100644
+> --- a/arch/ia64/configs/gensparse_defconfig
+> +++ b/arch/ia64/configs/gensparse_defconfig
+> @@ -25,7 +25,7 @@ CONFIG_ACPI_BUTTON=m
+>  CONFIG_ACPI_FAN=m
+>  CONFIG_ACPI_PROCESSOR=m
+>  CONFIG_ACPI_CONTAINER=m
+> -CONFIG_HOTPLUG_PCI=m
+> +CONFIG_HOTPLUG_PCI=y
+>  CONFIG_HOTPLUG_PCI_ACPI=m
+>  CONFIG_PACKET=y
+>  CONFIG_UNIX=y
+> diff --git a/arch/ia64/configs/tiger_defconfig b/arch/ia64/configs/tiger_defconfig
+> index a5a9e02..0f4e9e4 100644
+> --- a/arch/ia64/configs/tiger_defconfig
+> +++ b/arch/ia64/configs/tiger_defconfig
+> @@ -31,7 +31,7 @@ CONFIG_ACPI_BUTTON=m
+>  CONFIG_ACPI_FAN=m
+>  CONFIG_ACPI_PROCESSOR=m
+>  CONFIG_ACPI_CONTAINER=m
+> -CONFIG_HOTPLUG_PCI=m
+> +CONFIG_HOTPLUG_PCI=y
+>  CONFIG_HOTPLUG_PCI_ACPI=m
+>  CONFIG_PACKET=y
+>  CONFIG_UNIX=y
+> diff --git a/arch/ia64/configs/xen_domu_defconfig b/arch/ia64/configs/xen_domu_defconfig
+> index 37b9b42..b025acf 100644
+> --- a/arch/ia64/configs/xen_domu_defconfig
+> +++ b/arch/ia64/configs/xen_domu_defconfig
+> @@ -32,7 +32,7 @@ CONFIG_ACPI_BUTTON=m
+>  CONFIG_ACPI_FAN=m
+>  CONFIG_ACPI_PROCESSOR=m
+>  CONFIG_ACPI_CONTAINER=m
+> -CONFIG_HOTPLUG_PCI=m
+> +CONFIG_HOTPLUG_PCI=y
+>  CONFIG_HOTPLUG_PCI_ACPI=m
+>  CONFIG_PACKET=y
+>  CONFIG_UNIX=y
+> diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+> index c86fcb9..0e8cfd0 100644
+> --- a/arch/powerpc/configs/ppc64_defconfig
+> +++ b/arch/powerpc/configs/ppc64_defconfig
+> @@ -58,7 +58,7 @@ CONFIG_SCHED_SMT=y
+>  CONFIG_PPC_DENORMALISATION=y
+>  CONFIG_PCCARD=y
+>  CONFIG_ELECTRA_CF=y
+> -CONFIG_HOTPLUG_PCI=m
+> +CONFIG_HOTPLUG_PCI=y
+>  CONFIG_HOTPLUG_PCI_RPA=m
+>  CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
+>  CONFIG_PACKET=y
+> diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/ppc64e_defconfig
+> index 4b20f76..0085dc4 100644
+> --- a/arch/powerpc/configs/ppc64e_defconfig
+> +++ b/arch/powerpc/configs/ppc64e_defconfig
+> @@ -32,7 +32,7 @@ CONFIG_IRQ_ALL_CPUS=y
+>  CONFIG_SPARSEMEM_MANUAL=y
+>  CONFIG_PCI_MSI=y
+>  CONFIG_PCCARD=y
+> -CONFIG_HOTPLUG_PCI=m
+> +CONFIG_HOTPLUG_PCI=y
+>  CONFIG_PACKET=y
+>  CONFIG_UNIX=y
+>  CONFIG_XFRM_USER=m
+> diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+> index bea8587..1d4b976 100644
+> --- a/arch/powerpc/configs/pseries_defconfig
+> +++ b/arch/powerpc/configs/pseries_defconfig
+> @@ -53,7 +53,7 @@ CONFIG_PPC_64K_PAGES=y
+>  CONFIG_PPC_SUBPAGE_PROT=y
+>  CONFIG_SCHED_SMT=y
+>  CONFIG_PPC_DENORMALISATION=y
+> -CONFIG_HOTPLUG_PCI=m
+> +CONFIG_HOTPLUG_PCI=y
+>  CONFIG_HOTPLUG_PCI_RPA=m
+>  CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
+>  CONFIG_PACKET=y
+> diff --git a/arch/sh/configs/sh03_defconfig b/arch/sh/configs/sh03_defconfig
+> index 2051821..0cf4097 100644
+> --- a/arch/sh/configs/sh03_defconfig
+> +++ b/arch/sh/configs/sh03_defconfig
+> @@ -22,7 +22,7 @@ CONFIG_PREEMPT=y
+>  CONFIG_CMDLINE_OVERWRITE=y
+>  CONFIG_CMDLINE="console=ttySC1,115200 mem=64M root=/dev/nfs"
+>  CONFIG_PCI=y
+> -CONFIG_HOTPLUG_PCI=m
+> +CONFIG_HOTPLUG_PCI=y
+>  CONFIG_BINFMT_MISC=y
+>  CONFIG_NET=y
+>  CONFIG_PACKET=y
+> diff --git a/drivers/pci/hotplug/Kconfig b/drivers/pci/hotplug/Kconfig
+> index bb7ebb2..d85009d 100644
+> --- a/drivers/pci/hotplug/Kconfig
+> +++ b/drivers/pci/hotplug/Kconfig
+> @@ -3,16 +3,13 @@
+>  #
+>  
+>  menuconfig HOTPLUG_PCI
+> -	tristate "Support for PCI Hotplug"
+> +	bool "Support for PCI Hotplug"
+>  	depends on PCI && SYSFS
+>  	---help---
+>  	  Say Y here if you have a motherboard with a PCI Hotplug controller.
+>  	  This allows you to add and remove PCI cards while the machine is
+>  	  powered up and running.
+>  
+> -	  To compile this driver as a module, choose M here: the
+> -	  module will be called pci_hotplug.
+> -
+>  	  When in doubt, say N.
+>  
+>  if HOTPLUG_PCI
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
