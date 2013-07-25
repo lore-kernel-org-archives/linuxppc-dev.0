@@ -1,37 +1,20 @@
-Return-Path: <rcj@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9B66D2C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 11:13:48 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rcj@linux.vnet.ibm.com>;
- Thu, 25 Jul 2013 06:37:43 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1FA66E004F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 06:43:30 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6P1EHl029032622
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 06:44:22 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6P1DM4J000838
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 11:13:23 +1000
-Date: Wed, 24 Jul 2013 20:13:21 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Ellerman <michael@ellerman.id.au>,
- Jan Stancek <jstancek@redhat.com>
-Subject: [PATCH v3] powerpc: VPHN topology change updates all siblings
-Message-ID: <20130725011321.GA3087@linux.vnet.ibm.com>
+Return-Path: <B42677@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B13752C00CF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 11:29:56 +1000 (EST)
+From: Haijun Zhang <Haijun.Zhang@freescale.com>
+To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/2 V2] mmc: esdhc: get voltage from dts file
+Date: Thu, 25 Jul 2013 08:38:11 +0800
+Message-ID: <1374712691-12807-1-git-send-email-Haijun.Zhang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Cc: scottwood@freescale.com, cjb@laptop.org, AFLEMING@freescale.com,
+ Haijun Zhang <haijun.zhang@freescale.com>, cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,161 +24,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When an associativity level change is found for one thread, the
-siblings threads need to be updated as well.  This is done today
-for PRRN in stage_topology_update() but is missing for VPHN in
-update_cpu_associativity_changes_mask().  This patch will correctly
-update all thread siblings during a topology change.
+Add voltage-range support in esdhc of T4, So we can choose
+to read voltages from dts file as one optional.
+If we can get a valid voltage-range from device node, we use
+this voltage as the final voltage support. Else we still read
+from capacity or from other provider.
 
-Without this patch a topology update can result in a CPU in
-init_sched_groups_power() getting stuck indefinitely in a loop.
-
-This loop is built in build_sched_groups(). As a result of the thread
-moving to a node separate from its siblings the struct sched_group will
-have its next pointer set to point to itself rather than the sched_group
-struct of the next thread.  This happens because we have a domain without
-the SD_OVERLAP flag, which is correct, and a topology that doesn't conform
-with reality (threads on the same core assigned to different numa nodes).
-When this list is traversed by init_sched_groups_power() it will reach
-the thread's sched_group structure and loop indefinitely; the cpu will
-be stuck at this point.
-
-The bug was exposed when VPHN was enabled in commit b7abef0 (v3.9).
-
-Cc: <stable@vger.kernel.org>
-Reported-by: Jan Stancek <jstancek@redhat.com>
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
 ---
-v2. cpu_sibling_mask is now defined for UP which fixes that build break.
-v3. Corrected with Cc:stable under singed-off-by and improved description
-    of impact of this issue.
+changes for V2:
+	- change dev_info to dev_err
+	- share function in pltfm.c
 
- - While re-enabled only in v3.9, hardware VPHN support was available
- prior to this.  This could be a pervasive issue and should be considered
- for the stable tree.
----
- arch/powerpc/include/asm/smp.h |  4 +++ arch/powerpc/mm/numa.c         |
- 59 +++++++++++++++++++++++++++++++----------- 2 files changed, 48
- insertions(+), 15 deletions(-)
+ drivers/mmc/host/sdhci-of-esdhc.c |  1 +
+ drivers/mmc/host/sdhci-pltfm.c    | 32 ++++++++++++++++++++++++++++++++
+ drivers/mmc/host/sdhci-pltfm.h    |  1 +
+ drivers/mmc/host/sdhci.c          |  3 +++
+ include/linux/mmc/sdhci.h         |  1 +
+ 5 files changed, 38 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index ffbaabe..48cfc85 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -145,6 +145,10 @@ extern void __cpu_die(unsigned int cpu);
- #define smp_setup_cpu_maps()
- static inline void inhibit_secondary_onlining(void) {}
- static inline void uninhibit_secondary_onlining(void) {}
-+static inline const struct cpumask *cpu_sibling_mask(int cpu)
-+{
-+	return cpumask_of(cpu);
-+}
+diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+index 15039e2..cdfb08b 100644
+--- a/drivers/mmc/host/sdhci-of-esdhc.c
++++ b/drivers/mmc/host/sdhci-of-esdhc.c
+@@ -304,6 +304,7 @@ static int sdhci_esdhc_probe(struct platform_device *pdev)
+ 		return PTR_ERR(host);
  
- #endif /* CONFIG_SMP */
+ 	sdhci_get_of_property(pdev);
++	sdhci_get_voltage(pdev);
  
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 0839721..5850798 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -27,6 +27,7 @@
- #include <linux/seq_file.h>
- #include <linux/uaccess.h>
- #include <linux/slab.h>
-+#include <asm/cputhreads.h>
- #include <asm/sparsemem.h>
- #include <asm/prom.h>
- #include <asm/smp.h>
-@@ -1318,7 +1319,8 @@ static int update_cpu_associativity_changes_mask(void)
- 			}
- 		}
- 		if (changed) {
--			cpumask_set_cpu(cpu, changes);
-+			cpumask_or(changes, changes, cpu_sibling_mask(cpu));
-+			cpu = cpu_last_thread_sibling(cpu);
- 		}
+ 	np = pdev->dev.of_node;
+ 	if (of_device_is_compatible(np, "fsl,p2020-esdhc")) {
+diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+index e2065a4..4682aba 100644
+--- a/drivers/mmc/host/sdhci-pltfm.c
++++ b/drivers/mmc/host/sdhci-pltfm.c
+@@ -109,10 +109,42 @@ void sdhci_get_of_property(struct platform_device *pdev)
+ 			host->mmc->pm_caps |= MMC_PM_WAKE_SDIO_IRQ;
  	}
- 
-@@ -1426,7 +1428,7 @@ static int update_cpu_topology(void *data)
- 	if (!data)
- 		return -EINVAL;
- 
--	cpu = get_cpu();
-+	cpu = smp_processor_id();
- 
- 	for (update = data; update; update = update->next) {
- 		if (cpu != update->cpu)
-@@ -1446,12 +1448,12 @@ static int update_cpu_topology(void *data)
-  */
- int arch_update_cpu_topology(void)
- {
--	unsigned int cpu, changed = 0;
-+	unsigned int cpu, sibling, changed = 0;
- 	struct topology_update_data *updates, *ud;
- 	unsigned int associativity[VPHN_ASSOC_BUFSIZE] = {0};
- 	cpumask_t updated_cpus;
- 	struct device *dev;
--	int weight, i = 0;
-+	int weight, new_nid, i = 0;
- 
- 	weight = cpumask_weight(&cpu_associativity_changes_mask);
- 	if (!weight)
-@@ -1464,19 +1466,46 @@ int arch_update_cpu_topology(void)
- 	cpumask_clear(&updated_cpus);
- 
- 	for_each_cpu(cpu, &cpu_associativity_changes_mask) {
--		ud = &updates[i++];
--		ud->cpu = cpu;
--		vphn_get_associativity(cpu, associativity);
--		ud->new_nid = associativity_to_nid(associativity);
--
--		if (ud->new_nid < 0 || !node_online(ud->new_nid))
--			ud->new_nid = first_online_node;
-+		/*
-+		 * If siblings aren't flagged for changes, updates list
-+		 * will be too short. Skip on this update and set for next
-+		 * update.
-+		 */
-+		if (!cpumask_subset(cpu_sibling_mask(cpu),
-+					&cpu_associativity_changes_mask)) {
-+			pr_info("Sibling bits not set for associativity "
-+					"change, cpu%d\n", cpu);
-+			cpumask_or(&cpu_associativity_changes_mask,
-+					&cpu_associativity_changes_mask,
-+					cpu_sibling_mask(cpu));
-+			cpu = cpu_last_thread_sibling(cpu);
-+			continue;
-+		}
- 
--		ud->old_nid = numa_cpu_lookup_table[cpu];
--		cpumask_set_cpu(cpu, &updated_cpus);
-+		/* Use associativity from first thread for all siblings */
-+		vphn_get_associativity(cpu, associativity);
-+		new_nid = associativity_to_nid(associativity);
-+		if (new_nid < 0 || !node_online(new_nid))
-+			new_nid = first_online_node;
+ }
 +
-+		if (new_nid == numa_cpu_lookup_table[cpu]) {
-+			cpumask_andnot(&cpu_associativity_changes_mask,
-+					&cpu_associativity_changes_mask,
-+					cpu_sibling_mask(cpu));
-+			cpu = cpu_last_thread_sibling(cpu);
-+			continue;
++void sdhci_get_voltage(struct platform_device *pdev)
++{
++	struct sdhci_host *host = platform_get_drvdata(pdev);
++	const u32 *voltage_ranges;
++	int num_ranges, i;
++	struct device_node *np;
++
++	np = pdev->dev.of_node;
++	voltage_ranges = of_get_property(np, "voltage-ranges", &num_ranges);
++	num_ranges = num_ranges / sizeof(*voltage_ranges) / 2;
++	if (!voltage_ranges || !num_ranges) {
++		dev_info(&pdev->dev, "OF: voltage-ranges unspecified\n");
++		return;
++	}
++
++	for (i = 0; i < num_ranges; i++) {
++		const int j = i * 2;
++		u32 mask;
++
++		mask = mmc_vddrange_to_ocrmask(be32_to_cpu(voltage_ranges[j]),
++				be32_to_cpu(voltage_ranges[j + 1]));
++		if (!mask) {
++			dev_err(&pdev->dev,
++				"OF: voltage-range #%d is invalid\n", i);
++			return;
 +		}
++		host->ocr_mask |= mask;
++	}
++}
+ #else
+ void sdhci_get_of_property(struct platform_device *pdev) {}
++void sdhci_get_voltage(struct platform_device *pdev) {}
+ #endif /* CONFIG_OF */
+ EXPORT_SYMBOL_GPL(sdhci_get_of_property);
++EXPORT_SYMBOL_GPL(sdhci_get_voltage);
  
--		if (i < weight)
--			ud->next = &updates[i];
-+		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
-+			ud = &updates[i++];
-+			ud->cpu = sibling;
-+			ud->new_nid = new_nid;
-+			ud->old_nid = numa_cpu_lookup_table[sibling];
-+			cpumask_set_cpu(sibling, &updated_cpus);
-+			if (i < weight)
-+				ud->next = &updates[i];
-+		}
-+		cpu = cpu_last_thread_sibling(cpu);
+ struct sdhci_host *sdhci_pltfm_init(struct platform_device *pdev,
+ 				    const struct sdhci_pltfm_data *pdata,
+diff --git a/drivers/mmc/host/sdhci-pltfm.h b/drivers/mmc/host/sdhci-pltfm.h
+index e15ced79..aba8253 100644
+--- a/drivers/mmc/host/sdhci-pltfm.h
++++ b/drivers/mmc/host/sdhci-pltfm.h
+@@ -92,6 +92,7 @@ static inline void sdhci_be32bs_writeb(struct sdhci_host *host, u8 val, int reg)
+ #endif /* CONFIG_MMC_SDHCI_BIG_ENDIAN_32BIT_BYTE_SWAPPER */
+ 
+ extern void sdhci_get_of_property(struct platform_device *pdev);
++extern void sdhci_get_voltage(struct platform_device *pdev);
+ 
+ extern struct sdhci_host *sdhci_pltfm_init(struct platform_device *pdev,
+ 					  const struct sdhci_pltfm_data *pdata,
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index a78bd4f..57541e0 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -3119,6 +3119,9 @@ int sdhci_add_host(struct sdhci_host *host)
+ 				   SDHCI_MAX_CURRENT_MULTIPLIER;
  	}
  
- 	stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
++	if (host->ocr_mask)
++		ocr_avail = host->ocr_mask;
++
+ 	mmc->ocr_avail = ocr_avail;
+ 	mmc->ocr_avail_sdio = ocr_avail;
+ 	if (host->ocr_avail_sdio)
+diff --git a/include/linux/mmc/sdhci.h b/include/linux/mmc/sdhci.h
+index e3c6a74..3e781b8 100644
+--- a/include/linux/mmc/sdhci.h
++++ b/include/linux/mmc/sdhci.h
+@@ -171,6 +171,7 @@ struct sdhci_host {
+ 	unsigned int            ocr_avail_sdio;	/* OCR bit masks */
+ 	unsigned int            ocr_avail_sd;
+ 	unsigned int            ocr_avail_mmc;
++	u32 ocr_mask;		/* available voltages */
+ 
+ 	wait_queue_head_t	buf_ready_int;	/* Waitqueue for Buffer Read Ready interrupt */
+ 	unsigned int		tuning_done;	/* Condition flag set when CMD19 succeeds */
 -- 
-1.8.1.2
+1.8.0
