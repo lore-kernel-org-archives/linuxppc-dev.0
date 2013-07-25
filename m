@@ -1,32 +1,25 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 268AC2C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 18:37:51 +1000 (EST)
-Message-ID: <51F0E3A0.1080404@asianux.com>
-Date: Thu, 25 Jul 2013 16:36:48 +0800
-From: Chen Gang <gang.chen@asianux.com>
+Return-Path: <gleb@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 3D3F42C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 18:50:47 +1000 (EST)
+Date: Thu, 25 Jul 2013 11:50:42 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/2] kvm: powerpc: set cache coherency only for kernel
+ managed pages
+Message-ID: <20130725085042.GJ16400@redhat.com>
+References: <03EEFDFE-4603-44FC-8449-2450607F2864@suse.de>
+ <1374697969.15592.67@snotra>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc: kernel: remove useless code which related
- with 'max_cpus'
-References: <51ECCA10.7010709@asianux.com>
- <51ECCEA8.5040406@linux.vnet.ibm.com> <51ECD0BF.8080605@asianux.com>
- <51ECD3D4.9020405@asianux.com> <51ECD664.7040708@linux.vnet.ibm.com>
- <20130723134431.GF31944@concordia> <51EF1F97.3070409@asianux.com>
- <20130724011640.GA6042@concordia> <51EF375D.9060006@asianux.com>
- <20130725031501.GA15673@concordia> <1374729381.6142.59.camel@pasglop>
- <51F0B68F.4000402@asianux.com> <1374731505.6142.64.camel@pasglop>
- <51F0C2E8.3050005@asianux.com> <1374737592.6142.67.camel@pasglop>
- <51F0DAF1.9060702@asianux.com> <1374739597.6142.68.camel@pasglop>
- <51F0E037.1080609@asianux.com> <1374740911.6142.70.camel@pasglop>
-In-Reply-To: <1374740911.6142.70.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: chenhui.zhao@freescale.com, "paulus@samba.org" <paulus@samba.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1374697969.15592.67@snotra>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "kvm@vger.kernel.org list" <kvm@vger.kernel.org>,
+ Alexander Graf <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ =?cp1255?Q?=93tiejun=2Echen=94?= <tiejun.chen@windriver.com>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,32 +29,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/25/2013 04:28 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-07-25 at 16:22 +0800, Chen Gang wrote:
->> > On 07/25/2013 04:06 PM, Benjamin Herrenschmidt wrote:
->>> > > On Thu, 2013-07-25 at 15:59 +0800, Chen Gang wrote:
->>>> > >>
->>>> > >> For my opinion: one fix may like below (assume have removed max_cpus)
->>>> > >> which is more reasonable for code readers.
->>> > > 
->>> > > So instead of just failing to bring the secondary CPUs, but potentially
->>> > > still having a working system, you crash during boot.... potentially
->>> > > before a console is even visible. And this is good how ?
->>> > > 
->> > 
->> > Hmm... how about the above DBG("...") within this function ?
->> > 
->> > One implementation of BUG_ON() is use printk() and coredump, if it is a
->> > critical failure, I suggest to use it (if console is really invisible, I
->> > guess still can generate the coredump).
-> Whatever ... looks like you don't feel like listening so I'm not going
-> to waste my breath anymore, nor will I accept your patches.
+On Wed, Jul 24, 2013 at 03:32:49PM -0500, Scott Wood wrote:
+> On 07/24/2013 04:39:59 AM, Alexander Graf wrote:
+> >
+> >On 24.07.2013, at 11:35, Gleb Natapov wrote:
+> >
+> >> On Wed, Jul 24, 2013 at 11:21:11AM +0200, Alexander Graf wrote:
+> >>>> Are not we going to use page_is_ram() from
+> >e500_shadow_mas2_attrib() as Scott commented?
+> >>>
+> >>> rWhy aren't we using page_is_ram() in kvm_is_mmio_pfn()?
+> >>>
+> >>>
+> >> Because it is much slower and, IIRC, actually used to build pfn
+> >map that allow
+> >> us to check quickly for valid pfn.
+> >
+> >Then why should we use page_is_ram()? :)
+> >
+> >I really don't want the e500 code to diverge too much from what
+> >the rest of the kvm code is doing.
+> 
+> I don't understand "actually used to build pfn map...".  What code
+> is this?  I don't see any calls to page_is_ram() in the KVM code, or
+> in generic mm code.  Is this a statement about what x86 does?
+It may be not page_is_ram() directly, but the same into page_is_ram() is
+using. On power both page_is_ram() and do_init_bootmem() walks some kind
+of memblock_region data structure. What important is that pfn_valid()
+does not mean that there is a memory behind page structure. See Andrea's
+reply.
 
-I can understand,
+> 
+> On PPC page_is_ram() is only called (AFAICT) for determining what
+> attributes to set on mmaps.  We want to be sure that KVM always
+> makes the same decision.  While pfn_valid() seems like it should be
+> equivalent, it's not obvious from the PPC code that it is.
+> 
+Again pfn_valid() is not enough.
 
-But 'patch' or 'patches' ?  ;-)
+> If pfn_valid() is better, why is that not used for mmap?  Why are
+> there two different names for the same thing?
+> 
+They are not the same thing. page_is_ram() tells you if phys address is
+ram backed. pfn_valid() tells you if there is struct page behind the
+pfn. PageReserved() tells if you a pfn is marked as reserved. All non
+ram pfns should be reserved, but ram pfns can be reserved too. Again,
+see Andrea's reply.
 
+Why ppc uses page_is_ram() for mmap? How should I know? But looking at
+the function it does it only as a fallback if
+ppc_md.phys_mem_access_prot() is not provided. Making access to MMIO
+noncached as a safe fallback makes sense. It is also make sense to allow
+noncached access to reserved ram sometimes.
 
-Thanks.
--- 
-Chen Gang
+--
+			Gleb.
