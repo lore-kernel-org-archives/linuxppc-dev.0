@@ -1,16 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 78E6F2C007B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 18:07:04 +1000 (EST)
-Message-ID: <1374739597.6142.68.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id CD5EB2C00CE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 18:23:16 +1000 (EST)
+Message-ID: <51F0E037.1080609@asianux.com>
+Date: Thu, 25 Jul 2013 16:22:15 +0800
+From: Chen Gang <gang.chen@asianux.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH v2] powerpc: kernel: remove useless code which related
  with 'max_cpus'
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Chen Gang <gang.chen@asianux.com>
-Date: Thu, 25 Jul 2013 18:06:37 +1000
-In-Reply-To: <51F0DAF1.9060702@asianux.com>
 References: <51ECCA10.7010709@asianux.com>
  <51ECCEA8.5040406@linux.vnet.ibm.com> <51ECD0BF.8080605@asianux.com>
  <51ECD3D4.9020405@asianux.com> <51ECD664.7040708@linux.vnet.ibm.com>
@@ -19,9 +19,9 @@ References: <51ECCA10.7010709@asianux.com>
  <20130725031501.GA15673@concordia> <1374729381.6142.59.camel@pasglop>
  <51F0B68F.4000402@asianux.com> <1374731505.6142.64.camel@pasglop>
  <51F0C2E8.3050005@asianux.com> <1374737592.6142.67.camel@pasglop>
- <51F0DAF1.9060702@asianux.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <51F0DAF1.9060702@asianux.com> <1374739597.6142.68.camel@pasglop>
+In-Reply-To: <1374739597.6142.68.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
 Cc: chenhui.zhao@freescale.com, "paulus@samba.org" <paulus@samba.org>,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
  Thomas Gleixner <tglx@linutronix.de>,
@@ -35,13 +35,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-07-25 at 15:59 +0800, Chen Gang wrote:
+On 07/25/2013 04:06 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-07-25 at 15:59 +0800, Chen Gang wrote:
+>>
+>> For my opinion: one fix may like below (assume have removed max_cpus)
+>> which is more reasonable for code readers.
 > 
-> For my opinion: one fix may like below (assume have removed max_cpus)
-> which is more reasonable for code readers.
+> So instead of just failing to bring the secondary CPUs, but potentially
+> still having a working system, you crash during boot.... potentially
+> before a console is even visible. And this is good how ?
+> 
 
-So instead of just failing to bring the secondary CPUs, but potentially
-still having a working system, you crash during boot.... potentially
-before a console is even visible. And this is good how ?
+Hmm... how about the above DBG("...") within this function ?
 
-Ben.
+One implementation of BUG_ON() is use printk() and coredump, if it is a
+critical failure, I suggest to use it (if console is really invisible, I
+guess still can generate the coredump).
+
+Hmm... But do you mean it really can be failed, but it is not a critical
+failure ? if so we need print the related warning message instead of.
+
+Thanks.
+-- 
+Chen Gang
