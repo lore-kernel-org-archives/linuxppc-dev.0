@@ -1,20 +1,19 @@
-Return-Path: <B42677@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B13752C00CF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 11:29:56 +1000 (EST)
-From: Haijun Zhang <Haijun.Zhang@freescale.com>
-To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2 V2] mmc: esdhc: get voltage from dts file
-Date: Thu, 25 Jul 2013 08:38:11 +0800
-Message-ID: <1374712691-12807-1-git-send-email-Haijun.Zhang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, cjb@laptop.org, AFLEMING@freescale.com,
- Haijun Zhang <haijun.zhang@freescale.com>, cbouatmailru@gmail.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 119D52C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 12:12:39 +1000 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r6P2CXa4024194
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jul 2013 21:12:35 -0500
+Message-ID: <1374718352.6142.48.camel@pasglop>
+Subject: [PATCH] powerpc/pmac: Early debug output on screen on 64-bit macs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 25 Jul 2013 12:12:32 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,122 +23,494 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add voltage-range support in esdhc of T4, So we can choose
-to read voltages from dts file as one optional.
-If we can get a valid voltage-range from device node, we use
-this voltage as the final voltage support. Else we still read
-from capacity or from other provider.
+We have a bunch of CONFIG_PPC_EARLY_DEBUG_* options that are intended
+for bringup/debug only. They hard wire a machine specific udbg backend
+very early on (before we even probe the platform), and use whatever
+tricks are available on each machine/cpu to be able to get some kind
+of output out there early on.
 
-Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
-Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
+So far, on powermac with no serial ports, we have CONFIG_PPC_EARLY_DEBUG_BOOTX
+to use the low-level btext engine on the screen, but it doesn't do much, at
+least on 64-bit. It only really gets enabled after the platform has been
+probed and the MMU enabled.
+
+This adds a way to enable it much earlier. From prom_init.c (while still
+running with Open Firmware), we grab the screen details and set things up
+using the physical address of the frame buffer.
+
+Then btext itself uses the "rm_ci" feature of the 970 processor (Real
+Mode Cache Inhibited) to access it while in real mode.
+
+We need to do a little bit of reorg of the btext code to inline things
+better, in order to limit how much we touch memory while in this mode as
+the consequences might be ... interesting.
+
+This successfully allowed me to debug problems early on with the G5
+(related to gold being broken vs. ppc64 kernels).
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
-changes for V2:
-	- change dev_info to dev_err
-	- share function in pltfm.c
 
- drivers/mmc/host/sdhci-of-esdhc.c |  1 +
- drivers/mmc/host/sdhci-pltfm.c    | 32 ++++++++++++++++++++++++++++++++
- drivers/mmc/host/sdhci-pltfm.h    |  1 +
- drivers/mmc/host/sdhci.c          |  3 +++
- include/linux/mmc/sdhci.h         |  1 +
- 5 files changed, 38 insertions(+)
-
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index 15039e2..cdfb08b 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -304,6 +304,7 @@ static int sdhci_esdhc_probe(struct platform_device *pdev)
- 		return PTR_ERR(host);
+diff --git a/arch/powerpc/include/asm/btext.h b/arch/powerpc/include/asm/btext.h
+index 906f46e..89fc382 100644
+--- a/arch/powerpc/include/asm/btext.h
++++ b/arch/powerpc/include/asm/btext.h
+@@ -13,6 +13,7 @@ extern void btext_update_display(unsigned long phys, int width, int height,
+ extern void btext_setup_display(int width, int height, int depth, int pitch,
+ 				unsigned long address);
+ extern void btext_prepare_BAT(void);
++extern void btext_map(void);
+ extern void btext_unmap(void);
  
- 	sdhci_get_of_property(pdev);
-+	sdhci_get_voltage(pdev);
+ extern void btext_drawchar(char c);
+diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
+index ac8f527..0428992 100644
+--- a/arch/powerpc/kernel/btext.c
++++ b/arch/powerpc/kernel/btext.c
+@@ -25,11 +25,6 @@
+ static void scrollscreen(void);
+ #endif
  
- 	np = pdev->dev.of_node;
- 	if (of_device_is_compatible(np, "fsl,p2020-esdhc")) {
-diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
-index e2065a4..4682aba 100644
---- a/drivers/mmc/host/sdhci-pltfm.c
-+++ b/drivers/mmc/host/sdhci-pltfm.c
-@@ -109,10 +109,42 @@ void sdhci_get_of_property(struct platform_device *pdev)
- 			host->mmc->pm_caps |= MMC_PM_WAKE_SDIO_IRQ;
- 	}
- }
+-static void draw_byte(unsigned char c, long locX, long locY);
+-static void draw_byte_32(unsigned char *bits, unsigned int *base, int rb);
+-static void draw_byte_16(unsigned char *bits, unsigned int *base, int rb);
+-static void draw_byte_8(unsigned char *bits, unsigned int *base, int rb);
+-
+ #define __force_data __attribute__((__section__(".data")))
+ 
+ static int g_loc_X __force_data;
+@@ -52,6 +47,26 @@ static unsigned char vga_font[cmapsz];
+ int boot_text_mapped __force_data = 0;
+ int force_printk_to_btext = 0;
+ 
++extern void rmci_on(void);
++extern void rmci_off(void);
 +
-+void sdhci_get_voltage(struct platform_device *pdev)
++static inline void rmci_maybe_on(void)
 +{
-+	struct sdhci_host *host = platform_get_drvdata(pdev);
-+	const u32 *voltage_ranges;
-+	int num_ranges, i;
-+	struct device_node *np;
++#ifdef CONFIG_PPC_EARLY_DEBUG_BOOTX
++	if (!(mfmsr() & MSR_DR))
++		rmci_on();
++#endif
++}
 +
-+	np = pdev->dev.of_node;
-+	voltage_ranges = of_get_property(np, "voltage-ranges", &num_ranges);
-+	num_ranges = num_ranges / sizeof(*voltage_ranges) / 2;
-+	if (!voltage_ranges || !num_ranges) {
-+		dev_info(&pdev->dev, "OF: voltage-ranges unspecified\n");
-+		return;
-+	}
++static inline void rmci_maybe_off(void)
++{
++#ifdef CONFIG_PPC_EARLY_DEBUG_BOOTX
++	if (!(mfmsr() & MSR_DR))
++		rmci_off();
++#endif
++}
 +
-+	for (i = 0; i < num_ranges; i++) {
-+		const int j = i * 2;
-+		u32 mask;
 +
-+		mask = mmc_vddrange_to_ocrmask(be32_to_cpu(voltage_ranges[j]),
-+				be32_to_cpu(voltage_ranges[j + 1]));
-+		if (!mask) {
-+			dev_err(&pdev->dev,
-+				"OF: voltage-range #%d is invalid\n", i);
-+			return;
-+		}
-+		host->ocr_mask |= mask;
+ #ifdef CONFIG_PPC32
+ /* Calc BAT values for mapping the display and store them
+  * in disp_BAT.  Those values are then used from head.S to map
+@@ -134,7 +149,7 @@ void __init btext_unmap(void)
+  *    changes.
+  */
+ 
+-static void map_boot_text(void)
++void btext_map(void)
+ {
+ 	unsigned long base, offset, size;
+ 	unsigned char *vbase;
+@@ -209,7 +224,7 @@ int btext_initialize(struct device_node *np)
+ 	dispDeviceRect[2] = width;
+ 	dispDeviceRect[3] = height;
+ 
+-	map_boot_text();
++	btext_map();
+ 
+ 	return 0;
+ }
+@@ -283,7 +298,7 @@ void btext_update_display(unsigned long phys, int width, int height,
+ 		iounmap(logicalDisplayBase);
+ 		boot_text_mapped = 0;
+ 	}
+-	map_boot_text();
++	btext_map();
+ 	g_loc_X = 0;
+ 	g_loc_Y = 0;
+ 	g_max_loc_X = width / 8;
+@@ -298,6 +313,7 @@ void btext_clearscreen(void)
+ 					(dispDeviceDepth >> 3)) >> 2;
+ 	int i,j;
+ 
++	rmci_maybe_on();
+ 	for (i=0; i<(dispDeviceRect[3] - dispDeviceRect[1]); i++)
+ 	{
+ 		unsigned int *ptr = base;
+@@ -305,6 +321,7 @@ void btext_clearscreen(void)
+ 			*(ptr++) = 0;
+ 		base += (dispDeviceRowBytes >> 2);
+ 	}
++	rmci_maybe_off();
+ }
+ 
+ void btext_flushscreen(void)
+@@ -355,6 +372,8 @@ static void scrollscreen(void)
+ 				   (dispDeviceDepth >> 3)) >> 2;
+ 	int i,j;
+ 
++	rmci_maybe_on();
++
+ 	for (i=0; i<(dispDeviceRect[3] - dispDeviceRect[1] - 16); i++)
+ 	{
+ 		unsigned int *src_ptr = src;
+@@ -371,9 +390,116 @@ static void scrollscreen(void)
+ 			*(dst_ptr++) = 0;
+ 		dst += (dispDeviceRowBytes >> 2);
+ 	}
++
++	rmci_maybe_off();
+ }
+ #endif /* ndef NO_SCROLL */
+ 
++static unsigned int expand_bits_8[16] = {
++	0x00000000,
++	0x000000ff,
++	0x0000ff00,
++	0x0000ffff,
++	0x00ff0000,
++	0x00ff00ff,
++	0x00ffff00,
++	0x00ffffff,
++	0xff000000,
++	0xff0000ff,
++	0xff00ff00,
++	0xff00ffff,
++	0xffff0000,
++	0xffff00ff,
++	0xffffff00,
++	0xffffffff
++};
++
++static unsigned int expand_bits_16[4] = {
++	0x00000000,
++	0x0000ffff,
++	0xffff0000,
++	0xffffffff
++};
++
++
++static void draw_byte_32(unsigned char *font, unsigned int *base, int rb)
++{
++	int l, bits;
++	int fg = 0xFFFFFFFFUL;
++	int bg = 0x00000000UL;
++
++	for (l = 0; l < 16; ++l)
++	{
++		bits = *font++;
++		base[0] = (-(bits >> 7) & fg) ^ bg;
++		base[1] = (-((bits >> 6) & 1) & fg) ^ bg;
++		base[2] = (-((bits >> 5) & 1) & fg) ^ bg;
++		base[3] = (-((bits >> 4) & 1) & fg) ^ bg;
++		base[4] = (-((bits >> 3) & 1) & fg) ^ bg;
++		base[5] = (-((bits >> 2) & 1) & fg) ^ bg;
++		base[6] = (-((bits >> 1) & 1) & fg) ^ bg;
++		base[7] = (-(bits & 1) & fg) ^ bg;
++		base = (unsigned int *) ((char *)base + rb);
 +	}
 +}
- #else
- void sdhci_get_of_property(struct platform_device *pdev) {}
-+void sdhci_get_voltage(struct platform_device *pdev) {}
- #endif /* CONFIG_OF */
- EXPORT_SYMBOL_GPL(sdhci_get_of_property);
-+EXPORT_SYMBOL_GPL(sdhci_get_voltage);
- 
- struct sdhci_host *sdhci_pltfm_init(struct platform_device *pdev,
- 				    const struct sdhci_pltfm_data *pdata,
-diff --git a/drivers/mmc/host/sdhci-pltfm.h b/drivers/mmc/host/sdhci-pltfm.h
-index e15ced79..aba8253 100644
---- a/drivers/mmc/host/sdhci-pltfm.h
-+++ b/drivers/mmc/host/sdhci-pltfm.h
-@@ -92,6 +92,7 @@ static inline void sdhci_be32bs_writeb(struct sdhci_host *host, u8 val, int reg)
- #endif /* CONFIG_MMC_SDHCI_BIG_ENDIAN_32BIT_BYTE_SWAPPER */
- 
- extern void sdhci_get_of_property(struct platform_device *pdev);
-+extern void sdhci_get_voltage(struct platform_device *pdev);
- 
- extern struct sdhci_host *sdhci_pltfm_init(struct platform_device *pdev,
- 					  const struct sdhci_pltfm_data *pdata,
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index a78bd4f..57541e0 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -3119,6 +3119,9 @@ int sdhci_add_host(struct sdhci_host *host)
- 				   SDHCI_MAX_CURRENT_MULTIPLIER;
- 	}
- 
-+	if (host->ocr_mask)
-+		ocr_avail = host->ocr_mask;
 +
- 	mmc->ocr_avail = ocr_avail;
- 	mmc->ocr_avail_sdio = ocr_avail;
- 	if (host->ocr_avail_sdio)
-diff --git a/include/linux/mmc/sdhci.h b/include/linux/mmc/sdhci.h
-index e3c6a74..3e781b8 100644
---- a/include/linux/mmc/sdhci.h
-+++ b/include/linux/mmc/sdhci.h
-@@ -171,6 +171,7 @@ struct sdhci_host {
- 	unsigned int            ocr_avail_sdio;	/* OCR bit masks */
- 	unsigned int            ocr_avail_sd;
- 	unsigned int            ocr_avail_mmc;
-+	u32 ocr_mask;		/* available voltages */
++static inline void draw_byte_16(unsigned char *font, unsigned int *base, int rb)
++{
++	int l, bits;
++	int fg = 0xFFFFFFFFUL;
++	int bg = 0x00000000UL;
++	unsigned int *eb = (int *)expand_bits_16;
++
++	for (l = 0; l < 16; ++l)
++	{
++		bits = *font++;
++		base[0] = (eb[bits >> 6] & fg) ^ bg;
++		base[1] = (eb[(bits >> 4) & 3] & fg) ^ bg;
++		base[2] = (eb[(bits >> 2) & 3] & fg) ^ bg;
++		base[3] = (eb[bits & 3] & fg) ^ bg;
++		base = (unsigned int *) ((char *)base + rb);
++	}
++}
++
++static inline void draw_byte_8(unsigned char *font, unsigned int *base, int rb)
++{
++	int l, bits;
++	int fg = 0x0F0F0F0FUL;
++	int bg = 0x00000000UL;
++	unsigned int *eb = (int *)expand_bits_8;
++
++	for (l = 0; l < 16; ++l)
++	{
++		bits = *font++;
++		base[0] = (eb[bits >> 4] & fg) ^ bg;
++		base[1] = (eb[bits & 0xf] & fg) ^ bg;
++		base = (unsigned int *) ((char *)base + rb);
++	}
++}
++
++static noinline void draw_byte(unsigned char c, long locX, long locY)
++{
++	unsigned char *base	= calc_base(locX << 3, locY << 4);
++	unsigned char *font	= &vga_font[((unsigned int)c) * 16];
++	int rb			= dispDeviceRowBytes;
++
++	rmci_maybe_on();
++	switch(dispDeviceDepth) {
++	case 24:
++	case 32:
++		draw_byte_32(font, (unsigned int *)base, rb);
++		break;
++	case 15:
++	case 16:
++		draw_byte_16(font, (unsigned int *)base, rb);
++		break;
++	case 8:
++		draw_byte_8(font, (unsigned int *)base, rb);
++		break;
++	}
++	rmci_maybe_off();
++}
++
+ void btext_drawchar(char c)
+ {
+ 	int cline = 0;
+@@ -465,107 +591,12 @@ void btext_drawhex(unsigned long v)
+ 	btext_drawchar(' ');
+ }
  
- 	wait_queue_head_t	buf_ready_int;	/* Waitqueue for Buffer Read Ready interrupt */
- 	unsigned int		tuning_done;	/* Condition flag set when CMD19 succeeds */
--- 
-1.8.0
+-static void draw_byte(unsigned char c, long locX, long locY)
+-{
+-	unsigned char *base	= calc_base(locX << 3, locY << 4);
+-	unsigned char *font	= &vga_font[((unsigned int)c) * 16];
+-	int rb			= dispDeviceRowBytes;
+-
+-	switch(dispDeviceDepth) {
+-	case 24:
+-	case 32:
+-		draw_byte_32(font, (unsigned int *)base, rb);
+-		break;
+-	case 15:
+-	case 16:
+-		draw_byte_16(font, (unsigned int *)base, rb);
+-		break;
+-	case 8:
+-		draw_byte_8(font, (unsigned int *)base, rb);
+-		break;
+-	}
+-}
+-
+-static unsigned int expand_bits_8[16] = {
+-	0x00000000,
+-	0x000000ff,
+-	0x0000ff00,
+-	0x0000ffff,
+-	0x00ff0000,
+-	0x00ff00ff,
+-	0x00ffff00,
+-	0x00ffffff,
+-	0xff000000,
+-	0xff0000ff,
+-	0xff00ff00,
+-	0xff00ffff,
+-	0xffff0000,
+-	0xffff00ff,
+-	0xffffff00,
+-	0xffffffff
+-};
+-
+-static unsigned int expand_bits_16[4] = {
+-	0x00000000,
+-	0x0000ffff,
+-	0xffff0000,
+-	0xffffffff
+-};
+-
+-
+-static void draw_byte_32(unsigned char *font, unsigned int *base, int rb)
+-{
+-	int l, bits;
+-	int fg = 0xFFFFFFFFUL;
+-	int bg = 0x00000000UL;
+-
+-	for (l = 0; l < 16; ++l)
+-	{
+-		bits = *font++;
+-		base[0] = (-(bits >> 7) & fg) ^ bg;
+-		base[1] = (-((bits >> 6) & 1) & fg) ^ bg;
+-		base[2] = (-((bits >> 5) & 1) & fg) ^ bg;
+-		base[3] = (-((bits >> 4) & 1) & fg) ^ bg;
+-		base[4] = (-((bits >> 3) & 1) & fg) ^ bg;
+-		base[5] = (-((bits >> 2) & 1) & fg) ^ bg;
+-		base[6] = (-((bits >> 1) & 1) & fg) ^ bg;
+-		base[7] = (-(bits & 1) & fg) ^ bg;
+-		base = (unsigned int *) ((char *)base + rb);
+-	}
+-}
+-
+-static void draw_byte_16(unsigned char *font, unsigned int *base, int rb)
+-{
+-	int l, bits;
+-	int fg = 0xFFFFFFFFUL;
+-	int bg = 0x00000000UL;
+-	unsigned int *eb = (int *)expand_bits_16;
+-
+-	for (l = 0; l < 16; ++l)
+-	{
+-		bits = *font++;
+-		base[0] = (eb[bits >> 6] & fg) ^ bg;
+-		base[1] = (eb[(bits >> 4) & 3] & fg) ^ bg;
+-		base[2] = (eb[(bits >> 2) & 3] & fg) ^ bg;
+-		base[3] = (eb[bits & 3] & fg) ^ bg;
+-		base = (unsigned int *) ((char *)base + rb);
+-	}
+-}
+-
+-static void draw_byte_8(unsigned char *font, unsigned int *base, int rb)
++void __init udbg_init_btext(void)
+ {
+-	int l, bits;
+-	int fg = 0x0F0F0F0FUL;
+-	int bg = 0x00000000UL;
+-	unsigned int *eb = (int *)expand_bits_8;
+-
+-	for (l = 0; l < 16; ++l)
+-	{
+-		bits = *font++;
+-		base[0] = (eb[bits >> 4] & fg) ^ bg;
+-		base[1] = (eb[bits & 0xf] & fg) ^ bg;
+-		base = (unsigned int *) ((char *)base + rb);
+-	}
++	/* If btext is enabled, we might have a BAT setup for early display,
++	 * thus we do enable some very basic udbg output
++	 */
++	udbg_putc = btext_drawchar;
+ }
+ 
+ static unsigned char vga_font[cmapsz] = {
+@@ -913,10 +944,3 @@ static unsigned char vga_font[cmapsz] = {
+ 0x00, 0x00, 0x00, 0x00,
+ };
+ 
+-void __init udbg_init_btext(void)
+-{
+-	/* If btext is enabled, we might have a BAT setup for early display,
+-	 * thus we do enable some very basic udbg output
+-	 */
+-	udbg_putc = btext_drawchar;
+-}
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index 6820e45..5a29bc5 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -247,6 +247,37 @@ _GLOBAL(__bswapdi2)
+ 	blr
+ 
+ #if defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_MAPLE)
++
++_GLOBAL(rmci_on)
++	sync
++	isync
++	li	r3,0x100
++	rldicl	r3,r3,32,0
++	mfspr	r5,SPRN_HID4
++	or	r5,r5,r3
++	sync
++	mtspr	SPRN_HID4,r5
++	isync
++	slbia
++	isync
++	sync
++	blr
++
++_GLOBAL(rmci_off)
++	sync
++	isync
++	li	r3,0x100
++	rldicl	r3,r3,32,0
++	mfspr	r5,SPRN_HID4
++	andc	r5,r5,r3
++	sync
++	mtspr	SPRN_HID4,r5
++	isync
++	slbia
++	isync
++	sync
++	blr
++
+ /*
+  * Do an IO access in real mode
+  */
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 6079024..57df5cb 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2082,6 +2082,22 @@ static void __init prom_check_displays(void)
+ 					   clut[2]) != 0)
+ 				break;
+ #endif /* CONFIG_LOGO_LINUX_CLUT224 */
++
++#ifdef CONFIG_PPC_EARLY_DEBUG_BOOTX
++		if (prom_getprop(node, "linux,boot-display", NULL, 0) !=
++		    PROM_ERROR) {
++			u32 width, height, pitch, addr;
++
++			prom_printf("Setting btext !\n");
++			prom_getprop(node, "width", &width, 4);
++			prom_getprop(node, "height", &height, 4);
++			prom_getprop(node, "linebytes", &pitch, 4);
++			prom_getprop(node, "address", &addr, 4);
++			prom_printf("W=%d H=%d LB=%d addr=0x%x\n",
++				    width, height, pitch, addr);
++			btext_setup_display(width, height, 8, pitch, addr);
++		}
++#endif /* CONFIG_PPC_EARLY_DEBUG_BOOTX */
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
+index 3765da6..b0c263d 100644
+--- a/arch/powerpc/kernel/prom_init_check.sh
++++ b/arch/powerpc/kernel/prom_init_check.sh
+@@ -22,7 +22,8 @@ __secondary_hold_acknowledge __secondary_hold_spinloop __start
+ strcmp strcpy strlcpy strlen strncmp strstr logo_linux_clut224
+ reloc_got2 kernstart_addr memstart_addr linux_banner _stext
+ opal_query_takeover opal_do_takeover opal_enter_rtas opal_secondary_entry
+-boot_command_line __prom_init_toc_start __prom_init_toc_end"
++boot_command_line __prom_init_toc_start __prom_init_toc_end
++btext_setup_display"
+ 
+ NM="$1"
+ OBJ="$2"
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 389fb807..7016a13 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -10,7 +10,7 @@
+  *      2 of the License, or (at your option) any later version.
+  */
+ 
+-#undef DEBUG
++#define DEBUG
+ 
+ #include <linux/export.h>
+ #include <linux/string.h>
+@@ -237,6 +237,18 @@ void __init early_setup(unsigned long dt_ptr)
+ 	reserve_hugetlb_gpages();
+ 
+ 	DBG(" <- early_setup()\n");
++
++#ifdef CONFIG_PPC_EARLY_DEBUG_BOOTX
++	/*
++	 * This needs to be done *last* (after the above DBG() even)
++	 *
++	 * Right after we return from this function, we turn on the MMU
++	 * which means the real-mode access trick that btext does will
++	 * no longer work, it needs to switch to using a real MMU
++	 * mapping. This call will ensure that it does
++	 */
++	btext_map();
++#endif /* CONFIG_PPC_EARLY_DEBUG_BOOTX */
+ }
+ 
+ #ifdef CONFIG_SMP
