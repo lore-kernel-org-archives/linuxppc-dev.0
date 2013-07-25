@@ -1,18 +1,29 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 25 Jul 2013 14:42:34 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] of: Feed entire flattened device tree into the random pool
-Message-ID: <20130725044234.GI6806@voom.fritz.box>
-References: <20130725125122.78accf44@kryten> <20130725031717.GB15673@concordia>
- <20130725143031.16af0a96@kryten>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="zgY/UHCnsaNnNXRx"
-In-Reply-To: <20130725143031.16af0a96@kryten>
-Cc: devicetree@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Paul Mackerras <paulus@samba.org>, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E3BEE2C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 15:17:07 +1000 (EST)
+Message-ID: <1374729381.6142.59.camel@pasglop>
+Subject: Re: [PATCH v2] powerpc: kernel: remove useless code which related
+ with 'max_cpus'
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 25 Jul 2013 15:16:21 +1000
+In-Reply-To: <20130725031501.GA15673@concordia>
+References: <51ECCA10.7010709@asianux.com>
+ <51ECCEA8.5040406@linux.vnet.ibm.com> <51ECD0BF.8080605@asianux.com>
+ <51ECD3D4.9020405@asianux.com> <51ECD664.7040708@linux.vnet.ibm.com>
+ <20130723134431.GF31944@concordia> <51EF1F97.3070409@asianux.com>
+ <20130724011640.GA6042@concordia> <51EF375D.9060006@asianux.com>
+ <20130725031501.GA15673@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: chenhui.zhao@freescale.com, Chen Gang <gang.chen@asianux.com>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,41 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2013-07-25 at 13:15 +1000, Michael Ellerman wrote:
+> > But for API (also include the internal API), at least, better to always
+> > provide the return value which can indicate failure by negative number
+> > (if succeed can return the meanness value, e.g. the number of cpus).
+> 
+> Are we still talking about this?
+> 
+> There is no point returning a value when no one checks it. Which is the
+> case here.
 
---zgY/UHCnsaNnNXRx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Right. The return value is historical, it dates from when we didn't have
+cpu_possible_mask etc...
 
-On Thu, Jul 25, 2013 at 02:30:31PM +1000, Anton Blanchard wrote:
->=20
-> Hi Michael,
->=20
-> > But why not put the initcall in drivers/of/fdt.c, that way it's not
-> > early but it's still common ?
->=20
-> Good idea! How does this look? So long as it happens before
-> module_init(rand_initialize) we should be good.
+Nowadays, the probe() routine is just some early init, and might also
+affect those masks if needed, the return value has become obsolete.
 
-This must be some strange new meaning of the word "random" of which I
-was not previously aware.  But I guess it's marginally better than
-nothing.
+You are welcome to post a patch removing it.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---zgY/UHCnsaNnNXRx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.13 (GNU/Linux)
-
-iEYEARECAAYFAlHwrLoACgkQaILKxv3ab8YdSACeKo/ceJ1WkLo3FlDg9wN/Ayza
-1zQAnAynlR5xJs+CnvhoUuoLeuYkcS2h
-=VU3b
------END PGP SIGNATURE-----
-
---zgY/UHCnsaNnNXRx--
+Cheers,
+Ben.
