@@ -1,22 +1,42 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id 98FA02C00C2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 05:24:24 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH 1/2] PCI: hotplug: Convert to be builtin only, not modular
-Date: Thu, 25 Jul 2013 21:34:26 +0200
-Message-ID: <1790250.TtZ9d6PaXM@vostro.rjw.lan>
-In-Reply-To: <20130725175720.6006.96448.stgit@bhelgaas-glaptop>
-References: <20130725175242.6006.56007.stgit@bhelgaas-glaptop>
- <20130725175720.6006.96448.stgit@bhelgaas-glaptop>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-oa0-x235.google.com (mail-oa0-x235.google.com
+ [IPv6:2607:f8b0:4003:c02::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5F8012C00E8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 06:27:39 +1000 (EST)
+Received: by mail-oa0-f53.google.com with SMTP id k14so5597403oag.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 13:27:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
- Yinghai Lu <yinghai@kernel.org>
+In-Reply-To: <1373889167-27878-3-git-send-email-thomas.petazzoni@free-electrons.com>
+References: <1373889167-27878-1-git-send-email-thomas.petazzoni@free-electrons.com>
+ <1373889167-27878-3-git-send-email-thomas.petazzoni@free-electrons.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Thu, 25 Jul 2013 14:27:15 -0600
+Message-ID: <CAErSpo48_xu+MbYefaACUNje26AWwPG5EEnNQ47-pPkqYiTN6A@mail.gmail.com>
+Subject: Re: [PATCHv5 02/11] PCI: use weak functions for MSI arch-specific
+ functions
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ "x86@kernel.org" <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Jason Cooper <jason@lakedaemon.net>,
+ Rob Herring <rob.herring@calxeda.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Gregory Clement <gregory.clement@free-electrons.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm <linux-arm-kernel@lists.infradead.org>,
+ Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Maen Suleiman <maen@marvell.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux390@de.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,153 +46,286 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, July 25, 2013 11:57:20 AM Bjorn Helgaas wrote:
-> Convert CONFIG_HOTPLUG_PCI from tristate to bool.  This only affects
-> the hotplug core; several of the hotplug drivers can still be modules.
-> 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+On Mon, Jul 15, 2013 at 5:52 AM, Thomas Petazzoni
+<thomas.petazzoni@free-electrons.com> wrote:
+> Until now, the MSI architecture-specific functions could be overloaded
+> using a fairly complex set of #define and compile-time
+> conditionals. In order to prepare for the introduction of the msi_chip
+> infrastructure, it is desirable to switch all those functions to use
+> the 'weak' mechanism. This commit converts all the architectures that
+> were overidding those MSI functions to use the new strategy.
+>
+> Note that we keep a separate, non-weak, function
+> default_teardown_msi_irqs() for the default behavior of the
+> arch_teardown_msi_irqs(), as the default behavior is needed by the Xen
+> x86 PCI code.
+>
+> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Cc: linux390@de.ibm.com
+> Cc: linux-s390@vger.kernel.org
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Tony Luck <tony.luck@intel.com>
+> Cc: Fenghua Yu <fenghua.yu@intel.com>
+> Cc: linux-ia64@vger.kernel.org
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: linux-mips@linux-mips.org
+> Cc: David S. Miller <davem@davemloft.net>
+> Cc: sparclinux@vger.kernel.org
+> Cc: Chris Metcalf <cmetcalf@tilera.com>
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
 > ---
->  arch/ia64/configs/generic_defconfig    |    2 +-
->  arch/ia64/configs/gensparse_defconfig  |    2 +-
->  arch/ia64/configs/tiger_defconfig      |    2 +-
->  arch/ia64/configs/xen_domu_defconfig   |    2 +-
->  arch/powerpc/configs/ppc64_defconfig   |    2 +-
->  arch/powerpc/configs/ppc64e_defconfig  |    2 +-
->  arch/powerpc/configs/pseries_defconfig |    2 +-
->  arch/sh/configs/sh03_defconfig         |    2 +-
->  drivers/pci/hotplug/Kconfig            |    5 +----
->  9 files changed, 9 insertions(+), 12 deletions(-)
-> 
-> diff --git a/arch/ia64/configs/generic_defconfig b/arch/ia64/configs/generic_defconfig
-> index 7913695..efbd292 100644
-> --- a/arch/ia64/configs/generic_defconfig
-> +++ b/arch/ia64/configs/generic_defconfig
-> @@ -31,7 +31,7 @@ CONFIG_ACPI_FAN=m
->  CONFIG_ACPI_DOCK=y
->  CONFIG_ACPI_PROCESSOR=m
->  CONFIG_ACPI_CONTAINER=m
-> -CONFIG_HOTPLUG_PCI=m
-> +CONFIG_HOTPLUG_PCI=y
->  CONFIG_HOTPLUG_PCI_ACPI=m
->  CONFIG_PACKET=y
->  CONFIG_UNIX=y
-> diff --git a/arch/ia64/configs/gensparse_defconfig b/arch/ia64/configs/gensparse_defconfig
-> index f8e9133..f64980d 100644
-> --- a/arch/ia64/configs/gensparse_defconfig
-> +++ b/arch/ia64/configs/gensparse_defconfig
-> @@ -25,7 +25,7 @@ CONFIG_ACPI_BUTTON=m
->  CONFIG_ACPI_FAN=m
->  CONFIG_ACPI_PROCESSOR=m
->  CONFIG_ACPI_CONTAINER=m
-> -CONFIG_HOTPLUG_PCI=m
-> +CONFIG_HOTPLUG_PCI=y
->  CONFIG_HOTPLUG_PCI_ACPI=m
->  CONFIG_PACKET=y
->  CONFIG_UNIX=y
-> diff --git a/arch/ia64/configs/tiger_defconfig b/arch/ia64/configs/tiger_defconfig
-> index a5a9e02..0f4e9e4 100644
-> --- a/arch/ia64/configs/tiger_defconfig
-> +++ b/arch/ia64/configs/tiger_defconfig
-> @@ -31,7 +31,7 @@ CONFIG_ACPI_BUTTON=m
->  CONFIG_ACPI_FAN=m
->  CONFIG_ACPI_PROCESSOR=m
->  CONFIG_ACPI_CONTAINER=m
-> -CONFIG_HOTPLUG_PCI=m
-> +CONFIG_HOTPLUG_PCI=y
->  CONFIG_HOTPLUG_PCI_ACPI=m
->  CONFIG_PACKET=y
->  CONFIG_UNIX=y
-> diff --git a/arch/ia64/configs/xen_domu_defconfig b/arch/ia64/configs/xen_domu_defconfig
-> index 37b9b42..b025acf 100644
-> --- a/arch/ia64/configs/xen_domu_defconfig
-> +++ b/arch/ia64/configs/xen_domu_defconfig
-> @@ -32,7 +32,7 @@ CONFIG_ACPI_BUTTON=m
->  CONFIG_ACPI_FAN=m
->  CONFIG_ACPI_PROCESSOR=m
->  CONFIG_ACPI_CONTAINER=m
-> -CONFIG_HOTPLUG_PCI=m
-> +CONFIG_HOTPLUG_PCI=y
->  CONFIG_HOTPLUG_PCI_ACPI=m
->  CONFIG_PACKET=y
->  CONFIG_UNIX=y
-> diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-> index c86fcb9..0e8cfd0 100644
-> --- a/arch/powerpc/configs/ppc64_defconfig
-> +++ b/arch/powerpc/configs/ppc64_defconfig
-> @@ -58,7 +58,7 @@ CONFIG_SCHED_SMT=y
->  CONFIG_PPC_DENORMALISATION=y
->  CONFIG_PCCARD=y
->  CONFIG_ELECTRA_CF=y
-> -CONFIG_HOTPLUG_PCI=m
-> +CONFIG_HOTPLUG_PCI=y
->  CONFIG_HOTPLUG_PCI_RPA=m
->  CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
->  CONFIG_PACKET=y
-> diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/ppc64e_defconfig
-> index 4b20f76..0085dc4 100644
-> --- a/arch/powerpc/configs/ppc64e_defconfig
-> +++ b/arch/powerpc/configs/ppc64e_defconfig
-> @@ -32,7 +32,7 @@ CONFIG_IRQ_ALL_CPUS=y
->  CONFIG_SPARSEMEM_MANUAL=y
->  CONFIG_PCI_MSI=y
->  CONFIG_PCCARD=y
-> -CONFIG_HOTPLUG_PCI=m
-> +CONFIG_HOTPLUG_PCI=y
->  CONFIG_PACKET=y
->  CONFIG_UNIX=y
->  CONFIG_XFRM_USER=m
-> diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-> index bea8587..1d4b976 100644
-> --- a/arch/powerpc/configs/pseries_defconfig
-> +++ b/arch/powerpc/configs/pseries_defconfig
-> @@ -53,7 +53,7 @@ CONFIG_PPC_64K_PAGES=y
->  CONFIG_PPC_SUBPAGE_PROT=y
->  CONFIG_SCHED_SMT=y
->  CONFIG_PPC_DENORMALISATION=y
-> -CONFIG_HOTPLUG_PCI=m
-> +CONFIG_HOTPLUG_PCI=y
->  CONFIG_HOTPLUG_PCI_RPA=m
->  CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
->  CONFIG_PACKET=y
-> diff --git a/arch/sh/configs/sh03_defconfig b/arch/sh/configs/sh03_defconfig
-> index 2051821..0cf4097 100644
-> --- a/arch/sh/configs/sh03_defconfig
-> +++ b/arch/sh/configs/sh03_defconfig
-> @@ -22,7 +22,7 @@ CONFIG_PREEMPT=y
->  CONFIG_CMDLINE_OVERWRITE=y
->  CONFIG_CMDLINE="console=ttySC1,115200 mem=64M root=/dev/nfs"
->  CONFIG_PCI=y
-> -CONFIG_HOTPLUG_PCI=m
-> +CONFIG_HOTPLUG_PCI=y
->  CONFIG_BINFMT_MISC=y
->  CONFIG_NET=y
->  CONFIG_PACKET=y
-> diff --git a/drivers/pci/hotplug/Kconfig b/drivers/pci/hotplug/Kconfig
-> index bb7ebb2..d85009d 100644
-> --- a/drivers/pci/hotplug/Kconfig
-> +++ b/drivers/pci/hotplug/Kconfig
-> @@ -3,16 +3,13 @@
->  #
->  
->  menuconfig HOTPLUG_PCI
-> -	tristate "Support for PCI Hotplug"
-> +	bool "Support for PCI Hotplug"
->  	depends on PCI && SYSFS
->  	---help---
->  	  Say Y here if you have a motherboard with a PCI Hotplug controller.
->  	  This allows you to add and remove PCI cards while the machine is
->  	  powered up and running.
->  
-> -	  To compile this driver as a module, choose M here: the
-> -	  module will be called pci_hotplug.
+>  arch/mips/include/asm/pci.h    |  5 -----
+>  arch/powerpc/include/asm/pci.h |  5 -----
+>  arch/s390/include/asm/pci.h    |  4 ----
+>  arch/x86/include/asm/pci.h     | 28 --------------------------
+>  arch/x86/kernel/x86_init.c     | 21 ++++++++++++++++++++
+>  drivers/pci/msi.c              | 45 +++++++++++++++++++-----------------------
+>  include/linux/msi.h            |  7 ++++++-
+>  7 files changed, 47 insertions(+), 68 deletions(-)
+>
+> diff --git a/arch/mips/include/asm/pci.h b/arch/mips/include/asm/pci.h
+> index fa8e0aa..f194c08 100644
+> --- a/arch/mips/include/asm/pci.h
+> +++ b/arch/mips/include/asm/pci.h
+> @@ -136,11 +136,6 @@ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+>         return channel ? 15 : 14;
+>  }
+>
+> -#ifdef CONFIG_CPU_CAVIUM_OCTEON
+> -/* MSI arch hook for OCTEON */
+> -#define arch_setup_msi_irqs arch_setup_msi_irqs
+> -#endif
 > -
->  	  When in doubt, say N.
->  
->  if HOTPLUG_PCI
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+>  extern char * (*pcibios_plat_setup)(char *str);
+>
+>  #ifdef CONFIG_OF
+> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+> index 6653f27..95145a1 100644
+> --- a/arch/powerpc/include/asm/pci.h
+> +++ b/arch/powerpc/include/asm/pci.h
+> @@ -113,11 +113,6 @@ extern int pci_domain_nr(struct pci_bus *bus);
+>  /* Decide whether to display the domain number in /proc */
+>  extern int pci_proc_domain(struct pci_bus *bus);
+>
+> -/* MSI arch hooks */
+> -#define arch_setup_msi_irqs arch_setup_msi_irqs
+> -#define arch_teardown_msi_irqs arch_teardown_msi_irqs
+> -#define arch_msi_check_device arch_msi_check_device
+> -
+>  struct vm_area_struct;
+>  /* Map a range of PCI memory or I/O space for a device into user space */
+>  int pci_mmap_page_range(struct pci_dev *pdev, struct vm_area_struct *vma,
+> diff --git a/arch/s390/include/asm/pci.h b/arch/s390/include/asm/pci.h
+> index 6e577ba..262b91b 100644
+> --- a/arch/s390/include/asm/pci.h
+> +++ b/arch/s390/include/asm/pci.h
+> @@ -21,10 +21,6 @@ void pci_iounmap(struct pci_dev *, void __iomem *);
+>  int pci_domain_nr(struct pci_bus *);
+>  int pci_proc_domain(struct pci_bus *);
+>
+> -/* MSI arch hooks */
+> -#define arch_setup_msi_irqs    arch_setup_msi_irqs
+> -#define arch_teardown_msi_irqs arch_teardown_msi_irqs
+> -
+>  #define ZPCI_BUS_NR                    0       /* default bus number */
+>  #define ZPCI_DEVFN                     0       /* default device number */
+>
+> diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+> index d9e9e6c..8c61de0 100644
+> --- a/arch/x86/include/asm/pci.h
+> +++ b/arch/x86/include/asm/pci.h
+> @@ -100,29 +100,6 @@ static inline void early_quirks(void) { }
+>  extern void pci_iommu_alloc(void);
+>
+>  #ifdef CONFIG_PCI_MSI
+> -/* MSI arch specific hooks */
+> -static inline int x86_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+> -{
+> -       return x86_msi.setup_msi_irqs(dev, nvec, type);
+> -}
+> -
+> -static inline void x86_teardown_msi_irqs(struct pci_dev *dev)
+> -{
+> -       x86_msi.teardown_msi_irqs(dev);
+> -}
+> -
+> -static inline void x86_teardown_msi_irq(unsigned int irq)
+> -{
+> -       x86_msi.teardown_msi_irq(irq);
+> -}
+> -static inline void x86_restore_msi_irqs(struct pci_dev *dev, int irq)
+> -{
+> -       x86_msi.restore_msi_irqs(dev, irq);
+> -}
+> -#define arch_setup_msi_irqs x86_setup_msi_irqs
+> -#define arch_teardown_msi_irqs x86_teardown_msi_irqs
+> -#define arch_teardown_msi_irq x86_teardown_msi_irq
+> -#define arch_restore_msi_irqs x86_restore_msi_irqs
+>  /* implemented in arch/x86/kernel/apic/io_apic. */
+>  struct msi_desc;
+>  int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+> @@ -130,11 +107,6 @@ void native_teardown_msi_irq(unsigned int irq);
+>  void native_restore_msi_irqs(struct pci_dev *dev, int irq);
+>  int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+>                   unsigned int irq_base, unsigned int irq_offset);
+> -/* default to the implementation in drivers/lib/msi.c */
+> -#define HAVE_DEFAULT_MSI_TEARDOWN_IRQS
+> -#define HAVE_DEFAULT_MSI_RESTORE_IRQS
+> -void default_teardown_msi_irqs(struct pci_dev *dev);
+> -void default_restore_msi_irqs(struct pci_dev *dev, int irq);
+>  #else
+>  #define native_setup_msi_irqs          NULL
+>  #define native_teardown_msi_irq                NULL
+> diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
+> index 45a14db..a2b189c 100644
+> --- a/arch/x86/kernel/x86_init.c
+> +++ b/arch/x86/kernel/x86_init.c
+> @@ -116,6 +116,27 @@ struct x86_msi_ops x86_msi = {
+>         .setup_hpet_msi         = default_setup_hpet_msi,
+>  };
+>
+> +/* MSI arch specific hooks */
+> +int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+> +{
+> +       return x86_msi.setup_msi_irqs(dev, nvec, type);
+> +}
+> +
+> +void arch_teardown_msi_irqs(struct pci_dev *dev)
+> +{
+> +       x86_msi.teardown_msi_irqs(dev);
+> +}
+> +
+> +void arch_teardown_msi_irq(unsigned int irq)
+> +{
+> +       x86_msi.teardown_msi_irq(irq);
+> +}
+> +
+> +void arch_restore_msi_irqs(struct pci_dev *dev, int irq)
+> +{
+> +       x86_msi.restore_msi_irqs(dev, irq);
+> +}
+> +
+>  struct x86_io_apic_ops x86_io_apic_ops = {
+>         .init                   = native_io_apic_init_mappings,
+>         .read                   = native_io_apic_read,
+> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+> index aca7578..aa2f697 100644
+> --- a/drivers/pci/msi.c
+> +++ b/drivers/pci/msi.c
+> @@ -30,20 +30,21 @@ static int pci_msi_enable = 1;
+>
+>  /* Arch hooks */
+>
+> -#ifndef arch_msi_check_device
+> -int arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
+> +int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+>  {
+> -       return 0;
+> +       return -EINVAL;
+>  }
+> -#endif
+>
+> -#ifndef arch_setup_msi_irqs
+> -# define arch_setup_msi_irqs default_setup_msi_irqs
+> -# define HAVE_DEFAULT_MSI_SETUP_IRQS
+> -#endif
+> +void __weak arch_teardown_msi_irq(unsigned int irq)
+> +{
+> +}
+>
+> -#ifdef HAVE_DEFAULT_MSI_SETUP_IRQS
+> -int default_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+> +int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
+> +{
+> +       return 0;
+> +}
+> +
+> +int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+>  {
+>         struct msi_desc *entry;
+>         int ret;
+> @@ -65,14 +66,11 @@ int default_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+>
+>         return 0;
+>  }
+> -#endif
+>
+> -#ifndef arch_teardown_msi_irqs
+> -# define arch_teardown_msi_irqs default_teardown_msi_irqs
+> -# define HAVE_DEFAULT_MSI_TEARDOWN_IRQS
+> -#endif
+> -
+> -#ifdef HAVE_DEFAULT_MSI_TEARDOWN_IRQS
+> +/*
+> + * We have a default implementation available as a separate non-weak
+> + * function, as it is used by the Xen x86 PCI code
+> + */
+>  void default_teardown_msi_irqs(struct pci_dev *dev)
+>  {
+>         struct msi_desc *entry;
+> @@ -89,15 +87,13 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
+>                         arch_teardown_msi_irq(entry->irq + i);
+>         }
+>  }
+> -#endif
+>
+> -#ifndef arch_restore_msi_irqs
+> -# define arch_restore_msi_irqs default_restore_msi_irqs
+> -# define HAVE_DEFAULT_MSI_RESTORE_IRQS
+> -#endif
+> +void __weak arch_teardown_msi_irqs(struct pci_dev *dev)
+> +{
+> +       return default_teardown_msi_irqs(dev);
+> +}
+>
+> -#ifdef HAVE_DEFAULT_MSI_RESTORE_IRQS
+> -void default_restore_msi_irqs(struct pci_dev *dev, int irq)
+> +void __weak arch_restore_msi_irqs(struct pci_dev *dev, int irq)
+>  {
+>         struct msi_desc *entry;
+>
+> @@ -114,7 +110,6 @@ void default_restore_msi_irqs(struct pci_dev *dev, int irq)
+>         if (entry)
+>                 write_msi_msg(irq, &entry->msg);
+>  }
+> -#endif
+>
+>  static void msi_set_enable(struct pci_dev *dev, int enable)
+>  {
+> diff --git a/include/linux/msi.h b/include/linux/msi.h
+> index ee66f3a..18870b0 100644
+> --- a/include/linux/msi.h
+> +++ b/include/linux/msi.h
+> @@ -51,12 +51,17 @@ struct msi_desc {
+>  };
+>
+>  /*
+> - * The arch hook for setup up msi irqs
+> + * The arch hooks to setup up msi irqs. Those functions are
+> + * implemented as weak symbols so that they /can/ be overriden by
+> + * architecture specific code if needed.
+>   */
+>  int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
+>  void arch_teardown_msi_irq(unsigned int irq);
+>  int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+>  void arch_teardown_msi_irqs(struct pci_dev *dev);
+>  int arch_msi_check_device(struct pci_dev* dev, int nvec, int type);
+> +void arch_restore_msi_irqs(struct pci_dev *dev, int irq);
+> +
+> +void default_teardown_msi_irqs(struct pci_dev *dev);
+>
+>  #endif /* LINUX_MSI_H */
+> --
+> 1.8.1.2
+>
