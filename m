@@ -1,27 +1,27 @@
 Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E5DEC2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 12:42:54 +1000 (EST)
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 85A1B2C00F1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 13:06:20 +1000 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 26 Jul 2013 12:35:57 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id D92083578055
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 12:42:09 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6Q2QRBr30343196
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 12:26:43 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r6Q2fqgE019900
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 12:41:53 +1000
-Message-ID: <51F1E15B.3050106@linux.vnet.ibm.com>
-Date: Fri, 26 Jul 2013 08:09:23 +0530
+ Fri, 26 Jul 2013 08:28:01 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 678A6E0055
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 08:36:06 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6Q35wQF32243842
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 08:35:58 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6Q3603S031544
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 13:06:01 +1000
+Message-ID: <51F1E70C.1020408@linux.vnet.ibm.com>
+Date: Fri, 26 Jul 2013 08:33:40 +0530
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Frederic Weisbecker <fweisbec@gmail.com>
@@ -75,48 +75,13 @@ On 07/25/2013 07:00 PM, Frederic Weisbecker wrote:
 > I read in the previous patch that's because in dynticks idle mode the broadcast
 > CPU deactivates its lapic so it doesn't receive the IPI. But may be I misunderstood.
 > Anyway that's not good for powersaving.
-
-Let me elaborate. The CPUs in deep idle states have their lapics
-deactivated. This means the next timer event which would typically have
-been taken care of by a lapic firing at the appropriate moment does not
-get taken care of in deep idle states, due to the lapic being switched off.
-
-Hence such CPUs offload their next timer event to the broadcast CPU,
-which should *not* enter deep idle states. The broadcast CPU has the
-responsibility of waking the CPUs in deep idle states.
-
-*The lapic of a broadcast CPU is active always*. Say CPUX, wants the
-broadcast CPU to wake it up at timeX.  Since we cannot program the lapic
-of a remote CPU, CPUX will need to send an IPI to the broadcast CPU,
-asking it to program its lapic to fire at timeX so as to wake up CPUX.
-*With multiple CPUs the overhead of sending IPI, could result in
-performance bottlenecks and may not scale well.*
-
-Hence the workaround is that the broadcast CPU on each of its timer
-interrupt checks if any of the next timer event of a CPU in deep idle
-state has expired, which can very well be found from dev->next_event of
-that CPU. For example the timeX that has been mentioned above has
-expired. If so the broadcast handler is called to send an IPI to the
-idling CPU to wake it up.
-
-*If the broadcast CPU, is in tickless idle, its timer interrupt could be
-many ticks away. It could miss waking up a CPU in deep idle*, if its
-wakeup is much before this timer interrupt of the broadcast CPU. But
-without tickless idle, atleast at each period we are assured of a timer
-interrupt. At which time broadcast handling is done as stated in the
-previous paragraph and we will not miss wakeup of CPUs in deep idle states.
-
-Yeah it is true that not allowing the broadcast CPU to enter tickless
-idle is bad for power savings, but for the use case that we are aiming
-at in this patch series, the current approach seems to be the best, with
-minimal trade-offs in performance, power savings, scalability and no
-change in the broadcast framework that exists today in the kernel.
-
 > 
 > Also when an arch wants to prevent a CPU from entering dynticks idle mode, it typically
 > use arch_needs_cpu(). May be that could fit for you as well?
 
-Oh ok thanks :) I will look into this and get back on if we can use it.
+Yes this will suit our requirement perfectly. I will note down this
+change for the next version of this patchset. Thank you very much for
+pointing this out :)
 
 Regards
 Preeti U Murthy
