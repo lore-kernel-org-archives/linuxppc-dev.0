@@ -1,26 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A2A852C00F1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2013 08:03:18 +1000 (EST)
-Date: Fri, 26 Jul 2013 17:03:01 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v6 2/3] DMA: Freescale: Add new 8-channel DMA engine
- device tree nodes
-To: <hongbo.zhang@freescale.com>
-References: <1374834436-7149-1-git-send-email-hongbo.zhang@freescale.com>
- <1374834436-7149-3-git-send-email-hongbo.zhang@freescale.com>
-In-Reply-To: <1374834436-7149-3-git-send-email-hongbo.zhang@freescale.com>
- (from hongbo.zhang@freescale.com on Fri Jul 26 05:27:15 2013)
-Message-ID: <1374876181.30721.28@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: devicetree@vger.kernel.org, vinod.koul@intel.com,
- linux-kernel@vger.kernel.org, Hongbo Zhang <hongbo.zhang@freescale.com>,
- djbw@fb.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 33B482C00F3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2013 08:26:50 +1000 (EST)
+Message-ID: <1374877600.9200.28.camel@pasglop>
+Subject: Re: [PATCH 4/4] kvm: powerpc: set cache coherency only for RAM pages
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Date: Sat, 27 Jul 2013 08:26:40 +1000
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D070E5761@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1374817613-20169-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1374817613-20169-4-git-send-email-Bharat.Bhushan@freescale.com>
+ <1374827190.6142.124.camel@pasglop>
+ <6CF0D65E-76B6-4CDD-BADC-44DCCC8CAFF6@suse.de>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D070E5761@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Alexander Graf <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,48 +31,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/26/2013 05:27:15 AM, hongbo.zhang@freescale.com wrote:
-> From: Hongbo Zhang <hongbo.zhang@freescale.com>
->=20
-> Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this =20
-> patch adds
-> the device tree nodes for them.
->=20
-> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
-> ---
->  .../devicetree/bindings/powerpc/fsl/dma.txt        |   66 =20
-> ++++++++++++++++
->  arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
->  arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   81 =20
-> ++++++++++++++++++++
->  arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   81 =20
-> ++++++++++++++++++++
->  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
->  5 files changed, 232 insertions(+), 4 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
->  create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
->=20
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt =20
-> b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
-> index ed703d9..c9f81b9 100644
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
-> @@ -130,6 +130,72 @@ Example:
->  		};
->  	};
->=20
-> +** Freescale Elo3 DMA Controller
-> +   This is EloPlus controller with 8 channels, used in Freescale =20
-> Txxx and Bxxx
-> +   series chips, such as t1040, t4240, b4860.
-> +
-> +Required properties:
-> +
-> +- compatible        : must include "fsl,elo3-dma"
+On Fri, 2013-07-26 at 15:03 +0000, Bhushan Bharat-R65777 wrote:
+> Will not searching the Linux PTE is a overkill?
 
-OK, you fixed it here, but you still have the "fsl,CHIP-dma" language =20
-in the rest of the document.  There is no difference between elo3 and =20
-previous chips regarding fsl,CHIP-dma as far as the binding is =20
-concerned.
+That's the best approach. Also we are searching it already to resolve
+the page fault. That does mean we search twice but on the other hand
+that also means it's hot in the cache.
 
--Scott=
+Cheers,
+Ben
