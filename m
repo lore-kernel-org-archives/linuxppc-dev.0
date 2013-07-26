@@ -1,43 +1,21 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B93C92C00FD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:33:09 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 26 Jul 2013 15:15:08 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8B0093578056
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:22:57 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6Q57Jfh21495904
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:07:22 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6Q5Mqu9006057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:22:53 +1000
-Subject: [Resend RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are
- no arch-specific constraints
-To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org,
- shangw@linux.vnet.ibm.com, galak@kernel.crashing.org,
- fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au,
- arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org,
- rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de,
- chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com,
- geoff@infradead.org, linux-kernel@vger.kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com,
- svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Fri, 26 Jul 2013 10:49:32 +0530
-Message-ID: <20130726051858.17167.72800.stgit@preeti>
-In-Reply-To: <20130726050915.17167.16298.stgit@preeti>
-References: <20130726050915.17167.16298.stgit@preeti>
+Return-Path: <R65777@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 491062C00E6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:52:40 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <agraf@suse.de>, <benh@kernel.crashing.org>,
+ <scottwood@freescale.com>
+Subject: [PATCH 1/4] powerpc: book3e: _PAGE_LENDIAN must be _PAGE_ENDIAN
+Date: Fri, 26 Jul 2013 11:16:50 +0530
+Message-ID: <1374817613-20169-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,65 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the current design of timer offload framework, the broadcast cpu should
-*not* go into tickless idle so as to avoid missed wakeups on CPUs in deep idle states.
+For booke3e _PAGE_ENDIAN is not defined. Infact what is defined
+is "_PAGE_LENDIAN" which is wrong and that should be _PAGE_ENDIAN.
+There are no compilation errors as
+arch/powerpc/include/asm/pte-common.h defines _PAGE_ENDIAN to 0
+as it is not defined anywhere.
 
-Since we prevent the CPUs entering deep idle states from programming the
-decrementer of the broadcast cpu for their respective next local events for
-reasons mentioned in PATCH[3/5], the broadcast CPU checks if there are any
-CPUs to be woken up during each of its timer interrupt, which is programmed
-to its local events.
-
-With tickless idle, the broadcast CPU might not have a timer interrupt
-pending till after many ticks, which can result in missed wakeups on CPUs
-in deep idle states. By disabling tickless idle, worst case, the tick_sched
-hrtimer will trigger a timer interrupt every period.
-
-However the current setup of tickless idle does not let us make the choice
-of tickless on individual cpus. NOHZ_MODE_INACTIVE which disables tickless idle,
-is a system wide setting. Hence resort to an arch specific call to check if a cpu
-can go into tickless idle.
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
+ arch/powerpc/include/asm/pte-book3e.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- arch/powerpc/kernel/time.c |    5 +++++
- kernel/time/tick-sched.c   |    7 +++++++
- 2 files changed, 12 insertions(+)
-
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 7e858e1..916c32f 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -864,6 +864,11 @@ static void decrementer_timer_broadcast(const struct cpumask *mask)
- 	arch_send_tick_broadcast(mask);
- }
- 
-+int arch_can_stop_idle_tick(int cpu)
-+{
-+	return cpu != bc_cpu;
-+}
-+
- static void register_decrementer_clockevent(int cpu)
- {
- 	struct clock_event_device *dec = &per_cpu(decrementers, cpu);
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 6960172..e9ffa84 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -700,8 +700,15 @@ static void tick_nohz_full_stop_tick(struct tick_sched *ts)
- #endif
- }
- 
-+int __weak arch_can_stop_idle_tick(int cpu)
-+{
-+	return 1;
-+}
-+
- static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
- {
-+	if (!arch_can_stop_idle_tick(cpu))
-+		return false;
- 	/*
- 	 * If this cpu is offline and it is the one which updates
- 	 * jiffies, then give up the assignment and let it be taken by
+diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/include/asm/pte-book3e.h
+index 0156702..576ad88 100644
+--- a/arch/powerpc/include/asm/pte-book3e.h
++++ b/arch/powerpc/include/asm/pte-book3e.h
+@@ -40,7 +40,7 @@
+ #define _PAGE_U1	0x010000
+ #define _PAGE_U0	0x020000
+ #define _PAGE_ACCESSED	0x040000
+-#define _PAGE_LENDIAN	0x080000
++#define _PAGE_ENDIAN	0x080000
+ #define _PAGE_GUARDED	0x100000
+ #define _PAGE_COHERENT	0x200000 /* M: enforce memory coherence */
+ #define _PAGE_NO_CACHE	0x400000 /* I: cache inhibit */
+-- 
+1.7.0.4
