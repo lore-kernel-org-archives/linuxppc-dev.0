@@ -1,25 +1,26 @@
 Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 50E0E2C0099
- for <linuxppc-dev@ozlabs.org>; Sat, 27 Jul 2013 07:59:27 +1000 (EST)
-Date: Fri, 26 Jul 2013 16:59:16 -0500
+ by ozlabs.org (Postfix) with ESMTPS id A2A852C00F1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2013 08:03:18 +1000 (EST)
+Date: Fri, 26 Jul 2013 17:03:01 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 3/3] powerpc/85xx: Add C293PCIE board support
-To: Po Liu <Po.Liu@freescale.com>
-References: <1366854857-22791-4-git-send-email-Po.Liu@freescale.com>
- <1374806479-812-1-git-send-email-Po.Liu@freescale.com>
- <1374806479-812-3-git-send-email-Po.Liu@freescale.com>
-In-Reply-To: <1374806479-812-3-git-send-email-Po.Liu@freescale.com> (from
- Po.Liu@freescale.com on Thu Jul 25 21:41:19 2013)
-Message-ID: <1374875956.30721.27@snotra>
+Subject: Re: [PATCH v6 2/3] DMA: Freescale: Add new 8-channel DMA engine
+ device tree nodes
+To: <hongbo.zhang@freescale.com>
+References: <1374834436-7149-1-git-send-email-hongbo.zhang@freescale.com>
+ <1374834436-7149-3-git-send-email-hongbo.zhang@freescale.com>
+In-Reply-To: <1374834436-7149-3-git-send-email-hongbo.zhang@freescale.com>
+ (from hongbo.zhang@freescale.com on Fri Jul 26 05:27:15 2013)
+Message-ID: <1374876181.30721.28@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@ozlabs.org, Mingkai Hu <Mingkai.Hu@freescale.com>,
- afleming@freescale.com, Po Liu <Po.Liu@freescale.com>
+Cc: devicetree@vger.kernel.org, vinod.koul@intel.com,
+ linux-kernel@vger.kernel.org, Hongbo Zhang <hongbo.zhang@freescale.com>,
+ djbw@fb.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,50 +30,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/25/2013 09:41:19 PM, Po Liu wrote:
-> +		partition@1900000 {
-> +			/* 7MB for User Area */
-> +			reg =3D <0x01900000 0x00700000>;
-> +			label =3D "NAND User area";
-> +		};
+On 07/26/2013 05:27:15 AM, hongbo.zhang@freescale.com wrote:
+> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+>=20
+> Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this =20
+> patch adds
+> the device tree nodes for them.
+>=20
+> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+> ---
+>  .../devicetree/bindings/powerpc/fsl/dma.txt        |   66 =20
+> ++++++++++++++++
+>  arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
+>  arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   81 =20
+> ++++++++++++++++++++
+>  arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   81 =20
+> ++++++++++++++++++++
+>  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
+>  5 files changed, 232 insertions(+), 4 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+>  create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+>=20
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt =20
+> b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+> index ed703d9..c9f81b9 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+> @@ -130,6 +130,72 @@ Example:
+>  		};
+>  	};
+>=20
+> +** Freescale Elo3 DMA Controller
+> +   This is EloPlus controller with 8 channels, used in Freescale =20
+> Txxx and Bxxx
+> +   series chips, such as t1040, t4240, b4860.
 > +
-> +		partition@2000000 {
-> +			/* 96MB for Root File System */
-> +			reg =3D <0x02000000 0x06000000>;
-> +			label =3D "NAND Root File System";
-> +		};
+> +Required properties:
 > +
-> +		partition@8000000 {
-> +			/* 3968MB for Others */
-> +			reg =3D <0x08000000 0xF8000000>;
-> +			label =3D "NAND Others";
-> +		};
+> +- compatible        : must include "fsl,elo3-dma"
 
-Again, what is the difference between "user area" and "others"?  I'm =20
-not even sure why it needs to be separate from "root file system", but =20
-at least the root filesystem should be larger given the size of the =20
-overall flash.
-
-Also please use lowercase for hex.
-
-> +	};
-> +
-> +	cpld@2,0 {
-> +		#address-cells =3D <1>;
-> +		#size-cells =3D <1>;
-> +		compatible =3D "fsl,c293pcie-cpld";
-> +		reg =3D <0x2 0x0 0x20>;
-> +	};
-
-Remove #address-cells/#size-cells
-
-> +			partition@580000 {
-> +				/* 10.5MB for Compressed RFS Image */
-> +				reg =3D <0x00580000 0x00a80000>;
-> +				label =3D "SPI Flash Compressed RFSImage";
-> +			};
-
-Space before "Image".  Why specifiy that it's compressed, versus some =20
-other filesystem type?
+OK, you fixed it here, but you still have the "fsl,CHIP-dma" language =20
+in the rest of the document.  There is no difference between elo3 and =20
+previous chips regarding fsl,CHIP-dma as far as the binding is =20
+concerned.
 
 -Scott=
