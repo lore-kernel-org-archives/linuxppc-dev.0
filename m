@@ -1,24 +1,22 @@
-Return-Path: <anton@scarybugs.org>
-Received: from mail-pa0-f54.google.com (mail-pa0-f54.google.com
- [209.85.220.54])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3C47D2C00EF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2013 05:23:45 +1000 (EST)
-Received: by mail-pa0-f54.google.com with SMTP id kx1so3320475pab.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 12:23:43 -0700 (PDT)
-Sender: Anton Vorontsov <anton@scarybugs.org>
-Date: Fri, 26 Jul 2013 12:18:59 -0700
-From: Anton Vorontsov <anton@enomsg.org>
-To: Haijun Zhang <Haijun.Zhang@freescale.com>
-Subject: Re: [PATCH 2/2 V2] mmc: esdhc: get voltage from dts file
-Message-ID: <20130726191858.GB14216@lizard>
-References: <1374712691-12807-1-git-send-email-Haijun.Zhang@freescale.com>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D9BEA2C00EC
+ for <linuxppc-dev@ozlabs.org>; Sat, 27 Jul 2013 07:55:41 +1000 (EST)
+Date: Fri, 26 Jul 2013 16:55:23 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2 1/3] powerpc/85xx: Add SEC6.0 device tree
+To: Po Liu <Po.Liu@freescale.com>
+In-Reply-To: <1374806479-812-1-git-send-email-Po.Liu@freescale.com> (from
+ Po.Liu@freescale.com on Thu Jul 25 21:41:17 2013)
+Message-ID: <1374875723.30721.26@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1374712691-12807-1-git-send-email-Haijun.Zhang@freescale.com>
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org, cjb@laptop.org,
- linux-mmc@vger.kernel.org, AFLEMING@freescale.com
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@ozlabs.org, Mingkai Hu <Mingkai.Hu@freescale.com>,
+ afleming@freescale.com, Po Liu <Po.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +26,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 25, 2013 at 08:38:11AM +0800, Haijun Zhang wrote:
-> Add voltage-range support in esdhc of T4, So we can choose
-> to read voltages from dts file as one optional.
-> If we can get a valid voltage-range from device node, we use
-> this voltage as the final voltage support. Else we still read
-> from capacity or from other provider.
-> 
-> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
-> Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
+On 07/25/2013 09:41:17 PM, Po Liu wrote:
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +Job Ring (JR) Node
+> +
+> +    Child of the crypto node defines data processing interface to =20
+> SEC 6
+> +    across the peripheral bus for purposes of processing
+> +    cryptographic descriptors. The specified address
+> +    range can be made visible to one (or more) cores.
+> +    The interrupt defined for this node is controlled within
+> +    the address range of this node.
+> +
+> +  - compatible
+> +      Usage: required
+> +      Value type: <string>
+> +      Definition: Must include "fsl,sec-v6.0-job-ring", if it is
+> +      back compatible with old version, better add them all.
 
-Development process nitpick...
+Please don't use colloquialisms such as "[you'd] better do this" in a =20
+formal specification.
 
-The code originated from me, but I did not sign off this patch...
+Just say 'Must include "fsl,sec-v6.0-job-ring"' and leave it at that, =20
+like the other bindings do.
 
-Per Documentation/SubmittingPatches:
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +Full Example
+> +
+> +Since some chips may embeded with more than one SEC 6, we abstract
+> +all the same properties into one file qoriq-sec6.0-0.dtsi. Each chip
+> +want to binding the node could simply include it in its own device
+> +node tree. Below is full example in C293PCIE:
 
-  The Signed-off-by: tag indicates that the signer was involved in the
-  development of the patch, or that he/she was in the patch's delivery path.
+Replace this with:
 
-The order of the sign-off lines also has a meaning. Putting my sign off
-below yours means that I was not only involved in the development of the
-patch but also somehow approved the patch (but I did not :).
+Since some chips may contain more than one SEC, the dtsi contains only =20
+the node contents, not the node itself.  A chip using the SEC should =20
+include the dtsi inside each SEC node.  Example:
 
-[..]
-> +void sdhci_get_voltage(struct platform_device *pdev)
+> +In qoriq-sec6.0-0.dtsi:
+> +
+> +	compatible =3D "fsl,sec-v6.0";
+> +	fsl,sec-era =3D <6>;
+> +	#address-cells =3D <1>;
+> +	#size-cells =3D <1>;
+> +
+> +	jr@1000 {
+> +		compatible =3D "fsl,sec-v6.0-job-ring",
+> +			     "fsl,sec-v5.2-job-ring",
+> +			     "fsl,sec-v5.0-job-ring",
+> +			     "fsl,sec-v4.4-job-ring",
+> +			     "fsl,sec-v4.0-job-ring";
+> +		reg	   =3D <0x1000 0x1000>;
+> +	};
+> +
+> +	jr@2000 {
+> +		compatible =3D "fsl,sec-v6.0-job-ring",
+> +			     "fsl,sec-v5.2-job-ring",
+> +			     "fsl,sec-v5.0-job-ring",
+> +			     "fsl,sec-v4.4-job-ring",
+> +			     "fsl,sec-v4.0-job-ring";
+> +		reg	   =3D <0x2000 0x1000>;
+> +	};
+> +
+> +In the C293 device tree, we add the include of public property:
+> +
+> +crypto@a0000 {
+> +/include/ "qoriq-sec6.0-0.dtsi"
+> +	};
 
-You still duplicate the code... Per my previous email, this should
-probably go into mmc/core (with the function renamed to something more
-generic, of course.)
+Whitespace
 
-Thanks,
+> +
+> +	crypto@a0000 {
+> +		reg =3D <0xa0000 0x20000>;
+> +		ranges =3D <0x0 0xa0000 0x20000>;
+> +
+> +		jr@1000{
+> +			interrupts =3D <49 2 0 0>;
+> +		};
+> +		jr@2000{
+> +			interrupts =3D <50 2 0 0>;
+> +		};
+> +	};
 
-Anton
+You could combine the above like this:
+
+	crypto@a0000 {
+		reg =3D <0xa0000 0x20000>;
+		ranges =3D <0 0xa0000 0x20000>;
+
+		/include/ "qoriq-sec6.0-0.dtsi"
+
+		jr@1000 {
+			interrupts =3D <49 2 0 0>;
+		};
+
+		jr@2000 {
+			interrupts =3D <50 2 0 0>;
+		};
+	};
+
+Why is it "qoriq-sec6.0-0.dtsi" and not "qoriq-sec6.0-dtsi"?
+
+-Scott=
