@@ -1,18 +1,18 @@
 Return-Path: <R65777@freescale.com>
 Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+ (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1AF912C00E6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:52:40 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 5BE862C0205
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:53:04 +1000 (EST)
 From: Bharat Bhushan <r65777@freescale.com>
 To: <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <agraf@suse.de>, <benh@kernel.crashing.org>,
  <scottwood@freescale.com>
-Subject: [PATCH 2/4] kvm: powerpc: allow guest control "E" attribute in mas2
-Date: Fri, 26 Jul 2013 11:16:51 +0530
-Message-ID: <1374817613-20169-2-git-send-email-Bharat.Bhushan@freescale.com>
+Subject: [PATCH 3/4] kvm: powerpc: allow guest control "G" attribute in mas2
+Date: Fri, 26 Jul 2013 11:16:52 +0530
+Message-ID: <1374817613-20169-3-git-send-email-Bharat.Bhushan@freescale.com>
 In-Reply-To: <1374817613-20169-1-git-send-email-Bharat.Bhushan@freescale.com>
 References: <1374817613-20169-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
@@ -27,9 +27,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"E" bit in MAS2 bit indicates whether the page is accessed
-in Little-Endian or Big-Endian byte order.
-There is no reason to stop guest setting  "E", so allow him."
+"G" bit in MAS2 indicates whether the page is Guarded.
+There is no reason to stop guest setting  "G", so allow him.
 
 Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
@@ -37,15 +36,15 @@ Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index c2e5e98..277cb18 100644
+index 277cb18..4fd9650 100644
 --- a/arch/powerpc/kvm/e500.h
 +++ b/arch/powerpc/kvm/e500.h
 @@ -117,7 +117,7 @@ static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
  #define E500_TLB_USER_PERM_MASK (MAS3_UX|MAS3_UR|MAS3_UW)
  #define E500_TLB_SUPER_PERM_MASK (MAS3_SX|MAS3_SR|MAS3_SW)
  #define MAS2_ATTRIB_MASK \
--	  (MAS2_X0 | MAS2_X1)
-+	  (MAS2_X0 | MAS2_X1 | MAS2_E)
+-	  (MAS2_X0 | MAS2_X1 | MAS2_E)
++	  (MAS2_X0 | MAS2_X1 | MAS2_E | MAS2_G)
  #define MAS3_ATTRIB_MASK \
  	  (MAS3_U0 | MAS3_U1 | MAS3_U2 | MAS3_U3 \
  	   | E500_TLB_USER_PERM_MASK | E500_TLB_SUPER_PERM_MASK)
