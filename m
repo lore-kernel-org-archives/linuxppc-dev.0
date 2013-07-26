@@ -1,43 +1,30 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3AED32C00FF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:28:56 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 26 Jul 2013 15:10:44 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2CEE42CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:18:18 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6Q5I7FH5046766
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:18:07 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6Q5IEqG001242
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:18:16 +1000
-Subject: [Resend RFC PATCH 1/5] powerpc: Free up the IPI message slot of ipi
- call function (PPC_MSG_CALL_FUNC)
-To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org,
- shangw@linux.vnet.ibm.com, galak@kernel.crashing.org,
- fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au,
- arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org,
- rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de,
- chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com,
- geoff@infradead.org, linux-kernel@vger.kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com,
- svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Fri, 26 Jul 2013 10:45:12 +0530
-Message-ID: <20130726051453.17167.4477.stgit@preeti>
-In-Reply-To: <20130726050915.17167.16298.stgit@preeti>
-References: <20130726050915.17167.16298.stgit@preeti>
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-we0-x232.google.com (mail-we0-x232.google.com
+ [IPv6:2a00:1450:400c:c03::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B3E8B2C00FF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:31:09 +1000 (EST)
+Received: by mail-we0-f178.google.com with SMTP id u57so1454854wes.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jul 2013 22:31:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20130717090310.GI7080@book.gsilab.sittig.org>
+References: <1373451678-20065-1-git-send-email-a13xp0p0v88@gmail.com>
+ <20130710134624.GC2615@book.gsilab.sittig.org>
+ <CAF0T0X5MDGkBDrVBpKr2OTW4rqxg+nizFs9AdwbL0kAfoR3xcw@mail.gmail.com>
+ <20130717090310.GI7080@book.gsilab.sittig.org>
+Date: Fri, 26 Jul 2013 09:31:03 +0400
+Message-ID: <CAF0T0X52yk6xs673mNML1coFH1VJ_Y3Y6apBgZbohxMKwLpnzg@mail.gmail.com>
+Subject: Re: [V2 2/2] powerpc/512x: add LocalPlus Bus FIFO device driver
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Alexander Popov <a13xp0p0v88@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Anatolij Gustschin <agust@denx.de>, Grant Likely <grant.likely@linaro.org>,
+ Rob Herring <rob.herring@calxeda.com>, Chris Ball <cjb@laptop.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Timur Tabi <timur@tabi.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,114 +34,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Thanks, Gerhard.
 
-The IPI handlers for both PPC_MSG_CALL_FUNC and PPC_MSG_CALL_FUNC_SINGLE
-map to a common implementation - generic_smp_call_function_single_interrupt().
-So, we can consolidate them and save one of the IPI message slots, (which are
-precious, since only 4 of those slots are available).
+I'll improve the code and return with the third version.
 
-So, implement the functionality of PPC_MSG_CALL_FUNC using
-PPC_MSG_CALL_FUNC_SINGLE itself and release its IPI message slot, so that it
-can be used for something else in the future, if desired.
-
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
-
- arch/powerpc/include/asm/smp.h          |    2 +-
- arch/powerpc/kernel/smp.c               |   12 +++++-------
- arch/powerpc/platforms/cell/interrupt.c |    2 +-
- arch/powerpc/platforms/ps3/smp.c        |    2 +-
- 4 files changed, 8 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index ffbaabe..51bf017 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -117,7 +117,7 @@ extern int cpu_to_core_id(int cpu);
-  *
-  * Make sure this matches openpic_request_IPIs in open_pic.c, or what shows up
-  * in /proc/interrupts will be wrong!!! --Troy */
--#define PPC_MSG_CALL_FUNCTION   0
-+#define PPC_MSG_UNUSED		0
- #define PPC_MSG_RESCHEDULE      1
- #define PPC_MSG_CALL_FUNC_SINGLE	2
- #define PPC_MSG_DEBUGGER_BREAK  3
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 38b0ba6..bc41e9f 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -111,9 +111,9 @@ int smp_generic_kick_cpu(int nr)
- }
- #endif /* CONFIG_PPC64 */
- 
--static irqreturn_t call_function_action(int irq, void *data)
-+static irqreturn_t unused_action(int irq, void *data)
- {
--	generic_smp_call_function_interrupt();
-+	/* This slot is unused and hence available for use, if needed */
- 	return IRQ_HANDLED;
- }
- 
-@@ -144,14 +144,14 @@ static irqreturn_t debug_ipi_action(int irq, void *data)
- }
- 
- static irq_handler_t smp_ipi_action[] = {
--	[PPC_MSG_CALL_FUNCTION] =  call_function_action,
-+	[PPC_MSG_UNUSED] =  unused_action, /* Slot available for future use */
- 	[PPC_MSG_RESCHEDULE] = reschedule_action,
- 	[PPC_MSG_CALL_FUNC_SINGLE] = call_function_single_action,
- 	[PPC_MSG_DEBUGGER_BREAK] = debug_ipi_action,
- };
- 
- const char *smp_ipi_name[] = {
--	[PPC_MSG_CALL_FUNCTION] =  "ipi call function",
-+	[PPC_MSG_UNUSED] =  "ipi unused",
- 	[PPC_MSG_RESCHEDULE] = "ipi reschedule",
- 	[PPC_MSG_CALL_FUNC_SINGLE] = "ipi call function single",
- 	[PPC_MSG_DEBUGGER_BREAK] = "ipi debugger",
-@@ -221,8 +221,6 @@ irqreturn_t smp_ipi_demux(void)
- 		all = xchg(&info->messages, 0);
- 
- #ifdef __BIG_ENDIAN
--		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNCTION)))
--			generic_smp_call_function_interrupt();
- 		if (all & (1 << (24 - 8 * PPC_MSG_RESCHEDULE)))
- 			scheduler_ipi();
- 		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNC_SINGLE)))
-@@ -265,7 +263,7 @@ void arch_send_call_function_ipi_mask(const struct cpumask *mask)
- 	unsigned int cpu;
- 
- 	for_each_cpu(cpu, mask)
--		do_message_pass(cpu, PPC_MSG_CALL_FUNCTION);
-+		do_message_pass(cpu, PPC_MSG_CALL_FUNC_SINGLE);
- }
- 
- #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
-diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index 2d42f3b..28166e4 100644
---- a/arch/powerpc/platforms/cell/interrupt.c
-+++ b/arch/powerpc/platforms/cell/interrupt.c
-@@ -213,7 +213,7 @@ static void iic_request_ipi(int msg)
- 
- void iic_request_IPIs(void)
- {
--	iic_request_ipi(PPC_MSG_CALL_FUNCTION);
-+	iic_request_ipi(PPC_MSG_UNUSED);
- 	iic_request_ipi(PPC_MSG_RESCHEDULE);
- 	iic_request_ipi(PPC_MSG_CALL_FUNC_SINGLE);
- 	iic_request_ipi(PPC_MSG_DEBUGGER_BREAK);
-diff --git a/arch/powerpc/platforms/ps3/smp.c b/arch/powerpc/platforms/ps3/smp.c
-index 4b35166..488f069 100644
---- a/arch/powerpc/platforms/ps3/smp.c
-+++ b/arch/powerpc/platforms/ps3/smp.c
-@@ -74,7 +74,7 @@ static int __init ps3_smp_probe(void)
- 		* to index needs to be setup.
- 		*/
- 
--		BUILD_BUG_ON(PPC_MSG_CALL_FUNCTION    != 0);
-+		BUILD_BUG_ON(PPC_MSG_UNUSED	      != 0);
- 		BUILD_BUG_ON(PPC_MSG_RESCHEDULE       != 1);
- 		BUILD_BUG_ON(PPC_MSG_CALL_FUNC_SINGLE != 2);
- 		BUILD_BUG_ON(PPC_MSG_DEBUGGER_BREAK   != 3);
+Best regards,
+Alexander.
