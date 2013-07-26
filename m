@@ -1,27 +1,27 @@
 Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D768E2C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:24:58 +1000 (EST)
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3AED32C00FF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:28:56 +1000 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 26 Jul 2013 15:14:19 +1000
+ Fri, 26 Jul 2013 15:10:44 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 74BA33578055
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:24:39 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2CEE42CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:18:18 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r6Q5OQvq459040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:24:29 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r6Q5OWmV008847
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:24:35 +1000
-Subject: [Resend RFC PATCH 5/5] cpuidle/ppc: Add longnap state to the idle
- states on powernv
+ r6Q5I7FH5046766
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:18:07 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6Q5IEqG001242
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 15:18:16 +1000
+Subject: [Resend RFC PATCH 1/5] powerpc: Free up the IPI message slot of ipi
+ call function (PPC_MSG_CALL_FUNC)
 To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org,
  shangw@linux.vnet.ibm.com, galak@kernel.crashing.org,
  fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au,
@@ -32,8 +32,8 @@ To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org,
  srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com,
  svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Fri, 26 Jul 2013 10:51:14 +0530
-Message-ID: <20130726052040.17167.21530.stgit@preeti>
+Date: Fri, 26 Jul 2013 10:45:12 +0530
+Message-ID: <20130726051453.17167.4477.stgit@preeti>
 In-Reply-To: <20130726050915.17167.16298.stgit@preeti>
 References: <20130726050915.17167.16298.stgit@preeti>
 MIME-Version: 1.0
@@ -47,101 +47,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch hooks into the existing broadcast framework with the support that this
-patchset introduces for ppc, and the cpuidle driver backend
-for powernv(posted out recently by Deepthi Dharwar) to add sleep state as
-one of the deep idle states, in which the decrementer is switched off.
+From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
-However in this patch, we only emulate sleep by going into a state which does
-a nap with the decrementer interrupts disabled, termed as longnap. This enables
-focus on the timer broadcast framework for ppc in this series of patches ,
-which is required as a first step to enable sleep on ppc.
+The IPI handlers for both PPC_MSG_CALL_FUNC and PPC_MSG_CALL_FUNC_SINGLE
+map to a common implementation - generic_smp_call_function_single_interrupt().
+So, we can consolidate them and save one of the IPI message slots, (which are
+precious, since only 4 of those slots are available).
 
+So, implement the functionality of PPC_MSG_CALL_FUNC using
+PPC_MSG_CALL_FUNC_SINGLE itself and release its IPI message slot, so that it
+can be used for something else in the future, if desired.
+
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/platforms/powernv/processor_idle.c |   48 +++++++++++++++++++++++
- 1 file changed, 47 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/smp.h          |    2 +-
+ arch/powerpc/kernel/smp.c               |   12 +++++-------
+ arch/powerpc/platforms/cell/interrupt.c |    2 +-
+ arch/powerpc/platforms/ps3/smp.c        |    2 +-
+ 4 files changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/processor_idle.c b/arch/powerpc/platforms/powernv/processor_idle.c
-index f43ad91a..9aca502 100644
---- a/arch/powerpc/platforms/powernv/processor_idle.c
-+++ b/arch/powerpc/platforms/powernv/processor_idle.c
-@@ -9,16 +9,18 @@
- #include <linux/cpuidle.h>
- #include <linux/cpu.h>
- #include <linux/notifier.h>
-+#include <linux/clockchips.h>
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index ffbaabe..51bf017 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -117,7 +117,7 @@ extern int cpu_to_core_id(int cpu);
+  *
+  * Make sure this matches openpic_request_IPIs in open_pic.c, or what shows up
+  * in /proc/interrupts will be wrong!!! --Troy */
+-#define PPC_MSG_CALL_FUNCTION   0
++#define PPC_MSG_UNUSED		0
+ #define PPC_MSG_RESCHEDULE      1
+ #define PPC_MSG_CALL_FUNC_SINGLE	2
+ #define PPC_MSG_DEBUGGER_BREAK  3
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 38b0ba6..bc41e9f 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -111,9 +111,9 @@ int smp_generic_kick_cpu(int nr)
+ }
+ #endif /* CONFIG_PPC64 */
  
- #include <asm/machdep.h>
- #include <asm/runlatch.h>
-+#include <asm/time.h>
- 
- struct cpuidle_driver powernv_idle_driver = {
- 	.name =		"powernv_idle",
- 	.owner =	THIS_MODULE,
- };
- 
--#define MAX_IDLE_STATE_COUNT	2
-+#define MAX_IDLE_STATE_COUNT	3
- 
- static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
- static struct cpuidle_device __percpu *powernv_cpuidle_devices;
-@@ -54,6 +56,43 @@ static int nap_loop(struct cpuidle_device *dev,
- 	return index;
+-static irqreturn_t call_function_action(int irq, void *data)
++static irqreturn_t unused_action(int irq, void *data)
+ {
+-	generic_smp_call_function_interrupt();
++	/* This slot is unused and hence available for use, if needed */
+ 	return IRQ_HANDLED;
  }
  
-+/* Emulate sleep, with long nap.
-+ * During sleep, the core does not receive decrementer interrupts.
-+ * Emulate sleep using long nap with decrementers interrupts disabled.
-+ * This is an initial prototype to test the timer offload framework for ppc.
-+ * We will eventually introduce the sleep state once the timer offload framework
-+ * for ppc is stable.
-+ */
-+static int longnap_loop(struct cpuidle_device *dev,
-+				struct cpuidle_driver *drv,
-+				int index)
-+{
-+	int cpu = dev->cpu;
-+
-+	unsigned long lpcr = mfspr(SPRN_LPCR);
-+
-+	lpcr &= ~(LPCR_MER | LPCR_PECE); /* lpcr[mer] must be 0 */
-+
-+	/* exit powersave upon external interrupt, but not decrementer
-+	 * interrupt, Emulate sleep.
-+	 */
-+	lpcr |= LPCR_PECE0;
-+
-+	if (cpu != bc_cpu) {
-+		mtspr(SPRN_LPCR, lpcr);
-+		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-+		power7_nap();
-+		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
-+	} else {
-+		/* Wakeup on a decrementer interrupt, Do a nap */
-+		lpcr |= LPCR_PECE1;
-+		mtspr(SPRN_LPCR, lpcr);
-+		power7_nap();
-+	}
-+
-+	return index;
-+}
-+
- /*
-  * States for dedicated partition case.
-  */
-@@ -72,6 +111,13 @@ static struct cpuidle_state powernv_states[MAX_IDLE_STATE_COUNT] = {
- 		.exit_latency = 10,
- 		.target_residency = 100,
- 		.enter = &nap_loop },
-+	 { /* LongNap */
-+		.name = "LongNap",
-+		.desc = "LongNap",
-+		.flags = CPUIDLE_FLAG_TIME_VALID,
-+		.exit_latency = 10,
-+		.target_residency = 100,
-+		.enter = &longnap_loop },
+@@ -144,14 +144,14 @@ static irqreturn_t debug_ipi_action(int irq, void *data)
+ }
+ 
+ static irq_handler_t smp_ipi_action[] = {
+-	[PPC_MSG_CALL_FUNCTION] =  call_function_action,
++	[PPC_MSG_UNUSED] =  unused_action, /* Slot available for future use */
+ 	[PPC_MSG_RESCHEDULE] = reschedule_action,
+ 	[PPC_MSG_CALL_FUNC_SINGLE] = call_function_single_action,
+ 	[PPC_MSG_DEBUGGER_BREAK] = debug_ipi_action,
  };
  
- static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
+ const char *smp_ipi_name[] = {
+-	[PPC_MSG_CALL_FUNCTION] =  "ipi call function",
++	[PPC_MSG_UNUSED] =  "ipi unused",
+ 	[PPC_MSG_RESCHEDULE] = "ipi reschedule",
+ 	[PPC_MSG_CALL_FUNC_SINGLE] = "ipi call function single",
+ 	[PPC_MSG_DEBUGGER_BREAK] = "ipi debugger",
+@@ -221,8 +221,6 @@ irqreturn_t smp_ipi_demux(void)
+ 		all = xchg(&info->messages, 0);
+ 
+ #ifdef __BIG_ENDIAN
+-		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNCTION)))
+-			generic_smp_call_function_interrupt();
+ 		if (all & (1 << (24 - 8 * PPC_MSG_RESCHEDULE)))
+ 			scheduler_ipi();
+ 		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNC_SINGLE)))
+@@ -265,7 +263,7 @@ void arch_send_call_function_ipi_mask(const struct cpumask *mask)
+ 	unsigned int cpu;
+ 
+ 	for_each_cpu(cpu, mask)
+-		do_message_pass(cpu, PPC_MSG_CALL_FUNCTION);
++		do_message_pass(cpu, PPC_MSG_CALL_FUNC_SINGLE);
+ }
+ 
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 2d42f3b..28166e4 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -213,7 +213,7 @@ static void iic_request_ipi(int msg)
+ 
+ void iic_request_IPIs(void)
+ {
+-	iic_request_ipi(PPC_MSG_CALL_FUNCTION);
++	iic_request_ipi(PPC_MSG_UNUSED);
+ 	iic_request_ipi(PPC_MSG_RESCHEDULE);
+ 	iic_request_ipi(PPC_MSG_CALL_FUNC_SINGLE);
+ 	iic_request_ipi(PPC_MSG_DEBUGGER_BREAK);
+diff --git a/arch/powerpc/platforms/ps3/smp.c b/arch/powerpc/platforms/ps3/smp.c
+index 4b35166..488f069 100644
+--- a/arch/powerpc/platforms/ps3/smp.c
++++ b/arch/powerpc/platforms/ps3/smp.c
+@@ -74,7 +74,7 @@ static int __init ps3_smp_probe(void)
+ 		* to index needs to be setup.
+ 		*/
+ 
+-		BUILD_BUG_ON(PPC_MSG_CALL_FUNCTION    != 0);
++		BUILD_BUG_ON(PPC_MSG_UNUSED	      != 0);
+ 		BUILD_BUG_ON(PPC_MSG_RESCHEDULE       != 1);
+ 		BUILD_BUG_ON(PPC_MSG_CALL_FUNC_SINGLE != 2);
+ 		BUILD_BUG_ON(PPC_MSG_DEBUGGER_BREAK   != 3);
