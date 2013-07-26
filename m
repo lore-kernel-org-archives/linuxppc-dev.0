@@ -1,28 +1,38 @@
-Return-Path: <R65777@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+Return-Path: <r58472@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 56B352C00E9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 18:52:59 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Alexander Graf <agraf@suse.de>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-Subject: RE: [PATCH 4/4] kvm: powerpc: set cache coherency only for RAM pages
-Date: Fri, 26 Jul 2013 08:52:49 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D070E4ED5@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1374817613-20169-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1374817613-20169-4-git-send-email-Bharat.Bhushan@freescale.com>
- <1374827190.6142.124.camel@pasglop>
- <6CF0D65E-76B6-4CDD-BADC-44DCCC8CAFF6@suse.de>
-In-Reply-To: <6CF0D65E-76B6-4CDD-BADC-44DCCC8CAFF6@suse.de>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 32FD62C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 20:06:35 +1000 (EST)
+From: Li Yang-R58472 <r58472@freescale.com>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, "paul.gortmaker@windriver.com"
+ <paul.gortmaker@windriver.com>, "paulus@samba.org" <paulus@samba.org>,
+ "shangw@linux.vnet.ibm.com" <shangw@linux.vnet.ibm.com>,
+ "galak@kernel.crashing.org" <galak@kernel.crashing.org>, "fweisbec@gmail.com"
+ <fweisbec@gmail.com>, "paulmck@linux.vnet.ibm.com"
+ <paulmck@linux.vnet.ibm.com>, "michael@ellerman.id.au"
+ <michael@ellerman.id.au>, "arnd@arndb.de" <arnd@arndb.de>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rostedt@goodmis.org"
+ <rostedt@goodmis.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "john.stultz@linaro.org"
+ <john.stultz@linaro.org>, "tglx@linutronix.de" <tglx@linutronix.de>, Zhao
+ Chenhui-B35336 <B35336@freescale.com>, "deepthi@linux.vnet.ibm.com"
+ <deepthi@linux.vnet.ibm.com>, "geoff@infradead.org" <geoff@infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>,
+ "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>,
+ "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [RFC PATCH 0/5] cpuidle/ppc: Timer offload framework to support
+ deep idle states
+Date: Fri, 26 Jul 2013 10:05:38 +0000
+Message-ID: <94F013E7935FF44C83EBE7784D62AD3F097AD1D5@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
+In-Reply-To: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,65 +42,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-> -----Original Message-----
-> From: kvm-ppc-owner@vger.kernel.org [mailto:kvm-ppc-owner@vger.kernel.org=
-] On
-> Behalf Of Alexander Graf
-> Sent: Friday, July 26, 2013 2:20 PM
-> To: Benjamin Herrenschmidt
-> Cc: Bhushan Bharat-R65777; kvm-ppc@vger.kernel.org; kvm@vger.kernel.org;
-> linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Bhushan Bharat-R65777
-> Subject: Re: [PATCH 4/4] kvm: powerpc: set cache coherency only for RAM p=
-ages
->=20
->=20
-> On 26.07.2013, at 10:26, Benjamin Herrenschmidt wrote:
->=20
-> > On Fri, 2013-07-26 at 11:16 +0530, Bharat Bhushan wrote:
-> >> If the page is RAM then map this as cacheable and coherent (set "M"
-> >> bit) otherwise this page is treated as I/O and map this as cache
-> >> inhibited and guarded (set  "I + G")
-> >>
-> >> This helps setting proper MMU mapping for direct assigned device.
-> >>
-> >> NOTE: There can be devices that require cacheable mapping, which is no=
-t yet
-> supported.
-> >
-> > Why don't you do like server instead and enforce the use of the same I
-> > and M bits as the corresponding qemu PTE ?
->=20
-> Specifically, Ben is talking about this code:
->=20
->=20
->                 /* Translate to host virtual address */
->                 hva =3D __gfn_to_hva_memslot(memslot, gfn);
->=20
->                 /* Look up the Linux PTE for the backing page */
->                 pte_size =3D psize;
->                 pte =3D lookup_linux_pte(pgdir, hva, writing, &pte_size);
->                 if (pte_present(pte)) {
->                         if (writing && !pte_write(pte))
->                                 /* make the actual HPTE be read-only */
->                                 ptel =3D hpte_make_readonly(ptel);
->                         is_io =3D hpte_cache_bits(pte_val(pte));
->                         pa =3D pte_pfn(pte) << PAGE_SHIFT;
->                 }
->=20
-
-Ok
-
-Thanks
--Bharat
-
-
->=20
-> Alex
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in the=
- body
-> of a message to majordomo@vger.kernel.org More majordomo info at
-> http://vger.kernel.org/majordomo-info.html
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtcG0tb3duZXJA
+dmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgtcG0tDQo+IG93bmVyQHZnZXIua2VybmVsLm9y
+Z10gT24gQmVoYWxmIE9mIFByZWV0aSBVIE11cnRoeQ0KPiBTZW50OiBUaHVyc2RheSwgSnVseSAy
+NSwgMjAxMyA1OjAzIFBNDQo+IFRvOiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IHBhdWwuZ29y
+dG1ha2VyQHdpbmRyaXZlci5jb207DQo+IHBhdWx1c0BzYW1iYS5vcmc7IHNoYW5nd0BsaW51eC52
+bmV0LmlibS5jb207IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7DQo+IGZ3ZWlzYmVjQGdtYWls
+LmNvbTsgcGF1bG1ja0BsaW51eC52bmV0LmlibS5jb207IG1pY2hhZWxAZWxsZXJtYW4uaWQuYXU7
+DQo+IGFybmRAYXJuZGIuZGU7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgcm9zdGVkdEBnb29k
+bWlzLm9yZzsgcmp3QHNpc2sucGw7DQo+IGpvaG4uc3R1bHR6QGxpbmFyby5vcmc7IHRnbHhAbGlu
+dXRyb25peC5kZTsgWmhhbyBDaGVuaHVpLUIzNTMzNjsNCj4gZGVlcHRoaUBsaW51eC52bmV0Lmli
+bS5jb207IGdlb2ZmQGluZnJhZGVhZC5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwu
+b3JnOyBzcml2YXRzYS5iaGF0QGxpbnV4LnZuZXQuaWJtLmNvbTsNCj4gc2Nod2lkZWZza3lAZGUu
+aWJtLmNvbTsgc3ZhaWR5QGxpbnV4LnZuZXQuaWJtLmNvbTsgbGludXhwcGMtDQo+IGRldkBsaXN0
+cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFtSRkMgUEFUQ0ggMC81XSBjcHVpZGxlL3BwYzogVGlt
+ZXIgb2ZmbG9hZCBmcmFtZXdvcmsgdG8gc3VwcG9ydA0KPiBkZWVwIGlkbGUgc3RhdGVzDQo+IA0K
+PiBPbiBQb3dlclBDLCB3aGVuIENQVXMgZW50ZXIgZGVlcCBpZGxlIHN0YXRlcywgdGhlaXIgbG9j
+YWwgdGltZXJzIGFyZQ0KPiBzd2l0Y2hlZCBvZmYuIFRoZSByZXNwb25zaWJpbGl0eSBvZiB3YWtp
+bmcgdGhlbSB1cCBhdCB0aGVpciBuZXh0IHRpbWVyDQo+IGV2ZW50LCBuZWVkcyB0byBiZSBoYW5k
+ZWQgb3ZlciB0byBhbiBleHRlcm5hbCBkZXZpY2UuIE9uIFBvd2VyUEMsIHdlIGRvDQo+IG5vdCBo
+YXZlIGFuIGV4dGVybmFsIGRldmljZSBlcXVpdmFsZW50IHRvIEhQRVQsIHdoaWNoIGlzIGN1cnJl
+bnRseSBkb25lDQo+IG9uIGFyY2hpdGVjdHVyZXMgbGlrZSB4ODYuIEluc3RlYWQgd2UgYXNzaWdu
+IHRoZSBsb2NhbCB0aW1lciBvZiBvbmUgb2YNCj4gdGhlIENQVXMgdG8gZG8gdGhpcyBqb2IuDQoN
+CkkgZG9uJ3Qga25vdyBtdWNoIGFib3V0IHRoZSBkZWVwIGlkbGUgc3RhdGVzLiAgQnV0IGlzIGl0
+IG5lY2Vzc2FyeSB0byB0dXJuIG9mZiB0aGUgdGltZXIgaW4gdGhlc2Ugc3RhdGVzPyAgSSBtZWFu
+IHRoZSBleHRyYSB3b3JrIG5lZWRlZCBvbiB0aGUgYm9vdGluZyBDUFUgYW5kIHJlLXN5bmNpbmcg
+VGltZSBCYXNlIGFmdGVyIHdha2V1cCBtaWdodCBkZWZlYXQgdGhlIHBvd2VyIGNvbnN1bXB0aW9u
+IGJlbmVmaXQgb2YgdHVybmluZyBvZmYgdGhlIHRpbWVyLg0KDQpCdHcsIHRoZSBPcGVuIFBJQyBo
+YXMgYW4gaW50ZXJuYWwgdGltZXIuICBDYW4gd2UgdXNlIGl0IGFzIHRoZSB3YWtldXAgZXZlbnQ/
+DQoNClJlZ2FyZHMsDQpMZW8NCg0KPiANCj4gVGhpcyBwYXRjaHNldCBpcyBhbiBhdHRlbXB0IHRv
+IG1ha2UgdXNlIG9mIHRoZSBleGlzdGluZyB0aW1lciBicm9hZGNhc3QNCj4gZnJhbWV3b3JrIGlu
+IHRoZSBrZXJuZWwgdG8gbWVldCB0aGUgYWJvdmUgcmVxdWlyZW1lbnQsIGV4Y2VwdCB0aGF0IHRo
+ZQ0KPiB0aWNrIGJyb2FkY2FzdCBkZXZpY2UgaXMgdGhlIGxvY2FsIHRpbWVyIG9mIHRoZSBib290
+IENQVS4NCj4gDQo+IFRoaXMgcGF0Y2ggc2VyaWVzIGlzIHBvcnRlZCBvbnRvcCBvZiAzLjExLXJj
+MSArIHRoZSBjcHVpZGxlIGRyaXZlcg0KPiBiYWNrZW5kIGZvciBwb3dlcm52IHBvc3RlZCBieSBE
+ZWVwdGhpIERoYXJ3YXIgcmVjZW50bHkuIFRoZSBjdXJyZW50DQo+IGRlc2lnbiBhbmQgaW1wbGVt
+ZW50YXRpb24gc3VwcG9ydHMgdGhlIE9ORVNIT1QgdGljayBtb2RlLiBJdCBkb2VzIG5vdCB5ZXQN
+Cj4gc3VwcG9ydCB0aGUgUEVSSU9ESUMgdGljayBtb2RlLiBUaGlzIHBhdGNoIGlzIHRlc3RlZCB3
+aXRoIE5PSFpfRlVMTCBvZmYuDQo+IA0KPiBQYXRjaFsxLzVdLCBQYXRjaFsyLzVdOiBvcHRpbWl6
+ZSB0aGUgYnJvYWRjYXN0IG1lY2hhbmlzbSBvbiBwcGMuDQo+IFBhdGNoWzMvNV06IEludHJvZHVj
+ZXMgdGhlIGNvcmUgb2YgdGhlIHRpbWVyIG9mZmxvYWQgZnJhbWV3b3JrIG9uIHBvd2VycGMuDQo+
+IFBhdGNoWzQvNV06IFRoZSBjcHUgZG9pbmcgdGhlIGJyb2FkY2FzdCBzaG91bGQgbm90IGdvIGlu
+dG8gdGlja2xlc3MgaWRsZS4NCj4gUGF0Y2hbNS81XTogQWRkIGEgZGVlcCBpZGxlIHN0YXRlIHRv
+IHRoZSBjcHVpZGxlIHN0YXRlIHRhYmxlIG9uIHBvd2VybnYuDQo+IA0KPiBQYXRjaFs1LzVdIGlz
+IHRoZSBwYXRjaCB0aGF0IHVsdGltYXRlbHkgbWFrZXMgdXNlIG9mIHRoZSB0aW1lciBvZmZsb2Fk
+DQo+IGZyYW1ld29yayB0aGF0IHRoZSBwYXRjaGVzIFBhdGNoWzEvNV0gdG8gUGF0Y2hbNC81XSBi
+dWlsZC4NCj4gDQo+IC0tLQ0KPiANCj4gUHJlZXRpIFUgTXVydGh5ICgzKToNCj4gICAgICAgY3B1
+aWRsZS9wcGM6IEFkZCB0aW1lciBvZmZsb2FkIGZyYW1ld29yayB0byBzdXBwb3J0IGRlZXAgaWRs
+ZQ0KPiBzdGF0ZXMNCj4gICAgICAgY3B1aWRsZS9wcGM6IENQVSBnb2VzIHRpY2tsZXNzIGlmIHRo
+ZXJlIGFyZSBubyBhcmNoLXNwZWNpZmljDQo+IGNvbnN0cmFpbnRzDQo+ICAgICAgIGNwdWlkbGUv
+cHBjOiBBZGQgbG9uZ25hcCBzdGF0ZSB0byB0aGUgaWRsZSBzdGF0ZXMgb24gcG93ZXJudg0KPiAN
+Cj4gU3JpdmF0c2EgUy4gQmhhdCAoMik6DQo+ICAgICAgIHBvd2VycGM6IEZyZWUgdXAgdGhlIElQ
+SSBtZXNzYWdlIHNsb3Qgb2YgaXBpIGNhbGwgZnVuY3Rpb24NCj4gKFBQQ19NU0dfQ0FMTF9GVU5D
+KQ0KPiAgICAgICBwb3dlcnBjOiBJbXBsZW1lbnQgYnJvYWRjYXN0IHRpbWVyIGludGVycnVwdCBh
+cyBhbiBJUEkgbWVzc2FnZQ0KPiANCj4gDQo+ICBhcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vc21w
+LmggICAgICAgICAgICAgICAgICB8ICAgIDMgKw0KPiAgYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNt
+L3RpbWUuaCAgICAgICAgICAgICAgICAgfCAgICAzICsNCj4gIGFyY2gvcG93ZXJwYy9rZXJuZWwv
+c21wLmMgICAgICAgICAgICAgICAgICAgICAgIHwgICAyMyArKysrLS0NCj4gIGFyY2gvcG93ZXJw
+Yy9rZXJuZWwvdGltZS5jICAgICAgICAgICAgICAgICAgICAgIHwgICA4NA0KPiArKysrKysrKysr
+KysrKysrKysrKysrKw0KPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2ludGVycnVwdC5j
+ICAgICAgICAgfCAgICAyIC0NCj4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvcG93ZXJudi9LY29u
+ZmlnICAgICAgICAgIHwgICAgMQ0KPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9wb3dlcm52L3By
+b2Nlc3Nvcl9pZGxlLmMgfCAgIDQ4ICsrKysrKysrKysrKysNCj4gIGFyY2gvcG93ZXJwYy9wbGF0
+Zm9ybXMvcHMzL3NtcC5jICAgICAgICAgICAgICAgIHwgICAgMiAtDQo+ICBrZXJuZWwvdGltZS90
+aWNrLXNjaGVkLmMgICAgICAgICAgICAgICAgICAgICAgICB8ICAgIDcgKysNCj4gIDkgZmlsZXMg
+Y2hhbmdlZCwgMTYxIGluc2VydGlvbnMoKyksIDEyIGRlbGV0aW9ucygtKQ0KPiANCj4gLS0NCj4g
+U2lnbmF0dXJlDQo+IA0KPiAtLQ0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2Vu
+ZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtcG0iIGluDQo+IHRoZSBib2R5IG9mIGEgbWVz
+c2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnIE1vcmUgbWFqb3Jkb21vIGluZm8gYXQN
+Cj4gaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sDQoNCg==
