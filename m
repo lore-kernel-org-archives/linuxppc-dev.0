@@ -1,27 +1,28 @@
 Return-Path: <R65777@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0248.outbound.messaging.microsoft.com [213.199.154.248])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B3D732C008C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 18:51:59 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 56B352C00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 18:52:59 +1000 (EST)
 From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Graf <agraf@suse.de>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
 Subject: RE: [PATCH 4/4] kvm: powerpc: set cache coherency only for RAM pages
-Date: Fri, 26 Jul 2013 08:51:49 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D070E4EBC@039-SN2MPN1-013.039d.mgd.msft.net>
+Date: Fri, 26 Jul 2013 08:52:49 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D070E4ED5@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <1374817613-20169-1-git-send-email-Bharat.Bhushan@freescale.com>
  <1374817613-20169-4-git-send-email-Bharat.Bhushan@freescale.com>
  <1374827190.6142.124.camel@pasglop>
-In-Reply-To: <1374827190.6142.124.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+ <6CF0D65E-76B6-4CDD-BADC-44DCCC8CAFF6@suse.de>
+In-Reply-To: <6CF0D65E-76B6-4CDD-BADC-44DCCC8CAFF6@suse.de>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "agraf@suse.de" <agraf@suse.de>
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,55 +32,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogRnJpZGF5
-LCBKdWx5IDI2LCAyMDEzIDE6NTcgUE0NCj4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiBD
-Yzoga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBhZ3JhZkBzdXNlLmRlOyBXb29kIFNjb3R0LUIwNzQy
-MTsgQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggNC80XSBrdm06
-IHBvd2VycGM6IHNldCBjYWNoZSBjb2hlcmVuY3kgb25seSBmb3IgUkFNIHBhZ2VzDQo+IA0KPiBP
-biBGcmksIDIwMTMtMDctMjYgYXQgMTE6MTYgKzA1MzAsIEJoYXJhdCBCaHVzaGFuIHdyb3RlOg0K
-PiA+IElmIHRoZSBwYWdlIGlzIFJBTSB0aGVuIG1hcCB0aGlzIGFzIGNhY2hlYWJsZSBhbmQgY29o
-ZXJlbnQgKHNldCAiTSINCj4gPiBiaXQpIG90aGVyd2lzZSB0aGlzIHBhZ2UgaXMgdHJlYXRlZCBh
-cyBJL08gYW5kIG1hcCB0aGlzIGFzIGNhY2hlDQo+ID4gaW5oaWJpdGVkIGFuZCBndWFyZGVkIChz
-ZXQgICJJICsgRyIpDQo+ID4NCj4gPiBUaGlzIGhlbHBzIHNldHRpbmcgcHJvcGVyIE1NVSBtYXBw
-aW5nIGZvciBkaXJlY3QgYXNzaWduZWQgZGV2aWNlLg0KPiA+DQo+ID4gTk9URTogVGhlcmUgY2Fu
-IGJlIGRldmljZXMgdGhhdCByZXF1aXJlIGNhY2hlYWJsZSBtYXBwaW5nLCB3aGljaCBpcyBub3Qg
-eWV0DQo+IHN1cHBvcnRlZC4NCj4gDQo+IFdoeSBkb24ndCB5b3UgZG8gbGlrZSBzZXJ2ZXIgaW5z
-dGVhZCBhbmQgZW5mb3JjZSB0aGUgdXNlIG9mIHRoZSBzYW1lIEkgYW5kIE0NCj4gYml0cyBhcyB0
-aGUgY29ycmVzcG9uZGluZyBxZW11IFBURSA/DQoNCkJlbi9BbGV4LCBJIHdpbGwgbG9vayBpbnRv
-IHRoZSBjb2RlLiBDYW4geW91IHBsZWFzZSBkZXNjcmliZSBob3cgdGhpcyBpcyBoYW5kbGVkIG9u
-IHNlcnZlcj8NCg0KVGhhbmtzDQotQmhhcmF0DQoNCj4gDQo+IENoZWVycywNCj4gQmVuLg0KPiAN
-Cj4gPiBTaWduZWQtb2ZmLWJ5OiBCaGFyYXQgQmh1c2hhbiA8YmhhcmF0LmJodXNoYW5AZnJlZXNj
-YWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgYXJjaC9wb3dlcnBjL2t2bS9lNTAwX21tdV9ob3N0LmMg
-fCAgIDI0ICsrKysrKysrKysrKysrKysrKystLS0tLQ0KPiA+ICAxIGZpbGVzIGNoYW5nZWQsIDE5
-IGluc2VydGlvbnMoKyksIDUgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvYXJj
-aC9wb3dlcnBjL2t2bS9lNTAwX21tdV9ob3N0LmMNCj4gPiBiL2FyY2gvcG93ZXJwYy9rdm0vZTUw
-MF9tbXVfaG9zdC5jDQo+ID4gaW5kZXggMWM2YTlkNy4uNWNiZGM4ZiAxMDA2NDQNCj4gPiAtLS0g
-YS9hcmNoL3Bvd2VycGMva3ZtL2U1MDBfbW11X2hvc3QuYw0KPiA+ICsrKyBiL2FyY2gvcG93ZXJw
-Yy9rdm0vZTUwMF9tbXVfaG9zdC5jDQo+ID4gQEAgLTY0LDEzICs2NCwyNyBAQCBzdGF0aWMgaW5s
-aW5lIHUzMiBlNTAwX3NoYWRvd19tYXMzX2F0dHJpYih1MzIgbWFzMywgaW50DQo+IHVzZXJtb2Rl
-KQ0KPiA+ICAJcmV0dXJuIG1hczM7DQo+ID4gIH0NCj4gPg0KPiA+IC1zdGF0aWMgaW5saW5lIHUz
-MiBlNTAwX3NoYWRvd19tYXMyX2F0dHJpYih1MzIgbWFzMiwgaW50IHVzZXJtb2RlKQ0KPiA+ICtz
-dGF0aWMgaW5saW5lIHUzMiBlNTAwX3NoYWRvd19tYXMyX2F0dHJpYih1MzIgbWFzMiwgcGZuX3Qg
-cGZuKQ0KPiA+ICB7DQo+ID4gKwl1MzIgbWFzMl9hdHRyOw0KPiA+ICsNCj4gPiArCW1hczJfYXR0
-ciA9IG1hczIgJiBNQVMyX0FUVFJJQl9NQVNLOw0KPiA+ICsNCj4gPiArCWlmIChrdm1faXNfbW1p
-b19wZm4ocGZuKSkgew0KPiA+ICsJCS8qDQo+ID4gKwkJICogSWYgcGFnZSBpcyBub3QgUkFNIHRo
-ZW4gaXQgaXMgdHJlYXRlZCBhcyBJL08gcGFnZS4NCj4gPiArCQkgKiBNYXAgaXQgd2l0aCBjYWNo
-ZSBpbmhpYml0ZWQgYW5kIGd1YXJkZWQgKHNldCAiSSIgKyAiRyIpLg0KPiA+ICsJCSAqLw0KPiA+
-ICsJCW1hczJfYXR0ciB8PSBNQVMyX0kgfCBNQVMyX0c7DQo+ID4gKwkJcmV0dXJuIG1hczJfYXR0
-cjsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwkvKiBNYXAgUkFNIHBhZ2VzIGFzIGNhY2hlYWJsZSAo
-Tm90IHNldHRpbmcgIkkiIGluIE1BUzIpICovDQo+ID4gICNpZmRlZiBDT05GSUdfU01QDQo+ID4g
-LQlyZXR1cm4gKG1hczIgJiBNQVMyX0FUVFJJQl9NQVNLKSB8IE1BUzJfTTsNCj4gPiAtI2Vsc2UN
-Cj4gPiAtCXJldHVybiBtYXMyICYgTUFTMl9BVFRSSUJfTUFTSzsNCj4gPiArCS8qIEFsc28gbWFw
-IGFzIGNvaGVyZW50IChzZXQgIk0iKSBpbiBTTVAgKi8NCj4gPiArCW1hczJfYXR0ciB8PSBNQVMy
-X007DQo+ID4gICNlbmRpZg0KPiA+ICsJcmV0dXJuIG1hczJfYXR0cjsNCj4gPiAgfQ0KPiA+DQo+
-ID4gIC8qDQo+ID4gQEAgLTMxMyw3ICszMjcsNyBAQCBzdGF0aWMgdm9pZCBrdm1wcGNfZTUwMF9z
-ZXR1cF9zdGxiZSgNCj4gPiAgCS8qIEZvcmNlIElQUk9UPTAgZm9yIGFsbCBndWVzdCBtYXBwaW5n
-cy4gKi8NCj4gPiAgCXN0bGJlLT5tYXMxID0gTUFTMV9UU0laRSh0c2l6ZSkgfCBnZXRfdGxiX3N0
-cyhndGxiZSkgfCBNQVMxX1ZBTElEOw0KPiA+ICAJc3RsYmUtPm1hczIgPSAoZ3ZhZGRyICYgTUFT
-Ml9FUE4pIHwNCj4gPiAtCQkgICAgICBlNTAwX3NoYWRvd19tYXMyX2F0dHJpYihndGxiZS0+bWFz
-MiwgcHIpOw0KPiA+ICsJCSAgICAgIGU1MDBfc2hhZG93X21hczJfYXR0cmliKGd0bGJlLT5tYXMy
-LCBwZm4pOw0KPiA+ICAJc3RsYmUtPm1hczdfMyA9ICgodTY0KXBmbiA8PCBQQUdFX1NISUZUKSB8
-DQo+ID4gIAkJCWU1MDBfc2hhZG93X21hczNfYXR0cmliKGd0bGJlLT5tYXM3XzMsIHByKTsNCj4g
-Pg0KPiANCj4gDQoNCg==
+
+
+> -----Original Message-----
+> From: kvm-ppc-owner@vger.kernel.org [mailto:kvm-ppc-owner@vger.kernel.org=
+] On
+> Behalf Of Alexander Graf
+> Sent: Friday, July 26, 2013 2:20 PM
+> To: Benjamin Herrenschmidt
+> Cc: Bhushan Bharat-R65777; kvm-ppc@vger.kernel.org; kvm@vger.kernel.org;
+> linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Bhushan Bharat-R65777
+> Subject: Re: [PATCH 4/4] kvm: powerpc: set cache coherency only for RAM p=
+ages
+>=20
+>=20
+> On 26.07.2013, at 10:26, Benjamin Herrenschmidt wrote:
+>=20
+> > On Fri, 2013-07-26 at 11:16 +0530, Bharat Bhushan wrote:
+> >> If the page is RAM then map this as cacheable and coherent (set "M"
+> >> bit) otherwise this page is treated as I/O and map this as cache
+> >> inhibited and guarded (set  "I + G")
+> >>
+> >> This helps setting proper MMU mapping for direct assigned device.
+> >>
+> >> NOTE: There can be devices that require cacheable mapping, which is no=
+t yet
+> supported.
+> >
+> > Why don't you do like server instead and enforce the use of the same I
+> > and M bits as the corresponding qemu PTE ?
+>=20
+> Specifically, Ben is talking about this code:
+>=20
+>=20
+>                 /* Translate to host virtual address */
+>                 hva =3D __gfn_to_hva_memslot(memslot, gfn);
+>=20
+>                 /* Look up the Linux PTE for the backing page */
+>                 pte_size =3D psize;
+>                 pte =3D lookup_linux_pte(pgdir, hva, writing, &pte_size);
+>                 if (pte_present(pte)) {
+>                         if (writing && !pte_write(pte))
+>                                 /* make the actual HPTE be read-only */
+>                                 ptel =3D hpte_make_readonly(ptel);
+>                         is_io =3D hpte_cache_bits(pte_val(pte));
+>                         pa =3D pte_pfn(pte) << PAGE_SHIFT;
+>                 }
+>=20
+
+Ok
+
+Thanks
+-Bharat
+
+
+>=20
+> Alex
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in the=
+ body
+> of a message to majordomo@vger.kernel.org More majordomo info at
+> http://vger.kernel.org/majordomo-info.html
