@@ -1,38 +1,21 @@
-Return-Path: <r58472@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+Return-Path: <B45939@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 32FD62C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 20:06:35 +1000 (EST)
-From: Li Yang-R58472 <r58472@freescale.com>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>, "paul.gortmaker@windriver.com"
- <paul.gortmaker@windriver.com>, "paulus@samba.org" <paulus@samba.org>,
- "shangw@linux.vnet.ibm.com" <shangw@linux.vnet.ibm.com>,
- "galak@kernel.crashing.org" <galak@kernel.crashing.org>, "fweisbec@gmail.com"
- <fweisbec@gmail.com>, "paulmck@linux.vnet.ibm.com"
- <paulmck@linux.vnet.ibm.com>, "michael@ellerman.id.au"
- <michael@ellerman.id.au>, "arnd@arndb.de" <arnd@arndb.de>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rostedt@goodmis.org"
- <rostedt@goodmis.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "john.stultz@linaro.org"
- <john.stultz@linaro.org>, "tglx@linutronix.de" <tglx@linutronix.de>, Zhao
- Chenhui-B35336 <B35336@freescale.com>, "deepthi@linux.vnet.ibm.com"
- <deepthi@linux.vnet.ibm.com>, "geoff@infradead.org" <geoff@infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>,
- "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>,
- "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [RFC PATCH 0/5] cpuidle/ppc: Timer offload framework to support
- deep idle states
-Date: Fri, 26 Jul 2013 10:05:38 +0000
-Message-ID: <94F013E7935FF44C83EBE7784D62AD3F097AD1D5@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
-In-Reply-To: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 079E22C00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 20:27:37 +1000 (EST)
+From: <hongbo.zhang@freescale.com>
+To: <vinod.koul@intel.com>, <djbw@fb.com>, <leoli@freescale.com>,
+ <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v6 0/3] DMA: Freescale: Add support for 8-channel DMA engine
+Date: Fri, 26 Jul 2013 18:27:13 +0800
+Message-ID: <1374834436-7149-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Hongbo Zhang <hongbo.zhang@freescale.com>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,72 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtcG0tb3duZXJA
-dmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgtcG0tDQo+IG93bmVyQHZnZXIua2VybmVsLm9y
-Z10gT24gQmVoYWxmIE9mIFByZWV0aSBVIE11cnRoeQ0KPiBTZW50OiBUaHVyc2RheSwgSnVseSAy
-NSwgMjAxMyA1OjAzIFBNDQo+IFRvOiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IHBhdWwuZ29y
-dG1ha2VyQHdpbmRyaXZlci5jb207DQo+IHBhdWx1c0BzYW1iYS5vcmc7IHNoYW5nd0BsaW51eC52
-bmV0LmlibS5jb207IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7DQo+IGZ3ZWlzYmVjQGdtYWls
-LmNvbTsgcGF1bG1ja0BsaW51eC52bmV0LmlibS5jb207IG1pY2hhZWxAZWxsZXJtYW4uaWQuYXU7
-DQo+IGFybmRAYXJuZGIuZGU7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgcm9zdGVkdEBnb29k
-bWlzLm9yZzsgcmp3QHNpc2sucGw7DQo+IGpvaG4uc3R1bHR6QGxpbmFyby5vcmc7IHRnbHhAbGlu
-dXRyb25peC5kZTsgWmhhbyBDaGVuaHVpLUIzNTMzNjsNCj4gZGVlcHRoaUBsaW51eC52bmV0Lmli
-bS5jb207IGdlb2ZmQGluZnJhZGVhZC5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwu
-b3JnOyBzcml2YXRzYS5iaGF0QGxpbnV4LnZuZXQuaWJtLmNvbTsNCj4gc2Nod2lkZWZza3lAZGUu
-aWJtLmNvbTsgc3ZhaWR5QGxpbnV4LnZuZXQuaWJtLmNvbTsgbGludXhwcGMtDQo+IGRldkBsaXN0
-cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFtSRkMgUEFUQ0ggMC81XSBjcHVpZGxlL3BwYzogVGlt
-ZXIgb2ZmbG9hZCBmcmFtZXdvcmsgdG8gc3VwcG9ydA0KPiBkZWVwIGlkbGUgc3RhdGVzDQo+IA0K
-PiBPbiBQb3dlclBDLCB3aGVuIENQVXMgZW50ZXIgZGVlcCBpZGxlIHN0YXRlcywgdGhlaXIgbG9j
-YWwgdGltZXJzIGFyZQ0KPiBzd2l0Y2hlZCBvZmYuIFRoZSByZXNwb25zaWJpbGl0eSBvZiB3YWtp
-bmcgdGhlbSB1cCBhdCB0aGVpciBuZXh0IHRpbWVyDQo+IGV2ZW50LCBuZWVkcyB0byBiZSBoYW5k
-ZWQgb3ZlciB0byBhbiBleHRlcm5hbCBkZXZpY2UuIE9uIFBvd2VyUEMsIHdlIGRvDQo+IG5vdCBo
-YXZlIGFuIGV4dGVybmFsIGRldmljZSBlcXVpdmFsZW50IHRvIEhQRVQsIHdoaWNoIGlzIGN1cnJl
-bnRseSBkb25lDQo+IG9uIGFyY2hpdGVjdHVyZXMgbGlrZSB4ODYuIEluc3RlYWQgd2UgYXNzaWdu
-IHRoZSBsb2NhbCB0aW1lciBvZiBvbmUgb2YNCj4gdGhlIENQVXMgdG8gZG8gdGhpcyBqb2IuDQoN
-CkkgZG9uJ3Qga25vdyBtdWNoIGFib3V0IHRoZSBkZWVwIGlkbGUgc3RhdGVzLiAgQnV0IGlzIGl0
-IG5lY2Vzc2FyeSB0byB0dXJuIG9mZiB0aGUgdGltZXIgaW4gdGhlc2Ugc3RhdGVzPyAgSSBtZWFu
-IHRoZSBleHRyYSB3b3JrIG5lZWRlZCBvbiB0aGUgYm9vdGluZyBDUFUgYW5kIHJlLXN5bmNpbmcg
-VGltZSBCYXNlIGFmdGVyIHdha2V1cCBtaWdodCBkZWZlYXQgdGhlIHBvd2VyIGNvbnN1bXB0aW9u
-IGJlbmVmaXQgb2YgdHVybmluZyBvZmYgdGhlIHRpbWVyLg0KDQpCdHcsIHRoZSBPcGVuIFBJQyBo
-YXMgYW4gaW50ZXJuYWwgdGltZXIuICBDYW4gd2UgdXNlIGl0IGFzIHRoZSB3YWtldXAgZXZlbnQ/
-DQoNClJlZ2FyZHMsDQpMZW8NCg0KPiANCj4gVGhpcyBwYXRjaHNldCBpcyBhbiBhdHRlbXB0IHRv
-IG1ha2UgdXNlIG9mIHRoZSBleGlzdGluZyB0aW1lciBicm9hZGNhc3QNCj4gZnJhbWV3b3JrIGlu
-IHRoZSBrZXJuZWwgdG8gbWVldCB0aGUgYWJvdmUgcmVxdWlyZW1lbnQsIGV4Y2VwdCB0aGF0IHRo
-ZQ0KPiB0aWNrIGJyb2FkY2FzdCBkZXZpY2UgaXMgdGhlIGxvY2FsIHRpbWVyIG9mIHRoZSBib290
-IENQVS4NCj4gDQo+IFRoaXMgcGF0Y2ggc2VyaWVzIGlzIHBvcnRlZCBvbnRvcCBvZiAzLjExLXJj
-MSArIHRoZSBjcHVpZGxlIGRyaXZlcg0KPiBiYWNrZW5kIGZvciBwb3dlcm52IHBvc3RlZCBieSBE
-ZWVwdGhpIERoYXJ3YXIgcmVjZW50bHkuIFRoZSBjdXJyZW50DQo+IGRlc2lnbiBhbmQgaW1wbGVt
-ZW50YXRpb24gc3VwcG9ydHMgdGhlIE9ORVNIT1QgdGljayBtb2RlLiBJdCBkb2VzIG5vdCB5ZXQN
-Cj4gc3VwcG9ydCB0aGUgUEVSSU9ESUMgdGljayBtb2RlLiBUaGlzIHBhdGNoIGlzIHRlc3RlZCB3
-aXRoIE5PSFpfRlVMTCBvZmYuDQo+IA0KPiBQYXRjaFsxLzVdLCBQYXRjaFsyLzVdOiBvcHRpbWl6
-ZSB0aGUgYnJvYWRjYXN0IG1lY2hhbmlzbSBvbiBwcGMuDQo+IFBhdGNoWzMvNV06IEludHJvZHVj
-ZXMgdGhlIGNvcmUgb2YgdGhlIHRpbWVyIG9mZmxvYWQgZnJhbWV3b3JrIG9uIHBvd2VycGMuDQo+
-IFBhdGNoWzQvNV06IFRoZSBjcHUgZG9pbmcgdGhlIGJyb2FkY2FzdCBzaG91bGQgbm90IGdvIGlu
-dG8gdGlja2xlc3MgaWRsZS4NCj4gUGF0Y2hbNS81XTogQWRkIGEgZGVlcCBpZGxlIHN0YXRlIHRv
-IHRoZSBjcHVpZGxlIHN0YXRlIHRhYmxlIG9uIHBvd2VybnYuDQo+IA0KPiBQYXRjaFs1LzVdIGlz
-IHRoZSBwYXRjaCB0aGF0IHVsdGltYXRlbHkgbWFrZXMgdXNlIG9mIHRoZSB0aW1lciBvZmZsb2Fk
-DQo+IGZyYW1ld29yayB0aGF0IHRoZSBwYXRjaGVzIFBhdGNoWzEvNV0gdG8gUGF0Y2hbNC81XSBi
-dWlsZC4NCj4gDQo+IC0tLQ0KPiANCj4gUHJlZXRpIFUgTXVydGh5ICgzKToNCj4gICAgICAgY3B1
-aWRsZS9wcGM6IEFkZCB0aW1lciBvZmZsb2FkIGZyYW1ld29yayB0byBzdXBwb3J0IGRlZXAgaWRs
-ZQ0KPiBzdGF0ZXMNCj4gICAgICAgY3B1aWRsZS9wcGM6IENQVSBnb2VzIHRpY2tsZXNzIGlmIHRo
-ZXJlIGFyZSBubyBhcmNoLXNwZWNpZmljDQo+IGNvbnN0cmFpbnRzDQo+ICAgICAgIGNwdWlkbGUv
-cHBjOiBBZGQgbG9uZ25hcCBzdGF0ZSB0byB0aGUgaWRsZSBzdGF0ZXMgb24gcG93ZXJudg0KPiAN
-Cj4gU3JpdmF0c2EgUy4gQmhhdCAoMik6DQo+ICAgICAgIHBvd2VycGM6IEZyZWUgdXAgdGhlIElQ
-SSBtZXNzYWdlIHNsb3Qgb2YgaXBpIGNhbGwgZnVuY3Rpb24NCj4gKFBQQ19NU0dfQ0FMTF9GVU5D
-KQ0KPiAgICAgICBwb3dlcnBjOiBJbXBsZW1lbnQgYnJvYWRjYXN0IHRpbWVyIGludGVycnVwdCBh
-cyBhbiBJUEkgbWVzc2FnZQ0KPiANCj4gDQo+ICBhcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vc21w
-LmggICAgICAgICAgICAgICAgICB8ICAgIDMgKw0KPiAgYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNt
-L3RpbWUuaCAgICAgICAgICAgICAgICAgfCAgICAzICsNCj4gIGFyY2gvcG93ZXJwYy9rZXJuZWwv
-c21wLmMgICAgICAgICAgICAgICAgICAgICAgIHwgICAyMyArKysrLS0NCj4gIGFyY2gvcG93ZXJw
-Yy9rZXJuZWwvdGltZS5jICAgICAgICAgICAgICAgICAgICAgIHwgICA4NA0KPiArKysrKysrKysr
-KysrKysrKysrKysrKw0KPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsL2ludGVycnVwdC5j
-ICAgICAgICAgfCAgICAyIC0NCj4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvcG93ZXJudi9LY29u
-ZmlnICAgICAgICAgIHwgICAgMQ0KPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9wb3dlcm52L3By
-b2Nlc3Nvcl9pZGxlLmMgfCAgIDQ4ICsrKysrKysrKysrKysNCj4gIGFyY2gvcG93ZXJwYy9wbGF0
-Zm9ybXMvcHMzL3NtcC5jICAgICAgICAgICAgICAgIHwgICAgMiAtDQo+ICBrZXJuZWwvdGltZS90
-aWNrLXNjaGVkLmMgICAgICAgICAgICAgICAgICAgICAgICB8ICAgIDcgKysNCj4gIDkgZmlsZXMg
-Y2hhbmdlZCwgMTYxIGluc2VydGlvbnMoKyksIDEyIGRlbGV0aW9ucygtKQ0KPiANCj4gLS0NCj4g
-U2lnbmF0dXJlDQo+IA0KPiAtLQ0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2Vu
-ZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtcG0iIGluDQo+IHRoZSBib2R5IG9mIGEgbWVz
-c2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnIE1vcmUgbWFqb3Jkb21vIGluZm8gYXQN
-Cj4gaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sDQoNCg==
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
+
+Hi Vinod, Dan, Scott and Leo, please have a look at these V6 patches.
+
+Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
+adds support this DMA engine.
+
+V5->V6 changes:
+- minor updates of descriptions in binding document and Kconfig
+- remove [4/4], that should be another patch in future
+
+V4->V5 changes:
+- update description in the dt binding document, to make it more resonable
+- add new patch [4/4] to eliminate a compiling warning which already exists
+  for a long time
+
+V3->V4 changes:
+- introduce new patch [1/3] to revise the legacy dma binding document
+- and then add new paragraph to describe new dt node binding in [2/3]
+- rebase to latest kernel v3.11-rc1
+
+V2->V3 changes:
+- edit Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+- edit text string in Kconfig and the driver files, using "elo series" to
+  mention all the current "elo*"
+
+V1->V2 changes:
+- removed the codes handling the register dgsr1, since it isn't used currently
+- renamed the DMA DT compatible to "fsl,elo3-dma"
+- renamed the new dts files to "elo3-dma-<n>.dtsi"
+
+Hongbo Zhang (3):
+  DMA: Freescale: revise device tree binding document
+  DMA: Freescale: Add new 8-channel DMA engine device tree nodes
+  DMA: Freescale: update driver to support 8-channel DMA engine
+
+ .../devicetree/bindings/powerpc/fsl/dma.txt        |  118 +++++++++++++++-----
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
+ arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   81 ++++++++++++++
+ arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   81 ++++++++++++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
+ drivers/dma/Kconfig                                |    9 +-
+ drivers/dma/fsldma.c                               |    9 +-
+ drivers/dma/fsldma.h                               |    2 +-
+ 8 files changed, 268 insertions(+), 40 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+
+-- 
+1.7.9.5
