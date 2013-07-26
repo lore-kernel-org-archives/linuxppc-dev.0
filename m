@@ -1,23 +1,45 @@
-Return-Path: <B43644@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 278952C02C3
- for <linuxppc-dev@ozlabs.org>; Fri, 26 Jul 2013 13:35:10 +1000 (EST)
-From: Po Liu <Po.Liu@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v2 2/3] powerpc/85xx: Add silicon device tree for C293
-Date: Fri, 26 Jul 2013 10:41:18 +0800
-Message-ID: <1374806479-812-2-git-send-email-Po.Liu@freescale.com>
-In-Reply-To: <1374806479-812-1-git-send-email-Po.Liu@freescale.com>
-References: <1366854857-22791-4-git-send-email-Po.Liu@freescale.com>
- <1374806479-812-1-git-send-email-Po.Liu@freescale.com>
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 264432C00DD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 13:38:47 +1000 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Fri, 26 Jul 2013 09:00:23 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 7C372E005A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 09:08:11 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6Q3c5fl46727310
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 09:08:05 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6Q3c340020067
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 13:38:06 +1000
+Message-ID: <51F1EE90.9020701@linux.vnet.ibm.com>
+Date: Fri, 26 Jul 2013 09:05:44 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Mingkai Hu <Mingkai.Hu@freescale.com>,
- afleming@freescale.com, Po Liu <Po.Liu@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are no
+ arch-specific constraints
+References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
+ <20130725090302.12500.42998.stgit@preeti.in.ibm.com>
+ <20130725133044.GA7400@somewhere> <51F1E15B.3050106@linux.vnet.ibm.com>
+ <20130726031950.GA6438@iris.ozlabs.ibm.com>
+In-Reply-To: <20130726031950.GA6438@iris.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: deepthi@linux.vnet.ibm.com, shangw@linux.vnet.ibm.com, arnd@arndb.de,
+ linux-pm@vger.kernel.org, geoff@infradead.org,
+ Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, rjw@sisk.pl, paul.gortmaker@windriver.com,
+ john.stultz@linaro.org, srivatsa.bhat@linux.vnet.ibm.com,
+ schwidefsky@de.ibm.com, tglx@linutronix.de, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,287 +49,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mingkai Hu <Mingkai.Hu@freescale.com>
+Hi Paul,
 
-Signed-off-by: Mingkai Hu <Mingkai.Hu@freescale.com>
-Signed-off-by: Po Liu <Po.Liu@freescale.com>
----
-Changes for v2:
-	- None
+On 07/26/2013 08:49 AM, Paul Mackerras wrote:
+> On Fri, Jul 26, 2013 at 08:09:23AM +0530, Preeti U Murthy wrote:
+>> Hi Frederic,
+>>
+>> On 07/25/2013 07:00 PM, Frederic Weisbecker wrote:
+>>> Hi Preeti,
+>>>
+>>> I'm not exactly sure why you can't enter the broadcast CPU in dynticks idle mode.
+>>> I read in the previous patch that's because in dynticks idle mode the broadcast
+>>> CPU deactivates its lapic so it doesn't receive the IPI. But may be I misunderstood.
+>>> Anyway that's not good for powersaving.
+>>
+>> Let me elaborate. The CPUs in deep idle states have their lapics
+>> deactivated. This means the next timer event which would typically have
+>> been taken care of by a lapic firing at the appropriate moment does not
+>> get taken care of in deep idle states, due to the lapic being switched off.
+> 
+> I really don't think it's helpful to use the term "lapic" in
+> connection with Power systems.  There is nothing that is called a
+> "lapic" in a Power machine.  The nearest equivalent of the LAPIC on
+> x86 machines is the ICP, the interrupt-controller presentation
+> element, of which there is one per CPU thread.
+> 
+> However, I don't believe the ICP gets disabled in deep sleep modes.
+> What does get disabled is the "decrementer", which is a register that
+> normally counts down (at 512MHz) and generates an exception when it is
+> negative.  The decrementer *is* part of the CPU core, unlike the ICP.
+> That's why we can still get IPIs but not timer interrupts.
+> 
+> Please reword your patch description to not use the term "lapic",
+> which is not defined in the Power context and is therefore just
+> causing confusion.
 
- arch/powerpc/boot/dts/fsl/c293si-post.dtsi | 193 +++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/c293si-pre.dtsi  |  63 ++++++++++
- 2 files changed, 256 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/fsl/c293si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/c293si-pre.dtsi
-
-diff --git a/arch/powerpc/boot/dts/fsl/c293si-post.dtsi b/arch/powerpc/boot/dts/fsl/c293si-post.dtsi
-new file mode 100644
-index 0000000..bd20832
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/c293si-post.dtsi
-@@ -0,0 +1,193 @@
-+/*
-+ * C293 Silicon/SoC Device Tree Source (post include)
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+&ifc {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	compatible = "fsl,ifc", "simple-bus";
-+	interrupts = <19 2 0 0>;
-+};
-+
-+/* controller at 0xa000 */
-+&pci0 {
-+	compatible = "fsl,qoriq-pcie-v2.2", "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0 255>;
-+	clock-frequency = <33333333>;
-+	interrupts = <16 2 0 0>;
-+
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <16 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0x0 0x0 0x1 &mpic 0x0 0x1 0x0 0x0
-+			0000 0x0 0x0 0x2 &mpic 0x1 0x1 0x0 0x0
-+			0000 0x0 0x0 0x3 &mpic 0x2 0x1 0x0 0x0
-+			0000 0x0 0x0 0x4 &mpic 0x3 0x1 0x0 0x0
-+			>;
-+	};
-+};
-+
-+&soc {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	device_type = "soc";
-+	compatible = "simple-bus";
-+	bus-frequency = <0>;		// Filled out by uboot.
-+
-+	ecm-law@0 {
-+		compatible = "fsl,ecm-law";
-+		reg = <0x0 0x1000>;
-+		fsl,num-laws = <12>;
-+	};
-+
-+	ecm@1000 {
-+		compatible = "fsl,c293-ecm", "fsl,ecm";
-+		reg = <0x1000 0x1000>;
-+		interrupts = <16 2 0 0>;
-+	};
-+
-+	memory-controller@2000 {
-+		compatible = "fsl,c293-memory-controller";
-+		reg = <0x2000 0x1000>;
-+		interrupts = <16 2 0 0>;
-+	};
-+
-+/include/ "pq3-i2c-0.dtsi"
-+/include/ "pq3-i2c-1.dtsi"
-+/include/ "pq3-duart-0.dtsi"
-+/include/ "pq3-espi-0.dtsi"
-+	spi0: spi@7000 {
-+		fsl,espi-num-chipselects = <1>;
-+	};
-+
-+/include/ "pq3-gpio-0.dtsi"
-+	L2: l2-cache-controller@20000 {
-+		compatible = "fsl,c293-l2-cache-controller";
-+		reg = <0x20000 0x1000>;
-+		cache-line-size = <32>;	// 32 bytes
-+		cache-size = <0x80000>; // L2,512K
-+		interrupts = <16 2 0 0>;
-+	};
-+
-+/include/ "pq3-dma-0.dtsi"
-+/include/ "pq3-esdhc-0.dtsi"
-+	sdhc@2e000 {
-+		compatible = "fsl,c293-esdhc", "fsl,esdhc";
-+		sdhci,auto-cmd12;
-+	};
-+
-+	crypto@80000 {
-+/include/ "qoriq-sec6.0-0.dtsi"
-+	};
-+
-+	crypto@80000 {
-+		reg = <0x80000 0x20000>;
-+		ranges = <0x0 0x80000 0x20000>;
-+
-+		jr@1000{
-+			interrupts = <45 2 0 0>;
-+		};
-+		jr@2000{
-+			interrupts = <57 2 0 0>;
-+		};
-+	};
-+
-+	crypto@a0000 {
-+/include/ "qoriq-sec6.0-0.dtsi"
-+	};
-+
-+	crypto@a0000 {
-+		reg = <0xa0000 0x20000>;
-+		ranges = <0x0 0xa0000 0x20000>;
-+
-+		jr@1000{
-+			interrupts = <49 2 0 0>;
-+		};
-+		jr@2000{
-+			interrupts = <50 2 0 0>;
-+		};
-+	};
-+
-+	crypto@c0000 {
-+/include/ "qoriq-sec6.0-0.dtsi"
-+	};
-+
-+	crypto@c0000 {
-+		reg = <0xc0000 0x20000>;
-+		ranges = <0x0 0xc0000 0x20000>;
-+
-+		jr@1000{
-+			interrupts = <55 2 0 0>;
-+		};
-+		jr@2000{
-+			interrupts = <56 2 0 0>;
-+		};
-+	};
-+
-+/include/ "pq3-mpic.dtsi"
-+/include/ "pq3-mpic-timer-B.dtsi"
-+
-+/include/ "pq3-etsec2-0.dtsi"
-+	enet0: ethernet@b0000 {
-+		queue-group@b0000 {
-+			reg = <0x10000 0x1000>;
-+			fsl,rx-bit-map = <0xff>;
-+			fsl,tx-bit-map = <0xff>;
-+		};
-+	};
-+
-+/include/ "pq3-etsec2-1.dtsi"
-+	enet1: ethernet@b1000 {
-+		queue-group@b1000 {
-+			reg = <0x11000 0x1000>;
-+			fsl,rx-bit-map = <0xff>;
-+			fsl,tx-bit-map = <0xff>;
-+		};
-+	};
-+
-+	global-utilities@e0000 {
-+		compatible = "fsl,c293-guts";
-+		reg = <0xe0000 0x1000>;
-+		fsl,has-rstcr;
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/c293si-pre.dtsi b/arch/powerpc/boot/dts/fsl/c293si-pre.dtsi
-new file mode 100644
-index 0000000..065049d
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/c293si-pre.dtsi
-@@ -0,0 +1,63 @@
-+/*
-+ * C293 Silicon/SoC Device Tree Source (pre include)
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
-+/ {
-+	compatible = "fsl,C293";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	aliases {
-+		serial0 = &serial0;
-+		serial1 = &serial1;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		pci0 = &pci0;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,e500v2@0 {
-+			device_type = "cpu";
-+			reg = <0x0>;
-+			next-level-cache = <&L2>;
-+		};
-+	};
-+};
--- 
-1.8.0
+Noted. Thank you :) I will probably send out a fresh patchset with the
+appropriate changelog to avoid this confusion ?
+> 
+> Paul.
+> 
+Regards
+Preeti U murthy
