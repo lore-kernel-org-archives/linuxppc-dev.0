@@ -1,25 +1,28 @@
-Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-we0-f179.google.com (mail-we0-f179.google.com
- [74.125.82.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A3C012C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2013 15:29:47 +1000 (EST)
-Received: by mail-we0-f179.google.com with SMTP id t57so2533366wes.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2013 22:29:44 -0700 (PDT)
-Message-ID: <51F35AC7.8060909@linaro.org>
-Date: Sat, 27 Jul 2013 07:29:43 +0200
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-MIME-Version: 1.0
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/3] cpuidle/powernv: Enable idle powernv cpu to call
- into the cpuidle framework.
-References: <20130723090111.7291.99479.stgit@deepthi.in.ibm.com>
- <20130723090150.7291.89879.stgit@deepthi.in.ibm.com>
-In-Reply-To: <20130723090150.7291.89879.stgit@deepthi.in.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 7E3BB2C00EC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2013 16:31:47 +1000 (EST)
+Message-ID: <1374906605.3795.11.camel@pasglop>
+Subject: Re: [RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are no
+ arch-specific constraints
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Sat, 27 Jul 2013 16:30:05 +1000
+In-Reply-To: <51F1E15B.3050106@linux.vnet.ibm.com>
+References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
+ <20130725090302.12500.42998.stgit@preeti.in.ibm.com>
+ <20130725133044.GA7400@somewhere> <51F1E15B.3050106@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: deepthi@linux.vnet.ibm.com, shangw@linux.vnet.ibm.com, arnd@arndb.de,
+ linux-pm@vger.kernel.org, geoff@infradead.org,
+ Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, rjw@sisk.pl, paul.gortmaker@windriver.com,
+ paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com,
+ john.stultz@linaro.org, tglx@linutronix.de, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,68 +32,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/2013 11:01 AM, Deepthi Dharwar wrote:
-> This patch enables idle powernv cpu to hook on to the cpuidle
-> framework, if available, else call on to default idle platform
-> code.
-
-Why do you need to do that ?
-
-
-> Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/setup.c |   12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
+On Fri, 2013-07-26 at 08:09 +0530, Preeti U Murthy wrote:
+> *The lapic of a broadcast CPU is active always*. Say CPUX, wants the
+> broadcast CPU to wake it up at timeX.  Since we cannot program the lapic
+> of a remote CPU, CPUX will need to send an IPI to the broadcast CPU,
+> asking it to program its lapic to fire at timeX so as to wake up CPUX.
+> *With multiple CPUs the overhead of sending IPI, could result in
+> performance bottlenecks and may not scale well.*
 > 
-> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-> index 84438af..97d0951 100644
-> --- a/arch/powerpc/platforms/powernv/setup.c
-> +++ b/arch/powerpc/platforms/powernv/setup.c
-> @@ -25,6 +25,7 @@
->  #include <linux/of.h>
->  #include <linux/interrupt.h>
->  #include <linux/bug.h>
-> +#include <linux/cpuidle.h>
->  
->  #include <asm/machdep.h>
->  #include <asm/firmware.h>
-> @@ -196,6 +197,15 @@ static int __init pnv_probe(void)
->  	return 1;
->  }
->  
-> +void powernv_idle(void)
-> +{
-> +	/* Hook to cpuidle framework if available, else
-> +	 * call on default platform idle code
-> +	 */
-> +	if (cpuidle_idle_call())
-> +		power7_idle();
-> +}
-> +
->  define_machine(powernv) {
->  	.name			= "PowerNV",
->  	.probe			= pnv_probe,
-> @@ -205,7 +215,7 @@ define_machine(powernv) {
->  	.show_cpuinfo		= pnv_show_cpuinfo,
->  	.progress		= pnv_progress,
->  	.machine_shutdown	= pnv_shutdown,
-> -	.power_save             = power7_idle,
-> +	.power_save             = powernv_idle,
->  	.calibrate_decr		= generic_calibrate_decr,
->  #ifdef CONFIG_KEXEC
->  	.kexec_cpu_down		= pnv_kexec_cpu_down,
+> Hence the workaround is that the broadcast CPU on each of its timer
+> interrupt checks if any of the next timer event of a CPU in deep idle
+> state has expired, which can very well be found from dev->next_event of
+> that CPU. For example the timeX that has been mentioned above has
+> expired. If so the broadcast handler is called to send an IPI to the
+> idling CPU to wake it up.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> *If the broadcast CPU, is in tickless idle, its timer interrupt could be
+> many ticks away. It could miss waking up a CPU in deep idle*, if its
+> wakeup is much before this timer interrupt of the broadcast CPU. But
+> without tickless idle, atleast at each period we are assured of a timer
+> interrupt. At which time broadcast handling is done as stated in the
+> previous paragraph and we will not miss wakeup of CPUs in deep idle states.
 
+But that means a great loss of power saving on the broadcast CPU when the machine
+is basically completely idle. We might be able to come up with some thing better.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+(Note : I do no know the timer offload code if it exists already, I'm describing
+how things could happen "out of the blue" without any knowledge of pre-existing
+framework here)
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+We can know when the broadcast CPU expects to wake up next. When a CPU goes to
+a deep sleep state, it can then
+
+ - Indicate to the broadcast CPU when it intends to be woken up by queuing
+itself into an ordered queue (ordered by target wakeup time). (OPTIMISATION:
+Play with the locality of that: have one queue (and one "broadcast CPU") per
+chip or per node instead of a global one to limit cache bouncing).
+
+ - Check if that happens before the broadcast CPU intended wake time (we
+need statistics to see how often that happens), and in that case send an IPI
+to wake it up now. When the broadcast CPU goes to sleep, it limits its sleep
+time to the min of it's intended sleep time and the new sleeper time.
+(OPTIMISATION: Dynamically chose a broadcast CPU based on closest expiry ?)
+
+ - We can probably limit spurrious wakeups a *LOT* by aligning that target time
+to a global jiffy boundary, meaning that several CPUs going to idle are likely
+to be choosing the same. Or maybe better, an adaptative alignment by essentially
+getting more coarse grained as we go further in the future
+
+ - When the "broadcast" CPU goes to sleep, it can play the same game of alignment.
+
+I don't like the concept of a dedicated broadcast CPU however. I'd rather have a
+general queue (or per node) of sleepers needing a wakeup and more/less dynamically
+pick a waker to be the last man standing, but it does make things a bit more
+tricky with tickless scheduler (non-idle).
+
+Still, I wonder if we could just have some algorithm to actually pick wakers
+more dynamically based on who ever has the closest "next wakeup" planned,
+that sort of thing. A fixed broadcaster will create an imbalance in
+power/thermal within the chip in addition to needing to be moved around on
+hotplug etc...
+
+Cheers,
+Ben.
