@@ -1,19 +1,21 @@
 Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F1FB32C00F8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2013 09:37:18 +1000 (EST)
-Date: Fri, 26 Jul 2013 18:37:10 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 010962C00F9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2013 10:18:08 +1000 (EST)
+Date: Fri, 26 Jul 2013 19:17:57 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 4/8] powerpc/fsl_booke: set the tlb entry for the
- kernel address in AS1
+Subject: Re: [PATCH v2 7/8] powerpc/fsl_booke: make sure PAGE_OFFSET map to
+ memstart_addr for relocatable kernel
 To: Kevin Hao <haokexin@gmail.com>
-In-Reply-To: <1372942454-25191-5-git-send-email-haokexin@gmail.com> (from
- haokexin@gmail.com on Thu Jul  4 07:54:10 2013)
-Message-ID: <1374881830.30721.38@snotra>
+References: <1372942454-25191-1-git-send-email-haokexin@gmail.com>
+ <1372942454-25191-8-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1372942454-25191-8-git-send-email-haokexin@gmail.com> (from
+ haokexin@gmail.com on Thu Jul  4 07:54:13 2013)
+Message-ID: <1374884277.30721.39@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
 Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
@@ -26,56 +28,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/04/2013 07:54:10 AM, Kevin Hao wrote:
-> We use the tlb1 entries to map low mem to the kernel space. In the
-> current code, it assumes that the first tlb entry would cover the
-> kernel image. But this is not true for some special cases, such as
-> when we run a relocatable kernel above the 256M or set
-> CONFIG_KERNEL_START above 256M. So we choose to switch to address
-> space 1 before setting these tlb entries.
-
-If you're doing this, then I see even less reason to use such a large =20
-boot TLB1 entry.
-
-> Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> ---
-> A new patch in v2.
->=20
->  arch/powerpc/kernel/head_fsl_booke.S | 81 =20
-> ++++++++++++++++++++++++++++++++++++
->  arch/powerpc/mm/fsl_booke_mmu.c      |  2 +
->  arch/powerpc/mm/mmu_decl.h           |  2 +
->  3 files changed, 85 insertions(+)
->=20
-> diff --git a/arch/powerpc/kernel/head_fsl_booke.S =20
-> b/arch/powerpc/kernel/head_fsl_booke.S
-> index 134064d..0cbfe95 100644
-> --- a/arch/powerpc/kernel/head_fsl_booke.S
-> +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> @@ -1172,6 +1172,87 @@ __secondary_hold_acknowledge:
->  #endif
->=20
+On 07/04/2013 07:54:13 AM, Kevin Hao wrote:
+> @@ -1222,6 +1266,9 @@ _GLOBAL(switch_to_as1)
 >  /*
-> + * Create a tbl entry
+>   * Restore to the address space 0 and also invalidate the tlb entry =20
+> created
+>   * by switch_to_as1.
+> + * r3 - the tlb entry which should be invalidated
+> + * r4 - __pa(PAGE_OFFSET in AS0) - pa(PAGE_OFFSET in AS1)
+> + * r5 - device tree virtual address
+>  */
+>  _GLOBAL(restore_to_as0)
+>  	mflr	r0
+> @@ -1230,7 +1277,15 @@ _GLOBAL(restore_to_as0)
+>  0:	mflr	r9
+>  	addi	r9,r9,1f - 0b
+>=20
+> -	mfmsr	r7
+> +	/*
+> +	 * We may map the PAGE_OFFSET in AS0 to a different physical =20
+> address,
+> +	 * so we need calculate the right jump and device tree address =20
+> based
+> +	 * on the offset passed by r4.
+> +	*/
 
-s/tbl/tlb/
+Whitespace
 
+> +	subf	r9,r4,r9
+> +	subf	r5,r4,r5
+> +
+> +2:	mfmsr	r7
+>  	li	r8,(MSR_IS | MSR_DS)
+>  	andc	r7,r7,r8
+>=20
+> @@ -1249,9 +1304,19 @@ _GLOBAL(restore_to_as0)
+>  	mtspr	SPRN_MAS1,r9
+>  	tlbwe
+>  	isync
+> +
+> +	cmpwi	r4,0
+> +	bne	3f
+>  	mtlr	r0
+>  	blr
+>=20
+> +	/*
+> +	 * The PAGE_OFFSET will map to a different physical address,
+> +	 * jump to _start to do another relocation again.
+> +	*/
+> +3:	mr	r3,r5
+> +	bl	_start
+> +
+>  /*
+>   * We put a few things here that have to be page-aligned. This stuff
+>   * goes at the beginning of the data segment, which is page-aligned.
 > diff --git a/arch/powerpc/mm/fsl_booke_mmu.c =20
 > b/arch/powerpc/mm/fsl_booke_mmu.c
-> index 5fe271c..8f60ef8 100644
+> index 8f60ef8..dd283fd 100644
 > --- a/arch/powerpc/mm/fsl_booke_mmu.c
 > +++ b/arch/powerpc/mm/fsl_booke_mmu.c
-> @@ -222,7 +222,9 @@ void __init adjust_total_lowmem(void)
->  	/* adjust lowmem size to __max_low_memory */
->  	ram =3D min((phys_addr_t)__max_low_memory, =20
-> (phys_addr_t)total_lowmem);
+> @@ -224,7 +224,7 @@ void __init adjust_total_lowmem(void)
 >=20
-> +	i =3D switch_to_as1();
+>  	i =3D switch_to_as1();
 >  	__max_low_memory =3D map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM);
-> +	restore_to_as0(i);
+> -	restore_to_as0(i);
+> +	restore_to_as0(i, 0, 0);
 
-Wouldn't it be simpler to just run out of AS1 from the end of =20
-fsl_booke_entry_mapping.S, similar to what U-Boot does?  With ESEL =20
-being changed to something non-conflicting, of course.
+The device tree virtual address is zero?
+
+>  	pr_info("Memory CAM mapping: ");
+>  	for (i =3D 0; i < tlbcam_index - 1; i++)
+> @@ -245,30 +245,56 @@ void setup_initial_memory_limit(phys_addr_t =20
+> first_memblock_base,
+>  }
+>=20
+>  #ifdef CONFIG_RELOCATABLE
+> -notrace void __init relocate_init(phys_addr_t start)
+> +int __initdata is_second_reloc;
+> +notrace void __init relocate_init(u64 dt_ptr, phys_addr_t start)
+>  {
+>  	unsigned long base =3D KERNELBASE;
+>=20
+> -	/*
+> -	 * Relocatable kernel support based on processing of dynamic
+> -	 * relocation entries.
+> -	 * Compute the virt_phys_offset :
+> -	 * virt_phys_offset =3D stext.run - kernstart_addr
+> -	 *
+> -	 * stext.run =3D (KERNELBASE & ~0xfffffff) + (kernstart_addr & =20
+> 0xfffffff)
+> -	 * When we relocate, we have :
+> -	 *
+> -	 *	(kernstart_addr & 0xfffffff) =3D (stext.run & 0xfffffff)
+> -	 *
+> -	 * hence:
+> -	 *  virt_phys_offset =3D (KERNELBASE & ~0xfffffff) -
+> -	 *                              (kernstart_addr & ~0xfffffff)
+> -	 *
+> -	 */
+>  	kernstart_addr =3D start;
+> -	start &=3D ~0xfffffff;
+> -	base &=3D ~0xfffffff;
+> -	virt_phys_offset =3D base - start;
+> +	if (!is_second_reloc) {
+
+Since it's at the end of a function and one side is much shorter than =20
+the
+other, please do:
+
+	if (is_second_reloc) {
+		virt_phys_offset =3D PAGE_OFFSET - memstart_addr;
+		return;
+	}
+
+	/* the rest of the code goes here without having to indent =20
+everything */
+
+Otherwise, please use positive logic for if/else constructs.
+
+> +		phys_addr_t size;
+> +
+> +		/*
+> +		 * Relocatable kernel support based on processing of =20
+> dynamic
+> +		 * relocation entries. Before we get the real =20
+> memstart_addr,
+> +		 * We will compute the virt_phys_offset like this:
+> +		 * virt_phys_offset =3D stext.run - kernstart_addr
+> +		 *
+> +		 * stext.run =3D (KERNELBASE & ~0xfffffff) +
+> +		 *				(kernstart_addr & =20
+> 0xfffffff)
+> +		 * When we relocate, we have :
+> +		 *
+> +		 *	(kernstart_addr & 0xfffffff) =3D (stext.run & =20
+> 0xfffffff)
+> +		 *
+> +		 * hence:
+> +		 *  virt_phys_offset =3D (KERNELBASE & ~0xfffffff) -
+> +		 *                              (kernstart_addr & =20
+> ~0xfffffff)
+> +		 *
+> +		 */
+> +		start &=3D ~0xfffffff;
+> +		base &=3D ~0xfffffff;
+> +		virt_phys_offset =3D base - start;
+> +		early_get_first_memblock_info(__va(dt_ptr), &size);
+> +		/*
+> +		 * We now get the memstart_addr, then we should check =20
+> if this
+> +		 * address is the same as what the PAGE_OFFSET map to =20
+> now. If
+> +		 * not we have to change the map of PAGE_OFFSET to =20
+> memstart_addr
+> +		 * and do a second relocation.
+> +		 */
+> +		if (start !=3D memstart_addr) {
+> +			unsigned long ram;
+> +			int n, offset =3D memstart_addr - start;
+> +
+> +			is_second_reloc =3D 1;
+> +			ram =3D size;
+> +			n =3D switch_to_as1();
+> +			map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM);
+
+Do we really need this much RAM mapped at this point?  Why can't we =20
+continue
+with the same size TLB entry that we've been using, until the second
+relocation?
+
+> +			restore_to_as0(n, offset, __va(dt_ptr));
+> +			/* We should never reach here */
+> +			panic("Relocation error");
+
+Where is execution supposed to resume?  It looks like you're expecting =20
+it
+to resume from _start, but why?  And where is this effect of
+restore_to_as0() documented?
 
 -Scott=
