@@ -1,27 +1,24 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pb0-x22e.google.com (mail-pb0-x22e.google.com
- [IPv6:2607:f8b0:400e:c01::22e])
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pa0-f45.google.com (mail-pa0-f45.google.com
+ [209.85.220.45])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B6A762C0118
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2013 10:32:33 +1000 (EST)
-Received: by mail-pb0-f46.google.com with SMTP id rq8so3346173pbb.19
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2013 17:32:30 -0700 (PDT)
-Date: Sun, 28 Jul 2013 08:32:21 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/3] powerpc/mpc85xx: remove the unneeded pci init
- functions for corenet ds board
-Message-ID: <20130728003221.GA7396@pek-khao-d1.corp.ad.wrs.com>
-References: <20130607020020.GA4678@pek-khao-d1.corp.ad.wrs.com>
- <1374618676.15592.40@snotra>
- <20130725125453.GK5084@pek-khao-d1.corp.ad.wrs.com>
- <1374878624.30721.33@snotra>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
-In-Reply-To: <1374878624.30721.33@snotra>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>, Alexander Graf <agraf@suse.de>
+ by ozlabs.org (Postfix) with ESMTPS id E4E902C0120
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jul 2013 14:49:49 +1000 (EST)
+Received: by mail-pa0-f45.google.com with SMTP id bg4so4652932pad.18
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2013 21:49:45 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH] of: Feed entire flattened device tree into the random pool
+To: Anton Blanchard <anton@samba.org>,
+ Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <20130725143031.16af0a96@kryten>
+References: <20130725125122.78accf44@kryten>
+ <20130725031717.GB15673@concordia> <20130725143031.16af0a96@kryten>
+Date: Sat, 27 Jul 2013 22:49:42 -0600
+Message-Id: <20130728044942.A58793E0A24@localhost>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Rob Herring <rob.herring@calxeda.com>, devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,64 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 25 Jul 2013 14:30:31 +1000, Anton Blanchard <anton@samba.org> wrote:
+> 
+> Hi Michael,
+> 
+> > But why not put the initcall in drivers/of/fdt.c, that way it's not
+> > early but it's still common ?
+> 
+> Good idea! How does this look? So long as it happens before
+> module_init(rand_initialize) we should be good.
+> 
+> Anton
+> --
+> 
+> We feed the entire DMI table into the random pool to provide
+> better random data during early boot, so do the same with the
+> flattened device tree.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> v2: move to drivers/of/fdt.c as suggested by Michael Ellerman
+> 
+> Index: b/drivers/of/fdt.c
+> ===================================================================
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/string.h>
+>  #include <linux/errno.h>
+>  #include <linux/slab.h>
+> +#include <linux/random.h>
+>  
+>  #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
+>  #ifdef CONFIG_PPC
+> @@ -714,3 +715,14 @@ void __init unflatten_device_tree(void)
+>  }
+>  
+>  #endif /* CONFIG_OF_EARLY_FLATTREE */
+> +
+> +/* Feed entire flattened device tree into the random pool */
+> +static int __init add_fdt_randomness(void)
+> +{
+> +	if (initial_boot_params)
+> +		add_device_randomness(initial_boot_params,
+> +				      initial_boot_params->totalsize);
 
---jRHKVT23PllUwdXP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+be32_to_cpu(initial_boot_params->totalsize);
 
-On Fri, Jul 26, 2013 at 05:43:44PM -0500, Scott Wood wrote:
-> On 07/25/2013 07:54:53 AM, Kevin Hao wrote:
-> >The reason is that the ppc kernel assume that the BARs starting
-> >at 0 is unset and will reassign it later. There is a bug in the
-> >previous
-> >kernel, so the kernel maybe not work well for qemu in this case. But I
-> >think this has been fixed by the commit c5df457f (powerpc/pci:
-> >Check the
-> >bus address instead of resource address in pcibios_fixup_resources).
->=20
-> What ensures that the reassignment will not assign zero?
-
-In function pcibios_resource_survey() we will reserve the low IO area
-before reassignment. Please see the following comments and codes in this
-function.
-
-        /* Before we start assigning unassigned resource, we try to reserve
-         * the low IO area and the VGA memory area if they intersect the
-         * bus available resources to avoid allocating things on top of them
-         */
-        if (!pci_has_flag(PCI_PROBE_ONLY)) {
-                list_for_each_entry(b, &pci_root_buses, node)
-                        pcibios_reserve_legacy_regions(b);
-        }   =20
-
-
-Thanks,
-Kevin
-
->=20
-> I'm not doubting the result that it does, but I'm having a hard time
-> seeing it in the code.
->=20
-> Or are you saying that the resource assignment code will run twice,
-> rather than just saying that we won't trust the firmware when we
-> find zero?
->=20
-> -Scott
-
---jRHKVT23PllUwdXP
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJR9GaVAAoJEJNY7TDerrFxy1IH/3Ny/9GqzkQJwCO2f3ismXcm
-X2cZO8igD2CQPXAw/fdbccnzA78hP3HWkRKM5xV9LNlSDFO6j7td1Ui8osFni5BZ
-NmY3HVwWvYF0pOzcbTNqcVuaMilUfHJqCXtZ6GHNRDJaYrw0dn+pz8zPUwaigtqt
-kAOBOJdenj5vnHIiH4glFS/wXU0M88GTuH3CbDXhUyvi5Tr9tE8Zb9Qpjfj/ytPy
-pPteilNJcPt2LyBdoAKD7yrJZNYG6pspDxSp5FTCLCvjqN2fEVCBGbtBspBYlu0M
-kW02UwDu1Bh4EntngMRaYy8RVOLAj9HUowgKtedtApHZX4KOxtQyiXXLtplM2Tc=
-=Qhy6
------END PGP SIGNATURE-----
-
---jRHKVT23PllUwdXP--
+g.
