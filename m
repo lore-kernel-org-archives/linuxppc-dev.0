@@ -1,22 +1,48 @@
-Return-Path: <B42677@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 550A62C02B1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2013 13:49:53 +1000 (EST)
-From: Haijun Zhang <Haijun.Zhang@freescale.com>
-To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 3/3] mmc:esdhc: add support to get voltage from device-tree
-Date: Mon, 29 Jul 2013 10:56:35 +0800
-Message-ID: <1375066595-14968-3-git-send-email-Haijun.Zhang@freescale.com>
-In-Reply-To: <1375066595-14968-1-git-send-email-Haijun.Zhang@freescale.com>
-References: <1375066595-14968-1-git-send-email-Haijun.Zhang@freescale.com>
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BF6BB2C00D6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2013 15:12:03 +1000 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Mon, 29 Jul 2013 10:33:53 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 1BE651258054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2013 10:41:22 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6T5Bn2R38273246
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2013 10:41:50 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6T5BpmD020508
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2013 15:11:52 +1000
+Date: Mon, 29 Jul 2013 10:41:25 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are no
+ arch-specific constraints
+Message-ID: <20130729051125.GA8832@dirshya.in.ibm.com>
+References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
+ <20130725090302.12500.42998.stgit@preeti.in.ibm.com>
+ <20130725133044.GA7400@somewhere>
+ <51F1E15B.3050106@linux.vnet.ibm.com>
+ <1374906605.3795.11.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, cjb@laptop.org, AFLEMING@freescale.com,
- Haijun Zhang <haijun.zhang@freescale.com>, cbouatmailru@gmail.com
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1374906605.3795.11.camel@pasglop>
+Cc: deepthi@linux.vnet.ibm.com, shangw@linux.vnet.ibm.com, arnd@arndb.de,
+ linux-pm@vger.kernel.org, geoff@infradead.org,
+ Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, rjw@sisk.pl, paul.gortmaker@windriver.com,
+ paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>, john.stultz@linaro.org,
+ tglx@linutronix.de, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ schwidefsky@de.ibm.com, chenhui.zhao@freescale.com
+Reply-To: svaidy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +52,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add suppport to get voltage from device-tree node for esdhc host,
-if voltage-ranges was specified in device-tree node we can get
-ocr_mask instead of read from host capacity register. If not voltages
-still can be get from host capacity register.
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> [2013-07-27 16:30:05]:
 
-Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
----
- drivers/mmc/host/sdhci-of-esdhc.c | 1 +
- 1 file changed, 1 insertion(+)
+> On Fri, 2013-07-26 at 08:09 +0530, Preeti U Murthy wrote:
+> > *The lapic of a broadcast CPU is active always*. Say CPUX, wants the
+> > broadcast CPU to wake it up at timeX.  Since we cannot program the lapic
+> > of a remote CPU, CPUX will need to send an IPI to the broadcast CPU,
+> > asking it to program its lapic to fire at timeX so as to wake up CPUX.
+> > *With multiple CPUs the overhead of sending IPI, could result in
+> > performance bottlenecks and may not scale well.*
+> > 
+> > Hence the workaround is that the broadcast CPU on each of its timer
+> > interrupt checks if any of the next timer event of a CPU in deep idle
+> > state has expired, which can very well be found from dev->next_event of
+> > that CPU. For example the timeX that has been mentioned above has
+> > expired. If so the broadcast handler is called to send an IPI to the
+> > idling CPU to wake it up.
+> > 
+> > *If the broadcast CPU, is in tickless idle, its timer interrupt could be
+> > many ticks away. It could miss waking up a CPU in deep idle*, if its
+> > wakeup is much before this timer interrupt of the broadcast CPU. But
+> > without tickless idle, atleast at each period we are assured of a timer
+> > interrupt. At which time broadcast handling is done as stated in the
+> > previous paragraph and we will not miss wakeup of CPUs in deep idle states.
+> 
+> But that means a great loss of power saving on the broadcast CPU when the machine
+> is basically completely idle. We might be able to come up with some thing better.
 
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index 15039e2..b1a7f54 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -316,6 +316,7 @@ static int sdhci_esdhc_probe(struct platform_device *pdev)
+Hi Ben,
+
+Yes, we will need to improve on this case in stages.  In the current
+design, we will have to hold one of the CPU in shallow idle state
+(nap) to wakeup other deep idle cpus.  The cost of keeping the
+periodic tick ON on the broadcast CPU in minimal (but not zero) since
+we would not allow that CPU to enter any deep idle states even if
+there were no periodic timers queued.
  
- 	/* call to generic mmc_of_parse to support additional capabilities */
- 	mmc_of_parse(host->mmc);
-+	host->ocr_mask = mmc_of_parse_voltage(host->mmc);
+> (Note : I do no know the timer offload code if it exists already, I'm describing
+> how things could happen "out of the blue" without any knowledge of pre-existing
+> framework here)
+> 
+> We can know when the broadcast CPU expects to wake up next. When a CPU goes to
+> a deep sleep state, it can then
+> 
+>  - Indicate to the broadcast CPU when it intends to be woken up by queuing
+> itself into an ordered queue (ordered by target wakeup time). (OPTIMISATION:
+> Play with the locality of that: have one queue (and one "broadcast CPU") per
+> chip or per node instead of a global one to limit cache bouncing).
+> 
+>  - Check if that happens before the broadcast CPU intended wake time (we
+> need statistics to see how often that happens), and in that case send an IPI
+> to wake it up now. When the broadcast CPU goes to sleep, it limits its sleep
+> time to the min of it's intended sleep time and the new sleeper time.
+> (OPTIMISATION: Dynamically chose a broadcast CPU based on closest expiry ?)
+
+This will be an improvement and the idea we have is to have
+a hierarchical method of finding a waking CPU within core/socket/node
+in order to find a better fit and ultimately send IPI to wakeup
+a broadcast CPU only if there is no other fit.  This condition would
+imply that more CPUs are in deep idle state and the cost of sending an
+IPI to reprogram the broadcast cpu's local timer may well payoff.
+
+>  - We can probably limit spurrious wakeups a *LOT* by aligning that target time
+> to a global jiffy boundary, meaning that several CPUs going to idle are likely
+> to be choosing the same. Or maybe better, an adaptative alignment by essentially
+> getting more coarse grained as we go further in the future
+> 
+>  - When the "broadcast" CPU goes to sleep, it can play the same game of alignment.
+
+CPUs entering deep idle state would need to wakeup only at a jiffy
+boundary or the jiffy boundary earlier than the target wakeup time.
+Your point is can the broadcast cpu wakeup the sleeping CPU *around*
+the designated wakeup time (earlier) so as to avoid reprogramming its
+timer.
  
- 	ret = sdhci_add_host(host);
- 	if (ret)
--- 
-1.8.0
+> I don't like the concept of a dedicated broadcast CPU however. I'd rather have a
+> general queue (or per node) of sleepers needing a wakeup and more/less dynamically
+> pick a waker to be the last man standing, but it does make things a bit more
+> tricky with tickless scheduler (non-idle).
+> 
+> Still, I wonder if we could just have some algorithm to actually pick wakers
+> more dynamically based on who ever has the closest "next wakeup" planned,
+> that sort of thing. A fixed broadcaster will create an imbalance in
+> power/thermal within the chip in addition to needing to be moved around on
+> hotplug etc...
+
+Right Ben.  The hierarchical way of selecting the waker will help us
+have multiple wakers in different sockets/cores.  The broadcast
+framework allows us to decouple the cpu going to idle and the waker to
+be selected independently.  This patch series is the start where we
+pick one and allow it to move around.  The ideal goal to achieve would
+be that we can have multiple wakers serving wakeup requests from
+a queue (mask) and wakers are generally busy or just idle cpu who need
+not prevent itself from going to tickless idle or deep idle states
+just to wakeup another one.  This optimizations can adapt to the case
+where we will need the last cpu to stay in shallow idle mode and in
+tickless with the wakeup events queued to target one of the deep idle
+cpu.
+
+--Vaidy
