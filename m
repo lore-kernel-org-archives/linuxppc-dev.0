@@ -1,25 +1,24 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id CD91A2C00E8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 05:56:51 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 2/3] include: Convert ethernet mac address declarations to
- use ETH_ALEN
-Date: Mon, 29 Jul 2013 22:06:58 +0200
-Message-ID: <4497056.HfyZknBA2p@vostro.rjw.lan>
-In-Reply-To: <1375126464.2075.46.camel@joe-AO722>
-References: <cover.1375075325.git.joe@perches.com>
- <2929374.frUlkyTFNL@vostro.rjw.lan> <1375126464.2075.46.camel@joe-AO722>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 940A92C00FE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 08:07:27 +1000 (EST)
+Date: Mon, 29 Jul 2013 17:07:18 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/3] mmc:core: parse voltage from device-tree
+To: Haijun Zhang <Haijun.Zhang@freescale.com>
+References: <1375066595-14968-1-git-send-email-Haijun.Zhang@freescale.com>
+In-Reply-To: <1375066595-14968-1-git-send-email-Haijun.Zhang@freescale.com>
+ (from Haijun.Zhang@freescale.com on Sun Jul 28 21:56:33 2013)
+Message-ID: <1375135638.30721.58@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Steve Glendinning <steve.glendinning@shawell.net>,
- Samuel Ortiz <samuel@sortiz.org>, linux-media@vger.kernel.org,
- netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
- Vitaly Bordug <vbordug@ru.mvista.com>, Len Brown <lenb@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linux-mmc@vger.kernel.org, AFLEMING@freescale.com, cbouatmailru@gmail.com,
+ cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
+ Haijun Zhang <Haijun.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, July 29, 2013 12:34:24 PM Joe Perches wrote:
-> On Mon, 2013-07-29 at 13:59 +0200, Rafael J. Wysocki wrote:
-> > On Sunday, July 28, 2013 10:29:04 PM Joe Perches wrote:
-> > > It's convenient to have ethernet mac addresses use
-> > > ETH_ALEN to be able to grep for them a bit easier and
-> > > also to ensure that the addresses are __aligned(2).
-> []
-> > > diff --git a/include/acpi/actbl2.h b/include/acpi/actbl2.h
-> []
-> > > @@ -44,6 +44,8 @@
-> []
-> > > +#include <linux/if_ether.h>
-> > > +
-> []
-> > > @@ -605,7 +607,7 @@ struct acpi_ibft_nic {
-> []
-> > > -	u8 mac_address[6];
-> > > +	u8 mac_address[ETH_ALEN];
-> 
-> > Please don't touch this file.
-> > 
-> > It comes from a code base outside of the kernel and should be kept in sync with
-> > the upstream.
-> 
-> Which files in include/acpi have this characteristic?
+On 07/28/2013 09:56:33 PM, Haijun Zhang wrote:
+> Add function to support get voltage from device-tree.
+> If there are voltage-range specified in device-tree node, this =20
+> function
+> will parse it and return the avail voltage mask.
+>=20
+> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+> ---
+>  drivers/mmc/core/core.c  | 48 =20
+> ++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/mmc/core.h |  1 +
+>  2 files changed, 49 insertions(+)
 
-Generally, all whose names start with "ac" except for acpi_bus.h,
-acpi_drivers.h and acpi_numa.h.
+Move the code rather than copying it.
 
-> Perhaps an include/acpi/README is appropriate.
-
-Yes, we can add one.
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+-Scott=
