@@ -1,24 +1,19 @@
-Return-Path: <B45939@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9375E2C0263
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2013 20:50:07 +1000 (EST)
-From: <hongbo.zhang@freescale.com>
-To: <vinod.koul@intel.com>, <djbw@fb.com>, <leoli@freescale.com>,
- <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v7 3/3] DMA: Freescale: update driver to support 8-channel DMA
+Return-Path: <vinod.koul@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by ozlabs.org (Postfix) with ESMTP id A42F52C0105
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2013 21:38:09 +1000 (EST)
+Date: Mon, 29 Jul 2013 16:29:01 +0530
+From: Vinod Koul <vinod.koul@intel.com>
+To: hongbo.zhang@freescale.com
+Subject: Re: [PATCH v7 0/3] DMA: Freescale: Add support for 8-channel DMA
  engine
-Date: Mon, 29 Jul 2013 18:49:04 +0800
-Message-ID: <1375094944-3343-4-git-send-email-hongbo.zhang@freescale.com>
-In-Reply-To: <1375094944-3343-1-git-send-email-hongbo.zhang@freescale.com>
+Message-ID: <20130729105901.GI29095@intel.com>
 References: <1375094944-3343-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Hongbo Zhang <hongbo.zhang@freescale.com>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1375094944-3343-1-git-send-email-hongbo.zhang@freescale.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, djbw@fb.com,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,93 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+On Mon, Jul 29, 2013 at 06:49:01PM +0800, hongbo.zhang@freescale.com wrote:
+> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+> 
+> Hi Vinod, Dan, Scott and Leo, please have a look at these V7 patches.
+The dma relates changes look okay to me.
 
-This patch adds support to 8-channel DMA engine, thus the driver works for both
-the new 8-channel and the legacy 4-channel DMA engines.
+I need someone to review and ACK the DT bindings.
 
-Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
----
- drivers/dma/Kconfig  |    9 +++++----
- drivers/dma/fsldma.c |    9 ++++++---
- drivers/dma/fsldma.h |    2 +-
- 3 files changed, 12 insertions(+), 8 deletions(-)
+~Vinod
+> 
+> Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
+> adds support this DMA engine.
+> 
+> V6->V7 changes:
+> - only remove unnecessary "CHIP-dma" explanations in [1/3]
+> 
+> V5->V6 changes:
+> - minor updates of descriptions in binding document and Kconfig
+> - remove [4/4], that should be another patch in future
+> 
+> V4->V5 changes:
+> - update description in the dt binding document, to make it more resonable
+> - add new patch [4/4] to eliminate a compiling warning which already exists
+>   for a long time
+> 
+> V3->V4 changes:
+> - introduce new patch [1/3] to revise the legacy dma binding document
+> - and then add new paragraph to describe new dt node binding in [2/3]
+> - rebase to latest kernel v3.11-rc1
+> 
+> V2->V3 changes:
+> - edit Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+> - edit text string in Kconfig and the driver files, using "elo series" to
+>   mention all the current "elo*"
+> 
+> V1->V2 changes:
+> - removed the codes handling the register dgsr1, since it isn't used currently
+> - renamed the DMA DT compatible to "fsl,elo3-dma"
+> - renamed the new dts files to "elo3-dma-<n>.dtsi"
+> 
+> Hongbo Zhang (3):
+>   DMA: Freescale: revise device tree binding document
+>   DMA: Freescale: Add new 8-channel DMA engine device tree nodes
+>   DMA: Freescale: update driver to support 8-channel DMA engine
+> 
+>  .../devicetree/bindings/powerpc/fsl/dma.txt        |  114 +++++++++++++++-----
+>  arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
+>  arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   81 ++++++++++++++
+>  arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   81 ++++++++++++++
+>  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
+>  drivers/dma/Kconfig                                |    9 +-
+>  drivers/dma/fsldma.c                               |    9 +-
+>  drivers/dma/fsldma.h                               |    2 +-
+>  8 files changed, 264 insertions(+), 40 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+>  create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+> 
+> -- 
+> 1.7.9.5
+> 
+> 
+> 
 
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 6825957..3979c65 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -89,14 +89,15 @@ config AT_HDMAC
- 	  Support the Atmel AHB DMA controller.
- 
- config FSL_DMA
--	tristate "Freescale Elo and Elo Plus DMA support"
-+	tristate "Freescale Elo series DMA support"
- 	depends on FSL_SOC
- 	select DMA_ENGINE
- 	select ASYNC_TX_ENABLE_CHANNEL_SWITCH
- 	---help---
--	  Enable support for the Freescale Elo and Elo Plus DMA controllers.
--	  The Elo is the DMA controller on some 82xx and 83xx parts, and the
--	  Elo Plus is the DMA controller on 85xx and 86xx parts.
-+	  Enable support for the Freescale Elo series DMA controllers.
-+	  The Elo is the DMA controller on some mpc82xx and mpc83xx parts, the
-+	  EloPlus is on mpc85xx and mpc86xx and Pxxx parts, and the Elo3 is on
-+	  some Txxx and Bxxx parts.
- 
- config MPC512X_DMA
- 	tristate "Freescale MPC512x built-in DMA engine support"
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 49e8fbd..16a9a48 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -1261,7 +1261,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
- 	WARN_ON(fdev->feature != chan->feature);
- 
- 	chan->dev = fdev->dev;
--	chan->id = ((res.start - 0x100) & 0xfff) >> 7;
-+	chan->id = (res.start & 0xfff) < 0x300 ?
-+		   ((res.start - 0x100) & 0xfff) >> 7 :
-+		   ((res.start - 0x200) & 0xfff) >> 7;
- 	if (chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
- 		dev_err(fdev->dev, "too many channels for device\n");
- 		err = -EINVAL;
-@@ -1434,6 +1436,7 @@ static int fsldma_of_remove(struct platform_device *op)
- }
- 
- static const struct of_device_id fsldma_of_ids[] = {
-+	{ .compatible = "fsl,elo3-dma", },
- 	{ .compatible = "fsl,eloplus-dma", },
- 	{ .compatible = "fsl,elo-dma", },
- 	{}
-@@ -1455,7 +1458,7 @@ static struct platform_driver fsldma_of_driver = {
- 
- static __init int fsldma_init(void)
- {
--	pr_info("Freescale Elo / Elo Plus DMA driver\n");
-+	pr_info("Freescale Elo series DMA driver\n");
- 	return platform_driver_register(&fsldma_of_driver);
- }
- 
-@@ -1467,5 +1470,5 @@ static void __exit fsldma_exit(void)
- subsys_initcall(fsldma_init);
- module_exit(fsldma_exit);
- 
--MODULE_DESCRIPTION("Freescale Elo / Elo Plus DMA driver");
-+MODULE_DESCRIPTION("Freescale Elo series DMA driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-index f5c3879..1ffc244 100644
---- a/drivers/dma/fsldma.h
-+++ b/drivers/dma/fsldma.h
-@@ -112,7 +112,7 @@ struct fsldma_chan_regs {
- };
- 
- struct fsldma_chan;
--#define FSL_DMA_MAX_CHANS_PER_DEVICE 4
-+#define FSL_DMA_MAX_CHANS_PER_DEVICE 8
- 
- struct fsldma_device {
- 	void __iomem *regs;	/* DGSR register base */
 -- 
-1.7.9.5
