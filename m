@@ -1,17 +1,22 @@
-Return-Path: <anton@samba.org>
-Date: Mon, 29 Jul 2013 13:11:50 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH] of: Feed entire flattened device tree into the random pool
-Message-ID: <20130729131150.591926c3@kryten>
-In-Reply-To: <20130728044942.A58793E0A24@localhost>
-References: <20130725125122.78accf44@kryten> <20130725031717.GB15673@concordia>
- <20130725143031.16af0a96@kryten>
- <20130728044942.A58793E0A24@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: devicetree@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B42677@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 12BBD2C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2013 13:49:10 +1000 (EST)
+From: Haijun Zhang <Haijun.Zhang@freescale.com>
+To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/3] mmc:sdhc: get voltage from sdhc host
+Date: Mon, 29 Jul 2013 10:56:34 +0800
+Message-ID: <1375066595-14968-2-git-send-email-Haijun.Zhang@freescale.com>
+In-Reply-To: <1375066595-14968-1-git-send-email-Haijun.Zhang@freescale.com>
+References: <1375066595-14968-1-git-send-email-Haijun.Zhang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: scottwood@freescale.com, cjb@laptop.org, AFLEMING@freescale.com,
+ Haijun Zhang <haijun.zhang@freescale.com>, cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,49 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+We use host->ocr_mask to hold the voltage get from device-tree
+node, In case host->ocr_mask was available, we use host->ocr_mask
+as the final available voltage can be used by MMC/SD/SDIO card.
 
-Hi,
-
-> be32_to_cpu(initial_boot_params->totalsize);
-
-Ouch, thanks Grant.
-
-Anton
---
-
-We feed the entire DMI table into the random pool to provide
-better random data during early boot, so do the same with the
-flattened device tree.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
 ---
+ drivers/mmc/host/sdhci.c  | 3 +++
+ include/linux/mmc/sdhci.h | 1 +
+ 2 files changed, 4 insertions(+)
 
-v3: Fix endian issues as noted by Grant
-
-Index: b/drivers/of/fdt.c
-===================================================================
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -17,6 +17,7 @@
- #include <linux/string.h>
- #include <linux/errno.h>
- #include <linux/slab.h>
-+#include <linux/random.h>
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index a78bd4f..57541e0 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -3119,6 +3119,9 @@ int sdhci_add_host(struct sdhci_host *host)
+ 				   SDHCI_MAX_CURRENT_MULTIPLIER;
+ 	}
  
- #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
- #ifdef CONFIG_PPC
-@@ -714,3 +715,14 @@ void __init unflatten_device_tree(void)
- }
++	if (host->ocr_mask)
++		ocr_avail = host->ocr_mask;
++
+ 	mmc->ocr_avail = ocr_avail;
+ 	mmc->ocr_avail_sdio = ocr_avail;
+ 	if (host->ocr_avail_sdio)
+diff --git a/include/linux/mmc/sdhci.h b/include/linux/mmc/sdhci.h
+index e3c6a74..3e781b8 100644
+--- a/include/linux/mmc/sdhci.h
++++ b/include/linux/mmc/sdhci.h
+@@ -171,6 +171,7 @@ struct sdhci_host {
+ 	unsigned int            ocr_avail_sdio;	/* OCR bit masks */
+ 	unsigned int            ocr_avail_sd;
+ 	unsigned int            ocr_avail_mmc;
++	u32 ocr_mask;		/* available voltages */
  
- #endif /* CONFIG_OF_EARLY_FLATTREE */
-+
-+/* Feed entire flattened device tree into the random pool */
-+static int __init add_fdt_randomness(void)
-+{
-+	if (initial_boot_params)
-+		add_device_randomness(initial_boot_params,
-+				be32_to_cpu(initial_boot_params->totalsize));
-+
-+	return 0;
-+}
-+core_initcall(add_fdt_randomness);
+ 	wait_queue_head_t	buf_ready_int;	/* Waitqueue for Buffer Read Ready interrupt */
+ 	unsigned int		tuning_done;	/* Condition flag set when CMD19 succeeds */
+-- 
+1.8.0
