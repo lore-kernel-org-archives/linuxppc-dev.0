@@ -1,22 +1,21 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3705C2C00D4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 10:19:33 +1000 (EST)
-Date: Mon, 29 Jul 2013 19:19:13 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Sergey Gerasimov <Sergey.Gerasimov@astrosoft-development.com>
-Subject: Re: [1/1] MPC831x: fix PCI express probing
-Message-ID: <20130730001913.GA8120@home.buserror.net>
-References: <1369657783-19962-1-git-send-email-Sergey.Gerasimov@astrosoft-development.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1369657783-19962-1-git-send-email-Sergey.Gerasimov@astrosoft-development.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Jia Hongtao <B38951@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E4AD02C00D4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 10:29:47 +1000 (EST)
+Message-ID: <1375144178.3721.13.camel@pasglop>
+Subject: Re: [PATCH] Add device file bindings for MAPLE
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Tue, 30 Jul 2013 10:29:38 +1000
+In-Reply-To: <1375142451.30721.68@snotra>
+References: <1374930222-32739-1-git-send-email-shaveta@freescale.com>
+ <1375142451.30721.68@snotra>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Shaveta Leekha <shaveta@freescale.com>, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,62 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 27, 2013 at 02:29:43PM +0200, Sergey Gerasimov wrote:
-> For MPC831x the bus probing function also needs the fixup to assign
-> addresses to the PCI devices as it was for MPC85xx and MPC86xx.
-> The fixup of the bridge vendor and device ID should be done early in
-> PCI probing. Else the bridge is not detected as FIXUP_HEADER is called
-> too late.
-> 
-> Signed-off-by: Sergey Gerasimov <Sergey.Gerasimov@astrosoft-development.com>
-> 
-> ---
-> arch/powerpc/sysdev/fsl_pci.c | 68 +++++++++++++++++++------------------------
->  1 file changed, 30 insertions(+), 38 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index 028ac1f..94d1bd4 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -84,6 +84,34 @@ static int fsl_pcie_check_link(struct pci_controller *hose)
->  	return 0;
->  }
->  
-> +void fsl_pcibios_fixup_bus(struct pci_bus *bus)
-> +{
-> +	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
-> +	int i;
-> +
-> +
-> +	if ((bus->parent == hose->bus)
-> +		&& ((fsl_pcie_bus_fixup
-> +			&& pci_bus_find_capability(bus, 0, PCI_CAP_ID_EXP))
-> +			|| (hose->indirect_type
-> +				& PPC_INDIRECT_TYPE_NO_PCIE_LINK))) {
-> +		for (i = 0; i < 4; ++i) {
-> +			struct resource *res = bus->resource[i];
-> +			struct resource *par = bus->parent->resource[i];
-> +			if (res) {
-> +				res->start = 0;
-> +				res->end   = 0;
-> +				res->flags = 0;
-> +			}
-> +			if (res && par) {
-> +				res->start = par->start;
-> +				res->end   = par->end;
-> +				res->flags = par->flags;
-> +			}
-> +		}
-> +	}
-> +}
+On Mon, 2013-07-29 at 19:00 -0500, Scott Wood wrote:
+> On 07/27/2013 08:03:42 AM, Shaveta Leekha wrote:
+> > Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
+> > ---
+> >  .../devicetree/bindings/powerpc/fsl/maple.txt      |   50  
+> > ++++++++++++++++++++
 
-Why are you moving this function?  This makes it hardaer to see the
-changes you make -- and is likely the cause of unintended changes being
-made due to a bad conflict resolution.  In particular, you seem to be
-reverting commit 13635dfdc6aa8d2890e02dc441decfcb4ae63e14
-("powerpc/fsl/pci: Fix PCIe fixup regression").
+BTW, that's confusing, we have a platform called maple ... oh well...
 
-Also please confirm that the problem still exists in after "Fix PCIe
-fixup regression".
-
--Scott
+Cheers,
+Ben.
