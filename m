@@ -1,28 +1,25 @@
 Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EC2722C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 02:27:25 +1000 (EST)
-Received: from mail96-co1 (localhost [127.0.0.1])	by mail96-co1-R.bigfish.com
- (Postfix) with ESMTP id 596BCD001CF	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,
- 30 Jul 2013 16:27:21 +0000 (UTC)
-Received: from CO1EHSMHS002.bigfish.com (unknown [10.243.78.226])	by
- mail96-co1.bigfish.com (Postfix) with ESMTP id 6FAFDAA0048	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 16:27:19 +0000 (UTC)
-Date: Tue, 30 Jul 2013 11:27:15 -0500
+ by ozlabs.org (Postfix) with ESMTPS id D47AC2C0098
+ for <linuxppc-dev@ozlabs.org>; Wed, 31 Jul 2013 04:28:29 +1000 (EST)
+Date: Tue, 30 Jul 2013 13:28:11 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: powerpc/85xx: Add P1023RDB board support
-To: Chunhe Lan <b25806@freescale.com>
-In-Reply-To: <51F793D3.6080504@freescale.com> (from b25806@freescale.com on
- Tue Jul 30 05:22:11 2013)
-Message-ID: <1375201635.30721.71@snotra>
+Subject: Re: [PATCH v3 2/3] powerpc/85xx: Add silicon device tree for C293
+To: Po Liu <Po.Liu@freescale.com>
+References: <1374806479-812-3-git-send-email-Po.Liu@freescale.com>
+ <1375174163-19246-1-git-send-email-Po.Liu@freescale.com>
+ <1375174163-19246-2-git-send-email-Po.Liu@freescale.com>
+In-Reply-To: <1375174163-19246-2-git-send-email-Po.Liu@freescale.com> (from
+ Po.Liu@freescale.com on Tue Jul 30 03:49:22 2013)
+Message-ID: <1375208891.30721.74@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Chunhe Lan <Chunhe.Lan@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Mingkai Hu <Mingkai.Hu@freescale.com>,
+ afleming@freescale.com, Po Liu <Po.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +29,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/30/2013 05:22:11 AM, Chunhe Lan wrote:
+On 07/30/2013 03:49:22 AM, Po Liu wrote:
+> From: Mingkai Hu <Mingkai.Hu@freescale.com>
 >=20
-> On 07/30/2013 09:09 AM, Scott Wood wrote:
->> On Fri, Jun 14, 2013 at 04:26:20PM +0800, Chunhe Lan wrote:
->>> Ethernet:
->>>     eTSEC1: Connected to Atheros AR8035 GETH PHY
->>>     eTSEC2: Connected to Atheros AR8035 GETH PHY
->> Where are the PHYs in the device tree?
->     "Atheros AR8035 GETH PHY" driver is module_init driver. It uses =20
-> the two structs of "static struct phy_driver at8035_driver" and
->     "static struct mdio_device_id __maybe_unused atheros_tbl" to =20
-> register at8035_driver.
+> Signed-off-by: Mingkai Hu <Mingkai.Hu@freescale.com>
+> Signed-off-by: Po Liu <Po.Liu@freescale.com>
+> ---
+> Changes for v2:
+> 	- None
+> Changes for v3:
+> 	- None
 >=20
->     So do not need to add PHYs in the device tree.
+>  arch/powerpc/boot/dts/fsl/c293si-post.dtsi | 193 =20
+> +++++++++++++++++++++++++++++
+>  arch/powerpc/boot/dts/fsl/c293si-pre.dtsi  |  63 ++++++++++
+>  2 files changed, 256 insertions(+)
+>  create mode 100644 arch/powerpc/boot/dts/fsl/c293si-post.dtsi
+>  create mode 100644 arch/powerpc/boot/dts/fsl/c293si-pre.dtsi
+>=20
+> diff --git a/arch/powerpc/boot/dts/fsl/c293si-post.dtsi =20
+> b/arch/powerpc/boot/dts/fsl/c293si-post.dtsi
+> new file mode 100644
+> index 0000000..bd20832
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/fsl/c293si-post.dtsi
+> @@ -0,0 +1,193 @@
+> +/*
+> + * C293 Silicon/SoC Device Tree Source (post include)
+> + *
+> + * Copyright 2012 Freescale Semiconductor Inc.
+> + *
+> + * Redistribution and use in source and binary forms, with or without
+> + * modification, are permitted provided that the following =20
+> conditions are met:
+> + *     * Redistributions of source code must retain the above =20
+> copyright
+> + *       notice, this list of conditions and the following =20
+> disclaimer.
+> + *     * Redistributions in binary form must reproduce the above =20
+> copyright
+> + *       notice, this list of conditions and the following =20
+> disclaimer in the
+> + *       documentation and/or other materials provided with the =20
+> distribution.
+> + *     * Neither the name of Freescale Semiconductor nor the
+> + *       names of its contributors may be used to endorse or promote =20
+> products
+> + *       derived from this software without specific prior written =20
+> permission.
+> + *
+> + *
+> + * ALTERNATIVELY, this software may be distributed under the terms =20
+> of the
+> + * GNU General Public License ("GPL") as published by the Free =20
+> Software
+> + * Foundation, either version 2 of that License or (at your option) =20
+> any
+> + * later version.
+> + *
+> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' =20
+> AND ANY
+> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE =20
+> IMPLIED
+> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR =20
+> PURPOSE ARE
+> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE =20
+> FOR ANY
+> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR =20
+> CONSEQUENTIAL DAMAGES
+> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS =20
+> OR SERVICES;
+> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER =20
+> CAUSED AND
+> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT =20
+> LIABILITY, OR TORT
+> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE =20
+> USE OF THIS
+> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+> + */
+> +
+> +&ifc {
+> +	#address-cells =3D <2>;
+> +	#size-cells =3D <1>;
+> +	compatible =3D "fsl,ifc", "simple-bus";
+> +	interrupts =3D <19 2 0 0>;
+> +};
+> +
+> +/* controller at 0xa000 */
+> +&pci0 {
+> +	compatible =3D "fsl,qoriq-pcie-v2.2", "fsl,qoriq-pcie";
+> +	device_type =3D "pci";
+> +	#size-cells =3D <2>;
+> +	#address-cells =3D <3>;
+> +	bus-range =3D <0 255>;
+> +	clock-frequency =3D <33333333>;
+> +	interrupts =3D <16 2 0 0>;
 
-Huh?  How does registering a driver eliminate the need to describe the =20
-devices in the device tree?  If you're trying to say that the device =20
-can be probed (like a PCI device), how do you determine which PHY goes =20
-to which MAC?  I suspect the actual answer is "this chip has datapath =20
-ethernet, and datapath stuff is not upstream (still!)".  That's no =20
-excuse for not describing it in the device tree, though.  The device =20
-tree describes the hardware, not what Linux has drivers for.
+Remove clock-frequency (surely PCIe is not running at 33 MHz).
 
-FWIW, I don't see the string "at8035_driver" anywhere in the kernel =20
-(except in the SDK, which doesn't count here).  Maybe you meant =20
-at803x_driver?
+> +	crypto@80000 {
+> +/include/ "qoriq-sec6.0-0.dtsi"
+> +	};
+> +
+> +	crypto@80000 {
+> +		reg =3D <0x80000 0x20000>;
+> +		ranges =3D <0x0 0x80000 0x20000>;
+> +
+> +		jr@1000{
+> +			interrupts =3D <45 2 0 0>;
+> +		};
+> +		jr@2000{
+> +			interrupts =3D <57 2 0 0>;
+> +		};
+> +	};
+
+Do these inline the way the example shows.
 
 -Scott=
