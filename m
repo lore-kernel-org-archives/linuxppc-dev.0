@@ -1,23 +1,22 @@
-Return-Path: <B43644@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 422DA2C00DE
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Jul 2013 19:41:53 +1000 (EST)
-From: Po Liu <Po.Liu@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v3 3/3] powerpc/85xx: Add C293PCIE board support
-Date: Tue, 30 Jul 2013 16:49:23 +0800
-Message-ID: <1375174163-19246-3-git-send-email-Po.Liu@freescale.com>
-In-Reply-To: <1375174163-19246-1-git-send-email-Po.Liu@freescale.com>
-References: <1374806479-812-3-git-send-email-Po.Liu@freescale.com>
- <1375174163-19246-1-git-send-email-Po.Liu@freescale.com>
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-wg0-f50.google.com (mail-wg0-f50.google.com [74.125.82.50])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B4A982C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 19:51:32 +1000 (EST)
+Received: by mail-wg0-f50.google.com with SMTP id m15so5778354wgh.17
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 02:51:28 -0700 (PDT)
+Message-ID: <51F78CA1.40605@linaro.org>
+Date: Tue, 30 Jul 2013 11:51:29 +0200
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Mingkai Hu <Mingkai.Hu@freescale.com>,
- afleming@freescale.com, Po Liu <Po.Liu@freescale.com>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle support
+References: <1375167603-16722-1-git-send-email-dongsheng.wang@freescale.com>
+In-Reply-To: <1375167603-16722-1-git-send-email-dongsheng.wang@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: chenhui.zhao@freescale.com, linux-pm@vger.kernel.org, rjw@sisk.pl,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,403 +26,336 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mingkai Hu <Mingkai.Hu@freescale.com>
+On 07/30/2013 09:00 AM, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> Add cpuidle support for e500 family, using cpuidle framework to
+> manage various low power modes. The new implementation will remain
+> compatible with original idle method.
+> 
+> Initially, this supports PW10, and subsequent patches will support
+> PW20/DOZE/NAP.
+> 
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ---
+> This patch keep using cpuidle_register_device(), because we need to support cpu
+> hotplug. I will fix "device" issue in this driver, after
+> Deepthi Dharwar <deepthi@linux.vnet.ibm.com> add a hotplug handler into cpuidle
+> freamwork.
+> 
+> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+> index 8b48090..cbdbe25 100644
+> --- a/arch/powerpc/include/asm/machdep.h
+> +++ b/arch/powerpc/include/asm/machdep.h
+> @@ -271,6 +271,16 @@ extern void power7_idle(void);
+>  extern void ppc6xx_idle(void);
+>  extern void book3e_idle(void);
+>  
+> +/* Wait for Interrupt */
+> +static inline void fsl_cpuidle_wait(void)
+> +{
+> +#ifdef CONFIG_PPC64
+> +	book3e_idle();
+> +#else
+> +	e500_idle();
+> +#endif
+> +}
+> +
+>  /*
+>   * ppc_md contains a copy of the machine description structure for the
+>   * current platform. machine_id contains the initial address where the
+> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+> index b3fb81d..7ed114b 100644
+> --- a/drivers/cpuidle/Kconfig
+> +++ b/drivers/cpuidle/Kconfig
+> @@ -35,6 +35,11 @@ depends on ARM
+>  source "drivers/cpuidle/Kconfig.arm"
+>  endmenu
+>  
+> +menu "PowerPC CPU Idle Drivers"
+> +depends on PPC32 || PPC64
+> +source "drivers/cpuidle/Kconfig.powerpc"
+> +endmenu
+> +
+>  endif
+>  
+>  config ARCH_NEEDS_CPU_IDLE_COUPLED
+> diff --git a/drivers/cpuidle/Kconfig.powerpc b/drivers/cpuidle/Kconfig.powerpc
+> new file mode 100644
+> index 0000000..9f3f5ef
+> --- /dev/null
+> +++ b/drivers/cpuidle/Kconfig.powerpc
+> @@ -0,0 +1,9 @@
+> +#
+> +# PowerPC CPU Idle drivers
+> +#
+> +
+> +config PPC_E500_CPUIDLE
+> +	bool "CPU Idle Driver for E500 family processors"
+> +	depends on FSL_SOC_BOOKE
+> +	help
+> +	  Select this to enable cpuidle on e500 family processors.
+> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+> index 0b9d200..0dde3db 100644
+> --- a/drivers/cpuidle/Makefile
+> +++ b/drivers/cpuidle/Makefile
+> @@ -11,3 +11,7 @@ obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+= cpuidle-calxeda.o
+>  obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+= cpuidle-kirkwood.o
+>  obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+= cpuidle-zynq.o
+>  obj-$(CONFIG_ARM_U8500_CPUIDLE)         += cpuidle-ux500.o
+> +
+> +##################################################################################
+> +# PowerPC platform drivers
+> +obj-$(CONFIG_PPC_E500_CPUIDLE)		+= cpuidle-e500.o
+> diff --git a/drivers/cpuidle/cpuidle-e500.c b/drivers/cpuidle/cpuidle-e500.c
+> new file mode 100644
+> index 0000000..1919cea
+> --- /dev/null
+> +++ b/drivers/cpuidle/cpuidle-e500.c
+> @@ -0,0 +1,222 @@
+> +/*
+> + * Copyright 2013 Freescale Semiconductor, Inc.
+> + *
+> + * CPU Idle driver for Freescale PowerPC e500 family processors.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * Author: Wang Dongsheng <dongsheng.wang@freescale.com>
+> + */
+> +
+> +#include <linux/cpu.h>
+> +#include <linux/cpuidle.h>
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/notifier.h>
+> +
+> +#include <asm/machdep.h>
+> +
+> +static struct cpuidle_driver e500_idle_driver = {
+> +	.name = "e500_idle",
+> +	.owner = THIS_MODULE,
+> +};
+> +
+> +static struct cpuidle_device __percpu *e500_cpuidle_devices;
+> +
+> +static void e500_cpuidle(void)
+> +{
+> +	/*
+> +	 * This would call on the cpuidle framework, and the back-end
+> +	 * driver to go to idle states.
+> +	 */
+> +	if (cpuidle_idle_call()) {
+> +		/*
+> +		 * On error, execute default handler
+> +		 * to go into low thread priority and possibly
+> +		 * low power mode.
+> +		 */
+> +		HMT_low();
+> +		HMT_very_low();
+> +	}
+> +}
 
-C293PCIE board is a series of Freescale PCIe add-in cards to perform
-as public key crypto accelerator or secure key management module.
+Nope, this is not the place to add such function.
 
- - 512KB platform SRAM in addition to 512K L2 Cache/SRAM
- - 512MB soldered DDR3 32bit memory
- - CPLD System Logic
- - 64MB x16 NOR flash and 4GB x8 NAND flash
- - 16MB SPI flash
+> +static int pw10_enter(struct cpuidle_device *dev,
+> +			struct cpuidle_driver *drv, int index)
+> +{
+> +	fsl_cpuidle_wait();
+> +	return index;
+> +}
+> +
+> +static struct cpuidle_state fsl_pw_idle_states[] = {
+> +	{
+> +		.name = "pw10",
+> +		.desc = "pw10",
+> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+> +		.exit_latency = 0,
+> +		.target_residency = 0,
+> +		.enter = &pw10_enter
+> +	},
+> +};
+> +
+> +static int cpu_hotplug_notify(struct notifier_block *n,
+> +			unsigned long action, void *hcpu)
+> +{
+> +	unsigned long hotcpu = (unsigned long)hcpu;
+> +	struct cpuidle_device *dev =
+> +			per_cpu_ptr(e500_cpuidle_devices, hotcpu);
+> +
+> +	if (dev && cpuidle_get_driver()) {
+> +		switch (action) {
+> +		case CPU_ONLINE:
+> +		case CPU_ONLINE_FROZEN:
+> +			cpuidle_pause_and_lock();
+> +			cpuidle_enable_device(dev);
+> +			cpuidle_resume_and_unlock();
+> +			break;
+> +
+> +		case CPU_DEAD:
+> +		case CPU_DEAD_FROZEN:
+> +			cpuidle_pause_and_lock();
+> +			cpuidle_disable_device(dev);
+> +			cpuidle_resume_and_unlock();
+> +			break;
+> +
+> +		default:
+> +			return NOTIFY_DONE;
+> +		}
+> +	}
+> +
+> +	return NOTIFY_OK;
+> +}
+> +
+> +static struct notifier_block cpu_hotplug_notifier = {
+> +	.notifier_call = cpu_hotplug_notify,
+> +};
 
-Signed-off-by: Mingkai Hu <Mingkai.Hu@freescale.com>
-Signed-off-by: Po Liu <Po.Liu@freescale.com>
----
-Changes for v2:
-	- Remove the JFFS2 partitions in NOR/NAND/SPI flash;
-	- Implement the NAND partitions;
-	- Remove the no use descriptions for cpld node;
-	- Add mpc85xx_smp_defconfig and mpc85xx_defconfig for C293;
-	- Remove the no use includes in c293pcie.c
-Changes for v3:
-	- Remove some partitions for NAND, merge them into RFS
-	- Modify the SPI RFS partition expression
-	- Remove #address-cells #size-cells in cpld node
+This should go to the cpuidle framework.
 
- arch/powerpc/boot/dts/c293pcie.dts         | 223 +++++++++++++++++++++++++++++
- arch/powerpc/configs/mpc85xx_defconfig     |   1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig |   1 +
- arch/powerpc/platforms/85xx/Kconfig        |   6 +
- arch/powerpc/platforms/85xx/Makefile       |   1 +
- arch/powerpc/platforms/85xx/c293pcie.c     |  75 ++++++++++
- 6 files changed, 307 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/c293pcie.dts
- create mode 100644 arch/powerpc/platforms/85xx/c293pcie.c
+> +
+> +/*
+> + * e500_idle_devices_init(void)
+> + * allocate, initialize and register cpuidle device
+> + */
+> +static int e500_idle_devices_init(void)
+> +{
+> +	int i;
+> +	struct cpuidle_driver *drv = &e500_idle_driver;
+> +	struct cpuidle_device *dev;
+> +
+> +	e500_cpuidle_devices = alloc_percpu(struct cpuidle_device);
+> +	if (!e500_cpuidle_devices)
+> +		return -ENOMEM;
+> +
+> +	for_each_possible_cpu(i) {
+> +		dev = per_cpu_ptr(e500_cpuidle_devices, i);
+> +		dev->state_count = drv->state_count;
+> +		dev->cpu = i;
+> +
+> +		if (cpuidle_register_device(dev)) {
+> +			pr_err("cpuidle_register_device %d failed!\n", i);
+> +			return -EIO;
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * e500_idle_devices_uninit(void)
+> + * unregister cpuidle devices and de-allocate memory
+> + */
+> +static void e500_idle_devices_uninit(void)
+> +{
+> +	int i;
+> +	struct cpuidle_device *dev;
+> +
+> +	if (!e500_cpuidle_devices)
+> +		return;
+> +
+> +	for_each_possible_cpu(i) {
+> +		dev = per_cpu_ptr(e500_cpuidle_devices, i);
+> +		cpuidle_unregister_device(dev);
+> +	}
+> +
+> +	free_percpu(e500_cpuidle_devices);
+> +}
+> +
+> +static void e500_cpuidle_driver_init(unsigned int max_idle_state,
+> +		struct cpuidle_state *cpuidle_state_table)
+> +{
+> +	int idle_state;
+> +	struct cpuidle_driver *drv = &e500_idle_driver;
+> +
+> +	drv->state_count = 0;
+> +
+> +	for (idle_state = 0; idle_state < max_idle_state; ++idle_state) {
+> +		if (!cpuidle_state_table[idle_state].enter)
+> +			break;
+> +
+> +		drv->states[drv->state_count] = cpuidle_state_table[idle_state];
+> +		drv->state_count++;
+> +	}
+> +}
+> +
+> +static int cpu_is_feature(unsigned long feature)
+> +{
+> +	return (cur_cpu_spec->cpu_features == feature);
+> +}
+> +
+> +static int __init e500_idle_init(void)
+> +{
+> +	struct cpuidle_state *cpuidle_state_table = NULL;
+> +	struct cpuidle_driver *drv = &e500_idle_driver;
+> +	int err;
+> +	unsigned int max_idle_state = 0;
+> +
+> +	if (cpuidle_disable != IDLE_NO_OVERRIDE)
+> +		return -ENODEV;
+> +
+> +	if (cpu_is_feature(CPU_FTRS_E500MC) || cpu_is_feature(CPU_FTRS_E5500) ||
+> +			cpu_is_feature(CPU_FTRS_E6500)) {
+> +		cpuidle_state_table = fsl_pw_idle_states;
+> +		max_idle_state = ARRAY_SIZE(fsl_pw_idle_states);
+> +	}
+> +
+> +	if (!cpuidle_state_table || !max_idle_state)
+> +		return -EPERM;
 
-diff --git a/arch/powerpc/boot/dts/c293pcie.dts b/arch/powerpc/boot/dts/c293pcie.dts
-new file mode 100644
-index 0000000..24a2cdd
---- /dev/null
-+++ b/arch/powerpc/boot/dts/c293pcie.dts
-@@ -0,0 +1,223 @@
-+/*
-+ * C293 PCIE Device Tree Source
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/c293si-pre.dtsi"
-+
-+/ {
-+	model = "fsl,C293PCIE";
-+	compatible = "fsl,C293PCIE";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	ifc: ifc@fffe1e000 {
-+		reg = <0xf 0xffe1e000 0 0x2000>;
-+		ranges = <0x0 0x0 0xf 0xec000000 0x04000000
-+			  0x2 0x0 0xf 0xffdf0000 0x00010000>;
-+
-+	};
-+
-+	soc: soc@fffe00000 {
-+		ranges = <0x0 0xf 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@fffe0a000 {
-+		reg = <0xf 0xffe0a000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0x80000000 0xc 0x00000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0x80000000
-+				  0x2000000 0x0 0x80000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+};
-+
-+&ifc {
-+	nor@0,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "cfi-flash";
-+		reg = <0x0 0x0 0x4000000>;
-+		bank-width = <2>;
-+		device-width = <1>;
-+
-+		partition@0 {
-+			/* 1MB for DTB Image */
-+			reg = <0x0 0x00100000>;
-+			label = "NOR DTB Image";
-+		};
-+
-+		partition@100000 {
-+			/* 8 MB for Linux Kernel Image */
-+			reg = <0x00100000 0x00800000>;
-+			label = "NOR Linux Kernel Image";
-+		};
-+
-+		partition@900000 {
-+			/* 53MB for rootfs */
-+			reg = <0x00900000 0x03500000>;
-+			label = "NOR Rootfs Image";
-+		};
-+
-+		partition@3e00000 {
-+			/* 1MB for blob encrypted key */
-+			reg = <0x03e00000 0x00100000>;
-+			label = "NOR blob encrypted key";
-+		};
-+
-+		partition@3f00000 {
-+			/* 512KB for u-boot Bootloader Image and evn */
-+			reg = <0x03f00000 0x00100000>;
-+			label = "NOR U-Boot Image";
-+			read-only;
-+		};
-+	};
-+
-+	nand@1,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "fsl,ifc-nand";
-+		reg = <0x1 0x0 0x10000>;
-+
-+		partition@0 {
-+			/* This location must not be altered  */
-+			/* 1MB for u-boot Bootloader Image */
-+			reg = <0x0 0x00100000>;
-+			label = "NAND U-Boot Image";
-+			read-only;
-+		};
-+
-+		partition@100000 {
-+			/* 1MB for DTB Image */
-+			reg = <0x00100000 0x00100000>;
-+			label = "NAND DTB Image";
-+		};
-+
-+		partition@200000 {
-+			/* 4MB for Linux Kernel Image */
-+			reg = <0x00200000 0x00400000>;
-+			label = "NAND Linux Kernel Image";
-+		};
-+
-+		partition@600000 {
-+			/* 4090MB for Root file System Image */
-+			reg = <0x00600000 0xffa00000>;
-+			label = "NAND RFS Image";
-+		};
-+	};
-+
-+	cpld@2,0 {
-+		compatible = "fsl,c293pcie-cpld";
-+		reg = <0x2 0x0 0x20>;
-+	};
-+};
-+
-+&soc {
-+	i2c@3000 {
-+		eeprom@50 {
-+			compatible = "st,24c1024";
-+			reg = <0x50>;
-+		};
-+
-+		adt7461@4c {
-+			compatible = "adi,adt7461";
-+			reg = <0x4c>;
-+		};
-+	};
-+
-+	spi@7000 {
-+		flash@0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "spansion,s25sl12801";
-+			reg = <0>;
-+			spi-max-frequency = <50000000>;
-+
-+			partition@0 {
-+				/* 1MB for u-boot Bootloader Image */
-+				/* 1MB for Environment */
-+				reg = <0x0 0x00100000>;
-+				label = "SPI Flash U-Boot Image";
-+				read-only;
-+			};
-+
-+			partition@100000 {
-+				/* 512KB for DTB Image */
-+				reg = <0x00100000 0x00080000>;
-+				label = "SPI Flash DTB Image";
-+			};
-+
-+			partition@180000 {
-+				/* 4MB for Linux Kernel Image */
-+				reg = <0x00180000 0x00400000>;
-+				label = "SPI Flash Linux Kernel Image";
-+			};
-+
-+			partition@580000 {
-+				/* 10.5MB for RFS Image */
-+				reg = <0x00580000 0x00a80000>;
-+				label = "SPI Flash RFS Image";
-+			};
-+		};
-+	};
-+
-+	mdio@24000 {
-+		phy0: ethernet-phy@0 {
-+			interrupts = <2 1 0 0>;
-+			reg = <0x0>;
-+		};
-+
-+		phy1: ethernet-phy@1 {
-+			interrupts = <2 1 0 0>;
-+			reg = <0x2>;
-+		};
-+	};
-+
-+	enet0: ethernet@b0000 {
-+		phy-handle = <&phy0>;
-+		phy-connection-type = "rgmii-id";
-+	};
-+
-+	enet1: ethernet@b1000 {
-+		phy-handle = <&phy1>;
-+		phy-connection-type = "rgmii-id";
-+	};
-+};
-+/include/ "fsl/c293si-post.dtsi"
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index 5a58882..1592f8c 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -27,6 +27,7 @@ CONFIG_MPC85xx_MDS=y
- CONFIG_MPC8536_DS=y
- CONFIG_MPC85xx_DS=y
- CONFIG_MPC85xx_RDB=y
-+CONFIG_C293_PCIE=y
- CONFIG_P1010_RDB=y
- CONFIG_P1022_DS=y
- CONFIG_P1022_RDK=y
-diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-index 152fa05..d6549ff 100644
---- a/arch/powerpc/configs/mpc85xx_smp_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
-@@ -30,6 +30,7 @@ CONFIG_MPC85xx_MDS=y
- CONFIG_MPC8536_DS=y
- CONFIG_MPC85xx_DS=y
- CONFIG_MPC85xx_RDB=y
-+CONFIG_C293_PCIE=y
- CONFIG_P1010_RDB=y
- CONFIG_P1022_DS=y
- CONFIG_P1022_RDK=y
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index efdd37c..42fc72a 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -32,6 +32,12 @@ config BSC9131_RDB
- 	  StarCore SC3850 DSP
- 	  Manufacturer : Freescale Semiconductor, Inc
- 
-+config C293_PCIE
-+	  bool "Freescale C293PCIE"
-+	  select DEFAULT_UIMAGE
-+	  help
-+	  This option enables support for the C293PCIE board
-+
- config MPC8540_ADS
- 	bool "Freescale MPC8540 ADS"
- 	select DEFAULT_UIMAGE
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 2eab37e..53c9f75 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -6,6 +6,7 @@ obj-$(CONFIG_SMP) += smp.o
- obj-y += common.o
- 
- obj-$(CONFIG_BSC9131_RDB) += bsc913x_rdb.o
-+obj-$(CONFIG_C293_PCIE)   += c293pcie.o
- obj-$(CONFIG_MPC8540_ADS) += mpc85xx_ads.o
- obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
- obj-$(CONFIG_MPC85xx_CDS) += mpc85xx_cds.o
-diff --git a/arch/powerpc/platforms/85xx/c293pcie.c b/arch/powerpc/platforms/85xx/c293pcie.c
-new file mode 100644
-index 0000000..6208e49
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/c293pcie.c
-@@ -0,0 +1,75 @@
-+/*
-+ * C293PCIE Board Setup
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/udbg.h>
-+#include <asm/mpic.h>
-+
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
-+
-+#include "mpc85xx.h"
-+
-+void __init c293_pcie_pic_init(void)
-+{
-+	struct mpic *mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN |
-+	  MPIC_SINGLE_DEST_CPU, 0, 256, " OpenPIC  ");
-+
-+	BUG_ON(mpic == NULL);
-+
-+	mpic_init(mpic);
-+}
-+
-+
-+/*
-+ * Setup the architecture
-+ */
-+static void __init c293_pcie_setup_arch(void)
-+{
-+	if (ppc_md.progress)
-+		ppc_md.progress("c293_pcie_setup_arch()", 0);
-+
-+	fsl_pci_assign_primary();
-+
-+	printk(KERN_INFO "C293 PCIE board from Freescale Semiconductor\n");
-+}
-+
-+machine_arch_initcall(c293_pcie, mpc85xx_common_publish_devices);
-+
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init c293_pcie_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (of_flat_dt_is_compatible(root, "fsl,C293PCIE"))
-+		return 1;
-+	return 0;
-+}
-+
-+define_machine(c293_pcie) {
-+	.name			= "C293 PCIE",
-+	.probe			= c293_pcie_probe,
-+	.setup_arch		= c293_pcie_setup_arch,
-+	.init_IRQ		= c293_pcie_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+	.get_irq		= mpic_get_irq,
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
+Please use different drivers for each and then register the right one
+instead of state count convolutions.
+
+Then use cpuidle_register(&mydriver, NULL) and get rid of the duplicate
+initialization routine.
+
+
+> +	e500_cpuidle_driver_init(max_idle_state, cpuidle_state_table);
+> +
+> +	if (!drv->state_count)
+> +		return -EPERM;
+> +
+> +	err = cpuidle_register_driver(drv);
+> +	if (err) {
+> +		pr_err("Register e500 family cpuidle driver failed.\n");
+> +
+> +		return err;
+> +	}
+> +
+> +	err = e500_idle_devices_init();
+> +	if (err)
+> +		goto out;
+> +
+> +	err = register_cpu_notifier(&cpu_hotplug_notifier);
+> +	if (err)
+> +		goto out;
+> +
+> +	ppc_md.power_save = e500_cpuidle;
+
+This is not the place.
+
+> +
+> +	pr_info("e500_idle_driver registered.\n");
+> +
+> +	return 0;
+> +
+> +out:
+> +	e500_idle_devices_uninit();
+> +	cpuidle_unregister_driver(drv);
+> +
+> +	pr_err("Register e500 family cpuidle driver failed.\n");
+> +
+> +	return err;
+> +}
+> +device_initcall(e500_idle_init);
+> 
+
+
 -- 
-1.8.0
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
