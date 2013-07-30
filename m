@@ -1,23 +1,21 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
- by ozlabs.org (Postfix) with ESMTP id 230C72C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 19:02:14 +1000 (EST)
-Received: from juliette.telenet-ops.be (juliette.telenet-ops.be
- [195.130.137.74])
- by winston.telenet-ops.be (Postfix) with ESMTP id 3DCAB1BD774
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 10:51:41 +0200 (CEST)
-Date: Tue, 30 Jul 2013 10:51:37 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: Build regressions/improvements in v3.11-rc3
-In-Reply-To: <alpine.DEB.2.02.1307301048280.23035@ayla.of.borg>
-Message-ID: <alpine.DEB.2.02.1307301049230.23054@ayla.of.borg>
-References: <alpine.DEB.2.02.1307301048280.23035@ayla.of.borg>
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-wg0-f46.google.com (mail-wg0-f46.google.com [74.125.82.46])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 883BB2C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 19:28:18 +1000 (EST)
+Received: by mail-wg0-f46.google.com with SMTP id k13so5692564wgh.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 02:28:14 -0700 (PDT)
+Message-ID: <51F7872F.30101@linaro.org>
+Date: Tue, 30 Jul 2013 11:28:15 +0200
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-usb@vger.kernel.org,
- Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Subject: Re: [PATCH] cpuidle: fix unremovable issue for module driver
+References: <1375167319-12821-1-git-send-email-dongsheng.wang@freescale.com>
+In-Reply-To: <1375167319-12821-1-git-send-email-dongsheng.wang@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: rjw@sisk.pl, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,63 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 30 Jul 2013, Geert Uytterhoeven wrote:
-> JFYI, when comparing v3.11-rc3 to v3.11-rc2[3], the summaries are:
->   - build errors: +38/-14
+On 07/30/2013 08:55 AM, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> After __cpuidle_register_device, the cpu incs are added up, but decs
+> are not, thus the module refcount is not match. So the module "exit"
+> function can not be executed when we do remove operation. Move
+> module_put into __cpuidle_register_device to fix it.
 
-  + arch/powerpc/kvm/book3s_emulate.c: error: 'bat' may be used uninitialized in this function [-Werror=uninitialized]:  => 349:2
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_ANDCOND' undeclared (first use in this function):  => 161:17, 86:16
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_AVPN' undeclared (first use in this function):  => 160:17, 85:16, 192:16
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_BULK_REMOVE' undeclared (first use in this function):  => 246:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_CEDE' undeclared (first use in this function):  => 250:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_CPPR' undeclared (first use in this function):  => 257:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_ENTER' undeclared (first use in this function):  => 240:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_EOI' undeclared (first use in this function):  => 258:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_EXACT' undeclared (first use in this function):  => 50:6
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_IPI' undeclared (first use in this function):  => 259:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_IPOLL' undeclared (first use in this function):  => 260:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_NOT_FOUND' undeclared (first use in this function):  => 193:27, 87:27
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_PARAMETER' undeclared (first use in this function):  => 138:10
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_PROTECT' undeclared (first use in this function):  => 244:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_PTEG_FULL' undeclared (first use in this function):  => 54:12
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_PUT_TCE' undeclared (first use in this function):  => 248:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_REMOVE' undeclared (first use in this function):  => 242:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_RTAS' undeclared (first use in this function):  => 265:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_SUCCESS' undeclared (first use in this function):  => 67:26, 96:26, 211:26, 125:12
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_TOO_HARD' undeclared (first use in this function):  => 224:12
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_XIRR' undeclared (first use in this function):  => 256:7
-  + arch/powerpc/kvm/book3s_pr_papr.c: error: 'H_XIRR_X' undeclared (first use in this function):  => 261:7
-  + arch/powerpc/platforms/pseries/hotplug-memory.c: error: 'SECTION_SIZE_BITS' undeclared (first use in this function):  => 24:31
-  + mm/memory_hotplug.c: error: 'PAGES_PER_SECTION' undeclared (first use in this function):  => 1630:46
-  + mm/memory_hotplug.c: error: implicit declaration of function '__nr_to_section' [-Werror=implicit-function-declaration]:  => 1635:3
-  + mm/memory_hotplug.c: error: implicit declaration of function 'find_memory_block_hinted' [-Werror=implicit-function-declaration]:  => 1642:3
-  + mm/memory_hotplug.c: error: implicit declaration of function 'pfn_to_section_nr' [-Werror=implicit-function-declaration]:  => 1631:3
-  + mm/memory_hotplug.c: error: implicit declaration of function 'present_section_nr' [-Werror=implicit-function-declaration]:  => 1632:3
+Sorry, I still don't get it :/
 
-powerpc-randconfig
+register->module_get
+unregister->module_put
 
-  + drivers/md/dm-cache-policy-mq.c: error: conflicting types for 'remove_mapping':  => 962:13
+you change it by:
 
-sparc-allmodconfig, not a regression (was hidden due to a sparc64/sparc32
-mixup on kissb), patch submitted
+register->module_get
+register->module_put
+unregister->none
 
-  + error: "usb_add_gadget_udc" [drivers/usb/chipidea/ci_hdrc.ko] undefined!:  => N/A
-  + error: "usb_del_gadget_udc" [drivers/usb/chipidea/ci_hdrc.ko] undefined!:  => N/A
-  + error: "usb_gadget_map_request" [drivers/usb/chipidea/ci_hdrc.ko] undefined!:  => N/A
-  + error: "usb_gadget_unmap_request" [drivers/usb/chipidea/ci_hdrc.ko] undefined!:  => N/A
+which is wrong.
 
-x86_64-randconfig
+Can you describe the problem you are facing ? (a bit more than "I can't
+unload the module").
 
-> [1] http://kisskb.ellerman.id.au/kisskb/head/6490/ (all 120 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/6461/ (all 120 configs)
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index d75040d..e964ada 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -351,11 +351,8 @@ EXPORT_SYMBOL_GPL(cpuidle_disable_device);
+>  
+>  static void __cpuidle_unregister_device(struct cpuidle_device *dev)
+>  {
+> -	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+> -
+>  	list_del(&dev->device_list);
+>  	per_cpu(cpuidle_devices, dev->cpu) = NULL;
+> -	module_put(drv->owner);
+>  }
+>  
+>  static int __cpuidle_device_init(struct cpuidle_device *dev)
+> @@ -384,6 +381,8 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
+>  	per_cpu(cpuidle_devices, dev->cpu) = dev;
+>  	list_add(&dev->device_list, &cpuidle_detected_devices);
+>  
+> +	module_put(drv->owner);
+> +
+>  	ret = cpuidle_coupled_register_device(dev);
+>  	if (ret) {
+>  		__cpuidle_unregister_device(dev);
+> 
 
-Gr{oetje,eeting}s,
 
-						Geert
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
