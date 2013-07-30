@@ -1,26 +1,23 @@
 Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 613422C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 05:59:10 +1000 (EST)
-Date: Tue, 30 Jul 2013 14:58:54 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 9EC352C00D7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 08:40:21 +1000 (EST)
+Date: Tue, 30 Jul 2013 17:40:11 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/3] mmc:core: parse voltage from device-tree
-To: Zhang Haijun <B42677@freescale.com>
-References: <1375066595-14968-1-git-send-email-Haijun.Zhang@freescale.com>
- <1375135638.30721.58@snotra> <51F71825.9000904@freescale.com>
-In-Reply-To: <51F71825.9000904@freescale.com> (from B42677@freescale.com on
- Mon Jul 29 20:34:29 2013)
-Message-ID: <1375214334.30721.82@snotra>
+To: Sandeep Singh <sandeep@freescale.com>
+Subject: Re: [4/4] Added device tree entries for Legerity SLIC node on
+ various Freescale Platforms
+Message-ID: <20130730224011.GA15915@home.buserror.net>
+References: <1362655668-26721-4-git-send-email-Sandeep@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linux-mmc@vger.kernel.org, AFLEMING@freescale.com,
- Xie Xiaobo-R63061 <X.Xie@freescale.com>, cbouatmailru@gmail.com,
- cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
- Haijun Zhang <Haijun.Zhang@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1362655668-26721-4-git-send-email-Sandeep@freescale.com>
+Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/29/2013 08:34:29 PM, Zhang Haijun wrote:
-> On 07/30/2013 06:07 AM, Scott Wood wrote:
->> On 07/28/2013 09:56:33 PM, Haijun Zhang wrote:
->>> Add function to support get voltage from device-tree.
->>> If there are voltage-range specified in device-tree node, this =20
->>> function
->>> will parse it and return the avail voltage mask.
->>>=20
->>> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
->>> ---
->>>  drivers/mmc/core/core.c  | 48 =20
->>> ++++++++++++++++++++++++++++++++++++++++++++++++
->>>  include/linux/mmc/core.h |  1 +
->>>  2 files changed, 49 insertions(+)
->>=20
->> Move the code rather than copying it.
->>=20
->> -Scott
-> Hi, Scott
->=20
-> You mean?
+On Thu, Mar 07, 2013 at 04:57:48PM +0530, Sandeep Singh wrote:
+> diff --git a/arch/powerpc/boot/dts/p1024rdb.dtsi b/arch/powerpc/boot/dts/p1024rdb.dtsi
+> index b05dcb4..cec36a3 100644
+> --- a/arch/powerpc/boot/dts/p1024rdb.dtsi
+> +++ b/arch/powerpc/boot/dts/p1024rdb.dtsi
+> @@ -164,6 +164,19 @@
+>  				label = "SPI JFFS2 RFS";
+>  			};
+>  		};
+> +
+> +                tdm_phy_0: slic@0 {
+> +                        compatible = "zarlink,le88266", "tdm-phy-slic";
+> +			reg = <1>;
+> +			spi-max-frequency = <8000000>;
+> +		};
+> +
+> +                tdm_phy_1: slic@1 {
+> +                        compatible = "zarlink,le88266", "tdm-phy-slic";
+> +			reg = <2>;
+> +			spi-max-frequency = <8000000>;
+> +		};
+> +
+>  	};
+>  
+>  	i2c@3000 {
+> @@ -173,6 +186,11 @@
+>  		};
+>  	};
+>  
+> +        tdm@16000 {
+> +                num-phy = <2>;
+> +                phy-handle = <&tdm_phy_0>, <&tdm_phy_1>;
+> +        };
+> +
+>  	usb@22000 {
+>  		phy_type = "ulpi";
+>  	};
 
-The point of factoring this out is to avoid duplicating the code.  If =20
-you don't remove it from the place you copied it from (and have that =20
-code call here instead), then you're not avoiding the duplication.
+Whitespace
 
--Scott=
+What is "tdm-phy-slic"?  "num-phy"?  Document these in the binding and
+use proper vendor prefixes.
+
+Why "<&tdm_phy_0>, <&tdm_phy_1>" rather than "<&tdm_phy_0 &tdm_phy_1>"? 
+And can you just use the length of phy-handle rather than having a
+separate num-phy property?
+
+-Scott
+ 
