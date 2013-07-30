@@ -1,20 +1,22 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 1/4 v6] powerpc: export debug registers save function for
- KVM
-In-reply-to: <8F1AA8FF-5428-4978-B847-B89A581E1B28@suse.de>
-References: <1372921067-19678-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1372921067-19678-2-git-send-email-Bharat.Bhushan@freescale.com>
- <8F1AA8FF-5428-4978-B847-B89A581E1B28@suse.de>
-Date: Tue, 30 Jul 2013 12:42:46 +1000
-Message-ID: <28333.1375152166@ale.ozlabs.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- "kvm@vger.kernel.org list" <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org,
- Bharat Bhushan <Bharat.Bhushan@freescale.com>,
- =?windows-1252?Q?=22=93tiejun=2Echen=94_Chen=22?= <tiejun.chen@windriver.com>,
- Bharat Bhushan <r65777@freescale.com>, Scott Wood <scottwood@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 761632C00F8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 12:57:22 +1000 (EST)
+Message-ID: <51F72B50.2050404@asianux.com>
+Date: Tue, 30 Jul 2013 10:56:16 +0800
+From: Chen Gang <gang.chen@asianux.com>
+MIME-Version: 1.0
+To: Gleb Natapov <gleb@redhat.com>, pbonzini@redhat.com, agraf@suse.de,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "paulus@samba.org" <paulus@samba.org>
+Subject: Re: [PATCH] arch: powerpc: kvm: add signed type cast for comparation
+References: <51ECD203.9050507@asianux.com>
+In-Reply-To: <51ECD203.9050507@asianux.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,72 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Graf <agraf@suse.de> wrote:
+Hello Maintainers:
 
-> 
-> On 04.07.2013, at 08:57, Bharat Bhushan wrote:
-> 
-> > KVM need this function when switching from vcpu to user-space
-> > thread. My subsequent patch will use this function.
-> > 
-> > Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
-> 
-> Ben / Michael, please ack.
+Please help check this patch whether OK or not, when you have time.
 
-It's not really my area of expertise, but it applies and compiles for me
-and it's relatively simple, so FWIW...
+Thanks.
 
-Acked-by: Michael Neuling <mikey@neuling.org>
+On 07/22/2013 02:32 PM, Chen Gang wrote:
+> 'rmls' is 'unsigned long', lpcr_rmls() will return negative number when
+> failure occurs, so it need a type cast for comparing.
+> 
+> 'lpid' is 'unsigned long', kvmppc_alloc_lpid() return negative number
+> when failure occurs, so it need a type cast for comparing.
+> 
+> 
+> Signed-off-by: Chen Gang <gang.chen@asianux.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 2efa9dd..7629cd3 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -1809,7 +1809,7 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
+>  		rma_size <<= PAGE_SHIFT;
+>  		rmls = lpcr_rmls(rma_size);
+>  		err = -EINVAL;
+> -		if (rmls < 0) {
+> +		if ((long)rmls < 0) {
+>  			pr_err("KVM: Can't use RMA of 0x%lx bytes\n", rma_size);
+>  			goto out_srcu;
+>  		}
+> @@ -1874,7 +1874,7 @@ int kvmppc_core_init_vm(struct kvm *kvm)
+>  	/* Allocate the guest's logical partition ID */
+>  
+>  	lpid = kvmppc_alloc_lpid();
+> -	if (lpid < 0)
+> +	if ((long)lpid < 0)
+>  		return -ENOMEM;
+>  	kvm->arch.lpid = lpid;
+>  
+> 
 
-> 
-> 
-> Alex
-> 
-> > ---
-> > v5->v6
-> > - switch_booke_debug_regs() not guarded by the compiler switch
-> > 
-> > arch/powerpc/include/asm/switch_to.h |    1 +
-> > arch/powerpc/kernel/process.c        |    3 ++-
-> > 2 files changed, 3 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-> > index 200d763..db68f1d 100644
-> > --- a/arch/powerpc/include/asm/switch_to.h
-> > +++ b/arch/powerpc/include/asm/switch_to.h
-> > @@ -29,6 +29,7 @@ extern void giveup_vsx(struct task_struct *);
-> > extern void enable_kernel_spe(void);
-> > extern void giveup_spe(struct task_struct *);
-> > extern void load_up_spe(struct task_struct *);
-> > +extern void switch_booke_debug_regs(struct thread_struct *new_thread);
-> > 
-> > #ifndef CONFIG_SMP
-> > extern void discard_lazy_cpu_state(void);
-> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> > index 01ff496..da586aa 100644
-> > --- a/arch/powerpc/kernel/process.c
-> > +++ b/arch/powerpc/kernel/process.c
-> > @@ -362,12 +362,13 @@ static void prime_debug_regs(struct thread_struct *thread)
-> >  * debug registers, set the debug registers from the values
-> >  * stored in the new thread.
-> >  */
-> > -static void switch_booke_debug_regs(struct thread_struct *new_thread)
-> > +void switch_booke_debug_regs(struct thread_struct *new_thread)
-> > {
-> > 	if ((current->thread.debug.dbcr0 & DBCR0_IDM)
-> > 		|| (new_thread->debug.dbcr0 & DBCR0_IDM))
-> > 			prime_debug_regs(new_thread);
-> > }
-> > +EXPORT_SYMBOL_GPL(switch_booke_debug_regs);
-> > #else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
-> > #ifndef CONFIG_HAVE_HW_BREAKPOINT
-> > static void set_debug_reg_defaults(struct thread_struct *thread)
-> > -- 
-> > 1.7.0.4
-> > 
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+
+-- 
+Chen Gang
