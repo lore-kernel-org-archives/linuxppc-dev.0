@@ -1,30 +1,23 @@
 Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B2B812C00E1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 09:53:23 +1000 (EST)
-Received: from mail15-co1 (localhost [127.0.0.1])	by mail15-co1-R.bigfish.com
- (Postfix) with ESMTP id 5F8A58600C9	for
- <linuxppc-dev@lists.ozlabs.org>; Mon,
- 29 Jul 2013 23:53:18 +0000 (UTC)
-Received: from CO1EHSMHS007.bigfish.com (unknown [10.243.78.227])	by
- mail15-co1.bigfish.com (Postfix) with ESMTP id DDF40DA0047	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2013 23:53:15 +0000 (UTC)
-Date: Mon, 29 Jul 2013 18:53:13 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 403922C00CF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 10:00:59 +1000 (EST)
+Date: Mon, 29 Jul 2013 19:00:51 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2] powerpc: Update compilation flags with core specific
- options
-To: Catalin Udma <catalin.udma@freescale.com>
-References: <1374753254-10381-1-git-send-email-catalin.udma@freescale.com>
-In-Reply-To: <1374753254-10381-1-git-send-email-catalin.udma@freescale.com>
- (from catalin.udma@freescale.com on Thu Jul 25 06:54:14 2013)
-Message-ID: <1375141993.30721.67@snotra>
+Subject: Re: [PATCH] Add device file bindings for MAPLE
+To: Shaveta Leekha <shaveta@freescale.com>
+References: <1374930222-32739-1-git-send-email-shaveta@freescale.com>
+In-Reply-To: <1374930222-32739-1-git-send-email-shaveta@freescale.com> (from
+ shaveta@freescale.com on Sat Jul 27 08:03:42 2013)
+Message-ID: <1375142451.30721.68@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Catalin Udma <catalin.udma@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Shaveta Leekha <shaveta@freescale.com>, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,47 +27,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/25/2013 06:54:14 AM, Catalin Udma wrote:
-> If CONFIG_E500 is enabled, the compilation flags are updated
-> specifying the target core -mcpu=3De5500/e500mc/8540
-> Also remove -Wa,-me500, being incompatible with -mcpu=3De5500/e6500
-> The assembler option is redundant if the -mcpu=3D flag is set.
-> The patch fixes the kernel compilation problem for e5500/e6500
-> when using gcc option -mcpu=3De5500/e6500.
->=20
-> Signed-off-by: Catalin Udma <catalin.udma@freescale.com>
+On 07/27/2013 08:03:42 AM, Shaveta Leekha wrote:
+> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
 > ---
-> changes for v2:
->     - update also KBUILD_AFLAGS with -mcpu and -msoft-float flags
+>  .../devicetree/bindings/powerpc/fsl/maple.txt      |   50 =20
+> ++++++++++++++++++++
+>  1 files changed, 50 insertions(+), 0 deletions(-)
+>  create mode 100644 =20
+> Documentation/devicetree/bindings/powerpc/fsl/maple.txt
 >=20
->  arch/powerpc/Makefile |   16 +++++++++++++++-
->  1 files changed, 15 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 0624909..cb5cbe2 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -140,6 +140,21 @@ ifeq ($(CONFIG_6xx),y)
->  KBUILD_CFLAGS		+=3D -mcpu=3Dpowerpc
->  endif
->=20
-> +ifeq ($(CONFIG_E500),y)
-> +ifeq ($(CONFIG_64BIT),y)
-> +KBUILD_CFLAGS		+=3D -mcpu=3De5500
-> +KBUILD_AFLAGS		+=3D -mcpu=3De5500 -msoft-float
-> +else
-> +ifeq ($(CONFIG_PPC_E500MC),y)
-> +KBUILD_CFLAGS		+=3D -mcpu=3De500mc
-> +KBUILD_AFLAGS		+=3D -mcpu=3De500mc -msoft-float
-> +else
-> +KBUILD_CFLAGS		+=3D -mcpu=3D8540
-> +KBUILD_AFLAGS		+=3D -mcpu=3D8540 -msoft-float
-> +endif
-> +endif
-> +endif
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/maple.txt =20
+> b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
+> new file mode 100644
+> index 0000000..23b80a7
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
+> @@ -0,0 +1,50 @@
+> +* Freescale MAPLE Multi Accelerator Platform Engine Baseband 3
+> +  (MAPLE-B3)device nodes
+> +
+> +Supported chips:
+> +Example: B4860
+> +
+> +Required properties:
+> +
+> +- compatible:	Should contain "fsl,maple-b3" as the value
+> +		This identifies Multi Accelerator Platform Engine
+> +		Baseband 3 block.
+> +
+> +- reg:		offset and length of the register set for the =20
+> device
+> +
+> +- interrupts
+> +	Usage: required
+> +	Value type: <prop_encoded-array>
+> +	Definition:  Specifies the interrupts generated by this =20
+> device.  The
+> +			value of the interrupts property consists of =20
+> one interrupt
+> +			specifier. The format of the specifier is =20
+> defined by the
+> +			binding document describing the node's =20
+> interrupt parent.
 
-Instead of specifying -msoft-float here, shouldn't it go on the main =20
-KBUILD_AFLAGS in arch/powerpc/Makefile, right next to where it's added =20
-for KBUILD_CFLAGS?
+Please clean up whitespace so the text aligns.
+
+> +
+> +		A single IRQ that handles error conditions is specified =20
+> by
+> +		this property.  (Typically shared with port-write).
+> +
+> +Devices that have LIODNs need to specify links to the parent PAMU =20
+> controller
+> +(the actual PAMU controller that this device is connected to) and a =20
+> pointer to
+> +the LIODN register, if applicable.
+> +
+> +- fsl,iommu-parent
+> +		: <phandle>
+> +		This property should be present
+> +
+> +- status =3D "disabled"
+> +		In this example, status is set "disabled",
+> +		As Maple device wouldn't be used by PPC Linux. This =20
+> representation is required
+> +		for doing the PAMU programming on the Linux side.
+
+Is it proper for Linux to even set the LIODN on a device that is =20
+"disabled"?  Perhaps the compatible should be different, such as =20
+"fsl,maple-b3-liodn" to indicate that that is the only portion of the =20
+device that is owned by this partition.
+
+> +Example:
+> +	/* B4860 */
+> +
+> +	maple@800000 {
+> +		#address-cells =3D <0>;
+> +		#size-cells =3D <0>;
+> +		status =3D "disabled";
+> +		compatible =3D "fsl,maple-b3";
+> +		reg =3D <0x8000000 0x10000>;
+> +		interrupts =3D <16 2 1 18>;
+> +		fsl,iommu-parent =3D <&pamu1>;
+> +	};
+
+This error interrupt is documented as 13, not 18.  b4860 (and maybe =20
+other b4?) have an erratum that says that error interrupts are =20
+reversed, but this is generally implemented in b4si-post.dtsi, not in =20
+block-specific include files.  Will no chip without the erratum ever =20
+have maple?
 
 -Scott=
