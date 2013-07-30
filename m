@@ -1,29 +1,24 @@
-Return-Path: <B25806@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+Return-Path: <B40534@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 677812C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 20:16:54 +1000 (EST)
-Received: from mail80-db8 (localhost [127.0.0.1])	by mail80-db8-R.bigfish.com
- (Postfix) with ESMTP id EBB6BD60315	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,
- 30 Jul 2013 10:16:48 +0000 (UTC)
-Received: from DB8EHSMHS022.bigfish.com (unknown [10.174.8.246])	by
- mail80-db8.bigfish.com (Postfix) with ESMTP id 9ED73DA0149	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 10:16:46 +0000 (UTC)
-Message-ID: <51F793D3.6080504@freescale.com>
-Date: Tue, 30 Jul 2013 18:22:11 +0800
-From: Chunhe Lan <b25806@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 1DCE62C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 20:48:26 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: RE: [PATCH] cpuidle: fix unremovable issue for module driver
+Date: Tue, 30 Jul 2013 10:48:18 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259FEF32C@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1375167319-12821-1-git-send-email-dongsheng.wang@freescale.com>
+ <51F7872F.30101@linaro.org>
+In-Reply-To: <51F7872F.30101@linaro.org>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: powerpc/85xx: Add P1023RDB board support
-References: <1371198380-12792-1-git-send-email-Chunhe.Lan@freescale.com>
- <20130730010945.GA8645@home.buserror.net>
-In-Reply-To: <20130730010945.GA8645@home.buserror.net>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Chunhe Lan <Chunhe.Lan@freescale.com>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,19 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 07/30/2013 09:09 AM, Scott Wood wrote:
-> On Fri, Jun 14, 2013 at 04:26:20PM +0800, Chunhe Lan wrote:
->> Ethernet:
->>     eTSEC1: Connected to Atheros AR8035 GETH PHY
->>     eTSEC2: Connected to Atheros AR8035 GETH PHY
-> Where are the PHYs in the device tree?
-     "Atheros AR8035 GETH PHY" driver is module_init driver. It uses the 
-two structs of "static struct phy_driver at8035_driver" and
-     "static struct mdio_device_id __maybe_unused atheros_tbl" to 
-register at8035_driver.
-
-     So do not need to add PHYs in the device tree.
-
-Thanks,
--Chunhe
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
+W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUdWVzZGF5LCBKdWx5
+IDMwLCAyMDEzIDU6MjggUE0NCj4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogcmp3
+QHNpc2sucGw7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gY3B1aWRsZTogZml4IHVucmVtb3ZhYmxl
+IGlzc3VlIGZvciBtb2R1bGUgZHJpdmVyDQo+IA0KPiBPbiAwNy8zMC8yMDEzIDA4OjU1IEFNLCBE
+b25nc2hlbmcgV2FuZyB3cm90ZToNCj4gPiBGcm9tOiBXYW5nIERvbmdzaGVuZyA8ZG9uZ3NoZW5n
+LndhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IEFmdGVyIF9fY3B1aWRsZV9yZWdpc3Rlcl9k
+ZXZpY2UsIHRoZSBjcHUgaW5jcyBhcmUgYWRkZWQgdXAsIGJ1dCBkZWNzDQo+ID4gYXJlIG5vdCwg
+dGh1cyB0aGUgbW9kdWxlIHJlZmNvdW50IGlzIG5vdCBtYXRjaC4gU28gdGhlIG1vZHVsZSAiZXhp
+dCINCj4gPiBmdW5jdGlvbiBjYW4gbm90IGJlIGV4ZWN1dGVkIHdoZW4gd2UgZG8gcmVtb3ZlIG9w
+ZXJhdGlvbi4gTW92ZQ0KPiA+IG1vZHVsZV9wdXQgaW50byBfX2NwdWlkbGVfcmVnaXN0ZXJfZGV2
+aWNlIHRvIGZpeCBpdC4NCj4gDQo+IFNvcnJ5LCBJIHN0aWxsIGRvbid0IGdldCBpdCA6Lw0KPiAN
+Cj4gcmVnaXN0ZXItPm1vZHVsZV9nZXQNCj4gdW5yZWdpc3Rlci0+bW9kdWxlX3B1dA0KPiANCj4g
+eW91IGNoYW5nZSBpdCBieToNCj4gDQo+IHJlZ2lzdGVyLT5tb2R1bGVfZ2V0DQo+IHJlZ2lzdGVy
+LT5tb2R1bGVfcHV0DQo+IHVucmVnaXN0ZXItPm5vbmUNCj4gDQo+IHdoaWNoIGlzIHdyb25nLg0K
+PiANCm1vZHVsZV9nZXQtPnNldCBwZXIgY3B1IGluY3M9MQ0KbW9kdWxlX3B1dC0+c2V0IHBlciBj
+cHUgZGVjcz0xDQoNCm1vZHVsZV9yZWZjb3VudC0+IGluY3MgLSBkZWNzOw0KDQoidW5yZWdpc3Rl
+ciIgdXN1YWxseSBjYWxsIGluIG1vZHVsZS0+ZXhpdCBmdW5jdGlvbi4gDQpCdXQgaWYgbW9kdWxl
+X3JlZmNvdW50IGlzIG5vdCB6ZXJvLCB0aGUgbW9kdWxlLT5leGl0KCkgY2Fubm90IGJlIGV4ZWN1
+dGVkLg0KDQpTZWUsIGtlcm5lbC9tb2R1bGUuYyArODc0DQpkZWxldGVfbW9kdWxlKCktLT50cnlf
+c3RvcF9tb2R1bGUoKTsNCg0KVGVzdCBMb2c6DQpyb290On4jIHJtbW9kIGNwdWlkbGUtZTUwMA0K
+bW9kdWxlX3JlZmNvdW50OiBpbmNzWzldLCBkZWNzWzFdDQpybW1vZDogY2FuJ3QgdW5sb2FkICdj
+cHVpZGxlX2U1MDAnOiBSZXNvdXJjZSB0ZW1wb3JhcmlseSB1bmF2YWlsYWJsZQ0KDQo+IENhbiB5
+b3UgZGVzY3JpYmUgdGhlIHByb2JsZW0geW91IGFyZSBmYWNpbmcgPyAoYSBiaXQgbW9yZSB0aGFu
+ICJJIGNhbid0DQo+IHVubG9hZCB0aGUgbW9kdWxlIikuDQo+IA0KPiA+IFNpZ25lZC1vZmYtYnk6
+IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tPg0KPiA+DQo+ID4g
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmMgYi9kcml2ZXJzL2NwdWlkbGUv
+Y3B1aWRsZS5jDQo+ID4gaW5kZXggZDc1MDQwZC4uZTk2NGFkYSAxMDA2NDQNCj4gPiAtLS0gYS9k
+cml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5jDQo+ID4gKysrIGIvZHJpdmVycy9jcHVpZGxlL2NwdWlk
+bGUuYw0KPiA+IEBAIC0zNTEsMTEgKzM1MSw4IEBAIEVYUE9SVF9TWU1CT0xfR1BMKGNwdWlkbGVf
+ZGlzYWJsZV9kZXZpY2UpOw0KPiA+DQo+ID4gIHN0YXRpYyB2b2lkIF9fY3B1aWRsZV91bnJlZ2lz
+dGVyX2RldmljZShzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldikNCj4gPiB7DQo+ID4gLQlzdHJ1
+Y3QgY3B1aWRsZV9kcml2ZXIgKmRydiA9IGNwdWlkbGVfZ2V0X2NwdV9kcml2ZXIoZGV2KTsNCj4g
+PiAtDQo+ID4gIAlsaXN0X2RlbCgmZGV2LT5kZXZpY2VfbGlzdCk7DQo+ID4gIAlwZXJfY3B1KGNw
+dWlkbGVfZGV2aWNlcywgZGV2LT5jcHUpID0gTlVMTDsNCj4gPiAtCW1vZHVsZV9wdXQoZHJ2LT5v
+d25lcik7DQo+ID4gIH0NCj4gPg0KPiA+ICBzdGF0aWMgaW50IF9fY3B1aWRsZV9kZXZpY2VfaW5p
+dChzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldikgQEANCj4gPiAtMzg0LDYgKzM4MSw4IEBAIHN0
+YXRpYyBpbnQgX19jcHVpZGxlX3JlZ2lzdGVyX2RldmljZShzdHJ1Y3QNCj4gY3B1aWRsZV9kZXZp
+Y2UgKmRldikNCj4gPiAgCXBlcl9jcHUoY3B1aWRsZV9kZXZpY2VzLCBkZXYtPmNwdSkgPSBkZXY7
+DQo+ID4gIAlsaXN0X2FkZCgmZGV2LT5kZXZpY2VfbGlzdCwgJmNwdWlkbGVfZGV0ZWN0ZWRfZGV2
+aWNlcyk7DQo+ID4NCj4gPiArCW1vZHVsZV9wdXQoZHJ2LT5vd25lcik7DQo+ID4gKw0KPiA+ICAJ
+cmV0ID0gY3B1aWRsZV9jb3VwbGVkX3JlZ2lzdGVyX2RldmljZShkZXYpOw0KPiA+ICAJaWYgKHJl
+dCkgew0KPiA+ICAJCV9fY3B1aWRsZV91bnJlZ2lzdGVyX2RldmljZShkZXYpOw0KPiA+DQo+IA0K
+PiANCj4gLS0NCj4gIDxodHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIOKUgiBPcGVu
+IHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MNCj4gDQo+IEZvbGxvdyBMaW5hcm86ICA8aHR0
+cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8DQo+IDxodHRwOi8v
+dHdpdHRlci5jb20vIyEvbGluYXJvb3JnPiBUd2l0dGVyIHwNCj4gPGh0dHA6Ly93d3cubGluYXJv
+Lm9yZy9saW5hcm8tYmxvZy8+IEJsb2cNCj4gDQoNCg==
