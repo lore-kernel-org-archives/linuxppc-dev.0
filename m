@@ -1,26 +1,26 @@
-Return-Path: <B40534@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C8B112C009A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 21:02:39 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: RE: [PATCH] cpuidle: add freescale e500 family porcessors idle support
-Date: Tue, 30 Jul 2013 11:02:28 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259FEF361@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1375167603-16722-1-git-send-email-dongsheng.wang@freescale.com>
- <51F78CA1.40605@linaro.org>
-In-Reply-To: <51F78CA1.40605@linaro.org>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-wi0-f172.google.com (mail-wi0-f172.google.com
+ [209.85.212.172])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 590FB2C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 21:19:52 +1000 (EST)
+Received: by mail-wi0-f172.google.com with SMTP id hj13so1972453wib.17
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2013 04:19:45 -0700 (PDT)
+Message-ID: <51F7A152.3030602@linaro.org>
+Date: Tue, 30 Jul 2013 13:19:46 +0200
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Zhao Chenhui-B35336 <B35336@freescale.com>, "rjw@sisk.pl" <rjw@sisk.pl>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Subject: Re: [PATCH] cpuidle: fix unremovable issue for module driver
+References: <1375167319-12821-1-git-send-email-dongsheng.wang@freescale.com>
+ <51F7872F.30101@linaro.org>
+ <ABB05CD9C9F68C46A5CEDC7F15439259FEF32C@039-SN2MPN1-021.039d.mgd.msft.net>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259FEF32C@039-SN2MPN1-021.039d.mgd.msft.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,194 +30,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
-W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUdWVzZGF5LCBKdWx5
-IDMwLCAyMDEzIDU6NTEgUE0NCj4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogV29v
-ZCBTY290dC1CMDc0MjE7IHJqd0BzaXNrLnBsOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExp
-IFlhbmctDQo+IFI1ODQ3MjsgWmhhbyBDaGVuaHVpLUIzNTMzNjsgbGludXgtcG1Admdlci5rZXJu
-ZWwub3JnOyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6
-IFtQQVRDSF0gY3B1aWRsZTogYWRkIGZyZWVzY2FsZSBlNTAwIGZhbWlseSBwb3JjZXNzb3JzIGlk
-bGUNCj4gc3VwcG9ydA0KPiANCj4gT24gMDcvMzAvMjAxMyAwOTowMCBBTSwgRG9uZ3NoZW5nIFdh
-bmcgd3JvdGU6DQo+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVz
-Y2FsZS5jb20+DQo+ID4NCj4gPiBBZGQgY3B1aWRsZSBzdXBwb3J0IGZvciBlNTAwIGZhbWlseSwg
-dXNpbmcgY3B1aWRsZSBmcmFtZXdvcmsgdG8gbWFuYWdlDQo+ID4gdmFyaW91cyBsb3cgcG93ZXIg
-bW9kZXMuIFRoZSBuZXcgaW1wbGVtZW50YXRpb24gd2lsbCByZW1haW4gY29tcGF0aWJsZQ0KPiA+
-IHdpdGggb3JpZ2luYWwgaWRsZSBtZXRob2QuDQo+ID4NCj4gPiBJbml0aWFsbHksIHRoaXMgc3Vw
-cG9ydHMgUFcxMCwgYW5kIHN1YnNlcXVlbnQgcGF0Y2hlcyB3aWxsIHN1cHBvcnQNCj4gPiBQVzIw
-L0RPWkUvTkFQLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogV2FuZyBEb25nc2hlbmcgPGRvbmdz
-aGVuZy53YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gVGhpcyBwYXRjaCBrZWVwIHVz
-aW5nIGNwdWlkbGVfcmVnaXN0ZXJfZGV2aWNlKCksIGJlY2F1c2Ugd2UgbmVlZCB0bw0KPiA+IHN1
-cHBvcnQgY3B1IGhvdHBsdWcuIEkgd2lsbCBmaXggImRldmljZSIgaXNzdWUgaW4gdGhpcyBkcml2
-ZXIsIGFmdGVyDQo+ID4gRGVlcHRoaSBEaGFyd2FyIDxkZWVwdGhpQGxpbnV4LnZuZXQuaWJtLmNv
-bT4gYWRkIGEgaG90cGx1ZyBoYW5kbGVyDQo+ID4gaW50byBjcHVpZGxlIGZyZWFtd29yay4NCj4g
-Pg0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vbWFjaGRlcC5oDQo+
-ID4gYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vbWFjaGRlcC5oDQo+ID4gaW5kZXggOGI0ODA5
-MC4uY2JkYmUyNSAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vbWFj
-aGRlcC5oDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL21hY2hkZXAuaA0KPiA+
-IEBAIC0yNzEsNiArMjcxLDE2IEBAIGV4dGVybiB2b2lkIHBvd2VyN19pZGxlKHZvaWQpOyAgZXh0
-ZXJuIHZvaWQNCj4gPiBwcGM2eHhfaWRsZSh2b2lkKTsgIGV4dGVybiB2b2lkIGJvb2szZV9pZGxl
-KHZvaWQpOw0KPiA+DQo+ID4gKy8qIFdhaXQgZm9yIEludGVycnVwdCAqLw0KPiA+ICtzdGF0aWMg
-aW5saW5lIHZvaWQgZnNsX2NwdWlkbGVfd2FpdCh2b2lkKSB7ICNpZmRlZiBDT05GSUdfUFBDNjQN
-Cj4gPiArCWJvb2szZV9pZGxlKCk7DQo+ID4gKyNlbHNlDQo+ID4gKwllNTAwX2lkbGUoKTsNCj4g
-PiArI2VuZGlmDQo+ID4gK30NCj4gPiArDQo+ID4gIC8qDQo+ID4gICAqIHBwY19tZCBjb250YWlu
-cyBhIGNvcHkgb2YgdGhlIG1hY2hpbmUgZGVzY3JpcHRpb24gc3RydWN0dXJlIGZvciB0aGUNCj4g
-PiAgICogY3VycmVudCBwbGF0Zm9ybS4gbWFjaGluZV9pZCBjb250YWlucyB0aGUgaW5pdGlhbCBh
-ZGRyZXNzIHdoZXJlIHRoZQ0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWlkbGUvS2NvbmZp
-ZyBiL2RyaXZlcnMvY3B1aWRsZS9LY29uZmlnDQo+ID4gaW5kZXggYjNmYjgxZC4uN2VkMTE0YiAx
-MDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2NwdWlkbGUvS2NvbmZpZw0KPiA+ICsrKyBiL2RyaXZl
-cnMvY3B1aWRsZS9LY29uZmlnDQo+ID4gQEAgLTM1LDYgKzM1LDExIEBAIGRlcGVuZHMgb24gQVJN
-DQo+ID4gIHNvdXJjZSAiZHJpdmVycy9jcHVpZGxlL0tjb25maWcuYXJtIg0KPiA+ICBlbmRtZW51
-DQo+ID4NCj4gPiArbWVudSAiUG93ZXJQQyBDUFUgSWRsZSBEcml2ZXJzIg0KPiA+ICtkZXBlbmRz
-IG9uIFBQQzMyIHx8IFBQQzY0DQo+ID4gK3NvdXJjZSAiZHJpdmVycy9jcHVpZGxlL0tjb25maWcu
-cG93ZXJwYyINCj4gPiArZW5kbWVudQ0KPiA+ICsNCj4gPiAgZW5kaWYNCj4gPg0KPiA+ICBjb25m
-aWcgQVJDSF9ORUVEU19DUFVfSURMRV9DT1VQTEVEDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-Y3B1aWRsZS9LY29uZmlnLnBvd2VycGMNCj4gYi9kcml2ZXJzL2NwdWlkbGUvS2NvbmZpZy5wb3dl
-cnBjDQo+ID4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4gPiBpbmRleCAwMDAwMDAwLi45ZjNmNWVm
-DQo+ID4gLS0tIC9kZXYvbnVsbA0KPiA+ICsrKyBiL2RyaXZlcnMvY3B1aWRsZS9LY29uZmlnLnBv
-d2VycGMNCj4gPiBAQCAtMCwwICsxLDkgQEANCj4gPiArIw0KPiA+ICsjIFBvd2VyUEMgQ1BVIElk
-bGUgZHJpdmVycw0KPiA+ICsjDQo+ID4gKw0KPiA+ICtjb25maWcgUFBDX0U1MDBfQ1BVSURMRQ0K
-PiA+ICsJYm9vbCAiQ1BVIElkbGUgRHJpdmVyIGZvciBFNTAwIGZhbWlseSBwcm9jZXNzb3JzIg0K
-PiA+ICsJZGVwZW5kcyBvbiBGU0xfU09DX0JPT0tFDQo+ID4gKwloZWxwDQo+ID4gKwkgIFNlbGVj
-dCB0aGlzIHRvIGVuYWJsZSBjcHVpZGxlIG9uIGU1MDAgZmFtaWx5IHByb2Nlc3NvcnMuDQo+ID4g
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1aWRsZS9NYWtlZmlsZSBiL2RyaXZlcnMvY3B1aWRsZS9N
-YWtlZmlsZQ0KPiA+IGluZGV4IDBiOWQyMDAuLjBkZGUzZGIgMTAwNjQ0DQo+ID4gLS0tIGEvZHJp
-dmVycy9jcHVpZGxlL01ha2VmaWxlDQo+ID4gKysrIGIvZHJpdmVycy9jcHVpZGxlL01ha2VmaWxl
-DQo+ID4gQEAgLTExLDMgKzExLDcgQEAgb2JqLSQoQ09ORklHX0FSTV9ISUdIQkFOS19DUFVJRExF
-KQkrPSBjcHVpZGxlLQ0KPiBjYWx4ZWRhLm8NCj4gPiAgb2JqLSQoQ09ORklHX0FSTV9LSVJLV09P
-RF9DUFVJRExFKQkrPSBjcHVpZGxlLWtpcmt3b29kLm8NCj4gPiAgb2JqLSQoQ09ORklHX0FSTV9a
-WU5RX0NQVUlETEUpCQkrPSBjcHVpZGxlLXp5bnEubw0KPiA+ICBvYmotJChDT05GSUdfQVJNX1U4
-NTAwX0NQVUlETEUpICAgICAgICAgKz0gY3B1aWRsZS11eDUwMC5vDQo+ID4gKw0KPiA+DQo+ICsj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMNCj4gIyMjIyMjIyMjIw0KPiA+ICsjIFBvd2VyUEMgcGxhdGZvcm0gZHJp
-dmVycw0KPiA+ICtvYmotJChDT05GSUdfUFBDX0U1MDBfQ1BVSURMRSkJCSs9IGNwdWlkbGUtZTUw
-MC5vDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLWU1MDAuYyBiL2Ry
-aXZlcnMvY3B1aWRsZS9jcHVpZGxlLQ0KPiBlNTAwLmMNCj4gPiBuZXcgZmlsZSBtb2RlIDEwMDY0
-NA0KPiA+IGluZGV4IDAwMDAwMDAuLjE5MTljZWENCj4gPiAtLS0gL2Rldi9udWxsDQo+ID4gKysr
-IGIvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUtZTUwMC5jDQo+ID4gQEAgLTAsMCArMSwyMjIgQEAN
-Cj4gPiArLyoNCj4gPiArICogQ29weXJpZ2h0IDIwMTMgRnJlZXNjYWxlIFNlbWljb25kdWN0b3Is
-IEluYy4NCj4gPiArICoNCj4gPiArICogQ1BVIElkbGUgZHJpdmVyIGZvciBGcmVlc2NhbGUgUG93
-ZXJQQyBlNTAwIGZhbWlseSBwcm9jZXNzb3JzLg0KPiA+ICsgKg0KPiA+ICsgKiBUaGlzIHByb2dy
-YW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQgYW5kL29yDQo+IG1v
-ZGlmeQ0KPiA+ICsgKiBpdCB1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdOVSBHZW5lcmFsIFB1Ymxp
-YyBMaWNlbnNlIHZlcnNpb24gMiBhcw0KPiA+ICsgKiBwdWJsaXNoZWQgYnkgdGhlIEZyZWUgU29m
-dHdhcmUgRm91bmRhdGlvbi4NCj4gPiArICoNCj4gPiArICogQXV0aG9yOiBXYW5nIERvbmdzaGVu
-ZyA8ZG9uZ3NoZW5nLndhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPiArICovDQo+ID4gKw0KPiA+ICsj
-aW5jbHVkZSA8bGludXgvY3B1Lmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9jcHVpZGxlLmg+DQo+
-ID4gKyNpbmNsdWRlIDxsaW51eC9pbml0Lmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9rZXJuZWwu
-aD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgv
-bm90aWZpZXIuaD4NCj4gPiArDQo+ID4gKyNpbmNsdWRlIDxhc20vbWFjaGRlcC5oPg0KPiA+ICsN
-Cj4gPiArc3RhdGljIHN0cnVjdCBjcHVpZGxlX2RyaXZlciBlNTAwX2lkbGVfZHJpdmVyID0gew0K
-PiA+ICsJLm5hbWUgPSAiZTUwMF9pZGxlIiwNCj4gPiArCS5vd25lciA9IFRISVNfTU9EVUxFLA0K
-PiA+ICt9Ow0KPiA+ICsNCj4gPiArc3RhdGljIHN0cnVjdCBjcHVpZGxlX2RldmljZSBfX3BlcmNw
-dSAqZTUwMF9jcHVpZGxlX2RldmljZXM7DQo+ID4gKw0KPiA+ICtzdGF0aWMgdm9pZCBlNTAwX2Nw
-dWlkbGUodm9pZCkNCj4gPiArew0KPiA+ICsJLyoNCj4gPiArCSAqIFRoaXMgd291bGQgY2FsbCBv
-biB0aGUgY3B1aWRsZSBmcmFtZXdvcmssIGFuZCB0aGUgYmFjay1lbmQNCj4gPiArCSAqIGRyaXZl
-ciB0byBnbyB0byBpZGxlIHN0YXRlcy4NCj4gPiArCSAqLw0KPiA+ICsJaWYgKGNwdWlkbGVfaWRs
-ZV9jYWxsKCkpIHsNCj4gPiArCQkvKg0KPiA+ICsJCSAqIE9uIGVycm9yLCBleGVjdXRlIGRlZmF1
-bHQgaGFuZGxlcg0KPiA+ICsJCSAqIHRvIGdvIGludG8gbG93IHRocmVhZCBwcmlvcml0eSBhbmQg
-cG9zc2libHkNCj4gPiArCQkgKiBsb3cgcG93ZXIgbW9kZS4NCj4gPiArCQkgKi8NCj4gPiArCQlI
-TVRfbG93KCk7DQo+ID4gKwkJSE1UX3ZlcnlfbG93KCk7DQo+ID4gKwl9DQo+ID4gK30NCj4gDQo+
-IE5vcGUsIHRoaXMgaXMgbm90IHRoZSBwbGFjZSB0byBhZGQgc3VjaCBmdW5jdGlvbi4NCj4gDQpU
-aGFua3MuDQoNCkJ1dCBXaHkgbm90PyBPbiBwb3dlcnBjIHRoZXJlIGlzIGFscmVhZHkgaGF2ZSBh
-IGNwdWlkbGUgbWV0aG9kLiBXZSBuZWVkIHRvIGNvbXBhdGlibGUgdGhlbS4NCg0KVW0uLiBhcmNo
-L3Bvd2VycGMvcGxhdGZvcm1zL3h4eCA/DQoNCj4gPiArc3RhdGljIGludCBwdzEwX2VudGVyKHN0
-cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2LA0KPiA+ICsJCQlzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIg
-KmRydiwgaW50IGluZGV4KQ0KPiA+ICt7DQo+ID4gKwlmc2xfY3B1aWRsZV93YWl0KCk7DQo+ID4g
-KwlyZXR1cm4gaW5kZXg7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBzdHJ1Y3QgY3B1aWRs
-ZV9zdGF0ZSBmc2xfcHdfaWRsZV9zdGF0ZXNbXSA9IHsNCj4gPiArCXsNCj4gPiArCQkubmFtZSA9
-ICJwdzEwIiwNCj4gPiArCQkuZGVzYyA9ICJwdzEwIiwNCj4gPiArCQkuZmxhZ3MgPSBDUFVJRExF
-X0ZMQUdfVElNRV9WQUxJRCwNCj4gPiArCQkuZXhpdF9sYXRlbmN5ID0gMCwNCj4gPiArCQkudGFy
-Z2V0X3Jlc2lkZW5jeSA9IDAsDQo+ID4gKwkJLmVudGVyID0gJnB3MTBfZW50ZXINCj4gPiArCX0s
-DQo+ID4gK307DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IGNwdV9ob3RwbHVnX25vdGlmeShzdHJ1
-Y3Qgbm90aWZpZXJfYmxvY2sgKm4sDQo+ID4gKwkJCXVuc2lnbmVkIGxvbmcgYWN0aW9uLCB2b2lk
-ICpoY3B1KQ0KPiA+ICt7DQo+ID4gKwl1bnNpZ25lZCBsb25nIGhvdGNwdSA9ICh1bnNpZ25lZCBs
-b25nKWhjcHU7DQo+ID4gKwlzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldiA9DQo+ID4gKwkJCXBl
-cl9jcHVfcHRyKGU1MDBfY3B1aWRsZV9kZXZpY2VzLCBob3RjcHUpOw0KPiA+ICsNCj4gPiArCWlm
-IChkZXYgJiYgY3B1aWRsZV9nZXRfZHJpdmVyKCkpIHsNCj4gPiArCQlzd2l0Y2ggKGFjdGlvbikg
-ew0KPiA+ICsJCWNhc2UgQ1BVX09OTElORToNCj4gPiArCQljYXNlIENQVV9PTkxJTkVfRlJPWkVO
-Og0KPiA+ICsJCQljcHVpZGxlX3BhdXNlX2FuZF9sb2NrKCk7DQo+ID4gKwkJCWNwdWlkbGVfZW5h
-YmxlX2RldmljZShkZXYpOw0KPiA+ICsJCQljcHVpZGxlX3Jlc3VtZV9hbmRfdW5sb2NrKCk7DQo+
-ID4gKwkJCWJyZWFrOw0KPiA+ICsNCj4gPiArCQljYXNlIENQVV9ERUFEOg0KPiA+ICsJCWNhc2Ug
-Q1BVX0RFQURfRlJPWkVOOg0KPiA+ICsJCQljcHVpZGxlX3BhdXNlX2FuZF9sb2NrKCk7DQo+ID4g
-KwkJCWNwdWlkbGVfZGlzYWJsZV9kZXZpY2UoZGV2KTsNCj4gPiArCQkJY3B1aWRsZV9yZXN1bWVf
-YW5kX3VubG9jaygpOw0KPiA+ICsJCQlicmVhazsNCj4gPiArDQo+ID4gKwkJZGVmYXVsdDoNCj4g
-PiArCQkJcmV0dXJuIE5PVElGWV9ET05FOw0KPiA+ICsJCX0NCj4gPiArCX0NCj4gPiArDQo+ID4g
-KwlyZXR1cm4gTk9USUZZX09LOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgc3RydWN0IG5v
-dGlmaWVyX2Jsb2NrIGNwdV9ob3RwbHVnX25vdGlmaWVyID0gew0KPiA+ICsJLm5vdGlmaWVyX2Nh
-bGwgPSBjcHVfaG90cGx1Z19ub3RpZnksDQo+ID4gK307DQo+IA0KPiBUaGlzIHNob3VsZCBnbyB0
-byB0aGUgY3B1aWRsZSBmcmFtZXdvcmsuDQo+IA0KWWVzLCBJIHNlZSwgRGVlcHRoaSB3aWxsIHBv
-c3QgaXQuLi4NCjooLCBUaGlzIHBhdGNoIGlzIHJlbHlpbmcgb24gZm9yIERlZXB0aGkncyBwYXRj
-aCBhYm91dCAiaG90cGx1ZyBub3RpZmllciIuDQoNCj4gPiArDQo+ID4gKy8qDQo+ID4gKyAqIGU1
-MDBfaWRsZV9kZXZpY2VzX2luaXQodm9pZCkNCj4gPiArICogYWxsb2NhdGUsIGluaXRpYWxpemUg
-YW5kIHJlZ2lzdGVyIGNwdWlkbGUgZGV2aWNlDQo+ID4gKyAqLw0KPiA+ICtzdGF0aWMgaW50IGU1
-MDBfaWRsZV9kZXZpY2VzX2luaXQodm9pZCkNCj4gPiArew0KPiA+ICsJaW50IGk7DQo+ID4gKwlz
-dHJ1Y3QgY3B1aWRsZV9kcml2ZXIgKmRydiA9ICZlNTAwX2lkbGVfZHJpdmVyOw0KPiA+ICsJc3Ry
-dWN0IGNwdWlkbGVfZGV2aWNlICpkZXY7DQo+ID4gKw0KPiA+ICsJZTUwMF9jcHVpZGxlX2Rldmlj
-ZXMgPSBhbGxvY19wZXJjcHUoc3RydWN0IGNwdWlkbGVfZGV2aWNlKTsNCj4gPiArCWlmICghZTUw
-MF9jcHVpZGxlX2RldmljZXMpDQo+ID4gKwkJcmV0dXJuIC1FTk9NRU07DQo+ID4gKw0KPiA+ICsJ
-Zm9yX2VhY2hfcG9zc2libGVfY3B1KGkpIHsNCj4gPiArCQlkZXYgPSBwZXJfY3B1X3B0cihlNTAw
-X2NwdWlkbGVfZGV2aWNlcywgaSk7DQo+ID4gKwkJZGV2LT5zdGF0ZV9jb3VudCA9IGRydi0+c3Rh
-dGVfY291bnQ7DQo+ID4gKwkJZGV2LT5jcHUgPSBpOw0KPiA+ICsNCj4gPiArCQlpZiAoY3B1aWRs
-ZV9yZWdpc3Rlcl9kZXZpY2UoZGV2KSkgew0KPiA+ICsJCQlwcl9lcnIoImNwdWlkbGVfcmVnaXN0
-ZXJfZGV2aWNlICVkIGZhaWxlZCFcbiIsIGkpOw0KPiA+ICsJCQlyZXR1cm4gLUVJTzsNCj4gPiAr
-CQl9DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJcmV0dXJuIDA7DQo+ID4gK30NCj4gPiArDQo+ID4g
-Ky8qDQo+ID4gKyAqIGU1MDBfaWRsZV9kZXZpY2VzX3VuaW5pdCh2b2lkKQ0KPiA+ICsgKiB1bnJl
-Z2lzdGVyIGNwdWlkbGUgZGV2aWNlcyBhbmQgZGUtYWxsb2NhdGUgbWVtb3J5DQo+ID4gKyAqLw0K
-PiA+ICtzdGF0aWMgdm9pZCBlNTAwX2lkbGVfZGV2aWNlc191bmluaXQodm9pZCkNCj4gPiArew0K
-PiA+ICsJaW50IGk7DQo+ID4gKwlzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldjsNCj4gPiArDQo+
-ID4gKwlpZiAoIWU1MDBfY3B1aWRsZV9kZXZpY2VzKQ0KPiA+ICsJCXJldHVybjsNCj4gPiArDQo+
-ID4gKwlmb3JfZWFjaF9wb3NzaWJsZV9jcHUoaSkgew0KPiA+ICsJCWRldiA9IHBlcl9jcHVfcHRy
-KGU1MDBfY3B1aWRsZV9kZXZpY2VzLCBpKTsNCj4gPiArCQljcHVpZGxlX3VucmVnaXN0ZXJfZGV2
-aWNlKGRldik7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJZnJlZV9wZXJjcHUoZTUwMF9jcHVpZGxl
-X2RldmljZXMpOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgdm9pZCBlNTAwX2NwdWlkbGVf
-ZHJpdmVyX2luaXQodW5zaWduZWQgaW50IG1heF9pZGxlX3N0YXRlLA0KPiA+ICsJCXN0cnVjdCBj
-cHVpZGxlX3N0YXRlICpjcHVpZGxlX3N0YXRlX3RhYmxlKQ0KPiA+ICt7DQo+ID4gKwlpbnQgaWRs
-ZV9zdGF0ZTsNCj4gPiArCXN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2ID0gJmU1MDBfaWRsZV9k
-cml2ZXI7DQo+ID4gKw0KPiA+ICsJZHJ2LT5zdGF0ZV9jb3VudCA9IDA7DQo+ID4gKw0KPiA+ICsJ
-Zm9yIChpZGxlX3N0YXRlID0gMDsgaWRsZV9zdGF0ZSA8IG1heF9pZGxlX3N0YXRlOyArK2lkbGVf
-c3RhdGUpIHsNCj4gPiArCQlpZiAoIWNwdWlkbGVfc3RhdGVfdGFibGVbaWRsZV9zdGF0ZV0uZW50
-ZXIpDQo+ID4gKwkJCWJyZWFrOw0KPiA+ICsNCj4gPiArCQlkcnYtPnN0YXRlc1tkcnYtPnN0YXRl
-X2NvdW50XSA9DQo+IGNwdWlkbGVfc3RhdGVfdGFibGVbaWRsZV9zdGF0ZV07DQo+ID4gKwkJZHJ2
-LT5zdGF0ZV9jb3VudCsrOw0KPiA+ICsJfQ0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50
-IGNwdV9pc19mZWF0dXJlKHVuc2lnbmVkIGxvbmcgZmVhdHVyZSkNCj4gPiArew0KPiA+ICsJcmV0
-dXJuIChjdXJfY3B1X3NwZWMtPmNwdV9mZWF0dXJlcyA9PSBmZWF0dXJlKTsNCj4gPiArfQ0KPiA+
-ICsNCj4gPiArc3RhdGljIGludCBfX2luaXQgZTUwMF9pZGxlX2luaXQodm9pZCkNCj4gPiArew0K
-PiA+ICsJc3RydWN0IGNwdWlkbGVfc3RhdGUgKmNwdWlkbGVfc3RhdGVfdGFibGUgPSBOVUxMOw0K
-PiA+ICsJc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYgPSAmZTUwMF9pZGxlX2RyaXZlcjsNCj4g
-PiArCWludCBlcnI7DQo+ID4gKwl1bnNpZ25lZCBpbnQgbWF4X2lkbGVfc3RhdGUgPSAwOw0KPiA+
-ICsNCj4gPiArCWlmIChjcHVpZGxlX2Rpc2FibGUgIT0gSURMRV9OT19PVkVSUklERSkNCj4gPiAr
-CQlyZXR1cm4gLUVOT0RFVjsNCj4gPiArDQo+ID4gKwlpZiAoY3B1X2lzX2ZlYXR1cmUoQ1BVX0ZU
-UlNfRTUwME1DKSB8fA0KPiBjcHVfaXNfZmVhdHVyZShDUFVfRlRSU19FNTUwMCkgfHwNCj4gPiAr
-CQkJY3B1X2lzX2ZlYXR1cmUoQ1BVX0ZUUlNfRTY1MDApKSB7DQo+ID4gKwkJY3B1aWRsZV9zdGF0
-ZV90YWJsZSA9IGZzbF9wd19pZGxlX3N0YXRlczsNCj4gPiArCQltYXhfaWRsZV9zdGF0ZSA9IEFS
-UkFZX1NJWkUoZnNsX3B3X2lkbGVfc3RhdGVzKTsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwlpZiAo
-IWNwdWlkbGVfc3RhdGVfdGFibGUgfHwgIW1heF9pZGxlX3N0YXRlKQ0KPiA+ICsJCXJldHVybiAt
-RVBFUk07DQo+IA0KPiBQbGVhc2UgdXNlIGRpZmZlcmVudCBkcml2ZXJzIGZvciBlYWNoIGFuZCB0
-aGVuIHJlZ2lzdGVyIHRoZSByaWdodCBvbmUNCj4gaW5zdGVhZCBvZiBzdGF0ZSBjb3VudCBjb252
-b2x1dGlvbnMuDQo+IA0KPiBUaGVuIHVzZSBjcHVpZGxlX3JlZ2lzdGVyKCZteWRyaXZlciwgTlVM
-TCkgYW5kIGdldCByaWQgb2YgdGhlIGR1cGxpY2F0ZQ0KPiBpbml0aWFsaXphdGlvbiByb3V0aW5l
-Lg0KPiANClllcywgVGhhbmtzLCBUaGlzIHBhdGNoIGtlZXAgdXNpbmcgY3B1aWRsZV9yZWdpc3Rl
-cl9kZXZpY2UoKSwgYmVjYXVzZSB3ZSBuZWVkIHRvDQpzdXBwb3J0IGNwdSBob3RwbHVnLiBJIHdp
-bGwgZml4ICJkZXZpY2UiIGlzc3VlIGluIHRoaXMgZHJpdmVyLCBhZnRlcg0KRGVlcHRoaSBEaGFy
-d2FyIDxkZWVwdGhpQGxpbnV4LnZuZXQuaWJtLmNvbT4gYWRkIGEgaG90cGx1ZyBoYW5kbGVyDQpp
-bnRvIGNwdWlkbGUgZnJlYW13b3JrLg0KDQo+IA0KPiA+ICsJZTUwMF9jcHVpZGxlX2RyaXZlcl9p
-bml0KG1heF9pZGxlX3N0YXRlLCBjcHVpZGxlX3N0YXRlX3RhYmxlKTsNCj4gPiArDQo+ID4gKwlp
-ZiAoIWRydi0+c3RhdGVfY291bnQpDQo+ID4gKwkJcmV0dXJuIC1FUEVSTTsNCj4gPiArDQo+ID4g
-KwllcnIgPSBjcHVpZGxlX3JlZ2lzdGVyX2RyaXZlcihkcnYpOw0KPiA+ICsJaWYgKGVycikgew0K
-PiA+ICsJCXByX2VycigiUmVnaXN0ZXIgZTUwMCBmYW1pbHkgY3B1aWRsZSBkcml2ZXIgZmFpbGVk
-LlxuIik7DQo+ID4gKw0KPiA+ICsJCXJldHVybiBlcnI7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJ
-ZXJyID0gZTUwMF9pZGxlX2RldmljZXNfaW5pdCgpOw0KPiA+ICsJaWYgKGVycikNCj4gPiArCQln
-b3RvIG91dDsNCj4gPiArDQo+ID4gKwllcnIgPSByZWdpc3Rlcl9jcHVfbm90aWZpZXIoJmNwdV9o
-b3RwbHVnX25vdGlmaWVyKTsNCj4gPiArCWlmIChlcnIpDQo+ID4gKwkJZ290byBvdXQ7DQo+ID4g
-Kw0KPiA+ICsJcHBjX21kLnBvd2VyX3NhdmUgPSBlNTAwX2NwdWlkbGU7DQo+IA0KPiBUaGlzIGlz
-IG5vdCB0aGUgcGxhY2UuDQo+IA0KPiA+ICsNCj4gPiArCXByX2luZm8oImU1MDBfaWRsZV9kcml2
-ZXIgcmVnaXN0ZXJlZC5cbiIpOw0KPiA+ICsNCj4gPiArCXJldHVybiAwOw0KPiA+ICsNCj4gPiAr
-b3V0Og0KPiA+ICsJZTUwMF9pZGxlX2RldmljZXNfdW5pbml0KCk7DQo+ID4gKwljcHVpZGxlX3Vu
-cmVnaXN0ZXJfZHJpdmVyKGRydik7DQo+ID4gKw0KPiA+ICsJcHJfZXJyKCJSZWdpc3RlciBlNTAw
-IGZhbWlseSBjcHVpZGxlIGRyaXZlciBmYWlsZWQuXG4iKTsNCj4gPiArDQo+ID4gKwlyZXR1cm4g
-ZXJyOw0KPiA+ICt9DQo+ID4gK2RldmljZV9pbml0Y2FsbChlNTAwX2lkbGVfaW5pdCk7DQo+ID4N
-Cj4gDQo+IA0KPiAtLQ0KPiAgPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSC
-IE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29Dcw0KPiANCj4gRm9sbG93IExpbmFybzog
-IDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwNCj4gPGh0
-dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfA0KPiA8aHR0cDovL3d3dy5s
-aW5hcm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZw0KPiANCg0K
+On 07/30/2013 12:48 PM, Wang Dongsheng-B40534 wrote:
+> 
+> 
+>> -----Original Message-----
+>> From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
+>> Sent: Tuesday, July 30, 2013 5:28 PM
+>> To: Wang Dongsheng-B40534
+>> Cc: rjw@sisk.pl; linux-pm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+>> Subject: Re: [PATCH] cpuidle: fix unremovable issue for module driver
+>>
+>> On 07/30/2013 08:55 AM, Dongsheng Wang wrote:
+>>> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+>>>
+>>> After __cpuidle_register_device, the cpu incs are added up, but decs
+>>> are not, thus the module refcount is not match. So the module "exit"
+>>> function can not be executed when we do remove operation. Move
+>>> module_put into __cpuidle_register_device to fix it.
+>>
+>> Sorry, I still don't get it :/
+>>
+>> register->module_get
+>> unregister->module_put
+>>
+>> you change it by:
+>>
+>> register->module_get
+>> register->module_put
+>> unregister->none
+>>
+>> which is wrong.
+>>
+> module_get->set per cpu incs=1
+> module_put->set per cpu decs=1
+> 
+> module_refcount-> incs - decs;
+> 
+> "unregister" usually call in module->exit function. 
+> But if module_refcount is not zero, the module->exit() cannot be executed.
+
+Ok, IIUC, the refcount is decremented in the unregister function but
+this one is never called because the refcount is not zero.
+
+Funny, that means the module format was *never* used at all as it does
+not work.
+
+I am wondering if we shouldn't just remove the module support for
+cpuidle. Rafael ?
+
+> See, kernel/module.c +874
+> delete_module()-->try_stop_module();
+
+Thanks, I believe I understand the refcount mechanism.
+
+> Test Log:
+> root:~# rmmod cpuidle-e500
+> module_refcount: incs[9], decs[1]
+> rmmod: can't unload 'cpuidle_e500': Resource temporarily unavailable
+> 
+>> Can you describe the problem you are facing ? (a bit more than "I can't
+>> unload the module").
+>>
+>>> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+>>>
+>>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>>> index d75040d..e964ada 100644
+>>> --- a/drivers/cpuidle/cpuidle.c
+>>> +++ b/drivers/cpuidle/cpuidle.c
+>>> @@ -351,11 +351,8 @@ EXPORT_SYMBOL_GPL(cpuidle_disable_device);
+>>>
+>>>  static void __cpuidle_unregister_device(struct cpuidle_device *dev)
+>>> {
+>>> -	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+>>> -
+>>>  	list_del(&dev->device_list);
+>>>  	per_cpu(cpuidle_devices, dev->cpu) = NULL;
+>>> -	module_put(drv->owner);
+>>>  }
+>>>
+>>>  static int __cpuidle_device_init(struct cpuidle_device *dev) @@
+>>> -384,6 +381,8 @@ static int __cpuidle_register_device(struct
+>> cpuidle_device *dev)
+>>>  	per_cpu(cpuidle_devices, dev->cpu) = dev;
+>>>  	list_add(&dev->device_list, &cpuidle_detected_devices);
+>>>
+>>> +	module_put(drv->owner);
+>>> +
+>>>  	ret = cpuidle_coupled_register_device(dev);
+>>>  	if (ret) {
+>>>  		__cpuidle_unregister_device(dev);
+>>>
+
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
