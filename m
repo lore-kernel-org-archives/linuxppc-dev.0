@@ -1,27 +1,20 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wg0-x232.google.com (mail-wg0-x232.google.com
- [IPv6:2a00:1450:400c:c00::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 444612C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 17:46:14 +1000 (EST)
-MIME-Version: 1.0
-In-Reply-To: <20130717104234.GJ7080@book.gsilab.sittig.org>
-References: <1373642781-32631-1-git-send-email-gsi@denx.de>
- <1373803321-11628-1-git-send-email-gsi@denx.de>
- <1373803321-11628-3-git-send-email-gsi@denx.de>
- <51E5226D.9050100@metafoo.de>
- <20130717104234.GJ7080@book.gsilab.sittig.org>
-Date: Wed, 31 Jul 2013 11:46:09 +0400
-Message-ID: <CAF0T0X4pR_uAZq-iGrrJS=oGDFzKBj-CLELyu_fLbDzk2dnroA@mail.gmail.com>
-Subject: Re: [PATCH RFC v2 2/5] dma: mpc512x: add support for peripheral
- transfers
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Lars-Peter Clausen <lars@metafoo.de>, linuxppc-dev@lists.ozlabs.org,
- devicetree-discuss@lists.ozlabs.org, Alexander Popov <a13xp0p0v88@gmail.com>,
- Dan Williams <djbw@fb.com>, Vinod Koul <vinod.koul@intel.com>,
- Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id B325A2C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 17:52:42 +1000 (EST)
+Date: Wed, 31 Jul 2013 17:52:33 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH v2 1/2] powerpc: Add smp_generic_cpu_bootable
+Message-Id: <20130731175233.013066d0c473b1138774dc15@canb.auug.org.au>
+In-Reply-To: <1375140785-9782-1-git-send-email-afleming@freescale.com>
+References: <1375140785-9782-1-git-send-email-afleming@freescale.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__31_Jul_2013_17_52_33_+1000_aL+AS1RhiTxoSb1/"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,49 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello everyone!
+--Signature=_Wed__31_Jul_2013_17_52_33_+1000_aL+AS1RhiTxoSb1/
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I've just sent v3 of part 1 and 2 of RFC series:
-https://patchwork.kernel.org/patch/2836123/
-https://patchwork.kernel.org/patch/2836124/
+Hi Andy,
 
-
-2013/7/17 Gerhard Sittig <gsi@denx.de>:
-> OK, so the need for explicit start in software or external
-> request by the peripheral remains, but the condition for the
-> choice is different. It might become a flag attached to the DMA
-> channel, that gets setup in the prep routines (memory and slave
-> access each use their own prep calls) and gets evaluated in
-> execute.
-
-I made a flag "will_access_peripheral" be set up in the device control callback.
-
-
-> non-MDDRC channels can get used for memory
-> transfers as well, which your description of the the former use
-> suggests, when slave support was absent.
-
-I tested v3 on MPC5125 with SCLPC driver (transfers between dev and
-mem work fine)
-and dmatest module (all 64 DMA channels can perform mem-to-mem transfers).
-
-
->> > +   mchan = dma_chan_to_mpc_dma_chan(chan);
->> > +   switch (cmd) {
->> > +   case DMA_TERMINATE_ALL:
->> > +           /* disable channel requests */
->> > +           mdma = dma_chan_to_mpc_dma(chan);
->> > +           out_8(&mdma->regs->dmacerq, chan->chan_id);
->> > +           list_splice_tail_init(&mchan->prepared, &mchan->free);
->> > +           list_splice_tail_init(&mchan->queued, &mchan->free);
->> > +           list_splice_tail_init(&mchan->active, &mchan->free);
->>
->> This probably need locking.
+On Mon, 29 Jul 2013 18:33:04 -0500 Andy Fleming <afleming@freescale.com> wr=
+ote:
 >
-> Ah, yes.  It needs to grab the same lock as all the other list
-> manipulations in the driver's source.
+> +EXPORT_SYMBOL(smp_generic_cpu_bootable);
 
-Fixed that too.
+I am pretty sure that none of the places you are going to use this can be
+built as modules, so remove this EXPORT_SYMBOL, please.
 
-Best regards,
-Alexander.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Wed__31_Jul_2013_17_52_33_+1000_aL+AS1RhiTxoSb1/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJR+MJFAAoJEECxmPOUX5FE1RoP/1fiu1W/PNdldFZeWtFWLT/v
+tHLJo7pCsXdKXn17QdsCKeEsoGrtvL2eKh9bkRnMnPdhB0IKMrcPLuEa8WiIsUiB
+vVsraW8UTunjoscHPpAyorW1s/I7Pjcrcqv3neZLCffkWaxKDavnQ4rKw7Y+ONIn
+sP9nU5CorYsNr80I3V8i5pmqFlHfGJOjxteCJB8xpPz/Lg9ATT8SGXHMPDufUNvh
+Gl/HXUJo9WwJmyudMzKfF3zMjcBZD4rqZf8Hqv/Q2O20ILBgji5dKys70wspJJzN
+IMdvG8TvmOMmke1sWnYJv7IIrlaQriRqpE/KdOoIUv9v0BN0hL0I0VOM28zcefJq
+uB0GJ5H8f/lhqgvLBmWXE4rCCFFL2o9b9b0pWSOtLrSlpnejijbZ49/hN7320F5f
+Ec8EhhlUTVSMawhhGU67Im7knZK2MThj/704RiEU3ufM6nhOm1clE5rgtflvt2rw
+Sk7P4bsoIRKVpfwJNF6/QuayY3YNWK8hhnN5CCYWL9eIxilzHFDV1/Ee/ez3n12i
+yrQS71KyqXZdix5h2Sr8Ustca7BoNGvPFQdckMsrhS692AzWG0AvIzDbNqzAQ9kN
+vOUK3X0iY0VWXAq9teFP4PVRPpLbpDOc7c6j/FbO+bX5bvjO9GfOkeNqazxNYcWX
+X/261BIBfYFyowR5FOKq
+=ji2B
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__31_Jul_2013_17_52_33_+1000_aL+AS1RhiTxoSb1/--
