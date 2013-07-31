@@ -1,9 +1,9 @@
 Return-Path: <anton@samba.org>
-Date: Wed, 31 Jul 2013 16:05:19 +1000
+Date: Wed, 31 Jul 2013 16:07:43 +1000
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc: Wrap MSR macros with parentheses
-Message-ID: <20130731160519.3f01a89c@kryten>
+Subject: [PATCH] powerpc: Align p_toc
+Message-ID: <20130731160743.02611a32@kryten>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,27 +17,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Not having parentheses around a macro is asking for trouble.
+p_toc is an 8 byte relative offset to the TOC that we place in the
+text section. This means it is only 4 byte aligned where it should
+be 8 byte aligned. Add an explicit alignment.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: b/arch/powerpc/include/asm/reg.h
+Index: b/arch/powerpc/kernel/head_64.S
 ===================================================================
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -115,10 +115,10 @@
- #define MSR_64BIT	MSR_SF
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -703,6 +703,7 @@ _GLOBAL(relative_toc)
+ 	mtlr	r0
+ 	blr
  
- /* Server variant */
--#define MSR_		MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV
--#define MSR_KERNEL	MSR_ | MSR_64BIT
--#define MSR_USER32	MSR_ | MSR_PR | MSR_EE
--#define MSR_USER64	MSR_USER32 | MSR_64BIT
-+#define MSR_		(MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV)
-+#define MSR_KERNEL	(MSR_ | MSR_64BIT)
-+#define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
-+#define MSR_USER64	(MSR_USER32 | MSR_64BIT)
- #elif defined(CONFIG_PPC_BOOK3S_32) || defined(CONFIG_8xx)
- /* Default MSR for kernel mode. */
- #define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_IR|MSR_DR)
++.balign 8
+ p_toc:	.llong	__toc_start + 0x8000 - 0b
+ 
+ /*
