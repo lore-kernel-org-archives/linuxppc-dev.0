@@ -1,28 +1,25 @@
-Return-Path: <B42378@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 50EEE2C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 00:12:26 +1000 (EST)
-From: Chen Guangyu-B42378 <B42378@freescale.com>
-To: Lars-Peter Clausen <lars@metafoo.de>
-Subject: RE: [alsa-devel] [PATCH 2/3] ASoC: fsl: Add S/PDIF CPU DAI driver
-Date: Wed, 31 Jul 2013 14:12:18 +0000
-Message-ID: <E31481825E4C03459FC878EE97CB2EFD0CC2E0AA@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <cover.1375271745.git.b42378@freescale.com>
- <30e7b0fec9e813b8765514e48296ebecc6ca1039.1375271745.git.b42378@freescale.com>,
- <51F9001B.6070203@metafoo.de>
-In-Reply-To: <51F9001B.6070203@metafoo.de>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <Ian.Campbell@citrix.com>
+Received: from SMTP.EU.CITRIX.COM (smtp.eu.citrix.com [46.33.159.39])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "*.citrix.com",
+ Issuer "Cybertrust SureServer Standard Validation CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BA6822C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 00:56:40 +1000 (EST)
+Message-ID: <1375281925.7382.88.camel@kazak.uk.xensource.com>
+Subject: Re: [PATCH] powerpc/fsl-booke: Rename b4qds.dts -> b4qds.dtsi.
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: <linux-kernel@vger.kernel.org>
+Date: Wed, 31 Jul 2013 15:45:25 +0100
+In-Reply-To: <1369995280-20863-1-git-send-email-ian.campbell@citrix.com>
+References: <1369995280-20863-1-git-send-email-ian.campbell@citrix.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>, "timur@tabi.org" <timur@tabi.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ Shaveta Leekha <shaveta@freescale.com>,
+ Minghuan Lian <Minghuan.Lian@freescale.com>,
+ Andy Fleming <afleming@freescale.com>,
+ Ramneek Mehresh <ramneek.mehresh@freescale.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,91 +29,413 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Lars
+ping?
 
-Thank you for the sage advices.
-
-I'll revise the patch and send the v2.
-________________________________________
-From: Lars-Peter Clausen [lars@metafoo.de]
-Sent: Wednesday, July 31, 2013 8:16 PM
-To: Chen Guangyu-B42378
-Cc: broonie@kernel.org; timur@tabi.org; alsa-devel@alsa-project.org; linuxp=
-pc-dev@lists.ozlabs.org; devicetree-discuss@lists.ozlabs.org; rob.herring@c=
-alxeda.com
-Subject: Re: [alsa-devel] [PATCH 2/3] ASoC: fsl: Add S/PDIF CPU DAI driver
-
-[...]
-a/Documentation/devicetree/bindings/sound/fsl,spdif.txt
-b/Documentation/devicetree/bindings/sound/fsl,spdif.txt
+On Fri, 2013-05-31 at 11:14 +0100, Ian Campbell wrote:
+> This file is a common include for B4860 and B4420 but is not a valid DTS itself:
+> 	  DTC     arch/powerpc/boot/b4qds.dtb
+> 	Error: arch/powerpc/boot/dts/b4qds.dts:35.1-2 syntax error
+> 	FATAL ERROR: Unable to parse input tree
+> 	make[1]: *** [arch/powerpc/boot/b4qds.dtb] Error 1
+> 	make: *** [b4qds.dtb] Error 2
+> 
+> I spotted in build tests of device-tree.git, announcement
+> https://lkml.org/lkml/2013/4/24/209, which builds *.dts. Probably no one would
+> do this this in real life on linux.git but it still seems worth fixing.
+> 
+> Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+> Cc: Shaveta Leekha <shaveta@freescale.com>
+> Cc: Minghuan Lian <Minghuan.Lian@freescale.com>
+> Cc: Andy Fleming <afleming@freescale.com>
+> Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+> Cc: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  arch/powerpc/boot/dts/b4420qds.dts |    2 +-
+>  arch/powerpc/boot/dts/b4860qds.dts |    2 +-
+>  arch/powerpc/boot/dts/b4qds.dts    |  169 ------------------------------------
+>  arch/powerpc/boot/dts/b4qds.dtsi   |  169 ++++++++++++++++++++++++++++++++++++
+>  4 files changed, 171 insertions(+), 171 deletions(-)
+>  delete mode 100644 arch/powerpc/boot/dts/b4qds.dts
+>  create mode 100644 arch/powerpc/boot/dts/b4qds.dtsi
+> 
+> diff --git a/arch/powerpc/boot/dts/b4420qds.dts b/arch/powerpc/boot/dts/b4420qds.dts
+> index 923156d..508dbdf 100644
+> --- a/arch/powerpc/boot/dts/b4420qds.dts
+> +++ b/arch/powerpc/boot/dts/b4420qds.dts
+> @@ -33,7 +33,7 @@
+>   */
+>  
+>  /include/ "fsl/b4420si-pre.dtsi"
+> -/include/ "b4qds.dts"
+> +/include/ "b4qds.dtsi"
+>  
+>  / {
+>  	model = "fsl,B4420QDS";
+> diff --git a/arch/powerpc/boot/dts/b4860qds.dts b/arch/powerpc/boot/dts/b4860qds.dts
+> index 78907f3..6bb3707 100644
+> --- a/arch/powerpc/boot/dts/b4860qds.dts
+> +++ b/arch/powerpc/boot/dts/b4860qds.dts
+> @@ -33,7 +33,7 @@
+>   */
+>  
+>  /include/ "fsl/b4860si-pre.dtsi"
+> -/include/ "b4qds.dts"
+> +/include/ "b4qds.dtsi"
+>  
+>  / {
+>  	model = "fsl,B4860QDS";
+> diff --git a/arch/powerpc/boot/dts/b4qds.dts b/arch/powerpc/boot/dts/b4qds.dts
+> deleted file mode 100644
+> index e6d2f8f..0000000
+> --- a/arch/powerpc/boot/dts/b4qds.dts
+> +++ /dev/null
+> @@ -1,169 +0,0 @@
+> -/*
+> - * B4420DS Device Tree Source
+> - *
+> - * Copyright 2012 Freescale Semiconductor, Inc.
+> - *
+> - * Redistribution and use in source and binary forms, with or without
+> - * modification, are permitted provided that the following conditions are met:
+> - *     * Redistributions of source code must retain the above copyright
+> - *       notice, this list of conditions and the following disclaimer.
+> - *     * Redistributions in binary form must reproduce the above copyright
+> - *       notice, this list of conditions and the following disclaimer in the
+> - *       documentation and/or other materials provided with the distribution.
+> - *     * Neither the name of Freescale Semiconductor nor the
+> - *       names of its contributors may be used to endorse or promote products
+> - *       derived from this software without specific prior written permission.
+> - *
+> - *
+> - * ALTERNATIVELY, this software may be distributed under the terms of the
+> - * GNU General Public License ("GPL") as published by the Free Software
+> - * Foundation, either version 2 of that License or (at your option) any
+> - * later version.
+> - *
+> - * This software is provided by Freescale Semiconductor "as is" and any
+> - * express or implied warranties, including, but not limited to, the implied
+> - * warranties of merchantability and fitness for a particular purpose are
+> - * disclaimed. In no event shall Freescale Semiconductor be liable for any
+> - * direct, indirect, incidental, special, exemplary, or consequential damages
+> - * (including, but not limited to, procurement of substitute goods or services;
+> - * loss of use, data, or profits; or business interruption) however caused and
+> - * on any theory of liability, whether in contract, strict liability, or tort
+> - * (including negligence or otherwise) arising in any way out of the use of
+> - * this software, even if advised of the possibility of such damage.
+> - */
+> -
+> -/ {
+> -	model = "fsl,B4QDS";
+> -	compatible = "fsl,B4QDS";
+> -	#address-cells = <2>;
+> -	#size-cells = <2>;
+> -	interrupt-parent = <&mpic>;
+> -
+> -	ifc: localbus@ffe124000 {
+> -		reg = <0xf 0xfe124000 0 0x2000>;
+> -		ranges = <0 0 0xf 0xe8000000 0x08000000
+> -			  2 0 0xf 0xff800000 0x00010000
+> -			  3 0 0xf 0xffdf0000 0x00008000>;
+> -
+> -		nor@0,0 {
+> -			#address-cells = <1>;
+> -			#size-cells = <1>;
+> -			compatible = "cfi-flash";
+> -			reg = <0x0 0x0 0x8000000>;
+> -			bank-width = <2>;
+> -			device-width = <1>;
+> -		};
+> -
+> -		nand@2,0 {
+> -			#address-cells = <1>;
+> -			#size-cells = <1>;
+> -			compatible = "fsl,ifc-nand";
+> -			reg = <0x2 0x0 0x10000>;
+> -
+> -			partition@0 {
+> -				/* This location must not be altered  */
+> -				/* 1MB for u-boot Bootloader Image */
+> -				reg = <0x0 0x00100000>;
+> -				label = "NAND U-Boot Image";
+> -				read-only;
+> -			};
+> -
+> -			partition@100000 {
+> -				/* 1MB for DTB Image */
+> -				reg = <0x00100000 0x00100000>;
+> -				label = "NAND DTB Image";
+> -			};
+> -
+> -			partition@200000 {
+> -				/* 10MB for Linux Kernel Image */
+> -				reg = <0x00200000 0x00A00000>;
+> -				label = "NAND Linux Kernel Image";
+> -			};
+> -
+> -			partition@c00000 {
+> -				/* 500MB for Root file System Image */
+> -				reg = <0x00c00000 0x1F400000>;
+> -				label = "NAND RFS Image";
+> -			};
+> -		};
+> -
+> -		board-control@3,0 {
+> -			compatible = "fsl,b4qds-fpga", "fsl,fpga-qixis";
+> -			reg = <3 0 0x300>;
+> -		};
+> -	};
+> -
+> -	memory {
+> -		device_type = "memory";
+> -	};
+> -
+> -	dcsr: dcsr@f00000000 {
+> -		ranges = <0x00000000 0xf 0x00000000 0x01052000>;
+> -	};
+> -
+> -	soc: soc@ffe000000 {
+> -		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
+> -		reg = <0xf 0xfe000000 0 0x00001000>;
+> -		spi@110000 {
+> -			flash@0 {
+> -				#address-cells = <1>;
+> -				#size-cells = <1>;
+> -				compatible = "sst,sst25wf040";
+> -				reg = <0>;
+> -				spi-max-frequency = <40000000>; /* input clock */
+> -			};
+> -		};
+> -
+> -		sdhc@114000 {
+> -			/*Disabled as there is no sdhc connector on B4420QDS board*/
+> -			status = "disabled";
+> -		};
+> -
+> -		i2c@118000 {
+> -			eeprom@50 {
+> -				compatible = "at24,24c64";
+> -				reg = <0x50>;
+> -			};
+> -			eeprom@51 {
+> -				compatible = "at24,24c256";
+> -				reg = <0x51>;
+> -			};
+> -			eeprom@53 {
+> -				compatible = "at24,24c256";
+> -				reg = <0x53>;
+> -			};
+> -			eeprom@57 {
+> -				compatible = "at24,24c256";
+> -				reg = <0x57>;
+> -			};
+> -			rtc@68 {
+> -				compatible = "dallas,ds3232";
+> -				reg = <0x68>;
+> -			};
+> -		};
+> -
+> -		usb@210000 {
+> -			dr_mode = "host";
+> -			phy_type = "ulpi";
+> -		};
+> -
+> -	};
+> -
+> -	pci0: pcie@ffe200000 {
+> -		reg = <0xf 0xfe200000 0 0x10000>;
+> -		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x20000000
+> -			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
+> -		pcie@0 {
+> -			ranges = <0x02000000 0 0xe0000000
+> -				  0x02000000 0 0xe0000000
+> -				  0 0x20000000
+> -
+> -				  0x01000000 0 0x00000000
+> -				  0x01000000 0 0x00000000
+> -				  0 0x00010000>;
+> -		};
+> -	};
+> -
+> -};
+> -
+> -/include/ "fsl/b4si-post.dtsi"
+> diff --git a/arch/powerpc/boot/dts/b4qds.dtsi b/arch/powerpc/boot/dts/b4qds.dtsi
 > new file mode 100644
-> index 0000000..a655800
+> index 0000000..e6d2f8f
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/sound/fsl,spdif.txt
-> @@ -0,0 +1,63 @@
-> +Freescale Sony/Philips Digital Interface Format (S/PDIF) Controller
+> +++ b/arch/powerpc/boot/dts/b4qds.dtsi
+> @@ -0,0 +1,169 @@
+> +/*
+> + * B4420DS Device Tree Source
+> + *
+> + * Copyright 2012 Freescale Semiconductor, Inc.
+> + *
+> + * Redistribution and use in source and binary forms, with or without
+> + * modification, are permitted provided that the following conditions are met:
+> + *     * Redistributions of source code must retain the above copyright
+> + *       notice, this list of conditions and the following disclaimer.
+> + *     * Redistributions in binary form must reproduce the above copyright
+> + *       notice, this list of conditions and the following disclaimer in the
+> + *       documentation and/or other materials provided with the distribution.
+> + *     * Neither the name of Freescale Semiconductor nor the
+> + *       names of its contributors may be used to endorse or promote products
+> + *       derived from this software without specific prior written permission.
+> + *
+> + *
+> + * ALTERNATIVELY, this software may be distributed under the terms of the
+> + * GNU General Public License ("GPL") as published by the Free Software
+> + * Foundation, either version 2 of that License or (at your option) any
+> + * later version.
+> + *
+> + * This software is provided by Freescale Semiconductor "as is" and any
+> + * express or implied warranties, including, but not limited to, the implied
+> + * warranties of merchantability and fitness for a particular purpose are
+> + * disclaimed. In no event shall Freescale Semiconductor be liable for any
+> + * direct, indirect, incidental, special, exemplary, or consequential damages
+> + * (including, but not limited to, procurement of substitute goods or services;
+> + * loss of use, data, or profits; or business interruption) however caused and
+> + * on any theory of liability, whether in contract, strict liability, or tort
+> + * (including negligence or otherwise) arising in any way out of the use of
+> + * this software, even if advised of the possibility of such damage.
+> + */
 > +
-> +The Freescale S/PDIF audio block is a stereo transceiver that allows the
-> +processor to receive and transmit digital audio via an coaxial cable or
-> +a fibre cable.
+> +/ {
+> +	model = "fsl,B4QDS";
+> +	compatible = "fsl,B4QDS";
+> +	#address-cells = <2>;
+> +	#size-cells = <2>;
+> +	interrupt-parent = <&mpic>;
 > +
-> +Required properties:
+> +	ifc: localbus@ffe124000 {
+> +		reg = <0xf 0xfe124000 0 0x2000>;
+> +		ranges = <0 0 0xf 0xe8000000 0x08000000
+> +			  2 0 0xf 0xff800000 0x00010000
+> +			  3 0 0xf 0xffdf0000 0x00008000>;
 > +
-> +  - compatible : Compatible list, contains "fsl,spdif".
-
-That's not what the driver says though.
-
+> +		nor@0,0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "cfi-flash";
+> +			reg = <0x0 0x0 0x8000000>;
+> +			bank-width = <2>;
+> +			device-width = <1>;
+> +		};
 > +
-> +  - reg : Offset and length of the register set for the device.
+> +		nand@2,0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "fsl,ifc-nand";
+> +			reg = <0x2 0x0 0x10000>;
 > +
-> +  - interrupts : <a b> where a is the interrupt number and b is a field =
-that
-> +    represents an encoding of the sense and level information for the in=
-terrupt.
-> +    This should be encoded based on the information in section 2) depend=
-ing on
-> +    the type of interrupt controller you have.
-
-The exact layout of the cell depends on the parent interrupt controller, so
-you probably shouldn't describe it here.
-
+> +			partition@0 {
+> +				/* This location must not be altered  */
+> +				/* 1MB for u-boot Bootloader Image */
+> +				reg = <0x0 0x00100000>;
+> +				label = "NAND U-Boot Image";
+> +				read-only;
+> +			};
 > +
-> +  - clocks : The phandle for the clock ID number registered in clock tre=
-e.
+> +			partition@100000 {
+> +				/* 1MB for DTB Image */
+> +				reg = <0x00100000 0x00100000>;
+> +				label = "NAND DTB Image";
+> +			};
 > +
-> +  - fsl,spdif-dma-events: The dma event ID numbers for Tx and Rx.
+> +			partition@200000 {
+> +				/* 10MB for Linux Kernel Image */
+> +				reg = <0x00200000 0x00A00000>;
+> +				label = "NAND Linux Kernel Image";
+> +			};
 > +
-
-Use the generic DMA bindings.
-
-> +Optional properties:
+> +			partition@c00000 {
+> +				/* 500MB for Root file System Image */
+> +				reg = <0x00c00000 0x1F400000>;
+> +				label = "NAND RFS Image";
+> +			};
+> +		};
 > +
-> +  - rx-clk-source : The clock cource for Rx. Need to set this source acc=
-ording
-> +  to the SoC datasheet in SPDIF_SRPC section. If absent, the default sou=
-rce is
-> +  value 0x0 - if (DPLL Locked) SPDIF_RxClk else extal.
+> +		board-control@3,0 {
+> +			compatible = "fsl,b4qds-fpga", "fsl,fpga-qixis";
+> +			reg = <3 0 0x300>;
+> +		};
+> +	};
 > +
-> +  - tx-clk-source : The clock cources for Tx. There're three sources, ea=
-ch for
-> +  different supported sample rate, sequentially 32000Hz, 44100Hz and 480=
-00Hz.
-> +  Need to set this source according to the SoC datasheet in SPDIF_STC se=
-ction.
-> +  If absent, the default source is value 0x1 - CCM spdif0_clk_root input=
-.
+> +	memory {
+> +		device_type = "memory";
+> +	};
 > +
-> +  - tx-clk-div : The clock divider factor for Tx clock. There're three v=
-alues,
-> +  each for different supported sample rate, sequentially 32000Hz 44100Hz=
- 48000Hz.
-> +  Need to set this source according to the clock rate from the clock sou=
-rce.
-> +  If absent, the default divider factor is <37 23 37> by using spdif0_cl=
-k source.
-
-Can't the driver figure out the divider values on its own based on the inpu=
-t
-clock rate?
-
-- Lars
+> +	dcsr: dcsr@f00000000 {
+> +		ranges = <0x00000000 0xf 0x00000000 0x01052000>;
+> +	};
+> +
+> +	soc: soc@ffe000000 {
+> +		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
+> +		reg = <0xf 0xfe000000 0 0x00001000>;
+> +		spi@110000 {
+> +			flash@0 {
+> +				#address-cells = <1>;
+> +				#size-cells = <1>;
+> +				compatible = "sst,sst25wf040";
+> +				reg = <0>;
+> +				spi-max-frequency = <40000000>; /* input clock */
+> +			};
+> +		};
+> +
+> +		sdhc@114000 {
+> +			/*Disabled as there is no sdhc connector on B4420QDS board*/
+> +			status = "disabled";
+> +		};
+> +
+> +		i2c@118000 {
+> +			eeprom@50 {
+> +				compatible = "at24,24c64";
+> +				reg = <0x50>;
+> +			};
+> +			eeprom@51 {
+> +				compatible = "at24,24c256";
+> +				reg = <0x51>;
+> +			};
+> +			eeprom@53 {
+> +				compatible = "at24,24c256";
+> +				reg = <0x53>;
+> +			};
+> +			eeprom@57 {
+> +				compatible = "at24,24c256";
+> +				reg = <0x57>;
+> +			};
+> +			rtc@68 {
+> +				compatible = "dallas,ds3232";
+> +				reg = <0x68>;
+> +			};
+> +		};
+> +
+> +		usb@210000 {
+> +			dr_mode = "host";
+> +			phy_type = "ulpi";
+> +		};
+> +
+> +	};
+> +
+> +	pci0: pcie@ffe200000 {
+> +		reg = <0xf 0xfe200000 0 0x10000>;
+> +		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x20000000
+> +			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
+> +		pcie@0 {
+> +			ranges = <0x02000000 0 0xe0000000
+> +				  0x02000000 0 0xe0000000
+> +				  0 0x20000000
+> +
+> +				  0x01000000 0 0x00000000
+> +				  0x01000000 0 0x00000000
+> +				  0 0x00010000>;
+> +		};
+> +	};
+> +
+> +};
+> +
+> +/include/ "fsl/b4si-post.dtsi"
