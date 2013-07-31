@@ -1,9 +1,9 @@
 Return-Path: <anton@samba.org>
-Date: Wed, 31 Jul 2013 16:07:43 +1000
+Date: Wed, 31 Jul 2013 16:19:25 +1000
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc: Align p_toc
-Message-ID: <20130731160743.02611a32@kryten>
+To: benh@kernel.crashing.org, paulus@samba.org, mikey@neuling.org
+Subject: [PATCH] powerpc: Remove SAVE_VSRU and REST_VSRU macros
+Message-ID: <20130731161925.4fc8f5f2@kryten>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,22 +17,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-p_toc is an 8 byte relative offset to the TOC that we place in the
-text section. This means it is only 4 byte aligned where it should
-be 8 byte aligned. Add an explicit alignment.
+We always use VMX loads and stores to manage the high 32
+VSRs. Remove these unused macros.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: b/arch/powerpc/kernel/head_64.S
+Index: b/arch/powerpc/include/asm/ppc_asm.h
 ===================================================================
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -703,6 +703,7 @@ _GLOBAL(relative_toc)
- 	mtlr	r0
- 	blr
- 
-+.balign 8
- p_toc:	.llong	__toc_start + 0x8000 - 0b
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -219,19 +219,6 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLP
+ #define REST_8VSRS(n,b,base)	REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,base)
+ #define REST_16VSRS(n,b,base)	REST_8VSRS(n,b,base); REST_8VSRS(n+8,b,base)
+ #define REST_32VSRS(n,b,base)	REST_16VSRS(n,b,base); REST_16VSRS(n+16,b,base)
+-/* Save the upper 32 VSRs (32-63) in the thread VSX region (0-31) */
+-#define SAVE_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n));  STXVD2X(n+32,R##base,R##b)
+-#define SAVE_2VSRSU(n,b,base)	SAVE_VSRU(n,b,base); SAVE_VSRU(n+1,b,base)
+-#define SAVE_4VSRSU(n,b,base)	SAVE_2VSRSU(n,b,base); SAVE_2VSRSU(n+2,b,base)
+-#define SAVE_8VSRSU(n,b,base)	SAVE_4VSRSU(n,b,base); SAVE_4VSRSU(n+4,b,base)
+-#define SAVE_16VSRSU(n,b,base)	SAVE_8VSRSU(n,b,base); SAVE_8VSRSU(n+8,b,base)
+-#define SAVE_32VSRSU(n,b,base)	SAVE_16VSRSU(n,b,base); SAVE_16VSRSU(n+16,b,base)
+-#define REST_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n)); LXVD2X(n+32,R##base,R##b)
+-#define REST_2VSRSU(n,b,base)	REST_VSRU(n,b,base); REST_VSRU(n+1,b,base)
+-#define REST_4VSRSU(n,b,base)	REST_2VSRSU(n,b,base); REST_2VSRSU(n+2,b,base)
+-#define REST_8VSRSU(n,b,base)	REST_4VSRSU(n,b,base); REST_4VSRSU(n+4,b,base)
+-#define REST_16VSRSU(n,b,base)	REST_8VSRSU(n,b,base); REST_8VSRSU(n+8,b,base)
+-#define REST_32VSRSU(n,b,base)	REST_16VSRSU(n,b,base); REST_16VSRSU(n+16,b,base)
  
  /*
+  * b = base register for addressing, o = base offset from register of 1st EVR
