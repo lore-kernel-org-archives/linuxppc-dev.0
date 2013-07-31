@@ -1,28 +1,28 @@
-Return-Path: <B25806@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+Return-Path: <B31939@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 335AF2C00DB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 12:52:30 +1000 (EST)
-Received: from mail223-ch1 (localhost [127.0.0.1])	by
- mail223-ch1-R.bigfish.com (Postfix) with ESMTP id 7CABA4A018E	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 02:52:24 +0000 (UTC)
-Received: from CH1EHSMHS032.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.241])	by mail223-ch1.bigfish.com (Postfix) with ESMTP id
- 7EF0B160049	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 02:52:12
- +0000 (UTC)
-Message-ID: <51F87D20.6070801@freescale.com>
-Date: Wed, 31 Jul 2013 10:57:36 +0800
-From: Chunhe Lan <b25806@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3957B2C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 12:58:29 +1000 (EST)
+Received: from mail50-db9 (localhost [127.0.0.1])	by mail50-db9-R.bigfish.com
+ (Postfix) with ESMTP id AA9FAC01E3	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,
+ 31 Jul 2013 02:58:23 +0000 (UTC)
+Received: from DB9EHSMHS014.bigfish.com (unknown [10.174.16.234])	by
+ mail50-db9.bigfish.com (Postfix) with ESMTP id 0863F2C023A	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 02:58:22 +0000 (UTC)
+From: Minghuan Lian <Minghuan.Lian@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/dts: fix sRIO error interrupt for b4860
+Date: Wed, 31 Jul 2013 10:59:07 +0800
+Message-ID: <1375239547-8259-1-git-send-email-Minghuan.Lian@freescale.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2] powerpc/85xx: Add P1023RDB board support
-References: <1375210628.30721.78@snotra>
-In-Reply-To: <1375210628.30721.78@snotra>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Chunhe Lan <Chunhe.Lan@freescale.com>
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>,
+ Minghuan Lian <Minghuan.Lian@freescale.com>,
+ Zang Roy-R61911 <r61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,18 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/31/2013 02:57 AM, Scott Wood wrote:
-> On 07/30/2013 06:40:29 AM, Chunhe Lan wrote: +
->> +    lbc: localbus@ff605000 {
->> +        reg = <0 0xff605000 0 0x1000>;
->> +
->> +        /* NOR, NAND Flashes */
->> +        ranges = <0x0 0x0 0x0 0xec000000 0x04000000
->> +              0x1 0x0 0x0 0xffa00000 0x08000000>;
->
-> Is there no FPGA attached to eLBC?
+For B4 platform, MPIC EISR register is in reversed bitmap order,
+instead of "Error interrupt source 0-31. Bit 0 represents SRC0."
+the correct ordering is "Error interrupt source 0-31. Bit 0
+represents SRC31." This patch is to fix sRIO EISR bit value
+of error interrupt in dts node.
 
-     Yes, p1023rdb does not have FPGA attached to eLBC.
+Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+---
+ arch/powerpc/boot/dts/fsl/b4860si-post.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
--Chunhe
+diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+index e5cf6c8..9813975 100644
+--- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+@@ -41,7 +41,7 @@
+ 
+ &rio {
+ 	compatible = "fsl,srio";
+-	interrupts = <16 2 1 11>;
++	interrupts = <16 2 1 20>;
+ 	#address-cells = <2>;
+ 	#size-cells = <2>;
+ 	fsl,iommu-parent = <&pamu0>;
+-- 
+1.8.1.2
