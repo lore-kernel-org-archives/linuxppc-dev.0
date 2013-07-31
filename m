@@ -1,12 +1,17 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 31 Jul 2013 16:19:25 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mikey@neuling.org
-Subject: [PATCH] powerpc: Remove SAVE_VSRU and REST_VSRU macros
-Message-ID: <20130731161925.4fc8f5f2@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Date: Wed, 31 Jul 2013 16:23:56 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/3] selftests: Add support files for powerpc tests
+Message-ID: <20130731062356.GA9997@concordia>
+References: <1375246593-26116-1-git-send-email-michael@ellerman.id.au>
+ <1375246593-26116-2-git-send-email-michael@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1375246593-26116-2-git-send-email-michael@ellerman.id.au>
+Cc: Andrew Morton <akpm@osdl.org>, Michael Neuling <mikey@neuling.org>,
+ Jeremy Kerr <jk@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,34 +21,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Jul 31, 2013 at 02:56:32PM +1000, Michael Ellerman wrote:
+> This commit adds support code used by upcoming powerpc tests.
 
-We always use VMX loads and stores to manage the high 32
-VSRs. Remove these unused macros.
+Fudge, I broke this one while "cleaning it up". Will send a v2.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: b/arch/powerpc/include/asm/ppc_asm.h
-===================================================================
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -219,19 +219,6 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLP
- #define REST_8VSRS(n,b,base)	REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,base)
- #define REST_16VSRS(n,b,base)	REST_8VSRS(n,b,base); REST_8VSRS(n+8,b,base)
- #define REST_32VSRS(n,b,base)	REST_16VSRS(n,b,base); REST_16VSRS(n+16,b,base)
--/* Save the upper 32 VSRs (32-63) in the thread VSX region (0-31) */
--#define SAVE_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n));  STXVD2X(n+32,R##base,R##b)
--#define SAVE_2VSRSU(n,b,base)	SAVE_VSRU(n,b,base); SAVE_VSRU(n+1,b,base)
--#define SAVE_4VSRSU(n,b,base)	SAVE_2VSRSU(n,b,base); SAVE_2VSRSU(n+2,b,base)
--#define SAVE_8VSRSU(n,b,base)	SAVE_4VSRSU(n,b,base); SAVE_4VSRSU(n+4,b,base)
--#define SAVE_16VSRSU(n,b,base)	SAVE_8VSRSU(n,b,base); SAVE_8VSRSU(n+8,b,base)
--#define SAVE_32VSRSU(n,b,base)	SAVE_16VSRSU(n,b,base); SAVE_16VSRSU(n+16,b,base)
--#define REST_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n)); LXVD2X(n+32,R##base,R##b)
--#define REST_2VSRSU(n,b,base)	REST_VSRU(n,b,base); REST_VSRU(n+1,b,base)
--#define REST_4VSRSU(n,b,base)	REST_2VSRSU(n,b,base); REST_2VSRSU(n+2,b,base)
--#define REST_8VSRSU(n,b,base)	REST_4VSRSU(n,b,base); REST_4VSRSU(n+4,b,base)
--#define REST_16VSRSU(n,b,base)	REST_8VSRSU(n,b,base); REST_8VSRSU(n+8,b,base)
--#define REST_32VSRSU(n,b,base)	REST_16VSRSU(n,b,base); REST_16VSRSU(n+16,b,base)
- 
- /*
-  * b = base register for addressing, o = base offset from register of 1st EVR
+cheers
