@@ -1,23 +1,20 @@
-Return-Path: <0000014035b06a9d-e8b10680-e321-4d3b-95a8-0833fa3fb7c9-000000@amazonses.com>
-Received: from a9-46.smtp-out.amazonses.com (a9-46.smtp-out.amazonses.com
- [54.240.9.46]) by ozlabs.org (Postfix) with ESMTP id 1440A2C008E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 03:10:20 +1000 (EST)
-Date: Wed, 31 Jul 2013 17:04:49 +0000
-From: Christoph Lameter <cl@gentwo.org>
-To: Wladislav Wiebe <wladislav.kw@gmail.com>
-Subject: Re: mm/slab: ppc: ubi: kmalloc_slab WARNING / PPC + UBI driver
-In-Reply-To: <51F93C64.4090601@gmail.com>
-Message-ID: <0000014035b06a9d-e8b10680-e321-4d3b-95a8-0833fa3fb7c9-000000@email.amazonses.com>
-References: <51F8F827.6020108@gmail.com>
- <alpine.DEB.2.02.1307310858150.30572@gentwo.org>
- <alpine.DEB.2.02.1307311015320.30997@gentwo.org>
- <000001403567762a-60a27288-f0b2-4855-b88c-6a6f21ec537c-000000@email.amazonses.com>
- <51F93C64.4090601@gmail.com>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id B49DC2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 08:55:48 +1000 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle: fix unremovable issue for module driver
+Date: Thu, 01 Aug 2013 01:05:57 +0200
+Message-ID: <3434501.u5vXUZPfFA@vostro.rjw.lan>
+In-Reply-To: <2534583.WCBIj5YC29@vostro.rjw.lan>
+References: <1375167319-12821-1-git-send-email-dongsheng.wang@freescale.com>
+ <51F7A152.3030602@linaro.org> <2534583.WCBIj5YC29@vostro.rjw.lan>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: dedekind1@gmail.com, Mel Gorman <mel@csn.ul.ie>, dwmw2@infradead.org,
- Pekka Enberg <penberg@kernel.org>, linux-mm@kvack.org,
- linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Wang Dongsheng-B40534 <B40534@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 31 Jul 2013, Wladislav Wiebe wrote:
+On Tuesday, July 30, 2013 03:33:44 PM Rafael J. Wysocki wrote:
+> On Tuesday, July 30, 2013 01:19:46 PM Daniel Lezcano wrote:
+> > On 07/30/2013 12:48 PM, Wang Dongsheng-B40534 wrote:
+> > > 
+> > > 
+> > >> -----Original Message-----
+> > >> From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
+> > >> Sent: Tuesday, July 30, 2013 5:28 PM
+> > >> To: Wang Dongsheng-B40534
+> > >> Cc: rjw@sisk.pl; linux-pm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > >> Subject: Re: [PATCH] cpuidle: fix unremovable issue for module driver
+> > >>
+> > >> On 07/30/2013 08:55 AM, Dongsheng Wang wrote:
+> > >>> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > >>>
+> > >>> After __cpuidle_register_device, the cpu incs are added up, but decs
+> > >>> are not, thus the module refcount is not match. So the module "exit"
+> > >>> function can not be executed when we do remove operation. Move
+> > >>> module_put into __cpuidle_register_device to fix it.
+> > >>
+> > >> Sorry, I still don't get it :/
+> > >>
+> > >> register->module_get
+> > >> unregister->module_put
+> > >>
+> > >> you change it by:
+> > >>
+> > >> register->module_get
+> > >> register->module_put
+> > >> unregister->none
+> > >>
+> > >> which is wrong.
+> > >>
+> > > module_get->set per cpu incs=1
+> > > module_put->set per cpu decs=1
+> > > 
+> > > module_refcount-> incs - decs;
+> > > 
+> > > "unregister" usually call in module->exit function. 
+> > > But if module_refcount is not zero, the module->exit() cannot be executed.
+> > 
+> > Ok, IIUC, the refcount is decremented in the unregister function but
+> > this one is never called because the refcount is not zero.
+> > 
+> > Funny, that means the module format was *never* used at all as it does
+> > not work.
+> > 
+> > I am wondering if we shouldn't just remove the module support for
+> > cpuidle. Rafael ?
+> 
+> That would be the simplest thing to do and possibly the most correct one too,
+> but I need to double check how inte_idle/ACPI idle interactions depend on that.
 
-> Thanks for the point, do you plan to make kmalloc_large available for extern access in a separate mainline patch?
-> Since kmalloc_large is statically defined in slub_def.h and when including it to seq_file.c
-> we have a lot of conflicting types:
+As I thought, the ordering between intel_idle and the ACPI processor driver's
+idle part depends on the latter being modular.
 
-You cannot separatly include slub_def.h. slab.h includes slub_def.h for
-you. What problem did you try to fix by doing so?
+Also I'm not sure if the core is at fault here.  It evidently expects that
+drivers will be registered before devices, so the driver module cannot be
+released as long as there are any active devices.  This sounds logical from
+the correctness viewpoint.
 
-There is a patch pending that moves kmalloc_large to slab.h. So maybe we
-have to wait a merge period in order to be able to use it with other
-allocators than slub.
+However, from the usability viewpoint it is not very convenient.  It would be
+nicer if the driver could be unregistered and registered while devices are
+there, but I'm afraid that would require some code reorganization.
+
+The $subject patch isn't a correct change anyway in my opinion, because it
+tries to kind of sidestep the core's assumptions.
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
