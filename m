@@ -1,24 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 760062C009E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 02:51:56 +1000 (EST)
-Date: Wed, 31 Jul 2013 11:50:50 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: visible memory seems wrong in kexec crash dump kernel
-To: "Friesen, Christopher" <cbf123@mail.usask.ca>
-In-Reply-To: <CFBB0F4944BCD94BAC0398D7DB81D705EAF91D@CAMPUSMB5.usask.ca>
- (from cbf123@mail.usask.ca on Wed Jul 31 11:40:05 2013)
-Message-ID: <1375289450.30721.93@snotra>
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from filtteri6.pp.htv.fi (filtteri6.pp.htv.fi [213.243.153.189])
+ by ozlabs.org (Postfix) with ESMTP id 65D092C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 03:34:46 +1000 (EST)
+Date: Wed, 31 Jul 2013 20:34:34 +0300
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Wladislav Wiebe <wladislav.kw@gmail.com>
+Subject: Re: mm/slab: ppc: ubi: kmalloc_slab WARNING / PPC + UBI driver
+Message-ID: <20130731173434.GA27470@blackmetal.musicnaut.iki.fi>
+References: <51F8F827.6020108@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Paul Mackerras <paulus@samba.org>,
- "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Vivek Goyal <vgoyal@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <51F8F827.6020108@gmail.com>
+Cc: dedekind1@gmail.com, dwmw2@infradead.org, penberg@kernel.org,
+ linux-mm@kvack.org, linux-mtd@lists.infradead.org, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/31/2013 11:40:05 AM, Friesen, Christopher wrote:
->=20
-> From: Scott Wood [scottwood@freescale.com]
-> Sent: Monday, July 29, 2013 5:10 PM
-> To: Friesen, Christopher
-> Cc: Michael Ellerman; kexec@lists.infradead.org; Paul Mackerras; =20
-> linuxppc-dev@lists.ozlabs.org; Vivek Goyal
-> Subject: Re: visible memory seems wrong in kexec crash dump kernel
->=20
-> On 07/13/2013 01:30:50 AM, Chris Friesen wrote:
-> > The upshot is that there seems to be a number of things that could =20
-> be
-> > improved:
-> >
-> > 1) kexec should accept "/memory" and not just "/memory@"
-> > 2) lmb_reserve() should really respect the crashkernel memory limit
-> > 3) the freescale stuff really shouldn't assume it can map things
-> > wherever it feels like
->=20
-> What "board-specific freescale code" are you referring to?
->=20
-> -Scott
->=20
->=20
-> Sorry for the crappy quoting, I'm using a web outlook portal.
->=20
-> I've switched employers so I don't have access to the exact details =20
-> any more.  The system in question was a Kontron AM4150 which uses the =20
-> P5020.  As I recall, one of the Freescale drivers (I think it was the =20
-> buffer or queue manager that the network driver makes use of) was =20
-> attempting to call lmb_reserve() with a base address in the 4GB range =20
-> even though the recovery kernel was limited to 224MB of memory.
+Hi,
 
-That's not "board specific" code, and it's not even mainline Linux =20
-code.  Unfortunately none of the datapath stuff is upstream, still.
+On Wed, Jul 31, 2013 at 01:42:31PM +0200, Wladislav Wiebe wrote:
+> DEBUG: xxx kmalloc_slab, requested 'size' = 8388608, KMALLOC_MAX_SIZE = 4194304
+[...]
+> [ccd3be60] [c0099fd4] kmalloc_slab+0x48/0xe8 (unreliable)
+> [ccd3be70] [c00ae650] __kmalloc+0x20/0x1b4
+> [ccd3be90] [c00d46f4] seq_read+0x2a4/0x540
+> [ccd3bee0] [c00fe09c] proc_reg_read+0x5c/0x90
+> [ccd3bef0] [c00b4e1c] vfs_read+0xa4/0x150
+> [ccd3bf10] [c00b500c] SyS_read+0x4c/0x84
+> [ccd3bf40] [c000be80] ret_from_syscall+0x0/0x3c
 
-> While I've got your attention, the other thing that I found was that =20
-> the "dpa" network driver didn't properly work in a kexec'd kernel =20
-> even when given lots of memory.  It would work for a little bit and =20
-> then hang.
+It seems some procfs file is trying to dump 8 MB at a single go. You
+need to fix that to return data in smaller chunks. What file is it?
 
-I'm not particularly surprised by this.  It doesn't help that there's =20
-no way to do a device reset. :-(
-
-Issues with Freescale SDK code should be reported on =20
-https://community.freescale.com/, to support@freescale.com, or to your =20
-FAE.
-
--Scott=
+A.
