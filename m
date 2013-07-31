@@ -1,20 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 14F452C0096
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 18:19:30 +1000 (EST)
-Date: Wed, 31 Jul 2013 18:19:23 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc: handle unaligned ldbrx/stdbrx
-Message-Id: <20130731181923.270ccd5b2b9438cf8f8c6887@canb.auug.org.au>
-In-Reply-To: <20130731150521.74eb6639@kryten>
-References: <20130731150521.74eb6639@kryten>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__31_Jul_2013_18_19_23_+1000_Aus+RsMvi_NV5RUs"
-Cc: mikey@neuling.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D32F62C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 18:44:07 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 31 Jul 2013 04:44:04 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 47284C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 04:44:00 -0400 (EDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r6V8i1jC190880
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 04:44:01 -0400
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r6V8i1Yb019312
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 02:44:01 -0600
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/pci: Remove duplicate check in pcibios_fixup_bus()
+Date: Wed, 31 Jul 2013 16:43:56 +0800
+Message-Id: <1375260236-20689-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,57 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__31_Jul_2013_18_19_23_+1000_Aus+RsMvi_NV5RUs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+pci_read_bridge_bases() already checks if the PCI bus is root
+bus or not, so we needn't do same check in pcibios_fixup_bus()
+and just remove it.
 
-Hi Anton,
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/pci-common.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-On Wed, 31 Jul 2013 15:05:21 +1000 Anton Blanchard <anton@samba.org> wrote:
->
-> +++ b/arch/powerpc/kernel/align.c
-> @@ -764,6 +764,16 @@ int fix_alignment(struct pt_regs *regs)
->  	nb =3D aligninfo[instr].len;
->  	flags =3D aligninfo[instr].flags;
-> =20
-> +	/* ldbrx/stdbrx overlap lfs/stfs in the DSISR unfortunately */
-> +	if (IS_XFORM(instruction) && ((instruction >> 1) & 0x3ff) =3D=3D 532) {
-
-We have get_xop() in asm/disassemble.h (which is unfortunately not
-included by this file) ...
-
-> +		nb =3D 8;
-> +		flags =3D LD+SW;
-> +	} else if (IS_XFORM(instruction) &&
-> +		   ((instruction >> 1) & 0x3ff) =3D=3D 660) {
-
-ditto
-
-/me points at a bike shed :-)
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Wed__31_Jul_2013_18_19_23_+1000_Aus+RsMvi_NV5RUs
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJR+MiPAAoJEECxmPOUX5FEzNoP/0f/B2flJtKfT8VZwasqlAKD
-64UNVRA++Q8RGgjGlvWi/AMd7vQaGCHtj/CLMcTtdvfdRUP8qQZgNGpCg3OEJy/r
-/JJ6qb9JojPQu2bY7X97MY3pPVDbPpu6oXYydZJcdXIcLtpD0mVTyGqyWI/LHicn
-qlMqZ7pEoJ2v08w+um+Q0dZl0ncnpvjv9RYrJnaUOH8ItTU5Nxnx7QFRgBuaSiLb
-sf5EWXbgFNPhpFpxi6pROEIQ+/ez3fLnq2ivyZLzJBk7XmyzQ274UT8HIGlsP8o1
-G2rwUaihCy/S4sesu/mF9yrv6SocUiQ73ej/1hazgzq34nEh9y44xEytla1ChP5q
-mss9m/0LKe5fgvuaGXj+C1jCiPU3Z33HQ8atxtl2ikquZjug51FRMH1wOa9qaQER
-w7oWcb2eJpUM2pO1JYY6CSHcQkGxlthulPY4mMT42h9DLY3O+O1x+fEA94z8PpDK
-kekDDwDsUpi5YygbzH8dTs3AT+QXIjriBlv8F0uUw87oHJE7aTcjpSRTA/y06IkP
-cpEflg/HMuG5Kk9x8cqLdEgxHeeN0/POqbHeiJNKeeLNPZEpqdEwuKa+MmKIsk0x
-MchRGcJdl6DWfpmeLwNqHzLNVR7TIQzFrzu3rJFwsT1+VkfBkiialr3I9ahR+lb+
-KZiuWvbAdU6u1bLzxw7J
-=zW7e
------END PGP SIGNATURE-----
-
---Signature=_Wed__31_Jul_2013_18_19_23_+1000_Aus+RsMvi_NV5RUs--
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 7d22a67..c55fb35 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1055,8 +1055,7 @@ void pcibios_fixup_bus(struct pci_bus *bus)
+ 	 * bases. This is -not- called when generating the PCI tree from
+ 	 * the OF device-tree.
+ 	 */
+-	if (bus->self != NULL)
+-		pci_read_bridge_bases(bus);
++	pci_read_bridge_bases(bus);
+ 
+ 	/* Now fixup the bus bus */
+ 	pcibios_setup_bus_self(bus);
+-- 
+1.7.5.4
