@@ -1,14 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v2] selftests: Add support files for powerpc tests
-Date: Wed, 31 Jul 2013 16:52:47 +1000
-Message-Id: <1375253567-5154-1-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1375246593-26116-2-git-send-email-michael@ellerman.id.au>
-References: <1375246593-26116-2-git-send-email-michael@ellerman.id.au>
-Cc: Jeremy Kerr <jk@ozlabs.org>, Andrew Morton <akpm@osdl.org>,
- Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
- Anton Blanchard <anton@samba.org>
+Return-Path: <B42677@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A274B2C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 17:17:56 +1000 (EST)
+From: Haijun Zhang <Haijun.Zhang@freescale.com>
+To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/3 V2] mmc:core: parse voltage from device-tree
+Date: Wed, 31 Jul 2013 14:25:25 +0800
+Message-ID: <1375251927-3330-1-git-send-email-Haijun.Zhang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: scottwood@freescale.com, cjb@laptop.org, AFLEMING@freescale.com,
+ Haijun Zhang <haijun.zhang@freescale.com>, cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,217 +24,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This commit adds support code used by upcoming powerpc tests.
+Add function to support get voltage from device-tree.
+If there are voltage-range specified in device-tree node, this function
+will parse it and return the avail voltage mask.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
 ---
-v2: Put back the SIGALRM handler to make the hang logic work.
+changes for v2:
+	- Update the parameters of function
 
- tools/testing/selftests/powerpc/harness.c | 99 +++++++++++++++++++++++++++++++
- tools/testing/selftests/powerpc/subunit.h | 47 +++++++++++++++
- tools/testing/selftests/powerpc/utils.h   | 34 +++++++++++
- 3 files changed, 180 insertions(+)
- create mode 100644 tools/testing/selftests/powerpc/harness.c
- create mode 100644 tools/testing/selftests/powerpc/subunit.h
- create mode 100644 tools/testing/selftests/powerpc/utils.h
+ drivers/mmc/core/core.c  | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/mmc/core.h |  1 +
+ 2 files changed, 47 insertions(+)
 
-diff --git a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
-new file mode 100644
-index 0000000..03f169d
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/harness.c
-@@ -0,0 +1,99 @@
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index 49a5bca..ce9c957 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -27,6 +27,7 @@
+ #include <linux/fault-inject.h>
+ #include <linux/random.h>
+ #include <linux/slab.h>
++#include <linux/of.h>
+ 
+ #include <linux/mmc/card.h>
+ #include <linux/mmc/host.h>
+@@ -1196,6 +1197,51 @@ u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max)
+ }
+ EXPORT_SYMBOL(mmc_vddrange_to_ocrmask);
+ 
++#ifdef CONFIG_OF
++
 +/*
-+ * Copyright 2013, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
++ * mmc_of_parse_voltage - return mask of supported voltages
++ * @np: The device node need to be parsed.
++ *
++ * 1. Return zero: voltage-ranges unspecified in device-tree.
++ * 2. Return negative errno: voltage-range is invalid.
++ * 3. Return ocr_mask: a mask of voltages that parse from device-tree
++ * node can be provided to MMC/SD/SDIO devices.
 + */
 +
-+#include <errno.h>
-+#include <signal.h>
-+#include <stdbool.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <sys/types.h>
-+#include <sys/wait.h>
-+#include <unistd.h>
-+
-+#include "subunit.h"
-+#include "utils.h"
-+
-+#define TIMEOUT		120
-+#define KILL_TIMEOUT	5
-+
-+
-+int run_test(int (test_function)(void), char *name)
++u32 mmc_of_parse_voltage(struct device_node *np)
 +{
-+	bool terminated;
-+	int rc, status;
-+	pid_t pid;
++	const u32 *voltage_ranges;
++	int num_ranges, i;
++	u32 ocr_mask = 0;
 +
-+	/* Make sure output is flushed before forking */
-+	fflush(stdout);
-+
-+	pid = fork();
-+	if (pid == 0) {
-+		exit(test_function());
-+	} else if (pid == -1) {
-+		perror("fork");
-+		return 1;
++	voltage_ranges = of_get_property(np, "voltage-ranges", &num_ranges);
++	num_ranges = num_ranges / sizeof(*voltage_ranges) / 2;
++	if (!voltage_ranges || !num_ranges) {
++		pr_info("%s: voltage-ranges unspecified\n", np->full_name);
++		return 0;
 +	}
 +
-+	/* Wake us up in timeout seconds */
-+	alarm(TIMEOUT);
-+	terminated = false;
++	for (i = 0; i < num_ranges; i++) {
++		const int j = i * 2;
++		u32 mask;
 +
-+wait:
-+	rc = waitpid(pid, &status, 0);
-+	if (rc == -1) {
-+		if (errno != EINTR) {
-+			printf("unknown error from waitpid\n");
-+			return 1;
++		mask = mmc_vddrange_to_ocrmask(be32_to_cpu(voltage_ranges[j]),
++				be32_to_cpu(voltage_ranges[j + 1]));
++		if (!mask) {
++			pr_err("%s: voltage-range #%d is invalid\n",
++				np->full_name, i);
++			return -EINVAL;
 +		}
-+
-+		if (terminated) {
-+			printf("!! force killing %s\n", name);
-+			kill(pid, SIGKILL);
-+			return 1;
-+		} else {
-+			printf("!! killing %s\n", name);
-+			kill(pid, SIGTERM);
-+			terminated = true;
-+			alarm(KILL_TIMEOUT);
-+			goto wait;
-+		}
++		ocr_mask |= mask;
 +	}
 +
-+	if (WIFEXITED(status))
-+		status = WEXITSTATUS(status);
-+	else
-+		status = 1; /* Signal or other */
-+
-+	return status;
++	return ocr_mask;
 +}
++EXPORT_SYMBOL(mmc_of_parse_voltage);
 +
-+static void alarm_handler(int signum)
-+{
-+	/* Jut wake us up from waitpid */
-+}
++#endif /* CONFIG_OF */
 +
-+static struct sigaction alarm_action = {
-+	.sa_handler = alarm_handler,
-+};
-+
-+int test_harness(int (test_function)(void), char *name)
-+{
-+	int rc;
-+
-+	test_start(name);
-+	test_set_git_version(GIT_VERSION);
-+
-+	if (sigaction(SIGALRM, &alarm_action, NULL)) {
-+		perror("sigaction");
-+		test_error(name);
-+		return 1;
-+	}
-+
-+	rc = run_test(test_function, name);
-+
-+	test_finish(name, rc);
-+
-+	return rc;
-+}
-diff --git a/tools/testing/selftests/powerpc/subunit.h b/tools/testing/selftests/powerpc/subunit.h
-new file mode 100644
-index 0000000..98a2292
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/subunit.h
-@@ -0,0 +1,47 @@
-+/*
-+ * Copyright 2013, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#ifndef _SELFTESTS_POWERPC_SUBUNIT_H
-+#define _SELFTESTS_POWERPC_SUBUNIT_H
-+
-+static inline void test_start(char *name)
-+{
-+	printf("test: %s\n", name);
-+}
-+
-+static inline void test_failure_detail(char *name, char *detail)
-+{
-+	printf("failure: %s [%s]\n", name, detail);
-+}
-+
-+static inline void test_failure(char *name)
-+{
-+	printf("failure: %s\n", name);
-+}
-+
-+static inline void test_error(char *name)
-+{
-+	printf("error: %s\n", name);
-+}
-+
-+static inline void test_success(char *name)
-+{
-+	printf("success: %s\n", name);
-+}
-+
-+static inline void test_finish(char *name, int status)
-+{
-+	if (status)
-+		test_failure(name);
-+	else
-+		test_success(name);
-+}
-+
-+static inline void test_set_git_version(char *value)
-+{
-+	printf("tags: git_version:%s\n", value);
-+}
-+
-+#endif /* _SELFTESTS_POWERPC_SUBUNIT_H */
-diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
-new file mode 100644
-index 0000000..5851c4b
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/utils.h
-@@ -0,0 +1,34 @@
-+/*
-+ * Copyright 2013, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#ifndef _SELFTESTS_POWERPC_UTILS_H
-+#define _SELFTESTS_POWERPC_UTILS_H
-+
-+#include <stdint.h>
-+#include <stdbool.h>
-+
-+/* Avoid headaches with PRI?64 - just use %ll? always */
-+typedef unsigned long long u64;
-+typedef   signed long long s64;
-+
-+/* Just for familiarity */
-+typedef uint32_t u32;
-+typedef uint8_t u8;
-+
-+
-+int test_harness(int (test_function)(void), char *name);
-+
-+
-+/* Yes, this is evil */
-+#define FAIL_IF(x)						\
-+do {								\
-+	if ((x)) {						\
-+		fprintf(stderr,					\
-+		"[FAIL] Test FAILED on line %d\n", __LINE__);	\
-+		return 1;					\
-+	}							\
-+} while (0)
-+
-+#endif /* _SELFTESTS_POWERPC_UTILS_H */
+ #ifdef CONFIG_REGULATOR
+ 
+ /**
+diff --git a/include/linux/mmc/core.h b/include/linux/mmc/core.h
+index 443243b..e3f8fe3 100644
+--- a/include/linux/mmc/core.h
++++ b/include/linux/mmc/core.h
+@@ -209,5 +209,6 @@ static inline void mmc_claim_host(struct mmc_host *host)
+ }
+ 
+ extern u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max);
++extern u32 mmc_of_parse_voltage(struct device_node *np);
+ 
+ #endif /* LINUX_MMC_CORE_H */
 -- 
-1.8.1.2
+1.8.0
