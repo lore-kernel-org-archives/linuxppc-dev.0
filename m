@@ -1,17 +1,16 @@
 Return-Path: <B42378@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 605B62C00BC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 21:57:22 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 7900E2C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 21:57:23 +1000 (EST)
 From: Nicolin Chen <b42378@freescale.com>
 To: <broonie@kernel.org>, <timur@tabi.org>
-Subject: [PATCH 1/3] ASoC: codec: spdif: Add S20_3LE and S24_LE support for
- dummy codec drivers
-Date: Wed, 31 Jul 2013 20:07:05 +0800
-Message-ID: <ad8f9d8812c1823ae6f9e4a0d1e6d3c76b26a285.1375271745.git.b42378@freescale.com>
+Subject: [PATCH 3/3] ASoC: fsl: Add S/PDIF machine driver
+Date: Wed, 31 Jul 2013 20:07:07 +0800
+Message-ID: <af10b81cf704c08d3fda6fce40635ad6333988a8.1375271745.git.b42378@freescale.com>
 In-Reply-To: <cover.1375271745.git.b42378@freescale.com>
 References: <cover.1375271745.git.b42378@freescale.com>
 MIME-Version: 1.0
@@ -27,47 +26,232 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Generally, S/PDIF supports 20bit and optional 24bit samples. Thus add these
-two formats for the dummy codec drivers.
-
-If one S/PDIF controller has its own limitation, its CPU DAI driver should
-set the supported format by its own circumstance, since the soc-pcm driver
-will use the intersection of cpu_dai's formats and codec_dai's formats.
+Add S/PDIF machine driver for Freescale i.MX series SoC.
 
 Signed-off-by: Nicolin Chen <b42378@freescale.com>
 ---
- sound/soc/codecs/spdif_receiver.c    |    2 ++
- sound/soc/codecs/spdif_transmitter.c |    5 +++--
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ .../devicetree/bindings/sound/imx-audio-spdif.txt  |   29 +++++
+ sound/soc/fsl/Kconfig                              |   11 ++
+ sound/soc/fsl/Makefile                             |    2 +
+ sound/soc/fsl/imx-spdif.c                          |  134 ++++++++++++++++++++
+ 4 files changed, 176 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
+ create mode 100644 sound/soc/fsl/imx-spdif.c
 
-diff --git a/sound/soc/codecs/spdif_receiver.c b/sound/soc/codecs/spdif_receiver.c
-index e9d7881..26d3474 100644
---- a/sound/soc/codecs/spdif_receiver.c
-+++ b/sound/soc/codecs/spdif_receiver.c
-@@ -25,6 +25,8 @@
+diff --git a/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
+new file mode 100644
+index 0000000..9a3fa26
+--- /dev/null
++++ b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
+@@ -0,0 +1,29 @@
++Freescale i.MX audio complex with S/PDIF transceiver
++
++Required properties:
++
++  - compatible : "fsl,imx-audio-spdif"
++
++  - model : The user-visible name of this sound complex
++
++  - spdif-controller : The phandle of the i.MX S/PDIF controller
++
++
++Optional properties:
++
++  - spdif-transmitter : The phandle of the spdif-transmitter dummy codec
++
++  - spdif-receiver : The phandle of the spdif-receiver dummy codec
++
++* Note: At least one of these two properties should be set in the DT binding.
++
++
++Example:
++
++sound-spdif {
++	compatible = "fsl,imx-audio-spdif";
++	model = "imx-spdif";
++	spdif-controller = <&spdif>;
++	spdif-transmitter = <&spdif_tx_codec>;
++	spdif-receiver = <&spdif_rx_codec>;
++};
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index 156b794..ba0c7ff 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -195,6 +195,17 @@ config SND_SOC_IMX_SGTL5000
+ 	  Say Y if you want to add support for SoC audio on an i.MX board with
+ 	  a sgtl5000 codec.
  
- #define STUB_RATES	SNDRV_PCM_RATE_8000_192000
- #define STUB_FORMATS	(SNDRV_PCM_FMTBIT_S16_LE | \
-+			SNDRV_PCM_FMTBIT_S20_3LE | \
-+			SNDRV_PCM_FMTBIT_S24_LE | \
- 			SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE)
++config SND_SOC_IMX_SPDIF
++	tristate "SoC Audio support for i.MX boards with S/PDIF"
++	select SND_SOC_IMX_PCM_DMA
++	select SND_SOC_FSL_SPDIF
++	select SND_SOC_FSL_UTILS
++	select SND_SOC_SPDIF
++	help
++	  SoC Audio support for i.MX boards with S/PDIF
++	  Say Y if you want to add support for SoC audio on an i.MX board with
++	  a S/DPDIF.
++
+ config SND_SOC_IMX_MC13783
+ 	tristate "SoC Audio support for I.MX boards with mc13783"
+ 	depends on MFD_MC13783 && ARCH_ARM
+diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+index 4b5970e..e2aaff7 100644
+--- a/sound/soc/fsl/Makefile
++++ b/sound/soc/fsl/Makefile
+@@ -45,6 +45,7 @@ snd-soc-mx27vis-aic32x4-objs := mx27vis-aic32x4.o
+ snd-soc-wm1133-ev1-objs := wm1133-ev1.o
+ snd-soc-imx-sgtl5000-objs := imx-sgtl5000.o
+ snd-soc-imx-wm8962-objs := imx-wm8962.o
++snd-soc-imx-spdif-objs :=imx-spdif.o
+ snd-soc-imx-mc13783-objs := imx-mc13783.o
  
- static struct snd_soc_codec_driver soc_codec_spdif_dir;
-diff --git a/sound/soc/codecs/spdif_transmitter.c b/sound/soc/codecs/spdif_transmitter.c
-index 1828049..efc3d88 100644
---- a/sound/soc/codecs/spdif_transmitter.c
-+++ b/sound/soc/codecs/spdif_transmitter.c
-@@ -25,8 +25,9 @@
- #define DRV_NAME "spdif-dit"
- 
- #define STUB_RATES	SNDRV_PCM_RATE_8000_96000
--#define STUB_FORMATS	SNDRV_PCM_FMTBIT_S16_LE
--
-+#define STUB_FORMATS	(SNDRV_PCM_FMTBIT_S16_LE | \
-+			SNDRV_PCM_FMTBIT_S20_3LE | \
-+			SNDRV_PCM_FMTBIT_S24_LE)
- 
- static struct snd_soc_codec_driver soc_codec_spdif_dit;
- 
+ obj-$(CONFIG_SND_SOC_EUKREA_TLV320) += snd-soc-eukrea-tlv320.o
+@@ -53,4 +54,5 @@ obj-$(CONFIG_SND_SOC_MX27VIS_AIC32X4) += snd-soc-mx27vis-aic32x4.o
+ obj-$(CONFIG_SND_MXC_SOC_WM1133_EV1) += snd-soc-wm1133-ev1.o
+ obj-$(CONFIG_SND_SOC_IMX_SGTL5000) += snd-soc-imx-sgtl5000.o
+ obj-$(CONFIG_SND_SOC_IMX_WM8962) += snd-soc-imx-wm8962.o
++obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
+ obj-$(CONFIG_SND_SOC_IMX_MC13783) += snd-soc-imx-mc13783.o
+diff --git a/sound/soc/fsl/imx-spdif.c b/sound/soc/fsl/imx-spdif.c
+new file mode 100644
+index 0000000..893f3d1
+--- /dev/null
++++ b/sound/soc/fsl/imx-spdif.c
+@@ -0,0 +1,134 @@
++/*
++ * Copyright (C) 2013 Freescale Semiconductor, Inc.
++ *
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
++
++#include <linux/module.h>
++#include <linux/of_platform.h>
++#include <sound/soc.h>
++
++struct imx_spdif_data {
++	struct snd_soc_dai_link dai[2];
++	struct snd_soc_card card;
++};
++
++static int imx_spdif_audio_probe(struct platform_device *pdev)
++{
++	struct device_node *np = pdev->dev.of_node;
++	struct device_node *spdif_np, *codec_tx_np, *codec_rx_np;
++	struct platform_device *spdif_pdev;
++	struct imx_spdif_data *data;
++	int ret = 0, num_links = 0;
++
++	spdif_np = of_parse_phandle(np, "spdif-controller", 0);
++	if (!spdif_np) {
++		dev_err(&pdev->dev, "failed to find spdif-controller\n");
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	spdif_pdev = of_find_device_by_node(spdif_np);
++	if (!spdif_pdev) {
++		dev_err(&pdev->dev, "failed to find S/PDIF device\n");
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data) {
++		dev_err(&pdev->dev, "failed to allocate memory\n");
++		ret = -ENOMEM;
++		goto fail;
++	}
++
++	codec_tx_np = of_parse_phandle(np, "spdif-transmitter", 0);
++	if (codec_tx_np) {
++		data->dai[num_links].name = "S/PDIF TX";
++		data->dai[num_links].stream_name = "S/PDIF PCM Playback";
++		data->dai[num_links].codec_dai_name = "dit-hifi";
++		data->dai[num_links].codec_of_node = codec_tx_np;
++		data->dai[num_links].cpu_of_node = spdif_np;
++		data->dai[num_links].platform_of_node = spdif_np;
++		num_links++;
++	}
++
++	codec_rx_np = of_parse_phandle(np, "spdif-receiver", 0);
++	if (codec_rx_np) {
++		data->dai[num_links].name = "S/PDIF RX";
++		data->dai[num_links].stream_name = "S/PDIF PCM Capture";
++		data->dai[num_links].codec_dai_name = "dir-hifi";
++		data->dai[num_links].codec_of_node = codec_rx_np;
++		data->dai[num_links].cpu_of_node = spdif_np;
++		data->dai[num_links].platform_of_node = spdif_np;
++		num_links++;
++	}
++
++	if (!num_links) {
++		dev_err(&pdev->dev, "no enabled S/PDIF DAI link\n");
++		goto fail;
++	}
++
++	data->card.dev = &pdev->dev;
++	data->card.num_links = num_links;
++	data->card.dai_link = data->dai;
++
++	ret = snd_soc_of_parse_card_name(&data->card, "model");
++	if (ret)
++		goto fail;
++
++	ret = snd_soc_register_card(&data->card);
++	if (ret) {
++		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
++		goto fail;
++	}
++
++	platform_set_drvdata(pdev, data);
++
++fail:
++	if (codec_tx_np)
++		of_node_put(codec_tx_np);
++	if (codec_rx_np)
++		of_node_put(codec_rx_np);
++	if (spdif_np)
++		of_node_put(spdif_np);
++
++	return ret;
++}
++
++static int imx_spdif_audio_remove(struct platform_device *pdev)
++{
++	struct imx_spdif_data *data = platform_get_drvdata(pdev);
++
++	snd_soc_unregister_card(&data->card);
++
++	return 0;
++}
++
++static const struct of_device_id imx_spdif_dt_ids[] = {
++	{ .compatible = "fsl,imx-audio-spdif", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, imx_spdif_dt_ids);
++
++static struct platform_driver imx_spdif_driver = {
++	.driver = {
++		.name = "imx-spdif",
++		.owner = THIS_MODULE,
++		.of_match_table = imx_spdif_dt_ids,
++	},
++	.probe = imx_spdif_audio_probe,
++	.remove = imx_spdif_audio_remove,
++};
++
++module_platform_driver(imx_spdif_driver);
++
++MODULE_AUTHOR("Freescale Semiconductor, Inc.");
++MODULE_DESCRIPTION("Freescale i.MX S/PDIF machine driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:imx-spdif");
 -- 
 1.7.1
