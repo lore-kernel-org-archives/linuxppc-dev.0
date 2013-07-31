@@ -1,34 +1,12 @@
-Return-Path: <B40534@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 99F5E2C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 15:46:17 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: RE: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle backend
- driver to sysdev.
-Date: Wed, 31 Jul 2013 05:46:09 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259FF2A3A@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <20130731025840.19448.24468.stgit@deepthi>
- <20130731025924.19448.46538.stgit@deepthi>
- <ABB05CD9C9F68C46A5CEDC7F15439259FF2953@039-SN2MPN1-021.039d.mgd.msft.net>
- <51F88BA7.7090404@linux.vnet.ibm.com>
-In-Reply-To: <51F88BA7.7090404@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
- "rjw@sisk.pl" <rjw@sisk.pl>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Zhao Chenhui-B35336 <B35336@freescale.com>,
- "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>,
- Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <anton@samba.org>
+Date: Wed, 31 Jul 2013 16:05:19 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Wrap MSR macros with parentheses
+Message-ID: <20130731160519.3f01a89c@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,69 +16,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgUHJlZXRpLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFByZWV0
-aSBVIE11cnRoeSBbbWFpbHRvOnByZWV0aUBsaW51eC52bmV0LmlibS5jb21dDQo+IFNlbnQ6IFdl
-ZG5lc2RheSwgSnVseSAzMSwgMjAxMyAxMjowMCBQTQ0KPiBUbzogV2FuZyBEb25nc2hlbmctQjQw
-NTM0DQo+IENjOiBEZWVwdGhpIERoYXJ3YXI7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgZGFu
-aWVsLmxlemNhbm9AbGluYXJvLm9yZzsNCj4gbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsg
-bWljaGFlbEBlbGxlcm1hbi5pZC5hdTsNCj4gc3JpdmF0c2EuYmhhdEBsaW51eC52bmV0LmlibS5j
-b207IHN2YWlkeUBsaW51eC52bmV0LmlibS5jb207IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3ps
-YWJzLm9yZzsgcmp3QHNpc2sucGw7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0
-OiBSZTogW1BBVENIIFYyIDQvNl0gY3B1aWRsZS9wc2VyaWVzOiBNb3ZlIHRoZSBwc2VyaWVzX2lk
-bGUNCj4gYmFja2VuZCBkcml2ZXIgdG8gc3lzZGV2Lg0KPiANCj4gSGkgRG9uZ3NoZW5nLA0KPiAN
-Cj4gT24gMDcvMzEvMjAxMyAwODo1MiBBTSwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0K
-PiA+DQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogRGVl
-cHRoaSBEaGFyd2FyIFttYWlsdG86ZGVlcHRoaUBsaW51eC52bmV0LmlibS5jb21dDQo+ID4+IFNl
-bnQ6IFdlZG5lc2RheSwgSnVseSAzMSwgMjAxMyAxMDo1OSBBTQ0KPiA+PiBUbzogYmVuaEBrZXJu
-ZWwuY3Jhc2hpbmcub3JnOyBkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnOyBsaW51eC0NCj4gPj4g
-a2VybmVsQHZnZXIua2VybmVsLm9yZzsgbWljaGFlbEBlbGxlcm1hbi5pZC5hdTsNCj4gPj4gc3Jp
-dmF0c2EuYmhhdEBsaW51eC52bmV0LmlibS5jb207IHByZWV0aUBsaW51eC52bmV0LmlibS5jb207
-DQo+ID4+IHN2YWlkeUBsaW51eC52bmV0LmlibS5jb207IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
-YnMub3JnDQo+ID4+IENjOiByandAc2lzay5wbDsgV2FuZyBEb25nc2hlbmctQjQwNTM0OyBsaW51
-eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4gPj4gU3ViamVjdDogW1BBVENIIFYyIDQvNl0gY3B1aWRs
-ZS9wc2VyaWVzOiBNb3ZlIHRoZSBwc2VyaWVzX2lkbGUNCj4gPj4gYmFja2VuZCBkcml2ZXIgdG8g
-c3lzZGV2Lg0KPiA+Pg0KPiA+PiBNb3ZlIHBzZXJpZXNfaWRsZSBiYWNrZW5kIGRyaXZlciBjb2Rl
-IHRvIGFyY2gvcG93ZXJwYy9zeXNkZXYgc28gdGhhdA0KPiA+PiB0aGUgY29kZSBjYW4gYmUgdXNl
-ZCBmb3IgYSBjb21tb24gZHJpdmVyIGZvciBwb3dlcm52IGFuZCBwc2VyaWVzLg0KPiA+PiBUaGlz
-IHJlbW92ZXMgYSBsb3Qgb2YgY29kZSBkdXBsaWNhY3kuDQo+ID4+DQo+ID4gV2h5IG5vdCBkcml2
-ZXJzL2NwdWlkbGUvPw0KPiA+DQo+ID4gSSB0aGluayBpdCBzaG91bGQgYmUgbW92ZSB0byBkcml2
-ZXJzL2NwdWlkbGUuDQo+IA0KPiBQbGVhc2UgdGFrZSBhIGxvb2sgYXQgd2hhdCB0aGUgY3B1aWRs
-ZSB1bmRlciBkcml2ZXJzIGhhcyB0byBwcm92aWRlLg0KPiBjcHVpZGxlIGhhcyB0d28gcGFydHMg
-dG8gaXQuIFRoZSBmcm9udCBlbmQgYW5kIHRoZSBiYWNrIGVuZC4gVGhlIGZyb250DQo+IGVuZCBj
-b25zdGl0dXRlcyB0aGUgY3B1aWRsZSBnb3Zlcm5vcnMsIHJlZ2lzdGVyaW5nIG9mIGFyY2ggc3Bl
-Y2lmaWMNCj4gY3B1aWRsZSBkcml2ZXJzLCBkaXNhYmxpbmcgYW5kIGVuYWJsaW5nIG9mIGNwdWlk
-bGUgZmVhdHVyZS4gSXQgaXMgdGhpcw0KPiBmcm9udCBlbmQgY29kZSB3aGljaCBpcyBwcmVzZW50
-IHVuZGVyIGRyaXZlcnMvY3B1aWRsZS4NCj4gDQo+IFRoZSBhcmNoIHNwZWNpZmljIGNwdWlkbGUg
-ZHJpdmVycyB3aGljaCBkZWNpZGUgd2hhdCBuZWVkcyB0byBiZSBkb25lIHRvDQo+IGVudGVyIGEg
-c3BlY2lmaWMgaWRsZSBzdGF0ZSBjaG9zZW4gYnkgdGhlIGNwdWlkbGUgZ292ZXJub3IgaXMgd2hh
-dA0KPiBjb25zdGl0dXRlcyB0aGUgYmFjayBlbmQgb2YgY3B1aWRsZS4gVGhpcyB3aWxsIG5vdCBi
-ZSBpbiBkcml2ZXJzL2NwdWlkbGUNCj4gYnV0IGluIGFuIGFyY2gvIHNwZWNpZmljIGNvZGUuDQo+
-IA0KPiBUaGUgY3B1aWRsZSB1bmRlciBkcml2ZXJzL2NwdWlkbGUgZHJpdmVzIHRoZSBpZGxlIHBv
-d2VyIG1hbmFnZW1lbnQsIGJ1dA0KPiB0aGUgbG93IGxldmVsIGhhbmRsaW5nIG9mIHRoZSBlbnRy
-eSBpbnRvIGlkbGUgc3RhdGVzIHNob3VsZCBiZSB0YWtlbiBjYXJlDQo+IG9mIGJ5IHRoZSBhcmNo
-aXRlY3R1cmUuDQo+IA0KPiBZb3VyIHJlY2VudCBwYXRjaCA6DQo+IGNwdWlkbGU6IGFkZCBmcmVl
-c2NhbGUgZTUwMCBmYW1pbHkgcG9yY2Vzc29ycyBpZGxlIHN1cHBvcnQgSU1PIHNob3VsZA0KPiBo
-b29rIG9udG8gdGhlIGJhY2tlbmQgY3B1aWRsZSBkcml2ZXIgdGhhdCB0aGlzIHBhdGNoc2V0IHBy
-b3ZpZGVzLg0KPiANClNvcnJ5LCBJIGRvbid0IHRoaW5rIHNvLCBjcHVpZGxlIGZyYW1ld29yayBo
-YXMgYmVlbiBhbHJlYWR5IHZlcnkgY29tbW9uLg0KSGVyZSB3ZSBqdXN0IG5lZWQgdG8gZG8gc3Rh
-dGUgZGVmaW5pdGlvbiBhbmQgaGFuZGxpbmcuIEkgd29uZGVyIHdoZXRoZXINCndlIG5lZWQgdGhp
-cyBsYXllci4NCg0KSWYgeW91ciBoYW5kbGUgaXMgcGxhdGZvcm0gZGVwZW5kZW50LCBpdCBzaG91
-bGQgYmUgaW4gYXJjaC9wbGF0Zm9ybS4NCg0KSWYgaXQgaXMgb25seSBmb3Igc29tZSBwbGF0Zm9y
-bXMgYW5kIHRoZSBvcGVyYXRpb24gb2YgdGhlc2UgcGxhdGZvcm1zIGNhbiBiZQ0KbXVsdGlwbGV4
-ZWQsIFdoeSBjYW5ub3QgYXMgYSBkcml2ZXIgdG8gcHV0IGludG8gZHJpdmVyL2NwdWlkbGU/DQoN
-CklmIGl0IGEgZ2VuZXJhbCBkcml2ZXIsIEkgdGhpbmsgd2UgY2FuIHB1dCBzb21lIGNvbW1vbiBv
-cGVyYXRpbmcgdG8gZHJpdmVyL2NwdWlkbGUNCmFuZCBtYWtlIHRoZSBwbGF0Zm9ybSBzcGVjaWZp
-YyBjb2RlIHRvIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybS4NCg0KVGhpcyBwYXRjaCBpbmNsdWRlIGZy
-b250IGVuZCBhbmQgYmFjayBlbmQsIG5vdCBqdXN0IGJhY2sgZW5kLg0KDQpUaGlzIHBhdGNoIGlu
-Y2x1ZGUgdG9vIG1hbnkgc3RhdGUgb2YgZGlmZmVyZW50IHBsYXRmb3JtcyBhbmQgaGFuZGxlIGZ1
-bmN0aW9uLiBUaGlzIHN0YXRlDQphbmQgaGFuZGxlIHRoYXQgc2hvdWxkIGJlbG9uZyB0byBpdHNl
-bGYgcGxhdGZvcm1zLiBOb3QgYSBnZW5lcmFsIHdheS4gSWYgRGVlcHRoaSB3aWxsIGRvDQphIGdl
-bmVyYWwgcG93ZXJwYyBjcHVpZGxlLCBJIHRoaW5rLCBpdCdzIGNhbm5vdCBqdXN0IHVzaW5nIHRo
-ZSBtYWNybyB0byBkaXN0aW5ndWlzaA0KcGxhdGZvcm0uIHRoZSBmcm9udCBlbmQgY29kZSBtYXli
-ZSBtb3ZlIHRvIGRyaXZlci9jcHVpZGxlKGRydmllciByZWdpc3Rlcikgc2hvdWxkIGJlIGJldHRl
-ciwNCm1ha2UgdGhlIExvdyBQb3dlciBTdGF0ZSBhbmQgd2hhdCBzaG91bGQgYmUgaGFuZGxlIHRv
-IGFyY2gvcG93ZXJwYy9wbGF0Zm9ybS8qKiwgYmVjYXVzZSBkaWZmZXJlbnQNCnBsYXRmb3JtcyBo
-YXZlIGRpZmZlcmVudCBzdGF0ZSBvZiBsb3cgcG93ZXIgY29uc3VtcHRpb24sIGFuZCB0aGUgcHJv
-Y2Vzc2luZyBtZXRob2QuDQpUaGUgZnJvbnQgZW5kIGNhbiBwcm92aWRlIHNvbWUgZ2VuZXJhbCBt
-ZXRob2RzIHRvIHJlZ2lzdGVyIGludG8gZ2VuZXJhbCBwb3dlcnBjIGNwdWlkbGUgZHJpdmVyLg0K
-DQotZG9uZ3NoZW5nDQoNCg==
+
+Not having parentheses around a macro is asking for trouble.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: b/arch/powerpc/include/asm/reg.h
+===================================================================
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -115,10 +115,10 @@
+ #define MSR_64BIT	MSR_SF
+ 
+ /* Server variant */
+-#define MSR_		MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV
+-#define MSR_KERNEL	MSR_ | MSR_64BIT
+-#define MSR_USER32	MSR_ | MSR_PR | MSR_EE
+-#define MSR_USER64	MSR_USER32 | MSR_64BIT
++#define MSR_		(MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV)
++#define MSR_KERNEL	(MSR_ | MSR_64BIT)
++#define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
++#define MSR_USER64	(MSR_USER32 | MSR_64BIT)
+ #elif defined(CONFIG_PPC_BOOK3S_32) || defined(CONFIG_8xx)
+ /* Default MSR for kernel mode. */
+ #define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_IR|MSR_DR)
