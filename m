@@ -1,19 +1,20 @@
-Return-Path: <000001403506934c-ce0f08c9-240a-4464-84aa-f31664b86a74-000000@amazonses.com>
-Received: from a9-74.smtp-out.amazonses.com (a9-74.smtp-out.amazonses.com
- [54.240.9.74]) by ozlabs.org (Postfix) with ESMTP id 1F91F2C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 00:12:17 +1000 (EST)
-Date: Wed, 31 Jul 2013 13:59:18 +0000
+Return-Path: <00000140354e9118-9bafa70a-cb37-40a5-a6f3-4d39581f4942-000000@amazonses.com>
+Received: from a10-78.smtp-out.amazonses.com (a10-78.smtp-out.amazonses.com
+ [54.240.10.78]) by ozlabs.org (Postfix) with ESMTP id AE60D2C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 01:26:24 +1000 (EST)
+Date: Wed, 31 Jul 2013 15:17:56 +0000
 From: Christoph Lameter <cl@gentwo.org>
 To: Wladislav Wiebe <wladislav.kw@gmail.com>
 Subject: Re: mm/slab: ppc: ubi: kmalloc_slab WARNING / PPC + UBI driver
-In-Reply-To: <51F8F827.6020108@gmail.com>
-Message-ID: <000001403506934c-ce0f08c9-240a-4464-84aa-f31664b86a74-000000@email.amazonses.com>
+In-Reply-To: <alpine.DEB.2.02.1307310858150.30572@gentwo.org>
+Message-ID: <00000140354e9118-9bafa70a-cb37-40a5-a6f3-4d39581f4942-000000@email.amazonses.com>
 References: <51F8F827.6020108@gmail.com>
+ <alpine.DEB.2.02.1307310858150.30572@gentwo.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: dedekind1@gmail.com, dwmw2@infradead.org, penberg@kernel.org,
- linux-mm@kvack.org, linux-mtd@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: dedekind1@gmail.com, Mel Gorman <mel@csn.ul.ie>, dwmw2@infradead.org,
+ Pekka Enberg <penberg@kernel.org>, linux-mm@kvack.org,
+ linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +24,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 31 Jul 2013, Wladislav Wiebe wrote:
+This patch will suppress the warnings by using the page allocator wrappers
+of the slab allocators. These are page sized allocs after all.
 
-> on a PPC 32-Bit board with a Linux Kernel v3.10.0 I see trouble with kmalloc_slab.
-> Basically at system startup, something request a size of 8388608 b,
-> but KMALLOC_MAX_SIZE has 4194304 b in our case. It points a WARNING at:
 
-> ..
-> NIP [c0099fec] kmalloc_slab+0x60/0xe8
-> LR [c0099fd4] kmalloc_slab+0x48/0xe8
-> Call Trace:
-> [ccd3be60] [c0099fd4] kmalloc_slab+0x48/0xe8 (unreliable)
-> [ccd3be70] [c00ae650] __kmalloc+0x20/0x1b4
-> [ccd3be90] [c00d46f4] seq_read+0x2a4/0x540
-> [ccd3bee0] [c00fe09c] proc_reg_read+0x5c/0x90
-> [ccd3bef0] [c00b4e1c] vfs_read+0xa4/0x150
-> [ccd3bf10] [c00b500c] SyS_read+0x4c/0x84
-> [ccd3bf40] [c000be80] ret_from_syscall+0x0/0x3c
-> ..
->
-> Do you have any idea how I can analyze where these 8388608 b coming from?
+Subject: seq_file: Use kmalloc_large for page sized allocation
 
-It comes from the kmalloc in seq_read(). And 8M read from the proc
-filesystem? Wow. Maybe switch the kmalloc to vmalloc()?
+There is no point in using the slab allocation functions for large page
+order allocation. Use the kmalloc_large() wrappers which will cause calls
+to the page alocator instead.
+
+This fixes the warning about large allocs but it will still cause
+high order allocs to occur that could fail because of memory
+fragmentation. Maybe switch to vmalloc if we really want to allocate multi
+megabyte buffers for proc fs?
+
+Signed-off-by: Christoph Lameter <cl@linux.com>
+
+Index: linux/fs/seq_file.c
+===================================================================
+--- linux.orig/fs/seq_file.c	2013-07-10 14:03:15.367134544 -0500
++++ linux/fs/seq_file.c	2013-07-31 10:11:42.671736131 -0500
+@@ -96,7 +96,7 @@ static int traverse(struct seq_file *m,
+ 		return 0;
+ 	}
+ 	if (!m->buf) {
+-		m->buf = kmalloc(m->size = PAGE_SIZE, GFP_KERNEL);
++		m->buf = kmalloc_large(m->size = PAGE_SIZE, GFP_KERNEL);
+ 		if (!m->buf)
+ 			return -ENOMEM;
+ 	}
+@@ -136,7 +136,7 @@ static int traverse(struct seq_file *m,
+ Eoverflow:
+ 	m->op->stop(m, p);
+ 	kfree(m->buf);
+-	m->buf = kmalloc(m->size <<= 1, GFP_KERNEL);
++	m->buf = kmalloc_large(m->size <<= 1, GFP_KERNEL);
+ 	return !m->buf ? -ENOMEM : -EAGAIN;
+ }
+
+@@ -191,7 +191,7 @@ ssize_t seq_read(struct file *file, char
+
+ 	/* grab buffer if we didn't have one */
+ 	if (!m->buf) {
+-		m->buf = kmalloc(m->size = PAGE_SIZE, GFP_KERNEL);
++		m->buf = kmalloc_large(m->size = PAGE_SIZE, GFP_KERNEL);
+ 		if (!m->buf)
+ 			goto Enomem;
+ 	}
+@@ -232,7 +232,7 @@ ssize_t seq_read(struct file *file, char
+ 			goto Fill;
+ 		m->op->stop(m, p);
+ 		kfree(m->buf);
+-		m->buf = kmalloc(m->size <<= 1, GFP_KERNEL);
++		m->buf = kmalloc_large(m->size <<= 1, GFP_KERNEL);
+ 		if (!m->buf)
+ 			goto Enomem;
+ 		m->count = 0;
