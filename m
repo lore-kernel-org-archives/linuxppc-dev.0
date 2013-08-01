@@ -1,18 +1,19 @@
 Return-Path: <R65777@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6FB182C0123
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 21:18:00 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DA8492C0113
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 21:18:15 +1000 (EST)
 From: Bharat Bhushan <r65777@freescale.com>
 To: <benh@kernel.crashing.org>, <agraf@suse.de>, <kvm-ppc@vger.kernel.org>,
  <kvm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <scottwood@freescale.com>
-Subject: [PATCH 3/6 v2] kvm: powerpc: allow guest control "G" attribute in mas2
-Date: Thu, 1 Aug 2013 16:42:35 +0530
-Message-ID: <1375355558-19187-4-git-send-email-Bharat.Bhushan@freescale.com>
+Subject: [PATCH 4/6 v2] powerpc: move linux pte/hugepte search to more generic
+ file
+Date: Thu, 1 Aug 2013 16:42:36 +0530
+Message-ID: <1375355558-19187-5-git-send-email-Bharat.Bhushan@freescale.com>
 In-Reply-To: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
 References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
@@ -27,29 +28,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"G" bit in MAS2 indicates whether the page is Guarded.
-There is no reason to stop guest setting  "E", so allow him.
+Linux pte search functions find_linux_pte_or_hugepte() and
+find_linux_pte() have nothing specific to 64bit anymore.
+So they are move from pgtable-ppc64.h to asm/pgtable.h
 
 Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
 v1->v2
- - no change
+ - This is a new change in this version
 
- arch/powerpc/kvm/e500.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/pgtable-ppc64.h |   36 -----------------------------
+ arch/powerpc/include/asm/pgtable.h       |   37 ++++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+), 36 deletions(-)
 
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index 277cb18..4fd9650 100644
---- a/arch/powerpc/kvm/e500.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -117,7 +117,7 @@ static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
- #define E500_TLB_USER_PERM_MASK (MAS3_UX|MAS3_UR|MAS3_UW)
- #define E500_TLB_SUPER_PERM_MASK (MAS3_SX|MAS3_SR|MAS3_SW)
- #define MAS2_ATTRIB_MASK \
--	  (MAS2_X0 | MAS2_X1 | MAS2_E)
-+	  (MAS2_X0 | MAS2_X1 | MAS2_E | MAS2_G)
- #define MAS3_ATTRIB_MASK \
- 	  (MAS3_U0 | MAS3_U1 | MAS3_U2 | MAS3_U3 \
- 	   | E500_TLB_USER_PERM_MASK | E500_TLB_SUPER_PERM_MASK)
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index e3d55f6..d257d98 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -340,42 +340,6 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+ void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+ void pgtable_cache_init(void);
+ 
+-/*
+- * find_linux_pte returns the address of a linux pte for a given
+- * effective address and directory.  If not found, it returns zero.
+- */
+-static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea)
+-{
+-	pgd_t *pg;
+-	pud_t *pu;
+-	pmd_t *pm;
+-	pte_t *pt = NULL;
+-
+-	pg = pgdir + pgd_index(ea);
+-	if (!pgd_none(*pg)) {
+-		pu = pud_offset(pg, ea);
+-		if (!pud_none(*pu)) {
+-			pm = pmd_offset(pu, ea);
+-			if (pmd_present(*pm))
+-				pt = pte_offset_kernel(pm, ea);
+-		}
+-	}
+-	return pt;
+-}
+-
+-#ifdef CONFIG_HUGETLB_PAGE
+-pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
+-				 unsigned *shift);
+-#else
+-static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
+-					       unsigned *shift)
+-{
+-	if (shift)
+-		*shift = 0;
+-	return find_linux_pte(pgdir, ea);
+-}
+-#endif /* !CONFIG_HUGETLB_PAGE */
+-
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index b6293d2..690c8c2 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -217,6 +217,43 @@ extern int gup_hugepd(hugepd_t *hugepd, unsigned pdshift, unsigned long addr,
+ 
+ extern int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
+ 		       unsigned long end, int write, struct page **pages, int *nr);
++
++/*
++ * find_linux_pte returns the address of a linux pte for a given
++ * effective address and directory.  If not found, it returns zero.
++ */
++static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea)
++{
++	pgd_t *pg;
++	pud_t *pu;
++	pmd_t *pm;
++	pte_t *pt = NULL;
++
++	pg = pgdir + pgd_index(ea);
++	if (!pgd_none(*pg)) {
++		pu = pud_offset(pg, ea);
++		if (!pud_none(*pu)) {
++			pm = pmd_offset(pu, ea);
++			if (pmd_present(*pm))
++				pt = pte_offset_kernel(pm, ea);
++		}
++	}
++	return pt;
++}
++
++#ifdef CONFIG_HUGETLB_PAGE
++pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
++				 unsigned *shift);
++#else
++static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
++					       unsigned *shift)
++{
++	if (shift)
++		*shift = 0;
++	return find_linux_pte(pgdir, ea);
++}
++#endif /* !CONFIG_HUGETLB_PAGE */
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* __KERNEL__ */
 -- 
 1.7.0.4
