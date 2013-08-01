@@ -1,28 +1,27 @@
 Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2A4412C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 09:52:59 +1000 (EST)
-Date: Wed, 31 Jul 2013 18:52:47 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 701052C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 10:24:08 +1000 (EST)
+Date: Wed, 31 Jul 2013 19:23:55 -0500
 From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/fsl-booke: Rename b4qds.dts -> b4qds.dtsi.
-To: Ian Campbell <Ian.Campbell@citrix.com>
-References: <1369995280-20863-1-git-send-email-ian.campbell@citrix.com>
- <1375281925.7382.88.camel@kazak.uk.xensource.com>
-In-Reply-To: <1375281925.7382.88.camel@kazak.uk.xensource.com> (from
- Ian.Campbell@citrix.com on Wed Jul 31 09:45:25 2013)
-Message-ID: <1375314767.30721.120@snotra>
+Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle support
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259FF2AAC@039-SN2MPN1-021.039d.mgd.msft.net>
+ (from B40534@freescale.com on Wed Jul 31 01:30:06 2013)
+Message-ID: <1375316635.30721.122@snotra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Shaveta Leekha <shaveta@freescale.com>, linux-kernel@vger.kernel.org,
- Minghuan Lian <Minghuan.Lian@freescale.com>,
- Andy Fleming <afleming@freescale.com>,
- Ramneek Mehresh <ramneek.mehresh@freescale.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+ "rjw@sisk.pl" <rjw@sisk.pl>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,490 +31,210 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I've got it in my queue that I hope to send soon.
+On 07/31/2013 01:30:06 AM, Wang Dongsheng-B40534 wrote:
+>=20
+>=20
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Wednesday, July 31, 2013 3:38 AM
+> > To: Wang Dongsheng-B40534
+> > Cc: rjw@sisk.pl; daniel.lezcano@linaro.org; =20
+> benh@kernel.crashing.org; Li
+> > Yang-R58472; Zhao Chenhui-B35336; linux-pm@vger.kernel.org; =20
+> linuxppc-
+> > dev@lists.ozlabs.org
+> > Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors =20
+> idle
+> > support
+> >
+> > On 07/30/2013 02:00:03 AM, Dongsheng Wang wrote:
+> > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > >
+> > > Add cpuidle support for e500 family, using cpuidle framework to
+> > > manage various low power modes. The new implementation will remain
+> > > compatible with original idle method.
+> > >
+> > > Initially, this supports PW10, and subsequent patches will support
+> > > PW20/DOZE/NAP.
+> >
+> > Could you explain what the cpuidle framework does for us that the
+> > current idle code doesn't?
+> >
+>=20
+> The current idle code, Only a state of low power can make the core =20
+> idle.
+> The core can't get into more low power state.
+>=20
+> > In particular, what scenario do you see where we would require a
+> > software
+> > governor to choose between idle states, and how much power is saved
+> > compared to a simpler approach?  There is timer that can be used to
+> > automatically enter PW20 after a certain amount of time in PW10.
+>=20
+> Yes, the hardware can automatically enter PW20 state. But this is =20
+> hardware
+> feature, we need to software to manage it. Only for PW20 state, we =20
+> can drop
+> this cpuidle and using the hardware to control it. But if we need to =20
+> support
+> PH10/PH15/PH20/PH30, the current idle code cannot support them.
 
--Scott
+PH30 wasn't really meant as idle state, but rather a CPU hotplug =20
+state.  This isn't just about enter/exit latency (and complexity) but =20
+also about wakeup events.
 
-On 07/31/2013 09:45:25 AM, Ian Campbell wrote:
-> ping?
->=20
-> On Fri, 2013-05-31 at 11:14 +0100, Ian Campbell wrote:
-> > This file is a common include for B4860 and B4420 but is not a =20
-> valid DTS itself:
-> > 	  DTC     arch/powerpc/boot/b4qds.dtb
-> > 	Error: arch/powerpc/boot/dts/b4qds.dts:35.1-2 syntax error
-> > 	FATAL ERROR: Unable to parse input tree
-> > 	make[1]: *** [arch/powerpc/boot/b4qds.dtb] Error 1
-> > 	make: *** [b4qds.dtb] Error 2
-> >
-> > I spotted in build tests of device-tree.git, announcement
-> > https://lkml.org/lkml/2013/4/24/209, which builds *.dts. Probably =20
-> no one would
-> > do this this in real life on linux.git but it still seems worth =20
-> fixing.
-> >
-> > Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-> > Cc: Shaveta Leekha <shaveta@freescale.com>
-> > Cc: Minghuan Lian <Minghuan.Lian@freescale.com>
-> > Cc: Andy Fleming <afleming@freescale.com>
-> > Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-> > Cc: Ramneek Mehresh <ramneek.mehresh@freescale.com>
-> > Cc: Kumar Gala <galak@kernel.crashing.org>
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Cc: linux-kernel@vger.kernel.org
-> > ---
-> >  arch/powerpc/boot/dts/b4420qds.dts |    2 +-
-> >  arch/powerpc/boot/dts/b4860qds.dts |    2 +-
-> >  arch/powerpc/boot/dts/b4qds.dts    |  169 =20
-> ------------------------------------
-> >  arch/powerpc/boot/dts/b4qds.dtsi   |  169 =20
-> ++++++++++++++++++++++++++++++++++++
-> >  4 files changed, 171 insertions(+), 171 deletions(-)
-> >  delete mode 100644 arch/powerpc/boot/dts/b4qds.dts
-> >  create mode 100644 arch/powerpc/boot/dts/b4qds.dtsi
-> >
-> > diff --git a/arch/powerpc/boot/dts/b4420qds.dts =20
-> b/arch/powerpc/boot/dts/b4420qds.dts
-> > index 923156d..508dbdf 100644
-> > --- a/arch/powerpc/boot/dts/b4420qds.dts
-> > +++ b/arch/powerpc/boot/dts/b4420qds.dts
-> > @@ -33,7 +33,7 @@
-> >   */
-> >
-> >  /include/ "fsl/b4420si-pre.dtsi"
-> > -/include/ "b4qds.dts"
-> > +/include/ "b4qds.dtsi"
-> >
-> >  / {
-> >  	model =3D "fsl,B4420QDS";
-> > diff --git a/arch/powerpc/boot/dts/b4860qds.dts =20
-> b/arch/powerpc/boot/dts/b4860qds.dts
-> > index 78907f3..6bb3707 100644
-> > --- a/arch/powerpc/boot/dts/b4860qds.dts
-> > +++ b/arch/powerpc/boot/dts/b4860qds.dts
-> > @@ -33,7 +33,7 @@
-> >   */
-> >
-> >  /include/ "fsl/b4860si-pre.dtsi"
-> > -/include/ "b4qds.dts"
-> > +/include/ "b4qds.dtsi"
-> >
-> >  / {
-> >  	model =3D "fsl,B4860QDS";
-> > diff --git a/arch/powerpc/boot/dts/b4qds.dts =20
-> b/arch/powerpc/boot/dts/b4qds.dts
-> > deleted file mode 100644
-> > index e6d2f8f..0000000
-> > --- a/arch/powerpc/boot/dts/b4qds.dts
-> > +++ /dev/null
-> > @@ -1,169 +0,0 @@
-> > -/*
-> > - * B4420DS Device Tree Source
-> > - *
-> > - * Copyright 2012 Freescale Semiconductor, Inc.
-> > - *
-> > - * Redistribution and use in source and binary forms, with or =20
-> without
-> > - * modification, are permitted provided that the following =20
-> conditions are met:
-> > - *     * Redistributions of source code must retain the above =20
-> copyright
-> > - *       notice, this list of conditions and the following =20
-> disclaimer.
-> > - *     * Redistributions in binary form must reproduce the above =20
-> copyright
-> > - *       notice, this list of conditions and the following =20
-> disclaimer in the
-> > - *       documentation and/or other materials provided with the =20
-> distribution.
-> > - *     * Neither the name of Freescale Semiconductor nor the
-> > - *       names of its contributors may be used to endorse or =20
-> promote products
-> > - *       derived from this software without specific prior written =20
-> permission.
-> > - *
-> > - *
-> > - * ALTERNATIVELY, this software may be distributed under the terms =20
-> of the
-> > - * GNU General Public License ("GPL") as published by the Free =20
-> Software
-> > - * Foundation, either version 2 of that License or (at your =20
-> option) any
-> > - * later version.
-> > - *
-> > - * This software is provided by Freescale Semiconductor "as is" =20
-> and any
-> > - * express or implied warranties, including, but not limited to, =20
-> the implied
-> > - * warranties of merchantability and fitness for a particular =20
-> purpose are
-> > - * disclaimed. In no event shall Freescale Semiconductor be liable =20
-> for any
-> > - * direct, indirect, incidental, special, exemplary, or =20
-> consequential damages
-> > - * (including, but not limited to, procurement of substitute goods =20
-> or services;
-> > - * loss of use, data, or profits; or business interruption) =20
-> however caused and
-> > - * on any theory of liability, whether in contract, strict =20
-> liability, or tort
-> > - * (including negligence or otherwise) arising in any way out of =20
-> the use of
-> > - * this software, even if advised of the possibility of such =20
-> damage.
-> > - */
-> > -
-> > -/ {
-> > -	model =3D "fsl,B4QDS";
-> > -	compatible =3D "fsl,B4QDS";
-> > -	#address-cells =3D <2>;
-> > -	#size-cells =3D <2>;
-> > -	interrupt-parent =3D <&mpic>;
-> > -
-> > -	ifc: localbus@ffe124000 {
-> > -		reg =3D <0xf 0xfe124000 0 0x2000>;
-> > -		ranges =3D <0 0 0xf 0xe8000000 0x08000000
-> > -			  2 0 0xf 0xff800000 0x00010000
-> > -			  3 0 0xf 0xffdf0000 0x00008000>;
-> > -
-> > -		nor@0,0 {
-> > -			#address-cells =3D <1>;
-> > -			#size-cells =3D <1>;
-> > -			compatible =3D "cfi-flash";
-> > -			reg =3D <0x0 0x0 0x8000000>;
-> > -			bank-width =3D <2>;
-> > -			device-width =3D <1>;
-> > -		};
-> > -
-> > -		nand@2,0 {
-> > -			#address-cells =3D <1>;
-> > -			#size-cells =3D <1>;
-> > -			compatible =3D "fsl,ifc-nand";
-> > -			reg =3D <0x2 0x0 0x10000>;
-> > -
-> > -			partition@0 {
-> > -				/* This location must not be altered  */
-> > -				/* 1MB for u-boot Bootloader Image */
-> > -				reg =3D <0x0 0x00100000>;
-> > -				label =3D "NAND U-Boot Image";
-> > -				read-only;
-> > -			};
-> > -
-> > -			partition@100000 {
-> > -				/* 1MB for DTB Image */
-> > -				reg =3D <0x00100000 0x00100000>;
-> > -				label =3D "NAND DTB Image";
-> > -			};
-> > -
-> > -			partition@200000 {
-> > -				/* 10MB for Linux Kernel Image */
-> > -				reg =3D <0x00200000 0x00A00000>;
-> > -				label =3D "NAND Linux Kernel Image";
-> > -			};
-> > -
-> > -			partition@c00000 {
-> > -				/* 500MB for Root file System Image */
-> > -				reg =3D <0x00c00000 0x1F400000>;
-> > -				label =3D "NAND RFS Image";
-> > -			};
-> > -		};
-> > -
-> > -		board-control@3,0 {
-> > -			compatible =3D "fsl,b4qds-fpga", "fsl,fpga-qixis";
-> > -			reg =3D <3 0 0x300>;
-> > -		};
-> > -	};
-> > -
-> > -	memory {
-> > -		device_type =3D "memory";
-> > -	};
-> > -
-> > -	dcsr: dcsr@f00000000 {
-> > -		ranges =3D <0x00000000 0xf 0x00000000 0x01052000>;
-> > -	};
-> > -
-> > -	soc: soc@ffe000000 {
-> > -		ranges =3D <0x00000000 0xf 0xfe000000 0x1000000>;
-> > -		reg =3D <0xf 0xfe000000 0 0x00001000>;
-> > -		spi@110000 {
-> > -			flash@0 {
-> > -				#address-cells =3D <1>;
-> > -				#size-cells =3D <1>;
-> > -				compatible =3D "sst,sst25wf040";
-> > -				reg =3D <0>;
-> > -				spi-max-frequency =3D <40000000>; /* =20
-> input clock */
-> > -			};
-> > -		};
-> > -
-> > -		sdhc@114000 {
-> > -			/*Disabled as there is no sdhc connector on =20
-> B4420QDS board*/
-> > -			status =3D "disabled";
-> > -		};
-> > -
-> > -		i2c@118000 {
-> > -			eeprom@50 {
-> > -				compatible =3D "at24,24c64";
-> > -				reg =3D <0x50>;
-> > -			};
-> > -			eeprom@51 {
-> > -				compatible =3D "at24,24c256";
-> > -				reg =3D <0x51>;
-> > -			};
-> > -			eeprom@53 {
-> > -				compatible =3D "at24,24c256";
-> > -				reg =3D <0x53>;
-> > -			};
-> > -			eeprom@57 {
-> > -				compatible =3D "at24,24c256";
-> > -				reg =3D <0x57>;
-> > -			};
-> > -			rtc@68 {
-> > -				compatible =3D "dallas,ds3232";
-> > -				reg =3D <0x68>;
-> > -			};
-> > -		};
-> > -
-> > -		usb@210000 {
-> > -			dr_mode =3D "host";
-> > -			phy_type =3D "ulpi";
-> > -		};
-> > -
-> > -	};
-> > -
-> > -	pci0: pcie@ffe200000 {
-> > -		reg =3D <0xf 0xfe200000 0 0x10000>;
-> > -		ranges =3D <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 =20
-> 0x20000000
-> > -			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 =20
-> 0x00010000>;
-> > -		pcie@0 {
-> > -			ranges =3D <0x02000000 0 0xe0000000
-> > -				  0x02000000 0 0xe0000000
-> > -				  0 0x20000000
-> > -
-> > -				  0x01000000 0 0x00000000
-> > -				  0x01000000 0 0x00000000
-> > -				  0 0x00010000>;
-> > -		};
-> > -	};
-> > -
-> > -};
-> > -
-> > -/include/ "fsl/b4si-post.dtsi"
-> > diff --git a/arch/powerpc/boot/dts/b4qds.dtsi =20
-> b/arch/powerpc/boot/dts/b4qds.dtsi
-> > new file mode 100644
-> > index 0000000..e6d2f8f
-> > --- /dev/null
-> > +++ b/arch/powerpc/boot/dts/b4qds.dtsi
-> > @@ -0,0 +1,169 @@
-> > +/*
-> > + * B4420DS Device Tree Source
-> > + *
-> > + * Copyright 2012 Freescale Semiconductor, Inc.
-> > + *
-> > + * Redistribution and use in source and binary forms, with or =20
-> without
-> > + * modification, are permitted provided that the following =20
-> conditions are met:
-> > + *     * Redistributions of source code must retain the above =20
-> copyright
-> > + *       notice, this list of conditions and the following =20
-> disclaimer.
-> > + *     * Redistributions in binary form must reproduce the above =20
-> copyright
-> > + *       notice, this list of conditions and the following =20
-> disclaimer in the
-> > + *       documentation and/or other materials provided with the =20
-> distribution.
-> > + *     * Neither the name of Freescale Semiconductor nor the
-> > + *       names of its contributors may be used to endorse or =20
-> promote products
-> > + *       derived from this software without specific prior written =20
-> permission.
-> > + *
-> > + *
-> > + * ALTERNATIVELY, this software may be distributed under the terms =20
-> of the
-> > + * GNU General Public License ("GPL") as published by the Free =20
-> Software
-> > + * Foundation, either version 2 of that License or (at your =20
-> option) any
-> > + * later version.
-> > + *
-> > + * This software is provided by Freescale Semiconductor "as is" =20
-> and any
-> > + * express or implied warranties, including, but not limited to, =20
-> the implied
-> > + * warranties of merchantability and fitness for a particular =20
-> purpose are
-> > + * disclaimed. In no event shall Freescale Semiconductor be liable =20
-> for any
-> > + * direct, indirect, incidental, special, exemplary, or =20
-> consequential damages
-> > + * (including, but not limited to, procurement of substitute goods =20
-> or services;
-> > + * loss of use, data, or profits; or business interruption) =20
-> however caused and
-> > + * on any theory of liability, whether in contract, strict =20
-> liability, or tort
-> > + * (including negligence or otherwise) arising in any way out of =20
-> the use of
-> > + * this software, even if advised of the possibility of such =20
-> damage.
-> > + */
-> > +
-> > +/ {
-> > +	model =3D "fsl,B4QDS";
-> > +	compatible =3D "fsl,B4QDS";
-> > +	#address-cells =3D <2>;
-> > +	#size-cells =3D <2>;
-> > +	interrupt-parent =3D <&mpic>;
-> > +
-> > +	ifc: localbus@ffe124000 {
-> > +		reg =3D <0xf 0xfe124000 0 0x2000>;
-> > +		ranges =3D <0 0 0xf 0xe8000000 0x08000000
-> > +			  2 0 0xf 0xff800000 0x00010000
-> > +			  3 0 0xf 0xffdf0000 0x00008000>;
-> > +
-> > +		nor@0,0 {
-> > +			#address-cells =3D <1>;
-> > +			#size-cells =3D <1>;
-> > +			compatible =3D "cfi-flash";
-> > +			reg =3D <0x0 0x0 0x8000000>;
-> > +			bank-width =3D <2>;
-> > +			device-width =3D <1>;
-> > +		};
-> > +
-> > +		nand@2,0 {
-> > +			#address-cells =3D <1>;
-> > +			#size-cells =3D <1>;
-> > +			compatible =3D "fsl,ifc-nand";
-> > +			reg =3D <0x2 0x0 0x10000>;
-> > +
-> > +			partition@0 {
-> > +				/* This location must not be altered  */
-> > +				/* 1MB for u-boot Bootloader Image */
-> > +				reg =3D <0x0 0x00100000>;
-> > +				label =3D "NAND U-Boot Image";
-> > +				read-only;
-> > +			};
-> > +
-> > +			partition@100000 {
-> > +				/* 1MB for DTB Image */
-> > +				reg =3D <0x00100000 0x00100000>;
-> > +				label =3D "NAND DTB Image";
-> > +			};
-> > +
-> > +			partition@200000 {
-> > +				/* 10MB for Linux Kernel Image */
-> > +				reg =3D <0x00200000 0x00A00000>;
-> > +				label =3D "NAND Linux Kernel Image";
-> > +			};
-> > +
-> > +			partition@c00000 {
-> > +				/* 500MB for Root file System Image */
-> > +				reg =3D <0x00c00000 0x1F400000>;
-> > +				label =3D "NAND RFS Image";
-> > +			};
-> > +		};
-> > +
-> > +		board-control@3,0 {
-> > +			compatible =3D "fsl,b4qds-fpga", "fsl,fpga-qixis";
-> > +			reg =3D <3 0 0x300>;
-> > +		};
-> > +	};
-> > +
-> > +	memory {
-> > +		device_type =3D "memory";
-> > +	};
-> > +
-> > +	dcsr: dcsr@f00000000 {
-> > +		ranges =3D <0x00000000 0xf 0x00000000 0x01052000>;
-> > +	};
-> > +
-> > +	soc: soc@ffe000000 {
-> > +		ranges =3D <0x00000000 0xf 0xfe000000 0x1000000>;
-> > +		reg =3D <0xf 0xfe000000 0 0x00001000>;
-> > +		spi@110000 {
-> > +			flash@0 {
-> > +				#address-cells =3D <1>;
-> > +				#size-cells =3D <1>;
-> > +				compatible =3D "sst,sst25wf040";
-> > +				reg =3D <0>;
-> > +				spi-max-frequency =3D <40000000>; /* =20
-> input clock */
-> > +			};
-> > +		};
-> > +
-> > +		sdhc@114000 {
-> > +			/*Disabled as there is no sdhc connector on =20
-> B4420QDS board*/
-> > +			status =3D "disabled";
-> > +		};
-> > +
-> > +		i2c@118000 {
-> > +			eeprom@50 {
-> > +				compatible =3D "at24,24c64";
-> > +				reg =3D <0x50>;
-> > +			};
-> > +			eeprom@51 {
-> > +				compatible =3D "at24,24c256";
-> > +				reg =3D <0x51>;
-> > +			};
-> > +			eeprom@53 {
-> > +				compatible =3D "at24,24c256";
-> > +				reg =3D <0x53>;
-> > +			};
-> > +			eeprom@57 {
-> > +				compatible =3D "at24,24c256";
-> > +				reg =3D <0x57>;
-> > +			};
-> > +			rtc@68 {
-> > +				compatible =3D "dallas,ds3232";
-> > +				reg =3D <0x68>;
-> > +			};
-> > +		};
-> > +
-> > +		usb@210000 {
-> > +			dr_mode =3D "host";
-> > +			phy_type =3D "ulpi";
-> > +		};
-> > +
-> > +	};
-> > +
-> > +	pci0: pcie@ffe200000 {
-> > +		reg =3D <0xf 0xfe200000 0 0x10000>;
-> > +		ranges =3D <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 =20
-> 0x20000000
-> > +			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 =20
-> 0x00010000>;
-> > +		pcie@0 {
-> > +			ranges =3D <0x02000000 0 0xe0000000
-> > +				  0x02000000 0 0xe0000000
-> > +				  0 0x20000000
-> > +
-> > +				  0x01000000 0 0x00000000
-> > +				  0x01000000 0 0x00000000
-> > +				  0 0x00010000>;
-> > +		};
-> > +	};
-> > +
-> > +};
-> > +
-> > +/include/ "fsl/b4si-post.dtsi"
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->=20
->=20
->=20
+PH15 and PH20 were mainly intended as intermediate states on the way to =20
+PH30 or debug halt.  It looks like PH15 is the deepest PH state in =20
+which core timers continue to run.
 
-=
+The intended idle states on e6500 are PW10 and PW20.
+
+> > How much better results do you get from a software governor?  Do we =20
+> even
+> > have the right data to characterize each state so that a software =20
+> governor
+> > could make good decisions?  Is cpuidle capable of governing the =20
+> interval
+> > of such a timer, rather than directly governing states?
+> >
+> >From now on we did not benchmark these data, because we only have =20
+> PW10 state.
+>=20
+> I can do support doze/nap for e6500. To get some data to show you.
+>=20
+> > As for doze/nap, why would we want to use those on newer cores?  Do =20
+> you
+> > have numbers for how much power each mode saves?
+> >
+> The PH state is plan to support, if the core can make into more low =20
+> power state,
+> why not to do this.
+
+We don't do things just to do them.  We do things to make things better.
+
+> PH10(doze)/PH15(nap)/PH20/PH30, These states can save more CPU power.
+
+If you have evidence that PH15 saves more power than PW20, please =20
+provide it.
+
+> > Active governors may be useful on older cores that only have =20
+> doze/nap,
+> > to
+> > select between them, but if that's the use case then why start with
+> > pw10?
+> Pw10 is supported on E500MC/E5500/E6500. And we plan to support PW20 =20
+> for E65OO core.
+> I will take doze/nap up a bit later.
+
+By "older cores" I meant before e500mc.
+
+> > And I'd want to see numbers for how much power nap saves versus =20
+> doze.
+> >
+> > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > ---
+> > > This patch keep using cpuidle_register_device(), because we need =20
+> to
+> > > support cpu
+> > > hotplug. I will fix "device" issue in this driver, after
+> > > Deepthi Dharwar <deepthi@linux.vnet.ibm.com> add a hotplug handler
+> > > into cpuidle
+> > > freamwork.
+> >
+> > Where's the diffstat?
+> >
+> See, http://patchwork.ozlabs.org/patch/260997/
+
+That's a totally different patch.
+
+> > > @@ -0,0 +1,222 @@
+> > > +/*
+> > > + * Copyright 2013 Freescale Semiconductor, Inc.
+> > > + *
+> > > + * CPU Idle driver for Freescale PowerPC e500 family processors.
+> > > + *
+> > > + * This program is free software; you can redistribute it and/or
+> > > modify
+> > > + * it under the terms of the GNU General Public License version =20
+> 2 as
+> > > + * published by the Free Software Foundation.
+> > > + *
+> > > + * Author: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > + */
+> >
+> > Is this derived from some other file?  It looks like it...  Where's =20
+> the
+> > attribution?
+> >
+> The copyright is from drivers/cpufreq/ppc-corenet-cpufreq.c
+
+But the code isn't.
+
+> > > +static void e500_cpuidle(void)
+> > > +{
+> > > +	/*
+> > > +	 * This would call on the cpuidle framework, and the back-end
+> > > +	 * driver to go to idle states.
+> > > +	 */
+> > > +	if (cpuidle_idle_call()) {
+> > > +		/*
+> > > +		 * On error, execute default handler
+> > > +		 * to go into low thread priority and possibly
+> > > +		 * low power mode.
+> > > +		 */
+> > > +		HMT_low();
+> > > +		HMT_very_low();
+> >
+> > This HMT stuff doesn't do anything on e500 derivatives AFAIK.
+> >
+> Yes, there should do nothing, let arch_cpu_idle to do the failed.
+
+I can't parse this.
+
+> > > +static struct cpuidle_state fsl_pw_idle_states[] =3D {
+> > > +	{
+> > > +		.name =3D "pw10",
+> > > +		.desc =3D "pw10",
+> > > +		.flags =3D CPUIDLE_FLAG_TIME_VALID,
+> > > +		.exit_latency =3D 0,
+> > > +		.target_residency =3D 0,
+> > > +		.enter =3D &pw10_enter
+> >
+> > Where is pw10_enter defined?
+> >
+> In this patch..
+
+OK, I see it now -- sorry about that.
+
+> > > +static int cpu_is_feature(unsigned long feature)
+> > > +{
+> > > +	return (cur_cpu_spec->cpu_features =3D=3D feature);
+> > > +}
+> > > +
+> > > +static int __init e500_idle_init(void)
+> > > +{
+> > > +	struct cpuidle_state *cpuidle_state_table =3D NULL;
+> > > +	struct cpuidle_driver *drv =3D &e500_idle_driver;
+> > > +	int err;
+> > > +	unsigned int max_idle_state =3D 0;
+> > > +
+> > > +	if (cpuidle_disable !=3D IDLE_NO_OVERRIDE)
+> > > +		return -ENODEV;
+> > > +
+> > > +	if (cpu_is_feature(CPU_FTRS_E500MC) ||
+> > > cpu_is_feature(CPU_FTRS_E5500) ||
+> > > +			cpu_is_feature(CPU_FTRS_E6500)) {
+> >
+> > There's no guarantee that a CPU with the same set of features is the
+> > exact same CPU.
+> >
+> > What specific feature are you looking for here?
+> >
+> Here is the type of the core. E500MC,E5500,E6500 do wait.
+
+There's no guarantee that a CPU with the same set of features is the =20
+exact same CPU.
+
+The CPU feature mechanism is for checking *features*, not identity.
+
+-Scott=
