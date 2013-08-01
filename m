@@ -1,18 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 488C02C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 18:40:36 +1000 (EST)
-Message-ID: <1375346422.3743.67.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 01 Aug 2013 18:40:22 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <wladislav.kw@gmail.com>
+Received: from mail-we0-x232.google.com (mail-we0-x232.google.com
+ [IPv6:2a00:1450:400c:c03::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3DB922C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 18:51:33 +1000 (EST)
+Received: by mail-we0-f178.google.com with SMTP id u57so1456208wes.37
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Aug 2013 01:51:27 -0700 (PDT)
+Message-ID: <51FA2167.7060305@gmail.com>
+Date: Thu, 01 Aug 2013 10:50:47 +0200
+From: Wladislav Wiebe <wladislav.kw@gmail.com>
+MIME-Version: 1.0
+To: Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: Re: mm/slab: ppc: ubi: kmalloc_slab WARNING / PPC + UBI driver
+References: <51F8F827.6020108@gmail.com>
+ <20130731173434.GA27470@blackmetal.musicnaut.iki.fi>
+In-Reply-To: <20130731173434.GA27470@blackmetal.musicnaut.iki.fi>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: dedekind1@gmail.com, dwmw2@infradead.org, penberg@kernel.org,
+ linux-mm@kvack.org, linux-mtd@lists.infradead.org, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,53 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Hi,
 
-Here is not quite a handful of powerpc fixes for rc3. The windfarm fix is
-a regression fix (though not a new one), the PMU interrupt rename is not
-a fix per-se but has been submitted a long time ago and I kept forgetting
-to put it in (it puts us back in sync with x86), the other perf bit is
-just about putting an API/ABI bit definition in the right place for
-userspace to consume, and finally, we have a fix for the VPHN (Virtual
-Partition Home Node) feature (notification that the hypervisor is moving
-nodes around) which could cause lockups so we may as well fix it now.
+On 31/07/13 19:34, Aaro Koskinen wrote:
+> Hi,
+> 
+> On Wed, Jul 31, 2013 at 01:42:31PM +0200, Wladislav Wiebe wrote:
+>> DEBUG: xxx kmalloc_slab, requested 'size' = 8388608, KMALLOC_MAX_SIZE = 4194304
+> [...]
+> 
+> It seems some procfs file is trying to dump 8 MB at a single go. You
+> need to fix that to return data in smaller chunks. What file is it?
 
-Thanks !
+seems it's coming from DT:
+..
+DEBUG: xxx seq_path: file path = /proc/device-tree/localbus@5000/flash@0/partition@1/reg
+------------[ cut here ]------------
+..
 
-Cheers,
-Ben.
+need to check if and how it's possible divide it in smaller chunks.
+If somebody has suggestions, feel free to comment-)
 
-The following changes since commit ff3d79dc12c2ed38483f6c1e0f26fde430f27c9d:
-
-  powerpc/perf: BHRB filter configuration should follow the task (2013-07-24 14:42:34 +1000)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to fe956a1d4081ce1a959f87df397a15e252201f10:
-
-  powerpc/windfarm: Fix noisy slots-fan on Xserve (rm31) (2013-08-01 13:11:47 +1000)
-
-----------------------------------------------------------------
-Aaro Koskinen (1):
-      powerpc/windfarm: Fix noisy slots-fan on Xserve (rm31)
-
-Michael Ellerman (2):
-      powerpc: Rename PMU interrupts from CNT to PMI
-      powerpc/perf: Export PERF_EVENT_CONFIG_EBB_SHIFT to userspace
-
-Robert Jennings (1):
-      powerpc: VPHN topology change updates all siblings
-
- arch/powerpc/include/asm/perf_event_server.h |  6 +--
- arch/powerpc/include/asm/smp.h               |  4 ++
- arch/powerpc/include/uapi/asm/Kbuild         |  1 +
- arch/powerpc/include/uapi/asm/perf_event.h   | 18 +++++++++
- arch/powerpc/kernel/irq.c                    |  2 +-
- arch/powerpc/mm/numa.c                       | 59 +++++++++++++++++++++-------
- arch/powerpc/perf/core-book3s.c              |  2 +-
- arch/powerpc/perf/power8-pmu.c               |  6 +--
- drivers/macintosh/windfarm_rm31.c            | 18 ++++-----
- 9 files changed, 82 insertions(+), 34 deletions(-)
- create mode 100644 arch/powerpc/include/uapi/asm/perf_event.h
+Thanks & BR
+Wladislav Wiebe
