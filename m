@@ -1,37 +1,19 @@
-Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 431372C00C6
- for <linuxppc-dev@ozlabs.org>; Thu,  1 Aug 2013 20:40:17 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Thu, 1 Aug 2013 20:33:25 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id EDC6B3578051
- for <linuxppc-dev@ozlabs.org>; Thu,  1 Aug 2013 20:40:09 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r71AdxrX6881624
- for <linuxppc-dev@ozlabs.org>; Thu, 1 Aug 2013 20:39:59 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r71Ae8Ah029400
- for <linuxppc-dev@ozlabs.org>; Thu, 1 Aug 2013 20:40:09 +1000
-Message-ID: <51FA3B02.7060004@linux.vnet.ibm.com>
-Date: Thu, 01 Aug 2013 16:10:02 +0530
-From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Return-Path: <b20052@nmglablinux22.freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 060A82C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 21:02:54 +1000 (EST)
+From: Shaveta Leekha <shaveta@freescale.com>
+To: <devicetree-discuss@lists.ozlabs.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] Add device file bindings for MAPLE
+Date: Thu, 1 Aug 2013 16:32:43 +0530
+Message-ID: <1375354963-11219-1-git-send-email-shaveta@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org, tony.luck@intel.com, keescook@chromium.org
-Subject: Re: [PATCH 00/11] Add compression support to pstore
-References: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
-In-Reply-To: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: jkenisto@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com, ccross@android.com,
- anton@samba.org, cbouatmailru@gmail.com
+Content-Type: text/plain
+Cc: Shaveta Leekha <shaveta@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,83 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tony/Kees,
+Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
+---
+ .../devicetree/bindings/powerpc/fsl/maple.txt      |   30 ++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/maple.txt
 
-     Could you please review and let me know your comments!!
-
-Regards,
-Aruna
-
-On Monday 15 July 2013 10:25 PM, Aruna Balakrishnaiah wrote:
-> The patchset adds compression support to pstore.
->
-> As the non-volatile storage space is limited, adding compression
-> support results in capturing more data within limited space.
->
-> Size of dmesg file in a powerpc/pseries box with nvram's
-> oops partition (to store oops-log) size 4k:
->
-> Without compression:
-> dmesg-nvram-1:  ~ 4k (3980)
-> WIth compression:
-> dmesg-nvram-1: ~8.8k (8844)
->
-> Writing to persistent store
-> ----------------------------
-> Compression will reduce the size of oops/panic report to atmost 45% of its
-> original size. (Based on experiments done while providing compression support
-> to nvram by Jim keniston).
-> Hence buffer of size ( (100/45 approx 2.22) *<registered_buffer> is allocated).
-> The compression parameters selected based on some experiments:
-> compression_level = 6, window_bits = 12, memory_level = 4  which achieved a
-> significant compression of 12 % of uncompressed buffer size tried upto 36k.
-> Data is compressed from the bigger buffer to registered buffer which is
-> returned to backends.
-> Pstore will indicate that with a flag 'compressed' which is passed to backends.
-> Using this flag, backends will add a flag in their header to indicate the data
-> is compressed or not while writing to persistent store.
->
->
-> Reading from persistent store
-> -----------------------------
-> When backends read data from persistent store it will use the flag added by it
-> while writing to persistent store to determine if the data is compressed or not.
-> Using the information, it will set the flag in pstore's read call back.
-> Pstore will decompress the data based on the flag and writes decompressed data
-> to the file.
->
-> Test results:
->
-> Have tested the patches on powerpc/pseries.
-> On Intel have only tested with erst backend.
->
-> Efi-pstore and RAM persistent buffer requires testing.
->
->
-> ---
->
-> Aruna Balakrishnaiah (11):
->        powerpc/pseries: Remove (de)compression in nvram with pstore enabled
->        pstore: Add new argument 'compressed' in pstore write callback
->        pstore/Kconfig: Select ZLIB_DEFLATE and ZLIB_INFLATE when PSTORE is selected
->        pstore: Add compression support to pstore
->        pstore: Introduce new argument 'compressed' in the read callback
->        pstore: Provide decompression support to pstore
->        pstore: Add file extension to pstore file if compressed
->        powerpc/pseries: Read and write to the 'compressed' flag of pstore
->        erst: Read and write to the 'compressed' flag of pstore
->        efi-pstore: Read and write to the 'compressed' flag of pstore
->        pstore/ram: Read and write to the 'compressed' flag of pstore
->
->
->   arch/powerpc/platforms/pseries/nvram.c |  131 ++++----------------
->   drivers/acpi/apei/erst.c               |   21 ++-
->   drivers/firmware/efi/efi-pstore.c      |   27 +++-
->   fs/pstore/Kconfig                      |    2
->   fs/pstore/inode.c                      |    9 +
->   fs/pstore/internal.h                   |    5 -
->   fs/pstore/platform.c                   |  214 ++++++++++++++++++++++++++++++--
->   fs/pstore/ram.c                        |   41 +++++-
->   include/linux/pstore.h                 |    6 -
->   9 files changed, 307 insertions(+), 149 deletions(-)
->
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/maple.txt b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
+new file mode 100644
+index 0000000..da51c5f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
+@@ -0,0 +1,30 @@
++* Freescale MAPLE Multi Accelerator Platform Engine Baseband 3
++  (MAPLE-B3)device nodes
++
++Supported chips:
++Example: B4860
++
++Required properties:
++
++- compatible:	Should contain "fsl,maple-b3-liodn" as the value
++		This identifies Multi Accelerator Platform Engine
++		Baseband 3 block.This representation is required
++		for doing the PAMU/LIODN programming on the Linux side.
++
++- reg:		offset and length of the register set for the device
++
++Devices that have LIODNs need to specify links to the parent PAMU controller
++(the actual PAMU controller that this device is connected to) and a pointer to
++the LIODN register, if applicable.
++
++- fsl,iommu-parent
++		: <phandle>
++		This property should be present
++
++Example:
++	/* B4860 */
++	maple@800000 {
++		compatible = "fsl,maple-b3-liodn";
++		reg = <0x8000000 0x10000>;
++		fsl,iommu-parent = <&pamu1>;
++	};
+-- 
+1.7.6.GIT
