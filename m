@@ -1,19 +1,18 @@
 Return-Path: <R65777@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DA8492C0113
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 21:18:15 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D49F82C0298
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 21:18:16 +1000 (EST)
 From: Bharat Bhushan <r65777@freescale.com>
 To: <benh@kernel.crashing.org>, <agraf@suse.de>, <kvm-ppc@vger.kernel.org>,
  <kvm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <scottwood@freescale.com>
-Subject: [PATCH 4/6 v2] powerpc: move linux pte/hugepte search to more generic
- file
-Date: Thu, 1 Aug 2013 16:42:36 +0530
-Message-ID: <1375355558-19187-5-git-send-email-Bharat.Bhushan@freescale.com>
+Subject: [PATCH 5/6 v2] kvm: powerpc: booke: Add linux pte lookup like booke3s
+Date: Thu, 1 Aug 2013 16:42:37 +0530
+Message-ID: <1375355558-19187-6-git-send-email-Bharat.Bhushan@freescale.com>
 In-Reply-To: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
 References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
@@ -28,113 +27,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Linux pte search functions find_linux_pte_or_hugepte() and
-find_linux_pte() have nothing specific to 64bit anymore.
-So they are move from pgtable-ppc64.h to asm/pgtable.h
+KVM need to lookup linux pte for getting TLB attributes (WIMGE).
+This is similar to how book3s does.
+This will be used in follow-up patches.
 
 Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
 v1->v2
  - This is a new change in this version
 
- arch/powerpc/include/asm/pgtable-ppc64.h |   36 -----------------------------
- arch/powerpc/include/asm/pgtable.h       |   37 ++++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+), 36 deletions(-)
+ arch/powerpc/include/asm/kvm_booke.h |   73 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 73 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index e3d55f6..d257d98 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -340,42 +340,6 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
- void pgtable_cache_init(void);
- 
--/*
-- * find_linux_pte returns the address of a linux pte for a given
-- * effective address and directory.  If not found, it returns zero.
-- */
--static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea)
--{
--	pgd_t *pg;
--	pud_t *pu;
--	pmd_t *pm;
--	pte_t *pt = NULL;
--
--	pg = pgdir + pgd_index(ea);
--	if (!pgd_none(*pg)) {
--		pu = pud_offset(pg, ea);
--		if (!pud_none(*pu)) {
--			pm = pmd_offset(pu, ea);
--			if (pmd_present(*pm))
--				pt = pte_offset_kernel(pm, ea);
--		}
--	}
--	return pt;
--}
--
--#ifdef CONFIG_HUGETLB_PAGE
--pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
--				 unsigned *shift);
--#else
--static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
--					       unsigned *shift)
--{
--	if (shift)
--		*shift = 0;
--	return find_linux_pte(pgdir, ea);
--}
--#endif /* !CONFIG_HUGETLB_PAGE */
--
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index b6293d2..690c8c2 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -217,6 +217,43 @@ extern int gup_hugepd(hugepd_t *hugepd, unsigned pdshift, unsigned long addr,
- 
- extern int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
- 		       unsigned long end, int write, struct page **pages, int *nr);
+diff --git a/arch/powerpc/include/asm/kvm_booke.h b/arch/powerpc/include/asm/kvm_booke.h
+index d3c1eb3..903624d 100644
+--- a/arch/powerpc/include/asm/kvm_booke.h
++++ b/arch/powerpc/include/asm/kvm_booke.h
+@@ -102,4 +102,77 @@ static inline ulong kvmppc_get_msr(struct kvm_vcpu *vcpu)
+ {
+ 	return vcpu->arch.shared->msr;
+ }
 +
 +/*
-+ * find_linux_pte returns the address of a linux pte for a given
-+ * effective address and directory.  If not found, it returns zero.
++ * Lock and read a linux PTE.  If it's present and writable, atomically
++ * set dirty and referenced bits and return the PTE, otherwise return 0.
 + */
-+static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea)
++static inline pte_t kvmppc_read_update_linux_pte(pte_t *p, int writing)
 +{
-+	pgd_t *pg;
-+	pud_t *pu;
-+	pmd_t *pm;
-+	pte_t *pt = NULL;
++	pte_t pte;
 +
-+	pg = pgdir + pgd_index(ea);
-+	if (!pgd_none(*pg)) {
-+		pu = pud_offset(pg, ea);
-+		if (!pud_none(*pu)) {
-+			pm = pmd_offset(pu, ea);
-+			if (pmd_present(*pm))
-+				pt = pte_offset_kernel(pm, ea);
-+		}
-+	}
-+	return pt;
-+}
-+
-+#ifdef CONFIG_HUGETLB_PAGE
-+pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
-+				 unsigned *shift);
++#ifdef PTE_ATOMIC_UPDATES
++	pte_t tmp;
++        /* wait until _PAGE_BUSY is clear then set it atomically */
++#ifdef CONFIG_PPC64
++	__asm__ __volatile__ (
++		"1:	ldarx	%0,0,%3\n"
++		"	andi.	%1,%0,%4\n"
++		"	bne-	1b\n"
++		"	ori	%1,%0,%4\n"
++		"	stdcx.	%1,0,%3\n"
++		"	bne-	1b"
++		: "=&r" (pte), "=&r" (tmp), "=m" (*p)
++		: "r" (p), "i" (_PAGE_BUSY)
++		: "cc");
 +#else
-+static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
-+					       unsigned *shift)
-+{
-+	if (shift)
-+		*shift = 0;
-+	return find_linux_pte(pgdir, ea);
-+}
-+#endif /* !CONFIG_HUGETLB_PAGE */
++        __asm__ __volatile__ (
++                "1:     lwarx   %0,0,%3\n"
++                "       andi.   %1,%0,%4\n"
++                "       bne-    1b\n"
++                "       ori     %1,%0,%4\n"
++                "       stwcx.  %1,0,%3\n"
++                "       bne-    1b"
++                : "=&r" (pte), "=&r" (tmp), "=m" (*p)
++                : "r" (p), "i" (_PAGE_BUSY)
++                : "cc");
++#endif
++#else
++	pte = pte_val(*p);
++#endif
 +
- #endif /* __ASSEMBLY__ */
- 
- #endif /* __KERNEL__ */
++	if (pte_present(pte)) {
++		pte = pte_mkyoung(pte);
++		if (writing && pte_write(pte))
++			pte = pte_mkdirty(pte);
++	}
++
++	*p = pte;	/* clears _PAGE_BUSY */
++
++	return pte;
++}
++
++static inline pte_t lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
++			      int writing, unsigned long *pte_sizep)
++{
++	pte_t *ptep;
++	unsigned long ps = *pte_sizep;
++	unsigned int shift;
++
++	ptep = find_linux_pte_or_hugepte(pgdir, hva, &shift);
++	if (!ptep)
++		return __pte(0);
++	if (shift)
++		*pte_sizep = 1ul << shift;
++	else
++		*pte_sizep = PAGE_SIZE;
++
++	if (ps > *pte_sizep)
++		return __pte(0);
++	if (!pte_present(*ptep))
++		return __pte(0);
++
++	return kvmppc_read_update_linux_pte(ptep, writing);
++}
++
+ #endif /* __ASM_KVM_BOOKE_H__ */
 -- 
 1.7.0.4
