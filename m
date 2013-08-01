@@ -1,24 +1,48 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f52.google.com (mail-pa0-f52.google.com
- [209.85.220.52])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2505D2C017B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 14:45:51 +1000 (EST)
-Received: by mail-pa0-f52.google.com with SMTP id kq13so1660029pab.39
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 21:45:50 -0700 (PDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 10/10] KVM: PPC: Add hugepage support for IOMMU in-kernel
- handling
-Date: Thu,  1 Aug 2013 14:44:32 +1000
-Message-Id: <1375332272-22176-11-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1375332272-22176-1-git-send-email-aik@ozlabs.ru>
-References: <1375332272-22176-1-git-send-email-aik@ozlabs.ru>
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 747262C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 14:59:26 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Thu, 1 Aug 2013 10:19:10 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id E93AF394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 10:29:08 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r714xCip36241412
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Aug 2013 10:29:12 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r714xE1P015234
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Aug 2013 14:59:14 +1000
+Message-ID: <51F9EA96.7030407@linux.vnet.ibm.com>
+Date: Thu, 01 Aug 2013 10:26:54 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Subject: Re: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle backend
+ driver to sysdev.
+References: <20130731025840.19448.24468.stgit@deepthi>
+ <20130731025924.19448.46538.stgit@deepthi>
+ <ABB05CD9C9F68C46A5CEDC7F15439259FF2953@039-SN2MPN1-021.039d.mgd.msft.net>
+ <51F88BA7.7090404@linux.vnet.ibm.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259FF2A3A@039-SN2MPN1-021.039d.mgd.msft.net>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259FF2A3A@039-SN2MPN1-021.039d.mgd.msft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rjw@sisk.pl" <rjw@sisk.pl>, Zhao Chenhui-B35336 <B35336@freescale.com>,
+ "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Wood Scott-B07421 <B07421@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,409 +52,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds special support for huge pages (16MB) in real mode.
+Hi Dongsheng,
 
-The reference counting cannot be easily done for such pages in real
-mode (when MMU is off) so we added a hash table of huge pages.
-It is populated in virtual mode and get_page is called just once
-per a huge page. Real mode handlers check if the requested page is
-in the hash table, then no reference counting is done, otherwise
-an exit to virtual mode happens. The hash table is released at KVM
-exit.
+On 07/31/2013 11:16 AM, Wang Dongsheng-B40534 wrote:
+> Hi Preeti,
+> 
+>> -----Original Message-----
+>> From: Preeti U Murthy [mailto:preeti@linux.vnet.ibm.com]
+>> Sent: Wednesday, July 31, 2013 12:00 PM
+>> To: Wang Dongsheng-B40534
+>> Cc: Deepthi Dharwar; benh@kernel.crashing.org; daniel.lezcano@linaro.org;
+>> linux-kernel@vger.kernel.org; michael@ellerman.id.au;
+>> srivatsa.bhat@linux.vnet.ibm.com; svaidy@linux.vnet.ibm.com; linuxppc-
+>> dev@lists.ozlabs.org; rjw@sisk.pl; linux-pm@vger.kernel.org
+>> Subject: Re: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle
+>> backend driver to sysdev.
+>>
+>> Hi Dongsheng,
+>>
+>> On 07/31/2013 08:52 AM, Wang Dongsheng-B40534 wrote:
+>>>
+>>>
+>>>> -----Original Message-----
+>>>> From: Deepthi Dharwar [mailto:deepthi@linux.vnet.ibm.com]
+>>>> Sent: Wednesday, July 31, 2013 10:59 AM
+>>>> To: benh@kernel.crashing.org; daniel.lezcano@linaro.org; linux-
+>>>> kernel@vger.kernel.org; michael@ellerman.id.au;
+>>>> srivatsa.bhat@linux.vnet.ibm.com; preeti@linux.vnet.ibm.com;
+>>>> svaidy@linux.vnet.ibm.com; linuxppc-dev@lists.ozlabs.org
+>>>> Cc: rjw@sisk.pl; Wang Dongsheng-B40534; linux-pm@vger.kernel.org
+>>>> Subject: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle
+>>>> backend driver to sysdev.
+>>>>
+>>>> Move pseries_idle backend driver code to arch/powerpc/sysdev so that
+>>>> the code can be used for a common driver for powernv and pseries.
+>>>> This removes a lot of code duplicacy.
+>>>>
+>>> Why not drivers/cpuidle/?
+>>>
+>>> I think it should be move to drivers/cpuidle.
+>>
+>> Please take a look at what the cpuidle under drivers has to provide.
+>> cpuidle has two parts to it. The front end and the back end. The front
+>> end constitutes the cpuidle governors, registering of arch specific
+>> cpuidle drivers, disabling and enabling of cpuidle feature. It is this
+>> front end code which is present under drivers/cpuidle.
+>>
+>> The arch specific cpuidle drivers which decide what needs to be done to
+>> enter a specific idle state chosen by the cpuidle governor is what
+>> constitutes the back end of cpuidle. This will not be in drivers/cpuidle
+>> but in an arch/ specific code.
+>>
+>> The cpuidle under drivers/cpuidle drives the idle power management, but
+>> the low level handling of the entry into idle states should be taken care
+>> of by the architecture.
+>>
+>> Your recent patch :
+>> cpuidle: add freescale e500 family porcessors idle support IMO should
+>> hook onto the backend cpuidle driver that this patchset provides.
+>>
+> Sorry, I don't think so, cpuidle framework has been already very common.
+> Here we just need to do state definition and handling. I wonder whether
+> we need this layer.
+> 
+> If your handle is platform dependent, it should be in arch/platform.
+> 
+> If it is only for some platforms and the operation of these platforms can be
+> multiplexed, Why cannot as a driver to put into driver/cpuidle?
+> 
+> If it a general driver, I think we can put some common operating to driver/cpuidle
+> and make the platform specific code to arch/powerpc/platform.
+> 
+> This patch include front end and back end, not just back end.
+> 
+> This patch include too many state of different platforms and handle function. This state
+> and handle that should belong to itself platforms. Not a general way. If Deepthi will do
+> a general powerpc cpuidle, I think, it's cannot just using the macro to distinguish
+> platform. the front end code maybe move to driver/cpuidle(drvier register) should be better,
+> make the Low Power State and what should be handle to arch/powerpc/platform/**, because different
+> platforms have different state of low power consumption, and the processing method.
+> The front end can provide some general methods to register into general powerpc cpuidle driver.
 
-At the moment the fastest card available for tests uses up to 9 huge
-pages so walking through this hash table does not cost much.
-However this can change and we may want to optimize this.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+As Daniel pointed out, with a call to cpuidle_register(), we can get the
+cpuidle_driver and cpuidle_device registered through the generic cpuidle
+framework. Hence we can get rid of the powerpc_idle_devices_init() routine.
 
----
+We can have the hotplug notifier in the generic cpuidle framework as
+well. The rest of the patchset however should be arch specific IMO.
 
-Changes:
-2013/07/12:
-* removed multiple #ifdef IOMMU_API as IOMMU_API is always enabled
-for KVM_BOOK3S_64
+Regards
+Preeti U Murthy
 
-2013/06/27:
-* list of huge pages replaces with hashtable for better performance
-* spinlock removed from real mode and only protects insertion of new
-huge [ages descriptors into the hashtable
-
-2013/06/05:
-* fixed compile error when CONFIG_IOMMU_API=n
-
-2013/05/20:
-* the real mode handler now searches for a huge page by gpa (used to be pte)
-* the virtual mode handler prints warning if it is called twice for the same
-huge page as the real mode handler is expected to fail just once - when a huge
-page is not in the list yet.
-* the huge page is refcounted twice - when added to the hugepage list and
-when used in the virtual mode hcall handler (can be optimized but it will
-make the patch less nice).
-
-Conflicts:
-	arch/powerpc/kernel/iommu.c
-
-Conflicts:
-	arch/powerpc/kernel/iommu.c
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/include/asm/kvm_host.h |  25 ++++++++
- arch/powerpc/kernel/iommu.c         |   6 +-
- arch/powerpc/kvm/book3s_64_vio.c    | 121 ++++++++++++++++++++++++++++++++++--
- arch/powerpc/kvm/book3s_64_vio_hv.c |  32 +++++++++-
- 4 files changed, 175 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 4eeaf7d..c57b25a 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -31,6 +31,7 @@
- #include <linux/list.h>
- #include <linux/atomic.h>
- #include <linux/tracepoint.h>
-+#include <linux/hashtable.h>
- #include <asm/kvm_asm.h>
- #include <asm/processor.h>
- #include <asm/page.h>
-@@ -183,9 +184,33 @@ struct kvmppc_spapr_tce_table {
- 	u32 window_size;
- 	struct iommu_group *grp;		/* used for IOMMU groups */
- 	struct vfio_group *vfio_grp;		/* used for IOMMU groups */
-+	DECLARE_HASHTABLE(hash_tab, ilog2(64));	/* used for IOMMU groups */
-+	spinlock_t hugepages_write_lock;	/* used for IOMMU groups */
- 	struct page *pages[0];
- };
- 
-+/*
-+ * The KVM guest can be backed with 16MB pages.
-+ * In this case, we cannot do page counting from the real mode
-+ * as the compound pages are used - they are linked in a list
-+ * with pointers as virtual addresses which are inaccessible
-+ * in real mode.
-+ *
-+ * The code below keeps a 16MB pages list and uses page struct
-+ * in real mode if it is already locked in RAM and inserted into
-+ * the list or switches to the virtual mode where it can be
-+ * handled in a usual manner.
-+ */
-+#define KVMPPC_SPAPR_HUGEPAGE_HASH(gpa)	hash_32(gpa >> 24, 32)
-+
-+struct kvmppc_spapr_iommu_hugepage {
-+	struct hlist_node hash_node;
-+	unsigned long gpa;	/* Guest physical address */
-+	unsigned long hpa;	/* Host physical address */
-+	struct page *page;	/* page struct of the very first subpage */
-+	unsigned long size;	/* Huge page size (always 16MB at the moment) */
-+};
-+
- struct kvmppc_linear_info {
- 	void		*base_virt;
- 	unsigned long	 base_pfn;
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 8314c80..e4a8135 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -999,7 +999,8 @@ int iommu_free_tces(struct iommu_table *tbl, unsigned long entry,
- 			if (!pg) {
- 				ret = -EAGAIN;
- 			} else if (PageCompound(pg)) {
--				ret = -EAGAIN;
-+				/* Hugepages will be released at KVM exit */
-+				ret = 0;
- 			} else {
- 				if (oldtce & TCE_PCI_WRITE)
- 					SetPageDirty(pg);
-@@ -1010,6 +1011,9 @@ int iommu_free_tces(struct iommu_table *tbl, unsigned long entry,
- 			struct page *pg = pfn_to_page(oldtce >> PAGE_SHIFT);
- 			if (!pg) {
- 				ret = -EAGAIN;
-+			} else if (PageCompound(pg)) {
-+				/* Hugepages will be released at KVM exit */
-+				ret = 0;
- 			} else {
- 				if (oldtce & TCE_PCI_WRITE)
- 					SetPageDirty(pg);
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 1e86a8a..0798a7b 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -93,6 +93,102 @@ int kvmppc_vfio_external_user_iommu_id(struct vfio_group *group)
- 	return ret;
- }
- 
-+/*
-+ * API to support huge pages in real mode
-+ */
-+static void kvmppc_iommu_hugepages_init(struct kvmppc_spapr_tce_table *tt)
-+{
-+	spin_lock_init(&tt->hugepages_write_lock);
-+	hash_init(tt->hash_tab);
-+}
-+
-+static void kvmppc_iommu_hugepages_cleanup(struct kvmppc_spapr_tce_table *tt)
-+{
-+	int bkt;
-+	struct kvmppc_spapr_iommu_hugepage *hp;
-+	struct hlist_node *tmp;
-+
-+	spin_lock(&tt->hugepages_write_lock);
-+	hash_for_each_safe(tt->hash_tab, bkt, tmp, hp, hash_node) {
-+		pr_debug("Release HP liobn=%llx #%u gpa=%lx hpa=%lx size=%ld\n",
-+				tt->liobn, bkt, hp->gpa, hp->hpa, hp->size);
-+		hlist_del_rcu(&hp->hash_node);
-+
-+		put_page(hp->page);
-+		kfree(hp);
-+	}
-+	spin_unlock(&tt->hugepages_write_lock);
-+}
-+
-+/* Returns true if a page with GPA is already in the hash table */
-+static bool kvmppc_iommu_hugepage_lookup_gpa(struct kvmppc_spapr_tce_table *tt,
-+		unsigned long gpa)
-+{
-+	struct kvmppc_spapr_iommu_hugepage *hp;
-+	const unsigned key = KVMPPC_SPAPR_HUGEPAGE_HASH(gpa);
-+
-+	hash_for_each_possible_rcu(tt->hash_tab, hp, hash_node, key) {
-+		if ((gpa < hp->gpa) || (gpa >= hp->gpa + hp->size))
-+			continue;
-+
-+		return true;
-+	}
-+
-+	return false;
-+}
-+
-+/* Returns true if a page with GPA has been added to the hash table */
-+static bool kvmppc_iommu_hugepage_add(struct kvm_vcpu *vcpu,
-+		struct kvmppc_spapr_tce_table *tt,
-+		unsigned long hva, unsigned long gpa)
-+{
-+	struct kvmppc_spapr_iommu_hugepage *hp;
-+	const unsigned key = KVMPPC_SPAPR_HUGEPAGE_HASH(gpa);
-+	pte_t *ptep;
-+	unsigned int shift = 0;
-+	static const int is_write = 1;
-+
-+	ptep = find_linux_pte_or_hugepte(vcpu->arch.pgdir, hva, &shift);
-+	WARN_ON(!ptep);
-+
-+	if (!ptep || (shift <= PAGE_SHIFT))
-+		return false;
-+
-+	hp = kzalloc(sizeof(*hp), GFP_KERNEL);
-+	if (!hp)
-+		return false;
-+
-+	hp->gpa = gpa & ~((1 << shift) - 1);
-+	hp->hpa = (pte_pfn(*ptep) << PAGE_SHIFT);
-+	hp->size = 1 << shift;
-+
-+	if (get_user_pages_fast(hva & ~(hp->size - 1), 1,
-+			is_write, &hp->page) != 1) {
-+		kfree(hp);
-+		return false;
-+	}
-+	hash_add_rcu(tt->hash_tab, &hp->hash_node, key);
-+
-+	return true;
-+}
-+
-+/** Returns true if a page with GPA is in the hash table or
-+ *  has just been added.
-+ */
-+static bool kvmppc_iommu_hugepage_try_add(struct kvm_vcpu *vcpu,
-+		struct kvmppc_spapr_tce_table *tt,
-+		unsigned long hva, unsigned long gpa)
-+{
-+	bool ret;
-+
-+	spin_lock(&tt->hugepages_write_lock);
-+	ret = kvmppc_iommu_hugepage_lookup_gpa(tt, gpa) ||
-+			kvmppc_iommu_hugepage_add(vcpu, tt, hva, gpa);
-+	spin_unlock(&tt->hugepages_write_lock);
-+
-+	return ret;
-+}
-+
- static long kvmppc_stt_npages(unsigned long window_size)
- {
- 	return ALIGN((window_size >> SPAPR_TCE_SHIFT)
-@@ -106,6 +202,7 @@ static void release_spapr_tce_table(struct kvmppc_spapr_tce_table *stt)
- 
- 	mutex_lock(&kvm->lock);
- 	list_del(&stt->list);
-+	kvmppc_iommu_hugepages_cleanup(stt);
- 
- 	if (stt->grp) {
- 		if (stt->vfio_grp)
-@@ -192,6 +289,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 	kvm_get_kvm(kvm);
- 
- 	mutex_lock(&kvm->lock);
-+	kvmppc_iommu_hugepages_init(stt);
- 	list_add(&stt->list, &kvm->arch.spapr_tce_tables);
- 
- 	mutex_unlock(&kvm->lock);
-@@ -273,6 +371,7 @@ long kvm_vm_ioctl_create_spapr_tce_iommu(struct kvm *kvm,
- 
- 	/* Add the TCE table descriptor to the descriptor list */
- 	mutex_lock(&kvm->lock);
-+	kvmppc_iommu_hugepages_init(tt);
- 	list_add(&tt->list, &kvm->arch.spapr_tce_tables);
- 	mutex_unlock(&kvm->lock);
- 
-@@ -293,6 +392,7 @@ fput_exit:
-  * Also returns host physical address which is to put to TCE table.
-  */
- static void __user *kvmppc_gpa_to_hva_and_get(struct kvm_vcpu *vcpu,
-+		struct kvmppc_spapr_tce_table *tt,
- 		unsigned long gpa, struct page **pg, unsigned long *phpa)
- {
- 	unsigned long hva, gfn = gpa >> PAGE_SHIFT;
-@@ -312,6 +412,17 @@ static void __user *kvmppc_gpa_to_hva_and_get(struct kvm_vcpu *vcpu,
- 		*phpa = __pa((unsigned long) page_address(*pg)) |
- 				(hva & ~PAGE_MASK);
- 
-+	if (PageCompound(*pg)) {
-+		/** Check if this GPA is taken care of by the hash table.
-+		 *  If this is the case, do not show the caller page struct
-+		 *  address as huge pages will be released at KVM exit.
-+		 */
-+		if (kvmppc_iommu_hugepage_try_add(vcpu, tt, hva, gpa)) {
-+			put_page(*pg);
-+			*pg = NULL;
-+		}
-+	}
-+
- 	return (void *) hva;
- }
- 
-@@ -349,7 +460,7 @@ long kvmppc_h_put_tce_iommu(struct kvm_vcpu *vcpu,
- 		if (iommu_tce_put_param_check(tbl, ioba, tce))
- 			return H_PARAMETER;
- 
--		hva = kvmppc_gpa_to_hva_and_get(vcpu, tce, &pg, &hpa);
-+		hva = kvmppc_gpa_to_hva_and_get(vcpu, tt, tce, &pg, &hpa);
- 		if (hva == ERROR_ADDR)
- 			return H_HARDWARE;
- 	}
-@@ -358,7 +469,7 @@ long kvmppc_h_put_tce_iommu(struct kvm_vcpu *vcpu,
- 		return H_SUCCESS;
- 
- 	pg = pfn_to_page(hpa >> PAGE_SHIFT);
--	if (pg)
-+	if (pg && !PageCompound(pg))
- 		put_page(pg);
- 
- 	return H_HARDWARE;
-@@ -400,7 +511,7 @@ static long kvmppc_h_put_tce_indirect_iommu(struct kvm_vcpu *vcpu,
- 					(i << IOMMU_PAGE_SHIFT), gpa))
- 			return H_PARAMETER;
- 
--		hva = kvmppc_gpa_to_hva_and_get(vcpu, gpa, &pg,
-+		hva = kvmppc_gpa_to_hva_and_get(vcpu, tt, gpa, &pg,
- 				&vcpu->arch.tce_tmp_hpas[i]);
- 		if (hva == ERROR_ADDR)
- 			goto putpages_flush_exit;
-@@ -415,7 +526,7 @@ putpages_flush_exit:
- 	for ( --i; i >= 0; --i) {
- 		struct page *pg;
- 		pg = pfn_to_page(vcpu->arch.tce_tmp_hpas[i] >> PAGE_SHIFT);
--		if (pg)
-+		if (pg && !PageCompound(pg))
- 			put_page(pg);
- 	}
- 
-@@ -495,7 +606,7 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	if ((ioba + (npages << IOMMU_PAGE_SHIFT)) > tt->window_size)
- 		return H_PARAMETER;
- 
--	tces = kvmppc_gpa_to_hva_and_get(vcpu, tce_list, &pg, NULL);
-+	tces = kvmppc_gpa_to_hva_and_get(vcpu, tt, tce_list, &pg, NULL);
- 	if (tces == ERROR_ADDR)
- 		return H_TOO_HARD;
- 
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index f81451b..382c9f0 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -133,12 +133,30 @@ void kvmppc_tce_put(struct kvmppc_spapr_tce_table *tt,
- EXPORT_SYMBOL_GPL(kvmppc_tce_put);
- 
- #ifdef CONFIG_KVM_BOOK3S_64_HV
-+
-+static unsigned long kvmppc_rm_hugepage_gpa_to_hpa(
-+		struct kvmppc_spapr_tce_table *tt,
-+		unsigned long gpa)
-+{
-+	struct kvmppc_spapr_iommu_hugepage *hp;
-+	const unsigned key = KVMPPC_SPAPR_HUGEPAGE_HASH(gpa);
-+
-+	hash_for_each_possible_rcu_notrace(tt->hash_tab, hp, hash_node, key) {
-+		if ((gpa < hp->gpa) || (gpa >= hp->gpa + hp->size))
-+			continue;
-+		return hp->hpa + (gpa & (hp->size - 1));
-+	}
-+
-+	return ERROR_ADDR;
-+}
-+
- /*
-  * Converts guest physical address to host physical address.
-  * Tries to increase page counter via get_page_unless_zero() and
-  * returns ERROR_ADDR if failed.
-  */
- static unsigned long kvmppc_rm_gpa_to_hpa_and_get(struct kvm_vcpu *vcpu,
-+		struct kvmppc_spapr_tce_table *tt,
- 		unsigned long gpa, struct page **pg)
- {
- 	struct kvm_memory_slot *memslot;
-@@ -147,6 +165,14 @@ static unsigned long kvmppc_rm_gpa_to_hpa_and_get(struct kvm_vcpu *vcpu,
- 	unsigned long gfn = gpa >> PAGE_SHIFT;
- 	unsigned shift = 0;
- 
-+	/* Check if it is a hugepage */
-+	hpa = kvmppc_rm_hugepage_gpa_to_hpa(tt, gpa);
-+	if (hpa != ERROR_ADDR) {
-+		*pg = NULL; /* Tell the caller not to put page */
-+		return hpa;
-+	}
-+
-+	/* System page size case */
- 	memslot = search_memslots(kvm_memslots(vcpu->kvm), gfn);
- 	if (!memslot)
- 		return ERROR_ADDR;
-@@ -216,7 +242,7 @@ static long kvmppc_rm_h_put_tce_iommu(struct kvm_vcpu *vcpu,
- 	if (iommu_tce_put_param_check(tbl, ioba, tce))
- 		return H_PARAMETER;
- 
--	hpa = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tce, &pg);
-+	hpa = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tt, tce, &pg);
- 	if (hpa != ERROR_ADDR) {
- 		ret = iommu_tce_build(tbl, ioba >> IOMMU_PAGE_SHIFT,
- 				&hpa, 1, true);
-@@ -253,7 +279,7 @@ static long kvmppc_rm_h_put_tce_indirect_iommu(struct kvm_vcpu *vcpu,
- 
- 	/* Translate TCEs and go get_page() */
- 	for (i = 0; i < npages; ++i) {
--		hpa = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tces[i], &pg);
-+		hpa = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tt, tces[i], &pg);
- 		if (hpa == ERROR_ADDR) {
- 			vcpu->arch.tce_tmp_num = i;
- 			vcpu->arch.tce_rm_fail = TCERM_GETPAGE;
-@@ -344,7 +370,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	if ((ioba + (npages << IOMMU_PAGE_SHIFT)) > tt->window_size)
- 		return H_PARAMETER;
- 
--	tces = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tce_list, &pg);
-+	tces = kvmppc_rm_gpa_to_hpa_and_get(vcpu, tt, tce_list, &pg);
- 	if (tces == ERROR_ADDR) {
- 		ret = H_TOO_HARD;
- 		goto put_unlock_exit;
--- 
-1.8.3.2
+> 
+> -dongsheng
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
