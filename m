@@ -1,19 +1,21 @@
-Return-Path: <b20052@nmglablinux22.freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+Return-Path: <R65777@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 060A82C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 21:02:54 +1000 (EST)
-From: Shaveta Leekha <shaveta@freescale.com>
-To: <devicetree-discuss@lists.ozlabs.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] Add device file bindings for MAPLE
-Date: Thu, 1 Aug 2013 16:32:43 +0530
-Message-ID: <1375354963-11219-1-git-send-email-shaveta@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 6AA2B2C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 21:17:42 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <benh@kernel.crashing.org>, <agraf@suse.de>, <kvm-ppc@vger.kernel.org>,
+ <kvm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <scottwood@freescale.com>
+Subject: [PATCH 0/6 v2] kvm: powerpc: use cache attributes from linux pte
+Date: Thu, 1 Aug 2013 16:42:32 +0530
+Message-ID: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Shaveta Leekha <shaveta@freescale.com>
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,47 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
----
- .../devicetree/bindings/powerpc/fsl/maple.txt      |   30 ++++++++++++++++++++
- 1 files changed, 30 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/maple.txt
+From: Bharat Bhushan <bharat.bhushan@freescale.com>
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/maple.txt b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
-new file mode 100644
-index 0000000..da51c5f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
-@@ -0,0 +1,30 @@
-+* Freescale MAPLE Multi Accelerator Platform Engine Baseband 3
-+  (MAPLE-B3)device nodes
-+
-+Supported chips:
-+Example: B4860
-+
-+Required properties:
-+
-+- compatible:	Should contain "fsl,maple-b3-liodn" as the value
-+		This identifies Multi Accelerator Platform Engine
-+		Baseband 3 block.This representation is required
-+		for doing the PAMU/LIODN programming on the Linux side.
-+
-+- reg:		offset and length of the register set for the device
-+
-+Devices that have LIODNs need to specify links to the parent PAMU controller
-+(the actual PAMU controller that this device is connected to) and a pointer to
-+the LIODN register, if applicable.
-+
-+- fsl,iommu-parent
-+		: <phandle>
-+		This property should be present
-+
-+Example:
-+	/* B4860 */
-+	maple@800000 {
-+		compatible = "fsl,maple-b3-liodn";
-+		reg = <0x8000000 0x10000>;
-+		fsl,iommu-parent = <&pamu1>;
-+	};
--- 
-1.7.6.GIT
+First patch is a typo fix where book3e define _PAGE_LENDIAN while it should be
+defined as _PAGE_ENDIAN. This seems to show that this is never exercised :-)
+
+Second and third patch is to allow guest controlling "G"-Guarded and
+"E"-Endiany TLB attributes respectively.
+
+Rest of patches is about setting caching attributes (TLB.WIMGE) using
+corresponding Linux pte.
+
+v1->v2
+ - Earlier caching attributes (WIMGE) were set based of page is RAM or not
+   But now we get these attributes from corresponding Linux PTE.
+
+Bharat Bhushan (6):
+  powerpc: book3e: _PAGE_LENDIAN must be _PAGE_ENDIAN
+  kvm: powerpc: allow guest control "E" attribute in mas2
+  kvm: powerpc: allow guest control "G" attribute in mas2
+  powerpc: move linux pte/hugepte search to more generic file
+  kvm: powerpc: booke: Add linux pte lookup like booke3s
+  kvm: powerpc: use caching attributes as per linux pte
+
+ arch/powerpc/include/asm/kvm_booke.h     |   73 ++++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/kvm_host.h      |    2 +-
+ arch/powerpc/include/asm/pgtable-ppc64.h |   36 ---------------
+ arch/powerpc/include/asm/pgtable.h       |   37 +++++++++++++++
+ arch/powerpc/include/asm/pte-book3e.h    |    2 +-
+ arch/powerpc/kvm/booke.c                 |    2 +-
+ arch/powerpc/kvm/e500.h                  |   10 +++--
+ arch/powerpc/kvm/e500_mmu_host.c         |   31 +++++++-----
+ 8 files changed, 137 insertions(+), 56 deletions(-)
