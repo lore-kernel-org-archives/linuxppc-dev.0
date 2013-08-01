@@ -1,19 +1,41 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 85CCA2C0096
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2013 02:05:07 +1000 (EST)
-Subject: Re: [PATCH] Add device file bindings for MAPLE
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1375354963-11219-1-git-send-email-shaveta@freescale.com>
-Date: Thu, 1 Aug 2013 11:05:09 -0500
-Message-Id: <5C32ABF4-ECC3-4F1C-82D0-EA3AD9053575@kernel.crashing.org>
-References: <1375354963-11219-1-git-send-email-shaveta@freescale.com>
-To: Shaveta Leekha <shaveta@freescale.com>
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <bhelgaas@google.com>
+Received: from mail-oa0-x232.google.com (mail-oa0-x232.google.com
+ [IPv6:2607:f8b0:4003:c02::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F39652C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2013 02:48:50 +1000 (EST)
+Received: by mail-oa0-f50.google.com with SMTP id i4so4771009oah.23
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Aug 2013 09:48:46 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1375363516-2620-3-git-send-email-thomas.petazzoni@free-electrons.com>
+References: <1375363516-2620-1-git-send-email-thomas.petazzoni@free-electrons.com>
+ <1375363516-2620-3-git-send-email-thomas.petazzoni@free-electrons.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Thu, 1 Aug 2013 10:48:26 -0600
+Message-ID: <CAErSpo4iYRz_p+KBimR3ic40SAhsYQd1-EH2744JpGN2+Wyfdw@mail.gmail.com>
+Subject: Re: [PATCHv6 02/13] PCI: remove ARCH_SUPPORTS_MSI kconfig option
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ "x86@kernel.org" <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Jason Cooper <jason@lakedaemon.net>,
+ Rob Herring <rob.herring@calxeda.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Gregory Clement <gregory.clement@free-electrons.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm <linux-arm-kernel@lists.infradead.org>,
+ Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Maen Suleiman <maen@marvell.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux390@de.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,78 +45,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Aug 1, 2013 at 7:25 AM, Thomas Petazzoni
+<thomas.petazzoni@free-electrons.com> wrote:
+> Now that we have weak versions for each of the PCI MSI architecture
+> functions, we can actually build the MSI support for all platforms,
+> regardless of whether they provide or not architecture-specific
+> versions of those functions. For this reason, the ARCH_SUPPORTS_MSI
+> hidden kconfig boolean becomes useless, and this patch gets rid of it.
+>
+> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-On Aug 1, 2013, at 6:02 AM, Shaveta Leekha wrote:
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Cc: linux390@de.ibm.com
+> Cc: linux-s390@vger.kernel.org
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Tony Luck <tony.luck@intel.com>
+> Cc: Fenghua Yu <fenghua.yu@intel.com>
+> Cc: linux-ia64@vger.kernel.org
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: linux-mips@linux-mips.org
+> Cc: David S. Miller <davem@davemloft.net>
+> Cc: sparclinux@vger.kernel.org
+> Cc: Chris Metcalf <cmetcalf@tilera.com>
 > ---
-> .../devicetree/bindings/powerpc/fsl/maple.txt      |   30 =
-++++++++++++++++++++
-> 1 files changed, 30 insertions(+), 0 deletions(-)
-> create mode 100644 =
-Documentation/devicetree/bindings/powerpc/fsl/maple.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/maple.txt =
-b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
-> new file mode 100644
-> index 0000000..da51c5f
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
-> @@ -0,0 +1,30 @@
-> +* Freescale MAPLE Multi Accelerator Platform Engine Baseband 3
-> +  (MAPLE-B3)device nodes
-> +
-> +Supported chips:
-> +Example: B4860
-> +
-> +Required properties:
-> +
-> +- compatible:	Should contain "fsl,maple-b3-liodn" as the value
-> +		This identifies Multi Accelerator Platform Engine
-> +		Baseband 3 block.This representation is required
-> +		for doing the PAMU/LIODN programming on the Linux side.
-
-This compatible makes no sense, we shouldn't be marking a full HW block =
-with some name that is just intended for LIODN convenance.
-
-Is this version 3 of the block?  If so a name like "fsl,maple-v3" or =
-"fsl,maple-v3.0" would be more appropriate.
-
-- k
-
-> +
-> +- reg:		offset and length of the register set for the =
-device
-> +
-> +Devices that have LIODNs need to specify links to the parent PAMU =
-controller
-> +(the actual PAMU controller that this device is connected to) and a =
-pointer to
-> +the LIODN register, if applicable.
-
-
-Does Maple not have any IRQs associated with it?
-
-If you are going to have a minimal binding, at least cover the basics =
-associated with a device.
-
-> +
-> +- fsl,iommu-parent
-> +		: <phandle>
-> +		This property should be present
-> +
-> +Example:
-> +	/* B4860 */
-> +	maple@800000 {
-> +		compatible =3D "fsl,maple-b3-liodn";
-> +		reg =3D <0x8000000 0x10000>;
-> +		fsl,iommu-parent =3D <&pamu1>;
-> +	};
-> --=20
-> 1.7.6.GIT
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>  arch/arm/Kconfig     | 1 -
+>  arch/ia64/Kconfig    | 1 -
+>  arch/mips/Kconfig    | 2 --
+>  arch/powerpc/Kconfig | 1 -
+>  arch/s390/Kconfig    | 1 -
+>  arch/sparc/Kconfig   | 1 -
+>  arch/tile/Kconfig    | 1 -
+>  arch/x86/Kconfig     | 1 -
+>  drivers/pci/Kconfig  | 4 ----
+>  9 files changed, 13 deletions(-)
+>
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index 37c0f4e..41b6c96 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -441,7 +441,6 @@ config ARCH_NETX
+>  config ARCH_IOP13XX
+>         bool "IOP13xx-based"
+>         depends on MMU
+> -       select ARCH_SUPPORTS_MSI
+>         select CPU_XSC3
+>         select NEED_MACH_MEMORY_H
+>         select NEED_RET_TO_USER
+> diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+> index 5a768ad..098602b 100644
+> --- a/arch/ia64/Kconfig
+> +++ b/arch/ia64/Kconfig
+> @@ -9,7 +9,6 @@ config IA64
+>         select PCI if (!IA64_HP_SIM)
+>         select ACPI if (!IA64_HP_SIM)
+>         select PM if (!IA64_HP_SIM)
+> -       select ARCH_SUPPORTS_MSI
+>         select HAVE_UNSTABLE_SCHED_CLOCK
+>         select HAVE_IDE
+>         select HAVE_OPROFILE
+> diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+> index c3abed3..01b5f5a 100644
+> --- a/arch/mips/Kconfig
+> +++ b/arch/mips/Kconfig
+> @@ -726,7 +726,6 @@ config CAVIUM_OCTEON_SOC
+>         select SYS_HAS_CPU_CAVIUM_OCTEON
+>         select SWAP_IO_SPACE
+>         select HW_HAS_PCI
+> -       select ARCH_SUPPORTS_MSI
+>         select ZONE_DMA32
+>         select USB_ARCH_HAS_OHCI
+>         select USB_ARCH_HAS_EHCI
+> @@ -762,7 +761,6 @@ config NLM_XLR_BOARD
+>         select CEVT_R4K
+>         select CSRC_R4K
+>         select IRQ_CPU
+> -       select ARCH_SUPPORTS_MSI
+>         select ZONE_DMA32 if 64BIT
+>         select SYNC_R4K
+>         select SYS_HAS_EARLY_PRINTK
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 3bf72cd..183a165 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -727,7 +727,6 @@ config PCI
+>         default y if !40x && !CPM2 && !8xx && !PPC_83xx \
+>                 && !PPC_85xx && !PPC_86xx && !GAMECUBE_COMMON
+>         default PCI_QSPAN if !4xx && !CPM2 && 8xx
+> -       select ARCH_SUPPORTS_MSI
+>         select GENERIC_PCI_IOMAP
+>         help
+>           Find out whether your system includes a PCI bus. PCI is the name of
+> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+> index 22f75b5..e9982a3 100644
+> --- a/arch/s390/Kconfig
+> +++ b/arch/s390/Kconfig
+> @@ -428,7 +428,6 @@ menuconfig PCI
+>         bool "PCI support"
+>         default n
+>         depends on 64BIT
+> -       select ARCH_SUPPORTS_MSI
+>         select PCI_MSI
+>         help
+>           Enable PCI support.
+> diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+> index a00cbd3..1570ad2 100644
+> --- a/arch/sparc/Kconfig
+> +++ b/arch/sparc/Kconfig
+> @@ -52,7 +52,6 @@ config SPARC32
+>
+>  config SPARC64
+>         def_bool 64BIT
+> -       select ARCH_SUPPORTS_MSI
+>         select HAVE_FUNCTION_TRACER
+>         select HAVE_FUNCTION_GRAPH_TRACER
+>         select HAVE_FUNCTION_GRAPH_FP_TEST
+> diff --git a/arch/tile/Kconfig b/arch/tile/Kconfig
+> index 24565a7..74dff90 100644
+> --- a/arch/tile/Kconfig
+> +++ b/arch/tile/Kconfig
+> @@ -380,7 +380,6 @@ config PCI
+>         select PCI_DOMAINS
+>         select GENERIC_PCI_IOMAP
+>         select TILE_GXIO_TRIO if TILEGX
+> -       select ARCH_SUPPORTS_MSI if TILEGX
+>         select PCI_MSI if TILEGX
+>         ---help---
+>           Enable PCI root complex support, so PCIe endpoint devices can
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index b32ebf9..5db62ef 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -2014,7 +2014,6 @@ menu "Bus options (PCI etc.)"
+>  config PCI
+>         bool "PCI support"
+>         default y
+> -       select ARCH_SUPPORTS_MSI if (X86_LOCAL_APIC && X86_IO_APIC)
+>         ---help---
+>           Find out whether you have a PCI motherboard. PCI is the name of a
+>           bus system, i.e. the way the CPU talks to the other stuff inside
+> diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
+> index 81944fb..b6a99f7 100644
+> --- a/drivers/pci/Kconfig
+> +++ b/drivers/pci/Kconfig
+> @@ -1,13 +1,9 @@
+>  #
+>  # PCI configuration
+>  #
+> -config ARCH_SUPPORTS_MSI
+> -       bool
+> -
+>  config PCI_MSI
+>         bool "Message Signaled Interrupts (MSI and MSI-X)"
+>         depends on PCI
+> -       depends on ARCH_SUPPORTS_MSI
+>         help
+>            This allows device drivers to enable MSI (Message Signaled
+>            Interrupts).  Message Signaled Interrupts enable a device to
+> --
+> 1.8.1.2
+>
