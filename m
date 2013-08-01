@@ -1,17 +1,18 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pb0-f48.google.com (mail-pb0-f48.google.com
- [209.85.160.48])
+Received: from mail-pd0-f181.google.com (mail-pd0-f181.google.com
+ [209.85.192.181])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2C80E2C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 14:44:53 +1000 (EST)
-Received: by mail-pb0-f48.google.com with SMTP id ma3so1606060pbc.21
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 21:44:51 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 8F7162C0133
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 14:45:00 +1000 (EST)
+Received: by mail-pd0-f181.google.com with SMTP id g10so1572291pdj.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2013 21:44:58 -0700 (PDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 01/10] hashtable: add hash_for_each_possible_rcu_notrace()
-Date: Thu,  1 Aug 2013 14:44:23 +1000
-Message-Id: <1375332272-22176-2-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH 02/10] KVM: PPC: reserve a capability number for multitce
+ support
+Date: Thu,  1 Aug 2013 14:44:24 +1000
+Message-Id: <1375332272-22176-3-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1375332272-22176-1-git-send-email-aik@ozlabs.ru>
 References: <1375332272-22176-1-git-send-email-aik@ozlabs.ru>
 Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
@@ -27,40 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds hash_for_each_possible_rcu_notrace() which is basically
-a notrace clone of hash_for_each_possible_rcu() which cannot be
-used in real mode due to its tracing/debugging capability.
+This is to reserve a capablity number for upcoming support
+of H_PUT_TCE_INDIRECT and H_STUFF_TCE pseries hypercalls
+which support mulptiple DMA map/unmap operations per one call.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- include/linux/hashtable.h | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+Changes:
+2013/07/16:
+* changed the number
 
-diff --git a/include/linux/hashtable.h b/include/linux/hashtable.h
-index a9df51f..af8b169 100644
---- a/include/linux/hashtable.h
-+++ b/include/linux/hashtable.h
-@@ -174,6 +174,21 @@ static inline void hash_del_rcu(struct hlist_node *node)
- 		member)
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ include/uapi/linux/kvm.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index acccd08..99c2533 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -667,6 +667,7 @@ struct kvm_ppc_smmu_info {
+ #define KVM_CAP_PPC_RTAS 91
+ #define KVM_CAP_IRQ_XICS 92
+ #define KVM_CAP_ARM_EL1_32BIT 93
++#define KVM_CAP_SPAPR_MULTITCE 94
  
- /**
-+ * hash_for_each_possible_rcu_notrace - iterate over all possible objects hashing
-+ * to the same bucket in an rcu enabled hashtable in a rcu enabled hashtable
-+ * @name: hashtable to iterate
-+ * @obj: the type * to use as a loop cursor for each entry
-+ * @member: the name of the hlist_node within the struct
-+ * @key: the key of the objects to iterate over
-+ *
-+ * This is the same as hash_for_each_possible_rcu() except that it does
-+ * not do any RCU debugging or tracing.
-+ */
-+#define hash_for_each_possible_rcu_notrace(name, obj, member, key)	\
-+	hlist_for_each_entry_rcu_notrace(obj, &name[hash_min(key, HASH_BITS(name))],\
-+		member)
-+
-+/**
-  * hash_for_each_possible_safe - iterate over all possible objects hashing to the
-  * same bucket safe against removals
-  * @name: hashtable to iterate
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
 -- 
 1.8.3.2
