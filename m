@@ -1,18 +1,20 @@
 Return-Path: <R65777@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6AA2B2C00D1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 21:17:42 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C47F52C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2013 21:17:47 +1000 (EST)
 From: Bharat Bhushan <r65777@freescale.com>
 To: <benh@kernel.crashing.org>, <agraf@suse.de>, <kvm-ppc@vger.kernel.org>,
  <kvm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <scottwood@freescale.com>
-Subject: [PATCH 0/6 v2] kvm: powerpc: use cache attributes from linux pte
-Date: Thu, 1 Aug 2013 16:42:32 +0530
-Message-ID: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
+Subject: [PATCH 1/6 v2] powerpc: book3e: _PAGE_LENDIAN must be _PAGE_ENDIAN
+Date: Thu, 1 Aug 2013 16:42:33 +0530
+Message-ID: <1375355558-19187-2-git-send-email-Bharat.Bhushan@freescale.com>
+In-Reply-To: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
+References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
@@ -25,35 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Bharat Bhushan <bharat.bhushan@freescale.com>
+For booke3e _PAGE_ENDIAN is not defined. Infact what is defined
+is "_PAGE_LENDIAN" which is wrong and should be _PAGE_ENDIAN.
+There are no compilation errors as
+arch/powerpc/include/asm/pte-common.h defines _PAGE_ENDIAN to 0
+as it is not defined anywhere.
 
-First patch is a typo fix where book3e define _PAGE_LENDIAN while it should be
-defined as _PAGE_ENDIAN. This seems to show that this is never exercised :-)
-
-Second and third patch is to allow guest controlling "G"-Guarded and
-"E"-Endiany TLB attributes respectively.
-
-Rest of patches is about setting caching attributes (TLB.WIMGE) using
-corresponding Linux pte.
-
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+---
 v1->v2
- - Earlier caching attributes (WIMGE) were set based of page is RAM or not
-   But now we get these attributes from corresponding Linux PTE.
+ - no change
 
-Bharat Bhushan (6):
-  powerpc: book3e: _PAGE_LENDIAN must be _PAGE_ENDIAN
-  kvm: powerpc: allow guest control "E" attribute in mas2
-  kvm: powerpc: allow guest control "G" attribute in mas2
-  powerpc: move linux pte/hugepte search to more generic file
-  kvm: powerpc: booke: Add linux pte lookup like booke3s
-  kvm: powerpc: use caching attributes as per linux pte
+ arch/powerpc/include/asm/pte-book3e.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- arch/powerpc/include/asm/kvm_booke.h     |   73 ++++++++++++++++++++++++++++++
- arch/powerpc/include/asm/kvm_host.h      |    2 +-
- arch/powerpc/include/asm/pgtable-ppc64.h |   36 ---------------
- arch/powerpc/include/asm/pgtable.h       |   37 +++++++++++++++
- arch/powerpc/include/asm/pte-book3e.h    |    2 +-
- arch/powerpc/kvm/booke.c                 |    2 +-
- arch/powerpc/kvm/e500.h                  |   10 +++--
- arch/powerpc/kvm/e500_mmu_host.c         |   31 +++++++-----
- 8 files changed, 137 insertions(+), 56 deletions(-)
+diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/include/asm/pte-book3e.h
+index 0156702..576ad88 100644
+--- a/arch/powerpc/include/asm/pte-book3e.h
++++ b/arch/powerpc/include/asm/pte-book3e.h
+@@ -40,7 +40,7 @@
+ #define _PAGE_U1	0x010000
+ #define _PAGE_U0	0x020000
+ #define _PAGE_ACCESSED	0x040000
+-#define _PAGE_LENDIAN	0x080000
++#define _PAGE_ENDIAN	0x080000
+ #define _PAGE_GUARDED	0x100000
+ #define _PAGE_COHERENT	0x200000 /* M: enforce memory coherence */
+ #define _PAGE_NO_CACHE	0x400000 /* I: cache inhibit */
+-- 
+1.7.0.4
