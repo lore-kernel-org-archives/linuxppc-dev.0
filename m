@@ -1,19 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BCB6C2C0097
- for <linuxppc-dev@ozlabs.org>; Sat,  3 Aug 2013 08:11:00 +1000 (EST)
-Message-ID: <1375481448.15999.47.camel@pasglop>
-Subject: Re: windfarm_fcu_controls: cpu-pump-0 <HW FAULT>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Sat, 03 Aug 2013 08:10:48 +1000
-In-Reply-To: <87r4eb52s6.fsf@igel.home>
-References: <87r4eb52s6.fsf@igel.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <tony.luck@gmail.com>
+Received: from mail-vb0-x236.google.com (mail-vb0-x236.google.com
+ [IPv6:2607:f8b0:400c:c02::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D5F542C0096
+ for <linuxppc-dev@ozlabs.org>; Sat,  3 Aug 2013 08:12:40 +1000 (EST)
+Received: by mail-vb0-f54.google.com with SMTP id q14so1194627vbe.27
+ for <linuxppc-dev@ozlabs.org>; Fri, 02 Aug 2013 15:12:38 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CA+8MBbLuhVDCb26ag3AH0vXrP4MXHLxS5aVn8pTi4=qL1NdR5w@mail.gmail.com>
+References: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
+ <51FA3B02.7060004@linux.vnet.ibm.com>
+ <3908561D78D1C84285E8C5FCA982C28F31CAA167@ORSMSX106.amr.corp.intel.com>
+ <CA+8MBbLuhVDCb26ag3AH0vXrP4MXHLxS5aVn8pTi4=qL1NdR5w@mail.gmail.com>
+Date: Fri, 2 Aug 2013 15:12:38 -0700
+Message-ID: <CA+8MBbJ7x46FGC7dPSdNzf8z=fZz20w1kiNgnZr4QQB6SUELhg@mail.gmail.com>
+Subject: Re: [PATCH 00/11] Add compression support to pstore
+From: Tony Luck <tony.luck@gmail.com>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "keescook@chromium.org" <keescook@chromium.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-08-02 at 21:08 +0200, Andreas Schwab wrote:
-> wf_fcu_fan_get_rpm is returning EFAULT when reading the values for the
-> cpu pump controls on the PowerMac7,3.  Also, wf_fcu_get_pump_minmax is
-> unable to get the real limits and falls back to using the defaults.
-> 
-> Here is the output when DEBUG is defined:
+A quick experiment to use your patchset - but with compression
+disabled by tweaking this line in pstore_dump():
 
-Can you add some more printk's in there to check what's going on inside
-wf_fcu_get_pump_minmax() ?
+    zipped_len = -1; //zip_data(dst, hsize + len);
 
-Also is it getting faults for both pumps ?
+turned out well. This kernel dumps uncompressed dmesg blobs into pstore
+and gets them back out again.  So it seems likely that the problems are
+someplace in the compression/decompression code.
 
-Does it work with the older driver ? (both the minmax and the reading of
-the pump). What is the "failures" bitmask value ?
-
-Cheers,
-Ben.
+-Tony
