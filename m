@@ -1,25 +1,35 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
- by ozlabs.org (Postfix) with ESMTP id 5E06D2C0099
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2013 00:48:09 +1000 (EST)
-Message-ID: <1375454871.3852.27.camel@thor.local>
-Subject: Re: therm_pm72 units, interface
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 02 Aug 2013 16:47:51 +0200
-In-Reply-To: <1375447861.15999.1.camel@pasglop>
-References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
- <1345066616.11751.2.camel@pasglop>
- <alpine.LNX.2.01.1301142240140.30171@nerf07.vanv.qr>
- <1358465885.2782.24.camel@pasglop>
- <20130719174300.GL14385@blackmetal.musicnaut.iki.fi>
- <1374275809.19894.562.camel@pasglop>
- <20130720203346.GM14385@blackmetal.musicnaut.iki.fi>
- <1375437816.3852.12.camel@thor.local> <1375447861.15999.1.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Ben Hutchings <ben@decadent.org.uk>, Jan Engelhardt <jengelh@inai.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <pladow@gmail.com>
+Received: from mail-la0-x22a.google.com (mail-la0-x22a.google.com
+ [IPv6:2a00:1450:4010:c03::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3A8B92C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2013 01:02:03 +1000 (EST)
+Received: by mail-la0-f42.google.com with SMTP id mf11so520757lab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Aug 2013 08:01:57 -0700 (PDT)
+MIME-Version: 1.0
+Sender: pladow@gmail.com
+In-Reply-To: <CAN8Q1EeAaL-WnRPh77CNQBw3mH+Q2ejFhLKzBMimWu1w37bgcg@mail.gmail.com>
+References: <CAN8Q1EdnN9+kKGy+voF3=EyPfbHv04Emfz=uA6XKMJEAkvLpAA@mail.gmail.com>
+ <CAN8Q1Ed9Lpg1Sog5tQODe+jqCRXBBH3d_UeR5usdc23CD7vwjg@mail.gmail.com>
+ <1371945647.3944.106.camel@pasglop>
+ <CAN8Q1EetHpVkWFmbDGCE-3J4H7oJm0zE66SAdJyvtDb7OBc-gg@mail.gmail.com>
+ <1373492413.19894.29.camel@pasglop>
+ <CAN8Q1EdVVw3ofg9O3o=WThsKpcfMBXe_C7JsSSx9DdRZULW17Q@mail.gmail.com>
+ <CAN8Q1EeKCTCB30N50iA8-QB=0aoNtS1U3nNLGVoz7sHG-Qg26A@mail.gmail.com>
+ <20130719134615.GR7080@book.gsilab.sittig.org>
+ <CAN8Q1EeRWOD1ktGztsaY91VwDYTJmAgwo6XR2baQNb_f7p=FLA@mail.gmail.com>
+ <1374640044.3916.109.camel@pasglop>
+ <CAN8Q1EdAA6ZfYSdTJ6ieZxjuqTF7Cr9Bt6fo2qejbtXoZ=ce6g@mail.gmail.com>
+ <1374703722.6142.5.camel@pasglop>
+ <CAN8Q1EeAaL-WnRPh77CNQBw3mH+Q2ejFhLKzBMimWu1w37bgcg@mail.gmail.com>
+Date: Fri, 2 Aug 2013 08:01:57 -0700
+Message-ID: <CAN8Q1EfqHNC3bK6kn36vraLovFa-CMFzhVhidKnnCqZ=DciNEg@mail.gmail.com>
+Subject: Re: Inbound PCI and Memory Corruption
+From: Peter LaDow <petela@gocougs.wsu.edu>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,63 +39,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fre, 2013-08-02 at 22:51 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2013-08-02 at 12:03 +0200, Michel D=C3=A4nzer wrote:
-> > Could a similar change fix the same problem on desktop G5s? The same
-> > values for slots_param in windfarm_pm112.c don't help, unfortunately.
->=20
-> You have a 11,2 and a noisy fan ? Odd, mine(s) don't.... I can dbl check
-> the values vs. what Darwin uses tomorrow...
+On Wed, Jul 24, 2013 at 11:13 PM, Peter LaDow <petela@gocougs.wsu.edu> wrote:
+> There are other items, such as drivers for our custom hardware modules
+> implemented on the FPGA.  Perhaps I'll pull our drivers and run a
+> stock kernel.  Maybe a stock 83xx configuration (such as the
+> MPC8349E-MITX).  If we have problems even on a stock configuration...
 
-Yes, see /proc/cpuinfo below.
+Well, that didn't work either.  Unfortunately, the PCI slot on our
+MPC8349E-MITX eval kit doesn't work.  It doesn't matter what card I
+plug into that slot neither uboot, nor the kernel, recognize anything.
 
-With older kernels (currently still using Debian's 3.2.0-4-powerpc64
-because of this problem), the fans go basically silent as soon as the
-windfarm modules are loaded. With current kernels, the fans stay at the
-level OF sets them to, until after a while they go into 'airplane mode'.
+But I did have one thought.  Is it possible that somehow the
+configured incoming PCI regions are marked as pre-fetchable, and the
+e1000 is prefetching the descriptors?  Then at some later point the
+kernel changes things with the e1000 unaware?
 
-One thing I notice now is that the lines like
-
-[    9.539173] windfarm: CPUs control loops started.
-[   16.209962] windfarm: Backside control loop started.
-[   16.262274] windfarm: Slots control loop started.
-[   16.371642] windfarm: Drive bay control loop started.
-
-no longer appear in dmesg with current kernels. Should they?
-
-
-processor	: 0
-cpu		: PPC970MP, altivec supported
-clock		: 2500.000000MHz
-revision	: 1.1 (pvr 0044 0101)
-
-processor	: 1
-cpu		: PPC970MP, altivec supported
-clock		: 2500.000000MHz
-revision	: 1.1 (pvr 0044 0101)
-
-processor	: 2
-cpu		: PPC970MP, altivec supported
-clock		: 2500.000000MHz
-revision	: 1.1 (pvr 0044 0101)
-
-processor	: 3
-cpu		: PPC970MP, altivec supported
-clock		: 2500.000000MHz
-revision	: 1.1 (pvr 0044 0101)
-
-timebase	: 33333333
-platform	: PowerMac
-model		: PowerMac11,2
-machine		: PowerMac11,2
-motherboard	: PowerMac11,2 MacRISC4 Power Macintosh=20
-detected as	: 337 (PowerMac G5 Dual Core)
-pmac flags	: 00000000
-L2 cache	: 1024K unified
-pmac-generation	: NewWorld
-
-
---=20
-Earthling Michel D=C3=A4nzer           |                   http://www.amd.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+Thanks,
+Pete
