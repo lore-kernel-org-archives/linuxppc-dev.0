@@ -1,29 +1,38 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1B67F2C0097
- for <linuxppc-dev@ozlabs.org>; Sat,  3 Aug 2013 05:08:30 +1000 (EST)
-Received: from frontend1.mail.m-online.net (unknown [192.168.8.180])
- by mail-out.m-online.net (Postfix) with ESMTP id 3c6Hvv2Vsrz4KK3N
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Aug 2013 21:08:27 +0200 (CEST)
-Received: from localhost (dynscan1.mnet-online.de [192.168.6.68])
- by mail.m-online.net (Postfix) with ESMTP id 3c6Hvt73lFzbbnr
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Aug 2013 21:08:26 +0200 (CEST)
-Received: from mail.mnet-online.de ([192.168.8.180])
- by localhost (dynscan1.mail.m-online.net [192.168.6.68]) (amavisd-new,
- port 10024) with ESMTP id RrFv7ayaIBZ6 for <linuxppc-dev@ozlabs.org>;
- Fri,  2 Aug 2013 21:08:25 +0200 (CEST)
-Received: from igel.home (ppp-88-217-110-98.dynamic.mnet-online.de
- [88.217.110.98]) by mail.mnet-online.de (Postfix) with ESMTPA
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Aug 2013 21:08:25 +0200 (CEST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: linuxppc-dev@ozlabs.org
-Subject: windfarm_fcu_controls: cpu-pump-0 <HW FAULT>
-Date: Fri, 02 Aug 2013 21:08:25 +0200
-Message-ID: <87r4eb52s6.fsf@igel.home>
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 069692C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2013 05:13:16 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Sat, 3 Aug 2013 00:34:50 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 558DCE004F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2013 00:43:22 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r72JEG8932768138
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 3 Aug 2013 00:44:16 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r72JD9AP031942
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 3 Aug 2013 05:13:10 +1000
+Message-ID: <51FC04C2.70100@linux.vnet.ibm.com>
+Date: Fri, 02 Aug 2013 14:13:06 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/8] Add all memory via sysfs probe interface at once
+References: <51F01E06.6090800@linux.vnet.ibm.com>
+ <51F01EFB.6070207@linux.vnet.ibm.com> <20130802023259.GC1680@concordia>
+In-Reply-To: <20130802023259.GC1680@concordia>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mm <linux-mm@kvack.org>, isimatu.yasuaki@jp.fujitsu.com,
+ linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,59 +42,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-wf_fcu_fan_get_rpm is returning EFAULT when reading the values for the
-cpu pump controls on the PowerMac7,3.  Also, wf_fcu_get_pump_minmax is
-unable to get the real limits and falls back to using the defaults.
+On 08/01/2013 09:32 PM, Michael Ellerman wrote:
+> On Wed, Jul 24, 2013 at 01:37:47PM -0500, Nathan Fontenot wrote:
+>> When doing memory hot add via the 'probe' interface in sysfs we do not
+>> need to loop through and add memory one section at a time. I think this
+>> was originally done for powerpc, but is not needed. This patch removes
+>> the loop and just calls add_memory for all of the memory to be added.
+> 
+> Looks like memory hot add is supported on ia64, x86, sh, powerpc and
+> s390. Have you tested on any?
 
-Here is the output when DEBUG is defined:
+I have tested on powerpc. I would love to say I tested on the other
+platforms... but I haven't.  I should be able to get a x86 box to test
+on but the other architectures may not be possible.
 
-wf_fcu: FCU Initialized, RPM fan shift is 3
-Looking up FCU controls in device-tree...
- control: rpm0, type: fan-rpm-control
- matching location: CPU B PUMP, reg: 0x00000010
- location match, name: cpu-pump-1
-wf_fcu: pump min/max for cpu-pump-1 set to: [1250..3200] RPM
-wf_pm72: Liquid cooling pump(s) detected, using new algorithm !
- control: rpm1, type: fan-rpm-control
- matching location: CPU A PUMP, reg: 0x00000012
- location match, name: cpu-pump-0
-wf_fcu: pump min/max for cpu-pump-0 set to: [1250..3200] RPM
- control: rpm2, type: fan-rpm-control
- matching location: DRIVE BAY, reg: 0x00000014
- location match, name: drive-bay-fan
-wf_fcu: fan min/max for drive-bay-fan set to: [300..7000] RPM
- control: rpm3, type: fan-rpm-control
- matching location: CPU A INTAKE, reg: 0x00000016
- location match, name: cpu-front-fan-0
-wf_fcu: fan min/max for cpu-front-fan-0 set to: [300..3200] RPM
- control: rpm4, type: fan-rpm-control
- matching location: CPU A EXHAUST, reg: 0x00000018
- location match, name: cpu-rear-fan-0
-wf_fcu: fan min/max for cpu-rear-fan-0 set to: [300..3200] RPM
- control: rpm5, type: fan-rpm-control
- matching location: CPU B INTAKE, reg: 0x0000001a
- location match, name: cpu-front-fan-1
-wf_fcu: fan min/max for cpu-front-fan-1 set to: [300..3200] RPM
- control: rpm6, type: fan-rpm-control
- matching location: CPU B EXHAUST, reg: 0x0000001c
- location match, name: cpu-rear-fan-1
-wf_fcu: fan min/max for cpu-rear-fan-1 set to: [300..3200] RPM
- control: pwm1, type: fan-pwm-control
- matching location: BACKSIDE, reg: 0x00000032
- location match, name: backside-fan
- control: pwm2, type: fan-pwm-control
- matching location: SLOT, reg: 0x00000034
- location match, name: slots-fan
- control: adc0, type: power-sensor
- control: adc1, type: power-sensor
- control: adc2, type: power-sensor
- control: adc3, type: power-sensor
- control: gpi0, type: gpi-sensor
- control: gpi1, type: gpi-sensor
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+-Nathan
