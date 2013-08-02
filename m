@@ -1,31 +1,24 @@
-Return-Path: <mturquette@linaro.org>
-Received: from mail-pd0-f169.google.com (mail-pd0-f169.google.com
- [209.85.192.169])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4346B2C0095
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2013 08:46:19 +1000 (EST)
-Received: by mail-pd0-f169.google.com with SMTP id y11so1146264pdj.14
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Aug 2013 15:46:17 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <B07421@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3AE6D2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2013 08:59:21 +1000 (EST)
+Message-ID: <1375484319.26902.4.camel@snotra.buserror.net>
+Subject: Re: [PATCH 5/6 v2] kvm: powerpc: booke: Add linux pte lookup like
+ booke3s
+From: Scott Wood <scottwood@freescale.com>
+To: Bharat Bhushan <r65777@freescale.com>
+Date: Fri, 2 Aug 2013 17:58:39 -0500
+In-Reply-To: <1375355558-19187-6-git-send-email-Bharat.Bhushan@freescale.com>
+References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1375355558-19187-6-git-send-email-Bharat.Bhushan@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org,
- Anatolij Gustschin <agust@denx.de>, linux-arm-kernel@lists.infradead.org,
- devicetree-discuss@lists.ozlabs.org
-From: Mike Turquette <mturquette@linaro.org>
-In-Reply-To: <1374495298-22019-17-git-send-email-gsi@denx.de>
-References: <1374166855-7280-1-git-send-email-gsi@denx.de>
- <1374495298-22019-1-git-send-email-gsi@denx.de>
- <1374495298-22019-17-git-send-email-gsi@denx.de>
-Message-ID: <20130802224613.6450.5857@quantum>
-Subject: Re: [PATCH v3 16/31] dts: mpc512x: add clock related device tree specs
-Date: Fri, 02 Aug 2013 15:46:13 -0700
-Cc: Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Gerhard Sittig <gsi@denx.de>,
- Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
- Marc Kleine-Budde <mkl@pengutronix.de>, David Woodhouse <dwmw2@infradead.org>,
- Wolfgang Grandegger <wg@grandegger.com>,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+Cc: kvm@vger.kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ Bharat Bhushan <Bharat.Bhushan@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,99 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Gerhard Sittig (2013-07-22 05:14:43)
-> this addresses the clock driver aka provider's side of clocks
-> - prepare for future '<&clks ID>' phandle references for device tree
->   based clock lookup in client drivers
-> - introduce a 'clocks' subtree with an 'osc' node for the crystal
->   or oscillator SoC input (fixed frequency)
-> - provide default values with 33MHz oscillator frequency in the
->   common include (the 66MHz IPS bus already was there), add
->   override values for the ifm AC14xx board which deviates from
->   the reference design (25MHz xtal, 80MHz IPS bus)
-> =
-
-> Signed-off-by: Gerhard Sittig <gsi@denx.de>
-
-Reviewed-by: Mike Turquette <mturquette@linaro.org>
-
+On Thu, 2013-08-01 at 16:42 +0530, Bharat Bhushan wrote:
+> KVM need to lookup linux pte for getting TLB attributes (WIMGE).
+> This is similar to how book3s does.
+> This will be used in follow-up patches.
+> 
+> Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 > ---
->  arch/powerpc/boot/dts/ac14xx.dts   |    7 +++++++
->  arch/powerpc/boot/dts/mpc5121.dtsi |   15 ++++++++++++++-
->  2 files changed, 21 insertions(+), 1 deletion(-)
-> =
-
-> diff --git a/arch/powerpc/boot/dts/ac14xx.dts b/arch/powerpc/boot/dts/ac1=
-4xx.dts
-> index a543c40..a1b8837 100644
-> --- a/arch/powerpc/boot/dts/ac14xx.dts
-> +++ b/arch/powerpc/boot/dts/ac14xx.dts
-> @@ -139,7 +139,14 @@
->                 };
->         };
->  =
-
-> +       clocks {
-> +               osc {
-> +                       clock-frequency =3D <25000000>;
-> +               };
-> +       };
+> v1->v2
+>  - This is a new change in this version
+> 
+>  arch/powerpc/include/asm/kvm_booke.h |   73 ++++++++++++++++++++++++++++++++++
+>  1 files changed, 73 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/kvm_booke.h b/arch/powerpc/include/asm/kvm_booke.h
+> index d3c1eb3..903624d 100644
+> --- a/arch/powerpc/include/asm/kvm_booke.h
+> +++ b/arch/powerpc/include/asm/kvm_booke.h
+> @@ -102,4 +102,77 @@ static inline ulong kvmppc_get_msr(struct kvm_vcpu *vcpu)
+>  {
+>  	return vcpu->arch.shared->msr;
+>  }
 > +
->         soc@80000000 {
-> +               bus-frequency =3D <80000000>;     /* 80 MHz ips bus */
->  =
-
->                 clock@f00 {
->                         compatible =3D "fsl,mpc5121rev2-clock", "fsl,mpc5=
-121-clock";
-> diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/m=
-pc5121.dtsi
-> index bd14c00..8f4cba0 100644
-> --- a/arch/powerpc/boot/dts/mpc5121.dtsi
-> +++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-> @@ -9,6 +9,8 @@
->   * option) any later version.
->   */
->  =
-
-> +#include <dt-bindings/clock/mpc512x-clock.h>
+> +/*
+> + * Lock and read a linux PTE.  If it's present and writable, atomically
+> + * set dirty and referenced bits and return the PTE, otherwise return 0.
+> + */
+> +static inline pte_t kvmppc_read_update_linux_pte(pte_t *p, int writing)
+> +{
+> +	pte_t pte;
 > +
->  /dts-v1/;
->  =
+> +#ifdef PTE_ATOMIC_UPDATES
+> +	pte_t tmp;
+> +        /* wait until _PAGE_BUSY is clear then set it atomically */
 
->  / {
-> @@ -73,6 +75,16 @@
->                 ranges =3D <0x0 0x0 0xfc000000 0x04000000>;
->         };
->  =
+_PAGE_BUSY is 0 on book3e.
 
-> +       clocks {
-> +               #address-cells =3D <1>;
-> +               #size-cells =3D <0>;
-> +
-> +               osc {
-> +                       compatible =3D "fsl,mpc512x-osc", "fixed-clock";
-> +                       clock-frequency =3D <33000000>;
-> +               };
-> +       };
-> +
->         soc@80000000 {
->                 compatible =3D "fsl,mpc5121-immr";
->                 #address-cells =3D <1>;
-> @@ -118,9 +130,10 @@
->                 };
->  =
+> +#ifdef CONFIG_PPC64
+> +	__asm__ __volatile__ (
+> +		"1:	ldarx	%0,0,%3\n"
+> +		"	andi.	%1,%0,%4\n"
+> +		"	bne-	1b\n"
+> +		"	ori	%1,%0,%4\n"
+> +		"	stdcx.	%1,0,%3\n"
+> +		"	bne-	1b"
+> +		: "=&r" (pte), "=&r" (tmp), "=m" (*p)
+> +		: "r" (p), "i" (_PAGE_BUSY)
+> +		: "cc");
+> +#else
+> +        __asm__ __volatile__ (
+> +                "1:     lwarx   %0,0,%3\n"
+> +                "       andi.   %1,%0,%4\n"
+> +                "       bne-    1b\n"
+> +                "       ori     %1,%0,%4\n"
+> +                "       stwcx.  %1,0,%3\n"
+> +                "       bne-    1b"
+> +                : "=&r" (pte), "=&r" (tmp), "=m" (*p)
+> +                : "r" (p), "i" (_PAGE_BUSY)
+> +                : "cc");
+> +#endif
 
->                 /* Clock control */
-> -               clock@f00 {
-> +               clks: clock@f00 {
->                         compatible =3D "fsl,mpc5121-clock";
->                         reg =3D <0xf00 0x100>;
-> +                       #clock-cells =3D <1>;
->                 };
->  =
+What about 64-bit PTEs on 32-bit kernels?
 
->                 /* Power Management Controller */
-> -- =
+In any case, this code does not belong in KVM.  It should be in the main
+PPC mm code, even if KVM is the only user.
 
-> 1.7.10.4
+-Scott
