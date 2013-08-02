@@ -1,37 +1,18 @@
-Return-Path: <fin@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AD4362C007E
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2013 08:17:03 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fin@linux.vnet.ibm.com>;
- Fri, 2 Aug 2013 23:17:01 +0100
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id C90356E803A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2013 18:16:53 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r72MGwg038994150
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2013 18:16:58 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r72MGwaL014698
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2013 18:16:58 -0400
-Message-ID: <1375481816.32477.22.camel@what-is-leg>
-Subject: Re: [PATCH] drivers/crypto/nx: saves chaining value from co-processor
-From: Fionnuala Gunter <fin@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 02 Aug 2013 17:16:56 -0500
-In-Reply-To: <1375480754.15999.42.camel@pasglop>
-References: <1375477090.32477.10.camel@what-is-leg>
- <1375477741.15999.23.camel@pasglop> <1375480550.32477.19.camel@what-is-leg>
- <1375480754.15999.42.camel@pasglop>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EA2362C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2013 08:28:45 +1000 (EST)
+Message-ID: <1375482516.15999.51.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 03 Aug 2013 08:28:36 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,23 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-08-03 at 07:59 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2013-08-02 at 16:55 -0500, Fionnuala Gunter wrote:
-> > Sorry, I thought linuxppc-dev was the right tree since the patch is
-> > for
-> > a ppc driver and you've carried previous nx driver submissions
-> > upstream. 
-> > 
-> > I want to submit to the proper place, so what is your preference?
-> 
-> Well, that's the right place if you want me to merge it, which seems to
-> be what Marcelo is also expecting...
+[ resent in case you missed it ]
 
-Please merge this patch, it fixes a hot bug.
+Hi Linus !
 
-> However I do wonder why is that expectation there in the first place and
-> why aren't those handled by the crypto maintainer...
+Here is not quite a handful of powerpc fixes for rc3. The windfarm fix is
+a regression fix (though not a new one), the PMU interrupt rename is not
+a fix per-se but has been submitted a long time ago and I kept forgetting
+to put it in (it puts us back in sync with x86), the other perf bit is
+just about putting an API/ABI bit definition in the right place for
+userspace to consume, and finally, we have a fix for the VPHN (Virtual
+Partition Home Node) feature (notification that the hypervisor is moving
+nodes around) which could cause lockups so we may as well fix it now.
 
-In the future I can submit patches to the crypto maintainer.
+Thanks !
 
--Fin
+Cheers,
+Ben.
+
+The following changes since commit ff3d79dc12c2ed38483f6c1e0f26fde430f27c9d:
+
+  powerpc/perf: BHRB filter configuration should follow the task (2013-07-24 14:42:34 +1000)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to fe956a1d4081ce1a959f87df397a15e252201f10:
+
+  powerpc/windfarm: Fix noisy slots-fan on Xserve (rm31) (2013-08-01 13:11:47 +1000)
+
+----------------------------------------------------------------
+Aaro Koskinen (1):
+      powerpc/windfarm: Fix noisy slots-fan on Xserve (rm31)
+
+Michael Ellerman (2):
+      powerpc: Rename PMU interrupts from CNT to PMI
+      powerpc/perf: Export PERF_EVENT_CONFIG_EBB_SHIFT to userspace
+
+Robert Jennings (1):
+      powerpc: VPHN topology change updates all siblings
+
+ arch/powerpc/include/asm/perf_event_server.h |  6 +--
+ arch/powerpc/include/asm/smp.h               |  4 ++
+ arch/powerpc/include/uapi/asm/Kbuild         |  1 +
+ arch/powerpc/include/uapi/asm/perf_event.h   | 18 +++++++++
+ arch/powerpc/kernel/irq.c                    |  2 +-
+ arch/powerpc/mm/numa.c                       | 59 +++++++++++++++++++++-------
+ arch/powerpc/perf/core-book3s.c              |  2 +-
+ arch/powerpc/perf/power8-pmu.c               |  6 +--
+ drivers/macintosh/windfarm_rm31.c            | 18 ++++-----
+ 9 files changed, 82 insertions(+), 34 deletions(-)
+ create mode 100644 arch/powerpc/include/uapi/asm/perf_event.h
