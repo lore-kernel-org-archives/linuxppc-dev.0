@@ -1,25 +1,40 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
- by ozlabs.org (Postfix) with ESMTP id CE6CB2C0082
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2013 20:12:02 +1000 (EST)
-Message-ID: <1375437816.3852.12.camel@thor.local>
-Subject: Re: therm_pm72 units, interface
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Fri, 02 Aug 2013 12:03:36 +0200
-In-Reply-To: <20130720203346.GM14385@blackmetal.musicnaut.iki.fi>
-References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
- <1345066616.11751.2.camel@pasglop>
- <alpine.LNX.2.01.1301142240140.30171@nerf07.vanv.qr>
- <1358465885.2782.24.camel@pasglop>
- <20130719174300.GL14385@blackmetal.musicnaut.iki.fi>
- <1374275809.19894.562.camel@pasglop>
- <20130720203346.GM14385@blackmetal.musicnaut.iki.fi>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Jan Engelhardt <jengelh@inai.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Ben Hutchings <ben@decadent.org.uk>
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 405022C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2013 20:35:21 +1000 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Fri, 2 Aug 2013 15:59:16 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 3B83C1258043
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2013 16:04:45 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r72AZ9ic44761236
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2013 16:05:09 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r72AZBv7005270
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Aug 2013 16:05:12 +0530
+Message-ID: <51FB8AD0.6080606@linux.vnet.ibm.com>
+Date: Fri, 02 Aug 2013 16:02:48 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [linux-pm] [PATCH 1/3] cpuidle/powernv: cpuidle backend driver
+ for powernv
+References: <20130723090111.7291.99479.stgit@deepthi.in.ibm.com>
+ <20130723090137.7291.36657.stgit@deepthi.in.ibm.com>
+ <51F35A2A.1080408@linaro.org>
+In-Reply-To: <51F35A2A.1080408@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
+ linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,65 +44,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sam, 2013-07-20 at 23:33 +0300, Aaro Koskinen wrote:
-> Hi,
->=20
-> On Sat, Jul 20, 2013 at 09:16:49AM +1000, Benjamin Herrenschmidt wrote:
-> > On Fri, 2013-07-19 at 20:43 +0300, Aaro Koskinen wrote:
-> > > I booted a Xserve today with 3.11-rc1, and noticed the noise is comin=
-g
-> > > from slots-fan (PCI fan?) which is always 99%, although the slots-tem=
-p is
-> > > just 33. Is it on purpose the rm31 slots PID params are totally diffe=
-rent
-> > > from therm_pm72 slots params? It seems like they have been copied fro=
-m
-> > > pm72 "drive bay" PID params instead.
-> >=20
-> > Could be my mistake. What happens if you change them to match the old c=
-ode ?
->=20
-> I tried the change below (use SLOTS_PID_* values from therm_pm72.h),
-> and the noise level is considerably lower. The slots-fan stays at 19%,
-> and slots-temp rises to 42'C but not higher after running couple of hours=
-.
->=20
-> diff --git a/drivers/macintosh/windfarm_rm31.c b/drivers/macintosh/windfa=
-rm_rm31.c
-> index 0b9a79b..82fc86a 100644
-> --- a/drivers/macintosh/windfarm_rm31.c
-> +++ b/drivers/macintosh/windfarm_rm31.c
-> @@ -439,15 +439,15 @@ static void backside_setup_pid(void)
-> =20
->  /* Slots fan */
->  static const struct wf_pid_param slots_param =3D {
-> -	.interval	=3D 5,
-> -	.history_len	=3D 2,
-> -	.gd		=3D 30 << 20,
-> -	.gp		=3D 5 << 20,
-> -	.gr		=3D 0,
-> -	.itarget	=3D 40 << 16,
-> -	.additive	=3D 1,
-> -	.min		=3D 300,
-> -	.max		=3D 4000,
-> +	.interval	=3D 1,
-> +	.history_len	=3D 20,
-> +	.gd		=3D 0,
-> +	.gp		=3D 0,
-> +	.gr		=3D 0x00100000,
-> +	.itarget	=3D 3200000,
-> +	.additive	=3D 0,
-> +	.min		=3D 20,
-> +	.max		=3D 100,
->  };
-> =20
->  static void slots_fan_tick(void)
+Hi Daniel,
 
-Could a similar change fix the same problem on desktop G5s? The same
-values for slots_param in windfarm_pm112.c don't help, unfortunately.
+On 07/27/2013 10:57 AM, Daniel Lezcano wrote:
+> On 07/23/2013 11:01 AM, Deepthi Dharwar wrote:
+>> This patch implements a back-end cpuidle driver for
+>> powernv calling power7_nap and snooze idle states.
+>> This can be extended by adding more idle states
+>> in the future to the existing framework.
+>>
+>> Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/powernv/Kconfig          |    9 +
+>>  arch/powerpc/platforms/powernv/Makefile         |    1 
+>>  arch/powerpc/platforms/powernv/processor_idle.c |  239 +++++++++++++++++++++++
+>>  3 files changed, 249 insertions(+)
+>>  create mode 100644 arch/powerpc/platforms/powernv/processor_idle.c
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/processor_idle.c b/arch/powerpc/platforms/powernv/processor_idle.c
+>> new file mode 100644
+>> index 0000000..f43ad91a
+>> --- /dev/null
+>> +++ b/arch/powerpc/platforms/powernv/processor_idle.c
+>> @@ -0,0 +1,239 @@
+>> +/*
+>> + *  processor_idle - idle state cpuidle driver.
+>> + */
+>> +
+>> +#include <linux/kernel.h>
+>> +#include <linux/module.h>
+>> +#include <linux/init.h>
+>> +#include <linux/moduleparam.h>
+>> +#include <linux/cpuidle.h>
+>> +#include <linux/cpu.h>
+>> +#include <linux/notifier.h>
+>> +
+>> +#include <asm/machdep.h>
+>> +#include <asm/runlatch.h>
+>> +
+>> +struct cpuidle_driver powernv_idle_driver = {
+>> +	.name =		"powernv_idle",
+>> +	.owner =	THIS_MODULE,
+>> +};
+>> +
+>> +#define MAX_IDLE_STATE_COUNT	2
+>> +
+>> +static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
+>> +static struct cpuidle_device __percpu *powernv_cpuidle_devices;
+>> +static struct cpuidle_state *cpuidle_state_table;
+>> +
+>> +static int snooze_loop(struct cpuidle_device *dev,
+>> +			struct cpuidle_driver *drv,
+>> +			int index)
+>> +{
+>> +	int cpu = dev->cpu;
+>> +
+>> +	local_irq_enable();
+>> +	set_thread_flag(TIF_POLLING_NRFLAG);
+>> +
+>> +	while ((!need_resched()) && cpu_online(cpu)) {
+>> +		ppc64_runlatch_off();
+>> +		HMT_very_low();
+>> +	}
+> 
+> Why are you using the cpu_online test here ?
+> 
+>> +
+>> +	HMT_medium();
+>> +	clear_thread_flag(TIF_POLLING_NRFLAG);
+>> +	smp_mb();
+>> +	return index;
+>> +}
+>> +
+>> +
+>> +static int nap_loop(struct cpuidle_device *dev,
+>> +				struct cpuidle_driver *drv,
+>> +				int index)
+>> +{
+>> +	ppc64_runlatch_off();
+>> +	power7_idle();
+>> +	return index;
+>> +}
+>> +
+>> +/*
+>> + * States for dedicated partition case.
+>> + */
+>> +static struct cpuidle_state powernv_states[MAX_IDLE_STATE_COUNT] = {
+>> +	{ /* Snooze */
+>> +		.name = "snooze",
+>> +		.desc = "snooze",
+>> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+>> +		.exit_latency = 0,
+>> +		.target_residency = 0,
+>> +		.enter = &snooze_loop },
+>> +	 { /* Nap */
+>> +		.name = "Nap",
+>> +		.desc = "Nap",
+>> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+>> +		.exit_latency = 10,
+>> +		.target_residency = 100,
+>> +		.enter = &nap_loop },
+>> +};
+>> +
+>> +static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
+>> +			unsigned long action, void *hcpu)
+>> +{
+>> +	int hotcpu = (unsigned long)hcpu;
+>> +	struct cpuidle_device *dev =
+>> +			per_cpu_ptr(powernv_cpuidle_devices, hotcpu);
+>> +
+>> +	if (dev && cpuidle_get_driver()) {
+>> +		switch (action) {
+>> +		case CPU_ONLINE:
+>> +		case CPU_ONLINE_FROZEN:
+>> +			cpuidle_pause_and_lock();
+>> +			cpuidle_enable_device(dev);
+>> +			cpuidle_resume_and_unlock();
+>> +			break;
+>> +
+>> +		case CPU_DEAD:
+>> +		case CPU_DEAD_FROZEN:
+>> +			cpuidle_pause_and_lock();
+>> +			cpuidle_disable_device(dev);
+>> +			cpuidle_resume_and_unlock();
+>> +			break;
+>> +
+>> +		default:
+>> +			return NOTIFY_DONE;
+>> +		}
+>> +	}
+>> +	return NOTIFY_OK;
+>> +}
+>> +
+>> +static struct notifier_block setup_hotplug_notifier = {
+>> +	.notifier_call = powernv_cpuidle_add_cpu_notifier,
+>> +};
+> 
+> This is duplicated code with the pseries cpuidle driver and IMHO it
+> should be moved to the cpuidle framework.
+> 
 
+Will this not require a cleanup of the hotplug cpuidle notifiers from
+other architectures into the cpuidle framework as well?
 
---=20
-Earthling Michel D=C3=A4nzer           |                   http://www.amd.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+Regards
+Preeti U Murthy
