@@ -1,24 +1,24 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 642F12C0082
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Aug 2013 01:36:38 +1000 (EST)
-Date: Sat, 3 Aug 2013 17:36:30 +0200
+ by ozlabs.org (Postfix) with ESMTPS id ABAB02C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Aug 2013 01:54:04 +1000 (EST)
+Date: Sat, 3 Aug 2013 17:53:51 +0200
 From: Gerhard Sittig <gsi@denx.de>
-To: Mike Turquette <mturquette@linaro.org>
-Subject: Re: [PATCH v3 18/31] dts: mpc512x: add clock specs for client lookups
-Message-ID: <20130803153630.GJ2580@book.gsilab.sittig.org>
-References: <1374166855-7280-1-git-send-email-gsi@denx.de>
- <1374495298-22019-1-git-send-email-gsi@denx.de>
- <1374495298-22019-19-git-send-email-gsi@denx.de>
- <20130802234120.6450.57074@quantum>
+To: Alexander Popov <a13xp0p0v88@gmail.com>
+Subject: Re: [PATCH RFC v3 2/5] dma: mpc512x: add support for peripheral
+ transfers
+Message-ID: <20130803155351.GK2580@book.gsilab.sittig.org>
+References: <1375255292-11288-1-git-send-email-a13xp0p0v88@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130802234120.6450.57074@quantum>
-Cc: devicetree@vger.kernel.org, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>,
- linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1375255292-11288-1-git-send-email-a13xp0p0v88@gmail.com>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
+ Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org,
+ Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,339 +28,297 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ trimming the CC: list to device tree and ARM(clock) and PPC ]
-
-On Fri, Aug 02, 2013 at 16:41 -0700, Mike Turquette wrote:
+On Wed, Jul 31, 2013 at 11:21 +0400, Alexander Popov wrote:
 > 
-> Quoting Gerhard Sittig (2013-07-22 05:14:45)
-> > this addresses the client side of device tree based clock lookups
-> > 
-> > add clock specifiers to the mbx, nfc, mscan, sdhc, i2c, axe, diu, viu,
-> > mdio, fec, usb, pata, psc, psc fifo, and pci nodes in the shared
-> > mpc5121.dtsi include
-> > 
-> > these specs map 'clock-names' encoded in drivers to their respective
-> > 'struct clk' items in the platform's clock driver
-> > 
-> > Signed-off-by: Gerhard Sittig <gsi@denx.de>
+> Introduce support for slave s/g transfer preparation and the associated
+> device control callback in the MPC512x DMA controller driver, which adds
+> support for data transfers between memory and peripheral I/O to the
+> previously supported mem-to-mem transfers.
 > 
-> Reviewed-by: Mike Turquette <mturquette@linaro.org>
+> Refuse to prepare chunked transfers (transfers with more than one part)
+> as long as proper support for scatter/gather is lacking.
+> 
+> Keep MPC8308 operational by always starting transfers from software,
+> this SoC appears to not have request lines for flow control when
+> peripherals are involved in transfers.
+> 
+> Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
+> ---
+>  drivers/dma/mpc512x_dma.c | 183 ++++++++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 176 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
 
-Thank you for the review, Mike!
+You don't provide a lot of information to those you want to
+receive feedback from.  You should keep a history and list the
+changes between versions.  And you may want to somehow link this
+v3 to its predecessor -- especially when you only send part of
+the series and assume that reviewers may know where to find the
+remainder.
 
-Please note that there will be another update for the series.
-These clock specs for client side lookups will have additional
-'ipg' clock items next to 'mclk' for the PSC (UART, SPI) and
-MSCAN (CAN) nodes.  But this change is straight forward.
+Please help those persons you want to get help from.
+
+> index b8881de..d96d107 100644
+> --- a/drivers/dma/mpc512x_dma.c
+> +++ b/drivers/dma/mpc512x_dma.c
+> @@ -2,6 +2,7 @@
+>   * Copyright (C) Freescale Semicondutor, Inc. 2007, 2008.
+>   * Copyright (C) Semihalf 2009
+>   * Copyright (C) Ilya Yanok, Emcraft Systems 2010
+> + * Copyright (C) Alexander Popov, Promcontroller 2013
+>   *
+>   * Written by Piotr Ziecik <kosmo@semihalf.com>. Hardware description
+>   * (defines, structures and comments) was taken from MPC5121 DMA driver
+> @@ -28,11 +29,6 @@
+>   * file called COPYING.
+>   */
+>  
+> -/*
+> - * This is initial version of MPC5121 DMA driver. Only memory to memory
+> - * transfers are supported (tested using dmatest module).
+> - */
+> -
+>  #include <linux/module.h>
+>  #include <linux/dmaengine.h>
+>  #include <linux/dma-mapping.h>
+> @@ -199,6 +195,11 @@ struct mpc_dma_chan {
+>  	struct mpc_dma_tcd		*tcd;
+>  	dma_addr_t			tcd_paddr;
+>  
+> +	/* Settings for access to peripheral FIFO */
+> +	int				will_access_peripheral;
+> +	dma_addr_t			per_paddr;	/* FIFO address */
+> +	u32				tcd_nunits;
+> +
+>  	/* Lock for this structure */
+>  	spinlock_t			lock;
+>  };
+> @@ -264,7 +265,10 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+>  
+>  		prev->tcd->dlast_sga = mdesc->tcd_paddr;
+>  		prev->tcd->e_sg = 1;
+> -		mdesc->tcd->start = 1;
+> +
+> +		/* software start for mem-to-mem transfers */
+> +		if (mdma->is_mpc8308 || !mchan->will_access_peripheral)
+> +			mdesc->tcd->start = 1;
+
+here (channel -> will access peripheral)
+
+>  
+>  		prev = mdesc;
+>  	}
+> @@ -276,7 +280,17 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+>  
+>  	if (first != prev)
+>  		mdma->tcd[cid].e_sg = 1;
+> -	out_8(&mdma->regs->dmassrt, cid);
+> +
+> +	if (mdma->is_mpc8308) {
+> +		/* MPC8308, no request lines, software initiated start */
+> +		out_8(&mdma->regs->dmassrt, cid);
+> +	} else if (mchan->will_access_peripheral) {
+> +		/* peripherals involved, use external request line */
+> +		out_8(&mdma->regs->dmaserq, cid);
+> +	} else {
+> +		/* memory to memory transfer, software initiated start */
+> +		out_8(&mdma->regs->dmassrt, cid);
+> +	}
+
+and here (channel -> will access peripheral)
+
+>  }
+>  
+>  /* Handle interrupt on one half of DMA controller (32 channels) */
+> @@ -649,6 +663,158 @@ mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
+>  	return &mdesc->desc;
+>  }
+>  
+> +static struct dma_async_tx_descriptor *mpc_dma_prep_slave_sg(
+> +		struct dma_chan *chan, struct scatterlist *sgl,
+> +		unsigned int sg_len, enum dma_transfer_direction direction,
+> +		unsigned long flags, void *context)
+> +{
+> +	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
+> +	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
+> +	struct mpc_dma_desc *mdesc = NULL;
+> +	dma_addr_t per_paddr;
+> +	u32 tcd_nunits = 0;
+> +	struct mpc_dma_tcd *tcd;
+> +	unsigned long iflags;
+> +	struct scatterlist *sg;
+> +	size_t len;
+> +	int iter, i;
+> +
+> +	if (!list_empty(&mchan->active))
+> +		return NULL;
+> +
+> +	/* currently there is no proper support for scatter/gather */
+> +	if (sg_len > 1)
+> +		return NULL;
+> +
+> +	for_each_sg(sgl, sg, sg_len, i) {
+> +		spin_lock_irqsave(&mchan->lock, iflags);
+> +
+> +		mdesc = list_first_entry(&mchan->free, struct mpc_dma_desc,
+> +									node);
+> +		if (!mdesc) {
+> +			spin_unlock_irqrestore(&mchan->lock, iflags);
+> +			/* try to free completed descriptors */
+> +			mpc_dma_process_completed(mdma);
+> +			return NULL;
+> +		}
+> +
+> +		list_del(&mdesc->node);
+> +
+> +		per_paddr = mchan->per_paddr;
+> +		tcd_nunits = mchan->tcd_nunits;
+> +
+> +		spin_unlock_irqrestore(&mchan->lock, iflags);
+> +
+> +		mdesc->error = 0;
+> +		tcd = mdesc->tcd;
+> +
+> +		/* Prepare Transfer Control Descriptor for this transaction */
+> +		memset(tcd, 0, sizeof(struct mpc_dma_tcd));
+> +
+> +		if (!IS_ALIGNED(sg_dma_address(sg), 4))
+> +			return NULL;
+> +
+> +		if (direction == DMA_DEV_TO_MEM) {
+> +			tcd->saddr = per_paddr;
+> +			tcd->daddr = sg_dma_address(sg);
+> +			tcd->soff = 0;
+> +			tcd->doff = 4;
+> +		} else if (direction == DMA_MEM_TO_DEV) {
+> +			tcd->saddr = sg_dma_address(sg);
+> +			tcd->daddr = per_paddr;
+> +			tcd->soff = 4;
+> +			tcd->doff = 0;
+> +		} else {
+> +			return NULL;
+> +		}
+> +		tcd->ssize = MPC_DMA_TSIZE_4;
+> +		tcd->dsize = MPC_DMA_TSIZE_4;
+> +
+> +		len = sg_dma_len(sg);
+> +
+> +		if (tcd_nunits)
+> +			tcd->nbytes = tcd_nunits * 4;
+> +		else
+> +			return NULL;
+> +
+> +		if (!IS_ALIGNED(len, tcd->nbytes))
+> +			return NULL;
+> +
+> +		iter = len / tcd->nbytes;
+> +		if (iter > ((1 << 15) - 1)) {   /* maximum biter */
+> +			return NULL; /* len is too big */
+> +		} else {
+> +			/* citer_linkch contains the high bits of iter */
+> +			tcd->biter = iter & 0x1ff;
+> +			tcd->biter_linkch = iter >> 9;
+> +			tcd->citer = tcd->biter;
+> +			tcd->citer_linkch = tcd->biter_linkch;
+> +		}
+> +
+> +		tcd->e_sg = 0;
+> +		tcd->d_req = 1;
+> +
+> +		/* Place descriptor in prepared list */
+> +		spin_lock_irqsave(&mchan->lock, iflags);
+> +		list_add_tail(&mdesc->node, &mchan->prepared);
+> +		spin_unlock_irqrestore(&mchan->lock, iflags);
+> +	}
+> +
+> +	return &mdesc->desc;
+> +}
+> +
+> +static int mpc_dma_device_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd,
+> +				  unsigned long arg)
+> +{
+> +	struct mpc_dma_chan *mchan;
+> +	struct mpc_dma *mdma;
+> +	struct dma_slave_config *cfg;
+> +	unsigned long flags;
+> +
+> +	mchan = dma_chan_to_mpc_dma_chan(chan);
+> +	switch (cmd) {
+> +	case DMA_TERMINATE_ALL:
+> +		/* disable channel requests */
+> +		mdma = dma_chan_to_mpc_dma(chan);
+> +
+> +		spin_lock_irqsave(&mchan->lock, flags);
+> +
+> +		out_8(&mdma->regs->dmacerq, chan->chan_id);
+> +		list_splice_tail_init(&mchan->prepared, &mchan->free);
+> +		list_splice_tail_init(&mchan->queued, &mchan->free);
+> +		list_splice_tail_init(&mchan->active, &mchan->free);
+> +
+> +		spin_unlock_irqrestore(&mchan->lock, flags);
+> +
+> +		return 0;
+> +	case DMA_SLAVE_CONFIG:
+> +		cfg = (void *)arg;
+> +		if (cfg->src_addr_width != DMA_SLAVE_BUSWIDTH_4_BYTES &&
+> +		    cfg->dst_addr_width != DMA_SLAVE_BUSWIDTH_4_BYTES)
+> +			return -EINVAL;
+> +
+> +		spin_lock_irqsave(&mchan->lock, flags);
+> +
+> +		mchan->will_access_peripheral = 1;
+> +
+> +		if (cfg->direction == DMA_DEV_TO_MEM) {
+> +			mchan->per_paddr = cfg->src_addr;
+> +			mchan->tcd_nunits = cfg->src_maxburst;
+> +		} else {
+> +			mchan->per_paddr = cfg->dst_addr;
+> +			mchan->tcd_nunits = cfg->dst_maxburst;
+> +		}
+> +
+> +		spin_unlock_irqrestore(&mchan->lock, flags);
+> +
+> +		return 0;
+> +	default:
+> +		return -ENOSYS;
+> +	}
+> +
+> +	return -EINVAL;
+> +}
+> +
+
+and here
 
 
-> > ---
-> >  arch/powerpc/boot/dts/mpc5121.dtsi |   79 ++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 79 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-> > index 8f4cba0..3657ae6 100644
-> > --- a/arch/powerpc/boot/dts/mpc5121.dtsi
-> > +++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-> > @@ -51,6 +51,10 @@
-> >                 compatible = "fsl,mpc5121-mbx";
-> >                 reg = <0x20000000 0x4000>;
-> >                 interrupts = <66 0x8>;
-> > +               clocks = <&clks MPC512x_CLK_MBX_BUS>,
-> > +                        <&clks MPC512x_CLK_MBX_3D>,
-> > +                        <&clks MPC512x_CLK_MBX>;
-> > +               clock-names = "mbx-bus", "mbx-3d", "mbx";
-> >         };
-> >  
-> >         sram@30000000 {
-> > @@ -64,6 +68,8 @@
-> >                 interrupts = <6 8>;
-> >                 #address-cells = <1>;
-> >                 #size-cells = <1>;
-> > +               clocks = <&clks MPC512x_CLK_NFC>;
-> > +               clock-names = "per";
-> >         };
-> >  
-> >         localbus@80000020 {
-> > @@ -153,12 +159,22 @@
-> >                         compatible = "fsl,mpc5121-mscan";
-> >                         reg = <0x1300 0x80>;
-> >                         interrupts = <12 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_IPS>,
-> > +                                <&clks MPC512x_CLK_SYS>,
-> > +                                <&clks MPC512x_CLK_REF>,
-> > +                                <&clks MPC512x_CLK_MSCAN0_MCLK>;
-> > +                       clock-names = "ips", "sys", "ref", "mclk";
-> >                 };
-> >  
-> >                 can@1380 {
-> >                         compatible = "fsl,mpc5121-mscan";
-> >                         reg = <0x1380 0x80>;
-> >                         interrupts = <13 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_IPS>,
-> > +                                <&clks MPC512x_CLK_SYS>,
-> > +                                <&clks MPC512x_CLK_REF>,
-> > +                                <&clks MPC512x_CLK_MSCAN1_MCLK>;
-> > +                       clock-names = "ips", "sys", "ref", "mclk";
-> >                 };
-> >  
-> >                 sdhc@1500 {
-> > @@ -167,6 +183,9 @@
-> >                         interrupts = <8 0x8>;
-> >                         dmas = <&dma0 30>;
-> >                         dma-names = "rx-tx";
-> > +                       clocks = <&clks MPC512x_CLK_IPS>,
-> > +                                <&clks MPC512x_CLK_SDHC>;
-> > +                       clock-names = "ipg", "per";
-> >                 };
-> >  
-> >                 i2c@1700 {
-> > @@ -175,6 +194,8 @@
-> >                         compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-> >                         reg = <0x1700 0x20>;
-> >                         interrupts = <9 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_I2C>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 i2c@1720 {
-> > @@ -183,6 +204,8 @@
-> >                         compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-> >                         reg = <0x1720 0x20>;
-> >                         interrupts = <10 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_I2C>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 i2c@1740 {
-> > @@ -191,6 +214,8 @@
-> >                         compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-> >                         reg = <0x1740 0x20>;
-> >                         interrupts = <11 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_I2C>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 i2ccontrol@1760 {
-> > @@ -202,30 +227,46 @@
-> >                         compatible = "fsl,mpc5121-axe";
-> >                         reg = <0x2000 0x100>;
-> >                         interrupts = <42 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_AXE>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 display@2100 {
-> >                         compatible = "fsl,mpc5121-diu";
-> >                         reg = <0x2100 0x100>;
-> >                         interrupts = <64 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_DIU>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 can@2300 {
-> >                         compatible = "fsl,mpc5121-mscan";
-> >                         reg = <0x2300 0x80>;
-> >                         interrupts = <90 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_IPS>,
-> > +                                <&clks MPC512x_CLK_SYS>,
-> > +                                <&clks MPC512x_CLK_REF>,
-> > +                                <&clks MPC512x_CLK_MSCAN2_MCLK>;
-> > +                       clock-names = "ips", "sys", "ref", "mclk";
-> >                 };
-> >  
-> >                 can@2380 {
-> >                         compatible = "fsl,mpc5121-mscan";
-> >                         reg = <0x2380 0x80>;
-> >                         interrupts = <91 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_IPS>,
-> > +                                <&clks MPC512x_CLK_SYS>,
-> > +                                <&clks MPC512x_CLK_REF>,
-> > +                                <&clks MPC512x_CLK_MSCAN3_MCLK>;
-> > +                       clock-names = "ips", "sys", "ref", "mclk";
-> >                 };
-> >  
-> >                 viu@2400 {
-> >                         compatible = "fsl,mpc5121-viu";
-> >                         reg = <0x2400 0x400>;
-> >                         interrupts = <67 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_VIU>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 mdio@2800 {
-> > @@ -233,6 +274,8 @@
-> >                         reg = <0x2800 0x800>;
-> >                         #address-cells = <1>;
-> >                         #size-cells = <0>;
-> > +                       clocks = <&clks MPC512x_CLK_FEC>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 eth0: ethernet@2800 {
-> > @@ -241,6 +284,8 @@
-> >                         reg = <0x2800 0x800>;
-> >                         local-mac-address = [ 00 00 00 00 00 00 ];
-> >                         interrupts = <4 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_FEC>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 /* USB1 using external ULPI PHY */
-> > @@ -252,6 +297,8 @@
-> >                         interrupts = <43 0x8>;
-> >                         dr_mode = "otg";
-> >                         phy_type = "ulpi";
-> > +                       clocks = <&clks MPC512x_CLK_USB1>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 /* USB0 using internal UTMI PHY */
-> > @@ -263,6 +310,8 @@
-> >                         interrupts = <44 0x8>;
-> >                         dr_mode = "otg";
-> >                         phy_type = "utmi_wide";
-> > +                       clocks = <&clks MPC512x_CLK_USB2>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 /* IO control */
-> > @@ -281,6 +330,8 @@
-> >                         compatible = "fsl,mpc5121-pata";
-> >                         reg = <0x10200 0x100>;
-> >                         interrupts = <5 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_PATA>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 /* 512x PSCs are not 52xx PSC compatible */
-> > @@ -292,6 +343,8 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC0_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 /* PSC1 */
-> > @@ -301,6 +354,8 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC1_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 /* PSC2 */
-> > @@ -310,6 +365,8 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC2_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 /* PSC3 */
-> > @@ -319,6 +376,8 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC3_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 /* PSC4 */
-> > @@ -328,6 +387,8 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC4_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 /* PSC5 */
-> > @@ -337,6 +398,8 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC5_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 /* PSC6 */
-> > @@ -346,6 +409,8 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC6_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 /* PSC7 */
-> > @@ -355,6 +420,8 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC7_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 /* PSC8 */
-> > @@ -364,6 +431,8 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC8_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 /* PSC9 */
-> > @@ -373,6 +442,8 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC9_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 /* PSC10 */
-> > @@ -382,6 +453,8 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC10_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 /* PSC11 */
-> > @@ -391,12 +464,16 @@
-> >                         interrupts = <40 0x8>;
-> >                         fsl,rx-fifo-size = <16>;
-> >                         fsl,tx-fifo-size = <16>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC11_MCLK>;
-> > +                       clock-names = "mclk";
-> >                 };
-> >  
-> >                 pscfifo@11f00 {
-> >                         compatible = "fsl,mpc5121-psc-fifo";
-> >                         reg = <0x11f00 0x100>;
-> >                         interrupts = <40 0x8>;
-> > +                       clocks = <&clks MPC512x_CLK_PSC_FIFO>;
-> > +                       clock-names = "per";
-> >                 };
-> >  
-> >                 dma0: dma@14000 {
-> > @@ -414,6 +491,8 @@
-> >                 #address-cells = <3>;
-> >                 #size-cells = <2>;
-> >                 #interrupt-cells = <1>;
-> > +               clocks = <&clks MPC512x_CLK_PCI>;
-> > +               clock-names = "per";
-> >  
-> >                 reg = <0x80008500 0x100 /* internal registers */
-> >                        0x80008300 0x8>; /* config space access registers */
-> > -- 
-> > 1.7.10.4
+I think it's unfortunate to attribute the "will access
+peripheral" to the channel instead of the transfer job, and to
+set the flag from within the device control callback, and to
+nevery clear the flag (what will happen if a channel gets freed
+and reallocated by some other client?).
+
+I think that the peripheral access is an attribute of the
+transfer job, and should be setup in the prep routines (both set
+and cleared, depending on what gets setup).  This would be more
+robust and more readable (read: maintainable) in my eyes.
+
+>  static int mpc_dma_probe(struct platform_device *op)
+>  {
+>  	struct device_node *dn = op->dev.of_node;
+> @@ -733,9 +899,12 @@ static int mpc_dma_probe(struct platform_device *op)
+>  	dma->device_issue_pending = mpc_dma_issue_pending;
+>  	dma->device_tx_status = mpc_dma_tx_status;
+>  	dma->device_prep_dma_memcpy = mpc_dma_prep_memcpy;
+> +	dma->device_prep_slave_sg = mpc_dma_prep_slave_sg;
+> +	dma->device_control = mpc_dma_device_control;
+>  
+>  	INIT_LIST_HEAD(&dma->channels);
+>  	dma_cap_set(DMA_MEMCPY, dma->cap_mask);
+> +	dma_cap_set(DMA_SLAVE, dma->cap_mask);
+>  
+>  	for (i = 0; i < dma->chancnt; i++) {
+>  		mchan = &mdma->channels[i];
+> -- 
+> 1.7.11.3
 
 
 virtually yours
