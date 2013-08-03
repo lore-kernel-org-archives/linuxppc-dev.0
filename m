@@ -1,27 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A45822C0087
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2013 14:25:52 +1000 (EST)
-Message-ID: <1375503938.15999.82.camel@pasglop>
-Subject: Re: [PATCH 6/6 v2] kvm: powerpc: use caching attributes as per
- linux pte
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>
-Date: Sat, 03 Aug 2013 14:25:38 +1000
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D070F8FE9@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1375355558-19187-7-git-send-email-Bharat.Bhushan@freescale.com>
- <20130802233452.GA27636@home.buserror.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D070F8FE9@039-SN2MPN1-012.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id A69472C0091
+ for <linuxppc-dev@ozlabs.org>; Sat,  3 Aug 2013 18:43:31 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: windfarm_fcu_controls: cpu-pump-0 <HW FAULT>
+References: <87r4eb52s6.fsf@igel.home>
+ <1375481448.15999.47.camel__48019.1930350431$1375481501$gmane$org@pasglop>
+Date: Sat, 03 Aug 2013 10:43:26 +0200
+In-Reply-To: <1375481448.15999.47.camel__48019.1930350431$1375481501$gmane$org@pasglop>
+ (Benjamin Herrenschmidt's message of "Sat, 03 Aug 2013 08:10:48
+ +1000")
+Message-ID: <m2vc3nnp01.fsf@linux-m68k.org>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org, Andreas Schwab <schwab@linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-08-03 at 03:11 +0000, Bhushan Bharat-R65777 wrote:
-> 
-> > 
-> > Could you explain why we need to set dirty/referenced on the PTE, when we didn't
-> > need to do that before? All we're getting from the PTE is wimg.
-> > We have MMU notifiers to take care of the page being unmapped, and we've already
-> > marked the page itself as dirty if the TLB entry is writeable.
-> 
-> I pulled this code from book3s.
-> 
-> Ben, can you describe why we need this on book3s ?
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-If you let the guest write to the page you must set the dirty bit on the PTE
-(or the struct page, at least one of them), similar with accessed on any access.
+> Can you add some more printk's in there to check what's going on inside
+> wf_fcu_get_pump_minmax() ?
 
-If you don't, the VM might swap the page out without writing it back to disk
-for example, assuming it contains no modified data.
+All values from mpu->processor_part_num are 0xffff.
 
-Cheers,
-Ben.
+> Also is it getting faults for both pumps ?
+
+Yes.
+
+> Does it work with the older driver ? (both the minmax and the reading of
+> the pump).
+
+The minmax situation is the same, but otherwise appears to work (no fan
+reading errors logged).  Here is an example debug output:
+
+** CPU 1 RPM: 300 Ex, 300, Pump: 1250, In, overtemp: 0
+  cpu 0, exhaust RPM: 300
+  cpu 0, temp raw: 023c, m_diode: 9982, b_diode: fffff799
+  temp: 52.139
+  cpu 0, current: 8.789, voltage: 1.286, power: 11.308 W
+  cpu 1, exhaust RPM: 300
+  cpu 1, temp raw: 021c, m_diode: a047, b_diode: fffff777
+  temp: 50.380
+  cpu 1, current: 8.666, voltage: 1.281, power: 11.108 W
+  power target: 55.000, error: 43.691
+  integral: 00f42f8d
+   integ_p: 10
+   adj_in_target: 65.011, ttarget: 74
+   deriv_p: -15
+   prop_p: -103
+   sum: -118
+
+> What is the "failures" bitmask value ?
+
+3 for both.
+
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
