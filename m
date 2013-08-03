@@ -1,23 +1,21 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B70522C007E
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Aug 2013 00:40:02 +1000 (EST)
-Date: Sat, 3 Aug 2013 16:39:56 +0200
+ by ozlabs.org (Postfix) with ESMTPS id 14D422C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Aug 2013 01:03:50 +1000 (EST)
+Date: Sat, 3 Aug 2013 17:03:42 +0200
 From: Gerhard Sittig <gsi@denx.de>
 To: Mike Turquette <mturquette@linaro.org>
 Subject: Re: [PATCH v3 17/31] clk: mpc512x: introduce COMMON_CLK for MPC512x
-Message-ID: <20130803143956.GH2580@book.gsilab.sittig.org>
+Message-ID: <20130803150342.GI2580@book.gsilab.sittig.org>
 References: <1374166855-7280-1-git-send-email-gsi@denx.de>
  <1374495298-22019-1-git-send-email-gsi@denx.de>
  <1374495298-22019-18-git-send-email-gsi@denx.de>
- <20130723131406.GI19071@book.gsilab.sittig.org>
- <20130802233009.6450.21915@quantum>
+ <20130802234143.6450.39877@quantum>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130802233009.6450.21915@quantum>
+In-Reply-To: <20130802234143.6450.39877@quantum>
 Cc: Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,300 +27,966 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ we are strictly talking about clocks and source code again,
-  I have trimmed the CC: list to not spam the device tree ML or
-  subsystem maintainers ]
+[ this is about the MPC512x platform's clock driver, the core of
+  the series; trim the CC: list and only keep ARM (for clock) and
+  PPC lists and people ]
 
-On Fri, Aug 02, 2013 at 16:30 -0700, Mike Turquette wrote:
+On Fri, Aug 02, 2013 at 16:41 -0700, Mike Turquette wrote:
 > 
-> Quoting Gerhard Sittig (2013-07-23 06:14:06)
-> > [ summary: "shared gate" support desirable? approach acceptable? ]
+> Quoting Gerhard Sittig (2013-07-22 05:14:44)
+> > this change implements a clock driver for the MPC512x PowerPC platform
+> > which follows the COMMON_CLK approach and uses common clock drivers
+> > shared with other platforms
 > > 
-> > On Mon, Jul 22, 2013 at 14:14 +0200, Gerhard Sittig wrote:
-> > > 
-> > > this change implements a clock driver for the MPC512x PowerPC platform
-> > > which follows the COMMON_CLK approach and uses common clock drivers
-> > > shared with other platforms
-> > > 
-> > > [ ... ]
-> > > 
-> > > some of the clock items get pre-enabled in the clock driver to not have
-> > > them automatically disabled by the underlying clock subsystem because of
-> > > their being unused -- this approach is desirable because
-> > > [ ... ]
-> > > - some help introduce support for and migrate to the common
-> > >   infrastructure, while more appropriate support for specific hardware
-> > >   constraints isn't available yet (remaining changes are strictly
-> > >   internal to the clock driver and won't affect peripheral drivers)
+> > this driver implements the publicly announced set of clocks (which can
+> > get referenced by means of symbolic identifiers from the dt-bindings
+> > header file), as well as generates additional 'struct clk' items where
+> > the SoC hardware cannot easily get mapped to the common primitives of
+> > the clock API, or requires "intermediate" clock nodes to represent
+> > clocks that have both gates and dividers
 > > 
-> > This remark was related to the CAN clocks of the MPC512x SoC.
+> > the previous PPC_CLOCK implementation is kept in place and remains in
+> > parallel to the common clock implementation for test and comparison
+> > during migration, a compile time option picks one of the two
+> > alternatives (Kconfig switch, common clock used by default)
+> > 
+> > some of the clock items get pre-enabled in the clock driver to not have
+> > them automatically disabled by the underlying clock subsystem because of
+> > their being unused -- this approach is desirable because
+> > - some of the clocks are useful to have for diagnostics and information
+> >   despite their not getting claimed by any drivers (CPU, internal and
+> >   external RAM, internal busses, boot media)
+> > - some of the clocks aren't claimed by their peripheral drivers yet,
+> >   either because of missing driver support or because device tree specs
+> >   aren't available yet (but the workarounds will get removed as the
+> >   drivers get adjusted and the device tree provides the clock specs)
+> > - some help introduce support for and migrate to the common
+> >   infrastructure, while more appropriate support for specific hardware
+> >   constraints isn't available yet (remaining changes are strictly
+> >   internal to the clock driver and won't affect peripheral drivers)
+> > 
+> > clkdev registration provides "alias names" for few clock items
+> > - to not break those peripheral drivers which encode their component
+> >   index into the name that is used for clock lookup (UART, SPI, USB)
+> > - to not break those drivers which use names for the clock lookup which
+> >   were encoded in the previous PPC_CLOCK implementation (NFC, VIU, CAN)
+> > this workaround will get removed as these drivers get adjusted after
+> > device tree based clock lookup has become available
+> > 
+> > Signed-off-by: Gerhard Sittig <gsi@denx.de>
 > 
-> Gerhard,
+> Hi Gerhard,
 > 
-> Thanks for the patch (way far down below here). I'll check into it to
-> see if that implementation looks OK. It would be helpful if another
-> platform with shared gates could weigh in on whether the implementation
-> works for them.
+> This looks OK to me. Do you want me to take it or will you keep the
+> series together? Note that I took "clk: wrap I/O access for improved
+> portability" into the clk tree already.
 > 
-> Still, a shared gate solution is not a prerequisite for this series,
-> correct?
+> Regards,
+> Mike
 
-Well, the recent CAN driver related discussion suggested that I
-had a mental misconception there.  The need for "shared gates"
-was felt because of mixing up unrelated paths in the clock tree.
-But the MCLK subtree is for bitrate generation, while the BDLC
-gate is for register access into the peripheral controller.
-
-Currently I'm investigating how I can cleanly tell those
-individual aspects apart.  Telling the gate for register access
-(in ARM speak often referred to as 'ipg') from the bitrate
-generation (the 'per' clock, or 'mclk' here) seems so much more
-appropriate.
-
-After clean separation, and more testing to make sure nothing
-gets broken throughout the series, there will be v4.
+Thank you for the feedback and for the interest!  It's nice to
+hear that you like the central part of the series. :)
 
 
-So "shared gate" support might have become obsolete for the
-MPC512x platform.  But if others need it, the outlined approach
-(patch below) may be viable.  The change to the common code is
-minimal.  The use in the platform's clock driver was kind of
-overengineered for the case of exactly one such gate, but this
-immediately makes it a working approach for several gates, if
-others need it.
+There will be another version of the series (v4), addressing the
+remaining feedback, further reducing pre-enable workarounds,
+eliminating the need for "shared gates" by adding more 'ipg'
+clocks for serial communication (UART, SPI, CAN).  It's true that
+the series has widened its scope after initial submission, but it
+as well has much improved from the feedback.
 
-I'll trim the motivation and just leave the suggested approach
-for "shared gates" here.  Feel free to drop it or to only
-resurrect it as the need may re-arise later.  So far nobody
-appears to have felt the need up to now ...
+This specific patch introduces an alternative clock driver which
+is enabled by default, so it depends on the device tree data
+being available before the code becomes operational.  And the
+common clock platform driver might break those peripheral drivers
+which haven't received their clock API use cleanup yet (earlier
+parts of the series).
 
-> > [ ... ]
+
+So I'd like to keep the series together until it has passed
+review.  I will make sure that the series remains bisectable and
+always keeps working when applied in sequence, and would prefer
+to only start splitting it or staging parts of it later if
+needed.
+
+
+> > ---
+> >  arch/powerpc/platforms/512x/Kconfig           |   14 +-
+> >  arch/powerpc/platforms/512x/Makefile          |    4 +-
+> >  arch/powerpc/platforms/512x/clock-commonclk.c |  786 +++++++++++++++++++++++++
+> >  include/linux/clk-provider.h                  |   16 +
+> >  4 files changed, 818 insertions(+), 2 deletions(-)
+> >  create mode 100644 arch/powerpc/platforms/512x/clock-commonclk.c
 > > 
-> > The question now is how to correctly support the situation where
-> > a gate is shared between subtrees yet isn't really part of any
-> > path within the subtrees.  I really cannot find a single spot
-> > where to introduce the gate such that it's not duplicated.
-> > 
-> > The appropriate solution would not be to pre-enable those clocks,
-> > but to either introduce another gate clock type which supports a
-> > shared reference, or to add support for the shared reference to
-> > the existing gate code.
-> > 
-> > 
-> > I'd rather not duplicate most or all of the code of clk-gate.c,
-> > instead I looked into how to add "shared gate" support to the
-> > existing driver.
-> > 
-> > My question is whether the approach is acceptable.  It adds
-> > minimal overhead and shall be OK for the enable/disable path from
-> > a technical POV.  And it doesn't feel like too much of a stretch.
-> > But there may be non-technical reasons to reject the approach.
-> > I'd like to learn whether to follow that path before preparing
-> > another version of the patch series.
-> > 
-> > The diffs were taken with the '-w -b' options to demonstrate
-> > their essence and not drown it in whitespace changes.  The
-> > implementation assumes that the caller which registers the gate
-> > (the platform's clock driver) provides both the counter cell and
-> > the lock.  And that all gates with a "shared use counter" use the
-> > same lock (which is satisfied as they all get registered from the
-> > same spot in the platform's clock driver).
-> > 
-> > The CLK_IGNORE_UNUSED flag addresses a different problem.  The
-> > SoC has four MSCAN components, while two of them are enabled in
-> > the device tree (the other two are present but disabled).  So
-> > during probe two of the clocks get enabled.  After probe all
-> > unused clocks automatically get disabled (that's another two).
-> > So the "shared use counter" drops to zero although components are
-> > in use, because "disable, it's unused" isn't told from "disable
-> > after enable, regular use".  The flag would become obsolete if
-> > the common gate logic would implement a separate disable_unused()
-> > routine, but I guess this isn't necessary and the use of the flag
-> > is appropriate.
-> > 
-> > That the example use creates a field for just one counter is to
-> > better demonstrate the use and potential extension as need
-> > arises.  Reducing this to a mere integer variable would be a
-> > micro optimization.
-> > 
-> > 
-> > The extension of the existing clk_gate implementation:
-> > 
-> > --- a/drivers/clk/clk-gate.c
-> > +++ b/drivers/clk/clk-gate.c
-> > @@ -46,6 +46,7 @@ static void clk_gate_endisable(struct clk_hw *hw, int enable)
-> >         struct clk_gate *gate = to_clk_gate(hw);
-> >         int set = gate->flags & CLK_GATE_SET_TO_DISABLE ? 1 : 0;
-> >         unsigned long flags = 0;
-> > +       int need_reg_access;
-> >         u32 reg;
-> >  
-> >         set ^= enable;
-> > @@ -53,6 +54,20 @@ static void clk_gate_endisable(struct clk_hw *hw, int enable)
-> >         if (gate->lock)
-> >                 spin_lock_irqsave(gate->lock, flags);
-> >  
-> > +       /*
-> > +        * if a "shared use counter" was specified, keep track of enable
-> > +        * and disable calls and only access hardware registers upon the
-> > +        * very first enable or very last disable call
-> > +        */
-> > +       if (!gate->share_count) {
-> > +               need_reg_access = 1;
-> > +       } else if (enable) {
-> > +               need_reg_access = (*gate->share_count)++ == 0;
-> > +       } else {
-> > +               need_reg_access = --(*gate->share_count) == 0;
-> > +       }
+> > diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+> > index fc9c1cb..c5fcdd0 100644
+> > --- a/arch/powerpc/platforms/512x/Kconfig
+> > +++ b/arch/powerpc/platforms/512x/Kconfig
+> > @@ -1,9 +1,21 @@
+> > +config MPC512x_COMMON_CLK
+> > +       bool "MPC512x platform uses COMMON_CLK"
+> > +       default y
+> > +       depends on PPC_MPC512x
+> > +       help
+> > +         This option is only here to support tests and comparison
+> > +         during development and migration.  This option will get
+> > +         removed after the COMMON_CLK support for MPC512x has become
+> > +         fully operational and all drivers were adjusted to explicitly
+> > +         acquire their required clocks.
 > > +
-> > +       if (need_reg_access) {
-> >                 if (gate->flags & CLK_GATE_HIWORD_MASK) {
-> >                         reg = BIT(gate->bit_idx + 16);
-> >                         if (set)
-> > @@ -67,6 +82,7 @@ static void clk_gate_endisable(struct clk_hw *hw, int enable)
-> >                 }
-> >  
-> >                 clk_writel(reg, gate->reg);
-> > +       }
-> >  
-> >         if (gate->lock)
-> >                 spin_unlock_irqrestore(gate->lock, flags);
-> > @@ -118,10 +134,11 @@ EXPORT_SYMBOL_GPL(clk_gate_ops);
-> >   * @clk_gate_flags: gate-specific flags for this clock
-> >   * @lock: shared register lock for this clock
-> >   */
-> > -struct clk *clk_register_gate(struct device *dev, const char *name,
-> > +struct clk *clk_register_gate_shared(struct device *dev, const char *name,
-> >                 const char *parent_name, unsigned long flags,
-> >                 void __iomem *reg, u8 bit_idx,
-> > -               u8 clk_gate_flags, spinlock_t *lock)
-> > +               u8 clk_gate_flags, spinlock_t *lock,
-> > +               int *share_count)
-> >  {
-> >         struct clk_gate *gate;
-> >         struct clk *clk;
-> > @@ -152,6 +169,7 @@ struct clk *clk_register_gate(struct device *dev, const char *name,
-> >         gate->bit_idx = bit_idx;
-> >         gate->flags = clk_gate_flags;
-> >         gate->lock = lock;
-> > +       gate->share_count = share_count;
-> >         gate->hw.init = &init;
-> >  
-> >         clk = clk_register(dev, &gate->hw);
-> > @@ -161,3 +179,14 @@ struct clk *clk_register_gate(struct device *dev, const char *name,
-> >  
-> >         return clk;
-> >  }
-> > +
-> > +struct clk *clk_register_gate(struct device *dev, const char *name,
-> > +               const char *parent_name, unsigned long flags,
-> > +               void __iomem *reg, u8 bit_idx,
-> > +               u8 clk_gate_flags, spinlock_t *lock)
-> > +{
-> > +
-> > +       return clk_register_gate_shared(dev, name, parent_name, flags,
-> > +                                       reg, bit_idx, clk_gate_flags,
-> > +                                       lock, NULL);
-> > +}
-> > --- a/include/linux/clk-provider.h
-> > +++ b/include/linux/clk-provider.h
-> > @@ -222,6 +222,7 @@ struct clk_gate {
-> >         u8              bit_idx;
-> >         u8              flags;
-> >         spinlock_t      *lock;
-> > +       int             *share_count;
-> >  };
-> >  
-> >  #define CLK_GATE_SET_TO_DISABLE                BIT(0)
-> > @@ -232,6 +233,11 @@ struct clk *clk_register_gate(struct device *dev, const char *name,
-> >                 const char *parent_name, unsigned long flags,
-> >                 void __iomem *reg, u8 bit_idx,
-> >                 u8 clk_gate_flags, spinlock_t *lock);
-> > +struct clk *clk_register_gate_shared(struct device *dev, const char *name,
-> > +               const char *parent_name, unsigned long flags,
-> > +               void __iomem *reg, u8 bit_idx,
-> > +               u8 clk_gate_flags, spinlock_t *lock,
-> > +               int *share_count);
-> >  
-> >  struct clk_div_table {
-> >         unsigned int    val;
-> > 
-> > 
-> > How to use these shared gates:
-> > 
-> > --- a/arch/powerpc/platforms/512x/clock-commonclk.c
+> >  config PPC_MPC512x
+> >         bool "512x-based boards"
+> >         depends on 6xx
+> >         select FSL_SOC
+> >         select IPIC
+> > -       select PPC_CLOCK
+> > +       select PPC_CLOCK if !MPC512x_COMMON_CLK
+> > +       select COMMON_CLK if MPC512x_COMMON_CLK
+> >         select PPC_PCI_CHOICE
+> >         select FSL_PCI if PCI
+> >         select ARCH_WANT_OPTIONAL_GPIOLIB
+> > diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
+> > index 72fb934..1e05f9d 100644
+> > --- a/arch/powerpc/platforms/512x/Makefile
+> > +++ b/arch/powerpc/platforms/512x/Makefile
+> > @@ -1,7 +1,9 @@
+> >  #
+> >  # Makefile for the Freescale PowerPC 512x linux kernel.
+> >  #
+> > -obj-y                          += clock.o mpc512x_shared.o
+> > +obj-$(CONFIG_PPC_CLOCK)                += clock.o
+> > +obj-$(CONFIG_COMMON_CLK)       += clock-commonclk.o
+> > +obj-y                          += mpc512x_shared.o
+> >  obj-$(CONFIG_MPC5121_ADS)      += mpc5121_ads.o mpc5121_ads_cpld.o
+> >  obj-$(CONFIG_MPC512x_GENERIC)  += mpc512x_generic.o
+> >  obj-$(CONFIG_PDM360NG)         += pdm360ng.o
+> > diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
+> > new file mode 100644
+> > index 0000000..762ee85
+> > --- /dev/null
 > > +++ b/arch/powerpc/platforms/512x/clock-commonclk.c
-> > @@ -123,6 +123,39 @@ static inline struct clk *mpc512x_clk_gated(
-> >                                  reg, pos, 0, &clklock);
-> >  }
-> >  
-> > +enum mpc512x_clk_shared_gate_id_t {
-> > +       MPC512x_CLK_SHARED_GATE_MSCAN,
-> > +       MPC512x_CLK_SHARED_GATE_MAX,
+> > @@ -0,0 +1,786 @@
+> > +/*
+> > + * Copyright (C) 2013 DENX Software Engineering
+> > + *
+> > + * Gerhard Sittig, <gsi@denx.de>
+> > + *
+> > + * common clock driver support for the MPC512x platform
+> > + *
+> > + * This is free software; you can redistribute it and/or modify it
+> > + * under the terms of the GNU General Public License as published by
+> > + * the Free Software Foundation; either version 2 of the License, or
+> > + * (at your option) any later version.
+> > + */
+> > +
+> > +#include <linux/clk-provider.h>
+> > +#include <linux/clkdev.h>
+> > +#include <linux/device.h>
+> > +#include <linux/errno.h>
+> > +#include <linux/io.h>
+> > +#include <linux/of.h>
+> > +
+> > +#include <asm/mpc5121.h>
+> > +#include <dt-bindings/clock/mpc512x-clock.h>
+> > +
+> > +#include "mpc512x.h"           /* our public mpc5121_clk_init() API */
+> > +
+> > +/* helpers to keep the MCLK intermediates "somewhere" in our table */
+> > +enum {
+> > +       MCLK_IDX_MUX0,
+> > +       MCLK_IDX_EN0,
+> > +       MCLK_IDX_DIV0,
+> > +       MCLK_IDX_MUX1,
+> > +       MCLK_MAX_IDX,
 > > +};
 > > +
-> > +static int mpc512x_clk_gate_counters[MPC512x_CLK_SHARED_GATE_MAX];
+> > +#define NR_PSCS                        12
+> > +#define NR_MSCANS              4
+> > +#define NR_SPDIFS              1
+> > +#define NR_MCLKS               (NR_PSCS + NR_MSCANS + NR_SPDIFS)
 > > +
-> > +/*
-> > + * implementor's note:  since clk_gate items don't implement a separate
-> > + * .disable_unused() callback, their .disable() routine gets called and
-> > + * "disable the clock as we can't see it's in use" cannot be told from
-> > + * "regular disable, count these events please"
-> > + *
-> > + * passing the CLK_IGNORE_UNUSED flag upon clock creation will suppress
-> > + * the "disable, unused" call, so use counts won't get unbalanced, the
-> > + * clock either never got enabled and thus need not get disabled, or
-> > + * part of the hardware got enabled while disabling the other part isn't
-> > + * wanted
-> > + */
-> > +static inline struct clk *mpc512x_clk_gated_shared(
+> > +/* extend the public set of clocks by adding internal slots for management */
+> > +enum {
+> > +       /* arrange for adjacent numbers after the public set */
+> > +       MPC512x_CLK_START_PRIVATE = MPC512x_CLK_LAST_PUBLIC,
+> > +       /* clocks which aren't announced to the public */
+> > +       MPC512x_CLK_DDR,
+> > +       MPC512x_CLK_MEM,
+> > +       MPC512x_CLK_IIM,
+> > +       MPC512x_CLK_SDHC_2,
+> > +       /* intermediates in div+gate combos or fractional dividers */
+> > +       MPC512x_CLK_DDR_UG,
+> > +       MPC512x_CLK_SDHC_x4,
+> > +       MPC512x_CLK_SDHC_UG,
+> > +       MPC512x_CLK_DIU_x4,
+> > +       MPC512x_CLK_DIU_UG,
+> > +       MPC512x_CLK_MBX_BUS_UG,
+> > +       MPC512x_CLK_MBX_UG,
+> > +       MPC512x_CLK_MBX_3D_UG,
+> > +       MPC512x_CLK_PCI_UG,
+> > +       MPC512x_CLK_NFC_UG,
+> > +       MPC512x_CLK_LPC_UG,
+> > +       MPC512x_CLK_SPDIF_TX_IN,
+> > +       /* intermediates for the mux+gate+div+mux MCLK generation */
+> > +       MPC512x_CLK_MCLKS_FIRST,
+> > +       MPC512x_CLK_MCLKS_LAST = MPC512x_CLK_MCLKS_FIRST
+> > +                               + NR_MCLKS * MCLK_MAX_IDX,
+> > +       /* internal, symbolic spec for the number of slots */
+> > +       MPC512x_CLK_LAST_PRIVATE,
+> > +};
+> > +
+> > +/* data required for the OF clock provider registration */
+> > +static struct clk *clks[MPC512x_CLK_LAST_PRIVATE];
+> > +static struct clk_onecell_data clk_data;
+> > +
+> > +/* CCM register access */
+> > +static struct mpc512x_ccm __iomem *clkregs;
+> > +static DEFINE_SPINLOCK(clklock);
+> > +
+> > +/* convenience wrappers around the common clk API */
+> > +static inline struct clk *mpc512x_clk_fixed(const char *name, int rate)
+> > +{
+> > +       return clk_register_fixed_rate(NULL, name, NULL, CLK_IS_ROOT, rate);
+> > +}
+> > +
+> > +static inline struct clk *mpc512x_clk_factor(
 > > +       const char *name, const char *parent_name,
-> > +       u32 __iomem *reg, u8 pos,
-> > +       enum mpc512x_clk_shared_gate_id_t share_id)
+> > +       int mul, int div)
 > > +{
 > > +       int clkflags;
 > > +
 > > +       clkflags = CLK_SET_RATE_PARENT;
-> > +       clkflags |= CLK_IGNORE_UNUSED;
-> > +       return clk_register_gate_shared(NULL, name, parent_name, clkflags,
-> > +                                       reg, pos, 0, &clklock,
-> > +                                       &mpc512x_clk_gate_counters[share_id]);
+> > +       return clk_register_fixed_factor(NULL, name, parent_name, clkflags,
+> > +                                        mul, div);
 > > +}
 > > +
-> >  static inline struct clk *mpc512x_clk_muxed(const char *name,
-> >         const char **parent_names, int parent_count,
-> >         u32 __iomem *reg, u8 pos, u8 len)
-> > @@ -520,9 +553,16 @@ static void mpc512x_clk_setup_mclk(struct mclk_setup_data *entry)
-> >                                 1, 1);
-> >         }
-> >         if (sccr_reg) {
-> > +               if (entry->type == MCLK_TYPE_MSCAN) {
-> > +                       clks[clks_idx_pub] = mpc512x_clk_gated_shared(
-> > +                                       entry->name_mclk,
-> > +                                       entry->name_mux1, sccr_reg, sccr_bit,
-> > +                                       MPC512x_CLK_SHARED_GATE_MSCAN);
-> > +               } else {
-> >                         clks[clks_idx_pub] = mpc512x_clk_gated(
-> >                                         entry->name_mclk,
-> >                                         entry->name_mux1, sccr_reg, sccr_bit);
-> > +               }
-> >         } else {
-> >                 clks[clks_idx_pub] = mpc512x_clk_factor(
-> >                                 entry->name_mclk,
-> > 
-> > Local tests have shown that the extension solves the problem of
-> > how to satisfy the SoC's constraints on the MPC512x platform.
-> > The MSCAN clocks no longer need to get pre-enabled, instead they
-> > get setup and enabled only as the mscan(4) driver probes devices
-> > according to how it was instructed (device tree nodes).
-> > 
-> > What do you think?  Is the "shared gate" support in the common
-> > logic appropriate?  I'd rather not duplicate all of this code
-> > just to introduce the specific gate I need, while most of the
-> > logic is identical to the existing gate implementation.  The
-> > desire isn't to override the gate's operations, but to wrap them
-> > and to consult a counter in addition, while the register access
-> > still applies.
+> > +static inline struct clk *mpc512x_clk_divider(
+> > +       const char *name, const char *parent_name, u8 clkflags,
+> > +       u32 __iomem *reg, u8 pos, u8 len, int divflags)
+> > +{
+> > +       return clk_register_divider(NULL, name, parent_name, clkflags,
+> > +                                   reg, pos, len, divflags, &clklock);
+> > +}
+> > +
+> > +static inline struct clk *mpc512x_clk_divtable(
+> > +       const char *name, const char *parent_name,
+> > +       u32 __iomem *reg, u8 pos, u8 len,
+> > +       const struct clk_div_table *divtab)
+> > +{
+> > +       u8 divflags;
+> > +
+> > +       divflags = 0;
+> > +       return clk_register_divider_table(NULL, name, parent_name, 0,
+> > +                                         reg, pos, len, divflags,
+> > +                                         divtab, &clklock);
+> > +}
+> > +
+> > +static inline struct clk *mpc512x_clk_gated(
+> > +       const char *name, const char *parent_name,
+> > +       u32 __iomem *reg, u8 pos)
+> > +{
+> > +       int clkflags;
+> > +
+> > +       clkflags = CLK_SET_RATE_PARENT;
+> > +       return clk_register_gate(NULL, name, parent_name, clkflags,
+> > +                                reg, pos, 0, &clklock);
+> > +}
+> > +
+> > +static inline struct clk *mpc512x_clk_muxed(const char *name,
+> > +       const char **parent_names, int parent_count,
+> > +       u32 __iomem *reg, u8 pos, u8 len)
+> > +{
+> > +       int clkflags;
+> > +       u8 muxflags;
+> > +
+> > +       clkflags = CLK_SET_RATE_PARENT;
+> > +       muxflags = 0;
+> > +       return clk_register_mux(NULL, name,
+> > +                               parent_names, parent_count, clkflags,
+> > +                               reg, pos, len, muxflags, &clklock);
+> > +}
+> > +
+> > +/* helper to isolate a bit field from a register */
+> > +static inline int get_bit_field(uint32_t __iomem *reg, uint8_t pos, uint8_t len)
+> > +{
+> > +       uint32_t val;
+> > +
+> > +       val = in_be32(reg);
+> > +       val >>= pos;
+> > +       val &= (1 << len) - 1;
+> > +       return val;
+> > +}
+> > +
+> > +/* get the SPMF and translate it into the "sys pll" multiplier */
+> > +static int get_spmf_mult(void)
+> > +{
+> > +       static int spmf_to_mult[] = {
+> > +               68, 1, 12, 16, 20, 24, 28, 32,
+> > +               36, 40, 44, 48, 52, 56, 60, 64,
+> > +       };
+> > +       int spmf;
+> > +
+> > +       spmf = get_bit_field(&clkregs->spmr, 24, 4);
+> > +       return spmf_to_mult[spmf];
+> > +}
+> > +
+> > +/*
+> > + * get the SYS_DIV value and translate it into a divide factor
+> > + *
+> > + * values returned from here are a multiple of the real factor since the
+> > + * divide ratio is fractional
+> > + */
+> > +static int get_sys_div_x2(void)
+> > +{
+> > +       static int sysdiv_code_to_x2[] = {
+> > +               4, 5, 6, 7, 8, 9, 10, 14,
+> > +               12, 16, 18, 22, 20, 24, 26, 30,
+> > +               28, 32, 34, 38, 36, 40, 42, 46,
+> > +               44, 48, 50, 54, 52, 56, 58, 62,
+> > +               60, 64, 66,
+> > +       };
+> > +       int divcode;
+> > +
+> > +       divcode = get_bit_field(&clkregs->scfr2, 26, 6);
+> > +       return sysdiv_code_to_x2[divcode];
+> > +}
+> > +
+> > +/*
+> > + * get the CPMF value and translate it into a multiplier factor
+> > + *
+> > + * values returned from here are a multiple of the real factor since the
+> > + * multiplier ratio is fractional
+> > + */
+> > +static int get_cpmf_mult_x2(void)
+> > +{
+> > +       static int cpmf_to_mult[] = {
+> > +               72, 2, 2, 3, 4, 5, 6, 7,
+> > +       };
+> > +       int cpmf;
+> > +
+> > +       cpmf = get_bit_field(&clkregs->spmr, 16, 4);
+> > +       return cpmf_to_mult[cpmf];
+> > +}
+> > +
+> > +/*
+> > + * some of the clock dividers do scale in a linear way, yet not all of
+> > + * their bit combinations are legal; use a divider table to get a
+> > + * resulting set of applicable divider values
+> > + */
+> > +
+> > +/* applies to the IPS_DIV, and PCI_DIV values */
+> > +static struct clk_div_table divtab_2346[] = {
+> > +       { .val = 2, .div = 2, },
+> > +       { .val = 3, .div = 3, },
+> > +       { .val = 4, .div = 4, },
+> > +       { .val = 6, .div = 6, },
+> > +       { .div = 0, },
+> > +};
+> > +
+> > +/* applies to the MBX_DIV, LPC_DIV, and NFC_DIV values */
+> > +static struct clk_div_table divtab_1234[] = {
+> > +       { .val = 1, .div = 1, },
+> > +       { .val = 2, .div = 2, },
+> > +       { .val = 3, .div = 3, },
+> > +       { .val = 4, .div = 4, },
+> > +       { .div = 0, },
+> > +};
+> > +
+> > +static int get_freq_from_dt(char *propname)
+> > +{
+> > +       struct device_node *np;
+> > +       const unsigned int *prop;
+> > +       int val;
+> > +
+> > +       val = 0;
+> > +       np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-immr");
+> > +       if (np) {
+> > +               prop = of_get_property(np, propname, NULL);
+> > +               if (prop)
+> > +                       val = *prop;
+> > +           of_node_put(np);
+> > +       }
+> > +       return val;
+> > +}
+> > +
+> > +static void mpc512x_clk_preset_data(void)
+> > +{
+> > +       size_t i;
+> > +
+> > +       for (i = 0; i < ARRAY_SIZE(clks); i++)
+> > +               clks[i] = ERR_PTR(-ENODEV);
+> > +}
+> > +
+> > +/*
+> > + * - receives the "bus frequency" from the caller (that's the IPS clock
+> > + *   rate, the historical source of clock information)
+> > + * - fetches the system PLL multiplier and divider values as well as the
+> > + *   IPS divider value from hardware
+> > + * - determines the REF clock rate either from the XTAL/OSC spec (if
+> > + *   there is a device tree node describing the oscillator) or from the
+> > + *   IPS bus clock (supported for backwards compatibility, such that
+> > + *   setups without XTAL/OSC specs keep working)
+> > + * - creates the "ref" clock item in the clock tree, such that
+> > + *   subsequent code can create the remainder of the hierarchy (REF ->
+> > + *   SYS -> CSB -> IPS) from the REF clock rate and the returned mul/div
+> > + *   values
+> > + */
+> > +static void mpc512x_clk_setup_ref_clock(int bus_freq,
+> > +       int *sys_mul, int *sys_div, int *ips_div)
+> > +{
+> > +       struct clk *osc_clk;
+> > +       int calc_freq;
+> > +
+> > +       /* fetch mul/div factors from the hardware */
+> > +       *sys_mul = get_spmf_mult();
+> > +       *sys_mul *= 2;          /* compensate for the fractional divider */
+> > +       *sys_div = get_sys_div_x2();
+> > +       *ips_div = get_bit_field(&clkregs->scfr1, 23, 3);
+> > +
+> > +       /* lookup the oscillator node */
+> > +       osc_clk = clk_get(NULL, "osc");
+> > +       if (osc_clk) {
+> > +               /* descend REF directly from OSC, verify the IPS rate */
+> > +               clks[MPC512x_CLK_REF] = mpc512x_clk_factor("ref", "osc", 1, 1);
+> > +               calc_freq = clk_get_rate(clks[MPC512x_CLK_REF]);
+> > +               calc_freq *= *sys_mul;
+> > +               calc_freq /= *sys_div;
+> > +               calc_freq /= 2;
+> > +               calc_freq /= *ips_div;
+> > +               if (bus_freq && calc_freq != bus_freq)
+> > +                       pr_warn("calc rate %d != OF spec %d\n",
+> > +                               calc_freq, bus_freq);
+> > +       } else {
+> > +               /* calculate OSC rate and create REF from the freq value */
+> > +               calc_freq = bus_freq;   /* start with IPS */
+> > +               calc_freq *= *ips_div;  /* IPS -> CSB */
+> > +               calc_freq *= 2;         /* CSB -> SYS */
+> > +               calc_freq *= *sys_div;  /* SYS -> PLL out */
+> > +               calc_freq /= *sys_mul;  /* PLL out -> REF == OSC */
+> > +               clks[MPC512x_CLK_REF] = mpc512x_clk_fixed("ref", calc_freq);
+> > +       }
+> > +}
+> > +
+> > +/*
+> > + * helper code for the MCLK subtree setup
+> > + *
+> > + * the overview in section 5.2.4 of the MPC5121e Reference Manual rev4
+> > + * suggests that all instances of the "PSC clock generation" are equal,
+> > + * and that one might re-use the PSC setup for MSCAN clock generation
+> > + * (section 5.2.5) as well, at least the logic if not the data for
+> > + * description
+> > + *
+> > + * the details (starting at page 5-20) show differences in the specific
+> > + * inputs of the first mux stage ("can clk in", "spdif tx"), and the
+> > + * factual non-availability of the second mux stage (it's present yet
+> > + * only one input is valid)
+> > + *
+> > + * the MSCAN clock related registers (starting at page 5-35) all
+> > + * reference "spdif clk" at the first mux stage and don't mention any
+> > + * "can clk" at all, which somehow is unexpected
+> > + *
+> > + * TODO re-check the document, and clarify whether the RM is correct in
+> > + * the overview or in the details, and whether the difference is a
+> > + * clipboard induced error or results from chip revisions
+> > + *
+> > + * it turns out that the RM rev4 as of 2012-06 talks about "can" for the
+> > + * PSCs while RM rev3 as of 2008-10 talks about "spdif", so I guess that
+> > + * first a doc update is required which better reflects reality in the
+> > + * SoC before the implementation should follow while no questions remain
+> > + */
+> > +
+> > +/*
+> > + * note that this declaration raises a checkpatch warning, but
+> > + * it's the very data type which <linux/clk-provider.h> expects,
+> > + * making this declaration pass checkpatch will break compilation
+> > + */
+> > +static const char *parent_names_mux0[] = {
+> > +       "sys", "ref", "psc-mclk-in", "spdif-tx",
+> > +};
+> > +
+> > +enum mclk_type {
+> > +       MCLK_TYPE_PSC,
+> > +       MCLK_TYPE_MSCAN,
+> > +       MCLK_TYPE_SPDIF,
+> > +};
+> > +
+> > +struct mclk_setup_data {
+> > +       enum mclk_type type;
+> > +       int comp_idx;
+> > +       bool has_mclk1;
+> > +       int bit_sccr1, bit_sccr2;
+> > +       const char *name_mux0;
+> > +       const char *name_en0;
+> > +       const char *name_div0;
+> > +       const char *parent_names_mux1[2];
+> > +       const char *name_mux1;
+> > +       const char *name_mclk;
+> > +};
+> > +
+> > +#define MCLK_SETUP_DATA_PSC(id) { \
+> > +       MCLK_TYPE_PSC, id, \
+> > +       0, 27 - id, -1, \
+> > +       "psc" #id "-mux0", \
+> > +       "psc" #id "-en0", \
+> > +       "psc" #id "_mclk_div", \
+> > +       { "psc" #id "_mclk_div", "dummy", }, \
+> > +       "psc" #id "_mclk_out", \
+> > +       "psc" #id "_mclk", \
+> > +}
+> > +
+> > +#define MCLK_SETUP_DATA_MSCAN(id) { \
+> > +       MCLK_TYPE_MSCAN, id, \
+> > +       0, -1, 25, \
+> > +       "mscan" #id "-mux0", \
+> > +       "mscan" #id "-en0", \
+> > +       "mscan" #id "_mclk_div", \
+> > +       { "mscan" #id "_mclk_div", "dummy", }, \
+> > +       "mscan" #id "_mclk_out", \
+> > +       "mscan" #id "_mclk", \
+> > +}
+> > +
+> > +#define MCLK_SETUP_DATA_SPDIF { \
+> > +       MCLK_TYPE_SPDIF, 0, \
+> > +       1, -1, 23, \
+> > +       "spdif-mux0", \
+> > +       "spdif-en0", \
+> > +       "spdif_mclk_div", \
+> > +       { "spdif_mclk_div", "spdif-rx", }, \
+> > +       "spdif_mclk_out", \
+> > +       "spdif_mclk", \
+> > +}
+> > +
+> > +static struct mclk_setup_data mclk_psc_data[] = {
+> > +       MCLK_SETUP_DATA_PSC(0),
+> > +       MCLK_SETUP_DATA_PSC(1),
+> > +       MCLK_SETUP_DATA_PSC(2),
+> > +       MCLK_SETUP_DATA_PSC(3),
+> > +       MCLK_SETUP_DATA_PSC(4),
+> > +       MCLK_SETUP_DATA_PSC(5),
+> > +       MCLK_SETUP_DATA_PSC(6),
+> > +       MCLK_SETUP_DATA_PSC(7),
+> > +       MCLK_SETUP_DATA_PSC(8),
+> > +       MCLK_SETUP_DATA_PSC(9),
+> > +       MCLK_SETUP_DATA_PSC(10),
+> > +       MCLK_SETUP_DATA_PSC(11),
+> > +};
+> > +
+> > +static struct mclk_setup_data mclk_mscan_data[] = {
+> > +       MCLK_SETUP_DATA_MSCAN(0),
+> > +       MCLK_SETUP_DATA_MSCAN(1),
+> > +       MCLK_SETUP_DATA_MSCAN(2),
+> > +       MCLK_SETUP_DATA_MSCAN(3),
+> > +};
+> > +
+> > +static struct mclk_setup_data mclk_spdif_data[] = {
+> > +       MCLK_SETUP_DATA_SPDIF,
+> > +};
+> > +
+> > +/* setup the MCLK clock subtree of an individual PSC/MSCAN/SPDIF */
+> > +static void mpc512x_clk_setup_mclk(struct mclk_setup_data *entry)
+> > +{
+> > +       size_t clks_idx_pub, clks_idx_int;
+> > +       u32 __iomem *mccr_reg;  /* MCLK control register (mux, en, div) */
+> > +       u32 __iomem *sccr_reg;  /* system clock control register (enable) */
+> > +       int sccr_bit;
+> > +       int div;
+> > +
+> > +       /* derive a few parameters from the component type and index */
+> > +       switch (entry->type) {
+> > +       case MCLK_TYPE_PSC:
+> > +               clks_idx_pub = MPC512x_CLK_PSC0_MCLK + entry->comp_idx;
+> > +               clks_idx_int = MPC512x_CLK_MCLKS_FIRST
+> > +                            + (entry->comp_idx) * MCLK_MAX_IDX;
+> > +               mccr_reg = &clkregs->psc_ccr[entry->comp_idx];
+> > +               break;
+> > +       case MCLK_TYPE_MSCAN:
+> > +               clks_idx_pub = MPC512x_CLK_MSCAN0_MCLK + entry->comp_idx;
+> > +               clks_idx_int = MPC512x_CLK_MCLKS_FIRST
+> > +                            + (NR_PSCS + entry->comp_idx) * MCLK_MAX_IDX;
+> > +               mccr_reg = &clkregs->mscan_ccr[entry->comp_idx];
+> > +               break;
+> > +       case MCLK_TYPE_SPDIF:
+> > +               clks_idx_pub = MPC512x_CLK_SPDIF_MCLK;
+> > +               clks_idx_int = MPC512x_CLK_MCLKS_FIRST
+> > +                            + (NR_PSCS + NR_MSCANS) * MCLK_MAX_IDX;
+> > +               mccr_reg = &clkregs->spccr;
+> > +               break;
+> > +       default:
+> > +               return;
+> > +       }
+> > +       if (entry->bit_sccr1 >= 0) {
+> > +               sccr_reg = &clkregs->sccr1;
+> > +               sccr_bit = entry->bit_sccr1;
+> > +       } else if (entry->bit_sccr2 >= 0) {
+> > +               sccr_reg = &clkregs->sccr2;
+> > +               sccr_bit = entry->bit_sccr2;
+> > +       } else {
+> > +               sccr_reg = NULL;
+> > +       }
+> > +
+> > +       /*
+> > +        * this was grabbed from the PPC_CLOCK implementation, which
+> > +        * enforced a specific MCLK divider while the clock was gated
+> > +        * during setup (that's a documented hardware requirement)
+> > +        *
+> > +        * the PPC_CLOCK implementation might even have violated the
+> > +        * "MCLK <= IPS" constraint, the fixed divider value of 1
+> > +        * results in a divider of 2 and thus MCLK = SYS/2 which equals
+> > +        * CSB which is greater than IPS; the serial port setup may have
+> > +        * adjusted the divider which the clock setup might have left in
+> > +        * an undesirable state
+> > +        *
+> > +        * initial setup is:
+> > +        * - MCLK 0 from SYS
+> > +        * - MCLK DIV such to not exceed the IPS clock
+> > +        * - MCLK 0 enabled
+> > +        * - MCLK 1 from MCLK DIV
+> > +        */
+> > +       div = clk_get_rate(clks[MPC512x_CLK_SYS]);
+> > +       div /= clk_get_rate(clks[MPC512x_CLK_IPS]);
+> > +       out_be32(mccr_reg, (0 << 16));
+> > +       out_be32(mccr_reg, (0 << 16) | ((div - 1) << 17));
+> > +       out_be32(mccr_reg, (1 << 16) | ((div - 1) << 17));
+> > +
+> > +       /*
+> > +        * create the 'struct clk' items of the MCLK's clock subtree
+> > +        *
+> > +        * note that by design we always create all nodes and won't take
+> > +        * shortcuts here, because
+> > +        * - the "internal" MCLK_DIV and MCLK_OUT signal in turn are
+> > +        *   selectable inputs to the CFM while those who "actually use"
+> > +        *   the PSC/MSCAN/SPDIF (serial drivers et al) need the MCLK
+> > +        *   for their bitrate
+> > +        * - in the absence of "aliases" for clocks we need to create
+> > +        *   individial 'struct clk' items for whatever might get
+> > +        *   referenced or looked up, even if several of those items are
+> > +        *   identical from the logical POV (their rate value)
+> > +        * - for easier future maintenance and for better reflection of
+> > +        *   the SoC's documentation, it appears appropriate to generate
+> > +        *   clock items even for those muxers which actually are NOPs
+> > +        *   (those with two inputs of which one is reserved)
+> > +        */
+> > +       clks[clks_idx_int + MCLK_IDX_MUX0] = mpc512x_clk_muxed(
+> > +                       entry->name_mux0,
+> > +                       &parent_names_mux0[0], ARRAY_SIZE(parent_names_mux0),
+> > +                       mccr_reg, 14, 2);
+> > +       clks[clks_idx_int + MCLK_IDX_EN0] = mpc512x_clk_gated(
+> > +                       entry->name_en0, entry->name_mux0,
+> > +                       mccr_reg, 16);
+> > +       clks[clks_idx_int + MCLK_IDX_DIV0] = mpc512x_clk_divider(
+> > +                       entry->name_div0,
+> > +                       entry->name_en0, CLK_SET_RATE_GATE,
+> > +                       mccr_reg, 17, 15, 0);
+> > +       if (entry->has_mclk1) {
+> > +               clks[clks_idx_int + MCLK_IDX_MUX1] = mpc512x_clk_muxed(
+> > +                               entry->name_mux1,
+> > +                               &entry->parent_names_mux1[0],
+> > +                               ARRAY_SIZE(entry->parent_names_mux1),
+> > +                               mccr_reg, 7, 1);
+> > +       } else {
+> > +               clks[clks_idx_int + MCLK_IDX_MUX1] = mpc512x_clk_factor(
+> > +                               entry->name_mux1, entry->parent_names_mux1[0],
+> > +                               1, 1);
+> > +       }
+> > +       if (sccr_reg) {
+> > +               clks[clks_idx_pub] = mpc512x_clk_gated(
+> > +                               entry->name_mclk,
+> > +                               entry->name_mux1, sccr_reg, sccr_bit);
+> > +       } else {
+> > +               clks[clks_idx_pub] = mpc512x_clk_factor(
+> > +                               entry->name_mclk,
+> > +                               entry->name_mux1, 1, 1);
+> > +       }
+> > +
+> > +       /*
+> > +        * without this "clock device" registration, "simple" lookups in
+> > +        * the SPI master initialization and serial port setup will fail
+> > +        *
+> > +        * those drivers need to get adjusted to lookup their required
+> > +        * clocks from device tree specs, and device tree nodes need to
+> > +        * provide the clock specs, before this clkdev registration
+> > +        * becomes obsolete
+> > +        */
+> > +       clk_register_clkdev(clks[clks_idx_pub], entry->name_mclk, NULL);
+> > +}
+> > +
+> > +static void mpc512x_clk_setup_mclks(struct mclk_setup_data *table, size_t count)
+> > +{
+> > +       while (count-- > 0)
+> > +               mpc512x_clk_setup_mclk(table++);
+> > +}
+> > +
+> > +static void mpc512x_clk_setup_clock_tree(int busfreq)
+> > +{
+> > +       int sys_mul, sys_div, ips_div;
+> > +       int mul, div;
+> > +       int freq;
+> > +
+> > +       /*
+> > +        * TODO
+> > +        * - consider whether to handle clocks which have both gates and
+> > +        *   dividers via intermediates or by means of composites
+> > +        * - fractional dividers appear to not map well to composites
+> > +        *   since they can be seen as a fixed multiplier and an
+> > +        *   adjustable divider, while composites can only combine at
+> > +        *   most one of a mux, div, and gate each into one 'struct clk'
+> > +        *   item
+> > +        * - PSC/MSCAN/SPDIF clock generation OTOH already is very
+> > +        *   specific and cannot get mapped to componsites (at least not
+> > +        *   a single one, maybe two of them, but see the comment about
+> > +        *   "intermediates are referenced from elsewhere, too")
+> > +        * - trim the list of auto-enabled clocks after drivers acquire
+> > +        *   them correctly as needed
+> > +        */
+> > +
+> > +       /* regardless of whether XTAL/OSC exists, have REF created */
+> > +       mpc512x_clk_setup_ref_clock(busfreq, &sys_mul, &sys_div, &ips_div);
+> > +
+> > +       /* now setup the REF -> SYS -> CSB -> IPS hierarchy */
+> > +       clks[MPC512x_CLK_SYS] = mpc512x_clk_factor("sys", "ref",
+> > +                                                  sys_mul, sys_div);
+> > +       clks[MPC512x_CLK_CSB] = mpc512x_clk_factor("csb", "sys", 1, 2);
+> > +       clks[MPC512x_CLK_IPS] = mpc512x_clk_divtable("ips", "csb",
+> > +                                                    &clkregs->scfr1, 23, 3,
+> > +                                                    divtab_2346);
+> > +
+> > +       /* now setup anything below SYS and CSB and IPS */
+> > +       clks[MPC512x_CLK_DDR_UG] = mpc512x_clk_factor("ddr-ug", "sys", 1, 2);
+> > +       clks[MPC512x_CLK_SDHC_x4] = mpc512x_clk_factor("sdhc-x4", "csb", 4, 1);
+> > +       clks[MPC512x_CLK_SDHC_UG] = mpc512x_clk_divider("sdhc-ug", "sdhc-x4", 0,
+> > +                                                       &clkregs->scfr2, 0, 8,
+> > +                                                       CLK_DIVIDER_ONE_BASED);
+> > +       clks[MPC512x_CLK_DIU_x4] = mpc512x_clk_factor("diu-x4", "csb", 4, 1);
+> > +       clks[MPC512x_CLK_DIU_UG] = mpc512x_clk_divider("diu-ug", "diu-x4", 0,
+> > +                                                      &clkregs->scfr1, 0, 8,
+> > +                                                      CLK_DIVIDER_ONE_BASED);
+> > +
+> > +       /*
+> > +        * the "power architecture PLL" was setup from data which was
+> > +        * sampled from the reset config word, at this point in time the
+> > +        * configuration can be considered fixed and read only (i.e. no
+> > +        * longer adjustable, or no longer in need of adjustment), which
+> > +        * is why we don't register a PLL here but assume fixed factors
+> > +        */
+> > +       mul = get_cpmf_mult_x2();
+> > +       div = 2;        /* compensate for the fractional factor */
+> > +       clks[MPC512x_CLK_E300] = mpc512x_clk_factor("e300", "csb", mul, div);
+> > +
+> > +       clks[MPC512x_CLK_MBX_BUS_UG] = mpc512x_clk_factor("mbx-bus-ug", "csb",
+> > +                                                         1, 2);
+> > +       clks[MPC512x_CLK_MBX_UG] = mpc512x_clk_divtable("mbx-ug", "mbx-bus-ug",
+> > +                                                       &clkregs->scfr1, 14, 3,
+> > +                                                       divtab_1234);
+> > +       clks[MPC512x_CLK_MBX_3D_UG] = mpc512x_clk_factor("mbx-3d-ug", "mbx-ug",
+> > +                                                        1, 1);
+> > +       clks[MPC512x_CLK_PCI_UG] = mpc512x_clk_divtable("pci-ug", "csb",
+> > +                                                       &clkregs->scfr1, 20, 3,
+> > +                                                       divtab_2346);
+> > +       clks[MPC512x_CLK_NFC_UG] = mpc512x_clk_divtable("nfc-ug", "ips",
+> > +                                                       &clkregs->scfr1, 8, 3,
+> > +                                                       divtab_1234);
+> > +       clks[MPC512x_CLK_LPC_UG] = mpc512x_clk_divtable("lpc-ug", "ips",
+> > +                                                       &clkregs->scfr1, 11, 3,
+> > +                                                       divtab_1234);
+> > +
+> > +       clks[MPC512x_CLK_LPC] = mpc512x_clk_gated("lpc", "lpc-ug",
+> > +                                                 &clkregs->sccr1, 30);
+> > +       clks[MPC512x_CLK_NFC] = mpc512x_clk_gated("nfc", "nfc-ug",
+> > +                                                 &clkregs->sccr1, 29);
+> > +       clks[MPC512x_CLK_PATA] = mpc512x_clk_gated("pata", "ips",
+> > +                                                  &clkregs->sccr1, 28);
+> > +       mpc512x_clk_setup_mclks(mclk_psc_data, ARRAY_SIZE(mclk_psc_data));
+> > +       clks[MPC512x_CLK_PSC_FIFO] = mpc512x_clk_gated("psc-fifo", "ips",
+> > +                                                      &clkregs->sccr1, 15);
+> > +       clks[MPC512x_CLK_SATA] = mpc512x_clk_gated("sata", "ips",
+> > +                                                  &clkregs->sccr1, 14);
+> > +       clks[MPC512x_CLK_FEC] = mpc512x_clk_gated("fec", "ips",
+> > +                                                 &clkregs->sccr1, 13);
+> > +       clks[MPC512x_CLK_PCI] = mpc512x_clk_gated("pci", "pci-ug",
+> > +                                                 &clkregs->sccr1, 11);
+> > +       clks[MPC512x_CLK_DDR] = mpc512x_clk_gated("ddr", "ddr-ug",
+> > +                                                 &clkregs->sccr1, 10);
+> > +
+> > +       clks[MPC512x_CLK_DIU] = mpc512x_clk_gated("diu", "diu-ug",
+> > +                                                 &clkregs->sccr2, 31);
+> > +       clks[MPC512x_CLK_AXE] = mpc512x_clk_gated("axe", "csb",
+> > +                                                 &clkregs->sccr2, 30);
+> > +       clks[MPC512x_CLK_MEM] = mpc512x_clk_gated("mem", "ips",
+> > +                                                 &clkregs->sccr2, 29);
+> > +       clks[MPC512x_CLK_USB1] = mpc512x_clk_gated("usb1", "csb",
+> > +                                                  &clkregs->sccr2, 28);
+> > +       clks[MPC512x_CLK_USB2] = mpc512x_clk_gated("usb2", "csb",
+> > +                                                  &clkregs->sccr2, 27);
+> > +       clks[MPC512x_CLK_I2C] = mpc512x_clk_gated("i2c", "ips",
+> > +                                                 &clkregs->sccr2, 26);
+> > +       mpc512x_clk_setup_mclks(mclk_mscan_data, ARRAY_SIZE(mclk_mscan_data));
+> > +       clks[MPC512x_CLK_SDHC] = mpc512x_clk_gated("sdhc", "sdhc-ug",
+> > +                                                  &clkregs->sccr2, 24);
+> > +       mpc512x_clk_setup_mclks(mclk_spdif_data, ARRAY_SIZE(mclk_spdif_data));
+> > +       clks[MPC512x_CLK_MBX_BUS] = mpc512x_clk_gated("mbx-bus", "mbx-bus-ug",
+> > +                                                     &clkregs->sccr2, 22);
+> > +       clks[MPC512x_CLK_MBX] = mpc512x_clk_gated("mbx", "mbx-ug",
+> > +                                                 &clkregs->sccr2, 21);
+> > +       clks[MPC512x_CLK_MBX_3D] = mpc512x_clk_gated("mbx-3d", "mbx-3d-ug",
+> > +                                                    &clkregs->sccr2, 20);
+> > +       clks[MPC512x_CLK_IIM] = mpc512x_clk_gated("iim", "csb",
+> > +                                                 &clkregs->sccr2, 19);
+> > +       clks[MPC512x_CLK_VIU] = mpc512x_clk_gated("viu", "csb",
+> > +                                                 &clkregs->sccr2, 18);
+> > +       clks[MPC512x_CLK_SDHC_2] = mpc512x_clk_gated("sdhc-2", "sdhc-ug",
+> > +                                                    &clkregs->sccr2, 17);
+> > +
+> > +       /*
+> > +        * externally provided clocks (when implemented in hardware,
+> > +        * device tree may specify values which otherwise were unknown)
+> > +        */
+> > +       freq = get_freq_from_dt("psc_mclk_in");
+> > +       if (!freq)
+> > +               freq = 25000000;
+> > +       clks[MPC512x_CLK_PSC_MCLK_IN] = mpc512x_clk_fixed("psc_mclk_in", freq);
+> > +       freq = get_freq_from_dt("spdif_tx_in");
+> > +       clks[MPC512x_CLK_SPDIF_TX_IN] = mpc512x_clk_fixed("spdif_tx_in", freq);
+> > +       freq = get_freq_from_dt("spdif_rx_in");
+> > +       clks[MPC512x_CLK_SPDIF_TX_IN] = mpc512x_clk_fixed("spdif_rx_in", freq);
+> > +
+> > +       /* fixed frequency for AC97, always 24.567MHz */
+> > +       clks[MPC512x_CLK_AC97] = mpc512x_clk_fixed("ac97", 24567000);
+> > +
+> > +       /* clkdev registration for compatibility reasons */
+> > +       clk_register_clkdev(clks[MPC512x_CLK_REF], "ref_clk", NULL);
+> > +       clk_register_clkdev(clks[MPC512x_CLK_SYS], "sys_clk", NULL);
+> > +       clk_register_clkdev(clks[MPC512x_CLK_VIU], "viu_clk", NULL);
+> > +       clk_register_clkdev(clks[MPC512x_CLK_NFC], "nfc_clk", NULL);
+> > +       clk_register_clkdev(clks[MPC512x_CLK_USB1], "usb1_clk", NULL);
+> > +       clk_register_clkdev(clks[MPC512x_CLK_USB2], "usb2_clk", NULL);
+> > +
+> > +       pr_debug("clock tree setup complete\n");
+> > +       freq = clk_get_rate(clks[MPC512x_CLK_E300]);
+> > +       pr_debug("derived PPC freq [%d]\n", freq);
+> > +       freq = clk_get_rate(clks[MPC512x_CLK_IPS]);
+> > +       pr_debug("derived IPS freq [%d]\n", freq);
+> > +       freq = clk_get_rate(clks[MPC512x_CLK_LPC]);
+> > +       pr_debug("derived LPC freq [%d]\n", freq);
+> > +
+> > +       /* enable some of the clocks here unconditionally because ... */
+> > +       pr_debug("automatically enabling some clocks\n");
+> > +       /* some are essential yet never get claimed by any driver */
+> > +       clk_prepare_enable(clks[MPC512x_CLK_DUMMY]);
+> > +       clk_prepare_enable(clks[MPC512x_CLK_E300]);     /* PowerPC CPU */
+> > +       clk_prepare_enable(clks[MPC512x_CLK_DDR]);      /* DRAM */
+> > +       clk_prepare_enable(clks[MPC512x_CLK_MEM]);      /* SRAM */
+> > +       clk_prepare_enable(clks[MPC512x_CLK_IPS]);      /* SoC periph */
+> > +       clk_prepare_enable(clks[MPC512x_CLK_LPC]);      /* boot media */
+> > +       /* some are required yet no dependencies were declared */
+> > +       clk_prepare_enable(clks[MPC512x_CLK_PSC_FIFO]);
+> > +       /* some are not yet acquired by their respective drivers */
+> > +       clk_prepare_enable(clks[MPC512x_CLK_PSC3_MCLK]);/* serial console */
+> > +       clk_prepare_enable(clks[MPC512x_CLK_FEC]);      /* network, NFS */
+> > +       clk_prepare_enable(clks[MPC512x_CLK_DIU]);      /* display */
+> > +       clk_prepare_enable(clks[MPC512x_CLK_I2C]);
+> > +       /*
+> > +        * some have their individual clock subtree with separate clock
+> > +        * items and their individual enable counters, yet share a
+> > +        * common gate (refer to the same register location) while the
+> > +        * common clock driver code is not aware of the fact and the
+> > +        * platform's code doesn't provide specific support either
+> > +        *
+> > +        * what might happen is that e.g. enabling two MSCAN clock items
+> > +        * and disabling one of them will disable the common gate and
+> > +        * thus break the other MSCAN clock as well
+> > +        */
+> > +       clk_prepare_enable(clks[MPC512x_CLK_MSCAN0_MCLK]);
+> > +       clk_prepare_enable(clks[MPC512x_CLK_MSCAN1_MCLK]);
+> > +       clk_prepare_enable(clks[MPC512x_CLK_MSCAN2_MCLK]);
+> > +       clk_prepare_enable(clks[MPC512x_CLK_MSCAN3_MCLK]);
+> > +}
+> > +
+> > +/*
+> > + * registers the set of public clocks (those listed in the dt-bindings/
+> > + * header file) for OF lookups, keeps the intermediates private to us
+> > + */
+> > +static void mpc5121_clk_register_of_provider(struct device_node *np)
+> > +{
+> > +       clk_data.clks = clks;
+> > +       clk_data.clk_num = MPC512x_CLK_LAST_PUBLIC + 1; /* _not_ ARRAY_SIZE() */
+> > +       of_clk_add_provider(np, of_clk_src_onecell_get, &clk_data);
+> > +}
+> > +
+> > +int __init mpc5121_clk_init(void)
+> > +{
+> > +       struct device_node *clk_np;
+> > +       int busfreq;
+> > +
+> > +       /* map the clock control registers */
+> > +       clk_np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-clock");
+> > +       if (!clk_np)
+> > +               return -ENODEV;
+> > +       clkregs = of_iomap(clk_np, 0);
+> > +       WARN_ON(!clkregs);
+> > +
+> > +       /* invalidate all not yet registered clock slots */
+> > +       mpc512x_clk_preset_data();
+> > +
+> > +       /*
+> > +        * have the device tree scanned for "fixed-clock" nodes (which
+> > +        * includes the oscillator node if the board's DT provides one)
+> > +        */
+> > +       of_clk_init(NULL);
+> > +
+> > +       /*
+> > +        * add a dummy clock for those situations where a clock spec is
+> > +        * required yet no real clock is involved
+> > +        */
+> > +       clks[MPC512x_CLK_DUMMY] = mpc512x_clk_fixed("dummy", 0);
+> > +
+> > +       /*
+> > +        * have all the real nodes in the clock tree populated from REF
+> > +        * down to all leaves, either starting from the OSC node or from
+> > +        * a REF root that was created from the IPS bus clock input
+> > +        */
+> > +       busfreq = get_freq_from_dt("bus-frequency");
+> > +       mpc512x_clk_setup_clock_tree(busfreq);
+> > +
+> > +       /* register as an OF clock provider */
+> > +       mpc5121_clk_register_of_provider(clk_np);
+> > +
+> > +       return 0;
+> > +}
+> > diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
+> > index c4f7799..7f8fc64 100644
+> > --- a/include/linux/clk-provider.h
+> > +++ b/include/linux/clk-provider.h
+> > @@ -497,6 +497,20 @@ static inline const char *of_clk_get_parent_name(struct device_node *np,
+> >   * for improved portability across platforms
+> >   */
+> >  
+> > +#if IS_ENABLED(CONFIG_PPC)
+> > +
+> > +static inline u32 clk_readl(u32 __iomem *reg)
+> > +{
+> > +       return ioread32be(reg);
+> > +}
+> > +
+> > +static inline void clk_writel(u32 val, u32 __iomem *reg)
+> > +{
+> > +       iowrite32be(val, reg);
+> > +}
+> > +
+> > +#else  /* platform dependent I/O accessors */
+> > +
+> >  static inline u32 clk_readl(u32 __iomem *reg)
+> >  {
+> >         return readl(reg);
+> > @@ -507,5 +521,7 @@ static inline void clk_writel(u32 val, u32 __iomem *reg)
+> >         writel(val, reg);
+> >  }
+> >  
+> > +#endif /* platform dependent I/O accessors */
+> > +
+> >  #endif /* CONFIG_COMMON_CLK */
+> >  #endif /* CLK_PROVIDER_H */
+> > -- 
+> > 1.7.10.4
 
 
 virtually yours
