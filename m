@@ -1,24 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E39482C0092
- for <linuxppc-dev@ozlabs.org>; Sun,  4 Aug 2013 12:45:19 +1000 (EST)
-Message-ID: <1375582866.15999.86.camel@pasglop>
-Subject: Re: windfarm_fcu_controls: cpu-pump-0 <HW FAULT>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Sun, 04 Aug 2013 12:21:06 +1000
-In-Reply-To: <87mwoyhmj9.fsf@igel.home>
-References: <87r4eb52s6.fsf@igel.home>
- <1375481448.15999.47.camel__48019.1930350431$1375481501$gmane$org@pasglop>
- <m2vc3nnp01.fsf@linux-m68k.org>
- <1375519493.15999.83.camel__49452.0221990117$1375519543$gmane$org@pasglop>
- <87r4eahoka.fsf__2165.9838072539$1375537818$gmane$org@igel.home>
- <87mwoyhmj9.fsf@igel.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
+ [IPv6:2607:f8b0:400e:c02::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A7D2A2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2013 01:49:46 +1000 (EST)
+Received: by mail-pd0-f176.google.com with SMTP id q10so2317307pdj.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Aug 2013 08:49:44 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Sun, 4 Aug 2013 08:49:43 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Meelis Roos <mroos@linux.ee>
+Subject: Re: 3.11-rc3+git: __divdi3 undefined on powerpc (from radeon)
+Message-ID: <20130804154943.GA13807@roeck-us.net>
+References: <alpine.SOC.1.00.1308031534390.1352@math.ut.ee>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.SOC.1.00.1308031534390.1352@math.ut.ee>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel list <linux-kernel@vger.kernel.org>,
+ dri-devel@lists.freedesktop.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,13 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-08-03 at 16:33 +0200, Andreas Schwab wrote:
-> But then, MacOS is happy and the hardware test didn't find anything
-> either...
+On Sat, Aug 03, 2013 at 03:44:26PM +0300, Meelis Roos wrote:
+> While trying to compile v3.11-rc3-288-gabe0308 on powerpc 32-bit, 
+> it failed with the following linking error:
+> 
+> ERROR: "__divdi3" [drivers/gpu/drm/radeon/radeon.ko] undefined!
+> 
+> Some new 64-bit division in radeon that is not implemented on 32-bit 
+> powerpc?
+> 
+> This is new - 3.11-rc3 worked fine.
+> 
+Not only powerpc - i386 builds fail with the same error.
 
-Ok, I'll take another peek at the MacOS code see if there's anything
-meaningful there (though we don't have the complete stuff, I think the
-fault mask we decoded from the OFW methods).
-
-Cheers,
-Ben.
+Guenter
