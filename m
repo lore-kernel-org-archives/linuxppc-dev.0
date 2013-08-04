@@ -1,25 +1,24 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
- [IPv6:2607:f8b0:400e:c02::230])
+Received: from mail-pd0-x234.google.com (mail-pd0-x234.google.com
+ [IPv6:2607:f8b0:400e:c02::234])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33B672C008F
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Aug 2013 10:30:16 +1000 (EST)
-Received: by mail-pd0-f176.google.com with SMTP id q10so1911529pdj.7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Aug 2013 17:30:12 -0700 (PDT)
-Date: Sun, 4 Aug 2013 08:30:03 +0800
+ by ozlabs.org (Postfix) with ESMTPS id D2B0B2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Aug 2013 10:38:26 +1000 (EST)
+Received: by mail-pd0-f180.google.com with SMTP id 15so1928039pdi.25
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Aug 2013 17:38:24 -0700 (PDT)
+Date: Sun, 4 Aug 2013 08:38:11 +0800
 From: Kevin Hao <haokexin@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 1/8] powerpc/fsl_booke: protect the access to MAS7
- with MMU_FTR_BIG_PHYS
-Message-ID: <20130804003003.GA19141@pek-khao-d1.corp.ad.wrs.com>
-References: <1372942454-25191-1-git-send-email-haokexin@gmail.com>
- <1372942454-25191-2-git-send-email-haokexin@gmail.com>
- <1374880440.30721.36@snotra>
+Subject: Re: [PATCH v2 3/8] powerpc: enable the relocatable support for the
+ fsl booke 32bit kernel
+Message-ID: <20130804003811.GB19141@pek-khao-d1.corp.ad.wrs.com>
+References: <1372942454-25191-4-git-send-email-haokexin@gmail.com>
+ <1374881326.30721.37@snotra>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="oyUTqETQ0mS9luUI"
-In-Reply-To: <1374880440.30721.36@snotra>
+ protocol="application/pgp-signature"; boundary="9zSXsLTf0vkW971A"
+In-Reply-To: <1374881326.30721.37@snotra>
 Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,70 +30,82 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---oyUTqETQ0mS9luUI
+--9zSXsLTf0vkW971A
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jul 26, 2013 at 06:14:00PM -0500, Scott Wood wrote:
-> On 07/04/2013 07:54:07 AM, Kevin Hao wrote:
-> >diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-> >b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-> >index a92c79b..2201f84 100644
-> >--- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-> >+++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-> >@@ -88,9 +88,11 @@ skpinv:	addi	r6,r6,1				/* Increment */
-> > 1:	mflr	r7
+On Fri, Jul 26, 2013 at 06:28:46PM -0500, Scott Wood wrote:
+> On 07/04/2013 07:54:09 AM, Kevin Hao wrote:
+> >This is based on the codes in the head_44x.S. Since we always align to
+> >256M before mapping the PAGE_OFFSET for a relocatable kernel, we also
+> >change the init tlb map to 256M size.
 > >
-> > 	mfspr	r8,SPRN_MAS3
-> >-#ifdef CONFIG_PHYS_64BIT
-> >+BEGIN_MMU_FTR_SECTION
-> > 	mfspr	r23,SPRN_MAS7
-> >-#endif
-> >+MMU_FTR_SECTION_ELSE
-> >+	li	r23,0
-> >+ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_BIG_PHYS)
-> > 	and	r8,r6,r8
-> > 	subfic	r9,r6,-4096
-> > 	and	r9,r9,r7
-> >diff --git a/arch/powerpc/kernel/head_fsl_booke.S
-> >b/arch/powerpc/kernel/head_fsl_booke.S
-> >index d10a7ca..a04a48d 100644
-> >--- a/arch/powerpc/kernel/head_fsl_booke.S
-> >+++ b/arch/powerpc/kernel/head_fsl_booke.S
-> >@@ -82,7 +82,11 @@ _ENTRY(_start);
-> > 	and	r19,r3,r18		/* r19 =3D page offset */
-> > 	andc	r31,r20,r18		/* r31 =3D page base */
-> > 	or	r31,r31,r19		/* r31 =3D devtree phys addr */
-> >+BEGIN_MMU_FTR_SECTION
-> > 	mfspr	r30,SPRN_MAS7
-> >+MMU_FTR_SECTION_ELSE
-> >+	li	r30,0
-> >+ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_BIG_PHYS)
+> >Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> >---
+> >v2: Move the code to set kernstart_addr and virt_phys_offset to a
+> >c function.
+> >    So we can expand it easily later.
+> >
+> >Hi Scott,
+> >
+> >I still use the 256M align for the init tlb as in v1 for the
+> >following reasons:
+> >  * This should be the most possible case in reality.
 >=20
-> Code patching hasn't been done yet at this point.
+> There is no "most possible case".  It's either possible (and
+> supported) or not.  And having less than 256M is definitely
+> possible.  The 8540 reference board has 64M.
+>=20
+> AMP scenarios that start on a 64M-aligned but not 256M-aligned
+> address are also something I've done.
+>=20
+> >  * This is just for very early booting code and should not be a
+> >big issue
+> >    if the first tlb entry shrink to a less size later.
+>=20
+> "We can probably get away with it most of the time" is not a very
+> good justification.  What's wrong with the suggestion I made last
+> time, of basing the size on the alignment of the address?
 
-Indeed. I overlooked this. I will change it to #ifdef CONFIG_PHYS_64BIT.
+OK, I will use the 64M align.
+
+>=20
+> >+	/*
+> >+	 * We have the runtime (virutal) address of our base.
+> >+	 * We calculate our shift of offset from a 256M page.
+> >+	 * We could map the 256M page we belong to at PAGE_OFFSET and
+> >+	 * get going from there.
+> >+	 */
+> >+	lis	r4,KERNELBASE@h
+> >+	ori	r4,r4,KERNELBASE@l
+> >+	rlwinm	r6,r25,0,0xfffffff		/* r6 =3D PHYS_START % 256M */
+> >+	rlwinm	r5,r4,0,0xfffffff		/* r5 =3D KERNELBASE % 256M */
+> >+	subf	r3,r5,r6			/* r3 =3D r6 - r5 */
+> >+	add	r3,r4,r3			/* Required Virutal Address */
+>=20
+> s/Virutal/Virtual/
+
+Fixed.
 
 Thanks,
 Kevin
-
 >=20
 > -Scott
 
---oyUTqETQ0mS9luUI
+--9zSXsLTf0vkW971A
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQEcBAEBAgAGBQJR/aCLAAoJEJNY7TDerrFxpB8IAJpO1ueQRkP7VhN4XI18nK8j
-xTVHruPCaClvaH15O4BTMdTRfaidOVlq9Ot46PnjLey4DXJcqQbexxV6BacdGjkl
-SikUJ9UkEn5p5F/CGxUvfX6xpU3keNNh6NidgWY6sss3DpCZLfdDAajpRl346VGA
-An5PZ7tMk6lqbUNZD6xahhbDhaog+6HuxLS7ZWS9S0zp8XemUpOcDcrGGAjH0z1J
-aly/EGtIPigqaau+f62u10zaClIuRfi58hdbjslIVw/oeKpDKf/xLQ0aUsmbZWXb
-n+6NaaHi0I0tyHpzA2LyC+HlvsN2waPTCN3m/mJEF2NgdHvukG3YKsHuv3oc1cY=
-=5k5r
+iQEcBAEBAgAGBQJR/aJzAAoJEJNY7TDerrFxyRsH/1BR+gmzmD1+XxnSQ3ghJ7gm
+XulMzV/eqYnN4lj6QU7iHe4Uw0ez6LLFJ2FWhNEVMOq4NLzgvJnKAXQFiWPAgOxy
+tZI2+5J5iBRR2FUumnqvbCMEbIjlEYkDSn+98ttj5qe4fOy+Fypdfu0ZbW4WNPoH
+SzsBktQi/kaQbPRuC1cr5YVwDWr7JnEYkYAWtwOzuh174H2FqMsJk3Oipix3HgGW
+Ng0QEHx2B5pusgV9BdSMJ+G47IbjS9iyZoZ3e2mCaZhnDp2t5R2bZtlf9MWM7B/d
+m/qW5NqrSn+Mfv0VFxdAsFmLNBziSDxYh7sL870RgqJjxRh5PdAZwkfADKVrhxc=
+=mDfp
 -----END PGP SIGNATURE-----
 
---oyUTqETQ0mS9luUI--
+--9zSXsLTf0vkW971A--
