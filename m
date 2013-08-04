@@ -1,24 +1,23 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x234.google.com (mail-pd0-x234.google.com
- [IPv6:2607:f8b0:400e:c02::234])
+Received: from mail-pd0-x231.google.com (mail-pd0-x231.google.com
+ [IPv6:2607:f8b0:400e:c02::231])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 513442C0092
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Aug 2013 10:43:00 +1000 (EST)
-Received: by mail-pd0-f180.google.com with SMTP id 15so1930316pdi.11
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Aug 2013 17:42:58 -0700 (PDT)
-Date: Sun, 4 Aug 2013 08:42:43 +0800
+ by ozlabs.org (Postfix) with ESMTPS id B01182C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Aug 2013 10:45:51 +1000 (EST)
+Received: by mail-pd0-f177.google.com with SMTP id u10so1947877pdi.22
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Aug 2013 17:45:49 -0700 (PDT)
+Date: Sun, 4 Aug 2013 08:45:32 +0800
 From: Kevin Hao <haokexin@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 4/8] powerpc/fsl_booke: set the tlb entry for the
- kernel address in AS1
-Message-ID: <20130804004243.GC19141@pek-khao-d1.corp.ad.wrs.com>
-References: <1372942454-25191-5-git-send-email-haokexin@gmail.com>
- <1374881830.30721.38@snotra>
+Subject: Re: [PATCH v2 6/8] powerpc: introduce early_get_first_memblock_info
+Message-ID: <20130804004531.GD19141@pek-khao-d1.corp.ad.wrs.com>
+References: <1372942454-25191-7-git-send-email-haokexin@gmail.com>
+ <1374884281.30721.40@snotra>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="1SQmhf2mF2YjsYvc"
-In-Reply-To: <1374881830.30721.38@snotra>
+ protocol="application/pgp-signature"; boundary="VV4b6MQE+OnNyhkM"
+In-Reply-To: <1374884281.30721.40@snotra>
 Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,67 +29,90 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---1SQmhf2mF2YjsYvc
+--VV4b6MQE+OnNyhkM
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jul 26, 2013 at 06:37:10PM -0500, Scott Wood wrote:
-> On 07/04/2013 07:54:10 AM, Kevin Hao wrote:
-> >--- a/arch/powerpc/kernel/head_fsl_booke.S
-
-<snip>
-
-> >+++ b/arch/powerpc/kernel/head_fsl_booke.S
-> >@@ -1172,6 +1172,87 @@ __secondary_hold_acknowledge:
-> > #endif
-> >
-> > /*
-> >+ * Create a tbl entry
+On Fri, Jul 26, 2013 at 07:18:01PM -0500, Scott Wood wrote:
+> >+ * This function run before early_init_devtree, so we have to init
+> >+ * initial_boot_params. Since early_init_dt_scan_memory_ppc will be
+> >+ * executed again in early_init_devtree, we have to reinitialize the
+> >+ * memblock data before return.
+> >+ */
+> >+void __init early_get_first_memblock_info(void *params,
+> >phys_addr_t *size)
+> >+{
+> >+	/* Setup flat device-tree pointer */
+> >+	initial_boot_params =3D params;
+> >+
+> >+	/* Scan memory nodes and rebuild MEMBLOCKs */
+> >+	of_scan_flat_dt(early_init_dt_scan_root, NULL);
+> >+	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
+> >+
+> >+	if (size)
+> >+		*size =3D first_memblock_size;
+> >+
+> >+	/* Undo what early_init_dt_scan_memory_ppc does to memblock */
+> >+	memblock_reinit();
+> >+}
+> >+#endif
 >=20
-> s/tbl/tlb/
+> Wouldn't it be simpler to set a flag so that
+> early_init_dt_add_memory_arch() doesn't mess with memblocks on the
+> first pass?
 
-Fixed.
+Do you mean something like this?
 
->=20
-> >diff --git a/arch/powerpc/mm/fsl_booke_mmu.c
-> >b/arch/powerpc/mm/fsl_booke_mmu.c
-> >index 5fe271c..8f60ef8 100644
-> >--- a/arch/powerpc/mm/fsl_booke_mmu.c
-> >+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-> >@@ -222,7 +222,9 @@ void __init adjust_total_lowmem(void)
-> > 	/* adjust lowmem size to __max_low_memory */
-> > 	ram =3D min((phys_addr_t)__max_low_memory,
-> >(phys_addr_t)total_lowmem);
-> >
-> >+	i =3D switch_to_as1();
-> > 	__max_low_memory =3D map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM);
-> >+	restore_to_as0(i);
->=20
-> Wouldn't it be simpler to just run out of AS1 from the end of
-> fsl_booke_entry_mapping.S, similar to what U-Boot does?  With ESEL
-> being changed to something non-conflicting, of course.
-
-This pair of functions will be used by the codes in the following patch.
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 9a69d2d..e861394 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -523,6 +523,10 @@ static int __init early_init_dt_scan_memory_ppc(unsign=
+ed long node,
+=20
+ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+ {
++#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_FSL_BOOKE)
++	static int first_time =3D 1;
++#endif
++
+ #ifdef CONFIG_PPC64
+ 	if (iommu_is_off) {
+ 		if (base >=3D 0x80000000ul)
+@@ -541,6 +545,13 @@ void __init early_init_dt_add_memory_arch(u64 base, u6=
+4 size)
+ 	}
+=20
+ 	/* Add the chunk to the MEMBLOCK list */
++
++#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_FSL_BOOKE)
++	if (first_time) {
++		first_time =3D 0;
++		return;
++	}
++#endif
+ 	memblock_add(base, size);
+ }
 
 Thanks,
 Kevin
 >=20
 > -Scott
 
---1SQmhf2mF2YjsYvc
+--VV4b6MQE+OnNyhkM
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQEcBAEBAgAGBQJR/aODAAoJEJNY7TDerrFxA+sH/1esrP6hgWwQ/gobJ4HgeaM3
-1dGPLE3Hx99cUh6I7h1C+xIpJ3aJzQ1dWQgMb4vK/hZvnmVYYmoHt8AEQyEZ1QF5
-pWMjiaLRHXXxIWT8c4IWRZWolxG+K5/zXuU5bl88OehajSDlaY1tgHcKC9Q1Fkb3
-UNGACdodn1P9sgtt3If5Wm+YOoT6zmW/bxUD2XYiTkQJ6fm+qiO5ITXUDtm2dhxp
-59nZQ+R2e1UDTCN0FjNOULTYalx/0VKwlXff4RcA3eXF6iRHziDbmkTlp6jf/j/b
-vkBayYiQw3yCRWqZYuZqZ5nC8T2HHRPJCCny7fRG46rnaTvwqty/XhpGc+nq+PU=
-=LEn2
+iQEcBAEBAgAGBQJR/aQrAAoJEJNY7TDerrFxgbcIAKeb25T4GXKm5NCRknbkfJ90
+/EpoEjLRXc+FgFCqn2X+gXFcmcgh7QDU1JrlQfgNGSJ1u0whqkcUgi8NNhgTo+om
+FK+tQzhJd3C1xKINdN/eHa5xvw0pcrSRkz32ZM6OFgnjlWgxgNaXD1w6V3Cz6FgG
+/+ui6POSIGZqPzpb2cAm2bu5qfQrWM5Tfmqycg41r2cUN/zGTB5gYbCUZG0f8Qw4
+akwXIt9iG4SdR+hod+jzrLz36rTTPD43Zwk8TC5mPjFjZ9D3/NlrGwd+0IQCfEZy
+kJijvpQWMUtw7PaTZoiop13iJozSTw9aZ4ZjBFi2zCG1BRzkrLspsGjJ/tnstBU=
+=JHXK
 -----END PGP SIGNATURE-----
 
---1SQmhf2mF2YjsYvc--
+--VV4b6MQE+OnNyhkM--
