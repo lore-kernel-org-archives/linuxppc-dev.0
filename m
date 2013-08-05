@@ -1,31 +1,29 @@
-Return-Path: <R65777@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DA1F92C0091
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 00:27:15 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH 5/6 v2] kvm: powerpc: booke: Add linux pte lookup like
- booke3s
-Date: Mon, 5 Aug 2013 14:27:02 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D070FAD49@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1375355558-19187-6-git-send-email-Bharat.Bhushan@freescale.com>
- <1375484319.26902.4.camel@snotra.buserror.net>
- <1375485408.15999.67.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D070F8FCC@039-SN2MPN1-012.039d.mgd.msft.net>
- <1375503847.15999.80.camel@pasglop>
-In-Reply-To: <1375503847.15999.80.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <mark.rutland@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 426412C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2013 21:37:36 +1000 (EST)
+Date: Mon, 5 Aug 2013 12:37:20 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Gerhard Sittig <gsi@denx.de>
+Subject: Re: [PATCH v3 17/31] clk: mpc512x: introduce COMMON_CLK for MPC512x
+Message-ID: <20130805113720.GE9910@e106331-lin.cambridge.arm.com>
+References: <1374166855-7280-1-git-send-email-gsi@denx.de>
+ <1374495298-22019-1-git-send-email-gsi@denx.de>
+ <1374495298-22019-18-git-send-email-gsi@denx.de>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1374495298-22019-18-git-send-email-gsi@denx.de>
+Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Wolfram Sang <wsa@the-dreams.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ Mark Brown <broonie@kernel.org>, Marc Kleine-Budde <mkl@pengutronix.de>,
+ Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+ David Woodhouse <dwmw2@infradead.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,67 +33,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogU2F0dXJk
-YXksIEF1Z3VzdCAwMywgMjAxMyA5OjU0IEFNDQo+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcN
-Cj4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBhZ3JhZkBzdXNlLmRlOyBrdm0tcHBjQHZnZXIua2Vy
-bmVsLm9yZzsNCj4ga3ZtQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
-cy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCA1LzYgdjJdIGt2bTogcG93ZXJwYzogYm9va2U6
-IEFkZCBsaW51eCBwdGUgbG9va3VwIGxpa2UNCj4gYm9va2Uzcw0KPiANCj4gT24gU2F0LCAyMDEz
-LTA4LTAzIGF0IDAyOjU4ICswMDAwLCBCaHVzaGFuIEJoYXJhdC1SNjU3Nzcgd3JvdGU6DQo+ID4g
-T25lIG9mIHRoZSBwcm9ibGVtIEkgc2F3IHdhcyB0aGF0IGlmIEkgcHV0IHRoaXMgY29kZSBpbg0K
-PiA+IGFzbS9wZ3RhYmxlLTMyLmggYW5kIGFzbS9wZ3RhYmxlLTY0LmggdGhlbiBwdGVfcGVyc2Vu
-dCgpIGFuZCBvdGhlcg0KPiA+IGZyaWVuZCBmdW5jdGlvbiAob24gd2hpY2ggdGhpcyBjb2RlIGRl
-cGVuZHMpIGFyZSBkZWZpbmVkIGluIHBndGFibGUuaC4NCj4gPiBBbmQgcGd0YWJsZS5oIGluY2x1
-ZGVzIGFzbS9wZ3RhYmxlLTMyLmggYW5kIGFzbS9wZ3RhYmxlLTY0LmggYmVmb3JlIGl0DQo+ID4g
-ZGVmaW5lcyBwdGVfcHJlc2VudCgpIGFuZCBmcmllbmRzIGZ1bmN0aW9ucy4NCj4gPg0KPiA+IE9r
-IEkgbW92ZSB3b3ZlIHRoaXMgaW4gYXNtL3BndGFibGUqLmgsIGluaXRpYWxseSBJIGZvdWdodCB3
-aXRoIG15c2VsZg0KPiA+IHRvIHRha2UgdGhpcyBjb2RlIGluIHBndGFibGUqIGJ1dCBmaW5hbGx5
-IGVuZCB1cCBkb2luZyBoZXJlIChnb3QNCj4gPiBiaWFzZWQgYnkgYm9vazNzIDopKS4NCj4gDQo+
-IElzIHRoZXJlIGEgcmVhc29uIHdoeSB0aGVzZSByb3V0aW5lcyBjYW4gbm90IGJlIGNvbXBsZXRl
-bHkgZ2VuZXJpYyBpbiBwZ3RhYmxlLmgNCj4gPw0KDQpIb3cgYWJvdXQgdGhlIGdlbmVyaWMgZnVu
-Y3Rpb246DQoNCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vcGd0YWJsZS1w
-cGM2NC5oIGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BndGFibGUtcHBjNjQuaA0KaW5kZXgg
-ZDI1N2Q5OC4uMjFkYWYyOCAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9w
-Z3RhYmxlLXBwYzY0LmgNCisrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLXBw
-YzY0LmgNCkBAIC0yMjEsNiArMjIxLDI3IEBAIHN0YXRpYyBpbmxpbmUgdW5zaWduZWQgbG9uZyBw
-dGVfdXBkYXRlKHN0cnVjdCBtbV9zdHJ1Y3QgKm1tLA0KICAgICAgICByZXR1cm4gb2xkOw0KIH0N
-Cg0KK3N0YXRpYyBpbmxpbmUgdW5zaWduZWQgbG9uZyBwdGVfcmVhZChwdGVfdCAqcCkNCit7DQor
-I2lmZGVmIFBURV9BVE9NSUNfVVBEQVRFUw0KKyAgICAgICBwdGVfdCBwdGU7DQorICAgICAgIHB0
-ZV90IHRtcDsNCisgICAgICAgX19hc21fXyBfX3ZvbGF0aWxlX18gKA0KKyAgICAgICAiMTogICAg
-IGxkYXJ4ICAgJTAsMCwlM1xuIg0KKyAgICAgICAiICAgICAgIGFuZGkuICAgJTEsJTAsJTRcbiIN
-CisgICAgICAgIiAgICAgICBibmUtICAgIDFiXG4iDQorICAgICAgICIgICAgICAgb3JpICAgICAl
-MSwlMCwlNFxuIg0KKyAgICAgICAiICAgICAgIHN0ZGN4LiAgJTEsMCwlM1xuIg0KKyAgICAgICAi
-ICAgICAgIGJuZS0gICAgMWIiDQorICAgICAgIDogIj0mciIgKHB0ZSksICI9JnIiICh0bXApLCAi
-PW0iICgqcCkNCisgICAgICAgOiAiciIgKHApLCAiaSIgKF9QQUdFX0JVU1kpDQorICAgICAgIDog
-ImNjIik7DQorDQorICAgICAgIHJldHVybiBwdGU7DQorI2Vsc2UgIA0KKyAgICAgICByZXR1cm4g
-cHRlX3ZhbCgqcCk7DQorI2VuZGlmDQorI2VuZGlmDQorfQ0KIHN0YXRpYyBpbmxpbmUgaW50IF9f
-cHRlcF90ZXN0X2FuZF9jbGVhcl95b3VuZyhzdHJ1Y3QgbW1fc3RydWN0ICptbSwNCiAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB1bnNpZ25lZCBsb25nIGFkZHIs
-IHB0ZV90ICpwdGVwKQ0KIHsNCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20v
-cGd0YWJsZS5oIGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BndGFibGUuaA0KaW5kZXggNjkw
-YzhjMi4uZGFkNzEyYyAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3Rh
-YmxlLmgNCisrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLmgNCkBAIC0yNTQs
-NiArMjU0LDQ1IEBAIHN0YXRpYyBpbmxpbmUgcHRlX3QgKmZpbmRfbGludXhfcHRlX29yX2h1Z2Vw
-dGUocGdkX3QgKnBnZGlyLCB1bnNpZ25lZCBsb25nIGVhLA0KIH0NCiAjZW5kaWYgLyogIUNPTkZJ
-R19IVUdFVExCX1BBR0UgKi8NCg0KK3N0YXRpYyBpbmxpbmUgcHRlX3QgbG9va3VwX2xpbnV4X3B0
-ZShwZ2RfdCAqcGdkaXIsIHVuc2lnbmVkIGxvbmcgaHZhLA0KKyAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIGludCB3cml0aW5nLCB1bnNpZ25lZCBsb25nICpwdGVfc2l6ZXApDQor
-ew0KKyAgICAgICBwdGVfdCAqcHRlcDsNCisgICAgICAgcHRlX3QgcHRlOw0KKyAgICAgICB1bnNp
-Z25lZCBsb25nIHBzID0gKnB0ZV9zaXplcDsNCisgICAgICAgdW5zaWduZWQgaW50IHNoaWZ0Ow0K
-Kw0KKyAgICAgICBwdGVwID0gZmluZF9saW51eF9wdGVfb3JfaHVnZXB0ZShwZ2RpciwgaHZhLCAm
-c2hpZnQpOw0KKyAgICAgICBpZiAoIXB0ZXApDQorICAgICAgICAgICAgICAgcmV0dXJuIF9fcHRl
-KDApOw0KKyAgICAgICBpZiAoc2hpZnQpDQorICAgICAgICAgICAgICAgKnB0ZV9zaXplcCA9IDF1
-bCA8PCBzaGlmdDsNCisgICAgICAgZWxzZQ0KKyAgICAgICAgICAgICAgICpwdGVfc2l6ZXAgPSBQ
-QUdFX1NJWkU7DQorDQorICAgICAgIGlmIChwcyA+ICpwdGVfc2l6ZXApDQorICAgICAgICAgICAg
-ICAgcmV0dXJuIF9fcHRlKDApOw0KKw0KKyAgICAgICBpZiAoIXB0ZV9wcmVzZW50KCpwdGVwKSkN
-CisgICAgICAgICAgICAgICByZXR1cm4gX19wdGUoMCk7DQorDQorI2lmZGVmIENPTkZJR19QUEM2
-NA0KKyAgICAgICAvKiBMb2NrIFBURSAoc2V0IF9QQUdFX0JVU1kpIGFuZCByZWFkICovDQorICAg
-ICAgIHB0ZSA9IHB0ZV9yZWFkKHB0ZXApOw0KKyNlbHNlDQorICAgICAgIHB0ZSA9IHB0ZV92YWwo
-KnB0ZXApOw0KKyNlbmRpZg0KKyAgICAgICBpZiAocHRlX3ByZXNlbnQocHRlKSkgew0KKyAgICAg
-ICAgICAgICAgIHB0ZSA9IHB0ZV9ta3lvdW5nKHB0ZSk7DQorICAgICAgICAgICAgICAgaWYgKHdy
-aXRpbmcgJiYgcHRlX3dyaXRlKHB0ZSkpDQorICAgICAgICAgICAgICAgICAgICAgICBwdGUgPSBw
-dGVfbWtkaXJ0eShwdGUpOw0KKyAgICAgICB9DQorDQorICAgICAgICpwdGVwID0gX19wdGUocHRl
-KTsgLyogNjRiaXQ6IEFsc28gdW5sb2NrIHB0ZSAoY2xlYXIgX1BBR0VfQlVTWSkgKi8NCisNCisg
-ICAgICAgcmV0dXJuIHB0ZTsNCit9DQorDQogI2VuZGlmIC8qIF9fQVNTRU1CTFlfXyAqLw0KDQog
-I2VuZGlmIC8qIF9fS0VSTkVMX18gKi8NCg==
+On Mon, Jul 22, 2013 at 01:14:44PM +0100, Gerhard Sittig wrote:
+> this change implements a clock driver for the MPC512x PowerPC platform
+> which follows the COMMON_CLK approach and uses common clock drivers
+> shared with other platforms
+>
+> this driver implements the publicly announced set of clocks (which can
+> get referenced by means of symbolic identifiers from the dt-bindings
+> header file), as well as generates additional 'struct clk' items where
+> the SoC hardware cannot easily get mapped to the common primitives of
+> the clock API, or requires "intermediate" clock nodes to represent
+> clocks that have both gates and dividers
+>
+> the previous PPC_CLOCK implementation is kept in place and remains in
+> parallel to the common clock implementation for test and comparison
+> during migration, a compile time option picks one of the two
+> alternatives (Kconfig switch, common clock used by default)
+>
+> some of the clock items get pre-enabled in the clock driver to not have
+> them automatically disabled by the underlying clock subsystem because of
+> their being unused -- this approach is desirable because
+> - some of the clocks are useful to have for diagnostics and information
+>   despite their not getting claimed by any drivers (CPU, internal and
+>   external RAM, internal busses, boot media)
+> - some of the clocks aren't claimed by their peripheral drivers yet,
+>   either because of missing driver support or because device tree specs
+>   aren't available yet (but the workarounds will get removed as the
+>   drivers get adjusted and the device tree provides the clock specs)
+> - some help introduce support for and migrate to the common
+>   infrastructure, while more appropriate support for specific hardware
+>   constraints isn't available yet (remaining changes are strictly
+>   internal to the clock driver and won't affect peripheral drivers)
+>
+> clkdev registration provides "alias names" for few clock items
+> - to not break those peripheral drivers which encode their component
+>   index into the name that is used for clock lookup (UART, SPI, USB)
+> - to not break those drivers which use names for the clock lookup which
+>   were encoded in the previous PPC_CLOCK implementation (NFC, VIU, CAN)
+> this workaround will get removed as these drivers get adjusted after
+> device tree based clock lookup has become available
+>
+> Signed-off-by: Gerhard Sittig <gsi@denx.de>
+> ---
+>  arch/powerpc/platforms/512x/Kconfig           |   14 +-
+>  arch/powerpc/platforms/512x/Makefile          |    4 +-
+>  arch/powerpc/platforms/512x/clock-commonclk.c |  786 +++++++++++++++++++++++++
+>  include/linux/clk-provider.h                  |   16 +
+>  4 files changed, 818 insertions(+), 2 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/512x/clock-commonclk.c
+>
+
+[...]
+
+> +static int get_freq_from_dt(char *propname)
+> +{
+> +       struct device_node *np;
+> +       const unsigned int *prop;
+> +       int val;
+> +
+> +       val = 0;
+> +       np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-immr");
+> +       if (np) {
+> +               prop = of_get_property(np, propname, NULL);
+> +               if (prop)
+> +                       val = *prop;
+> +           of_node_put(np);
+> +       }
+> +       return val;
+> +}
+
+Can you not use of_property_read_u32 here rather than of_get_property?
+
+Also, this seems rather unlike the common clock bindings method for
+describing frequencies in the dt. Given there's nothing in mainline
+using this yet, we can do it 'right' from the start.
+
+[...]
+
+> +       /*
+> +        * externally provided clocks (when implemented in hardware,
+> +        * device tree may specify values which otherwise were unknown)
+> +        */
+> +       freq = get_freq_from_dt("psc_mclk_in");
+> +       if (!freq)
+> +               freq = 25000000;
+> +       clks[MPC512x_CLK_PSC_MCLK_IN] = mpc512x_clk_fixed("psc_mclk_in", freq);
+> +       freq = get_freq_from_dt("spdif_tx_in");
+> +       clks[MPC512x_CLK_SPDIF_TX_IN] = mpc512x_clk_fixed("spdif_tx_in", freq);
+> +       freq = get_freq_from_dt("spdif_rx_in");
+> +       clks[MPC512x_CLK_SPDIF_TX_IN] = mpc512x_clk_fixed("spdif_rx_in", freq);
+
+Can we not just use fixed-clocks for these in the dt? It feels odd to
+describe them in a compeltely differnet way in the dt, especially as
+we'll have to maintain some backwards compatibility for a while...
+
+I see for psc_mclk_in we assume a default value if not present. I'm not
+sure how to handle that, but I assume there's some way of finding out if
+we've already registered a clock output with the same name?
+
+Thanks,
+Mark.
