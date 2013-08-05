@@ -1,22 +1,11 @@
-Return-Path: <B42378@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 92D462C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2013 17:19:34 +1000 (EST)
-From: Nicolin Chen <b42378@freescale.com>
-To: <broonie@kernel.org>, <lars@metafoo.de>
-Subject: [PATCH v3 2/2] ASoC: fsl: Add S/PDIF machine driver
-Date: Mon, 5 Aug 2013 15:29:41 +0800
-Message-ID: <1375687781-23225-3-git-send-email-b42378@freescale.com>
-In-Reply-To: <1375687781-23225-1-git-send-email-b42378@freescale.com>
-References: <1375687781-23225-1-git-send-email-b42378@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, timur@tabi.org, rob.herring@calxeda.com
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/3] powerpc: Rework setting up H/FSCR bit definitions
+Date: Mon,  5 Aug 2013 17:28:04 +1000
+Message-Id: <1375687686-5633-1-git-send-email-mikey@neuling.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,232 +15,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add S/PDIF machine driver for Freescale i.MX series SoC.
+This reworks the Facility Status and Control Regsiter (FSCR) config bit
+definitions so that we can access the bit numbers.  This will be useful when
+looking at the status in the facility unavailable interrupt.
 
-Signed-off-by: Nicolin Chen <b42378@freescale.com>
+HFSCR and FSCR versions are the same, so reuse them.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- .../devicetree/bindings/sound/imx-audio-spdif.txt  |   29 +++++
- sound/soc/fsl/Kconfig                              |   11 ++
- sound/soc/fsl/Makefile                             |    2 +
- sound/soc/fsl/imx-spdif.c                          |  134 ++++++++++++++++++++
- 4 files changed, 176 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
- create mode 100644 sound/soc/fsl/imx-spdif.c
+ arch/powerpc/include/asm/reg.h | 31 ++++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
-new file mode 100644
-index 0000000..9a3fa26
---- /dev/null
-+++ b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
-@@ -0,0 +1,29 @@
-+Freescale i.MX audio complex with S/PDIF transceiver
-+
-+Required properties:
-+
-+  - compatible : "fsl,imx-audio-spdif"
-+
-+  - model : The user-visible name of this sound complex
-+
-+  - spdif-controller : The phandle of the i.MX S/PDIF controller
-+
-+
-+Optional properties:
-+
-+  - spdif-transmitter : The phandle of the spdif-transmitter dummy codec
-+
-+  - spdif-receiver : The phandle of the spdif-receiver dummy codec
-+
-+* Note: At least one of these two properties should be set in the DT binding.
-+
-+
-+Example:
-+
-+sound-spdif {
-+	compatible = "fsl,imx-audio-spdif";
-+	model = "imx-spdif";
-+	spdif-controller = <&spdif>;
-+	spdif-transmitter = <&spdif_tx_codec>;
-+	spdif-receiver = <&spdif_rx_codec>;
-+};
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index 74f533b..9043abc 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -195,6 +195,17 @@ config SND_SOC_IMX_SGTL5000
- 	  Say Y if you want to add support for SoC audio on an i.MX board with
- 	  a sgtl5000 codec.
- 
-+config SND_SOC_IMX_SPDIF
-+	tristate "SoC Audio support for i.MX boards with S/PDIF"
-+	select SND_SOC_IMX_PCM_DMA
-+	select SND_SOC_FSL_SPDIF
-+	select SND_SOC_FSL_UTILS
-+	select SND_SOC_SPDIF
-+	help
-+	  SoC Audio support for i.MX boards with S/PDIF
-+	  Say Y if you want to add support for SoC audio on an i.MX board with
-+	  a S/DPDIF.
-+
- config SND_SOC_IMX_MC13783
- 	tristate "SoC Audio support for I.MX boards with mc13783"
- 	depends on MFD_MC13783 && ARCH_ARM
-diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index 4b5970e..e2aaff7 100644
---- a/sound/soc/fsl/Makefile
-+++ b/sound/soc/fsl/Makefile
-@@ -45,6 +45,7 @@ snd-soc-mx27vis-aic32x4-objs := mx27vis-aic32x4.o
- snd-soc-wm1133-ev1-objs := wm1133-ev1.o
- snd-soc-imx-sgtl5000-objs := imx-sgtl5000.o
- snd-soc-imx-wm8962-objs := imx-wm8962.o
-+snd-soc-imx-spdif-objs :=imx-spdif.o
- snd-soc-imx-mc13783-objs := imx-mc13783.o
- 
- obj-$(CONFIG_SND_SOC_EUKREA_TLV320) += snd-soc-eukrea-tlv320.o
-@@ -53,4 +54,5 @@ obj-$(CONFIG_SND_SOC_MX27VIS_AIC32X4) += snd-soc-mx27vis-aic32x4.o
- obj-$(CONFIG_SND_MXC_SOC_WM1133_EV1) += snd-soc-wm1133-ev1.o
- obj-$(CONFIG_SND_SOC_IMX_SGTL5000) += snd-soc-imx-sgtl5000.o
- obj-$(CONFIG_SND_SOC_IMX_WM8962) += snd-soc-imx-wm8962.o
-+obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
- obj-$(CONFIG_SND_SOC_IMX_MC13783) += snd-soc-imx-mc13783.o
-diff --git a/sound/soc/fsl/imx-spdif.c b/sound/soc/fsl/imx-spdif.c
-new file mode 100644
-index 0000000..893f3d1
---- /dev/null
-+++ b/sound/soc/fsl/imx-spdif.c
-@@ -0,0 +1,134 @@
-+/*
-+ * Copyright (C) 2013 Freescale Semiconductor, Inc.
-+ *
-+ * The code contained herein is licensed under the GNU General Public
-+ * License. You may obtain a copy of the GNU General Public License
-+ * Version 2 or later at the following locations:
-+ *
-+ * http://www.opensource.org/licenses/gpl-license.html
-+ * http://www.gnu.org/copyleft/gpl.html
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/of_platform.h>
-+#include <sound/soc.h>
-+
-+struct imx_spdif_data {
-+	struct snd_soc_dai_link dai[2];
-+	struct snd_soc_card card;
-+};
-+
-+static int imx_spdif_audio_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct device_node *spdif_np, *codec_tx_np, *codec_rx_np;
-+	struct platform_device *spdif_pdev;
-+	struct imx_spdif_data *data;
-+	int ret = 0, num_links = 0;
-+
-+	spdif_np = of_parse_phandle(np, "spdif-controller", 0);
-+	if (!spdif_np) {
-+		dev_err(&pdev->dev, "failed to find spdif-controller\n");
-+		ret = -EINVAL;
-+		goto fail;
-+	}
-+
-+	spdif_pdev = of_find_device_by_node(spdif_np);
-+	if (!spdif_pdev) {
-+		dev_err(&pdev->dev, "failed to find S/PDIF device\n");
-+		ret = -EINVAL;
-+		goto fail;
-+	}
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data) {
-+		dev_err(&pdev->dev, "failed to allocate memory\n");
-+		ret = -ENOMEM;
-+		goto fail;
-+	}
-+
-+	codec_tx_np = of_parse_phandle(np, "spdif-transmitter", 0);
-+	if (codec_tx_np) {
-+		data->dai[num_links].name = "S/PDIF TX";
-+		data->dai[num_links].stream_name = "S/PDIF PCM Playback";
-+		data->dai[num_links].codec_dai_name = "dit-hifi";
-+		data->dai[num_links].codec_of_node = codec_tx_np;
-+		data->dai[num_links].cpu_of_node = spdif_np;
-+		data->dai[num_links].platform_of_node = spdif_np;
-+		num_links++;
-+	}
-+
-+	codec_rx_np = of_parse_phandle(np, "spdif-receiver", 0);
-+	if (codec_rx_np) {
-+		data->dai[num_links].name = "S/PDIF RX";
-+		data->dai[num_links].stream_name = "S/PDIF PCM Capture";
-+		data->dai[num_links].codec_dai_name = "dir-hifi";
-+		data->dai[num_links].codec_of_node = codec_rx_np;
-+		data->dai[num_links].cpu_of_node = spdif_np;
-+		data->dai[num_links].platform_of_node = spdif_np;
-+		num_links++;
-+	}
-+
-+	if (!num_links) {
-+		dev_err(&pdev->dev, "no enabled S/PDIF DAI link\n");
-+		goto fail;
-+	}
-+
-+	data->card.dev = &pdev->dev;
-+	data->card.num_links = num_links;
-+	data->card.dai_link = data->dai;
-+
-+	ret = snd_soc_of_parse_card_name(&data->card, "model");
-+	if (ret)
-+		goto fail;
-+
-+	ret = snd_soc_register_card(&data->card);
-+	if (ret) {
-+		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
-+		goto fail;
-+	}
-+
-+	platform_set_drvdata(pdev, data);
-+
-+fail:
-+	if (codec_tx_np)
-+		of_node_put(codec_tx_np);
-+	if (codec_rx_np)
-+		of_node_put(codec_rx_np);
-+	if (spdif_np)
-+		of_node_put(spdif_np);
-+
-+	return ret;
-+}
-+
-+static int imx_spdif_audio_remove(struct platform_device *pdev)
-+{
-+	struct imx_spdif_data *data = platform_get_drvdata(pdev);
-+
-+	snd_soc_unregister_card(&data->card);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id imx_spdif_dt_ids[] = {
-+	{ .compatible = "fsl,imx-audio-spdif", },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, imx_spdif_dt_ids);
-+
-+static struct platform_driver imx_spdif_driver = {
-+	.driver = {
-+		.name = "imx-spdif",
-+		.owner = THIS_MODULE,
-+		.of_match_table = imx_spdif_dt_ids,
-+	},
-+	.probe = imx_spdif_audio_probe,
-+	.remove = imx_spdif_audio_remove,
-+};
-+
-+module_platform_driver(imx_spdif_driver);
-+
-+MODULE_AUTHOR("Freescale Semiconductor, Inc.");
-+MODULE_DESCRIPTION("Freescale i.MX S/PDIF machine driver");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:imx-spdif");
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index a6840e4..75199581 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -254,19 +254,28 @@
+ #define SPRN_HRMOR	0x139	/* Real mode offset register */
+ #define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
+ #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
++/* HFSCR and FSCR bit numbers are the same */
++#define FSCR_TAR_LG	8	/* Enable Target Address Register */
++#define FSCR_EBB_LG	7	/* Enable Event Based Branching */
++#define FSCR_TM_LG	6	/* Enable Transactional Memory */
++#define FSCR_PM_LG	5	/* Enable prob/priv access to PMU SPRs */
++#define FSCR_BHRB_LG	4	/* Enable Branch History Rolling Buffer*/
++#define FSCR_DSCR_LG	2	/* Enable Data Stream Control Register */
++#define FSCR_VECVSX_LG	1	/* Enable VMX/VSX  */
++#define FSCR_FP_LG	0	/* Enable Floating Point */
+ #define SPRN_FSCR	0x099	/* Facility Status & Control Register */
+-#define   FSCR_TAR	(1 << (63-55)) /* Enable Target Address Register */
+-#define   FSCR_EBB	(1 << (63-56)) /* Enable Event Based Branching */
+-#define   FSCR_DSCR	(1 << (63-61)) /* Enable Data Stream Control Register */
++#define   FSCR_TAR	__MASK(FSCR_TAR_LG)
++#define   FSCR_EBB	__MASK(FSCR_EBB_LG)
++#define   FSCR_DSCR	__MASK(FSCR_DSCR_LG)
+ #define SPRN_HFSCR	0xbe	/* HV=1 Facility Status & Control Register */
+-#define   HFSCR_TAR	(1 << (63-55)) /* Enable Target Address Register */
+-#define   HFSCR_EBB	(1 << (63-56)) /* Enable Event Based Branching */
+-#define   HFSCR_TM	(1 << (63-58)) /* Enable Transactional Memory */
+-#define   HFSCR_PM	(1 << (63-60)) /* Enable prob/priv access to PMU SPRs */
+-#define   HFSCR_BHRB	(1 << (63-59)) /* Enable Branch History Rolling Buffer*/
+-#define   HFSCR_DSCR	(1 << (63-61)) /* Enable Data Stream Control Register */
+-#define   HFSCR_VECVSX	(1 << (63-62)) /* Enable VMX/VSX  */
+-#define   HFSCR_FP	(1 << (63-63)) /* Enable Floating Point */
++#define   HFSCR_TAR	__MASK(FSCR_TAR_LG)
++#define   HFSCR_EBB	__MASK(FSCR_EBB_LG)
++#define   HFSCR_TM	__MASK(FSCR_TM_LG)
++#define   HFSCR_PM	__MASK(FSCR_PM_LG)
++#define   HFSCR_BHRB	__MASK(FSCR_BHRB_LG)
++#define   HFSCR_DSCR	__MASK(FSCR_DSCR_LG)
++#define   HFSCR_VECVSX	__MASK(FSCR_VECVSX_LG)
++#define   HFSCR_FP	__MASK(FSCR_FP_LG)
+ #define SPRN_TAR	0x32f	/* Target Address Register */
+ #define SPRN_LPCR	0x13E	/* LPAR Control Register */
+ #define   LPCR_VPM0	(1ul << (63-0))
 -- 
-1.7.1
+1.8.1.2
