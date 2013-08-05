@@ -1,21 +1,28 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 30B052C0091
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2013 18:42:14 +1000 (EST)
-Date: Mon, 5 Aug 2013 18:42:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 3/3] powerpc: Correctly context switch DSCR on POWER8
-Message-Id: <20130805184205.79cafb9ac299313228ec53cc@canb.auug.org.au>
-In-Reply-To: <1375687686-5633-3-git-send-email-mikey@neuling.org>
-References: <1375687686-5633-1-git-send-email-mikey@neuling.org>
- <1375687686-5633-3-git-send-email-mikey@neuling.org>
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+ by ozlabs.org (Postfix) with ESMTP id 22CEA2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2013 19:13:33 +1000 (EST)
+Message-ID: <1375693993.3852.143.camel@thor.local>
+Subject: Re: therm_pm72 units, interface
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 05 Aug 2013 11:13:13 +0200
+In-Reply-To: <1375477360.15999.19.camel@pasglop>
+References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
+ <1345066616.11751.2.camel@pasglop>
+ <alpine.LNX.2.01.1301142240140.30171@nerf07.vanv.qr>
+ <1358465885.2782.24.camel@pasglop>
+ <20130719174300.GL14385@blackmetal.musicnaut.iki.fi>
+ <1374275809.19894.562.camel@pasglop>
+ <20130720203346.GM14385@blackmetal.musicnaut.iki.fi>
+ <1375437816.3852.12.camel@thor.local> <1375447861.15999.1.camel@pasglop>
+ <1375454871.3852.27.camel@thor.local>
+ <20130802155818.GB29933@blackmetal.musicnaut.iki.fi>
+ <1375462346.3852.42.camel@thor.local> <1375477360.15999.19.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__5_Aug_2013_18_42_05_+1000_lg8kfhjqcNG7G2eq"
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Cc: Ben Hutchings <ben@decadent.org.uk>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,115 +32,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__5_Aug_2013_18_42_05_+1000_lg8kfhjqcNG7G2eq
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-[This time from a good email address :-)]
-
-Hi Mikey,
-
-On Mon,  5 Aug 2013 17:28:06 +1000 Michael Neuling
-<mikey@neuling.org> wrote:
->
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -1296,43 +1294,56 @@ void vsx_unavailable_exception(struct pt_regs *re=
-gs)
->  	die("Unrecoverable VSX Unavailable Exception", regs, SIGABRT);
+On Sam, 2013-08-03 at 07:02 +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2013-08-02 at 18:52 +0200, Michel D=C3=A4nzer wrote:
+>=20
+> > Thanks for the suggestion. The same windfarm modules were loaded in bot=
+h
+> > cases, but i2c_powermac wasn't loaded with the newer kernels. Loading i=
+t
+> > manually fixes the problem.
+> >=20
+> > How is i2c_powermac supposed to get loaded with current kernels?
+>=20
+> It's a platform driver, but it's missing a module device-table
+>=20
+> Can you try this completely untested patch ?
+>=20
+> diff --git a/drivers/i2c/busses/i2c-powermac.c b/drivers/i2c/busses/i2c-p=
+owermac.c
+> index 8dc90da..5af5153 100644
+> --- a/drivers/i2c/busses/i2c-powermac.c
+> +++ b/drivers/i2c/busses/i2c-powermac.c
+> @@ -458,9 +458,15 @@ static int i2c_powermac_probe(struct platform_device=
+ *dev)
+>  	return rc;
 >  }
 > =20
-> +#ifdef CONFIG_PPC64
->  void facility_unavailable_exception(struct pt_regs *regs)
->  {
->  	static char *facility_strings[] =3D {
-> -		"FPU",
-> -		"VMX/VSX",
-> -		"DSCR",
-> -		"PMU SPRs",
-> -		"BHRB",
-> -		"TM",
-> -		"AT",
-> -		"EBB",
-> -		"TAR",
-> +		[FSCR_FP_LG] =3D "FPU",
-> +		[FSCR_VECVSX_LG] =3D "VMX/VSX",
-> +		[FSCR_DSCR_LG] =3D "DSCR",
-> +		[FSCR_PM_LG] =3D "PMU SPRs",
-> +		[FSCR_BHRB_LG] =3D "BHRB",
-> +		[FSCR_TM_LG] =3D "TM",
-> +		[FSCR_EBB_LG] =3D "EBB",
-> +		[FSCR_TAR_LG] =3D "TAR",
-
-I assume that you intentionally dropped "AT".
-
->  	};
-> -	char *facility, *prefix;
-> +	char *facility;
->  	u64 value;
-> +	u8 status;
-> +	bool hv;
-> =20
->  	if (regs->trap =3D=3D 0xf60) {
->  		value =3D mfspr(SPRN_FSCR);
-> -		prefix =3D "";
-> +		hv =3D false;
->  	} else {
->  		value =3D mfspr(SPRN_HFSCR);
-> -		prefix =3D "Hypervisor ";
-> +		hv =3D true;
->  	}
-
-Maybe:
-	hv =3D regs->trap =3D=3D 0xf60;
-	if (hv)
-		value =3D mfspr(SPRN_HFSCR);
-	else
-		value =3D mfspr(SPRN_HFSCR);
-or
-	value =3D mfspr(hv ? SPRN_HFSCR : SPRN_HFSCR);
-
-> -	value =3D value >> 56;
-> +	status =3D value >> 56;
+> +static const struct platform_device_id i2c_powermac_id =3D {
+> +	.name =3D "i2c-powermac"
+> +};
+> +MODULE_DEVICE_TABLE(platform, i2c_powermac_id);
 > +
-> +	if (status < ARRAY_SIZE(facility_strings))
-> +		facility =3D facility_strings[status];
-> +	else
-> +		facility =3D "unknown";
+>  static struct platform_driver i2c_powermac_driver =3D {
+>  	.probe =3D i2c_powermac_probe,
+>  	.remove =3D i2c_powermac_remove,
+> +	.id_table =3D *i2c_powermac_id,
 
-For entries in the array that are not set, this will give facility =3D=3D
-NULL.  Is that what you intended?
+This fails to build:
 
->  	pr_err("%sFacility '%s' unavailable, exception at 0x%lx, MSR=3D%lx\n",
-> -		prefix, facility, regs->nip, regs->msr);
-> +	       hv ? "Hypervisor ":"", facility, regs->nip, regs->msr);
+  CC [M]  drivers/i2c/busses/i2c-powermac.o
+drivers/i2c/busses/i2c-powermac.c:469:14: error: invalid type argument of u=
+nary =E2=80=98*=E2=80=99 (have =E2=80=98const struct platform_device_id=E2=
+=80=99)
+make[1]: *** [drivers/i2c/busses/i2c-powermac.o] Error 1
 
-... and this may attempt to print a NULL pointer with %s.  Also please
-put spaces around the : .
+The version below builds, but the module still doesn't get loaded
+automagically (unless I'm missing some command I need to run between
+copying the new module to /lib/modules/$(uname -r)/ and rebooting?).
+
+Looking at other drivers in drivers/i2c/busses/, maybe
+i2c_powermac_driver.driver needs an of_match_table entry?
+
+
+diff --git a/drivers/i2c/busses/i2c-powermac.c
+b/drivers/i2c/busses/i2c-powermac.c
+index 8dc90da..74066fc 100644
+--- a/drivers/i2c/busses/i2c-powermac.c
++++ b/drivers/i2c/busses/i2c-powermac.c
+@@ -458,9 +458,19 @@ static int i2c_powermac_probe(struct
+platform_device *dev)
+        return rc;
+ }
+
++static const struct platform_device_id i2c_powermac_id[] =3D {
++       {
++               .name =3D "i2c-powermac"
++       }, {
++               /* sentinel */
++       }
++};
++MODULE_DEVICE_TABLE(platform, i2c_powermac_id);
++
+ static struct platform_driver i2c_powermac_driver =3D {
+        .probe =3D i2c_powermac_probe,
+        .remove =3D i2c_powermac_remove,
++       .id_table =3D i2c_powermac_id,
+        .driver =3D {
+                .name =3D "i2c-powermac",
+                .bus =3D &platform_bus_type,
+@@ -468,5 +478,3 @@ static struct platform_driver i2c_powermac_driver =3D
+{
+ };
+
+ module_platform_driver(i2c_powermac_driver);
+-
+-MODULE_ALIAS("platform:i2c-powermac");
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Mon__5_Aug_2013_18_42_05_+1000_lg8kfhjqcNG7G2eq
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJR/2ViAAoJEECxmPOUX5FESBsP/2RNjF3LtiOI0fcTX832bTHE
-WpDYGG7d3Yv2CaHVRuB/FW4/OKPFX5Nsszc6DMJJSd8+X57AM6b9+qVgDDE8JwAF
-SIU1aRSNSFdhwofqUnLef574mFZmozKtWTtmZZgxoKvMVPra8GbiPsLLkaFjG3xC
-UAD95gCivBsRp3y3weWz9vwsojZ6tQicYCDMzz8JuN7oM3hrxgmm2yCTlvfnoqBq
-SblMR4cIKHM8qu179dYchEdUuBDXQwrMJT8/ihIkoh53dPFnTT2WB0TmG9OmSzwl
-9o9fcRCnnTpb6Wh4oBTIbteaK3JAtBkTGrr7/bXdLKq7AhaW2gFCxcWyww26h6yx
-Et8dxXGu4CUYqG2sokfRRP+Tykz8grbUk4CK3DlCORGLCqSUxH08VHfkfZjAJBjr
-U1Kp5dUnAUnhmtu4lfTY9iosSnGZtyGKca5r0wO6LYnnF2PBaNohvZlQaT0w9OC8
-E0VizkJsvBtgd/LST1gBkJ6dV2Q9ayoeDRD8UROQMKAn7RpUXoJF/9Aj2Rhysyqh
-XjdIf0m+dZdTym0E7XAZ/b3/qSeYLLzbOn4mI3rTGkFACzxHU3hZ7bPRe5m6V8Me
-y49iRIkBCqla/i9nsG3XKhlFH+QUt086UTT5UU2VSeyWdzAnJcexYAretT8LLljO
-frRjqsNE0wqWeT/aI+kX
-=LchW
------END PGP SIGNATURE-----
-
---Signature=_Mon__5_Aug_2013_18_42_05_+1000_lg8kfhjqcNG7G2eq--
+Earthling Michel D=C3=A4nzer           |                   http://www.amd.c=
+om
+Libre software enthusiast         |          Debian, X and DRI developer
