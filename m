@@ -1,23 +1,32 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0C5CC2C01BC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 07:11:19 +1000 (EST)
-Message-ID: <1375737065.13074.58.camel@snotra.buserror.net>
-Subject: Re: [PATCH] Add device file bindings for MAPLE
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Mon, 5 Aug 2013 16:11:05 -0500
-In-Reply-To: <5C32ABF4-ECC3-4F1C-82D0-EA3AD9053575@kernel.crashing.org>
-References: <1375354963-11219-1-git-send-email-shaveta@freescale.com>
- <5C32ABF4-ECC3-4F1C-82D0-EA3AD9053575@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <tony.luck@gmail.com>
+Received: from mail-vb0-x236.google.com (mail-vb0-x236.google.com
+ [IPv6:2607:f8b0:400c:c02::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B84222C007C
+ for <linuxppc-dev@ozlabs.org>; Tue,  6 Aug 2013 07:20:48 +1000 (EST)
+Received: by mail-vb0-f54.google.com with SMTP id q14so3404507vbe.13
+ for <linuxppc-dev@ozlabs.org>; Mon, 05 Aug 2013 14:20:44 -0700 (PDT)
 MIME-Version: 1.0
-Cc: Shaveta Leekha <shaveta@freescale.com>, devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <51FFFFEB.3030907@linux.vnet.ibm.com>
+References: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
+ <51FA3B02.7060004@linux.vnet.ibm.com>
+ <3908561D78D1C84285E8C5FCA982C28F31CAA167@ORSMSX106.amr.corp.intel.com>
+ <CA+8MBbLuhVDCb26ag3AH0vXrP4MXHLxS5aVn8pTi4=qL1NdR5w@mail.gmail.com>
+ <CA+8MBbJ7x46FGC7dPSdNzf8z=fZz20w1kiNgnZr4QQB6SUELhg@mail.gmail.com>
+ <51FFDC8B.7010909@linux.vnet.ibm.com>
+ <CA+8MBb+1LpR+Cx=84WZT98U5eqZcm1KriUP75aCg+uSrXrb3Yw@mail.gmail.com>
+ <51FFFFEB.3030907@linux.vnet.ibm.com>
+Date: Mon, 5 Aug 2013 14:20:44 -0700
+Message-ID: <CA+8MBbK9oZJO+RJGC-7riO=Kz=UbRcAvQ-nDi=2GLyvEDpoc7g@mail.gmail.com>
+Subject: Re: [PATCH 00/11] Add compression support to pstore
+From: Tony Luck <tony.luck@gmail.com>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "keescook@chromium.org" <keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,53 +36,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-08-01 at 11:05 -0500, Kumar Gala wrote:
-> On Aug 1, 2013, at 6:02 AM, Shaveta Leekha wrote:
-> 
-> > Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
-> > ---
-> > .../devicetree/bindings/powerpc/fsl/maple.txt      |   30 ++++++++++++++++++++
-> > 1 files changed, 30 insertions(+), 0 deletions(-)
-> > create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/maple.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/maple.txt b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
-> > new file mode 100644
-> > index 0000000..da51c5f
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
-> > @@ -0,0 +1,30 @@
-> > +* Freescale MAPLE Multi Accelerator Platform Engine Baseband 3
-> > +  (MAPLE-B3)device nodes
-> > +
-> > +Supported chips:
-> > +Example: B4860
-> > +
-> > +Required properties:
-> > +
-> > +- compatible:	Should contain "fsl,maple-b3-liodn" as the value
-> > +		This identifies Multi Accelerator Platform Engine
-> > +		Baseband 3 block.This representation is required
-> > +		for doing the PAMU/LIODN programming on the Linux side.
-> 
-> This compatible makes no sense, we shouldn't be marking a full HW block with some name that is just intended for LIODN convenance.
+This patch seems to fix the garbage at the end problem.  Booting an
+old kernel and using openssl decodes them OK.
 
-The point is we're not describing the whole block here, because the rest
-of the block is owned by an external entity (the DSP cores).
+Still have problems booting if there are any compressed images in ERST
+to be inflated.
 
-> Is this version 3 of the block?  If so a name like "fsl,maple-v3" or "fsl,maple-v3.0" would be more appropriate.
-> 
-> - k
-> 
-> > +
-> > +- reg:		offset and length of the register set for the device
-> > +
-> > +Devices that have LIODNs need to specify links to the parent PAMU controller
-> > +(the actual PAMU controller that this device is connected to) and a pointer to
-> > +the LIODN register, if applicable.
-> 
-> 
-> Does Maple not have any IRQs associated with it?
-
-maple-liodn doesn't.
-
--Scott
+-Tony
