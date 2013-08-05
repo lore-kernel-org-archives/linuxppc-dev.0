@@ -1,32 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 145042C007E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2013 20:53:52 +1000 (EST)
-Message-ID: <1375699987.12557.46.camel@pasglop>
-Subject: Re: therm_pm72 units, interface
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Date: Mon, 05 Aug 2013 20:53:07 +1000
-In-Reply-To: <1375698760.3852.152.camel@thor.local>
-References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
- <1345066616.11751.2.camel@pasglop>
- <alpine.LNX.2.01.1301142240140.30171@nerf07.vanv.qr>
- <1358465885.2782.24.camel@pasglop>
- <20130719174300.GL14385@blackmetal.musicnaut.iki.fi>
- <1374275809.19894.562.camel@pasglop>
- <20130720203346.GM14385@blackmetal.musicnaut.iki.fi>
- <1375437816.3852.12.camel@thor.local> <1375447861.15999.1.camel@pasglop>
- <1375454871.3852.27.camel@thor.local>
- <20130802155818.GB29933@blackmetal.musicnaut.iki.fi>
- <1375462346.3852.42.camel@thor.local> <1375477360.15999.19.camel@pasglop>
- <1375693993.3852.143.camel@thor.local> <1375694554.12557.40.camel@pasglop>
- <1375698760.3852.152.camel@thor.local>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Ben Hutchings <ben@decadent.org.uk>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH v2 3/3] powerpc: Correctly context switch DSCR on POWER8
+In-reply-to: <21599.1375697783@ale.ozlabs.ibm.com>
+References: <1375687686-5633-1-git-send-email-mikey@neuling.org>
+ <1375687686-5633-3-git-send-email-mikey@neuling.org>
+ <20130805184205.79cafb9ac299313228ec53cc@canb.auug.org.au>
+ <15850.1375694796@ale.ozlabs.ibm.com> <21599.1375697783@ale.ozlabs.ibm.com>
+Date: Mon, 05 Aug 2013 21:00:35 +1000
+Message-ID: <30983.1375700435@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,49 +19,185 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-08-05 at 12:32 +0200, Michel Dänzer wrote:
-> 
-> I did that, sorry should have mentioned that.
-> 
-> 
-> > > @@ -468,5 +478,3 @@ static struct platform_driver
-> i2c_powermac_driver
-> > > =
-> > > {
-> > >  };
-> > > 
-> > >  module_platform_driver(i2c_powermac_driver);
-> > > -
-> > > -MODULE_ALIAS("platform:i2c-powermac");
-> > 
-> > Maybe add the module alias back ? It shouldn't be necessary...
-> 
-> Doesn't help.
+POWER8 allows the DSCR to be accessed directly from userspace via a new SPR
+number 0x3 (Rather than 0x11.  DSCR SPR number 0x11 is still used on POWER8 but
+like POWER7, is only accessible in HV and OS modes).  Currently, we allow this
+by setting H/FSCR DSCR bit on boot.
 
-Hrm, that might require some more involved debugging, figuring out
-what's up with udev etc... that or maybe bisecting.
+Unfortunately this doesn't work, as the kernel needs to see the DSCR change so
+that it knows to no longer restore the system wide version of DSCR on context
+switch (ie. to set thread.dscr_inherit).
 
->From what I can tell, we do attach an OF node to the platform device,
-but since the driver has no of match table, we should still fallback to
-the old platform matching style.
+This clears the H/FSCR DSCR bit initially.  If a process then accesses the DSCR
+(via SPR 0x3), it'll trap into the kernel where we set thread.dscr_inherit in
+facility_unavailable_exception().
 
-I think I see... adding Grant.
+We also change _switch() so that we set or clear the H/FSCR DSCR bit based on
+the thread.dscr_inherit.
 
-Grant, something broke the auto-loading the of i2c-powermac module. It's
-a platform device, but while it does have a populated "of_node, its
-driver doesn't have an OF match table and relies on the old style
-platform device matching.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-That's broken with newer kernels, platform_uevent() calls
-of_device_uevent_modalias() which sees the of_node and thus doesn't
-return -ENOMEM, and we don't create a platform modalias anymore.
-
-Is it legit to add several MODALIAS ? If yes we could add both ... if
-not, we have a problem. Doing real OF matching with that critter is
-tricky at best for various reasons but it needs the of_node because it
-uses it to scan for children.
-
-Any suggestion ?
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
+index 18b5b9c..c7a3b81 100644
+--- a/arch/powerpc/kernel/cpu_setup_power.S
++++ b/arch/powerpc/kernel/cpu_setup_power.S
+@@ -123,14 +123,18 @@ __init_LPCR:
+ 
+ __init_FSCR:
+ 	mfspr	r3,SPRN_FSCR
+-	ori	r3,r3,FSCR_TAR|FSCR_DSCR|FSCR_EBB
++	ori	r3,r3,FSCR_TAR|FSCR_EBB
++	li	r5,HFSCR_DSCR
++	andc	r3,r3,r5
+ 	mtspr	SPRN_FSCR,r3
+ 	blr
+ 
+ __init_HFSCR:
+ 	mfspr	r3,SPRN_HFSCR
+ 	ori	r3,r3,HFSCR_TAR|HFSCR_TM|HFSCR_BHRB|HFSCR_PM|\
+-		      HFSCR_DSCR|HFSCR_VECVSX|HFSCR_FP|HFSCR_EBB
++		      HFSCR_VECVSX|HFSCR_FP|HFSCR_EBB
++	li	r5,HFSCR_DSCR
++	andc	r3,r3,r5
+ 	mtspr	SPRN_HFSCR,r3
+ 	blr
+ 
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index ab15b8d..4674fe6 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -584,9 +584,34 @@ BEGIN_FTR_SECTION
+ 	ld	r7,DSCR_DEFAULT@toc(2)
+ 	ld	r0,THREAD_DSCR(r4)
+ 	cmpwi	r6,0
++	li	r8, FSCR_DSCR
+ 	bne	1f
+ 	ld	r0,0(r7)
+-1:	cmpd	r0,r25
++	b	3f
++1:
++  BEGIN_FTR_SECTION_NESTED(70)
++	mfspr	r6, SPRN_FSCR
++	or	r6, r6, r8
++	mtspr	SPRN_FSCR, r6
++    BEGIN_FTR_SECTION_NESTED(69)
++	mfspr	r6, SPRN_HFSCR
++	or	r6, r6, r8
++	mtspr	SPRN_HFSCR, r6
++    END_FTR_SECTION_NESTED(CPU_FTR_HVMODE, CPU_FTR_HVMODE, 69)
++	b	4f
++  END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
++3:
++  BEGIN_FTR_SECTION_NESTED(70)
++	mfspr	r6, SPRN_FSCR
++	andc	r6, r6, r8
++	mtspr	SPRN_FSCR, r6
++    BEGIN_FTR_SECTION_NESTED(69)
++	mfspr	r6, SPRN_HFSCR
++	andc	r6, r6, r8
++	mtspr	SPRN_HFSCR, r6
++    END_FTR_SECTION_NESTED(CPU_FTR_HVMODE, CPU_FTR_HVMODE, 69)
++  END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
++4:	cmpd	r0,r25
+ 	beq	2f
+ 	mtspr	SPRN_DSCR,r0
+ 2:
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index bf33c22..e435bc0 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -44,9 +44,7 @@
+ #include <asm/machdep.h>
+ #include <asm/rtas.h>
+ #include <asm/pmc.h>
+-#ifdef CONFIG_PPC32
+ #include <asm/reg.h>
+-#endif
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ #include <asm/backlight.h>
+ #endif
+@@ -1296,43 +1294,54 @@ void vsx_unavailable_exception(struct pt_regs *regs)
+ 	die("Unrecoverable VSX Unavailable Exception", regs, SIGABRT);
+ }
+ 
++#ifdef CONFIG_PPC64
+ void facility_unavailable_exception(struct pt_regs *regs)
+ {
+ 	static char *facility_strings[] = {
+-		"FPU",
+-		"VMX/VSX",
+-		"DSCR",
+-		"PMU SPRs",
+-		"BHRB",
+-		"TM",
+-		"AT",
+-		"EBB",
+-		"TAR",
++		[FSCR_FP_LG] = "FPU",
++		[FSCR_VECVSX_LG] = "VMX/VSX",
++		[FSCR_DSCR_LG] = "DSCR",
++		[FSCR_PM_LG] = "PMU SPRs",
++		[FSCR_BHRB_LG] = "BHRB",
++		[FSCR_TM_LG] = "TM",
++		[FSCR_EBB_LG] = "EBB",
++		[FSCR_TAR_LG] = "TAR",
+ 	};
+-	char *facility, *prefix;
++	char *facility = "unknown";
+ 	u64 value;
++	u8 status;
++	bool hv;
+ 
+-	if (regs->trap == 0xf60) {
+-		value = mfspr(SPRN_FSCR);
+-		prefix = "";
+-	} else {
++	hv = (regs->trap == 0xf80);
++	if (hv)
+ 		value = mfspr(SPRN_HFSCR);
+-		prefix = "Hypervisor ";
++	else
++		value = mfspr(SPRN_FSCR);
++
++	status = value >> 56;
++	if (status == FSCR_DSCR_LG) {
++		/* User is acessing the DSCR.  Set the inherit bit and allow
++		 * the user to set it directly in future by setting via the
++		 * H/FSCR DSCR bit.
++		 */
++		current->thread.dscr_inherit = 1;
++		if (hv)
++			mtspr(SPRN_HFSCR, value | HFSCR_DSCR);
++		else
++			mtspr(SPRN_FSCR,  value | FSCR_DSCR);
++		return;
+ 	}
+ 
+-	value = value >> 56;
++	if ((status < ARRAY_SIZE(facility_strings)) &&
++	    facility_strings[status])
++		facility = facility_strings[status];
+ 
+ 	/* We restore the interrupt state now */
+ 	if (!arch_irq_disabled_regs(regs))
+ 		local_irq_enable();
+ 
+-	if (value < ARRAY_SIZE(facility_strings))
+-		facility = facility_strings[value];
+-	else
+-		facility = "unknown";
+-
+ 	pr_err("%sFacility '%s' unavailable, exception at 0x%lx, MSR=%lx\n",
+-		prefix, facility, regs->nip, regs->msr);
++	       hv ? "Hypervisor " : "", facility, regs->nip, regs->msr);
+ 
+ 	if (user_mode(regs)) {
+ 		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
+@@ -1341,6 +1350,7 @@ void facility_unavailable_exception(struct pt_regs *regs)
+ 
+ 	die("Unexpected facility unavailable exception", regs, SIGABRT);
+ }
++#endif
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 
