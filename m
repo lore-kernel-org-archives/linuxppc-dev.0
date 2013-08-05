@@ -1,11 +1,12 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Mon, 5 Aug 2013 14:11:23 +1000
+Date: Mon, 5 Aug 2013 14:13:16 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Implement __get_user_pages_fast()
-Message-ID: <20130805041123.GB19254@iris.ozlabs.ibm.com>
+Subject: [PATCH] powerpc: Fix VRSAVE handling
+Message-ID: <20130805041316.GC19254@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Cc: Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,112 +16,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Other architectures have a __get_user_pages_fast(), in addition to the
-regular get_user_pages_fast(), which doesn't call get_user_pages() on
-failure, and thus doesn't attempt to fault pages in or COW them.  The
-generic KVM code uses __get_user_pages_fast() to detect whether a page
-for which we have only requested read access is actually writable.
+Since 2002, the kernel has not saved VRSAVE on exception entry and
+restored it on exit; rather, VRSAVE gets context-switched in _switch.
+This means that when executing in process context in the kernel, the
+userspace VRSAVE value is live in the VRSAVE register.
 
-This provides an implementation of __get_user_pages_fast() by
-splitting the existing get_user_pages_fast() in two.  With this, the
-generic KVM code will get the right answer instead of always
-considering such pages non-writable.
+However, the signal code assumes that current->thread.vrsave holds
+the current VRSAVE value, which is incorrect.  Therefore, this
+commit changes it to use the actual VRSAVE register instead.  (It
+still uses current->thread.vrsave as a temporary location to store
+it in, as __get_user and __put_user can only transfer to/from a
+variable, not an SPR.)
+
+This also modifies the transactional memory code to save and restore
+VRSAVE regardless of whether VMX is enabled in the MSR.  This is
+because accesses to VRSAVE are not controlled by the MSR.VEC bit,
+but can happen at any time.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/mm/gup.c | 37 +++++++++++++++++++++----------------
- 1 file changed, 21 insertions(+), 16 deletions(-)
+ arch/powerpc/kernel/signal_32.c | 9 +++++++++
+ arch/powerpc/kernel/signal_64.c | 8 ++++++++
+ arch/powerpc/kernel/tm.S        | 4 ++--
+ 3 files changed, 19 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/gup.c b/arch/powerpc/mm/gup.c
-index 49822d9..6936547 100644
---- a/arch/powerpc/mm/gup.c
-+++ b/arch/powerpc/mm/gup.c
-@@ -117,8 +117,8 @@ static int gup_pud_range(pgd_t pgd, unsigned long addr, unsigned long end,
- 	return 1;
- }
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 0f83122..bebdf1a 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -436,7 +436,10 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+ 	 * use altivec. Since VSCR only contains 32 bits saved in the least
+ 	 * significant bits of a vector, we "cheat" and stuff VRSAVE in the
+ 	 * most significant bits of that same vector. --BenH
++	 * Note that the current VRSAVE value is in the SPR at this point.
+ 	 */
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		current->thread.vrsave = mfspr(SPRN_VRSAVE);
+ 	if (__put_user(current->thread.vrsave, (u32 __user *)&frame->mc_vregs[32]))
+ 		return 1;
+ #endif /* CONFIG_ALTIVEC */
+@@ -557,6 +560,8 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ 	 * significant bits of a vector, we "cheat" and stuff VRSAVE in the
+ 	 * most significant bits of that same vector. --BenH
+ 	 */
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		current->thread.vrsave = mfspr(SPRN_VRSAVE);
+ 	if (__put_user(current->thread.vrsave,
+ 		       (u32 __user *)&frame->mc_vregs[32]))
+ 		return 1;
+@@ -696,6 +701,8 @@ static long restore_user_regs(struct pt_regs *regs,
+ 	/* Always get VRSAVE back */
+ 	if (__get_user(current->thread.vrsave, (u32 __user *)&sr->mc_vregs[32]))
+ 		return 1;
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		mtspr(SPRN_VRSAVE, current->thread.vrsave);
+ #endif /* CONFIG_ALTIVEC */
+ 	if (copy_fpr_from_user(current, &sr->mc_fregs))
+ 		return 1;
+@@ -809,6 +816,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 	    __get_user(current->thread.transact_vrsave,
+ 		       (u32 __user *)&tm_sr->mc_vregs[32]))
+ 		return 1;
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		mtspr(SPRN_VRSAVE, current->thread.vrsave);
+ #endif /* CONFIG_ALTIVEC */
  
--int get_user_pages_fast(unsigned long start, int nr_pages, int write,
--			struct page **pages)
-+int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
-+			  struct page **pages)
- {
- 	struct mm_struct *mm = current->mm;
- 	unsigned long addr, len, end;
-@@ -135,7 +135,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 
- 	if (unlikely(!access_ok(write ? VERIFY_WRITE : VERIFY_READ,
- 					start, len)))
--		goto slow_irqon;
-+		return 0;
- 
- 	pr_devel("  aligned: %lx .. %lx\n", start, end);
- 
-@@ -166,30 +166,35 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 			 (void *)pgd_val(pgd));
- 		next = pgd_addr_end(addr, end);
- 		if (pgd_none(pgd))
--			goto slow;
-+			break;
- 		if (pgd_huge(pgd)) {
- 			if (!gup_hugepte((pte_t *)pgdp, PGDIR_SIZE, addr, next,
- 					 write, pages, &nr))
--				goto slow;
-+				break;
- 		} else if (is_hugepd(pgdp)) {
- 			if (!gup_hugepd((hugepd_t *)pgdp, PGDIR_SHIFT,
- 					addr, next, write, pages, &nr))
--				goto slow;
-+				break;
- 		} else if (!gup_pud_range(pgd, addr, next, write, pages, &nr))
--			goto slow;
-+			break;
- 	} while (pgdp++, addr = next, addr != end);
- 
- 	local_irq_enable();
- 
--	VM_BUG_ON(nr != (end - start) >> PAGE_SHIFT);
- 	return nr;
-+}
- 
--	{
--		int ret;
-+int get_user_pages_fast(unsigned long start, int nr_pages, int write,
-+			struct page **pages)
-+{
-+	struct mm_struct *mm = current->mm;
-+	int nr, ret;
-+
-+	start &= PAGE_MASK;
-+	nr = __get_user_pages_fast(start, nr_pages, write, pages);
-+	ret = nr;
- 
--slow:
--		local_irq_enable();
--slow_irqon:
-+	if (nr < nr_pages) {
- 		pr_devel("  slow path ! nr = %d\n", nr);
- 
- 		/* Try to get the remaining pages with get_user_pages */
-@@ -198,7 +203,7 @@ slow_irqon:
- 
- 		down_read(&mm->mmap_sem);
- 		ret = get_user_pages(current, mm, start,
--			(end - start) >> PAGE_SHIFT, write, 0, pages, NULL);
-+				     nr_pages - nr, write, 0, pages, NULL);
- 		up_read(&mm->mmap_sem);
- 
- 		/* Have to be a bit careful with return values */
-@@ -208,9 +213,9 @@ slow_irqon:
- 			else
- 				ret += nr;
- 		}
--
--		return ret;
+ 	regs->msr &= ~(MSR_FP | MSR_FE0 | MSR_FE1);
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 887e99d..c95257e 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -114,6 +114,8 @@ static long setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
+ 	/* We always copy to/from vrsave, it's 0 if we don't have or don't
+ 	 * use altivec.
+ 	 */
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		current->thread.vrsave = mfspr(SPRN_VRSAVE);
+ 	err |= __put_user(current->thread.vrsave, (u32 __user *)&v_regs[33]);
+ #else /* CONFIG_ALTIVEC */
+ 	err |= __put_user(0, &sc->v_regs);
+@@ -217,6 +219,8 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+ 	/* We always copy to/from vrsave, it's 0 if we don't have or don't
+ 	 * use altivec.
+ 	 */
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		current->thread.vrsave = mfspr(SPRN_VRSAVE);
+ 	err |= __put_user(current->thread.vrsave, (u32 __user *)&v_regs[33]);
+ 	if (msr & MSR_VEC)
+ 		err |= __put_user(current->thread.transact_vrsave,
+@@ -356,6 +360,8 @@ static long restore_sigcontext(struct pt_regs *regs, sigset_t *set, int sig,
+ 		err |= __get_user(current->thread.vrsave, (u32 __user *)&v_regs[33]);
+ 	else
+ 		current->thread.vrsave = 0;
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		mtspr(SPRN_VRSAVE, current->thread.vrsave);
+ #endif /* CONFIG_ALTIVEC */
+ 	/* restore floating point */
+ 	err |= copy_fpr_from_user(current, &sc->fp_regs);
+@@ -484,6 +490,8 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
+ 		current->thread.vrsave = 0;
+ 		current->thread.transact_vrsave = 0;
  	}
-+
-+	return ret;
- }
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		mtspr(SPRN_VRSAVE, current->thread.vrsave);
+ #endif /* CONFIG_ALTIVEC */
+ 	/* restore floating point */
+ 	err |= copy_fpr_from_user(current, &sc->fp_regs);
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index 51be8fb..e2145b2 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -155,10 +155,10 @@ _GLOBAL(tm_reclaim)
+ 	mfvscr	vr0
+ 	li	r6, THREAD_TRANSACT_VSCR
+ 	stvx	vr0, r3, r6
++dont_backup_vec:
+ 	mfspr	r0, SPRN_VRSAVE
+ 	std	r0, THREAD_TRANSACT_VRSAVE(r3)
  
- #endif /* __HAVE_ARCH_PTE_SPECIAL */
+-dont_backup_vec:
+ 	andi.	r0, r4, MSR_FP
+ 	beq	dont_backup_fp
+ 
+@@ -331,11 +331,11 @@ _GLOBAL(tm_recheckpoint)
+ 	lvx	vr0, r3, r5
+ 	mtvscr	vr0
+ 	REST_32VRS(0, r5, r3)			/* r5 scratch, r3 THREAD ptr */
++dont_restore_vec:
+ 	ld	r5, THREAD_VRSAVE(r3)
+ 	mtspr	SPRN_VRSAVE, r5
+ #endif
+ 
+-dont_restore_vec:
+ 	andi.	r0, r4, MSR_FP
+ 	beq	dont_restore_fp
+ 
 -- 
 1.8.3.1
