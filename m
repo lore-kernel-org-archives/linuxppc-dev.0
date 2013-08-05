@@ -1,13 +1,15 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
- by ozlabs.org (Postfix) with ESMTP id 22CEA2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2013 19:13:33 +1000 (EST)
-Message-ID: <1375693993.3852.143.camel@thor.local>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DBAEB2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2013 19:22:53 +1000 (EST)
+Message-ID: <1375694554.12557.40.camel@pasglop>
 Subject: Re: therm_pm72 units, interface
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 05 Aug 2013 11:13:13 +0200
-In-Reply-To: <1375477360.15999.19.camel@pasglop>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Date: Mon, 05 Aug 2013 19:22:34 +1000
+In-Reply-To: <1375693993.3852.143.camel@thor.local>
 References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
  <1345066616.11751.2.camel@pasglop>
  <alpine.LNX.2.01.1301142240140.30171@nerf07.vanv.qr>
@@ -19,6 +21,7 @@ References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
  <1375454871.3852.27.camel@thor.local>
  <20130802155818.GB29933@blackmetal.musicnaut.iki.fi>
  <1375462346.3852.42.camel@thor.local> <1375477360.15999.19.camel@pasglop>
+ <1375693993.3852.143.camel@thor.local>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Ben Hutchings <ben@decadent.org.uk>,
@@ -32,92 +35,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sam, 2013-08-03 at 07:02 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2013-08-02 at 18:52 +0200, Michel D=C3=A4nzer wrote:
->=20
-> > Thanks for the suggestion. The same windfarm modules were loaded in bot=
-h
-> > cases, but i2c_powermac wasn't loaded with the newer kernels. Loading i=
-t
-> > manually fixes the problem.
-> >=20
-> > How is i2c_powermac supposed to get loaded with current kernels?
->=20
-> It's a platform driver, but it's missing a module device-table
->=20
-> Can you try this completely untested patch ?
->=20
-> diff --git a/drivers/i2c/busses/i2c-powermac.c b/drivers/i2c/busses/i2c-p=
-owermac.c
-> index 8dc90da..5af5153 100644
+On Mon, 2013-08-05 at 11:13 +0200, Michel Dänzer wrote:
+> >  static struct platform_driver i2c_powermac_driver = {
+> >       .probe = i2c_powermac_probe,
+> >       .remove = i2c_powermac_remove,
+> > +     .id_table = *i2c_powermac_id,
+> 
+> This fails to build:
+> 
+>   CC [M]  drivers/i2c/busses/i2c-powermac.o
+> drivers/i2c/busses/i2c-powermac.c:469:14: error: invalid type argument
+> of unary ‘*’ (have ‘const struct platform_device_id’)
+> make[1]: *** [drivers/i2c/busses/i2c-powermac.o] Error 1
+
+Yeah, obvious typo, I said it was completely untested :-)
+
+> The version below builds, but the module still doesn't get loaded
+> automagically (unless I'm missing some command I need to run between
+> copying the new module to /lib/modules/$(uname -r)/ and rebooting?).
+
+depmod -a ?
+
+> Looking at other drivers in drivers/i2c/busses/, maybe
+> i2c_powermac_driver.driver needs an of_match_table entry?
+
+No, that would be messy, the driver is just an interface layer
+on top of the low-i2c.c stuff in arch, which abstracts 3 different
+i2c controllers and inconsistent device-tree representations. It's
+done outside of the normal i2c framework because it's used in some
+special contexts such as when running the platform functions, at early
+boot or sleep/wakeup time. Also it's historical stuff I'd rather not
+touch since I don't have that many different combos to test with
+anymore.
+
+However, the kernel creates platform device so the normal platform
+matching mechanism should work... we might be missing something.
+
+> diff --git a/drivers/i2c/busses/i2c-powermac.c
+> b/drivers/i2c/busses/i2c-powermac.c
+> index 8dc90da..74066fc 100644
 > --- a/drivers/i2c/busses/i2c-powermac.c
 > +++ b/drivers/i2c/busses/i2c-powermac.c
-> @@ -458,9 +458,15 @@ static int i2c_powermac_probe(struct platform_device=
- *dev)
->  	return rc;
+> @@ -458,9 +458,19 @@ static int i2c_powermac_probe(struct
+> platform_device *dev)
+>         return rc;
 >  }
-> =20
-> +static const struct platform_device_id i2c_powermac_id =3D {
-> +	.name =3D "i2c-powermac"
+> 
+> +static const struct platform_device_id i2c_powermac_id[] = {
+> +       {
+> +               .name = "i2c-powermac"
+> +       }, {
+> +               /* sentinel */
+> +       }
 > +};
 > +MODULE_DEVICE_TABLE(platform, i2c_powermac_id);
 > +
->  static struct platform_driver i2c_powermac_driver =3D {
->  	.probe =3D i2c_powermac_probe,
->  	.remove =3D i2c_powermac_remove,
-> +	.id_table =3D *i2c_powermac_id,
+>  static struct platform_driver i2c_powermac_driver = {
+>         .probe = i2c_powermac_probe,
+>         .remove = i2c_powermac_remove,
+> +       .id_table = i2c_powermac_id,
+>         .driver = {
+>                 .name = "i2c-powermac",
+>                 .bus = &platform_bus_type,
+> @@ -468,5 +478,3 @@ static struct platform_driver i2c_powermac_driver
+> =
+> {
+>  };
+> 
+>  module_platform_driver(i2c_powermac_driver);
+> -
+> -MODULE_ALIAS("platform:i2c-powermac");
 
-This fails to build:
+Maybe add the module alias back ? It shouldn't be necessary...
 
-  CC [M]  drivers/i2c/busses/i2c-powermac.o
-drivers/i2c/busses/i2c-powermac.c:469:14: error: invalid type argument of u=
-nary =E2=80=98*=E2=80=99 (have =E2=80=98const struct platform_device_id=E2=
-=80=99)
-make[1]: *** [drivers/i2c/busses/i2c-powermac.o] Error 1
-
-The version below builds, but the module still doesn't get loaded
-automagically (unless I'm missing some command I need to run between
-copying the new module to /lib/modules/$(uname -r)/ and rebooting?).
-
-Looking at other drivers in drivers/i2c/busses/, maybe
-i2c_powermac_driver.driver needs an of_match_table entry?
-
-
-diff --git a/drivers/i2c/busses/i2c-powermac.c
-b/drivers/i2c/busses/i2c-powermac.c
-index 8dc90da..74066fc 100644
---- a/drivers/i2c/busses/i2c-powermac.c
-+++ b/drivers/i2c/busses/i2c-powermac.c
-@@ -458,9 +458,19 @@ static int i2c_powermac_probe(struct
-platform_device *dev)
-        return rc;
- }
-
-+static const struct platform_device_id i2c_powermac_id[] =3D {
-+       {
-+               .name =3D "i2c-powermac"
-+       }, {
-+               /* sentinel */
-+       }
-+};
-+MODULE_DEVICE_TABLE(platform, i2c_powermac_id);
-+
- static struct platform_driver i2c_powermac_driver =3D {
-        .probe =3D i2c_powermac_probe,
-        .remove =3D i2c_powermac_remove,
-+       .id_table =3D i2c_powermac_id,
-        .driver =3D {
-                .name =3D "i2c-powermac",
-                .bus =3D &platform_bus_type,
-@@ -468,5 +478,3 @@ static struct platform_driver i2c_powermac_driver =3D
-{
- };
-
- module_platform_driver(i2c_powermac_driver);
--
--MODULE_ALIAS("platform:i2c-powermac");
-
---=20
-Earthling Michel D=C3=A4nzer           |                   http://www.amd.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+Cheers,
+Ben.
