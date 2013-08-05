@@ -1,9 +1,11 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/3] powerpc: Rework setting up H/FSCR bit definitions
-Date: Mon,  5 Aug 2013 17:28:04 +1000
-Message-Id: <1375687686-5633-1-git-send-email-mikey@neuling.org>
+Subject: [PATCH 2/3] powerpc: Fix hypervisor facility unavaliable vector number
+Date: Mon,  5 Aug 2013 17:28:05 +1000
+Message-Id: <1375687686-5633-2-git-send-email-mikey@neuling.org>
+In-Reply-To: <1375687686-5633-1-git-send-email-mikey@neuling.org>
+References: <1375687686-5633-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -15,60 +17,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reworks the Facility Status and Control Regsiter (FSCR) config bit
-definitions so that we can access the bit numbers.  This will be useful when
-looking at the status in the facility unavailable interrupt.
+Currently if we take hypervisor facility unavaliable (from 0xf80/0x4f80) we
+mark it as an OS facility unavaliable (0xf60) as the two share the same code
+path.
 
-HFSCR and FSCR versions are the same, so reuse them.
+The becomes a problem in facility_unavailable_exception() as we aren't able to
+see the hypervisor facility unavailable exceptions.
+
+Below fixes this by duplication the required macros.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/reg.h | 31 ++++++++++++++++++++-----------
- 1 file changed, 20 insertions(+), 11 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index a6840e4..75199581 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -254,19 +254,28 @@
- #define SPRN_HRMOR	0x139	/* Real mode offset register */
- #define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
- #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
-+/* HFSCR and FSCR bit numbers are the same */
-+#define FSCR_TAR_LG	8	/* Enable Target Address Register */
-+#define FSCR_EBB_LG	7	/* Enable Event Based Branching */
-+#define FSCR_TM_LG	6	/* Enable Transactional Memory */
-+#define FSCR_PM_LG	5	/* Enable prob/priv access to PMU SPRs */
-+#define FSCR_BHRB_LG	4	/* Enable Branch History Rolling Buffer*/
-+#define FSCR_DSCR_LG	2	/* Enable Data Stream Control Register */
-+#define FSCR_VECVSX_LG	1	/* Enable VMX/VSX  */
-+#define FSCR_FP_LG	0	/* Enable Floating Point */
- #define SPRN_FSCR	0x099	/* Facility Status & Control Register */
--#define   FSCR_TAR	(1 << (63-55)) /* Enable Target Address Register */
--#define   FSCR_EBB	(1 << (63-56)) /* Enable Event Based Branching */
--#define   FSCR_DSCR	(1 << (63-61)) /* Enable Data Stream Control Register */
-+#define   FSCR_TAR	__MASK(FSCR_TAR_LG)
-+#define   FSCR_EBB	__MASK(FSCR_EBB_LG)
-+#define   FSCR_DSCR	__MASK(FSCR_DSCR_LG)
- #define SPRN_HFSCR	0xbe	/* HV=1 Facility Status & Control Register */
--#define   HFSCR_TAR	(1 << (63-55)) /* Enable Target Address Register */
--#define   HFSCR_EBB	(1 << (63-56)) /* Enable Event Based Branching */
--#define   HFSCR_TM	(1 << (63-58)) /* Enable Transactional Memory */
--#define   HFSCR_PM	(1 << (63-60)) /* Enable prob/priv access to PMU SPRs */
--#define   HFSCR_BHRB	(1 << (63-59)) /* Enable Branch History Rolling Buffer*/
--#define   HFSCR_DSCR	(1 << (63-61)) /* Enable Data Stream Control Register */
--#define   HFSCR_VECVSX	(1 << (63-62)) /* Enable VMX/VSX  */
--#define   HFSCR_FP	(1 << (63-63)) /* Enable Floating Point */
-+#define   HFSCR_TAR	__MASK(FSCR_TAR_LG)
-+#define   HFSCR_EBB	__MASK(FSCR_EBB_LG)
-+#define   HFSCR_TM	__MASK(FSCR_TM_LG)
-+#define   HFSCR_PM	__MASK(FSCR_PM_LG)
-+#define   HFSCR_BHRB	__MASK(FSCR_BHRB_LG)
-+#define   HFSCR_DSCR	__MASK(FSCR_DSCR_LG)
-+#define   HFSCR_VECVSX	__MASK(FSCR_VECVSX_LG)
-+#define   HFSCR_FP	__MASK(FSCR_FP_LG)
- #define SPRN_TAR	0x32f	/* Target Address Register */
- #define SPRN_LPCR	0x13E	/* LPAR Control Register */
- #define   LPCR_VPM0	(1ul << (63-0))
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 4e00d22..902ca3c 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -848,7 +848,7 @@ hv_facility_unavailable_relon_trampoline:
+ 	. = 0x4f80
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
+-	b	facility_unavailable_relon_hv
++	b	hv_facility_unavailable_relon_hv
+ 
+ 	STD_RELON_EXCEPTION_PSERIES(0x5300, 0x1300, instruction_breakpoint)
+ #ifdef CONFIG_PPC_DENORMALISATION
+@@ -1175,6 +1175,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ 	b	.ret_from_except
+ 
+ 	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, .facility_unavailable_exception)
++	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, .facility_unavailable_exception)
+ 
+ 	.align	7
+ 	.globl	__end_handlers
+@@ -1188,7 +1189,7 @@ __end_handlers:
+ 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf20, altivec_unavailable)
+ 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf40, vsx_unavailable)
+ 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
+-	STD_RELON_EXCEPTION_HV_OOL(0xf80, facility_unavailable)
++	STD_RELON_EXCEPTION_HV_OOL(0xf80, hv_facility_unavailable)
+ 
+ #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+ /*
 -- 
 1.8.1.2
