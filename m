@@ -1,22 +1,23 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id 36C972C0077
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 07:10:47 +1000 (EST)
-Message-ID: <520014C5.4060703@ovro.caltech.edu>
-Date: Mon, 05 Aug 2013 14:10:29 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0C5CC2C01BC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 07:11:19 +1000 (EST)
+Message-ID: <1375737065.13074.58.camel@snotra.buserror.net>
+Subject: Re: [PATCH] Add device file bindings for MAPLE
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Date: Mon, 5 Aug 2013 16:11:05 -0500
+In-Reply-To: <5C32ABF4-ECC3-4F1C-82D0-EA3AD9053575@kernel.crashing.org>
+References: <1375354963-11219-1-git-send-email-shaveta@freescale.com>
+ <5C32ABF4-ECC3-4F1C-82D0-EA3AD9053575@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Peter LaDow <petela@gocougs.wsu.edu>
-Subject: Re: Failure to detect PCI card
-References: <CAN8Q1Ed-YtD1L7e9TaJyELdcz5Rcfdi0mdwU_H6HAx0-3FJ4Lg@mail.gmail.com>
- <20130805202559.0086e806@crub>
- <CAN8Q1EfoLTDr-x0r82Ezpqak+R=QuL1o37_OVU3Q0=8zFfDMqA@mail.gmail.com>
- <52000ACA.1010606@ovro.caltech.edu>
- <CAN8Q1EcnT3We1X22pw4AQ28xmd2d-XB9nTzZ2KdVb=qOx4j7-Q@mail.gmail.com>
- <5200143F.9010307@ovro.caltech.edu>
-In-Reply-To: <5200143F.9010307@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+Cc: Shaveta Leekha <shaveta@freescale.com>, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Pete,
+On Thu, 2013-08-01 at 11:05 -0500, Kumar Gala wrote:
+> On Aug 1, 2013, at 6:02 AM, Shaveta Leekha wrote:
+> 
+> > Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
+> > ---
+> > .../devicetree/bindings/powerpc/fsl/maple.txt      |   30 ++++++++++++++++++++
+> > 1 files changed, 30 insertions(+), 0 deletions(-)
+> > create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/maple.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/maple.txt b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
+> > new file mode 100644
+> > index 0000000..da51c5f
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
+> > @@ -0,0 +1,30 @@
+> > +* Freescale MAPLE Multi Accelerator Platform Engine Baseband 3
+> > +  (MAPLE-B3)device nodes
+> > +
+> > +Supported chips:
+> > +Example: B4860
+> > +
+> > +Required properties:
+> > +
+> > +- compatible:	Should contain "fsl,maple-b3-liodn" as the value
+> > +		This identifies Multi Accelerator Platform Engine
+> > +		Baseband 3 block.This representation is required
+> > +		for doing the PAMU/LIODN programming on the Linux side.
+> 
+> This compatible makes no sense, we shouldn't be marking a full HW block with some name that is just intended for LIODN convenance.
 
+The point is we're not describing the whole block here, because the rest
+of the block is owned by an external entity (the DSP cores).
 
-> Actually, before going down that route, I would get a PCI extender
-> that you can use to trace the traffic with your board. Does the
-> network card use 33MHz or 66MHz?
+> Is this version 3 of the block?  If so a name like "fsl,maple-v3" or "fsl,maple-v3.0" would be more appropriate.
+> 
+> - k
+> 
+> > +
+> > +- reg:		offset and length of the register set for the device
+> > +
+> > +Devices that have LIODNs need to specify links to the parent PAMU controller
+> > +(the actual PAMU controller that this device is connected to) and a pointer to
+> > +the LIODN register, if applicable.
+> 
+> 
+> Does Maple not have any IRQs associated with it?
 
-I wonder if something like this board:
+maple-liodn doesn't.
 
-http://www.logicsupply.com/products/pci122_dflex
-
-can be used to make a single PCI slot into two PCI slots. You
-could then plug your analyzer into the second slot.
-
-For $30 it might be worth a shot ...
-
-Cheers,
-Dave
+-Scott
