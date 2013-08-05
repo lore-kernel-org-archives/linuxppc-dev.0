@@ -1,27 +1,23 @@
-Return-Path: <pladow@gmail.com>
-Received: from mail-la0-x22a.google.com (mail-la0-x22a.google.com
- [IPv6:2a00:1450:4010:c03::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ED0D82C007B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 09:14:36 +1000 (EST)
-Received: by mail-la0-f42.google.com with SMTP id mf11so2556985lab.15
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Aug 2013 16:14:30 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A08ED2C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 09:59:40 +1000 (EST)
+Message-ID: <1375747168.13074.100.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2 6/8] powerpc: introduce early_get_first_memblock_info
+From: Scott Wood <scottwood@freescale.com>
+To: Kevin Hao <haokexin@gmail.com>
+Date: Mon, 5 Aug 2013 18:59:28 -0500
+In-Reply-To: <20130804004531.GD19141@pek-khao-d1.corp.ad.wrs.com>
+References: <1372942454-25191-7-git-send-email-haokexin@gmail.com>
+ <1374884281.30721.40@snotra>
+ <20130804004531.GD19141@pek-khao-d1.corp.ad.wrs.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Sender: pladow@gmail.com
-In-Reply-To: <CAN8Q1EecMBWb_wKVOGnBJ=CHZ9zQQDKjwN5ZD4DkP30+QRerPA@mail.gmail.com>
-References: <CAN8Q1Ed-YtD1L7e9TaJyELdcz5Rcfdi0mdwU_H6HAx0-3FJ4Lg@mail.gmail.com>
- <20130805202559.0086e806@crub>
- <CAN8Q1EfoLTDr-x0r82Ezpqak+R=QuL1o37_OVU3Q0=8zFfDMqA@mail.gmail.com>
- <52000ACA.1010606@ovro.caltech.edu>
- <CAN8Q1EecMBWb_wKVOGnBJ=CHZ9zQQDKjwN5ZD4DkP30+QRerPA@mail.gmail.com>
-Date: Mon, 5 Aug 2013 16:14:29 -0700
-Message-ID: <CAN8Q1EfWOedMFKtFQbTmmydnLoLe24=c3Fo1Ao3sTdDmuYBJqQ@mail.gmail.com>
-Subject: Re: Failure to detect PCI card
-From: Peter LaDow <petela@gocougs.wsu.edu>
-To: David Hawkins <dwh@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +27,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 5, 2013 at 4:07 PM, Peter LaDow <petela@gocougs.wsu.edu> wrote:
-> However, replacing the 82540 based card with either a 3com 3C905TXM or
-> the Netgear FA331, there is no response on the 0x10 IDSEL line.  Thus
-> it appears these cards are NOT responding to configuration reads.  I
-> think I have to break out the scope and probe around for the 5V/3V.  I
-> wouldn't think that the supplies are the issue since these are
-> universal cards, and as I understand it either 3V3 _or_ 5V can be
-> present, so these should work fine.  Yet they aren't responding to PCI
-> configuration cycles.
+On Sun, 2013-08-04 at 08:45 +0800, Kevin Hao wrote:
+> On Fri, Jul 26, 2013 at 07:18:01PM -0500, Scott Wood wrote:
+> > >+ * This function run before early_init_devtree, so we have to init
+> > >+ * initial_boot_params. Since early_init_dt_scan_memory_ppc will be
+> > >+ * executed again in early_init_devtree, we have to reinitialize the
+> > >+ * memblock data before return.
+> > >+ */
+> > >+void __init early_get_first_memblock_info(void *params,
+> > >phys_addr_t *size)
+> > >+{
+> > >+	/* Setup flat device-tree pointer */
+> > >+	initial_boot_params = params;
+> > >+
+> > >+	/* Scan memory nodes and rebuild MEMBLOCKs */
+> > >+	of_scan_flat_dt(early_init_dt_scan_root, NULL);
+> > >+	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
+> > >+
+> > >+	if (size)
+> > >+		*size = first_memblock_size;
+> > >+
+> > >+	/* Undo what early_init_dt_scan_memory_ppc does to memblock */
+> > >+	memblock_reinit();
+> > >+}
+> > >+#endif
+> > 
+> > Wouldn't it be simpler to set a flag so that
+> > early_init_dt_add_memory_arch() doesn't mess with memblocks on the
+> > first pass?
+> 
+> Do you mean something like this?
+> 
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 9a69d2d..e861394 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -523,6 +523,10 @@ static int __init early_init_dt_scan_memory_ppc(unsigned long node,
+>  
+>  void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+>  {
+> +#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_FSL_BOOKE)
+> +	static int first_time = 1;
+> +#endif
+> +
+>  #ifdef CONFIG_PPC64
+>  	if (iommu_is_off) {
+>  		if (base >= 0x80000000ul)
+> @@ -541,6 +545,13 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+>  	}
+>  
+>  	/* Add the chunk to the MEMBLOCK list */
+> +
+> +#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_FSL_BOOKE)
+> +	if (first_time) {
+> +		first_time = 0;
+> +		return;
+> +	}
+> +#endif
+>  	memblock_add(base, size);
+>  }
 
-A few more notes.  I tried a variety of other cards, such as a PCI
-modem (WinMode, ack), a WinTV card, and a PCI based 802.11 card.  All
-of them enumerate perfectly.
+I think it'd be clearer for it to be an external variable that gets set
+by the relocation code -- plus, the above wouldn't work if this gets
+called twice due to having multiple memory regions.
 
-Perhaps it is a BIOS option ROM like you suggested earlier.  The
-3c90xC reference manual I found
-(http://people.freebsd.org/~wpaul/3Com/3c90xc.pdf) mentions an option
-ROM (and there is an Atmel part stuffed).  I can't find any technical
-information on the FA331 (yet), so I don't know about it.
-
-But regardless, wouldn't enumeration have to occur before any option
-ROM could even be used?
-
-Thanks,
-Pete
+-Scott
