@@ -1,32 +1,42 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Return-Path: <aruna@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 50ACA2C0082
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 03:01:51 +1000 (EST)
-Date: Mon, 5 Aug 2013 19:01:28 +0200
-From: Gerhard Sittig <gsi@denx.de>
-To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v3 17/31] clk: mpc512x: introduce COMMON_CLK for MPC512x
-Message-ID: <20130805170128.GQ2580@book.gsilab.sittig.org>
-References: <1374166855-7280-1-git-send-email-gsi@denx.de>
- <1374495298-22019-1-git-send-email-gsi@denx.de>
- <1374495298-22019-18-git-send-email-gsi@denx.de>
- <20130805113720.GE9910@e106331-lin.cambridge.arm.com>
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 815B22C0097
+ for <linuxppc-dev@ozlabs.org>; Tue,  6 Aug 2013 03:10:54 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
+ Mon, 5 Aug 2013 22:30:19 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id AEE5E3940058
+ for <linuxppc-dev@ozlabs.org>; Mon,  5 Aug 2013 22:40:31 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r75HAYrv40698016
+ for <linuxppc-dev@ozlabs.org>; Mon, 5 Aug 2013 22:40:34 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r75HAbZo031486
+ for <linuxppc-dev@ozlabs.org>; Mon, 5 Aug 2013 22:40:38 +0530
+Message-ID: <51FFDC8B.7010909@linux.vnet.ibm.com>
+Date: Mon, 05 Aug 2013 22:40:35 +0530
+From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130805113720.GE9910@e106331-lin.cambridge.arm.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
- Wolfram Sang <wsa@the-dreams.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- Mark Brown <broonie@kernel.org>, Marc Kleine-Budde <mkl@pengutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Anatolij Gustschin <agust@denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- David Woodhouse <dwmw2@infradead.org>, Wolfgang Grandegger <wg@grandegger.com>,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+To: Tony Luck <tony.luck@gmail.com>
+Subject: Re: [PATCH 00/11] Add compression support to pstore
+References: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
+ <51FA3B02.7060004@linux.vnet.ibm.com>
+ <3908561D78D1C84285E8C5FCA982C28F31CAA167@ORSMSX106.amr.corp.intel.com>
+ <CA+8MBbLuhVDCb26ag3AH0vXrP4MXHLxS5aVn8pTi4=qL1NdR5w@mail.gmail.com>
+ <CA+8MBbJ7x46FGC7dPSdNzf8z=fZz20w1kiNgnZr4QQB6SUELhg@mail.gmail.com>
+In-Reply-To: <CA+8MBbJ7x46FGC7dPSdNzf8z=fZz20w1kiNgnZr4QQB6SUELhg@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "keescook@chromium.org" <keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,135 +46,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 05, 2013 at 12:37 +0100, Mark Rutland wrote:
-> 
-> On Mon, Jul 22, 2013 at 01:14:44PM +0100, Gerhard Sittig wrote:
-> > this change implements a clock driver for the MPC512x PowerPC platform
-> > which follows the COMMON_CLK approach and uses common clock drivers
-> > shared with other platforms
-> >
-> > this driver implements the publicly announced set of clocks (which can
-> > get referenced by means of symbolic identifiers from the dt-bindings
-> > header file), as well as generates additional 'struct clk' items where
-> > the SoC hardware cannot easily get mapped to the common primitives of
-> > the clock API, or requires "intermediate" clock nodes to represent
-> > clocks that have both gates and dividers
-> >
-> > the previous PPC_CLOCK implementation is kept in place and remains in
-> > parallel to the common clock implementation for test and comparison
-> > during migration, a compile time option picks one of the two
-> > alternatives (Kconfig switch, common clock used by default)
-> >
-> > some of the clock items get pre-enabled in the clock driver to not have
-> > them automatically disabled by the underlying clock subsystem because of
-> > their being unused -- this approach is desirable because
-> > - some of the clocks are useful to have for diagnostics and information
-> >   despite their not getting claimed by any drivers (CPU, internal and
-> >   external RAM, internal busses, boot media)
-> > - some of the clocks aren't claimed by their peripheral drivers yet,
-> >   either because of missing driver support or because device tree specs
-> >   aren't available yet (but the workarounds will get removed as the
-> >   drivers get adjusted and the device tree provides the clock specs)
-> > - some help introduce support for and migrate to the common
-> >   infrastructure, while more appropriate support for specific hardware
-> >   constraints isn't available yet (remaining changes are strictly
-> >   internal to the clock driver and won't affect peripheral drivers)
-> >
-> > clkdev registration provides "alias names" for few clock items
-> > - to not break those peripheral drivers which encode their component
-> >   index into the name that is used for clock lookup (UART, SPI, USB)
-> > - to not break those drivers which use names for the clock lookup which
-> >   were encoded in the previous PPC_CLOCK implementation (NFC, VIU, CAN)
-> > this workaround will get removed as these drivers get adjusted after
-> > device tree based clock lookup has become available
-> >
-> > Signed-off-by: Gerhard Sittig <gsi@denx.de>
-> > ---
-> >  arch/powerpc/platforms/512x/Kconfig           |   14 +-
-> >  arch/powerpc/platforms/512x/Makefile          |    4 +-
-> >  arch/powerpc/platforms/512x/clock-commonclk.c |  786 +++++++++++++++++++++++++
-> >  include/linux/clk-provider.h                  |   16 +
-> >  4 files changed, 818 insertions(+), 2 deletions(-)
-> >  create mode 100644 arch/powerpc/platforms/512x/clock-commonclk.c
-> >
-> 
-> [...]
-> 
-> > +static int get_freq_from_dt(char *propname)
-> > +{
-> > +       struct device_node *np;
-> > +       const unsigned int *prop;
-> > +       int val;
-> > +
-> > +       val = 0;
-> > +       np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-immr");
-> > +       if (np) {
-> > +               prop = of_get_property(np, propname, NULL);
-> > +               if (prop)
-> > +                       val = *prop;
-> > +           of_node_put(np);
-> > +       }
-> > +       return val;
-> > +}
-> 
-> Can you not use of_property_read_u32 here rather than of_get_property?
-> 
-> Also, this seems rather unlike the common clock bindings method for
-> describing frequencies in the dt. Given there's nothing in mainline
-> using this yet, we can do it 'right' from the start.
+Hi Tony,
 
-This specific routine was taken in verbatim form from the former
-PPC_CLOCK implementation.  Although I could re-implement it in
-other ways if that was considered necessary.
+Thank you very much for testing my patches.
 
-> 
-> [...]
-> 
-> > +       /*
-> > +        * externally provided clocks (when implemented in hardware,
-> > +        * device tree may specify values which otherwise were unknown)
-> > +        */
-> > +       freq = get_freq_from_dt("psc_mclk_in");
-> > +       if (!freq)
-> > +               freq = 25000000;
-> > +       clks[MPC512x_CLK_PSC_MCLK_IN] = mpc512x_clk_fixed("psc_mclk_in", freq);
-> > +       freq = get_freq_from_dt("spdif_tx_in");
-> > +       clks[MPC512x_CLK_SPDIF_TX_IN] = mpc512x_clk_fixed("spdif_tx_in", freq);
-> > +       freq = get_freq_from_dt("spdif_rx_in");
-> > +       clks[MPC512x_CLK_SPDIF_TX_IN] = mpc512x_clk_fixed("spdif_rx_in", freq);
-> 
-> Can we not just use fixed-clocks for these in the dt? It feels odd to
-> describe them in a compeltely differnet way in the dt, especially as
-> we'll have to maintain some backwards compatibility for a while...
-> 
-> I see for psc_mclk_in we assume a default value if not present. I'm not
-> sure how to handle that, but I assume there's some way of finding out if
-> we've already registered a clock output with the same name?
+On Saturday 03 August 2013 03:42 AM, Tony Luck wrote:
+> A quick experiment to use your patchset - but with compression
+> disabled by tweaking this line in pstore_dump():
+>
+>      zipped_len = -1; //zip_data(dst, hsize + len);
+>
+> turned out well. This kernel dumps uncompressed dmesg blobs into pstore
+> and gets them back out again.  So it seems likely that the problems are
+> someplace in the compression/decompression code.
 
-I guess using fixed-clocks (i.e. clock items that completely get
-described in the device tree, and are taken care of by a common
-driver which attaches to anything that is said to be compatible)
-would change behaviour, which I did not intend to introduce.
+A quick look on my code suggests that problem could be in this part
+of code.
 
-The above code does what the PPC_CLOCK implementation did: Always
-create the clock items, while their _rate_ may or may not be
-specified or overridden from device tree specs, and defaults
-(non-zero or zero) always apply.
+In pstore_dump:
 
+          if (zipped_len < 0) {
+                         dst = psinfo->buf;
+                         hsize = sprintf(dst, "%s#%d Part%d\n",
+                                         why, oopscount, part);
+                         size = psinfo->bufsize - hsize;
+                         dst += hsize;
+                         compressed = false;
 
-Thank you for the feedback and suggestions.  I've yet to find out
-how much compatibility I'm allowed to break. :)  ATM I assume
-that my changes do keep compatibility where appropriate, and only
-change the device tree or its interpretation where the device
-tree may be considered wrong (not that it would provide false
-information, but it certainly lacked essential information about
-the hardware, like clock related information, and thus it shall
-be acceptable to require an update of the dtb to fix that gap).
+                         if (!kmsg_dump_get_buffer(dumper, true, dst,
+size, &len))
+                                 break;
+                 } else {
+                         compressed = true;
+      --->               len = zipped_len;
+                 }
 
+I am returning zipped_len as the length of the compressed data (which also
+has hsize compressed). So returning hsize + len in pstore_write callback
+will be wrong. It should just have been zipped_len. This might be adding
+junk characters.
 
-virtually yours
-Gerhard Sittig
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+Can you please replace this hunk with:
+
+                 if (zipped_len < 0) {
+                         pr_err("Compression failed\n");
+                         dst = psinfo->buf;
+                         hsize = sprintf(dst, "%s#%d Part%d\n",
+                                         why, oopscount, part);
+                         size = psinfo->bufsize - hsize;
+                         dst += hsize;
+                         compressed = false;
+
+                         if (!kmsg_dump_get_buffer(dumper, true, dst,
+size, &len))
+                                 break;
+                         total_len = hsize + len;
+                 } else {
+                         compressed = true;
+                         total_len = zipped_len;
+                 }
+
+                 ret = psinfo->write(PSTORE_TYPE_DMESG, reason, &id, part,
+                                     oopscount, compressed, total_len, psinfo);
+                 if (ret == 0 && reason == KMSG_DUMP_OOPS && pstore_is_mounted())
+                         pstore_new_entry = 1;
+
+                 total += total_len;
+                 part++;
+
+With the above hunk, atleast I dont see junk characters at the end in power.
+
+I apologise, since I do not have the suitable machine to test this I am
+not able to reproduce the scenarios you are stating. I need your help
+in testing this.
+
+- Aruna
+
+> -Tony
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
