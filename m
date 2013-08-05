@@ -1,25 +1,18 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
- [IPv6:2607:f8b0:400e:c02::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A7D2A2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2013 01:49:46 +1000 (EST)
-Received: by mail-pd0-f176.google.com with SMTP id q10so2317307pdj.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Aug 2013 08:49:44 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Sun, 4 Aug 2013 08:49:43 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Meelis Roos <mroos@linux.ee>
-Subject: Re: 3.11-rc3+git: __divdi3 undefined on powerpc (from radeon)
-Message-ID: <20130804154943.GA13807@roeck-us.net>
-References: <alpine.SOC.1.00.1308031534390.1352@math.ut.ee>
+Return-Path: <michael@ellerman.id.au>
+Date: Mon, 5 Aug 2013 12:21:21 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Fionnuala Gunter <fin@linux.vnet.ibm.com>
+Subject: Re: [PATCH] drivers/crypto/nx: saves chaining value from co-processor
+Message-ID: <20130805022120.GA5281@concordia>
+References: <1375477090.32477.10.camel@what-is-leg>
+ <1375477741.15999.23.camel@pasglop>
+ <1375480550.32477.19.camel@what-is-leg>
+ <1375480754.15999.42.camel@pasglop>
+ <1375481816.32477.22.camel@what-is-leg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.SOC.1.00.1308031534390.1352@math.ut.ee>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Linux Kernel list <linux-kernel@vger.kernel.org>,
- dri-devel@lists.freedesktop.org
+In-Reply-To: <1375481816.32477.22.camel@what-is-leg>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,17 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Aug 03, 2013 at 03:44:26PM +0300, Meelis Roos wrote:
-> While trying to compile v3.11-rc3-288-gabe0308 on powerpc 32-bit, 
-> it failed with the following linking error:
+On Fri, Aug 02, 2013 at 05:16:56PM -0500, Fionnuala Gunter wrote:
+> On Sat, 2013-08-03 at 07:59 +1000, Benjamin Herrenschmidt wrote:
+> > On Fri, 2013-08-02 at 16:55 -0500, Fionnuala Gunter wrote:
+> > > Sorry, I thought linuxppc-dev was the right tree since the patch is
+> > > for
+> > > a ppc driver and you've carried previous nx driver submissions
+> > > upstream. 
+> > > 
+> > > I want to submit to the proper place, so what is your preference?
+> > 
+> > Well, that's the right place if you want me to merge it, which seems to
+> > be what Marcelo is also expecting...
 > 
-> ERROR: "__divdi3" [drivers/gpu/drm/radeon/radeon.ko] undefined!
-> 
-> Some new 64-bit division in radeon that is not implemented on 32-bit 
-> powerpc?
-> 
-> This is new - 3.11-rc3 worked fine.
-> 
-Not only powerpc - i386 builds fail with the same error.
+> Please merge this patch, it fixes a hot bug.
 
-Guenter
+You don't actually mention that anywhere in the changelog.
+
+The description implies that it's probably a bug, but doesn't describe
+the symptoms in any way - does it make it completely non-functional or
+just break in certain corner cases.
+
+And you make no mention of when this bug appeared, has it always been
+there, or was it introduced by a particular commit? That's important
+because it helps determine whether the patch should go into any of the
+stable trees.
+
+cheers
