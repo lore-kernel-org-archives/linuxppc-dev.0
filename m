@@ -1,22 +1,20 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 3123F2C0098
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 03:18:31 +1000 (EST)
-Message-ID: <1375723092.31262.410.camel@ul30vt.home>
-Subject: Re: [PATCH 03/10] vfio: add external user support
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 05 Aug 2013 11:18:12 -0600
-In-Reply-To: <51EE47DE.5020002@ozlabs.ru>
-References: <1373936045-22653-1-git-send-email-aik@ozlabs.ru>
- <1373936045-22653-4-git-send-email-aik@ozlabs.ru>
- <1374546224.15429.8.camel@ul30vt.home> <51EE47DE.5020002@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <pladow@gmail.com>
+Received: from mail-lb0-x234.google.com (mail-lb0-x234.google.com
+ [IPv6:2a00:1450:4010:c04::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6BBE92C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 03:58:12 +1000 (EST)
+Received: by mail-lb0-f180.google.com with SMTP id a16so2281057lbj.25
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Aug 2013 10:58:02 -0700 (PDT)
+MIME-Version: 1.0
+Sender: pladow@gmail.com
+Date: Mon, 5 Aug 2013 10:58:01 -0700
+Message-ID: <CAN8Q1Ed-YtD1L7e9TaJyELdcz5Rcfdi0mdwU_H6HAx0-3FJ4Lg@mail.gmail.com>
+Subject: Failure to detect PCI card
+From: Peter LaDow <petela@gocougs.wsu.edu>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-07-23 at 19:07 +1000, Alexey Kardashevskiy wrote:
-> On 07/23/2013 12:23 PM, Alex Williamson wrote:
-> > On Tue, 2013-07-16 at 10:53 +1000, Alexey Kardashevskiy wrote:
-> >> VFIO is designed to be used via ioctls on file descriptors
-> >> returned by VFIO.
-> >>
-> >> However in some situations support for an external user is required.
-> >> The first user is KVM on PPC64 (SPAPR TCE protocol) which is going to
-> >> use the existing VFIO groups for exclusive access in real/virtual mode
-> >> on a host to avoid passing map/unmap requests to the user space which
-> >> would made things pretty slow.
-> >>
-> >> The protocol includes:
-> >>
-> >> 1. do normal VFIO init operation:
-> >> 	- opening a new container;
-> >> 	- attaching group(s) to it;
-> >> 	- setting an IOMMU driver for a container.
-> >> When IOMMU is set for a container, all groups in it are
-> >> considered ready to use by an external user.
-> >>
-> >> 2. User space passes a group fd to an external user.
-> >> The external user calls vfio_group_get_external_user()
-> >> to verify that:
-> >> 	- the group is initialized;
-> >> 	- IOMMU is set for it.
-> >> If both checks passed, vfio_group_get_external_user()
-> >> increments the container user counter to prevent
-> >> the VFIO group from disposal before KVM exits.
-> >>
-> >> 3. The external user calls vfio_external_user_iommu_id()
-> >> to know an IOMMU ID. PPC64 KVM uses it to link logical bus
-> >> number (LIOBN) with IOMMU ID.
-> >>
-> >> 4. When the external KVM finishes, it calls
-> >> vfio_group_put_external_user() to release the VFIO group.
-> >> This call decrements the container user counter.
-> >> Everything gets released.
-> >>
-> >> The "vfio: Limit group opens" patch is also required for the consistency.
-> >>
-> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > 
-> > This looks fine to me.  Is the plan to add this through the ppc tree
-> > again?  Thanks,
-> 
-> 
-> Nope, better to add this through your tree. And faster for sure :) Thanks!
+I have a PCI card (a Netgear FA331, vendor:device 100b:0020) that is
+failing to be detected by our PPC platform.  This device works just
+fine in a PC, and other cards work just fine in the same PCI slot (we
+have an Intel 82540EM based card that works).
 
-Applied to my next branch for v3.12.  Thanks,
+But for some reason, neither u-boot nor the kernel detect this card.
+Any ideas why this might be?
 
-Alex
+Thanks,
+Pete
