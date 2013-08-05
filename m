@@ -1,25 +1,31 @@
-Return-Path: <B42378@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
+Return-Path: <R65777@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3BB322C0092
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2013 21:33:44 +1000 (EST)
-Date: Mon, 5 Aug 2013 19:28:05 +0800
-From: Nicolin Chen <b42378@freescale.com>
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: Re: [PATCH v3 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
-Message-ID: <20130805112804.GA6770@MrMyself>
-References: <1375687781-23225-1-git-send-email-b42378@freescale.com>
- <1375687781-23225-2-git-send-email-b42378@freescale.com>
- <1375697222.4000.59.camel@pizza.hi.pengutronix.de>
+ by ozlabs.org (Postfix) with ESMTPS id DA1F92C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 00:27:15 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [PATCH 5/6 v2] kvm: powerpc: booke: Add linux pte lookup like
+ booke3s
+Date: Mon, 5 Aug 2013 14:27:02 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D070FAD49@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1375355558-19187-6-git-send-email-Bharat.Bhushan@freescale.com>
+ <1375484319.26902.4.camel@snotra.buserror.net>
+ <1375485408.15999.67.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D070F8FCC@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1375503847.15999.80.camel@pasglop>
+In-Reply-To: <1375503847.15999.80.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1375697222.4000.59.camel@pizza.hi.pengutronix.de>
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, lars@metafoo.de,
- timur@tabi.org, rob.herring@calxeda.com, broonie@kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,41 +35,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Philipp,
-
-   Thanks for the comments! I'll revise it and send a v4.
-   Here is my reply to some parts of your question.
-
-On Mon, Aug 05, 2013 at 12:07:02PM +0200, Philipp Zabel wrote:
-> This looks to me like a case of configuration data in the device tree.
-> Couldn't the tx/rx clock source be determined automatically or at least
-> the SoC specific clock sources to the mux be known to the driver, so
-> that we can use clock phandles here?
-> 
-> What happens if a different tx-clk-source is needed for 48 kHz than for
-> 44.1 kHz?
-
-You are right about the case. I'll try to figure out a nicer way, including
-for the different sample-rate.
-
-
-> Do we already have anything for this in the kernel?
-> It could also be done using:
-> 
-> 	u8 tmp = input;
-> 
->         tmp = ((tmp & 0b10101010) >> 1) | ((tmp << 1) & 0b10101010);
->         tmp = ((tmp & 0b11001100) >> 2) | ((tmp << 2) & 0b11001100);
->         tmp = ((tmp & 0b11110000) >> 4) | ((tmp << 4) & 0b11110000);
-> 
-> 	return tmp;
-
-I was also wondering this question but I couldn't find it.
-And obviously your algorithm is better :)
-
-
-> In principle, it should also be possible to let the SDMA engine only
-> take the FIFOs' MSBs for S16_LE. Is this a limitation of the SDMA ROM
-> script?
-
-You are right about the idea and the inference.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogU2F0dXJk
+YXksIEF1Z3VzdCAwMywgMjAxMyA5OjU0IEFNDQo+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcN
+Cj4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBhZ3JhZkBzdXNlLmRlOyBrdm0tcHBjQHZnZXIua2Vy
+bmVsLm9yZzsNCj4ga3ZtQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
+cy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCA1LzYgdjJdIGt2bTogcG93ZXJwYzogYm9va2U6
+IEFkZCBsaW51eCBwdGUgbG9va3VwIGxpa2UNCj4gYm9va2Uzcw0KPiANCj4gT24gU2F0LCAyMDEz
+LTA4LTAzIGF0IDAyOjU4ICswMDAwLCBCaHVzaGFuIEJoYXJhdC1SNjU3Nzcgd3JvdGU6DQo+ID4g
+T25lIG9mIHRoZSBwcm9ibGVtIEkgc2F3IHdhcyB0aGF0IGlmIEkgcHV0IHRoaXMgY29kZSBpbg0K
+PiA+IGFzbS9wZ3RhYmxlLTMyLmggYW5kIGFzbS9wZ3RhYmxlLTY0LmggdGhlbiBwdGVfcGVyc2Vu
+dCgpIGFuZCBvdGhlcg0KPiA+IGZyaWVuZCBmdW5jdGlvbiAob24gd2hpY2ggdGhpcyBjb2RlIGRl
+cGVuZHMpIGFyZSBkZWZpbmVkIGluIHBndGFibGUuaC4NCj4gPiBBbmQgcGd0YWJsZS5oIGluY2x1
+ZGVzIGFzbS9wZ3RhYmxlLTMyLmggYW5kIGFzbS9wZ3RhYmxlLTY0LmggYmVmb3JlIGl0DQo+ID4g
+ZGVmaW5lcyBwdGVfcHJlc2VudCgpIGFuZCBmcmllbmRzIGZ1bmN0aW9ucy4NCj4gPg0KPiA+IE9r
+IEkgbW92ZSB3b3ZlIHRoaXMgaW4gYXNtL3BndGFibGUqLmgsIGluaXRpYWxseSBJIGZvdWdodCB3
+aXRoIG15c2VsZg0KPiA+IHRvIHRha2UgdGhpcyBjb2RlIGluIHBndGFibGUqIGJ1dCBmaW5hbGx5
+IGVuZCB1cCBkb2luZyBoZXJlIChnb3QNCj4gPiBiaWFzZWQgYnkgYm9vazNzIDopKS4NCj4gDQo+
+IElzIHRoZXJlIGEgcmVhc29uIHdoeSB0aGVzZSByb3V0aW5lcyBjYW4gbm90IGJlIGNvbXBsZXRl
+bHkgZ2VuZXJpYyBpbiBwZ3RhYmxlLmgNCj4gPw0KDQpIb3cgYWJvdXQgdGhlIGdlbmVyaWMgZnVu
+Y3Rpb246DQoNCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vcGd0YWJsZS1w
+cGM2NC5oIGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BndGFibGUtcHBjNjQuaA0KaW5kZXgg
+ZDI1N2Q5OC4uMjFkYWYyOCAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9w
+Z3RhYmxlLXBwYzY0LmgNCisrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLXBw
+YzY0LmgNCkBAIC0yMjEsNiArMjIxLDI3IEBAIHN0YXRpYyBpbmxpbmUgdW5zaWduZWQgbG9uZyBw
+dGVfdXBkYXRlKHN0cnVjdCBtbV9zdHJ1Y3QgKm1tLA0KICAgICAgICByZXR1cm4gb2xkOw0KIH0N
+Cg0KK3N0YXRpYyBpbmxpbmUgdW5zaWduZWQgbG9uZyBwdGVfcmVhZChwdGVfdCAqcCkNCit7DQor
+I2lmZGVmIFBURV9BVE9NSUNfVVBEQVRFUw0KKyAgICAgICBwdGVfdCBwdGU7DQorICAgICAgIHB0
+ZV90IHRtcDsNCisgICAgICAgX19hc21fXyBfX3ZvbGF0aWxlX18gKA0KKyAgICAgICAiMTogICAg
+IGxkYXJ4ICAgJTAsMCwlM1xuIg0KKyAgICAgICAiICAgICAgIGFuZGkuICAgJTEsJTAsJTRcbiIN
+CisgICAgICAgIiAgICAgICBibmUtICAgIDFiXG4iDQorICAgICAgICIgICAgICAgb3JpICAgICAl
+MSwlMCwlNFxuIg0KKyAgICAgICAiICAgICAgIHN0ZGN4LiAgJTEsMCwlM1xuIg0KKyAgICAgICAi
+ICAgICAgIGJuZS0gICAgMWIiDQorICAgICAgIDogIj0mciIgKHB0ZSksICI9JnIiICh0bXApLCAi
+PW0iICgqcCkNCisgICAgICAgOiAiciIgKHApLCAiaSIgKF9QQUdFX0JVU1kpDQorICAgICAgIDog
+ImNjIik7DQorDQorICAgICAgIHJldHVybiBwdGU7DQorI2Vsc2UgIA0KKyAgICAgICByZXR1cm4g
+cHRlX3ZhbCgqcCk7DQorI2VuZGlmDQorI2VuZGlmDQorfQ0KIHN0YXRpYyBpbmxpbmUgaW50IF9f
+cHRlcF90ZXN0X2FuZF9jbGVhcl95b3VuZyhzdHJ1Y3QgbW1fc3RydWN0ICptbSwNCiAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB1bnNpZ25lZCBsb25nIGFkZHIs
+IHB0ZV90ICpwdGVwKQ0KIHsNCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20v
+cGd0YWJsZS5oIGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BndGFibGUuaA0KaW5kZXggNjkw
+YzhjMi4uZGFkNzEyYyAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3Rh
+YmxlLmgNCisrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLmgNCkBAIC0yNTQs
+NiArMjU0LDQ1IEBAIHN0YXRpYyBpbmxpbmUgcHRlX3QgKmZpbmRfbGludXhfcHRlX29yX2h1Z2Vw
+dGUocGdkX3QgKnBnZGlyLCB1bnNpZ25lZCBsb25nIGVhLA0KIH0NCiAjZW5kaWYgLyogIUNPTkZJ
+R19IVUdFVExCX1BBR0UgKi8NCg0KK3N0YXRpYyBpbmxpbmUgcHRlX3QgbG9va3VwX2xpbnV4X3B0
+ZShwZ2RfdCAqcGdkaXIsIHVuc2lnbmVkIGxvbmcgaHZhLA0KKyAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIGludCB3cml0aW5nLCB1bnNpZ25lZCBsb25nICpwdGVfc2l6ZXApDQor
+ew0KKyAgICAgICBwdGVfdCAqcHRlcDsNCisgICAgICAgcHRlX3QgcHRlOw0KKyAgICAgICB1bnNp
+Z25lZCBsb25nIHBzID0gKnB0ZV9zaXplcDsNCisgICAgICAgdW5zaWduZWQgaW50IHNoaWZ0Ow0K
+Kw0KKyAgICAgICBwdGVwID0gZmluZF9saW51eF9wdGVfb3JfaHVnZXB0ZShwZ2RpciwgaHZhLCAm
+c2hpZnQpOw0KKyAgICAgICBpZiAoIXB0ZXApDQorICAgICAgICAgICAgICAgcmV0dXJuIF9fcHRl
+KDApOw0KKyAgICAgICBpZiAoc2hpZnQpDQorICAgICAgICAgICAgICAgKnB0ZV9zaXplcCA9IDF1
+bCA8PCBzaGlmdDsNCisgICAgICAgZWxzZQ0KKyAgICAgICAgICAgICAgICpwdGVfc2l6ZXAgPSBQ
+QUdFX1NJWkU7DQorDQorICAgICAgIGlmIChwcyA+ICpwdGVfc2l6ZXApDQorICAgICAgICAgICAg
+ICAgcmV0dXJuIF9fcHRlKDApOw0KKw0KKyAgICAgICBpZiAoIXB0ZV9wcmVzZW50KCpwdGVwKSkN
+CisgICAgICAgICAgICAgICByZXR1cm4gX19wdGUoMCk7DQorDQorI2lmZGVmIENPTkZJR19QUEM2
+NA0KKyAgICAgICAvKiBMb2NrIFBURSAoc2V0IF9QQUdFX0JVU1kpIGFuZCByZWFkICovDQorICAg
+ICAgIHB0ZSA9IHB0ZV9yZWFkKHB0ZXApOw0KKyNlbHNlDQorICAgICAgIHB0ZSA9IHB0ZV92YWwo
+KnB0ZXApOw0KKyNlbmRpZg0KKyAgICAgICBpZiAocHRlX3ByZXNlbnQocHRlKSkgew0KKyAgICAg
+ICAgICAgICAgIHB0ZSA9IHB0ZV9ta3lvdW5nKHB0ZSk7DQorICAgICAgICAgICAgICAgaWYgKHdy
+aXRpbmcgJiYgcHRlX3dyaXRlKHB0ZSkpDQorICAgICAgICAgICAgICAgICAgICAgICBwdGUgPSBw
+dGVfbWtkaXJ0eShwdGUpOw0KKyAgICAgICB9DQorDQorICAgICAgICpwdGVwID0gX19wdGUocHRl
+KTsgLyogNjRiaXQ6IEFsc28gdW5sb2NrIHB0ZSAoY2xlYXIgX1BBR0VfQlVTWSkgKi8NCisNCisg
+ICAgICAgcmV0dXJuIHB0ZTsNCit9DQorDQogI2VuZGlmIC8qIF9fQVNTRU1CTFlfXyAqLw0KDQog
+I2VuZGlmIC8qIF9fS0VSTkVMX18gKi8NCg==
