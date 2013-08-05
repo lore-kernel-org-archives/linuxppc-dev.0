@@ -1,18 +1,18 @@
-Return-Path: <agust@denx.de>
+Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E88152C007A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 04:26:08 +1000 (EST)
-Date: Mon, 5 Aug 2013 20:25:59 +0200
-From: Anatolij Gustschin <agust@denx.de>
+ by ozlabs.org (Postfix) with ESMTPS id D6D4C2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 04:32:16 +1000 (EST)
 To: Peter LaDow <petela@gocougs.wsu.edu>
+From: Wolfgang Denk <wd@denx.de>
 Subject: Re: Failure to detect PCI card
-Message-ID: <20130805202559.0086e806@crub>
-In-Reply-To: <CAN8Q1Ed-YtD1L7e9TaJyELdcz5Rcfdi0mdwU_H6HAx0-3FJ4Lg@mail.gmail.com>
+MIME-Version: 1.0
+Content-type: text/plain; charset=UTF-8
+In-reply-to: <CAN8Q1Ed-YtD1L7e9TaJyELdcz5Rcfdi0mdwU_H6HAx0-3FJ4Lg@mail.gmail.com>
 References: <CAN8Q1Ed-YtD1L7e9TaJyELdcz5Rcfdi0mdwU_H6HAx0-3FJ4Lg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 05 Aug 2013 20:32:09 +0200
+Message-Id: <20130805183209.06686380495@gemini.denx.de>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,9 +23,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 5 Aug 2013 10:58:01 -0700
-Peter LaDow <petela@gocougs.wsu.edu> wrote:
+Dear Peter LaDow,
 
+In message <CAN8Q1Ed-YtD1L7e9TaJyELdcz5Rcfdi0mdwU_H6HAx0-3FJ4Lg@mail.gmail.com> you wrote:
 > I have a PCI card (a Netgear FA331, vendor:device 100b:0020) that is
 > failing to be detected by our PPC platform.  This device works just
 > fine in a PC, and other cards work just fine in the same PCI slot (we
@@ -34,11 +34,21 @@ Peter LaDow <petela@gocougs.wsu.edu> wrote:
 > But for some reason, neither u-boot nor the kernel detect this card.
 > Any ideas why this might be?
 
-Maybe this card needs bigger delay to respond after PCI reset. You can
-try to re-build U-Boot with defined CONFIG_PCI_BOOTDELAY. Use 1000
-for CONFIG_PCI_BOOTDELAY in the first step and if detection works,
-try to decrease this value.
+Is there any chance that this card has some BIOS (like most graphic
+adapters do) which needs to run to put the card into an operative
+state (like by initializing any DRAM memory on the card)?  OK, I would
+normally not expect such on a 10/100 PCI Ethernet network adapter, but
+I don't know this card at all...
 
-HTH,
+Do you know if this card works in any other non-x86 system at all?
 
-Anatolij
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Quote from a recent meeting:   "We are going to continue having these
+meetings everyday until I find out why no work is getting done."
