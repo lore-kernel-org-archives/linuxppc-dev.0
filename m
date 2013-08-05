@@ -1,22 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4E74E2C007B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 08:26:30 +1000 (EST)
-Subject: Re: [PATCH] Add device file bindings for MAPLE
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1375737065.13074.58.camel@snotra.buserror.net>
-Date: Mon, 5 Aug 2013 17:26:23 -0500
-Message-Id: <02BD0D75-437A-4653-B7F9-856373F58763@kernel.crashing.org>
-References: <1375354963-11219-1-git-send-email-shaveta@freescale.com>
- <5C32ABF4-ECC3-4F1C-82D0-EA3AD9053575@kernel.crashing.org>
- <1375737065.13074.58.camel@snotra.buserror.net>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Shaveta Leekha <shaveta@freescale.com>, devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <pladow@gmail.com>
+Received: from mail-lb0-x234.google.com (mail-lb0-x234.google.com
+ [IPv6:2a00:1450:4010:c04::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 186342C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 09:07:37 +1000 (EST)
+Received: by mail-lb0-f180.google.com with SMTP id a16so2544006lbj.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Aug 2013 16:07:32 -0700 (PDT)
+MIME-Version: 1.0
+Sender: pladow@gmail.com
+In-Reply-To: <52000ACA.1010606@ovro.caltech.edu>
+References: <CAN8Q1Ed-YtD1L7e9TaJyELdcz5Rcfdi0mdwU_H6HAx0-3FJ4Lg@mail.gmail.com>
+ <20130805202559.0086e806@crub>
+ <CAN8Q1EfoLTDr-x0r82Ezpqak+R=QuL1o37_OVU3Q0=8zFfDMqA@mail.gmail.com>
+ <52000ACA.1010606@ovro.caltech.edu>
+Date: Mon, 5 Aug 2013 16:07:32 -0700
+Message-ID: <CAN8Q1EecMBWb_wKVOGnBJ=CHZ9zQQDKjwN5ZD4DkP30+QRerPA@mail.gmail.com>
+Subject: Re: Failure to detect PCI card
+From: Peter LaDow <petela@gocougs.wsu.edu>
+To: David Hawkins <dwh@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,74 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Aug 5, 2013 at 1:27 PM, David Hawkins <dwh@ovro.caltech.edu> wrote:
+> 2. Have you probed the PCI bus using a bus analyzer or scope?
 
-On Aug 5, 2013, at 4:11 PM, Scott Wood wrote:
+Ok.  I managed to find someone with a bus extender, and have connected
+both our analyzer and card.
 
-> On Thu, 2013-08-01 at 11:05 -0500, Kumar Gala wrote:
->> On Aug 1, 2013, at 6:02 AM, Shaveta Leekha wrote:
->>=20
->>> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
->>> ---
->>> .../devicetree/bindings/powerpc/fsl/maple.txt      |   30 =
-++++++++++++++++++++
->>> 1 files changed, 30 insertions(+), 0 deletions(-)
->>> create mode 100644 =
-Documentation/devicetree/bindings/powerpc/fsl/maple.txt
->>>=20
->>> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/maple.txt =
-b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
->>> new file mode 100644
->>> index 0000000..da51c5f
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
->>> @@ -0,0 +1,30 @@
->>> +* Freescale MAPLE Multi Accelerator Platform Engine Baseband 3
->>> +  (MAPLE-B3)device nodes
->>> +
->>> +Supported chips:
->>> +Example: B4860
->>> +
->>> +Required properties:
->>> +
->>> +- compatible:	Should contain "fsl,maple-b3-liodn" as the value
->>> +		This identifies Multi Accelerator Platform Engine
->>> +		Baseband 3 block.This representation is required
->>> +		for doing the PAMU/LIODN programming on the Linux side.
->>=20
->> This compatible makes no sense, we shouldn't be marking a full HW =
-block with some name that is just intended for LIODN convenance.
->=20
-> The point is we're not describing the whole block here, because the =
-rest
-> of the block is owned by an external entity (the DSP cores).
+With a working card (the 82540EM based card), I see configuration
+reads on 0x00040000, 0x00080000, and 0x00100000 succeed.  The 4 and 8
+correspond to the IDSEL's for our on-board ethernet (also 82540 based)
+and our FPGA, respectively (these configuration addresses match the
+IDSEL on our schematic, and these accesses are present when no card is
+plugged into the expansion slot).  The 0x10 corresponds with the 82540
+based network card.  All the vendor/device id's make sense.
 
-So the binding should make that far more clear that the MAPLE would be =
-controlled by DSP SW.
+However, replacing the 82540 based card with either a 3com 3C905TXM or
+the Netgear FA331, there is no response on the 0x10 IDSEL line.  Thus
+it appears these cards are NOT responding to configuration reads.  I
+think I have to break out the scope and probe around for the 5V/3V.  I
+wouldn't think that the supplies are the issue since these are
+universal cards, and as I understand it either 3V3 _or_ 5V can be
+present, so these should work fine.  Yet they aren't responding to PCI
+configuration cycles.
 
->=20
->> Is this version 3 of the block?  If so a name like "fsl,maple-v3" or =
-"fsl,maple-v3.0" would be more appropriate.
->>=20
->> - k
->>=20
->>> +
->>> +- reg:		offset and length of the register set for the =
-device
->>> +
+I'll have to do more digging.
 
-So the reg should limit itself to the LIODN registers only.
-
->>> +Devices that have LIODNs need to specify links to the parent PAMU =
-controller
->>> +(the actual PAMU controller that this device is connected to) and a =
-pointer to
->>> +the LIODN register, if applicable.
->>=20
->>=20
->> Does Maple not have any IRQs associated with it?
->=20
-> maple-liodn doesn't.
->=20
-> -Scott
->=20
->=20
+Thanks,
+Pete
