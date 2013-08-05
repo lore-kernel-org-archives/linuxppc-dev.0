@@ -1,28 +1,21 @@
-Return-Path: <pladow@gmail.com>
-Received: from mail-la0-x233.google.com (mail-la0-x233.google.com
- [IPv6:2a00:1450:4010:c03::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C3D082C007A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 08:11:57 +1000 (EST)
-Received: by mail-la0-f51.google.com with SMTP id fp13so2498742lab.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Aug 2013 15:11:51 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1AE742C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 08:16:36 +1000 (EST)
+Message-ID: <1375740987.13074.65.camel@snotra.buserror.net>
+Subject: Re: [PATCH] Add device file bindings for MAPLE
+From: Scott Wood <scottwood@freescale.com>
+To: Shaveta Leekha <shaveta@freescale.com>
+Date: Mon, 5 Aug 2013 17:16:27 -0500
+In-Reply-To: <1375354963-11219-1-git-send-email-shaveta@freescale.com>
+References: <1375354963-11219-1-git-send-email-shaveta@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Sender: pladow@gmail.com
-In-Reply-To: <5200143F.9010307@ovro.caltech.edu>
-References: <CAN8Q1Ed-YtD1L7e9TaJyELdcz5Rcfdi0mdwU_H6HAx0-3FJ4Lg@mail.gmail.com>
- <20130805202559.0086e806@crub>
- <CAN8Q1EfoLTDr-x0r82Ezpqak+R=QuL1o37_OVU3Q0=8zFfDMqA@mail.gmail.com>
- <52000ACA.1010606@ovro.caltech.edu>
- <CAN8Q1EcnT3We1X22pw4AQ28xmd2d-XB9nTzZ2KdVb=qOx4j7-Q@mail.gmail.com>
- <5200143F.9010307@ovro.caltech.edu>
-Date: Mon, 5 Aug 2013 15:11:51 -0700
-Message-ID: <CAN8Q1EdtAB5kV=KoUBbnDXRbNr6w8A1ZK_dFkfEVOzUaycEVuQ@mail.gmail.com>
-Subject: Re: Failure to detect PCI card
-From: Peter LaDow <petela@gocougs.wsu.edu>
-To: David Hawkins <dwh@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 5, 2013 at 2:08 PM, David Hawkins <dwh@ovro.caltech.edu> wrote:
-> My analyzer has an extender card that you first plug in, and then
-> plug the board into that ... any chance someone in your organization
-> has one of those cards? Alternatively, confirm the board works in
-> a machine that has more than one slot, and if it does not, use the
-> analyzer to see what is happening.
+On Thu, 2013-08-01 at 16:32 +0530, Shaveta Leekha wrote:
+> Signed-off-by: Shaveta Leekha <shaveta@freescale.com>
+> ---
+>  .../devicetree/bindings/powerpc/fsl/maple.txt      |   30 ++++++++++++++++++++
+>  1 files changed, 30 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/maple.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/maple.txt b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
+> new file mode 100644
+> index 0000000..da51c5f
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/maple.txt
+> @@ -0,0 +1,30 @@
+> +* Freescale MAPLE Multi Accelerator Platform Engine Baseband 3
+> +  (MAPLE-B3)device nodes
+> +
+> +Supported chips:
+> +Example: B4860
+> +
+> +Required properties:
+> +
+> +- compatible:	Should contain "fsl,maple-b3-liodn" as the value
+> +		This identifies Multi Accelerator Platform Engine
+> +		Baseband 3 block.This representation is required
+> +		for doing the PAMU/LIODN programming on the Linux side.
 
-Mine has an extender as well, but it is a 5V only extender (such as
-the one you pointed out).  I'll ask the HW guys if they have a 3V
-somewhere.
+Device tree bindings should not talk about particular OSes or use cases
+(except for use case information that is part of the AMP partitioning,
+and thus not at the discretion of the OS).  Just say that this
+identifies the LIODN register of the block.
 
-Now, I'm not a PCI expoert, but, I can do PCI transactions via u-boot.
- And probing the PCI space via u-boot reveals nothing on 00:14.0 (the
-place where our 82540 typically shows up).  Indeed, it returns all
-FF's, so I presume that means nothing is there.  And enabling PCI_ENUM
-is u-boot causes an exception when I try 'pci enum' (with an older
-version of u-boot) or hangs u-boot (in 2013.07).
+> +
+> +- reg:		offset and length of the register set for the device
+> +
+> +Devices that have LIODNs need to specify links to the parent PAMU controller
+> +(the actual PAMU controller that this device is connected to) and a pointer to
+> +the LIODN register, if applicable.
+> +
+> +- fsl,iommu-parent
+> +		: <phandle>
+> +		This property should be present
+> +
+> +Example:
+> +	/* B4860 */
+> +	maple@800000 {
+> +		compatible = "fsl,maple-b3-liodn";
+> +		reg = <0x8000000 0x10000>;
 
-> If you're looking for a PCI target that you can completely control,
-> then if you have an "FPGA guy" in your company, perhaps he can
-> dig up a low-cost PCI card that you can configure as a PCI master
-> to emulate the functions of a network card.
+Unit address doesn't match reg (missing/extra zero).
 
-Well, we do have an FPGA hanging off the bus.  But getting an RTL guy
-to do this....hmmm.  I'll have to explore more.
-
-> Actually, before going down that route, I would get a PCI extender
-> that you can use to trace the traffic with your board. Does the
-> network card use 33MHz or 66MHz?
-
-It's at 33MHz.  I just need to find a 3V extender somewhere...
-
-Thanks,
-Pete
+-Scott
