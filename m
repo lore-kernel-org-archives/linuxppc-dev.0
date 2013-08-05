@@ -1,29 +1,24 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 426412C0077
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2013 21:37:36 +1000 (EST)
-Date: Mon, 5 Aug 2013 12:37:20 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: [PATCH v3 17/31] clk: mpc512x: introduce COMMON_CLK for MPC512x
-Message-ID: <20130805113720.GE9910@e106331-lin.cambridge.arm.com>
-References: <1374166855-7280-1-git-send-email-gsi@denx.de>
- <1374495298-22019-1-git-send-email-gsi@denx.de>
- <1374495298-22019-18-git-send-email-gsi@denx.de>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-oa0-x22a.google.com (mail-oa0-x22a.google.com
+ [IPv6:2607:f8b0:4003:c02::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1D0FD2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 01:39:15 +1000 (EST)
+Received: by mail-oa0-f42.google.com with SMTP id i18so6687874oag.29
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Aug 2013 08:39:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1374495298-22019-18-git-send-email-gsi@denx.de>
-Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
- Wolfram Sang <wsa@the-dreams.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- Mark Brown <broonie@kernel.org>, Marc Kleine-Budde <mkl@pengutronix.de>,
- Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- David Woodhouse <dwmw2@infradead.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+In-Reply-To: <CAPWoNkLQUbFG2vZ7wqoqqVNj4uxKz3Fa_vsSH=1_TDD=XC1f2A@mail.gmail.com>
+References: <CAPWoNkJ3NKM-_g93LdRpjvdNFtLt-Pjpg4d4oEKC9CvkpzZ-Wg@mail.gmail.com>
+ <CAPWoNkLQUbFG2vZ7wqoqqVNj4uxKz3Fa_vsSH=1_TDD=XC1f2A@mail.gmail.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Mon, 5 Aug 2013 09:38:45 -0600
+Message-ID: <CAErSpo5ZZgdpkK+QdQUEnNCEXcG_T+QBWTVoQnMTghxkX7n2HA@mail.gmail.com>
+Subject: Re: PCIE device errors after linux kernel upgrade
+To: Leon Ravich <lravich@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,103 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 22, 2013 at 01:14:44PM +0100, Gerhard Sittig wrote:
-> this change implements a clock driver for the MPC512x PowerPC platform
-> which follows the COMMON_CLK approach and uses common clock drivers
-> shared with other platforms
+[+cc linuxppc-dev]
+
+On Mon, Aug 5, 2013 at 5:17 AM, Leon Ravich <lravich@gmail.com> wrote:
+> Hi all ,
+> I am trying to upgrade ours embedded device (freescale powerPC P2020 cpu)
+> linux kernel  , till now we used 2.6.32 I am trying to upgrade to 3.8.13 .
+> I took the source from freescale git:
+> git://git.freescale.com/ppc/sdk/linux.git
 >
-> this driver implements the publicly announced set of clocks (which can
-> get referenced by means of symbolic identifiers from the dt-bindings
-> header file), as well as generates additional 'struct clk' items where
-> the SoC hardware cannot easily get mapped to the common primitives of
-> the clock API, or requires "intermediate" clock nodes to represent
-> clocks that have both gates and dividers
+> on our embedded device we have an FPGA connected through PCIE .
 >
-> the previous PPC_CLOCK implementation is kept in place and remains in
-> parallel to the common clock implementation for test and comparison
-> during migration, a compile time option picks one of the two
-> alternatives (Kconfig switch, common clock used by default)
+> on each boot we loading the rbf design to the FPGA and the rescan pci bus to let
+> kernel detect it .
 >
-> some of the clock items get pre-enabled in the clock driver to not have
-> them automatically disabled by the underlying clock subsystem because of
-> their being unused -- this approach is desirable because
-> - some of the clocks are useful to have for diagnostics and information
->   despite their not getting claimed by any drivers (CPU, internal and
->   external RAM, internal busses, boot media)
-> - some of the clocks aren't claimed by their peripheral drivers yet,
->   either because of missing driver support or because device tree specs
->   aren't available yet (but the workarounds will get removed as the
->   drivers get adjusted and the device tree provides the clock specs)
-> - some help introduce support for and migrate to the common
->   infrastructure, while more appropriate support for specific hardware
->   constraints isn't available yet (remaining changes are strictly
->   internal to the clock driver and won't affect peripheral drivers)
+> during the rescan I getting error messages:
+>  genirq: Setting trigger mode 0 for irq 27 failed
+> (mpc8xxx_irq_set_type+0x0/0xec)
+> [   22.060898] genirq: Setting trigger mode 0 for irq 28 failed
+> (mpc8xxx_irq_set_type+0x0/0xec)
+> [   22.069461] genirq: Setting trigger mode 0 for irq 31 failed
+> (mpc8xxx_irq_set_type+0x0/0xec)
+> [   22.078010] genirq: Setting trigger mode 0 for irq 32 failed
+> (mpc8xxx_irq_set_type+0x0/0xec)
+> [   22.086576] genirq: Setting trigger mode 0 for irq 33 failed
+> (mpc8xxx_irq_set_type+0x0/0xec)
+> [   22.095143] genirq: Setting trigger mode 0 for irq 37 failed
+> (mpc8xxx_irq_set_type+0x0/0xec)
+> [   22.103715] genirq: Setting trigger mode 0 for irq 38 failed
+> (mpc8xxx_irq_set_type+0x0/0xec)
+> [   22.112282] genirq: Setting trigger mode 0 for irq 39 failed
+> (mpc8xxx_irq_set_type+0x0/0xec)
+
+Hmm, I don't know much about IRQ issues.
+
+> [   37.945785] pci 0000:00:00.0: ignoring class 0x0b2000 (doesn't
+> match header type 01)
+
+There's a recent patch related to this:
+http://lkml.kernel.org/r/1374823418-1550-1-git-send-email-Chunhe.Lan@freescale.com
+
+> [   37.953640] PCIE error(s) detected
+> [   37.953858] pci 0000:00:00.0: PCI bridge to [bus 01-ff]
+> [   37.953988] pci 0000:00:00.0: BAR 8: assigned [mem 0xc0000000-0xdfffffff]
+> [   37.953994] pci 0000:00:00.0: BAR 7: can't assign io (size 0x10000)
+> [   37.954000] pci 0000:01:00.0: BAR 0: assigned [mem 0xc0000000-0xc00fffff]
+> [   37.954013] pci 0000:01:00.0: BAR 1: assigned [mem 0xc0100000-0xc017ffff]
+> [   37.954025] pci 0000:01:00.0: BAR 2: assigned [mem 0xc0180000-0xc01fffff]
+> [   37.954036] pci 0000:00:00.0: PCI bridge to [bus 01]
+> [   37.954041] pci 0000:00:00.0:   bridge window [mem 0xc0000000-0xdfffffff]
+> [   38.007354] PCIE ERR_DR register: 0x80020000
+> [   38.011613] PCIE ERR_CAP_STAT register: 0x00000041
+> [   38.016392] PCIE ERR_CAP_R0 register: 0x00000800
+> [   38.020997] PCIE ERR_CAP_R1 register: 0x00000000
+> [   38.025602] PCIE ERR_CAP_R2 register: 0x00000000
+> [   38.030207] PCIE ERR_CAP_R3 register: 0x00000000
 >
-> clkdev registration provides "alias names" for few clock items
-> - to not break those peripheral drivers which encode their component
->   index into the name that is used for clock lookup (UART, SPI, USB)
-> - to not break those drivers which use names for the clock lookup which
->   were encoded in the previous PPC_CLOCK implementation (NFC, VIU, CAN)
-> this workaround will get removed as these drivers get adjusted after
-> device tree based clock lookup has become available
 >
-> Signed-off-by: Gerhard Sittig <gsi@denx.de>
-> ---
->  arch/powerpc/platforms/512x/Kconfig           |   14 +-
->  arch/powerpc/platforms/512x/Makefile          |    4 +-
->  arch/powerpc/platforms/512x/clock-commonclk.c |  786 +++++++++++++++++++++++++
->  include/linux/clk-provider.h                  |   16 +
->  4 files changed, 818 insertions(+), 2 deletions(-)
->  create mode 100644 arch/powerpc/platforms/512x/clock-commonclk.c
+> and after a few minutes I linux reboot it self,
 >
+>
+> where can I start debugging it??
 
-[...]
+I'd start by applying the header quirk patch above, then comparing the
+complete console log (boot with "ignore_loglevel") from 2.6.32 and
+3.8.13.
 
-> +static int get_freq_from_dt(char *propname)
-> +{
-> +       struct device_node *np;
-> +       const unsigned int *prop;
-> +       int val;
-> +
-> +       val = 0;
-> +       np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-immr");
-> +       if (np) {
-> +               prop = of_get_property(np, propname, NULL);
-> +               if (prop)
-> +                       val = *prop;
-> +           of_node_put(np);
-> +       }
-> +       return val;
-> +}
-
-Can you not use of_property_read_u32 here rather than of_get_property?
-
-Also, this seems rather unlike the common clock bindings method for
-describing frequencies in the dt. Given there's nothing in mainline
-using this yet, we can do it 'right' from the start.
-
-[...]
-
-> +       /*
-> +        * externally provided clocks (when implemented in hardware,
-> +        * device tree may specify values which otherwise were unknown)
-> +        */
-> +       freq = get_freq_from_dt("psc_mclk_in");
-> +       if (!freq)
-> +               freq = 25000000;
-> +       clks[MPC512x_CLK_PSC_MCLK_IN] = mpc512x_clk_fixed("psc_mclk_in", freq);
-> +       freq = get_freq_from_dt("spdif_tx_in");
-> +       clks[MPC512x_CLK_SPDIF_TX_IN] = mpc512x_clk_fixed("spdif_tx_in", freq);
-> +       freq = get_freq_from_dt("spdif_rx_in");
-> +       clks[MPC512x_CLK_SPDIF_TX_IN] = mpc512x_clk_fixed("spdif_rx_in", freq);
-
-Can we not just use fixed-clocks for these in the dt? It feels odd to
-describe them in a compeltely differnet way in the dt, especially as
-we'll have to maintain some backwards compatibility for a while...
-
-I see for psc_mclk_in we assume a default value if not present. I'm not
-sure how to handle that, but I assume there's some way of finding out if
-we've already registered a clock output with the same name?
-
-Thanks,
-Mark.
+Bjorn
