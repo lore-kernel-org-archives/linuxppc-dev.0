@@ -2,9 +2,9 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 03/63] powerpc: Wrap MSR macros with parentheses
-Date: Wed,  7 Aug 2013 02:01:20 +1000
-Message-Id: <1375804940-22050-4-git-send-email-anton@samba.org>
+Subject: [PATCH 04/63] powerpc: Remove SAVE_VSRU and REST_VSRU macros
+Date: Wed,  7 Aug 2013 02:01:21 +1000
+Message-Id: <1375804940-22050-5-git-send-email-anton@samba.org>
 In-Reply-To: <1375804940-22050-1-git-send-email-anton@samba.org>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,51 +17,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Not having parentheses around a macro is asking for trouble.
+We always use VMX loads and stores to manage the high 32
+VSRs. Remove these unused macros.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/reg.h       | 8 ++++----
- arch/powerpc/include/asm/reg_booke.h | 8 ++++----
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/ppc_asm.h | 13 -------------
+ 1 file changed, 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index a6840e4..a312e0c 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -115,10 +115,10 @@
- #define MSR_64BIT	MSR_SF
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index 2f1b6c5..b5c85f1 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -219,19 +219,6 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+ #define REST_8VSRS(n,b,base)	REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,base)
+ #define REST_16VSRS(n,b,base)	REST_8VSRS(n,b,base); REST_8VSRS(n+8,b,base)
+ #define REST_32VSRS(n,b,base)	REST_16VSRS(n,b,base); REST_16VSRS(n+16,b,base)
+-/* Save the upper 32 VSRs (32-63) in the thread VSX region (0-31) */
+-#define SAVE_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n));  STXVD2X(n+32,R##base,R##b)
+-#define SAVE_2VSRSU(n,b,base)	SAVE_VSRU(n,b,base); SAVE_VSRU(n+1,b,base)
+-#define SAVE_4VSRSU(n,b,base)	SAVE_2VSRSU(n,b,base); SAVE_2VSRSU(n+2,b,base)
+-#define SAVE_8VSRSU(n,b,base)	SAVE_4VSRSU(n,b,base); SAVE_4VSRSU(n+4,b,base)
+-#define SAVE_16VSRSU(n,b,base)	SAVE_8VSRSU(n,b,base); SAVE_8VSRSU(n+8,b,base)
+-#define SAVE_32VSRSU(n,b,base)	SAVE_16VSRSU(n,b,base); SAVE_16VSRSU(n+16,b,base)
+-#define REST_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n)); LXVD2X(n+32,R##base,R##b)
+-#define REST_2VSRSU(n,b,base)	REST_VSRU(n,b,base); REST_VSRU(n+1,b,base)
+-#define REST_4VSRSU(n,b,base)	REST_2VSRSU(n,b,base); REST_2VSRSU(n+2,b,base)
+-#define REST_8VSRSU(n,b,base)	REST_4VSRSU(n,b,base); REST_4VSRSU(n+4,b,base)
+-#define REST_16VSRSU(n,b,base)	REST_8VSRSU(n,b,base); REST_8VSRSU(n+8,b,base)
+-#define REST_32VSRSU(n,b,base)	REST_16VSRSU(n,b,base); REST_16VSRSU(n+16,b,base)
  
- /* Server variant */
--#define MSR_		MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV
--#define MSR_KERNEL	MSR_ | MSR_64BIT
--#define MSR_USER32	MSR_ | MSR_PR | MSR_EE
--#define MSR_USER64	MSR_USER32 | MSR_64BIT
-+#define MSR_		(MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV)
-+#define MSR_KERNEL	(MSR_ | MSR_64BIT)
-+#define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
-+#define MSR_USER64	(MSR_USER32 | MSR_64BIT)
- #elif defined(CONFIG_PPC_BOOK3S_32) || defined(CONFIG_8xx)
- /* Default MSR for kernel mode. */
- #define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_IR|MSR_DR)
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index b417de3..ed8f836 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -29,10 +29,10 @@
- #if defined(CONFIG_PPC_BOOK3E_64)
- #define MSR_64BIT	MSR_CM
- 
--#define MSR_		MSR_ME | MSR_CE
--#define MSR_KERNEL	MSR_ | MSR_64BIT
--#define MSR_USER32	MSR_ | MSR_PR | MSR_EE
--#define MSR_USER64	MSR_USER32 | MSR_64BIT
-+#define MSR_		(MSR_ME | MSR_CE)
-+#define MSR_KERNEL	(MSR_ | MSR_64BIT)
-+#define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
-+#define MSR_USER64	(MSR_USER32 | MSR_64BIT)
- #elif defined (CONFIG_40x)
- #define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_IR|MSR_DR|MSR_CE)
- #define MSR_USER	(MSR_KERNEL|MSR_PR|MSR_EE)
+ /*
+  * b = base register for addressing, o = base offset from register of 1st EVR
 -- 
 1.8.1.2
