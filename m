@@ -2,9 +2,9 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 43/63] powerpc: Reset MSR_LE on signal entry
-Date: Wed,  7 Aug 2013 02:02:00 +1000
-Message-Id: <1375804940-22050-44-git-send-email-anton@samba.org>
+Subject: [PATCH 44/63] powerpc: Include the appropriate endianness header
+Date: Wed,  7 Aug 2013 02:02:01 +1000
+Message-Id: <1375804940-22050-45-git-send-email-anton@samba.org>
 In-Reply-To: <1375804940-22050-1-git-send-email-anton@samba.org>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,44 +17,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We always take signals in big endian which is wrong. Signals
-should be taken in native endian.
+From: Ian Munsie <imunsie@au1.ibm.com>
 
+This patch will have powerpc include the appropriate generic endianness
+header depending on what the compiler reports.
+
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/kernel/signal_32.c | 3 ++-
- arch/powerpc/kernel/signal_64.c | 3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/include/uapi/asm/byteorder.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 0f83122..3b9a673 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -1036,8 +1036,9 @@ int handle_rt_signal32(unsigned long sig, struct k_sigaction *ka,
- 	regs->gpr[5] = (unsigned long) &rt_sf->uc;
- 	regs->gpr[6] = (unsigned long) rt_sf;
- 	regs->nip = (unsigned long) ka->sa.sa_handler;
--	/* enter the signal handler in big-endian mode */
-+	/* enter the signal handler in native-endian mode */
- 	regs->msr &= ~MSR_LE;
-+	regs->msr |= (MSR_KERNEL & MSR_LE);
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	/* Remove TM bits from thread's MSR.  The MSR in the sigcontext
- 	 * just indicates to userland that we were doing a transaction, but we
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index cbd2692..f7e61e0 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -767,8 +767,9 @@ int handle_rt_signal64(int signr, struct k_sigaction *ka, siginfo_t *info,
+diff --git a/arch/powerpc/include/uapi/asm/byteorder.h b/arch/powerpc/include/uapi/asm/byteorder.h
+index aa6cc4f..ca931d0 100644
+--- a/arch/powerpc/include/uapi/asm/byteorder.h
++++ b/arch/powerpc/include/uapi/asm/byteorder.h
+@@ -7,6 +7,10 @@
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  */
++#ifdef __LITTLE_ENDIAN__
++#include <linux/byteorder/little_endian.h>
++#else
+ #include <linux/byteorder/big_endian.h>
++#endif
  
- 	/* Set up "regs" so we "return" to the signal handler. */
- 	err |= get_user(regs->nip, &funct_desc_ptr->entry);
--	/* enter the signal handler in big-endian mode */
-+	/* enter the signal handler in native-endian mode */
- 	regs->msr &= ~MSR_LE;
-+	regs->msr |= (MSR_KERNEL & MSR_LE);
- 	regs->gpr[1] = newsp;
- 	err |= get_user(regs->gpr[2], &funct_desc_ptr->toc);
- 	regs->gpr[3] = signr;
+ #endif /* _ASM_POWERPC_BYTEORDER_H */
 -- 
 1.8.1.2
