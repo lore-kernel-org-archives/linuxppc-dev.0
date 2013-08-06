@@ -1,24 +1,29 @@
-Return-Path: <Johannes.Thumshirn@men.de>
-Received: from mail1.bemta5.messagelabs.com (mail1.bemta5.messagelabs.com
- [195.245.231.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.bemta5.messagelabs.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0A9072C007A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 17:13:09 +1000 (EST)
-Date: Tue, 6 Aug 2013 09:07:03 +0200
-From: Johannes Thumshirn <johannes.thumshirn@men.de>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: PCIE device errors after linux kernel upgrade
-Message-ID: <20130806070703.GA20622@jtlinux>
-References: <CAPWoNkJ3NKM-_g93LdRpjvdNFtLt-Pjpg4d4oEKC9CvkpzZ-Wg@mail.gmail.com>
- <CAPWoNkLQUbFG2vZ7wqoqqVNj4uxKz3Fa_vsSH=1_TDD=XC1f2A@mail.gmail.com>
- <CAErSpo5ZZgdpkK+QdQUEnNCEXcG_T+QBWTVoQnMTghxkX7n2HA@mail.gmail.com>
+Return-Path: <wladislav.kw@gmail.com>
+Received: from mail-ee0-x22f.google.com (mail-ee0-x22f.google.com
+ [IPv6:2a00:1450:4013:c00::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 316942C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 17:17:16 +1000 (EST)
+Received: by mail-ee0-f47.google.com with SMTP id d49so17659eek.20
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Aug 2013 00:17:12 -0700 (PDT)
+Message-ID: <5200A29C.9060702@gmail.com>
+Date: Tue, 06 Aug 2013 09:15:40 +0200
+From: Wladislav Wiebe <wladislav.kw@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <CAErSpo5ZZgdpkK+QdQUEnNCEXcG_T+QBWTVoQnMTghxkX7n2HA@mail.gmail.com>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Leon Ravich <lravich@gmail.com>
+To: Christoph Lameter <cl@gentwo.org>
+Subject: Re: mm/slab: ppc: ubi: kmalloc_slab WARNING / PPC + UBI driver
+References: <51F8F827.6020108@gmail.com>
+ <alpine.DEB.2.02.1307310858150.30572@gentwo.org>
+ <alpine.DEB.2.02.1307311015320.30997@gentwo.org>
+ <000001403567762a-60a27288-f0b2-4855-b88c-6a6f21ec537c-000000@email.amazonses.com>
+ <51F93C64.4090601@gmail.com>
+ <0000014035b06a9d-e8b10680-e321-4d3b-95a8-0833fa3fb7c9-000000@email.amazonses.com>
+In-Reply-To: <0000014035b06a9d-e8b10680-e321-4d3b-95a8-0833fa3fb7c9-000000@email.amazonses.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: dedekind1@gmail.com, Mel Gorman <mel@csn.ul.ie>, dwmw2@infradead.org,
+ Pekka Enberg <penberg@kernel.org>, linux-mm@kvack.org,
+ linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,83 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 05, 2013 at 09:38:45AM -0600, Bjorn Helgaas wrote:
-> [+cc linuxppc-dev]
->
-> On Mon, Aug 5, 2013 at 5:17 AM, Leon Ravich <lravich@gmail.com> wrote:
-> > Hi all ,
-> > I am trying to upgrade ours embedded device (freescale powerPC P2020 cpu)
-> > linux kernel  , till now we used 2.6.32 I am trying to upgrade to 3.8.13 .
-> > I took the source from freescale git:
-> > git://git.freescale.com/ppc/sdk/linux.git
-> >
-> > on our embedded device we have an FPGA connected through PCIE .
-> >
-> > on each boot we loading the rbf design to the FPGA and the rescan pci bus to let
-> > kernel detect it .
-> >
-> > during the rescan I getting error messages:
-> >  genirq: Setting trigger mode 0 for irq 27 failed
-> > (mpc8xxx_irq_set_type+0x0/0xec)
-> > [   22.060898] genirq: Setting trigger mode 0 for irq 28 failed
-> > (mpc8xxx_irq_set_type+0x0/0xec)
-> > [   22.069461] genirq: Setting trigger mode 0 for irq 31 failed
-> > (mpc8xxx_irq_set_type+0x0/0xec)
-> > [   22.078010] genirq: Setting trigger mode 0 for irq 32 failed
-> > (mpc8xxx_irq_set_type+0x0/0xec)
-> > [   22.086576] genirq: Setting trigger mode 0 for irq 33 failed
-> > (mpc8xxx_irq_set_type+0x0/0xec)
-> > [   22.095143] genirq: Setting trigger mode 0 for irq 37 failed
-> > (mpc8xxx_irq_set_type+0x0/0xec)
-> > [   22.103715] genirq: Setting trigger mode 0 for irq 38 failed
-> > (mpc8xxx_irq_set_type+0x0/0xec)
-> > [   22.112282] genirq: Setting trigger mode 0 for irq 39 failed
-> > (mpc8xxx_irq_set_type+0x0/0xec)
->
-> Hmm, I don't know much about IRQ issues.
->
-> > [   37.945785] pci 0000:00:00.0: ignoring class 0x0b2000 (doesn't
-> > match header type 01)
->
-> There's a recent patch related to this:
-> http://lkml.kernel.org/r/1374823418-1550-1-git-send-email-Chunhe.Lan@freescale.com
->
-> > [   37.953640] PCIE error(s) detected
-> > [   37.953858] pci 0000:00:00.0: PCI bridge to [bus 01-ff]
-> > [   37.953988] pci 0000:00:00.0: BAR 8: assigned [mem 0xc0000000-0xdfffffff]
-> > [   37.953994] pci 0000:00:00.0: BAR 7: can't assign io (size 0x10000)
-> > [   37.954000] pci 0000:01:00.0: BAR 0: assigned [mem 0xc0000000-0xc00fffff]
-> > [   37.954013] pci 0000:01:00.0: BAR 1: assigned [mem 0xc0100000-0xc017ffff]
-> > [   37.954025] pci 0000:01:00.0: BAR 2: assigned [mem 0xc0180000-0xc01fffff]
-> > [   37.954036] pci 0000:00:00.0: PCI bridge to [bus 01]
-> > [   37.954041] pci 0000:00:00.0:   bridge window [mem 0xc0000000-0xdfffffff]
-> > [   38.007354] PCIE ERR_DR register: 0x80020000
-> > [   38.011613] PCIE ERR_CAP_STAT register: 0x00000041
-> > [   38.016392] PCIE ERR_CAP_R0 register: 0x00000800
-> > [   38.020997] PCIE ERR_CAP_R1 register: 0x00000000
-> > [   38.025602] PCIE ERR_CAP_R2 register: 0x00000000
-> > [   38.030207] PCIE ERR_CAP_R3 register: 0x00000000
-> >
-> >
-> > and after a few minutes I linux reboot it self,
-> >
-> >
-> > where can I start debugging it??
->
-> I'd start by applying the header quirk patch above, then comparing the
-> complete console log (boot with "ignore_loglevel") from 2.6.32 and
-> 3.8.13.
->
-> Bjorn
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
 Hi,
 
-I have a similar problem here on a P4080 based board with the same 3.8 Kernel
-from freescale git. Does your system panic (maybe due to a machine check
-exception)?  If yes could it be the first read from the PCI device?
+On 31/07/13 19:04, Christoph Lameter wrote:
+> On Wed, 31 Jul 2013, Wladislav Wiebe wrote:
+> 
+>> Thanks for the point, do you plan to make kmalloc_large available for extern access in a separate mainline patch?
+>> Since kmalloc_large is statically defined in slub_def.h and when including it to seq_file.c
+>> we have a lot of conflicting types:
+> 
+> You cannot separatly include slub_def.h. slab.h includes slub_def.h for
+> you. What problem did you try to fix by doing so?
+> 
+> There is a patch pending that moves kmalloc_large to slab.h. So maybe we
+> have to wait a merge period in order to be able to use it with other
+> allocators than slub.
+> 
+> 
 
-Johannes
+ok, just saw in slab/for-linus branch that those stuff is reverted again..
+
+commit 4932163637fbb9aaa654ca0703c5a624b7809da2
+Author: Pekka Enberg <penberg@kernel.org>
+Date:   Wed Jul 10 10:16:01 2013 +0300
+
+    Revert "mm/sl[aou]b: Move kmalloc_node functions to common code"
+
+..
+
+commit 35be03cafb8f5ddcc1236e90144b6ec76296b789
+Author: Pekka Enberg <penberg@kernel.org>
+Date:   Wed Jul 10 09:56:49 2013 +0300
+
+    Revert "mm/sl[aou]b: Move kmalloc definitions to slab.h"
+
+
+--
+WBR, WLadislav Wiebe
