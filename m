@@ -2,9 +2,10 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 40/63] powerpc: Support endian agnostic MMIO
-Date: Wed,  7 Aug 2013 02:01:57 +1000
-Message-Id: <1375804940-22050-41-git-send-email-anton@samba.org>
+Subject: [PATCH 41/63] powerpc: Add little endian support for word-at-a-time
+ functions
+Date: Wed,  7 Aug 2013 02:01:58 +1000
+Message-Id: <1375804940-22050-42-git-send-email-anton@samba.org>
 In-Reply-To: <1375804940-22050-1-git-send-email-anton@samba.org>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,160 +18,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+The powerpc word-at-a-time functions are big endian specific.
+Bring in the x86 version in order to support little endian builds.
 
-This patch maps the MMIO functions for 32bit PowerPC to their
-appropriate instructions depending on CPU endianness.
-
-The macros used to create the corresponding inline functions are also
-renamed by this patch. Previously they had BE or LE in their names which
-was misleading - they had nothing to do with endianness, but actually
-created different instruction forms so their new names reflect the
-instruction form they are creating (D-Form and X-Form).
-
-Little endian 64bit PowerPC is not supported, so the lack of mappings
-(and corresponding breakage) for that case is intentional to bring the
-attention of anyone doing a 64bit little endian port. 64bit big endian
-is unaffected.
-
-[ Added 64 bit versions - Anton ]
-
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/io.h | 67 +++++++++++++++++++++++++++++++------------
- 1 file changed, 49 insertions(+), 18 deletions(-)
+ arch/powerpc/include/asm/word-at-a-time.h | 71 +++++++++++++++++++++++++++++++
+ 1 file changed, 71 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index dd15e5e..3aca565 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -103,7 +103,7 @@ extern resource_size_t isa_mem_base;
+diff --git a/arch/powerpc/include/asm/word-at-a-time.h b/arch/powerpc/include/asm/word-at-a-time.h
+index d0b6d4a..213a5f2 100644
+--- a/arch/powerpc/include/asm/word-at-a-time.h
++++ b/arch/powerpc/include/asm/word-at-a-time.h
+@@ -8,6 +8,8 @@
+ #include <linux/kernel.h>
+ #include <asm/asm-compat.h>
  
- /* gcc 4.0 and older doesn't have 'Z' constraint */
- #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ == 0)
--#define DEF_MMIO_IN_LE(name, size, insn)				\
-+#define DEF_MMIO_IN_X(name, size, insn)				\
- static inline u##size name(const volatile u##size __iomem *addr)	\
- {									\
- 	u##size ret;							\
-@@ -112,7 +112,7 @@ static inline u##size name(const volatile u##size __iomem *addr)	\
- 	return ret;							\
- }
- 
--#define DEF_MMIO_OUT_LE(name, size, insn) 				\
-+#define DEF_MMIO_OUT_X(name, size, insn)				\
- static inline void name(volatile u##size __iomem *addr, u##size val)	\
- {									\
- 	__asm__ __volatile__("sync;"#insn" %1,0,%2"			\
-@@ -120,7 +120,7 @@ static inline void name(volatile u##size __iomem *addr, u##size val)	\
- 	IO_SET_SYNC_FLAG();						\
- }
- #else /* newer gcc */
--#define DEF_MMIO_IN_LE(name, size, insn)				\
-+#define DEF_MMIO_IN_X(name, size, insn)				\
- static inline u##size name(const volatile u##size __iomem *addr)	\
- {									\
- 	u##size ret;							\
-@@ -129,7 +129,7 @@ static inline u##size name(const volatile u##size __iomem *addr)	\
- 	return ret;							\
- }
- 
--#define DEF_MMIO_OUT_LE(name, size, insn) 				\
-+#define DEF_MMIO_OUT_X(name, size, insn)				\
- static inline void name(volatile u##size __iomem *addr, u##size val)	\
- {									\
- 	__asm__ __volatile__("sync;"#insn" %1,%y0"			\
-@@ -138,7 +138,7 @@ static inline void name(volatile u##size __iomem *addr, u##size val)	\
- }
- #endif
- 
--#define DEF_MMIO_IN_BE(name, size, insn)				\
-+#define DEF_MMIO_IN_D(name, size, insn)				\
- static inline u##size name(const volatile u##size __iomem *addr)	\
- {									\
- 	u##size ret;							\
-@@ -147,7 +147,7 @@ static inline u##size name(const volatile u##size __iomem *addr)	\
- 	return ret;							\
- }
- 
--#define DEF_MMIO_OUT_BE(name, size, insn)				\
-+#define DEF_MMIO_OUT_D(name, size, insn)				\
- static inline void name(volatile u##size __iomem *addr, u##size val)	\
- {									\
- 	__asm__ __volatile__("sync;"#insn"%U0%X0 %1,%0"			\
-@@ -155,22 +155,37 @@ static inline void name(volatile u##size __iomem *addr, u##size val)	\
- 	IO_SET_SYNC_FLAG();						\
- }
- 
-+DEF_MMIO_IN_D(in_8,     8, lbz);
-+DEF_MMIO_OUT_D(out_8,   8, stb);
- 
--DEF_MMIO_IN_BE(in_8,     8, lbz);
--DEF_MMIO_IN_BE(in_be16, 16, lhz);
--DEF_MMIO_IN_BE(in_be32, 32, lwz);
--DEF_MMIO_IN_LE(in_le16, 16, lhbrx);
--DEF_MMIO_IN_LE(in_le32, 32, lwbrx);
 +#ifdef __BIG_ENDIAN__
-+DEF_MMIO_IN_D(in_be16, 16, lhz);
-+DEF_MMIO_IN_D(in_be32, 32, lwz);
-+DEF_MMIO_IN_X(in_le16, 16, lhbrx);
-+DEF_MMIO_IN_X(in_le32, 32, lwbrx);
- 
--DEF_MMIO_OUT_BE(out_8,     8, stb);
--DEF_MMIO_OUT_BE(out_be16, 16, sth);
--DEF_MMIO_OUT_BE(out_be32, 32, stw);
--DEF_MMIO_OUT_LE(out_le16, 16, sthbrx);
--DEF_MMIO_OUT_LE(out_le32, 32, stwbrx);
-+DEF_MMIO_OUT_D(out_be16, 16, sth);
-+DEF_MMIO_OUT_D(out_be32, 32, stw);
-+DEF_MMIO_OUT_X(out_le16, 16, sthbrx);
-+DEF_MMIO_OUT_X(out_le32, 32, stwbrx);
-+#else
-+DEF_MMIO_IN_X(in_be16, 16, lhbrx);
-+DEF_MMIO_IN_X(in_be32, 32, lwbrx);
-+DEF_MMIO_IN_D(in_le16, 16, lhz);
-+DEF_MMIO_IN_D(in_le32, 32, lwz);
 +
-+DEF_MMIO_OUT_X(out_be16, 16, sthbrx);
-+DEF_MMIO_OUT_X(out_be32, 32, stwbrx);
-+DEF_MMIO_OUT_D(out_le16, 16, sth);
-+DEF_MMIO_OUT_D(out_le32, 32, stw);
-+
-+#endif /* __BIG_ENDIAN */
- 
- #ifdef __powerpc64__
--DEF_MMIO_OUT_BE(out_be64, 64, std);
--DEF_MMIO_IN_BE(in_be64, 64, ld);
-+
-+#ifdef __BIG_ENDIAN__
-+DEF_MMIO_OUT_D(out_be64, 64, std);
-+DEF_MMIO_IN_D(in_be64, 64, ld);
- 
- /* There is no asm instructions for 64 bits reverse loads and stores */
- static inline u64 in_le64(const volatile u64 __iomem *addr)
-@@ -182,6 +197,22 @@ static inline void out_le64(volatile u64 __iomem *addr, u64 val)
- {
- 	out_be64(addr, swab64(val));
+ struct word_at_a_time {
+ 	const unsigned long high_bits, low_bits;
+ };
+@@ -38,4 +40,73 @@ static inline bool has_zero(unsigned long val, unsigned long *data, const struct
+ 	return (val + c->high_bits) & ~rhs;
  }
+ 
 +#else
-+DEF_MMIO_OUT_D(out_le64, 64, std);
-+DEF_MMIO_IN_D(in_le64, 64, ld);
 +
-+/* There is no asm instructions for 64 bits reverse loads and stores */
-+static inline u64 in_be64(const volatile u64 __iomem *addr)
++/*
++ * This is largely generic for little-endian machines, but the
++ * optimal byte mask counting is probably going to be something
++ * that is architecture-specific. If you have a reliably fast
++ * bit count instruction, that might be better than the multiply
++ * and shift, for example.
++ */
++struct word_at_a_time {
++	const unsigned long one_bits, high_bits;
++};
++
++#define WORD_AT_A_TIME_CONSTANTS { REPEAT_BYTE(0x01), REPEAT_BYTE(0x80) }
++
++#ifdef CONFIG_64BIT
++
++/*
++ * Jan Achrenius on G+: microoptimized version of
++ * the simpler "(mask & ONEBYTES) * ONEBYTES >> 56"
++ * that works for the bytemasks without having to
++ * mask them first.
++ */
++static inline long count_masked_bytes(unsigned long mask)
 +{
-+	return swab64(in_le64(addr));
++	return mask*0x0001020304050608ul >> 56;
 +}
 +
-+static inline void out_be64(volatile u64 __iomem *addr, u64 val)
++#else	/* 32-bit case */
++
++/* Carl Chatfield / Jan Achrenius G+ version for 32-bit */
++static inline long count_masked_bytes(long mask)
 +{
-+	out_le64(addr, swab64(val));
++	/* (000000 0000ff 00ffff ffffff) -> ( 1 1 2 3 ) */
++	long a = (0x0ff0001+mask) >> 23;
++	/* Fix the 1 for 00 case */
++	return a & mask;
 +}
 +
 +#endif
- #endif /* __powerpc64__ */
- 
- /*
++
++/* Return nonzero if it has a zero */
++static inline unsigned long has_zero(unsigned long a, unsigned long *bits, const struct word_at_a_time *c)
++{
++	unsigned long mask = ((a - c->one_bits) & ~a) & c->high_bits;
++	*bits = mask;
++	return mask;
++}
++
++static inline unsigned long prep_zero_mask(unsigned long a, unsigned long bits, const struct word_at_a_time *c)
++{
++	return bits;
++}
++
++static inline unsigned long create_zero_mask(unsigned long bits)
++{
++	bits = (bits - 1) & ~bits;
++	return bits >> 7;
++}
++
++/* The mask we created is directly usable as a bytemask */
++#define zero_bytemask(mask) (mask)
++
++static inline unsigned long find_zero(unsigned long mask)
++{
++	return count_masked_bytes(mask);
++}
++#endif
++
+ #endif /* _ASM_WORD_AT_A_TIME_H */
 -- 
 1.8.1.2
