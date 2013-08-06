@@ -2,10 +2,9 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 09/63] powerpc: Stop using non-architected shared_proc field
- in lppaca
-Date: Wed,  7 Aug 2013 02:01:26 +1000
-Message-Id: <1375804940-22050-10-git-send-email-anton@samba.org>
+Subject: [PATCH 10/63] powerpc: Make prom.c device tree accesses endian safe
+Date: Wed,  7 Aug 2013 02:01:27 +1000
+Message-Id: <1375804940-22050-11-git-send-email-anton@samba.org>
 In-Reply-To: <1375804940-22050-1-git-send-email-anton@samba.org>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -18,157 +17,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Although the shared_proc field in the lppaca works today, it is
-not architected. A shared processor partition will always have a non
-zero yield_count so use that instead. Create a wrapper so users
-don't have to know about the details.
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-In order for older kernels to continue to work on KVM we need
-to set the shared_proc bit. While here, remove the ugly bitfield.
+On PowerPC the device tree is always big endian, but the CPU could be
+either, so add be32_to_cpu where appropriate and change the types of
+device tree data to __be32 etc to allow sparse to locate endian issues.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/powerpc/include/asm/lppaca.h               | 18 ++++++++++++++----
- arch/powerpc/include/asm/spinlock.h             |  2 +-
- arch/powerpc/kernel/lparcfg.c                   |  5 +++--
- arch/powerpc/kvm/book3s_hv.c                    |  2 +-
- arch/powerpc/mm/numa.c                          |  2 +-
- arch/powerpc/platforms/pseries/hotplug-cpu.c    |  4 ++--
- arch/powerpc/platforms/pseries/processor_idle.c |  2 +-
- 7 files changed, 23 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/prom.c | 60 ++++++++++++++++++++++++----------------------
+ 1 file changed, 31 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
-index 9b12f88..bc8def0 100644
---- a/arch/powerpc/include/asm/lppaca.h
-+++ b/arch/powerpc/include/asm/lppaca.h
-@@ -50,10 +50,8 @@ struct lppaca {
- 
- 	u32	desc;			/* Eye catcher 0xD397D781 */
- 	u16	size;			/* Size of this struct */
--	u16	reserved1;
--	u16	reserved2:14;
--	u8	shared_proc:1;		/* Shared processor indicator */
--	u8	secondary_thread:1;	/* Secondary thread indicator */
-+	u8	reserved1[3];
-+	u8	__old_status;		/* Old status, including shared proc */
- 	u8	reserved3[14];
- 	volatile u32 dyn_hw_node_id;	/* Dynamic hardware node id */
- 	volatile u32 dyn_hw_proc_id;	/* Dynamic hardware proc id */
-@@ -108,6 +106,18 @@ extern struct lppaca lppaca[];
- #define lppaca_of(cpu)	(*paca[cpu].lppaca_ptr)
- 
- /*
-+ * Old kernels used a reserved bit in the VPA to determine if it was running
-+ * in shared processor mode. New kernels look for a non zero yield count
-+ * but KVM still needs to set the bit to keep the old stuff happy.
-+ */
-+#define LPPACA_OLD_SHARED_PROC		2
-+
-+static inline bool lppaca_shared_proc(struct lppaca *l)
-+{
-+	return l->yield_count != 0;
-+}
-+
-+/*
-  * SLB shadow buffer structure as defined in the PAPR.  The save_area
-  * contains adjacent ESID and VSID pairs for each shadowed SLB.  The
-  * ESID is stored in the lower 64bits, then the VSID.
-diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-index 5b23f91..7c345b6 100644
---- a/arch/powerpc/include/asm/spinlock.h
-+++ b/arch/powerpc/include/asm/spinlock.h
-@@ -96,7 +96,7 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
- 
- #if defined(CONFIG_PPC_SPLPAR)
- /* We only yield to the hypervisor if we are in shared processor mode */
--#define SHARED_PROCESSOR (local_paca->lppaca_ptr->shared_proc)
-+#define SHARED_PROCESSOR (lppaca_shared_proc(local_paca->lppaca_ptr))
- extern void __spin_yield(arch_spinlock_t *lock);
- extern void __rw_yield(arch_rwlock_t *lock);
- #else /* SPLPAR */
-diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
-index d92f387..e6024c2 100644
---- a/arch/powerpc/kernel/lparcfg.c
-+++ b/arch/powerpc/kernel/lparcfg.c
-@@ -165,7 +165,7 @@ static void parse_ppp_data(struct seq_file *m)
- 	           ppp_data.active_system_procs);
- 
- 	/* pool related entries are appropriate for shared configs */
--	if (lppaca_of(0).shared_proc) {
-+	if (lppaca_shared_proc(get_lppaca())) {
- 		unsigned long pool_idle_time, pool_procs;
- 
- 		seq_printf(m, "pool=%d\n", ppp_data.pool_num);
-@@ -473,7 +473,8 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
- 	seq_printf(m, "partition_potential_processors=%d\n",
- 		   partition_potential_processors);
- 
--	seq_printf(m, "shared_processor_mode=%d\n", lppaca_of(0).shared_proc);
-+	seq_printf(m, "shared_processor_mode=%d\n",
-+		   lppaca_shared_proc(get_lppaca()));
- 
- 	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
- 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 2efa9dd..cf39bf4 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -217,7 +217,7 @@ struct kvm_vcpu *kvmppc_find_vcpu(struct kvm *kvm, int id)
- 
- static void init_vpa(struct kvm_vcpu *vcpu, struct lppaca *vpa)
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index eb23ac9..d072f67 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -215,16 +215,16 @@ static void __init check_cpu_pa_features(unsigned long node)
+ #ifdef CONFIG_PPC_STD_MMU_64
+ static void __init check_cpu_slb_size(unsigned long node)
  {
--	vpa->shared_proc = 1;
-+	vpa->__old_status |= LPPACA_OLD_SHARED_PROC;
- 	vpa->yield_count = 1;
- }
+-	u32 *slb_size_ptr;
++	__be32 *slb_size_ptr;
  
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 5850798..501e32c 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1609,7 +1609,7 @@ int start_topology_update(void)
- #endif
- 		}
- 	} else if (firmware_has_feature(FW_FEATURE_VPHN) &&
--		   get_lppaca()->shared_proc) {
-+		   lppaca_shared_proc(get_lppaca())) {
- 		if (!vphn_enabled) {
- 			prrn_enabled = 0;
- 			vphn_enabled = 1;
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 217ca5c..1e490cf 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -123,7 +123,7 @@ static void pseries_mach_cpu_die(void)
- 		cede_latency_hint = 2;
- 
- 		get_lppaca()->idle = 1;
--		if (!get_lppaca()->shared_proc)
-+		if (!lppaca_shared_proc(get_lppaca()))
- 			get_lppaca()->donate_dedicated_cpu = 1;
- 
- 		while (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
-@@ -137,7 +137,7 @@ static void pseries_mach_cpu_die(void)
- 
- 		local_irq_disable();
- 
--		if (!get_lppaca()->shared_proc)
-+		if (!lppaca_shared_proc(get_lppaca()))
- 			get_lppaca()->donate_dedicated_cpu = 0;
- 		get_lppaca()->idle = 0;
- 
-diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
-index 4644efa0..92db881 100644
---- a/arch/powerpc/platforms/pseries/processor_idle.c
-+++ b/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -308,7 +308,7 @@ static int pseries_idle_probe(void)
- 		return -EPERM;
+ 	slb_size_ptr = of_get_flat_dt_prop(node, "slb-size", NULL);
+ 	if (slb_size_ptr != NULL) {
+-		mmu_slb_size = *slb_size_ptr;
++		mmu_slb_size = be32_to_cpup(slb_size_ptr);
+ 		return;
  	}
+ 	slb_size_ptr = of_get_flat_dt_prop(node, "ibm,slb-size", NULL);
+ 	if (slb_size_ptr != NULL) {
+-		mmu_slb_size = *slb_size_ptr;
++		mmu_slb_size = be32_to_cpup(slb_size_ptr);
+ 	}
+ }
+ #else
+@@ -279,11 +279,11 @@ static void __init check_cpu_feature_properties(unsigned long node)
+ {
+ 	unsigned long i;
+ 	struct feature_property *fp = feature_properties;
+-	const u32 *prop;
++	const __be32 *prop;
  
--	if (get_lppaca()->shared_proc)
-+	if (lppaca_shared_proc(get_lppaca()))
- 		cpuidle_state_table = shared_states;
- 	else
- 		cpuidle_state_table = dedicated_states;
+ 	for (i = 0; i < ARRAY_SIZE(feature_properties); ++i, ++fp) {
+ 		prop = of_get_flat_dt_prop(node, fp->name, NULL);
+-		if (prop && *prop >= fp->min_value) {
++		if (prop && be32_to_cpup(prop) >= fp->min_value) {
+ 			cur_cpu_spec->cpu_features |= fp->cpu_feature;
+ 			cur_cpu_spec->cpu_user_features |= fp->cpu_user_ftr;
+ 		}
+@@ -295,8 +295,8 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 					  void *data)
+ {
+ 	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+-	const u32 *prop;
+-	const u32 *intserv;
++	const __be32 *prop;
++	const __be32 *intserv;
+ 	int i, nthreads;
+ 	unsigned long len;
+ 	int found = -1;
+@@ -324,8 +324,9 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 		 * version 2 of the kexec param format adds the phys cpuid of
+ 		 * booted proc.
+ 		 */
+-		if (initial_boot_params->version >= 2) {
+-			if (intserv[i] == initial_boot_params->boot_cpuid_phys) {
++		if (be32_to_cpu(initial_boot_params->version) >= 2) {
++			if (be32_to_cpu(intserv[i]) ==
++			    be32_to_cpu(initial_boot_params->boot_cpuid_phys)) {
+ 				found = boot_cpu_count;
+ 				found_thread = i;
+ 			}
+@@ -347,9 +348,10 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 
+ 	if (found >= 0) {
+ 		DBG("boot cpu: logical %d physical %d\n", found,
+-			intserv[found_thread]);
++			be32_to_cpu(intserv[found_thread]));
+ 		boot_cpuid = found;
+-		set_hard_smp_processor_id(found, intserv[found_thread]);
++		set_hard_smp_processor_id(found,
++			be32_to_cpu(intserv[found_thread]));
+ 
+ 		/*
+ 		 * PAPR defines "logical" PVR values for cpus that
+@@ -366,8 +368,8 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 		 * it uses 0x0f000001.
+ 		 */
+ 		prop = of_get_flat_dt_prop(node, "cpu-version", NULL);
+-		if (prop && (*prop & 0xff000000) == 0x0f000000)
+-			identify_cpu(0, *prop);
++		if (prop && (be32_to_cpup(prop) & 0xff000000) == 0x0f000000)
++			identify_cpu(0, be32_to_cpup(prop));
+ 
+ 		identical_pvr_fixup(node);
+ 	}
+@@ -389,7 +391,7 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ int __init early_init_dt_scan_chosen_ppc(unsigned long node, const char *uname,
+ 					 int depth, void *data)
+ {
+-	unsigned long *lprop;
++	unsigned long *lprop; /* All these set by kernel, so no need to convert endian */
+ 
+ 	/* Use common scan routine to determine if this is the chosen node */
+ 	if (early_init_dt_scan_chosen(node, uname, depth, data) == 0)
+@@ -591,16 +593,16 @@ static void __init early_reserve_mem_dt(void)
+ static void __init early_reserve_mem(void)
+ {
+ 	u64 base, size;
+-	u64 *reserve_map;
++	__be64 *reserve_map;
+ 	unsigned long self_base;
+ 	unsigned long self_size;
+ 
+-	reserve_map = (u64 *)(((unsigned long)initial_boot_params) +
+-					initial_boot_params->off_mem_rsvmap);
++	reserve_map = (__be64 *)(((unsigned long)initial_boot_params) +
++			be32_to_cpu(initial_boot_params->off_mem_rsvmap));
+ 
+ 	/* before we do anything, lets reserve the dt blob */
+ 	self_base = __pa((unsigned long)initial_boot_params);
+-	self_size = initial_boot_params->totalsize;
++	self_size = be32_to_cpu(initial_boot_params->totalsize);
+ 	memblock_reserve(self_base, self_size);
+ 
+ 	/* Look for the new "reserved-regions" property in the DT */
+@@ -620,15 +622,15 @@ static void __init early_reserve_mem(void)
+ 	 * Handle the case where we might be booting from an old kexec
+ 	 * image that setup the mem_rsvmap as pairs of 32-bit values
+ 	 */
+-	if (*reserve_map > 0xffffffffull) {
++	if (be64_to_cpup(reserve_map) > 0xffffffffull) {
+ 		u32 base_32, size_32;
+-		u32 *reserve_map_32 = (u32 *)reserve_map;
++		__be32 *reserve_map_32 = (__be32 *)reserve_map;
+ 
+ 		DBG("Found old 32-bit reserve map\n");
+ 
+ 		while (1) {
+-			base_32 = *(reserve_map_32++);
+-			size_32 = *(reserve_map_32++);
++			base_32 = be32_to_cpup(reserve_map_32++);
++			size_32 = be32_to_cpup(reserve_map_32++);
+ 			if (size_32 == 0)
+ 				break;
+ 			/* skip if the reservation is for the blob */
+@@ -644,8 +646,8 @@ static void __init early_reserve_mem(void)
+ 
+ 	/* Handle the reserve map in the fdt blob if it exists */
+ 	while (1) {
+-		base = *(reserve_map++);
+-		size = *(reserve_map++);
++		base = be64_to_cpup(reserve_map++);
++		size = be64_to_cpup(reserve_map++);
+ 		if (size == 0)
+ 			break;
+ 		DBG("reserving: %llx -> %llx\n", base, size);
+@@ -877,7 +879,7 @@ struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
+ 	hardid = get_hard_smp_processor_id(cpu);
+ 
+ 	for_each_node_by_type(np, "cpu") {
+-		const u32 *intserv;
++		const __be32 *intserv;
+ 		unsigned int plen, t;
+ 
+ 		/* Check for ibm,ppc-interrupt-server#s. If it doesn't exist
+@@ -886,10 +888,10 @@ struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
+ 		intserv = of_get_property(np, "ibm,ppc-interrupt-server#s",
+ 				&plen);
+ 		if (intserv == NULL) {
+-			const u32 *reg = of_get_property(np, "reg", NULL);
++			const __be32 *reg = of_get_property(np, "reg", NULL);
+ 			if (reg == NULL)
+ 				continue;
+-			if (*reg == hardid) {
++			if (be32_to_cpup(reg) == hardid) {
+ 				if (thread)
+ 					*thread = 0;
+ 				return np;
+@@ -897,7 +899,7 @@ struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
+ 		} else {
+ 			plen /= sizeof(u32);
+ 			for (t = 0; t < plen; t++) {
+-				if (hardid == intserv[t]) {
++				if (hardid == be32_to_cpu(intserv[t])) {
+ 					if (thread)
+ 						*thread = t;
+ 					return np;
+@@ -917,7 +919,7 @@ static int __init export_flat_device_tree(void)
+ 	struct dentry *d;
+ 
+ 	flat_dt_blob.data = initial_boot_params;
+-	flat_dt_blob.size = initial_boot_params->totalsize;
++	flat_dt_blob.size = be32_to_cpu(initial_boot_params->totalsize);
+ 
+ 	d = debugfs_create_blob("flat-device-tree", S_IFREG | S_IRUSR,
+ 				powerpc_debugfs_root, &flat_dt_blob);
 -- 
 1.8.1.2
