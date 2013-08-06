@@ -1,15 +1,28 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v3 3/3] selftests: Add test of PMU instruction counting on
- powerpc
-Date: Tue,  6 Aug 2013 17:42:37 +1000
-Message-Id: <1375774957-30052-3-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1375774957-30052-1-git-send-email-michael@ellerman.id.au>
-References: <1375774957-30052-1-git-send-email-michael@ellerman.id.au>
-Cc: Jeremy Kerr <jk@ozlabs.org>, Andrew Morton <akpm@osdl.org>,
- Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
- Anton Blanchard <anton@samba.org>
+Return-Path: <Johannes.Thumshirn@men.de>
+Received: from mail1.bemta14.messagelabs.com (mail1.bemta14.messagelabs.com
+ [193.109.254.118])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.bemta14.messagelabs.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3EE2A2C0105
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 17:42:58 +1000 (EST)
+Date: Tue, 6 Aug 2013 09:36:34 +0200
+From: Johannes Thumshirn <johannes.thumshirn@men.de>
+To: Leon Ravich <lravich@gmail.com>
+Subject: Re: PCIE device errors after linux kernel upgrade
+Message-ID: <20130806073633.GA21492@jtlinux>
+References: <CAPWoNkJ3NKM-_g93LdRpjvdNFtLt-Pjpg4d4oEKC9CvkpzZ-Wg@mail.gmail.com>
+ <CAPWoNkLQUbFG2vZ7wqoqqVNj4uxKz3Fa_vsSH=1_TDD=XC1f2A@mail.gmail.com>
+ <CAErSpo5ZZgdpkK+QdQUEnNCEXcG_T+QBWTVoQnMTghxkX7n2HA@mail.gmail.com>
+ <20130806070703.GA20622@jtlinux>
+ <CAPWoNkKo6Cfg0Hr2QYBXVnUrC-UQwES65UUHfSvR3nBvZrfFoA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <CAPWoNkKo6Cfg0Hr2QYBXVnUrC-UQwES65UUHfSvR3nBvZrfFoA@mail.gmail.com>
+Cc: Johannes Thumshirn <johannes.thumshirn@men.de>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,418 +32,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This commit adds a test of instruction counting using the PMU on powerpc.
+On Tue, Aug 06, 2013 at 10:26:18AM +0300, Leon Ravich wrote:
+> Hi Johannes
+> no panic just reboot.
+> it is not the first read, it takes few minutes of work with pcie to reboot.
+>
 
-Although the bulk of the code is architecture agnostic, the code needs to
-run a precisely sized loop which is implemented in assembler.
+Ah, OK. Unfortunately I can't really help you then.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
-v2,3: No change
+Have you looked up the error values from the EDAC driver?
 
- tools/testing/selftests/powerpc/Makefile           |   2 +-
- tools/testing/selftests/powerpc/pmu/Makefile       |  23 ++++
- .../selftests/powerpc/pmu/count_instructions.c     | 135 +++++++++++++++++++++
- tools/testing/selftests/powerpc/pmu/event.c        | 105 ++++++++++++++++
- tools/testing/selftests/powerpc/pmu/event.h        |  39 ++++++
- tools/testing/selftests/powerpc/pmu/loop.S         |  46 +++++++
- 6 files changed, 349 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/pmu/Makefile
- create mode 100644 tools/testing/selftests/powerpc/pmu/count_instructions.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/event.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/event.h
- create mode 100644 tools/testing/selftests/powerpc/pmu/loop.S
+If it's just a reboot without panic, could there be a watchdog resetting the
+board?
 
-diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-index b315740..bd24ae5 100644
---- a/tools/testing/selftests/powerpc/Makefile
-+++ b/tools/testing/selftests/powerpc/Makefile
-@@ -13,7 +13,7 @@ CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CUR
- 
- export CC CFLAGS
- 
--TARGETS =
-+TARGETS = pmu
- 
- endif
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
-new file mode 100644
-index 0000000..7216f00
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/Makefile
-@@ -0,0 +1,23 @@
-+noarg:
-+	$(MAKE) -C ../
-+
-+PROGS := count_instructions
-+EXTRA_SOURCES := ../harness.c event.c
-+
-+all: $(PROGS)
-+
-+$(PROGS): $(EXTRA_SOURCES)
-+
-+# loop.S can only be built 64-bit
-+count_instructions: loop.S count_instructions.c $(EXTRA_SOURCES)
-+	$(CC) $(CFLAGS) -m64 -o $@ $^
-+
-+run_tests: all
-+	@-for PROG in $(PROGS); do \
-+		./$$PROG; \
-+	done;
-+
-+clean:
-+	rm -f $(PROGS) loop.o
-+
-+.PHONY: all run_tests clean
-diff --git a/tools/testing/selftests/powerpc/pmu/count_instructions.c b/tools/testing/selftests/powerpc/pmu/count_instructions.c
-new file mode 100644
-index 0000000..312b4f0
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/count_instructions.c
-@@ -0,0 +1,135 @@
-+/*
-+ * Copyright 2013, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#define _GNU_SOURCE
-+
-+#include <stdio.h>
-+#include <stdbool.h>
-+#include <string.h>
-+#include <sys/prctl.h>
-+
-+#include "event.h"
-+#include "utils.h"
-+
-+extern void thirty_two_instruction_loop(u64 loops);
-+
-+static void setup_event(struct event *e, u64 config, char *name)
-+{
-+	event_init_opts(e, config, PERF_TYPE_HARDWARE, name);
-+
-+	e->attr.disabled = 1;
-+	e->attr.exclude_kernel = 1;
-+	e->attr.exclude_hv = 1;
-+	e->attr.exclude_idle = 1;
-+}
-+
-+static int do_count_loop(struct event *events, u64 instructions,
-+			 u64 overhead, bool report)
-+{
-+	s64 difference, expected;
-+	double percentage;
-+
-+	prctl(PR_TASK_PERF_EVENTS_ENABLE);
-+
-+	/* Run for 1M instructions */
-+	thirty_two_instruction_loop(instructions >> 5);
-+
-+	prctl(PR_TASK_PERF_EVENTS_DISABLE);
-+
-+	event_read(&events[0]);
-+	event_read(&events[1]);
-+
-+	expected = instructions + overhead;
-+	difference = events[0].result.value - expected;
-+	percentage = (double)difference / events[0].result.value * 100;
-+
-+	if (report) {
-+		event_report(&events[0]);
-+		event_report(&events[1]);
-+
-+		printf("Looped for %llu instructions, overhead %llu\n", instructions, overhead);
-+		printf("Expected %llu\n", expected);
-+		printf("Actual   %llu\n", events[0].result.value);
-+		printf("Delta    %lld, %f%%\n", difference, percentage);
-+	}
-+
-+	event_reset(&events[0]);
-+	event_reset(&events[1]);
-+
-+	if (difference < 0)
-+		difference = -difference;
-+
-+	/* Tolerate a difference below 0.0001 % */
-+	difference *= 10000 * 100;
-+	if (difference / events[0].result.value)
-+		return -1;
-+
-+	return 0;
-+}
-+
-+/* Count how many instructions it takes to do a null loop */
-+static u64 determine_overhead(struct event *events)
-+{
-+	u64 current, overhead;
-+	int i;
-+
-+	do_count_loop(events, 0, 0, false);
-+	overhead = events[0].result.value;
-+
-+	for (i = 0; i < 100; i++) {
-+		do_count_loop(events, 0, 0, false);
-+		current = events[0].result.value;
-+		if (current < overhead) {
-+			printf("Replacing overhead %llu with %llu\n", overhead, current);
-+			overhead = current;
-+		}
-+	}
-+
-+	return overhead;
-+}
-+
-+static int count_instructions(void)
-+{
-+	struct event events[2];
-+	u64 overhead;
-+
-+	setup_event(&events[0], PERF_COUNT_HW_INSTRUCTIONS, "instructions");
-+	setup_event(&events[1], PERF_COUNT_HW_CPU_CYCLES, "cycles");
-+
-+	if (event_open(&events[0])) {
-+		perror("perf_event_open");
-+		return -1;
-+	}
-+
-+	if (event_open_with_group(&events[1], events[0].fd)) {
-+		perror("perf_event_open");
-+		return -1;
-+	}
-+
-+	overhead = determine_overhead(events);
-+	printf("Overhead of null loop: %llu instructions\n", overhead);
-+
-+	/* Run for 1M instructions */
-+	FAIL_IF(do_count_loop(events, 0x100000, overhead, true));
-+
-+	/* Run for 10M instructions */
-+	FAIL_IF(do_count_loop(events, 0xa00000, overhead, true));
-+
-+	/* Run for 100M instructions */
-+	FAIL_IF(do_count_loop(events, 0x6400000, overhead, true));
-+
-+	/* Run for 1G instructions */
-+	FAIL_IF(do_count_loop(events, 0x40000000, overhead, true));
-+
-+	event_close(&events[0]);
-+	event_close(&events[1]);
-+
-+	return 0;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(count_instructions, "count_instructions");
-+}
-diff --git a/tools/testing/selftests/powerpc/pmu/event.c b/tools/testing/selftests/powerpc/pmu/event.c
-new file mode 100644
-index 0000000..2b2d11d
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/event.c
-@@ -0,0 +1,105 @@
-+/*
-+ * Copyright 2013, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#define _GNU_SOURCE
-+#include <unistd.h>
-+#include <sys/syscall.h>
-+#include <string.h>
-+#include <stdio.h>
-+#include <sys/ioctl.h>
-+
-+#include "event.h"
-+
-+
-+int perf_event_open(struct perf_event_attr *attr, pid_t pid, int cpu,
-+		int group_fd, unsigned long flags)
-+{
-+	return syscall(__NR_perf_event_open, attr, pid, cpu,
-+			   group_fd, flags);
-+}
-+
-+void event_init_opts(struct event *e, u64 config, int type, char *name)
-+{
-+	memset(e, 0, sizeof(*e));
-+
-+	e->name = name;
-+
-+	e->attr.type = type;
-+	e->attr.config = config;
-+	e->attr.size = sizeof(e->attr);
-+	/* This has to match the structure layout in the header */
-+	e->attr.read_format = PERF_FORMAT_TOTAL_TIME_ENABLED | \
-+				  PERF_FORMAT_TOTAL_TIME_RUNNING;
-+}
-+
-+void event_init_named(struct event *e, u64 config, char *name)
-+{
-+	event_init_opts(e, config, PERF_TYPE_RAW, name);
-+}
-+
-+#define PERF_CURRENT_PID	0
-+#define PERF_NO_CPU		-1
-+#define PERF_NO_GROUP		-1
-+
-+int event_open_with_options(struct event *e, pid_t pid, int cpu, int group_fd)
-+{
-+	e->fd = perf_event_open(&e->attr, pid, cpu, group_fd, 0);
-+	if (e->fd == -1) {
-+		perror("perf_event_open");
-+		return -1;
-+	}
-+
-+	return 0;
-+}
-+
-+int event_open_with_group(struct event *e, int group_fd)
-+{
-+	return event_open_with_options(e, PERF_CURRENT_PID, PERF_NO_CPU, group_fd);
-+}
-+
-+int event_open(struct event *e)
-+{
-+	return event_open_with_options(e, PERF_CURRENT_PID, PERF_NO_CPU, PERF_NO_GROUP);
-+}
-+
-+void event_close(struct event *e)
-+{
-+	close(e->fd);
-+}
-+
-+int event_reset(struct event *e)
-+{
-+	return ioctl(e->fd, PERF_EVENT_IOC_RESET);
-+}
-+
-+int event_read(struct event *e)
-+{
-+	int rc;
-+
-+	rc = read(e->fd, &e->result, sizeof(e->result));
-+	if (rc != sizeof(e->result)) {
-+		fprintf(stderr, "read error on event %p!\n", e);
-+		return -1;
-+	}
-+
-+	return 0;
-+}
-+
-+void event_report_justified(struct event *e, int name_width, int result_width)
-+{
-+	printf("%*s: result %*llu ", name_width, e->name, result_width,
-+	       e->result.value);
-+
-+	if (e->result.running == e->result.enabled)
-+		printf("running/enabled %llu\n", e->result.running);
-+	else
-+		printf("running %llu enabled %llu\n", e->result.running,
-+			e->result.enabled);
-+}
-+
-+void event_report(struct event *e)
-+{
-+	event_report_justified(e, 0, 0);
-+}
-diff --git a/tools/testing/selftests/powerpc/pmu/event.h b/tools/testing/selftests/powerpc/pmu/event.h
-new file mode 100644
-index 0000000..e699319
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/event.h
-@@ -0,0 +1,39 @@
-+/*
-+ * Copyright 2013, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#ifndef _SELFTESTS_POWERPC_PMU_EVENT_H
-+#define _SELFTESTS_POWERPC_PMU_EVENT_H
-+
-+#include <unistd.h>
-+#include <linux/perf_event.h>
-+
-+#include "utils.h"
-+
-+
-+struct event {
-+	struct perf_event_attr attr;
-+	char *name;
-+	int fd;
-+	/* This must match the read_format we use */
-+	struct {
-+		u64 value;
-+		u64 running;
-+		u64 enabled;
-+	} result;
-+};
-+
-+void event_init(struct event *e, u64 config);
-+void event_init_named(struct event *e, u64 config, char *name);
-+void event_init_opts(struct event *e, u64 config, int type, char *name);
-+int event_open_with_options(struct event *e, pid_t pid, int cpu, int group_fd);
-+int event_open_with_group(struct event *e, int group_fd);
-+int event_open(struct event *e);
-+void event_close(struct event *e);
-+int event_reset(struct event *e);
-+int event_read(struct event *e);
-+void event_report_justified(struct event *e, int name_width, int result_width);
-+void event_report(struct event *e);
-+
-+#endif /* _SELFTESTS_POWERPC_PMU_EVENT_H */
-diff --git a/tools/testing/selftests/powerpc/pmu/loop.S b/tools/testing/selftests/powerpc/pmu/loop.S
-new file mode 100644
-index 0000000..8820e3d
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/loop.S
-@@ -0,0 +1,46 @@
-+/*
-+ * Copyright 2013, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+	.text
-+
-+	.global thirty_two_instruction_loop
-+	.type .thirty_two_instruction_loop,@function
-+	.section ".opd","aw",@progbits
-+thirty_two_instruction_loop:
-+	.quad .thirty_two_instruction_loop, .TOC.@tocbase, 0
-+	.previous
-+.thirty_two_instruction_loop:
-+	cmpwi	%r3,0
-+	beqlr
-+	addi	%r4,%r3,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1
-+	addi	%r4,%r4,1	# 28 addi's
-+	subi	%r3,%r3,1
-+	b	.thirty_two_instruction_loop
--- 
-1.8.1.2
+
+>
+>
+> On 6 August 2013 10:07, Johannes Thumshirn <johannes.thumshirn@men.de> wrote:
+> > On Mon, Aug 05, 2013 at 09:38:45AM -0600, Bjorn Helgaas wrote:
+> >> [+cc linuxppc-dev]
+> >>
+> >> On Mon, Aug 5, 2013 at 5:17 AM, Leon Ravich <lravich@gmail.com> wrote:
+> >> > Hi all ,
+> >> > I am trying to upgrade ours embedded device (freescale powerPC P2020 cpu)
+> >> > linux kernel  , till now we used 2.6.32 I am trying to upgrade to 3.8.13 .
+> >> > I took the source from freescale git:
+> >> > git://git.freescale.com/ppc/sdk/linux.git
+> >> >
+> >> > on our embedded device we have an FPGA connected through PCIE .
+> >> >
+> >> > on each boot we loading the rbf design to the FPGA and the rescan pci bus to let
+> >> > kernel detect it .
+> >> >
+> >> > during the rescan I getting error messages:
+> >> >  genirq: Setting trigger mode 0 for irq 27 failed
+> >> > (mpc8xxx_irq_set_type+0x0/0xec)
+> >> > [   22.060898] genirq: Setting trigger mode 0 for irq 28 failed
+> >> > (mpc8xxx_irq_set_type+0x0/0xec)
+> >> > [   22.069461] genirq: Setting trigger mode 0 for irq 31 failed
+> >> > (mpc8xxx_irq_set_type+0x0/0xec)
+> >> > [   22.078010] genirq: Setting trigger mode 0 for irq 32 failed
+> >> > (mpc8xxx_irq_set_type+0x0/0xec)
+> >> > [   22.086576] genirq: Setting trigger mode 0 for irq 33 failed
+> >> > (mpc8xxx_irq_set_type+0x0/0xec)
+> >> > [   22.095143] genirq: Setting trigger mode 0 for irq 37 failed
+> >> > (mpc8xxx_irq_set_type+0x0/0xec)
+> >> > [   22.103715] genirq: Setting trigger mode 0 for irq 38 failed
+> >> > (mpc8xxx_irq_set_type+0x0/0xec)
+> >> > [   22.112282] genirq: Setting trigger mode 0 for irq 39 failed
+> >> > (mpc8xxx_irq_set_type+0x0/0xec)
+> >>
+> >> Hmm, I don't know much about IRQ issues.
+> >>
+> >> > [   37.945785] pci 0000:00:00.0: ignoring class 0x0b2000 (doesn't
+> >> > match header type 01)
+> >>
+> >> There's a recent patch related to this:
+> >> http://lkml.kernel.org/r/1374823418-1550-1-git-send-email-Chunhe.Lan@freescale.com
+> >>
+> >> > [   37.953640] PCIE error(s) detected
+> >> > [   37.953858] pci 0000:00:00.0: PCI bridge to [bus 01-ff]
+> >> > [   37.953988] pci 0000:00:00.0: BAR 8: assigned [mem 0xc0000000-0xdfffffff]
+> >> > [   37.953994] pci 0000:00:00.0: BAR 7: can't assign io (size 0x10000)
+> >> > [   37.954000] pci 0000:01:00.0: BAR 0: assigned [mem 0xc0000000-0xc00fffff]
+> >> > [   37.954013] pci 0000:01:00.0: BAR 1: assigned [mem 0xc0100000-0xc017ffff]
+> >> > [   37.954025] pci 0000:01:00.0: BAR 2: assigned [mem 0xc0180000-0xc01fffff]
+> >> > [   37.954036] pci 0000:00:00.0: PCI bridge to [bus 01]
+> >> > [   37.954041] pci 0000:00:00.0:   bridge window [mem 0xc0000000-0xdfffffff]
+> >> > [   38.007354] PCIE ERR_DR register: 0x80020000
+> >> > [   38.011613] PCIE ERR_CAP_STAT register: 0x00000041
+> >> > [   38.016392] PCIE ERR_CAP_R0 register: 0x00000800
+> >> > [   38.020997] PCIE ERR_CAP_R1 register: 0x00000000
+> >> > [   38.025602] PCIE ERR_CAP_R2 register: 0x00000000
+> >> > [   38.030207] PCIE ERR_CAP_R3 register: 0x00000000
+> >> >
+> >> >
+> >> > and after a few minutes I linux reboot it self,
+> >> >
+> >> >
+> >> > where can I start debugging it??
+> >>
+> >> I'd start by applying the header quirk patch above, then comparing the
+> >> complete console log (boot with "ignore_loglevel") from 2.6.32 and
+> >> 3.8.13.
+> >>
+> >> Bjorn
+> >> _______________________________________________
+> >> Linuxppc-dev mailing list
+> >> Linuxppc-dev@lists.ozlabs.org
+> >> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> >
+> > Hi,
+> >
+> > I have a similar problem here on a P4080 based board with the same 3.8 Kernel
+> > from freescale git. Does your system panic (maybe due to a machine check
+> > exception)?  If yes could it be the first read from the PCI device?
+> >
+> > Johannes
+>
+>
+>
+> --
+> Leonid Ravich
