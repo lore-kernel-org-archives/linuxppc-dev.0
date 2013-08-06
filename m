@@ -1,19 +1,18 @@
 Return-Path: <R65777@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DC27C2C01BF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 21:37:09 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3F1FC2C02CB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 21:37:15 +1000 (EST)
 From: Bharat Bhushan <r65777@freescale.com>
 To: <scottwood@freescale.com>, <benh@kernel.crashing.org>, <agraf@suse.de>,
  <paulus@samba.org>, <kvm@vger.kernel.org>, <kvm-ppc@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 4/6 v3] powerpc: move linux pte/hugepte search to more generic
- file
-Date: Tue, 6 Aug 2013 17:01:12 +0530
-Message-ID: <1375788674-13140-5-git-send-email-Bharat.Bhushan@freescale.com>
+Subject: [PATCH 6/6 v3] kvm: powerpc: use caching attributes as per linux pte
+Date: Tue, 6 Aug 2013 17:01:14 +0530
+Message-ID: <1375788674-13140-7-git-send-email-Bharat.Bhushan@freescale.com>
 In-Reply-To: <1375788674-13140-1-git-send-email-Bharat.Bhushan@freescale.com>
 References: <1375788674-13140-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
@@ -28,115 +27,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Linux pte search functions find_linux_pte_or_hugepte() and
-find_linux_pte() have nothing specific to 64bit anymore.
-So they are move from pgtable-ppc64.h to asm/pgtable.h
+KVM uses same WIM tlb attributes as the corresponding qemu pte.
+For this we now search the linux pte for the requested page and
+get these cache caching/coherency attributes from pte.
 
 Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
 v2->v3
- - no change
+ - setting pgdir before kvmppc_fix_ee_before_entry() on vcpu_run
+ - Aligned as per changes in patch 5/6
+ - setting WIMG for pfnmap pages also
+ 
 v1->v2
- - This is a new change in this version
- 
- arch/powerpc/include/asm/pgtable-ppc64.h |   36 -----------------------------
- arch/powerpc/include/asm/pgtable.h       |   37 ++++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+), 36 deletions(-)
+ - Use Linux pte for wimge rather than RAM/no-RAM mechanism
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index e3d55f6..d257d98 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -340,42 +340,6 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
- void pgtable_cache_init(void);
+ arch/powerpc/include/asm/kvm_host.h |    2 +-
+ arch/powerpc/kvm/booke.c            |    2 +-
+ arch/powerpc/kvm/e500.h             |    8 ++++--
+ arch/powerpc/kvm/e500_mmu_host.c    |   36 ++++++++++++++++++++--------------
+ 4 files changed, 28 insertions(+), 20 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 3328353..583d405 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -535,6 +535,7 @@ struct kvm_vcpu_arch {
+ #endif
+ 	gpa_t paddr_accessed;
+ 	gva_t vaddr_accessed;
++	pgd_t *pgdir;
  
--/*
-- * find_linux_pte returns the address of a linux pte for a given
-- * effective address and directory.  If not found, it returns zero.
-- */
--static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea)
+ 	u8 io_gpr; /* GPR used as IO source/target */
+ 	u8 mmio_is_bigendian;
+@@ -592,7 +593,6 @@ struct kvm_vcpu_arch {
+ 	struct list_head run_list;
+ 	struct task_struct *run_task;
+ 	struct kvm_run *kvm_run;
+-	pgd_t *pgdir;
+ 
+ 	spinlock_t vpa_update_lock;
+ 	struct kvmppc_vpa vpa;
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 17722d8..0d96d50 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -696,8 +696,8 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 	kvmppc_load_guest_fp(vcpu);
+ #endif
+ 
++	vcpu->arch.pgdir = current->mm->pgd;
+ 	kvmppc_fix_ee_before_entry();
+-
+ 	ret = __kvmppc_vcpu_run(kvm_run, vcpu);
+ 
+ 	/* No need for kvm_guest_exit. It's done in handle_exit.
+diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
+index 4fd9650..fc4b2f6 100644
+--- a/arch/powerpc/kvm/e500.h
++++ b/arch/powerpc/kvm/e500.h
+@@ -31,11 +31,13 @@ enum vcpu_ftr {
+ #define E500_TLB_NUM   2
+ 
+ /* entry is mapped somewhere in host TLB */
+-#define E500_TLB_VALID		(1 << 0)
++#define E500_TLB_VALID		(1 << 31)
+ /* TLB1 entry is mapped by host TLB1, tracked by bitmaps */
+-#define E500_TLB_BITMAP		(1 << 1)
++#define E500_TLB_BITMAP		(1 << 30)
+ /* TLB1 entry is mapped by host TLB0 */
+-#define E500_TLB_TLB0		(1 << 2)
++#define E500_TLB_TLB0		(1 << 29)
++/* Lower 5 bits have WIMGE value */
++#define E500_TLB_WIMGE_MASK	(0x1f)
+ 
+ struct tlbe_ref {
+ 	pfn_t pfn;		/* valid only for TLB0, except briefly */
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index 1c6a9d7..001a2b0 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -64,15 +64,6 @@ static inline u32 e500_shadow_mas3_attrib(u32 mas3, int usermode)
+ 	return mas3;
+ }
+ 
+-static inline u32 e500_shadow_mas2_attrib(u32 mas2, int usermode)
 -{
--	pgd_t *pg;
--	pud_t *pu;
--	pmd_t *pm;
--	pte_t *pt = NULL;
--
--	pg = pgdir + pgd_index(ea);
--	if (!pgd_none(*pg)) {
--		pu = pud_offset(pg, ea);
--		if (!pud_none(*pu)) {
--			pm = pmd_offset(pu, ea);
--			if (pmd_present(*pm))
--				pt = pte_offset_kernel(pm, ea);
--		}
--	}
--	return pt;
--}
--
--#ifdef CONFIG_HUGETLB_PAGE
--pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
--				 unsigned *shift);
+-#ifdef CONFIG_SMP
+-	return (mas2 & MAS2_ATTRIB_MASK) | MAS2_M;
 -#else
--static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
--					       unsigned *shift)
--{
--	if (shift)
--		*shift = 0;
--	return find_linux_pte(pgdir, ea);
+-	return mas2 & MAS2_ATTRIB_MASK;
+-#endif
 -}
--#endif /* !CONFIG_HUGETLB_PAGE */
 -
- #endif /* __ASSEMBLY__ */
+ /*
+  * writing shadow tlb entry to host TLB
+  */
+@@ -248,10 +239,12 @@ static inline int tlbe_is_writable(struct kvm_book3e_206_tlb_entry *tlbe)
  
- #endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index b6293d2..690c8c2 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -217,6 +217,43 @@ extern int gup_hugepd(hugepd_t *hugepd, unsigned pdshift, unsigned long addr,
+ static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
+ 					 struct kvm_book3e_206_tlb_entry *gtlbe,
+-					 pfn_t pfn)
++					 pfn_t pfn, int wimg)
+ {
+ 	ref->pfn = pfn;
+ 	ref->flags |= E500_TLB_VALID;
++	/* Use guest supplied MAS2_G and MAS2_E */
++	ref->flags |= (gtlbe->mas2 & MAS2_ATTRIB_MASK) | wimg;
  
- extern int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
- 		       unsigned long end, int write, struct page **pages, int *nr);
+ 	if (tlbe_is_writable(gtlbe))
+ 		kvm_set_pfn_dirty(pfn);
+@@ -312,8 +305,7 @@ static void kvmppc_e500_setup_stlbe(
+ 
+ 	/* Force IPROT=0 for all guest mappings. */
+ 	stlbe->mas1 = MAS1_TSIZE(tsize) | get_tlb_sts(gtlbe) | MAS1_VALID;
+-	stlbe->mas2 = (gvaddr & MAS2_EPN) |
+-		      e500_shadow_mas2_attrib(gtlbe->mas2, pr);
++	stlbe->mas2 = (gvaddr & MAS2_EPN) | (ref->flags & E500_TLB_WIMGE_MASK);
+ 	stlbe->mas7_3 = ((u64)pfn << PAGE_SHIFT) |
+ 			e500_shadow_mas3_attrib(gtlbe->mas7_3, pr);
+ 
+@@ -332,6 +324,10 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	unsigned long hva;
+ 	int pfnmap = 0;
+ 	int tsize = BOOK3E_PAGESZ_4K;
++	unsigned long tsize_pages = 0;
++	pte_t *ptep;
++	int wimg = 0;
++	pgd_t *pgdir;
+ 
+ 	/*
+ 	 * Translate guest physical to true physical, acquiring
+@@ -394,7 +390,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 			 */
+ 
+ 			for (; tsize > BOOK3E_PAGESZ_4K; tsize -= 2) {
+-				unsigned long gfn_start, gfn_end, tsize_pages;
++				unsigned long gfn_start, gfn_end;
+ 				tsize_pages = 1 << (tsize - 2);
+ 
+ 				gfn_start = gfn & ~(tsize_pages - 1);
+@@ -436,7 +432,8 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	}
+ 
+ 	if (likely(!pfnmap)) {
+-		unsigned long tsize_pages = 1 << (tsize + 10 - PAGE_SHIFT);
++		tsize_pages = 1 << (tsize + 10 - PAGE_SHIFT);
 +
-+/*
-+ * find_linux_pte returns the address of a linux pte for a given
-+ * effective address and directory.  If not found, it returns zero.
-+ */
-+static inline pte_t *find_linux_pte(pgd_t *pgdir, unsigned long ea)
-+{
-+	pgd_t *pg;
-+	pud_t *pu;
-+	pmd_t *pm;
-+	pte_t *pt = NULL;
-+
-+	pg = pgdir + pgd_index(ea);
-+	if (!pgd_none(*pg)) {
-+		pu = pud_offset(pg, ea);
-+		if (!pud_none(*pu)) {
-+			pm = pmd_offset(pu, ea);
-+			if (pmd_present(*pm))
-+				pt = pte_offset_kernel(pm, ea);
-+		}
+ 		pfn = gfn_to_pfn_memslot(slot, gfn);
+ 		if (is_error_noslot_pfn(pfn)) {
+ 			printk(KERN_ERR "Couldn't get real page for gfn %lx!\n",
+@@ -449,7 +446,16 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 		gvaddr &= ~((tsize_pages << PAGE_SHIFT) - 1);
+ 	}
+ 
+-	kvmppc_e500_ref_setup(ref, gtlbe, pfn);
++	pgdir = vcpu_e500->vcpu.arch.pgdir;
++	ptep = lookup_linux_pte(pgdir, hva, &tsize_pages);
++	if (pte_present(*ptep)) {
++		wimg = (pte_val(*ptep) >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
++	} else {
++		printk(KERN_ERR "pte not present: gfn %lx, pfn %lx\n",
++				(long)gfn, pfn);
++		return -EINVAL;
 +	}
-+	return pt;
-+}
-+
-+#ifdef CONFIG_HUGETLB_PAGE
-+pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
-+				 unsigned *shift);
-+#else
-+static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
-+					       unsigned *shift)
-+{
-+	if (shift)
-+		*shift = 0;
-+	return find_linux_pte(pgdir, ea);
-+}
-+#endif /* !CONFIG_HUGETLB_PAGE */
-+
- #endif /* __ASSEMBLY__ */
++	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
  
- #endif /* __KERNEL__ */
+ 	kvmppc_e500_setup_stlbe(&vcpu_e500->vcpu, gtlbe, tsize,
+ 				ref, gvaddr, stlbe);
 -- 
 1.7.0.4
