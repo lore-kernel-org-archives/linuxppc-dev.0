@@ -1,18 +1,18 @@
 Return-Path: <R65777@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0243C2C007A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 21:35:54 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4055C2C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 21:36:50 +1000 (EST)
 From: Bharat Bhushan <r65777@freescale.com>
 To: <scottwood@freescale.com>, <benh@kernel.crashing.org>, <agraf@suse.de>,
  <paulus@samba.org>, <kvm@vger.kernel.org>, <kvm-ppc@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/6 v3] kvm: powerpc: allow guest control "E" attribute in mas2
-Date: Tue, 6 Aug 2013 17:01:10 +0530
-Message-ID: <1375788674-13140-3-git-send-email-Bharat.Bhushan@freescale.com>
+Subject: [PATCH 1/6 v3] powerpc: book3e: _PAGE_LENDIAN must be _PAGE_ENDIAN
+Date: Tue, 6 Aug 2013 17:01:09 +0530
+Message-ID: <1375788674-13140-2-git-send-email-Bharat.Bhushan@freescale.com>
 In-Reply-To: <1375788674-13140-1-git-send-email-Bharat.Bhushan@freescale.com>
 References: <1375788674-13140-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
@@ -27,9 +27,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"E" bit in MAS2 bit indicates whether the page is accessed
-in Little-Endian or Big-Endian byte order.
-There is no reason to stop guest setting  "E", so allow him."
+For booke3e _PAGE_ENDIAN is not defined. Infact what is defined
+is "_PAGE_LENDIAN" which is wrong and should be _PAGE_ENDIAN.
+There are no compilation errors as
+arch/powerpc/include/asm/pte-common.h defines _PAGE_ENDIAN to 0
+as it is not defined anywhere.
 
 Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
@@ -37,21 +39,22 @@ v2->v3
  - no change
 v1->v2
  - no change
- arch/powerpc/kvm/e500.h |    2 +-
+
+ arch/powerpc/include/asm/pte-book3e.h |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index c2e5e98..277cb18 100644
---- a/arch/powerpc/kvm/e500.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -117,7 +117,7 @@ static inline struct kvmppc_vcpu_e500 *to_e500(struct kvm_vcpu *vcpu)
- #define E500_TLB_USER_PERM_MASK (MAS3_UX|MAS3_UR|MAS3_UW)
- #define E500_TLB_SUPER_PERM_MASK (MAS3_SX|MAS3_SR|MAS3_SW)
- #define MAS2_ATTRIB_MASK \
--	  (MAS2_X0 | MAS2_X1)
-+	  (MAS2_X0 | MAS2_X1 | MAS2_E)
- #define MAS3_ATTRIB_MASK \
- 	  (MAS3_U0 | MAS3_U1 | MAS3_U2 | MAS3_U3 \
- 	   | E500_TLB_USER_PERM_MASK | E500_TLB_SUPER_PERM_MASK)
+diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/include/asm/pte-book3e.h
+index 0156702..576ad88 100644
+--- a/arch/powerpc/include/asm/pte-book3e.h
++++ b/arch/powerpc/include/asm/pte-book3e.h
+@@ -40,7 +40,7 @@
+ #define _PAGE_U1	0x010000
+ #define _PAGE_U0	0x020000
+ #define _PAGE_ACCESSED	0x040000
+-#define _PAGE_LENDIAN	0x080000
++#define _PAGE_ENDIAN	0x080000
+ #define _PAGE_GUARDED	0x100000
+ #define _PAGE_COHERENT	0x200000 /* M: enforce memory coherence */
+ #define _PAGE_NO_CACHE	0x400000 /* I: cache inhibit */
 -- 
 1.7.0.4
