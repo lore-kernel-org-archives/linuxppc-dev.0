@@ -1,24 +1,32 @@
 Return-Path: <R65777@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A85D62C02EE
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 21:37:16 +1000 (EST)
-From: Bharat Bhushan <r65777@freescale.com>
-To: <scottwood@freescale.com>, <benh@kernel.crashing.org>, <agraf@suse.de>,
- <paulus@samba.org>, <kvm@vger.kernel.org>, <kvm-ppc@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 5/6 v3] kvm: powerpc: keep only pte search logic in
- lookup_linux_pte
-Date: Tue, 6 Aug 2013 17:01:13 +0530
-Message-ID: <1375788674-13140-6-git-send-email-Bharat.Bhushan@freescale.com>
-In-Reply-To: <1375788674-13140-1-git-send-email-Bharat.Bhushan@freescale.com>
-References: <1375788674-13140-1-git-send-email-Bharat.Bhushan@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 462BE2C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 00:46:54 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 5/6 v2] kvm: powerpc: booke: Add linux pte lookup like
+ booke3s
+Date: Tue, 6 Aug 2013 14:46:45 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D070FCE8A@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1375355558-19187-6-git-send-email-Bharat.Bhushan@freescale.com>
+ <1375484319.26902.4.camel@snotra.buserror.net>
+ <1375485408.15999.67.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D070F8FCC@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1375503847.15999.80.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D070FAD49@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1375730341.13074.38.camel@snotra.buserror.net>
+In-Reply-To: <1375730341.13074.38.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,132 +36,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-lookup_linux_pte() was searching for a pte and also sets access
-flags is writable. This function now searches only pte while
-access flag setting is done explicitly.
-
-This pte lookup is not kvm specific, so moved to common code (asm/pgtable.h)
-My Followup patch will use this on booke.
-
-Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
----
-v2->v3
- - New change
-
- arch/powerpc/include/asm/pgtable.h  |   23 +++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv_rm_mmu.c |   38 +++++++++++-----------------------
- 2 files changed, 35 insertions(+), 26 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index 690c8c2..d4d16ab 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -254,6 +254,29 @@ static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
- }
- #endif /* !CONFIG_HUGETLB_PAGE */
- 
-+static inline pte_t *lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
-+				     unsigned long *pte_sizep)
-+{
-+	pte_t *ptep;
-+	unsigned long ps = *pte_sizep;
-+	unsigned int shift;
-+
-+	ptep = find_linux_pte_or_hugepte(pgdir, hva, &shift);
-+	if (!ptep)
-+		return __pte(0);
-+	if (shift)
-+		*pte_sizep = 1ul << shift;
-+	else
-+		*pte_sizep = PAGE_SIZE;
-+
-+	if (ps > *pte_sizep)
-+		return __pte(0);
-+
-+	if (!pte_present(*ptep))
-+		return __pte(0);
-+
-+	return ptep;
-+}
- #endif /* __ASSEMBLY__ */
- 
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 105b00f..7e6200c 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -134,27 +134,6 @@ static void remove_revmap_chain(struct kvm *kvm, long pte_index,
- 	unlock_rmap(rmap);
- }
- 
--static pte_t lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
--			      int writing, unsigned long *pte_sizep)
--{
--	pte_t *ptep;
--	unsigned long ps = *pte_sizep;
--	unsigned int shift;
--
--	ptep = find_linux_pte_or_hugepte(pgdir, hva, &shift);
--	if (!ptep)
--		return __pte(0);
--	if (shift)
--		*pte_sizep = 1ul << shift;
--	else
--		*pte_sizep = PAGE_SIZE;
--	if (ps > *pte_sizep)
--		return __pte(0);
--	if (!pte_present(*ptep))
--		return __pte(0);
--	return kvmppc_read_update_linux_pte(ptep, writing);
--}
--
- static inline void unlock_hpte(unsigned long *hpte, unsigned long hpte_v)
- {
- 	asm volatile(PPC_RELEASE_BARRIER "" : : : "memory");
-@@ -174,6 +153,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
- 	unsigned long *physp, pte_size;
- 	unsigned long is_io;
- 	unsigned long *rmap;
-+	pte_t *ptep;
- 	pte_t pte;
- 	unsigned int writing;
- 	unsigned long mmu_seq;
-@@ -233,8 +213,9 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
- 
- 		/* Look up the Linux PTE for the backing page */
- 		pte_size = psize;
--		pte = lookup_linux_pte(pgdir, hva, writing, &pte_size);
--		if (pte_present(pte)) {
-+		ptep = lookup_linux_pte(pgdir, hva, &pte_size);
-+		if (pte_present(pte_val(*ptep))) {
-+			pte = kvmppc_read_update_linux_pte(ptep, writing);
- 			if (writing && !pte_write(pte))
- 				/* make the actual HPTE be read-only */
- 				ptel = hpte_make_readonly(ptel);
-@@ -662,6 +643,7 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 			unsigned long psize, gfn, hva;
- 			struct kvm_memory_slot *memslot;
- 			pgd_t *pgdir = vcpu->arch.pgdir;
-+			pte_t *ptep;
- 			pte_t pte;
- 
- 			psize = hpte_page_size(v, r);
-@@ -669,9 +651,13 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 			memslot = __gfn_to_memslot(kvm_memslots(kvm), gfn);
- 			if (memslot) {
- 				hva = __gfn_to_hva_memslot(memslot, gfn);
--				pte = lookup_linux_pte(pgdir, hva, 1, &psize);
--				if (pte_present(pte) && !pte_write(pte))
--					r = hpte_make_readonly(r);
-+				ptep = lookup_linux_pte(pgdir, hva, &psize);
-+				if (pte_present(pte_val(*ptep))) {
-+					pte = kvmppc_read_update_linux_pte(ptep,
-+									   1);
-+					if (pte_present(pte) && !pte_write(pte))
-+						r = hpte_make_readonly(r);
-+				}
- 			}
- 		}
- 	}
--- 
-1.7.0.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgQXVndXN0IDA2LCAyMDEzIDEyOjQ5IEFNDQo+IFRvOiBCaHVz
+aGFuIEJoYXJhdC1SNjU3NzcNCj4gQ2M6IEJlbmphbWluIEhlcnJlbnNjaG1pZHQ7IFdvb2QgU2Nv
+dHQtQjA3NDIxOyBhZ3JhZkBzdXNlLmRlOyBrdm0tDQo+IHBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2
+bUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1Ympl
+Y3Q6IFJlOiBbUEFUQ0ggNS82IHYyXSBrdm06IHBvd2VycGM6IGJvb2tlOiBBZGQgbGludXggcHRl
+IGxvb2t1cCBsaWtlDQo+IGJvb2tlM3MNCj4gDQo+IE9uIE1vbiwgMjAxMy0wOC0wNSBhdCAwOToy
+NyAtMDUwMCwgQmh1c2hhbiBCaGFyYXQtUjY1Nzc3IHdyb3RlOg0KPiA+DQo+ID4gPiAtLS0tLU9y
+aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogQmVuamFtaW4gSGVycmVuc2NobWlkdCBb
+bWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gPiA+IFNlbnQ6IFNhdHVyZGF5LCBB
+dWd1c3QgMDMsIDIwMTMgOTo1NCBBTQ0KPiA+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0K
+PiA+ID4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBhZ3JhZkBzdXNlLmRlOyBrdm0tcHBjQHZnZXIu
+a2VybmVsLm9yZzsNCj4gPiA+IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0
+cy5vemxhYnMub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDUvNiB2Ml0ga3ZtOiBwb3dl
+cnBjOiBib29rZTogQWRkIGxpbnV4IHB0ZQ0KPiA+ID4gbG9va3VwIGxpa2UgYm9va2Uzcw0KPiA+
+ID4NCj4gPiA+IE9uIFNhdCwgMjAxMy0wOC0wMyBhdCAwMjo1OCArMDAwMCwgQmh1c2hhbiBCaGFy
+YXQtUjY1Nzc3IHdyb3RlOg0KPiA+ID4gPiBPbmUgb2YgdGhlIHByb2JsZW0gSSBzYXcgd2FzIHRo
+YXQgaWYgSSBwdXQgdGhpcyBjb2RlIGluDQo+ID4gPiA+IGFzbS9wZ3RhYmxlLTMyLmggYW5kIGFz
+bS9wZ3RhYmxlLTY0LmggdGhlbiBwdGVfcGVyc2VudCgpIGFuZCBvdGhlcg0KPiA+ID4gPiBmcmll
+bmQgZnVuY3Rpb24gKG9uIHdoaWNoIHRoaXMgY29kZSBkZXBlbmRzKSBhcmUgZGVmaW5lZCBpbiBw
+Z3RhYmxlLmguDQo+ID4gPiA+IEFuZCBwZ3RhYmxlLmggaW5jbHVkZXMgYXNtL3BndGFibGUtMzIu
+aCBhbmQgYXNtL3BndGFibGUtNjQuaA0KPiA+ID4gPiBiZWZvcmUgaXQgZGVmaW5lcyBwdGVfcHJl
+c2VudCgpIGFuZCBmcmllbmRzIGZ1bmN0aW9ucy4NCj4gPiA+ID4NCj4gPiA+ID4gT2sgSSBtb3Zl
+IHdvdmUgdGhpcyBpbiBhc20vcGd0YWJsZSouaCwgaW5pdGlhbGx5IEkgZm91Z2h0IHdpdGgNCj4g
+PiA+ID4gbXlzZWxmIHRvIHRha2UgdGhpcyBjb2RlIGluIHBndGFibGUqIGJ1dCBmaW5hbGx5IGVu
+ZCB1cCBkb2luZyBoZXJlDQo+ID4gPiA+IChnb3QgYmlhc2VkIGJ5IGJvb2szcyA6KSkuDQo+ID4g
+Pg0KPiA+ID4gSXMgdGhlcmUgYSByZWFzb24gd2h5IHRoZXNlIHJvdXRpbmVzIGNhbiBub3QgYmUg
+Y29tcGxldGVseSBnZW5lcmljDQo+ID4gPiBpbiBwZ3RhYmxlLmggPw0KPiA+DQo+ID4gSG93IGFi
+b3V0IHRoZSBnZW5lcmljIGZ1bmN0aW9uOg0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93
+ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLXBwYzY0LmgNCj4gPiBiL2FyY2gvcG93ZXJwYy9pbmNs
+dWRlL2FzbS9wZ3RhYmxlLXBwYzY0LmgNCj4gPiBpbmRleCBkMjU3ZDk4Li4yMWRhZjI4IDEwMDY0
+NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLXBwYzY0LmgNCj4g
+PiArKysgYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vcGd0YWJsZS1wcGM2NC5oDQo+ID4gQEAg
+LTIyMSw2ICsyMjEsMjcgQEAgc3RhdGljIGlubGluZSB1bnNpZ25lZCBsb25nIHB0ZV91cGRhdGUo
+c3RydWN0IG1tX3N0cnVjdA0KPiAqbW0sDQo+ID4gICAgICAgICByZXR1cm4gb2xkOw0KPiA+ICB9
+DQo+ID4NCj4gPiArc3RhdGljIGlubGluZSB1bnNpZ25lZCBsb25nIHB0ZV9yZWFkKHB0ZV90ICpw
+KSB7ICNpZmRlZg0KPiA+ICtQVEVfQVRPTUlDX1VQREFURVMNCj4gPiArICAgICAgIHB0ZV90IHB0
+ZTsNCj4gPiArICAgICAgIHB0ZV90IHRtcDsNCj4gPiArICAgICAgIF9fYXNtX18gX192b2xhdGls
+ZV9fICgNCj4gPiArICAgICAgICIxOiAgICAgbGRhcnggICAlMCwwLCUzXG4iDQo+ID4gKyAgICAg
+ICAiICAgICAgIGFuZGkuICAgJTEsJTAsJTRcbiINCj4gPiArICAgICAgICIgICAgICAgYm5lLSAg
+ICAxYlxuIg0KPiA+ICsgICAgICAgIiAgICAgICBvcmkgICAgICUxLCUwLCU0XG4iDQo+ID4gKyAg
+ICAgICAiICAgICAgIHN0ZGN4LiAgJTEsMCwlM1xuIg0KPiA+ICsgICAgICAgIiAgICAgICBibmUt
+ICAgIDFiIg0KPiA+ICsgICAgICAgOiAiPSZyIiAocHRlKSwgIj0mciIgKHRtcCksICI9bSIgKCpw
+KQ0KPiA+ICsgICAgICAgOiAiciIgKHApLCAiaSIgKF9QQUdFX0JVU1kpDQo+ID4gKyAgICAgICA6
+ICJjYyIpOw0KPiA+ICsNCj4gPiArICAgICAgIHJldHVybiBwdGU7DQo+ID4gKyNlbHNlDQo+ID4g
+KyAgICAgICByZXR1cm4gcHRlX3ZhbCgqcCk7DQo+ID4gKyNlbmRpZg0KPiA+ICsjZW5kaWYNCj4g
+PiArfQ0KPiA+ICBzdGF0aWMgaW5saW5lIGludCBfX3B0ZXBfdGVzdF9hbmRfY2xlYXJfeW91bmco
+c3RydWN0IG1tX3N0cnVjdCAqbW0sDQo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIHVuc2lnbmVkIGxvbmcgYWRkciwNCj4gPiBwdGVfdCAqcHRlcCkNCj4g
+DQo+IFBsZWFzZSBsZWF2ZSBhIGJsYW5rIGxpbmUgYmV0d2VlbiBmdW5jdGlvbnMuDQo+IA0KPiA+
+ICB7DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLmgN
+Cj4gPiBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLmgNCj4gPiBpbmRleCA2OTBj
+OGMyLi5kYWQ3MTJjIDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9w
+Z3RhYmxlLmgNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vcGd0YWJsZS5oDQo+
+ID4gQEAgLTI1NCw2ICsyNTQsNDUgQEAgc3RhdGljIGlubGluZSBwdGVfdA0KPiA+ICpmaW5kX2xp
+bnV4X3B0ZV9vcl9odWdlcHRlKHBnZF90ICpwZ2RpciwgdW5zaWduZWQgbG9uZyBlYSwgIH0gICNl
+bmRpZg0KPiA+IC8qICFDT05GSUdfSFVHRVRMQl9QQUdFICovDQo+ID4NCj4gPiArc3RhdGljIGlu
+bGluZSBwdGVfdCBsb29rdXBfbGludXhfcHRlKHBnZF90ICpwZ2RpciwgdW5zaWduZWQgbG9uZyBo
+dmEsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGludCB3cml0aW5n
+LCB1bnNpZ25lZCBsb25nDQo+ID4gKypwdGVfc2l6ZXApDQo+IA0KPiBUaGUgbmFtZSBpbXBsaWVz
+IHRoYXQgaXQganVzdCByZWFkcyB0aGUgUFRFLiAgU2V0dGluZyBhY2Nlc3NlZC9kaXJ0eSBzaG91
+bGRuJ3QNCj4gYmUgYW4gdW5kb2N1bWVudGVkIHNpZGUtZWZmZWN0LiAgV2h5IGNhbid0IHRoZSBj
+YWxsZXIgZG8gdGhhdCAob3IgYSBkaWZmZXJlbnQNCj4gZnVuY3Rpb24gdGhhdCB0aGUgY2FsbGVy
+IGNhbGxzIGFmdGVyd2FyZCBpZiBkZXNpcmVkKT8NCg0KU2NvdHQsIEkgc2VudCB0aGUgbmV4dCB2
+ZXJzaW9uIG9mIHBhdGNoIGJhc2VkIG9uIGFib3ZlIGlkZWEuIE5vdyBJIHRoaW5rIHdlIGRvIG5v
+dCBuZWVkIHRvIHVwZGF0ZSB0aGUgcHRlIGZsYWdzIG9uIGJvb2tlIA0KU28gd2UgZG8gbm90IG5l
+ZWQgdG8gc29sdmUgdGhlIGt2bXBwY19yZWFkX3VwZGF0ZV9saW51eF9wdGUoKSBzdHVmZiBvZiBi
+b29rM3MuDQoNCi1CaGFyYXQNCg0KPiANCj4gVGhvdWdoIGV2ZW4gdGhlbiB5b3UgaGF2ZSB0aGUg
+dW5kb2N1bWVudGVkIHNpZGUgZWZmZWN0IG9mIGxvY2tpbmcgdGhlIFBURSBvbg0KPiBjZXJ0YWlu
+IHRhcmdldHMuDQo+IA0KPiA+ICt7DQo+ID4gKyAgICAgICBwdGVfdCAqcHRlcDsNCj4gPiArICAg
+ICAgIHB0ZV90IHB0ZTsNCj4gPiArICAgICAgIHVuc2lnbmVkIGxvbmcgcHMgPSAqcHRlX3NpemVw
+Ow0KPiA+ICsgICAgICAgdW5zaWduZWQgaW50IHNoaWZ0Ow0KPiA+ICsNCj4gPiArICAgICAgIHB0
+ZXAgPSBmaW5kX2xpbnV4X3B0ZV9vcl9odWdlcHRlKHBnZGlyLCBodmEsICZzaGlmdCk7DQo+ID4g
+KyAgICAgICBpZiAoIXB0ZXApDQo+ID4gKyAgICAgICAgICAgICAgIHJldHVybiBfX3B0ZSgwKTsN
+Cj4gPiArICAgICAgIGlmIChzaGlmdCkNCj4gPiArICAgICAgICAgICAgICAgKnB0ZV9zaXplcCA9
+IDF1bCA8PCBzaGlmdDsNCj4gPiArICAgICAgIGVsc2UNCj4gPiArICAgICAgICAgICAgICAgKnB0
+ZV9zaXplcCA9IFBBR0VfU0laRTsNCj4gPiArDQo+ID4gKyAgICAgICBpZiAocHMgPiAqcHRlX3Np
+emVwKQ0KPiA+ICsgICAgICAgICAgICAgICByZXR1cm4gX19wdGUoMCk7DQo+ID4gKw0KPiA+ICsg
+ICAgICAgaWYgKCFwdGVfcHJlc2VudCgqcHRlcCkpDQo+ID4gKyAgICAgICAgICAgICAgIHJldHVy
+biBfX3B0ZSgwKTsNCj4gPiArDQo+ID4gKyNpZmRlZiBDT05GSUdfUFBDNjQNCj4gPiArICAgICAg
+IC8qIExvY2sgUFRFIChzZXQgX1BBR0VfQlVTWSkgYW5kIHJlYWQgKi8NCj4gPiArICAgICAgIHB0
+ZSA9IHB0ZV9yZWFkKHB0ZXApOw0KPiA+ICsjZWxzZQ0KPiA+ICsgICAgICAgcHRlID0gcHRlX3Zh
+bCgqcHRlcCk7DQo+ID4gKyNlbmRpZg0KPiANCj4gV2hhdCBhYm91dCAzMi1iaXQgcGxhdGZvcm1z
+IHRoYXQgbmVlZCBhdG9taWMgUFRFcz8NCj4gDQo+IC1TY290dA0KPiANCg0K
