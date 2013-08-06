@@ -2,9 +2,10 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 16/63] powerpc: More little endian fixes for setup-common.c
-Date: Wed,  7 Aug 2013 02:01:33 +1000
-Message-Id: <1375804940-22050-17-git-send-email-anton@samba.org>
+Subject: [PATCH 17/63] powerpc: Add some endian annotations to time and xics
+ code
+Date: Wed,  7 Aug 2013 02:01:34 +1000
+Message-Id: <1375804940-22050-18-git-send-email-anton@samba.org>
 In-Reply-To: <1375804940-22050-1-git-send-email-anton@samba.org>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,37 +18,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alistair Popple <alistair@popple.id.au>
+Fix a couple of sparse warnings.
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/kernel/setup-common.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/time.c            | 2 +-
+ arch/powerpc/sysdev/xics/icp-native.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index ee0e055..3d261c0 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -437,6 +437,7 @@ void __init smp_setup_cpu_maps(void)
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 65ab9e9..c863aa1 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -612,7 +612,7 @@ unsigned long long sched_clock(void)
+ static int __init get_freq(char *name, int cells, unsigned long *val)
+ {
+ 	struct device_node *cpu;
+-	const unsigned int *fp;
++	const __be32 *fp;
+ 	int found = 0;
  
- 	while ((dn = of_find_node_by_type(dn, "cpu")) && cpu < nr_cpu_ids) {
- 		const __be32 *intserv;
-+		__be32 cpu_be;
- 		int j, len;
- 
- 		DBG("  * %s...\n", dn->full_name);
-@@ -450,8 +451,10 @@ void __init smp_setup_cpu_maps(void)
- 		} else {
- 			DBG("    no ibm,ppc-interrupt-server#s -> 1 thread\n");
- 			intserv = of_get_property(dn, "reg", NULL);
--			if (!intserv)
--				intserv = &cpu;	/* assume logical == phys */
-+			if (!intserv) {
-+				cpu_be = cpu_to_be32(cpu);
-+				intserv = &cpu_be;	/* assume logical == phys */
-+			}
- 		}
- 
- 		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
+ 	/* The cpu node should have timebase and clock frequency properties */
+diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
+index 7cd728b..9dee470 100644
+--- a/arch/powerpc/sysdev/xics/icp-native.c
++++ b/arch/powerpc/sysdev/xics/icp-native.c
+@@ -216,7 +216,7 @@ static int __init icp_native_init_one_node(struct device_node *np,
+ 					   unsigned int *indx)
+ {
+ 	unsigned int ilen;
+-	const u32 *ireg;
++	const __be32 *ireg;
+ 	int i;
+ 	int reg_tuple_size;
+ 	int num_servers = 0;
 -- 
 1.8.1.2
