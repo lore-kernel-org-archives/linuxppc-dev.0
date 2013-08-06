@@ -1,39 +1,26 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AAF172C0247
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 06:45:13 +1000 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 7 Aug 2013 06:28:52 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0F99C2CE804C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 06:45:02 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r76KTCJg50790504
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Aug 2013 06:29:12 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r76Kj0Ue005061
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Aug 2013 06:45:01 +1000
-Message-ID: <52016047.5060903@linux.vnet.ibm.com>
-Date: Tue, 06 Aug 2013 15:44:55 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/8] Add all memory via sysfs probe interface at once
-References: <51F01E06.6090800@linux.vnet.ibm.com>
- <51F01EFB.6070207@linux.vnet.ibm.com> <20130802023259.GC1680@concordia>
- <51FC04C2.70100@linux.vnet.ibm.com> <20130805031326.GB5347@concordia>
-In-Reply-To: <20130805031326.GB5347@concordia>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mm <linux-mm@kvack.org>, isimatu.yasuaki@jp.fujitsu.com,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 055EA2C0275
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 06:45:17 +1000 (EST)
+From: Gerhard Sittig <gsi@denx.de>
+To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
+ Mike Turquette <mturquette@linaro.org>,
+ linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Subject: [PATCH v4 06/31] i2c: mpc: cleanup clock API use
+Date: Tue,  6 Aug 2013 22:43:46 +0200
+Message-Id: <1375821851-31609-7-git-send-email-gsi@denx.de>
+In-Reply-To: <1375821851-31609-1-git-send-email-gsi@denx.de>
+References: <1374495298-22019-1-git-send-email-gsi@denx.de>
+ <1375821851-31609-1-git-send-email-gsi@denx.de>
+Cc: Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Gerhard Sittig <gsi@denx.de>,
+ Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
+ Marc Kleine-Budde <mkl@pengutronix.de>, David Woodhouse <dwmw2@infradead.org>,
+ Wolfgang Grandegger <wg@grandegger.com>,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,35 +30,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/04/2013 10:13 PM, Michael Ellerman wrote:
-> On Fri, Aug 02, 2013 at 02:13:06PM -0500, Nathan Fontenot wrote:
->> On 08/01/2013 09:32 PM, Michael Ellerman wrote:
->>> On Wed, Jul 24, 2013 at 01:37:47PM -0500, Nathan Fontenot wrote:
->>>> When doing memory hot add via the 'probe' interface in sysfs we do not
->>>> need to loop through and add memory one section at a time. I think this
->>>> was originally done for powerpc, but is not needed. This patch removes
->>>> the loop and just calls add_memory for all of the memory to be added.
->>>
->>> Looks like memory hot add is supported on ia64, x86, sh, powerpc and
->>> s390. Have you tested on any?
->>
->> I have tested on powerpc. I would love to say I tested on the other
->> platforms... but I haven't.  I should be able to get a x86 box to test
->> on but the other architectures may not be possible.
-> 
-> Is the rest of your series dependent on this patch? Or is it sort of
-> incidental?
-> 
-> If possible it might be worth pulling this one out and sticking it in
-> linux-next for a cycle to give people a chance to test it. Unless
-> someone who knows the code well is comfortable with it.
-> 
+make the MPC I2C driver get, prepare and enable the peripheral clock
+during probe ('per' for access to the peripheral's registers); disable
+and unprepare the clock upon remove(), put is done by the devm approach;
+hold a reference to the clock over the period of use
 
-I am planning on pulling the first two patches and sending them out
-separate from the patch set since they are really independent of the
-rest of the patch series.
+clock lookup is non-fatal in this implementation as not all platforms
+may provide clock specs in their device tree, but enable errors for
+specified clocks are considered fatal
 
-The remaining code I will send out for review and inclusion in
-linux-next so it can have the proper test time as you mentioned.
+Signed-off-by: Gerhard Sittig <gsi@denx.de>
+---
+ drivers/i2c/busses/i2c-mpc.c |   24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
--Nathan
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index 7607dc0..4b00dd0 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -21,6 +21,7 @@
+ #include <linux/of_i2c.h>
+ #include <linux/slab.h>
+ 
++#include <linux/clk.h>
+ #include <linux/io.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/i2c.h>
+@@ -67,6 +68,7 @@ struct mpc_i2c {
+ #ifdef CONFIG_PM
+ 	u8 fdr, dfsrr;
+ #endif
++	struct clk *clk_per;
+ };
+ 
+ struct mpc_i2c_divider {
+@@ -623,6 +625,8 @@ static int fsl_i2c_probe(struct platform_device *op)
+ 	u32 clock = MPC_I2C_CLOCK_LEGACY;
+ 	int result = 0;
+ 	int plen;
++	struct clk *clk;
++	int err;
+ 
+ 	match = of_match_device(mpc_i2c_of_match, &op->dev);
+ 	if (!match)
+@@ -653,6 +657,21 @@ static int fsl_i2c_probe(struct platform_device *op)
+ 		}
+ 	}
+ 
++	/*
++	 * enable clock for the I2C peripheral (non fatal),
++	 * keep a reference upon successful allocation
++	 */
++	clk = devm_clk_get(&op->dev, "per");
++	if (!IS_ERR(clk)) {
++		err = clk_prepare_enable(clk);
++		if (err) {
++			dev_err(&op->dev, "failed to enable clock\n");
++			goto fail_request;
++		} else {
++			i2c->clk_per = clk;
++		}
++	}
++
+ 	if (of_get_property(op->dev.of_node, "fsl,preserve-clocking", NULL)) {
+ 		clock = MPC_I2C_CLOCK_PRESERVE;
+ 	} else {
+@@ -696,6 +715,8 @@ static int fsl_i2c_probe(struct platform_device *op)
+ 	return result;
+ 
+  fail_add:
++	if (i2c->clk_per)
++		clk_disable_unprepare(i2c->clk_per);
+ 	free_irq(i2c->irq, i2c);
+  fail_request:
+ 	irq_dispose_mapping(i2c->irq);
+@@ -711,6 +732,9 @@ static int fsl_i2c_remove(struct platform_device *op)
+ 
+ 	i2c_del_adapter(&i2c->adap);
+ 
++	if (i2c->clk_per)
++		clk_disable_unprepare(i2c->clk_per);
++
+ 	if (i2c->irq)
+ 		free_irq(i2c->irq, i2c);
+ 
+-- 
+1.7.10.4
