@@ -2,10 +2,9 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 53/63] powerpc: Handle VSX alignment faults in little endian
- mode
-Date: Wed,  7 Aug 2013 02:02:10 +1000
-Message-Id: <1375804940-22050-54-git-send-email-anton@samba.org>
+Subject: [PATCH 54/63] ibmveth: Fix little endian issues
+Date: Wed,  7 Aug 2013 02:02:11 +1000
+Message-Id: <1375804940-22050-55-git-send-email-anton@samba.org>
 In-Reply-To: <1375804940-22050-1-git-send-email-anton@samba.org>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -18,106 +17,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Things are complicated by the fact that VSX elements are big
-endian ordered even in little endian mode. 8 byte loads and
-stores also write to the top 8 bytes of the register.
+The hypervisor is big endian, so little endian kernel builds need
+to byteswap.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/kernel/align.c | 41 +++++++++++++++++++++++++++++++++--------
- 1 file changed, 33 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/ibm/ibmveth.c |  4 ++--
+ drivers/net/ethernet/ibm/ibmveth.h | 19 ++++++++++++++++---
+ 2 files changed, 18 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index 0a1a8f2..033d04a 100644
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -630,7 +630,7 @@ static int emulate_spe(struct pt_regs *regs, unsigned int reg,
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 70fd559..5d41aee 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -106,7 +106,7 @@ struct ibmveth_stat ibmveth_stats[] = {
+ /* simple methods of getting data from the current rxq entry */
+ static inline u32 ibmveth_rxq_flags(struct ibmveth_adapter *adapter)
+ {
+-	return adapter->rx_queue.queue_addr[adapter->rx_queue.index].flags_off;
++	return be32_to_cpu(adapter->rx_queue.queue_addr[adapter->rx_queue.index].flags_off);
  }
- #endif /* CONFIG_SPE */
  
--#if defined(CONFIG_VSX) && defined(__BIG_ENDIAN__)
-+#ifdef CONFIG_VSX
- /*
-  * Emulate VSX instructions...
-  */
-@@ -654,8 +654,25 @@ static int emulate_vsx(unsigned char __user *addr, unsigned int reg,
+ static inline int ibmveth_rxq_toggle(struct ibmveth_adapter *adapter)
+@@ -132,7 +132,7 @@ static inline int ibmveth_rxq_frame_offset(struct ibmveth_adapter *adapter)
  
- 	lptr = (unsigned long *) ptr;
+ static inline int ibmveth_rxq_frame_length(struct ibmveth_adapter *adapter)
+ {
+-	return adapter->rx_queue.queue_addr[adapter->rx_queue.index].length;
++	return be32_to_cpu(adapter->rx_queue.queue_addr[adapter->rx_queue.index].length);
+ }
  
-+#ifdef __LITTLE_ENDIAN__
-+	if (flags & SW) {
-+		elsize = length;
-+		sw = length-1;
-+	} else {
-+		/*
-+		 * The elements are BE ordered, even in LE mode, so process
-+		 * them in reverse order.
-+		 */
-+		addr += length - elsize;
-+
-+		/* 8 byte memory accesses go in the top 8 bytes of the VR */
-+		if (length == 8)
-+			ptr += 8;
-+	}
+ static inline int ibmveth_rxq_csum_good(struct ibmveth_adapter *adapter)
+diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
+index 43a794f..84066ba 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.h
++++ b/drivers/net/ethernet/ibm/ibmveth.h
+@@ -164,14 +164,26 @@ struct ibmveth_adapter {
+     u64 tx_send_failed;
+ };
+ 
++/*
++ * We pass struct ibmveth_buf_desc_fields to the hypervisor in registers,
++ * so we don't need to byteswap the two elements. However since we use
++ * a union (ibmveth_buf_desc) to convert from the struct to a u64 we
++ * do end up with endian specific ordering of the elements and that
++ * needs correcting.
++ */
+ struct ibmveth_buf_desc_fields {
++#ifdef __BIG_ENDIAN
++	u32 flags_len;
++	u32 address;
 +#else
- 	if (flags & SW)
- 		sw = elsize-1;
++	u32 address;
+ 	u32 flags_len;
 +#endif
+ #define IBMVETH_BUF_VALID	0x80000000
+ #define IBMVETH_BUF_TOGGLE	0x40000000
+ #define IBMVETH_BUF_NO_CSUM	0x02000000
+ #define IBMVETH_BUF_CSUM_GOOD	0x01000000
+ #define IBMVETH_BUF_LEN_MASK	0x00FFFFFF
+-	u32 address;
+ };
  
- 	for (j = 0; j < length; j += elsize) {
- 		for (i = 0; i < elsize; ++i) {
-@@ -665,19 +682,31 @@ static int emulate_vsx(unsigned char __user *addr, unsigned int reg,
- 				ret |= __get_user(ptr[i^sw], addr + i);
- 		}
- 		ptr  += elsize;
-+#ifdef __LITTLE_ENDIAN__
-+		addr -= elsize;
-+#else
- 		addr += elsize;
-+#endif
- 	}
+ union ibmveth_buf_desc {
+@@ -180,7 +192,7 @@ union ibmveth_buf_desc {
+ };
  
-+#ifdef __BIG_ENDIAN__
-+#define VSX_HI 0
-+#define VSX_LO 1
-+#else
-+#define VSX_HI 1
-+#define VSX_LO 0
-+#endif
-+
- 	if (!ret) {
- 		if (flags & U)
- 			regs->gpr[areg] = regs->dar;
+ struct ibmveth_rx_q_entry {
+-	u32 flags_off;
++	__be32 flags_off;
+ #define IBMVETH_RXQ_TOGGLE		0x80000000
+ #define IBMVETH_RXQ_TOGGLE_SHIFT	31
+ #define IBMVETH_RXQ_VALID		0x40000000
+@@ -188,7 +200,8 @@ struct ibmveth_rx_q_entry {
+ #define IBMVETH_RXQ_CSUM_GOOD		0x01000000
+ #define IBMVETH_RXQ_OFF_MASK		0x0000FFFF
  
- 		/* Splat load copies the same data to top and bottom 8 bytes */
- 		if (flags & SPLT)
--			lptr[1] = lptr[0];
--		/* For 8 byte loads, zero the top 8 bytes */
-+			lptr[VSX_LO] = lptr[VSX_HI];
-+		/* For 8 byte loads, zero the low 8 bytes */
- 		else if (!(flags & ST) && (8 == length))
--			lptr[1] = 0;
-+			lptr[VSX_LO] = 0;
- 	} else
- 		return -EFAULT;
+-	u32 length;
++	__be32 length;
++	/* correlator is only used by the OS, no need to byte swap */
+ 	u64 correlator;
+ };
  
-@@ -801,7 +830,6 @@ int fix_alignment(struct pt_regs *regs)
- 	/* DAR has the operand effective address */
- 	addr = (unsigned char __user *)regs->dar;
- 
--#ifdef __BIG_ENDIAN__
- #ifdef CONFIG_VSX
- 	if ((instruction & 0xfc00003e) == 0x7c000018) {
- 		unsigned int elsize;
-@@ -836,9 +864,6 @@ int fix_alignment(struct pt_regs *regs)
- 		return emulate_vsx(addr, reg, areg, regs, flags, nb, elsize);
- 	}
- #endif
--#else
--	return -EFAULT;
--#endif
- 	/* A size of 0 indicates an instruction we don't support, with
- 	 * the exception of DCBZ which is handled as a special case here
- 	 */
 -- 
 1.8.1.2
