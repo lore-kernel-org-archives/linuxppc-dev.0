@@ -2,9 +2,9 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 05/63] powerpc: Simplify logic in include/uapi/asm/elf.h
-Date: Wed,  7 Aug 2013 02:01:22 +1000
-Message-Id: <1375804940-22050-6-git-send-email-anton@samba.org>
+Subject: [PATCH 06/63] powerpc/pseries: Simplify H_GET_TERM_CHAR
+Date: Wed,  7 Aug 2013 02:01:23 +1000
+Message-Id: <1375804940-22050-7-git-send-email-anton@samba.org>
 In-Reply-To: <1375804940-22050-1-git-send-email-anton@samba.org>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,52 +17,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Simplify things by putting all the 32bit and 64bit defines
-together instead of in two spots.
+plpar_get_term_char is only used once and just adds a layer
+of complexity to H_GET_TERM_CHAR. plpar_put_term_char isn't
+used at all so we can remove it.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/uapi/asm/elf.h | 19 +++++++------------
- 1 file changed, 7 insertions(+), 12 deletions(-)
+ arch/powerpc/platforms/pseries/hvconsole.c      | 12 +++++++++---
+ arch/powerpc/platforms/pseries/plpar_wrappers.h | 24 ------------------------
+ 2 files changed, 9 insertions(+), 27 deletions(-)
 
-diff --git a/arch/powerpc/include/uapi/asm/elf.h b/arch/powerpc/include/uapi/asm/elf.h
-index 05b8d56..89fa042 100644
---- a/arch/powerpc/include/uapi/asm/elf.h
-+++ b/arch/powerpc/include/uapi/asm/elf.h
-@@ -107,6 +107,11 @@ typedef elf_gregset_t32 compat_elf_gregset_t;
- # define ELF_NVRREG	34	/* includes vscr & vrsave in split vectors */
- # define ELF_NVSRHALFREG 32	/* Half the vsx registers */
- # define ELF_GREG_TYPE	elf_greg_t64
-+# define ELF_ARCH	EM_PPC64
-+# define ELF_CLASS	ELFCLASS64
-+# define ELF_DATA	ELFDATA2MSB
-+typedef elf_greg_t64 elf_greg_t;
-+typedef elf_gregset_t64 elf_gregset_t;
- #else
- # define ELF_NEVRREG	34	/* includes acc (as 2) */
- # define ELF_NVRREG	33	/* includes vscr */
-@@ -114,20 +119,10 @@ typedef elf_gregset_t32 compat_elf_gregset_t;
- # define ELF_ARCH	EM_PPC
- # define ELF_CLASS	ELFCLASS32
- # define ELF_DATA	ELFDATA2MSB
-+typedef elf_greg_t32 elf_greg_t;
-+typedef elf_gregset_t32 elf_gregset_t;
- #endif /* __powerpc64__ */
+diff --git a/arch/powerpc/platforms/pseries/hvconsole.c b/arch/powerpc/platforms/pseries/hvconsole.c
+index b344f94..aa0aa37 100644
+--- a/arch/powerpc/platforms/pseries/hvconsole.c
++++ b/arch/powerpc/platforms/pseries/hvconsole.c
+@@ -40,10 +40,16 @@
+  */
+ int hvc_get_chars(uint32_t vtermno, char *buf, int count)
+ {
+-	unsigned long got;
++	long ret;
++	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
++	unsigned long *lbuf = (unsigned long *)buf;
++
++	ret = plpar_hcall(H_GET_TERM_CHAR, retbuf, vtermno);
++	lbuf[0] = retbuf[1];
++	lbuf[1] = retbuf[2];
  
--#ifndef ELF_ARCH
--# define ELF_ARCH	EM_PPC64
--# define ELF_CLASS	ELFCLASS64
--# define ELF_DATA	ELFDATA2MSB
--  typedef elf_greg_t64 elf_greg_t;
--  typedef elf_gregset_t64 elf_gregset_t;
--#else
--  /* Assumption: ELF_ARCH == EM_PPC and ELF_CLASS == ELFCLASS32 */
--  typedef elf_greg_t32 elf_greg_t;
--  typedef elf_gregset_t32 elf_gregset_t;
--#endif /* ELF_ARCH */
+-	if (plpar_get_term_char(vtermno, &got, buf) == H_SUCCESS)
+-		return got;
++	if (ret == H_SUCCESS)
++		return retbuf[0];
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/platforms/pseries/plpar_wrappers.h b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+index f35787b..417d0bf 100644
+--- a/arch/powerpc/platforms/pseries/plpar_wrappers.h
++++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+@@ -256,30 +256,6 @@ static inline long plpar_tce_stuff(unsigned long liobn, unsigned long ioba,
+ 	return plpar_hcall_norets(H_STUFF_TCE, liobn, ioba, tceval, count);
+ }
+ 
+-static inline long plpar_get_term_char(unsigned long termno,
+-		unsigned long *len_ret, char *buf_ret)
+-{
+-	long rc;
+-	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+-	unsigned long *lbuf = (unsigned long *)buf_ret;	/* TODO: alignment? */
 -
- /* Floating point registers */
- typedef double elf_fpreg_t;
- typedef elf_fpreg_t elf_fpregset_t[ELF_NFPREG];
+-	rc = plpar_hcall(H_GET_TERM_CHAR, retbuf, termno);
+-
+-	*len_ret = retbuf[0];
+-	lbuf[0] = retbuf[1];
+-	lbuf[1] = retbuf[2];
+-
+-	return rc;
+-}
+-
+-static inline long plpar_put_term_char(unsigned long termno, unsigned long len,
+-		const char *buffer)
+-{
+-	unsigned long *lbuf = (unsigned long *)buffer;	/* TODO: alignment? */
+-	return plpar_hcall_norets(H_PUT_TERM_CHAR, termno, len, lbuf[0],
+-			lbuf[1]);
+-}
+-
+ /* Set various resource mode parameters */
+ static inline long plpar_set_mode(unsigned long mflags, unsigned long resource,
+ 		unsigned long value1, unsigned long value2)
 -- 
 1.8.1.2
