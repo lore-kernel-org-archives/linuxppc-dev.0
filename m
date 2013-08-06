@@ -1,29 +1,12 @@
-Return-Path: <wladislav.kw@gmail.com>
-Received: from mail-ee0-x22f.google.com (mail-ee0-x22f.google.com
- [IPv6:2a00:1450:4013:c00::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 316942C007A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 17:17:16 +1000 (EST)
-Received: by mail-ee0-f47.google.com with SMTP id d49so17659eek.20
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Aug 2013 00:17:12 -0700 (PDT)
-Message-ID: <5200A29C.9060702@gmail.com>
-Date: Tue, 06 Aug 2013 09:15:40 +0200
-From: Wladislav Wiebe <wladislav.kw@gmail.com>
-MIME-Version: 1.0
-To: Christoph Lameter <cl@gentwo.org>
-Subject: Re: mm/slab: ppc: ubi: kmalloc_slab WARNING / PPC + UBI driver
-References: <51F8F827.6020108@gmail.com>
- <alpine.DEB.2.02.1307310858150.30572@gentwo.org>
- <alpine.DEB.2.02.1307311015320.30997@gentwo.org>
- <000001403567762a-60a27288-f0b2-4855-b88c-6a6f21ec537c-000000@email.amazonses.com>
- <51F93C64.4090601@gmail.com>
- <0000014035b06a9d-e8b10680-e321-4d3b-95a8-0833fa3fb7c9-000000@email.amazonses.com>
-In-Reply-To: <0000014035b06a9d-e8b10680-e321-4d3b-95a8-0833fa3fb7c9-000000@email.amazonses.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: dedekind1@gmail.com, Mel Gorman <mel@csn.ul.ie>, dwmw2@infradead.org,
- Pekka Enberg <penberg@kernel.org>, linux-mm@kvack.org,
- linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH v3 1/3] selftests: Add infrastructure for powerpc selftests
+Date: Tue,  6 Aug 2013 17:42:35 +1000
+Message-Id: <1375774957-30052-1-git-send-email-michael@ellerman.id.au>
+Cc: Jeremy Kerr <jk@ozlabs.org>, Andrew Morton <akpm@osdl.org>,
+ Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,40 +16,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+This commit adds a powerpc subdirectory to tools/testing/selftests,
+for tests that are powerpc specific.
 
-On 31/07/13 19:04, Christoph Lameter wrote:
-> On Wed, 31 Jul 2013, Wladislav Wiebe wrote:
-> 
->> Thanks for the point, do you plan to make kmalloc_large available for extern access in a separate mainline patch?
->> Since kmalloc_large is statically defined in slub_def.h and when including it to seq_file.c
->> we have a lot of conflicting types:
-> 
-> You cannot separatly include slub_def.h. slab.h includes slub_def.h for
-> you. What problem did you try to fix by doing so?
-> 
-> There is a patch pending that moves kmalloc_large to slab.h. So maybe we
-> have to wait a merge period in order to be able to use it with other
-> allocators than slub.
-> 
-> 
+On other architectures nothing is built. The makefile supports cross
+compilation if the user sets ARCH and CROSS_COMPILE.
 
-ok, just saw in slab/for-linus branch that those stuff is reverted again..
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+v3: Add tags
+v2: No change
 
-commit 4932163637fbb9aaa654ca0703c5a624b7809da2
-Author: Pekka Enberg <penberg@kernel.org>
-Date:   Wed Jul 10 10:16:01 2013 +0300
+ tools/testing/selftests/Makefile         |  1 +
+ tools/testing/selftests/powerpc/Makefile | 39 ++++++++++++++++++++++++++++++++
+ 2 files changed, 40 insertions(+)
+ create mode 100644 tools/testing/selftests/powerpc/Makefile
 
-    Revert "mm/sl[aou]b: Move kmalloc_node functions to common code"
-
-..
-
-commit 35be03cafb8f5ddcc1236e90144b6ec76296b789
-Author: Pekka Enberg <penberg@kernel.org>
-Date:   Wed Jul 10 09:56:49 2013 +0300
-
-    Revert "mm/sl[aou]b: Move kmalloc definitions to slab.h"
-
-
---
-WBR, WLadislav Wiebe
+diff --git a/tools/testing/selftests/Makefile b/tools/testing/selftests/Makefile
+index 4cb14ca..9f3eae2 100644
+--- a/tools/testing/selftests/Makefile
++++ b/tools/testing/selftests/Makefile
+@@ -8,6 +8,7 @@ TARGETS += net
+ TARGETS += ptrace
+ TARGETS += timers
+ TARGETS += vm
++TARGETS += powerpc
+ 
+ all:
+ 	for TARGET in $(TARGETS); do \
+diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+new file mode 100644
+index 0000000..b315740
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/Makefile
+@@ -0,0 +1,39 @@
++# Makefile for powerpc selftests
++
++# ARCH can be overridden by the user for cross compiling
++ARCH ?= $(shell uname -m)
++ARCH := $(shell echo $(ARCH) | sed -e s/ppc.*/powerpc/)
++
++ifeq ($(ARCH),powerpc)
++
++GIT_VERSION = $(shell git describe --always --long --dirty || echo "unknown")
++
++CC := $(CROSS_COMPILE)$(CC)
++CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CURDIR) $(CFLAGS)
++
++export CC CFLAGS
++
++TARGETS =
++
++endif
++
++all:
++	@for TARGET in $(TARGETS); do \
++		$(MAKE) -C $$TARGET all; \
++	done;
++
++run_tests: all
++	@for TARGET in $(TARGETS); do \
++		$(MAKE) -C $$TARGET run_tests; \
++	done;
++
++clean:
++	@for TARGET in $(TARGETS); do \
++		$(MAKE) -C $$TARGET clean; \
++	done;
++	rm -f tags
++
++tags:
++	find . -name '*.c' -o -name '*.h' | xargs ctags
++
++.PHONY: all run_tests clean tags
+-- 
+1.8.1.2
