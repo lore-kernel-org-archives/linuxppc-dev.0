@@ -2,9 +2,9 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 04/63] powerpc: Remove SAVE_VSRU and REST_VSRU macros
-Date: Wed,  7 Aug 2013 02:01:21 +1000
-Message-Id: <1375804940-22050-5-git-send-email-anton@samba.org>
+Subject: [PATCH 05/63] powerpc: Simplify logic in include/uapi/asm/elf.h
+Date: Wed,  7 Aug 2013 02:01:22 +1000
+Message-Id: <1375804940-22050-6-git-send-email-anton@samba.org>
 In-Reply-To: <1375804940-22050-1-git-send-email-anton@samba.org>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,37 +17,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We always use VMX loads and stores to manage the high 32
-VSRs. Remove these unused macros.
+Simplify things by putting all the 32bit and 64bit defines
+together instead of in two spots.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/ppc_asm.h | 13 -------------
- 1 file changed, 13 deletions(-)
+ arch/powerpc/include/uapi/asm/elf.h | 19 +++++++------------
+ 1 file changed, 7 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 2f1b6c5..b5c85f1 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -219,19 +219,6 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- #define REST_8VSRS(n,b,base)	REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,base)
- #define REST_16VSRS(n,b,base)	REST_8VSRS(n,b,base); REST_8VSRS(n+8,b,base)
- #define REST_32VSRS(n,b,base)	REST_16VSRS(n,b,base); REST_16VSRS(n+16,b,base)
--/* Save the upper 32 VSRs (32-63) in the thread VSX region (0-31) */
--#define SAVE_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n));  STXVD2X(n+32,R##base,R##b)
--#define SAVE_2VSRSU(n,b,base)	SAVE_VSRU(n,b,base); SAVE_VSRU(n+1,b,base)
--#define SAVE_4VSRSU(n,b,base)	SAVE_2VSRSU(n,b,base); SAVE_2VSRSU(n+2,b,base)
--#define SAVE_8VSRSU(n,b,base)	SAVE_4VSRSU(n,b,base); SAVE_4VSRSU(n+4,b,base)
--#define SAVE_16VSRSU(n,b,base)	SAVE_8VSRSU(n,b,base); SAVE_8VSRSU(n+8,b,base)
--#define SAVE_32VSRSU(n,b,base)	SAVE_16VSRSU(n,b,base); SAVE_16VSRSU(n+16,b,base)
--#define REST_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n)); LXVD2X(n+32,R##base,R##b)
--#define REST_2VSRSU(n,b,base)	REST_VSRU(n,b,base); REST_VSRU(n+1,b,base)
--#define REST_4VSRSU(n,b,base)	REST_2VSRSU(n,b,base); REST_2VSRSU(n+2,b,base)
--#define REST_8VSRSU(n,b,base)	REST_4VSRSU(n,b,base); REST_4VSRSU(n+4,b,base)
--#define REST_16VSRSU(n,b,base)	REST_8VSRSU(n,b,base); REST_8VSRSU(n+8,b,base)
--#define REST_32VSRSU(n,b,base)	REST_16VSRSU(n,b,base); REST_16VSRSU(n+16,b,base)
+diff --git a/arch/powerpc/include/uapi/asm/elf.h b/arch/powerpc/include/uapi/asm/elf.h
+index 05b8d56..89fa042 100644
+--- a/arch/powerpc/include/uapi/asm/elf.h
++++ b/arch/powerpc/include/uapi/asm/elf.h
+@@ -107,6 +107,11 @@ typedef elf_gregset_t32 compat_elf_gregset_t;
+ # define ELF_NVRREG	34	/* includes vscr & vrsave in split vectors */
+ # define ELF_NVSRHALFREG 32	/* Half the vsx registers */
+ # define ELF_GREG_TYPE	elf_greg_t64
++# define ELF_ARCH	EM_PPC64
++# define ELF_CLASS	ELFCLASS64
++# define ELF_DATA	ELFDATA2MSB
++typedef elf_greg_t64 elf_greg_t;
++typedef elf_gregset_t64 elf_gregset_t;
+ #else
+ # define ELF_NEVRREG	34	/* includes acc (as 2) */
+ # define ELF_NVRREG	33	/* includes vscr */
+@@ -114,20 +119,10 @@ typedef elf_gregset_t32 compat_elf_gregset_t;
+ # define ELF_ARCH	EM_PPC
+ # define ELF_CLASS	ELFCLASS32
+ # define ELF_DATA	ELFDATA2MSB
++typedef elf_greg_t32 elf_greg_t;
++typedef elf_gregset_t32 elf_gregset_t;
+ #endif /* __powerpc64__ */
  
- /*
-  * b = base register for addressing, o = base offset from register of 1st EVR
+-#ifndef ELF_ARCH
+-# define ELF_ARCH	EM_PPC64
+-# define ELF_CLASS	ELFCLASS64
+-# define ELF_DATA	ELFDATA2MSB
+-  typedef elf_greg_t64 elf_greg_t;
+-  typedef elf_gregset_t64 elf_gregset_t;
+-#else
+-  /* Assumption: ELF_ARCH == EM_PPC and ELF_CLASS == ELFCLASS32 */
+-  typedef elf_greg_t32 elf_greg_t;
+-  typedef elf_gregset_t32 elf_gregset_t;
+-#endif /* ELF_ARCH */
+-
+ /* Floating point registers */
+ typedef double elf_fpreg_t;
+ typedef elf_fpreg_t elf_fpregset_t[ELF_NFPREG];
 -- 
 1.8.1.2
