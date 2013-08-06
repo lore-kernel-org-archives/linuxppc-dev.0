@@ -1,16 +1,16 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D18F52C0215
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 06:45:05 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E87DC2C01D5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 06:45:09 +1000 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
-Subject: [PATCH v4 03/31] USB: fsl-mph-dr-of: cleanup clock API use
-Date: Tue,  6 Aug 2013 22:43:43 +0200
-Message-Id: <1375821851-31609-4-git-send-email-gsi@denx.de>
+Subject: [PATCH v4 05/31] [media] fsl-viu: cleanup clock API use
+Date: Tue,  6 Aug 2013 22:43:45 +0200
+Message-Id: <1375821851-31609-6-git-send-email-gsi@denx.de>
 In-Reply-To: <1375821851-31609-1-git-send-email-gsi@denx.de>
 References: <1374495298-22019-1-git-send-email-gsi@denx.de>
  <1375821851-31609-1-git-send-email-gsi@denx.de>
@@ -29,59 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-use devm_get_clk() for automatic put upon device close, check for and
-propagate errors when enabling clocks, must prepare clocks before they
-can get enabled, unprepare after disable
+use devm_clk_get() for automatic put after device close, check for and
+propagate errors when enabling clocks, need to prepare clocks before
+they can get enabled, adjust code paths to correctly balance get/put and
+prepare/unprepare and enable/disable calls
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/usb/host/fsl-mph-dr-of.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/media/platform/fsl-viu.c |   23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr-of.c
-index 11e0b79..b8a1866 100644
---- a/drivers/usb/host/fsl-mph-dr-of.c
-+++ b/drivers/usb/host/fsl-mph-dr-of.c
-@@ -260,6 +260,7 @@ int fsl_usb2_mpc5121_init(struct platform_device *pdev)
- {
- 	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
- 	struct clk *clk;
-+	int err;
- 	char clk_name[10];
- 	int base, clk_num;
+diff --git a/drivers/media/platform/fsl-viu.c b/drivers/media/platform/fsl-viu.c
+index 221ec42..fe9898c 100644
+--- a/drivers/media/platform/fsl-viu.c
++++ b/drivers/media/platform/fsl-viu.c
+@@ -1485,6 +1485,7 @@ static int viu_of_probe(struct platform_device *op)
+ 	struct viu_reg __iomem *viu_regs;
+ 	struct i2c_adapter *ad;
+ 	int ret, viu_irq;
++	struct clk *clk;
  
-@@ -272,13 +273,16 @@ int fsl_usb2_mpc5121_init(struct platform_device *pdev)
- 		return -ENODEV;
- 
- 	snprintf(clk_name, sizeof(clk_name), "usb%d_clk", clk_num);
--	clk = clk_get(&pdev->dev, clk_name);
-+	clk = devm_clk_get(&pdev->dev, clk_name);
- 	if (IS_ERR(clk)) {
- 		dev_err(&pdev->dev, "failed to get clk\n");
- 		return PTR_ERR(clk);
+ 	ret = of_address_to_resource(op->dev.of_node, 0, &r);
+ 	if (ret) {
+@@ -1577,14 +1578,18 @@ static int viu_of_probe(struct platform_device *op)
  	}
--
--	clk_enable(clk);
-+	err = clk_prepare_enable(clk);
-+	if (err) {
-+		dev_err(&pdev->dev, "failed to enable clk\n");
-+		return err;
+ 
+ 	/* enable VIU clock */
+-	viu_dev->clk = clk_get(&op->dev, "viu_clk");
+-	if (IS_ERR(viu_dev->clk)) {
+-		dev_err(&op->dev, "failed to find the clock module!\n");
+-		ret = -ENODEV;
++	clk = devm_clk_get(&op->dev, "viu_clk");
++	if (IS_ERR(clk)) {
++		dev_err(&op->dev, "failed to lookup the clock!\n");
++		ret = PTR_ERR(clk);
++		goto err_clk;
 +	}
- 	pdata->clk = clk;
++	ret = clk_prepare_enable(clk);
++	if (ret) {
++		dev_err(&op->dev, "failed to enable the clock!\n");
+ 		goto err_clk;
+-	} else {
+-		clk_enable(viu_dev->clk);
+ 	}
++	viu_dev->clk = clk;
  
- 	if (pdata->phy_mode == FSL_USB2_PHY_UTMI_WIDE) {
-@@ -302,10 +306,8 @@ static void fsl_usb2_mpc5121_exit(struct platform_device *pdev)
+ 	/* reset VIU module */
+ 	viu_reset(viu_dev->vr);
+@@ -1602,8 +1607,7 @@ static int viu_of_probe(struct platform_device *op)
+ 	return ret;
  
- 	pdata->regs = NULL;
+ err_irq:
+-	clk_disable(viu_dev->clk);
+-	clk_put(viu_dev->clk);
++	clk_disable_unprepare(viu_dev->clk);
+ err_clk:
+ 	video_unregister_device(viu_dev->vdev);
+ err_vdev:
+@@ -1626,8 +1630,7 @@ static int viu_of_remove(struct platform_device *op)
+ 	free_irq(dev->irq, (void *)dev);
+ 	irq_dispose_mapping(dev->irq);
  
--	if (pdata->clk) {
--		clk_disable(pdata->clk);
--		clk_put(pdata->clk);
--	}
-+	if (pdata->clk)
-+		clk_disable_unprepare(pdata->clk);
- }
+-	clk_disable(dev->clk);
+-	clk_put(dev->clk);
++	clk_disable_unprepare(dev->clk);
  
- static struct fsl_usb2_platform_data fsl_usb2_mpc5121_pd = {
+ 	video_unregister_device(dev->vdev);
+ 	i2c_put_adapter(client->adapter);
 -- 
 1.7.10.4
