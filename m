@@ -2,10 +2,9 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 25/63] powerpc: Make PCI device node device tree accesses
- endian safe
-Date: Wed,  7 Aug 2013 02:01:42 +1000
-Message-Id: <1375804940-22050-26-git-send-email-anton@samba.org>
+Subject: [PATCH 26/63] powerpc: Little endian fixes for legacy_serial.c
+Date: Wed,  7 Aug 2013 02:01:43 +1000
+Message-Id: <1375804940-22050-27-git-send-email-anton@samba.org>
 In-Reply-To: <1375804940-22050-1-git-send-email-anton@samba.org>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -18,61 +17,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/kernel/pci_dn.c | 20 +++++++++++---------
- 1 file changed, 11 insertions(+), 9 deletions(-)
+From: Alistair Popple <alistair@popple.id.au>
 
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index df03844..1f61fab 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -47,9 +47,8 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
- void *update_dn_pci_info(struct device_node *dn, void *data)
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+---
+ arch/powerpc/kernel/legacy_serial.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index af1c63f..179beea 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -152,7 +152,7 @@ static int __init add_legacy_soc_port(struct device_node *np,
+ 				      struct device_node *soc_dev)
  {
- 	struct pci_controller *phb = data;
--	const int *type =
--		of_get_property(dn, "ibm,pci-config-space-type", NULL);
--	const u32 *regs;
-+	const __be32 *type = of_get_property(dn, "ibm,pci-config-space-type", NULL);
-+	const __be32 *regs;
- 	struct pci_dn *pdn;
+ 	u64 addr;
+-	const u32 *addrp;
++	const __be32 *addrp;
+ 	upf_t flags = UPF_BOOT_AUTOCONF | UPF_SKIP_TEST | UPF_SHARE_IRQ
+ 		| UPF_FIXED_PORT;
+ 	struct device_node *tsi = of_get_parent(np);
+@@ -237,7 +237,7 @@ static int __init add_legacy_pci_port(struct device_node *np,
+ 				      struct device_node *pci_dev)
+ {
+ 	u64 addr, base;
+-	const u32 *addrp;
++	const __be32 *addrp;
+ 	unsigned int flags;
+ 	int iotype, index = -1, lindex = 0;
  
- 	pdn = zalloc_maybe_bootmem(sizeof(*pdn), GFP_KERNEL);
-@@ -63,12 +62,14 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
- #endif
- 	regs = of_get_property(dn, "reg", NULL);
- 	if (regs) {
-+		u32 addr = of_read_number(regs, 1);
-+
- 		/* First register entry is addr (00BBSS00)  */
--		pdn->busno = (regs[0] >> 16) & 0xff;
--		pdn->devfn = (regs[0] >> 8) & 0xff;
-+		pdn->busno = (addr >> 16) & 0xff;
-+		pdn->devfn = (addr >> 8) & 0xff;
- 	}
+@@ -270,7 +270,7 @@ static int __init add_legacy_pci_port(struct device_node *np,
+ 	if (iotype == UPIO_MEM)
+ 		base = addr;
+ 	else
+-		base = addrp[2];
++		base = of_read_number(&addrp[2], 1);
  
--	pdn->pci_ext_config_space = (type && *type == 1);
-+	pdn->pci_ext_config_space = (type && of_read_number(type, 1) == 1);
- 	return NULL;
- }
- 
-@@ -98,12 +99,13 @@ void *traverse_pci_devices(struct device_node *start, traverse_func pre,
- 
- 	/* We started with a phb, iterate all childs */
- 	for (dn = start->child; dn; dn = nextdn) {
--		const u32 *classp;
--		u32 class;
-+		const __be32 *classp;
-+		u32 class = 0;
- 
- 		nextdn = NULL;
- 		classp = of_get_property(dn, "class-code", NULL);
--		class = classp ? *classp : 0;
-+		if (classp)
-+			class = of_read_number(classp, 1);
- 
- 		if (pre && ((ret = pre(dn, data)) != NULL))
- 			return ret;
+ 	/* Try to guess an index... If we have subdevices of the pci dev,
+ 	 * we get to their "reg" property
 -- 
 1.8.1.2
