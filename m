@@ -1,32 +1,24 @@
-Return-Path: <R65777@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0A49A2C0089
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 17:03:00 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Paul Mackerras <paulus@samba.org>
-Subject: RE: [PATCH 5/6 v2] kvm: powerpc: booke: Add linux pte lookup like
- booke3s
-Date: Tue, 6 Aug 2013 07:02:48 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D070FBE3B@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1375355558-19187-6-git-send-email-Bharat.Bhushan@freescale.com>
- <1375484319.26902.4.camel@snotra.buserror.net>
- <1375485408.15999.67.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D070F8FCC@039-SN2MPN1-012.039d.mgd.msft.net>
- <1375503847.15999.80.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D070FAD49@039-SN2MPN1-012.039d.mgd.msft.net>
- <1375730341.13074.38.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <Johannes.Thumshirn@men.de>
+Received: from mail1.bemta5.messagelabs.com (mail1.bemta5.messagelabs.com
+ [195.245.231.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.bemta5.messagelabs.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0A9072C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2013 17:13:09 +1000 (EST)
+Date: Tue, 6 Aug 2013 09:07:03 +0200
+From: Johannes Thumshirn <johannes.thumshirn@men.de>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: PCIE device errors after linux kernel upgrade
+Message-ID: <20130806070703.GA20622@jtlinux>
+References: <CAPWoNkJ3NKM-_g93LdRpjvdNFtLt-Pjpg4d4oEKC9CvkpzZ-Wg@mail.gmail.com>
+ <CAPWoNkLQUbFG2vZ7wqoqqVNj4uxKz3Fa_vsSH=1_TDD=XC1f2A@mail.gmail.com>
+ <CAErSpo5ZZgdpkK+QdQUEnNCEXcG_T+QBWTVoQnMTghxkX7n2HA@mail.gmail.com>
 MIME-Version: 1.0
-Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <CAErSpo5ZZgdpkK+QdQUEnNCEXcG_T+QBWTVoQnMTghxkX7n2HA@mail.gmail.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Leon Ravich <lravich@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,141 +28,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmh1c2hhbiBCaGFyYXQt
-UjY1Nzc3DQo+IFNlbnQ6IFR1ZXNkYXksIEF1Z3VzdCAwNiwgMjAxMyA2OjQyIEFNDQo+IFRvOiBX
-b29kIFNjb3R0LUIwNzQyMQ0KPiBDYzogQmVuamFtaW4gSGVycmVuc2NobWlkdDsgYWdyYWZAc3Vz
-ZS5kZTsga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmc7DQo+IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGxp
-bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggNS82IHYy
-XSBrdm06IHBvd2VycGM6IGJvb2tlOiBBZGQgbGludXggcHRlIGxvb2t1cCBsaWtlDQo+IGJvb2tl
-M3MNCj4gDQo+IA0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206
-IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gU2VudDogVHVlc2RheSwgQXVndXN0IDA2LCAyMDEzIDEy
-OjQ5IEFNDQo+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+IENjOiBCZW5qYW1pbiBI
-ZXJyZW5zY2htaWR0OyBXb29kIFNjb3R0LUIwNzQyMTsgYWdyYWZAc3VzZS5kZTsga3ZtLQ0KPiA+
-IHBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gbGludXhwcGMt
-ZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDUvNiB2Ml0ga3Zt
-OiBwb3dlcnBjOiBib29rZTogQWRkIGxpbnV4IHB0ZSBsb29rdXANCj4gPiBsaWtlIGJvb2tlM3MN
-Cj4gPg0KPiA+IE9uIE1vbiwgMjAxMy0wOC0wNSBhdCAwOToyNyAtMDUwMCwgQmh1c2hhbiBCaGFy
-YXQtUjY1Nzc3IHdyb3RlOg0KPiA+ID4NCj4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0t
-LS0NCj4gPiA+ID4gRnJvbTogQmVuamFtaW4gSGVycmVuc2NobWlkdCBbbWFpbHRvOmJlbmhAa2Vy
-bmVsLmNyYXNoaW5nLm9yZ10NCj4gPiA+ID4gU2VudDogU2F0dXJkYXksIEF1Z3VzdCAwMywgMjAx
-MyA5OjU0IEFNDQo+ID4gPiA+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gPiA+ID4gQ2M6
-IFdvb2QgU2NvdHQtQjA3NDIxOyBhZ3JhZkBzdXNlLmRlOyBrdm0tcHBjQHZnZXIua2VybmVsLm9y
-ZzsNCj4gPiA+ID4ga3ZtQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
-cy5vcmcNCj4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCA1LzYgdjJdIGt2bTogcG93ZXJwYzog
-Ym9va2U6IEFkZCBsaW51eCBwdGUNCj4gPiA+ID4gbG9va3VwIGxpa2UgYm9va2Uzcw0KPiA+ID4g
-Pg0KPiA+ID4gPiBPbiBTYXQsIDIwMTMtMDgtMDMgYXQgMDI6NTggKzAwMDAsIEJodXNoYW4gQmhh
-cmF0LVI2NTc3NyB3cm90ZToNCj4gPiA+ID4gPiBPbmUgb2YgdGhlIHByb2JsZW0gSSBzYXcgd2Fz
-IHRoYXQgaWYgSSBwdXQgdGhpcyBjb2RlIGluDQo+ID4gPiA+ID4gYXNtL3BndGFibGUtMzIuaCBh
-bmQgYXNtL3BndGFibGUtNjQuaCB0aGVuIHB0ZV9wZXJzZW50KCkgYW5kDQo+ID4gPiA+ID4gb3Ro
-ZXIgZnJpZW5kIGZ1bmN0aW9uIChvbiB3aGljaCB0aGlzIGNvZGUgZGVwZW5kcykgYXJlIGRlZmlu
-ZWQgaW4NCj4gcGd0YWJsZS5oLg0KPiA+ID4gPiA+IEFuZCBwZ3RhYmxlLmggaW5jbHVkZXMgYXNt
-L3BndGFibGUtMzIuaCBhbmQgYXNtL3BndGFibGUtNjQuaA0KPiA+ID4gPiA+IGJlZm9yZSBpdCBk
-ZWZpbmVzIHB0ZV9wcmVzZW50KCkgYW5kIGZyaWVuZHMgZnVuY3Rpb25zLg0KPiA+ID4gPiA+DQo+
-ID4gPiA+ID4gT2sgSSBtb3ZlIHdvdmUgdGhpcyBpbiBhc20vcGd0YWJsZSouaCwgaW5pdGlhbGx5
-IEkgZm91Z2h0IHdpdGgNCj4gPiA+ID4gPiBteXNlbGYgdG8gdGFrZSB0aGlzIGNvZGUgaW4gcGd0
-YWJsZSogYnV0IGZpbmFsbHkgZW5kIHVwIGRvaW5nDQo+ID4gPiA+ID4gaGVyZSAoZ290IGJpYXNl
-ZCBieSBib29rM3MgOikpLg0KPiA+ID4gPg0KPiA+ID4gPiBJcyB0aGVyZSBhIHJlYXNvbiB3aHkg
-dGhlc2Ugcm91dGluZXMgY2FuIG5vdCBiZSBjb21wbGV0ZWx5IGdlbmVyaWMNCj4gPiA+ID4gaW4g
-cGd0YWJsZS5oID8NCj4gPiA+DQo+ID4gPiBIb3cgYWJvdXQgdGhlIGdlbmVyaWMgZnVuY3Rpb246
-DQo+ID4gPg0KPiA+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3Rh
-YmxlLXBwYzY0LmgNCj4gPiA+IGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BndGFibGUtcHBj
-NjQuaA0KPiA+ID4gaW5kZXggZDI1N2Q5OC4uMjFkYWYyOCAxMDA2NDQNCj4gPiA+IC0tLSBhL2Fy
-Y2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLXBwYzY0LmgNCj4gPiA+ICsrKyBiL2FyY2gv
-cG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLXBwYzY0LmgNCj4gPiA+IEBAIC0yMjEsNiArMjIx
-LDI3IEBAIHN0YXRpYyBpbmxpbmUgdW5zaWduZWQgbG9uZyBwdGVfdXBkYXRlKHN0cnVjdA0KPiA+
-ID4gbW1fc3RydWN0DQo+ID4gKm1tLA0KPiA+ID4gICAgICAgICByZXR1cm4gb2xkOw0KPiA+ID4g
-IH0NCj4gPiA+DQo+ID4gPiArc3RhdGljIGlubGluZSB1bnNpZ25lZCBsb25nIHB0ZV9yZWFkKHB0
-ZV90ICpwKSB7ICNpZmRlZg0KPiA+ID4gK1BURV9BVE9NSUNfVVBEQVRFUw0KPiA+ID4gKyAgICAg
-ICBwdGVfdCBwdGU7DQo+ID4gPiArICAgICAgIHB0ZV90IHRtcDsNCj4gPiA+ICsgICAgICAgX19h
-c21fXyBfX3ZvbGF0aWxlX18gKA0KPiA+ID4gKyAgICAgICAiMTogICAgIGxkYXJ4ICAgJTAsMCwl
-M1xuIg0KPiA+ID4gKyAgICAgICAiICAgICAgIGFuZGkuICAgJTEsJTAsJTRcbiINCj4gPiA+ICsg
-ICAgICAgIiAgICAgICBibmUtICAgIDFiXG4iDQo+ID4gPiArICAgICAgICIgICAgICAgb3JpICAg
-ICAlMSwlMCwlNFxuIg0KPiA+ID4gKyAgICAgICAiICAgICAgIHN0ZGN4LiAgJTEsMCwlM1xuIg0K
-PiA+ID4gKyAgICAgICAiICAgICAgIGJuZS0gICAgMWIiDQo+ID4gPiArICAgICAgIDogIj0mciIg
-KHB0ZSksICI9JnIiICh0bXApLCAiPW0iICgqcCkNCj4gPiA+ICsgICAgICAgOiAiciIgKHApLCAi
-aSIgKF9QQUdFX0JVU1kpDQo+ID4gPiArICAgICAgIDogImNjIik7DQo+ID4gPiArDQo+ID4gPiAr
-ICAgICAgIHJldHVybiBwdGU7DQo+ID4gPiArI2Vsc2UNCj4gPiA+ICsgICAgICAgcmV0dXJuIHB0
-ZV92YWwoKnApOw0KPiA+ID4gKyNlbmRpZg0KPiA+ID4gKyNlbmRpZg0KPiA+ID4gK30NCj4gPiA+
-ICBzdGF0aWMgaW5saW5lIGludCBfX3B0ZXBfdGVzdF9hbmRfY2xlYXJfeW91bmcoc3RydWN0IG1t
-X3N0cnVjdCAqbW0sDQo+ID4gPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgdW5zaWduZWQgbG9uZyBhZGRyLA0KPiA+ID4gcHRlX3QgKnB0ZXApDQo+ID4NCj4g
-PiBQbGVhc2UgbGVhdmUgYSBibGFuayBsaW5lIGJldHdlZW4gZnVuY3Rpb25zLg0KPiA+DQo+ID4g
-PiAgew0KPiA+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxl
-LmgNCj4gPiA+IGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BndGFibGUuaA0KPiA+ID4gaW5k
-ZXggNjkwYzhjMi4uZGFkNzEyYyAxMDA2NDQNCj4gPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNs
-dWRlL2FzbS9wZ3RhYmxlLmgNCj4gPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9w
-Z3RhYmxlLmgNCj4gPiA+IEBAIC0yNTQsNiArMjU0LDQ1IEBAIHN0YXRpYyBpbmxpbmUgcHRlX3QN
-Cj4gPiA+ICpmaW5kX2xpbnV4X3B0ZV9vcl9odWdlcHRlKHBnZF90ICpwZ2RpciwgdW5zaWduZWQg
-bG9uZyBlYSwgIH0NCj4gPiA+ICNlbmRpZg0KPiA+ID4gLyogIUNPTkZJR19IVUdFVExCX1BBR0Ug
-Ki8NCj4gPiA+DQo+ID4gPiArc3RhdGljIGlubGluZSBwdGVfdCBsb29rdXBfbGludXhfcHRlKHBn
-ZF90ICpwZ2RpciwgdW5zaWduZWQgbG9uZyBodmEsDQo+ID4gPiArICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgaW50IHdyaXRpbmcsIHVuc2lnbmVkIGxvbmcNCj4gPiA+ICsqcHRl
-X3NpemVwKQ0KPiA+DQo+ID4gVGhlIG5hbWUgaW1wbGllcyB0aGF0IGl0IGp1c3QgcmVhZHMgdGhl
-IFBURS4gIFNldHRpbmcgYWNjZXNzZWQvZGlydHkNCj4gPiBzaG91bGRuJ3QgYmUgYW4gdW5kb2N1
-bWVudGVkIHNpZGUtZWZmZWN0Lg0KPiANCj4gT2ssIHdpbGwgcmVuYW1lIGFuZCBkb2N1bWVudC4N
-Cj4gDQo+ID4gV2h5IGNhbid0IHRoZSBjYWxsZXIgZG8gdGhhdCAob3IgYSBkaWZmZXJlbnQgZnVu
-Y3Rpb24gdGhhdCB0aGUgY2FsbGVyDQo+ID4gY2FsbHMgYWZ0ZXJ3YXJkIGlmIGRlc2lyZWQpPw0K
-PiANCj4gVGhlIGN1cnJlbnQgaW1wbGVtZW50YXRpb24gaW4gYm9vazNzIGlzOw0KPiAgMSkgZmlu
-ZCBhIHB0ZS9odWdlcHRlDQo+ICAyKSByZXR1cm4gbnVsbCBpZiBwdGUgbm90IHByZXNlbnQNCj4g
-IDMpIHRha2UgX1BBR0VfQlVTWSBsb2NrDQo+ICA0KSBzZXQgYWNjZXNzZWQvZGlydHkNCj4gIDUp
-IGNsZWFyIF9QQUdFX0JVU1kuDQo+IA0KPiBXaGF0IEkgdHJpZWQgd2FzDQo+IDEpIGZpbmQgYSBw
-dGUvaHVnZXB0ZQ0KPiAyKSByZXR1cm4gbnVsbCBpZiBwdGUgbm90IHByZXNlbnQNCj4gMykgcmV0
-dXJuIHB0ZSAobm90IHRha2UgbG9jayBieSBub3Qgc2V0dGluZyBfUEFHRV9CVVNZKQ0KPiANCj4g
-NCkgdGhlbiB1c2VyIGNhbGxzICBfX3B0ZXBfc2V0X2FjY2Vzc19mbGFncygpIHRvIGF0b21pYyB1
-cGRhdGUgdGhlDQo+IGRpcnR5L2FjY2Vzc2VkIGZsYWdzIGluIHB0ZS4NCj4gDQo+IC0gYnV0IHRo
-ZSBiZW5jaG1hcmsgcmVzdWx0cyB3ZXJlIG5vdCBnb29kDQo+IC0gQWxzbyBjYW4gdGhlcmUgYmUg
-cmFjZSBhcyB3ZSBkbyBub3QgdGFrZSBsb2NrIGluIHN0ZXAgMyBhbmQgdXBkYXRlIGluIHN0ZXAg
-NCA/DQo+IA0KPiA+DQo+ID4gVGhvdWdoIGV2ZW4gdGhlbiB5b3UgaGF2ZSB0aGUgdW5kb2N1bWVu
-dGVkIHNpZGUgZWZmZWN0IG9mIGxvY2tpbmcgdGhlDQo+ID4gUFRFIG9uIGNlcnRhaW4gdGFyZ2V0
-cy4NCj4gPg0KPiA+ID4gK3sNCj4gPiA+ICsgICAgICAgcHRlX3QgKnB0ZXA7DQo+ID4gPiArICAg
-ICAgIHB0ZV90IHB0ZTsNCj4gPiA+ICsgICAgICAgdW5zaWduZWQgbG9uZyBwcyA9ICpwdGVfc2l6
-ZXA7DQo+ID4gPiArICAgICAgIHVuc2lnbmVkIGludCBzaGlmdDsNCj4gPiA+ICsNCj4gPiA+ICsg
-ICAgICAgcHRlcCA9IGZpbmRfbGludXhfcHRlX29yX2h1Z2VwdGUocGdkaXIsIGh2YSwgJnNoaWZ0
-KTsNCj4gPiA+ICsgICAgICAgaWYgKCFwdGVwKQ0KPiA+ID4gKyAgICAgICAgICAgICAgIHJldHVy
-biBfX3B0ZSgwKTsNCj4gPiA+ICsgICAgICAgaWYgKHNoaWZ0KQ0KPiA+ID4gKyAgICAgICAgICAg
-ICAgICpwdGVfc2l6ZXAgPSAxdWwgPDwgc2hpZnQ7DQo+ID4gPiArICAgICAgIGVsc2UNCj4gPiA+
-ICsgICAgICAgICAgICAgICAqcHRlX3NpemVwID0gUEFHRV9TSVpFOw0KPiA+ID4gKw0KPiA+ID4g
-KyAgICAgICBpZiAocHMgPiAqcHRlX3NpemVwKQ0KPiA+ID4gKyAgICAgICAgICAgICAgIHJldHVy
-biBfX3B0ZSgwKTsNCj4gPiA+ICsNCj4gPiA+ICsgICAgICAgaWYgKCFwdGVfcHJlc2VudCgqcHRl
-cCkpDQo+ID4gPiArICAgICAgICAgICAgICAgcmV0dXJuIF9fcHRlKDApOw0KPiA+ID4gKw0KPiA+
-ID4gKyNpZmRlZiBDT05GSUdfUFBDNjQNCj4gPiA+ICsgICAgICAgLyogTG9jayBQVEUgKHNldCBf
-UEFHRV9CVVNZKSBhbmQgcmVhZCAqLw0KPiA+ID4gKyAgICAgICBwdGUgPSBwdGVfcmVhZChwdGVw
-KTsNCj4gPiA+ICsjZWxzZQ0KPiA+ID4gKyAgICAgICBwdGUgPSBwdGVfdmFsKCpwdGVwKTsNCj4g
-PiA+ICsjZW5kaWYNCj4gPg0KPiA+IFdoYXQgYWJvdXQgMzItYml0IHBsYXRmb3JtcyB0aGF0IG5l
-ZWQgYXRvbWljIFBURXM/DQo+IA0KPiBJIGNhbGxlZCBfX3B0ZXBfc2V0X2FjY2Vzc19mbGFncygp
-IGZvciBib3RoIDMyLzY0Yml0IChmb3IgNjRiaXQgSSB3YXMgbm90DQo+IGNhbGxpbmcgcHRlX3Jl
-YWQoKSksIHdoaWNoIGhhbmRsZXMgYXRvbWljIHVwZGF0ZXMuIFNvbWVob3cgdGhlIGJlbmNobWFy
-ayByZXN1bHQNCj4gd2VyZSBub3QgZ29vZCwgd2lsbCB0cnkgYWdhaW4uDQoNCkhpIFBhdWxzLA0K
-DQpJIGFtIHRyeWluZyB0byBtZSB0aGUgTGludXggcHRlIHNlYXJjaCBhbmQgdXBkYXRlIGdlbmVy
-aWMgc28gdGhhdCB0aGlzIGNhbiBiZSB1c2VkIGZvciBwb3dlcnBjIGFzIHdlbGwuDQoNCkkgYW0g
-bm90IHN1cmUgd2hpY2ggb2YgdGhlIGJlbG93IHR3byBzaG91bGQgYmUgb2ssIHBsZWFzZSBoZWxw
-DQoNCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSAoMSkgVGhpcyAtLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLQ0KLyoNCiAqIExvY2sgYW5kIHJlYWQgYSBsaW51eCBQVEUuICBJZiBpdCdzIHBy
-ZXNlbnQgYW5kIHdyaXRhYmxlLCBhdG9taWNhbGx5DQogKiBzZXQgZGlydHkgYW5kIHJlZmVyZW5j
-ZWQgYml0cyBhbmQgcmV0dXJuIHRoZSBQVEUsIG90aGVyd2lzZSByZXR1cm4gMC4NCiAqLw0Kc3Rh
-dGljIGlubGluZSBhdG9taWNfcmVhZF91cGRhdGVfcHRlX2ZsYWdzKHB0ZV90ICpwdGVwLCBpbnQg
-d3JpdGluZykNCnsNCiAgICAgICAgcHRlX3QgcHRlOw0KI2lmZGVmIENPTkZJR19QUEM2NA0KICAg
-ICAgICAvKiBMb2NrIFBURSAoc2V0IF9QQUdFX0JVU1kpIGFuZCByZWFkDQogICAgICAgICAqIFhY
-WDogTk9URTogU29tZSBBcmNoaXRlY3R1cmVzIChib29rM2UpIGRvZXMgbm90IGhhdmUgcHRlIExv
-Y2tpbmcsDQogICAgICAgICAqIHNvIG5vdCBnZW5lcmljIGluIHRoYXQgc2Vuc2UgZm9yIGFsbCBh
-cmNoaXRlY3R1cmUNCiAgICAgICAgICovDQogICAgICAgIHB0ZSA9IHB0ZV9yZWFkKHB0ZXApOw0K
-I2Vsc2UNCiAgICAgICAgLyogWFhYOiBkbyBub3Qgc2VlIGFueSByZWFkIGxvY2tpbmcgb24gMzIg
-Yml0IGFyY2hpdGVjdHVyZSAqLw0KICAgICAgICBwdGUgPSBwdGVfdmFsKCpwdGVwKTsNCiNlbmRp
-Zg0KICAgICAgICBpZiAocHRlX3ByZXNlbnQocHRlKSkgew0KICAgICAgICAgICAgICAgIHB0ZSA9
-IHB0ZV9ta3lvdW5nKHB0ZSk7DQogICAgICAgICAgICAgICAgaWYgKHdyaXRpbmcgJiYgcHRlX3dy
-aXRlKHB0ZSkpDQogICAgICAgICAgICAgICAgICAgICAgICBwdGUgPSBwdGVfbWtkaXJ0eShwdGUp
-Ow0KICAgICAgICB9DQoNCiAgICAgICAgKnB0ZXAgPSBfX3B0ZShwdGUpOyAvKiA2NGJpdDogQWxz
-byB1bmxvY2sgcHRlIChjbGVhciBfUEFHRV9CVVNZKSAqLw0KDQogICAgICAgIHJldHVybiBwdGU7
-DQp9DQoNCg0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tICgyKSBPUiBUSElTIC0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0NCg0KLyoNCiAqIFJlYWQgYSBsaW51eCBQVEUuICBJZiBpdCdz
-IHByZXNlbnQgYW5kIHdyaXRhYmxlLCBhdG9taWNhbGx5DQogKiBzZXQgZGlydHkgYW5kIHJlZmVy
-ZW5jZWQgYml0cyBhbmQgcmV0dXJuIHRoZSBQVEUsIG90aGVyd2lzZSByZXR1cm4gMC4NCiAqLw0K
-c3RhdGljIGlubGluZSBhdG9taWNfcmVhZF91cGRhdGVfcHRlX2ZsYWdzKHB0ZV90ICpwdGVwLCBp
-bnQgd3JpdGluZykNCnsNCiAgICAgICAgcHRlX3QgcHRlOw0KICAgICAgICBwdGUgPSBwdGVfdmFs
-KCpwdGVwKTsNCiAgICAgICAgaWYgKHB0ZV9wcmVzZW50KHB0ZSkpIHsNCiAgICAgICAgICAgICAg
-ICBwdGUgPSBwdGVfbWt5b3VuZyhwdGUpOw0KICAgICAgICAgICAgICAgIGlmICh3cml0aW5nICYm
-IHB0ZV93cml0ZShwdGUpKQ0KICAgICAgICAgICAgICAgICAgICAgICAgcHRlID0gcHRlX21rZGly
-dHkocHRlKTsNCiAgICAgICAgfQ0KDQogICAgICAgIF9fcHRlcF9zZXRfYWNjZXNzX2ZsYWdzKHB0
-ZXAsIHB0ZSk7DQoNCiAgICAgICAgcmV0dXJuIHB0ZV92YWwoKnB0ZXApOw0KfQ0KDQpUaGFua3MN
-Ci1CaGFyYXQNCg0KPiANCj4gVGhhbmtzDQo+IC1CaGFyYXQNCj4gPg0KPiA+IC1TY290dA0KPiA+
-DQoNCg==
+On Mon, Aug 05, 2013 at 09:38:45AM -0600, Bjorn Helgaas wrote:
+> [+cc linuxppc-dev]
+>
+> On Mon, Aug 5, 2013 at 5:17 AM, Leon Ravich <lravich@gmail.com> wrote:
+> > Hi all ,
+> > I am trying to upgrade ours embedded device (freescale powerPC P2020 cpu)
+> > linux kernel  , till now we used 2.6.32 I am trying to upgrade to 3.8.13 .
+> > I took the source from freescale git:
+> > git://git.freescale.com/ppc/sdk/linux.git
+> >
+> > on our embedded device we have an FPGA connected through PCIE .
+> >
+> > on each boot we loading the rbf design to the FPGA and the rescan pci bus to let
+> > kernel detect it .
+> >
+> > during the rescan I getting error messages:
+> >  genirq: Setting trigger mode 0 for irq 27 failed
+> > (mpc8xxx_irq_set_type+0x0/0xec)
+> > [   22.060898] genirq: Setting trigger mode 0 for irq 28 failed
+> > (mpc8xxx_irq_set_type+0x0/0xec)
+> > [   22.069461] genirq: Setting trigger mode 0 for irq 31 failed
+> > (mpc8xxx_irq_set_type+0x0/0xec)
+> > [   22.078010] genirq: Setting trigger mode 0 for irq 32 failed
+> > (mpc8xxx_irq_set_type+0x0/0xec)
+> > [   22.086576] genirq: Setting trigger mode 0 for irq 33 failed
+> > (mpc8xxx_irq_set_type+0x0/0xec)
+> > [   22.095143] genirq: Setting trigger mode 0 for irq 37 failed
+> > (mpc8xxx_irq_set_type+0x0/0xec)
+> > [   22.103715] genirq: Setting trigger mode 0 for irq 38 failed
+> > (mpc8xxx_irq_set_type+0x0/0xec)
+> > [   22.112282] genirq: Setting trigger mode 0 for irq 39 failed
+> > (mpc8xxx_irq_set_type+0x0/0xec)
+>
+> Hmm, I don't know much about IRQ issues.
+>
+> > [   37.945785] pci 0000:00:00.0: ignoring class 0x0b2000 (doesn't
+> > match header type 01)
+>
+> There's a recent patch related to this:
+> http://lkml.kernel.org/r/1374823418-1550-1-git-send-email-Chunhe.Lan@freescale.com
+>
+> > [   37.953640] PCIE error(s) detected
+> > [   37.953858] pci 0000:00:00.0: PCI bridge to [bus 01-ff]
+> > [   37.953988] pci 0000:00:00.0: BAR 8: assigned [mem 0xc0000000-0xdfffffff]
+> > [   37.953994] pci 0000:00:00.0: BAR 7: can't assign io (size 0x10000)
+> > [   37.954000] pci 0000:01:00.0: BAR 0: assigned [mem 0xc0000000-0xc00fffff]
+> > [   37.954013] pci 0000:01:00.0: BAR 1: assigned [mem 0xc0100000-0xc017ffff]
+> > [   37.954025] pci 0000:01:00.0: BAR 2: assigned [mem 0xc0180000-0xc01fffff]
+> > [   37.954036] pci 0000:00:00.0: PCI bridge to [bus 01]
+> > [   37.954041] pci 0000:00:00.0:   bridge window [mem 0xc0000000-0xdfffffff]
+> > [   38.007354] PCIE ERR_DR register: 0x80020000
+> > [   38.011613] PCIE ERR_CAP_STAT register: 0x00000041
+> > [   38.016392] PCIE ERR_CAP_R0 register: 0x00000800
+> > [   38.020997] PCIE ERR_CAP_R1 register: 0x00000000
+> > [   38.025602] PCIE ERR_CAP_R2 register: 0x00000000
+> > [   38.030207] PCIE ERR_CAP_R3 register: 0x00000000
+> >
+> >
+> > and after a few minutes I linux reboot it self,
+> >
+> >
+> > where can I start debugging it??
+>
+> I'd start by applying the header quirk patch above, then comparing the
+> complete console log (boot with "ignore_loglevel") from 2.6.32 and
+> 3.8.13.
+>
+> Bjorn
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+Hi,
+
+I have a similar problem here on a P4080 based board with the same 3.8 Kernel
+from freescale git. Does your system panic (maybe due to a machine check
+exception)?  If yes could it be the first read from the PCI device?
+
+Johannes
