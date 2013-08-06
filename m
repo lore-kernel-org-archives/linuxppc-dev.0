@@ -2,10 +2,10 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 37/63] powerpc: Fix offset of FPRs in VSX registers in little
- endian builds
-Date: Wed,  7 Aug 2013 02:01:54 +1000
-Message-Id: <1375804940-22050-38-git-send-email-anton@samba.org>
+Subject: [PATCH 38/63] powerpc: PTRACE_PEEKUSR/PTRACE_POKEUSER of FPR
+ registers in little endian builds
+Date: Wed,  7 Aug 2013 02:01:55 +1000
+Message-Id: <1375804940-22050-39-git-send-email-anton@samba.org>
 In-Reply-To: <1375804940-22050-1-git-send-email-anton@samba.org>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -18,49 +18,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The FPRs overlap the high doublewords of the first 32 VSX registers.
-Fix TS_FPROFFSET and TS_VSRLOWOFFSET so we access the correct fields
-in little endian mode.
+FPRs overlap the high 64bits of the first 32 VSX registers. The
+ptrace FP read/write code assumes big endian ordering and grabs
+the lowest 64 bits.
 
-If VSX is disabled the FPRs are only one doubleword in length so
-TS_FPROFFSET needs adjusting in little endian.
+Fix this by using the TS_FPR macro which does the right thing.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/processor.h | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/ptrace.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 47a35b0..d705431 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -14,8 +14,18 @@
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 9a0d24c..8d5d4e9 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1554,8 +1554,8 @@ long arch_ptrace(struct task_struct *child, long request,
  
- #ifdef CONFIG_VSX
- #define TS_FPRWIDTH 2
-+
-+#ifdef __BIG_ENDIAN__
-+#define TS_FPROFFSET 0
-+#define TS_VSRLOWOFFSET 1
-+#else
-+#define TS_FPROFFSET 1
-+#define TS_VSRLOWOFFSET 0
-+#endif
-+
- #else
- #define TS_FPRWIDTH 1
-+#define TS_FPROFFSET 0
- #endif
+ 			flush_fp_to_thread(child);
+ 			if (fpidx < (PT_FPSCR - PT_FPR0))
+-				tmp = ((unsigned long *)child->thread.fpr)
+-					[fpidx * TS_FPRWIDTH];
++				memcpy(&tmp, &child->thread.TS_FPR(fpidx),
++				       sizeof(long));
+ 			else
+ 				tmp = child->thread.fpscr.val;
+ 		}
+@@ -1587,8 +1587,8 @@ long arch_ptrace(struct task_struct *child, long request,
  
- #ifdef CONFIG_PPC64
-@@ -142,8 +152,6 @@ typedef struct {
- 	unsigned long seg;
- } mm_segment_t;
- 
--#define TS_FPROFFSET 0
--#define TS_VSRLOWOFFSET 1
- #define TS_FPR(i) fpr[i][TS_FPROFFSET]
- #define TS_TRANS_FPR(i) transact_fpr[i][TS_FPROFFSET]
- 
+ 			flush_fp_to_thread(child);
+ 			if (fpidx < (PT_FPSCR - PT_FPR0))
+-				((unsigned long *)child->thread.fpr)
+-					[fpidx * TS_FPRWIDTH] = data;
++				memcpy(&child->thread.TS_FPR(fpidx), &data,
++				       sizeof(long));
+ 			else
+ 				child->thread.fpscr.val = data;
+ 			ret = 0;
 -- 
 1.8.1.2
