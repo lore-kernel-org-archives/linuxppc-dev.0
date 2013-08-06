@@ -1,16 +1,16 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1170C2C015C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 06:45:02 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D18F52C0215
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 06:45:05 +1000 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
-Subject: [PATCH v4 04/31] mtd: mpc5121_nfc: cleanup clock API use
-Date: Tue,  6 Aug 2013 22:43:44 +0200
-Message-Id: <1375821851-31609-5-git-send-email-gsi@denx.de>
+Subject: [PATCH v4 03/31] USB: fsl-mph-dr-of: cleanup clock API use
+Date: Tue,  6 Aug 2013 22:43:43 +0200
+Message-Id: <1375821851-31609-4-git-send-email-gsi@denx.de>
 In-Reply-To: <1375821851-31609-1-git-send-email-gsi@denx.de>
 References: <1374495298-22019-1-git-send-email-gsi@denx.de>
  <1375821851-31609-1-git-send-email-gsi@denx.de>
@@ -29,64 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-use devm_clk_get() for automatic put after device close, check for and
-propagate errors when enabling clocks, need to prepare clocks before
-they can get enabled, adjust error code paths to correctly balance
-get/put and prepare/unprepare and enable/disable calls
+use devm_get_clk() for automatic put upon device close, check for and
+propagate errors when enabling clocks, must prepare clocks before they
+can get enabled, unprepare after disable
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/mtd/nand/mpc5121_nfc.c |   21 ++++++++++++---------
- 1 file changed, 12 insertions(+), 9 deletions(-)
+ drivers/usb/host/fsl-mph-dr-of.c |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/mtd/nand/mpc5121_nfc.c b/drivers/mtd/nand/mpc5121_nfc.c
-index 3c9cdcb..3c60a00 100644
---- a/drivers/mtd/nand/mpc5121_nfc.c
-+++ b/drivers/mtd/nand/mpc5121_nfc.c
-@@ -617,10 +617,8 @@ static void mpc5121_nfc_free(struct device *dev, struct mtd_info *mtd)
- 	struct nand_chip *chip = mtd->priv;
- 	struct mpc5121_nfc_prv *prv = chip->priv;
- 
--	if (prv->clk) {
--		clk_disable(prv->clk);
--		clk_put(prv->clk);
--	}
-+	if (prv->clk)
-+		clk_disable_unprepare(prv->clk);
- 
- 	if (prv->csreg)
- 		iounmap(prv->csreg);
-@@ -629,6 +627,7 @@ static void mpc5121_nfc_free(struct device *dev, struct mtd_info *mtd)
- static int mpc5121_nfc_probe(struct platform_device *op)
+diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr-of.c
+index 11e0b79..b8a1866 100644
+--- a/drivers/usb/host/fsl-mph-dr-of.c
++++ b/drivers/usb/host/fsl-mph-dr-of.c
+@@ -260,6 +260,7 @@ int fsl_usb2_mpc5121_init(struct platform_device *pdev)
  {
- 	struct device_node *rootnode, *dn = op->dev.of_node;
-+	struct clk *clk;
- 	struct device *dev = &op->dev;
- 	struct mpc5121_nfc_prv *prv;
- 	struct resource res;
-@@ -730,14 +729,18 @@ static int mpc5121_nfc_probe(struct platform_device *op)
- 	of_node_put(rootnode);
+ 	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
+ 	struct clk *clk;
++	int err;
+ 	char clk_name[10];
+ 	int base, clk_num;
  
- 	/* Enable NFC clock */
--	prv->clk = clk_get(dev, "nfc_clk");
--	if (IS_ERR(prv->clk)) {
-+	clk = devm_clk_get(dev, "nfc_clk");
-+	if (IS_ERR(clk)) {
- 		dev_err(dev, "Unable to acquire NFC clock!\n");
--		retval = PTR_ERR(prv->clk);
-+		retval = PTR_ERR(clk);
- 		goto error;
+@@ -272,13 +273,16 @@ int fsl_usb2_mpc5121_init(struct platform_device *pdev)
+ 		return -ENODEV;
+ 
+ 	snprintf(clk_name, sizeof(clk_name), "usb%d_clk", clk_num);
+-	clk = clk_get(&pdev->dev, clk_name);
++	clk = devm_clk_get(&pdev->dev, clk_name);
+ 	if (IS_ERR(clk)) {
+ 		dev_err(&pdev->dev, "failed to get clk\n");
+ 		return PTR_ERR(clk);
  	}
 -
--	clk_enable(prv->clk);
-+	retval = clk_prepare_enable(clk);
-+	if (retval) {
-+		dev_err(dev, "Unable to enable NFC clock!\n");
-+		goto error;
+-	clk_enable(clk);
++	err = clk_prepare_enable(clk);
++	if (err) {
++		dev_err(&pdev->dev, "failed to enable clk\n");
++		return err;
 +	}
-+	prv->clk = clk;
+ 	pdata->clk = clk;
  
- 	/* Reset NAND Flash controller */
- 	nfc_set(mtd, NFC_CONFIG1, NFC_RESET);
+ 	if (pdata->phy_mode == FSL_USB2_PHY_UTMI_WIDE) {
+@@ -302,10 +306,8 @@ static void fsl_usb2_mpc5121_exit(struct platform_device *pdev)
+ 
+ 	pdata->regs = NULL;
+ 
+-	if (pdata->clk) {
+-		clk_disable(pdata->clk);
+-		clk_put(pdata->clk);
+-	}
++	if (pdata->clk)
++		clk_disable_unprepare(pdata->clk);
+ }
+ 
+ static struct fsl_usb2_platform_data fsl_usb2_mpc5121_pd = {
 -- 
 1.7.10.4
