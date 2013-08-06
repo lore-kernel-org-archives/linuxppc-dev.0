@@ -2,15 +2,15 @@ Return-Path: <gsi@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BA5EB2C0725
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 06:48:08 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 1909C2C080A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 06:48:20 +1000 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
-Subject: [PATCH v4 28/31] powerpc/mpc512x: improve DIU related clock setup
-Date: Tue,  6 Aug 2013 22:44:08 +0200
-Message-Id: <1375821851-31609-29-git-send-email-gsi@denx.de>
+Subject: [PATCH v4 29/31] clk: mpc512x: switch to COMMON_CLK, remove PPC_CLOCK
+Date: Tue,  6 Aug 2013 22:44:09 +0200
+Message-Id: <1375821851-31609-30-git-send-email-gsi@denx.de>
 In-Reply-To: <1375821851-31609-1-git-send-email-gsi@denx.de>
 References: <1374495298-22019-1-git-send-email-gsi@denx.de>
  <1375821851-31609-1-git-send-email-gsi@denx.de>
@@ -29,237 +29,817 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-adapt the DIU clock initialization to the COMMON_CLK approach:
-device tree based clock lookup, prepare and unprepare for clocks,
-work with frequencies not dividers, call the appropriate clk_*()
-routines and don't access CCM registers, remove the pre-enable
-workaround in the platform's clock driver
-
-the "best clock" determination now completely relies on the
-platform's clock driver to pick a frequency close to what the
-caller requests, and merely checks whether the desired frequency
-was met (is acceptable since it meets the tolerance of the monitor)
-
-this approach shall succeed upon first try in the usual case,
-will test a few less desirable yet acceptable frequencies in
-edge cases, and will fallback to "best effort" if none of the
-previously tried frequencies pass the test
+completely switch to, i.e. unconditionally use COMMON_CLK for the
+MPC512x platform, and retire the PPC_CLOCK implementation for that
+platform after the transition has completed
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- arch/powerpc/platforms/512x/clock-commonclk.c |    1 -
- arch/powerpc/platforms/512x/mpc512x_shared.c  |  165 +++++++++++++------------
- 2 files changed, 88 insertions(+), 78 deletions(-)
+ arch/powerpc/platforms/512x/Kconfig  |   14 +-
+ arch/powerpc/platforms/512x/Makefile |    3 +-
+ arch/powerpc/platforms/512x/clock.c  |  753 ----------------------------------
+ 3 files changed, 2 insertions(+), 768 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/512x/clock.c
 
-diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
-index afbb01d..fa95814 100644
---- a/arch/powerpc/platforms/512x/clock-commonclk.c
-+++ b/arch/powerpc/platforms/512x/clock-commonclk.c
-@@ -668,7 +668,6 @@ static void mpc512x_clk_setup_clock_tree(int busfreq)
- 	clk_prepare_enable(clks[MPC512x_CLK_LPC]);	/* boot media */
- 	/* some are not yet acquired by their respective drivers */
- 	clk_prepare_enable(clks[MPC512x_CLK_PSC3_MCLK]);/* serial console */
--	clk_prepare_enable(clks[MPC512x_CLK_DIU]);	/* display */
- }
- 
- /*
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index a82a41b..3381eea 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -12,6 +12,7 @@
-  * (at your option) any later version.
-  */
- 
-+#include <linux/clk.h>
- #include <linux/kernel.h>
- #include <linux/io.h>
- #include <linux/irq.h>
-@@ -70,98 +71,108 @@ struct fsl_diu_shared_fb {
- 	bool		in_use;
- };
- 
--#define DIU_DIV_MASK	0x000000ff
-+/* receives a pixel clock spec in pico seconds, adjusts the DIU clock rate */
- void mpc512x_set_pixel_clock(unsigned int pixclock)
- {
--	unsigned long bestval, bestfreq, speed, busfreq;
--	unsigned long minpixclock, maxpixclock, pixval;
--	struct mpc512x_ccm __iomem *ccm;
- 	struct device_node *np;
--	u32 temp;
--	long err;
--	int i;
-+	struct clk *clk_diu;
-+	unsigned long epsilon, minpixclock, maxpixclock;
-+	unsigned long offset, want, got, delta;
- 
--	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-clock");
-+	/* lookup and enable the DIU clock */
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-diu");
- 	if (!np) {
--		pr_err("Can't find clock control module.\n");
-+		pr_err("Could not find DIU device tree node.\n");
- 		return;
- 	}
+diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+index c5fcdd0..5aa3f4b 100644
+--- a/arch/powerpc/platforms/512x/Kconfig
++++ b/arch/powerpc/platforms/512x/Kconfig
+@@ -1,21 +1,9 @@
+-config MPC512x_COMMON_CLK
+-	bool "MPC512x platform uses COMMON_CLK"
+-	default y
+-	depends on PPC_MPC512x
+-	help
+-	  This option is only here to support tests and comparison
+-	  during development and migration.  This option will get
+-	  removed after the COMMON_CLK support for MPC512x has become
+-	  fully operational and all drivers were adjusted to explicitly
+-	  acquire their required clocks.
 -
--	ccm = of_iomap(np, 0);
-+	clk_diu = of_clk_get_by_name(np, "per");
- 	of_node_put(np);
--	if (!ccm) {
--		pr_err("Can't map clock control module reg.\n");
-+	if (IS_ERR(clk_diu)) {
-+		pr_err("Could not lookup DIU clock.\n");
- 		return;
- 	}
+ config PPC_MPC512x
+ 	bool "512x-based boards"
+ 	depends on 6xx
++	select COMMON_CLK
+ 	select FSL_SOC
+ 	select IPIC
+-	select PPC_CLOCK if !MPC512x_COMMON_CLK
+-	select COMMON_CLK if MPC512x_COMMON_CLK
+ 	select PPC_PCI_CHOICE
+ 	select FSL_PCI if PCI
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
+index 1e05f9d..bb20116 100644
+--- a/arch/powerpc/platforms/512x/Makefile
++++ b/arch/powerpc/platforms/512x/Makefile
+@@ -1,8 +1,7 @@
+ #
+ # Makefile for the Freescale PowerPC 512x linux kernel.
+ #
+-obj-$(CONFIG_PPC_CLOCK)		+= clock.o
+-obj-$(CONFIG_COMMON_CLK)	+= clock-commonclk.o
++obj-y				+= clock-commonclk.o
+ obj-y				+= mpc512x_shared.o
+ obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o mpc5121_ads_cpld.o
+ obj-$(CONFIG_MPC512x_GENERIC)	+= mpc512x_generic.o
+diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
+deleted file mode 100644
+index e504166..0000000
+--- a/arch/powerpc/platforms/512x/clock.c
++++ /dev/null
+@@ -1,753 +0,0 @@
+-/*
+- * Copyright (C) 2007,2008 Freescale Semiconductor, Inc. All rights reserved.
+- *
+- * Author: John Rigby <jrigby@freescale.com>
+- *
+- * Implements the clk api defined in include/linux/clk.h
+- *
+- *    Original based on linux/arch/arm/mach-integrator/clock.c
+- *
+- *    Copyright (C) 2004 ARM Limited.
+- *    Written by Deep Blue Solutions Limited.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-#include <linux/kernel.h>
+-#include <linux/list.h>
+-#include <linux/errno.h>
+-#include <linux/err.h>
+-#include <linux/module.h>
+-#include <linux/string.h>
+-#include <linux/clk.h>
+-#include <linux/mutex.h>
+-#include <linux/io.h>
 -
--	np = of_find_node_by_type(NULL, "cpu");
+-#include <linux/of_platform.h>
+-#include <asm/mpc5xxx.h>
+-#include <asm/mpc5121.h>
+-#include <asm/clk_interface.h>
+-
+-#include "mpc512x.h"
+-
+-#undef CLK_DEBUG
+-
+-static int clocks_initialized;
+-
+-#define CLK_HAS_RATE	0x1	/* has rate in MHz */
+-#define CLK_HAS_CTRL	0x2	/* has control reg and bit */
+-
+-struct clk {
+-	struct list_head node;
+-	char name[32];
+-	int flags;
+-	struct device *dev;
+-	unsigned long rate;
+-	struct module *owner;
+-	void (*calc) (struct clk *);
+-	struct clk *parent;
+-	int reg, bit;		/* CLK_HAS_CTRL */
+-	int div_shift;		/* only used by generic_div_clk_calc */
+-};
+-
+-static LIST_HEAD(clocks);
+-static DEFINE_MUTEX(clocks_mutex);
+-
+-static struct clk *mpc5121_clk_get(struct device *dev, const char *id)
+-{
+-	struct clk *p, *clk = ERR_PTR(-ENOENT);
+-	int dev_match;
+-	int id_match;
+-
+-	if (dev == NULL || id == NULL)
+-		return clk;
+-
+-	mutex_lock(&clocks_mutex);
+-	list_for_each_entry(p, &clocks, node) {
+-		dev_match = id_match = 0;
+-
+-		if (dev == p->dev)
+-			dev_match++;
+-		if (strcmp(id, p->name) == 0)
+-			id_match++;
+-		if ((dev_match || id_match) && try_module_get(p->owner)) {
+-			clk = p;
+-			break;
+-		}
+-	}
+-	mutex_unlock(&clocks_mutex);
+-
+-	return clk;
+-}
+-
+-#ifdef CLK_DEBUG
+-static void dump_clocks(void)
+-{
+-	struct clk *p;
+-
+-	mutex_lock(&clocks_mutex);
+-	printk(KERN_INFO "CLOCKS:\n");
+-	list_for_each_entry(p, &clocks, node) {
+-		pr_info("  %s=%ld", p->name, p->rate);
+-		if (p->parent)
+-			pr_cont(" %s=%ld", p->parent->name,
+-			       p->parent->rate);
+-		if (p->flags & CLK_HAS_CTRL)
+-			pr_cont(" reg/bit=%d/%d", p->reg, p->bit);
+-		pr_cont("\n");
+-	}
+-	mutex_unlock(&clocks_mutex);
+-}
+-#define	DEBUG_CLK_DUMP() dump_clocks()
+-#else
+-#define	DEBUG_CLK_DUMP()
+-#endif
+-
+-
+-static void mpc5121_clk_put(struct clk *clk)
+-{
+-	module_put(clk->owner);
+-}
+-
+-#define NRPSC 12
+-
+-struct mpc512x_clockctl {
+-	u32 spmr;		/* System PLL Mode Reg */
+-	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
+-	u32 scfr1;		/* System Clk Freq Reg 1 */
+-	u32 scfr2;		/* System Clk Freq Reg 2 */
+-	u32 reserved;
+-	u32 bcr;		/* Bread Crumb Reg */
+-	u32 pccr[NRPSC];	/* PSC Clk Ctrl Reg 0-11 */
+-	u32 spccr;		/* SPDIF Clk Ctrl Reg */
+-	u32 cccr;		/* CFM Clk Ctrl Reg */
+-	u32 dccr;		/* DIU Clk Cnfg Reg */
+-};
+-
+-static struct mpc512x_clockctl __iomem *clockctl;
+-
+-static int mpc5121_clk_enable(struct clk *clk)
+-{
+-	unsigned int mask;
+-
+-	if (clk->flags & CLK_HAS_CTRL) {
+-		mask = in_be32(&clockctl->sccr[clk->reg]);
+-		mask |= 1 << clk->bit;
+-		out_be32(&clockctl->sccr[clk->reg], mask);
+-	}
+-	return 0;
+-}
+-
+-static void mpc5121_clk_disable(struct clk *clk)
+-{
+-	unsigned int mask;
+-
+-	if (clk->flags & CLK_HAS_CTRL) {
+-		mask = in_be32(&clockctl->sccr[clk->reg]);
+-		mask &= ~(1 << clk->bit);
+-		out_be32(&clockctl->sccr[clk->reg], mask);
+-	}
+-}
+-
+-static unsigned long mpc5121_clk_get_rate(struct clk *clk)
+-{
+-	if (clk->flags & CLK_HAS_RATE)
+-		return clk->rate;
+-	else
+-		return 0;
+-}
+-
+-static long mpc5121_clk_round_rate(struct clk *clk, unsigned long rate)
+-{
+-	return rate;
+-}
+-
+-static int mpc5121_clk_set_rate(struct clk *clk, unsigned long rate)
+-{
+-	return 0;
+-}
+-
+-static int clk_register(struct clk *clk)
+-{
+-	mutex_lock(&clocks_mutex);
+-	list_add(&clk->node, &clocks);
+-	mutex_unlock(&clocks_mutex);
+-	return 0;
+-}
+-
+-static unsigned long spmf_mult(void)
+-{
+-	/*
+-	 * Convert spmf to multiplier
+-	 */
+-	static int spmf_to_mult[] = {
+-		68, 1, 12, 16,
+-		20, 24, 28, 32,
+-		36, 40, 44, 48,
+-		52, 56, 60, 64
+-	};
+-	int spmf = (in_be32(&clockctl->spmr) >> 24) & 0xf;
+-	return spmf_to_mult[spmf];
+-}
+-
+-static unsigned long sysdiv_div_x_2(void)
+-{
+-	/*
+-	 * Convert sysdiv to divisor x 2
+-	 * Some divisors have fractional parts so
+-	 * multiply by 2 then divide by this value
+-	 */
+-	static int sysdiv_to_div_x_2[] = {
+-		4, 5, 6, 7,
+-		8, 9, 10, 14,
+-		12, 16, 18, 22,
+-		20, 24, 26, 30,
+-		28, 32, 34, 38,
+-		36, 40, 42, 46,
+-		44, 48, 50, 54,
+-		52, 56, 58, 62,
+-		60, 64, 66,
+-	};
+-	int sysdiv = (in_be32(&clockctl->scfr2) >> 26) & 0x3f;
+-	return sysdiv_to_div_x_2[sysdiv];
+-}
+-
+-static unsigned long ref_to_sys(unsigned long rate)
+-{
+-	rate *= spmf_mult();
+-	rate *= 2;
+-	rate /= sysdiv_div_x_2();
+-
+-	return rate;
+-}
+-
+-static unsigned long sys_to_ref(unsigned long rate)
+-{
+-	rate *= sysdiv_div_x_2();
+-	rate /= 2;
+-	rate /= spmf_mult();
+-
+-	return rate;
+-}
+-
+-static long ips_to_ref(unsigned long rate)
+-{
+-	int ips_div = (in_be32(&clockctl->scfr1) >> 23) & 0x7;
+-
+-	rate *= ips_div;	/* csb_clk = ips_clk * ips_div */
+-	rate *= 2;		/* sys_clk = csb_clk * 2 */
+-	return sys_to_ref(rate);
+-}
+-
+-static unsigned long devtree_getfreq(char *clockname)
+-{
+-	struct device_node *np;
+-	const unsigned int *prop;
+-	unsigned int val = 0;
+-
+-	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-immr");
 -	if (np) {
--		const unsigned int *prop =
--			of_get_property(np, "bus-frequency", NULL);
+-		prop = of_get_property(np, clockname, NULL);
+-		if (prop)
+-			val = *prop;
+-	    of_node_put(np);
+-	}
+-	return val;
+-}
 -
--		of_node_put(np);
--		if (prop) {
--			busfreq = *prop;
--		} else {
--			pr_err("Can't get bus-frequency property\n");
--			return;
--		}
+-static void ref_clk_calc(struct clk *clk)
+-{
+-	unsigned long rate;
+-
+-	rate = devtree_getfreq("bus-frequency");
+-	if (rate == 0) {
+-		printk(KERN_ERR "No bus-frequency in dev tree\n");
+-		clk->rate = 0;
+-		return;
+-	}
+-	clk->rate = ips_to_ref(rate);
+-}
+-
+-static struct clk ref_clk = {
+-	.name = "ref_clk",
+-	.calc = ref_clk_calc,
+-};
+-
+-
+-static void sys_clk_calc(struct clk *clk)
+-{
+-	clk->rate = ref_to_sys(ref_clk.rate);
+-}
+-
+-static struct clk sys_clk = {
+-	.name = "sys_clk",
+-	.calc = sys_clk_calc,
+-};
+-
+-static void diu_clk_calc(struct clk *clk)
+-{
+-	int diudiv_x_2 = in_be32(&clockctl->scfr1) & 0xff;
+-	unsigned long rate;
+-
+-	rate = sys_clk.rate;
+-
+-	rate *= 2;
+-	rate /= diudiv_x_2;
+-
+-	clk->rate = rate;
+-}
+-
+-static void viu_clk_calc(struct clk *clk)
+-{
+-	unsigned long rate;
+-
+-	rate = sys_clk.rate;
+-	rate /= 2;
+-	clk->rate = rate;
+-}
+-
+-static void half_clk_calc(struct clk *clk)
+-{
+-	clk->rate = clk->parent->rate / 2;
+-}
+-
+-static void generic_div_clk_calc(struct clk *clk)
+-{
+-	int div = (in_be32(&clockctl->scfr1) >> clk->div_shift) & 0x7;
+-
+-	clk->rate = clk->parent->rate / div;
+-}
+-
+-static void unity_clk_calc(struct clk *clk)
+-{
+-	clk->rate = clk->parent->rate;
+-}
+-
+-static struct clk csb_clk = {
+-	.name = "csb_clk",
+-	.calc = half_clk_calc,
+-	.parent = &sys_clk,
+-};
+-
+-static void e300_clk_calc(struct clk *clk)
+-{
+-	int spmf = (in_be32(&clockctl->spmr) >> 16) & 0xf;
+-	int ratex2 = clk->parent->rate * spmf;
+-
+-	clk->rate = ratex2 / 2;
+-}
+-
+-static struct clk e300_clk = {
+-	.name = "e300_clk",
+-	.calc = e300_clk_calc,
+-	.parent = &csb_clk,
+-};
+-
+-static struct clk ips_clk = {
+-	.name = "ips_clk",
+-	.calc = generic_div_clk_calc,
+-	.parent = &csb_clk,
+-	.div_shift = 23,
+-};
+-
+-/*
+- * Clocks controlled by SCCR1 (.reg = 0)
+- */
+-static struct clk lpc_clk = {
+-	.name = "lpc_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 0,
+-	.bit = 30,
+-	.calc = generic_div_clk_calc,
+-	.parent = &ips_clk,
+-	.div_shift = 11,
+-};
+-
+-static struct clk nfc_clk = {
+-	.name = "nfc_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 0,
+-	.bit = 29,
+-	.calc = generic_div_clk_calc,
+-	.parent = &ips_clk,
+-	.div_shift = 8,
+-};
+-
+-static struct clk pata_clk = {
+-	.name = "pata_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 0,
+-	.bit = 28,
+-	.calc = unity_clk_calc,
+-	.parent = &ips_clk,
+-};
+-
+-/*
+- * PSC clocks (bits 27 - 16)
+- * are setup elsewhere
+- */
+-
+-static struct clk sata_clk = {
+-	.name = "sata_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 0,
+-	.bit = 14,
+-	.calc = unity_clk_calc,
+-	.parent = &ips_clk,
+-};
+-
+-static struct clk fec_clk = {
+-	.name = "fec_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 0,
+-	.bit = 13,
+-	.calc = unity_clk_calc,
+-	.parent = &ips_clk,
+-};
+-
+-static struct clk pci_clk = {
+-	.name = "pci_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 0,
+-	.bit = 11,
+-	.calc = generic_div_clk_calc,
+-	.parent = &csb_clk,
+-	.div_shift = 20,
+-};
+-
+-/*
+- * Clocks controlled by SCCR2 (.reg = 1)
+- */
+-static struct clk diu_clk = {
+-	.name = "diu_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 31,
+-	.calc = diu_clk_calc,
+-};
+-
+-static struct clk viu_clk = {
+-	.name = "viu_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 18,
+-	.calc = viu_clk_calc,
+-};
+-
+-static struct clk axe_clk = {
+-	.name = "axe_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 30,
+-	.calc = unity_clk_calc,
+-	.parent = &csb_clk,
+-};
+-
+-static struct clk usb1_clk = {
+-	.name = "usb1_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 28,
+-	.calc = unity_clk_calc,
+-	.parent = &csb_clk,
+-};
+-
+-static struct clk usb2_clk = {
+-	.name = "usb2_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 27,
+-	.calc = unity_clk_calc,
+-	.parent = &csb_clk,
+-};
+-
+-static struct clk i2c_clk = {
+-	.name = "i2c_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 26,
+-	.calc = unity_clk_calc,
+-	.parent = &ips_clk,
+-};
+-
+-static struct clk mscan_clk = {
+-	.name = "mscan_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 25,
+-	.calc = unity_clk_calc,
+-	.parent = &ips_clk,
+-};
+-
+-static struct clk sdhc_clk = {
+-	.name = "sdhc_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 24,
+-	.calc = unity_clk_calc,
+-	.parent = &ips_clk,
+-};
+-
+-static struct clk mbx_bus_clk = {
+-	.name = "mbx_bus_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 22,
+-	.calc = half_clk_calc,
+-	.parent = &csb_clk,
+-};
+-
+-static struct clk mbx_clk = {
+-	.name = "mbx_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 21,
+-	.calc = unity_clk_calc,
+-	.parent = &csb_clk,
+-};
+-
+-static struct clk mbx_3d_clk = {
+-	.name = "mbx_3d_clk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 20,
+-	.calc = generic_div_clk_calc,
+-	.parent = &mbx_bus_clk,
+-	.div_shift = 14,
+-};
+-
+-static void psc_mclk_in_calc(struct clk *clk)
+-{
+-	clk->rate = devtree_getfreq("psc_mclk_in");
+-	if (!clk->rate)
+-		clk->rate = 25000000;
+-}
+-
+-static struct clk psc_mclk_in = {
+-	.name = "psc_mclk_in",
+-	.calc = psc_mclk_in_calc,
+-};
+-
+-static struct clk spdif_txclk = {
+-	.name = "spdif_txclk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 23,
+-};
+-
+-static struct clk spdif_rxclk = {
+-	.name = "spdif_rxclk",
+-	.flags = CLK_HAS_CTRL,
+-	.reg = 1,
+-	.bit = 23,
+-};
+-
+-static void ac97_clk_calc(struct clk *clk)
+-{
+-	/* ac97 bit clock is always 24.567 MHz */
+-	clk->rate = 24567000;
+-}
+-
+-static struct clk ac97_clk = {
+-	.name = "ac97_clk_in",
+-	.calc = ac97_clk_calc,
+-};
+-
+-static struct clk *rate_clks[] = {
+-	&ref_clk,
+-	&sys_clk,
+-	&diu_clk,
+-	&viu_clk,
+-	&csb_clk,
+-	&e300_clk,
+-	&ips_clk,
+-	&fec_clk,
+-	&sata_clk,
+-	&pata_clk,
+-	&nfc_clk,
+-	&lpc_clk,
+-	&mbx_bus_clk,
+-	&mbx_clk,
+-	&mbx_3d_clk,
+-	&axe_clk,
+-	&usb1_clk,
+-	&usb2_clk,
+-	&i2c_clk,
+-	&mscan_clk,
+-	&sdhc_clk,
+-	&pci_clk,
+-	&psc_mclk_in,
+-	&spdif_txclk,
+-	&spdif_rxclk,
+-	&ac97_clk,
+-	NULL
+-};
+-
+-static void rate_clk_init(struct clk *clk)
+-{
+-	if (clk->calc) {
+-		clk->calc(clk);
+-		clk->flags |= CLK_HAS_RATE;
+-		clk_register(clk);
 -	} else {
--		pr_err("Can't find 'cpu' node.\n");
-+	if (clk_prepare_enable(clk_diu)) {
-+		pr_err("Could not enable DIU clock.\n");
- 		return;
- 	}
- 
--	/* Pixel Clock configuration */
--	pr_debug("DIU: Bus Frequency = %lu\n", busfreq);
--	speed = busfreq * 4; /* DIU_DIV ratio is 4 * CSB_CLK / DIU_CLK */
+-		printk(KERN_WARNING
+-		       "Could not initialize clk %s without a calc routine\n",
+-		       clk->name);
+-	}
+-}
 -
--	/* Calculate the pixel clock with the smallest error */
--	/* calculate the following in steps to avoid overflow */
--	pr_debug("DIU pixclock in ps - %d\n", pixclock);
--	temp = (1000000000 / pixclock) * 1000;
--	pixclock = temp;
--	pr_debug("DIU pixclock freq - %u\n", pixclock);
+-static void rate_clks_init(void)
+-{
+-	struct clk **cpp, *clk;
 -
--	temp = temp / 20; /* pixclock * 0.05 */
--	pr_debug("deviation = %d\n", temp);
--	minpixclock = pixclock - temp;
--	maxpixclock = pixclock + temp;
--	pr_debug("DIU minpixclock - %lu\n", minpixclock);
--	pr_debug("DIU maxpixclock - %lu\n", maxpixclock);
--	pixval = speed/pixclock;
--	pr_debug("DIU pixval = %lu\n", pixval);
+-	cpp = rate_clks;
+-	while ((clk = *cpp++))
+-		rate_clk_init(clk);
+-}
 -
--	err = LONG_MAX;
--	bestval = pixval;
--	pr_debug("DIU bestval = %lu\n", bestval);
+-/*
+- * There are two clk enable registers with 32 enable bits each
+- * psc clocks and device clocks are all stored in dev_clks
+- */
+-static struct clk dev_clks[2][32];
 -
--	bestfreq = 0;
--	for (i = -1; i <= 1; i++) {
--		temp = speed / (pixval+i);
--		pr_debug("DIU test pixval i=%d, pixval=%lu, temp freq. = %u\n",
--			i, pixval, temp);
--		if ((temp < minpixclock) || (temp > maxpixclock))
--			pr_debug("DIU exceeds monitor range (%lu to %lu)\n",
--				minpixclock, maxpixclock);
--		else if (abs(temp - pixclock) < err) {
--			pr_debug("Entered the else if block %d\n", i);
--			err = abs(temp - pixclock);
--			bestval = pixval + i;
--			bestfreq = temp;
+-/*
+- * Given a psc number return the dev_clk
+- * associated with it
+- */
+-static struct clk *psc_dev_clk(int pscnum)
+-{
+-	int reg, bit;
+-	struct clk *clk;
+-
+-	reg = 0;
+-	bit = 27 - pscnum;
+-
+-	clk = &dev_clks[reg][bit];
+-	clk->reg = 0;
+-	clk->bit = bit;
+-	return clk;
+-}
+-
+-/*
+- * PSC clock rate calculation
+- */
+-static void psc_calc_rate(struct clk *clk, int pscnum, struct device_node *np)
+-{
+-	unsigned long mclk_src = sys_clk.rate;
+-	unsigned long mclk_div;
+-
+-	/*
+-	 * Can only change value of mclk divider
+-	 * when the divider is disabled.
+-	 *
+-	 * Zero is not a valid divider so minimum
+-	 * divider is 1
+-	 *
+-	 * disable/set divider/enable
+-	 */
+-	out_be32(&clockctl->pccr[pscnum], 0);
+-	out_be32(&clockctl->pccr[pscnum], 0x00020000);
+-	out_be32(&clockctl->pccr[pscnum], 0x00030000);
+-
+-	if (in_be32(&clockctl->pccr[pscnum]) & 0x80) {
+-		clk->rate = spdif_rxclk.rate;
+-		return;
+-	}
+-
+-	switch ((in_be32(&clockctl->pccr[pscnum]) >> 14) & 0x3) {
+-	case 0:
+-		mclk_src = sys_clk.rate;
+-		break;
+-	case 1:
+-		mclk_src = ref_clk.rate;
+-		break;
+-	case 2:
+-		mclk_src = psc_mclk_in.rate;
+-		break;
+-	case 3:
+-		mclk_src = spdif_txclk.rate;
+-		break;
+-	}
+-
+-	mclk_div = ((in_be32(&clockctl->pccr[pscnum]) >> 17) & 0x7fff) + 1;
+-	clk->rate = mclk_src / mclk_div;
+-}
+-
+-/*
+- * Find all psc nodes in device tree and assign a clock
+- * with name "psc%d_mclk" and dev pointing at the device
+- * returned from of_find_device_by_node
+- */
+-static void psc_clks_init(void)
+-{
+-	struct device_node *np;
+-	struct platform_device *ofdev;
+-	u32 reg;
+-	const char *psc_compat;
+-
+-	psc_compat = mpc512x_select_psc_compat();
+-	if (!psc_compat)
+-		return;
+-
+-	for_each_compatible_node(np, NULL, psc_compat) {
+-		if (!of_property_read_u32(np, "reg", &reg)) {
+-			int pscnum = (reg & 0xf00) >> 8;
+-			struct clk *clk = psc_dev_clk(pscnum);
+-
+-			clk->flags = CLK_HAS_RATE | CLK_HAS_CTRL;
+-			ofdev = of_find_device_by_node(np);
+-			clk->dev = &ofdev->dev;
+-			/*
+-			 * AC97 is special rate clock does
+-			 * not go through normal path
+-			 */
+-			if (of_device_is_compatible(np, "fsl,mpc5121-psc-ac97"))
+-				clk->rate = ac97_clk.rate;
+-			else
+-				psc_calc_rate(clk, pscnum, np);
+-			sprintf(clk->name, "psc%d_mclk", pscnum);
+-			clk_register(clk);
+-			clk_enable(clk);
 -		}
-+	/*
-+	 * convert the picoseconds spec into the desired clock rate,
-+	 * determine the acceptable clock range for the monitor (+/- 5%),
-+	 * do the calculation in steps to avoid integer overflow
-+	 */
-+	pr_debug("DIU pixclock in ps - %u\n", pixclock);
-+	pixclock = (1000000000 / pixclock) * 1000;
-+	pr_debug("DIU pixclock freq  - %u\n", pixclock);
-+	epsilon = pixclock / 20; /* pixclock * 0.05 */
-+	pr_debug("DIU deviation      - %lu\n", epsilon);
-+	minpixclock = pixclock - epsilon;
-+	maxpixclock = pixclock + epsilon;
-+	pr_debug("DIU minpixclock    - %lu\n", minpixclock);
-+	pr_debug("DIU maxpixclock    - %lu\n", maxpixclock);
-+
-+	/*
-+	 * check whether the DIU supports the desired pixel clock
-+	 *
-+	 * - simply request the desired clock and see what the
-+	 *   platform's clock driver will make of it, assuming that it
-+	 *   will setup the best approximation of the requested value
-+	 * - try other candidate frequencies in the order of decreasing
-+	 *   preference (i.e. with increasing distance from the desired
-+	 *   pixel clock, and checking the lower frequency before the
-+	 *   higher frequency to not overload the hardware) until the
-+	 *   first match is found -- any potential subsequent match
-+	 *   would only be as good as the former match or typically
-+	 *   would be less preferrable
-+	 *
-+	 * the offset increment of pixelclock divided by 64 is an
-+	 * arbitrary choice -- it's simple to calculate, in the typical
-+	 * case we expect the first check to succeed already, in the
-+	 * worst case seven frequencies get tested (the exact center and
-+	 * three more values each to the left and to the right) before
-+	 * the 5% tolerance window is exceeded, resulting in fast enough
-+	 * execution yet high enough probability of finding a suitable
-+	 * value, while the error rate will be in the order of single
-+	 * percents
-+	 */
-+	for (offset = 0; offset <= epsilon; offset += pixclock / 64) {
-+		want = pixclock - offset;
-+		pr_debug("DIU checking clock - %lu\n", want);
-+		clk_set_rate(clk_diu, want);
-+		got = clk_get_rate(clk_diu);
-+		delta = abs(pixclock - got);
-+		if (delta < epsilon)
-+			break;
-+		if (!offset)
-+			continue;
-+		want = pixclock + offset;
-+		pr_debug("DIU checking clock - %lu\n", want);
-+		clk_set_rate(clk_diu, want);
-+		got = clk_get_rate(clk_diu);
-+		delta = abs(pixclock - got);
-+		if (delta < epsilon)
-+			break;
- 	}
-+	if (offset <= epsilon) {
-+		pr_debug("DIU clock accepted - %lu\n", want);
-+		pr_debug("DIU pixclock want %u, got %lu, delta %lu, eps %lu\n",
-+			 pixclock, got, delta, epsilon);
-+		return;
-+	}
-+	pr_warn("DIU pixclock auto search unsuccessful\n");
- 
--	pr_debug("DIU chose = %lx\n", bestval);
--	pr_debug("DIU error = %ld\n NomPixClk ", err);
--	pr_debug("DIU: Best Freq = %lx\n", bestfreq);
--	/* Modify DIU_DIV in CCM SCFR1 */
--	temp = in_be32(&ccm->scfr1);
--	pr_debug("DIU: Current value of SCFR1: 0x%08x\n", temp);
--	temp &= ~DIU_DIV_MASK;
--	temp |= (bestval & DIU_DIV_MASK);
--	out_be32(&ccm->scfr1, temp);
--	pr_debug("DIU: Modified value of SCFR1: 0x%08x\n", temp);
--	iounmap(ccm);
-+	/*
-+	 * what is the most appropriate action to take when the search
-+	 * for an available pixel clock which is acceptable to the
-+	 * monitor has failed?  disable the DIU (clock) or just provide
-+	 * a "best effort"?  we go with the latter
-+	 */
-+	pr_warn("DIU pixclock best effort fallback (backend's choice)\n");
-+	clk_set_rate(clk_diu, pixclock);
-+	got = clk_get_rate(clk_diu);
-+	delta = abs(pixclock - got);
-+	pr_debug("DIU pixclock want %u, got %lu, delta %lu, eps %lu\n",
-+		 pixclock, got, delta, epsilon);
- }
- 
- enum fsl_diu_monitor_port
+-	}
+-}
+-
+-static struct clk_interface mpc5121_clk_functions = {
+-	.clk_get		= mpc5121_clk_get,
+-	.clk_enable		= mpc5121_clk_enable,
+-	.clk_disable		= mpc5121_clk_disable,
+-	.clk_get_rate		= mpc5121_clk_get_rate,
+-	.clk_put		= mpc5121_clk_put,
+-	.clk_round_rate		= mpc5121_clk_round_rate,
+-	.clk_set_rate		= mpc5121_clk_set_rate,
+-	.clk_set_parent		= NULL,
+-	.clk_get_parent		= NULL,
+-};
+-
+-int __init mpc5121_clk_init(void)
+-{
+-	struct device_node *np;
+-
+-	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-clock");
+-	if (np) {
+-		clockctl = of_iomap(np, 0);
+-		of_node_put(np);
+-	}
+-
+-	if (!clockctl) {
+-		printk(KERN_ERR "Could not map clock control registers\n");
+-		return 0;
+-	}
+-
+-	rate_clks_init();
+-	psc_clks_init();
+-
+-	/* leave clockctl mapped forever */
+-	/*iounmap(clockctl); */
+-	DEBUG_CLK_DUMP();
+-	clocks_initialized++;
+-	clk_functions = mpc5121_clk_functions;
+-	return 0;
+-}
 -- 
 1.7.10.4
