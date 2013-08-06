@@ -2,9 +2,9 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 47/63] pseries: Add H_SET_MODE to change exception endianness
-Date: Wed,  7 Aug 2013 02:02:04 +1000
-Message-Id: <1375804940-22050-48-git-send-email-anton@samba.org>
+Subject: [PATCH 48/63] powerpc/kvm/book3s_hv: Add little endian guest support
+Date: Wed,  7 Aug 2013 02:02:05 +1000
+Message-Id: <1375804940-22050-49-git-send-email-anton@samba.org>
 In-Reply-To: <1375804940-22050-1-git-send-email-anton@samba.org>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,156 +17,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On little endian builds call H_SET_MODE so exceptions have the
-correct endianness. We need a better hook to handle flipping back
-into big endian mode on a kexec, but insert it into the mmu
-teardown callback for now.
+Add support for the H_SET_MODE hcall so we can select the
+endianness of our exceptions.
+
+We create a guest MSR from scratch when delivering exceptions in
+a few places and instead of extracting the LPCR[ILE] and inserting
+it into MSR_LE each time simply create a new variable intr_msr which
+contains the entire MSR to use.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/hvcall.h               |  2 ++
- arch/powerpc/platforms/pseries/lpar.c           | 17 ++++++++++
- arch/powerpc/platforms/pseries/plpar_wrappers.h | 26 +++++++++++++++
- arch/powerpc/platforms/pseries/setup.c          | 42 +++++++++++++++++++++++++
- 4 files changed, 87 insertions(+)
+ arch/powerpc/include/asm/kvm_host.h     |  1 +
+ arch/powerpc/kernel/asm-offsets.c       |  1 +
+ arch/powerpc/kvm/book3s_64_mmu_hv.c     |  2 +-
+ arch/powerpc/kvm/book3s_hv.c            | 44 +++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 15 ++++-------
+ 5 files changed, 52 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 0c7f2bf..d8b600b 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -403,6 +403,8 @@ static inline unsigned long cmo_get_page_size(void)
- extern long pSeries_enable_reloc_on_exc(void);
- extern long pSeries_disable_reloc_on_exc(void);
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index af326cd..88f0c8e 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -609,6 +609,7 @@ struct kvm_vcpu_arch {
+ 	spinlock_t tbacct_lock;
+ 	u64 busy_stolen;
+ 	u64 busy_preempt;
++	unsigned long intr_msr;
+ #endif
+ };
  
-+extern long pseries_big_endian_exceptions(void);
-+
- #else
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index c7e8afc..0f93cb0 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -486,6 +486,7 @@ int main(void)
+ 	DEFINE(VCPU_DAR, offsetof(struct kvm_vcpu, arch.shregs.dar));
+ 	DEFINE(VCPU_VPA, offsetof(struct kvm_vcpu, arch.vpa.pinned_addr));
+ 	DEFINE(VCPU_VPA_DIRTY, offsetof(struct kvm_vcpu, arch.vpa.dirty));
++	DEFINE(VCPU_INTR_MSR, offsetof(struct kvm_vcpu, arch.intr_msr));
+ #endif
+ #ifdef CONFIG_PPC_BOOK3S
+ 	DEFINE(VCPU_VCPUID, offsetof(struct kvm_vcpu, vcpu_id));
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 710d313..fae9751 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -266,7 +266,7 @@ void kvmppc_mmu_destroy(struct kvm_vcpu *vcpu)
  
- #define pSeries_enable_reloc_on_exc()  do {} while (0)
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 0b7c86e..f28bf35 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -239,6 +239,23 @@ static void pSeries_lpar_hptab_clear(void)
- 					&(ptes[j].pteh), &(ptes[j].ptel));
- 		}
- 	}
-+
-+#ifdef __LITTLE_ENDIAN__
-+	/* Reset exceptions to big endian */
-+	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
-+		long rc;
-+
-+		rc = pseries_big_endian_exceptions();
-+		/*
-+		 * At this point it is unlikely panic() will get anything
-+		 * out to the user, but at least this will stop us from
-+		 * continuing on further and creating an even more
-+		 * difficult to debug situation.
-+		 */
-+		if (rc)
-+			panic("Could not enable big endian exceptions");
-+	}
-+#endif
+ static void kvmppc_mmu_book3s_64_hv_reset_msr(struct kvm_vcpu *vcpu)
+ {
+-	kvmppc_set_msr(vcpu, MSR_SF | MSR_ME);
++	kvmppc_set_msr(vcpu, vcpu->arch.intr_msr);
  }
  
  /*
-diff --git a/arch/powerpc/platforms/pseries/plpar_wrappers.h b/arch/powerpc/platforms/pseries/plpar_wrappers.h
-index 417d0bf..6c1c218 100644
---- a/arch/powerpc/platforms/pseries/plpar_wrappers.h
-+++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h
-@@ -287,6 +287,32 @@ static inline long disable_reloc_on_exceptions(void) {
- 	return plpar_set_mode(0, 3, 0, 0);
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index cf39bf4..d4f087b 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -503,6 +503,43 @@ static void kvmppc_create_dtl_entry(struct kvm_vcpu *vcpu,
+ 	vcpu->arch.dtl.dirty = true;
  }
  
-+/*
-+ * Take exceptions in big endian mode on this partition
-+ *
-+ * Note: this call has a partition wide scope and can take a while to complete.
-+ * If it returns H_LONG_BUSY_* it should be retried periodically until it
-+ * returns H_SUCCESS.
-+ */
-+static inline long enable_big_endian_exceptions(void)
++static int kvmppc_h_set_mode(struct kvm_vcpu *vcpu, unsigned long mflags,
++			     unsigned long resource, unsigned long value1,
++			     unsigned long value2)
 +{
-+	/* mflags = 0: big endian exceptions */
-+	return plpar_set_mode(0, 4, 0, 0);
-+}
++	struct kvm *kvm = vcpu->kvm;
++	struct kvm_vcpu *v;
++	int n;
 +
-+/*
-+ * Take exceptions in little endian mode on this partition
-+ *
-+ * Note: this call has a partition wide scope and can take a while to complete.
-+ * If it returns H_LONG_BUSY_* it should be retried periodically until it
-+ * returns H_SUCCESS.
-+ */
-+static inline long enable_little_endian_exceptions(void)
-+{
-+	/* mflags = 1: little endian exceptions */
-+	return plpar_set_mode(1, 4, 0, 0);
-+}
++	if (resource == 4) {
++		if (value1)
++			return H_P3;
++		if (value2)
++			return H_P4;
 +
- static inline long plapr_set_ciabr(unsigned long ciabr)
- {
- 	return plpar_set_mode(0, 1, ciabr, 0);
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 33d6196..51c195d 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -430,6 +430,32 @@ static void pSeries_machine_kexec(struct kimage *image)
- }
- #endif
- 
-+#ifdef __LITTLE_ENDIAN__
-+long pseries_big_endian_exceptions(void)
-+{
-+	long rc;
++		switch (mflags) {
++		case 0:
++			kvm->arch.lpcr &= ~LPCR_ILE;
++			kvm_for_each_vcpu(n, v, kvm)
++				v->arch.intr_msr &= ~MSR_LE;
++			kick_all_cpus_sync();
++			return H_SUCCESS;
 +
-+	while (1) {
-+		rc = enable_big_endian_exceptions();
-+		if (!H_IS_LONG_BUSY(rc))
-+			return rc;
-+		mdelay(get_longbusy_msecs(rc));
-+	}
-+}
++		case 1:
++			kvm->arch.lpcr |= LPCR_ILE;
++			kvm_for_each_vcpu(n, v, kvm)
++				v->arch.intr_msr |= MSR_LE;
++			kick_all_cpus_sync();
++			return H_SUCCESS;
 +
-+static long pseries_little_endian_exceptions(void)
-+{
-+	long rc;
-+
-+	while (1) {
-+		rc = enable_little_endian_exceptions();
-+		if (!H_IS_LONG_BUSY(rc))
-+			return rc;
-+		mdelay(get_longbusy_msecs(rc));
-+	}
-+}
-+#endif
-+
- static void __init pSeries_setup_arch(void)
- {
- 	panic_timeout = 10;
-@@ -687,6 +713,22 @@ static int __init pSeries_probe(void)
- 	/* Now try to figure out if we are running on LPAR */
- 	of_scan_flat_dt(pseries_probe_fw_features, NULL);
- 
-+#ifdef __LITTLE_ENDIAN__
-+	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
-+		long rc;
-+		/*
-+		 * Tell the hypervisor that we want our exceptions to
-+		 * be taken in little endian mode. If this fails we don't
-+		 * want to use BUG() because it will trigger an exception.
-+		 */
-+		rc = pseries_little_endian_exceptions();
-+		if (rc) {
-+			ppc_md.progress("H_SET_MODE LE exception fail", 0);
-+			panic("Could not enable little endian exceptions");
++		default:
++			return H_UNSUPPORTED_FLAG_START;
 +		}
 +	}
-+#endif
 +
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		hpte_init_lpar();
- 	else
++	return H_P2;
++}
++
+ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ {
+ 	unsigned long req = kvmppc_get_gpr(vcpu, 3);
+@@ -557,6 +594,12 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ 
+ 		/* Send the error out to userspace via KVM_RUN */
+ 		return rc;
++	case H_SET_MODE:
++		ret = kvmppc_h_set_mode(vcpu, kvmppc_get_gpr(vcpu, 4),
++					kvmppc_get_gpr(vcpu, 5),
++					kvmppc_get_gpr(vcpu, 6),
++					kvmppc_get_gpr(vcpu, 7));
++		break;
+ 
+ 	case H_XIRR:
+ 	case H_CPPR:
+@@ -925,6 +968,7 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 	spin_lock_init(&vcpu->arch.vpa_update_lock);
+ 	spin_lock_init(&vcpu->arch.tbacct_lock);
+ 	vcpu->arch.busy_preempt = TB_NIL;
++	vcpu->arch.intr_msr = MSR_SF | MSR_ME;
+ 
+ 	kvmppc_mmu_book3s_hv_init(vcpu);
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index b93e3cd..c48061c 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -521,8 +521,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 12:	mr	r6,r10
+ 	mr	r10,r0
+ 	mr	r7,r11
+-	li	r11,(MSR_ME << 1) | 1	/* synthesize MSR_SF | MSR_ME */
+-	rotldi	r11,r11,63
++	ld	r11,VCPU_INTR_MSR(r4)
+ 	b	5f
+ 11:	beq	5f
+ 	mfspr	r0,SPRN_DEC
+@@ -758,8 +757,7 @@ do_ext_interrupt:
+ 	mtspr	SPRN_SRR0, r10
+ 	mtspr	SPRN_SRR1, r11
+ 	li	r10, BOOK3S_INTERRUPT_EXTERNAL
+-	li	r11, (MSR_ME << 1) | 1	/* synthesize MSR_SF | MSR_ME */
+-	rotldi	r11, r11, 63
++	ld	r11,VCPU_INTR_MSR(r9)
+ 2:	mr	r4, r9
+ 	mtspr	SPRN_LPCR, r8
+ 	b	fast_guest_return
+@@ -1300,8 +1298,7 @@ kvmppc_hdsi:
+ 	mtspr	SPRN_SRR0, r10
+ 	mtspr	SPRN_SRR1, r11
+ 	li	r10, BOOK3S_INTERRUPT_DATA_STORAGE
+-	li	r11, (MSR_ME << 1) | 1	/* synthesize MSR_SF | MSR_ME */
+-	rotldi	r11, r11, 63
++	ld	r11,VCPU_INTR_MSR(r9)
+ fast_interrupt_c_return:
+ 6:	ld	r7, VCPU_CTR(r9)
+ 	lwz	r8, VCPU_XER(r9)
+@@ -1370,8 +1367,7 @@ kvmppc_hisi:
+ 1:	mtspr	SPRN_SRR0, r10
+ 	mtspr	SPRN_SRR1, r11
+ 	li	r10, BOOK3S_INTERRUPT_INST_STORAGE
+-	li	r11, (MSR_ME << 1) | 1	/* synthesize MSR_SF | MSR_ME */
+-	rotldi	r11, r11, 63
++	ld	r11,VCPU_INTR_MSR(r9)
+ 	b	fast_interrupt_c_return
+ 
+ 3:	ld	r6, VCPU_KVM(r9)	/* not relocated, use VRMA */
+@@ -1697,8 +1693,7 @@ machine_check_realmode:
+ 	beq	mc_cont
+ 	/* If not, deliver a machine check.  SRR0/1 are already set */
+ 	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
+-	li	r11, (MSR_ME << 1) | 1	/* synthesize MSR_SF | MSR_ME */
+-	rotldi	r11, r11, 63
++	ld	r11,VCPU_INTR_MSR(r9)
+ 	b	fast_interrupt_c_return
+ 
+ secondary_too_late:
 -- 
 1.8.1.2
