@@ -1,32 +1,25 @@
-Return-Path: <R65777@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 462BE2C0089
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 00:46:54 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 5/6 v2] kvm: powerpc: booke: Add linux pte lookup like
- booke3s
-Date: Tue, 6 Aug 2013 14:46:45 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D070FCE8A@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1375355558-19187-6-git-send-email-Bharat.Bhushan@freescale.com>
- <1375484319.26902.4.camel@snotra.buserror.net>
- <1375485408.15999.67.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D070F8FCC@039-SN2MPN1-012.039d.mgd.msft.net>
- <1375503847.15999.80.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D070FAD49@039-SN2MPN1-012.039d.mgd.msft.net>
- <1375730341.13074.38.camel@snotra.buserror.net>
-In-Reply-To: <1375730341.13074.38.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <000001405421b036-0b2994fa-3dd8-4ce7-995c-81660d804803-000000@amazonses.com>
+Received: from a193-30.smtp-out.amazonses.com (a193-30.smtp-out.amazonses.com
+ [199.255.193.30]) by ozlabs.org (Postfix) with ESMTP id 8A79E2C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 01:06:59 +1000 (EST)
+Date: Tue, 6 Aug 2013 14:57:08 +0000
+From: Christoph Lameter <cl@gentwo.org>
+To: Wladislav Wiebe <wladislav.kw@gmail.com>
+Subject: Re: mm/slab: ppc: ubi: kmalloc_slab WARNING / PPC + UBI driver
+In-Reply-To: <5200A29C.9060702@gmail.com>
+Message-ID: <000001405421b036-0b2994fa-3dd8-4ce7-995c-81660d804803-000000@email.amazonses.com>
+References: <51F8F827.6020108@gmail.com>
+ <alpine.DEB.2.02.1307310858150.30572@gentwo.org>
+ <alpine.DEB.2.02.1307311015320.30997@gentwo.org>
+ <000001403567762a-60a27288-f0b2-4855-b88c-6a6f21ec537c-000000@email.amazonses.com>
+ <51F93C64.4090601@gmail.com>
+ <0000014035b06a9d-e8b10680-e321-4d3b-95a8-0833fa3fb7c9-000000@email.amazonses.com>
+ <5200A29C.9060702@gmail.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: dedekind1@gmail.com, Mel Gorman <mel@csn.ul.ie>, dwmw2@infradead.org,
+ Pekka Enberg <penberg@kernel.org>, linux-mm@kvack.org,
+ linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,87 +29,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVHVlc2RheSwgQXVndXN0IDA2LCAyMDEzIDEyOjQ5IEFNDQo+IFRvOiBCaHVz
-aGFuIEJoYXJhdC1SNjU3NzcNCj4gQ2M6IEJlbmphbWluIEhlcnJlbnNjaG1pZHQ7IFdvb2QgU2Nv
-dHQtQjA3NDIxOyBhZ3JhZkBzdXNlLmRlOyBrdm0tDQo+IHBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2
-bUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1Ympl
-Y3Q6IFJlOiBbUEFUQ0ggNS82IHYyXSBrdm06IHBvd2VycGM6IGJvb2tlOiBBZGQgbGludXggcHRl
-IGxvb2t1cCBsaWtlDQo+IGJvb2tlM3MNCj4gDQo+IE9uIE1vbiwgMjAxMy0wOC0wNSBhdCAwOToy
-NyAtMDUwMCwgQmh1c2hhbiBCaGFyYXQtUjY1Nzc3IHdyb3RlOg0KPiA+DQo+ID4gPiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogQmVuamFtaW4gSGVycmVuc2NobWlkdCBb
-bWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gPiA+IFNlbnQ6IFNhdHVyZGF5LCBB
-dWd1c3QgMDMsIDIwMTMgOTo1NCBBTQ0KPiA+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0K
-PiA+ID4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBhZ3JhZkBzdXNlLmRlOyBrdm0tcHBjQHZnZXIu
-a2VybmVsLm9yZzsNCj4gPiA+IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0
-cy5vemxhYnMub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDUvNiB2Ml0ga3ZtOiBwb3dl
-cnBjOiBib29rZTogQWRkIGxpbnV4IHB0ZQ0KPiA+ID4gbG9va3VwIGxpa2UgYm9va2Uzcw0KPiA+
-ID4NCj4gPiA+IE9uIFNhdCwgMjAxMy0wOC0wMyBhdCAwMjo1OCArMDAwMCwgQmh1c2hhbiBCaGFy
-YXQtUjY1Nzc3IHdyb3RlOg0KPiA+ID4gPiBPbmUgb2YgdGhlIHByb2JsZW0gSSBzYXcgd2FzIHRo
-YXQgaWYgSSBwdXQgdGhpcyBjb2RlIGluDQo+ID4gPiA+IGFzbS9wZ3RhYmxlLTMyLmggYW5kIGFz
-bS9wZ3RhYmxlLTY0LmggdGhlbiBwdGVfcGVyc2VudCgpIGFuZCBvdGhlcg0KPiA+ID4gPiBmcmll
-bmQgZnVuY3Rpb24gKG9uIHdoaWNoIHRoaXMgY29kZSBkZXBlbmRzKSBhcmUgZGVmaW5lZCBpbiBw
-Z3RhYmxlLmguDQo+ID4gPiA+IEFuZCBwZ3RhYmxlLmggaW5jbHVkZXMgYXNtL3BndGFibGUtMzIu
-aCBhbmQgYXNtL3BndGFibGUtNjQuaA0KPiA+ID4gPiBiZWZvcmUgaXQgZGVmaW5lcyBwdGVfcHJl
-c2VudCgpIGFuZCBmcmllbmRzIGZ1bmN0aW9ucy4NCj4gPiA+ID4NCj4gPiA+ID4gT2sgSSBtb3Zl
-IHdvdmUgdGhpcyBpbiBhc20vcGd0YWJsZSouaCwgaW5pdGlhbGx5IEkgZm91Z2h0IHdpdGgNCj4g
-PiA+ID4gbXlzZWxmIHRvIHRha2UgdGhpcyBjb2RlIGluIHBndGFibGUqIGJ1dCBmaW5hbGx5IGVu
-ZCB1cCBkb2luZyBoZXJlDQo+ID4gPiA+IChnb3QgYmlhc2VkIGJ5IGJvb2szcyA6KSkuDQo+ID4g
-Pg0KPiA+ID4gSXMgdGhlcmUgYSByZWFzb24gd2h5IHRoZXNlIHJvdXRpbmVzIGNhbiBub3QgYmUg
-Y29tcGxldGVseSBnZW5lcmljDQo+ID4gPiBpbiBwZ3RhYmxlLmggPw0KPiA+DQo+ID4gSG93IGFi
-b3V0IHRoZSBnZW5lcmljIGZ1bmN0aW9uOg0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93
-ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLXBwYzY0LmgNCj4gPiBiL2FyY2gvcG93ZXJwYy9pbmNs
-dWRlL2FzbS9wZ3RhYmxlLXBwYzY0LmgNCj4gPiBpbmRleCBkMjU3ZDk4Li4yMWRhZjI4IDEwMDY0
-NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLXBwYzY0LmgNCj4g
-PiArKysgYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vcGd0YWJsZS1wcGM2NC5oDQo+ID4gQEAg
-LTIyMSw2ICsyMjEsMjcgQEAgc3RhdGljIGlubGluZSB1bnNpZ25lZCBsb25nIHB0ZV91cGRhdGUo
-c3RydWN0IG1tX3N0cnVjdA0KPiAqbW0sDQo+ID4gICAgICAgICByZXR1cm4gb2xkOw0KPiA+ICB9
-DQo+ID4NCj4gPiArc3RhdGljIGlubGluZSB1bnNpZ25lZCBsb25nIHB0ZV9yZWFkKHB0ZV90ICpw
-KSB7ICNpZmRlZg0KPiA+ICtQVEVfQVRPTUlDX1VQREFURVMNCj4gPiArICAgICAgIHB0ZV90IHB0
-ZTsNCj4gPiArICAgICAgIHB0ZV90IHRtcDsNCj4gPiArICAgICAgIF9fYXNtX18gX192b2xhdGls
-ZV9fICgNCj4gPiArICAgICAgICIxOiAgICAgbGRhcnggICAlMCwwLCUzXG4iDQo+ID4gKyAgICAg
-ICAiICAgICAgIGFuZGkuICAgJTEsJTAsJTRcbiINCj4gPiArICAgICAgICIgICAgICAgYm5lLSAg
-ICAxYlxuIg0KPiA+ICsgICAgICAgIiAgICAgICBvcmkgICAgICUxLCUwLCU0XG4iDQo+ID4gKyAg
-ICAgICAiICAgICAgIHN0ZGN4LiAgJTEsMCwlM1xuIg0KPiA+ICsgICAgICAgIiAgICAgICBibmUt
-ICAgIDFiIg0KPiA+ICsgICAgICAgOiAiPSZyIiAocHRlKSwgIj0mciIgKHRtcCksICI9bSIgKCpw
-KQ0KPiA+ICsgICAgICAgOiAiciIgKHApLCAiaSIgKF9QQUdFX0JVU1kpDQo+ID4gKyAgICAgICA6
-ICJjYyIpOw0KPiA+ICsNCj4gPiArICAgICAgIHJldHVybiBwdGU7DQo+ID4gKyNlbHNlDQo+ID4g
-KyAgICAgICByZXR1cm4gcHRlX3ZhbCgqcCk7DQo+ID4gKyNlbmRpZg0KPiA+ICsjZW5kaWYNCj4g
-PiArfQ0KPiA+ICBzdGF0aWMgaW5saW5lIGludCBfX3B0ZXBfdGVzdF9hbmRfY2xlYXJfeW91bmco
-c3RydWN0IG1tX3N0cnVjdCAqbW0sDQo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIHVuc2lnbmVkIGxvbmcgYWRkciwNCj4gPiBwdGVfdCAqcHRlcCkNCj4g
-DQo+IFBsZWFzZSBsZWF2ZSBhIGJsYW5rIGxpbmUgYmV0d2VlbiBmdW5jdGlvbnMuDQo+IA0KPiA+
-ICB7DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLmgN
-Cj4gPiBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wZ3RhYmxlLmgNCj4gPiBpbmRleCA2OTBj
-OGMyLi5kYWQ3MTJjIDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9w
-Z3RhYmxlLmgNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vcGd0YWJsZS5oDQo+
-ID4gQEAgLTI1NCw2ICsyNTQsNDUgQEAgc3RhdGljIGlubGluZSBwdGVfdA0KPiA+ICpmaW5kX2xp
-bnV4X3B0ZV9vcl9odWdlcHRlKHBnZF90ICpwZ2RpciwgdW5zaWduZWQgbG9uZyBlYSwgIH0gICNl
-bmRpZg0KPiA+IC8qICFDT05GSUdfSFVHRVRMQl9QQUdFICovDQo+ID4NCj4gPiArc3RhdGljIGlu
-bGluZSBwdGVfdCBsb29rdXBfbGludXhfcHRlKHBnZF90ICpwZ2RpciwgdW5zaWduZWQgbG9uZyBo
-dmEsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGludCB3cml0aW5n
-LCB1bnNpZ25lZCBsb25nDQo+ID4gKypwdGVfc2l6ZXApDQo+IA0KPiBUaGUgbmFtZSBpbXBsaWVz
-IHRoYXQgaXQganVzdCByZWFkcyB0aGUgUFRFLiAgU2V0dGluZyBhY2Nlc3NlZC9kaXJ0eSBzaG91
-bGRuJ3QNCj4gYmUgYW4gdW5kb2N1bWVudGVkIHNpZGUtZWZmZWN0LiAgV2h5IGNhbid0IHRoZSBj
-YWxsZXIgZG8gdGhhdCAob3IgYSBkaWZmZXJlbnQNCj4gZnVuY3Rpb24gdGhhdCB0aGUgY2FsbGVy
-IGNhbGxzIGFmdGVyd2FyZCBpZiBkZXNpcmVkKT8NCg0KU2NvdHQsIEkgc2VudCB0aGUgbmV4dCB2
-ZXJzaW9uIG9mIHBhdGNoIGJhc2VkIG9uIGFib3ZlIGlkZWEuIE5vdyBJIHRoaW5rIHdlIGRvIG5v
-dCBuZWVkIHRvIHVwZGF0ZSB0aGUgcHRlIGZsYWdzIG9uIGJvb2tlIA0KU28gd2UgZG8gbm90IG5l
-ZWQgdG8gc29sdmUgdGhlIGt2bXBwY19yZWFkX3VwZGF0ZV9saW51eF9wdGUoKSBzdHVmZiBvZiBi
-b29rM3MuDQoNCi1CaGFyYXQNCg0KPiANCj4gVGhvdWdoIGV2ZW4gdGhlbiB5b3UgaGF2ZSB0aGUg
-dW5kb2N1bWVudGVkIHNpZGUgZWZmZWN0IG9mIGxvY2tpbmcgdGhlIFBURSBvbg0KPiBjZXJ0YWlu
-IHRhcmdldHMuDQo+IA0KPiA+ICt7DQo+ID4gKyAgICAgICBwdGVfdCAqcHRlcDsNCj4gPiArICAg
-ICAgIHB0ZV90IHB0ZTsNCj4gPiArICAgICAgIHVuc2lnbmVkIGxvbmcgcHMgPSAqcHRlX3NpemVw
-Ow0KPiA+ICsgICAgICAgdW5zaWduZWQgaW50IHNoaWZ0Ow0KPiA+ICsNCj4gPiArICAgICAgIHB0
-ZXAgPSBmaW5kX2xpbnV4X3B0ZV9vcl9odWdlcHRlKHBnZGlyLCBodmEsICZzaGlmdCk7DQo+ID4g
-KyAgICAgICBpZiAoIXB0ZXApDQo+ID4gKyAgICAgICAgICAgICAgIHJldHVybiBfX3B0ZSgwKTsN
-Cj4gPiArICAgICAgIGlmIChzaGlmdCkNCj4gPiArICAgICAgICAgICAgICAgKnB0ZV9zaXplcCA9
-IDF1bCA8PCBzaGlmdDsNCj4gPiArICAgICAgIGVsc2UNCj4gPiArICAgICAgICAgICAgICAgKnB0
-ZV9zaXplcCA9IFBBR0VfU0laRTsNCj4gPiArDQo+ID4gKyAgICAgICBpZiAocHMgPiAqcHRlX3Np
-emVwKQ0KPiA+ICsgICAgICAgICAgICAgICByZXR1cm4gX19wdGUoMCk7DQo+ID4gKw0KPiA+ICsg
-ICAgICAgaWYgKCFwdGVfcHJlc2VudCgqcHRlcCkpDQo+ID4gKyAgICAgICAgICAgICAgIHJldHVy
-biBfX3B0ZSgwKTsNCj4gPiArDQo+ID4gKyNpZmRlZiBDT05GSUdfUFBDNjQNCj4gPiArICAgICAg
-IC8qIExvY2sgUFRFIChzZXQgX1BBR0VfQlVTWSkgYW5kIHJlYWQgKi8NCj4gPiArICAgICAgIHB0
-ZSA9IHB0ZV9yZWFkKHB0ZXApOw0KPiA+ICsjZWxzZQ0KPiA+ICsgICAgICAgcHRlID0gcHRlX3Zh
-bCgqcHRlcCk7DQo+ID4gKyNlbmRpZg0KPiANCj4gV2hhdCBhYm91dCAzMi1iaXQgcGxhdGZvcm1z
-IHRoYXQgbmVlZCBhdG9taWMgUFRFcz8NCj4gDQo+IC1TY290dA0KPiANCg0K
+On Tue, 6 Aug 2013, Wladislav Wiebe wrote:
+
+> ok, just saw in slab/for-linus branch that those stuff is reverted again..
+
+No that was only for the 3.11 merge by Linus. The 3.12 patches have not
+been put into pekkas tree.
