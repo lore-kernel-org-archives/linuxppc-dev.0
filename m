@@ -1,16 +1,16 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 99BE52C03CC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 06:47:00 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6257C2C025A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 06:47:07 +1000 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>,
  linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
-Subject: [PATCH v4 20/31] spi: mpc512x: switch to CCF names in clock lookup
-Date: Tue,  6 Aug 2013 22:44:00 +0200
-Message-Id: <1375821851-31609-21-git-send-email-gsi@denx.de>
+Subject: [PATCH v4 21/31] serial: mpc512x: switch to CCF names in clock lookup
+Date: Tue,  6 Aug 2013 22:44:01 +0200
+Message-Id: <1375821851-31609-22-git-send-email-gsi@denx.de>
 In-Reply-To: <1375821851-31609-1-git-send-email-gsi@denx.de>
 References: <1374495298-22019-1-git-send-email-gsi@denx.de>
  <1375821851-31609-1-git-send-email-gsi@denx.de>
@@ -37,86 +37,95 @@ acquire and release the 'ipg' clock for register access as well
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/spi/spi-mpc512x-psc.c |   30 +++++++++++++++++++++---------
- 1 file changed, 21 insertions(+), 9 deletions(-)
+ drivers/tty/serial/mpc52xx_uart.c |   45 ++++++++++++++++++++++++++++++++-----
+ 1 file changed, 40 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/spi/spi-mpc512x-psc.c b/drivers/spi/spi-mpc512x-psc.c
-index 85581f3..daedee7 100644
---- a/drivers/spi/spi-mpc512x-psc.c
-+++ b/drivers/spi/spi-mpc512x-psc.c
-@@ -38,6 +38,7 @@ struct mpc512x_psc_spi {
- 	struct mpc512x_psc_fifo __iomem *fifo;
- 	unsigned int irq;
- 	u8 bits_per_word;
-+	struct clk *clk_ipg;
- 	struct clk *clk_mclk;
- 	u32 mclk_rate;
+diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
+index 5be1df3..f4d2b70 100644
+--- a/drivers/tty/serial/mpc52xx_uart.c
++++ b/drivers/tty/serial/mpc52xx_uart.c
+@@ -618,30 +618,58 @@ static irqreturn_t mpc512x_psc_handle_irq(struct uart_port *port)
+ 	return IRQ_NONE;
+ }
  
-@@ -474,8 +475,6 @@ static int mpc512x_psc_spi_do_probe(struct device *dev, u32 regaddr,
- 	struct spi_master *master;
- 	int ret;
- 	void *tempp;
--	int psc_num;
++static struct clk *psc_ipg_clk[MPC52xx_PSC_MAXNUM];
+ static struct clk *psc_mclk_clk[MPC52xx_PSC_MAXNUM];
+ 
+ /* called from within the .request_port() callback (allocation) */
+ static int mpc512x_psc_alloc_clock(struct uart_port *port)
+ {
+ 	int psc_num;
 -	char clk_name[16];
  	struct clk *clk;
+ 	int err;
  
- 	master = spi_alloc_master(dev, sizeof *mps);
-@@ -519,29 +518,41 @@ static int mpc512x_psc_spi_do_probe(struct device *dev, u32 regaddr,
- 		goto free_master;
- 	init_completion(&mps->txisrdone);
- 
--	psc_num = master->bus_num;
+ 	psc_num = (port->mapbase & 0xf00) >> 8;
 -	snprintf(clk_name, sizeof(clk_name), "psc%d_mclk", psc_num);
--	clk = devm_clk_get(dev, clk_name);
--	if (IS_ERR(clk))
-+	clk = devm_clk_get(dev, "ipg");
-+	if (IS_ERR(clk)) {
-+		ret = PTR_ERR(clk);
- 		goto free_irq;
-+	}
- 	ret = clk_prepare_enable(clk);
- 	if (ret)
- 		goto free_irq;
-+	mps->clk_ipg = clk;
+-	clk = devm_clk_get(port->dev, clk_name);
 +
-+	clk = devm_clk_get(dev, "mclk");
++	clk = devm_clk_get(port->dev, "ipg");
 +	if (IS_ERR(clk)) {
-+		ret = PTR_ERR(clk);
-+		goto free_ipg_clock;
++		dev_err(port->dev, "Failed to get IPG clock!\n");
++		err = PTR_ERR(clk);
++		goto out_err;
 +	}
-+	ret = clk_prepare_enable(clk);
-+	if (ret)
-+		goto free_ipg_clock;
- 	mps->clk_mclk = clk;
- 	mps->mclk_rate = clk_get_rate(clk);
++	err = clk_prepare_enable(clk);
++	if (err) {
++		dev_err(port->dev, "Failed to enable IPG clock!\n");
++		goto out_err;
++	}
++	psc_ipg_clk[psc_num] = clk;
++
++	clk = devm_clk_get(port->dev, "mclk");
+ 	if (IS_ERR(clk)) {
+ 		dev_err(port->dev, "Failed to get MCLK!\n");
+-		return PTR_ERR(clk);
++		err = PTR_ERR(clk);
++		goto out_err;
+ 	}
+ 	err = clk_prepare_enable(clk);
+ 	if (err) {
+ 		dev_err(port->dev, "Failed to enable MCLK!\n");
+-		return err;
++		goto out_err;
+ 	}
+ 	psc_mclk_clk[psc_num] = clk;
++
+ 	return 0;
++
++out_err:
++	clk = psc_mclk_clk[psc_num];
++	if (clk) {
++		clk_disable_unprepare(clk);
++		psc_mclk_clk[psc_num] = NULL;
++	}
++	clk = psc_ipg_clk[psc_num];
++	if (clk) {
++		clk_disable_unprepare(clk);
++		psc_ipg_clk[psc_num] = NULL;
++	}
++	return err;
+ }
  
- 	ret = mpc512x_psc_spi_port_config(master, mps);
- 	if (ret < 0)
--		goto free_clock;
-+		goto free_mclk_clock;
+ /* called from within the .release_port() callback (release) */
+@@ -651,11 +679,18 @@ static void mpc512x_psc_relse_clock(struct uart_port *port)
+ 	struct clk *clk;
  
- 	ret = spi_register_master(master);
- 	if (ret < 0)
--		goto free_clock;
-+		goto free_mclk_clock;
+ 	psc_num = (port->mapbase & 0xf00) >> 8;
++
+ 	clk = psc_mclk_clk[psc_num];
+ 	if (clk) {
+ 		clk_disable_unprepare(clk);
+ 		psc_mclk_clk[psc_num] = NULL;
+ 	}
++
++	clk = psc_ipg_clk[psc_num];
++	if (clk) {
++		clk_disable_unprepare(clk);
++		psc_ipg_clk[psc_num] = NULL;
++	}
+ }
  
- 	return ret;
- 
--free_clock:
-+free_mclk_clock:
- 	clk_disable_unprepare(mps->clk_mclk);
-+free_ipg_clock:
-+	clk_disable_unprepare(mps->clk_ipg);
- free_irq:
- 	free_irq(mps->irq, mps);
- free_master:
-@@ -559,6 +570,7 @@ static int mpc512x_psc_spi_do_remove(struct device *dev)
- 
- 	spi_unregister_master(master);
- 	clk_disable_unprepare(mps->clk_mclk);
-+	clk_disable_unprepare(mps->clk_ipg);
- 	free_irq(mps->irq, mps);
- 	if (mps->psc)
- 		iounmap(mps->psc);
+ /* implementation of the .clock() callback (enable/disable) */
 -- 
 1.7.10.4
