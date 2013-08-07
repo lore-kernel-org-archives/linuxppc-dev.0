@@ -1,22 +1,26 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B43432C0098
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 09:55:18 +1000 (EST)
-Message-ID: <1375833300.5600.51.camel@snotra.buserror.net>
-Subject: Re: [PATCH] net/fsl_pq_mdio: fix handling of TBIPA register
-From: Scott Wood <scottwood@freescale.com>
-To: Lutz Jaenicke <ljaenicke@innominate.com>
-Date: Tue, 6 Aug 2013 18:55:00 -0500
-In-Reply-To: <1375830655.5600.24.camel@snotra.buserror.net>
-References: <1375379355-18594-1-git-send-email-ljaenicke@innominate.com>
- <1375830655.5600.24.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 7 Aug 2013 10:24:08 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Subject: Re: [PATCH 5/6 v2] kvm: powerpc: booke: Add linux pte lookup like
+ booke3s
+Message-ID: <20130807002408.GE19254@iris.ozlabs.ibm.com>
+References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1375355558-19187-6-git-send-email-Bharat.Bhushan@freescale.com>
+ <1375484319.26902.4.camel@snotra.buserror.net>
+ <1375485408.15999.67.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D070F8FCC@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1375503847.15999.80.camel@pasglop>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D070FAD49@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1375730341.13074.38.camel@snotra.buserror.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D070FBE3B@039-SN2MPN1-012.039d.mgd.msft.net>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D070FBE3B@039-SN2MPN1-012.039d.mgd.msft.net>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-08-06 at 18:10 -0500, Scott Wood wrote:
-> On Thu, 2013-08-01 at 19:49 +0200, Lutz Jaenicke wrote:
-> > The TBIPA register is part of gianfar's full register set. When starting
-> > from the MII registers, the start address of struct gfar needs to
-> > be determined via container_of().
-> > Experienced with mpc8313 and "fsl,gianfar-mdio" device tree entries.
-> > 
-> > Signed-off-by: Lutz Jaenicke <ljaenicke@innominate.com>
-> > ---
-> >  drivers/net/ethernet/freescale/fsl_pq_mdio.c |    3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/net/ethernet/freescale/fsl_pq_mdio.c b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-> > index c93a056..9485fdb 100644
-> > --- a/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-> > +++ b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-> > @@ -193,7 +193,8 @@ static int fsl_pq_mdio_reset(struct mii_bus *bus)
-> >   */
-> >  static uint32_t __iomem *get_gfar_tbipa(void __iomem *p)
-> >  {
-> > -	struct gfar __iomem *enet_regs = p;
-> > +	struct gfar __iomem *enet_regs = 
-> > +		container_of(p, struct gfar, gfar_mii_regs);
-> >  
-> >  	return &enet_regs->tbipa;
-> >  }
+On Tue, Aug 06, 2013 at 07:02:48AM +0000, Bhushan Bharat-R65777 wrote:
 > 
-> Please send this to the netdev list/maintainer.
+> I am trying to me the Linux pte search and update generic so that this can be used for powerpc as well.
+> 
+> I am not sure which of the below two should be ok, please help
 
-Though, do we have any guarantee that p is contained by a "struct gfar"?
-It looks like the code of_iomap()s the reg of the mdio node, which is
-just the MDIO registers.  Don't access outside that area.
+Given that the BookE code uses gfn_to_pfn_memslot() to get the host
+pfn, and then kvm_set_pfn_dirty(pfn) on pages that you're going to let
+the guest write to, I don't think you need to set the dirty and/or
+accessed bits in the Linux PTE explicitly.  If you care about the
+WIMGE bits you can do find_linux_pte_or_hugepte() and just look at the
+PTE, but you really should be using mmu_notifier_retry() to guard
+against concurrent changes to the Linux PTE.  See the HV KVM code or
+patch 21 of my recent series to see how it's used.  You probably
+should be calling kvm_set_pfn_accessed() as well.
 
-Of course, this register probably *should* be described in the MDIO node
-(see http://patchwork.ozlabs.org/patch/250766/), but since it isn't,
-we'll need to either find the associated full gianfar device and ask it
-to set tbipa, or look up the physical address of tbipa and do a separate
-ioremap.  I know that in practice we'll have at least 4K-granular
-mappings and thus tbipa will be there, but it's best to avoid such
-hacks.
-
--Scott
+Paul.
