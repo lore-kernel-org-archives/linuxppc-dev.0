@@ -1,10 +1,11 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/4] powerpc/tm: Add checkpointed versions of some SPRs to
- thread_struct
-Date: Wed,  7 Aug 2013 16:11:55 +1000
-Message-Id: <1375855918-3625-1-git-send-email-mikey@neuling.org>
+Subject: [PATCH 2/4] powerpc: Add new save_tar() register function.
+Date: Wed,  7 Aug 2013 16:11:56 +1000
+Message-Id: <1375855918-3625-2-git-send-email-mikey@neuling.org>
+In-Reply-To: <1375855918-3625-1-git-send-email-mikey@neuling.org>
+References: <1375855918-3625-1-git-send-email-mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -15,45 +16,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Transactional memory will restore the TAR, PPR and DSCR on transaction failure.
-
-Add these to the thread_struct for use in the future
+Add save_tar() function to save the Target Address Register (TAR).  This will
+be used in a future patch to save the TAR earlier than it currently is.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 Cc: <stable@vger.kernel.org>
 ---
- arch/powerpc/include/asm/processor.h | 4 ++++
- arch/powerpc/kernel/asm-offsets.c    | 3 +++
- 2 files changed, 7 insertions(+)
+ arch/powerpc/include/asm/switch_to.h |  5 +++++
+ arch/powerpc/kernel/entry_64.S       | 12 ++++++++++++
+ 2 files changed, 17 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 47a35b0..e378ccc 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -247,6 +247,10 @@ struct thread_struct {
- 	unsigned long	tm_orig_msr;	/* Thread's MSR on ctx switch */
- 	struct pt_regs	ckpt_regs;	/* Checkpointed registers */
+diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+index 49a13e0..4531068 100644
+--- a/arch/powerpc/include/asm/switch_to.h
++++ b/arch/powerpc/include/asm/switch_to.h
+@@ -15,6 +15,11 @@ extern struct task_struct *__switch_to(struct task_struct *,
+ struct thread_struct;
+ extern struct task_struct *_switch(struct thread_struct *prev,
+ 				   struct thread_struct *next);
++#ifdef CONFIG_PPC_BOOK3S_64
++extern void _save_tar(struct thread_struct *prev);
++#else
++static inline void _save_tar(struct thread_struct *prev) {}
++#endif
  
-+	unsigned long	tm_tar;
-+	unsigned long	tm_ppr;
-+	unsigned long	tm_dscr;
-+
- 	/*
- 	 * Transactional FP and VSX 0-31 register set.
- 	 * NOTE: the sense of these is the opposite of the integer ckpt_regs!
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index c7e8afc..8207459 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -138,6 +138,9 @@ int main(void)
- 	DEFINE(THREAD_TM_TFHAR, offsetof(struct thread_struct, tm_tfhar));
- 	DEFINE(THREAD_TM_TEXASR, offsetof(struct thread_struct, tm_texasr));
- 	DEFINE(THREAD_TM_TFIAR, offsetof(struct thread_struct, tm_tfiar));
-+	DEFINE(THREAD_TM_TAR, offsetof(struct thread_struct, tm_tar));
-+	DEFINE(THREAD_TM_PPR, offsetof(struct thread_struct, tm_ppr));
-+	DEFINE(THREAD_TM_DSCR, offsetof(struct thread_struct, tm_dscr));
- 	DEFINE(PT_CKPT_REGS, offsetof(struct thread_struct, ckpt_regs));
- 	DEFINE(THREAD_TRANSACT_VR0, offsetof(struct thread_struct,
- 					 transact_vr[0]));
+ extern void giveup_fpu(struct task_struct *);
+ extern void load_up_fpu(void);
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 4674fe6..32e18f3 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -389,6 +389,18 @@ DSCR_DEFAULT:
+ 	.tc dscr_default[TC],dscr_default
+ 
+ 	.section	".text"
++#ifdef CONFIG_PPC_BOOK3S_64
++_GLOBAL(_save_tar)
++	/*
++	 * Back up the TAR across context switches.  Note that the TAR is not
++	 * available for use in the kernel.  (To provide this, the TAR should
++	 * be backed up/restored on exception entry/exit instead, and be in
++	 * pt_regs.  FIXME, this should be in pt_regs anyway (for debug).)
++	 */
++	mfspr	r0,SPRN_TAR
++	std	r0,THREAD_TAR(r3)
++	blr
++#endif
+ 
+ /*
+  * This routine switches between two different tasks.  The process
 -- 
 1.8.1.2
