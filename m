@@ -1,28 +1,38 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 87E3C2C0242
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 02:13:26 +1000 (EST)
-Subject: Re: [PATCH v4 00/31] add COMMON_CLK support for PowerPC MPC512x
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1375821851-31609-1-git-send-email-gsi@denx.de>
-Date: Wed, 7 Aug 2013 10:40:24 -0500
-Message-Id: <BF555A06-59CD-4697-927E-04657E6F1DB1@kernel.crashing.org>
-References: <1374495298-22019-1-git-send-email-gsi@denx.de>
- <1375821851-31609-1-git-send-email-gsi@denx.de>
-To: Gerhard Sittig <gsi@denx.de>
-Cc: devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>,
- Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@kernel.org>,
- Marc Kleine-Budde <mkl@pengutronix.de>,
- Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
- linux-arm-kernel@lists.infradead.org,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+Return-Path: <tony.luck@gmail.com>
+Received: from mail-vb0-x236.google.com (mail-vb0-x236.google.com
+ [IPv6:2607:f8b0:400c:c02::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 31CA62C008C
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Aug 2013 03:30:13 +1000 (EST)
+Received: by mail-vb0-f54.google.com with SMTP id q14so2092940vbe.41
+ for <linuxppc-dev@ozlabs.org>; Wed, 07 Aug 2013 10:30:09 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CA+8MBb+pkKpaEDs6J_XbzM3wzady2MjdU+jcDP+jH1f1VBxG5w@mail.gmail.com>
+References: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
+ <51FA3B02.7060004@linux.vnet.ibm.com>
+ <3908561D78D1C84285E8C5FCA982C28F31CAA167@ORSMSX106.amr.corp.intel.com>
+ <CA+8MBbLuhVDCb26ag3AH0vXrP4MXHLxS5aVn8pTi4=qL1NdR5w@mail.gmail.com>
+ <CA+8MBbJ7x46FGC7dPSdNzf8z=fZz20w1kiNgnZr4QQB6SUELhg@mail.gmail.com>
+ <51FFDC8B.7010909@linux.vnet.ibm.com>
+ <CA+8MBb+1LpR+Cx=84WZT98U5eqZcm1KriUP75aCg+uSrXrb3Yw@mail.gmail.com>
+ <51FFFFEB.3030907@linux.vnet.ibm.com>
+ <CA+8MBbK9oZJO+RJGC-7riO=Kz=UbRcAvQ-nDi=2GLyvEDpoc7g@mail.gmail.com>
+ <CA+8MBbKA+P4vs3utSKQ-LPMW3ybrWOp=f3FH6ahv1YtwnMm5KA@mail.gmail.com>
+ <5201A9BD.4090503@linux.vnet.ibm.com>
+ <CA+8MBbJS0Dymn4OABi-rW9M5Bw-ZZ6DaEjQOW-oki+4ge4BDtg@mail.gmail.com>
+ <5201D777.8060303@linux.vnet.ibm.com>
+ <CA+8MBb+pkKpaEDs6J_XbzM3wzady2MjdU+jcDP+jH1f1VBxG5w@mail.gmail.com>
+Date: Wed, 7 Aug 2013 10:30:09 -0700
+Message-ID: <CA+8MBb+dNkT_xpqL6oy=D3UqCtEwAci5fatw-0crCFLMAGE1nA@mail.gmail.com>
+Subject: Re: [PATCH 00/11] Add compression support to pstore
+From: Tony Luck <tony.luck@gmail.com>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "keescook@chromium.org" <keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,52 +42,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Oh - one more thing - and my apologies for not spotting this before:
 
-On Aug 6, 2013, at 3:43 PM, Gerhard Sittig wrote:
+                dst = allocate_buf_for_compression(big_buf_sz);
 
-> this series
-> - fixes several drivers that are used in the MPC512x platform (UART,
-> SPI, ethernet, PCI, USB, CAN, NAND flash, video capture) in how they
-> handle clocks (appropriately acquire and setup them, hold references
-> during use, release clocks after use)
-> - introduces support for the common clock framework (CCF, COMMON_CLK
-> Kconfig option) in the PowerPC based MPC512x platform, which brings
-> device tree based clock lookup as well
->=20
-> although the series does touch several subsystems -- tty (serial), =
-spi,
-> net (can, fs_enet), mtd (nfc), usb, i2c, media (viu), and dts -- all =
-of
-> the patches are strictly clock related or trivial
->=20
-> it appears most appropriate to take this series through either the clk
-> or the powerpc trees after it has passed review and other subsystem
-> maintainers ACKed the clock setup related driver modifications
->=20
-> the series passes 'checkpatch.pl --strict' except for one warning =
-which
-> cannot get resolved, since that either breaks compilation (the data =
-type
-> is preset by the clk-provider.h API) or requires a cast which shadows
-> real mismatches:
->=20
-> WARNING: static const char * array should probably be static const =
-char * const
-> #431: FILE: arch/powerpc/platforms/512x/clock-commonclk.c:334:
-> +static const char *parent_names_mux0[] =3D {
->=20
-> total: 0 errors, 1 warnings, 0 checks, 807 lines checked
->=20
-> each step in the series was build and run tested (with a display that =
-is
-> attached to the DIU as well as SPI, with an SPI attached NOR flash, =
-with
-> multiple UART ports such that one is not the boot console, with =
-EEPROMs
-> attached to I2C, with an SD card, booting from network)
->=20
+No - you may not call kmalloc() in oops/panic context.  Please pre-allocate
+everything you need in some initialization code to make sure that we don't
+fail in the panic path because we can't get the memory we need.
 
-How do the driver changes impact other PPC SoCs that use the same =
-drivers (i2c, fs_enet, usb) ?
-
-- k=
+-Tony
