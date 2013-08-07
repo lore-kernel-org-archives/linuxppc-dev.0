@@ -1,32 +1,31 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A8662C031B
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:41:12 +1000 (EST)
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CE8EA2C030C
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:41:21 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Wed, 7 Aug 2013 19:33:02 +1000
+ Thu, 8 Aug 2013 06:36:06 +1000
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id AC0A72CE804D
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:39:00 +1000 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id AB0D72BB0055
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:38:25 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r779NAfY67043388
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:23:11 +1000
+ r779MZmN7078286
+ for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:22:36 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r779cx4I017935
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:38:59 +1000
-Subject: [RFC PATCH 5/9] powerpc: Flush SLB/TLBs if we get SLB/TLB machine
- check errors on power7.
+ r779cOoO017008
+ for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:38:24 +1000
+Subject: [RFC PATCH 2/9] powerpc: handle machine check in Linux host.
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Wed, 07 Aug 2013 15:08:55 +0530
-Message-ID: <20130807093855.5389.21377.stgit@mars.in.ibm.com>
+Date: Wed, 07 Aug 2013 15:08:15 +0530
+Message-ID: <20130807093815.5389.7668.stgit@mars.in.ibm.com>
 In-Reply-To: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
 References: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
@@ -44,318 +43,215 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-If we get a machine check exception due to SLB or TLB errors, then flush
-SLBs/TLBs and reload SLBs to recover. We do this in real mode before turning
-on MMU. Otherwise we would run into nested machine checks.
+Move machine check entry point into Linux. So far we were dependent on
+firmware to decode MCE error details and handover the high level info to OS.
 
-If we get a machine check when we are in guest, then just flush the
-SLBs and continue. This patch handles errors for power7. The next
-patch will handle errors for power8
+This patch introduces early machine check routine that saves the MCE
+information (srr1, srr0, dar and dsisr) to the emergency stack. We allocate
+stack frame on emergency stack and set the r1 accordingly. This allows us
+to be prepared to take another exception without loosing context. One thing
+to note here that, if we get another machine check while ME bit is off then
+we risk a checkstop. Hence we restrict ourselves to save only MCE information
+and turn the ME bit on.
+
+This is the code flow:
+
+		Machine Check Interrupt
+			|
+			V
+		   0x200 vector				  ME=0, IR=0, DR=0
+			|
+			V
+	+-----------------------------------------------+
+	|machine_check_pSeries_early:			| ME=0, IR=0, DR=0
+	|	Alloc frame on emergency stack		|
+	|	Save srr1, srr0, dar and dsisr on stack |
+	+-----------------------------------------------+
+			|
+		(ME=1, IR=0, DR=0, RFID)
+			|
+			V
+		machine_check_handle_early		  ME=1, IR=0, DR=0
+			|
+			V
+	+-----------------------------------------------+
+	|	machine_check_early (r3=pt_regs)	| ME=1, IR=0, DR=0
+	|	Things to do: (in next patches)		|
+	|		Flush SLB for SLB errors	|
+	|		Flush TLB for TLB errors	|
+	|		Decode and save MCE info	|
+	+-----------------------------------------------+
+			|
+	(Fall through existing exception handler routine.)
+			|
+			V
+		machine_check_pSerie			  ME=1, IR=0, DR=0
+			|
+		(ME=1, IR=1, DR=1, RFID)
+			|
+			V
+		machine_check_common			  ME=1, IR=1, DR=1
+			.
+			.
+			.
+
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/bitops.h |    5 +
- arch/powerpc/include/asm/mce.h    |   67 ++++++++++++++++
- arch/powerpc/kernel/Makefile      |    1 
- arch/powerpc/kernel/cputable.c    |    4 +
- arch/powerpc/kernel/mce_power.c   |  153 +++++++++++++++++++++++++++++++++++++
- 5 files changed, 230 insertions(+)
- create mode 100644 arch/powerpc/include/asm/mce.h
- create mode 100644 arch/powerpc/kernel/mce_power.c
+ arch/powerpc/include/asm/exception-64s.h |   43 ++++++++++++++++++++++++++
+ arch/powerpc/kernel/exceptions-64s.S     |   50 +++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/traps.c              |   12 +++++++
+ 3 files changed, 104 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index 910194e..a57f4bc 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -46,6 +46,11 @@
- #include <asm/asm-compat.h>
- #include <asm/synch.h>
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 2386d40..c5d2cbc 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -174,6 +174,49 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ #define EXCEPTION_PROLOG_1(area, extra, vec)				\
+ 	__EXCEPTION_PROLOG_1(area, extra, vec)
  
-+/* PPC bit number conversion */
-+#define PPC_BIT(bit)		(0x8000000000000000UL >> (bit))
-+#define PPC_BITLSHIFT(be)	(63 - (be))
-+#define PPC_BITMASK(bs, be)	((PPC_BIT(bs) - PPC_BIT(be)) | PPC_BIT(bs))
-+
- /*
-  * clear_bit doesn't imply a memory barrier
-  */
-diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-new file mode 100644
-index 0000000..ba19073
---- /dev/null
-+++ b/arch/powerpc/include/asm/mce.h
-@@ -0,0 +1,67 @@
 +/*
-+ * Machine check exception header file.
++ * Register contents:
++ * R12		= interrupt vector
++ * R13		= PACA
++ * R9		= CR
++ * R11 & R12 is saved on PACA_EXMC
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright 2013 IBM Corporation
-+ * Author: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
++ * Swicth to emergency stack and handle re-entrancy (though we currently
++ * don't test for overflow). Save MCE registers srr1, srr0, dar and
++ * dsisr and then turn the ME bit on.
 + */
++#define __EARLY_MACHINE_CHECK_HANDLER(area, label)			\
++	/* Check if we are laready using emergency stack. */		\
++	ld	r10,PACAEMERGSP(r13);					\
++	subi	r10,r10,THREAD_SIZE;					\
++	rldicr	r10,r10,0,(63 - THREAD_SHIFT);				\
++	rldicr	r11,r1,0,(63 - THREAD_SHIFT);				\
++	cmpd	r10,r11;	/* Are we using emergency stack? */	\
++	mr	r11,r1;			/* Save current stack pointer */\
++	beq	0f;							\
++	ld	r1,PACAEMERGSP(r13);	/* Use emergency stack */	\
++0:	subi	r1,r1,INT_FRAME_SIZE;	/* alloc stack frame */		\
++	std	r11,GPR1(r1);						\
++	std	r11,0(r1);		/* make stack chain pointer */	\
++	mfspr	r11,SPRN_SRR0;		/* Save SRR0 */			\
++	std	r11,_NIP(r1);						\
++	mfspr	r11,SPRN_SRR1;		/* Save SRR1 */			\
++	std	r11,_MSR(r1);						\
++	mfspr	r11,SPRN_DAR;		/* Save DAR */			\
++	std 	r11,_DAR(r1);						\
++	mfspr	r11,SPRN_DSISR;		/* Save DSISR */		\
++	std	r11,_DSISR(r1);						\
++	mfmsr	r11;			/* get MSR value */		\
++	ori	r11,r11,MSR_ME;		/* turn on ME bit */		\
++	ld	r12,PACAKBASE(r13);	/* get high part of &label */	\
++	LOAD_HANDLER(r12,label)						\
++	mtspr	SPRN_SRR0,r12;						\
++	mtspr	SPRN_SRR1,r11;						\
++	rfid;								\
++	b	.	/* prevent speculative execution */
++#define EARLY_MACHINE_CHECK_HANDLER(area, label)			\
++	__EARLY_MACHINE_CHECK_HANDLER(area, label)
 +
-+#ifndef __ASM_PPC64_MCE_H__
-+#define __ASM_PPC64_MCE_H__
-+
-+#include <linux/bitops.h>
-+
-+/*
-+ * Machine Check bits on power7 and power8
-+ */
-+#define P7_SRR1_MC_LOADSTORE(srr1)	((srr1) & PPC_BIT(42)) /* P8 too */
-+
-+/* SRR1 bits for machine check (On Power7 and Power8) */
-+#define P7_SRR1_MC_IFETCH(srr1)	((srr1) & PPC_BITMASK(43, 45)) /* P8 too */
-+
-+#define P7_SRR1_MC_IFETCH_UE		(0x1 << PPC_BITLSHIFT(45)) /* P8 too */
-+#define P7_SRR1_MC_IFETCH_SLB_PARITY	(0x2 << PPC_BITLSHIFT(45)) /* P8 too */
-+#define P7_SRR1_MC_IFETCH_SLB_MULTIHIT	(0x3 << PPC_BITLSHIFT(45)) /* P8 too */
-+#define P7_SRR1_MC_IFETCH_SLB_BOTH	(0x4 << PPC_BITLSHIFT(45)) /* P8 too */
-+#define P7_SRR1_MC_IFETCH_TLB_MULTIHIT	(0x5 << PPC_BITLSHIFT(45)) /* P8 too */
-+#define P7_SRR1_MC_IFETCH_UE_TLB_RELOAD	(0x6 << PPC_BITLSHIFT(45)) /* P8 too */
-+#define P7_SRR1_MC_IFETCH_UE_IFU_INTERNAL	(0x7 << PPC_BITLSHIFT(45))
-+
-+/* SRR1 bits for machine check (On Power8) */
-+#define P8_SRR1_MC_IFETCH_ERAT_MULTIHIT	(0x4 << PPC_BITLSHIFT(45))
-+
-+/* DSISR bits for machine check (On Power7 and Power8) */
-+#define P7_DSISR_MC_UE			(PPC_BIT(48))	/* P8 too */
-+#define P7_DSISR_MC_UE_TABLEWALK	(PPC_BIT(49))	/* P8 too */
-+#define P7_DSISR_MC_ERAT_MULTIHIT	(PPC_BIT(52))	/* P8 too */
-+#define P7_DSISR_MC_TLB_MULTIHIT_MFTLB	(PPC_BIT(53))	/* P8 too */
-+#define P7_DSISR_MC_SLB_PARITY_MFSLB	(PPC_BIT(55))	/* P8 too */
-+#define P7_DSISR_MC_SLB_MULTIHIT	(PPC_BIT(56))	/* P8 too */
-+#define P7_DSISR_MC_SLB_MULTIHIT_PARITY	(PPC_BIT(57))	/* P8 too */
-+
-+/*
-+ * DSISR bits for machine check (Power8) in addition to above.
-+ * Secondary DERAT Multihit
-+ */
-+#define P8_DSISR_MC_ERAT_MULTIHIT_SEC	(PPC_BIT(54))
-+
-+/* SLB error bits */
-+#define P7_DSISR_MC_SLB_ERRORS		(P7_DSISR_MC_ERAT_MULTIHIT | \
-+					 P7_DSISR_MC_SLB_PARITY_MFSLB | \
-+					 P7_DSISR_MC_SLB_MULTIHIT | \
-+					 P7_DSISR_MC_SLB_MULTIHIT_PARITY)
-+
-+#endif /* __ASM_PPC64_MCE_H__ */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index a8619bf..a1aba53 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -39,6 +39,7 @@ obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
- obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
-+obj-$(CONFIG_PPC_BOOK3S_64)	+= mce_power.o
- obj64-$(CONFIG_RELOCATABLE)	+= reloc_64.o
- obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
- obj-$(CONFIG_PPC_A2)		+= cpu_setup_a2.o
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index cdbe115..c28cc2c 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -73,6 +73,7 @@ extern void __restore_cpu_power8(void);
- extern void __restore_cpu_a2(void);
- extern void __flush_tlb_power7(unsigned long inval_selector);
- extern void __flush_tlb_power8(unsigned long inval_selector);
-+extern long __machine_check_early_realmode_p7(struct pt_regs *regs);
- #endif /* CONFIG_PPC64 */
- #if defined(CONFIG_E500)
- extern void __setup_cpu_e5500(unsigned long offset, struct cpu_spec* spec);
-@@ -443,6 +444,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_power7,
- 		.cpu_restore		= __restore_cpu_power7,
- 		.flush_tlb		= __flush_tlb_power7,
-+		.machine_check_early	= __machine_check_early_realmode_p7,
- 		.platform		= "power7",
- 	},
- 	{	/* 2.07-compliant processor, i.e. Power8 "architected" mode */
-@@ -479,6 +481,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_power7,
- 		.cpu_restore		= __restore_cpu_power7,
- 		.flush_tlb		= __flush_tlb_power7,
-+		.machine_check_early	= __machine_check_early_realmode_p7,
- 		.platform		= "power7",
- 	},
- 	{	/* Power7+ */
-@@ -498,6 +501,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_power7,
- 		.cpu_restore		= __restore_cpu_power7,
- 		.flush_tlb		= __flush_tlb_power7,
-+		.machine_check_early	= __machine_check_early_realmode_p7,
- 		.platform		= "power7+",
- 	},
- 	{	/* Power8E */
-diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-new file mode 100644
-index 0000000..645d722
---- /dev/null
-+++ b/arch/powerpc/kernel/mce_power.c
-@@ -0,0 +1,153 @@
-+/*
-+ * Machine check exception handling CPU-side for power7 and power8
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright 2013 IBM Corporation
-+ * Author: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-+ */
-+
-+#undef DEBUG
-+#define pr_fmt(fmt) "mce_power: " fmt
-+
-+#include <linux/types.h>
-+#include <linux/ptrace.h>
-+#include <asm/mmu.h>
-+#include <asm/mce.h>
-+
-+/* flush SLBs and reload */
-+static void flush_and_reload_slb(void)
-+{
-+	struct slb_shadow *slb;
-+	unsigned long i, n;
-+
-+	if (!mmu_has_feature(MMU_FTR_SLB))
-+		return;
-+
-+	/* Invalidate all SLBs */
-+	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
-+
-+#ifdef CONFIG_KVM_BOOK3S_HANDLER
+ #define __EXCEPTION_PROLOG_PSERIES_1(label, h)				\
+ 	ld	r12,PACAKBASE(r13);	/* get high part of &label */	\
+ 	ld	r10,PACAKMSR(r13);	/* get MSR value for kernel */	\
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 4e00d22..66d2a71 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -156,7 +156,7 @@ machine_check_pSeries_1:
+ 	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)		/* save r13 */
+ 	EXCEPTION_PROLOG_0(PACA_EXMC)
+-	b	machine_check_pSeries_0
++	b	machine_check_pSeries_early
+ 
+ 	. = 0x300
+ 	.globl data_access_pSeries
+@@ -404,6 +404,9 @@ denorm_exception_hv:
+ 
+ 	.align	7
+ 	/* moved from 0x200 */
++machine_check_pSeries_early:
++	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
++	EARLY_MACHINE_CHECK_HANDLER(PACA_EXMC, machine_check_handle_early)
+ machine_check_pSeries:
+ 	.globl machine_check_fwnmi
+ machine_check_fwnmi:
+@@ -681,6 +684,51 @@ machine_check_common:
+ 	bl	.machine_check_exception
+ 	b	.ret_from_except
+ 
 +	/*
-+	 * If machine check is hit when in guest or in transition, we will
-+	 * only flush the SLBs and continue.
++	 * Handle machine check early in real mode. We come here with
++	 * ME bit on with MMU (IR and DR) off and using emergency stack.
 +	 */
-+	if (get_paca()->kvm_hstate.in_guest)
-+		return;
-+#endif
-+
-+	/* For host kernel, reload the SLBs from shadow SLB buffer. */
-+	slb = get_slb_shadow();
-+	if (!slb)
-+		return;
-+
-+	n = min_t(u32, slb->persistent, SLB_MIN_SIZE);
-+
-+	/* Load up the SLB entries from shadow SLB */
-+	for (i = 0; i < n; i++) {
-+		unsigned long rb = slb->save_area[i].esid;
-+		unsigned long rs = slb->save_area[i].vsid;
-+
-+		rb = (rb & ~0xFFFul) | i;
-+		asm volatile("slbmte %0,%1" : : "r" (rs), "r" (rb));
-+	}
-+}
-+
-+static long mce_handle_derror(uint64_t dsisr, uint64_t slb_error_bits)
-+{
-+	long handled = 1;
-+
++	.align	7
++	.globl machine_check_handle_early
++machine_check_handle_early:
++	std	r9,_CCR(r1)	/* Save CR in stackframe */
++	std	r0,GPR0(r1)	/* Save r0, r2 - r10 */
++	EXCEPTION_PROLOG_COMMON_2(0x200, PACA_EXMC)
++	bl	.save_nvgprs
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	.machine_check_early
++	cmpdi	r3,0			/* Did we handle it? */
++	ld	r9,_MSR(r1)
++	beq	1f
++	ori	r9,r9,MSR_RI		/* Yes we have handled it. */
++	/* Move original SRR0 and SRR1 into the respective regs */
++1:	mtspr	SPRN_SRR1,r9
++	ld	r3,_NIP(r1)
++	mtspr	SPRN_SRR0,r3
++	REST_NVGPRS(r1)
++	ld	r9,_CTR(r1)
++	mtctr	r9
++	ld	r9,_XER(r1)
++	mtxer	r9
++	ld	r9,_CCR(r1)
++	mtcr	r9
++BEGIN_FTR_SECTION
++	ld	r9,ORIG_GPR3(r1)
++	mtspr	SPRN_CFAR,r9
++END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
++	ld	r9,_LINK(r1)
++	mtlr	r9
++	REST_GPR(0, r1)
++	REST_8GPRS(2, r1)
++	REST_2GPRS(10, r1)
++	REST_GPR(12, r1)
 +	/*
-+	 * flush and reload SLBs for SLB errors and flush TLBs for TLB errors.
-+	 * reset the error bits whenever we handle them so that at the end
-+	 * we can check whether we handled all of them or not.
-+	 * */
-+	if (dsisr & slb_error_bits) {
-+		flush_and_reload_slb();
-+		/* reset error bits */
-+		dsisr &= ~(slb_error_bits);
-+	}
-+	if (dsisr & P7_DSISR_MC_TLB_MULTIHIT_MFTLB) {
-+		if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
-+			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_PAGE);
-+		/* reset error bits */
-+		dsisr &= ~P7_DSISR_MC_TLB_MULTIHIT_MFTLB;
-+	}
-+	/* Any other errors we don't understand? */
-+	if (dsisr & 0xffffffffUL)
-+		handled = 0;
++	 * restore orig stack pointer. We have already saved MCE info
++	 * to per cpu MCE event buffer.
++	 */
++	ld	r1,GPR1(r1)
++	b	machine_check_pSeries
 +
-+	return handled;
-+}
+ 	STD_EXCEPTION_COMMON_ASYNC(0x500, hardware_interrupt, do_IRQ)
+ 	STD_EXCEPTION_COMMON_ASYNC(0x900, decrementer, .timer_interrupt)
+ 	STD_EXCEPTION_COMMON(0x980, hdecrementer, .hdec_interrupt)
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index bf33c22..1720e08 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -286,6 +286,18 @@ void system_reset_exception(struct pt_regs *regs)
+ 
+ 	/* What should we do here? We could issue a shutdown or hard reset. */
+ }
 +
-+static long mce_handle_derror_p7(uint64_t dsisr)
++/*
++ * This function is called in real mode. Strictly no printk's please.
++ *
++ * regs->nip and regs->msr contains srr0 and ssr1.
++ */
++long machine_check_early(struct pt_regs *regs)
 +{
-+	return mce_handle_derror(dsisr, P7_DSISR_MC_SLB_ERRORS);
++	/* TODO: handle/decode machine check reason */
++	return 0;
 +}
 +
-+static long mce_handle_common_ierror(uint64_t srr1)
-+{
-+	long handled = 0;
-+
-+	switch (P7_SRR1_MC_IFETCH(srr1)) {
-+	case 0:
-+		break;
-+	case P7_SRR1_MC_IFETCH_SLB_PARITY:
-+	case P7_SRR1_MC_IFETCH_SLB_MULTIHIT:
-+		/* flush and reload SLBs for SLB errors. */
-+		flush_and_reload_slb();
-+		handled = 1;
-+		break;
-+	case P7_SRR1_MC_IFETCH_TLB_MULTIHIT:
-+		if (cur_cpu_spec && cur_cpu_spec->flush_tlb) {
-+			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_PAGE);
-+			handled = 1;
-+		}
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return handled;
-+}
-+
-+static long mce_handle_ierror_p7(uint64_t srr1)
-+{
-+	long handled = 0;
-+
-+	handled = mce_handle_common_ierror(srr1);
-+
-+	if (P7_SRR1_MC_IFETCH(srr1) == P7_SRR1_MC_IFETCH_SLB_BOTH) {
-+		flush_and_reload_slb();
-+		handled = 1;
-+	}
-+	return handled;
-+}
-+
-+long __machine_check_early_realmode_p7(struct pt_regs *regs)
-+{
-+	uint64_t srr1;
-+	long handled = 1;
-+
-+	srr1 = regs->msr;
-+
-+	if (P7_SRR1_MC_LOADSTORE(srr1))
-+		handled = mce_handle_derror_p7(regs->dsisr);
-+	else
-+		handled = mce_handle_ierror_p7(srr1);
-+
-+	/* TODO: Decode machine check reason. */
-+	return handled;
-+}
+ #endif
+ 
+ /*
