@@ -1,31 +1,31 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 505A62C0496
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:41:45 +1000 (EST)
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D3ADF2C064C
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:42:00 +1000 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Wed, 7 Aug 2013 19:38:37 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 41F1E2BB0051
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:38:51 +1000 (EST)
+ Wed, 7 Aug 2013 19:31:58 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 284F52BB0053
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:39:35 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r779NAOw57016330
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:23:10 +1000
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r779dOJl7405868
+ for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:39:24 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r779cnIp017724
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:38:50 +1000
-Subject: [RFC PATCH 4/9] powerpc: Add flush_tlb operation in cpu_spec.
+ r779dYK8018858
+ for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:39:34 +1000
+Subject: [RFC PATCH 9/9] powerpc/powernv: Machine check exception handling.
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Wed, 07 Aug 2013 15:08:38 +0530
-Message-ID: <20130807093838.5389.5433.stgit@mars.in.ibm.com>
+Date: Wed, 07 Aug 2013 15:09:30 +0530
+Message-ID: <20130807093930.5389.66368.stgit@mars.in.ibm.com>
 In-Reply-To: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
 References: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
@@ -43,223 +43,133 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-This patch introduces flush_tlb operation in cpu_spec structure. This will
-help us to invoke appropriate CPU-side flush tlb routine. This patch
-adds the foundation to invoke CPU specific flush routine for respective
-architectures. Currently this patch introduce flush_tlb for p7 and p8.
+Add basic error handling in machine check exception handler.
+
+- If MSR_RI isn't set, we can not recover.
+- Check if disposition set to OpalMCE_DISPOSITION_RECOVERED.
+- Check if address at fault is inside kernel address space, if not then send
+  SIGBUS to process if we hit exception when in userspace.
+- If address at fault is not provided then and if we get a synchronous machine
+  check while in userspace then kill the task.
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/cputable.h   |    5 ++++
- arch/powerpc/kernel/cpu_setup_power.S |   39 ++++++++++++++++++++++++---------
- arch/powerpc/kernel/cputable.c        |    8 +++++++
- arch/powerpc/kvm/book3s_hv_ras.c      |   18 +++------------
- 4 files changed, 45 insertions(+), 25 deletions(-)
+ arch/powerpc/include/asm/mce.h        |    1 +
+ arch/powerpc/kernel/mce.c             |   27 +++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal.c |   43 ++++++++++++++++++++++++++++++++-
+ 3 files changed, 70 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index d8c098e..d76e47b 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -97,6 +97,11 @@ struct cpu_spec {
- 	 */
- 	long		(*machine_check_early)(struct pt_regs *regs);
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index cf57f3d..558d0ca 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -185,5 +185,6 @@ struct mce_error_info {
+ extern void save_mce_event(struct pt_regs *regs, long handled,
+ 			   struct mce_error_info *mce_err, uint64_t addr);
+ extern int get_mce_event(struct machine_check_event *mce);
++extern uint64_t get_mce_fault_addr(struct machine_check_event *evt);
  
-+	/*
-+	 * Processor specific routine to flush tlbs.
-+	 */
-+	void		(*flush_tlb)(unsigned long inval_selector);
+ #endif /* __ASM_PPC64_MCE_H__ */
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index a523d8b..eb9e059 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -150,3 +150,30 @@ int get_mce_event(struct machine_check_event *mce)
+ 
+ 	return ret;
+ }
 +
- };
- 
- extern struct cpu_spec		*cur_cpu_spec;
-diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-index 18b5b9c..17f1fd4 100644
---- a/arch/powerpc/kernel/cpu_setup_power.S
-+++ b/arch/powerpc/kernel/cpu_setup_power.S
-@@ -15,6 +15,7 @@
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
- #include <asm/cache.h>
-+#include <asm/mmu-hash64.h>
- 
- /* Entry: r3 = crap, r4 = ptr to cputable entry
-  *
-@@ -29,7 +30,7 @@ _GLOBAL(__setup_cpu_power7)
- 	mtspr	SPRN_LPID,r0
- 	mfspr	r3,SPRN_LPCR
- 	bl	__init_LPCR
--	bl	__init_TLB
-+	bl	__init_tlb_power7
- 	mtlr	r11
- 	blr
- 
-@@ -42,7 +43,7 @@ _GLOBAL(__restore_cpu_power7)
- 	mtspr	SPRN_LPID,r0
- 	mfspr	r3,SPRN_LPCR
- 	bl	__init_LPCR
--	bl	__init_TLB
-+	bl	__init_tlb_power7
- 	mtlr	r11
- 	blr
- 
-@@ -59,7 +60,7 @@ _GLOBAL(__setup_cpu_power8)
- 	oris	r3, r3, LPCR_AIL_3@h
- 	bl	__init_LPCR
- 	bl	__init_HFSCR
--	bl	__init_TLB
-+	bl	__init_tlb_power8
- 	bl	__init_PMU_HV
- 	mtlr	r11
- 	blr
-@@ -78,7 +79,7 @@ _GLOBAL(__restore_cpu_power8)
- 	oris	r3, r3, LPCR_AIL_3@h
- 	bl	__init_LPCR
- 	bl	__init_HFSCR
--	bl	__init_TLB
-+	bl	__init_tlb_power8
- 	bl	__init_PMU_HV
- 	mtlr	r11
- 	blr
-@@ -134,15 +135,31 @@ __init_HFSCR:
- 	mtspr	SPRN_HFSCR,r3
- 	blr
- 
--__init_TLB:
--	/*
--	 * Clear the TLB using the "IS 3" form of tlbiel instruction
--	 * (invalidate by congruence class). P7 has 128 CCs, P8 has 512
--	 * so we just always do 512
--	 */
-+/*
-+ * Clear the TLB using the specified IS form of tlbiel instruction
-+ * (invalidate by congruence class). P7 has 128 CCs., P8 has 512.
-+ *
-+ * r3 = IS field
-+ */
-+__init_tlb_power7:
-+	li	r3,0xc00	/* IS field = 0b11 */
-+_GLOBAL(__flush_tlb_power7)
-+	li	r6,128
-+	mtctr	r6
-+	mr	r7,r3		/* IS field */
-+	ptesync
-+2:	tlbiel	r7
-+	addi	r7,r7,0x1000
-+	bdnz	2b
-+	ptesync
-+1:	blr
-+
-+__init_tlb_power8:
-+	li	r3,0xc00	/* IS field = 0b11 */
-+_GLOBAL(__flush_tlb_power8)
- 	li	r6,512
- 	mtctr	r6
--	li	r7,0xc00	/* IS field = 0b11 */
-+	mr	r7,r3		/* IS field */
- 	ptesync
- 2:	tlbiel	r7
- 	addi	r7,r7,0x1000
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 22973a7..cdbe115 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -71,6 +71,8 @@ extern void __restore_cpu_power7(void);
- extern void __setup_cpu_power8(unsigned long offset, struct cpu_spec* spec);
- extern void __restore_cpu_power8(void);
- extern void __restore_cpu_a2(void);
-+extern void __flush_tlb_power7(unsigned long inval_selector);
-+extern void __flush_tlb_power8(unsigned long inval_selector);
- #endif /* CONFIG_PPC64 */
- #if defined(CONFIG_E500)
- extern void __setup_cpu_e5500(unsigned long offset, struct cpu_spec* spec);
-@@ -440,6 +442,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
- 		.cpu_setup		= __setup_cpu_power7,
- 		.cpu_restore		= __restore_cpu_power7,
-+		.flush_tlb		= __flush_tlb_power7,
- 		.platform		= "power7",
- 	},
- 	{	/* 2.07-compliant processor, i.e. Power8 "architected" mode */
-@@ -456,6 +459,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
- 		.cpu_setup		= __setup_cpu_power8,
- 		.cpu_restore		= __restore_cpu_power8,
-+		.flush_tlb		= __flush_tlb_power8,
- 		.platform		= "power8",
- 	},
- 	{	/* Power7 */
-@@ -474,6 +478,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.oprofile_type		= PPC_OPROFILE_POWER4,
- 		.cpu_setup		= __setup_cpu_power7,
- 		.cpu_restore		= __restore_cpu_power7,
-+		.flush_tlb		= __flush_tlb_power7,
- 		.platform		= "power7",
- 	},
- 	{	/* Power7+ */
-@@ -492,6 +497,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.oprofile_type		= PPC_OPROFILE_POWER4,
- 		.cpu_setup		= __setup_cpu_power7,
- 		.cpu_restore		= __restore_cpu_power7,
-+		.flush_tlb		= __flush_tlb_power7,
- 		.platform		= "power7+",
- 	},
- 	{	/* Power8E */
-@@ -510,6 +516,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.oprofile_type		= PPC_OPROFILE_INVALID,
- 		.cpu_setup		= __setup_cpu_power8,
- 		.cpu_restore		= __restore_cpu_power8,
-+		.flush_tlb		= __flush_tlb_power8,
- 		.platform		= "power8",
- 	},
- 	{	/* Power8 */
-@@ -528,6 +535,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.oprofile_type		= PPC_OPROFILE_INVALID,
- 		.cpu_setup		= __setup_cpu_power8,
- 		.cpu_restore		= __restore_cpu_power8,
-+		.flush_tlb		= __flush_tlb_power8,
- 		.platform		= "power8",
- 	},
- 	{	/* Cell Broadband Engine */
-diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
-index a353c48..5c427b4 100644
---- a/arch/powerpc/kvm/book3s_hv_ras.c
-+++ b/arch/powerpc/kvm/book3s_hv_ras.c
-@@ -58,18 +58,6 @@ static void reload_slb(struct kvm_vcpu *vcpu)
- 	}
++uint64_t get_mce_fault_addr(struct machine_check_event *evt)
++{
++	switch (evt->error_type) {
++	case MCE_ERROR_TYPE_UE:
++		if (evt->u.ue_error.effective_address_provided)
++			return evt->u.ue_error.effective_address;
++		break;
++	case MCE_ERROR_TYPE_SLB:
++		if (evt->u.slb_error.effective_address_provided)
++			return evt->u.slb_error.effective_address;
++		break;
++	case MCE_ERROR_TYPE_ERAT:
++		if (evt->u.erat_error.effective_address_provided)
++			return evt->u.erat_error.effective_address;
++		break;
++	case MCE_ERROR_TYPE_TLB:
++		if (evt->u.tlb_error.effective_address_provided)
++			return evt->u.tlb_error.effective_address;
++		break;
++	default:
++	case MCE_ERROR_TYPE_UNKNOWN:
++		break;
++	}
++	return 0;
++}
++EXPORT_SYMBOL(get_mce_fault_addr);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index a08243d..407d571 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -17,6 +17,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/notifier.h>
+ #include <linux/slab.h>
++#include <linux/sched.h>
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
+ #include <asm/mce.h>
+@@ -240,6 +241,44 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
+ 	return written;
  }
  
--/* POWER7 TLB flush */
--static void flush_tlb_power7(struct kvm_vcpu *vcpu)
--{
--	unsigned long i, rb;
--
--	rb = TLBIEL_INVAL_SET_LPID;
--	for (i = 0; i < POWER7_TLB_SETS; ++i) {
--		asm volatile("tlbiel %0" : : "r" (rb));
--		rb += 1 << TLBIEL_INVAL_SET_SHIFT;
--	}
--}
--
- /*
-  * On POWER7, see if we can handle a machine check that occurred inside
-  * the guest in real mode, without switching to the host partition.
-@@ -96,7 +84,8 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
- 				   DSISR_MC_SLB_PARITY | DSISR_MC_DERAT_MULTI);
- 		}
- 		if (dsisr & DSISR_MC_TLB_MULTI) {
--			flush_tlb_power7(vcpu);
-+			if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
-+				cur_cpu_spec->flush_tlb(TLBIEL_INVAL_SET_LPID);
- 			dsisr &= ~DSISR_MC_TLB_MULTI;
- 		}
- 		/* Any other errors we don't understand? */
-@@ -113,7 +102,8 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
- 		reload_slb(vcpu);
++static int opal_recover_mce(struct pt_regs *regs,
++					struct machine_check_event *evt)
++{
++	int recovered = 0;
++	uint64_t ea = get_mce_fault_addr(evt);
++
++	if (!(regs->msr & MSR_RI)) {
++		/* If MSR_RI isn't set, we cannot recover */
++		recovered = 0;
++	} else if (evt->disposition == MCE_DISPOSITION_RECOVERED) {
++		/* Platform corrected itself */
++		recovered = 1;
++	} else if (ea && !is_kernel_addr(ea)) {
++		/*
++		 * Faulting address is not in kernel text. We should be fine.
++		 * We need to find which process uses this address.
++		 * For now, kill the task if we have received exception when
++		 * in userspace.
++		 *
++		 * TODO: Queue up this address for hwpoisioning later.
++		 */
++		if (user_mode(regs) && !is_global_init(current)) {
++			_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
++			recovered = 1;
++		} else
++			recovered = 0;
++	} else if (user_mode(regs) && !is_global_init(current) &&
++		evt->severity == MCE_SEV_ERROR_SYNC) {
++		/*
++		 * If we have received a synchronous error when in userspace
++		 * kill the task.
++		 */
++		_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
++		recovered = 1;
++	}
++	return recovered;
++}
++
+ int opal_machine_check(struct pt_regs *regs)
+ {
+ 	struct machine_check_event evt;
+@@ -350,7 +389,9 @@ int opal_machine_check(struct pt_regs *regs)
+ 		printk("%s  Error type: Unknown\n", level);
  		break;
- 	case SRR1_MC_IFETCH_TLBMULTI:
--		flush_tlb_power7(vcpu);
-+		if (cur_cpu_spec && cur_cpu_spec->flush_tlb)
-+			cur_cpu_spec->flush_tlb(TLBIEL_INVAL_SET_LPID);
- 		break;
- 	default:
- 		handled = 0;
+ 	}
+-	return evt.severity == MCE_SEV_FATAL ? 0 : 1;
++	if (opal_recover_mce(regs, &evt))
++		return 1;
++	return 0;
+ }
+ 
+ static irqreturn_t opal_interrupt(int irq, void *data)
