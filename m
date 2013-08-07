@@ -1,37 +1,31 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CE8EA2C030C
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:41:21 +1000 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 8 Aug 2013 06:36:06 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id AB0D72BB0055
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:38:25 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r779MZmN7078286
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:22:36 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r779cOoO017008
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:38:24 +1000
-Subject: [RFC PATCH 2/9] powerpc: handle machine check in Linux host.
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Wed, 07 Aug 2013 15:08:15 +0530
-Message-ID: <20130807093815.5389.7668.stgit@mars.in.ibm.com>
-In-Reply-To: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
-References: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Jeremy Kerr <jeremy.kerr@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>
+Return-Path: <thomas.petazzoni@free-electrons.com>
+Received: from mail.free-electrons.com (top.free-electrons.com [176.31.233.9])
+ by ozlabs.org (Postfix) with ESMTP id A0DC62C042B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 19:41:37 +1000 (EST)
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>,
+ Andrew Lunn <andrew@lunn.ch>,
+ Gregory Clement <gregory.clement@free-electrons.com>
+Subject: [PATCHv7 02/13] PCI: remove ARCH_SUPPORTS_MSI kconfig option
+Date: Wed,  7 Aug 2013 11:32:23 +0200
+Message-Id: <1375867954-2320-3-git-send-email-thomas.petazzoni@free-electrons.com>
+In-Reply-To: <1375867954-2320-1-git-send-email-thomas.petazzoni@free-electrons.com>
+References: <1375867954-2320-1-git-send-email-thomas.petazzoni@free-electrons.com>
+Cc: Lior Amsalem <alior@marvell.com>, linux-mips@linux-mips.org,
+ linux-ia64@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
+ Ralf Baechle <ralf@linux-mips.org>, Maen Suleiman <maen@marvell.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,217 +35,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Now that we have weak versions for each of the PCI MSI architecture
+functions, we can actually build the MSI support for all platforms,
+regardless of whether they provide or not architecture-specific
+versions of those functions. For this reason, the ARCH_SUPPORTS_MSI
+hidden kconfig boolean becomes useless, and this patch gets rid of it.
 
-Move machine check entry point into Linux. So far we were dependent on
-firmware to decode MCE error details and handover the high level info to OS.
-
-This patch introduces early machine check routine that saves the MCE
-information (srr1, srr0, dar and dsisr) to the emergency stack. We allocate
-stack frame on emergency stack and set the r1 accordingly. This allows us
-to be prepared to take another exception without loosing context. One thing
-to note here that, if we get another machine check while ME bit is off then
-we risk a checkstop. Hence we restrict ourselves to save only MCE information
-and turn the ME bit on.
-
-This is the code flow:
-
-		Machine Check Interrupt
-			|
-			V
-		   0x200 vector				  ME=0, IR=0, DR=0
-			|
-			V
-	+-----------------------------------------------+
-	|machine_check_pSeries_early:			| ME=0, IR=0, DR=0
-	|	Alloc frame on emergency stack		|
-	|	Save srr1, srr0, dar and dsisr on stack |
-	+-----------------------------------------------+
-			|
-		(ME=1, IR=0, DR=0, RFID)
-			|
-			V
-		machine_check_handle_early		  ME=1, IR=0, DR=0
-			|
-			V
-	+-----------------------------------------------+
-	|	machine_check_early (r3=pt_regs)	| ME=1, IR=0, DR=0
-	|	Things to do: (in next patches)		|
-	|		Flush SLB for SLB errors	|
-	|		Flush TLB for TLB errors	|
-	|		Decode and save MCE info	|
-	+-----------------------------------------------+
-			|
-	(Fall through existing exception handler routine.)
-			|
-			V
-		machine_check_pSerie			  ME=1, IR=0, DR=0
-			|
-		(ME=1, IR=1, DR=1, RFID)
-			|
-			V
-		machine_check_common			  ME=1, IR=1, DR=1
-			.
-			.
-			.
-
-
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Tested-by: Daniel Price <daniel.price@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux390@de.ibm.com
+Cc: linux-s390@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org
+Cc: David S. Miller <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+Cc: Chris Metcalf <cmetcalf@tilera.com>
 ---
- arch/powerpc/include/asm/exception-64s.h |   43 ++++++++++++++++++++++++++
- arch/powerpc/kernel/exceptions-64s.S     |   50 +++++++++++++++++++++++++++++-
- arch/powerpc/kernel/traps.c              |   12 +++++++
- 3 files changed, 104 insertions(+), 1 deletion(-)
+ arch/arm/Kconfig     | 1 -
+ arch/ia64/Kconfig    | 1 -
+ arch/mips/Kconfig    | 2 --
+ arch/powerpc/Kconfig | 1 -
+ arch/s390/Kconfig    | 1 -
+ arch/sparc/Kconfig   | 1 -
+ arch/tile/Kconfig    | 1 -
+ arch/x86/Kconfig     | 1 -
+ drivers/pci/Kconfig  | 4 ----
+ 9 files changed, 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 2386d40..c5d2cbc 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -174,6 +174,49 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- #define EXCEPTION_PROLOG_1(area, extra, vec)				\
- 	__EXCEPTION_PROLOG_1(area, extra, vec)
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 37c0f4e..41b6c96 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -441,7 +441,6 @@ config ARCH_NETX
+ config ARCH_IOP13XX
+ 	bool "IOP13xx-based"
+ 	depends on MMU
+-	select ARCH_SUPPORTS_MSI
+ 	select CPU_XSC3
+ 	select NEED_MACH_MEMORY_H
+ 	select NEED_RET_TO_USER
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 5a768ad..098602b 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -9,7 +9,6 @@ config IA64
+ 	select PCI if (!IA64_HP_SIM)
+ 	select ACPI if (!IA64_HP_SIM)
+ 	select PM if (!IA64_HP_SIM)
+-	select ARCH_SUPPORTS_MSI
+ 	select HAVE_UNSTABLE_SCHED_CLOCK
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index c3abed3..01b5f5a 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -726,7 +726,6 @@ config CAVIUM_OCTEON_SOC
+ 	select SYS_HAS_CPU_CAVIUM_OCTEON
+ 	select SWAP_IO_SPACE
+ 	select HW_HAS_PCI
+-	select ARCH_SUPPORTS_MSI
+ 	select ZONE_DMA32
+ 	select USB_ARCH_HAS_OHCI
+ 	select USB_ARCH_HAS_EHCI
+@@ -762,7 +761,6 @@ config NLM_XLR_BOARD
+ 	select CEVT_R4K
+ 	select CSRC_R4K
+ 	select IRQ_CPU
+-	select ARCH_SUPPORTS_MSI
+ 	select ZONE_DMA32 if 64BIT
+ 	select SYNC_R4K
+ 	select SYS_HAS_EARLY_PRINTK
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 3bf72cd..183a165 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -727,7 +727,6 @@ config PCI
+ 	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
+ 		&& !PPC_85xx && !PPC_86xx && !GAMECUBE_COMMON
+ 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
+-	select ARCH_SUPPORTS_MSI
+ 	select GENERIC_PCI_IOMAP
+ 	help
+ 	  Find out whether your system includes a PCI bus. PCI is the name of
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index 22f75b5..e9982a3 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -428,7 +428,6 @@ menuconfig PCI
+ 	bool "PCI support"
+ 	default n
+ 	depends on 64BIT
+-	select ARCH_SUPPORTS_MSI
+ 	select PCI_MSI
+ 	help
+ 	  Enable PCI support.
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index a00cbd3..1570ad2 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -52,7 +52,6 @@ config SPARC32
  
-+/*
-+ * Register contents:
-+ * R12		= interrupt vector
-+ * R13		= PACA
-+ * R9		= CR
-+ * R11 & R12 is saved on PACA_EXMC
-+ *
-+ * Swicth to emergency stack and handle re-entrancy (though we currently
-+ * don't test for overflow). Save MCE registers srr1, srr0, dar and
-+ * dsisr and then turn the ME bit on.
-+ */
-+#define __EARLY_MACHINE_CHECK_HANDLER(area, label)			\
-+	/* Check if we are laready using emergency stack. */		\
-+	ld	r10,PACAEMERGSP(r13);					\
-+	subi	r10,r10,THREAD_SIZE;					\
-+	rldicr	r10,r10,0,(63 - THREAD_SHIFT);				\
-+	rldicr	r11,r1,0,(63 - THREAD_SHIFT);				\
-+	cmpd	r10,r11;	/* Are we using emergency stack? */	\
-+	mr	r11,r1;			/* Save current stack pointer */\
-+	beq	0f;							\
-+	ld	r1,PACAEMERGSP(r13);	/* Use emergency stack */	\
-+0:	subi	r1,r1,INT_FRAME_SIZE;	/* alloc stack frame */		\
-+	std	r11,GPR1(r1);						\
-+	std	r11,0(r1);		/* make stack chain pointer */	\
-+	mfspr	r11,SPRN_SRR0;		/* Save SRR0 */			\
-+	std	r11,_NIP(r1);						\
-+	mfspr	r11,SPRN_SRR1;		/* Save SRR1 */			\
-+	std	r11,_MSR(r1);						\
-+	mfspr	r11,SPRN_DAR;		/* Save DAR */			\
-+	std 	r11,_DAR(r1);						\
-+	mfspr	r11,SPRN_DSISR;		/* Save DSISR */		\
-+	std	r11,_DSISR(r1);						\
-+	mfmsr	r11;			/* get MSR value */		\
-+	ori	r11,r11,MSR_ME;		/* turn on ME bit */		\
-+	ld	r12,PACAKBASE(r13);	/* get high part of &label */	\
-+	LOAD_HANDLER(r12,label)						\
-+	mtspr	SPRN_SRR0,r12;						\
-+	mtspr	SPRN_SRR1,r11;						\
-+	rfid;								\
-+	b	.	/* prevent speculative execution */
-+#define EARLY_MACHINE_CHECK_HANDLER(area, label)			\
-+	__EARLY_MACHINE_CHECK_HANDLER(area, label)
-+
- #define __EXCEPTION_PROLOG_PSERIES_1(label, h)				\
- 	ld	r12,PACAKBASE(r13);	/* get high part of &label */	\
- 	ld	r10,PACAKMSR(r13);	/* get MSR value for kernel */	\
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 4e00d22..66d2a71 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -156,7 +156,7 @@ machine_check_pSeries_1:
- 	HMT_MEDIUM_PPR_DISCARD
- 	SET_SCRATCH0(r13)		/* save r13 */
- 	EXCEPTION_PROLOG_0(PACA_EXMC)
--	b	machine_check_pSeries_0
-+	b	machine_check_pSeries_early
- 
- 	. = 0x300
- 	.globl data_access_pSeries
-@@ -404,6 +404,9 @@ denorm_exception_hv:
- 
- 	.align	7
- 	/* moved from 0x200 */
-+machine_check_pSeries_early:
-+	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
-+	EARLY_MACHINE_CHECK_HANDLER(PACA_EXMC, machine_check_handle_early)
- machine_check_pSeries:
- 	.globl machine_check_fwnmi
- machine_check_fwnmi:
-@@ -681,6 +684,51 @@ machine_check_common:
- 	bl	.machine_check_exception
- 	b	.ret_from_except
- 
-+	/*
-+	 * Handle machine check early in real mode. We come here with
-+	 * ME bit on with MMU (IR and DR) off and using emergency stack.
-+	 */
-+	.align	7
-+	.globl machine_check_handle_early
-+machine_check_handle_early:
-+	std	r9,_CCR(r1)	/* Save CR in stackframe */
-+	std	r0,GPR0(r1)	/* Save r0, r2 - r10 */
-+	EXCEPTION_PROLOG_COMMON_2(0x200, PACA_EXMC)
-+	bl	.save_nvgprs
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	.machine_check_early
-+	cmpdi	r3,0			/* Did we handle it? */
-+	ld	r9,_MSR(r1)
-+	beq	1f
-+	ori	r9,r9,MSR_RI		/* Yes we have handled it. */
-+	/* Move original SRR0 and SRR1 into the respective regs */
-+1:	mtspr	SPRN_SRR1,r9
-+	ld	r3,_NIP(r1)
-+	mtspr	SPRN_SRR0,r3
-+	REST_NVGPRS(r1)
-+	ld	r9,_CTR(r1)
-+	mtctr	r9
-+	ld	r9,_XER(r1)
-+	mtxer	r9
-+	ld	r9,_CCR(r1)
-+	mtcr	r9
-+BEGIN_FTR_SECTION
-+	ld	r9,ORIG_GPR3(r1)
-+	mtspr	SPRN_CFAR,r9
-+END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
-+	ld	r9,_LINK(r1)
-+	mtlr	r9
-+	REST_GPR(0, r1)
-+	REST_8GPRS(2, r1)
-+	REST_2GPRS(10, r1)
-+	REST_GPR(12, r1)
-+	/*
-+	 * restore orig stack pointer. We have already saved MCE info
-+	 * to per cpu MCE event buffer.
-+	 */
-+	ld	r1,GPR1(r1)
-+	b	machine_check_pSeries
-+
- 	STD_EXCEPTION_COMMON_ASYNC(0x500, hardware_interrupt, do_IRQ)
- 	STD_EXCEPTION_COMMON_ASYNC(0x900, decrementer, .timer_interrupt)
- 	STD_EXCEPTION_COMMON(0x980, hdecrementer, .hdec_interrupt)
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index bf33c22..1720e08 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -286,6 +286,18 @@ void system_reset_exception(struct pt_regs *regs)
- 
- 	/* What should we do here? We could issue a shutdown or hard reset. */
- }
-+
-+/*
-+ * This function is called in real mode. Strictly no printk's please.
-+ *
-+ * regs->nip and regs->msr contains srr0 and ssr1.
-+ */
-+long machine_check_early(struct pt_regs *regs)
-+{
-+	/* TODO: handle/decode machine check reason */
-+	return 0;
-+}
-+
- #endif
- 
- /*
+ config SPARC64
+ 	def_bool 64BIT
+-	select ARCH_SUPPORTS_MSI
+ 	select HAVE_FUNCTION_TRACER
+ 	select HAVE_FUNCTION_GRAPH_TRACER
+ 	select HAVE_FUNCTION_GRAPH_FP_TEST
+diff --git a/arch/tile/Kconfig b/arch/tile/Kconfig
+index 24565a7..74dff90 100644
+--- a/arch/tile/Kconfig
++++ b/arch/tile/Kconfig
+@@ -380,7 +380,6 @@ config PCI
+ 	select PCI_DOMAINS
+ 	select GENERIC_PCI_IOMAP
+ 	select TILE_GXIO_TRIO if TILEGX
+-	select ARCH_SUPPORTS_MSI if TILEGX
+ 	select PCI_MSI if TILEGX
+ 	---help---
+ 	  Enable PCI root complex support, so PCIe endpoint devices can
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index b32ebf9..5db62ef 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -2014,7 +2014,6 @@ menu "Bus options (PCI etc.)"
+ config PCI
+ 	bool "PCI support"
+ 	default y
+-	select ARCH_SUPPORTS_MSI if (X86_LOCAL_APIC && X86_IO_APIC)
+ 	---help---
+ 	  Find out whether you have a PCI motherboard. PCI is the name of a
+ 	  bus system, i.e. the way the CPU talks to the other stuff inside
+diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
+index 81944fb..b6a99f7 100644
+--- a/drivers/pci/Kconfig
++++ b/drivers/pci/Kconfig
+@@ -1,13 +1,9 @@
+ #
+ # PCI configuration
+ #
+-config ARCH_SUPPORTS_MSI
+-	bool
+-
+ config PCI_MSI
+ 	bool "Message Signaled Interrupts (MSI and MSI-X)"
+ 	depends on PCI
+-	depends on ARCH_SUPPORTS_MSI
+ 	help
+ 	   This allows device drivers to enable MSI (Message Signaled
+ 	   Interrupts).  Message Signaled Interrupts enable a device to
+-- 
+1.8.1.2
