@@ -1,35 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 872742C0084
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 11:14:23 +1000 (EST)
-Message-ID: <1375837894.5600.64.camel@snotra.buserror.net>
-Subject: Re: [PATCH 5/6 v2] kvm: powerpc: booke: Add linux pte lookup like
- booke3s
-From: Scott Wood <scottwood@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Date: Tue, 6 Aug 2013 20:11:34 -0500
-In-Reply-To: <20130807002408.GE19254@iris.ozlabs.ibm.com>
-References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1375355558-19187-6-git-send-email-Bharat.Bhushan@freescale.com>
- <1375484319.26902.4.camel@snotra.buserror.net>
- <1375485408.15999.67.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D070F8FCC@039-SN2MPN1-012.039d.mgd.msft.net>
- <1375503847.15999.80.camel@pasglop>
- <6A3DF150A5B70D4F9B66A25E3F7C888D070FAD49@039-SN2MPN1-012.039d.mgd.msft.net>
- <1375730341.13074.38.camel@snotra.buserror.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D070FBE3B@039-SN2MPN1-012.039d.mgd.msft.net>
- <20130807002408.GE19254@iris.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <haokexin@gmail.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4E1CE2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 11:19:57 +1000 (EST)
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>, Kumar Gala
+ <galak@kernel.crashing.org>
+Subject: [PATCH v3 0/7] powerpc: enable the relocatable support for fsl booke
+ 32bit kernel
+Date: Wed, 7 Aug 2013 09:18:28 +0800
+Message-ID: <1375838315-27797-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Bhushan Bharat-R65777 <R65777@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,31 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-08-07 at 10:24 +1000, Paul Mackerras wrote:
-> On Tue, Aug 06, 2013 at 07:02:48AM +0000, Bhushan Bharat-R65777 wrote:
-> > 
-> > I am trying to me the Linux pte search and update generic so that this can be used for powerpc as well.
-> > 
-> > I am not sure which of the below two should be ok, please help
-> 
-> Given that the BookE code uses gfn_to_pfn_memslot() to get the host
-> pfn, and then kvm_set_pfn_dirty(pfn) on pages that you're going to let
-> the guest write to, I don't think you need to set the dirty and/or
-> accessed bits in the Linux PTE explicitly.  If you care about the
-> WIMGE bits you can do find_linux_pte_or_hugepte() and just look at the
-> PTE, but you really should be using mmu_notifier_retry() to guard
-> against concurrent changes to the Linux PTE.  See the HV KVM code or
-> patch 21 of my recent series to see how it's used. 
+v3:
+The main changes include:
+  * Drop the patch 5 in v2 (memblock: introduce the memblock_reinit function)
+  * Change to use the 64M boot init tlb.
 
-Hmm... we only get a callback on invalidate_range_start(), not
-invalidate_range_end() (and even if we did get a callback for the
-latter, it'd probably be racy).  So we may have a problem here
-regardless of getting WIMG from the PTE, unless it's guaranteed that
-hva_to_pfn() will fail after invalidate_range_start().
+Please refer to the comment section of each patch for more detail.
 
->  You probably should be calling kvm_set_pfn_accessed() as well.
+This patch series passed the kdump test with kernel option "crashkernel=64M@32M"
+and "crashkernel=64M@80M" on a p2020rdb board.
 
-Yeah...  I think it'll only affect the quality of page-out decisions (as
-opposed to corruption and such), but still it should be fixed.
+v2:
+These patches are based on the Ben's next branch. In this version we choose
+to do a second relocation if the PAGE_OFFSET is not mapped to the memstart_addr
+and we also choose to set the tlb1 entries for the kernel space in address
+space 1. With this implementation:
+  * We can load the kernel at any place between
+     memstart_addr ~ memstart_addr + 768M
+  * We can reserve any memory between memstart_addr ~ memstart_addr + 768M
+    for a kdump kernel.
 
--Scott
+I have done a kdump boot on a p2020rdb kernel with the memory reserved by
+'crashkernel=32M@320M'.
+
+
+v1:
+Currently the fsl booke 32bit kernel is using the DYNAMIC_MEMSTART relocation
+method. But the RELOCATABLE method is more flexible and has less alignment
+restriction. So enable this feature on this platform and use it by
+default for the kdump kernel.
+
+These patches have passed the kdump boot test on a p2020rdb board.
+---
+Kevin Hao (7):
+  powerpc/fsl_booke: protect the access to MAS7
+  powerpc/fsl_booke: introduce get_phys_addr function
+  powerpc: enable the relocatable support for the fsl booke 32bit kernel
+  powerpc/fsl_booke: set the tlb entry for the kernel address in AS1
+  powerpc: introduce early_get_first_memblock_info
+  powerpc/fsl_booke: make sure PAGE_OFFSET map to memstart_addr for    
+    relocatable kernel
+  powerpc/fsl_booke: enable the relocatable for the kdump kernel
+
+ arch/powerpc/Kconfig                          |   5 +-
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S |   2 +
+ arch/powerpc/kernel/head_fsl_booke.S          | 231 ++++++++++++++++++++++++--
+ arch/powerpc/kernel/prom.c                    |  41 ++++-
+ arch/powerpc/mm/fsl_booke_mmu.c               |  55 ++++++
+ arch/powerpc/mm/hugetlbpage-book3e.c          |   3 +-
+ arch/powerpc/mm/mmu_decl.h                    |   2 +
+ include/linux/of_fdt.h                        |   1 +
+ 8 files changed, 317 insertions(+), 23 deletions(-)
+
+-- 
+1.8.3.1
