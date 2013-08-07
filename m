@@ -1,27 +1,21 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wi0-x231.google.com (mail-wi0-x231.google.com
- [IPv6:2a00:1450:400c:c05::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A42D92C02A8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 00:12:19 +1000 (EST)
-Received: by mail-wi0-f177.google.com with SMTP id hq12so1734328wib.16
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Aug 2013 07:12:13 -0700 (PDT)
+Return-Path: <ljaenicke@innominate.com>
+Received: from home.innominate.com (home.innominate.com [77.245.32.75])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4F05F2C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 00:22:52 +1000 (EST)
+Date: Wed, 7 Aug 2013 16:22:48 +0200
+From: Lutz Jaenicke <ljaenicke@innominate.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] net/fsl_pq_mdio: fix handling of TBIPA register
+Message-ID: <20130807142247.GA9012@lutz.bln.innominate.local>
+References: <1375379355-18594-1-git-send-email-ljaenicke@innominate.com>
+ <1375830655.5600.24.camel@snotra.buserror.net>
+ <1375833300.5600.51.camel@snotra.buserror.net>
 MIME-Version: 1.0
-In-Reply-To: <20130803155351.GK2580@book.gsilab.sittig.org>
-References: <1375255292-11288-1-git-send-email-a13xp0p0v88@gmail.com>
- <20130803155351.GK2580@book.gsilab.sittig.org>
-Date: Wed, 7 Aug 2013 18:12:13 +0400
-Message-ID: <CAF0T0X5YU=7Q=SmRvQ6Nr-awmext5EAk7SqtuqeLcySo1jazYw@mail.gmail.com>
-Subject: Re: [PATCH RFC v3 2/5] dma: mpc512x: add support for peripheral
- transfers
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Alexander Popov <a13xp0p0v88@gmail.com>, Vinod Koul <vinod.koul@intel.com>,
- Dan Williams <djbw@fb.com>, Lars-Peter Clausen <lars@metafoo.de>,
- Arnd Bergmann <arnd@arndb.de>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1375833300.5600.51.camel@snotra.buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +25,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2013/8/3 Gerhard Sittig <gsi@denx.de>:
-> On Wed, Jul 31, 2013 at 11:21 +0400, Alexander Popov wrote:
->>
-> You don't provide a lot of information to those you want to
-> receive feedback from.  You should keep a history and list the
-> changes between versions.  And you may want to somehow link this
-> v3 to its predecessor -- especially when you only send part of
-> the series and assume that reviewers may know where to find the
-> remainder.
->
-> Please help those persons you want to get help from.
+On Tue, Aug 06, 2013 at 06:55:00PM -0500, Scott Wood wrote:
+> On Tue, 2013-08-06 at 18:10 -0500, Scott Wood wrote:
+> > On Thu, 2013-08-01 at 19:49 +0200, Lutz Jaenicke wrote:
+> > > The TBIPA register is part of gianfar's full register set. When starting
+> > > from the MII registers, the start address of struct gfar needs to
+> > > be determined via container_of().
+> > > Experienced with mpc8313 and "fsl,gianfar-mdio" device tree entries.
+> > > 
+> > > Signed-off-by: Lutz Jaenicke <ljaenicke@innominate.com>
+> > > ---
+> > >  drivers/net/ethernet/freescale/fsl_pq_mdio.c |    3 ++-
+> > >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/net/ethernet/freescale/fsl_pq_mdio.c b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
+> > > index c93a056..9485fdb 100644
+> > > --- a/drivers/net/ethernet/freescale/fsl_pq_mdio.c
+> > > +++ b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
+> > > @@ -193,7 +193,8 @@ static int fsl_pq_mdio_reset(struct mii_bus *bus)
+> > >   */
+> > >  static uint32_t __iomem *get_gfar_tbipa(void __iomem *p)
+> > >  {
+> > > -	struct gfar __iomem *enet_regs = p;
+> > > +	struct gfar __iomem *enet_regs = 
+> > > +		container_of(p, struct gfar, gfar_mii_regs);
+> > >  
+> > >  	return &enet_regs->tbipa;
+> > >  }
+> > 
+> > Please send this to the netdev list/maintainer.
+> 
+> Though, do we have any guarantee that p is contained by a "struct gfar"?
+> It looks like the code of_iomap()s the reg of the mdio node, which is
+> just the MDIO registers.  Don't access outside that area.
 
-Thanks. Now I see how to collaborate via mailing lists properly.
+If I did not understand the setup totally wrong, The proposed patch just
+restores the behavior before application of
+  commit afae5ad78b342f401c28b0bb1adb3cd494cb125a
+  Author: Timur Tabi <timur@freescale.com>
+  Date:   Wed Aug 29 08:08:01 2012 +0000
 
-> I think it's unfortunate to attribute the "will access
-> peripheral" to the channel instead of the transfer job, and to
-> set the flag from within the device control callback, and to
-> nevery clear the flag (what will happen if a channel gets freed
-> and reallocated by some other client?).
->
-> I think that the peripheral access is an attribute of the
-> transfer job, and should be setup in the prep routines (both set
-> and cleared, depending on what gets setup).  This would be more
-> robust and more readable (read: maintainable) in my eyes.
+    net/fsl_pq_mdio: streamline probing of MDIO nodes
 
-Yes. I agree, I will implement it and offer differences from RFC v2
-in the initial topic.
+I guess that is meant with
+  /*
+   * This is mildly evil, but so is our hardware for doing this.
+   * Also, we have to cast back to struct gfar because of
+   * definition weirdness done in gianfar.h.
+   */
+
+> Of course, this register probably *should* be described in the MDIO node
+> (see http://patchwork.ozlabs.org/patch/250766/), but since it isn't,
+> we'll need to either find the associated full gianfar device and ask it
+> to set tbipa, or look up the physical address of tbipa and do a separate
+> ioremap.  I know that in practice we'll have at least 4K-granular
+> mappings and thus tbipa will be there, but it's best to avoid such
+> hacks.
+
+This patch does make some sense, it however only covers the pure
+fsl,gianfar-tbi case (just a TBI PHY) but not the fsl,gianfar-mdio
+with a full MDIO (@24520). On my MPC8313 based custom board I have
+a PHY at address 0 and I can only access this PHY if the TBI PHY's address
+is first rewritten to another id (from the "0" which is the reset
+default).
+The device trees shipped with Linux indicate that the boards listed
+typically do not have PHYs at address 0 so that the effect won't be
+noted. (And: writing the TBI-PHY's mdio_bus-address into another
+register (with offset 0x520!?) instead of the real TBIPA register
+does not seem to create any ill effects.
+
+As to ask the gianfar device: It is fine to setup the mdio_bus first and
+only load the gianfar module later, so at least the gianfar driver itself
+cannot do it.
 
 Best regards,
-Alexander.
+	Lutz
+-- 
+Dr.-Ing. Lutz Jänicke
+CTO
+Innominate Security Technologies AG  /protecting industrial networks/
+tel: +49.30.921028-200
+fax: +49.30.921028-020
+Rudower Chaussee 13
+D-12489 Berlin, Germany
+www.innominate.com
+
+Register Court: AG Charlottenburg, HR B 81603
+Management Board: Dirk Seewald
+Chairman of the Supervisory Board: Christoph Leifer
