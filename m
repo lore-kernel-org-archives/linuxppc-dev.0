@@ -1,10 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 7 Aug 2013 10:24:08 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 872742C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 11:14:23 +1000 (EST)
+Message-ID: <1375837894.5600.64.camel@snotra.buserror.net>
 Subject: Re: [PATCH 5/6 v2] kvm: powerpc: booke: Add linux pte lookup like
  booke3s
-Message-ID: <20130807002408.GE19254@iris.ozlabs.ibm.com>
+From: Scott Wood <scottwood@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Date: Tue, 6 Aug 2013 20:11:34 -0500
+In-Reply-To: <20130807002408.GE19254@iris.ozlabs.ibm.com>
 References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
  <1375355558-19187-6-git-send-email-Bharat.Bhushan@freescale.com>
  <1375484319.26902.4.camel@snotra.buserror.net>
@@ -14,12 +22,13 @@ References: <1375355558-19187-1-git-send-email-Bharat.Bhushan@freescale.com>
  <6A3DF150A5B70D4F9B66A25E3F7C888D070FAD49@039-SN2MPN1-012.039d.mgd.msft.net>
  <1375730341.13074.38.camel@snotra.buserror.net>
  <6A3DF150A5B70D4F9B66A25E3F7C888D070FBE3B@039-SN2MPN1-012.039d.mgd.msft.net>
+ <20130807002408.GE19254@iris.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D070FBE3B@039-SN2MPN1-012.039d.mgd.msft.net>
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
  "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "agraf@suse.de" <agraf@suse.de>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,20 +39,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 06, 2013 at 07:02:48AM +0000, Bhushan Bharat-R65777 wrote:
+On Wed, 2013-08-07 at 10:24 +1000, Paul Mackerras wrote:
+> On Tue, Aug 06, 2013 at 07:02:48AM +0000, Bhushan Bharat-R65777 wrote:
+> > 
+> > I am trying to me the Linux pte search and update generic so that this can be used for powerpc as well.
+> > 
+> > I am not sure which of the below two should be ok, please help
 > 
-> I am trying to me the Linux pte search and update generic so that this can be used for powerpc as well.
-> 
-> I am not sure which of the below two should be ok, please help
+> Given that the BookE code uses gfn_to_pfn_memslot() to get the host
+> pfn, and then kvm_set_pfn_dirty(pfn) on pages that you're going to let
+> the guest write to, I don't think you need to set the dirty and/or
+> accessed bits in the Linux PTE explicitly.  If you care about the
+> WIMGE bits you can do find_linux_pte_or_hugepte() and just look at the
+> PTE, but you really should be using mmu_notifier_retry() to guard
+> against concurrent changes to the Linux PTE.  See the HV KVM code or
+> patch 21 of my recent series to see how it's used. 
 
-Given that the BookE code uses gfn_to_pfn_memslot() to get the host
-pfn, and then kvm_set_pfn_dirty(pfn) on pages that you're going to let
-the guest write to, I don't think you need to set the dirty and/or
-accessed bits in the Linux PTE explicitly.  If you care about the
-WIMGE bits you can do find_linux_pte_or_hugepte() and just look at the
-PTE, but you really should be using mmu_notifier_retry() to guard
-against concurrent changes to the Linux PTE.  See the HV KVM code or
-patch 21 of my recent series to see how it's used.  You probably
-should be calling kvm_set_pfn_accessed() as well.
+Hmm... we only get a callback on invalidate_range_start(), not
+invalidate_range_end() (and even if we did get a callback for the
+latter, it'd probably be racy).  So we may have a problem here
+regardless of getting WIMG from the PTE, unless it's guaranteed that
+hva_to_pfn() will fail after invalidate_range_start().
 
-Paul.
+>  You probably should be calling kvm_set_pfn_accessed() as well.
+
+Yeah...  I think it'll only affect the quality of page-out decisions (as
+opposed to corruption and such), but still it should be fixed.
+
+-Scott
