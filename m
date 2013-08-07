@@ -1,9 +1,9 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/4] powerpc: Add new save_tar() register function.
-Date: Wed,  7 Aug 2013 16:11:56 +1000
-Message-Id: <1375855918-3625-2-git-send-email-mikey@neuling.org>
+Subject: [PATCH 3/4] powerpc: Save the TAR register earlier
+Date: Wed,  7 Aug 2013 16:11:57 +1000
+Message-Id: <1375855918-3625-3-git-send-email-mikey@neuling.org>
 In-Reply-To: <1375855918-3625-1-git-send-email-mikey@neuling.org>
 References: <1375855918-3625-1-git-send-email-mikey@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
@@ -16,54 +16,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add save_tar() function to save the Target Address Register (TAR).  This will
-be used in a future patch to save the TAR earlier than it currently is.
+This moves us to use the save_tar() function to save the Target Address
+Register (TAR) a lot earlier in __switch_to.
+
+We need to save the TAR earlier as we may overwrite it in the transactional
+memory reclaim/recheckpoint path.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 Cc: <stable@vger.kernel.org>
 ---
- arch/powerpc/include/asm/switch_to.h |  5 +++++
- arch/powerpc/kernel/entry_64.S       | 12 ++++++++++++
- 2 files changed, 17 insertions(+)
+ arch/powerpc/kernel/entry_64.S | 9 ---------
+ arch/powerpc/kernel/process.c  | 6 ++++++
+ 2 files changed, 6 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 49a13e0..4531068 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -15,6 +15,11 @@ extern struct task_struct *__switch_to(struct task_struct *,
- struct thread_struct;
- extern struct task_struct *_switch(struct thread_struct *prev,
- 				   struct thread_struct *next);
-+#ifdef CONFIG_PPC_BOOK3S_64
-+extern void _save_tar(struct thread_struct *prev);
-+#else
-+static inline void _save_tar(struct thread_struct *prev) {}
-+#endif
- 
- extern void giveup_fpu(struct task_struct *);
- extern void load_up_fpu(void);
 diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 4674fe6..32e18f3 100644
+index 32e18f3..616328e 100644
 --- a/arch/powerpc/kernel/entry_64.S
 +++ b/arch/powerpc/kernel/entry_64.S
-@@ -389,6 +389,18 @@ DSCR_DEFAULT:
- 	.tc dscr_default[TC],dscr_default
+@@ -461,15 +461,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_DSCR)
  
- 	.section	".text"
-+#ifdef CONFIG_PPC_BOOK3S_64
-+_GLOBAL(_save_tar)
-+	/*
-+	 * Back up the TAR across context switches.  Note that the TAR is not
-+	 * available for use in the kernel.  (To provide this, the TAR should
-+	 * be backed up/restored on exception entry/exit instead, and be in
-+	 * pt_regs.  FIXME, this should be in pt_regs anyway (for debug).)
+ #ifdef CONFIG_PPC_BOOK3S_64
+ BEGIN_FTR_SECTION
+-	/*
+-	 * Back up the TAR across context switches.  Note that the TAR is not
+-	 * available for use in the kernel.  (To provide this, the TAR should
+-	 * be backed up/restored on exception entry/exit instead, and be in
+-	 * pt_regs.  FIXME, this should be in pt_regs anyway (for debug).)
+-	 */
+-	mfspr	r0,SPRN_TAR
+-	std	r0,THREAD_TAR(r3)
+-
+ 	/* Event based branch registers */
+ 	mfspr	r0, SPRN_BESCR
+ 	std	r0, THREAD_BESCR(r3)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index c517dbe..6b4c649 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -600,6 +600,12 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	struct ppc64_tlb_batch *batch;
+ #endif
+ 
++	/* Save the tar before we do treclaim/trecheckpoint as these
++	 * will change the TAR
 +	 */
-+	mfspr	r0,SPRN_TAR
-+	std	r0,THREAD_TAR(r3)
-+	blr
-+#endif
++	if (cpu_has_feature(CPU_FTR_ARCH_207S))
++		_save_tar(&prev->thread);
++
+ 	__switch_to_tm(prev);
  
- /*
-  * This routine switches between two different tasks.  The process
+ #ifdef CONFIG_SMP
 -- 
 1.8.1.2
