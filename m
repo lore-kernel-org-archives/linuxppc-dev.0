@@ -1,38 +1,26 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E1EEC2C0754
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:42:17 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Wed, 7 Aug 2013 19:32:16 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 499F22BB005A
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:39:26 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r779NaT244957786
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:23:36 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r779dP8b018655
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:39:25 +1000
-Subject: [RFC PATCH 8/9] powerpc/powernv: Remove machine check handling in
- OPAL.
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Wed, 07 Aug 2013 15:09:22 +0530
-Message-ID: <20130807093922.5389.10511.stgit@mars.in.ibm.com>
-In-Reply-To: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
-References: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
-MIME-Version: 1.0
+Return-Path: <B40534@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8FC592C00F8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 19:55:48 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [PATCH 2/2] powerpc/hibernate: add restore mmu context after
+ resume
+Date: Wed, 7 Aug 2013 09:55:40 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010008E6@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1373666090.8183.290@snotra> <1373670396.19894.215.camel@pasglop>
+In-Reply-To: <1373670396.19894.215.camel@pasglop>
 Content-Type: text/plain; charset="utf-8"
-Cc: Jeremy Kerr <jeremy.kerr@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+ "anton@enomsg.org" <anton@enomsg.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,34 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-
-Now that we are ready to handle machine check directly in linux, do not
-register with firmware to handle machine check exception.
-
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/opal.c |    8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index bd1afa4..a08243d 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -83,14 +83,10 @@ static int __init opal_register_exception_handlers(void)
- 	if (!(powerpc_firmware_features & FW_FEATURE_OPAL))
- 		return -ENODEV;
- 
--	/* Hookup some exception handlers. We use the fwnmi area at 0x7000
--	 * to provide the glue space to OPAL
-+	/* Hookup some exception handlers except machine check. We use the
-+	 * fwnmi area at 0x7000 to provide the glue space to OPAL
- 	 */
- 	glue = 0x7000;
--	opal_register_exception_handler(OPAL_MACHINE_CHECK_HANDLER,
--					__pa(opal_mc_secondary_handler[0]),
--					glue);
--	glue += 128;
- 	opal_register_exception_handler(OPAL_HYPERVISOR_MAINTENANCE_HANDLER,
- 					0, glue);
- 	glue += 128;
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogU2F0dXJk
+YXksIEp1bHkgMTMsIDIwMTMgNzowNyBBTQ0KPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gQ2M6
+IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNDsgV29vZCBTY290dC1CMDc0MjE7IGpvaGFubmVzQHNpcHNv
+bHV0aW9ucy5uZXQ7DQo+IGFudG9uQGVub21zZy5vcmc7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5v
+cmc7IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BB
+VENIIDIvMl0gcG93ZXJwYy9oaWJlcm5hdGU6IGFkZCByZXN0b3JlIG1tdSBjb250ZXh0IGFmdGVy
+DQo+IHJlc3VtZQ0KPiANCj4gT24gRnJpLCAyMDEzLTA3LTEyIGF0IDE2OjU0IC0wNTAwLCBTY290
+dCBXb29kIHdyb3RlOg0KPiA+IHNldF9jb250ZXh0KCkgZG9lc24ndCBleGlzdCBmb3IgaGFzaCBN
+TVVzLg0KPiA+DQo+ID4gV2hhdGV2ZXIgeW91IGRvLCBwbGVhc2UgdHJ5IGFjdHVhbGx5IGJ1aWxk
+aW5nIGl0IG9uIHZhcmlvdXMgdGFyZ2V0cywNCj4gPiBpbmNsdWRpbmcgYm90aCAzMiBhbmQgNjQg
+Yml0cywgYW5kIGJvdGggaGFzaCBhbmQgbm9uLWhhc2guICBBbmQgbWFrZQ0KPiA+IHN1cmUgdGhh
+dCB3aGF0ZXZlciBlZmZlY3QgUFBDMzIgd2FzIGRlcGVuZGluZyBvbiBzd2l0Y2hfbW11X2NvbnRl
+eHQNCj4gPiBmb3INCj4gPiBpcyBwcmVzZXJ2ZWQsIGluY2x1ZGluZyBvbiBub24tYm9va2UuDQo+
+IA0KPiBUaGUgcmlnaHQgdGhpbmcgdG8gZG8gaXMgcHJvYmFibHkgdG8gaGF2ZSB0aGUgdmFyaW91
+cyB0bGJfKiBmaWxlcw0KSG93IGFib3V0IG1tdV9jb250ZXh0XyogZmlsZXMgdG8gcHJvdmlkZSBh
+IHBhaXIgb2Ygc2F2ZS9yZXN0b3JlIGNvbnRleHQgZnVuY3Rpb25zPw0KDQo+IHByb3ZpZGUgYSBw
+YWlyIG9mIHNhdmUvcmVzdG9yZSBmdW5jdGlvbnMgdGhhdCBkbyB0aGUgcmlnaHQgdGhpbmcNCj4g
+Zm9yIHRoYXQgc3BlY2lmaWMgTU1VIHR5cGUuDQo+IA0KPiBCZW4uDQo+IA0KPiANCg0K
