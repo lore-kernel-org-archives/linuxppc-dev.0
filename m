@@ -1,32 +1,32 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E1C772C037C
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:40:56 +1000 (EST)
+ (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1DFED2C0297
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:40:58 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Wed, 7 Aug 2013 19:24:36 +1000
+ Wed, 7 Aug 2013 19:34:03 +1000
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D752B2CE804C
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:38:33 +1000 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3FB1E357804E
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Aug 2013 19:38:11 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r779Mhm37078312
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:22:44 +1000
+ r779MLnV62783740
+ for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:22:21 +1000
 Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r779cWk5017259
- for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:38:33 +1000
-Subject: [RFC PATCH 3/9] powerpc: Introduce a early machine check hook in
- cpu_spec.
+ r779c9gL016436
+ for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 19:38:10 +1000
+Subject: [RFC PATCH 1/9] powerpc: Split the common exception prolog logic into
+ two section.
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Wed, 07 Aug 2013 15:08:29 +0530
-Message-ID: <20130807093829.5389.85984.stgit@mars.in.ibm.com>
+Date: Wed, 07 Aug 2013 15:08:06 +0530
+Message-ID: <20130807093806.5389.41596.stgit@mars.in.ibm.com>
 In-Reply-To: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
 References: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
@@ -44,51 +44,100 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-This patch adds the early machine check function pointer in cputable for
-CPU specific early machine check handling. The early machine handle routine
-will be called in real mode to handle SLB and TLB errors. This patch just
-sets up a mechanism invoke CPU specific handler. The subsequent patches
-will populate the function pointer.
+This patch splits the common exception prolog logic into two parts to
+facilitate reuse of existing code in the next patch. The second part will
+be reused in the machine check exception routine in the next patch.
+
+Please note that this patch does not introduce or change existing code
+logic. Instead it is just a code movement.
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/cputable.h |    7 +++++++
- arch/powerpc/kernel/traps.c         |    7 +++++--
- 2 files changed, 12 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h |   67 ++++++++++++++++--------------
+ 1 file changed, 35 insertions(+), 32 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 6f3887d..d8c098e 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -90,6 +90,13 @@ struct cpu_spec {
- 	 * if the error is fatal, 1 if it was fully recovered and 0 to
- 	 * pass up (not CPU originated) */
- 	int		(*machine_check)(struct pt_regs *regs);
-+
-+	/*
-+	 * Processor specific early machine check handler which is
-+	 * called in real mode to handle SLB and TLB errors.
-+	 */
-+	long		(*machine_check_early)(struct pt_regs *regs);
-+
- };
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 07ca627..2386d40 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -248,6 +248,40 @@ do_kvm_##n:								\
  
- extern struct cpu_spec		*cur_cpu_spec;
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 1720e08..07331b7 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -294,8 +294,11 @@ void system_reset_exception(struct pt_regs *regs)
-  */
- long machine_check_early(struct pt_regs *regs)
- {
--	/* TODO: handle/decode machine check reason */
--	return 0;
-+	long handled = 0;
-+
-+	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
-+		handled = cur_cpu_spec->machine_check_early(regs);
-+	return handled;
- }
+ #define NOTEST(n)
  
- #endif
++#define EXCEPTION_PROLOG_COMMON_2(n, area)				   \
++	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
++	SAVE_4GPRS(3, r1);		/* save r3 - r6 in stackframe	*/ \
++	SAVE_2GPRS(7, r1);		/* save r7, r8 in stackframe	*/ \
++	ld	r9,area+EX_R9(r13);	/* move r9, r10 to stackframe	*/ \
++	ld	r10,area+EX_R10(r13);					   \
++	std	r9,GPR9(r1);						   \
++	std	r10,GPR10(r1);						   \
++	ld	r9,area+EX_R11(r13);	/* move r11 - r13 to stackframe	*/ \
++	ld	r10,area+EX_R12(r13);					   \
++	ld	r11,area+EX_R13(r13);					   \
++	std	r9,GPR11(r1);						   \
++	std	r10,GPR12(r1);						   \
++	std	r11,GPR13(r1);						   \
++	BEGIN_FTR_SECTION_NESTED(66);					   \
++	ld	r10,area+EX_CFAR(r13);					   \
++	std	r10,ORIG_GPR3(r1);					   \
++	END_FTR_SECTION_NESTED(CPU_FTR_CFAR, CPU_FTR_CFAR, 66);		   \
++	GET_LR(r9,area);		/* Get LR, later save to stack	*/ \
++	ld	r2,PACATOC(r13);	/* get kernel TOC into r2	*/ \
++	std	r9,_LINK(r1);						   \
++	mfctr	r10;			/* save CTR in stackframe	*/ \
++	std	r10,_CTR(r1);						   \
++	lbz	r10,PACASOFTIRQEN(r13);				   \
++	mfspr	r11,SPRN_XER;		/* save XER in stackframe	*/ \
++	std	r10,SOFTE(r1);						   \
++	std	r11,_XER(r1);						   \
++	li	r9,(n)+1;						   \
++	std	r9,_TRAP(r1);		/* set trap number		*/ \
++	li	r10,0;							   \
++	ld	r11,exception_marker@toc(r2);				   \
++	std	r10,RESULT(r1);		/* clear regs->result		*/ \
++	std	r11,STACK_FRAME_OVERHEAD-16(r1); /* mark the frame	*/
++
+ /*
+  * The common exception prolog is used for all except a few exceptions
+  * such as a segment miss on a kernel address.  We have to be prepared
+@@ -281,38 +315,7 @@ do_kvm_##n:								\
+ 	beq	4f;			/* if from kernel mode		*/ \
+ 	ACCOUNT_CPU_USER_ENTRY(r9, r10);				   \
+ 	SAVE_PPR(area, r9, r10);					   \
+-4:	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
+-	SAVE_4GPRS(3, r1);		/* save r3 - r6 in stackframe	*/ \
+-	SAVE_2GPRS(7, r1);		/* save r7, r8 in stackframe	*/ \
+-	ld	r9,area+EX_R9(r13);	/* move r9, r10 to stackframe	*/ \
+-	ld	r10,area+EX_R10(r13);					   \
+-	std	r9,GPR9(r1);						   \
+-	std	r10,GPR10(r1);						   \
+-	ld	r9,area+EX_R11(r13);	/* move r11 - r13 to stackframe	*/ \
+-	ld	r10,area+EX_R12(r13);					   \
+-	ld	r11,area+EX_R13(r13);					   \
+-	std	r9,GPR11(r1);						   \
+-	std	r10,GPR12(r1);						   \
+-	std	r11,GPR13(r1);						   \
+-	BEGIN_FTR_SECTION_NESTED(66);					   \
+-	ld	r10,area+EX_CFAR(r13);					   \
+-	std	r10,ORIG_GPR3(r1);					   \
+-	END_FTR_SECTION_NESTED(CPU_FTR_CFAR, CPU_FTR_CFAR, 66);		   \
+-	GET_LR(r9,area);		/* Get LR, later save to stack	*/ \
+-	ld	r2,PACATOC(r13);	/* get kernel TOC into r2	*/ \
+-	std	r9,_LINK(r1);						   \
+-	mfctr	r10;			/* save CTR in stackframe	*/ \
+-	std	r10,_CTR(r1);						   \
+-	lbz	r10,PACASOFTIRQEN(r13);				   \
+-	mfspr	r11,SPRN_XER;		/* save XER in stackframe	*/ \
+-	std	r10,SOFTE(r1);						   \
+-	std	r11,_XER(r1);						   \
+-	li	r9,(n)+1;						   \
+-	std	r9,_TRAP(r1);		/* set trap number		*/ \
+-	li	r10,0;							   \
+-	ld	r11,exception_marker@toc(r2);				   \
+-	std	r10,RESULT(r1);		/* clear regs->result		*/ \
+-	std	r11,STACK_FRAME_OVERHEAD-16(r1); /* mark the frame	*/ \
++4:	EXCEPTION_PROLOG_COMMON_2(n, area)				   \
+ 	ACCOUNT_STOLEN_TIME
+ 
+ /*
