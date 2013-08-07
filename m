@@ -3,14 +3,15 @@ Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 560F62C0097
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 11:21:05 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id EBAC42C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 11:22:12 +1000 (EST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Scott Wood <scottwood@freescale.com>, Kumar Gala
  <galak@kernel.crashing.org>
-Subject: [PATCH v3 1/7] powerpc/fsl_booke: protect the access to MAS7
-Date: Wed, 7 Aug 2013 09:18:29 +0800
-Message-ID: <1375838315-27797-2-git-send-email-haokexin@gmail.com>
+Subject: [PATCH v3 4/7] powerpc/fsl_booke: set the tlb entry for the kernel
+ address in AS1
+Date: Wed, 7 Aug 2013 09:18:32 +0800
+Message-ID: <1375838315-27797-5-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1375838315-27797-1-git-send-email-haokexin@gmail.com>
 References: <1375838315-27797-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
@@ -25,49 +26,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The e500v1 doesn't implement the MAS7, so we should avoid to access
-this register on that implementations. In the current kernel, the
-access to MAS7 are protected by either CONFIG_PHYS_64BIT or
-MMU_FTR_BIG_PHYS. Since some code are executed before the code
-patching, we have to use CONFIG_PHYS_64BIT in these cases.
+We use the tlb1 entries to map low mem to the kernel space. In the
+current code, it assumes that the first tlb entry would cover the
+kernel image. But this is not true for some special cases, such as
+when we run a relocatable kernel above the 64M or set
+CONFIG_KERNEL_START above 64M. So we choose to switch to address
+space 1 before setting these tlb entries.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
-v3: Use ifdef CONFIG_PHYS_64BIT for the code running before code patching.
+v3: Typo fix.
 
 v2: A new patch in v2.
 
- arch/powerpc/kernel/head_fsl_booke.S | 2 ++
- arch/powerpc/mm/hugetlbpage-book3e.c | 3 ++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/head_fsl_booke.S | 81 ++++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/fsl_booke_mmu.c      |  2 +
+ arch/powerpc/mm/mmu_decl.h           |  2 +
+ 3 files changed, 85 insertions(+)
 
 diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index d10a7ca..304e6f2 100644
+index f6ec9a3..7e9724e 100644
 --- a/arch/powerpc/kernel/head_fsl_booke.S
 +++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -82,7 +82,9 @@ _ENTRY(_start);
- 	and	r19,r3,r18		/* r19 = page offset */
- 	andc	r31,r20,r18		/* r31 = page base */
- 	or	r31,r31,r19		/* r31 = devtree phys addr */
-+#ifdef CONFIG_PHYS_64BIT
- 	mfspr	r30,SPRN_MAS7
-+#endif
+@@ -1170,6 +1170,87 @@ __secondary_hold_acknowledge:
+ #endif
  
- 	li	r25,0			/* phys kernel start (low) */
- 	li	r24,0			/* CPU number */
-diff --git a/arch/powerpc/mm/hugetlbpage-book3e.c b/arch/powerpc/mm/hugetlbpage-book3e.c
-index 3bc7006..ac63e7e 100644
---- a/arch/powerpc/mm/hugetlbpage-book3e.c
-+++ b/arch/powerpc/mm/hugetlbpage-book3e.c
-@@ -103,7 +103,8 @@ void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
- 	if (mmu_has_feature(MMU_FTR_USE_PAIRED_MAS)) {
- 		mtspr(SPRN_MAS7_MAS3, mas7_3);
- 	} else {
--		mtspr(SPRN_MAS7, upper_32_bits(mas7_3));
-+		if (mmu_has_feature(MMU_FTR_BIG_PHYS))
-+			mtspr(SPRN_MAS7, upper_32_bits(mas7_3));
- 		mtspr(SPRN_MAS3, lower_32_bits(mas7_3));
- 	}
+ /*
++ * Create a tlb entry with the same effective and physical address as
++ * the tlb entry used by the current running code. But set the TS to 1.
++ * Then switch to the address space 1. It will return with the r3 set to
++ * the ESEL of the new created tlb.
++ */
++_GLOBAL(switch_to_as1)
++	mflr	r5
++
++	/* Find a entry not used */
++	mfspr	r3,SPRN_TLB1CFG
++	andi.	r3,r3,0xfff
++	mfspr	r4,SPRN_PID
++	rlwinm	r4,r4,16,0x3fff0000	/* turn PID into MAS6[SPID] */
++	mtspr	SPRN_MAS6,r4
++1:	lis	r4,0x1000		/* Set MAS0(TLBSEL) = 1 */
++	addi	r3,r3,-1
++	rlwimi	r4,r3,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r3) */
++	mtspr	SPRN_MAS0,r4
++	tlbre
++	mfspr	r4,SPRN_MAS1
++	andis.	r4,r4,MAS1_VALID@h
++	bne	1b
++
++	/* Get the tlb entry used by the current running code */
++	bl	0f
++0:	mflr	r4
++	tlbsx	0,r4
++
++	mfspr	r4,SPRN_MAS1
++	ori	r4,r4,MAS1_TS		/* Set the TS = 1 */
++	mtspr	SPRN_MAS1,r4
++
++	mfspr	r4,SPRN_MAS0
++	rlwinm	r4,r4,0,~MAS0_ESEL_MASK
++	rlwimi	r4,r3,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r3) */
++	mtspr	SPRN_MAS0,r4
++	tlbwe
++	isync
++	sync
++
++	mfmsr	r4
++	ori	r4,r4,MSR_IS | MSR_DS
++	mtspr	SPRN_SRR0,r5
++	mtspr	SPRN_SRR1,r4
++	sync
++	rfi
++
++/*
++ * Restore to the address space 0 and also invalidate the tlb entry created
++ * by switch_to_as1.
++*/
++_GLOBAL(restore_to_as0)
++	mflr	r0
++
++	bl	0f
++0:	mflr	r9
++	addi	r9,r9,1f - 0b
++
++	mfmsr	r7
++	li	r8,(MSR_IS | MSR_DS)
++	andc	r7,r7,r8
++
++	mtspr	SPRN_SRR0,r9
++	mtspr	SPRN_SRR1,r7
++	sync
++	rfi
++
++	/* Invalidate the temporary tlb entry for AS1 */
++1:	lis	r9,0x1000		/* Set MAS0(TLBSEL) = 1 */
++	rlwimi	r9,r3,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r3) */
++	mtspr	SPRN_MAS0,r9
++	tlbre
++	mfspr	r9,SPRN_MAS1
++	rlwinm	r9,r9,0,2,31		/* Clear MAS1 Valid and IPPROT */
++	mtspr	SPRN_MAS1,r9
++	tlbwe
++	isync
++	mtlr	r0
++	blr
++
++/*
+  * We put a few things here that have to be page-aligned. This stuff
+  * goes at the beginning of the data segment, which is page-aligned.
+  */
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index ce4a116..1d54f6d 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -222,7 +222,9 @@ void __init adjust_total_lowmem(void)
+ 	/* adjust lowmem size to __max_low_memory */
+ 	ram = min((phys_addr_t)__max_low_memory, (phys_addr_t)total_lowmem);
+ 
++	i = switch_to_as1();
+ 	__max_low_memory = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM);
++	restore_to_as0(i);
+ 
+ 	pr_info("Memory CAM mapping: ");
+ 	for (i = 0; i < tlbcam_index - 1; i++)
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 83eb5d5..eefbf7b 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -148,6 +148,8 @@ extern unsigned long calc_cam_sz(unsigned long ram, unsigned long virt,
+ extern void MMU_init_hw(void);
+ extern unsigned long mmu_mapin_ram(unsigned long top);
+ extern void adjust_total_lowmem(void);
++extern int switch_to_as1(void);
++extern void restore_to_as0(int esel);
+ #endif
+ extern void loadcam_entry(unsigned int index);
  
 -- 
 1.8.3.1
