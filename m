@@ -1,17 +1,17 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 40AEB2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 11:22:14 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 677E92C0796
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 11:23:12 +1000 (EST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Scott Wood <scottwood@freescale.com>, Kumar Gala
- <galak@kernel.crashing.org>
-Subject: [PATCH v3 3/7] powerpc: enable the relocatable support for the fsl
- booke 32bit kernel
-Date: Wed, 7 Aug 2013 09:18:31 +0800
-Message-ID: <1375838315-27797-4-git-send-email-haokexin@gmail.com>
+ <galak@kernel.crashing.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: [PATCH v3 5/7] powerpc: introduce early_get_first_memblock_info
+Date: Wed, 7 Aug 2013 09:18:33 +0800
+Message-ID: <1375838315-27797-6-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1375838315-27797-1-git-send-email-haokexin@gmail.com>
 References: <1375838315-27797-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
@@ -26,143 +26,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is based on the codes in the head_44x.S. The difference is that
-the init tlb size we used is 64M. With this patch we can only load the
-kernel at address between memstart_addr ~ memstart_addr + 64M. We will
-fix this restriction in the following patches.
+For a relocatable kernel since it can be loaded at any place, there
+is no any relation between the kernel start addr and the memstart_addr.
+So we can't calculate the memstart_addr from kernel start addr. And
+also we can't wait to do the relocation after we get the real
+memstart_addr from device tree because it is so late. So introduce
+a new function we can use to get the first memblock address and size
+in a very early stage (before machine_init).
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
-v3:
-  * Use the 64M align.
-  * typo fix.
+v3: Introduce a variable to avoid to mess the memblock.
 
-v2: Move the code to set kernstart_addr and virt_phys_offset to a c function.
-    So we can expand it easily later.
+v2: A new patch in v2.
 
- arch/powerpc/Kconfig                          |  2 +-
- arch/powerpc/kernel/fsl_booke_entry_mapping.S |  2 ++
- arch/powerpc/kernel/head_fsl_booke.S          | 37 +++++++++++++++++++++++++++
- arch/powerpc/mm/fsl_booke_mmu.c               | 28 ++++++++++++++++++++
- 4 files changed, 68 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/prom.c | 41 ++++++++++++++++++++++++++++++++++++++++-
+ include/linux/of_fdt.h     |  1 +
+ 2 files changed, 41 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 3bf72cd..57dc8f9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -859,7 +859,7 @@ config DYNAMIC_MEMSTART
- 
- config RELOCATABLE
- 	bool "Build a relocatable kernel"
--	depends on ADVANCED_OPTIONS && FLATMEM && 44x
-+	depends on ADVANCED_OPTIONS && FLATMEM && (44x || FSL_BOOKE)
- 	select NONSTATIC_KERNEL
- 	help
- 	  This builds a kernel image that is capable of running at the
-diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-index a92c79b..f22e7e4 100644
---- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-+++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-@@ -176,6 +176,8 @@ skpinv:	addi	r6,r6,1				/* Increment */
- /* 7. Jump to KERNELBASE mapping */
- 	lis	r6,(KERNELBASE & ~0xfff)@h
- 	ori	r6,r6,(KERNELBASE & ~0xfff)@l
-+	rlwinm	r7,r25,0,0x03ffffff
-+	add	r6,r7,r6
- 
- #elif defined(ENTRY_MAPPING_KEXEC_SETUP)
- /*
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 377bd81..f6ec9a3 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -73,6 +73,33 @@ _ENTRY(_start);
- 	li	r24,0			/* CPU number */
- 	li	r23,0			/* phys kernel start (high) */
- 
-+#ifdef CONFIG_RELOCATABLE
-+	bl	0f			/* Get our runtime address */
-+0:	mflr	r3			/* Make it accessible */
-+	addis	r3,r3,(_stext - 0b)@ha
-+	addi	r3,r3,(_stext - 0b)@l	/* Get our current runtime base */
-+
-+	/* Translate _stext address to physical, save in r23/r25 */
-+	bl	get_phys_addr
-+	mr	r23,r3
-+	mr	r25,r4
-+
-+	/*
-+	 * We have the runtime (virutal) address of our base.
-+	 * We calculate our shift of offset from a 64M page.
-+	 * We could map the 64M page we belong to at PAGE_OFFSET and
-+	 * get going from there.
-+	 */
-+	lis	r4,KERNELBASE@h
-+	ori	r4,r4,KERNELBASE@l
-+	rlwinm	r6,r25,0,0x3ffffff		/* r6 = PHYS_START % 64M */
-+	rlwinm	r5,r4,0,0x3ffffff		/* r5 = KERNELBASE % 64M */
-+	subf	r3,r5,r6			/* r3 = r6 - r5 */
-+	add	r3,r4,r3			/* Required Virtual Address */
-+
-+	bl	relocate
-+#endif
-+
- /* We try to not make any assumptions about how the boot loader
-  * setup or used the TLBs.  We invalidate all mappings from the
-  * boot loader and load a single entry in TLB1[0] to map the
-@@ -182,6 +209,16 @@ _ENTRY(__early_start)
- 
- 	bl	early_init
- 
-+#ifdef CONFIG_RELOCATABLE
-+#ifdef CONFIG_PHYS_64BIT
-+	mr	r3,r23
-+	mr	r4,r25
-+#else
-+	mr	r3,r25
-+#endif
-+	bl	relocate_init
-+#endif
-+
- #ifdef CONFIG_DYNAMIC_MEMSTART
- 	lis	r3,kernstart_addr@ha
- 	la	r3,kernstart_addr@l(r3)
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index 07ba45b..ce4a116 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -241,4 +241,32 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	/* 64M mapped initially according to head_fsl_booke.S */
- 	memblock_set_current_limit(min_t(u64, limit, 0x04000000));
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index eb23ac9..bfd525e 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -521,6 +521,20 @@ static int __init early_init_dt_scan_memory_ppc(unsigned long node,
+ 	return early_init_dt_scan_memory(node, uname, depth, data);
  }
-+
+ 
++/*
++ * For a relocatable kernel, we need to get the memstart_addr first,
++ * then use it to calculate the virtual kernel start address. This has
++ * to happen at a very early stage (before machine_init). In this case,
++ * we just want to get the memstart_address and would not like to mess the
++ * memblock at this stage. So introduce a variable to skip the memblock_add()
++ * for this reason.
++ */
 +#ifdef CONFIG_RELOCATABLE
-+notrace void __init relocate_init(phys_addr_t start)
++static int add_mem_to_memblock = 1;
++#else
++#define add_mem_to_memblock 1
++#endif
++
+ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+ {
+ #ifdef CONFIG_PPC64
+@@ -541,7 +555,8 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+ 	}
+ 
+ 	/* Add the chunk to the MEMBLOCK list */
+-	memblock_add(base, size);
++	if (add_mem_to_memblock)
++		memblock_add(base, size);
+ }
+ 
+ void * __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
+@@ -753,6 +768,30 @@ void __init early_init_devtree(void *params)
+ 	DBG(" <- early_init_devtree()\n");
+ }
+ 
++#ifdef CONFIG_RELOCATABLE
++/*
++ * This function run before early_init_devtree, so we have to init
++ * initial_boot_params.
++ */
++void __init early_get_first_memblock_info(void *params, phys_addr_t *size)
 +{
-+	unsigned long base = KERNELBASE;
++	/* Setup flat device-tree pointer */
++	initial_boot_params = params;
 +
 +	/*
-+	 * Relocatable kernel support based on processing of dynamic
-+	 * relocation entries.
-+	 * Compute the virt_phys_offset :
-+	 * virt_phys_offset = stext.run - kernstart_addr
-+	 *
-+	 * stext.run = (KERNELBASE & ~0x3ffffff) + (kernstart_addr & 0x3ffffff)
-+	 * When we relocate, we have :
-+	 *
-+	 *	(kernstart_addr & 0x3ffffff) = (stext.run & 0x3ffffff)
-+	 *
-+	 * hence:
-+	 *  virt_phys_offset = (KERNELBASE & ~0x3ffffff) -
-+	 *                              (kernstart_addr & ~0x3ffffff)
-+	 *
++	 * Scan the memory nodes and set add_mem_to_memblock to 0 to avoid
++	 * mess the memblock.
 +	 */
-+	kernstart_addr = start;
-+	start &= ~0x3ffffff;
-+	base &= ~0x3ffffff;
-+	virt_phys_offset = base - start;
++	add_mem_to_memblock = 0;
++	of_scan_flat_dt(early_init_dt_scan_root, NULL);
++	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
++	add_mem_to_memblock = 1;
++
++	if (size)
++		*size = first_memblock_size;
 +}
 +#endif
- #endif
++
+ /*******
+  *
+  * New implementation of the OF "find" APIs, return a refcounted
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index ed136ad..befe744 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -117,6 +117,7 @@ extern int early_init_dt_scan_root(unsigned long node, const char *uname,
+ /* Other Prototypes */
+ extern void unflatten_device_tree(void);
+ extern void early_init_devtree(void *);
++extern void early_get_first_memblock_info(void *, phys_addr_t *);
+ #else /* CONFIG_OF_FLATTREE */
+ static inline void unflatten_device_tree(void) {}
+ #endif /* CONFIG_OF_FLATTREE */
 -- 
 1.8.3.1
