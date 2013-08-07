@@ -1,38 +1,36 @@
-Return-Path: <tony.luck@gmail.com>
-Received: from mail-ve0-x22e.google.com (mail-ve0-x22e.google.com
- [IPv6:2607:f8b0:400c:c01::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E29D62C0084
- for <linuxppc-dev@ozlabs.org>; Thu,  8 Aug 2013 08:22:47 +1000 (EST)
-Received: by mail-ve0-f174.google.com with SMTP id d10so2418209vea.5
- for <linuxppc-dev@ozlabs.org>; Wed, 07 Aug 2013 15:22:45 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CA+8MBb+pkKpaEDs6J_XbzM3wzady2MjdU+jcDP+jH1f1VBxG5w@mail.gmail.com>
-References: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
- <51FA3B02.7060004@linux.vnet.ibm.com>
- <3908561D78D1C84285E8C5FCA982C28F31CAA167@ORSMSX106.amr.corp.intel.com>
- <CA+8MBbLuhVDCb26ag3AH0vXrP4MXHLxS5aVn8pTi4=qL1NdR5w@mail.gmail.com>
- <CA+8MBbJ7x46FGC7dPSdNzf8z=fZz20w1kiNgnZr4QQB6SUELhg@mail.gmail.com>
- <51FFDC8B.7010909@linux.vnet.ibm.com>
- <CA+8MBb+1LpR+Cx=84WZT98U5eqZcm1KriUP75aCg+uSrXrb3Yw@mail.gmail.com>
- <51FFFFEB.3030907@linux.vnet.ibm.com>
- <CA+8MBbK9oZJO+RJGC-7riO=Kz=UbRcAvQ-nDi=2GLyvEDpoc7g@mail.gmail.com>
- <CA+8MBbKA+P4vs3utSKQ-LPMW3ybrWOp=f3FH6ahv1YtwnMm5KA@mail.gmail.com>
- <5201A9BD.4090503@linux.vnet.ibm.com>
- <CA+8MBbJS0Dymn4OABi-rW9M5Bw-ZZ6DaEjQOW-oki+4ge4BDtg@mail.gmail.com>
- <5201D777.8060303@linux.vnet.ibm.com>
- <CA+8MBb+pkKpaEDs6J_XbzM3wzady2MjdU+jcDP+jH1f1VBxG5w@mail.gmail.com>
-Date: Wed, 7 Aug 2013 15:22:45 -0700
-Message-ID: <CA+8MBbJk63N3+YLUGDmGP5jrVc2mLa0Pn-QrqPk1xatknTVVEQ@mail.gmail.com>
-Subject: Re: [PATCH 00/11] Add compression support to pstore
-From: Tony Luck <tony.luck@gmail.com>
-To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "keescook@chromium.org" <keescook@chromium.org>
+Return-Path: <fin@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C3B8A2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 09:16:05 +1000 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fin@linux.vnet.ibm.com>;
+ Wed, 7 Aug 2013 17:15:58 -0600
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+ [9.17.195.228])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 494243E40042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2013 17:15:31 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r77NFrhK197102
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Aug 2013 17:15:54 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r77NFqK2005677
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Aug 2013 17:15:53 -0600
+Message-ID: <1375917350.16050.14.camel@what-is-leg>
+Subject: [PATCH v2] drivers/crypto/nx: saves chaining value from co-processor
+From: Fionnuala Gunter <fin@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Date: Wed, 07 Aug 2013 18:15:50 -0500
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: fin@linux.vnet.ibm.com, mhcerri@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+ herbert@gondor.apana.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,33 +40,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 6, 2013 at 10:35 PM, Tony Luck <tony.luck@gmail.com> wrote:
-> ERST is at the whim of the BIOS writer (the ACPI standard doesn't provide any
-> suggestions on record sizes).  My systems support ~6K record size.
+This patch fixes a bug that is triggered when cts(cbc(aes)) is used with
+nx-crypto driver on input larger than 32 bytes.
 
-Off by a little - 7896 bytes on my current machine.
+The chaining value from co-processor was not being saved. This value is
+needed because it is used as the IV by cts(cbc(aes)).
 
-> efivars has, IIRC, a 1k limit coded in the Linux back end.
-My memory was correct for this one.
+Signed-off-by: Fionnuala Gunter <fin@linux.vnet.ibm.com>
+Reviewed-by: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
+---
+v2. changed signed-off-by to reviewed-by and added more details to
+description
 
-Adding a little tracing to pstore_getrecords() I see this:
+This bug appeared in the original submission (v3.5)
+---
+ drivers/crypto/nx/nx-aes-cbc.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-pstore: inflated 3880 bytes compressed to 17459 bytes
-pstore: inflated 2567 bytes compressed to 17531 bytes
-pstore: inflated 4018 bytes compressed to 17488 bytes
+diff --git a/drivers/crypto/nx/nx-aes-cbc.c
+b/drivers/crypto/nx/nx-aes-cbc.c
+index 35d483f..a2f99a9 100644
+--- a/drivers/crypto/nx/nx-aes-cbc.c
++++ b/drivers/crypto/nx/nx-aes-cbc.c
+@@ -95,6 +95,7 @@ static int cbc_aes_nx_crypt(struct blkcipher_desc
+*desc,
+        if (rc)
+                goto out;
 
-Which isn't at all what I expected.  The ERST backend
-advertised a bufsize of 7896, and I have the default
-kmsg_bytes of 10240.  So on my forced panic the code
-decided to create a three part pstore dump.  The sum of
-the pieces is close to, but a little over the target of 10K.
-But I don't understand why the compressed sizes are so
-much smaller that the ERST backend block size.
-
-The uncompressed sizes appear to be close to constant.
-The compression ratios vary from 14% to 23%
-
-Why do we get three small parts instead of two bigger
-ones close the the 7896 ERST bufsize?
-
--Tony
++       memcpy(desc->info, csbcpb->cpb.aes_cbc.cv, AES_BLOCK_SIZE);
+        atomic_inc(&(nx_ctx->stats->aes_ops));
+        atomic64_add(csbcpb->csb.processed_byte_count,
+                     &(nx_ctx->stats->aes_bytes));
+-- 
+1.7.10.4
