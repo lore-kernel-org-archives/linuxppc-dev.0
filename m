@@ -1,25 +1,38 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AFE5F2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 07:27:11 +1000 (EST)
-Message-ID: <1375910819.18333.58.camel@snotra.buserror.net>
-Subject: Re: [PATCH] net/fsl_pq_mdio: fix handling of TBIPA register
-From: Scott Wood <scottwood@freescale.com>
-To: Lutz Jaenicke <ljaenicke@innominate.com>
-Date: Wed, 7 Aug 2013 16:26:59 -0500
-In-Reply-To: <20130807142247.GA9012@lutz.bln.innominate.local>
-References: <1375379355-18594-1-git-send-email-ljaenicke@innominate.com>
- <1375830655.5600.24.camel@snotra.buserror.net>
- <1375833300.5600.51.camel@snotra.buserror.net>
- <20130807142247.GA9012@lutz.bln.innominate.local>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <tony.luck@gmail.com>
+Received: from mail-ve0-x22e.google.com (mail-ve0-x22e.google.com
+ [IPv6:2607:f8b0:400c:c01::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E29D62C0084
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Aug 2013 08:22:47 +1000 (EST)
+Received: by mail-ve0-f174.google.com with SMTP id d10so2418209vea.5
+ for <linuxppc-dev@ozlabs.org>; Wed, 07 Aug 2013 15:22:45 -0700 (PDT)
 MIME-Version: 1.0
-Cc: Sandeep Gopalpet <Sandeep.Kumar@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <CA+8MBb+pkKpaEDs6J_XbzM3wzady2MjdU+jcDP+jH1f1VBxG5w@mail.gmail.com>
+References: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
+ <51FA3B02.7060004@linux.vnet.ibm.com>
+ <3908561D78D1C84285E8C5FCA982C28F31CAA167@ORSMSX106.amr.corp.intel.com>
+ <CA+8MBbLuhVDCb26ag3AH0vXrP4MXHLxS5aVn8pTi4=qL1NdR5w@mail.gmail.com>
+ <CA+8MBbJ7x46FGC7dPSdNzf8z=fZz20w1kiNgnZr4QQB6SUELhg@mail.gmail.com>
+ <51FFDC8B.7010909@linux.vnet.ibm.com>
+ <CA+8MBb+1LpR+Cx=84WZT98U5eqZcm1KriUP75aCg+uSrXrb3Yw@mail.gmail.com>
+ <51FFFFEB.3030907@linux.vnet.ibm.com>
+ <CA+8MBbK9oZJO+RJGC-7riO=Kz=UbRcAvQ-nDi=2GLyvEDpoc7g@mail.gmail.com>
+ <CA+8MBbKA+P4vs3utSKQ-LPMW3ybrWOp=f3FH6ahv1YtwnMm5KA@mail.gmail.com>
+ <5201A9BD.4090503@linux.vnet.ibm.com>
+ <CA+8MBbJS0Dymn4OABi-rW9M5Bw-ZZ6DaEjQOW-oki+4ge4BDtg@mail.gmail.com>
+ <5201D777.8060303@linux.vnet.ibm.com>
+ <CA+8MBb+pkKpaEDs6J_XbzM3wzady2MjdU+jcDP+jH1f1VBxG5w@mail.gmail.com>
+Date: Wed, 7 Aug 2013 15:22:45 -0700
+Message-ID: <CA+8MBbJk63N3+YLUGDmGP5jrVc2mLa0Pn-QrqPk1xatknTVVEQ@mail.gmail.com>
+Subject: Re: [PATCH 00/11] Add compression support to pstore
+From: Tony Luck <tony.luck@gmail.com>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "keescook@chromium.org" <keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,87 +42,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-08-07 at 16:22 +0200, Lutz Jaenicke wrote:
-> On Tue, Aug 06, 2013 at 06:55:00PM -0500, Scott Wood wrote:
-> > On Tue, 2013-08-06 at 18:10 -0500, Scott Wood wrote:
-> > > On Thu, 2013-08-01 at 19:49 +0200, Lutz Jaenicke wrote:
-> > > > The TBIPA register is part of gianfar's full register set. When starting
-> > > > from the MII registers, the start address of struct gfar needs to
-> > > > be determined via container_of().
-> > > > Experienced with mpc8313 and "fsl,gianfar-mdio" device tree entries.
-> > > > 
-> > > > Signed-off-by: Lutz Jaenicke <ljaenicke@innominate.com>
-> > > > ---
-> > > >  drivers/net/ethernet/freescale/fsl_pq_mdio.c |    3 ++-
-> > > >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > > > 
-> > > > diff --git a/drivers/net/ethernet/freescale/fsl_pq_mdio.c b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-> > > > index c93a056..9485fdb 100644
-> > > > --- a/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-> > > > +++ b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-> > > > @@ -193,7 +193,8 @@ static int fsl_pq_mdio_reset(struct mii_bus *bus)
-> > > >   */
-> > > >  static uint32_t __iomem *get_gfar_tbipa(void __iomem *p)
-> > > >  {
-> > > > -	struct gfar __iomem *enet_regs = p;
-> > > > +	struct gfar __iomem *enet_regs = 
-> > > > +		container_of(p, struct gfar, gfar_mii_regs);
-> > > >  
-> > > >  	return &enet_regs->tbipa;
-> > > >  }
-> > > 
-> > > Please send this to the netdev list/maintainer.
-> > 
-> > Though, do we have any guarantee that p is contained by a "struct gfar"?
-> > It looks like the code of_iomap()s the reg of the mdio node, which is
-> > just the MDIO registers.  Don't access outside that area.
-> 
-> If I did not understand the setup totally wrong, The proposed patch just
-> restores the behavior before application of
->   commit afae5ad78b342f401c28b0bb1adb3cd494cb125a
->   Author: Timur Tabi <timur@freescale.com>
->   Date:   Wed Aug 29 08:08:01 2012 +0000
-> 
->     net/fsl_pq_mdio: streamline probing of MDIO nodes
+On Tue, Aug 6, 2013 at 10:35 PM, Tony Luck <tony.luck@gmail.com> wrote:
+> ERST is at the whim of the BIOS writer (the ACPI standard doesn't provide any
+> suggestions on record sizes).  My systems support ~6K record size.
 
-It's not exactly new ugliness, but it's still ugly. :-)
+Off by a little - 7896 bytes on my current machine.
 
-Though I think you need to go back before commit
-1d2397d742b7a2b39b2f09dd9da3b9d1463f55e9 ("fsl_pq_mdio: Add Suport for
-etsec2.0 devices.") for the offset to be "properly" adjusted.
+> efivars has, IIRC, a 1k limit coded in the Linux back end.
+My memory was correct for this one.
 
-> > Of course, this register probably *should* be described in the MDIO node
-> > (see http://patchwork.ozlabs.org/patch/250766/), but since it isn't,
-> > we'll need to either find the associated full gianfar device and ask it
-> > to set tbipa, or look up the physical address of tbipa and do a separate
-> > ioremap.  I know that in practice we'll have at least 4K-granular
-> > mappings and thus tbipa will be there, but it's best to avoid such
-> > hacks.
-> 
-> This patch does make some sense, it however only covers the pure
-> fsl,gianfar-tbi case (just a TBI PHY) but not the fsl,gianfar-mdio
-> with a full MDIO (@24520). 
+Adding a little tracing to pstore_getrecords() I see this:
 
-I'm not seeing any difference between the address for fsl,gianfar-tbi
-and fsl,gianfar-mdio.
+pstore: inflated 3880 bytes compressed to 17459 bytes
+pstore: inflated 2567 bytes compressed to 17531 bytes
+pstore: inflated 4018 bytes compressed to 17488 bytes
 
-> On my MPC8313 based custom board I have
-> a PHY at address 0 and I can only access this PHY if the TBI PHY's address
-> is first rewritten to another id (from the "0" which is the reset
-> default).
+Which isn't at all what I expected.  The ERST backend
+advertised a bufsize of 7896, and I have the default
+kmsg_bytes of 10240.  So on my forced panic the code
+decided to create a three part pstore dump.  The sum of
+the pieces is close to, but a little over the target of 10K.
+But I don't understand why the compressed sizes are so
+much smaller that the ERST backend block size.
 
-Yes, I understand the need to write TBIPA -- I was just hoping it could
-be done in a less hacky way.
+The uncompressed sizes appear to be close to constant.
+The compression ratios vary from 14% to 23%
 
-> As to ask the gianfar device: It is fine to setup the mdio_bus first and
-> only load the gianfar module later, so at least the gianfar driver itself
-> cannot do it.
+Why do we get three small parts instead of two bigger
+ones close the the 7896 ERST bufsize?
 
-You could look up the main gianfar node from the mdio driver.  Or at
-least modify the ioremap so that it covers the whole struct gfar,
-instead of using of_iomap().  It'd still be a little hacky but only in
-that we're recognizing a bad device tree and interpreting it how it
-should have been written, rather than accessing outside the bounds of an
-ioremap request.
-
--Scott
+-Tony
