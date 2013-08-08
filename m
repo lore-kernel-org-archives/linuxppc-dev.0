@@ -1,27 +1,24 @@
 Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3A5D82C009E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 10:33:10 +1000 (EST)
-Received: from mail66-db8 (localhost [127.0.0.1])	by mail66-db8-R.bigfish.com
- (Postfix) with ESMTP id 2A39D8C00BD	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Aug 2013 00:33:03 +0000 (UTC)
-Received: from DB8EHSMHS015.bigfish.com (unknown [10.174.8.228])	by
- mail66-db8.bigfish.com (Postfix) with ESMTP id 519C8600046	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 00:33:00 +0000 (UTC)
-Date: Wed, 7 Aug 2013 19:32:55 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 2B1FA2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 10:35:11 +1000 (EST)
+Date: Wed, 7 Aug 2013 19:34:59 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Minghuan Lian <Minghuan.Lian@freescale.com>
-Subject: Re: [3/3,v2] powerpc/fsl_msi: add MSIIR1 support for MPIC v4.3
-Message-ID: <20130808003255.GA3901@home.buserror.net>
-References: <1371812354-1962-3-git-send-email-Minghuan.Lian@freescale.com>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Subject: Re: powerpc/mpc85xx: fix non-bootcpu cannot up after hibernation
+ resume
+Message-ID: <20130808003459.GA3964@home.buserror.net>
+References: <1368518756-9850-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1371812354-1962-3-git-send-email-Minghuan.Lian@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Zang Roy-R61911 <r61911@freescale.com>
+In-Reply-To: <1368518756-9850-1-git-send-email-dongsheng.wang@freescale.com>
+Cc: chenhui.zhao@freescale.com, rjw@sisk.pl, paulus@samba.org,
+ johannes@sipsolutions.net, avorontsov@ru.mvista.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,43 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 21, 2013 at 06:59:14PM +0800, Minghuan Lian wrote:
-> The original MPIC MSI bank contains 8 registers, MPIC v4.3 MSI bank
-> contains 16 registers, and this patch adds NR_MSI_REG_MAX and
-> NR_MSI_IRQS_MAX to describe the maximum capability of MSI bank.
-> MPIC v4.3 provides MSIIR1 to index these 16 MSI registers. MSIIR1
-> uses different bits definition than MSIIR. This patch adds
-> ibs_shift and srs_shift to indicate the bits definition of the
-> MSIIR and MSIIR1, so the same code can handle the MSIIR and MSIIR1
-> simultaneously.
+On Tue, May 14, 2013 at 04:05:56PM +0800, Dongsheng Wang wrote:
+> This problem belongs to the core synchronization issues.
+> The cpu1 already updated spin_table values, but bootcore cannot get
+> this value in time.
 > 
-> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+> After bootcpu hibiernation restore the pages. we are now running
+> with the kernel data of the old kernel fully restored. if we reset
+> the non-bootcpus that will be reset cache(tlb), the non-bootcpus
+> will get new address(map virtual and physical address spaces).
+> but bootcpu tlb cache still use boot kernel data, so we need to
+> invalidate the bootcpu tlb cache make it to get new main memory data.
 > 
-> ---
-> v2 log:
-> 1. remove 'msiregs' support.
+> log:
+> Enabling non-boot CPUs ...
+> smp_85xx_kick_cpu: timeout waiting for core 1 to reset
+> smp: failed starting cpu 1 (rc -2)
+> Error taking CPU1 up: -2
 > 
->  arch/powerpc/sysdev/fsl_msi.c | 132 ++++++++++++++++++++++++++++++------------
->  arch/powerpc/sysdev/fsl_msi.h |  10 +++-
->  2 files changed, 101 insertions(+), 41 deletions(-)
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> Reviewed-by: Anton Vorontsov <anton@enomsg.org>
+> 
+> 
+> diff --git a/arch/powerpc/kernel/swsusp_booke.S b/arch/powerpc/kernel/swsusp_booke.S
+> index 11a3930..9503249 100644
+> --- a/arch/powerpc/kernel/swsusp_booke.S
+> +++ b/arch/powerpc/kernel/swsusp_booke.S
+> @@ -141,6 +141,19 @@ _GLOBAL(swsusp_arch_resume)
+>  	lis	r11,swsusp_save_area@h
+>  	ori	r11,r11,swsusp_save_area@l
+>  
+> +	/*
+> +	 * The boot core get a virtual address, when the boot process,
+> +	 * the virtual address corresponds to a physical address. After
+> +	 * hibernation resume memory snapshots, The corresponding
+> +	 * relationship between the virtual memory and physical memory
+> +	 * might change again. We need to get a new page table. So we
+> +	 * need to invalidate TLB after resume pages.
+> +	 *
+> +	 * Invalidations TLB Using tlbilx/tlbivax/MMUCSR0.
+> +	 * tlbilx used here.
+> +	 */
+> +	bl	_tlbil_all
 
-Applied with the following changes:
+Applied with the code comment changed to:
 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index fd6458b..77efbae 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -481,8 +481,8 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 				goto error_out;
- 		}
- 	} else {
--		const u32 all_avail[] = { 0,
--					  NR_MSI_REG_MSIIR * IRQS_PER_MSI_REG};
-+		static const u32 all_avail[] =
-+			{ 0, NR_MSI_REG_MSIIR * IRQS_PER_MSI_REG };
- 
- 		msi->srs_shift = MSIIR_SRS_SHIFT;
- 		msi->ibs_shift = MSIIR_IBS_SHIFT;
-
+        /*
+         * Mappings from virtual addresses to physical addresses may be
+         * different than they were prior to restoring hibernation state.
+         * Invalidate the TLB so that the boot CPU is using the new
+         * mappings.
+         */
 
 -Scott
