@@ -1,9 +1,10 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 3/4] powerpc: Save the TAR register earlier
-Date: Thu,  8 Aug 2013 12:33:56 +1000
-Message-Id: <1375929237-19944-3-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 4/4] powerpc/tm: Save and restore checkpointed TAR,
+ PPR and DSCR
+Date: Thu,  8 Aug 2013 12:33:57 +1000
+Message-Id: <1375929237-19944-4-git-send-email-mikey@neuling.org>
 In-Reply-To: <1375929237-19944-1-git-send-email-mikey@neuling.org>
 References: <1375929237-19944-1-git-send-email-mikey@neuling.org>
 In-Reply-To: <25550.1375872955@ale.ozlabs.ibm.com>
@@ -18,54 +19,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves us to use the save_tar() function to save the Target Address
-Register (TAR) a lot earlier in __switch_to.
+Currently we don't save and restore the checkpointed TAR, PPR and DSCR.
 
-We need to save the TAR earlier as we may overwrite it in the transactional
-memory reclaim/recheckpoint path.
+This adds the required save and restore to the treclaim and trechkpt code.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 Cc: <stable@vger.kernel.org>
 ---
- arch/powerpc/kernel/entry_64.S | 9 ---------
- arch/powerpc/kernel/process.c  | 5 +++++
- 2 files changed, 5 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/tm.S | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index cfb6de4..08f2e2e 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -448,15 +448,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_DSCR)
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index 51be8fb..0554d1f 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -233,6 +233,16 @@ dont_backup_fp:
+ 	std	r5, _CCR(r7)
+ 	std	r6, _XER(r7)
  
- #ifdef CONFIG_PPC_BOOK3S_64
- BEGIN_FTR_SECTION
--	/*
--	 * Back up the TAR across context switches.  Note that the TAR is not
--	 * available for use in the kernel.  (To provide this, the TAR should
--	 * be backed up/restored on exception entry/exit instead, and be in
--	 * pt_regs.  FIXME, this should be in pt_regs anyway (for debug).)
--	 */
--	mfspr	r0,SPRN_TAR
--	std	r0,THREAD_TAR(r3)
--
- 	/* Event based branch registers */
- 	mfspr	r0, SPRN_BESCR
- 	std	r0, THREAD_BESCR(r3)
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index c517dbe..4ef77df 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -600,6 +600,11 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 	struct ppc64_tlb_batch *batch;
- #endif
- 
-+	/* Save the tar before we do treclaim/trecheckpoint as these
-+	 * will change the TAR
-+	 */
-+	save_tar(&prev->thread);
 +
- 	__switch_to_tm(prev);
++	/* ******************** TAR, PPR, DSCR ********** */
++	mfspr	r3, SPRN_TAR
++	mfspr	r4, SPRN_PPR
++	mfspr	r5, SPRN_DSCR
++
++	std	r3, THREAD_TM_TAR(r12)
++	std	r4, THREAD_TM_PPR(r12)
++	std	r5, THREAD_TM_DSCR(r12)
++
+ 	/* MSR and flags:  We don't change CRs, and we don't need to alter
+ 	 * MSR.
+ 	 */
+@@ -347,6 +357,16 @@ dont_restore_fp:
+ 	mtmsr	r6				/* FP/Vec off again! */
  
- #ifdef CONFIG_SMP
+ restore_gprs:
++
++	/* ******************** TAR, PPR, DSCR ********** */
++	ld	r4, THREAD_TM_TAR(r3)
++	ld	r5, THREAD_TM_PPR(r3)
++	ld	r6, THREAD_TM_DSCR(r3)
++
++	mtspr	SPRN_TAR,	r4
++	mtspr	SPRN_PPR,	r5
++	mtspr	SPRN_DSCR,	r6
++
+ 	/* ******************** CR,LR,CCR,MSR ********** */
+ 	ld	r3, _CTR(r7)
+ 	ld	r4, _LINK(r7)
 -- 
 1.8.1.2
