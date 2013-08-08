@@ -1,37 +1,24 @@
-Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 402D12C00D3
- for <linuxppc-dev@ozlabs.org>; Fri,  9 Aug 2013 03:04:10 +1000 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Fri, 9 Aug 2013 02:47:45 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 16AA2357804E
- for <linuxppc-dev@ozlabs.org>; Fri,  9 Aug 2013 03:04:06 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r78H3tc965470592
- for <linuxppc-dev@ozlabs.org>; Fri, 9 Aug 2013 03:03:55 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r78H45Ri029084
- for <linuxppc-dev@ozlabs.org>; Fri, 9 Aug 2013 03:04:05 +1000
-Subject: [PATCH 2/2] powerpc/pseries: Add backward compatibilty to read old
- kernel oops-log
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org
-From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Thu, 08 Aug 2013 22:34:00 +0530
-Message-ID: <20130808170358.9914.98084.stgit@aruna-ThinkPad-T420>
-In-Reply-To: <20130808170253.9914.25346.stgit@aruna-ThinkPad-T420>
-References: <20130808170253.9914.25346.stgit@aruna-ThinkPad-T420>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0DDBF2C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 04:08:47 +1000 (EST)
+Message-ID: <1375985244.4514.21.camel@snotra.buserror.net>
+Subject: Re: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for
+ Motorola/Emerson MVME5100.
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Date: Thu, 8 Aug 2013 13:07:24 -0500
+In-Reply-To: <B7B7FD2F-8272-487C-B946-154107EF7C09@kernel.crashing.org>
+References: <OFBCFBBD51.E4ECB0DF-ONCA257BC0.0083C866-CA257BC1.0000531E@csc.com>
+ <B7B7FD2F-8272-487C-B946-154107EF7C09@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: mahesh@linux.vne.ibm.com
+Cc: paulus@samba.org, Stephen N Chivers <schivers@csc.com.au>,
+ linuxppc-dev@lists.ozlabs.org, Chris Proctor <cproctor@csc.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,47 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Older kernels has just length information in their header. Handle it
-while reading old kernel oops log from pstore.
+On Thu, 2013-08-08 at 10:30 -0500, Kumar Gala wrote:
+> On Aug 7, 2013, at 7:03 PM, Stephen N Chivers wrote:
+> 
+> > Add support for the Motorola/Emerson MVME5100 Single Board Computer.
+> > 
+> > The MVME5100 is a 6U form factor VME64 computer with:
+> > 
+> >        - A single MPC7410 or MPC750 CPU
+> >        - A HAWK Processor Host Bridge (CPU to PCI) and
+> >          MultiProcessor Interrupt Controller (MPIC)
+> >        - Up to 500Mb of onboard memory
+> >        - A M48T37 Real Time Clock (RTC) and Non-Volatile Memory chip
+> >        - Two 16550 compatible UARTS
+> >        - Two Intel E100 Fast Ethernets
+> >        - Two PCI Mezzanine Card (PMC) Slots
+> >        - PPCBug Firmware
+> > 
+> > The HAWK PHB/MPIC is compatible with the MPC10x devices.
+> > 
+> > There is no onboard disk support. This is usually provided by installing a 
+> > PMC
+> > in first PMC slot.
+> > 
+> > This patch revives the board support, it was present in early 2.6
+> > series kernels. The board support in those days was by Matt Porter of
+> > MontaVista Software.
+> > 
+> > CSC Australia has around 31 of these boards in service. The kernel in use
+> > for the boards is based on 2.6.31. The boards are operated without disks
+> > from a file server. 
+> > 
+> > This patch is based on linux-3.11-rc4 and has been boot tested.
+> > 
+> > Signed-off-by: Stephen Chivers <schivers@csc.com>
+> > ---
+> > arch/powerpc/boot/dts/mvme5100.dts            |  195 ++
+> > arch/powerpc/boot/mvme5100.c                  |   28 +
+> > arch/powerpc/configs/mvme5100_defconfig       | 2597 
+> > +++++++++++++++++++++++++
+> > arch/powerpc/platforms/embedded6xx/mvme5100.c |  288 +++
+> > 4 files changed, 3108 insertions(+), 0 deletions(-)
+> 
+> Please look at fixing the white space issues you seem to have throughout this patch.
+> 
+> Also, we don't take full defconfigs in the tree, look at 'make savedefconfig'
 
-Applies on top of powerpc/pseries: Fix buffer overflow when reading from pstore
+Why does this board need its own defconfig at all?  Just add it to
+ppc6xx_defconfig.
 
-Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/nvram.c |   18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
-index 893f360..6a5f2b1 100644
---- a/arch/powerpc/platforms/pseries/nvram.c
-+++ b/arch/powerpc/platforms/pseries/nvram.c
-@@ -720,15 +720,25 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
- 
- 	if (nvram_type_ids[read_type] == PSTORE_TYPE_DMESG) {
- 		int length, unzipped_len;
-+		size_t hdr_size;
- 
- 		oops_hdr = (struct oops_log_info *)buff;
--		length = oops_hdr->report_length;
-+		if (oops_hdr->version < OOPS_HDR_VERSION) {
-+			/* Old format oops header had 2-byte record size */
-+			hdr_size = sizeof(u16);
-+			length = oops_hdr->version;
-+			time->tv_sec = 0;
-+			time->tv_nsec = 0;
-+		} else {
-+			hdr_size = sizeof(*oops_hdr);
-+			length = oops_hdr->report_length;
-+			time->tv_sec = oops_hdr->timestamp;
-+			time->tv_nsec = 0;
-+		}
- 		*buf = kmalloc(length, GFP_KERNEL);
- 		if (*buf == NULL)
- 			return -ENOMEM;
--		memcpy(*buf, buff + sizeof(*oops_hdr), length);
--		time->tv_sec = oops_hdr->timestamp;
--		time->tv_nsec = 0;
-+		memcpy(*buf, buff + hdr_size, length);
- 		kfree(buff);
- 
- 		if (err_type == ERR_TYPE_KERNEL_PANIC_GZ) {
+-Scott
