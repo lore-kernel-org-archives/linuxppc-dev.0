@@ -1,30 +1,28 @@
 Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 856CD2C009C
- for <linuxppc-dev@ozlabs.org>; Thu,  8 Aug 2013 09:24:54 +1000 (EST)
-Message-ID: <1375917882.18333.81.camel@snotra.buserror.net>
-Subject: Re: [PATCH v3 2/3] powerpc/85xx: Add silicon device tree for C293
+ by ozlabs.org (Postfix) with ESMTPS id E5F7A2C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 10:30:32 +1000 (EST)
+Received: from mail56-ch1 (localhost [127.0.0.1])	by mail56-ch1-R.bigfish.com
+ (Postfix) with ESMTP id BD12E3000E5	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Aug 2013 00:30:26 +0000 (UTC)
+Received: from CH1EHSMHS023.bigfish.com (snatpool3.int.messaging.microsoft.com
+ [10.43.68.228])	by mail56-ch1.bigfish.com (Postfix) with ESMTP id
+ 34CB318004C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 00:30:25 +0000 (UTC)
+Date: Wed, 7 Aug 2013 19:30:21 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Liu Po-B43644 <B43644@freescale.com>
-Date: Wed, 7 Aug 2013 18:24:42 -0500
-In-Reply-To: <D473A0D087F4EA47A30C37E4637E25E609DB5B7F@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1374806479-812-3-git-send-email-Po.Liu@freescale.com>
- <1375174163-19246-1-git-send-email-Po.Liu@freescale.com>
- <1375174163-19246-2-git-send-email-Po.Liu@freescale.com>
- <1375208891.30721.74@snotra>
- <D473A0D087F4EA47A30C37E4637E25E609DB5966@039-SN2MPN1-023.039d.mgd.msft.net>
- <1375285614.30721.90@snotra>
- <D473A0D087F4EA47A30C37E4637E25E609DB5B7F@039-SN2MPN1-023.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
+To: Minghuan Lian <Minghuan.Lian@freescale.com>
+Subject: Re: [1/3,v2] powerpc/dts: update MSI bindings doc for MPIC v4.3
+Message-ID: <20130808003021.GA22932@home.buserror.net>
+References: <1371812354-1962-1-git-send-email-Minghuan.Lian@freescale.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Hu Mingkai-B21284 <B21284@freescale.com>,
- Fleming Andy-AFLEMING <afleming@freescale.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1371812354-1962-1-git-send-email-Minghuan.Lian@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Zang Roy-R61911 <r61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,64 +32,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-07-31 at 21:32 -0500, Liu Po-B43644 wrote:
-> >  -----Original Message-----
-> >  From: Wood Scott-B07421
-> >  Sent: Wednesday, July 31, 2013 11:47 PM
-> >  To: Liu Po-B43644
-> >  Cc: Wood Scott-B07421; linuxppc-dev@ozlabs.org; galak@kernel.crashing.org;
-> >  Fleming Andy-AFLEMING; Hu Mingkai-B21284
-> >  Subject: Re: [PATCH v3 2/3] powerpc/85xx: Add silicon device tree for
-> >  C293
-> >  
-> >  On 07/30/2013 09:13:28 PM, Liu Po-B43644 wrote:
-> >  >
-> >  > >  -----Original Message-----
-> >  > >  From: Wood Scott-B07421
-> >  > >  Sent: Wednesday, July 31, 2013 2:28 AM
-> >  > >  To: Liu Po-B43644
-> >  > >  Cc: linuxppc-dev@ozlabs.org; galak@kernel.crashing.org; Fleming
-> >  > Andy-
-> >  > >  AFLEMING; Hu Mingkai-B21284; Liu Po-B43644
-> >  > >  Subject: Re: [PATCH v3 2/3] powerpc/85xx: Add silicon device tree
-> >  > for
-> >  > >  C293
-> >  > >
-> >  > >  On 07/30/2013 03:49:22 AM, Po Liu wrote:
-> >  > >  > +	crypto@80000 {
-> >  > >  > +/include/ "qoriq-sec6.0-0.dtsi"
-> >  > >  > +	};
-> >  > >  > +
-> >  > >  > +	crypto@80000 {
-> >  > >  > +		reg = <0x80000 0x20000>;
-> >  > >  > +		ranges = <0x0 0x80000 0x20000>;
-> >  > >  > +
-> >  > >  > +		jr@1000{
-> >  > >  > +			interrupts = <45 2 0 0>;
-> >  > >  > +		};
-> >  > >  > +		jr@2000{
-> >  > >  > +			interrupts = <57 2 0 0>;
-> >  > >  > +		};
-> >  > >  > +	};
-> >  > >
-> >  > >  Do these inline the way the example shows.
-> >  > Sorry, Scott, I just remember in this way, the node can't be
-> >  > recognized by system when run Uboot. The include can't be in the
-> >  > crypto@80000. See the discussion in
-> >  > http://git.am.freescale.net:8181/#/c/736/  .
-> >  > Maybe I should re-modify the example file.
-> >  
-> >  git.am.freescale.net is not accessible outside of Freescale; don't
-> >  reference it on external lists.  In any case, I don't know what
-> >  specifically you want me to look at there.  Just put the explanation here.
-> Sorry, I've realize that.
-> The fact is that: when put the include into the crypto@xxxx, it can't compile success(make c293pcie.dtb as example). Error will show as:
+On Fri, Jun 21, 2013 at 06:59:12PM +0800, Minghuan Lian wrote:
+> Add compatible "fsl,mpic-msi-v4.3" for MPIC v4.3. MPIC v4.3 contains
+> MSIIR and MSIIR1. MSIIR supports 8 MSI registers and MSIIR1 supports
+> 16 MSI registers, but uses different IBS and SRS shift. When using
+> MSIR1, the interrupt number is not consecutive. It is hard to use
+> 'msi-available-ranges' to describe the ranges of the available
+> interrupt, so MPIC v4.3 does not support this property.
 > 
-> ERROR (duplicate_node_names): Duplicate node name /soc@fffe00000/crypto@80000/jr@1000
+> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+> 
+> ---
+> v2 log:
+> 1. move msi-available-ranges to optional properties.
+> 
+>  .../devicetree/bindings/powerpc/fsl/msi-pic.txt    | 51 +++++++++++++++++-----
+>  1 file changed, 40 insertions(+), 11 deletions(-)
 
-OK... It seems dtc will only merge duplicates when it's not the first
-time it's seen the parent node.  We're probably relying on a side-effect
-of the intended behavior of accepting duplicates between the multiple
-instances of the parent node.
+Applied with these changes:
+
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/msi-pic.txt b/Documentation/devicetree/bindings/powerpc/fsl/msi-pic.txt
+index d82b080..82dd5b6 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/msi-pic.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/msi-pic.txt
+@@ -1,13 +1,13 @@
+ * Freescale MSI interrupt controller
+ 
+ Required properties:
+-- compatible : compatible list, may contains one or two entries,
+-  first is "fsl,CHIP-msi", where CHIP is the processor(mpc8610, mpc8572,
++- compatible : compatible list, may contain one or two entries
++  The first is "fsl,CHIP-msi", where CHIP is the processor(mpc8610, mpc8572,
+   etc.) and the second is "fsl,mpic-msi" or "fsl,ipic-msi" or
+   "fsl,mpic-msi-v4.3" depending on the parent type and version. If mpic
+   version is 4.3, the number of MSI registers is increased to 16, MSIIR1 is
+-  provided to access these 16 registers, compatible "fsl,mpic-msi-v4.3"
+-  should be used. The first entry is optional, the second entry must be
++  provided to access these 16 registers, and compatible "fsl,mpic-msi-v4.3"
++  should be used. The first entry is optional; the second entry is
+   required.
+ 
+ - reg : It may contain one or two regions. The first region should contain
 
 -Scott
