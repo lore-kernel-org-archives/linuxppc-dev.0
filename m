@@ -1,36 +1,20 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E31492C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 18:33:35 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 8 Aug 2013 13:57:24 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 30E891258052
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 14:03:06 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r788YjLK41025696
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Aug 2013 14:04:46 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r788XT14018232
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Aug 2013 14:03:29 +0530
-Message-ID: <520357D8.2090502@linux.vnet.ibm.com>
-Date: Thu, 08 Aug 2013 14:03:28 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 90BF72C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 18:56:17 +1000 (EST)
+Message-ID: <52035BA5.1030405@roeck-us.net>
+Date: Thu, 08 Aug 2013 01:49:41 -0700
+From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 63/63] powerpc: Add pseries_le_defconfig
-References: <1375804940-22050-1-git-send-email-anton@samba.org>
- <1375804940-22050-64-git-send-email-anton@samba.org>
-In-Reply-To: <1375804940-22050-64-git-send-email-anton@samba.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+To: leroy christophe <christophe.leroy@c-s.fr>
+Subject: Re: [v2] Enhanced support for MPC8xx/8xxx watchdog
+References: <201302280852.r1S8qMYu003742@localhost.localdomain>
+ <20130625230431.GA29393@home.buserror.net> <520331C1.4060406@c-s.fr>
+In-Reply-To: <520331C1.4060406@c-s.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, Wim Van Sebroeck <wim@iguana.be>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,371 +24,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 06 August 2013 09:32 PM, Anton Blanchard wrote:
-> This is the pseries_defconfig with CONFIG_CPU_LITTLE_ENDIAN enabled
-> and CONFIG_VIRTUALIZATION disabled (required until we fix some
-> endian issues in KVM).
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
->  arch/powerpc/configs/pseries_le_defconfig | 347 ++++++++++++++++++++++++++++++
->  1 file changed, 347 insertions(+)
->  create mode 100644 arch/powerpc/configs/pseries_le_defconfig
-> 
-> diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
-> new file mode 100644
-> index 0000000..a30db45
-> --- /dev/null
-> +++ b/arch/powerpc/configs/pseries_le_defconfig
-> @@ -0,0 +1,347 @@
-> +CONFIG_PPC64=y
-> +CONFIG_ALTIVEC=y
-> +CONFIG_VSX=y
-> +CONFIG_SMP=y
-> +CONFIG_NR_CPUS=2048
-> +CONFIG_EXPERIMENTAL=y
-> +CONFIG_SYSVIPC=y
-> +CONFIG_POSIX_MQUEUE=y
-> +CONFIG_AUDIT=y
-> +CONFIG_AUDITSYSCALL=y
-> +CONFIG_IRQ_DOMAIN_DEBUG=y
-> +CONFIG_NO_HZ=y
-> +CONFIG_HIGH_RES_TIMERS=y
-> +CONFIG_TASKSTATS=y
-> +CONFIG_TASK_DELAY_ACCT=y
-> +CONFIG_TASK_XACCT=y
-> +CONFIG_TASK_IO_ACCOUNTING=y
-> +CONFIG_IKCONFIG=y
-> +CONFIG_IKCONFIG_PROC=y
-> +CONFIG_CGROUPS=y
-> +CONFIG_CGROUP_FREEZER=y
-> +CONFIG_CGROUP_DEVICE=y
-> +CONFIG_CPUSETS=y
-> +CONFIG_CGROUP_CPUACCT=y
-> +CONFIG_BLK_DEV_INITRD=y
-> +# CONFIG_COMPAT_BRK is not set
-> +CONFIG_PROFILING=y
-> +CONFIG_OPROFILE=y
-> +CONFIG_KPROBES=y
-> +CONFIG_JUMP_LABEL=y
-> +CONFIG_MODULES=y
-> +CONFIG_MODULE_UNLOAD=y
-> +CONFIG_MODVERSIONS=y
-> +CONFIG_MODULE_SRCVERSION_ALL=y
-> +CONFIG_PARTITION_ADVANCED=y
-> +CONFIG_EFI_PARTITION=y
-> +CONFIG_PPC_SPLPAR=y
-> +CONFIG_SCANLOG=m
-> +CONFIG_PPC_SMLPAR=y
-> +CONFIG_DTL=y
-> +# CONFIG_PPC_PMAC is not set
-> +CONFIG_RTAS_FLASH=m
-> +CONFIG_IBMEBUS=y
-> +CONFIG_HZ_100=y
-> +CONFIG_BINFMT_MISC=m
-> +CONFIG_PPC_TRANSACTIONAL_MEM=y
-> +CONFIG_HOTPLUG_CPU=y
-> +CONFIG_KEXEC=y
-> +CONFIG_IRQ_ALL_CPUS=y
-> +CONFIG_MEMORY_HOTPLUG=y
-> +CONFIG_MEMORY_HOTREMOVE=y
-> +CONFIG_PPC_64K_PAGES=y
-> +CONFIG_PPC_SUBPAGE_PROT=y
-> +CONFIG_SCHED_SMT=y
-> +CONFIG_PPC_DENORMALISATION=y
-> +CONFIG_HOTPLUG_PCI=m
-Why the value "m" in the le_config file, when it is "y" in
-pseries_defconfig.
-Also I do see a warning saying invalid value for this symbol.
-> +CONFIG_HOTPLUG_PCI_RPA=m
-> +CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
-> +CONFIG_PACKET=y
-> +CONFIG_UNIX=y
-> +CONFIG_XFRM_USER=m
-> +CONFIG_NET_KEY=m
-> +CONFIG_INET=y
-> +CONFIG_IP_MULTICAST=y
-> +CONFIG_NET_IPIP=y
-> +CONFIG_SYN_COOKIES=y
-> +CONFIG_INET_AH=m
-> +CONFIG_INET_ESP=m
-> +CONFIG_INET_IPCOMP=m
-> +# CONFIG_IPV6 is not set
-> +CONFIG_NETFILTER=y
-> +CONFIG_NF_CONNTRACK=m
-> +CONFIG_NF_CONNTRACK_EVENTS=y
-> +CONFIG_NF_CT_PROTO_UDPLITE=m
-> +CONFIG_NF_CONNTRACK_FTP=m
-> +CONFIG_NF_CONNTRACK_IRC=m
-> +CONFIG_NF_CONNTRACK_TFTP=m
-> +CONFIG_NF_CT_NETLINK=m
-> +CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
-> +CONFIG_NETFILTER_XT_TARGET_CONNMARK=m
-> +CONFIG_NETFILTER_XT_TARGET_MARK=m
-> +CONFIG_NETFILTER_XT_TARGET_NFLOG=m
-> +CONFIG_NETFILTER_XT_TARGET_NFQUEUE=m
-> +CONFIG_NETFILTER_XT_TARGET_TCPMSS=m
-> +CONFIG_NETFILTER_XT_MATCH_COMMENT=m
-> +CONFIG_NETFILTER_XT_MATCH_CONNBYTES=m
-> +CONFIG_NETFILTER_XT_MATCH_CONNLIMIT=m
-> +CONFIG_NETFILTER_XT_MATCH_CONNMARK=m
-> +CONFIG_NETFILTER_XT_MATCH_CONNTRACK=m
-> +CONFIG_NETFILTER_XT_MATCH_DCCP=m
-> +CONFIG_NETFILTER_XT_MATCH_DSCP=m
-> +CONFIG_NETFILTER_XT_MATCH_ESP=m
-> +CONFIG_NETFILTER_XT_MATCH_HASHLIMIT=m
-> +CONFIG_NETFILTER_XT_MATCH_HELPER=m
-> +CONFIG_NETFILTER_XT_MATCH_IPRANGE=m
-> +CONFIG_NETFILTER_XT_MATCH_LENGTH=m
-> +CONFIG_NETFILTER_XT_MATCH_LIMIT=m
-> +CONFIG_NETFILTER_XT_MATCH_MAC=m
-> +CONFIG_NETFILTER_XT_MATCH_MARK=m
-> +CONFIG_NETFILTER_XT_MATCH_MULTIPORT=m
-> +CONFIG_NETFILTER_XT_MATCH_OWNER=m
-> +CONFIG_NETFILTER_XT_MATCH_POLICY=m
-> +CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
-> +CONFIG_NETFILTER_XT_MATCH_QUOTA=m
-> +CONFIG_NETFILTER_XT_MATCH_RATEEST=m
-> +CONFIG_NETFILTER_XT_MATCH_REALM=m
-> +CONFIG_NETFILTER_XT_MATCH_RECENT=m
-> +CONFIG_NETFILTER_XT_MATCH_SCTP=m
-> +CONFIG_NETFILTER_XT_MATCH_STATE=m
-> +CONFIG_NETFILTER_XT_MATCH_STATISTIC=m
-> +CONFIG_NETFILTER_XT_MATCH_STRING=m
-> +CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
-> +CONFIG_NETFILTER_XT_MATCH_TIME=m
-> +CONFIG_NETFILTER_XT_MATCH_U32=m
-> +CONFIG_NF_CONNTRACK_IPV4=m
-> +CONFIG_IP_NF_QUEUE=m
-> +CONFIG_IP_NF_IPTABLES=m
-> +CONFIG_IP_NF_MATCH_AH=m
-> +CONFIG_IP_NF_MATCH_ECN=m
-> +CONFIG_IP_NF_MATCH_TTL=m
-> +CONFIG_IP_NF_FILTER=m
-> +CONFIG_IP_NF_TARGET_REJECT=m
-> +CONFIG_IP_NF_TARGET_ULOG=m
-> +CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-> +CONFIG_DEVTMPFS=y
-> +CONFIG_DEVTMPFS_MOUNT=y
-> +CONFIG_PROC_DEVICETREE=y
-> +CONFIG_PARPORT=m
-> +CONFIG_PARPORT_PC=m
-> +CONFIG_BLK_DEV_FD=m
-> +CONFIG_BLK_DEV_LOOP=y
-> +CONFIG_BLK_DEV_NBD=m
-> +CONFIG_BLK_DEV_RAM=y
-> +CONFIG_BLK_DEV_RAM_SIZE=65536
-> +CONFIG_IDE=y
-> +CONFIG_BLK_DEV_IDECD=y
-> +CONFIG_BLK_DEV_GENERIC=y
-> +CONFIG_BLK_DEV_AMD74XX=y
-> +CONFIG_BLK_DEV_SD=y
-> +CONFIG_CHR_DEV_ST=y
-> +CONFIG_BLK_DEV_SR=y
-> +CONFIG_BLK_DEV_SR_VENDOR=y
-> +CONFIG_CHR_DEV_SG=y
-> +CONFIG_SCSI_MULTI_LUN=y
-> +CONFIG_SCSI_CONSTANTS=y
-> +CONFIG_SCSI_FC_ATTRS=y
-> +CONFIG_SCSI_CXGB3_ISCSI=m
-> +CONFIG_SCSI_CXGB4_ISCSI=m
-> +CONFIG_SCSI_BNX2_ISCSI=m
-> +CONFIG_BE2ISCSI=m
-> +CONFIG_SCSI_MPT2SAS=m
-> +CONFIG_SCSI_IBMVSCSI=y
-> +CONFIG_SCSI_IBMVFC=m
-> +CONFIG_SCSI_SYM53C8XX_2=y
-> +CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
-> +CONFIG_SCSI_IPR=y
-> +CONFIG_SCSI_QLA_FC=m
-> +CONFIG_SCSI_QLA_ISCSI=m
-> +CONFIG_SCSI_LPFC=m
-> +CONFIG_ATA=y
-> +# CONFIG_ATA_SFF is not set
-> +CONFIG_MD=y
-> +CONFIG_BLK_DEV_MD=y
-> +CONFIG_MD_LINEAR=y
-> +CONFIG_MD_RAID0=y
-> +CONFIG_MD_RAID1=y
-> +CONFIG_MD_RAID10=m
-> +CONFIG_MD_RAID456=m
-> +CONFIG_MD_MULTIPATH=m
-> +CONFIG_MD_FAULTY=m
-> +CONFIG_BLK_DEV_DM=y
-> +CONFIG_DM_CRYPT=m
-> +CONFIG_DM_SNAPSHOT=m
-> +CONFIG_DM_MIRROR=m
-> +CONFIG_DM_ZERO=m
-> +CONFIG_DM_MULTIPATH=m
-> +CONFIG_BONDING=m
-> +CONFIG_DUMMY=m
-> +CONFIG_NETCONSOLE=y
-> +CONFIG_NETPOLL_TRAP=y
-> +CONFIG_TUN=m
-> +CONFIG_VORTEX=y
-> +CONFIG_ACENIC=m
-> +CONFIG_ACENIC_OMIT_TIGON_I=y
-> +CONFIG_PCNET32=y
-> +CONFIG_TIGON3=y
-> +CONFIG_CHELSIO_T1=m
-> +CONFIG_BE2NET=m
-> +CONFIG_S2IO=m
-> +CONFIG_IBMVETH=y
-> +CONFIG_EHEA=y
-> +CONFIG_E100=y
-> +CONFIG_E1000=y
-> +CONFIG_E1000E=y
-> +CONFIG_IXGB=m
-> +CONFIG_IXGBE=m
-> +CONFIG_MLX4_EN=m
-> +CONFIG_MYRI10GE=m
-> +CONFIG_QLGE=m
-> +CONFIG_NETXEN_NIC=m
-> +CONFIG_PPP=m
-> +CONFIG_PPP_BSDCOMP=m
-> +CONFIG_PPP_DEFLATE=m
-> +CONFIG_PPPOE=m
-> +CONFIG_PPP_ASYNC=m
-> +CONFIG_PPP_SYNC_TTY=m
-> +# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
-> +CONFIG_INPUT_EVDEV=m
-> +CONFIG_INPUT_MISC=y
-> +CONFIG_INPUT_PCSPKR=m
-> +# CONFIG_SERIO_SERPORT is not set
-> +CONFIG_SERIAL_8250=y
-> +CONFIG_SERIAL_8250_CONSOLE=y
-> +CONFIG_SERIAL_ICOM=m
-> +CONFIG_SERIAL_JSM=m
-> +CONFIG_HVC_CONSOLE=y
-> +CONFIG_HVC_RTAS=y
-> +CONFIG_HVCS=m
-> +CONFIG_IBM_BSR=m
-> +CONFIG_GEN_RTC=y
-> +CONFIG_RAW_DRIVER=y
-> +CONFIG_MAX_RAW_DEVS=1024
-> +CONFIG_FB=y
-> +CONFIG_FIRMWARE_EDID=y
-> +CONFIG_FB_OF=y
-> +CONFIG_FB_MATROX=y
-> +CONFIG_FB_MATROX_MILLENIUM=y
-> +CONFIG_FB_MATROX_MYSTIQUE=y
-> +CONFIG_FB_MATROX_G=y
-> +CONFIG_FB_RADEON=y
-> +CONFIG_FB_IBM_GXT4500=y
-> +CONFIG_LCD_PLATFORM=m
-> +# CONFIG_VGA_CONSOLE is not set
-> +CONFIG_FRAMEBUFFER_CONSOLE=y
-> +CONFIG_LOGO=y
-> +CONFIG_HID_GYRATION=y
-> +CONFIG_HID_PANTHERLORD=y
-> +CONFIG_HID_PETALYNX=y
-> +CONFIG_HID_SAMSUNG=y
-> +CONFIG_HID_SONY=y
-> +CONFIG_HID_SUNPLUS=y
-> +CONFIG_USB_HIDDEV=y
-> +CONFIG_USB=y
-> +CONFIG_USB_MON=m
-> +CONFIG_USB_EHCI_HCD=y
-> +# CONFIG_USB_EHCI_HCD_PPC_OF is not set
-> +CONFIG_USB_OHCI_HCD=y
-> +CONFIG_USB_STORAGE=m
-> +CONFIG_INFINIBAND=m
-> +CONFIG_INFINIBAND_USER_MAD=m
-> +CONFIG_INFINIBAND_USER_ACCESS=m
-> +CONFIG_INFINIBAND_MTHCA=m
-> +CONFIG_INFINIBAND_EHCA=m
-> +CONFIG_INFINIBAND_CXGB3=m
-> +CONFIG_INFINIBAND_CXGB4=m
-> +CONFIG_MLX4_INFINIBAND=m
-> +CONFIG_INFINIBAND_IPOIB=m
-> +CONFIG_INFINIBAND_IPOIB_CM=y
-> +CONFIG_INFINIBAND_SRP=m
-> +CONFIG_INFINIBAND_ISER=m
-> +CONFIG_EXT2_FS=y
-> +CONFIG_EXT2_FS_XATTR=y
-> +CONFIG_EXT2_FS_POSIX_ACL=y
-> +CONFIG_EXT2_FS_SECURITY=y
-> +CONFIG_EXT2_FS_XIP=y
-> +CONFIG_EXT3_FS=y
-> +CONFIG_EXT3_FS_POSIX_ACL=y
-> +CONFIG_EXT3_FS_SECURITY=y
-> +CONFIG_EXT4_FS=y
-> +CONFIG_EXT4_FS_POSIX_ACL=y
-> +CONFIG_EXT4_FS_SECURITY=y
-> +CONFIG_REISERFS_FS=y
-> +CONFIG_REISERFS_FS_XATTR=y
-> +CONFIG_REISERFS_FS_POSIX_ACL=y
-> +CONFIG_REISERFS_FS_SECURITY=y
-> +CONFIG_JFS_FS=m
-> +CONFIG_JFS_POSIX_ACL=y
-> +CONFIG_JFS_SECURITY=y
-> +CONFIG_XFS_FS=m
-> +CONFIG_XFS_POSIX_ACL=y
-> +CONFIG_BTRFS_FS=m
-> +CONFIG_BTRFS_FS_POSIX_ACL=y
-> +CONFIG_NILFS2_FS=m
-> +CONFIG_AUTOFS4_FS=m
-> +CONFIG_FUSE_FS=m
-> +CONFIG_ISO9660_FS=y
-> +CONFIG_UDF_FS=m
-> +CONFIG_MSDOS_FS=y
-> +CONFIG_VFAT_FS=y
-> +CONFIG_PROC_KCORE=y
-> +CONFIG_TMPFS=y
-> +CONFIG_TMPFS_POSIX_ACL=y
-> +CONFIG_HUGETLBFS=y
-> +CONFIG_CRAMFS=m
-> +CONFIG_SQUASHFS=m
-> +CONFIG_SQUASHFS_XATTR=y
-> +CONFIG_SQUASHFS_LZO=y
-> +CONFIG_SQUASHFS_XZ=y
-> +CONFIG_NFS_FS=y
-> +CONFIG_NFS_V3_ACL=y
-> +CONFIG_NFS_V4=y
-> +CONFIG_NFSD=m
-> +CONFIG_NFSD_V3_ACL=y
-> +CONFIG_NFSD_V4=y
-> +CONFIG_CIFS=m
-> +CONFIG_CIFS_XATTR=y
-> +CONFIG_CIFS_POSIX=y
-> +CONFIG_NLS_DEFAULT="utf8"
-> +CONFIG_NLS_CODEPAGE_437=y
-> +CONFIG_NLS_ASCII=y
-> +CONFIG_NLS_ISO8859_1=y
-> +CONFIG_NLS_UTF8=y
-> +CONFIG_CRC_T10DIF=y
-> +CONFIG_MAGIC_SYSRQ=y
-> +CONFIG_DEBUG_KERNEL=y
-> +CONFIG_LOCKUP_DETECTOR=y
-> +CONFIG_DEBUG_STACK_USAGE=y
-> +CONFIG_LATENCYTOP=y
-> +CONFIG_SCHED_TRACER=y
-> +CONFIG_BLK_DEV_IO_TRACE=y
-> +CONFIG_DEBUG_STACKOVERFLOW=y
-> +CONFIG_CODE_PATCHING_SELFTEST=y
-> +CONFIG_FTR_FIXUP_SELFTEST=y
-> +CONFIG_MSI_BITMAP_SELFTEST=y
-> +CONFIG_XMON=y
-> +CONFIG_XMON_DEFAULT=y
-> +CONFIG_CRYPTO_NULL=m
-> +CONFIG_CRYPTO_TEST=m
-> +CONFIG_CRYPTO_PCBC=m
-> +CONFIG_CRYPTO_HMAC=y
-> +CONFIG_CRYPTO_MICHAEL_MIC=m
-> +CONFIG_CRYPTO_TGR192=m
-> +CONFIG_CRYPTO_WP512=m
-> +CONFIG_CRYPTO_ANUBIS=m
-> +CONFIG_CRYPTO_BLOWFISH=m
-> +CONFIG_CRYPTO_CAST6=m
-> +CONFIG_CRYPTO_KHAZAD=m
-> +CONFIG_CRYPTO_SALSA20=m
-> +CONFIG_CRYPTO_SERPENT=m
-> +CONFIG_CRYPTO_TEA=m
-> +CONFIG_CRYPTO_TWOFISH=m
-> +CONFIG_CRYPTO_LZO=m
-> +# CONFIG_CRYPTO_ANSI_CPRNG is not set
-> +CONFIG_CRYPTO_DEV_NX=y
-> +CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
-> +# CONFIG_VIRTUALIZATION is not set
-> +CONFIG_CPU_LITTLE_ENDIAN=y
-> 
+On 08/07/2013 10:50 PM, leroy christophe wrote:
+> Le 26/06/2013 01:04, Scott Wood a écrit :
+>> On Thu, Feb 28, 2013 at 09:52:22AM +0100, LEROY Christophe wrote:
+>>> This patch modifies the behaviour of the MPC8xx/8xxx watchdog. On the MPC8xx,
+>>> at 133Mhz, the maximum timeout of the watchdog timer is 1s, which means it must
+>>> be pinged twice a second. This is not in line with the Linux watchdog concept
+>>> which is based on a default watchdog timeout around 60s.
+>>> This patch introduces an intermediate layer between the CPU and the userspace.
+>>> The kernel pings the watchdog at the required frequency at the condition that
+>>> userspace tools refresh it regularly.
+>>> Existing parameter 'timeout' is renamed 'hw_time'.
+>>> The new parameter 'timeout' allows to set up the userspace timeout.
+>>> The driver also implements the WDIOC_SETTIMEOUT ioctl.
+>>>
+>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>
+>>>
+>>> diff -ur linux-3.7.9/drivers/watchdog/mpc8xxx_wdt.c linux/drivers/watchdog/mpc8xxx_wdt.c
+>>> --- linux-3.7.9/drivers/watchdog/mpc8xxx_wdt.c    2013-02-17 19:53:32.000000000 +0100
+>>> +++ linux/drivers/watchdog/mpc8xxx_wdt.c    2013-02-27 16:00:07.000000000 +0100
+>>> @@ -52,10 +52,17 @@
+>>>   static struct mpc8xxx_wdt __iomem *wd_base;
+>>>   static int mpc8xxx_wdt_init_late(void);
+>>> -static u16 timeout = 0xffff;
+>>> -module_param(timeout, ushort, 0);
+>>> +#define WD_TIMO 10            /* Default timeout = 10 seconds */
+>> If the default Linux watchdog timeout is normally 60 seconds, why is it 10
+>> here?
+> Looks like each driver has its own default value, but agreed, I change it to 60 seconds
+>
+>>> +static uint timeout = WD_TIMO;
+>>> +module_param(timeout, uint, 0);
+>>>   MODULE_PARM_DESC(timeout,
+>>> -    "Watchdog timeout in ticks. (0<timeout<65536, default=65535)");
+>>> +    "Watchdog SW timeout in seconds. (0 < timeout < 65536s, default = "
+>>> +                __MODULE_STRING(WD_TIMO) "s)");
+>>> +static u16 hw_timo = 0xffff;
+>>> +module_param(hw_timo, ushort, 0);
+>>> +MODULE_PARM_DESC(hw_timo,
+>>> +    "Watchdog HW timeout in ticks. (0 < hw_timo < 65536, default = 65535)");
+>> hw_timeout would be more legibile -- this is a public interface.
+> Ok
+>>
+>>>   static bool reset = 1;
+>>>   module_param(reset, bool, 0);
+>>> @@ -72,10 +79,12 @@
+>>>    * to 0
+>>>    */
+>>>   static int prescale = 1;
+>>> -static unsigned int timeout_sec;
+>>> +static unsigned int hw_timo_sec;
+>>> +static int wdt_auto = 1;
+>> bool, and add a comment indicating what this means.
+> Ok
+>>
+>>>   static unsigned long wdt_is_open;
+>>>   static DEFINE_SPINLOCK(wdt_spinlock);
+>>> +static unsigned long wdt_last_ping;
+>>>   static void mpc8xxx_wdt_keepalive(void)
+>>>   {
+>>> @@ -91,9 +100,20 @@
+>>>   static void mpc8xxx_wdt_timer_ping(unsigned long arg)
+>>>   {
+>>> -    mpc8xxx_wdt_keepalive();
+>>> -    /* We're pinging it twice faster than needed, just to be sure. */
+>>> -    mod_timer(&wdt_timer, jiffies + HZ * timeout_sec / 2);
+>>> +    if (wdt_auto)
+>>> +        wdt_last_ping = jiffies;
+>>> +
+>>> +    if (jiffies - wdt_last_ping <= timeout * HZ) {
+>> So timeout cannot be more than UINT_MAX / HZ...  Might want to check for
+>> that, just in case.
+> Ok.
+>>
+>> What happens if there's a race?  If another CPU updates wdt_last_ping in
+>> parallel, then you could see wdt_last_ping greater than the value you
+
+Using the watchdog infrastructure (which has a mutex to avoid the problem)
+would help avoiding this race.
+
+>> read for jiffies.  Since this is an unsigned comparison, it will fail to
+>> call keepalive.  You might get saved by pinging it twice as often as
+>> necessary, but you shouldn't rely on that.
+> Euh ... This watchdog is integrated inside the CPU, so there is no chance that any external CPU get access to it.
+
+Unless I am missing something, neither jiffies nor wdt_last_ping nor timeout
+is integrated inside a CPU.
+
+There are macros for well defined time comparison which you possibly
+might want to consider using (such as time_after() and time_before() etc).
+
+My overall feedback is that I believe it would make more sense to convert
+the driver to the watchdog infrastructure first, then add the softdog as
+second patch.
+
+Guenter
+
+>>
+>>> +        mpc8xxx_wdt_keepalive();
+>>> +        /* We're pinging it twice faster than needed, to be sure. */
+>>> +        mod_timer(&wdt_timer, jiffies + HZ * hw_timo_sec / 2);
+>>> +    }
+>>> +}
+>>> +
+>>> +static void mpc8xxx_wdt_sw_keepalive(void)
+>>> +{
+>>> +    wdt_last_ping = jiffies;
+>>> +    mpc8xxx_wdt_timer_ping(0);
+>>>   }
+>> This isn't new with this patch, but it looks like
+>> mpc8xxx_wdt_keepalive() can be called either from timer context, or with
+>> interrupts enabled... yet it uses a bare spin_lock() rather than an
+>> irq-safe version.  This should be fixed.
+> Ok, I'll propose another patch for that. Indeed, is the spin_lock needed at all ? If we get two writes interleaved, it will make it anyway.
+>
+> Christophe
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
