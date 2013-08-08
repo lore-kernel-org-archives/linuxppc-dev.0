@@ -1,24 +1,13 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2B1FA2C009A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 10:35:11 +1000 (EST)
-Date: Wed, 7 Aug 2013 19:34:59 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Subject: Re: powerpc/mpc85xx: fix non-bootcpu cannot up after hibernation
- resume
-Message-ID: <20130808003459.GA3964@home.buserror.net>
-References: <1368518756-9850-1-git-send-email-dongsheng.wang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1368518756-9850-1-git-send-email-dongsheng.wang@freescale.com>
-Cc: chenhui.zhao@freescale.com, rjw@sisk.pl, paulus@samba.org,
- johannes@sipsolutions.net, avorontsov@ru.mvista.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v2 1/4] powerpc/tm: Add checkpointed versions of some SPRs to
+ thread_struct
+Date: Thu,  8 Aug 2013 12:33:54 +1000
+Message-Id: <1375929237-19944-1-git-send-email-mikey@neuling.org>
+In-Reply-To: <25550.1375872955@ale.ozlabs.ibm.com>
+References: <25550.1375872955@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,56 +17,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 14, 2013 at 04:05:56PM +0800, Dongsheng Wang wrote:
-> This problem belongs to the core synchronization issues.
-> The cpu1 already updated spin_table values, but bootcore cannot get
-> this value in time.
-> 
-> After bootcpu hibiernation restore the pages. we are now running
-> with the kernel data of the old kernel fully restored. if we reset
-> the non-bootcpus that will be reset cache(tlb), the non-bootcpus
-> will get new address(map virtual and physical address spaces).
-> but bootcpu tlb cache still use boot kernel data, so we need to
-> invalidate the bootcpu tlb cache make it to get new main memory data.
-> 
-> log:
-> Enabling non-boot CPUs ...
-> smp_85xx_kick_cpu: timeout waiting for core 1 to reset
-> smp: failed starting cpu 1 (rc -2)
-> Error taking CPU1 up: -2
-> 
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> Reviewed-by: Anton Vorontsov <anton@enomsg.org>
-> 
-> 
-> diff --git a/arch/powerpc/kernel/swsusp_booke.S b/arch/powerpc/kernel/swsusp_booke.S
-> index 11a3930..9503249 100644
-> --- a/arch/powerpc/kernel/swsusp_booke.S
-> +++ b/arch/powerpc/kernel/swsusp_booke.S
-> @@ -141,6 +141,19 @@ _GLOBAL(swsusp_arch_resume)
->  	lis	r11,swsusp_save_area@h
->  	ori	r11,r11,swsusp_save_area@l
->  
-> +	/*
-> +	 * The boot core get a virtual address, when the boot process,
-> +	 * the virtual address corresponds to a physical address. After
-> +	 * hibernation resume memory snapshots, The corresponding
-> +	 * relationship between the virtual memory and physical memory
-> +	 * might change again. We need to get a new page table. So we
-> +	 * need to invalidate TLB after resume pages.
-> +	 *
-> +	 * Invalidations TLB Using tlbilx/tlbivax/MMUCSR0.
-> +	 * tlbilx used here.
-> +	 */
-> +	bl	_tlbil_all
+Transactional memory will restore the TAR, PPR and DSCR on transaction failure.
 
-Applied with the code comment changed to:
+Add these to the thread_struct for use in the future
 
-        /*
-         * Mappings from virtual addresses to physical addresses may be
-         * different than they were prior to restoring hibernation state.
-         * Invalidate the TLB so that the boot CPU is using the new
-         * mappings.
-         */
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: <stable@vger.kernel.org>
+---
+ arch/powerpc/include/asm/processor.h | 4 ++++
+ arch/powerpc/kernel/asm-offsets.c    | 3 +++
+ 2 files changed, 7 insertions(+)
 
--Scott
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 47a35b0..e378ccc 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -247,6 +247,10 @@ struct thread_struct {
+ 	unsigned long	tm_orig_msr;	/* Thread's MSR on ctx switch */
+ 	struct pt_regs	ckpt_regs;	/* Checkpointed registers */
+ 
++	unsigned long	tm_tar;
++	unsigned long	tm_ppr;
++	unsigned long	tm_dscr;
++
+ 	/*
+ 	 * Transactional FP and VSX 0-31 register set.
+ 	 * NOTE: the sense of these is the opposite of the integer ckpt_regs!
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index c7e8afc..8207459 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -138,6 +138,9 @@ int main(void)
+ 	DEFINE(THREAD_TM_TFHAR, offsetof(struct thread_struct, tm_tfhar));
+ 	DEFINE(THREAD_TM_TEXASR, offsetof(struct thread_struct, tm_texasr));
+ 	DEFINE(THREAD_TM_TFIAR, offsetof(struct thread_struct, tm_tfiar));
++	DEFINE(THREAD_TM_TAR, offsetof(struct thread_struct, tm_tar));
++	DEFINE(THREAD_TM_PPR, offsetof(struct thread_struct, tm_ppr));
++	DEFINE(THREAD_TM_DSCR, offsetof(struct thread_struct, tm_dscr));
+ 	DEFINE(PT_CKPT_REGS, offsetof(struct thread_struct, ckpt_regs));
+ 	DEFINE(THREAD_TRANSACT_VR0, offsetof(struct thread_struct,
+ 					 transact_vr[0]));
+-- 
+1.8.1.2
