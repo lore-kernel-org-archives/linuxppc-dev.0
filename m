@@ -1,40 +1,16 @@
-Return-Path: <tony.luck@gmail.com>
-Received: from mail-ve0-x22a.google.com (mail-ve0-x22a.google.com
- [IPv6:2607:f8b0:400c:c01::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6B3952C009E
- for <linuxppc-dev@ozlabs.org>; Thu,  8 Aug 2013 15:05:44 +1000 (EST)
-Received: by mail-ve0-f170.google.com with SMTP id 15so2700960vea.15
- for <linuxppc-dev@ozlabs.org>; Wed, 07 Aug 2013 22:05:41 -0700 (PDT)
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 8 Aug 2013 15:14:22 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 7/9] powerpc: Decode and save machine check event.
+Message-ID: <20130808051422.GE12112@iris.ozlabs.ibm.com>
+References: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
+ <20130807093913.5389.80206.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <52031EAE.5080005@linux.vnet.ibm.com>
-References: <20130715164844.1520.27771.stgit@aruna-ThinkPad-T420>
- <51FA3B02.7060004@linux.vnet.ibm.com>
- <3908561D78D1C84285E8C5FCA982C28F31CAA167@ORSMSX106.amr.corp.intel.com>
- <CA+8MBbLuhVDCb26ag3AH0vXrP4MXHLxS5aVn8pTi4=qL1NdR5w@mail.gmail.com>
- <CA+8MBbJ7x46FGC7dPSdNzf8z=fZz20w1kiNgnZr4QQB6SUELhg@mail.gmail.com>
- <51FFDC8B.7010909@linux.vnet.ibm.com>
- <CA+8MBb+1LpR+Cx=84WZT98U5eqZcm1KriUP75aCg+uSrXrb3Yw@mail.gmail.com>
- <51FFFFEB.3030907@linux.vnet.ibm.com>
- <CA+8MBbK9oZJO+RJGC-7riO=Kz=UbRcAvQ-nDi=2GLyvEDpoc7g@mail.gmail.com>
- <CA+8MBbKA+P4vs3utSKQ-LPMW3ybrWOp=f3FH6ahv1YtwnMm5KA@mail.gmail.com>
- <5201A9BD.4090503@linux.vnet.ibm.com>
- <CA+8MBbJS0Dymn4OABi-rW9M5Bw-ZZ6DaEjQOW-oki+4ge4BDtg@mail.gmail.com>
- <5201D777.8060303@linux.vnet.ibm.com>
- <CA+8MBb+pkKpaEDs6J_XbzM3wzady2MjdU+jcDP+jH1f1VBxG5w@mail.gmail.com>
- <CA+8MBb+dNkT_xpqL6oy=D3UqCtEwAci5fatw-0crCFLMAGE1nA@mail.gmail.com>
- <52031EAE.5080005@linux.vnet.ibm.com>
-Date: Wed, 7 Aug 2013 22:05:41 -0700
-Message-ID: <CA+8MBb+7Q9MHzGxQv+_an5C2-5P9N7tRvYpE3ran-0TcE5pScQ@mail.gmail.com>
-Subject: Re: [PATCH 00/11] Add compression support to pstore
-From: Tony Luck <tony.luck@gmail.com>
-To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "keescook@chromium.org" <keescook@chromium.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130807093913.5389.80206.stgit@mars.in.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Jeremy Kerr <jeremy.kerr@au1.ibm.com>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,33 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 7, 2013 at 9:29 PM, Aruna Balakrishnaiah
-<aruna@linux.vnet.ibm.com> wrote:
-> When we preallocate, we can use the same big_buf for compression as well as
-> decompression.
-> Also workspace will be one for both. By allocating max of inflate workspace
-> size and deflate
-> workspace size. We can save memory here.
+On Wed, Aug 07, 2013 at 03:09:13PM +0530, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> 
+> Now that we handle machine check in linux, the MCE decoding should also
+> take place in linux host. This info is crucial to log before we go down
+> in case we can not handle the machine check errors. This patch decodes
+> and populates a machine check event which contain high level meaning full
+> MCE information.
 
-Well decompression isn't a problem. We are doing that in the non-panicing
-context of the freshly booted kernel so we can allocate memory without any
-worries for this.  It's only the compression during panic where we must
-pre-allocate.  But if the sizes are close to the same, then we might as well
-use the same buffers for both (and simplify the code because we don't have
-to worry about the kmalloc/kfree bits.
+A couple of things worry me about this patch:
 
-> If pre-allocating close to 50k of buffer is not a issue. We can go ahead
-> with this approach.
+First, there is the fact that we can only do get_mce_event() once for
+a given machine check.  You call it in kvmppc_realmode_mc_power7(),
+which is fine, but if it is not something we recognize and can handle
+we will proceed to exit the guest and jump to machine_check_fwnmi,
+which will then proceed to machine_check_common() and then
+opal_machine_check(), where you have added another call to
+get_mce_event(), which will probably underflow your little per-cpu
+stack of machine check events.
 
-I never care about allocations measured in *kilo*bytes[1] - the smallest systems
-I use have 32GB - so 50K is so far down in the noise of other allocations.
-But other types of systems might be more concerned.  ERST is generally
-only implemented on servers ... so the better question might be:
-What are the sizes for the EFI backend (where the buffer size is 1024). It
-sounds like it should scale linearly ... so below 8K???  That should not
-scare many people. Even phones measure memory in hundreds of MBytes.
+Secondly, we shouldn't call save_mce_event() if we're not in
+hypervisor mode, since per-cpu variables are not in general accessible
+in real mode when running under a hypervisor with a limited real-mode
+area (RMA).
 
--Tony
-
-[1] unless they are per-cpu or per something else that there are a lot of
-on a big server - but this is a one-per-system allocation.
+Paul.
