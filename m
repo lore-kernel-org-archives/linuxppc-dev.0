@@ -1,10 +1,11 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 1/4] powerpc/tm: Add checkpointed versions of some SPRs to
- thread_struct
-Date: Thu,  8 Aug 2013 12:33:54 +1000
-Message-Id: <1375929237-19944-1-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 2/4] powerpc: Add new save_tar() register function.
+Date: Thu,  8 Aug 2013 12:33:55 +1000
+Message-Id: <1375929237-19944-2-git-send-email-mikey@neuling.org>
+In-Reply-To: <1375929237-19944-1-git-send-email-mikey@neuling.org>
+References: <1375929237-19944-1-git-send-email-mikey@neuling.org>
 In-Reply-To: <25550.1375872955@ale.ozlabs.ibm.com>
 References: <25550.1375872955@ale.ozlabs.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
@@ -17,45 +18,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Transactional memory will restore the TAR, PPR and DSCR on transaction failure.
-
-Add these to the thread_struct for use in the future
+Add save_tar() function to save the Target Address Register (TAR).  This will
+be used in a future patch to save the TAR earlier than it currently is.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 Cc: <stable@vger.kernel.org>
 ---
- arch/powerpc/include/asm/processor.h | 4 ++++
- arch/powerpc/kernel/asm-offsets.c    | 3 +++
- 2 files changed, 7 insertions(+)
+ arch/powerpc/include/asm/switch_to.h | 9 +++++++++
+ arch/powerpc/kernel/entry_64.S       | 1 -
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 47a35b0..e378ccc 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -247,6 +247,10 @@ struct thread_struct {
- 	unsigned long	tm_orig_msr;	/* Thread's MSR on ctx switch */
- 	struct pt_regs	ckpt_regs;	/* Checkpointed registers */
+diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+index 49a13e0..294c2ce 100644
+--- a/arch/powerpc/include/asm/switch_to.h
++++ b/arch/powerpc/include/asm/switch_to.h
+@@ -15,6 +15,15 @@ extern struct task_struct *__switch_to(struct task_struct *,
+ struct thread_struct;
+ extern struct task_struct *_switch(struct thread_struct *prev,
+ 				   struct thread_struct *next);
++#ifdef CONFIG_PPC_BOOK3S_64
++static inline void save_tar(struct thread_struct *prev)
++{
++	if (cpu_has_feature(CPU_FTR_ARCH_207S))
++		prev->tar = mfspr(SPRN_TAR);
++}
++#else
++static inline void save_tar(struct thread_struct *prev) {}
++#endif
  
-+	unsigned long	tm_tar;
-+	unsigned long	tm_ppr;
-+	unsigned long	tm_dscr;
-+
- 	/*
- 	 * Transactional FP and VSX 0-31 register set.
- 	 * NOTE: the sense of these is the opposite of the integer ckpt_regs!
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index c7e8afc..8207459 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -138,6 +138,9 @@ int main(void)
- 	DEFINE(THREAD_TM_TFHAR, offsetof(struct thread_struct, tm_tfhar));
- 	DEFINE(THREAD_TM_TEXASR, offsetof(struct thread_struct, tm_texasr));
- 	DEFINE(THREAD_TM_TFIAR, offsetof(struct thread_struct, tm_tfiar));
-+	DEFINE(THREAD_TM_TAR, offsetof(struct thread_struct, tm_tar));
-+	DEFINE(THREAD_TM_PPR, offsetof(struct thread_struct, tm_ppr));
-+	DEFINE(THREAD_TM_DSCR, offsetof(struct thread_struct, tm_dscr));
- 	DEFINE(PT_CKPT_REGS, offsetof(struct thread_struct, ckpt_regs));
- 	DEFINE(THREAD_TRANSACT_VR0, offsetof(struct thread_struct,
- 					 transact_vr[0]));
+ extern void giveup_fpu(struct task_struct *);
+ extern void load_up_fpu(void);
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 4674fe6..cfb6de4 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -389,7 +389,6 @@ DSCR_DEFAULT:
+ 	.tc dscr_default[TC],dscr_default
+ 
+ 	.section	".text"
+-
+ /*
+  * This routine switches between two different tasks.  The process
+  * state of one is saved on its kernel stack.  Then the state
 -- 
 1.8.1.2
