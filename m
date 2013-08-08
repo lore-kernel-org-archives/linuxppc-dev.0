@@ -1,20 +1,38 @@
-Return-Path: <B02008@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 297902C00CC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 22:56:32 +1000 (EST)
-From: Mihai Caraman <mihai.caraman@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2] powerpc/booke64: Add LRAT error exception handler
-Date: Thu, 8 Aug 2013 15:56:09 +0300
-Message-ID: <1375966569-3037-1-git-send-email-mihai.caraman@freescale.com>
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0CD852C00C9
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Aug 2013 23:19:50 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 8 Aug 2013 23:09:05 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0082F2BB0051
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Aug 2013 23:19:44 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r78DJXAs9502990
+ for <linuxppc-dev@ozlabs.org>; Thu, 8 Aug 2013 23:19:33 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r78DJgcU007529
+ for <linuxppc-dev@ozlabs.org>; Thu, 8 Aug 2013 23:19:43 +1000
+Message-ID: <52039AEC.8010006@linux.vnet.ibm.com>
+Date: Thu, 08 Aug 2013 18:49:40 +0530
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC PATCH 2/9] powerpc: handle machine check in Linux host.
+References: <20130807093609.5389.26534.stgit@mars.in.ibm.com>
+ <20130807093815.5389.7668.stgit@mars.in.ibm.com>
+ <20130808045143.GC12112@iris.ozlabs.ibm.com>
+In-Reply-To: <20130808045143.GC12112@iris.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Jeremy Kerr <jeremy.kerr@au1.ibm.com>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,140 +42,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-LRAT (Logical to Real Address Translation) present in MMU v2 provides hardware
-translation from a logical page number (LPN) to a real page number (RPN) when
-tlbwe is executed by a guest or when a page table translation occurs from a
-guest virtual address.
+On 08/08/2013 10:21 AM, Paul Mackerras wrote:
+> On Wed, Aug 07, 2013 at 03:08:15PM +0530, Mahesh J Salgaonkar wrote:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> Move machine check entry point into Linux. So far we were dependent on
+>> firmware to decode MCE error details and handover the high level info to OS.
+>>
+>> This patch introduces early machine check routine that saves the MCE
+>> information (srr1, srr0, dar and dsisr) to the emergency stack. We allocate
+>> stack frame on emergency stack and set the r1 accordingly. This allows us
+>> to be prepared to take another exception without loosing context. One thing
+>> to note here that, if we get another machine check while ME bit is off then
+>> we risk a checkstop. Hence we restrict ourselves to save only MCE information
+>> and turn the ME bit on.
+> 
+> Some comments below:
+> 
+>> + * Swicth to emergency stack and handle re-entrancy (though we currently
+>       ^
+>       Switch
+> 
+>> + * don't test for overflow). Save MCE registers srr1, srr0, dar and
+>> + * dsisr and then turn the ME bit on.
+>> + */
+>> +#define __EARLY_MACHINE_CHECK_HANDLER(area, label)			\
+>> +	/* Check if we are laready using emergency stack. */		\
+>> +	ld	r10,PACAEMERGSP(r13);					\
+>> +	subi	r10,r10,THREAD_SIZE;					\
+>> +	rldicr	r10,r10,0,(63 - THREAD_SHIFT);				\
+>> +	rldicr	r11,r1,0,(63 - THREAD_SHIFT);				\
+>> +	cmpd	r10,r11;	/* Are we using emergency stack? */	\
+> 
+> This assumes that r1 contains a host kernel stack pointer value.
+> However, we could be coming in from a guest, or from userspace, in
+> which case r1 could have any value at all, and we shouldn't even be
+> considering using it as our stack pointer.
 
-Add LRAT error exception handler to Booke3E 64-bit kernel and the basic KVM
-handler to avoid build breakage. This is a prerequisite for KVM LRAT support
-that will follow.
+I see your point. I need to have different mechanism to keep track of
+emergency stack pointer. May be using some sratch registers or something
+in paca structure.
 
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
----
-v2
-  - squash patches for bisectability
-  - set IVOR42 from setup_cpu
+> 
+> There is another complication, too: if we are coming in from a KVM
+> guest running on a secondary thread (not thread 0), we will be using
+> part of the emergency stack already (see kvm_start_guest in
+> arch/powerpc/kvm/book3s_hv_rmhandlers.S).  However, because we have
+> come in from a guest, r1 contains a guest value, and we would have to
+> look in KVM data structures to find out how much of the emergency
+> stack we have already used.  I'm not sure at the moment what the best
+> way to fix this is.
 
- arch/powerpc/include/asm/kvm_asm.h        |    1 +
- arch/powerpc/include/asm/reg_booke.h      |    1 +
- arch/powerpc/kernel/cpu_setup_fsl_booke.S |   12 ++++++++++++
- arch/powerpc/kernel/exceptions-64e.S      |   17 +++++++++++++++++
- arch/powerpc/kvm/bookehv_interrupts.S     |    2 ++
- 5 files changed, 33 insertions(+), 0 deletions(-)
+How about adding a paca member to maintain current emergency stack
+pointer in use?
 
-diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
-index 851bac7..83b91e5 100644
---- a/arch/powerpc/include/asm/kvm_asm.h
-+++ b/arch/powerpc/include/asm/kvm_asm.h
-@@ -74,6 +74,7 @@
- #define BOOKE_INTERRUPT_GUEST_DBELL_CRIT 39
- #define BOOKE_INTERRUPT_HV_SYSCALL 40
- #define BOOKE_INTERRUPT_HV_PRIV 41
-+#define BOOKE_INTERRUPT_LRAT_ERROR 42
- 
- /* book3s */
- 
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index b417de3..6b113e1 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -101,6 +101,7 @@
- #define SPRN_IVOR39	0x1B1	/* Interrupt Vector Offset Register 39 */
- #define SPRN_IVOR40	0x1B2	/* Interrupt Vector Offset Register 40 */
- #define SPRN_IVOR41	0x1B3	/* Interrupt Vector Offset Register 41 */
-+#define SPRN_IVOR42	0x1B4	/* Interrupt Vector Offset Register 42 */
- #define SPRN_GIVOR2	0x1B8	/* Guest IVOR2 */
- #define SPRN_GIVOR3	0x1B9	/* Guest IVOR3 */
- #define SPRN_GIVOR4	0x1BA	/* Guest IVOR4 */
-diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-index 0b9af01..754a11d 100644
---- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-+++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-@@ -57,6 +57,12 @@ _GLOBAL(__setup_cpu_e6500)
- 	mflr	r6
- #ifdef CONFIG_PPC64
- 	bl	.setup_altivec_ivors
-+	/* Touch IVOR42 only if the CPU supports E.HV category */
-+	mfspr	r10,SPRN_MMUCFG
-+	rlwinm.	r10,r10,0,MMUCFG_LPIDSIZE
-+	beq	1f
-+	bl	.setup_lrat_ivor
-+1:
- #endif
- 	bl	__setup_cpu_e5500
- 	mtlr	r6
-@@ -119,6 +125,12 @@ _GLOBAL(__setup_cpu_e5500)
- _GLOBAL(__restore_cpu_e6500)
- 	mflr	r5
- 	bl	.setup_altivec_ivors
-+	/* Touch IVOR42 only if the CPU supports E.HV category */
-+	mfspr	r10,SPRN_MMUCFG
-+	rlwinm.	r10,r10,0,MMUCFG_LPIDSIZE
-+	beq	1f
-+	bl	.setup_lrat_ivor
-+1:
- 	bl	__restore_cpu_e5500
- 	mtlr	r5
- 	blr
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 645170a..9e4a506 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -308,6 +308,7 @@ interrupt_base_book3e:					/* fake trap */
- 	EXCEPTION_STUB(0x2e0, guest_doorbell_crit)
- 	EXCEPTION_STUB(0x300, hypercall)
- 	EXCEPTION_STUB(0x320, ehpriv)
-+	EXCEPTION_STUB(0x340, lrat_error)
- 
- 	.globl interrupt_end_book3e
- interrupt_end_book3e:
-@@ -675,6 +676,17 @@ kernel_dbg_exc:
- 	bl	.unknown_exception
- 	b	.ret_from_except
- 
-+/* LRAT Error interrupt */
-+	START_EXCEPTION(lrat_error);
-+	NORMAL_EXCEPTION_PROLOG(0x340, BOOKE_INTERRUPT_LRAT_ERROR,
-+			        PROLOG_ADDITION_NONE)
-+	EXCEPTION_COMMON(0x340, PACA_EXGEN, INTS_KEEP)
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	.save_nvgprs
-+	INTS_RESTORE_HARD
-+	bl	.unknown_exception
-+	b	.ret_from_except
-+
- /*
-  * An interrupt came in while soft-disabled; We mark paca->irq_happened
-  * accordingly and if the interrupt is level sensitive, we hard disable
-@@ -857,6 +869,7 @@ BAD_STACK_TRAMPOLINE(0x2e0)
- BAD_STACK_TRAMPOLINE(0x300)
- BAD_STACK_TRAMPOLINE(0x310)
- BAD_STACK_TRAMPOLINE(0x320)
-+BAD_STACK_TRAMPOLINE(0x340)
- BAD_STACK_TRAMPOLINE(0x400)
- BAD_STACK_TRAMPOLINE(0x500)
- BAD_STACK_TRAMPOLINE(0x600)
-@@ -1412,3 +1425,7 @@ _GLOBAL(setup_ehv_ivors)
- 	SET_IVOR(38, 0x2c0) /* Guest Processor Doorbell */
- 	SET_IVOR(39, 0x2e0) /* Guest Processor Doorbell Crit/MC */
- 	blr
-+
-+_GLOBAL(setup_lrat_ivor)
-+	SET_IVOR(42, 0x340) /* LRAT Error */
-+	blr
-diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index e8ed7d6..a0d6929 100644
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -319,6 +319,8 @@ kvm_handler BOOKE_INTERRUPT_DEBUG, EX_PARAMS(DBG), \
- 	SPRN_DSRR0, SPRN_DSRR1, 0
- kvm_handler BOOKE_INTERRUPT_DEBUG, EX_PARAMS(CRIT), \
- 	SPRN_CSRR0, SPRN_CSRR1, 0
-+kvm_handler BOOKE_INTERRUPT_LRAT_ERROR, EX_PARAMS(GEN), \
-+	SPRN_SRR0, SPRN_SRR1, (NEED_EMU | NEED_DEAR | NEED_ESR)
- #else
- /*
-  * For input register values, see arch/powerpc/include/asm/kvm_booke_hv_asm.h
--- 
-1.7.3.4
+> 
+>> +	mr	r11,r1;			/* Save current stack pointer */\
+>> +	beq	0f;							\
+>> +	ld	r1,PACAEMERGSP(r13);	/* Use emergency stack */	\
+>> +0:	subi	r1,r1,INT_FRAME_SIZE;	/* alloc stack frame */		\
+>> +	std	r11,GPR1(r1);						\
+>> +	std	r11,0(r1);		/* make stack chain pointer */	\
+>> +	mfspr	r11,SPRN_SRR0;		/* Save SRR0 */			\
+>> +	std	r11,_NIP(r1);						\
+>> +	mfspr	r11,SPRN_SRR1;		/* Save SRR1 */			\
+>> +	std	r11,_MSR(r1);						\
+>> +	mfspr	r11,SPRN_DAR;		/* Save DAR */			\
+>> +	std 	r11,_DAR(r1);						\
+>> +	mfspr	r11,SPRN_DSISR;		/* Save DSISR */		\
+>> +	std	r11,_DSISR(r1);						\
+>> +	mfmsr	r11;			/* get MSR value */		\
+>> +	ori	r11,r11,MSR_ME;		/* turn on ME bit */		\
+>> +	ld	r12,PACAKBASE(r13);	/* get high part of &label */	\
+>> +	LOAD_HANDLER(r12,label)						\
+>> +	mtspr	SPRN_SRR0,r12;						\
+>> +	mtspr	SPRN_SRR1,r11;						\
+>> +	rfid;								\
+>> +	b	.	/* prevent speculative execution */
+>> +#define EARLY_MACHINE_CHECK_HANDLER(area, label)			\
+>> +	__EARLY_MACHINE_CHECK_HANDLER(area, label)
+> 
+> Given this is only used in one place, why make this a macro?  Wouldn't
+> it be simpler and neater to just spell out this code in the place
+> where you use the macro?
+
+Sure, will do that.
+
+> 
+>> +	/*
+>> +	 * Handle machine check early in real mode. We come here with
+>> +	 * ME bit on with MMU (IR and DR) off and using emergency stack.
+>> +	 */
+>> +	.align	7
+>> +	.globl machine_check_handle_early
+>> +machine_check_handle_early:
+>> +	std	r9,_CCR(r1)	/* Save CR in stackframe */
+>> +	std	r0,GPR0(r1)	/* Save r0, r2 - r10 */
+>> +	EXCEPTION_PROLOG_COMMON_2(0x200, PACA_EXMC)
+>> +	bl	.save_nvgprs
+>> +	addi	r3,r1,STACK_FRAME_OVERHEAD
+>> +	bl	.machine_check_early
+>> +	cmpdi	r3,0			/* Did we handle it? */
+>> +	ld	r9,_MSR(r1)
+>> +	beq	1f
+>> +	ori	r9,r9,MSR_RI		/* Yes we have handled it. */
+> 
+> I don't think this is a good idea.  MSR_RI being off means either that
+> the machine check happened at a time when SRR0 and SRR1 contained live
+> contents, which have been overwritten by the machine check interrupt,
+> or else that the CPU was not able to determine a precise state at
+> which the interrupt could be taken.  Neither of those problems would
+> be fixed by our machine check handler.
+
+Agree.
+
+> 
+> What was the rationale for setting RI in this situation?
+
+When I tested SLB multihit, I got an interrupt with RI=0. In
+opal_machine_check() the very first check I added is to see if MSR_RI is
+set or not and return accordingly which ended up in die and panic in
+machine_check_exception() routine.
+
+But, I think I should depend on
+evt->disposition==MCE_DISPOSITION_RECOVERED and not play with MSR_RI and
+SRR1. I will fix my code.
+
+> 
+>> +	/* Move original SRR0 and SRR1 into the respective regs */
+>> +1:	mtspr	SPRN_SRR1,r9
+>> +	ld	r3,_NIP(r1)
+>> +	mtspr	SPRN_SRR0,r3
+>> +	REST_NVGPRS(r1)
+>> +	ld	r9,_CTR(r1)
+>> +	mtctr	r9
+>> +	ld	r9,_XER(r1)
+>> +	mtxer	r9
+>> +	ld	r9,_CCR(r1)
+>> +	mtcr	r9
+>> +BEGIN_FTR_SECTION
+>> +	ld	r9,ORIG_GPR3(r1)
+>> +	mtspr	SPRN_CFAR,r9
+>> +END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+>> +	ld	r9,_LINK(r1)
+>> +	mtlr	r9
+>> +	REST_GPR(0, r1)
+>> +	REST_8GPRS(2, r1)
+>> +	REST_2GPRS(10, r1)
+>> +	REST_GPR(12, r1)
+>> +	/*
+>> +	 * restore orig stack pointer. We have already saved MCE info
+>> +	 * to per cpu MCE event buffer.
+>> +	 */
+>> +	ld	r1,GPR1(r1)
+>> +	b	machine_check_pSeries
+> 
+> What about r13?  I don't see that you have restored it at this point.
+
+Will fix it.
+
+> 
+>> +
+>>  	STD_EXCEPTION_COMMON_ASYNC(0x500, hardware_interrupt, do_IRQ)
+>>  	STD_EXCEPTION_COMMON_ASYNC(0x900, decrementer, .timer_interrupt)
+>>  	STD_EXCEPTION_COMMON(0x980, hdecrementer, .hdec_interrupt)
+>> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+>> index bf33c22..1720e08 100644
+>> --- a/arch/powerpc/kernel/traps.c
+>> +++ b/arch/powerpc/kernel/traps.c
+>> @@ -286,6 +286,18 @@ void system_reset_exception(struct pt_regs *regs)
+>>  
+>>  	/* What should we do here? We could issue a shutdown or hard reset. */
+>>  }
+>> +
+>> +/*
+>> + * This function is called in real mode. Strictly no printk's please.
+>> + *
+>> + * regs->nip and regs->msr contains srr0 and ssr1.
+>> + */
+>> +long machine_check_early(struct pt_regs *regs)
+>> +{
+>> +	/* TODO: handle/decode machine check reason */
+>> +	return 0;
+>> +}
+>> +
+>>  #endif
+>>  
+>>  /*
+> 
