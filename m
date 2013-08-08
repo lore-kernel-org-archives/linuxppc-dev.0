@@ -1,15 +1,20 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 4/4] powerpc/tm: Save and restore checkpointed TAR,
- PPR and DSCR
-Date: Thu,  8 Aug 2013 12:33:57 +1000
-Message-Id: <1375929237-19944-4-git-send-email-mikey@neuling.org>
-In-Reply-To: <1375929237-19944-1-git-send-email-mikey@neuling.org>
-References: <1375929237-19944-1-git-send-email-mikey@neuling.org>
-In-Reply-To: <25550.1375872955@ale.ozlabs.ibm.com>
-References: <25550.1375872955@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
+Return-Path: <B40534@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6BCD62C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 13:00:19 +1000 (EST)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH v3 1/2] powerpc: add Book E support to 64-bit hibernation
+Date: Thu, 8 Aug 2013 10:06:45 +0800
+Message-ID: <1375927605-3353-1-git-send-email-dongsheng.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,53 +24,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we don't save and restore the checkpointed TAR, PPR and DSCR.
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-This adds the required save and restore to the treclaim and trechkpt code.
+Update the 64-bit hibernation code to support Book E CPUs.
+Some registers and instructions are not defined for Book3e
+(SDR reg, tlbia instruction).
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Cc: <stable@vger.kernel.org>
+SDR: Storage Description Register. Book3S and Book3E have different
+address translation mode, we do not need HTABORG & HTABSIZE to
+translate virtual address to real address.
+
+More registers are saved in BookE-64bit.(TCR, SPRG1)
+
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 ---
- arch/powerpc/kernel/tm.S | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+v3:
+* Move "invaild tlb" code to FSL code path.
+  Book3S has already invaild tlb.
 
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index 51be8fb..0554d1f 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -233,6 +233,16 @@ dont_backup_fp:
- 	std	r5, _CCR(r7)
- 	std	r6, _XER(r7)
+v2:
+* Remove: Save SPRG0, SPRG2-SPRG7.
+SPRG1 should be saved, the paca will be saved here.
+
+* Add: Invaild tlbs.
+
+* Modify: Code style, add whitespace after commas.
+
+diff --git a/arch/powerpc/kernel/swsusp_asm64.S b/arch/powerpc/kernel/swsusp_asm64.S
+index 86ac1d9..2204598 100644
+--- a/arch/powerpc/kernel/swsusp_asm64.S
++++ b/arch/powerpc/kernel/swsusp_asm64.S
+@@ -46,10 +46,19 @@
+ #define SL_r29		0xe8
+ #define SL_r30		0xf0
+ #define SL_r31		0xf8
+-#define SL_SIZE		SL_r31+8
++#define SL_SPRG1	0x100
++#define SL_TCR		0x108
++#define SL_SIZE		SL_TCR+8
  
+ /* these macros rely on the save area being
+  * pointed to by r11 */
 +
-+	/* ******************** TAR, PPR, DSCR ********** */
-+	mfspr	r3, SPRN_TAR
-+	mfspr	r4, SPRN_PPR
-+	mfspr	r5, SPRN_DSCR
++#define SAVE_SPR(register)		\
++	mfspr	r0, SPRN_##register	;\
++	std	r0, SL_##register(r11)
++#define RESTORE_SPR(register)		\
++	ld	r0, SL_##register(r11)	;\
++	mtspr	SPRN_##register, r0
+ #define SAVE_SPECIAL(special)		\
+ 	mf##special	r0		;\
+ 	std	r0, SL_##special(r11)
+@@ -103,8 +112,15 @@ _GLOBAL(swsusp_arch_suspend)
+ 	SAVE_REGISTER(r30)
+ 	SAVE_REGISTER(r31)
+ 	SAVE_SPECIAL(MSR)
+-	SAVE_SPECIAL(SDR1)
+ 	SAVE_SPECIAL(XER)
++#ifdef CONFIG_PPC_BOOK3S_64
++	SAVE_SPECIAL(SDR1)
++#else
++	SAVE_SPR(TCR)
 +
-+	std	r3, THREAD_TM_TAR(r12)
-+	std	r4, THREAD_TM_PPR(r12)
-+	std	r5, THREAD_TM_DSCR(r12)
-+
- 	/* MSR and flags:  We don't change CRs, and we don't need to alter
- 	 * MSR.
- 	 */
-@@ -347,6 +357,16 @@ dont_restore_fp:
- 	mtmsr	r6				/* FP/Vec off again! */
++	/* Save SPRG1, SPRG1 be used save paca */
++	SAVE_SPR(SPRG1)
++#endif
  
- restore_gprs:
+ 	/* we push the stack up 128 bytes but don't store the
+ 	 * stack pointer on the stack like a real stackframe */
+@@ -151,6 +167,7 @@ copy_page_loop:
+ 	bne+	copyloop
+ nothing_to_copy:
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	/* flush caches */
+ 	lis	r3, 0x10
+ 	mtctr	r3
+@@ -167,6 +184,7 @@ nothing_to_copy:
+ 	sync
+ 
+ 	tlbia
++#endif
+ 
+ 	ld	r11,swsusp_save_area_ptr@toc(r2)
+ 
+@@ -208,16 +226,39 @@ nothing_to_copy:
+ 	RESTORE_REGISTER(r29)
+ 	RESTORE_REGISTER(r30)
+ 	RESTORE_REGISTER(r31)
 +
-+	/* ******************** TAR, PPR, DSCR ********** */
-+	ld	r4, THREAD_TM_TAR(r3)
-+	ld	r5, THREAD_TM_PPR(r3)
-+	ld	r6, THREAD_TM_DSCR(r3)
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	/* can't use RESTORE_SPECIAL(MSR) */
+ 	ld	r0, SL_MSR(r11)
+ 	mtmsrd	r0, 0
+ 	RESTORE_SPECIAL(SDR1)
++#else
++	/* Restore SPRG1, be used to save paca */
++	ld	r0, SL_SPRG1(r11)
++	mtsprg	1, r0
 +
-+	mtspr	SPRN_TAR,	r4
-+	mtspr	SPRN_PPR,	r5
-+	mtspr	SPRN_DSCR,	r6
++	RESTORE_SPECIAL(MSR)
 +
- 	/* ******************** CR,LR,CCR,MSR ********** */
- 	ld	r3, _CTR(r7)
- 	ld	r4, _LINK(r7)
++	/* Restore TCR and clear any pending bits in TSR. */
++	RESTORE_SPR(TCR)
++	lis	r0, (TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS)@h
++	mtspr	SPRN_TSR, r0
++
++	/* Kick decrementer */
++	li	r0, 1
++	mtdec	r0
++
++	/* Invalidate all tlbs */
++	bl	_tlbil_all
++#endif
+ 	RESTORE_SPECIAL(XER)
+ 
+ 	sync
+ 
+ 	addi	r1,r1,-128
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	bl	slb_flush_and_rebolt
++#endif
+ 	bl	do_after_copyback
+ 	addi	r1,r1,128
+ 
 -- 
-1.8.1.2
+1.8.0
