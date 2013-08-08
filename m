@@ -1,32 +1,34 @@
 Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F26712C00AB
- for <linuxppc-dev@ozlabs.org>; Fri,  9 Aug 2013 03:03:58 +1000 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 402D12C00D3
+ for <linuxppc-dev@ozlabs.org>; Fri,  9 Aug 2013 03:04:10 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Fri, 9 Aug 2013 13:58:44 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C0A9E2CE804D
- for <linuxppc-dev@ozlabs.org>; Fri,  9 Aug 2013 03:03:55 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r78GmC8x8716672
- for <linuxppc-dev@ozlabs.org>; Fri, 9 Aug 2013 02:48:13 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r78H3svD024121
- for <linuxppc-dev@ozlabs.org>; Fri, 9 Aug 2013 03:03:54 +1000
-Subject: [PATCH 1/2] powerpc/pseries: Fix buffer overflow when reading from
- pstore
+ Fri, 9 Aug 2013 02:47:45 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 16AA2357804E
+ for <linuxppc-dev@ozlabs.org>; Fri,  9 Aug 2013 03:04:06 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r78H3tc965470592
+ for <linuxppc-dev@ozlabs.org>; Fri, 9 Aug 2013 03:03:55 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r78H45Ri029084
+ for <linuxppc-dev@ozlabs.org>; Fri, 9 Aug 2013 03:04:05 +1000
+Subject: [PATCH 2/2] powerpc/pseries: Add backward compatibilty to read old
+ kernel oops-log
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
  benh@kernel.crashing.org
 From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Thu, 08 Aug 2013 22:33:49 +0530
-Message-ID: <20130808170253.9914.25346.stgit@aruna-ThinkPad-T420>
+Date: Thu, 08 Aug 2013 22:34:00 +0530
+Message-ID: <20130808170358.9914.98084.stgit@aruna-ThinkPad-T420>
+In-Reply-To: <20130808170253.9914.25346.stgit@aruna-ThinkPad-T420>
+References: <20130808170253.9914.25346.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: mahesh@linux.vne.ibm.com
@@ -39,138 +41,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When reading from pstore there is a buffer overflow during decompression
-due to the header added in unzip_oops. Remove unzip_oops and call
-pstore_decompress directly in nvram_pstore_read. Allocate buffer of size
-report_length of the oops header as header will not be deallocated in pstore.
-Since we have 'openssl' command line tool to decompress the compressed data,
-dump the compressed data in case decompression fails instead of not dumping
-anything.
+Older kernels has just length information in their header. Handle it
+while reading old kernel oops log from pstore.
+
+Applies on top of powerpc/pseries: Fix buffer overflow when reading from pstore
 
 Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/nvram.c |   70 +++++++++++---------------------
- 1 file changed, 24 insertions(+), 46 deletions(-)
+ arch/powerpc/platforms/pseries/nvram.c |   18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
-index 9f8671a..893f360 100644
+index 893f360..6a5f2b1 100644
 --- a/arch/powerpc/platforms/pseries/nvram.c
 +++ b/arch/powerpc/platforms/pseries/nvram.c
-@@ -569,35 +569,6 @@ error:
- 	return ret;
- }
- 
--static int unzip_oops(char *oops_buf, char *big_buf)
--{
--	struct oops_log_info *oops_hdr = (struct oops_log_info *)oops_buf;
--	u64 timestamp = oops_hdr->timestamp;
--	char *big_oops_data = NULL;
--	char *oops_data_buf = NULL;
--	size_t big_oops_data_sz;
--	int unzipped_len;
--
--	big_oops_data = big_buf + sizeof(struct oops_log_info);
--	big_oops_data_sz = big_oops_buf_sz - sizeof(struct oops_log_info);
--	oops_data_buf = oops_buf + sizeof(struct oops_log_info);
--
--	unzipped_len = nvram_decompress(oops_data_buf, big_oops_data,
--					oops_hdr->report_length,
--					big_oops_data_sz);
--
--	if (unzipped_len < 0) {
--		pr_err("nvram: decompression failed; returned %d\n",
--								unzipped_len);
--		return -1;
--	}
--	oops_hdr = (struct oops_log_info *)big_buf;
--	oops_hdr->version = OOPS_HDR_VERSION;
--	oops_hdr->report_length = (u16) unzipped_len;
--	oops_hdr->timestamp = timestamp;
--	return 0;
--}
--
- static int nvram_pstore_open(struct pstore_info *psi)
- {
- 	/* Reset the iterator to start reading partitions again */
-@@ -685,10 +656,9 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
- 	unsigned int err_type, id_no, size = 0;
- 	struct nvram_os_partition *part = NULL;
- 	char *buff = NULL, *big_buff = NULL;
--	int rc, sig = 0;
-+	int sig = 0;
- 	loff_t p;
- 
--read_partition:
- 	read_type++;
- 
- 	switch (nvram_type_ids[read_type]) {
-@@ -749,30 +719,36 @@ read_partition:
- 		*id = id_no;
+@@ -720,15 +720,25 @@ static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
  
  	if (nvram_type_ids[read_type] == PSTORE_TYPE_DMESG) {
-+		int length, unzipped_len;
-+
+ 		int length, unzipped_len;
++		size_t hdr_size;
+ 
  		oops_hdr = (struct oops_log_info *)buff;
--		*buf = buff + sizeof(*oops_hdr);
-+		length = oops_hdr->report_length;
-+		*buf = kmalloc(length, GFP_KERNEL);
-+		if (*buf == NULL)
-+			return -ENOMEM;
-+		memcpy(*buf, buff + sizeof(*oops_hdr), length);
-+		time->tv_sec = oops_hdr->timestamp;
-+		time->tv_nsec = 0;
-+		kfree(buff);
- 
- 		if (err_type == ERR_TYPE_KERNEL_PANIC_GZ) {
- 			big_buff = kmalloc(big_oops_buf_sz, GFP_KERNEL);
- 			if (!big_buff)
- 				return -ENOMEM;
- 
--			rc = unzip_oops(buff, big_buff);
-+			unzipped_len = nvram_decompress(*buf, big_buff,
-+						length, big_oops_buf_sz);
- 
--			if (rc != 0) {
--				kfree(buff);
-+			if (unzipped_len < 0) {
-+				pr_err("nvram: decompression failed, returned "
-+					"rc %d\n", unzipped_len);
- 				kfree(big_buff);
--				goto read_partition;
-+			} else {
-+				*buf = big_buff;
-+				length = unzipped_len;
- 			}
--
--			oops_hdr = (struct oops_log_info *)big_buff;
--			*buf = big_buff + sizeof(*oops_hdr);
--			kfree(buff);
- 		}
--
+-		length = oops_hdr->report_length;
++		if (oops_hdr->version < OOPS_HDR_VERSION) {
++			/* Old format oops header had 2-byte record size */
++			hdr_size = sizeof(u16);
++			length = oops_hdr->version;
++			time->tv_sec = 0;
++			time->tv_nsec = 0;
++		} else {
++			hdr_size = sizeof(*oops_hdr);
++			length = oops_hdr->report_length;
++			time->tv_sec = oops_hdr->timestamp;
++			time->tv_nsec = 0;
++		}
+ 		*buf = kmalloc(length, GFP_KERNEL);
+ 		if (*buf == NULL)
+ 			return -ENOMEM;
+-		memcpy(*buf, buff + sizeof(*oops_hdr), length);
 -		time->tv_sec = oops_hdr->timestamp;
 -		time->tv_nsec = 0;
--		return oops_hdr->report_length;
-+		return length;
- 	}
++		memcpy(*buf, buff + hdr_size, length);
+ 		kfree(buff);
  
- 	*buf = buff;
-@@ -816,6 +792,7 @@ static int nvram_pstore_init(void)
- static void __init nvram_init_oops_partition(int rtas_partition_exists)
- {
- 	int rc;
-+	size_t size;
- 
- 	rc = pseries_nvram_init_os_partition(&oops_log_partition);
- 	if (rc != 0) {
-@@ -844,8 +821,9 @@ static void __init nvram_init_oops_partition(int rtas_partition_exists)
- 	big_oops_buf_sz = (oops_data_sz * 100) / 45;
- 	big_oops_buf = kmalloc(big_oops_buf_sz, GFP_KERNEL);
- 	if (big_oops_buf) {
--		stream.workspace = kmalloc(zlib_deflate_workspacesize(
--				WINDOW_BITS, MEM_LEVEL), GFP_KERNEL);
-+		size = max(zlib_deflate_workspacesize(WINDOW_BITS, MEM_LEVEL),
-+			zlib_inflate_workspacesize());
-+		stream.workspace = kmalloc(size, GFP_KERNEL);
- 		if (!stream.workspace) {
- 			pr_err("nvram: No memory for compression workspace; "
- 				"skipping compression of %s partition data\n",
+ 		if (err_type == ERR_TYPE_KERNEL_PANIC_GZ) {
