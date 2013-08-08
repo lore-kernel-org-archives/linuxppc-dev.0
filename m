@@ -1,21 +1,39 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3EE502C0098
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 01:31:04 +1000 (EST)
-Subject: Re: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for
- Motorola/Emerson MVME5100.
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <OFBCFBBD51.E4ECB0DF-ONCA257BC0.0083C866-CA257BC1.0000531E@csc.com>
-Date: Thu, 8 Aug 2013 10:30:53 -0500
-Message-Id: <B7B7FD2F-8272-487C-B946-154107EF7C09@kernel.crashing.org>
-References: <OFBCFBBD51.E4ECB0DF-ONCA257BC0.0083C866-CA257BC1.0000531E@csc.com>
-To: Stephen N Chivers <schivers@csc.com.au>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Chris Proctor <cproctor@csc.com.au>
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 335892C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 01:33:03 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 8 Aug 2013 20:55:38 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 7DCB4394004D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 21:02:46 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r78FY7Hm35520740
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Aug 2013 21:04:07 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r78FWrLv026446
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Aug 2013 21:02:53 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>,
+ Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 63/63] powerpc: Add pseries_le_defconfig
+In-Reply-To: <20130807051618.GB19998@concordia>
+References: <1375804940-22050-1-git-send-email-anton@samba.org>
+ <1375804940-22050-64-git-send-email-anton@samba.org>
+ <2419.1375831860@ale.ozlabs.ibm.com> <20130807051618.GB19998@concordia>
+Date: Thu, 08 Aug 2013 21:02:52 +0530
+Message-ID: <87r4e4p597.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +43,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-On Aug 7, 2013, at 7:03 PM, Stephen N Chivers wrote:
+> On Wed, Aug 07, 2013 at 09:31:00AM +1000, Michael Neuling wrote:
+>> Anton Blanchard <anton@samba.org> wrote:
+>> 
+>> > This is the pseries_defconfig with CONFIG_CPU_LITTLE_ENDIAN enabled
+>> > and CONFIG_VIRTUALIZATION disabled (required until we fix some
+>> > endian issues in KVM).
+>> 
+>> The CONFIG_VIRTUALIZATION disabling should be done in the Kconfig not
+>> here. 
+>> 
+>> I'm not that keen on another defconfig.  benh is already talking about
+>> having a powernv defconfig.  I'm worried we are going to fragment the
+>> defconfigs.  If you want something special like LE, then change the
+>> default one.  
+>
+> I disagree. defconfigs are great because they're easy to add to kisskb
+> or other auto builders, making automated build testing easier.
+>
+> In fact because the defconfigs are pretty much the only thing that
+> people build test, if you stray too far from them you are almost
+> guaranteed to find breakage. For example the UP build was broken for
+> months because we didn't have a defconfig for it.
 
-> Add support for the Motorola/Emerson MVME5100 Single Board Computer.
->=20
-> The MVME5100 is a 6U form factor VME64 computer with:
->=20
->        - A single MPC7410 or MPC750 CPU
->        - A HAWK Processor Host Bridge (CPU to PCI) and
->          MultiProcessor Interrupt Controller (MPIC)
->        - Up to 500Mb of onboard memory
->        - A M48T37 Real Time Clock (RTC) and Non-Volatile Memory chip
->        - Two 16550 compatible UARTS
->        - Two Intel E100 Fast Ethernets
->        - Two PCI Mezzanine Card (PMC) Slots
->        - PPCBug Firmware
->=20
-> The HAWK PHB/MPIC is compatible with the MPC10x devices.
->=20
-> There is no onboard disk support. This is usually provided by =
-installing a=20
-> PMC
-> in first PMC slot.
->=20
-> This patch revives the board support, it was present in early 2.6
-> series kernels. The board support in those days was by Matt Porter of
-> MontaVista Software.
->=20
-> CSC Australia has around 31 of these boards in service. The kernel in =
-use
-> for the boards is based on 2.6.31. The boards are operated without =
-disks
-> from a file server.=20
->=20
-> This patch is based on linux-3.11-rc4 and has been boot tested.
->=20
-> Signed-off-by: Stephen Chivers <schivers@csc.com>
-> ---
-> arch/powerpc/boot/dts/mvme5100.dts            |  195 ++
-> arch/powerpc/boot/mvme5100.c                  |   28 +
-> arch/powerpc/configs/mvme5100_defconfig       | 2597=20
-> +++++++++++++++++++++++++
-> arch/powerpc/platforms/embedded6xx/mvme5100.c |  288 +++
-> 4 files changed, 3108 insertions(+), 0 deletions(-)
+This is true. My test build for patches mostly include 
 
-Please look at fixing the white space issues you seem to have throughout =
-this patch.
+for config in "....."
+do
+   make $config
+   ....
+done
 
-Also, we don't take full defconfigs in the tree, look at 'make =
-savedefconfig'
-
-- k
+-aneesh
