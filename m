@@ -1,20 +1,22 @@
 Return-Path: <schivers@csc.com.au>
-Received: from mail1.bemta8.messagelabs.com (mail1.bemta8.messagelabs.com
- [216.82.243.203])
+Received: from mail1.bemta12.messagelabs.com (mail1.bemta12.messagelabs.com
+ [216.82.251.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.bemta8.messagelabs.com",
+ (Client CN "mail1.bemta12.messagelabs.com",
  Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 32A1E2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2013 10:10:30 +1000 (EST)
-To: benh@kernel.crashing.org, paulus@samba.org
+ by ozlabs.org (Postfix) with ESMTPS id D9AF82C00A3
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Aug 2013 11:20:01 +1000 (EST)
+Received: from amer-gw09.amer.csc.com (amer-gw09.amer.csc.com [20.6.39.245])
+ by amer-mta101.csc.com (8.13.8/8.13.8) with ESMTP id r7819aMx026448
+ for <linuxppc-dev@ozlabs.org>; Wed, 7 Aug 2013 21:09:36 -0400
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Subject: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for Motorola/Emerson
- MVME5100.
+Subject: Fw: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for
+ Motorola/Emerson MVME5100.
 From: Stephen N Chivers <schivers@csc.com.au>
-Message-ID: <OFBCFBBD51.E4ECB0DF-ONCA257BC0.0083C866-CA257BC1.0000531E@csc.com>
-Date: Thu, 8 Aug 2013 11:03:31 +1100
+Message-ID: <OF1587FC34.B05EB459-ONCA257BC1.0006AC60-CA257BC1.0006BA0C@csc.com>
+Date: Thu, 8 Aug 2013 12:13:26 +1100
 Content-Type: text/plain; charset="US-ASCII"
-Cc: Chris Proctor <cproctor@csc.com.au>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
