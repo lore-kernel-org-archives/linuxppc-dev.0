@@ -1,17 +1,16 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Thu, 8 Aug 2013 17:49:22 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Fionnuala Gunter <fin@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] drivers/crypto/nx: saves chaining value from
- co-processor
-Message-ID: <20130808074922.GA22688@concordia>
-References: <1375917350.16050.14.camel@what-is-leg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1375917350.16050.14.camel@what-is-leg>
-Cc: linuxppc-dev@lists.ozlabs.org, herbert@gondor.apana.org.au,
- mhcerri@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linux-crypto@vger.kernel.org
+Return-Path: <anton@samba.org>
+Date: Thu, 8 Aug 2013 17:53:24 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 63/63] powerpc: Add pseries_le_defconfig
+Message-ID: <20130808175324.735c1575@kryten>
+In-Reply-To: <2419.1375831860@ale.ozlabs.ibm.com>
+References: <1375804940-22050-1-git-send-email-anton@samba.org>
+ <1375804940-22050-64-git-send-email-anton@samba.org>
+ <2419.1375831860@ale.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,39 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Fin,
 
-I don't know anything about crypto so I can only critique you on your
-patch submission technique :)  ...
+Hi,
 
-On Wed, Aug 07, 2013 at 06:15:50PM -0500, Fionnuala Gunter wrote:
-> This patch fixes a bug that is triggered when cts(cbc(aes)) is used with
-> nx-crypto driver on input larger than 32 bytes.
+> The CONFIG_VIRTUALIZATION disabling should be done in the Kconfig not
+> here. 
 > 
-> The chaining value from co-processor was not being saved. This value is
-> needed because it is used as the IV by cts(cbc(aes)).
-> 
-> Signed-off-by: Fionnuala Gunter <fin@linux.vnet.ibm.com>
-> Reviewed-by: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
-> ---
-> v2. changed signed-off-by to reviewed-by and added more details to
-> description
-> 
-> This bug appeared in the original submission (v3.5)
+> I'm not that keen on another defconfig.  benh is already talking about
+> having a powernv defconfig.  I'm worried we are going to fragment the
+> defconfigs.  If you want something special like LE, then change the
+> default one.
 
-Ideally this should identify the commit, so:
+I agree we don't want machine specific defconfigs, but I think it makes
+sense to have ones that cover the key options that conflict. I'm
+thinking 32bit, 64bit, 64bit BookE, 64bit LE etc.
 
-  This bug was introduced in the original submission (v3.5), commit
-  856d673 "powerpc/crypto: AES-CBC mode routines for nx encryption".
+One bonus is if we have a smaller set of defconfigs we might actually
+get better testing. I have no idea which 32bit defconfigs I should test
+for example, and I'm not going to test them all!
 
-Including the subject of the commit is handy in case the patch has been
-backported somewhere, in which case the commit sha will be different.
-
-It should definitely be part of the commit message, not below the "---".
-
-And Ben might disagree but I think with a clear cut bug fix like this it
-should include the CC to stable, so:
-
-    Cc: stable@vger.kernel.org # 3.5+
-
-cheers
+Anton
