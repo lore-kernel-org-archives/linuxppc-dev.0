@@ -1,36 +1,12 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D0E812C00D3
- for <linuxppc-dev@ozlabs.org>; Fri,  9 Aug 2013 17:21:50 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Fri, 9 Aug 2013 12:45:38 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 85E9EE004F
- for <linuxppc-dev@ozlabs.org>; Fri,  9 Aug 2013 12:52:02 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r797LgBo33882136
- for <linuxppc-dev@ozlabs.org>; Fri, 9 Aug 2013 12:51:42 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r797LibW018679
- for <linuxppc-dev@ozlabs.org>; Fri, 9 Aug 2013 12:51:44 +0530
-Message-ID: <520498A4.9050805@linux.vnet.ibm.com>
-Date: Fri, 09 Aug 2013 12:52:12 +0530
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: Use ibm,
- chip-id property to compute cpu_core_mask if available
-References: <20130704030506.GA2396@iris.ozlabs.ibm.com>
-In-Reply-To: <20130704030506.GA2396@iris.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/5] powerpc: Fix hypervisor facility unavaliable vector number
+Date: Fri,  9 Aug 2013 17:29:27 +1000
+Message-Id: <1376033371-28713-1-git-send-email-mikey@neuling.org>
+In-Reply-To: <25550.1375872955@ale.ozlabs.ibm.com>
+References: <25550.1375872955@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,98 +16,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/04/2013 08:35 AM, Paul Mackerras wrote:
-> Some systems have an ibm,chip-id property in the cpu nodes in the
-> device tree.  On these systems, we now use that to compute the
-> cpu_core_mask (i.e. the set of core siblings) rather than looking
-> at cache properties.
->
+Currently if we take hypervisor facility unavaliable (from 0xf80/0x4f80) we
+mark it as an OS facility unavaliable (0xf60) as the two share the same code
+path.
 
-Paul,
+The becomes a problem in facility_unavailable_exception() as we aren't able to
+see the hypervisor facility unavailable exceptions.
 
-I wanted to test this patch but not able to apply this patch on top of Linux 
-tree. Looks like I'm missing traverse_core_siblings() related patch. I searched 
-in ppc mailing list and couldn't figure out.
+Below fixes this by duplication the required macros.
 
-Can you point me to related patch?
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: <stable@vger.kernel.org> [v3.10]
+---
+ arch/powerpc/kernel/exceptions-64s.S | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
--Vasant
-
-
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index b72d8c9..3b7a118 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -587,6 +587,32 @@ int cpu_first_thread_of_core(int core)
->   }
->   EXPORT_SYMBOL_GPL(cpu_first_thread_of_core);
->
-> +static void traverse_siblings_chip_id(int cpu, int add, int chipid)
-> +{
-> +	const struct cpumask *mask;
-> +	struct device_node *np;
-> +	int i, plen;
-> +	const int *prop;
-> +
-> +	mask = add ? cpu_online_mask : cpu_present_mask;
-> +	for_each_cpu(i, mask) {
-> +		np = of_get_cpu_node(i, NULL);
-> +		if (!np)
-> +			continue;
-> +		prop = of_get_property(np, "ibm,chip-id", &plen);
-> +		if (prop && plen == sizeof(int) && *prop == chipid) {
-> +			if (add) {
-> +				cpumask_set_cpu(cpu, cpu_core_mask(i));
-> +				cpumask_set_cpu(i, cpu_core_mask(cpu));
-> +			} else {
-> +				cpumask_clear_cpu(cpu, cpu_core_mask(i));
-> +				cpumask_clear_cpu(i, cpu_core_mask(cpu));
-> +			}
-> +		}
-> +		of_node_put(np);
-> +	}
-> +}
-> +
->   /* Must be called when no change can occur to cpu_present_mask,
->    * i.e. during cpu online or offline.
->    */
-> @@ -611,14 +637,29 @@ static struct device_node *cpu_to_l2cache(int cpu)
->
->   static void traverse_core_siblings(int cpu, int add)
->   {
-> -	struct device_node *l2_cache;
-> +	struct device_node *l2_cache, *np;
->   	const struct cpumask *mask;
-> -	int i;
-> +	int i, chip, plen;
-> +	const int *prop;
-> +
-> +	/* First see if we have ibm,chip-id properties in cpu nodes */
-> +	np = of_get_cpu_node(cpu, NULL);
-> +	if (np) {
-> +		chip = -1;
-> +		prop = of_get_property(np, "ibm,chip-id", &plen);
-> +		if (prop && plen == sizeof(int))
-> +			chip = *(int *)prop;
-> +		of_node_put(np);
-> +		if (chip >= 0) {
-> +			traverse_siblings_chip_id(cpu, add, chip);
-> +			return;
-> +		}
-> +	}
->
->   	l2_cache = cpu_to_l2cache(cpu);
->   	mask = add ? cpu_online_mask : cpu_present_mask;
->   	for_each_cpu(i, mask) {
-> -		struct device_node *np = cpu_to_l2cache(i);
-> +		np = cpu_to_l2cache(i);
->   		if (!np)
->   			continue;
->   		if (np == l2_cache) {
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 4e00d22..902ca3c 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -848,7 +848,7 @@ hv_facility_unavailable_relon_trampoline:
+ 	. = 0x4f80
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
+-	b	facility_unavailable_relon_hv
++	b	hv_facility_unavailable_relon_hv
+ 
+ 	STD_RELON_EXCEPTION_PSERIES(0x5300, 0x1300, instruction_breakpoint)
+ #ifdef CONFIG_PPC_DENORMALISATION
+@@ -1175,6 +1175,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ 	b	.ret_from_except
+ 
+ 	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, .facility_unavailable_exception)
++	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, .facility_unavailable_exception)
+ 
+ 	.align	7
+ 	.globl	__end_handlers
+@@ -1188,7 +1189,7 @@ __end_handlers:
+ 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf20, altivec_unavailable)
+ 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf40, vsx_unavailable)
+ 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
+-	STD_RELON_EXCEPTION_HV_OOL(0xf80, facility_unavailable)
++	STD_RELON_EXCEPTION_HV_OOL(0xf80, hv_facility_unavailable)
+ 
+ #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+ /*
+-- 
+1.8.1.2
