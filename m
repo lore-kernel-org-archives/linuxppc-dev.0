@@ -1,17 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-Subject: [PATCH v3 3/3] powerpc: Correctly context switch DSCR on POWER8
-In-reply-to: <30983.1375700435@ale.ozlabs.ibm.com>
-References: <1375687686-5633-1-git-send-email-mikey@neuling.org>
- <1375687686-5633-3-git-send-email-mikey@neuling.org>
- <20130805184205.79cafb9ac299313228ec53cc@canb.auug.org.au>
- <15850.1375694796@ale.ozlabs.ibm.com> <21599.1375697783@ale.ozlabs.ibm.com>
- <30983.1375700435@ale.ozlabs.ibm.com>
-Date: Fri, 09 Aug 2013 15:49:20 +1000
-Message-ID: <20158.1376027360@ale.ozlabs.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CD4A22C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 16:03:24 +1000 (EST)
+Message-ID: <1376028191.32100.13.camel@pasglop>
+Subject: Re: Pull request: scottwood/linux.git next
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Fri, 09 Aug 2013 16:03:11 +1000
+In-Reply-To: <20130808224501.GA8925@home.buserror.net>
+References: <20130808224501.GA8925@home.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,162 +23,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER8 allows the DSCR to be accessed directly from userspace via a new SPR
-number 0x3 (Rather than 0x11.  DSCR SPR number 0x11 is still used on POWER8 but
-like POWER7, is only accessible in HV and OS modes).  Currently, we allow this
-by setting H/FSCR DSCR bit on boot.
+On Thu, 2013-08-08 at 17:45 -0500, Scott Wood wrote:
+> The following changes since commit 3b2f64d00c46e1e4e9bd0bb9bb12619adac27a4b:
+> 
+>   Linux 3.11-rc2 (2013-07-21 12:05:29 -0700)
+> 
+> are available in the git repository at:
 
-Unfortunately this doesn't work, as the kernel needs to see the DSCR change so
-that it knows to no longer restore the system wide version of DSCR on context
-switch (ie. to set thread.dscr_inherit).
+Next time, put a little blurb at the head of the pull request giving a
+rough highlight, like I do when I send a pull request to Linus.
 
-This clears the H/FSCR DSCR bit initially.  If a process then accesses the DSCR
-(via SPR 0x3), it'll trap into the kernel where we set thread.dscr_inherit in
-facility_unavailable_exception().
+Thanks !
 
-We also change _switch() so that we set or clear the H/FSCR DSCR bit based on
-the thread.dscr_inherit.
+Cheers,
+Ben.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-v3: remove unnecessary clearing of H/FSCR at boot.
-
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index ab15b8d..4674fe6 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -584,9 +584,34 @@ BEGIN_FTR_SECTION
- 	ld	r7,DSCR_DEFAULT@toc(2)
- 	ld	r0,THREAD_DSCR(r4)
- 	cmpwi	r6,0
-+	li	r8, FSCR_DSCR
- 	bne	1f
- 	ld	r0,0(r7)
--1:	cmpd	r0,r25
-+	b	3f
-+1:
-+  BEGIN_FTR_SECTION_NESTED(70)
-+	mfspr	r6, SPRN_FSCR
-+	or	r6, r6, r8
-+	mtspr	SPRN_FSCR, r6
-+    BEGIN_FTR_SECTION_NESTED(69)
-+	mfspr	r6, SPRN_HFSCR
-+	or	r6, r6, r8
-+	mtspr	SPRN_HFSCR, r6
-+    END_FTR_SECTION_NESTED(CPU_FTR_HVMODE, CPU_FTR_HVMODE, 69)
-+	b	4f
-+  END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
-+3:
-+  BEGIN_FTR_SECTION_NESTED(70)
-+	mfspr	r6, SPRN_FSCR
-+	andc	r6, r6, r8
-+	mtspr	SPRN_FSCR, r6
-+    BEGIN_FTR_SECTION_NESTED(69)
-+	mfspr	r6, SPRN_HFSCR
-+	andc	r6, r6, r8
-+	mtspr	SPRN_HFSCR, r6
-+    END_FTR_SECTION_NESTED(CPU_FTR_HVMODE, CPU_FTR_HVMODE, 69)
-+  END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
-+4:	cmpd	r0,r25
- 	beq	2f
- 	mtspr	SPRN_DSCR,r0
- 2:
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index bf33c22..e435bc0 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -44,9 +44,7 @@
- #include <asm/machdep.h>
- #include <asm/rtas.h>
- #include <asm/pmc.h>
--#ifdef CONFIG_PPC32
- #include <asm/reg.h>
--#endif
- #ifdef CONFIG_PMAC_BACKLIGHT
- #include <asm/backlight.h>
- #endif
-@@ -1296,43 +1294,54 @@ void vsx_unavailable_exception(struct pt_regs *regs)
- 	die("Unrecoverable VSX Unavailable Exception", regs, SIGABRT);
- }
- 
-+#ifdef CONFIG_PPC64
- void facility_unavailable_exception(struct pt_regs *regs)
- {
- 	static char *facility_strings[] = {
--		"FPU",
--		"VMX/VSX",
--		"DSCR",
--		"PMU SPRs",
--		"BHRB",
--		"TM",
--		"AT",
--		"EBB",
--		"TAR",
-+		[FSCR_FP_LG] = "FPU",
-+		[FSCR_VECVSX_LG] = "VMX/VSX",
-+		[FSCR_DSCR_LG] = "DSCR",
-+		[FSCR_PM_LG] = "PMU SPRs",
-+		[FSCR_BHRB_LG] = "BHRB",
-+		[FSCR_TM_LG] = "TM",
-+		[FSCR_EBB_LG] = "EBB",
-+		[FSCR_TAR_LG] = "TAR",
- 	};
--	char *facility, *prefix;
-+	char *facility = "unknown";
- 	u64 value;
-+	u8 status;
-+	bool hv;
- 
--	if (regs->trap == 0xf60) {
--		value = mfspr(SPRN_FSCR);
--		prefix = "";
--	} else {
-+	hv = (regs->trap == 0xf80);
-+	if (hv)
- 		value = mfspr(SPRN_HFSCR);
--		prefix = "Hypervisor ";
-+	else
-+		value = mfspr(SPRN_FSCR);
-+
-+	status = value >> 56;
-+	if (status == FSCR_DSCR_LG) {
-+		/* User is acessing the DSCR.  Set the inherit bit and allow
-+		 * the user to set it directly in future by setting via the
-+		 * H/FSCR DSCR bit.
-+		 */
-+		current->thread.dscr_inherit = 1;
-+		if (hv)
-+			mtspr(SPRN_HFSCR, value | HFSCR_DSCR);
-+		else
-+			mtspr(SPRN_FSCR,  value | FSCR_DSCR);
-+		return;
- 	}
- 
--	value = value >> 56;
-+	if ((status < ARRAY_SIZE(facility_strings)) &&
-+	    facility_strings[status])
-+		facility = facility_strings[status];
- 
- 	/* We restore the interrupt state now */
- 	if (!arch_irq_disabled_regs(regs))
- 		local_irq_enable();
- 
--	if (value < ARRAY_SIZE(facility_strings))
--		facility = facility_strings[value];
--	else
--		facility = "unknown";
--
- 	pr_err("%sFacility '%s' unavailable, exception at 0x%lx, MSR=%lx\n",
--		prefix, facility, regs->nip, regs->msr);
-+	       hv ? "Hypervisor " : "", facility, regs->nip, regs->msr);
- 
- 	if (user_mode(regs)) {
- 		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
-@@ -1341,6 +1350,7 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 
- 	die("Unexpected facility unavailable exception", regs, SIGABRT);
- }
-+#endif
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+> 
+> for you to fetch changes up to c8db32c8669f7de05b820ee4934926405af52188:
+> 
+>   powerpc/e500: Update compilation flags with core specific options (2013-08-07 18:49:44 -0500)
+> 
+> ----------------------------------------------------------------
+> Catalin Udma (2):
+>       powerpc/perf: increase the perf HW events to 6
+>       powerpc/e500: Update compilation flags with core specific options
+> 
+> Dongsheng Wang (1):
+>       powerpc/mpc85xx: invalidate TLB after hibernation resume
+> 
+> Haijun.Zhang (2):
+>       powerpc/85xx: add P1020RDB-PD platform support
+>       powerpc/85xx: add the P1020RDB-PD DTS support
+> 
+> Hongtao Jia (3):
+>       powerpc: Move opcode definitions from kvm/emulate.c to asm/ppc-opcode.h
+>       powerpc/85xx: Add machine check handler to fix PCIe erratum on mpc85xx
+>       powerpc/msi: Fix compile error on mpc83xx
+> 
+> Ian Campbell (1):
+>       powerpc/fsl-booke: Rename b4qds.dts -> b4qds.dtsi.
+> 
+> Kevin Hao (3):
+>       powerpc/mpc85xx: remove the unneeded pci init functions for corenet ds board
+>       powerpc/fsl-pci: fix the unreachable warning message
+>       powerpc/fsl-pci: enable SWIOTLB in function setup_pci_atmu
+> 
+> Laurentiu TUDOR (1):
+>       powerpc/85xx: Move ePAPR paravirt initialization earlier
+> 
+> Lijun Pan (2):
+>       powerpc/perf: correct typos in counter enumeration
+>       powerpc/perf: add 2 additional performance monitor counters for e6500 core
+> 
+> Minghuan Lian (3):
+>       powerpc/dts: update MSI bindings doc for MPIC v4.3
+>       powerpc/dts: add MPIC v4.3 dts node
+>       powerpc/fsl_msi: add MSIIR1 support for MPIC v4.3
+> 
+> Priyanka Jain (1):
+>       powerpc/perf: Add e6500 PMU driver
+> 
+> Wei Yongjun (1):
+>       powerpc/fsl_msi: fix error return code in fsl_of_msi_probe()
+> 
+> Yuanquan Chen (1):
+>       powerpc/pci: fix PCI-e check link issue
+> 
+> Zhenhua Luo (1):
+>       powerpc/fsl: Enable CONFIG_DEVTMPFS_MOUNT so /dev can be mounted correctly
+> 
+>  .../devicetree/bindings/powerpc/fsl/msi-pic.txt    |  53 +++-
+>  arch/powerpc/Makefile                              |  18 +-
+>  arch/powerpc/boot/dts/b4420qds.dts                 |   2 +-
+>  arch/powerpc/boot/dts/b4860qds.dts                 |   2 +-
+>  arch/powerpc/boot/dts/{b4qds.dts => b4qds.dtsi}    |   0
+>  arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |   2 +-
+>  arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi       | 149 +++++++++++
+>  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |   2 +-
+>  arch/powerpc/boot/dts/p1020rdb-pd.dts              | 280 +++++++++++++++++++++
+>  arch/powerpc/configs/85xx/p1023rds_defconfig       |   1 +
+>  arch/powerpc/configs/corenet32_smp_defconfig       |   1 +
+>  arch/powerpc/configs/corenet64_smp_defconfig       |   1 +
+>  arch/powerpc/configs/mpc83xx_defconfig             |   1 +
+>  arch/powerpc/configs/mpc85xx_defconfig             |   1 +
+>  arch/powerpc/configs/mpc85xx_smp_defconfig         |   1 +
+>  arch/powerpc/include/asm/epapr_hcalls.h            |   6 +
+>  arch/powerpc/include/asm/mpic.h                    |   7 +
+>  arch/powerpc/include/asm/perf_event_fsl_emb.h      |   2 +-
+>  arch/powerpc/include/asm/ppc-opcode.h              |  47 ++++
+>  arch/powerpc/include/asm/reg_fsl_emb.h             |  24 +-
+>  arch/powerpc/kernel/cpu_setup_fsl_booke.S          |   2 +-
+>  arch/powerpc/kernel/cputable.c                     |   2 +-
+>  arch/powerpc/kernel/epapr_paravirt.c               |  28 ++-
+>  arch/powerpc/kernel/setup_32.c                     |   4 +-
+>  arch/powerpc/kernel/setup_64.c                     |   3 +
+>  arch/powerpc/kernel/swsusp_booke.S                 |   8 +
+>  arch/powerpc/kernel/traps.c                        |   3 +
+>  arch/powerpc/kvm/emulate.c                         |  45 +---
+>  arch/powerpc/oprofile/op_model_fsl_emb.c           |  30 +++
+>  arch/powerpc/perf/Makefile                         |   2 +-
+>  arch/powerpc/perf/core-fsl-emb.c                   |  30 +++
+>  arch/powerpc/perf/e6500-pmu.c                      | 121 +++++++++
+>  arch/powerpc/platforms/85xx/corenet_ds.c           |   6 -
+>  arch/powerpc/platforms/85xx/mpc85xx_rdb.c          |  22 ++
+>  arch/powerpc/sysdev/fsl_msi.c                      | 137 +++++++---
+>  arch/powerpc/sysdev/fsl_msi.h                      |  10 +-
+>  arch/powerpc/sysdev/fsl_pci.c                      | 184 ++++++++++++--
+>  arch/powerpc/sysdev/fsl_pci.h                      |   6 +
+>  38 files changed, 1088 insertions(+), 155 deletions(-)
+>  rename arch/powerpc/boot/dts/{b4qds.dts => b4qds.dtsi} (100%)
+>  create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-mpic4.3.dtsi
+>  create mode 100644 arch/powerpc/boot/dts/p1020rdb-pd.dts
+>  create mode 100644 arch/powerpc/perf/e6500-pmu.c
