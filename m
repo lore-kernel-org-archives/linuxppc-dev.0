@@ -1,23 +1,36 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E03F82C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 02:31:14 +1000 (EST)
-Message-ID: <1376065856.15633.14.camel@snotra.buserror.net>
-Subject: Re: Pull request: scottwood/linux.git next
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Fri, 9 Aug 2013 11:30:56 -0500
-In-Reply-To: <0C3278E8-558D-445B-A8F5-CCD0868C808C@kernel.crashing.org>
-References: <20130808224501.GA8925@home.buserror.net>
- <1376028191.32100.13.camel@pasglop>
- <0C3278E8-558D-445B-A8F5-CCD0868C808C@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EF0602C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 04:25:19 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Fri, 9 Aug 2013 12:25:16 -0600
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id CED4338C8027
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 14:25:12 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r79IPE2M186282
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Aug 2013 14:25:14 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r79IPDMc031166
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Aug 2013 14:25:13 -0400
+Received: from suka2 (suka2.usor.ibm.com [9.70.94.91])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+ r79IPAZc031038
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Aug 2013 14:25:10 -0400
+Date: Fri, 9 Aug 2013 11:24:47 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Build errors on mainline kernel
+Message-ID: <20130809182446.GA26711@us.ibm.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +40,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-08-09 at 09:43 -0500, Kumar Gala wrote:
-> On Aug 9, 2013, at 1:03 AM, Benjamin Herrenschmidt wrote:
-> 
-> > On Thu, 2013-08-08 at 17:45 -0500, Scott Wood wrote:
-> >> The following changes since commit 3b2f64d00c46e1e4e9bd0bb9bb12619adac27a4b:
-> >> 
-> >>  Linux 3.11-rc2 (2013-07-21 12:05:29 -0700)
-> >> 
-> >> are available in the git repository at:
-> > 
-> > Next time, put a little blurb at the head of the pull request giving a
-> > rough highlight, like I do when I send a pull request to Linus.
-> > 
-> > Thanks !
-> > 
-> > Cheers,
-> > Ben.
 
-Oh, sorry -- forgot.
+I am tryng to compile clean mainline kernel with a few different config files
+and running into errors with some configs.
 
-Highlights include:
- - Setting compilation flags properly for the chosen e500 target --
-among other things, on 64-bit e500 builds this will prevent the
-assembler from replacing lwsync with sync, which caused a significant
-slowdown on certain workloads.
- - e6500 perf support
- - MPIC MSI support for t4240/b4860-era chips
- - p1020rdb-pd board support
+I am building on RHEL6.3 with following binaries:
 
-> Also, I think we should pull a few of the commits in here out and submit for 3.11
-> 
->      powerpc/msi: Fix compile error on mpc83xx
+	gcc (GCC) 4.4.6 20120305 (Red Hat 4.4.6-4)
+	GNU ld version 2.20.51.0.2-5.34.el6 20100205
+	binutils-2.20.51.0.2-5.34.el6.ppc64
+	binutils-devel-2.20.51.0.2-5.34.el6.ppc64
 
-This is poorly worded -- there is no compilation error unless you apply
-a subsequent patch without this one.  A better subject would have been
-"powerpc/mpic: allow fsl_mpic_primary_get_version without CONFIG_MPIC".
+I am getting the error with several files and configs, but other configs 
+(eg: ppc64_defconfig, pmac32_defconfig) build fine.
 
->      powerpc/fsl_msi: fix error return code in fsl_of_msi_probe()
+For instance, with latest mainline kernel (commit 6c2580c) and ppc64_defconfig, I get:
 
-This one doesn't seem that critical...
+	make O=linux-obj mrproper
+	make O=linux-obj ppc64e_defconfig
+	make O=linux-obj arch/powerpc/platforms/85xx/smp.o
+	  ...
 
->      powerpc/pci: fix PCI-e check link issue
+	CC      arch/powerpc/platforms/85xx/smp.o
+	{standard input}: Assembler messages:
+	{standard input}:240: Error: junk at end of line: `1'
+	make[2]: *** [arch/powerpc/platforms/85xx/smp.o] Error 1
+	make[1]: *** [arch/powerpc/platforms/85xx/smp.o] Error 2
 
-I agree on this one.
+Not sure if 240 is a line number in smp.c, but looking through the function
+containing line 240, I was able to compile the smp.c after commenting out
+the two WARN_ON() messages.
 
--Scott
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp
+index 5ced4f5..9705850 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -151,8 +151,10 @@ static int smp_85xx_kick_cpu(int nr)
+        int ioremappable;
+        int ret = 0;
+ 
++#if 0
+        WARN_ON(nr < 0 || nr >= NR_CPUS);
+        WARN_ON(hw_cpu < 0 || hw_cpu >= NR_CPUS);
++#endif
+ 
+        pr_debug("smp_85xx_kick_cpu: kick CPU #%d\n", nr);
+
+---
+
+The pre-processor output for the first WARN_ON() is:
+
+ ---
+ ({ int __ret_warn_on = !!(nr < 0 || nr >= 32); if (__builtin_constant_p(__ret_warn_on)) { if (__ret_warn_on) do { __asm__ __volatile__( "1:    twi 31,0,0\n" ".section __bug_table,\"a\"\n" "2:\t" ".llong" " " "1b, %0\n" "\t.short %1, %2\n" ".org 2b+%3\n" ".previous\n" : : "i" ("/root/tmp/linux.git/arch/powerpc/platforms/85xx/smp.c"), "i" (154), "i" (((1 << 0) | ((9) << 8))), "i" (sizeof(struct bug_entry))); } while (0); } else { __asm__ __volatile__( "1:      ""tdnei" " ""   %4,0\n" ".section __bug_table,\"a\"\n" "2:\t" ".llong" " " "1b, %0\n" "\t.short %1, %2\n" ".org 2b+%3\n" ".previous\n" : : "i" ("/root/tmp/linux.git/arch/powerpc/platforms/85xx/smp.c"), "i" (154), "i" (((1 << 0) | ((9) << 8))), "i" (sizeof(struct bug_entry)), "r" (__ret_warn_on)); } __builtin_expect(!!(__ret_warn_on), 0); });
+
+---
+
+
+Should I be doing something different to build with these configs ?
