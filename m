@@ -1,9 +1,9 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 3/5] powerpc: Fix context switch DSCR on POWER8
-Date: Fri,  9 Aug 2013 17:29:29 +1000
-Message-Id: <1376033371-28713-3-git-send-email-mikey@neuling.org>
+Subject: [PATCH 4/5] powerpc: Save the TAR register earlier
+Date: Fri,  9 Aug 2013 17:29:30 +1000
+Message-Id: <1376033371-28713-4-git-send-email-mikey@neuling.org>
 In-Reply-To: <1376033371-28713-1-git-send-email-mikey@neuling.org>
 References: <1376033371-28713-1-git-send-email-mikey@neuling.org>
 In-Reply-To: <25550.1375872955@ale.ozlabs.ibm.com>
@@ -18,167 +18,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER8 allows the DSCR to be accessed directly from userspace via a new SPR
-number 0x3 (Rather than 0x11.  DSCR SPR number 0x11 is still used on POWER8 but
-like POWER7, is only accessible in HV and OS modes).  Currently, we allow this
-by setting H/FSCR DSCR bit on boot.
+This moves us to save the Target Address Register (TAR) a earlier in
+__switch_to.  It introduces a new function save_tar() to do this.
 
-Unfortunately this doesn't work, as the kernel needs to see the DSCR change so
-that it knows to no longer restore the system wide version of DSCR on context
-switch (ie. to set thread.dscr_inherit).
-
-This clears the H/FSCR DSCR bit initially.  If a process then accesses the DSCR
-(via SPR 0x3), it'll trap into the kernel where we set thread.dscr_inherit in
-facility_unavailable_exception().
-
-We also change _switch() so that we set or clear the H/FSCR DSCR bit based on
-the thread.dscr_inherit.
+We need to save the TAR earlier as we will overwrite it in the transactional
+memory reclaim/recheckpoint path.  We are going to do this in a subsequent
+patch which will fix saving the TAR register when it's modified inside a
+transaction.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 Cc: <stable@vger.kernel.org> [v3.10]
 ---
- arch/powerpc/kernel/entry_64.S | 27 +++++++++++++++++++-
- arch/powerpc/kernel/traps.c    | 58 +++++++++++++++++++++++++-----------------
- 2 files changed, 60 insertions(+), 25 deletions(-)
+ arch/powerpc/include/asm/switch_to.h |  9 +++++++++
+ arch/powerpc/kernel/entry_64.S       |  9 ---------
+ arch/powerpc/kernel/process.c        | 10 ++++++++++
+ 3 files changed, 19 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index ab15b8d..4674fe6 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -584,9 +584,34 @@ BEGIN_FTR_SECTION
- 	ld	r7,DSCR_DEFAULT@toc(2)
- 	ld	r0,THREAD_DSCR(r4)
- 	cmpwi	r6,0
-+	li	r8, FSCR_DSCR
- 	bne	1f
- 	ld	r0,0(r7)
--1:	cmpd	r0,r25
-+	b	3f
-+1:
-+  BEGIN_FTR_SECTION_NESTED(70)
-+	mfspr	r6, SPRN_FSCR
-+	or	r6, r6, r8
-+	mtspr	SPRN_FSCR, r6
-+    BEGIN_FTR_SECTION_NESTED(69)
-+	mfspr	r6, SPRN_HFSCR
-+	or	r6, r6, r8
-+	mtspr	SPRN_HFSCR, r6
-+    END_FTR_SECTION_NESTED(CPU_FTR_HVMODE, CPU_FTR_HVMODE, 69)
-+	b	4f
-+  END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
-+3:
-+  BEGIN_FTR_SECTION_NESTED(70)
-+	mfspr	r6, SPRN_FSCR
-+	andc	r6, r6, r8
-+	mtspr	SPRN_FSCR, r6
-+    BEGIN_FTR_SECTION_NESTED(69)
-+	mfspr	r6, SPRN_HFSCR
-+	andc	r6, r6, r8
-+	mtspr	SPRN_HFSCR, r6
-+    END_FTR_SECTION_NESTED(CPU_FTR_HVMODE, CPU_FTR_HVMODE, 69)
-+  END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
-+4:	cmpd	r0,r25
- 	beq	2f
- 	mtspr	SPRN_DSCR,r0
- 2:
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index bf33c22..e435bc0 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -44,9 +44,7 @@
- #include <asm/machdep.h>
- #include <asm/rtas.h>
- #include <asm/pmc.h>
--#ifdef CONFIG_PPC32
- #include <asm/reg.h>
--#endif
- #ifdef CONFIG_PMAC_BACKLIGHT
- #include <asm/backlight.h>
- #endif
-@@ -1296,43 +1294,54 @@ void vsx_unavailable_exception(struct pt_regs *regs)
- 	die("Unrecoverable VSX Unavailable Exception", regs, SIGABRT);
- }
- 
-+#ifdef CONFIG_PPC64
- void facility_unavailable_exception(struct pt_regs *regs)
- {
- 	static char *facility_strings[] = {
--		"FPU",
--		"VMX/VSX",
--		"DSCR",
--		"PMU SPRs",
--		"BHRB",
--		"TM",
--		"AT",
--		"EBB",
--		"TAR",
-+		[FSCR_FP_LG] = "FPU",
-+		[FSCR_VECVSX_LG] = "VMX/VSX",
-+		[FSCR_DSCR_LG] = "DSCR",
-+		[FSCR_PM_LG] = "PMU SPRs",
-+		[FSCR_BHRB_LG] = "BHRB",
-+		[FSCR_TM_LG] = "TM",
-+		[FSCR_EBB_LG] = "EBB",
-+		[FSCR_TAR_LG] = "TAR",
- 	};
--	char *facility, *prefix;
-+	char *facility = "unknown";
- 	u64 value;
-+	u8 status;
-+	bool hv;
- 
--	if (regs->trap == 0xf60) {
--		value = mfspr(SPRN_FSCR);
--		prefix = "";
--	} else {
-+	hv = (regs->trap == 0xf80);
-+	if (hv)
- 		value = mfspr(SPRN_HFSCR);
--		prefix = "Hypervisor ";
-+	else
-+		value = mfspr(SPRN_FSCR);
-+
-+	status = value >> 56;
-+	if (status == FSCR_DSCR_LG) {
-+		/* User is acessing the DSCR.  Set the inherit bit and allow
-+		 * the user to set it directly in future by setting via the
-+		 * H/FSCR DSCR bit.
-+		 */
-+		current->thread.dscr_inherit = 1;
-+		if (hv)
-+			mtspr(SPRN_HFSCR, value | HFSCR_DSCR);
-+		else
-+			mtspr(SPRN_FSCR,  value | FSCR_DSCR);
-+		return;
- 	}
- 
--	value = value >> 56;
-+	if ((status < ARRAY_SIZE(facility_strings)) &&
-+	    facility_strings[status])
-+		facility = facility_strings[status];
- 
- 	/* We restore the interrupt state now */
- 	if (!arch_irq_disabled_regs(regs))
- 		local_irq_enable();
- 
--	if (value < ARRAY_SIZE(facility_strings))
--		facility = facility_strings[value];
--	else
--		facility = "unknown";
--
- 	pr_err("%sFacility '%s' unavailable, exception at 0x%lx, MSR=%lx\n",
--		prefix, facility, regs->nip, regs->msr);
-+	       hv ? "Hypervisor " : "", facility, regs->nip, regs->msr);
- 
- 	if (user_mode(regs)) {
- 		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
-@@ -1341,6 +1350,7 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 
- 	die("Unexpected facility unavailable exception", regs, SIGABRT);
- }
+diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+index 49a13e0..294c2ce 100644
+--- a/arch/powerpc/include/asm/switch_to.h
++++ b/arch/powerpc/include/asm/switch_to.h
+@@ -15,6 +15,15 @@ extern struct task_struct *__switch_to(struct task_struct *,
+ struct thread_struct;
+ extern struct task_struct *_switch(struct thread_struct *prev,
+ 				   struct thread_struct *next);
++#ifdef CONFIG_PPC_BOOK3S_64
++static inline void save_tar(struct thread_struct *prev)
++{
++	if (cpu_has_feature(CPU_FTR_ARCH_207S))
++		prev->tar = mfspr(SPRN_TAR);
++}
++#else
++static inline void save_tar(struct thread_struct *prev) {}
 +#endif
  
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ extern void giveup_fpu(struct task_struct *);
+ extern void load_up_fpu(void);
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 4674fe6..2bd0b88 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -449,15 +449,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_DSCR)
  
+ #ifdef CONFIG_PPC_BOOK3S_64
+ BEGIN_FTR_SECTION
+-	/*
+-	 * Back up the TAR across context switches.  Note that the TAR is not
+-	 * available for use in the kernel.  (To provide this, the TAR should
+-	 * be backed up/restored on exception entry/exit instead, and be in
+-	 * pt_regs.  FIXME, this should be in pt_regs anyway (for debug).)
+-	 */
+-	mfspr	r0,SPRN_TAR
+-	std	r0,THREAD_TAR(r3)
+-
+ 	/* Event based branch registers */
+ 	mfspr	r0, SPRN_BESCR
+ 	std	r0, THREAD_BESCR(r3)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index c517dbe..8083be2 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -600,6 +600,16 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	struct ppc64_tlb_batch *batch;
+ #endif
+ 
++	/* Back up the TAR across context switches.
++	 * Note that the TAR is not available for use in the kernel.  (To
++	 * provide this, the TAR should be backed up/restored on exception
++	 * entry/exit instead, and be in pt_regs.  FIXME, this should be in
++	 * pt_regs anyway (for debug).)
++	 * Save the TAR here before we do treclaim/trecheckpoint as these
++	 * will change the TAR.
++	 */
++	save_tar(&prev->thread);
++
+ 	__switch_to_tm(prev);
+ 
+ #ifdef CONFIG_SMP
 -- 
 1.8.1.2
