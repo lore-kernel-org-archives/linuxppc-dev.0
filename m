@@ -1,19 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Fri, 9 Aug 2013 13:23:53 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 63/63] powerpc: Add pseries_le_defconfig
-Message-ID: <20130809032353.GB20970@concordia>
-References: <1375804940-22050-1-git-send-email-anton@samba.org>
- <1375804940-22050-64-git-send-email-anton@samba.org>
- <2419.1375831860@ale.ozlabs.ibm.com>
- <20130808175324.735c1575@kryten>
- <25736.1376003557@ale.ozlabs.ibm.com>
+Return-Path: <B42677@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0248.outbound.messaging.microsoft.com [213.199.154.248])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BAD332C00C0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 13:33:16 +1000 (EST)
+Message-ID: <52046347.80407@freescale.com>
+Date: Fri, 9 Aug 2013 11:34:31 +0800
+From: Zhang Haijun <B42677@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <25736.1376003557@ale.ozlabs.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
+To: Anton Vorontsov <anton@enomsg.org>
+Subject: Re: [PATCH 1/3 V2] mmc:core: parse voltage from device-tree
+References: <1375251927-3330-1-git-send-email-Haijun.Zhang@freescale.com>
+ <20130809001540.GB7427@lizard.mcd01528.sjc.wayport.net>
+In-Reply-To: <20130809001540.GB7427@lizard.mcd01528.sjc.wayport.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linux-mmc@vger.kernel.org, AFLEMING@freescale.com, scottwood@freescale.com,
+ cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
+ Haijun Zhang <Haijun.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,47 +28,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 09, 2013 at 09:12:37AM +1000, Michael Neuling wrote:
-> Anton Blanchard <anton@samba.org> wrote:
-> 
-> > 
-> > Hi,
-> > 
-> > > The CONFIG_VIRTUALIZATION disabling should be done in the Kconfig not
-> > > here. 
-> > > 
-> > > I'm not that keen on another defconfig.  benh is already talking about
-> > > having a powernv defconfig.  I'm worried we are going to fragment the
-> > > defconfigs.  If you want something special like LE, then change the
-> > > default one.
-> > 
-> > I agree we don't want machine specific defconfigs, but I think it makes
-> > sense to have ones that cover the key options that conflict. I'm
-> > thinking 32bit, 64bit, 64bit BookE, 64bit LE etc.
-> > 
-> > One bonus is if we have a smaller set of defconfigs we might actually
-> > get better testing. I have no idea which 32bit defconfigs I should test
-> > for example, and I'm not going to test them all!
-> 
-> FWIW, I test with these configs and it seems to catch most of 32/64 bit,
-> SMP/UP, differnt MMU issues:
-> 
->   pseries_defconfig 
->   ppc64_defconfig 
->   ppc64e_defconfig 
->   pmac32_defconfig
->   ppc44x_defconfig 
->   ppc6xx_defconfig 
->   mpc85xx_smp_defconfig
->   mpc85xx_defconfig 
->   chroma_defconfig 
+On 08/09/2013 08:15 AM, Anton Vorontsov wrote:
+> On Wed, Jul 31, 2013 at 02:25:25PM +0800, Haijun Zhang wrote:
+>> Add function to support get voltage from device-tree.
+>> If there are voltage-range specified in device-tree node, this function
+>> will parse it and return the avail voltage mask.
+>>
+>> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+>> ---
+>> changes for v2:
+>> 	- Update the parameters of function
+>>
+>>   drivers/mmc/core/core.c  | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+>>   include/linux/mmc/core.h |  1 +
+>>   2 files changed, 47 insertions(+)
+>>
+>> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+>> index 49a5bca..ce9c957 100644
+>> --- a/drivers/mmc/core/core.c
+>> +++ b/drivers/mmc/core/core.c
+>> @@ -27,6 +27,7 @@
+>>   #include <linux/fault-inject.h>
+>>   #include <linux/random.h>
+>>   #include <linux/slab.h>
+>> +#include <linux/of.h>
+>>   
+>>   #include <linux/mmc/card.h>
+>>   #include <linux/mmc/host.h>
+>> @@ -1196,6 +1197,51 @@ u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max)
+>>   }
+>>   EXPORT_SYMBOL(mmc_vddrange_to_ocrmask);
+>>   
+>> +#ifdef CONFIG_OF
+>> +
+>> +/*
+> This is not kernel-doc formatted comment for the function.. it should
+> start with /**...
+>
+>> + * mmc_of_parse_voltage - return mask of supported voltages
+>> + * @np: The device node need to be parsed.
+>> + *
+>> + * 1. Return zero: voltage-ranges unspecified in device-tree.
+>> + * 2. Return negative errno: voltage-range is invalid.
+> This doesn't seem right... the function returns the unsigned mask... You
+> can change the prototype of this func to something like this:
+>
+> int mmc_of_parse_voltage(struct device_node *np, u32 *mask);
+>
+> So the function will fill the mask and return 0 on success, and will
+> return negtive errno on errors.
+Thanks, Anton.
+I'll correct the return prototype of the function.
+In case voltage unspecified in device node is not an error in my 
+platform. So i hope to reserve the zero as unspecified case and give an 
+prompt, an available value in case success, negative errno in case 
+error. It's easy to figure out the root cause.
 
->   ps3_defconfig 
->   celleb_defconfig
+>> + * 3. Return ocr_mask: a mask of voltages that parse from device-tree
+>> + * node can be provided to MMC/SD/SDIO devices.
+>> + */
+>> +
+> No need for this empty line...
+>
+>> +u32 mmc_of_parse_voltage(struct device_node *np)
+>> +{
+>> +	const u32 *voltage_ranges;
+>> +	int num_ranges, i;
+>> +	u32 ocr_mask = 0;
+>> +
+>> +	voltage_ranges = of_get_property(np, "voltage-ranges", &num_ranges);
+>> +	num_ranges = num_ranges / sizeof(*voltage_ranges) / 2;
+>> +	if (!voltage_ranges || !num_ranges) {
+>> +		pr_info("%s: voltage-ranges unspecified\n", np->full_name);
+>> +		return 0;
+>> +	}
+>> +
+>> +	for (i = 0; i < num_ranges; i++) {
+>> +		const int j = i * 2;
+>> +		u32 mask;
+>> +
+>> +		mask = mmc_vddrange_to_ocrmask(be32_to_cpu(voltage_ranges[j]),
+>> +				be32_to_cpu(voltage_ranges[j + 1]));
+> You lost some [pretty] formatting to line up the two arguments. :)
+I'll correct these. Thanks.
+>> +		if (!mask) {
+>> +			pr_err("%s: voltage-range #%d is invalid\n",
+>> +				np->full_name, i);
+>> +			return -EINVAL;
+>> +		}
+>> +		ocr_mask |= mask;
+>> +	}
+>> +
+>> +	return ocr_mask;
+>> +}
+>> +EXPORT_SYMBOL(mmc_of_parse_voltage);
+>> +
+>> +#endif /* CONFIG_OF */
+>> +
+>>   #ifdef CONFIG_REGULATOR
+>>   
+>>   /**
+>> diff --git a/include/linux/mmc/core.h b/include/linux/mmc/core.h
+>> index 443243b..e3f8fe3 100644
+>> --- a/include/linux/mmc/core.h
+>> +++ b/include/linux/mmc/core.h
+>> @@ -209,5 +209,6 @@ static inline void mmc_claim_host(struct mmc_host *host)
+>>   }
+>>   
+>>   extern u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max);
+>> +extern u32 mmc_of_parse_voltage(struct device_node *np);
+> You need to add a 'struct device_node;' forward-declaration, otherwise
+> non-OF code might fail to compile...
+I'll move of.h from core.c to core.h
+>
+> Thanks,
+>
+> Anton
+>
 
-I think cell_defconfig pretty much covers these too, and also gets you
-coverage of the IBM blades.
 
-And add randconfig too :)
+-- 
+Thanks & Regards
 
-cheers
+Haijun
