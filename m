@@ -1,31 +1,19 @@
-Return-Path: <thomas.petazzoni@free-electrons.com>
-Received: from mail.free-electrons.com (top.free-electrons.com [176.31.233.9])
- by ozlabs.org (Postfix) with ESMTP id 719312C00B7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 06:27:30 +1000 (EST)
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-To: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Rob Herring <rob.herring@calxeda.com>,
- Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>,
- Andrew Lunn <andrew@lunn.ch>,
- Gregory Clement <gregory.clement@free-electrons.com>
-Subject: [PATCHv9 02/10] PCI: remove ARCH_SUPPORTS_MSI kconfig option
-Date: Fri,  9 Aug 2013 22:27:07 +0200
-Message-Id: <1376080035-29344-3-git-send-email-thomas.petazzoni@free-electrons.com>
-In-Reply-To: <1376080035-29344-1-git-send-email-thomas.petazzoni@free-electrons.com>
-References: <1376080035-29344-1-git-send-email-thomas.petazzoni@free-electrons.com>
-Cc: Lior Amsalem <alior@marvell.com>, linux-mips@linux-mips.org,
- linux-ia64@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Chris Metcalf <cmetcalf@tilera.com>,
- linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
- Ralf Baechle <ralf@linux-mips.org>, Maen Suleiman <maen@marvell.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 288CA2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 09:47:11 +1000 (EST)
+Subject: Re: Build errors on mainline kernel
+Mime-Version: 1.0 (Apple Message framework v1283)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20130809182446.GA26711@us.ibm.com>
+Date: Fri, 9 Aug 2013 18:47:04 -0500
+Message-Id: <EA801718-CA2E-4F85-AF6B-29119911038E@kernel.crashing.org>
+References: <20130809182446.GA26711@us.ibm.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,170 +23,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have weak versions for each of the PCI MSI architecture
-functions, we can actually build the MSI support for all platforms,
-regardless of whether they provide or not architecture-specific
-versions of those functions. For this reason, the ARCH_SUPPORTS_MSI
-hidden kconfig boolean becomes useless, and this patch gets rid of it.
 
-Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Tested-by: Daniel Price <daniel.price@gmail.com>
-Tested-by: Thierry Reding <thierry.reding@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux390@de.ibm.com
-Cc: linux-s390@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: x86@kernel.org
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: linux-ia64@vger.kernel.org
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org
-Cc: David S. Miller <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org
-Cc: Chris Metcalf <cmetcalf@tilera.com>
----
- arch/arm/Kconfig     | 1 -
- arch/ia64/Kconfig    | 1 -
- arch/mips/Kconfig    | 2 --
- arch/powerpc/Kconfig | 1 -
- arch/s390/Kconfig    | 1 -
- arch/sparc/Kconfig   | 1 -
- arch/tile/Kconfig    | 1 -
- arch/x86/Kconfig     | 1 -
- drivers/pci/Kconfig  | 4 ----
- 9 files changed, 13 deletions(-)
+On Aug 9, 2013, at 1:24 PM, Sukadev Bhattiprolu wrote:
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 37c0f4e..41b6c96 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -441,7 +441,6 @@ config ARCH_NETX
- config ARCH_IOP13XX
- 	bool "IOP13xx-based"
- 	depends on MMU
--	select ARCH_SUPPORTS_MSI
- 	select CPU_XSC3
- 	select NEED_MACH_MEMORY_H
- 	select NEED_RET_TO_USER
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 5a768ad..098602b 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -9,7 +9,6 @@ config IA64
- 	select PCI if (!IA64_HP_SIM)
- 	select ACPI if (!IA64_HP_SIM)
- 	select PM if (!IA64_HP_SIM)
--	select ARCH_SUPPORTS_MSI
- 	select HAVE_UNSTABLE_SCHED_CLOCK
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index c3abed3..01b5f5a 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -726,7 +726,6 @@ config CAVIUM_OCTEON_SOC
- 	select SYS_HAS_CPU_CAVIUM_OCTEON
- 	select SWAP_IO_SPACE
- 	select HW_HAS_PCI
--	select ARCH_SUPPORTS_MSI
- 	select ZONE_DMA32
- 	select USB_ARCH_HAS_OHCI
- 	select USB_ARCH_HAS_EHCI
-@@ -762,7 +761,6 @@ config NLM_XLR_BOARD
- 	select CEVT_R4K
- 	select CSRC_R4K
- 	select IRQ_CPU
--	select ARCH_SUPPORTS_MSI
- 	select ZONE_DMA32 if 64BIT
- 	select SYNC_R4K
- 	select SYS_HAS_EARLY_PRINTK
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 3bf72cd..183a165 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -727,7 +727,6 @@ config PCI
- 	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx && !GAMECUBE_COMMON
- 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
--	select ARCH_SUPPORTS_MSI
- 	select GENERIC_PCI_IOMAP
- 	help
- 	  Find out whether your system includes a PCI bus. PCI is the name of
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 22f75b5..e9982a3 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -428,7 +428,6 @@ menuconfig PCI
- 	bool "PCI support"
- 	default n
- 	depends on 64BIT
--	select ARCH_SUPPORTS_MSI
- 	select PCI_MSI
- 	help
- 	  Enable PCI support.
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index a00cbd3..1570ad2 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -52,7 +52,6 @@ config SPARC32
- 
- config SPARC64
- 	def_bool 64BIT
--	select ARCH_SUPPORTS_MSI
- 	select HAVE_FUNCTION_TRACER
- 	select HAVE_FUNCTION_GRAPH_TRACER
- 	select HAVE_FUNCTION_GRAPH_FP_TEST
-diff --git a/arch/tile/Kconfig b/arch/tile/Kconfig
-index 24565a7..74dff90 100644
---- a/arch/tile/Kconfig
-+++ b/arch/tile/Kconfig
-@@ -380,7 +380,6 @@ config PCI
- 	select PCI_DOMAINS
- 	select GENERIC_PCI_IOMAP
- 	select TILE_GXIO_TRIO if TILEGX
--	select ARCH_SUPPORTS_MSI if TILEGX
- 	select PCI_MSI if TILEGX
- 	---help---
- 	  Enable PCI root complex support, so PCIe endpoint devices can
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index b32ebf9..5db62ef 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -2014,7 +2014,6 @@ menu "Bus options (PCI etc.)"
- config PCI
- 	bool "PCI support"
- 	default y
--	select ARCH_SUPPORTS_MSI if (X86_LOCAL_APIC && X86_IO_APIC)
- 	---help---
- 	  Find out whether you have a PCI motherboard. PCI is the name of a
- 	  bus system, i.e. the way the CPU talks to the other stuff inside
-diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
-index 81944fb..b6a99f7 100644
---- a/drivers/pci/Kconfig
-+++ b/drivers/pci/Kconfig
-@@ -1,13 +1,9 @@
- #
- # PCI configuration
- #
--config ARCH_SUPPORTS_MSI
--	bool
--
- config PCI_MSI
- 	bool "Message Signaled Interrupts (MSI and MSI-X)"
- 	depends on PCI
--	depends on ARCH_SUPPORTS_MSI
- 	help
- 	   This allows device drivers to enable MSI (Message Signaled
- 	   Interrupts).  Message Signaled Interrupts enable a device to
--- 
-1.8.1.2
+>=20
+> I am tryng to compile clean mainline kernel with a few different =
+config files
+> and running into errors with some configs.
+>=20
+> I am building on RHEL6.3 with following binaries:
+>=20
+> 	gcc (GCC) 4.4.6 20120305 (Red Hat 4.4.6-4)
+> 	GNU ld version 2.20.51.0.2-5.34.el6 20100205
+> 	binutils-2.20.51.0.2-5.34.el6.ppc64
+> 	binutils-devel-2.20.51.0.2-5.34.el6.ppc64
+>=20
+> I am getting the error with several files and configs, but other =
+configs=20
+> (eg: ppc64_defconfig, pmac32_defconfig) build fine.
+>=20
+> For instance, with latest mainline kernel (commit 6c2580c) and =
+ppc64_defconfig, I get:
+>=20
+> 	make O=3Dlinux-obj mrproper
+> 	make O=3Dlinux-obj ppc64e_defconfig
+> 	make O=3Dlinux-obj arch/powerpc/platforms/85xx/smp.o
+> 	  ...
+>=20
+> 	CC      arch/powerpc/platforms/85xx/smp.o
+> 	{standard input}: Assembler messages:
+> 	{standard input}:240: Error: junk at end of line: `1'
+> 	make[2]: *** [arch/powerpc/platforms/85xx/smp.o] Error 1
+> 	make[1]: *** [arch/powerpc/platforms/85xx/smp.o] Error 2
+>=20
+> Not sure if 240 is a line number in smp.c, but looking through the =
+function
+> containing line 240, I was able to compile the smp.c after commenting =
+out
+> the two WARN_ON() messages.
+>=20
+> diff --git a/arch/powerpc/platforms/85xx/smp.c =
+b/arch/powerpc/platforms/85xx/smp
+> index 5ced4f5..9705850 100644
+> --- a/arch/powerpc/platforms/85xx/smp.c
+> +++ b/arch/powerpc/platforms/85xx/smp.c
+> @@ -151,8 +151,10 @@ static int smp_85xx_kick_cpu(int nr)
+>        int ioremappable;
+>        int ret =3D 0;
+>=20
+> +#if 0
+>        WARN_ON(nr < 0 || nr >=3D NR_CPUS);
+>        WARN_ON(hw_cpu < 0 || hw_cpu >=3D NR_CPUS);
+> +#endif
+>=20
+>        pr_debug("smp_85xx_kick_cpu: kick CPU #%d\n", nr);
+>=20
+> ---
+>=20
+> The pre-processor output for the first WARN_ON() is:
+>=20
+> ---
+> ({ int __ret_warn_on =3D !!(nr < 0 || nr >=3D 32); if =
+(__builtin_constant_p(__ret_warn_on)) { if (__ret_warn_on) do { __asm__ =
+__volatile__( "1:    twi 31,0,0\n" ".section __bug_table,\"a\"\n" "2:\t" =
+".llong" " " "1b, %0\n" "\t.short %1, %2\n" ".org 2b+%3\n" ".previous\n" =
+: : "i" ("/root/tmp/linux.git/arch/powerpc/platforms/85xx/smp.c"), "i" =
+(154), "i" (((1 << 0) | ((9) << 8))), "i" (sizeof(struct bug_entry))); } =
+while (0); } else { __asm__ __volatile__( "1:      ""tdnei" " ""   =
+%4,0\n" ".section __bug_table,\"a\"\n" "2:\t" ".llong" " " "1b, %0\n" =
+"\t.short %1, %2\n" ".org 2b+%3\n" ".previous\n" : : "i" =
+("/root/tmp/linux.git/arch/powerpc/platforms/85xx/smp.c"), "i" (154), =
+"i" (((1 << 0) | ((9) << 8))), "i" (sizeof(struct bug_entry)), "r" =
+(__ret_warn_on)); } __builtin_expect(!!(__ret_warn_on), 0); });
+>=20
+> ---
+>=20
+>=20
+> Should I be doing something different to build with these configs ?
+>=20
+
+Hmm, that is odd.
+
+How about doing:
+
+$ make V=3D1
+
+so we can see what compiler flags are being passed around.
+
+- k=
