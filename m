@@ -1,14 +1,25 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 63/63] powerpc: Add pseries_le_defconfig
-In-reply-to: <20130808175324.735c1575@kryten>
-References: <1375804940-22050-1-git-send-email-anton@samba.org>
- <1375804940-22050-64-git-send-email-anton@samba.org>
- <2419.1375831860@ale.ozlabs.ibm.com> <20130808175324.735c1575@kryten>
-Date: Fri, 09 Aug 2013 09:12:37 +1000
-Message-ID: <25736.1376003557@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <anton@scarybugs.org>
+Received: from mail-pb0-f43.google.com (mail-pb0-f43.google.com
+ [209.85.160.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 062BD2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 10:12:48 +1000 (EST)
+Received: by mail-pb0-f43.google.com with SMTP id md4so2967994pbc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Aug 2013 17:12:45 -0700 (PDT)
+Sender: Anton Vorontsov <anton@scarybugs.org>
+Date: Thu, 8 Aug 2013 17:08:05 -0700
+From: Anton Vorontsov <anton@enomsg.org>
+To: Haijun Zhang <Haijun.Zhang@freescale.com>
+Subject: Re: [PATCH] mmc:of_spi: Update the code of getting voltage-ranges
+Message-ID: <20130809000805.GA7427@lizard.mcd01528.sjc.wayport.net>
+References: <1375251927-3330-1-git-send-email-Haijun.Zhang@freescale.com>
+ <1375251927-3330-3-git-send-email-Haijun.Zhang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1375251927-3330-3-git-send-email-Haijun.Zhang@freescale.com>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org, cjb@laptop.org,
+ linux-mmc@vger.kernel.org, AFLEMING@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,40 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard <anton@samba.org> wrote:
+On Wed, Jul 31, 2013 at 02:25:27PM +0800, Haijun Zhang wrote:
+>  	int num_ranges;
+> +	u32 ocr_mask;
+>  	int i;
+>  	int ret = -EINVAL;
+>  
+> @@ -102,26 +103,11 @@ struct mmc_spi_platform_data *mmc_spi_get_pdata(struct spi_device *spi)
+>  	if (!oms)
+>  		return NULL;
+>  
+> -	voltage_ranges = of_get_property(np, "voltage-ranges", &num_ranges);
+> -	num_ranges = num_ranges / sizeof(*voltage_ranges) / 2;
+> -	if (!voltage_ranges || !num_ranges) {
+> -		dev_err(dev, "OF: voltage-ranges unspecified\n");
+> +	ocr_mask = mmc_of_parse_voltage(np);
+> +	if (ocr_mask <= 0)
 
-> 
-> Hi,
-> 
-> > The CONFIG_VIRTUALIZATION disabling should be done in the Kconfig not
-> > here. 
-> > 
-> > I'm not that keen on another defconfig.  benh is already talking about
-> > having a powernv defconfig.  I'm worried we are going to fragment the
-> > defconfigs.  If you want something special like LE, then change the
-> > default one.
-> 
-> I agree we don't want machine specific defconfigs, but I think it makes
-> sense to have ones that cover the key options that conflict. I'm
-> thinking 32bit, 64bit, 64bit BookE, 64bit LE etc.
-> 
-> One bonus is if we have a smaller set of defconfigs we might actually
-> get better testing. I have no idea which 32bit defconfigs I should test
-> for example, and I'm not going to test them all!
+'< 0' check for an unsigned type? :) I'd write just !ocr_mask...
 
-FWIW, I test with these configs and it seems to catch most of 32/64 bit,
-SMP/UP, differnt MMU issues:
+But other than that the patch looks good to me...
 
-  pseries_defconfig 
-  ppc64_defconfig 
-  ppc64e_defconfig 
-  pmac32_defconfig
-  ppc44x_defconfig 
-  ppc6xx_defconfig 
-  mpc85xx_smp_defconfig
-  mpc85xx_defconfig 
-  chroma_defconfig 
-  ps3_defconfig 
-  celleb_defconfig
+Reviewed-by: Anton Vorontsov <anton@enomsg.org>
 
-Mikey
+Thanks!
+
+>  		goto err_ocr;
+> -	}
+> -
+> -	for (i = 0; i < num_ranges; i++) {
+> -		const int j = i * 2;
+> -		u32 mask;
+>  
+> -		mask = mmc_vddrange_to_ocrmask(be32_to_cpu(voltage_ranges[j]),
+> -					       be32_to_cpu(voltage_ranges[j + 1]));
+> -		if (!mask) {
+> -			ret = -EINVAL;
+> -			dev_err(dev, "OF: voltage-range #%d is invalid\n", i);
+> -			goto err_ocr;
+> -		}
+> -		oms->pdata.ocr_mask |= mask;
+> -	}
+> +	oms->pdata.ocr_mask |= ocr_mask;
+>  
+>  	for (i = 0; i < ARRAY_SIZE(oms->gpios); i++) {
+>  		enum of_gpio_flags gpio_flags;
+> -- 
+> 1.8.0
