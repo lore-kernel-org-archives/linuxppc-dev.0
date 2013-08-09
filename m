@@ -1,24 +1,14 @@
-Return-Path: <B42677@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0248.outbound.messaging.microsoft.com [213.199.154.248])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BAD332C00C0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 13:33:16 +1000 (EST)
-Message-ID: <52046347.80407@freescale.com>
-Date: Fri, 9 Aug 2013 11:34:31 +0800
-From: Zhang Haijun <B42677@freescale.com>
-MIME-Version: 1.0
-To: Anton Vorontsov <anton@enomsg.org>
-Subject: Re: [PATCH 1/3 V2] mmc:core: parse voltage from device-tree
-References: <1375251927-3330-1-git-send-email-Haijun.Zhang@freescale.com>
- <20130809001540.GB7427@lizard.mcd01528.sjc.wayport.net>
-In-Reply-To: <20130809001540.GB7427@lizard.mcd01528.sjc.wayport.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linux-mmc@vger.kernel.org, AFLEMING@freescale.com, scottwood@freescale.com,
- cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
- Haijun Zhang <Haijun.Zhang@freescale.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v3 2/4] powerpc: Add new save_tar() register function.
+In-reply-to: <1375929237-19944-2-git-send-email-mikey@neuling.org>
+References: <1375929237-19944-1-git-send-email-mikey@neuling.org>
+ <25550.1375872955@ale.ozlabs.ibm.com>
+ <1375929237-19944-2-git-send-email-mikey@neuling.org>
+Date: Fri, 09 Aug 2013 13:43:47 +1000
+Message-ID: <7325.1376019827@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,126 +18,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/09/2013 08:15 AM, Anton Vorontsov wrote:
-> On Wed, Jul 31, 2013 at 02:25:25PM +0800, Haijun Zhang wrote:
->> Add function to support get voltage from device-tree.
->> If there are voltage-range specified in device-tree node, this function
->> will parse it and return the avail voltage mask.
->>
->> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
->> ---
->> changes for v2:
->> 	- Update the parameters of function
->>
->>   drivers/mmc/core/core.c  | 46 ++++++++++++++++++++++++++++++++++++++++++++++
->>   include/linux/mmc/core.h |  1 +
->>   2 files changed, 47 insertions(+)
->>
->> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
->> index 49a5bca..ce9c957 100644
->> --- a/drivers/mmc/core/core.c
->> +++ b/drivers/mmc/core/core.c
->> @@ -27,6 +27,7 @@
->>   #include <linux/fault-inject.h>
->>   #include <linux/random.h>
->>   #include <linux/slab.h>
->> +#include <linux/of.h>
->>   
->>   #include <linux/mmc/card.h>
->>   #include <linux/mmc/host.h>
->> @@ -1196,6 +1197,51 @@ u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max)
->>   }
->>   EXPORT_SYMBOL(mmc_vddrange_to_ocrmask);
->>   
->> +#ifdef CONFIG_OF
->> +
->> +/*
-> This is not kernel-doc formatted comment for the function.. it should
-> start with /**...
->
->> + * mmc_of_parse_voltage - return mask of supported voltages
->> + * @np: The device node need to be parsed.
->> + *
->> + * 1. Return zero: voltage-ranges unspecified in device-tree.
->> + * 2. Return negative errno: voltage-range is invalid.
-> This doesn't seem right... the function returns the unsigned mask... You
-> can change the prototype of this func to something like this:
->
-> int mmc_of_parse_voltage(struct device_node *np, u32 *mask);
->
-> So the function will fill the mask and return 0 on success, and will
-> return negtive errno on errors.
-Thanks, Anton.
-I'll correct the return prototype of the function.
-In case voltage unspecified in device node is not an error in my 
-platform. So i hope to reserve the zero as unspecified case and give an 
-prompt, an available value in case success, negative errno in case 
-error. It's easy to figure out the root cause.
+powerpc: Add new save_tar() register function.
 
->> + * 3. Return ocr_mask: a mask of voltages that parse from device-tree
->> + * node can be provided to MMC/SD/SDIO devices.
->> + */
->> +
-> No need for this empty line...
->
->> +u32 mmc_of_parse_voltage(struct device_node *np)
->> +{
->> +	const u32 *voltage_ranges;
->> +	int num_ranges, i;
->> +	u32 ocr_mask = 0;
->> +
->> +	voltage_ranges = of_get_property(np, "voltage-ranges", &num_ranges);
->> +	num_ranges = num_ranges / sizeof(*voltage_ranges) / 2;
->> +	if (!voltage_ranges || !num_ranges) {
->> +		pr_info("%s: voltage-ranges unspecified\n", np->full_name);
->> +		return 0;
->> +	}
->> +
->> +	for (i = 0; i < num_ranges; i++) {
->> +		const int j = i * 2;
->> +		u32 mask;
->> +
->> +		mask = mmc_vddrange_to_ocrmask(be32_to_cpu(voltage_ranges[j]),
->> +				be32_to_cpu(voltage_ranges[j + 1]));
-> You lost some [pretty] formatting to line up the two arguments. :)
-I'll correct these. Thanks.
->> +		if (!mask) {
->> +			pr_err("%s: voltage-range #%d is invalid\n",
->> +				np->full_name, i);
->> +			return -EINVAL;
->> +		}
->> +		ocr_mask |= mask;
->> +	}
->> +
->> +	return ocr_mask;
->> +}
->> +EXPORT_SYMBOL(mmc_of_parse_voltage);
->> +
->> +#endif /* CONFIG_OF */
->> +
->>   #ifdef CONFIG_REGULATOR
->>   
->>   /**
->> diff --git a/include/linux/mmc/core.h b/include/linux/mmc/core.h
->> index 443243b..e3f8fe3 100644
->> --- a/include/linux/mmc/core.h
->> +++ b/include/linux/mmc/core.h
->> @@ -209,5 +209,6 @@ static inline void mmc_claim_host(struct mmc_host *host)
->>   }
->>   
->>   extern u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max);
->> +extern u32 mmc_of_parse_voltage(struct device_node *np);
-> You need to add a 'struct device_node;' forward-declaration, otherwise
-> non-OF code might fail to compile...
-I'll move of.h from core.c to core.h
->
-> Thanks,
->
-> Anton
->
+Add save_tar() function to save the Target Address Register (TAR).  This will
+be used in a future patch to save the TAR earlier than it currently is.
 
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: <stable@vger.kernel.org>
+---
+v3: remove whitespace screw age noticed by sfr
 
--- 
-Thanks & Regards
-
-Haijun
+diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+index 49a13e0..294c2ce 100644
+--- a/arch/powerpc/include/asm/switch_to.h
++++ b/arch/powerpc/include/asm/switch_to.h
+@@ -15,6 +15,15 @@ extern struct task_struct *__switch_to(struct task_struct *,
+ struct thread_struct;
+ extern struct task_struct *_switch(struct thread_struct *prev,
+ 				   struct thread_struct *next);
++#ifdef CONFIG_PPC_BOOK3S_64
++static inline void save_tar(struct thread_struct *prev)
++{
++	if (cpu_has_feature(CPU_FTR_ARCH_207S))
++		prev->tar = mfspr(SPRN_TAR);
++}
++#else
++static inline void save_tar(struct thread_struct *prev) {}
++#endif
+ 
+ extern void giveup_fpu(struct task_struct *);
+ extern void load_up_fpu(void);
