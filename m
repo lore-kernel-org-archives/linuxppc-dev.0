@@ -1,20 +1,36 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9C0B42C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 00:48:28 +1000 (EST)
-Subject: Re: [PATCH 1/3 V2] mmc:core: parse voltage from device-tree
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1375251927-3330-1-git-send-email-Haijun.Zhang@freescale.com>
-Date: Fri, 9 Aug 2013 09:48:09 -0500
-Message-Id: <733059D3-105A-437B-B330-763D2C1859B2@kernel.crashing.org>
-References: <1375251927-3330-1-git-send-email-Haijun.Zhang@freescale.com>
-To: Haijun Zhang <Haijun.Zhang@freescale.com>
-Cc: linux-mmc@vger.kernel.org, AFLEMING@freescale.com, cbouatmailru@gmail.com,
- scottwood@freescale.com, cjb@laptop.org, linuxppc-dev@lists.ozlabs.org
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BCABA2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 01:29:31 +1000 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Fri, 9 Aug 2013 20:53:15 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 795543940053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 20:59:15 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r79FTJ7Z40698108
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Aug 2013 20:59:19 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r79FTMUJ031098
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Aug 2013 20:59:22 +0530
+Received: from [9.41.105.123] ([9.41.105.123])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ r79FTJYx030844
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Aug 2013 20:59:20 +0530
+Message-ID: <52050ACE.4090001@linux.vnet.ibm.com>
+Date: Fri, 09 Aug 2013 10:29:18 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/2] Correct memory hotplug remove
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +40,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Memory hotplug on Power is currently broken, these two patches correct the
+issues needed to get memory hotplug working again.
 
-On Jul 31, 2013, at 1:25 AM, Haijun Zhang wrote:
+This update marks memory resources that are added at boot time are also
+marked as busy. It sounds a bit counter intuitive but the core mm code will
+not free memory resources if they are not marked as busy.
 
-> Add function to support get voltage from device-tree.
-> If there are voltage-range specified in device-tree node, this =
-function
-> will parse it and return the avail voltage mask.
->=20
-> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
-> ---
-> changes for v2:
-> 	- Update the parameters of function
->=20
-> drivers/mmc/core/core.c  | 46 =
-++++++++++++++++++++++++++++++++++++++++++++++
-> include/linux/mmc/core.h |  1 +
-> 2 files changed, 47 insertions(+)
+This also ensures that bootmem memory is is registered at boot time. A
+previous commit (46723bfa540...) that enabled memory hotplug remove with
+SPARSE_VMEMMAP enabled broke this on Power.
 
-There should be a device tree binding spec update to go with this patch =
-series.
+Additional patches to follow to correct the current memory hotplug
+implementation on Power.
 
-- k=
+Nathan Fontenot
+---
+
+ arch/powerpc/mm/mem.c             |    2 +-
+ powerpc/arch/powerpc/mm/init_64.c |    6 ++++++
+ powerpc/arch/powerpc/mm/mem.c     |    9 +++++++++
+ powerpc/mm/Kconfig                |    2 +-
+ 4 files changed, 17 insertions(+), 2 deletions(-)
