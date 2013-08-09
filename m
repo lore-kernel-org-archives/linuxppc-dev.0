@@ -1,14 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 5/5] powerpc/tm: Fix context switching TAR, PPR and DSCR SPRs
-Date: Fri,  9 Aug 2013 17:29:31 +1000
-Message-Id: <1376033371-28713-5-git-send-email-mikey@neuling.org>
-In-Reply-To: <1376033371-28713-1-git-send-email-mikey@neuling.org>
-References: <1376033371-28713-1-git-send-email-mikey@neuling.org>
-In-Reply-To: <25550.1375872955@ale.ozlabs.ibm.com>
-References: <25550.1375872955@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B02012C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 17:57:15 +1000 (EST)
+Message-ID: <1376035026.32100.24.camel@pasglop>
+Subject: Re: [PATCH v2] powerpc/eeh: powerpc/eeh: Fix undefined variable
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Date: Fri, 09 Aug 2013 17:57:06 +1000
+In-Reply-To: <1375855279-28592-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+References: <1375855279-28592-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, shangw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,97 +23,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a transaction is rolled back, the Target Address Register (TAR), Processor
-Priority Register (PPR) and Data Stream Control Register (DSCR) should be
-restored to the checkpointed values before the transaction began.  Any changes
-to these SPRs inside the transaction should not be visible in the abort
-handler.
+On Wed, 2013-08-07 at 02:01 -0400, Mike Qiu wrote:
+> 'pe_no' hasn't been defined, it should be an typo error,
+> it should be 'frozen_pe_no'.
 
-Currently Linux doesn't save or restore the checkpointed TAR, PPR or DSCR.  If
-we preempt a processes inside a transaction which has modified any of these, on
-process restore, that same transaction may be aborted we but we won't see the
-checkpointed versions of these SPRs.
+For some reason I can't find v3 of this in my mailbox, but it's
+on patchwork so I tried applying it and it breaks the build
+because %d doesn't work for a u64. Have you even tested it ?
 
-This adds checkpointed versions of these SPRs to the thread_struct and adds the
-save/restore of these three SPRs to the treclaim/trechkpt code.
+Ben.
 
-Without this if any of these SPRs are modified during a transaction, users may
-incorrectly see a speculated SPR value even if the transaction is aborted.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Cc: <stable@vger.kernel.org> [v3.10]
----
- arch/powerpc/include/asm/processor.h |  4 ++++
- arch/powerpc/kernel/asm-offsets.c    |  3 +++
- arch/powerpc/kernel/tm.S             | 20 ++++++++++++++++++++
- 3 files changed, 27 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 47a35b0..e378ccc 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -247,6 +247,10 @@ struct thread_struct {
- 	unsigned long	tm_orig_msr;	/* Thread's MSR on ctx switch */
- 	struct pt_regs	ckpt_regs;	/* Checkpointed registers */
- 
-+	unsigned long	tm_tar;
-+	unsigned long	tm_ppr;
-+	unsigned long	tm_dscr;
-+
- 	/*
- 	 * Transactional FP and VSX 0-31 register set.
- 	 * NOTE: the sense of these is the opposite of the integer ckpt_regs!
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index c7e8afc..8207459 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -138,6 +138,9 @@ int main(void)
- 	DEFINE(THREAD_TM_TFHAR, offsetof(struct thread_struct, tm_tfhar));
- 	DEFINE(THREAD_TM_TEXASR, offsetof(struct thread_struct, tm_texasr));
- 	DEFINE(THREAD_TM_TFIAR, offsetof(struct thread_struct, tm_tfiar));
-+	DEFINE(THREAD_TM_TAR, offsetof(struct thread_struct, tm_tar));
-+	DEFINE(THREAD_TM_PPR, offsetof(struct thread_struct, tm_ppr));
-+	DEFINE(THREAD_TM_DSCR, offsetof(struct thread_struct, tm_dscr));
- 	DEFINE(PT_CKPT_REGS, offsetof(struct thread_struct, ckpt_regs));
- 	DEFINE(THREAD_TRANSACT_VR0, offsetof(struct thread_struct,
- 					 transact_vr[0]));
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index 51be8fb..0554d1f 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -233,6 +233,16 @@ dont_backup_fp:
- 	std	r5, _CCR(r7)
- 	std	r6, _XER(r7)
- 
-+
-+	/* ******************** TAR, PPR, DSCR ********** */
-+	mfspr	r3, SPRN_TAR
-+	mfspr	r4, SPRN_PPR
-+	mfspr	r5, SPRN_DSCR
-+
-+	std	r3, THREAD_TM_TAR(r12)
-+	std	r4, THREAD_TM_PPR(r12)
-+	std	r5, THREAD_TM_DSCR(r12)
-+
- 	/* MSR and flags:  We don't change CRs, and we don't need to alter
- 	 * MSR.
- 	 */
-@@ -347,6 +357,16 @@ dont_restore_fp:
- 	mtmsr	r6				/* FP/Vec off again! */
- 
- restore_gprs:
-+
-+	/* ******************** TAR, PPR, DSCR ********** */
-+	ld	r4, THREAD_TM_TAR(r3)
-+	ld	r5, THREAD_TM_PPR(r3)
-+	ld	r6, THREAD_TM_DSCR(r3)
-+
-+	mtspr	SPRN_TAR,	r4
-+	mtspr	SPRN_PPR,	r5
-+	mtspr	SPRN_DSCR,	r6
-+
- 	/* ******************** CR,LR,CCR,MSR ********** */
- 	ld	r3, _CTR(r7)
- 	ld	r4, _LINK(r7)
--- 
-1.8.1.2
+> Also '__func__' has missed iz IODA_EEH_DBG(),
+> 
+> For safety reasons, use pr_info() directly, instead
+> of use IODA_EEH_DBG()
+> 
+> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/eeh-ioda.c | 22 ++++++++--------------
+>  1 file changed, 8 insertions(+), 14 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+> index 0cd1c4a..8bc19c8 100644
+> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+> @@ -36,13 +36,6 @@
+>  #include "powernv.h"
+>  #include "pci.h"
+>  
+> -/* Debugging option */
+> -#ifdef IODA_EEH_DBG_ON
+> -#define IODA_EEH_DBG(args...)	pr_info(args)
+> -#else
+> -#define IODA_EEH_DBG(args...)
+> -#endif
+> -
+>  static char *hub_diag = NULL;
+>  static int ioda_eeh_nb_init = 0;
+>  
+> @@ -823,17 +816,17 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+>  
+>  		/* If OPAL API returns error, we needn't proceed */
+>  		if (rc != OPAL_SUCCESS) {
+> -			IODA_EEH_DBG("%s: Invalid return value on "
+> -				     "PHB#%x (0x%lx) from opal_pci_next_error",
+> -				     __func__, hose->global_number, rc);
+> +			pr_info("%s: Invalid return value on "
+> +				"PHB#%x (0x%lx) from opal_pci_next_error",
+> +				__func__, hose->global_number, rc);
+>  			continue;
+>  		}
+>  
+>  		/* If the PHB doesn't have error, stop processing */
+>  		if (err_type == OPAL_EEH_NO_ERROR ||
+>  		    severity == OPAL_EEH_SEV_NO_ERROR) {
+> -			IODA_EEH_DBG("%s: No error found on PHB#%x\n",
+> -				     __func__, hose->global_number);
+> +			pr_info("%s: No error found on PHB#%x\n",
+> +				__func__, hose->global_number);
+>  			continue;
+>  		}
+>  
+> @@ -842,8 +835,9 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+>  		 * highest priority reported upon multiple errors on the
+>  		 * specific PHB.
+>  		 */
+> -		IODA_EEH_DBG("%s: Error (%d, %d, %d) on PHB#%x\n",
+> -			err_type, severity, pe_no, hose->global_number);
+> +		pr_info("%s: Error (%d, %d, %d) on PHB#%x\n",
+> +			__func__, err_type, severity,
+> +			frozen_pe_no, hose->global_number);
+>  		switch (err_type) {
+>  		case OPAL_EEH_IOC_ERROR:
+>  			if (severity == OPAL_EEH_SEV_IOC_DEAD) {
