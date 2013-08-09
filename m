@@ -1,19 +1,19 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Fri, 9 Aug 2013 13:21:06 +1000
+Date: Fri, 9 Aug 2013 13:23:53 +1000
 From: Michael Ellerman <michael@ellerman.id.au>
 To: Michael Neuling <mikey@neuling.org>
 Subject: Re: [PATCH 63/63] powerpc: Add pseries_le_defconfig
-Message-ID: <20130809032105.GA20970@concordia>
+Message-ID: <20130809032353.GB20970@concordia>
 References: <1375804940-22050-1-git-send-email-anton@samba.org>
  <1375804940-22050-64-git-send-email-anton@samba.org>
- <520357D8.2090502@linux.vnet.ibm.com>
- <15944.1375958991@ale.ozlabs.ibm.com>
+ <2419.1375831860@ale.ozlabs.ibm.com>
+ <20130808175324.735c1575@kryten>
+ <25736.1376003557@ale.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15944.1375958991@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+In-Reply-To: <25736.1376003557@ale.ozlabs.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,15 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 08, 2013 at 08:49:51PM +1000, Michael Neuling wrote:
-> > > +CONFIG_SCHED_SMT=y
-> > > +CONFIG_PPC_DENORMALISATION=y
-> > > +CONFIG_HOTPLUG_PCI=m
-> > Why the value "m" in the le_config file, when it is "y" in
-> > pseries_defconfig.
+On Fri, Aug 09, 2013 at 09:12:37AM +1000, Michael Neuling wrote:
+> Anton Blanchard <anton@samba.org> wrote:
 > 
-> We are out of sync already!?!?! *sigh* ;-)
+> > 
+> > Hi,
+> > 
+> > > The CONFIG_VIRTUALIZATION disabling should be done in the Kconfig not
+> > > here. 
+> > > 
+> > > I'm not that keen on another defconfig.  benh is already talking about
+> > > having a powernv defconfig.  I'm worried we are going to fragment the
+> > > defconfigs.  If you want something special like LE, then change the
+> > > default one.
+> > 
+> > I agree we don't want machine specific defconfigs, but I think it makes
+> > sense to have ones that cover the key options that conflict. I'm
+> > thinking 32bit, 64bit, 64bit BookE, 64bit LE etc.
+> > 
+> > One bonus is if we have a smaller set of defconfigs we might actually
+> > get better testing. I have no idea which 32bit defconfigs I should test
+> > for example, and I'm not going to test them all!
+> 
+> FWIW, I test with these configs and it seems to catch most of 32/64 bit,
+> SMP/UP, differnt MMU issues:
+> 
+>   pseries_defconfig 
+>   ppc64_defconfig 
+>   ppc64e_defconfig 
+>   pmac32_defconfig
+>   ppc44x_defconfig 
+>   ppc6xx_defconfig 
+>   mpc85xx_smp_defconfig
+>   mpc85xx_defconfig 
+>   chroma_defconfig 
 
-That's good, more coverage!
+>   ps3_defconfig 
+>   celleb_defconfig
+
+I think cell_defconfig pretty much covers these too, and also gets you
+coverage of the IBM blades.
+
+And add randconfig too :)
 
 cheers
