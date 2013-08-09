@@ -1,23 +1,24 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from fornost.hengli.com.au (ringil.hengli.com.au [178.18.16.133])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9651E2C00CF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 17:01:35 +1000 (EST)
-Date: Fri, 9 Aug 2013 16:30:03 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] drivers/crypto/nx: saves chaining value from
- co-processor
-Message-ID: <20130809063003.GB23506@gondor.apana.org.au>
-References: <1375917350.16050.14.camel@what-is-leg>
- <1376029504.32100.16.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1376029504.32100.16.camel@pasglop>
-Cc: Fionnuala Gunter <fin@linux.vnet.ibm.com>, mhcerri@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-crypto@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 3BBDF2C00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Aug 2013 17:16:35 +1000 (EST)
+Message-ID: <1376032572.32100.17.camel@pasglop>
+Subject: Re: [PATCH 3/8] Add all memory via sysfs probe interface at once
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Fri, 09 Aug 2013 17:16:12 +1000
+In-Reply-To: <52016047.5060903@linux.vnet.ibm.com>
+References: <51F01E06.6090800@linux.vnet.ibm.com>
+ <51F01EFB.6070207@linux.vnet.ibm.com> <20130802023259.GC1680@concordia>
+ <51FC04C2.70100@linux.vnet.ibm.com> <20130805031326.GB5347@concordia>
+ <52016047.5060903@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+ isimatu.yasuaki@jp.fujitsu.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 09, 2013 at 04:25:04PM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2013-08-07 at 18:15 -0500, Fionnuala Gunter wrote:
-> > This patch fixes a bug that is triggered when cts(cbc(aes)) is used with
-> > nx-crypto driver on input larger than 32 bytes.
-> > 
-> > The chaining value from co-processor was not being saved. This value is
-> > needed because it is used as the IV by cts(cbc(aes)).
-> > 
-> > Signed-off-by: Fionnuala Gunter <fin@linux.vnet.ibm.com>
-> > Reviewed-by: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
+On Tue, 2013-08-06 at 15:44 -0500, Nathan Fontenot wrote:
+> I am planning on pulling the first two patches and sending them out
+> separate from the patch set since they are really independent of the
+> rest of the patch series.
 > 
-> Herbert, I assume you will handle this along with all the other NX fixes
-> and I can safely take them out of linuxppc patchwork ?
+> The remaining code I will send out for review and inclusion in
+> linux-next so it can have the proper test time as you mentioned.
 
-Yes of course.
+Ping ? :-)
 
-Thanks,
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Cheers,
+Ben.
