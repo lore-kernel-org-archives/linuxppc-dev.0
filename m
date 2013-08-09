@@ -1,14 +1,12 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v3 2/4] powerpc: Add new save_tar() register function.
-In-reply-to: <1375929237-19944-2-git-send-email-mikey@neuling.org>
-References: <1375929237-19944-1-git-send-email-mikey@neuling.org>
- <25550.1375872955@ale.ozlabs.ibm.com>
- <1375929237-19944-2-git-send-email-mikey@neuling.org>
-Date: Fri, 09 Aug 2013 13:43:47 +1000
-Message-ID: <7325.1376019827@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Matt Evans <matt@ozlabs.org>
+Subject: [PATCH v2 1/3] powerpc: Rework setting up H/FSCR bit definitions
+In-reply-to: <1375687686-5633-1-git-send-email-mikey@neuling.org>
+References: <1375687686-5633-1-git-send-email-mikey@neuling.org>
+Date: Fri, 09 Aug 2013 13:46:06 +1000
+Message-ID: <7729.1376019966@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,33 +16,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc: Add new save_tar() register function.
+powerpc: Rework setting up H/FSCR bit definitions
 
-Add save_tar() function to save the Target Address Register (TAR).  This will
-be used in a future patch to save the TAR earlier than it currently is.
+This reworks the Facility Status and Control Regsiter (FSCR) config bit
+definitions so that we can access the bit numbers.  This will be useful when
+looking at the status in the facility unavailable interrupt.
+
+HFSCR and FSCR versions are the same, so reuse them.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
-Cc: <stable@vger.kernel.org>
 ---
-v3: remove whitespace screw age noticed by sfr
+v2: Fix bit numbers:
+  -#define FSCR_TM_LG     6
+  -#define FSCR_PM_LG     5
+  -#define FSCR_BHRB_LG   4
+  +#define FSCR_TM_LG     5
+  +#define FSCR_PM_LG     4
+  +#define FSCR_BHRB_LG   3
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 49a13e0..294c2ce 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -15,6 +15,15 @@ extern struct task_struct *__switch_to(struct task_struct *,
- struct thread_struct;
- extern struct task_struct *_switch(struct thread_struct *prev,
- 				   struct thread_struct *next);
-+#ifdef CONFIG_PPC_BOOK3S_64
-+static inline void save_tar(struct thread_struct *prev)
-+{
-+	if (cpu_has_feature(CPU_FTR_ARCH_207S))
-+		prev->tar = mfspr(SPRN_TAR);
-+}
-+#else
-+static inline void save_tar(struct thread_struct *prev) {}
-+#endif
- 
- extern void giveup_fpu(struct task_struct *);
- extern void load_up_fpu(void);
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index a6840e4..99222e2 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -254,19 +254,28 @@
+ #define SPRN_HRMOR	0x139	/* Real mode offset register */
+ #define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
+ #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
++/* HFSCR and FSCR bit numbers are the same */
++#define FSCR_TAR_LG	8	/* Enable Target Address Register */
++#define FSCR_EBB_LG	7	/* Enable Event Based Branching */
++#define FSCR_TM_LG	5	/* Enable Transactional Memory */
++#define FSCR_PM_LG	4	/* Enable prob/priv access to PMU SPRs */
++#define FSCR_BHRB_LG	3	/* Enable Branch History Rolling Buffer*/
++#define FSCR_DSCR_LG	2	/* Enable Data Stream Control Register */
++#define FSCR_VECVSX_LG	1	/* Enable VMX/VSX  */
++#define FSCR_FP_LG	0	/* Enable Floating Point */
+ #define SPRN_FSCR	0x099	/* Facility Status & Control Register */
+-#define   FSCR_TAR	(1 << (63-55)) /* Enable Target Address Register */
+-#define   FSCR_EBB	(1 << (63-56)) /* Enable Event Based Branching */
+-#define   FSCR_DSCR	(1 << (63-61)) /* Enable Data Stream Control Register */
++#define   FSCR_TAR	__MASK(FSCR_TAR_LG)
++#define   FSCR_EBB	__MASK(FSCR_EBB_LG)
++#define   FSCR_DSCR	__MASK(FSCR_DSCR_LG)
+ #define SPRN_HFSCR	0xbe	/* HV=1 Facility Status & Control Register */
+-#define   HFSCR_TAR	(1 << (63-55)) /* Enable Target Address Register */
+-#define   HFSCR_EBB	(1 << (63-56)) /* Enable Event Based Branching */
+-#define   HFSCR_TM	(1 << (63-58)) /* Enable Transactional Memory */
+-#define   HFSCR_PM	(1 << (63-60)) /* Enable prob/priv access to PMU SPRs */
+-#define   HFSCR_BHRB	(1 << (63-59)) /* Enable Branch History Rolling Buffer*/
+-#define   HFSCR_DSCR	(1 << (63-61)) /* Enable Data Stream Control Register */
+-#define   HFSCR_VECVSX	(1 << (63-62)) /* Enable VMX/VSX  */
+-#define   HFSCR_FP	(1 << (63-63)) /* Enable Floating Point */
++#define   HFSCR_TAR	__MASK(FSCR_TAR_LG)
++#define   HFSCR_EBB	__MASK(FSCR_EBB_LG)
++#define   HFSCR_TM	__MASK(FSCR_TM_LG)
++#define   HFSCR_PM	__MASK(FSCR_PM_LG)
++#define   HFSCR_BHRB	__MASK(FSCR_BHRB_LG)
++#define   HFSCR_DSCR	__MASK(FSCR_DSCR_LG)
++#define   HFSCR_VECVSX	__MASK(FSCR_VECVSX_LG)
++#define   HFSCR_FP	__MASK(FSCR_FP_LG)
+ #define SPRN_TAR	0x32f	/* Target Address Register */
+ #define SPRN_LPCR	0x13E	/* LPAR Control Register */
+ #define   LPCR_VPM0	(1ul << (63-0))
