@@ -1,19 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 288CA2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 09:47:11 +1000 (EST)
-Subject: Re: Build errors on mainline kernel
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20130809182446.GA26711@us.ibm.com>
-Date: Fri, 9 Aug 2013 18:47:04 -0500
-Message-Id: <EA801718-CA2E-4F85-AF6B-29119911038E@kernel.crashing.org>
-References: <20130809182446.GA26711@us.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D7ED72C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 10:02:46 +1000 (EST)
+Message-ID: <1376092951.15633.93.camel@snotra.buserror.net>
+Subject: Re: [v2] Enhanced support for MPC8xx/8xxx watchdog
+From: Scott Wood <scottwood@freescale.com>
+To: leroy christophe <christophe.leroy@c-s.fr>
+Date: Fri, 9 Aug 2013 19:02:31 -0500
+In-Reply-To: <520331C1.4060406@c-s.fr>
+References: <201302280852.r1S8qMYu003742@localhost.localdomain>
+ <20130625230431.GA29393@home.buserror.net> <520331C1.4060406@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: Wim Van Sebroeck <wim@iguana.be>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,91 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2013-08-08 at 07:50 +0200, leroy christophe wrote:
+> Le 26/06/2013 01:04, Scott Wood a =C3=A9crit :
+> > What happens if there's a race?  If another CPU updates wdt_last_ping=
+ in
+> > parallel, then you could see wdt_last_ping greater than the value you
+> > read for jiffies.  Since this is an unsigned comparison, it will fail=
+ to
+> > call keepalive.  You might get saved by pinging it twice as often as
+> > necessary, but you shouldn't rely on that.
+> Euh ... This watchdog is integrated inside the CPU, so there is no=20
+> chance that any external CPU get access to it.
 
-On Aug 9, 2013, at 1:24 PM, Sukadev Bhattiprolu wrote:
+Hmm, it looks like mpc8641d (which is the only multi-core SoC among mpc8x=
+x/mpc83xx/mpc86xx) does not have this watchdog, even though mpc8610 does.
 
->=20
-> I am tryng to compile clean mainline kernel with a few different =
-config files
-> and running into errors with some configs.
->=20
-> I am building on RHEL6.3 with following binaries:
->=20
-> 	gcc (GCC) 4.4.6 20120305 (Red Hat 4.4.6-4)
-> 	GNU ld version 2.20.51.0.2-5.34.el6 20100205
-> 	binutils-2.20.51.0.2-5.34.el6.ppc64
-> 	binutils-devel-2.20.51.0.2-5.34.el6.ppc64
->=20
-> I am getting the error with several files and configs, but other =
-configs=20
-> (eg: ppc64_defconfig, pmac32_defconfig) build fine.
->=20
-> For instance, with latest mainline kernel (commit 6c2580c) and =
-ppc64_defconfig, I get:
->=20
-> 	make O=3Dlinux-obj mrproper
-> 	make O=3Dlinux-obj ppc64e_defconfig
-> 	make O=3Dlinux-obj arch/powerpc/platforms/85xx/smp.o
-> 	  ...
->=20
-> 	CC      arch/powerpc/platforms/85xx/smp.o
-> 	{standard input}: Assembler messages:
-> 	{standard input}:240: Error: junk at end of line: `1'
-> 	make[2]: *** [arch/powerpc/platforms/85xx/smp.o] Error 1
-> 	make[1]: *** [arch/powerpc/platforms/85xx/smp.o] Error 2
->=20
-> Not sure if 240 is a line number in smp.c, but looking through the =
-function
-> containing line 240, I was able to compile the smp.c after commenting =
-out
-> the two WARN_ON() messages.
->=20
-> diff --git a/arch/powerpc/platforms/85xx/smp.c =
-b/arch/powerpc/platforms/85xx/smp
-> index 5ced4f5..9705850 100644
-> --- a/arch/powerpc/platforms/85xx/smp.c
-> +++ b/arch/powerpc/platforms/85xx/smp.c
-> @@ -151,8 +151,10 @@ static int smp_85xx_kick_cpu(int nr)
->        int ioremappable;
->        int ret =3D 0;
->=20
-> +#if 0
->        WARN_ON(nr < 0 || nr >=3D NR_CPUS);
->        WARN_ON(hw_cpu < 0 || hw_cpu >=3D NR_CPUS);
-> +#endif
->=20
->        pr_debug("smp_85xx_kick_cpu: kick CPU #%d\n", nr);
->=20
-> ---
->=20
-> The pre-processor output for the first WARN_ON() is:
->=20
-> ---
-> ({ int __ret_warn_on =3D !!(nr < 0 || nr >=3D 32); if =
-(__builtin_constant_p(__ret_warn_on)) { if (__ret_warn_on) do { __asm__ =
-__volatile__( "1:    twi 31,0,0\n" ".section __bug_table,\"a\"\n" "2:\t" =
-".llong" " " "1b, %0\n" "\t.short %1, %2\n" ".org 2b+%3\n" ".previous\n" =
-: : "i" ("/root/tmp/linux.git/arch/powerpc/platforms/85xx/smp.c"), "i" =
-(154), "i" (((1 << 0) | ((9) << 8))), "i" (sizeof(struct bug_entry))); } =
-while (0); } else { __asm__ __volatile__( "1:      ""tdnei" " ""   =
-%4,0\n" ".section __bug_table,\"a\"\n" "2:\t" ".llong" " " "1b, %0\n" =
-"\t.short %1, %2\n" ".org 2b+%3\n" ".previous\n" : : "i" =
-("/root/tmp/linux.git/arch/powerpc/platforms/85xx/smp.c"), "i" (154), =
-"i" (((1 << 0) | ((9) << 8))), "i" (sizeof(struct bug_entry)), "r" =
-(__ret_warn_on)); } __builtin_expect(!!(__ret_warn_on), 0); });
->=20
-> ---
->=20
->=20
-> Should I be doing something different to build with these configs ?
->=20
+So pretend I said "what if you get preempted?". :-)
 
-Hmm, that is odd.
+> >> +		mpc8xxx_wdt_keepalive();
+> >> +		/* We're pinging it twice faster than needed, to be sure. */
+> >> +		mod_timer(&wdt_timer, jiffies + HZ * hw_timo_sec / 2);
+> >> +	}
+> >> +}
+> >> +
+> >> +static void mpc8xxx_wdt_sw_keepalive(void)
+> >> +{
+> >> +	wdt_last_ping =3D jiffies;
+> >> +	mpc8xxx_wdt_timer_ping(0);
+> >>   }
+> > This isn't new with this patch, but it looks like
+> > mpc8xxx_wdt_keepalive() can be called either from timer context, or w=
+ith
+> > interrupts enabled... yet it uses a bare spin_lock() rather than an
+> > irq-safe version.  This should be fixed.
+> Ok, I'll propose another patch for that. Indeed, is the spin_lock neede=
+d=20
+> at all ? If we get two writes interleaved, it will make it anyway.
 
-How about doing:
+I suppose...  I don't like relying on things like that, though.
 
-$ make V=3D1
-
-so we can see what compiler flags are being passed around.
-
-- k=
+-Scott
