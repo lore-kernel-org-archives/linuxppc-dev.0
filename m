@@ -1,31 +1,31 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E06C02C01B5
- for <linuxppc-dev@ozlabs.org>; Sun, 11 Aug 2013 03:51:53 +1000 (EST)
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 41BB92C0289
+ for <linuxppc-dev@ozlabs.org>; Sun, 11 Aug 2013 03:52:26 +1000 (EST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Sat, 10 Aug 2013 11:51:52 -0600
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 4C3C3C90026
- for <linuxppc-dev@ozlabs.org>; Sat, 10 Aug 2013 13:51:47 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7AHpm3n31785082
- for <linuxppc-dev@ozlabs.org>; Sat, 10 Aug 2013 13:51:48 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7AHplJa006343
- for <linuxppc-dev@ozlabs.org>; Sat, 10 Aug 2013 14:51:48 -0300
-Date: Sat, 10 Aug 2013 10:51:23 -0700
+ Sat, 10 Aug 2013 18:52:22 +0100
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 48C4A38C8027
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Aug 2013 13:52:18 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7AHqJSp127982
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Aug 2013 13:52:19 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r7AHqICC006523
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Aug 2013 13:52:19 -0400
+Date: Sat, 10 Aug 2013 10:51:54 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/7] powerpc/perf: Create mem-loads/mem-stores events for
- Power7
-Message-ID: <20130810175123.GE15551@us.ibm.com>
+Subject: [PATCH 5/7] powerpc/perf: Define big-endian version of
+ perf_mem_data_src
+Message-ID: <20130810175153.GF15551@us.ibm.com>
 References: <20130810174831.GA15551@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -42,63 +42,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[PATCH 4/7] powerpc/perf: Create mem-loads/mem-stores events for Power7
 
-'perf mem' command depends on the support for generic hardware events
-'mem-loads' and 'mem-stores'.
+[PATCH 5/7] powerpc/perf: Define big-endian version of perf_mem_data_src
 
-Create those events for Power7 and map them both to the event PM_MRK_GRP_CMPL.
-While PM_MRK_GRP_CMPL is strictly not restricted to loads and stores, that
-seems to be a close/resonable match.
+perf_mem_data_src is an union that is initialized via the ->val field
+and accessed via the bitmap fields. For this to work on big endian
+platforms, we also need a big-endian represenation of perf_mem_data_src.
 
 Cc: Stephane Eranian <eranian@google.com>
 Cc: Paul Mckerras <paulus@samba.org>
 Cc: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/power7-pmu.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-index 56c67bc..161861d 100644
---- a/arch/powerpc/perf/power7-pmu.c
-+++ b/arch/powerpc/perf/power7-pmu.c
-@@ -58,6 +58,18 @@
+Thanks to input from Stephane Eranian and Michael Ellerman.
+
+ include/uapi/linux/perf_event.h |   55 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 55 insertions(+), 0 deletions(-)
+
+diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+index 62c25a2..8497c51 100644
+--- a/include/uapi/linux/perf_event.h
++++ b/include/uapi/linux/perf_event.h
+@@ -19,6 +19,47 @@
+ #include <asm/byteorder.h>
  
- enum {
- #include "power7-events-list.h"
-+	/*
-+	 * Normally, generic events like 'cycles' are aliases for a real
-+	 * event PM_CYC. So we want both the event and the alias listed in
-+	 * sysfs. But mem-loads and mem-stores are just aliases - they are
-+	 * not listed in  power7_generic_events[] for instance. Adding them
-+	 * to power7-events-list.h will unnecessariliy create PM_MEM_LOADS
-+	 * and PM_MEM_STORES events in sysfs when that file is processed
-+	 * again below. To save a couple of sysfs entries, define these
-+	 * separately.
-+	 */
-+	EVENT(PM_MEM_LOADS,	0x40030)
-+	EVENT(PM_MEM_STORES,	0x40030)
+ /*
++ * Kernel and userspace check for endianness in incompatible ways.
++ * In user space, <endian.h> defines both __BIG_ENDIAN and __LITTLE_ENDIAN
++ * but sets __BYTE_ORDER to one or the other. So user space uses checks are:
++ *
++ *	#if __BYTE_ORDER == __LITTLE_ENDIAN
++ *
++ * In the kernel, __BYTE_ORDER is undefined, so using the above check doesn't
++ * work. Further, kernel code assumes that exactly one of __BIG_ENDIAN and
++ * __LITTLE_ENDIAN is defined.  So the kernel checks are like:
++ *
++ *	#if defined(__LITTLE_ENDIAN)
++ *
++ * But we can't use that check in user space since __LITTLE_ENDIAN (and
++ * __BIG_ENDIAN) are always defined.
++ *
++ * Since some perf data structures depend on endianness _and_ are shared
++ * between kernel and user, perf needs its own notion of endian macros (at
++ * least until user and kernel endian checks converge).
++ */
++#define __PERF_LE	1234
++#define __PERF_BE	4321
++
++#if defined(__KERNEL__)
++
++#if defined(__LITTLE_ENDIAN)
++#define __PERF_BYTE_ORDER	__PERF_LE
++#elif defined(__BIG_ENDIAN)
++#define __PERF_BYTE_ORDER	__PERF_BE
++#endif
++
++#else /* __KERNEL__ */
++
++#if __BYTE_ORDER == __LITTLE_ENDIAN
++#define __PERF_BYTE_ORDER	__PERF_LE
++#elif __BYTE_ORDER == __BIG_ENDIAN
++#define __PERF_BYTE_ORDER	__PERF_BE
++#endif
++
++#endif /* __KERNEL__ */
++
++/*
+  * User-space ABI bits:
+  */
+ 
+@@ -659,6 +700,7 @@ enum perf_callchain_context {
+ #define PERF_FLAG_FD_OUTPUT		(1U << 1)
+ #define PERF_FLAG_PID_CGROUP		(1U << 2) /* pid=cgroup id, per-cpu mode only */
+ 
++#if __PERF_BYTE_ORDER == __PERF_LE
+ union perf_mem_data_src {
+ 	__u64 val;
+ 	struct {
+@@ -670,6 +712,19 @@ union perf_mem_data_src {
+ 			mem_rsvd:31;
+ 	};
  };
- #undef EVENT
++#elif __PERF_BYTE_ORDER == __PERF_BE
++union perf_mem_data_src {
++	__u64 val;
++	struct {
++		__u64	mem_rsvd:31,
++			mem_dtlb:7,	/* tlb access */
++			mem_lock:2,	/* lock instr */
++			mem_snoop:5,	/* snoop mode */
++			mem_lvl:14,	/* memory hierarchy level */
++			mem_op:5;	/* type of opcode */
++	};
++};
++#endif
  
-@@ -382,6 +394,8 @@ GENERIC_EVENT_ATTR(cache-references,		PM_LD_REF_L1);
- GENERIC_EVENT_ATTR(cache-misses,		PM_LD_MISS_L1);
- GENERIC_EVENT_ATTR(branch-instructions,		PM_BRU_FIN);
- GENERIC_EVENT_ATTR(branch-misses,		PM_BR_MPRED);
-+GENERIC_EVENT_ATTR(mem-loads,			PM_MEM_LOADS);
-+GENERIC_EVENT_ATTR(mem-stores,			PM_MEM_STORES);
- 
- #define EVENT(_name, _code)     POWER_EVENT_ATTR(_name, _name);
- #include "power7-events-list.h"
-@@ -398,6 +412,8 @@ static struct attribute *power7_events_attr[] = {
- 	GENERIC_EVENT_PTR(PM_LD_MISS_L1),
- 	GENERIC_EVENT_PTR(PM_BRU_FIN),
- 	GENERIC_EVENT_PTR(PM_BR_MPRED),
-+	GENERIC_EVENT_PTR(PM_MEM_LOADS),
-+	GENERIC_EVENT_PTR(PM_MEM_STORES),
- 
- 	#include "power7-events-list.h"
- 	#undef EVENT
+ /* type of opcode (load/store/prefetch,code) */
+ #define PERF_MEM_OP_NA		0x01 /* not available */
 -- 
 1.7.1
