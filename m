@@ -1,39 +1,23 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 576DD2C04E5
- for <linuxppc-dev@ozlabs.org>; Sun, 11 Aug 2013 03:53:27 +1000 (EST)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Sat, 10 Aug 2013 11:53:25 -0600
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id ADC853E4003E
- for <linuxppc-dev@ozlabs.org>; Sat, 10 Aug 2013 11:52:59 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7AHrNBL340588
- for <linuxppc-dev@ozlabs.org>; Sat, 10 Aug 2013 11:53:23 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7AHrMdN001781
- for <linuxppc-dev@ozlabs.org>; Sat, 10 Aug 2013 11:53:23 -0600
-Date: Sat, 10 Aug 2013 10:52:57 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 7/7] powerpc/perf: Export Power7 memory hierarchy info to
- user space
-Message-ID: <20130810175256.GH15551@us.ibm.com>
-References: <20130810174831.GA15551@us.ibm.com>
+Return-Path: <geert@linux-m68k.org>
+Received: from wilson.telenet-ops.be (wilson.telenet-ops.be [195.130.132.42])
+ by ozlabs.org (Postfix) with ESMTP id 99D972C00DE
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Aug 2013 04:31:12 +1000 (EST)
+Received: from juliette.telenet-ops.be (juliette.telenet-ops.be
+ [195.130.137.74])
+ by wilson.telenet-ops.be (Postfix) with ESMTP id 207533581C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 20:19:38 +0200 (CEST)
+Date: Sat, 10 Aug 2013 20:19:30 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: Build regressions/improvements in v3.11-rc4
+In-Reply-To: <alpine.DEB.2.02.1308102018140.30352@ayla.of.borg>
+Message-ID: <alpine.DEB.2.02.1308102018470.30367@ayla.of.borg>
+References: <alpine.DEB.2.02.1308102018140.30352@ayla.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130810174831.GA15551@us.ibm.com>
-Cc: Anton Blanchard <anton@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Stephane Eranian <eranian@google.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
+ linux-sh@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,144 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, 10 Aug 2013, Geert Uytterhoeven wrote:
+> JFYI, when comparing v3.11-rc4 to v3.11-rc3[3], the summaries are:
+>   - build errors: +20/-35
 
-[PATCH 7/7] powerpc/perf: Export Power7 memory hierarchy info to user space.
+  + arch/powerpc/kernel/cacheinfo.c: error: 'size_kb' may be used uninitialized in this function [-Werror=uninitialized]:  => 526:16
+  + arch/powerpc/kernel/pci_dn.c: error: 'ret' may be used uninitialized in this function [-Werror=uninitialized]:  => 97:8
+  + arch/powerpc/kvm/book3s_hv.c: error: 'vcpus_to_update[need_vpa_update]' may be used uninitialized in this function [-Werror=uninitialized]:  => 1187:22
+  + arch/powerpc/kvm/book3s_xics.c: error: implicit declaration of function 'get_tb' [-Werror=implicit-function-declaration]:  => 812:3
+  + arch/powerpc/mm/hash_native_64.c: error: 'a_size' may be used uninitialized in this function [-Werror=uninitialized]:  => 578:10
+  + arch/powerpc/platforms/cell/axon_msi.c: error: 'ph' may be used uninitialized in this function [-Werror=uninitialized]:  => 172:2
+  + arch/powerpc/platforms/cell/axon_msi.c: error: 'prop' may be used uninitialized in this function [-Werror=uninitialized]:  => 237:2
+  + arch/powerpc/platforms/cell/beat_iommu.c: error: 'dma_base' may be used uninitialized in this function [-Werror=uninitialized]:  => 69:11
+  + arch/powerpc/platforms/cell/beat_iommu.c: error: 'dma_size' may be used uninitialized in this function [-Werror=uninitialized]:  => 68:2
+  + arch/powerpc/platforms/cell/beat_iommu.c: error: 'io_page_size' may be used uninitialized in this function [-Werror=uninitialized]:  => 68:54
+  + arch/powerpc/platforms/cell/beat_wrapper.h: error: 'io_space_id' may be used uninitialized in this function [-Werror=uninitialized]:  => 249:2
+  + arch/powerpc/platforms/cell/beat_wrapper.h: error: 'ioid' may be used uninitialized in this function [-Werror=uninitialized]:  => 249:2
+  + arch/powerpc/platforms/cell/spufs/inode.c: error: incompatible types when assigning to type 'kgid_t' from type 'int':  => 628:16
+  + arch/powerpc/platforms/cell/spufs/inode.c: error: incompatible types when assigning to type 'kuid_t' from type 'int':  => 623:16
+  + arch/powerpc/platforms/powernv/pci-ioda.c: error: 'hose' may be used uninitialized in this function [-Werror=uninitialized]:  => 1175:74
+  + arch/powerpc/platforms/pseries/pci.c: error: 'pcie_link_speed_stats' may be used uninitialized in this function [-Werror=uninitialized]:  => 150:31
 
-On Power7, the DCACHE_SRC field in MMCRA register identify the memory
-hierarchy level (eg: L1, L2 etc) from which a data-cache miss for a
-marked instruction was satisfied.
+powerpc-randconfig
 
-Use the 'perf_mem_data_src' object to export this hierarchy level to user
-space. Some memory hierarchy levels in Power7 don't map into the arch-neutral
-levels. However, since newer generation of the processor (i.e. Power8) uses
-fewer levels than in Power7, we don't really need to define new hierarchy
-levels just for Power7.
+  + arch/sh/mm/cache-sh4.c: error: 'cached_to_uncached' undeclared (first use in this function):  => 99:17
+  + arch/sh/mm/cache-sh4.c: error: implicit declaration of function 'cpu_context' [-Werror=implicit-function-declaration]:  => 192:2
 
-We instead, map as many levels as possible and approximate the rest. See
-comments near dcache-src_map[] in the patch.
+sh-randconfig
 
-The hierarchy level information could be used with 'perf record --data'
-or 'perf mem' command to analyze application behavior.
+> [1] http://kisskb.ellerman.id.au/kisskb/head/6510/ (all 120 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/6490/ (all 120 configs)
 
-Usage:
+Gr{oetje,eeting}s,
 
-	perf mem record <application>
-	perf mem report
+						Geert
 
-	OR
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-	perf record --data <application>
-	perf report -D
-
-	Sample records contain a 'data_src' field which encodes the memory
-	hierarchy level: Eg: data_src 0x442 indicates MEM_OP_LOAD, MEM_LVL_HIT,
-	MEM_LVL_L2 (i.e load hit L2).
-
-Cc: Stephane Eranian <eranian@google.com>
-Cc: Michael Ellerman <michael@ellerman.id.au>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
-Thanks to input from Stephane Eranian and Michael Ellerman.
-
-Changelog[v3]:
-	[Michael Ellerman] If newer levels that we defined in [v2] are not
-	needed for Power8, ignore the new levels for Power7 also, and
-	approximate them.
-	Separate the TLB level mapping to a separate patchset.
-
-Changelog[v2]:
-        [Stephane Eranian] Define new levels rather than ORing the L2 and L3
-        with REM_CCE1 and REM_CCE2.
-        [Stephane Eranian] allocate a bit PERF_MEM_XLVL_NA for architectures
-        that don't use the ->mem_xlvl field.
-        Insert the TLB patch ahead so the new TLB bits are contigous with
-        existing TLB bits.
-
- arch/powerpc/perf/power7-pmu.c |   65 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 65 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-index 161861d..f8143d6 100644
---- a/arch/powerpc/perf/power7-pmu.c
-+++ b/arch/powerpc/perf/power7-pmu.c
-@@ -329,6 +329,70 @@ static void power7_disable_pmc(unsigned int pmc, unsigned long mmcr[])
- 		mmcr[1] &= ~(0xffUL << MMCR1_PMCSEL_SH(pmc));
- }
- 
-+#define POWER7_MMCRA_DCACHE_MISS	(0x1LL << 55)
-+#define POWER7_MMCRA_DCACHE_SRC_SHIFT	51
-+#define POWER7_MMCRA_DCACHE_SRC_MASK	(0xFLL << POWER7_MMCRA_DCACHE_SRC_SHIFT)
-+
-+#define P(a, b)		PERF_MEM_S(a, b)
-+#define PLH(a, b)	(P(OP, LOAD) | P(LVL, HIT) | P(a, b))
-+/*
-+ * Map the Power7 DCACHE_SRC field (bits 9..12) in MMCRA register to the
-+ * architecture-neutral memory hierarchy levels. For the levels in Power7
-+ * that don't map to the arch-neutral levels, approximate to nearest
-+ * level.
-+ *
-+ *	1-hop:	indicates another core on the same chip (2.1 and 3.1 levels).
-+ *	2-hops:	indicates a different chip on same or different node (remote
-+ *		and distant levels).
-+ *
-+ * For consistency with this interpretation of the hops, we dont use
-+ * the REM_RAM1 level below.
-+ *
-+ * The *SHR and *MOD states of the cache are ignored/not exported to user.
-+ *
-+ * ### Levels marked with ### in comments below are approximated
-+ */
-+static u64 dcache_src_map[] = {
-+	PLH(LVL, L2),			/* 00: FROM_L2 */
-+	PLH(LVL, L3),			/* 01: FROM_L3 */
-+
-+	P(LVL, NA),			/* 02: Reserved */
-+	P(LVL, NA),			/* 03: Reserved */
-+
-+	PLH(LVL, REM_CCE1),		/* 04: FROM_L2.1_SHR ### */
-+	PLH(LVL, REM_CCE1),		/* 05: FROM_L2.1_MOD ### */
-+
-+	PLH(LVL, REM_CCE1),		/* 06: FROM_L3.1_SHR ### */
-+	PLH(LVL, REM_CCE1),		/* 07: FROM_L3.1_MOD ### */
-+
-+	PLH(LVL, REM_CCE2),		/* 08: FROM_RL2L3_SHR ### */
-+	PLH(LVL, REM_CCE2),		/* 09: FROM_RL2L3_MOD ### */
-+
-+	PLH(LVL, REM_CCE2),		/* 10: FROM_DL2L3_SHR ### */
-+	PLH(LVL, REM_CCE2),		/* 11: FROM_DL2L3_MOD ### */
-+
-+	PLH(LVL, LOC_RAM),		/* 12: FROM_LMEM */
-+	PLH(LVL, REM_RAM2),		/* 13: FROM_RMEM ### */
-+	PLH(LVL, REM_RAM2),		/* 14: FROM_DMEM */
-+
-+	P(LVL, NA),			/* 15: Reserved */
-+};
-+
-+static void power7_get_mem_data_src(union perf_mem_data_src *dsrc,
-+			struct pt_regs *regs)
-+{
-+	u64 idx;
-+	u64 mmcra = regs->dsisr;
-+
-+	if (mmcra & POWER7_MMCRA_DCACHE_MISS) {
-+		idx = mmcra & POWER7_MMCRA_DCACHE_SRC_MASK;
-+		idx >>= POWER7_MMCRA_DCACHE_SRC_SHIFT;
-+
-+		dsrc->val |= dcache_src_map[idx];
-+	}
-+}
-+
-+
- static int power7_generic_events[] = {
- 	[PERF_COUNT_HW_CPU_CYCLES] =			PME_PM_CYC,
- 	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PME_PM_GCT_NOSLOT_CYC,
-@@ -453,6 +517,7 @@ static struct power_pmu power7_pmu = {
- 	.get_constraint		= power7_get_constraint,
- 	.get_alternatives	= power7_get_alternatives,
- 	.disable_pmc		= power7_disable_pmc,
-+	.get_mem_data_src	= power7_get_mem_data_src,
- 	.flags			= PPMU_ALT_SIPR,
- 	.attr_groups		= power7_pmu_attr_groups,
- 	.n_generic		= ARRAY_SIZE(power7_generic_events),
--- 
-1.7.1
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
