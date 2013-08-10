@@ -1,25 +1,15 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 98AC52C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 11:04:58 +1000 (EST)
-Message-ID: <1376096685.15633.109.camel@snotra.buserror.net>
-Subject: Re: [PATCH 6/6 v3] kvm: powerpc: use caching attributes as per
- linux pte
-From: Scott Wood <scottwood@freescale.com>
-To: Bharat Bhushan <r65777@freescale.com>
-Date: Fri, 9 Aug 2013 20:04:45 -0500
-In-Reply-To: <1375788674-13140-7-git-send-email-Bharat.Bhushan@freescale.com>
-References: <1375788674-13140-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1375788674-13140-7-git-send-email-Bharat.Bhushan@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <paulus@ozlabs.org>
+Date: Sat, 10 Aug 2013 13:46:15 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 2/2] powerpc: Use ibm,chip-id property to compute
+ cpu_core_mask if available
+Message-ID: <20130810034615.GE5240@iris.ozlabs.ibm.com>
+References: <20130810034530.GD5240@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
-Cc: kvm@vger.kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- Bharat Bhushan <Bharat.Bhushan@freescale.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130810034530.GD5240@iris.ozlabs.ibm.com>
+Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +19,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-08-06 at 17:01 +0530, Bharat Bhushan wrote:
-> @@ -449,7 +446,16 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
->  		gvaddr &= ~((tsize_pages << PAGE_SHIFT) - 1);
->  	}
->  
-> -	kvmppc_e500_ref_setup(ref, gtlbe, pfn);
-> +	pgdir = vcpu_e500->vcpu.arch.pgdir;
-> +	ptep = lookup_linux_pte(pgdir, hva, &tsize_pages);
-> +	if (pte_present(*ptep)) {
-> +		wimg = (pte_val(*ptep) >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
-> +	} else {
-> +		printk(KERN_ERR "pte not present: gfn %lx, pfn %lx\n",
-> +				(long)gfn, pfn);
-> +		return -EINVAL;
+Some systems have an ibm,chip-id property in the cpu nodes in the
+device tree.  On these systems, we now use that to compute the
+cpu_core_mask (i.e. the set of core siblings) rather than looking
+at cache properties.
 
-Don't let the guest spam the host kernel console by repeatedly accessing
-bad mappings (even if it requires host userspace to assist by pointing a
-memslot at a bad hva).  This should at most be printk_ratelimited(), and
-probably just pr_debug().  It should also have __func__ context.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/kernel/smp.c | 47 ++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 44 insertions(+), 3 deletions(-)
 
-Also, I don't see the return value getting checked (the immediate
-callers check it and propogate the error, but kvmppc_mmu_map() doesn't).
-We want to send a machine check to the guest if this happens (or
-possibly exit to userspace since it indicates a bad memslot, not just a
-guest bug).  We don't want to just silently retry over and over.
-
-Otherwise, this series looks good to me.
-
--Scott
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 663cefd..076977c 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -587,6 +587,32 @@ int cpu_first_thread_of_core(int core)
+ }
+ EXPORT_SYMBOL_GPL(cpu_first_thread_of_core);
+ 
++static void traverse_siblings_chip_id(int cpu, int add, int chipid)
++{
++	const struct cpumask *mask;
++	struct device_node *np;
++	int i, plen;
++	const int *prop;
++
++	mask = add ? cpu_online_mask : cpu_present_mask;
++	for_each_cpu(i, mask) {
++		np = of_get_cpu_node(i, NULL);
++		if (!np)
++			continue;
++		prop = of_get_property(np, "ibm,chip-id", &plen);
++		if (prop && plen == sizeof(int) && *prop == chipid) {
++			if (add) {
++				cpumask_set_cpu(cpu, cpu_core_mask(i));
++				cpumask_set_cpu(i, cpu_core_mask(cpu));
++			} else {
++				cpumask_clear_cpu(cpu, cpu_core_mask(i));
++				cpumask_clear_cpu(i, cpu_core_mask(cpu));
++			}
++		}
++		of_node_put(np);
++	}
++}
++
+ /* Must be called when no change can occur to cpu_present_mask,
+  * i.e. during cpu online or offline.
+  */
+@@ -611,14 +637,29 @@ static struct device_node *cpu_to_l2cache(int cpu)
+ 
+ static void traverse_core_siblings(int cpu, int add)
+ {
+-	struct device_node *l2_cache;
++	struct device_node *l2_cache, *np;
+ 	const struct cpumask *mask;
+-	int i;
++	int i, chip, plen;
++	const int *prop;
++
++	/* First see if we have ibm,chip-id properties in cpu nodes */
++	np = of_get_cpu_node(cpu, NULL);
++	if (np) {
++		chip = -1;
++		prop = of_get_property(np, "ibm,chip-id", &plen);
++		if (prop && plen == sizeof(int))
++			chip = *(int *)prop;
++		of_node_put(np);
++		if (chip >= 0) {
++			traverse_siblings_chip_id(cpu, add, chip);
++			return;
++		}
++	}
+ 
+ 	l2_cache = cpu_to_l2cache(cpu);
+ 	mask = add ? cpu_online_mask : cpu_present_mask;
+ 	for_each_cpu(i, mask) {
+-		struct device_node *np = cpu_to_l2cache(i);
++		np = cpu_to_l2cache(i);
+ 		if (!np)
+ 			continue;
+ 		if (np == l2_cache) {
+-- 
+1.8.3.1
