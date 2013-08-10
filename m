@@ -1,19 +1,22 @@
-Return-Path: <ra8135@perf2farm5.am.freescale.net>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 705B72C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 14:49:45 +1000 (EST)
-From: James Yang <James.Yang@freescale.com>
-To: <benh@kernel.crashing.org>, <scottwood@freescale.com>
-Subject: [PATCH] powerpc/ppc64: remove __volatile__ in  get_current()
-Date: Fri, 9 Aug 2013 23:49:22 -0500
-Message-ID: <1376110162-3462-1-git-send-email-James.Yang@freescale.com>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E13332C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 17:15:24 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: Build errors on mainline kernel
+References: <20130809182446.GA26711@us.ibm.com>
+ <EA801718-CA2E-4F85-AF6B-29119911038E@kernel.crashing.org>
+ <20130810010119.GA29407__43692.6458766267$1376096568$gmane$org@us.ibm.com>
+Date: Sat, 10 Aug 2013 09:15:11 +0200
+In-Reply-To: <20130810010119.GA29407__43692.6458766267$1376096568$gmane$org@us.ibm.com>
+ (Sukadev Bhattiprolu's message of "Fri, 9 Aug 2013 18:01:19 -0700")
+Message-ID: <m2y58axbi8.fsf@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: James Yang <James.Yang@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,28 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Uses of get_current() that normally get optimized away still result in
-a load instruction of the current pointer in 64-bit because the inline
-asm uses __volatile__.  This patch removes __volatile__ so that nop-ed
-uses of get_current() don't actually result in a load of the pointer.
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
 
-Signed-off-by: James Yang <James.Yang@freescale.com>
----
- arch/powerpc/include/asm/current.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> {standard input}: Assembler messages:
+> {standard input}:244: Error: junk at end of line: `1'
+> make[2]: *** [arch/powerpc/platforms/85xx/smp.o] Error 1
+> make[1]: *** [arch/powerpc/platforms/85xx/smp.o] Error 2
+> make: *** [sub-make] Error 2
 
-diff --git a/arch/powerpc/include/asm/current.h b/arch/powerpc/include/asm/current.h
-index e2c7f06..bb250c8 100644
---- a/arch/powerpc/include/asm/current.h
-+++ b/arch/powerpc/include/asm/current.h
-@@ -19,7 +19,7 @@ static inline struct task_struct *get_current(void)
- {
- 	struct task_struct *task;
- 
--	__asm__ __volatile__("ld %0,%1(13)"
-+	__asm__ ("ld %0,%1(13)"
- 	: "=r" (task)
- 	: "i" (offsetof(struct paca_struct, __current)));
- 
+Run "make arch/powerpc/platforms/85xx/smp.s" to create the assembler
+file.
+
+Andreas.
+
 -- 
-1.7.0.4
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
