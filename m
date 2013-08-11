@@ -1,23 +1,25 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from wilson.telenet-ops.be (wilson.telenet-ops.be [195.130.132.42])
- by ozlabs.org (Postfix) with ESMTP id 99D972C00DE
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Aug 2013 04:31:12 +1000 (EST)
-Received: from juliette.telenet-ops.be (juliette.telenet-ops.be
- [195.130.137.74])
- by wilson.telenet-ops.be (Postfix) with ESMTP id 207533581C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Aug 2013 20:19:38 +0200 (CEST)
-Date: Sat, 10 Aug 2013 20:19:30 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: Build regressions/improvements in v3.11-rc4
-In-Reply-To: <alpine.DEB.2.02.1308102018140.30352@ayla.of.borg>
-Message-ID: <alpine.DEB.2.02.1308102018470.30367@ayla.of.borg>
-References: <alpine.DEB.2.02.1308102018140.30352@ayla.of.borg>
+Return-Path: <vince@deater.net>
+Received: from fbr03.mfg.siteprotect.com (fbr03.mfg.siteprotect.com
+ [64.26.60.138]) by ozlabs.org (Postfix) with ESMTP id 899A82C00F9
+ for <linuxppc-dev@ozlabs.org>; Sun, 11 Aug 2013 12:39:11 +1000 (EST)
+Received: from smtpauth05.mfg.siteprotect.com (unknown [192.168.33.144])
+ by fbr03.mfg.siteprotect.com (Postfix) with ESMTP id B81D0880614
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Aug 2013 21:33:56 -0500 (CDT)
+Date: Sat, 10 Aug 2013 22:34:58 -0400 (EDT)
+From: Vince Weaver <vince@deater.net>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 5/7] powerpc/perf: Define big-endian version of
+ perf_mem_data_src
+In-Reply-To: <20130810175153.GF15551@us.ibm.com>
+Message-ID: <alpine.DEB.2.02.1308102232120.4119@pianoman.cluster.toy>
+References: <20130810174831.GA15551@us.ibm.com>
+ <20130810175153.GF15551@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
- linux-sh@vger.kernel.org
+Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 10 Aug 2013, Geert Uytterhoeven wrote:
-> JFYI, when comparing v3.11-rc4 to v3.11-rc3[3], the summaries are:
->   - build errors: +20/-35
+On Sat, 10 Aug 2013, Sukadev Bhattiprolu wrote:
 
-  + arch/powerpc/kernel/cacheinfo.c: error: 'size_kb' may be used uninitialized in this function [-Werror=uninitialized]:  => 526:16
-  + arch/powerpc/kernel/pci_dn.c: error: 'ret' may be used uninitialized in this function [-Werror=uninitialized]:  => 97:8
-  + arch/powerpc/kvm/book3s_hv.c: error: 'vcpus_to_update[need_vpa_update]' may be used uninitialized in this function [-Werror=uninitialized]:  => 1187:22
-  + arch/powerpc/kvm/book3s_xics.c: error: implicit declaration of function 'get_tb' [-Werror=implicit-function-declaration]:  => 812:3
-  + arch/powerpc/mm/hash_native_64.c: error: 'a_size' may be used uninitialized in this function [-Werror=uninitialized]:  => 578:10
-  + arch/powerpc/platforms/cell/axon_msi.c: error: 'ph' may be used uninitialized in this function [-Werror=uninitialized]:  => 172:2
-  + arch/powerpc/platforms/cell/axon_msi.c: error: 'prop' may be used uninitialized in this function [-Werror=uninitialized]:  => 237:2
-  + arch/powerpc/platforms/cell/beat_iommu.c: error: 'dma_base' may be used uninitialized in this function [-Werror=uninitialized]:  => 69:11
-  + arch/powerpc/platforms/cell/beat_iommu.c: error: 'dma_size' may be used uninitialized in this function [-Werror=uninitialized]:  => 68:2
-  + arch/powerpc/platforms/cell/beat_iommu.c: error: 'io_page_size' may be used uninitialized in this function [-Werror=uninitialized]:  => 68:54
-  + arch/powerpc/platforms/cell/beat_wrapper.h: error: 'io_space_id' may be used uninitialized in this function [-Werror=uninitialized]:  => 249:2
-  + arch/powerpc/platforms/cell/beat_wrapper.h: error: 'ioid' may be used uninitialized in this function [-Werror=uninitialized]:  => 249:2
-  + arch/powerpc/platforms/cell/spufs/inode.c: error: incompatible types when assigning to type 'kgid_t' from type 'int':  => 628:16
-  + arch/powerpc/platforms/cell/spufs/inode.c: error: incompatible types when assigning to type 'kuid_t' from type 'int':  => 623:16
-  + arch/powerpc/platforms/powernv/pci-ioda.c: error: 'hose' may be used uninitialized in this function [-Werror=uninitialized]:  => 1175:74
-  + arch/powerpc/platforms/pseries/pci.c: error: 'pcie_link_speed_stats' may be used uninitialized in this function [-Werror=uninitialized]:  => 150:31
+> 
+>  include/uapi/linux/perf_event.h |   55 +++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 55 insertions(+), 0 deletions(-)
 
-powerpc-randconfig
+> +#define __PERF_LE	1234
+> +#define __PERF_BE	4321
+> +
+> +#if defined(__KERNEL__)
 
-  + arch/sh/mm/cache-sh4.c: error: 'cached_to_uncached' undeclared (first use in this function):  => 99:17
-  + arch/sh/mm/cache-sh4.c: error: implicit declaration of function 'cpu_context' [-Werror=implicit-function-declaration]:  => 192:2
+I could be wrong, but I thought files under uapi weren't supposed to 
+contain __KERNEL__ code.  Wasn't that the whole point of uapi?
 
-sh-randconfig
+Also having the perf_event interface depend on endianess just seems like a 
+complicated mess.  Can't we just declare the interface to be a certain 
+endianess and have the kernel byte-swap as necessary?
 
-> [1] http://kisskb.ellerman.id.au/kisskb/head/6510/ (all 120 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/6490/ (all 120 configs)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Vince
