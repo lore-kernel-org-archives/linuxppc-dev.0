@@ -1,30 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1FCCA2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 04:19:57 +1000 (EST)
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 17C182C01B2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 04:20:30 +1000 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 11 Aug 2013 23:44:11 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id EE6FD394004E
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Aug 2013 23:49:38 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7BIL3i236241486
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Aug 2013 23:51:04 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7BIJjfU032514
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Aug 2013 23:49:46 +0530
+ Mon, 12 Aug 2013 04:12:14 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 762DC2CE804C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 04:20:25 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7BIKEL32621872
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 04:20:14 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r7BIKOUH018575
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 04:20:24 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc/kvm: Copy the pvr value after memset
-Date: Sun, 11 Aug 2013 23:49:42 +0530
-Message-Id: <1376245182-20409-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/kvm: Handle the boundary condition correctly
+Date: Sun, 11 Aug 2013 23:50:20 +0530
+Message-Id: <1376245220-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,41 +38,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Otherwise we would clear the pvr value
+We should be able to copy upto count bytes
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/kvm/book3s_hv.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 2efa9dd..dd1b72c 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -680,13 +680,12 @@ static int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- }
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 710d313..0ae6bb6 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -1362,7 +1362,7 @@ static ssize_t kvm_htab_read(struct file *file, char __user *buf,
+ 	lbuf = (unsigned long __user *)buf;
  
- int kvm_arch_vcpu_ioctl_get_sregs(struct kvm_vcpu *vcpu,
--                                  struct kvm_sregs *sregs)
-+				  struct kvm_sregs *sregs)
- {
- 	int i;
- 
--	sregs->pvr = vcpu->arch.pvr;
--
- 	memset(sregs, 0, sizeof(struct kvm_sregs));
-+	sregs->pvr = vcpu->arch.pvr;
- 	for (i = 0; i < vcpu->arch.slb_max; i++) {
- 		sregs->u.s.ppc64.slb[i].slbe = vcpu->arch.slb[i].orige;
- 		sregs->u.s.ppc64.slb[i].slbv = vcpu->arch.slb[i].origv;
-@@ -696,7 +695,7 @@ int kvm_arch_vcpu_ioctl_get_sregs(struct kvm_vcpu *vcpu,
- }
- 
- int kvm_arch_vcpu_ioctl_set_sregs(struct kvm_vcpu *vcpu,
--                                  struct kvm_sregs *sregs)
-+				  struct kvm_sregs *sregs)
- {
- 	int i, j;
- 
+ 	nb = 0;
+-	while (nb + sizeof(hdr) + HPTE_SIZE < count) {
++	while (nb + sizeof(hdr) + HPTE_SIZE <= count) {
+ 		/* Initialize header */
+ 		hptr = (struct kvm_get_htab_header __user *)buf;
+ 		hdr.n_valid = 0;
+@@ -1385,7 +1385,7 @@ static ssize_t kvm_htab_read(struct file *file, char __user *buf,
+ 		/* Grab a series of valid entries */
+ 		while (i < kvm->arch.hpt_npte &&
+ 		       hdr.n_valid < 0xffff &&
+-		       nb + HPTE_SIZE < count &&
++		       nb + HPTE_SIZE <= count &&
+ 		       record_hpte(flags, hptp, hpte, revp, 1, first_pass)) {
+ 			/* valid entry, write it out */
+ 			++hdr.n_valid;
 -- 
 1.8.1.2
