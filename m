@@ -1,25 +1,22 @@
-Return-Path: <wladislav.kw@gmail.com>
-Received: from mail-wi0-x235.google.com (mail-wi0-x235.google.com
- [IPv6:2a00:1450:400c:c05::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E94BF2C00EC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 21:08:35 +1000 (EST)
-Received: by mail-wi0-f181.google.com with SMTP id en1so1538955wid.14
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 04:08:26 -0700 (PDT)
-Message-ID: <5208C1CD.3040601@gmail.com>
-Date: Mon, 12 Aug 2013 13:06:53 +0200
-From: Wladislav Wiebe <wladislav.kw@gmail.com>
+Return-Path: <B42378@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 65FDE2C00D4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 21:50:48 +1000 (EST)
+From: Nicolin Chen <b42378@freescale.com>
+To: <broonie@kernel.org>, <lars@metafoo.de>, <p.zabel@pengutronix.de>
+Subject: [PATCH v4 2/2] ASoC: fsl: Add S/PDIF machine driver
+Date: Mon, 12 Aug 2013 20:01:10 +0800
+Message-ID: <1376308870-14232-3-git-send-email-b42378@freescale.com>
+In-Reply-To: <1376308870-14232-1-git-send-email-b42378@freescale.com>
+References: <1376308870-14232-1-git-send-email-b42378@freescale.com>
 MIME-Version: 1.0
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Subject: Re: mm/slab: ppc: ubi: kmalloc_slab WARNING / PPC + UBI driver
-References: <51F8F827.6020108@gmail.com>
- <20130731173434.GA27470@blackmetal.musicnaut.iki.fi>
-In-Reply-To: <20130731173434.GA27470@blackmetal.musicnaut.iki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: dedekind1@gmail.com, dwmw2@infradead.org, penberg@kernel.org,
- linux-mm@kvack.org, linux-mtd@lists.infradead.org, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, timur@tabi.org, rob.herring@calxeda.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,77 +26,232 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi guys,
+Add S/PDIF machine driver for Freescale i.MX series SoC.
 
-we got the real root cause of the allocation issue:
-
-Subject: [PATCH 1/1] of: fdt: fix memory initialization for expanded DT
-
-Already existing property flags are filled wrong for properties created from
-initial FDT. This could cause problems if this DYNAMIC device-tree functions
-are used later, i.e. properties are attached/detached/replaced. Simply dumping
-flags from the running system show, that some initial static (not allocated via
-kzmalloc()) nodes are marked as dynamic.
-
-I putted some debug extensions to property_proc_show(..) :
-..
-+       if (OF_IS_DYNAMIC(pp))
-+               pr_err("DEBUG: xxx : OF_IS_DYNAMIC\n");
-+       if (OF_IS_DETACHED(pp))
-+               pr_err("DEBUG: xxx : OF_IS_DETACHED\n");
-
-when you operate on the nodes (e.g.: ~$ cat /proc/device-tree/*some_node*) you
-will see that those flags are filled wrong, basically in most cases it will dump
-a DYNAMIC or DETACHED status, which is in not true.
-(BTW. this OF_IS_DETACHED is a own define for debug purposes which which just
-make a test_bit(OF_DETACHED, &x->_flags)
-
-If nodes are dynamic kernel is allowed to kfree() them. But it will crash
-attempting to do so on the nodes from FDT -- they are not allocated via
-kzmalloc().
-
-Signed-off-by: Wladislav Wiebe <wladislav.kw@gmail.com>
+Signed-off-by: Nicolin Chen <b42378@freescale.com>
 ---
- drivers/of/fdt.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ .../devicetree/bindings/sound/imx-audio-spdif.txt  |   29 +++++
+ sound/soc/fsl/Kconfig                              |   11 ++
+ sound/soc/fsl/Makefile                             |    2 +
+ sound/soc/fsl/imx-spdif.c                          |  134 ++++++++++++++++++++
+ 4 files changed, 176 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
+ create mode 100644 sound/soc/fsl/imx-spdif.c
 
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index 6bb7cf2..b10ba00 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -392,6 +392,8 @@ static void __unflatten_device_tree(struct boot_param_header *blob,
- 	mem = (unsigned long)
- 		dt_alloc(size + 4, __alignof__(struct device_node));
-
-+	memset((void *)mem, 0, size);
+diff --git a/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
+new file mode 100644
+index 0000000..9a3fa26
+--- /dev/null
++++ b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
+@@ -0,0 +1,29 @@
++Freescale i.MX audio complex with S/PDIF transceiver
 +
- 	((__be32 *)mem)[size / 4] = cpu_to_be32(0xdeadbeef);
-
- 	pr_debug("  unflattening %lx...\n", mem);
--- 1.7.1
-
-This is committed to the mainline - hope it comes in soon.
-
-Thanks & BR,
-Wladislav Wiebe
-
-
-On 31/07/13 19:34, Aaro Koskinen wrote:
-> Hi,
-> 
-> On Wed, Jul 31, 2013 at 01:42:31PM +0200, Wladislav Wiebe wrote:
->> DEBUG: xxx kmalloc_slab, requested 'size' = 8388608, KMALLOC_MAX_SIZE = 4194304
-> [...]
->> [ccd3be60] [c0099fd4] kmalloc_slab+0x48/0xe8 (unreliable)
->> [ccd3be70] [c00ae650] __kmalloc+0x20/0x1b4
->> [ccd3be90] [c00d46f4] seq_read+0x2a4/0x540
->> [ccd3bee0] [c00fe09c] proc_reg_read+0x5c/0x90
->> [ccd3bef0] [c00b4e1c] vfs_read+0xa4/0x150
->> [ccd3bf10] [c00b500c] SyS_read+0x4c/0x84
->> [ccd3bf40] [c000be80] ret_from_syscall+0x0/0x3c
-> 
-> It seems some procfs file is trying to dump 8 MB at a single go. You
-> need to fix that to return data in smaller chunks. What file is it?
-> 
-> A.
-> 
++Required properties:
++
++  - compatible : "fsl,imx-audio-spdif"
++
++  - model : The user-visible name of this sound complex
++
++  - spdif-controller : The phandle of the i.MX S/PDIF controller
++
++
++Optional properties:
++
++  - spdif-transmitter : The phandle of the spdif-transmitter dummy codec
++
++  - spdif-receiver : The phandle of the spdif-receiver dummy codec
++
++* Note: At least one of these two properties should be set in the DT binding.
++
++
++Example:
++
++sound-spdif {
++	compatible = "fsl,imx-audio-spdif";
++	model = "imx-spdif";
++	spdif-controller = <&spdif>;
++	spdif-transmitter = <&spdif_tx_codec>;
++	spdif-receiver = <&spdif_rx_codec>;
++};
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index 2c518db..4cc118c 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -195,6 +195,17 @@ config SND_SOC_IMX_SGTL5000
+ 	  Say Y if you want to add support for SoC audio on an i.MX board with
+ 	  a sgtl5000 codec.
+ 
++config SND_SOC_IMX_SPDIF
++	tristate "SoC Audio support for i.MX boards with S/PDIF"
++	select SND_SOC_IMX_PCM_DMA
++	select SND_SOC_FSL_SPDIF
++	select SND_SOC_FSL_UTILS
++	select SND_SOC_SPDIF
++	help
++	  SoC Audio support for i.MX boards with S/PDIF
++	  Say Y if you want to add support for SoC audio on an i.MX board with
++	  a S/DPDIF.
++
+ config SND_SOC_IMX_MC13783
+ 	tristate "SoC Audio support for I.MX boards with mc13783"
+ 	depends on MFD_MC13783 && ARM
+diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+index 4b5970e..e2aaff7 100644
+--- a/sound/soc/fsl/Makefile
++++ b/sound/soc/fsl/Makefile
+@@ -45,6 +45,7 @@ snd-soc-mx27vis-aic32x4-objs := mx27vis-aic32x4.o
+ snd-soc-wm1133-ev1-objs := wm1133-ev1.o
+ snd-soc-imx-sgtl5000-objs := imx-sgtl5000.o
+ snd-soc-imx-wm8962-objs := imx-wm8962.o
++snd-soc-imx-spdif-objs :=imx-spdif.o
+ snd-soc-imx-mc13783-objs := imx-mc13783.o
+ 
+ obj-$(CONFIG_SND_SOC_EUKREA_TLV320) += snd-soc-eukrea-tlv320.o
+@@ -53,4 +54,5 @@ obj-$(CONFIG_SND_SOC_MX27VIS_AIC32X4) += snd-soc-mx27vis-aic32x4.o
+ obj-$(CONFIG_SND_MXC_SOC_WM1133_EV1) += snd-soc-wm1133-ev1.o
+ obj-$(CONFIG_SND_SOC_IMX_SGTL5000) += snd-soc-imx-sgtl5000.o
+ obj-$(CONFIG_SND_SOC_IMX_WM8962) += snd-soc-imx-wm8962.o
++obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
+ obj-$(CONFIG_SND_SOC_IMX_MC13783) += snd-soc-imx-mc13783.o
+diff --git a/sound/soc/fsl/imx-spdif.c b/sound/soc/fsl/imx-spdif.c
+new file mode 100644
+index 0000000..893f3d1
+--- /dev/null
++++ b/sound/soc/fsl/imx-spdif.c
+@@ -0,0 +1,134 @@
++/*
++ * Copyright (C) 2013 Freescale Semiconductor, Inc.
++ *
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
++
++#include <linux/module.h>
++#include <linux/of_platform.h>
++#include <sound/soc.h>
++
++struct imx_spdif_data {
++	struct snd_soc_dai_link dai[2];
++	struct snd_soc_card card;
++};
++
++static int imx_spdif_audio_probe(struct platform_device *pdev)
++{
++	struct device_node *np = pdev->dev.of_node;
++	struct device_node *spdif_np, *codec_tx_np, *codec_rx_np;
++	struct platform_device *spdif_pdev;
++	struct imx_spdif_data *data;
++	int ret = 0, num_links = 0;
++
++	spdif_np = of_parse_phandle(np, "spdif-controller", 0);
++	if (!spdif_np) {
++		dev_err(&pdev->dev, "failed to find spdif-controller\n");
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	spdif_pdev = of_find_device_by_node(spdif_np);
++	if (!spdif_pdev) {
++		dev_err(&pdev->dev, "failed to find S/PDIF device\n");
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data) {
++		dev_err(&pdev->dev, "failed to allocate memory\n");
++		ret = -ENOMEM;
++		goto fail;
++	}
++
++	codec_tx_np = of_parse_phandle(np, "spdif-transmitter", 0);
++	if (codec_tx_np) {
++		data->dai[num_links].name = "S/PDIF TX";
++		data->dai[num_links].stream_name = "S/PDIF PCM Playback";
++		data->dai[num_links].codec_dai_name = "dit-hifi";
++		data->dai[num_links].codec_of_node = codec_tx_np;
++		data->dai[num_links].cpu_of_node = spdif_np;
++		data->dai[num_links].platform_of_node = spdif_np;
++		num_links++;
++	}
++
++	codec_rx_np = of_parse_phandle(np, "spdif-receiver", 0);
++	if (codec_rx_np) {
++		data->dai[num_links].name = "S/PDIF RX";
++		data->dai[num_links].stream_name = "S/PDIF PCM Capture";
++		data->dai[num_links].codec_dai_name = "dir-hifi";
++		data->dai[num_links].codec_of_node = codec_rx_np;
++		data->dai[num_links].cpu_of_node = spdif_np;
++		data->dai[num_links].platform_of_node = spdif_np;
++		num_links++;
++	}
++
++	if (!num_links) {
++		dev_err(&pdev->dev, "no enabled S/PDIF DAI link\n");
++		goto fail;
++	}
++
++	data->card.dev = &pdev->dev;
++	data->card.num_links = num_links;
++	data->card.dai_link = data->dai;
++
++	ret = snd_soc_of_parse_card_name(&data->card, "model");
++	if (ret)
++		goto fail;
++
++	ret = snd_soc_register_card(&data->card);
++	if (ret) {
++		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
++		goto fail;
++	}
++
++	platform_set_drvdata(pdev, data);
++
++fail:
++	if (codec_tx_np)
++		of_node_put(codec_tx_np);
++	if (codec_rx_np)
++		of_node_put(codec_rx_np);
++	if (spdif_np)
++		of_node_put(spdif_np);
++
++	return ret;
++}
++
++static int imx_spdif_audio_remove(struct platform_device *pdev)
++{
++	struct imx_spdif_data *data = platform_get_drvdata(pdev);
++
++	snd_soc_unregister_card(&data->card);
++
++	return 0;
++}
++
++static const struct of_device_id imx_spdif_dt_ids[] = {
++	{ .compatible = "fsl,imx-audio-spdif", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, imx_spdif_dt_ids);
++
++static struct platform_driver imx_spdif_driver = {
++	.driver = {
++		.name = "imx-spdif",
++		.owner = THIS_MODULE,
++		.of_match_table = imx_spdif_dt_ids,
++	},
++	.probe = imx_spdif_audio_probe,
++	.remove = imx_spdif_audio_remove,
++};
++
++module_platform_driver(imx_spdif_driver);
++
++MODULE_AUTHOR("Freescale Semiconductor, Inc.");
++MODULE_DESCRIPTION("Freescale i.MX S/PDIF machine driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:imx-spdif");
+-- 
+1.7.1
