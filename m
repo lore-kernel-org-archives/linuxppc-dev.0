@@ -1,22 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id D85922C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 09:59:47 +1000 (EST)
-Date: Mon, 12 Aug 2013 09:59:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC] powerpc: put the common parts of the ppc64*defconfigs in
- a Kconfig file
-Message-Id: <20130812095941.a90d32046570b365b7ea4084@canb.auug.org.au>
-In-Reply-To: <37F6E4C6-0428-4707-A46A-B9DB9A145747@kernel.crashing.org>
-References: <20130809162426.ecdb5b034047db309ebd2b45@canb.auug.org.au>
- <37F6E4C6-0428-4707-A46A-B9DB9A145747@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 08C6C2C00CE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 10:19:33 +1000 (EST)
+Message-ID: <1376266763.32100.144.camel@pasglop>
+Subject: Re: [PATCH 2/2] Register bootmem pages at boot on powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Mon, 12 Aug 2013 10:19:23 +1000
+In-Reply-To: <52050B80.8010602@linux.vnet.ibm.com>
+References: <52050ACE.4090001@linux.vnet.ibm.com>
+ <52050B80.8010602@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__12_Aug_2013_09_59_41_+1000_KHXCU7IFR.dhpXQu"
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-mm <linux-mm@kvack.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,82 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__12_Aug_2013_09_59_41_+1000_KHXCU7IFR.dhpXQu
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2013-08-09 at 10:32 -0500, Nathan Fontenot wrote:
 
-Hi Kumar,
+> +void register_page_bootmem_memmap(unsigned long section_nr,
+> +				  struct page *start_page, unsigned long size)
+> +{
+> +	WARN_ONCE(1, KERN_INFO
+> +		  "Sparse Vmemmap not fully supported for bootmem info nodes\n");
+> +}
+>  #endif /* CONFIG_SPARSEMEM_VMEMMAP */
 
-Thanks for your comments.
+But SPARSEMEM_VMEMMAP is our default on ppc64 pseries ... and you are
+select'ing the new option, so it looks like we are missing something
+here...
 
-On Fri, 9 Aug 2013 09:41:54 -0500 Kumar Gala <galak@kernel.crashing.org> wr=
-ote:
->
->=20
-> On Aug 9, 2013, at 1:24 AM, Stephen Rothwell wrote:
->=20
-> > We cannot put the unsetting of config options in the Kconfig file, nor
-> > the integer or string options.
-> >=20
-> > I checked that after this we get the same .config files generated (exce=
-pt
-> > for the addition of the new PPC64_DEFCONFIG* config options.
-> >=20
-> > Any thoughts?
-> > ---
-> > arch/powerpc/Kconfig                  |   2 +
-> > arch/powerpc/configs/Kconfig          | 295 +++++++++++++++++++++++++++=
-++++++
-> > arch/powerpc/configs/ppc64_defconfig  | 301 +--------------------------=
--------
-> > arch/powerpc/configs/ppc64e_defconfig | 297 +--------------------------=
-------
-> > 4 files changed, 302 insertions(+), 593 deletions(-)
-> > create mode 100644 arch/powerpc/configs/Kconfig
->=20
-> Am I missing something here, isn't this a bit of a maintenance pain if
-> symbol names change?
+Can you tell me a bit more, the above makes me nervous...
 
-I don't think it is any worse than what we have, and in fact may be
-better.  Currently if someone renames a config option, they usually do
-nothing about the defconfigs, this way, at least if the option is in
-configs/Kconfig, they may update it.
-
-> Also, how much of a benefit is this?
-
-There has been some discussion about Anton adding 2 new defconfigs that
-are very similar to the current defconfigs.   This is an attempt to
-reduce the amount of unnecessary repetition and churn.
-
-A similar thing could be done for other sets of similar defconfig files.
-
-There was a plan a few years ago to replace the defconfigs with Kconfig
-fragments and this would be a step along that path.
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Ben.
 
---Signature=_Mon__12_Aug_2013_09_59_41_+1000_KHXCU7IFR.dhpXQu
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSCCVxAAoJEECxmPOUX5FEERIP+wV7laGyLK8bFqA1/HDAODj0
-A/lGF9/ZJ9GoctOC6rmXKVU+v7wOTaD6WH2/TQM31tUPBCDxtpwpvF3A/ym8LOPD
-YcPDuftLa95lfA4H52PnwUs3qBJXPZfWcwMVo4kmcVWrbZoUAi/YHxHs20lXazCt
-/tKmqPmPS0q+3oMZoj46rizjUkvB4yPMzbjHt++R4tJimk/qhwCkq6qkKmbviUsB
-+lCW61cXBL0KVVvytpqVDNVDONrCU8m2FKQEA3Aa+3FeIDEOrmYesHumuV9x9Mdy
-HjEEl38SFwtBiJpvx5h54AKFXa2gfXC+HA4zteCLRy+5+seMBa7z748MrfVk81Pz
-QrdCxJ0SM9egG+g0CnF30pTuXii/cCIveLWwpbPYe3jJpfIik3+PmA3ci5PIaRKU
-eAP761Z6SCIB30ls937RBRNPuWOC0Ov6oQ0jiXR+0SRaGUseIfpSCjkQpZekeotn
-qN4mhhs7kBmXNIyH6lf0NmYA8qiwoFupl+pPtNi4SEQWeq7tjWKypAs7fgncD1kK
-gDHH3p3lo2gKExi+sGeDJkP09/JrjwVWsnuWcsOH91IVJqOAGIAq+q6I291A8zfr
-D+D593wYHNfMyITK6J+v6p13OugLWPSGeP6btj69Xiw9J8lfbmF2CoYqE8/0T4KY
-z5iwhr/Z6grhvO54/Nd7
-=CXP1
------END PGP SIGNATURE-----
-
---Signature=_Mon__12_Aug_2013_09_59_41_+1000_KHXCU7IFR.dhpXQu--
+> Index: powerpc/arch/powerpc/mm/mem.c
+> ===================================================================
+> --- powerpc.orig/arch/powerpc/mm/mem.c
+> +++ powerpc/arch/powerpc/mm/mem.c
+> @@ -297,12 +297,21 @@ void __init paging_init(void)
+>  }
+>  #endif /* ! CONFIG_NEED_MULTIPLE_NODES */
+> 
+> +static void __init register_page_bootmem_info(void)
+> +{
+> +	int i;
+> +
+> +	for_each_online_node(i)
+> +		register_page_bootmem_info_node(NODE_DATA(i));
+> +}
+> +
+>  void __init mem_init(void)
+>  {
+>  #ifdef CONFIG_SWIOTLB
+>  	swiotlb_init(0);
+>  #endif
+> 
+> +	register_page_bootmem_info();
+>  	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+>  	set_max_mapnr(max_pfn);
+>  	free_all_bootmem();
+> Index: powerpc/mm/Kconfig
+> ===================================================================
+> --- powerpc.orig/mm/Kconfig
+> +++ powerpc/mm/Kconfig
+> @@ -183,7 +183,7 @@ config MEMORY_HOTPLUG_SPARSE
+>  config MEMORY_HOTREMOVE
+>  	bool "Allow for memory hot remove"
+>  	select MEMORY_ISOLATION
+> -	select HAVE_BOOTMEM_INFO_NODE if X86_64
+> +	select HAVE_BOOTMEM_INFO_NODE if (X86_64 || PPC64)
+>  	depends on MEMORY_HOTPLUG && ARCH_ENABLE_MEMORY_HOTREMOVE
+>  	depends on MIGRATION
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
