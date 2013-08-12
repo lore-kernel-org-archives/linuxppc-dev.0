@@ -1,28 +1,22 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wg0-x234.google.com (mail-wg0-x234.google.com
- [IPv6:2a00:1450:400c:c00::234])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pb0-f49.google.com (mail-pb0-f49.google.com
+ [209.85.160.49])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C1DE32C0103
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 23:38:26 +1000 (EST)
-Received: by mail-wg0-f52.google.com with SMTP id b13so5463824wgh.19
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 06:38:21 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 2B4122C00F4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2013 00:13:49 +1000 (EST)
+Received: by mail-pb0-f49.google.com with SMTP id xb4so6844816pbc.22
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 07:13:47 -0700 (PDT)
+Message-ID: <5208ED95.4090204@ozlabs.ru>
+Date: Tue, 13 Aug 2013 00:13:41 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <1373803321-11628-2-git-send-email-gsi@denx.de>
-References: <1373642781-32631-1-git-send-email-gsi@denx.de>
- <1373803321-11628-1-git-send-email-gsi@denx.de>
- <1373803321-11628-2-git-send-email-gsi@denx.de>
-Date: Mon, 12 Aug 2013 17:38:21 +0400
-Message-ID: <CAF0T0X4f9RCjY-tyw9z+X_n7qRxXacKf7FOzT-U_rH0WtLOUHw@mail.gmail.com>
-Subject: Re: [PATCH RFC v2 1/5] dma: mpc512x: re-order mpc8308 specific
- instructions
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org,
- Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Subject: Re: Powerpc: Kernel warn_on when enabling IOMMU_API
+References: <6A3DF150A5B70D4F9B66A25E3F7C888D0710DCBF@039-SN2MPN1-013.039d.mgd.msft.net>
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0710DCBF@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset=KOI8-R
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,34 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello everyone!
-
-2013/7/14 Gerhard Sittig <gsi@denx.de>:
-> @@ -50,9 +50,23 @@
->  #define MPC_DMA_DESCRIPTORS    64
->
->  /* Macro definitions */
-> -#define MPC_DMA_CHANNELS       64
->  #define MPC_DMA_TCD_OFFSET     0x1000
->
-> +/*
-> + * the maximum channel count, and specific channels which need
-> + * special processing, for individual hardware variants
-> + *
-> + * and the maximum channel count over all supported controllers,
-> + * used for data structure sizes
-> + */
-> +enum mpc8308_dmachan_id_t {
-> +       MPC8308_DMACHAN_MAX = 16,
-> +};
-> +enum mpc512x_dmachan_id_t {
-> +       MPC512x_DMACHAN_MAX = 64,
-> +};
-> +#define MPC_DMA_CHANNELS       64
+On 08/12/2013 08:20 PM, Bhushan Bharat-R65777 wrote:
+> And this simple fix work for me 
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index b20ff17..8869b0d 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -48,6 +48,8 @@
+>  #include <asm/vio.h>
+>  #include <asm/tce.h>
+>  
+> +#define DEBUG
 > +
+>  #define DBG(...)
+>  
+>  static int novmerge;
+> @@ -871,7 +873,7 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
+>         }
+>  }
+>  
+> -#ifdef CONFIG_IOMMU_API
+> +#ifdef SPAPR_TCE_IOMMU
+>  /*
+>   * SPAPR TCE API
+>   */
+> ----------------------
 
-I offer to use #define instead of enum here
-since individual channels don't require special handling.
 
-Best regards,
-Alexander.
+And with this fix, what does "ls -laR /sys/kernel/iommu_groups/" print?
+
+
+
+-- 
+Alexey
