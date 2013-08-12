@@ -1,28 +1,24 @@
-Return-Path: <R65777@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 779A02C0123
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2013 03:14:14 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 6/6 v3] kvm: powerpc: use caching attributes as per
- linux pte
-Date: Mon, 12 Aug 2013 17:14:01 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0710E51D@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1375788674-13140-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1375788674-13140-7-git-send-email-Bharat.Bhushan@freescale.com>
- <1376096685.15633.109.camel@snotra.buserror.net>
-In-Reply-To: <1376096685.15633.109.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <sergei.shtylyov@cogentembedded.com>
+Received: from mail-la0-f45.google.com (mail-la0-f45.google.com
+ [209.85.215.45])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E2C492C00DA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2013 04:16:06 +1000 (EST)
+Received: by mail-la0-f45.google.com with SMTP id fj20so5049991lab.18
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 11:16:02 -0700 (PDT)
+Message-ID: <52092662.6040507@cogentembedded.com>
+Date: Mon, 12 Aug 2013 22:16:02 +0400
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 MIME-Version: 1.0
-Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Libo Chen <clbchenlibo.chen@huawei.com>
+Subject: Re: [PATCH 4/8] net: fs_enet: use platform_{get,set}_drvdata()
+References: <5208E222.60300@huawei.com>
+In-Reply-To: <5208E222.60300@huawei.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ Li Zefan <lizefan@huawei.com>, vbordug@ru.mvista.com,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,41 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogU2F0dXJkYXksIEF1Z3VzdCAxMCwgMjAxMyA2OjM1IEFNDQo+IFRvOiBCaHVz
-aGFuIEJoYXJhdC1SNjU3NzcNCj4gQ2M6IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgYWdyYWZA
-c3VzZS5kZTsgcGF1bHVzQHNhbWJhLm9yZzsNCj4ga3ZtQHZnZXIua2VybmVsLm9yZzsga3ZtLXBw
-Y0B2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBCaHVz
-aGFuIEJoYXJhdC1SNjU3NzcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCA2LzYgdjNdIGt2bTogcG93
-ZXJwYzogdXNlIGNhY2hpbmcgYXR0cmlidXRlcyBhcyBwZXIgbGludXgNCj4gcHRlDQo+IA0KPiBP
-biBUdWUsIDIwMTMtMDgtMDYgYXQgMTc6MDEgKzA1MzAsIEJoYXJhdCBCaHVzaGFuIHdyb3RlOg0K
-PiA+IEBAIC00NDksNyArNDQ2LDE2IEBAIHN0YXRpYyBpbmxpbmUgaW50IGt2bXBwY19lNTAwX3No
-YWRvd19tYXAoc3RydWN0DQo+IGt2bXBwY192Y3B1X2U1MDAgKnZjcHVfZTUwMCwNCj4gPiAgCQln
-dmFkZHIgJj0gfigodHNpemVfcGFnZXMgPDwgUEFHRV9TSElGVCkgLSAxKTsNCj4gPiAgCX0NCj4g
-Pg0KPiA+IC0Ja3ZtcHBjX2U1MDBfcmVmX3NldHVwKHJlZiwgZ3RsYmUsIHBmbik7DQo+ID4gKwlw
-Z2RpciA9IHZjcHVfZTUwMC0+dmNwdS5hcmNoLnBnZGlyOw0KPiA+ICsJcHRlcCA9IGxvb2t1cF9s
-aW51eF9wdGUocGdkaXIsIGh2YSwgJnRzaXplX3BhZ2VzKTsNCj4gPiArCWlmIChwdGVfcHJlc2Vu
-dCgqcHRlcCkpIHsNCj4gPiArCQl3aW1nID0gKHB0ZV92YWwoKnB0ZXApID4+IFBURV9XSU1HRV9T
-SElGVCkgJiBNQVMyX1dJTUdFX01BU0s7DQo+ID4gKwl9IGVsc2Ugew0KPiA+ICsJCXByaW50ayhL
-RVJOX0VSUiAicHRlIG5vdCBwcmVzZW50OiBnZm4gJWx4LCBwZm4gJWx4XG4iLA0KPiA+ICsJCQkJ
-KGxvbmcpZ2ZuLCBwZm4pOw0KPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiANCj4gRG9uJ3QgbGV0
-IHRoZSBndWVzdCBzcGFtIHRoZSBob3N0IGtlcm5lbCBjb25zb2xlIGJ5IHJlcGVhdGVkbHkgYWNj
-ZXNzaW5nIGJhZA0KPiBtYXBwaW5ncyAoZXZlbiBpZiBpdCByZXF1aXJlcyBob3N0IHVzZXJzcGFj
-ZSB0byBhc3Npc3QgYnkgcG9pbnRpbmcgYSBtZW1zbG90IGF0DQo+IGEgYmFkIGh2YSkuICBUaGlz
-IHNob3VsZCBhdCBtb3N0IGJlIHByaW50a19yYXRlbGltaXRlZCgpLCBhbmQgcHJvYmFibHkganVz
-dA0KPiBwcl9kZWJ1ZygpLiAgSXQgc2hvdWxkIGFsc28gaGF2ZSBfX2Z1bmNfXyBjb250ZXh0Lg0K
-DQpWZXJ5IGdvb2QgcG9pbnQsIEkgd2lsbCBtYWtlIHRoaXMgcHJpbnRrX3JhdGVsaW1pdGVkKCkg
-aW4gdGhpcyBwYXRjaC4gQW5kIGNvbnZlcnQgdGhpcyBhbmQgb3RoZXIgZXJyb3IgcHJpbnRzIHRv
-IHByX2RlYnVnKCkgd2hlbiB3ZSB3aWxsIHNlbmQgbWFjaGluZSBjaGVjayBvbiBlcnJvciBpbiB0
-aGlzIGZsb3cuDQoNCj4gDQo+IEFsc28sIEkgZG9uJ3Qgc2VlIHRoZSByZXR1cm4gdmFsdWUgZ2V0
-dGluZyBjaGVja2VkICh0aGUgaW1tZWRpYXRlIGNhbGxlcnMgY2hlY2sNCj4gaXQgYW5kIHByb3Bv
-Z2F0ZSB0aGUgZXJyb3IsIGJ1dCBrdm1wcGNfbW11X21hcCgpIGRvZXNuJ3QpLg0KPiBXZSB3YW50
-IHRvIHNlbmQgYSBtYWNoaW5lIGNoZWNrIHRvIHRoZSBndWVzdCBpZiB0aGlzIGhhcHBlbnMgKG9y
-IHBvc3NpYmx5IGV4aXQNCj4gdG8gdXNlcnNwYWNlIHNpbmNlIGl0IGluZGljYXRlcyBhIGJhZCBt
-ZW1zbG90LCBub3QganVzdCBhIGd1ZXN0IGJ1ZykuICBXZSBkb24ndA0KPiB3YW50IHRvIGp1c3Qg
-c2lsZW50bHkgcmV0cnkgb3ZlciBhbmQgb3Zlci4NCg0KSSBjb21wbGV0ZWx5IGFncmVlIHdpdGgg
-eW91LCBidXQgdGhpcyB3YXMgc29tZXRoaW5nIGFscmVhZHkgbWlzc2luZyAoZXJyb3IgcmV0dXJu
-IGJ5IHRoaXMgZnVuY3Rpb24gaXMgbm90aGluZyBuZXcgYWRkZWQgaW4gdGhpcyBwYXRjaCksIFNv
-IEkgd291bGQgbGlrZSB0byB0YWtlIHRoYXQgc2VwYXJhdGVseS4NCg0KPiANCj4gT3RoZXJ3aXNl
-LCB0aGlzIHNlcmllcyBsb29rcyBnb29kIHRvIG1lLg0KDQpUaGFuayB5b3UuIDopDQotQmhhcmF0
-DQoNCj4gDQo+IC1TY290dA0KPiANCg0K
+On 08/12/2013 05:24 PM, Libo Chen wrote:
+
+> Use the wrapper functions for getting and setting the driver data using
+> platform_device instead of using dev_{get,set}_drvdata() with &pdev->dev,
+> so we can directly pass a struct platform_device.
+
+> Signed-off-by: Libo Chen <libo.chen@huawei.com>
+> ---
+>   .../net/ethernet/freescale/fs_enet/fs_enet-main.c  |    1 -
+>   1 files changed, 0 insertions(+), 1 deletions(-)
+
+> diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> index 8de53a1..7e3de10 100644
+> --- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> @@ -1122,7 +1122,6 @@ static int fs_enet_remove(struct platform_device *ofdev)
+>
+>   	fep->ops->free_bd(ndev);
+>   	fep->ops->cleanup_data(ndev);
+> -	dev_set_drvdata(fep->dev, NULL);
+>   	of_node_put(fep->fpi->phy_node);
+>   	free_netdev(ndev);
+>   	return 0;
+
+    Changelog simply doesn't match the patch.
+
+WBR, Sergei
