@@ -1,22 +1,14 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id D610D2C00E5
- for <linuxppc-dev@ozlabs.org>; Mon, 12 Aug 2013 15:02:09 +1000 (EST)
-Date: Mon, 12 Aug 2013 15:02:00 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 2/2] powerpc: Use ibm,chip-id property to compute
- cpu_core_mask if available
-Message-Id: <20130812150200.cbb7fa39afbc5f2a9344585d@canb.auug.org.au>
-In-Reply-To: <20130810034615.GE5240@iris.ozlabs.ibm.com>
-References: <20130810034530.GD5240@iris.ozlabs.ibm.com>
- <20130810034615.GE5240@iris.ozlabs.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1376286123.2066.7.camel@concordia>
+Subject: Re: Build errors on mainline kernel
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Mon, 12 Aug 2013 15:42:03 +1000
+In-Reply-To: <20130809182446.GA26711@us.ibm.com>
+References: <20130809182446.GA26711@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__12_Aug_2013_15_02_00_+1000_a5ajGO4Bmi5e6znr"
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,77 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__12_Aug_2013_15_02_00_+1000_a5ajGO4Bmi5e6znr
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2013-08-09 at 11:24 -0700, Sukadev Bhattiprolu wrote:
+> I am tryng to compile clean mainline kernel with a few different config files
+> and running into errors with some configs.
+> 
+> I am building on RHEL6.3 with following binaries:
+> 
+> 	gcc (GCC) 4.4.6 20120305 (Red Hat 4.4.6-4)
+> 	GNU ld version 2.20.51.0.2-5.34.el6 20100205
+> 	binutils-2.20.51.0.2-5.34.el6.ppc64
+> 	binutils-devel-2.20.51.0.2-5.34.el6.ppc64
+> 
+> I am getting the error with several files and configs, but other configs 
+> (eg: ppc64_defconfig, pmac32_defconfig) build fine.
+> 
+> For instance, with latest mainline kernel (commit 6c2580c) and ppc64_defconfig, I get:
 
-Hi Paul,
+Here you say ppc64_defconfig ..
 
-On Sat, 10 Aug 2013 13:46:15 +1000 Paul Mackerras <paulus@samba.org> wrote:
->
-> +static void traverse_siblings_chip_id(int cpu, int add, int chipid)
+> 	make O=linux-obj mrproper
+> 	make O=linux-obj ppc64e_defconfig
 
-Again, the "add is a boolean.
+But here you say ppc64e_defconfig ?
 
-> +{
-> +	const struct cpumask *mask;
-> +	struct device_node *np;
-> +	int i, plen;
-> +	const int *prop;
-> +
-> +	mask =3D add ? cpu_online_mask : cpu_present_mask;
-> +	for_each_cpu(i, mask) {
-> +		np =3D of_get_cpu_node(i, NULL);
-> +		if (!np)
-> +			continue;
-> +		prop =3D of_get_property(np, "ibm,chip-id", &plen);
-> +		if (prop && plen =3D=3D sizeof(int) && *prop =3D=3D chipid) {
-                                                   ^^^^^
-You should be using of_read_number(), I think.
+> 	make O=linux-obj arch/powerpc/platforms/85xx/smp.o
+> 	  ...
+> 
+> 	CC      arch/powerpc/platforms/85xx/smp.o
+> 	{standard input}: Assembler messages:
+> 	{standard input}:240: Error: junk at end of line: `1'
+> 	make[2]: *** [arch/powerpc/platforms/85xx/smp.o] Error 1
+> 	make[1]: *** [arch/powerpc/platforms/85xx/smp.o] Error 2
 
->  static void traverse_core_siblings(int cpu, int add)
->  {
-> -	struct device_node *l2_cache;
-> +	struct device_node *l2_cache, *np;
->  	const struct cpumask *mask;
-> -	int i;
-> +	int i, chip, plen;
-> +	const int *prop;
-> +
-> +	/* First see if we have ibm,chip-id properties in cpu nodes */
-> +	np =3D of_get_cpu_node(cpu, NULL);
-> +	if (np) {
-> +		chip =3D -1;
-> +		prop =3D of_get_property(np, "ibm,chip-id", &plen);
-> +		if (prop && plen =3D=3D sizeof(int))
-> +			chip =3D *(int *)prop;
+So I'm not clear which config you're building.
 
-Here as well.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Mon__12_Aug_2013_15_02_00_+1000_a5ajGO4Bmi5e6znr
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSCGxOAAoJEECxmPOUX5FEVZUP/0qc90Sv1r5ALBLc0F7csaps
-dru0O8iMgMRfed+ss+dpLigYje13ftW6L3WcRPWZtnlJr/1GUpQ7iKN7KPez2bDK
-/cMGj4DoomPV9Ct+NqvZKqwficIWPES9HkSdpTMRBJGI3FcfWFFUGhQDilxPe3bN
-69fxbFQt+aMQ4pzZFne7Ht03wgOxvCTaaC5q1hfO92O/ifT/P9K57nLaS2CH5M2Y
-M3Ki+tgdNd3lZDUrp4pMVtGqXmZMmjfYc1Jgd67K+Zz5szbBxumVGlD8hBtckpZ8
-OOY6vJEh1aLFEv/Xx5YHclrACHsR1ZZTor45gbde0umsv9APa5pm8C057dxqq5h1
-jXgzD9ehIpF4Ai9pMD8I52LBgk6vsLuq4efea1PBoYK/7yYlS3mCBmLK6bf1fyP4
-/8+b5aGYadWuXk+XzEt8I8JrhPu6gri/X8ZvrmuTKbesnujJdMU1n77bQvuEQoyX
-Np0wfS+dw5AqBlUn+xqvU8sonH5YK54LJEsqSfDSxzzAyPaRPy+vV18TZEK40qJc
-8sJH015oglyftBXhQT97SYSgzd4t6JWaAmGsH1ty06cvts5s/3eO89ra65WvbDVz
-9C+N0esim4kg36+kF60y7sPYTqS4j9u6dLBP+m7Zf/sqSrK2qF32BOHpPzdLPv9S
-A6rGk3XiW3a9Q0BYEunH
-=XMSn
------END PGP SIGNATURE-----
-
---Signature=_Mon__12_Aug_2013_15_02_00_+1000_a5ajGO4Bmi5e6znr--
+cheers
