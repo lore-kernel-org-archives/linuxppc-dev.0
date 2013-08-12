@@ -1,20 +1,22 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 630252C00FF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2013 08:17:03 +1000 (EST)
-Date: Tue, 13 Aug 2013 00:16:54 +0200
-From: Anatolij Gustschin <agust@denx.de>
+Return-Path: <B07421@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 81EA12C013C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2013 09:11:31 +1000 (EST)
+Message-ID: <1376349080.20487.68.camel@snotra.buserror.net>
+Subject: Re: powerpc: Mark low level irq handlers NO_THREAD
+From: Scott Wood <scottwood@freescale.com>
 To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH] powerpc: 52xx: provide a default in mpc52xx_irqhost_map()
-Message-ID: <20130813001654.16d67af6@crub>
-In-Reply-To: <1376317073-14302-1-git-send-email-bigeasy@linutronix.de>
-References: <1376317073-14302-1-git-send-email-bigeasy@linutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, Wolfram Sang <w.sang@pengutronix.de>
+Date: Mon, 12 Aug 2013 18:11:20 -0500
+In-Reply-To: <1376318939-14447-1-git-send-email-bigeasy@linutronix.de>
+References: <1376318939-14447-1-git-send-email-bigeasy@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: Marcelo Tosatti <marcelo@kvack.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 12 Aug 2013 16:17:53 +0200
-Sebastian Andrzej Siewior <bigeasy@linutronix.de> wrote:
-
-> My gcc-4.3.5 fails to compile due to:
->=20
-> |cc1: warnings being treated as errors
-> |arch/powerpc/platforms/52xx/mpc52xx_pic.c: In function =E2=80=98mpc52xx_=
-irqhost_map=E2=80=99:
-> |arch/powerpc/platforms/52xx/mpc52xx_pic.c:343: error: =E2=80=98irqchip=
-=E2=80=99 may be used uninitialized in this function
->=20
-> since commit e34298c ("powerpc: 52xx: nop out unsupported critical
-> IRQs"). This warning is complete crap since only values 0=E2=80=A63 are p=
-ossible
-> which are checked but gcc fails to understand that. I wouldn't care much
-> but since this is compiled with -Werror I made this patch.
-> While add it, I replaced the warning from l2irq to l1irq since this is
-> the number that is evaluated.
->=20
+On Mon, 2013-08-12 at 16:48 +0200, Sebastian Andrzej Siewior wrote:
+> From: Thomas Gleixner <tglx@linutronix.de>
+> 
+> These low level handlers cannot be threaded. Mark them NO_THREAD
+> 
+> Reported-by: leroy christophe <christophe.leroy@c-s.fr>
+> Tested-by: leroy christophe <christophe.leroy@c-s.fr>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 > ---
->  arch/powerpc/platforms/52xx/mpc52xx_pic.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> This patch has been posted on Feb 13, 2013 and nobody responded back then.
 
-Applied, thanks!
+It went in v3.11-rc1.
 
-Anatolij
+-Scott
