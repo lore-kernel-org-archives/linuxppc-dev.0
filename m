@@ -1,12 +1,31 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Mon, 12 Aug 2013 16:12:06 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix denormalized exception handler
-Message-ID: <20130812061206.GA20246@iris.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Anton Blanchard <anton@samba.org>
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 60AC52C00F0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 16:15:54 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Mon, 12 Aug 2013 11:35:11 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1CB1FE0059
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 11:46:07 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7C6FgE515663226
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 11:45:42 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r7C6Fhj2017111
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 06:15:44 GMT
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4] powerpc/eeh: powerpc/eeh: Fix undefined variable
+Date: Mon, 12 Aug 2013 02:15:36 -0400
+Message-Id: <1376288136-3291-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+Cc: Mike Qiu <qiudayu@linux.vnet.ibm.com>, shangw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,60 +35,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The denormalized exception handler (denorm_exception_hv) has a couple
-of bugs.  If the CONFIG_PPC_DENORMALISATION option is not selected,
-or the HSRR1_DENORM bit is not set in HSRR1, we don't test whether the
-interrupt occurred within a KVM guest.  On the other hand, if the
-HSRR1_DENORM bit is set and CONFIG_PPC_DENORMALISATION is enabled,
-we corrupt the CFAR and PPR.
+changes for V4:
+	- changes the type of frozen_pe_no from %d to %llu
+	  in pr_devel()
 
-To correct these problems, this replaces the open-coded version of
-EXCEPTION_PROLOG_1 that is there currently, and that is missing the
-saving of PPR and CFAR values to the PACA, with an instance of
-EXCEPTION_PROLOG_1.  This adds an explicit KVMTEST after testing
-whether the exception is one we can handle, and adds code to restore
-the CFAR on exit.
+'pe_no' hasn't been defined, it should be an typo error,
+it should be 'frozen_pe_no'.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+Also '__func__' has missed in IODA_EEH_DBG(),
+
+For safety reasons, use pr_devel() directly, instead
+of use IODA_EEH_DBG()
+
+Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 22 ++++++++--------------
+ 1 file changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index e3c8a03..3e06b26 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -360,11 +360,7 @@ denorm_exception_hv:
- 	HMT_MEDIUM_PPR_DISCARD
- 	mtspr	SPRN_SPRG_HSCRATCH0,r13
- 	EXCEPTION_PROLOG_0(PACA_EXGEN)
--	std	r11,PACA_EXGEN+EX_R11(r13)
--	std	r12,PACA_EXGEN+EX_R12(r13)
--	mfspr	r9,SPRN_SPRG_HSCRATCH0
--	std	r9,PACA_EXGEN+EX_R13(r13)
--	mfcr	r9
-+	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0x1500)
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index 0cd1c4a..cf42e74 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -36,13 +36,6 @@
+ #include "powernv.h"
+ #include "pci.h"
  
- #ifdef CONFIG_PPC_DENORMALISATION
- 	mfspr	r10,SPRN_HSRR1
-@@ -374,6 +370,7 @@ denorm_exception_hv:
- 	bne+	denorm_assist
- #endif
+-/* Debugging option */
+-#ifdef IODA_EEH_DBG_ON
+-#define IODA_EEH_DBG(args...)	pr_info(args)
+-#else
+-#define IODA_EEH_DBG(args...)
+-#endif
+-
+ static char *hub_diag = NULL;
+ static int ioda_eeh_nb_init = 0;
  
-+	KVMTEST(0x1500)
- 	EXCEPTION_PROLOG_PSERIES_1(denorm_common, EXC_HV)
- 	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_STD, 0x1500)
+@@ -823,17 +816,17 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
  
-@@ -494,6 +491,10 @@ denorm_done:
- 	mtcrf	0x80,r9
- 	ld	r9,PACA_EXGEN+EX_R9(r13)
- 	RESTORE_PPR_PACA(PACA_EXGEN, r10)
-+BEGIN_FTR_SECTION
-+	ld	r10,PACA_EXGEN+EX_CFAR(r13)
-+	mtspr	SPRN_CFAR,r10
-+END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
- 	ld	r10,PACA_EXGEN+EX_R10(r13)
- 	ld	r11,PACA_EXGEN+EX_R11(r13)
- 	ld	r12,PACA_EXGEN+EX_R12(r13)
+ 		/* If OPAL API returns error, we needn't proceed */
+ 		if (rc != OPAL_SUCCESS) {
+-			IODA_EEH_DBG("%s: Invalid return value on "
+-				     "PHB#%x (0x%lx) from opal_pci_next_error",
+-				     __func__, hose->global_number, rc);
++			pr_devel("%s: Invalid return value on "
++				 "PHB#%x (0x%lx) from opal_pci_next_error",
++				 __func__, hose->global_number, rc);
+ 			continue;
+ 		}
+ 
+ 		/* If the PHB doesn't have error, stop processing */
+ 		if (err_type == OPAL_EEH_NO_ERROR ||
+ 		    severity == OPAL_EEH_SEV_NO_ERROR) {
+-			IODA_EEH_DBG("%s: No error found on PHB#%x\n",
+-				     __func__, hose->global_number);
++			pr_devel("%s: No error found on PHB#%x\n",
++				 __func__, hose->global_number);
+ 			continue;
+ 		}
+ 
+@@ -842,8 +835,9 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 		 * highest priority reported upon multiple errors on the
+ 		 * specific PHB.
+ 		 */
+-		IODA_EEH_DBG("%s: Error (%d, %d, %d) on PHB#%x\n",
+-			err_type, severity, pe_no, hose->global_number);
++		pr_devel("%s: Error (%d, %d, %llu) on PHB#%x\n",
++			 __func__, err_type, severity,
++			 frozen_pe_no, hose->global_number);
+ 		switch (err_type) {
+ 		case OPAL_EEH_IOC_ERROR:
+ 			if (severity == OPAL_EEH_SEV_IOC_DEAD) {
 -- 
-1.8.4.rc2
+1.8.2.1
