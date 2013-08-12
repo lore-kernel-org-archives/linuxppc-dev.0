@@ -1,25 +1,25 @@
-Return-Path: <vince@deater.net>
-Received: from smtpauth03.mfg.siteprotect.com (smtpauth03h.mfg.siteprotect.com
- [64.26.60.134]) by ozlabs.org (Postfix) with ESMTP id E3A012C00D6
- for <linuxppc-dev@ozlabs.org>; Mon, 12 Aug 2013 13:18:45 +1000 (EST)
-Date: Sun, 11 Aug 2013 23:19:52 -0400 (EDT)
-From: Vince Weaver <vince@deater.net>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 5/7] powerpc/perf: Define big-endian version of
- perf_mem_data_src
-In-Reply-To: <20130811235758.GA29824@concordia>
-Message-ID: <alpine.DEB.2.02.1308112308040.16609@pianoman.cluster.toy>
-References: <20130810174831.GA15551@us.ibm.com>
- <20130810175153.GF15551@us.ibm.com>
- <alpine.DEB.2.02.1308102232120.4119@pianoman.cluster.toy>
- <20130811235758.GA29824@concordia>
+Return-Path: <B42677@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 71E5F2C00D9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 12:44:36 +1000 (EST)
+Message-ID: <52084C7E.9000706@freescale.com>
+Date: Mon, 12 Aug 2013 10:46:22 +0800
+From: Zhang Haijun <B42677@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3 V2] mmc:core: parse voltage from device-tree
+References: <1375251927-3330-1-git-send-email-Haijun.Zhang@freescale.com>
+ <733059D3-105A-437B-B330-763D2C1859B2@kernel.crashing.org>
+In-Reply-To: <733059D3-105A-437B-B330-763D2C1859B2@kernel.crashing.org>
+Content-Type: multipart/alternative;
+ boundary="------------070007000903050701070905"
+Cc: linux-mmc@vger.kernel.org, cbouatmailru@gmail.com, scottwood@freescale.com,
+ cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
+ Haijun Zhang <Haijun.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +29,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 12 Aug 2013, Michael Ellerman wrote:
-> 
-> Yes I think so. The interface is already defined and it's little endian,
-> so on big endian we just need to swap.
-> 
-> The only part I'm not clear on is how things are handled in perf
-> userspace, it seems to already do some byte swapping.
+--------------070007000903050701070905
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 
-It would be nice to clarify this.
+On 08/09/2013 10:48 PM, Kumar Gala wrote:
+> On Jul 31, 2013, at 1:25 AM, Haijun Zhang wrote:
+>
+>> Add function to support get voltage from device-tree.
+>> If there are voltage-range specified in device-tree node, this function
+>> will parse it and return the avail voltage mask.
+>>
+>> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+>> ---
+>> changes for v2:
+>> 	- Update the parameters of function
+>>
+>> drivers/mmc/core/core.c  | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+>> include/linux/mmc/core.h |  1 +
+>> 2 files changed, 47 insertions(+)
+> There should be a device tree binding spec update to go with this patch series.
+>
+> - k
+Hi, kumar
 
-"struct perf_branch_entry" also has bitfields like this, though to make
-things more confusing that structure isn't exported via the uapi header
-so it's not clear how userspace code is supposed to interpret the values.
+I'll update this tree binding spec after the patch set is accept by Anton.
 
-As you say it gets complicated with perf userspace, especially in cases
-where you record the data on big-endian but then try to analyze the
-results on a little-endian machine.
+-- 
+Thanks & Regards
 
-It would be nice to get confirmation that these bitfields will always be 
-little-endian.  I guess they currently are by definition because only 
-x86/pebs sets data.data_src.val so far?
+Haijun
 
-Vince
+
+--------------070007000903050701070905
+Content-Type: text/html; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=ISO-8859-1"
+      http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <div class="moz-cite-prefix">On 08/09/2013 10:48 PM, Kumar Gala
+      wrote:<br>
+    </div>
+    <blockquote
+      cite="mid:733059D3-105A-437B-B330-763D2C1859B2@kernel.crashing.org"
+      type="cite">
+      <pre wrap="">
+On Jul 31, 2013, at 1:25 AM, Haijun Zhang wrote:
+
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">Add function to support get voltage from device-tree.
+If there are voltage-range specified in device-tree node, this function
+will parse it and return the avail voltage mask.
+
+Signed-off-by: Haijun Zhang <a class="moz-txt-link-rfc2396E" href="mailto:haijun.zhang@freescale.com">&lt;haijun.zhang@freescale.com&gt;</a>
+---
+changes for v2:
+	- Update the parameters of function
+
+drivers/mmc/core/core.c  | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+include/linux/mmc/core.h |  1 +
+2 files changed, 47 insertions(+)
+</pre>
+      </blockquote>
+      <pre wrap="">
+There should be a device tree binding spec update to go with this patch series.
+
+- k
+</pre>
+    </blockquote>
+    <font size="-1"><font size="-1">Hi, kumar<br>
+        <br>
+        <font size="-1">I'll update <font size="-1">this tree bin<font
+              size="-1">ding spec <font size="-1">after the patch set
+                is acce<font size="-1">pt by Anton.</font></font></font></font></font><br>
+      </font></font><br>
+    <pre class="moz-signature" cols="72">-- 
+Thanks &amp; Regards
+
+Haijun</pre>
+  </body>
+</html>
+
+--------------070007000903050701070905--
