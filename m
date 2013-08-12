@@ -1,18 +1,24 @@
-Return-Path: <bigeasy@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 58D9E2C0113
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2013 00:49:14 +1000 (EST)
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: powerpc: Mark low level irq handlers NO_THREAD
-Date: Mon, 12 Aug 2013 16:48:59 +0200
-Message-Id: <1376318939-14447-1-git-send-email-bigeasy@linutronix.de>
-Cc: Marcelo Tosatti <marcelo@kvack.org>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Return-Path: <B07421@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DBB712C00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2013 02:11:49 +1000 (EST)
+Message-ID: <1376323889.20487.7.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/3 V2] mmc:core: parse voltage from device-tree
+From: Scott Wood <scottwood@freescale.com>
+To: Zhang Haijun <B42677@freescale.com>
+Date: Mon, 12 Aug 2013 11:11:29 -0500
+In-Reply-To: <52084C7E.9000706@freescale.com>
+References: <1375251927-3330-1-git-send-email-Haijun.Zhang@freescale.com>
+ <733059D3-105A-437B-B330-763D2C1859B2@kernel.crashing.org>
+ <52084C7E.9000706@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: linux-mmc@vger.kernel.org, cbouatmailru@gmail.com, cjb@laptop.org,
+ linuxppc-dev@lists.ozlabs.org, Haijun Zhang <Haijun.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,39 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thomas Gleixner <tglx@linutronix.de>
+On Mon, 2013-08-12 at 10:46 +0800, Zhang Haijun wrote:
+> On 08/09/2013 10:48 PM, Kumar Gala wrote:
+> 
+> > On Jul 31, 2013, at 1:25 AM, Haijun Zhang wrote:
+> > 
+> > > Add function to support get voltage from device-tree.
+> > > If there are voltage-range specified in device-tree node, this function
+> > > will parse it and return the avail voltage mask.
+> > > 
+> > > Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+> > > ---
+> > > changes for v2:
+> > > 	- Update the parameters of function
+> > > 
+> > > drivers/mmc/core/core.c  | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+> > > include/linux/mmc/core.h |  1 +
+> > > 2 files changed, 47 insertions(+)
+> > There should be a device tree binding spec update to go with this patch series.
+> > 
+> > - k
+> Hi, kumar
+> 
+> I'll update this tree binding spec after the patch set is accept by
+> Anton.
 
-These low level handlers cannot be threaded. Mark them NO_THREAD
+Bindings should come first (or at least, at the same time).
 
-Reported-by: leroy christophe <christophe.leroy@c-s.fr>
-Tested-by: leroy christophe <christophe.leroy@c-s.fr>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
-
-This patch has been posted on Feb 13, 2013 and nobody responded back then.
-
- arch/powerpc/platforms/8xx/m8xx_setup.c |    1 +
- arch/powerpc/sysdev/cpm1.c              |    1 +
- 2 files changed, 2 insertions(+)
-
---- a/arch/powerpc/platforms/8xx/m8xx_setup.c
-+++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
-@@ -43,6 +43,7 @@ static irqreturn_t timebase_interrupt(in
- 
- static struct irqaction tbint_irqaction = {
- 	.handler = timebase_interrupt,
-+	.flags = IRQF_NO_THREAD,
- 	.name = "tbint",
- };
- 
---- a/arch/powerpc/sysdev/cpm1.c
-+++ b/arch/powerpc/sysdev/cpm1.c
-@@ -120,6 +120,7 @@ static irqreturn_t cpm_error_interrupt(i
- 
- static struct irqaction cpm_error_irqaction = {
- 	.handler = cpm_error_interrupt,
-+	.flags = IRQF_NO_THREAD,
- 	.name = "error",
- };
- 
+-Scott
