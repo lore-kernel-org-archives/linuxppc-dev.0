@@ -1,22 +1,25 @@
-Return-Path: <B42677@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9C62D2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 12:45:38 +1000 (EST)
-From: Haijun Zhang <Haijun.Zhang@freescale.com>
-To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 3/3 V3] mmc:esdhc: add support to get voltage from device-tree
-Date: Mon, 12 Aug 2013 09:39:04 +0800
-Message-ID: <1376271546-25085-2-git-send-email-Haijun.Zhang@freescale.com>
-In-Reply-To: <1376271546-25085-1-git-send-email-Haijun.Zhang@freescale.com>
-References: <1376271546-25085-1-git-send-email-Haijun.Zhang@freescale.com>
+Return-Path: <vince@deater.net>
+Received: from smtpauth03.mfg.siteprotect.com (smtpauth03h.mfg.siteprotect.com
+ [64.26.60.134]) by ozlabs.org (Postfix) with ESMTP id E3A012C00D6
+ for <linuxppc-dev@ozlabs.org>; Mon, 12 Aug 2013 13:18:45 +1000 (EST)
+Date: Sun, 11 Aug 2013 23:19:52 -0400 (EDT)
+From: Vince Weaver <vince@deater.net>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 5/7] powerpc/perf: Define big-endian version of
+ perf_mem_data_src
+In-Reply-To: <20130811235758.GA29824@concordia>
+Message-ID: <alpine.DEB.2.02.1308112308040.16609@pianoman.cluster.toy>
+References: <20130810174831.GA15551@us.ibm.com>
+ <20130810175153.GF15551@us.ibm.com>
+ <alpine.DEB.2.02.1308102232120.4119@pianoman.cluster.toy>
+ <20130811235758.GA29824@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: X.Xie@freescale.com, cbouatmailru@gmail.com, scottwood@freescale.com,
- cjb@laptop.org, Haijun Zhang <haijun.zhang@freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add suppport to get voltage from device-tree node for esdhc host,
-if voltage-ranges was specified in device-tree node we can get
-ocr_mask instead of read from host capacity register. If not voltages
-still can be get from host capacity register.
+On Mon, 12 Aug 2013, Michael Ellerman wrote:
+> 
+> Yes I think so. The interface is already defined and it's little endian,
+> so on big endian we just need to swap.
+> 
+> The only part I'm not clear on is how things are handled in perf
+> userspace, it seems to already do some byte swapping.
 
-Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
----
-changes for V3:
-	- changed the parameter of function
+It would be nice to clarify this.
 
- drivers/mmc/host/sdhci-of-esdhc.c | 1 +
- 1 file changed, 1 insertion(+)
+"struct perf_branch_entry" also has bitfields like this, though to make
+things more confusing that structure isn't exported via the uapi header
+so it's not clear how userspace code is supposed to interpret the values.
 
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index 15039e2..e328252 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -316,6 +316,7 @@ static int sdhci_esdhc_probe(struct platform_device *pdev)
- 
- 	/* call to generic mmc_of_parse to support additional capabilities */
- 	mmc_of_parse(host->mmc);
-+	mmc_of_parse_voltage(np, &host->ocr_mask);
- 
- 	ret = sdhci_add_host(host);
- 	if (ret)
--- 
-1.8.0
+As you say it gets complicated with perf userspace, especially in cases
+where you record the data on big-endian but then try to analyze the
+results on a little-endian machine.
+
+It would be nice to get confirmation that these bitfields will always be 
+little-endian.  I guess they currently are by definition because only 
+x86/pebs sets data.data_src.val so far?
+
+Vince
