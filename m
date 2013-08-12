@@ -1,16 +1,16 @@
 Return-Path: <B42378@freescale.com>
 Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DD9012C01E4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 21:51:51 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 537FB2C00D4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 21:54:50 +1000 (EST)
 From: Nicolin Chen <b42378@freescale.com>
 To: <broonie@kernel.org>, <lars@metafoo.de>, <p.zabel@pengutronix.de>
-Subject: [PATCH v4 0/2] Add freescale S/PDIF CPU DAI and machine drivers
-Date: Mon, 12 Aug 2013 20:01:08 +0800
-Message-ID: <1376308870-14232-1-git-send-email-b42378@freescale.com>
+Subject: [PATCH v4 resent 0/2] Add freescale S/PDIF CPU DAI and machine drivers
+Date: Mon, 12 Aug 2013 20:05:26 +0800
+Message-ID: <cover.1376309076.git.b42378@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org,
