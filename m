@@ -1,31 +1,14 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 60AC52C00F0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 16:15:54 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Mon, 12 Aug 2013 11:35:11 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1CB1FE0059
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 11:46:07 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7C6FgE515663226
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 11:45:42 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7C6Fhj2017111
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 06:15:44 GMT
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4] powerpc/eeh: powerpc/eeh: Fix undefined variable
-Date: Mon, 12 Aug 2013 02:15:36 -0400
-Message-Id: <1376288136-3291-1-git-send-email-qiudayu@linux.vnet.ibm.com>
-Cc: Mike Qiu <qiudayu@linux.vnet.ibm.com>, shangw@linux.vnet.ibm.com
+Return-Path: <paulus@ozlabs.org>
+Date: Mon, 12 Aug 2013 16:28:47 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2 1/2] powerpc: Pull out cpu_core_mask updates into a
+ separate function
+Message-ID: <20130812062847.GB20246@iris.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,75 +18,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-changes for V4:
-	- changes the type of frozen_pe_no from %d to %llu
-	  in pr_devel()
+This factors out the details of updating cpu_core_mask into a separate
+function, to make it easier to change how the mask is calculated later.
+This makes no functional change.
 
-'pe_no' hasn't been defined, it should be an typo error,
-it should be 'frozen_pe_no'.
-
-Also '__func__' has missed in IODA_EEH_DBG(),
-
-For safety reasons, use pr_devel() directly, instead
-of use IODA_EEH_DBG()
-
-Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/platforms/powernv/eeh-ioda.c | 22 ++++++++--------------
- 1 file changed, 8 insertions(+), 14 deletions(-)
+v2: add is bool
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 0cd1c4a..cf42e74 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -36,13 +36,6 @@
- #include "powernv.h"
- #include "pci.h"
+ arch/powerpc/kernel/smp.c | 56 +++++++++++++++++++++++------------------------
+ 1 file changed, 28 insertions(+), 28 deletions(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 38b0ba6..1568525 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -609,11 +609,36 @@ static struct device_node *cpu_to_l2cache(int cpu)
+ 	return cache;
+ }
  
--/* Debugging option */
--#ifdef IODA_EEH_DBG_ON
--#define IODA_EEH_DBG(args...)	pr_info(args)
--#else
--#define IODA_EEH_DBG(args...)
--#endif
++static void traverse_core_siblings(int cpu, bool add)
++{
++	struct device_node *l2_cache;
++	const struct cpumask *mask;
++	int i;
++
++	l2_cache = cpu_to_l2cache(cpu);
++	mask = add ? cpu_online_mask : cpu_present_mask;
++	for_each_cpu(i, mask) {
++		struct device_node *np = cpu_to_l2cache(i);
++		if (!np)
++			continue;
++		if (np == l2_cache) {
++			if (add) {
++				cpumask_set_cpu(cpu, cpu_core_mask(i));
++				cpumask_set_cpu(i, cpu_core_mask(cpu));
++			} else {
++				cpumask_clear_cpu(cpu, cpu_core_mask(i));
++				cpumask_clear_cpu(i, cpu_core_mask(cpu));
++			}
++		}
++		of_node_put(np);
++	}
++	of_node_put(l2_cache);
++}
++
+ /* Activate a secondary processor. */
+ void start_secondary(void *unused)
+ {
+ 	unsigned int cpu = smp_processor_id();
+-	struct device_node *l2_cache;
+ 	int i, base;
+ 
+ 	atomic_inc(&init_mm.mm_count);
+@@ -652,18 +677,7 @@ void start_secondary(void *unused)
+ 		cpumask_set_cpu(cpu, cpu_core_mask(base + i));
+ 		cpumask_set_cpu(base + i, cpu_core_mask(cpu));
+ 	}
+-	l2_cache = cpu_to_l2cache(cpu);
+-	for_each_online_cpu(i) {
+-		struct device_node *np = cpu_to_l2cache(i);
+-		if (!np)
+-			continue;
+-		if (np == l2_cache) {
+-			cpumask_set_cpu(cpu, cpu_core_mask(i));
+-			cpumask_set_cpu(i, cpu_core_mask(cpu));
+-		}
+-		of_node_put(np);
+-	}
+-	of_node_put(l2_cache);
++	traverse_core_siblings(cpu, true);
+ 
+ 	smp_wmb();
+ 	notify_cpu_starting(cpu);
+@@ -719,7 +733,6 @@ int arch_sd_sibling_asym_packing(void)
+ #ifdef CONFIG_HOTPLUG_CPU
+ int __cpu_disable(void)
+ {
+-	struct device_node *l2_cache;
+ 	int cpu = smp_processor_id();
+ 	int base, i;
+ 	int err;
+@@ -739,20 +752,7 @@ int __cpu_disable(void)
+ 		cpumask_clear_cpu(cpu, cpu_core_mask(base + i));
+ 		cpumask_clear_cpu(base + i, cpu_core_mask(cpu));
+ 	}
 -
- static char *hub_diag = NULL;
- static int ioda_eeh_nb_init = 0;
+-	l2_cache = cpu_to_l2cache(cpu);
+-	for_each_present_cpu(i) {
+-		struct device_node *np = cpu_to_l2cache(i);
+-		if (!np)
+-			continue;
+-		if (np == l2_cache) {
+-			cpumask_clear_cpu(cpu, cpu_core_mask(i));
+-			cpumask_clear_cpu(i, cpu_core_mask(cpu));
+-		}
+-		of_node_put(np);
+-	}
+-	of_node_put(l2_cache);
+-
++	traverse_core_siblings(cpu, false);
  
-@@ -823,17 +816,17 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 
- 		/* If OPAL API returns error, we needn't proceed */
- 		if (rc != OPAL_SUCCESS) {
--			IODA_EEH_DBG("%s: Invalid return value on "
--				     "PHB#%x (0x%lx) from opal_pci_next_error",
--				     __func__, hose->global_number, rc);
-+			pr_devel("%s: Invalid return value on "
-+				 "PHB#%x (0x%lx) from opal_pci_next_error",
-+				 __func__, hose->global_number, rc);
- 			continue;
- 		}
- 
- 		/* If the PHB doesn't have error, stop processing */
- 		if (err_type == OPAL_EEH_NO_ERROR ||
- 		    severity == OPAL_EEH_SEV_NO_ERROR) {
--			IODA_EEH_DBG("%s: No error found on PHB#%x\n",
--				     __func__, hose->global_number);
-+			pr_devel("%s: No error found on PHB#%x\n",
-+				 __func__, hose->global_number);
- 			continue;
- 		}
- 
-@@ -842,8 +835,9 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 		 * highest priority reported upon multiple errors on the
- 		 * specific PHB.
- 		 */
--		IODA_EEH_DBG("%s: Error (%d, %d, %d) on PHB#%x\n",
--			err_type, severity, pe_no, hose->global_number);
-+		pr_devel("%s: Error (%d, %d, %llu) on PHB#%x\n",
-+			 __func__, err_type, severity,
-+			 frozen_pe_no, hose->global_number);
- 		switch (err_type) {
- 		case OPAL_EEH_IOC_ERROR:
- 			if (severity == OPAL_EEH_SEV_IOC_DEAD) {
+ 	return 0;
+ }
 -- 
-1.8.2.1
+1.8.4.rc2
