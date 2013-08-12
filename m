@@ -1,36 +1,12 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3CA922C00EB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 16:02:59 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 12 Aug 2013 07:02:55 +0100
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 1304638C8027
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 02:02:52 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7C62rml090846
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 02:02:53 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7C62r8R005775
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2013 02:02:53 -0400
-Date: Sun, 11 Aug 2013 23:02:28 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: Build errors on mainline kernel
-Message-ID: <20130812060228.GA8608@us.ibm.com>
-References: <20130809182446.GA26711@us.ibm.com>
- <1376286123.2066.7.camel@concordia>
+Return-Path: <paulus@ozlabs.org>
+Date: Mon, 12 Aug 2013 16:12:06 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fix denormalized exception handler
+Message-ID: <20130812061206.GA20246@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1376286123.2066.7.camel@concordia>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,31 +16,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman [michael@ellerman.id.au] wrote:
-| On Fri, 2013-08-09 at 11:24 -0700, Sukadev Bhattiprolu wrote:
-| > I am tryng to compile clean mainline kernel with a few different config files
-| > and running into errors with some configs.
-| > 
-| > I am building on RHEL6.3 with following binaries:
-| > 
-| > 	gcc (GCC) 4.4.6 20120305 (Red Hat 4.4.6-4)
-| > 	GNU ld version 2.20.51.0.2-5.34.el6 20100205
-| > 	binutils-2.20.51.0.2-5.34.el6.ppc64
-| > 	binutils-devel-2.20.51.0.2-5.34.el6.ppc64
-| > 
-| > I am getting the error with several files and configs, but other configs 
-| > (eg: ppc64_defconfig, pmac32_defconfig) build fine.
-| > 
-| > For instance, with latest mainline kernel (commit 6c2580c) and ppc64_defconfig, I get:
-| 
-| Here you say ppc64_defconfig ..
+The denormalized exception handler (denorm_exception_hv) has a couple
+of bugs.  If the CONFIG_PPC_DENORMALISATION option is not selected,
+or the HSRR1_DENORM bit is not set in HSRR1, we don't test whether the
+interrupt occurred within a KVM guest.  On the other hand, if the
+HSRR1_DENORM bit is set and CONFIG_PPC_DENORMALISATION is enabled,
+we corrupt the CFAR and PPR.
 
-That was a stupid typo. ppc64_defconfig works.
+To correct these problems, this replaces the open-coded version of
+EXCEPTION_PROLOG_1 that is there currently, and that is missing the
+saving of PPR and CFAR values to the PACA, with an instance of
+EXCEPTION_PROLOG_1.  This adds an explicit KVMTEST after testing
+whether the exception is one we can handle, and adds code to restore
+the CFAR on exit.
 
-| 
-| > 	make O=linux-obj mrproper
-| > 	make O=linux-obj ppc64e_defconfig
-| 
-| But here you say ppc64e_defconfig ?
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-ppc64e_defconfig fails (checked again now).
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index e3c8a03..3e06b26 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -360,11 +360,7 @@ denorm_exception_hv:
+ 	HMT_MEDIUM_PPR_DISCARD
+ 	mtspr	SPRN_SPRG_HSCRATCH0,r13
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
+-	std	r11,PACA_EXGEN+EX_R11(r13)
+-	std	r12,PACA_EXGEN+EX_R12(r13)
+-	mfspr	r9,SPRN_SPRG_HSCRATCH0
+-	std	r9,PACA_EXGEN+EX_R13(r13)
+-	mfcr	r9
++	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0x1500)
+ 
+ #ifdef CONFIG_PPC_DENORMALISATION
+ 	mfspr	r10,SPRN_HSRR1
+@@ -374,6 +370,7 @@ denorm_exception_hv:
+ 	bne+	denorm_assist
+ #endif
+ 
++	KVMTEST(0x1500)
+ 	EXCEPTION_PROLOG_PSERIES_1(denorm_common, EXC_HV)
+ 	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_STD, 0x1500)
+ 
+@@ -494,6 +491,10 @@ denorm_done:
+ 	mtcrf	0x80,r9
+ 	ld	r9,PACA_EXGEN+EX_R9(r13)
+ 	RESTORE_PPR_PACA(PACA_EXGEN, r10)
++BEGIN_FTR_SECTION
++	ld	r10,PACA_EXGEN+EX_CFAR(r13)
++	mtspr	SPRN_CFAR,r10
++END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ 	ld	r10,PACA_EXGEN+EX_R10(r13)
+ 	ld	r11,PACA_EXGEN+EX_R11(r13)
+ 	ld	r12,PACA_EXGEN+EX_R12(r13)
+-- 
+1.8.4.rc2
