@@ -1,10 +1,14 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-Date: Tue, 13 Aug 2013 15:40:11 +1000
-Message-ID: <22993.1376372411@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- anton@samba.org, Stephen Rothwell <sfr@canb.auug.org.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH v2] powerpc: Avoid link stack corruption for MMU on exceptions
+In-reply-to: <20130813150617.dba639d38dad2ea41668c4d4@canb.auug.org.au>
+References: <18522.1376360422@ale.ozlabs.ibm.com>
+ <20130813150617.dba639d38dad2ea41668c4d4@canb.auug.org.au>
+Date: Tue, 13 Aug 2013 15:54:52 +1000
+Message-ID: <24595.1376373292@ale.ozlabs.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, anton@samba.org,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -14,14 +18,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fcc: +outbox
-Subject: [PATCH v2] powerpc: Avoid link stack corruption for MMU on exceptions
-In-reply-to: <20130813150617.dba639d38dad2ea41668c4d4@canb.auug.org.au>
-References: <18522.1376360422@ale.ozlabs.ibm.com> <20130813150617.dba639d38dad2ea41668c4d4@canb.auug.org.au>
-Comments: In-reply-to Stephen Rothwell <sfr@canb.auug.org.au>
-   message dated "Tue, 13 Aug 2013 15:06:17 +1000."
-X-Mailer: MH-E 8.2; nmh 1.5; GNU Emacs 23.4.1
---------
 When we have MMU on exceptions (POWER8) and a relocatable kernel, we
 need to branch from the initial exception vectors at 0x0 to up high
 where the kernel might be located.  Currently we do this using the link
@@ -32,7 +28,7 @@ count register.  We did this for the syscall entry path in:
   6a40480 powerpc: Avoid link stack corruption in MMU on syscall entry path
 but I stupidly forgot to do the same for other exceptions.
 
-This patches changes the initial exception vectors to use the count
+This patch changes the initial exception vectors to use the count
 register instead of the link register when we need to branch up to the
 relocated kernel.
 
@@ -45,6 +41,8 @@ patch.
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 v2: fix comments as noticed by sfr
+
+Note to self, give emails a subject :-(
 
 diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
 index 07ca627..fe5e523 100644
