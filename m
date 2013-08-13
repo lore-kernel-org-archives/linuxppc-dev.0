@@ -1,29 +1,27 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-qa0-x232.google.com (mail-qa0-x232.google.com
- [IPv6:2607:f8b0:400d:c00::232])
+Return-Path: <festevam@gmail.com>
+Received: from mail-vc0-x22f.google.com (mail-vc0-x22f.google.com
+ [IPv6:2607:f8b0:400c:c03::22f])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6B3062C0158
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 04:44:27 +1000 (EST)
-Received: by mail-qa0-f50.google.com with SMTP id f14so513156qak.16
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2013 11:44:23 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 4AB542C015A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 05:01:20 +1000 (EST)
+Received: by mail-vc0-f175.google.com with SMTP id ia10so4157472vcb.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2013 12:01:15 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <520A536C.3030600@arm.com>
-References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>
- <520A536C.3030600@arm.com>
-Date: Tue, 13 Aug 2013 13:44:23 -0500
-Message-ID: <CAL_JsqJdGXuTmb2kgBwgmRYGs9f92-dsawDXSXjmJW8cwjFVQQ@mail.gmail.com>
-Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
-From: Rob Herring <robherring2@gmail.com>
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>,
- Olof Johansson <olof@lixom.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <CAOMZO5A7noEb98yuCPY6o2mf-FikFcMYiDLpg3huPKHMO7Fwdw@mail.gmail.com>
+References: <1376308870-14232-1-git-send-email-b42378@freescale.com>
+ <1376308870-14232-2-git-send-email-b42378@freescale.com>
+ <CAOMZO5A7noEb98yuCPY6o2mf-FikFcMYiDLpg3huPKHMO7Fwdw@mail.gmail.com>
+Date: Tue, 13 Aug 2013 16:01:14 -0300
+Message-ID: <CAOMZO5AqUcKYD8Rx_NV5=r3soBaScDY5PxD0SS_HEyYpf_PpbQ@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH v4 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+From: Fabio Estevam <festevam@gmail.com>
+To: Nicolin Chen <b42378@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, lars@metafoo.de,
+ timur@tabi.org, rob.herring@calxeda.com, broonie@kernel.org,
+ p.zabel@pengutronix.de, Shawn Guo <shawn.guo@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,70 +31,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 13, 2013 at 10:40 AM, Sudeep KarkadaNagesha
-<Sudeep.KarkadaNagesha@arm.com> wrote:
-> Adding PowerPC list
+On Tue, Aug 13, 2013 at 2:58 PM, Fabio Estevam <festevam@gmail.com> wrote:
+> On Mon, Aug 12, 2013 at 9:01 AM, Nicolin Chen <b42378@freescale.com> wrote:
+>> +Required properties:
+>> +
+>> +  - compatible : Compatible list, contains "fsl,<chip>-spdif". Using general
 >
-> On 13/08/13 14:00, Rafael J. Wysocki wrote:
->> On Monday, August 12, 2013 02:27:47 PM Sudeep KarkadaNagesha wrote:
->>> The following changes since commit
->>> d4e4ab86bcba5a72779c43dc1459f71fea3d89c8:
->>>
->>> Linux 3.11-rc5 (2013-08-11 18:04:20 -0700)
->>>
->>> are available in the git repository at:
->>>
->>> git://linux-arm.org/linux-skn.git cpu_of_node
+> Can't we just use "fsl,fsl-spdif" instead?
 
-[snip]
-
->> All error/warnings:
->>
->> warning: (MPC836x_RDK && MTD_NAND_FSL_ELBC && MTD_NAND_FSL_UPM)
->> selects FSL_LBC which has unmet direct dependencies (FSL_SOC)
->> warning: (MPC836x_RDK && MTD_NAND_FSL_ELBC && MTD_NAND_FSL_UPM)
->> selects FSL_LBC which has unmet direct dependencies (FSL_SOC)
->> In file included from arch/powerpc/include/asm/kvm_para.h:26:0, from
->> include/uapi/linux/kvm_para.h:26, from include/linux/kvm_para.h:4,
->> from include/linux/kvm_host.h:30, from
->> arch/powerpc/kernel/asm-offsets.c:53:
->> include/linux/of.h:269:28: error: conflicting types for
->>'of_get_cpu_node'
->> extern struct device_node *of_get_cpu_node(int cpu); ^ In file
->> included from include/linux/of.h:139:0, from
->> arch/powerpc/include/asm/kvm_para.h:26, from
->> include/uapi/linux/kvm_para.h:26, from include/linux/kvm_para.h:4,
->> from include/linux/kvm_host.h:30, from
->> arch/powerpc/kernel/asm-offsets.c:53:
->> arch/powerpc/include/asm/prom.h:47:21: note: previous declaration
->> of 'of_get_cpu_node' was here
->> struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
->> ^ make[2]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1 make[2]:
->> Target `__build' not remade because of errors. make[1]: ***
->> [prepare0] Error 2 make[1]: Target `prepare' not remade because of
->> errors. make: *** [sub-make] Error 2
->>
->
-> There seems to be conflict in the new function "of_get_cpu_node" added.
-> PowerPC also defines the same function name. Further microblaze and
-> openrisc declares it(can be removed) but doesn't define it.
-> To fix this:
-> 1. I can rename the newly added function to something different like
->    `of_get_cpunode` or
-> 2. If of_* namespace should be used by only OF/FDT and not by any
->    architecture specific code, then the arch specific version can be
->    renamed to some thing like arch_of_get_cpu_node.
->    Also most of the calls to arch specific function can be moved to
->    generic code.
->
-> Let me know your thoughts.
-
-It is up to Rafael if he is willing/able to rebase his tree, but I
-would drop this series until this is sorted out. I think the new
-common function should be and can be generalized to work for powerpc.
-It would need to make reg property optional and pass in the device
-node to the arch specific function.
-
-A short term solution would be just to make the function "#ifndef CONFIG_PPC".
-
-Rob
+Or maybe "fsl,imx35-spdif", since mx35 was the first imx SoC with this
+spdif IP block.
