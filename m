@@ -1,12 +1,16 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
+Return-Path: <michael@ellerman.id.au>
+Date: Tue, 13 Aug 2013 12:23:50 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: Build errors on mainline kernel
+Message-ID: <20130813022350.GA9957@concordia>
+References: <20130809182446.GA26711@us.ibm.com>
+ <1376286123.2066.7.camel@concordia>
+ <20130812060228.GA8608@us.ibm.com>
 MIME-Version: 1.0
-Subject: [PATCH] powerpc: Avoid link stack corruption for MMU on exceptions
-Date: Tue, 13 Aug 2013 12:20:22 +1000
-Message-ID: <18522.1376360422@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- anton@samba.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130812060228.GA8608@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,119 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we have MMU on exceptions (POWER8) and a relocatable kernel, we
-need to branch from the initial exception vectors at 0x0 to up high
-where the kernel might be located.  Currently we do this using the link
-register.
+On Sun, Aug 11, 2013 at 11:02:28PM -0700, Sukadev Bhattiprolu wrote:
+> Michael Ellerman [michael@ellerman.id.au] wrote:
+> | On Fri, 2013-08-09 at 11:24 -0700, Sukadev Bhattiprolu wrote:
+> | > I am tryng to compile clean mainline kernel with a few different config files
+> | > and running into errors with some configs.
+> | > 
+> | > I am building on RHEL6.3 with following binaries:
+> | > 
+> | > 	gcc (GCC) 4.4.6 20120305 (Red Hat 4.4.6-4)
+> | > 	GNU ld version 2.20.51.0.2-5.34.el6 20100205
+> | > 	binutils-2.20.51.0.2-5.34.el6.ppc64
+> | > 	binutils-devel-2.20.51.0.2-5.34.el6.ppc64
+> | > 
+> | > I am getting the error with several files and configs, but other configs 
+> | > (eg: ppc64_defconfig, pmac32_defconfig) build fine.
+> | > 
+> | > For instance, with latest mainline kernel (commit 6c2580c) and ppc64_defconfig, I get:
+> | 
+> | Here you say ppc64_defconfig ..
+> 
+> That was a stupid typo. ppc64_defconfig works.
+> 
+> | 
+> | > 	make O=linux-obj mrproper
+> | > 	make O=linux-obj ppc64e_defconfig
+> | 
+> | But here you say ppc64e_defconfig ?
+> 
+> ppc64e_defconfig fails (checked again now).
 
-Unfortunately this corrupts the link stack and instead we should use the
-count register.  We did this for the syscall entry path in: 
-  6a40480 powerpc: Avoid link stack corruption in MMU on syscall entry path 
-but I stupidly forgot to do the same for other exceptions.
+OK. I don't have a RHEL 6 system around. But I can build
+ppc64e_defconfig on debian with gcc 4.4.7-2.
 
-This patches changes the initial exception vectors to use the count
-register instead of the link register when we need to branch up to the
-relocated kernel.
-
-I have a dodgy userspace test which loops calling a function that reads
-the PVR (mfpvr in userspace will be emulated by the kernel via the
-program check exception).  On POWER8 and with CONFIG_RELOCATABLE=y, I
-get a ~10% performance improvement with my userspace test with this
-patch.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 07ca627..01ed463 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -48,17 +48,18 @@
- #define EX_LR		72
- #define EX_CFAR		80
- #define EX_PPR		88	/* SMT thread status register (priority) */
-+#define EX_CTR		96
+So not sure what's going on.
  
- #ifdef CONFIG_RELOCATABLE
- #define __EXCEPTION_RELON_PROLOG_PSERIES_1(label, h)			\
- 	ld	r12,PACAKBASE(r13);	/* get high part of &label */	\
- 	mfspr	r11,SPRN_##h##SRR0;	/* save SRR0 */			\
- 	LOAD_HANDLER(r12,label);					\
--	mtlr	r12;							\
-+	mtctr	r12;							\
- 	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
- 	li	r10,MSR_RI;						\
- 	mtmsrd 	r10,1;			/* Set RI (EE=0) */		\
--	blr;
-+	bctr;
- #else
- /* If not relocatable, we can jump directly -- and save messing with LR */
- #define __EXCEPTION_RELON_PROLOG_PSERIES_1(label, h)			\
-@@ -101,14 +102,14 @@
-  * kernel, we need to use LR to get to the 2nd level handler.  So, save/restore
-  * it when required.
-  */
--#define SAVE_LR(reg, area)	mflr	reg ; 	std	reg,area+EX_LR(r13)
--#define GET_LR(reg, area) 			ld	reg,area+EX_LR(r13)
--#define RESTORE_LR(reg, area)	ld	reg,area+EX_LR(r13) ; mtlr reg
-+#define SAVE_CTR(reg, area)	mfctr	reg ; 	std	reg,area+EX_CTR(r13)
-+#define GET_CTR(reg, area) 			ld	reg,area+EX_CTR(r13)
-+#define RESTORE_CTR(reg, area)	ld	reg,area+EX_CTR(r13) ; mtctr reg
- #else
- /* ...else LR is unused and in register. */
--#define SAVE_LR(reg, area)
--#define GET_LR(reg, area) 	mflr	reg
--#define RESTORE_LR(reg, area)
-+#define SAVE_CTR(reg, area)
-+#define GET_CTR(reg, area) 	mfctr	reg
-+#define RESTORE_CTR(reg, area)
- #endif
- 
- /*
-@@ -164,7 +165,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- #define __EXCEPTION_PROLOG_1(area, extra, vec)				\
- 	OPT_SAVE_REG_TO_PACA(area+EX_PPR, r9, CPU_FTR_HAS_PPR);		\
- 	OPT_SAVE_REG_TO_PACA(area+EX_CFAR, r10, CPU_FTR_CFAR);		\
--	SAVE_LR(r10, area);						\
-+	SAVE_CTR(r10, area);						\
- 	mfcr	r9;							\
- 	extra(vec);							\
- 	std	r11,area+EX_R11(r13);					\
-@@ -270,7 +271,7 @@ do_kvm_##n:								\
- 	sth	r1,PACA_TRAP_SAVE(r13);					   \
- 	std	r3,area+EX_R3(r13);					   \
- 	addi	r3,r13,area;		/* r3 -> where regs are saved*/	   \
--	RESTORE_LR(r1, area);						   \
-+	RESTORE_CTR(r1, area);						   \
- 	b	bad_stack;						   \
- 3:	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
- 	std	r11,_NIP(r1);		/* save SRR0 in stackframe	*/ \
-@@ -298,10 +299,10 @@ do_kvm_##n:								\
- 	ld	r10,area+EX_CFAR(r13);					   \
- 	std	r10,ORIG_GPR3(r1);					   \
- 	END_FTR_SECTION_NESTED(CPU_FTR_CFAR, CPU_FTR_CFAR, 66);		   \
--	GET_LR(r9,area);		/* Get LR, later save to stack	*/ \
-+	mflr	r9;			/* Get LR, later save to stack	*/ \
- 	ld	r2,PACATOC(r13);	/* get kernel TOC into r2	*/ \
- 	std	r9,_LINK(r1);						   \
--	mfctr	r10;			/* save CTR in stackframe	*/ \
-+	GET_CTR(r10, area);						   \
- 	std	r10,_CTR(r1);						   \
- 	lbz	r10,PACASOFTIRQEN(r13);				   \
- 	mfspr	r11,SPRN_XER;		/* save XER in stackframe	*/ \
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 77c91e7..17d40a2 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -93,9 +93,9 @@ struct paca_struct {
- 	 * Now, starting in cacheline 2, the exception save areas
- 	 */
- 	/* used for most interrupts/exceptions */
--	u64 exgen[12] __attribute__((aligned(0x80)));
--	u64 exmc[12];		/* used for machine checks */
--	u64 exslb[12];		/* used for SLB/segment table misses
-+	u64 exgen[13] __attribute__((aligned(0x80)));
-+	u64 exmc[13];		/* used for machine checks */
-+	u64 exslb[13];		/* used for SLB/segment table misses
-  				 * on the linear mapping */
- 	/* SLB related definitions */
- 	u16 vmalloc_sllp;
+cheers
