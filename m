@@ -1,28 +1,42 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 475542C00F4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 21:37:49 +1000 (EST)
-Message-ID: <1376480227.4255.66.camel@pasglop>
-Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Date: Wed, 14 Aug 2013 21:37:07 +1000
-In-Reply-To: <520B5584.7030608@arm.com>
-References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>
- <520A536C.3030600@arm.com> <520A7B00.8060405@arm.com>
- <1376428024.4255.14.camel@pasglop> <520B5584.7030608@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Olof Johansson <olof@lixom.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 724C52C01D1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 21:58:29 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Wed, 14 Aug 2013 17:19:38 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 4F2B81258054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 17:28:03 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7EBxcBp32571494
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 17:29:39 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7EBwBwl011698
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 17:28:13 +0530
+Subject: [RFC V2 PATCH 0/6] cpuidle/ppc: Timer offload framework to support
+ deep idle states
+To: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org,
+ shangw@linux.vnet.ibm.com, galak@kernel.crashing.org,
+ deepthi@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org,
+ rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org,
+ tglx@linutronix.de, chenhui.zhao@freescale.com, michael@ellerman.id.au,
+ r58472@freescale.com, geoff@infradead.org,
+ linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
+ schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Wed, 14 Aug 2013 17:25:47 +0530
+Message-ID: <20130814115311.5193.32212.stgit@preeti.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,21 +46,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-08-14 at 11:01 +0100, Sudeep KarkadaNagesha wrote:
-> Yes this doesn't cover the historical "ibm,ppc-interrupt-server#s",
-> for
-> which we can have PPC specific wrapper above the generic one i.e. get
-> the cpu node and then parse for thread id under custom property.
+On PowerPC, when CPUs enter deep idle states, their local timers are
+switched off. The responsibility of waking them up at their next timer event,
+needs to be handed over to an external device. On PowerPC, we do not have an
+external device equivalent to HPET, which is currently done on architectures
+like x86. Instead we assign the local timer of one of the CPUs to do this job.
 
-A wrapper is wrong. I don't want to have to have all ppc callers to use
-a different function.
+This patchset is an attempt to make use of the existing timer broadcast
+framework in the kernel to meet the above requirement, except that the tick
+broadcast device is the local timer of the boot CPU.
 
-As I said, just make a generic one that returns a thread ID, ie, same
-signature as the powerpc one. Make it weak, we can override it in
-powerpc-land, or we can move the ibm,ppc-interrupt-server#s handling
-into the generic one, it won't hurt, but leave the thread_id return
-there, it doesn't hurt it will come in handy in a few cases without
-causing code duplication.
+This patch series is ported ontop of 3.11-rc1 + the cpuidle driver backend
+for powernv posted by Deepthi Dharwar recently. NOHZ_FULL is disabled for all
+testing purposes.
+  The current design and implementation supports the ONESHOT tick mode.
+It does not yet support the PERIODIC tick mode.
 
-Cheers,
-Ben.
+The discussion around V1 of this patchset can be found here:
+https://lkml.org/lkml/2013/7/25/740.
+
+Changes since V1:
+1. Dynamically pick a broadcast CPU, instead of having a dedicated one.
+2. Remove the constraint of having to disable tickless idle on the broadcast CPU.
+
+Thanks to Ben H, Frederic Weisbecker, Li Yang and Vaidyanathan Srinivasan for
+all their comments and suggestions on the V1 of this patchset.
+
+Patch[1/6], Patch[2/6]: optimize the broadcast mechanism on ppc.
+Patch[3/6]: Introduces the core of the timer offload framework on powerpc.
+Patch[4/6]: Add a deep idle state to the cpuidle state table on powernv
+Patch[5/6]: Dynamically pick a broadcast CPU
+Patch[6/6]: Remove the constraint of having to disable tickless idle on the
+broadcast cpu, by queueing a hrtimer exclusively to do broadcast handling.
+
+---
+
+Preeti U Murthy (4):
+      cpuidle/ppc: Add timer offload framework to support deep idle states
+      cpuidle/ppc: Add longnap state to the idle states on powernv
+      cpuidle/ppc: Enable dynamic movement of the broadcast functionality across CPUs
+      cpuidle/ppc : Queue a hrtimer on bc_cpu, explicitly to do broadcast handling
+
+Srivatsa S. Bhat (2):
+      powerpc: Free up the IPI message slot of ipi call function (PPC_MSG_CALL_FUNC)
+      powerpc: Implement broadcast timer interrupt as an IPI message
+
+
+ arch/powerpc/include/asm/smp.h                  |    3 -
+ arch/powerpc/include/asm/time.h                 |    9 ++
+ arch/powerpc/kernel/smp.c                       |   23 +++--
+ arch/powerpc/kernel/time.c                      |  114 +++++++++++++++++++++++
+ arch/powerpc/platforms/cell/interrupt.c         |    2 
+ arch/powerpc/platforms/powernv/Kconfig          |    1 
+ arch/powerpc/platforms/powernv/processor_idle.c |  104 +++++++++++++++++++++
+ arch/powerpc/platforms/ps3/smp.c                |    2 
+ 8 files changed, 246 insertions(+), 12 deletions(-)
