@@ -1,28 +1,25 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-ob0-x236.google.com (mail-ob0-x236.google.com
- [IPv6:2607:f8b0:4003:c01::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BB6D82C0176
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 22:53:08 +1000 (EST)
-Received: by mail-ob0-f182.google.com with SMTP id wo10so11739735obc.41
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 05:53:05 -0700 (PDT)
-Message-ID: <520B7DAE.3060501@gmail.com>
-Date: Wed, 14 Aug 2013 07:53:02 -0500
-From: Rob Herring <robherring2@gmail.com>
+Return-Path: <sudeep.karkadanagesha@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id 311B32C0205
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 23:21:47 +1000 (EST)
+Message-ID: <520B8468.7050307@arm.com>
+Date: Wed, 14 Aug 2013 14:21:44 +0100
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 MIME-Version: 1.0
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
 References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>
  <520A536C.3030600@arm.com> <520A7B00.8060405@arm.com>
  <1376428024.4255.14.camel@pasglop> <520B5584.7030608@arm.com>
-In-Reply-To: <520B5584.7030608@arm.com>
+ <1376480227.4255.66.camel@pasglop>
+In-Reply-To: <1376480227.4255.66.camel@pasglop>
 Content-Type: text/plain; charset=UTF-8
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
  Viresh Kumar <viresh.kumar@linaro.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
  "Rafael J. Wysocki" <rjw@sisk.pl>, Olof Johansson <olof@lixom.net>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
@@ -35,134 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/14/2013 05:01 AM, Sudeep KarkadaNagesha wrote:
-> On 13/08/13 22:07, Benjamin Herrenschmidt wrote:
->> On Tue, 2013-08-13 at 19:29 +0100, Sudeep KarkadaNagesha wrote:
->>> I don't understand completely the use of ibm,ppc-interrupt-server#s and
->>> its implications on generic of_get_cpu_node implementation.
->>> I see the PPC specific definition of of_get_cpu_node uses thread id only
->>> in 2 instances. Based on that, I have tried to move all the other
->>> instances to use generic definition.
->>>
->>> Let me know if the idea is correct.
->>
->> No. The device-tree historically only represents cores, not HW threads, so
->> it makes sense to retrieve also the thread number corresponding to the CPU.
->>
-> Ok
-> 
->> However, the mechanism to represent HW threads in the device-tree is currently
->> somewhat platform specific (the ibm,ppc-interrupt-server#s).
-> I see most of the callers pass NULL to thread id argument except 2
-> instances in entire tree. If that's the case why can't we move to use
-> generic of_get_cpu_node in most of those cases and have PPC specific
-> implementation for the ones using thread id.
-> 
->>
->> So what you could do for now is:
->>
->>  - Have a generic version that always returns 0 as the thread, which is weak
-> I would prefer to move to generic of_get_cpu_node where ever possible
-> and rename the function that takes thread id rather than making generic
-> one weak.
-> 
->>
->>  - powerpc keeps its own implementation
-> How about only in cases where it needs thread_id.
-> 
->>
->>  - Start a discussion on the bindings (if not already there) to define threads
->> in a better way at which point the generic function can be updated.
->>
-> I am not sure if we need to define any new bindings. Excerpts from ePAPR
-> (v1.1):
-> "3.7.1 General Properties of CPU nodes
-> The value of "reg" is a <prop-encoded-array> that defines a unique
-> CPU/thread id for the CPU/threads represented by the CPU node.
-> If a CPU supports more than one thread (i.e. multiple streams of
-> execution) the reg property is an array with 1 element per thread. The
-> #address-cells on the /cpus node specifies how many cells each element
-> of the array takes. Software can determine the number of threads by
-> dividing the size of reg by the parent node's #address-cells."
-> 
-> And this is exactly in agreement to what's implemented in the generic
-> of_get_cpu_node:
-> 
-> for_each_child_of_node(cpus, cpun) {
->         if (of_node_cmp(cpun->type, "cpu"))
->                 continue;
->         cell = of_get_property(cpun, "reg", &prop_len);
->         if (!cell) {
->                 pr_warn("%s: missing reg property\n", cpun->full_name);
->                 continue;
->         }
->         prop_len /= sizeof(*cell);
->         while (prop_len) {
->                 hwid = of_read_number(cell, ac);
->                 prop_len -= ac;
->                 if (arch_match_cpu_phys_id(cpu, hwid))
->                         return cpun;
->         }
-> }
+On 14/08/13 12:37, Benjamin Herrenschmidt wrote:
+> On Wed, 2013-08-14 at 11:01 +0100, Sudeep KarkadaNagesha wrote:
+>> Yes this doesn't cover the historical "ibm,ppc-interrupt-server#s",
+>> for
+>> which we can have PPC specific wrapper above the generic one i.e. get
+>> the cpu node and then parse for thread id under custom property.
+>=20
+> A wrapper is wrong. I don't want to have to have all ppc callers to use
+> a different function.
+Ok.
 
-How about something like this:
+On the side note the main intention of this patch series[1] is to avoid
+calling of_get_cpu_node function once CPU devices are registered. It
+initialises the of_node in all the cpu devices using this function when
+registering the CPU device. It can be retrieved from cpu_dev->of_node.
+So direct users of of_get_cpu_node can be reduced to avoid unnecessary
+parsing of DT to find cpu node.
 
-for_each_child_of_node(cpus, cpun) {
-        if (of_node_cmp(cpun->type, "cpu"))
-                continue;
+>=20
+> As I said, just make a generic one that returns a thread ID, ie, same
+> signature as the powerpc one. Make it weak, we can override it in
+> powerpc-land,
+IMO, making generic definition which adhere to the ePAPR specification
+as weak is not so clean.
 
-	if (arch_of_get_cpu_node(cpun, thread))
-		return cpun;
+> or we can move the ibm,ppc-interrupt-server#s handling
+> into the generic one, it won't hurt, but leave the thread_id return
+> there, it doesn't hurt it will come in handy in a few cases without
+> causing code duplication.
+>=20
 
-        cell = of_get_property(cpun, "reg", &prop_len);
-        if (!cell) {
-                pr_warn("%s: missing reg property\n", cpun->full_name);
-                continue;
-        }
-        prop_len /= sizeof(*cell);
-        while (prop_len) {
-                hwid = of_read_number(cell, ac);
-                prop_len -= ac;
-                if (arch_match_cpu_phys_id(cpu, hwid))
-       	                return cpun;
-        }
-}
+IMO moving of handling ibm,ppc-interrupt-server#s to generic code under
+#ifdef CONFIG_PPC seems to be cleaner approach than weak definitation.
 
-For PPC:
+As per my understanding each thread is a different logical cpu.
+Each logical cpu is mapped to unique physical id(either present in reg
+field or legacy ibm,ppc-interrupt-server#s field). So given a logical
+cpu id we can get the cpu node corresponding to it.
+Looking @ smp_setup_cpu_maps in arch/powerpc/kernel/setup-common.c
+and the comment in the same file: "This implementation only supports
+power of 2 number of threads.." the thread id id is implicit in the
+logical cpu id. Do we need to fetch that from DT ?
 
-arch_of_get_cpu_node()
-{
-        const u32 *intserv;
-        unsigned int plen, t;
+Regards,
+Sudeep
 
-        /* Check for ibm,ppc-interrupt-server#s. */
-        intserv = of_get_property(np, "ibm,ppc-interrupt-server#s",
-                                &plen);
-        if (!intserv)
-		return false;
-
-	hardid = get_hard_smp_processor_id(cpu);
-
-        plen /= sizeof(u32);
-        for (t = 0; t < plen; t++) {
-                 if (hardid == intserv[t]) {
-                         if (thread)
-                                  *thread = t;
-                         return true;
-                 }
-        }
-	return false;
-}
-
-> 
-> Yes this doesn't cover the historical "ibm,ppc-interrupt-server#s", for
-> which we can have PPC specific wrapper above the generic one i.e. get
-> the cpu node and then parse for thread id under custom property.
-> 
-> Let me know your thoughts.
-> 
-> Regards,
-> Sudeep
-> 
-> 
-> 
+[1] https://lkml.org/lkml/2013/7/22/219
