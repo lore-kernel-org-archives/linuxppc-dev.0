@@ -1,28 +1,30 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 93EC52C007A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 23:27:39 +1000 (EST)
-Message-ID: <520B85C8.5030908@arm.com>
-Date: Wed, 14 Aug 2013 14:27:36 +0100
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Return-Path: <swarren@wwwdotorg.org>
+Received: from avon.wwwdotorg.org (avon.wwwdotorg.org
+ [IPv6:2001:470:1f0f:bd7::2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 737062C013E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2013 01:53:07 +1000 (EST)
+Message-ID: <520BA687.4030905@wwwdotorg.org>
+Date: Wed, 14 Aug 2013 09:47:19 -0600
+From: Stephen Warren <swarren@wwwdotorg.org>
 MIME-Version: 1.0
-To: Rob Herring <robherring2@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
-References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>
- <520A536C.3030600@arm.com> <520A7B00.8060405@arm.com>
- <1376428024.4255.14.camel@pasglop> <520B5584.7030608@arm.com>
- <520B7DAE.3060501@gmail.com>
-In-Reply-To: <520B7DAE.3060501@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Olof Johansson <olof@lixom.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [alsa-devel] [PATCH v4 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+References: <1376308870-14232-1-git-send-email-b42378@freescale.com>
+ <1376308870-14232-2-git-send-email-b42378@freescale.com>
+ <CAOMZO5A7noEb98yuCPY6o2mf-FikFcMYiDLpg3huPKHMO7Fwdw@mail.gmail.com>
+ <20130814032658.GA16915@S2101-09.ap.freescale.net>
+ <20130814053016.GF31651@MrMyself>
+ <20130814063931.GB31141@S2101-09.ap.freescale.net>
+ <20130814063444.GG31651@MrMyself>
+ <20130814081445.GC31141@S2101-09.ap.freescale.net>
+In-Reply-To: <20130814081445.GC31141@S2101-09.ap.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, lars@metafoo.de,
+ linuxppc-dev@lists.ozlabs.org, Nicolin Chen <b42378@freescale.com>,
+ timur@tabi.org, rob.herring@calxeda.com, broonie@kernel.org,
+ p.zabel@pengutronix.de, Fabio Estevam <festevam@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,155 +34,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14/08/13 13:53, Rob Herring wrote:
-> On 08/14/2013 05:01 AM, Sudeep KarkadaNagesha wrote:
->> On 13/08/13 22:07, Benjamin Herrenschmidt wrote:
->>> On Tue, 2013-08-13 at 19:29 +0100, Sudeep KarkadaNagesha wrote:
->>>> I don't understand completely the use of ibm,ppc-interrupt-server#s an=
-d
->>>> its implications on generic of_get_cpu_node implementation.
->>>> I see the PPC specific definition of of_get_cpu_node uses thread id on=
-ly
->>>> in 2 instances. Based on that, I have tried to move all the other
->>>> instances to use generic definition.
->>>>
->>>> Let me know if the idea is correct.
+On 08/14/2013 02:14 AM, Shawn Guo wrote:
+> On Wed, Aug 14, 2013 at 02:34:45PM +0800, Nicolin Chen wrote:
+>> On Wed, Aug 14, 2013 at 02:39:33PM +0800, Shawn Guo wrote:
+>>> We only need to maintain those versions that require different
+>>> programming model in the list.  For example, if S/PDIF on Vybrid
+>>> is completely compatible with imx6q one and uses the exactly same
+>>> programming model, we do not need to maintain a compatible string
+>>> for Vybrid S/PDIF at all.  Instead, we only need to have something
+>>> like below in Vybrid dts file, and S/PDIF driver will just work for it.
 >>>
->>> No. The device-tree historically only represents cores, not HW threads,=
- so
->>> it makes sense to retrieve also the thread number corresponding to the =
-CPU.
+>>> 	compatible = "fsl,vf600-spdif", "fsl,imx6q-spdif";
 >>>
->> Ok
+>>> Shawn
 >>
->>> However, the mechanism to represent HW threads in the device-tree is cu=
-rrently
->>> somewhat platform specific (the ibm,ppc-interrupt-server#s).
->> I see most of the callers pass NULL to thread id argument except 2
->> instances in entire tree. If that's the case why can't we move to use
->> generic of_get_cpu_node in most of those cases and have PPC specific
->> implementation for the ones using thread id.
+>> Clear. Thank you for the explain.
 >>
->>>
->>> So what you could do for now is:
->>>
->>>  - Have a generic version that always returns 0 as the thread, which is=
- weak
->> I would prefer to move to generic of_get_cpu_node where ever possible
->> and rename the function that takes thread id rather than making generic
->> one weak.
+>> Then I think I can merely remain "fsl,imx6q-spdif" here,
+>> because all other cases should be completely compatible
+>> with this one. They are only different in the clock source
+>> names list, which's already being specified in dts file.
 >>
->>>
->>>  - powerpc keeps its own implementation
->> How about only in cases where it needs thread_id.
->>
->>>
->>>  - Start a discussion on the bindings (if not already there) to define =
-threads
->>> in a better way at which point the generic function can be updated.
->>>
->> I am not sure if we need to define any new bindings. Excerpts from ePAPR
->> (v1.1):
->> "3.7.1 General Properties of CPU nodes
->> The value of "reg" is a <prop-encoded-array> that defines a unique
->> CPU/thread id for the CPU/threads represented by the CPU node.
->> If a CPU supports more than one thread (i.e. multiple streams of
->> execution) the reg property is an array with 1 element per thread. The
->> #address-cells on the /cpus node specifies how many cells each element
->> of the array takes. Software can determine the number of threads by
->> dividing the size of reg by the parent node's #address-cells."
->>
->> And this is exactly in agreement to what's implemented in the generic
->> of_get_cpu_node:
->>
->> for_each_child_of_node(cpus, cpun) {
->>         if (of_node_cmp(cpun->type, "cpu"))
->>                 continue;
->>         cell =3D of_get_property(cpun, "reg", &prop_len);
->>         if (!cell) {
->>                 pr_warn("%s: missing reg property\n", cpun->full_name);
->>                 continue;
->>         }
->>         prop_len /=3D sizeof(*cell);
->>         while (prop_len) {
->>                 hwid =3D of_read_number(cell, ac);
->>                 prop_len -=3D ac;
->>                 if (arch_match_cpu_phys_id(cpu, hwid))
->>                         return cpun;
->>         }
->> }
->=20
-> How about something like this:
->=20
-> for_each_child_of_node(cpus, cpun) {
->         if (of_node_cmp(cpun->type, "cpu"))
->                 continue;
->=20
-> =09if (arch_of_get_cpu_node(cpun, thread))
-> =09=09return cpun;
->=20
->         cell =3D of_get_property(cpun, "reg", &prop_len);
->         if (!cell) {
->                 pr_warn("%s: missing reg property\n", cpun->full_name);
->                 continue;
->         }
->         prop_len /=3D sizeof(*cell);
->         while (prop_len) {
->                 hwid =3D of_read_number(cell, ac);
->                 prop_len -=3D ac;
->                 if (arch_match_cpu_phys_id(cpu, hwid))
->        =09                return cpun;
->         }
-> }
->=20
-> For PPC:
->=20
-> arch_of_get_cpu_node()
-> {
->         const u32 *intserv;
->         unsigned int plen, t;
->=20
->         /* Check for ibm,ppc-interrupt-server#s. */
->         intserv =3D of_get_property(np, "ibm,ppc-interrupt-server#s",
->                                 &plen);
->         if (!intserv)
-> =09=09return false;
->=20
-> =09hardid =3D get_hard_smp_processor_id(cpu);
->=20
->         plen /=3D sizeof(u32);
->         for (t =3D 0; t < plen; t++) {
->                  if (hardid =3D=3D intserv[t]) {
->                          if (thread)
->                                   *thread =3D t;
->                          return true;
->                  }
->         }
-> =09return false;
-> }
->=20
+>> Please correct me if you think this still isn't proper.
 
-Sorry responded to earlier mail before seeing this. This approach looks
-good, but we still need to have thread id as argument which should be fine.
+If the clock source name list is different, then it needs a different
+compatible value, so that each compatible value can specify which clock
+names are required.
 
-But as per my understanding on how logical cpu<->hard proccessor id is
-setup, the thread_id is implicit in the logical cpu id making it
-unnecessary to depend on DT each time.
+Also, the compatible value itself should always include the exact HW
+that's present (most specific HW version), as well as any other HW it's
+compatible with.
 
-Regards,
-Sudeep
-
->>
->> Yes this doesn't cover the historical "ibm,ppc-interrupt-server#s", for
->> which we can have PPC specific wrapper above the generic one i.e. get
->> the cpu node and then parse for thread id under custom property.
->>
->> Let me know your thoughts.
->>
->> Regards,
->> Sudeep
->>
->>
->>
->=20
->=20
+> And we generally prefer to use the soc that firstly integrates the IP to
+> name the compatible.  For IMX series, I think imx35 is the one, so we
+> would name it "fsl,imx35-spdif".
