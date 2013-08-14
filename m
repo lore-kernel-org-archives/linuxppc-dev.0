@@ -1,26 +1,19 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id F0A3E2C0191
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 19:23:04 +1000 (EST)
-Message-ID: <520B4C76.8020900@arm.com>
-Date: Wed, 14 Aug 2013 10:23:02 +0100
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
-References: <5208E2D3.7060005@arm.com> <520A536C.3030600@arm.com>
- <CAL_JsqJdGXuTmb2kgBwgmRYGs9f92-dsawDXSXjmJW8cwjFVQQ@mail.gmail.com>
- <1974929.8mIZF44QnT@vostro.rjw.lan>
-In-Reply-To: <1974929.8mIZF44QnT@vostro.rjw.lan>
-Content-Type: text/plain; charset=UTF-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- Rob Herring <robherring2@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>,
- Olof Johansson <olof@lixom.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f175.google.com (mail-pd0-f175.google.com
+ [209.85.192.175])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 98B272C017F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 19:24:52 +1000 (EST)
+Received: by mail-pd0-f175.google.com with SMTP id q10so6011584pdj.20
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 02:24:50 -0700 (PDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] KVM: PPC: POWERNV: move iommu_add_device earlier
+Date: Wed, 14 Aug 2013 19:24:41 +1000
+Message-Id: <1376472281-12663-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,89 +23,249 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13/08/13 20:45, Rafael J. Wysocki wrote:
-> On Tuesday, August 13, 2013 01:44:23 PM Rob Herring wrote:
->> On Tue, Aug 13, 2013 at 10:40 AM, Sudeep KarkadaNagesha
->> <Sudeep.KarkadaNagesha@arm.com> wrote:
->>> Adding PowerPC list
->>>
->>> On 13/08/13 14:00, Rafael J. Wysocki wrote:
->>>> On Monday, August 12, 2013 02:27:47 PM Sudeep KarkadaNagesha wrote:
->>>>> The following changes since commit
->>>>> d4e4ab86bcba5a72779c43dc1459f71fea3d89c8:
->>>>>
->>>>> Linux 3.11-rc5 (2013-08-11 18:04:20 -0700)
->>>>>
->>>>> are available in the git repository at:
->>>>>
->>>>> git://linux-arm.org/linux-skn.git cpu_of_node
->>
->> [snip]
->>
->>>> All error/warnings:
->>>>
->>>> warning: (MPC836x_RDK && MTD_NAND_FSL_ELBC && MTD_NAND_FSL_UPM)
->>>> selects FSL_LBC which has unmet direct dependencies (FSL_SOC)
->>>> warning: (MPC836x_RDK && MTD_NAND_FSL_ELBC && MTD_NAND_FSL_UPM)
->>>> selects FSL_LBC which has unmet direct dependencies (FSL_SOC)
->>>> In file included from arch/powerpc/include/asm/kvm_para.h:26:0, from
->>>> include/uapi/linux/kvm_para.h:26, from include/linux/kvm_para.h:4,
->>>> from include/linux/kvm_host.h:30, from
->>>> arch/powerpc/kernel/asm-offsets.c:53:
->>>> include/linux/of.h:269:28: error: conflicting types for
->>>> 'of_get_cpu_node'
->>>> extern struct device_node *of_get_cpu_node(int cpu); ^ In file
->>>> included from include/linux/of.h:139:0, from
->>>> arch/powerpc/include/asm/kvm_para.h:26, from
->>>> include/uapi/linux/kvm_para.h:26, from include/linux/kvm_para.h:4,
->>>> from include/linux/kvm_host.h:30, from
->>>> arch/powerpc/kernel/asm-offsets.c:53:
->>>> arch/powerpc/include/asm/prom.h:47:21: note: previous declaration
->>>> of 'of_get_cpu_node' was here
->>>> struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
->>>> ^ make[2]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1 make[2]:
->>>> Target `__build' not remade because of errors. make[1]: ***
->>>> [prepare0] Error 2 make[1]: Target `prepare' not remade because of
->>>> errors. make: *** [sub-make] Error 2
->>>>
->>>
->>> There seems to be conflict in the new function "of_get_cpu_node" added.
->>> PowerPC also defines the same function name. Further microblaze and
->>> openrisc declares it(can be removed) but doesn't define it.
->>> To fix this:
->>> 1. I can rename the newly added function to something different like
->>>    `of_get_cpunode` or
->>> 2. If of_* namespace should be used by only OF/FDT and not by any
->>>    architecture specific code, then the arch specific version can be
->>>    renamed to some thing like arch_of_get_cpu_node.
->>>    Also most of the calls to arch specific function can be moved to
->>>    generic code.
->>>
->>> Let me know your thoughts.
->>
->> It is up to Rafael if he is willing/able to rebase his tree, but I
->> would drop this series until this is sorted out.
->=20
-> Yeah, I've just done that.
->=20
-Thanks Rafael, sorry for the trouble. I didn't expect of_* name-space to
-be used in ARCH specific code.
+The current implementation of IOMMU on sPAPR does not use iommu_ops
+and therefore does not call IOMMU API's bus_set_iommu() which
+1) sets iommu_ops for a bus
+2) registers a bus notifier
+Instead, PCI devices are added to IOMMU groups from
+subsys_initcall_sync(tce_iommu_init) which does basically the same
+thing without using iommu_ops callbacks.
 
->> I think the new common function should be and can be generalized to work=
- for
->> powerpc.
->> It would need to make reg property optional and pass in the device
->> node to the arch specific function.
->>
->> A short term solution would be just to make the function "#ifndef CONFIG=
-_PPC".
->=20
-> I wouldn't do that, it's almost guaranteed to be messy going forward.
->=20
-> I'd go for 1 above personally.
+However Freescale PAMU driver (https://lkml.org/lkml/2013/7/1/158)
+implements iommu_ops and when tce_iommu_init is called, every PCI device
+is already added to some group so there is a conflict.
 
-Even though it's easier approach, I would go for fixing PPC and converge
-at generic of_get_cpu_node implementation if possible.
+This patch does 2 things:
+1. removes the loop in which PCI devices were added to groups and
+adds explicit iommu_add_device() calls to add devices as soon as they get
+the iommu_table pointer assigned to them.
+2. moves a bus notifier to powernv code in order to avoid conflict with
+the notifier from Freescale driver.
 
-Regards,
-Sudeep
+iommu_add_device() and iommu_del_device() are public now.
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/include/asm/iommu.h            |  2 ++
+ arch/powerpc/kernel/iommu.c                 | 41 +++--------------------------
+ arch/powerpc/platforms/powernv/pci-ioda.c   | 12 ++++++---
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c |  1 +
+ arch/powerpc/platforms/powernv/pci.c        | 31 ++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/iommu.c      |  7 +++--
+ 6 files changed, 51 insertions(+), 43 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index c34656a..ba74329 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -103,6 +103,8 @@ extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
+ 					    int nid);
+ extern void iommu_register_group(struct iommu_table *tbl,
+ 				 int pci_domain_number, unsigned long pe_num);
++extern int iommu_add_device(struct device *dev);
++extern void iommu_del_device(struct device *dev);
+ 
+ extern int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 			struct scatterlist *sglist, int nelems,
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index b20ff17..15f8ca8 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -1105,7 +1105,7 @@ void iommu_release_ownership(struct iommu_table *tbl)
+ }
+ EXPORT_SYMBOL_GPL(iommu_release_ownership);
+ 
+-static int iommu_add_device(struct device *dev)
++int iommu_add_device(struct device *dev)
+ {
+ 	struct iommu_table *tbl;
+ 	int ret = 0;
+@@ -1134,46 +1134,13 @@ static int iommu_add_device(struct device *dev)
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(iommu_add_device);
+ 
+-static void iommu_del_device(struct device *dev)
++void iommu_del_device(struct device *dev)
+ {
+ 	iommu_group_remove_device(dev);
+ }
+-
+-static int iommu_bus_notifier(struct notifier_block *nb,
+-			      unsigned long action, void *data)
+-{
+-	struct device *dev = data;
+-
+-	switch (action) {
+-	case BUS_NOTIFY_ADD_DEVICE:
+-		return iommu_add_device(dev);
+-	case BUS_NOTIFY_DEL_DEVICE:
+-		iommu_del_device(dev);
+-		return 0;
+-	default:
+-		return 0;
+-	}
+-}
+-
+-static struct notifier_block tce_iommu_bus_nb = {
+-	.notifier_call = iommu_bus_notifier,
+-};
+-
+-static int __init tce_iommu_init(void)
+-{
+-	struct pci_dev *pdev = NULL;
+-
+-	BUILD_BUG_ON(PAGE_SIZE < IOMMU_PAGE_SIZE);
+-
+-	for_each_pci_dev(pdev)
+-		iommu_add_device(&pdev->dev);
+-
+-	bus_register_notifier(&pci_bus_type, &tce_iommu_bus_nb);
+-	return 0;
+-}
+-
+-subsys_initcall_sync(tce_iommu_init);
++EXPORT_SYMBOL_GPL(iommu_del_device);
+ 
+ #else
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index d8140b1..a9f8fef 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -441,6 +441,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
+ 
+ 	pe = &phb->ioda.pe_array[pdn->pe_number];
+ 	set_iommu_table_base(&pdev->dev, &pe->tce32_table);
++	iommu_add_device(&pdev->dev);
+ }
+ 
+ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe, struct pci_bus *bus)
+@@ -449,6 +450,7 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe, struct pci_bus *bus)
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		set_iommu_table_base(&dev->dev, &pe->tce32_table);
++		iommu_add_device(&dev->dev);
+ 		if (dev->subordinate)
+ 			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
+ 	}
+@@ -610,9 +612,10 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 	iommu_init_table(tbl, phb->hose->node);
+ 	iommu_register_group(tbl, pci_domain_nr(pe->pbus), pe->pe_number);
+ 
+-	if (pe->pdev)
++	if (pe->pdev) {
+ 		set_iommu_table_base(&pe->pdev->dev, tbl);
+-	else
++		iommu_add_device(&pe->pdev->dev);
++	} else
+ 		pnv_ioda_setup_bus_dma(pe, pe->pbus);
+ 
+ 	return;
+@@ -686,9 +689,10 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	}
+ 	iommu_init_table(tbl, phb->hose->node);
+ 
+-	if (pe->pdev)
++	if (pe->pdev) {
+ 		set_iommu_table_base(&pe->pdev->dev, tbl);
+-	else
++		iommu_add_device(&pe->pdev->dev);
++	} else
+ 		pnv_ioda_setup_bus_dma(pe, pe->pbus);
+ 
+ 	return;
+diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+index b68db63..8d1b501 100644
+--- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
++++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+@@ -93,6 +93,7 @@ static void pnv_pci_p5ioc2_dma_dev_setup(struct pnv_phb *phb,
+ 	}
+ 
+ 	set_iommu_table_base(&pdev->dev, &phb->p5ioc2.iommu_table);
++	iommu_add_device(&pdev->dev);
+ }
+ 
+ static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np, u64 hub_id,
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index a28d3b5..55447e6 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -505,6 +505,7 @@ static void pnv_pci_dma_fallback_setup(struct pci_controller *hose,
+ 	if (!pdn->iommu_table)
+ 		return;
+ 	set_iommu_table_base(&pdev->dev, pdn->iommu_table);
++	iommu_add_device(&pdev->dev);
+ }
+ 
+ static void pnv_pci_dma_dev_setup(struct pci_dev *pdev)
+@@ -623,3 +624,33 @@ void __init pnv_pci_init(void)
+ 	ppc_md.teardown_msi_irqs = pnv_teardown_msi_irqs;
+ #endif
+ }
++
++static int tce_iommu_bus_notifier(struct notifier_block *nb,
++		unsigned long action, void *data)
++{
++	struct device *dev = data;
++
++	switch (action) {
++	case BUS_NOTIFY_ADD_DEVICE:
++		return iommu_add_device(dev);
++	case BUS_NOTIFY_DEL_DEVICE:
++		iommu_del_device(dev);
++		return 0;
++	default:
++		return 0;
++	}
++}
++
++static struct notifier_block tce_iommu_bus_nb = {
++	.notifier_call = tce_iommu_bus_notifier,
++};
++
++static int __init tce_iommu_bus_notifier_init(void)
++{
++	BUILD_BUG_ON(PAGE_SIZE < IOMMU_PAGE_SIZE);
++
++	bus_register_notifier(&pci_bus_type, &tce_iommu_bus_nb);
++	return 0;
++}
++
++subsys_initcall_sync(tce_iommu_bus_notifier_init);
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 23fc1dc..9c6dc29 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -688,6 +688,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
+ 		iommu_register_group(tbl, pci_domain_nr(phb->bus), 0);
+ 		set_iommu_table_base(&dev->dev, PCI_DN(dn)->iommu_table);
++		iommu_add_device(&dev->dev);
+ 		return;
+ 	}
+ 
+@@ -698,9 +699,10 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 	while (dn && PCI_DN(dn) && PCI_DN(dn)->iommu_table == NULL)
+ 		dn = dn->parent;
+ 
+-	if (dn && PCI_DN(dn))
++	if (dn && PCI_DN(dn)) {
+ 		set_iommu_table_base(&dev->dev, PCI_DN(dn)->iommu_table);
+-	else
++		iommu_add_device(&dev->dev);
++	} else
+ 		printk(KERN_WARNING "iommu: Device %s has no iommu table\n",
+ 		       pci_name(dev));
+ }
+@@ -1194,6 +1196,7 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+ 	}
+ 
+ 	set_iommu_table_base(&dev->dev, pci->iommu_table);
++	iommu_add_device(&dev->dev);
+ }
+ 
+ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
+-- 
+1.8.3.2
