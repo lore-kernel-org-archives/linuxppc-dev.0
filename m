@@ -1,20 +1,28 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from fornost.hengli.com.au (ringil.hengli.com.au [178.18.16.133])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B76CD2C01BE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 20:49:54 +1000 (EST)
-Date: Wed, 14 Aug 2013 20:49:40 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
-Subject: Re: [PATCH] crypto: nx - fix concurrency issue
-Message-ID: <20130814104937.GC13403@gondor.apana.org.au>
-References: <1376344177-7205-1-git-send-email-mhcerri@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1376344177-7205-1-git-send-email-mhcerri@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-crypto@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 475542C00F4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 21:37:49 +1000 (EST)
+Message-ID: <1376480227.4255.66.camel@pasglop>
+Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Date: Wed, 14 Aug 2013 21:37:07 +1000
+In-Reply-To: <520B5584.7030608@arm.com>
+References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>
+ <520A536C.3030600@arm.com> <520A7B00.8060405@arm.com>
+ <1376428024.4255.14.camel@pasglop> <520B5584.7030608@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, Olof Johansson <olof@lixom.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 12, 2013 at 06:49:37PM -0300, Marcelo Cerri wrote:
-> The NX driver uses the transformation context to store several fields
-> containing data related to the state of the operations in progress.
-> Since a single tfm can be used by different kernel threads at the same
-> time, we need to protect the data stored into the context.
-> 
-> This patch makes use of spin locks to protect the data where a race
-> condition can happen.
-> 
-> Reviewed-by: Fionnuala Gunter <fin@linux.vnet.ibm.com>
-> Reviewed-by: Joy Latten <jmlatten@linux.vnet.ibm.com>
-> Signed-off-by: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
+On Wed, 2013-08-14 at 11:01 +0100, Sudeep KarkadaNagesha wrote:
+> Yes this doesn't cover the historical "ibm,ppc-interrupt-server#s",
+> for
+> which we can have PPC specific wrapper above the generic one i.e. get
+> the cpu node and then parse for thread id under custom property.
 
-Patch applied.  Thanks a lot!
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+A wrapper is wrong. I don't want to have to have all ppc callers to use
+a different function.
+
+As I said, just make a generic one that returns a thread ID, ie, same
+signature as the powerpc one. Make it weak, we can override it in
+powerpc-land, or we can move the ibm,ppc-interrupt-server#s handling
+into the generic one, it won't hurt, but leave the thread_id return
+there, it doesn't hurt it will come in handy in a few cases without
+causing code duplication.
+
+Cheers,
+Ben.
