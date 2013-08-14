@@ -1,19 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id ACE9F2C013A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 14:18:09 +1000 (EST)
-Message-ID: <1376453881.4255.57.camel@pasglop>
-Subject: Re: Pull request: scottwood/linux.git next
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Wed, 14 Aug 2013 14:18:01 +1000
-In-Reply-To: <20130808224501.GA8925@home.buserror.net>
-References: <20130808224501.GA8925@home.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B42378@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BAFFA2C0133
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 15:44:10 +1000 (EST)
+Date: Wed, 14 Aug 2013 13:30:17 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [alsa-devel] [PATCH v4 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130814053016.GF31651@MrMyself>
+References: <1376308870-14232-1-git-send-email-b42378@freescale.com>
+ <1376308870-14232-2-git-send-email-b42378@freescale.com>
+ <CAOMZO5A7noEb98yuCPY6o2mf-FikFcMYiDLpg3huPKHMO7Fwdw@mail.gmail.com>
+ <20130814032658.GA16915@S2101-09.ap.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20130814032658.GA16915@S2101-09.ap.freescale.net>
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, lars@metafoo.de,
+ linuxppc-dev@lists.ozlabs.org, timur@tabi.org, rob.herring@calxeda.com,
+ broonie@kernel.org, p.zabel@pengutronix.de, Fabio Estevam <festevam@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,18 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-08-08 at 17:45 -0500, Scott Wood wrote:
->       powerpc/e500: Update compilation flags with core specific
-> options
+Hi Shwan,
 
-This breaks the build for my FSL test configs. For some reason gcc 4.7.3
-doesn't know about -mcpu=e5500
+On Wed, Aug 14, 2013 at 11:27:00AM +0800, Shawn Guo wrote:
+> I do not think we need this general compatible string.  Device tree
+> compatible should be specific.
 
-Additionally, on 64-bit, that means one can no longer make a kernel that
-does both A2 and e5500...
+So I should just use 'fsl,<chip>-spdif" and list all <chip>-spdif
+in compatible list?
 
-I'm reverting that crap patch, please make such optimizations CONFIG_*
-options like power5...7
+I added 'fsl,fsl-spdif' just for those not-in-list chips, Vybrid
+for example. So you think I should add all the possible chips to 
+the list? But what if some chip I don't know right now that also
+uses this spdif controller? Add them to the list later?
 
-Cheers,
-Ben.
+Thank you.
