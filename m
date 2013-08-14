@@ -1,29 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2EFB02C0157
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2013 08:58:09 +1000 (EST)
-Message-ID: <1376521050.4255.82.camel@pasglop>
-Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Date: Thu, 15 Aug 2013 08:57:30 +1000
-In-Reply-To: <520B8468.7050307@arm.com>
-References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>
- <520A536C.3030600@arm.com> <520A7B00.8060405@arm.com>
- <1376428024.4255.14.camel@pasglop> <520B5584.7030608@arm.com>
- <1376480227.4255.66.camel@pasglop> <520B8468.7050307@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Olof Johansson <olof@lixom.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-Path: <jmlatten@linux.vnet.ibm.com>
+Received: from oc8377654763.ibm.com (unknown [32.97.110.51])
+ by ozlabs.org (Postfix) with SMTP id 259C62C0150
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2013 08:25:30 +1000 (EST)
+Date: Wed, 14 Aug 2013 17:17:57 -0500
+From: jmlatten@linux.vnet.ibm.com
+To: herbert@gondor.apana.org.au
+Subject: [PATCH] crypto:nx - fix nx-aes-gcm verification
+Message-ID: <520c0215.kHFgBNcJQfAPXpv3%jmlatten@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,22 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-08-14 at 14:21 +0100, Sudeep KarkadaNagesha wrote:
-> IMO moving of handling ibm,ppc-interrupt-server#s to generic code
-> under
-> #ifdef CONFIG_PPC seems to be cleaner approach than weak definitation.
-> 
-> As per my understanding each thread is a different logical cpu.
-> Each logical cpu is mapped to unique physical id(either present in reg
-> field or legacy ibm,ppc-interrupt-server#s field). So given a logical
-> cpu id we can get the cpu node corresponding to it.
-> Looking @ smp_setup_cpu_maps in arch/powerpc/kernel/setup-common.c
-> and the comment in the same file: "This implementation only supports
-> power of 2 number of threads.." the thread id id is implicit in the
-> logical cpu id. Do we need to fetch that from DT ?
+This patch fixes a bug in the nx-aes-gcm implementation.
+Corrected the code so that the authtag is always verified after
+decrypting and not just when there is associated data included.
+Also, corrected the code to retrieve the input authtag from src
+instead of dst. 
 
-I don't want those parsing routines to make those assumptions. We have
-changed our logical numbering in the past and may again.
+Reviewed-by: Fionnuala Gunter <fin@linux.vnet.ibm.com>
+Reviewed-by: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
+Signed-off-by: Joy Latten <jmlatten@linux.vnet.ibm.com>
 
-Cheers,
-Ben.
+diff --git a/drivers/crypto/nx/nx-aes-gcm.c b/drivers/crypto/nx/nx-aes-gcm.c
+index 6cca6c3..eb851bb 100644
+--- a/drivers/crypto/nx/nx-aes-gcm.c
++++ b/drivers/crypto/nx/nx-aes-gcm.c
+@@ -243,11 +243,11 @@ static int gcm_aes_nx_crypt(struct aead_request *req, int enc)
+ 				 req->dst, nbytes,
+ 				 crypto_aead_authsize(crypto_aead_reqtfm(req)),
+ 				 SCATTERWALK_TO_SG);
+-	} else if (req->assoclen) {
++	} else {
+ 		u8 *itag = nx_ctx->priv.gcm.iauth_tag;
+ 		u8 *otag = csbcpb->cpb.aes_gcm.out_pat_or_mac;
+ 
+-		scatterwalk_map_and_copy(itag, req->dst, nbytes,
++		scatterwalk_map_and_copy(itag, req->src, nbytes,
+ 				 crypto_aead_authsize(crypto_aead_reqtfm(req)),
+ 				 SCATTERWALK_FROM_SG);
+ 		rc = memcmp(itag, otag,
