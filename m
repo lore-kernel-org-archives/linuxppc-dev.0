@@ -1,23 +1,29 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5F92E2C0129
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 17:50:34 +1000 (EST)
-Date: Wed, 14 Aug 2013 09:50:17 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
+Return-Path: <shawn.guo@linaro.org>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 874632C0100
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 18:14:49 +1000 (EST)
+Date: Wed, 14 Aug 2013 16:14:47 +0800
+From: Shawn Guo <shawn.guo@linaro.org>
 To: Nicolin Chen <b42378@freescale.com>
-Subject: Re: [PATCH v4 resent 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
-Message-ID: <20130814075017.GE2324@pengutronix.de>
-References: <cover.1376309076.git.b42378@freescale.com>
- <51808310dd97d2a35a28766ed7309f269521cafd.1376309076.git.b42378@freescale.com>
+Subject: Re: [alsa-devel] [PATCH v4 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130814081445.GC31141@S2101-09.ap.freescale.net>
+References: <1376308870-14232-1-git-send-email-b42378@freescale.com>
+ <1376308870-14232-2-git-send-email-b42378@freescale.com>
+ <CAOMZO5A7noEb98yuCPY6o2mf-FikFcMYiDLpg3huPKHMO7Fwdw@mail.gmail.com>
+ <20130814032658.GA16915@S2101-09.ap.freescale.net>
+ <20130814053016.GF31651@MrMyself>
+ <20130814063931.GB31141@S2101-09.ap.freescale.net>
+ <20130814063444.GG31651@MrMyself>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <51808310dd97d2a35a28766ed7309f269521cafd.1376309076.git.b42378@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20130814063444.GG31651@MrMyself>
 Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, lars@metafoo.de,
- timur@tabi.org, rob.herring@calxeda.com, broonie@kernel.org,
- p.zabel@pengutronix.de, linuxppc-dev@lists.ozlabs.org
+ linuxppc-dev@lists.ozlabs.org, timur@tabi.org, rob.herring@calxeda.com,
+ broonie@kernel.org, p.zabel@pengutronix.de, Fabio Estevam <festevam@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,90 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 12, 2013 at 08:05:27PM +0800, Nicolin Chen wrote:
-> This patch add S/PDIF controller driver for Freescale SoC.
+On Wed, Aug 14, 2013 at 02:34:45PM +0800, Nicolin Chen wrote:
+> On Wed, Aug 14, 2013 at 02:39:33PM +0800, Shawn Guo wrote:
+> > We only need to maintain those versions that require different
+> > programming model in the list.  For example, if S/PDIF on Vybrid
+> > is completely compatible with imx6q one and uses the exactly same
+> > programming model, we do not need to maintain a compatible string
+> > for Vybrid S/PDIF at all.  Instead, we only need to have something
+> > like below in Vybrid dts file, and S/PDIF driver will just work for it.
+> > 
+> > 	compatible = "fsl,vf600-spdif", "fsl,imx6q-spdif";
+> > 
+> > Shawn
 > 
-> Signed-off-by: Nicolin Chen <b42378@freescale.com>
-> +
-> +Required properties:
-> +
-> +  - compatible : Compatible list, contains "fsl,<chip>-spdif". Using general
-> +  "fsl,fsl-spdif" will get the default SoC type -- imx6q-spdif.
-> +
-> +  - reg : Offset and length of the register set for the device.
-> +
-> +  - interrupts : Contains spdif interrupt.
-> +
-> +  - dmas : Generic dma devicetree binding as described in
-> +  Documentation/devicetree/bindings/dma/dma.txt.
-> +
-> +  - dma-names : Two dmas have to be defined, "tx" and "rx".
-> +
-> +  - clocks : Contains an entry for each entry in clock-names.
-> +
-> +  - clock-names : Includes the following entries:
-> +	name		type		comments
-> +	"core"		Required	The core clock of spdif controller
-> +	"rx"		Optional	Rx clock source for spdif record.
-> +					If absent, will use core clock.
-> +	"tx"		Optional	Tx clock source for spdif playback.
-> +					If absent, will use core clock.
-> +	"tx-32000"	Optional	Tx clock source for 32000Hz sample rate
-> +					playback. If absent, will use tx clock.
-> +	"tx-44100"	Optional	Tx clock source for 44100Hz sample rate
-> +					playback. If absent, will use tx clock.
-> +	"tx-48000"	Optional	Tx clock source for 48000Hz sample rate
-> +					playback. If absent, will use tx clock.
-> +
-> +  - tx-clksrc-names : The names for all available clock sources for tx, which
-> +  is also being listed in SoC reference manual, ClkSrc_Sel bit of SPDIF_SRPC.
-> +  And the name list would be different between different SoC. Use 'null' for
-> +  those unlisted names, and the max number of tx-clksrc-names should be 8.
-> +
-> +  - rx-clksrc-names : The names for all available clock sources for rx, which
-> +  is also being listed in SoC reference manual, TxClk_Source bit of SPDIF_STC.
-> +  And the name list would be different between different SoC. Use 'null' for
-> +  those unlisted names, and the max number of rx-clksrc-names should be 16.
-> +
-> +Optional properties:
-> +
-> +  - rx-clksrc-lock: This is a boolean property. If present, ClkSrc_Sel bit
-> +  of SPDIF_SRPC would be set a clock source that cares DPLL locked condition.
-> +
-> +Example1:
-> +
-> +spdif: spdif@02004000 {
-> +	compatible = "fsl,imx6q-spdif";
-> +	reg = <0x02004000 0x4000>;
-> +	interrupts = <0 52 0x04>;
-> +	dmas = <&sdma 14 18 0>,
-> +	       <&sdma 15 18 0>;
-> +	dma-names = "rx", "tx";
-> +
-> +	clocks = <&clks 197>;
-> +	clock-names = "core";
-> +	rx-clksrc-lock;
-> +	rx-clksrc-names =
-> +		"lock.ext", "lock.spdif", "lock.asrc",
-> +		"lock.spdif_ext", "lock.esai", "ext",
-> +		"spdif", "asrc", "spdif_ext", "esai",
-> +		"lock.mlb", "lock.mlb_phy", "mlb",
-> +		"mlb_phy";
-> +	tx-clksrc-names =
-> +		"xtal", "spdif", "asrc", "spdif_ext",
-> +		"esai", "ipg", "mlb", "mlb_phy";
+> Clear. Thank you for the explain.
+> 
+> Then I think I can merely remain "fsl,imx6q-spdif" here,
+> because all other cases should be completely compatible
+> with this one. They are only different in the clock source
+> names list, which's already being specified in dts file.
+> 
+> Please correct me if you think this still isn't proper.
 
-I had a hard time understanding what you are doing here.
+And we generally prefer to use the soc that firstly integrates the IP to
+name the compatible.  For IMX series, I think imx35 is the one, so we
+would name it "fsl,imx35-spdif".
 
-With this the clk names in arch/arm/mach-imx/clk-imx6q.c become an API
-between the Kernel and the devicetree. Don't do that.
-
-There is a standardized devicetree binding for clocks. Use it.
-
-Sascha
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Shawn
