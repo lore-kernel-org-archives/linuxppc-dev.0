@@ -1,27 +1,28 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 9F1F92C019B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 20:01:43 +1000 (EST)
-Message-ID: <520B5584.7030608@arm.com>
-Date: Wed, 14 Aug 2013 11:01:40 +0100
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Return-Path: <B42378@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1B50B2C01BF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 20:39:49 +1000 (EST)
+Date: Wed, 14 Aug 2013 18:23:46 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [alsa-devel] [PATCH v4 resent 1/2] ASoC: fsl: Add S/PDIF CPU DAI
+ driver
+Message-ID: <20130814102346.GK31651@MrMyself>
+References: <cover.1376309076.git.b42378@freescale.com>
+ <51808310dd97d2a35a28766ed7309f269521cafd.1376309076.git.b42378@freescale.com>
+ <20130814075017.GE2324@pengutronix.de>
+ <20130814084801.GH31651@MrMyself>
+ <20130814095652.GX26614@pengutronix.de>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
-References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>
- <520A536C.3030600@arm.com> <520A7B00.8060405@arm.com>
- <1376428024.4255.14.camel@pasglop>
-In-Reply-To: <1376428024.4255.14.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Olof Johansson <olof@lixom.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20130814095652.GX26614@pengutronix.de>
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, lars@metafoo.de,
+ timur@tabi.org, rob.herring@calxeda.com, broonie@kernel.org,
+ p.zabel@pengutronix.de, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,85 +32,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13/08/13 22:07, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-08-13 at 19:29 +0100, Sudeep KarkadaNagesha wrote:
->> I don't understand completely the use of ibm,ppc-interrupt-server#s and
->> its implications on generic of_get_cpu_node implementation.
->> I see the PPC specific definition of of_get_cpu_node uses thread id only
->> in 2 instances. Based on that, I have tried to move all the other
->> instances to use generic definition.
->>
->> Let me know if the idea is correct.
->=20
-> No. The device-tree historically only represents cores, not HW threads, s=
-o
-> it makes sense to retrieve also the thread number corresponding to the CP=
-U.
->=20
-Ok
+Hi,
 
-> However, the mechanism to represent HW threads in the device-tree is curr=
-ently
-> somewhat platform specific (the ibm,ppc-interrupt-server#s).
-I see most of the callers pass NULL to thread id argument except 2
-instances in entire tree. If that's the case why can't we move to use
-generic of_get_cpu_node in most of those cases and have PPC specific
-implementation for the ones using thread id.
+On Wed, Aug 14, 2013 at 11:56:52AM +0200, Sascha Hauer wrote:
+> > I think I should first explain to you what this part is doing:
+> > The driver needs to set Clk_source bit for TX/RX to select the 
+> > clock from a clock mux. The names listed above are those of the 
+> > clocks connecting to the mux, while they are not only internal 
+> > clocks which're included in clk-imx6q.c but also external ones,
+> > an on-board external osc for example.
+> > 
+> > The driver does get the clock by using the standard DT binding,
+> > see the 'clocks = <&clks 197>' above, and then compare this
+> > obtained clock->name with the name list to decide which value
+> > should be set to the Clk_source bit.
+> > 
+> > ==================================================================
+> > ClkSrc_Sel from i.MX6Q reference manual:
+> > 
+> > Clock source selection, all other settings not shown are reserved:
+> > 0000 if (DPLL Locked) SPDIF_RxClk else extal
+> > 0001 if (DPLL Locked) SPDIF_RxClk else spdif_clk
+> > 0010 if (DPLL Locked) SPDIF_RxClk else asrc_clk
+> > 0011 if (DPLL Locked) SPDIF_RxClk else spdif_extclk
+> > 0100 if (DPLL Locked) SPDIF_Rxclk else esai_hckt
+> > 0101 extal_clk
+> > 0110 spdif_clk
+> > 0111 asrc_clk
+> > 1000 spdif_extclk
+> > 1001 esai_hckt
+> > 1010 if (DPLL Locked) SPDIF_RxClk else mlb_clk
+> > ==================================================================
+> > 
+> > So the name list here basically is not being used to obtain a
+> > clock like what standardized DT binding does but to provide the
+> > driver a full list to look up which value should be exactly used
+> > according to the obtained clock.
+> > 
+> > I think I should revise the binding doc for these two lists. It 
+> > might be hard to explain within that kinda short paragraph. 
+> > 
+> > Surely, if I misunderstand your point, please correct me. And
+> > if you have any sage idea, please guide me.
+> 
+> Something like this:
+> 
+> clocks = <&clks 197>, <&clks 3>, <&clks 197>, <&clks 107>, <&clks SPDIF_EXT>,
+>          <&clks 118>, <&clks 62>, <&clks 139>, <&clks MLB_PHY>
+> clock-names = "core", "rxtx0", "rxtx1", "rxtx2", "rxtx3", "rxtx4", "rxtx5", "rxtx6", "rxtx7"
+> 
+> This describes the different input clocks to the spdif core and also
+> gives a hint to the array index (rxtx_n_) to use.
 
->=20
-> So what you could do for now is:
->=20
->  - Have a generic version that always returns 0 as the thread, which is w=
-eak
-I would prefer to move to generic of_get_cpu_node where ever possible
-and rename the function that takes thread id rather than making generic
-one weak.
+Thank you for the idea, and..hmm..I'm a bit confused.. Is this really
+a nicer way?
 
->=20
->  - powerpc keeps its own implementation
-How about only in cases where it needs thread_id.
+Actually the rx clock list and tx clock list are totally different.
+So doing this I have to list, in the maximum case, 24 (8 + 16) clock
+phandles for these two lists. And plussing another 6 I've listed in
+this binding doc -- thus there are totally 30 clock phanldes. But
+the 24 of 30 are only used to get two indexes.
 
->=20
->  - Start a discussion on the bindings (if not already there) to define th=
-reads
-> in a better way at which point the generic function can be updated.
->=20
-I am not sure if we need to define any new bindings. Excerpts from ePAPR
-(v1.1):
-"3.7.1 General Properties of CPU nodes
-The value of "reg" is a <prop-encoded-array> that defines a unique
-CPU/thread id for the CPU/threads represented by the CPU node.
-If a CPU supports more than one thread (i.e. multiple streams of
-execution) the reg property is an array with 1 element per thread. The
-#address-cells on the /cpus node specifies how many cells each element
-of the array takes. Software can determine the number of threads by
-dividing the size of reg by the parent node's #address-cells."
+I think I need a little help here to understand why this is better.
+It looks more complicated to me.
 
-And this is exactly in agreement to what's implemented in the generic
-of_get_cpu_node:
+Creating the two name lists just because I can describe them in the 
+dtsi of SoC, since they are totally fixed and identical to the SoC
+reference manual, while the clocks area can be remained for users
+to select the actual clocks (core/rx/tx/tx-32000/tx-44100/tx-48000),
+so they can configure these clocks in dts file of a specific board,
+and they don't need to touch the name lists any more.
 
-for_each_child_of_node(cpus, cpun) {
-        if (of_node_cmp(cpun->type, "cpu"))
-                continue;
-        cell =3D of_get_property(cpun, "reg", &prop_len);
-        if (!cell) {
-                pr_warn("%s: missing reg property\n", cpun->full_name);
-                continue;
-        }
-        prop_len /=3D sizeof(*cell);
-        while (prop_len) {
-                hwid =3D of_read_number(cell, ac);
-                prop_len -=3D ac;
-                if (arch_match_cpu_phys_id(cpu, hwid))
-                        return cpun;
-        }
-}
-
-Yes this doesn't cover the historical "ibm,ppc-interrupt-server#s", for
-which we can have PPC specific wrapper above the generic one i.e. get
-the cpu node and then parse for thread id under custom property.
-
-Let me know your thoughts.
-
-Regards,
-Sudeep
+Thank you,
+Nicolin Chen
