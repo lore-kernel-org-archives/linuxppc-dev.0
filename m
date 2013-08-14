@@ -1,21 +1,26 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
- [209.85.192.172])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DE63E2C017F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 19:19:24 +1000 (EST)
-Received: by mail-pd0-f172.google.com with SMTP id z10so6070573pdj.17
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 02:19:22 -0700 (PDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] Revert "cxgb3: Check and handle the dma mapping errors"
-Date: Wed, 14 Aug 2013 19:19:01 +1000
-Message-Id: <1376471941-2914-1-git-send-email-aik@ozlabs.ru>
-Cc: Santosh Rastapur <santosh@chelsio.com>, Jay Fenlason <fenlason@redhat.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>, Divy Le Ray <divy@chelsio.com>
+Return-Path: <sudeep.karkadanagesha@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id F0A3E2C0191
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 19:23:04 +1000 (EST)
+Message-ID: <520B4C76.8020900@arm.com>
+Date: Wed, 14 Aug 2013 10:23:02 +0100
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
+References: <5208E2D3.7060005@arm.com> <520A536C.3030600@arm.com>
+ <CAL_JsqJdGXuTmb2kgBwgmRYGs9f92-dsawDXSXjmJW8cwjFVQQ@mail.gmail.com>
+ <1974929.8mIZF44QnT@vostro.rjw.lan>
+In-Reply-To: <1974929.8mIZF44QnT@vostro.rjw.lan>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ Rob Herring <robherring2@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Olof Johansson <olof@lixom.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,262 +30,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts commit f83331bab149e29fa2c49cf102c0cd8c3f1ce9f9.
+On 13/08/13 20:45, Rafael J. Wysocki wrote:
+> On Tuesday, August 13, 2013 01:44:23 PM Rob Herring wrote:
+>> On Tue, Aug 13, 2013 at 10:40 AM, Sudeep KarkadaNagesha
+>> <Sudeep.KarkadaNagesha@arm.com> wrote:
+>>> Adding PowerPC list
+>>>
+>>> On 13/08/13 14:00, Rafael J. Wysocki wrote:
+>>>> On Monday, August 12, 2013 02:27:47 PM Sudeep KarkadaNagesha wrote:
+>>>>> The following changes since commit
+>>>>> d4e4ab86bcba5a72779c43dc1459f71fea3d89c8:
+>>>>>
+>>>>> Linux 3.11-rc5 (2013-08-11 18:04:20 -0700)
+>>>>>
+>>>>> are available in the git repository at:
+>>>>>
+>>>>> git://linux-arm.org/linux-skn.git cpu_of_node
+>>
+>> [snip]
+>>
+>>>> All error/warnings:
+>>>>
+>>>> warning: (MPC836x_RDK && MTD_NAND_FSL_ELBC && MTD_NAND_FSL_UPM)
+>>>> selects FSL_LBC which has unmet direct dependencies (FSL_SOC)
+>>>> warning: (MPC836x_RDK && MTD_NAND_FSL_ELBC && MTD_NAND_FSL_UPM)
+>>>> selects FSL_LBC which has unmet direct dependencies (FSL_SOC)
+>>>> In file included from arch/powerpc/include/asm/kvm_para.h:26:0, from
+>>>> include/uapi/linux/kvm_para.h:26, from include/linux/kvm_para.h:4,
+>>>> from include/linux/kvm_host.h:30, from
+>>>> arch/powerpc/kernel/asm-offsets.c:53:
+>>>> include/linux/of.h:269:28: error: conflicting types for
+>>>> 'of_get_cpu_node'
+>>>> extern struct device_node *of_get_cpu_node(int cpu); ^ In file
+>>>> included from include/linux/of.h:139:0, from
+>>>> arch/powerpc/include/asm/kvm_para.h:26, from
+>>>> include/uapi/linux/kvm_para.h:26, from include/linux/kvm_para.h:4,
+>>>> from include/linux/kvm_host.h:30, from
+>>>> arch/powerpc/kernel/asm-offsets.c:53:
+>>>> arch/powerpc/include/asm/prom.h:47:21: note: previous declaration
+>>>> of 'of_get_cpu_node' was here
+>>>> struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
+>>>> ^ make[2]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1 make[2]:
+>>>> Target `__build' not remade because of errors. make[1]: ***
+>>>> [prepare0] Error 2 make[1]: Target `prepare' not remade because of
+>>>> errors. make: *** [sub-make] Error 2
+>>>>
+>>>
+>>> There seems to be conflict in the new function "of_get_cpu_node" added.
+>>> PowerPC also defines the same function name. Further microblaze and
+>>> openrisc declares it(can be removed) but doesn't define it.
+>>> To fix this:
+>>> 1. I can rename the newly added function to something different like
+>>>    `of_get_cpunode` or
+>>> 2. If of_* namespace should be used by only OF/FDT and not by any
+>>>    architecture specific code, then the arch specific version can be
+>>>    renamed to some thing like arch_of_get_cpu_node.
+>>>    Also most of the calls to arch specific function can be moved to
+>>>    generic code.
+>>>
+>>> Let me know your thoughts.
+>>
+>> It is up to Rafael if he is willing/able to rebase his tree, but I
+>> would drop this series until this is sorted out.
+>=20
+> Yeah, I've just done that.
+>=20
+Thanks Rafael, sorry for the trouble. I didn't expect of_* name-space to
+be used in ARCH specific code.
 
-As the tests PPC64 (powernv platform) show, IOMMU pages are leaking
-when transferring big amount of small packets (<=64 bytes),
-"ping -f" and waiting for 15 seconds is the simplest way to confirm the bug.
+>> I think the new common function should be and can be generalized to work=
+ for
+>> powerpc.
+>> It would need to make reg property optional and pass in the device
+>> node to the arch specific function.
+>>
+>> A short term solution would be just to make the function "#ifndef CONFIG=
+_PPC".
+>=20
+> I wouldn't do that, it's almost guaranteed to be messy going forward.
+>=20
+> I'd go for 1 above personally.
 
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Santosh Rastapur <santosh@chelsio.com>
-Cc: Jay Fenlason <fenlason@redhat.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Divy Le ray <divy@chelsio.com>
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- drivers/net/ethernet/chelsio/cxgb3/sge.c | 107 +++++++------------------------
- 1 file changed, 24 insertions(+), 83 deletions(-)
+Even though it's easier approach, I would go for fixing PPC and converge
+at generic of_get_cpu_node implementation if possible.
 
-diff --git a/drivers/net/ethernet/chelsio/cxgb3/sge.c b/drivers/net/ethernet/chelsio/cxgb3/sge.c
-index 687ec4a..9c89dc8 100644
---- a/drivers/net/ethernet/chelsio/cxgb3/sge.c
-+++ b/drivers/net/ethernet/chelsio/cxgb3/sge.c
-@@ -455,11 +455,6 @@ static int alloc_pg_chunk(struct adapter *adapter, struct sge_fl *q,
- 		q->pg_chunk.offset = 0;
- 		mapping = pci_map_page(adapter->pdev, q->pg_chunk.page,
- 				       0, q->alloc_size, PCI_DMA_FROMDEVICE);
--		if (unlikely(pci_dma_mapping_error(adapter->pdev, mapping))) {
--			__free_pages(q->pg_chunk.page, order);
--			q->pg_chunk.page = NULL;
--			return -EIO;
--		}
- 		q->pg_chunk.mapping = mapping;
- 	}
- 	sd->pg_chunk = q->pg_chunk;
-@@ -954,75 +949,40 @@ static inline unsigned int calc_tx_descs(const struct sk_buff *skb)
- 	return flits_to_desc(flits);
- }
- 
--
--/*	map_skb - map a packet main body and its page fragments
-- *	@pdev: the PCI device
-- *	@skb: the packet
-- *	@addr: placeholder to save the mapped addresses
-- *
-- *	map the main body of an sk_buff and its page fragments, if any.
-- */
--static int map_skb(struct pci_dev *pdev, const struct sk_buff *skb,
--		   dma_addr_t *addr)
--{
--	const skb_frag_t *fp, *end;
--	const struct skb_shared_info *si;
--
--	*addr = pci_map_single(pdev, skb->data, skb_headlen(skb),
--			       PCI_DMA_TODEVICE);
--	if (pci_dma_mapping_error(pdev, *addr))
--		goto out_err;
--
--	si = skb_shinfo(skb);
--	end = &si->frags[si->nr_frags];
--
--	for (fp = si->frags; fp < end; fp++) {
--		*++addr = skb_frag_dma_map(&pdev->dev, fp, 0, skb_frag_size(fp),
--					   DMA_TO_DEVICE);
--		if (pci_dma_mapping_error(pdev, *addr))
--			goto unwind;
--	}
--	return 0;
--
--unwind:
--	while (fp-- > si->frags)
--		dma_unmap_page(&pdev->dev, *--addr, skb_frag_size(fp),
--			       DMA_TO_DEVICE);
--
--	pci_unmap_single(pdev, addr[-1], skb_headlen(skb), PCI_DMA_TODEVICE);
--out_err:
--	return -ENOMEM;
--}
--
- /**
-- *	write_sgl - populate a scatter/gather list for a packet
-+ *	make_sgl - populate a scatter/gather list for a packet
-  *	@skb: the packet
-  *	@sgp: the SGL to populate
-  *	@start: start address of skb main body data to include in the SGL
-  *	@len: length of skb main body data to include in the SGL
-- *	@addr: the list of the mapped addresses
-+ *	@pdev: the PCI device
-  *
-- *	Copies the scatter/gather list for the buffers that make up a packet
-+ *	Generates a scatter/gather list for the buffers that make up a packet
-  *	and returns the SGL size in 8-byte words.  The caller must size the SGL
-  *	appropriately.
-  */
--static inline unsigned int write_sgl(const struct sk_buff *skb,
-+static inline unsigned int make_sgl(const struct sk_buff *skb,
- 				    struct sg_ent *sgp, unsigned char *start,
--				    unsigned int len, const dma_addr_t *addr)
-+				    unsigned int len, struct pci_dev *pdev)
- {
--	unsigned int i, j = 0, k = 0, nfrags;
-+	dma_addr_t mapping;
-+	unsigned int i, j = 0, nfrags;
- 
- 	if (len) {
-+		mapping = pci_map_single(pdev, start, len, PCI_DMA_TODEVICE);
- 		sgp->len[0] = cpu_to_be32(len);
--		sgp->addr[j++] = cpu_to_be64(addr[k++]);
-+		sgp->addr[0] = cpu_to_be64(mapping);
-+		j = 1;
- 	}
- 
- 	nfrags = skb_shinfo(skb)->nr_frags;
- 	for (i = 0; i < nfrags; i++) {
- 		const skb_frag_t *frag = &skb_shinfo(skb)->frags[i];
- 
-+		mapping = skb_frag_dma_map(&pdev->dev, frag, 0, skb_frag_size(frag),
-+					   DMA_TO_DEVICE);
- 		sgp->len[j] = cpu_to_be32(skb_frag_size(frag));
--		sgp->addr[j] = cpu_to_be64(addr[k++]);
-+		sgp->addr[j] = cpu_to_be64(mapping);
- 		j ^= 1;
- 		if (j == 0)
- 			++sgp;
-@@ -1178,7 +1138,7 @@ static void write_tx_pkt_wr(struct adapter *adap, struct sk_buff *skb,
- 			    const struct port_info *pi,
- 			    unsigned int pidx, unsigned int gen,
- 			    struct sge_txq *q, unsigned int ndesc,
--			    unsigned int compl, const dma_addr_t *addr)
-+			    unsigned int compl)
- {
- 	unsigned int flits, sgl_flits, cntrl, tso_info;
- 	struct sg_ent *sgp, sgl[MAX_SKB_FRAGS / 2 + 1];
-@@ -1236,7 +1196,7 @@ static void write_tx_pkt_wr(struct adapter *adap, struct sk_buff *skb,
- 	}
- 
- 	sgp = ndesc == 1 ? (struct sg_ent *)&d->flit[flits] : sgl;
--	sgl_flits = write_sgl(skb, sgp, skb->data, skb_headlen(skb), addr);
-+	sgl_flits = make_sgl(skb, sgp, skb->data, skb_headlen(skb), adap->pdev);
- 
- 	write_wr_hdr_sgl(ndesc, skb, d, pidx, q, sgl, flits, sgl_flits, gen,
- 			 htonl(V_WR_OP(FW_WROPCODE_TUNNEL_TX_PKT) | compl),
-@@ -1267,7 +1227,6 @@ netdev_tx_t t3_eth_xmit(struct sk_buff *skb, struct net_device *dev)
- 	struct netdev_queue *txq;
- 	struct sge_qset *qs;
- 	struct sge_txq *q;
--	dma_addr_t addr[MAX_SKB_FRAGS + 1];
- 
- 	/*
- 	 * The chip min packet length is 9 octets but play safe and reject
-@@ -1296,11 +1255,6 @@ netdev_tx_t t3_eth_xmit(struct sk_buff *skb, struct net_device *dev)
- 		return NETDEV_TX_BUSY;
- 	}
- 
--	if (unlikely(map_skb(adap->pdev, skb, addr) < 0)) {
--		dev_kfree_skb(skb);
--		return NETDEV_TX_OK;
--	}
--
- 	q->in_use += ndesc;
- 	if (unlikely(credits - ndesc < q->stop_thres)) {
- 		t3_stop_tx_queue(txq, qs, q);
-@@ -1358,7 +1312,7 @@ netdev_tx_t t3_eth_xmit(struct sk_buff *skb, struct net_device *dev)
- 	if (likely(!skb_shared(skb)))
- 		skb_orphan(skb);
- 
--	write_tx_pkt_wr(adap, skb, pi, pidx, gen, q, ndesc, compl, addr);
-+	write_tx_pkt_wr(adap, skb, pi, pidx, gen, q, ndesc, compl);
- 	check_ring_tx_db(adap, q);
- 	return NETDEV_TX_OK;
- }
-@@ -1623,8 +1577,7 @@ static void setup_deferred_unmapping(struct sk_buff *skb, struct pci_dev *pdev,
-  */
- static void write_ofld_wr(struct adapter *adap, struct sk_buff *skb,
- 			  struct sge_txq *q, unsigned int pidx,
--			  unsigned int gen, unsigned int ndesc,
--			  const dma_addr_t *addr)
-+			  unsigned int gen, unsigned int ndesc)
- {
- 	unsigned int sgl_flits, flits;
- 	struct work_request_hdr *from;
-@@ -1645,9 +1598,9 @@ static void write_ofld_wr(struct adapter *adap, struct sk_buff *skb,
- 
- 	flits = skb_transport_offset(skb) / 8;
- 	sgp = ndesc == 1 ? (struct sg_ent *)&d->flit[flits] : sgl;
--	sgl_flits = write_sgl(skb, sgp, skb_transport_header(skb),
--			     skb_tail_pointer(skb) -
--			     skb_transport_header(skb), addr);
-+	sgl_flits = make_sgl(skb, sgp, skb_transport_header(skb),
-+			     skb->tail - skb->transport_header,
-+			     adap->pdev);
- 	if (need_skb_unmap()) {
- 		setup_deferred_unmapping(skb, adap->pdev, sgp, sgl_flits);
- 		skb->destructor = deferred_unmap_destructor;
-@@ -1705,11 +1658,6 @@ again:	reclaim_completed_tx(adap, q, TX_RECLAIM_CHUNK);
- 		goto again;
- 	}
- 
--	if (map_skb(adap->pdev, skb, (dma_addr_t *)skb->head)) {
--		spin_unlock(&q->lock);
--		return NET_XMIT_SUCCESS;
--	}
--
- 	gen = q->gen;
- 	q->in_use += ndesc;
- 	pidx = q->pidx;
-@@ -1720,7 +1668,7 @@ again:	reclaim_completed_tx(adap, q, TX_RECLAIM_CHUNK);
- 	}
- 	spin_unlock(&q->lock);
- 
--	write_ofld_wr(adap, skb, q, pidx, gen, ndesc, (dma_addr_t *)skb->head);
-+	write_ofld_wr(adap, skb, q, pidx, gen, ndesc);
- 	check_ring_tx_db(adap, q);
- 	return NET_XMIT_SUCCESS;
- }
-@@ -1738,7 +1686,6 @@ static void restart_offloadq(unsigned long data)
- 	struct sge_txq *q = &qs->txq[TXQ_OFLD];
- 	const struct port_info *pi = netdev_priv(qs->netdev);
- 	struct adapter *adap = pi->adapter;
--	unsigned int written = 0;
- 
- 	spin_lock(&q->lock);
- again:	reclaim_completed_tx(adap, q, TX_RECLAIM_CHUNK);
-@@ -1758,14 +1705,10 @@ again:	reclaim_completed_tx(adap, q, TX_RECLAIM_CHUNK);
- 			break;
- 		}
- 
--		if (map_skb(adap->pdev, skb, (dma_addr_t *)skb->head))
--			break;
--
- 		gen = q->gen;
- 		q->in_use += ndesc;
- 		pidx = q->pidx;
- 		q->pidx += ndesc;
--		written += ndesc;
- 		if (q->pidx >= q->size) {
- 			q->pidx -= q->size;
- 			q->gen ^= 1;
-@@ -1773,8 +1716,7 @@ again:	reclaim_completed_tx(adap, q, TX_RECLAIM_CHUNK);
- 		__skb_unlink(skb, &q->sendq);
- 		spin_unlock(&q->lock);
- 
--		write_ofld_wr(adap, skb, q, pidx, gen, ndesc,
--			     (dma_addr_t *)skb->head);
-+		write_ofld_wr(adap, skb, q, pidx, gen, ndesc);
- 		spin_lock(&q->lock);
- 	}
- 	spin_unlock(&q->lock);
-@@ -1784,9 +1726,8 @@ again:	reclaim_completed_tx(adap, q, TX_RECLAIM_CHUNK);
- 	set_bit(TXQ_LAST_PKT_DB, &q->flags);
- #endif
- 	wmb();
--	if (likely(written))
--		t3_write_reg(adap, A_SG_KDOORBELL,
--			     F_SELEGRCNTX | V_EGRCNTX(q->cntxt_id));
-+	t3_write_reg(adap, A_SG_KDOORBELL,
-+		     F_SELEGRCNTX | V_EGRCNTX(q->cntxt_id));
- }
- 
- /**
--- 
-1.8.3.2
+Regards,
+Sudeep
