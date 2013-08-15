@@ -1,31 +1,34 @@
 Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A59EF2C073E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2013 15:24:04 +1000 (EST)
+ (Client CN "e31.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 479722C0745
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2013 15:24:05 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Thu, 15 Aug 2013 01:24:01 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 2AB566E803A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2013 01:23:53 -0400 (EDT)
+ Wed, 14 Aug 2013 23:24:02 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 7B26C1FF001D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 23:18:34 -0600 (MDT)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7F5Nwej193952
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2013 01:23:58 -0400
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
+ id r7F5O01n092944
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 23:24:00 -0600
 Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
  by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7F5Nvfr015102
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 23:23:58 -0600
+ r7F5O0cQ015180
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2013 23:24:00 -0600
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/8] powerpc/pseries: fix/cleanup broken mobility device-tree
- update code
-Date: Wed, 14 Aug 2013 22:23:44 -0700
-Message-Id: <1376544232-24936-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Subject: [PATCH 6/8] powerpc/pseries: make dlpar_configure_connector parent
+ node aware
+Date: Wed, 14 Aug 2013 22:23:50 -0700
+Message-Id: <1376544232-24936-7-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1376544232-24936-1-git-send-email-tyreld@linux.vnet.ibm.com>
+References: <1376544232-24936-1-git-send-email-tyreld@linux.vnet.ibm.com>
 Cc: nfont@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,35 +39,193 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we still perform updating of the device tree after a suspend or
-migration from drmgr in userspace through the ugly /proc/ppc64/ofdt interface.
-Code exists to do this update from within the kernel, but testing revealed it
-to be severely broken to the point that the system hardlocks up stuck in an
-infinite loop with irqs disabled.
+Currently the device nodes created in the device subtree returned by a call to
+dlpar_configure_connector are all named in the root node. This is because the
+the node name in the work area returned by ibm,configure-connector rtas call
+only contains the node name and not the entire node path. Passing the parent
+node where the new subtree will be created to dlpar_configure_connector allows
+the correct node path to be prefixed in the full_name field.
 
-The first 4 patches in the series fix several issues encountered tyring to
-perform node property updates as dictated by the ibm,update-properties rtas
-call. The next 2 patches refactor the logic of dlpar_configure_connector to
-enusre that nodes created in a device nodes subtree are initialized
-correctly. The remainder of the patchset fixes a couple problems with node
-removal.
-
-Tyrel Datwyler (8):
-  powerpc/pseries: fix creation of loop in device node property list
-  powerpc/pseries: fix over writing of rtas return code in
-    update_dt_node
-  powerpc/pseries: pack update_props_workarea to map correctly to rtas
-    buffer header
-  powerpc/pseries: fix parsing of initial node path in update_dt_node
-  powerpc/pseries: do all node initialization in dlpar_parse_cc_node
-  powerpc/pseries: make dlpar_configure_connector parent node aware
-  powerpc/pseries: add mising of_node_put in delete_dt_node
-  powerpc/pseries: child nodes are not detached by dlpar_detach_node
-
- arch/powerpc/platforms/pseries/dlpar.c    | 67 ++++++++++++++++++-------------
- arch/powerpc/platforms/pseries/mobility.c | 45 ++++++++++-----------
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/dlpar.c    | 55 ++++++++++++++++---------------
+ arch/powerpc/platforms/pseries/mobility.c | 11 +++----
  arch/powerpc/platforms/pseries/pseries.h  |  2 +-
- 3 files changed, 62 insertions(+), 52 deletions(-)
+ 3 files changed, 34 insertions(+), 34 deletions(-)
 
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index c855233..4ea667d 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -63,21 +63,24 @@ static struct property *dlpar_parse_cc_property(struct cc_workarea *ccwa)
+ 	return prop;
+ }
+ 
+-static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccwa)
++static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccwa,
++					       const char *path)
+ {
+ 	struct device_node *dn;
+ 	char *name;
+ 
++	/* If parent node path is "/" advance path to NULL terminator to
++	 * prevent double leading slashs in full_name.
++	 */
++	if (!path[1])
++		path++;
++
+ 	dn = kzalloc(sizeof(*dn), GFP_KERNEL);
+ 	if (!dn)
+ 		return NULL;
+ 
+-	/* The configure connector reported name does not contain a
+-	 * preceding '/', so we allocate a buffer large enough to
+-	 * prepend this to the full_name.
+-	 */
+ 	name = (char *)ccwa + ccwa->name_offset;
+-	dn->full_name = kasprintf(GFP_KERNEL, "/%s", name);
++	dn->full_name = kasprintf(GFP_KERNEL, "%s/%s", path, name);
+ 	if (!dn->full_name) {
+ 		kfree(dn);
+ 		return NULL;
+@@ -123,7 +126,8 @@ void dlpar_free_cc_nodes(struct device_node *dn)
+ #define CALL_AGAIN	-2
+ #define ERR_CFG_USE     -9003
+ 
+-struct device_node *dlpar_configure_connector(u32 drc_index)
++struct device_node *dlpar_configure_connector(u32 drc_index,
++					      struct device_node *parent)
+ {
+ 	struct device_node *dn;
+ 	struct device_node *first_dn = NULL;
+@@ -132,6 +136,7 @@ struct device_node *dlpar_configure_connector(u32 drc_index)
+ 	struct property *last_property = NULL;
+ 	struct cc_workarea *ccwa;
+ 	char *data_buf;
++	const char *parent_path = parent->full_name;
+ 	int cc_token;
+ 	int rc = -1;
+ 
+@@ -165,7 +170,7 @@ struct device_node *dlpar_configure_connector(u32 drc_index)
+ 			break;
+ 
+ 		case NEXT_SIBLING:
+-			dn = dlpar_parse_cc_node(ccwa);
++			dn = dlpar_parse_cc_node(ccwa, parent_path);
+ 			if (!dn)
+ 				goto cc_error;
+ 
+@@ -175,13 +180,17 @@ struct device_node *dlpar_configure_connector(u32 drc_index)
+ 			break;
+ 
+ 		case NEXT_CHILD:
+-			dn = dlpar_parse_cc_node(ccwa);
++			if (first_dn)
++				parent_path = last_dn->full_name;
++
++			dn = dlpar_parse_cc_node(ccwa, parent_path);
+ 			if (!dn)
+ 				goto cc_error;
+ 
+-			if (!first_dn)
++			if (!first_dn) {
++				dn->parent = parent;
+ 				first_dn = dn;
+-			else {
++			} else {
+ 				dn->parent = last_dn;
+ 				if (last_dn)
+ 					last_dn->child = dn;
+@@ -205,6 +214,7 @@ struct device_node *dlpar_configure_connector(u32 drc_index)
+ 
+ 		case PREV_PARENT:
+ 			last_dn = last_dn->parent;
++			parent_path = last_dn->parent->full_name;
+ 			break;
+ 
+ 		case CALL_AGAIN:
+@@ -383,9 +393,8 @@ out:
+ 
+ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
+ {
+-	struct device_node *dn;
++	struct device_node *dn, *parent;
+ 	unsigned long drc_index;
+-	char *cpu_name;
+ 	int rc;
+ 
+ 	cpu_hotplug_driver_lock();
+@@ -395,25 +404,19 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
+ 		goto out;
+ 	}
+ 
+-	dn = dlpar_configure_connector(drc_index);
+-	if (!dn) {
+-		rc = -EINVAL;
++	parent = of_find_node_by_path("/cpus");
++	if (!parent) {
++		rc = -ENODEV;
+ 		goto out;
+ 	}
+ 
+-	/* configure-connector reports cpus as living in the base
+-	 * directory of the device tree.  CPUs actually live in the
+-	 * cpus directory so we need to fixup the full_name.
+-	 */
+-	cpu_name = kasprintf(GFP_KERNEL, "/cpus%s", dn->full_name);
+-	if (!cpu_name) {
+-		dlpar_free_cc_nodes(dn);
+-		rc = -ENOMEM;
++	dn = dlpar_configure_connector(drc_index, parent);
++	if (!dn) {
++		rc = -EINVAL;
+ 		goto out;
+ 	}
+ 
+-	kfree(dn->full_name);
+-	dn->full_name = cpu_name;
++	of_node_put(parent);
+ 
+ 	rc = dlpar_acquire_drc(drc_index);
+ 	if (rc) {
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index ed5426f..ff102e2 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -216,17 +216,14 @@ static int add_dt_node(u32 parent_phandle, u32 drc_index)
+ 	struct device_node *parent_dn;
+ 	int rc;
+ 
+-	dn = dlpar_configure_connector(drc_index);
+-	if (!dn)
++	parent_dn = of_find_node_by_phandle(parent_phandle);
++	if (!parent_dn)
+ 		return -ENOENT;
+ 
+-	parent_dn = of_find_node_by_phandle(parent_phandle);
+-	if (!parent_dn) {
+-		dlpar_free_cc_nodes(dn);
++	dn = dlpar_configure_connector(drc_index, parent_dn);
++	if (!dn)
+ 		return -ENOENT;
+-	}
+ 
+-	dn->parent = parent_dn;
+ 	rc = dlpar_attach_node(dn);
+ 	if (rc)
+ 		dlpar_free_cc_nodes(dn);
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index c2a3a25..defb3c9 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -56,7 +56,7 @@ extern void hvc_vio_init_early(void);
+ /* Dynamic logical Partitioning/Mobility */
+ extern void dlpar_free_cc_nodes(struct device_node *);
+ extern void dlpar_free_cc_property(struct property *);
+-extern struct device_node *dlpar_configure_connector(u32);
++extern struct device_node *dlpar_configure_connector(u32, struct device_node *);
+ extern int dlpar_attach_node(struct device_node *);
+ extern int dlpar_detach_node(struct device_node *);
+ 
 -- 
 1.7.12.4
