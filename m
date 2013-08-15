@@ -1,24 +1,22 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 14C7F2C0259
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 03:10:05 +1000 (EST)
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- microblaze-uclinux@itee.uq.edu.au, linux@lists.openrisc.net,
- linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 3/4] powerpc: refactor of_get_cpu_node to support other
- architectures
-Date: Thu, 15 Aug 2013 18:09:39 +0100
-Message-Id: <1376586580-5409-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-In-Reply-To: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Cc: Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>,
- Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>,
- Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
- Grant Likely <grant.likely@linaro.org>
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from filtteri5.pp.htv.fi (filtteri5.pp.htv.fi [213.243.153.188])
+ by ozlabs.org (Postfix) with ESMTP id 61D3A2C0222
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 06:10:12 +1000 (EST)
+Date: Thu, 15 Aug 2013 23:10:00 +0300
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] cpufreq: pmac64: speed up frequency switch
+Message-ID: <20130815201000.GB3067@blackmetal.musicnaut.iki.fi>
+References: <1374611079-28091-1-git-send-email-aaro.koskinen@iki.fi>
+ <9298823.WUCyZreP9q@vostro.rjw.lan>
+ <1374614043.3916.84.camel@pasglop>
+ <1376269668.32100.148.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1376269668.32100.148.camel@pasglop>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Nick Piggin <npiggin@suse.de>,
+ linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,129 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+Hi,
 
-Currently different drivers requiring to access cpu device node are
-parsing the device tree themselves. Since the ordering in the DT need
-not match the logical cpu ordering, the parsing logic needs to consider
-that. However, this has resulted in lots of code duplication and in some
-cases even incorrect logic.
+On Mon, Aug 12, 2013 at 11:07:48AM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2013-07-24 at 07:14 +1000, Benjamin Herrenschmidt wrote:
+> > On Tue, 2013-07-23 at 23:20 +0200, Rafael J. Wysocki wrote:
+> > > All looks good in the patchset from 10000 feet (or more), but I need
+> > > Ben to speak here.
+> > 
+> > I want to give it a quick spin on the HW here, I'll ack then. But yes,
+> > it looks good.
+> 
+> Seems to work here on the quad G5.
+> 
+> However, If I use on-demand, there's a huge latency of switch as far as
+> I can tell (about 10s) after I start/stop a bunch of CPU eaters... I
+> quite like how the userspace "powernowd" which I used to use switches
+> more aggressively.
+> 
+> Is that expected ?
 
-It's better to consolidate them by adding support for getting cpu
-device node for a given logical cpu index in DT core library. However
-logical to physical index mapping can be architecture specific.
+I guess we should keep the current 12us latency in g5_neo2_cpufreq_init()
+(although I doubt it's correct...), and only add the new 10ms latency
+value to g5_pm72_cpufreq_init() - that way we can enable the older systems
+to use ondemand (despite long latencies), while not risking regressing
+any of the current functionality.
 
-PowerPC has it's own implementation to get the cpu node for a given
-logical index.
+I'll resend the series with the changes.
 
-This patch refactors the current implementation of of_get_cpu_node.
-This in preparation to move the implementation to DT core library.
-It separates out the logical to physical mapping so that a default
-matching of the physical id to the logical cpu index can be added
-when moved to common code. Architecture specific code can override it.
-
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Grant Likely <grant.likely@linaro.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
----
- arch/powerpc/kernel/prom.c | 70 ++++++++++++++++++++++++++++--------------=
-----
- 1 file changed, 43 insertions(+), 27 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index eb23ac9..594c9f9 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -865,45 +865,61 @@ static int __init prom_reconfig_setup(void)
- __initcall(prom_reconfig_setup);
- #endif
-=20
-+bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
-+{
-+=09return (int)phys_id =3D=3D get_hard_smp_processor_id(cpu);
-+}
-+
-+static bool __of_find_n_match_cpu_property(struct device_node *cpun,
-+=09=09=09const char *prop_name, int cpu, unsigned int *thread)
-+{
-+=09const __be32 *cell;
-+=09int ac, prop_len, tid;
-+=09u64 hwid;
-+
-+=09ac =3D of_n_addr_cells(cpun);
-+=09cell =3D of_get_property(cpun, prop_name, &prop_len);
-+=09if (!cell)
-+=09=09return false;
-+=09prop_len /=3D sizeof(*cell);
-+=09for (tid =3D 0; tid < prop_len; tid++) {
-+=09=09hwid =3D of_read_number(cell, ac);
-+=09=09if (arch_match_cpu_phys_id(cpu, hwid)) {
-+=09=09=09if (thread)
-+=09=09=09=09*thread =3D tid;
-+=09=09=09return true;
-+=09=09}
-+=09}
-+=09return false;
-+}
-+
- /* Find the device node for a given logical cpu number, also returns the c=
-pu
-  * local thread number (index in ibm,interrupt-server#s) if relevant and
-  * asked for (non NULL)
-  */
- struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
- {
--=09int hardid;
--=09struct device_node *np;
-+=09struct device_node *cpun, *cpus;
-=20
--=09hardid =3D get_hard_smp_processor_id(cpu);
-+=09cpus =3D of_find_node_by_path("/cpus");
-+=09if (!cpus) {
-+=09=09pr_warn("Missing cpus node, bailing out\n");
-+=09=09return NULL;
-+=09}
-=20
--=09for_each_node_by_type(np, "cpu") {
--=09=09const u32 *intserv;
--=09=09unsigned int plen, t;
-+=09for_each_child_of_node(cpus, cpun) {
-+=09=09if (of_node_cmp(cpun->type, "cpu"))
-+=09=09=09continue;
-=20
- =09=09/* Check for ibm,ppc-interrupt-server#s. If it doesn't exist
- =09=09 * fallback to "reg" property and assume no threads
- =09=09 */
--=09=09intserv =3D of_get_property(np, "ibm,ppc-interrupt-server#s",
--=09=09=09=09&plen);
--=09=09if (intserv =3D=3D NULL) {
--=09=09=09const u32 *reg =3D of_get_property(np, "reg", NULL);
--=09=09=09if (reg =3D=3D NULL)
--=09=09=09=09continue;
--=09=09=09if (*reg =3D=3D hardid) {
--=09=09=09=09if (thread)
--=09=09=09=09=09*thread =3D 0;
--=09=09=09=09return np;
--=09=09=09}
--=09=09} else {
--=09=09=09plen /=3D sizeof(u32);
--=09=09=09for (t =3D 0; t < plen; t++) {
--=09=09=09=09if (hardid =3D=3D intserv[t]) {
--=09=09=09=09=09if (thread)
--=09=09=09=09=09=09*thread =3D t;
--=09=09=09=09=09return np;
--=09=09=09=09}
--=09=09=09}
--=09=09}
-+=09=09if (__of_find_n_match_cpu_property(cpun,
-+=09=09=09=09"ibm,ppc-interrupt-server#s", cpu, thread))
-+=09=09=09return cpun;
-+
-+=09=09if (__of_find_n_match_cpu_property(cpun, "reg", cpu, thread))
-+=09=09=09return cpun;
- =09}
- =09return NULL;
- }
---=20
-1.8.1.2
+A.
