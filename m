@@ -1,21 +1,25 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (unknown
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by ozlabs.org (Postfix) with ESMTP id 7F67D2C01F6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 08:39:05 +1000 (EST)
-Date: Thu, 15 Aug 2013 15:39:03 -0700 (PDT)
-Message-Id: <20130815.153903.859166500375208182.davem@davemloft.net>
-To: clbchenlibo.chen@huawei.com
+Return-Path: <sergei.shtylyov@cogentembedded.com>
+Received: from mail-la0-f53.google.com (mail-la0-f53.google.com
+ [209.85.215.53])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5A9312C00D2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 08:51:48 +1000 (EST)
+Received: by mail-la0-f53.google.com with SMTP id el20so965781lab.40
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2013 15:51:44 -0700 (PDT)
+Message-ID: <520D5B88.7080304@cogentembedded.com>
+Date: Fri, 16 Aug 2013 02:51:52 +0400
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>, clbchenlibo.chen@huawei.com
 Subject: Re: [PATCH v3 0/7] net: use platform_{get,set}_drvdata()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20130815.152359.920302339053249583.davem@davemloft.net>
 References: <520CD11D.8010202@huawei.com>
  <20130815.152359.920302339053249583.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-7
-Cc: sergei.shtylyov@cogentembedded.com, gregkh@linuxfoundation.org,
- netdev@vger.kernel.org, jg1.han@samsung.com, lizefan@huawei.com,
- vbordug@ru.mvista.com, linuxppc-dev@lists.ozlabs.org
+ <20130815.153903.859166500375208182.davem@davemloft.net>
+In-Reply-To: <20130815.153903.859166500375208182.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-7; format=flowed
+Cc: gregkh@linuxfoundation.org, netdev@vger.kernel.org, jg1.han@samsung.com,
+ lizefan@huawei.com, vbordug@ru.mvista.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,24 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogRGF2aWQgTWlsbGVyIDxkYXZlbUBkYXZlbWxvZnQubmV0Pg0KRGF0ZTogVGh1LCAxNSBB
-dWcgMjAxMyAxNToyMzo1OSAtMDcwMCAoUERUKQ0KDQo+IEZyb206IExpYm8gQ2hlbiA8Y2xiY2hl
-bmxpYm8uY2hlbkBodWF3ZWkuY29tPg0KPiBEYXRlOiBUaHUsIDE1IEF1ZyAyMDEzIDIxOjAxOjE3
-ICswODAwDQo+IA0KPj4gVXNlIHRoZSB3cmFwcGVyIGZ1bmN0aW9ucyBmb3IgZ2V0dGluZyBhbmQg
-c2V0dGluZyB0aGUgZHJpdmVyIGRhdGEgdXNpbmcNCj4+IHBsYXRmb3JtX2RldmljZSBpbnN0ZWFk
-IG9mIHVzaW5nIGRldl97Z2V0LHNldH1fZHJ2ZGF0YSgpIHdpdGggJnBkZXYtPmRldiwNCj4+IHNv
-IHdlIGNhbiBkaXJlY3RseSBwYXNzIGEgc3RydWN0IHBsYXRmb3JtX2RldmljZS4NCj4+IA0KPj4g
-Y2hhbmdlbG9nIHYzOg0KPj4gCXJlbW92ZSBtb2RpZnkgYWJvdXQgZGV2X3NldF9kcnZkYXRhKCkN
-Cj4+IGNoYW5nZWxvZyB2MjoNCj4+IAl0aGlzIHZlcnNpb24gYWRkIG1vZGlmeSByZWNvcmQgYWJv
-dXQgZGV2X3NldF9kcnZkYXRhKCkuDQo+IA0KPiBTZXJpZXMgYXBwbGllZC4NCg0KQWN0dWFsbHks
-IEkgaGFkIHRvIHJldmVydCwgdGhlc2UgcGF0Y2hlcyBicmVhayB0aGUgYnVpbGQuDQoNCmRyaXZl
-cnMvbmV0L2V0aGVybmV0L3N1bi9zdW5obWUuYzogSW4gZnVuY3Rpb24goWhhcHB5X21lYWxfcGNp
-X3Byb2JlojoNCmRyaXZlcnMvbmV0L2V0aGVybmV0L3N1bi9zdW5obWUuYzozMTE0OjI6IGVycm9y
-OiBpbXBsaWNpdCBkZWNsYXJhdGlvbiBvZiBmdW5jdGlvbiChcGxhdGZvcm1fc2V0X2RydmRhdGGi
-IFstV2Vycm9yPWltcGxpY2l0LWZ1bmN0aW9uLWRlY2xhcmF0aW9uXQ0KZHJpdmVycy9uZXQvZXRo
-ZXJuZXQvc3VuL3N1bmhtZS5jOiBJbiBmdW5jdGlvbiChaGFwcHlfbWVhbF9wY2lfcmVtb3ZlojoN
-CmRyaXZlcnMvbmV0L2V0aGVybmV0L3N1bi9zdW5obWUuYzozMTYyOjk6IGVycm9yOiBpbXBsaWNp
-dCBkZWNsYXJhdGlvbiBvZiBmdW5jdGlvbiChcGxhdGZvcm1fZ2V0X2RydmRhdGGiIFstV2Vycm9y
-PWltcGxpY2l0LWZ1bmN0aW9uLWRlY2xhcmF0aW9uXQ0KZHJpdmVycy9uZXQvZXRoZXJuZXQvc3Vu
-L3N1bmhtZS5jOjMxNjI6MjY6IHdhcm5pbmc6IGluaXRpYWxpemF0aW9uIG1ha2VzIHBvaW50ZXIg
-ZnJvbSBpbnRlZ2VyIHdpdGhvdXQgYSBjYXN0IFtlbmFibGVkIGJ5IGRlZmF1bHRdDQo=
+Hello.
+
+On 08/16/2013 02:39 AM, David Miller wrote:
+
+>> From: Libo Chen <clbchenlibo.chen@huawei.com>
+>> Date: Thu, 15 Aug 2013 21:01:17 +0800
+
+>>> Use the wrapper functions for getting and setting the driver data using
+>>> platform_device instead of using dev_{get,set}_drvdata() with &pdev->dev,
+>>> so we can directly pass a struct platform_device.
+
+>>> changelog v3:
+>>> 	remove modify about dev_set_drvdata()
+>>> changelog v2:
+>>> 	this version add modify record about dev_set_drvdata().
+
+>> Series applied.
+
+> Actually, I had to revert, these patches break the build.
+
+> drivers/net/ethernet/sun/sunhme.c: In function ¡happy_meal_pci_probe¢:
+> drivers/net/ethernet/sun/sunhme.c:3114:2: error: implicit declaration of function ¡platform_set_drvdata¢ [-Werror=implicit-function-declaration]
+> drivers/net/ethernet/sun/sunhme.c: In function ¡happy_meal_pci_remove¢:
+> drivers/net/ethernet/sun/sunhme.c:3162:9: error: implicit declaration of function ¡platform_get_drvdata¢ [-Werror=implicit-function-declaration]
+> drivers/net/ethernet/sun/sunhme.c:3162:26: warning: initialization makes pointer from integer without a cast [enabled by default]
+
+    Hm, patch #5 was clearly defective as it tried to call 
+platform_{get|set}_drvdata() on PCI devices -- I've read the patch but 
+overlooked that. And the driver lacks #include <linux/platform_device.h>, so 
+I'm not sure it always compiled flawlessly.
+
+WBR, Sergei
