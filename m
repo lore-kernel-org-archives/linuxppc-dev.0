@@ -1,24 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 459B92C0238
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 08:14:52 +1000 (EST)
-Message-ID: <1376604872.4255.115.camel@pasglop>
-Subject: Re: [PATCH 1/3] cpufreq: pmac64: speed up frequency switch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Fri, 16 Aug 2013 08:14:32 +1000
-In-Reply-To: <20130815201000.GB3067@blackmetal.musicnaut.iki.fi>
-References: <1374611079-28091-1-git-send-email-aaro.koskinen@iki.fi>
- <9298823.WUCyZreP9q@vostro.rjw.lan> <1374614043.3916.84.camel@pasglop>
- <1376269668.32100.148.camel@pasglop>
- <20130815201000.GB3067@blackmetal.musicnaut.iki.fi>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (unknown
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by ozlabs.org (Postfix) with ESMTP id 763992C016A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 08:24:02 +1000 (EST)
+Date: Thu, 15 Aug 2013 15:23:59 -0700 (PDT)
+Message-Id: <20130815.152359.920302339053249583.davem@davemloft.net>
+To: clbchenlibo.chen@huawei.com
+Subject: Re: [PATCH v3 0/7] net: use platform_{get,set}_drvdata()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <520CD11D.8010202@huawei.com>
+References: <520CD11D.8010202@huawei.com>
 Mime-Version: 1.0
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Nick Piggin <npiggin@suse.de>,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sergei.shtylyov@cogentembedded.com, gregkh@linuxfoundation.org,
+ netdev@vger.kernel.org, jg1.han@samsung.com, lizefan@huawei.com,
+ vbordug@ru.mvista.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-08-15 at 23:10 +0300, Aaro Koskinen wrote:
+From: Libo Chen <clbchenlibo.chen@huawei.com>
+Date: Thu, 15 Aug 2013 21:01:17 +0800
 
-> I guess we should keep the current 12us latency in g5_neo2_cpufreq_init()
-> (although I doubt it's correct...), and only add the new 10ms latency
-> value to g5_pm72_cpufreq_init() - that way we can enable the older systems
-> to use ondemand (despite long latencies), while not risking regressing
-> any of the current functionality.
+> Use the wrapper functions for getting and setting the driver data using
+> platform_device instead of using dev_{get,set}_drvdata() with &pdev->dev,
+> so we can directly pass a struct platform_device.
 > 
-> I'll resend the series with the changes.
+> changelog v3:
+> 	remove modify about dev_set_drvdata()
+> changelog v2:
+> 	this version add modify record about dev_set_drvdata().
 
-Well, mine is a 11,2, it's not a neo2.
-
-I suppose we could try to measure the latency :-)
-
-Cheers,
-Ben.
+Series applied.
