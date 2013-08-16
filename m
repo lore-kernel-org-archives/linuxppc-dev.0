@@ -1,32 +1,32 @@
 Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0525F2C033C
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:17 +1000 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6010D2C0256
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:40:29 +1000 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Fri, 16 Aug 2013 23:16:06 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3421B2BB004F
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:15 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7GD3EaC721234
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:03:14 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7GDJDkW018438
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:14 +1000
-Subject: [RFC PATCH v2 11/11] pstore/ram: Read and write to the 'compressed'
- flag of pstore
+ Fri, 16 Aug 2013 19:04:07 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8D89F1258054
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 19:10:08 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7GDRNB937355676
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 19:11:53 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7GDIW02018214
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:48:33 +0530
+Subject: [RFC PATCH v2 07/11] pstore: Add file extension to pstore file if
+ compressed
 To: linuxppc-dev@ozlabs.org, tony.luck@intel.com, linux-kernel@vger.kernel.org,
  keescook@chromium.org
 From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Fri, 16 Aug 2013 18:49:07 +0530
-Message-ID: <20130816131907.3338.76154.stgit@aruna-ThinkPad-T420>
+Date: Fri, 16 Aug 2013 18:48:28 +0530
+Message-ID: <20130816131828.3338.65602.stgit@aruna-ThinkPad-T420>
 In-Reply-To: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
 References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
@@ -42,92 +42,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In pstore write, add character 'C'(compressed) or 'D'(decompressed)
-in the header while writing to Ram persistent buffer. In pstore read,
-read the header and update the 'compressed' flag accordingly.
+In case decompression fails, add a ".enc.z" to indicate the file has
+compressed data. This will help user space utilities to figure
+out the file contents.
 
 Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 ---
- fs/pstore/ram.c |   36 ++++++++++++++++++++++++++++--------
- 1 file changed, 28 insertions(+), 8 deletions(-)
+ fs/pstore/inode.c    |    7 ++++---
+ fs/pstore/internal.h |    5 +++--
+ fs/pstore/platform.c |    4 +++-
+ 3 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/fs/pstore/ram.c b/fs/pstore/ram.c
-index 2927223..4027c20 100644
---- a/fs/pstore/ram.c
-+++ b/fs/pstore/ram.c
-@@ -131,6 +131,27 @@ ramoops_get_next_prz(struct persistent_ram_zone *przs[], uint *c, uint max,
- 	return prz;
- }
- 
-+static void ramoops_read_kmsg_hdr(char *buffer, struct timespec *time,
-+				  bool *compressed)
-+{
-+	char data_type;
-+
-+	if (sscanf(buffer, RAMOOPS_KERNMSG_HDR "%lu.%lu-%c\n",
-+			&time->tv_sec, &time->tv_nsec, &data_type) == 3) {
-+		if (data_type == 'C')
-+			*compressed = true;
-+		else
-+			*compressed = false;
-+	} else if (sscanf(buffer, RAMOOPS_KERNMSG_HDR "%lu.%lu\n",
-+			&time->tv_sec, &time->tv_nsec) == 2) {
-+			*compressed = false;
-+	} else {
-+		time->tv_sec = 0;
-+		time->tv_nsec = 0;
-+		*compressed = false;
-+	}
-+}
-+
- static ssize_t ramoops_pstore_read(u64 *id, enum pstore_type_id *type,
- 				   int *count, struct timespec *time,
- 				   char **buf, bool *compressed,
-@@ -153,10 +174,6 @@ static ssize_t ramoops_pstore_read(u64 *id, enum pstore_type_id *type,
- 	if (!prz)
- 		return 0;
- 
--	/* TODO(kees): Bogus time for the moment. */
--	time->tv_sec = 0;
--	time->tv_nsec = 0;
--
- 	size = persistent_ram_old_size(prz);
- 
- 	/* ECC correction notice */
-@@ -167,12 +184,14 @@ static ssize_t ramoops_pstore_read(u64 *id, enum pstore_type_id *type,
- 		return -ENOMEM;
- 
- 	memcpy(*buf, persistent_ram_old(prz), size);
-+	ramoops_read_kmsg_hdr(*buf, time, compressed);
- 	persistent_ram_ecc_string(prz, *buf + size, ecc_notice_size + 1);
- 
- 	return size + ecc_notice_size;
- }
- 
--static size_t ramoops_write_kmsg_hdr(struct persistent_ram_zone *prz)
-+static size_t ramoops_write_kmsg_hdr(struct persistent_ram_zone *prz,
-+				     bool compressed)
+diff --git a/fs/pstore/inode.c b/fs/pstore/inode.c
+index 71bf5f4..519d278 100644
+--- a/fs/pstore/inode.c
++++ b/fs/pstore/inode.c
+@@ -275,8 +275,8 @@ int pstore_is_mounted(void)
+  * Set the mtime & ctime to the date that this record was originally stored.
+  */
+ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
+-		  char *data, size_t size, struct timespec time,
+-		  struct pstore_info *psi)
++		  char *data, bool compressed, size_t size,
++		  struct timespec time, struct pstore_info *psi)
  {
- 	char *hdr;
- 	struct timespec timestamp;
-@@ -183,8 +202,9 @@ static size_t ramoops_write_kmsg_hdr(struct persistent_ram_zone *prz)
- 		timestamp.tv_sec = 0;
- 		timestamp.tv_nsec = 0;
- 	}
--	hdr = kasprintf(GFP_ATOMIC, RAMOOPS_KERNMSG_HDR "%lu.%lu\n",
--		(long)timestamp.tv_sec, (long)(timestamp.tv_nsec / 1000));
-+	hdr = kasprintf(GFP_ATOMIC, RAMOOPS_KERNMSG_HDR "%lu.%lu-%c\n",
-+		(long)timestamp.tv_sec, (long)(timestamp.tv_nsec / 1000),
-+		compressed ? 'C' : 'D');
- 	WARN_ON_ONCE(!hdr);
- 	len = hdr ? strlen(hdr) : 0;
- 	persistent_ram_write(prz, hdr, len);
-@@ -243,7 +263,7 @@ static int notrace ramoops_pstore_write_buf(enum pstore_type_id type,
+ 	struct dentry		*root = pstore_sb->s_root;
+ 	struct dentry		*dentry;
+@@ -315,7 +315,8 @@ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
  
- 	prz = cxt->przs[cxt->dump_write_cnt];
+ 	switch (type) {
+ 	case PSTORE_TYPE_DMESG:
+-		sprintf(name, "dmesg-%s-%lld", psname, id);
++		sprintf(name, "dmesg-%s-%lld%s", psname, id,
++						compressed ? ".enc.z" : "");
+ 		break;
+ 	case PSTORE_TYPE_CONSOLE:
+ 		sprintf(name, "console-%s", psname);
+diff --git a/fs/pstore/internal.h b/fs/pstore/internal.h
+index 937d820..3b3d305 100644
+--- a/fs/pstore/internal.h
++++ b/fs/pstore/internal.h
+@@ -50,8 +50,9 @@ extern struct pstore_info *psinfo;
+ extern void	pstore_set_kmsg_bytes(int);
+ extern void	pstore_get_records(int);
+ extern int	pstore_mkfile(enum pstore_type_id, char *psname, u64 id,
+-			      int count, char *data, size_t size,
+-			      struct timespec time, struct pstore_info *psi);
++			      int count, char *data, bool compressed,
++			      size_t size, struct timespec time,
++			      struct pstore_info *psi);
+ extern int	pstore_is_mounted(void);
  
--	hlen = ramoops_write_kmsg_hdr(prz);
-+	hlen = ramoops_write_kmsg_hdr(prz, compressed);
- 	if (size + hlen > prz->buffer_size)
- 		size = prz->buffer_size - hlen;
- 	persistent_ram_write(prz, buf, size);
+ #endif
+diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
+index 0195cca0..cf0b53f 100644
+--- a/fs/pstore/platform.c
++++ b/fs/pstore/platform.c
+@@ -479,13 +479,15 @@ void pstore_get_records(int quiet)
+ 			if (unzipped_len > 0) {
+ 				buf = big_oops_buf;
+ 				size = unzipped_len;
++				compressed = false;
+ 			} else {
+ 				pr_err("pstore: decompression failed;"
+ 					"returned %d\n", unzipped_len);
++				compressed = true;
+ 			}
+ 		}
+ 		rc = pstore_mkfile(type, psi->name, id, count, buf,
+-				  (size_t)size, time, psi);
++				  compressed, (size_t)size, time, psi);
+ 		if (unzipped_len < 0) {
+ 			/* Free buffer other than big oops */
+ 			kfree(buf);
