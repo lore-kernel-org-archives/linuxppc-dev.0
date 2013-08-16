@@ -1,26 +1,19 @@
-Return-Path: <sergei.shtylyov@cogentembedded.com>
-Received: from mail-la0-f51.google.com (mail-la0-f51.google.com
- [209.85.215.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6D7962C0222
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 09:04:40 +1000 (EST)
-Received: by mail-la0-f51.google.com with SMTP id es20so971643lab.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2013 16:04:36 -0700 (PDT)
-Message-ID: <520D5E8C.4020600@cogentembedded.com>
-Date: Fri, 16 Aug 2013 03:04:44 +0400
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>, clbchenlibo.chen@huawei.com
-Subject: Re: [PATCH v3 0/7] net: use platform_{get,set}_drvdata()
-References: <520CD11D.8010202@huawei.com>
- <20130815.152359.920302339053249583.davem@davemloft.net>
- <20130815.153903.859166500375208182.davem@davemloft.net>
- <520D5B88.7080304@cogentembedded.com>
-In-Reply-To: <520D5B88.7080304@cogentembedded.com>
-Content-Type: text/plain; charset=ISO-8859-7; format=flowed
-Cc: gregkh@linuxfoundation.org, netdev@vger.kernel.org, jg1.han@samsung.com,
- lizefan@huawei.com, vbordug@ru.mvista.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 019E42C01B3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 10:05:52 +1000 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r7G05me3020617
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2013 19:05:49 -0500
+Message-ID: <1376611546.4255.120.camel@pasglop>
+Subject: [PATCH] powerpc/powernv: Return secondary CPUs to firmware on kexec
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Fri, 16 Aug 2013 10:05:46 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/16/2013 02:51 AM, Sergei Shtylyov wrote:
+With OPAL v3 we can return secondary CPUs to firmware on kexec. This
+allows firmware to do various cleanups making things generally more
+reliable, and will enable the "new" kernel to call OPAL to perform
+some reconfiguration tasks early on that can only be done while
+all the CPUs are in firmware.
 
->>> From: Libo Chen <clbchenlibo.chen@huawei.com>
->>> Date: Thu, 15 Aug 2013 21:01:17 +0800
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
->>>> Use the wrapper functions for getting and setting the driver data using
->>>> platform_device instead of using dev_{get,set}_drvdata() with &pdev->dev,
->>>> so we can directly pass a struct platform_device.
-
->>>> changelog v3:
->>>>     remove modify about dev_set_drvdata()
->>>> changelog v2:
->>>>     this version add modify record about dev_set_drvdata().
-
->>> Series applied.
-
->> Actually, I had to revert, these patches break the build.
-
->> drivers/net/ethernet/sun/sunhme.c: In function ¡happy_meal_pci_probe¢:
->> drivers/net/ethernet/sun/sunhme.c:3114:2: error: implicit declaration of
->> function ¡platform_set_drvdata¢ [-Werror=implicit-function-declaration]
->> drivers/net/ethernet/sun/sunhme.c: In function ¡happy_meal_pci_remove¢:
->> drivers/net/ethernet/sun/sunhme.c:3162:9: error: implicit declaration of
->> function ¡platform_get_drvdata¢ [-Werror=implicit-function-declaration]
->> drivers/net/ethernet/sun/sunhme.c:3162:26: warning: initialization makes
->> pointer from integer without a cast [enabled by default]
-
->     Hm, patch #5 was clearly defective as it tried to call
-> platform_{get|set}_drvdata() on PCI devices -- I've read the patch but
-> overlooked that. And the driver lacks #include <linux/platform_device.h>, so
-> I'm not sure it always compiled flawlessly.
-
-    Ah, the platform code is protected by #ifdef CONFIG_SBUS... probably some 
-header #include's <linux/platform_device.h>?
-
-WBR, Sergei
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index d4459bf..b59a1da 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -31,6 +31,7 @@
+ #include <asm/xics.h>
+ #include <asm/rtas.h>
+ #include <asm/opal.h>
++#include <asm/kexec.h>
+ 
+ #include "powernv.h"
+ 
+@@ -143,6 +144,16 @@ static void pnv_shutdown(void)
+ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
+ {
+ 	xics_kexec_teardown_cpu(secondary);
++
++	/* Return secondary CPUs to firmware on OPAL v3 */
++	if (firmware_has_feature(FW_FEATURE_OPALv3) && secondary) {
++		mb();
++		get_paca()->kexec_state = KEXEC_STATE_REAL_MODE;
++		mb();
++
++		/* Return the CPU to OPAL */
++		opal_return_cpu();
++	}
+ }
+ #endif /* CONFIG_KEXEC */
+ 
