@@ -1,39 +1,29 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2FF392C021C
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 19:06:07 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Fri, 16 Aug 2013 18:52:49 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 004AB2BB0052
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 19:06:05 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7G8o3hv9437468
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:50:04 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7G962dC013987
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 19:06:03 +1000
-Message-ID: <520DEB77.9030003@linux.vnet.ibm.com>
-Date: Fri, 16 Aug 2013 14:35:59 +0530
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Return-Path: <sudeep.karkadanagesha@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id 5F5852C0259
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 19:41:12 +1000 (EST)
+Message-ID: <520DF3BD.2070904@arm.com>
+Date: Fri, 16 Aug 2013 10:41:17 +0100
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 MIME-Version: 1.0
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v2 02/10] powerpc/book3s: Introduce exclusive emergency
- stack for machine check exception.
-References: <20130816080213.680.50794.stgit@mars.in.ibm.com>
- <20130816080410.680.46919.stgit@mars.in.ibm.com>
- <520DE9D4.5050402@linux.vnet.ibm.com>
-In-Reply-To: <520DE9D4.5050402@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- Jeremy Kerr <jeremy.kerr@au1.ibm.com>, Anton Blanchard <anton@samba.org>
+To: Jonas Bonn <jonas@southpole.se>
+Subject: Re: [RFC PATCH 2/4] openrisc: remove undefined of_get_cpu_node
+ declaration
+References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376586580-5409-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+In-Reply-To: <1376586580-5409-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Michal Simek <monstr@monstr.eu>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,79 +33,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/16/2013 02:29 PM, Madhavan Srinivasan wrote:
-> On Friday 16 August 2013 01:34 PM, Mahesh J Salgaonkar wrote:
->> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>
->> This patch introduces exclusive emergency stack for machine check exception.
->> We use emergency stack to handle machine check exception so that we can save
->> MCE information (srr1, srr0, dar and dsisr) before turning on ME bit and be
->> ready for re-entrancy. This helps us to prevent clobbering of MCE information
->> in case of nested machine checks.
->>
->> The reason for using emergency stack over normal kernel stack is that the
->> machine check might occur in the middle of setting up a stack frame which may
->> result into improper use of kernel stack.
->>
->> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/paca.h |    9 +++++++++
->>  arch/powerpc/kernel/setup_64.c  |    8 +++++++-
->>  arch/powerpc/xmon/xmon.c        |    2 ++
->>  3 files changed, 18 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
->> index 77c91e7..b4ca4e9 100644
->> --- a/arch/powerpc/include/asm/paca.h
->> +++ b/arch/powerpc/include/asm/paca.h
->> @@ -147,6 +147,15 @@ struct paca_struct {
->>  	 */
->>  	struct opal_machine_check_event *opal_mc_evt;
->>  #endif
->> +#ifdef CONFIG_PPC_BOOK3S_64
->> +	/* Exclusive emergency stack pointer for machine check exception. */
->> +	void *mc_emergency_sp;
->> +	/*
->> +	 * Flag to check whether we are in machine check early handler
->> +	 * and already using emergency stack.
->> +	 */
->> +	u16 in_mce;
->> +#endif
->>
->>  	/* Stuff for accurate time accounting */
->>  	u64 user_time;			/* accumulated usermode TB ticks */
->> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
->> index 389fb807..3fdbdb0 100644
->> --- a/arch/powerpc/kernel/setup_64.c
->> +++ b/arch/powerpc/kernel/setup_64.c
->> @@ -529,7 +529,8 @@ static void __init exc_lvl_early_init(void)
->>
->>  /*
->>   * Stack space used when we detect a bad kernel stack pointer, and
->> - * early in SMP boots before relocation is enabled.
->> + * early in SMP boots before relocation is enabled. Exclusive emergency
->> + * stack for machine checks.
->>   */
->>  static void __init emergency_stack_init(void)
->>  {
->> @@ -552,6 +553,11 @@ static void __init emergency_stack_init(void)
->>  		sp  = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
->>  		sp += THREAD_SIZE;
->>  		paca[i].emergency_sp = __va(sp);
->> +
->> +		/* emergency stack for machine check exception handling. */
->> +		sp  = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
->> +		sp += THREAD_SIZE;
->> +		paca[i].mc_emergency_sp = __va(sp);
->>  	}
->>  }
->>
-> Just a concern, kindly ignore it if it is irrelevant.
-> you have defined mc_emergency_sp under CONFIG_PPC_BOOK3S_64, but
-> assigning memory in a common code. This may break build for other
-> configs such as like ppc64e_defconfig.
+On 15/08/13 18:09, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>=20
+> This patch removes the declaration of the function 'of_get_cpu_node'
+> which is not defined for openrisc. This is in preparation to move
+> it's definition from PPC to DT common code.
+>=20
+> Again it could be there as it was originally copied from powerpc.
+>=20
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> Cc: Jonas Bonn <jonas@southpole.se>
+Hi Jonas,
 
-Nice catch. Will fix it in next spin.
+Since both microblaze and openrisc have moderated lists which I am not
+member of, these patches were blocked. Michal Simek agreed to remove
+this for microblaze. Do you see any concern with this patch for openrisc
+? Can I have you ACK if it looks fine ?
 
-Thanks,
--Mahesh.
+Regards,
+Sudeep
+> ---
+>  arch/openrisc/include/asm/prom.h | 3 ---
+>  1 file changed, 3 deletions(-)
+>=20
+> diff --git a/arch/openrisc/include/asm/prom.h b/arch/openrisc/include/asm=
+/prom.h
+> index bbb34e5..eb59bfe 100644
+> --- a/arch/openrisc/include/asm/prom.h
+> +++ b/arch/openrisc/include/asm/prom.h
+> @@ -44,9 +44,6 @@ void of_parse_dma_window(struct device_node *dn, const =
+void *dma_window_prop,
+> =20
+>  extern void kdump_move_device_tree(void);
+> =20
+> -/* CPU OF node matching */
+> -struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
+> -
+>  /* Get the MAC address */
+>  extern const void *of_get_mac_address(struct device_node *np);
+> =20
+>=20
