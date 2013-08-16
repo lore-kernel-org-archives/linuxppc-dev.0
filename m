@@ -1,33 +1,29 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 9D5A52C0200
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 18:48:17 +1000 (EST)
-Message-ID: <520DE753.8090601@arm.com>
-Date: Fri, 16 Aug 2013 09:48:19 +0100
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Return-Path: <sha@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 71FD32C019D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 18:56:48 +1000 (EST)
+Date: Fri, 16 Aug 2013 10:56:32 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [PATCH v5 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130816085632.GO26614@pengutronix.de>
+References: <cover.1376565456.git.b42378@freescale.com>
+ <4eb991fafc171305ebc71847fecb7bdae0ede927.1376565456.git.b42378@freescale.com>
+ <2188999.03O3zirCAO@flatron> <20130816044330.GD1846@MrMyself>
+ <20130816070818.GM26614@pengutronix.de>
+ <20130816080124.GE1846@MrMyself>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376586580-5409-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376628563.4255.137.camel@pasglop>
-In-Reply-To: <1376628563.4255.137.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jonas Bonn <jonas@southpole.se>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michal Simek <monstr@monstr.eu>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- "microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
- "linux@openrisc.net" <linux@openrisc.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130816080124.GE1846@MrMyself>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, ian.campbell@citrix.com,
+ pawel.moll@arm.com, swarren@wwwdotorg.org, festevam@gmail.com,
+ Tomasz Figa <tomasz.figa@gmail.com>, rob.herring@calxeda.com, timur@tabi.org,
+ broonie@kernel.org, p.zabel@pengutronix.de, galak@codeaurora.org,
+ shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,54 +33,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16/08/13 05:49, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-08-15 at 18:09 +0100, Sudeep KarkadaNagesha wrote:
->> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>
->> Currently different drivers requiring to access cpu device node are
->> parsing the device tree themselves. Since the ordering in the DT need
->> not match the logical cpu ordering, the parsing logic needs to consider
->> that. However, this has resulted in lots of code duplication and in some
->> cases even incorrect logic.
->=20
->  .../...
->=20
->> =20
->> +bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
->> +{
->> +=09return (int)phys_id =3D=3D get_hard_smp_processor_id(cpu);
->> +}
->=20
-> Naming is a bit gross. You might want to make it clearer that
-> we are talking about CPU IDs in the device-tree here.
->=20
-Any particular preference to the name or just a note is sufficient.
-Also unlike PPC, in ARM we don't set hard processor id value based
-values read from device tree. DT must contain the values matching to the
-hardware ID registers.
+On Fri, Aug 16, 2013 at 04:01:25PM +0800, Nicolin Chen wrote:
+> Hi Sascha,
+> 
+>    Thank you for the detailed comments.
+> 
+> On Fri, Aug 16, 2013 at 09:08:18AM +0200, Sascha Hauer wrote:
+> > Which of them the driver should use is configuration and thus normally
+> > should *not* be described in the devicetree. However, there may be no
+> > good way for the driver to know which clock to use in which case. There
+> > may be additional board requirements which are unknown to the driver. So
+> > in this case it might be valid to put the information which clock to use
+> > into the devicetree. But be aware that from the moment you put this
+> > information into the devicetree the driver is no longer free to chose
+> > the best clock, even if in future we find a good way to automatically
+> > guess the best clock. Do you have some insights in which case I would
+> > use which input clock? Is this only about which clock has the best
+> > suitable input frequency or is this also about synchronization of the
+> > audio signal with some other unit?
+> 
+> I understand. What I'm thinking now is to let the driver find the best
+> clock source for tx clock and a correspond divisor like this:
+> 
+> "tx<0-8>"	Optional	Tx clock source for spdif playback.
+> 				If absent, will use core clock.
+> 				The index from 0 to 8 is identical
+> 				to the clock source list described
+> 				in TxClk_Source bit of register STC.
+> 				Multiple clock source are allowed
+> 				for this tx clock source. The driver
+> 				will select one source from them for
+> 				each supported sample rate according
+> 				to the clock rates of these provided
+> 				clock sources.
 
->> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
->> +=09=09=09const char *prop_name, int cpu, unsigned int *thread)
->> +{
->> +=09const __be32 *cell;
->> +=09int ac, prop_len, tid;
->> +=09u64 hwid;
->> +
->> +=09ac =3D of_n_addr_cells(cpun);
->> +=09cell =3D of_get_property(cpun, prop_name, &prop_len);
->> +=09if (!cell)
->> +=09=09return false;
->> +=09prop_len /=3D sizeof(*cell);
->> +=09for (tid =3D 0; tid < prop_len; tid++) {
->> +=09=09hwid =3D of_read_number(cell, ac);
->> +=09=09if (arch_match_cpu_phys_id(cpu, hwid)) {
->> +=09=09=09if (thread)
->> +=09=09=09=09*thread =3D tid;
->> +=09=09=09return true;
->> +=09=09}
->=20
-> Missing:          cell +=3D ac;
-Ah, missed it while refactoring, will fix it. Thanks
+You mean tx<0-7>.
 
-Regards,
-Sudeep
+Also I would make this option required. Use a dummy clock for mux inputs
+that are grounded for a specific SoC.
+
+> 
+> Please review this idea.
+> 
+> 
+> And likewise for rx:
+> 
+> "rx<0-16>"	Optional	Rx clock source for spdif record.
+> 				If absent, will use core clock.
+> 				The index from 0 to 16 is identical
+> 				to the clock source list described
+> 				in ClkSrc_Sel bit of register SRPC.
+> 				If the index provided contains an
+> 				"if (DPLL Locked)" condition in its
+> 				source, the correspond clock phandle
+> 				should be the one in "else" path.
+> 				Only one rx clock source should be
+> 				defined here.
+
+Again, describe the input clocks *to* *the* *S/PDIF* *core* in the
+devicetree. Nothing more, nothing less. We've already been at the point
+where we realized that half of the above clocks only describe the
+'PDLL locked' condition. Also the tx clocks are from what I see identical
+to the rx clocks. The following are the clocks:
+
+clock-names: "core", "rxtx<0-7>" Required. The S/PDIF core has a core
+clock and 8 clocks which are muxed internally to provide input/output
+sample clocks.
+
+This is all binding that is needed for now.
+
+Sascha
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
