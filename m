@@ -1,27 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 47E2A2C0154
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 14:55:27 +1000 (EST)
-Message-ID: <1376628563.4255.137.camel@pasglop>
-Subject: Re: [RFC PATCH 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Date: Fri, 16 Aug 2013 14:49:23 +1000
-In-Reply-To: <1376586580-5409-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376586580-5409-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org,
- Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org,
- microblaze-uclinux@itee.uq.edu.au, linux@openrisc.net,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <R65777@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4922F2C021E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 15:18:13 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <benh@kernel.crashing.org>, <agraf@suse.de>, <paulus@samba.org>,
+ <kvm@vger.kernel.org>, <kvm-ppc@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: [PATCH 6/6 v4] kvm: powerpc: use caching attributes as per linux pte
+Date: Fri, 16 Aug 2013 10:44:59 +0530
+Message-ID: <1376630099-28099-1-git-send-email-Bharat.Bhushan@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,109 +25,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-08-15 at 18:09 +0100, Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> 
-> Currently different drivers requiring to access cpu device node are
-> parsing the device tree themselves. Since the ordering in the DT need
-> not match the logical cpu ordering, the parsing logic needs to consider
-> that. However, this has resulted in lots of code duplication and in some
-> cases even incorrect logic.
+KVM uses same WIM tlb attributes as the corresponding qemu pte.
+For this we now search the linux pte for the requested page and
+get these cache caching/coherency attributes from pte.
 
- .../...
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+---
+v3->v4
+ - s/printk/printk_ratelimited till we return machine check in mmu setup
 
->  
-> +bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
-> +{
-> +	return (int)phys_id == get_hard_smp_processor_id(cpu);
-> +}
+v2->v3
+ - setting pgdir before kvmppc_fix_ee_before_entry() on vcpu_run
+ - Aligned as per changes in patch 5/6
+ - setting WIMG for pfnmap pages also
+ 
+v1->v2
+ - Use Linux pte for wimge rather than RAM/no-RAM mechanism
 
-Naming is a bit gross. You might want to make it clearer that
-we are talking about CPU IDs in the device-tree here.
+ arch/powerpc/include/asm/kvm_host.h |    2 +-
+ arch/powerpc/kvm/booke.c            |    2 +-
+ arch/powerpc/kvm/e500.h             |    8 ++++--
+ arch/powerpc/kvm/e500_mmu_host.c    |   38 ++++++++++++++++++++--------------
+ 4 files changed, 29 insertions(+), 21 deletions(-)
 
-> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
-> +			const char *prop_name, int cpu, unsigned int *thread)
-> +{
-> +	const __be32 *cell;
-> +	int ac, prop_len, tid;
-> +	u64 hwid;
-> +
-> +	ac = of_n_addr_cells(cpun);
-> +	cell = of_get_property(cpun, prop_name, &prop_len);
-> +	if (!cell)
-> +		return false;
-> +	prop_len /= sizeof(*cell);
-> +	for (tid = 0; tid < prop_len; tid++) {
-> +		hwid = of_read_number(cell, ac);
-> +		if (arch_match_cpu_phys_id(cpu, hwid)) {
-> +			if (thread)
-> +				*thread = tid;
-> +			return true;
-> +		}
-
-Missing:          cell += ac;
-
-> +	}
-> +	return false;
-> +}
-> +
->  /* Find the device node for a given logical cpu number, also returns the cpu
->   * local thread number (index in ibm,interrupt-server#s) if relevant and
->   * asked for (non NULL)
->   */
->  struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
->  {
-> -	int hardid;
-> -	struct device_node *np;
-> +	struct device_node *cpun, *cpus;
->  
-> -	hardid = get_hard_smp_processor_id(cpu);
-> +	cpus = of_find_node_by_path("/cpus");
-> +	if (!cpus) {
-> +		pr_warn("Missing cpus node, bailing out\n");
-> +		return NULL;
-> +	}
->  
-> -	for_each_node_by_type(np, "cpu") {
-> -		const u32 *intserv;
-> -		unsigned int plen, t;
-> +	for_each_child_of_node(cpus, cpun) {
-> +		if (of_node_cmp(cpun->type, "cpu"))
-> +			continue;
->  
->  		/* Check for ibm,ppc-interrupt-server#s. If it doesn't exist
->  		 * fallback to "reg" property and assume no threads
->  		 */
-> -		intserv = of_get_property(np, "ibm,ppc-interrupt-server#s",
-> -				&plen);
-> -		if (intserv == NULL) {
-> -			const u32 *reg = of_get_property(np, "reg", NULL);
-> -			if (reg == NULL)
-> -				continue;
-> -			if (*reg == hardid) {
-> -				if (thread)
-> -					*thread = 0;
-> -				return np;
-> -			}
-> -		} else {
-> -			plen /= sizeof(u32);
-> -			for (t = 0; t < plen; t++) {
-> -				if (hardid == intserv[t]) {
-> -					if (thread)
-> -						*thread = t;
-> -					return np;
-> -				}
-> -			}
-> -		}
-> +		if (__of_find_n_match_cpu_property(cpun,
-> +				"ibm,ppc-interrupt-server#s", cpu, thread))
-> +			return cpun;
-> +
-> +		if (__of_find_n_match_cpu_property(cpun, "reg", cpu, thread))
-> +			return cpun;
->  	}
->  	return NULL;
->  }
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 3328353..583d405 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -535,6 +535,7 @@ struct kvm_vcpu_arch {
+ #endif
+ 	gpa_t paddr_accessed;
+ 	gva_t vaddr_accessed;
++	pgd_t *pgdir;
+ 
+ 	u8 io_gpr; /* GPR used as IO source/target */
+ 	u8 mmio_is_bigendian;
+@@ -592,7 +593,6 @@ struct kvm_vcpu_arch {
+ 	struct list_head run_list;
+ 	struct task_struct *run_task;
+ 	struct kvm_run *kvm_run;
+-	pgd_t *pgdir;
+ 
+ 	spinlock_t vpa_update_lock;
+ 	struct kvmppc_vpa vpa;
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 17722d8..0d96d50 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -696,8 +696,8 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 	kvmppc_load_guest_fp(vcpu);
+ #endif
+ 
++	vcpu->arch.pgdir = current->mm->pgd;
+ 	kvmppc_fix_ee_before_entry();
+-
+ 	ret = __kvmppc_vcpu_run(kvm_run, vcpu);
+ 
+ 	/* No need for kvm_guest_exit. It's done in handle_exit.
+diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
+index 4fd9650..fc4b2f6 100644
+--- a/arch/powerpc/kvm/e500.h
++++ b/arch/powerpc/kvm/e500.h
+@@ -31,11 +31,13 @@ enum vcpu_ftr {
+ #define E500_TLB_NUM   2
+ 
+ /* entry is mapped somewhere in host TLB */
+-#define E500_TLB_VALID		(1 << 0)
++#define E500_TLB_VALID		(1 << 31)
+ /* TLB1 entry is mapped by host TLB1, tracked by bitmaps */
+-#define E500_TLB_BITMAP		(1 << 1)
++#define E500_TLB_BITMAP		(1 << 30)
+ /* TLB1 entry is mapped by host TLB0 */
+-#define E500_TLB_TLB0		(1 << 2)
++#define E500_TLB_TLB0		(1 << 29)
++/* Lower 5 bits have WIMGE value */
++#define E500_TLB_WIMGE_MASK	(0x1f)
+ 
+ struct tlbe_ref {
+ 	pfn_t pfn;		/* valid only for TLB0, except briefly */
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index 1c6a9d7..603f5ba 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -64,15 +64,6 @@ static inline u32 e500_shadow_mas3_attrib(u32 mas3, int usermode)
+ 	return mas3;
+ }
+ 
+-static inline u32 e500_shadow_mas2_attrib(u32 mas2, int usermode)
+-{
+-#ifdef CONFIG_SMP
+-	return (mas2 & MAS2_ATTRIB_MASK) | MAS2_M;
+-#else
+-	return mas2 & MAS2_ATTRIB_MASK;
+-#endif
+-}
+-
+ /*
+  * writing shadow tlb entry to host TLB
+  */
+@@ -248,10 +239,12 @@ static inline int tlbe_is_writable(struct kvm_book3e_206_tlb_entry *tlbe)
+ 
+ static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
+ 					 struct kvm_book3e_206_tlb_entry *gtlbe,
+-					 pfn_t pfn)
++					 pfn_t pfn, int wimg)
+ {
+ 	ref->pfn = pfn;
+ 	ref->flags |= E500_TLB_VALID;
++	/* Use guest supplied MAS2_G and MAS2_E */
++	ref->flags |= (gtlbe->mas2 & MAS2_ATTRIB_MASK) | wimg;
+ 
+ 	if (tlbe_is_writable(gtlbe))
+ 		kvm_set_pfn_dirty(pfn);
+@@ -312,8 +305,7 @@ static void kvmppc_e500_setup_stlbe(
+ 
+ 	/* Force IPROT=0 for all guest mappings. */
+ 	stlbe->mas1 = MAS1_TSIZE(tsize) | get_tlb_sts(gtlbe) | MAS1_VALID;
+-	stlbe->mas2 = (gvaddr & MAS2_EPN) |
+-		      e500_shadow_mas2_attrib(gtlbe->mas2, pr);
++	stlbe->mas2 = (gvaddr & MAS2_EPN) | (ref->flags & E500_TLB_WIMGE_MASK);
+ 	stlbe->mas7_3 = ((u64)pfn << PAGE_SHIFT) |
+ 			e500_shadow_mas3_attrib(gtlbe->mas7_3, pr);
+ 
+@@ -332,6 +324,10 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	unsigned long hva;
+ 	int pfnmap = 0;
+ 	int tsize = BOOK3E_PAGESZ_4K;
++	unsigned long tsize_pages = 0;
++	pte_t *ptep;
++	int wimg = 0;
++	pgd_t *pgdir;
+ 
+ 	/*
+ 	 * Translate guest physical to true physical, acquiring
+@@ -394,7 +390,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 			 */
+ 
+ 			for (; tsize > BOOK3E_PAGESZ_4K; tsize -= 2) {
+-				unsigned long gfn_start, gfn_end, tsize_pages;
++				unsigned long gfn_start, gfn_end;
+ 				tsize_pages = 1 << (tsize - 2);
+ 
+ 				gfn_start = gfn & ~(tsize_pages - 1);
+@@ -436,9 +432,10 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	}
+ 
+ 	if (likely(!pfnmap)) {
+-		unsigned long tsize_pages = 1 << (tsize + 10 - PAGE_SHIFT);
++		tsize_pages = 1 << (tsize + 10 - PAGE_SHIFT);
++
+ 		pfn = gfn_to_pfn_memslot(slot, gfn);
+-		if (is_error_noslot_pfn(pfn)) {
++		if (printk_ratelimit() && is_error_noslot_pfn(pfn)) {
+ 			printk(KERN_ERR "Couldn't get real page for gfn %lx!\n",
+ 					(long)gfn);
+ 			return -EINVAL;
+@@ -449,7 +446,16 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 		gvaddr &= ~((tsize_pages << PAGE_SHIFT) - 1);
+ 	}
+ 
+-	kvmppc_e500_ref_setup(ref, gtlbe, pfn);
++	pgdir = vcpu_e500->vcpu.arch.pgdir;
++	ptep = lookup_linux_pte(pgdir, hva, &tsize_pages);
++	if (pte_present(*ptep)) {
++		wimg = (pte_val(*ptep) >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
++	} else if (printk_ratelimit()) {
++		printk(KERN_ERR "%s: pte not present: gfn %lx, pfn %lx\n",
++				__func__, (long)gfn, pfn);
++		return -EINVAL;
++	}
++	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
+ 
+ 	kvmppc_e500_setup_stlbe(&vcpu_e500->vcpu, gtlbe, tsize,
+ 				ref, gvaddr, stlbe);
+-- 
+1.7.0.4
