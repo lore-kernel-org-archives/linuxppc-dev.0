@@ -1,24 +1,23 @@
-Return-Path: <michael.neuling@gmail.com>
-Received: from mail-pb0-x22e.google.com (mail-pb0-x22e.google.com
- [IPv6:2607:f8b0:400e:c01::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 83D342C020B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 11:16:19 +1000 (EST)
-Received: by mail-pb0-f46.google.com with SMTP id rq2so1412114pbb.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Aug 2013 18:16:16 -0700 (PDT)
+Return-Path: <libo.chen@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
+ (using TLSv1 with cipher DES-CBC3-SHA (168/168 bits))
+ (Client CN "myname.my.domain", Issuer "www.mirapoint.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DBBFF2C0237
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 12:16:10 +1000 (EST)
+Message-ID: <520D8B4C.8010509@huawei.com>
+Date: Fri, 16 Aug 2013 10:15:40 +0800
+From: Libo Chen <clbchenlibo.chen@huawei.com>
 MIME-Version: 1.0
-Sender: michael.neuling@gmail.com
-In-Reply-To: <1376611546.4255.120.camel@pasglop>
-References: <1376611546.4255.120.camel@pasglop>
-Date: Fri, 16 Aug 2013 11:16:16 +1000
-Message-ID: <CAEjGV6wdjnoh__eAZ0pFh9o+-=ZpDB-Sg9CBuA2Z+FepgK1-1w@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/powernv: Return secondary CPUs to firmware on
- kexec
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: multipart/alternative; boundary=047d7bb0470858ff1104e4065663
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v3 0/7] net: use platform_{get,set}_drvdata()
+References: <520CD11D.8010202@huawei.com>
+ <20130815.152359.920302339053249583.davem@davemloft.net>
+ <20130815.153903.859166500375208182.davem@davemloft.net>
+In-Reply-To: <20130815.153903.859166500375208182.davem@davemloft.net>
+Content-Type: text/plain; charset="ISO-8859-7"
+Cc: sergei.shtylyov@cogentembedded.com, gregkh@linuxfoundation.org,
+ netdev@vger.kernel.org, jg1.han@samsung.com, lizefan@huawei.com,
+ vbordug@ru.mvista.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,121 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7bb0470858ff1104e4065663
-Content-Type: text/plain; charset=ISO-8859-1
+On 2013/8/16 6:39, David Miller wrote:
+> From: David Miller <davem@davemloft.net>
+> Date: Thu, 15 Aug 2013 15:23:59 -0700 (PDT)
+> 
+>> From: Libo Chen <clbchenlibo.chen@huawei.com>
+>> Date: Thu, 15 Aug 2013 21:01:17 +0800
+>>
+>>> Use the wrapper functions for getting and setting the driver data using
+>>> platform_device instead of using dev_{get,set}_drvdata() with &pdev->dev,
+>>> so we can directly pass a struct platform_device.
+>>>
+>>> changelog v3:
+>>> 	remove modify about dev_set_drvdata()
+>>> changelog v2:
+>>> 	this version add modify record about dev_set_drvdata().
+>>
+>> Series applied.
+> 
+> Actually, I had to revert, these patches break the build.
+> 
+> drivers/net/ethernet/sun/sunhme.c: In function ¡happy_meal_pci_probe¢:
+> drivers/net/ethernet/sun/sunhme.c:3114:2: error: implicit declaration of function ¡platform_set_drvdata¢ [-Werror=implicit-function-declaration]
+> drivers/net/ethernet/sun/sunhme.c: In function ¡happy_meal_pci_remove¢:
+> drivers/net/ethernet/sun/sunhme.c:3162:9: error: implicit declaration of function ¡platform_get_drvdata¢ [-Werror=implicit-function-declaration]
+> drivers/net/ethernet/sun/sunhme.c:3162:26: warning: initialization makes pointer from integer without a cast [enabled by default]
+> 
 
-> With OPAL v3 we can return secondary CPUs to firmware on kexec. This
-> allows firmware to do various cleanups making things generally more
-> reliable, and will enable the "new" kernel to call OPAL to perform
-> some reconfiguration tasks early on that can only be done while
-> all the CPUs are in firmware.
 
-Dumb question, but isn't the point of kexec to avoid fw interactions like
-this?
-
-Mikey
-
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->
-> diff --git a/arch/powerpc/platforms/powernv/setup.c
-b/arch/powerpc/platforms/powernv/setup.c
-> index d4459bf..b59a1da 100644
-> --- a/arch/powerpc/platforms/powernv/setup.c
-> +++ b/arch/powerpc/platforms/powernv/setup.c
-> @@ -31,6 +31,7 @@
->  #include <asm/xics.h>
->  #include <asm/rtas.h>
->  #include <asm/opal.h>
-> +#include <asm/kexec.h>
->
->  #include "powernv.h"
->
-> @@ -143,6 +144,16 @@ static void pnv_shutdown(void)
->  static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
->  {
->         xics_kexec_teardown_cpu(secondary);
-> +
-> +       /* Return secondary CPUs to firmware on OPAL v3 */
-> +       if (firmware_has_feature(FW_FEATURE_OPALv3) && secondary) {
-> +               mb();
-> +               get_paca()->kexec_state = KEXEC_STATE_REAL_MODE;
-> +               mb();
-> +
-> +               /* Return the CPU to OPAL */
-> +               opal_return_cpu();
-> +       }
->  }
->  #endif /* CONFIG_KEXEC */
->
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
-
---047d7bb0470858ff1104e4065663
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<p dir=3D"ltr"><br>
-&gt; With OPAL v3 we can return secondary CPUs to firmware on kexec. This<b=
-r>
-&gt; allows firmware to do various cleanups making things generally more<br=
->
-&gt; reliable, and will enable the &quot;new&quot; kernel to call OPAL to p=
-erform<br>
-&gt; some reconfiguration tasks early on that can only be done while<br>
-&gt; all the CPUs are in firmware.</p>
-<p dir=3D"ltr">Dumb question, but isn&#39;t the point of kexec to avoid fw =
-interactions like this?</p>
-<p dir=3D"ltr">Mikey<br></p>
-<p dir=3D"ltr">&gt; Signed-off-by: Benjamin Herrenschmidt &lt;<a href=3D"ma=
-ilto:benh@kernel.crashing.org">benh@kernel.crashing.org</a>&gt;<br>
-&gt;<br>
-&gt; diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/pla=
-tforms/powernv/setup.c<br>
-&gt; index d4459bf..b59a1da 100644<br>
-&gt; --- a/arch/powerpc/platforms/powernv/setup.c<br>
-&gt; +++ b/arch/powerpc/platforms/powernv/setup.c<br>
-&gt; @@ -31,6 +31,7 @@<br>
-&gt; =A0#include &lt;asm/xics.h&gt;<br>
-&gt; =A0#include &lt;asm/rtas.h&gt;<br>
-&gt; =A0#include &lt;asm/opal.h&gt;<br>
-&gt; +#include &lt;asm/kexec.h&gt;<br>
-&gt;<br>
-&gt; =A0#include &quot;powernv.h&quot;<br>
-&gt;<br>
-&gt; @@ -143,6 +144,16 @@ static void pnv_shutdown(void)<br>
-&gt; =A0static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)<b=
-r>
-&gt; =A0{<br>
-&gt; =A0 =A0 =A0 =A0 xics_kexec_teardown_cpu(secondary);<br>
-&gt; +<br>
-&gt; + =A0 =A0 =A0 /* Return secondary CPUs to firmware on OPAL v3 */<br>
-&gt; + =A0 =A0 =A0 if (firmware_has_feature(FW_FEATURE_OPALv3) &amp;&amp; s=
-econdary) {<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mb();<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 get_paca()-&gt;kexec_state =3D KEXEC_STA=
-TE_REAL_MODE;<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mb();<br>
-&gt; +<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Return the CPU to OPAL */<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 opal_return_cpu();<br>
-&gt; + =A0 =A0 =A0 }<br>
-&gt; =A0}<br>
-&gt; =A0#endif /* CONFIG_KEXEC */<br>
-&gt;<br>
-&gt;<br>
-&gt;<br>
-&gt; _______________________________________________<br>
-&gt; Linuxppc-dev mailing list<br>
-&gt; <a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.oz=
-labs.org</a><br>
-&gt; <a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lis=
-ts.ozlabs.org/listinfo/linuxppc-dev</a><br>
-&gt;<br>
-</p>
-
---047d7bb0470858ff1104e4065663--
+oh, it is my fault, I will update!
