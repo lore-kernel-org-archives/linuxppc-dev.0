@@ -1,32 +1,30 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 80D062C0265
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 20:08:26 +1000 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9F07E2C026C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 20:08:30 +1000 (EST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 16 Aug 2013 15:30:43 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 05DF3394004E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 15:38:03 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7GA9YfC45482172
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 15:39:34 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7GA8BVB027672
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 15:38:11 +0530
+ Fri, 16 Aug 2013 19:54:53 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4ED9C2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 20:08:10 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7G9q9mP1049042
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 19:52:09 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r7GA8970016108
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 20:08:09 +1000
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] iommu: Don't remove device when no iommu_group associated
-Date: Fri, 16 Aug 2013 18:08:06 +0800
-Message-Id: <1376647687-20550-2-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1376647687-20550-1-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1376647687-20550-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] powerpc/iommu: check dev->iommu_group before remove it
+Date: Fri, 16 Aug 2013 18:08:05 +0800
+Message-Id: <1376647687-20550-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, paulus@au1.ibm.com, benh@au1.ibm.com,
  Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,31 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In some cases, one device may not associated with any iommu_group.
-For example, not enough DMA address space.
+Had a talk with Alexey, who suggest me to send this for comments.
 
-For those devices, kernel will crash when try to remove it from an iommu_group.
+On powernv platform, the P7IOC provide limited range of DMA space. For
+example, there are only 8 DMA segments on each PHB. When there are more 
+than 8 PEs, some of PE's tce32_table is not initialized.
 
-This patch do the check before remove it.
+In the normal case, 8 PE is enough. If VF is enabled, 8 is not enough. This
+lead to some pci_dev's iommu_table_base is NULL. Which results this device
+couldn't be added to any iommu_group, and finally dev->iommu_group is left NULL.
+When this VF is removed from the system, this will case kernel crash.
 
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
----
- drivers/iommu/iommu.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+These two patches add the check to guard the kernel. Comments are welcome for
+which place is better.
 
-diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index fbe9ca7..fe41946 100644
---- a/drivers/iommu/iommu.c
-+++ b/drivers/iommu/iommu.c
-@@ -379,6 +379,9 @@ void iommu_group_remove_device(struct device *dev)
- 	struct iommu_group *group = dev->iommu_group;
- 	struct iommu_device *tmp_device, *device = NULL;
- 
-+	if (!group)
-+		return;
-+
- 	/* Pre-notify listeners that a device is being removed. */
- 	blocking_notifier_call_chain(&group->notifier,
- 				     IOMMU_GROUP_NOTIFY_DEL_DEVICE, dev);
+One more comment from Alexey is where we allow these non-DMA capable device
+exist in the system. Maybe we should not allow to create a pci_dev for those
+who can't get proper DMA space. Your comments are welcome :-)
+
+Thanks in advance.
+
+Wei Yang (2):
+  iommu: Don't remove device when no iommu_group associated
+  powerpc/iommu: check dev->iommu_group before remove a device from
+    iommu_group
+
+ arch/powerpc/kernel/iommu.c |    3 ++-
+ drivers/iommu/iommu.c       |    3 +++
+ 2 files changed, 5 insertions(+), 1 deletions(-)
+
 -- 
 1.7.5.4
