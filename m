@@ -1,29 +1,31 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 5F5852C0259
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 19:41:12 +1000 (EST)
-Message-ID: <520DF3BD.2070904@arm.com>
-Date: Fri, 16 Aug 2013 10:41:17 +0100
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Return-Path: <B42378@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 37C802C0261
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 19:56:29 +1000 (EST)
+Date: Fri, 16 Aug 2013 17:53:58 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH v5 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130816095357.GA4694@MrMyself>
+References: <cover.1376565456.git.b42378@freescale.com>
+ <4eb991fafc171305ebc71847fecb7bdae0ede927.1376565456.git.b42378@freescale.com>
+ <2188999.03O3zirCAO@flatron> <20130816044330.GD1846@MrMyself>
+ <20130816070818.GM26614@pengutronix.de>
+ <20130816080124.GE1846@MrMyself>
+ <20130816085632.GO26614@pengutronix.de>
 MIME-Version: 1.0
-To: Jonas Bonn <jonas@southpole.se>
-Subject: Re: [RFC PATCH 2/4] openrisc: remove undefined of_get_cpu_node
- declaration
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376586580-5409-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-In-Reply-To: <1376586580-5409-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michal Simek <monstr@monstr.eu>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20130816085632.GO26614@pengutronix.de>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, ian.campbell@citrix.com,
+ pawel.moll@arm.com, swarren@wwwdotorg.org, festevam@gmail.com,
+ Tomasz Figa <tomasz.figa@gmail.com>, rob.herring@calxeda.com, timur@tabi.org,
+ broonie@kernel.org, p.zabel@pengutronix.de, galak@codeaurora.org,
+ shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,44 +35,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15/08/13 18:09, Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->=20
-> This patch removes the declaration of the function 'of_get_cpu_node'
-> which is not defined for openrisc. This is in preparation to move
-> it's definition from PPC to DT common code.
->=20
-> Again it could be there as it was originally copied from powerpc.
->=20
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> Cc: Jonas Bonn <jonas@southpole.se>
-Hi Jonas,
+On Fri, Aug 16, 2013 at 10:56:32AM +0200, Sascha Hauer wrote:
+> > "tx<0-8>"	Optional	Tx clock source for spdif playback.
+> > 				If absent, will use core clock.
+> > 				The index from 0 to 8 is identical
+> > 				to the clock source list described
+> > 				in TxClk_Source bit of register STC.
+> > 				Multiple clock source are allowed
+> > 				for this tx clock source. The driver
+> > 				will select one source from them for
+> > 				each supported sample rate according
+> > 				to the clock rates of these provided
+> > 				clock sources.
+> 
+> You mean tx<0-7>
 
-Since both microblaze and openrisc have moderated lists which I am not
-member of, these patches were blocked. Michal Simek agreed to remove
-this for microblaze. Do you see any concern with this patch for openrisc
-? Can I have you ACK if it looks fine ?
+Yes. Thank you.
 
-Regards,
-Sudeep
-> ---
->  arch/openrisc/include/asm/prom.h | 3 ---
->  1 file changed, 3 deletions(-)
->=20
-> diff --git a/arch/openrisc/include/asm/prom.h b/arch/openrisc/include/asm=
-/prom.h
-> index bbb34e5..eb59bfe 100644
-> --- a/arch/openrisc/include/asm/prom.h
-> +++ b/arch/openrisc/include/asm/prom.h
-> @@ -44,9 +44,6 @@ void of_parse_dma_window(struct device_node *dn, const =
-void *dma_window_prop,
-> =20
->  extern void kdump_move_device_tree(void);
-> =20
-> -/* CPU OF node matching */
-> -struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
-> -
->  /* Get the MAC address */
->  extern const void *of_get_mac_address(struct device_node *np);
-> =20
->=20
+> Also I would make this option required. Use a dummy clock for mux inputs
+> that are grounded for a specific SoC.
+
+Some clocks are not from CCM and we haven't defined in imx6q-clk.txt,
+so in most cases we can't provide a phandle for them, eg: spdif_ext.
+I think it's a bit hard to force it to be 'required'. An 'optional'
+looks more flexible to me and a default one is ensured even if it's
+missing.
+
+> > "rx<0-16>"	Optional	Rx clock source for spdif record.
+> > 				If absent, will use core clock.
+> > 				The index from 0 to 16 is identical
+> > 				to the clock source list described
+> > 				in ClkSrc_Sel bit of register SRPC.
+> > 				If the index provided contains an
+> > 				"if (DPLL Locked)" condition in its
+> > 				source, the correspond clock phandle
+> > 				should be the one in "else" path.
+> > 				Only one rx clock source should be
+> > 				defined here.
+> 
+> Again, describe the input clocks *to* *the* *S/PDIF* *core* in the
+> devicetree. Nothing more, nothing less. We've already been at the point
+> where we realized that half of the above clocks only describe the
+> 'PDLL locked' condition. Also the tx clocks are from what I see identical
+> to the rx clocks. The following are the clocks:
+> 
+> clock-names: "core", "rxtx<0-7>" Required. The S/PDIF core has a core
+> clock and 8 clocks which are muxed internally to provide input/output
+> sample clocks.
+
+I know the reason why you suggest to combine two into 'rxtx<0-7>'
+is because the clock mux is defined so. And the previous suggestion
+'the option required' is also because of it. But actually the rxclk 
+itself, can be not only routed from the clock mux but also derived
+from DPLL of SPDIF Rx BLOCK as well. So, IMHO, it's more likely to
+be a fact that rxclk actually has 9 clock source, 8 from mux and
+1 from DPLL. But why we here have to exclude it?
+
+
+WELL anyway, I know my opinion might not be concerned so much. So
+I would like to follow the suggestion as an expediency because I
+still wish this patch could be finally applied and merged into
+mainline :(
+
+But I still don't get why we need to be so obsessed to make this
+impenetrable rule of devicetree that we here have to sacrifice
+something we could have reasonably done.
+
+And thank you for the comments again, Sascha.
+Nicolin Chen
