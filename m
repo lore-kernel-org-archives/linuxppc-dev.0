@@ -1,29 +1,38 @@
-Return-Path: <B42378@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 669132C0238
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 18:03:59 +1000 (EST)
-Date: Fri, 16 Aug 2013 16:01:25 +0800
-From: Nicolin Chen <b42378@freescale.com>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH v5 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
-Message-ID: <20130816080124.GE1846@MrMyself>
-References: <cover.1376565456.git.b42378@freescale.com>
- <4eb991fafc171305ebc71847fecb7bdae0ede927.1376565456.git.b42378@freescale.com>
- <2188999.03O3zirCAO@flatron> <20130816044330.GD1846@MrMyself>
- <20130816070818.GM26614@pengutronix.de>
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E408F2C0249
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:04:09 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 16 Aug 2013 17:53:15 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 977022BB0054
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:04:06 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7G83tSp60031206
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:03:55 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r7G845gT029558
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:04:06 +1000
+Subject: [RFC PATCH v2 01/10] powerpc/book3s: Split the common exception
+ prolog logic into two section.
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Fri, 16 Aug 2013 13:33:58 +0530
+Message-ID: <20130816080358.680.18856.stgit@mars.in.ibm.com>
+In-Reply-To: <20130816080213.680.50794.stgit@mars.in.ibm.com>
+References: <20130816080213.680.50794.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20130816070818.GM26614@pengutronix.de>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, lars@metafoo.de, ian.campbell@citrix.com,
- pawel.moll@arm.com, swarren@wwwdotorg.org, festevam@gmail.com,
- Tomasz Figa <tomasz.figa@gmail.com>, rob.herring@calxeda.com, timur@tabi.org,
- broonie@kernel.org, p.zabel@pengutronix.de, galak@codeaurora.org,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Jeremy Kerr <jeremy.kerr@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,79 +42,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sascha,
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-   Thank you for the detailed comments.
+This patch splits the common exception prolog logic into two parts to
+facilitate reuse of existing code in the next patch. The second part will
+be reused in the machine check exception routine in the next patch.
 
-On Fri, Aug 16, 2013 at 09:08:18AM +0200, Sascha Hauer wrote:
-> Which of them the driver should use is configuration and thus normally
-> should *not* be described in the devicetree. However, there may be no
-> good way for the driver to know which clock to use in which case. There
-> may be additional board requirements which are unknown to the driver. So
-> in this case it might be valid to put the information which clock to use
-> into the devicetree. But be aware that from the moment you put this
-> information into the devicetree the driver is no longer free to chose
-> the best clock, even if in future we find a good way to automatically
-> guess the best clock. Do you have some insights in which case I would
-> use which input clock? Is this only about which clock has the best
-> suitable input frequency or is this also about synchronization of the
-> audio signal with some other unit?
+Please note that this patch does not introduce or change existing code
+logic. Instead it is just a code movement.
 
-I understand. What I'm thinking now is to let the driver find the best
-clock source for tx clock and a correspond divisor like this:
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/exception-64s.h |   67 ++++++++++++++++--------------
+ 1 file changed, 35 insertions(+), 32 deletions(-)
 
-"tx<0-8>"	Optional	Tx clock source for spdif playback.
-				If absent, will use core clock.
-				The index from 0 to 8 is identical
-				to the clock source list described
-				in TxClk_Source bit of register STC.
-				Multiple clock source are allowed
-				for this tx clock source. The driver
-				will select one source from them for
-				each supported sample rate according
-				to the clock rates of these provided
-				clock sources.
-
-Please review this idea.
-
-
-And likewise for rx:
-
-"rx<0-16>"	Optional	Rx clock source for spdif record.
-				If absent, will use core clock.
-				The index from 0 to 16 is identical
-				to the clock source list described
-				in ClkSrc_Sel bit of register SRPC.
-				If the index provided contains an
-				"if (DPLL Locked)" condition in its
-				source, the correspond clock phandle
-				should be the one in "else" path.
-				Only one rx clock source should be
-				defined here.
-
-> Likewise with the rx-clksrc-lock property. what are the reasons to
-> enable/disable this property? Is this an option you want to change
-> during runtime? Is it an option you always want to use when it's
-> available?
-> 
-> If you don't know the answer then it might be a good option to just let
-> the driver pick a sane default. If someone feels the need to change the
-> default he probably comes up with a good reason why this is necessary.
-> And then we can discuss again whether we want to have the option in the
-> devicetree or some sysfs entry or whatever else.
-
-The answer is, SPDIF controller actually doesn't care about which rx
-clock source being chosen or even whether it has the "if (DPLL Locked)"
-condition or not. It can measure its input clock sample rate by measuring
-the signal source, from a spdif transmitter via coaxial cable or optical
-line. However, the rxclk will be sent to other IP, ASRC on i.MX6Q for
-example. Quoting from the i.MX6Q reference manual that "Both the Rx clock
-and Tx clock are sent to the ASRC".
-
-Therefore, if 'rx-clksrc-lock' is present, that means ASRC will get a
-clock source indirectly from coaxial cable that contains the sample rate
-information. So it can know what input sample rate is and do his own
-procedure accordingly.
-
-Thank you,
-Nicolin Chen
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 07ca627..2386d40 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -248,6 +248,40 @@ do_kvm_##n:								\
+ 
+ #define NOTEST(n)
+ 
++#define EXCEPTION_PROLOG_COMMON_2(n, area)				   \
++	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
++	SAVE_4GPRS(3, r1);		/* save r3 - r6 in stackframe	*/ \
++	SAVE_2GPRS(7, r1);		/* save r7, r8 in stackframe	*/ \
++	ld	r9,area+EX_R9(r13);	/* move r9, r10 to stackframe	*/ \
++	ld	r10,area+EX_R10(r13);					   \
++	std	r9,GPR9(r1);						   \
++	std	r10,GPR10(r1);						   \
++	ld	r9,area+EX_R11(r13);	/* move r11 - r13 to stackframe	*/ \
++	ld	r10,area+EX_R12(r13);					   \
++	ld	r11,area+EX_R13(r13);					   \
++	std	r9,GPR11(r1);						   \
++	std	r10,GPR12(r1);						   \
++	std	r11,GPR13(r1);						   \
++	BEGIN_FTR_SECTION_NESTED(66);					   \
++	ld	r10,area+EX_CFAR(r13);					   \
++	std	r10,ORIG_GPR3(r1);					   \
++	END_FTR_SECTION_NESTED(CPU_FTR_CFAR, CPU_FTR_CFAR, 66);		   \
++	GET_LR(r9,area);		/* Get LR, later save to stack	*/ \
++	ld	r2,PACATOC(r13);	/* get kernel TOC into r2	*/ \
++	std	r9,_LINK(r1);						   \
++	mfctr	r10;			/* save CTR in stackframe	*/ \
++	std	r10,_CTR(r1);						   \
++	lbz	r10,PACASOFTIRQEN(r13);				   \
++	mfspr	r11,SPRN_XER;		/* save XER in stackframe	*/ \
++	std	r10,SOFTE(r1);						   \
++	std	r11,_XER(r1);						   \
++	li	r9,(n)+1;						   \
++	std	r9,_TRAP(r1);		/* set trap number		*/ \
++	li	r10,0;							   \
++	ld	r11,exception_marker@toc(r2);				   \
++	std	r10,RESULT(r1);		/* clear regs->result		*/ \
++	std	r11,STACK_FRAME_OVERHEAD-16(r1); /* mark the frame	*/
++
+ /*
+  * The common exception prolog is used for all except a few exceptions
+  * such as a segment miss on a kernel address.  We have to be prepared
+@@ -281,38 +315,7 @@ do_kvm_##n:								\
+ 	beq	4f;			/* if from kernel mode		*/ \
+ 	ACCOUNT_CPU_USER_ENTRY(r9, r10);				   \
+ 	SAVE_PPR(area, r9, r10);					   \
+-4:	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
+-	SAVE_4GPRS(3, r1);		/* save r3 - r6 in stackframe	*/ \
+-	SAVE_2GPRS(7, r1);		/* save r7, r8 in stackframe	*/ \
+-	ld	r9,area+EX_R9(r13);	/* move r9, r10 to stackframe	*/ \
+-	ld	r10,area+EX_R10(r13);					   \
+-	std	r9,GPR9(r1);						   \
+-	std	r10,GPR10(r1);						   \
+-	ld	r9,area+EX_R11(r13);	/* move r11 - r13 to stackframe	*/ \
+-	ld	r10,area+EX_R12(r13);					   \
+-	ld	r11,area+EX_R13(r13);					   \
+-	std	r9,GPR11(r1);						   \
+-	std	r10,GPR12(r1);						   \
+-	std	r11,GPR13(r1);						   \
+-	BEGIN_FTR_SECTION_NESTED(66);					   \
+-	ld	r10,area+EX_CFAR(r13);					   \
+-	std	r10,ORIG_GPR3(r1);					   \
+-	END_FTR_SECTION_NESTED(CPU_FTR_CFAR, CPU_FTR_CFAR, 66);		   \
+-	GET_LR(r9,area);		/* Get LR, later save to stack	*/ \
+-	ld	r2,PACATOC(r13);	/* get kernel TOC into r2	*/ \
+-	std	r9,_LINK(r1);						   \
+-	mfctr	r10;			/* save CTR in stackframe	*/ \
+-	std	r10,_CTR(r1);						   \
+-	lbz	r10,PACASOFTIRQEN(r13);				   \
+-	mfspr	r11,SPRN_XER;		/* save XER in stackframe	*/ \
+-	std	r10,SOFTE(r1);						   \
+-	std	r11,_XER(r1);						   \
+-	li	r9,(n)+1;						   \
+-	std	r9,_TRAP(r1);		/* set trap number		*/ \
+-	li	r10,0;							   \
+-	ld	r11,exception_marker@toc(r2);				   \
+-	std	r10,RESULT(r1);		/* clear regs->result		*/ \
+-	std	r11,STACK_FRAME_OVERHEAD-16(r1); /* mark the frame	*/ \
++4:	EXCEPTION_PROLOG_COMMON_2(n, area)				   \
+ 	ACCOUNT_STOLEN_TIME
+ 
+ /*
