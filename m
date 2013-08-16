@@ -1,26 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <swarren@wwwdotorg.org>
+Received: from avon.wwwdotorg.org (avon.wwwdotorg.org
+ [IPv6:2001:470:1f0f:bd7::2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 22C1B2C0191
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2013 08:20:10 +1000 (EST)
-Message-ID: <1376691273.25016.5.camel@pasglop>
-Subject: Re: [RFC PATCH v2 4/4] of: move of_get_cpu_node implementation to
- DT core library
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Date: Sat, 17 Aug 2013 08:14:33 +1000
-In-Reply-To: <1376674791-28244-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org,
- Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ by ozlabs.org (Postfix) with ESMTPS id AD7E02C0253
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2013 08:49:55 +1000 (EST)
+Message-ID: <520EAC8D.5080802@wwwdotorg.org>
+Date: Fri, 16 Aug 2013 16:49:49 -0600
+From: Stephen Warren <swarren@wwwdotorg.org>
+MIME-Version: 1.0
+To: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [alsa-devel] [PATCH v4 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+References: <1376308870-14232-1-git-send-email-b42378@freescale.com>
+ <1376308870-14232-2-git-send-email-b42378@freescale.com>
+ <CAOMZO5A7noEb98yuCPY6o2mf-FikFcMYiDLpg3huPKHMO7Fwdw@mail.gmail.com>
+ <20130814032658.GA16915@S2101-09.ap.freescale.net>
+ <20130814053016.GF31651@MrMyself>
+ <20130814063931.GB31141@S2101-09.ap.freescale.net>
+ <20130814063444.GG31651@MrMyself>
+ <20130814081445.GC31141@S2101-09.ap.freescale.net>
+ <520BA687.4030905@wwwdotorg.org> <20130815021823.GA1846@MrMyself>
+ <20130815092428.GI16915@S2101-09.ap.freescale.net>
+In-Reply-To: <20130815092428.GI16915@S2101-09.ap.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, lars@metafoo.de,
+ linuxppc-dev@lists.ozlabs.org, Nicolin Chen <b42378@freescale.com>,
+ timur@tabi.org, rob.herring@calxeda.com, broonie@kernel.org,
+ p.zabel@pengutronix.de, Fabio Estevam <festevam@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,18 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-08-16 at 18:39 +0100, Sudeep KarkadaNagesha wrote:
-> +#ifdef CONFIG_PPC
-> +               /* Check for historical "ibm,ppc-interrupt-server#s" property
-> +                * for thread ids on PowerPC. If it doesn't exist fallback to
-> +                * standard "reg" property.
-> +                */
-> +               if (__of_find_n_match_cpu_property(cpun,
-> +                               "ibm,ppc-interrupt-server#s", cpu, thread))
-> +                       return cpun;
-> +#endif
+On 08/15/2013 03:24 AM, Shawn Guo wrote:
+> On Thu, Aug 15, 2013 at 10:18:23AM +0800, Nicolin Chen wrote:
+>> Hi Stephen,
+>>
+>> On Wed, Aug 14, 2013 at 09:47:19AM -0600, Stephen Warren wrote:
+>>> If the clock source name list is different, then it needs a different
+>>> compatible value, so that each compatible value can specify which clock
+>>> names are required.
+>>>
+>>> Also, the compatible value itself should always include the exact HW
+>>> that's present (most specific HW version), as well as any other HW it's
+>>> compatible with.
+>>  
+>> Thank you for the comments. Yes, I did so in v1-v3, but after rethinking
+>> about the situation (Actually both the HW version and the clock mux itself
+>> are same, just the clock sources connecting to the mux might be different),
+>> so I decided to do this by abstracting the driver from those source info
+>> and letting DT binding to pass such information. Because I think putting 
+>> the clock sources into the driver differed by compatible value would make
+>> the driver more like SoC-specified, not the ideal way -- SoC-independent,
+>> since the clock sources are based on SoC design, not on itself.
+> 
+> +1
+> 
+> It's pretty much the differences at SoC integration level not the IP
+> itself, and it just happens to be handled in a register of the IP.
 
-It's not "historical". It's still very much in use and well defined in PAPR :-)
-
-Cheers,
-Ben.
+OK, if the difference are the sources of the clocks and not the set of
+clocks, then there's no issue. I can't remember what triggered my
+comments above, but obviously it wasn't clear that this was the case.
