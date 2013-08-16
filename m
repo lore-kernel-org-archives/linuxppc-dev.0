@@ -1,27 +1,26 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ie0-x230.google.com (mail-ie0-x230.google.com
- [IPv6:2607:f8b0:4001:c03::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DE84F2C028C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2013 08:06:07 +1000 (EST)
-Received: by mail-ie0-f176.google.com with SMTP id 9so4283691iec.21
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 15:06:03 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAPWoNkLTC+1ba3vwY0xiJVmmebvuXZBTwiyH5HAFfE8mRReaRQ@mail.gmail.com>
-References: <CAPWoNkJ3NKM-_g93LdRpjvdNFtLt-Pjpg4d4oEKC9CvkpzZ-Wg@mail.gmail.com>
- <CAPWoNkLQUbFG2vZ7wqoqqVNj4uxKz3Fa_vsSH=1_TDD=XC1f2A@mail.gmail.com>
- <CAErSpo5ZZgdpkK+QdQUEnNCEXcG_T+QBWTVoQnMTghxkX7n2HA@mail.gmail.com>
- <CAPWoNkJtnE3ASH0AdgfAD-3soa13DyH-zZAyzWMg9K2=nCX87Q@mail.gmail.com>
- <CAPWoNkLTC+1ba3vwY0xiJVmmebvuXZBTwiyH5HAFfE8mRReaRQ@mail.gmail.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 16 Aug 2013 16:05:43 -0600
-Message-ID: <CAErSpo6zGZkL7hWmBOVzd2=MWvY18v5xLO1qg7jVfSgqa8wHzw@mail.gmail.com>
-Subject: Re: PCIE device errors after linux kernel upgrade
-To: Leon Ravich <lravich@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 17BB72C01FC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2013 08:13:53 +1000 (EST)
+Message-ID: <1376691186.25016.4.camel@pasglop>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
+ other architectures
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Date: Sat, 17 Aug 2013 08:13:06 +1000
+In-Reply-To: <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org,
+ Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 6, 2013 at 11:41 PM, Leon Ravich <lravich@gmail.com> wrote:
-> From comparison of pci printout from the two kernel ,
-> beside the EDAC errors I noticed other strange differences:
->
-> In 3.8.13 I got BAR 7 and BAR 8:
-> [   39.017749] pci 0000:00:00.0: BAR 8: assigned [mem 0xc0000000-0xdfffffff]
-> [   39.024530] pci 0000:00:00.0: BAR 7: can't assign io (size 0x10000)
->
-> In 3.8.13 I am getting:
-> [   38.931873] pci_bus 0000:01: busn_res: can not insert [bus 01-ff]
-> under [bus 00-01] (conflicts with (null) [bus 00-01])
->
->
-> On 6 August 2013 09:32, Leon Ravich <lravich@gmail.com> wrote:
->> Thanks Bjorn.
+On Fri, 2013-08-16 at 18:39 +0100, Sudeep KarkadaNagesha wrote:
+> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
+> +                       const char *prop_name, int cpu, unsigned int
+> *thread)
+> +{
+> +       const __be32 *cell;
+> +       int ac, prop_len, tid;
+> +       u64 hwid;
+> +
+> +       ac = of_n_addr_cells(cpun);
+> +       cell = of_get_property(cpun, prop_name, &prop_len);
+> +       if (!cell)
+> +               return false;
+> +       prop_len /= sizeof(*cell);
+> +       for (tid = 0; tid < prop_len; tid++) {
+> +               hwid = of_read_number(cell, ac);
+> +               if (arch_match_cpu_phys_id(cpu, hwid)) {
+> +                       if (thread)
+> +                               *thread = tid;
+> +                       return true;
+> +               }
+> +               cell += ac;
+> +       }
+> +       return false;
+> +}
 
-Is this still a problem, or have you found a solution in the meantime?
+The only problem I can see here is if "ac" is not 1, that will not work
+for the ibm,ppc-interrupt-server#s case. IE. The latter is always 1 cell
+per entry, only "reg" depends on #address-cells.
 
->> 1) If I understand it right this patch only removes the "pci
->> 0000:00:00.0: ignoring class 0x0b2000 (doesn't
->> match header type 01)" message , don't  care about it , had it before .
+However that's only a theorical problem since on ppc #address-cells of
+/cpus is always 1...
 
-It also affects how the PCI core handles the device.  But as you said,
-if you had the message before, it's probably not the cause of the
-current problem.
-
->> 2) regarding the comparing of printouts:
-
-Can you post the complete logs somewhere, maybe in a bugzilla or similar?
-
-Where are the "PCIE ERR_CAP_STAT" and similar messages from?  My quick
-grep didn't find them.
-
-Bjorn
+Cheers,
+Ben.
