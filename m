@@ -1,32 +1,32 @@
 Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9E1412C0464
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:18:57 +1000 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2A78B2C02AD
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:07 +1000 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Fri, 16 Aug 2013 23:07:52 +1000
+ Fri, 16 Aug 2013 23:02:22 +1000
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id DEEC72BB004F
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:18:53 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A3B50357804E
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:04 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7GD2rI241943228
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:02:53 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7GDIqct018179
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:18:53 +1000
-Subject: [RFC PATCH v2 09/11] erst: Read and write to the 'compressed' flag
- of pstore
+ r7GD34XQ43909290
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:03:04 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r7GDJ3bv015829
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:04 +1000
+Subject: [RFC PATCH v2 10/11] efi-pstore: Read and write to the 'compressed'
+ flag of pstore
 To: linuxppc-dev@ozlabs.org, tony.luck@intel.com, linux-kernel@vger.kernel.org,
  keescook@chromium.org
 From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Fri, 16 Aug 2013 18:48:47 +0530
-Message-ID: <20130816131847.3338.90091.stgit@aruna-ThinkPad-T420>
+Date: Fri, 16 Aug 2013 18:48:57 +0530
+Message-ID: <20130816131857.3338.26295.stgit@aruna-ThinkPad-T420>
 In-Reply-To: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
 References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
@@ -42,51 +42,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In pstore write, set the section type to CPER_SECTION_TYPE_DMESG_COMPR
-if the data is compressed. In pstore read, read the section type and
-update the 'compressed' flag accordingly.
+In pstore write, Efi will add a character 'C'(compressed) or
+D'(decompressed) in its header while writing to persistent store.
+In pstore read, read the header and update the 'compressed' flag
+accordingly.
 
 Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 ---
- drivers/acpi/apei/erst.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ drivers/firmware/efi/efi-pstore.c |   22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/acpi/apei/erst.c b/drivers/acpi/apei/erst.c
-index b0dca8e..62df189 100644
---- a/drivers/acpi/apei/erst.c
-+++ b/drivers/acpi/apei/erst.c
-@@ -956,6 +956,9 @@ static struct pstore_info erst_info = {
- #define CPER_SECTION_TYPE_DMESG						\
- 	UUID_LE(0xc197e04e, 0xd545, 0x4a70, 0x9c, 0x17, 0xa5, 0x54,	\
- 		0x94, 0x19, 0xeb, 0x12)
-+#define CPER_SECTION_TYPE_DMESG_Z					\
-+	UUID_LE(0x4f118707, 0x04dd, 0x4055, 0xb5, 0xdd, 0x95, 0x6d,	\
-+		0x34, 0xdd, 0xfa, 0xc6)
- #define CPER_SECTION_TYPE_MCE						\
- 	UUID_LE(0xfe08ffbe, 0x95e4, 0x4be7, 0xbc, 0x73, 0x40, 0x96,	\
- 		0x04, 0x4a, 0x38, 0xfc)
-@@ -1034,7 +1037,12 @@ skip:
- 	}
- 	memcpy(*buf, rcd->data, len - sizeof(*rcd));
- 	*id = record_id;
-+	*compressed = false;
- 	if (uuid_le_cmp(rcd->sec_hdr.section_type,
-+			CPER_SECTION_TYPE_DMESG_Z) == 0) {
-+		*type = PSTORE_TYPE_DMESG;
-+		*compressed = true;
-+	} else if (uuid_le_cmp(rcd->sec_hdr.section_type,
- 			CPER_SECTION_TYPE_DMESG) == 0)
- 		*type = PSTORE_TYPE_DMESG;
- 	else if (uuid_le_cmp(rcd->sec_hdr.section_type,
-@@ -1085,7 +1093,10 @@ static int erst_writer(enum pstore_type_id type, enum kmsg_dump_reason reason,
- 	rcd->sec_hdr.flags = CPER_SEC_PRIMARY;
- 	switch (type) {
- 	case PSTORE_TYPE_DMESG:
--		rcd->sec_hdr.section_type = CPER_SECTION_TYPE_DMESG;
-+		if (compressed)
-+			rcd->sec_hdr.section_type = CPER_SECTION_TYPE_DMESG_Z;
+diff --git a/drivers/firmware/efi/efi-pstore.c b/drivers/firmware/efi/efi-pstore.c
+index 9a5425f..5002d50 100644
+--- a/drivers/firmware/efi/efi-pstore.c
++++ b/drivers/firmware/efi/efi-pstore.c
+@@ -35,6 +35,7 @@ struct pstore_read_data {
+ 	enum pstore_type_id *type;
+ 	int *count;
+ 	struct timespec *timespec;
++	bool *compressed;
+ 	char **buf;
+ };
+ 
+@@ -42,7 +43,7 @@ static int efi_pstore_read_func(struct efivar_entry *entry, void *data)
+ {
+ 	efi_guid_t vendor = LINUX_EFI_CRASH_GUID;
+ 	struct pstore_read_data *cb_data = data;
+-	char name[DUMP_NAME_LEN];
++	char name[DUMP_NAME_LEN], data_type;
+ 	int i;
+ 	int cnt;
+ 	unsigned int part;
+@@ -54,12 +55,23 @@ static int efi_pstore_read_func(struct efivar_entry *entry, void *data)
+ 	for (i = 0; i < DUMP_NAME_LEN; i++)
+ 		name[i] = entry->var.VariableName[i];
+ 
+-	if (sscanf(name, "dump-type%u-%u-%d-%lu",
++	if (sscanf(name, "dump-type%u-%u-%d-%lu-%c",
++		   cb_data->type, &part, &cnt, &time, &data_type) == 5) {
++		*cb_data->id = part;
++		*cb_data->count = cnt;
++		cb_data->timespec->tv_sec = time;
++		cb_data->timespec->tv_nsec = 0;
++		if (data_type == 'C')
++			*cb_data->compressed = true;
 +		else
-+			rcd->sec_hdr.section_type = CPER_SECTION_TYPE_DMESG;
- 		break;
- 	case PSTORE_TYPE_MCE:
- 		rcd->sec_hdr.section_type = CPER_SECTION_TYPE_MCE;
++			*cb_data->compressed = false;
++	} else if (sscanf(name, "dump-type%u-%u-%d-%lu",
+ 		   cb_data->type, &part, &cnt, &time) == 4) {
+ 		*cb_data->id = part;
+ 		*cb_data->count = cnt;
+ 		cb_data->timespec->tv_sec = time;
+ 		cb_data->timespec->tv_nsec = 0;
++		*cb_data->compressed = false;
+ 	} else if (sscanf(name, "dump-type%u-%u-%lu",
+ 			  cb_data->type, &part, &time) == 3) {
+ 		/*
+@@ -71,6 +83,7 @@ static int efi_pstore_read_func(struct efivar_entry *entry, void *data)
+ 		*cb_data->count = 0;
+ 		cb_data->timespec->tv_sec = time;
+ 		cb_data->timespec->tv_nsec = 0;
++		*cb_data->compressed = false;
+ 	} else
+ 		return 0;
+ 
+@@ -96,6 +109,7 @@ static ssize_t efi_pstore_read(u64 *id, enum pstore_type_id *type,
+ 	data.type = type;
+ 	data.count = count;
+ 	data.timespec = timespec;
++	data.compressed = compressed;
+ 	data.buf = buf;
+ 
+ 	return __efivar_entry_iter(efi_pstore_read_func, &efivar_sysfs_list, &data,
+@@ -112,8 +126,8 @@ static int efi_pstore_write(enum pstore_type_id type,
+ 	efi_guid_t vendor = LINUX_EFI_CRASH_GUID;
+ 	int i, ret = 0;
+ 
+-	sprintf(name, "dump-type%u-%u-%d-%lu", type, part, count,
+-		get_seconds());
++	sprintf(name, "dump-type%u-%u-%d-%lu-%c", type, part, count,
++		get_seconds(), compressed ? 'C' : 'D');
+ 
+ 	for (i = 0; i < DUMP_NAME_LEN; i++)
+ 		efi_name[i] = name[i];
