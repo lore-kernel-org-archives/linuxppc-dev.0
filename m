@@ -1,32 +1,32 @@
 Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2A78B2C02AD
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:07 +1000 (EST)
+ (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0525F2C033C
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:17 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Fri, 16 Aug 2013 23:02:22 +1000
+ Fri, 16 Aug 2013 23:16:06 +1000
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A3B50357804E
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:04 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3421B2BB004F
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:15 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7GD34XQ43909290
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:03:04 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7GDJ3bv015829
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:04 +1000
-Subject: [RFC PATCH v2 10/11] efi-pstore: Read and write to the 'compressed'
+ r7GD3EaC721234
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:03:14 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7GDJDkW018438
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:19:14 +1000
+Subject: [RFC PATCH v2 11/11] pstore/ram: Read and write to the 'compressed'
  flag of pstore
 To: linuxppc-dev@ozlabs.org, tony.luck@intel.com, linux-kernel@vger.kernel.org,
  keescook@chromium.org
 From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Fri, 16 Aug 2013 18:48:57 +0530
-Message-ID: <20130816131857.3338.26295.stgit@aruna-ThinkPad-T420>
+Date: Fri, 16 Aug 2013 18:49:07 +0530
+Message-ID: <20130816131907.3338.76154.stgit@aruna-ThinkPad-T420>
 In-Reply-To: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
 References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
@@ -42,86 +42,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In pstore write, Efi will add a character 'C'(compressed) or
-D'(decompressed) in its header while writing to persistent store.
-In pstore read, read the header and update the 'compressed' flag
-accordingly.
+In pstore write, add character 'C'(compressed) or 'D'(decompressed)
+in the header while writing to Ram persistent buffer. In pstore read,
+read the header and update the 'compressed' flag accordingly.
 
 Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 ---
- drivers/firmware/efi/efi-pstore.c |   22 ++++++++++++++++++----
- 1 file changed, 18 insertions(+), 4 deletions(-)
+ fs/pstore/ram.c |   36 ++++++++++++++++++++++++++++--------
+ 1 file changed, 28 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/firmware/efi/efi-pstore.c b/drivers/firmware/efi/efi-pstore.c
-index 9a5425f..5002d50 100644
---- a/drivers/firmware/efi/efi-pstore.c
-+++ b/drivers/firmware/efi/efi-pstore.c
-@@ -35,6 +35,7 @@ struct pstore_read_data {
- 	enum pstore_type_id *type;
- 	int *count;
- 	struct timespec *timespec;
-+	bool *compressed;
- 	char **buf;
- };
+diff --git a/fs/pstore/ram.c b/fs/pstore/ram.c
+index 2927223..4027c20 100644
+--- a/fs/pstore/ram.c
++++ b/fs/pstore/ram.c
+@@ -131,6 +131,27 @@ ramoops_get_next_prz(struct persistent_ram_zone *przs[], uint *c, uint max,
+ 	return prz;
+ }
  
-@@ -42,7 +43,7 @@ static int efi_pstore_read_func(struct efivar_entry *entry, void *data)
- {
- 	efi_guid_t vendor = LINUX_EFI_CRASH_GUID;
- 	struct pstore_read_data *cb_data = data;
--	char name[DUMP_NAME_LEN];
-+	char name[DUMP_NAME_LEN], data_type;
- 	int i;
- 	int cnt;
- 	unsigned int part;
-@@ -54,12 +55,23 @@ static int efi_pstore_read_func(struct efivar_entry *entry, void *data)
- 	for (i = 0; i < DUMP_NAME_LEN; i++)
- 		name[i] = entry->var.VariableName[i];
- 
--	if (sscanf(name, "dump-type%u-%u-%d-%lu",
-+	if (sscanf(name, "dump-type%u-%u-%d-%lu-%c",
-+		   cb_data->type, &part, &cnt, &time, &data_type) == 5) {
-+		*cb_data->id = part;
-+		*cb_data->count = cnt;
-+		cb_data->timespec->tv_sec = time;
-+		cb_data->timespec->tv_nsec = 0;
++static void ramoops_read_kmsg_hdr(char *buffer, struct timespec *time,
++				  bool *compressed)
++{
++	char data_type;
++
++	if (sscanf(buffer, RAMOOPS_KERNMSG_HDR "%lu.%lu-%c\n",
++			&time->tv_sec, &time->tv_nsec, &data_type) == 3) {
 +		if (data_type == 'C')
-+			*cb_data->compressed = true;
++			*compressed = true;
 +		else
-+			*cb_data->compressed = false;
-+	} else if (sscanf(name, "dump-type%u-%u-%d-%lu",
- 		   cb_data->type, &part, &cnt, &time) == 4) {
- 		*cb_data->id = part;
- 		*cb_data->count = cnt;
- 		cb_data->timespec->tv_sec = time;
- 		cb_data->timespec->tv_nsec = 0;
-+		*cb_data->compressed = false;
- 	} else if (sscanf(name, "dump-type%u-%u-%lu",
- 			  cb_data->type, &part, &time) == 3) {
- 		/*
-@@ -71,6 +83,7 @@ static int efi_pstore_read_func(struct efivar_entry *entry, void *data)
- 		*cb_data->count = 0;
- 		cb_data->timespec->tv_sec = time;
- 		cb_data->timespec->tv_nsec = 0;
-+		*cb_data->compressed = false;
- 	} else
++			*compressed = false;
++	} else if (sscanf(buffer, RAMOOPS_KERNMSG_HDR "%lu.%lu\n",
++			&time->tv_sec, &time->tv_nsec) == 2) {
++			*compressed = false;
++	} else {
++		time->tv_sec = 0;
++		time->tv_nsec = 0;
++		*compressed = false;
++	}
++}
++
+ static ssize_t ramoops_pstore_read(u64 *id, enum pstore_type_id *type,
+ 				   int *count, struct timespec *time,
+ 				   char **buf, bool *compressed,
+@@ -153,10 +174,6 @@ static ssize_t ramoops_pstore_read(u64 *id, enum pstore_type_id *type,
+ 	if (!prz)
  		return 0;
  
-@@ -96,6 +109,7 @@ static ssize_t efi_pstore_read(u64 *id, enum pstore_type_id *type,
- 	data.type = type;
- 	data.count = count;
- 	data.timespec = timespec;
-+	data.compressed = compressed;
- 	data.buf = buf;
+-	/* TODO(kees): Bogus time for the moment. */
+-	time->tv_sec = 0;
+-	time->tv_nsec = 0;
+-
+ 	size = persistent_ram_old_size(prz);
  
- 	return __efivar_entry_iter(efi_pstore_read_func, &efivar_sysfs_list, &data,
-@@ -112,8 +126,8 @@ static int efi_pstore_write(enum pstore_type_id type,
- 	efi_guid_t vendor = LINUX_EFI_CRASH_GUID;
- 	int i, ret = 0;
+ 	/* ECC correction notice */
+@@ -167,12 +184,14 @@ static ssize_t ramoops_pstore_read(u64 *id, enum pstore_type_id *type,
+ 		return -ENOMEM;
  
--	sprintf(name, "dump-type%u-%u-%d-%lu", type, part, count,
--		get_seconds());
-+	sprintf(name, "dump-type%u-%u-%d-%lu-%c", type, part, count,
-+		get_seconds(), compressed ? 'C' : 'D');
+ 	memcpy(*buf, persistent_ram_old(prz), size);
++	ramoops_read_kmsg_hdr(*buf, time, compressed);
+ 	persistent_ram_ecc_string(prz, *buf + size, ecc_notice_size + 1);
  
- 	for (i = 0; i < DUMP_NAME_LEN; i++)
- 		efi_name[i] = name[i];
+ 	return size + ecc_notice_size;
+ }
+ 
+-static size_t ramoops_write_kmsg_hdr(struct persistent_ram_zone *prz)
++static size_t ramoops_write_kmsg_hdr(struct persistent_ram_zone *prz,
++				     bool compressed)
+ {
+ 	char *hdr;
+ 	struct timespec timestamp;
+@@ -183,8 +202,9 @@ static size_t ramoops_write_kmsg_hdr(struct persistent_ram_zone *prz)
+ 		timestamp.tv_sec = 0;
+ 		timestamp.tv_nsec = 0;
+ 	}
+-	hdr = kasprintf(GFP_ATOMIC, RAMOOPS_KERNMSG_HDR "%lu.%lu\n",
+-		(long)timestamp.tv_sec, (long)(timestamp.tv_nsec / 1000));
++	hdr = kasprintf(GFP_ATOMIC, RAMOOPS_KERNMSG_HDR "%lu.%lu-%c\n",
++		(long)timestamp.tv_sec, (long)(timestamp.tv_nsec / 1000),
++		compressed ? 'C' : 'D');
+ 	WARN_ON_ONCE(!hdr);
+ 	len = hdr ? strlen(hdr) : 0;
+ 	persistent_ram_write(prz, hdr, len);
+@@ -243,7 +263,7 @@ static int notrace ramoops_pstore_write_buf(enum pstore_type_id type,
+ 
+ 	prz = cxt->przs[cxt->dump_write_cnt];
+ 
+-	hlen = ramoops_write_kmsg_hdr(prz);
++	hlen = ramoops_write_kmsg_hdr(prz, compressed);
+ 	if (size + hlen > prz->buffer_size)
+ 		size = prz->buffer_size - hlen;
+ 	persistent_ram_write(prz, buf, size);
