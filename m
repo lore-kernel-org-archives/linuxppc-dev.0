@@ -1,35 +1,29 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 91DAD2C023C
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:04:00 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Fri, 16 Aug 2013 17:56:56 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 594A72CE8053
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:03:54 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7G7lrKY62128278
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 17:47:53 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7G83qt6029171
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:03:53 +1000
-Subject: [RFC PATCH v2 00/10] Machine check handling in linux host.
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Fri, 16 Aug 2013 13:33:50 +0530
-Message-ID: <20130816080213.680.50794.stgit@mars.in.ibm.com>
+Return-Path: <B42378@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 669132C0238
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 18:03:59 +1000 (EST)
+Date: Fri, 16 Aug 2013 16:01:25 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH v5 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130816080124.GE1846@MrMyself>
+References: <cover.1376565456.git.b42378@freescale.com>
+ <4eb991fafc171305ebc71847fecb7bdae0ede927.1376565456.git.b42378@freescale.com>
+ <2188999.03O3zirCAO@flatron> <20130816044330.GD1846@MrMyself>
+ <20130816070818.GM26614@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Jeremy Kerr <jeremy.kerr@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20130816070818.GM26614@pengutronix.de>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, ian.campbell@citrix.com,
+ pawel.moll@arm.com, swarren@wwwdotorg.org, festevam@gmail.com,
+ Tomasz Figa <tomasz.figa@gmail.com>, rob.herring@calxeda.com, timur@tabi.org,
+ broonie@kernel.org, p.zabel@pengutronix.de, galak@codeaurora.org,
+ shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,75 +33,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Sascha,
 
-Please find the patch set that performs the machine check handling inside linux
-host. The design is to be able to handle re-entrancy so that we do not clobber
-the machine check information during nested machine check interrupt.
+   Thank you for the detailed comments.
 
-The patch 2 introduces separate emergency stack in paca structure exclusively
-for machine check exception handling.  Patch 3 implements the logic to save the
-raw MCE info onto the emergency stack and prepares to take another exception.
-Patch 4 and 5 adds CPU-side hooks for early machine check handler and TLB
-flush.  The patch 6 and 7 is responsible to detect SLB/TLB errors and flush
-them off in the real mode. The patch 9 implements the logic to decode and save
-high level MCE information to per cpu buffer without clobbering. The patch 10
-adds the basic error handling to the high level C code with MMU on.
+On Fri, Aug 16, 2013 at 09:08:18AM +0200, Sascha Hauer wrote:
+> Which of them the driver should use is configuration and thus normally
+> should *not* be described in the devicetree. However, there may be no
+> good way for the driver to know which clock to use in which case. There
+> may be additional board requirements which are unknown to the driver. So
+> in this case it might be valid to put the information which clock to use
+> into the devicetree. But be aware that from the moment you put this
+> information into the devicetree the driver is no longer free to chose
+> the best clock, even if in future we find a good way to automatically
+> guess the best clock. Do you have some insights in which case I would
+> use which input clock? Is this only about which clock has the best
+> suitable input frequency or is this also about synchronization of the
+> audio signal with some other unit?
 
-I have tested SLB multihit scenario on powernv.
+I understand. What I'm thinking now is to let the driver find the best
+clock source for tx clock and a correspond divisor like this:
 
-Please review and let me know your comments.
+"tx<0-8>"	Optional	Tx clock source for spdif playback.
+				If absent, will use core clock.
+				The index from 0 to 8 is identical
+				to the clock source list described
+				in TxClk_Source bit of register STC.
+				Multiple clock source are allowed
+				for this tx clock source. The driver
+				will select one source from them for
+				each supported sample rate according
+				to the clock rates of these provided
+				clock sources.
 
-Changes in v2:
-- Moved early machine check handling code under CPU_FTR_HVMODE section.
-  This makes sure that the early machine check handler will get executed
-  only in hypervisor kernel.
-- Add dedicated emergency stack for machine check so that we don't end up
-  disturbing others who use same emergency stack.
-- Fixed the machine check early handle where it used to assume that r1 always
-  contains the valid stack pointer.
-- Fixed an issue where per-cpu mce_nest_count variable underflows when kvm
-  fails to handle MC error and exit the guest.
-- Fixed the code to restore r13 before exiting early handler.
-
-Thanks,
--Mahesh.
----
-
-Mahesh Salgaonkar (10):
-      powerpc/book3s: Split the common exception prolog logic into two section.
-      powerpc/book3s: Introduce exclusive emergency stack for machine check exception.
-      powerpc/book3s: handle machine check in Linux host.
-      powerpc/book3s: Introduce a early machine check hook in cpu_spec.
-      powerpc/book3s: Add flush_tlb operation in cpu_spec.
-      powerpc/book3s: Flush SLB/TLBs if we get SLB/TLB machine check errors on power7.
-      powerpc/book3s: Flush SLB/TLBs if we get SLB/TLB machine check errors on power8.
-      powerpc/book3s: Decode and save machine check event.
-      powerpc/powernv: Remove machine check handling in OPAL.
-      powerpc/powernv: Machine check exception handling.
+Please review this idea.
 
 
- arch/powerpc/include/asm/bitops.h        |    5 +
- arch/powerpc/include/asm/cputable.h      |   12 +
- arch/powerpc/include/asm/exception-64s.h |   67 ++++---
- arch/powerpc/include/asm/mce.h           |  195 ++++++++++++++++++++
- arch/powerpc/include/asm/paca.h          |    9 +
- arch/powerpc/kernel/Makefile             |    1 
- arch/powerpc/kernel/asm-offsets.c        |    4 
- arch/powerpc/kernel/cpu_setup_power.S    |   38 +++-
- arch/powerpc/kernel/cputable.c           |   16 ++
- arch/powerpc/kernel/exceptions-64s.S     |  108 +++++++++++
- arch/powerpc/kernel/mce.c                |  191 ++++++++++++++++++++
- arch/powerpc/kernel/mce_power.c          |  287 ++++++++++++++++++++++++++++++
- arch/powerpc/kernel/setup_64.c           |    8 +
- arch/powerpc/kernel/traps.c              |   15 ++
- arch/powerpc/kvm/book3s_hv_ras.c         |   50 +++--
- arch/powerpc/platforms/powernv/opal.c    |   84 ++++++---
- arch/powerpc/xmon/xmon.c                 |    2 
- 17 files changed, 998 insertions(+), 94 deletions(-)
- create mode 100644 arch/powerpc/include/asm/mce.h
- create mode 100644 arch/powerpc/kernel/mce.c
- create mode 100644 arch/powerpc/kernel/mce_power.c
+And likewise for rx:
 
--- 
--Mahesh
+"rx<0-16>"	Optional	Rx clock source for spdif record.
+				If absent, will use core clock.
+				The index from 0 to 16 is identical
+				to the clock source list described
+				in ClkSrc_Sel bit of register SRPC.
+				If the index provided contains an
+				"if (DPLL Locked)" condition in its
+				source, the correspond clock phandle
+				should be the one in "else" path.
+				Only one rx clock source should be
+				defined here.
+
+> Likewise with the rx-clksrc-lock property. what are the reasons to
+> enable/disable this property? Is this an option you want to change
+> during runtime? Is it an option you always want to use when it's
+> available?
+> 
+> If you don't know the answer then it might be a good option to just let
+> the driver pick a sane default. If someone feels the need to change the
+> default he probably comes up with a good reason why this is necessary.
+> And then we can discuss again whether we want to have the option in the
+> devicetree or some sysfs entry or whatever else.
+
+The answer is, SPDIF controller actually doesn't care about which rx
+clock source being chosen or even whether it has the "if (DPLL Locked)"
+condition or not. It can measure its input clock sample rate by measuring
+the signal source, from a spdif transmitter via coaxial cable or optical
+line. However, the rxclk will be sent to other IP, ASRC on i.MX6Q for
+example. Quoting from the i.MX6Q reference manual that "Both the Rx clock
+and Tx clock are sent to the ASRC".
+
+Therefore, if 'rx-clksrc-lock' is present, that means ASRC will get a
+clock source indirectly from coaxial cable that contains the sample rate
+information. So it can know what input sample rate is and do his own
+procedure accordingly.
+
+Thank you,
+Nicolin Chen
