@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0100B2C0259
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 21:02:51 +1000 (EST)
-Subject: Re: [PATCH 1/2] powerpc/85xx: add hardware automatically enter
- altivec idle state
+ by ozlabs.org (Postfix) with ESMTPS id 0034D2C0260
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 21:04:47 +1000 (EST)
+Subject: Re: Critical Interrupt Input
 Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1376637789-27330-1-git-send-email-dongsheng.wang@freescale.com>
-Date: Fri, 16 Aug 2013 06:02:56 -0500
-Message-Id: <83499AB5-DCE7-407D-AEC1-B2493D1D38BE@kernel.crashing.org>
-References: <1376637789-27330-1-git-send-email-dongsheng.wang@freescale.com>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <4724f96e$5f998126$5fb2b995$@deltatau.com>
+Date: Fri, 16 Aug 2013 06:04:54 -0500
+Message-Id: <DA804F98-B7E5-42C1-9D5C-8A8A63681EC0@kernel.crashing.org>
+References: <4724f96e$5f998126$5fb2b995$@deltatau.com>
+To: hbausley@deltatau.com
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +24,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Aug 16, 2013, at 2:23 AM, Dongsheng Wang wrote:
+On Aug 15, 2013, at 11:57 PM, Henry Bausley wrote:
 
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
 >=20
-> Each core's AltiVec unit may be placed into a power savings mode
-> by turning off power to the unit. Core hardware will automatically
-> power down the AltiVec unit after no AltiVec instructions have
-> executed in N cycles. The AltiVec power-control is triggered by =
-hardware.
+> Is there any reason that a Critical Input Interrupt will not work =
+reliably on a 44x powerpc?
 >=20
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> I am using an AMCC now Applied Micro AMCC460EX=20
+>=20
+> and changed
+>=20
+> CRITICAL_EXCEPTION(0x0100, CriticalInput, unknown_exception)
+> to
+> CRITICAL_EXCEPTION(0x0100, CriticalInput, do_MyCritIntr)
+>=20
+> The code for the handler is trivial
+> ie.
+> int crintrcount;
+>=20
+> void do_MyCritIntr(void)
+> {
+>   crintrcount++;
+> }
+>=20
+> The code runs for a while but eventually I get panic messages and  the =
+system hangs.  Is there something I must alter in the kernel to do this =
+reliably?
 
-Why treat this as a idle HW governor vs just some one time setup at boot =
-of the time delay?
+The 44x low level code needs to handle exception stacks properly for =
+this to work.  Since its possible to have a critical exception occur =
+while in a normal exception level, you have to have proper saving of =
+additional register state and a stack frame for the critical exception, =
+etc.  I'm not sure if that was ever done for 44x.
 
-- k=
+- k
