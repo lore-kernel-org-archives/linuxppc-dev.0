@@ -1,19 +1,34 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0034D2C0260
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 21:04:47 +1000 (EST)
-Subject: Re: Critical Interrupt Input
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=iso-8859-1
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4724f96e$5f998126$5fb2b995$@deltatau.com>
-Date: Fri, 16 Aug 2013 06:04:54 -0500
-Message-Id: <DA804F98-B7E5-42C1-9D5C-8A8A63681EC0@kernel.crashing.org>
-References: <4724f96e$5f998126$5fb2b995$@deltatau.com>
-To: hbausley@deltatau.com
-Cc: linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 4E5DA2C0275
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 22:33:27 +1000 (EST)
+Message-ID: <1376656351.25016.2.camel@pasglop>
+Subject: Re: [RFC PATCH 3/4] powerpc: refactor of_get_cpu_node to support
+ other architectures
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Date: Fri, 16 Aug 2013 22:32:31 +1000
+In-Reply-To: <520DE753.8090601@arm.com>
+References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376586580-5409-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376628563.4255.137.camel@pasglop> <520DE753.8090601@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Jonas Bonn <jonas@southpole.se>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Michal Simek <monstr@monstr.eu>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
+ "linux@openrisc.net" <linux@openrisc.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,38 +38,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2013-08-16 at 09:48 +0100, Sudeep KarkadaNagesha wrote:
 
-On Aug 15, 2013, at 11:57 PM, Henry Bausley wrote:
+> > Naming is a bit gross. You might want to make it clearer that
+> > we are talking about CPU IDs in the device-tree here.
+> > 
+> Any particular preference to the name or just a note is sufficient.
+> Also unlike PPC, in ARM we don't set hard processor id value based
+> values read from device tree. DT must contain the values matching to the
+> hardware ID registers.
 
->=20
-> Is there any reason that a Critical Input Interrupt will not work =
-reliably on a 44x powerpc?
->=20
-> I am using an AMCC now Applied Micro AMCC460EX=20
->=20
-> and changed
->=20
-> CRITICAL_EXCEPTION(0x0100, CriticalInput, unknown_exception)
-> to
-> CRITICAL_EXCEPTION(0x0100, CriticalInput, do_MyCritIntr)
->=20
-> The code for the handler is trivial
-> ie.
-> int crintrcount;
->=20
-> void do_MyCritIntr(void)
-> {
->   crintrcount++;
-> }
->=20
-> The code runs for a while but eventually I get panic messages and  the =
-system hangs.  Is there something I must alter in the kernel to do this =
-reliably?
+This is exactly the same on ppc. We don't "set" HW values. The
+device-tree content matches the HW internals. Some processors have a
+"PIR" register as well which contains the HW value, in this case the
+device-tree must contain the same value as the PIR on that processor.
 
-The 44x low level code needs to handle exception stacks properly for =
-this to work.  Since its possible to have a critical exception occur =
-while in a normal exception level, you have to have proper saving of =
-additional register state and a stack frame for the critical exception, =
-etc.  I'm not sure if that was ever done for 44x.
+> >> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
+> >> +			const char *prop_name, int cpu, unsigned int *thread)
+> >> +{
+> >> +	const __be32 *cell;
+> >> +	int ac, prop_len, tid;
+> >> +	u64 hwid;
+> >> +
+> >> +	ac = of_n_addr_cells(cpun);
+> >> +	cell = of_get_property(cpun, prop_name, &prop_len);
+> >> +	if (!cell)
+> >> +		return false;
+> >> +	prop_len /= sizeof(*cell);
+> >> +	for (tid = 0; tid < prop_len; tid++) {
+> >> +		hwid = of_read_number(cell, ac);
+> >> +		if (arch_match_cpu_phys_id(cpu, hwid)) {
+> >> +			if (thread)
+> >> +				*thread = tid;
+> >> +			return true;
+> >> +		}
+> > 
+> > Missing:          cell += ac;
+> Ah, missed it while refactoring, will fix it. Thanks
 
-- k
+Ben.
+
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
