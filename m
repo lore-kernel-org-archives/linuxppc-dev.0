@@ -1,29 +1,38 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 71FD32C019D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 18:56:48 +1000 (EST)
-Date: Fri, 16 Aug 2013 10:56:32 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Nicolin Chen <b42378@freescale.com>
-Subject: Re: [PATCH v5 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
-Message-ID: <20130816085632.GO26614@pengutronix.de>
-References: <cover.1376565456.git.b42378@freescale.com>
- <4eb991fafc171305ebc71847fecb7bdae0ede927.1376565456.git.b42378@freescale.com>
- <2188999.03O3zirCAO@flatron> <20130816044330.GD1846@MrMyself>
- <20130816070818.GM26614@pengutronix.de>
- <20130816080124.GE1846@MrMyself>
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EA6F32C021C
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:59:07 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Fri, 16 Aug 2013 18:48:52 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 39B892BB0051
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:59:04 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7G8hCI954722630
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:43:12 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7G8x3Jl012212
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:59:03 +1000
+Message-ID: <520DE9D4.5050402@linux.vnet.ibm.com>
+Date: Fri, 16 Aug 2013 14:29:00 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130816080124.GE1846@MrMyself>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, lars@metafoo.de, ian.campbell@citrix.com,
- pawel.moll@arm.com, swarren@wwwdotorg.org, festevam@gmail.com,
- Tomasz Figa <tomasz.figa@gmail.com>, rob.herring@calxeda.com, timur@tabi.org,
- broonie@kernel.org, p.zabel@pengutronix.de, galak@codeaurora.org,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 02/10] powerpc/book3s: Introduce exclusive emergency
+ stack for machine check exception.
+References: <20130816080213.680.50794.stgit@mars.in.ibm.com>
+ <20130816080410.680.46919.stgit@mars.in.ibm.com>
+In-Reply-To: <20130816080410.680.46919.stgit@mars.in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+ Jeremy Kerr <jeremy.kerr@au1.ibm.com>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,79 +42,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 16, 2013 at 04:01:25PM +0800, Nicolin Chen wrote:
-> Hi Sascha,
+On Friday 16 August 2013 01:34 PM, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
->    Thank you for the detailed comments.
+> This patch introduces exclusive emergency stack for machine check exception.
+> We use emergency stack to handle machine check exception so that we can save
+> MCE information (srr1, srr0, dar and dsisr) before turning on ME bit and be
+> ready for re-entrancy. This helps us to prevent clobbering of MCE information
+> in case of nested machine checks.
 > 
-> On Fri, Aug 16, 2013 at 09:08:18AM +0200, Sascha Hauer wrote:
-> > Which of them the driver should use is configuration and thus normally
-> > should *not* be described in the devicetree. However, there may be no
-> > good way for the driver to know which clock to use in which case. There
-> > may be additional board requirements which are unknown to the driver. So
-> > in this case it might be valid to put the information which clock to use
-> > into the devicetree. But be aware that from the moment you put this
-> > information into the devicetree the driver is no longer free to chose
-> > the best clock, even if in future we find a good way to automatically
-> > guess the best clock. Do you have some insights in which case I would
-> > use which input clock? Is this only about which clock has the best
-> > suitable input frequency or is this also about synchronization of the
-> > audio signal with some other unit?
+> The reason for using emergency stack over normal kernel stack is that the
+> machine check might occur in the middle of setting up a stack frame which may
+> result into improper use of kernel stack.
 > 
-> I understand. What I'm thinking now is to let the driver find the best
-> clock source for tx clock and a correspond divisor like this:
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/paca.h |    9 +++++++++
+>  arch/powerpc/kernel/setup_64.c  |    8 +++++++-
+>  arch/powerpc/xmon/xmon.c        |    2 ++
+>  3 files changed, 18 insertions(+), 1 deletion(-)
 > 
-> "tx<0-8>"	Optional	Tx clock source for spdif playback.
-> 				If absent, will use core clock.
-> 				The index from 0 to 8 is identical
-> 				to the clock source list described
-> 				in TxClk_Source bit of register STC.
-> 				Multiple clock source are allowed
-> 				for this tx clock source. The driver
-> 				will select one source from them for
-> 				each supported sample rate according
-> 				to the clock rates of these provided
-> 				clock sources.
-
-You mean tx<0-7>.
-
-Also I would make this option required. Use a dummy clock for mux inputs
-that are grounded for a specific SoC.
-
+> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+> index 77c91e7..b4ca4e9 100644
+> --- a/arch/powerpc/include/asm/paca.h
+> +++ b/arch/powerpc/include/asm/paca.h
+> @@ -147,6 +147,15 @@ struct paca_struct {
+>  	 */
+>  	struct opal_machine_check_event *opal_mc_evt;
+>  #endif
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +	/* Exclusive emergency stack pointer for machine check exception. */
+> +	void *mc_emergency_sp;
+> +	/*
+> +	 * Flag to check whether we are in machine check early handler
+> +	 * and already using emergency stack.
+> +	 */
+> +	u16 in_mce;
+> +#endif
 > 
-> Please review this idea.
+>  	/* Stuff for accurate time accounting */
+>  	u64 user_time;			/* accumulated usermode TB ticks */
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index 389fb807..3fdbdb0 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -529,7 +529,8 @@ static void __init exc_lvl_early_init(void)
 > 
+>  /*
+>   * Stack space used when we detect a bad kernel stack pointer, and
+> - * early in SMP boots before relocation is enabled.
+> + * early in SMP boots before relocation is enabled. Exclusive emergency
+> + * stack for machine checks.
+>   */
+>  static void __init emergency_stack_init(void)
+>  {
+> @@ -552,6 +553,11 @@ static void __init emergency_stack_init(void)
+>  		sp  = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
+>  		sp += THREAD_SIZE;
+>  		paca[i].emergency_sp = __va(sp);
+> +
+> +		/* emergency stack for machine check exception handling. */
+> +		sp  = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
+> +		sp += THREAD_SIZE;
+> +		paca[i].mc_emergency_sp = __va(sp);
+>  	}
+>  }
 > 
-> And likewise for rx:
+Just a concern, kindly ignore it if it is irrelevant.
+you have defined mc_emergency_sp under CONFIG_PPC_BOOK3S_64, but
+assigning memory in a common code. This may break build for other
+configs such as like ppc64e_defconfig.
+
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 96bf5bd..147a5e98 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -2044,6 +2044,8 @@ static void dump_one_paca(int cpu)
+>  	DUMP(p, stab_addr, "lx");
+>  #endif
+>  	DUMP(p, emergency_sp, "p");
+> +	DUMP(p, mc_emergency_sp, "p");
+> +	DUMP(p, in_mce, "x");
+>  	DUMP(p, data_offset, "lx");
+>  	DUMP(p, hw_cpu_id, "x");
+>  	DUMP(p, cpu_start, "x");
 > 
-> "rx<0-16>"	Optional	Rx clock source for spdif record.
-> 				If absent, will use core clock.
-> 				The index from 0 to 16 is identical
-> 				to the clock source list described
-> 				in ClkSrc_Sel bit of register SRPC.
-> 				If the index provided contains an
-> 				"if (DPLL Locked)" condition in its
-> 				source, the correspond clock phandle
-> 				should be the one in "else" path.
-> 				Only one rx clock source should be
-> 				defined here.
-
-Again, describe the input clocks *to* *the* *S/PDIF* *core* in the
-devicetree. Nothing more, nothing less. We've already been at the point
-where we realized that half of the above clocks only describe the
-'PDLL locked' condition. Also the tx clocks are from what I see identical
-to the rx clocks. The following are the clocks:
-
-clock-names: "core", "rxtx<0-7>" Required. The S/PDIF core has a core
-clock and 8 clocks which are muxed internally to provide input/output
-sample clocks.
-
-This is all binding that is needed for now.
-
-Sascha
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
