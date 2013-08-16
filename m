@@ -1,32 +1,31 @@
 Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 50DCE2C02E8
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:18:23 +1000 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D24022C0375
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 23:18:31 +1000 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Fri, 16 Aug 2013 18:42:34 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 1F480394004D
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:48:10 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7GDJfcP17760452
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:49:42 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7GDIGOx027512
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:48:17 +0530
-Subject: [RFC PATCH v2 05/11] pstore: Introduce new argument 'compressed' in
- the read callback
+ Fri, 16 Aug 2013 18:42:09 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id D196C394004D
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:48:17 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7GDJrFv39321756
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:49:53 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7GDIObu017718
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Aug 2013 18:48:25 +0530
+Subject: [RFC PATCH v2 06/11] pstore: Add decompression support to pstore
 To: linuxppc-dev@ozlabs.org, tony.luck@intel.com, linux-kernel@vger.kernel.org,
  keescook@chromium.org
 From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Fri, 16 Aug 2013 18:48:13 +0530
-Message-ID: <20130816131813.3338.15295.stgit@aruna-ThinkPad-T420>
+Date: Fri, 16 Aug 2013 18:48:21 +0530
+Message-ID: <20130816131821.3338.27923.stgit@aruna-ThinkPad-T420>
 In-Reply-To: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
 References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
@@ -42,115 +41,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Backends will set the flag 'compressed' after reading the log from
-persistent store to indicate the data being returned to pstore is
-compressed or not.
+Based on the flag 'compressed' set or not, pstore will decompress the
+data returning a plain text file. If decompression fails for a particular
+record it will have the compressed data in the file which can be
+decompressed with 'openssl' command line tool.
 
 Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/nvram.c |    2 +-
- drivers/acpi/apei/erst.c               |    4 ++--
- drivers/firmware/efi/efi-pstore.c      |    3 ++-
- fs/pstore/platform.c                   |    4 +++-
- fs/pstore/ram.c                        |    3 ++-
- include/linux/pstore.h                 |    2 +-
- 6 files changed, 11 insertions(+), 7 deletions(-)
+ fs/pstore/platform.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 51 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
-index dbe5dad..6c4dc52a 100644
---- a/arch/powerpc/platforms/pseries/nvram.c
-+++ b/arch/powerpc/platforms/pseries/nvram.c
-@@ -598,7 +598,7 @@ static int nvram_pstore_write(enum pstore_type_id type,
-  */
- static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
- 				int *count, struct timespec *time, char **buf,
--				struct pstore_info *psi)
-+				bool *compressed, struct pstore_info *psi)
- {
- 	struct oops_log_info *oops_hdr;
- 	unsigned int err_type, id_no, size = 0;
-diff --git a/drivers/acpi/apei/erst.c b/drivers/acpi/apei/erst.c
-index 5e90796..b0dca8e 100644
---- a/drivers/acpi/apei/erst.c
-+++ b/drivers/acpi/apei/erst.c
-@@ -933,7 +933,7 @@ static int erst_open_pstore(struct pstore_info *psi);
- static int erst_close_pstore(struct pstore_info *psi);
- static ssize_t erst_reader(u64 *id, enum pstore_type_id *type, int *count,
- 			   struct timespec *time, char **buf,
--			   struct pstore_info *psi);
-+			   bool *compressed, struct pstore_info *psi);
- static int erst_writer(enum pstore_type_id type, enum kmsg_dump_reason reason,
- 		       u64 *id, unsigned int part, int count, bool compressed,
- 		       size_t size, struct pstore_info *psi);
-@@ -989,7 +989,7 @@ static int erst_close_pstore(struct pstore_info *psi)
- 
- static ssize_t erst_reader(u64 *id, enum pstore_type_id *type, int *count,
- 			   struct timespec *time, char **buf,
--			   struct pstore_info *psi)
-+			   bool *compressed, struct pstore_info *psi)
- {
- 	int rc;
- 	ssize_t len = 0;
-diff --git a/drivers/firmware/efi/efi-pstore.c b/drivers/firmware/efi/efi-pstore.c
-index fab6892..9a5425f 100644
---- a/drivers/firmware/efi/efi-pstore.c
-+++ b/drivers/firmware/efi/efi-pstore.c
-@@ -87,7 +87,8 @@ static int efi_pstore_read_func(struct efivar_entry *entry, void *data)
- 
- static ssize_t efi_pstore_read(u64 *id, enum pstore_type_id *type,
- 			       int *count, struct timespec *timespec,
--			       char **buf, struct pstore_info *psi)
-+			       char **buf, bool *compressed,
-+			       struct pstore_info *psi)
- {
- 	struct pstore_read_data data;
- 
 diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
-index 56218cb..6418eb7 100644
+index 6418eb7..0195cca0 100644
 --- a/fs/pstore/platform.c
 +++ b/fs/pstore/platform.c
-@@ -428,6 +428,7 @@ void pstore_get_records(int quiet)
- 	enum pstore_type_id	type;
+@@ -162,6 +162,36 @@ error:
+ 	return ret;
+ }
+ 
++/* Derived from logfs_uncompress */
++int pstore_decompress(void *in, void *out, size_t inlen, size_t outlen)
++{
++	int err, ret;
++
++	ret = -EIO;
++	err = zlib_inflateInit(&stream);
++	if (err != Z_OK)
++		goto error;
++
++	stream.next_in = in;
++	stream.avail_in = inlen;
++	stream.total_in = 0;
++	stream.next_out = out;
++	stream.avail_out = outlen;
++	stream.total_out = 0;
++
++	err = zlib_inflate(&stream, Z_FINISH);
++	if (err != Z_STREAM_END)
++		goto error;
++
++	err = zlib_inflateEnd(&stream);
++	if (err != Z_OK)
++		goto error;
++
++	ret = stream.total_out;
++error:
++	return ret;
++}
++
+ static void allocate_buf_for_compression(void)
+ {
+ 	size_t size;
+@@ -429,6 +459,7 @@ void pstore_get_records(int quiet)
  	struct timespec		time;
  	int			failed = 0, rc;
-+	bool			compressed;
+ 	bool			compressed;
++	int			unzipped_len = -1;
  
  	if (!psi)
  		return;
-@@ -436,7 +437,8 @@ void pstore_get_records(int quiet)
- 	if (psi->open && psi->open(psi))
- 		goto out;
+@@ -439,10 +470,28 @@ void pstore_get_records(int quiet)
  
--	while ((size = psi->read(&id, &type, &count, &time, &buf, psi)) > 0) {
-+	while ((size = psi->read(&id, &type, &count, &time, &buf, &compressed,
-+				psi)) > 0) {
+ 	while ((size = psi->read(&id, &type, &count, &time, &buf, &compressed,
+ 				psi)) > 0) {
++		if (compressed && (type == PSTORE_TYPE_DMESG)) {
++			if (big_oops_buf)
++				unzipped_len = pstore_decompress(buf,
++							big_oops_buf, size,
++							big_oops_buf_sz);
++
++			if (unzipped_len > 0) {
++				buf = big_oops_buf;
++				size = unzipped_len;
++			} else {
++				pr_err("pstore: decompression failed;"
++					"returned %d\n", unzipped_len);
++			}
++		}
  		rc = pstore_mkfile(type, psi->name, id, count, buf,
  				  (size_t)size, time, psi);
- 		kfree(buf);
-diff --git a/fs/pstore/ram.c b/fs/pstore/ram.c
-index fe7188f..2927223 100644
---- a/fs/pstore/ram.c
-+++ b/fs/pstore/ram.c
-@@ -133,7 +133,8 @@ ramoops_get_next_prz(struct persistent_ram_zone *przs[], uint *c, uint max,
- 
- static ssize_t ramoops_pstore_read(u64 *id, enum pstore_type_id *type,
- 				   int *count, struct timespec *time,
--				   char **buf, struct pstore_info *psi)
-+				   char **buf, bool *compressed,
-+				   struct pstore_info *psi)
- {
- 	ssize_t size;
- 	ssize_t ecc_notice_size;
-diff --git a/include/linux/pstore.h b/include/linux/pstore.h
-index abfca4f..abd437d 100644
---- a/include/linux/pstore.h
-+++ b/include/linux/pstore.h
-@@ -55,7 +55,7 @@ struct pstore_info {
- 	int		(*close)(struct pstore_info *psi);
- 	ssize_t		(*read)(u64 *id, enum pstore_type_id *type,
- 			int *count, struct timespec *time, char **buf,
--			struct pstore_info *psi);
-+			bool *compressed, struct pstore_info *psi);
- 	int		(*write)(enum pstore_type_id type,
- 			enum kmsg_dump_reason reason, u64 *id,
- 			unsigned int part, int count, bool compressed,
+-		kfree(buf);
+-		buf = NULL;
++		if (unzipped_len < 0) {
++			/* Free buffer other than big oops */
++			kfree(buf);
++			buf = NULL;
++		} else
++			unzipped_len = -1;
+ 		if (rc && (rc != -EEXIST || !quiet))
+ 			failed++;
+ 	}
