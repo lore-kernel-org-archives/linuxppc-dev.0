@@ -1,21 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1AD462C021F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 13:34:43 +1000 (EST)
-Message-ID: <1376624076.4255.132.camel@pasglop>
-Subject: Re: [PATCH] powerpc/powernv: Return secondary CPUs to firmware on
- kexec
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-Date: Fri, 16 Aug 2013 13:34:36 +1000
-In-Reply-To: <CAEjGV6wdjnoh__eAZ0pFh9o+-=ZpDB-Sg9CBuA2Z+FepgK1-1w@mail.gmail.com>
-References: <1376611546.4255.120.camel@pasglop>
- <CAEjGV6wdjnoh__eAZ0pFh9o+-=ZpDB-Sg9CBuA2Z+FepgK1-1w@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B42378@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6FE9A2C0232
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2013 14:46:06 +1000 (EST)
+Date: Fri, 16 Aug 2013 12:43:31 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH v5 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130816044330.GD1846@MrMyself>
+References: <cover.1376565456.git.b42378@freescale.com>
+ <4eb991fafc171305ebc71847fecb7bdae0ede927.1376565456.git.b42378@freescale.com>
+ <2188999.03O3zirCAO@flatron>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <2188999.03O3zirCAO@flatron>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, ian.campbell@citrix.com,
+ pawel.moll@arm.com, swarren@wwwdotorg.org, festevam@gmail.com,
+ s.hauer@pengutronix.de, timur@tabi.org, rob.herring@calxeda.com,
+ broonie@kernel.org, p.zabel@pengutronix.de, galak@codeaurora.org,
+ shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,72 +32,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-08-16 at 11:16 +1000, Michael Neuling wrote:
-> 
-> > With OPAL v3 we can return secondary CPUs to firmware on kexec. This
-> > allows firmware to do various cleanups making things generally more
-> > reliable, and will enable the "new" kernel to call OPAL to perform
-> > some reconfiguration tasks early on that can only be done while
-> > all the CPUs are in firmware.
-> 
-> Dumb question, but isn't the point of kexec to avoid fw interactions
-> like this?
+Hi Tomasz,
+   
+   Thank you for the comments. I'll revise them in v6.
+   And below is my reply for you comments.
 
-The point of kexec is to avoid rebooting :-)
-
-Sending secondaries back to the OPAL internal spin loop doesn't take a
-noticeable amount of time.
-
-We could avoid doing it and solve the problem of needing all CPUs in
-firmware for "reconfig" differently however. We could have the "target"
-kernel code take them out of kexec into a special path that goes back
-into the fw ... I chose the kexec solution because it was simpler and
-less code :-)
-
-Cheers,
-Ben.
-
-> Mikey
-> 
-> 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >
-> > diff --git a/arch/powerpc/platforms/powernv/setup.c
-> b/arch/powerpc/platforms/powernv/setup.c
-> > index d4459bf..b59a1da 100644
-> > --- a/arch/powerpc/platforms/powernv/setup.c
-> > +++ b/arch/powerpc/platforms/powernv/setup.c
-> > @@ -31,6 +31,7 @@
-> >  #include <asm/xics.h>
-> >  #include <asm/rtas.h>
-> >  #include <asm/opal.h>
-> > +#include <asm/kexec.h>
-> >
-> >  #include "powernv.h"
-> >
-> > @@ -143,6 +144,16 @@ static void pnv_shutdown(void)
-> >  static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
-> >  {
-> >         xics_kexec_teardown_cpu(secondary);
+On Thu, Aug 15, 2013 at 02:18:22PM +0200, Tomasz Figa wrote:
+> > +  - clock-names : Includes the following entries:
+> > +	name		type		comments
+> > +	"core"		Required	The core clock of spdif controller
 > > +
-> > +       /* Return secondary CPUs to firmware on OPAL v3 */
-> > +       if (firmware_has_feature(FW_FEATURE_OPALv3) && secondary) {
-> > +               mb();
-> > +               get_paca()->kexec_state = KEXEC_STATE_REAL_MODE;
-> > +               mb();
+> > +	"rx"		Optional	Rx clock source for spdif record.
+> > +					If absent, will use core clock.
 > > +
-> > +               /* Return the CPU to OPAL */
-> > +               opal_return_cpu();
-> > +       }
-> >  }
-> >  #endif /* CONFIG_KEXEC */
-> >
-> >
-> >
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> >
+> > +	"tx"		Optional	Tx clock source for spdif playback.
+> > +					If absent, will use core clock.
+> > +
+> > +	"tx-32000"	Optional	Tx clock source for 32000Hz sample rate
+> > +					playback. If absent, will use tx clock.
+> > +
+> > +	"tx-44100"	Optional	Tx clock source for 44100Hz sample rate
+> > +					playback. If absent, will use tx clock.
+> > +
+> > +	"tx-48000"	Optional	Tx clock source for 48000Hz sample rate
+> > +					playback. If absent, will use tx clock.
+> > +
+> > +	"src<0-7>"	Optional	Clock source list for tx and rx clock
+> > +					to look up their clock source indexes.
+> > +					This clock list should be identical to
+> > +					the list of TxClk_Source bit value of
+> > +					register SPDIF_STC. If absent or failed
+> > +					to look up, tx and rx clock would then
+> > +					ignore the "rx", "tx" "tx-32000",
+> > +					"tx-44100", "tx-48000" clock phandles
+> > +					and select the core clock as default
+> > +					tx and rx clock.
 > 
+> I suspect a little abuse of clocks property here. From the description of
+> "core" and "src<0-7>" clocks I assume that the IP can have up to 9 clock
+> inputs - core clock and up to 8 extra source clocks. Is it correct?
 > 
+> If yes, this makes the "tx", "rx" and "tx-*" clocks describe
+> configuration, not hardware. IMHO it should be up to the driver which
+> source clocks to use for tx and rx channels and for each sampling rate.
+
+First, you are right that all the properties you just commented are
+software configurations. And I got the point that device tree now
+can't allow any software configuration even if the actual hardware
+connection will depend on it.
+
+If so, I would like to remove those abused clocks and also drop the 
+unused clocks in src<0-7>, then just remain those needed clocks src.
+I think that can be plausible because there'll be no more clock abuse
+and the driver will be able to get the source index from the name 
+'src<num>'.
+
+And you are right about the 9 clock inputs, just there're not only 9
+inputs but also an extra external clock from S/PDIF transmitter via
+coaxial cable or optical fiber -- RxCLK. Please check the following
+list:
+
+0000 if (DPLL Locked) SPDIF_RxClk else extal
+0001 if (DPLL Locked) SPDIF_RxClk else spdif_clk
+0010 if (DPLL Locked) SPDIF_RxClk else asrc_clk
+0011 if (DPLL Locked) SPDIF_RxClk else spdif_extclk
+0100 if (DPLL Locked) SPDIF_Rxclk else esai_hckt
+0101 extal_clk
+0110 spdif_clk
+0111 asrc_clk
+1000 spdif_extclk
+1001 esai_hckt
+1010 if (DPLL Locked) SPDIF_RxClk else mlb_clk
+1011 if (DPLL Locked) SPDIF_RxClk else mlb_phy_clk
+1100 mkb_clk
+1101 mlb_phy_clk
+
+When (DPLL Locked) condition matches, the rx clock can ignore the 8 input
+clocks from clock mux then use the external one from a S/PDIF transmitter.
+
+So for the below part:
+
+> > +Optional properties:
+> > +
+> > +  - rx-clksrc-lock: This is a boolean property. If present, ClkSrc_Sel
+> > bit +  of SPDIF_SRPC would be set a clock source that cares DPLL locked
+> > condition. +
+> 
+> This again looks like software configuration, not hardware description.
+> Could you elaborate a bit more on meaning of this property?
+
+I think the rx-clksrc-lock property should be included in DT as well, since
+it's exactly a available clock source for rx. But I guess I just need to 
+figure out a better way or a more elaborated description.
+
+Thank you,
+Nicolin Chen
