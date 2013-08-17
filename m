@@ -1,30 +1,21 @@
-Return-Path: <tomasz.figa@gmail.com>
-Received: from mail-bk0-x22e.google.com (mail-bk0-x22e.google.com
- [IPv6:2a00:1450:4008:c01::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1DBB02C012C
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Aug 2013 08:22:53 +1000 (EST)
-Received: by mail-bk0-f46.google.com with SMTP id 6so994864bkj.19
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2013 15:22:48 -0700 (PDT)
-From: Tomasz Figa <tomasz.figa@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
-Date: Sun, 18 Aug 2013 00:22:43 +0200
-Message-ID: <6043373.ZgY5Yo1tNM@flatron>
-In-Reply-To: <1376777376.25016.11.camel@pasglop>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop>
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 2F86A2C0169
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Aug 2013 09:14:11 +1000 (EST)
+Date: Sat, 17 Aug 2013 16:15:52 -0700
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Toshi Kani <toshi.kani@hp.com>
+Subject: Re: [PATCH 2/4] hotplug, x86: Add hotplug lock to missing places
+Message-ID: <20130817231552.GA20169@kroah.com>
+References: <1376768819-28975-1-git-send-email-toshi.kani@hp.com>
+ <1376768819-28975-3-git-send-email-toshi.kani@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org,
- Michal Simek <monstr@monstr.eu>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- linux-pm@vger.kernel.org,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1376768819-28975-3-git-send-email-toshi.kani@hp.com>
+Cc: fenghua.yu@intel.com, bp@suse.de, x86@kernel.org,
+ linux-kernel@vger.kernel.org, rjw@sisk.pl, isimatu.yasuaki@jp.fujitsu.com,
+ mingo@redhat.com, srivatsa.bhat@linux.vnet.ibm.com, tglx@linutronix.de,
+ hpa@linux.intel.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sunday 18 of August 2013 08:09:36 Benjamin Herrenschmidt wrote:
-> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
-> > I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
-> > which
-> > the updated bindings[1] define #address-cells = <0> and so no reg
-> > property.
-> > 
-> > [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
+On Sat, Aug 17, 2013 at 01:46:57PM -0600, Toshi Kani wrote:
+> lock_device_hotplug() serializes CPU & Memory online/offline and hotplug
+> operations.  However, this lock is not held in the debug interfaces below
+> that initiate CPU online/offline operations.
 > 
-> Why did you do that in the binding ? That sounds like looking to create
-> problems ...
+>  - _debug_hotplug_cpu(), cpu0 hotplug test interface enabled by
+>    CONFIG_DEBUG_HOTPLUG_CPU0.
+>  - cpu_probe_store() and cpu_release_store(), cpu hotplug test interface
+>    enabled by CONFIG_ARCH_CPU_PROBE_RELEASE.
+> 
+> This patch changes the above interfaces to hold lock_device_hotplug().
+> 
+> Signed-off-by: Toshi Kani <toshi.kani@hp.com>
+> ---
+>  arch/x86/kernel/topology.c |    2 ++
+>  drivers/base/cpu.c         |   16 ++++++++++++++--
+>  2 files changed, 16 insertions(+), 2 deletions(-)
 
-[Copying Lorenzo...]
-
-I'm not the author of the change. I was just passing by, while the 
-question showed up in my mind. ;)
-
-> Traditionally, UP setups just used "0" as the "reg" property on other
-> architectures, why do differently ?
-
-Right, especially since the ARM DT topology parsing code still considers a 
-device tree without reg property in cpu node invalid.
-
-Best regards,
-Tomasz
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
