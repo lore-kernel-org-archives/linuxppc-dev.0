@@ -1,30 +1,28 @@
 Return-Path: <tomasz.figa@gmail.com>
-Received: from mail-bk0-x234.google.com (mail-bk0-x234.google.com
- [IPv6:2a00:1450:4008:c01::234])
+Received: from mail-bk0-x231.google.com (mail-bk0-x231.google.com
+ [IPv6:2a00:1450:4008:c01::231])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2FF4A2C024B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2013 20:50:17 +1000 (EST)
-Received: by mail-bk0-f52.google.com with SMTP id e11so930673bkh.11
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2013 03:50:11 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 6BF7A2C0233
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2013 22:26:51 +1000 (EST)
+Received: by mail-bk0-f49.google.com with SMTP id r7so910756bkg.36
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2013 05:26:44 -0700 (PDT)
 From: Tomasz Figa <tomasz.figa@gmail.com>
-To: linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
-Date: Sat, 17 Aug 2013 12:50:07 +0200
-Message-ID: <2032060.4bgTKOdEX2@flatron>
-In-Reply-To: <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH v5 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Date: Sat, 17 Aug 2013 14:26:40 +0200
+Message-ID: <137675716.iLf1T1CVZo@flatron>
+In-Reply-To: <20130816085632.GO26614@pengutronix.de>
+References: <cover.1376565456.git.b42378@freescale.com>
+ <20130816080124.GE1846@MrMyself> <20130816085632.GO26614@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org,
- Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org,
- Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, ian.campbell@citrix.com,
+ pawel.moll@arm.com, swarren@wwwdotorg.org, festevam@gmail.com,
+ Nicolin Chen <b42378@freescale.com>, timur@tabi.org, rob.herring@calxeda.com,
+ broonie@kernel.org, p.zabel@pengutronix.de, galak@codeaurora.org,
+ shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,72 +32,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sudeep,
+On Friday 16 of August 2013 10:56:32 Sascha Hauer wrote:
+> On Fri, Aug 16, 2013 at 04:01:25PM +0800, Nicolin Chen wrote:
+> > Hi Sascha,
+> > 
+> >    Thank you for the detailed comments.
+> > 
+> > On Fri, Aug 16, 2013 at 09:08:18AM +0200, Sascha Hauer wrote:
+> > > Which of them the driver should use is configuration and thus
+> > > normally
+> > > should *not* be described in the devicetree. However, there may be
+> > > no
+> > > good way for the driver to know which clock to use in which case.
+> > > There
+> > > may be additional board requirements which are unknown to the
+> > > driver. So in this case it might be valid to put the information
+> > > which clock to use into the devicetree. But be aware that from the
+> > > moment you put this information into the devicetree the driver is
+> > > no longer free to chose the best clock, even if in future we find a
+> > > good way to automatically guess the best clock. Do you have some
+> > > insights in which case I would use which input clock? Is this only
+> > > about which clock has the best suitable input frequency or is this
+> > > also about synchronization of the audio signal with some other
+> > > unit?
+> > 
+> > I understand. What I'm thinking now is to let the driver find the best
+> > clock source for tx clock and a correspond divisor like this:
+> > 
+> > "tx<0-8>"	Optional	Tx clock source for spdif playback.
+> > 
+> > 				If absent, will use core clock.
+> > 				The index from 0 to 8 is identical
+> > 				to the clock source list described
+> > 				in TxClk_Source bit of register STC.
+> > 				Multiple clock source are allowed
+> > 				for this tx clock source. The driver
+> > 				will select one source from them for
+> > 				each supported sample rate according
+> > 				to the clock rates of these provided
+> > 				clock sources.
+> 
+> You mean tx<0-7>.
+> 
+> Also I would make this option required. Use a dummy clock for mux inputs
+> that are grounded for a specific SoC.
 
-This looks good to me overall, but I have one more question inline.
+Why do you need a dummy clock?
 
-On Friday 16 of August 2013 18:39:50 Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> 
-> Currently different drivers requiring to access cpu device node are
-> parsing the device tree themselves. Since the ordering in the DT need
-> not match the logical cpu ordering, the parsing logic needs to consider
-> that. However, this has resulted in lots of code duplication and in some
-> cases even incorrect logic.
-> 
-> It's better to consolidate them by adding support for getting cpu
-> device node for a given logical cpu index in DT core library. However
-> logical to physical index mapping can be architecture specific.
-> 
-> PowerPC has it's own implementation to get the cpu node for a given
-> logical index.
-> 
-> This patch refactors the current implementation of of_get_cpu_node.
-> This in preparation to move the implementation to DT core library.
-> It separates out the logical to physical mapping so that a default
-> matching of the physical id to the logical cpu index can be added
-> when moved to common code. Architecture specific code can override it.
-> 
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> ---
->  arch/powerpc/kernel/prom.c | 76
-> ++++++++++++++++++++++++++++------------------ 1 file changed, 47
-> insertions(+), 29 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index eb23ac9..fb12be6 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -865,45 +865,63 @@ static int __init prom_reconfig_setup(void)
->  __initcall(prom_reconfig_setup);
->  #endif
-> 
-> +bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
-> +{
-> +	return (int)phys_id == get_hard_smp_processor_id(cpu);
-> +}
-> +
-> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
-> +			const char *prop_name, int cpu, unsigned int 
-*thread)
-> +{
-> +	const __be32 *cell;
-> +	int ac, prop_len, tid;
-> +	u64 hwid;
-> +
-> +	ac = of_n_addr_cells(cpun);
-> +	cell = of_get_property(cpun, prop_name, &prop_len);
-> +	if (!cell)
-> +		return false;
-
-I wonder how would this handle uniprocessor ARM (pre-v7) cores, for which 
-the updated bindings[1] define #address-cells = <0> and so no reg 
-property.
-
-[1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
+The driver can simply try to grab all the possible clocks and discard 
+those that failed, so you can just keep those grounded clocks unspecified.
 
 Best regards,
 Tomasz
