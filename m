@@ -1,30 +1,21 @@
-Return-Path: <keescook@google.com>
-Received: from mail-ie0-x22c.google.com (mail-ie0-x22c.google.com
- [IPv6:2607:f8b0:4001:c03::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1D68E2C01BF
- for <linuxppc-dev@ozlabs.org>; Sun, 18 Aug 2013 04:32:55 +1000 (EST)
-Received: by mail-ie0-f172.google.com with SMTP id 17so5432822iea.3
- for <linuxppc-dev@ozlabs.org>; Sat, 17 Aug 2013 11:32:52 -0700 (PDT)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <3908561D78D1C84285E8C5FCA982C28F31CBF152@ORSMSX106.amr.corp.intel.com>
-References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
- <3908561D78D1C84285E8C5FCA982C28F31CBF152@ORSMSX106.amr.corp.intel.com>
-Date: Sat, 17 Aug 2013 11:32:52 -0700
-Message-ID: <CAGXu5jLFa+bC-atqy9X7yFJipB69qnPP_MqDRBgag10Q2Fas6A@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 00/11] Add (de)compression support to pstore
-From: Kees Cook <keescook@chromium.org>
-To: "Luck, Tony" <tony.luck@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>,
- "ccross@android.com" <ccross@android.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "mahesh@linux.vnet.ibm.com" <mahesh@linux.vnet.ibm.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>
+Return-Path: <toshi.kani@hp.com>
+Received: from g6t0187.atlanta.hp.com (g6t0187.atlanta.hp.com [15.193.32.64])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "smtp.hp.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 776F72C0187
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Aug 2013 05:55:08 +1000 (EST)
+From: Toshi Kani <toshi.kani@hp.com>
+To: mingo@redhat.com, hpa@linux.intel.com, tglx@linutronix.de,
+ gregkh@linuxfoundation.org, benh@kernel.crashing.org
+Subject: [PATCH 1/4] hotplug, x86: Fix online state in cpu0 debug interface
+Date: Sat, 17 Aug 2013 13:46:56 -0600
+Message-Id: <1376768819-28975-2-git-send-email-toshi.kani@hp.com>
+In-Reply-To: <1376768819-28975-1-git-send-email-toshi.kani@hp.com>
+References: <1376768819-28975-1-git-send-email-toshi.kani@hp.com>
+Cc: fenghua.yu@intel.com, Toshi Kani <toshi.kani@hp.com>, x86@kernel.org,
+ linux-kernel@vger.kernel.org, rjw@sisk.pl, isimatu.yasuaki@jp.fujitsu.com,
+ srivatsa.bhat@linux.vnet.ibm.com, bp@suse.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,25 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 16, 2013 at 3:15 PM, Luck, Tony <tony.luck@intel.com> wrote:
->> Needs testing with erst backend, efivars and persistent ram.
->
-> Tested against ERST - works fine for me now.
->
-> Need to stare at the code to see if there are any more bits that could be cleaned up.
->
-> Thanks for addressing my issues from v1
+_debug_hotplug_cpu() is a debug interface that puts cpu0 offline during
+boot-up when CONFIG_DEBUG_HOTPLUG_CPU0 is set.  After cpu0 is put offline
+in this interface, however, /sys/devices/system/cpu/cpu0/online still
+shows 1 (online).
 
-Yeah, this is great. While I haven't tested it myself yet, the code
-seems to be in good shape. I acked the ram piece separately, but
-consider the entire series:
+This patch fixes _debug_hotplug_cpu() to update dev->offline when CPU
+online/offline operation succeeded.
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: Toshi Kani <toshi.kani@hp.com>
+---
+ arch/x86/kernel/topology.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Thanks!
-
--Kees
-
--- 
-Kees Cook
-Chrome OS Security
+diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
+index 6e60b5f..5823bbd 100644
+--- a/arch/x86/kernel/topology.c
++++ b/arch/x86/kernel/topology.c
+@@ -72,16 +72,19 @@ int __ref _debug_hotplug_cpu(int cpu, int action)
+ 		ret = cpu_down(cpu);
+ 		if (!ret) {
+ 			pr_info("CPU %u is now offline\n", cpu);
++			dev->offline = true;
+ 			kobject_uevent(&dev->kobj, KOBJ_OFFLINE);
+ 		} else
+ 			pr_debug("Can't offline CPU%d.\n", cpu);
+ 		break;
+ 	case 1:
+ 		ret = cpu_up(cpu);
+-		if (!ret)
++		if (!ret) {
++			dev->offline = false;
+ 			kobject_uevent(&dev->kobj, KOBJ_ONLINE);
+-		else
++		} else {
+ 			pr_debug("Can't online CPU%d.\n", cpu);
++		}
+ 		break;
+ 	default:
+ 		ret = -EINVAL;
