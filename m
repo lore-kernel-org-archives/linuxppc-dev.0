@@ -2,19 +2,27 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 670C72C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Aug 2013 08:05:30 +1000 (EST)
-Message-ID: <1376777122.25016.9.camel@pasglop>
-Subject: Re: Critical Interrupt Input
+ by ozlabs.org (Postfix) with ESMTPS id 01AC72C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Aug 2013 08:15:35 +1000 (EST)
+Message-ID: <1376777376.25016.11.camel@pasglop>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
+ other architectures
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Sun, 18 Aug 2013 08:05:22 +1000
-In-Reply-To: <DA804F98-B7E5-42C1-9D5C-8A8A63681EC0@kernel.crashing.org>
-References: <4724f96e$5f998126$5fb2b995$@deltatau.com>
- <DA804F98-B7E5-42C1-9D5C-8A8A63681EC0@kernel.crashing.org>
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Date: Sun, 18 Aug 2013 08:09:36 +1000
+In-Reply-To: <2032060.4bgTKOdEX2@flatron>
+References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <2032060.4bgTKOdEX2@flatron>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, hbausley@deltatau.com
+Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org,
+ Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org,
+ Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,16 +32,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-08-16 at 06:04 -0500, Kumar Gala wrote:
-> The 44x low level code needs to handle exception stacks properly for
-> this to work.  Since its possible to have a critical exception occur
-> while in a normal exception level, you have to have proper saving of
-> additional register state and a stack frame for the critical
-> exception, etc.  I'm not sure if that was ever done for 44x.
+On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
+> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
+> which 
+> the updated bindings[1] define #address-cells = <0> and so no reg 
+> property.
+> 
+> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
 
-Don't 44x and FSL BookE share the same macros ? I would think 44x does
-indeed implement the same crit support as e500...
+Why did you do that in the binding ? That sounds like looking to create
+problems ... 
 
-What does the crash look like ?
+Traditionally, UP setups just used "0" as the "reg" property on other
+architectures, why do differently ?
 
 Ben.
