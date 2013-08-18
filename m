@@ -1,21 +1,23 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 2F86A2C0169
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Aug 2013 09:14:11 +1000 (EST)
-Date: Sat, 17 Aug 2013 16:15:52 -0700
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Toshi Kani <toshi.kani@hp.com>
-Subject: Re: [PATCH 2/4] hotplug, x86: Add hotplug lock to missing places
-Message-ID: <20130817231552.GA20169@kroah.com>
-References: <1376768819-28975-1-git-send-email-toshi.kani@hp.com>
- <1376768819-28975-3-git-send-email-toshi.kani@hp.com>
+Return-Path: <tkil@scrye.com>
+Received: from mail.scrye.com (scrye.com
+ [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B476B2C01BC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Aug 2013 10:07:11 +1000 (EST)
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Subject: Re: MPC8315 reboot failure, lockdep splat possibly related?
+From: Anthony Foiani <tkil@scrye.com>
+References: <g61v5p02b.fsf@dworkin.scrye.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07114F7C@039-SN2MPN1-013.039d.mgd.msft.net>
+Date: Sat, 17 Aug 2013 18:07:07 -0600
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D07114F7C@039-SN2MPN1-013.039d.mgd.msft.net>
+ (Bhushan Bharat-R's message of "Sat\, 17 Aug 2013 04\:58\:34 +0000")
+Message-ID: <gwqnjoo9g.fsf@dworkin.scrye.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1376768819-28975-3-git-send-email-toshi.kani@hp.com>
-Cc: fenghua.yu@intel.com, bp@suse.de, x86@kernel.org,
- linux-kernel@vger.kernel.org, rjw@sisk.pl, isimatu.yasuaki@jp.fujitsu.com,
- mingo@redhat.com, srivatsa.bhat@linux.vnet.ibm.com, tglx@linutronix.de,
- hpa@linux.intel.com, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: Anthony Foiani <tkil@scrye.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,22 +27,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Aug 17, 2013 at 01:46:57PM -0600, Toshi Kani wrote:
-> lock_device_hotplug() serializes CPU & Memory online/offline and hotplug
-> operations.  However, this lock is not held in the debug interfaces below
-> that initiate CPU online/offline operations.
-> 
->  - _debug_hotplug_cpu(), cpu0 hotplug test interface enabled by
->    CONFIG_DEBUG_HOTPLUG_CPU0.
->  - cpu_probe_store() and cpu_release_store(), cpu hotplug test interface
->    enabled by CONFIG_ARCH_CPU_PROBE_RELEASE.
-> 
-> This patch changes the above interfaces to hold lock_device_hotplug().
-> 
-> Signed-off-by: Toshi Kani <toshi.kani@hp.com>
-> ---
->  arch/x86/kernel/topology.c |    2 ++
->  drivers/base/cpu.c         |   16 ++++++++++++++--
->  2 files changed, 16 insertions(+), 2 deletions(-)
+Bhushan Bharat-R65777 <R65777@freescale.com> writes:
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> You should get rid of this by changing spin_lock/unlock() in
+> fsl_sata_set_irq_coalescing() to spin_lock_irqsave/restore()
+
+I can verify that the suggested change removes the lockdep warning.
+The below patch is against 3.9.7 and has been tested on hardware with
+that release.
+
+It applies with slight fuzz to linux-next; I've compile-tested that
+version, but I have not booted that build on the hardware.  The
+linux-next patch can be found here:
+
+  http://scrye.com/~tkil/linux/fsl-sata-lockdep-201308/next-sata-fsl-save-irqs-while-coalescing.patch
+  (or: http://preview.tinyurl.com/mpd4e9h )
+
+Unfortunately, the hang on reboot was not easily repeatable; I'll
+report whether it happens in the next few days or not.
+
+Thanks again,
+Anthony Foiani
+
+-- >8 --
+
+>From 2abb6df770c95eb4103476c70847a78f816fe5e3 Mon Sep 17 00:00:00 2001
+From: Anthony Foiani <anthony.foiani@gmail.com>
+Date: Sat, 17 Aug 2013 13:28:17 -0600
+Subject: [PATCH] sata: fsl: save irqs while coalescing
+
+Before this patch, I was seeing the following lockdep splat on my
+MPC8315 (PPC32) target:
+
+  [    9.086051] =================================
+  [    9.090393] [ INFO: inconsistent lock state ]
+  [    9.094744] 3.9.7-ajf-gc39503d #1 Not tainted
+  [    9.099087] ---------------------------------
+  [    9.103432] inconsistent {HARDIRQ-ON-W} -> {IN-HARDIRQ-W} usage.
+  [    9.109431] scsi_eh_1/39 [HC1[1]:SC0[0]:HE0:SE1] takes:
+  [    9.114642]  (&(&host->lock)->rlock){?.+...}, at: [<c02f4168>] sata_fsl_interrupt+0x50/0x250
+  [    9.123137] {HARDIRQ-ON-W} state was registered at:
+  [    9.128004]   [<c006cdb8>] lock_acquire+0x90/0xf4
+  [    9.132737]   [<c043ef04>] _raw_spin_lock+0x34/0x4c
+  [    9.137645]   [<c02f3560>] fsl_sata_set_irq_coalescing+0x68/0x100
+  [    9.143750]   [<c02f36a0>] sata_fsl_init_controller+0xa8/0xc0
+  [    9.149505]   [<c02f3f10>] sata_fsl_probe+0x17c/0x2e8
+  [    9.154568]   [<c02acc90>] driver_probe_device+0x90/0x248
+  [    9.159987]   [<c02acf0c>] __driver_attach+0xc4/0xc8
+  [    9.164964]   [<c02aae74>] bus_for_each_dev+0x5c/0xa8
+  [    9.170028]   [<c02ac218>] bus_add_driver+0x100/0x26c
+  [    9.175091]   [<c02ad638>] driver_register+0x88/0x198
+  [    9.180155]   [<c0003a24>] do_one_initcall+0x58/0x1b4
+  [    9.185226]   [<c05aeeac>] kernel_init_freeable+0x118/0x1c0
+  [    9.190823]   [<c0004110>] kernel_init+0x18/0x108
+  [    9.195542]   [<c000f6b8>] ret_from_kernel_thread+0x64/0x6c
+  [    9.201142] irq event stamp: 160
+  [    9.204366] hardirqs last  enabled at (159): [<c043f778>] _raw_spin_unlock_irq+0x30/0x50
+  [    9.212469] hardirqs last disabled at (160): [<c000f414>] reenable_mmu+0x30/0x88
+  [    9.219867] softirqs last  enabled at (144): [<c002ae5c>] __do_softirq+0x168/0x218
+  [    9.227435] softirqs last disabled at (137): [<c002b0d4>] irq_exit+0xa8/0xb4
+  [    9.234481]
+  [    9.234481] other info that might help us debug this:
+  [    9.240995]  Possible unsafe locking scenario:
+  [    9.240995]
+  [    9.246898]        CPU0
+  [    9.249337]        ----
+  [    9.251776]   lock(&(&host->lock)->rlock);
+  [    9.255878]   <Interrupt>
+  [    9.258492]     lock(&(&host->lock)->rlock);
+  [    9.262765]
+  [    9.262765]  *** DEADLOCK ***
+  [    9.262765]
+  [    9.268684] no locks held by scsi_eh_1/39.
+  [    9.272767]
+  [    9.272767] stack backtrace:
+  [    9.277117] Call Trace:
+  [    9.279589] [cfff9da0] [c0008504] show_stack+0x48/0x150 (unreliable)
+  [    9.285972] [cfff9de0] [c0447d5c] print_usage_bug.part.35+0x268/0x27c
+  [    9.292425] [cfff9e10] [c006ace4] mark_lock+0x2ac/0x658
+  [    9.297660] [cfff9e40] [c006b7e4] __lock_acquire+0x754/0x1840
+  [    9.303414] [cfff9ee0] [c006cdb8] lock_acquire+0x90/0xf4
+  [    9.308745] [cfff9f20] [c043ef04] _raw_spin_lock+0x34/0x4c
+  [    9.314250] [cfff9f30] [c02f4168] sata_fsl_interrupt+0x50/0x250
+  [    9.320187] [cfff9f70] [c0079ff0] handle_irq_event_percpu+0x90/0x254
+  [    9.326547] [cfff9fc0] [c007a1fc] handle_irq_event+0x48/0x78
+  [    9.332220] [cfff9fe0] [c007c95c] handle_level_irq+0x9c/0x104
+  [    9.337981] [cfff9ff0] [c000d978] call_handle_irq+0x18/0x28
+  [    9.343568] [cc7139f0] [c000608c] do_IRQ+0xf0/0x1a8
+  [    9.348464] [cc713a20] [c000fc8c] ret_from_except+0x0/0x14
+  [    9.353983] --- Exception: 501 at _raw_spin_unlock_irq+0x40/0x50
+  [    9.353983]     LR = _raw_spin_unlock_irq+0x30/0x50
+  [    9.364839] [cc713af0] [c043db10] wait_for_common+0xac/0x188
+  [    9.370513] [cc713b30] [c02ddee4] ata_exec_internal_sg+0x2b0/0x4f0
+  [    9.376699] [cc713be0] [c02de18c] ata_exec_internal+0x68/0xa8
+  [    9.382454] [cc713c20] [c02de4b8] ata_dev_read_id+0x158/0x594
+  [    9.388205] [cc713ca0] [c02ec244] ata_eh_recover+0xd88/0x13d0
+  [    9.393962] [cc713d20] [c02f2520] sata_pmp_error_handler+0xc0/0x8ac
+  [    9.400234] [cc713dd0] [c02ecdc8] ata_scsi_port_error_handler+0x464/0x5e8
+  [    9.407023] [cc713e10] [c02ecfd0] ata_scsi_error+0x84/0xb8
+  [    9.412528] [cc713e40] [c02c4974] scsi_error_handler+0xd8/0x47c
+  [    9.418457] [cc713eb0] [c004737c] kthread+0xa8/0xac
+  [    9.423355] [cc713f40] [c000f6b8] ret_from_kernel_thread+0x64/0x6c
+
+This fix was suggested by Bhushan Bharat <R65777@freescale.com>, and
+was discussed in email at:
+
+  http://linuxppc.10917.n7.nabble.com/MPC8315-reboot-failure-lockdep-splat-possibly-related-tp75162.html
+
+Signed-off-by: Anthony Foiani <anthony.foiani@gmail.com>
+---
+ drivers/ata/sata_fsl.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index 0e93ba9..c240b63 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -292,6 +292,7 @@ static void fsl_sata_set_irq_coalescing(struct ata_host *host,
+ {
+ 	struct sata_fsl_host_priv *host_priv = host->private_data;
+ 	void __iomem *hcr_base = host_priv->hcr_base;
++	unsigned long flags;
+ 
+ 	if (count > ICC_MAX_INT_COUNT_THRESHOLD)
+ 		count = ICC_MAX_INT_COUNT_THRESHOLD;
+@@ -304,12 +305,12 @@ static void fsl_sata_set_irq_coalescing(struct ata_host *host,
+ 			(count > ICC_MIN_INT_COUNT_THRESHOLD))
+ 		ticks = ICC_SAFE_INT_TICKS;
+ 
+-	spin_lock(&host->lock);
++	spin_lock_irqsave(&host->lock, flags);
+ 	iowrite32((count << 24 | ticks), hcr_base + ICC);
+ 
+ 	intr_coalescing_count = count;
+ 	intr_coalescing_ticks = ticks;
+-	spin_unlock(&host->lock);
++	spin_unlock_irqrestore(&host->lock, flags);
+ 
+ 	DPRINTK("intrrupt coalescing, count = 0x%x, ticks = %x\n",
+ 			intr_coalescing_count, intr_coalescing_ticks);
+-- 
+1.8.1.4
