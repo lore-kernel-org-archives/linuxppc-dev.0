@@ -1,37 +1,34 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AC6C82C0163
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:54:41 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 19 Aug 2013 23:46:15 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4C7B92BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:54:37 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7JDcWqr8126818
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:38:32 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7JDsaFY017684
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:54:36 +1000
-Message-ID: <5212239A.5020206@linux.vnet.ibm.com>
-Date: Mon, 19 Aug 2013 08:54:34 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Return-Path: <sudeep.karkadanagesha@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id 6058C2C012B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:55:54 +1000 (EST)
+Message-ID: <521223FA.5050903@arm.com>
+Date: Mon, 19 Aug 2013 14:56:10 +0100
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 MIME-Version: 1.0
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [PATCH 7/8] powerpc/pseries: add mising of_node_put in
- delete_dt_node
-References: <1376544232-24936-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1376544232-24936-8-git-send-email-tyreld@linux.vnet.ibm.com>
-In-Reply-To: <1376544232-24936-8-git-send-email-tyreld@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Rob Herring <robherring2@gmail.com>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
+ other architectures
+References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop>
+ <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
+ <5212177C.8000709@gmail.com>
+In-Reply-To: <5212177C.8000709@gmail.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Jonas Bonn <jonas@southpole.se>,
+ Michal Simek <monstr@monstr.eu>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
+ Tomasz Figa <tomasz.figa@gmail.com>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,30 +38,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/15/2013 12:23 AM, Tyrel Datwyler wrote:
-> The node to be detached is retrieved via its phandle by a call to
-> of_find_node_by_phandle which increments the ref count. We need a matching
-> call to of_node_put to decrement the ref count and ensure the node is
-> actually freed.
-> 
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+On 19/08/13 14:02, Rob Herring wrote:
+> On 08/19/2013 05:19 AM, Mark Rutland wrote:
+>> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
+>>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
+>>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
+>>>> which=20
+>>>> the updated bindings[1] define #address-cells =3D <0> and so no reg=20
+>>>> property.
+>>>>
+>>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
+>>>
+>>> Why did you do that in the binding ? That sounds like looking to create
+>>> problems ...=20
+>>>
+>>> Traditionally, UP setups just used "0" as the "reg" property on other
+>>> architectures, why do differently ?
+>>
+>> The decision was taken because we defined our reg property to refer to
+>> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
+>> there's no MPIDR register at all. Given there can only be a single CPU
+>> in that case, describing a register that wasn't present didn't seem
+>> necessary or helpful.
+>=20
+> What exactly reg represents is up to the binding definition, but it
+> still should be present IMO. I don't see any issue with it being
+> different for pre-v7.
+>=20
+Yes it's better to have 'reg' with value 0 than not having it.
+Otherwise this generic of_get_cpu_node implementation would need some
+_hack_ to handle that case.
 
-Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-
-> ---
->  arch/powerpc/platforms/pseries/mobility.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-> index ff102e2..cde4e0a 100644
-> --- a/arch/powerpc/platforms/pseries/mobility.c
-> +++ b/arch/powerpc/platforms/pseries/mobility.c
-> @@ -62,6 +62,7 @@ static int delete_dt_node(u32 phandle)
->  		return -ENOENT;
->  
->  	dlpar_detach_node(dn);
-> +	of_node_put(dn);
->  	return 0;
->  }
->  
-> 
+Regards,
+Sudeep
