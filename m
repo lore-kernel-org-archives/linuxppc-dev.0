@@ -1,29 +1,15 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-oa0-x229.google.com (mail-oa0-x229.google.com
- [IPv6:2607:f8b0:4003:c02::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AB7A92C0152
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:11:18 +1000 (EST)
-Received: by mail-oa0-f41.google.com with SMTP id j6so5969662oag.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 06:11:16 -0700 (PDT)
-Message-ID: <5212196F.4060708@gmail.com>
-Date: Mon, 19 Aug 2013 08:11:11 -0500
-From: Rob Herring <robherring2@gmail.com>
-MIME-Version: 1.0
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH v2 4/4] of: move of_get_cpu_node implementation to
- DT core library
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-In-Reply-To: <1376674791-28244-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org,
- Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CB7342C014D
+ for <linuxppc-dev@ozlabs.org>; Mon, 19 Aug 2013 23:18:37 +1000 (EST)
+From: Wolfram Sang <wsa@the-dreams.de>
+To: linux-i2c@vger.kernel.org
+Subject: [PATCH] i2c: powermac: fix return path on error
+Date: Mon, 19 Aug 2013 15:18:15 +0200
+Message-Id: <1376918295-6961-1-git-send-email-wsa@the-dreams.de>
+Cc: Wolfram Sang <wsa@the-dreams.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,67 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/16/2013 12:39 PM, Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> 
-> This patch moves the generalized implementation of of_get_cpu_node from
-> PowerPC to DT core library, thereby adding support for retrieving cpu
-> node for a given logical cpu index on any architecture.
-> 
-> The CPU subsystem can now use this function to assign of_node in the
-> cpu device while registering CPUs.
-> 
-> It is recommended to use these helper function only in pre-SMP/early
-> initialisation stages to retrieve CPU device node pointers in logical
-> ordering. Once the cpu devices are registered, it can be retrieved easily
-> from cpu device of_node which avoids unnecessary parsing and matching.
-> 
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+We want to bail out immediately if i2c_add_adapter failed and not try to
+register child nodes with a nilled adapter structure.
 
-[snip]
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+---
+ drivers/i2c/busses/i2c-powermac.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> +/**
-> + * of_get_cpu_node - Get device node associated with the given logical CPU
-> + *
-> + * @cpu: CPU number(logical index) for which device node is required
-> + * @thread: if not NULL, local thread number within the physical core is
-> + *          returned
-> + *
-> + * The main purpose of this function is to retrieve the device node for the
-> + * given logical CPU index. It should be used to initialize the of_node in
-> + * cpu device. Once of_node in cpu device is populated, all the further
-> + * references can use that instead.
-> + *
-> + * CPU logical to physical index mapping is architecture specific and is built
-> + * before booting secondary cores. This function uses arch_match_cpu_phys_id
-> + * which can be overridden by architecture specific implementation.
-> + *
-> + * Returns a node pointer for the logical cpu if found, else NULL.
-> + */
-> +struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
-> +{
-> +	struct device_node *cpun, *cpus;
-> +
-> +	cpus = of_find_node_by_path("/cpus");
-> +	if (!cpus) {
-> +		pr_warn("Missing cpus node, bailing out\n");
-> +		return NULL;
-> +	}
-> +
-> +	for_each_child_of_node(cpus, cpun) {
-> +		if (of_node_cmp(cpun->type, "cpu"))
-> +			continue;
-> +#ifdef CONFIG_PPC
-
-You don't really need this ifdef as this function should never succeed
-on other arches. Alternatively, you can use "IS_ENABLED(CONFIG_PPC)"
-instead.
-
-Otherwise,
-
-Acked-by: Rob Herring <rob.herring@calxeda.com>
-
-Rob
+diff --git a/drivers/i2c/busses/i2c-powermac.c b/drivers/i2c/busses/i2c-powermac.c
+index 8dc90da..bb81773 100644
+--- a/drivers/i2c/busses/i2c-powermac.c
++++ b/drivers/i2c/busses/i2c-powermac.c
+@@ -446,6 +446,7 @@ static int i2c_powermac_probe(struct platform_device *dev)
+ 		printk(KERN_ERR "i2c-powermac: Adapter %s registration "
+ 		       "failed\n", adapter->name);
+ 		memset(adapter, 0, sizeof(*adapter));
++		return rc;
+ 	}
+ 
+ 	printk(KERN_INFO "PowerMac i2c bus %s registered\n", adapter->name);
+@@ -455,7 +456,7 @@ static int i2c_powermac_probe(struct platform_device *dev)
+ 	 */
+ 	i2c_powermac_register_devices(adapter, bus);
+ 
+-	return rc;
++	return 0;
+ }
+ 
+ static struct platform_driver i2c_powermac_driver = {
+-- 
+1.7.10.4
