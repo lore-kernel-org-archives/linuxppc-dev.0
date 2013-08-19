@@ -1,18 +1,29 @@
-Return-Path: <hbausley@deltatau.com>
-Received: from Barracuda.deltatau.com (barracuda.deltatau.com [76.79.246.10])
- by ozlabs.org (Postfix) with ESMTP id 552CD2C00BF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 05:00:40 +1000 (EST)
-From: "Henry Bausley" <hbausley@deltatau.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
- "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: Critical Interrupt Input
-Date: Mon, 19 Aug 2013 12:00:25 -0700
-Message-ID: <63d2635a$648939a4$b3aeac8$@deltatau.com>
+Return-Path: <thierry.reding@gmail.com>
+Received: from mail-bk0-x232.google.com (mail-bk0-x232.google.com
+ [IPv6:2a00:1450:4008:c01::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ABF422C0143
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 05:46:13 +1000 (EST)
+Received: by mail-bk0-f50.google.com with SMTP id mz11so1638489bkb.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 12:46:07 -0700 (PDT)
+Date: Mon, 19 Aug 2013 21:46:04 +0200
+From: Thierry Reding <thierry.reding@gmail.com>
+To: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH RESEND] i2c: move of helpers into the core
+Message-ID: <20130819194603.GC4961@mithrandir>
+References: <1376918361-7014-1-git-send-email-wsa@the-dreams.de>
+ <1376935183-11218-1-git-send-email-wsa@the-dreams.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="----=_NextPart_000_0001_59684433.2E39B445"
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: hbausley@deltatau.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="TYecfFk8j8mZq+dy"
+In-Reply-To: <1376935183-11218-1-git-send-email-wsa@the-dreams.de>
+Cc: devicetree@vger.kernel.org, davinci-linux-open-source@linux.davincidsp.com,
+ linux-samsung-soc@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-i2c@vger.kernel.org, linux-tegra@vger.kernel.org,
+ linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,163 +33,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
 
-------=_NextPart_000_0001_59684433.2E39B445
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-
-Support does appear to be present but there is a problem returning back to 
-user space I suspect.
-
-What fails is it causes Linux user space programs to get Segmentation 
-errors.
-Issuing a simple ls causes a segmentation fault sometimes.  The shell gets 
-terminated 
-and you cannot log back in.  INIT: Id "T0" respawning too fast: disabled 
-for 5 minutes pops up.
-
-However, the critical interrupt handler keeps running.  I know this by 
-adding the reading 
-of a physical I/O location in the handler and can see it is being read on 
-the scope.
-
-The only code in the handler is below.
-
-void critintr_handler(void *dev)
-{
-  critintrcount++;          // increment a variable
-  iodata = *piom;           // read an I/O location 
-  mtdcr(0x0c0, 0x00002000); // clear critical interrupt
-}
-
-Below is a log of the type of crashes that occur:
-
-root@10.34.9.213:/opt/ppmac/ktest# ls
-Segmentation fault
-root@10.34.9.213:/opt/ppmac/ktest# ls
-Segmentation fault
-root@10.34.9.213:/opt/ppmac/ktest# ls
-Makefile        ktest.c    ktest.ko     ktest.mod.o  modules.order
-Module.symvers  ktest.cbp  ktest.mod.c  ktest.o
-root@10.34.9.213:/opt/ppmac/ktest# ls
-
-Debian GNU/Linux 7 powerpmac ttyS0
-
-powerpmac login: root
-
-Debian GNU/Linux 7 powerpmac ttyS0
-
-powerpmac login: root
-
-Debian GNU/Linux 7 powerpmac ttyS0
-
-powerpmac login: root
-
-Debian GNU/Linux 7 powerpmac ttyS0
-
-powerpmac login: root
-Password: 
-Last login: Thu Nov 30 20:42:16 UTC 1933 on ttyS0
-Linux powerpmac 3.2.21-aspen_2.01.09 #10 Mon Aug 19 08:49:12 PDT 2013 ppc
-
-The programs included with the Debian GNU/Linux system are free software;
-the exact distribution terms for each program are described in the
-individual files in /usr/share/doc/*/copyright.
-
-Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-permitted by applicable law.
-INIT: Id "T0" respawning too fast: disabled for 5 minutes
-
-----------------------------------------
-From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Sent: Saturday, August 17, 2013 3:05 PM
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, hbausley@deltatau.com
-Subject: Re: Critical Interrupt Input
-
-On Fri, 2013-08-16 at 06:04 -0500, Kumar Gala wrote:
-> The 44x low level code needs to handle exception stacks properly for
-> this to work.  Since its possible to have a critical exception occur
-> while in a normal exception level, you have to have proper saving of
-> additional register state and a stack frame for the critical
-> exception, etc.  I'm not sure if that was ever done for 44x.
-
-Don't 44x and FSL BookE share the same macros ? I would think 44x does
-indeed implement the same crit support as e500...
-
-What does the crash look like ?
-
-Ben.
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@lists.ozlabs.org
-https://lists.ozlabs.org/listinfo/linuxppc-dev
-
-
-
-
-Outbound scan for Spam or Virus by Barracuda at Delta Tau
-
-
-------=_NextPart_000_0001_59684433.2E39B445
-Content-Type: text/html;
-	charset="iso-8859-1"
+--TYecfFk8j8mZq+dy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-<span style=3D"font-family: Tahoma, Geneva, sans-serif; font-size: 10pt"><b=
-r>Support does appear to be present but there is a problem returning back t=
-o user space I suspect.<br><br>What fails is it causes Linux user space pro=
-grams to get Segmentation errors.<br>Issuing a simple ls causes a segmentat=
-ion fault sometimes.&nbsp; The shell gets terminated <br>and you cannot log=
- back in.&nbsp; INIT: Id "T0" respawning too fast: disabled for 5 minutes p=
-ops up.<br><br>However, the critical interrupt handler keeps running.&nbsp;=
- I know this by adding the reading <br>of a physical I/O location in the ha=
-ndler and can see it is being read on the scope.<br><br><br>The only code i=
-n the handler is below.<br><br>void critintr_handler(void *dev)<br>{<br>&nb=
-sp; critintrcount++;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-// increment a variable<br>&nbsp; iodata =3D *piom;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // read an I/O location <br>&nbsp; mtd=
-cr(0x0c0, 0x00002000); // clear critical interrupt<br>}<br><br><br>Below is=
- a log of the type of crashes that occur:<br><br>root@10.34.9.213:/opt/ppma=
-c/ktest# ls<br>
-Segmentation fault<br>
-root@10.34.9.213:/opt/ppmac/ktest# ls<br>Segmentation fault<br>root@10.34.9=
-.213:/opt/ppmac/ktest# ls<br>Makefile&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; ktest.c&nbsp;&nbsp;&nbsp; ktest.ko&nbsp;&nbsp;&nbsp;&nbsp; ktest.mod.o=
-&nbsp; modules.order<br>Module.symvers&nbsp; ktest.cbp&nbsp; ktest.mod.c&nb=
-sp; ktest.o<br>root@10.34.9.213:/opt/ppmac/ktest# ls<br><br>Debian GNU/Linu=
-x 7 powerpmac ttyS0<br><br>powerpmac login: root<br><br>Debian GNU/Linux 7 =
-powerpmac ttyS0<br><br>powerpmac login: root<br><br>Debian GNU/Linux 7 powe=
-rpmac ttyS0<br><br>powerpmac login: root<br><br>Debian GNU/Linux 7 powerpma=
-c ttyS0<br><br>powerpmac login: root<br>Password: <br>Last login: Thu Nov 3=
-0 20:42:16 UTC 1933 on ttyS0<br>Linux powerpmac 3.2.21-aspen_2.01.09 #10 Mo=
-n Aug 19 08:49:12 PDT 2013 ppc<br><br>The programs included with the Debian=
- GNU/Linux system are free software;<br>the exact distribution terms for ea=
-ch program are described in the<br>individual files in /usr/share/doc/*/cop=
-yright.<br><br>Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the e=
-xtent<br>permitted by applicable law.<br>INIT: Id "T0" respawning too fast:=
- disabled for 5 minutes<br><br><span style=3D"font-family: tahoma,arial,san=
-s-serif; font-size: 10pt;"><hr size=3D"2" width=3D"100%" align=3D"center"><=
-b>From</b>: "Benjamin Herrenschmidt" &lt;benh@kernel.crashing.org&gt;<br><b=
->Sent</b>: Saturday, August 17, 2013 3:05 PM<br><b>To</b>: "Kumar Gala" &lt=
-;galak@kernel.crashing.org&gt;<br><b>Cc</b>: linuxppc-dev@lists.ozlabs.org,=
- hbausley@deltatau.com<br><b>Subject</b>: Re: Critical Interrupt Input</spa=
-n><br><br>On Fri, 2013-08-16 at 06:04 -0500, Kumar Gala wrote:<br>&gt; The =
-44x low level code needs to handle exception stacks properly for<br>&gt; th=
-is to work.  Since its possible to have a critical exception occur<br>&gt; =
-while in a normal exception level, you have to have proper saving of<br>&gt=
-; additional register state and a stack frame for the critical<br>&gt; exce=
-ption, etc.  I'm not sure if that was ever done for 44x.<br><br>Don't 44x a=
-nd FSL BookE share the same macros ? I would think 44x does<br>indeed imple=
-ment the same crit support as e500...<br><br>What does the crash look like =
-?<br><br>Ben.<br><br><br>_______________________________________________<br=
->Linuxppc-dev mailing list<br>Linuxppc-dev@lists.ozlabs.org<br>https://list=
-s.ozlabs.org/listinfo/linuxppc-dev<br><br></span>
-<br>
-&nbsp;&nbsp;&shy;&shy;&nbsp;&nbsp;=
+On Mon, Aug 19, 2013 at 07:59:40PM +0200, Wolfram Sang wrote:
+[...]
+> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+[...]
+> +#if IS_ENABLED(CONFIG_OF)
+> +static void of_i2c_register_devices(struct i2c_adapter *adap)
+> +{
+[...]
+> +}
+[...]
+> +#endif /* CONFIG_OF */
 
-------=_NextPart_000_0001_59684433.2E39B445--
+Isn't this missing the dummy implementation for !OF.
+
+>  static int i2c_do_add_adapter(struct i2c_driver *driver,
+>  			      struct i2c_adapter *adap)
+>  {
+> @@ -1058,6 +1160,8 @@ static int i2c_register_adapter(struct i2c_adapter =
+*adap)
+> =20
+>  exit_recovery:
+>  	/* create pre-declared device nodes */
+> +	of_i2c_register_devices(adap);
+
+Alternatively you could remove the of_i2c_register_devices() from the
+"#ifdef CONFIG_OF" block so that it will always be compiled. You could
+turn the above into
+
+	if (IS_ENABLED(CONFIG_OF))
+		of_i2c_register_devices(adap);
+
+and let the compiler throw the static function away if it sees that the
+condition is always false.
+
+Thierry
+
+--TYecfFk8j8mZq+dy
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSEnX7AAoJEN0jrNd/PrOhtxEP/2Ulur33dk711CAHb3j6OaCw
+JZ633M09rA84w4ngGfFM/2IfZFUBeqoyQ7wDnrtW7N89A+COpTqCAOpqo1LQ4WdU
+aehQXm1JyGXPiKb9hvgNXfL9Xz5U1VALvivFJs4kroXVIUlceGmoBZ/ywXYp8SH3
+0C9ClEkxCyvzaIBVmuwDVYZrr42pQduXnbTa/AwwIDlYcUfhELm8a3vfxteP3d9d
+pjrqsxmhTgGHoVp2EvGKXacaf2ISiwMe/FUK1dSrbRf69TU9KTVnUh8eIPlBCJ8s
+bjolz/LfRakgSmQpnzru+3apNnpkPOqApQhWd15E2o2ZUM0XRQx1ratt+meZEbbZ
+GWZj4jPeXWSDWkxtQwFgtPlltyMzJ11AvMxpgs93hjNmdDsjH5uPbrC5Cvz2S2MC
+UB5QOBMRb+DcdQhb72cg4GSiSv08loIFwRQb3lPuDQe2CzbcinHvTUANlzQXKmnF
+R8ZZ2UL1akR3zULh7CmzvQzNHplLOuS4T/J1gu9V7EhOJs2I7xWcoHqCVsqhfIk7
+MGSyYf7te7elOJKNomD/v22ojmbcmPapAf1yn1GBr74mk2t8SdH/QszRMem27oh5
+iL1yw/CIktcr6/EhOlQjIePBum4yQNAxnbtfbFc9ZBkLpR9YsDOw/CE7gEDQargW
+H56h2el3+6kiSlao+UmT
+=ukb7
+-----END PGP SIGNATURE-----
+
+--TYecfFk8j8mZq+dy--
