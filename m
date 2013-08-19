@@ -1,34 +1,37 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 6058C2C012B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:55:54 +1000 (EST)
-Message-ID: <521223FA.5050903@arm.com>
-Date: Mon, 19 Aug 2013 14:56:10 +0100
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6C0F72C04F0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:56:22 +1000 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 19 Aug 2013 23:45:10 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8A83C3578050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:56:17 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7JDu6Na33095682
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:56:06 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7JDuH3W019042
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:56:17 +1000
+Message-ID: <521223FE.8030100@linux.vnet.ibm.com>
+Date: Mon, 19 Aug 2013 08:56:14 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop>
- <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
- <5212177C.8000709@gmail.com>
-In-Reply-To: <5212177C.8000709@gmail.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Jonas Bonn <jonas@southpole.se>,
- Michal Simek <monstr@monstr.eu>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- Tomasz Figa <tomasz.figa@gmail.com>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@sisk.pl>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: Re: [PATCH 8/8] powerpc/pseries: child nodes are not detached by
+ dlpar_detach_node
+References: <1376544232-24936-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1376544232-24936-9-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1376544232-24936-9-git-send-email-tyreld@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,36 +41,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19/08/13 14:02, Rob Herring wrote:
-> On 08/19/2013 05:19 AM, Mark Rutland wrote:
->> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
->>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
->>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
->>>> which=20
->>>> the updated bindings[1] define #address-cells =3D <0> and so no reg=20
->>>> property.
->>>>
->>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
->>>
->>> Why did you do that in the binding ? That sounds like looking to create
->>> problems ...=20
->>>
->>> Traditionally, UP setups just used "0" as the "reg" property on other
->>> architectures, why do differently ?
->>
->> The decision was taken because we defined our reg property to refer to
->> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
->> there's no MPIDR register at all. Given there can only be a single CPU
->> in that case, describing a register that wasn't present didn't seem
->> necessary or helpful.
->=20
-> What exactly reg represents is up to the binding definition, but it
-> still should be present IMO. I don't see any issue with it being
-> different for pre-v7.
->=20
-Yes it's better to have 'reg' with value 0 than not having it.
-Otherwise this generic of_get_cpu_node implementation would need some
-_hack_ to handle that case.
+On 08/15/2013 12:23 AM, Tyrel Datwyler wrote:
+> Calls to dlpar_detach_node do not iterate over child nodes detaching them as
+> well. By iterating and detaching the child nodes we ensure that they have the
+> OF_DETACHED flag set and that their reference counts are decremented such that
+> the node will be freed from memory by of_node_release.
+> 
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 
-Regards,
-Sudeep
+Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+
+> ---
+>  arch/powerpc/platforms/pseries/dlpar.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+> index 4ea667d..7cfdaae 100644
+> --- a/arch/powerpc/platforms/pseries/dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> @@ -286,8 +286,15 @@ int dlpar_attach_node(struct device_node *dn)
+>  
+>  int dlpar_detach_node(struct device_node *dn)
+>  {
+> +	struct device_node *child;
+>  	int rc;
+>  
+> +	child = of_get_next_child(dn, NULL);
+> +	while (child) {
+> +		dlpar_detach_node(child);
+> +		child = of_get_next_child(dn, child);
+> +	}
+> +
+>  	rc = of_detach_node(dn);
+>  	if (rc)
+>  		return rc;
+> 
