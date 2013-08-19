@@ -1,25 +1,31 @@
-Return-Path: <B42378@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 42CDD2C027F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 18:25:13 +1000 (EST)
-From: Nicolin Chen <b42378@freescale.com>
-To: <broonie@kernel.org>, <lars@metafoo.de>, <p.zabel@pengutronix.de>,
- <s.hauer@pengutronix.de>
-Subject: [PATCH v7 2/2] ASoC: fsl: Add S/PDIF machine driver
-Date: Mon, 19 Aug 2013 16:35:22 +0800
-Message-ID: <e7ceef74714bb4ead624b333ee3969225b4c5cb5.1376901081.git.b42378@freescale.com>
-In-Reply-To: <cover.1376901081.git.b42378@freescale.com>
+Return-Path: <mark.rutland@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 0B7EA2C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 19:18:25 +1000 (EST)
+Date: Mon, 19 Aug 2013 10:18:09 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [PATCH v7 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130819091809.GD3719@e106331-lin.cambridge.arm.com>
 References: <cover.1376901081.git.b42378@freescale.com>
+ <43416f3617951161b6e779277b4719438f844e49.1376901081.git.b42378@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, swarren@wwwdotorg.org, festevam@gmail.com,
- timur@tabi.org, rob.herring@calxeda.com, tomasz.figa@gmail.com,
- R65777@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <43416f3617951161b6e779277b4719438f844e49.1376901081.git.b42378@freescale.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "lars@metafoo.de" <lars@metafoo.de>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
+ "timur@tabi.org" <timur@tabi.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+ "R65777@freescale.com" <R65777@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,234 +35,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch implements a device-tree-only machine driver for Freescale
-i.MX series Soc. It works with spdif_transmitter/spdif_receiver and
-fsl_spdif.c drivers.
+On Mon, Aug 19, 2013 at 09:35:21AM +0100, Nicolin Chen wrote:
+> This patch implements a device-tree-only CPU DAI driver for Freescale
+> S/PDIF controller that supports stereo playback and record feature.
+> 
+> Signed-off-by: Nicolin Chen <b42378@freescale.com>
+> ---
+>  .../devicetree/bindings/sound/fsl,spdif.txt        |   56 +
+>  sound/soc/fsl/Kconfig                              |    3 +
+>  sound/soc/fsl/Makefile                             |    2 +
+>  sound/soc/fsl/fsl_spdif.c                          | 1277 ++++++++++++++++++++
+>  sound/soc/fsl/fsl_spdif.h                          |  224 ++++
+>  5 files changed, 1562 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/sound/fsl,spdif.txt
+>  create mode 100644 sound/soc/fsl/fsl_spdif.c
+>  create mode 100644 sound/soc/fsl/fsl_spdif.h
+> 
+> diff --git a/Documentation/devicetree/bindings/sound/fsl,spdif.txt b/Documentation/devicetree/bindings/sound/fsl,spdif.txt
+> new file mode 100644
+> index 0000000..e9caf1c
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/sound/fsl,spdif.txt
+> @@ -0,0 +1,56 @@
+> +Freescale Sony/Philips Digital Interface Format (S/PDIF) Controller
+> +
+> +The Freescale S/PDIF audio block is a stereo transceiver that allows the
+> +processor to receive and transmit digital audio via an coaxial cable or
+> +a fibre cable.
+> +
+> +Required properties:
+> +
+> +  - compatible : Compatible list, contains "fsl,<chip>-spdif".
 
-Signed-off-by: Nicolin Chen <b42378@freescale.com>
----
- .../devicetree/bindings/sound/imx-audio-spdif.txt  |   29 +++++
- sound/soc/fsl/Kconfig                              |   11 ++
- sound/soc/fsl/Makefile                             |    2 +
- sound/soc/fsl/imx-spdif.c                          |  134 ++++++++++++++++++++
- 4 files changed, 176 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
- create mode 100644 sound/soc/fsl/imx-spdif.c
+What are valid values for <chip>? The binding should mention this. There
+are bindings that don't, but they need to be fixed. Undocumented ABIs
+are a bad idea.
 
-diff --git a/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
-new file mode 100644
-index 0000000..9a3fa26
---- /dev/null
-+++ b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
-@@ -0,0 +1,29 @@
-+Freescale i.MX audio complex with S/PDIF transceiver
-+
-+Required properties:
-+
-+  - compatible : "fsl,imx-audio-spdif"
-+
-+  - model : The user-visible name of this sound complex
-+
-+  - spdif-controller : The phandle of the i.MX S/PDIF controller
-+
-+
-+Optional properties:
-+
-+  - spdif-transmitter : The phandle of the spdif-transmitter dummy codec
-+
-+  - spdif-receiver : The phandle of the spdif-receiver dummy codec
-+
-+* Note: At least one of these two properties should be set in the DT binding.
-+
-+
-+Example:
-+
-+sound-spdif {
-+	compatible = "fsl,imx-audio-spdif";
-+	model = "imx-spdif";
-+	spdif-controller = <&spdif>;
-+	spdif-transmitter = <&spdif_tx_codec>;
-+	spdif-receiver = <&spdif_rx_codec>;
-+};
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index cd088cc..a708380 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -193,6 +193,17 @@ config SND_SOC_IMX_SGTL5000
- 	  Say Y if you want to add support for SoC audio on an i.MX board with
- 	  a sgtl5000 codec.
- 
-+config SND_SOC_IMX_SPDIF
-+	tristate "SoC Audio support for i.MX boards with S/PDIF"
-+	select SND_SOC_IMX_PCM_DMA
-+	select SND_SOC_FSL_SPDIF
-+	select SND_SOC_FSL_UTILS
-+	select SND_SOC_SPDIF
-+	help
-+	  SoC Audio support for i.MX boards with S/PDIF
-+	  Say Y if you want to add support for SoC audio on an i.MX board with
-+	  a S/DPDIF.
-+
- config SND_SOC_IMX_MC13783
- 	tristate "SoC Audio support for I.MX boards with mc13783"
- 	depends on MFD_MC13783 && ARM
-diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index 4b5970e..e2aaff7 100644
---- a/sound/soc/fsl/Makefile
-+++ b/sound/soc/fsl/Makefile
-@@ -45,6 +45,7 @@ snd-soc-mx27vis-aic32x4-objs := mx27vis-aic32x4.o
- snd-soc-wm1133-ev1-objs := wm1133-ev1.o
- snd-soc-imx-sgtl5000-objs := imx-sgtl5000.o
- snd-soc-imx-wm8962-objs := imx-wm8962.o
-+snd-soc-imx-spdif-objs :=imx-spdif.o
- snd-soc-imx-mc13783-objs := imx-mc13783.o
- 
- obj-$(CONFIG_SND_SOC_EUKREA_TLV320) += snd-soc-eukrea-tlv320.o
-@@ -53,4 +54,5 @@ obj-$(CONFIG_SND_SOC_MX27VIS_AIC32X4) += snd-soc-mx27vis-aic32x4.o
- obj-$(CONFIG_SND_MXC_SOC_WM1133_EV1) += snd-soc-wm1133-ev1.o
- obj-$(CONFIG_SND_SOC_IMX_SGTL5000) += snd-soc-imx-sgtl5000.o
- obj-$(CONFIG_SND_SOC_IMX_WM8962) += snd-soc-imx-wm8962.o
-+obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
- obj-$(CONFIG_SND_SOC_IMX_MC13783) += snd-soc-imx-mc13783.o
-diff --git a/sound/soc/fsl/imx-spdif.c b/sound/soc/fsl/imx-spdif.c
-new file mode 100644
-index 0000000..893f3d1
---- /dev/null
-+++ b/sound/soc/fsl/imx-spdif.c
-@@ -0,0 +1,134 @@
-+/*
-+ * Copyright (C) 2013 Freescale Semiconductor, Inc.
-+ *
-+ * The code contained herein is licensed under the GNU General Public
-+ * License. You may obtain a copy of the GNU General Public License
-+ * Version 2 or later at the following locations:
-+ *
-+ * http://www.opensource.org/licenses/gpl-license.html
-+ * http://www.gnu.org/copyleft/gpl.html
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/of_platform.h>
-+#include <sound/soc.h>
-+
-+struct imx_spdif_data {
-+	struct snd_soc_dai_link dai[2];
-+	struct snd_soc_card card;
-+};
-+
-+static int imx_spdif_audio_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct device_node *spdif_np, *codec_tx_np, *codec_rx_np;
-+	struct platform_device *spdif_pdev;
-+	struct imx_spdif_data *data;
-+	int ret = 0, num_links = 0;
-+
-+	spdif_np = of_parse_phandle(np, "spdif-controller", 0);
-+	if (!spdif_np) {
-+		dev_err(&pdev->dev, "failed to find spdif-controller\n");
-+		ret = -EINVAL;
-+		goto fail;
-+	}
-+
-+	spdif_pdev = of_find_device_by_node(spdif_np);
-+	if (!spdif_pdev) {
-+		dev_err(&pdev->dev, "failed to find S/PDIF device\n");
-+		ret = -EINVAL;
-+		goto fail;
-+	}
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data) {
-+		dev_err(&pdev->dev, "failed to allocate memory\n");
-+		ret = -ENOMEM;
-+		goto fail;
-+	}
-+
-+	codec_tx_np = of_parse_phandle(np, "spdif-transmitter", 0);
-+	if (codec_tx_np) {
-+		data->dai[num_links].name = "S/PDIF TX";
-+		data->dai[num_links].stream_name = "S/PDIF PCM Playback";
-+		data->dai[num_links].codec_dai_name = "dit-hifi";
-+		data->dai[num_links].codec_of_node = codec_tx_np;
-+		data->dai[num_links].cpu_of_node = spdif_np;
-+		data->dai[num_links].platform_of_node = spdif_np;
-+		num_links++;
-+	}
-+
-+	codec_rx_np = of_parse_phandle(np, "spdif-receiver", 0);
-+	if (codec_rx_np) {
-+		data->dai[num_links].name = "S/PDIF RX";
-+		data->dai[num_links].stream_name = "S/PDIF PCM Capture";
-+		data->dai[num_links].codec_dai_name = "dir-hifi";
-+		data->dai[num_links].codec_of_node = codec_rx_np;
-+		data->dai[num_links].cpu_of_node = spdif_np;
-+		data->dai[num_links].platform_of_node = spdif_np;
-+		num_links++;
-+	}
-+
-+	if (!num_links) {
-+		dev_err(&pdev->dev, "no enabled S/PDIF DAI link\n");
-+		goto fail;
-+	}
-+
-+	data->card.dev = &pdev->dev;
-+	data->card.num_links = num_links;
-+	data->card.dai_link = data->dai;
-+
-+	ret = snd_soc_of_parse_card_name(&data->card, "model");
-+	if (ret)
-+		goto fail;
-+
-+	ret = snd_soc_register_card(&data->card);
-+	if (ret) {
-+		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
-+		goto fail;
-+	}
-+
-+	platform_set_drvdata(pdev, data);
-+
-+fail:
-+	if (codec_tx_np)
-+		of_node_put(codec_tx_np);
-+	if (codec_rx_np)
-+		of_node_put(codec_rx_np);
-+	if (spdif_np)
-+		of_node_put(spdif_np);
-+
-+	return ret;
-+}
-+
-+static int imx_spdif_audio_remove(struct platform_device *pdev)
-+{
-+	struct imx_spdif_data *data = platform_get_drvdata(pdev);
-+
-+	snd_soc_unregister_card(&data->card);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id imx_spdif_dt_ids[] = {
-+	{ .compatible = "fsl,imx-audio-spdif", },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, imx_spdif_dt_ids);
-+
-+static struct platform_driver imx_spdif_driver = {
-+	.driver = {
-+		.name = "imx-spdif",
-+		.owner = THIS_MODULE,
-+		.of_match_table = imx_spdif_dt_ids,
-+	},
-+	.probe = imx_spdif_audio_probe,
-+	.remove = imx_spdif_audio_remove,
-+};
-+
-+module_platform_driver(imx_spdif_driver);
-+
-+MODULE_AUTHOR("Freescale Semiconductor, Inc.");
-+MODULE_DESCRIPTION("Freescale i.MX S/PDIF machine driver");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:imx-spdif");
--- 
-1.7.1
+> +
+> +  - reg : Offset and length of the register set for the device.
+> +
+> +  - interrupts : Contains spdif interrupt.
+
+Is that the only interrupt the device generates?
+
+> +
+> +  - dmas : Generic dma devicetree binding as described in
+> +  Documentation/devicetree/bindings/dma/dma.txt.
+> +
+> +  - dma-names : Two dmas have to be defined, "tx" and "rx".
+> +
+> +  - clocks : Contains an entry for each entry in clock-names.
+> +
+> +  - clock-names : Includes the following entries:
+> +       name            description
+
+I don't think you need this line, it's obvious enough without it.
+
+> +       "core"          The core clock of spdif controller
+> +       "rxtx<0-7>"     Clock source list for tx and rx clock.
+> +                       This clock list should be identical to
+> +                       the source list connecting to the spdif
+> +                       clock mux in "SPDIF Transceiver Clock
+> +                       Diagram" of SoC reference manual. It
+> +                       can also be referred to TxClk_Source
+> +                       bit of register SPDIF_STC.
+
+Could you elaborate on the last sentence? I'm not sure exactly what you
+meant.
+
+> +
+> +Example:
+> +
+> +spdif: spdif@02004000 {
+> +       compatible = "fsl,imx6q-spdif",
+> +               "fsl,imx35-spdif";
+
+Is "fsl,imx35-spdif" necessary in the list, or is it not the case all
+"fsl,<chip>-spdif" variants are compatible with it?
+
+That should be mentioned along with the list of valid compatible
+strings.
+
+> +       reg = <0x02004000 0x4000>;
+> +       interrupts = <0 52 0x04>;
+> +       dmas = <&sdma 14 18 0>,
+> +              <&sdma 15 18 0>;
+> +       dma-names = "rx", "tx";
+> +
+> +       clocks = <&clks 197>, <&clks 3>,
+> +              <&clks 197>, <&clks 107>,
+> +              <&clks 0>, <&clks 118>,
+> +              <&clks 62>, <&clks 139>,
+> +              <&clks 0>;
+> +       clock-names = "core", "rxtx0",
+> +               "rxtx1", "rxtx2",
+> +               "rxtx3", "rxtx4",
+> +               "rxtx5", "rxtx6",
+> +               "rxtx7";
+> +
+> +       status = "okay";
+> +};
+
+[...]
+
+> +static int spdif_clk_set_rate(struct clk *clk, unsigned long rate)
+> +{
+> +       unsigned long rate_actual;
+> +
+> +       rate_actual = clk_round_rate(clk, rate);
+> +       clk_set_rate(clk, rate_actual);
+> +
+> +       return 0;
+> +}
+
+Can't clk_set_rate fail?
+
+[...]
+
+> +       /* Select clock source for rx/tx clock */
+> +       spdif_priv->rxclk = devm_clk_get(&pdev->dev, "rxtx1");
+> +       if (IS_ERR(spdif_priv->rxclk)) {
+> +               dev_err(&pdev->dev, "no rxtx1 property in devicetree\n");
+
+Saying "no rxtx1 clock in devicetree" would be clearer.
+
+[...]
+
+> +static const struct of_device_id fsl_spdif_dt_ids[] = {
+> +       { .compatible = "fsl,imx35-spdif", },
+> +       {}
+> +};
+
+So "fsl,imx35-spdif" *must* be in the compatible list. The binding
+should mention this.
+
+Thanks,
+Mark.
