@@ -1,30 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 88AB42C007B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 04:17:34 +1000 (EST)
-Message-ID: <1376936241.31636.352.camel@snotra.buserror.net>
-Subject: Re: [RFC PATCH V3 3/5] powerpc/cpuidle: Generic powerpc backend
- cpuidle driver.
-From: Scott Wood <scottwood@freescale.com>
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Mon, 19 Aug 2013 13:17:21 -0500
-In-Reply-To: <5211F0E0.7080507@linux.vnet.ibm.com>
-References: <20130819042736.8609.17890.stgit@deepthi.in.ibm.com>
- <20130819042818.8609.77060.stgit@deepthi.in.ibm.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259010226D5@039-SN2MPN1-021.039d.mgd.msft.net>
- <5211F0E0.7080507@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 415312C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 04:56:41 +1000 (EST)
+Date: Mon, 19 Aug 2013 20:56:33 +0200
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH RESEND] i2c: move of helpers into the core
+Message-ID: <20130819185633.GA12011@katana>
+References: <1376918361-7014-1-git-send-email-wsa@the-dreams.de>
+ <1376935183-11218-1-git-send-email-wsa@the-dreams.de>
+ <5212624D.5090708@samsung.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
- Wang Dongsheng-B40534 <B40534@freescale.com>,
- "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>,
- "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="9jxsPFA5p3P2qPhR"
+In-Reply-To: <5212624D.5090708@samsung.com>
+Cc: devicetree@vger.kernel.org, davinci-linux-open-source@linux.davincidsp.com,
+ linux-samsung-soc@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-i2c@vger.kernel.org, linux-tegra@vger.kernel.org,
+ linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,51 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-08-19 at 15:48 +0530, Deepthi Dharwar wrote:
-> Hi Dongsheng,
-> 
-> On 08/19/2013 11:22 AM, Wang Dongsheng-B40534 wrote:
-> > I think we should move the states and handle function to arch/power/platform*
-> > The states and handle function is belong to backend driver, not for this, different platform have different state.
-> > Different platforms to make their own deal with these states.
-> > 
-> > I think we cannot put all the status of different platforms and handler in this driver.
-> 
-> The idea here is a single powerpc back-end driver, which does a runtime
-> detection of the platform it is running and choose the right
-> idle states table. This was one of outcome of V2 discussion.
 
-I see a lot more in there than just detecting a platform and choosing a
-driver.
+--9jxsPFA5p3P2qPhR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> I feel there is no harm in keeping the state information in the same
-> file. We do have x86, which has all its variants information in one
-> file. One place will have all the idle consolidated information of
-> all the platform variants. If community does feel, we need to
-> have just the states information in arch specific file, we can do so.
 
-What actual functionality is common to all powerpc but not common to
-other arches?
+> However this patch fails to apply onto either v3.11-rc4 or v3.11-rc6:
 
-> >> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-> >> index 0e2cd5c..99ee5d4 100644
-> >> --- a/drivers/cpuidle/Kconfig
-> >> +++ b/drivers/cpuidle/Kconfig
-> >> @@ -42,6 +42,13 @@ config CPU_IDLE_ZYNQ
-> >>  	help
-> >>  	  Select this to enable cpuidle on Xilinx Zynq processors.
-> >>
-> >> +config CPU_IDLE_POWERPC
-> >> +	bool "CPU Idle driver for POWERPC platforms"
-> >> +	depends on PPC64
-> > 
-> > Why not PPC?
-> 
-> PPC64 seems to a good place to began the consolidation work. This
-> patch-set has not been tested for PPC32 currently.
+Argh, did not drop the MPC patch before rebasing :( So either pick the
+patch "i2c: powermac: fix return path on error" before, pull the branch
+[1], or force me to resend ;)
 
-PPC64 is a bad place to start if you want it to be generic, because it
-means you'll end up growing dependencies on other things that are PPC64
-only.  There are too many arbitrary 32/64 differences as is.
+Thanks!
 
--Scott
+[1] git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/core-with-of
+
+--9jxsPFA5p3P2qPhR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSEmphAAoJEBQN5MwUoCm2oSMQALA/vPFqMuszNie+wpNeFLTx
+ndq9K7tvwvyV6ix/QtfrneDKM17i0G/OljSqOXMuO3YddSvGKIvs956j6te7Tor0
+INyTIzc59ycgiF10Zt6egrZOa4CTwka0IyozuU9tiue9VIIL2u4SnTkS7aEOH7rI
+rSFgyaDAFjvcMLAVrw/nsTcM5GRLVsFwZJklQ4m5m6ntXOs8cVDsEhkFUbMabLEA
+ITNMspH4KtEQr3v5ij+tl6rhUGJzWu8IARf4C7f8Gxas3y8NuADXlXgFjtd5xccR
+6Qgex4Wuv9yOLK9oCiXHrg3J7iXR46po/VM5BEHxT013Wxde8784u8Hv8FaPxC9r
+r1FkkadCnWaJWe0nIq2eFTU6pECwuSBT3Bu5d4kOrhr4S3a9Z+3s4KpmWZEmaNkz
+nN5hBURGFQIdLY7BzGJWiBRLqa7kq97ATfMr9N9Pg7Rpqa9TezMDF2Sm5DP2p0Ha
+fR764qsVds2fPT8+DIEnNiwfgBFJYcXhV0yv5T5pkncE5C6x6RQoK+RmRXMPO8hx
+l3xL9yV9GHVITzzgah/uaCKHCh7dboPYlKoiEqwHb0GxGbaEq3kMqaJ0D99mIss+
+k9sAe3Nfq02mwMN+2pGEZX7Rzs3d4CD84Yi0NC/csPSzkAHuC0qD1qdEw9nGrw4v
+ptWWV5ABSl7wqbZKZ0Rc
+=96ic
+-----END PGP SIGNATURE-----
+
+--9jxsPFA5p3P2qPhR--
