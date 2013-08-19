@@ -1,27 +1,28 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 415312C0096
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 04:56:41 +1000 (EST)
-Date: Mon, 19 Aug 2013 20:56:33 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Return-Path: <balbi@ti.com>
+Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mailhost.ti.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A367A2C00F9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 06:10:56 +1000 (EST)
+Date: Mon, 19 Aug 2013 15:10:05 -0500
+From: Felipe Balbi <balbi@ti.com>
+To: Wolfram Sang <wsa@the-dreams.de>
 Subject: Re: [PATCH RESEND] i2c: move of helpers into the core
-Message-ID: <20130819185633.GA12011@katana>
+Message-ID: <20130819201005.GM26587@radagast>
 References: <1376918361-7014-1-git-send-email-wsa@the-dreams.de>
  <1376935183-11218-1-git-send-email-wsa@the-dreams.de>
- <5212624D.5090708@samsung.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="9jxsPFA5p3P2qPhR"
-In-Reply-To: <5212624D.5090708@samsung.com>
+ protocol="application/pgp-signature"; boundary="McpcKDxJRrEJVmOH"
+In-Reply-To: <1376935183-11218-1-git-send-email-wsa@the-dreams.de>
 Cc: devicetree@vger.kernel.org, davinci-linux-open-source@linux.davincidsp.com,
  linux-samsung-soc@vger.kernel.org, linux-doc@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
  linux-i2c@vger.kernel.org, linux-tegra@vger.kernel.org,
  linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,42 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---9jxsPFA5p3P2qPhR
+--McpcKDxJRrEJVmOH
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, Aug 19, 2013 at 07:59:40PM +0200, Wolfram Sang wrote:
+> I2C of helpers used to live in of_i2c.c but experience (from SPI) shows
+> that it is much cleaner to have this in the core. This also removes a
+> circular dependency between the helpers and the core, and so we can
+> finally register child nodes in the core instead of doing this manually
+> in each driver. So, fix the drivers and documentation, too.
+>=20
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 
-> However this patch fails to apply onto either v3.11-rc4 or v3.11-rc6:
+for i2c-omap.c:
 
-Argh, did not drop the MPC patch before rebasing :( So either pick the
-patch "i2c: powermac: fix return path on error" before, pull the branch
-[1], or force me to resend ;)
+Reviewed-by: Felipe Balbi <balbi@ti.com>
 
-Thanks!
+--=20
+balbi
 
-[1] git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/core-with-of
-
---9jxsPFA5p3P2qPhR
+--McpcKDxJRrEJVmOH
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSEmphAAoJEBQN5MwUoCm2oSMQALA/vPFqMuszNie+wpNeFLTx
-ndq9K7tvwvyV6ix/QtfrneDKM17i0G/OljSqOXMuO3YddSvGKIvs956j6te7Tor0
-INyTIzc59ycgiF10Zt6egrZOa4CTwka0IyozuU9tiue9VIIL2u4SnTkS7aEOH7rI
-rSFgyaDAFjvcMLAVrw/nsTcM5GRLVsFwZJklQ4m5m6ntXOs8cVDsEhkFUbMabLEA
-ITNMspH4KtEQr3v5ij+tl6rhUGJzWu8IARf4C7f8Gxas3y8NuADXlXgFjtd5xccR
-6Qgex4Wuv9yOLK9oCiXHrg3J7iXR46po/VM5BEHxT013Wxde8784u8Hv8FaPxC9r
-r1FkkadCnWaJWe0nIq2eFTU6pECwuSBT3Bu5d4kOrhr4S3a9Z+3s4KpmWZEmaNkz
-nN5hBURGFQIdLY7BzGJWiBRLqa7kq97ATfMr9N9Pg7Rpqa9TezMDF2Sm5DP2p0Ha
-fR764qsVds2fPT8+DIEnNiwfgBFJYcXhV0yv5T5pkncE5C6x6RQoK+RmRXMPO8hx
-l3xL9yV9GHVITzzgah/uaCKHCh7dboPYlKoiEqwHb0GxGbaEq3kMqaJ0D99mIss+
-k9sAe3Nfq02mwMN+2pGEZX7Rzs3d4CD84Yi0NC/csPSzkAHuC0qD1qdEw9nGrw4v
-ptWWV5ABSl7wqbZKZ0Rc
-=96ic
+iQIcBAEBAgAGBQJSEnudAAoJEIaOsuA1yqREcNkP/0LKPk4o7wCnJXxOqAyLoeZd
+WwCRafc7R0Ls3S5M28xTpxPm+34Ol7FOt8tezKWc1s6G6WCLxEo84glBf4gAWKhf
+KaVC35hyoh1tibIeUZR4QfXYKn+UVxu6lMeEwJaC8+yMhuMjq0SLXBHkAUwsLCiN
+q3/Unq+bsuNgup5HnIJ6aAOZfbYj047leZF/cnfqup3epSxcZDsU/1lVj+I19rL3
+pTYeZ6WECWwhmxHj0rjEf3mgeqCaMwW8XCsRKDoDTOd/sTcvWsAooC53h2ygYe2b
+tS9zeeNW9uIlZSmtR1yNBgr59PP1ykf0zp9jGOY0r8u/oP6HG5h/bAjLMN58dXwt
+WWLYYJgj3mrXA2EtXoSKQnDNmJl7tLOJu3oxMpQfBbKlrCECgyvxp54xSQpUd+yB
+0kT8QEY/wQXCLjlLJWuPWqHkHw+YNCTap//XQYEfPyubucT27Zxa8wz4vhmkjWdH
+Cp1VEWD2O5sWpfwdyS7w54GgAOfkNyuF+FWus8zd7PN1hMxNKui2Tw8n4glmC2Ql
+LljlBN9YZUvz9ETmJTFuGFGLnX3PZO/zWeF7JkXbEDjYV4tAlKYo0pW8SeTSnY6v
+M3I3C6h4TFKDYmctFDbEJnZl8NBmBImV3Zhh+eRohrhimEtscvyoYAiFXtK3tgWN
+ojVKmnuVliAHBulFgZbj
+=wjr2
 -----END PGP SIGNATURE-----
 
---9jxsPFA5p3P2qPhR--
+--McpcKDxJRrEJVmOH--
