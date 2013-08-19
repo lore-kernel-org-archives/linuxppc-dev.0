@@ -1,28 +1,18 @@
-Return-Path: <s.nawrocki@samsung.com>
-Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
- [210.118.77.13]) by ozlabs.org (Postfix) with ESMTP id CD8D12C013D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 04:32:14 +1000 (EST)
-Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
- by mailout3.w1.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0MRS0058NJ0VJ6C0@mailout3.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 19 Aug 2013 19:22:07 +0100 (BST)
-Message-id: <5212624D.5090708@samsung.com>
-Date: Mon, 19 Aug 2013 20:22:05 +0200
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-MIME-version: 1.0
-To: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH RESEND] i2c: move of helpers into the core
-References: <1376918361-7014-1-git-send-email-wsa@the-dreams.de>
- <1376935183-11218-1-git-send-email-wsa@the-dreams.de>
-In-reply-to: <1376935183-11218-1-git-send-email-wsa@the-dreams.de>
-Content-type: text/plain; charset=ISO-8859-1
-Cc: devicetree@vger.kernel.org, davinci-linux-open-source@linux.davincidsp.com,
- linux-samsung-soc@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
- linux-i2c@vger.kernel.org, linux-tegra@vger.kernel.org,
- linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+Return-Path: <hbausley@deltatau.com>
+Received: from Barracuda.deltatau.com (barracuda.deltatau.com [76.79.246.10])
+ by ozlabs.org (Postfix) with ESMTP id 552CD2C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 05:00:40 +1000 (EST)
+From: "Henry Bausley" <hbausley@deltatau.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+ "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: Critical Interrupt Input
+Date: Mon, 19 Aug 2013 12:00:25 -0700
+Message-ID: <63d2635a$648939a4$b3aeac8$@deltatau.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="----=_NextPart_000_0001_59684433.2E39B445"
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: hbausley@deltatau.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,175 +22,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/19/2013 07:59 PM, Wolfram Sang wrote:
-> I2C of helpers used to live in of_i2c.c but experience (from SPI) shows
-> that it is much cleaner to have this in the core. This also removes a
-> circular dependency between the helpers and the core, and so we can
-> finally register child nodes in the core instead of doing this manually
-> in each driver. So, fix the drivers and documentation, too.
-> 
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
-> ---
-> 
-> Sigh, hitting the CC threshold on vger again. So resending to the lists only.
-> BTW this patch is based on -rc4 and was tested on an AT91 board. More tests
-> very welcome. Thanks!
-> 
-> 
->  drivers/i2c/busses/i2c-s3c2410.c                |    2 -
->  drivers/media/platform/exynos4-is/fimc-is-i2c.c |    3 -
+This is a multipart message in MIME format.
 
-For these:
-
-Acked-by: Sylwester Nawrocki <s.nawrocki@amsung.com>
-
-However this patch fails to apply onto either v3.11-rc4 or v3.11-rc6:
-
-Applying: i2c: move of helpers into the core
-fatal: sha1 information is lacking or useless (drivers/i2c/busses/i2c-powermac.c).
-Repository lacks necessary blobs to fall back on 3-way merge.
-Cannot fall back to three-way merge.
-Patch failed at 0001 i2c: move of helpers into the core
+------=_NextPart_000_0001_59684433.2E39B445
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
 
-One nitpick below..
+Support does appear to be present but there is a problem returning back to 
+user space I suspect.
 
-[...]
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index f32ca29..321b7ca 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -23,7 +23,11 @@
->     SMBus 2.0 support by Mark Studebaker <mdsxyz123@yahoo.com> and
->     Jean Delvare <khali@linux-fr.org>
->     Mux support by Rodolfo Giometti <giometti@enneenne.com> and
-> -   Michael Lawnick <michael.lawnick.ext@nsn.com> */
-> +   Michael Lawnick <michael.lawnick.ext@nsn.com>
-> +   OF support is copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
-> +   (based on a previous patch from Jon Smirl <jonsmirl@gmail.com>) and
-> +   (c) 2013  Wolfram Sang <wsa@the-dreams.de>
-> + */
->  
->  #include <linux/module.h>
->  #include <linux/kernel.h>
-> @@ -35,7 +39,9 @@
->  #include <linux/init.h>
->  #include <linux/idr.h>
->  #include <linux/mutex.h>
-> +#include <linux/of.h>
->  #include <linux/of_device.h>
-> +#include <linux/of_irq.h>
->  #include <linux/completion.h>
->  #include <linux/hardirq.h>
->  #include <linux/irqflags.h>
-> @@ -954,6 +960,102 @@ static void i2c_scan_static_board_info(struct i2c_adapter *adapter)
->  	up_read(&__i2c_board_lock);
->  }
->  
-> +/* of support code */
+What fails is it causes Linux user space programs to get Segmentation 
+errors.
+Issuing a simple ls causes a segmentation fault sometimes.  The shell gets 
+terminated 
+and you cannot log back in.  INIT: Id "T0" respawning too fast: disabled 
+for 5 minutes pops up.
 
-/* OF support code */
+However, the critical interrupt handler keeps running.  I know this by 
+adding the reading 
+of a physical I/O location in the handler and can see it is being read on 
+the scope.
 
-or
+The only code in the handler is below.
 
-/*
- * Device Tree support code.
- */
+void critintr_handler(void *dev)
+{
+  critintrcount++;          // increment a variable
+  iodata = *piom;           // read an I/O location 
+  mtdcr(0x0c0, 0x00002000); // clear critical interrupt
+}
 
-?
-> +#if IS_ENABLED(CONFIG_OF)
-> +static void of_i2c_register_devices(struct i2c_adapter *adap)
-> +{
-> +	void *result;
-> +	struct device_node *node;
-> +
-> +	/* Only register child devices if the adapter has a node pointer set */
-> +	if (!adap->dev.of_node)
-> +		return;
-> +
-> +	dev_dbg(&adap->dev, "of_i2c: walking child nodes\n");
-> +
-> +	for_each_available_child_of_node(adap->dev.of_node, node) {
-> +		struct i2c_board_info info = {};
-> +		struct dev_archdata dev_ad = {};
-> +		const __be32 *addr;
-> +		int len;
-> +
-> +		dev_dbg(&adap->dev, "of_i2c: register %s\n", node->full_name);
-> +
-> +		if (of_modalias_node(node, info.type, sizeof(info.type)) < 0) {
-> +			dev_err(&adap->dev, "of_i2c: modalias failure on %s\n",
-> +				node->full_name);
-> +			continue;
-> +		}
-> +
-> +		addr = of_get_property(node, "reg", &len);
-> +		if (!addr || (len < sizeof(int))) {
-> +			dev_err(&adap->dev, "of_i2c: invalid reg on %s\n",
-> +				node->full_name);
-> +			continue;
-> +		}
-> +
-> +		info.addr = be32_to_cpup(addr);
-> +		if (info.addr > (1 << 10) - 1) {
-> +			dev_err(&adap->dev, "of_i2c: invalid addr=%x on %s\n",
-> +				info.addr, node->full_name);
-> +			continue;
-> +		}
-> +
-> +		info.irq = irq_of_parse_and_map(node, 0);
-> +		info.of_node = of_node_get(node);
-> +		info.archdata = &dev_ad;
-> +
-> +		if (of_get_property(node, "wakeup-source", NULL))
-> +			info.flags |= I2C_CLIENT_WAKE;
-> +
-> +		request_module("%s%s", I2C_MODULE_PREFIX, info.type);
-> +
-> +		result = i2c_new_device(adap, &info);
-> +		if (result == NULL) {
-> +			dev_err(&adap->dev, "of_i2c: Failure registering %s\n",
-> +				node->full_name);
-> +			of_node_put(node);
-> +			irq_dispose_mapping(info.irq);
-> +			continue;
-> +		}
-> +	}
-> +}
-> +
-> +static int of_dev_node_match(struct device *dev, void *data)
-> +{
-> +	return dev->of_node == data;
-> +}
-> +
-> +/* must call put_device() when done with returned i2c_client device */
-> +struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
-> +{
-> +	struct device *dev;
-> +
-> +	dev = bus_find_device(&i2c_bus_type, NULL, node,
-> +					 of_dev_node_match);
-> +	if (!dev)
-> +		return NULL;
-> +
-> +	return i2c_verify_client(dev);
-> +}
-> +EXPORT_SYMBOL(of_find_i2c_adapter_by_node);
-> +
-> +/* must call put_device() when done with returned i2c_adapter device */
-> +struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node)
-> +{
-> +	struct device *dev;
-> +
-> +	dev = bus_find_device(&i2c_bus_type, NULL, node,
-> +					 of_dev_node_match);
-> +	if (!dev)
-> +		return NULL;
-> +
-> +	return i2c_verify_adapter(dev);
-> +}
-> +EXPORT_SYMBOL(of_find_i2c_device_by_node);
-> +#endif /* CONFIG_OF */
+Below is a log of the type of crashes that occur:
 
-Thanks,
-Sylwester
+root@10.34.9.213:/opt/ppmac/ktest# ls
+Segmentation fault
+root@10.34.9.213:/opt/ppmac/ktest# ls
+Segmentation fault
+root@10.34.9.213:/opt/ppmac/ktest# ls
+Makefile        ktest.c    ktest.ko     ktest.mod.o  modules.order
+Module.symvers  ktest.cbp  ktest.mod.c  ktest.o
+root@10.34.9.213:/opt/ppmac/ktest# ls
+
+Debian GNU/Linux 7 powerpmac ttyS0
+
+powerpmac login: root
+
+Debian GNU/Linux 7 powerpmac ttyS0
+
+powerpmac login: root
+
+Debian GNU/Linux 7 powerpmac ttyS0
+
+powerpmac login: root
+
+Debian GNU/Linux 7 powerpmac ttyS0
+
+powerpmac login: root
+Password: 
+Last login: Thu Nov 30 20:42:16 UTC 1933 on ttyS0
+Linux powerpmac 3.2.21-aspen_2.01.09 #10 Mon Aug 19 08:49:12 PDT 2013 ppc
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+INIT: Id "T0" respawning too fast: disabled for 5 minutes
+
+----------------------------------------
+From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Sent: Saturday, August 17, 2013 3:05 PM
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, hbausley@deltatau.com
+Subject: Re: Critical Interrupt Input
+
+On Fri, 2013-08-16 at 06:04 -0500, Kumar Gala wrote:
+> The 44x low level code needs to handle exception stacks properly for
+> this to work.  Since its possible to have a critical exception occur
+> while in a normal exception level, you have to have proper saving of
+> additional register state and a stack frame for the critical
+> exception, etc.  I'm not sure if that was ever done for 44x.
+
+Don't 44x and FSL BookE share the same macros ? I would think 44x does
+indeed implement the same crit support as e500...
+
+What does the crash look like ?
+
+Ben.
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@lists.ozlabs.org
+https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+
+
+
+Outbound scan for Spam or Virus by Barracuda at Delta Tau
+
+
+------=_NextPart_000_0001_59684433.2E39B445
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<span style=3D"font-family: Tahoma, Geneva, sans-serif; font-size: 10pt"><b=
+r>Support does appear to be present but there is a problem returning back t=
+o user space I suspect.<br><br>What fails is it causes Linux user space pro=
+grams to get Segmentation errors.<br>Issuing a simple ls causes a segmentat=
+ion fault sometimes.&nbsp; The shell gets terminated <br>and you cannot log=
+ back in.&nbsp; INIT: Id "T0" respawning too fast: disabled for 5 minutes p=
+ops up.<br><br>However, the critical interrupt handler keeps running.&nbsp;=
+ I know this by adding the reading <br>of a physical I/O location in the ha=
+ndler and can see it is being read on the scope.<br><br><br>The only code i=
+n the handler is below.<br><br>void critintr_handler(void *dev)<br>{<br>&nb=
+sp; critintrcount++;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+// increment a variable<br>&nbsp; iodata =3D *piom;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // read an I/O location <br>&nbsp; mtd=
+cr(0x0c0, 0x00002000); // clear critical interrupt<br>}<br><br><br>Below is=
+ a log of the type of crashes that occur:<br><br>root@10.34.9.213:/opt/ppma=
+c/ktest# ls<br>
+Segmentation fault<br>
+root@10.34.9.213:/opt/ppmac/ktest# ls<br>Segmentation fault<br>root@10.34.9=
+.213:/opt/ppmac/ktest# ls<br>Makefile&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp; ktest.c&nbsp;&nbsp;&nbsp; ktest.ko&nbsp;&nbsp;&nbsp;&nbsp; ktest.mod.o=
+&nbsp; modules.order<br>Module.symvers&nbsp; ktest.cbp&nbsp; ktest.mod.c&nb=
+sp; ktest.o<br>root@10.34.9.213:/opt/ppmac/ktest# ls<br><br>Debian GNU/Linu=
+x 7 powerpmac ttyS0<br><br>powerpmac login: root<br><br>Debian GNU/Linux 7 =
+powerpmac ttyS0<br><br>powerpmac login: root<br><br>Debian GNU/Linux 7 powe=
+rpmac ttyS0<br><br>powerpmac login: root<br><br>Debian GNU/Linux 7 powerpma=
+c ttyS0<br><br>powerpmac login: root<br>Password: <br>Last login: Thu Nov 3=
+0 20:42:16 UTC 1933 on ttyS0<br>Linux powerpmac 3.2.21-aspen_2.01.09 #10 Mo=
+n Aug 19 08:49:12 PDT 2013 ppc<br><br>The programs included with the Debian=
+ GNU/Linux system are free software;<br>the exact distribution terms for ea=
+ch program are described in the<br>individual files in /usr/share/doc/*/cop=
+yright.<br><br>Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the e=
+xtent<br>permitted by applicable law.<br>INIT: Id "T0" respawning too fast:=
+ disabled for 5 minutes<br><br><span style=3D"font-family: tahoma,arial,san=
+s-serif; font-size: 10pt;"><hr size=3D"2" width=3D"100%" align=3D"center"><=
+b>From</b>: "Benjamin Herrenschmidt" &lt;benh@kernel.crashing.org&gt;<br><b=
+>Sent</b>: Saturday, August 17, 2013 3:05 PM<br><b>To</b>: "Kumar Gala" &lt=
+;galak@kernel.crashing.org&gt;<br><b>Cc</b>: linuxppc-dev@lists.ozlabs.org,=
+ hbausley@deltatau.com<br><b>Subject</b>: Re: Critical Interrupt Input</spa=
+n><br><br>On Fri, 2013-08-16 at 06:04 -0500, Kumar Gala wrote:<br>&gt; The =
+44x low level code needs to handle exception stacks properly for<br>&gt; th=
+is to work.  Since its possible to have a critical exception occur<br>&gt; =
+while in a normal exception level, you have to have proper saving of<br>&gt=
+; additional register state and a stack frame for the critical<br>&gt; exce=
+ption, etc.  I'm not sure if that was ever done for 44x.<br><br>Don't 44x a=
+nd FSL BookE share the same macros ? I would think 44x does<br>indeed imple=
+ment the same crit support as e500...<br><br>What does the crash look like =
+?<br><br>Ben.<br><br><br>_______________________________________________<br=
+>Linuxppc-dev mailing list<br>Linuxppc-dev@lists.ozlabs.org<br>https://list=
+s.ozlabs.org/listinfo/linuxppc-dev<br><br></span>
+<br>
+&nbsp;&nbsp;&shy;&shy;&nbsp;&nbsp;=
+
+------=_NextPart_000_0001_59684433.2E39B445--
