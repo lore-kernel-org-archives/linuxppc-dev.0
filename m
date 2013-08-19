@@ -1,31 +1,37 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 731902C0155
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:24:04 +1000 (EST)
-Message-ID: <52121C84.1030102@arm.com>
-Date: Mon, 19 Aug 2013 14:24:20 +0100
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B20832C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:43:51 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 19 Aug 2013 23:32:52 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id DBADB2CE804D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:43:48 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7JDRiFm55836696
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:27:44 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7JDhmS9002281
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:43:48 +1000
+Message-ID: <52122111.6010909@linux.vnet.ibm.com>
+Date: Mon, 19 Aug 2013 08:43:45 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [RFC PATCH v2 4/4] of: move of_get_cpu_node implementation to
- DT core library
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <5212196F.4060708@gmail.com>
-In-Reply-To: <5212196F.4060708@gmail.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Cc: Jonas Bonn <jonas@southpole.se>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michal Simek <monstr@monstr.eu>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/8] powerpc/pseries: fix creation of loop in device node
+ property list
+References: <1376544232-24936-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1376544232-24936-2-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1376544232-24936-2-git-send-email-tyreld@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,82 +41,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19/08/13 14:11, Rob Herring wrote:
-> On 08/16/2013 12:39 PM, Sudeep KarkadaNagesha wrote:
->> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>
->> This patch moves the generalized implementation of of_get_cpu_node from
->> PowerPC to DT core library, thereby adding support for retrieving cpu
->> node for a given logical cpu index on any architecture.
->>
->> The CPU subsystem can now use this function to assign of_node in the
->> cpu device while registering CPUs.
->>
->> It is recommended to use these helper function only in pre-SMP/early
->> initialisation stages to retrieve CPU device node pointers in logical
->> ordering. Once the cpu devices are registered, it can be retrieved easil=
-y
->> from cpu device of_node which avoids unnecessary parsing and matching.
->>
->> Cc: Rob Herring <rob.herring@calxeda.com>
->> Cc: Grant Likely <grant.likely@linaro.org>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->=20
-> [snip]
->=20
->> +/**
->> + * of_get_cpu_node - Get device node associated with the given logical =
-CPU
->> + *
->> + * @cpu: CPU number(logical index) for which device node is required
->> + * @thread: if not NULL, local thread number within the physical core i=
-s
->> + *          returned
->> + *
->> + * The main purpose of this function is to retrieve the device node for=
- the
->> + * given logical CPU index. It should be used to initialize the of_node=
- in
->> + * cpu device. Once of_node in cpu device is populated, all the further
->> + * references can use that instead.
->> + *
->> + * CPU logical to physical index mapping is architecture specific and i=
-s built
->> + * before booting secondary cores. This function uses arch_match_cpu_ph=
-ys_id
->> + * which can be overridden by architecture specific implementation.
->> + *
->> + * Returns a node pointer for the logical cpu if found, else NULL.
->> + */
->> +struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
->> +{
->> +=09struct device_node *cpun, *cpus;
->> +
->> +=09cpus =3D of_find_node_by_path("/cpus");
->> +=09if (!cpus) {
->> +=09=09pr_warn("Missing cpus node, bailing out\n");
->> +=09=09return NULL;
->> +=09}
->> +
->> +=09for_each_child_of_node(cpus, cpun) {
->> +=09=09if (of_node_cmp(cpun->type, "cpu"))
->> +=09=09=09continue;
->> +#ifdef CONFIG_PPC
->=20
-> You don't really need this ifdef as this function should never succeed
-> on other arches. Alternatively, you can use "IS_ENABLED(CONFIG_PPC)"
-> instead.
->=20
-Agreed, I can remove it as long as no other architecture use that
-property. It's just to avoid checking for it on other architectures.
-I will use IS_ENABLED as you suggested.
+On 08/15/2013 12:23 AM, Tyrel Datwyler wrote:
+> The update_dt_prop helper function fails to set the IN/OUT parameter prop to
+> NULL after a complete property has been parsed from the work area returned by
+> the ibm,update-properties rtas function. This results in the property list of
+> the device node being updated is corrupted and becomes a loop since the same
+> property structure is used repeatedly.
+> 
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 
-> Otherwise,
->=20
-> Acked-by: Rob Herring <rob.herring@calxeda.com>
->=20
-Thanks.
+Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
-Regards,
-Sudeep
+> ---
+>  arch/powerpc/platforms/pseries/mobility.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+> index 3d01eee..f28abee 100644
+> --- a/arch/powerpc/platforms/pseries/mobility.c
+> +++ b/arch/powerpc/platforms/pseries/mobility.c
+> @@ -119,7 +119,7 @@ static int update_dt_property(struct device_node *dn, struct property **prop,
+>  
+>  	if (!more) {
+>  		of_update_property(dn, new_prop);
+> -		new_prop = NULL;
+> +		*prop = NULL;
+>  	}
+>  
+>  	return 0;
+> 
