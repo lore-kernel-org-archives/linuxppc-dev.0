@@ -1,38 +1,29 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-oa0-x236.google.com (mail-oa0-x236.google.com
- [IPv6:2607:f8b0:4003:c02::236])
+Received: from mail-oa0-x229.google.com (mail-oa0-x229.google.com
+ [IPv6:2607:f8b0:4003:c02::229])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 990702C0152
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:03:01 +1000 (EST)
-Received: by mail-oa0-f54.google.com with SMTP id o6so5893704oag.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 06:02:57 -0700 (PDT)
-Message-ID: <5212177C.8000709@gmail.com>
-Date: Mon, 19 Aug 2013 08:02:52 -0500
+ by ozlabs.org (Postfix) with ESMTPS id AB7A92C0152
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 23:11:18 +1000 (EST)
+Received: by mail-oa0-f41.google.com with SMTP id j6so5969662oag.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 06:11:16 -0700 (PDT)
+Message-ID: <5212196F.4060708@gmail.com>
+Date: Mon, 19 Aug 2013 08:11:11 -0500
 From: Rob Herring <robherring2@gmail.com>
 MIME-Version: 1.0
-To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [RFC PATCH v2 4/4] of: move of_get_cpu_node implementation to
+ DT core library
 References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop>
- <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
-In-Reply-To: <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
+ <1376674791-28244-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+In-Reply-To: <1376674791-28244-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Jonas Bonn <jonas@southpole.se>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michal Simek <monstr@monstr.eu>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- Tomasz Figa <tomasz.figa@gmail.com>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@sisk.pl>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org,
+ Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,40 +33,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/19/2013 05:19 AM, Mark Rutland wrote:
-> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
->> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
->>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
->>> which 
->>> the updated bindings[1] define #address-cells = <0> and so no reg 
->>> property.
->>>
->>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
->>
->> Why did you do that in the binding ? That sounds like looking to create
->> problems ... 
->>
->> Traditionally, UP setups just used "0" as the "reg" property on other
->> architectures, why do differently ?
+On 08/16/2013 12:39 PM, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> The decision was taken because we defined our reg property to refer to
-> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
-> there's no MPIDR register at all. Given there can only be a single CPU
-> in that case, describing a register that wasn't present didn't seem
-> necessary or helpful.
+> This patch moves the generalized implementation of of_get_cpu_node from
+> PowerPC to DT core library, thereby adding support for retrieving cpu
+> node for a given logical cpu index on any architecture.
+> 
+> The CPU subsystem can now use this function to assign of_node in the
+> cpu device while registering CPUs.
+> 
+> It is recommended to use these helper function only in pre-SMP/early
+> initialisation stages to retrieve CPU device node pointers in logical
+> ordering. Once the cpu devices are registered, it can be retrieved easily
+> from cpu device of_node which avoids unnecessary parsing and matching.
+> 
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Cc: Grant Likely <grant.likely@linaro.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-What exactly reg represents is up to the binding definition, but it
-still should be present IMO. I don't see any issue with it being
-different for pre-v7.
+[snip]
+
+> +/**
+> + * of_get_cpu_node - Get device node associated with the given logical CPU
+> + *
+> + * @cpu: CPU number(logical index) for which device node is required
+> + * @thread: if not NULL, local thread number within the physical core is
+> + *          returned
+> + *
+> + * The main purpose of this function is to retrieve the device node for the
+> + * given logical CPU index. It should be used to initialize the of_node in
+> + * cpu device. Once of_node in cpu device is populated, all the further
+> + * references can use that instead.
+> + *
+> + * CPU logical to physical index mapping is architecture specific and is built
+> + * before booting secondary cores. This function uses arch_match_cpu_phys_id
+> + * which can be overridden by architecture specific implementation.
+> + *
+> + * Returns a node pointer for the logical cpu if found, else NULL.
+> + */
+> +struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
+> +{
+> +	struct device_node *cpun, *cpus;
+> +
+> +	cpus = of_find_node_by_path("/cpus");
+> +	if (!cpus) {
+> +		pr_warn("Missing cpus node, bailing out\n");
+> +		return NULL;
+> +	}
+> +
+> +	for_each_child_of_node(cpus, cpun) {
+> +		if (of_node_cmp(cpun->type, "cpu"))
+> +			continue;
+> +#ifdef CONFIG_PPC
+
+You don't really need this ifdef as this function should never succeed
+on other arches. Alternatively, you can use "IS_ENABLED(CONFIG_PPC)"
+instead.
+
+Otherwise,
+
+Acked-by: Rob Herring <rob.herring@calxeda.com>
 
 Rob
-
-> 
-> Thanks,
-> Mark.
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
