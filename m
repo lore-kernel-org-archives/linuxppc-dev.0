@@ -1,28 +1,27 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id CCE652C0111
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 20:20:03 +1000 (EST)
-Date: Mon, 19 Aug 2013 11:19:22 +0100
-From: Mark Rutland <mark.rutland@arm.com>
+Return-Path: <sudeep.karkadanagesha@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id 477962C012C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 20:21:23 +1000 (EST)
+Message-ID: <5211F1B3.4080206@arm.com>
+Date: Mon, 19 Aug 2013 11:21:39 +0100
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to
- support other architectures
-Message-ID: <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
+Subject: Re: [RFC PATCH v2 4/4] of: move of_get_cpu_node implementation to
+ DT core library
 References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1376777376.25016.11.camel@pasglop>
+ <1376674791-28244-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376691273.25016.5.camel@pasglop>
+In-Reply-To: <1376691273.25016.5.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
 Cc: Jonas Bonn <jonas@southpole.se>,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  Michal Simek <monstr@monstr.eu>,
  "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
  Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- Tomasz Figa <tomasz.figa@gmail.com>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
  "Rafael J. Wysocki" <rjw@sisk.pl>,
  "grant.likely@linaro.org" <grant.likely@linaro.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -36,26 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
-> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
-> > I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
-> > which 
-> > the updated bindings[1] define #address-cells = <0> and so no reg 
-> > property.
-> > 
-> > [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
-> 
-> Why did you do that in the binding ? That sounds like looking to create
-> problems ... 
-> 
-> Traditionally, UP setups just used "0" as the "reg" property on other
-> architectures, why do differently ?
+On 16/08/13 23:14, Benjamin Herrenschmidt wrote:
+> On Fri, 2013-08-16 at 18:39 +0100, Sudeep KarkadaNagesha wrote:
+>> +#ifdef CONFIG_PPC
+>> +               /* Check for historical "ibm,ppc-interrupt-server#s" pro=
+perty
+>> +                * for thread ids on PowerPC. If it doesn't exist fallba=
+ck to
+>> +                * standard "reg" property.
+>> +                */
+>> +               if (__of_find_n_match_cpu_property(cpun,
+>> +                               "ibm,ppc-interrupt-server#s", cpu, threa=
+d))
+>> +                       return cpun;
+>> +#endif
+>=20
+> It's not "historical". It's still very much in use and well defined in PA=
+PR :-)
+>=20
+By historical, I meant it should not be used in future bindings.
 
-The decision was taken because we defined our reg property to refer to
-the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
-there's no MPIDR register at all. Given there can only be a single CPU
-in that case, describing a register that wasn't present didn't seem
-necessary or helpful.
+Ah, sorry missed it in ePAPR, because its not under CPU node section.
+What's more interesting is that ePAPR has it as an example for
+non-standard property names :)
 
-Thanks,
-Mark.
+Can I mark it as custom/non-standard instead ? I mainly want to indicate
+that we need to use 'reg' property and not introduce any more custom
+properties for thread ids.
+
+Can I add your ACK with this comment fixed ?
+
+Regards,
+Sudeep
