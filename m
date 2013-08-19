@@ -1,38 +1,28 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 59CA02C0085
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 21:45:32 +1000 (EST)
-Date: Mon, 19 Aug 2013 12:45:22 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Mark Rutland <mark.rutland@arm.com>
-Message-ID: <20130819114522.GC30073@sirena.org.uk>
-References: <cover.1376901081.git.b42378@freescale.com>
- <e7ceef74714bb4ead624b333ee3969225b4c5cb5.1376901081.git.b42378@freescale.com>
- <20130819092458.GE3719@e106331-lin.cambridge.arm.com>
- <20130819095042.GA11402@MrMyself>
- <20130819100143.GH3719@e106331-lin.cambridge.arm.com>
- <20130819105201.GB30073@sirena.org.uk>
- <20130819113121.GL3719@e106331-lin.cambridge.arm.com>
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pb0-x22f.google.com (mail-pb0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c01::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7B6122C00FC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 21:50:48 +1000 (EST)
+Received: by mail-pb0-f47.google.com with SMTP id rr4so4857372pbb.20
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 04:50:44 -0700 (PDT)
+Date: Mon, 19 Aug 2013 19:50:29 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: add the missing required isync for the coherent
+ icache flush
+Message-ID: <20130819115029.GD20146@pek-khao-d1.corp.ad.wrs.com>
+References: <1376567767-20620-1-git-send-email-haokexin@gmail.com>
+ <ABB05CD9C9F68C46A5CEDC7F1543925901020606@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1376883397.25016.60.camel@pasglop>
+ <1376883437.25016.61.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="o9w4P0ZCTVHZJ0iX"
-In-Reply-To: <20130819113121.GL3719@e106331-lin.cambridge.arm.com>
-Subject: Re: [PATCH v7 2/2] ASoC: fsl: Add S/PDIF machine driver
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "lars@metafoo.de" <lars@metafoo.de>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "festevam@gmail.com" <festevam@gmail.com>,
- "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
- Nicolin Chen <b42378@freescale.com>, "timur@tabi.org" <timur@tabi.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>,
- "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
- "R65777@freescale.com" <R65777@freescale.com>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ protocol="application/pgp-signature"; boundary="TybLhxa8M7aNoW+V"
+In-Reply-To: <1376883437.25016.61.camel@pasglop>
+Cc: Wang Dongsheng-B40534 <B40534@freescale.com>,
+ linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,55 +33,109 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---o9w4P0ZCTVHZJ0iX
+--TybLhxa8M7aNoW+V
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Aug 19, 2013 at 12:31:21PM +0100, Mark Rutland wrote:
-> On Mon, Aug 19, 2013 at 11:52:01AM +0100, Mark Brown wrote:
+On Mon, Aug 19, 2013 at 01:37:17PM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2013-08-19 at 13:36 +1000, Benjamin Herrenschmidt wrote:
+>=20
+> > The semantic of this function is to make data executable. Even if the
+> > implementation has a snooping icache, it *still* needs to make sure
+> > prefetched code is tossed out of the pipeline which is what isync
+> > should provide.
+> >=20
+> > The architecture actually specifies that.
+>=20
+> In fact, on P5 and later, I think we are supposed to do a single dummy
+> icbi followed by sync and isync.
 
-> > This is intended to allow userspace to distinguish between systems that
-> > are electrically identical but physically distinct, for example when
-> > multiple systems are derived from the same reference design.
+Do you mean something like this? But why?
 
-> I see. Surely if there's some meaning imparted to userspace by the model
-> name, there's a contract there that we should document (the set of valid
-> model names and what they correspond to)?
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index d74fefb..8fcdec7 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -69,6 +69,8 @@ PPC64_CACHES:
+=20
+ _KPROBE(flush_icache_range)
+ BEGIN_FTR_SECTION
++	icbi	0,r3
++	sync
+ 	isync
+ 	blr
+ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+@@ -209,6 +211,8 @@ _GLOBAL(flush_inval_dcache_range)
+  */
+ _GLOBAL(__flush_dcache_icache)
+ BEGIN_FTR_SECTION
++	icbi	0,r3
++	sync
+ 	isync
+ 	blr
+ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
 
-In theory I guess.  In practice I doubt many people will bother and I'd
-expect zero productive result from those that do.
+Thanks,
+Kevin
 
-> I'm not sure I understand why userspace needs to know what the system is
-> if we've adequately described how it's wired and what its capabilities
-> are. However, I'm not at all familiar with the way we handle audio, so
-> please forgive my naivety there :)
+>=20
+> Cheers,
+> Ben.
+>=20
+> > Cheers,
+> > Ben.
+> >=20
+> > > >  	blr
+> > > >  END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+> > > >  	rlwinm	r3,r3,0,0,31-PAGE_SHIFT		/* Get page base address
+> > > > */
+> > > > @@ -474,6 +475,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_44x)
+> > > >   */
+> > > >  _GLOBAL(__flush_dcache_icache_phys)
+> > > >  BEGIN_FTR_SECTION
+> > > > +	isync
+> > > >  	blr					/* for 601, do nothing */
+> > > >  END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+> > > >  	mfmsr	r10
+> > > > diff --git a/arch/powerpc/kernel/misc_64.S
+> > > > b/arch/powerpc/kernel/misc_64.S
+> > > > index 992a78e..d74fefb 100644
+> > > > --- a/arch/powerpc/kernel/misc_64.S
+> > > > +++ b/arch/powerpc/kernel/misc_64.S
+> > > > @@ -69,6 +69,7 @@ PPC64_CACHES:
+> > > >=20
+> > > >  _KPROBE(flush_icache_range)
+> > > >  BEGIN_FTR_SECTION
+> > > > +	isync
+> > > >  	blr
+> > > >  END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+> > > >  /*
+> > > > --
+> > > > 1.8.3.1
+> > > >=20
+> > > > _______________________________________________
+> > > > Linuxppc-dev mailing list
+> > > > Linuxppc-dev@lists.ozlabs.org
+> > > > https://lists.ozlabs.org/listinfo/linuxppc-dev
+> > >=20
+> >=20
+>=20
+>=20
 
-The physical form of the system can have a substantial impact on how
-people want to configure it at runtime even if there is no software
-visible difference.  Coefficients can be chosen to work with plastics,
-or volumes adjusted for expected user positioning with respect to the
-hardware for example.
-
---o9w4P0ZCTVHZJ0iX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+--TybLhxa8M7aNoW+V
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSEgVPAAoJELSic+t+oim9ksAP/2Bgg1B+z3G9u3ScZp230xoo
-4d6MJq8MBUH4TeuaJcrt8lXt4yYB4Tu66gYEDnUYaCnCNp3rjWYTkjAPmrtOEFds
-0QuAx1wDTASRbpGPELimQol/IyxcGRxDkffFoWpnkK5tGRn/30oINEK7NPEub7sU
-96E2BuGEgzLA3r2YPQKcfb9tqzKFeNBJD3G25h4GQd7tRU1UCMGhj2XXOIU1vsDI
-KM3Zea0/2M/mqBRv0k6SucDmD+yIyAyJjpRcn6zeqVgBdZDm+P3CfhfDOiNA0pOU
-Vs0HMlo48MbN1Mfpg8oRCvIiwCOxtpV8otx3CZGE6S49+pipNT7FcRPa+mWJFgqa
-F7sECi3habGmihKMWXE24y4d5/f+CCkK0y3XgVj+YSNBsufk9WSSiyyNx616w7DG
-a0DIHXBKRrkgDssJ7oCmmJiU1n9m0166l2DY5ZnLwi7kxYnVnJZ0zmZcTiH1HxCA
-dCnMmM0sdYg546yHr/8M+icec6HivmmUsYxPwjeOZ0hmSv7TVdd4xdH9YEbV703N
-Z6g5pnrOGTdu56z8FThmcNCjVAC8wVDMwb1mHm2r269AUg97V088ZZfYjBdphmJo
-77cowAdSM8FFl2AMqx5igLUFqglTR3Nrivx2OTzlzQUs2jIfD5Ma4gzxSW5NWY8T
-2Vv7Xs86czSoFW0w1onQ
-=5Tdu
+iQEcBAEBAgAGBQJSEgaFAAoJEJNY7TDerrFxWuwH/0dBUb2/9VTtBlcxyCoIsy+D
+39p+8Ah91fT6wSA/zqVMzQl89C5Z4OVyJIbI7cYS9vV+qcv5HgvpeyAAA+XBYY6Q
+aIrayjzH6OL+cS77Mspt52CieZS4FZszLnI48J0GXJNoNn/BvTnTTNQhIPP7ncB2
+hv/nYa6x25GCup8vie4c+8hMgvHbyRKz8BricSI+PURZjzkchzdxRWURMlf5gKTa
+r3HdVcwy30pWbUKUo2IsOGKb/Dzxo77GmuhOHs6/k0Br/hUe4Zxxi945lJAia2OA
+PcM97uXXHsnvwiH8ywp5xws0RhigxcmJ2q3epUU2fRCKjDsI4Q6pGkl0aHzTr+w=
+=KVlB
 -----END PGP SIGNATURE-----
 
---o9w4P0ZCTVHZJ0iX--
+--TybLhxa8M7aNoW+V--
