@@ -1,36 +1,34 @@
-Return-Path: <B42378@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D4B432C0169
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 21:34:44 +1000 (EST)
-Date: Mon, 19 Aug 2013 19:34:08 +0800
-From: Nicolin Chen <b42378@freescale.com>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 59CA02C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 21:45:32 +1000 (EST)
+Date: Mon, 19 Aug 2013 12:45:22 +0100
+From: Mark Brown <broonie@kernel.org>
 To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v7 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
-Message-ID: <20130819113407.GA11489@MrMyself>
+Message-ID: <20130819114522.GC30073@sirena.org.uk>
 References: <cover.1376901081.git.b42378@freescale.com>
- <43416f3617951161b6e779277b4719438f844e49.1376901081.git.b42378@freescale.com>
- <20130819091809.GD3719@e106331-lin.cambridge.arm.com>
- <20130819093423.GB10950@MrMyself>
- <20130819095433.GG3719@e106331-lin.cambridge.arm.com>
- <20130819101303.GB11402@MrMyself>
- <20130819111349.GJ3719@e106331-lin.cambridge.arm.com>
+ <e7ceef74714bb4ead624b333ee3969225b4c5cb5.1376901081.git.b42378@freescale.com>
+ <20130819092458.GE3719@e106331-lin.cambridge.arm.com>
+ <20130819095042.GA11402@MrMyself>
+ <20130819100143.GH3719@e106331-lin.cambridge.arm.com>
+ <20130819105201.GB30073@sirena.org.uk>
+ <20130819113121.GL3719@e106331-lin.cambridge.arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20130819111349.GJ3719@e106331-lin.cambridge.arm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="o9w4P0ZCTVHZJ0iX"
+In-Reply-To: <20130819113121.GL3719@e106331-lin.cambridge.arm.com>
+Subject: Re: [PATCH v7 2/2] ASoC: fsl: Add S/PDIF machine driver
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
  "lars@metafoo.de" <lars@metafoo.de>,
  "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
  "festevam@gmail.com" <festevam@gmail.com>,
  "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
- "timur@tabi.org" <timur@tabi.org>,
+ Nicolin Chen <b42378@freescale.com>, "timur@tabi.org" <timur@tabi.org>,
  "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
  "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>,
- "broonie@kernel.org" <broonie@kernel.org>,
  "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
  "R65777@freescale.com" <R65777@freescale.com>,
  "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
@@ -44,50 +42,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 19, 2013 at 12:13:49PM +0100, Mark Rutland wrote:
-> > > > > > +       "rxtx<0-7>"     Clock source list for tx and rx clock.
-> > > > > > +                       This clock list should be identical to
-> > > > > > +                       the source list connecting to the spdif
-> > > > > > +                       clock mux in "SPDIF Transceiver Clock
-> > > > > > +                       Diagram" of SoC reference manual. It
-> > > > > > +                       can also be referred to TxClk_Source
-> > > > > > +                       bit of register SPDIF_STC.
-> > Actually there's a clock mux for TxClk and it's connecting with 8 clock 
-> > sources. So the TxClk_Source bit show the connection between its value
-> > with the correspond source on the clock mux:
-> > 
-> > TxClk_Source	000 XTAL clk input
-> > 		001 CCM spdif0_clk_root input
-> > 		010 asrc_clk input
-> > 		011 spdif_extclk input, from pads
-> > 		100 esai_hckt input
-> > 		101 frequency divided ipg_clk input
-> > 		110 mlb_clk input
-> > 		111 mlb phy clk input
-> 
-> Ah. So are these the actual input names on the mux, or the names of the
-> outputs that are wired up to the mux? If the former, these may be better
-> clock-names than rxtx<0-7>.
 
-The clock names are actually different with different SoC. The list above
-is only for i.MX6Q. So we can't specify these names here, because the driver
-then would need to maintain a clock names list for different SoC as well.
+--o9w4P0ZCTVHZJ0iX
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> Is there a similar Rx mux?
+On Mon, Aug 19, 2013 at 12:31:21PM +0100, Mark Rutland wrote:
+> On Mon, Aug 19, 2013 at 11:52:01AM +0100, Mark Brown wrote:
 
-Both Tx and RX clocks can be derived from the Tx mux.
+> > This is intended to allow userspace to distinguish between systems that
+> > are electrically identical but physically distinct, for example when
+> > multiple systems are derived from the same reference design.
 
-> Given the "rxtx<0-7>" names you've given these clocks, are there 8 clock
-> inputs that get duplicated within the spdif block and fed into both
-> muxes, or are there 16 external inputs that happen to be two groups of 8
-> identical sets of clocks in systems so far?
+> I see. Surely if there's some meaning imparted to userspace by the model
+> name, there's a contract there that we should document (the set of valid
+> model names and what they correspond to)?
 
-I think you can refer to the RM, since you just got it. The diagram doesn't
-show which one you mentioned is true. But I think we can understand in both
-ways. 
+In theory I guess.  In practice I doubt many people will bother and I'd
+expect zero productive result from those that do.
 
-I'm going to send a v8. So I think I don't need to modify the description
-right?
+> I'm not sure I understand why userspace needs to know what the system is
+> if we've adequately described how it's wired and what its capabilities
+> are. However, I'm not at all familiar with the way we handle audio, so
+> please forgive my naivety there :)
 
-Thank you
-Nicolin Chen
+The physical form of the system can have a substantial impact on how
+people want to configure it at runtime even if there is no software
+visible difference.  Coefficients can be chosen to work with plastics,
+or volumes adjusted for expected user positioning with respect to the
+hardware for example.
+
+--o9w4P0ZCTVHZJ0iX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSEgVPAAoJELSic+t+oim9ksAP/2Bgg1B+z3G9u3ScZp230xoo
+4d6MJq8MBUH4TeuaJcrt8lXt4yYB4Tu66gYEDnUYaCnCNp3rjWYTkjAPmrtOEFds
+0QuAx1wDTASRbpGPELimQol/IyxcGRxDkffFoWpnkK5tGRn/30oINEK7NPEub7sU
+96E2BuGEgzLA3r2YPQKcfb9tqzKFeNBJD3G25h4GQd7tRU1UCMGhj2XXOIU1vsDI
+KM3Zea0/2M/mqBRv0k6SucDmD+yIyAyJjpRcn6zeqVgBdZDm+P3CfhfDOiNA0pOU
+Vs0HMlo48MbN1Mfpg8oRCvIiwCOxtpV8otx3CZGE6S49+pipNT7FcRPa+mWJFgqa
+F7sECi3habGmihKMWXE24y4d5/f+CCkK0y3XgVj+YSNBsufk9WSSiyyNx616w7DG
+a0DIHXBKRrkgDssJ7oCmmJiU1n9m0166l2DY5ZnLwi7kxYnVnJZ0zmZcTiH1HxCA
+dCnMmM0sdYg546yHr/8M+icec6HivmmUsYxPwjeOZ0hmSv7TVdd4xdH9YEbV703N
+Z6g5pnrOGTdu56z8FThmcNCjVAC8wVDMwb1mHm2r269AUg97V088ZZfYjBdphmJo
+77cowAdSM8FFl2AMqx5igLUFqglTR3Nrivx2OTzlzQUs2jIfD5Ma4gzxSW5NWY8T
+2Vv7Xs86czSoFW0w1onQ
+=5Tdu
+-----END PGP SIGNATURE-----
+
+--o9w4P0ZCTVHZJ0iX--
