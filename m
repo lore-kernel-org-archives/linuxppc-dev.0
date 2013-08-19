@@ -1,31 +1,38 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id B892E2C0116
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 20:13:14 +1000 (EST)
-Message-ID: <5211EFC7.9090800@arm.com>
-Date: Mon, 19 Aug 2013 11:13:27 +0100
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Return-Path: <B42378@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 311A72C0285
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 20:13:26 +1000 (EST)
+Date: Mon, 19 Aug 2013 18:13:04 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v7 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130819101303.GB11402@MrMyself>
+References: <cover.1376901081.git.b42378@freescale.com>
+ <43416f3617951161b6e779277b4719438f844e49.1376901081.git.b42378@freescale.com>
+ <20130819091809.GD3719@e106331-lin.cambridge.arm.com>
+ <20130819093423.GB10950@MrMyself>
+ <20130819095433.GG3719@e106331-lin.cambridge.arm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376691186.25016.4.camel@pasglop>
-In-Reply-To: <1376691186.25016.4.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jonas Bonn <jonas@southpole.se>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michal Simek <monstr@monstr.eu>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20130819095433.GG3719@e106331-lin.cambridge.arm.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "lars@metafoo.de" <lars@metafoo.de>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
+ "timur@tabi.org" <timur@tabi.org>,
  "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+ "R65777@freescale.com" <R65777@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,45 +42,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16/08/13 23:13, Benjamin Herrenschmidt wrote:
-> On Fri, 2013-08-16 at 18:39 +0100, Sudeep KarkadaNagesha wrote:
->> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
->> +                       const char *prop_name, int cpu, unsigned int
->> *thread)
->> +{
->> +       const __be32 *cell;
->> +       int ac, prop_len, tid;
->> +       u64 hwid;
->> +
->> +       ac =3D of_n_addr_cells(cpun);
->> +       cell =3D of_get_property(cpun, prop_name, &prop_len);
->> +       if (!cell)
->> +               return false;
->> +       prop_len /=3D sizeof(*cell);
->> +       for (tid =3D 0; tid < prop_len; tid++) {
->> +               hwid =3D of_read_number(cell, ac);
->> +               if (arch_match_cpu_phys_id(cpu, hwid)) {
->> +                       if (thread)
->> +                               *thread =3D tid;
->> +                       return true;
->> +               }
->> +               cell +=3D ac;
->> +       }
->> +       return false;
->> +}
->=20
-> The only problem I can see here is if "ac" is not 1, that will not work
-> for the ibm,ppc-interrupt-server#s case. IE. The latter is always 1 cell
-> per entry, only "reg" depends on #address-cells.
->=20
-> However that's only a theorical problem since on ppc #address-cells of
-> /cpus is always 1...
->=20
-Ok agreed, but I assume in future if thread ids need 2 ac, it would use
-standard 'reg' instead of 'ibm,ppc-interrupt-server#' property.
+On Mon, Aug 19, 2013 at 10:54:33AM +0100, Mark Rutland wrote:
+> > I see, so 'Compatible list, must contains "fsl,imx35-spdif"' would be okay?
+> 
+> While that needs to be mentioned, other values which might be present
+> (e.g. "fsl,imx6q-spdif") must be mentioned, or we can't rely on them
+> if we want to use them in future from drivers to provide additional
+> information (and thus they're useless).
 
-So I assume the above function is generic and need not be modified to
-handle non '1' ac case  with non standard 'ibm,ppc-interrupt-server#'.
+Well, imx6q-spdif is identical to the imx35-spdif. So I think the
+'must contains 35' would be enough for the current case. If any
+future modification happens to the list, I can update this doc later.
 
-Regards,
-Sudeep
+> > 
+> > > > +  - interrupts : Contains spdif interrupt.
+> > > 
+> > > Is that the only interrupt the device generates?
+> > 
+> > Yes, how could I improve this description?
+> 
+> It's probably not possible to make it much clearar to be honest,
+> "Contains the sole interrupt generated by the device" might be a little
+> overkill.
+
+Then I keep it no-change :)
+
+
+> > > > +       "rxtx<0-7>"     Clock source list for tx and rx clock.
+> > > > +                       This clock list should be identical to
+> > > > +                       the source list connecting to the spdif
+> > > > +                       clock mux in "SPDIF Transceiver Clock
+> > > > +                       Diagram" of SoC reference manual. It
+> > > > +                       can also be referred to TxClk_Source
+> > > > +                       bit of register SPDIF_STC.
+
+> > The list is also identical to the TxClk_Source bit value list of
+> > register SPDIF_STC.
+> 
+> What I don't understand is how the value of the SPDIF_STC register
+> within the spdif IP block can describe the necessary details of clocks
+> coming from an external clock provider.
+>
+> What do the TxClk_Source bits represent? The configuration of the clock
+> inputs on the spdif IP block, or the outputs on some clock provider? Are
+> they writeable, or configured at integration time? If the clock provider
+> were replaced with another arbitrary clock provider, what would they
+> represent?
+
+
+Actually there's a clock mux for TxClk and it's connecting with 8 clock 
+sources. So the TxClk_Source bit show the connection between its value
+with the correspond source on the clock mux:
+
+TxClk_Source	000 XTAL clk input
+		001 CCM spdif0_clk_root input
+		010 asrc_clk input
+		011 spdif_extclk input, from pads
+		100 esai_hckt input
+		101 frequency divided ipg_clk input
+		110 mlb_clk input
+		111 mlb phy clk input
+
+
+> > I guess it's better to drop the 'imx6q-spdif' here?
+> 
+> That depends:
+> 
+> * If the two IP blocks are identical, only the "imx35-spdif" name is
+>   necessary, and we can forget about "fsl,imx6q-spdif".
+> 
+> * If "fsl,imx6q-spdif" is a strict superset of "fsl,imx35-spdif", having
+>   both names documented and in a compatible list for a "fsl,imx6q-spdif"
+>   device makes sense.
+> 
+> * If "fsl,imx6q-spdif" is a variation of "fsl,imx35-spdif", and the
+>   "fsl,imx6q-spdif" cannot always be treated identically to a
+>   "fsl,imx35-spdif", then it makes sense to have separate compatible
+>   strings, with a device being listed as either "fsl,imx6q-spdif" or
+>   "fsl,imx35-spdif".
+> 
+> I don't know enough about the hardware to make that judgement call.
+
+Thank you for explaining! I will choose A, because they are internally
+identical except their external clock sources.
+
+Best regards,
+Nicolin
