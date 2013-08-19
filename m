@@ -1,21 +1,28 @@
-Return-Path: <anthony.foiani@gmail.com>
-Received: from mail-ie0-x22b.google.com (mail-ie0-x22b.google.com
- [IPv6:2607:f8b0:4001:c03::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 481652C00CE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 04:15:35 +1000 (EST)
-Received: by mail-ie0-f171.google.com with SMTP id 16so106668iea.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 11:15:31 -0700 (PDT)
-From: Anthony Foiani <anthony.foiani@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] sata: fsl: save irqs while coalescing
-Date: Mon, 19 Aug 2013 12:15:28 -0600
-Message-Id: <1376936128-1624-1-git-send-email-anthony.foiani@gmail.com>
-In-Reply-To: <gsiy6olhp.fsf@dworkin.scrye.com>
-References: <gsiy6olhp.fsf@dworkin.scrye.com>
-Cc: Anthony Foiani <anthony.foiani@gmail.com>, Anthony Foiani <tkil@scrye.com>,
- Bhushan Bharat-R65777 <R65777@freescale.com>
+Return-Path: <s.nawrocki@samsung.com>
+Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
+ [210.118.77.13]) by ozlabs.org (Postfix) with ESMTP id CD8D12C013D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 04:32:14 +1000 (EST)
+Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
+ by mailout3.w1.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0MRS0058NJ0VJ6C0@mailout3.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 19 Aug 2013 19:22:07 +0100 (BST)
+Message-id: <5212624D.5090708@samsung.com>
+Date: Mon, 19 Aug 2013 20:22:05 +0200
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+MIME-version: 1.0
+To: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH RESEND] i2c: move of helpers into the core
+References: <1376918361-7014-1-git-send-email-wsa@the-dreams.de>
+ <1376935183-11218-1-git-send-email-wsa@the-dreams.de>
+In-reply-to: <1376935183-11218-1-git-send-email-wsa@the-dreams.de>
+Content-type: text/plain; charset=ISO-8859-1
+Cc: devicetree@vger.kernel.org, davinci-linux-open-source@linux.davincidsp.com,
+ linux-samsung-soc@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-i2c@vger.kernel.org, linux-tegra@vger.kernel.org,
+ linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,121 +32,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Before this patch, I was seeing the following lockdep splat on my
-MPC8315 (PPC32) target:
+On 08/19/2013 07:59 PM, Wolfram Sang wrote:
+> I2C of helpers used to live in of_i2c.c but experience (from SPI) shows
+> that it is much cleaner to have this in the core. This also removes a
+> circular dependency between the helpers and the core, and so we can
+> finally register child nodes in the core instead of doing this manually
+> in each driver. So, fix the drivers and documentation, too.
+> 
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> ---
+> 
+> Sigh, hitting the CC threshold on vger again. So resending to the lists only.
+> BTW this patch is based on -rc4 and was tested on an AT91 board. More tests
+> very welcome. Thanks!
+> 
+> 
+>  drivers/i2c/busses/i2c-s3c2410.c                |    2 -
+>  drivers/media/platform/exynos4-is/fimc-is-i2c.c |    3 -
 
-  [    9.086051] =================================
-  [    9.090393] [ INFO: inconsistent lock state ]
-  [    9.094744] 3.9.7-ajf-gc39503d #1 Not tainted
-  [    9.099087] ---------------------------------
-  [    9.103432] inconsistent {HARDIRQ-ON-W} -> {IN-HARDIRQ-W} usage.
-  [    9.109431] scsi_eh_1/39 [HC1[1]:SC0[0]:HE0:SE1] takes:
-  [    9.114642]  (&(&host->lock)->rlock){?.+...}, at: [<c02f4168>] sata_fsl_interrupt+0x50/0x250
-  [    9.123137] {HARDIRQ-ON-W} state was registered at:
-  [    9.128004]   [<c006cdb8>] lock_acquire+0x90/0xf4
-  [    9.132737]   [<c043ef04>] _raw_spin_lock+0x34/0x4c
-  [    9.137645]   [<c02f3560>] fsl_sata_set_irq_coalescing+0x68/0x100
-  [    9.143750]   [<c02f36a0>] sata_fsl_init_controller+0xa8/0xc0
-  [    9.149505]   [<c02f3f10>] sata_fsl_probe+0x17c/0x2e8
-  [    9.154568]   [<c02acc90>] driver_probe_device+0x90/0x248
-  [    9.159987]   [<c02acf0c>] __driver_attach+0xc4/0xc8
-  [    9.164964]   [<c02aae74>] bus_for_each_dev+0x5c/0xa8
-  [    9.170028]   [<c02ac218>] bus_add_driver+0x100/0x26c
-  [    9.175091]   [<c02ad638>] driver_register+0x88/0x198
-  [    9.180155]   [<c0003a24>] do_one_initcall+0x58/0x1b4
-  [    9.185226]   [<c05aeeac>] kernel_init_freeable+0x118/0x1c0
-  [    9.190823]   [<c0004110>] kernel_init+0x18/0x108
-  [    9.195542]   [<c000f6b8>] ret_from_kernel_thread+0x64/0x6c
-  [    9.201142] irq event stamp: 160
-  [    9.204366] hardirqs last  enabled at (159): [<c043f778>] _raw_spin_unlock_irq+0x30/0x50
-  [    9.212469] hardirqs last disabled at (160): [<c000f414>] reenable_mmu+0x30/0x88
-  [    9.219867] softirqs last  enabled at (144): [<c002ae5c>] __do_softirq+0x168/0x218
-  [    9.227435] softirqs last disabled at (137): [<c002b0d4>] irq_exit+0xa8/0xb4
-  [    9.234481]
-  [    9.234481] other info that might help us debug this:
-  [    9.240995]  Possible unsafe locking scenario:
-  [    9.240995]
-  [    9.246898]        CPU0
-  [    9.249337]        ----
-  [    9.251776]   lock(&(&host->lock)->rlock);
-  [    9.255878]   <Interrupt>
-  [    9.258492]     lock(&(&host->lock)->rlock);
-  [    9.262765]
-  [    9.262765]  *** DEADLOCK ***
-  [    9.262765]
-  [    9.268684] no locks held by scsi_eh_1/39.
-  [    9.272767]
-  [    9.272767] stack backtrace:
-  [    9.277117] Call Trace:
-  [    9.279589] [cfff9da0] [c0008504] show_stack+0x48/0x150 (unreliable)
-  [    9.285972] [cfff9de0] [c0447d5c] print_usage_bug.part.35+0x268/0x27c
-  [    9.292425] [cfff9e10] [c006ace4] mark_lock+0x2ac/0x658
-  [    9.297660] [cfff9e40] [c006b7e4] __lock_acquire+0x754/0x1840
-  [    9.303414] [cfff9ee0] [c006cdb8] lock_acquire+0x90/0xf4
-  [    9.308745] [cfff9f20] [c043ef04] _raw_spin_lock+0x34/0x4c
-  [    9.314250] [cfff9f30] [c02f4168] sata_fsl_interrupt+0x50/0x250
-  [    9.320187] [cfff9f70] [c0079ff0] handle_irq_event_percpu+0x90/0x254
-  [    9.326547] [cfff9fc0] [c007a1fc] handle_irq_event+0x48/0x78
-  [    9.332220] [cfff9fe0] [c007c95c] handle_level_irq+0x9c/0x104
-  [    9.337981] [cfff9ff0] [c000d978] call_handle_irq+0x18/0x28
-  [    9.343568] [cc7139f0] [c000608c] do_IRQ+0xf0/0x1a8
-  [    9.348464] [cc713a20] [c000fc8c] ret_from_except+0x0/0x14
-  [    9.353983] --- Exception: 501 at _raw_spin_unlock_irq+0x40/0x50
-  [    9.353983]     LR = _raw_spin_unlock_irq+0x30/0x50
-  [    9.364839] [cc713af0] [c043db10] wait_for_common+0xac/0x188
-  [    9.370513] [cc713b30] [c02ddee4] ata_exec_internal_sg+0x2b0/0x4f0
-  [    9.376699] [cc713be0] [c02de18c] ata_exec_internal+0x68/0xa8
-  [    9.382454] [cc713c20] [c02de4b8] ata_dev_read_id+0x158/0x594
-  [    9.388205] [cc713ca0] [c02ec244] ata_eh_recover+0xd88/0x13d0
-  [    9.393962] [cc713d20] [c02f2520] sata_pmp_error_handler+0xc0/0x8ac
-  [    9.400234] [cc713dd0] [c02ecdc8] ata_scsi_port_error_handler+0x464/0x5e8
-  [    9.407023] [cc713e10] [c02ecfd0] ata_scsi_error+0x84/0xb8
-  [    9.412528] [cc713e40] [c02c4974] scsi_error_handler+0xd8/0x47c
-  [    9.418457] [cc713eb0] [c004737c] kthread+0xa8/0xac
-  [    9.423355] [cc713f40] [c000f6b8] ret_from_kernel_thread+0x64/0x6c
+For these:
 
-This fix was suggested by Bhushan Bharat <R65777@freescale.com>, and
-was discussed in email at:
+Acked-by: Sylwester Nawrocki <s.nawrocki@amsung.com>
 
-  http://linuxppc.10917.n7.nabble.com/MPC8315-reboot-failure-lockdep-splat-possibly-related-tp75162.html
+However this patch fails to apply onto either v3.11-rc4 or v3.11-rc6:
 
-Same patch successfully tested with 3.9.7.  linux-next compiled but
-not tested on hardware.
+Applying: i2c: move of helpers into the core
+fatal: sha1 information is lacking or useless (drivers/i2c/busses/i2c-powermac.c).
+Repository lacks necessary blobs to fall back on 3-way merge.
+Cannot fall back to three-way merge.
+Patch failed at 0001 i2c: move of helpers into the core
 
-This patch is based off linux-next tag next-20130819
-(which is commit 66a01bae29d11916c09f9f5a937cafe7d402e4a5 )
 
-Signed-off-by: Anthony Foiani <anthony.foiani@gmail.com>
----
- drivers/ata/sata_fsl.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+One nitpick below..
 
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index 19720a0..851bd3f 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -293,6 +293,7 @@ static void fsl_sata_set_irq_coalescing(struct ata_host *host,
- {
- 	struct sata_fsl_host_priv *host_priv = host->private_data;
- 	void __iomem *hcr_base = host_priv->hcr_base;
-+	unsigned long flags;
- 
- 	if (count > ICC_MAX_INT_COUNT_THRESHOLD)
- 		count = ICC_MAX_INT_COUNT_THRESHOLD;
-@@ -305,12 +306,12 @@ static void fsl_sata_set_irq_coalescing(struct ata_host *host,
- 			(count > ICC_MIN_INT_COUNT_THRESHOLD))
- 		ticks = ICC_SAFE_INT_TICKS;
- 
--	spin_lock(&host->lock);
-+	spin_lock_irqsave(&host->lock, flags);
- 	iowrite32((count << 24 | ticks), hcr_base + ICC);
- 
- 	intr_coalescing_count = count;
- 	intr_coalescing_ticks = ticks;
--	spin_unlock(&host->lock);
-+	spin_unlock_irqrestore(&host->lock, flags);
- 
- 	DPRINTK("interrupt coalescing, count = 0x%x, ticks = %x\n",
- 			intr_coalescing_count, intr_coalescing_ticks);
--- 
-1.8.1.4
+[...]
+> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> index f32ca29..321b7ca 100644
+> --- a/drivers/i2c/i2c-core.c
+> +++ b/drivers/i2c/i2c-core.c
+> @@ -23,7 +23,11 @@
+>     SMBus 2.0 support by Mark Studebaker <mdsxyz123@yahoo.com> and
+>     Jean Delvare <khali@linux-fr.org>
+>     Mux support by Rodolfo Giometti <giometti@enneenne.com> and
+> -   Michael Lawnick <michael.lawnick.ext@nsn.com> */
+> +   Michael Lawnick <michael.lawnick.ext@nsn.com>
+> +   OF support is copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
+> +   (based on a previous patch from Jon Smirl <jonsmirl@gmail.com>) and
+> +   (c) 2013  Wolfram Sang <wsa@the-dreams.de>
+> + */
+>  
+>  #include <linux/module.h>
+>  #include <linux/kernel.h>
+> @@ -35,7 +39,9 @@
+>  #include <linux/init.h>
+>  #include <linux/idr.h>
+>  #include <linux/mutex.h>
+> +#include <linux/of.h>
+>  #include <linux/of_device.h>
+> +#include <linux/of_irq.h>
+>  #include <linux/completion.h>
+>  #include <linux/hardirq.h>
+>  #include <linux/irqflags.h>
+> @@ -954,6 +960,102 @@ static void i2c_scan_static_board_info(struct i2c_adapter *adapter)
+>  	up_read(&__i2c_board_lock);
+>  }
+>  
+> +/* of support code */
+
+/* OF support code */
+
+or
+
+/*
+ * Device Tree support code.
+ */
+
+?
+> +#if IS_ENABLED(CONFIG_OF)
+> +static void of_i2c_register_devices(struct i2c_adapter *adap)
+> +{
+> +	void *result;
+> +	struct device_node *node;
+> +
+> +	/* Only register child devices if the adapter has a node pointer set */
+> +	if (!adap->dev.of_node)
+> +		return;
+> +
+> +	dev_dbg(&adap->dev, "of_i2c: walking child nodes\n");
+> +
+> +	for_each_available_child_of_node(adap->dev.of_node, node) {
+> +		struct i2c_board_info info = {};
+> +		struct dev_archdata dev_ad = {};
+> +		const __be32 *addr;
+> +		int len;
+> +
+> +		dev_dbg(&adap->dev, "of_i2c: register %s\n", node->full_name);
+> +
+> +		if (of_modalias_node(node, info.type, sizeof(info.type)) < 0) {
+> +			dev_err(&adap->dev, "of_i2c: modalias failure on %s\n",
+> +				node->full_name);
+> +			continue;
+> +		}
+> +
+> +		addr = of_get_property(node, "reg", &len);
+> +		if (!addr || (len < sizeof(int))) {
+> +			dev_err(&adap->dev, "of_i2c: invalid reg on %s\n",
+> +				node->full_name);
+> +			continue;
+> +		}
+> +
+> +		info.addr = be32_to_cpup(addr);
+> +		if (info.addr > (1 << 10) - 1) {
+> +			dev_err(&adap->dev, "of_i2c: invalid addr=%x on %s\n",
+> +				info.addr, node->full_name);
+> +			continue;
+> +		}
+> +
+> +		info.irq = irq_of_parse_and_map(node, 0);
+> +		info.of_node = of_node_get(node);
+> +		info.archdata = &dev_ad;
+> +
+> +		if (of_get_property(node, "wakeup-source", NULL))
+> +			info.flags |= I2C_CLIENT_WAKE;
+> +
+> +		request_module("%s%s", I2C_MODULE_PREFIX, info.type);
+> +
+> +		result = i2c_new_device(adap, &info);
+> +		if (result == NULL) {
+> +			dev_err(&adap->dev, "of_i2c: Failure registering %s\n",
+> +				node->full_name);
+> +			of_node_put(node);
+> +			irq_dispose_mapping(info.irq);
+> +			continue;
+> +		}
+> +	}
+> +}
+> +
+> +static int of_dev_node_match(struct device *dev, void *data)
+> +{
+> +	return dev->of_node == data;
+> +}
+> +
+> +/* must call put_device() when done with returned i2c_client device */
+> +struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
+> +{
+> +	struct device *dev;
+> +
+> +	dev = bus_find_device(&i2c_bus_type, NULL, node,
+> +					 of_dev_node_match);
+> +	if (!dev)
+> +		return NULL;
+> +
+> +	return i2c_verify_client(dev);
+> +}
+> +EXPORT_SYMBOL(of_find_i2c_adapter_by_node);
+> +
+> +/* must call put_device() when done with returned i2c_adapter device */
+> +struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node)
+> +{
+> +	struct device *dev;
+> +
+> +	dev = bus_find_device(&i2c_bus_type, NULL, node,
+> +					 of_dev_node_match);
+> +	if (!dev)
+> +		return NULL;
+> +
+> +	return i2c_verify_adapter(dev);
+> +}
+> +EXPORT_SYMBOL(of_find_i2c_device_by_node);
+> +#endif /* CONFIG_OF */
+
+Thanks,
+Sylwester
