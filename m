@@ -1,28 +1,36 @@
-Return-Path: <B42378@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6BC7D2C00E0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 12:39:18 +1000 (EST)
-Date: Tue, 20 Aug 2013 10:28:59 +0800
-From: Nicolin Chen <b42378@freescale.com>
-To: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH v8 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
-Message-ID: <20130820022858.GB13169@MrMyself>
-References: <cover.1376912873.git.b42378@freescale.com>
- <a5b34243c0323e7692fab6a52a7adf4e3e8a5844.1376912873.git.b42378@freescale.com>
- <52128FBE.4080103@wwwdotorg.org>
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D1F972C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 12:51:08 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 20 Aug 2013 08:09:56 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 999C11258043
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 08:20:38 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7K2qLvd36241422
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 08:22:21 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7K2oqBR028015
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 08:20:52 +0530
+Received: from [9.65.233.1] (sig-9-65-233-1.mts.ibm.com [9.65.233.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ r7K2oo3P027938
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 08:20:51 +0530
+Message-ID: <5212D989.8090103@linux.vnet.ibm.com>
+Date: Mon, 19 Aug 2013 21:50:49 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <52128FBE.4080103@wwwdotorg.org>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, lars@metafoo.de, Pawel Moll <pawel.moll@arm.com>,
- festevam@gmail.com, s.hauer@pengutronix.de, Kumar Gala <galak@codeaurora.org>,
- timur@tabi.org, rob.herring@calxeda.com, tomasz.figa@gmail.com,
- broonie@kernel.org, p.zabel@pengutronix.de, R65777@freescale.com,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] Correct Memory Hotplug for Power
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,35 +40,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 19, 2013 at 03:35:58PM -0600, Stephen Warren wrote:
-> > +	"core"		The core clock of spdif controller
-> > +	"rxtx<0-7>"	Clock source list for tx and rx clock.
-> > +			This clock list should be identical to
-> > +			the source list connecting to the spdif
-> > +			clock mux in "SPDIF Transceiver Clock
-> > +			Diagram" of SoC reference manual. It
-> > +			can also be referred to TxClk_Source
-> > +			bit of register SPDIF_STC.
-> 
-> So, the HW block has 1 clock input, yet there's a mux somewhere else in
-> the SoC which has 8 inputs?
-> 
-> If so, I'm not completely sure it's correct to reference anything other
-> than the "core" clock in this binding. I think the other clocks would be
-> more suitably represented in the system-level "sound card" binding that
-> I guess patch 2/2 (which I haven't read yet) adds, since I assume those
-> clock are more to do with system-level clock tree setup decisions, and
-> might not even exist in some other SoC that included this IP block.
-> 
-> What do others think, assuming I'm correct about my HW design assumptions?
+Memory hotplug on Power is currently broken, these two patches correct the
+issues needed to get memory hotplug working again.
 
-The core clock is being only needed when accessing registers of this IP.
-Thus, in the driver, I let regmap handle it.
+This update marks memory resources that are added at boot time are also
+marked as busy. It sounds a bit counter intuitive but the core mm code will
+not free memory resources if they are not marked as busy.
 
-While the other 8 clocks are actual reference clocks for Tx. Tx clock needs
-to select one of them that can easily derive a child clock matching the tx
-sample rate. This is essential for the IP, so I don't think it's nicer to 
-put into machine driver.
+This also ensures that bootmem memory is is registered at boot time. A
+previous commit (46723bfa540...) that enabled memory hotplug remove with
+SPARSE_VMEMMAP enabled broke this on Power.
 
-Thank you
-Nicolin
+Additional patches to follow to correct the current memory hotplug
+implementation on Power.
+
+Nathan Fontenot
+
+Updates for v2:
+
+- The WARN_ONCE is removed from the added register_page_bootmem_memmap()
+routine. I have been able to verify that memory hotplug works with
+SPARSE_VMEMMAP enabled and do not think the warning is needed.
+
+---
+ arch/powerpc/mm/mem.c           |    9 +++++++++
+ linux/arch/powerpc/mm/init_64.c |    4 ++++
+ linux/arch/powerpc/mm/mem.c     |    2 +-
+ linux/mm/Kconfig                |    2 +-
+ 4 files changed, 15 insertions(+), 2 deletions(-)
