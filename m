@@ -1,20 +1,21 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by ozlabs.org (Postfix) with ESMTP id 41F702C00EA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 18:58:53 +1000 (EST)
-Date: Tue, 20 Aug 2013 13:45:22 +0530
-From: Vinod Koul <vinod.koul@intel.com>
-To: Hongbo Zhang <hongbo.zhang@freescale.com>
-Subject: Re: [PATCH v7 0/3] DMA: Freescale: Add support for 8-channel DMA
- engine
-Message-ID: <20130820081522.GC5810@intel.com>
-References: <1375094944-3343-1-git-send-email-hongbo.zhang@freescale.com>
- <20130729105901.GI29095@intel.com> <521329EA.3050900@freescale.com>
+Return-Path: <geert@linux-m68k.org>
+Received: from wilson.telenet-ops.be (wilson.telenet-ops.be [195.130.132.42])
+ by ozlabs.org (Postfix) with ESMTP id 2D92F2C0104
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 19:25:22 +1000 (EST)
+Received: from georges.telenet-ops.be (georges.telenet-ops.be [195.130.137.68])
+ by wilson.telenet-ops.be (Postfix) with ESMTP id 83A63348524
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 11:25:01 +0200 (CEST)
+Date: Tue, 20 Aug 2013 11:24:45 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: Build regressions/improvements in v3.11-rc6
+In-Reply-To: <alpine.DEB.2.02.1308201120400.26995@ayla.of.borg>
+Message-ID: <alpine.DEB.2.02.1308201121150.27907@ayla.of.borg>
+References: <alpine.DEB.2.02.1308201120400.26995@ayla.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <521329EA.3050900@freescale.com>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, djbw@fb.com,
- scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 20, 2013 at 04:33:46PM +0800, Hongbo Zhang wrote:
-> On 07/29/2013 06:59 PM, Vinod Koul wrote:
-> >On Mon, Jul 29, 2013 at 06:49:01PM +0800, hongbo.zhang@freescale.com wrote:
-> >>From: Hongbo Zhang <hongbo.zhang@freescale.com>
-> >>
-> >>Hi Vinod, Dan, Scott and Leo, please have a look at these V7 patches.
-> >The dma relates changes look okay to me.
-> >
-> >I need someone to review and ACK the DT bindings.
-> >
-> >~Vinod
-> Vinod,
-> Are you using this tree?
-> http://git.infradead.org/users/vkoul/slave-dma.git
-Yes
+On Tue, 20 Aug 2013, Geert Uytterhoeven wrote:
+> JFYI, when comparing v3.11-rc6 to v3.11-rc5[3], the summaries are:
+>   - build errors: +6/-9
 
-> Did you merge these patches?
-No
+  + arch/powerpc/kvm/book3s_xics.c: error: implicit declaration of function 'get_tb' [-Werror=implicit-function-declaration]:  => 812:3
 
-As I said I would like someone who know DT and dma binding to ack them. I see
-devicetree ML has been cced, can Arnd or someone else review these...
+powerpc-randconfig
 
-~Vinod
+  + error: No rule to make target /etc/sound/dsp001.ld:  => N/A
+
+i386-randconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/6556/ (all 120 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/6532/ (all 120 configs)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
