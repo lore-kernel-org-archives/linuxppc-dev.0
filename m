@@ -1,23 +1,37 @@
-Return-Path: <amodra@gmail.com>
-Received: from mail-ie0-x22d.google.com (mail-ie0-x22d.google.com
- [IPv6:2607:f8b0:4001:c03::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 09AB92C0117
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 14:45:42 +1000 (EST)
-Received: by mail-ie0-f173.google.com with SMTP id k5so1081860iea.18
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 21:45:39 -0700 (PDT)
-Date: Tue, 20 Aug 2013 14:15:34 +0930
-From: Alan Modra <amodra@gmail.com>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: BUG_ON and gcc don't mix
-Message-ID: <20130820044534.GD3430@bubble.grove.modra.org>
-References: <20130820123750.7353f2f1@kryten>
- <20130820043211.GC3430@bubble.grove.modra.org>
+Return-Path: <shawn.guo@linaro.org>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9069E2C0137
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 15:19:19 +1000 (EST)
+Date: Tue, 20 Aug 2013 13:19:49 +0800
+From: Shawn Guo <shawn.guo@linaro.org>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v7 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130820051947.GB29114@S2101-09.ap.freescale.net>
+References: <cover.1376901081.git.b42378@freescale.com>
+ <43416f3617951161b6e779277b4719438f844e49.1376901081.git.b42378@freescale.com>
+ <20130819091809.GD3719@e106331-lin.cambridge.arm.com>
+ <20130819093423.GB10950@MrMyself>
+ <20130819095433.GG3719@e106331-lin.cambridge.arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130820043211.GC3430@bubble.grove.modra.org>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, wschmidt@us.ibm.com
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20130819095433.GG3719@e106331-lin.cambridge.arm.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "lars@metafoo.de" <lars@metafoo.de>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
+ Nicolin Chen <b42378@freescale.com>, "timur@tabi.org" <timur@tabi.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+ "R65777@freescale.com" <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +41,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 20, 2013 at 02:02:11PM +0930, Alan Modra wrote:
-> On Tue, Aug 20, 2013 at 12:37:50PM +1000, Anton Blanchard wrote:
-> > address of the trap instruction for our bug exception table. Maybe
-> > we need a gcc builtin in which we can get a label on the trap
-> > instruction. Would that be possible?
+On Mon, Aug 19, 2013 at 10:54:33AM +0100, Mark Rutland wrote:
+> > I guess it's better to drop the 'imx6q-spdif' here?
 > 
-> Not your actual _EMIT_BUG_ENTRY, but something like this ought to work.
-> The only trick here is not putting anything after __builtin_trap()..
+> That depends:
+> 
+> * If the two IP blocks are identical, only the "imx35-spdif" name is
+>   necessary, and we can forget about "fsl,imx6q-spdif".
+> 
+> * If "fsl,imx6q-spdif" is a strict superset of "fsl,imx35-spdif", having
+>   both names documented and in a compatible list for a "fsl,imx6q-spdif"
+>   device makes sense.
 
-Doh!  I guess the whole point was to get the condition folded into the
-trap, which is foiled by emitting an asm between the condition and
-buildin_trap().
+Practically, I found it's very useful to have "fsl,<soc>-<ip>" in the
+device compatible property in <soc>.dtsi, even when device driver does
+not match it right now.  For this example, I still prefer to have the
+following line for spdif device in imx6q.dtsi.
 
--- 
-Alan Modra
-Australia Development Lab, IBM
+	compatible = "fsl,imx6q-spdif", "fsl,imx35-spdif";
+
+The reason for that is we usually do not see all the differences of an
+IP block from one SoC to another when we firstly define the bindings
+for the device by looking at hardware reference manual.  Some
+programming model differences are only identified when we're actually
+programming.  That said, if some day we find there is difference between
+imx6q-spdif and imx35-spdif to be handled when we add something new to
+the driver, we only need to add "fsl,imx6q-spdif" as a new compatible
+into device driver and bindings document.  The existing device tree
+would need no update to work with the new kernel driver.
+
+Shawn
+
+> 
+> * If "fsl,imx6q-spdif" is a variation of "fsl,imx35-spdif", and the
+>   "fsl,imx6q-spdif" cannot always be treated identically to a
+>   "fsl,imx35-spdif", then it makes sense to have separate compatible
+>   strings, with a device being listed as either "fsl,imx6q-spdif" or
+>   "fsl,imx35-spdif".
