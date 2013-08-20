@@ -1,21 +1,27 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
- by ozlabs.org (Postfix) with ESMTP id 0BB402C00EF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 05:39:01 +1000 (EST)
-Received: from gerard.telenet-ops.be (gerard.telenet-ops.be [195.130.132.48])
- by winston.telenet-ops.be (Postfix) with ESMTP id 7FE9D1BF142
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 21:38:57 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH] Kconfig: Remove hotplug enable hints in CONFIG_KEXEC help
- texts
-Date: Tue, 20 Aug 2013 21:38:03 +0200
-Message-Id: <1377027483-17025-1-git-send-email-geert@linux-m68k.org>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <swarren@wwwdotorg.org>
+Received: from avon.wwwdotorg.org (avon.wwwdotorg.org
+ [IPv6:2001:470:1f0f:bd7::2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3C7642C00FC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 05:53:58 +1000 (EST)
+Message-ID: <5213C94D.7050304@wwwdotorg.org>
+Date: Tue, 20 Aug 2013 13:53:49 -0600
+From: Stephen Warren <swarren@wwwdotorg.org>
+MIME-Version: 1.0
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v8 2/2] ASoC: fsl: Add S/PDIF machine driver
+References: <cover.1376912873.git.b42378@freescale.com>
+ <ca3061d70ab8bf59afc59031fa7befcfaed26d51.1376912873.git.b42378@freescale.com>
+ <5212908E.6050104@wwwdotorg.org> <20130820001858.GF30073@sirena.org.uk>
+ <52138FDE.3080007@wwwdotorg.org> <20130820190701.GR30073@sirena.org.uk>
+In-Reply-To: <20130820190701.GR30073@sirena.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, festevam@gmail.com,
+ s.hauer@pengutronix.de, Nicolin Chen <b42378@freescale.com>, timur@tabi.org,
+ rob.herring@calxeda.com, tomasz.figa@gmail.com, p.zabel@pengutronix.de,
+ R65777@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,120 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 40b313608ad4ea655addd2ec6cdd106477ae8e15 ("Finally eradicate
-CONFIG_HOTPLUG") removed remaining references to CONFIG_HOTPLUG, but missed
-a few plain English references in the CONFIG_KEXEC help texts.
+On 08/20/2013 01:07 PM, Mark Brown wrote:
+> On Tue, Aug 20, 2013 at 09:48:46AM -0600, Stephen Warren wrote:
+>> On 08/19/2013 06:18 PM, Mark Brown wrote:
+> 
+>>> S/PDIF is also sometimes used as an interconnect between
+>>> devices - some CODECs have S/PDIF I/O (more normally used as an
+>>> external connector on the box).  This is most frequently seen
+>>> as a way to
+> 
+>> That's not a good argument for an incorrect binding.
+> 
+> The point is that it might turn into a more correct binding
+> depending on what the S/PDIF device actually is.
 
-Remove them, too.
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- arch/arm/Kconfig     |    3 +--
- arch/ia64/Kconfig    |    6 +++---
- arch/mips/Kconfig    |    6 +++---
- arch/powerpc/Kconfig |    6 +++---
- arch/sh/Kconfig      |    6 +++---
- arch/x86/Kconfig     |    6 +++---
- 6 files changed, 16 insertions(+), 17 deletions(-)
-
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 43594d5..cd5c1c9 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -2064,8 +2064,7 @@ config KEXEC
- 
- 	  It is an ongoing process to be certain the hardware in a machine
- 	  is properly shutdown, so do not be surprised if this code does not
--	  initially work for you.  It may help to enable device hotplugging
--	  support.
-+	  initially work for you.
- 
- config ATAGS_PROC
- 	bool "Export atags in procfs"
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 5a768ad..b36370d 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -565,9 +565,9 @@ config KEXEC
- 
- 	  It is an ongoing process to be certain the hardware in a machine
- 	  is properly shutdown, so do not be surprised if this code does not
--	  initially work for you.  It may help to enable device hotplugging
--	  support.  As of this writing the exact hardware interface is
--	  strongly in flux, so no good recommendation can be made.
-+	  initially work for you.  As of this writing the exact hardware
-+	  interface is strongly in flux, so no good recommendation can be
-+	  made.
- 
- config CRASH_DUMP
- 	  bool "kernel crash dumps"
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index e12764c..dccd7ce 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -2305,9 +2305,9 @@ config KEXEC
- 
- 	  It is an ongoing process to be certain the hardware in a machine
- 	  is properly shutdown, so do not be surprised if this code does not
--	  initially work for you.  It may help to enable device hotplugging
--	  support.  As of this writing the exact hardware interface is
--	  strongly in flux, so no good recommendation can be made.
-+	  initially work for you.  As of this writing the exact hardware
-+	  interface is strongly in flux, so no good recommendation can be
-+	  made.
- 
- config CRASH_DUMP
- 	  bool "Kernel crash dumps"
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index dbd9d3c..cc61418 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -369,9 +369,9 @@ config KEXEC
- 
- 	  It is an ongoing process to be certain the hardware in a machine
- 	  is properly shutdown, so do not be surprised if this code does not
--	  initially work for you.  It may help to enable device hotplugging
--	  support.  As of this writing the exact hardware interface is
--	  strongly in flux, so no good recommendation can be made.
-+	  initially work for you.  As of this writing the exact hardware
-+	  interface is strongly in flux, so no good recommendation can be
-+	  made.
- 
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel"
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 1020dd8..1018ed3 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -643,9 +643,9 @@ config KEXEC
- 
- 	  It is an ongoing process to be certain the hardware in a machine
- 	  is properly shutdown, so do not be surprised if this code does not
--	  initially work for you.  It may help to enable device hotplugging
--	  support.  As of this writing the exact hardware interface is
--	  strongly in flux, so no good recommendation can be made.
-+	  initially work for you.  As of this writing the exact hardware
-+	  interface is strongly in flux, so no good recommendation can be
-+	  made.
- 
- config CRASH_DUMP
- 	bool "kernel crash dumps (EXPERIMENTAL)"
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index b32ebf9..6ace5de 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1627,9 +1627,9 @@ config KEXEC
- 
- 	  It is an ongoing process to be certain the hardware in a machine
- 	  is properly shutdown, so do not be surprised if this code does not
--	  initially work for you.  It may help to enable device hotplugging
--	  support.  As of this writing the exact hardware interface is
--	  strongly in flux, so no good recommendation can be made.
-+	  initially work for you.  As of this writing the exact hardware
-+	  interface is strongly in flux, so no good recommendation can be
-+	  made.
- 
- config CRASH_DUMP
- 	bool "kernel crash dumps"
--- 
-1.7.9.5
+There's *never* an object on the board called a "dummy codec".
