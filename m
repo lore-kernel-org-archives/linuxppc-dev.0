@@ -1,25 +1,26 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 2C18E2C010F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 01:17:03 +1000 (EST)
-Date: Tue, 20 Aug 2013 08:18:52 -0700
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [PATCH v4 06/19] driver/core: cpu: initialize of_node in cpu's
- device struture
-Message-ID: <20130820151852.GB18016@kroah.com>
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-7-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Return-Path: <swarren@wwwdotorg.org>
+Received: from avon.wwwdotorg.org (avon.wwwdotorg.org
+ [IPv6:2001:470:1f0f:bd7::2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id ACDEA2C0112
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 01:48:53 +1000 (EST)
+Message-ID: <52138FDE.3080007@wwwdotorg.org>
+Date: Tue, 20 Aug 2013 09:48:46 -0600
+From: Stephen Warren <swarren@wwwdotorg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1376991021-12160-7-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org,
- Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org,
- Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
- Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v8 2/2] ASoC: fsl: Add S/PDIF machine driver
+References: <cover.1376912873.git.b42378@freescale.com>
+ <ca3061d70ab8bf59afc59031fa7befcfaed26d51.1376912873.git.b42378@freescale.com>
+ <5212908E.6050104@wwwdotorg.org> <20130820001858.GF30073@sirena.org.uk>
+In-Reply-To: <20130820001858.GF30073@sirena.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, festevam@gmail.com,
+ s.hauer@pengutronix.de, Nicolin Chen <b42378@freescale.com>, timur@tabi.org,
+ rob.herring@calxeda.com, tomasz.figa@gmail.com, p.zabel@pengutronix.de,
+ R65777@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,27 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 20, 2013 at 10:30:08AM +0100, Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On 08/19/2013 06:18 PM, Mark Brown wrote:
+> On Mon, Aug 19, 2013 at 03:39:26PM -0600, Stephen Warren wrote:
+>> On 08/19/2013 06:08 AM, Nicolin Chen wrote:
+>>> This patch implements a device-tree-only machine driver for
+>>> Freescale i.MX series Soc. It works with
+>>> spdif_transmitter/spdif_receiver and fsl_spdif.c drivers.
+>> 
+>>> diff --git
+>>> a/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
+>>> b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
 > 
-> CPUs are also registered as devices but the of_node in these cpu
-> devices are not initialized. Currently different drivers requiring
-> to access cpu device node are parsing the nodes themselves and
-> initialising the of_node in cpu device.
+>>> +Optional properties:
 > 
-> The of_node in all the cpu devices needs to be initialized properly
-> and at one place. The best place to update this is CPU subsystem
-> driver when registering the cpu devices.
+>>> +  - spdif-transmitter : The phandle of the spdif-transmitter
+>>> dummy codec +  - spdif-receiver : The phandle of the
+>>> spdif-receiver dummy codec
 > 
-> The OF/DT core library now provides of_get_cpu_node to retrieve a cpu
-> device node for a given logical index by abstracting the architecture
-> specific details.
+>>> +* Note: At least one of these two properties should be set in
+>>> the DT binding.
 > 
-> This patch uses of_get_cpu_node to assign of_node when registering the
-> cpu devices.
+>> Those object truly don't exist in HW and only exist due to
+>> internal details of Linux's ASoC subsystem.
 > 
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Acked-by: Rob Herring <rob.herring@calxeda.com>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> They will physically exist if they're usefully present on the board
+> (in the sense that they're there and can be pointed at) - there
+> will be either a TOSLINK optical connector or (less commonly) an
+> electrical connector breaking the signal out to go elsewhere though
+> they don't have any interaction with software usually which is more
+> what you mean here.
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Sure, the S/PDIF signal is connected to something, but it is not a
+"dummy CODEC"; a "dummy CODEC" is purely something internal to ASoC
+and absolutely nothing to do with HW.
+
+>> Or, to map the properties more directly to HW, perhaps name the
+>> property "spdif-tx-jack-exists", or even "spdif-tx-jack" and make
+>> it a phandle to a node that represents the actual S/PDIF
+>> connector?
+> 
+> S/PDIF is also sometimes used as an interconnect between devices -
+> some CODECs have S/PDIF I/O (more normally used as an external
+> connector on the box).  This is most frequently seen as a way to
+> plumb HDMI in since some HDMI devices seem to provide this as a
+> legacy interconnect, though it can get used just for regular CODECs
+> as well.  Using this machine driver would probably be a bit of an
+> abuse for some applications, though with things like the HDMI one
+> the goal of the hardware is to be dropped into a driver like this
+> so perhaps it makes sense and is useful anyway.
+> 
+> Equally well it'd be good to get this stuff actually merged, it
+> seems to have been surprisingly time consuming thus far...
+
+That's not a good argument for an incorrect binding.
