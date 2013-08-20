@@ -1,24 +1,24 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 64CA12C010B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 19:30:27 +1000 (EST)
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 16/19] cpufreq: arm_big_little: remove device tree parsing
- for cpu nodes
-Date: Tue, 20 Aug 2013 10:30:18 +0100
-Message-Id: <1376991021-12160-17-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Cc: Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>
+Return-Path: <michael.neuling@gmail.com>
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7775D2C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 20:04:12 +1000 (EST)
+Received: by mail-pa0-f48.google.com with SMTP id kp13so383200pab.21
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 03:04:10 -0700 (PDT)
+MIME-Version: 1.0
+Sender: michael.neuling@gmail.com
+In-Reply-To: <20130820160516.596a85a4@kryten>
+References: <20130820160516.596a85a4@kryten>
+Date: Tue, 20 Aug 2013 20:04:09 +1000
+Message-ID: <CAEjGV6x6fMPMunzfcm7O0RYHdxEyhnUoH1FcZno2AQRHtqkMVw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Never handle VSX alignment exceptions from kernel
+From: Michael Neuling <mikey@neuling.org>
+To: Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, amodra@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,103 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On Tue, Aug 20, 2013 at 4:05 PM, Anton Blanchard <anton@samba.org> wrote:
+>
+> The VSX alignment handler needs to write out the existing VSX
+> state to memory before operating on it (flush_vsx_to_thread()).
+> If we take a VSX alignment exception in the kernel bad things
+> will happen. It looks like we could write the kernel state out
+> to the user process, or we could handle the kernel exception
+> using data from the user process (depending if MSR_VSX is set
+> or not).
+>
+> Worse still, if the code to read or write the VSX state causes an
+> alignment exception, we will recurse forever. I ended up with
+> hundreds of megabytes of kernel stack to look through as a result.
+>
+> Floating point and SPE code have similar issues but already include
+> a user check. Add the same check to emulate_vsx().
+>
 
-Now that the cpu device registration initialises the of_node(if available)
-appropriately for all the cpus, parsing here is redundant.
+Can you say what will happen when you apply this patch.  ie It
+produces one oops rather than megabytes of crap making it easier
+to debug.
 
-This patch removes all DT parsing and uses cpu->of_node instead.
+Also, can you give a clue as to how you can hit this since it should
+never happen in the first place.  I assume it's some LE corner case...
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
----
- drivers/cpufreq/arm_big_little_dt.c | 40 +++++++++++++--------------------=
-----
- 1 file changed, 14 insertions(+), 26 deletions(-)
+Mikey
 
-diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_=
-little_dt.c
-index fd9e3ea..480c0bd 100644
---- a/drivers/cpufreq/arm_big_little_dt.c
-+++ b/drivers/cpufreq/arm_big_little_dt.c
-@@ -19,12 +19,11 @@
-=20
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-=20
--#include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/device.h>
- #include <linux/export.h>
- #include <linux/module.h>
--#include <linux/of.h>
-+#include <linux/of_device.h>
- #include <linux/opp.h>
- #include <linux/platform_device.h>
- #include <linux/slab.h>
-@@ -34,27 +33,13 @@
- /* get cpu node with valid operating-points */
- static struct device_node *get_cpu_node_with_valid_op(int cpu)
- {
--=09struct device_node *np =3D NULL, *parent;
--=09int count =3D 0;
-+=09struct device_node *np =3D of_cpu_device_node_get(cpu);
-=20
--=09parent =3D of_find_node_by_path("/cpus");
--=09if (!parent) {
--=09=09pr_err("failed to find OF /cpus\n");
--=09=09return NULL;
-+=09if (!of_get_property(np, "operating-points", NULL)) {
-+=09=09of_node_put(np);
-+=09=09np =3D NULL;
- =09}
-=20
--=09for_each_child_of_node(parent, np) {
--=09=09if (count++ !=3D cpu)
--=09=09=09continue;
--=09=09if (!of_get_property(np, "operating-points", NULL)) {
--=09=09=09of_node_put(np);
--=09=09=09np =3D NULL;
--=09=09}
--
--=09=09break;
--=09}
--
--=09of_node_put(parent);
- =09return np;
- }
-=20
-@@ -63,11 +48,12 @@ static int dt_init_opp_table(struct device *cpu_dev)
- =09struct device_node *np;
- =09int ret;
-=20
--=09np =3D get_cpu_node_with_valid_op(cpu_dev->id);
--=09if (!np)
--=09=09return -ENODATA;
-+=09np =3D of_node_get(cpu_dev->of_node);
-+=09if (!np) {
-+=09=09pr_err("failed to find cpu%d node\n", cpu_dev->id);
-+=09=09return -ENOENT;
-+=09}
-=20
--=09cpu_dev->of_node =3D np;
- =09ret =3D of_init_opp_table(cpu_dev);
- =09of_node_put(np);
-=20
-@@ -79,9 +65,11 @@ static int dt_get_transition_latency(struct device *cpu_=
-dev)
- =09struct device_node *np;
- =09u32 transition_latency =3D CPUFREQ_ETERNAL;
-=20
--=09np =3D get_cpu_node_with_valid_op(cpu_dev->id);
--=09if (!np)
-+=09np =3D of_node_get(cpu_dev->of_node);
-+=09if (!np) {
-+=09=09pr_info("Failed to find cpu node. Use CPUFREQ_ETERNAL transition lat=
-ency\n");
- =09=09return CPUFREQ_ETERNAL;
-+=09}
-=20
- =09of_property_read_u32(np, "clock-latency", &transition_latency);
- =09of_node_put(np);
---=20
-1.8.1.2
+
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>
+> Index: b/arch/powerpc/kernel/align.c
+> ===================================================================
+> --- a/arch/powerpc/kernel/align.c
+> +++ b/arch/powerpc/kernel/align.c
+> @@ -651,6 +651,10 @@ static int emulate_vsx(unsigned char __u
+>         int sw = 0;
+>         int i, j;
+>
+> +       /* userland only */
+> +       if (unlikely(!user_mode(regs)))
+> +               return 0;
+> +
+>         flush_vsx_to_thread(current);
+>
+>         if (reg < 32)
+>
