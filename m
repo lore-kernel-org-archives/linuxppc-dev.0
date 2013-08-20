@@ -1,18 +1,34 @@
-Return-Path: <bpm@sgi.com>
-Date: Tue, 20 Aug 2013 14:28:44 -0500
-From: Ben Myers <bpm@sgi.com>
-To: Dwight Engen <dwight.engen@oracle.com>, Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: linux-next: build failure after merge of the final tree
-Message-ID: <20130820192844.GC5262@sgi.com>
-References: <20130820172052.1f0d89ddf6a1a40ef70333fd@canb.auug.org.au>
- <20130820120702.000b044e@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130820120702.000b044e@oracle.com>
-Cc: cbe-oss-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
- linux-next@vger.kernel.org, Gao feng <gaofeng@cn.fujitsu.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BE3882C00FC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 07:49:22 +1000 (EST)
+Message-ID: <1377035309.25016.167.camel@pasglop>
+Subject: Re: [PATCH v4 03/19] powerpc: refactor of_get_cpu_node to support
+ other architectures
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Date: Wed, 21 Aug 2013 07:48:29 +1000
+In-Reply-To: <52135F86.9020401@arm.com>
+References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <3703987.W8AZjrDbn0@vostro.rjw.lan> <52135F86.9020401@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Jonas Bonn <jonas@southpole.se>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Michal Simek <monstr@monstr.eu>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,82 +38,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jeremy,
+On Tue, 2013-08-20 at 13:22 +0100, Sudeep KarkadaNagesha wrote:
+> Correct, he has reviewed but I am waiting for his ACK before I could
+> sent you pull request. Hopefully I should be able to send pull request
+> tomorrow with his ACK.
+> 
+> Hi Ben,
+> 
+> If this is patch is fine, can I have your ACK ?
 
-Apologies for breaking your build...
+I just want to test it (just in case...), will give an Ack then.
 
-On Tue, Aug 20, 2013 at 12:07:02PM -0400, Dwight Engen wrote:
-> On Tue, 20 Aug 2013 17:20:52 +1000
-> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > After merging the final tree, today's linux-next build (powerpc
-> > allyesconfig) failed like this:
-> > 
-> > arch/powerpc/platforms/cell/spufs/inode.c: In function
-> > 'spufs_parse_options':
-> > arch/powerpc/platforms/cell/spufs/inode.c:623:16: error: incompatible
-> > types when assigning to type 'kuid_t' from type 'int' root->i_uid =
-> > option; ^ arch/powerpc/platforms/cell/spufs/inode.c:628:16: error:
-> > incompatible types when assigning to type 'kgid_t' from type 'int'
-> > root->i_gid = option; ^
-> > 
-> > Caused by commit d6970d4b726c ("enable building user namespace with
-> > xfs") from the xfs tree (that was fun to find :-)).
-> > 
-> > I have reverted that commit for today.  It could probably be replaced
-> > with a patch that just changed XFS_FS to SPU_FS in the
-> > UIDGID_CONVERTED config dependency - or someone could fix up SPU_FS.
-> 
-> Hi, (already sent this email based on Intel's kbuild robot this
-> morning, sorry for the dup to those who already got it). 
-> 
-> Yep this looks to me like SPU_FS should have been in the list of
-> stuff that had not been UIDGID_CONVERTED, but reviving
-> UIDGID_CONVERTED and adding SPU_FS to it won't work for
-> non powerpc arch because SPU_FS = n won't be defined. The following can
-> be used to mark it as incompatible with USER_NS:
-> 
-> diff --git a/arch/powerpc/platforms/cell/Kconfig
-> b/arch/powerpc/platforms/cell/Kconfig index 9978f59..fcf8336 100644
-> --- a/arch/powerpc/platforms/cell/Kconfig
-> +++ b/arch/powerpc/platforms/cell/Kconfig
-> @@ -61,6 +61,7 @@ config SPU_FS
->         tristate "SPU file system"
->         default m
->         depends on PPC_CELL
-> +       depends on USER_NS=n
->         select SPU_BASE
->         select MEMORY_HOTPLUG
->         help
-> 
-> Or if the rest of spufs is already okay for user namespace (I have not
-> checked it, but this seems to be the only place it is dealing with
-> uid/gid), then the following will fix these particular errors
-> (cross-compile tested, but I don't have a powerpc to run test on):
-> 
-> diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-> index f390042..90fb308 100644
-> --- a/arch/powerpc/platforms/cell/spufs/inode.c
-> +++ b/arch/powerpc/platforms/cell/spufs/inode.c
-> @@ -620,12 +620,12 @@ spufs_parse_options(struct super_block *sb, char *options, struct inode *root)
->                 case Opt_uid:
->                         if (match_int(&args[0], &option))
->                                 return 0;
-> -                       root->i_uid = option;
-> +                       root->i_uid = make_kuid(&init_user_ns, option);
->                         break;
->                 case Opt_gid:
->                         if (match_int(&args[0], &option))
->                                 return 0;
-> -                       root->i_gid = option;
-> +                       root->i_gid = make_kgid(&init_user_ns, option);
->                         break;
->                 case Opt_mode:
->                         if (match_octal(&args[0], &option))
-
-I'd prefer not to break Stephen's tree two days in a row.  We could just revert
-d6970d4b726c in the xfs tree for the time being as Stephen has done, but given
-the choice would prefer the fix.  Do you have a preference between the two
-approaches that Dwight has posted?  The first seems more conservative...
-
-Thanks,
-	Ben
+Cheers,
+Ben.
