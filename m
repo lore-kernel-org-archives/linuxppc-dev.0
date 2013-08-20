@@ -1,13 +1,28 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 20 Aug 2013 12:37:50 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, Alan Modra
- <amodra@gmail.com>, wschmidt@us.ibm.com
-Subject: BUG_ON and gcc don't mix
-Message-ID: <20130820123750.7353f2f1@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B42378@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6BC7D2C00E0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 12:39:18 +1000 (EST)
+Date: Tue, 20 Aug 2013 10:28:59 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH v8 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130820022858.GB13169@MrMyself>
+References: <cover.1376912873.git.b42378@freescale.com>
+ <a5b34243c0323e7692fab6a52a7adf4e3e8a5844.1376912873.git.b42378@freescale.com>
+ <52128FBE.4080103@wwwdotorg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <52128FBE.4080103@wwwdotorg.org>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, Pawel Moll <pawel.moll@arm.com>,
+ festevam@gmail.com, s.hauer@pengutronix.de, Kumar Gala <galak@codeaurora.org>,
+ timur@tabi.org, rob.herring@calxeda.com, tomasz.figa@gmail.com,
+ broonie@kernel.org, p.zabel@pengutronix.de, R65777@freescale.com,
+ shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,81 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Aug 19, 2013 at 03:35:58PM -0600, Stephen Warren wrote:
+> > +	"core"		The core clock of spdif controller
+> > +	"rxtx<0-7>"	Clock source list for tx and rx clock.
+> > +			This clock list should be identical to
+> > +			the source list connecting to the spdif
+> > +			clock mux in "SPDIF Transceiver Clock
+> > +			Diagram" of SoC reference manual. It
+> > +			can also be referred to TxClk_Source
+> > +			bit of register SPDIF_STC.
+> 
+> So, the HW block has 1 clock input, yet there's a mux somewhere else in
+> the SoC which has 8 inputs?
+> 
+> If so, I'm not completely sure it's correct to reference anything other
+> than the "core" clock in this binding. I think the other clocks would be
+> more suitably represented in the system-level "sound card" binding that
+> I guess patch 2/2 (which I haven't read yet) adds, since I assume those
+> clock are more to do with system-level clock tree setup decisions, and
+> might not even exist in some other SoC that included this IP block.
+> 
+> What do others think, assuming I'm correct about my HW design assumptions?
 
-Hi,
+The core clock is being only needed when accessing registers of this IP.
+Thus, in the driver, I let regmap handle it.
 
-I noticed our BUG_ON macros were taking a large number of instructions.
-I've built a testcase to analyse it:
+While the other 8 clocks are actual reference clocks for Tx. Tx clock needs
+to select one of them that can easily derive a child clock matching the tx
+sample rate. This is essential for the IP, so I don't think it's nicer to 
+put into machine driver.
 
-
-#if defined(ASMBUG)
-
-#define BUG_ON(x) do {	\
-	__asm__ __volatile__("tdnei %0,0\n" : : "r" ((long)(x))); \
-} while (0)
-
-#elif defined(BUILTIN)
-
-#define BUG_ON(x) do { \
-	if (x) \
-		__builtin_trap(); \
-} while (0)
-
-#else
-
-#define BUG_ON(x) do { \
-	if (x) { \
-		__asm__ __volatile__("twi 31,0,0\n"); \
-		__builtin_unreachable(); \
-	} \
-} while (0)
-
-#endif
-
-int foo(unsigned int *bar)
-{
-	unsigned int holder_cpu;
-
-	holder_cpu = *bar & 0xffff;
-	BUG_ON(holder_cpu >= 32);
-
-	return 1;
-}
-
-
-3 versions. First our current upstream behaviour (-DASMBUG):
-
-   0:	00 00 23 a1 	lhz     r9,0(r3)
-   4:	1f 00 89 2b 	cmplwi  cr7,r9,31
-   8:	26 00 20 7d 	mfcr    r9
-   c:	fe f7 29 55 	rlwinm  r9,r9,30,31,31
-  10:	00 00 09 0b 	tdnei   r9,0
-  14:	01 00 60 38 	li      r3,1
-  18:	20 00 80 4e 	blr
-
-What a load of work. We do the compare, then pull it out of the
-condition register and do some more work. We are trying to help gcc
-but it seems to be backfiring. Let's try doing a simple version in c:
-
-   0:	00 00 23 a1 	lhz     r9,0(r3)
-   4:	1f 00 89 2b 	cmplwi  cr7,r9,31
-   8:	0c 00 9d 41 	bgt     cr7,14
-   c:	01 00 60 38 	li      r3,1
-  10:	20 00 80 4e 	blr
-  14:	00 00 e0 0f 	twui    r0,0
-
-Better, we branch out of line to do the trap. But if we could do a
-conditional trap properly then we should be able to do even better
-(-DBUILTIN):
-
-   0:	00 00 23 a1 	lhz     r9,0(r3)
-   4:	01 00 60 38 	li      r3,1
-   8:	20 00 a9 0c 	twlgei  r9,32
-   c:	20 00 80 4e 	blr
-
-Nice! I remember chasing this down before and the issue is we need the
-address of the trap instruction for our bug exception table. Maybe
-we need a gcc builtin in which we can get a label on the trap
-instruction. Would that be possible?
-
-Anton
+Thank you
+Nicolin
