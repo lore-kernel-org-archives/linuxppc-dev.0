@@ -1,22 +1,24 @@
-Return-Path: <B42677@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 26EC22C0147
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 11:10:38 +1000 (EST)
-Message-ID: <5212C1FC.7070300@freescale.com>
-Date: Tue, 20 Aug 2013 09:10:20 +0800
-From: Zhang Haijun <b42677@freescale.com>
-MIME-Version: 1.0
-To: Haijun Zhang <Haijun.Zhang@freescale.com>
-Subject: Re: [PATCH 1/3 V4] mmc:core: parse voltage from device-tree
-References: <1376271546-25085-1-git-send-email-Haijun.Zhang@freescale.com>
-In-Reply-To: <1376271546-25085-1-git-send-email-Haijun.Zhang@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linux-mmc@vger.kernel.org, cbouatmailru@gmail.com, scottwood@freescale.com,
- cjb@laptop.org, linuxppc-dev@lists.ozlabs.org, X.Xie@freescale.com
+Return-Path: <anthony.foiani@gmail.com>
+Received: from mail-ie0-x230.google.com (mail-ie0-x230.google.com
+ [IPv6:2607:f8b0:4001:c03::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 578512C0142
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 11:20:52 +1000 (EST)
+Received: by mail-ie0-f176.google.com with SMTP id e13so829868iej.35
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2013 18:20:48 -0700 (PDT)
+From: Anthony Foiani <anthony.foiani@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	linux-ide@vger.kernel.org
+Subject: [PATCH] sata: fsl: save irqs while coalescing
+Date: Mon, 19 Aug 2013 19:20:30 -0600
+Message-Id: <1376961630-6255-1-git-send-email-anthony.foiani@gmail.com>
+In-Reply-To: <gsiy6olhp.fsf@dworkin.scrye.com>
+References: <gsiy6olhp.fsf@dworkin.scrye.com>
+Cc: Tejun Heo <tj@kernel.org>, Anthony Foiani <tkil@scrye.com>,
+ Anthony Foiani <anthony.foiani@gmail.com>,
+ Scott Wood <scottwood@freescale.com>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,102 +28,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, Anton and all
+Scott Wood indicated this should go to the SATA addresses as well as,
+or maybe even instead of, the PPC list.
 
-I had update this patchset.
-Is there any change need?
-If so let me know.
+-- 8< --
 
-Thanks.
+Before this patch, I was seeing the following lockdep splat on my
+MPC8315 (PPC32) target:
 
-On 08/12/2013 09:39 AM, Haijun Zhang wrote:
-> Add function to support get voltage from device-tree.
-> If there are voltage-range specified in device-tree node, this function
-> will parse it and return the available voltage mask.
->
-> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
-> ---
-> changes for V4:
-> 	- Add new parameter mask to return voltages.
-> changes for V3:
-> 	- Correct the type of return value.
->
->   drivers/mmc/core/core.c  | 44 ++++++++++++++++++++++++++++++++++++++++++++
->   include/linux/mmc/core.h |  2 ++
->   2 files changed, 46 insertions(+)
->
-> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-> index 49a5bca..b9b9fb6 100644
-> --- a/drivers/mmc/core/core.c
-> +++ b/drivers/mmc/core/core.c
-> @@ -27,6 +27,7 @@
->   #include <linux/fault-inject.h>
->   #include <linux/random.h>
->   #include <linux/slab.h>
-> +#include <linux/of.h>
->   
->   #include <linux/mmc/card.h>
->   #include <linux/mmc/host.h>
-> @@ -1196,6 +1197,49 @@ u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max)
->   }
->   EXPORT_SYMBOL(mmc_vddrange_to_ocrmask);
->   
-> +#ifdef CONFIG_OF
-> +
-> +/**
-> + * mmc_of_parse_voltage - return mask of supported voltages
-> + * @np: The device node need to be parsed.
-> + * @mask: mask of voltages available for MMC/SD/SDIO
-> + *
-> + * 1. Return zero on success.
-> + * 2. Return negative errno: voltage-range is invalid.
-> + */
-> +int mmc_of_parse_voltage(struct device_node *np, u32 *mask)
-> +{
-> +	const u32 *voltage_ranges;
-> +	int num_ranges, i;
-> +
-> +	voltage_ranges = of_get_property(np, "voltage-ranges", &num_ranges);
-> +	num_ranges = num_ranges / sizeof(*voltage_ranges) / 2;
-> +	if (!voltage_ranges || !num_ranges) {
-> +		pr_info("%s: voltage-ranges unspecified\n", np->full_name);
-> +		return -EINVAL;
-> +	}
-> +
-> +	for (i = 0; i < num_ranges; i++) {
-> +		const int j = i * 2;
-> +		u32 ocr_mask;
-> +
-> +		ocr_mask = mmc_vddrange_to_ocrmask(
-> +				be32_to_cpu(voltage_ranges[j]),
-> +				be32_to_cpu(voltage_ranges[j + 1]));
-> +		if (!ocr_mask) {
-> +			pr_err("%s: voltage-range #%d is invalid\n",
-> +				np->full_name, i);
-> +			return -EINVAL;
-> +		}
-> +		*mask |= ocr_mask;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(mmc_of_parse_voltage);
-> +
-> +#endif /* CONFIG_OF */
-> +
->   #ifdef CONFIG_REGULATOR
->   
->   /**
-> diff --git a/include/linux/mmc/core.h b/include/linux/mmc/core.h
-> index 443243b..da51bec 100644
-> --- a/include/linux/mmc/core.h
-> +++ b/include/linux/mmc/core.h
-> @@ -208,6 +208,8 @@ static inline void mmc_claim_host(struct mmc_host *host)
->   	__mmc_claim_host(host, NULL);
->   }
->   
-> +struct device_node;
->   extern u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max);
-> +extern int mmc_of_parse_voltage(struct device_node *np, u32 *mask);
->   
->   #endif /* LINUX_MMC_CORE_H */
+  [    9.086051] =================================
+  [    9.090393] [ INFO: inconsistent lock state ]
+  [    9.094744] 3.9.7-ajf-gc39503d #1 Not tainted
+  [    9.099087] ---------------------------------
+  [    9.103432] inconsistent {HARDIRQ-ON-W} -> {IN-HARDIRQ-W} usage.
+  [    9.109431] scsi_eh_1/39 [HC1[1]:SC0[0]:HE0:SE1] takes:
+  [    9.114642]  (&(&host->lock)->rlock){?.+...}, at: [<c02f4168>] sata_fsl_interrupt+0x50/0x250
+  [    9.123137] {HARDIRQ-ON-W} state was registered at:
+  [    9.128004]   [<c006cdb8>] lock_acquire+0x90/0xf4
+  [    9.132737]   [<c043ef04>] _raw_spin_lock+0x34/0x4c
+  [    9.137645]   [<c02f3560>] fsl_sata_set_irq_coalescing+0x68/0x100
+  [    9.143750]   [<c02f36a0>] sata_fsl_init_controller+0xa8/0xc0
+  [    9.149505]   [<c02f3f10>] sata_fsl_probe+0x17c/0x2e8
+  [    9.154568]   [<c02acc90>] driver_probe_device+0x90/0x248
+  [    9.159987]   [<c02acf0c>] __driver_attach+0xc4/0xc8
+  [    9.164964]   [<c02aae74>] bus_for_each_dev+0x5c/0xa8
+  [    9.170028]   [<c02ac218>] bus_add_driver+0x100/0x26c
+  [    9.175091]   [<c02ad638>] driver_register+0x88/0x198
+  [    9.180155]   [<c0003a24>] do_one_initcall+0x58/0x1b4
+  [    9.185226]   [<c05aeeac>] kernel_init_freeable+0x118/0x1c0
+  [    9.190823]   [<c0004110>] kernel_init+0x18/0x108
+  [    9.195542]   [<c000f6b8>] ret_from_kernel_thread+0x64/0x6c
+  [    9.201142] irq event stamp: 160
+  [    9.204366] hardirqs last  enabled at (159): [<c043f778>] _raw_spin_unlock_irq+0x30/0x50
+  [    9.212469] hardirqs last disabled at (160): [<c000f414>] reenable_mmu+0x30/0x88
+  [    9.219867] softirqs last  enabled at (144): [<c002ae5c>] __do_softirq+0x168/0x218
+  [    9.227435] softirqs last disabled at (137): [<c002b0d4>] irq_exit+0xa8/0xb4
+  [    9.234481]
+  [    9.234481] other info that might help us debug this:
+  [    9.240995]  Possible unsafe locking scenario:
+  [    9.240995]
+  [    9.246898]        CPU0
+  [    9.249337]        ----
+  [    9.251776]   lock(&(&host->lock)->rlock);
+  [    9.255878]   <Interrupt>
+  [    9.258492]     lock(&(&host->lock)->rlock);
+  [    9.262765]
+  [    9.262765]  *** DEADLOCK ***
+  [    9.262765]
+  [    9.268684] no locks held by scsi_eh_1/39.
+  [    9.272767]
+  [    9.272767] stack backtrace:
+  [    9.277117] Call Trace:
+  [    9.279589] [cfff9da0] [c0008504] show_stack+0x48/0x150 (unreliable)
+  [    9.285972] [cfff9de0] [c0447d5c] print_usage_bug.part.35+0x268/0x27c
+  [    9.292425] [cfff9e10] [c006ace4] mark_lock+0x2ac/0x658
+  [    9.297660] [cfff9e40] [c006b7e4] __lock_acquire+0x754/0x1840
+  [    9.303414] [cfff9ee0] [c006cdb8] lock_acquire+0x90/0xf4
+  [    9.308745] [cfff9f20] [c043ef04] _raw_spin_lock+0x34/0x4c
+  [    9.314250] [cfff9f30] [c02f4168] sata_fsl_interrupt+0x50/0x250
+  [    9.320187] [cfff9f70] [c0079ff0] handle_irq_event_percpu+0x90/0x254
+  [    9.326547] [cfff9fc0] [c007a1fc] handle_irq_event+0x48/0x78
+  [    9.332220] [cfff9fe0] [c007c95c] handle_level_irq+0x9c/0x104
+  [    9.337981] [cfff9ff0] [c000d978] call_handle_irq+0x18/0x28
+  [    9.343568] [cc7139f0] [c000608c] do_IRQ+0xf0/0x1a8
+  [    9.348464] [cc713a20] [c000fc8c] ret_from_except+0x0/0x14
+  [    9.353983] --- Exception: 501 at _raw_spin_unlock_irq+0x40/0x50
+  [    9.353983]     LR = _raw_spin_unlock_irq+0x30/0x50
+  [    9.364839] [cc713af0] [c043db10] wait_for_common+0xac/0x188
+  [    9.370513] [cc713b30] [c02ddee4] ata_exec_internal_sg+0x2b0/0x4f0
+  [    9.376699] [cc713be0] [c02de18c] ata_exec_internal+0x68/0xa8
+  [    9.382454] [cc713c20] [c02de4b8] ata_dev_read_id+0x158/0x594
+  [    9.388205] [cc713ca0] [c02ec244] ata_eh_recover+0xd88/0x13d0
+  [    9.393962] [cc713d20] [c02f2520] sata_pmp_error_handler+0xc0/0x8ac
+  [    9.400234] [cc713dd0] [c02ecdc8] ata_scsi_port_error_handler+0x464/0x5e8
+  [    9.407023] [cc713e10] [c02ecfd0] ata_scsi_error+0x84/0xb8
+  [    9.412528] [cc713e40] [c02c4974] scsi_error_handler+0xd8/0x47c
+  [    9.418457] [cc713eb0] [c004737c] kthread+0xa8/0xac
+  [    9.423355] [cc713f40] [c000f6b8] ret_from_kernel_thread+0x64/0x6c
+
+This fix was suggested by Bhushan Bharat <R65777@freescale.com>, and
+was discussed in email at:
+
+  http://linuxppc.10917.n7.nabble.com/MPC8315-reboot-failure-lockdep-splat-possibly-related-tp75162.html
+
+Same patch successfully tested with 3.9.7.  linux-next compiled but
+not tested on hardware.
+
+This patch is based off linux-next tag next-20130819
+(which is commit 66a01bae29d11916c09f9f5a937cafe7d402e4a5 )
+
+Signed-off-by: Anthony Foiani <anthony.foiani@gmail.com>
+---
+ drivers/ata/sata_fsl.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index 19720a0..851bd3f 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -293,6 +293,7 @@ static void fsl_sata_set_irq_coalescing(struct ata_host *host,
+ {
+ 	struct sata_fsl_host_priv *host_priv = host->private_data;
+ 	void __iomem *hcr_base = host_priv->hcr_base;
++	unsigned long flags;
+ 
+ 	if (count > ICC_MAX_INT_COUNT_THRESHOLD)
+ 		count = ICC_MAX_INT_COUNT_THRESHOLD;
+@@ -305,12 +306,12 @@ static void fsl_sata_set_irq_coalescing(struct ata_host *host,
+ 			(count > ICC_MIN_INT_COUNT_THRESHOLD))
+ 		ticks = ICC_SAFE_INT_TICKS;
+ 
+-	spin_lock(&host->lock);
++	spin_lock_irqsave(&host->lock, flags);
+ 	iowrite32((count << 24 | ticks), hcr_base + ICC);
+ 
+ 	intr_coalescing_count = count;
+ 	intr_coalescing_ticks = ticks;
+-	spin_unlock(&host->lock);
++	spin_unlock_irqrestore(&host->lock, flags);
+ 
+ 	DPRINTK("interrupt coalescing, count = 0x%x, ticks = %x\n",
+ 			intr_coalescing_count, intr_coalescing_ticks);
+-- 
+1.8.1.4
