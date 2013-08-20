@@ -1,18 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Tue, 20 Aug 2013 17:20:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ben Myers <bpm@sgi.com>, David Chinner <david@fromorbit.com>,
- xfs@oss.sgi.com
-Subject: linux-next: build failure after merge of the final tree
-Message-Id: <20130820172052.1f0d89ddf6a1a40ef70333fd@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Tue__20_Aug_2013_17_20_52_+1000_G/NvKTePrGMPcx_5"
-Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
- Dwight Engen <dwight.engen@oracle.com>, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, Jeremy Kerr <jk@ozlabs.org>,
- linuxppc-dev@lists.ozlabs.org, Gao feng <gaofeng@cn.fujitsu.com>
+Return-Path: <B45939@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 79CCB2C00FB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 18:34:03 +1000 (EST)
+Message-ID: <521329EA.3050900@freescale.com>
+Date: Tue, 20 Aug 2013 16:33:46 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
+MIME-Version: 1.0
+To: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v7 0/3] DMA: Freescale: Add support for 8-channel DMA
+ engine
+References: <1375094944-3343-1-git-send-email-hongbo.zhang@freescale.com>
+ <20130729105901.GI29095@intel.com>
+In-Reply-To: <20130729105901.GI29095@intel.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, djbw@fb.com,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,57 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__20_Aug_2013_17_20_52_+1000_G/NvKTePrGMPcx_5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi all,
-
-After merging the final tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
-
-arch/powerpc/platforms/cell/spufs/inode.c: In function 'spufs_parse_options=
-':
-arch/powerpc/platforms/cell/spufs/inode.c:623:16: error: incompatible types=
- when assigning to type 'kuid_t' from type 'int'
-    root->i_uid =3D option;
-                ^
-arch/powerpc/platforms/cell/spufs/inode.c:628:16: error: incompatible types=
- when assigning to type 'kgid_t' from type 'int'
-    root->i_gid =3D option;
-                ^
-
-Caused by commit d6970d4b726c ("enable building user namespace with xfs")
-from the xfs tree (that was fun to find :-)).
-
-I have reverted that commit for today.  It could probably be replaced
-with a patch that just changed XFS_FS to SPU_FS in the UIDGID_CONVERTED
-config dependency - or someone could fix up SPU_FS.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Tue__20_Aug_2013_17_20_52_+1000_G/NvKTePrGMPcx_5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSExjUAAoJEECxmPOUX5FEop4P/1ASCOZV7QRDszGfWJzPIFfx
-kr9Xe2WnbIQKbxESqLDO1d2BAjv9E6xtRRS2fe5HPIC1MTwlq+2D9BaZAZd9i0tY
-B2xVVr1f6E2G0hl0dCnxXOZo06Ng9FOctUE0UQVN8YhCXni9h+SqckH9FbifdjaW
-TooVpCW6j+TyYvjG4Nnm8ax7p/sQQW3UeL6fI/43X3aQ4+dkZEv/oP1YbN+bPsvR
-jTWTAo8ZDt003bEDTwjM1MCKx6V16DW0xHqxe7iAPYi26ysJ3UjD7DDRmiUjKSpy
-7KVUcqUBc8GLcQDwgf4cL4ozQ4949k0qoWkygoPobBNxu5QFC3rLfKWCp2T8bxii
-QCE3kT4+8pCjk5gxv0+6W5Hy1OAcf4odDIrBFzmILko3GcHQxjl0YSKx65PLd6sO
-BenoVxdCcWcvecSPcKmR48vZLiZ7jMDMpi0I6u6vM8ANfXDcDQnNZ75EWGlZEakH
-Ejq31npT4Yi//zK6DaNdq4zIr7MH3vO5NrjOaz2wXTbA6D76kIPoUPBd3AX881GS
-XVK5PV9bRrYe9HVuAcyzqsu4c44NEL2VQFJUA3tcAmLlrEukBdpOTO43Nl73v2fh
-QIKOlnsjr0fvP3Nb/Xk53+4HtWkHFiqjb4NhObdbJ7wUZJHl8IhTMmEeo0o+0OXY
-GtbSocq6/hU+nq2ISt1q
-=/Ph4
------END PGP SIGNATURE-----
-
---Signature=_Tue__20_Aug_2013_17_20_52_+1000_G/NvKTePrGMPcx_5--
+On 07/29/2013 06:59 PM, Vinod Koul wrote:
+> On Mon, Jul 29, 2013 at 06:49:01PM +0800, hongbo.zhang@freescale.com wrote:
+>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+>>
+>> Hi Vinod, Dan, Scott and Leo, please have a look at these V7 patches.
+> The dma relates changes look okay to me.
+>
+> I need someone to review and ACK the DT bindings.
+>
+> ~Vinod
+Vinod,
+Are you using this tree?
+http://git.infradead.org/users/vkoul/slave-dma.git
+Did you merge these patches?
+Thanks.
+>> Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
+>> adds support this DMA engine.
+>>
+>> V6->V7 changes:
+>> - only remove unnecessary "CHIP-dma" explanations in [1/3]
+>>
+>> V5->V6 changes:
+>> - minor updates of descriptions in binding document and Kconfig
+>> - remove [4/4], that should be another patch in future
+>>
+>> V4->V5 changes:
+>> - update description in the dt binding document, to make it more resonable
+>> - add new patch [4/4] to eliminate a compiling warning which already exists
+>>    for a long time
+>>
+>> V3->V4 changes:
+>> - introduce new patch [1/3] to revise the legacy dma binding document
+>> - and then add new paragraph to describe new dt node binding in [2/3]
+>> - rebase to latest kernel v3.11-rc1
+>>
+>> V2->V3 changes:
+>> - edit Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+>> - edit text string in Kconfig and the driver files, using "elo series" to
+>>    mention all the current "elo*"
+>>
+>> V1->V2 changes:
+>> - removed the codes handling the register dgsr1, since it isn't used currently
+>> - renamed the DMA DT compatible to "fsl,elo3-dma"
+>> - renamed the new dts files to "elo3-dma-<n>.dtsi"
+>>
+>> Hongbo Zhang (3):
+>>    DMA: Freescale: revise device tree binding document
+>>    DMA: Freescale: Add new 8-channel DMA engine device tree nodes
+>>    DMA: Freescale: update driver to support 8-channel DMA engine
+>>
+>>   .../devicetree/bindings/powerpc/fsl/dma.txt        |  114 +++++++++++++++-----
+>>   arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
+>>   arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   81 ++++++++++++++
+>>   arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   81 ++++++++++++++
+>>   arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
+>>   drivers/dma/Kconfig                                |    9 +-
+>>   drivers/dma/fsldma.c                               |    9 +-
+>>   drivers/dma/fsldma.h                               |    2 +-
+>>   8 files changed, 264 insertions(+), 40 deletions(-)
+>>   create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+>>   create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+>>
+>> -- 
+>> 1.7.9.5
+>>
+>>
+>>
