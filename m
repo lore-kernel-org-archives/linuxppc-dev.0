@@ -1,16 +1,18 @@
 Return-Path: <sudeep.karkadanagesha@arm.com>
 Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id E91882C0106
+ by ozlabs.org (Postfix) with ESMTP id 2A5A12C0108
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 19:30:12 +1000 (EST)
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 00/19] DT/core: update cpu device of_node
-Date: Tue, 20 Aug 2013 10:30:02 +0100
-Message-Id: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-In-Reply-To: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v4 03/19] powerpc: refactor of_get_cpu_node to support other
+ architectures
+Date: Tue, 20 Aug 2013 10:30:05 +0100
+Message-Id: <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Cc: Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -28,106 +30,131 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-As more and more information is getting added into the cpu node, the number
-of drivers needing to parse the device tree for CPU nodes are increasing.
-Most of the time, the information needed from the cpu node is preferred
-in the logical CPU order. Hence many drivers first parse and search the
-CPU node, match them to logical index if needed and then search for the
-required property inside a particular cpu node. Some of them assume the
-logical and physical CPU ordering to be same which is incorrect.
+Currently different drivers requiring to access cpu device node are
+parsing the device tree themselves. Since the ordering in the DT need
+not match the logical cpu ordering, the parsing logic needs to consider
+that. However, this has resulted in lots of code duplication and in some
+cases even incorrect logic.
 
-This patch series initialises the of_node in all the cpu devices when
-registering the CPU device.
-1. This avoids different drivers having to parse the cpu nodes to obtain
-   different attributes like operating points, latency,...etc.
-2. This handles different physical and logical cpu ordering which is not
-   the case in current code.
-3. Also all the cpu nodes will have their of_node initialised correctly.
-   Currently different drivers assign them partially and incorrectly.
-4. Removes all the reduntant parsing in various drivers.
+It's better to consolidate them by adding support for getting cpu
+device node for a given logical cpu index in DT core library. However
+logical to physical index mapping can be architecture specific.
 
-Changes v3->v4:
-1. There was a conflict with the generic definition of of_get_cpu_node
-   with the one defined in PPC with the same name but different arguments.
-   This version refactored the PPC definition to support other architecture=
-s
-   before moving the code to DT core. This part was separately posted and
-   reviewed[1].
-2. Updated the users of of_get_cpu_node with second argument(i.e. thread id
-   mostly NULL as its currently used only in PPC).
+PowerPC has it's own implementation to get the cpu node for a given
+logical index.
 
-Changes v2->v3:
-1. Added new OF helper to get of_node from the cpu logical index.
-   With the use of this help, removed lots of duplicated code from
-   cpufreq drivers.
-2. Fixed issue with property length calculation in of_get_cpu_node.
-   (previously had assumed of_get_property returns number of cells)
-3. Changed return type of arch_match_cpu_phys_id to bool(as suggested by Ni=
-co)
-4. Re-ordered patch 2 and 3, and few typo fixes.
-5. Rebased on v3.11-rc2(to avoid any conflicts with __cpuinit* deletion)
+This patch refactors the current implementation of of_get_cpu_node.
+This in preparation to move the implementation to DT core library.
+It separates out the logical to physical mapping so that a default
+matching of the physical id to the logical cpu index can be added
+when moved to common code. Architecture specific code can override it.
 
-Changes v1->v2:
-1. Moved most of arch_of_get_cpu_node to OF/DT core as of_get_cpu_node
-   adding a provision for architecture specific hooks for matching
-   logical and physical ids.
-2. Extended removal of DT cpu node parsing to PPC cpufreq drivers
-3. Added Acks from Viresh and Shawn
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+---
+ arch/powerpc/kernel/prom.c | 76 ++++++++++++++++++++++++++++--------------=
+----
+ 1 file changed, 47 insertions(+), 29 deletions(-)
 
-Regards,
-Sudeep
-
-v1: https://lkml.org/lkml/2013/7/15/128
-v2: https://lkml.org/lkml/2013/7/17/341
-v3: https://lkml.org/lkml/2013/7/22/219
-[1] https://lkml.org/lkml/2013/8/15/319 (PPC refactoring)
-
-Sudeep KarkadaNagesha (19):
-  microblaze: remove undefined of_get_cpu_node declaration
-  openrisc: remove undefined of_get_cpu_node declaration
-  powerpc: refactor of_get_cpu_node to support other architectures
-  of: move of_get_cpu_node implementation to DT core library
-  ARM: DT/kernel: define ARM specific arch_match_cpu_phys_id
-  driver/core: cpu: initialize of_node in cpu's device struture
-  of/device: add helper to get cpu device node from logical cpu index
-  ARM: topology: remove hwid/MPIDR dependency from cpu_capacity
-  ARM: mvebu: remove device tree parsing for cpu nodes
-  drivers/bus: arm-cci: avoid parsing DT for cpu device nodes
-  cpufreq: imx6q-cpufreq: remove device tree parsing for cpu nodes
-  cpufreq: cpufreq-cpu0: remove device tree parsing for cpu nodes
-  cpufreq: highbank-cpufreq: remove device tree parsing for cpu nodes
-  cpufreq: spear-cpufreq: remove device tree parsing for cpu nodes
-  cpufreq: kirkwood-cpufreq: remove device tree parsing for cpu nodes
-  cpufreq: arm_big_little: remove device tree parsing for cpu nodes
-  cpufreq: maple-cpufreq: remove device tree parsing for cpu nodes
-  cpufreq: pmac64-cpufreq: remove device tree parsing for cpu nodes
-  cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
-
- arch/arm/kernel/devtree.c           |  5 ++
- arch/arm/kernel/topology.c          | 61 ++++++++----------------
- arch/arm/mach-imx/mach-imx6q.c      |  3 +-
- arch/arm/mach-mvebu/platsmp.c       | 51 +++++++++-----------
- arch/microblaze/include/asm/prom.h  |  3 --
- arch/openrisc/include/asm/prom.h    |  3 --
- arch/powerpc/include/asm/prom.h     |  3 --
- arch/powerpc/kernel/prom.c          | 43 +----------------
- drivers/base/cpu.c                  |  2 +
- drivers/bus/arm-cci.c               | 28 +++--------
- drivers/cpufreq/arm_big_little_dt.c | 40 ++++++----------
- drivers/cpufreq/cpufreq-cpu0.c      | 23 ++-------
- drivers/cpufreq/highbank-cpufreq.c  | 18 +++----
- drivers/cpufreq/imx6q-cpufreq.c     |  4 +-
- drivers/cpufreq/kirkwood-cpufreq.c  |  8 ++--
- drivers/cpufreq/maple-cpufreq.c     | 23 ++-------
- drivers/cpufreq/pmac32-cpufreq.c    |  5 +-
- drivers/cpufreq/pmac64-cpufreq.c    | 47 +++++-------------
- drivers/cpufreq/spear-cpufreq.c     |  4 +-
- drivers/of/base.c                   | 95 +++++++++++++++++++++++++++++++++=
-++++
- include/linux/cpu.h                 |  1 +
- include/linux/of.h                  |  7 +++
- include/linux/of_device.h           | 15 ++++++
- 23 files changed, 226 insertions(+), 266 deletions(-)
-
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index eb23ac9..f7b8c0b 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -865,45 +865,63 @@ static int __init prom_reconfig_setup(void)
+ __initcall(prom_reconfig_setup);
+ #endif
+=20
++bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
++{
++=09return (int)phys_id =3D=3D get_hard_smp_processor_id(cpu);
++}
++
++static bool __of_find_n_match_cpu_property(struct device_node *cpun,
++=09=09=09const char *prop_name, int cpu, unsigned int *thread)
++{
++=09const __be32 *cell;
++=09int ac, prop_len, tid;
++=09u64 hwid;
++
++=09ac =3D of_n_addr_cells(cpun);
++=09cell =3D of_get_property(cpun, prop_name, &prop_len);
++=09if (!cell)
++=09=09return false;
++=09prop_len /=3D sizeof(*cell);
++=09for (tid =3D 0; tid < prop_len; tid++) {
++=09=09hwid =3D of_read_number(cell, ac);
++=09=09if (arch_match_cpu_phys_id(cpu, hwid)) {
++=09=09=09if (thread)
++=09=09=09=09*thread =3D tid;
++=09=09=09return true;
++=09=09}
++=09=09cell +=3D ac;
++=09}
++=09return false;
++}
++
+ /* Find the device node for a given logical cpu number, also returns the c=
+pu
+  * local thread number (index in ibm,interrupt-server#s) if relevant and
+  * asked for (non NULL)
+  */
+ struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
+ {
+-=09int hardid;
+-=09struct device_node *np;
++=09struct device_node *cpun, *cpus;
+=20
+-=09hardid =3D get_hard_smp_processor_id(cpu);
++=09cpus =3D of_find_node_by_path("/cpus");
++=09if (!cpus) {
++=09=09pr_warn("Missing cpus node, bailing out\n");
++=09=09return NULL;
++=09}
+=20
+-=09for_each_node_by_type(np, "cpu") {
+-=09=09const u32 *intserv;
+-=09=09unsigned int plen, t;
++=09for_each_child_of_node(cpus, cpun) {
++=09=09if (of_node_cmp(cpun->type, "cpu"))
++=09=09=09continue;
+=20
+-=09=09/* Check for ibm,ppc-interrupt-server#s. If it doesn't exist
+-=09=09 * fallback to "reg" property and assume no threads
++=09=09/* Check for non-standard "ibm,ppc-interrupt-server#s" property
++=09=09 * for thread ids on PowerPC. If it doesn't exist fallback to
++=09=09 * standard "reg" property.
+ =09=09 */
+-=09=09intserv =3D of_get_property(np, "ibm,ppc-interrupt-server#s",
+-=09=09=09=09&plen);
+-=09=09if (intserv =3D=3D NULL) {
+-=09=09=09const u32 *reg =3D of_get_property(np, "reg", NULL);
+-=09=09=09if (reg =3D=3D NULL)
+-=09=09=09=09continue;
+-=09=09=09if (*reg =3D=3D hardid) {
+-=09=09=09=09if (thread)
+-=09=09=09=09=09*thread =3D 0;
+-=09=09=09=09return np;
+-=09=09=09}
+-=09=09} else {
+-=09=09=09plen /=3D sizeof(u32);
+-=09=09=09for (t =3D 0; t < plen; t++) {
+-=09=09=09=09if (hardid =3D=3D intserv[t]) {
+-=09=09=09=09=09if (thread)
+-=09=09=09=09=09=09*thread =3D t;
+-=09=09=09=09=09return np;
+-=09=09=09=09}
+-=09=09=09}
+-=09=09}
++=09=09if (__of_find_n_match_cpu_property(cpun,
++=09=09=09=09"ibm,ppc-interrupt-server#s", cpu, thread))
++=09=09=09return cpun;
++
++=09=09if (__of_find_n_match_cpu_property(cpun, "reg", cpu, thread))
++=09=09=09return cpun;
+ =09}
+ =09return NULL;
+ }
 --=20
 1.8.1.2
