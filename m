@@ -1,15 +1,15 @@
 Return-Path: <sudeep.karkadanagesha@arm.com>
 Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id C011A2C0135
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 19:30:26 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 64CA12C010B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 19:30:27 +1000 (EST)
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 19/19] cpufreq: pmac32-cpufreq: remove device tree parsing
+Subject: [PATCH v4 16/19] cpufreq: arm_big_little: remove device tree parsing
  for cpu nodes
-Date: Tue, 20 Aug 2013 10:30:21 +0100
-Message-Id: <1376991021-12160-20-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Date: Tue, 20 Aug 2013 10:30:18 +0100
+Message-Id: <1376991021-12160-17-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
@@ -33,38 +33,98 @@ From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 Now that the cpu device registration initialises the of_node(if available)
 appropriately for all the cpus, parsing here is redundant.
 
-This patch removes DT parsing and uses cpu->of_node instead.
+This patch removes all DT parsing and uses cpu->of_node instead.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- drivers/cpufreq/pmac32-cpufreq.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/cpufreq/arm_big_little_dt.c | 40 +++++++++++++--------------------=
+----
+ 1 file changed, 14 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpuf=
-req.c
-index 3104fad..56bfb6f 100644
---- a/drivers/cpufreq/pmac32-cpufreq.c
-+++ b/drivers/cpufreq/pmac32-cpufreq.c
-@@ -25,6 +25,7 @@
- #include <linux/init.h>
+diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_=
+little_dt.c
+index fd9e3ea..480c0bd 100644
+--- a/drivers/cpufreq/arm_big_little_dt.c
++++ b/drivers/cpufreq/arm_big_little_dt.c
+@@ -19,12 +19,11 @@
+=20
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+=20
+-#include <linux/cpu.h>
+ #include <linux/cpufreq.h>
  #include <linux/device.h>
- #include <linux/hardirq.h>
+ #include <linux/export.h>
+ #include <linux/module.h>
+-#include <linux/of.h>
 +#include <linux/of_device.h>
- #include <asm/prom.h>
- #include <asm/machdep.h>
- #include <asm/irq.h>
-@@ -649,8 +650,8 @@ static int __init pmac_cpufreq_setup(void)
- =09if (strstr(cmd_line, "nocpufreq"))
- =09=09return 0;
+ #include <linux/opp.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+@@ -34,27 +33,13 @@
+ /* get cpu node with valid operating-points */
+ static struct device_node *get_cpu_node_with_valid_op(int cpu)
+ {
+-=09struct device_node *np =3D NULL, *parent;
+-=09int count =3D 0;
++=09struct device_node *np =3D of_cpu_device_node_get(cpu);
 =20
--=09/* Assume only one CPU */
--=09cpunode =3D of_find_node_by_type(NULL, "cpu");
-+=09/* Get first CPU node */
-+=09cpunode =3D of_cpu_device_node_get(0);
- =09if (!cpunode)
- =09=09goto out;
+-=09parent =3D of_find_node_by_path("/cpus");
+-=09if (!parent) {
+-=09=09pr_err("failed to find OF /cpus\n");
+-=09=09return NULL;
++=09if (!of_get_property(np, "operating-points", NULL)) {
++=09=09of_node_put(np);
++=09=09np =3D NULL;
+ =09}
 =20
+-=09for_each_child_of_node(parent, np) {
+-=09=09if (count++ !=3D cpu)
+-=09=09=09continue;
+-=09=09if (!of_get_property(np, "operating-points", NULL)) {
+-=09=09=09of_node_put(np);
+-=09=09=09np =3D NULL;
+-=09=09}
+-
+-=09=09break;
+-=09}
+-
+-=09of_node_put(parent);
+ =09return np;
+ }
+=20
+@@ -63,11 +48,12 @@ static int dt_init_opp_table(struct device *cpu_dev)
+ =09struct device_node *np;
+ =09int ret;
+=20
+-=09np =3D get_cpu_node_with_valid_op(cpu_dev->id);
+-=09if (!np)
+-=09=09return -ENODATA;
++=09np =3D of_node_get(cpu_dev->of_node);
++=09if (!np) {
++=09=09pr_err("failed to find cpu%d node\n", cpu_dev->id);
++=09=09return -ENOENT;
++=09}
+=20
+-=09cpu_dev->of_node =3D np;
+ =09ret =3D of_init_opp_table(cpu_dev);
+ =09of_node_put(np);
+=20
+@@ -79,9 +65,11 @@ static int dt_get_transition_latency(struct device *cpu_=
+dev)
+ =09struct device_node *np;
+ =09u32 transition_latency =3D CPUFREQ_ETERNAL;
+=20
+-=09np =3D get_cpu_node_with_valid_op(cpu_dev->id);
+-=09if (!np)
++=09np =3D of_node_get(cpu_dev->of_node);
++=09if (!np) {
++=09=09pr_info("Failed to find cpu node. Use CPUFREQ_ETERNAL transition lat=
+ency\n");
+ =09=09return CPUFREQ_ETERNAL;
++=09}
+=20
+ =09of_property_read_u32(np, "clock-latency", &transition_latency);
+ =09of_node_put(np);
 --=20
 1.8.1.2
