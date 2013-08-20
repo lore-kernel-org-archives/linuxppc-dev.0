@@ -1,20 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EC61C2C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 09:08:55 +1000 (EST)
-Message-ID: <1377040129.25016.181.camel@pasglop>
-Subject: Re: Critical Interrupt Input
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Henry Bausley <hbausley@deltatau.com>
-Date: Wed, 21 Aug 2013 09:08:49 +1000
-In-Reply-To: <1377038913.25385.194.camel@lx-henry>
-References: <63d2635a$648939a4$b3aeac8$@deltatau.com>
- <1376945799.25016.77.camel@pasglop> <1377038913.25385.194.camel@lx-henry>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 04DC62C010E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 09:20:21 +1000 (EST)
+Message-ID: <1377040803.3370.88.camel@snotra.buserror.net>
+Subject: Re: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for
+ Motorola/Emerson MVME5100.
+From: Scott Wood <scottwood@freescale.com>
+To: Stephen N Chivers <schivers@csc.com.au>
+Date: Tue, 20 Aug 2013 18:20:03 -0500
+In-Reply-To: <OFE172B06C.BE11BDC5-ONCA257BCC.007C0097-CA257BCD.000D984C@csc.com>
+References: <OFBCFBBD51.E4ECB0DF-ONCA257BC0.0083C866-CA257BC1.0000531E@csc.com>
+ <1376012120.4514.86.camel@snotra.buserror.net>
+ <OFE172B06C.BE11BDC5-ONCA257BCC.007C0097-CA257BCD.000D984C@csc.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ Chris Proctor <cproctor@csc.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,215 +29,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-08-20 at 15:48 -0700, Henry Bausley wrote:
-> Ben,
+On Tue, 2013-08-20 at 13:28 +1100, Stephen N Chivers wrote:
+> Scott Wood <scottwood@freescale.com> wrote on 08/09/2013 11:35:20 AM:
 > 
-> 
-> After your hints I suspected the read of a real world i/o variable *piom
-> which came from ioremap_nocache in the 3 line critical interrupt handler
-> 
-> void critintr_handler(void *dev)
+> > From: Scott Wood <scottwood@freescale.com>
+> > To: Stephen N Chivers <schivers@csc.com.au>
+> > Cc: <benh@kernel.crashing.org>, <paulus@samba.org>, Chris Proctor 
+> > <cproctor@csc.com.au>, <linuxppc-dev@lists.ozlabs.org>
+> > Date: 08/09/2013 11:36 AM
+> > Subject: Re: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for 
+> > Motorola/Emerson MVME5100.
+> > 
+> > simple-bus may be applicable here (in addition to a specific
+> > compatible).
+> >
+> The HAWK ASIC is a difficult beast. I still cannot get a positive
+> identification as to what it is (Motorola/Freescale part number
+> unknown, not even the part number on the chip on the board helps....).
+> The best I can come up with is that it is a tsi108 without
+> the ethenets.
+> So device_type will be tsi-bridge and compatible will be
+> tsi108-bridge.
+
+Don't use device_type.  compatible should include "hawk" in the name
+(especially if you're not sure what's really in it), and/or the part
+number on the chip.  If you're convinced it's fully compatible with
+tsi108-bridge you can add that as a second compatible value, though
+given the uncertainty it's probably better to just teach Linux to look
+for the new compatible.
+
+If devices on the bus can be used without any special bus setup or
+knowledge, then you can add a compatible of "simple-bus" to the end.
+
+> > Why not just look for a chrp,iic node directly?
+> >
+> I was following the model used in other places, like chrp/setup.c.
+
+Not all examples are good examples. :-)
+
+> > > +       if ((np = of_find_compatible_node(NULL, "pci", "mpc10x-pci"))) 
 > {
->   critintrcount++;          // increment a variable
->   iodata = *piom;           // read an I/O location 
->   mtdcr(0x0c0, 0x00002000); // clear critical interrupt 
-> } 
-> 
-> is what caused the problem. Commenting it out seems to make the system stable.  
-
-Right, definitely would do that. BTW. You may want to use proper IO
-accessors while at it, to get the right memory barriers etc...
-
-> This led us to disable the critical interrupt when in the
-> DataTLBError44x and InstructionTLBError44x exceptions.  Now the critical
-> interrupt handler seems to make things more stable when reading real
-> world i/o for our application.
->
-> 
->   /* Data TLB Error Interrupt */
->   START_EXCEPTION(DataTLBError44x)
->   mtspr	SPRN_SPRG_WSCRATCH0, r10  /* Save some working */
-> +  mfmsr r10                      /*  Disable the */
-> +  rlwinm r10,r10,0,15,13         /*  MSR's CE bit */
-> +  mtmsr r10                     
-> 
-> 
-> Do you see any potential problems with this approach?
-> 
-> If so can you advise us on how to better take care of this.
-
- - You potentially still have an exposure ... between the mtspr to
-scratch and the mfmsr, a CRIC can occur, causing a re-entrancy which
-would than clobber the scratch register. That can be handled by saving
-that scratc SPRG into the stack frame on entry/exit from the crit
-interrupt. Look at crit_transfer_to_handler, how it already handles
-MMUCR:
-
-	mfspr	r0,SPRN_MMUCR
-	stw	r0,MMUCR(r11)
-
-Probably add saving of the SPRG_WSCRATCH0 in there (need to add a frame
-slot for it) and do the restore in RESTORE_MMU_REGS
-
- - You need to handle Instructions TLB miss as well
-
- - You add overhead to the TLB miss handlers which are fairly
-performance critical pieces of code. You might be able to alleviate
-that by making the whole thing support re-entrancy properly but that's
-harder. To do that you would have to:
-
-    * Save *all* the SPRGs used by the TLB miss during crit entry/exit
-
-    * Detect in crit_transfer_to_handler (check the CSRR0 bounds) that 
-      the crit code interrupted finish_tlb_load_44x before or at the
-      last tlbwe instruction. In that case, immediately clear the 
-      partially written TLB entry (index in r13) and change the
-      return address to skip right past the last tlbwe.
-
-Cheers,
-Ben.
-
-
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> On Tue, 2013-08-20 at 06:56 +1000, Benjamin Herrenschmidt wrote:
-> > On Mon, 2013-08-19 at 12:00 -0700, Henry Bausley wrote:
-> > > 
-> > > Support does appear to be present but there is a problem returning
-> > > back to user space I suspect.
 > > 
-> > Probably a problem with TLB misses vs. crit interrupts.
+> > Why insist on the device_type?
+> >
+> Following the model in the linkstation (kurobox) platform support. 
+
+Drop the device_type check.
+
+> > > +static void
+> > > +mvme5100_restart(char *cmd)
+> > > +{
+> > > +       volatile ulong          i = 10000000;
+> > > +
+> > > +
+> > > +       local_irq_disable();
+> > > +       _nmask_and_or_msr(0, MSR_IP);
 > > 
-> > A critical interrupt can re-enter a TLB miss.
+> > Does "mtmsr(mfmsr() | MSR_IP)" not work?
+> >
+> Don't know. Is from the original code by Matt Porter.
+
+It actually appears that there are no callers remaining that use the
+"and" portion of the functionality.  In fact there are no callers that
+use it for anything other than setting MSR_IP. :-P
+
+> > > +       out_8((u_char *) BOARD_MODRST_REG, 0x01);
+> > > +
+> > > +       while (i-- > 0);
 > > 
-> > I can see two potential issues there:
+> > Do not use a loop to implement a delay.
+> >
+> Taken from the original code. But at this point the board
+> is going to reset and reboot via firmware, as /sbin/reboot
+> or /sbin/halt has been invoked.
+
+Still, it's just a bad idea.  What's wrong with udelay()?
+
+Or just use an infinite loop.  How much value is there really in timing
+out here?
+
+> > > +static void __init
+> > > +mvme5100_set_bat(void)
+> > > +{
+> > > +
+> > > +
+> > > +       mb();
+> > > +       mtspr(SPRN_DBAT1U, 0xf0001ffe);
+> > > +       mtspr(SPRN_DBAT1L, 0xf000002a);
+> > > +       mb();
+> > > +       setbat(1, 0xfe000000, 0xfe000000, 0x02000000, 
+> PAGE_KERNEL_NCG);
+> > > +}
 > > 
-> >  - A bug where we don't properly restore "something" (I thought we did
-> > save and restore MMUCR though, but that's worth dbl checking if it works
-> > properly) accross the crit entry/exit
-> > 
-> >  - Something in your crit code causing a TLB miss (the
-> > kernel .text/.data/.bss should be bolted but anything else can). We
-> > don't currently support re-entering the TLB miss that way.
-> > 
-> > If we were to support the latter, we'd need to detect on entering a crit
-> > that the PC is within the TLB miss handler, and setup a return context
-> > to the original instruction (replay the miss) rather than trying to
-> > resume it..
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> > > What fails is it causes Linux user space programs to get Segmentation
-> > > errors.
-> > > Issuing a simple ls causes a segmentation fault sometimes.  The shell
-> > > gets terminated 
-> > > and you cannot log back in.  INIT: Id "T0" respawning too fast:
-> > > disabled for 5 minutes pops up.
-> > > 
-> > > However, the critical interrupt handler keeps running.  I know this by
-> > > adding the reading 
-> > > of a physical I/O location in the handler and can see it is being read
-> > > on the scope.
-> > > 
-> > > 
-> > > The only code in the handler is below.
-> > > 
-> > > void critintr_handler(void *dev)
-> > > {
-> > >   critintrcount++;          // increment a variable
-> > >   iodata = *piom;           // read an I/O location 
-> > >   mtdcr(0x0c0, 0x00002000); // clear critical interrupt
-> > > }
-> > > 
-> > > 
-> > > Below is a log of the type of crashes that occur:
-> > > 
-> > > root@10.34.9.213:/opt/ppmac/ktest# ls
-> > > Segmentation fault
-> > > root@10.34.9.213:/opt/ppmac/ktest# ls
-> > > Segmentation fault
-> > > root@10.34.9.213:/opt/ppmac/ktest# ls
-> > > Makefile        ktest.c    ktest.ko     ktest.mod.o  modules.order
-> > > Module.symvers  ktest.cbp  ktest.mod.c  ktest.o
-> > > root@10.34.9.213:/opt/ppmac/ktest# ls
-> > > 
-> > > Debian GNU/Linux 7 powerpmac ttyS0
-> > > 
-> > > powerpmac login: root
-> > > 
-> > > Debian GNU/Linux 7 powerpmac ttyS0
-> > > 
-> > > powerpmac login: root
-> > > 
-> > > Debian GNU/Linux 7 powerpmac ttyS0
-> > > 
-> > > powerpmac login: root
-> > > 
-> > > Debian GNU/Linux 7 powerpmac ttyS0
-> > > 
-> > > powerpmac login: root
-> > > Password: 
-> > > Last login: Thu Nov 30 20:42:16 UTC 1933 on ttyS0
-> > > Linux powerpmac 3.2.21-aspen_2.01.09 #10 Mon Aug 19 08:49:12 PDT 2013
-> > > ppc
-> > > 
-> > > The programs included with the Debian GNU/Linux system are free
-> > > software;
-> > > the exact distribution terms for each program are described in the
-> > > individual files in /usr/share/doc/*/copyright.
-> > > 
-> > > Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-> > > permitted by applicable law.
-> > > INIT: Id "T0" respawning too fast: disabled for 5 minutes
-> > > 
-> > > 
-> > > ______________________________________________________________________
-> > > From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-> > > Sent: Saturday, August 17, 2013 3:05 PM
-> > > To: "Kumar Gala" <galak@kernel.crashing.org>
-> > > Cc: linuxppc-dev@lists.ozlabs.org, hbausley@deltatau.com
-> > > Subject: Re: Critical Interrupt Input
-> > > 
-> > > On Fri, 2013-08-16 at 06:04 -0500, Kumar Gala wrote:
-> > > > The 44x low level code needs to handle exception stacks properly for
-> > > > this to work. Since its possible to have a critical exception occur
-> > > > while in a normal exception level, you have to have proper saving of
-> > > > additional register state and a stack frame for the critical
-> > > > exception, etc. I'm not sure if that was ever done for 44x.
-> > > 
-> > > Don't 44x and FSL BookE share the same macros ? I would think 44x does
-> > > indeed implement the same crit support as e500...
-> > > 
-> > > What does the crash look like ?
-> > > 
-> > > Ben.
-> > > 
-> > > 
-> > > _______________________________________________
-> > > Linuxppc-dev mailing list
-> > > Linuxppc-dev@lists.ozlabs.org
-> > > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> > > 
-> > > 
-> > >   ­­  
-> > 
-> > 
-> 
-> 
-> 
-> 
-> 
-> Outbound scan for Spam or Virus by Barracuda at Delta Tau
+> > It is no longer allowed to squat on random virtual address space like
+> > this.  If you really need a BAT you'll have to allocate the virtual
+> > address properly.
+> >
+> Yes. I found that this was an anathema when researching the port in
+> 2010 but I couldn't find any practical solution at the time.
+> The code is called early to ensure that the hawk registers are available.
+> sysdev/cpm_common.c does the same thing.
+
+> What is the correct solution?
+
+ioremap() has special code to function early (using ioremap_bot).
+
+If you still need to use a BAT that early, reserve the space with
+asm/fixmap.h or by adding a function to the early ioremap code to just
+reserve the space.  Or better, improve the ioremap code to be capable of
+creating a BAT (or equivalent) when requested.
+
+-Scott
