@@ -1,30 +1,27 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9F7F62C010C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 22:16:42 +1000 (EST)
-Received: by mail-pa0-f46.google.com with SMTP id fa1so643359pad.19
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 05:16:37 -0700 (PDT)
-Date: Tue, 20 Aug 2013 20:16:28 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: add the missing required isync for the coherent
- icache flush
-Message-ID: <20130820121627.GB18634@pek-khao-d1.corp.ad.wrs.com>
-References: <1376567767-20620-1-git-send-email-haokexin@gmail.com>
- <ABB05CD9C9F68C46A5CEDC7F1543925901020606@039-SN2MPN1-021.039d.mgd.msft.net>
- <1376883397.25016.60.camel@pasglop>
- <1376883437.25016.61.camel@pasglop>
- <20130819115029.GD20146@pek-khao-d1.corp.ad.wrs.com>
- <1376916335.25016.72.camel@pasglop>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id BEBE32C0204
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 22:16:57 +1000 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v4 03/19] powerpc: refactor of_get_cpu_node to support
+ other architectures
+Date: Tue, 20 Aug 2013 14:27:28 +0200
+Message-ID: <3703987.W8AZjrDbn0@vostro.rjw.lan>
+In-Reply-To: <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="H1spWtNR+x+ondvy"
-In-Reply-To: <1376916335.25016.72.camel@pasglop>
-Cc: Wang Dongsheng-B40534 <B40534@freescale.com>,
- linuxppc <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org,
+ Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org,
+ Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,143 +31,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tuesday, August 20, 2013 10:30:05 AM Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> Currently different drivers requiring to access cpu device node are
+> parsing the device tree themselves. Since the ordering in the DT need
+> not match the logical cpu ordering, the parsing logic needs to consider
+> that. However, this has resulted in lots of code duplication and in some
+> cases even incorrect logic.
+> 
+> It's better to consolidate them by adding support for getting cpu
+> device node for a given logical cpu index in DT core library. However
+> logical to physical index mapping can be architecture specific.
+> 
+> PowerPC has it's own implementation to get the cpu node for a given
+> logical index.
+> 
+> This patch refactors the current implementation of of_get_cpu_node.
+> This in preparation to move the implementation to DT core library.
+> It separates out the logical to physical mapping so that a default
+> matching of the physical id to the logical cpu index can be added
+> when moved to common code. Architecture specific code can override it.
+> 
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Cc: Grant Likely <grant.likely@linaro.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
---H1spWtNR+x+ondvy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Aug 19, 2013 at 10:45:35PM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2013-08-19 at 19:50 +0800, Kevin Hao wrote:
-> > On Mon, Aug 19, 2013 at 01:37:17PM +1000, Benjamin Herrenschmidt wrote:
-> > > On Mon, 2013-08-19 at 13:36 +1000, Benjamin Herrenschmidt wrote:
-> > >=20
-> > > > The semantic of this function is to make data executable. Even if t=
-he
-> > > > implementation has a snooping icache, it *still* needs to make sure
-> > > > prefetched code is tossed out of the pipeline which is what isync
-> > > > should provide.
-> > > >=20
-> > > > The architecture actually specifies that.
-> > >=20
-> > > In fact, on P5 and later, I think we are supposed to do a single dummy
-> > > icbi followed by sync and isync.
-> >=20
-> > Do you mean something like this? But why?
->=20
-> It has to do with making sure prefetched and/or speculated instructions
-> are properly tossed.
->=20
-> My understanding is that icbi basically tells the ifetch buffers to drop
-> it
-
-Dummy question: What does the ifetch buffers mean? The instruction fetch
-pipeline or instruction dispatch pipeline? Shouldn't all the prefetched
-instructions in these buffers be discarded by isync?
-
-
->, sync orders the icbi and isync ensures its execution has been
-> synchronized. At least I *think* that's the required sequence, I have to
-> dbl check the arch, maybe tomorrow. I wouldn't be surprise if we also
-> need a sync before the icbi to order the actual stores to memory that
-> might have modified instructions with the icbi.
-
-Doesn't the coherence between icache and dcache be maintained by the snoopi=
-ng?
+This needs an ACK from Ben to go anywhere.
 
 Thanks,
-Kevin
+Rafael
 
->=20
-> Cheers,
-> Ben.
->=20
-> > diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_6=
-4.S
-> > index d74fefb..8fcdec7 100644
-> > --- a/arch/powerpc/kernel/misc_64.S
-> > +++ b/arch/powerpc/kernel/misc_64.S
-> > @@ -69,6 +69,8 @@ PPC64_CACHES:
-> > =20
-> >  _KPROBE(flush_icache_range)
-> >  BEGIN_FTR_SECTION
-> > +	icbi	0,r3
-> > +	sync
-> >  	isync
-> >  	blr
-> >  END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-> > @@ -209,6 +211,8 @@ _GLOBAL(flush_inval_dcache_range)
-> >   */
-> >  _GLOBAL(__flush_dcache_icache)
-> >  BEGIN_FTR_SECTION
-> > +	icbi	0,r3
-> > +	sync
-> >  	isync
-> >  	blr
-> >  END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-> >=20
-> > Thanks,
-> > Kevin
-> >=20
-> > >=20
-> > > Cheers,
-> > > Ben.
-> > >=20
-> > > > Cheers,
-> > > > Ben.
-> > > >=20
-> > > > > >  	blr
-> > > > > >  END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-> > > > > >  	rlwinm	r3,r3,0,0,31-PAGE_SHIFT		/* Get page base address
-> > > > > > */
-> > > > > > @@ -474,6 +475,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_44x)
-> > > > > >   */
-> > > > > >  _GLOBAL(__flush_dcache_icache_phys)
-> > > > > >  BEGIN_FTR_SECTION
-> > > > > > +	isync
-> > > > > >  	blr					/* for 601, do nothing */
-> > > > > >  END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-> > > > > >  	mfmsr	r10
-> > > > > > diff --git a/arch/powerpc/kernel/misc_64.S
-> > > > > > b/arch/powerpc/kernel/misc_64.S
-> > > > > > index 992a78e..d74fefb 100644
-> > > > > > --- a/arch/powerpc/kernel/misc_64.S
-> > > > > > +++ b/arch/powerpc/kernel/misc_64.S
-> > > > > > @@ -69,6 +69,7 @@ PPC64_CACHES:
-> > > > > >=20
-> > > > > >  _KPROBE(flush_icache_range)
-> > > > > >  BEGIN_FTR_SECTION
-> > > > > > +	isync
-> > > > > >  	blr
-> > > > > >  END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-> > > > > >  /*
-> > > > > > --
-> > > > > > 1.8.3.1
-> > > > > >=20
-> > > > > > _______________________________________________
-> > > > > > Linuxppc-dev mailing list
-> > > > > > Linuxppc-dev@lists.ozlabs.org
-> > > > > > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> > > > >=20
-> > > >=20
-> > >=20
-> > >=20
->=20
->=20
 
---H1spWtNR+x+ondvy
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJSE14bAAoJEJNY7TDerrFxWSMH/2wR6PBfN10UfUJZeuS00w5D
-xu3UnUQiHsDHdd63DekQjATxxyuaMHnAuWF7jbrJSuHPzfDmKafMekT5FAWAeAEc
-KxcGyB+JgJR5M459qLN3xC4fmYoEAPC5cMm3Es8JvcHJN3kNwS9Q5t2nLBHU27jX
-UUlXp3IHSd/kTqAf/U7PR1JYQGjYlHVu8ouESqrUsqsK83wjRbrB7jcTaUoVmAnL
-5B1qZxiKQkfOFjoNab3b99nCaubzq+O+0/DHSHrQx6GRFeRSH+p1/pgocOuVuxCz
-rxVGu2HFKUgNj1sMB2yTKOAgtNDcUkqkGwyJNMN0cyFKqvtmqnedCz4vSupAeGQ=
-=yf8o
------END PGP SIGNATURE-----
-
---H1spWtNR+x+ondvy--
+> ---
+>  arch/powerpc/kernel/prom.c | 76 ++++++++++++++++++++++++++++------------------
+>  1 file changed, 47 insertions(+), 29 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index eb23ac9..f7b8c0b 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -865,45 +865,63 @@ static int __init prom_reconfig_setup(void)
+>  __initcall(prom_reconfig_setup);
+>  #endif
+>  
+> +bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
+> +{
+> +	return (int)phys_id == get_hard_smp_processor_id(cpu);
+> +}
+> +
+> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
+> +			const char *prop_name, int cpu, unsigned int *thread)
+> +{
+> +	const __be32 *cell;
+> +	int ac, prop_len, tid;
+> +	u64 hwid;
+> +
+> +	ac = of_n_addr_cells(cpun);
+> +	cell = of_get_property(cpun, prop_name, &prop_len);
+> +	if (!cell)
+> +		return false;
+> +	prop_len /= sizeof(*cell);
+> +	for (tid = 0; tid < prop_len; tid++) {
+> +		hwid = of_read_number(cell, ac);
+> +		if (arch_match_cpu_phys_id(cpu, hwid)) {
+> +			if (thread)
+> +				*thread = tid;
+> +			return true;
+> +		}
+> +		cell += ac;
+> +	}
+> +	return false;
+> +}
+> +
+>  /* Find the device node for a given logical cpu number, also returns the cpu
+>   * local thread number (index in ibm,interrupt-server#s) if relevant and
+>   * asked for (non NULL)
+>   */
+>  struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
+>  {
+> -	int hardid;
+> -	struct device_node *np;
+> +	struct device_node *cpun, *cpus;
+>  
+> -	hardid = get_hard_smp_processor_id(cpu);
+> +	cpus = of_find_node_by_path("/cpus");
+> +	if (!cpus) {
+> +		pr_warn("Missing cpus node, bailing out\n");
+> +		return NULL;
+> +	}
+>  
+> -	for_each_node_by_type(np, "cpu") {
+> -		const u32 *intserv;
+> -		unsigned int plen, t;
+> +	for_each_child_of_node(cpus, cpun) {
+> +		if (of_node_cmp(cpun->type, "cpu"))
+> +			continue;
+>  
+> -		/* Check for ibm,ppc-interrupt-server#s. If it doesn't exist
+> -		 * fallback to "reg" property and assume no threads
+> +		/* Check for non-standard "ibm,ppc-interrupt-server#s" property
+> +		 * for thread ids on PowerPC. If it doesn't exist fallback to
+> +		 * standard "reg" property.
+>  		 */
+> -		intserv = of_get_property(np, "ibm,ppc-interrupt-server#s",
+> -				&plen);
+> -		if (intserv == NULL) {
+> -			const u32 *reg = of_get_property(np, "reg", NULL);
+> -			if (reg == NULL)
+> -				continue;
+> -			if (*reg == hardid) {
+> -				if (thread)
+> -					*thread = 0;
+> -				return np;
+> -			}
+> -		} else {
+> -			plen /= sizeof(u32);
+> -			for (t = 0; t < plen; t++) {
+> -				if (hardid == intserv[t]) {
+> -					if (thread)
+> -						*thread = t;
+> -					return np;
+> -				}
+> -			}
+> -		}
+> +		if (__of_find_n_match_cpu_property(cpun,
+> +				"ibm,ppc-interrupt-server#s", cpu, thread))
+> +			return cpun;
+> +
+> +		if (__of_find_n_match_cpu_property(cpun, "reg", cpu, thread))
+> +			return cpun;
+>  	}
+>  	return NULL;
+>  }
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
