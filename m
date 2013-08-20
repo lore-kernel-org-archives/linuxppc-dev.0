@@ -1,26 +1,28 @@
 Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 978BE2C013E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 10:38:45 +1000 (EST)
-Message-ID: <1376959116.31636.392.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/2] powerpc/85xx: add hardware automatically enter
- altivec idle state
+ by ozlabs.org (Postfix) with ESMTPS id BEE5F2C0100
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 10:44:43 +1000 (EST)
+Message-ID: <1376959471.31636.395.camel@snotra.buserror.net>
+Subject: Re: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for
+ Motorola/Emerson MVME5100.
 From: Scott Wood <scottwood@freescale.com>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Date: Mon, 19 Aug 2013 19:38:36 -0500
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F154392590101E5A5@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1376637789-27330-1-git-send-email-dongsheng.wang@freescale.com>
- <83499AB5-DCE7-407D-AEC1-B2493D1D38BE@kernel.crashing.org>
- <1376671853.31636.252.camel@snotra.buserror.net>
- <ABB05CD9C9F68C46A5CEDC7F154392590101E5A5@039-SN2MPN1-021.039d.mgd.msft.net>
+To: Stephen N Chivers <schivers@csc.com.au>
+Date: Mon, 19 Aug 2013 19:44:31 -0500
+In-Reply-To: <OFE77F59FB.5CB18F2A-ONCA257BCB.007040E3-CA257BCB.00733D8F@csc.com>
+References: <OFBCFBBD51.E4ECB0DF-ONCA257BC0.0083C866-CA257BC1.0000531E@csc.com>
+ <B7B7FD2F-8272-487C-B946-154107EF7C09@kernel.crashing.org>
+ <1375985244.4514.21.camel@snotra.buserror.net>
+ <OF23301F36.A839CDA8-ONCA257BC5.0073F671-CA257BC5.00789A7F@csc.com>
+ <1376345070.20487.41.camel@snotra.buserror.net>
+ <OFE77F59FB.5CB18F2A-ONCA257BCB.007040E3-CA257BCB.00733D8F@csc.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Chris Proctor <cproctor@csc.com.au>, linuxppc-dev@lists.ozlabs.org,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,65 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-08-18 at 21:53 -0500, Wang Dongsheng-B40534 wrote:
-> Thanks for your feedback.
+On Mon, 2013-08-19 at 07:58 +1100, Stephen N Chivers wrote:
+> The serial console setup in 'legacy_serial' does not support reg-shift
+> or reg-offset properties and so a preferred_console is not added by it.
+> The DTS file for the board does specify the register shift so that
+> 'of_serial' will correctly setup the UARTS. But that is too late, the
+> preferred console will be tty0 as the .config derived from 
+> ppc6xx_defconfig
+> has CONF_VT_CONSOLE set. In the test kernels I have built 'con_init' in
+> the VT support is always called before serial8250_console_init.
+
+Are you setting console=ttyS0,<baud> on the kernel command line?
+
+> I did try modifying legacy_serial to correctly support the tsi-bridge
+> UARTS and add the preferred console but encountered even more problems
+> in 8250_core when registering the serial console (to the point of
+> having a silently panic'ing kernel).
 > 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Saturday, August 17, 2013 12:51 AM
-> > To: Kumar Gala
-> > Cc: Wang Dongsheng-B40534; linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH 1/2] powerpc/85xx: add hardware automatically enter
-> > altivec idle state
-> > 
-> > On Fri, 2013-08-16 at 06:02 -0500, Kumar Gala wrote:
-> > > On Aug 16, 2013, at 2:23 AM, Dongsheng Wang wrote:
-> > >
-> > > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > > >
-> > > > Each core's AltiVec unit may be placed into a power savings mode
-> > > > by turning off power to the unit. Core hardware will automatically
-> > > > power down the AltiVec unit after no AltiVec instructions have
-> > > > executed in N cycles. The AltiVec power-control is triggered by
-> > hardware.
-> > > >
-> > > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > >
-> > > Why treat this as a idle HW governor vs just some one time setup at
-> > boot of the time delay?
-> > 
-> > It is being done as one-time setup, despite the function name.
-> > 
-> > Maybe it should be moved into __setup/restore_cpu_e6500 (BTW, we really
-> > should refactor those to reduce duplication) with the timebase bit
-> > number hardcoded rather than a time in us.
-> > 
-> The frequency of the different platforms timebase is not the same.
+> So I think for the moment, the board will need its own default config.
 
-It's close enough.  Remember, this number is a vague initial guess, not
-something that's been carefully calibrated.  Though, it would make it
-harder to substitute the number with one that's been more carefully
-calibrated...  but wouldn't different chips possibly have different
-optimal delays anyway?
-
-> If we use it, we need to set different timebase bit on each platform.
-> That is why I did not put the code in __setup/restore_cpu_e6500, I need
-> use tb_ticks_per_usec to get timebase bit. So we only need to set a time
-> for each platform, and not set different timebase bit.
-
-It just seems wrong to have an ad-hoc mechanism for running
-core-specific code when we have cputable...  If we really need this,
-maybe we should add a "cpu_setup_late" function pointer.
-
-With your patch, when does the power management register get set when
-hot plugging a cpu?
-
-> > As for the PVR check, the upstream kernel doesn't need to care about
-> > rev1, so knowing it's an e6500 is good enough.
-> > 
-> But AltiVec idle & PW20 cannot work on rev1 platform.
-> We didn't have to deal with it?
-
-Upstream does not run on rev1.
+Which config symbol is relevant here?
 
 -Scott
