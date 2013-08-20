@@ -1,15 +1,15 @@
 Return-Path: <sudeep.karkadanagesha@arm.com>
 Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id B80CA2C0107
+ by ozlabs.org (Postfix) with ESMTP id 038582C0108
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 19:30:15 +1000 (EST)
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 06/19] driver/core: cpu: initialize of_node in cpu's device
- struture
-Date: Tue, 20 Aug 2013 10:30:08 +0100
-Message-Id: <1376991021-12160-7-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v4 07/19] of/device: add helper to get cpu device node from
+ logical cpu index
+Date: Tue, 20 Aug 2013 10:30:09 +0100
+Message-Id: <1376991021-12160-8-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
@@ -30,48 +30,58 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-CPUs are also registered as devices but the of_node in these cpu
-devices are not initialized. Currently different drivers requiring
-to access cpu device node are parsing the nodes themselves and
-initialising the of_node in cpu device.
+Multiple drivers need to get the cpu device node from the cpu logical
+index and then access the of_node.
 
-The of_node in all the cpu devices needs to be initialized properly
-and at one place. The best place to update this is CPU subsystem
-driver when registering the cpu devices.
+This patch adds helper function to fetch the device node directly.
 
-The OF/DT core library now provides of_get_cpu_node to retrieve a cpu
-device node for a given logical index by abstracting the architecture
-specific details.
-
-This patch uses of_get_cpu_node to assign of_node when registering the
-cpu devices.
-
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Acked-by: Rob Herring <rob.herring@calxeda.com>
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- drivers/base/cpu.c | 2 ++
- 1 file changed, 2 insertions(+)
+ include/linux/of_device.h | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 4c358bc..4cf0717 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -14,6 +14,7 @@
- #include <linux/slab.h>
- #include <linux/percpu.h>
- #include <linux/acpi.h>
-+#include <linux/of.h>
+diff --git a/include/linux/of_device.h b/include/linux/of_device.h
+index 9d27475..82ce324 100644
+--- a/include/linux/of_device.h
++++ b/include/linux/of_device.h
+@@ -1,6 +1,7 @@
+ #ifndef _LINUX_OF_DEVICE_H
+ #define _LINUX_OF_DEVICE_H
 =20
- #include "base.h"
++#include <linux/cpu.h>
+ #include <linux/platform_device.h>
+ #include <linux/of_platform.h> /* temporary until merge */
 =20
-@@ -289,6 +290,7 @@ int register_cpu(struct cpu *cpu, int num)
- =09cpu->dev.release =3D cpu_device_release;
- =09cpu->dev.offline_disabled =3D !cpu->hotpluggable;
- =09cpu->dev.offline =3D !cpu_online(num);
-+=09cpu->dev.of_node =3D of_get_cpu_node(num, NULL);
- #ifdef CONFIG_ARCH_HAS_CPU_AUTOPROBE
- =09cpu->dev.bus->uevent =3D arch_cpu_uevent;
- #endif
+@@ -43,6 +44,15 @@ static inline void of_device_node_put(struct device *dev=
+)
+ =09of_node_put(dev->of_node);
+ }
+=20
++static inline struct device_node *of_cpu_device_node_get(int cpu)
++{
++=09struct device *cpu_dev;
++=09cpu_dev =3D get_cpu_device(cpu);
++=09if (!cpu_dev)
++=09=09return NULL;
++=09return of_node_get(cpu_dev->of_node);
++}
++
+ #else /* CONFIG_OF */
+=20
+ static inline int of_driver_match_device(struct device *dev,
+@@ -67,6 +77,11 @@ static inline const struct of_device_id *of_match_device=
+(
+ {
+ =09return NULL;
+ }
++
++static inline struct device_node *of_cpu_device_node_get(int cpu)
++{
++=09return NULL;
++}
+ #endif /* CONFIG_OF */
+=20
+ #endif /* _LINUX_OF_DEVICE_H */
 --=20
 1.8.1.2
