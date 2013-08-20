@@ -1,22 +1,20 @@
 Return-Path: <sudeep.karkadanagesha@arm.com>
 Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id D21162C0106
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 19:30:14 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTP id B80CA2C0107
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 19:30:15 +1000 (EST)
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 05/19] ARM: DT/kernel: define ARM specific
- arch_match_cpu_phys_id
-Date: Tue, 20 Aug 2013 10:30:07 +0100
-Message-Id: <1376991021-12160-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v4 06/19] driver/core: cpu: initialize of_node in cpu's device
+ struture
+Date: Tue, 20 Aug 2013 10:30:08 +0100
+Message-Id: <1376991021-12160-7-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Cc: Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Russell King <linux@arm.linux.org.uk>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>,
  Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@calxeda.com>,
@@ -32,38 +30,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-OF/DT core library now provides architecture specific hook to match the
-logical cpu index with the corresponding physical identifier. Most of the
-cpu DT node parsing and initialisation is contained in devtree.c. So it's
-better to define ARM specific arch_match_cpu_phys_id there.
+CPUs are also registered as devices but the of_node in these cpu
+devices are not initialized. Currently different drivers requiring
+to access cpu device node are parsing the nodes themselves and
+initialising the of_node in cpu device.
 
-This mainly helps to avoid replication of the code doing CPU node parsing
-and physical(MPIDR) to logical mapping.
+The of_node in all the cpu devices needs to be initialized properly
+and at one place. The best place to update this is CPU subsystem
+driver when registering the cpu devices.
 
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+The OF/DT core library now provides of_get_cpu_node to retrieve a cpu
+device node for a given logical index by abstracting the architecture
+specific details.
+
+This patch uses of_get_cpu_node to assign of_node when registering the
+cpu devices.
+
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Acked-by: Rob Herring <rob.herring@calxeda.com>
-Acked-by: Nicolas Pitre <nico@linaro.org>
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- arch/arm/kernel/devtree.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/base/cpu.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/kernel/devtree.c b/arch/arm/kernel/devtree.c
-index 5859c8b..2ee8a17 100644
---- a/arch/arm/kernel/devtree.c
-+++ b/arch/arm/kernel/devtree.c
-@@ -169,6 +169,11 @@ void __init arm_dt_init_cpu_maps(void)
- =09}
- }
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 4c358bc..4cf0717 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -14,6 +14,7 @@
+ #include <linux/slab.h>
+ #include <linux/percpu.h>
+ #include <linux/acpi.h>
++#include <linux/of.h>
 =20
-+bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
-+{
-+=09return (phys_id & MPIDR_HWID_BITMASK) =3D=3D cpu_logical_map(cpu);
-+}
-+
- /**
-  * setup_machine_fdt - Machine setup when an dtb was passed to the kernel
-  * @dt_phys: physical address of dt blob
+ #include "base.h"
+=20
+@@ -289,6 +290,7 @@ int register_cpu(struct cpu *cpu, int num)
+ =09cpu->dev.release =3D cpu_device_release;
+ =09cpu->dev.offline_disabled =3D !cpu->hotpluggable;
+ =09cpu->dev.offline =3D !cpu_online(num);
++=09cpu->dev.of_node =3D of_get_cpu_node(num, NULL);
+ #ifdef CONFIG_ARCH_HAS_CPU_AUTOPROBE
+ =09cpu->dev.bus->uevent =3D arch_cpu_uevent;
+ #endif
 --=20
 1.8.1.2
