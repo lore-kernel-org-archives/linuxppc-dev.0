@@ -1,21 +1,24 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from wilson.telenet-ops.be (wilson.telenet-ops.be [195.130.132.42])
- by ozlabs.org (Postfix) with ESMTP id 2D92F2C0104
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 19:25:22 +1000 (EST)
-Received: from georges.telenet-ops.be (georges.telenet-ops.be [195.130.137.68])
- by wilson.telenet-ops.be (Postfix) with ESMTP id 83A63348524
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 11:25:01 +0200 (CEST)
-Date: Tue, 20 Aug 2013 11:24:45 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: Build regressions/improvements in v3.11-rc6
-In-Reply-To: <alpine.DEB.2.02.1308201120400.26995@ayla.of.borg>
-Message-ID: <alpine.DEB.2.02.1308201121150.27907@ayla.of.borg>
-References: <alpine.DEB.2.02.1308201120400.26995@ayla.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <sudeep.karkadanagesha@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id EB4A92C0107
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 19:30:12 +1000 (EST)
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 01/19] microblaze: remove undefined of_get_cpu_node
+ declaration
+Date: Tue, 20 Aug 2013 10:30:03 +0100
+Message-Id: <1376991021-12160-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Cc: Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@calxeda.com>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 20 Aug 2013, Geert Uytterhoeven wrote:
-> JFYI, when comparing v3.11-rc6 to v3.11-rc5[3], the summaries are:
->   - build errors: +6/-9
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-  + arch/powerpc/kvm/book3s_xics.c: error: implicit declaration of function 'get_tb' [-Werror=implicit-function-declaration]:  => 812:3
+This patch removes the declaration of the function 'of_get_cpu_node'
+which is not defined for microblaze. This is in preparation to move
+it's definition from PPC to DT common code.
 
-powerpc-randconfig
+Michal Simek says: "it was just there because Microblaze
+was based on powerpc code"
 
-  + error: No rule to make target /etc/sound/dsp001.ld:  => N/A
+Acked-by: Michal Simek <monstr@monstr.eu>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+---
+ arch/microblaze/include/asm/prom.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-i386-randconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/6556/ (all 120 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/6532/ (all 120 configs)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/a=
+sm/prom.h
+index 20c5e8e..9977816 100644
+--- a/arch/microblaze/include/asm/prom.h
++++ b/arch/microblaze/include/asm/prom.h
+@@ -50,9 +50,6 @@ void of_parse_dma_window(struct device_node *dn, const vo=
+id *dma_window_prop,
+=20
+ extern void kdump_move_device_tree(void);
+=20
+-/* CPU OF node matching */
+-struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
+-
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+=20
+--=20
+1.8.1.2
