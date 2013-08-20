@@ -1,34 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BE3882C00FC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 07:49:22 +1000 (EST)
-Message-ID: <1377035309.25016.167.camel@pasglop>
-Subject: Re: [PATCH v4 03/19] powerpc: refactor of_get_cpu_node to support
- other architectures
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Date: Wed, 21 Aug 2013 07:48:29 +1000
-In-Reply-To: <52135F86.9020401@arm.com>
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <3703987.W8AZjrDbn0@vostro.rjw.lan> <52135F86.9020401@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Jonas Bonn <jonas@southpole.se>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michal Simek <monstr@monstr.eu>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ by ozlabs.org (Postfix) with ESMTPS id AD5292C00FD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 08:28:20 +1000 (EST)
+Date: Tue, 20 Aug 2013 23:28:10 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Message-ID: <20130820222810.GU30073@sirena.org.uk>
+References: <cover.1376912873.git.b42378@freescale.com>
+ <ca3061d70ab8bf59afc59031fa7befcfaed26d51.1376912873.git.b42378@freescale.com>
+ <5212908E.6050104@wwwdotorg.org>
+ <20130820001858.GF30073@sirena.org.uk>
+ <52138FDE.3080007@wwwdotorg.org>
+ <20130820190701.GR30073@sirena.org.uk>
+ <5213C94D.7050304@wwwdotorg.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="+AZ+hzazKhrb9rIx"
+In-Reply-To: <5213C94D.7050304@wwwdotorg.org>
+Subject: Re: [PATCH v8 2/2] ASoC: fsl: Add S/PDIF machine driver
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, festevam@gmail.com,
+ s.hauer@pengutronix.de, Nicolin Chen <b42378@freescale.com>, timur@tabi.org,
+ rob.herring@calxeda.com, tomasz.figa@gmail.com, p.zabel@pengutronix.de,
+ R65777@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,16 +34,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-08-20 at 13:22 +0100, Sudeep KarkadaNagesha wrote:
-> Correct, he has reviewed but I am waiting for his ACK before I could
-> sent you pull request. Hopefully I should be able to send pull request
-> tomorrow with his ACK.
-> 
-> Hi Ben,
-> 
-> If this is patch is fine, can I have your ACK ?
 
-I just want to test it (just in case...), will give an Ack then.
+--+AZ+hzazKhrb9rIx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Cheers,
-Ben.
+On Tue, Aug 20, 2013 at 01:53:49PM -0600, Stephen Warren wrote:
+> On 08/20/2013 01:07 PM, Mark Brown wrote:
+
+> > The point is that it might turn into a more correct binding
+> > depending on what the S/PDIF device actually is.
+
+> There's *never* an object on the board called a "dummy codec".
+
+Oh, is that what you're talking about?  Yes, that makes sense.  I had
+been responding to the comments about the transceivers.
+
+--+AZ+hzazKhrb9rIx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSE+13AAoJELSic+t+oim9JDwP/0RB7DTixRIt8qhqIQpRpGxR
+jNOFenHh8frGmVAEUO6XXmxx2zsjptA1FsBHrLU4oRnRwh6d+Hxx8UYbGyAm8pQS
+zcNAK267KHEY43tVyh1pEWGuSbIqVSCWQTN3sHWfcA3yk3pccre2gu6Kr2yV/ran
+pMDpcQ7zGYdNESUNUX4uNmwWTiZMcM6DOOdcUeIhGmTn8lWLL+gRGpNkxB9fNtQk
+gd+jKpIeM/7V8W3GCTtfGQay5r8RSNLo318CGyDyoXs2P347sKrzLdqxD0mmVm0p
+DFLkLTMeICV6HhUGWlh60lLtlALhGCtsSqxe8gXlZgsk95wXel5/XtOHBag0cF7z
+Aq1rPQPgrp+HAQP5JWSnglPoMOvpEZOcWZN0VMmLC0jQ470LMRsZcWOnVeS4tapF
+nh87/bo1kzgqOayIlz3C7svBncbhpKogl9GUmfm77EhXxk3Ikiqr5Iu9eRjrWYD2
+MVZrW8etFf5t3G/MMAcTVOvPyGlWPUj6m37BZIuPMyYVlUrP6q3tj+gqO5y7WtN3
+jzbDXSZgfw2HujLPpyF3RL5J44WeX5w+l/e8eNYdq52BENJ2wHYGJLcfygbnSZJN
+W6B9X9V8UbuoFzv96NxJdfCkKeGb4EFzFR4gK5UUTGydzIOwVzM43A07empJ8abg
+YCinEi6uYMVKYaAkGZEL
+=SNVc
+-----END PGP SIGNATURE-----
+
+--+AZ+hzazKhrb9rIx--
