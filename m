@@ -1,27 +1,13 @@
-Return-Path: <B42378@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1192E2C00D8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 12:32:07 +1000 (EST)
-Date: Tue, 20 Aug 2013 10:21:35 +0800
-From: Nicolin Chen <b42378@freescale.com>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH v8 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
-Message-ID: <20130820022134.GA13169@MrMyself>
-References: <cover.1376912873.git.b42378@freescale.com>
- <a5b34243c0323e7692fab6a52a7adf4e3e8a5844.1376912873.git.b42378@freescale.com>
- <20130819123449.GE31036@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20130819123449.GE31036@pengutronix.de>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, lars@metafoo.de, swarren@wwwdotorg.org,
- festevam@gmail.com, timur@tabi.org, rob.herring@calxeda.com,
- tomasz.figa@gmail.com, broonie@kernel.org, p.zabel@pengutronix.de,
- R65777@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Tue, 20 Aug 2013 12:37:50 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, Alan Modra
+ <amodra@gmail.com>, wschmidt@us.ibm.com
+Subject: BUG_ON and gcc don't mix
+Message-ID: <20130820123750.7353f2f1@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,156 +17,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thank you Sascha, I'll revise them all in v9
 
-On Mon, Aug 19, 2013 at 02:34:49PM +0200, Sascha Hauer wrote:
-> Hi Nicolas,
-> 
-> Some misc other comments inline.
-> 
-> On Mon, Aug 19, 2013 at 08:08:48PM +0800, Nicolin Chen wrote:
-> > This patch implements a device-tree-only CPU DAI driver for Freescale
-> > +
-> > +struct fsl_spdif_priv {
-> > +	struct spdif_mixer_control fsl_spdif_control;
-> > +	struct snd_soc_dai_driver cpu_dai_drv;
-> > +	struct platform_device *pdev;
-> > +	struct regmap *regmap;
-> > +	atomic_t dpll_locked;
-> 
-> You don't need an atomic_t to track a bool variable. Use a plain bool or
-> int instead.
-> 
-> > +	u8 txclk_div[SPDIF_TXRATE_MAX];
-> > +	u8 txclk_src[SPDIF_TXRATE_MAX];
-> > +	u8 rxclk_src;
-> > +	struct clk *txclk[SPDIF_TXRATE_MAX];
-> > +	struct clk *rxclk;
-> > +	struct snd_dmaengine_dai_dma_data dma_params_tx;
-> > +	struct snd_dmaengine_dai_dma_data dma_params_rx;
-> > +
-> > +	/* The name space will be allocated dynamically */
-> > +	char name[0];
-> > +};
-> > +
-> > +
-> > +#ifdef DEBUG
-> > +static void dumpregs(struct fsl_spdif_priv *spdif_priv)
-> > +{
-> > +	struct regmap *regmap = spdif_priv->regmap;
-> > +	struct platform_device *pdev = spdif_priv->pdev;
-> > +	u32 val, i;
-> > +	int ret;
-> > +
-> > +	/* Valid address set of SPDIF is {[0x0-0x38], 0x44, 0x50} */
-> > +	for (i = 0 ; i <= REG_SPDIF_STC; i += 4) {
-> > +		ret = regmap_read(regmap, REG_SPDIF_SCR + i, &val);
-> > +		if (!ret)
-> > +			dev_dbg(&pdev->dev, "REG 0x%02x = 0x%06x\n", i, val);
-> > +	}
-> > +}
-> > +#else
-> > +static void dumpregs(struct fsl_spdif_priv *spdif_priv) {}
-> > +#endif
-> 
-> Is this needed? regmap provides a register dump in debugfs.
-> 
-> > +
-> > +static int spdif_clk_set_rate(struct clk *clk, unsigned long rate)
-> > +{
-> > +	unsigned long rate_actual;
-> > +
-> > +	rate_actual = clk_round_rate(clk, rate);
-> > +	return clk_set_rate(clk, rate_actual);
-> > +}
-> 
-> clk_round_rate returns the rate which clk_set_rate would set if called
-> with the same rate. The clk_round_rate() is unnecessary.
-> 
-> > +
-> > +	dev_dbg(&pdev->dev, "expected clock rate = %d\n",
-> > +			(int)(64 * sample_rate * div));
-> > +	dev_dbg(&pdev->dev, "acutal clock rate = %d\n",
-> > +			(int)clk_get_rate(spdif_priv->txclk[rate]));
-> 
-> s/acutal/actual/
-> 
-> Also please use %ld instead of casting the unsigned long to int.
-> 
-> > +
-> > +	dev_dbg(&pdev->dev, "FreqMeas: %d\n", (int)freqmeas);
-> > +	dev_dbg(&pdev->dev, "BusclkFreq: %d\n", (int)busclk_freq);
-> > +	dev_dbg(&pdev->dev, "RxRate: %d\n", (int)tmpval64);
-> 
-> Get rid of the casts
-> 
-> > +
-> > +	spdif_priv = devm_kzalloc(&pdev->dev,
-> > +			sizeof(struct fsl_spdif_priv) + strlen(np->name) + 1, GFP_KERNEL);
-> > +	if (!spdif_priv) {
-> > +		dev_err(&pdev->dev, "could not allocate DAI object\n");
-> 
-> Please drop this message. You'll never see it.
-> 
-> > +
-> > +	for (i = 0; i < SPDIF_TXRATE_MAX; i++) {
-> > +		ret = fsl_spdif_probe_txclk(spdif_priv, i);
-> > +		if (ret)
-> > +			return ret;
-> > +	}
-> > +
-> > +	/* Prepare rx/tx clock */
-> > +	clk_prepare(spdif_priv->rxclk);
-> > +	for (i = 0; i < SPDIF_TXRATE_MAX; i++)
-> > +		clk_prepare(spdif_priv->txclk[i]);
-> 
-> Why do you prepare all clocks instead of the one you actually use? Also,
-> no need to do this here. You can use clk_prepare_enable instead where
-> you have clk_enable now.
-> 
-> > +
-> > +/* SPDIF rx clock source */
-> > +enum spdif_rxclk_src {
-> > +	SRPC_CLKSRC_0 = 0,
-> > +	SRPC_CLKSRC_1,
-> > +	SRPC_CLKSRC_2,
-> > +	SRPC_CLKSRC_3,
-> > +	SRPC_CLKSRC_4,
-> > +	SRPC_CLKSRC_5,
-> > +	SRPC_CLKSRC_6,
-> > +	SRPC_CLKSRC_7,
-> > +	SRPC_CLKSRC_8,
-> > +	SRPC_CLKSRC_9,
-> > +	SRPC_CLKSRC_10,
-> > +	SRPC_CLKSRC_11,
-> > +	SRPC_CLKSRC_12,
-> > +	SRPC_CLKSRC_13,
-> > +	SRPC_CLKSRC_14,
-> > +	SRPC_CLKSRC_15,
-> > +};
-> 
-> These are unused and look unnecessary.
-> 
-> > +
-> > +/* SPDIF tx clksrc */
-> > +enum spdif_txclk_src {
-> > +	STC_TXCLK_SRC_0 = 0,
-> > +	STC_TXCLK_SRC_1,
-> > +	STC_TXCLK_SRC_2,
-> > +	STC_TXCLK_SRC_3,
-> > +	STC_TXCLK_SRC_4,
-> > +	STC_TXCLK_SRC_5,
-> > +	STC_TXCLK_SRC_6,
-> > +	STC_TXCLK_SRC_7,
-> > +};
-> 
-> Also unused.
-> 
-> Sascha
-> 
-> -- 
-> Pengutronix e.K.                           |                             |
-> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
-> 
+Hi,
+
+I noticed our BUG_ON macros were taking a large number of instructions.
+I've built a testcase to analyse it:
+
+
+#if defined(ASMBUG)
+
+#define BUG_ON(x) do {	\
+	__asm__ __volatile__("tdnei %0,0\n" : : "r" ((long)(x))); \
+} while (0)
+
+#elif defined(BUILTIN)
+
+#define BUG_ON(x) do { \
+	if (x) \
+		__builtin_trap(); \
+} while (0)
+
+#else
+
+#define BUG_ON(x) do { \
+	if (x) { \
+		__asm__ __volatile__("twi 31,0,0\n"); \
+		__builtin_unreachable(); \
+	} \
+} while (0)
+
+#endif
+
+int foo(unsigned int *bar)
+{
+	unsigned int holder_cpu;
+
+	holder_cpu = *bar & 0xffff;
+	BUG_ON(holder_cpu >= 32);
+
+	return 1;
+}
+
+
+3 versions. First our current upstream behaviour (-DASMBUG):
+
+   0:	00 00 23 a1 	lhz     r9,0(r3)
+   4:	1f 00 89 2b 	cmplwi  cr7,r9,31
+   8:	26 00 20 7d 	mfcr    r9
+   c:	fe f7 29 55 	rlwinm  r9,r9,30,31,31
+  10:	00 00 09 0b 	tdnei   r9,0
+  14:	01 00 60 38 	li      r3,1
+  18:	20 00 80 4e 	blr
+
+What a load of work. We do the compare, then pull it out of the
+condition register and do some more work. We are trying to help gcc
+but it seems to be backfiring. Let's try doing a simple version in c:
+
+   0:	00 00 23 a1 	lhz     r9,0(r3)
+   4:	1f 00 89 2b 	cmplwi  cr7,r9,31
+   8:	0c 00 9d 41 	bgt     cr7,14
+   c:	01 00 60 38 	li      r3,1
+  10:	20 00 80 4e 	blr
+  14:	00 00 e0 0f 	twui    r0,0
+
+Better, we branch out of line to do the trap. But if we could do a
+conditional trap properly then we should be able to do even better
+(-DBUILTIN):
+
+   0:	00 00 23 a1 	lhz     r9,0(r3)
+   4:	01 00 60 38 	li      r3,1
+   8:	20 00 a9 0c 	twlgei  r9,32
+   c:	20 00 80 4e 	blr
+
+Nice! I remember chasing this down before and the issue is we need the
+address of the trap instruction for our bug exception table. Maybe
+we need a gcc builtin in which we can get a label on the trap
+instruction. Would that be possible?
+
+Anton
