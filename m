@@ -1,27 +1,20 @@
-Return-Path: <swarren@wwwdotorg.org>
-Received: from avon.wwwdotorg.org (avon.wwwdotorg.org
- [IPv6:2001:470:1f0f:bd7::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3C7642C00FC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 05:53:58 +1000 (EST)
-Message-ID: <5213C94D.7050304@wwwdotorg.org>
-Date: Tue, 20 Aug 2013 13:53:49 -0600
-From: Stephen Warren <swarren@wwwdotorg.org>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Dwight Engen <dwight.engen@oracle.com>
+Subject: Re: linux-next: build failure after merge of the final tree
+Date: Tue, 20 Aug 2013 22:46:30 +0200
+References: <20130820172052.1f0d89ddf6a1a40ef70333fd@canb.auug.org.au>
+ <20130820120702.000b044e@oracle.com>
+In-Reply-To: <20130820120702.000b044e@oracle.com>
 MIME-Version: 1.0
-To: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v8 2/2] ASoC: fsl: Add S/PDIF machine driver
-References: <cover.1376912873.git.b42378@freescale.com>
- <ca3061d70ab8bf59afc59031fa7befcfaed26d51.1376912873.git.b42378@freescale.com>
- <5212908E.6050104@wwwdotorg.org> <20130820001858.GF30073@sirena.org.uk>
- <52138FDE.3080007@wwwdotorg.org> <20130820190701.GR30073@sirena.org.uk>
-In-Reply-To: <20130820190701.GR30073@sirena.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, lars@metafoo.de, festevam@gmail.com,
- s.hauer@pengutronix.de, Nicolin Chen <b42378@freescale.com>, timur@tabi.org,
- rob.herring@calxeda.com, tomasz.figa@gmail.com, p.zabel@pengutronix.de,
- R65777@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201308202246.30869.arnd@arndb.de>
+Cc: cbe-oss-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ David Chinner <david@fromorbit.com>, linux-kernel@vger.kernel.org,
+ xfs@oss.sgi.com, Ben Myers <bpm@sgi.com>, linux-next@vger.kernel.org,
+ Gao feng <gaofeng@cn.fujitsu.com>, linuxppc-dev@lists.ozlabs.org,
+ Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,18 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/20/2013 01:07 PM, Mark Brown wrote:
-> On Tue, Aug 20, 2013 at 09:48:46AM -0600, Stephen Warren wrote:
->> On 08/19/2013 06:18 PM, Mark Brown wrote:
-> 
->>> S/PDIF is also sometimes used as an interconnect between
->>> devices - some CODECs have S/PDIF I/O (more normally used as an
->>> external connector on the box).  This is most frequently seen
->>> as a way to
-> 
->> That's not a good argument for an incorrect binding.
-> 
-> The point is that it might turn into a more correct binding
-> depending on what the S/PDIF device actually is.
+On Tuesday 20 August 2013, Dwight Engen wrote:
+> diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
+> index f390042..90fb308 100644
+> --- a/arch/powerpc/platforms/cell/spufs/inode.c
+> +++ b/arch/powerpc/platforms/cell/spufs/inode.c
+> @@ -620,12 +620,12 @@ spufs_parse_options(struct super_block *sb, char *options, struct inode *root)
+>                 case Opt_uid:
+>                         if (match_int(&args[0], &option))
+>                                 return 0;
+> -                       root->i_uid = option;
+> +                       root->i_uid = make_kuid(&init_user_ns, option);
+>                         break;
+>                 case Opt_gid:
+>                         if (match_int(&args[0], &option))
+>                                 return 0;
+> -                       root->i_gid = option;
+> +                       root->i_gid = make_kgid(&init_user_ns, option);
+>                         break;
+>                 case Opt_mode:
+>                         if (match_octal(&args[0], &option))
 
-There's *never* an object on the board called a "dummy codec".
+Doesn't this mean the uid/gid is taken from the initial namespace rather than
+from the namespace of the 'mount' process calling this? I think the logical
+choice would be to have the UID be the one that gets passed here in the caller's
+namespace.
+
+	Arnd
