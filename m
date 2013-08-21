@@ -1,22 +1,33 @@
-Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+Return-Path: <B42378@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DB7AB2C0322
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 12:13:42 +1000 (EST)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 4/4] powerpc/e500: Set -mcpu flag for 32-bit e500
-Date: Tue, 20 Aug 2013 21:12:42 -0500
-Message-ID: <1377051162-2588-5-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1377051162-2588-1-git-send-email-scottwood@freescale.com>
-References: <1377051162-2588-1-git-send-email-scottwood@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 097AE2C00D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 12:18:39 +1000 (EST)
+Date: Wed, 21 Aug 2013 10:18:02 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [alsa-devel] [PATCH v8 2/2] ASoC: fsl: Add S/PDIF machine driver
+Message-ID: <20130821021801.GA6177@MrMyself>
+References: <cover.1376912873.git.b42378@freescale.com>
+ <ca3061d70ab8bf59afc59031fa7befcfaed26d51.1376912873.git.b42378@freescale.com>
+ <5212908E.6050104@wwwdotorg.org>
+ <20130820001858.GF30073@sirena.org.uk>
+ <52138FDE.3080007@wwwdotorg.org>
+ <20130820190701.GR30073@sirena.org.uk>
+ <5213C94D.7050304@wwwdotorg.org>
+ <20130820222810.GU30073@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>,
- Catalin Udma <catalin.udma@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20130820222810.GU30073@sirena.org.uk>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de,
+ Stephen Warren <swarren@wwwdotorg.org>, linuxppc-dev@lists.ozlabs.org,
+ s.hauer@pengutronix.de, timur@tabi.org, rob.herring@calxeda.com,
+ tomasz.figa@gmail.com, p.zabel@pengutronix.de, R65777@freescale.com,
+ shawn.guo@linaro.org, festevam@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +37,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Unlike 64-bit, we don't currently support multiplatform between e500
-and non-e500, so the -mcpu is not configurable at this time.
+On Tue, Aug 20, 2013 at 11:28:10PM +0100, Mark Brown wrote:
+> On Tue, Aug 20, 2013 at 01:53:49PM -0600, Stephen Warren wrote:
+> > On 08/20/2013 01:07 PM, Mark Brown wrote:
+> 
+> > > The point is that it might turn into a more correct binding
+> > > depending on what the S/PDIF device actually is.
+> 
+> > There's *never* an object on the board called a "dummy codec".
+> 
+> Oh, is that what you're talking about?  Yes, that makes sense.  I had
+> been responding to the comments about the transceivers.
 
--msoft-float is specified when testing for -mcpu=8540 because otherwise
-some older toolchains will fail with "error: E500 and FPRs not
-supported".
+I'll remove the 'dummy' words in the next version from the binding doc.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/Makefile | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 32dfd5d..51cfb78 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -104,6 +104,14 @@ E5500_CPU := $(call cc-option,-mcpu=e500mc64,-mcpu=powerpc64)
- CFLAGS-$(CONFIG_E5500_CPU) += $(E5500_CPU)
- CFLAGS-$(CONFIG_E6500_CPU) += $(call cc-option,-mcpu=e6500,$(E5500_CPU))
- 
-+ifeq ($(CONFIG_PPC32),y)
-+ifeq ($(CONFIG_PPC_E500MC),y)
-+CFLAGS-y += $(call cc-option,-mcpu=e500mc,-mcpu=powerpc)
-+else
-+CFLAGS-$(CONFIG_E500) += $(call cc-option,-mcpu=8540 -msoft-float,-mcpu=powerpc)
-+endif
-+endif
-+
- CFLAGS-$(CONFIG_TUNE_CELL) += $(call cc-option,-mtune=cell)
- 
- KBUILD_CPPFLAGS	+= -Iarch/$(ARCH)
--- 
-1.8.1.2
+Thank you
+Nicolin
