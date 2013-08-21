@@ -1,20 +1,15 @@
-Return-Path: <bpm@sgi.com>
-Date: Wed, 21 Aug 2013 10:54:16 -0500
-From: Ben Myers <bpm@sgi.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: build failure after merge of the final tree
-Message-ID: <20130821155416.GH5262@sgi.com>
-References: <20130820172052.1f0d89ddf6a1a40ef70333fd@canb.auug.org.au>
- <20130820120702.000b044e@oracle.com>
- <20130820192844.GC5262@sgi.com>
- <20130821102246.4e3c4c8fe549d8c7760da96d@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130821102246.4e3c4c8fe549d8c7760da96d@canb.auug.org.au>
-Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
- Dwight Engen <dwight.engen@oracle.com>, linux-kernel@vger.kernel.org,
- xfs@oss.sgi.com, linux-next@vger.kernel.org, Jeremy Kerr <jk@ozlabs.org>,
- linuxppc-dev@lists.ozlabs.org, Gao feng <gaofeng@cn.fujitsu.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id C123D2C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 01:59:29 +1000 (EST)
+Date: Wed, 21 Aug 2013 17:59:24 +0200
+Message-Id: <201308211559.r7LFxOBV025845@localhost.localdomain>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.cz>
+Subject: [PATCH] Adding proper request of GPIO used by cpm_uart driver
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hey Stephen,
+cpm_uart serial driver uses GPIO for control signals. In order to be used
+properly, GPIOs have to be reserved. Comment in gpiolib.c considers illegal
+the use of GPIOs without requesting them. In addition, the direction of the
+GPIO has to be set properly.
 
-On Wed, Aug 21, 2013 at 10:22:46AM +1000, Stephen Rothwell wrote:
-> On Tue, 20 Aug 2013 14:28:44 -0500 Ben Myers <bpm@sgi.com> wrote:
-> > I'd prefer not to break Stephen's tree two days in a row.  We could just revert
-> > d6970d4b726c in the xfs tree for the time being as Stephen has done, but given
-> > the choice would prefer the fix.  Do you have a preference between the two
-> > approaches that Dwight has posted?  The first seems more conservative...
-> 
-> I will automatically revert that commit when I merge the xfs tree until
-> some other solution is forthcoming (so you don't have to do the revert in
-> the xfs tree).
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Gah.  That makes sense.  ;)
-
-> This does need to be fixed fairly soon, though.
-
-Agreed, thanks.
-
--Ben
+diff -ur linux-3.8.13/drivers/tty/serial/cpm_uart/cpm_uart_core.c linux/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+--- linux-3.8.13/drivers/tty/serial/cpm_uart/cpm_uart_core.c	2013-08-21 05:34:03.000000000 +0200
++++ linux/drivers/tty/serial/cpm_uart/cpm_uart_core.c	2013-08-21 05:30:04.000000000 +0200
+@@ -1213,8 +1213,32 @@
+ 		goto out_pram;
+ 	}
+ 
+-	for (i = 0; i < NUM_GPIOS; i++)
+-		pinfo->gpios[i] = of_get_gpio(np, i);
++	for (i = 0; i < NUM_GPIOS; i++) {
++		int gpio;
++
++		pinfo->gpios[i] = -1;
++
++		gpio = of_get_gpio(np, i);
++
++		if (gpio_is_valid(gpio)) {
++			ret = gpio_request(gpio, "cpm_uart");
++			if (ret) {
++				pr_err("can't request gpio #%d: %d\n", i, ret);
++				continue;
++			}
++			if (i == GPIO_RTS || i == GPIO_DTR)
++				ret = gpio_direction_output(gpio, 0);
++			else
++				ret = gpio_direction_input(gpio);
++			if (ret) {
++				pr_err("can't set direction for gpio #%d: %d\n",
++					i, ret);
++				gpio_free(gpio);
++				continue;
++			}
++			pinfo->gpios[i] = gpio;
++		}
++	}
+ 
+ #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
+ 	udbg_putc = NULL;
