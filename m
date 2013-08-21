@@ -1,20 +1,29 @@
-Return-Path: <bpm@sgi.com>
-Date: Wed, 21 Aug 2013 10:56:54 -0500
-From: Ben Myers <bpm@sgi.com>
-To: Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: linux-next: build failure after merge of the final tree
-Message-ID: <20130821155654.GI5262@sgi.com>
-References: <20130820172052.1f0d89ddf6a1a40ef70333fd@canb.auug.org.au>
- <20130820120702.000b044e@oracle.com>
- <201308202246.30869.arnd@arndb.de>
- <20130821010822.220f592a@oracle.com> <52145E6C.80404@ozlabs.org>
+Return-Path: <swarren@wwwdotorg.org>
+Received: from avon.wwwdotorg.org (avon.wwwdotorg.org
+ [IPv6:2001:470:1f0f:bd7::2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 28C772C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 02:08:21 +1000 (EST)
+Message-ID: <5214E5E8.1000102@wwwdotorg.org>
+Date: Wed, 21 Aug 2013 10:08:08 -0600
+From: Stephen Warren <swarren@wwwdotorg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52145E6C.80404@ozlabs.org>
-Cc: cbe-oss-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- Arnd Bergmann <arnd@arndb.de>, Dwight Engen <dwight.engen@oracle.com>,
- linux-kernel@vger.kernel.org, xfs@oss.sgi.com, linux-next@vger.kernel.org,
- Gao feng <gaofeng@cn.fujitsu.com>, linuxppc-dev@lists.ozlabs.org
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [alsa-devel] [PATCH v8 2/2] ASoC: fsl: Add S/PDIF machine driver
+References: <cover.1376912873.git.b42378@freescale.com>
+ <ca3061d70ab8bf59afc59031fa7befcfaed26d51.1376912873.git.b42378@freescale.com>
+ <5212908E.6050104@wwwdotorg.org> <20130820001858.GF30073@sirena.org.uk>
+ <52138FDE.3080007@wwwdotorg.org> <20130820190701.GR30073@sirena.org.uk>
+ <5213C94D.7050304@wwwdotorg.org> <20130820222810.GU30073@sirena.org.uk>
+ <20130821021801.GA6177@MrMyself>
+In-Reply-To: <20130821021801.GA6177@MrMyself>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, linuxppc-dev@lists.ozlabs.org,
+ s.hauer@pengutronix.de, timur@tabi.org, rob.herring@calxeda.com,
+ tomasz.figa@gmail.com, Mark Brown <broonie@kernel.org>, p.zabel@pengutronix.de,
+ R65777@freescale.com, shawn.guo@linaro.org, festevam@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hey Dwight,
-
-On Wed, Aug 21, 2013 at 02:30:04PM +0800, Jeremy Kerr wrote:
-> > Yes, I agree. The other filesystems that take an Opt_uid as well do use
-> > current_user_ns() and not init_user_ns. They also do a uid_valid()
-> > check and fail the mount (or fallback to GLOBAL_ROOT_UID). So I think
-> > that would look like this:
+On 08/20/2013 08:18 PM, Nicolin Chen wrote:
+> On Tue, Aug 20, 2013 at 11:28:10PM +0100, Mark Brown wrote:
+>> On Tue, Aug 20, 2013 at 01:53:49PM -0600, Stephen Warren wrote:
+>>> On 08/20/2013 01:07 PM, Mark Brown wrote:
+>>
+>>>> The point is that it might turn into a more correct binding
+>>>> depending on what the S/PDIF device actually is.
+>>
+>>> There's *never* an object on the board called a "dummy codec".
+>>
+>> Oh, is that what you're talking about?  Yes, that makes sense.  I had
+>> been responding to the comments about the transceivers.
 > 
-> Looks good to me. Builds and mounts as expected.
-> 
-> Acked-by: Jeremy Kerr <jk@ozlabs.org>
+> I'll remove the 'dummy' words in the next version from the binding doc.
 
-Could you repost this patch with the right subject and a commit header?  Given
-Jeremy's Ack I think we could proceed to pull this in.
-
-Regards,
-	Ben
+I think the word "CODEC" is also problematic in this context, since
+whatever is connector to the S/PDIF output path may not be a CODEC.
+That's why I suggested some more generic property names that IIRC
+concentrated on enabling rx/tx rather than indicating what was actually
+connected to the S/PDIF controller.
