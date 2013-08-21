@@ -1,27 +1,20 @@
-Return-Path: <s.nawrocki@samsung.com>
-Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
- [210.118.77.14]) by ozlabs.org (Postfix) with ESMTP id EADCA2C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 00:46:55 +1000 (EST)
-Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
- by mailout4.w1.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0MRV00MIAYDOVTC0@mailout4.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 21 Aug 2013 15:46:50 +0100 (BST)
-Message-id: <5214D2D8.7010106@samsung.com>
-Date: Wed, 21 Aug 2013 16:46:48 +0200
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-MIME-version: 1.0
-To: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH V2] i2c: move of helpers into the core
-References: <1377092832-3417-1-git-send-email-wsa@the-dreams.de>
-In-reply-to: <1377092832-3417-1-git-send-email-wsa@the-dreams.de>
-Content-type: text/plain; charset=ISO-8859-1
-Cc: devicetree@vger.kernel.org, davinci-linux-open-source@linux.davincidsp.com,
- linux-samsung-soc@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
- linux-i2c@vger.kernel.org, linux-tegra@vger.kernel.org,
- linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+Return-Path: <bpm@sgi.com>
+Date: Wed, 21 Aug 2013 10:54:16 -0500
+From: Ben Myers <bpm@sgi.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: build failure after merge of the final tree
+Message-ID: <20130821155416.GH5262@sgi.com>
+References: <20130820172052.1f0d89ddf6a1a40ef70333fd@canb.auug.org.au>
+ <20130820120702.000b044e@oracle.com>
+ <20130820192844.GC5262@sgi.com>
+ <20130821102246.4e3c4c8fe549d8c7760da96d@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130821102246.4e3c4c8fe549d8c7760da96d@canb.auug.org.au>
+Cc: cbe-oss-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+ Dwight Engen <dwight.engen@oracle.com>, linux-kernel@vger.kernel.org,
+ xfs@oss.sgi.com, linux-next@vger.kernel.org, Jeremy Kerr <jk@ozlabs.org>,
+ linuxppc-dev@lists.ozlabs.org, Gao feng <gaofeng@cn.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,135 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/21/2013 03:47 PM, Wolfram Sang wrote:
-> I2C of helpers used to live in of_i2c.c but experience (from SPI) shows
-> that it is much cleaner to have this in the core. This also removes a
-> circular dependency between the helpers and the core, and so we can
-> finally register child nodes in the core instead of doing this manually
-> in each driver. So, fix the drivers and documentation, too.
+Hey Stephen,
+
+On Wed, Aug 21, 2013 at 10:22:46AM +1000, Stephen Rothwell wrote:
+> On Tue, 20 Aug 2013 14:28:44 -0500 Ben Myers <bpm@sgi.com> wrote:
+> > I'd prefer not to break Stephen's tree two days in a row.  We could just revert
+> > d6970d4b726c in the xfs tree for the time being as Stephen has done, but given
+> > the choice would prefer the fix.  Do you have a preference between the two
+> > approaches that Dwight has posted?  The first seems more conservative...
 > 
-> Acked-by: Sylwester Nawrocki <s.nawrocki@amsung.com>
-> Acked-by: Rob Herring <rob.herring@calxeda.com>
-> Reviewed-by: Felipe Balbi <balbi@ti.com>
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> I will automatically revert that commit when I merge the xfs tree until
+> some other solution is forthcoming (so you don't have to do the revert in
+> the xfs tree).
 
-With this patch there are still couple of of_i2c.h header file
-inclusions:
+Gah.  That makes sense.  ;)
 
-$ git grep of_i2c.h
-arch/powerpc/platforms/44x/warp.c:#include <linux/of_i2c.h>
-drivers/gpu/drm/tilcdc/tilcdc_slave.c:#include <linux/of_i2c.h>
-drivers/gpu/drm/tilcdc/tilcdc_tfp410.c:#include <linux/of_i2c.h>
-drivers/gpu/host1x/drm/output.c:#include <linux/of_i2c.h>
-drivers/media/platform/exynos4-is/fimc-is.c:#include <linux/of_i2c.h>
-drivers/media/platform/exynos4-is/media-dev.c:#include <linux/of_i2c.h>
-drivers/staging/imx-drm/imx-tve.c:#include <linux/of_i2c.h>
-sound/soc/fsl/imx-sgtl5000.c:#include <linux/of_i2c.h>
-sound/soc/fsl/imx-wm8962.c:#include <linux/of_i2c.h>
+> This does need to be fixed fairly soon, though.
 
+Agreed, thanks.
 
-Please include also this chunk, without it I'm getting build errors.
-
---------------8<---------------------
-diff --git a/drivers/media/platform/exynos4-is/fimc-is-i2c.c
-b/drivers/media/platform/exynos4-is/fimc-is-i2c.c
-index ca07b48..e38e9dc 100644
---- a/drivers/media/platform/exynos4-is/fimc-is-i2c.c
-+++ b/drivers/media/platform/exynos4-is/fimc-is-i2c.c
-@@ -11,6 +11,7 @@
-  */
-
- #include <linux/clk.h>
-+#include <linux/i2c.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
-diff --git a/drivers/media/platform/exynos4-is/fimc-is.c
-b/drivers/media/platform/exynos4-is/fimc-is.c
-index 6743ae3..63e4f1d 100644
---- a/drivers/media/platform/exynos4-is/fimc-is.c
-+++ b/drivers/media/platform/exynos4-is/fimc-is.c
-@@ -21,7 +21,6 @@
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/of_i2c.h>
- #include <linux/of_irq.h>
- #include <linux/of_address.h>
- #include <linux/of_platform.h>
-diff --git a/drivers/media/platform/exynos4-is/media-dev.c
-b/drivers/media/platform/exynos4-is/media-dev.c
-index c10dee2..00e5f91 100644
---- a/drivers/media/platform/exynos4-is/media-dev.c
-+++ b/drivers/media/platform/exynos4-is/media-dev.c
-@@ -22,7 +22,6 @@
- #include <linux/of.h>
- #include <linux/of_platform.h>
- #include <linux/of_device.h>
--#include <linux/of_i2c.h>
- #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
- #include <linux/types.h>
---------------8<---------------------
-
-> ---
-> 
-> V1 -> V2: * Add #else branch to #if CONFIG_OF
-> 	  * EXPORT_SYMBOLs got attached to wrong functions
-> 	  * cosmetic change (of -> OF)
-> 	  * properly based on 3.11-rc4
-> 
->  Documentation/acpi/enumeration.txt              |    1 -
->  drivers/i2c/busses/i2c-at91.c                   |    3 -
->  drivers/i2c/busses/i2c-cpm.c                    |    6 --
->  drivers/i2c/busses/i2c-davinci.c                |    2 -
->  drivers/i2c/busses/i2c-designware-platdrv.c     |    2 -
->  drivers/i2c/busses/i2c-gpio.c                   |    3 -
->  drivers/i2c/busses/i2c-i801.c                   |    2 -
->  drivers/i2c/busses/i2c-ibm_iic.c                |    4 -
->  drivers/i2c/busses/i2c-imx.c                    |    3 -
->  drivers/i2c/busses/i2c-mpc.c                    |    2 -
->  drivers/i2c/busses/i2c-mv64xxx.c                |    3 -
->  drivers/i2c/busses/i2c-mxs.c                    |    3 -
->  drivers/i2c/busses/i2c-nomadik.c                |    3 -
->  drivers/i2c/busses/i2c-ocores.c                 |    3 -
->  drivers/i2c/busses/i2c-octeon.c                 |    3 -
->  drivers/i2c/busses/i2c-omap.c                   |    3 -
->  drivers/i2c/busses/i2c-pnx.c                    |    3 -
->  drivers/i2c/busses/i2c-powermac.c               |    9 +-
->  drivers/i2c/busses/i2c-pxa.c                    |    2 -
->  drivers/i2c/busses/i2c-s3c2410.c                |    2 -
->  drivers/i2c/busses/i2c-sh_mobile.c              |    2 -
->  drivers/i2c/busses/i2c-sirf.c                   |    3 -
->  drivers/i2c/busses/i2c-stu300.c                 |    2 -
->  drivers/i2c/busses/i2c-tegra.c                  |    3 -
->  drivers/i2c/busses/i2c-versatile.c              |    2 -
->  drivers/i2c/busses/i2c-wmt.c                    |    3 -
->  drivers/i2c/busses/i2c-xiic.c                   |    3 -
->  drivers/i2c/i2c-core.c                          |  109 +++++++++++++++++++++-
->  drivers/i2c/i2c-mux.c                           |    3 -
->  drivers/i2c/muxes/i2c-arb-gpio-challenge.c      |    1 -
->  drivers/i2c/muxes/i2c-mux-gpio.c                |    1 -
->  drivers/i2c/muxes/i2c-mux-pinctrl.c             |    1 -
->  drivers/media/platform/exynos4-is/fimc-is-i2c.c |    3 -
->  drivers/of/Kconfig                              |    6 --
->  drivers/of/Makefile                             |    1 -
->  drivers/of/of_i2c.c                             |  114 -----------------------
->  include/linux/i2c.h                             |   20 ++++
->  include/linux/of_i2c.h                          |   46 ---------
->  38 files changed, 132 insertions(+), 253 deletions(-)
->  delete mode 100644 drivers/of/of_i2c.c
->  delete mode 100644 include/linux/of_i2c.h
-
-I've tested this patch on Exynos4412 SoC based board, so this covers
-i2c-s3c2410 and fimc-is-i2c. Compiled with CONFIG_OF enabled.
-
-I guess after removing all remaining occurrences of
-#include <linux/of_i2c.h> you could add:
-
-Tested-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-
---
-Thanks,
-Sylwester
+-Ben
