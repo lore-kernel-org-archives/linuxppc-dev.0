@@ -1,21 +1,24 @@
-Return-Path: <bpm@sgi.com>
-Date: Wed, 21 Aug 2013 15:24:17 -0500
-From: Ben Myers <bpm@sgi.com>
-To: Jeremy Kerr <jk@ozlabs.org>, Dwight Engen <dwight.engen@oracle.com>,
- Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] powerpc/spufs: convert userns uid/gid mount options to
- kuid/kgid
-Message-ID: <20130821202417.GN5262@sgi.com>
-References: <20130820172052.1f0d89ddf6a1a40ef70333fd@canb.auug.org.au>
- <20130821155654.GI5262@sgi.com>
- <20130821143351.5840d556@oracle.com>
- <201308212205.27789.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201308212205.27789.arnd@arndb.de>
-Cc: cbe-oss-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-kernel@vger.kernel.org, xfs@oss.sgi.com, linux-next@vger.kernel.org,
- Gao feng <gaofeng@cn.fujitsu.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 716992C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 06:38:24 +1000 (EST)
+Date: Wed, 21 Aug 2013 22:38:17 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v4 01/31] spi: mpc512x: cleanup clock API use
+Message-ID: <20130821223817.1bf459a0@crub>
+In-Reply-To: <20130821194817.GL26118@sirena.org.uk>
+References: <1374495298-22019-1-git-send-email-gsi@denx.de>
+ <1375821851-31609-1-git-send-email-gsi@denx.de>
+ <1375821851-31609-2-git-send-email-gsi@denx.de>
+ <20130821212258.2cbc969c@crub>
+ <20130821194817.GL26118@sirena.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: devicetree@vger.kernel.org, Gerhard Sittig <gsi@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 21, 2013 at 10:05:27PM +0200, Arnd Bergmann wrote:
-> On Wednesday 21 August 2013, Dwight Engen wrote:
-> > 
-> > Acked-by: Jeremy Kerr <jk@ozlabs.org>
-> > Tested-by: Jeremy Kerr <jk@ozlabs.org>
-> > Signed-off-by: Dwight Engen <dwight.engen@oracle.com>
+On Wed, 21 Aug 2013 20:48:17 +0100
+Mark Brown <broonie@kernel.org> wrote:
+
+> On Wed, Aug 21, 2013 at 09:22:58PM +0200, Anatolij Gustschin wrote:
 > 
-> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+> > Mark, are you going to apply this patch? Or should I queue it
+> > in my mpc5xxx tree (I'd like to get your Acked-by then)?
+> 
+> Has this series settled down?  I'd been ignoring it since it was getting
+> so many and so frequent revisions.
 
-Applied.
+Patches 01 - 14 (except 09 and 11) won't change I think. I'd prefer
+to queue them for v3.12, so there will be no need to resubmit again
+and again. Other patches are not ready yet.
 
-Thanks,
-	-Ben
+Anatolij
