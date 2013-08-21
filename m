@@ -3,24 +3,22 @@ Received: from avon.wwwdotorg.org (avon.wwwdotorg.org
  [IPv6:2001:470:1f0f:bd7::2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 93D7E2C00D2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 08:14:59 +1000 (EST)
-Message-ID: <52153BDC.8020702@wwwdotorg.org>
-Date: Wed, 21 Aug 2013 16:14:52 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 9C43F2C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 08:40:51 +1000 (EST)
+Message-ID: <521541EE.4010303@wwwdotorg.org>
+Date: Wed, 21 Aug 2013 16:40:46 -0600
 From: Stephen Warren <swarren@wwwdotorg.org>
 MIME-Version: 1.0
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH v10 2/2] ASoC: fsl: Add S/PDIF machine driver
-References: <cover.1377054540.git.b42378@freescale.com>
- <e9cf5e37f858dea78319720f007f66c8c063885f.1377054540.git.b42378@freescale.com>
- <52150763.8020707@wwwdotorg.org> <2125663.4przPy426h@flatron>
-In-Reply-To: <2125663.4przPy426h@flatron>
+To: hongbo.zhang@freescale.com
+Subject: Re: [PATCH v7 2/3] DMA: Freescale: Add new 8-channel DMA engine device
+ tree nodes
+References: <1375094944-3343-1-git-send-email-hongbo.zhang@freescale.com>
+ <1375094944-3343-3-git-send-email-hongbo.zhang@freescale.com>
+In-Reply-To: <1375094944-3343-3-git-send-email-hongbo.zhang@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, lars@metafoo.de, festevam@gmail.com,
- s.hauer@pengutronix.de, Nicolin Chen <b42378@freescale.com>, timur@tabi.org,
- rob.herring@calxeda.com, broonie@kernel.org, p.zabel@pengutronix.de,
- R65777@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, vinod.koul@intel.com,
+ linux-kernel@vger.kernel.org, djbw@fb.com, scottwood@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,82 +28,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/21/2013 12:54 PM, Tomasz Figa wrote:
-> On Wednesday 21 of August 2013 12:30:59 Stephen Warren wrote:
->> On 08/20/2013 09:13 PM, Nicolin Chen wrote:
->>> This patch implements a device-tree-only machine driver for Freescale
->>> i.MX series Soc. It works with spdif_transmitter/spdif_receiver and
->>> fsl_spdif.c drivers.
->>>
->>> diff --git
->>> a/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
->>> b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
->>>
->>> +Optional properties:
->>> +
->>> +  - spdif-transmitter : The phandle of the spdif-transmitter codec
->>> +
->>> +  - spdif-receiver : The phandle of the spdif-receiver codec
->>> +
->>> +* Note: At least one of these two properties should be set in the DT
->>> binding.
->> I still don't think those two properties are correct.
->>
->> Exactly what node will those phandles point at?
-> 
-> Imagine following setup:
-> 
->   ________              ________________
->  |        |     RX     | Microphone DSP |   Analog mic input
->  | S/PDIF | <--------< |________________| <-------------------
->  |        |             ________________
->  |  DAI   | >--------> | Amplifier      | >-------------------
->  |________|     TX     |________________|   Speakers output
-> 
-> As you see in the diagram, the S/PDIF interface of the SoC can be 
-> connected to some external devices that can perform sound processing or 
-> simply handle the physical layer.
-> 
-> I'd say that normally both RX and TX lines would be connected to a single 
-> codec chip that has multiple blocks inside, like sound processing, 
-> amplifier, mixer, etc., but nothing stops you from making a crazy setup, 
-> when RX and TX lines are connected to different chips.
+On 07/29/2013 04:49 AM, hongbo.zhang@freescale.com wrote:
+> Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch adds
+> the device tree nodes for them.
 
-That's much rarer with S/PDIF than I2S though right? Usually I'd expect
-the S/PDIF controller to simply be routed out to a jack/connector on the
-board, or perhaps to an internal HDMI encoder.
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
 
-But the point of my question was more that the binding should fully
-describe the type of object/node that the phandle should reference. The
-type of the node would then imply what kind of operations could be
-performed on that other node's driver by this node's driver. If the set
-of operations is undefined, that's bad. If the set of operations is
-NULL, there's probably no need to reference the node.
+> +** Freescale Elo3 DMA Controller
+> +   This is EloPlus controller with 8 channels, used in Freescale Txxx and Bxxx
+> +   series chips, such as t1040, t4240, b4860.
+> +
+> +Required properties:
+> +
+> +- compatible        : must include "fsl,elo3-dma"
 
->> There definitely should not be a DT node for any "dummy CODEC",
->> irrespective of whether this binding calls the other node a "CODEC" or a
->> "dummy CODEC".
-> 
-> I agree. Instead if no chip connected to particular line is specified in 
-> device tree, it's responsibility of Linux sound core to handle this 
-> properly by adding a dummy codec or whatever.
-> 
->> If these properties are to contain phandles, it would be acceptable for
->> the referenced node to be:
->>
->> * A node representing the physical connector/jack on the board.
->>
->> * A node representing some other IP block on the board, such as an HDMI
->> encoder/display-controller
->>
->> I think those options are unlikely in general
-> 
-> Why? You usually codec SoC DAIs to some external chips.
+This should probably list all the SoC-specific compatible values too.
 
-It's unlikely the phandle would reference a connector/jack since we
-(thus far at least) haven't created DT nodes for them. If we do put
-jacks/connectors into DT, then referencing them is fine.
+> +- ranges            : describes the mapping between the address space of the
+> +                      DMA channels and the address space of the DMA controller
 
-In the "other IP block" case, it may be worth referencing the device,
-although as I mentioned above, we need to describe exactly what is
-expected from that other device interface-wise.
+Oh, so looking at the example, this is simply about being able to write
+the reg value in the child nodes more easily without having to write out
+the full based address of the controller in each child node.
+
+I don't think the binding document should require this; all the binding
+document should care about is that the child nodes have a valid reg
+value. Whether that reg value is <0x100100 0x80> without a ranges in the
+top-level DMA nor or whether that reg value is <0x0 0x80> with a ranges
+value in the top-level DMA node isn't something that the binding should
+specify. Either way will work equally without affecting a driver for the
+DMA controller; the parsing of reg with/without a ranges property is
+more of a core part of DT than anything to do with this binding.
+
+> +- DMA channel nodes:
+> +        - compatible        : must include "fsl,eloplus-dma-channel"
+
+Why do the channel nodes even need a compatible value? Presumably the
+driver for the top-level DMA node will scan these dma-channel nodes to
+extract the information it needs and will simply assume that all these
+nodes are DMA channel nodes rather than something else? I suppose this
+doesn't hurt, it just seems unnecessary unless you foresee other child
+nodes types existing in the future and hence a need to differentiate
+different types of nodes.
+
+> +        - reg               : <registers mapping for channel>
+> +        - interrupts        : <interrupt mapping for DMA channel IRQ>
+
+s/interrupts/specifier/
+
+> +Example:
+> +dma@100300 {
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+
+Those weren't mentioned in the required properties list above. Perhaps
+they're considered such a core part of DT functionality that it's not
+necessary, yet some other binding documents do include these properties
+in the list of required properties.
