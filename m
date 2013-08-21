@@ -1,24 +1,21 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D6FC52C00CC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 05:48:23 +1000 (EST)
-Date: Wed, 21 Aug 2013 20:48:17 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Anatolij Gustschin <agust@denx.de>
-Message-ID: <20130821194817.GL26118@sirena.org.uk>
+ by ozlabs.org (Postfix) with ESMTPS id 621602C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 05:52:10 +1000 (EST)
+Date: Wed, 21 Aug 2013 21:52:04 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Gerhard Sittig <gsi@denx.de>
+Subject: Re: [PATCH v4 02/31] serial: mpc512x: cleanup clock API use
+Message-ID: <20130821215204.4e46d322@crub>
+In-Reply-To: <1375821851-31609-3-git-send-email-gsi@denx.de>
 References: <1374495298-22019-1-git-send-email-gsi@denx.de>
  <1375821851-31609-1-git-send-email-gsi@denx.de>
- <1375821851-31609-2-git-send-email-gsi@denx.de>
- <20130821212258.2cbc969c@crub>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="HL3CiL6n73+IAdG4"
-In-Reply-To: <20130821212258.2cbc969c@crub>
-Subject: Re: [PATCH v4 01/31] spi: mpc512x: cleanup clock API use
-Cc: devicetree@vger.kernel.org, Gerhard Sittig <gsi@denx.de>,
- linuxppc-dev@lists.ozlabs.org
+ <1375821851-31609-3-git-send-email-gsi@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue,  6 Aug 2013 22:43:42 +0200
+Gerhard Sittig <gsi@denx.de> wrote:
 
---HL3CiL6n73+IAdG4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> cleanup the clock API use of the UART driver which is shared among the
+> MPC512x and the MPC5200 platforms
+> - get, prepare, and enable the MCLK during port allocation; disable,
+>   unprepare and put the MCLK upon port release; hold a reference to the
+>   clock over the period of use; check for and propagate enable errors
+> - fix a buffer overflow for clock names with two digit PSC index numbers
+> - stick with the PPC_CLOCK 'psc%d_mclk' name for clock lookup, only
+>   switch to a fixed string later after device tree based clock lookup
+>   will have become available
+> 
+> to achieve support for MPC512x which is neutral to MPC5200, the
+> modification was done as follows
+> - introduce "clock alloc" and "clock release" routines in addition to
+>   the previous "clock enable/disable" routine in the psc_ops struct
+> - make the clock allocation a part of the port request (resource
+>   allocation), and make clock release a part of the port release, such
+>   that essential resources get allocated early
+> - just enable/disable the clock from within the .clock() callback
+>   without any allocation or preparation as the former implementation
+>   did, since this routine is called from within the startup and shutdown
+>   callbacks
+> - all of the above remains a NOP for the MPC5200 platform (no callbacks
+>   are provided on that platform)
+> - implementation note: the clock gets enabled upon allocation already
+>   just in case the clock is not only required for bitrate generation but
+>   for register access as well
+> 
+> Signed-off-by: Gerhard Sittig <gsi@denx.de>
+> ---
+>  drivers/tty/serial/mpc52xx_uart.c |   98 ++++++++++++++++++++++++++++++-------
+>  1 file changed, 81 insertions(+), 17 deletions(-)
 
-On Wed, Aug 21, 2013 at 09:22:58PM +0200, Anatolij Gustschin wrote:
+applied, thanks!
 
-> Mark, are you going to apply this patch? Or should I queue it
-> in my mpc5xxx tree (I'd like to get your Acked-by then)?
-
-Has this series settled down?  I'd been ignoring it since it was getting
-so many and so frequent revisions.
-
---HL3CiL6n73+IAdG4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSFRl9AAoJELSic+t+oim9XcgP/jrHPPLOFbwXqyqMPfTbnAMP
-3nNQkIkVVXUYOrYkWRpzaffpBe3xCaTrqWNT8nU7oIirbnRS640cq2SoS3gIizLK
-tiQatKsZEm51b6bHB04Nl37n34GQbKJaJs+0RHnN6/outFgpytdXwFzVNvPAqFd9
-9ZND8DqyxPFUxF2cfpHNFZi5hFcVLHj0ckXb5xHbCxCrZEOhx3hKTzHOpWtHKB+q
-9ITizGaKgSGzejhBfyD27cdmNkRctsfaK1w3x1DXOGsMliEp+nLRjolnF3PZ8FvB
-2pj6RndEAi6Pu4160ZWiUCs6Rpj7WtDhBUexZaWkurCXVn5BfoHG8/xiaTFh0z44
-i9PxmmZh2jHrgUmWF1zciTTfp7xON4smwLKOGN8FOCyGvAAkYXfeBjX2OWrOxwqv
-75oanq5lithbPrRsjaMchud9h5XgQBh6Ou6ytrXj/JDrBI3bh/Cvm9p5kRZZe51X
-nMk8ydspkP/3xjdo876bBnJhDW+Bh1IPfVFRCw60cnUVFwKkZ8oVHHJr/YEW5c/K
-de3dWGuUarmAOBADDdIATmkhs+VUnS54sTYEiem6zr04yYqIZlFGR5VXfka2rhpB
-Vuha3ARk9WUtzCIrDdqqyWaiAVq0EG2b9NlyDwSzsYH4mgexr3fRqHP7nPthfCC5
-pygEw+vx4qK+AFhTS/ZX
-=r6Yz
------END PGP SIGNATURE-----
-
---HL3CiL6n73+IAdG4--
+Anatolij
