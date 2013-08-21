@@ -1,19 +1,45 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6BCF82C0352
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 13:03:26 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r7L33Lgf026795
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Aug 2013 22:03:22 -0500
-Message-ID: <1377054200.25016.195.camel@pasglop>
-Subject: [PATCH v2] powerpc/powernv: Return secondary CPUs to firmware on kexec
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 21 Aug 2013 13:03:20 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BCA5E2C00E0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 14:54:49 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Wed, 21 Aug 2013 10:15:37 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 8B4C4E0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 10:25:03 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7L4sUlv44433452
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 10:24:30 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7L4sXfv002241
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 10:24:33 +0530
+Message-ID: <521447E7.5000302@linux.vnet.ibm.com>
+Date: Wed, 21 Aug 2013 10:23:59 +0530
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC PATCH V3 3/5] powerpc/cpuidle: Generic powerpc backend
+ cpuidle driver.
+References: <20130819042736.8609.17890.stgit@deepthi.in.ibm.com>
+ <20130819042818.8609.77060.stgit@deepthi.in.ibm.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010226D5@039-SN2MPN1-021.039d.mgd.msft.net>
+ <5211F0E0.7080507@linux.vnet.ibm.com>
+ <1376936241.31636.352.camel@snotra.buserror.net>
+In-Reply-To: <1376936241.31636.352.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+ Wang Dongsheng-B40534 <B40534@freescale.com>,
+ "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>,
+ "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,78 +49,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With OPAL v3 we can return secondary CPUs to firmware on kexec. This
-allows firmware to do various cleanups making things generally more
-reliable, and will enable the "new" kernel to call OPAL to perform
-some reconfiguration tasks early on that can only be done while
-all the CPUs are in firmware.
+On 08/19/2013 11:47 PM, Scott Wood wrote:
+> On Mon, 2013-08-19 at 15:48 +0530, Deepthi Dharwar wrote:
+>> Hi Dongsheng,
+>>
+>> On 08/19/2013 11:22 AM, Wang Dongsheng-B40534 wrote:
+>>> I think we should move the states and handle function to arch/power/platform*
+>>> The states and handle function is belong to backend driver, not for this, different platform have different state.
+>>> Different platforms to make their own deal with these states.
+>>>
+>>> I think we cannot put all the status of different platforms and handler in this driver.
+>>
+>> The idea here is a single powerpc back-end driver, which does a runtime
+>> detection of the platform it is running and choose the right
+>> idle states table. This was one of outcome of V2 discussion.
+> 
+> I see a lot more in there than just detecting a platform and choosing a
+> driver.
+> 
+>> I feel there is no harm in keeping the state information in the same
+>> file. We do have x86, which has all its variants information in one
+>> file. One place will have all the idle consolidated information of
+>> all the platform variants. If community does feel, we need to
+>> have just the states information in arch specific file, we can do so.
+> 
+> What actual functionality is common to all powerpc but not common to
+> other arches?
+> 
+>>>> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+>>>> index 0e2cd5c..99ee5d4 100644
+>>>> --- a/drivers/cpuidle/Kconfig
+>>>> +++ b/drivers/cpuidle/Kconfig
+>>>> @@ -42,6 +42,13 @@ config CPU_IDLE_ZYNQ
+>>>>  	help
+>>>>  	  Select this to enable cpuidle on Xilinx Zynq processors.
+>>>>
+>>>> +config CPU_IDLE_POWERPC
+>>>> +	bool "CPU Idle driver for POWERPC platforms"
+>>>> +	depends on PPC64
+>>>
+>>> Why not PPC?
+>>
+>> PPC64 seems to a good place to began the consolidation work. This
+>> patch-set has not been tested for PPC32 currently.
+> 
+> PPC64 is a bad place to start if you want it to be generic, because it
+> means you'll end up growing dependencies on other things that are PPC64
+> only.  There are too many arbitrary 32/64 differences as is.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Hi Scott,
 
-v2: Actually applies on top of current kernels rather than some
-obscure internal branch :-)
+>From my understanding, PPC64 includes BOOK3E and BOOK3S archs.
+PPC includes PPC32 and PPC64.
 
- arch/powerpc/include/asm/opal.h                |  2 ++
- arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
- arch/powerpc/platforms/powernv/setup.c         | 11 +++++++++++
- 3 files changed, 14 insertions(+)
+It seemed logical to start consolidating at PPC64 as
+one does not want to get into 32/64 bit differences.
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 029fe85..eebb221 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -124,6 +124,7 @@ extern int opal_enter_rtas(struct rtas_args *args,
- #define OPAL_PCI_POLL				62
- #define OPAL_PCI_MSI_EOI			63
- #define OPAL_PCI_GET_PHB_DIAG_DATA2		64
-+#define OPAL_RETURN_CPU				69
- 
- #ifndef __ASSEMBLY__
- 
-@@ -631,6 +632,7 @@ int64_t opal_set_system_attention_led(uint8_t led_action);
- int64_t opal_pci_next_error(uint64_t phb_id, uint64_t *first_frozen_pe,
- 			    uint16_t *pci_error_type, uint16_t *severity);
- int64_t opal_pci_poll(uint64_t phb_id);
-+int64_t opal_return_cpu(void);
- 
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname, int depth, void *data);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index e88863f..874e5ff 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -111,3 +111,4 @@ OPAL_CALL(opal_pci_next_error,			OPAL_PCI_NEXT_ERROR);
- OPAL_CALL(opal_pci_poll,			OPAL_PCI_POLL);
- OPAL_CALL(opal_pci_msi_eoi,			OPAL_PCI_MSI_EOI);
- OPAL_CALL(opal_pci_get_phb_diag_data2,		OPAL_PCI_GET_PHB_DIAG_DATA2);
-+OPAL_CALL(opal_return_cpu,			OPAL_RETURN_CPU);
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 84438af..7e3b464 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -31,6 +31,7 @@
- #include <asm/xics.h>
- #include <asm/rtas.h>
- #include <asm/opal.h>
-+#include <asm/kexec.h>
- 
- #include "powernv.h"
- 
-@@ -147,6 +148,16 @@ static void pnv_shutdown(void)
- static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
- {
- 	xics_kexec_teardown_cpu(secondary);
-+
-+	/* Return secondary CPUs to firmware on OPAL v3 */
-+	if (firmware_has_feature(FW_FEATURE_OPALv3) && secondary) {
-+		mb();
-+		get_paca()->kexec_state = KEXEC_STATE_REAL_MODE;
-+		mb();
-+
-+		/* Return the CPU to OPAL */
-+		opal_return_cpu();
-+	}
- }
- #endif /* CONFIG_KEXEC */
- 
+>From your comments above,  I just wanted to clarify if PPC or PPC64 is
+bad place to start. If PPC64 is bad place to start, then whats the way
+forward ?  Can you please throw some more light on it.
+
+Thanks!
+Deepthi
+
+
+
+> -Scott
+> 
+> 
+> 
+> 
