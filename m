@@ -1,22 +1,25 @@
-Return-Path: <dwight.engen@oracle.com>
-Date: Wed, 21 Aug 2013 14:33:51 -0400
-From: Dwight Engen <dwight.engen@oracle.com>
-To: Ben Myers <bpm@sgi.com>
-Subject: [PATCH] powerpc/spufs: convert userns uid/gid mount options to
- kuid/kgid
-Message-ID: <20130821143351.5840d556@oracle.com>
-In-Reply-To: <20130821155654.GI5262@sgi.com>
-References: <20130820172052.1f0d89ddf6a1a40ef70333fd@canb.auug.org.au>
- <20130820120702.000b044e@oracle.com>
- <201308202246.30869.arnd@arndb.de>
- <20130821010822.220f592a@oracle.com> <52145E6C.80404@ozlabs.org>
- <20130821155654.GI5262@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: cbe-oss-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
- linux-next@vger.kernel.org, Jeremy Kerr <jk@ozlabs.org>,
- linuxppc-dev@lists.ozlabs.org, Gao feng <gaofeng@cn.fujitsu.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 168B42C00CE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 04:50:53 +1000 (EST)
+Date: Wed, 21 Aug 2013 11:50:51 -0700
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Seth Jennings <sjenning@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/7] drivers: base: move mutex lock out of
+ add_memory_section()
+Message-ID: <20130821185051.GA11574@kroah.com>
+References: <1377018783-26756-1-git-send-email-sjenning@linux.vnet.ibm.com>
+ <20130820172445.GE4151@medulla.variantweb.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130820172445.GE4151@medulla.variantweb.net>
+Cc: Dave Hansen <dave@sr71.net>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+ linuxppc-dev@lists.ozlabs.org, Yinghai Lu <yinghai@kernel.org>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Cody P Schafer <cody@linux.vnet.ibm.com>,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,59 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Jeremy Kerr <jk@ozlabs.org>
-Tested-by: Jeremy Kerr <jk@ozlabs.org>
-Signed-off-by: Dwight Engen <dwight.engen@oracle.com>
----
- arch/powerpc/platforms/cell/spufs/inode.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+On Tue, Aug 20, 2013 at 12:24:45PM -0500, Seth Jennings wrote:
+> Gah! Forgot the cover letter.
 
-diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-index f390042..87ba7cf 100644
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -620,12 +620,16 @@ spufs_parse_options(struct super_block *sb, char *options, struct inode *root)
- 		case Opt_uid:
- 			if (match_int(&args[0], &option))
- 				return 0;
--			root->i_uid = option;
-+			root->i_uid = make_kuid(current_user_ns(), option);
-+			if (!uid_valid(root->i_uid))
-+				return 0;
- 			break;
- 		case Opt_gid:
- 			if (match_int(&args[0], &option))
- 				return 0;
--			root->i_gid = option;
-+			root->i_gid = make_kgid(current_user_ns(), option);
-+			if (!gid_valid(root->i_gid))
-+				return 0;
- 			break;
- 		case Opt_mode:
- 			if (match_octal(&args[0], &option))
--- 
-1.8.1.4
+No worries, I barely read them anyway :)
 
-On Wed, 21 Aug 2013 10:56:54 -0500
-Ben Myers <bpm@sgi.com> wrote:
+> This patchset just seeks to clean up and refactor some things in
+> memory.c for better understanding and possibly better performance due do
+> a decrease in mutex acquisitions and refcount churn at boot time.  No
+> functional change is intended by this set!
 
-> Hey Dwight,
-> 
-> On Wed, Aug 21, 2013 at 02:30:04PM +0800, Jeremy Kerr wrote:
-> > > Yes, I agree. The other filesystems that take an Opt_uid as well
-> > > do use current_user_ns() and not init_user_ns. They also do a
-> > > uid_valid() check and fail the mount (or fallback to
-> > > GLOBAL_ROOT_UID). So I think that would look like this:
-> > 
-> > Looks good to me. Builds and mounts as expected.
-> > 
-> > Acked-by: Jeremy Kerr <jk@ozlabs.org>
-> 
-> Could you repost this patch with the right subject and a commit
-> header?  Given Jeremy's Ack I think we could proceed to pull this in.
+All looks good, thanks for breaking it up into reviewable patches.  Now
+applied.
 
-Sure, I just wanted to make sure someone had tested it first, which it
-looks like Jeremy did, thanks.
-
-> Regards,
-> 	Ben
+greg k-h
