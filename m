@@ -1,27 +1,28 @@
-Return-Path: <B45939@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EB2C82C0103
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 16:59:29 +1000 (EST)
-Message-ID: <5214653E.4080105@freescale.com>
-Date: Wed, 21 Aug 2013 14:59:10 +0800
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-ee0-x236.google.com (mail-ee0-x236.google.com
+ [IPv6:2a00:1450:4013:c00::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CDC7D2C0103
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 17:26:47 +1000 (EST)
+Received: by mail-ee0-f54.google.com with SMTP id e53so36798eek.27
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 00:26:43 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Wed, 21 Aug 2013 09:26:40 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] Kconfig: Remove hotplug enable hints in CONFIG_KEXEC
+ help texts
+Message-ID: <20130821072640.GA27495@gmail.com>
+References: <1377027483-17025-1-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
-To: Vinod Koul <vinod.koul@intel.com>, <devicetree@vger.kernel.org>,
- <rob.herring@calxeda.com>, <pawel.moll@arm.com>, <mark.rutland@arm.com>,
- <swarren@wwwdotorg.org>, <ian.campbell@citrix.com>
-Subject: Re: [PATCH v7 0/3] DMA: Freescale: Add support for 8-channel DMA
- engine
-References: <1375094944-3343-1-git-send-email-hongbo.zhang@freescale.com>
- <20130729105901.GI29095@intel.com> <521329EA.3050900@freescale.com>
- <20130820081522.GC5810@intel.com>
-In-Reply-To: <20130820081522.GC5810@intel.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linux-kernel@vger.kernel.org, grant.likely@linaro.org, djbw@fb.com,
- scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1377027483-17025-1-git-send-email-geert@linux-m68k.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, x86@kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,35 +32,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi DT maintainers,
-Rob Herring, Pawel Moll, Mark Rutland, Stephen Warren, Ian Campbell, 
-could you please have a look at [1/3] and [2/3] of these patch set.
-These patches have been fully reviewed by Scott Wood, and the DMA 
-maintainer Vinod needs a Acted-by: from DT maintainers.
-Thanks.
 
-On 08/20/2013 04:15 PM, Vinod Koul wrote:
-> On Tue, Aug 20, 2013 at 04:33:46PM +0800, Hongbo Zhang wrote:
->> On 07/29/2013 06:59 PM, Vinod Koul wrote:
->>> On Mon, Jul 29, 2013 at 06:49:01PM +0800, hongbo.zhang@freescale.com wrote:
->>>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
->>>>
->>>> Hi Vinod, Dan, Scott and Leo, please have a look at these V7 patches.
->>> The dma relates changes look okay to me.
->>>
->>> I need someone to review and ACK the DT bindings.
->>>
->>> ~Vinod
->> Vinod,
->> Are you using this tree?
->> http://git.infradead.org/users/vkoul/slave-dma.git
-> Yes
->
->> Did you merge these patches?
-> No
->
-> As I said I would like someone who know DT and dma binding to ack them. I see
-> devicetree ML has been cced, can Arnd or someone else review these...
->
-> ~Vinod
->
+* Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+
+> commit 40b313608ad4ea655addd2ec6cdd106477ae8e15 ("Finally eradicate
+> CONFIG_HOTPLUG") removed remaining references to CONFIG_HOTPLUG, but missed
+> a few plain English references in the CONFIG_KEXEC help texts.
+> 
+> Remove them, too.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+>  arch/arm/Kconfig     |    3 +--
+>  arch/ia64/Kconfig    |    6 +++---
+>  arch/mips/Kconfig    |    6 +++---
+>  arch/powerpc/Kconfig |    6 +++---
+>  arch/sh/Kconfig      |    6 +++---
+>  arch/x86/Kconfig     |    6 +++---
+>  6 files changed, 16 insertions(+), 17 deletions(-)
+[...]
+>  	bool "kernel crash dumps (EXPERIMENTAL)"
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index b32ebf9..6ace5de 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -1627,9 +1627,9 @@ config KEXEC
+>  
+>  	  It is an ongoing process to be certain the hardware in a machine
+>  	  is properly shutdown, so do not be surprised if this code does not
+> -	  initially work for you.  It may help to enable device hotplugging
+> -	  support.  As of this writing the exact hardware interface is
+> -	  strongly in flux, so no good recommendation can be made.
+> +	  initially work for you.  As of this writing the exact hardware
+> +	  interface is strongly in flux, so no good recommendation can be
+> +	  made.
+>  
+>  config CRASH_DUMP
+>  	bool "kernel crash dumps"
+
+Acked-by: Ingo Molnar <mingo@kernel.org>
+
+Thanks,
+
+	Ingo
