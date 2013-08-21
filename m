@@ -1,15 +1,20 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id C123D2C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 01:59:29 +1000 (EST)
-Date: Wed, 21 Aug 2013 17:59:24 +0200
-Message-Id: <201308211559.r7LFxOBV025845@localhost.localdomain>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.cz>
-Subject: [PATCH] Adding proper request of GPIO used by cpm_uart driver
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-serial@vger.kernel.org
+Return-Path: <bpm@sgi.com>
+Date: Wed, 21 Aug 2013 10:56:54 -0500
+From: Ben Myers <bpm@sgi.com>
+To: Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: linux-next: build failure after merge of the final tree
+Message-ID: <20130821155654.GI5262@sgi.com>
+References: <20130820172052.1f0d89ddf6a1a40ef70333fd@canb.auug.org.au>
+ <20130820120702.000b044e@oracle.com>
+ <201308202246.30869.arnd@arndb.de>
+ <20130821010822.220f592a@oracle.com> <52145E6C.80404@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <52145E6C.80404@ozlabs.org>
+Cc: cbe-oss-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Arnd Bergmann <arnd@arndb.de>, Dwight Engen <dwight.engen@oracle.com>,
+ linux-kernel@vger.kernel.org, xfs@oss.sgi.com, linux-next@vger.kernel.org,
+ Gao feng <gaofeng@cn.fujitsu.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,48 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cpm_uart serial driver uses GPIO for control signals. In order to be used
-properly, GPIOs have to be reserved. Comment in gpiolib.c considers illegal
-the use of GPIOs without requesting them. In addition, the direction of the
-GPIO has to be set properly.
+Hey Dwight,
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+On Wed, Aug 21, 2013 at 02:30:04PM +0800, Jeremy Kerr wrote:
+> > Yes, I agree. The other filesystems that take an Opt_uid as well do use
+> > current_user_ns() and not init_user_ns. They also do a uid_valid()
+> > check and fail the mount (or fallback to GLOBAL_ROOT_UID). So I think
+> > that would look like this:
+> 
+> Looks good to me. Builds and mounts as expected.
+> 
+> Acked-by: Jeremy Kerr <jk@ozlabs.org>
 
-diff -ur linux-3.8.13/drivers/tty/serial/cpm_uart/cpm_uart_core.c linux/drivers/tty/serial/cpm_uart/cpm_uart_core.c
---- linux-3.8.13/drivers/tty/serial/cpm_uart/cpm_uart_core.c	2013-08-21 05:34:03.000000000 +0200
-+++ linux/drivers/tty/serial/cpm_uart/cpm_uart_core.c	2013-08-21 05:30:04.000000000 +0200
-@@ -1213,8 +1213,32 @@
- 		goto out_pram;
- 	}
- 
--	for (i = 0; i < NUM_GPIOS; i++)
--		pinfo->gpios[i] = of_get_gpio(np, i);
-+	for (i = 0; i < NUM_GPIOS; i++) {
-+		int gpio;
-+
-+		pinfo->gpios[i] = -1;
-+
-+		gpio = of_get_gpio(np, i);
-+
-+		if (gpio_is_valid(gpio)) {
-+			ret = gpio_request(gpio, "cpm_uart");
-+			if (ret) {
-+				pr_err("can't request gpio #%d: %d\n", i, ret);
-+				continue;
-+			}
-+			if (i == GPIO_RTS || i == GPIO_DTR)
-+				ret = gpio_direction_output(gpio, 0);
-+			else
-+				ret = gpio_direction_input(gpio);
-+			if (ret) {
-+				pr_err("can't set direction for gpio #%d: %d\n",
-+					i, ret);
-+				gpio_free(gpio);
-+				continue;
-+			}
-+			pinfo->gpios[i] = gpio;
-+		}
-+	}
- 
- #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
- 	udbg_putc = NULL;
+Could you repost this patch with the right subject and a commit header?  Given
+Jeremy's Ack I think we could proceed to pull this in.
+
+Regards,
+	Ben
