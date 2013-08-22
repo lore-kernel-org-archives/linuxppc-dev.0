@@ -1,33 +1,22 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id E0FF82C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 23:29:17 +1000 (EST)
-Message-ID: <52161245.3080404@arm.com>
-Date: Thu, 22 Aug 2013 14:29:41 +0100
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Return-Path: <imr@rtschenk.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0D3002C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 23:56:19 +1000 (EST)
+From: Rojhalat Ibrahim <imr@rtschenk.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 3/4] powerpc/booke64: Use appropriate -mcpu
+Date: Thu, 22 Aug 2013 15:56:11 +0200
+Message-ID: <1753626.1M86qx3vEi@pcimr>
+In-Reply-To: <1377051162-2588-4-git-send-email-scottwood@freescale.com>
+References: <1377051162-2588-1-git-send-email-scottwood@freescale.com>
+ <1377051162-2588-4-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4 03/19] powerpc: refactor of_get_cpu_node to support
- other architectures
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1377152143.25016.289.camel@pasglop>
-In-Reply-To: <1377152143.25016.289.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jonas Bonn <jonas@southpole.se>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michal Simek <monstr@monstr.eu>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+Cc: Scott Wood <scottwood@freescale.com>,
+ Catalin Udma <catalin.udma@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,43 +26,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22/08/13 07:15, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-08-20 at 10:30 +0100, Sudeep KarkadaNagesha wrote:
->> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>
->> Currently different drivers requiring to access cpu device node are
->> parsing the device tree themselves. Since the ordering in the DT need
->> not match the logical cpu ordering, the parsing logic needs to consider
->> that. However, this has resulted in lots of code duplication and in some
->> cases even incorrect logic.
->>
->> It's better to consolidate them by adding support for getting cpu
->> device node for a given logical cpu index in DT core library. However
->> logical to physical index mapping can be architecture specific.
->>
->> PowerPC has it's own implementation to get the cpu node for a given
->> logical index.
->>
->> This patch refactors the current implementation of of_get_cpu_node.
->> This in preparation to move the implementation to DT core library.
->> It separates out the logical to physical mapping so that a default
->> matching of the physical id to the logical cpu index can be added
->> when moved to common code. Architecture specific code can override it.
->=20
-> So the patch unfortunately collides with other changes in powerpc -next,
-> though it's not a huge deal and not hard to fixup, but expect Linus
-> to tick unless we sort it out some other way.
->=20
-> Appart from that, it's fine, builds on all my test configs and doesn't
-> seem to negatively impact things as far as I can tell so far...
->=20
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->=20
+Just out of curiosity: What's the difference (if any) between -mcpu=e500mc64 
+and -mcpu=e5500? AFAIK -mcpu=e500mc64 is supported by gcc since at least 
+version 4.6 whereas -mcpu=e5500 is only supported since gcc 4.8. But is there 
+actually any difference?
 
-Hi Ben,
+   Rojhalat
 
-Thanks a lot for testing and ACK.
-I will check with Rafael about these (trivial) conflicts.
 
-Regards,
-Sudeep
+On Tuesday 20 August 2013 21:12:41 Scott Wood wrote:
+> By default use -mcpu=powerpc64 rather than -mtune=power7
+> 
+> Add options for e5500/e6500, with fallbacks for older compilers.
+> 
+> Hide the POWER cpu options in booke configs.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+>  arch/powerpc/Makefile                  |  9 +++++++++
+>  arch/powerpc/platforms/Kconfig.cputype | 13 +++++++++++++
+>  2 files changed, 22 insertions(+)
+> 
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 6930c93..32dfd5d 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -88,13 +88,22 @@ CFLAGS-$(CONFIG_PPC64)	+= $(call
+> cc-option,-mcmodel=medium,-mminimal-toc) CFLAGS-$(CONFIG_PPC64)	+= $(call
+> cc-option,-mno-pointers-to-nested-functions) CFLAGS-$(CONFIG_PPC32)	:=
+> -ffixed-r2 -mmultiple
+> 
+> +ifeq ($(CONFIG_PPC_BOOK3S_64),y)
+>  CFLAGS-$(CONFIG_GENERIC_CPU) += $(call
+> cc-option,-mtune=power7,-mtune=power4) +else
+> +CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=powerpc64
+> +endif
+> +
+>  CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
+>  CFLAGS-$(CONFIG_POWER4_CPU) += $(call cc-option,-mcpu=power4)
+>  CFLAGS-$(CONFIG_POWER5_CPU) += $(call cc-option,-mcpu=power5)
+>  CFLAGS-$(CONFIG_POWER6_CPU) += $(call cc-option,-mcpu=power6)
+>  CFLAGS-$(CONFIG_POWER7_CPU) += $(call cc-option,-mcpu=power7)
+> 
+> +E5500_CPU := $(call cc-option,-mcpu=e500mc64,-mcpu=powerpc64)
+> +CFLAGS-$(CONFIG_E5500_CPU) += $(E5500_CPU)
+> +CFLAGS-$(CONFIG_E6500_CPU) += $(call cc-option,-mcpu=e6500,$(E5500_CPU))
+> +
+>  CFLAGS-$(CONFIG_TUNE_CELL) += $(call cc-option,-mtune=cell)
+> 
+>  KBUILD_CPPFLAGS	+= -Iarch/$(ARCH)
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype
+> b/arch/powerpc/platforms/Kconfig.cputype index 47d9a03..6704e2e 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -96,18 +96,31 @@ config GENERIC_CPU
+> 
+>  config CELL_CPU
+>  	bool "Cell Broadband Engine"
+> +	depends on PPC_BOOK3S_64
+> 
+>  config POWER4_CPU
+>  	bool "POWER4"
+> +	depends on PPC_BOOK3S_64
+> 
+>  config POWER5_CPU
+>  	bool "POWER5"
+> +	depends on PPC_BOOK3S_64
+> 
+>  config POWER6_CPU
+>  	bool "POWER6"
+> +	depends on PPC_BOOK3S_64
+> 
+>  config POWER7_CPU
+>  	bool "POWER7"
+> +	depends on PPC_BOOK3S_64
+> +
+> +config E5500_CPU
+> +	bool "Freescale e5500"
+> +	depends on E500
+> +
+> +config E6500_CPU
+> +	bool "Freescale e6500"
+> +	depends on E500
+> 
+>  endchoice
