@@ -1,33 +1,23 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 629AD2C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 23:59:39 +1000 (EST)
-Date: Thu, 22 Aug 2013 14:59:30 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to
- support other architectures
-Message-ID: <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop>
- <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
- <5212177C.8000709@gmail.com> <521223FA.5050903@arm.com>
+Return-Path: <B07421@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 22CF12C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 00:18:38 +1000 (EST)
+Message-ID: <1377181107.5029.91.camel@snotra.buserror.net>
+Subject: Re: [PATCH 3/4] powerpc/booke64: Use appropriate -mcpu
+From: Scott Wood <scottwood@freescale.com>
+To: Rojhalat Ibrahim <imr@rtschenk.de>
+Date: Thu, 22 Aug 2013 09:18:27 -0500
+In-Reply-To: <1753626.1M86qx3vEi@pcimr>
+References: <1377051162-2588-1-git-send-email-scottwood@freescale.com>
+ <1377051162-2588-4-git-send-email-scottwood@freescale.com>
+ <1753626.1M86qx3vEi@pcimr>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <521223FA.5050903@arm.com>
-Cc: Jonas Bonn <jonas@southpole.se>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michal Simek <monstr@monstr.eu>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Tomasz Figa <tomasz.figa@gmail.com>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Rob Herring <robherring2@gmail.com>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Catalin Udma <catalin.udma@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,45 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 19, 2013 at 02:56:10PM +0100, Sudeep KarkadaNagesha wrote:
-> On 19/08/13 14:02, Rob Herring wrote:
-> > On 08/19/2013 05:19 AM, Mark Rutland wrote:
-> >> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
-> >>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
-> >>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
-> >>>> which 
-> >>>> the updated bindings[1] define #address-cells = <0> and so no reg 
-> >>>> property.
-> >>>>
-> >>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
-> >>>
-> >>> Why did you do that in the binding ? That sounds like looking to create
-> >>> problems ... 
-> >>>
-> >>> Traditionally, UP setups just used "0" as the "reg" property on other
-> >>> architectures, why do differently ?
-> >>
-> >> The decision was taken because we defined our reg property to refer to
-> >> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
-> >> there's no MPIDR register at all. Given there can only be a single CPU
-> >> in that case, describing a register that wasn't present didn't seem
-> >> necessary or helpful.
-> > 
-> > What exactly reg represents is up to the binding definition, but it
-> > still should be present IMO. I don't see any issue with it being
-> > different for pre-v7.
-> > 
-> Yes it's better to have 'reg' with value 0 than not having it.
-> Otherwise this generic of_get_cpu_node implementation would need some
-> _hack_ to handle that case.
+On Thu, 2013-08-22 at 15:56 +0200, Rojhalat Ibrahim wrote:
+> Just out of curiosity: What's the difference (if any) between -mcpu=e500mc64 
+> and -mcpu=e5500? AFAIK -mcpu=e500mc64 is supported by gcc since at least 
+> version 4.6 whereas -mcpu=e5500 is only supported since gcc 4.8. But is there 
+> actually any difference?
 
-I'm not sure that having some code to handle a difference in standard
-between two architectures is a hack. If anything, I'd argue encoding a
-reg of 0 that corresponds to a nonexistent MPIDR value (given that's
-what the reg property is defined to map to on ARM) is more of a hack ;)
+I had asked our compiler person that before sending...  the answer
+wasn't very clear, but when I asked whether there was any benefit for
+the kernel specifying e5500 (requiring an extra fallback check) he said
+"probably not".  Eventually they'll probably just become aliases for the
+same thing.  Currently they do have separate .md files though, so
+they're not identical.
 
-I'm not averse to having a reg value of 0 for this case, but given that
-there are existing devicetrees without it, requiring a reg property will
-break compatibility with them.
-
-Mark.
+-Scott
