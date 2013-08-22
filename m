@@ -1,35 +1,26 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 7458F2C0095
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 02:51:25 +1000 (EST)
-Message-ID: <521641A6.2070503@arm.com>
-Date: Thu, 22 Aug 2013 17:51:50 +0100
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Return-Path: <swarren@wwwdotorg.org>
+Received: from avon.wwwdotorg.org (avon.wwwdotorg.org
+ [IPv6:2001:470:1f0f:bd7::2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 15E4F2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 05:56:41 +1000 (EST)
+Message-ID: <52166CF0.9080402@wwwdotorg.org>
+Date: Thu, 22 Aug 2013 13:56:32 -0600
+From: Stephen Warren <swarren@wwwdotorg.org>
 MIME-Version: 1.0
-To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop>
- <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
- <5212177C.8000709@gmail.com> <521223FA.5050903@arm.com>
- <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
-In-Reply-To: <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Cc: Jonas Bonn <jonas@southpole.se>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michal Simek <monstr@monstr.eu>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- Tomasz Figa <tomasz.figa@gmail.com>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Rob Herring <robherring2@gmail.com>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [PATCH v10 2/2] ASoC: fsl: Add S/PDIF machine driver
+References: <cover.1377054540.git.b42378@freescale.com>
+ <e9cf5e37f858dea78319720f007f66c8c063885f.1377054540.git.b42378@freescale.com>
+ <52150763.8020707@wwwdotorg.org> <20130822114027.GA4258@MrMyself>
+In-Reply-To: <20130822114027.GA4258@MrMyself>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, festevam@gmail.com,
+ s.hauer@pengutronix.de, timur@tabi.org, rob.herring@calxeda.com,
+ tomasz.figa@gmail.com, broonie@kernel.org, p.zabel@pengutronix.de,
+ R65777@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,66 +30,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22/08/13 14:59, Mark Rutland wrote:
-> On Mon, Aug 19, 2013 at 02:56:10PM +0100, Sudeep KarkadaNagesha wrote:
->> On 19/08/13 14:02, Rob Herring wrote:
->>> On 08/19/2013 05:19 AM, Mark Rutland wrote:
->>>> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote=
-:
->>>>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
->>>>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
->>>>>> which=20
->>>>>> the updated bindings[1] define #address-cells =3D <0> and so no reg=
-=20
->>>>>> property.
->>>>>>
->>>>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
->>>>>
->>>>> Why did you do that in the binding ? That sounds like looking to crea=
-te
->>>>> problems ...=20
->>>>>
->>>>> Traditionally, UP setups just used "0" as the "reg" property on other
->>>>> architectures, why do differently ?
->>>>
->>>> The decision was taken because we defined our reg property to refer to
->>>> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
->>>> there's no MPIDR register at all. Given there can only be a single CPU
->>>> in that case, describing a register that wasn't present didn't seem
->>>> necessary or helpful.
->>>
->>> What exactly reg represents is up to the binding definition, but it
->>> still should be present IMO. I don't see any issue with it being
->>> different for pre-v7.
->>>
->> Yes it's better to have 'reg' with value 0 than not having it.
->> Otherwise this generic of_get_cpu_node implementation would need some
->> _hack_ to handle that case.
->=20
-> I'm not sure that having some code to handle a difference in standard
-> between two architectures is a hack. If anything, I'd argue encoding a
-> reg of 0 that corresponds to a nonexistent MPIDR value (given that's
-> what the reg property is defined to map to on ARM) is more of a hack ;)
->=20
-Agreed. But I am more confused.
+On 08/22/2013 05:40 AM, Nicolin Chen wrote:
+> Hi Stephen,
+> 
+> On Wed, Aug 21, 2013 at 12:30:59PM -0600, Stephen Warren wrote:
+>> I still don't think those two properties are correct.
+>>
+>> Exactly what node will those phandles point at?
+>>
+>> There definitely should not be a DT node for any "dummy CODEC",
+>> irrespective of whether this binding calls the other node a "CODEC" or a
+>> "dummy CODEC".
+>>
+>> If these properties are to contain phandles, it would be acceptable for
+>> the referenced node to be:
+>>
+>> * A node representing the physical connector/jack on the board.
+>>
+>> * A node representing some other IP block on the board, such as an HDMI
+>> encoder/display-controller
+>>
+>> I think those options are unlikely in general, so I think instead these
+>> properties should just be Boolean indicating that "something" is
+>> connector to the S/PDIF RX/TX, without specifying what that "something"
+>> is. It doesn't matter what at least in the connector/jack case, although
+>> perhaps it does in the HDMI encoder/display-controller?
+> 
+> Documentation/devicetree/bindings/sound/spdif-receiver.txt
+> If I understand correctly, this doc for the dummy codec should be invalid?
 
-1. This raises another question as how much do we follow from ePAPR
-standard. ePAPR marks the reg property in /cpu as required.
-Does that mean we must have all the properties marked as required to be
-present in DT ? On the contrary timebase/clock-frequency is some thing
-that can be found dynamically and need not be present but they are
-marked as required too.
+Yes, I'm not convinced that binding is a good idea; it describes
+something that often doesn't actually exist in HW. (Sometimes there's a
+real S/PDIF receiving device on board, but sometimes there's nothing
+except a jack/connector).
 
-> I'm not averse to having a reg value of 0 for this case, but given that
-> there are existing devicetrees without it, requiring a reg property will
-> break compatibility with them.
->=20
+It'd be useful if other DT binding maintainers could weigh in on this to
+confirm/deny my thoughts.
 
-2. What exactly does backward compatibility has to cover ? This can't be
-considered as breaking of the binding definition. In continuation to the
-above argument that reg property is required, do we need to cover this
-as it's clearly a case of missing required property(this holds only if
-reg is required always).
+> But this patch, the spdif machine driver, is based on this codec driver,
+> pls check the following code:
+> 
+> 164 +       codec_rx_np = of_parse_phandle(np, "spdif-receiver", 0);
+> 165 +       if (codec_rx_np) {
+> 169 +               data->dai[num_links].codec_of_node = codec_rx_np;
+> 173 +       }
+> 
+> Accordingly, the binding I planned to add in DT:
+> 
+> 27 +       spdif_rx_codec: spdif-receiver {
+> 28 +               compatible = "linux,spdif-dir";
+> 29 +       };
+> 30 +
+> 31 +       sound-spdif {
+> 32 +               compatible = "fsl,imx-audio-spdif",
+> 33 +                          "fsl,imx-sabreauto-spdif";
+> 34 +               model = "imx-spdif";
+> 35 +               spdif-controller = <&spdif>;
+> 37 +               spdif-receiver = <&spdif_rx_codec>;
+> 38 +       };
+> 
+> So if the DT can't allow me to include this codec node, how could I
+> handle it in the current baseline.
 
-Regards,
-Sudeep
+I would expect the machine driver's probe routine to create the dummy
+S/PDIF receiver object itself, and register it by calling
+snd_soc_register_codec(). That way, only the machine driver code need
+know it (dummy CODEC) exists.
