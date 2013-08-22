@@ -1,20 +1,23 @@
 Return-Path: <seiji.aguchi@hds.com>
-Received: from usindpps04.hds.com (usindpps04.hds.com [207.126.252.17])
+Received: from usindpps03.hds.com (usindpps03.hds.com [207.126.252.16])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 73E2D2C00A3
- for <linuxppc-dev@ozlabs.org>; Fri, 23 Aug 2013 09:43:20 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 2484E2C0091
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Aug 2013 09:47:24 +1000 (EST)
 From: Seiji Aguchi <seiji.aguchi@hds.com>
-To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>, "linuxppc-dev@ozlabs.org"
- <linuxppc-dev@ozlabs.org>, "tony.luck@intel.com" <tony.luck@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "keescook@chromium.org" <keescook@chromium.org>
-Subject: RE: [RFC PATCH v2 06/11] pstore: Add decompression support to pstore
-Date: Thu, 22 Aug 2013 23:04:11 +0000
-Message-ID: <A5ED84D3BB3A384992CBB9C77DEDA4D443E8F0B8@USINDEM103.corp.hds.com>
+To: "Luck, Tony" <tony.luck@intel.com>, Aruna Balakrishnaiah
+ <aruna@linux.vnet.ibm.com>, "linuxppc-dev@ozlabs.org"
+ <linuxppc-dev@ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "keescook@chromium.org"
+ <keescook@chromium.org>
+Subject: RE: [RFC PATCH v2 04/11] pstore: Add compression support to pstore
+Date: Thu, 22 Aug 2013 23:47:02 +0000
+Message-ID: <A5ED84D3BB3A384992CBB9C77DEDA4D443E8F1E2@USINDEM103.corp.hds.com>
 References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
- <20130816131821.3338.27923.stgit@aruna-ThinkPad-T420>
-In-Reply-To: <20130816131821.3338.27923.stgit@aruna-ThinkPad-T420>
+ <20130816131805.3338.68767.stgit@aruna-ThinkPad-T420>
+ <A5ED84D3BB3A384992CBB9C77DEDA4D443E8F0D7@USINDEM103.corp.hds.com>
+ <3908561D78D1C84285E8C5FCA982C28F31CC7AC0@ORSMSX106.amr.corp.intel.com>
+In-Reply-To: <3908561D78D1C84285E8C5FCA982C28F31CC7AC0@ORSMSX106.amr.corp.intel.com>
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>,
@@ -30,27 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgta2VybmVsLW93
-bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LWtlcm5lbC1vd25lckB2Z2VyLmtlcm5l
-bC5vcmddIE9uIEJlaGFsZiBPZiBBcnVuYSBCYWxha3Jpc2huYWlhaA0KPiBTZW50OiBGcmlkYXks
-IEF1Z3VzdCAxNiwgMjAxMyA5OjE4IEFNDQo+IFRvOiBsaW51eHBwYy1kZXZAb3psYWJzLm9yZzsg
-dG9ueS5sdWNrQGludGVsLmNvbTsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsga2Vlc2Nv
-b2tAY2hyb21pdW0ub3JnDQo+IENjOiBqa2VuaXN0b0BsaW51eC52bmV0LmlibS5jb207IGFuYW50
-aEBpbi5pYm0uY29tOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IGNib3VhdG1haWxydUBnbWFp
-bC5jb207DQo+IG1haGVzaEBsaW51eC52bmV0LmlibS5jb207IGNjcm9zc0BhbmRyb2lkLmNvbQ0K
-PiBTdWJqZWN0OiBbUkZDIFBBVENIIHYyIDA2LzExXSBwc3RvcmU6IEFkZCBkZWNvbXByZXNzaW9u
-IHN1cHBvcnQgdG8gcHN0b3JlDQo+IA0KPiBCYXNlZCBvbiB0aGUgZmxhZyAnY29tcHJlc3NlZCcg
-c2V0IG9yIG5vdCwgcHN0b3JlIHdpbGwgZGVjb21wcmVzcyB0aGUNCj4gZGF0YSByZXR1cm5pbmcg
-YSBwbGFpbiB0ZXh0IGZpbGUuIElmIGRlY29tcHJlc3Npb24gZmFpbHMgZm9yIGEgcGFydGljdWxh
-cg0KPiByZWNvcmQgaXQgd2lsbCBoYXZlIHRoZSBjb21wcmVzc2VkIGRhdGEgaW4gdGhlIGZpbGUg
-d2hpY2ggY2FuIGJlDQo+IGRlY29tcHJlc3NlZCB3aXRoICdvcGVuc3NsJyBjb21tYW5kIGxpbmUg
-dG9vbC4NCg0KSWYgdGhlIGRlY29tcHJlc3Npb24gZmFpbHMgYW5kIG9wZW5zc2wgZG9lc24ndCB3
-b3JrLCB0aGUgd29yc3QgY2FzZSBpcyB0aGF0IHVzZXJzIGNhbid0IHJlYWQgdGhlIGVudHJ5Lg0K
-SW4gdGhhdCBjYXNlLCBwc3RvcmUgaXMgbWVhbmluZ2xlc3MgYXQgYWxsLg0KDQpBbHNvLCBmb3Ig
-dXNlcnMgd2hvIHdhbnQgdG8gZ2V0IGEgc2luZ2xlIHBhbmljIG1lc3NhZ2UsIGEgY29tcHJlc3Np
-b24gaXMgbm90IG5lZWRlZC4NCg0KU28sIEkgdGhpbmsgd2Ugc3RpbGwgaGF2ZSB0byBzdXBwb3J0
-IG5vbi1jb21wcmVzc2lvbiBtb2RlLg0KKElNTywgcHN0b3JlIGNhbiB0YWtlIGtkdW1wIGFzIGEg
-bW9kZWwuIEtkdW1wIHN1cHBvcnRzIGJvdGggY29tcHJlc3Npb24gYW5kIG5vbi1jb21wcmVzc2lv
-biBtb2RlLikNCg0KQnV0LCBpZiB5b3UgdGhpbmsgbXkgY29tbWVudCBpcyBvdXRzaWRlIHRoaXMg
-cGF0Y2hzZXQsIGl0J3MgT0suDQpXZSBjYW4gbWFrZSBpdCB3aXRoIGEgc2VwYXJhdGUgcGF0Y2gu
-DQoNClNlaWppDQo=
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTHVjaywgVG9ueSBbbWFp
+bHRvOnRvbnkubHVja0BpbnRlbC5jb21dDQo+IFNlbnQ6IFRodXJzZGF5LCBBdWd1c3QgMjIsIDIw
+MTMgNzoxNyBQTQ0KPiBUbzogU2VpamkgQWd1Y2hpOyBBcnVuYSBCYWxha3Jpc2huYWlhaDsgbGlu
+dXhwcGMtZGV2QG96bGFicy5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGtlZXNj
+b29rQGNocm9taXVtLm9yZw0KPiBDYzogamtlbmlzdG9AbGludXgudm5ldC5pYm0uY29tOyBhbmFu
+dGhAaW4uaWJtLmNvbTsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBjYm91YXRtYWlscnVAZ21h
+aWwuY29tOw0KPiBtYWhlc2hAbGludXgudm5ldC5pYm0uY29tOyBjY3Jvc3NAYW5kcm9pZC5jb20N
+Cj4gU3ViamVjdDogUkU6IFtSRkMgUEFUQ0ggdjIgMDQvMTFdIHBzdG9yZTogQWRkIGNvbXByZXNz
+aW9uIHN1cHBvcnQgdG8gcHN0b3JlDQo+IA0KPiA8MT5bICAzODMuMjA5MDU3XSBSSVAgIFs8ZmZm
+ZmZmZmY4MTNkMzk0Nj5dIHN5c3JxX2hhbmRsZV9jcmFzaCsweDE2LzB4MjANCj4gPDQ+WyAgMzgz
+LjIwOTA1N10gIFJTUCA8ZmZmZjg4MDA2ZjU1MWU4MD4NCj4gPDQ+WyAgMzgzLjIwOTA1N10gQ1Iy
+OiAwMDAwMDAwMDAwMDAwMDAwDQo+IDw0PlsgIDM4My4yMDkwNTddIC0tLVsgZW5kIHRyYWNlIDA0
+YTFjZGRhZDM3YjRiMzMgXS0tLQ0KPiA8Mz5bICAzODMuMjA5MDU3XSBwc3RvcmU6IGNvbXByZXNz
+aW9uIGZhaWxlZCBmb3IgUGFydCAyIHJldHVybmVkIC01DQo+IDwzPlsgIDM4My4yMDkwNTddIHBz
+dG9yZTogQ2FwdHVyZSB1bmNvbXByZXNzZWQgb29wcy9wYW5pYyByZXBvcnQgb2YgUGFydCAyDQo+
+IDwzPlsgIDM4My4yMDkwNTddIHBzdG9yZTogY29tcHJlc3Npb24gZmFpbGVkIGZvciBQYXJ0IDUg
+cmV0dXJuZWQgLTUNCj4gDQo+IEludGVyZXN0aW5nLiAgV2l0aCBFUlNUIGJhY2tlbmQgSSBkaWRu
+J3Qgc2VlIHRoZXNlIG1lc3NhZ2VzLiAgVHJhY2VzIGluDQo+IHBzdG9yZSByZWNvdmVyZWQgZmls
+ZXMgZ28gYXMgZmFyIGFzIHRoZSBsaW5lIGJlZm9yZSB0aGUgIi0tLVsgZW5kIHRyYWNlIDA0YTFj
+ZGRhZDM3YjRiMzMgXS0tLSINCj4gDQo+IFdoeSB0aGUgZGlmZmVyZW5jZSBkZXBlbmRpbmcgb24g
+d2hpY2ggYmFjayBlbmQgaXMgaW4gdXNlPw0KDQpJIHRoaW5rIHRoZSBkaWZmZXJlbmNlIGRvZXNu
+J3QgZGVwZW5kIG9uIHRoZSBiYWNrIGVuZC4NClJhdGhlciBpdCBkZXBlbmRzIG9uIHRoZSBlbnZp
+cm9ubWVudC4NCg0KSSB0ZXN0ZWQgb24gYSBrdm0gZ3Vlc3Qgd2l0aCBPVk1GLg0KDQpTZWlqaQ0K
+DQoNCj4gDQo+IEJ1dCBJIGFncmVlIHRoYXQgd2Ugc2hvdWxkbid0IGhhdmUgdGhlc2UgbWVzc2Fn
+ZXMuICBUaGV5IHVzZSB1cCBzcGFjZQ0KPiBpbiB0aGUgcGVyc2lzdGVudCBzdG9yZSB0aGF0IGNv
+dWxkIGJlIGJldHRlciB1c2VkIHNhdmluZyBzb21lIG1vcmUgbGluZXMNCj4gZnJvbSBlYXJsaWVy
+IGluIHRoZSBjb25zb2xlIGxvZy4NCj4gDQo+IC1Ub255DQo=
