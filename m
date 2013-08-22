@@ -1,17 +1,35 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 5E5CB2C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 02:48:43 +1000 (EST)
-Subject: Re: [PATCH] powerpc/kvm: Handle the boundary condition correctly
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1377171479-25738-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Thu, 22 Aug 2013 17:48:41 +0100
-Message-Id: <1683D101-052D-4BEB-8ED1-6F32C6904850@suse.de>
-References: <1377171479-25738-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Return-Path: <sudeep.karkadanagesha@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id 7458F2C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 02:51:25 +1000 (EST)
+Message-ID: <521641A6.2070503@arm.com>
+Date: Thu, 22 Aug 2013 17:51:50 +0100
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+MIME-Version: 1.0
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
+ other architectures
+References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop>
+ <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
+ <5212177C.8000709@gmail.com> <521223FA.5050903@arm.com>
+ <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
+In-Reply-To: <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Cc: Jonas Bonn <jonas@southpole.se>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Michal Simek <monstr@monstr.eu>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
+ Tomasz Figa <tomasz.figa@gmail.com>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, Rob Herring <robherring2@gmail.com>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,53 +39,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 22.08.2013, at 12:37, Aneesh Kumar K.V wrote:
-
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-
-Isn't this you?
-
+On 22/08/13 14:59, Mark Rutland wrote:
+> On Mon, Aug 19, 2013 at 02:56:10PM +0100, Sudeep KarkadaNagesha wrote:
+>> On 19/08/13 14:02, Rob Herring wrote:
+>>> On 08/19/2013 05:19 AM, Mark Rutland wrote:
+>>>> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote=
+:
+>>>>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
+>>>>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
+>>>>>> which=20
+>>>>>> the updated bindings[1] define #address-cells =3D <0> and so no reg=
+=20
+>>>>>> property.
+>>>>>>
+>>>>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
+>>>>>
+>>>>> Why did you do that in the binding ? That sounds like looking to crea=
+te
+>>>>> problems ...=20
+>>>>>
+>>>>> Traditionally, UP setups just used "0" as the "reg" property on other
+>>>>> architectures, why do differently ?
+>>>>
+>>>> The decision was taken because we defined our reg property to refer to
+>>>> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
+>>>> there's no MPIDR register at all. Given there can only be a single CPU
+>>>> in that case, describing a register that wasn't present didn't seem
+>>>> necessary or helpful.
+>>>
+>>> What exactly reg represents is up to the binding definition, but it
+>>> still should be present IMO. I don't see any issue with it being
+>>> different for pre-v7.
+>>>
+>> Yes it's better to have 'reg' with value 0 than not having it.
+>> Otherwise this generic of_get_cpu_node implementation would need some
+>> _hack_ to handle that case.
 >=20
-> We should be able to copy upto count bytes
-
-Why?
-
-
-Alex
-
+> I'm not sure that having some code to handle a difference in standard
+> between two architectures is a hack. If anything, I'd argue encoding a
+> reg of 0 that corresponds to a nonexistent MPIDR value (given that's
+> what the reg property is defined to map to on ARM) is more of a hack ;)
 >=20
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
-> arch/powerpc/kvm/book3s_64_mmu_hv.c | 4 ++--
-> 1 file changed, 2 insertions(+), 2 deletions(-)
+Agreed. But I am more confused.
+
+1. This raises another question as how much do we follow from ePAPR
+standard. ePAPR marks the reg property in /cpu as required.
+Does that mean we must have all the properties marked as required to be
+present in DT ? On the contrary timebase/clock-frequency is some thing
+that can be found dynamically and need not be present but they are
+marked as required too.
+
+> I'm not averse to having a reg value of 0 for this case, but given that
+> there are existing devicetrees without it, requiring a reg property will
+> break compatibility with them.
 >=20
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c =
-b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> index 710d313..0ae6bb6 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> @@ -1362,7 +1362,7 @@ static ssize_t kvm_htab_read(struct file *file, =
-char __user *buf,
-> 	lbuf =3D (unsigned long __user *)buf;
->=20
-> 	nb =3D 0;
-> -	while (nb + sizeof(hdr) + HPTE_SIZE < count) {
-> +	while (nb + sizeof(hdr) + HPTE_SIZE <=3D count) {
-> 		/* Initialize header */
-> 		hptr =3D (struct kvm_get_htab_header __user *)buf;
-> 		hdr.n_valid =3D 0;
-> @@ -1385,7 +1385,7 @@ static ssize_t kvm_htab_read(struct file *file, =
-char __user *buf,
-> 		/* Grab a series of valid entries */
-> 		while (i < kvm->arch.hpt_npte &&
-> 		       hdr.n_valid < 0xffff &&
-> -		       nb + HPTE_SIZE < count &&
-> +		       nb + HPTE_SIZE <=3D count &&
-> 		       record_hpte(flags, hptp, hpte, revp, 1, =
-first_pass)) {
-> 			/* valid entry, write it out */
-> 			++hdr.n_valid;
-> --=20
-> 1.8.1.2
->=20
+
+2. What exactly does backward compatibility has to cover ? This can't be
+considered as breaking of the binding definition. In continuation to the
+above argument that reg property is required, do we need to cover this
+as it's clearly a case of missing required property(this holds only if
+reg is required always).
+
+Regards,
+Sudeep
