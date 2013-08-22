@@ -1,26 +1,21 @@
-Return-Path: <schivers@csc.com.au>
-Received: from mail1.bemta7.messagelabs.com (mail1.bemta7.messagelabs.com
- [216.82.254.109])
+Return-Path: <haokexin@gmail.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.bemta7.messagelabs.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DA4402C0085
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 10:57:47 +1000 (EST)
-In-Reply-To: <1377040803.3370.88.camel@snotra.buserror.net>
-References: <OFBCFBBD51.E4ECB0DF-ONCA257BC0.0083C866-CA257BC1.0000531E@csc.com>	
- <1376012120.4514.86.camel@snotra.buserror.net>
- <OFE172B06C.BE11BDC5-ONCA257BCC.007C0097-CA257BCD.000D984C@csc.com>
- <1377040803.3370.88.camel@snotra.buserror.net>
-To: Scott Wood <scottwood@freescale.com>
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8F3142C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 11:30:58 +1000 (EST)
+From: Kevin Hao <haokexin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v2] powerpc: purge all the prefetched instructions for the
+ coherent icache flush
+Date: Thu, 22 Aug 2013 09:30:35 +0800
+Message-ID: <1377135035-4497-1-git-send-email-haokexin@gmail.com>
+In-Reply-To: <20130821114915.GC32546@pek-khao-d1.corp.ad.wrs.com>
+References: <20130821114915.GC32546@pek-khao-d1.corp.ad.wrs.com>
 MIME-Version: 1.0
-Subject: Re: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for
- Motorola/Emerson MVME5100.
-From: Stephen N Chivers <schivers@csc.com.au>
-Message-ID: <OFA6564D85.57B12E50-ONCA257BCF.00042385-CA257BCF.000553C9@csc.com>
-Date: Thu, 22 Aug 2013 11:58:02 +1100
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org, Stephen N Chivers <schivers@csc.com.au>,
- paulus@samba.org, Chris Proctor <cproctor@csc.com.au>
+Content-Type: text/plain
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,151 +25,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 08/21/2013 09:20:03 AM:
+As Benjamin Herrenschmidt has indicated, we still need a dummy icbi to
+purge all the prefetched instructions from the ifetch buffers for the
+snooping icache. We also need a sync before the icbi to order the
+actual stores to memory that might have modified instructions with
+the icbi.
 
-> From: Scott Wood <scottwood@freescale.com>
-> To: Stephen N Chivers <schivers@csc.com.au>
-> Cc: <benh@kernel.crashing.org>, Chris Proctor <cproctor@csc.com.au>,
-> <linuxppc-dev@lists.ozlabs.org>, <paulus@samba.org>
-> Date: 08/21/2013 09:20 AM
-> Subject: Re: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for 
-> Motorola/Emerson MVME5100.
-> 
-> On Tue, 2013-08-20 at 13:28 +1100, Stephen N Chivers wrote:
-> > Scott Wood <scottwood@freescale.com> wrote on 08/09/2013 11:35:20 AM:
-> > 
-> > > From: Scott Wood <scottwood@freescale.com>
-> > > To: Stephen N Chivers <schivers@csc.com.au>
-> > > Cc: <benh@kernel.crashing.org>, <paulus@samba.org>, Chris Proctor 
-> > > <cproctor@csc.com.au>, <linuxppc-dev@lists.ozlabs.org>
-> > > Date: 08/09/2013 11:36 AM
-> > > Subject: Re: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for 
-> > > Motorola/Emerson MVME5100.
-> > > 
-> > > simple-bus may be applicable here (in addition to a specific
-> > > compatible).
-> > >
-> > The HAWK ASIC is a difficult beast. I still cannot get a positive
-> > identification as to what it is (Motorola/Freescale part number
-> > unknown, not even the part number on the chip on the board helps....).
-> > The best I can come up with is that it is a tsi108 without
-> > the ethenets.
-> > So device_type will be tsi-bridge and compatible will be
-> > tsi108-bridge.
-> 
-> Don't use device_type.  compatible should include "hawk" in the name
-> (especially if you're not sure what's really in it), and/or the part
-> number on the chip.  If you're convinced it's fully compatible with
-> tsi108-bridge you can add that as a second compatible value, though
-> given the uncertainty it's probably better to just teach Linux to look
-> for the new compatible.
-> 
-> If devices on the bus can be used without any special bus setup or
-> knowledge, then you can add a compatible of "simple-bus" to the end.
-> 
-> > > Why not just look for a chrp,iic node directly?
-> > >
-> > I was following the model used in other places, like chrp/setup.c.
-> 
-> Not all examples are good examples. :-)
-> 
-> > > > +       if ((np = of_find_compatible_node(NULL, "pci", 
-"mpc10x-pci"))) 
-> > {
-> > > 
-> > > Why insist on the device_type?
-> > >
-> > Following the model in the linkstation (kurobox) platform support. 
-> 
-> Drop the device_type check.
-> 
-> > > > +static void
-> > > > +mvme5100_restart(char *cmd)
-> > > > +{
-> > > > +       volatile ulong          i = 10000000;
-> > > > +
-> > > > +
-> > > > +       local_irq_disable();
-> > > > +       _nmask_and_or_msr(0, MSR_IP);
-> > > 
-> > > Does "mtmsr(mfmsr() | MSR_IP)" not work?
-> > >
-> > Don't know. Is from the original code by Matt Porter.
-> 
-> It actually appears that there are no callers remaining that use the
-> "and" portion of the functionality.  In fact there are no callers that
-> use it for anything other than setting MSR_IP. :-P
-> 
-> > > > +       out_8((u_char *) BOARD_MODRST_REG, 0x01);
-> > > > +
-> > > > +       while (i-- > 0);
-> > > 
-> > > Do not use a loop to implement a delay.
-> > >
-> > Taken from the original code. But at this point the board
-> > is going to reset and reboot via firmware, as /sbin/reboot
-> > or /sbin/halt has been invoked.
-> 
-> Still, it's just a bad idea.  What's wrong with udelay()?
-> 
-> Or just use an infinite loop.  How much value is there really in timing
-> out here?
-> 
-> > > > +static void __init
-> > > > +mvme5100_set_bat(void)
-> > > > +{
-> > > > +
-> > > > +
-> > > > +       mb();
-> > > > +       mtspr(SPRN_DBAT1U, 0xf0001ffe);
-> > > > +       mtspr(SPRN_DBAT1L, 0xf000002a);
-> > > > +       mb();
-> > > > +       setbat(1, 0xfe000000, 0xfe000000, 0x02000000, 
-> > PAGE_KERNEL_NCG);
-> > > > +}
-> > > 
-> > > It is no longer allowed to squat on random virtual address space 
-like
-> > > this.  If you really need a BAT you'll have to allocate the virtual
-> > > address properly.
-> > >
-> > Yes. I found that this was an anathema when researching the port in
-> > 2010 but I couldn't find any practical solution at the time.
-> > The code is called early to ensure that the hawk registers are 
-available.
-> > sysdev/cpm_common.c does the same thing.
-> 
-> > What is the correct solution?
-> 
-> ioremap() has special code to function early (using ioremap_bot).
-> 
-> If you still need to use a BAT that early, reserve the space with
-> asm/fixmap.h or by adding a function to the early ioremap code to just
-> reserve the space.  Or better, improve the ioremap code to be capable of
-> creating a BAT (or equivalent) when requested.
->
-It is really interesting. Given that the UART implementation on the
-HAWK is such that legacy_serial will not set up an early console it
-is very likely that the address translation set up by the bat is not
-required.
-I can probably replace the physical addresses used in:
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
+---
+ arch/powerpc/include/asm/cache.h | 14 +++++++++++++-
+ arch/powerpc/kernel/misc_32.S    |  4 +++-
+ arch/powerpc/kernel/misc_64.S    |  3 ++-
+ 3 files changed, 18 insertions(+), 3 deletions(-)
 
-        setup_indirec_pci(hose, 0, 0xfe000cf8, 0xfe000cfc, 0);
-
-with remapped equivalents. But, with the setbat eliminated, the
-line:
-
-        pcibios_alloc_controller(dev);
-
-silently (remember no early console, due to UART reg-shift) panics.
-It is happening at the point where the newly allocated PHB
-structure is being added to the "hose_list" in pci-common.c.
-
-So, I think there is some side effect due to the call to the setbat with 
-the
-PAGE_KERNEL_NCG parameter that I do not yet understand.
+diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
+index 9e495c9..ed0afc1 100644
+--- a/arch/powerpc/include/asm/cache.h
++++ b/arch/powerpc/include/asm/cache.h
+@@ -41,8 +41,20 @@ struct ppc64_caches {
+ extern struct ppc64_caches ppc64_caches;
+ #endif /* __powerpc64__ && ! __ASSEMBLY__ */
  
-> -Scott
-> 
-> 
-> 
+-#if !defined(__ASSEMBLY__)
++#if defined(__ASSEMBLY__)
++/*
++ * For a snooping icache, we still need a dummy icbi to purge all the
++ * prefetched instructions from the ifetch buffers. We also need a sync
++ * before the icbi to order the the actual stores to memory that might
++ * have modified instructions with the icbi.
++ */
++#define PURGE_PREFETCHED_INS	\
++	sync;			\
++	icbi	0,r3;		\
++	sync;			\
++	isync
+ 
++#else
+ #define __read_mostly __attribute__((__section__(".data..read_mostly")))
+ 
+ #ifdef CONFIG_6xx
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 777d999..d1e819b 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -329,7 +329,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_UNIFIED_ID_CACHE)
+  */
+ _KPROBE(flush_icache_range)
+ BEGIN_FTR_SECTION
+-	isync
++	PURGE_PREFETCHED_INS
+ 	blr				/* for 601, do nothing */
+ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	li	r5,L1_CACHE_BYTES-1
+@@ -433,6 +433,7 @@ _GLOBAL(invalidate_dcache_range)
+  */
+ _GLOBAL(__flush_dcache_icache)
+ BEGIN_FTR_SECTION
++	PURGE_PREFETCHED_INS
+ 	blr
+ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	rlwinm	r3,r3,0,0,31-PAGE_SHIFT		/* Get page base address */
+@@ -474,6 +475,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_44x)
+  */
+ _GLOBAL(__flush_dcache_icache_phys)
+ BEGIN_FTR_SECTION
++	PURGE_PREFETCHED_INS
+ 	blr					/* for 601, do nothing */
+ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 	mfmsr	r10
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index 992a78e..f9e8770 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -69,6 +69,7 @@ PPC64_CACHES:
+ 
+ _KPROBE(flush_icache_range)
+ BEGIN_FTR_SECTION
++	PURGE_PREFETCHED_INS
+ 	blr
+ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ /*
+@@ -208,7 +209,7 @@ _GLOBAL(flush_inval_dcache_range)
+  */
+ _GLOBAL(__flush_dcache_icache)
+ BEGIN_FTR_SECTION
+-	isync
++	PURGE_PREFETCHED_INS
+ 	blr
+ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ /*
+-- 
+1.8.3.1
