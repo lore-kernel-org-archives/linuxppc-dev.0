@@ -1,39 +1,47 @@
 Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 93B002C031F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 15:31:37 +1000 (EST)
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A7E042C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 15:51:05 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Thu, 22 Aug 2013 15:18:07 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C0A6F2CE8055
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 15:31:34 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7M5FaGP40108116
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 15:15:36 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7M5VXxr026071
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 15:31:34 +1000
-Subject: [PATCH V4 5/5] powernv/cpuidle: Enable idle powernv cpu to call
- into the cpuidle framework.
-To: linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ Thu, 22 Aug 2013 11:15:07 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id C2D303940053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 11:20:48 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7M5qSvi46596240
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 11:22:28 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7M5ovHU010562
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 11:20:58 +0530
+Message-ID: <5215A69F.4090904@linux.vnet.ibm.com>
+Date: Thu, 22 Aug 2013 11:20:23 +0530
 From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Thu, 22 Aug 2013 11:00:56 +0530
-Message-ID: <20130822053054.23277.72070.stgit@deepthi.in.ibm.com>
-In-Reply-To: <20130822052938.23277.67621.stgit@deepthi.in.ibm.com>
-References: <20130822052938.23277.67621.stgit@deepthi.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: rjw@sisk.pl, daniel.lezcano@linaro.org, dongsheng.wang@freescale.com,
- preeti@linux.vnet.ibm.com, srivatsa.bhat@linux.vnet.ibm.com,
- scottwood@freescale.com
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC PATCH V3 3/5] powerpc/cpuidle: Generic powerpc backend
+ cpuidle driver.
+References: <20130819042736.8609.17890.stgit@deepthi.in.ibm.com>
+ <20130819042818.8609.77060.stgit@deepthi.in.ibm.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010226D5@039-SN2MPN1-021.039d.mgd.msft.net>
+ <5211F0E0.7080507@linux.vnet.ibm.com>
+ <1376936241.31636.352.camel@snotra.buserror.net>
+ <521447E7.5000302@linux.vnet.ibm.com>
+ <1377115703.5029.14.camel@snotra.buserror.net>
+In-Reply-To: <1377115703.5029.14.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Wang Dongsheng-B40534 <B40534@freescale.com>,
+ "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+ "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>,
+ "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,51 +51,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables idle cpu on the powernv platform  to hook on to the cpuidle
-framework, if available, else call on to default idle platform
-code.
+On 08/22/2013 01:38 AM, Scott Wood wrote:
+> On Wed, 2013-08-21 at 10:23 +0530, Deepthi Dharwar wrote:
+>> On 08/19/2013 11:47 PM, Scott Wood wrote:
+>>> On Mon, 2013-08-19 at 15:48 +0530, Deepthi Dharwar wrote:
+>>>> Hi Dongsheng,
+>>>>
+>>>> On 08/19/2013 11:22 AM, Wang Dongsheng-B40534 wrote:
+>>>>> I think we should move the states and handle function to arch/power/platform*
+>>>>> The states and handle function is belong to backend driver, not for this, different platform have different state.
+>>>>> Different platforms to make their own deal with these states.
+>>>>>
+>>>>> I think we cannot put all the status of different platforms and handler in this driver.
+>>>>
+>>>> The idea here is a single powerpc back-end driver, which does a runtime
+>>>> detection of the platform it is running and choose the right
+>>>> idle states table. This was one of outcome of V2 discussion.
+>>>
+>>> I see a lot more in there than just detecting a platform and choosing a
+>>> driver.
+>>>
+>>>> I feel there is no harm in keeping the state information in the same
+>>>> file. We do have x86, which has all its variants information in one
+>>>> file. One place will have all the idle consolidated information of
+>>>> all the platform variants. If community does feel, we need to
+>>>> have just the states information in arch specific file, we can do so.
+>>>
+>>> What actual functionality is common to all powerpc but not common to
+>>> other arches?
+> 
 
-Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/setup.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+The functionality here is idle states on powerpc  like the snooze loop
+that is common.
+Also, the basic registration of the driver, hotplug notifier etc for
+powerpc.
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 84438af..fc62f21 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -25,6 +25,7 @@
- #include <linux/of.h>
- #include <linux/interrupt.h>
- #include <linux/bug.h>
-+#include <linux/cpuidle.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-@@ -175,6 +176,17 @@ static void __init pnv_setup_machdep_rtas(void)
- }
- #endif /* CONFIG_PPC_POWERNV_RTAS */
- 
-+void powernv_idle(void)
-+{
-+	/* Hook to cpuidle framework if available, else
-+	 * call on default platform idle code
-+	 */
-+	if (cpuidle_idle_call()) {
-+		HMT_low();
-+		HMT_very_low();
-+	}
-+}
-+
- static int __init pnv_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
-@@ -205,7 +217,7 @@ define_machine(powernv) {
- 	.show_cpuinfo		= pnv_show_cpuinfo,
- 	.progress		= pnv_progress,
- 	.machine_shutdown	= pnv_shutdown,
--	.power_save             = power7_idle,
-+	.power_save             = powernv_idle,
- 	.calibrate_decr		= generic_calibrate_decr,
- #ifdef CONFIG_KEXEC
- 	.kexec_cpu_down		= pnv_kexec_cpu_down,
+> 
+>>>>>> +config CPU_IDLE_POWERPC
+>>>>>> +	bool "CPU Idle driver for POWERPC platforms"
+>>>>>> +	depends on PPC64
+>>>>>
+>>>>> Why not PPC?
+>>>>
+>>>> PPC64 seems to a good place to began the consolidation work. This
+>>>> patch-set has not been tested for PPC32 currently.
+>>>
+>>> PPC64 is a bad place to start if you want it to be generic, because it
+>>> means you'll end up growing dependencies on other things that are PPC64
+>>> only.  There are too many arbitrary 32/64 differences as is.
+>>
+>> Hi Scott,
+>>
+>> From my understanding, PPC64 includes BOOK3E and BOOK3S archs.
+>> PPC includes PPC32 and PPC64.
+>>
+>> It seemed logical to start consolidating at PPC64 as
+>> one does not want to get into 32/64 bit differences.
+> 
+> I don't want to "get into" a file that claims to be generic PPC but is
+> loaded with 64-bit dependencies.
+> 
+>> From your comments above,  I just wanted to clarify if PPC or PPC64 is
+>> bad place to start. If PPC64 is bad place to start, then whats the way
+>> forward ?  Can you please throw some more light on it.
+> 
+> The way forward is to give this file a more appropriate name based on
+> the hardware that it actually targets -- and to refactor it so that the
+> answer to that question is not complicated.
+
+Sure, thanks.
+Our idea was to have POWER archs idle states merged at the first go.
+Only that is what is enabled in the current version (V4 posted out)
+( Code is enabled for PSERIES and POWERNV only)
+If needed, other POWERPC archs might benefit by extending the same
+driver, that is why it is named cpuidle-powerpc.c
+
+But if having cpuidle backend-driver separately for other powerpc arcs
+makes sense such that each one have their own state information etc
+then it makes sense to name the files as cpuidle-power.c,
+cpuilde-ppc32.c and so on.
+
+Regards,
+Deepthi
+
+
+> 
+> -Scott
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+> 
