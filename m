@@ -1,21 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6BE032C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 07:38:24 +1000 (EST)
-Message-ID: <1377207495.20722.11.camel@snotra.buserror.net>
-Subject: Re: Ethernet over PCIe driver for Inter-Processor Communication
-From: Scott Wood <scottwood@freescale.com>
-To: Saravanan S <sarans1987@gmail.com>
-Date: Thu, 22 Aug 2013 16:38:15 -0500
-In-Reply-To: <CAEqOc-Rrsc2JoM4eeLzgyhGXqpJoe2Jfmf6uV4LjrTr7e8hhAw@mail.gmail.com>
-References: <CAEqOc-Rrsc2JoM4eeLzgyhGXqpJoe2Jfmf6uV4LjrTr7e8hhAw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+ by ozlabs.org (Postfix) with ESMTP id 725E72C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 07:43:40 +1000 (EST)
+Message-ID: <5216860A.6060409@ovro.caltech.edu>
+Date: Thu, 22 Aug 2013 14:43:38 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Saravanan S <sarans1987@gmail.com>
+Subject: Re: Ethernet over PCIe driver for Inter-Processor Communication
+References: <CAEqOc-Rrsc2JoM4eeLzgyhGXqpJoe2Jfmf6uV4LjrTr7e8hhAw@mail.gmail.com>
+In-Reply-To: <CAEqOc-Rrsc2JoM4eeLzgyhGXqpJoe2Jfmf6uV4LjrTr7e8hhAw@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +22,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-08-22 at 21:04 +0530, Saravanan S wrote:
+Hi S.Saravanan,
 
+> I have a custom board  with four MPC8640 nodes connected over
+> a transparent PCI express switch . In this configuration one node is
+> configured as host(Root Complex) and others as agents(End Point). Thus
+> the legacy PCI software works fine . However the mainline kernel lacks
+> any standard support for Inter-processor communication over PCI. I am
+> in the process of developing an Ethernet over  PCI driver for the same
+> on the lines of rionet . However I am facing the following problems.
+>
 > a)   I can generate MSI interrupts from End Point to Root Complex over
 > PCI . But the vice-versa is not possible . However i need a method to
 > interrupt the End Point from the Root Complex to complete my driver.
+
+Root complex's would normally interrupt a device via a PCIe write
+to a register in a BAR on the end-point (or in extended configuration
+space registers depending on the hardware implementation).
+
 > Only previous references I can find are this post
-> http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg25765.html . However this uses doorbells and I think may not be possible in MPC8640.
+> http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg25765.html
+> However this uses doorbells and I think may not be possible in MPC8640.
 
-You should be able to write to the destination's MPIC registers to send
-a doorbell.
+PCIe drivers need some way to interrupt the processor, so there must
+be an option somewhere ... for example, what are the message register
+interrupts intended for? See p479
 
--Scott
+http://cache.freescale.com/files/32bit/doc/ref_manual/MPC8641DRM.pdf
+
+(Ira and myself have not used the MPC8640 so are not familiar with
+its user manual).
+
+> Any pointers on this issue and guidance on this driver development would
+> be helpful .
+
+We use the Ethernet-over-PCI driver that Ira developed. Our next boards
+will use an MPC8308, but we don't currently have any in a PCIe device
+form-factor (just the MPC8038RDB), so he has not ported it to PCIe.
+
+Feel free to discuss your ideas for your PCIe driver (eg., why start
+with rionet rather than Ira's driver), either on-list, or email Ira
+and myself directly.
+
+Cheers,
+Dave
