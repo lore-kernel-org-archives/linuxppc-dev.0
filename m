@@ -1,27 +1,44 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
- [209.85.192.177])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 34AEA2C0077
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:23:43 +1000 (EST)
-Received: by mail-pd0-f177.google.com with SMTP id y10so1518091pdj.22
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 00:23:40 -0700 (PDT)
-Message-ID: <5215BC76.10105@ozlabs.ru>
-Date: Thu, 22 Aug 2013 17:23:34 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 203C82C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:52:46 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Thu, 22 Aug 2013 17:42:17 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 039BD2BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:52:40 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7M7aWGk57278488
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:36:32 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r7M7qdnk031546
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:52:39 +1000
+Date: Thu, 22 Aug 2013 15:52:37 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Subject: Re: [PATCH 2/2] powerpc/iommu: check dev->iommu_group before remove
  a device from iommu_group
+Message-ID: <20130822075237.GA14479@weiyang.vnet.ibm.com>
 References: <1376647687-20550-1-git-send-email-weiyang@linux.vnet.ibm.com>
  <1376647687-20550-3-git-send-email-weiyang@linux.vnet.ibm.com>
- <520DFBC8.4040509@ozlabs.ru> <20130819012945.GA8342@weiyang.vnet.ibm.com>
- <52117765.7010205@ozlabs.ru> <20130819015538.GB8342@weiyang.vnet.ibm.com>
-In-Reply-To: <20130819015538.GB8342@weiyang.vnet.ibm.com>
-Content-Type: text/plain; charset=KOI8-R
-Cc: paulus@au1.ibm.com, benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ <520DFBC8.4040509@ozlabs.ru>
+ <20130819012945.GA8342@weiyang.vnet.ibm.com>
+ <52117765.7010205@ozlabs.ru>
+ <20130819015538.GB8342@weiyang.vnet.ibm.com>
+ <5215BC76.10105@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5215BC76.10105@ozlabs.ru>
+Cc: alex.williamson@redhat.com, paulus@au1.ibm.com, benh@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,67 +48,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/19/2013 11:55 AM, Wei Yang wrote:
-> On Mon, Aug 19, 2013 at 11:39:49AM +1000, Alexey Kardashevskiy wrote:
->> On 08/19/2013 11:29 AM, Wei Yang wrote:
->>> On Fri, Aug 16, 2013 at 08:15:36PM +1000, Alexey Kardashevskiy wrote:
->>>> On 08/16/2013 08:08 PM, Wei Yang wrote:
->>>>> ---
->>>>>  arch/powerpc/kernel/iommu.c |    3 ++-
->>>>>  1 files changed, 2 insertions(+), 1 deletions(-)
+On Thu, Aug 22, 2013 at 05:23:34PM +1000, Alexey Kardashevskiy wrote:
+>On 08/19/2013 11:55 AM, Wei Yang wrote:
+>> On Mon, Aug 19, 2013 at 11:39:49AM +1000, Alexey Kardashevskiy wrote:
+>>> On 08/19/2013 11:29 AM, Wei Yang wrote:
+>>>> On Fri, Aug 16, 2013 at 08:15:36PM +1000, Alexey Kardashevskiy wrote:
+>>>>> On 08/16/2013 08:08 PM, Wei Yang wrote:
+>>>>>> ---
+>>>>>>  arch/powerpc/kernel/iommu.c |    3 ++-
+>>>>>>  1 files changed, 2 insertions(+), 1 deletions(-)
+>>>>>>
+>>>>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>>>>>> index b20ff17..5abf7c3 100644
+>>>>>> --- a/arch/powerpc/kernel/iommu.c
+>>>>>> +++ b/arch/powerpc/kernel/iommu.c
+>>>>>> @@ -1149,7 +1149,8 @@ static int iommu_bus_notifier(struct notifier_block *nb,
+>>>>>>  	case BUS_NOTIFY_ADD_DEVICE:
+>>>>>>  		return iommu_add_device(dev);
+>>>>>>  	case BUS_NOTIFY_DEL_DEVICE:
+>>>>>> -		iommu_del_device(dev);
+>>>>>> +		if (dev->iommu_group)
+>>>>>> +			iommu_del_device(dev);
+>>>>>>  		return 0;
+>>>>>>  	default:
+>>>>>>  		return 0;
+>>>>>>
 >>>>>
->>>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->>>>> index b20ff17..5abf7c3 100644
->>>>> --- a/arch/powerpc/kernel/iommu.c
->>>>> +++ b/arch/powerpc/kernel/iommu.c
->>>>> @@ -1149,7 +1149,8 @@ static int iommu_bus_notifier(struct notifier_block *nb,
->>>>>  	case BUS_NOTIFY_ADD_DEVICE:
->>>>>  		return iommu_add_device(dev);
->>>>>  	case BUS_NOTIFY_DEL_DEVICE:
->>>>> -		iommu_del_device(dev);
->>>>> +		if (dev->iommu_group)
->>>>> +			iommu_del_device(dev);
->>>>>  		return 0;
->>>>>  	default:
->>>>>  		return 0;
->>>>>
+>>>>> This one seems redundant, no?
 >>>>
->>>> This one seems redundant, no?
+>>>> Sorry for the late.
+>>>>
+>>>> Yes, these two patches have the same purpose to guard the system, while in two
+>>>> different places.  One is in powernv platform, the other is in the generic iommu 
+>>>> driver.
+>>>>
+>>>> The one in powernv platform is used to correct the original logic.
+>>>>
+>>>> The one in generic iommu driver is to keep system safe in case other platform to
+>>>> call iommu_group_remove_device() without the check.
 >>>
->>> Sorry for the late.
 >>>
->>> Yes, these two patches have the same purpose to guard the system, while in two
->>> different places.  One is in powernv platform, the other is in the generic iommu 
->>> driver.
->>>
->>> The one in powernv platform is used to correct the original logic.
->>>
->>> The one in generic iommu driver is to keep system safe in case other platform to
->>> call iommu_group_remove_device() without the check.
->>
->>
->> But I am moving bus notifier to powernv code (posted a patch last week,
->> otherwise Freescale's IOMMU conflicted) so this won't be the case.
-> 
-> Yes, I see the patch.
-> 
-> This means other platforms, besides powernv, will check the dev->iommu_group
-> before remove the device? This would be a convention?
-> 
-> If this is the case, the second patch is enough. We don't need to check it in
-> generic iommu driver.
-> 
-> Since I am not very familiar with the code convention, I post these two
-> patches together. This doesn't mean I need to push both of them. Your comments
-> are welcome, lets me understand which one is more suitable in this case.
+>>> But I am moving bus notifier to powernv code (posted a patch last week,
+>>> otherwise Freescale's IOMMU conflicted) so this won't be the case.
+>> 
+>> Yes, I see the patch.
+>> 
+>> This means other platforms, besides powernv, will check the dev->iommu_group
+>> before remove the device? This would be a convention?
+>> 
+>> If this is the case, the second patch is enough. We don't need to check it in
+>> generic iommu driver.
+>> 
+>> Since I am not very familiar with the code convention, I post these two
+>> patches together. This doesn't mean I need to push both of them. Your comments
+>> are welcome, lets me understand which one is more suitable in this case.
+>
+>
+>Ok. So. I included the check in the bus notifier which I moved to powernv
+>platform, I guess I'll repost the series soon.
 
+Thanks, this check will guard the powernv platform.
 
-Ok. So. I included the check in the bus notifier which I moved to powernv
-platform, I guess I'll repost the series soon.
+>
+>Good luck with pushing the fix for drivers/iommu/iommu.c :)
+>
 
-Good luck with pushing the fix for drivers/iommu/iommu.c :)
+Alex,
 
+Sorry for not including you in the very beginning, which may spend you more
+efforts to track previous mails in this thread.
 
+Do you think it is reasonable to check the dev->iommu_group in
+iommu_group_remove_device()? Or we can count on the bus notifier to check it?
+
+Welcome your suggestions~
+
+>
+>
+>-- 
+>Alexey
 
 -- 
-Alexey
+Richard Yang
+Help you, Help me
