@@ -1,18 +1,39 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id 2CB582C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 08:42:13 +1000 (EST)
-Date: Thu, 22 Aug 2013 15:29:51 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: David Hawkins <dwh@ovro.caltech.edu>
-Subject: Re: Ethernet over PCIe driver for Inter-Processor Communication
-Message-ID: <20130822222951.GA13201@ovro.caltech.edu>
-References: <CAEqOc-Rrsc2JoM4eeLzgyhGXqpJoe2Jfmf6uV4LjrTr7e8hhAw@mail.gmail.com>
- <5216860A.6060409@ovro.caltech.edu>
+Return-Path: <mturquette@linaro.org>
+Received: from mail-pa0-f52.google.com (mail-pa0-f52.google.com
+ [209.85.220.52])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 433ED2C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 08:43:37 +1000 (EST)
+Received: by mail-pa0-f52.google.com with SMTP id kq13so2683868pab.39
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 15:43:35 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5216860A.6060409@ovro.caltech.edu>
-Cc: Saravanan S <sarans1987@gmail.com>,
+To: Sascha Hauer <s.hauer@pengutronix.de>, Mark Rutland <mark.rutland@arm.com>
+From: Mike Turquette <mturquette@linaro.org>
+In-Reply-To: <20130822210035.GB31036@pengutronix.de>
+References: <cover.1376565456.git.b42378@freescale.com>
+ <20130820000625.4443.23018@quantum>
+ <20130821085015.GY3719@e106331-lin.cambridge.arm.com>
+ <2207416.NJhrdSqkEZ@flatron> <20130822071910.8231.47324@quantum>
+ <20130822120930.GD9799@e106331-lin.cambridge.arm.com>
+ <20130822210035.GB31036@pengutronix.de>
+Message-ID: <20130822224331.8231.75743@quantum>
+Subject: Re: [PATCH v5 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Date: Thu, 22 Aug 2013 15:43:31 -0700
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "lars@metafoo.de" <lars@metafoo.de>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ Pawel Moll <Pawel.Moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "festevam@gmail.com" <festevam@gmail.com>, Nicolin Chen <b42378@freescale.com>,
+ Tomasz Figa <tomasz.figa@gmail.com>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "timur@tabi.org" <timur@tabi.org>, "broonie@kernel.org" <broonie@kernel.org>,
+ "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+ "galak@codeaurora.org" <galak@codeaurora.org>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,53 +44,209 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 22, 2013 at 02:43:38PM -0700, David Hawkins wrote:
-> Hi S.Saravanan,
-> 
-> > I have a custom board  with four MPC8640 nodes connected over
-> > a transparent PCI express switch . In this configuration one node is
-> > configured as host(Root Complex) and others as agents(End Point). Thus
-> > the legacy PCI software works fine . However the mainline kernel lacks
-> > any standard support for Inter-processor communication over PCI. I am
-> > in the process of developing an Ethernet over  PCI driver for the same
-> > on the lines of rionet . However I am facing the following problems.
-> >
-> > a)   I can generate MSI interrupts from End Point to Root Complex over
-> > PCI . But the vice-versa is not possible . However i need a method to
-> > interrupt the End Point from the Root Complex to complete my driver.
-> 
-> Root complex's would normally interrupt a device via a PCIe write
-> to a register in a BAR on the end-point (or in extended configuration
-> space registers depending on the hardware implementation).
-> 
-> > Only previous references I can find are this post
-> > http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg25765.html
-> > However this uses doorbells and I think may not be possible in MPC8640.
-> 
-> PCIe drivers need some way to interrupt the processor, so there must
-> be an option somewhere ... for example, what are the message register
-> interrupts intended for? See p479
-> 
-> http://cache.freescale.com/files/32bit/doc/ref_manual/MPC8641DRM.pdf
-> 
-> (Ira and myself have not used the MPC8640 so are not familiar with
-> its user manual).
-> 
-> > Any pointers on this issue and guidance on this driver development would
-> > be helpful .
-> 
-> We use the Ethernet-over-PCI driver that Ira developed. Our next boards
-> will use an MPC8308, but we don't currently have any in a PCIe device
-> form-factor (just the MPC8038RDB), so he has not ported it to PCIe.
-> 
-> Feel free to discuss your ideas for your PCIe driver (eg., why start
-> with rionet rather than Ira's driver), either on-list, or email Ira
-> and myself directly.
-> 
+Quoting Sascha Hauer (2013-08-22 14:00:35)
+> On Thu, Aug 22, 2013 at 01:09:31PM +0100, Mark Rutland wrote:
+> > On Thu, Aug 22, 2013 at 08:19:10AM +0100, Mike Turquette wrote:
+> > > Quoting Tomasz Figa (2013-08-21 14:34:55)
+> > > > On Wednesday 21 of August 2013 09:50:15 Mark Rutland wrote:
+> > > > > On Tue, Aug 20, 2013 at 01:06:25AM +0100, Mike Turquette wrote:
+> > > > > > Quoting Mark Rutland (2013-08-19 02:35:43)
+> > > > > > =
 
-One further note. You might want to look at rproc/rpmsg and their virtio
-driver support. That seems to be where the Linux world is moving for
-inter-processor communications. See for example the ARM CPUs interfacing
-with DSPs.
+> > > > > > > On Sat, Aug 17, 2013 at 04:17:18PM +0100, Tomasz Figa wrote:
+> > > > > > > > On Saturday 17 of August 2013 16:53:16 Sascha Hauer wrote:
+> > > > > > > > > On Sat, Aug 17, 2013 at 02:28:04PM +0200, Tomasz Figa wro=
+te:
+> > > > > > > > > > > > > Also I would make this option required. Use a dum=
+my
+> > > > > > > > > > > > > clock for
+> > > > > > > > > > > > > mux
+> > > > > > > > > > > > > inputs that are grounded for a specific SoC.
+> > > > > > > > > > > > =
 
-Ira
+> > > > > > > > > > > > Some clocks are not from CCM and we haven't defined=
+ in
+> > > > > > > > > > > > imx6q-clk.txt,
+> > > > > > > > > > > > so in most cases we can't provide a phandle for the=
+m, eg:
+> > > > > > > > > > > > spdif_ext.
+> > > > > > > > > > > > I think it's a bit hard to force it to be 'required=
+'. An
+> > > > > > > > > > > > 'optional'
+> > > > > > > > > > > > looks more flexible to me and a default one is ensu=
+red
+> > > > > > > > > > > > even if
+> > > > > > > > > > > > it's
+> > > > > > > > > > > > missing.
+> > > > > > > > > > > =
+
+> > > > > > > > > > > <&clks 0> is the dummy clock. This can be used for al=
+l input
+> > > > > > > > > > > clocks
+> > > > > > > > > > > not
+> > > > > > > > > > > defined by the SoC.
+> > > > > > > > > > =
+
+> > > > > > > > > > Where does this assumption come from? Is it documented
+> > > > > > > > > > anywhere?
+> > > > > > > > > =
+
+> > > > > > > > > This is how all i.MX clock bindings currently are. See
+> > > > > > > > > Documentation/devicetree/bindings/clock/imx*-clock.txt
+> > > > > > > > =
+
+> > > > > > > > OK, thanks.
+> > > > > > > > =
+
+> > > > > > > > I guess we need some discussion on dummy clocks vs skipped =
+clocks.
+> > > > > > > > I think we want some consistency on this, don't we?
+> > > > > > > > =
+
+> > > > > > > > If we really need a dummy clock, then we might also want a =
+generic
+> > > > > > > > way to specify it.
+> > > > > > > =
+
+> > > > > > > What do we actually mean by a "dummy clock"? We already have
+> > > > > > > bindings
+> > > > > > > for "fixed-clock" and co friends describe relatively simple
+> > > > > > > preconfigured clocks.
+> > > > > > =
+
+> > > > > > Some platforms have a fake clock which defines noops callbacks =
+and
+> > > > > > basically doesn't do anything. This is analogous to the dummy
+> > > > > > regulator
+> > > > > > implementation. A central one could be registered by the clock =
+core,
+> > > > > > as
+> > > > > > is done by the regulator core.
+> > > > > =
+
+> > > > > When you say some platforms, you presumably mean the platform cod=
+e in
+> > > > > Linux? A dummy clock sounds like a completely Linux-specific abst=
+raction
+> > > > > rather than a description of the hardware, and I don't see why we=
+ need
+> > > > > that in the DT:
+> > > > > =
+
+> > > > > * If a clock is wired up and running (as presumably the dummy clo=
+ck is),
+> > > > > then surely it's a fixed-clock (it's running, we and we have no c=
+ontrol
+> > > > > over it, but we presumably know its rate) and can be described as=
+ such?
+> > > > > =
+
+> > > > > * If no clock is wired up, then we should be able to describe tha=
+t. If a
+> > > > > driver believes that a clock is required when it isn't (for some =
+level
+> > > > > of functionality), then that driver should be fixed up to support=
+ the
+> > > > > clock as being optional.
+> > > > > =
+
+> > > > > Am I missing something?
+> > > > =
+
+> > > > I second that.
+> > > > =
+
+> > > > Moreover, I don't think that device tree should deal with dummy any=
+thing. =
+
+> > > > It should be able to describe hardware that is available on given s=
+ystem, =
+
+> > > > not list what hardware is not available.
+> > > =
+
+> > > I wasn't clear. The dummy clock IS a completely Linux-specific
+> > > abstraction.
+> > > =
+
+> > > I'm not advocating a dummy clock in DT. I am advocating consolidation=
+ of
+> > > the implementation of a clock that does nothing into the clock core.
+> > > This code could easily live in drivers/clk/clk.c instead of having
+> > > everyone open-code it.
+> > > =
+
+> > > As far as specifying a dummy clock in DT? I dunno. DT should describe
+> > > real hardware so there isn't much use for a dummy clock.
+> > =
+
+> > =
+
+> > Sorry, I misunderstood. Good to hear we're on the same page :)
+> > =
+
+> > > =
+
+> > > I'm guessing one of the reasons for such a clock are drivers do not
+> > > honor the clk.h api and they freak out when clk_get gives them a NULL
+> > > pointer?
+> > =
+
+> > I'm not sure. Sascha, could you shed some light on the matter?
+> =
+
+> The original reason introducing the dummy clocks in the i.MX dtbs
+> was to provide devices a clock which the driver requests but is
+> not software controllable. We often have the case where the same
+> devices are on several SoCs, but not on all of them all clocks have
+> a bit to en/disable them.
+> =
+
+> Anyway, to accomplish this we don't need dummy clocks. We can just
+> describe the real clocks.
+
+You could use a dummy clk for the Linux implementation, but the downside
+is that a dummy clock has a rate of 0 always and a your clocks likely
+have non-zero rates.
+
+It is probably better for you define a clock which only implements the
+.recalc_rate callback. If the rate of this clock changes without Linux
+having knowledge of it you can use the CLK_GET_RATE_NOCACHE flag.
+
+> =
+
+> BTW with the S/PDIF core on which not all mux inputs are connected
+> to actual clocks we could also describe the unconnected inputs as
+> ground clocks with rate 0. This way we describe something which
+> is really there instead of dummy clocks ;)
+
+Again you could use a dummy clock for this OR a fixed-rate clock with a
+rate of zero from the perspective of the Linux implementation.
+
+Do you think it worthwhile to have a DT binding for a grounded clock?
+That is not an entirely uncommon case.
+
+> =
+
+> Background to why it might be a good idea to connect a ground clock
+> to the unconnected input pins is that a driver has a chance to
+> successfully grab all clocks. Otherwise how does the driver distinguish
+> between an unconnected and an erroneous clock?
+
+Sorry, I don't follow this last question. Do you mean how to distinguish
+based on the value returned from clk_get?
+
+Regards,
+Mike
+
+> =
+
+> Sascha
+> =
+
+> -- =
+
+> Pengutronix e.K.                           |                             |
+> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
