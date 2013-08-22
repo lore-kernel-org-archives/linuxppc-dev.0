@@ -1,44 +1,47 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail8.fujitsu.co.jp (fgwmail8.fujitsu.co.jp [192.51.44.38])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 366132C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 19:11:57 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Thu, 22 Aug 2013 19:00:41 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8B9E53578052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 19:11:55 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7M8tlZT5898714
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 18:55:47 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7M9BrrZ009091
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 19:11:55 +1000
-Message-ID: <5215D540.9020309@linux.vnet.ibm.com>
-Date: Thu, 22 Aug 2013 14:39:20 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D88442C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 19:17:35 +1000 (EST)
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+ by fgwmail8.fujitsu.co.jp (Postfix) with ESMTP id 5E2581793CCF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:21:08 +0900 (JST)
+Received: from m4.gw.fujitsu.co.jp (unknown [10.0.50.74])
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id A85F83EE0C0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:21:04 +0900 (JST)
+Received: from smail (m4 [127.0.0.1])
+ by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 908CE45DE56
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:21:04 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
+ by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 6F62945DE53
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:21:04 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 5B491E08001
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:21:04 +0900 (JST)
+Received: from g01jpfmpwkw03.exch.g01.fujitsu.local
+ (g01jpfmpwkw03.exch.g01.fujitsu.local [10.0.193.57])
+ by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id E1E6EE08002
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:21:03 +0900 (JST)
+Message-ID: <5215C9B3.4090608@jp.fujitsu.com>
+Date: Thu, 22 Aug 2013 17:20:03 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC V2 PATCH 4/6] cpuidle/ppc: Add longnap state to the idle
- states on powernv
-References: <20130814115311.5193.32212.stgit@preeti.in.ibm.com>
- <20130814115623.5193.36974.stgit@preeti.in.ibm.com>
- <1377142130.25016.273.camel@pasglop>
-In-Reply-To: <1377142130.25016.273.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org,
- shangw@linux.vnet.ibm.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
- arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org,
- john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com,
- deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: Seth Jennings <sjenning@linux.vnet.ibm.com>
+Subject: Re: [PATCH 7/7] drivers: base: refactor add_memory_section() to
+ add_memory_block()
+References: <1377018783-26756-1-git-send-email-sjenning@linux.vnet.ibm.com>
+ <1377018783-26756-7-git-send-email-sjenning@linux.vnet.ibm.com>
+In-Reply-To: <1377018783-26756-7-git-send-email-sjenning@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="ISO-2022-JP"
+Cc: Dave Hansen <dave@sr71.net>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+ linuxppc-dev@lists.ozlabs.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Yinghai Lu <yinghai@kernel.org>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Cody P Schafer <cody@linux.vnet.ibm.com>,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,30 +51,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
-
-On 08/22/2013 08:58 AM, Benjamin Herrenschmidt wrote:
-> On Wed, 2013-08-14 at 17:26 +0530, Preeti U Murthy wrote:
->> This patch hooks into the existing broadcast framework along with the support
->> that this patchset introduces for ppc, and the cpuidle driver backend
->> for powernv(posted out by Deepthi Dharwar:https://lkml.org/lkml/2013/7/23/128)
->> to add sleep state as one of the deep idle states, in which the decrementer
->> is switched off.
->>
->> However in this patch, we only emulate sleep by going into a state which does
->> a nap with the decrementer interrupts disabled, termed as longnap. This enables
->> focus on the timer broadcast framework for ppc in this series of patches ,
->> which is required as a first step to enable sleep on ppc.
+(2013/08/21 2:13), Seth Jennings wrote:
+> Right now memory_dev_init() maintains the memory block pointer
+> between iterations of add_memory_section().  This is nasty.
 > 
-> This is only for debug / proof of concept right ? We should use a real
-> sleep here.
+> This patch refactors add_memory_section() to become add_memory_block().
+> The refactoring pulls the section scanning out of memory_dev_init()
+> and simplifies the signature.
 > 
-> If we need to know whether the FW supports it (PORE etc...) we shall add
-> a device-tree property from the FW to indicate that fact.
+> Signed-off-by: Seth Jennings <sjenning@linux.vnet.ibm.com>
+> ---
+>   drivers/base/memory.c | 48 +++++++++++++++++++++---------------------------
+>   1 file changed, 21 insertions(+), 27 deletions(-)
+> 
+> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+> index 7d9d3bc..021283a 100644
+> --- a/drivers/base/memory.c
+> +++ b/drivers/base/memory.c
+> @@ -602,32 +602,31 @@ static int init_memory_block(struct memory_block **memory,
+>   	return ret;
+>   }
+>   
+> -static int add_memory_section(struct mem_section *section,
+> -			struct memory_block **mem_p)
+> +static int add_memory_block(int base_section_nr)
+>   {
+> -	struct memory_block *mem = NULL;
+> -	int scn_nr = __section_nr(section);
+> -	int ret = 0;
+> -
+> -	if (mem_p && *mem_p) {
+> -		if (scn_nr >= (*mem_p)->start_section_nr &&
+> -		    scn_nr <= (*mem_p)->end_section_nr) {
+> -			mem = *mem_p;
+> -		}
+> -	}
+> +	struct memory_block *mem;
+> +	int i, ret, section_count = 0, section_nr;
+>   
+> -	if (mem)
+> -		mem->section_count++;
+> -	else {
+> -		ret = init_memory_block(&mem, section, MEM_ONLINE);
+> -		/* store memory_block pointer for next loop */
+> -		if (!ret && mem_p)
+> -			*mem_p = mem;
+> +	for (i = base_section_nr;
+> +	     (i < base_section_nr + sections_per_block) && i < NR_MEM_SECTIONS;
+> +	     i++) {
+> +		if (!present_section_nr(i))
+> +			continue;
+> +		if (section_count == 0)
+> +			section_nr = i;
+> +		section_count++;
+>   	}
+>   
+> -	return ret;
+> +	if (section_count == 0)
+> +		return 0;
+> +	ret = init_memory_block(&mem, __nr_to_section(section_nr), MEM_ONLINE);
+> +	if (ret)
+> +		return ret;
+> +	mem->section_count = section_count;
+> +	return 0;
+>   }
+>   
+> +
+>   /*
+>    * need an interface for the VM to add new memory regions,
+>    * but without onlining it.
+> @@ -733,7 +732,6 @@ int __init memory_dev_init(void)
+>   	int ret;
+>   	int err;
+>   	unsigned long block_sz;
+> -	struct memory_block *mem = NULL;
+>   
+>   	ret = subsys_system_register(&memory_subsys, memory_root_attr_groups);
+>   	if (ret)
+> @@ -747,12 +745,8 @@ int __init memory_dev_init(void)
+>   	 * during boot and have been initialized
+>   	 */
+>   	mutex_lock(&mem_sysfs_mutex);
+> -	for (i = 0; i < NR_MEM_SECTIONS; i++) {
+> -		if (!present_section_nr(i))
+> -			continue;
+> -		/* don't need to reuse memory_block if only one per block */
+> -		err = add_memory_section(__nr_to_section(i),
+> -				 (sections_per_block == 1) ? NULL : &mem);
+> +	for (i = 0; i < NR_MEM_SECTIONS; i += sections_per_block) {
 
-We also need the sleep support right? The context management, I mean.
-Yes it is a debug patch, so as to first ensure that we have the hook up
-to the broadcast framework done right.
+Why do you remove present_setcion_nr() check?
 
-Regards
-Preeti U Murthy
+> +		err = add_memory_block(i);
+>   		if (!ret)
+
+Thanks,
+Yasuaki Ishimatasu
+
+>   			ret = err;
+>   	}
+> 
