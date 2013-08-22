@@ -1,22 +1,24 @@
-Return-Path: <imr@rtschenk.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0D3002C0099
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 23:56:19 +1000 (EST)
-From: Rojhalat Ibrahim <imr@rtschenk.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 3/4] powerpc/booke64: Use appropriate -mcpu
-Date: Thu, 22 Aug 2013 15:56:11 +0200
-Message-ID: <1753626.1M86qx3vEi@pcimr>
-In-Reply-To: <1377051162-2588-4-git-send-email-scottwood@freescale.com>
-References: <1377051162-2588-1-git-send-email-scottwood@freescale.com>
- <1377051162-2588-4-git-send-email-scottwood@freescale.com>
+Return-Path: <sudeep.karkadanagesha@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id 597192C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 23:57:32 +1000 (EST)
+Message-ID: <521618E4.4020007@arm.com>
+Date: Thu, 22 Aug 2013 14:57:56 +0100
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: Scott Wood <scottwood@freescale.com>,
- Catalin Udma <catalin.udma@freescale.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL v2] DT/core: cpu_ofnode updates for v3.12
+Content-Type: text/plain; charset=WINDOWS-1252
+Cc: Jonas Bonn <jonas@southpole.se>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "monstr@monstr.eu" <monstr@monstr.eu>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Sudeep.KarkadaNagesha@arm.com,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "arm@kernel.org" <arm@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,87 +28,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Just out of curiosity: What's the difference (if any) between -mcpu=e500mc64 
-and -mcpu=e5500? AFAIK -mcpu=e500mc64 is supported by gcc since at least 
-version 4.6 whereas -mcpu=e5500 is only supported since gcc 4.8. But is there 
-actually any difference?
+Hi Rafael,
 
-   Rojhalat
+Here is the v2 of the pull request for cpu of_node updates for v3.12
+It includes ACK for all the new changes since v1(mainly from Ben for
+PPC). Currently there's trivial conflict with today's linux-next in 3
+files. Let me know if you need me to rebase this on any particular
+branch if needed.
 
+Regards,
+Sudeep
 
-On Tuesday 20 August 2013 21:12:41 Scott Wood wrote:
-> By default use -mcpu=powerpc64 rather than -mtune=power7
-> 
-> Add options for e5500/e6500, with fallbacks for older compilers.
-> 
-> Hide the POWER cpu options in booke configs.
-> 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/Makefile                  |  9 +++++++++
->  arch/powerpc/platforms/Kconfig.cputype | 13 +++++++++++++
->  2 files changed, 22 insertions(+)
-> 
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 6930c93..32dfd5d 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -88,13 +88,22 @@ CFLAGS-$(CONFIG_PPC64)	+= $(call
-> cc-option,-mcmodel=medium,-mminimal-toc) CFLAGS-$(CONFIG_PPC64)	+= $(call
-> cc-option,-mno-pointers-to-nested-functions) CFLAGS-$(CONFIG_PPC32)	:=
-> -ffixed-r2 -mmultiple
-> 
-> +ifeq ($(CONFIG_PPC_BOOK3S_64),y)
->  CFLAGS-$(CONFIG_GENERIC_CPU) += $(call
-> cc-option,-mtune=power7,-mtune=power4) +else
-> +CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=powerpc64
-> +endif
-> +
->  CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
->  CFLAGS-$(CONFIG_POWER4_CPU) += $(call cc-option,-mcpu=power4)
->  CFLAGS-$(CONFIG_POWER5_CPU) += $(call cc-option,-mcpu=power5)
->  CFLAGS-$(CONFIG_POWER6_CPU) += $(call cc-option,-mcpu=power6)
->  CFLAGS-$(CONFIG_POWER7_CPU) += $(call cc-option,-mcpu=power7)
-> 
-> +E5500_CPU := $(call cc-option,-mcpu=e500mc64,-mcpu=powerpc64)
-> +CFLAGS-$(CONFIG_E5500_CPU) += $(E5500_CPU)
-> +CFLAGS-$(CONFIG_E6500_CPU) += $(call cc-option,-mcpu=e6500,$(E5500_CPU))
-> +
->  CFLAGS-$(CONFIG_TUNE_CELL) += $(call cc-option,-mtune=cell)
-> 
->  KBUILD_CPPFLAGS	+= -Iarch/$(ARCH)
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype
-> b/arch/powerpc/platforms/Kconfig.cputype index 47d9a03..6704e2e 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -96,18 +96,31 @@ config GENERIC_CPU
-> 
->  config CELL_CPU
->  	bool "Cell Broadband Engine"
-> +	depends on PPC_BOOK3S_64
-> 
->  config POWER4_CPU
->  	bool "POWER4"
-> +	depends on PPC_BOOK3S_64
-> 
->  config POWER5_CPU
->  	bool "POWER5"
-> +	depends on PPC_BOOK3S_64
-> 
->  config POWER6_CPU
->  	bool "POWER6"
-> +	depends on PPC_BOOK3S_64
-> 
->  config POWER7_CPU
->  	bool "POWER7"
-> +	depends on PPC_BOOK3S_64
-> +
-> +config E5500_CPU
-> +	bool "Freescale e5500"
-> +	depends on E500
-> +
-> +config E6500_CPU
-> +	bool "Freescale e6500"
-> +	depends on E500
-> 
->  endchoice
+The following changes since commit b36f4be3de1b123d8601de062e7dbfc904f305fb=
+:
+
+  Linux 3.11-rc6 (2013-08-18 14:36:53 -0700)
+
+are available in the git repository at:
+
+  git://linux-arm.org/linux-skn.git cpu_of_node
+
+for you to fetch changes up to 1037b2752345cc5666e90b711a913ab2ae6c5920:
+
+  cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
+(2013-08-21 10:29:56 +0100)
+
+----------------------------------------------------------------
+Sudeep KarkadaNagesha (19):
+   microblaze: remove undefined of_get_cpu_node declaration
+   openrisc: remove undefined of_get_cpu_node declaration
+   powerpc: refactor of_get_cpu_node to support other architectures
+   of: move of_get_cpu_node implementation to DT core library
+   ARM: DT/kernel: define ARM specific arch_match_cpu_phys_id
+   driver/core: cpu: initialize of_node in cpu's device struture
+   of/device: add helper to get cpu device node from logical cpu index
+   ARM: topology: remove hwid/MPIDR dependency from cpu_capacity
+   ARM: mvebu: remove device tree parsing for cpu nodes
+   drivers/bus: arm-cci: avoid parsing DT for cpu device nodes
+   cpufreq: imx6q-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: cpufreq-cpu0: remove device tree parsing for cpu nodes
+   cpufreq: highbank-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: spear-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: kirkwood-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: arm_big_little: remove device tree parsing for cpu nodes
+   cpufreq: maple-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: pmac64-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
+
+ arch/arm/kernel/devtree.c           |  5 ++
+ arch/arm/kernel/topology.c          | 61 +++++-----------
+ arch/arm/mach-imx/mach-imx6q.c      |  3 +-
+ arch/arm/mach-mvebu/platsmp.c       | 51 ++++++-------
+ arch/microblaze/include/asm/prom.h  |  3 -
+ arch/openrisc/include/asm/prom.h    |  3 -
+ arch/powerpc/include/asm/prom.h     |  3 -
+ arch/powerpc/kernel/prom.c          | 43 +-----------
+ drivers/base/cpu.c                  |  2 +
+ drivers/bus/arm-cci.c               | 28 ++------
+ drivers/cpufreq/arm_big_little_dt.c | 40 ++++-------
+ drivers/cpufreq/cpufreq-cpu0.c      | 23 +-----
+ drivers/cpufreq/highbank-cpufreq.c  | 18 ++---
+ drivers/cpufreq/imx6q-cpufreq.c     |  4 +-
+ drivers/cpufreq/kirkwood-cpufreq.c  |  8 ++-
+ drivers/cpufreq/maple-cpufreq.c     | 23 +-----
+ drivers/cpufreq/pmac32-cpufreq.c    |  5 +-
+ drivers/cpufreq/pmac64-cpufreq.c    | 47 +++---------
+ drivers/cpufreq/spear-cpufreq.c     |  4 +-
+ drivers/of/base.c                   | 95 ++++++++++++++++++++++++
+ include/linux/cpu.h                 |  1 +
+ include/linux/of.h                  |  7 ++
+ include/linux/of_device.h           | 15 ++++
+ 23 files changed, 226 insertions(+), 266 deletions(-)
