@@ -1,29 +1,23 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 479C42C009F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 01:19:34 +1000 (EST)
-Message-ID: <1377184761.5029.96.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/2] powerpc/85xx: add hardware automatically enter
- altivec idle state
-From: Scott Wood <scottwood@freescale.com>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Date: Thu, 22 Aug 2013 10:19:21 -0500
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F1543925901027BD3@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1376637789-27330-1-git-send-email-dongsheng.wang@freescale.com>
- <83499AB5-DCE7-407D-AEC1-B2493D1D38BE@kernel.crashing.org>
- <1376671853.31636.252.camel@snotra.buserror.net>
- <ABB05CD9C9F68C46A5CEDC7F154392590101E5A5@039-SN2MPN1-021.039d.mgd.msft.net>
- <1376959116.31636.392.camel@snotra.buserror.net>
- <ABB05CD9C9F68C46A5CEDC7F1543925901027BD3@039-SN2MPN1-021.039d.mgd.msft.net>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 6E6C12C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 01:28:33 +1000 (EST)
+Message-ID: <1377185303.25163.13.camel@ul30vt.home>
+Subject: Re: [PATCH 2/2] powerpc/iommu: check dev->iommu_group before remove
+ a device from iommu_group
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Date: Thu, 22 Aug 2013 09:28:23 -0600
+In-Reply-To: <20130822075237.GA14479@weiyang.vnet.ibm.com>
+References: <1376647687-20550-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1376647687-20550-3-git-send-email-weiyang@linux.vnet.ibm.com>
+ <520DFBC8.4040509@ozlabs.ru> <20130819012945.GA8342@weiyang.vnet.ibm.com>
+ <52117765.7010205@ozlabs.ru> <20130819015538.GB8342@weiyang.vnet.ibm.com>
+ <5215BC76.10105@ozlabs.ru> <20130822075237.GA14479@weiyang.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Zhao Chenhui-B35336 <B35336@freescale.com>
+Mime-Version: 1.0
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, paulus@au1.ibm.com, benh@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,45 +27,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-08-21 at 22:13 -0500, Wang Dongsheng-B40534 wrote:
+On Thu, 2013-08-22 at 15:52 +0800, Wei Yang wrote:
+> On Thu, Aug 22, 2013 at 05:23:34PM +1000, Alexey Kardashevskiy wrote:
+> >On 08/19/2013 11:55 AM, Wei Yang wrote:
+> >> On Mon, Aug 19, 2013 at 11:39:49AM +1000, Alexey Kardashevskiy wrote:
+> >>> On 08/19/2013 11:29 AM, Wei Yang wrote:
+> >>>> On Fri, Aug 16, 2013 at 08:15:36PM +1000, Alexey Kardashevskiy wrote:
+> >>>>> On 08/16/2013 08:08 PM, Wei Yang wrote:
+> >>>>>> ---
+> >>>>>>  arch/powerpc/kernel/iommu.c |    3 ++-
+> >>>>>>  1 files changed, 2 insertions(+), 1 deletions(-)
+> >>>>>>
+> >>>>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> >>>>>> index b20ff17..5abf7c3 100644
+> >>>>>> --- a/arch/powerpc/kernel/iommu.c
+> >>>>>> +++ b/arch/powerpc/kernel/iommu.c
+> >>>>>> @@ -1149,7 +1149,8 @@ static int iommu_bus_notifier(struct notifier_block *nb,
+> >>>>>>  	case BUS_NOTIFY_ADD_DEVICE:
+> >>>>>>  		return iommu_add_device(dev);
+> >>>>>>  	case BUS_NOTIFY_DEL_DEVICE:
+> >>>>>> -		iommu_del_device(dev);
+> >>>>>> +		if (dev->iommu_group)
+> >>>>>> +			iommu_del_device(dev);
+> >>>>>>  		return 0;
+> >>>>>>  	default:
+> >>>>>>  		return 0;
+> >>>>>>
+> >>>>>
+> >>>>> This one seems redundant, no?
+> >>>>
+> >>>> Sorry for the late.
+> >>>>
+> >>>> Yes, these two patches have the same purpose to guard the system, while in two
+> >>>> different places.  One is in powernv platform, the other is in the generic iommu 
+> >>>> driver.
+> >>>>
+> >>>> The one in powernv platform is used to correct the original logic.
+> >>>>
+> >>>> The one in generic iommu driver is to keep system safe in case other platform to
+> >>>> call iommu_group_remove_device() without the check.
+> >>>
+> >>>
+> >>> But I am moving bus notifier to powernv code (posted a patch last week,
+> >>> otherwise Freescale's IOMMU conflicted) so this won't be the case.
+> >> 
+> >> Yes, I see the patch.
+> >> 
+> >> This means other platforms, besides powernv, will check the dev->iommu_group
+> >> before remove the device? This would be a convention?
+> >> 
+> >> If this is the case, the second patch is enough. We don't need to check it in
+> >> generic iommu driver.
+> >> 
+> >> Since I am not very familiar with the code convention, I post these two
+> >> patches together. This doesn't mean I need to push both of them. Your comments
+> >> are welcome, lets me understand which one is more suitable in this case.
+> >
+> >
+> >Ok. So. I included the check in the bus notifier which I moved to powernv
+> >platform, I guess I'll repost the series soon.
 > 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Tuesday, August 20, 2013 8:39 AM
-> > To: Wang Dongsheng-B40534
-> > Cc: Wood Scott-B07421; Kumar Gala; linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH 1/2] powerpc/85xx: add hardware automatically enter
-> > altivec idle state
-> > 
-> > It just seems wrong to have an ad-hoc mechanism for running
-> > core-specific code when we have cputable...  If we really need this,
-> > maybe we should add a "cpu_setup_late" function pointer.
-> > 
-> > With your patch, when does the power management register get set when
-> > hot plugging a cpu?
-> > 
-> Um.. I don't deal with this situation. I will fix it.
-> __setup/restore_cpu_e6500 looks good. But only bootcpu call __setup_cpu_e6500, not on each cpu.
-> I think this is a bug.
+> Thanks, this check will guard the powernv platform.
+> 
+> >
+> >Good luck with pushing the fix for drivers/iommu/iommu.c :)
+> >
+> 
+> Alex,
+> 
+> Sorry for not including you in the very beginning, which may spend you more
+> efforts to track previous mails in this thread.
+> 
+> Do you think it is reasonable to check the dev->iommu_group in
+> iommu_group_remove_device()? Or we can count on the bus notifier to check it?
+> 
+> Welcome your suggestions~
 
-Other CPUs call __restore_cpu_e6500.
+I don't really see the point of patch 1/2. iommu_group_remove_device()
+is specifically to remove a device from an iommu_group, so why would you
+call it on a device that's not part of an iommu_group.  If you want to
+avoid testing dev->iommu_group, then implement the .remove_device
+callback rather than using the notifier.  Thanks,
 
-> > > > As for the PVR check, the upstream kernel doesn't need to care about
-> > > > rev1, so knowing it's an e6500 is good enough.
-> > > >
-> > > But AltiVec idle & PW20 cannot work on rev1 platform.
-> > > We didn't have to deal with it?
-> > 
-> > Upstream does not run on rev1.
-> > 
-> :), But already have customers in the use of rev1.
-> Why we don't need to care about that?
-
-rev1 is not production-qualified.  Those customers are supposed to only
-be using rev1 for evaluation and early development.  It's not that we
-don't care about rev1 now (we have the SDK for that) but that we won't
-care about it long-term and don't want to have to carry around a bunch
-of baggage for it.  Some of the workarounds are pretty nasty (especially
-A-006198).
-
--Scott
+Alex
