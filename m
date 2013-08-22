@@ -1,29 +1,32 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5C2AA2C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 20:02:34 +1000 (EST)
-Date: Thu, 22 Aug 2013 11:02:27 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Gerhard Sittig <gsi@denx.de>
-Message-ID: <20130822100227.GT26118@sirena.org.uk>
-References: <1374495298-22019-1-git-send-email-gsi@denx.de>
- <1375821851-31609-1-git-send-email-gsi@denx.de>
- <1375821851-31609-2-git-send-email-gsi@denx.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="vBRosIkLXbYTRpGW"
-In-Reply-To: <1375821851-31609-2-git-send-email-gsi@denx.de>
-Subject: Re: [PATCH v4 01/31] spi: mpc512x: cleanup clock API use
-Cc: devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>,
- Detlev Zundel <dzu@denx.de>, Wolfram Sang <wsa@the-dreams.de>,
- David Woodhouse <dwmw2@infradead.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Rob Herring <rob.herring@calxeda.com>, Marc Kleine-Budde <mkl@pengutronix.de>,
- Wolfgang Grandegger <wg@grandegger.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 739922C00C0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 21:38:20 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 22 Aug 2013 21:31:09 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id AC35E2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 21:38:11 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7MBc0MQ5374426
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 21:38:00 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7MBcAaK012706
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 21:38:10 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, agraf@suse.de
+Subject: [PATCH] powerpc/kvm: Handle the boundary condition correctly
+Date: Thu, 22 Aug 2013 17:07:59 +0530
+Message-Id: <1377171479-25738-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,39 +36,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
---vBRosIkLXbYTRpGW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+We should be able to copy upto count bytes
 
-On Tue, Aug 06, 2013 at 10:43:41PM +0200, Gerhard Sittig wrote:
-> cleanup the MPC512x SoC's SPI master's use of the clock API
-> - get, prepare, and enable the MCLK during probe; disable, unprepare and
->   put the MCLK upon remove; hold a reference to the clock over the
->   period of use
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Applied, thanks.
-
---vBRosIkLXbYTRpGW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSFeGwAAoJELSic+t+oim9s/MP/j2rFnWIixLHWCFoDvQ/11sg
-RC0ArJ13ELabQfRXY0y3IeIEqXqcEyoDv2ikjQ5nCoaWy7/g9XlXnmTzpu6rqn9v
-V3g5r++7bqWMrd5XghFuPGixSsRGyRAHnCnDSUCgyF067VicfQ7RYSH/AT3LyJo3
-IaVZby1CyPMfapPFK9UEXklUzpNpX72ece62S+DzCNKjPx+RDr9coW5UT2cGc6oc
-JMHP7fdsCWnbDAvNj3BGOvjxfJDcoIogiYBMkvZGsKbpls8mh45K7/IRTLkbuipg
-m6GFsQzpZMNnLwsAUAH4wUFeeZzurdiAs8Yl4Rghvbp3HlANdZshz71zMOKqsDqo
-qlrb7htyqO8wK2vRq6qovqKDysBbiicMDalGle5wqeOJMtEInUyD/OOak/T7Vpo4
-RgphHcGmUWJdAT+YLhe/aZjIUf1R48r+wpMCLOh5q9QAWkAAPz4XZvBScvBwvJh3
-mw153pbuEEZdyXSxUkGNyt3IHE3OoWTzgNa/LSWscZnsMXnhXCTZHMgUkssvemrc
-2B5HNGD40N2n0aSPg4a4QHrIc3jS+Y0/ri4pMJZnUFo5ldTL9nonblafh5alGpPz
-4FRwl/HjGLxec8y6SdGHzGxhcGVI8BLpbLSaLHhoyBw9tlPiStdU4CEWiW72RHtS
-lq2l85gqYTcfhs4j09Ad
-=K94d
------END PGP SIGNATURE-----
-
---vBRosIkLXbYTRpGW--
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 710d313..0ae6bb6 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -1362,7 +1362,7 @@ static ssize_t kvm_htab_read(struct file *file, char __user *buf,
+ 	lbuf = (unsigned long __user *)buf;
+ 
+ 	nb = 0;
+-	while (nb + sizeof(hdr) + HPTE_SIZE < count) {
++	while (nb + sizeof(hdr) + HPTE_SIZE <= count) {
+ 		/* Initialize header */
+ 		hptr = (struct kvm_get_htab_header __user *)buf;
+ 		hdr.n_valid = 0;
+@@ -1385,7 +1385,7 @@ static ssize_t kvm_htab_read(struct file *file, char __user *buf,
+ 		/* Grab a series of valid entries */
+ 		while (i < kvm->arch.hpt_npte &&
+ 		       hdr.n_valid < 0xffff &&
+-		       nb + HPTE_SIZE < count &&
++		       nb + HPTE_SIZE <= count &&
+ 		       record_hpte(flags, hptp, hpte, revp, 1, first_pass)) {
+ 			/* valid entry, write it out */
+ 			++hdr.n_valid;
+-- 
+1.8.1.2
