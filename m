@@ -1,44 +1,45 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 203C82C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:52:46 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Thu, 22 Aug 2013 17:42:17 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 039BD2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:52:40 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7M7aWGk57278488
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:36:32 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7M7qdnk031546
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:52:39 +1000
-Date: Thu, 22 Aug 2013 15:52:37 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH 2/2] powerpc/iommu: check dev->iommu_group before remove
- a device from iommu_group
-Message-ID: <20130822075237.GA14479@weiyang.vnet.ibm.com>
-References: <1376647687-20550-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1376647687-20550-3-git-send-email-weiyang@linux.vnet.ibm.com>
- <520DFBC8.4040509@ozlabs.ru>
- <20130819012945.GA8342@weiyang.vnet.ibm.com>
- <52117765.7010205@ozlabs.ru>
- <20130819015538.GB8342@weiyang.vnet.ibm.com>
- <5215BC76.10105@ozlabs.ru>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6AE452C00C0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 18:31:40 +1000 (EST)
+Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 7D4DD3EE1DE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:31:38 +0900 (JST)
+Received: from smail (m2 [127.0.0.1])
+ by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 656D145DE53
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:31:38 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
+ by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 407E545DD78
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:31:38 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 325901DB8041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:31:38 +0900 (JST)
+Received: from g01jpfmpwkw03.exch.g01.fujitsu.local
+ (g01jpfmpwkw03.exch.g01.fujitsu.local [10.0.193.57])
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id D17231DB803C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:31:37 +0900 (JST)
+Message-ID: <5215CC40.5060406@jp.fujitsu.com>
+Date: Thu, 22 Aug 2013 17:30:56 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5215BC76.10105@ozlabs.ru>
-Cc: alex.williamson@redhat.com, paulus@au1.ibm.com, benh@au1.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Seth Jennings <sjenning@linux.vnet.ibm.com>
+Subject: Re: [PATCH 7/7] drivers: base: refactor add_memory_section() to
+ add_memory_block()
+References: <1377018783-26756-1-git-send-email-sjenning@linux.vnet.ibm.com>
+ <1377018783-26756-7-git-send-email-sjenning@linux.vnet.ibm.com>
+ <5215C9B3.4090608@jp.fujitsu.com>
+In-Reply-To: <5215C9B3.4090608@jp.fujitsu.com>
+Content-Type: text/plain; charset="ISO-2022-JP"
+Cc: Dave Hansen <dave@sr71.net>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+ linuxppc-dev@lists.ozlabs.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Yinghai Lu <yinghai@kernel.org>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Cody P Schafer <cody@linux.vnet.ibm.com>,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,86 +49,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 22, 2013 at 05:23:34PM +1000, Alexey Kardashevskiy wrote:
->On 08/19/2013 11:55 AM, Wei Yang wrote:
->> On Mon, Aug 19, 2013 at 11:39:49AM +1000, Alexey Kardashevskiy wrote:
->>> On 08/19/2013 11:29 AM, Wei Yang wrote:
->>>> On Fri, Aug 16, 2013 at 08:15:36PM +1000, Alexey Kardashevskiy wrote:
->>>>> On 08/16/2013 08:08 PM, Wei Yang wrote:
->>>>>> ---
->>>>>>  arch/powerpc/kernel/iommu.c |    3 ++-
->>>>>>  1 files changed, 2 insertions(+), 1 deletions(-)
->>>>>>
->>>>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->>>>>> index b20ff17..5abf7c3 100644
->>>>>> --- a/arch/powerpc/kernel/iommu.c
->>>>>> +++ b/arch/powerpc/kernel/iommu.c
->>>>>> @@ -1149,7 +1149,8 @@ static int iommu_bus_notifier(struct notifier_block *nb,
->>>>>>  	case BUS_NOTIFY_ADD_DEVICE:
->>>>>>  		return iommu_add_device(dev);
->>>>>>  	case BUS_NOTIFY_DEL_DEVICE:
->>>>>> -		iommu_del_device(dev);
->>>>>> +		if (dev->iommu_group)
->>>>>> +			iommu_del_device(dev);
->>>>>>  		return 0;
->>>>>>  	default:
->>>>>>  		return 0;
->>>>>>
->>>>>
->>>>> This one seems redundant, no?
->>>>
->>>> Sorry for the late.
->>>>
->>>> Yes, these two patches have the same purpose to guard the system, while in two
->>>> different places.  One is in powernv platform, the other is in the generic iommu 
->>>> driver.
->>>>
->>>> The one in powernv platform is used to correct the original logic.
->>>>
->>>> The one in generic iommu driver is to keep system safe in case other platform to
->>>> call iommu_group_remove_device() without the check.
->>>
->>>
->>> But I am moving bus notifier to powernv code (posted a patch last week,
->>> otherwise Freescale's IOMMU conflicted) so this won't be the case.
->> 
->> Yes, I see the patch.
->> 
->> This means other platforms, besides powernv, will check the dev->iommu_group
->> before remove the device? This would be a convention?
->> 
->> If this is the case, the second patch is enough. We don't need to check it in
->> generic iommu driver.
->> 
->> Since I am not very familiar with the code convention, I post these two
->> patches together. This doesn't mean I need to push both of them. Your comments
->> are welcome, lets me understand which one is more suitable in this case.
->
->
->Ok. So. I included the check in the bus notifier which I moved to powernv
->platform, I guess I'll repost the series soon.
+(2013/08/22 17:20), Yasuaki Ishimatsu wrote:
+> (2013/08/21 2:13), Seth Jennings wrote:
+>> Right now memory_dev_init() maintains the memory block pointer
+>> between iterations of add_memory_section().  This is nasty.
+>>
+>> This patch refactors add_memory_section() to become add_memory_block().
+>> The refactoring pulls the section scanning out of memory_dev_init()
+>> and simplifies the signature.
+>>
+>> Signed-off-by: Seth Jennings <sjenning@linux.vnet.ibm.com>
+>> ---
+>>    drivers/base/memory.c | 48 +++++++++++++++++++++---------------------------
+>>    1 file changed, 21 insertions(+), 27 deletions(-)
+>>
+>> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+>> index 7d9d3bc..021283a 100644
+>> --- a/drivers/base/memory.c
+>> +++ b/drivers/base/memory.c
+>> @@ -602,32 +602,31 @@ static int init_memory_block(struct memory_block **memory,
+>>    	return ret;
+>>    }
+>>    
+>> -static int add_memory_section(struct mem_section *section,
+>> -			struct memory_block **mem_p)
+>> +static int add_memory_block(int base_section_nr)
+>>    {
+>> -	struct memory_block *mem = NULL;
+>> -	int scn_nr = __section_nr(section);
+>> -	int ret = 0;
+>> -
+>> -	if (mem_p && *mem_p) {
+>> -		if (scn_nr >= (*mem_p)->start_section_nr &&
+>> -		    scn_nr <= (*mem_p)->end_section_nr) {
+>> -			mem = *mem_p;
+>> -		}
+>> -	}
+>> +	struct memory_block *mem;
+>> +	int i, ret, section_count = 0, section_nr;
+>>    
+>> -	if (mem)
+>> -		mem->section_count++;
+>> -	else {
+>> -		ret = init_memory_block(&mem, section, MEM_ONLINE);
+>> -		/* store memory_block pointer for next loop */
+>> -		if (!ret && mem_p)
+>> -			*mem_p = mem;
+>> +	for (i = base_section_nr;
+>> +	     (i < base_section_nr + sections_per_block) && i < NR_MEM_SECTIONS;
+>> +	     i++) {
+>> +		if (!present_section_nr(i))
+>> +			continue;
+>> +		if (section_count == 0)
+>> +			section_nr = i;
+>> +		section_count++;
+>>    	}
+>>    
+>> -	return ret;
+>> +	if (section_count == 0)
+>> +		return 0;
+>> +	ret = init_memory_block(&mem, __nr_to_section(section_nr), MEM_ONLINE);
+>> +	if (ret)
+>> +		return ret;
+>> +	mem->section_count = section_count;
+>> +	return 0;
+>>    }
+>>    
+>> +
+>>    /*
+>>     * need an interface for the VM to add new memory regions,
+>>     * but without onlining it.
+>> @@ -733,7 +732,6 @@ int __init memory_dev_init(void)
+>>    	int ret;
+>>    	int err;
+>>    	unsigned long block_sz;
+>> -	struct memory_block *mem = NULL;
+>>    
+>>    	ret = subsys_system_register(&memory_subsys, memory_root_attr_groups);
+>>    	if (ret)
+>> @@ -747,12 +745,8 @@ int __init memory_dev_init(void)
+>>    	 * during boot and have been initialized
+>>    	 */
+>>    	mutex_lock(&mem_sysfs_mutex);
+>> -	for (i = 0; i < NR_MEM_SECTIONS; i++) {
+>> -		if (!present_section_nr(i))
+>> -			continue;
+>> -		/* don't need to reuse memory_block if only one per block */
+>> -		err = add_memory_section(__nr_to_section(i),
+>> -				 (sections_per_block == 1) ? NULL : &mem);
+>> +	for (i = 0; i < NR_MEM_SECTIONS; i += sections_per_block) {
+> 
+> Why do you remove present_setcion_nr() check?
 
-Thanks, this check will guard the powernv platform.
+Sorry for the noise. I understood.
+The check was moved into add_memory_section(). So it was removed.
 
->
->Good luck with pushing the fix for drivers/iommu/iommu.c :)
->
+Thanks,
+Yasuaki Ishimatsu
 
-Alex,
-
-Sorry for not including you in the very beginning, which may spend you more
-efforts to track previous mails in this thread.
-
-Do you think it is reasonable to check the dev->iommu_group in
-iommu_group_remove_device()? Or we can count on the bus notifier to check it?
-
-Welcome your suggestions~
-
->
->
->-- 
->Alexey
-
--- 
-Richard Yang
-Help you, Help me
+> 
+>> +		err = add_memory_block(i);
+>>    		if (!ret)
+> 
+> Thanks,
+> Yasuaki Ishimatasu
+> 
+>>    			ret = err;
+>>    	}
+>>
+> 
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
