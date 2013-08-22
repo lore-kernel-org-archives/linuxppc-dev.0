@@ -1,32 +1,26 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by ozlabs.org (Postfix) with ESMTP id C3E092C00C6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 10:27:55 +1000 (EST)
-Received: from mail-ve0-f169.google.com (mail-ve0-f169.google.com
- [209.85.128.169])
- by muin.pair.com (Postfix) with ESMTPSA id 2FEEC8FC3E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 20:27:53 -0400 (EDT)
-Received: by mail-ve0-f169.google.com with SMTP id db10so999974veb.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2013 17:27:52 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1377127873.5029.72.camel@snotra.buserror.net>
-References: <1375094944-3343-1-git-send-email-hongbo.zhang@freescale.com>
- <1375094944-3343-3-git-send-email-hongbo.zhang@freescale.com>
- <521541EE.4010303@wwwdotorg.org>
- <1377125827.5029.50.camel@snotra.buserror.net>
- <52154A22.4090809@wwwdotorg.org>
- <1377127873.5029.72.camel@snotra.buserror.net>
-Date: Wed, 21 Aug 2013 19:27:52 -0500
-Message-ID: <CAOZdJXXvyFQZqyKjDerESB7RmZ9J76R40xLtNGfTd1Wv=W-bow@mail.gmail.com>
-Subject: Re: [PATCH v7 2/3] DMA: Freescale: Add new 8-channel DMA engine
- device tree nodes
-From: Timur Tabi <timur@tabi.org>
+Return-Path: <schivers@csc.com.au>
+Received: from mail1.bemta7.messagelabs.com (mail1.bemta7.messagelabs.com
+ [216.82.254.109])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.bemta7.messagelabs.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DA4402C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 10:57:47 +1000 (EST)
+In-Reply-To: <1377040803.3370.88.camel@snotra.buserror.net>
+References: <OFBCFBBD51.E4ECB0DF-ONCA257BC0.0083C866-CA257BC1.0000531E@csc.com>	
+ <1376012120.4514.86.camel@snotra.buserror.net>
+ <OFE172B06C.BE11BDC5-ONCA257BCC.007C0097-CA257BCD.000D984C@csc.com>
+ <1377040803.3370.88.camel@snotra.buserror.net>
 To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>,
- hongbo.zhang@freescale.com, lkml <linux-kernel@vger.kernel.org>,
- "vinod.koul@intel.com" <vinod.koul@intel.com>, djbw@fb.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+MIME-Version: 1.0
+Subject: Re: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for
+ Motorola/Emerson MVME5100.
+From: Stephen N Chivers <schivers@csc.com.au>
+Message-ID: <OFA6564D85.57B12E50-ONCA257BCF.00042385-CA257BCF.000553C9@csc.com>
+Date: Thu, 22 Aug 2013 11:58:02 +1100
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org, Stephen N Chivers <schivers@csc.com.au>,
+ paulus@samba.org, Chris Proctor <cproctor@csc.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,32 +30,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 21, 2013 at 6:31 PM, Scott Wood <scottwood@freescale.com> wrote:
->
->> > Other than "this is how the existing binding works and we're not going
->> > to break compatibility", it allows the OS more flexibility to choose
->> > whether to bind to controllers or directly to the channels.  Sometimes a
->> > channel will be labelled with a different compatible if it has a fixed
->> > purpose such as being connected to audio hardware (e.g. mpc8610_hpcd.dts
->> > where some channels are "fsl,ssi-dma-channel").
->>
->> That sounds terribly like encoding policy into DT rather than it being a
->> HW description.
->
-> It is hardware description.  Those DMA channels are physically wired
-> into the audio hardware.  Other DMA channels in the same system aren't.
+Scott Wood <scottwood@freescale.com> wrote on 08/21/2013 09:20:03 AM:
 
-Well, not quite.  Technically the DMA channel can be dynamically
-assigned to the SSI, but there are limits.  At the time the code was
-written, there was no way to reserve a DMA channel from the generic
-DMA driver, and I didn't want to have to depend on that driver either.
- Using the device tree forced a specific pair of channels to be
-assigned to each SSI.  The audio driver has code to program the SoC to
-route whichever DMA channels are assigned, but it assumes that the
-device tree has a valid assignment.
+> From: Scott Wood <scottwood@freescale.com>
+> To: Stephen N Chivers <schivers@csc.com.au>
+> Cc: <benh@kernel.crashing.org>, Chris Proctor <cproctor@csc.com.au>,
+> <linuxppc-dev@lists.ozlabs.org>, <paulus@samba.org>
+> Date: 08/21/2013 09:20 AM
+> Subject: Re: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for 
+> Motorola/Emerson MVME5100.
+> 
+> On Tue, 2013-08-20 at 13:28 +1100, Stephen N Chivers wrote:
+> > Scott Wood <scottwood@freescale.com> wrote on 08/09/2013 11:35:20 AM:
+> > 
+> > > From: Scott Wood <scottwood@freescale.com>
+> > > To: Stephen N Chivers <schivers@csc.com.au>
+> > > Cc: <benh@kernel.crashing.org>, <paulus@samba.org>, Chris Proctor 
+> > > <cproctor@csc.com.au>, <linuxppc-dev@lists.ozlabs.org>
+> > > Date: 08/09/2013 11:36 AM
+> > > Subject: Re: [RFC PATCH 1/1] powerpc/embedded6xx: Add support for 
+> > > Motorola/Emerson MVME5100.
+> > > 
+> > > simple-bus may be applicable here (in addition to a specific
+> > > compatible).
+> > >
+> > The HAWK ASIC is a difficult beast. I still cannot get a positive
+> > identification as to what it is (Motorola/Freescale part number
+> > unknown, not even the part number on the chip on the board helps....).
+> > The best I can come up with is that it is a tsi108 without
+> > the ethenets.
+> > So device_type will be tsi-bridge and compatible will be
+> > tsi108-bridge.
+> 
+> Don't use device_type.  compatible should include "hawk" in the name
+> (especially if you're not sure what's really in it), and/or the part
+> number on the chip.  If you're convinced it's fully compatible with
+> tsi108-bridge you can add that as a second compatible value, though
+> given the uncertainty it's probably better to just teach Linux to look
+> for the new compatible.
+> 
+> If devices on the bus can be used without any special bus setup or
+> knowledge, then you can add a compatible of "simple-bus" to the end.
+> 
+> > > Why not just look for a chrp,iic node directly?
+> > >
+> > I was following the model used in other places, like chrp/setup.c.
+> 
+> Not all examples are good examples. :-)
+> 
+> > > > +       if ((np = of_find_compatible_node(NULL, "pci", 
+"mpc10x-pci"))) 
+> > {
+> > > 
+> > > Why insist on the device_type?
+> > >
+> > Following the model in the linkstation (kurobox) platform support. 
+> 
+> Drop the device_type check.
+> 
+> > > > +static void
+> > > > +mvme5100_restart(char *cmd)
+> > > > +{
+> > > > +       volatile ulong          i = 10000000;
+> > > > +
+> > > > +
+> > > > +       local_irq_disable();
+> > > > +       _nmask_and_or_msr(0, MSR_IP);
+> > > 
+> > > Does "mtmsr(mfmsr() | MSR_IP)" not work?
+> > >
+> > Don't know. Is from the original code by Matt Porter.
+> 
+> It actually appears that there are no callers remaining that use the
+> "and" portion of the functionality.  In fact there are no callers that
+> use it for anything other than setting MSR_IP. :-P
+> 
+> > > > +       out_8((u_char *) BOARD_MODRST_REG, 0x01);
+> > > > +
+> > > > +       while (i-- > 0);
+> > > 
+> > > Do not use a loop to implement a delay.
+> > >
+> > Taken from the original code. But at this point the board
+> > is going to reset and reboot via firmware, as /sbin/reboot
+> > or /sbin/halt has been invoked.
+> 
+> Still, it's just a bad idea.  What's wrong with udelay()?
+> 
+> Or just use an infinite loop.  How much value is there really in timing
+> out here?
+> 
+> > > > +static void __init
+> > > > +mvme5100_set_bat(void)
+> > > > +{
+> > > > +
+> > > > +
+> > > > +       mb();
+> > > > +       mtspr(SPRN_DBAT1U, 0xf0001ffe);
+> > > > +       mtspr(SPRN_DBAT1L, 0xf000002a);
+> > > > +       mb();
+> > > > +       setbat(1, 0xfe000000, 0xfe000000, 0x02000000, 
+> > PAGE_KERNEL_NCG);
+> > > > +}
+> > > 
+> > > It is no longer allowed to squat on random virtual address space 
+like
+> > > this.  If you really need a BAT you'll have to allocate the virtual
+> > > address properly.
+> > >
+> > Yes. I found that this was an anathema when researching the port in
+> > 2010 but I couldn't find any practical solution at the time.
+> > The code is called early to ensure that the hawk registers are 
+available.
+> > sysdev/cpm_common.c does the same thing.
+> 
+> > What is the correct solution?
+> 
+> ioremap() has special code to function early (using ioremap_bot).
+> 
+> If you still need to use a BAT that early, reserve the space with
+> asm/fixmap.h or by adding a function to the early ioremap code to just
+> reserve the space.  Or better, improve the ioremap code to be capable of
+> creating a BAT (or equivalent) when requested.
+>
+It is really interesting. Given that the UART implementation on the
+HAWK is such that legacy_serial will not set up an early console it
+is very likely that the address translation set up by the bat is not
+required.
+I can probably replace the physical addresses used in:
 
-I believe the generic DMA driver can now accept DMA channel
-reservations, but I don't think it works both ways.  That is, if the
-audio driver loads first, I don't think there's a clean way to tell
-the DMA driver which channels have already been taken by the audio
-driver.
+        setup_indirec_pci(hose, 0, 0xfe000cf8, 0xfe000cfc, 0);
+
+with remapped equivalents. But, with the setbat eliminated, the
+line:
+
+        pcibios_alloc_controller(dev);
+
+silently (remember no early console, due to UART reg-shift) panics.
+It is happening at the point where the newly allocated PHB
+structure is being added to the "hose_list" in pci-common.c.
+
+So, I think there is some side effect due to the call to the setbat with 
+the
+PAGE_KERNEL_NCG parameter that I do not yet understand.
+ 
+> -Scott
+> 
+> 
+> 
