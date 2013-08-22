@@ -1,27 +1,37 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <sha@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DF8EE2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 06:06:06 +1000 (EST)
-Date: Thu, 22 Aug 2013 21:05:58 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Stephen Warren <swarren@wwwdotorg.org>
-Message-ID: <20130822200558.GV26118@sirena.org.uk>
-References: <cover.1377054540.git.b42378@freescale.com>
- <e9cf5e37f858dea78319720f007f66c8c063885f.1377054540.git.b42378@freescale.com>
- <52150763.8020707@wwwdotorg.org> <20130822114027.GA4258@MrMyself>
- <52166CF0.9080402@wwwdotorg.org>
+ by ozlabs.org (Postfix) with ESMTPS id 809622C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 07:01:01 +1000 (EST)
+Date: Thu, 22 Aug 2013 23:00:35 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v5 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130822210035.GB31036@pengutronix.de>
+References: <cover.1376565456.git.b42378@freescale.com>
+ <20130820000625.4443.23018@quantum>
+ <20130821085015.GY3719@e106331-lin.cambridge.arm.com>
+ <2207416.NJhrdSqkEZ@flatron> <20130822071910.8231.47324@quantum>
+ <20130822120930.GD9799@e106331-lin.cambridge.arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="1MV0VfA6Y2yiVCnw"
-In-Reply-To: <52166CF0.9080402@wwwdotorg.org>
-Subject: Re: [PATCH v10 2/2] ASoC: fsl: Add S/PDIF machine driver
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, lars@metafoo.de, festevam@gmail.com,
- s.hauer@pengutronix.de, Nicolin Chen <b42378@freescale.com>, timur@tabi.org,
- rob.herring@calxeda.com, tomasz.figa@gmail.com, p.zabel@pengutronix.de,
- R65777@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130822120930.GD9799@e106331-lin.cambridge.arm.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "lars@metafoo.de" <lars@metafoo.de>, Mike Turquette <mturquette@linaro.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ Pawel Moll <Pawel.Moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "festevam@gmail.com" <festevam@gmail.com>, Nicolin Chen <b42378@freescale.com>,
+ Tomasz Figa <tomasz.figa@gmail.com>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "timur@tabi.org" <timur@tabi.org>, "broonie@kernel.org" <broonie@kernel.org>,
+ "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+ "galak@codeaurora.org" <galak@codeaurora.org>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,52 +41,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Aug 22, 2013 at 01:09:31PM +0100, Mark Rutland wrote:
+> On Thu, Aug 22, 2013 at 08:19:10AM +0100, Mike Turquette wrote:
+> > Quoting Tomasz Figa (2013-08-21 14:34:55)
+> > > On Wednesday 21 of August 2013 09:50:15 Mark Rutland wrote:
+> > > > On Tue, Aug 20, 2013 at 01:06:25AM +0100, Mike Turquette wrote:
+> > > > > Quoting Mark Rutland (2013-08-19 02:35:43)
+> > > > > 
+> > > > > > On Sat, Aug 17, 2013 at 04:17:18PM +0100, Tomasz Figa wrote:
+> > > > > > > On Saturday 17 of August 2013 16:53:16 Sascha Hauer wrote:
+> > > > > > > > On Sat, Aug 17, 2013 at 02:28:04PM +0200, Tomasz Figa wrote:
+> > > > > > > > > > > > Also I would make this option required. Use a dummy
+> > > > > > > > > > > > clock for
+> > > > > > > > > > > > mux
+> > > > > > > > > > > > inputs that are grounded for a specific SoC.
+> > > > > > > > > > > 
+> > > > > > > > > > > Some clocks are not from CCM and we haven't defined in
+> > > > > > > > > > > imx6q-clk.txt,
+> > > > > > > > > > > so in most cases we can't provide a phandle for them, eg:
+> > > > > > > > > > > spdif_ext.
+> > > > > > > > > > > I think it's a bit hard to force it to be 'required'. An
+> > > > > > > > > > > 'optional'
+> > > > > > > > > > > looks more flexible to me and a default one is ensured
+> > > > > > > > > > > even if
+> > > > > > > > > > > it's
+> > > > > > > > > > > missing.
+> > > > > > > > > > 
+> > > > > > > > > > <&clks 0> is the dummy clock. This can be used for all input
+> > > > > > > > > > clocks
+> > > > > > > > > > not
+> > > > > > > > > > defined by the SoC.
+> > > > > > > > > 
+> > > > > > > > > Where does this assumption come from? Is it documented
+> > > > > > > > > anywhere?
+> > > > > > > > 
+> > > > > > > > This is how all i.MX clock bindings currently are. See
+> > > > > > > > Documentation/devicetree/bindings/clock/imx*-clock.txt
+> > > > > > > 
+> > > > > > > OK, thanks.
+> > > > > > > 
+> > > > > > > I guess we need some discussion on dummy clocks vs skipped clocks.
+> > > > > > > I think we want some consistency on this, don't we?
+> > > > > > > 
+> > > > > > > If we really need a dummy clock, then we might also want a generic
+> > > > > > > way to specify it.
+> > > > > > 
+> > > > > > What do we actually mean by a "dummy clock"? We already have
+> > > > > > bindings
+> > > > > > for "fixed-clock" and co friends describe relatively simple
+> > > > > > preconfigured clocks.
+> > > > > 
+> > > > > Some platforms have a fake clock which defines noops callbacks and
+> > > > > basically doesn't do anything. This is analogous to the dummy
+> > > > > regulator
+> > > > > implementation. A central one could be registered by the clock core,
+> > > > > as
+> > > > > is done by the regulator core.
+> > > > 
+> > > > When you say some platforms, you presumably mean the platform code in
+> > > > Linux? A dummy clock sounds like a completely Linux-specific abstraction
+> > > > rather than a description of the hardware, and I don't see why we need
+> > > > that in the DT:
+> > > > 
+> > > > * If a clock is wired up and running (as presumably the dummy clock is),
+> > > > then surely it's a fixed-clock (it's running, we and we have no control
+> > > > over it, but we presumably know its rate) and can be described as such?
+> > > > 
+> > > > * If no clock is wired up, then we should be able to describe that. If a
+> > > > driver believes that a clock is required when it isn't (for some level
+> > > > of functionality), then that driver should be fixed up to support the
+> > > > clock as being optional.
+> > > > 
+> > > > Am I missing something?
+> > > 
+> > > I second that.
+> > > 
+> > > Moreover, I don't think that device tree should deal with dummy anything. 
+> > > It should be able to describe hardware that is available on given system, 
+> > > not list what hardware is not available.
+> > 
+> > I wasn't clear. The dummy clock IS a completely Linux-specific
+> > abstraction.
+> > 
+> > I'm not advocating a dummy clock in DT. I am advocating consolidation of
+> > the implementation of a clock that does nothing into the clock core.
+> > This code could easily live in drivers/clk/clk.c instead of having
+> > everyone open-code it.
+> > 
+> > As far as specifying a dummy clock in DT? I dunno. DT should describe
+> > real hardware so there isn't much use for a dummy clock.
+> 
+> 
+> Sorry, I misunderstood. Good to hear we're on the same page :)
+> 
+> > 
+> > I'm guessing one of the reasons for such a clock are drivers do not
+> > honor the clk.h api and they freak out when clk_get gives them a NULL
+> > pointer?
+> 
+> I'm not sure. Sascha, could you shed some light on the matter?
 
---1MV0VfA6Y2yiVCnw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The original reason introducing the dummy clocks in the i.MX dtbs
+was to provide devices a clock which the driver requests but is
+not software controllable. We often have the case where the same
+devices are on several SoCs, but not on all of them all clocks have
+a bit to en/disable them.
 
-On Thu, Aug 22, 2013 at 01:56:32PM -0600, Stephen Warren wrote:
-> On 08/22/2013 05:40 AM, Nicolin Chen wrote:
+Anyway, to accomplish this we don't need dummy clocks. We can just
+describe the real clocks.
 
-> > Documentation/devicetree/bindings/sound/spdif-receiver.txt
-> > If I understand correctly, this doc for the dummy codec should be invalid?
+BTW with the S/PDIF core on which not all mux inputs are connected
+to actual clocks we could also describe the unconnected inputs as
+ground clocks with rate 0. This way we describe something which
+is really there instead of dummy clocks ;)
 
-> Yes, I'm not convinced that binding is a good idea; it describes
-> something that often doesn't actually exist in HW. (Sometimes there's a
-> real S/PDIF receiving device on board, but sometimes there's nothing
-> except a jack/connector).
+Background to why it might be a good idea to connect a ground clock
+to the unconnected input pins is that a driver has a chance to
+successfully grab all clocks. Otherwise how does the driver distinguish
+between an unconnected and an erroneous clock?
 
-> It'd be useful if other DT binding maintainers could weigh in on this to
-> confirm/deny my thoughts.
+Sascha
 
-I think the binding should be changed to replace the word "dummy" with
-"generic" and perhaps some verbiage about not requiring software
-configuration.  I think given the unidirectional nature of S/PDIF it's
-reasonable to represent a jack like this - the hardware can't generally
-tell if there's anything at the other end of the link anyway, for all
-pratical purposes the transmit end just has to blindly send.
-
---1MV0VfA6Y2yiVCnw
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSFm8iAAoJELSic+t+oim9XT8P/jmtdNchB0XJLs8+fq1fdxS1
-I1YqGnJD4wnRuDGeIkfwz8YR0bd1a+aoiHZTp9CUDWG8tw7awihtZNo74socvriy
-MY9RImLETAGmrsyghYuziU1oV3qvc3hDoH9J66LRRgMEEJIS36KVReyZJ0wh9vpr
-TM8K6WaPkxa8Dr0MxYjrMi0hLTm6TiPPfPZs68H3eIl9wrHcpAFWY96T2OX84XOM
-IbqY6cCEsjNCRbMhEhtj1r6Di5h7AfPsuOf8rXPYVX1nYinpj1ybIY6q1YGgP8xl
-MlaSPUyW6p3jQtgmt/v/Wt5qZOUOVhl/5sp4t65KuoCKnlQ3PB0sC+tBLcmM8URH
-hZ+PDFBKdWumuF7cPrULBBzBsIfCHiTQ2kFCwW4e+Nxg3s1YqYBcwpDA18u7xPLC
-3CLDPsMvAgXQjG0n6/PRAvlaR0bIaoueWi+kKQYu2od6ix+iTYz3UquOTfx801h4
-sabUZDiF3lRQaLhsJNAlzugIcxK8B7UC5uOFRDI0/r26o6MWP4uoGb7Cbx1RDuuP
-wHSLkoW1wmftH+vqXOYPRa9lVFd891VT/Rgdj6DNX3jVp+1lhF/EZ4Iph6xJZlHa
-hqOFDHfvSI+6plyypppJR1tc1yrHZ14echmmEsUDdXDY//HlvFsBjNvjZISlMMoR
-fDNNnuFqdskrYYDtloc6
-=HclX
------END PGP SIGNATURE-----
-
---1MV0VfA6Y2yiVCnw--
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
