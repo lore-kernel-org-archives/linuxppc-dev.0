@@ -1,27 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 903932C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 14:34:04 +1000 (EST)
-Message-ID: <1377142130.25016.273.camel@pasglop>
-Subject: Re: [RFC V2 PATCH 4/6] cpuidle/ppc: Add longnap state to the idle
- states on powernv
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Thu, 22 Aug 2013 13:28:50 +1000
-In-Reply-To: <20130814115623.5193.36974.stgit@preeti.in.ibm.com>
-References: <20130814115311.5193.32212.stgit@preeti.in.ibm.com>
- <20130814115623.5193.36974.stgit@preeti.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org,
- shangw@linux.vnet.ibm.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
- arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org,
- john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com,
- deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B36685@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8469E2C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 15:08:31 +1000 (EST)
+Received: from mail97-va3 (localhost [127.0.0.1])	by mail97-va3-R.bigfish.com
+ (Postfix) with ESMTP id ECAFF20114	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,
+ 22 Aug 2013 05:08:25 +0000 (UTC)
+Received: from VA3EHSMHS020.bigfish.com (unknown [10.7.14.239])	by
+ mail97-va3.bigfish.com (Postfix) with ESMTP id 473F63A0153	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 05:07:23 +0000 (UTC)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/p1010rdb: update phy node in dts
+Date: Thu, 22 Aug 2013 12:06:12 +0800
+Message-ID: <1377144372-9003-1-git-send-email-Shengzhou.Liu@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,112 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-08-14 at 17:26 +0530, Preeti U Murthy wrote:
-> This patch hooks into the existing broadcast framework along with the support
-> that this patchset introduces for ppc, and the cpuidle driver backend
-> for powernv(posted out by Deepthi Dharwar:https://lkml.org/lkml/2013/7/23/128)
-> to add sleep state as one of the deep idle states, in which the decrementer
-> is switched off.
-> 
-> However in this patch, we only emulate sleep by going into a state which does
-> a nap with the decrementer interrupts disabled, termed as longnap. This enables
-> focus on the timer broadcast framework for ppc in this series of patches ,
-> which is required as a first step to enable sleep on ppc.
+Update phy node according to new P1010RDB-PB board.
 
-This is only for debug / proof of concept right ? We should use a real
-sleep here.
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+ arch/powerpc/boot/dts/p1010rdb.dtsi |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-If we need to know whether the FW supports it (PORE etc...) we shall add
-a device-tree property from the FW to indicate that fact.
-
-Cheers,
-Ben.
-
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
-> 
->  arch/powerpc/platforms/powernv/processor_idle.c |   48 +++++++++++++++++++++++
->  1 file changed, 47 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/processor_idle.c b/arch/powerpc/platforms/powernv/processor_idle.c
-> index f43ad91a..9aca502 100644
-> --- a/arch/powerpc/platforms/powernv/processor_idle.c
-> +++ b/arch/powerpc/platforms/powernv/processor_idle.c
-> @@ -9,16 +9,18 @@
->  #include <linux/cpuidle.h>
->  #include <linux/cpu.h>
->  #include <linux/notifier.h>
-> +#include <linux/clockchips.h>
->  
->  #include <asm/machdep.h>
->  #include <asm/runlatch.h>
-> +#include <asm/time.h>
->  
->  struct cpuidle_driver powernv_idle_driver = {
->  	.name =		"powernv_idle",
->  	.owner =	THIS_MODULE,
->  };
->  
-> -#define MAX_IDLE_STATE_COUNT	2
-> +#define MAX_IDLE_STATE_COUNT	3
->  
->  static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
->  static struct cpuidle_device __percpu *powernv_cpuidle_devices;
-> @@ -54,6 +56,43 @@ static int nap_loop(struct cpuidle_device *dev,
->  	return index;
->  }
->  
-> +/* Emulate sleep, with long nap.
-> + * During sleep, the core does not receive decrementer interrupts.
-> + * Emulate sleep using long nap with decrementers interrupts disabled.
-> + * This is an initial prototype to test the timer offload framework for ppc.
-> + * We will eventually introduce the sleep state once the timer offload framework
-> + * for ppc is stable.
-> + */
-> +static int longnap_loop(struct cpuidle_device *dev,
-> +				struct cpuidle_driver *drv,
-> +				int index)
-> +{
-> +	int cpu = dev->cpu;
-> +
-> +	unsigned long lpcr = mfspr(SPRN_LPCR);
-> +
-> +	lpcr &= ~(LPCR_MER | LPCR_PECE); /* lpcr[mer] must be 0 */
-> +
-> +	/* exit powersave upon external interrupt, but not decrementer
-> +	 * interrupt, Emulate sleep.
-> +	 */
-> +	lpcr |= LPCR_PECE0;
-> +
-> +	if (cpu != bc_cpu) {
-> +		mtspr(SPRN_LPCR, lpcr);
-> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-> +		power7_nap();
-> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
-> +	} else {
-> +		/* Wakeup on a decrementer interrupt, Do a nap */
-> +		lpcr |= LPCR_PECE1;
-> +		mtspr(SPRN_LPCR, lpcr);
-> +		power7_nap();
-> +	}
-> +
-> +	return index;
-> +}
-> +
->  /*
->   * States for dedicated partition case.
->   */
-> @@ -72,6 +111,13 @@ static struct cpuidle_state powernv_states[MAX_IDLE_STATE_COUNT] = {
->  		.exit_latency = 10,
->  		.target_residency = 100,
->  		.enter = &nap_loop },
-> +	 { /* LongNap */
-> +		.name = "LongNap",
-> +		.desc = "LongNap",
-> +		.flags = CPUIDLE_FLAG_TIME_VALID,
-> +		.exit_latency = 10,
-> +		.target_residency = 100,
-> +		.enter = &longnap_loop },
->  };
->  
->  static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
+diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi b/arch/powerpc/boot/dts/p1010rdb.dtsi
+index ec7c27a..da24b2d 100644
+--- a/arch/powerpc/boot/dts/p1010rdb.dtsi
++++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
+@@ -193,17 +193,17 @@
+ 
+ 	mdio@24000 {
+ 		phy0: ethernet-phy@0 {
+-			interrupts = <3 1 0 0>;
++			interrupts = <0 1>;
+ 			reg = <0x1>;
+ 		};
+ 
+ 		phy1: ethernet-phy@1 {
+-			interrupts = <2 1 0 0>;
++			interrupts = <2 1>;
+ 			reg = <0x0>;
+ 		};
+ 
+ 		phy2: ethernet-phy@2 {
+-			interrupts = <2 1 0 0>;
++			interrupts = <1 1>;
+ 			reg = <0x2>;
+ 		};
+ 
+-- 
+1.7.0.4
