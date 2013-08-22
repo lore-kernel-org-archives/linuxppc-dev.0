@@ -1,37 +1,36 @@
 Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6AE452C00C0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 18:31:40 +1000 (EST)
-Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 7D4DD3EE1DE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:31:38 +0900 (JST)
-Received: from smail (m2 [127.0.0.1])
- by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 656D145DE53
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:31:38 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
- by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 407E545DD78
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:31:38 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 325901DB8041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:31:38 +0900 (JST)
-Received: from g01jpfmpwkw03.exch.g01.fujitsu.local
- (g01jpfmpwkw03.exch.g01.fujitsu.local [10.0.193.57])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id D17231DB803C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:31:37 +0900 (JST)
-Message-ID: <5215CC40.5060406@jp.fujitsu.com>
-Date: Thu, 22 Aug 2013 17:30:56 +0900
+ by ozlabs.org (Postfix) with ESMTPS id B204B2C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 18:45:22 +1000 (EST)
+Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 8785F3EE0C5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:45:21 +0900 (JST)
+Received: from smail (m3 [127.0.0.1])
+ by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 7A2E545DEB5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:45:21 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
+ by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 6584445DEB2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:45:21 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 551121DB8038
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:45:21 +0900 (JST)
+Received: from g01jpfmpwyt01.exch.g01.fujitsu.local
+ (g01jpfmpwyt01.exch.g01.fujitsu.local [10.128.193.38])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 0BE931DB803B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2013 17:45:21 +0900 (JST)
+Message-ID: <5215CF7F.5060109@jp.fujitsu.com>
+Date: Thu, 22 Aug 2013 17:44:47 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
 To: Seth Jennings <sjenning@linux.vnet.ibm.com>
-Subject: Re: [PATCH 7/7] drivers: base: refactor add_memory_section() to
- add_memory_block()
+Subject: Re: [PATCH 1/7] drivers: base: move mutex lock out of
+ add_memory_section()
 References: <1377018783-26756-1-git-send-email-sjenning@linux.vnet.ibm.com>
- <1377018783-26756-7-git-send-email-sjenning@linux.vnet.ibm.com>
- <5215C9B3.4090608@jp.fujitsu.com>
-In-Reply-To: <5215C9B3.4090608@jp.fujitsu.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
+ <20130820172445.GE4151@medulla.variantweb.net>
+In-Reply-To: <20130820172445.GE4151@medulla.variantweb.net>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Cc: Dave Hansen <dave@sr71.net>, Lai Jiangshan <laijs@cn.fujitsu.com>,
  linuxppc-dev@lists.ozlabs.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org,
@@ -49,119 +48,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2013/08/22 17:20), Yasuaki Ishimatsu wrote:
-> (2013/08/21 2:13), Seth Jennings wrote:
->> Right now memory_dev_init() maintains the memory block pointer
->> between iterations of add_memory_section().  This is nasty.
->>
->> This patch refactors add_memory_section() to become add_memory_block().
->> The refactoring pulls the section scanning out of memory_dev_init()
->> and simplifies the signature.
->>
->> Signed-off-by: Seth Jennings <sjenning@linux.vnet.ibm.com>
->> ---
->>    drivers/base/memory.c | 48 +++++++++++++++++++++---------------------------
->>    1 file changed, 21 insertions(+), 27 deletions(-)
->>
->> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
->> index 7d9d3bc..021283a 100644
->> --- a/drivers/base/memory.c
->> +++ b/drivers/base/memory.c
->> @@ -602,32 +602,31 @@ static int init_memory_block(struct memory_block **memory,
->>    	return ret;
->>    }
->>    
->> -static int add_memory_section(struct mem_section *section,
->> -			struct memory_block **mem_p)
->> +static int add_memory_block(int base_section_nr)
->>    {
->> -	struct memory_block *mem = NULL;
->> -	int scn_nr = __section_nr(section);
->> -	int ret = 0;
->> -
->> -	if (mem_p && *mem_p) {
->> -		if (scn_nr >= (*mem_p)->start_section_nr &&
->> -		    scn_nr <= (*mem_p)->end_section_nr) {
->> -			mem = *mem_p;
->> -		}
->> -	}
->> +	struct memory_block *mem;
->> +	int i, ret, section_count = 0, section_nr;
->>    
->> -	if (mem)
->> -		mem->section_count++;
->> -	else {
->> -		ret = init_memory_block(&mem, section, MEM_ONLINE);
->> -		/* store memory_block pointer for next loop */
->> -		if (!ret && mem_p)
->> -			*mem_p = mem;
->> +	for (i = base_section_nr;
->> +	     (i < base_section_nr + sections_per_block) && i < NR_MEM_SECTIONS;
->> +	     i++) {
->> +		if (!present_section_nr(i))
->> +			continue;
->> +		if (section_count == 0)
->> +			section_nr = i;
->> +		section_count++;
->>    	}
->>    
->> -	return ret;
->> +	if (section_count == 0)
->> +		return 0;
->> +	ret = init_memory_block(&mem, __nr_to_section(section_nr), MEM_ONLINE);
->> +	if (ret)
->> +		return ret;
->> +	mem->section_count = section_count;
->> +	return 0;
->>    }
->>    
->> +
->>    /*
->>     * need an interface for the VM to add new memory regions,
->>     * but without onlining it.
->> @@ -733,7 +732,6 @@ int __init memory_dev_init(void)
->>    	int ret;
->>    	int err;
->>    	unsigned long block_sz;
->> -	struct memory_block *mem = NULL;
->>    
->>    	ret = subsys_system_register(&memory_subsys, memory_root_attr_groups);
->>    	if (ret)
->> @@ -747,12 +745,8 @@ int __init memory_dev_init(void)
->>    	 * during boot and have been initialized
->>    	 */
->>    	mutex_lock(&mem_sysfs_mutex);
->> -	for (i = 0; i < NR_MEM_SECTIONS; i++) {
->> -		if (!present_section_nr(i))
->> -			continue;
->> -		/* don't need to reuse memory_block if only one per block */
->> -		err = add_memory_section(__nr_to_section(i),
->> -				 (sections_per_block == 1) ? NULL : &mem);
->> +	for (i = 0; i < NR_MEM_SECTIONS; i += sections_per_block) {
-> 
-> Why do you remove present_setcion_nr() check?
+(2013/08/21 2:24), Seth Jennings wrote:
+> Gah! Forgot the cover letter.
+>
+> This patchset just seeks to clean up and refactor some things in
+> memory.c for better understanding and possibly better performance due do
+> a decrease in mutex acquisitions and refcount churn at boot time.  No
+> functional change is intended by this set!
 
-Sorry for the noise. I understood.
-The check was moved into add_memory_section(). So it was removed.
+All patches were
+Reviewed-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Tested-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
 Thanks,
 Yasuaki Ishimatsu
 
-> 
->> +		err = add_memory_block(i);
->>    		if (!ret)
-> 
-> Thanks,
-> Yasuaki Ishimatasu
-> 
->>    			ret = err;
->>    	}
->>
-> 
-> 
+>
+> Seth
+>
 > --
 > To unsubscribe, send a message with 'unsubscribe linux-mm' in
 > the body to majordomo@kvack.org.  For more info on Linux MM,
 > see: http://www.linux-mm.org/ .
 > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+>
