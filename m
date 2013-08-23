@@ -1,28 +1,22 @@
-Return-Path: <B42677@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+Return-Path: <B42378@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E4E612C0079
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 16:38:00 +1000 (EST)
-Message-ID: <521703AB.8030702@freescale.com>
-Date: Fri, 23 Aug 2013 14:39:39 +0800
-From: Zhang Haijun <B42677@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 4C2CB2C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 17:53:59 +1000 (EST)
+From: Nicolin Chen <b42378@freescale.com>
+To: <broonie@kernel.org>, <s.hauer@pengutronix.de>, <swarren@wwwdotorg.org>
+Subject: [PATCH v11] ASoC: fsl: Add S/PDIF machine driver
+Date: Fri, 23 Aug 2013 16:04:43 +0800
+Message-ID: <fac39ed91818630e03f81a5f0cf9ddde0e6a3c3a.1377244995.git.b42378@freescale.com>
 MIME-Version: 1.0
-To: Zhang Haijun-B42677 <B42677@freescale.com>
-Subject: Re: [PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last
- system transaction
-References: <1374055891-20703-1-git-send-email-Haijun.Zhang@freescale.com>
- <99E897753B6F7048BD8CCDB4661D02E13DF52C@039-SN2MPN1-022.039d.mgd.msft.net>
-In-Reply-To: <99E897753B6F7048BD8CCDB4661D02E13DF52C@039-SN2MPN1-022.039d.mgd.msft.net>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
- "cjb@laptop.org" <cjb@laptop.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Xiaobo-R63061 <X.Xie@freescale.com>
+Content-Type: text/plain
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de, tomasz.figa@gmail.com,
+ rob.herring@calxeda.com, p.zabel@pengutronix.de, shawn.guo@linaro.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,247 +26,262 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, Anton and all
+This patch implements a device-tree-only machine driver for Freescale
+i.MX series Soc. It works with spdif_transmitter/spdif_receiver and
+fsl_spdif.c drivers.
 
-Is there any advice on these two patches ?
+Signed-off-by: Nicolin Chen <b42378@freescale.com>
+---
+Changelog
+v10->v11:
+ * Use boolean properties for spdif-out/in switch instead of codec phandles.
+ * Accordingly create dummy codec driver in probe() instead of DT nodes.
 
-[PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last system 
-transaction
-[PATCH 3/4 V3] mmc: esdhc: Correct host version of T4240-R1.0-R2.0.
+ .../devicetree/bindings/sound/imx-audio-spdif.txt  |   34 +++++
+ sound/soc/fsl/Kconfig                              |   11 ++
+ sound/soc/fsl/Makefile                             |    2 +
+ sound/soc/fsl/imx-spdif.c                          |  152 ++++++++++++++++++++
+ 4 files changed, 199 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
+ create mode 100644 sound/soc/fsl/imx-spdif.c
 
-
-[PATCH 1/4 V4] powerpc/85xx: Add support for 85xx cpu type detection
-This patch is Act-by Scott.
-Patch 4/4 is split to four patches and Act-by Anton.
-
-
-Thanks all.
-
-
-
-On 07/19/2013 10:21 AM, Zhang Haijun-B42677 wrote:
-> Hi, all
->
-> Expect your advice and any comments.
->
->
-> Thanks.
->
-> Regards
-> Haijun.
->
->
->> -----Original Message-----
->> From: Zhang Haijun-B42677
->> Sent: Wednesday, July 17, 2013 6:11 PM
->> To: linux-mmc@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
->> Cc: cbouatmailru@gmail.com; cjb@laptop.org; Wood Scott-B07421; Fleming
->> Andy-AFLEMING; Zhang Haijun-B42677; Zhang Haijun-B42677
->> Subject: [PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last
->> system transaction
->>
->> A-004388: eSDHC DMA might not stop if error occurs on system transaction
->>
->> eSDHC DMA(SDMA/ADMA) might not stop if an error occurs in the last system
->> transaction. It may continue initiating additional transactions until
->> software reset for data/all is issued during error recovery. There is not
->> any data corruption to the SD data. The IRQSTAT[DMAE] is set when the
->> erratum occurs.
->> The only conditions under which issues occur are the following:
->> 1. SDMA - For SD Write , the error occurs in the last system transaction.
->> No issue for SD read
->> 2. ADMA
->> a. Block count is enabled: For SD write, the error occurs in the last
->> system transaction. There is no issue for SD read when block count is
->> enabled.
->> b. Block count is disabled: Block count is designated by the ADMA
->> descriptor table, and the error occurs in the last system transaction
->> when ADMA is executing last descriptor line of table.
->>
->> eSDHC may initiate additional system transactions. There is no data
->> integrity issue for case 1 and 2a described below. For case 2b, system
->> data might be corrupted.
->>
->> Workaround: Set eSDHC_SYSCTL[RSTD] when IRQSTAT[DMAE] is set. For cases
->> 2a and 2b above, add an extra descriptor line with zero data next to the
->> last descriptor line.
->>
->> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
->> ---
->> changes for V2:
->> 	- Update the svr version list
->>
->>   drivers/mmc/host/sdhci-of-esdhc.c | 112
->> ++++++++++++++++++++++++++++++++++----
->>   1 file changed, 102 insertions(+), 10 deletions(-)
->>
->> diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-
->> of-esdhc.c
->> index 15039e2..adfaadd 100644
->> --- a/drivers/mmc/host/sdhci-of-esdhc.c
->> +++ b/drivers/mmc/host/sdhci-of-esdhc.c
->> @@ -21,9 +21,13 @@
->>   #include <linux/mmc/host.h>
->>   #include "sdhci-pltfm.h"
->>   #include "sdhci-esdhc.h"
->> +#include <asm/mpc85xx.h>
->>
->>   #define VENDOR_V_22	0x12
->>   #define VENDOR_V_23	0x13
->> +
->> +static u32 svr;
->> +
->>   static u32 esdhc_readl(struct sdhci_host *host, int reg)  {
->>   	u32 ret;
->> @@ -142,6 +146,26 @@ static void esdhc_writeb(struct sdhci_host *host, u8
->> val, int reg)
->>   	sdhci_be32bs_writeb(host, val, reg);
->>   }
->>
->> +static void esdhc_reset(struct sdhci_host *host, u8 mask) {
->> +	u32 ier;
->> +	u32 uninitialized_var(isav);
->> +
->> +	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
->> +		isav = esdhc_readl(host, SDHCI_INT_ENABLE);
->> +
->> +	esdhc_writeb(host, mask, SDHCI_SOFTWARE_RESET);
->> +	mdelay(100);
->> +
->> +	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET) {
->> +		ier = esdhc_readl(host, SDHCI_INT_ENABLE);
->> +		ier &= ~SDHCI_INT_ALL_MASK;
->> +		ier |= isav;
->> +		esdhc_writel(host, ier, SDHCI_INT_ENABLE);
->> +		esdhc_writel(host, ier, SDHCI_SIGNAL_ENABLE);
->> +	}
->> +}
->> +
->>   /*
->>    * For Abort or Suspend after Stop at Block Gap, ignore the ADMA
->>    * error(IRQSTAT[ADMAE]) if both Transfer Complete(IRQSTAT[TC]) @@ -
->> 156,25 +180,92 @@ static void esdhci_of_adma_workaround(struct sdhci_host
->> *host, u32 intmask)
->>   	dma_addr_t dmastart;
->>   	dma_addr_t dmanow;
->>
->> -	tmp = in_be32(host->ioaddr + SDHCI_SLOT_INT_STATUS);
->> +	tmp = esdhc_readl(host, SDHCI_SLOT_INT_STATUS);
->>   	tmp = (tmp & SDHCI_VENDOR_VER_MASK) >> SDHCI_VENDOR_VER_SHIFT;
->>
->>   	applicable = (intmask & SDHCI_INT_DATA_END) &&
->>   		(intmask & SDHCI_INT_BLK_GAP) &&
->>   		(tmp == VENDOR_V_23);
->> -	if (!applicable)
->> +	if (applicable) {
->> +
->> +		esdhc_reset(host, SDHCI_RESET_DATA);
->> +		host->data->error = 0;
->> +		dmastart = sg_dma_address(host->data->sg);
->> +		dmanow = dmastart + host->data->bytes_xfered;
->> +
->> +		/* Force update to the next DMA block boundary. */
->> +		dmanow = (dmanow & ~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1)) +
->> +			SDHCI_DEFAULT_BOUNDARY_SIZE;
->> +		host->data->bytes_xfered = dmanow - dmastart;
->> +		esdhc_writel(host, dmanow, SDHCI_DMA_ADDRESS);
->> +
->>   		return;
->> +	}
->>
->> -	host->data->error = 0;
->> -	dmastart = sg_dma_address(host->data->sg);
->> -	dmanow = dmastart + host->data->bytes_xfered;
->>   	/*
->> -	 * Force update to the next DMA block boundary.
->> +	 * Check for A-004388: eSDHC DMA might not stop if error
->> +	 * occurs on system transaction
->> +	 * Impact list:
->> +	 * T4240-R1.0 B4860-R1.0 P1010-R1.0
->> +	 * P3041-R1.0-R2.0-R1.1 P2041-R1.0-R1.1-R2.0
->> +	 * P5040-R2.0
->>   	 */
->> -	dmanow = (dmanow & ~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1)) +
->> -		SDHCI_DEFAULT_BOUNDARY_SIZE;
->> -	host->data->bytes_xfered = dmanow - dmastart;
->> -	sdhci_writel(host, dmanow, SDHCI_DMA_ADDRESS);
->> +	if (!(((SVR_SOC_VER(svr) == SVR_T4240) && (SVR_REV(svr) == 0x10))
->> ||
->> +		((SVR_SOC_VER(svr) == SVR_B4860) && (SVR_REV(svr) == 0x10))
->> ||
->> +		((SVR_SOC_VER(svr) == SVR_P1010) && (SVR_REV(svr) == 0x10))
->> ||
->> +		((SVR_SOC_VER(svr) == SVR_P3041) && (SVR_REV(svr) <= 0x20))
->> ||
->> +		((SVR_SOC_VER(svr) == SVR_P2041) && (SVR_REV(svr) <= 0x20))
->> ||
->> +		((SVR_SOC_VER(svr) == SVR_P5040) && SVR_REV(svr) == 0x20)))
->> +		return;
->> +
->> +	esdhc_reset(host, SDHCI_RESET_DATA);
->> +
->> +	if (host->flags & SDHCI_USE_ADMA) {
->> +		u32 mod, i, offset;
->> +		u8 *desc;
->> +		dma_addr_t addr;
->> +		struct scatterlist *sg;
->> +		__le32 *dataddr;
->> +		__le32 *cmdlen;
->> +
->> +		/*
->> +		 * If block count was enabled, in case read transfer there
->> +		 * is no data was corrupted
->> +		 */
->> +		mod = esdhc_readl(host, SDHCI_TRANSFER_MODE);
->> +		if ((mod & SDHCI_TRNS_BLK_CNT_EN) &&
->> +			(host->data->flags & MMC_DATA_READ))
->> +			host->data->error = 0;
->> +
->> +		BUG_ON(!host->data);
->> +		desc = host->adma_desc;
->> +		for_each_sg(host->data->sg, sg, host->sg_count, i) {
->> +			addr = sg_dma_address(sg);
->> +			offset = (4 - (addr & 0x3)) & 0x3;
->> +			if (offset)
->> +				desc += 8;
->> +			desc += 8;
->> +		}
->> +
->> +		/*
->> +		 * Add an extra zero descriptor next to the
->> +		 * terminating descriptor.
->> +		 */
->> +		desc += 8;
->> +		WARN_ON((desc - host->adma_desc) > (128 * 2 + 1) * 4);
->> +
->> +		dataddr = (__le32 __force *)(desc + 4);
->> +		cmdlen = (__le32 __force *)desc;
->> +
->> +		cmdlen[0] = cpu_to_le32(0);
->> +		dataddr[0] = cpu_to_le32(0);
->> +	}
->> +
->> +	if ((host->flags & SDHCI_USE_SDMA) &&
->> +		(host->data->flags & MMC_DATA_READ))
->> +		host->data->error = 0;
->> +
->> +	return;
->>   }
->>
->>   static int esdhc_of_enable_dma(struct sdhci_host *host) @@ -299,6 +390,7
->> @@ static int sdhci_esdhc_probe(struct platform_device *pdev)
->>   	struct device_node *np;
->>   	int ret;
->>
->> +	svr = mfspr(SPRN_SVR);
->>   	host = sdhci_pltfm_init(pdev, &sdhci_esdhc_pdata, 0);
->>   	if (IS_ERR(host))
->>   		return PTR_ERR(host);
->> --
->> 1.8.0
-
-
+diff --git a/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
+new file mode 100644
+index 0000000..7d13479
+--- /dev/null
++++ b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
+@@ -0,0 +1,34 @@
++Freescale i.MX audio complex with S/PDIF transceiver
++
++Required properties:
++
++  - compatible : "fsl,imx-audio-spdif"
++
++  - model : The user-visible name of this sound complex
++
++  - spdif-controller : The phandle of the i.MX S/PDIF controller
++
++
++Optional properties:
++
++  - spdif-out : This is a boolean property. If present, the transmitting
++    function of S/PDIF will be enabled, indicating there's a physical
++    S/PDIF out connector/jack on the board or it's connecting to some
++    other IP block, such as an HDMI encoder/display-controller.
++
++  - spdif-in : This is a boolean property. If present, the receiving
++    function of S/PDIF will be enabled, indicating there's a physical
++    S/PDIF in connector/jack on the board.
++
++* Note: At least one of these two properties should be set in the DT binding.
++
++
++Example:
++
++sound-spdif {
++	compatible = "fsl,imx-audio-spdif";
++	model = "imx-spdif";
++	spdif-controller = <&spdif>;
++	spdif-out;
++	spdif-in;
++};
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index cd088cc..a708380 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -193,6 +193,17 @@ config SND_SOC_IMX_SGTL5000
+ 	  Say Y if you want to add support for SoC audio on an i.MX board with
+ 	  a sgtl5000 codec.
+ 
++config SND_SOC_IMX_SPDIF
++	tristate "SoC Audio support for i.MX boards with S/PDIF"
++	select SND_SOC_IMX_PCM_DMA
++	select SND_SOC_FSL_SPDIF
++	select SND_SOC_FSL_UTILS
++	select SND_SOC_SPDIF
++	help
++	  SoC Audio support for i.MX boards with S/PDIF
++	  Say Y if you want to add support for SoC audio on an i.MX board with
++	  a S/DPDIF.
++
+ config SND_SOC_IMX_MC13783
+ 	tristate "SoC Audio support for I.MX boards with mc13783"
+ 	depends on MFD_MC13783 && ARM
+diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+index 4b5970e..e2aaff7 100644
+--- a/sound/soc/fsl/Makefile
++++ b/sound/soc/fsl/Makefile
+@@ -45,6 +45,7 @@ snd-soc-mx27vis-aic32x4-objs := mx27vis-aic32x4.o
+ snd-soc-wm1133-ev1-objs := wm1133-ev1.o
+ snd-soc-imx-sgtl5000-objs := imx-sgtl5000.o
+ snd-soc-imx-wm8962-objs := imx-wm8962.o
++snd-soc-imx-spdif-objs :=imx-spdif.o
+ snd-soc-imx-mc13783-objs := imx-mc13783.o
+ 
+ obj-$(CONFIG_SND_SOC_EUKREA_TLV320) += snd-soc-eukrea-tlv320.o
+@@ -53,4 +54,5 @@ obj-$(CONFIG_SND_SOC_MX27VIS_AIC32X4) += snd-soc-mx27vis-aic32x4.o
+ obj-$(CONFIG_SND_MXC_SOC_WM1133_EV1) += snd-soc-wm1133-ev1.o
+ obj-$(CONFIG_SND_SOC_IMX_SGTL5000) += snd-soc-imx-sgtl5000.o
+ obj-$(CONFIG_SND_SOC_IMX_WM8962) += snd-soc-imx-wm8962.o
++obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
+ obj-$(CONFIG_SND_SOC_IMX_MC13783) += snd-soc-imx-mc13783.o
+diff --git a/sound/soc/fsl/imx-spdif.c b/sound/soc/fsl/imx-spdif.c
+new file mode 100644
+index 0000000..af5b553
+--- /dev/null
++++ b/sound/soc/fsl/imx-spdif.c
+@@ -0,0 +1,152 @@
++/*
++ * Copyright (C) 2013 Freescale Semiconductor, Inc.
++ *
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
++
++#include <linux/module.h>
++#include <linux/of_platform.h>
++#include <sound/soc.h>
++
++struct imx_spdif_data {
++	struct snd_soc_dai_link dai[2];
++	struct snd_soc_card card;
++	struct platform_device *txdev;
++	struct platform_device *rxdev;
++};
++
++static int imx_spdif_audio_probe(struct platform_device *pdev)
++{
++	struct device_node *spdif_np, *np = pdev->dev.of_node;
++	struct platform_device *spdif_pdev;
++	struct imx_spdif_data *data;
++	int ret = 0, num_links = 0;
++
++	spdif_np = of_parse_phandle(np, "spdif-controller", 0);
++	if (!spdif_np) {
++		dev_err(&pdev->dev, "failed to find spdif-controller\n");
++		ret = -EINVAL;
++		goto end;
++	}
++
++	spdif_pdev = of_find_device_by_node(spdif_np);
++	if (!spdif_pdev) {
++		dev_err(&pdev->dev, "failed to find S/PDIF device\n");
++		ret = -EINVAL;
++		goto end;
++	}
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data) {
++		dev_err(&pdev->dev, "failed to allocate memory\n");
++		ret = -ENOMEM;
++		goto end;
++	}
++
++	if (of_property_read_bool(np, "spdif-out")) {
++		data->dai[num_links].name = "S/PDIF TX";
++		data->dai[num_links].stream_name = "S/PDIF PCM Playback";
++		data->dai[num_links].codec_dai_name = "dit-hifi";
++		data->dai[num_links].codec_name = "spdif-dit";
++		data->dai[num_links].cpu_of_node = spdif_np;
++		data->dai[num_links].platform_of_node = spdif_np;
++		num_links++;
++	}
++
++	if (of_property_read_bool(np, "spdif-in")) {
++		data->dai[num_links].name = "S/PDIF RX";
++		data->dai[num_links].stream_name = "S/PDIF PCM Capture";
++		data->dai[num_links].codec_dai_name = "dir-hifi";
++		data->dai[num_links].codec_name = "spdif-dir";
++		data->dai[num_links].cpu_of_node = spdif_np;
++		data->dai[num_links].platform_of_node = spdif_np;
++		num_links++;
++	}
++
++	if (!num_links) {
++		dev_err(&pdev->dev, "no enabled S/PDIF DAI link\n");
++		goto end;
++	}
++
++	data->card.dev = &pdev->dev;
++	data->card.num_links = num_links;
++	data->card.dai_link = data->dai;
++
++	ret = snd_soc_of_parse_card_name(&data->card, "model");
++	if (ret)
++		goto end;
++
++	data->txdev = platform_device_register_simple("spdif-dit", -1, NULL, 0);
++	if (IS_ERR(data->txdev)) {
++		ret = PTR_ERR(data->txdev);
++		dev_err(&pdev->dev, "register spdif-dit failed (%d)\n", ret);
++		goto end;
++	}
++
++	data->rxdev = platform_device_register_simple("spdif-dir", -1, NULL, 0);
++	if (IS_ERR(data->rxdev)) {
++		ret = PTR_ERR(data->rxdev);
++		dev_err(&pdev->dev, "register spdif-dir failed (%d)\n", ret);
++		goto error_dit;
++	}
++
++	ret = snd_soc_register_card(&data->card);
++	if (ret) {
++		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
++		goto error_dir;
++	}
++
++	platform_set_drvdata(pdev, data);
++
++	goto end;
++
++error_dir:
++	platform_device_unregister(data->rxdev);
++error_dit:
++	platform_device_unregister(data->txdev);
++end:
++	if (spdif_np)
++		of_node_put(spdif_np);
++
++	return ret;
++}
++
++static int imx_spdif_audio_remove(struct platform_device *pdev)
++{
++	struct imx_spdif_data *data = platform_get_drvdata(pdev);
++
++	platform_device_unregister(data->rxdev);
++	platform_device_unregister(data->txdev);
++
++	snd_soc_unregister_card(&data->card);
++
++	return 0;
++}
++
++static const struct of_device_id imx_spdif_dt_ids[] = {
++	{ .compatible = "fsl,imx-audio-spdif", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, imx_spdif_dt_ids);
++
++static struct platform_driver imx_spdif_driver = {
++	.driver = {
++		.name = "imx-spdif",
++		.owner = THIS_MODULE,
++		.of_match_table = imx_spdif_dt_ids,
++	},
++	.probe = imx_spdif_audio_probe,
++	.remove = imx_spdif_audio_remove,
++};
++
++module_platform_driver(imx_spdif_driver);
++
++MODULE_AUTHOR("Freescale Semiconductor, Inc.");
++MODULE_DESCRIPTION("Freescale i.MX S/PDIF machine driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:imx-spdif");
 -- 
-Thanks & Regards
-
-Haijun
+1.7.1
