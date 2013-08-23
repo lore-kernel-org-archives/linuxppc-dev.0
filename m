@@ -1,34 +1,21 @@
-Return-Path: <mhcerri@linux.vnet.ibm.com>
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp01.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F22A72C00F9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 06:01:54 +1000 (EST)
-Received: from /spool/local
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mhcerri@linux.vnet.ibm.com>;
- Fri, 23 Aug 2013 17:01:51 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 30B4C1DC0068
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 16:01:48 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7NK075O45744228
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 17:00:07 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7NK1lxt001422
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 17:01:47 -0300
-From: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
-To: herbert@gondor.apana.org.au
-Subject: [PATCH 10/10] crypto: nx - fix SHA-2 for chunks bigger than block size
-Date: Fri, 23 Aug 2013 17:01:14 -0300
-Message-Id: <1377288074-18998-11-git-send-email-mhcerri@linux.vnet.ibm.com>
-In-Reply-To: <1377288074-18998-1-git-send-email-mhcerri@linux.vnet.ibm.com>
-References: <1377288074-18998-1-git-send-email-mhcerri@linux.vnet.ibm.com>
-Cc: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Return-Path: <B07421@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8CB5F2C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 06:08:39 +1000 (EST)
+Date: Fri, 23 Aug 2013 15:08:27 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: tang yuantian <Yuantian.Tang@freescale.com>
+Subject: Re: [v3] powerpc/mpc85xx: Update the clock device tree nodes
+Message-ID: <20130823200827.GA29737@home.buserror.net>
+References: <1370480811-13700-1-git-send-email-Yuantian.Tang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1370480811-13700-1-git-send-email-Yuantian.Tang@freescale.com>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,45 +25,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Each call to the co-processor, with exception of the last call, needs to
-send data that is multiple of block size. As consequence, any remaining
-data is kept in the internal NX context.
+On Thu, Jun 06, 2013 at 09:06:51AM +0800, tang yuantian wrote:
+> From: Tang Yuantian <yuantian.tang@freescale.com>
+> 
+> The following SoCs will be affected: p2041, p3041, p4080,
+> p5020, p5040, b4420, b4860, t4240
+> 
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> 
+> ---
+> v3:
+> 	- fix typo
+> v2:
+> 	- add t4240, b4420, b4860 support
+> 	- remove pll/4 clock from p2041, p3041 and p5020 board
+> 
+>  arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |  32 ++++++++-
+>  arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |   2 +
+>  arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  32 ++++++++-
+>  arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   4 ++
+>  arch/powerpc/boot/dts/fsl/p2041si-post.dtsi |  54 ++++++++++++++-
+>  arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi  |   4 ++
+>  arch/powerpc/boot/dts/fsl/p3041si-post.dtsi |  54 ++++++++++++++-
+>  arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi  |   4 ++
+>  arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 100 +++++++++++++++++++++++++++-
+>  arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi  |   8 +++
+>  arch/powerpc/boot/dts/fsl/p5020si-post.dtsi |  38 ++++++++++-
+>  arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi  |   2 +
+>  arch/powerpc/boot/dts/fsl/p5040si-post.dtsi |  54 ++++++++++++++-
+>  arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi  |   4 ++
+>  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |  77 ++++++++++++++++++++-
+>  arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi  |  12 ++++
+>  16 files changed, 473 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+> index 5a6615d..b69d6e5 100644
+> --- a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+> +++ b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+> @@ -85,7 +85,37 @@
+>  	};
+>  
+>  	clockgen: global-utilities@e1000 {
+> -		compatible = "fsl,b4420-clockgen", "fsl,qoriq-clockgen-2.0";
+> +		compatible = "fsl,b4420-clockgen", "fsl,qoriq-clockgen-2.0",
+> +				   "fixed-clock";
+> +		clock-output-names = "sysclk";
+> +		#clock-cells = <0>;
 
-This patch fixes a bug in the driver that causes it to save incorrect
-data into the context when data is bigger than the block size.
+Does U-Boot fill in clock-frequency here?
 
-Reviewed-by: Joy Latten <jmlatten@linux.vnet.ibm.com>
-Signed-off-by: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
----
- drivers/crypto/nx/nx-sha256.c | 2 +-
- drivers/crypto/nx/nx-sha512.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		pll0: pll0@800 {
+> +			#clock-cells = <1>;
+> +			reg = <0x800>;
+> +			compatible = "fsl,core-pll-clock";
+> +			clocks = <&clockgen>;
+> +			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
+> +		};
+> +		pll1: pll1@820 {
+> +			#clock-cells = <1>;
+> +			reg = <0x820>;
+> +			compatible = "fsl,core-pll-clock";
+> +			clocks = <&clockgen>;
+> +			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
+> +		};
 
-diff --git a/drivers/crypto/nx/nx-sha256.c b/drivers/crypto/nx/nx-sha256.c
-index 6547a71..da0b24a 100644
---- a/drivers/crypto/nx/nx-sha256.c
-+++ b/drivers/crypto/nx/nx-sha256.c
-@@ -129,7 +129,7 @@ static int nx_sha256_update(struct shash_desc *desc, const u8 *data,
- 		NX_CPB_FDM(csbcpb) |= NX_FDM_CONTINUATION;
- 
- 		total -= to_process;
--		data += to_process;
-+		data += to_process - sctx->count;
- 		sctx->count = 0;
- 		in_sg = nx_ctx->in_sg;
- 	} while (leftover >= SHA256_BLOCK_SIZE);
-diff --git a/drivers/crypto/nx/nx-sha512.c b/drivers/crypto/nx/nx-sha512.c
-index 236e6af..4ae5b0f 100644
---- a/drivers/crypto/nx/nx-sha512.c
-+++ b/drivers/crypto/nx/nx-sha512.c
-@@ -131,7 +131,7 @@ static int nx_sha512_update(struct shash_desc *desc, const u8 *data,
- 		NX_CPB_FDM(csbcpb) |= NX_FDM_CONTINUATION;
- 
- 		total -= to_process;
--		data += to_process;
-+		data += to_process - sctx->count[0];
- 		sctx->count[0] = 0;
- 		in_sg = nx_ctx->in_sg;
- 	} while (leftover >= SHA512_BLOCK_SIZE);
--- 
-1.7.12
+Please leave a blank line between properties and nodes, and between
+nodes.
+
+What does reg represent?  Where is the binding for this?
+
+The compatible is too vague.
+
+> +		mux0: mux0@0 {
+> +			#clock-cells = <0>;
+> +			reg = <0x0>;
+> +			compatible = "fsl,core-mux-clock";
+> +			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+> +				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
+> +			clock-names = "pll0_0", "pll0_1", "pll0_2",
+> +				"pll1_0", "pll1_1", "pll1_2";
+> +			clock-output-names = "cmux0";
+> +		};
+
+What does reg represent?  Where is the binding for this?
+
+The compatible is too vague.
+
+-Scott
