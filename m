@@ -1,42 +1,34 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5369A2C0099
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 21:56:17 +1000 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Fri, 23 Aug 2013 21:45:11 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6353D2BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 21:56:13 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7NBeDIE45809720
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 21:40:13 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7NBuB1S026767
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 21:56:12 +1000
-Message-ID: <52174DB5.5050201@linux.vnet.ibm.com>
-Date: Fri, 23 Aug 2013 17:25:33 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Return-Path: <mark.rutland@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 49CB32C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 22:45:15 +1000 (EST)
+Date: Fri, 23 Aug 2013 13:44:56 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH v5 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
+Message-ID: <20130823124455.GF25856@e106331-lin.cambridge.arm.com>
+References: <cover.1376565456.git.b42378@freescale.com>
+ <20130820000625.4443.23018@quantum>
+ <20130821085015.GY3719@e106331-lin.cambridge.arm.com>
+ <2207416.NJhrdSqkEZ@flatron> <20130822071910.8231.47324@quantum>
+ <20130822120930.GD9799@e106331-lin.cambridge.arm.com>
+ <20130822210035.GB31036@pengutronix.de>
 MIME-Version: 1.0
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Subject: Re: [PATCH V5 3/5] POWER/cpuidle: Generic IBM-POWER backend cpuidle
- driver.
-References: <20130822095323.27416.79369.stgit@deepthi.in.ibm.com>
- <20130822095357.27416.48110.stgit@deepthi.in.ibm.com>
- <ABB05CD9C9F68C46A5CEDC7F154392590102822A@039-SN2MPN1-021.039d.mgd.msft.net>
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F154392590102822A@039-SN2MPN1-021.039d.mgd.msft.net>
-Content-Type: text/plain; charset=UTF-8
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>,
- "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130822210035.GB31036@pengutronix.de>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "lars@metafoo.de" <lars@metafoo.de>, Mike Turquette <mturquette@linaro.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ Pawel Moll <Pawel.Moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "festevam@gmail.com" <festevam@gmail.com>, Nicolin Chen <b42378@freescale.com>,
+ Tomasz Figa <tomasz.figa@gmail.com>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "timur@tabi.org" <timur@tabi.org>, "broonie@kernel.org" <broonie@kernel.org>,
+ "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+ "galak@codeaurora.org" <galak@codeaurora.org>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -47,143 +39,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/23/2013 08:46 AM, Wang Dongsheng-B40534 wrote:
+On Thu, Aug 22, 2013 at 10:00:35PM +0100, Sascha Hauer wrote:
+> On Thu, Aug 22, 2013 at 01:09:31PM +0100, Mark Rutland wrote:
+> > On Thu, Aug 22, 2013 at 08:19:10AM +0100, Mike Turquette wrote:
+> > > Quoting Tomasz Figa (2013-08-21 14:34:55)
+> > > > On Wednesday 21 of August 2013 09:50:15 Mark Rutland wrote:
+> > > > > On Tue, Aug 20, 2013 at 01:06:25AM +0100, Mike Turquette wrote:
+> > > > > > Quoting Mark Rutland (2013-08-19 02:35:43)
+> > > > > > 
+> > > > > > > On Sat, Aug 17, 2013 at 04:17:18PM +0100, Tomasz Figa wrote:
+> > > > > > > > On Saturday 17 of August 2013 16:53:16 Sascha Hauer wrote:
+> > > > > > > > > On Sat, Aug 17, 2013 at 02:28:04PM +0200, Tomasz Figa wrote:
+> > > > > > > > > > > > > Also I would make this option required. Use a dummy
+> > > > > > > > > > > > > clock for
+> > > > > > > > > > > > > mux
+> > > > > > > > > > > > > inputs that are grounded for a specific SoC.
+> > > > > > > > > > > > 
+> > > > > > > > > > > > Some clocks are not from CCM and we haven't defined in
+> > > > > > > > > > > > imx6q-clk.txt,
+> > > > > > > > > > > > so in most cases we can't provide a phandle for them, eg:
+> > > > > > > > > > > > spdif_ext.
+> > > > > > > > > > > > I think it's a bit hard to force it to be 'required'. An
+> > > > > > > > > > > > 'optional'
+> > > > > > > > > > > > looks more flexible to me and a default one is ensured
+> > > > > > > > > > > > even if
+> > > > > > > > > > > > it's
+> > > > > > > > > > > > missing.
+> > > > > > > > > > > 
+> > > > > > > > > > > <&clks 0> is the dummy clock. This can be used for all input
+> > > > > > > > > > > clocks
+> > > > > > > > > > > not
+> > > > > > > > > > > defined by the SoC.
+> > > > > > > > > > 
+> > > > > > > > > > Where does this assumption come from? Is it documented
+> > > > > > > > > > anywhere?
+> > > > > > > > > 
+> > > > > > > > > This is how all i.MX clock bindings currently are. See
+> > > > > > > > > Documentation/devicetree/bindings/clock/imx*-clock.txt
+> > > > > > > > 
+> > > > > > > > OK, thanks.
+> > > > > > > > 
+> > > > > > > > I guess we need some discussion on dummy clocks vs skipped clocks.
+> > > > > > > > I think we want some consistency on this, don't we?
+> > > > > > > > 
+> > > > > > > > If we really need a dummy clock, then we might also want a generic
+> > > > > > > > way to specify it.
+> > > > > > > 
+> > > > > > > What do we actually mean by a "dummy clock"? We already have
+> > > > > > > bindings
+> > > > > > > for "fixed-clock" and co friends describe relatively simple
+> > > > > > > preconfigured clocks.
+> > > > > > 
+> > > > > > Some platforms have a fake clock which defines noops callbacks and
+> > > > > > basically doesn't do anything. This is analogous to the dummy
+> > > > > > regulator
+> > > > > > implementation. A central one could be registered by the clock core,
+> > > > > > as
+> > > > > > is done by the regulator core.
+> > > > > 
+> > > > > When you say some platforms, you presumably mean the platform code in
+> > > > > Linux? A dummy clock sounds like a completely Linux-specific abstraction
+> > > > > rather than a description of the hardware, and I don't see why we need
+> > > > > that in the DT:
+> > > > > 
+> > > > > * If a clock is wired up and running (as presumably the dummy clock is),
+> > > > > then surely it's a fixed-clock (it's running, we and we have no control
+> > > > > over it, but we presumably know its rate) and can be described as such?
+> > > > > 
+> > > > > * If no clock is wired up, then we should be able to describe that. If a
+> > > > > driver believes that a clock is required when it isn't (for some level
+> > > > > of functionality), then that driver should be fixed up to support the
+> > > > > clock as being optional.
+> > > > > 
+> > > > > Am I missing something?
+> > > > 
+> > > > I second that.
+> > > > 
+> > > > Moreover, I don't think that device tree should deal with dummy anything. 
+> > > > It should be able to describe hardware that is available on given system, 
+> > > > not list what hardware is not available.
+> > > 
+> > > I wasn't clear. The dummy clock IS a completely Linux-specific
+> > > abstraction.
+> > > 
+> > > I'm not advocating a dummy clock in DT. I am advocating consolidation of
+> > > the implementation of a clock that does nothing into the clock core.
+> > > This code could easily live in drivers/clk/clk.c instead of having
+> > > everyone open-code it.
+> > > 
+> > > As far as specifying a dummy clock in DT? I dunno. DT should describe
+> > > real hardware so there isn't much use for a dummy clock.
+> > 
+> > 
+> > Sorry, I misunderstood. Good to hear we're on the same page :)
+> > 
+> > > 
+> > > I'm guessing one of the reasons for such a clock are drivers do not
+> > > honor the clk.h api and they freak out when clk_get gives them a NULL
+> > > pointer?
+> > 
+> > I'm not sure. Sascha, could you shed some light on the matter?
 > 
->> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
->> index 0e2cd5c..e805dcd 100644
->> --- a/drivers/cpuidle/Kconfig
->> +++ b/drivers/cpuidle/Kconfig
-> 
-> Maybe drivers/cpuidle/Kconfig.powerpc is better? Like arm.
-> 
->> +obj-$(CONFIG_CPU_IDLE_IBM_POWER) += cpuidle-ibm-power.o
->> diff --git a/drivers/cpuidle/cpuidle-ibm-power.c
->> b/drivers/cpuidle/cpuidle-ibm-power.c
->> new file mode 100644
->> index 0000000..4ee5a94
->> --- /dev/null
->> +++ b/drivers/cpuidle/cpuidle-ibm-power.c
->> @@ -0,0 +1,304 @@
->> +/*
->> + *  cpuidle-ibm-power - idle state cpuidle driver.
->> + *  Adapted from drivers/idle/intel_idle.c and
->> + *  drivers/acpi/processor_idle.c
->> + *
->> + */
->> +
->> +#include <linux/kernel.h>
->> +#include <linux/module.h>
->> +#include <linux/init.h>
->> +#include <linux/moduleparam.h>
->> +#include <linux/cpuidle.h>
->> +#include <linux/cpu.h>
->> +#include <linux/notifier.h>
->> +
->> +#include <asm/paca.h>
->> +#include <asm/reg.h>
->> +#include <asm/machdep.h>
->> +#include <asm/firmware.h>
->> +#include <asm/runlatch.h>
->> +#include <asm/plpar_wrappers.h>
->> +
->> +struct cpuidle_driver power_idle_driver = {
->> +	.name             = "IBM-POWER-Idle",
->> +	.owner            = THIS_MODULE,
->> +};
->> +
->> +#define MAX_IDLE_STATE_COUNT	2
->> +
->> +static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
-> 
-> Again, do not use the macro.
+> The original reason introducing the dummy clocks in the i.MX dtbs
+> was to provide devices a clock which the driver requests but is
+> not software controllable. We often have the case where the same
+> devices are on several SoCs, but not on all of them all clocks have
+> a bit to en/disable them.
 
-Wanting to re-use CPUIDLE_STATE_MAX macro, defined in linux/cpuidle.h
-similar to what x86 uses. This is def scalable for various platforms ,
-as demonstrated in drivers/idle/intel_idle.c
+So those clocks are always on at some fixed rate?
 
- >
->> +static struct cpuidle_state *cpuidle_state_table;
->> +
->> +static inline void idle_loop_prolog(unsigned long *in_purr)
->> +{
->> +	*in_purr = mfspr(SPRN_PURR);
->> +	/*
->> +	 * Indicate to the HV that we are idle. Now would be
->> +	 * a good time to find other work to dispatch.
->> +	 */
->> +	get_lppaca()->idle = 1;
->> +}
->> +
->> +static inline void idle_loop_epilog(unsigned long in_purr)
->> +{
->> +	get_lppaca()->wait_state_cycles += mfspr(SPRN_PURR) - in_purr;
->> +	get_lppaca()->idle = 0;
->> +}
->> +
->> +static int snooze_loop(struct cpuidle_device *dev,
->> +			struct cpuidle_driver *drv,
->> +			int index)
->> +{
->> +	unsigned long in_purr;
->> +
->> +	idle_loop_prolog(&in_purr);
->> +	local_irq_enable();
 > 
-> snooze_loop has already registered in cpuidle framework to handle snooze state.
-> where disable the irq? Why do "enable" here?
+> Anyway, to accomplish this we don't need dummy clocks. We can just
+> describe the real clocks.
+
+Ok.
+
 > 
->> +/*
->> + * States for dedicated partition case.
->> + */
->> +static struct cpuidle_state dedicated_states[MAX_IDLE_STATE_COUNT] = {
->> +	{ /* Snooze */
->> +		.name = "snooze",
->> +		.desc = "snooze",
->> +		.flags = CPUIDLE_FLAG_TIME_VALID,
->> +		.exit_latency = 0,
->> +		.target_residency = 0,
->> +		.enter = &snooze_loop },
->> +	{ /* CEDE */
->> +		.name = "CEDE",
->> +		.desc = "CEDE",
->> +		.flags = CPUIDLE_FLAG_TIME_VALID,
->> +		.exit_latency = 10,
->> +		.target_residency = 100,
->> +		.enter = &dedicated_cede_loop },
->> +};
->> +
->> +/*
->> + * States for shared partition case.
->> + */
->> +static struct cpuidle_state shared_states[MAX_IDLE_STATE_COUNT] = {
->> +	{ /* Shared Cede */
->> +		.name = "Shared Cede",
->> +		.desc = "Shared Cede",
->> +		.flags = CPUIDLE_FLAG_TIME_VALID,
->> +		.exit_latency = 0,
->> +		.target_residency = 0,
->> +		.enter = &shared_cede_loop },
->> +};
->> +
->> +static void __exit power_processor_idle_exit(void)
->> +{
->> +
->> +	unregister_cpu_notifier(&setup_hotplug_notifier);
+> BTW with the S/PDIF core on which not all mux inputs are connected
+> to actual clocks we could also describe the unconnected inputs as
+> ground clocks with rate 0. This way we describe something which
+> is really there instead of dummy clocks ;)
 > 
-> Remove a blank line.
-> 
->> +	cpuidle_unregister(&power_idle_driver);
->> +	return;
->> +}
->> +
->> +module_init(power_processor_idle_init);
->> +module_exit(power_processor_idle_exit);
->> +
-> 
-> Did you have tested the module? If not tested, please don't use the module.
-> 
->> +MODULE_AUTHOR("Deepthi Dharwar <deepthi@linux.vnet.ibm.com>");
->> +MODULE_DESCRIPTION("Cpuidle driver for IBM POWER platforms");
->> +MODULE_LICENSE("GPL");
->>
-> 
+> Background to why it might be a good idea to connect a ground clock
+> to the unconnected input pins is that a driver has a chance to
+> successfully grab all clocks. Otherwise how does the driver distinguish
+> between an unconnected and an erroneous clock?
+
+Surely the presence of a name in "clock-names" tells you that a clock is
+connected, and if not listed it's not connected? If we don't have the
+infrastructure for telling apart unconnected clocks from inability to
+enable/configure clocks, that's a Linux issue rather than something that
+should be hacked up in the dt.
+
+Thanks,
+Mark.
