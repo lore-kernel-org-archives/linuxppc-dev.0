@@ -1,26 +1,26 @@
-Return-Path: <seiji.aguchi@hds.com>
-Received: from usindpps05.hds.com (usindpps05.hds.com [207.126.252.18])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 05F3B2C0091
- for <linuxppc-dev@ozlabs.org>; Fri, 23 Aug 2013 09:50:17 +1000 (EST)
-From: Seiji Aguchi <seiji.aguchi@hds.com>
-To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>, "linuxppc-dev@ozlabs.org"
- <linuxppc-dev@ozlabs.org>, "tony.luck@intel.com" <tony.luck@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "keescook@chromium.org" <keescook@chromium.org>
-Subject: RE: [RFC PATCH v2 04/11] pstore: Add compression support to pstore
-Date: Thu, 22 Aug 2013 23:07:57 +0000
-Message-ID: <A5ED84D3BB3A384992CBB9C77DEDA4D443E8F0D7@USINDEM103.corp.hds.com>
-References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
- <20130816131805.3338.68767.stgit@aruna-ThinkPad-T420>
-In-Reply-To: <20130816131805.3338.68767.stgit@aruna-ThinkPad-T420>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <B42677@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E94652C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 11:58:12 +1000 (EST)
+Message-ID: <5216C267.5060701@freescale.com>
+Date: Fri, 23 Aug 2013 10:01:11 +0800
+From: Zhang Haijun <B42677@freescale.com>
 MIME-Version: 1.0
-Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
- "mahesh@linux.vnet.ibm.com" <mahesh@linux.vnet.ibm.com>,
- "ccross@android.com" <ccross@android.com>
+To: Anton Vorontsov <anton@enomsg.org>
+Subject: Re: [PATCH 2/3 V3] mmc:sdhc: get voltage from sdhc host
+References: <1376271546-25085-1-git-send-email-Haijun.Zhang@freescale.com>
+ <1376271546-25085-4-git-send-email-Haijun.Zhang@freescale.com>
+ <20130823014841.GD24803@teo>
+In-Reply-To: <20130823014841.GD24803@teo>
+Content-Type: multipart/alternative;
+ boundary="------------090908050003040501000307"
+Cc: linux-mmc@vger.kernel.org, Haijun Zhang <Haijun.Zhang@freescale.com>,
+ scottwood@freescale.com, cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
+ X.Xie@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,102 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gICAqIGNhbGxiYWNrIGZyb20ga21zZ19kdW1wLiAoczIsbDIpIGhhcyB0aGUgbW9zdCBy
-ZWNlbnRseQ0KPiAgICogd3JpdHRlbiBieXRlcywgb2xkZXIgYnl0ZXMgYXJlIGluIChzMSxsMSku
-IFNhdmUgYXMgbXVjaA0KPiBAQCAtMTQ4LDIzICsyNDMsNTYgQEAgc3RhdGljIHZvaWQgcHN0b3Jl
-X2R1bXAoc3RydWN0IGttc2dfZHVtcGVyICpkdW1wZXIsDQo+ICAJCWNoYXIgKmRzdDsNCj4gIAkJ
-dW5zaWduZWQgbG9uZyBzaXplOw0KPiAgCQlpbnQgaHNpemU7DQo+ICsJCWludCB6aXBwZWRfbGVu
-ID0gLTE7DQo+ICAJCXNpemVfdCBsZW47DQo+IC0JCWJvb2wgY29tcHJlc3NlZCA9IGZhbHNlOw0K
-PiArCQlib29sIGNvbXByZXNzZWQ7DQo+ICsJCXNpemVfdCB0b3RhbF9sZW47DQo+IA0KPiAtCQlk
-c3QgPSBwc2luZm8tPmJ1ZjsNCj4gLQkJaHNpemUgPSBzcHJpbnRmKGRzdCwgIiVzIyVkIFBhcnQl
-ZFxuIiwgd2h5LCBvb3BzY291bnQsIHBhcnQpOw0KPiAtCQlzaXplID0gcHNpbmZvLT5idWZzaXpl
-IC0gaHNpemU7DQo+IC0JCWRzdCArPSBoc2l6ZTsNCj4gKwkJaWYgKGJpZ19vb3BzX2J1Zikgew0K
-PiArCQkJZHN0ID0gYmlnX29vcHNfYnVmOw0KPiArCQkJaHNpemUgPSBzcHJpbnRmKGRzdCwgIiVz
-IyVkIFBhcnQlZFxuIiwgd2h5LA0KPiArCQkJCQkJCW9vcHNjb3VudCwgcGFydCk7DQo+ICsJCQlz
-aXplID0gYmlnX29vcHNfYnVmX3N6IC0gaHNpemU7DQo+IA0KPiAtCQlpZiAoIWttc2dfZHVtcF9n
-ZXRfYnVmZmVyKGR1bXBlciwgdHJ1ZSwgZHN0LCBzaXplLCAmbGVuKSkNCj4gLQkJCWJyZWFrOw0K
-PiArCQkJaWYgKCFrbXNnX2R1bXBfZ2V0X2J1ZmZlcihkdW1wZXIsIHRydWUsIGRzdCArIGhzaXpl
-LA0KPiArCQkJCQkJCQlzaXplLCAmbGVuKSkNCj4gKwkJCQlicmVhazsNCj4gKw0KPiArCQkJemlw
-cGVkX2xlbiA9IHBzdG9yZV9jb21wcmVzcyhkc3QsIHBzaW5mby0+YnVmLA0KPiArCQkJCQkJaHNp
-emUgKyBsZW4sIHBzaW5mby0+YnVmc2l6ZSk7DQo+ICsNCj4gKwkJCWlmICh6aXBwZWRfbGVuID4g
-MCkgew0KPiArCQkJCWNvbXByZXNzZWQgPSB0cnVlOw0KPiArCQkJCXRvdGFsX2xlbiA9IHppcHBl
-ZF9sZW47DQo+ICsJCQl9IGVsc2Ugew0KPiArCQkJCXByX2VycigicHN0b3JlOiBjb21wcmVzc2lv
-biBmYWlsZWQgZm9yIFBhcnQgJWQiDQo+ICsJCQkJCSIgcmV0dXJuZWQgJWRcbiIsIHBhcnQsIHpp
-cHBlZF9sZW4pOw0KPiArCQkJCXByX2VycigicHN0b3JlOiBDYXB0dXJlIHVuY29tcHJlc3NlZCIN
-Cj4gKwkJCQkJIiBvb3BzL3BhbmljIHJlcG9ydCBvZiBQYXJ0ICVkXG4iLCBwYXJ0KTsNCg0KV2h5
-IGRpZCB5b3UgYWRkIHRoZXNlIG1lc3NhZ2VzIGluIHBzdG9yZV9kdW1wKCk/DQpJbiBteSB0ZXN0
-IGNhc2UsIHRoZXkgYXJlIG5vdCBuZWVkZWQuLi4uDQoNCjxzbmlwPg0KIyBjYXQgZG1lc2ctZWZp
-LTENClBhbmljIzIgUGFydDENCjw0PlsgIDM4My4yMDkwNTddIFJCUDogZmZmZjg4MDA2ZjU1MWU4
-MCBSMDg6IDAwMDAwMDAwMDAwMDAwMDIgUjA5OiAwMDAwMDAwMDAwMDAwMDAwDQo8ND5bICAzODMu
-MjA5MDU3XSBSMTA6IDAwMDAwMDAwMDAwMDAzODIgUjExOiAwMDAwMDAwMDAwMDAwMDAwIFIxMjog
-MDAwMDAwMDAwMDAwMDA2Mw0KPDQ+WyAgMzgzLjIwOTA1N10gUjEzOiAwMDAwMDAwMDAwMDAwMjg2
-IFIxNDogMDAwMDAwMDAwMDAwMDAwZiBSMTU6IDAwMDAwMDAwMDAwMDAwMDANCjw0PlsgIDM4My4y
-MDkwNTddIEZTOiAgMDAwMDdmNTMzMTdjYzc0MCgwMDAwKSBHUzpmZmZmODgwMDdjNDAwMDAwKDAw
-MDApIGtubEdTOjAwMDAwMDAwMDAwMDAwMDANCjw0PlsgIDM4My4yMDkwNTddIENTOiAgMDAxMCBE
-UzogMDAwMCBFUzogMDAwMCBDUjA6IDAwMDAwMDAwODAwNTAwMzMNCjw0PlsgIDM4My4yMDkwNTdd
-IENSMjogMDAwMDAwMDAwMDAwMDAwMCBDUjM6IDAwMDAwMDAwNzhhNzMwMDAgQ1I0OiAwMDAwMDAw
-MDAwMDAwNmYwDQo8ND5bICAzODMuMjA5MDU3XSBTdGFjazoNCjw0PlsgIDM4My4yMDkwNTddICBm
-ZmZmODgwMDZmNTUxZWI4IGZmZmZmZmZmODEzZDQwYTIgMDAwMDAwMDAwMDAwMDAwMiAwMDAwN2Y1
-MzMxN2RiMDAwDQo8ND5bICAzODMuMjA5MDU3XSAgZmZmZjg4MDA2ZjU1MWY1MCAwMDAwMDAwMDAw
-MDAwMDAyIDAwMDAwMDAwMDAwMDAwMDAgZmZmZjg4MDA2ZjU1MWVkOA0KPDQ+WyAgMzgzLjIwOTA1
-N10gIGZmZmZmZmZmODEzZDQ1YWEgMDAwMDdmNTMzMTdkYjAwMCBmZmZmODgwMDNmOGMyYjAwIGZm
-ZmY4ODAwNmY1NTFlZjgNCjw0PlsgIDM4My4yMDkwNTddIENhbGwgVHJhY2U6DQo8ND5bICAzODMu
-MjA5MDU3XSAgWzxmZmZmZmZmZjgxM2Q0MGEyPl0gX19oYW5kbGVfc3lzcnErMHhhMi8weDE3MA0K
-PDQ+WyAgMzgzLjIwOTA1N10gIFs8ZmZmZmZmZmY4MTNkNDVhYT5dIHdyaXRlX3N5c3JxX3RyaWdn
-ZXIrMHg0YS8weDUwDQo8ND5bICAzODMuMjA5MDU3XSAgWzxmZmZmZmZmZjgxMjE5ODFkPl0gcHJv
-Y19yZWdfd3JpdGUrMHgzZC8weDgwDQo8ND5bICAzODMuMjA5MDU3XSAgWzxmZmZmZmZmZjgxMWFl
-YjIwPl0gdmZzX3dyaXRlKzB4YzAvMHgxZjANCjw0PlsgIDM4My4yMDkwNTddICBbPGZmZmZmZmZm
-ODExYWY1OWM+XSBTeVNfd3JpdGUrMHg0Yy8weGEwDQo8ND5bICAzODMuMjA5MDU3XSAgWzxmZmZm
-ZmZmZjgxNjhiZTgyPl0gc3lzdGVtX2NhbGxfZmFzdHBhdGgrMHgxNi8weDFiDQo8ND5bICAzODMu
-MjA5MDU3XSBDb2RlOiBlZiBlOCBmZiBmNyBmZiBmZiBlYiBkOCA2NiAyZSAwZiAxZiA4NCAwMCAw
-MCAwMCAwMCAwMCAwZiAxZiAwMCAwZiAxZiA0NCAwMCAwMCA1NSBjNyAwNSBjYyBmMyBjOSAwMCAw
-MSAwMCAwMCAwMCA0OCA4OSBlNSAwZiBhZSBmOCA8YzY+IDA0IDI1IDAwIDAwIDAwIDAwIDAxIDVk
-IGMzIDBmIDFmIDQ0IDAwIDAwIDU1IDMxIGMwIGM3IDA1IDVlIA0KPDE+WyAgMzgzLjIwOTA1N10g
-UklQICBbPGZmZmZmZmZmODEzZDM5NDY+XSBzeXNycV9oYW5kbGVfY3Jhc2grMHgxNi8weDIwDQo8
-ND5bICAzODMuMjA5MDU3XSAgUlNQIDxmZmZmODgwMDZmNTUxZTgwPg0KPDQ+WyAgMzgzLjIwOTA1
-N10gQ1IyOiAwMDAwMDAwMDAwMDAwMDAwDQo8ND5bICAzODMuMjA5MDU3XSAtLS1bIGVuZCB0cmFj
-ZSAwNGExY2RkYWQzN2I0YjMzIF0tLS0NCjwzPlsgIDM4My4yMDkwNTddIHBzdG9yZTogY29tcHJl
-c3Npb24gZmFpbGVkIGZvciBQYXJ0IDIgcmV0dXJuZWQgLTUNCjwzPlsgIDM4My4yMDkwNTddIHBz
-dG9yZTogQ2FwdHVyZSB1bmNvbXByZXNzZWQgb29wcy9wYW5pYyByZXBvcnQgb2YgUGFydCAyDQo8
-Mz5bICAzODMuMjA5MDU3XSBwc3RvcmU6IGNvbXByZXNzaW9uIGZhaWxlZCBmb3IgUGFydCA1IHJl
-dHVybmVkIC01DQo8Mz5bICAzODMuMjA5MDU3XSBwc3RvcmU6IENhcHR1cmUgdW5jb21wcmVzc2Vk
-IG9vcHMvcGFuaWMgcmVwb3J0IG9mIFBhcnQgNQ0KPDM+WyAgMzgzLjIwOTA1N10gcHN0b3JlOiBj
-b21wcmVzc2lvbiBmYWlsZWQgZm9yIFBhcnQgMTIgcmV0dXJuZWQgLTUNCjwzPlsgIDM4My4yMDkw
-NTddIHBzdG9yZTogQ2FwdHVyZSB1bmNvbXByZXNzZWQgb29wcy9wYW5pYyByZXBvcnQgb2YgUGFy
-dCAxMg0KPDA+WyAgMzgzLjIwOTA1N10gS2VybmVsIHBhbmljIC0gbm90IHN5bmNpbmc6IEZhdGFs
-IGV4Y2VwdGlvbg0KPDM+WyAgMzgzLjIwOTA1N10gZHJtX2ttc19oZWxwZXI6IHBhbmljIG9jY3Vy
-cmVkLCBzd2l0Y2hpbmcgYmFjayB0byB0ZXh0IGNvbnNvbGUNCjxzbmlwPg0KDQoNCkluIGVmaS1w
-c3RvcmUgY2FzZSwgYWZ0ZXIgcmVib290aW5nIGEgc3lzdGVtLA0Kd2UgYXJlIGFibGUgdG8ga25v
-dyB3aGljaCBlbnRyeSBmYWlsZWQgdG8gY29tcHJlc3Mgd2l0aCAnQycgb3IgJ0QnIGFzIGJlbG93
-Lg0KDQojbHMgL3N5cy9maXJtd2FyZS9lZmkvdmFycy8gfGdyZXAgZHVtcA0KZHVtcC10eXBlMC0x
-MC0xLTEzNzcyMDQ3MzQtQy1jZmM4ZmM3OS1iZTJlLTRkZGMtOTdmMC05Zjk4YmZlMjk4YTANCmR1
-bXAtdHlwZTAtMTAtMi0xMzc3MjA0NzM0LUMtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJm
-ZTI5OGEwDQpkdW1wLXR5cGUwLTExLTEtMTM3NzIwNDczNC1DLWNmYzhmYzc5LWJlMmUtNGRkYy05
-N2YwLTlmOThiZmUyOThhMA0KZHVtcC10eXBlMC0xLTEtMTM3NzIwNDczNC1DLWNmYzhmYzc5LWJl
-MmUtNGRkYy05N2YwLTlmOThiZmUyOThhMA0KZHVtcC10eXBlMC0xMS0yLTEzNzcyMDQ3MzQtQy1j
-ZmM4ZmM3OS1iZTJlLTRkZGMtOTdmMC05Zjk4YmZlMjk4YTANCmR1bXAtdHlwZTAtMTItMS0xMzc3
-MjA0NzM0LUQtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUw
-LTEtMi0xMzc3MjA0NzM0LUMtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpk
-dW1wLXR5cGUwLTEyLTItMTM3NzIwNDczNC1ELWNmYzhmYzc5LWJlMmUtNGRkYy05N2YwLTlmOThi
-ZmUyOThhMA0KZHVtcC10eXBlMC0xMy0xLTEzNzcyMDQ3MzQtQy1jZmM4ZmM3OS1iZTJlLTRkZGMt
-OTdmMC05Zjk4YmZlMjk4YTANCmR1bXAtdHlwZTAtMTMtMi0xMzc3MjA0NzM0LUMtY2ZjOGZjNzkt
-YmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUwLTItMS0xMzc3MjA0NzM0LUQt
-Y2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUwLTItMi0xMzc3
-MjA0NzM0LUQtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUw
-LTMtMS0xMzc3MjA0NzM0LUMtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpk
-dW1wLXR5cGUwLTMtMi0xMzc3MjA0NzM0LUQtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJm
-ZTI5OGEwDQpkdW1wLXR5cGUwLTQtMS0xMzc3MjA0NzM0LUMtY2ZjOGZjNzktYmUyZS00ZGRjLTk3
-ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUwLTQtMi0xMzc3MjA0NzM0LUMtY2ZjOGZjNzktYmUy
-ZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUwLTUtMS0xMzc3MjA0NzM0LUQtY2Zj
-OGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUwLTUtMi0xMzc3MjA0
-NzM0LUMtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUwLTYt
-MS0xMzc3MjA0NzM0LUMtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1w
-LXR5cGUwLTYtMi0xMzc3MjA0NzM0LUMtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5
-OGEwDQpkdW1wLXR5cGUwLTctMS0xMzc3MjA0NzM0LUMtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAt
-OWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUwLTctMi0xMzc3MjA0NzM0LUMtY2ZjOGZjNzktYmUyZS00
-ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUwLTgtMS0xMzc3MjA0NzM0LUMtY2ZjOGZj
-NzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUwLTgtMi0xMzc3MjA0NzM0
-LUMtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5cGUwLTktMS0x
-Mzc3MjA0NzM0LUMtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEwDQpkdW1wLXR5
-cGUwLTktMi0xMzc3MjA0NzM0LUMtY2ZjOGZjNzktYmUyZS00ZGRjLTk3ZjAtOWY5OGJmZTI5OGEw
-DQoNClNlaWppDQo=
+--------------090908050003040501000307
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+
+On 08/23/2013 09:48 AM, Anton Vorontsov wrote:
+> On Mon, Aug 12, 2013 at 09:39:06AM +0800, Haijun Zhang wrote:
+>> We use host->ocr_mask to hold the voltage get from device-tree
+>> node, In case host->ocr_mask was available, we use host->ocr_mask
+>> as the final available voltage can be used by MMC/SD/SDIO card.
+>>
+>> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+>> ---
+> Reviewed-by: Anton Vorontsov <anton@enomsg.org>
+>
+Thank you very much.
+
+-- 
+Thanks & Regards
+
+Haijun
+
+
+--------------090908050003040501000307
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <div class="moz-cite-prefix">On 08/23/2013 09:48 AM, Anton Vorontsov
+      wrote:<br>
+    </div>
+    <blockquote cite="mid:20130823014841.GD24803@teo" type="cite">
+      <pre wrap="">On Mon, Aug 12, 2013 at 09:39:06AM +0800, Haijun Zhang wrote:
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">We use host-&gt;ocr_mask to hold the voltage get from device-tree
+node, In case host-&gt;ocr_mask was available, we use host-&gt;ocr_mask
+as the final available voltage can be used by MMC/SD/SDIO card.
+
+Signed-off-by: Haijun Zhang <a class="moz-txt-link-rfc2396E" href="mailto:haijun.zhang@freescale.com">&lt;haijun.zhang@freescale.com&gt;</a>
+---
+</pre>
+      </blockquote>
+      <pre wrap="">
+Reviewed-by: Anton Vorontsov <a class="moz-txt-link-rfc2396E" href="mailto:anton@enomsg.org">&lt;anton@enomsg.org&gt;</a>
+
+</pre>
+    </blockquote>
+    <font size="-1"><font size="-1">Thank you very m<font size="-1">uch.</font></font></font><br>
+    <br>
+    <pre class="moz-signature" cols="72">-- 
+Thanks &amp; Regards
+
+Haijun</pre>
+  </body>
+</html>
+
+--------------090908050003040501000307--
