@@ -1,26 +1,21 @@
-Return-Path: <B42677@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E94652C008F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 11:58:12 +1000 (EST)
-Message-ID: <5216C267.5060701@freescale.com>
-Date: Fri, 23 Aug 2013 10:01:11 +0800
-From: Zhang Haijun <B42677@freescale.com>
+Return-Path: <rui.xiang@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+ (using TLSv1 with cipher DES-CBC3-SHA (168/168 bits))
+ (Client CN "myname.my.domain", Issuer "www.mirapoint.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 260C72C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 12:57:28 +1000 (EST)
+From: Rui Xiang <rui.xiang@huawei.com>
+To: <linux-fsdevel@vger.kernel.org>, <viro@zeniv.linux.org.uk>
+Subject: [PATCH 0/2] fs: supply inode uid/gid setting interface
+Date: Fri, 23 Aug 2013 10:48:36 +0800
+Message-ID: <1377226118-43756-1-git-send-email-rui.xiang@huawei.com>
 MIME-Version: 1.0
-To: Anton Vorontsov <anton@enomsg.org>
-Subject: Re: [PATCH 2/3 V3] mmc:sdhc: get voltage from sdhc host
-References: <1376271546-25085-1-git-send-email-Haijun.Zhang@freescale.com>
- <1376271546-25085-4-git-send-email-Haijun.Zhang@freescale.com>
- <20130823014841.GD24803@teo>
-In-Reply-To: <20130823014841.GD24803@teo>
-Content-Type: multipart/alternative;
- boundary="------------090908050003040501000307"
-Cc: linux-mmc@vger.kernel.org, Haijun Zhang <Haijun.Zhang@freescale.com>,
- scottwood@freescale.com, cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
- X.Xie@freescale.com
+Content-Type: text/plain
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Rui Xiang <rui.xiang@huawei.com>, linux-rdma@vger.kernel.org,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, cgroups@vger.kernel.org,
+ v9fs-developer@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,64 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---------------090908050003040501000307
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+This patchset implements an accessor functions to set uid/gid
+in inode struct. Just finish code clean up.
 
-On 08/23/2013 09:48 AM, Anton Vorontsov wrote:
-> On Mon, Aug 12, 2013 at 09:39:06AM +0800, Haijun Zhang wrote:
->> We use host->ocr_mask to hold the voltage get from device-tree
->> node, In case host->ocr_mask was available, we use host->ocr_mask
->> as the final available voltage can be used by MMC/SD/SDIO card.
->>
->> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
->> ---
-> Reviewed-by: Anton Vorontsov <anton@enomsg.org>
->
-Thank you very much.
+Rui Xiang (2):
+  fs: implement inode uid/gid setting function
+  fs: use inode_set_user to set uid/gid of inode
+
+ arch/ia64/kernel/perfmon.c                |  3 +--
+ arch/powerpc/platforms/cell/spufs/inode.c |  3 +--
+ arch/s390/hypfs/inode.c                   |  3 +--
+ drivers/infiniband/hw/qib/qib_fs.c        |  3 +--
+ drivers/usb/gadget/f_fs.c                 |  3 +--
+ drivers/usb/gadget/inode.c                |  5 +++--
+ fs/9p/vfs_inode.c                         |  6 ++----
+ fs/adfs/inode.c                           |  3 +--
+ fs/affs/inode.c                           |  6 ++----
+ fs/afs/inode.c                            |  6 ++----
+ fs/anon_inodes.c                          |  3 +--
+ fs/autofs4/inode.c                        |  4 ++--
+ fs/befs/linuxvfs.c                        |  8 ++++----
+ fs/ceph/caps.c                            |  5 +++--
+ fs/ceph/inode.c                           |  8 ++++----
+ fs/cifs/inode.c                           |  6 ++----
+ fs/configfs/inode.c                       |  3 +--
+ fs/debugfs/inode.c                        |  3 +--
+ fs/devpts/inode.c                         |  7 +++----
+ fs/ext2/ialloc.c                          |  3 +--
+ fs/ext3/ialloc.c                          |  3 +--
+ fs/ext4/ialloc.c                          |  3 +--
+ fs/fat/inode.c                            |  6 ++----
+ fs/fuse/control.c                         |  3 +--
+ fs/fuse/inode.c                           |  4 ++--
+ fs/hfs/inode.c                            |  6 ++----
+ fs/hfsplus/inode.c                        |  3 +--
+ fs/hpfs/inode.c                           |  3 +--
+ fs/hpfs/namei.c                           | 12 ++++--------
+ fs/hugetlbfs/inode.c                      |  3 +--
+ fs/inode.c                                |  7 +++++++
+ fs/isofs/inode.c                          |  3 +--
+ fs/isofs/rock.c                           |  3 +--
+ fs/ncpfs/inode.c                          |  3 +--
+ fs/nfs/inode.c                            |  4 ++--
+ fs/ntfs/inode.c                           | 12 ++++--------
+ fs/ntfs/mft.c                             |  3 +--
+ fs/ntfs/super.c                           |  3 +--
+ fs/ocfs2/refcounttree.c                   |  3 +--
+ fs/omfs/inode.c                           |  3 +--
+ fs/pipe.c                                 |  3 +--
+ fs/proc/base.c                            | 15 +++++----------
+ fs/proc/fd.c                              |  8 ++++----
+ fs/proc/inode.c                           |  3 +--
+ fs/proc/self.c                            |  3 +--
+ fs/stack.c                                |  3 +--
+ fs/sysfs/inode.c                          |  3 +--
+ fs/xfs/xfs_iops.c                         |  4 ++--
+ include/linux/fs.h                        |  1 +
+ ipc/mqueue.c                              |  3 +--
+ kernel/cgroup.c                           |  3 +--
+ mm/shmem.c                                |  3 +--
+ net/socket.c                              |  3 +--
+ 53 files changed, 94 insertions(+), 142 deletions(-)
 
 -- 
-Thanks & Regards
-
-Haijun
-
-
---------------090908050003040501000307
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <div class="moz-cite-prefix">On 08/23/2013 09:48 AM, Anton Vorontsov
-      wrote:<br>
-    </div>
-    <blockquote cite="mid:20130823014841.GD24803@teo" type="cite">
-      <pre wrap="">On Mon, Aug 12, 2013 at 09:39:06AM +0800, Haijun Zhang wrote:
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">We use host-&gt;ocr_mask to hold the voltage get from device-tree
-node, In case host-&gt;ocr_mask was available, we use host-&gt;ocr_mask
-as the final available voltage can be used by MMC/SD/SDIO card.
-
-Signed-off-by: Haijun Zhang <a class="moz-txt-link-rfc2396E" href="mailto:haijun.zhang@freescale.com">&lt;haijun.zhang@freescale.com&gt;</a>
----
-</pre>
-      </blockquote>
-      <pre wrap="">
-Reviewed-by: Anton Vorontsov <a class="moz-txt-link-rfc2396E" href="mailto:anton@enomsg.org">&lt;anton@enomsg.org&gt;</a>
-
-</pre>
-    </blockquote>
-    <font size="-1"><font size="-1">Thank you very m<font size="-1">uch.</font></font></font><br>
-    <br>
-    <pre class="moz-signature" cols="72">-- 
-Thanks &amp; Regards
-
-Haijun</pre>
-  </body>
-</html>
-
---------------090908050003040501000307--
+1.8.2.2
