@@ -1,34 +1,29 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B94322C009C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 11:55:26 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 23 Aug 2013 07:18:48 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 3FACE394004D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 07:25:05 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7N1tBZu44695784
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 07:25:11 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7N1tD0x012718
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 07:25:14 +0530
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: alex.williamson@redhat.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] iommu: WARN_ON when removing a device with no iommu_group
- associated
-Date: Fri, 23 Aug 2013 09:55:11 +0800
-Message-Id: <1377222911-12144-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: aik@ozlabs.ru, paulus@au1.ibm.com, benh@au1.ibm.com,
- Wei Yang <weiyang@linux.vnet.ibm.com>
+Return-Path: <B40534@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 76A152C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 12:52:59 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 1/2] powerpc/85xx: add hardware automatically enter
+ altivec idle state
+Date: Fri, 23 Aug 2013 02:52:06 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010281F1@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1376637789-27330-1-git-send-email-dongsheng.wang@freescale.com>
+ <83499AB5-DCE7-407D-AEC1-B2493D1D38BE@kernel.crashing.org>
+ <1376671853.31636.252.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F154392590101E5A5@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1376959116.31636.392.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F1543925901027BD3@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1377184761.5029.96.camel@snotra.buserror.net>
+In-Reply-To: <1377184761.5029.96.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,37 +33,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When removing a device from the system, iommu_group driver will try to
-disconnect it from its group. While in some cases, one device may not
-associated with any iommu_group. For example, not enough DMA address space.
-
-In the generic bus notification, it will check dev->iommu_group before calling
-iommu_group_remove_device(). While in some cases, developers may call
-iommu_group_remove_device() in a different code path and without check. For
-those devices with dev->iommu_group set to NULL, kernel will crash.
-
-This patch gives a warning and return when trying to remove a device from an
-iommu_group with dev->iommu_group set to NULL. This helps to indicate some bad
-behavior and also guard the kernel.
-
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
----
- drivers/iommu/iommu.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index fbe9ca7..43396f0 100644
---- a/drivers/iommu/iommu.c
-+++ b/drivers/iommu/iommu.c
-@@ -379,6 +379,9 @@ void iommu_group_remove_device(struct device *dev)
- 	struct iommu_group *group = dev->iommu_group;
- 	struct iommu_device *tmp_device, *device = NULL;
- 
-+	if (WARN_ON(!group))
-+		return;
-+
- 	/* Pre-notify listeners that a device is being removed. */
- 	blocking_notifier_call_chain(&group->notifier,
- 				     IOMMU_GROUP_NOTIFY_DEL_DEVICE, dev);
--- 
-1.7.5.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVGh1cnNkYXksIEF1Z3VzdCAyMiwgMjAxMyAxMToxOSBQTQ0KPiBUbzogV2Fu
+ZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgS3VtYXIgR2FsYTsg
+WmhhbyBDaGVuaHVpLUIzNTMzNjsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnDQo+
+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBwb3dlcnBjLzg1eHg6IGFkZCBoYXJkd2FyZSBhdXRv
+bWF0aWNhbGx5IGVudGVyDQo+IGFsdGl2ZWMgaWRsZSBzdGF0ZQ0KPiANCj4gT24gV2VkLCAyMDEz
+LTA4LTIxIGF0IDIyOjEzIC0wNTAwLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+ID4N
+Cj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0
+LUIwNzQyMQ0KPiA+ID4gU2VudDogVHVlc2RheSwgQXVndXN0IDIwLCAyMDEzIDg6MzkgQU0NCj4g
+PiA+IFRvOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+IENjOiBXb29kIFNjb3R0LUIwNzQy
+MTsgS3VtYXIgR2FsYTsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+IFN1Ympl
+Y3Q6IFJlOiBbUEFUQ0ggMS8yXSBwb3dlcnBjLzg1eHg6IGFkZCBoYXJkd2FyZSBhdXRvbWF0aWNh
+bGx5DQo+ID4gPiBlbnRlciBhbHRpdmVjIGlkbGUgc3RhdGUNCj4gPiA+DQo+ID4gPiBJdCBqdXN0
+IHNlZW1zIHdyb25nIHRvIGhhdmUgYW4gYWQtaG9jIG1lY2hhbmlzbSBmb3IgcnVubmluZw0KPiA+
+ID4gY29yZS1zcGVjaWZpYyBjb2RlIHdoZW4gd2UgaGF2ZSBjcHV0YWJsZS4uLiAgSWYgd2UgcmVh
+bGx5IG5lZWQgdGhpcywNCj4gPiA+IG1heWJlIHdlIHNob3VsZCBhZGQgYSAiY3B1X3NldHVwX2xh
+dGUiIGZ1bmN0aW9uIHBvaW50ZXIuDQo+ID4gPg0KPiA+ID4gV2l0aCB5b3VyIHBhdGNoLCB3aGVu
+IGRvZXMgdGhlIHBvd2VyIG1hbmFnZW1lbnQgcmVnaXN0ZXIgZ2V0IHNldA0KPiA+ID4gd2hlbiBo
+b3QgcGx1Z2dpbmcgYSBjcHU/DQo+ID4gPg0KPiA+IFVtLi4gSSBkb24ndCBkZWFsIHdpdGggdGhp
+cyBzaXR1YXRpb24uIEkgd2lsbCBmaXggaXQuDQo+ID4gX19zZXR1cC9yZXN0b3JlX2NwdV9lNjUw
+MCBsb29rcyBnb29kLiBCdXQgb25seSBib290Y3B1IGNhbGwNCj4gX19zZXR1cF9jcHVfZTY1MDAs
+IG5vdCBvbiBlYWNoIGNwdS4NCj4gPiBJIHRoaW5rIHRoaXMgaXMgYSBidWcuDQo+IA0KPiBPdGhl
+ciBDUFVzIGNhbGwgX19yZXN0b3JlX2NwdV9lNjUwMC4NCj4gDQpObywgdGhlcmUgaXMgYm9vdGNv
+cmUgb2Ygc2Vjb25kYXJ5IHRocmVhZCwgYW5kIG90aGVyIGNvcmVzIG9mIGZpcnN0IHRocmVhZCBj
+YWxsIF9fcmVzdG9yZV9jcHVfZTY1MDAuDQpUaGlzIGZsb3cgaXMgY29ycmVjdD8NCg0KPiA+ID4g
+PiA+IEFzIGZvciB0aGUgUFZSIGNoZWNrLCB0aGUgdXBzdHJlYW0ga2VybmVsIGRvZXNuJ3QgbmVl
+ZCB0byBjYXJlDQo+ID4gPiA+ID4gYWJvdXQgcmV2MSwgc28ga25vd2luZyBpdCdzIGFuIGU2NTAw
+IGlzIGdvb2QgZW5vdWdoLg0KPiA+ID4gPiA+DQo+ID4gPiA+IEJ1dCBBbHRpVmVjIGlkbGUgJiBQ
+VzIwIGNhbm5vdCB3b3JrIG9uIHJldjEgcGxhdGZvcm0uDQo+ID4gPiA+IFdlIGRpZG4ndCBoYXZl
+IHRvIGRlYWwgd2l0aCBpdD8NCj4gPiA+DQo+ID4gPiBVcHN0cmVhbSBkb2VzIG5vdCBydW4gb24g
+cmV2MS4NCj4gPiA+DQo+ID4gOiksIEJ1dCBhbHJlYWR5IGhhdmUgY3VzdG9tZXJzIGluIHRoZSB1
+c2Ugb2YgcmV2MS4NCj4gPiBXaHkgd2UgZG9uJ3QgbmVlZCB0byBjYXJlIGFib3V0IHRoYXQ/DQo+
+IA0KPiByZXYxIGlzIG5vdCBwcm9kdWN0aW9uLXF1YWxpZmllZC4gIFRob3NlIGN1c3RvbWVycyBh
+cmUgc3VwcG9zZWQgdG8gb25seQ0KPiBiZSB1c2luZyByZXYxIGZvciBldmFsdWF0aW9uIGFuZCBl
+YXJseSBkZXZlbG9wbWVudC4gIEl0J3Mgbm90IHRoYXQgd2UNCj4gZG9uJ3QgY2FyZSBhYm91dCBy
+ZXYxIG5vdyAod2UgaGF2ZSB0aGUgU0RLIGZvciB0aGF0KSBidXQgdGhhdCB3ZSB3b24ndA0KPiBj
+YXJlIGFib3V0IGl0IGxvbmctdGVybSBhbmQgZG9uJ3Qgd2FudCB0byBoYXZlIHRvIGNhcnJ5IGFy
+b3VuZCBhIGJ1bmNoIG9mDQo+IGJhZ2dhZ2UgZm9yIGl0LiAgU29tZSBvZiB0aGUgd29ya2Fyb3Vu
+ZHMgYXJlIHByZXR0eSBuYXN0eSAoZXNwZWNpYWxseSBBLQ0KPiAwMDYxOTgpLg0KPiANClRoYW5r
+cy4NCg0K
