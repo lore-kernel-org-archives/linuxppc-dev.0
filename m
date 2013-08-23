@@ -1,28 +1,28 @@
-Return-Path: <B40534@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+Return-Path: <B45939@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1238D2C009A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 13:17:07 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>, "daniel.lezcano@linaro.org"
- <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, Wood Scott-B07421 <B07421@freescale.com>,
- "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH V5 3/5] POWER/cpuidle: Generic IBM-POWER backend cpuidle
- driver.
-Date: Fri, 23 Aug 2013 03:16:59 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F154392590102822A@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <20130822095323.27416.79369.stgit@deepthi.in.ibm.com>
- <20130822095357.27416.48110.stgit@deepthi.in.ibm.com>
-In-Reply-To: <20130822095357.27416.48110.stgit@deepthi.in.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 4A3632C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 13:18:15 +1000 (EST)
+Message-ID: <5216D461.4010604@freescale.com>
+Date: Fri, 23 Aug 2013 11:17:53 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Cc: "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH v7 2/3] DMA: Freescale: Add new 8-channel DMA engine device
+ tree nodes
+References: <1375094944-3343-1-git-send-email-hongbo.zhang@freescale.com>
+ <1375094944-3343-3-git-send-email-hongbo.zhang@freescale.com>
+ <521541EE.4010303@wwwdotorg.org>
+ <1377126028.5029.52.camel@snotra.buserror.net>
+ <52154A34.4020405@wwwdotorg.org>
+In-Reply-To: <52154A34.4020405@wwwdotorg.org>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: devicetree@vger.kernel.org, vinod.koul@intel.com,
+ linux-kernel@vger.kernel.org, djbw@fb.com,
+ Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,68 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWlkbGUvS2NvbmZpZyBiL2RyaXZlcnMvY3B1aWRs
-ZS9LY29uZmlnDQo+IGluZGV4IDBlMmNkNWMuLmU4MDVkY2QgMTAwNjQ0DQo+IC0tLSBhL2RyaXZl
-cnMvY3B1aWRsZS9LY29uZmlnDQo+ICsrKyBiL2RyaXZlcnMvY3B1aWRsZS9LY29uZmlnDQoNCk1h
-eWJlIGRyaXZlcnMvY3B1aWRsZS9LY29uZmlnLnBvd2VycGMgaXMgYmV0dGVyPyBMaWtlIGFybS4N
-Cg0KPiArb2JqLSQoQ09ORklHX0NQVV9JRExFX0lCTV9QT1dFUikgKz0gY3B1aWRsZS1pYm0tcG93
-ZXIubw0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUtaWJtLXBvd2VyLmMN
-Cj4gYi9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS1pYm0tcG93ZXIuYw0KPiBuZXcgZmlsZSBtb2Rl
-IDEwMDY0NA0KPiBpbmRleCAwMDAwMDAwLi40ZWU1YTk0DQo+IC0tLSAvZGV2L251bGwNCj4gKysr
-IGIvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUtaWJtLXBvd2VyLmMNCj4gQEAgLTAsMCArMSwzMDQg
-QEANCj4gKy8qDQo+ICsgKiAgY3B1aWRsZS1pYm0tcG93ZXIgLSBpZGxlIHN0YXRlIGNwdWlkbGUg
-ZHJpdmVyLg0KPiArICogIEFkYXB0ZWQgZnJvbSBkcml2ZXJzL2lkbGUvaW50ZWxfaWRsZS5jIGFu
-ZA0KPiArICogIGRyaXZlcnMvYWNwaS9wcm9jZXNzb3JfaWRsZS5jDQo+ICsgKg0KPiArICovDQo+
-ICsNCj4gKyNpbmNsdWRlIDxsaW51eC9rZXJuZWwuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9tb2R1
-bGUuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9pbml0Lmg+DQo+ICsjaW5jbHVkZSA8bGludXgvbW9k
-dWxlcGFyYW0uaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9jcHVpZGxlLmg+DQo+ICsjaW5jbHVkZSA8
-bGludXgvY3B1Lmg+DQo+ICsjaW5jbHVkZSA8bGludXgvbm90aWZpZXIuaD4NCj4gKw0KPiArI2lu
-Y2x1ZGUgPGFzbS9wYWNhLmg+DQo+ICsjaW5jbHVkZSA8YXNtL3JlZy5oPg0KPiArI2luY2x1ZGUg
-PGFzbS9tYWNoZGVwLmg+DQo+ICsjaW5jbHVkZSA8YXNtL2Zpcm13YXJlLmg+DQo+ICsjaW5jbHVk
-ZSA8YXNtL3J1bmxhdGNoLmg+DQo+ICsjaW5jbHVkZSA8YXNtL3BscGFyX3dyYXBwZXJzLmg+DQo+
-ICsNCj4gK3N0cnVjdCBjcHVpZGxlX2RyaXZlciBwb3dlcl9pZGxlX2RyaXZlciA9IHsNCj4gKwku
-bmFtZSAgICAgICAgICAgICA9ICJJQk0tUE9XRVItSWRsZSIsDQo+ICsJLm93bmVyICAgICAgICAg
-ICAgPSBUSElTX01PRFVMRSwNCj4gK307DQo+ICsNCj4gKyNkZWZpbmUgTUFYX0lETEVfU1RBVEVf
-Q09VTlQJMg0KPiArDQo+ICtzdGF0aWMgaW50IG1heF9pZGxlX3N0YXRlID0gTUFYX0lETEVfU1RB
-VEVfQ09VTlQgLSAxOw0KDQpBZ2FpbiwgZG8gbm90IHVzZSB0aGUgbWFjcm8uDQoNCj4gK3N0YXRp
-YyBzdHJ1Y3QgY3B1aWRsZV9zdGF0ZSAqY3B1aWRsZV9zdGF0ZV90YWJsZTsNCj4gKw0KPiArc3Rh
-dGljIGlubGluZSB2b2lkIGlkbGVfbG9vcF9wcm9sb2codW5zaWduZWQgbG9uZyAqaW5fcHVycikN
-Cj4gK3sNCj4gKwkqaW5fcHVyciA9IG1mc3ByKFNQUk5fUFVSUik7DQo+ICsJLyoNCj4gKwkgKiBJ
-bmRpY2F0ZSB0byB0aGUgSFYgdGhhdCB3ZSBhcmUgaWRsZS4gTm93IHdvdWxkIGJlDQo+ICsJICog
-YSBnb29kIHRpbWUgdG8gZmluZCBvdGhlciB3b3JrIHRvIGRpc3BhdGNoLg0KPiArCSAqLw0KPiAr
-CWdldF9scHBhY2EoKS0+aWRsZSA9IDE7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyBpbmxpbmUgdm9p
-ZCBpZGxlX2xvb3BfZXBpbG9nKHVuc2lnbmVkIGxvbmcgaW5fcHVycikNCj4gK3sNCj4gKwlnZXRf
-bHBwYWNhKCktPndhaXRfc3RhdGVfY3ljbGVzICs9IG1mc3ByKFNQUk5fUFVSUikgLSBpbl9wdXJy
-Ow0KPiArCWdldF9scHBhY2EoKS0+aWRsZSA9IDA7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyBpbnQg
-c25vb3plX2xvb3Aoc3RydWN0IGNwdWlkbGVfZGV2aWNlICpkZXYsDQo+ICsJCQlzdHJ1Y3QgY3B1
-aWRsZV9kcml2ZXIgKmRydiwNCj4gKwkJCWludCBpbmRleCkNCj4gK3sNCj4gKwl1bnNpZ25lZCBs
-b25nIGluX3B1cnI7DQo+ICsNCj4gKwlpZGxlX2xvb3BfcHJvbG9nKCZpbl9wdXJyKTsNCj4gKwls
-b2NhbF9pcnFfZW5hYmxlKCk7DQoNCnNub296ZV9sb29wIGhhcyBhbHJlYWR5IHJlZ2lzdGVyZWQg
-aW4gY3B1aWRsZSBmcmFtZXdvcmsgdG8gaGFuZGxlIHNub296ZSBzdGF0ZS4NCndoZXJlIGRpc2Fi
-bGUgdGhlIGlycT8gV2h5IGRvICJlbmFibGUiIGhlcmU/DQoNCj4gKy8qDQo+ICsgKiBTdGF0ZXMg
-Zm9yIGRlZGljYXRlZCBwYXJ0aXRpb24gY2FzZS4NCj4gKyAqLw0KPiArc3RhdGljIHN0cnVjdCBj
-cHVpZGxlX3N0YXRlIGRlZGljYXRlZF9zdGF0ZXNbTUFYX0lETEVfU1RBVEVfQ09VTlRdID0gew0K
-PiArCXsgLyogU25vb3plICovDQo+ICsJCS5uYW1lID0gInNub296ZSIsDQo+ICsJCS5kZXNjID0g
-InNub296ZSIsDQo+ICsJCS5mbGFncyA9IENQVUlETEVfRkxBR19USU1FX1ZBTElELA0KPiArCQku
-ZXhpdF9sYXRlbmN5ID0gMCwNCj4gKwkJLnRhcmdldF9yZXNpZGVuY3kgPSAwLA0KPiArCQkuZW50
-ZXIgPSAmc25vb3plX2xvb3AgfSwNCj4gKwl7IC8qIENFREUgKi8NCj4gKwkJLm5hbWUgPSAiQ0VE
-RSIsDQo+ICsJCS5kZXNjID0gIkNFREUiLA0KPiArCQkuZmxhZ3MgPSBDUFVJRExFX0ZMQUdfVElN
-RV9WQUxJRCwNCj4gKwkJLmV4aXRfbGF0ZW5jeSA9IDEwLA0KPiArCQkudGFyZ2V0X3Jlc2lkZW5j
-eSA9IDEwMCwNCj4gKwkJLmVudGVyID0gJmRlZGljYXRlZF9jZWRlX2xvb3AgfSwNCj4gK307DQo+
-ICsNCj4gKy8qDQo+ICsgKiBTdGF0ZXMgZm9yIHNoYXJlZCBwYXJ0aXRpb24gY2FzZS4NCj4gKyAq
-Lw0KPiArc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlIHNoYXJlZF9zdGF0ZXNbTUFYX0lETEVf
-U1RBVEVfQ09VTlRdID0gew0KPiArCXsgLyogU2hhcmVkIENlZGUgKi8NCj4gKwkJLm5hbWUgPSAi
-U2hhcmVkIENlZGUiLA0KPiArCQkuZGVzYyA9ICJTaGFyZWQgQ2VkZSIsDQo+ICsJCS5mbGFncyA9
-IENQVUlETEVfRkxBR19USU1FX1ZBTElELA0KPiArCQkuZXhpdF9sYXRlbmN5ID0gMCwNCj4gKwkJ
-LnRhcmdldF9yZXNpZGVuY3kgPSAwLA0KPiArCQkuZW50ZXIgPSAmc2hhcmVkX2NlZGVfbG9vcCB9
-LA0KPiArfTsNCj4gKw0KPiArc3RhdGljIHZvaWQgX19leGl0IHBvd2VyX3Byb2Nlc3Nvcl9pZGxl
-X2V4aXQodm9pZCkNCj4gK3sNCj4gKw0KPiArCXVucmVnaXN0ZXJfY3B1X25vdGlmaWVyKCZzZXR1
-cF9ob3RwbHVnX25vdGlmaWVyKTsNCg0KUmVtb3ZlIGEgYmxhbmsgbGluZS4NCg0KPiArCWNwdWlk
-bGVfdW5yZWdpc3RlcigmcG93ZXJfaWRsZV9kcml2ZXIpOw0KPiArCXJldHVybjsNCj4gK30NCj4g
-Kw0KPiArbW9kdWxlX2luaXQocG93ZXJfcHJvY2Vzc29yX2lkbGVfaW5pdCk7DQo+ICttb2R1bGVf
-ZXhpdChwb3dlcl9wcm9jZXNzb3JfaWRsZV9leGl0KTsNCj4gKw0KDQpEaWQgeW91IGhhdmUgdGVz
-dGVkIHRoZSBtb2R1bGU/IElmIG5vdCB0ZXN0ZWQsIHBsZWFzZSBkb24ndCB1c2UgdGhlIG1vZHVs
-ZS4NCg0KPiArTU9EVUxFX0FVVEhPUigiRGVlcHRoaSBEaGFyd2FyIDxkZWVwdGhpQGxpbnV4LnZu
-ZXQuaWJtLmNvbT4iKTsNCj4gK01PRFVMRV9ERVNDUklQVElPTigiQ3B1aWRsZSBkcml2ZXIgZm9y
-IElCTSBQT1dFUiBwbGF0Zm9ybXMiKTsNCj4gK01PRFVMRV9MSUNFTlNFKCJHUEwiKTsNCj4gDQoN
-Cg==
+On 08/22/2013 07:16 AM, Stephen Warren wrote:
+> On 08/21/2013 05:00 PM, Scott Wood wrote:
+>> On Wed, 2013-08-21 at 16:40 -0600, Stephen Warren wrote:
+>>> On 07/29/2013 04:49 AM, hongbo.zhang@freescale.com wrote:
+>>>> +        - reg               : <registers mapping for channel>
+>>>> +        - interrupts        : <interrupt mapping for DMA channel IRQ>
+>>> s/interrupts/specifier/
+>> Do you mean s/interrupt mapping/interrupt specifier/?
+>>
+>> And probably s/registers mapping/register specifier/ as well.
+> Yup.
+>
+OK, I will update these descriptions.
