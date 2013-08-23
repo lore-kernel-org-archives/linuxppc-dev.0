@@ -1,21 +1,24 @@
-Return-Path: <RA8135@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 03B9F2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 09:41:11 +1000 (EST)
-Date: Fri, 23 Aug 2013 18:40:59 -0500
-From: James Yang <James.Yang@freescale.com>
-To: James Yang <James.Yang@freescale.com>
-Subject: Re: [PATCH] powerpc/ppc64: remove __volatile__ in  get_current()
-In-Reply-To: <1376110162-3462-1-git-send-email-James.Yang@freescale.com>
-Message-ID: <alpine.LRH.2.00.1308231832570.4940@ra8135-ec1.am.freescale.net>
-References: <1376110162-3462-1-git-send-email-James.Yang@freescale.com>
+Return-Path: <tkil@scrye.com>
+Received: from mail.scrye.com (scrye.com
+ [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 922482C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 09:41:35 +1000 (EST)
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
+From: Anthony Foiani <tkil@scrye.com>
+References: <20130823192532.GA29205@home.buserror.net>
+Date: Fri, 23 Aug 2013 17:41:30 -0600
+In-Reply-To: <20130823192532.GA29205@home.buserror.net> (Scott Wood's message
+ of "Fri\, 23 Aug 2013 14\:25\:32 -0500")
+Message-ID: <gppt4gel1.fsf@dworkin.scrye.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Adrian Bunk <bunk@stusta.de>, "Robert P.J.Day" <rpjday@crashcourse.ca>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Shaohui.Xie@freescale.com, Li Yang-R58472 <r58472@freescale.com>
+Reply-To: Anthony Foiani <tkil@scrye.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,42 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 10 Aug 2013, James Yang wrote:
+Scott Wood <scottwood@freescale.com> writes:
 
-> Uses of get_current() that normally get optimized away still result in
-> a load instruction of the current pointer in 64-bit because the inline
-> asm uses __volatile__.  This patch removes __volatile__ so that nop-ed
-> uses of get_current() don't actually result in a load of the pointer.
-> 
-> Signed-off-by: James Yang <James.Yang@freescale.com>
-> ---
->  arch/powerpc/include/asm/current.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/current.h b/arch/powerpc/include/asm/current.h
-> index e2c7f06..bb250c8 100644
-> --- a/arch/powerpc/include/asm/current.h
-> +++ b/arch/powerpc/include/asm/current.h
-> @@ -19,7 +19,7 @@ static inline struct task_struct *get_current(void)
->  {
->  	struct task_struct *task;
->  
-> -	__asm__ __volatile__("ld %0,%1(13)"
-> +	__asm__ ("ld %0,%1(13)"
->  	: "=r" (task)
->  	: "i" (offsetof(struct paca_struct, __current)));
+>> --- a/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+>> +++ b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+>
+> This should go in Documentation/devicetree/bindings/ata/fsl-sata.txt.
 
+Ok, will change.
 
-Hello, 
+> As for the property name, I'd prefer "fsl,sata-speed-limit" or
+> "fsl,sata-max-generation".  
 
-Scott's been able to put enough doubt in me to think that this is not 
-entirely safe, even though the testing and code generation show it to 
-work.  Please reject this patch.
+In my original patch:
 
-I think there is still value in getting the unnecessary loads to be 
-removed since it would also allow unnecessary conditional branches to 
-be removed.  I'll think about alternate ways to do this.
+  http://article.gmane.org/gmane.linux.ports.ppc.embedded/58710
 
-Regards,
+I used "fsl,sata-max-gen".  I thought Jeff disliked it, so I changed
+it be more generic -- but maybe I misread his complaint.  (And while
+his opinions are still respected, new maintainers might have different
+tastes.)
 
---James
+I think my logic was that there exist "sata_spd_limit" and related
+functions in the ata core, so I should mirror that in the dev tree.
+No guarantees, though -- it's been a while since I wrote that code.
+
+> Shaohui, do the driver bits look OK?
+
+> This patch should go via the linux-scsi list (note that Tejun Heo is
+> now the SATA maintainer).
+
+linux-scsi, or linux-ide?  My other recent change to sata_fsl went
+through the latter.
+
+Thanks for the review / comments.  Let me know how you'd like to
+proceed on the above points, and I can resubmit (as a proper patch for
+easier tracking).
+
+Best regards,
+Anthony Foiani
