@@ -1,27 +1,49 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E2F2D2C009A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 18:52:09 +1000 (EST)
-Date: Fri, 23 Aug 2013 10:52:03 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: linux-i2c@vger.kernel.org
-Subject: Re: [PATCH V3] i2c: move of helpers into the core
-Message-ID: <20130823085203.GC3035@katana>
-References: <1377187217-31820-1-git-send-email-wsa@the-dreams.de>
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ABCBB2C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 20:13:48 +1000 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Sat, 24 Aug 2013 07:08:03 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C0CF43578050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 20:12:48 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7N9uKEj1704220
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 19:56:29 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r7NAC93Y004334
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 20:12:10 +1000
+Message-ID: <5217354D.2060109@linux.vnet.ibm.com>
+Date: Fri, 23 Aug 2013 15:41:25 +0530
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="bAmEntskrkuBymla"
-In-Reply-To: <1377187217-31820-1-git-send-email-wsa@the-dreams.de>
-Cc: devel@driverdev.osuosl.org, devicetree@vger.kernel.org,
- davinci-linux-open-source@linux.davincidsp.com,
- linux-samsung-soc@vger.kernel.org, alsa-devel@alsa-project.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org,
- linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-media@vger.kernel.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC PATCH V3 3/5] powerpc/cpuidle: Generic powerpc backend
+ cpuidle driver.
+References: <20130819042736.8609.17890.stgit@deepthi.in.ibm.com>
+ <20130819042818.8609.77060.stgit@deepthi.in.ibm.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010226D5@039-SN2MPN1-021.039d.mgd.msft.net>
+ <5211F0E0.7080507@linux.vnet.ibm.com>
+ <1376936241.31636.352.camel@snotra.buserror.net>
+ <521447E7.5000302@linux.vnet.ibm.com>
+ <1377115703.5029.14.camel@snotra.buserror.net>
+ <5215A69F.4090904@linux.vnet.ibm.com>
+ <1377206679.20722.10.camel@snotra.buserror.net>
+In-Reply-To: <1377206679.20722.10.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+ Wang Dongsheng-B40534 <B40534@freescale.com>,
+ "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>,
+ "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +53,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 08/23/2013 02:54 AM, Scott Wood wrote:
+> On Thu, 2013-08-22 at 11:20 +0530, Deepthi Dharwar wrote:
+>> On 08/22/2013 01:38 AM, Scott Wood wrote:
+>>> On Wed, 2013-08-21 at 10:23 +0530, Deepthi Dharwar wrote:
+>>>> On 08/19/2013 11:47 PM, Scott Wood wrote:
+>>>>> What actual functionality is common to all powerpc but not common to
+>>>>> other arches?
+>>>
+>>
+>> The functionality here is idle states on powerpc  like the snooze loop
+>> that is common.
+>> Also, the basic registration of the driver, hotplug notifier etc for
+>> powerpc.
+> 
+> The snooze loop uses things like SPRN_PURR, get_lppaca(), and CTRL which
+> aren't common to all PPC (they might be common to all book3s64).  I also
+> don't see any hook for the low power mode entry -- is "snooze" just a
+> busy loop plus the de-emphasis stuff like HMT and CTRL[RUN]?  I'm not
+> familiar with the term "snooze" in this context.  I don't think we'd use
+> anything like that on our chips; we'd always at least "wait" or "doze"
+> depending on the chip.
+>
 
---bAmEntskrkuBymla
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Duly noted. Lot of stuff are common across book3s64. So my later
+versions of this patchset does just that. (V5 posted out yesterday).
+The driver is common only to IBM-POWER platform. Other PPC variants
+can have their own driver.
 
-On Thu, Aug 22, 2013 at 06:00:14PM +0200, Wolfram Sang wrote:
-> I2C of helpers used to live in of_i2c.c but experience (from SPI) shows
-> that it is much cleaner to have this in the core. This also removes a
-> circular dependency between the helpers and the core, and so we can
-> finally register child nodes in the core instead of doing this manually
-> in each driver. So, fix the drivers and documentation, too.
->=20
-> Acked-by: Rob Herring <rob.herring@calxeda.com>
-> Reviewed-by: Felipe Balbi <balbi@ti.com>
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Tested-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 
-Applied to for-next!
+> It's not clear what is powerpc-specific about the notifier -- perhaps it
+> should go in drivers/cpuidle/.
 
---bAmEntskrkuBymla
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Currently all the arcs have their own hotplug notifier. Unifying this
+across all archs is a challenge that needs to be taken going forward.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Thanks for the review.
+Regards,
+Deepthi
 
-iQIcBAEBAgAGBQJSFyKzAAoJEBQN5MwUoCm2bI0QAK5awQ507hl+3+q76tlv3bM/
-+m1YNlqdEye7K3+XmB48MpCUi65bGtoITuOg+DaWYxw3+A7RhoJgwkFyMZ0gpesj
-aHkFe51yVYiU4Zx1MVSpIDo5ufAmp+8FRM3TF++IgAq62/7fLtwhTJlU2qgzShzs
-rw8UbmXg9+VjWFRfw1tAl+Vz3sWb9+vH2fmNiwXyPMglOdpClKe28rXrABJ78Gqc
-cxqgatPqfBCxyob57z/hGShtPUZkRWdpMU/hjbfemsPrysbLQzmqVyVS2idFP1ad
-T3mJ3xbKXcyJNO4NjGWazxPnpZ74RfNIJQ5nerZfqralO2gdVW8EFwCYaEy9k8YF
-/EpBpMQkHz3Pb3eb4tZJa50cVCygjuikpPoxq9Mtao6T8VG0aVNj8NuE9ros2WS8
-YWkRaVRDN8fjW98vuw7HmNuHCfFZV7QQ8uCcDtrl9k7X+fLQIvxPAVgrDs7Qmugm
-9nzR9AchLDuHuBNRM42bz/t+cILX2ExwIMC5k1YouF0Inuvfrh3LSrEyaJSD8IEF
-VeRGJPNSEP+Ww2+bGexV56ziz8JeMNLaj5rghDw9h9Jz5D4nMRjqhsRAbSfjrlMb
-YfyMTzS/tmJgt2NPj2bc2DvK4JLfrS/SR5YsdWSgR6VQ0WUvPSLJL/rY8Gn/UJ2j
-gfliuM4Sj6/OhS+bbMX3
-=pGc6
------END PGP SIGNATURE-----
 
---bAmEntskrkuBymla--
+>>> The way forward is to give this file a more appropriate name based on
+>>> the hardware that it actually targets -- and to refactor it so that the
+>>> answer to that question is not complicated.
+>>
+>> Sure, thanks.
+>> Our idea was to have POWER archs idle states merged at the first go.
+>> Only that is what is enabled in the current version (V4 posted out)
+>> ( Code is enabled for PSERIES and POWERNV only)
+>> If needed, other POWERPC archs might benefit by extending the same
+>> driver, that is why it is named cpuidle-powerpc.c
+>>
+>> But if having cpuidle backend-driver separately for other powerpc arcs
+>> makes sense such that each one have their own state information etc
+>> then it makes sense to name the files as cpuidle-power.c,
+>> cpuilde-ppc32.c and so on.
+> 
+> Thanks.
+> 
+> -Scott
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+> 
