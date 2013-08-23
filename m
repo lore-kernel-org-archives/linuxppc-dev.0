@@ -2,29 +2,29 @@ Return-Path: <mhcerri@linux.vnet.ibm.com>
 Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e24smtp01.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6FABB2C007C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 06:01:41 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DBE042C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 06:01:42 +1000 (EST)
 Received: from /spool/local
  by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mhcerri@linux.vnet.ibm.com>;
- Fri, 23 Aug 2013 17:01:35 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id E3CF31DC0068
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 16:01:32 -0400 (EDT)
+ Fri, 23 Aug 2013 17:01:39 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 9FE4F1DC006A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 16:01:35 -0400 (EDT)
 Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7NJxpfn24969306
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 16:59:52 -0300
+ by d24relay03.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7NK08v522806576
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 17:00:08 -0300
 Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
  by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7NK1Vu3000743
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 17:01:31 -0300
+ r7NK1YbK000895
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 17:01:35 -0300
 From: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
 To: herbert@gondor.apana.org.au
-Subject: [PATCH 01/10] crypto: nx - add offset to nx_build_sg_lists()
-Date: Fri, 23 Aug 2013 17:01:05 -0300
-Message-Id: <1377288074-18998-2-git-send-email-mhcerri@linux.vnet.ibm.com>
+Subject: [PATCH 03/10] crypto: nx - fix limits to sg lists for AES-CBC
+Date: Fri, 23 Aug 2013 17:01:07 -0300
+Message-Id: <1377288074-18998-4-git-send-email-mhcerri@linux.vnet.ibm.com>
 In-Reply-To: <1377288074-18998-1-git-send-email-mhcerri@linux.vnet.ibm.com>
 References: <1377288074-18998-1-git-send-email-mhcerri@linux.vnet.ibm.com>
 Cc: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
@@ -38,144 +38,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch includes one more parameter to nx_build_sg_lists() to skip
-the given number of bytes from beginning of each sg list.
+This patch updates the nx-aes-cbc implementation to perform several
+hyper calls if needed in order to always respect the length limits for
+scatter/gather lists.
 
-This is needed in order to implement the fixes for the AES modes to make
-them able to process larger chunks of data.
+Two different limits are considered:
+
+ - "ibm,max-sg-len": maximum number of bytes of each scatter/gather
+   list.
+
+ - "ibm,max-sync-cop":
+    - The total number of bytes that a scatter/gather list can hold.
+    - The maximum number of elements that a scatter/gather list can have.
 
 Reviewed-by: Joy Latten <jmlatten@linux.vnet.ibm.com>
 Signed-off-by: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
 ---
- drivers/crypto/nx/nx-aes-cbc.c | 2 +-
- drivers/crypto/nx/nx-aes-ccm.c | 4 ++--
- drivers/crypto/nx/nx-aes-ctr.c | 2 +-
- drivers/crypto/nx/nx-aes-ecb.c | 2 +-
- drivers/crypto/nx/nx-aes-gcm.c | 2 +-
- drivers/crypto/nx/nx.c         | 9 +++++++--
- drivers/crypto/nx/nx.h         | 2 +-
- 7 files changed, 14 insertions(+), 9 deletions(-)
+ drivers/crypto/nx/nx-aes-cbc.c | 50 +++++++++++++++++++++++++-----------------
+ 1 file changed, 30 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/crypto/nx/nx-aes-cbc.c b/drivers/crypto/nx/nx-aes-cbc.c
-index 9310982..f334a60 100644
+index f334a60..fa37df1 100644
 --- a/drivers/crypto/nx/nx-aes-cbc.c
 +++ b/drivers/crypto/nx/nx-aes-cbc.c
-@@ -85,7 +85,7 @@ static int cbc_aes_nx_crypt(struct blkcipher_desc *desc,
+@@ -71,40 +71,50 @@ static int cbc_aes_nx_crypt(struct blkcipher_desc *desc,
+ 	struct nx_crypto_ctx *nx_ctx = crypto_blkcipher_ctx(desc->tfm);
+ 	struct nx_csbcpb *csbcpb = nx_ctx->csbcpb;
+ 	unsigned long irq_flags;
++	unsigned int processed = 0, to_process;
++	u32 max_sg_len;
+ 	int rc;
+ 
+ 	spin_lock_irqsave(&nx_ctx->lock, irq_flags);
+ 
+-	if (nbytes > nx_ctx->ap->databytelen) {
+-		rc = -EINVAL;
+-		goto out;
+-	}
++	max_sg_len = min_t(u32, nx_driver.of.max_sg_len/sizeof(struct nx_sg),
++			   nx_ctx->ap->sglen);
+ 
+ 	if (enc)
+ 		NX_CPB_FDM(csbcpb) |= NX_FDM_ENDE_ENCRYPT;
  	else
  		NX_CPB_FDM(csbcpb) &= ~NX_FDM_ENDE_ENCRYPT;
  
--	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes,
-+	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes, 0,
- 			       csbcpb->cpb.aes_cbc.iv);
- 	if (rc)
- 		goto out;
-diff --git a/drivers/crypto/nx/nx-aes-ccm.c b/drivers/crypto/nx/nx-aes-ccm.c
-index 39d4224..666a35b 100644
---- a/drivers/crypto/nx/nx-aes-ccm.c
-+++ b/drivers/crypto/nx/nx-aes-ccm.c
-@@ -293,7 +293,7 @@ static int ccm_nx_decrypt(struct aead_request   *req,
- 	if (rc)
- 		goto out;
+-	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes, 0,
+-			       csbcpb->cpb.aes_cbc.iv);
+-	if (rc)
+-		goto out;
++	do {
++		to_process = min_t(u64, nbytes - processed,
++				   nx_ctx->ap->databytelen);
++		to_process = min_t(u64, to_process,
++				   NX_PAGE_SIZE * (max_sg_len - 1));
++		to_process = to_process & ~(AES_BLOCK_SIZE - 1);
  
--	rc = nx_build_sg_lists(nx_ctx, desc, req->dst, req->src, nbytes,
-+	rc = nx_build_sg_lists(nx_ctx, desc, req->dst, req->src, nbytes, 0,
- 			       csbcpb->cpb.aes_ccm.iv_or_ctr);
- 	if (rc)
- 		goto out;
-@@ -339,7 +339,7 @@ static int ccm_nx_encrypt(struct aead_request   *req,
- 	if (rc)
- 		goto out;
+-	if (!nx_ctx->op.inlen || !nx_ctx->op.outlen) {
+-		rc = -EINVAL;
+-		goto out;
+-	}
++		rc = nx_build_sg_lists(nx_ctx, desc, dst, src, to_process,
++				       processed, csbcpb->cpb.aes_cbc.iv);
++		if (rc)
++			goto out;
  
--	rc = nx_build_sg_lists(nx_ctx, desc, req->dst, req->src, nbytes,
-+	rc = nx_build_sg_lists(nx_ctx, desc, req->dst, req->src, nbytes, 0,
- 			       csbcpb->cpb.aes_ccm.iv_or_ctr);
- 	if (rc)
- 		goto out;
-diff --git a/drivers/crypto/nx/nx-aes-ctr.c b/drivers/crypto/nx/nx-aes-ctr.c
-index 762611b..80dee8d 100644
---- a/drivers/crypto/nx/nx-aes-ctr.c
-+++ b/drivers/crypto/nx/nx-aes-ctr.c
-@@ -98,7 +98,7 @@ static int ctr_aes_nx_crypt(struct blkcipher_desc *desc,
- 		goto out;
- 	}
+-	rc = nx_hcall_sync(nx_ctx, &nx_ctx->op,
+-			   desc->flags & CRYPTO_TFM_REQ_MAY_SLEEP);
+-	if (rc)
+-		goto out;
++		if (!nx_ctx->op.inlen || !nx_ctx->op.outlen) {
++			rc = -EINVAL;
++			goto out;
++		}
  
--	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes,
-+	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes, 0,
- 			       csbcpb->cpb.aes_ctr.iv);
- 	if (rc)
- 		goto out;
-diff --git a/drivers/crypto/nx/nx-aes-ecb.c b/drivers/crypto/nx/nx-aes-ecb.c
-index 77dbe08..fe0d803 100644
---- a/drivers/crypto/nx/nx-aes-ecb.c
-+++ b/drivers/crypto/nx/nx-aes-ecb.c
-@@ -85,7 +85,7 @@ static int ecb_aes_nx_crypt(struct blkcipher_desc *desc,
- 	else
- 		NX_CPB_FDM(csbcpb) &= ~NX_FDM_ENDE_ENCRYPT;
+-	memcpy(desc->info, csbcpb->cpb.aes_cbc.cv, AES_BLOCK_SIZE);
++		rc = nx_hcall_sync(nx_ctx, &nx_ctx->op,
++				   desc->flags & CRYPTO_TFM_REQ_MAY_SLEEP);
++		if (rc)
++			goto out;
  
--	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes, NULL);
-+	rc = nx_build_sg_lists(nx_ctx, desc, dst, src, nbytes, 0, NULL);
- 	if (rc)
- 		goto out;
- 
-diff --git a/drivers/crypto/nx/nx-aes-gcm.c b/drivers/crypto/nx/nx-aes-gcm.c
-index 74feee1..c2d6f76 100644
---- a/drivers/crypto/nx/nx-aes-gcm.c
-+++ b/drivers/crypto/nx/nx-aes-gcm.c
-@@ -226,7 +226,7 @@ static int gcm_aes_nx_crypt(struct aead_request *req, int enc)
- 
- 	csbcpb->cpb.aes_gcm.bit_length_data = nbytes * 8;
- 
--	rc = nx_build_sg_lists(nx_ctx, &desc, req->dst, req->src, nbytes,
-+	rc = nx_build_sg_lists(nx_ctx, &desc, req->dst, req->src, nbytes, 0,
- 			       csbcpb->cpb.aes_gcm.iv_or_cnt);
- 	if (rc)
- 		goto out;
-diff --git a/drivers/crypto/nx/nx.c b/drivers/crypto/nx/nx.c
-index bdf4990..5533fe3 100644
---- a/drivers/crypto/nx/nx.c
-+++ b/drivers/crypto/nx/nx.c
-@@ -211,6 +211,8 @@ struct nx_sg *nx_walk_and_build(struct nx_sg       *nx_dst,
-  * @dst: destination scatterlist
-  * @src: source scatterlist
-  * @nbytes: length of data described in the scatterlists
-+ * @offset: number of bytes to fast-forward past at the beginning of
-+ *          scatterlists.
-  * @iv: destination for the iv data, if the algorithm requires it
-  *
-  * This is common code shared by all the AES algorithms. It uses the block
-@@ -222,6 +224,7 @@ int nx_build_sg_lists(struct nx_crypto_ctx  *nx_ctx,
- 		      struct scatterlist    *dst,
- 		      struct scatterlist    *src,
- 		      unsigned int           nbytes,
-+		      unsigned int           offset,
- 		      u8                    *iv)
- {
- 	struct nx_sg *nx_insg = nx_ctx->in_sg;
-@@ -230,8 +233,10 @@ int nx_build_sg_lists(struct nx_crypto_ctx  *nx_ctx,
- 	if (iv)
- 		memcpy(iv, desc->info, AES_BLOCK_SIZE);
- 
--	nx_insg = nx_walk_and_build(nx_insg, nx_ctx->ap->sglen, src, 0, nbytes);
--	nx_outsg = nx_walk_and_build(nx_outsg, nx_ctx->ap->sglen, dst, 0, nbytes);
-+	nx_insg = nx_walk_and_build(nx_insg, nx_ctx->ap->sglen, src,
-+				    offset, nbytes);
-+	nx_outsg = nx_walk_and_build(nx_outsg, nx_ctx->ap->sglen, dst,
-+				    offset, nbytes);
- 
- 	/* these lengths should be negative, which will indicate to phyp that
- 	 * the input and output parameters are scatterlists, not linear
-diff --git a/drivers/crypto/nx/nx.h b/drivers/crypto/nx/nx.h
-index 14bb97f..befda07 100644
---- a/drivers/crypto/nx/nx.h
-+++ b/drivers/crypto/nx/nx.h
-@@ -156,7 +156,7 @@ int nx_hcall_sync(struct nx_crypto_ctx *ctx, struct vio_pfo_op *op,
- struct nx_sg *nx_build_sg_list(struct nx_sg *, u8 *, unsigned int, u32);
- int nx_build_sg_lists(struct nx_crypto_ctx *, struct blkcipher_desc *,
- 		      struct scatterlist *, struct scatterlist *, unsigned int,
--		      u8 *);
-+		      unsigned int, u8 *);
- struct nx_sg *nx_walk_and_build(struct nx_sg *, unsigned int,
- 				struct scatterlist *, unsigned int,
- 				unsigned int);
+-	atomic_inc(&(nx_ctx->stats->aes_ops));
+-	atomic64_add(csbcpb->csb.processed_byte_count,
+-		     &(nx_ctx->stats->aes_bytes));
++		memcpy(desc->info, csbcpb->cpb.aes_cbc.cv, AES_BLOCK_SIZE);
++
++		atomic_inc(&(nx_ctx->stats->aes_ops));
++		atomic64_add(csbcpb->csb.processed_byte_count,
++			     &(nx_ctx->stats->aes_bytes));
++
++		processed += to_process;
++	} while (processed < nbytes);
+ out:
+ 	spin_unlock_irqrestore(&nx_ctx->lock, irq_flags);
+ 	return rc;
 -- 
 1.7.12
