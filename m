@@ -1,27 +1,27 @@
 Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 13A982C009D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 20:33:38 +1000 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5369A2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 21:56:17 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Fri, 23 Aug 2013 15:57:05 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id B39F63940059
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 16:03:21 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7NAZ39r32833768
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 16:05:04 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7NAXUoQ031875
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 16:03:30 +0530
-Message-ID: <52173A56.9040200@linux.vnet.ibm.com>
-Date: Fri, 23 Aug 2013 16:02:54 +0530
+ Fri, 23 Aug 2013 21:45:11 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6353D2BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 21:56:13 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7NBeDIE45809720
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 21:40:13 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7NBuB1S026767
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 21:56:12 +1000
+Message-ID: <52174DB5.5050201@linux.vnet.ibm.com>
+Date: Fri, 23 Aug 2013 17:25:33 +0530
 From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Wang Dongsheng-B40534 <B40534@freescale.com>
@@ -56,9 +56,6 @@ On 08/23/2013 08:46 AM, Wang Dongsheng-B40534 wrote:
 > 
 > Maybe drivers/cpuidle/Kconfig.powerpc is better? Like arm.
 > 
-
-Yes will do that, going ahead other powerpc archs can use this Kconfig.
-
 >> +obj-$(CONFIG_CPU_IDLE_IBM_POWER) += cpuidle-ibm-power.o
 >> diff --git a/drivers/cpuidle/cpuidle-ibm-power.c
 >> b/drivers/cpuidle/cpuidle-ibm-power.c
@@ -99,12 +96,12 @@ Yes will do that, going ahead other powerpc archs can use this Kconfig.
 >> +static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
 > 
 > Again, do not use the macro.
-> 
 
-Yes, shall use ARRAY_SIZE instead and get away with this macro.
-That should work
+Wanting to re-use CPUIDLE_STATE_MAX macro, defined in linux/cpuidle.h
+similar to what x86 uses. This is def scalable for various platforms ,
+as demonstrated in drivers/idle/intel_idle.c
 
-
+ >
 >> +static struct cpuidle_state *cpuidle_state_table;
 >> +
 >> +static inline void idle_loop_prolog(unsigned long *in_purr)
@@ -135,13 +132,6 @@ That should work
 > snooze_loop has already registered in cpuidle framework to handle snooze state.
 > where disable the irq? Why do "enable" here?
 > 
-
-On POWER, snooze state is an infinte busy looping state. The CPUs keep
-looping around lowering their priority until they are interrupted. For
-this we need to enable irqs in the snooze loop. There is no way a CPU
-can come out this state if the interrupts are not enabled.
-
-
 >> +/*
 >> + * States for dedicated partition case.
 >> + */
@@ -192,16 +182,8 @@ can come out this state if the interrupts are not enabled.
 > 
 > Did you have tested the module? If not tested, please don't use the module.
 > 
-We do want to make it a module. But for now that cannot be done due to
-some other dependencies. This feature needs to be built in.
-
-Thanks for the review.
-
-
 >> +MODULE_AUTHOR("Deepthi Dharwar <deepthi@linux.vnet.ibm.com>");
 >> +MODULE_DESCRIPTION("Cpuidle driver for IBM POWER platforms");
 >> +MODULE_LICENSE("GPL");
 >>
 > 
-Regards,
-Deepthi
