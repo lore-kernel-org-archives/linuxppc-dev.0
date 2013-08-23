@@ -1,36 +1,28 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8268A2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 16:34:45 +1000 (EST)
-Date: Fri, 23 Aug 2013 08:34:21 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH v5 1/2] ASoC: fsl: Add S/PDIF CPU DAI driver
-Message-ID: <20130823063421.GF31036@pengutronix.de>
-References: <cover.1376565456.git.b42378@freescale.com>
- <20130822210035.GB31036@pengutronix.de>
- <20130822224331.8231.75743@quantum> <34430785.ApIqfgatMc@flatron>
+Return-Path: <B42677@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E4E612C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2013 16:38:00 +1000 (EST)
+Message-ID: <521703AB.8030702@freescale.com>
+Date: Fri, 23 Aug 2013 14:39:39 +0800
+From: Zhang Haijun <B42677@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <34430785.ApIqfgatMc@flatron>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "lars@metafoo.de" <lars@metafoo.de>, Mike Turquette <mturquette@linaro.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- Pawel Moll <Pawel.Moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "festevam@gmail.com" <festevam@gmail.com>, Nicolin Chen <b42378@freescale.com>,
- "timur@tabi.org" <timur@tabi.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
- "galak@codeaurora.org" <galak@codeaurora.org>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Zhang Haijun-B42677 <B42677@freescale.com>
+Subject: Re: [PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last
+ system transaction
+References: <1374055891-20703-1-git-send-email-Haijun.Zhang@freescale.com>
+ <99E897753B6F7048BD8CCDB4661D02E13DF52C@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <99E897753B6F7048BD8CCDB4661D02E13DF52C@039-SN2MPN1-022.039d.mgd.msft.net>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Xiaobo-R63061 <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,205 +32,247 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 23, 2013 at 12:49:19AM +0200, Tomasz Figa wrote:
-> On Thursday 22 of August 2013 15:43:31 Mike Turquette wrote:
-> > Quoting Sascha Hauer (2013-08-22 14:00:35)
-> > 
-> > > On Thu, Aug 22, 2013 at 01:09:31PM +0100, Mark Rutland wrote:
-> > > > On Thu, Aug 22, 2013 at 08:19:10AM +0100, Mike Turquette wrote:
-> > > > > Quoting Tomasz Figa (2013-08-21 14:34:55)
-> > > > > 
-> > > > > > On Wednesday 21 of August 2013 09:50:15 Mark Rutland wrote:
-> > > > > > > On Tue, Aug 20, 2013 at 01:06:25AM +0100, Mike Turquette 
-> wrote:
-> > > > > > > > Quoting Mark Rutland (2013-08-19 02:35:43)
-> > > > > > > > 
-> > > > > > > > > On Sat, Aug 17, 2013 at 04:17:18PM +0100, Tomasz Figa 
-> wrote:
-> > > > > > > > > > On Saturday 17 of August 2013 16:53:16 Sascha Hauer 
-> wrote:
-> > > > > > > > > > > On Sat, Aug 17, 2013 at 02:28:04PM +0200, Tomasz Figa 
-> wrote:
-> > > > > > > > > > > > > > > Also I would make this option required. Use a
-> > > > > > > > > > > > > > > dummy
-> > > > > > > > > > > > > > > clock for
-> > > > > > > > > > > > > > > mux
-> > > > > > > > > > > > > > > inputs that are grounded for a specific SoC.
-> > > > > > > > > > > > > > 
-> > > > > > > > > > > > > > Some clocks are not from CCM and we haven't
-> > > > > > > > > > > > > > defined in
-> > > > > > > > > > > > > > imx6q-clk.txt,
-> > > > > > > > > > > > > > so in most cases we can't provide a phandle for
-> > > > > > > > > > > > > > them, eg:
-> > > > > > > > > > > > > > spdif_ext.
-> > > > > > > > > > > > > > I think it's a bit hard to force it to be
-> > > > > > > > > > > > > > 'required'. An
-> > > > > > > > > > > > > > 'optional'
-> > > > > > > > > > > > > > looks more flexible to me and a default one is
-> > > > > > > > > > > > > > ensured
-> > > > > > > > > > > > > > even if
-> > > > > > > > > > > > > > it's
-> > > > > > > > > > > > > > missing.
-> > > > > > > > > > > > > 
-> > > > > > > > > > > > > <&clks 0> is the dummy clock. This can be used for
-> > > > > > > > > > > > > all input
-> > > > > > > > > > > > > clocks
-> > > > > > > > > > > > > not
-> > > > > > > > > > > > > defined by the SoC.
-> > > > > > > > > > > > 
-> > > > > > > > > > > > Where does this assumption come from? Is it
-> > > > > > > > > > > > documented
-> > > > > > > > > > > > anywhere?
-> > > > > > > > > > > 
-> > > > > > > > > > > This is how all i.MX clock bindings currently are. See
-> > > > > > > > > > > Documentation/devicetree/bindings/clock/imx*-clock.txt
-> > > > > > > > > > 
-> > > > > > > > > > OK, thanks.
-> > > > > > > > > > 
-> > > > > > > > > > I guess we need some discussion on dummy clocks vs
-> > > > > > > > > > skipped clocks.
-> > > > > > > > > > I think we want some consistency on this, don't we?
-> > > > > > > > > > 
-> > > > > > > > > > If we really need a dummy clock, then we might also want
-> > > > > > > > > > a generic
-> > > > > > > > > > way to specify it.
-> > > > > > > > > 
-> > > > > > > > > What do we actually mean by a "dummy clock"? We already
-> > > > > > > > > have
-> > > > > > > > > bindings
-> > > > > > > > > for "fixed-clock" and co friends describe relatively
-> > > > > > > > > simple
-> > > > > > > > > preconfigured clocks.
-> > > > > > > > 
-> > > > > > > > Some platforms have a fake clock which defines noops
-> > > > > > > > callbacks and
-> > > > > > > > basically doesn't do anything. This is analogous to the
-> > > > > > > > dummy
-> > > > > > > > regulator
-> > > > > > > > implementation. A central one could be registered by the
-> > > > > > > > clock core,
-> > > > > > > > as
-> > > > > > > > is done by the regulator core.
-> > > > > > > 
-> > > > > > > When you say some platforms, you presumably mean the platform
-> > > > > > > code in
-> > > > > > > Linux? A dummy clock sounds like a completely Linux-specific
-> > > > > > > abstraction rather than a description of the hardware, and I
-> > > > > > > don't see why we need that in the DT:
-> > > > > > > 
-> > > > > > > * If a clock is wired up and running (as presumably the dummy
-> > > > > > > clock is), then surely it's a fixed-clock (it's running, we
-> > > > > > > and we have no control over it, but we presumably know its
-> > > > > > > rate) and can be described as such?
-> > > > > > > 
-> > > > > > > * If no clock is wired up, then we should be able to describe
-> > > > > > > that. If a driver believes that a clock is required when it
-> > > > > > > isn't (for some level of functionality), then that driver
-> > > > > > > should be fixed up to support the clock as being optional.
-> > > > > > > 
-> > > > > > > Am I missing something?
-> > > > > > 
-> > > > > > I second that.
-> > > > > > 
-> > > > > > Moreover, I don't think that device tree should deal with dummy
-> > > > > > anything. It should be able to describe hardware that is
-> > > > > > available on given system, not list what hardware is not
-> > > > > > available.
-> > > > > 
-> > > > > I wasn't clear. The dummy clock IS a completely Linux-specific
-> > > > > abstraction.
-> > > > > 
-> > > > > I'm not advocating a dummy clock in DT. I am advocating
-> > > > > consolidation of the implementation of a clock that does nothing
-> > > > > into the clock core. This code could easily live in
-> > > > > drivers/clk/clk.c instead of having everyone open-code it.
-> > > > > 
-> > > > > As far as specifying a dummy clock in DT? I dunno. DT should
-> > > > > describe
-> > > > > real hardware so there isn't much use for a dummy clock.
-> > > > 
-> > > > Sorry, I misunderstood. Good to hear we're on the same page :)
-> > > > 
-> > > > > I'm guessing one of the reasons for such a clock are drivers do
-> > > > > not
-> > > > > honor the clk.h api and they freak out when clk_get gives them a
-> > > > > NULL
-> > > > > pointer?
-> > > > 
-> > > > I'm not sure. Sascha, could you shed some light on the matter?
-> > > 
-> > > The original reason introducing the dummy clocks in the i.MX dtbs
-> > > was to provide devices a clock which the driver requests but is
-> > > not software controllable. We often have the case where the same
-> > > devices are on several SoCs, but not on all of them all clocks have
-> > > a bit to en/disable them.
-> > > 
-> > > Anyway, to accomplish this we don't need dummy clocks. We can just
-> > > describe the real clocks.
-> > 
-> > You could use a dummy clk for the Linux implementation, but the downside
-> > is that a dummy clock has a rate of 0 always and a your clocks likely
-> > have non-zero rates.
-> > 
-> > It is probably better for you define a clock which only implements the
-> > .recalc_rate callback. If the rate of this clock changes without Linux
-> > having knowledge of it you can use the CLK_GET_RATE_NOCACHE flag.
-> 
-> I doubt that rate of a dummy clock could ever change... unless it is a 
-> rather smart dummy.
-> 
-> > > BTW with the S/PDIF core on which not all mux inputs are connected
-> > > to actual clocks we could also describe the unconnected inputs as
-> > > ground clocks with rate 0. This way we describe something which
-> > > is really there instead of dummy clocks ;)
-> > 
-> > Again you could use a dummy clock for this OR a fixed-rate clock with a
-> > rate of zero from the perspective of the Linux implementation.
-> > 
-> > Do you think it worthwhile to have a DT binding for a grounded clock?
-> > That is not an entirely uncommon case.
-> 
-> Well, how would that differ from skipping a clock from clocks list, i.e. 
-> not specifying it in clock-names and clocks properties?
+Hi, Anton and all
 
-The difference is that you can successfully grab it in your driver.
+Is there any advice on these two patches ?
 
-> 
-> > > Background to why it might be a good idea to connect a ground clock
-> > > to the unconnected input pins is that a driver has a chance to
-> > > successfully grab all clocks. Otherwise how does the driver
-> > > distinguish
-> > > between an unconnected and an erroneous clock?
-> > 
-> > Sorry, I don't follow this last question. Do you mean how to distinguish
-> > based on the value returned from clk_get?
-> 
-> Hmm, in theory, a driver could want to distinguish an error case (e.g. 
-> clock specified, but there is a problem with it) from no clock (e.g. clock 
-> not specified in DT, because it is not available on particular board).
+[PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last system 
+transaction
+[PATCH 3/4 V3] mmc: esdhc: Correct host version of T4240-R1.0-R2.0.
 
-Yes, that's what I meant. To illustrate the problem for this driver:
 
-	for (i = 0; i < STC_TXCLK_SRC_MAX; i++) {
-		sprintf(tmp, "rxtx%d", i);
-		clk = devm_clk_get(&pdev->dev, tmp);
-		if (IS_ERR(clk)) {
-			/*
-			 * This can either mean this clock is not wired
-			 * up (skipped in the devicetree, *or* it is wired
-			 * up, but there went something wrong requesting it.
-			 * We can only ignore this error.
-			 */
-		}
-	}
+[PATCH 1/4 V4] powerpc/85xx: Add support for 85xx cpu type detection
+This patch is Act-by Scott.
+Patch 4/4 is split to four patches and Act-by Anton.
 
-This could be solved by always specifying all input clocks in the
-devicetree.
 
-Sascha
+Thanks all.
+
+
+
+On 07/19/2013 10:21 AM, Zhang Haijun-B42677 wrote:
+> Hi, all
+>
+> Expect your advice and any comments.
+>
+>
+> Thanks.
+>
+> Regards
+> Haijun.
+>
+>
+>> -----Original Message-----
+>> From: Zhang Haijun-B42677
+>> Sent: Wednesday, July 17, 2013 6:11 PM
+>> To: linux-mmc@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+>> Cc: cbouatmailru@gmail.com; cjb@laptop.org; Wood Scott-B07421; Fleming
+>> Andy-AFLEMING; Zhang Haijun-B42677; Zhang Haijun-B42677
+>> Subject: [PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last
+>> system transaction
+>>
+>> A-004388: eSDHC DMA might not stop if error occurs on system transaction
+>>
+>> eSDHC DMA(SDMA/ADMA) might not stop if an error occurs in the last system
+>> transaction. It may continue initiating additional transactions until
+>> software reset for data/all is issued during error recovery. There is not
+>> any data corruption to the SD data. The IRQSTAT[DMAE] is set when the
+>> erratum occurs.
+>> The only conditions under which issues occur are the following:
+>> 1. SDMA - For SD Write , the error occurs in the last system transaction.
+>> No issue for SD read
+>> 2. ADMA
+>> a. Block count is enabled: For SD write, the error occurs in the last
+>> system transaction. There is no issue for SD read when block count is
+>> enabled.
+>> b. Block count is disabled: Block count is designated by the ADMA
+>> descriptor table, and the error occurs in the last system transaction
+>> when ADMA is executing last descriptor line of table.
+>>
+>> eSDHC may initiate additional system transactions. There is no data
+>> integrity issue for case 1 and 2a described below. For case 2b, system
+>> data might be corrupted.
+>>
+>> Workaround: Set eSDHC_SYSCTL[RSTD] when IRQSTAT[DMAE] is set. For cases
+>> 2a and 2b above, add an extra descriptor line with zero data next to the
+>> last descriptor line.
+>>
+>> Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
+>> ---
+>> changes for V2:
+>> 	- Update the svr version list
+>>
+>>   drivers/mmc/host/sdhci-of-esdhc.c | 112
+>> ++++++++++++++++++++++++++++++++++----
+>>   1 file changed, 102 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-
+>> of-esdhc.c
+>> index 15039e2..adfaadd 100644
+>> --- a/drivers/mmc/host/sdhci-of-esdhc.c
+>> +++ b/drivers/mmc/host/sdhci-of-esdhc.c
+>> @@ -21,9 +21,13 @@
+>>   #include <linux/mmc/host.h>
+>>   #include "sdhci-pltfm.h"
+>>   #include "sdhci-esdhc.h"
+>> +#include <asm/mpc85xx.h>
+>>
+>>   #define VENDOR_V_22	0x12
+>>   #define VENDOR_V_23	0x13
+>> +
+>> +static u32 svr;
+>> +
+>>   static u32 esdhc_readl(struct sdhci_host *host, int reg)  {
+>>   	u32 ret;
+>> @@ -142,6 +146,26 @@ static void esdhc_writeb(struct sdhci_host *host, u8
+>> val, int reg)
+>>   	sdhci_be32bs_writeb(host, val, reg);
+>>   }
+>>
+>> +static void esdhc_reset(struct sdhci_host *host, u8 mask) {
+>> +	u32 ier;
+>> +	u32 uninitialized_var(isav);
+>> +
+>> +	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
+>> +		isav = esdhc_readl(host, SDHCI_INT_ENABLE);
+>> +
+>> +	esdhc_writeb(host, mask, SDHCI_SOFTWARE_RESET);
+>> +	mdelay(100);
+>> +
+>> +	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET) {
+>> +		ier = esdhc_readl(host, SDHCI_INT_ENABLE);
+>> +		ier &= ~SDHCI_INT_ALL_MASK;
+>> +		ier |= isav;
+>> +		esdhc_writel(host, ier, SDHCI_INT_ENABLE);
+>> +		esdhc_writel(host, ier, SDHCI_SIGNAL_ENABLE);
+>> +	}
+>> +}
+>> +
+>>   /*
+>>    * For Abort or Suspend after Stop at Block Gap, ignore the ADMA
+>>    * error(IRQSTAT[ADMAE]) if both Transfer Complete(IRQSTAT[TC]) @@ -
+>> 156,25 +180,92 @@ static void esdhci_of_adma_workaround(struct sdhci_host
+>> *host, u32 intmask)
+>>   	dma_addr_t dmastart;
+>>   	dma_addr_t dmanow;
+>>
+>> -	tmp = in_be32(host->ioaddr + SDHCI_SLOT_INT_STATUS);
+>> +	tmp = esdhc_readl(host, SDHCI_SLOT_INT_STATUS);
+>>   	tmp = (tmp & SDHCI_VENDOR_VER_MASK) >> SDHCI_VENDOR_VER_SHIFT;
+>>
+>>   	applicable = (intmask & SDHCI_INT_DATA_END) &&
+>>   		(intmask & SDHCI_INT_BLK_GAP) &&
+>>   		(tmp == VENDOR_V_23);
+>> -	if (!applicable)
+>> +	if (applicable) {
+>> +
+>> +		esdhc_reset(host, SDHCI_RESET_DATA);
+>> +		host->data->error = 0;
+>> +		dmastart = sg_dma_address(host->data->sg);
+>> +		dmanow = dmastart + host->data->bytes_xfered;
+>> +
+>> +		/* Force update to the next DMA block boundary. */
+>> +		dmanow = (dmanow & ~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1)) +
+>> +			SDHCI_DEFAULT_BOUNDARY_SIZE;
+>> +		host->data->bytes_xfered = dmanow - dmastart;
+>> +		esdhc_writel(host, dmanow, SDHCI_DMA_ADDRESS);
+>> +
+>>   		return;
+>> +	}
+>>
+>> -	host->data->error = 0;
+>> -	dmastart = sg_dma_address(host->data->sg);
+>> -	dmanow = dmastart + host->data->bytes_xfered;
+>>   	/*
+>> -	 * Force update to the next DMA block boundary.
+>> +	 * Check for A-004388: eSDHC DMA might not stop if error
+>> +	 * occurs on system transaction
+>> +	 * Impact list:
+>> +	 * T4240-R1.0 B4860-R1.0 P1010-R1.0
+>> +	 * P3041-R1.0-R2.0-R1.1 P2041-R1.0-R1.1-R2.0
+>> +	 * P5040-R2.0
+>>   	 */
+>> -	dmanow = (dmanow & ~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1)) +
+>> -		SDHCI_DEFAULT_BOUNDARY_SIZE;
+>> -	host->data->bytes_xfered = dmanow - dmastart;
+>> -	sdhci_writel(host, dmanow, SDHCI_DMA_ADDRESS);
+>> +	if (!(((SVR_SOC_VER(svr) == SVR_T4240) && (SVR_REV(svr) == 0x10))
+>> ||
+>> +		((SVR_SOC_VER(svr) == SVR_B4860) && (SVR_REV(svr) == 0x10))
+>> ||
+>> +		((SVR_SOC_VER(svr) == SVR_P1010) && (SVR_REV(svr) == 0x10))
+>> ||
+>> +		((SVR_SOC_VER(svr) == SVR_P3041) && (SVR_REV(svr) <= 0x20))
+>> ||
+>> +		((SVR_SOC_VER(svr) == SVR_P2041) && (SVR_REV(svr) <= 0x20))
+>> ||
+>> +		((SVR_SOC_VER(svr) == SVR_P5040) && SVR_REV(svr) == 0x20)))
+>> +		return;
+>> +
+>> +	esdhc_reset(host, SDHCI_RESET_DATA);
+>> +
+>> +	if (host->flags & SDHCI_USE_ADMA) {
+>> +		u32 mod, i, offset;
+>> +		u8 *desc;
+>> +		dma_addr_t addr;
+>> +		struct scatterlist *sg;
+>> +		__le32 *dataddr;
+>> +		__le32 *cmdlen;
+>> +
+>> +		/*
+>> +		 * If block count was enabled, in case read transfer there
+>> +		 * is no data was corrupted
+>> +		 */
+>> +		mod = esdhc_readl(host, SDHCI_TRANSFER_MODE);
+>> +		if ((mod & SDHCI_TRNS_BLK_CNT_EN) &&
+>> +			(host->data->flags & MMC_DATA_READ))
+>> +			host->data->error = 0;
+>> +
+>> +		BUG_ON(!host->data);
+>> +		desc = host->adma_desc;
+>> +		for_each_sg(host->data->sg, sg, host->sg_count, i) {
+>> +			addr = sg_dma_address(sg);
+>> +			offset = (4 - (addr & 0x3)) & 0x3;
+>> +			if (offset)
+>> +				desc += 8;
+>> +			desc += 8;
+>> +		}
+>> +
+>> +		/*
+>> +		 * Add an extra zero descriptor next to the
+>> +		 * terminating descriptor.
+>> +		 */
+>> +		desc += 8;
+>> +		WARN_ON((desc - host->adma_desc) > (128 * 2 + 1) * 4);
+>> +
+>> +		dataddr = (__le32 __force *)(desc + 4);
+>> +		cmdlen = (__le32 __force *)desc;
+>> +
+>> +		cmdlen[0] = cpu_to_le32(0);
+>> +		dataddr[0] = cpu_to_le32(0);
+>> +	}
+>> +
+>> +	if ((host->flags & SDHCI_USE_SDMA) &&
+>> +		(host->data->flags & MMC_DATA_READ))
+>> +		host->data->error = 0;
+>> +
+>> +	return;
+>>   }
+>>
+>>   static int esdhc_of_enable_dma(struct sdhci_host *host) @@ -299,6 +390,7
+>> @@ static int sdhci_esdhc_probe(struct platform_device *pdev)
+>>   	struct device_node *np;
+>>   	int ret;
+>>
+>> +	svr = mfspr(SPRN_SVR);
+>>   	host = sdhci_pltfm_init(pdev, &sdhci_esdhc_pdata, 0);
+>>   	if (IS_ERR(host))
+>>   		return PTR_ERR(host);
+>> --
+>> 1.8.0
+
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Thanks & Regards
+
+Haijun
