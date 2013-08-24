@@ -1,21 +1,18 @@
-Return-Path: <martin@hinner.info>
-Received: from mail-vc0-f180.google.com (mail-vc0-f180.google.com
- [209.85.220.180])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3CD642C0087
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Aug 2013 03:15:41 +1000 (EST)
-Received: by mail-vc0-f180.google.com with SMTP id gf11so1201530vcb.11
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 10:15:37 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAPVwjkzkuw4cbo9YxnsskdoAda-k+Gb5sdVEJiZTVAD1nR5OOg@mail.gmail.com>
-References: <CAPVwjkzkuw4cbo9YxnsskdoAda-k+Gb5sdVEJiZTVAD1nR5OOg@mail.gmail.com>
-Date: Sat, 24 Aug 2013 19:15:37 +0200
-Message-ID: <CAPVwjkyPKo0SmoEkJttzz0fXrTcyuv7K1nuhOzW9CdGXD+t7_A@mail.gmail.com>
-Subject: Re: Loading kernel on MPC86x
-From: Martin Hinner <martin@hinner.info>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <ydroneaud@quest-ce.net>
+Received: from smtp2-g21.free.fr (smtp2-g21.free.fr [IPv6:2a01:e0c:1:1599::11])
+ by ozlabs.org (Postfix) with ESMTP id E823B2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Aug 2013 06:21:04 +1000 (EST)
+From: Yann Droneaud <ydroneaud@opteya.com>
+To: Alexander Graf <agraf@suse.de>, Gleb Natapov <gleb@redhat.com>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 0/2] kvm: use anon_inode_getfd() with O_CLOEXEC flag
+Date: Sat, 24 Aug 2013 22:14:06 +0200
+Message-Id: <cover.1377372576.git.ydroneaud@opteya.com>
+Cc: Yann Droneaud <ydroneaud@opteya.com>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,34 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello again,
+Hi,
 
-  just a quick update: I have spent some more time on this and now I
-can boot into kernel (it works even with initramfs and simple assembly
-HelloWorld, so it's time to compile userland now). The problem was
-that kernel must be at location 0. Another problem was that interrupts
-got re-enabled during execution of my bootloader (I am doing some
-syscalls -> goes  to Cisco rom), otherwise it crashed randomly. And
-finally it seems that stack must be < 8M. After this kernel boots.
+Following a patchset asking to change calls to get_unused_flag() [1]
+to use O_CLOEXEC, Alex Williamson [2][3] decided to change VFIO
+to use the flag.
 
-Anyway, I would still appreciate clarification on vmlinux:__start
-entry conditions:
+Since it's a related subsystem to KVM, using O_CLOEXEC for
+file descriptors created by KVM might be applicable too.
 
-- must be loaded at 0 (but why arch/powerpc/boot/main.c has option to
-allocate space for kernel at nonzero addr ?)
-- stack? Does it really have to be < 8M ?
-- interrupts disabled (really ;-) )
-- MSR.PR=0/LE=0/EE=0, but what other bits (RI? IP=0? ME?)
-- IMMR 0xff000000
-- and of course correct entry arguments in registers
+I'm suggesting to change calls to anon_inode_getfd() to use O_CLOEXEC
+as default flag.
 
-anything else?
+This patchset should be reviewed to not break existing userspace program.
 
-I am also curious why CONFIG_PPC_EARLY_DEBUG_CPM uses
-CONFIG_PPC_EARLY_DEBUG_CPM_ADDR as pointer to transmit SMC buffer and
-not address of CPM/SCM parameter RAM ? TX buffer address can be read
-from SMC parameter RAM. Wouldn't this solution be more portable? At
-least this way I do it when I take over console from Cisco
-startup/rommon.
+BTW, if it's not applicable, I would suggest that new ioctls be added to
+KVM subsystem, those ioctls would have a "flag" field added to their arguments.
+Such "flag" would let userspace choose the open flag to use.
+See for example other APIs using anon_inode_getfd() such as fanotify,
+inotify, signalfd and timerfd.
 
-Martin
+You might be interested to read:
+
+- Secure File Descriptor Handling (Ulrich Drepper, 2008)
+  http://udrepper.livejournal.com/20407.html
+
+- Excuse me son, but your code is leaking !!! (Dan Walsh, March 2012) 
+  http://danwalsh.livejournal.com/53603.html
+
+Regards.
+
+[1] http://lkml.kernel.org/r/cover.1376327678.git.ydroneaud@opteya.com
+[2] http://lkml.kernel.org/r/1377186804.25163.17.camel@ul30vt.home
+[3] http://lkml.kernel.org/r/20130822171744.1297.13711.stgit@bling.home
+
+Yann Droneaud (2):
+  kvm: use anon_inode_getfd() with O_CLOEXEC flag
+  ppc: kvm: use anon_inode_getfd() with O_CLOEXEC flag
+
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 2 +-
+ arch/powerpc/kvm/book3s_64_vio.c    | 2 +-
+ arch/powerpc/kvm/book3s_hv.c        | 2 +-
+ virt/kvm/kvm_main.c                 | 6 +++---
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+
+-- 
+1.8.3.1
