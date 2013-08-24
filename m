@@ -1,28 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9957D2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 10:12:16 +1000 (EST)
-Received: from mail170-va3 (localhost [127.0.0.1])	by
- mail170-va3-R.bigfish.com (Postfix) with ESMTP id 302B11E00FA	for
- <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 00:12:12 +0000 (UTC)
-Received: from VA3EHSMHS001.bigfish.com (unknown [10.7.14.237])	by
- mail170-va3.bigfish.com (Postfix) with ESMTP id D765C420041	for
- <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 00:12:10 +0000 (UTC)
-Message-ID: <1377303125.20722.112.camel@snotra.buserror.net>
-Subject: Re: [v2] powerpc/85xx: Add P1023RDB board support
-From: Scott Wood <scottwood@freescale.com>
-To: Chunhe Lan <Chunhe.Lan@freescale.com>
-Date: Fri, 23 Aug 2013 19:12:05 -0500
-In-Reply-To: <20130824000930.GA29088@home.buserror.net>
-References: <1375184429-22145-1-git-send-email-Chunhe.Lan@freescale.com>
- <20130824000930.GA29088@home.buserror.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 46A232C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 10:20:20 +1000 (EST)
+Message-ID: <1377303610.3819.4.camel@pasglop>
+Subject: Re: [PATCH] powerpc/ppc64: remove __volatile__ in  get_current()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: James Yang <James.Yang@freescale.com>
+Date: Sat, 24 Aug 2013 10:20:10 +1000
+In-Reply-To: <alpine.LRH.2.00.1308231832570.4940@ra8135-ec1.am.freescale.net>
+References: <1376110162-3462-1-git-send-email-James.Yang@freescale.com>
+ <alpine.LRH.2.00.1308231832570.4940@ra8135-ec1.am.freescale.net>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Mime-Version: 1.0
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-08-23 at 19:09 -0500, Scott Wood wrote:
-> On Tue, Jul 30, 2013 at 07:40:29PM +0800, Chunhe Lan wrote:
-> > P1023RDB Specification:
-> > -----------------------
-> > Memory subsystem:
-> >    512MB DDR3 (Fixed DDR on board)
-> >    64MB NOR flash
-> >    128MB NAND flash
-> > 
-> > Ethernet:
-> >    eTSEC1: Connected to Atheros AR8035 GETH PHY
-> >    eTSEC2: Connected to Atheros AR8035 GETH PHY
-> > 
-> > PCIe:
-> >    Three mini-PCIe slots
-> > 
-> > USB:
-> >    Two USB2.0 Type A ports
-> > 
-> > I2C:
-> >    AT24C08 8K Board EEPROM (8 bit address)
-> > 
-> > Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-> > Cc: Scott Wood <scottwood@freescale.com>
-> > 
-> > ---
+On Fri, 2013-08-23 at 18:40 -0500, James Yang wrote:
+> Scott's been able to put enough doubt in me to think that this is not 
+> entirely safe, even though the testing and code generation show it to 
+> work.  Please reject this patch.
 > 
-> No changelog since v1...
+> I think there is still value in getting the unnecessary loads to be 
+> removed since it would also allow unnecessary conditional branches to 
+> be removed.  I'll think about alternate ways to do this.
 
+Hrm, The problem has to do with PACA accesses moving around accross
+preempt boundaries, it's a bit tricky, but in the case of "current"
+shouldn't be a problem... while the rest of the PACA might change (CPU#
+etc...) current remains stable for the point of view of a given thread.
 
-Sigh, and now I see there was a v3 right after this that addressed most
-of these issues. :-P
+So I think the patch is fine.
 
--Scott
+Scott ?
+
+Now, we do need some serious rework of PACA accesses. I'm very *VERY*
+nervous with what we have now. A bit of grepping shows dozens of cases
+where gcc copies r13 into another register or even saves/restores it, it
+scares the shit out of me :-)
+
+My thinking is to make r13 a hidden reg like we do (or used to) on ppc32
+with r2 and break down paca access into two forms:
+
+ - Direct access of a single field -> asm loads/stores inline
+
+ - Anything else, uses a get_paca/put_paca construct that includes a
+preempt_disable/enable (and maybe along with a __get_paca/__put_paca
+pair that doesn't). This basically does a mr of r13 into another
+register and basically hides the whole lot from gcc.
+
+The former would be used for single fields, the latter, while adding a
+potentially unnecessary mr, will be much safer vs. gcc playing games
+with r13.
+
+Any volunteer ? Haven't had time to do it myself so far :-)
+
+Cheers,
+Ben.
