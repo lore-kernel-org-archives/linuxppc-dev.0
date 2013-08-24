@@ -1,16 +1,18 @@
 Return-Path: <martin@hinner.info>
-Received: from mail-ve0-f175.google.com (mail-ve0-f175.google.com
- [209.85.128.175])
+Received: from mail-vc0-f180.google.com (mail-vc0-f180.google.com
+ [209.85.220.180])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B3ECB2C009A
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Aug 2013 00:54:59 +1000 (EST)
-Received: by mail-ve0-f175.google.com with SMTP id oy10so1177813veb.34
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 07:54:55 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3CD642C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Aug 2013 03:15:41 +1000 (EST)
+Received: by mail-vc0-f180.google.com with SMTP id gf11so1201530vcb.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 10:15:37 -0700 (PDT)
 MIME-Version: 1.0
-Date: Sat, 24 Aug 2013 16:54:55 +0200
-Message-ID: <CAPVwjkzkuw4cbo9YxnsskdoAda-k+Gb5sdVEJiZTVAD1nR5OOg@mail.gmail.com>
-Subject: Loading kernel on MPC86x
+In-Reply-To: <CAPVwjkzkuw4cbo9YxnsskdoAda-k+Gb5sdVEJiZTVAD1nR5OOg@mail.gmail.com>
+References: <CAPVwjkzkuw4cbo9YxnsskdoAda-k+Gb5sdVEJiZTVAD1nR5OOg@mail.gmail.com>
+Date: Sat, 24 Aug 2013 19:15:37 +0200
+Message-ID: <CAPVwjkyPKo0SmoEkJttzz0fXrTcyuv7K1nuhOzW9CdGXD+t7_A@mail.gmail.com>
+Subject: Re: Loading kernel on MPC86x
 From: Martin Hinner <martin@hinner.info>
 To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
@@ -23,71 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hello again,
 
-  I am trying to load kernel 2.6.39 on MPC86x-based Cisco 8xx router
-(I need development platform for another embedded project and this
-router was first suitable device I have).
+  just a quick update: I have spent some more time on this and now I
+can boot into kernel (it works even with initramfs and simple assembly
+HelloWorld, so it's time to compile userland now). The problem was
+that kernel must be at location 0. Another problem was that interrupts
+got re-enabled during execution of my bootloader (I am doing some
+syscalls -> goes  to Cisco rom), otherwise it crashed randomly. And
+finally it seems that stack must be < 8M. After this kernel boots.
 
-So far I have:
+Anyway, I would still appreciate clarification on vmlinux:__start
+entry conditions:
 
-- built crosscompiler
-- created simple bootloader based on CILO code that can load ELF
-(zImage) into memory, relocate and start it
-- Modified Linux kernel arch/powerpc/boot directory so as it can
-decompress kernel into memory and start it (__start gets executed)
-- Created dts for the device (arch/powerpc/boot/main.c is making
-printf via correct device without any hacks)
+- must be loaded at 0 (but why arch/powerpc/boot/main.c has option to
+allocate space for kernel at nonzero addr ?)
+- stack? Does it really have to be < 8M ?
+- interrupts disabled (really ;-) )
+- MSR.PR=0/LE=0/EE=0, but what other bits (RI? IP=0? ME?)
+- IMMR 0xff000000
+- and of course correct entry arguments in registers
 
-Most of tasks were accomplished by creating temporary debug output to
-cpm-uart and finding problems step-by-step, however I am a bit stuck
-with kernel now and I would appreciate some help from someone who has
-already done similar task.
+anything else?
 
-Hardware info: The MPC86x has 32MB SDRAM located at 0x00000 and
-0x80000000 (I have not checked how this is done but it looks like it's
-alias as both memory regions have the same data). IMMR is 0xff000000,
-ROM is at 0xfff00000. Initial stack is in first 64kB (I left it as
-Cisco rommon has set it up).
-
-I had to modify arch/powerpc/boot/main.c so as it loads kernel to a
-different location than 0 and does not overwrite rommon's exception
-vectors & stack.
-
-arch/powerpc/boot/main.c starts succesfully kernel (I can see debug
-output produced by modified '__start' at
-arch/powerpc/kernel/head_8xx.S). Unfortunately call to "bl
-initial_mmu" fails (there is no exception that rommon catches,
-processor just freezes and as I do not have BDM attached to it I have
-no idea what is going wrong).
-
-My feeling is that I should load vmlinux to address 0 as there is no
-relocation code anywhere. Is this correct? I can live with it (stack
-will be relocated in my bootloader, but before I start doing this work
-(more than stack relocation is involved) I would like to make sure it
-is really my problem).
-
-Second, I would like to ask what else do I have to set-up before
-jumping to arch/powerpc/kernel/head_8xx.S ; is vmlinux sitting at
-0x00000 and "temporary" stack at safe place (end of mem) enough ? How
-about interrupts ? What if some of them were enabled by Cisco
-startup/rommon ?
-
-Do I understand correctly that
-arch/powerpc/kernel/head_8xx.S:initial_mmu (and then real mm handler)
-sets-up MMU so as I can always access IMMR region and print debug
-characters on console? (I am sorry I am not yet familiar with MPC8xx
-MMU so the code is a bit confusing for me).
-
-I do not understand how kernel base 0xC0000000 works; kernel is
-normally loaded at 0, however all references go to 0xC0000000. Does
-initial_mmu set-up "mapping" from 0xC0000000 to 0x00000 or do I miss
-anything? When switch from 0 to 0xC0000000 happens?
-
-Maybe a link to document describing how kernel on PowerPC starts would
-clarify all my question, but all I have found is focused on using
-existing bootloaders (U-Boot) with no detailed description ...
-
-Thank you,
+I am also curious why CONFIG_PPC_EARLY_DEBUG_CPM uses
+CONFIG_PPC_EARLY_DEBUG_CPM_ADDR as pointer to transmit SMC buffer and
+not address of CPM/SCM parameter RAM ? TX buffer address can be read
+from SMC parameter RAM. Wouldn't this solution be more portable? At
+least this way I do it when I take over console from Cisco
+startup/rommon.
 
 Martin
