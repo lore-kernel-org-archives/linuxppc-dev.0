@@ -1,19 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 66E392C0090
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 11:08:27 +1000 (EST)
-Date: Fri, 23 Aug 2013 20:07:33 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: <benh@kernel.crashing.org>
-Subject: Pull request: scottwood/linux.git next
-Message-ID: <20130824010733.GA6116@home.buserror.net>
+Return-Path: <tkil@scrye.com>
+Received: from mail.scrye.com (scrye.com
+ [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 94B0E2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2013 18:03:20 +1000 (EST)
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
+From: Anthony Foiani <tkil@scrye.com>
+References: <20130823192532.GA29205@home.buserror.net>
+ <gppt4gel1.fsf@dworkin.scrye.com>
+ <1377301643.20722.109.camel@snotra.buserror.net>
+Date: Sat, 24 Aug 2013 02:03:14 -0600
+In-Reply-To: <1377301643.20722.109.camel@snotra.buserror.net> (Scott Wood's
+ message of "Fri\, 23 Aug 2013 18\:47\:23 -0500")
+Message-ID: <gd2p3h5x9.fsf@dworkin.scrye.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+ "Robert P.J.Day" <rpjday@crashcourse.ca>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Shaohui.Xie@freescale.com, Adrian Bunk <bunk@stusta.de>
+Reply-To: Anthony Foiani <tkil@scrye.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,72 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following changes since commit afbcdd97bf117bc2d01b865a32f78f662437a4d8:
+Scott Wood <scottwood@freescale.com> writes:
 
-  powerpc/wsp: Fix early debug build (2013-08-16 10:59:27 +1000)
+> On Fri, 2013-08-23 at 17:41 -0600, Anthony Foiani wrote:
+> > In my original patch [...]  I used "fsl,sata-max-gen".  I thought
+> > Jeff disliked it, so I changed it be more generic -- but maybe I
+> > misread his complaint.  (And while his opinions are still
+> > respected, new maintainers might have different tastes.)
+>
+> I didn't see anything to that effect from Jeff in that thread -- maybe
+> it was elsewhere.
 
-are available in the git repository at:
+I think I'm referring to this message:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+  http://article.gmane.org/gmane.linux.ports.ppc.embedded/58720
 
-for you to fetch changes up to 622e03eb3498c32ee29de5c1d6d381f443e58fad:
+As he was referring me to generic methods, I inferred that I should be
+providing generic knobs...
 
-  powerpc/85xx: Add C293PCIE board support (2013-08-23 19:43:24 -0500)
+> The device tree describes the hardware, not the driver -- and thus
+> should be free to use clearer wording. :-)
 
-----------------------------------------------------------------
-Chunhe Lan (1):
-      powerpc/85xx: Add P1023RDB board support
+*nod*
 
-Haijun.Zhang (1):
-      powerpc/85xx: Add support for 85xx cpu type detection
+> As for fsl-specific versus generic, generic is fine but then it
+> needs to be documented in a generic place.
 
-Mingkai Hu (3):
-      powerpc/85xx: Add SEC6.0 device tree
-      powerpc/85xx: Add silicon device tree for C293
-      powerpc/85xx: Add C293PCIE board support
+Agreed.  I actually prefer the "generation" nomenclature, as it has a
+more direct/straightforward interpretation.  ("speed=1" vs
+"generation=1"; the latter is a much bigger clue, IMHO.)
 
-Scott Wood (5):
-      powerpc/fsl-booke: Work around erratum A-006958
-      powerpc: Convert some mftb/mftbu into mfspr
-      powerpc/85xx: Remove -Wa,-me500
-      powerpc/booke64: Use appropriate -mcpu
-      powerpc/e500: Set -mcpu flag for 32-bit e500
+> Sorry, linux-ide.
 
-Wang Dongsheng (1):
-      powerpc: add Book E support to 64-bit hibernation
+Ok, thanks.
 
- .../devicetree/bindings/crypto/fsl-sec6.txt        | 157 ++++++++++++++
- arch/powerpc/Makefile                              |  18 +-
- arch/powerpc/boot/dts/c293pcie.dts                 | 223 ++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/c293si-post.dtsi         | 193 +++++++++++++++++
- arch/powerpc/boot/dts/fsl/c293si-pre.dtsi          |  63 ++++++
- arch/powerpc/boot/dts/fsl/qoriq-sec6.0-0.dtsi      |  56 +++++
- arch/powerpc/boot/dts/p1023rdb.dts                 | 234 +++++++++++++++++++++
- arch/powerpc/boot/ppc_asm.h                        |   3 +
- arch/powerpc/boot/util.S                           |  10 +-
- .../85xx/{p1023rds_defconfig => p1023_defconfig}   |  24 ++-
- arch/powerpc/configs/mpc85xx_defconfig             |   1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig         |   1 +
- arch/powerpc/include/asm/cputable.h                |   9 +-
- arch/powerpc/include/asm/mpc85xx.h                 |  92 ++++++++
- arch/powerpc/include/asm/ppc_asm.h                 |   6 +-
- arch/powerpc/include/asm/reg.h                     |  17 +-
- arch/powerpc/include/asm/timex.h                   |   4 +-
- arch/powerpc/kernel/swsusp_asm64.S                 |  45 +++-
- arch/powerpc/kernel/vdso32/gettimeofday.S          |   6 +-
- arch/powerpc/platforms/85xx/Kconfig                |  10 +-
- arch/powerpc/platforms/85xx/Makefile               |   1 +
- arch/powerpc/platforms/85xx/c293pcie.c             |  75 +++++++
- arch/powerpc/platforms/85xx/p1023_rds.c            |  24 ++-
- arch/powerpc/platforms/85xx/smp.c                  |  25 +++
- arch/powerpc/platforms/Kconfig.cputype             |  13 ++
- 25 files changed, 1280 insertions(+), 30 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/crypto/fsl-sec6.txt
- create mode 100644 arch/powerpc/boot/dts/c293pcie.dts
- create mode 100644 arch/powerpc/boot/dts/fsl/c293si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/c293si-pre.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-sec6.0-0.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1023rdb.dts
- rename arch/powerpc/configs/85xx/{p1023rds_defconfig => p1023_defconfig} (88%)
- create mode 100644 arch/powerpc/include/asm/mpc85xx.h
- create mode 100644 arch/powerpc/platforms/85xx/c293pcie.c
+I'll wait a few days to see if there are any other comments or
+concerns, then I'll spin a final version
+
+As always, thanks for the review and insight!
+
+Best regards,
+Anthony Foiani
