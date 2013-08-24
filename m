@@ -1,15 +1,19 @@
 Return-Path: <ydroneaud@quest-ce.net>
 Received: from smtp2-g21.free.fr (smtp2-g21.free.fr [IPv6:2a01:e0c:1:1599::11])
- by ozlabs.org (Postfix) with ESMTP id E823B2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Aug 2013 06:21:04 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 639B42C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Aug 2013 06:21:18 +1000 (EST)
 From: Yann Droneaud <ydroneaud@opteya.com>
 To: Alexander Graf <agraf@suse.de>, Gleb Natapov <gleb@redhat.com>,
  Paolo Bonzini <pbonzini@redhat.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 0/2] kvm: use anon_inode_getfd() with O_CLOEXEC flag
-Date: Sat, 24 Aug 2013 22:14:06 +0200
-Message-Id: <cover.1377372576.git.ydroneaud@opteya.com>
+Subject: [PATCH 2/2] ppc: kvm: use anon_inode_getfd() with O_CLOEXEC flag
+Date: Sat, 24 Aug 2013 22:14:08 +0200
+Message-Id: <b7ae23be3a3d4a2f57eca6cfc7f9361da883ceca.1377372576.git.ydroneaud@opteya.com>
+In-Reply-To: <cover.1377372576.git.ydroneaud@opteya.com>
+References: <cover.1377372576.git.ydroneaud@opteya.com>
+In-Reply-To: <cover.1377372576.git.ydroneaud@opteya.com>
+References: <cover.1377372576.git.ydroneaud@opteya.com>
 Cc: Yann Droneaud <ydroneaud@opteya.com>, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org
@@ -22,49 +26,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+KVM uses anon_inode_get() to allocate file descriptors as part
+of some of its ioctls. But those ioctls are lacking a flag argument
+allowing userspace to choose options for the newly opened file descriptor.
 
-Following a patchset asking to change calls to get_unused_flag() [1]
-to use O_CLOEXEC, Alex Williamson [2][3] decided to change VFIO
-to use the flag.
+In such case it's advised to use O_CLOEXEC by default so that
+userspace is allowed to choose, without race, if the file descriptor
+is going to be inherited across exec().
 
-Since it's a related subsystem to KVM, using O_CLOEXEC for
-file descriptors created by KVM might be applicable too.
+This patch set O_CLOEXEC flag on all file descriptors created
+with anon_inode_getfd() to not leak file descriptors across exec().
 
-I'm suggesting to change calls to anon_inode_getfd() to use O_CLOEXEC
-as default flag.
+Signed-off-by: Yann Droneaud <ydroneaud@opteya.com>
+Link: http://lkml.kernel.org/r/cover.1377372576.git.ydroneaud@opteya.com
 
-This patchset should be reviewed to not break existing userspace program.
-
-BTW, if it's not applicable, I would suggest that new ioctls be added to
-KVM subsystem, those ioctls would have a "flag" field added to their arguments.
-Such "flag" would let userspace choose the open flag to use.
-See for example other APIs using anon_inode_getfd() such as fanotify,
-inotify, signalfd and timerfd.
-
-You might be interested to read:
-
-- Secure File Descriptor Handling (Ulrich Drepper, 2008)
-  http://udrepper.livejournal.com/20407.html
-
-- Excuse me son, but your code is leaking !!! (Dan Walsh, March 2012) 
-  http://danwalsh.livejournal.com/53603.html
-
-Regards.
-
-[1] http://lkml.kernel.org/r/cover.1376327678.git.ydroneaud@opteya.com
-[2] http://lkml.kernel.org/r/1377186804.25163.17.camel@ul30vt.home
-[3] http://lkml.kernel.org/r/20130822171744.1297.13711.stgit@bling.home
-
-Yann Droneaud (2):
-  kvm: use anon_inode_getfd() with O_CLOEXEC flag
-  ppc: kvm: use anon_inode_getfd() with O_CLOEXEC flag
-
+---
  arch/powerpc/kvm/book3s_64_mmu_hv.c | 2 +-
  arch/powerpc/kvm/book3s_64_vio.c    | 2 +-
  arch/powerpc/kvm/book3s_hv.c        | 2 +-
- virt/kvm/kvm_main.c                 | 6 +++---
- 4 files changed, 6 insertions(+), 6 deletions(-)
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 710d313..f7c9e8a 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -1579,7 +1579,7 @@ int kvm_vm_ioctl_get_htab_fd(struct kvm *kvm, struct kvm_get_htab_fd *ghf)
+ 	ctx->first_pass = 1;
+ 
+ 	rwflag = (ghf->flags & KVM_GET_HTAB_WRITE) ? O_WRONLY : O_RDONLY;
+-	ret = anon_inode_getfd("kvm-htab", &kvm_htab_fops, ctx, rwflag);
++	ret = anon_inode_getfd("kvm-htab", &kvm_htab_fops, ctx, rwflag | O_CLOEXEC);
+ 	if (ret < 0) {
+ 		kvm_put_kvm(kvm);
+ 		return ret;
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index b2d3f3b..54cf9bc 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -136,7 +136,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 	mutex_unlock(&kvm->lock);
+ 
+ 	return anon_inode_getfd("kvm-spapr-tce", &kvm_spapr_tce_fops,
+-				stt, O_RDWR);
++				stt, O_RDWR | O_CLOEXEC);
+ 
+ fail:
+ 	if (stt) {
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index e8d51cb..3503829 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -1556,7 +1556,7 @@ long kvm_vm_ioctl_allocate_rma(struct kvm *kvm, struct kvm_allocate_rma *ret)
+ 	if (!ri)
+ 		return -ENOMEM;
+ 
+-	fd = anon_inode_getfd("kvm-rma", &kvm_rma_fops, ri, O_RDWR);
++	fd = anon_inode_getfd("kvm-rma", &kvm_rma_fops, ri, O_RDWR | O_CLOEXEC);
+ 	if (fd < 0)
+ 		kvm_release_rma(ri);
+ 
 -- 
 1.8.3.1
