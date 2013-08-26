@@ -1,23 +1,38 @@
-Return-Path: <B29983@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A9EC62C0079
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 12:42:39 +1000 (EST)
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [v3] powerpc/mpc85xx: Update the clock device tree nodes
-Date: Mon, 26 Aug 2013 02:42:30 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B1503BE58@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1370480811-13700-1-git-send-email-Yuantian.Tang@freescale.com>
- <20130823200827.GA29737@home.buserror.net>
-In-Reply-To: <20130823200827.GA29737@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 646C62C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 13:28:25 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 26 Aug 2013 08:48:40 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 1F32A1258043
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 08:58:09 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7Q3SGRV47513640
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 08:58:16 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7Q3SICS022455
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 08:58:19 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] powerpc/kvm: Handle the boundary condition correctly
+In-Reply-To: <527D8312-EA18-4962-9069-B54FA738F5FA@suse.de>
+References: <1377171479-25738-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1683D101-052D-4BEB-8ED1-6F32C6904850@suse.de>
+ <87haeh13s2.fsf@linux.vnet.ibm.com>
+ <527D8312-EA18-4962-9069-B54FA738F5FA@suse.de>
+Date: Mon, 26 Aug 2013 08:58:17 +0530
+Message-ID: <87wqn9dtbi.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,68 +42,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> >
-> >  	clockgen: global-utilities@e1000 {
-> > -		compatible =3D "fsl,b4420-clockgen", "fsl,qoriq-clockgen-2.0";
-> > +		compatible =3D "fsl,b4420-clockgen", "fsl,qoriq-clockgen-2.0",
-> > +				   "fixed-clock";
-> > +		clock-output-names =3D "sysclk";
-> > +		#clock-cells =3D <0>;
->=20
-> Does U-Boot fill in clock-frequency here?
->=20
-Yes, clock-frequency will be filled by uboot.
-You suggested we'd better not add it here.
+Alexander Graf <agraf@suse.de> writes:
 
-> > +		#address-cells =3D <1>;
-> > +		#size-cells =3D <0>;
-> > +		pll0: pll0@800 {
-> > +			#clock-cells =3D <1>;
-> > +			reg =3D <0x800>;
-> > +			compatible =3D "fsl,core-pll-clock";
-> > +			clocks =3D <&clockgen>;
-> > +			clock-output-names =3D "pll0", "pll0-div2", "pll0-div4";
-> > +		};
-> > +		pll1: pll1@820 {
-> > +			#clock-cells =3D <1>;
-> > +			reg =3D <0x820>;
-> > +			compatible =3D "fsl,core-pll-clock";
-> > +			clocks =3D <&clockgen>;
-> > +			clock-output-names =3D "pll1", "pll1-div2", "pll1-div4";
-> > +		};
->=20
-> Please leave a blank line between properties and nodes, and between nodes=
-.
->=20
-OK, will add.
+> On 23.08.2013, at 04:31, Aneesh Kumar K.V wrote:
+>
+>> Alexander Graf <agraf@suse.de> writes:
+>> 
+>>> On 22.08.2013, at 12:37, Aneesh Kumar K.V wrote:
+>>> 
+>>>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>>> 
+>>> Isn't this you?
+>> 
+>> Yes. The patches are generated using git format-patch and sent by
+>> git send-email. That's how it always created patches for me. I am not sure if
+>> there is a config I can change to avoid having From:
+>> 
+>>> 
+>>>> 
+>>>> We should be able to copy upto count bytes
+>>> 
+>>> Why?
+>>> 
+>> 
+>> Without this we end up doing
+>> 
+>> +    struct kvm_get_htab_buf {
+>> +        struct kvm_get_htab_header header;
+>> +        /*
+>> +         * Older kernel required one extra byte.
+>> +         */
+>> +        unsigned long hpte[3];
+>> +    } hpte_buf;
+>> 
+>> 
+>> even though we are only looking for one hpte entry.
+>
+> Ok, please give me an example with real numbers and why it breaks.
+>
+>> 
+>> http://mid.gmane.org/1376995766-16526-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+>> 
 
-> What does reg represent?  Where is the binding for this?
->=20
-> The compatible is too vague.
-Reg is register offset. I should have had a binding document.
-About the compatible, you should pointed it out earlier in SDK review.
-It is too later to change since the clock driver is merged for months altho=
-ugh=20
-I sent this patch first.
-Besides, it is not too bad because other arch use the similar name.
+Didn't quiet get what you are looking for. As explained before, we now
+need to pass an array with array size 3 even though we know we need to
+read only 2 entries because kernel doesn't loop correctly.
 
-Regards,
-Yuantian
-
->=20
-> > +		mux0: mux0@0 {
-> > +			#clock-cells =3D <0>;
-> > +			reg =3D <0x0>;
-> > +			compatible =3D "fsl,core-mux-clock";
-> > +			clocks =3D <&pll0 0>, <&pll0 1>, <&pll0 2>,
-> > +				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-> > +			clock-names =3D "pll0_0", "pll0_1", "pll0_2",
-> > +				"pll1_0", "pll1_1", "pll1_2";
-> > +			clock-output-names =3D "cmux0";
-> > +		};
->=20
-> What does reg represent?  Where is the binding for this?
->=20
-> The compatible is too vague.
->=20
-> -Scott
+-aneesh
