@@ -1,38 +1,11 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 646C62C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 13:28:25 +1000 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 26 Aug 2013 08:48:40 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 1F32A1258043
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 08:58:09 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7Q3SGRV47513640
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 08:58:16 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7Q3SICS022455
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 08:58:19 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH] powerpc/kvm: Handle the boundary condition correctly
-In-Reply-To: <527D8312-EA18-4962-9069-B54FA738F5FA@suse.de>
-References: <1377171479-25738-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1683D101-052D-4BEB-8ED1-6F32C6904850@suse.de>
- <87haeh13s2.fsf@linux.vnet.ibm.com>
- <527D8312-EA18-4962-9069-B54FA738F5FA@suse.de>
-Date: Mon, 26 Aug 2013 08:58:17 +0530
-Message-ID: <87wqn9dtbi.fsf@linux.vnet.ibm.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: benh@kernel.crashing.org
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: [PATCH] powerpc: DSCR FSCR cleanup
+Date: Mon, 26 Aug 2013 13:55:57 +1000
+Message-ID: <24883.1377489357@ale.ozlabs.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,50 +15,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Graf <agraf@suse.de> writes:
+As suggested by paulus we can simplify the Data Stream Control Register
+(DSCR) Facility Status and Control Register (FSCR) handling.
 
-> On 23.08.2013, at 04:31, Aneesh Kumar K.V wrote:
->
->> Alexander Graf <agraf@suse.de> writes:
->> 
->>> On 22.08.2013, at 12:37, Aneesh Kumar K.V wrote:
->>> 
->>>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->>> 
->>> Isn't this you?
->> 
->> Yes. The patches are generated using git format-patch and sent by
->> git send-email. That's how it always created patches for me. I am not sure if
->> there is a config I can change to avoid having From:
->> 
->>> 
->>>> 
->>>> We should be able to copy upto count bytes
->>> 
->>> Why?
->>> 
->> 
->> Without this we end up doing
->> 
->> +    struct kvm_get_htab_buf {
->> +        struct kvm_get_htab_header header;
->> +        /*
->> +         * Older kernel required one extra byte.
->> +         */
->> +        unsigned long hpte[3];
->> +    } hpte_buf;
->> 
->> 
->> even though we are only looking for one hpte entry.
->
-> Ok, please give me an example with real numbers and why it breaks.
->
->> 
->> http://mid.gmane.org/1376995766-16526-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com
->> 
+Firstly, we simplify the asm by using a rldimi.
 
-Didn't quiet get what you are looking for. As explained before, we now
-need to pass an array with array size 3 even though we know we need to
-read only 2 entries because kernel doesn't loop correctly.
+Secondly, we now use the FSCR only to control the DSCR facility, rather
+than both the FSCR and HFSCR.  Users will see no functional change from
+this but will get a minor speedup as they will trap into the kernel only
+once (rather than twice) when they first touch the DSCR.  Also, this
+changes removes a bunch of ugly FTR_SECTION code.
 
--aneesh
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+--
+ arch/powerpc/kernel/entry_64.S | 31 ++++++-------------------------
+ arch/powerpc/kernel/traps.c    |  7 ++-----
+ 2 files changed, 8 insertions(+), 30 deletions(-)
+
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 2bd0b88..513dc4d 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -575,34 +575,15 @@ BEGIN_FTR_SECTION
+ 	ld	r7,DSCR_DEFAULT@toc(2)
+ 	ld	r0,THREAD_DSCR(r4)
+ 	cmpwi	r6,0
+-	li	r8, FSCR_DSCR
+ 	bne	1f
+ 	ld	r0,0(r7)
+-	b	3f
+ 1:
+-  BEGIN_FTR_SECTION_NESTED(70)
+-	mfspr	r6, SPRN_FSCR
+-	or	r6, r6, r8
+-	mtspr	SPRN_FSCR, r6
+-    BEGIN_FTR_SECTION_NESTED(69)
+-	mfspr	r6, SPRN_HFSCR
+-	or	r6, r6, r8
+-	mtspr	SPRN_HFSCR, r6
+-    END_FTR_SECTION_NESTED(CPU_FTR_HVMODE, CPU_FTR_HVMODE, 69)
+-	b	4f
+-  END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
+-3:
+-  BEGIN_FTR_SECTION_NESTED(70)
+-	mfspr	r6, SPRN_FSCR
+-	andc	r6, r6, r8
+-	mtspr	SPRN_FSCR, r6
+-    BEGIN_FTR_SECTION_NESTED(69)
+-	mfspr	r6, SPRN_HFSCR
+-	andc	r6, r6, r8
+-	mtspr	SPRN_HFSCR, r6
+-    END_FTR_SECTION_NESTED(CPU_FTR_HVMODE, CPU_FTR_HVMODE, 69)
+-  END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
+-4:	cmpd	r0,r25
++BEGIN_FTR_SECTION_NESTED(70)
++	mfspr	r8, SPRN_FSCR
++	rldimi	r8, r6, FSCR_DSCR_LG, (63 - FSCR_DSCR_LG)
++	mtspr	SPRN_FSCR, r8
++END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
++	cmpd	r0,r25
+ 	beq	2f
+ 	mtspr	SPRN_DSCR,r0
+ 2:
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index e435bc0..0ba68a2 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1322,13 +1322,10 @@ void facility_unavailable_exception(struct pt_regs *regs)
+ 	if (status == FSCR_DSCR_LG) {
+ 		/* User is acessing the DSCR.  Set the inherit bit and allow
+ 		 * the user to set it directly in future by setting via the
+-		 * H/FSCR DSCR bit.
++		 * FSCR DSCR bit.  We always leave HFSCR DSCR set.
+ 		 */
+ 		current->thread.dscr_inherit = 1;
+-		if (hv)
+-			mtspr(SPRN_HFSCR, value | HFSCR_DSCR);
+-		else
+-			mtspr(SPRN_FSCR,  value | FSCR_DSCR);
++		mtspr(SPRN_FSCR, value | FSCR_DSCR);
+ 		return;
+ 	}
+ 
