@@ -1,21 +1,31 @@
 Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 31B102C009F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 01:49:01 +1000 (EST)
-Message-ID: <1377532129.3033.4.camel@snotra.buserror.net>
-Subject: Re: Pull request: scottwood/linux.git next
+ by ozlabs.org (Postfix) with ESMTPS id 6AFFD2C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 02:36:55 +1000 (EST)
+Message-ID: <1377535003.3033.6.camel@snotra.buserror.net>
+Subject: Re: [PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last
+ system transaction
 From: Scott Wood <scottwood@freescale.com>
-To: <benh@kernel.crashing.org>
-Date: Mon, 26 Aug 2013 10:48:49 -0500
-In-Reply-To: <20130824010733.GA6116@home.buserror.net>
-References: <20130824010733.GA6116@home.buserror.net>
+To: Zhang Haijun <B42677@freescale.com>
+Date: Mon, 26 Aug 2013 11:36:43 -0500
+In-Reply-To: <521AA947.6080209@freescale.com>
+References: <1374055891-20703-1-git-send-email-Haijun.Zhang@freescale.com>
+ <99E897753B6F7048BD8CCDB4661D02E13DF52C@039-SN2MPN1-022.039d.mgd.msft.net>
+ <521703AB.8030702@freescale.com>
+ <1377272410.20722.46.camel@snotra.buserror.net>
+ <521AA947.6080209@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "cjb@laptop.org" <cjb@laptop.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xie Xiaobo-R63061 <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +35,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-08-23 at 20:07 -0500, Scott Wood wrote:
-> The following changes since commit afbcdd97bf117bc2d01b865a32f78f662437a4d8:
+On Mon, 2013-08-26 at 09:03 +0800, Zhang Haijun wrote:
+> On 08/23/2013 11:40 PM, Scott Wood wrote:
 > 
->   powerpc/wsp: Fix early debug build (2013-08-16 10:59:27 +1000)
+> > On Fri, 2013-08-23 at 14:39 +0800, Zhang Haijun wrote:
+> > > Hi, Anton and all
+> > > 
+> > > Is there any advice on these two patches ?
+> > > 
+> > > [PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last system 
+> > > transaction
+> > > [PATCH 3/4 V3] mmc: esdhc: Correct host version of T4240-R1.0-R2.0.
+> > > 
+> > > 
+> > > [PATCH 1/4 V4] powerpc/85xx: Add support for 85xx cpu type detection
+> > > This patch is Act-by Scott.
+> > > Patch 4/4 is split to four patches and Act-by Anton.
+> > > 
+> > > 
+> > > Thanks all.
+> > > 
+> > > 
+> > > 
+> > [snip]
+> > > > > +	if (!(((SVR_SOC_VER(svr) == SVR_T4240) && (SVR_REV(svr) == 0x10))
+> > > > > ||
+> > > > > +		((SVR_SOC_VER(svr) == SVR_B4860) && (SVR_REV(svr) == 0x10))
+> > > > > ||
+> > > > > +		((SVR_SOC_VER(svr) == SVR_P1010) && (SVR_REV(svr) == 0x10))
+> > > > > ||
+> > > > > +		((SVR_SOC_VER(svr) == SVR_P3041) && (SVR_REV(svr) <= 0x20))
+> > > > > ||
+> > > > > +		((SVR_SOC_VER(svr) == SVR_P2041) && (SVR_REV(svr) <= 0x20))
+> > > > > ||
+> > > > > +		((SVR_SOC_VER(svr) == SVR_P5040) && SVR_REV(svr) == 0x20)))
+> > > > > +		return;
+> > You need to include variants here.  If P5040 is affected, then P5021 is
+> > affected.  If P2041 is affected, then P2040 is affected, etc.
+> > 
+> > -Scott
+> > 
+> > 
+> Hi, Scott
 > 
-> are available in the git repository at:
+> This workaround is for CR:ENGR00229586: A-005055, Configs Affected
+> only list these soc and its version.
+> I was also wonder why only these boards?
 > 
->   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
-> 
-> for you to fetch changes up to 622e03eb3498c32ee29de5c1d6d381f443e58fad:
-> 
->   powerpc/85xx: Add C293PCIE board support (2013-08-23 19:43:24 -0500)
-> 
-> ----------------------------------------------------------------
-> Chunhe Lan (1):
->       powerpc/85xx: Add P1023RDB board support
-> 
-> Haijun.Zhang (1):
->       powerpc/85xx: Add support for 85xx cpu type detection
-> 
-> Mingkai Hu (3):
->       powerpc/85xx: Add SEC6.0 device tree
->       powerpc/85xx: Add silicon device tree for C293
->       powerpc/85xx: Add C293PCIE board support
-> 
-> Scott Wood (5):
->       powerpc/fsl-booke: Work around erratum A-006958
->       powerpc: Convert some mftb/mftbu into mfspr
->       powerpc/85xx: Remove -Wa,-me500
->       powerpc/booke64: Use appropriate -mcpu
->       powerpc/e500: Set -mcpu flag for 32-bit e500
-> 
-> Wang Dongsheng (1):
->       powerpc: add Book E support to 64-bit hibernation
+> But I can't add soc like P5021 as I think it should be. Maybe there
+> are some difference between them.
 
-Oh, forgot again: Highlights include changes in compiler flag settings
-on e500 family cores, booke64 hibernation support, support for two new
-boards, and an erratum workaround.
+The only difference between P5040 and P5021 is the number of cores
+enabled.  It is physically the same silicon.  Likewise with a lot of
+other variants.
 
 -Scott
