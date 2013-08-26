@@ -1,23 +1,21 @@
-Return-Path: <gleb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 979092C009F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 22:37:58 +1000 (EST)
-Date: Mon, 26 Aug 2013 15:37:53 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 02/10] KVM: PPC: reserve a capability number for multitce
- support
-Message-ID: <20130826123753.GA22977@redhat.com>
-References: <1375332272-22176-1-git-send-email-aik@ozlabs.ru>
- <1375332272-22176-3-git-send-email-aik@ozlabs.ru>
- <1376441474.4255.39.camel@pasglop>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 31B102C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 01:49:01 +1000 (EST)
+Message-ID: <1377532129.3033.4.camel@snotra.buserror.net>
+Subject: Re: Pull request: scottwood/linux.git next
+From: Scott Wood <scottwood@freescale.com>
+To: <benh@kernel.crashing.org>
+Date: Mon, 26 Aug 2013 10:48:49 -0500
+In-Reply-To: <20130824010733.GA6116@home.buserror.net>
+References: <20130824010733.GA6116@home.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1376441474.4255.39.camel@pasglop>
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,56 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 14, 2013 at 10:51:14AM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-08-01 at 14:44 +1000, Alexey Kardashevskiy wrote:
-> > This is to reserve a capablity number for upcoming support
-> > of H_PUT_TCE_INDIRECT and H_STUFF_TCE pseries hypercalls
-> > which support mulptiple DMA map/unmap operations per one call.
+On Fri, 2013-08-23 at 20:07 -0500, Scott Wood wrote:
+> The following changes since commit afbcdd97bf117bc2d01b865a32f78f662437a4d8:
 > 
-> Gleb, any chance you can put this (and the next one) into a tree to
-> "lock in" the numbers ?
+>   powerpc/wsp: Fix early debug build (2013-08-16 10:59:27 +1000)
 > 
-Applied it. Sorry for slow response, was on vocation and still go
-through the email backlog.
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+> 
+> for you to fetch changes up to 622e03eb3498c32ee29de5c1d6d381f443e58fad:
+> 
+>   powerpc/85xx: Add C293PCIE board support (2013-08-23 19:43:24 -0500)
+> 
+> ----------------------------------------------------------------
+> Chunhe Lan (1):
+>       powerpc/85xx: Add P1023RDB board support
+> 
+> Haijun.Zhang (1):
+>       powerpc/85xx: Add support for 85xx cpu type detection
+> 
+> Mingkai Hu (3):
+>       powerpc/85xx: Add SEC6.0 device tree
+>       powerpc/85xx: Add silicon device tree for C293
+>       powerpc/85xx: Add C293PCIE board support
+> 
+> Scott Wood (5):
+>       powerpc/fsl-booke: Work around erratum A-006958
+>       powerpc: Convert some mftb/mftbu into mfspr
+>       powerpc/85xx: Remove -Wa,-me500
+>       powerpc/booke64: Use appropriate -mcpu
+>       powerpc/e500: Set -mcpu flag for 32-bit e500
+> 
+> Wang Dongsheng (1):
+>       powerpc: add Book E support to 64-bit hibernation
 
-> I've been wanting to apply the whole series to powerpc-next, that's
-> stuff has been simmering for way too long and is in a good enough shape
-> imho, but I need the capabilities and ioctl numbers locked in your tree
-> first.
-> 
-> Cheers,
-> Ben.
-> 
-> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > ---
-> > Changes:
-> > 2013/07/16:
-> > * changed the number
-> > 
-> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > ---
-> >  include/uapi/linux/kvm.h | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> > index acccd08..99c2533 100644
-> > --- a/include/uapi/linux/kvm.h
-> > +++ b/include/uapi/linux/kvm.h
-> > @@ -667,6 +667,7 @@ struct kvm_ppc_smmu_info {
-> >  #define KVM_CAP_PPC_RTAS 91
-> >  #define KVM_CAP_IRQ_XICS 92
-> >  #define KVM_CAP_ARM_EL1_32BIT 93
-> > +#define KVM_CAP_SPAPR_MULTITCE 94
-> >  
-> >  #ifdef KVM_CAP_IRQ_ROUTING
-> >  
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Oh, forgot again: Highlights include changes in compiler flag settings
+on e500 family cores, booke64 hibernation support, support for two new
+boards, and an erratum workaround.
 
---
-			Gleb.
+-Scott
