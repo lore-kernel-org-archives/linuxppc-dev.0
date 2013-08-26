@@ -1,15 +1,35 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [173.228.107.16])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 59AA72C0084
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 05:00:15 +1000 (EST)
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/hvsi: increase handshake timeout from 200ms to 400ms.
-Date: Mon, 26 Aug 2013 11:53:32 -0700
-Message-Id: <1377543212-20432-1-git-send-email-ebs@ebshome.net>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B43312C00A2
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 05:31:26 +1000 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 27 Aug 2013 05:28:09 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1EA783578050
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 05:31:23 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7QJF6XB9503200
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 05:15:10 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r7QJVINK029096
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 05:31:19 +1000
+Subject: [RFC PATCH v3 00/12] Machine check handling in linux host.
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Tue, 27 Aug 2013 01:01:16 +0530
+Message-ID: <20130826192616.2855.18749.stgit@mars>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Jeremy Kerr <jeremy.kerr@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,35 +39,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This solves a problem observed in kexec'ed kernel where 200ms timeout is
-too short and bootconsole fails to initialize. Console did eventually
-become workable but much later into the boot process.
+Hi,
 
-Observed timeout was around 260ms, but I decided to make it a little bigger
-for more reliability.
+Please find the patch set that performs the machine check handling inside linux
+host. The design is to be able to handle re-entrancy so that we do not clobber
+the machine check information during nested machine check interrupt.
 
-This has been tested on Power7 machine with Petitboot as a primary
-bootloader and PowerNV firmware.
+The patch 2 introduces separate emergency stack in paca structure exclusively
+for machine check exception handling.  Patch 3 implements the logic to save the
+raw MCE info onto the emergency stack and prepares to take another exception.
+Patch 4 implements the additional checks that helps to decide whether to
+deliver machine check event to host kernel right away or queue it up and
+return. Patch 5 and 6 adds CPU-side hooks for early machine check handler
+and TLB flush. The patch 7 and 8 is responsible to detect SLB/TLB errors and
+flush them off in the real mode. The patch 9 implements the logic to decode
+and save high level MCE information to per cpu buffer without clobbering.
+Patch 10 implements mechanism to queue up MCE event in cases where early
+handler can not deliver the event to host kernel right away. The patch 12
+adds the basic error handling to the high level C code with MMU on.
 
-Signed-off-by: Eugene Surovegin <surovegin@google.com>
+I have tested SLB multihit, MC coming from opal context on powernv.
+
+Please review and let me know your comments.
+
+Changes in v3:
+- Rebased to v3.11-rc7
+- Handle MCE coming from opal context, secondary thread nap and return
+  from interrupt. Queue up the MCE event in this scenario and log it
+  later during syscall exit path. (patch 4 and 10).
+
+Changes in v2:
+- Moved early machine check handling code under CPU_FTR_HVMODE section.
+  This makes sure that the early machine check handler will get executed
+  only in hypervisor kernel.
+- Add dedicated emergency stack for machine check so that we don't end up
+  disturbing others who use same emergency stack.
+- Fixed the machine check early handle where it used to assume that r1 always
+  contains the valid stack pointer.
+- Fixed an issue where per-cpu mce_nest_count variable underflows when kvm
+  fails to handle MC error and exit the guest.
+- Fixed the code to restore r13 while before exiting early handler.
+
+Thanks,
+-Mahesh.
 ---
- drivers/tty/hvc/hvsi_lib.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvsi_lib.c b/drivers/tty/hvc/hvsi_lib.c
-index 3396eb9..ac27671 100644
---- a/drivers/tty/hvc/hvsi_lib.c
-+++ b/drivers/tty/hvc/hvsi_lib.c
-@@ -341,8 +341,8 @@ void hvsilib_establish(struct hvsi_priv *pv)
- 
- 	pr_devel("HVSI@%x:   ... waiting handshake\n", pv->termno);
- 
--	/* Try for up to 200s */
--	for (timeout = 0; timeout < 20; timeout++) {
-+	/* Try for up to 400ms */
-+	for (timeout = 0; timeout < 40; timeout++) {
- 		if (pv->established)
- 			goto established;
- 		if (!hvsi_get_packet(pv))
+Mahesh Salgaonkar (12):
+      powerpc/book3s: Split the common exception prolog logic into two section.
+      powerpc/book3s: Introduce exclusive emergency stack for machine check exception.
+      powerpc/book3s: handle machine check in Linux host.
+      Validate r1 value before going to host kernel in virtual mode.
+      powerpc/book3s: Introduce a early machine check hook in cpu_spec.
+      powerpc/book3s: Add flush_tlb operation in cpu_spec.
+      powerpc/book3s: Flush SLB/TLBs if we get SLB/TLB machine check errors on power7.
+      powerpc/book3s: Flush SLB/TLBs if we get SLB/TLB machine check errors on power8.
+      powerpc/book3s: Decode and save machine check event.
+      Queue up and process delayed MCE events.
+      powerpc/powernv: Remove machine check handling in OPAL.
+      powerpc/powernv: Machine check exception handling.
+
+
+ arch/powerpc/include/asm/bitops.h        |    5 
+ arch/powerpc/include/asm/cputable.h      |   12 +
+ arch/powerpc/include/asm/exception-64s.h |   67 +++---
+ arch/powerpc/include/asm/mce.h           |  198 +++++++++++++++++
+ arch/powerpc/include/asm/paca.h          |    9 +
+ arch/powerpc/kernel/Makefile             |    1 
+ arch/powerpc/kernel/asm-offsets.c        |    4 
+ arch/powerpc/kernel/cpu_setup_power.S    |   38 ++-
+ arch/powerpc/kernel/cputable.c           |   16 +
+ arch/powerpc/kernel/entry_64.S           |    5 
+ arch/powerpc/kernel/exceptions-64s.S     |  181 ++++++++++++++++
+ arch/powerpc/kernel/mce.c                |  345 ++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/mce_power.c          |  287 +++++++++++++++++++++++++
+ arch/powerpc/kernel/setup_64.c           |   10 +
+ arch/powerpc/kernel/traps.c              |   15 +
+ arch/powerpc/kvm/book3s_hv_ras.c         |   50 ++--
+ arch/powerpc/platforms/powernv/opal.c    |  161 ++++----------
+ arch/powerpc/xmon/xmon.c                 |    4 
+ 18 files changed, 1228 insertions(+), 180 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/mce.h
+ create mode 100644 arch/powerpc/kernel/mce.c
+ create mode 100644 arch/powerpc/kernel/mce_power.c
+
 -- 
-1.7.10.2
+-Mahesh
