@@ -1,23 +1,14 @@
-Return-Path: <martin@hinner.info>
-Received: from mail-qe0-f41.google.com (mail-qe0-f41.google.com
- [209.85.128.41])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 17A822C007B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 04:29:10 +1000 (EST)
-Received: by mail-qe0-f41.google.com with SMTP id x7so1990928qeu.14
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 11:29:07 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1377537249.3033.26.camel@snotra.buserror.net>
-References: <CAPVwjkzkuw4cbo9YxnsskdoAda-k+Gb5sdVEJiZTVAD1nR5OOg@mail.gmail.com>
- <CAPVwjkyPKo0SmoEkJttzz0fXrTcyuv7K1nuhOzW9CdGXD+t7_A@mail.gmail.com>
- <1377537249.3033.26.camel@snotra.buserror.net>
-Date: Mon, 26 Aug 2013 20:29:06 +0200
-Message-ID: <CAPVwjkzT6dyv-T_8fF-zm8VLKvGFgLkrEeBC4ib-p0mkFJ7=fA@mail.gmail.com>
-Subject: Re: Loading kernel on MPC86x
-From: Martin Hinner <martin@hinner.info>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [173.228.107.16])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 59AA72C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 05:00:15 +1000 (EST)
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/hvsi: increase handshake timeout from 200ms to 400ms.
+Date: Mon, 26 Aug 2013 11:53:32 -0700
+Message-Id: <1377543212-20432-1-git-send-email-ebs@ebshome.net>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,44 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 26, 2013 at 7:14 PM, Scott Wood <scottwood@freescale.com> wrote:
->> that kernel must be at location 0. Another problem was that interrupts
->> got re-enabled during execution of my bootloader (I am doing some
->> syscalls -> goes  to Cisco rom),
-> Do you mean you're calling into the rom after Linux has already started
-> executing?  That's not normal for 8xx.
+This solves a problem observed in kexec'ed kernel where 200ms timeout is
+too short and bootconsole fails to initialize. Console did eventually
+become workable but much later into the boot process.
 
-No, in bootloader. I have disabled interrupts and then later did a
-syscall which probably enabled them again. As I have overwritten some
-of Cisco ROM data it crashed (at random place).
+Observed timeout was around 260ms, but I decided to make it a little bigger
+for more reliability.
 
->> I am also curious why CONFIG_PPC_EARLY_DEBUG_CPM uses
->> CONFIG_PPC_EARLY_DEBUG_CPM_ADDR as pointer to transmit SMC buffer and
->> not address of CPM/SCM parameter RAM ? TX buffer address can be read
->> from SMC parameter RAM. Wouldn't this solution be more portable? At
->> least this way I do it when I take over console from Cisco
->> startup/rommon.
->
-> The point was to keep things as simple as possible (e.g. for use in
-> temporary handcoded asm as needed).  This is a hacky debugging feature
-> that assumes you know what you're doing and can set the address to match
-> what the loader does (and that the loader's choice of address is
-> static).  If you have an improvement that keeps it simple, feel free to
-> send a patch.
+This has been tested on Power7 machine with Petitboot as a primary
+bootloader and PowerNV firmware.
 
-How about making CONFIG_PPC_EARLY_DEBUG_CPM_PARRAM that woud carry
-address of SMCx parameter RAM (IMMR+0x04180 on MPC866) and this value
-would be used in case CONFIG_PPC_EARLY_DEBUG_CPM_ADDR is zero ? This
-would allow kernel hackers to still use
-CONFIG_PPC_EARLY_DEBUG_CPM_ADDR for assembly debugging (+legacy use)
-and everyone else can use it as a more reliable option that does not
-rely on particular bootloader behavior. Early debug is good even for
-end-users so as they can send debug output if anything goes wrong at
-early stage.
+Signed-off-by: Eugene Surovegin <surovegin@google.com>
+---
+ drivers/tty/hvc/hvsi_lib.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Anyway, difference between _PARRAM and _ADDR is only one lwz
-instruction, so I guess it is possible to completely discard _ADDR if
-there is no legacy use for it. I am also not sure if this works with
-SCC UART ports or only CPM SMC UART.
-
-Martin
+diff --git a/drivers/tty/hvc/hvsi_lib.c b/drivers/tty/hvc/hvsi_lib.c
+index 3396eb9..ac27671 100644
+--- a/drivers/tty/hvc/hvsi_lib.c
++++ b/drivers/tty/hvc/hvsi_lib.c
+@@ -341,8 +341,8 @@ void hvsilib_establish(struct hvsi_priv *pv)
+ 
+ 	pr_devel("HVSI@%x:   ... waiting handshake\n", pv->termno);
+ 
+-	/* Try for up to 200s */
+-	for (timeout = 0; timeout < 20; timeout++) {
++	/* Try for up to 400ms */
++	for (timeout = 0; timeout < 40; timeout++) {
+ 		if (pv->established)
+ 			goto established;
+ 		if (!hvsi_get_packet(pv))
+-- 
+1.7.10.2
