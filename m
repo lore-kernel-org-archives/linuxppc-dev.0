@@ -1,32 +1,21 @@
-Return-Path: <B42677@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3F30A2C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 11:46:51 +1000 (EST)
-Message-ID: <521AB457.3030009@freescale.com>
-Date: Mon, 26 Aug 2013 09:50:15 +0800
-From: Zhang Haijun <B42677@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last
- system transaction
-References: <1374055891-20703-1-git-send-email-Haijun.Zhang@freescale.com>
- <99E897753B6F7048BD8CCDB4661D02E13DF52C@039-SN2MPN1-022.039d.mgd.msft.net>
- <521703AB.8030702@freescale.com>
- <1377272410.20722.46.camel@snotra.buserror.net>
- <521AA947.6080209@freescale.com>
-In-Reply-To: <521AA947.6080209@freescale.com>
-Content-Type: multipart/alternative;
- boundary="------------090104010705040003030102"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
- "cjb@laptop.org" <cjb@laptop.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Xiaobo-R63061 <X.Xie@freescale.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 0BE462C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 21:10:42 +1000 (EST)
+Subject: Re: [PATCH] powerpc/kvm: Handle the boundary condition correctly
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <87wqn9dtbi.fsf@linux.vnet.ibm.com>
+Date: Mon, 26 Aug 2013 13:10:33 +0200
+Message-Id: <932EC6E7-BC15-474F-9E8B-4321B2126BE4@suse.de>
+References: <1377171479-25738-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1683D101-052D-4BEB-8ED1-6F32C6904850@suse.de>
+ <87haeh13s2.fsf@linux.vnet.ibm.com>
+ <527D8312-EA18-4962-9069-B54FA738F5FA@suse.de>
+ <87wqn9dtbi.fsf@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,192 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---------------090104010705040003030102
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
 
-On 08/26/2013 09:03 AM, Zhang Haijun wrote:
-> On 08/23/2013 11:40 PM, Scott Wood wrote:
->> On Fri, 2013-08-23 at 14:39 +0800, Zhang Haijun wrote:
->>> Hi, Anton and all
->>>
->>> Is there any advice on these two patches ?
->>>
->>> [PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last system
->>> transaction
->>> [PATCH 3/4 V3] mmc: esdhc: Correct host version of T4240-R1.0-R2.0.
->>>
->>>
->>> [PATCH 1/4 V4] powerpc/85xx: Add support for 85xx cpu type detection
->>> This patch is Act-by Scott.
->>> Patch 4/4 is split to four patches and Act-by Anton.
->>>
->>>
->>> Thanks all.
->>>
->>>
->>>
->> [snip]
->>>>> +	if (!(((SVR_SOC_VER(svr) == SVR_T4240) && (SVR_REV(svr) == 0x10))
->>>>> ||
->>>>> +		((SVR_SOC_VER(svr) == SVR_B4860) && (SVR_REV(svr) == 0x10))
->>>>> ||
->>>>> +		((SVR_SOC_VER(svr) == SVR_P1010) && (SVR_REV(svr) == 0x10))
->>>>> ||
->>>>> +		((SVR_SOC_VER(svr) == SVR_P3041) && (SVR_REV(svr) <= 0x20))
->>>>> ||
->>>>> +		((SVR_SOC_VER(svr) == SVR_P2041) && (SVR_REV(svr) <= 0x20))
->>>>> ||
->>>>> +		((SVR_SOC_VER(svr) == SVR_P5040) && SVR_REV(svr) == 0x20)))
->>>>> +		return;
->> You need to include variants here.  If P5040 is affected, then P5021 is
->> affected.  If P2041 is affected, then P2040 is affected, etc.
->>
->> -Scott
->>
->>
-> Hi, Scott
->
-> This workaround is for CR:ENGR00229586: A-005055, Configs Affected 
-> onlylist these soc and its version.
-> I was also wonder why only these boards?
->
-> But Ican't add soc like P5021 as I think it should be. Maybe there are 
-> some difference between them.
->
-> -- 
-> Thanks & Regards
->
-> Haijun
-Hi, Scott
+On 26.08.2013, at 05:28, Aneesh Kumar K.V wrote:
 
-I found there are update about this errata.
+> Alexander Graf <agraf@suse.de> writes:
+>=20
+>> On 23.08.2013, at 04:31, Aneesh Kumar K.V wrote:
+>>=20
+>>> Alexander Graf <agraf@suse.de> writes:
+>>>=20
+>>>> On 22.08.2013, at 12:37, Aneesh Kumar K.V wrote:
+>>>>=20
+>>>>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>>>>=20
+>>>> Isn't this you?
+>>>=20
+>>> Yes. The patches are generated using git format-patch and sent by
+>>> git send-email. That's how it always created patches for me. I am =
+not sure if
+>>> there is a config I can change to avoid having From:
+>>>=20
+>>>>=20
+>>>>>=20
+>>>>> We should be able to copy upto count bytes
+>>>>=20
+>>>> Why?
+>>>>=20
+>>>=20
+>>> Without this we end up doing
+>>>=20
+>>> +    struct kvm_get_htab_buf {
+>>> +        struct kvm_get_htab_header header;
+>>> +        /*
+>>> +         * Older kernel required one extra byte.
+>>> +         */
+>>> +        unsigned long hpte[3];
+>>> +    } hpte_buf;
+>>>=20
+>>>=20
+>>> even though we are only looking for one hpte entry.
+>>=20
+>> Ok, please give me an example with real numbers and why it breaks.
+>>=20
+>>>=20
+>>> =
+http://mid.gmane.org/1376995766-16526-4-git-send-email-aneesh.kumar@linux.=
+vnet.ibm.com
+>>>=20
+>=20
+> Didn't quiet get what you are looking for. As explained before, we now
+> need to pass an array with array size 3 even though we know we need to
+> read only 2 entries because kernel doesn't loop correctly.
 
-I'll update thispatch.
-
-Thanks.
-
--- 
-Thanks & Regards
-
-Haijun
+But we need to do that regardless, because newer QEMU needs to be able =
+to run on older kernels, no?
 
 
---------------090104010705040003030102
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <div class="moz-cite-prefix">On 08/26/2013 09:03 AM, Zhang Haijun
-      wrote:<br>
-    </div>
-    <blockquote cite="mid:521AA947.6080209@freescale.com" type="cite">
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <div class="moz-cite-prefix">On 08/23/2013 11:40 PM, Scott Wood
-        wrote:<br>
-      </div>
-      <blockquote
-        cite="mid:1377272410.20722.46.camel@snotra.buserror.net"
-        type="cite">
-        <pre wrap="">On Fri, 2013-08-23 at 14:39 +0800, Zhang Haijun wrote:
-</pre>
-        <blockquote type="cite">
-          <pre wrap="">Hi, Anton and all
-
-Is there any advice on these two patches ?
-
-[PATCH 2/4 V2] mmc: esdhc: workaround for dma err in the last system 
-transaction
-[PATCH 3/4 V3] mmc: esdhc: Correct host version of T4240-R1.0-R2.0.
-
-
-[PATCH 1/4 V4] powerpc/85xx: Add support for 85xx cpu type detection
-This patch is Act-by Scott.
-Patch 4/4 is split to four patches and Act-by Anton.
-
-
-Thanks all.
-
-
-
-</pre>
-        </blockquote>
-        <pre wrap="">[snip]
-</pre>
-        <blockquote type="cite">
-          <blockquote type="cite">
-            <blockquote type="cite">
-              <pre wrap="">+	if (!(((SVR_SOC_VER(svr) == SVR_T4240) &amp;&amp; (SVR_REV(svr) == 0x10))
-||
-+		((SVR_SOC_VER(svr) == SVR_B4860) &amp;&amp; (SVR_REV(svr) == 0x10))
-||
-+		((SVR_SOC_VER(svr) == SVR_P1010) &amp;&amp; (SVR_REV(svr) == 0x10))
-||
-+		((SVR_SOC_VER(svr) == SVR_P3041) &amp;&amp; (SVR_REV(svr) &lt;= 0x20))
-||
-+		((SVR_SOC_VER(svr) == SVR_P2041) &amp;&amp; (SVR_REV(svr) &lt;= 0x20))
-||
-+		((SVR_SOC_VER(svr) == SVR_P5040) &amp;&amp; SVR_REV(svr) == 0x20)))
-+		return;
-</pre>
-            </blockquote>
-          </blockquote>
-        </blockquote>
-        <pre wrap="">You need to include variants here.  If P5040 is affected, then P5021 is
-affected.  If P2041 is affected, then P2040 is affected, etc.
-
--Scott
-
-
-</pre>
-      </blockquote>
-      <font size="-1">Hi, Scott<br>
-        <br>
-        <font size="-1"><font size="-1">This <font size="-1">worka<font
-                size="-1">round is for </font></font></font></font></font><font
-        size="-1"><font size="-1"><font size="-1"><font size="-1"><font
-                size="-1">CR:ENGR00229586: A-005055<font size="-1">,
-                  Config<font size="-1">s Affected only<font size="-1">
-                      list th<font size="-1">e<font size="-1">se <font
-                            size="-1">soc and its version</font>.<br>
-                          <font size="-1">I was also wo<font size="-1">nder
-
-                              <font size="-1">why only these boards<font
-                                  size="-1">?<br>
-                                  <br>
-                                  <font size="-1"><font size="-1">But <font
-                                        size="-1">I<font size="-1">
-                                          can't add s<font size="-1">oc
-                                          </font>like P5021 as <font
-                                            size="-1">I think it should
-                                            be. Maybe there are some <font
-                                              size="-1">difference <font
-                                                size="-1">between them.</font></font></font></font></font></font></font><br>
-                                </font></font></font></font></font></font></font></font></font></font></font></font></font></font><br>
-      <pre class="moz-signature" cols="72">-- 
-Thanks &amp; Regards
-
-Haijun</pre>
-    </blockquote>
-    <font size="-1"><font size="-1">Hi, <font size="-1">Scott<br>
-          <br>
-          <font size="-1">I found there are update about <font
-              size="-1">this errata.<br>
-              <br>
-              <font size="-1">I'<font size="-1">ll update this<font
-                    size="-1"> patch. <br>
-                    <br>
-                    Thanks<font size="-1">.</font></font></font></font><br>
-            </font></font></font></font></font><br>
-    <pre class="moz-signature" cols="72">-- 
-Thanks &amp; Regards
-
-Haijun</pre>
-  </body>
-</html>
-
---------------090104010705040003030102--
+Alex
