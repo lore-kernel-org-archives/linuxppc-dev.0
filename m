@@ -1,11 +1,28 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
+Return-Path: <paolo.bonzini@gmail.com>
+Received: from mail-qa0-x230.google.com (mail-qa0-x230.google.com
+ [IPv6:2607:f8b0:400d:c00::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7D75E2C00B6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 17:39:26 +1000 (EST)
+Received: by mail-qa0-f48.google.com with SMTP id hu14so135981qab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2013 00:39:21 -0700 (PDT)
+Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
+Message-ID: <521B0622.9090208@redhat.com>
+Date: Mon, 26 Aug 2013 09:39:14 +0200
+From: Paolo Bonzini <pbonzini@redhat.com>
 MIME-Version: 1.0
-Subject: [PATCH] powerpc: DSCR FSCR cleanup
-Date: Mon, 26 Aug 2013 13:55:57 +1000
-Message-ID: <24883.1377489357@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 2/2] ppc: kvm: use anon_inode_getfd() with O_CLOEXEC flag
+References: <cover.1377372576.git.ydroneaud@opteya.com>
+ <b7ae23be3a3d4a2f57eca6cfc7f9361da883ceca.1377372576.git.ydroneaud@opteya.com>
+ <3557EF65-4327-4DAE-999A-B0EE13C433F5@suse.de>
+In-Reply-To: <3557EF65-4327-4DAE-999A-B0EE13C433F5@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Yann Droneaud <ydroneaud@opteya.com>, kvm@vger.kernel.org,
+ Gleb Natapov <gleb@redhat.com>, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,85 +32,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As suggested by paulus we can simplify the Data Stream Control Register
-(DSCR) Facility Status and Control Register (FSCR) handling.
+Il 25/08/2013 17:04, Alexander Graf ha scritto:
+> 
+> On 24.08.2013, at 21:14, Yann Droneaud wrote:
+> 
+>> KVM uses anon_inode_get() to allocate file descriptors as part
+>> of some of its ioctls. But those ioctls are lacking a flag argument
+>> allowing userspace to choose options for the newly opened file descriptor.
+>>
+>> In such case it's advised to use O_CLOEXEC by default so that
+>> userspace is allowed to choose, without race, if the file descriptor
+>> is going to be inherited across exec().
+>>
+>> This patch set O_CLOEXEC flag on all file descriptors created
+>> with anon_inode_getfd() to not leak file descriptors across exec().
+>>
+>> Signed-off-by: Yann Droneaud <ydroneaud@opteya.com>
+>> Link: http://lkml.kernel.org/r/cover.1377372576.git.ydroneaud@opteya.com
+> 
+> Reviewed-by: Alexander Graf <agraf@suse.de>
+> 
+> Would it make sense to simply inherit the O_CLOEXEC flag from the
+> parent kvm fd instead? That would give user space the power to keep
+> fds across exec() if it wants to.
 
-Firstly, we simplify the asm by using a rldimi.
+Does it make sense to use non-O_CLOEXEC file descriptors with KVM at
+all?  Besides fork() not being supported by KVM, as described in
+Documentation/virtual/kvm/api.txt, the VMAs of the parent process go
+away as soon as you exec().  I'm not sure how you can use the inherited
+file descriptor in a sensible way after exec().
 
-Secondly, we now use the FSCR only to control the DSCR facility, rather
-than both the FSCR and HFSCR.  Users will see no functional change from
-this but will get a minor speedup as they will trap into the kernel only
-once (rather than twice) when they first touch the DSCR.  Also, this
-changes removes a bunch of ugly FTR_SECTION code.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
---
- arch/powerpc/kernel/entry_64.S | 31 ++++++-------------------------
- arch/powerpc/kernel/traps.c    |  7 ++-----
- 2 files changed, 8 insertions(+), 30 deletions(-)
-
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 2bd0b88..513dc4d 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -575,34 +575,15 @@ BEGIN_FTR_SECTION
- 	ld	r7,DSCR_DEFAULT@toc(2)
- 	ld	r0,THREAD_DSCR(r4)
- 	cmpwi	r6,0
--	li	r8, FSCR_DSCR
- 	bne	1f
- 	ld	r0,0(r7)
--	b	3f
- 1:
--  BEGIN_FTR_SECTION_NESTED(70)
--	mfspr	r6, SPRN_FSCR
--	or	r6, r6, r8
--	mtspr	SPRN_FSCR, r6
--    BEGIN_FTR_SECTION_NESTED(69)
--	mfspr	r6, SPRN_HFSCR
--	or	r6, r6, r8
--	mtspr	SPRN_HFSCR, r6
--    END_FTR_SECTION_NESTED(CPU_FTR_HVMODE, CPU_FTR_HVMODE, 69)
--	b	4f
--  END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
--3:
--  BEGIN_FTR_SECTION_NESTED(70)
--	mfspr	r6, SPRN_FSCR
--	andc	r6, r6, r8
--	mtspr	SPRN_FSCR, r6
--    BEGIN_FTR_SECTION_NESTED(69)
--	mfspr	r6, SPRN_HFSCR
--	andc	r6, r6, r8
--	mtspr	SPRN_HFSCR, r6
--    END_FTR_SECTION_NESTED(CPU_FTR_HVMODE, CPU_FTR_HVMODE, 69)
--  END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
--4:	cmpd	r0,r25
-+BEGIN_FTR_SECTION_NESTED(70)
-+	mfspr	r8, SPRN_FSCR
-+	rldimi	r8, r6, FSCR_DSCR_LG, (63 - FSCR_DSCR_LG)
-+	mtspr	SPRN_FSCR, r8
-+END_FTR_SECTION_NESTED(CPU_FTR_ARCH_207S, CPU_FTR_ARCH_207S, 70)
-+	cmpd	r0,r25
- 	beq	2f
- 	mtspr	SPRN_DSCR,r0
- 2:
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index e435bc0..0ba68a2 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1322,13 +1322,10 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 	if (status == FSCR_DSCR_LG) {
- 		/* User is acessing the DSCR.  Set the inherit bit and allow
- 		 * the user to set it directly in future by setting via the
--		 * H/FSCR DSCR bit.
-+		 * FSCR DSCR bit.  We always leave HFSCR DSCR set.
- 		 */
- 		current->thread.dscr_inherit = 1;
--		if (hv)
--			mtspr(SPRN_HFSCR, value | HFSCR_DSCR);
--		else
--			mtspr(SPRN_FSCR,  value | FSCR_DSCR);
-+		mtspr(SPRN_FSCR, value | FSCR_DSCR);
- 		return;
- 	}
- 
+Paolo
