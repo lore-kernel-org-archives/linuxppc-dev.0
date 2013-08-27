@@ -1,31 +1,32 @@
 Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 049552C0354
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:32:45 +1000 (EST)
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 93E332C0235
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:32:56 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Wed, 28 Aug 2013 04:15:30 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E89553578051
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:32:40 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7RIWTex59769050
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:32:29 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7RIWdHA026098
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:32:40 +1000
-Subject: [PATCH V6 6/7] POWER/cpuidle: Enable powernv cpuidle support.
+ Tue, 27 Aug 2013 23:53:08 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 535A0394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 00:02:41 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7RIYXtg21561424
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 00:04:33 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7RIWotA031105
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 00:02:51 +0530
+Subject: [PATCH V6 7/7] powernv/cpuidle: Enable idle powernv cpu to call
+ into the cpuidle framework.
 To: linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Wed, 28 Aug 2013 00:01:47 +0530
-Message-ID: <20130827183145.18579.9940.stgit@deepthi.in.ibm.com>
+Date: Wed, 28 Aug 2013 00:02:12 +0530
+Message-ID: <20130827183207.18579.92954.stgit@deepthi.in.ibm.com>
 In-Reply-To: <20130827183016.18579.16595.stgit@deepthi.in.ibm.com>
 References: <20130827183016.18579.16595.stgit@deepthi.in.ibm.com>
 MIME-Version: 1.0
@@ -42,90 +43,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following patch extends the current power backend
-idle driver to the powernv platform.
+This patch enables idle cpu on the powernv platform  to hook on to the cpuidle
+framework, if available, else call on to default idle platform
+code.
 
 Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 ---
- drivers/cpuidle/cpuidle-ibm-power.c |   39 ++++++++++++++++++++++++++++++++---
- 1 file changed, 36 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/powernv/setup.c |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpuidle/cpuidle-ibm-power.c b/drivers/cpuidle/cpuidle-ibm-power.c
-index 162deda..f8905c3 100644
---- a/drivers/cpuidle/cpuidle-ibm-power.c
-+++ b/drivers/cpuidle/cpuidle-ibm-power.c
-@@ -48,9 +48,10 @@ static int snooze_loop(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
- 			int index)
- {
--	unsigned long in_purr;
-+	unsigned long in_purr = 0;
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 84438af..fc62f21 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -25,6 +25,7 @@
+ #include <linux/of.h>
+ #include <linux/interrupt.h>
+ #include <linux/bug.h>
++#include <linux/cpuidle.h>
  
--	idle_loop_prolog(&in_purr);
-+	if (firmware_has_feature(FW_FEATURE_SPLPAR))
-+		idle_loop_prolog(&in_purr);
- 	local_irq_enable();
- 	set_thread_flag(TIF_POLLING_NRFLAG);
- 
-@@ -64,7 +65,8 @@ static int snooze_loop(struct cpuidle_device *dev,
- 	clear_thread_flag(TIF_POLLING_NRFLAG);
- 	smp_mb();
- 
--	idle_loop_epilog(in_purr);
-+	if (firmware_has_feature(FW_FEATURE_SPLPAR))
-+		idle_loop_epilog(in_purr);
- 
- 	return index;
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+@@ -175,6 +176,17 @@ static void __init pnv_setup_machdep_rtas(void)
  }
-@@ -128,6 +130,15 @@ static int shared_cede_loop(struct cpuidle_device *dev,
- 	return index;
- }
+ #endif /* CONFIG_PPC_POWERNV_RTAS */
  
-+static int nap_loop(struct cpuidle_device *dev,
-+			struct cpuidle_driver *drv,
-+			int index)
++void powernv_idle(void)
 +{
-+	ppc64_runlatch_off();
-+	power7_idle();
-+	return index;
++	/* Hook to cpuidle framework if available, else
++	 * call on default platform idle code
++	 */
++	if (cpuidle_idle_call()) {
++		HMT_low();
++		HMT_very_low();
++	}
 +}
 +
- /*
-  * States for dedicated partition case.
-  */
-@@ -161,6 +172,23 @@ static struct cpuidle_state shared_states[] = {
- 		.enter = &shared_cede_loop },
- };
- 
-+static struct cpuidle_state powernv_states[] = {
-+	{ /* Snooze */
-+		.name = "snooze",
-+		.desc = "snooze",
-+		.flags = CPUIDLE_FLAG_TIME_VALID,
-+		.exit_latency = 0,
-+		.target_residency = 0,
-+		.enter = &snooze_loop },
-+	{ /* NAP */
-+		.name = "NAP",
-+		.desc = "NAP",
-+		.flags = CPUIDLE_FLAG_TIME_VALID,
-+		.exit_latency = 10,
-+		.target_residency = 100,
-+		.enter = &nap_loop },
-+};
-+
- void update_smt_snooze_delay(int cpu, int residency)
+ static int __init pnv_probe(void)
  {
- 	struct cpuidle_driver *drv = cpuidle_get_driver();
-@@ -254,6 +282,11 @@ static int power_idle_probe(void)
- 			cpuidle_state_table = dedicated_states;
- 			max_idle_state = ARRAY_SIZE(dedicated_states);
- 		}
-+
-+	} else if (firmware_has_feature(FW_FEATURE_OPALv3)) {
-+		cpuidle_state_table = powernv_states;
-+		max_idle_state = ARRAY_SIZE(powernv_states);
-+
- 	} else
- 		return -ENODEV;
- 
+ 	unsigned long root = of_get_flat_dt_root();
+@@ -205,7 +217,7 @@ define_machine(powernv) {
+ 	.show_cpuinfo		= pnv_show_cpuinfo,
+ 	.progress		= pnv_progress,
+ 	.machine_shutdown	= pnv_shutdown,
+-	.power_save             = power7_idle,
++	.power_save             = powernv_idle,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ #ifdef CONFIG_KEXEC
+ 	.kexec_cpu_down		= pnv_kexec_cpu_down,
