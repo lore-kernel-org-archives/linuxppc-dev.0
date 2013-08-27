@@ -1,23 +1,18 @@
-Return-Path: <amodra@gmail.com>
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9CF192C00A9
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 17:12:44 +1000 (EST)
-Received: by mail-pa0-f51.google.com with SMTP id lf1so4459478pab.10
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 00:12:41 -0700 (PDT)
-Date: Tue, 27 Aug 2013 16:42:35 +0930
-From: Alan Modra <amodra@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: Work around gcc miscompilation of __pa() on
- 64-bit
-Message-ID: <20130827071235.GQ3430@bubble.grove.modra.org>
-References: <20130827060749.GA16462@drongo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130827060749.GA16462@drongo>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D0A152C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 17:32:12 +1000 (EST)
+Message-ID: <1377588720.3819.113.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 27 Aug 2013 17:32:00 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 27, 2013 at 04:07:49PM +1000, Paul Mackerras wrote:
-> On 64-bit, __pa(&static_var) gets miscompiled by recent versions of
-> gcc as something like:
-> 
->         addis 3,2,.LANCHOR1+4611686018427387904@toc@ha
->         addi 3,3,.LANCHOR1+4611686018427387904@toc@l
+Hi Linus !
 
-I might argue that this isn't a miscompilation, since -mcmodel=medium
-assumes everything can be accessed within +/-2G of the toc pointer,
-but it's definitely a problem since gas and/or ld don't give an
-overflow error.  They would except for the fact that our ABI has a
-hole in it.
+Here are 3 bug fixes that should probably go into 3.11 since I'm also
+tagging them for stable.
 
-We have relocs that error on 16-bit overflow, eg.
-  addi 3,2,x@toc
-will give an error if x is more than +/-32k from the toc pointer, but
-@ha and _HA/_HI relocs don't error on 32-bit overflow.  (They can't,
-because they were really designed to be used in HIHGESTA, HIGHERA, HA,
-LO sequences to build up 64-bit values.)
+Once fixes our old /proc/powerpc/lparcfg file which provides partition
+informations when running under our hypervisor and also acts as a
+user-triggerable Oops when hot :-(
 
-The proper fix is to define a whole slew of new relocations and reloc
-specifiers, and modify everything to use them, but that seems like too
-much bother.  I had ideas once upon a time to implement gas and ld
-options that makes @ha and _HA report overflows, but haven't found one
-of those round tuits.
+The other two respectively are a one liner to fix a HVSI protocol
+handshake problem causing the console to fail to show up on a bunch of
+machines until we reach userspace, which I deem annoying enough to
+warrant going to stable, and a nasty gcc miscompile causing us to
+pass virtual instead of physical addresses to the firmware under some
+circumstances.
 
--- 
-Alan Modra
-Australia Development Lab, IBM
+Cheers,
+Ben.
+The following changes since commit 28e61cc466d8daace4b0f04ba2b83e0bd68f5832:
+
+  powerpc/tm: Fix context switching TAR, PPR and DSCR SPRs (2013-08-09 18:07:12 +1000)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to d220980b701d838560a70de691b53be007e99e78:
+
+  powerpc/hvsi: Increase handshake timeout from 200ms to 400ms. (2013-08-27 16:59:56 +1000)
+
+----------------------------------------------------------------
+Benjamin Herrenschmidt (1):
+      powerpc: Don't Oops when accessing /proc/powerpc/lparcfg without hypervisor
+
+Eugene Surovegin (1):
+      powerpc/hvsi: Increase handshake timeout from 200ms to 400ms.
+
+Paul Mackerras (1):
+      powerpc: Work around gcc miscompilation of __pa() on 64-bit
+
+ arch/powerpc/Kconfig            |  1 +
+ arch/powerpc/include/asm/page.h | 10 ++++++++++
+ arch/powerpc/kernel/lparcfg.c   | 22 +++++++++-------------
+ drivers/tty/hvc/hvsi_lib.c      |  4 ++--
+ 4 files changed, 22 insertions(+), 15 deletions(-)
