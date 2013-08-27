@@ -2,31 +2,30 @@ Return-Path: <deepthi@linux.vnet.ibm.com>
 Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 50ECF2C01B9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:32:03 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 401E92C02CE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:32:13 +1000 (EST)
 Received: from /spool/local
  by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Wed, 28 Aug 2013 04:28:44 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9D4F12BB004F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:31:59 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7RIFsaJ8716594
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:15:54 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7RIVwj7031173
+ Wed, 28 Aug 2013 04:28:56 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id DEB602BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:32:10 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7RIVxaG327994
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:31:59 +1000
-Subject: [PATCH V6 3/7] pseries/cpuidle: Make pseries_idle backend driver a
- non-module.
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7RIW9T6018646
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 04:32:10 +1000
+Subject: [PATCH V6 4/7] pseries/cpuidle: Remove MAX_IDLE_STATE macro.
 To: linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Wed, 28 Aug 2013 00:01:16 +0530
-Message-ID: <20130827183115.18579.60906.stgit@deepthi.in.ibm.com>
+Date: Wed, 28 Aug 2013 00:01:28 +0530
+Message-ID: <20130827183126.18579.80649.stgit@deepthi.in.ibm.com>
 In-Reply-To: <20130827183016.18579.16595.stgit@deepthi.in.ibm.com>
 References: <20130827183016.18579.16595.stgit@deepthi.in.ibm.com>
 MIME-Version: 1.0
@@ -43,37 +42,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently pseries_idle cpuidle backend driver cannot be
-built as a module due to dependencies. Therefore the driver has
-to be built in. The dependency is around update_snooze_delay() defined
-in cpuidle driver and called from kernel/sysfs.c.
-This patch is removes all the module related code.
+This patch removes the usage of MAX_IDLE_STATE macro
+and dead code around it. The number of states
+are determined at run time based on the cpuidle
+state table selected on a given platform
 
 Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 ---
- drivers/cpuidle/cpuidle-ibm-power.c |   15 +--------------
- 1 file changed, 1 insertion(+), 14 deletions(-)
+ drivers/cpuidle/cpuidle-ibm-power.c |   26 +++++++++-----------------
+ 1 file changed, 9 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/cpuidle/cpuidle-ibm-power.c b/drivers/cpuidle/cpuidle-ibm-power.c
-index b42b948..262db3c 100644
+index 262db3c..14ebdb4 100644
 --- a/drivers/cpuidle/cpuidle-ibm-power.c
 +++ b/drivers/cpuidle/cpuidle-ibm-power.c
-@@ -288,17 +288,4 @@ static int __init pseries_processor_idle_init(void)
- 	return 0;
- }
+@@ -25,9 +25,7 @@ struct cpuidle_driver pseries_idle_driver = {
+ 	.owner            = THIS_MODULE,
+ };
  
--static void __exit pseries_processor_idle_exit(void)
--{
+-#define MAX_IDLE_STATE_COUNT	2
 -
--	unregister_cpu_notifier(&setup_hotplug_notifier);
--	cpuidle_unregister(&pseries_idle_driver);
--	return;
--}
+-static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
++static int max_idle_state;
+ static struct cpuidle_state *cpuidle_state_table;
+ 
+ static inline void idle_loop_prolog(unsigned long *in_purr)
+@@ -133,7 +131,7 @@ static int shared_cede_loop(struct cpuidle_device *dev,
+ /*
+  * States for dedicated partition case.
+  */
+-static struct cpuidle_state dedicated_states[MAX_IDLE_STATE_COUNT] = {
++static struct cpuidle_state dedicated_states[] = {
+ 	{ /* Snooze */
+ 		.name = "snooze",
+ 		.desc = "snooze",
+@@ -153,7 +151,7 @@ static struct cpuidle_state dedicated_states[MAX_IDLE_STATE_COUNT] = {
+ /*
+  * States for shared partition case.
+  */
+-static struct cpuidle_state shared_states[MAX_IDLE_STATE_COUNT] = {
++static struct cpuidle_state shared_states[] = {
+ 	{ /* Shared Cede */
+ 		.name = "Shared Cede",
+ 		.desc = "Shared Cede",
+@@ -223,11 +221,7 @@ static int pseries_cpuidle_driver_init(void)
+ 	struct cpuidle_driver *drv = &pseries_idle_driver;
+ 
+ 	drv->state_count = 0;
 -
--module_init(pseries_processor_idle_init);
--module_exit(pseries_processor_idle_exit);
+-	for (idle_state = 0; idle_state < MAX_IDLE_STATE_COUNT; ++idle_state) {
 -
--MODULE_AUTHOR("Deepthi Dharwar <deepthi@linux.vnet.ibm.com>");
--MODULE_DESCRIPTION("Cpuidle driver for POWER");
--MODULE_LICENSE("GPL");
-+device_initcall(pseries_processor_idle_init);
+-		if (idle_state > max_idle_state)
+-			break;
++	for (idle_state = 0; idle_state < max_idle_state; ++idle_state) {
+ 
+ 		/* is the state not enabled? */
+ 		if (cpuidle_state_table[idle_state].enter == NULL)
+@@ -252,16 +246,14 @@ static int pseries_idle_probe(void)
+ 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
+ 		return -ENODEV;
+ 
+-	if (max_idle_state == 0) {
+-		printk(KERN_DEBUG "pseries processor idle disabled.\n");
+-		return -EPERM;
+-	}
+-
+ 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+-		if (get_lppaca()->shared_proc)
++		if (get_lppaca()->shared_proc) {
+ 			cpuidle_state_table = shared_states;
+-		else
++			max_idle_state = ARRAY_SIZE(shared_states);
++		} else {
+ 			cpuidle_state_table = dedicated_states;
++			max_idle_state = ARRAY_SIZE(dedicated_states);
++		}
+ 	} else
+ 		return -ENODEV;
+ 
