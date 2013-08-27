@@ -1,38 +1,24 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 37C5D2C037F
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 05:32:59 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 27 Aug 2013 05:22:26 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A97CC357804E
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 05:32:56 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7QJWjsj64356430
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 05:32:45 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r7QJWtB6030166
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 05:32:55 +1000
-Subject: [RFC PATCH v3 12/12] powerpc/powernv: Machine check exception
- handling.
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Tue, 27 Aug 2013 01:02:53 +0530
-Message-ID: <20130826193252.2855.59425.stgit@mars>
-In-Reply-To: <20130826192616.2855.18749.stgit@mars>
-References: <20130826192616.2855.18749.stgit@mars>
+Return-Path: <B07421@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CC0982C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 10:39:34 +1000 (EST)
+Message-ID: <1377563961.3033.84.camel@snotra.buserror.net>
+Subject: Re: Loading kernel on MPC86x
+From: Scott Wood <scottwood@freescale.com>
+To: Martin Hinner <martin@hinner.info>
+Date: Mon, 26 Aug 2013 19:39:21 -0500
+In-Reply-To: <CAPVwjkzT6dyv-T_8fF-zm8VLKvGFgLkrEeBC4ib-p0mkFJ7=fA@mail.gmail.com>
+References: <CAPVwjkzkuw4cbo9YxnsskdoAda-k+Gb5sdVEJiZTVAD1nR5OOg@mail.gmail.com>
+ <CAPVwjkyPKo0SmoEkJttzz0fXrTcyuv7K1nuhOzW9CdGXD+t7_A@mail.gmail.com>
+ <1377537249.3033.26.camel@snotra.buserror.net>
+ <CAPVwjkzT6dyv-T_8fF-zm8VLKvGFgLkrEeBC4ib-p0mkFJ7=fA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Jeremy Kerr <jeremy.kerr@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,135 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Mon, 2013-08-26 at 20:29 +0200, Martin Hinner wrote:
+> On Mon, Aug 26, 2013 at 7:14 PM, Scott Wood <scottwood@freescale.com> wrote:
+> >> that kernel must be at location 0. Another problem was that interrupts
+> >> got re-enabled during execution of my bootloader (I am doing some
+> >> syscalls -> goes  to Cisco rom),
+> > Do you mean you're calling into the rom after Linux has already started
+> > executing?  That's not normal for 8xx.
+> 
+> No, in bootloader. I have disabled interrupts and then later did a
+> syscall which probably enabled them again. As I have overwritten some
+> of Cisco ROM data it crashed (at random place).
+> 
+> >> I am also curious why CONFIG_PPC_EARLY_DEBUG_CPM uses
+> >> CONFIG_PPC_EARLY_DEBUG_CPM_ADDR as pointer to transmit SMC buffer and
+> >> not address of CPM/SCM parameter RAM ? TX buffer address can be read
+> >> from SMC parameter RAM. Wouldn't this solution be more portable? At
+> >> least this way I do it when I take over console from Cisco
+> >> startup/rommon.
+> >
+> > The point was to keep things as simple as possible (e.g. for use in
+> > temporary handcoded asm as needed).  This is a hacky debugging feature
+> > that assumes you know what you're doing and can set the address to match
+> > what the loader does (and that the loader's choice of address is
+> > static).  If you have an improvement that keeps it simple, feel free to
+> > send a patch.
+> 
+> How about making CONFIG_PPC_EARLY_DEBUG_CPM_PARRAM
 
-Add basic error handling in machine check exception handler.
+PARAM
 
-- If MSR_RI isn't set, we can not recover.
-- Check if disposition set to OpalMCE_DISPOSITION_RECOVERED.
-- Check if address at fault is inside kernel address space, if not then send
-  SIGBUS to process if we hit exception when in userspace.
-- If address at fault is not provided then and if we get a synchronous machine
-  check while in userspace then kill the task.
+> that woud carry address of SMCx parameter RAM (IMMR+0x04180 on MPC866) and this value
+> would be used in case CONFIG_PPC_EARLY_DEBUG_CPM_ADDR is zero ? This
+> would allow kernel hackers to still use
+> CONFIG_PPC_EARLY_DEBUG_CPM_ADDR for assembly debugging (+legacy use)
+> and everyone else can use it as a more reliable option that does not
+> rely on particular bootloader behavior. Early debug is good even for
+> end-users so as they can send debug output if anything goes wrong at
+> early stage.
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/mce.h        |    1 +
- arch/powerpc/kernel/mce.c             |   27 +++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal.c |   43 ++++++++++++++++++++++++++++++++-
- 3 files changed, 70 insertions(+), 1 deletion(-)
+If it only works with CPM1 SMC, then that should be in the name of the
+symbol.
 
-diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-index 1c20731..f72ea4c 100644
---- a/arch/powerpc/include/asm/mce.h
-+++ b/arch/powerpc/include/asm/mce.h
-@@ -193,5 +193,6 @@ extern void release_mce_event(void);
- extern void machine_check_queue_event(void);
- extern void machine_check_process_queued_event(void);
- extern void machine_check_print_event_info(struct machine_check_event *evt);
-+extern uint64_t get_mce_fault_addr(struct machine_check_event *evt);
- 
- #endif /* __ASM_PPC64_MCE_H__ */
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index 1cca4b6..3100509 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -316,3 +316,30 @@ void machine_check_print_event_info(struct machine_check_event *evt)
- 		break;
- 	}
- }
-+
-+uint64_t get_mce_fault_addr(struct machine_check_event *evt)
-+{
-+	switch (evt->error_type) {
-+	case MCE_ERROR_TYPE_UE:
-+		if (evt->u.ue_error.effective_address_provided)
-+			return evt->u.ue_error.effective_address;
-+		break;
-+	case MCE_ERROR_TYPE_SLB:
-+		if (evt->u.slb_error.effective_address_provided)
-+			return evt->u.slb_error.effective_address;
-+		break;
-+	case MCE_ERROR_TYPE_ERAT:
-+		if (evt->u.erat_error.effective_address_provided)
-+			return evt->u.erat_error.effective_address;
-+		break;
-+	case MCE_ERROR_TYPE_TLB:
-+		if (evt->u.tlb_error.effective_address_provided)
-+			return evt->u.tlb_error.effective_address;
-+		break;
-+	default:
-+	case MCE_ERROR_TYPE_UNKNOWN:
-+		break;
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL(get_mce_fault_addr);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 0170d19..2070970 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -17,6 +17,7 @@
- #include <linux/interrupt.h>
- #include <linux/notifier.h>
- #include <linux/slab.h>
-+#include <linux/sched.h>
- #include <asm/opal.h>
- #include <asm/firmware.h>
- #include <asm/mce.h>
-@@ -240,6 +241,44 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
- 	return written;
- }
- 
-+static int opal_recover_mce(struct pt_regs *regs,
-+					struct machine_check_event *evt)
-+{
-+	int recovered = 0;
-+	uint64_t ea = get_mce_fault_addr(evt);
-+
-+	if (!(regs->msr & MSR_RI)) {
-+		/* If MSR_RI isn't set, we cannot recover */
-+		recovered = 0;
-+	} else if (evt->disposition == MCE_DISPOSITION_RECOVERED) {
-+		/* Platform corrected itself */
-+		recovered = 1;
-+	} else if (ea && !is_kernel_addr(ea)) {
-+		/*
-+		 * Faulting address is not in kernel text. We should be fine.
-+		 * We need to find which process uses this address.
-+		 * For now, kill the task if we have received exception when
-+		 * in userspace.
-+		 *
-+		 * TODO: Queue up this address for hwpoisioning later.
-+		 */
-+		if (user_mode(regs) && !is_global_init(current)) {
-+			_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
-+			recovered = 1;
-+		} else
-+			recovered = 0;
-+	} else if (user_mode(regs) && !is_global_init(current) &&
-+		evt->severity == MCE_SEV_ERROR_SYNC) {
-+		/*
-+		 * If we have received a synchronous error when in userspace
-+		 * kill the task.
-+		 */
-+		_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
-+		recovered = 1;
-+	}
-+	return recovered;
-+}
-+
- int opal_machine_check(struct pt_regs *regs)
- {
- 	struct machine_check_event evt;
-@@ -255,7 +294,9 @@ int opal_machine_check(struct pt_regs *regs)
- 	}
- 	machine_check_print_event_info(&evt);
- 
--	return evt.severity == MCE_SEV_FATAL ? 0 : 1;
-+	if (opal_recover_mce(regs, &evt))
-+		return 1;
-+	return 0;
- }
- 
- static irqreturn_t opal_interrupt(int irq, void *data)
+> Anyway, difference between _PARRAM and _ADDR is only one lwz
+> instruction, so I guess it is possible to completely discard _ADDR if
+> there is no legacy use for it. I am also not sure if this works with
+> SCC UART ports or only CPM SMC UART.
+
+Given that testing can be a challenge on this old hardware (I don't have
+easy access anymore, except maybe one 8xx board), I'd rather leave the
+existing mechanism in place if you don't have the ability to test all
+these cases.  The ability to not care about what type of CPM serial port
+it is, is an important simplification.
+
+-Scott
