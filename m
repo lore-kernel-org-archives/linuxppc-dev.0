@@ -1,26 +1,22 @@
-Return-Path: <B29983@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 77EA52C009F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 12:49:53 +1000 (EST)
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [v3] powerpc/mpc85xx: Update the clock device tree nodes
-Date: Tue, 27 Aug 2013 02:49:43 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B1503F161@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1370480811-13700-1-git-send-email-Yuantian.Tang@freescale.com>
- <20130823200827.GA29737@home.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B1503BE58@039-SN2MPN1-012.039d.mgd.msft.net>
- <1377536416.3033.18.camel@snotra.buserror.net>
-In-Reply-To: <1377536416.3033.18.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Mike Turquette <mturquette@linaro.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 7AFC82C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 13:05:17 +1000 (EST)
+Date: Tue, 27 Aug 2013 13:05:07 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, "Rafael J. Wysocki"
+ <rafael.j.wysocki@intel.com>
+Subject: linux-next: manual merge of the pm tree with the powerpc tree
+Message-Id: <20130827130507.27bd4ceda462db1751bfc30d@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__27_Aug_2013_13_05_07_+1000_=PZhilQHd=xvTHH+"
+Cc: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ linux-next@vger.kernel.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,51 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiA+ID4gPiArCQl9Ow0KPiA+ID4gPiArCQlwbGwxOiBwbGwxQDgyMCB7DQo+ID4gPiA+ICsJCQkj
-Y2xvY2stY2VsbHMgPSA8MT47DQo+ID4gPiA+ICsJCQlyZWcgPSA8MHg4MjA+Ow0KPiA+ID4gPiAr
-CQkJY29tcGF0aWJsZSA9ICJmc2wsY29yZS1wbGwtY2xvY2siOw0KPiA+ID4gPiArCQkJY2xvY2tz
-ID0gPCZjbG9ja2dlbj47DQo+ID4gPiA+ICsJCQljbG9jay1vdXRwdXQtbmFtZXMgPSAicGxsMSIs
-ICJwbGwxLWRpdjIiLCAicGxsMS0NCj4gZGl2NCI7DQo+ID4gPiA+ICsJCX07DQo+ID4gPg0KPiA+
-ID4gUGxlYXNlIGxlYXZlIGEgYmxhbmsgbGluZSBiZXR3ZWVuIHByb3BlcnRpZXMgYW5kIG5vZGVz
-LCBhbmQgYmV0d2Vlbg0KPiBub2Rlcy4NCj4gPiA+DQo+ID4gT0ssIHdpbGwgYWRkLg0KPiA+DQo+
-ID4gPiBXaGF0IGRvZXMgcmVnIHJlcHJlc2VudD8gIFdoZXJlIGlzIHRoZSBiaW5kaW5nIGZvciB0
-aGlzPw0KPiA+ID4NCj4gPiA+IFRoZSBjb21wYXRpYmxlIGlzIHRvbyB2YWd1ZS4NCj4gPiBSZWcg
-aXMgcmVnaXN0ZXIgb2Zmc2V0Lg0KPiANCj4gV2l0aCBubyBzaXplPw0KDQpObyBzaXplIGlzIG5l
-ZWRlZC4NCg0KPiANCj4gPiBJIHNob3VsZCBoYXZlIGhhZCBhIGJpbmRpbmcgZG9jdW1lbnQuDQo+
-ID4gQWJvdXQgdGhlIGNvbXBhdGlibGUsIHlvdSBzaG91bGQgcG9pbnRlZCBpdCBvdXQgZWFybGll
-ciBpbiBTREsgcmV2aWV3Lg0KPiANCj4gU29ycnksIGl0IGRvZXNuJ3Qgd29yayB0aGF0IHdheS4g
-IEkgZG9uJ3Qga25vdyB3aHkgSSBkaWRuJ3Qgbm90aWNlIHRoaXMNCj4gc3R1ZmYgdGhlcmUgLS0g
-dGhlIFNESyByZXZpZXcgd2FzIHByb2JhYmx5IHJ1c2hlZCwgd2l0aCBzb21lb25lIHNob3V0aW5n
-DQo+ICJ1cmdlbnQiLiAgVGhlIFNESyBkb2VzIG5vdCBkaWN0YXRlIHdoYXQgZ29lcyB1cHN0cmVh
-bS4gIERldmljZSB0cmVlDQo+IGJpbmRpbmdzIHNob3VsZCBnbyB1cHN0cmVhbSBmaXJzdC4NCj4g
-DQpXaGVuIEkgc2VudCB0aGUgcGF0Y2ggdjEsIHRoZXJlIGlzIGEgYmluZGluZyBkb2N1bWVudCB3
-aXRoIGl0LiBCdXQgSSBtaXNzZWQNCkl0IGluIHRoZSBwYXRjaCB2Mywgc28gd2hlbiBwYXRjaCB2
-MyBnb3QgbWVyZ2VkLCB0aGUgYmluZGluZyBkb2N1bWVudCBkaWRuJ3QgZ2V0IG1lcmdlZC4NCkkg
-d2lsbCBtYWtlIHRoZSBiaW5kaW5nIGdvIHVwc3RyZWFtIGZpcnN0IG5leHQgdGltZS4NCg0KPiA+
-IEl0IGlzIHRvbyBsYXRlciB0byBjaGFuZ2Ugc2luY2UgdGhlIGNsb2NrIGRyaXZlciBpcyBtZXJn
-ZWQgZm9yIG1vbnRocw0KPiA+IGFsdGhvdWdoIEkgc2VudCB0aGlzIHBhdGNoIGZpcnN0Lg0KPiAN
-Cj4gSXQgc2hvdWxkIG5vdCBoYXZlIGdvbmUgaW4gd2l0aG91dCBhbiBhcHByb3ZlZCBiaW5kaW5n
-LiAgSXQgc2VlbXMgaXQgd2VudA0KPiBpbiB2aWEgTWlrZSBUdXJxdWV0dGUgKHdoeSBpcyBhIG5v
-bi1BUk0tc3BlY2lmaWMgdHJlZSB1c2luZyBsaW51eC1hcm0tDQo+IGtlcm5lbCBhcyBpdHMgbGlz
-dCwgQlRXPykuICBObyBhY2sgZnJvbSBCZW4sIEt1bWFyLCBvciBtZSBpcyBzaG93biBpbiB0aGUN
-Cj4gY29tbWl0Lg0KVGhlIExpbnV4IGNvbW1vbiBjbG9jayBmcmFtZXdvcmsgaXMgbm90IEFSTSBz
-cGVjaWZpYy4gQW55IG90aGVyIGFyY2ggY2FuIHVzZSBpdC4NCkluIGZhY3QsIHRoaXMgY2xvY2sg
-ZHJpdmVyIGlzIHRoZSBmaXJzdCBvbmUgdGhhdCB1c2UgY29tbW9uIGNsayBvbiBQUEMgYXJjaC4N
-Ckkgd2lsbCBnZXQgdGhlIGFjayBmcm9tIHlvdSBndXlzIG5leHQgdGltZS4gSSBob3BlIGl0IGRv
-ZXNuJ3QgbWFrZSBtZSB3YWl0IHRvbyBsb25nLg0KIA0KPiANCj4gSW4gYW55IGNhc2UsIHlvdSBj
-YW4gcHJlc2VydmUgY29tcGF0aWJpbGl0eSB3aXRoIGV4aXN0aW5nIHRyZWVzIHdpdGhvdXQNCj4g
-dXNpbmcgdGhpcyBjb21wYXRpYmxlIGluIG5ldyB0cmVlcy4gIFRoZSBkcml2ZXIgY2FuIGNoZWNr
-IGZvciBib3RoDQo+IGNvbXBhdGlibGVzLCB3aXRoIGEgY29tbWVudCBpbmRpY2F0aW5nIHRoYXQg
-ImZzbCxjb3JlLW11eC1jbG9jayIgaXMNCj4gZGVwcmVjYXRlZCBhbmQgZm9yIGNvbXBhdGliaWxp
-dHkgb25seS4NCkl0IGlzIHN1Yi1jbG9jayBub2RlLCBpcyBpdCByZWFsbHkgbmVjZXNzYXJ5IHRv
-IHRoaW5rIGFib3V0IGNvbXBhdGliaWxpdHk/DQpJIHRoaW5rIHRoYXQncyB0aGUgbm9kZSBjbG9j
-a2dlbidzIHJlc3BvbnNpYmlsaXR5Lg0KDQo+IA0KPiA+IEJlc2lkZXMsIGl0IGlzIG5vdCB0b28g
-YmFkIGJlY2F1c2Ugb3RoZXIgYXJjaCB1c2UgdGhlIHNpbWlsYXIgbmFtZS4NCj4gDQo+IEkgZG9u
-J3QgZm9sbG93LiAgVGhpcyBpcyBhIHNwZWNpZmljIEZyZWVzY2FsZSByZWdpc3RlciBpbnRlcmZh
-Y2UsIG5vdCBhDQo+IGdlbmVyYWwgY29uY2VwdC4NCj4gDQo+IEluIGFueSBjYXNlLCB3aGljaCAi
-c2ltaWxhciBuYW1lcyIgYXJlIHlvdSByZWZlcnJpbmcgdG8/ICBBIHNlYXJjaCBpbg0KPiBhcmNo
-L2FybS9ib290L2R0cyBmb3IgIm11eCIgd2l0aCAiY2xrIiBvciAiY2xvY2siIHR1cm5zIHVwDQo+
-ICJhbGx3aW5uZXIsc3VuNGktYXBiMS1tdXgtY2xrIiB3aGljaCBpcyBtdWNoIG1vcmUgc3BlY2lm
-aWMgdGhhbg0KPiAiZnNsLGNvcmUtbXV4LWNsb2NrIi4NCk9rLCBJIHdpbGwgY2hhbmdlIHRoZSBj
-b21wYXRpYmxlIHN0cmluZy4NCkRvIHlvdSB0aGluayAiZnNsLHBwYy1jb3JlLSoiIGlzIG9rPw0K
-DQpSZWdhcmRzLA0KWXVhbnRpYW4NCj4gDQo+IC1TY290dA0KPiANCg0K
+--Signature=_Tue__27_Aug_2013_13_05_07_+1000_=PZhilQHd=xvTHH+
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Rafael,
+
+Today's linux-next merge of the pm tree got a conflict in
+arch/powerpc/kernel/prom.c between commit dc0e643afc50 ("powerpc: Make
+prom.c device tree accesses endian safe") from the powerpc tree and
+commits 819d596568d8 ("powerpc: refactor of_get_cpu_node to support other
+architectures") and 183912d352a2 ("of: move of_get_cpu_node
+implementation to DT core library") from the pm tree.
+
+I think that the latter superceded the conflicting fixes in the former,
+so I just used the latter and can carry the fix as necessary (no action
+is required).
+
+P.S. Rafael, I used both your addresses because I have had a bounce from
+the sisk.pl one in the past ...
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Tue__27_Aug_2013_13_05_07_+1000_=PZhilQHd=xvTHH+
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSHBdnAAoJEECxmPOUX5FEPyUP/iZE8GL5yG0uUsWBUzM0PFtF
+3ua5VbUd/Anzakk+gOjswUtbC/BhdTluHwLuEEi2oKzj6XqHA1NfNVT8k+o13shl
+/lOZzDEcxqFpkbItJrsMDW9n5eRBw2TebAbqa03Hx9fDvBuZkTQVS1QWpHuggu1D
+tN1wr4ktpMM9odR/jYzN12WHYO7Lk3AADvpNkVU0/VUuBRpKCzwvN3DRi0XJ6jp8
+QNXRgrYj9b+ESdpFY/4Hg+4wk7CLb6rxgH+85RfgAynv5zie/GVTA13wksvI9WLm
+Zk1ZQRGuz8Tt8qAs3enLiunOnsbF/W41SQkjB7/gLYCzqwF65mFUIRKZz1IBAKuf
+aJSi/GFe3qwg8DDXQxlnQ9DyNYWbl6Wf12F5Au5E6Cw6yhvNPdHd3Z9m+gRFs1nx
+O0Q48xVWVuq6RFpJ0rxUuzjaWF4EQRCLXX20iQZ0Kjd3BCWGdnVc3Pxh8TmdoSwF
+a1O4nGGp6/06xkUptzJ4dpHGvKzDDfjkPdJui2WoilcW4fknSQtXKvy40oGWRQQM
+/PUb2vpUJeg/UPEw+v3+7BOrcGvPq2w8y6xs8Qxg9BuvFLm+ofnPt7lLlgn9Gijy
+9S0+ReZKN4nRpTYzN1tFh27oM1RbQWGIta87PSUrxgV6qJqWhG9vRDTdaKgxHk6b
+ZDrOB0nPC9PAzIGkr8kM
+=3JKn
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__27_Aug_2013_13_05_07_+1000_=PZhilQHd=xvTHH+--
