@@ -1,44 +1,22 @@
-Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 09A1F2C00D4
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 19:39:42 +1000 (EST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Tue, 27 Aug 2013 15:01:49 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 983BB1258051
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 15:09:27 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7R9fEQU33554588
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 15:11:14 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7R9dZlx030704
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 15:09:36 +0530
-Message-ID: <521C73D7.1010007@linux.vnet.ibm.com>
-Date: Tue, 27 Aug 2013 15:09:35 +0530
-From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Return-Path: <B45939@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E7E322C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 20:43:47 +1000 (EST)
+From: <hongbo.zhang@freescale.com>
+To: <rob.herring@calxeda.com>, <pawel.moll@arm.com>, <mark.rutland@arm.com>,
+ <swarren@wwwdotorg.org>, <ian.campbell@citrix.com>, <vinod.koul@intel.com>,
+ <djbw@fb.com>
+Subject: [PATCH v8 0/3] DMA: Freescale: Add support for 8-channel DMA engine
+Date: Tue, 27 Aug 2013 18:42:00 +0800
+Message-ID: <1377600123-5746-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-To: Seiji Aguchi <seiji.aguchi@hds.com>
-Subject: Re: [RFC PATCH v2 06/11] pstore: Add decompression support to pstore
-References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
- <20130816131821.3338.27923.stgit@aruna-ThinkPad-T420>
- <A5ED84D3BB3A384992CBB9C77DEDA4D443E8F0B8@USINDEM103.corp.hds.com>
-In-Reply-To: <A5ED84D3BB3A384992CBB9C77DEDA4D443E8F0B8@USINDEM103.corp.hds.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>,
- "tony.luck@intel.com" <tony.luck@intel.com>,
- "keescook@chromium.org" <keescook@chromium.org>,
- "mahesh@linux.vnet.ibm.com" <mahesh@linux.vnet.ibm.com>,
- "ccross@android.com" <ccross@android.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>
+Content-Type: text/plain
+Cc: Hongbo Zhang <hongbo.zhang@freescale.com>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,38 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 23 August 2013 04:34 AM, Seiji Aguchi wrote:
->
->> -----Original Message-----
->> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Aruna Balakrishnaiah
->> Sent: Friday, August 16, 2013 9:18 AM
->> To: linuxppc-dev@ozlabs.org; tony.luck@intel.com; linux-kernel@vger.kernel.org; keescook@chromium.org
->> Cc: jkenisto@linux.vnet.ibm.com; ananth@in.ibm.com; benh@kernel.crashing.org; cbouatmailru@gmail.com;
->> mahesh@linux.vnet.ibm.com; ccross@android.com
->> Subject: [RFC PATCH v2 06/11] pstore: Add decompression support to pstore
->>
->> Based on the flag 'compressed' set or not, pstore will decompress the
->> data returning a plain text file. If decompression fails for a particular
->> record it will have the compressed data in the file which can be
->> decompressed with 'openssl' command line tool.
-> If the decompression fails and openssl doesn't work, the worst case is that users can't read the entry.
-> In that case, pstore is meaningless at all.
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-If decompression fails and openssl doesn't work. We have python module zlib to 
-decompress
-the zlib data. zlib.decompress() should do the trick.
+Hi DMA and DT maintainers, please have a look at these V8 patches.
 
-> Also, for users who want to get a single panic message, a compression is not needed.
->
-> So, I think we still have to support non-compression mode.
-> (IMO, pstore can take kdump as a model. Kdump supports both compression and non-compression mode.)
->
-> But, if you think my comment is outside this patchset, it's OK.
-> We can make it with a separate patch.
->
-> Seiji
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
+adds support this DMA engine.
+
+V7->V8 changes:
+- change the word "mapping" to "specifier" for reg and interrupts description
+
+V6->V7 changes:
+- only remove unnecessary "CHIP-dma" explanations in [1/3]
+
+V5->V6 changes:
+- minor updates of descriptions in binding document and Kconfig
+- remove [4/4], that should be another patch in future
+
+V4->V5 changes:
+- update description in the dt binding document, to make it more resonable
+- add new patch [4/4] to eliminate a compiling warning which already exists
+  for a long time
+
+V3->V4 changes:
+- introduce new patch [1/3] to revise the legacy dma binding document
+- and then add new paragraph to describe new dt node binding in [2/3]
+- rebase to latest kernel v3.11-rc1
+
+V2->V3 changes:
+- edit Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+- edit text string in Kconfig and the driver files, using "elo series" to
+  mention all the current "elo*"
+
+V1->V2 changes:
+- removed the codes handling the register dgsr1, since it isn't used currently
+- renamed the DMA DT compatible to "fsl,elo3-dma"
+- renamed the new dts files to "elo3-dma-<n>.dtsi"
+
+Hongbo Zhang (3):
+  DMA: Freescale: revise device tree binding document
+  DMA: Freescale: Add new 8-channel DMA engine device tree nodes
+  DMA: Freescale: update driver to support 8-channel DMA engine
+
+ .../devicetree/bindings/powerpc/fsl/dma.txt        |  128 ++++++++++++++------
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
+ arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   81 +++++++++++++
+ arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   81 +++++++++++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
+ drivers/dma/Kconfig                                |    9 +-
+ drivers/dma/fsldma.c                               |    9 +-
+ drivers/dma/fsldma.h                               |    2 +-
+ 8 files changed, 271 insertions(+), 47 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+
+-- 
+1.7.9.5
