@@ -1,26 +1,23 @@
-Return-Path: <gleb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 450232C0258
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 16:41:19 +1000 (EST)
-Date: Tue, 27 Aug 2013 09:41:14 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 02/10] KVM: PPC: reserve a capability number for multitce
- support
-Message-ID: <20130827064114.GC22899@redhat.com>
-References: <1375332272-22176-1-git-send-email-aik@ozlabs.ru>
- <1375332272-22176-3-git-send-email-aik@ozlabs.ru>
- <1376441474.4255.39.camel@pasglop>
- <20130826123753.GA22977@redhat.com>
- <1377577198.3819.102.camel@pasglop>
- <1377577362.3819.103.camel@pasglop>
+Return-Path: <amodra@gmail.com>
+Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
+ [IPv6:2607:f8b0:400e:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9CF192C00A9
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 17:12:44 +1000 (EST)
+Received: by mail-pa0-f51.google.com with SMTP id lf1so4459478pab.10
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 00:12:41 -0700 (PDT)
+Date: Tue, 27 Aug 2013 16:42:35 +0930
+From: Alan Modra <amodra@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc: Work around gcc miscompilation of __pa() on
+ 64-bit
+Message-ID: <20130827071235.GQ3430@bubble.grove.modra.org>
+References: <20130827060749.GA16462@drongo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1377577362.3819.103.camel@pasglop>
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20130827060749.GA16462@drongo>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,26 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 27, 2013 at 02:22:42PM +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-08-27 at 14:19 +1000, Benjamin Herrenschmidt wrote:
-> > On Mon, 2013-08-26 at 15:37 +0300, Gleb Natapov wrote:
-> > > > Gleb, any chance you can put this (and the next one) into a tree to
-> > > > "lock in" the numbers ?
-> > > > 
-> > > Applied it. Sorry for slow response, was on vocation and still go
-> > > through the email backlog.
-> > 
-> > Thanks. Since it's not in a topic branch that I can pull, I'm going to
-> > just cherry-pick them. However, they are in your "queue" branch, not
-> > "next" branch. Should I still assume this is a stable branch and that
-> > the numbers aren't going to change ?
+On Tue, Aug 27, 2013 at 04:07:49PM +1000, Paul Mackerras wrote:
+> On 64-bit, __pa(&static_var) gets miscompiled by recent versions of
+> gcc as something like:
 > 
-> Oh and Alexey mentions that there are two capabilities and you only
-> applied one :-)
-> 
-Another one is:
- [PATCH v8] KVM: PPC: reserve a capability and ioctl numbers for realmode VFIO
-?
+>         addis 3,2,.LANCHOR1+4611686018427387904@toc@ha
+>         addi 3,3,.LANCHOR1+4611686018427387904@toc@l
 
---
-			Gleb.
+I might argue that this isn't a miscompilation, since -mcmodel=medium
+assumes everything can be accessed within +/-2G of the toc pointer,
+but it's definitely a problem since gas and/or ld don't give an
+overflow error.  They would except for the fact that our ABI has a
+hole in it.
+
+We have relocs that error on 16-bit overflow, eg.
+  addi 3,2,x@toc
+will give an error if x is more than +/-32k from the toc pointer, but
+@ha and _HA/_HI relocs don't error on 32-bit overflow.  (They can't,
+because they were really designed to be used in HIHGESTA, HIGHERA, HA,
+LO sequences to build up 64-bit values.)
+
+The proper fix is to define a whole slew of new relocations and reloc
+specifiers, and modify everything to use them, but that seems like too
+much bother.  I had ideas once upon a time to implement gas and ld
+options that makes @ha and _HA report overflows, but haven't found one
+of those round tuits.
+
+-- 
+Alan Modra
+Australia Development Lab, IBM
