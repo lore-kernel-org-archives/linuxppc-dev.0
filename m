@@ -1,27 +1,31 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id B33B72C007B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 21:35:45 +1000 (EST)
-Date: Tue, 27 Aug 2013 12:35:34 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: "hongbo.zhang@freescale.com" <hongbo.zhang@freescale.com>
-Subject: Re: [PATCH v8 2/3] DMA: Freescale: Add new 8-channel DMA engine
- device tree nodes
-Message-ID: <20130827113534.GI19893@e106331-lin.cambridge.arm.com>
-References: <1377600123-5746-1-git-send-email-hongbo.zhang@freescale.com>
- <1377600123-5746-3-git-send-email-hongbo.zhang@freescale.com>
+Return-Path: <B31939@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BE35A2C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 21:38:31 +1000 (EST)
+Received: from mail33-am1 (localhost [127.0.0.1])	by mail33-am1-R.bigfish.com
+ (Postfix) with ESMTP id BD8F61E00F5	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 27 Aug 2013 11:38:23 +0000 (UTC)
+Received: from AM1EHSMHS015.bigfish.com (unknown [10.3.201.232])	by
+ mail33-am1.bigfish.com (Postfix) with ESMTP id 4045C3C0170	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 11:37:28 +0000 (UTC)
+Message-ID: <521C8FB5.1010405@freescale.com>
+Date: Tue, 27 Aug 2013 19:38:29 +0800
+From: Lian Minghuan-b31939 <B31939@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1377600123-5746-3-git-send-email-hongbo.zhang@freescale.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- Pawel Moll <Pawel.Moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "vinod.koul@intel.com" <vinod.koul@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "djbw@fb.com" <djbw@fb.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH][RFC] pci: fsl: rework PCIe driver compatible with
+ Layerscape
+References: <1376915011-31467-1-git-send-email-Minghuan.Lian@freescale.com>
+ <1377294311.20722.71.camel@snotra.buserror.net>
+In-Reply-To: <1377294311.20722.71.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Zang Roy-R61911 <r61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,150 +35,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 27, 2013 at 11:42:02AM +0100, hongbo.zhang@freescale.com wrote:
-> From: Hongbo Zhang <hongbo.zhang@freescale.com>
-> 
-> Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch adds
-> the device tree nodes for them.
-> 
-> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
-> ---
->  .../devicetree/bindings/powerpc/fsl/dma.txt        |   66 ++++++++++++++++
->  arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
->  arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   81 ++++++++++++++++++++
->  arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   81 ++++++++++++++++++++
->  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
->  5 files changed, 232 insertions(+), 4 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
->  create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
-> 
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
-> index ddf17af..10fd031 100644
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
-> @@ -126,6 +126,72 @@ Example:
->                 };
->         };
-> 
-> +** Freescale Elo3 DMA Controller
-> +   This is EloPlus controller with 8 channels, used in Freescale Txxx and Bxxx
-> +   series chips, such as t1040, t4240, b4860.
-> +
-> +Required properties:
-> +
-> +- compatible        : must include "fsl,elo3-dma"
-> +- reg               : <registers specifier for DMA general status reg>
-> +- ranges            : describes the mapping between the address space of the
-> +                      DMA channels and the address space of the DMA controller
-> +
-> +- DMA channel nodes:
-> +        - compatible        : must include "fsl,eloplus-dma-channel"
-> +        - reg               : <registers specifier for channel>
-> +        - interrupts        : <interrupt specifier for DMA channel IRQ>
-> +        - interrupt-parent  : optional, if needed for interrupt mapping
-> +
-> +Example:
-> +dma@100300 {
-> +       #address-cells = <1>;
-> +       #size-cells = <1>;
-> +       compatible = "fsl,elo3-dma";
-> +       reg = <0x100300 0x4 0x100600 0x4>;
+Hi Scott,
 
-Is that one reg entry where #size-cells=2 and #address-cells=2?
+Thanks for your comments, please see my replies inline.
 
-That's what the binding implies (given it only describes a single reg
-entry).
-
-if it's two entries, we should make that explicit (both in the binding
-and example):
-
-	reg = <0x100300 0x4>,
-	      <0x100600 0x4>;
-
-> +       ranges = <0x0 0x100100 0x500>;
-
-If it is one reg entry then the example ranges property isn't big enough
-to contain the parent-bus-address.
-
-> +       dma-channel@0 {
-> +               compatible = "fsl,eloplus-dma-channel";
-> +               reg = <0x0 0x80>;
-> +               interrupts = <28 2 0 0>;
-> +       };
-> +       dma-channel@80 {
-> +               compatible = "fsl,eloplus-dma-channel";
-> +               reg = <0x80 0x80>;
-> +               interrupts = <29 2 0 0>;
-> +       };
-> +       dma-channel@100 {
-> +               compatible = "fsl,eloplus-dma-channel";
-> +               reg = <0x100 0x80>;
-> +               interrupts = <30 2 0 0>;
-> +       };
-> +       dma-channel@180 {
-> +               compatible = "fsl,eloplus-dma-channel";
-> +               reg = <0x180 0x80>;
-> +               interrupts = <31 2 0 0>;
-> +       };
-> +       dma-channel@300 {
-> +               compatible = "fsl,eloplus-dma-channel";
-> +               reg = <0x300 0x80>;
-> +               interrupts = <76 2 0 0>;
-> +       };
-> +       dma-channel@380 {
-> +               compatible = "fsl,eloplus-dma-channel";
-> +               reg = <0x380 0x80>;
-> +               interrupts = <77 2 0 0>;
-> +       };
-> +       dma-channel@400 {
-> +               compatible = "fsl,eloplus-dma-channel";
-> +               reg = <0x400 0x80>;
-> +               interrupts = <78 2 0 0>;
-> +       };
-> +       dma-channel@480 {
-> +               compatible = "fsl,eloplus-dma-channel";
-> +               reg = <0x480 0x80>;
-> +               interrupts = <79 2 0 0>;
-> +       };
-> +};
-> +
->  Note on DMA channel compatible properties: The compatible property must say
->  "fsl,elo-dma-channel" or "fsl,eloplus-dma-channel" to be used by the Elo DMA
->  driver (fsldma).  Any DMA channel used by fsldma cannot be used by another
-> diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-> index 7399154..ea53ea1 100644
-> --- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-> +++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-> @@ -223,13 +223,13 @@
->                 reg = <0xe2000 0x1000>;
->         };
-> 
-> -/include/ "qoriq-dma-0.dtsi"
-> +/include/ "elo3-dma-0.dtsi"
->         dma@100300 {
->                 fsl,iommu-parent = <&pamu0>;
->                 fsl,liodn-reg = <&guts 0x580>; /* DMA1LIODNR */
->         };
-> 
-> -/include/ "qoriq-dma-1.dtsi"
-> +/include/ "elo3-dma-1.dtsi"
->         dma@101300 {
->                 fsl,iommu-parent = <&pamu0>;
->                 fsl,liodn-reg = <&guts 0x584>; /* DMA2LIODNR */
-> diff --git a/arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi b/arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
-> new file mode 100644
-> index 0000000..69a3277
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
-> @@ -0,0 +1,81 @@
-> +/*
-> + * QorIQ DMA device tree stub [ controller @ offset 0x100000 ]
-
-Copy-pasted?
-
-Presumably should be "Elo3 DMA devicetree stub", or similar?
-
-Similarly for elo3-dma-1.dtsi.
-
-Thanks,
-Mark.
+On 08/24/2013 05:45 AM, Scott Wood wrote:
+> On Mon, 2013-08-19 at 20:23 +0800, Minghuan Lian wrote:
+>> The Freescale's Layerscape series processors will use ARM cores.
+>> The LS1's PCIe controllers is the same as T4240's. So it's better
+>> the PCIe controller driver can support PowerPC and ARM
+>> simultaneously. This patch is for this purpose. It derives
+>> the common functions from arch/powerpc/sysdev/fsl_pci.c to
+>> drivers/pci/host/pcie-fsl.c and leaves several platform-dependent
+>> functions which should be implemented in platform files.
+>>
+>> Signed-off-by: Minghuan Lian<Minghuan.Lian@freescale.com>
+>> ---
+>> Based on upstream master 3.11-rc6
+>> The function has been tested  on P5020DS and P3041DS and T4240QDS boards
+>> For mpc83xx and mpc86xx, I only did compile test.
+> I assume you'll test on these (and older mpc85xx) before this becomes
+> non-RFC?
+[Minghuan] I will try to test on the relevant boards and list them.
+>>   arch/powerpc/Kconfig          |   1 +
+>>   arch/powerpc/sysdev/fsl_pci.c | 591 ++++++----------------------------
+>>   arch/powerpc/sysdev/fsl_pci.h |  91 ------
+>>   drivers/edac/mpc85xx_edac.c   |  10 -
+>>   drivers/pci/host/Kconfig      |   4 +
+>>   drivers/pci/host/Makefile     |   1 +
+>>   drivers/pci/host/pcie-fsl.c   | 734 ++++++++++++++++++++++++++++++++++++++++++
+>>   include/linux/fsl/fsl-pcie.h  | 176 ++++++++++
+>>   8 files changed, 1008 insertions(+), 600 deletions(-)
+>>   create mode 100644 drivers/pci/host/pcie-fsl.c
+>>   create mode 100644 include/linux/fsl/fsl-pcie.h
+> Please use -M -C with git format-patch.
+>
+> Why "pcie" rather than "pci"?  Is non-express not supported by these new
+> files?
+[Minghuan] Using "pci" is more accurate. I selected 'pcie' because the 
+new file is
+mainly for PCI Express controller, but it does contain two pci 
+boards(mpc8610,
+mpc8540) support. I will change to 'pci'.
+>> @@ -259,15 +258,6 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+>>   
+>>   	/* we only need the error registers */
+>>   	r.start += 0xe00;
+>> -
+>> -	if (!devm_request_mem_region(&op->dev, r.start, resource_size(&r),
+>> -					pdata->name)) {
+>> -		printk(KERN_ERR "%s: Error while requesting mem region\n",
+>> -		       __func__);
+>> -		res = -EBUSY;
+>> -		goto err;
+>> -	}
+>> -
+>>   	pdata->pci_vbase = devm_ioremap(&op->dev, r.start, resource_size(&r));
+>>   	if (!pdata->pci_vbase) {
+>>   		printk(KERN_ERR "%s: Unable to setup PCI err regs\n", __func__);
+> Could you explain this part?
+[Minghuan] The new pci driver used devm_ioremap_resource() to map reg space.
+So PCI EDAC driver would encounter an error when calling 
+devm_request_mem_region()
+because pci device reg space has been assigned to pci driver. And EDAC 
+is only to
+handler the error, has no reason to request exclusive PCI device reg space.
+>> diff --git a/drivers/pci/host/pcie-fsl.c b/drivers/pci/host/pcie-fsl.c
+>> new file mode 100644
+>> index 0000000..6e767d4
+>> --- /dev/null
+>> +++ b/drivers/pci/host/pcie-fsl.c
+>> @@ -0,0 +1,734 @@
+>> +/*
+>> + * 85xx/86xx/LS PCI/PCIE common driver support
+>> + *
+>> + * Copyright 2013 Freescale Semiconductor, Inc.
+>> + *
+>> + * Moved from arch/power/fsl_pci.c
+> That's not the right pathname.
+[Minghuan] Sorry, I will fix it.
+>> + *
+>> + * This program is free software; you can redistribute  it and/or modify it
+>> + * under  the terms of  the GNU General  Public License as published by the
+>> + * Free Software Foundation;  either version 2 of the  License, or (at your
+>> + * option) any later version.
+>> + */
+>> +
+>> +#include <linux/kernel.h>
+>> +#include <linux/pci.h>
+>> +#include <linux/string.h>
+>> +#include <linux/init.h>
+>> +#include <linux/log2.h>
+>> +#include <linux/of.h>
+>> +#include <linux/of_address.h>
+>> +#include <linux/of_pci.h>
+>> +#include <linux/pci_regs.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/resource.h>
+>> +#include <linux/types.h>
+>> +#include <linux/memblock.h>
+>> +#include <linux/fsl/fsl-pcie.h>
+> You don't need an "fsl-" prefix if it's in the "fsl/" directory.
+[Minghuan] No, I will remove 'fsl-' prefix.
+>> +static int fsl_pcie_write_config(struct fsl_pcie *pcie, int bus, int devfn,
+>> +				 int offset, int len, u32 val)
+>> +{
+>> +	void __iomem *cfg_data;
+>> +	u32 bus_no, reg;
+>> +
+>> +	if (pcie->indirect_type & INDIRECT_TYPE_NO_PCIE_LINK) {
+>> +		if (bus != pcie->first_busno)
+>> +			return PCIBIOS_DEVICE_NOT_FOUND;
+>> +		if (devfn != 0)
+>> +			return PCIBIOS_DEVICE_NOT_FOUND;
+>> +	}
+>> +
+>> +	if (fsl_pci_exclude_device(pcie, bus, devfn))
+>> +		return PCIBIOS_DEVICE_NOT_FOUND;
+>> +
+>> +	bus_no = (bus == pcie->first_busno) ?
+>> +			pcie->self_busno : bus;
+>> +
+>> +	if (pcie->indirect_type & INDIRECT_TYPE_EXT_REG)
+>> +		reg = ((offset & 0xf00) << 16) | (offset & 0xfc);
+>> +	else
+>> +		reg = offset & 0xfc;
+>> +
+>> +	if (pcie->indirect_type & INDIRECT_TYPE_BIG_ENDIAN)
+>> +		out_be32(&pcie->regs->config_addr,
+>> +			 (0x80000000 | (bus_no << 16) | (devfn << 8) | reg));
+>> +	else
+>> +		out_le32(&pcie->regs->config_addr,
+>> +			 (0x80000000 | (bus_no << 16) | (devfn << 8) | reg));
+> Did you try building this on ARM?  out_be32/le32() is PPC-specific.  Use iowrite32be()/iowrite32().
+[Minghuan] Yes. I will change them.
+>> +ep_mode:
+>> +	dev_info(&pdev->dev, "It works as EP mode\n");
+> This is a bit casually phrased...  and where did this come from?  This
+> patch should just be about moving code around and removing PPC
+> dependencies (ideally even those two would be separate).  If there's
+> new functionality or other changes it should be a separate patch.
+[Minghuan] Sorry, I will continue using "no_bridge"
+>> +static int __init fsl_pcie_probe(struct platform_device *pdev)
+>> +{
+>> +	int ret;
+>> +	struct fsl_pcie *pcie;
+>> +
+>> +	if (!of_device_is_available(pdev->dev.of_node)) {
+>> +		dev_err(&pdev->dev, "disabled\n");
+>> +		return -ENODEV;
+>> +	}
+> That's not an error.
+[Minghuan] Ok, I will fix it.
+> -Scott
+>
+>
