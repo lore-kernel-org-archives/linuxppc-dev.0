@@ -1,12 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Tue, 27 Aug 2013 16:07:49 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Work around gcc miscompilation of __pa() on 64-bit
-Message-ID: <20130827060749.GA16462@drongo>
+Return-Path: <gleb@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 6B6AE2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 16:40:33 +1000 (EST)
+Date: Tue, 27 Aug 2013 09:40:26 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 02/10] KVM: PPC: reserve a capability number for multitce
+ support
+Message-ID: <20130827064026.GB22899@redhat.com>
+References: <1375332272-22176-1-git-send-email-aik@ozlabs.ru>
+ <1375332272-22176-3-git-send-email-aik@ozlabs.ru>
+ <1376441474.4255.39.camel@pasglop>
+ <20130826123753.GA22977@redhat.com>
+ <1377577198.3819.102.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Alan Modra <amodra@gmail.com>
+In-Reply-To: <1377577198.3819.102.camel@pasglop>
+Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,64 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 64-bit, __pa(&static_var) gets miscompiled by recent versions of
-gcc as something like:
+On Tue, Aug 27, 2013 at 02:19:58PM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2013-08-26 at 15:37 +0300, Gleb Natapov wrote:
+> > > Gleb, any chance you can put this (and the next one) into a tree to
+> > > "lock in" the numbers ?
+> > > 
+> > Applied it. Sorry for slow response, was on vocation and still go
+> > through the email backlog.
+> 
+> Thanks. Since it's not in a topic branch that I can pull, I'm going to
+> just cherry-pick them. However, they are in your "queue" branch, not
+> "next" branch. Should I still assume this is a stable branch and that
+> the numbers aren't going to change ?
+> 
+Queue will become next after I will test it and if test will fail the
+commit hash may change, but since you are going to cherry-pick and this
+does not preserve commit hash it does not matter.
 
-        addis 3,2,.LANCHOR1+4611686018427387904@toc@ha
-        addi 3,3,.LANCHOR1+4611686018427387904@toc@l
-
-This ends up effectively ignoring the offset, since its bottom 32 bits
-are zero, and means that the result of __pa() still has 0xC in the top
-nibble.  This happens with gcc 4.8.1, at least.
-
-To work around this, for 64-bit we make __pa() use an AND operator,
-and for symmetry, we make __va() use an OR operator.  Using an AND
-operator rather than a subtraction ends up with slightly shorter code
-since it can be done with a single clrldi instruction, whereas it
-takes three instructions to form the constant (-PAGE_OFFSET) and add
-it on.  (Note that MEMORY_START is always 0 on 64-bit.)
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/Kconfig            |  1 +
- arch/powerpc/include/asm/page.h | 10 ++++++++++
- 2 files changed, 11 insertions(+)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index dbd9d3c..9cf59816d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -979,6 +979,7 @@ config RELOCATABLE
- 	  must live at a different physical address than the primary
- 	  kernel.
- 
-+# This value must have zeroes in the bottom 60 bits otherwise lots will break
- config PAGE_OFFSET
- 	hex
- 	default "0xc000000000000000"
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 988c812..b9f4262 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -211,9 +211,19 @@ extern long long virt_phys_offset;
- #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) + VIRT_PHYS_OFFSET))
- #define __pa(x) ((unsigned long)(x) - VIRT_PHYS_OFFSET)
- #else
-+#ifdef CONFIG_PPC64
-+/*
-+ * gcc miscompiles (unsigned long)(&static_var) - PAGE_OFFSET
-+ * with -mcmodel=medium, so we use & and | instead of - and + on 64-bit.
-+ */
-+#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) | PAGE_OFFSET))
-+#define __pa(x) ((unsigned long)(x) & 0x0fffffffffffffffUL)
-+
-+#else /* 32-bit, non book E */
- #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) + PAGE_OFFSET - MEMORY_START))
- #define __pa(x) ((unsigned long)(x) - PAGE_OFFSET + MEMORY_START)
- #endif
-+#endif
- 
- /*
-  * Unfortunately the PLT is in the BSS in the PPC32 ELF ABI,
--- 
-1.8.4.rc3
+--
+			Gleb.
