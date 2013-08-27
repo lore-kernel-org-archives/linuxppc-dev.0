@@ -1,27 +1,32 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 41BEB2C00C7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 19:24:17 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 05790-01 for <linuxppc-dev@lists.ozlabs.org>;
- Tue, 27 Aug 2013 10:24:13 +0100 (BST)
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D8F902C00D4
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 19:39:37 +1000 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Tue, 27 Aug 2013 15:01:26 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 8B9B23940058
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 15:09:20 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7R9fBgK40239346
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 15:11:12 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7R9dTNl022784
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Aug 2013 15:09:29 +0530
+Subject: [PATCH] powerpc/powernv: Create opal sysfs directory
+To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Tue, 27 Aug 2013 15:09:52 +0530
+Message-ID: <20130827093936.15620.7721.stgit@hegdevasant.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: [PATCH 0/2] fs: supply inode uid/gid setting interface
-Date: Tue, 27 Aug 2013 10:20:50 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7307@saturn3.aculab.com>
-In-Reply-To: <5217100E.6080506@huawei.com>
-References: <1377226118-43756-1-git-send-email-rui.xiang@huawei.com>
- <20130823041010.GA12296@kroah.com> <5217100E.6080506@huawei.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Rui Xiang" <rui.xiang@huawei.com>, "Greg KH" <gregkh@linuxfoundation.org>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, viro@zeniv.linux.org.uk,
- v9fs-developer@lists.sourceforge.net, linux-fsdevel@vger.kernel.org,
- cgroups@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +36,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Subject: Re: [PATCH 0/2] fs: supply inode uid/gid setting interface
->=20
-> On 2013/8/23 12:10, Greg KH wrote:
-> > On Fri, Aug 23, 2013 at 10:48:36AM +0800, Rui Xiang wrote:
-> >> This patchset implements an accessor functions to set uid/gid
-> >> in inode struct. Just finish code clean up.
-> >
-> > Why?
-> >
-> It can introduce a new function to reduce some codes.
->  Just clean up.
+Create /sys/firmware/opal directory. We wil use this
+interface to fetch opal error logs, firmware update, etc.
 
-In what sense is it a 'cleanup' ?
+Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/opal.h       |    3 +++
+ arch/powerpc/platforms/powernv/opal.c |   21 ++++++++++++++++++++-
+ 2 files changed, 23 insertions(+), 1 deletion(-)
 
-To my mind it just means that anyone reading the code has
-to go and look at another file in order to see what the
-function does (it might be expected to be more complex).
-
-It also adds run time cost, while probably not directly
-measurable I suspect it more than doubles the execution
-time of that code fragment - do that everywhere and the
-system will run like a sick pig.
-
-The only real use for accessor functions is when you
-don't want the structure offset to be public.
-In this case that is obviously not the case since
-all the drivers are directly accessing other members
-of the structure.
-
-	David
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index ba6ffe6..4432b7a 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -523,6 +523,9 @@ typedef struct oppanel_line {
+ 	uint64_t 	line_len;
+ } oppanel_line_t;
+ 
++/* /sys/firmware/opal */
++extern struct kobject *opal_kobj;
++
+ /* API functions */
+ int64_t opal_console_write(int64_t term_number, int64_t *length,
+ 			   const uint8_t *buffer);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 106301f..1c48a68 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -17,11 +17,15 @@
+ #include <linux/interrupt.h>
+ #include <linux/notifier.h>
+ #include <linux/slab.h>
++#include <linux/kobject.h>
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
+ 
+ #include "powernv.h"
+ 
++/* /sys/firmware/opal */
++struct kobject *opal_kobj;
++
+ struct opal {
+ 	u64 base;
+ 	u64 entry;
+@@ -369,6 +373,17 @@ static irqreturn_t opal_interrupt(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
+ 
++static int opal_sysfs_init(void)
++{
++	opal_kobj = kobject_create_and_add("opal", firmware_kobj);
++	if (!opal_kobj) {
++		pr_warn("kobject_create_and_add opal failed\n");
++		return -ENOMEM;
++	}
++
++	return 0;
++}
++
+ static int __init opal_init(void)
+ {
+ 	struct device_node *np, *consoles;
+@@ -412,7 +427,11 @@ static int __init opal_init(void)
+ 				   " (0x%x)\n", rc, irq, hwirq);
+ 		opal_irqs[i] = irq;
+ 	}
+-	return 0;
++
++	/* Create "opal" kobject under /sys/firmware */
++	rc = opal_sysfs_init();
++
++	return rc;
+ }
+ subsys_initcall(opal_init);
+ 
