@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 43AF52C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 17:53:48 +1000 (EST)
-Message-ID: <1377590004.3819.120.camel@pasglop>
-Subject: Re: [PATCH 1/2] powerpc/irq: remove the unneeded flag PACA_IRQ_EE_EDGE
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Tue, 27 Aug 2013 17:53:24 +1000
-In-Reply-To: <1365643954-20798-2-git-send-email-haokexin@gmail.com>
-References: <1365643954-20798-1-git-send-email-haokexin@gmail.com>
- <1365643954-20798-2-git-send-email-haokexin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <gleb@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 1B2E52C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 17:56:09 +1000 (EST)
+Date: Tue, 27 Aug 2013 10:56:00 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH v8] KVM: PPC: reserve a capability and ioctl numbers for
+ realmode VFIO
+Message-ID: <20130827075600.GE22899@redhat.com>
+References: <1376552966-8529-1-git-send-email-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1376552966-8529-1-git-send-email-aik@ozlabs.ru>
+Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,69 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-04-11 at 09:32 +0800, Kevin Hao wrote:
-> In order to support the Book3E external proxy, the flag
-> PACA_IRQ_EE_EDGE was introduced in patch 7230c564 (powerpc: Rework
-> lazy-interrupt handling). But it turns out that this is not needed.
-> And it is also not used by any code in the current kernel. According
-> to the PowerISA 2.0.6, the content of EPR (External Proxy Register)
-> is valid until MSR[EE] is set to 1. Since we never enable the hard irq
-> before replaying a external interrupt. That means we still can get
-> the valid interrupt vector from EPR when replaying irq.
-
-I assume you understand why that patch is broken and this is superseeded
-by your more recent series to actually make use of PACA_IRQ_EE_EDGE
-right ? :-)
-
-(Just making sure I can take that one out of patchwork).
-
-> Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> ---
->  arch/powerpc/include/asm/hw_irq.h    | 1 -
->  arch/powerpc/kernel/exceptions-64e.S | 1 -
->  arch/powerpc/kernel/irq.c            | 8 --------
->  3 files changed, 10 deletions(-)
+On Thu, Aug 15, 2013 at 05:49:26PM +1000, Alexey Kardashevskiy wrote:
+> This is to reserve a capablity number for upcoming support
+> of VFIO-IOMMU DMA operations in real mode.
 > 
-> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-> index e45c494..8bf0789 100644
-> --- a/arch/powerpc/include/asm/hw_irq.h
-> +++ b/arch/powerpc/include/asm/hw_irq.h
-> @@ -24,7 +24,6 @@
->  #define PACA_IRQ_DBELL		0x02
->  #define PACA_IRQ_EE		0x04
->  #define PACA_IRQ_DEC		0x08 /* Or FIT */
-> -#define PACA_IRQ_EE_EDGE	0x10 /* BookE only */
+> The last ioctl in the group which KVM_CREATE_SPAPR_TCE_IOMMU is added to
+> is 0xac, the next two numbers are taken - 0xad for KVM_KVMCLOCK_CTRL and
+0xac was also taken by KVM_SET_ONE_REG :(
+
+> 0xae for KVM_ARM_VCPU_INIT. So the KVM_CREATE_SPAPR_TCE_IOMMU ioclt gets
+> 0xaf.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> 
+> ---
+> Changes:
+> 2013/08/15 v8:
+> * fixed comment again
+> 
+> 2013/08/15:
+> * fixed mistype in comments
+> * fixed commit message which says what uses ioctls 0xad and 0xae
+> 
+> 2013/07/16:
+> * changed the number
+> 
+> 2013/07/11:
+> * changed order in a file, added comment about a gap in ioctl number
+> ---
+>  include/uapi/linux/kvm.h | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index 99c2533..bd94127 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -668,6 +668,7 @@ struct kvm_ppc_smmu_info {
+>  #define KVM_CAP_IRQ_XICS 92
+>  #define KVM_CAP_ARM_EL1_32BIT 93
+>  #define KVM_CAP_SPAPR_MULTITCE 94
+> +#define KVM_CAP_SPAPR_TCE_IOMMU 95
 >  
->  #endif /* CONFIG_PPC64 */
+>  #ifdef KVM_CAP_IRQ_ROUTING
 >  
-> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-> index 42a756e..64f2fbd 100644
-> --- a/arch/powerpc/kernel/exceptions-64e.S
-> +++ b/arch/powerpc/kernel/exceptions-64e.S
-> @@ -701,7 +701,6 @@ kernel_dbg_exc:
->  .endm
+> @@ -933,6 +934,11 @@ struct kvm_s390_ucas_mapping {
+>  #define KVM_ARM_SET_DEVICE_ADDR	  _IOW(KVMIO,  0xab, struct kvm_arm_device_addr)
+>  /* Available with KVM_CAP_PPC_RTAS */
+>  #define KVM_PPC_RTAS_DEFINE_TOKEN _IOW(KVMIO,  0xac, struct kvm_rtas_token_args)
+> +/* 0xad is taken by KVM_KVMCLOCK_CTRL */
+> +/* 0xae is taken by KVM_ARM_VCPU_INIT */
+> +/* Available with KVM_CAP_SPAPR_TCE_IOMMU */
+> +#define KVM_CREATE_SPAPR_TCE_IOMMU _IOW(KVMIO,  0xaf, \
+> +					struct kvm_create_spapr_tce_iommu)
 >  
->  masked_interrupt_book3e_0x500:
-> -	// XXX When adding support for EPR, use PACA_IRQ_EE_EDGE
->  	masked_interrupt_book3e PACA_IRQ_EE 1
->  
->  masked_interrupt_book3e_0x900:
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index 4f97fe3..dbc1c05 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -171,14 +171,6 @@ notrace unsigned int __check_irq_replay(void)
->  		return 0x500;
->  
->  #ifdef CONFIG_PPC_BOOK3E
-> -	/* Finally check if an EPR external interrupt happened
-> -	 * this bit is typically set if we need to handle another
-> -	 * "edge" interrupt from within the MPIC "EPR" handler
-> -	 */
-> -	local_paca->irq_happened &= ~PACA_IRQ_EE_EDGE;
-> -	if (happened & PACA_IRQ_EE_EDGE)
-> -		return 0x500;
-> -
->  	local_paca->irq_happened &= ~PACA_IRQ_DBELL;
->  	if (happened & PACA_IRQ_DBELL)
->  		return 0x280;
+Why not use KVM_CREATE_DEVICE API for that?
+
+>  /* ioctl for vm fd */
+>  #define KVM_CREATE_DEVICE	  _IOWR(KVMIO,  0xe0, struct kvm_create_device)
+> -- 
+> 1.8.3.2
+
+--
+			Gleb.
