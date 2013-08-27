@@ -1,23 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CC0982C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 10:39:34 +1000 (EST)
-Message-ID: <1377563961.3033.84.camel@snotra.buserror.net>
-Subject: Re: Loading kernel on MPC86x
-From: Scott Wood <scottwood@freescale.com>
-To: Martin Hinner <martin@hinner.info>
-Date: Mon, 26 Aug 2013 19:39:21 -0500
-In-Reply-To: <CAPVwjkzT6dyv-T_8fF-zm8VLKvGFgLkrEeBC4ib-p0mkFJ7=fA@mail.gmail.com>
-References: <CAPVwjkzkuw4cbo9YxnsskdoAda-k+Gb5sdVEJiZTVAD1nR5OOg@mail.gmail.com>
- <CAPVwjkyPKo0SmoEkJttzz0fXrTcyuv7K1nuhOzW9CdGXD+t7_A@mail.gmail.com>
- <1377537249.3033.26.camel@snotra.buserror.net>
- <CAPVwjkzT6dyv-T_8fF-zm8VLKvGFgLkrEeBC4ib-p0mkFJ7=fA@mail.gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 786A12C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 10:53:02 +1000 (EST)
+Message-ID: <1377564760.3819.91.camel@pasglop>
+Subject: Re: [PATCH] powerpc/hvsi: increase handshake timeout from 200ms to
+ 400ms.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eugene Surovegin <ebs@ebshome.net>
+Date: Tue, 27 Aug 2013 10:52:40 +1000
+In-Reply-To: <1377543212-20432-1-git-send-email-ebs@ebshome.net>
+References: <1377543212-20432-1-git-send-email-ebs@ebshome.net>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,57 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-08-26 at 20:29 +0200, Martin Hinner wrote:
-> On Mon, Aug 26, 2013 at 7:14 PM, Scott Wood <scottwood@freescale.com> wrote:
-> >> that kernel must be at location 0. Another problem was that interrupts
-> >> got re-enabled during execution of my bootloader (I am doing some
-> >> syscalls -> goes  to Cisco rom),
-> > Do you mean you're calling into the rom after Linux has already started
-> > executing?  That's not normal for 8xx.
+On Mon, 2013-08-26 at 11:53 -0700, Eugene Surovegin wrote:
+> This solves a problem observed in kexec'ed kernel where 200ms timeout is
+> too short and bootconsole fails to initialize. Console did eventually
+> become workable but much later into the boot process.
 > 
-> No, in bootloader. I have disabled interrupts and then later did a
-> syscall which probably enabled them again. As I have overwritten some
-> of Cisco ROM data it crashed (at random place).
+> Observed timeout was around 260ms, but I decided to make it a little bigger
+> for more reliability.
 > 
-> >> I am also curious why CONFIG_PPC_EARLY_DEBUG_CPM uses
-> >> CONFIG_PPC_EARLY_DEBUG_CPM_ADDR as pointer to transmit SMC buffer and
-> >> not address of CPM/SCM parameter RAM ? TX buffer address can be read
-> >> from SMC parameter RAM. Wouldn't this solution be more portable? At
-> >> least this way I do it when I take over console from Cisco
-> >> startup/rommon.
-> >
-> > The point was to keep things as simple as possible (e.g. for use in
-> > temporary handcoded asm as needed).  This is a hacky debugging feature
-> > that assumes you know what you're doing and can set the address to match
-> > what the loader does (and that the loader's choice of address is
-> > static).  If you have an improvement that keeps it simple, feel free to
-> > send a patch.
+> This has been tested on Power7 machine with Petitboot as a primary
+> bootloader and PowerNV firmware.
+
+Thanks !
+
+I've been carrying a patch like that in my test stuff, the only reason I
+hadn't merged it yet was that I though there might be a problem under
+the hood, such as us maybe not actually polling the FSP fast enough or
+something, but so far it looks like it's just slow to respond.
+
+Cheers,
+Ben.
+
+> Signed-off-by: Eugene Surovegin <surovegin@google.com>
+> ---
+>  drivers/tty/hvc/hvsi_lib.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> How about making CONFIG_PPC_EARLY_DEBUG_CPM_PARRAM
-
-PARAM
-
-> that woud carry address of SMCx parameter RAM (IMMR+0x04180 on MPC866) and this value
-> would be used in case CONFIG_PPC_EARLY_DEBUG_CPM_ADDR is zero ? This
-> would allow kernel hackers to still use
-> CONFIG_PPC_EARLY_DEBUG_CPM_ADDR for assembly debugging (+legacy use)
-> and everyone else can use it as a more reliable option that does not
-> rely on particular bootloader behavior. Early debug is good even for
-> end-users so as they can send debug output if anything goes wrong at
-> early stage.
-
-If it only works with CPM1 SMC, then that should be in the name of the
-symbol.
-
-> Anyway, difference between _PARRAM and _ADDR is only one lwz
-> instruction, so I guess it is possible to completely discard _ADDR if
-> there is no legacy use for it. I am also not sure if this works with
-> SCC UART ports or only CPM SMC UART.
-
-Given that testing can be a challenge on this old hardware (I don't have
-easy access anymore, except maybe one 8xx board), I'd rather leave the
-existing mechanism in place if you don't have the ability to test all
-these cases.  The ability to not care about what type of CPM serial port
-it is, is an important simplification.
-
--Scott
+> diff --git a/drivers/tty/hvc/hvsi_lib.c b/drivers/tty/hvc/hvsi_lib.c
+> index 3396eb9..ac27671 100644
+> --- a/drivers/tty/hvc/hvsi_lib.c
+> +++ b/drivers/tty/hvc/hvsi_lib.c
+> @@ -341,8 +341,8 @@ void hvsilib_establish(struct hvsi_priv *pv)
+>  
+>  	pr_devel("HVSI@%x:   ... waiting handshake\n", pv->termno);
+>  
+> -	/* Try for up to 200s */
+> -	for (timeout = 0; timeout < 20; timeout++) {
+> +	/* Try for up to 400ms */
+> +	for (timeout = 0; timeout < 40; timeout++) {
+>  		if (pv->established)
+>  			goto established;
+>  		if (!hvsi_get_packet(pv))
