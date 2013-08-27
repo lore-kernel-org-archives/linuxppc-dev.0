@@ -1,20 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 786A12C0082
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 10:53:02 +1000 (EST)
-Message-ID: <1377564760.3819.91.camel@pasglop>
-Subject: Re: [PATCH] powerpc/hvsi: increase handshake timeout from 200ms to
- 400ms.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Eugene Surovegin <ebs@ebshome.net>
-Date: Tue, 27 Aug 2013 10:52:40 +1000
-In-Reply-To: <1377543212-20432-1-git-send-email-ebs@ebshome.net>
-References: <1377543212-20432-1-git-send-email-ebs@ebshome.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B42378@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CD8C52C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 12:13:24 +1000 (EST)
+Date: Tue, 27 Aug 2013 10:01:08 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [alsa-devel] [PATCH v11] ASoC: fsl: Add S/PDIF machine driver
+Message-ID: <20130827020107.GB3758@MrMyself>
+References: <fac39ed91818630e03f81a5f0cf9ddde0e6a3c3a.1377244995.git.b42378@freescale.com>
+ <5217B32C.5070300@wwwdotorg.org>
+ <20130823191353.GK25263@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20130823191353.GK25263@sirena.org.uk>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, lars@metafoo.de,
+ Stephen Warren <swarren@wwwdotorg.org>, s.hauer@pengutronix.de,
+ tomasz.figa@gmail.com, rob.herring@calxeda.com, p.zabel@pengutronix.de,
+ shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,44 +31,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-08-26 at 11:53 -0700, Eugene Surovegin wrote:
-> This solves a problem observed in kexec'ed kernel where 200ms timeout is
-> too short and bootconsole fails to initialize. Console did eventually
-> become workable but much later into the boot process.
+On Fri, Aug 23, 2013 at 08:13:53PM +0100, Mark Brown wrote:
+> On Fri, Aug 23, 2013 at 01:08:28PM -0600, Stephen Warren wrote:
+> > On 08/23/2013 02:04 AM, Nicolin Chen wrote:
+> > > This patch implements a device-tree-only machine driver for Freescale
+> > > i.MX series Soc. It works with spdif_transmitter/spdif_receiver and
+> > > fsl_spdif.c drivers.
 > 
-> Observed timeout was around 260ms, but I decided to make it a little bigger
-> for more reliability.
+> > The binding looks reasonable to me now. Thanks.
 > 
-> This has been tested on Power7 machine with Petitboot as a primary
-> bootloader and PowerNV firmware.
+> Is that a Reviewed-by?
 
-Thanks !
+Sir,
+I think this patch hasn't been applied yet, already been acked though.
+Is there any problem in it?
 
-I've been carrying a patch like that in my test stuff, the only reason I
-hadn't merged it yet was that I though there might be a problem under
-the hood, such as us maybe not actually polling the FSP fast enough or
-something, but so far it looks like it's just slow to respond.
-
-Cheers,
-Ben.
-
-> Signed-off-by: Eugene Surovegin <surovegin@google.com>
-> ---
->  drivers/tty/hvc/hvsi_lib.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/tty/hvc/hvsi_lib.c b/drivers/tty/hvc/hvsi_lib.c
-> index 3396eb9..ac27671 100644
-> --- a/drivers/tty/hvc/hvsi_lib.c
-> +++ b/drivers/tty/hvc/hvsi_lib.c
-> @@ -341,8 +341,8 @@ void hvsilib_establish(struct hvsi_priv *pv)
->  
->  	pr_devel("HVSI@%x:   ... waiting handshake\n", pv->termno);
->  
-> -	/* Try for up to 200s */
-> -	for (timeout = 0; timeout < 20; timeout++) {
-> +	/* Try for up to 400ms */
-> +	for (timeout = 0; timeout < 40; timeout++) {
->  		if (pv->established)
->  			goto established;
->  		if (!hvsi_get_packet(pv))
+Thank you.
+Nicolin
