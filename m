@@ -1,21 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A402C2C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 08:14:33 +1000 (EST)
-Message-ID: <1377641665.3819.138.camel@pasglop>
-Subject: Re: Critical Interrupt Input
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Henry Bausley <hbausley@deltatau.com>
-Date: Wed, 28 Aug 2013 08:14:25 +1000
-In-Reply-To: <1377641516.4691.11.camel@lx-henry>
-References: <63d2635a$648939a4$b3aeac8$@deltatau.com>
- <1376945799.25016.77.camel@pasglop> <1377038913.25385.194.camel@lx-henry>
- <1377040129.25016.181.camel@pasglop> <1377641516.4691.11.camel@lx-henry>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f176.google.com (mail-pd0-f176.google.com
+ [209.85.192.176])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B7FD12C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 10:51:14 +1000 (EST)
+Received: by mail-pd0-f176.google.com with SMTP id q10so5562363pdj.35
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2013 17:51:11 -0700 (PDT)
+Message-ID: <521D4977.7060803@ozlabs.ru>
+Date: Wed, 28 Aug 2013 10:51:03 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Gleb Natapov <gleb@redhat.com>
+Subject: Re: [PATCH v8] KVM: PPC: reserve a capability and ioctl numbers for
+ realmode VFIO
+References: <1376552966-8529-1-git-send-email-aik@ozlabs.ru>
+ <20130827075600.GE22899@redhat.com> <521C666A.3020508@ozlabs.ru>
+ <20130827105832.GH22899@redhat.com>
+In-Reply-To: <20130827105832.GH22899@redhat.com>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,256 +31,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-08-27 at 15:11 -0700, Henry Bausley wrote:
-> Both methods you described seem to work. We are currently using the
-> method of clearing the partially written TLB. Seems to be working but
-> we're still testing.  Thanks.  
+On 08/27/2013 08:58 PM, Gleb Natapov wrote:
+> On Tue, Aug 27, 2013 at 06:42:18PM +1000, Alexey Kardashevskiy wrote:
+>> On 08/27/2013 05:56 PM, Gleb Natapov wrote:
+>>> On Thu, Aug 15, 2013 at 05:49:26PM +1000, Alexey Kardashevskiy wrote:
+>>>> This is to reserve a capablity number for upcoming support
+>>>> of VFIO-IOMMU DMA operations in real mode.
+>>>>
+>>>> The last ioctl in the group which KVM_CREATE_SPAPR_TCE_IOMMU is added to
+>>>> is 0xac, the next two numbers are taken - 0xad for KVM_KVMCLOCK_CTRL and
+>>> 0xac was also taken by KVM_SET_ONE_REG :(
+>>>
+>>>> 0xae for KVM_ARM_VCPU_INIT. So the KVM_CREATE_SPAPR_TCE_IOMMU ioclt gets
+>>>> 0xaf.
+>>>>
+>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>
+>>>> ---
+>>>> Changes:
+>>>> 2013/08/15 v8:
+>>>> * fixed comment again
+>>>>
+>>>> 2013/08/15:
+>>>> * fixed mistype in comments
+>>>> * fixed commit message which says what uses ioctls 0xad and 0xae
+>>>>
+>>>> 2013/07/16:
+>>>> * changed the number
+>>>>
+>>>> 2013/07/11:
+>>>> * changed order in a file, added comment about a gap in ioctl number
+>>>> ---
+>>>>  include/uapi/linux/kvm.h | 6 ++++++
+>>>>  1 file changed, 6 insertions(+)
+>>>>
+>>>> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+>>>> index 99c2533..bd94127 100644
+>>>> --- a/include/uapi/linux/kvm.h
+>>>> +++ b/include/uapi/linux/kvm.h
+>>>> @@ -668,6 +668,7 @@ struct kvm_ppc_smmu_info {
+>>>>  #define KVM_CAP_IRQ_XICS 92
+>>>>  #define KVM_CAP_ARM_EL1_32BIT 93
+>>>>  #define KVM_CAP_SPAPR_MULTITCE 94
+>>>> +#define KVM_CAP_SPAPR_TCE_IOMMU 95
+>>>>  
+>>>>  #ifdef KVM_CAP_IRQ_ROUTING
+>>>>  
+>>>> @@ -933,6 +934,11 @@ struct kvm_s390_ucas_mapping {
+>>>>  #define KVM_ARM_SET_DEVICE_ADDR	  _IOW(KVMIO,  0xab, struct kvm_arm_device_addr)
+>>>>  /* Available with KVM_CAP_PPC_RTAS */
+>>>>  #define KVM_PPC_RTAS_DEFINE_TOKEN _IOW(KVMIO,  0xac, struct kvm_rtas_token_args)
+>>>> +/* 0xad is taken by KVM_KVMCLOCK_CTRL */
+>>>> +/* 0xae is taken by KVM_ARM_VCPU_INIT */
+>>>> +/* Available with KVM_CAP_SPAPR_TCE_IOMMU */
+>>>> +#define KVM_CREATE_SPAPR_TCE_IOMMU _IOW(KVMIO,  0xaf, \
+>>>> +					struct kvm_create_spapr_tce_iommu)
+>>>>  
+>>> Why not use KVM_CREATE_DEVICE API for that?
+>>
+>>
+>> Because when I came up with my ioctl first time, it was not in upstream and
+>> since then nobody pointed me to this new ioctl :)
+> Sorry about that :(. The ioctl exists for a while now, but with v8 patch I
+> imaging your patch series predates it.
 
-Feel free to send me us patch for review :-)
+The ioctl I made up is basically a copy of KVM_CREATE_SPAPR_TCE which does
+the same thing for emulated devices and it is there for quite a while but
+it is not really extensible. And these two ioctls share some bits of code.
+Now we will have 2 pieces of code which do almost the same thing but in a
+different way. Kinda sucks :(
 
-Cheers,
-Ben.
+>> So my stuff is not going to upstream again. Heh. Ok. I'll implement it.
+>>
+> Thanks! Should I keep KVM_CAP_SPAPR_MULTITCE capability patch or can I
+> drop it for now?
 
-> .
-> .
-> .
-> 	mfspr	r5,SPRN_CSRR0;
-> 	lis	r12,finish_tlb_load_44x@h
-> 	ori	r12,r12,finish_tlb_load_44x@l;
-> 	addi	r11,r12,finish_tlb_load_44x_end-finish_tlb_load_44x;
-> 	cmplw	cr0,r5,r12;
-> 	cmplw	cr1,r5,r11;
-> 	ble	cr0,3f;
-> 	bge	cr1,3f;
-> 	li	r12,0;
-> 	mr	r5,r11
-> 	tlbwe	r12,r13,PPC44x_TLB_XLAT;
-> 	tlbwe	r12,r13,PPC44x_TLB_PAGEID;	/* Clear PAGEID */
->         tlbwe   r12,r13,PPC44x_TLB_ATTRIB;	/* Clear ATTRIB */
-> 	isync
-> .
-> .
-> .
-> 
-> 
-> On Wed, 2013-08-21 at 09:08 +1000, Benjamin Herrenschmidt wrote:
-> > On Tue, 2013-08-20 at 15:48 -0700, Henry Bausley wrote:
-> > > Ben,
-> > > 
-> > > 
-> > > After your hints I suspected the read of a real world i/o variable *piom
-> > > which came from ioremap_nocache in the 3 line critical interrupt handler
-> > > 
-> > > void critintr_handler(void *dev)
-> > > {
-> > >   critintrcount++;          // increment a variable
-> > >   iodata = *piom;           // read an I/O location 
-> > >   mtdcr(0x0c0, 0x00002000); // clear critical interrupt 
-> > > } 
-> > > 
-> > > is what caused the problem. Commenting it out seems to make the system stable.  
-> > 
-> > Right, definitely would do that. BTW. You may want to use proper IO
-> > accessors while at it, to get the right memory barriers etc...
-> > 
-> > > This led us to disable the critical interrupt when in the
-> > > DataTLBError44x and InstructionTLBError44x exceptions.  Now the critical
-> > > interrupt handler seems to make things more stable when reading real
-> > > world i/o for our application.
-> > >
-> > > 
-> > >   /* Data TLB Error Interrupt */
-> > >   START_EXCEPTION(DataTLBError44x)
-> > >   mtspr	SPRN_SPRG_WSCRATCH0, r10  /* Save some working */
-> > > +  mfmsr r10                      /*  Disable the */
-> > > +  rlwinm r10,r10,0,15,13         /*  MSR's CE bit */
-> > > +  mtmsr r10                     
-> > > 
-> > > 
-> > > Do you see any potential problems with this approach?
-> > > 
-> > > If so can you advise us on how to better take care of this.
-> > 
-> >  - You potentially still have an exposure ... between the mtspr to
-> > scratch and the mfmsr, a CRIC can occur, causing a re-entrancy which
-> > would than clobber the scratch register. That can be handled by saving
-> > that scratc SPRG into the stack frame on entry/exit from the crit
-> > interrupt. Look at crit_transfer_to_handler, how it already handles
-> > MMUCR:
-> > 
-> > 	mfspr	r0,SPRN_MMUCR
-> > 	stw	r0,MMUCR(r11)
-> > 
-> > Probably add saving of the SPRG_WSCRATCH0 in there (need to add a frame
-> > slot for it) and do the restore in RESTORE_MMU_REGS
-> > 
-> >  - You need to handle Instructions TLB miss as well
-> > 
-> >  - You add overhead to the TLB miss handlers which are fairly
-> > performance critical pieces of code. You might be able to alleviate
-> > that by making the whole thing support re-entrancy properly but that's
-> > harder. To do that you would have to:
-> > 
-> >     * Save *all* the SPRGs used by the TLB miss during crit entry/exit
-> > 
-> >     * Detect in crit_transfer_to_handler (check the CSRR0 bounds) that 
-> >       the crit code interrupted finish_tlb_load_44x before or at the
-> >       last tlbwe instruction. In that case, immediately clear the 
-> >       partially written TLB entry (index in r13) and change the
-> >       return address to skip right past the last tlbwe.
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > On Tue, 2013-08-20 at 06:56 +1000, Benjamin Herrenschmidt wrote:
-> > > > On Mon, 2013-08-19 at 12:00 -0700, Henry Bausley wrote:
-> > > > > 
-> > > > > Support does appear to be present but there is a problem returning
-> > > > > back to user space I suspect.
-> > > > 
-> > > > Probably a problem with TLB misses vs. crit interrupts.
-> > > > 
-> > > > A critical interrupt can re-enter a TLB miss.
-> > > > 
-> > > > I can see two potential issues there:
-> > > > 
-> > > >  - A bug where we don't properly restore "something" (I thought we did
-> > > > save and restore MMUCR though, but that's worth dbl checking if it works
-> > > > properly) accross the crit entry/exit
-> > > > 
-> > > >  - Something in your crit code causing a TLB miss (the
-> > > > kernel .text/.data/.bss should be bolted but anything else can). We
-> > > > don't currently support re-entering the TLB miss that way.
-> > > > 
-> > > > If we were to support the latter, we'd need to detect on entering a crit
-> > > > that the PC is within the TLB miss handler, and setup a return context
-> > > > to the original instruction (replay the miss) rather than trying to
-> > > > resume it..
-> > > > 
-> > > > Cheers,
-> > > > Ben.
-> > > > 
-> > > > > What fails is it causes Linux user space programs to get Segmentation
-> > > > > errors.
-> > > > > Issuing a simple ls causes a segmentation fault sometimes.  The shell
-> > > > > gets terminated 
-> > > > > and you cannot log back in.  INIT: Id "T0" respawning too fast:
-> > > > > disabled for 5 minutes pops up.
-> > > > > 
-> > > > > However, the critical interrupt handler keeps running.  I know this by
-> > > > > adding the reading 
-> > > > > of a physical I/O location in the handler and can see it is being read
-> > > > > on the scope.
-> > > > > 
-> > > > > 
-> > > > > The only code in the handler is below.
-> > > > > 
-> > > > > void critintr_handler(void *dev)
-> > > > > {
-> > > > >   critintrcount++;          // increment a variable
-> > > > >   iodata = *piom;           // read an I/O location 
-> > > > >   mtdcr(0x0c0, 0x00002000); // clear critical interrupt
-> > > > > }
-> > > > > 
-> > > > > 
-> > > > > Below is a log of the type of crashes that occur:
-> > > > > 
-> > > > > root@10.34.9.213:/opt/ppmac/ktest# ls
-> > > > > Segmentation fault
-> > > > > root@10.34.9.213:/opt/ppmac/ktest# ls
-> > > > > Segmentation fault
-> > > > > root@10.34.9.213:/opt/ppmac/ktest# ls
-> > > > > Makefile        ktest.c    ktest.ko     ktest.mod.o  modules.order
-> > > > > Module.symvers  ktest.cbp  ktest.mod.c  ktest.o
-> > > > > root@10.34.9.213:/opt/ppmac/ktest# ls
-> > > > > 
-> > > > > Debian GNU/Linux 7 powerpmac ttyS0
-> > > > > 
-> > > > > powerpmac login: root
-> > > > > 
-> > > > > Debian GNU/Linux 7 powerpmac ttyS0
-> > > > > 
-> > > > > powerpmac login: root
-> > > > > 
-> > > > > Debian GNU/Linux 7 powerpmac ttyS0
-> > > > > 
-> > > > > powerpmac login: root
-> > > > > 
-> > > > > Debian GNU/Linux 7 powerpmac ttyS0
-> > > > > 
-> > > > > powerpmac login: root
-> > > > > Password: 
-> > > > > Last login: Thu Nov 30 20:42:16 UTC 1933 on ttyS0
-> > > > > Linux powerpmac 3.2.21-aspen_2.01.09 #10 Mon Aug 19 08:49:12 PDT 2013
-> > > > > ppc
-> > > > > 
-> > > > > The programs included with the Debian GNU/Linux system are free
-> > > > > software;
-> > > > > the exact distribution terms for each program are described in the
-> > > > > individual files in /usr/share/doc/*/copyright.
-> > > > > 
-> > > > > Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-> > > > > permitted by applicable law.
-> > > > > INIT: Id "T0" respawning too fast: disabled for 5 minutes
-> > > > > 
-> > > > > 
-> > > > > ______________________________________________________________________
-> > > > > From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-> > > > > Sent: Saturday, August 17, 2013 3:05 PM
-> > > > > To: "Kumar Gala" <galak@kernel.crashing.org>
-> > > > > Cc: linuxppc-dev@lists.ozlabs.org, hbausley@deltatau.com
-> > > > > Subject: Re: Critical Interrupt Input
-> > > > > 
-> > > > > On Fri, 2013-08-16 at 06:04 -0500, Kumar Gala wrote:
-> > > > > > The 44x low level code needs to handle exception stacks properly for
-> > > > > > this to work. Since its possible to have a critical exception occur
-> > > > > > while in a normal exception level, you have to have proper saving of
-> > > > > > additional register state and a stack frame for the critical
-> > > > > > exception, etc. I'm not sure if that was ever done for 44x.
-> > > > > 
-> > > > > Don't 44x and FSL BookE share the same macros ? I would think 44x does
-> > > > > indeed implement the same crit support as e500...
-> > > > > 
-> > > > > What does the crash look like ?
-> > > > > 
-> > > > > Ben.
-> > > > > 
-> > > > > 
-> > > > > _______________________________________________
-> > > > > Linuxppc-dev mailing list
-> > > > > Linuxppc-dev@lists.ozlabs.org
-> > > > > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> > > > > 
-> > > > > 
-> > > > >   ­­  
-> > > > 
-> > > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > 
-> > > Outbound scan for Spam or Virus by Barracuda at Delta Tau
-> > 
-> > 
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
-> 
+Please keep it, it is unrelated to the IOMMU-VFIO thing.
+
+
+
+-- 
+Alexey
