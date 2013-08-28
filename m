@@ -1,22 +1,25 @@
-Return-Path: <B42378@freescale.com>
+Return-Path: <B40534@freescale.com>
 Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4E9472C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 13:53:39 +1000 (EST)
-From: Nicolin Chen <b42378@freescale.com>
-To: <broonie@kernel.org>, <s.hauer@pengutronix.de>, <swarren@wwwdotorg.org>
-Subject: [PATCH v12] ASoC: fsl: Add S/PDIF machine driver
-Date: Wed, 28 Aug 2013 12:04:46 +0800
-Message-ID: <1377662686-31696-1-git-send-email-b42378@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 5E88A2C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 16:08:34 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>, Wood Scott-B07421
+ <B07421@freescale.com>, "galak@kernel.crashing.org"
+ <galak@kernel.crashing.org>
+Subject: RE: [PATCH v2 2/3] powerpc/85xx: add hardware automatically enter
+ altivec idle state
+Date: Wed, 28 Aug 2013 06:08:11 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F154392590103460B@039-SN2MPN1-023.039d.mgd.msft.net>
+References: <1377592900-5020-1-git-send-email-dongsheng.wang@freescale.com>
+ <1377592900-5020-2-git-send-email-dongsheng.wang@freescale.com>
+In-Reply-To: <1377592900-5020-2-git-send-email-dongsheng.wang@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, lars@metafoo.de, tomasz.figa@gmail.com,
- rob.herring@calxeda.com, p.zabel@pengutronix.de, shawn.guo@linaro.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,261 +29,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch implements a device-tree-only machine driver for Freescale
-i.MX series Soc. It works with spdif_transmitter/spdif_receiver and
-fsl_spdif.c drivers.
 
-Signed-off-by: Nicolin Chen <b42378@freescale.com>
----
-Changelog
-v11->v12:
- * Dropped unused spdif_pdev.
- * Register spdif-dit/dir depending on DT bool property.
-v10->v11:
- * Use boolean properties for spdif-out/in switch instead of codec phandles.
- * Accordingly create dummy codec driver in probe() instead of DT nodes.
 
- .../devicetree/bindings/sound/imx-audio-spdif.txt  |   34 +++++
- sound/soc/fsl/Kconfig                              |   11 ++
- sound/soc/fsl/Makefile                             |    2 +
- sound/soc/fsl/imx-spdif.c                          |  148 ++++++++++++++++++++
- 4 files changed, 195 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
- create mode 100644 sound/soc/fsl/imx-spdif.c
+> -----Original Message-----
+> From: Wang Dongsheng-B40534
+> Sent: Tuesday, August 27, 2013 4:42 PM
+> To: Wood Scott-B07421; galak@kernel.crashing.org
+> Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> Subject: [PATCH v2 2/3] powerpc/85xx: add hardware automatically enter
+> altivec idle state
+>=20
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+>=20
+> Each core's AltiVec unit may be placed into a power savings mode
+> by turning off power to the unit. Core hardware will automatically
+> power down the AltiVec unit after no AltiVec instructions have
+> executed in N cycles. The AltiVec power-control is triggered by hardware.
+>=20
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ---
+> *v2:
+> Remove:
+> delete setup_idle_hw_governor function.
+> delete "Fix erratum" for rev1.
+>=20
+> Move:
+> move setup_* into __setup/restore_cpu_e6500.
+>=20
+> diff --git a/arch/powerpc/include/asm/reg_booke.h
+> b/arch/powerpc/include/asm/reg_booke.h
+> index 86ede76..8364bbe 100644
+> --- a/arch/powerpc/include/asm/reg_booke.h
+> +++ b/arch/powerpc/include/asm/reg_booke.h
+> @@ -217,6 +217,9 @@
+>  #define	CCR1_DPC	0x00000100 /* Disable L1 I-Cache/D-Cache parity
+> checking */
+>  #define	CCR1_TCS	0x00000080 /* Timer Clock Select */
+>=20
+> +/* Bit definitions for PWRMGTCR0. */
+> +#define PWRMGTCR0_ALTIVEC_IDLE	(1 << 22) /* Altivec idle enable */
+> +
+>  /* Bit definitions for the MCSR. */
+>  #define MCSR_MCS	0x80000000 /* Machine Check Summary */
+>  #define MCSR_IB		0x40000000 /* Instruction PLB Error */
+> diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> index bfb18c7..90bbb46 100644
+> --- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> +++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> @@ -58,6 +58,7 @@ _GLOBAL(__setup_cpu_e6500)
+>  #ifdef CONFIG_PPC64
+>  	bl	.setup_altivec_ivors
+>  #endif
+> +	bl	setup_altivec_idle
+>  	bl	__setup_cpu_e5500
+>  	mtlr	r6
+>  	blr
+> @@ -119,6 +120,7 @@ _GLOBAL(__setup_cpu_e5500)
+>  _GLOBAL(__restore_cpu_e6500)
+>  	mflr	r5
+>  	bl	.setup_altivec_ivors
+> +	bl	setup_altivec_idle
+>  	bl	__restore_cpu_e5500
+>  	mtlr	r5
+>  	blr
+> diff --git a/arch/powerpc/platforms/85xx/common.c
+> b/arch/powerpc/platforms/85xx/common.c
+> index d0861a0..93b563b 100644
+> --- a/arch/powerpc/platforms/85xx/common.c
+> +++ b/arch/powerpc/platforms/85xx/common.c
+> @@ -11,6 +11,16 @@
+>=20
+>  #include "mpc85xx.h"
+>=20
+> +#define MAX_BIT				64
+> +
+This should be change to 63, i will fix this in next patch.
 
-diff --git a/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
-new file mode 100644
-index 0000000..7d13479
---- /dev/null
-+++ b/Documentation/devicetree/bindings/sound/imx-audio-spdif.txt
-@@ -0,0 +1,34 @@
-+Freescale i.MX audio complex with S/PDIF transceiver
-+
-+Required properties:
-+
-+  - compatible : "fsl,imx-audio-spdif"
-+
-+  - model : The user-visible name of this sound complex
-+
-+  - spdif-controller : The phandle of the i.MX S/PDIF controller
-+
-+
-+Optional properties:
-+
-+  - spdif-out : This is a boolean property. If present, the transmitting
-+    function of S/PDIF will be enabled, indicating there's a physical
-+    S/PDIF out connector/jack on the board or it's connecting to some
-+    other IP block, such as an HDMI encoder/display-controller.
-+
-+  - spdif-in : This is a boolean property. If present, the receiving
-+    function of S/PDIF will be enabled, indicating there's a physical
-+    S/PDIF in connector/jack on the board.
-+
-+* Note: At least one of these two properties should be set in the DT binding.
-+
-+
-+Example:
-+
-+sound-spdif {
-+	compatible = "fsl,imx-audio-spdif";
-+	model = "imx-spdif";
-+	spdif-controller = <&spdif>;
-+	spdif-out;
-+	spdif-in;
-+};
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index cd088cc..a708380 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -193,6 +193,17 @@ config SND_SOC_IMX_SGTL5000
- 	  Say Y if you want to add support for SoC audio on an i.MX board with
- 	  a sgtl5000 codec.
- 
-+config SND_SOC_IMX_SPDIF
-+	tristate "SoC Audio support for i.MX boards with S/PDIF"
-+	select SND_SOC_IMX_PCM_DMA
-+	select SND_SOC_FSL_SPDIF
-+	select SND_SOC_FSL_UTILS
-+	select SND_SOC_SPDIF
-+	help
-+	  SoC Audio support for i.MX boards with S/PDIF
-+	  Say Y if you want to add support for SoC audio on an i.MX board with
-+	  a S/DPDIF.
-+
- config SND_SOC_IMX_MC13783
- 	tristate "SoC Audio support for I.MX boards with mc13783"
- 	depends on MFD_MC13783 && ARM
-diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index 4b5970e..e2aaff7 100644
---- a/sound/soc/fsl/Makefile
-+++ b/sound/soc/fsl/Makefile
-@@ -45,6 +45,7 @@ snd-soc-mx27vis-aic32x4-objs := mx27vis-aic32x4.o
- snd-soc-wm1133-ev1-objs := wm1133-ev1.o
- snd-soc-imx-sgtl5000-objs := imx-sgtl5000.o
- snd-soc-imx-wm8962-objs := imx-wm8962.o
-+snd-soc-imx-spdif-objs :=imx-spdif.o
- snd-soc-imx-mc13783-objs := imx-mc13783.o
- 
- obj-$(CONFIG_SND_SOC_EUKREA_TLV320) += snd-soc-eukrea-tlv320.o
-@@ -53,4 +54,5 @@ obj-$(CONFIG_SND_SOC_MX27VIS_AIC32X4) += snd-soc-mx27vis-aic32x4.o
- obj-$(CONFIG_SND_MXC_SOC_WM1133_EV1) += snd-soc-wm1133-ev1.o
- obj-$(CONFIG_SND_SOC_IMX_SGTL5000) += snd-soc-imx-sgtl5000.o
- obj-$(CONFIG_SND_SOC_IMX_WM8962) += snd-soc-imx-wm8962.o
-+obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
- obj-$(CONFIG_SND_SOC_IMX_MC13783) += snd-soc-imx-mc13783.o
-diff --git a/sound/soc/fsl/imx-spdif.c b/sound/soc/fsl/imx-spdif.c
-new file mode 100644
-index 0000000..816013b
---- /dev/null
-+++ b/sound/soc/fsl/imx-spdif.c
-@@ -0,0 +1,148 @@
-+/*
-+ * Copyright (C) 2013 Freescale Semiconductor, Inc.
-+ *
-+ * The code contained herein is licensed under the GNU General Public
-+ * License. You may obtain a copy of the GNU General Public License
-+ * Version 2 or later at the following locations:
-+ *
-+ * http://www.opensource.org/licenses/gpl-license.html
-+ * http://www.gnu.org/copyleft/gpl.html
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/of_platform.h>
-+#include <sound/soc.h>
-+
-+struct imx_spdif_data {
-+	struct snd_soc_dai_link dai[2];
-+	struct snd_soc_card card;
-+	struct platform_device *txdev;
-+	struct platform_device *rxdev;
-+};
-+
-+static int imx_spdif_audio_probe(struct platform_device *pdev)
-+{
-+	struct device_node *spdif_np, *np = pdev->dev.of_node;
-+	struct imx_spdif_data *data;
-+	int ret = 0, num_links = 0;
-+
-+	spdif_np = of_parse_phandle(np, "spdif-controller", 0);
-+	if (!spdif_np) {
-+		dev_err(&pdev->dev, "failed to find spdif-controller\n");
-+		ret = -EINVAL;
-+		goto end;
-+	}
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data) {
-+		dev_err(&pdev->dev, "failed to allocate memory\n");
-+		ret = -ENOMEM;
-+		goto end;
-+	}
-+
-+	if (of_property_read_bool(np, "spdif-out")) {
-+		data->dai[num_links].name = "S/PDIF TX";
-+		data->dai[num_links].stream_name = "S/PDIF PCM Playback";
-+		data->dai[num_links].codec_dai_name = "dit-hifi";
-+		data->dai[num_links].codec_name = "spdif-dit";
-+		data->dai[num_links].cpu_of_node = spdif_np;
-+		data->dai[num_links].platform_of_node = spdif_np;
-+		num_links++;
-+
-+		data->txdev = platform_device_register_simple("spdif-dit", -1, NULL, 0);
-+		if (IS_ERR(data->txdev)) {
-+			ret = PTR_ERR(data->txdev);
-+			dev_err(&pdev->dev, "register dit failed: %d\n", ret);
-+			goto end;
-+		}
-+	}
-+
-+	if (of_property_read_bool(np, "spdif-in")) {
-+		data->dai[num_links].name = "S/PDIF RX";
-+		data->dai[num_links].stream_name = "S/PDIF PCM Capture";
-+		data->dai[num_links].codec_dai_name = "dir-hifi";
-+		data->dai[num_links].codec_name = "spdif-dir";
-+		data->dai[num_links].cpu_of_node = spdif_np;
-+		data->dai[num_links].platform_of_node = spdif_np;
-+		num_links++;
-+
-+		data->rxdev = platform_device_register_simple("spdif-dir", -1, NULL, 0);
-+		if (IS_ERR(data->rxdev)) {
-+			ret = PTR_ERR(data->rxdev);
-+			dev_err(&pdev->dev, "register dir failed: %d\n", ret);
-+			goto error_dit;
-+		}
-+	}
-+
-+	if (!num_links) {
-+		dev_err(&pdev->dev, "no enabled S/PDIF DAI link\n");
-+		goto error_dir;
-+	}
-+
-+	data->card.dev = &pdev->dev;
-+	data->card.num_links = num_links;
-+	data->card.dai_link = data->dai;
-+
-+	ret = snd_soc_of_parse_card_name(&data->card, "model");
-+	if (ret)
-+		goto error_dir;
-+
-+	ret = snd_soc_register_card(&data->card);
-+	if (ret) {
-+		dev_err(&pdev->dev, "snd_soc_register_card failed: %d\n", ret);
-+		goto error_dir;
-+	}
-+
-+	platform_set_drvdata(pdev, data);
-+
-+	goto end;
-+
-+error_dir:
-+	if (data->rxdev)
-+		platform_device_unregister(data->rxdev);
-+error_dit:
-+	if (data->txdev)
-+		platform_device_unregister(data->txdev);
-+end:
-+	if (spdif_np)
-+		of_node_put(spdif_np);
-+
-+	return ret;
-+}
-+
-+static int imx_spdif_audio_remove(struct platform_device *pdev)
-+{
-+	struct imx_spdif_data *data = platform_get_drvdata(pdev);
-+
-+	if (data->rxdev)
-+		platform_device_unregister(data->rxdev);
-+	if (data->txdev)
-+		platform_device_unregister(data->txdev);
-+
-+	snd_soc_unregister_card(&data->card);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id imx_spdif_dt_ids[] = {
-+	{ .compatible = "fsl,imx-audio-spdif", },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, imx_spdif_dt_ids);
-+
-+static struct platform_driver imx_spdif_driver = {
-+	.driver = {
-+		.name = "imx-spdif",
-+		.owner = THIS_MODULE,
-+		.of_match_table = imx_spdif_dt_ids,
-+	},
-+	.probe = imx_spdif_audio_probe,
-+	.remove = imx_spdif_audio_remove,
-+};
-+
-+module_platform_driver(imx_spdif_driver);
-+
-+MODULE_AUTHOR("Freescale Semiconductor, Inc.");
-+MODULE_DESCRIPTION("Freescale i.MX S/PDIF machine driver");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:imx-spdif");
--- 
-1.7.1
+- dongsheng
