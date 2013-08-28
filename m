@@ -1,37 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-wg0-f44.google.com (mail-wg0-f44.google.com [74.125.82.44])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E8122C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 05:46:39 +1000 (EST)
-Received: by mail-wg0-f44.google.com with SMTP id x12so5016874wgg.23
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 12:46:36 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@linaro.org>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
-To: Mark Rutland <mark.rutland@arm.com>,
- Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-In-Reply-To: <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop>
- <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
- <5212177C.8000709@gmail.com> <521223FA.5050903@arm.com>
- <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
-Date: Wed, 28 Aug 2013 20:46:38 +0100
-Message-Id: <20130828194638.AB78E3E0A6F@localhost>
-Cc: Jonas Bonn <jonas@southpole.se>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Michal Simek <monstr@monstr.eu>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Tomasz Figa <tomasz.figa@gmail.com>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Rob Herring <robherring2@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 77A822C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 08:11:07 +1000 (EST)
+Message-ID: <1377727813.3819.156.camel@pasglop>
+Subject: Re: [PATCH v4 09/31] powerpc/fsl-pci: improve clock API use
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gerhard Sittig <gsi@denx.de>
+Date: Thu, 29 Aug 2013 08:10:13 +1000
+In-Reply-To: <20130828155944.GA30987@book.gsilab.sittig.org>
+References: <1374495298-22019-1-git-send-email-gsi@denx.de>
+ <1375821851-31609-1-git-send-email-gsi@denx.de>
+ <1375821851-31609-10-git-send-email-gsi@denx.de>
+ <20130828120827.GB26379@book.gsilab.sittig.org>
+ <20130828155944.GA30987@book.gsilab.sittig.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,50 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 22 Aug 2013 14:59:30 +0100, Mark Rutland <mark.rutland@arm.com> wrote:
-> On Mon, Aug 19, 2013 at 02:56:10PM +0100, Sudeep KarkadaNagesha wrote:
-> > On 19/08/13 14:02, Rob Herring wrote:
-> > > On 08/19/2013 05:19 AM, Mark Rutland wrote:
-> > >> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
-> > >>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
-> > >>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
-> > >>>> which 
-> > >>>> the updated bindings[1] define #address-cells = <0> and so no reg 
-> > >>>> property.
-> > >>>>
-> > >>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
-> > >>>
-> > >>> Why did you do that in the binding ? That sounds like looking to create
-> > >>> problems ... 
-> > >>>
-> > >>> Traditionally, UP setups just used "0" as the "reg" property on other
-> > >>> architectures, why do differently ?
-> > >>
-> > >> The decision was taken because we defined our reg property to refer to
-> > >> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
-> > >> there's no MPIDR register at all. Given there can only be a single CPU
-> > >> in that case, describing a register that wasn't present didn't seem
-> > >> necessary or helpful.
-> > > 
-> > > What exactly reg represents is up to the binding definition, but it
-> > > still should be present IMO. I don't see any issue with it being
-> > > different for pre-v7.
-> > > 
-> > Yes it's better to have 'reg' with value 0 than not having it.
-> > Otherwise this generic of_get_cpu_node implementation would need some
-> > _hack_ to handle that case.
+On Wed, 2013-08-28 at 17:59 +0200, Gerhard Sittig wrote:
+> On Wed, Aug 28, 2013 at 14:08 +0200, Gerhard Sittig wrote:
+> > 
+> > [ re-created the Cc: list, this is about the PCI clock exclusively ]
 > 
-> I'm not sure that having some code to handle a difference in standard
-> between two architectures is a hack. If anything, I'd argue encoding a
-> reg of 0 that corresponds to a nonexistent MPIDR value (given that's
-> what the reg property is defined to map to on ARM) is more of a hack ;)
+> I just noticed by coincidence that the message which I received
+> back from the linuxppc-dev ML appeared to have dropped Benjamin
+> Herrenschmidt and Kumar Gala from the Cc: list -- while they do
+> appear in the header of the message that I have sent and I can't
+> see what might have caused the loss of information. :-O
+
+Don't bother with me. I haven't had the bandwidth to look at that
+at all. I'll leave Anatolij the responsibility here :-)
+
+Cheers,
+Ben.
+
+> Do you want me to re-send the message for the benefit of
+> potential followups, or is it OK that you receive the message via
+> the list but potentially without the Cc: attribute?
 > 
-> I'm not averse to having a reg value of 0 for this case, but given that
-> there are existing devicetrees without it, requiring a reg property will
-> break compatibility with them.
-
-Then special cases those device trees, but you changing existing
-convention really needs to be avoided. The referenced documentation
-change is brand new, so we're not stuck with it.
-
-g.
+> The message was mostly "for your information" and contained a
+> status update, while no action is required or problems need to
+> get resolved.
+> 
+> 
+> virtually yours
+> Gerhard Sittig
