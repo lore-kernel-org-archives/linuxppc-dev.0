@@ -1,15 +1,21 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id 434522C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 00:19:25 +1000 (EST)
-Date: Wed, 28 Aug 2013 16:19:17 +0200
-Message-Id: <201308281419.r7SEJHS0012038@localhost.localdomain>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc/mpc8xx: Clearer Oops message for Software Emulation
- Exception
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 9CD1A2C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 00:24:55 +1000 (EST)
+Subject: Re: [PATCH] arch: powerpc: kvm: add signed type cast for comparation
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <51FF3D0B.6050609@asianux.com>
+Date: Wed, 28 Aug 2013 16:24:44 +0200
+Message-Id: <0FAEAF08-2C96-41BB-8E8F-B6E8F8F176C1@suse.de>
+References: <51ECD203.9050507@asianux.com>
+ <20130805043406.GD19254@iris.ozlabs.ibm.com> <51FF3D0B.6050609@asianux.com>
+To: Chen Gang <gang.chen@asianux.com>
+Cc: Gleb Natapov <gleb@redhat.com>, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ pbonzini@redhat.com,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,26 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch modifies the Oops message in case of Software Emulation Exception.
-The existing message is quite confusing because it refers to FPU Emulation
-while most often the issue is due to either a non supported instruction
-(not necessarily FPU related) or a stale instruction due to HW issues.
-The new message tries to be more generic in order to make the user understand
-that the Oops is due to something wrong with an instruction, not necessarily
-due to an FPU instruction.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+On 05.08.2013, at 07:50, Chen Gang wrote:
 
-diff -ur linux-3.11-rc6/arch/powerpc/kernel/traps.c linux/arch/powerpc/kernel/traps.c
---- linux-3.11-rc6/arch/powerpc/kernel/traps.c	2013-08-25 15:20:33.000000000 +0200
-+++ linux/arch/powerpc/kernel/traps.c	2013-08-25 15:31:29.000000000 +0200
-@@ -1476,7 +1476,8 @@
- 
- 	if (!user_mode(regs)) {
- 		debugger(regs);
--		die("Kernel Mode Software FPU Emulation", regs, SIGFPE);
-+		die("Kernel Mode Unimplemented Instruction or SW FPU Emulation",
-+			regs, SIGFPE);
- 	}
- 
- #ifdef CONFIG_MATH_EMULATION
+> On 08/05/2013 12:34 PM, Paul Mackerras wrote:
+>> On Mon, Jul 22, 2013 at 02:32:35PM +0800, Chen Gang wrote:
+>>>> 'rmls' is 'unsigned long', lpcr_rmls() will return negative number when
+>>>> failure occurs, so it need a type cast for comparing.
+>>>> 
+>>>> 'lpid' is 'unsigned long', kvmppc_alloc_lpid() return negative number
+>>>> when failure occurs, so it need a type cast for comparing.
+>>>> 
+>>>> 
+>>>> Signed-off-by: Chen Gang <gang.chen@asianux.com>
+>> Looks right, thanks.
+>> 
+>> Acked-by: Paul Mackerras <paulus@samba.org>
+>> 
+>> 
+> 
+> Thank you very much.
+
+Thanks, applied to kvm-ppc-queue.
+
+
+Alex
