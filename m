@@ -1,31 +1,23 @@
-Return-Path: <B45939@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 079472C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 18:19:15 +1000 (EST)
-Message-ID: <521DB26F.8010501@freescale.com>
-Date: Wed, 28 Aug 2013 16:18:55 +0800
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
-MIME-Version: 1.0
-To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v8 1/3] DMA: Freescale: revise device tree binding document
-References: <1377600123-5746-1-git-send-email-hongbo.zhang@freescale.com>
- <1377600123-5746-2-git-send-email-hongbo.zhang@freescale.com>
- <20130827112509.GH19893@e106331-lin.cambridge.arm.com>
-In-Reply-To: <20130827112509.GH19893@e106331-lin.cambridge.arm.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- Pawel Moll <Pawel.Moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "vinod.koul@intel.com" <vinod.koul@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "djbw@fb.com" <djbw@fb.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f49.google.com (mail-pa0-f49.google.com
+ [209.85.220.49])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BFBBB2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 18:38:03 +1000 (EST)
+Received: by mail-pa0-f49.google.com with SMTP id ld10so5948776pab.22
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2013 01:38:01 -0700 (PDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v9 00/13] KVM: PPC: IOMMU in-kernel handling of VFIO
+Date: Wed, 28 Aug 2013 18:37:37 +1000
+Message-Id: <1377679070-3515-1-git-send-email-aik@ozlabs.ru>
+Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,149 +27,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/27/2013 07:25 PM, Mark Rutland wrote:
-> On Tue, Aug 27, 2013 at 11:42:01AM +0100, hongbo.zhang@freescale.com wrote:
->> From: Hongbo Zhang <hongbo.zhang@freescale.com>
->>
->> This patch updates the discription of each type of DMA controller and its
->> channels, it is preparation for adding another new DMA controller binding, it
->> also fixes some defects of indent for text alignment at the same time.
->>
->> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
->> ---
->>   .../devicetree/bindings/powerpc/fsl/dma.txt        |   62 +++++++++-----------
->>   1 file changed, 27 insertions(+), 35 deletions(-)
->>
->> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
->> index 2a4b4bc..ddf17af 100644
->> --- a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
->> +++ b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
->> @@ -1,33 +1,29 @@
->> -* Freescale 83xx DMA Controller
->> +* Freescale DMA Controllers
->>   
->> -Freescale PowerPC 83xx have on chip general purpose DMA controllers.
->> +** Freescale Elo DMA Controller
->> +   This is a little-endian DMA controller, used in Freescale mpc83xx series
->> +   chips such as mpc8315, mpc8349, mpc8379 etc.
->>   
->>   Required properties:
->>   
->> -- compatible        : compatible list, contains 2 entries, first is
->> -		 "fsl,CHIP-dma", where CHIP is the processor
->> -		 (mpc8349, mpc8360, etc.) and the second is
->> -		 "fsl,elo-dma"
->> -- reg               : <registers mapping for DMA general status reg>
->> -- ranges		: Should be defined as specified in 1) to describe the
->> -		  DMA controller channels.
->> +- compatible        : must include "fsl,elo-dma"
-> We should list the other values that may be in the list also, unless
-> they are really of no consequence, in which case their presence in dt is
-> questionable.
-Hmm.  Stephen questioned here too, it seems this is a default rule.
-Although Scott@freescale had explained our thoughts, I'd like to edit 
-this item like this:
+This accelerates VFIO DMA operations on POWER by moving them
+into kernel.
 
-"must include "fsl,eloplus-dma", and a "fsl,CHIP-dma" is optional, where 
-CHIP is the processor name"
+This depends on VFIO external API patch which is on its way to upstream.
 
-We don't list all the chip name because we have tens of them and we 
-cannot list all of them, and it is unnecessary to list them because we 
-even don't use "fsl,CHIP-dma" in the new driver, add "fsl,CHIP-dma" here 
-just make it questionable when it presents in example and  old dts files.
+Changes:
+v9:
+* replaced the "link logical bus number to IOMMU group" ioctl to KVM
+with a KVM device doing the same thing, i.e. the actual changes are in
+these 3 patches:
+  KVM: PPC: reserve a capability and KVM device type for realmode VFIO
+  KVM: PPC: remove warning from kvmppc_core_destroy_vm
+  KVM: PPC: Add support for IOMMU in-kernel handling
 
-I remove the examples in bracket "(mpc8349, mpc8360, etc.)" because we 
-can see the real example below.
-I don't say" if "fsl,CHIP-dma" presents, it should be the first one, and 
-the "fsl,eloplus-dma" should be the second" because it is common rule.
-the description language should be clear and concise too I think.
->> +- reg               : <registers specifier for DMA general status reg>
->> +- ranges            : describes the mapping between the address space of the
->> +                      DMA channels and the address space of the DMA controller
->>   - cell-index        : controller index.  0 for controller @ 0x8100
->> -- interrupts        : <interrupt mapping for DMA IRQ>
->> +- interrupts        : <interrupt specifier for DMA IRQ>
->>   - interrupt-parent  : optional, if needed for interrupt mapping
->>   
->> -
->>   - DMA channel nodes:
->> -        - compatible        : compatible list, contains 2 entries, first is
->> -			 "fsl,CHIP-dma-channel", where CHIP is the processor
->> -			 (mpc8349, mpc8350, etc.) and the second is
->> -			 "fsl,elo-dma-channel". However, see note below.
->> -        - reg               : <registers mapping for channel>
->> +        - compatible        : must include "fsl,elo-dma-channel"
->> +                              However, see note below.
-> Again, I think we should list the other entries that may be in the list.
-> Otherwise it's not clear what the binding defines. Similarly for the
-> other compatible list definitions below...
->
->> +        - reg               : <registers specifier for channel>
->>           - cell-index        : dma channel index starts at 0.
-> I realise you haven't changed it, but it's unclear what the cell-index
-> property is (and somewhat confusingly there seem to be multiple
-> defnitions). It might be worth clarifying it while performing the other
-> cleanup.
-not clear with your point "multiple definitions", we really have 
-multiple dma channels for one dma controller.
-cell-index is used as channel index, this is an old method used by old 
-driver, my patch didn't touch this part.
->>   
->>   Optional properties:
->> -        - interrupts        : <interrupt mapping for DMA channel IRQ>
->> -			  (on 83xx this is expected to be identical to
->> -			   the interrupts property of the parent node)
->> +        - interrupts        : <interrupt specifier for DMA channel IRQ>
->> +                              (on 83xx this is expected to be identical to
->> +                              the interrupts property of the parent node)
->>           - interrupt-parent  : optional, if needed for interrupt mapping
->>   
->>   Example:
->> @@ -70,30 +66,26 @@ Example:
->>   		};
->>   	};
->>   
->> -* Freescale 85xx/86xx DMA Controller
->> -
->> -Freescale PowerPC 85xx/86xx have on chip general purpose DMA controllers.
->> +** Freescale EloPlus DMA Controller
->> +   This is DMA controller with extended addresses and chaining, mainly used in
->> +   Freescale mpc85xx/86xx, Pxxx and BSC series chips, such as mpc8540, mpc8641
->> +   p4080, bsc9131 etc.
->>   
->>   Required properties:
->>   
->> -- compatible        : compatible list, contains 2 entries, first is
->> -		 "fsl,CHIP-dma", where CHIP is the processor
->> -		 (mpc8540, mpc8540, etc.) and the second is
->> -		 "fsl,eloplus-dma"
->> -- reg               : <registers mapping for DMA general status reg>
->> +- compatible        : must include "fsl,eloplus-dma"
->> +- reg               : <registers specifier for DMA general status reg>
->>   - cell-index        : controller index.  0 for controller @ 0x21000,
->>                                            1 for controller @ 0xc000
->> -- ranges		: Should be defined as specified in 1) to describe the
->> -		  DMA controller channels.
->> +- ranges            : describes the mapping between the address space of the
->> +                      DMA channels and the address space of the DMA controller
->>   
->>   - DMA channel nodes:
->> -        - compatible        : compatible list, contains 2 entries, first is
->> -			 "fsl,CHIP-dma-channel", where CHIP is the processor
->> -			 (mpc8540, mpc8560, etc.) and the second is
->> -			 "fsl,eloplus-dma-channel". However, see note below.
->> +        - compatible        : must include "fsl,eloplus-dma-channel"
->> +                              However, see note below.
->>           - cell-index        : dma channel index starts at 0.
->> -        - reg               : <registers mapping for channel>
->> -        - interrupts        : <interrupt mapping for DMA channel IRQ>
->> +        - reg               : <registers specifier for channel>
->> +        - interrupts        : <interrupt specifier for DMA channel IRQ>
->>           - interrupt-parent  : optional, if needed for interrupt mapping
->>   
->>   Example:
->> -- 
->> 1.7.9.5
-> Thanks,
-> Mark.
->
+* moved some VFIO external API bits to a separate patch to reduce the size
+of the "KVM: PPC: Add support for IOMMU in-kernel handling" patch
+
+* fixed code style problems reported by checkpatch.pl.
+
+v8:
+* fixed comments about capabilities numbers
+
+v7:
+* rebased on v3.11-rc3.
+* VFIO external user API will go through VFIO tree so it is
+excluded from this series.
+* As nobody ever reacted on "hashtable: add hash_for_each_possible_rcu_notrace()",
+Ben suggested to push it via his tree so I included it to the series.
+* realmode_(get|put)_page is reworked.
+
+More details in the individual patch comments.
+
+Alexey Kardashevskiy (13):
+  KVM: PPC: POWERNV: move iommu_add_device earlier
+  hashtable: add hash_for_each_possible_rcu_notrace()
+  KVM: PPC: reserve a capability number for multitce support
+  KVM: PPC: reserve a capability and KVM device type for realmode VFIO
+  powerpc: Prepare to support kernel handling of IOMMU map/unmap
+  powerpc: add real mode support for dma operations on powernv
+  KVM: PPC: enable IOMMU_API for KVM_BOOK3S_64 permanently
+  KVM: PPC: Add support for multiple-TCE hcalls
+  powerpc/iommu: rework to support realmode
+  KVM: PPC: remove warning from kvmppc_core_destroy_vm
+  KVM: PPC: add trampolines for VFIO external API
+  KVM: PPC: Add support for IOMMU in-kernel handling
+  KVM: PPC: Add hugepage support for IOMMU in-kernel handling
+
+ Documentation/virtual/kvm/api.txt                  |  26 +
+ .../virtual/kvm/devices/spapr_tce_iommu.txt        |  37 ++
+ arch/powerpc/include/asm/iommu.h                   |  18 +-
+ arch/powerpc/include/asm/kvm_host.h                |  38 ++
+ arch/powerpc/include/asm/kvm_ppc.h                 |  16 +-
+ arch/powerpc/include/asm/machdep.h                 |  12 +
+ arch/powerpc/include/asm/pgtable-ppc64.h           |   2 +
+ arch/powerpc/include/uapi/asm/kvm.h                |   8 +
+ arch/powerpc/kernel/iommu.c                        | 243 +++++----
+ arch/powerpc/kvm/Kconfig                           |   1 +
+ arch/powerpc/kvm/book3s_64_vio.c                   | 597 ++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_64_vio_hv.c                | 408 +++++++++++++-
+ arch/powerpc/kvm/book3s_hv.c                       |  42 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S            |   8 +-
+ arch/powerpc/kvm/book3s_pr_papr.c                  |  35 ++
+ arch/powerpc/kvm/powerpc.c                         |   4 +
+ arch/powerpc/mm/init_64.c                          |  50 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c          |  57 +-
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c        |   2 +-
+ arch/powerpc/platforms/powernv/pci.c               |  75 ++-
+ arch/powerpc/platforms/powernv/pci.h               |   3 +-
+ arch/powerpc/platforms/pseries/iommu.c             |   8 +-
+ include/linux/hashtable.h                          |  15 +
+ include/linux/kvm_host.h                           |   1 +
+ include/linux/mm.h                                 |  14 +
+ include/linux/page-flags.h                         |   4 +-
+ include/uapi/linux/kvm.h                           |   3 +
+ virt/kvm/kvm_main.c                                |   5 +
+ 28 files changed, 1564 insertions(+), 168 deletions(-)
+ create mode 100644 Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
+
+-- 
+1.8.4.rc4
