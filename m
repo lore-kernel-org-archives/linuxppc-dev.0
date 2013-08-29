@@ -1,20 +1,21 @@
-Return-Path: <B42677@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E5912C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 13:33:51 +1000 (EST)
-From: Haijun Zhang <Haijun.Zhang@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH] Powerpc/eSDCH: Specify voltage for T4240QDS
-Date: Thu, 29 Aug 2013 11:31:28 +0800
-Message-ID: <1377747088-394-1-git-send-email-Haijun.Zhang@freescale.com>
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from fornost.hengli.com.au (ringil.hengli.com.au [178.18.16.133])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3C9742C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 14:42:36 +1000 (EST)
+Date: Thu, 29 Aug 2013 14:42:22 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
+Subject: Re: [PATCH 03/10] crypto: nx - fix limits to sg lists for AES-CBC
+Message-ID: <20130829044221.GA25208@gondor.apana.org.au>
+References: <1377288074-18998-1-git-send-email-mhcerri@linux.vnet.ibm.com>
+ <1377288074-18998-4-git-send-email-mhcerri@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Haijun Zhang <haijun.zhang@freescale.com>,
- X.Xie@freescale.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1377288074-18998-4-git-send-email-mhcerri@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Freescale T4240QDS reference board has extra voltage shifters added
-to allow 3.3V operation, so add 3.3v voltage support for T4240QDS.
-1.8v and 3.3v is recommand for eMMC and SDHC card.
+On Fri, Aug 23, 2013 at 05:01:07PM -0300, Marcelo Cerri wrote:
+> This patch updates the nx-aes-cbc implementation to perform several
+> hyper calls if needed in order to always respect the length limits for
+> scatter/gather lists.
+> 
+> Two different limits are considered:
+> 
+>  - "ibm,max-sg-len": maximum number of bytes of each scatter/gather
+>    list.
+> 
+>  - "ibm,max-sync-cop":
+>     - The total number of bytes that a scatter/gather list can hold.
+>     - The maximum number of elements that a scatter/gather list can have.
+> 
+> Reviewed-by: Joy Latten <jmlatten@linux.vnet.ibm.com>
+> Signed-off-by: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
 
-Signed-off-by: Haijun Zhang <haijun.zhang@freescale.com>
----
- arch/powerpc/boot/dts/t4240qds.dts | 4 ++++
- 1 file changed, 4 insertions(+)
+This patch does not apply against the current cryptodev tree.
 
-diff --git a/arch/powerpc/boot/dts/t4240qds.dts b/arch/powerpc/boot/dts/t4240qds.dts
-index 0555976..eb3c3de 100644
---- a/arch/powerpc/boot/dts/t4240qds.dts
-+++ b/arch/powerpc/boot/dts/t4240qds.dts
-@@ -148,6 +148,10 @@
- 				interrupts = <0x1 0x1 0 0>;
- 			};
- 		};
-+
-+		sdhc@114000 {
-+			voltage-ranges = <1800 1800 3300 3300>;
-+		};
- 	};
- 
- 	pci0: pcie@ffe240000 {
+Please regenerate your pathces.
+
+Thanks,
 -- 
-1.8.0
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
