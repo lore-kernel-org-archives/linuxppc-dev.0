@@ -2,29 +2,30 @@ Return-Path: <mhcerri@linux.vnet.ibm.com>
 Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e24smtp01.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1E3212C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 00:37:33 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id BB9162C01D1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 00:37:36 +1000 (EST)
 Received: from /spool/local
  by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mhcerri@linux.vnet.ibm.com>;
- Thu, 29 Aug 2013 11:37:27 -0300
+ Thu, 29 Aug 2013 11:37:31 -0300
 Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id D01811DC006C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 10:37:24 -0400 (EDT)
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 774E13520065
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 10:37:28 -0400 (EDT)
 Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
  by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r7TEZgOQ39845950
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 11:35:42 -0300
+ r7TEZkN935192900
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 11:35:46 -0300
 Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
  by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r7TEbNnQ026614
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 11:37:24 -0300
+ r7TEbRBW026856
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 11:37:28 -0300
 From: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
 To: herbert@gondor.apana.org.au
-Subject: [PATCH v2 08/10] crypto: nx - fix XCBC for zero length messages
-Date: Thu, 29 Aug 2013 11:36:38 -0300
-Message-Id: <1377787000-4966-9-git-send-email-mhcerri@linux.vnet.ibm.com>
+Subject: [PATCH v2 10/10] crypto: nx - fix SHA-2 for chunks bigger than block
+ size
+Date: Thu, 29 Aug 2013 11:36:40 -0300
+Message-Id: <1377787000-4966-11-git-send-email-mhcerri@linux.vnet.ibm.com>
 In-Reply-To: <1377787000-4966-1-git-send-email-mhcerri@linux.vnet.ibm.com>
 References: <1377787000-4966-1-git-send-email-mhcerri@linux.vnet.ibm.com>
 Cc: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
@@ -38,121 +39,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The NX XCBC implementation doesn't support zero length messages and
-because of that NX is currently returning a hard-coded hash for zero
-length messages. However this approach is incorrect since the hash value
-also depends on which key is used.
+Each call to the co-processor, with exception of the last call, needs to
+send data that is multiple of block size. As consequence, any remaining
+data is kept in the internal NX context.
 
-This patch removes the hard-coded hash and replace it with an
-implementation based on the RFC 3566 using ECB.
+This patch fixes a bug in the driver that causes it to save incorrect
+data into the context when data is bigger than the block size.
 
 Reviewed-by: Joy Latten <jmlatten@linux.vnet.ibm.com>
 Signed-off-by: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
 ---
- drivers/crypto/nx/nx-aes-xcbc.c | 84 +++++++++++++++++++++++++++++++++++++----
- 1 file changed, 77 insertions(+), 7 deletions(-)
+ drivers/crypto/nx/nx-sha256.c | 2 +-
+ drivers/crypto/nx/nx-sha512.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/crypto/nx/nx-aes-xcbc.c b/drivers/crypto/nx/nx-aes-xcbc.c
-index 1a5d9e3..03c4bf5 100644
---- a/drivers/crypto/nx/nx-aes-xcbc.c
-+++ b/drivers/crypto/nx/nx-aes-xcbc.c
-@@ -56,6 +56,77 @@ static int nx_xcbc_set_key(struct crypto_shash *desc,
- 	return 0;
- }
+diff --git a/drivers/crypto/nx/nx-sha256.c b/drivers/crypto/nx/nx-sha256.c
+index 6547a71..da0b24a 100644
+--- a/drivers/crypto/nx/nx-sha256.c
++++ b/drivers/crypto/nx/nx-sha256.c
+@@ -129,7 +129,7 @@ static int nx_sha256_update(struct shash_desc *desc, const u8 *data,
+ 		NX_CPB_FDM(csbcpb) |= NX_FDM_CONTINUATION;
  
-+/*
-+ * Based on RFC 3566, for a zero-length message:
-+ *
-+ * n = 1
-+ * K1 = E(K, 0x01010101010101010101010101010101)
-+ * K3 = E(K, 0x03030303030303030303030303030303)
-+ * E[0] = 0x00000000000000000000000000000000
-+ * M[1] = 0x80000000000000000000000000000000 (0 length message with padding)
-+ * E[1] = (K1, M[1] ^ E[0] ^ K3)
-+ * Tag = M[1]
-+ */
-+static int nx_xcbc_empty(struct shash_desc *desc, u8 *out)
-+{
-+	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
-+	struct nx_csbcpb *csbcpb = nx_ctx->csbcpb;
-+	struct nx_sg *in_sg, *out_sg;
-+	u8 keys[2][AES_BLOCK_SIZE];
-+	u8 key[32];
-+	int rc = 0;
-+
-+	/* Change to ECB mode */
-+	csbcpb->cpb.hdr.mode = NX_MODE_AES_ECB;
-+	memcpy(key, csbcpb->cpb.aes_xcbc.key, AES_BLOCK_SIZE);
-+	memcpy(csbcpb->cpb.aes_ecb.key, key, AES_BLOCK_SIZE);
-+	NX_CPB_FDM(csbcpb) |= NX_FDM_ENDE_ENCRYPT;
-+
-+	/* K1 and K3 base patterns */
-+	memset(keys[0], 0x01, sizeof(keys[0]));
-+	memset(keys[1], 0x03, sizeof(keys[1]));
-+
-+	/* Generate K1 and K3 encrypting the patterns */
-+	in_sg = nx_build_sg_list(nx_ctx->in_sg, (u8 *) keys, sizeof(keys),
-+				 nx_ctx->ap->sglen);
-+	out_sg = nx_build_sg_list(nx_ctx->out_sg, (u8 *) keys, sizeof(keys),
-+				  nx_ctx->ap->sglen);
-+	nx_ctx->op.inlen = (nx_ctx->in_sg - in_sg) * sizeof(struct nx_sg);
-+	nx_ctx->op.outlen = (nx_ctx->out_sg - out_sg) * sizeof(struct nx_sg);
-+
-+	rc = nx_hcall_sync(nx_ctx, &nx_ctx->op,
-+			   desc->flags & CRYPTO_TFM_REQ_MAY_SLEEP);
-+	if (rc)
-+		goto out;
-+	atomic_inc(&(nx_ctx->stats->aes_ops));
-+
-+	/* XOr K3 with the padding for a 0 length message */
-+	keys[1][0] ^= 0x80;
-+
-+	/* Encrypt the final result */
-+	memcpy(csbcpb->cpb.aes_ecb.key, keys[0], AES_BLOCK_SIZE);
-+	in_sg = nx_build_sg_list(nx_ctx->in_sg, (u8 *) keys[1], sizeof(keys[1]),
-+				 nx_ctx->ap->sglen);
-+	out_sg = nx_build_sg_list(nx_ctx->out_sg, out, AES_BLOCK_SIZE,
-+				  nx_ctx->ap->sglen);
-+	nx_ctx->op.inlen = (nx_ctx->in_sg - in_sg) * sizeof(struct nx_sg);
-+	nx_ctx->op.outlen = (nx_ctx->out_sg - out_sg) * sizeof(struct nx_sg);
-+
-+	rc = nx_hcall_sync(nx_ctx, &nx_ctx->op,
-+			   desc->flags & CRYPTO_TFM_REQ_MAY_SLEEP);
-+	if (rc)
-+		goto out;
-+	atomic_inc(&(nx_ctx->stats->aes_ops));
-+
-+out:
-+	/* Restore XCBC mode */
-+	csbcpb->cpb.hdr.mode = NX_MODE_AES_XCBC_MAC;
-+	memcpy(csbcpb->cpb.aes_xcbc.key, key, AES_BLOCK_SIZE);
-+	NX_CPB_FDM(csbcpb) &= ~NX_FDM_ENDE_ENCRYPT;
-+
-+	return rc;
-+}
-+
- static int nx_xcbc_init(struct shash_desc *desc)
- {
- 	struct xcbc_state *sctx = shash_desc_ctx(desc);
-@@ -201,13 +272,12 @@ static int nx_xcbc_final(struct shash_desc *desc, u8 *out)
- 		memcpy(csbcpb->cpb.aes_xcbc.cv,
- 		       csbcpb->cpb.aes_xcbc.out_cv_mac, AES_BLOCK_SIZE);
- 	} else if (sctx->count == 0) {
--		/* we've never seen an update, so this is a 0 byte op. The
--		 * hardware cannot handle a 0 byte op, so just copy out the
--		 * known 0 byte result. This is cheaper than allocating a
--		 * software context to do a 0 byte op */
--		u8 data[] = { 0x75, 0xf0, 0x25, 0x1d, 0x52, 0x8a, 0xc0, 0x1c,
--			      0x45, 0x73, 0xdf, 0xd5, 0x84, 0xd7, 0x9f, 0x29 };
--		memcpy(out, data, sizeof(data));
-+		/*
-+		 * we've never seen an update, so this is a 0 byte op. The
-+		 * hardware cannot handle a 0 byte op, so just ECB to
-+		 * generate the hash.
-+		 */
-+		rc = nx_xcbc_empty(desc, out);
- 		goto out;
- 	}
+ 		total -= to_process;
+-		data += to_process;
++		data += to_process - sctx->count;
+ 		sctx->count = 0;
+ 		in_sg = nx_ctx->in_sg;
+ 	} while (leftover >= SHA256_BLOCK_SIZE);
+diff --git a/drivers/crypto/nx/nx-sha512.c b/drivers/crypto/nx/nx-sha512.c
+index 236e6af..4ae5b0f 100644
+--- a/drivers/crypto/nx/nx-sha512.c
++++ b/drivers/crypto/nx/nx-sha512.c
+@@ -131,7 +131,7 @@ static int nx_sha512_update(struct shash_desc *desc, const u8 *data,
+ 		NX_CPB_FDM(csbcpb) |= NX_FDM_CONTINUATION;
  
+ 		total -= to_process;
+-		data += to_process;
++		data += to_process - sctx->count[0];
+ 		sctx->count[0] = 0;
+ 		in_sg = nx_ctx->in_sg;
+ 	} while (leftover >= SHA512_BLOCK_SIZE);
 -- 
 1.7.12
