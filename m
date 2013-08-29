@@ -1,21 +1,19 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from fornost.hengli.com.au (ringil.hengli.com.au [178.18.16.133])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3C9742C0091
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 14:42:36 +1000 (EST)
-Date: Thu, 29 Aug 2013 14:42:22 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
-Subject: Re: [PATCH 03/10] crypto: nx - fix limits to sg lists for AES-CBC
-Message-ID: <20130829044221.GA25208@gondor.apana.org.au>
-References: <1377288074-18998-1-git-send-email-mhcerri@linux.vnet.ibm.com>
- <1377288074-18998-4-git-send-email-mhcerri@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1377288074-18998-4-git-send-email-mhcerri@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-crypto@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id B4D0D2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 16:55:15 +1000 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r7T6t7pL011068
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2013 01:55:09 -0500
+Message-ID: <1377759307.4028.23.camel@pasglop>
+Subject: [PATCH] powerpc: Enable /dev/port when isa_io_special is set
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 29 Aug 2013 16:55:07 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 23, 2013 at 05:01:07PM -0300, Marcelo Cerri wrote:
-> This patch updates the nx-aes-cbc implementation to perform several
-> hyper calls if needed in order to always respect the length limits for
-> scatter/gather lists.
-> 
-> Two different limits are considered:
-> 
->  - "ibm,max-sg-len": maximum number of bytes of each scatter/gather
->    list.
-> 
->  - "ibm,max-sync-cop":
->     - The total number of bytes that a scatter/gather list can hold.
->     - The maximum number of elements that a scatter/gather list can have.
-> 
-> Reviewed-by: Joy Latten <jmlatten@linux.vnet.ibm.com>
-> Signed-off-by: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
+isa_io_special is set when the platform provides a "special"
+implementation of inX/outX via some FW interface for example.
 
-This patch does not apply against the current cryptodev tree.
+Such a platform doesn't need an ISA bridge on PCI, and so /dev/port
+should be made available even if one isn't present.
 
-Please regenerate your pathces.
+This makes the LPC bus IOs accessible via /dev/port on PowerNV Power8
 
-Thanks,
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/io.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index 5a64757..edcc209 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -21,7 +21,7 @@ extern struct pci_dev *isa_bridge_pcidev;
+ /*
+  * has legacy ISA devices ?
+  */
+-#define arch_has_dev_port()	(isa_bridge_pcidev != NULL)
++#define arch_has_dev_port()	(isa_bridge_pcidev != NULL || isa_io_special)
+ #endif
+ 
+ #include <linux/device.h>
