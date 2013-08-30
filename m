@@ -1,23 +1,19 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id 7ADA42C00C5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2013 10:13:42 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Toshi Kani <toshi.kani@hp.com>, hpa@linux.intel.com
-Subject: Re: [PATCH v2 1/4] hotplug,
- x86: Fix online state in cpu0 debug interface
-Date: Sat, 31 Aug 2013 02:24:22 +0200
-Message-ID: <2774711.qY7OXM5Wgn@vostro.rjw.lan>
-In-Reply-To: <1377822129-4143-2-git-send-email-toshi.kani@hp.com>
-References: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
- <1377822129-4143-2-git-send-email-toshi.kani@hp.com>
+Return-Path: <rkrcmar@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id D80612C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2013 02:39:01 +1000 (EST)
+Date: Fri, 30 Aug 2013 18:37:33 +0200
+From: Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>
+To: Kevin Hao <haokexin@gmail.com>
+Subject: Re: [PATCH 1/5] jump_label: factor out the base part of jump_label.h
+ to a separate file
+Message-ID: <20130830163732.GA2353@hpx.cz>
+References: <1377414952-15995-1-git-send-email-haokexin@gmail.com>
+ <1377414952-15995-2-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: fenghua.yu@intel.com, gregkh@linuxfoundation.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, mingo@redhat.com,
- srivatsa.bhat@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com, tglx@linutronix.de,
- bp@suse.de, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1377414952-15995-2-git-send-email-haokexin@gmail.com>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Peter,
+2013-08-25 15:15+0800, Kevin Hao:
+> We plan to use the jump label in the cpu/mmu feature check on ppc.
+> This will need to include the jump_label.h in several very basic header
+> files of ppc which seems to be included by most of the other head
+> files implicitly or explicitly. But in the current jump_label.h,
+> it also include the "linux/workqueue.h" and this will cause recursive
+> inclusion. In order to fix this, we choose to factor out the base
+> part of jump_label.h to a separate header file and we can include
+> that file instead of jump_label.h to avoid the recursive inclusion.
+> No functional change.
 
-Any objections here?
-
-On Thursday, August 29, 2013 06:22:06 PM Toshi Kani wrote:
-> _debug_hotplug_cpu() is a debug interface that puts cpu0 offline during
-> boot-up when CONFIG_DEBUG_HOTPLUG_CPU0 is set.  After cpu0 is put offline
-> in this interface, however, /sys/devices/system/cpu/cpu0/online still
-> shows 1 (online).
-> 
-> This patch fixes _debug_hotplug_cpu() to update dev->offline when CPU
-> online/offline operation succeeded.
-> 
-> Signed-off-by: Toshi Kani <toshi.kani@hp.com>
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  arch/x86/kernel/topology.c |    7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
-> index 6e60b5f..5823bbd 100644
-> --- a/arch/x86/kernel/topology.c
-> +++ b/arch/x86/kernel/topology.c
-> @@ -72,16 +72,19 @@ int __ref _debug_hotplug_cpu(int cpu, int action)
->  		ret = cpu_down(cpu);
->  		if (!ret) {
->  			pr_info("CPU %u is now offline\n", cpu);
-> +			dev->offline = true;
->  			kobject_uevent(&dev->kobj, KOBJ_OFFLINE);
->  		} else
->  			pr_debug("Can't offline CPU%d.\n", cpu);
->  		break;
->  	case 1:
->  		ret = cpu_up(cpu);
-> -		if (!ret)
-> +		if (!ret) {
-> +			dev->offline = false;
->  			kobject_uevent(&dev->kobj, KOBJ_ONLINE);
-> -		else
-> +		} else {
->  			pr_debug("Can't online CPU%d.\n", cpu);
-> +		}
->  		break;
->  	default:
->  		ret = -EINVAL;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+"linux/workqueue.h" was included because of deferred keys and they are
+split into "linux/jump_label_ratelimit.h" to solve the same problem in
+paravirt ticket spinlock series.
+(still in -next: 851cf6e7 jump_label: Split jumplabel ratelimit)
