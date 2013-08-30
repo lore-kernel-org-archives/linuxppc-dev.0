@@ -1,22 +1,24 @@
-Return-Path: <gleb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id ECDB42C00CC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2013 03:58:45 +1000 (EST)
-Date: Fri, 30 Aug 2013 20:58:35 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH v9 00/13] KVM: PPC: IOMMU in-kernel handling of VFIO
-Message-ID: <20130830175835.GF10142@redhat.com>
-References: <1377679070-3515-1-git-send-email-aik@ozlabs.ru>
- <5220736E.5050503@ozlabs.ru>
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+ by ozlabs.org (Postfix) with ESMTP id 92D1C2C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2013 04:07:07 +1000 (EST)
+Message-ID: <5220DF42.2030208@ovro.caltech.edu>
+Date: Fri, 30 Aug 2013 11:06:58 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5220736E.5050503@ozlabs.ru>
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+To: Saravanan S <sarans1987@gmail.com>
+Subject: Re: Ethernet over PCIe driver for Inter-Processor Communication
+References: <CAEqOc-Rrsc2JoM4eeLzgyhGXqpJoe2Jfmf6uV4LjrTr7e8hhAw@mail.gmail.com>
+ <5216860A.6060409@ovro.caltech.edu> <20130822222951.GA13201@ovro.caltech.edu>
+ <CAEqOc-SdBZgiB1HZOQAJhgq_epdGsqMXaiSO0Axcd9ZBq6kLDw@mail.gmail.com>
+ <521A8782.60807@ovro.caltech.edu>
+ <CAEqOc-T5-PuVnDi-MdzGekbLHWR4wfnCb3etfRbu4DAmNGuzVg@mail.gmail.com>
+In-Reply-To: <CAEqOc-T5-PuVnDi-MdzGekbLHWR4wfnCb3etfRbu4DAmNGuzVg@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: naishab@gmail.com,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Michael George <michaelgeorge2010@gmail.com>,
+ "Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,106 +28,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 30, 2013 at 08:26:54PM +1000, Alexey Kardashevskiy wrote:
-> On 08/28/2013 06:37 PM, Alexey Kardashevskiy wrote:
-> > This accelerates VFIO DMA operations on POWER by moving them
-> > into kernel.
-> > 
-> > This depends on VFIO external API patch which is on its way to upstream.
-> > 
-> > Changes:
-> > v9:
-> > * replaced the "link logical bus number to IOMMU group" ioctl to KVM
-> > with a KVM device doing the same thing, i.e. the actual changes are in
-> > these 3 patches:
-> >   KVM: PPC: reserve a capability and KVM device type for realmode VFIO
-> >   KVM: PPC: remove warning from kvmppc_core_destroy_vm
-> >   KVM: PPC: Add support for IOMMU in-kernel handling
-> > 
-> > * moved some VFIO external API bits to a separate patch to reduce the size
-> > of the "KVM: PPC: Add support for IOMMU in-kernel handling" patch
-> > 
-> > * fixed code style problems reported by checkpatch.pl.
-> > 
-> > v8:
-> > * fixed comments about capabilities numbers
-> > 
-> > v7:
-> > * rebased on v3.11-rc3.
-> > * VFIO external user API will go through VFIO tree so it is
-> > excluded from this series.
-> > * As nobody ever reacted on "hashtable: add hash_for_each_possible_rcu_notrace()",
-> > Ben suggested to push it via his tree so I included it to the series.
-> > * realmode_(get|put)_page is reworked.
-> > 
-> > More details in the individual patch comments.
-> > 
-> > Alexey Kardashevskiy (13):
-> >   KVM: PPC: POWERNV: move iommu_add_device earlier
-> >   hashtable: add hash_for_each_possible_rcu_notrace()
-> >   KVM: PPC: reserve a capability number for multitce support
-> >   KVM: PPC: reserve a capability and KVM device type for realmode VFIO
-> 
-> 
-> Hi Gleb!
-> 
-> Could you please review and pick (if they are ok) the two "capability"
-> patches from above?
-> 
-> It would be cool if you also looked at "KVM: PPC: Add support for IOMMU
-> in-kernel handling", the part about KVM device for SPAPR TCE IOMMU table.
-> 
-> Thanks!
-Will do it next week.
+Hi S.Saravanan,
+>
+> I successfully  mapped the Programmable Interrupt Controller registers
+> in the EP to the PCI space. Thus now I can write the shared message
+> interrupt registers in the EP from the RC over PCI.
 
-> 
-> 
-> 
-> >   powerpc: Prepare to support kernel handling of IOMMU map/unmap
-> >   powerpc: add real mode support for dma operations on powernv
-> >   KVM: PPC: enable IOMMU_API for KVM_BOOK3S_64 permanently
-> >   KVM: PPC: Add support for multiple-TCE hcalls
-> >   powerpc/iommu: rework to support realmode
-> >   KVM: PPC: remove warning from kvmppc_core_destroy_vm
-> >   KVM: PPC: add trampolines for VFIO external API
-> >   KVM: PPC: Add support for IOMMU in-kernel handling
-> >   KVM: PPC: Add hugepage support for IOMMU in-kernel handling
-> > 
-> >  Documentation/virtual/kvm/api.txt                  |  26 +
-> >  .../virtual/kvm/devices/spapr_tce_iommu.txt        |  37 ++
-> >  arch/powerpc/include/asm/iommu.h                   |  18 +-
-> >  arch/powerpc/include/asm/kvm_host.h                |  38 ++
-> >  arch/powerpc/include/asm/kvm_ppc.h                 |  16 +-
-> >  arch/powerpc/include/asm/machdep.h                 |  12 +
-> >  arch/powerpc/include/asm/pgtable-ppc64.h           |   2 +
-> >  arch/powerpc/include/uapi/asm/kvm.h                |   8 +
-> >  arch/powerpc/kernel/iommu.c                        | 243 +++++----
-> >  arch/powerpc/kvm/Kconfig                           |   1 +
-> >  arch/powerpc/kvm/book3s_64_vio.c                   | 597 ++++++++++++++++++++-
-> >  arch/powerpc/kvm/book3s_64_vio_hv.c                | 408 +++++++++++++-
-> >  arch/powerpc/kvm/book3s_hv.c                       |  42 +-
-> >  arch/powerpc/kvm/book3s_hv_rmhandlers.S            |   8 +-
-> >  arch/powerpc/kvm/book3s_pr_papr.c                  |  35 ++
-> >  arch/powerpc/kvm/powerpc.c                         |   4 +
-> >  arch/powerpc/mm/init_64.c                          |  50 +-
-> >  arch/powerpc/platforms/powernv/pci-ioda.c          |  57 +-
-> >  arch/powerpc/platforms/powernv/pci-p5ioc2.c        |   2 +-
-> >  arch/powerpc/platforms/powernv/pci.c               |  75 ++-
-> >  arch/powerpc/platforms/powernv/pci.h               |   3 +-
-> >  arch/powerpc/platforms/pseries/iommu.c             |   8 +-
-> >  include/linux/hashtable.h                          |  15 +
-> >  include/linux/kvm_host.h                           |   1 +
-> >  include/linux/mm.h                                 |  14 +
-> >  include/linux/page-flags.h                         |   4 +-
-> >  include/uapi/linux/kvm.h                           |   3 +
-> >  virt/kvm/kvm_main.c                                |   5 +
-> >  28 files changed, 1564 insertions(+), 168 deletions(-)
-> >  create mode 100644 Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
-> > 
-> 
-> 
-> -- 
-> Alexey
+Excellent.
 
---
-			Gleb.
+> But I am facing the following problems now.
+>
+> 1) In my driver at EP, to register for this interrupt I need to know the
+> hardware irq number but I can't find any interrupt number assigned  by
+> the PIC for the messages interrupt sources(Page 451 , MPC8641DRM manual).
+> 2) Otherwise i need to get the virtual irq number assigned by kernel
+> corresponding to the message interrupt . I am unable to find a method to
+> get this also.
+
+I recall having to ask a similar question when trying to map a
+GPIO interrupt into a Linux interrupt number. I forget the
+convention (I'm "the hardware guy"). It may be a device tree
+thing, or an offset, I'll let someone more knowledgeable comment.
+
+> In the RC side driver i get the virtual irq number after calling
+> pci_enable_msi() which is straightforward.
+> I studied the RC code which sets up shared message interrupts (Page 481,
+> MPC manual)  for PCI MSI interrupts . When  msi is enabled the
+> "arch_setup_msi_irqs()" is called leading to the fsl_setup_msi_irqs()
+> (http://lxr.free-electrons.com/source/arch/powerpc/sysdev/fsl_msi.c?v=3.7#L151)
+> . In this function the virtual irq no is obtained as below:
+>
+> /virq = irq_create_mapping(msi_data->irqhost, hwirq);/
+>
+> In the above function the hardware irq number is same as the value
+> written into the  Shared Message Signaled Interrupt Index Register (Page
+> 482) which is strange. Further these functions are called in the RC
+> during pci_probe at boot time or when pci_enable_msi() is called . Thus
+> there is a always a PCI slave device context to it. However I  require
+> to do it in the EP which has no pci probing nor any  pci device
+> reference whatsoever as it a slave. Is this approach right  ?
+
+I'm not sure.
+
+You'll have two drivers;
+  * The root-complex.
+    This is a standard PCIe driver, so you'll just follow convention
+    there
+  * The end-point driver.
+    This driver needs to use the PCIe bus, but its not responsible
+    for the PCIe bus in the way a root-complex is. The driver needs
+    to know what the root-complex is interrupting it for, eg.,
+    "transmitter empty" (I've read your last message) or "receiver
+    ready" (there is a message from me, waiting for you).
+    So you need at least two unique interrupts or messages from the
+    root-complex to the end-point.
+
+>> Its always a good idea to discuss different options, and to stub out
+>> drivers or create minimal (but functional) drivers. That way you'll
+>> be able to see how similar your new driver is to other drivers, and
+>> you'll quickly discover if there is a hardware feature in the
+>> existing driver that you cannot emulate (eg., some SRIO feature
+>> used by the rionet driver).
+>
+> Right now I am trying a very primitive driver just to check the
+> feasibility of bi-directional communication between the RC and the EP.
+> Once this is established  I will be in a better position to get inputs
+> on making it a more effective one.
+
+You're on the right track. When I looked at using the messaging
+registers on the PLX PCI device, I started by simply creating
+what was effectively a serial port (one char at a time).
+Section 4 explains the interlocking required between two processors
+
+http://www.ovro.caltech.edu/~dwh/correlator/pdf/cobra_driver.pdf
+
+The mailbox/interrupt registers are effectively being used to
+implement a mutex between the two processors.
+
+I think at one point Ira took similar code to this and hooked
+it into the actual serial layer, so that you had a tty over
+PCI. You could always start with a simplification like that too.
+
+Cheers,
+Dave
