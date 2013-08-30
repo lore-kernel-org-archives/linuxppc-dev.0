@@ -1,24 +1,20 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id 92D1C2C00C6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2013 04:07:07 +1000 (EST)
-Message-ID: <5220DF42.2030208@ovro.caltech.edu>
-Date: Fri, 30 Aug 2013 11:06:58 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 853022C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2013 08:01:41 +1000 (EST)
+Date: Fri, 30 Aug 2013 23:01:33 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <b42378@freescale.com>
+Message-ID: <20130830220133.GB18608@sirena.org.uk>
+References: <7c26687b556e1b4fc33ea5771de7b64e45a02d38.1377855239.git.b42378@freescale.com>
 MIME-Version: 1.0
-To: Saravanan S <sarans1987@gmail.com>
-Subject: Re: Ethernet over PCIe driver for Inter-Processor Communication
-References: <CAEqOc-Rrsc2JoM4eeLzgyhGXqpJoe2Jfmf6uV4LjrTr7e8hhAw@mail.gmail.com>
- <5216860A.6060409@ovro.caltech.edu> <20130822222951.GA13201@ovro.caltech.edu>
- <CAEqOc-SdBZgiB1HZOQAJhgq_epdGsqMXaiSO0Axcd9ZBq6kLDw@mail.gmail.com>
- <521A8782.60807@ovro.caltech.edu>
- <CAEqOc-T5-PuVnDi-MdzGekbLHWR4wfnCb3etfRbu4DAmNGuzVg@mail.gmail.com>
-In-Reply-To: <CAEqOc-T5-PuVnDi-MdzGekbLHWR4wfnCb3etfRbu4DAmNGuzVg@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: naishab@gmail.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Michael George <michaelgeorge2010@gmail.com>,
- "Ira W. Snyder" <iws@ovro.caltech.edu>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="uZ3hkaAS1mZxFaxD"
+In-Reply-To: <7c26687b556e1b4fc33ea5771de7b64e45a02d38.1377855239.git.b42378@freescale.com>
+Subject: Re: [PATCH 1/2] ASoC: fsl: Add wrapping for dev_dbg() in fsl_spdif.c
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, timur@tabi.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,86 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi S.Saravanan,
->
-> I successfully  mapped the Programmable Interrupt Controller registers
-> in the EP to the PCI space. Thus now I can write the shared message
-> interrupt registers in the EP from the RC over PCI.
 
-Excellent.
+--uZ3hkaAS1mZxFaxD
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> But I am facing the following problems now.
->
-> 1) In my driver at EP, to register for this interrupt I need to know the
-> hardware irq number but I can't find any interrupt number assigned  by
-> the PIC for the messages interrupt sources(Page 451 , MPC8641DRM manual).
-> 2) Otherwise i need to get the virtual irq number assigned by kernel
-> corresponding to the message interrupt . I am unable to find a method to
-> get this also.
+On Fri, Aug 30, 2013 at 05:38:08PM +0800, Nicolin Chen wrote:
+> Add wrapping '\n' for dev_dbg() in fsl_spdif.c
 
-I recall having to ask a similar question when trying to map a
-GPIO interrupt into a Linux interrupt number. I forget the
-convention (I'm "the hardware guy"). It may be a device tree
-thing, or an offset, I'll let someone more knowledgeable comment.
+Applied both, thanks.
 
-> In the RC side driver i get the virtual irq number after calling
-> pci_enable_msi() which is straightforward.
-> I studied the RC code which sets up shared message interrupts (Page 481,
-> MPC manual)  for PCI MSI interrupts . When  msi is enabled the
-> "arch_setup_msi_irqs()" is called leading to the fsl_setup_msi_irqs()
-> (http://lxr.free-electrons.com/source/arch/powerpc/sysdev/fsl_msi.c?v=3.7#L151)
-> . In this function the virtual irq no is obtained as below:
->
-> /virq = irq_create_mapping(msi_data->irqhost, hwirq);/
->
-> In the above function the hardware irq number is same as the value
-> written into the  Shared Message Signaled Interrupt Index Register (Page
-> 482) which is strange. Further these functions are called in the RC
-> during pci_probe at boot time or when pci_enable_msi() is called . Thus
-> there is a always a PCI slave device context to it. However I  require
-> to do it in the EP which has no pci probing nor any  pci device
-> reference whatsoever as it a slave. Is this approach right  ?
+--uZ3hkaAS1mZxFaxD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-I'm not sure.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.21 (GNU/Linux)
 
-You'll have two drivers;
-  * The root-complex.
-    This is a standard PCIe driver, so you'll just follow convention
-    there
-  * The end-point driver.
-    This driver needs to use the PCIe bus, but its not responsible
-    for the PCIe bus in the way a root-complex is. The driver needs
-    to know what the root-complex is interrupting it for, eg.,
-    "transmitter empty" (I've read your last message) or "receiver
-    ready" (there is a message from me, waiting for you).
-    So you need at least two unique interrupts or messages from the
-    root-complex to the end-point.
+iQIcBAEBAgAGBQJSIRY6AAoJELSic+t+oim9cYMP/0NaYZIyebC4kqYozti3BkOq
+Bx/mPLgZmmvjbFb0a6CQ1FNQfaFVt+xz+ubHmA508ebcHOoBNu7DMmK/gU6qKJcU
+LUMMpY953bS4lhfpYlonIFVukBkjyyC+srZPwsZG6/lw1s1r5w//Pp0Un6d6h5fa
+kIfh9NdiG5xEk56gy5D4vIjIF8C1AlEq0mjyaBI/gkqp3pMirLWio0QsdDQdPFu0
+VtGrOY9N4Ii40Y39zV0DNiVi+PQI5QGEn2ClicNHT670DZwwdYRsQUkuzR1y9eQj
+KUIMfWBMNF/fDY6QN5jetqmCZMcGQZOexUNjx0v62aSvcCm4EjPL5ixEwKI0EBjw
+UH/ExUjnhQsNRHCYmWmepbk8RFUdGjFVVVd4aGxqAhw2N7mpAIyAwAgpU0hcZUn0
+X2Q7O2e0RuIDp7BnN6fYBzHWvwnBRnuJpeqlaWvs4ZAwOm24URiCgljgJr1g7CIK
+9CO5eMvy+POKtKpxX5ociwWyjdTvdD8eresWsHvSEW13deMX+ELDC+flYNO61IO8
+uY2bQdN/QRvXKfoGNiLarx85EMlhQpprT18vgWYJ41gcOQT56Hfh/28/bIeOn3mk
+PqDARa0Rk/zbP051sg4WrNgTx/+5+1iqYN9ThMmTSLRSUQM7ijZ94pUkYWGjbQGK
+c8exp8heG1OojqNx/iJO
+=CXoi
+-----END PGP SIGNATURE-----
 
->> Its always a good idea to discuss different options, and to stub out
->> drivers or create minimal (but functional) drivers. That way you'll
->> be able to see how similar your new driver is to other drivers, and
->> you'll quickly discover if there is a hardware feature in the
->> existing driver that you cannot emulate (eg., some SRIO feature
->> used by the rionet driver).
->
-> Right now I am trying a very primitive driver just to check the
-> feasibility of bi-directional communication between the RC and the EP.
-> Once this is established  I will be in a better position to get inputs
-> on making it a more effective one.
-
-You're on the right track. When I looked at using the messaging
-registers on the PLX PCI device, I started by simply creating
-what was effectively a serial port (one char at a time).
-Section 4 explains the interlocking required between two processors
-
-http://www.ovro.caltech.edu/~dwh/correlator/pdf/cobra_driver.pdf
-
-The mailbox/interrupt registers are effectively being used to
-implement a mutex between the two processors.
-
-I think at one point Ira took similar code to this and hooked
-it into the actual serial layer, so that you had a tty over
-PCI. You could always start with a simplification like that too.
-
-Cheers,
-Dave
+--uZ3hkaAS1mZxFaxD--
