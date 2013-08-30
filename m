@@ -1,19 +1,22 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id 68E702C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 22:03:56 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Return-Path: <toshi.kani@hp.com>
+Received: from g1t0027.austin.hp.com (g1t0027.austin.hp.com [15.216.28.34])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "smtp.hp.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4607D2C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2013 00:35:09 +1000 (EST)
+Message-ID: <1377873212.10300.877.camel@misato.fc.hp.com>
 Subject: Re: [PATCH v2 0/4] Unify CPU hotplug lock interface
-Date: Fri, 30 Aug 2013 14:14:38 +0200
-Message-ID: <4448049.EdPFQ3JMc0@vostro.rjw.lan>
+From: Toshi Kani <toshi.kani@hp.com>
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Date: Fri, 30 Aug 2013 08:33:32 -0600
 In-Reply-To: <522006F6.2060206@jp.fujitsu.com>
 References: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
  <522006F6.2060206@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: fenghua.yu@intel.com, bp@suse.de, Toshi Kani <toshi.kani@hp.com>,
- gregkh@linuxfoundation.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: fenghua.yu@intel.com, bp@suse.de, gregkh@linuxfoundation.org,
+ x86@kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl,
  linux-acpi@vger.kernel.org, mingo@redhat.com, srivatsa.bhat@linux.vnet.ibm.com,
  nfont@linux.vnet.ibm.com, tglx@linutronix.de, hpa@linux.intel.com,
  linuxppc-dev@lists.ozlabs.org
@@ -26,7 +29,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday, August 30, 2013 11:44:06 AM Yasuaki Ishimatsu wrote:
+On Fri, 2013-08-30 at 11:44 +0900, Yasuaki Ishimatsu wrote:
 > (2013/08/30 9:22), Toshi Kani wrote:
 > > lock_device_hotplug() was recently introduced to serialize CPU & Memory
 > > online/offline and hotplug operations, along with sysfs online interface
@@ -52,8 +55,5 @@ On Friday, August 30, 2013 11:44:06 AM Yasuaki Ishimatsu wrote:
 > 
 > Acked-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
-Thanks!  I'll tentatively queue up this series for 3.12 (for the second
-half of the merge window).
-
-Thanks,
-Rafael
+Thanks Yasuaki!
+-Toshi
