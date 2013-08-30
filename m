@@ -1,18 +1,20 @@
 Return-Path: <B45939@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BD0A62C00BC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 21:26:56 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 29D7B2C00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 21:26:59 +1000 (EST)
 From: <hongbo.zhang@freescale.com>
 To: <rob.herring@calxeda.com>, <pawel.moll@arm.com>, <mark.rutland@arm.com>,
  <swarren@wwwdotorg.org>, <ian.campbell@citrix.com>, <vinod.koul@intel.com>,
  <djbw@fb.com>
-Subject: [PATCH v9 0/3] DMA: Freescale: Add support for 8-channel DMA engine
-Date: Fri, 30 Aug 2013 19:26:17 +0800
-Message-ID: <1377861980-7027-1-git-send-email-hongbo.zhang@freescale.com>
+Subject: [PATCH v9 1/3] DMA: Freescale: revise device tree binding document
+Date: Fri, 30 Aug 2013 19:26:18 +0800
+Message-ID: <1377861980-7027-2-git-send-email-hongbo.zhang@freescale.com>
+In-Reply-To: <1377861980-7027-1-git-send-email-hongbo.zhang@freescale.com>
+References: <1377861980-7027-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Hongbo Zhang <hongbo.zhang@freescale.com>, devicetree@vger.kernel.org,
@@ -28,63 +30,111 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-Hi DMA and DT maintainers, please have a look at these V9 patches.
+This patch updates the discription of each type of DMA controller and its
+channels, it is preparation for adding another new DMA controller binding, it
+also fixes some defects of indent for text alignment at the same time.
 
-Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
-adds support this DMA engine.
+Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+Acked-by: Mark Rutland <mark.rutland@arm.com>
+---
+ .../devicetree/bindings/powerpc/fsl/dma.txt        |   62 +++++++++-----------
+ 1 file changed, 27 insertions(+), 35 deletions(-)
 
-V8->V9 changes:
-- add "Acked-by: Mark Rutland <mark.rutland@arm.com>" into patch [1/3]
-- update reg entry <0x100300 0x4 0x100600 0x4> to two seperate ones
-  <0x100300 0x4>, <0x100600 0x4> in patch [2/3]
-- and also use "QorIQ Elo3 DMA" to mention previous "QorIQ DMA" in [2/3]
-
-V7->V8 changes:
-- change the word "mapping" to "specifier" for reg and interrupts description
-
-V6->V7 changes:
-- only remove unnecessary "CHIP-dma" explanations in [1/3]
-
-V5->V6 changes:
-- minor updates of descriptions in binding document and Kconfig
-- remove [4/4], that should be another patch in future
-
-V4->V5 changes:
-- update description in the dt binding document, to make it more resonable
-- add new patch [4/4] to eliminate a compiling warning which already exists
-  for a long time
-
-V3->V4 changes:
-- introduce new patch [1/3] to revise the legacy dma binding document
-- and then add new paragraph to describe new dt node binding in [2/3]
-- rebase to latest kernel v3.11-rc1
-
-V2->V3 changes:
-- edit Documentation/devicetree/bindings/powerpc/fsl/dma.txt
-- edit text string in Kconfig and the driver files, using "elo series" to
-  mention all the current "elo*"
-
-V1->V2 changes:
-- removed the codes handling the register dgsr1, since it isn't used currently
-- renamed the DMA DT compatible to "fsl,elo3-dma"
-- renamed the new dts files to "elo3-dma-<n>.dtsi"
-
-Hongbo Zhang (3):
-  DMA: Freescale: revise device tree binding document
-  DMA: Freescale: Add new 8-channel DMA engine device tree nodes
-  DMA: Freescale: update driver to support 8-channel DMA engine
-
- .../devicetree/bindings/powerpc/fsl/dma.txt        |  129 ++++++++++++++------
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
- arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   82 +++++++++++++
- arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   82 +++++++++++++
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
- drivers/dma/Kconfig                                |    9 +-
- drivers/dma/fsldma.c                               |    9 +-
- drivers/dma/fsldma.h                               |    2 +-
- 8 files changed, 274 insertions(+), 47 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
-
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+index 2a4b4bc..ddf17af 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+@@ -1,33 +1,29 @@
+-* Freescale 83xx DMA Controller
++* Freescale DMA Controllers
+ 
+-Freescale PowerPC 83xx have on chip general purpose DMA controllers.
++** Freescale Elo DMA Controller
++   This is a little-endian DMA controller, used in Freescale mpc83xx series
++   chips such as mpc8315, mpc8349, mpc8379 etc.
+ 
+ Required properties:
+ 
+-- compatible        : compatible list, contains 2 entries, first is
+-		 "fsl,CHIP-dma", where CHIP is the processor
+-		 (mpc8349, mpc8360, etc.) and the second is
+-		 "fsl,elo-dma"
+-- reg               : <registers mapping for DMA general status reg>
+-- ranges		: Should be defined as specified in 1) to describe the
+-		  DMA controller channels.
++- compatible        : must include "fsl,elo-dma"
++- reg               : <registers specifier for DMA general status reg>
++- ranges            : describes the mapping between the address space of the
++                      DMA channels and the address space of the DMA controller
+ - cell-index        : controller index.  0 for controller @ 0x8100
+-- interrupts        : <interrupt mapping for DMA IRQ>
++- interrupts        : <interrupt specifier for DMA IRQ>
+ - interrupt-parent  : optional, if needed for interrupt mapping
+ 
+-
+ - DMA channel nodes:
+-        - compatible        : compatible list, contains 2 entries, first is
+-			 "fsl,CHIP-dma-channel", where CHIP is the processor
+-			 (mpc8349, mpc8350, etc.) and the second is
+-			 "fsl,elo-dma-channel". However, see note below.
+-        - reg               : <registers mapping for channel>
++        - compatible        : must include "fsl,elo-dma-channel"
++                              However, see note below.
++        - reg               : <registers specifier for channel>
+         - cell-index        : dma channel index starts at 0.
+ 
+ Optional properties:
+-        - interrupts        : <interrupt mapping for DMA channel IRQ>
+-			  (on 83xx this is expected to be identical to
+-			   the interrupts property of the parent node)
++        - interrupts        : <interrupt specifier for DMA channel IRQ>
++                              (on 83xx this is expected to be identical to
++                              the interrupts property of the parent node)
+         - interrupt-parent  : optional, if needed for interrupt mapping
+ 
+ Example:
+@@ -70,30 +66,26 @@ Example:
+ 		};
+ 	};
+ 
+-* Freescale 85xx/86xx DMA Controller
+-
+-Freescale PowerPC 85xx/86xx have on chip general purpose DMA controllers.
++** Freescale EloPlus DMA Controller
++   This is DMA controller with extended addresses and chaining, mainly used in
++   Freescale mpc85xx/86xx, Pxxx and BSC series chips, such as mpc8540, mpc8641
++   p4080, bsc9131 etc.
+ 
+ Required properties:
+ 
+-- compatible        : compatible list, contains 2 entries, first is
+-		 "fsl,CHIP-dma", where CHIP is the processor
+-		 (mpc8540, mpc8540, etc.) and the second is
+-		 "fsl,eloplus-dma"
+-- reg               : <registers mapping for DMA general status reg>
++- compatible        : must include "fsl,eloplus-dma"
++- reg               : <registers specifier for DMA general status reg>
+ - cell-index        : controller index.  0 for controller @ 0x21000,
+                                          1 for controller @ 0xc000
+-- ranges		: Should be defined as specified in 1) to describe the
+-		  DMA controller channels.
++- ranges            : describes the mapping between the address space of the
++                      DMA channels and the address space of the DMA controller
+ 
+ - DMA channel nodes:
+-        - compatible        : compatible list, contains 2 entries, first is
+-			 "fsl,CHIP-dma-channel", where CHIP is the processor
+-			 (mpc8540, mpc8560, etc.) and the second is
+-			 "fsl,eloplus-dma-channel". However, see note below.
++        - compatible        : must include "fsl,eloplus-dma-channel"
++                              However, see note below.
+         - cell-index        : dma channel index starts at 0.
+-        - reg               : <registers mapping for channel>
+-        - interrupts        : <interrupt mapping for DMA channel IRQ>
++        - reg               : <registers specifier for channel>
++        - interrupts        : <interrupt specifier for DMA channel IRQ>
+         - interrupt-parent  : optional, if needed for interrupt mapping
+ 
+ Example:
 -- 
 1.7.9.5
