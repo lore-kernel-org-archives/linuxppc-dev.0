@@ -1,25 +1,22 @@
-Return-Path: <toshi.kani@hp.com>
-Received: from g1t0026.austin.hp.com (g1t0026.austin.hp.com [15.216.28.33])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "smtp.hp.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 872A62C0092
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2013 00:37:13 +1000 (EST)
-Message-ID: <1377873338.10300.878.camel@misato.fc.hp.com>
-Subject: Re: [PATCH v2 0/4] Unify CPU hotplug lock interface
-From: Toshi Kani <toshi.kani@hp.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Fri, 30 Aug 2013 08:35:38 -0600
-In-Reply-To: <4448049.EdPFQ3JMc0@vostro.rjw.lan>
-References: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
- <522006F6.2060206@jp.fujitsu.com> <4448049.EdPFQ3JMc0@vostro.rjw.lan>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: fenghua.yu@intel.com, bp@suse.de, gregkh@linuxfoundation.org,
- x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, mingo@redhat.com,
- srivatsa.bhat@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com, tglx@linutronix.de,
- hpa@linux.intel.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <gleb@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id ECDB42C00CC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2013 03:58:45 +1000 (EST)
+Date: Fri, 30 Aug 2013 20:58:35 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH v9 00/13] KVM: PPC: IOMMU in-kernel handling of VFIO
+Message-ID: <20130830175835.GF10142@redhat.com>
+References: <1377679070-3515-1-git-send-email-aik@ozlabs.ru>
+ <5220736E.5050503@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5220736E.5050503@ozlabs.ru>
+Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,35 +26,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-08-30 at 14:14 +0200, Rafael J. Wysocki wrote:
-> On Friday, August 30, 2013 11:44:06 AM Yasuaki Ishimatsu wrote:
-> > (2013/08/30 9:22), Toshi Kani wrote:
-> > > lock_device_hotplug() was recently introduced to serialize CPU & Memory
-> > > online/offline and hotplug operations, along with sysfs online interface
-> > > restructure (commit 4f3549d7).  With this new locking scheme,
-> > > cpu_hotplug_driver_lock() is redundant and is no longer necessary.
-> > > 
-> > > This patchset makes sure that lock_device_hotplug() covers all CPU online/
-> > > offline interfaces, and then removes cpu_hotplug_driver_lock().
-> > > 
-> > > v2:
-> > >   - Rebased to the pm tree, bleeding-edge.
-> > >   - Changed patch 2/4 to use lock_device_hotplug_sysfs().
-> > > 
-> > > ---
-> > > Toshi Kani (4):
-> > >    hotplug, x86: Fix online state in cpu0 debug interface
-> > >    hotplug, x86: Add hotplug lock to missing places
-> > >    hotplug, x86: Disable ARCH_CPU_PROBE_RELEASE on x86
-> > >    hotplug, powerpc, x86: Remove cpu_hotplug_driver_lock()
-> > > 
-> > > ---
-> > The patch-set looks good to me.
+On Fri, Aug 30, 2013 at 08:26:54PM +1000, Alexey Kardashevskiy wrote:
+> On 08/28/2013 06:37 PM, Alexey Kardashevskiy wrote:
+> > This accelerates VFIO DMA operations on POWER by moving them
+> > into kernel.
 > > 
-> > Acked-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> > This depends on VFIO external API patch which is on its way to upstream.
+> > 
+> > Changes:
+> > v9:
+> > * replaced the "link logical bus number to IOMMU group" ioctl to KVM
+> > with a KVM device doing the same thing, i.e. the actual changes are in
+> > these 3 patches:
+> >   KVM: PPC: reserve a capability and KVM device type for realmode VFIO
+> >   KVM: PPC: remove warning from kvmppc_core_destroy_vm
+> >   KVM: PPC: Add support for IOMMU in-kernel handling
+> > 
+> > * moved some VFIO external API bits to a separate patch to reduce the size
+> > of the "KVM: PPC: Add support for IOMMU in-kernel handling" patch
+> > 
+> > * fixed code style problems reported by checkpatch.pl.
+> > 
+> > v8:
+> > * fixed comments about capabilities numbers
+> > 
+> > v7:
+> > * rebased on v3.11-rc3.
+> > * VFIO external user API will go through VFIO tree so it is
+> > excluded from this series.
+> > * As nobody ever reacted on "hashtable: add hash_for_each_possible_rcu_notrace()",
+> > Ben suggested to push it via his tree so I included it to the series.
+> > * realmode_(get|put)_page is reworked.
+> > 
+> > More details in the individual patch comments.
+> > 
+> > Alexey Kardashevskiy (13):
+> >   KVM: PPC: POWERNV: move iommu_add_device earlier
+> >   hashtable: add hash_for_each_possible_rcu_notrace()
+> >   KVM: PPC: reserve a capability number for multitce support
+> >   KVM: PPC: reserve a capability and KVM device type for realmode VFIO
 > 
-> Thanks!  I'll tentatively queue up this series for 3.12 (for the second
-> half of the merge window).
+> 
+> Hi Gleb!
+> 
+> Could you please review and pick (if they are ok) the two "capability"
+> patches from above?
+> 
+> It would be cool if you also looked at "KVM: PPC: Add support for IOMMU
+> in-kernel handling", the part about KVM device for SPAPR TCE IOMMU table.
+> 
+> Thanks!
+Will do it next week.
 
-Thanks Rafael!
--Toshi
+> 
+> 
+> 
+> >   powerpc: Prepare to support kernel handling of IOMMU map/unmap
+> >   powerpc: add real mode support for dma operations on powernv
+> >   KVM: PPC: enable IOMMU_API for KVM_BOOK3S_64 permanently
+> >   KVM: PPC: Add support for multiple-TCE hcalls
+> >   powerpc/iommu: rework to support realmode
+> >   KVM: PPC: remove warning from kvmppc_core_destroy_vm
+> >   KVM: PPC: add trampolines for VFIO external API
+> >   KVM: PPC: Add support for IOMMU in-kernel handling
+> >   KVM: PPC: Add hugepage support for IOMMU in-kernel handling
+> > 
+> >  Documentation/virtual/kvm/api.txt                  |  26 +
+> >  .../virtual/kvm/devices/spapr_tce_iommu.txt        |  37 ++
+> >  arch/powerpc/include/asm/iommu.h                   |  18 +-
+> >  arch/powerpc/include/asm/kvm_host.h                |  38 ++
+> >  arch/powerpc/include/asm/kvm_ppc.h                 |  16 +-
+> >  arch/powerpc/include/asm/machdep.h                 |  12 +
+> >  arch/powerpc/include/asm/pgtable-ppc64.h           |   2 +
+> >  arch/powerpc/include/uapi/asm/kvm.h                |   8 +
+> >  arch/powerpc/kernel/iommu.c                        | 243 +++++----
+> >  arch/powerpc/kvm/Kconfig                           |   1 +
+> >  arch/powerpc/kvm/book3s_64_vio.c                   | 597 ++++++++++++++++++++-
+> >  arch/powerpc/kvm/book3s_64_vio_hv.c                | 408 +++++++++++++-
+> >  arch/powerpc/kvm/book3s_hv.c                       |  42 +-
+> >  arch/powerpc/kvm/book3s_hv_rmhandlers.S            |   8 +-
+> >  arch/powerpc/kvm/book3s_pr_papr.c                  |  35 ++
+> >  arch/powerpc/kvm/powerpc.c                         |   4 +
+> >  arch/powerpc/mm/init_64.c                          |  50 +-
+> >  arch/powerpc/platforms/powernv/pci-ioda.c          |  57 +-
+> >  arch/powerpc/platforms/powernv/pci-p5ioc2.c        |   2 +-
+> >  arch/powerpc/platforms/powernv/pci.c               |  75 ++-
+> >  arch/powerpc/platforms/powernv/pci.h               |   3 +-
+> >  arch/powerpc/platforms/pseries/iommu.c             |   8 +-
+> >  include/linux/hashtable.h                          |  15 +
+> >  include/linux/kvm_host.h                           |   1 +
+> >  include/linux/mm.h                                 |  14 +
+> >  include/linux/page-flags.h                         |   4 +-
+> >  include/uapi/linux/kvm.h                           |   3 +
+> >  virt/kvm/kvm_main.c                                |   5 +
+> >  28 files changed, 1564 insertions(+), 168 deletions(-)
+> >  create mode 100644 Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
+> > 
+> 
+> 
+> -- 
+> Alexey
+
+--
+			Gleb.
