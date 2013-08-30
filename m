@@ -3,13 +3,13 @@ Received: from g1t0029.austin.hp.com (g1t0029.austin.hp.com [15.216.28.36])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "smtp.hp.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 53B292C00FF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 10:23:57 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 159682C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 10:23:51 +1000 (EST)
 From: Toshi Kani <toshi.kani@hp.com>
 To: rjw@sisk.pl
-Subject: [PATCH v2 4/4] hotplug, powerpc, x86: Remove cpu_hotplug_driver_lock()
-Date: Thu, 29 Aug 2013 18:22:09 -0600
-Message-Id: <1377822129-4143-5-git-send-email-toshi.kani@hp.com>
+Subject: [PATCH v2 1/4] hotplug, x86: Fix online state in cpu0 debug interface
+Date: Thu, 29 Aug 2013 18:22:06 -0600
+Message-Id: <1377822129-4143-2-git-send-email-toshi.kani@hp.com>
 In-Reply-To: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
 References: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
 Cc: fenghua.yu@intel.com, bp@suse.de, Toshi Kani <toshi.kani@hp.com>,
@@ -26,233 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cpu_hotplug_driver_lock() serializes CPU online/offline operations
-when ARCH_CPU_PROBE_RELEASE is set.  This lock interface is no longer
-necessary with the following reason:
+_debug_hotplug_cpu() is a debug interface that puts cpu0 offline during
+boot-up when CONFIG_DEBUG_HOTPLUG_CPU0 is set.  After cpu0 is put offline
+in this interface, however, /sys/devices/system/cpu/cpu0/online still
+shows 1 (online).
 
- - lock_device_hotplug() now protects CPU online/offline operations,
-   including the probe & release interfaces enabled by
-   ARCH_CPU_PROBE_RELEASE.  The use of cpu_hotplug_driver_lock() is
-   redundant.
- - cpu_hotplug_driver_lock() is only valid when ARCH_CPU_PROBE_RELEASE
-   is defined, which is misleading and is only enabled on powerpc.
-
-This patch removes the cpu_hotplug_driver_lock() interface.  As
-a result, ARCH_CPU_PROBE_RELEASE only enables / disables the cpu
-probe & release interface as intended.  There is no functional change
-in this patch.
+This patch fixes _debug_hotplug_cpu() to update dev->offline when CPU
+online/offline operation succeeded.
 
 Signed-off-by: Toshi Kani <toshi.kani@hp.com>
 Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
-Performed build test only on powerpc.
----
- arch/powerpc/kernel/smp.c              |   12 ----------
- arch/powerpc/platforms/pseries/dlpar.c |   40 ++++++++++++--------------------
- arch/x86/kernel/topology.c             |    2 --
- drivers/base/cpu.c                     |   10 +-------
- include/linux/cpu.h                    |   13 ----------
- 5 files changed, 16 insertions(+), 61 deletions(-)
+ arch/x86/kernel/topology.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 38b0ba6..1667269 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -763,18 +763,6 @@ void __cpu_die(unsigned int cpu)
- 		smp_ops->cpu_die(cpu);
- }
- 
--static DEFINE_MUTEX(powerpc_cpu_hotplug_driver_mutex);
--
--void cpu_hotplug_driver_lock()
--{
--	mutex_lock(&powerpc_cpu_hotplug_driver_mutex);
--}
--
--void cpu_hotplug_driver_unlock()
--{
--	mutex_unlock(&powerpc_cpu_hotplug_driver_mutex);
--}
--
- void cpu_die(void)
- {
- 	if (ppc_md.cpu_die)
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index a1a7b9a..e39325d 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -387,18 +387,13 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
- 	char *cpu_name;
- 	int rc;
- 
--	cpu_hotplug_driver_lock();
- 	rc = strict_strtoul(buf, 0, &drc_index);
--	if (rc) {
--		rc = -EINVAL;
--		goto out;
--	}
-+	if (rc)
-+		return -EINVAL;
- 
- 	dn = dlpar_configure_connector(drc_index);
--	if (!dn) {
--		rc = -EINVAL;
--		goto out;
--	}
-+	if (!dn)
-+		return -EINVAL;
- 
- 	/* configure-connector reports cpus as living in the base
- 	 * directory of the device tree.  CPUs actually live in the
-@@ -407,8 +402,7 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
- 	cpu_name = kasprintf(GFP_KERNEL, "/cpus%s", dn->full_name);
- 	if (!cpu_name) {
- 		dlpar_free_cc_nodes(dn);
--		rc = -ENOMEM;
--		goto out;
-+		return -ENOMEM;
- 	}
- 
- 	kfree(dn->full_name);
-@@ -417,22 +411,21 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
- 	rc = dlpar_acquire_drc(drc_index);
- 	if (rc) {
- 		dlpar_free_cc_nodes(dn);
--		rc = -EINVAL;
--		goto out;
-+		return -EINVAL;
- 	}
- 
- 	rc = dlpar_attach_node(dn);
- 	if (rc) {
- 		dlpar_release_drc(drc_index);
- 		dlpar_free_cc_nodes(dn);
--		goto out;
-+		return rc;
- 	}
- 
- 	rc = dlpar_online_cpu(dn);
--out:
--	cpu_hotplug_driver_unlock();
-+	if (rc)
-+		return rc;
- 
--	return rc ? rc : count;
-+	return count;
- }
- 
- static int dlpar_offline_cpu(struct device_node *dn)
-@@ -505,30 +498,27 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
- 		return -EINVAL;
- 	}
- 
--	cpu_hotplug_driver_lock();
- 	rc = dlpar_offline_cpu(dn);
- 	if (rc) {
- 		of_node_put(dn);
--		rc = -EINVAL;
--		goto out;
-+		return -EINVAL;
- 	}
- 
- 	rc = dlpar_release_drc(*drc_index);
- 	if (rc) {
- 		of_node_put(dn);
--		goto out;
-+		return rc;
- 	}
- 
- 	rc = dlpar_detach_node(dn);
- 	if (rc) {
- 		dlpar_acquire_drc(*drc_index);
--		goto out;
-+		return rc;
- 	}
- 
- 	of_node_put(dn);
--out:
--	cpu_hotplug_driver_unlock();
--	return rc ? rc : count;
-+
-+	return count;
- }
- 
- static int __init pseries_dlpar_init(void)
 diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
-index a3f35eb..649b010 100644
+index 6e60b5f..5823bbd 100644
 --- a/arch/x86/kernel/topology.c
 +++ b/arch/x86/kernel/topology.c
-@@ -66,7 +66,6 @@ int __ref _debug_hotplug_cpu(int cpu, int action)
- 		return -EINVAL;
- 
- 	lock_device_hotplug();
--	cpu_hotplug_driver_lock();
- 
- 	switch (action) {
- 	case 0:
-@@ -91,7 +90,6 @@ int __ref _debug_hotplug_cpu(int cpu, int action)
+@@ -72,16 +72,19 @@ int __ref _debug_hotplug_cpu(int cpu, int action)
+ 		ret = cpu_down(cpu);
+ 		if (!ret) {
+ 			pr_info("CPU %u is now offline\n", cpu);
++			dev->offline = true;
+ 			kobject_uevent(&dev->kobj, KOBJ_OFFLINE);
+ 		} else
+ 			pr_debug("Can't offline CPU%d.\n", cpu);
+ 		break;
+ 	case 1:
+ 		ret = cpu_up(cpu);
+-		if (!ret)
++		if (!ret) {
++			dev->offline = false;
+ 			kobject_uevent(&dev->kobj, KOBJ_ONLINE);
+-		else
++		} else {
+ 			pr_debug("Can't online CPU%d.\n", cpu);
++		}
+ 		break;
+ 	default:
  		ret = -EINVAL;
- 	}
- 
--	cpu_hotplug_driver_unlock();
- 	unlock_device_hotplug();
- 
- 	return ret;
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index dc78e45..9745f03 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -46,8 +46,6 @@ static int __ref cpu_subsys_online(struct device *dev)
- 	int from_nid, to_nid;
- 	int ret;
- 
--	cpu_hotplug_driver_lock();
--
- 	from_nid = cpu_to_node(cpuid);
- 	ret = cpu_up(cpuid);
- 	/*
-@@ -58,18 +56,12 @@ static int __ref cpu_subsys_online(struct device *dev)
- 	if (from_nid != to_nid)
- 		change_cpu_under_node(cpu, from_nid, to_nid);
- 
--	cpu_hotplug_driver_unlock();
- 	return ret;
- }
- 
- static int cpu_subsys_offline(struct device *dev)
- {
--	int ret;
--
--	cpu_hotplug_driver_lock();
--	ret = cpu_down(dev->id);
--	cpu_hotplug_driver_unlock();
--	return ret;
-+	return cpu_down(dev->id);
- }
- 
- void unregister_cpu(struct cpu *cpu)
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index 801ff9e..3434ef7 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -185,19 +185,6 @@ extern void cpu_hotplug_enable(void);
- void clear_tasks_mm_cpumask(int cpu);
- int cpu_down(unsigned int cpu);
- 
--#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
--extern void cpu_hotplug_driver_lock(void);
--extern void cpu_hotplug_driver_unlock(void);
--#else
--static inline void cpu_hotplug_driver_lock(void)
--{
--}
--
--static inline void cpu_hotplug_driver_unlock(void)
--{
--}
--#endif
--
- #else		/* CONFIG_HOTPLUG_CPU */
- 
- static inline void cpu_hotplug_begin(void) {}
