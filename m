@@ -1,39 +1,35 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 906D82C008E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 12:45:06 +1000 (EST)
-Received: from m4.gw.fujitsu.co.jp (unknown [10.0.50.74])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id E4EA43EE0C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 11:45:03 +0900 (JST)
-Received: from smail (m4 [127.0.0.1])
- by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id CFB2945DE59
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 11:45:03 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
- by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 9A41F45DE57
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 11:45:03 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 827D31DB8040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 11:45:03 +0900 (JST)
-Received: from g01jpfmpwyt02.exch.g01.fujitsu.local
- (g01jpfmpwyt02.exch.g01.fujitsu.local [10.128.193.56])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id EDD4B1DB8041
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 11:45:02 +0900 (JST)
-Message-ID: <522006F6.2060206@jp.fujitsu.com>
-Date: Fri, 30 Aug 2013 11:44:06 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-MIME-Version: 1.0
-To: Toshi Kani <toshi.kani@hp.com>
-Subject: Re: [PATCH v2 0/4] Unify CPU hotplug lock interface
-References: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
-In-Reply-To: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
-Cc: fenghua.yu@intel.com, bp@suse.de, gregkh@linuxfoundation.org,
- x86@kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl,
- linux-acpi@vger.kernel.org, mingo@redhat.com, srivatsa.bhat@linux.vnet.ibm.com,
- nfont@linux.vnet.ibm.com, tglx@linutronix.de, hpa@linux.intel.com,
- linuxppc-dev@lists.ozlabs.org
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ED8F52C008E
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Aug 2013 14:25:42 +1000 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 30 Aug 2013 09:47:25 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5252BE0056
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Aug 2013 09:56:16 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r7U4PYRh47448200
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Aug 2013 09:55:35 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r7U4PaON024917
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Aug 2013 09:55:36 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH V2 1/6] perf: New conditional branch filter criteria in branch
+ stack sampling
+Date: Fri, 30 Aug 2013 09:54:45 +0530
+Message-Id: <1377836690-32710-2-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1377836690-32710-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1377836690-32710-1-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: eranian@google.com, acme@redhat.com, ellerman@au1.ibm.com,
+ sukadev@linux.vnet.ibm.com, michael.neuling@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,41 +39,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2013/08/30 9:22), Toshi Kani wrote:
-> lock_device_hotplug() was recently introduced to serialize CPU & Memory
-> online/offline and hotplug operations, along with sysfs online interface
-> restructure (commit 4f3549d7).  With this new locking scheme,
-> cpu_hotplug_driver_lock() is redundant and is no longer necessary.
-> 
-> This patchset makes sure that lock_device_hotplug() covers all CPU online/
-> offline interfaces, and then removes cpu_hotplug_driver_lock().
-> 
-> v2:
->   - Rebased to the pm tree, bleeding-edge.
->   - Changed patch 2/4 to use lock_device_hotplug_sysfs().
-> 
-> ---
-> Toshi Kani (4):
->    hotplug, x86: Fix online state in cpu0 debug interface
->    hotplug, x86: Add hotplug lock to missing places
->    hotplug, x86: Disable ARCH_CPU_PROBE_RELEASE on x86
->    hotplug, powerpc, x86: Remove cpu_hotplug_driver_lock()
-> 
-> ---
-The patch-set looks good to me.
+POWER8 PMU based BHRB supports filtering for conditional branches.
+This patch introduces new branch filter PERF_SAMPLE_BRANCH_COND which
+will extend the existing perf ABI. Other architectures can provide
+this functionality with either HW filtering support (if present) or
+with SW filtering of instructions.
 
-Acked-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Reviewed-by: Stephane Eranian <eranian@google.com>
+---
+ include/uapi/linux/perf_event.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Thanks,
-Yasuaki Ishimatsu
-
-
->   arch/powerpc/kernel/smp.c              | 12 ----------
->   arch/powerpc/platforms/pseries/dlpar.c | 40 +++++++++++++---------------------
->   arch/x86/Kconfig                       |  4 ----
->   arch/x86/kernel/smpboot.c              | 21 ------------------
->   arch/x86/kernel/topology.c             | 11 ++++++----
->   drivers/base/cpu.c                     | 34 +++++++++++++++++++----------
->   include/linux/cpu.h                    | 13 -----------
->   7 files changed, 45 insertions(+), 90 deletions(-)
-> 
+diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+index 0b1df41..5da52b6 100644
+--- a/include/uapi/linux/perf_event.h
++++ b/include/uapi/linux/perf_event.h
+@@ -160,8 +160,9 @@ enum perf_branch_sample_type {
+ 	PERF_SAMPLE_BRANCH_ABORT_TX	= 1U << 7, /* transaction aborts */
+ 	PERF_SAMPLE_BRANCH_IN_TX	= 1U << 8, /* in transaction */
+ 	PERF_SAMPLE_BRANCH_NO_TX	= 1U << 9, /* not in transaction */
++	PERF_SAMPLE_BRANCH_COND		= 1U << 10, /* conditional branches */
+ 
+-	PERF_SAMPLE_BRANCH_MAX		= 1U << 10, /* non-ABI */
++	PERF_SAMPLE_BRANCH_MAX		= 1U << 11, /* non-ABI */
+ };
+ 
+ #define PERF_SAMPLE_BRANCH_PLM_ALL \
+-- 
+1.7.11.7
