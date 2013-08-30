@@ -1,18 +1,22 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id A7E2F2C0089
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 09:55:30 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Toshi Kani <toshi.kani@hp.com>
+Return-Path: <toshi.kani@hp.com>
+Received: from g1t0028.austin.hp.com (g1t0028.austin.hp.com [15.216.28.35])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "smtp.hp.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D4C2A2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 10:14:01 +1000 (EST)
+Message-ID: <1377821542.10300.869.camel@misato.fc.hp.com>
 Subject: Re: [PATCH 0/4] Unify CPU hotplug lock interface
-Date: Fri, 30 Aug 2013 02:06:09 +0200
-Message-ID: <21553065.6VHCMzStpF@vostro.rjw.lan>
-In-Reply-To: <1377796510.10300.868.camel@misato.fc.hp.com>
+From: Toshi Kani <toshi.kani@hp.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Thu, 29 Aug 2013 18:12:22 -0600
+In-Reply-To: <21553065.6VHCMzStpF@vostro.rjw.lan>
 References: <1376768819-28975-1-git-send-email-toshi.kani@hp.com>
  <1449558.tneKXFMIWE@vostro.rjw.lan>
  <1377796510.10300.868.camel@misato.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ <21553065.6VHCMzStpF@vostro.rjw.lan>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: fenghua.yu@intel.com, bp@suse.de, gregkh@linuxfoundation.org,
  x86@kernel.org, linux-kernel@vger.kernel.org, isimatu.yasuaki@jp.fujitsu.com,
  mingo@redhat.com, srivatsa.bhat@linux.vnet.ibm.com, tglx@linutronix.de,
@@ -26,58 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, August 29, 2013 11:15:10 AM Toshi Kani wrote:
-> On Sun, 2013-08-18 at 03:02 +0200, Rafael J. Wysocki wrote:
-> > On Saturday, August 17, 2013 01:46:55 PM Toshi Kani wrote:
-> > > lock_device_hotplug() was recently introduced to serialize CPU & Memory
-> > > online/offline and hotplug operations, along with sysfs online interface
-> > > restructure (commit 4f3549d7).  With this new locking scheme,
-> > > cpu_hotplug_driver_lock() is redundant and is no longer necessary.
+On Fri, 2013-08-30 at 02:06 +0200, Rafael J. Wysocki wrote:
+> On Thursday, August 29, 2013 11:15:10 AM Toshi Kani wrote:
+> > On Sun, 2013-08-18 at 03:02 +0200, Rafael J. Wysocki wrote:
+> > > On Saturday, August 17, 2013 01:46:55 PM Toshi Kani wrote:
+> > > > lock_device_hotplug() was recently introduced to serialize CPU & Memory
+> > > > online/offline and hotplug operations, along with sysfs online interface
+> > > > restructure (commit 4f3549d7).  With this new locking scheme,
+> > > > cpu_hotplug_driver_lock() is redundant and is no longer necessary.
+> > > > 
+> > > > This patchset makes sure that lock_device_hotplug() covers all CPU online/
+> > > > offline interfaces, and then removes cpu_hotplug_driver_lock().
+> > > > 
+> > > > The patchset is based on Linus's tree, 3.11.0-rc5.
 > > > 
-> > > This patchset makes sure that lock_device_hotplug() covers all CPU online/
-> > > offline interfaces, and then removes cpu_hotplug_driver_lock().
-> > > 
-> > > The patchset is based on Linus's tree, 3.11.0-rc5.
+> > > Nice series, thanks a lot for taking care of this!
 > > 
-> > Nice series, thanks a lot for taking care of this!
+> > Hi Rafael,
+> > 
+> > Per the recent your changes in lock_device_hotplug(), do you think it
+> > makes sense to integrate this patchset into your tree?  I am also
+> > considering to add one more patch to use lock_device_hotplug_sysfs() in
+> > cpu_probe_store().  I will rebase to your tree and send them today if it
+> > makes sense to you.
 > 
-> Hi Rafael,
-> 
-> Per the recent your changes in lock_device_hotplug(), do you think it
-> makes sense to integrate this patchset into your tree?  I am also
-> considering to add one more patch to use lock_device_hotplug_sysfs() in
-> cpu_probe_store().  I will rebase to your tree and send them today if it
-> makes sense to you.
+> Yes, it does to me.
 
-Yes, it does to me.
+Great!  I will send them shortly.
 
 Thanks,
-Rafael
-
-
-> > > ---
-> > > Toshi Kani (4):
-> > >   hotplug, x86: Fix online state in cpu0 debug interface
-> > >   hotplug, x86: Add hotplug lock to missing places
-> > >   hotplug, x86: Disable ARCH_CPU_PROBE_RELEASE on x86
-> > >   hotplug, powerpc, x86: Remove cpu_hotplug_driver_lock()
-> > > 
-> > > ---
-> > >  arch/powerpc/kernel/smp.c              | 12 ----------
-> > >  arch/powerpc/platforms/pseries/dlpar.c | 40 +++++++++++++---------------------
-> > >  arch/x86/Kconfig                       |  4 ----
-> > >  arch/x86/kernel/smpboot.c              | 21 ------------------
-> > >  arch/x86/kernel/topology.c             | 11 ++++++----
-> > >  drivers/base/cpu.c                     | 26 ++++++++++++----------
-> > >  include/linux/cpu.h                    | 13 -----------
-> > >  7 files changed, 37 insertions(+), 90 deletions(-)
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+-Toshi
