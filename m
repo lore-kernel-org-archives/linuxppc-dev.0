@@ -1,25 +1,21 @@
 Return-Path: <toshi.kani@hp.com>
-Received: from g1t0028.austin.hp.com (g1t0028.austin.hp.com [15.216.28.35])
+Received: from g1t0029.austin.hp.com (g1t0029.austin.hp.com [15.216.28.36])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "smtp.hp.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D4C2A2C0090
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 10:14:01 +1000 (EST)
-Message-ID: <1377821542.10300.869.camel@misato.fc.hp.com>
-Subject: Re: [PATCH 0/4] Unify CPU hotplug lock interface
+ by ozlabs.org (Postfix) with ESMTPS id 342622C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 10:23:52 +1000 (EST)
 From: Toshi Kani <toshi.kani@hp.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Thu, 29 Aug 2013 18:12:22 -0600
-In-Reply-To: <21553065.6VHCMzStpF@vostro.rjw.lan>
-References: <1376768819-28975-1-git-send-email-toshi.kani@hp.com>
- <1449558.tneKXFMIWE@vostro.rjw.lan>
- <1377796510.10300.868.camel@misato.fc.hp.com>
- <21553065.6VHCMzStpF@vostro.rjw.lan>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: fenghua.yu@intel.com, bp@suse.de, gregkh@linuxfoundation.org,
- x86@kernel.org, linux-kernel@vger.kernel.org, isimatu.yasuaki@jp.fujitsu.com,
- mingo@redhat.com, srivatsa.bhat@linux.vnet.ibm.com, tglx@linutronix.de,
+To: rjw@sisk.pl
+Subject: [PATCH v2 2/4] hotplug, x86: Add hotplug lock to missing places
+Date: Thu, 29 Aug 2013 18:22:07 -0600
+Message-Id: <1377822129-4143-3-git-send-email-toshi.kani@hp.com>
+In-Reply-To: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
+References: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
+Cc: fenghua.yu@intel.com, bp@suse.de, Toshi Kani <toshi.kani@hp.com>,
+ gregkh@linuxfoundation.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ linux-acpi@vger.kernel.org, isimatu.yasuaki@jp.fujitsu.com, mingo@redhat.com,
+ srivatsa.bhat@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com, tglx@linutronix.de,
  hpa@linux.intel.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,33 +26,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-08-30 at 02:06 +0200, Rafael J. Wysocki wrote:
-> On Thursday, August 29, 2013 11:15:10 AM Toshi Kani wrote:
-> > On Sun, 2013-08-18 at 03:02 +0200, Rafael J. Wysocki wrote:
-> > > On Saturday, August 17, 2013 01:46:55 PM Toshi Kani wrote:
-> > > > lock_device_hotplug() was recently introduced to serialize CPU & Memory
-> > > > online/offline and hotplug operations, along with sysfs online interface
-> > > > restructure (commit 4f3549d7).  With this new locking scheme,
-> > > > cpu_hotplug_driver_lock() is redundant and is no longer necessary.
-> > > > 
-> > > > This patchset makes sure that lock_device_hotplug() covers all CPU online/
-> > > > offline interfaces, and then removes cpu_hotplug_driver_lock().
-> > > > 
-> > > > The patchset is based on Linus's tree, 3.11.0-rc5.
-> > > 
-> > > Nice series, thanks a lot for taking care of this!
-> > 
-> > Hi Rafael,
-> > 
-> > Per the recent your changes in lock_device_hotplug(), do you think it
-> > makes sense to integrate this patchset into your tree?  I am also
-> > considering to add one more patch to use lock_device_hotplug_sysfs() in
-> > cpu_probe_store().  I will rebase to your tree and send them today if it
-> > makes sense to you.
-> 
-> Yes, it does to me.
+lock_device_hotplug[_sysfs]() serializes CPU & Memory online/offline
+and hotplug operations.  However, this lock is not held in the debug
+interfaces below that initiate CPU online/offline operations.
 
-Great!  I will send them shortly.
+ - _debug_hotplug_cpu(), cpu0 hotplug test interface enabled by
+   CONFIG_DEBUG_HOTPLUG_CPU0.
+ - cpu_probe_store() and cpu_release_store(), cpu hotplug test interface
+   enabled by CONFIG_ARCH_CPU_PROBE_RELEASE.
 
-Thanks,
--Toshi
+This patch changes the above interfaces to hold lock_device_hotplug().
+
+Signed-off-by: Toshi Kani <toshi.kani@hp.com>
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ arch/x86/kernel/topology.c |    2 ++
+ drivers/base/cpu.c         |   24 ++++++++++++++++++++++--
+ 2 files changed, 24 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
+index 5823bbd..a3f35eb 100644
+--- a/arch/x86/kernel/topology.c
++++ b/arch/x86/kernel/topology.c
+@@ -65,6 +65,7 @@ int __ref _debug_hotplug_cpu(int cpu, int action)
+ 	if (!cpu_is_hotpluggable(cpu))
+ 		return -EINVAL;
+ 
++	lock_device_hotplug();
+ 	cpu_hotplug_driver_lock();
+ 
+ 	switch (action) {
+@@ -91,6 +92,7 @@ int __ref _debug_hotplug_cpu(int cpu, int action)
+ 	}
+ 
+ 	cpu_hotplug_driver_unlock();
++	unlock_device_hotplug();
+ 
+ 	return ret;
+ }
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 4cf0717..dc78e45 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -89,7 +89,17 @@ static ssize_t cpu_probe_store(struct device *dev,
+ 			       const char *buf,
+ 			       size_t count)
+ {
+-	return arch_cpu_probe(buf, count);
++	ssize_t cnt;
++	int ret;
++
++	ret = lock_device_hotplug_sysfs();
++	if (ret)
++		return ret;
++
++	cnt = arch_cpu_probe(buf, count);
++
++	unlock_device_hotplug();
++	return cnt;
+ }
+ 
+ static ssize_t cpu_release_store(struct device *dev,
+@@ -97,7 +107,17 @@ static ssize_t cpu_release_store(struct device *dev,
+ 				 const char *buf,
+ 				 size_t count)
+ {
+-	return arch_cpu_release(buf, count);
++	ssize_t cnt;
++	int ret;
++
++	ret = lock_device_hotplug_sysfs();
++	if (ret)
++		return ret;
++
++	cnt = arch_cpu_release(buf, count);
++
++	unlock_device_hotplug();
++	return cnt;
+ }
+ 
+ static DEVICE_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
