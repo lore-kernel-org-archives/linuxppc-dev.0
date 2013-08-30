@@ -1,26 +1,22 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pb0-f46.google.com (mail-pb0-f46.google.com
- [209.85.160.46])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D5F172C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 20:27:04 +1000 (EST)
-Received: by mail-pb0-f46.google.com with SMTP id rq2so1702385pbb.19
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 03:27:02 -0700 (PDT)
-Message-ID: <5220736E.5050503@ozlabs.ru>
-Date: Fri, 30 Aug 2013 20:26:54 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Return-Path: <B45939@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BD0A62C00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2013 21:26:56 +1000 (EST)
+From: <hongbo.zhang@freescale.com>
+To: <rob.herring@calxeda.com>, <pawel.moll@arm.com>, <mark.rutland@arm.com>,
+ <swarren@wwwdotorg.org>, <ian.campbell@citrix.com>, <vinod.koul@intel.com>,
+ <djbw@fb.com>
+Subject: [PATCH v9 0/3] DMA: Freescale: Add support for 8-channel DMA engine
+Date: Fri, 30 Aug 2013 19:26:17 +0800
+Message-ID: <1377861980-7027-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, Gleb Natapov <gleb@redhat.com>
-Subject: Re: [PATCH v9 00/13] KVM: PPC: IOMMU in-kernel handling of VFIO
-References: <1377679070-3515-1-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1377679070-3515-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain
+Cc: Hongbo Zhang <hongbo.zhang@freescale.com>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,100 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/28/2013 06:37 PM, Alexey Kardashevskiy wrote:
-> This accelerates VFIO DMA operations on POWER by moving them
-> into kernel.
-> 
-> This depends on VFIO external API patch which is on its way to upstream.
-> 
-> Changes:
-> v9:
-> * replaced the "link logical bus number to IOMMU group" ioctl to KVM
-> with a KVM device doing the same thing, i.e. the actual changes are in
-> these 3 patches:
->   KVM: PPC: reserve a capability and KVM device type for realmode VFIO
->   KVM: PPC: remove warning from kvmppc_core_destroy_vm
->   KVM: PPC: Add support for IOMMU in-kernel handling
-> 
-> * moved some VFIO external API bits to a separate patch to reduce the size
-> of the "KVM: PPC: Add support for IOMMU in-kernel handling" patch
-> 
-> * fixed code style problems reported by checkpatch.pl.
-> 
-> v8:
-> * fixed comments about capabilities numbers
-> 
-> v7:
-> * rebased on v3.11-rc3.
-> * VFIO external user API will go through VFIO tree so it is
-> excluded from this series.
-> * As nobody ever reacted on "hashtable: add hash_for_each_possible_rcu_notrace()",
-> Ben suggested to push it via his tree so I included it to the series.
-> * realmode_(get|put)_page is reworked.
-> 
-> More details in the individual patch comments.
-> 
-> Alexey Kardashevskiy (13):
->   KVM: PPC: POWERNV: move iommu_add_device earlier
->   hashtable: add hash_for_each_possible_rcu_notrace()
->   KVM: PPC: reserve a capability number for multitce support
->   KVM: PPC: reserve a capability and KVM device type for realmode VFIO
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
+Hi DMA and DT maintainers, please have a look at these V9 patches.
 
-Hi Gleb!
+Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
+adds support this DMA engine.
 
-Could you please review and pick (if they are ok) the two "capability"
-patches from above?
+V8->V9 changes:
+- add "Acked-by: Mark Rutland <mark.rutland@arm.com>" into patch [1/3]
+- update reg entry <0x100300 0x4 0x100600 0x4> to two seperate ones
+  <0x100300 0x4>, <0x100600 0x4> in patch [2/3]
+- and also use "QorIQ Elo3 DMA" to mention previous "QorIQ DMA" in [2/3]
 
-It would be cool if you also looked at "KVM: PPC: Add support for IOMMU
-in-kernel handling", the part about KVM device for SPAPR TCE IOMMU table.
+V7->V8 changes:
+- change the word "mapping" to "specifier" for reg and interrupts description
 
-Thanks!
+V6->V7 changes:
+- only remove unnecessary "CHIP-dma" explanations in [1/3]
 
+V5->V6 changes:
+- minor updates of descriptions in binding document and Kconfig
+- remove [4/4], that should be another patch in future
 
+V4->V5 changes:
+- update description in the dt binding document, to make it more resonable
+- add new patch [4/4] to eliminate a compiling warning which already exists
+  for a long time
 
->   powerpc: Prepare to support kernel handling of IOMMU map/unmap
->   powerpc: add real mode support for dma operations on powernv
->   KVM: PPC: enable IOMMU_API for KVM_BOOK3S_64 permanently
->   KVM: PPC: Add support for multiple-TCE hcalls
->   powerpc/iommu: rework to support realmode
->   KVM: PPC: remove warning from kvmppc_core_destroy_vm
->   KVM: PPC: add trampolines for VFIO external API
->   KVM: PPC: Add support for IOMMU in-kernel handling
->   KVM: PPC: Add hugepage support for IOMMU in-kernel handling
-> 
->  Documentation/virtual/kvm/api.txt                  |  26 +
->  .../virtual/kvm/devices/spapr_tce_iommu.txt        |  37 ++
->  arch/powerpc/include/asm/iommu.h                   |  18 +-
->  arch/powerpc/include/asm/kvm_host.h                |  38 ++
->  arch/powerpc/include/asm/kvm_ppc.h                 |  16 +-
->  arch/powerpc/include/asm/machdep.h                 |  12 +
->  arch/powerpc/include/asm/pgtable-ppc64.h           |   2 +
->  arch/powerpc/include/uapi/asm/kvm.h                |   8 +
->  arch/powerpc/kernel/iommu.c                        | 243 +++++----
->  arch/powerpc/kvm/Kconfig                           |   1 +
->  arch/powerpc/kvm/book3s_64_vio.c                   | 597 ++++++++++++++++++++-
->  arch/powerpc/kvm/book3s_64_vio_hv.c                | 408 +++++++++++++-
->  arch/powerpc/kvm/book3s_hv.c                       |  42 +-
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S            |   8 +-
->  arch/powerpc/kvm/book3s_pr_papr.c                  |  35 ++
->  arch/powerpc/kvm/powerpc.c                         |   4 +
->  arch/powerpc/mm/init_64.c                          |  50 +-
->  arch/powerpc/platforms/powernv/pci-ioda.c          |  57 +-
->  arch/powerpc/platforms/powernv/pci-p5ioc2.c        |   2 +-
->  arch/powerpc/platforms/powernv/pci.c               |  75 ++-
->  arch/powerpc/platforms/powernv/pci.h               |   3 +-
->  arch/powerpc/platforms/pseries/iommu.c             |   8 +-
->  include/linux/hashtable.h                          |  15 +
->  include/linux/kvm_host.h                           |   1 +
->  include/linux/mm.h                                 |  14 +
->  include/linux/page-flags.h                         |   4 +-
->  include/uapi/linux/kvm.h                           |   3 +
->  virt/kvm/kvm_main.c                                |   5 +
->  28 files changed, 1564 insertions(+), 168 deletions(-)
->  create mode 100644 Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
-> 
+V3->V4 changes:
+- introduce new patch [1/3] to revise the legacy dma binding document
+- and then add new paragraph to describe new dt node binding in [2/3]
+- rebase to latest kernel v3.11-rc1
 
+V2->V3 changes:
+- edit Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+- edit text string in Kconfig and the driver files, using "elo series" to
+  mention all the current "elo*"
+
+V1->V2 changes:
+- removed the codes handling the register dgsr1, since it isn't used currently
+- renamed the DMA DT compatible to "fsl,elo3-dma"
+- renamed the new dts files to "elo3-dma-<n>.dtsi"
+
+Hongbo Zhang (3):
+  DMA: Freescale: revise device tree binding document
+  DMA: Freescale: Add new 8-channel DMA engine device tree nodes
+  DMA: Freescale: update driver to support 8-channel DMA engine
+
+ .../devicetree/bindings/powerpc/fsl/dma.txt        |  129 ++++++++++++++------
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
+ arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   82 +++++++++++++
+ arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   82 +++++++++++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
+ drivers/dma/Kconfig                                |    9 +-
+ drivers/dma/fsldma.c                               |    9 +-
+ drivers/dma/fsldma.h                               |    2 +-
+ 8 files changed, 274 insertions(+), 47 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
 
 -- 
-Alexey
+1.7.9.5
