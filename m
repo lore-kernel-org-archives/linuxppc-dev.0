@@ -1,20 +1,23 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 853022C0099
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2013 08:01:41 +1000 (EST)
-Date: Fri, 30 Aug 2013 23:01:33 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <b42378@freescale.com>
-Message-ID: <20130830220133.GB18608@sirena.org.uk>
-References: <7c26687b556e1b4fc33ea5771de7b64e45a02d38.1377855239.git.b42378@freescale.com>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id 7ADA42C00C5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2013 10:13:42 +1000 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Toshi Kani <toshi.kani@hp.com>, hpa@linux.intel.com
+Subject: Re: [PATCH v2 1/4] hotplug,
+ x86: Fix online state in cpu0 debug interface
+Date: Sat, 31 Aug 2013 02:24:22 +0200
+Message-ID: <2774711.qY7OXM5Wgn@vostro.rjw.lan>
+In-Reply-To: <1377822129-4143-2-git-send-email-toshi.kani@hp.com>
+References: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
+ <1377822129-4143-2-git-send-email-toshi.kani@hp.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="uZ3hkaAS1mZxFaxD"
-In-Reply-To: <7c26687b556e1b4fc33ea5771de7b64e45a02d38.1377855239.git.b42378@freescale.com>
-Subject: Re: [PATCH 1/2] ASoC: fsl: Add wrapping for dev_dbg() in fsl_spdif.c
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, timur@tabi.org
+Content-Type: text/plain; charset="utf-8"
+Cc: fenghua.yu@intel.com, gregkh@linuxfoundation.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, mingo@redhat.com,
+ srivatsa.bhat@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com, tglx@linutronix.de,
+ bp@suse.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Peter,
 
---uZ3hkaAS1mZxFaxD
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Any objections here?
 
-On Fri, Aug 30, 2013 at 05:38:08PM +0800, Nicolin Chen wrote:
-> Add wrapping '\n' for dev_dbg() in fsl_spdif.c
-
-Applied both, thanks.
-
---uZ3hkaAS1mZxFaxD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.21 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSIRY6AAoJELSic+t+oim9cYMP/0NaYZIyebC4kqYozti3BkOq
-Bx/mPLgZmmvjbFb0a6CQ1FNQfaFVt+xz+ubHmA508ebcHOoBNu7DMmK/gU6qKJcU
-LUMMpY953bS4lhfpYlonIFVukBkjyyC+srZPwsZG6/lw1s1r5w//Pp0Un6d6h5fa
-kIfh9NdiG5xEk56gy5D4vIjIF8C1AlEq0mjyaBI/gkqp3pMirLWio0QsdDQdPFu0
-VtGrOY9N4Ii40Y39zV0DNiVi+PQI5QGEn2ClicNHT670DZwwdYRsQUkuzR1y9eQj
-KUIMfWBMNF/fDY6QN5jetqmCZMcGQZOexUNjx0v62aSvcCm4EjPL5ixEwKI0EBjw
-UH/ExUjnhQsNRHCYmWmepbk8RFUdGjFVVVd4aGxqAhw2N7mpAIyAwAgpU0hcZUn0
-X2Q7O2e0RuIDp7BnN6fYBzHWvwnBRnuJpeqlaWvs4ZAwOm24URiCgljgJr1g7CIK
-9CO5eMvy+POKtKpxX5ociwWyjdTvdD8eresWsHvSEW13deMX+ELDC+flYNO61IO8
-uY2bQdN/QRvXKfoGNiLarx85EMlhQpprT18vgWYJ41gcOQT56Hfh/28/bIeOn3mk
-PqDARa0Rk/zbP051sg4WrNgTx/+5+1iqYN9ThMmTSLRSUQM7ijZ94pUkYWGjbQGK
-c8exp8heG1OojqNx/iJO
-=CXoi
------END PGP SIGNATURE-----
-
---uZ3hkaAS1mZxFaxD--
+On Thursday, August 29, 2013 06:22:06 PM Toshi Kani wrote:
+> _debug_hotplug_cpu() is a debug interface that puts cpu0 offline during
+> boot-up when CONFIG_DEBUG_HOTPLUG_CPU0 is set.  After cpu0 is put offline
+> in this interface, however, /sys/devices/system/cpu/cpu0/online still
+> shows 1 (online).
+> 
+> This patch fixes _debug_hotplug_cpu() to update dev->offline when CPU
+> online/offline operation succeeded.
+> 
+> Signed-off-by: Toshi Kani <toshi.kani@hp.com>
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  arch/x86/kernel/topology.c |    7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
+> index 6e60b5f..5823bbd 100644
+> --- a/arch/x86/kernel/topology.c
+> +++ b/arch/x86/kernel/topology.c
+> @@ -72,16 +72,19 @@ int __ref _debug_hotplug_cpu(int cpu, int action)
+>  		ret = cpu_down(cpu);
+>  		if (!ret) {
+>  			pr_info("CPU %u is now offline\n", cpu);
+> +			dev->offline = true;
+>  			kobject_uevent(&dev->kobj, KOBJ_OFFLINE);
+>  		} else
+>  			pr_debug("Can't offline CPU%d.\n", cpu);
+>  		break;
+>  	case 1:
+>  		ret = cpu_up(cpu);
+> -		if (!ret)
+> +		if (!ret) {
+> +			dev->offline = false;
+>  			kobject_uevent(&dev->kobj, KOBJ_ONLINE);
+> -		else
+> +		} else {
+>  			pr_debug("Can't online CPU%d.\n", cpu);
+> +		}
+>  		break;
+>  	default:
+>  		ret = -EINVAL;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
