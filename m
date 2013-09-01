@@ -1,21 +1,22 @@
-Return-Path: <ben@decadent.org.uk>
-Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
- [88.96.1.126])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A27032C0097
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2013 02:24:30 +1000 (EST)
-Message-ID: <1378052656.25743.33.camel@deadeye.wl.decadent.org.uk>
-Subject: [PATCH] hvc_vio: Do not override preferred console set by kernel
- parameter
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Jiri Slaby <jslaby@suse.cz>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>
-Date: Sun, 01 Sep 2013 17:24:16 +0100
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-1UdErQ1kOAKUZPlm0VLt"
+ by ozlabs.org (Postfix) with ESMTPS id 17FC12C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2013 09:56:52 +1000 (EST)
+Message-ID: <1378079740.3978.13.camel@pasglop>
+Subject: Re: [PATCH] hvc_vio: Do not override preferred console set by
+ kernel parameter
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ben Hutchings <ben@decadent.org.uk>
+Date: Mon, 02 Sep 2013 09:55:40 +1000
+In-Reply-To: <1378052656.25743.33.camel@deadeye.wl.decadent.org.uk>
+References: <1378052656.25743.33.camel@deadeye.wl.decadent.org.uk>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Bastian Blank <waldi@debian.org>, linuxppc-dev@lists.ozlabs.org,
+Cc: Bastian Blank <waldi@debian.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org,
  Debian kernel maintainers <debian-kernel@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,78 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, 2013-09-01 at 17:24 +0100, Ben Hutchings wrote:
+> The original version of this was done by Bastian Blank, who wrote:
+> 
+> > The problem is the following:
+> > - Architecture specific code sets preferred console to something bogus.
+> > - Command line handling tries to set preferred console but is overruled
+> >   by the old setting.
+> > 
+> > The udbg0 console is a boot console and independant.
+> 
+> References: http://bugs.debian.org/492703
+> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+> ---
+> We've been carrying this in Debian for 5 years now, so it's about time
+> it got reviewed.
+> 
+> I'm not convinced strstr() is the right way to check the command line
+> (what if there's also a 'netconsole='?).
 
---=-1UdErQ1kOAKUZPlm0VLt
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Also I think the problem should be solved elsewhere :-)
 
-The original version of this was done by Bastian Blank, who wrote:
+In the end, what that code is trying to do (as are all the other similar
+instances) is to set "this is a good default in case nothing is
+specified *or* what is specified doesn't actually exist".
 
-> The problem is the following:
-> - Architecture specific code sets preferred console to something bogus.
-> - Command line handling tries to set preferred console but is overruled
->   by the old setting.
->=20
-> The udbg0 console is a boot console and independant.
+Of course "doesn't exist" is tricky since the console could be provided
+by a module loaded god knows when ... but in that case, maybe it does
+make sense to stick to one of the known good defaults. After all, init
+will fail without a tty ...
 
-References: http://bugs.debian.org/492703
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
-We've been carrying this in Debian for 5 years now, so it's about time
-it got reviewed.
+So I'm thinking we should in kernel/printk.c keep track of all those
+"arch defaults" when console= is specified as "latent" consoles, and
+right before starting init, if the specified one didn't work out (we
+have no console with an associated tty), then go through those latent
+ones and pick one that works.
 
-I'm not convinced strstr() is the right way to check the command line
-(what if there's also a 'netconsole=3D'?).
-
+Cheers,
 Ben.
-
---- a/drivers/tty/hvc/hvc_vio.c
-+++ b/drivers/tty/hvc/hvc_vio.c
-@@ -48,6 +48,7 @@
- #include <asm/prom.h>
- #include <asm/hvsi.h>
- #include <asm/udbg.h>
-+#include <asm/machdep.h>
-=20
- #include "hvc_console.h"
-=20
-@@ -440,7 +441,9 @@
- 	if (hvterm_priv0.proto =3D=3D HV_PROTOCOL_HVSI)
- 		goto out;
- #endif
--	add_preferred_console("hvc", 0, NULL);
-+	/* Check whether the user has requested a different console. */
-+	if (!strstr(cmd_line, "console=3D"))
-+		add_preferred_console("hvc", 0, NULL);
- 	hvc_instantiate(0, 0, ops);
- out:
- 	of_node_put(stdout_node);
-
---=20
-Ben Hutchings
-The most exhausting thing in life is being insincere. - Anne Morrow Lindber=
-g
-
---=-1UdErQ1kOAKUZPlm0VLt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-
-iQIVAwUAUiNqMOe/yOyVhhEJAQpESxAA1OBj4Bx8PJUJ83zLX4laZb0n+fuvxviO
-dsBZBX6K+s2YDUeaarzi/9u+f8MdpwOImWm+Rg/jz+U0FFqjUPupuTyjyxaqsCTd
-jb0XlrLAKJGrLGGNLw023MIV34ZUXrvkpqo8Es8LLdXBOEyfc+76X6DYsWMeZZjn
-R0wWwvUXICqj+0KsEu66qk/yBOksETPcm2wP7SB/jMhcNN6UbaqL0Z3G3wof48f5
-aKFpdaGPTy1xj7QcPCd+S22fTRE6JHAj9L9/LXiSzso85pfZ+NM1DX5PbJhbcBz5
-2+vC2Oxt66xUNq+/y73L9wIfEinO8OAfq8EGQSSaRya9zJvLr3QH8Ne7IpToAEVD
-NsEaqUv3npONQkf4eFMlE1oIUZ7wo46ESrLdH6PZYijYFSIw+rPQEydwoLzzTPyy
-wpqD4xhmVJDdpYUzLf+7SRMpfmwfZa+CvIan+ER3fme9N+2X1P0qsJqg8SijPouY
-gqEvFVXcSRHa8gw+ZTUpodlqvBNeEP5FCz1yCefcGOCn//4zmjZy5sRe/vi9YMiQ
-9eIYi+AmyTXggeMgDe9Cep6sIq8Jgu3SoOj9g3We1DQru08js++uR1YOpYMzhuK7
-y0h1Ql+WrgPfx++7p+mK3BROYpo4UauXzmOhe4jojFLCwn13FXS69c9MDxOzBfcZ
-/wdZMhYfSKw=
-=ftzS
------END PGP SIGNATURE-----
-
---=-1UdErQ1kOAKUZPlm0VLt--
