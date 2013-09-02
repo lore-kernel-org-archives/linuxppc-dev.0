@@ -1,20 +1,20 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3BE372C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2013 15:46:34 +1000 (EST)
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 3/3] powerpc: use jump label for mmu_has_feature
-Date: Mon, 2 Sep 2013 13:45:26 +0800
-Message-ID: <1378100726-32545-4-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1378100726-32545-1-git-send-email-haokexin@gmail.com>
-References: <1378100726-32545-1-git-send-email-haokexin@gmail.com>
+Return-Path: <B36685@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 645162C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2013 16:29:21 +1000 (EST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-usb@vger.kernel.org>
+Subject: [PATCH] fsl/ehci: fix failure of checking PHY_CLK_VALID during
+ reinitialization
+Date: Mon, 2 Sep 2013 13:25:52 +0800
+Message-ID: <1378099552-2713-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,86 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The mmu features are fixed once the probe of mmu features are done.
-And the function mmu_has_feature() does be used in some hot path.
-The checking of the mmu features for each time of invoking of
-mmu_has_feature() seems suboptimal. This tries to reduce this
-overhead of this check by using jump label. But we can only use
-the jump label for this check only after the execution of
-jump_label_init(), so we introduce another jump label to
-still do the feature check by default before all the mmu
-feature jump labels are initialized.
+In case of usb phy reinitialization:
+e.g. insmod usb-module(usb works well) -> rmmod usb-module -> insmod usb-module
+It found the PHY_CLK_VALID bit didn't work if it's not with the power-on reset.
+So we just check PHY_CLK_VALID bit during the stage with POR, this can be met
+by the tricky of checking FSL_SOC_USB_PRICTRL register.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 ---
-v2: Include the jump_label.h instead of jump_label_base.h.
+based on master branch of upstream, from sdk1.4
 
- arch/powerpc/include/asm/mmu.h | 19 +++++++++++++++++++
- arch/powerpc/kernel/cputable.c | 20 ++++++++++++++++++++
- 2 files changed, 39 insertions(+)
+ drivers/usb/host/ehci-fsl.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 691fd8a..b7f049e 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -121,10 +121,29 @@
- DECLARE_PER_CPU(int, next_tlbcam_idx);
- #endif
- 
-+#ifdef CONFIG_JUMP_LABEL
-+#include <linux/jump_label.h>
-+
-+#define MAX_MMU_FEATURES	32
-+
-+extern struct static_key mmu_feat_keys[MAX_MMU_FEATURES];
-+extern struct static_key mmu_feat_keys_enabled;
-+
-+static inline int mmu_has_feature(unsigned long feature)
-+{
-+	if (static_key_false(&mmu_feat_keys_enabled)) {
-+		int i = __builtin_ctzl(feature);
-+
-+		return static_key_false(&mmu_feat_keys[i]);
-+	} else
-+		return !!(cur_cpu_spec->mmu_features & feature);
-+}
-+#else
- static inline int mmu_has_feature(unsigned long feature)
- {
- 	return (cur_cpu_spec->mmu_features & feature);
- }
-+#endif
- 
- static inline void mmu_clear_feature(unsigned long feature)
- {
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 50bd216..785370b 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -2280,4 +2280,24 @@ static __init int cpu_feat_keys_init(void)
- 	return 0;
- }
- early_initcall(cpu_feat_keys_init);
-+
-+struct static_key mmu_feat_keys[MAX_MMU_FEATURES];
-+struct static_key mmu_feat_keys_enabled;
-+
-+static __init int mmu_feat_keys_init(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < MAX_MMU_FEATURES; i++) {
-+		unsigned long f = 1 << i;
-+
-+		if (cur_cpu_spec->mmu_features & f)
-+			static_key_slow_inc(&mmu_feat_keys[i]);
-+	}
-+
-+	static_key_slow_inc(&mmu_feat_keys_enabled);
-+
-+	return 0;
-+}
-+early_initcall(mmu_feat_keys_init);
- #endif
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+index bd831ec..3156e12 100644
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -270,8 +270,9 @@ static int ehci_fsl_setup_phy(struct usb_hcd *hcd,
+ 	if (pdata->have_sysif_regs && pdata->controller_ver &&
+ 	    (phy_mode == FSL_USB2_PHY_ULPI)) {
+ 		/* check PHY_CLK_VALID to get phy clk valid */
+-		if (!spin_event_timeout(in_be32(non_ehci + FSL_SOC_USB_CTRL) &
+-				PHY_CLK_VALID, FSL_USB_PHY_CLK_TIMEOUT, 0)) {
++		if (!(spin_event_timeout(in_be32(non_ehci + FSL_SOC_USB_CTRL) &
++				PHY_CLK_VALID, FSL_USB_PHY_CLK_TIMEOUT, 0) ||
++				in_be32(non_ehci + FSL_SOC_USB_PRICTRL))) {
+ 			printk(KERN_WARNING "fsl-ehci: USB PHY clock invalid\n");
+ 			return -EINVAL;
+ 		}
 -- 
-1.8.3.1
+1.7.0.4
