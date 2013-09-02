@@ -1,23 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <haokexin@gmail.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4D5602C0079
- for <linuxppc-dev@ozlabs.org>; Mon,  2 Sep 2013 15:06:26 +1000 (EST)
-Message-ID: <1378098376.3978.17.camel@pasglop>
-Subject: Re: [PATCH] powerpc: Work around gcc miscompilation of __pa() on
- 64-bit
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Modra <amodra@gmail.com>
-Date: Mon, 02 Sep 2013 15:06:16 +1000
-In-Reply-To: <20130902023110.GV3430@bubble.grove.modra.org>
-References: <20130827060749.GA16462@drongo>
- <20130827071235.GQ3430@bubble.grove.modra.org>
- <1378079952.3978.15.camel@pasglop>
- <20130902023110.GV3430@bubble.grove.modra.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 614652C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2013 15:46:23 +1000 (EST)
+From: Kevin Hao <haokexin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v2 0/3] powerpc: use jump label for cpu/mmu_has_feature
+Date: Mon, 2 Sep 2013 13:45:23 +0800
+Message-ID: <1378100726-32545-1-git-send-email-haokexin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-09-02 at 12:01 +0930, Alan Modra wrote:
-> > No, if you don't have a reloc that can represent this, then the proper
-> > fix is to use the existing relocs to load the original symbol address
-> > into a register, then *generate* the appropriate 64-bit addition on top
-> > of it.
-> 
-> I already have a gcc fix to do exactly that.  My "proper fix" comment
-> was more to do with the general case.  For example, when linking a
-> huge object that overflows _HA relocs right now we silently generate
-> bad code.
+v2:
+  - Rebase on git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
+    since these patches have a dependence on patch 851cf6e7 (jump_label:
+    Split jumplabel ratelimit)
 
-Ah that is nice indeed :-) In that case I assume we can't have the offset
-itself be part of the TOC :-) Chicken or egg ?
+  - Drop the first two patches in v1 since they are not needed due to
+    the patch 851cf6e7.
 
-Not sure what's the right fix here is, we don't want to always reserve
-enough instructions "space" to do a full 64-bit offset load...
+v1:
+Inspired by Benjamin Herrenschmidt, this patch series try to reduce the
+cpu/mmu feature checking overhead by using jump label. The following is
+the difference of the run path of cpu_has_feature between before and after
+applying these patches:
 
-Ben.
+   before                             after
+  addis   r10,r2,1                   b xxx
+  addi    r9,r10,-2280               b xxx (This will also be omitted if the
+  ld	  r9,0(r9)                          feature is not set)
+  ld	  r9,16(r9)
+  rldicl. r8,r9,55,63
+  beq     c000000000037c94
+
+This patch series passed the build test for almost all the defconfig of ppc.
+There does have some broken for some configs. But they are not related to this
+change. This also passed allyesconfig for x86. Boot test on p2020rdb and
+p5020ds boards.
+
+Kevin Hao (3):
+  powerpc: move the cpu_has_feature to a separate file
+  powerpc: use the jump label for cpu_has_feature
+  powerpc: use jump label for mmu_has_feature
+
+ arch/powerpc/include/asm/cacheflush.h   |  1 +
+ arch/powerpc/include/asm/cpufeatures.h  | 41 +++++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/cputable.h     |  8 ------
+ arch/powerpc/include/asm/cputime.h      |  1 +
+ arch/powerpc/include/asm/dbell.h        |  1 +
+ arch/powerpc/include/asm/dcr-native.h   |  1 +
+ arch/powerpc/include/asm/mman.h         |  1 +
+ arch/powerpc/include/asm/mmu.h          | 19 +++++++++++++++
+ arch/powerpc/include/asm/time.h         |  1 +
+ arch/powerpc/kernel/align.c             |  1 +
+ arch/powerpc/kernel/cputable.c          | 43 +++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/irq.c               |  1 +
+ arch/powerpc/kernel/process.c           |  1 +
+ arch/powerpc/kernel/setup-common.c      |  1 +
+ arch/powerpc/kernel/setup_32.c          |  1 +
+ arch/powerpc/kernel/smp.c               |  1 +
+ arch/powerpc/oprofile/op_model_rs64.c   |  1 +
+ arch/powerpc/platforms/cell/pervasive.c |  1 +
+ arch/powerpc/xmon/ppc-dis.c             |  1 +
+ 19 files changed, 118 insertions(+), 8 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/cpufeatures.h
+
+-- 
+1.8.3.1
