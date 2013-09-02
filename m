@@ -1,28 +1,40 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
- [209.85.220.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AB2352C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2013 13:14:38 +1000 (EST)
-Received: by mail-pa0-f51.google.com with SMTP id lf1so4624774pab.38
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Sep 2013 20:14:36 -0700 (PDT)
-Message-ID: <52240295.7050608@ozlabs.ru>
-Date: Mon, 02 Sep 2013 13:14:29 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 317F32C00A2
+ for <linuxppc-dev@ozlabs.org>; Mon,  2 Sep 2013 13:38:34 +1000 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 3 Sep 2013 00:32:29 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 4F4492CE8051
+ for <linuxppc-dev@ozlabs.org>; Mon,  2 Sep 2013 13:38:28 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r823cE0N6095258
+ for <linuxppc-dev@ozlabs.org>; Mon, 2 Sep 2013 13:38:17 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r823cOlK029754
+ for <linuxppc-dev@ozlabs.org>; Mon, 2 Sep 2013 13:38:25 +1000
+Message-ID: <52240800.6060002@linux.vnet.ibm.com>
+Date: Mon, 02 Sep 2013 09:07:36 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Gleb Natapov <gleb@redhat.com>
-Subject: Re: [PATCH v9 12/13] KVM: PPC: Add support for IOMMU in-kernel
- handling
-References: <1377679070-3515-1-git-send-email-aik@ozlabs.ru>
- <1377679841-3822-1-git-send-email-aik@ozlabs.ru>
- <20130901120609.GJ22899@redhat.com>
-In-Reply-To: <20130901120609.GJ22899@redhat.com>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+To: Stephane Eranian <eranian@google.com>
+Subject: Re: [PATCH V2 0/6] perf: New conditional branch filter
+References: <1377836690-32710-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <CABPqkBS2AD873tHnyCHeC7uwsJdP1V6=8WGUTHG+R0z2pphHjQ@mail.gmail.com>
+In-Reply-To: <CABPqkBS2AD873tHnyCHeC7uwsJdP1V6=8WGUTHG+R0z2pphHjQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, ellerman@au1.ibm.com,
+ michael.neuling@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,185 +44,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/01/2013 10:06 PM, Gleb Natapov wrote:
-> On Wed, Aug 28, 2013 at 06:50:41PM +1000, Alexey Kardashevskiy wrote:
->> This allows the host kernel to handle H_PUT_TCE, H_PUT_TCE_INDIRECT
->> and H_STUFF_TCE requests targeted an IOMMU TCE table without passing
->> them to user space which saves time on switching to user space and back.
->>
->> Both real and virtual modes are supported. The kernel tries to
->> handle a TCE request in the real mode, if fails it passes the request
->> to the virtual mode to complete the operation. If it a virtual mode
->> handler fails, the request is passed to user space.
->>
->> The first user of this is VFIO on POWER. Trampolines to the VFIO external
->> user API functions are required for this patch.
->>
->> This adds a "SPAPR TCE IOMMU" KVM device to associate a logical bus
->> number (LIOBN) with an VFIO IOMMU group fd and enable in-kernel handling
->> of map/unmap requests. The device supports a single attribute which is
->> a struct with LIOBN and IOMMU fd. When the attribute is set, the device
->> establishes the connection between KVM and VFIO.
->>
->> Tests show that this patch increases transmission speed from 220MB/s
->> to 750..1020MB/s on 10Gb network (Chelsea CXGB3 10Gb ethernet card).
->>
->> Signed-off-by: Paul Mackerras <paulus@samba.org>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>
->> ---
->>
->> Changes:
->> v9:
->> * KVM_CAP_SPAPR_TCE_IOMMU ioctl to KVM replaced with "SPAPR TCE IOMMU"
->> KVM device
->> * release_spapr_tce_table() is not shared between different TCE types
->> * reduced the patch size by moving VFIO external API
->> trampolines to separate patche
->> * moved documentation from Documentation/virtual/kvm/api.txt to
->> Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
->>
->> v8:
->> * fixed warnings from check_patch.pl
->>
->> 2013/07/11:
->> * removed multiple #ifdef IOMMU_API as IOMMU_API is always enabled
->> for KVM_BOOK3S_64
->> * kvmppc_gpa_to_hva_and_get also returns host phys address. Not much sense
->> for this here but the next patch for hugepages support will use it more.
->>
->> 2013/07/06:
->> * added realmode arch_spin_lock to protect TCE table from races
->> in real and virtual modes
->> * POWERPC IOMMU API is changed to support real mode
->> * iommu_take_ownership and iommu_release_ownership are protected by
->> iommu_table's locks
->> * VFIO external user API use rewritten
->> * multiple small fixes
->>
->> 2013/06/27:
->> * tce_list page is referenced now in order to protect it from accident
->> invalidation during H_PUT_TCE_INDIRECT execution
->> * added use of the external user VFIO API
->>
->> 2013/06/05:
->> * changed capability number
->> * changed ioctl number
->> * update the doc article number
->>
->> 2013/05/20:
->> * removed get_user() from real mode handlers
->> * kvm_vcpu_arch::tce_tmp usage extended. Now real mode handler puts there
->> translated TCEs, tries realmode_get_page() on those and if it fails, it
->> passes control over the virtual mode handler which tries to finish
->> the request handling
->> * kvmppc_lookup_pte() now does realmode_get_page() protected by BUSY bit
->> on a page
->> * The only reason to pass the request to user mode now is when the user mode
->> did not register TCE table in the kernel, in all other cases the virtual mode
->> handler is expected to do the job
->> ---
->>  .../virtual/kvm/devices/spapr_tce_iommu.txt        |  37 +++
->>  arch/powerpc/include/asm/kvm_host.h                |   4 +
->>  arch/powerpc/kvm/book3s_64_vio.c                   | 310 ++++++++++++++++++++-
->>  arch/powerpc/kvm/book3s_64_vio_hv.c                | 122 ++++++++
->>  arch/powerpc/kvm/powerpc.c                         |   1 +
->>  include/linux/kvm_host.h                           |   1 +
->>  virt/kvm/kvm_main.c                                |   5 +
->>  7 files changed, 477 insertions(+), 3 deletions(-)
->>  create mode 100644 Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
->>
->> diff --git a/Documentation/virtual/kvm/devices/spapr_tce_iommu.txt b/Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
->> new file mode 100644
->> index 0000000..4bc8fc3
->> --- /dev/null
->> +++ b/Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
->> @@ -0,0 +1,37 @@
->> +SPAPR TCE IOMMU device
->> +
->> +Capability: KVM_CAP_SPAPR_TCE_IOMMU
->> +Architectures: powerpc
->> +
->> +Device type supported: KVM_DEV_TYPE_SPAPR_TCE_IOMMU
->> +
->> +Groups:
->> +  KVM_DEV_SPAPR_TCE_IOMMU_ATTR_LINKAGE
->> +  Attributes: single attribute with pair { LIOBN, IOMMU fd}
->> +
->> +This is completely made up device which provides API to link
->> +logical bus number (LIOBN) and IOMMU group. The user space has
->> +to create a new SPAPR TCE IOMMU device per a logical bus.
->> +
-> Why not have one device that can handle multimple links?
+On 08/30/2013 05:18 PM, Stephane Eranian wrote:
+> 2013/8/30 Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> >
+>> >         This patchset is the re-spin of the original branch stack sampling
+>> > patchset which introduced new PERF_SAMPLE_BRANCH_COND filter. This patchset
+>> > also enables SW based branch filtering support for PPC64 platforms which have
+>> > branch stack sampling support. With this new enablement, the branch filter support
+>> > for PPC64 platforms have been extended to include all these combinations discussed
+>> > below with a sample test application program.
+>> >
+>> >
+> I am trying to understand which HW has support for capturing the
+> branches: PPC7 or PPC8.
+> Then it seems you're saying that only PPC8 has the filtering support.
+> On PPC7 you use the
+> SW filter. Did I get this right?
+> 
+> I will look at the patch set.
+> 
 
+Hey Stephane,
 
-I can do that. If I make it so, it won't even look as a device at all, just
-some weird interface to KVM but ok. What bothers me is it is just a
-question what I will have to do next. Because I can easily predict a
-suggestion to move kvmppc_spapr_tce_table's (a links list) from
-kvm->arch.spapr_tce_tables to that device but I cannot do that for obvious
-compatibility reasons caused by the fact that the list is already used for
-emulated devices (for the starter - they need mmap()).
+POWER7 does not have BHRB support required to capture the branches. Right
+now its only POWER8 (which has BHRB) can capture branches in HW. It has some
+PMU level branch filters and rest we have implemented in SW. But these SW
+filters cannot be applied in POWER7 as it does not support branch stack 
+sampling because of lack of BHRB. I have mentioned PPC64 support in the
+sense that this SW filtering code could be used in existing or future generation
+powerpc processors which would have PMU support for branch stack sampling. My
+apologies if the description for the patchset was ambiguous.
 
-Or supporting all IOMMU links (and leaving emulated stuff as is) in on
-"device" is the last thing I have to do and then you'll ack the patch?
-
-
-
->> +LIOBN is a PCI bus identifier from PPC64-server (sPAPR) DMA hypercalls
->> +(H_PUT_TCE, H_PUT_TCE_INDIRECT, H_STUFF_TCE).
->> +IOMMU group is a minimal isolated device set which can be passed to
->> +the user space via VFIO.
->> +
->> +Right after creation the device is in uninitlized state and requires
->> +a KVM_DEV_SPAPR_TCE_IOMMU_ATTR_LINKAGE attribute to be set.
->> +The attribute contains liobn, IOMMU fd and flags:
->> +
->> +struct kvm_create_spapr_tce_iommu_linkage {
->> +	__u64 liobn;
->> +	__u32 fd;
->> +	__u32 flags;
->> +};
->> +
->> +The user space creates the SPAPR TCE IOMMU device, obtains
->> +an IOMMU fd via VFIO ABI and sets the attribute to the SPAPR TCE IOMMU
->> +device. At the moment of setting the attribute, the SPAPR TCE IOMMU
->> +device links LIOBN to IOMMU group and makes necessary steps
->> +to make sure that VFIO group will not disappear before KVM destroys.
->> +
->> +The kernel advertises this feature via KVM_CAP_SPAPR_TCE_IOMMU capability.
-> [skip]
-
-Yes, I read the other comment. So roughly speaking I'll replace the
-KVM_CAP_SPAPR_TCE_IOMMU check with the KVM_CAP_DEVICE_CTRL capability check
-+ try to KVM_CREATE_DEVICE with the KVM_CREATE_DEVICE_TEST flag set, and we
-are fine.
-
-
->> +
->> +static int kvmppc_spapr_tce_iommu_get_attr(struct kvm_device *dev,
->> +		struct kvm_device_attr *attr)
->> +{
->> +	struct kvmppc_spapr_tce_table *tt = dev->private;
->> +	void __user *argp = (void __user *) attr->addr;
->> +
->> +	switch (attr->group) {
->> +	case KVM_DEV_SPAPR_TCE_IOMMU_ATTR_LINKAGE:
->> +		if (!tt)
->> +			return -EFAULT;
-> Does not look like correct error code to return here. EINVAL may be?
-
-Yep, I'll fix this. Thanks.
-
-
->> +		if (copy_to_user(&tt->link, argp, sizeof(tt->link)))
->> +			return -EFAULT;
->> +		return 0;
->> +	}
->> +	return -ENXIO;
->> +}
->> +
-
-
--- 
-Alexey
+Regards
+Anshuman
