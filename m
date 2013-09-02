@@ -1,20 +1,26 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from fornost.hengli.com.au (ringil.hengli.com.au [178.18.16.133])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 576132C0084
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2013 20:35:56 +1000 (EST)
-Date: Mon, 2 Sep 2013 20:35:38 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Marcelo Cerri <mhcerri@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 00/10] Series of fixes for NX driver
-Message-ID: <20130902103538.GA815@gondor.apana.org.au>
-References: <1377787000-4966-1-git-send-email-mhcerri@linux.vnet.ibm.com>
+Return-Path: <B42677@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BF3D92C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2013 20:39:54 +1000 (EST)
+Received: from mail81-va3 (localhost [127.0.0.1])	by mail81-va3-R.bigfish.com
+ (Postfix) with ESMTP id 997CB8018A	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Sep 2013 10:39:49 +0000 (UTC)
+Received: from VA3EHSMHS015.bigfish.com (unknown [10.7.14.228])	by
+ mail81-va3.bigfish.com (Postfix) with ESMTP id D032260041	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2013 10:39:47 +0000 (UTC)
+From: Haijun Zhang <Haijun.Zhang@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] Powerpc/dts: Correct sdhci quirk for bsc9131
+Date: Mon, 2 Sep 2013 18:37:02 +0800
+Message-ID: <1378118222-17338-1-git-send-email-Haijun.Zhang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1377787000-4966-1-git-send-email-mhcerri@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-crypto@vger.kernel.org
+Content-Type: text/plain
+Cc: scottwood@freescale.com, Haijun Zhang <Haijun.Zhang@freescale.com>,
+ X.Xie@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 29, 2013 at 11:36:30AM -0300, Marcelo Cerri wrote:
-> This series of patches contains fixes in several algorithms implemented
-> by the NX driver. The patches can be separated in three different
-> categories:
->   
->  - Changes to split the data in several hyper calls to respect the
->    limits of data that the co-processador can handle. This affects
->    all AES modes.
->  - Fixes in how the driver handle zero length messages. This affects
->    XCBC and GCM.
->  - Fixes for SHA-2 when chunks bigger than the block size are provided.
-> 
-> v2:
->  - Fixed conflict.
+We use property "sdhci,auto-cmd12" instead of "fsl,sdhci-auto-cmd12"
+to distinguish if the sdhc host has quirk SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12.
 
-All applied.  Thanks!
+Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
+---
+ arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi b/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
+index 5180d9d..0c0efa9 100644
+--- a/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
+@@ -130,7 +130,7 @@ usb@22000 {
+ 
+ /include/ "pq3-esdhc-0.dtsi"
+ 	sdhc@2e000 {
+-		fsl,sdhci-auto-cmd12;
++		sdhci,auto-cmd12;
+ 		interrupts = <41 0x2 0 0>;
+ 	};
+ 
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.8.0
