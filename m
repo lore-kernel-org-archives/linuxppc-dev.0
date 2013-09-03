@@ -1,21 +1,40 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 455F12C0095
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2013 06:46:04 +1000 (EST)
-Message-ID: <1378154750.3978.43.camel@pasglop>
-Subject: Re: [PATCH] ppc: bpf_jit: support MOD operation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Vladimir Murzin <murzin.v@gmail.com>
-Date: Tue, 03 Sep 2013 06:45:50 +1000
-In-Reply-To: <20130902174842.GA1866@hp530>
-References: <1377643792-10327-1-git-send-email-murzin.v@gmail.com>
- <20130902174842.GA1866@hp530>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: paulus@samba.org, dborkman@redhat.com, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net, Matt Evans <matt@ozlabs.org>
+ (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 163EB2C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2013 13:15:52 +1000 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Tue, 3 Sep 2013 13:12:29 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id CF8652CE8055
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2013 13:15:46 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r833FZaw10813802
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Sep 2013 13:15:35 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r833Fk5S015355
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Sep 2013 13:15:46 +1000
+Date: Tue, 3 Sep 2013 11:15:44 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH] iommu: WARN_ON when removing a device with no
+ iommu_group associated
+Message-ID: <20130903031544.GA16232@weiyang.vnet.ibm.com>
+References: <1377222911-12144-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1377228807.25163.33.camel@ul30vt.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1377228807.25163.33.camel@ul30vt.home>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com, aik@ozlabs.ru,
+ linux-kernel@vger.kernel.org, iommu <iommu@lists.linux-foundation.org>,
+ paulus@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,62 +44,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-09-02 at 19:48 +0200, Vladimir Murzin wrote:
-> Ping
-> 
-> On Wed, Aug 28, 2013 at 02:49:52AM +0400, Vladimir Murzin wrote:
-> > commit b6069a9570 (filter: add MOD operation) added generic
-> > support for modulus operation in BPF.
-> >
-Sorry, nobody got a chance to review that yet. Unfortunately Matt
-doesn't work for us anymore and none of us has experience with the
-BPF code, so somebody (possibly me) will need to spend a bit of time
-figuring it out before verifying that is correct.
+Any more comments? Or this one is not proper?
 
-Do you have a test case/suite by any chance ?
+On Thu, Aug 22, 2013 at 09:33:27PM -0600, Alex Williamson wrote:
+>[+cc iommu]
+>
+>On Fri, 2013-08-23 at 09:55 +0800, Wei Yang wrote:
+>> When removing a device from the system, iommu_group driver will try to
+>> disconnect it from its group. While in some cases, one device may not
+>> associated with any iommu_group. For example, not enough DMA address space.
+>> 
+>> In the generic bus notification, it will check dev->iommu_group before calling
+>> iommu_group_remove_device(). While in some cases, developers may call
+>> iommu_group_remove_device() in a different code path and without check. For
+>> those devices with dev->iommu_group set to NULL, kernel will crash.
+>> 
+>> This patch gives a warning and return when trying to remove a device from an
+>> iommu_group with dev->iommu_group set to NULL. This helps to indicate some bad
+>> behavior and also guard the kernel.
+>> 
+>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>
+>Acked-by: Alex Williamson <alex.williamson@redhat.com>
+>
+>> ---
+>>  drivers/iommu/iommu.c |    3 +++
+>>  1 files changed, 3 insertions(+), 0 deletions(-)
+>> 
+>> diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
+>> index fbe9ca7..43396f0 100644
+>> --- a/drivers/iommu/iommu.c
+>> +++ b/drivers/iommu/iommu.c
+>> @@ -379,6 +379,9 @@ void iommu_group_remove_device(struct device *dev)
+>>  	struct iommu_group *group = dev->iommu_group;
+>>  	struct iommu_device *tmp_device, *device = NULL;
+>>  
+>> +	if (WARN_ON(!group))
+>> +		return;
+>> +
+>>  	/* Pre-notify listeners that a device is being removed. */
+>>  	blocking_notifier_call_chain(&group->notifier,
+>>  				     IOMMU_GROUP_NOTIFY_DEL_DEVICE, dev);
+>
+>
 
-Ben.
-
-> > This patch brings JIT support for PPC64
-> > 
-> > Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
-> > ---
-> >  arch/powerpc/net/bpf_jit_comp.c | 22 ++++++++++++++++++++++
-> >  1 file changed, 22 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> > index bf56e33..96f24dc 100644
-> > --- a/arch/powerpc/net/bpf_jit_comp.c
-> > +++ b/arch/powerpc/net/bpf_jit_comp.c
-> > @@ -193,6 +193,28 @@ static int bpf_jit_build_body(struct sk_filter *fp, u32 *image,
-> >  				PPC_MUL(r_A, r_A, r_scratch1);
-> >  			}
-> >  			break;
-> > +		case BPF_S_ALU_MOD_X: /* A %= X; */
-> > +			ctx->seen |= SEEN_XREG;
-> > +			PPC_CMPWI(r_X, 0);
-> > +			if (ctx->pc_ret0 != -1) {
-> > +				PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
-> > +			} else {
-> > +				PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
-> > +				PPC_LI(r_ret, 0);
-> > +				PPC_JMP(exit_addr);
-> > +			}
-> > +			PPC_DIVWU(r_scratch1, r_A, r_X);
-> > +			PPC_MUL(r_scratch1, r_X, r_scratch1);
-> > +			PPC_SUB(r_A, r_A, r_scratch1);
-> > +			break;
-> > +		case BPF_S_ALU_MOD_K: /* A %= K; */
-> > +#define r_scratch2 (r_scratch1 + 1)
-> > +			PPC_LI32(r_scratch2, K);
-> > +			PPC_DIVWU(r_scratch1, r_A, r_scratch2);
-> > +			PPC_MUL(r_scratch1, r_scratch2, r_scratch1);
-> > +			PPC_SUB(r_A, r_A, r_scratch1);
-> > +#undef r_scratch2
-> > +			break;
-> >  		case BPF_S_ALU_DIV_X: /* A /= X; */
-> >  			ctx->seen |= SEEN_XREG;
-> >  			PPC_CMPWI(r_X, 0);
-> > -- 
-> > 1.8.1.5
-> > 
+-- 
+Richard Yang
+Help you, Help me
