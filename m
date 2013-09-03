@@ -1,29 +1,24 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f173.google.com (mail-pd0-f173.google.com
- [209.85.192.173])
+Return-Path: <murzin.v@gmail.com>
+Received: from mail-la0-x233.google.com (mail-la0-x233.google.com
+ [IPv6:2a00:1450:4010:c03::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 927842C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2013 02:01:50 +1000 (EST)
-Received: by mail-pd0-f173.google.com with SMTP id p10so6175951pdj.32
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Sep 2013 09:01:42 -0700 (PDT)
-Message-ID: <522607D8.4070408@ozlabs.ru>
-Date: Wed, 04 Sep 2013 02:01:28 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by ozlabs.org (Postfix) with ESMTPS id 312392C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2013 05:59:08 +1000 (EST)
+Received: by mail-la0-f51.google.com with SMTP id es20so5143357lab.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Sep 2013 12:59:02 -0700 (PDT)
+Date: Tue, 3 Sep 2013 21:58:25 +0200
+From: Vladimir Murzin <murzin.v@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] ppc: bpf_jit: support MOD operation
+Message-ID: <20130903195819.GA1971@hp530>
+References: <1377643792-10327-1-git-send-email-murzin.v@gmail.com>
+ <20130902174842.GA1866@hp530> <1378154750.3978.43.camel@pasglop>
 MIME-Version: 1.0
-To: Gleb Natapov <gleb@redhat.com>
-Subject: Re: [PATCH v9 12/13] KVM: PPC: Add support for IOMMU in-kernel
- handling
-References: <1377679070-3515-1-git-send-email-aik@ozlabs.ru>
- <1377679841-3822-1-git-send-email-aik@ozlabs.ru>
- <20130901120609.GJ22899@redhat.com> <52240295.7050608@ozlabs.ru>
- <20130903105315.GY22899@redhat.com>
-In-Reply-To: <20130903105315.GY22899@redhat.com>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=koi8-r
+In-Reply-To: <1378154750.3978.43.camel@pasglop>
+Cc: paulus@samba.org, dborkman@redhat.com, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net, Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,194 +28,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/03/2013 08:53 PM, Gleb Natapov wrote:
-> On Mon, Sep 02, 2013 at 01:14:29PM +1000, Alexey Kardashevskiy wrote:
->> On 09/01/2013 10:06 PM, Gleb Natapov wrote:
->>> On Wed, Aug 28, 2013 at 06:50:41PM +1000, Alexey Kardashevskiy wrote:
->>>> This allows the host kernel to handle H_PUT_TCE, H_PUT_TCE_INDIRECT
->>>> and H_STUFF_TCE requests targeted an IOMMU TCE table without passing
->>>> them to user space which saves time on switching to user space and back.
->>>>
->>>> Both real and virtual modes are supported. The kernel tries to
->>>> handle a TCE request in the real mode, if fails it passes the request
->>>> to the virtual mode to complete the operation. If it a virtual mode
->>>> handler fails, the request is passed to user space.
->>>>
->>>> The first user of this is VFIO on POWER. Trampolines to the VFIO external
->>>> user API functions are required for this patch.
->>>>
->>>> This adds a "SPAPR TCE IOMMU" KVM device to associate a logical bus
->>>> number (LIOBN) with an VFIO IOMMU group fd and enable in-kernel handling
->>>> of map/unmap requests. The device supports a single attribute which is
->>>> a struct with LIOBN and IOMMU fd. When the attribute is set, the device
->>>> establishes the connection between KVM and VFIO.
->>>>
->>>> Tests show that this patch increases transmission speed from 220MB/s
->>>> to 750..1020MB/s on 10Gb network (Chelsea CXGB3 10Gb ethernet card).
->>>>
->>>> Signed-off-by: Paul Mackerras <paulus@samba.org>
->>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>>
->>>> ---
->>>>
->>>> Changes:
->>>> v9:
->>>> * KVM_CAP_SPAPR_TCE_IOMMU ioctl to KVM replaced with "SPAPR TCE IOMMU"
->>>> KVM device
->>>> * release_spapr_tce_table() is not shared between different TCE types
->>>> * reduced the patch size by moving VFIO external API
->>>> trampolines to separate patche
->>>> * moved documentation from Documentation/virtual/kvm/api.txt to
->>>> Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
->>>>
->>>> v8:
->>>> * fixed warnings from check_patch.pl
->>>>
->>>> 2013/07/11:
->>>> * removed multiple #ifdef IOMMU_API as IOMMU_API is always enabled
->>>> for KVM_BOOK3S_64
->>>> * kvmppc_gpa_to_hva_and_get also returns host phys address. Not much sense
->>>> for this here but the next patch for hugepages support will use it more.
->>>>
->>>> 2013/07/06:
->>>> * added realmode arch_spin_lock to protect TCE table from races
->>>> in real and virtual modes
->>>> * POWERPC IOMMU API is changed to support real mode
->>>> * iommu_take_ownership and iommu_release_ownership are protected by
->>>> iommu_table's locks
->>>> * VFIO external user API use rewritten
->>>> * multiple small fixes
->>>>
->>>> 2013/06/27:
->>>> * tce_list page is referenced now in order to protect it from accident
->>>> invalidation during H_PUT_TCE_INDIRECT execution
->>>> * added use of the external user VFIO API
->>>>
->>>> 2013/06/05:
->>>> * changed capability number
->>>> * changed ioctl number
->>>> * update the doc article number
->>>>
->>>> 2013/05/20:
->>>> * removed get_user() from real mode handlers
->>>> * kvm_vcpu_arch::tce_tmp usage extended. Now real mode handler puts there
->>>> translated TCEs, tries realmode_get_page() on those and if it fails, it
->>>> passes control over the virtual mode handler which tries to finish
->>>> the request handling
->>>> * kvmppc_lookup_pte() now does realmode_get_page() protected by BUSY bit
->>>> on a page
->>>> * The only reason to pass the request to user mode now is when the user mode
->>>> did not register TCE table in the kernel, in all other cases the virtual mode
->>>> handler is expected to do the job
->>>> ---
->>>>  .../virtual/kvm/devices/spapr_tce_iommu.txt        |  37 +++
->>>>  arch/powerpc/include/asm/kvm_host.h                |   4 +
->>>>  arch/powerpc/kvm/book3s_64_vio.c                   | 310 ++++++++++++++++++++-
->>>>  arch/powerpc/kvm/book3s_64_vio_hv.c                | 122 ++++++++
->>>>  arch/powerpc/kvm/powerpc.c                         |   1 +
->>>>  include/linux/kvm_host.h                           |   1 +
->>>>  virt/kvm/kvm_main.c                                |   5 +
->>>>  7 files changed, 477 insertions(+), 3 deletions(-)
->>>>  create mode 100644 Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
->>>>
->>>> diff --git a/Documentation/virtual/kvm/devices/spapr_tce_iommu.txt b/Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
->>>> new file mode 100644
->>>> index 0000000..4bc8fc3
->>>> --- /dev/null
->>>> +++ b/Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
->>>> @@ -0,0 +1,37 @@
->>>> +SPAPR TCE IOMMU device
->>>> +
->>>> +Capability: KVM_CAP_SPAPR_TCE_IOMMU
->>>> +Architectures: powerpc
->>>> +
->>>> +Device type supported: KVM_DEV_TYPE_SPAPR_TCE_IOMMU
->>>> +
->>>> +Groups:
->>>> +  KVM_DEV_SPAPR_TCE_IOMMU_ATTR_LINKAGE
->>>> +  Attributes: single attribute with pair { LIOBN, IOMMU fd}
->>>> +
->>>> +This is completely made up device which provides API to link
->>>> +logical bus number (LIOBN) and IOMMU group. The user space has
->>>> +to create a new SPAPR TCE IOMMU device per a logical bus.
->>>> +
->>> Why not have one device that can handle multimple links?
->>
->>
->> I can do that. If I make it so, it won't even look as a device at all, just
->> some weird interface to KVM but ok. What bothers me is it is just a
-> May be I do not understand usage pattern here. Why do you feel that device
-> that can handle multiple links is worse than device per link? How many logical
-> buses is there usually? How often they created/destroyed? I am not insisting
-> on the change, just trying to understand why you do not like it.
-
-
-Is it usually one PCI host bus adapter per IOMMU group which is usually
-one PCI card or 2-3 cards if it is a legacy PCI-X, and they are created
-when QEMU-KVM starts. Not many. And they live till KVM ends.
-
-My point is why would I want to put all links to one device? It all is just
-a matter of taste and nothing more. Or I am missing something but I do not
-see what. If it is all about making thing to be kosher/halal/orthodox, then
-I have more stuff to do, like reworking the emulated TCEs. But if is it for
-(I do not know, just guessing) performance or something like that - then
-I'll fix it, I just need to know what I am fixing.
-
-
-
->> question what I will have to do next. Because I can easily predict a
->> suggestion to move kvmppc_spapr_tce_table's (a links list) from
->> kvm->arch.spapr_tce_tables to that device but I cannot do that for obvious
->> compatibility reasons caused by the fact that the list is already used for
->> emulated devices (for the starter - they need mmap()).
->>
->> Or supporting all IOMMU links (and leaving emulated stuff as is) in on
->> "device" is the last thing I have to do and then you'll ack the patch?
->>
-> I am concerned more about API here. Internal implementation details I
-> leave to powerpc experts :)
-
-
-The Expert (Ben) wants capabilities number and API to get fixed in KVM tree :)
-
-
+On Tue, Sep 03, 2013 at 06:45:50AM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2013-09-02 at 19:48 +0200, Vladimir Murzin wrote:
+> > Ping
+> > 
+> > On Wed, Aug 28, 2013 at 02:49:52AM +0400, Vladimir Murzin wrote:
+> > > commit b6069a9570 (filter: add MOD operation) added generic
+> > > support for modulus operation in BPF.
+> > >
+> Sorry, nobody got a chance to review that yet. Unfortunately Matt
+> doesn't work for us anymore and none of us has experience with the
+> BPF code, so somebody (possibly me) will need to spend a bit of time
+> figuring it out before verifying that is correct.
 > 
->>
->>
->>>> +LIOBN is a PCI bus identifier from PPC64-server (sPAPR) DMA hypercalls
->>>> +(H_PUT_TCE, H_PUT_TCE_INDIRECT, H_STUFF_TCE).
->>>> +IOMMU group is a minimal isolated device set which can be passed to
->>>> +the user space via VFIO.
->>>> +
->>>> +Right after creation the device is in uninitlized state and requires
->>>> +a KVM_DEV_SPAPR_TCE_IOMMU_ATTR_LINKAGE attribute to be set.
->>>> +The attribute contains liobn, IOMMU fd and flags:
->>>> +
->>>> +struct kvm_create_spapr_tce_iommu_linkage {
->>>> +	__u64 liobn;
->>>> +	__u32 fd;
->>>> +	__u32 flags;
->>>> +};
->>>> +
->>>> +The user space creates the SPAPR TCE IOMMU device, obtains
->>>> +an IOMMU fd via VFIO ABI and sets the attribute to the SPAPR TCE IOMMU
->>>> +device. At the moment of setting the attribute, the SPAPR TCE IOMMU
->>>> +device links LIOBN to IOMMU group and makes necessary steps
->>>> +to make sure that VFIO group will not disappear before KVM destroys.
->>>> +
->>>> +The kernel advertises this feature via KVM_CAP_SPAPR_TCE_IOMMU capability.
->>> [skip]
->>
->> Yes, I read the other comment. So roughly speaking I'll replace the
->> KVM_CAP_SPAPR_TCE_IOMMU check with the KVM_CAP_DEVICE_CTRL capability check
->> + try to KVM_CREATE_DEVICE with the KVM_CREATE_DEVICE_TEST flag set, and we
->> are fine.
-> Yes, but KVM_CREATE_DEVICE_TEST does not create device, only checks if
-> device type is supported.
+> Do you have a test case/suite by any chance ?
+> 
+> Ben.
+> 
 
-Sure.
+Hi Ben!
 
+Thanks for your feedback.
 
+This patch is only compile tested. I have no real hardware, but I'll
+probably bring up qemu ppc64 till end of the week...
+Meanwhile, I've made simple how-to for testing. You can use it if you wish.
+It is mainly based on the [1] and rechecked on x86-64.
 
--- 
-Alexey
+1. get the tcpdump utility (git clone git://bpf.tcpdump.org/tcpdump)
+2. get the libcap library (git clone git://bpf.tcpdump.org/libpcap)
+2.1. apply patch for libcap [2] (against libcap-1.3 branch)
+2.2. build libcap (./configure && make && ln -s libcap.so.1.3.0 libcap.so)
+3. build tcpdump (LDFLAGS="-L/path/to/libcap" ./configure && make)
+4. run 
+
+# ./tcpdump -d "(ip[2:2] - 20) % 5 != 0 && ip[6] & 0x20 = 0x20"
+(000) ldh [14]
+(001) jeq #0x800 jt 2 jf 10
+(002) ldh [18]
+(003) sub #20
+(004) mod #5
+(005) jeq #0x0 jt 10 jf 6
+(006) ldb [22]
+(007) and #0x20
+(008) jeq #0x20 jt 9 jf 10
+(009) ret #65535
+(010) ret #0
+
+to get pseudo code (we are interested the most into line #4)
+
+5. enable bpf jit compiler
+
+# echo 2 > /proc/sys/net/core/bpf_jit_enable 
+
+6. run
+
+./tcpdump -nv "(ip[2:2] - 20) % 5 != 0 && ip[6] & 0x20 = 0x20"
+
+7. check dmesg for lines starting with (output for x86-64 is provided as an example)
+
+[ 3768.329253] flen=11 proglen=99 pass=3 image=ffffffffa003c000
+[ 3768.329254] JIT code: ffffffffa003c000: 55 48 89 e5 48 83 ec 60 48 89 5d f8 44 8b 4f 60
+[ 3768.329255] JIT code: ffffffffa003c010: 44 2b 4f 64 4c 8b 87 c0 00 00 00 0f b7 47 76 86
+[ 3768.329256] JIT code: ffffffffa003c020: c4 3d 00 08 00 00 75 37 be 02 00 00 00 e8 9f 3e
+[ 3768.329257] JIT code: ffffffffa003c030: 02 e1 83 e8 14 31 d2 b9 05 00 00 00 f7 f1 89 d0
+[ 3768.329258] JIT code: ffffffffa003c040: 85 c0 74 1b be 06 00 00 00 e8 9f 3e 02 e1 25 20
+[ 3768.329259] JIT code: ffffffffa003c050: 00 00 00 83 f8 20 75 07 b8 ff ff 00 00 eb 02 31
+[ 3768.329259] JIT code: ffffffffa003c060: c0 c9 c3
+
+8. make sure generated opcodes (JIT code) implement pseudo code form step 4.
+
+Reference
+[1] http://comments.gmane.org/gmane.linux.network/242456
+[2] http://permalink.gmane.org/gmane.network.tcpdump.devel/5973
+
+P.S.
+I hope net people will corect me if I'm wrong there
+
+Cheers
+Vladimir Murzin
+
+> > > This patch brings JIT support for PPC64
+> > > 
+> > > Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
+> > > ---
+> > >  arch/powerpc/net/bpf_jit_comp.c | 22 ++++++++++++++++++++++
+> > >  1 file changed, 22 insertions(+)
+> > > 
+> > > diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+> > > index bf56e33..96f24dc 100644
+> > > --- a/arch/powerpc/net/bpf_jit_comp.c
+> > > +++ b/arch/powerpc/net/bpf_jit_comp.c
+> > > @@ -193,6 +193,28 @@ static int bpf_jit_build_body(struct sk_filter *fp, u32 *image,
+> > >  				PPC_MUL(r_A, r_A, r_scratch1);
+> > >  			}
+> > >  			break;
+> > > +		case BPF_S_ALU_MOD_X: /* A %= X; */
+> > > +			ctx->seen |= SEEN_XREG;
+> > > +			PPC_CMPWI(r_X, 0);
+> > > +			if (ctx->pc_ret0 != -1) {
+> > > +				PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
+> > > +			} else {
+> > > +				PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
+> > > +				PPC_LI(r_ret, 0);
+> > > +				PPC_JMP(exit_addr);
+> > > +			}
+> > > +			PPC_DIVWU(r_scratch1, r_A, r_X);
+> > > +			PPC_MUL(r_scratch1, r_X, r_scratch1);
+> > > +			PPC_SUB(r_A, r_A, r_scratch1);
+> > > +			break;
+> > > +		case BPF_S_ALU_MOD_K: /* A %= K; */
+> > > +#define r_scratch2 (r_scratch1 + 1)
+> > > +			PPC_LI32(r_scratch2, K);
+> > > +			PPC_DIVWU(r_scratch1, r_A, r_scratch2);
+> > > +			PPC_MUL(r_scratch1, r_scratch2, r_scratch1);
+> > > +			PPC_SUB(r_A, r_A, r_scratch1);
+> > > +#undef r_scratch2
+> > > +			break;
+> > >  		case BPF_S_ALU_DIV_X: /* A /= X; */
+> > >  			ctx->seen |= SEEN_XREG;
+> > >  			PPC_CMPWI(r_X, 0);
+> > > -- 
+> > > 1.8.1.5
+> > > 
+> 
+> 
