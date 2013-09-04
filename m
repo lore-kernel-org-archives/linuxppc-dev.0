@@ -1,23 +1,43 @@
-Return-Path: <Wei.Yang@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 659FD2C007C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2013 11:47:07 +1000 (EST)
-Message-ID: <52269105.3020600@windriver.com>
-Date: Wed, 4 Sep 2013 09:46:45 +0800
-From: "Yang,Wei" <Wei.Yang@windriver.com>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2B5512C00B6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2013 13:17:03 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Tue, 3 Sep 2013 23:16:59 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id D00536E8028
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2013 23:16:57 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r843GvGU29294796
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Sep 2013 03:16:57 GMT
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r843GuHT023340
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Sep 2013 00:16:57 -0300
+Date: Wed, 4 Sep 2013 11:16:51 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH 3/7] powerpc/pci: use pci_is_pcie() to simplify code
+Message-ID: <20130904031651.GA6991@shangw.(null)>
+References: <1378193715-25328-1-git-send-email-wangyijing@huawei.com>
+ <1378193715-25328-3-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-To: Yu Chen <chenyu105@gmail.com>
-Subject: Re: [RFC PATCH v1 1/1] powerpc/85xx: Wakeup kexec smp slave cpus
- in second kernel
-References: <CANHg-x7q4y6go_Bc8z5ZSYUJdQ72OQekg=SU+UVJopztknu6Ew@mail.gmail.com>
-In-Reply-To: <CANHg-x7q4y6go_Bc8z5ZSYUJdQ72OQekg=SU+UVJopztknu6Ew@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: b24347@freescale.com, chenhui.zhao@freescale.com,
- linux-kernel@vger.kernel.org, paulus@samba.org, msm@freescale.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1378193715-25328-3-git-send-email-wangyijing@huawei.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, Hanjun Guo <guohanjun@huawei.com>,
+ linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <JBottomley@parallels.com>,
+ Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,450 +47,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/31/2013 05:12 PM, Yu Chen wrote:
-> >From 1ccf579b871dfd5938ce958f729361a203485c74 Mon Sep 17 00:00:00 2001
-> From: Yu Chen <chenyu105@gmail.com>
-> Date: Sat, 31 Aug 2013 23:52:31 +0800
-> Subject: [PATCH]  powerpc/85xx: Wakeup kexec smp slave cpus in second kernel
+>Use pci_is_pcie() to simplify code.
 >
-> In current 85xx smp kexec implementation,master cpu reset slave cpus
-> by mpic_reset_core,
-> before jump to second kernel.In order to wake slave cpus up in second
-> kernel,we debug
-> this patch on p2041rdb.
+>Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+>Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+>Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>Cc: Paul Mackerras <paulus@samba.org>
+>Cc: linuxppc-dev@lists.ozlabs.org
+>Cc: linux-kernel@vger.kernel.org
 
-What problem causes that you do the modification? I am just curious as 
-kexec feature always is fine on our
-P2041RDB board.:-)
+It looks good to me:
 
-Wei
+Reviewed-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+
+Thanks,
+Gavin
+
+>---
+> arch/powerpc/kernel/eeh.c     |    3 +--
+> arch/powerpc/sysdev/fsl_pci.c |    2 +-
+> 2 files changed, 2 insertions(+), 3 deletions(-)
 >
-> The main principle of this patch,is to get slave cpus polling for flag
-> to change,
-> thus waiting for master cpu to set it with non-zero cpu number(see misc_32.S).
-> This flag is placed in kexec control page,so it would not be
-> overlapped when copying kimage.
-> The master cpu put flag's physical address in r28 as a parameter
-> passed to second kernel,
-> so the latter knows how to wake slave cpus up in smp_85xx_kick_cpu.
-> The pseudo-code may be like:
-> void slave_cpu_spin(void)
-> {
->          int cpu = smp_processor_id();
->          while (*kexec_poll != cpu)
->                  ;
->          /*slave wakeup and jump*/
->          jump(*(kexec_poll+1));
-> }
+>diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>index 39954fe..b0bd41a 100644
+>--- a/arch/powerpc/kernel/eeh.c
+>+++ b/arch/powerpc/kernel/eeh.c
+>@@ -189,8 +189,7 @@ static size_t eeh_gather_pci_data(struct eeh_dev *edev, char * buf, size_t len)
+> 	}
 >
-> void master_cpu_wakeup(unsigned long *kexec_poll, int cpu)
-> {
->          *(kexec_poll+1) = __early_start;
->          mb();
->          *kexec_poll = cpu;
-> }
+> 	/* If PCI-E capable, dump PCI-E cap 10, and the AER */
+>-	cap = pci_find_capability(dev, PCI_CAP_ID_EXP);
+>-	if (cap) {
+>+	if (pci_is_pcie(dev)) {
+> 		n += scnprintf(buf+n, len-n, "pci-e cap10:\n");
+> 		printk(KERN_WARNING
+> 		       "EEH: PCI-E capabilities and status follow:\n");
+>diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+>index 46ac1dd..5402a1d 100644
+>--- a/arch/powerpc/sysdev/fsl_pci.c
+>+++ b/arch/powerpc/sysdev/fsl_pci.c
+>@@ -41,7 +41,7 @@ static void quirk_fsl_pcie_header(struct pci_dev *dev)
+> 	u8 hdr_type;
 >
-> However,after applied this patch,we got some kernel exception during
-> booting second kernel,
-> I'm not sure if it's caused by improper treament of cache,or tlb,or
-> other.So I put this
-> patch here hoping someone can check and review it.
+> 	/* if we aren't a PCIe don't bother */
+>-	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
+>+	if (!pci_is_pcie(dev))
+> 		return;
 >
-> Signed-off-by: Yu Chen <chenyu105@gmail.com>
-> ---
->   arch/powerpc/kernel/head_fsl_booke.S |    7 ++
->   arch/powerpc/kernel/misc_32.S        |   66 +++++++++++++-
->   arch/powerpc/platforms/85xx/smp.c    |  166 ++++++++++++++++++++++++++++++----
->   3 files changed, 222 insertions(+), 17 deletions(-)
->   mode change 100644 => 100755 arch/powerpc/kernel/head_fsl_booke.S
->   mode change 100644 => 100755 arch/powerpc/kernel/misc_32.S
->   mode change 100644 => 100755 arch/powerpc/platforms/85xx/smp.c
+> 	/* if we aren't in host mode don't bother */
+>-- 
+>1.7.1
 >
-> diff --git a/arch/powerpc/kernel/head_fsl_booke.S
-> b/arch/powerpc/kernel/head_fsl_booke.S
-> old mode 100644
-> new mode 100755
-> index d10a7ca..63c8392
-> --- a/arch/powerpc/kernel/head_fsl_booke.S
-> +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> @@ -178,6 +178,13 @@ _ENTRY(__early_start)
->        * This is where the main kernel code starts.
->        */
 >
-> +#if defined(CONFIG_KEXEC) && defined(CONFIG_SMP)
-> +    /* r28 contain position where slave cpus spin*/
-> +    lis    r1,kexec_poll_phy@h
-> +    ori    r1,r1,kexec_poll_phy@l
-> +    stw    r28,0(r1)
-> +#endif
-> +
->       /* ptr to current */
->       lis    r2,init_task@h
->       ori    r2,r2,init_task@l
-> diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-> old mode 100644
-> new mode 100755
-> index e469f30..d9eefc2
-> --- a/arch/powerpc/kernel/misc_32.S
-> +++ b/arch/powerpc/kernel/misc_32.S
-> @@ -120,7 +120,7 @@ _GLOBAL(reloc_got2)
->       addi    r4,r4,1b@l
->       subf    r0,r4,r0
->       add    r7,r0,r7
-> -2:    lwz    r0,0(r7)
-> +    2:    lwz    r0,0(r7)
->       add    r0,r0,r3
->       stw    r0,0(r7)
->       addi    r7,r7,4
-> @@ -692,6 +692,7 @@ _GLOBAL(__main)
->       blr
->
->   #ifdef CONFIG_KEXEC
-> +#define KEXEC_MAGIC 0xdeadbeef
->       /*
->        * Must be relocatable PIC code callable as a C function.
->        */
-> @@ -707,6 +708,16 @@ relocate_new_kernel:
->       mr    r30, r4
->       mr    r31, r5
->
-> +#ifdef CONFIG_SMP
-> +    bl    1f
-> +1:    mflr    r8
-> +    addi    r8,r8,kexec_flag-1b
-> +    lis     r7,PAGE_OFFSET@h
-> +    ori     r7,r7,PAGE_OFFSET@l
-> +    /*r28 contain slave cpu spin physical address */
-> +    subf    r28, r7, r8
-> +#endif
-> +
->   #define ENTRY_MAPPING_KEXEC_SETUP
->   #include "fsl_booke_entry_mapping.S"
->   #undef ENTRY_MAPPING_KEXEC_SETUP
-> @@ -1172,4 +1183,57 @@ relocate_new_kernel_end:
->       .globl relocate_new_kernel_size
->   relocate_new_kernel_size:
->       .long relocate_new_kernel_end - relocate_new_kernel
-> +#ifdef CONFIG_FSL_BOOKE
-> +    /**
-> +    * Slave cpus wait for kexec_flag to change
-> +    */
-> +    .globl relocate_smp_cpu_offset
-> +relocate_smp_cpu_offset:
-> +    .long relocate_smp_cpu_wait-relocate_new_kernel
-> +
-> +    .globl relocate_smp_cpu_wait
-> +relocate_smp_cpu_wait:
-> +
-> +    bl    1f
-> +1:    mflr    r5
-> +    addi    r5,r5,kexec_flag-1b
-> +    /*see if anyone calls me?*/
-> +    mfspr   r24,SPRN_PIR
-> +99:    lwz    r4,4(r5)
-> +    cmpw    r4,r24
-> +    msync
-> +    bne        99b
-> +
-> +    msync
-> +    /*r4 contains jump address*/
-> +    lwz    r4,8(r5)
-> +    msync
-> +    lis    r5,MSR_KERNEL@h
-> +    ori    r5,r5,MSR_KERNEL@l
-> +    msync
-> +    isync
-> +    mtspr    SPRN_SRR1, r5
-> +    mtspr    SPRN_SRR0, r4
-> +    msync
-> +    isync
-> +    rfi
-> +    isync
-> +1:    b    1b
-> +
-> +    /**
-> +    * kexec_flag indicates a kexec magic
-> +    * kexec_flag+4 bytes supposed to be set with cpu number
-> +    * kexec_flag+8 countain addr for slave cpu to jump into
-> +    */
-> +    .globl kexec_flag
-> +kexec_flag:
-> +    .long   KEXEC_MAGIC
-> +    .long    0
-> +    .long    0
-> +relocate_smp_cpu_wait_end:
-> +    .globl relocate_smp_cpu_size
-> +relocate_smp_cpu_size:
-> +    .long relocate_smp_cpu_wait_end-relocate_smp_cpu_wait
-> +#endif
-> +
->   #endif
-> diff --git a/arch/powerpc/platforms/85xx/smp.c
-> b/arch/powerpc/platforms/85xx/smp.c
-> old mode 100644
-> new mode 100755
-> index 5ced4f5..c4f5c4c
-> --- a/arch/powerpc/platforms/85xx/smp.c
-> +++ b/arch/powerpc/platforms/85xx/smp.c
-> @@ -140,6 +140,70 @@ static inline u32 read_spin_table_addr_l(void *spin_table)
->           (ulong)spin_table + sizeof(struct epapr_spin_table));
->       return in_be32(&((struct epapr_spin_table *)spin_table)->addr_l);
->   }
-> +#ifdef CONFIG_KEXEC
-> +
-> +#define KEXEC_MAGIC 0xdeadbeef
-> +#define KEXEC_RESERVE_LIMIT 0x10
-> +unsigned long kexec_poll_phy;
-> +extern void reserve_kexec_bootmem(unsigned long poll_phy, int size);
-> +
-> +/*
-> + * Reserved bootmem for slave cpus kexec spin area.
-> + */
-> +void mpc85xx_smp_reserve_kexec(void)
-> +{
-> +    unsigned long kexec_poll_virt;
-> +    unsigned long *kexec_magic_virt;
-> +
-> +    if (!kexec_poll_phy ||
-> +            kexec_poll_phy >= __max_low_memory)
-> +        return;
-> +
-> +    kexec_poll_virt = (unsigned long)phys_to_virt(kexec_poll_phy);
-> +    kexec_magic_virt = (unsigned long *)kexec_poll_virt;
-> +
-> +    if (*kexec_magic_virt == KEXEC_MAGIC)
-> +        reserve_kexec_bootmem(kexec_poll_phy, KEXEC_RESERVE_LIMIT);
-> +}
-> +
-> +/*
-> + * Kick slave cpus from kexec spin area.
-> + */
-> +int mpc85xx_smp_kick_kexec_cpus(int nr)
-> +{
-> +    unsigned long  kexec_poll_virt;
-> +    unsigned long *kexec_flag_virt;
-> +    unsigned long *kexec_magic_virt;
-> +    unsigned long *kexec_jump_virt;
-> +
-> +    /*verify accessible*/
-> +    if (!kexec_poll_phy ||
-> +            kexec_poll_phy >= __max_low_memory)
-> +        return -EBUSY;
-> +
-> +    kexec_poll_virt = (unsigned long)phys_to_virt(kexec_poll_phy);
-> +
-> +    kexec_magic_virt = (unsigned long *)kexec_poll_virt;
-> +    kexec_flag_virt = (unsigned long *)kexec_poll_virt + 1;
-> +    kexec_jump_virt = (unsigned long *)kexec_poll_virt + 2;
-> +
-> +    /*verify a valid kexec kick*/
-> +    if (*kexec_magic_virt == KEXEC_MAGIC) {
-> +        flush_dcache_range((ulong)kexec_poll_virt,
-> +        (ulong)kexec_poll_virt + L1_CACHE_BYTES-1);
-> +        *kexec_jump_virt = (unsigned long)__early_start;
-> +        mb();
-> +        /*kick cpu[nr] up*/
-> +        *kexec_flag_virt = nr;
-> +        mb();
-> +        flush_dcache_range((ulong)kexec_poll_virt,
-> +        (ulong)kexec_poll_virt + L1_CACHE_BYTES-1);
-> +
-> +        return 0;
-> +    }
-> +    return -EBUSY;
-> +}
-> +#endif
->
->   static int smp_85xx_kick_cpu(int nr)
->   {
-> @@ -181,6 +245,10 @@ static int smp_85xx_kick_cpu(int nr)
->
->       local_irq_save(flags);
->   #ifdef CONFIG_PPC32
-> +#ifdef CONFIG_KEXEC
-> +    if (!mpc85xx_smp_kick_kexec_cpus(nr))
-> +        goto kexec_kick_done;
-> +#endif
->   #ifdef CONFIG_HOTPLUG_CPU
->       /* Corresponding to generic_set_cpu_dead() */
->       generic_set_cpu_up(nr);
-> @@ -225,7 +293,9 @@ static int smp_85xx_kick_cpu(int nr)
->       out_be32(&spin_table->pir, hw_cpu);
->       out_be32(&spin_table->addr_l, __pa(__early_start));
->       flush_spin_table(spin_table);
-> -
-> +#ifdef CONFIG_KEXEC
-> +kexec_kick_done:
-> +#endif
->       /* Wait a bit for the CPU to ack. */
->       if (!spin_event_timeout(__secondary_hold_acknowledge == hw_cpu,
->                       10000, 100)) {
-> @@ -266,7 +336,13 @@ struct smp_ops_t smp_85xx_ops = {
->   };
->
->   #ifdef CONFIG_KEXEC
-> +
->   atomic_t kexec_down_cpus = ATOMIC_INIT(0);
-> +atomic_t kexec_ready_to_reboot = ATOMIC_INIT(0);
-> +atomic_t kexec_slave_finish = ATOMIC_INIT(0);
-> +unsigned long wait_code_buffer;
-> +static struct kimage *save_image;
-> +extern const unsigned int relocate_smp_cpu_size;
->
->   void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
->   {
-> @@ -274,8 +350,29 @@ void mpc85xx_smp_kexec_cpu_down(int
-> crash_shutdown, int secondary)
->
->       if (secondary) {
->           atomic_inc(&kexec_down_cpus);
-> -        /* loop forever */
-> -        while (1);
-> +        mb();
-> +
-> +        if (crash_shutdown) {
-> +            /* loop forever */
-> +            while (1)
-> +                ;
-> +        } else {
-> +            while (!atomic_read(&kexec_ready_to_reboot))
-> +                cpu_relax();
-> +            /*flush destination*/
-> +            if (save_image)
-> +                mpc85xx_smp_flush_dcache_kexec(save_image, 1);
-> +
-> +            flush_icache_range(wait_code_buffer,
-> +                wait_code_buffer + relocate_smp_cpu_size);
-> +            flush_dcache_range(wait_code_buffer,
-> +                wait_code_buffer + relocate_smp_cpu_size);
-> +
-> +            atomic_inc(&kexec_slave_finish);
-> +
-> +            ((void (*)(void)) wait_code_buffer)();
-> +            /* NOTREACHED */
-> +        }
->       }
->   }
->
-> @@ -285,13 +382,23 @@ static void mpc85xx_smp_kexec_down(void *arg)
->           ppc_md.kexec_cpu_down(0,1);
->   }
->
-> -static void map_and_flush(unsigned long paddr)
-> +static void map_and_flush(unsigned long paddr, int atomic)
->   {
->       struct page *page = pfn_to_page(paddr >> PAGE_SHIFT);
-> -    unsigned long kaddr  = (unsigned long)kmap(page);
-> +    unsigned long kaddr;
-> +
-> +    if (atomic)
-> +        kaddr  = (unsigned long)kmap_atomic(page);
-> +    else
-> +        kaddr  = (unsigned long)kmap(page);
->
->       flush_dcache_range(kaddr, kaddr + PAGE_SIZE);
-> -    kunmap(page);
-> +    flush_icache_range(kaddr, kaddr + PAGE_SIZE);
-> +
-> +    if (atomic)
-> +        kunmap_atomic((void *)kaddr);
-> +    else
-> +        kunmap(page);
->   }
->
->   /**
-> @@ -300,7 +407,7 @@ static void map_and_flush(unsigned long paddr)
->    * are performed out of an overabundance of caution as interrupts are not
->    * disabled yet and we can switch cores
->    */
-> -static void mpc85xx_smp_flush_dcache_kexec(struct kimage *image)
-> +static void mpc85xx_smp_flush_dcache_kexec(struct kimage *image, int atomic)
->   {
->       kimage_entry_t *ptr, entry;
->       unsigned long paddr;
-> @@ -312,18 +419,18 @@ static void
-> mpc85xx_smp_flush_dcache_kexec(struct kimage *image)
->                ptr = (entry & IND_INDIRECTION) ?
->                   phys_to_virt(entry & PAGE_MASK) : ptr + 1) {
->               if (!(entry & IND_DESTINATION)) {
-> -                map_and_flush(entry);
-> +                map_and_flush(entry, atomic);
->               }
->           }
->           /* flush out last IND_DONE page */
-> -        map_and_flush(entry);
-> +        map_and_flush(entry, atomic);
->       } else {
->           /* crash type kexec images are copied to the crash region */
->           for (i = 0; i < image->nr_segments; i++) {
->               struct kexec_segment *seg = &image->segment[i];
->               for (paddr = seg->mem; paddr < seg->mem + seg->memsz;
->                    paddr += PAGE_SIZE) {
-> -                map_and_flush(paddr);
-> +                map_and_flush(paddr, atomic);
->               }
->           }
->       }
-> @@ -335,13 +442,18 @@ static void
-> mpc85xx_smp_flush_dcache_kexec(struct kimage *image)
->
->   static void mpc85xx_smp_machine_kexec(struct kimage *image)
->   {
-> +    extern const unsigned char  relocate_smp_cpu_wait[];
-> +    extern const unsigned int relocate_smp_cpu_offset;
->       int timeout = INT_MAX;
->       int i, num_cpus = num_present_cpus();
->
->       mpc85xx_smp_flush_dcache_kexec(image);
->
-> -    if (image->type == KEXEC_TYPE_DEFAULT)
-> +    if (image->type == KEXEC_TYPE_DEFAULT) {
-> +        save_image = image;
-> +        mb();
->           smp_call_function(mpc85xx_smp_kexec_down, NULL, 0);
-> +    }
->
->       while ( (atomic_read(&kexec_down_cpus) != (num_cpus - 1)) &&
->           ( timeout > 0 ) )
-> @@ -352,12 +464,34 @@ static void mpc85xx_smp_machine_kexec(struct
-> kimage *image)
->       if ( !timeout )
->           printk(KERN_ERR "Unable to bring down secondary cpu(s)");
->
-> -    for_each_online_cpu(i)
-> -    {
-> -        if ( i == smp_processor_id() ) continue;
-> -        mpic_reset_core(i);
-> -    }
-> +    if (image->type == KEXEC_TYPE_DEFAULT) {
->
-> +        wait_code_buffer =
-> +        (unsigned long)page_address(image->control_code_page)+
-> +                relocate_smp_cpu_offset;
-> +
-> +        /* copy slave cpu spin code to the control code page */
-> +        memcpy((void *)wait_code_buffer, relocate_smp_cpu_wait,
-> +                        relocate_smp_cpu_size);
-> +        atomic_set(&kexec_ready_to_reboot, 1);
-> +        mb();
-> +        timeout = INT_MAX;
-> +
-> +        while ((atomic_read(&kexec_slave_finish) != (num_cpus-1)) &&
-> +            (timeout > 0))
-> +            timeout--;
-> +
-> +        if (!timeout)
-> +            printk(KERN_ERR "Unable to wait for secondary cpu(s) to
-> flush caches\n");
-> +
-> +        } else {
-> +        for_each_online_cpu(i)
-> +        {
-> +            if (i == smp_processor_id())
-> +                continue;
-> +            mpic_reset_core(i);
-> +        }
-> +    }
->       default_machine_kexec(image);
->   }
->   #endif /* CONFIG_KEXEC */
