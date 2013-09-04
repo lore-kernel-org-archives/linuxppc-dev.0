@@ -1,33 +1,35 @@
-Return-Path: <seiji.aguchi@hds.com>
-Received: from usindpps04.hds.com (usindpps04.hds.com [207.126.252.17])
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B35E92C00B6
- for <linuxppc-dev@ozlabs.org>; Thu,  5 Sep 2013 02:40:41 +1000 (EST)
-From: Seiji Aguchi <seiji.aguchi@hds.com>
-To: "Luck, Tony" <tony.luck@intel.com>, Aruna Balakrishnaiah
- <aruna@linux.vnet.ibm.com>
-Subject: RE: [RFC PATCH v2 04/11] pstore: Add compression support to pstore
-Date: Wed, 4 Sep 2013 16:39:23 +0000
-Message-ID: <A5ED84D3BB3A384992CBB9C77DEDA4D443E9F05D@USINDEM103.corp.hds.com>
-References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
- <20130816131805.3338.68767.stgit@aruna-ThinkPad-T420>
- <A5ED84D3BB3A384992CBB9C77DEDA4D443E8F0D7@USINDEM103.corp.hds.com>
- <3908561D78D1C84285E8C5FCA982C28F31CC7AC0@ORSMSX106.amr.corp.intel.com>
- <521C36F4.8030607@linux.vnet.ibm.com>
- <A5ED84D3BB3A384992CBB9C77DEDA4D443E9E24D@USINDEM103.corp.hds.com>
- <5226CC9D.30904@linux.vnet.ibm.com>
- <3908561D78D1C84285E8C5FCA982C28F31CDB23E@ORSMSX106.amr.corp.intel.com>
-In-Reply-To: <3908561D78D1C84285E8C5FCA982C28F31CDB23E@ORSMSX106.amr.corp.intel.com>
-Content-Type: text/plain; charset="us-ascii"
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6891B2C00D6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2013 04:20:17 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Thu, 5 Sep 2013 04:02:18 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E8B652CE804C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2013 04:19:43 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r84I3KcT46792948
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Sep 2013 04:03:20 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r84IJhTu028301
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Sep 2013 04:19:43 +1000
+Date: Wed, 4 Sep 2013 23:49:36 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: default arch idle could cede processor on pseries
+Message-ID: <20130904181936.GA22956@dirshya.in.ibm.com>
 MIME-Version: 1.0
-Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>,
- "keescook@chromium.org" <keescook@chromium.org>,
- "mahesh@linux.vnet.ibm.com" <mahesh@linux.vnet.ibm.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "ccross@android.com" <ccross@android.com>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Reply-To: svaidy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,42 +39,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> But let's make sure that efivars, erst,
-> etc. are all happy with the changes we make before I ask Linus to pull an=
-other
-> pstore piece.
+Hi,
 
-I will test efivars when Aruna posts the bugfix patches.
+Idle routines on pseries were rearranged so that cpuidle can do
+an optimized idle state selection.  However, until cpuidle takes
+over during boot, the idle loop spins for a short while.  This
+actually affected bootup time since spinning idle sibling threads
+slows down master cpu that executes bootup code.
 
-Seiji
+The following patch enables pseries system to yield to hypervisor and
+stop spinning by calling cede_processor() until cpuidle can take over
+and do optimal idle state selection.
 
-> -----Original Message-----
-> From: Luck, Tony [mailto:tony.luck@intel.com]
-> Sent: Wednesday, September 04, 2013 12:11 PM
-> To: Aruna Balakrishnaiah; Seiji Aguchi
-> Cc: jkenisto@linux.vnet.ibm.com; keescook@chromium.org; mahesh@linux.vnet=
-.ibm.com; ccross@android.com; linux-
-> kernel@vger.kernel.org; linuxppc-dev@ozlabs.org; cbouatmailru@gmail.com
-> Subject: RE: [RFC PATCH v2 04/11] pstore: Add compression support to psto=
-re
->=20
-> > The reason behind compression failure is the size of big_oops_buf which=
- is too
-> > big for efivars case. I will do some experiments with different kind of=
- texts
-> > for buffer size 1024 to check if 100/53 suits for all the cases.
-> ...
->=20
-> > Yes this can be changed to zlib_inflateInit2().
->=20
-> Original patch series was just pulled by Linus ... so we'll need a patch =
-on top
-> of current Linus git tree to fix these issues.  But let's make sure that =
-efivars, erst,
-> etc. are all happy with the changes we make before I ask Linus to pull an=
-other
-> pstore piece.
->=20
-> Thanks
->=20
-> -Tony
+Bootup time can be reduced to half on small guest where most of the
+time is spend before device init.
+
+--Vaidy
+
+
+    powerpc: default arch idle should cede processor on pseries
+
+    On IBM POWER platform (pseries), use cede_processor()
+    in arch idle to save cycles until cpuidle takes over.
+
+    This helps speedup boot by having SMT threads stop and yield to
+    master thread rather than spinning until cpuidle in initialized.
+
+    Reported-by: Paul Mackerras <paulus@samba.org>
+    Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+    Acked-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index c11c823..fd4f995 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -362,10 +362,22 @@ static void pSeries_idle(void)
+ 	if (cpuidle_idle_call()) {
+ 		/* On error, execute default handler
+ 		 * to go into low thread priority and possibly
+-		 * low power mode.
++		 * low power mode by ceding processor to hypervisor
+ 		 */
+-		HMT_low();
+-		HMT_very_low();
++
++		/* Indicate to hypervisor that we are idle. */
++		get_lppaca()->idle = 1;
++
++		/*
++		 * Yield the processor to the hypervisor.  We return if
++		 * an external interrupt occurs (which are driven prior
++		 * to returning here) or if a prod occurs from another
++		 * processor. When returning here, external interrupts
++		 * are enabled.
++		 */
++		cede_processor();
++
++		get_lppaca()->idle = 0;
+ 	}
+ }
+ 
