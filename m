@@ -1,26 +1,25 @@
-Return-Path: <B38951@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2C6E52C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2013 14:10:52 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Tang Yuantian-B29983 <B29983@freescale.com>, "Yang,Wei"
- <Wei.Yang@windriver.com>
-Subject: RE: [PATCH] powerpc: Add I2C bus multiplexer node for B4 and T4240QDS
-Date: Wed, 4 Sep 2013 04:10:42 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01D327C3@039-SN1MPN1-002.039d.mgd.msft.net>
+Return-Path: <Wei.Yang@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ED2C92C00B6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2013 14:27:26 +1000 (EST)
+Message-ID: <5226B69F.207@windriver.com>
+Date: Wed, 4 Sep 2013 12:27:11 +0800
+From: "Yang,Wei" <Wei.Yang@windriver.com>
+MIME-Version: 1.0
+To: Tang Yuantian-B29983 <B29983@freescale.com>
+Subject: Re: [PATCH] powerpc: Add I2C bus multiplexer node for B4 and T4240QDS
 References: <1378194704-29909-1-git-send-email-hongtao.jia@freescale.com>
  <52268C7E.4040209@windriver.com>
  <412C8208B4A0464FA894C5F0C278CD5D01D32795@039-SN1MPN1-002.039d.mgd.msft.net>
  <D07C73A334FF604B95B3CBD2A545D07B15056D2E@039-SN2MPN1-011.039d.mgd.msft.net>
 In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B15056D2E@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="gb2312"
-MIME-Version: 1.0
+Content-Type: text/plain; charset="GB2312"
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,118 +29,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgWXVhbnRpYW4sDQpZZXMsIHlvdSBhcmUgcmlnaHQuDQoNCkhpIFdlaSwNCkkgbWlzdW5kZXJz
-dG9vZCB5b3VyIGlkZWEuDQpJIGFncmVlIGl0IGFuZCBJIHdpbGwgc3VibWl0IFYyIHBhdGNoIHRv
-IHVwZGF0ZSBpdCBzb29uLg0KDQpUaGFua3MuDQotSG9uZ3Rhbw0KDQo+IC0tLS0tT3JpZ2luYWwg
-TWVzc2FnZS0tLS0tDQo+IEZyb206IFRhbmcgWXVhbnRpYW4tQjI5OTgzDQo+IFNlbnQ6IFdlZG5l
-c2RheSwgU2VwdGVtYmVyIDA0LCAyMDEzIDEyOjA0IFBNDQo+IFRvOiBKaWEgSG9uZ3Rhby1CMzg5
-NTE7IFlhbmcsV2VpDQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMtZGV2QGxpc3Rz
-Lm96bGFicy5vcmcNCj4gU3ViamVjdDogUkU6IFtQQVRDSF0gcG93ZXJwYzogQWRkIEkyQyBidXMg
-bXVsdGlwbGV4ZXIgbm9kZSBmb3IgQjQgYW5kDQo+IFQ0MjQwUURTDQo+IA0KPiBIaSwNCj4gSSBu
-b3RpY2VkIHRoYXQgdGhlcmUgYXJlIGFscmVhZHkgc29tZSBub2RlcyBpbiBpMmMgYnVzLg0KPiBZ
-b3Ugc2hvdWxkIGF0IGxlYXN0IG1vdmUgdGhlIGV4aXN0aW5nIG5vZGUgaW50byBQQ0E5NTQ3Lg0K
-PiANCj4gVGhhbmtzLA0KPiBZdWFudGlhbg0KPiANCj4gDQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNz
-YWdlLS0tLS0NCj4gPiBGcm9tOiBMaW51eHBwYy1kZXYgW21haWx0bzpsaW51eHBwYy1kZXYtDQo+
-ID4gYm91bmNlcytiMjk5ODM9ZnJlZXNjYWxlLmNvbUBsaXN0cy5vemxhYnMub3JnXSBPbiBCZWhh
-bGYgT2YgSmlhDQo+ID4gYm91bmNlcytIb25ndGFvLQ0KPiA+IEIzODk1MQ0KPiA+IFNlbnQ6IDIw
-MTPE6jnUwjTI1SDQx8bayP0gMTE6MzgNCj4gPiBUbzogWWFuZyxXZWkNCj4gPiBDYzogV29vZCBT
-Y290dC1CMDc0MjE7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+ID4gU3ViamVjdDog
-UkU6IFtQQVRDSF0gcG93ZXJwYzogQWRkIEkyQyBidXMgbXVsdGlwbGV4ZXIgbm9kZSBmb3IgQjQg
-YW5kDQo+ID4gVDQyNDBRRFMNCj4gPg0KPiA+IEhpIFdlaSwNCj4gPg0KPiA+IEkgdG90YWxseSBh
-Z3JlZSB0aGF0IHRoZSBpMmMgbm9kZXMgdG9wb2xvZ3kgc2hvdWxkIGVuZCB1cCBsaWtlIHlvdSBz
-YWlkLg0KPiA+DQo+ID4gQnV0IEkgdGhpbmsgYWRkaW5nIHN1Yi1ub2RlcyBzaG91bGQgc3RlcCBi
-eSBzdGVwLg0KPiA+IEFjdHVhbGx5IHRoZSBoYXJkd2FyZSBpMmMgdG9wb2xvZ3kgYXJlIGh1Z2Ug
-bGlrZSBvbiBUNC4NCj4gPiBTbyBJJ2QgbGlrZSB0byBhZGRpbmcgbm9kZXMgd2hlbiB3ZSBuZWVk
-ZWQuDQo+ID4gSWYgeW91IHRoaW5rIHRoZSBzdWItbm9kZXMgYXJlIG5lZWRlZCBwbGVhc2Ugc2Vu
-ZCBhbm90aGVyIHBhdGNoIGJhc2VkDQo+ID4gb24gbWluZS4NCj4gPiBJIHRoaW5rIHRoaXMgaXMg
-dGhlIG1vcmUgcmVhc29uYWJsZSB3YXkuDQo+ID4NCj4gPiBUaGFua3MuDQo+ID4NCj4gPiAtSG9u
-Z3Rhbw0KPiA+DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBG
-cm9tOiBZYW5nLFdlaSBbbWFpbHRvOldlaS5ZYW5nQHdpbmRyaXZlci5jb21dDQo+ID4gPiBTZW50
-OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwNCwgMjAxMyA5OjI3IEFNDQo+ID4gPiBUbzogSmlhIEhv
-bmd0YW8tQjM4OTUxDQo+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdv
-b2QgU2NvdHQtQjA3NDIxOyBKaWENCj4gPiA+IEhvbmd0YW8tQjM4OTUxDQo+ID4gPiBTdWJqZWN0
-OiBSZTogW1BBVENIXSBwb3dlcnBjOiBBZGQgSTJDIGJ1cyBtdWx0aXBsZXhlciBub2RlIGZvciBC
-NA0KPiA+ID4gYW5kIFQ0MjQwUURTDQo+ID4gPg0KPiA+ID4gT24gMDkvMDMvMjAxMyAwMzo1MSBQ
-TSwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+ID4gPiA+IEluIGJvdGggQjQgYW5kIFQ0MjQwUURTIHBs
-YXRmb3JtIFBDQTk1NDcgSTJDIGJ1cyBtdWx0aXBsZXhlciBpcw0KPiB1c2VkLg0KPiA+ID4NCj4g
-PiA+IEhpIEhvbmd0YW8sDQo+ID4gPg0KPiA+ID4gSWYgeW91IHdhbnQgdG8gc3VwcG9ydCBJMkMg
-YnVzIG11bHRpcGxleGVyLCBmb3IgVDQgYW5kIEI0UURTDQo+ID4gPiBwbGF0Zm9ybSwgc2luY2Ug
-c29tZSBlZXByb20gZGV2aWNlcyBpcyBjb25uZWN0ZWQgdG8gUENBOTU3NCBJMkMgYnVzDQo+ID4g
-PiBtdWx0aXBsZXhlciwgc28gdGhlc2UgZGV2aWNlcyBzaG91bGQgYmUgY29ubmVjdGVkIHRvIHBj
-YTk1NDcgbm9kZS4NCj4gPiA+IEp1c3QgbGlrZSB0aGUgZm9sbG93aW5nLCB3aGF0IGRvIHlvdSB0
-aGluayBvZiBpdD8NCj4gPiA+DQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICBwY2E5NTQ3
-QDc3IHsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9
-ICJwaGlsaXBzLHBjYTk1NDciOw0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICByZWcgPSA8MHg3Nz47DQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICNh
-ZGRyZXNzLWNlbGxzID0gPDE+Ow0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAjc2l6ZS1jZWxscyA9IDwwPjsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgY2hhbm5lbEAwIHsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAjc2l6ZS1jZWxscyA9IDwwPjsNCj4gPiA+ICsgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICByZWcgPSA8MD47DQo+ID4gPiArICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBlZXByb21ANTEgew0KPiA+ID4gKyAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb21w
-YXRpYmxlID0NCj4gPiA+ICJhdDI0LDI0YzI1NiI7DQo+ID4gPiArICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDUxPjsNCj4gPiA+
-ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIH07DQo+ID4g
-PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBlZXByb21A
-NTIgew0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICBjb21wYXRpYmxlID0NCj4gPiA+ICJhdDI0LDI0YzI1NiI7DQo+ID4gPiArICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9
-IDwweDUyPjsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIH07DQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICBlZXByb21ANTMgew0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0NCj4gPiA+ICJhdDI0LDI0YzI1
-NiI7DQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgIHJlZyA9IDwweDUzPjsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIH07DQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICBlZXByb21ANTQgew0KPiA+ID4gKyAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0NCj4g
-PiA+ICJhdDI0LDI0YzI1NiI7DQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDU0PjsNCj4gPiA+ICsgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIH07DQo+ID4gPiArICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBlZXByb21ANTUgew0KPiA+ID4g
-KyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBj
-b21wYXRpYmxlID0NCj4gPiA+ICJhdDI0LDI0YzI1NiI7DQo+ID4gPiArICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDU1PjsNCj4g
-PiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIH07DQo+
-ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBlZXBy
-b21ANTYgew0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICBjb21wYXRpYmxlID0NCj4gPiA+ICJhdDI0LDI0YzI1NiI7DQo+ID4gPiAr
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJl
-ZyA9IDwweDU2PjsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgIH07DQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICBydGNANjggew0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0NCj4gPiA+ICJkYWxsYXMsZHMz
-MjMyIjsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgcmVnID0gPDB4Njg+Ow0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbnRlcnJ1cHRzID0NCj4gPiA+IDwweDEg
-MHgxIDAgMD47DQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICB9Ow0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IH07DQo+ID4gPg0KPiA+ID4gV2VpDQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IEpp
-YSBIb25ndGFvIDxob25ndGFvLmppYUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiAtLS0NCj4gPiA+
-ID4gICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvYjRxZHMuZHRzaSAgIHwgNCArKysrDQo+ID4gPiA+
-ICAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3Q0MjQwcWRzLmR0cyB8IDQgKysrKw0KPiA+ID4gPiAg
-IDIgZmlsZXMgY2hhbmdlZCwgOCBpbnNlcnRpb25zKCspDQo+ID4gPiA+DQo+ID4gPiA+IGRpZmYg
-LS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvYjRxZHMuZHRzaQ0KPiA+ID4gPiBiL2FyY2gv
-cG93ZXJwYy9ib290L2R0cy9iNHFkcy5kdHNpDQo+ID4gPiA+IGluZGV4IGU2ZDJmOGYuLjJhYTMz
-OTkgMTAwNjQ0DQo+ID4gPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9iNHFkcy5kdHNp
-DQo+ID4gPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9iNHFkcy5kdHNpDQo+ID4gPiA+
-IEBAIC0xMjAsNiArMTIwLDEwIEBADQo+ID4gPiA+ICAgCQl9Ow0KPiA+ID4gPg0KPiA+ID4gPiAg
-IAkJaTJjQDExODAwMCB7DQo+ID4gPiA+ICsJCQlwY2E5NTQ3QDc3IHsNCj4gPiA+ID4gKwkJCQlj
-b21wYXRpYmxlID0gInBoaWxpcHMscGNhOTU0NyI7DQo+ID4gPiA+ICsJCQkJcmVnID0gPDB4Nzc+
-Ow0KPiA+ID4gPiArCQkJfTsNCj4gPiA+ID4gICAJCQllZXByb21ANTAgew0KPiA+ID4gPiAgIAkJ
-CQljb21wYXRpYmxlID0gImF0MjQsMjRjNjQiOw0KPiA+ID4gPiAgIAkJCQlyZWcgPSA8MHg1MD47
-DQo+ID4gPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvdDQyNDBxZHMuZHRz
-DQo+ID4gPiA+IGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3Q0MjQwcWRzLmR0cw0KPiA+ID4gPiBp
-bmRleCAwNTU1OTc2Li4wODRkYjU3IDEwMDY0NA0KPiA+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMv
-Ym9vdC9kdHMvdDQyNDBxZHMuZHRzDQo+ID4gPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0
-cy90NDI0MHFkcy5kdHMNCj4gPiA+ID4gQEAgLTExOCw2ICsxMTgsMTAgQEANCj4gPiA+ID4gICAJ
-CX07DQo+ID4gPiA+DQo+ID4gPiA+ICAgCQlpMmNAMTE4MDAwIHsNCj4gPiA+ID4gKwkJCXBjYTk1
-NDdANzcgew0KPiA+ID4gPiArCQkJCWNvbXBhdGlibGUgPSAicGhpbGlwcyxwY2E5NTQ3IjsNCj4g
-PiA+ID4gKwkJCQlyZWcgPSA8MHg3Nz47DQo+ID4gPiA+ICsJCQl9Ow0KPiA+ID4gPiAgIAkJCWVl
-cHJvbUA1MSB7DQo+ID4gPiA+ICAgCQkJCWNvbXBhdGlibGUgPSAiYXQyNCwyNGMyNTYiOw0KPiA+
-ID4gPiAgIAkJCQlyZWcgPSA8MHg1MT47DQo+ID4gPg0KPiA+DQo+ID4NCj4gPiBfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KPiA+IExpbnV4cHBjLWRldiBt
-YWlsaW5nIGxpc3QNCj4gPiBMaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+IGh0dHBz
-Oi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXYNCg0K
+On 09/04/2013 12:03 PM, Tang Yuantian-B29983 wrote:
+> Hi,
+> I noticed that there are already some nodes in i2c bus.
+
+Sorry for my late response, yeah, just as you noticed, some eeprom nodes
+already are inside i2c bus.:-)
+
+Wei
+> You should at least move the existing node into PCA9547.
+>
+> Thanks,
+> Yuantian
+>
+>
+>> -----Original Message-----
+>> From: Linuxppc-dev [mailto:linuxppc-dev-
+>> bounces+b29983=freescale.com@lists.ozlabs.org] On Behalf Of Jia Hongtao-
+>> B38951
+>> Sent: 2013年9月4日 星期三 11:38
+>> To: Yang,Wei
+>> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org
+>> Subject: RE: [PATCH] powerpc: Add I2C bus multiplexer node for B4 and
+>> T4240QDS
+>>
+>> Hi Wei,
+>>
+>> I totally agree that the i2c nodes topology should end up like you said.
+>>
+>> But I think adding sub-nodes should step by step.
+>> Actually the hardware i2c topology are huge like on T4.
+>> So I'd like to adding nodes when we needed.
+>> If you think the sub-nodes are needed please send another patch based on
+>> mine.
+>> I think this is the more reasonable way.
+>>
+>> Thanks.
+>>
+>> -Hongtao
+>>
+>>
+>>> -----Original Message-----
+>>> From: Yang,Wei [mailto:Wei.Yang@windriver.com]
+>>> Sent: Wednesday, September 04, 2013 9:27 AM
+>>> To: Jia Hongtao-B38951
+>>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Jia
+>>> Hongtao-B38951
+>>> Subject: Re: [PATCH] powerpc: Add I2C bus multiplexer node for B4 and
+>>> T4240QDS
+>>>
+>>> On 09/03/2013 03:51 PM, Jia Hongtao wrote:
+>>>> In both B4 and T4240QDS platform PCA9547 I2C bus multiplexer is used.
+>>> Hi Hongtao,
+>>>
+>>> If you want to support I2C bus multiplexer, for T4 and B4QDS platform,
+>>> since some eeprom devices is connected to PCA9574 I2C bus multiplexer,
+>>> so these devices should be connected to pca9547 node. Just like the
+>>> following, what do you think of it?
+>>>
+>>> +                       pca9547@77 {
+>>> +                               compatible = "philips,pca9547";
+>>> +                               reg = <0x77>;
+>>> +                               #address-cells = <1>;
+>>> +                               #size-cells = <0>;
+>>> +                               channel@0 {
+>>> +                                       #address-cells = <1>;
+>>> +                                       #size-cells = <0>;
+>>> +                                       reg = <0>;
+>>> +                                               eeprom@51 {
+>>> +                                                       compatible =
+>>> "at24,24c256";
+>>> +                                                       reg = <0x51>;
+>>> +                                               };
+>>> +                                               eeprom@52 {
+>>> +                                                       compatible =
+>>> "at24,24c256";
+>>> +                                                       reg = <0x52>;
+>>> +                                               };
+>>> +                                               eeprom@53 {
+>>> +                                                       compatible =
+>>> "at24,24c256";
+>>> +                                                       reg = <0x53>;
+>>> +                                               };
+>>> +                                               eeprom@54 {
+>>> +                                                       compatible =
+>>> "at24,24c256";
+>>> +                                                       reg = <0x54>;
+>>> +                                               };
+>>> +                                               eeprom@55 {
+>>> +                                                       compatible =
+>>> "at24,24c256";
+>>> +                                                       reg = <0x55>;
+>>> +                                               };
+>>> +                                               eeprom@56 {
+>>> +                                                       compatible =
+>>> "at24,24c256";
+>>> +                                                       reg = <0x56>;
+>>> +                                               };
+>>> +                                               rtc@68 {
+>>> +                                                       compatible =
+>>> "dallas,ds3232";
+>>> +                                                       reg = <0x68>;
+>>> +                                                       interrupts =
+>>> <0x1 0x1 0 0>;
+>>> +                                               };
+>>> +                                       };
+>>>
+>>> Wei
+>>>> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+>>>> ---
+>>>>   arch/powerpc/boot/dts/b4qds.dtsi   | 4 ++++
+>>>>   arch/powerpc/boot/dts/t4240qds.dts | 4 ++++
+>>>>   2 files changed, 8 insertions(+)
+>>>>
+>>>> diff --git a/arch/powerpc/boot/dts/b4qds.dtsi
+>>>> b/arch/powerpc/boot/dts/b4qds.dtsi
+>>>> index e6d2f8f..2aa3399 100644
+>>>> --- a/arch/powerpc/boot/dts/b4qds.dtsi
+>>>> +++ b/arch/powerpc/boot/dts/b4qds.dtsi
+>>>> @@ -120,6 +120,10 @@
+>>>>   		};
+>>>>
+>>>>   		i2c@118000 {
+>>>> +			pca9547@77 {
+>>>> +				compatible = "philips,pca9547";
+>>>> +				reg = <0x77>;
+>>>> +			};
+>>>>   			eeprom@50 {
+>>>>   				compatible = "at24,24c64";
+>>>>   				reg = <0x50>;
+>>>> diff --git a/arch/powerpc/boot/dts/t4240qds.dts
+>>>> b/arch/powerpc/boot/dts/t4240qds.dts
+>>>> index 0555976..084db57 100644
+>>>> --- a/arch/powerpc/boot/dts/t4240qds.dts
+>>>> +++ b/arch/powerpc/boot/dts/t4240qds.dts
+>>>> @@ -118,6 +118,10 @@
+>>>>   		};
+>>>>
+>>>>   		i2c@118000 {
+>>>> +			pca9547@77 {
+>>>> +				compatible = "philips,pca9547";
+>>>> +				reg = <0x77>;
+>>>> +			};
+>>>>   			eeprom@51 {
+>>>>   				compatible = "at24,24c256";
+>>>>   				reg = <0x51>;
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
