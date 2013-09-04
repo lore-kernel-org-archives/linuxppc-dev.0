@@ -1,21 +1,30 @@
-Return-Path: <qiuxishi@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher DES-CBC3-SHA (168/168 bits))
- (Client CN "myname.my.domain", Issuer "www.mirapoint.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 79E142C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2013 20:51:15 +1000 (EST)
-Message-ID: <52270E5F.4000600@huawei.com>
-Date: Wed, 4 Sep 2013 18:41:35 +0800
-From: Xishi Qiu <qiuxishi@huawei.com>
+Return-Path: <tony.luck@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
+ by ozlabs.org (Postfix) with ESMTP id 7C6BB2C00D5
+ for <linuxppc-dev@ozlabs.org>; Thu,  5 Sep 2013 02:11:24 +1000 (EST)
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>, Seiji Aguchi
+ <seiji.aguchi@hds.com>
+Subject: RE: [RFC PATCH v2 04/11] pstore: Add compression support to pstore
+Date: Wed, 4 Sep 2013 16:11:13 +0000
+Message-ID: <3908561D78D1C84285E8C5FCA982C28F31CDB23E@ORSMSX106.amr.corp.intel.com>
+References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
+ <20130816131805.3338.68767.stgit@aruna-ThinkPad-T420>
+ <A5ED84D3BB3A384992CBB9C77DEDA4D443E8F0D7@USINDEM103.corp.hds.com>
+ <3908561D78D1C84285E8C5FCA982C28F31CC7AC0@ORSMSX106.amr.corp.intel.com>
+ <521C36F4.8030607@linux.vnet.ibm.com>
+ <A5ED84D3BB3A384992CBB9C77DEDA4D443E9E24D@USINDEM103.corp.hds.com>
+ <5226CC9D.30904@linux.vnet.ibm.com>
+In-Reply-To: <5226CC9D.30904@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: <plagnioj@jcrosoft.com>, <tomi.valkeinen@ti.com>, <james.hogan@imgtec.com>,
- <monstr@monstr.eu>, <benh@kernel.crashing.org>, <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/2] mm/arch: use __free_reserved_page() to simplify the code
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-fbdev@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
- LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
- Xishi Qiu <qiuxishi@huawei.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>,
+ "keescook@chromium.org" <keescook@chromium.org>,
+ "mahesh@linux.vnet.ibm.com" <mahesh@linux.vnet.ibm.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "ccross@android.com" <ccross@android.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,77 +34,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use __free_reserved_page() to simplify the code in arch.
+> The reason behind compression failure is the size of big_oops_buf which i=
+s too
+> big for efivars case. I will do some experiments with different kind of t=
+exts
+> for buffer size 1024 to check if 100/53 suits for all the cases.
+...
 
-It used split_page() in consistent_alloc()/__dma_alloc_coherent()/dma_alloc_coherent(),
-so page->_count == 1, and we can free it safely.
+> Yes this can be changed to zlib_inflateInit2().
 
-__free_reserved_page()
-	ClearPageReserved()
-	init_page_count()  // it won't change the value
-	__free_page()
+Original patch series was just pulled by Linus ... so we'll need a patch on=
+ top
+of current Linus git tree to fix these issues.  But let's make sure that ef=
+ivars, erst,
+etc. are all happy with the changes we make before I ask Linus to pull anot=
+her
+pstore piece.
 
-Signed-off-by: Xishi Qiu <qiuxishi@huawei.com>
----
- arch/metag/kernel/dma.c           |    4 +---
- arch/microblaze/mm/consistent.c   |    7 ++-----
- arch/powerpc/mm/dma-noncoherent.c |    4 +---
- 3 files changed, 4 insertions(+), 11 deletions(-)
+Thanks
 
-diff --git a/arch/metag/kernel/dma.c b/arch/metag/kernel/dma.c
-index 8c00ded..db589ad 100644
---- a/arch/metag/kernel/dma.c
-+++ b/arch/metag/kernel/dma.c
-@@ -305,9 +305,7 @@ void dma_free_coherent(struct device *dev, size_t size,
- 
- 			if (pfn_valid(pfn)) {
- 				struct page *page = pfn_to_page(pfn);
--				ClearPageReserved(page);
--
--				__free_page(page);
-+				__free_reserved_page(page);
- 				continue;
- 			}
- 		}
-diff --git a/arch/microblaze/mm/consistent.c b/arch/microblaze/mm/consistent.c
-index 5226b09..dbbf224 100644
---- a/arch/microblaze/mm/consistent.c
-+++ b/arch/microblaze/mm/consistent.c
-@@ -176,8 +176,7 @@ void consistent_free(size_t size, void *vaddr)
- 	page = virt_to_page(vaddr);
- 
- 	do {
--		ClearPageReserved(page);
--		__free_page(page);
-+		__free_reserved_page(page);
- 		page++;
- 	} while (size -= PAGE_SIZE);
- #else
-@@ -194,9 +193,7 @@ void consistent_free(size_t size, void *vaddr)
- 			pte_clear(&init_mm, (unsigned int)vaddr, ptep);
- 			if (pfn_valid(pfn)) {
- 				page = pfn_to_page(pfn);
--
--				ClearPageReserved(page);
--				__free_page(page);
-+				__free_reserved_page(page);
- 			}
- 		}
- 		vaddr += PAGE_SIZE;
-diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
-index 6747eec..7b6c107 100644
---- a/arch/powerpc/mm/dma-noncoherent.c
-+++ b/arch/powerpc/mm/dma-noncoherent.c
-@@ -287,9 +287,7 @@ void __dma_free_coherent(size_t size, void *vaddr)
- 			pte_clear(&init_mm, addr, ptep);
- 			if (pfn_valid(pfn)) {
- 				struct page *page = pfn_to_page(pfn);
--
--				ClearPageReserved(page);
--				__free_page(page);
-+				__free_reserved_page(page);
- 			}
- 		}
- 		addr += PAGE_SIZE;
--- 
-1.7.1
+-Tony
