@@ -1,25 +1,46 @@
-Return-Path: <Wei.Yang@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <aruna@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ED2C92C00B6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2013 14:27:26 +1000 (EST)
-Message-ID: <5226B69F.207@windriver.com>
-Date: Wed, 4 Sep 2013 12:27:11 +0800
-From: "Yang,Wei" <Wei.Yang@windriver.com>
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0B9962C00D3
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Sep 2013 16:01:12 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
+ Wed, 4 Sep 2013 15:49:43 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0D36B3578052
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Sep 2013 16:01:06 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8460svM9437546
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Sep 2013 16:00:54 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r84614t8025339
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Sep 2013 16:01:05 +1000
+Message-ID: <5226CC9D.30904@linux.vnet.ibm.com>
+Date: Wed, 04 Sep 2013 11:31:01 +0530
+From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Subject: Re: [PATCH] powerpc: Add I2C bus multiplexer node for B4 and T4240QDS
-References: <1378194704-29909-1-git-send-email-hongtao.jia@freescale.com>
- <52268C7E.4040209@windriver.com>
- <412C8208B4A0464FA894C5F0C278CD5D01D32795@039-SN1MPN1-002.039d.mgd.msft.net>
- <D07C73A334FF604B95B3CBD2A545D07B15056D2E@039-SN2MPN1-011.039d.mgd.msft.net>
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B15056D2E@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="GB2312"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Jia Hongtao-B38951 <B38951@freescale.com>
+To: Seiji Aguchi <seiji.aguchi@hds.com>
+Subject: Re: [RFC PATCH v2 04/11] pstore: Add compression support to pstore
+References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
+ <20130816131805.3338.68767.stgit@aruna-ThinkPad-T420>
+ <A5ED84D3BB3A384992CBB9C77DEDA4D443E8F0D7@USINDEM103.corp.hds.com>
+ <3908561D78D1C84285E8C5FCA982C28F31CC7AC0@ORSMSX106.amr.corp.intel.com>
+ <521C36F4.8030607@linux.vnet.ibm.com>
+ <A5ED84D3BB3A384992CBB9C77DEDA4D443E9E24D@USINDEM103.corp.hds.com>
+In-Reply-To: <A5ED84D3BB3A384992CBB9C77DEDA4D443E9E24D@USINDEM103.corp.hds.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>, "Luck,
+ Tony" <tony.luck@intel.com>, "keescook@chromium.org" <keescook@chromium.org>,
+ "mahesh@linux.vnet.ibm.com" <mahesh@linux.vnet.ibm.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "ccross@android.com" <ccross@android.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,153 +50,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/04/2013 12:03 PM, Tang Yuantian-B29983 wrote:
-> Hi,
-> I noticed that there are already some nodes in i2c bus.
+On Wednesday 04 September 2013 07:14 AM, Seiji Aguchi wrote:
+> Aruna,
+>
+> Sorry for the late response.
+>
+>> Seiji,
+>>
+>> Could you let us know the efivars buffer size with which the pstore is
+>> registered when
+>> the failure occurred.
+> I looked into the issue today.
+>
+> I added some debug message just before pstore_compress().
+> As you can see below, the buffer size is a fixed value(1024).
+> Therefore, the size doesn't seem to be related to the failure directly.
+>
+> Also, in the failure case, zlib_deflate() returns Z_OK and stream.avail_out is zero.
+> So, I thought big_oops_buf_sz is too big in my environment.
+> And then, I tuned  big_oops_buf_sz to (psinfo->bufsize * 100) / 53.
+Seiji,
 
-Sorry for my late response, yeah, just as you noticed, some eeprom nodes
-already are inside i2c bus.:-)
+Thank you for the analysis.
 
-Wei
-> You should at least move the existing node into PCA9547.
+The reason behind compression failure is the size of big_oops_buf which is too
+big for efivars case. I will do some experiments with different kind of texts
+for buffer size 1024 to check if 100/53 suits for all the cases.
+
 >
-> Thanks,
-> Yuantian
+> At the same time, while looking into this issue, I had two concerns about current cording.
 >
+> 1) In pstore_decompress(), why not use zlib_inflateInit2() instead of zlib_inflateInit()?
+>       If you use zlib_deflateInit2()  for specifying window_bit at compressing time,
+>       zlib_inflateInit2() seems to be appropriate for decompressing.
+>       (Please see a comment about inflateInit2() in include/linux/zlib.h and source code of crypto/deflate.c)
+
+Yes this can be changed to zlib_inflateInit2().
+
+> 2) As looking at crypto/deflate.c, stream->workspace is kzalloced at the beginning of
+>     compressing/decompressing time.
+>      So, in pstore case,  stream.workspace must be initialized to 0 with memset() in pstore_compress()/decompress().
+
+Hmm.. I don't think this is a issue. If you see fs/logfs/compr.c from which I 
+derived the compression
+algorithms for pstore as well, they have not initialized stream.workspace. Since 
+the space will be overwritten
+during the calculation, I dont think it will matter.
+
+The above 2 things you have suggested are good to have. But the reason behind 
+compression failure is
+the big_oops_buf_sz which is too big for efivars.
+
+> I did three things above, tuning big_oops_buf_sz, using zlib_inflateInit2() and initializing stream.workspace , in my environment.
+> As a result, compressions/decmpressions of all entries succeeded with efivars driver.
 >
->> -----Original Message-----
->> From: Linuxppc-dev [mailto:linuxppc-dev-
->> bounces+b29983=freescale.com@lists.ozlabs.org] On Behalf Of Jia Hongtao-
->> B38951
->> Sent: 2013年9月4日 星期三 11:38
->> To: Yang,Wei
->> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org
->> Subject: RE: [PATCH] powerpc: Add I2C bus multiplexer node for B4 and
->> T4240QDS
->>
->> Hi Wei,
->>
->> I totally agree that the i2c nodes topology should end up like you said.
->>
->> But I think adding sub-nodes should step by step.
->> Actually the hardware i2c topology are huge like on T4.
->> So I'd like to adding nodes when we needed.
->> If you think the sub-nodes are needed please send another patch based on
->> mine.
->> I think this is the more reasonable way.
->>
->> Thanks.
->>
->> -Hongtao
->>
->>
->>> -----Original Message-----
->>> From: Yang,Wei [mailto:Wei.Yang@windriver.com]
->>> Sent: Wednesday, September 04, 2013 9:27 AM
->>> To: Jia Hongtao-B38951
->>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Jia
->>> Hongtao-B38951
->>> Subject: Re: [PATCH] powerpc: Add I2C bus multiplexer node for B4 and
->>> T4240QDS
->>>
->>> On 09/03/2013 03:51 PM, Jia Hongtao wrote:
->>>> In both B4 and T4240QDS platform PCA9547 I2C bus multiplexer is used.
->>> Hi Hongtao,
->>>
->>> If you want to support I2C bus multiplexer, for T4 and B4QDS platform,
->>> since some eeprom devices is connected to PCA9574 I2C bus multiplexer,
->>> so these devices should be connected to pca9547 node. Just like the
->>> following, what do you think of it?
->>>
->>> +                       pca9547@77 {
->>> +                               compatible = "philips,pca9547";
->>> +                               reg = <0x77>;
->>> +                               #address-cells = <1>;
->>> +                               #size-cells = <0>;
->>> +                               channel@0 {
->>> +                                       #address-cells = <1>;
->>> +                                       #size-cells = <0>;
->>> +                                       reg = <0>;
->>> +                                               eeprom@51 {
->>> +                                                       compatible =
->>> "at24,24c256";
->>> +                                                       reg = <0x51>;
->>> +                                               };
->>> +                                               eeprom@52 {
->>> +                                                       compatible =
->>> "at24,24c256";
->>> +                                                       reg = <0x52>;
->>> +                                               };
->>> +                                               eeprom@53 {
->>> +                                                       compatible =
->>> "at24,24c256";
->>> +                                                       reg = <0x53>;
->>> +                                               };
->>> +                                               eeprom@54 {
->>> +                                                       compatible =
->>> "at24,24c256";
->>> +                                                       reg = <0x54>;
->>> +                                               };
->>> +                                               eeprom@55 {
->>> +                                                       compatible =
->>> "at24,24c256";
->>> +                                                       reg = <0x55>;
->>> +                                               };
->>> +                                               eeprom@56 {
->>> +                                                       compatible =
->>> "at24,24c256";
->>> +                                                       reg = <0x56>;
->>> +                                               };
->>> +                                               rtc@68 {
->>> +                                                       compatible =
->>> "dallas,ds3232";
->>> +                                                       reg = <0x68>;
->>> +                                                       interrupts =
->>> <0x1 0x1 0 0>;
->>> +                                               };
->>> +                                       };
->>>
->>> Wei
->>>> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
->>>> ---
->>>>   arch/powerpc/boot/dts/b4qds.dtsi   | 4 ++++
->>>>   arch/powerpc/boot/dts/t4240qds.dts | 4 ++++
->>>>   2 files changed, 8 insertions(+)
->>>>
->>>> diff --git a/arch/powerpc/boot/dts/b4qds.dtsi
->>>> b/arch/powerpc/boot/dts/b4qds.dtsi
->>>> index e6d2f8f..2aa3399 100644
->>>> --- a/arch/powerpc/boot/dts/b4qds.dtsi
->>>> +++ b/arch/powerpc/boot/dts/b4qds.dtsi
->>>> @@ -120,6 +120,10 @@
->>>>   		};
->>>>
->>>>   		i2c@118000 {
->>>> +			pca9547@77 {
->>>> +				compatible = "philips,pca9547";
->>>> +				reg = <0x77>;
->>>> +			};
->>>>   			eeprom@50 {
->>>>   				compatible = "at24,24c64";
->>>>   				reg = <0x50>;
->>>> diff --git a/arch/powerpc/boot/dts/t4240qds.dts
->>>> b/arch/powerpc/boot/dts/t4240qds.dts
->>>> index 0555976..084db57 100644
->>>> --- a/arch/powerpc/boot/dts/t4240qds.dts
->>>> +++ b/arch/powerpc/boot/dts/t4240qds.dts
->>>> @@ -118,6 +118,10 @@
->>>>   		};
->>>>
->>>>   		i2c@118000 {
->>>> +			pca9547@77 {
->>>> +				compatible = "philips,pca9547";
->>>> +				reg = <0x77>;
->>>> +			};
->>>>   			eeprom@51 {
->>>>   				compatible = "at24,24c256";
->>>>   				reg = <0x51>;
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> <snip>
+> Panic#2 Part1
+> <4>[   75.665020]  [<ffffffff811af59c>] SyS_write+0x4c/0xa0
+> <4>[   75.665020]  [<ffffffff8168be82>] system_call_fastpath+0x16/0x1b
+> <4>[   75.665020] Code: ef e8 ff f7 ff ff eb d8 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 0f 1f 44 00 00 55 c7 05 cc f3 c9 00 01 00 00 00 48 89 e5 0f ae f8 <c6> 04 25 00 00 00 00 01 5d c3 0f 1f 44 00 00 55 31 c0 c7 05 5e
+> <1>[   75.665020] RIP  [<ffffffff813d3946>] sysrq_handle_crash+0x16/0x20
+> <4>[   75.665020]  RSP <ffff88007852de80>
+> <4>[   75.665020] CR2: 0000000000000000
+> <4>[   75.665020] ---[ end trace 97bb4a1f8d3fe7b2 ]---
+> <3>[   75.665020] pstore_dump hsize=13 len=2155 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <3>[   75.665020] pstore_dump hsize=13 len=2246 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <3>[   75.665020] pstore: compression failed for Part 2 returned -5
+> <3>[   75.665020] pstore: Capture uncompressed oops/panic report of Part 2
+> <3>[   75.665020] pstore_dump hsize=13 len=2239 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <3>[   75.665020] pstore_dump hsize=13 len=2231 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <3>[   75.665020] pstore_dump hsize=13 len=2185 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <3>[   75.665020] pstore: compression failed for Part 5 returned -5
+> <3>[   75.665020] pstore: Capture uncompressed oops/panic report of Part 5
+> <3>[   75.665020] pstore_dump hsize=13 len=2234 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <3>[   75.665020] pstore_dump hsize=13 len=2208 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <3>[   75.665020] pstore_dump hsize=13 len=2218 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <3>[   75.665020] pstore_dump hsize=13 len=2222 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <3>[   75.665020] pstore: compression failed for Part 9 returned -5
+> <3>[   75.665020] pstore: Capture uncompressed oops/panic report of Part 9
+> <3>[   75.665020] pstore_dump hsize=14 len=2256 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <3>[   75.665020] pstore_dump hsize=14 len=2219 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <3>[   75.665020] pstore_dump hsize=14 len=2226 big_oops_buf_sz=2275 psinfo->bufsize=1024
+> <0>[   75.665020] Kernel panic - not syncing: Fatal exception
+> <3>[   75.665020] drm_kms_helper: panic occurred, switching back to text console
+> <snip>
+>
+> Seiji
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
