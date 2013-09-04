@@ -1,30 +1,23 @@
-Return-Path: <tony.luck@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
- by ozlabs.org (Postfix) with ESMTP id 7C6BB2C00D5
- for <linuxppc-dev@ozlabs.org>; Thu,  5 Sep 2013 02:11:24 +1000 (EST)
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>, Seiji Aguchi
- <seiji.aguchi@hds.com>
-Subject: RE: [RFC PATCH v2 04/11] pstore: Add compression support to pstore
-Date: Wed, 4 Sep 2013 16:11:13 +0000
-Message-ID: <3908561D78D1C84285E8C5FCA982C28F31CDB23E@ORSMSX106.amr.corp.intel.com>
-References: <20130816131403.3338.82330.stgit@aruna-ThinkPad-T420>
- <20130816131805.3338.68767.stgit@aruna-ThinkPad-T420>
- <A5ED84D3BB3A384992CBB9C77DEDA4D443E8F0D7@USINDEM103.corp.hds.com>
- <3908561D78D1C84285E8C5FCA982C28F31CC7AC0@ORSMSX106.amr.corp.intel.com>
- <521C36F4.8030607@linux.vnet.ibm.com>
- <A5ED84D3BB3A384992CBB9C77DEDA4D443E9E24D@USINDEM103.corp.hds.com>
- <5226CC9D.30904@linux.vnet.ibm.com>
-In-Reply-To: <5226CC9D.30904@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 919CE2C00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2013 02:26:03 +1000 (EST)
+Message-ID: <1378311953.12204.20.camel@snotra.buserror.net>
+Subject: Re: [PATCH V3 2/2] powerpc/85xx: Add TWR-P1025 board support
+From: Scott Wood <scottwood@freescale.com>
+To: Xie Xiaobo <X.Xie@freescale.com>
+Date: Wed, 4 Sep 2013 11:25:53 -0500
+In-Reply-To: <1378116699-18826-2-git-send-email-X.Xie@freescale.com>
+References: <1378116699-18826-1-git-send-email-X.Xie@freescale.com>
+ <1378116699-18826-2-git-send-email-X.Xie@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>,
- "keescook@chromium.org" <keescook@chromium.org>,
- "mahesh@linux.vnet.ibm.com" <mahesh@linux.vnet.ibm.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "ccross@android.com" <ccross@android.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Michael Johnston <michael.johnston@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,23 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> The reason behind compression failure is the size of big_oops_buf which i=
-s too
-> big for efivars case. I will do some experiments with different kind of t=
-exts
-> for buffer size 1024 to check if 100/53 suits for all the cases.
-...
+On Mon, 2013-09-02 at 18:11 +0800, Xie Xiaobo wrote:
+> +&soc {
+> +	usb@22000 {
+> +		phy_type = "ulpi";
+> +	};
+> +
+> +	mdio@24000 {
+> +		phy0: ethernet-phy@2 {
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <1 1>;
+> +			reg = <0x2>;
+> +		};
+> +
+> +		phy1: ethernet-phy@1 {
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <2 1>;
+> +			reg = <0x1>;
+> +		};
 
-> Yes this can be changed to zlib_inflateInit2().
+Again, #interrupt-cells is 4.
 
-Original patch series was just pulled by Linus ... so we'll need a patch on=
- top
-of current Linus git tree to fix these issues.  But let's make sure that ef=
-ivars, erst,
-etc. are all happy with the changes we make before I ask Linus to pull anot=
-her
-pstore piece.
+Please respond to feedback rather than ignoring it and reposting the
+same thing without comment.
 
-Thanks
-
--Tony
+-Scott
