@@ -1,23 +1,14 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher DES-CBC3-SHA (168/168 bits))
- (Client CN "myname.my.domain", Issuer "www.mirapoint.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5A5D22C0096
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2013 17:57:33 +1000 (EST)
-From: Yijing Wang <wangyijing@huawei.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bjorn Helgaas
- <bhelgaas@google.com>, "James E.J. Bottomley" <JBottomley@parallels.com>
-Subject: [PATCH v2 3/6] powerpc/pci: use pci_is_pcie() to simplify code
-Date: Thu, 5 Sep 2013 15:55:27 +0800
-Message-ID: <1378367730-25996-3-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1378367730-25996-1-git-send-email-wangyijing@huawei.com>
-References: <1378367730-25996-1-git-send-email-wangyijing@huawei.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 5 Sep 2013 19:53:16 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Fix possible deadlock on page fault
+Message-ID: <20130905095316.GA18222@iris.ozlabs.ibm.com>
+References: <1378365422-25203-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Hanjun Guo <guohanjun@huawei.com>, Yijing Wang <wangyijing@huawei.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1378365422-25203-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use pci_is_pcie() to simplify code.
+On Thu, Sep 05, 2013 at 12:47:02PM +0530, Aneesh Kumar K.V wrote:
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
-Reviewed-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
----
- arch/powerpc/kernel/eeh.c     |    3 +--
- arch/powerpc/sysdev/fsl_pci.c |    2 +-
- 2 files changed, 2 insertions(+), 3 deletions(-)
+> @@ -280,6 +280,13 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+>  
+>  	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
+>  
+> +	/*
+> +	 * We want to do this outside mmap_sem, because reading code around nip
+> +	 * can result in fault, which will cause a deadlock when called with
+> +	 * mmap_sem held
+> +	 */
+> +	store_update = store_updates_sp(regs);
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 55593ee..6ebbe54 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -189,8 +189,7 @@ static size_t eeh_gather_pci_data(struct eeh_dev *edev, char * buf, size_t len)
- 	}
- 
- 	/* If PCI-E capable, dump PCI-E cap 10, and the AER */
--	cap = pci_find_capability(dev, PCI_CAP_ID_EXP);
--	if (cap) {
-+	if (pci_is_pcie(dev)) {
- 		n += scnprintf(buf+n, len-n, "pci-e cap10:\n");
- 		printk(KERN_WARNING
- 		       "EEH: PCI-E capabilities and status follow:\n");
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 46ac1dd..5402a1d 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -41,7 +41,7 @@ static void quirk_fsl_pcie_header(struct pci_dev *dev)
- 	u8 hdr_type;
- 
- 	/* if we aren't a PCIe don't bother */
--	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
-+	if (!pci_is_pcie(dev))
- 		return;
- 
- 	/* if we aren't in host mode don't bother */
--- 
-1.7.1
+We should only call store_updates_sp() if user_mode(regs); that was
+the previous behaviour.
+
+Paul.
