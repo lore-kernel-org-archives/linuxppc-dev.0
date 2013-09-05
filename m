@@ -1,37 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 036402C00EE
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2013 22:35:19 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 5 Sep 2013 22:31:57 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 610053578050
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2013 22:35:15 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r85CIxMJ3735862
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Sep 2013 22:18:59 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r85CZEmc022634
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Sep 2013 22:35:14 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix possible deadlock on page fault
-In-Reply-To: <1378381835.4321.169.camel@pasglop>
-References: <1378365422-25203-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20130905095316.GA18222@iris.ozlabs.ibm.com>
- <87a9jrwkuc.fsf@linux.vnet.ibm.com> <1378381835.4321.169.camel@pasglop>
-Date: Thu, 05 Sep 2013 18:05:12 +0530
-Message-ID: <877gevwinz.fsf@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8F73D2C00ED
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2013 03:57:29 +1000 (EST)
+Message-ID: <1378403834.12204.99.camel@snotra.buserror.net>
+Subject: Re: [V2,2/2] powerpc/85xx: workaround for chips with MSI hardware
+ errata
+From: Scott Wood <scottwood@freescale.com>
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Date: Thu, 5 Sep 2013 12:57:14 -0500
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01D40DC2@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1364954598-31914-2-git-send-email-hongtao.jia@freescale.com>
+ <20130628022833.GA28050@home.buserror.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01D40DC2@039-SN1MPN1-003.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,47 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Wed, 2013-09-04 at 23:00 -0500, Jia Hongtao-B38951 wrote:
+> > -----Original Message-----
+> > From: Jia Hongtao-B38951
+> > Sent: Monday, July 01, 2013 5:36 PM
+> > To: Wood Scott-B07421
+> > Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
+> > Subject: RE: [V2,2/2] powerpc/85xx: workaround for chips with MSI
+> > hardware errata
+> > 
+> > > -----Original Message-----
+> > > From: Wood Scott-B07421
+> > > Sent: Friday, June 28, 2013 10:29 AM
+> > > To: Jia Hongtao-B38951
+> > > Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Wood
+> > > Scott-
+> > > B07421
+> > > Subject: Re: [V2,2/2] powerpc/85xx: workaround for chips with MSI
+> > > hardware errata
+> > >
+> > > On Wed, Apr 03, 2013 at 10:03:18AM +0800, Hongtao Jia wrote:
+> > > > The MPIC version 2.0 has a MSI errata (errata PIC1 of mpc8544), It
+> > > > causes that neither MSI nor MSI-X can work fine. This is a
+> > > > workaround to allow MSI-X to function properly.
+> > > >
+> > > > Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
+> > > > Signed-off-by: Li Yang <leoli@freescale.com>
+> > > > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> > >
+> > > Building on 83xx:
+> > >
+> > >   arch/powerpc/sysdev/built-in.o: In function `fsl_of_msi_probe':
+> > >   fsl_msi.c:(.text+0x1464): undefined reference to
+> > > `fsl_mpic_primary_get_version'
+> > >   make[1]: *** [vmlinux] Error 1
+> > >   make: *** [sub-make] Error 2
+> > >
+> > > fsl_msi.c supports IPIC as well.
+> > >
+> > > -Scott
+> > 
+> > Hi Scott,
+> > I updated the patch to fix this compile error just now.
+> > please refer to:
+> > http://patchwork.ozlabs.org/patch/256018/
+> > 
+> > Thanks.
+> > -Hongtao
+> 
+> Hi Scott,
+> 
+> The 83xx compile issue has already been fixed.
+> Please have a review on this patch.
 
-> On Thu, 2013-09-05 at 17:18 +0530, Aneesh Kumar K.V wrote:
->> Paul Mackerras <paulus@samba.org> writes:
->> 
->> > On Thu, Sep 05, 2013 at 12:47:02PM +0530, Aneesh Kumar K.V wrote:
->> >
->> >> @@ -280,6 +280,13 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
->> >>  
->> >>  	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
->> >>  
->> >> +	/*
->> >> +	 * We want to do this outside mmap_sem, because reading code around nip
->> >> +	 * can result in fault, which will cause a deadlock when called with
->> >> +	 * mmap_sem held
->> >> +	 */
->> >> +	store_update = store_updates_sp(regs);
->> >
->> > We should only call store_updates_sp() if user_mode(regs); that was
->> > the previous behaviour.
->> 
->> Updated to 
->> 
->> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
->> index 8726779..fad7af6 100644
->> --- a/arch/powerpc/mm/fault.c
->> +++ b/arch/powerpc/mm/fault.c
->> @@ -206,7 +206,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
->>  	int trap = TRAP(regs);
->>   	int is_exec = trap == 0x400;
->>  	int fault;
->> -	int rc = 0;
->> +	int rc = 0, store_update = 0;
->
-> Keep the "sp", in the name, it's confusing otherwise. It's not just
-> about "store update", it's about specifically recognizing instructions
-> used to update the stack frame in order to let them and only them
-> significantly lower the stack pointer.
->
+Oh, sorry -- I missed it because it was marked "Changes Requested".
+I've changed the status and will consider it for the next batch of
+"next" patches.
 
-Ok will do that. I posted a v2. So will wait for other feedback before i
-post a new version.
+In the future, if a patch is miscategorized in patchwork (e.g. says
+"changes requested" when there is no longer a need to submit a new
+patch) please mention that specifically and provide the patchwork URL.
 
--aneesh
+-Scott
