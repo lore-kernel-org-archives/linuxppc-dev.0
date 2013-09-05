@@ -1,19 +1,23 @@
 Return-Path: <B38951@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E6AF82C00DA
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2013 12:44:58 +1000 (EST)
-From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <B07421@freescale.com>
-Subject: [PATCH V2] powerpc: Add I2C bus multiplexer node for B4 and T4240QDS
-Date: Thu, 5 Sep 2013 10:41:47 +0800
-Message-ID: <1378348907-3137-1-git-send-email-hongtao.jia@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3CC072C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2013 14:00:17 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Jia Hongtao-B38951 <B38951@freescale.com>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [V2,2/2] powerpc/85xx: workaround for chips with MSI hardware
+ errata
+Date: Thu, 5 Sep 2013 04:00:08 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01D40DC2@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1364954598-31914-2-git-send-email-hongtao.jia@freescale.com>
+ <20130628022833.GA28050@home.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: hongtao.jia@freescale.com, Wei.Yang@windriver.com
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,155 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In both B4 and T4240QDS platform PCA9547 I2C bus multiplexer is used.
-The sub-nodes are also reorganized according to right I2C topology.
+> -----Original Message-----
+> From: Jia Hongtao-B38951
+> Sent: Monday, July 01, 2013 5:36 PM
+> To: Wood Scott-B07421
+> Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
+> Subject: RE: [V2,2/2] powerpc/85xx: workaround for chips with MSI
+> hardware errata
+>=20
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, June 28, 2013 10:29 AM
+> > To: Jia Hongtao-B38951
+> > Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Wood
+> > Scott-
+> > B07421
+> > Subject: Re: [V2,2/2] powerpc/85xx: workaround for chips with MSI
+> > hardware errata
+> >
+> > On Wed, Apr 03, 2013 at 10:03:18AM +0800, Hongtao Jia wrote:
+> > > The MPIC version 2.0 has a MSI errata (errata PIC1 of mpc8544), It
+> > > causes that neither MSI nor MSI-X can work fine. This is a
+> > > workaround to allow MSI-X to function properly.
+> > >
+> > > Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
+> > > Signed-off-by: Li Yang <leoli@freescale.com>
+> > > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> >
+> > Building on 83xx:
+> >
+> >   arch/powerpc/sysdev/built-in.o: In function `fsl_of_msi_probe':
+> >   fsl_msi.c:(.text+0x1464): undefined reference to
+> > `fsl_mpic_primary_get_version'
+> >   make[1]: *** [vmlinux] Error 1
+> >   make: *** [sub-make] Error 2
+> >
+> > fsl_msi.c supports IPIC as well.
+> >
+> > -Scott
+>=20
+> Hi Scott,
+> I updated the patch to fix this compile error just now.
+> please refer to:
+> http://patchwork.ozlabs.org/patch/256018/
+>=20
+> Thanks.
+> -Hongtao
 
-Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
----
-V2 change log:
-Reorganized the sub-nodes under I2C multiplexer to represent right topology.
+Hi Scott,
 
- arch/powerpc/boot/dts/b4qds.dtsi   | 49 +++++++++++++++++-----------
- arch/powerpc/boot/dts/t4240qds.dts | 67 ++++++++++++++++++++++----------------
- 2 files changed, 69 insertions(+), 47 deletions(-)
+The 83xx compile issue has already been fixed.
+Please have a review on this patch.
 
-diff --git a/arch/powerpc/boot/dts/b4qds.dtsi b/arch/powerpc/boot/dts/b4qds.dtsi
-index e6d2f8f..de8cb38 100644
---- a/arch/powerpc/boot/dts/b4qds.dtsi
-+++ b/arch/powerpc/boot/dts/b4qds.dtsi
-@@ -120,25 +120,36 @@
- 		};
- 
- 		i2c@118000 {
--			eeprom@50 {
--				compatible = "at24,24c64";
--				reg = <0x50>;
--			};
--			eeprom@51 {
--				compatible = "at24,24c256";
--				reg = <0x51>;
--			};
--			eeprom@53 {
--				compatible = "at24,24c256";
--				reg = <0x53>;
--			};
--			eeprom@57 {
--				compatible = "at24,24c256";
--				reg = <0x57>;
--			};
--			rtc@68 {
--				compatible = "dallas,ds3232";
--				reg = <0x68>;
-+			pca9547@77 {
-+				compatible = "philips,pca9547";
-+				reg = <0x77>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				channel@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+					eeprom@50 {
-+						compatible = "at24,24c64";
-+						reg = <0x50>;
-+					};
-+					eeprom@51 {
-+						compatible = "at24,24c256";
-+						reg = <0x51>;
-+					};
-+					eeprom@53 {
-+						compatible = "at24,24c256";
-+						reg = <0x53>;
-+					};
-+					eeprom@57 {
-+						compatible = "at24,24c256";
-+						reg = <0x57>;
-+					};
-+					rtc@68 {
-+						compatible = "dallas,ds3232";
-+						reg = <0x68>;
-+					};
-+				};
- 			};
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/t4240qds.dts b/arch/powerpc/boot/dts/t4240qds.dts
-index 0555976..ae68595 100644
---- a/arch/powerpc/boot/dts/t4240qds.dts
-+++ b/arch/powerpc/boot/dts/t4240qds.dts
-@@ -118,34 +118,45 @@
- 		};
- 
- 		i2c@118000 {
--			eeprom@51 {
--				compatible = "at24,24c256";
--				reg = <0x51>;
--			};
--			eeprom@52 {
--				compatible = "at24,24c256";
--				reg = <0x52>;
--			};
--			eeprom@53 {
--				compatible = "at24,24c256";
--				reg = <0x53>;
--			};
--			eeprom@54 {
--				compatible = "at24,24c256";
--				reg = <0x54>;
--			};
--			eeprom@55 {
--				compatible = "at24,24c256";
--				reg = <0x55>;
--			};
--			eeprom@56 {
--				compatible = "at24,24c256";
--				reg = <0x56>;
--			};
--			rtc@68 {
--				compatible = "dallas,ds3232";
--				reg = <0x68>;
--				interrupts = <0x1 0x1 0 0>;
-+			pca9547@77 {
-+				compatible = "philips,pca9547";
-+				reg = <0x77>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				channel@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+					eeprom@51 {
-+						compatible = "at24,24c256";
-+						reg = <0x51>;
-+					};
-+					eeprom@52 {
-+						compatible = "at24,24c256";
-+						reg = <0x52>;
-+					};
-+					eeprom@53 {
-+						compatible = "at24,24c256";
-+						reg = <0x53>;
-+					};
-+					eeprom@54 {
-+						compatible = "at24,24c256";
-+						reg = <0x54>;
-+					};
-+					eeprom@55 {
-+						compatible = "at24,24c256";
-+						reg = <0x55>;
-+					};
-+					eeprom@56 {
-+						compatible = "at24,24c256";
-+						reg = <0x56>;
-+					};
-+					rtc@68 {
-+						compatible = "dallas,ds3232";
-+						reg = <0x68>;
-+						interrupts = <0x1 0x1 0 0>;
-+					};
-+				};
- 			};
- 		};
- 	};
--- 
-1.8.0
+Thanks.
+-Hongtao
