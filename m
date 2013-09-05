@@ -1,32 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D63B2C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2013 17:17:14 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 5 Sep 2013 17:03:15 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id BAE7B2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2013 17:17:11 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8570lYW61538506
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Sep 2013 17:00:47 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r857HAYH011386
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Sep 2013 17:17:11 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc: Fix possible deadlock on page fault
-Date: Thu,  5 Sep 2013 12:47:02 +0530
-Message-Id: <1378365422-25203-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+ (using TLSv1 with cipher DES-CBC3-SHA (168/168 bits))
+ (Client CN "myname.my.domain", Issuer "www.mirapoint.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5A5D22C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2013 17:57:33 +1000 (EST)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bjorn Helgaas
+ <bhelgaas@google.com>, "James E.J. Bottomley" <JBottomley@parallels.com>
+Subject: [PATCH v2 3/6] powerpc/pci: use pci_is_pcie() to simplify code
+Date: Thu, 5 Sep 2013 15:55:27 +0800
+Message-ID: <1378367730-25996-3-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1378367730-25996-1-git-send-email-wangyijing@huawei.com>
+References: <1378367730-25996-1-git-send-email-wangyijing@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Hanjun Guo <guohanjun@huawei.com>, Yijing Wang <wangyijing@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,80 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Use pci_is_pcie() to simplify code.
 
- stack_grow_into/14082 is trying to acquire lock:
-  (&mm->mmap_sem){++++++}, at: [<c000000000206d28>] .might_fault+0x78/0xe0
-
- but task is already holding lock:
-  (&mm->mmap_sem){++++++}, at: [<c0000000007ffd8c>] .do_page_fault+0x24c/0x910
-
- other info that might help us debug this:
-  Possible unsafe locking scenario:
-
-        CPU0
-        ----
-   lock(&mm->mmap_sem);
-   lock(&mm->mmap_sem);
-
-  *** DEADLOCK ***
-
-  May be due to missing lock nesting notation
-
- 1 lock held by stack_grow_into/14082:
-  #0:  (&mm->mmap_sem){++++++}, at: [<c0000000007ffd8c>] .do_page_fault+0x24c/0x910
-
- stack backtrace:
- CPU: 21 PID: 14082 Comm: stack_grow_into Not tainted 3.10.0-10.el7.ppc64.debug #1
- Call Trace:
- [c0000003d396b850] [c000000000016e7c] .show_stack+0x7c/0x1f0 (unreliable)
- [c0000003d396b920] [c000000000813fc8] .dump_stack+0x28/0x3c
- [c0000003d396b990] [c000000000124b90] .__lock_acquire+0x1640/0x1800
- [c0000003d396bab0] [c00000000012570c] .lock_acquire+0xac/0x250
- [c0000003d396bb80] [c000000000206d54] .might_fault+0xa4/0xe0
- [c0000003d396bbf0] [c0000000007ffe2c] .do_page_fault+0x2ec/0x910
- [c0000003d396be30] [c0000000000092e8] handle_page_fault+0x10/0x30
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
+Reviewed-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
 ---
- arch/powerpc/mm/fault.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/eeh.c     |    3 +--
+ arch/powerpc/sysdev/fsl_pci.c |    2 +-
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 8726779..dc2902a 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -206,7 +206,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- 	int trap = TRAP(regs);
-  	int is_exec = trap == 0x400;
- 	int fault;
--	int rc = 0;
-+	int rc = 0, store_update;
- 
- #if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
- 	/*
-@@ -280,6 +280,13 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- 
- 	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
- 
-+	/*
-+	 * We want to do this outside mmap_sem, because reading code around nip
-+	 * can result in fault, which will cause a deadlock when called with
-+	 * mmap_sem held
-+	 */
-+	store_update = store_updates_sp(regs);
-+
- 	/* When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
- 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
-@@ -346,7 +353,7 @@ retry:
- 		 * expand the stack rather than segfaulting.
- 		 */
- 		if (address + 2048 < uregs->gpr[1]
--		    && (!user_mode(regs) || !store_updates_sp(regs)))
-+		    && (!user_mode(regs) || !store_update))
- 			goto bad_area;
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 55593ee..6ebbe54 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -189,8 +189,7 @@ static size_t eeh_gather_pci_data(struct eeh_dev *edev, char * buf, size_t len)
  	}
- 	if (expand_stack(vma, address))
+ 
+ 	/* If PCI-E capable, dump PCI-E cap 10, and the AER */
+-	cap = pci_find_capability(dev, PCI_CAP_ID_EXP);
+-	if (cap) {
++	if (pci_is_pcie(dev)) {
+ 		n += scnprintf(buf+n, len-n, "pci-e cap10:\n");
+ 		printk(KERN_WARNING
+ 		       "EEH: PCI-E capabilities and status follow:\n");
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 46ac1dd..5402a1d 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -41,7 +41,7 @@ static void quirk_fsl_pcie_header(struct pci_dev *dev)
+ 	u8 hdr_type;
+ 
+ 	/* if we aren't a PCIe don't bother */
+-	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
++	if (!pci_is_pcie(dev))
+ 		return;
+ 
+ 	/* if we aren't in host mode don't bother */
 -- 
-1.8.1.2
+1.7.1
