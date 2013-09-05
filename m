@@ -1,24 +1,21 @@
-Return-Path: <gleb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 69AA62C00F2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2013 04:10:25 +1000 (EST)
-Date: Thu, 5 Sep 2013 21:10:10 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH v9 12/13] KVM: PPC: Add support for IOMMU in-kernel
- handling
-Message-ID: <20130905181010.GE13021@redhat.com>
-References: <1377679070-3515-1-git-send-email-aik@ozlabs.ru>
- <1377679841-3822-1-git-send-email-aik@ozlabs.ru>
- <20130901120609.GJ22899@redhat.com> <52240295.7050608@ozlabs.ru>
- <20130903105315.GY22899@redhat.com> <522607D8.4070408@ozlabs.ru>
-MIME-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 557292C00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2013 04:34:39 +1000 (EST)
+Subject: Re: [PATCH V2 2/2] powerpc/85xx: workaround for chips with MSI
+ hardware errata
+Mime-Version: 1.0 (Apple Message framework v1283)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <522607D8.4070408@ozlabs.ru>
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1364954598-31914-2-git-send-email-hongtao.jia@freescale.com>
+Date: Thu, 5 Sep 2013 13:34:41 -0500
+Message-Id: <C12D1FFD-4D98-48C1-8681-54489600F722@kernel.crashing.org>
+References: <1364954598-31914-1-git-send-email-hongtao.jia@freescale.com>
+ <1364954598-31914-2-git-send-email-hongtao.jia@freescale.com>
+To: Jia Hongtao <hongtao.jia@freescale.com>
+Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,143 +25,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 04, 2013 at 02:01:28AM +1000, Alexey Kardashevskiy wrote:
-> On 09/03/2013 08:53 PM, Gleb Natapov wrote:
-> > On Mon, Sep 02, 2013 at 01:14:29PM +1000, Alexey Kardashevskiy wrote:
-> >> On 09/01/2013 10:06 PM, Gleb Natapov wrote:
-> >>> On Wed, Aug 28, 2013 at 06:50:41PM +1000, Alexey Kardashevskiy wrote:
-> >>>> This allows the host kernel to handle H_PUT_TCE, H_PUT_TCE_INDIRECT
-> >>>> and H_STUFF_TCE requests targeted an IOMMU TCE table without passing
-> >>>> them to user space which saves time on switching to user space and back.
-> >>>>
-> >>>> Both real and virtual modes are supported. The kernel tries to
-> >>>> handle a TCE request in the real mode, if fails it passes the request
-> >>>> to the virtual mode to complete the operation. If it a virtual mode
-> >>>> handler fails, the request is passed to user space.
-> >>>>
-> >>>> The first user of this is VFIO on POWER. Trampolines to the VFIO external
-> >>>> user API functions are required for this patch.
-> >>>>
-> >>>> This adds a "SPAPR TCE IOMMU" KVM device to associate a logical bus
-> >>>> number (LIOBN) with an VFIO IOMMU group fd and enable in-kernel handling
-> >>>> of map/unmap requests. The device supports a single attribute which is
-> >>>> a struct with LIOBN and IOMMU fd. When the attribute is set, the device
-> >>>> establishes the connection between KVM and VFIO.
-> >>>>
-> >>>> Tests show that this patch increases transmission speed from 220MB/s
-> >>>> to 750..1020MB/s on 10Gb network (Chelsea CXGB3 10Gb ethernet card).
-> >>>>
-> >>>> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> >>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>>
-> >>>> ---
-> >>>>
-> >>>> Changes:
-> >>>> v9:
-> >>>> * KVM_CAP_SPAPR_TCE_IOMMU ioctl to KVM replaced with "SPAPR TCE IOMMU"
-> >>>> KVM device
-> >>>> * release_spapr_tce_table() is not shared between different TCE types
-> >>>> * reduced the patch size by moving VFIO external API
-> >>>> trampolines to separate patche
-> >>>> * moved documentation from Documentation/virtual/kvm/api.txt to
-> >>>> Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
-> >>>>
-> >>>> v8:
-> >>>> * fixed warnings from check_patch.pl
-> >>>>
-> >>>> 2013/07/11:
-> >>>> * removed multiple #ifdef IOMMU_API as IOMMU_API is always enabled
-> >>>> for KVM_BOOK3S_64
-> >>>> * kvmppc_gpa_to_hva_and_get also returns host phys address. Not much sense
-> >>>> for this here but the next patch for hugepages support will use it more.
-> >>>>
-> >>>> 2013/07/06:
-> >>>> * added realmode arch_spin_lock to protect TCE table from races
-> >>>> in real and virtual modes
-> >>>> * POWERPC IOMMU API is changed to support real mode
-> >>>> * iommu_take_ownership and iommu_release_ownership are protected by
-> >>>> iommu_table's locks
-> >>>> * VFIO external user API use rewritten
-> >>>> * multiple small fixes
-> >>>>
-> >>>> 2013/06/27:
-> >>>> * tce_list page is referenced now in order to protect it from accident
-> >>>> invalidation during H_PUT_TCE_INDIRECT execution
-> >>>> * added use of the external user VFIO API
-> >>>>
-> >>>> 2013/06/05:
-> >>>> * changed capability number
-> >>>> * changed ioctl number
-> >>>> * update the doc article number
-> >>>>
-> >>>> 2013/05/20:
-> >>>> * removed get_user() from real mode handlers
-> >>>> * kvm_vcpu_arch::tce_tmp usage extended. Now real mode handler puts there
-> >>>> translated TCEs, tries realmode_get_page() on those and if it fails, it
-> >>>> passes control over the virtual mode handler which tries to finish
-> >>>> the request handling
-> >>>> * kvmppc_lookup_pte() now does realmode_get_page() protected by BUSY bit
-> >>>> on a page
-> >>>> * The only reason to pass the request to user mode now is when the user mode
-> >>>> did not register TCE table in the kernel, in all other cases the virtual mode
-> >>>> handler is expected to do the job
-> >>>> ---
-> >>>>  .../virtual/kvm/devices/spapr_tce_iommu.txt        |  37 +++
-> >>>>  arch/powerpc/include/asm/kvm_host.h                |   4 +
-> >>>>  arch/powerpc/kvm/book3s_64_vio.c                   | 310 ++++++++++++++++++++-
-> >>>>  arch/powerpc/kvm/book3s_64_vio_hv.c                | 122 ++++++++
-> >>>>  arch/powerpc/kvm/powerpc.c                         |   1 +
-> >>>>  include/linux/kvm_host.h                           |   1 +
-> >>>>  virt/kvm/kvm_main.c                                |   5 +
-> >>>>  7 files changed, 477 insertions(+), 3 deletions(-)
-> >>>>  create mode 100644 Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
-> >>>>
-> >>>> diff --git a/Documentation/virtual/kvm/devices/spapr_tce_iommu.txt b/Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
-> >>>> new file mode 100644
-> >>>> index 0000000..4bc8fc3
-> >>>> --- /dev/null
-> >>>> +++ b/Documentation/virtual/kvm/devices/spapr_tce_iommu.txt
-> >>>> @@ -0,0 +1,37 @@
-> >>>> +SPAPR TCE IOMMU device
-> >>>> +
-> >>>> +Capability: KVM_CAP_SPAPR_TCE_IOMMU
-> >>>> +Architectures: powerpc
-> >>>> +
-> >>>> +Device type supported: KVM_DEV_TYPE_SPAPR_TCE_IOMMU
-> >>>> +
-> >>>> +Groups:
-> >>>> +  KVM_DEV_SPAPR_TCE_IOMMU_ATTR_LINKAGE
-> >>>> +  Attributes: single attribute with pair { LIOBN, IOMMU fd}
-> >>>> +
-> >>>> +This is completely made up device which provides API to link
-> >>>> +logical bus number (LIOBN) and IOMMU group. The user space has
-> >>>> +to create a new SPAPR TCE IOMMU device per a logical bus.
-> >>>> +
-> >>> Why not have one device that can handle multimple links?
-> >>
-> >>
-> >> I can do that. If I make it so, it won't even look as a device at all, just
-> >> some weird interface to KVM but ok. What bothers me is it is just a
-> > May be I do not understand usage pattern here. Why do you feel that device
-> > that can handle multiple links is worse than device per link? How many logical
-> > buses is there usually? How often they created/destroyed? I am not insisting
-> > on the change, just trying to understand why you do not like it.
-> 
-> 
-> Is it usually one PCI host bus adapter per IOMMU group which is usually
-> one PCI card or 2-3 cards if it is a legacy PCI-X, and they are created
-> when QEMU-KVM starts. Not many. And they live till KVM ends.
-> 
-> My point is why would I want to put all links to one device? It all is just
-> a matter of taste and nothing more. Or I am missing something but I do not
-> see what. If it is all about making thing to be kosher/halal/orthodox, then
-> I have more stuff to do, like reworking the emulated TCEs. But if is it for
-> (I do not know, just guessing) performance or something like that - then
-> I'll fix it, I just need to know what I am fixing.
-> 
-Each device creates an fd, if you can have a lot of them eventually this
-will be a bottleneck. You are saying this is not the case, so lets go
-with proposed interface.
- 
---
-			Gleb.
+
+On Apr 2, 2013, at 9:03 PM, Jia Hongtao wrote:
+
+> The MPIC version 2.0 has a MSI errata (errata PIC1 of mpc8544), It =
+causes
+> that neither MSI nor MSI-X can work fine. This is a workaround to =
+allow
+> MSI-X to function properly.
+>=20
+> Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> ---
+> Changes for V2:
+> * change the name of function mpic_has_errata() to =
+mpic_has_erratum_pic1().
+> * move MSI_HW_ERRATA_ENDIAN define to fsl_msi.h with all other =
+defines.
+>=20
+> arch/powerpc/sysdev/fsl_msi.c | 40 =
++++++++++++++++++++++++++++++++++++++---
+> arch/powerpc/sysdev/fsl_msi.h |  2 ++
+> 2 files changed, 39 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/arch/powerpc/sysdev/fsl_msi.c =
+b/arch/powerpc/sysdev/fsl_msi.c
+> index 178c994..ca1157a 100644
+> --- a/arch/powerpc/sysdev/fsl_msi.c
+> +++ b/arch/powerpc/sysdev/fsl_msi.c
+> @@ -98,8 +98,18 @@ static int fsl_msi_init_allocator(struct fsl_msi =
+*msi_data)
+>=20
+> static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int =
+type)
+> {
+> -	if (type =3D=3D PCI_CAP_ID_MSIX)
+> -		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
+> +	struct fsl_msi *msi;
+> +
+> +	if (type =3D=3D PCI_CAP_ID_MSI) {
+> +		/*
+> +		 * MPIC version 2.0 has erratum PIC1. For now MSI
+> +		 * could not work. So check to prevent MSI from
+> +		 * being used on the board with this erratum.
+> +		 */
+> +		list_for_each_entry(msi, &msi_head, list)
+> +			if (msi->feature & MSI_HW_ERRATA_ENDIAN)
+> +				return -EINVAL;
+> +	}
+>=20
+> 	return 0;
+> }
+> @@ -142,7 +152,17 @@ static void fsl_compose_msi_msg(struct pci_dev =
+*pdev, int hwirq,
+> 	msg->address_lo =3D lower_32_bits(address);
+> 	msg->address_hi =3D upper_32_bits(address);
+>=20
+> -	msg->data =3D hwirq;
+> +	/*
+> +	 * MPIC version 2.0 has erratum PIC1. It causes
+> +	 * that neither MSI nor MSI-X can work fine.
+> +	 * This is a workaround to allow MSI-X to function
+> +	 * properly. It only works for MSI-X, we prevent
+> +	 * MSI on buggy chips in fsl_msi_check_device().
+> +	 */
+> +	if (msi_data->feature & MSI_HW_ERRATA_ENDIAN)
+> +		msg->data =3D __swab32(hwirq);
+> +	else
+> +		msg->data =3D hwirq;
+>=20
+> 	pr_debug("%s: allocated srs: %d, ibs: %d\n",
+> 		__func__, hwirq / IRQS_PER_MSI_REG, hwirq % =
+IRQS_PER_MSI_REG);
+> @@ -361,6 +381,15 @@ static int fsl_msi_setup_hwirq(struct fsl_msi =
+*msi, struct platform_device *dev,
+> 	return 0;
+> }
+>=20
+> +/* MPIC version 2.0 has erratum PIC1 */
+> +static int mpic_has_erratum_pic1(void)
+> +{
+> +	if (fsl_mpic_primary_get_version() =3D=3D 0x0200)
+> +		return 1;
+> +
+> +	return 0;
+> +}
+> +
+> static const struct of_device_id fsl_of_msi_ids[];
+> static int fsl_of_msi_probe(struct platform_device *dev)
+> {
+> @@ -423,6 +452,11 @@ static int fsl_of_msi_probe(struct =
+platform_device *dev)
+>=20
+> 	msi->feature =3D features->fsl_pic_ip;
+>=20
+> +	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) =3D=3D =
+FSL_PIC_IP_MPIC) {
+> +		if (mpic_has_erratum_pic1())
+
+Get ride of the mpic_has_erratum_pic1() function and just put the test =
+here
+
+> +			msi->feature |=3D MSI_HW_ERRATA_ENDIAN;
+> +	}
+> +
+> 	/*
+> 	 * Remember the phandle, so that we can match with any PCI nodes
+> 	 * that have an "fsl,msi" property.
+> diff --git a/arch/powerpc/sysdev/fsl_msi.h =
+b/arch/powerpc/sysdev/fsl_msi.h
+> index 8225f86..7389e8e 100644
+> --- a/arch/powerpc/sysdev/fsl_msi.h
+> +++ b/arch/powerpc/sysdev/fsl_msi.h
+> @@ -25,6 +25,8 @@
+> #define FSL_PIC_IP_IPIC   0x00000002
+> #define FSL_PIC_IP_VMPIC  0x00000003
+>=20
+> +#define MSI_HW_ERRATA_ENDIAN 0x00000010
+> +
+
+Why does this need to be in the header, why not just have it in the .c =
+only
+
+> struct fsl_msi {
+> 	struct irq_domain *irqhost;
+>=20
+> --=20
+> 1.8.0
+>=20
