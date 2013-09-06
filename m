@@ -1,30 +1,26 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f178.google.com (mail-pd0-f178.google.com
- [209.85.192.178])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 333122C00F2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2013 17:05:07 +1000 (EST)
-Received: by mail-pd0-f178.google.com with SMTP id w10so2848166pde.23
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Sep 2013 00:05:05 -0700 (PDT)
-Message-ID: <52297E9A.3070206@ozlabs.ru>
-Date: Fri, 06 Sep 2013 17:04:58 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Return-Path: <B21284@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6B05C2C00AF
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 Sep 2013 18:09:01 +1000 (EST)
+Received: from mail145-ch1 (localhost [127.0.0.1])	by
+ mail145-ch1-R.bigfish.com (Postfix) with ESMTP id 151761C0413	for
+ <linuxppc-dev@ozlabs.org>; Fri,  6 Sep 2013 08:08:58 +0000 (UTC)
+Received: from CH1EHSMHS019.bigfish.com (snatpool3.int.messaging.microsoft.com
+ [10.43.68.226])	by mail145-ch1.bigfish.com (Postfix) with ESMTP id
+ 3701B240047	for <linuxppc-dev@ozlabs.org>; Fri,  6 Sep 2013 08:08:56 +0000
+ (UTC)
+From: Mingkai Hu <Mingkai.Hu@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/85xx: DTS - re-organize the SPI partitions property
+Date: Fri, 6 Sep 2013 16:05:43 +0800
+Message-ID: <1378454743-17637-1-git-send-email-Mingkai.Hu@freescale.com>
 MIME-Version: 1.0
-To: Gleb Natapov <gleb@redhat.com>
-Subject: Re: [PATCH v9 12/13] KVM: PPC: Add support for IOMMU in-kernel
- handling
-References: <1377679070-3515-1-git-send-email-aik@ozlabs.ru>
- <1377679841-3822-1-git-send-email-aik@ozlabs.ru>
- <20130901120609.GJ22899@redhat.com> <52240295.7050608@ozlabs.ru>
- <20130903105315.GY22899@redhat.com> <1378353909.4321.126.camel@pasglop>
- <20130906065715.GG13021@redhat.com>
-In-Reply-To: <20130906065715.GG13021@redhat.com>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain
+Cc: scottwood@freescale.com, Mingkai Hu <Mingkai.Hu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,59 +30,884 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/06/2013 04:57 PM, Gleb Natapov wrote:
-> On Thu, Sep 05, 2013 at 02:05:09PM +1000, Benjamin Herrenschmidt wrote:
->> On Tue, 2013-09-03 at 13:53 +0300, Gleb Natapov wrote:
->>>> Or supporting all IOMMU links (and leaving emulated stuff as is) in on
->>>> "device" is the last thing I have to do and then you'll ack the patch?
->>>>
->>> I am concerned more about API here. Internal implementation details I
->>> leave to powerpc experts :)
->>
->> So Gleb, I want to step in for a bit here.
->>
->> While I understand that the new KVM device API is all nice and shiny and that this
->> whole thing should probably have been KVM devices in the first place (had they
->> existed or had we been told back then), the point is, the API for handling
->> HW IOMMUs that Alexey is trying to add is an extension of an existing mechanism
->> used for emulated IOMMUs.
->>
->> The internal data structure is shared, and fundamentally, by forcing him to
->> use that new KVM device for the "new stuff", we create a oddball API with
->> an ioctl for one type of iommu and a KVM device for the other, which makes
->> the implementation a complete mess in the kernel (and you should care :-)
->>
-> Is it unfixable mess? Even if Alexey will do what you suggested earlier?
-> 
->   - Convert *both* existing TCE objects to the new
->       KVM_CREATE_DEVICE, and have some backward compat code for the old one.
+Re-organize the SPI partitions and use the same SPI flash memory
+map for most of the platforms which have 16MB SPI flash mounted.
 
+1. Extend the U-Boot partition to 1MB
+   The image for booting from SPI is larger than 512KB, while
+   the size of U-Boot partition is 512KB on some boards, so
+   enlarge it to 1MB in order to contain the whole U-Boot image.
 
+2. Reserve space for U-Boot environment variables
+   The environment variables are stored at offset 0x100000, so
+   if other image was put at this address, it'll be overlapped
+   when saving the environment variables.
 
-If we convert *old*, then for compatibility we will need one KVM device
-(more precisely, one fd) per an TCE object (not one for all TCE objects) as
-the guest (upstream QEMU) will mmap the table via mmap() and it won't use
-any offset when mapping this fd.
+3. Reserve space for FMAN ucode
+   The FMAN ucode is required on DPAA platform and is stored at
+   offset 0x110000, this address should not be used to store any
+   other images.
 
-The current KVM device implementation does not even support mmap().
+4. Extend the kernel partition to 5MB
 
-So I would go with the KVM device patch I posted and really want to avoid
-putting all TCEs into one device.
+Here is diagram for the SPI flash memory map:
 
+        0x000000 |-------------|
+                 | U-Boot      |
+                 | (1MB)       |
+        0x100000 |-------------|
+                 | Env(64KB)   |
+        0x110000 |-------------|
+                 | ucode       |
+        0x180000 |-------------|
+                 | DTB         |
+                 | (512KB)     |
+        0x200000 |-------------|
+                 | kernel      |
+                 | (5MB)       |
+        0x700000 |-------------|
+                 | file system |
+                 | (9MB)       |
+       0x1000000 |-------------|
 
+Signed-off-by: Mingkai Hu <Mingkai.Hu@freescale.com>
+---
 
-> The point is implementation usually can be changed, but for API it is
-> much harder to do so.
-> 
->> So for something completely new, I would tend to agree with you. However, I
->> still think that for this specific case, we should just plonk-in the original
->> ioctl proposed by Alexey and be done with it.
->>
-> Do you think this is the last extension to IOMMU code, or we will see
-> more and will use same justification to continue adding ioctls?
+Based on 'next' branch on git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
 
+ arch/powerpc/boot/dts/bsc9131rdb.dtsi  | 35 ++++++++++++-----------------
+ arch/powerpc/boot/dts/c293pcie.dts     | 35 ++++++++++++-----------------
+ arch/powerpc/boot/dts/mpc8536ds.dtsi   | 12 +++++-----
+ arch/powerpc/boot/dts/p1010rdb.dtsi    | 40 ++++++++++++----------------------
+ arch/powerpc/boot/dts/p1020rdb-pc.dtsi | 24 +++++---------------
+ arch/powerpc/boot/dts/p1020rdb-pd.dts  | 34 ++++++++++++-----------------
+ arch/powerpc/boot/dts/p1020rdb.dtsi    | 23 ++++---------------
+ arch/powerpc/boot/dts/p1021mds.dts     | 17 +++++++--------
+ arch/powerpc/boot/dts/p1021rdb-pc.dtsi | 32 +++++++++------------------
+ arch/powerpc/boot/dts/p1022ds.dtsi     | 21 +++++++++---------
+ arch/powerpc/boot/dts/p1023rds.dts     | 10 ++-------
+ arch/powerpc/boot/dts/p1024rdb.dtsi    | 40 ++++++++++++----------------------
+ arch/powerpc/boot/dts/p1025rdb.dtsi    | 23 +++++--------------
+ arch/powerpc/boot/dts/p2020rdb-pc.dtsi | 40 ++++++++++++----------------------
+ arch/powerpc/boot/dts/p2020rdb.dts     | 38 ++++++++++----------------------
+ arch/powerpc/boot/dts/p2041rdb.dts     | 12 +++++-----
+ arch/powerpc/boot/dts/p3041ds.dts      | 12 +++++-----
+ arch/powerpc/boot/dts/p4080ds.dts      | 12 +++++-----
+ arch/powerpc/boot/dts/p5020ds.dts      | 12 +++++-----
+ arch/powerpc/boot/dts/p5040ds.dts      | 13 ++++++-----
+ 20 files changed, 180 insertions(+), 305 deletions(-)
 
-
-
+diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dtsi b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
+index 9e6c013..8250593 100644
+--- a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
++++ b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
+@@ -81,32 +81,25 @@
+ 			compatible = "spansion,s25sl12801";
+ 			reg = <0>;
+ 			spi-max-frequency = <50000000>;
+-
+-			/* 512KB for u-boot Bootloader Image */
+-			partition@0 {
+-				reg = <0x0 0x00080000>;
+-				label = "SPI Flash U-Boot Image";
++			partition@u-boot {
++				label = "u-boot";
++				reg = <0x00000000 0x00100000>;
+ 				read-only;
+ 			};
+-
+-			/* 512KB for DTB Image */
+-			partition@80000 {
+-				reg = <0x00080000 0x00080000>;
+-				label = "SPI Flash DTB Image";
++			partition@dtb {
++				label = "dtb";
++				reg = <0x00180000 0x00080000>;
++				read-only;
+ 			};
+-
+-			/* 4MB for Linux Kernel Image */
+-			partition@100000 {
+-				reg = <0x00100000 0x00400000>;
+-				label = "SPI Flash Kernel Image";
++			partition@kernel {
++				label = "kernel";
++				reg = <0x00200000 0x00500000>;
++				read-only;
+ 			};
+-
+-			/*11MB for RFS Image */
+-			partition@500000 {
+-				reg = <0x00500000 0x00B00000>;
+-				label = "SPI Flash RFS Image";
++			partition@fs {
++				label = "file system";
++				reg = <0x00700000 0x00900000>;
+ 			};
+-
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/c293pcie.dts b/arch/powerpc/boot/dts/c293pcie.dts
+index 1238bda..8ee8459 100644
+--- a/arch/powerpc/boot/dts/c293pcie.dts
++++ b/arch/powerpc/boot/dts/c293pcie.dts
+@@ -169,31 +169,24 @@
+ 			compatible = "spansion,s25sl12801";
+ 			reg = <0>;
+ 			spi-max-frequency = <50000000>;
+-
+-			partition@0 {
+-				/* 1MB for u-boot Bootloader Image */
+-				/* 1MB for Environment */
+-				reg = <0x0 0x00100000>;
+-				label = "SPI Flash U-Boot Image";
++			partition@u-boot {
++				label = "u-boot";
++				reg = <0x00000000 0x00100000>;
+ 				read-only;
+ 			};
+-
+-			partition@100000 {
+-				/* 512KB for DTB Image */
+-				reg = <0x00100000 0x00080000>;
+-				label = "SPI Flash DTB Image";
++			partition@dtb {
++				label = "dtb";
++				reg = <0x00180000 0x00080000>;
++				read-only;
+ 			};
+-
+-			partition@180000 {
+-				/* 4MB for Linux Kernel Image */
+-				reg = <0x00180000 0x00400000>;
+-				label = "SPI Flash Linux Kernel Image";
++			partition@kernel {
++				label = "kernel";
++				reg = <0x00200000 0x00500000>;
++				read-only;
+ 			};
+-
+-			partition@580000 {
+-				/* 10.5MB for RFS Image */
+-				reg = <0x00580000 0x00a80000>;
+-				label = "SPI Flash RFS Image";
++			partition@fs {
++				label = "file system";
++				reg = <0x00700000 0x00900000>;
+ 			};
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/mpc8536ds.dtsi b/arch/powerpc/boot/dts/mpc8536ds.dtsi
+index 7c3dde8..daa3de4 100644
+--- a/arch/powerpc/boot/dts/mpc8536ds.dtsi
++++ b/arch/powerpc/boot/dts/mpc8536ds.dtsi
+@@ -150,14 +150,14 @@
+ 				reg = <0x00000000 0x00100000>;
+ 				read-only;
+ 			};
+-			partition@kernel {
+-				label = "kernel";
+-				reg = <0x00100000 0x00500000>;
+-				read-only;
+-			};
+ 			partition@dtb {
+ 				label = "dtb";
+-				reg = <0x00600000 0x00100000>;
++				reg = <0x00180000 0x00080000>;
++				read-only;
++			};
++			partition@kernel {
++				label = "kernel";
++				reg = <0x00200000 0x00500000>;
+ 				read-only;
+ 			};
+ 			partition@fs {
+diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi b/arch/powerpc/boot/dts/p1010rdb.dtsi
+index ec7c27a..e67db57 100644
+--- a/arch/powerpc/boot/dts/p1010rdb.dtsi
++++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
+@@ -152,36 +152,24 @@
+ 			reg = <0>;
+ 			spi-max-frequency = <40000000>;
+ 
+-			partition@0 {
+-				/* 1MB for u-boot Bootloader Image */
+-				/* 1MB for Environment */
+-				reg = <0x0 0x00100000>;
+-				label = "SPI Flash U-Boot Image";
++			partition@u-boot {
++				label = "u-boot";
++				reg = <0x00000000 0x00100000>;
+ 				read-only;
+ 			};
+-
+-			partition@100000 {
+-				/* 512KB for DTB Image */
+-				reg = <0x00100000 0x00080000>;
+-				label = "SPI Flash DTB Image";
+-			};
+-
+-			partition@180000 {
+-				/* 4MB for Linux Kernel Image */
+-				reg = <0x00180000 0x00400000>;
+-				label = "SPI Flash Linux Kernel Image";
++			partition@dtb {
++				label = "dtb";
++				reg = <0x00180000 0x00080000>;
++				read-only;
+ 			};
+-
+-			partition@580000 {
+-				/* 4MB for Compressed RFS Image */
+-				reg = <0x00580000 0x00400000>;
+-				label = "SPI Flash Compressed RFSImage";
++			partition@kernel {
++				label = "kernel";
++				reg = <0x00200000 0x00500000>;
++				read-only;
+ 			};
+-
+-			partition@980000 {
+-				/* 6.5MB for JFFS2 based RFS */
+-				reg = <0x00980000 0x00680000>;
+-				label = "SPI Flash JFFS2 RFS";
++			partition@fs {
++				label = "file system";
++				reg = <0x00700000 0x00900000>;
+ 			};
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/p1020rdb-pc.dtsi b/arch/powerpc/boot/dts/p1020rdb-pc.dtsi
+index c952cd3..277b563 100644
+--- a/arch/powerpc/boot/dts/p1020rdb-pc.dtsi
++++ b/arch/powerpc/boot/dts/p1020rdb-pc.dtsi
+@@ -154,36 +154,24 @@
+ 			compatible = "spansion,s25sl12801";
+ 			reg = <0>;
+ 			spi-max-frequency = <40000000>; /* input clock */
+-
+ 			partition@u-boot {
+-				/* 512KB for u-boot Bootloader Image */
+-				reg = <0x0 0x00080000>;
+ 				label = "u-boot";
++				reg = <0x00000000 0x00100000>;
+ 				read-only;
+ 			};
+-
+ 			partition@dtb {
+-				/* 512KB for DTB Image*/
+-				reg = <0x00080000 0x00080000>;
+ 				label = "dtb";
++				reg = <0x00180000 0x00080000>;
++				read-only;
+ 			};
+-
+ 			partition@kernel {
+-				/* 4MB for Linux Kernel Image */
+-				reg = <0x00100000 0x00400000>;
+ 				label = "kernel";
++				reg = <0x00200000 0x00500000>;
++				read-only;
+ 			};
+-
+ 			partition@fs {
+-				/* 4MB for Compressed RFS Image */
+-				reg = <0x00500000 0x00400000>;
+ 				label = "file system";
+-			};
+-
+-			partition@jffs-fs {
+-				/* 7MB for JFFS2 based RFS */
+-				reg = <0x00900000 0x00700000>;
+-				label = "file system jffs2";
++				reg = <0x00700000 0x00900000>;
+ 			};
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/p1020rdb-pd.dts b/arch/powerpc/boot/dts/p1020rdb-pd.dts
+index 987017e..b37f3e0 100644
+--- a/arch/powerpc/boot/dts/p1020rdb-pd.dts
++++ b/arch/powerpc/boot/dts/p1020rdb-pd.dts
+@@ -159,30 +159,24 @@
+ 				reg = <0>;
+ 				/* input clock */
+ 				spi-max-frequency = <40000000>;
+-
+-				partition@0 {
+-					/* 512KB for u-boot Bootloader Image */
+-					reg = <0x0 0x00080000>;
+-					label = "SPI U-Boot Image";
++				partition@u-boot {
++					label = "u-boot";
++					reg = <0x00000000 0x00100000>;
+ 					read-only;
+ 				};
+-
+-				partition@80000 {
+-					/* 512KB for DTB Image*/
+-					reg = <0x00080000 0x00080000>;
+-					label = "SPI DTB Image";
++				partition@dtb {
++					label = "dtb";
++					reg = <0x00180000 0x00080000>;
++					read-only;
+ 				};
+-
+-				partition@100000 {
+-					/* 4MB for Linux Kernel Image */
+-					reg = <0x00100000 0x00400000>;
+-					label = "SPI Linux Kernel Image";
++				partition@kernel {
++					label = "kernel";
++					reg = <0x00200000 0x00500000>;
++					read-only;
+ 				};
+-
+-				partition@500000 {
+-					/* 11MB for FS System Image */
+-					reg = <0x00500000 0x00b00000>;
+-					label = "SPI File System Image";
++				partition@fs {
++					label = "file system";
++					reg = <0x00700000 0x00900000>;
+ 				};
+ 			};
+ 
+diff --git a/arch/powerpc/boot/dts/p1020rdb.dtsi b/arch/powerpc/boot/dts/p1020rdb.dtsi
+index 1fb7e0e..f320acc 100644
+--- a/arch/powerpc/boot/dts/p1020rdb.dtsi
++++ b/arch/powerpc/boot/dts/p1020rdb.dtsi
+@@ -151,39 +151,24 @@
+ 			compatible = "spansion,s25sl12801";
+ 			reg = <0>;
+ 			spi-max-frequency = <40000000>; /* input clock */
+-
+ 			partition@u-boot {
+-				/* 512KB for u-boot Bootloader Image */
+-				reg = <0x0 0x00080000>;
+ 				label = "u-boot";
++				reg = <0x00000000 0x00100000>;
+ 				read-only;
+ 			};
+-
+ 			partition@dtb {
+-				/* 512KB for DTB Image */
+-				reg = <0x00080000 0x00080000>;
+ 				label = "dtb";
++				reg = <0x00180000 0x00080000>;
+ 				read-only;
+ 			};
+-
+ 			partition@kernel {
+-				/* 4MB for Linux Kernel Image */
+-				reg = <0x00100000 0x00400000>;
+ 				label = "kernel";
++				reg = <0x00200000 0x00500000>;
+ 				read-only;
+ 			};
+-
+ 			partition@fs {
+-				/* 4MB for Compressed RFS Image */
+-				reg = <0x00500000 0x00400000>;
+ 				label = "file system";
+-				read-only;
+-			};
+-
+-			partition@jffs-fs {
+-				/* 7MB for JFFS2 based RFS */
+-				reg = <0x00900000 0x00700000>;
+-				label = "file system jffs2";
++				reg = <0x00700000 0x00900000>;
+ 			};
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/p1021mds.dts b/arch/powerpc/boot/dts/p1021mds.dts
+index 97116f1..0d0b6f7 100644
+--- a/arch/powerpc/boot/dts/p1021mds.dts
++++ b/arch/powerpc/boot/dts/p1021mds.dts
+@@ -126,24 +126,23 @@
+ 				compatible = "spansion,s25sl12801";
+ 				reg = <0>;
+ 				spi-max-frequency = <40000000>; /* input clock */
+-
+ 				partition@u-boot {
+-					label = "u-boot-spi";
++					label = "u-boot";
+ 					reg = <0x00000000 0x00100000>;
+ 					read-only;
+ 				};
+-				partition@kernel {
+-					label = "kernel-spi";
+-					reg = <0x00100000 0x00500000>;
++				partition@dtb {
++					label = "dtb";
++					reg = <0x00180000 0x00080000>;
+ 					read-only;
+ 				};
+-				partition@dtb {
+-					label = "dtb-spi";
+-					reg = <0x00600000 0x00100000>;
++				partition@kernel {
++					label = "kernel";
++					reg = <0x00200000 0x00500000>;
+ 					read-only;
+ 				};
+ 				partition@fs {
+-					label = "file system-spi";
++					label = "file system";
+ 					reg = <0x00700000 0x00900000>;
+ 				};
+ 			};
+diff --git a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
+index d6274c5..4e6aedd 100644
+--- a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
++++ b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
+@@ -153,36 +153,24 @@
+ 			compatible = "spansion,s25sl12801";
+ 			reg = <0>;
+ 			spi-max-frequency = <40000000>; /* input clock */
+-
+ 			partition@u-boot {
+-				/* 512KB for u-boot Bootloader Image */
+-				reg = <0x0 0x00080000>;
+-				label = "SPI Flash U-Boot Image";
++				label = "u-boot";
++				reg = <0x00000000 0x00100000>;
+ 				read-only;
+ 			};
+-
+ 			partition@dtb {
+-				/* 512KB for DTB Image */
+-				reg = <0x00080000 0x00080000>;
+-				label = "SPI Flash DTB Image";
++				label = "dtb";
++				reg = <0x00180000 0x00080000>;
++				read-only;
+ 			};
+-
+ 			partition@kernel {
+-				/* 4MB for Linux Kernel Image */
+-				reg = <0x00100000 0x00400000>;
+-				label = "SPI Flash Linux Kernel Image";
++				label = "kernel";
++				reg = <0x00200000 0x00500000>;
++				read-only;
+ 			};
+-
+ 			partition@fs {
+-				/* 4MB for Compressed RFS Image */
+-				reg = <0x00500000 0x00400000>;
+-				label = "SPI Flash Compressed RFSImage";
+-			};
+-
+-			partition@jffs-fs {
+-				/* 7MB for JFFS2 based RFS */
+-				reg = <0x00900000 0x00700000>;
+-				label = "SPI Flash JFFS2 RFS";
++				label = "file system";
++				reg = <0x00700000 0x00900000>;
+ 			};
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/p1022ds.dtsi b/arch/powerpc/boot/dts/p1022ds.dtsi
+index 873da35..faa2cb0 100644
+--- a/arch/powerpc/boot/dts/p1022ds.dtsi
++++ b/arch/powerpc/boot/dts/p1022ds.dtsi
+@@ -162,24 +162,23 @@
+ 			compatible = "spansion,s25sl12801";
+ 			reg = <0>;
+ 			spi-max-frequency = <40000000>; /* input clock */
+-
+-			partition@0 {
+-				label = "u-boot-spi";
++			partition@u-boot {
++				label = "u-boot";
+ 				reg = <0x00000000 0x00100000>;
+ 				read-only;
+ 			};
+-			partition@100000 {
+-				label = "kernel-spi";
+-				reg = <0x00100000 0x00500000>;
++			partition@dtb {
++				label = "dtb";
++				reg = <0x00180000 0x00080000>;
+ 				read-only;
+ 			};
+-			partition@600000 {
+-				label = "dtb-spi";
+-				reg = <0x00600000 0x00100000>;
++			partition@kernel {
++				label = "kernel";
++				reg = <0x00200000 0x00500000>;
+ 				read-only;
+ 			};
+-			partition@700000 {
+-				label = "file system-spi";
++			partition@fs {
++				label = "file system";
+ 				reg = <0x00700000 0x00900000>;
+ 			};
+ 		};
+diff --git a/arch/powerpc/boot/dts/p1023rds.dts b/arch/powerpc/boot/dts/p1023rds.dts
+index beb6cb1..9fcf9af 100644
+--- a/arch/powerpc/boot/dts/p1023rds.dts
++++ b/arch/powerpc/boot/dts/p1023rds.dts
+@@ -65,15 +65,9 @@
+ 				reg = <0>;
+ 				spi-max-frequency = <40000000>; /* input clock */
+ 				partition@u-boot {
+-					/* 512KB for u-boot Bootloader Image */
++					/* 1MB for u-boot Bootloader Image */
+ 					label = "u-boot-spi";
+-					reg = <0x00000000 0x00080000>;
+-					read-only;
+-				};
+-				partition@dtb {
+-					/* 512KB for DTB Image */
+-					label = "dtb-spi";
+-					reg = <0x00080000 0x00080000>;
++					reg = <0x00000000 0x00100000>;
+ 					read-only;
+ 				};
+ 			};
+diff --git a/arch/powerpc/boot/dts/p1024rdb.dtsi b/arch/powerpc/boot/dts/p1024rdb.dtsi
+index b05dcb4..2896f98 100644
+--- a/arch/powerpc/boot/dts/p1024rdb.dtsi
++++ b/arch/powerpc/boot/dts/p1024rdb.dtsi
+@@ -132,36 +132,24 @@
+ 			compatible = "spansion,m25p80";
+ 			reg = <0>;
+ 			spi-max-frequency = <40000000>;
+-
+-			partition@0 {
+-				/* 512KB for u-boot Bootloader Image */
+-				reg = <0x0 0x00080000>;
+-				label = "SPI U-Boot Image";
++			partition@u-boot {
++				label = "u-boot";
++				reg = <0x00000000 0x00100000>;
+ 				read-only;
+ 			};
+-
+-			partition@80000 {
+-				/* 512KB for DTB Image */
+-				reg = <0x00080000 0x00080000>;
+-				label = "SPI DTB Image";
+-			};
+-
+-			partition@100000 {
+-				/* 4MB for Linux Kernel Image */
+-				reg = <0x00100000 0x00400000>;
+-				label = "SPI Linux Kernel Image";
++			partition@dtb {
++				label = "dtb";
++				reg = <0x00180000 0x00080000>;
++				read-only;
+ 			};
+-
+-			partition@500000 {
+-				/* 4MB for Compressed RFS Image */
+-				reg = <0x00500000 0x00400000>;
+-				label = "SPI Compressed RFS Image";
++			partition@kernel {
++				label = "kernel";
++				reg = <0x00200000 0x00500000>;
++				read-only;
+ 			};
+-
+-			partition@900000 {
+-				/* 7MB for JFFS2 based RFS */
+-				reg = <0x00900000 0x00700000>;
+-				label = "SPI JFFS2 RFS";
++			partition@fs {
++				label = "file system";
++				reg = <0x00700000 0x00900000>;
+ 			};
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/p1025rdb.dtsi b/arch/powerpc/boot/dts/p1025rdb.dtsi
+index f502564..e74439c8 100644
+--- a/arch/powerpc/boot/dts/p1025rdb.dtsi
++++ b/arch/powerpc/boot/dts/p1025rdb.dtsi
+@@ -142,34 +142,23 @@
+ 			spi-max-frequency = <40000000>; /* input clock */
+ 
+ 			partition@u-boot {
+-				/* 512KB for u-boot Bootloader Image */
+-				reg = <0x0 0x00080000>;
+ 				label = "u-boot";
++				reg = <0x00000000 0x00100000>;
+ 				read-only;
+ 			};
+-
+ 			partition@dtb {
+-				/* 512KB for DTB Image */
+-				reg = <0x00080000 0x00080000>;
+ 				label = "dtb";
++				reg = <0x00180000 0x00080000>;
++				read-only;
+ 			};
+-
+ 			partition@kernel {
+-				/* 4MB for Linux Kernel Image */
+-				reg = <0x00100000 0x00400000>;
+ 				label = "kernel";
++				reg = <0x00200000 0x00500000>;
++				read-only;
+ 			};
+-
+ 			partition@fs {
+-				/* 4MB for Compressed RFS Image */
+-				reg = <0x00500000 0x00400000>;
+ 				label = "file system";
+-			};
+-
+-			partition@jffs-fs {
+-				/* 7MB for JFFS2 based RFS */
+-				reg = <0x00900000 0x00700000>;
+-				label = "file system jffs2";
++				reg = <0x00700000 0x00900000>;
+ 			};
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+index c21d1c7..d501d35 100644
+--- a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
++++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+@@ -154,36 +154,24 @@
+ 			compatible = "spansion,m25p80";
+ 			reg = <0>;
+ 			spi-max-frequency = <40000000>;
+-
+-			partition@0 {
+-				/* 512KB for u-boot Bootloader Image */
+-				reg = <0x0 0x00080000>;
+-				label = "SPI U-Boot Image";
++			partition@u-boot {
++				label = "u-boot";
++				reg = <0x00000000 0x00100000>;
+ 				read-only;
+ 			};
+-
+-			partition@80000 {
+-				/* 512KB for DTB Image */
+-				reg = <0x00080000 0x00080000>;
+-				label = "SPI DTB Image";
+-			};
+-
+-			partition@100000 {
+-				/* 4MB for Linux Kernel Image */
+-				reg = <0x00100000 0x00400000>;
+-				label = "SPI Linux Kernel Image";
++			partition@dtb {
++				label = "dtb";
++				reg = <0x00180000 0x00080000>;
++				read-only;
+ 			};
+-
+-			partition@500000 {
+-				/* 4MB for Compressed RFS Image */
+-				reg = <0x00500000 0x00400000>;
+-				label = "SPI Compressed RFS Image";
++			partition@kernel {
++				label = "kernel";
++				reg = <0x00200000 0x00500000>;
++				read-only;
+ 			};
+-
+-			partition@900000 {
+-				/* 7MB for JFFS2 based RFS */
+-				reg = <0x00900000 0x00700000>;
+-				label = "SPI JFFS2 RFS";
++			partition@fs {
++				label = "file system";
++				reg = <0x00700000 0x00900000>;
+ 			};
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/p2020rdb.dts b/arch/powerpc/boot/dts/p2020rdb.dts
+index 4d52bce..d47ae13 100644
+--- a/arch/powerpc/boot/dts/p2020rdb.dts
++++ b/arch/powerpc/boot/dts/p2020rdb.dts
+@@ -159,38 +159,24 @@
+ 				reg = <0>;
+ 				spi-max-frequency = <40000000>;
+ 
+-				partition@0 {
+-					/* 512KB for u-boot Bootloader Image */
+-					reg = <0x0 0x00080000>;
+-					label = "SPI (RO) U-Boot Image";
++				partition@u-boot {
++					label = "u-boot";
++					reg = <0x00000000 0x00100000>;
+ 					read-only;
+ 				};
+-
+-				partition@80000 {
+-					/* 512KB for DTB Image */
+-					reg = <0x00080000 0x00080000>;
+-					label = "SPI (RO) DTB Image";
+-					read-only;
+-				};
+-
+-				partition@100000 {
+-					/* 4MB for Linux Kernel Image */
+-					reg = <0x00100000 0x00400000>;
+-					label = "SPI (RO) Linux Kernel Image";
++				partition@dtb {
++					label = "dtb";
++					reg = <0x00180000 0x00080000>;
+ 					read-only;
+ 				};
+-
+-				partition@500000 {
+-					/* 4MB for Compressed RFS Image */
+-					reg = <0x00500000 0x00400000>;
+-					label = "SPI (RO) Compressed RFS Image";
++				partition@kernel {
++					label = "kernel";
++					reg = <0x00200000 0x00500000>;
+ 					read-only;
+ 				};
+-
+-				partition@900000 {
+-					/* 7MB for JFFS2 based RFS */
+-					reg = <0x00900000 0x00700000>;
+-					label = "SPI (RW) JFFS2 RFS";
++				partition@fs {
++					label = "file system";
++					reg = <0x00700000 0x00900000>;
+ 				};
+ 			};
+ 		};
+diff --git a/arch/powerpc/boot/dts/p2041rdb.dts b/arch/powerpc/boot/dts/p2041rdb.dts
+index d97ad74..6fed1ea 100644
+--- a/arch/powerpc/boot/dts/p2041rdb.dts
++++ b/arch/powerpc/boot/dts/p2041rdb.dts
+@@ -64,14 +64,14 @@
+ 					reg = <0x00000000 0x00100000>;
+ 					read-only;
+ 				};
+-				partition@kernel {
+-					label = "kernel";
+-					reg = <0x00100000 0x00500000>;
+-					read-only;
+-				};
+ 				partition@dtb {
+ 					label = "dtb";
+-					reg = <0x00600000 0x00100000>;
++					reg = <0x00180000 0x00080000>;
++					read-only;
++				};
++				partition@kernel {
++					label = "kernel";
++					reg = <0x00200000 0x00500000>;
+ 					read-only;
+ 				};
+ 				partition@fs {
+diff --git a/arch/powerpc/boot/dts/p3041ds.dts b/arch/powerpc/boot/dts/p3041ds.dts
+index 2fed3bc..74a3b7e 100644
+--- a/arch/powerpc/boot/dts/p3041ds.dts
++++ b/arch/powerpc/boot/dts/p3041ds.dts
+@@ -64,14 +64,14 @@
+ 					reg = <0x00000000 0x00100000>;
+ 					read-only;
+ 				};
+-				partition@kernel {
+-					label = "kernel";
+-					reg = <0x00100000 0x00500000>;
+-					read-only;
+-				};
+ 				partition@dtb {
+ 					label = "dtb";
+-					reg = <0x00600000 0x00100000>;
++					reg = <0x00180000 0x00080000>;
++					read-only;
++				};
++				partition@kernel {
++					label = "kernel";
++					reg = <0x00200000 0x00500000>;
+ 					read-only;
+ 				};
+ 				partition@fs {
+diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
+index 1cf6148..06525b3 100644
+--- a/arch/powerpc/boot/dts/p4080ds.dts
++++ b/arch/powerpc/boot/dts/p4080ds.dts
+@@ -65,14 +65,14 @@
+ 					reg = <0x00000000 0x00100000>;
+ 					read-only;
+ 				};
+-				partition@kernel {
+-					label = "kernel";
+-					reg = <0x00100000 0x00500000>;
+-					read-only;
+-				};
+ 				partition@dtb {
+ 					label = "dtb";
+-					reg = <0x00600000 0x00100000>;
++					reg = <0x00180000 0x00080000>;
++					read-only;
++				};
++				partition@kernel {
++					label = "kernel";
++					reg = <0x00200000 0x00500000>;
+ 					read-only;
+ 				};
+ 				partition@fs {
+diff --git a/arch/powerpc/boot/dts/p5020ds.dts b/arch/powerpc/boot/dts/p5020ds.dts
+index 2869fea..b0615a3 100644
+--- a/arch/powerpc/boot/dts/p5020ds.dts
++++ b/arch/powerpc/boot/dts/p5020ds.dts
+@@ -64,14 +64,14 @@
+ 					reg = <0x00000000 0x00100000>;
+ 					read-only;
+ 				};
+-				partition@kernel {
+-					label = "kernel";
+-					reg = <0x00100000 0x00500000>;
+-					read-only;
+-				};
+ 				partition@dtb {
+ 					label = "dtb";
+-					reg = <0x00600000 0x00100000>;
++					reg = <0x00180000 0x00080000>;
++					read-only;
++				};
++				partition@kernel {
++					label = "kernel";
++					reg = <0x00200000 0x00500000>;
+ 					read-only;
+ 				};
+ 				partition@fs {
+diff --git a/arch/powerpc/boot/dts/p5040ds.dts b/arch/powerpc/boot/dts/p5040ds.dts
+index 860b5cc..1a3a994 100644
+--- a/arch/powerpc/boot/dts/p5040ds.dts
++++ b/arch/powerpc/boot/dts/p5040ds.dts
+@@ -62,14 +62,17 @@
+ 				partition@u-boot {
+ 					label = "u-boot";
+ 					reg = <0x00000000 0x00100000>;
+-				};
+-				partition@kernel {
+-					label = "kernel";
+-					reg = <0x00100000 0x00500000>;
++					read-only;
+ 				};
+ 				partition@dtb {
+ 					label = "dtb";
+-					reg = <0x00600000 0x00100000>;
++					reg = <0x00180000 0x00080000>;
++					read-only;
++				};
++				partition@kernel {
++					label = "kernel";
++					reg = <0x00200000 0x00500000>;
++					read-only;
+ 				};
+ 				partition@fs {
+ 					label = "file system";
 -- 
-Alexey
+1.8.0
