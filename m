@@ -1,19 +1,22 @@
-Return-Path: <R64188@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
+Return-Path: <r63061@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7A72D2C00C5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2013 19:35:57 +1000 (EST)
-From: Jason Jin <Jason.Jin@freescale.com>
-To: <scottwood@freescale.com>
-Subject: [PATCH] Add a vga alias node for P1022
-Date: Fri, 6 Sep 2013 17:32:37 +0800
-Message-ID: <1378459957-26334-1-git-send-email-Jason.Jin@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 1E5202C00EA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2013 19:52:27 +1000 (EST)
+From: Xie Xiaobo-R63061 <r63061@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH V3 1/2] powerpc/85xx: Add QE common init functions
+Date: Fri, 6 Sep 2013 09:52:19 +0000
+Message-ID: <69EC9ED88E3CC04094A78F8074A7986D5D2378@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1378116699-18826-1-git-send-email-X.Xie@freescale.com>
+ <1378312019.12204.21.camel@snotra.buserror.net>
+In-Reply-To: <1378312019.12204.21.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, Jason Jin <Jason.jin@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,41 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jason Jin <Jason.jin@freescale.com>
-
-When the vga was set as the stdout and stderr in u-boot, the stdout fixup
-code in u-boot need to find out the vga alias node in dtb.
-
-Signed-off-by: Jason Jin <Jason.jin@freescale.com>
----
- arch/powerpc/boot/dts/fsl/p1022si-post.dtsi | 2 +-
- arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi  | 1 +
- 2 files changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-index 1f189a9..c907c8e 100644
---- a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-@@ -175,7 +175,7 @@
- 
- /include/ "pq3-gpio-0.dtsi"
- 
--	display@10000 {
-+	display: display@10000 {
- 		compatible = "fsl,diu", "fsl,p1022-diu";
- 		reg = <0x10000 1000>;
- 		interrupts = <64 2 0 0>;
-diff --git a/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
-index 1956dea..cb8d816 100644
---- a/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
-@@ -50,6 +50,7 @@
- 		pci0 = &pci0;
- 		pci1 = &pci1;
- 		pci2 = &pci2;
-+		vga = &display;
- 	};
- 
- 	cpus {
--- 
-1.8.0
+SGkgU2NvdHQsDQoNCkkgYWxyZWFkeSByZW1vdmUgdGhlc2UgY29kZSBmcm9tIHRoZSBQMTAyNVRX
+UiBwbGF0Zm9ybSBmaWxlKHNlZSB0aGUgMi8yIHBhdGNoKS4gRG8geW91IG1lYW5zIEkgYWxzbyBu
+ZWVkIHRvIHJlbW92ZSB0aGVzZSBjb2RlcyBmcm9tIHRoZSBvdGhlcnMgcGxhdGZvcm1zIGFuZCB1
+c2UgdGhlIGNvbW1vbiBjYWxsIGluc3RlYWQ/IA0KVGhhbmsgeW91Lg0KDQpCZXN0IFJlZ2FyZHMN
+ClhpZSBYaWFvYm8NCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBXb29kIFNjb3R0
+LUIwNzQyMSANClNlbnQ6IFRodXJzZGF5LCBTZXB0ZW1iZXIgMDUsIDIwMTMgMTI6MjcgQU0NClRv
+OiBYaWUgWGlhb2JvLVI2MzA2MQ0KQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBn
+YWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnDQpTdWJqZWN0OiBSZTogW1BBVENIIFYzIDEvMl0gcG93
+ZXJwYy84NXh4OiBBZGQgUUUgY29tbW9uIGluaXQgZnVuY3Rpb25zDQoNCk9uIE1vbiwgMjAxMy0w
+OS0wMiBhdCAxODoxMSArMDgwMCwgWGllIFhpYW9ibyB3cm90ZToNCj4gRGVmaW5lIHR3byBRRSBp
+bml0IGZ1bmN0aW9ucyBpbiBjb21tb24gZmlsZSwgYW5kIGF2b2lkIHRoZSBzYW1lIGNvZGVzIA0K
+PiBiZWluZyBkdXBsaWNhdGVkIGluIGJvYXJkIGZpbGVzLg0KPiANCj4gU2lnbmVkLW9mZi1ieTog
+WGllIFhpYW9ibyA8WC5YaWVAZnJlZXNjYWxlLmNvbT4NCj4gLS0tDQo+IFYzIC0+IFYyOiBOb2No
+YW5nZQ0KPiANCj4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9jb21tb24uYyAgfCA0NyAN
+Cj4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gIGFyY2gvcG93ZXJwYy9w
+bGF0Zm9ybXMvODV4eC9tcGM4NXh4LmggfCAgOCArKysrKysNCj4gIDIgZmlsZXMgY2hhbmdlZCwg
+NTUgaW5zZXJ0aW9ucygrKQ0KDQpEb24ndCBqdXN0IGNvcHkgaXQ7IHJlbW92ZSBpdCBmcm9tIHRo
+ZSBwbGFjZSB5b3UgY29waWVkIGZyb20gYW5kIGhhdmUgdGhhdCBjb2RlIGNhbGwgdGhlIGNvbW1v
+biB2ZXJzaW9uLg0KDQotU2NvdHQNCg0KDQo=
