@@ -1,24 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 77A3D2C0101
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2013 01:01:23 +1000 (EST)
-Subject: Re: [PATCH V2 2/2] powerpc/85xx: workaround for chips with MSI
- hardware errata
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1378406276.12204.101.camel@snotra.buserror.net>
-Date: Fri, 6 Sep 2013 10:01:15 -0500
-Message-Id: <D0460C0F-D497-4E6A-A0F3-03145FE4444D@kernel.crashing.org>
-References: <1364954598-31914-1-git-send-email-hongtao.jia@freescale.com>
- <1364954598-31914-2-git-send-email-hongtao.jia@freescale.com>
- <C12D1FFD-4D98-48C1-8681-54489600F722@kernel.crashing.org>
- <1378406276.12204.101.camel@snotra.buserror.net>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Jia Hongtao <hongtao.jia@freescale.com>,
- B07421@freescale.com
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 198352C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2013 01:17:31 +1000 (EST)
+Message-ID: <1378480637.12204.179.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc: Add I2C bus multiplexer node for B4 and T4240QDS
+From: Scott Wood <scottwood@freescale.com>
+To: Tang Yuantian-B29983 <B29983@freescale.com>
+Date: Fri, 6 Sep 2013 10:17:17 -0500
+In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B1506A44E@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1378194704-29909-1-git-send-email-hongtao.jia@freescale.com>
+ <52268C7E.4040209@windriver.com>
+ <D07C73A334FF604B95B3CBD2A545D07B15056D07@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1378406443.12204.102.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B1506A44E@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Yang,
+ Wei" <Wei.Yang@windriver.com>, Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2013-09-05 at 21:30 -0500, Tang Yuantian-B29983 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: 2013=E5=B9=B49=E6=9C=886=E6=97=A5 =E6=98=9F=E6=9C=9F=E4=BA=94 2=
+:41
+> > To: Tang Yuantian-B29983
+> > Cc: Yang,Wei; Jia Hongtao-B38951; Wood Scott-B07421; linuxppc-
+> > dev@lists.ozlabs.org
+> > Subject: Re: [PATCH] powerpc: Add I2C bus multiplexer node for B4 and
+> > T4240QDS
+> >=20
+> > On Tue, 2013-09-03 at 22:30 -0500, Tang Yuantian-B29983 wrote:
+> > > Hi,
+> > >
+> > > These eeproms are never used by kernel. So no need to add them.
+> >=20
+> > The device tree describes the hardware, not what Linux does with it.
+> >=20
+> Missing some nodes doesn't mean it is not describing the hardware.
+> There are almost fifty I2C devices on T4 connected to PCA9547.
+> Do you think we need to list them all?
 
-On Sep 5, 2013, at 1:37 PM, Scott Wood wrote:
+Ideally, yes.  I realize it's not uncommon for some things to be
+missing, but that's not a reason to tell people to leave things out just
+because Linux doesn't use them.
 
-> On Thu, 2013-09-05 at 13:34 -0500, Kumar Gala wrote:
->> On Apr 2, 2013, at 9:03 PM, Jia Hongtao wrote:
->>> +			msi->feature |=3D MSI_HW_ERRATA_ENDIAN;
->>> +	}
->>> +
->>> 	/*
->>> 	 * Remember the phandle, so that we can match with any PCI nodes
->>> 	 * that have an "fsl,msi" property.
->>> diff --git a/arch/powerpc/sysdev/fsl_msi.h =
-b/arch/powerpc/sysdev/fsl_msi.h
->>> index 8225f86..7389e8e 100644
->>> --- a/arch/powerpc/sysdev/fsl_msi.h
->>> +++ b/arch/powerpc/sysdev/fsl_msi.h
->>> @@ -25,6 +25,8 @@
->>> #define FSL_PIC_IP_IPIC   0x00000002
->>> #define FSL_PIC_IP_VMPIC  0x00000003
->>>=20
->>> +#define MSI_HW_ERRATA_ENDIAN 0x00000010
->>> +
->>=20
->> Why does this need to be in the header, why not just have it in the =
-.c only
->=20
-> Didn't you ask this last time around? :-)
->=20
-> This flag is part of the same numberspace as FSL_PIC_IP_xxx and thus
-> should be defined in the same place.
-
-I probably did, if its part of the FSL_PIC_IP_xxx namespace, than lets =
-remove blank line between things to make that a bit more clear
-
-- k
+-Scott
