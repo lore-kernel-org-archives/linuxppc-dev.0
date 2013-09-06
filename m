@@ -2,23 +2,25 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 305C62C00C9
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2013 02:10:31 +1000 (EST)
-Subject: Re: [PATCH V2] powerpc: Add I2C bus multiplexer node for B4 and
- T4240QDS
+ by ozlabs.org (Postfix) with ESMTPS id DC13B2C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2013 02:12:03 +1000 (EST)
+Subject: Re: [PATCH V2 2/2] powerpc/85xx: workaround for chips with MSI
+ hardware errata
 Mime-Version: 1.0 (Apple Message framework v1283)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01D4824D@039-SN1MPN1-003.039d.mgd.msft.net>
-Date: Fri, 6 Sep 2013 11:10:25 -0500
-Message-Id: <AC1DB807-91FA-41F6-8468-371E02F41D35@kernel.crashing.org>
-References: <1378348907-3137-1-git-send-email-hongtao.jia@freescale.com>
- <7BA50BB5-9A63-4EA5-91E4-D04576892AAF@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01D4824D@039-SN1MPN1-003.039d.mgd.msft.net>
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Wei.Yang@windriver.com" <Wei.Yang@windriver.com>
+In-Reply-To: <1378481816.12204.191.camel@snotra.buserror.net>
+Date: Fri, 6 Sep 2013 11:11:59 -0500
+Message-Id: <443C064C-EA0A-4299-9E09-79399E8F7375@kernel.crashing.org>
+References: <1364954598-31914-1-git-send-email-hongtao.jia@freescale.com>
+ <1364954598-31914-2-git-send-email-hongtao.jia@freescale.com>
+ <C12D1FFD-4D98-48C1-8681-54489600F722@kernel.crashing.org>
+ <1378406276.12204.101.camel@snotra.buserror.net>
+ <D0460C0F-D497-4E6A-A0F3-03145FE4444D@kernel.crashing.org>
+ <1378481816.12204.191.camel@snotra.buserror.net>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Jia Hongtao <hongtao.jia@freescale.com>,
+ B07421@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,208 +31,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Sep 5, 2013, at 10:33 PM, Jia Hongtao-B38951 wrote:
+On Sep 6, 2013, at 10:36 AM, Scott Wood wrote:
 
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Friday, September 06, 2013 2:41 AM
->> To: Jia Hongtao-B38951
->> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
->> Wei.Yang@windriver.com
->> Subject: Re: [PATCH V2] powerpc: Add I2C bus multiplexer node for B4 and
->> T4240QDS
->> 
->> 
->> On Sep 4, 2013, at 9:41 PM, Jia Hongtao wrote:
->> 
->>> In both B4 and T4240QDS platform PCA9547 I2C bus multiplexer is used.
->>> The sub-nodes are also reorganized according to right I2C topology.
->>> 
->>> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
->>> ---
->>> V2 change log:
->>> Reorganized the sub-nodes under I2C multiplexer to represent right
->> topology.
->>> 
->>> arch/powerpc/boot/dts/b4qds.dtsi   | 49 +++++++++++++++++-----------
->>> arch/powerpc/boot/dts/t4240qds.dts | 67 ++++++++++++++++++++++---------
->> -------
->>> 2 files changed, 69 insertions(+), 47 deletions(-)
->>> 
->>> diff --git a/arch/powerpc/boot/dts/b4qds.dtsi
->> b/arch/powerpc/boot/dts/b4qds.dtsi
->>> index e6d2f8f..de8cb38 100644
->>> --- a/arch/powerpc/boot/dts/b4qds.dtsi
->>> +++ b/arch/powerpc/boot/dts/b4qds.dtsi
->>> @@ -120,25 +120,36 @@
->>> 		};
->>> 
->>> 		i2c@118000 {
->>> -			eeprom@50 {
->>> -				compatible = "at24,24c64";
->>> -				reg = <0x50>;
->>> -			};
->>> -			eeprom@51 {
->>> -				compatible = "at24,24c256";
->>> -				reg = <0x51>;
->>> -			};
->>> -			eeprom@53 {
->>> -				compatible = "at24,24c256";
->>> -				reg = <0x53>;
->>> -			};
->>> -			eeprom@57 {
->>> -				compatible = "at24,24c256";
->>> -				reg = <0x57>;
->>> -			};
->>> -			rtc@68 {
->>> -				compatible = "dallas,ds3232";
->>> -				reg = <0x68>;
->>> +			pca9547@77 {
->>> +				compatible = "philips,pca9547";
->> 
->> We seem to be using nxp instead of philips now.
+> On Fri, 2013-09-06 at 10:01 -0500, Kumar Gala wrote:
+>> On Sep 5, 2013, at 1:37 PM, Scott Wood wrote:
+>>=20
+>>> On Thu, 2013-09-05 at 13:34 -0500, Kumar Gala wrote:
+>>>> On Apr 2, 2013, at 9:03 PM, Jia Hongtao wrote:
+>>>>> +			msi->feature |=3D MSI_HW_ERRATA_ENDIAN;
+>>>>> +	}
+>>>>> +
+>>>>> 	/*
+>>>>> 	 * Remember the phandle, so that we can match with any PCI nodes
+>>>>> 	 * that have an "fsl,msi" property.
+>>>>> diff --git a/arch/powerpc/sysdev/fsl_msi.h =
+b/arch/powerpc/sysdev/fsl_msi.h
+>>>>> index 8225f86..7389e8e 100644
+>>>>> --- a/arch/powerpc/sysdev/fsl_msi.h
+>>>>> +++ b/arch/powerpc/sysdev/fsl_msi.h
+>>>>> @@ -25,6 +25,8 @@
+>>>>> #define FSL_PIC_IP_IPIC   0x00000002
+>>>>> #define FSL_PIC_IP_VMPIC  0x00000003
+>>>>>=20
+>>>>> +#define MSI_HW_ERRATA_ENDIAN 0x00000010
+>>>>> +
+>>>>=20
+>>>> Why does this need to be in the header, why not just have it in the =
+.c only
+>>>=20
+>>> Didn't you ask this last time around? :-)
+>>>=20
+>>> This flag is part of the same numberspace as FSL_PIC_IP_xxx and thus
+>>> should be defined in the same place.
+>>=20
+>> I probably did, if its part of the FSL_PIC_IP_xxx namespace, than =
+lets remove blank line between things to make that a bit more clear
+>=20
+> It's not part of the FSL_PIC_IP_MASK subnumberspace though, just the
+> overall msi->features numberspace.
+>=20
+> It would be nice if these symbols could have some sort of prefix in
+> common, though.
+>=20
+> -Scott
 
-This is based on Documentation/devicetree/bindings/vendor-prefixes.txt
+Maybe we should do something like MSI_FTR_ as a prefix
 
->> 
->>> +				reg = <0x77>;
->>> +				#address-cells = <1>;
->>> +				#size-cells = <0>;
->>> +				channel@0 {
->> 
->> channel should probably be i2c
-> 
-> 
-> Is there any standard for the name?
-> i2c is ok but I think channel is more intuitional.
-> 
-> Hi Scott,
-> What do you think of it.
-
-Basing my comments on Documentation/devicetree/bindings/i2c/i2c-mux.txt 
-
-
-> 
-> Thanks.
-> -Hongtao
-> 
-> 
->> 
->> [same comments below]
->> 
->>> +					#address-cells = <1>;
->>> +					#size-cells = <0>;
->>> +					reg = <0>;
->>> +					eeprom@50 {
->>> +						compatible = "at24,24c64";
->>> +						reg = <0x50>;
->>> +					};
->>> +					eeprom@51 {
->>> +						compatible = "at24,24c256";
->>> +						reg = <0x51>;
->>> +					};
->>> +					eeprom@53 {
->>> +						compatible = "at24,24c256";
->>> +						reg = <0x53>;
->>> +					};
->>> +					eeprom@57 {
->>> +						compatible = "at24,24c256";
->>> +						reg = <0x57>;
->>> +					};
->>> +					rtc@68 {
->>> +						compatible = "dallas,ds3232";
->>> +						reg = <0x68>;
->>> +					};
->>> +				};
->>> 			};
->>> 		};
->>> 
->>> diff --git a/arch/powerpc/boot/dts/t4240qds.dts
->> b/arch/powerpc/boot/dts/t4240qds.dts
->>> index 0555976..ae68595 100644
->>> --- a/arch/powerpc/boot/dts/t4240qds.dts
->>> +++ b/arch/powerpc/boot/dts/t4240qds.dts
->>> @@ -118,34 +118,45 @@
->>> 		};
->>> 
->>> 		i2c@118000 {
->>> -			eeprom@51 {
->>> -				compatible = "at24,24c256";
->>> -				reg = <0x51>;
->>> -			};
->>> -			eeprom@52 {
->>> -				compatible = "at24,24c256";
->>> -				reg = <0x52>;
->>> -			};
->>> -			eeprom@53 {
->>> -				compatible = "at24,24c256";
->>> -				reg = <0x53>;
->>> -			};
->>> -			eeprom@54 {
->>> -				compatible = "at24,24c256";
->>> -				reg = <0x54>;
->>> -			};
->>> -			eeprom@55 {
->>> -				compatible = "at24,24c256";
->>> -				reg = <0x55>;
->>> -			};
->>> -			eeprom@56 {
->>> -				compatible = "at24,24c256";
->>> -				reg = <0x56>;
->>> -			};
->>> -			rtc@68 {
->>> -				compatible = "dallas,ds3232";
->>> -				reg = <0x68>;
->>> -				interrupts = <0x1 0x1 0 0>;
->>> +			pca9547@77 {
->>> +				compatible = "philips,pca9547";
->>> +				reg = <0x77>;
->>> +				#address-cells = <1>;
->>> +				#size-cells = <0>;
->>> +				channel@0 {
->>> +					#address-cells = <1>;
->>> +					#size-cells = <0>;
->>> +					reg = <0>;
->>> +					eeprom@51 {
->>> +						compatible = "at24,24c256";
->>> +						reg = <0x51>;
->>> +					};
->>> +					eeprom@52 {
->>> +						compatible = "at24,24c256";
->>> +						reg = <0x52>;
->>> +					};
->>> +					eeprom@53 {
->>> +						compatible = "at24,24c256";
->>> +						reg = <0x53>;
->>> +					};
->>> +					eeprom@54 {
->>> +						compatible = "at24,24c256";
->>> +						reg = <0x54>;
->>> +					};
->>> +					eeprom@55 {
->>> +						compatible = "at24,24c256";
->>> +						reg = <0x55>;
->>> +					};
->>> +					eeprom@56 {
->>> +						compatible = "at24,24c256";
->>> +						reg = <0x56>;
->>> +					};
->>> +					rtc@68 {
->>> +						compatible = "dallas,ds3232";
->>> +						reg = <0x68>;
->>> +						interrupts = <0x1 0x1 0 0>;
->>> +					};
->>> +				};
->>> 			};
->>> 		};
->>> 	};
->>> --
->>> 1.8.0
->>> 
->>> 
->>> _______________________________________________
->>> Linuxppc-dev mailing list
->>> Linuxppc-dev@lists.ozlabs.org
->>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->> 
-> 
+- k
