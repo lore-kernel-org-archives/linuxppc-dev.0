@@ -1,27 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+Return-Path: <R58495@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 351792C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2013 01:37:04 +1000 (EST)
-Message-ID: <1378481816.12204.191.camel@snotra.buserror.net>
-Subject: Re: [PATCH V2 2/2] powerpc/85xx: workaround for chips with MSI
- hardware errata
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Fri, 6 Sep 2013 10:36:56 -0500
-In-Reply-To: <D0460C0F-D497-4E6A-A0F3-03145FE4444D@kernel.crashing.org>
-References: <1364954598-31914-1-git-send-email-hongtao.jia@freescale.com>
- <1364954598-31914-2-git-send-email-hongtao.jia@freescale.com>
- <C12D1FFD-4D98-48C1-8681-54489600F722@kernel.crashing.org>
- <1378406276.12204.101.camel@snotra.buserror.net>
- <D0460C0F-D497-4E6A-A0F3-03145FE4444D@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 567E22C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2013 01:43:47 +1000 (EST)
+From: York Sun <yorksun@freescale.com>
+To: <galak@kernel.crashing.org>
+Subject: [PATCH 1/7] powerpc/mpc85xx: Fix EDAC address capture
+Date: Fri, 6 Sep 2013 08:43:13 -0700
+Message-ID: <1378482199-10581-1-git-send-email-yorksun@freescale.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Jia Hongtao <hongtao.jia@freescale.com>,
- B07421@freescale.com
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, York Sun <yorksun@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-09-06 at 10:01 -0500, Kumar Gala wrote:
-> On Sep 5, 2013, at 1:37 PM, Scott Wood wrote:
-> 
-> > On Thu, 2013-09-05 at 13:34 -0500, Kumar Gala wrote:
-> >> On Apr 2, 2013, at 9:03 PM, Jia Hongtao wrote:
-> >>> +			msi->feature |= MSI_HW_ERRATA_ENDIAN;
-> >>> +	}
-> >>> +
-> >>> 	/*
-> >>> 	 * Remember the phandle, so that we can match with any PCI nodes
-> >>> 	 * that have an "fsl,msi" property.
-> >>> diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-> >>> index 8225f86..7389e8e 100644
-> >>> --- a/arch/powerpc/sysdev/fsl_msi.h
-> >>> +++ b/arch/powerpc/sysdev/fsl_msi.h
-> >>> @@ -25,6 +25,8 @@
-> >>> #define FSL_PIC_IP_IPIC   0x00000002
-> >>> #define FSL_PIC_IP_VMPIC  0x00000003
-> >>> 
-> >>> +#define MSI_HW_ERRATA_ENDIAN 0x00000010
-> >>> +
-> >> 
-> >> Why does this need to be in the header, why not just have it in the .c only
-> > 
-> > Didn't you ask this last time around? :-)
-> > 
-> > This flag is part of the same numberspace as FSL_PIC_IP_xxx and thus
-> > should be defined in the same place.
-> 
-> I probably did, if its part of the FSL_PIC_IP_xxx namespace, than lets remove blank line between things to make that a bit more clear
+Extend err_addr to cover 64 bits for DDR errors.
 
-It's not part of the FSL_PIC_IP_MASK subnumberspace though, just the
-overall msi->features numberspace.
+Signed-off-by: York Sun <yorksun@freescale.com>
+Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
+Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
+---
+ drivers/edac/mpc85xx_edac.c |   10 +++++++---
+ drivers/edac/mpc85xx_edac.h |    1 +
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
-It would be nice if these symbols could have some sort of prefix in
-common, though.
-
--Scott
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index 3eb32f6..392178f 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -773,6 +773,8 @@ static void sbe_ecc_decode(u32 cap_high, u32 cap_low, u32 cap_ecc,
+ 	}
+ }
+ 
++#define make64(high, low) (((u64)(high) << 32) | (low))
++
+ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
+ {
+ 	struct mpc85xx_mc_pdata *pdata = mci->pvt_info;
+@@ -780,7 +782,7 @@ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
+ 	u32 bus_width;
+ 	u32 err_detect;
+ 	u32 syndrome;
+-	u32 err_addr;
++	u64 err_addr;
+ 	u32 pfn;
+ 	int row_index;
+ 	u32 cap_high;
+@@ -811,7 +813,9 @@ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
+ 	else
+ 		syndrome &= 0xffff;
+ 
+-	err_addr = in_be32(pdata->mc_vbase + MPC85XX_MC_CAPTURE_ADDRESS);
++	err_addr = make64(
++		in_be32(pdata->mc_vbase + MPC85XX_MC_CAPTURE_EXT_ADDRESS),
++		in_be32(pdata->mc_vbase + MPC85XX_MC_CAPTURE_ADDRESS));
+ 	pfn = err_addr >> PAGE_SHIFT;
+ 
+ 	for (row_index = 0; row_index < mci->nr_csrows; row_index++) {
+@@ -848,7 +852,7 @@ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
+ 	mpc85xx_mc_printk(mci, KERN_ERR,
+ 			"Captured Data / ECC:\t%#8.8x_%08x / %#2.2x\n",
+ 			cap_high, cap_low, syndrome);
+-	mpc85xx_mc_printk(mci, KERN_ERR, "Err addr: %#8.8x\n", err_addr);
++	mpc85xx_mc_printk(mci, KERN_ERR, "Err addr: %#8.8llx\n", err_addr);
+ 	mpc85xx_mc_printk(mci, KERN_ERR, "PFN: %#8.8x\n", pfn);
+ 
+ 	/* we are out of range */
+diff --git a/drivers/edac/mpc85xx_edac.h b/drivers/edac/mpc85xx_edac.h
+index 932016f..efb25bc 100644
+--- a/drivers/edac/mpc85xx_edac.h
++++ b/drivers/edac/mpc85xx_edac.h
+@@ -43,6 +43,7 @@
+ #define MPC85XX_MC_ERR_INT_EN		0x0e48
+ #define MPC85XX_MC_CAPTURE_ATRIBUTES	0x0e4c
+ #define MPC85XX_MC_CAPTURE_ADDRESS	0x0e50
++#define MPC85XX_MC_CAPTURE_EXT_ADDRESS	0x0e54
+ #define MPC85XX_MC_ERR_SBE		0x0e58
+ 
+ #define DSC_MEM_EN	0x80000000
+-- 
+1.7.9.5
