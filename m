@@ -1,21 +1,33 @@
-Return-Path: <R58495@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 132D12C018A
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2013 01:44:22 +1000 (EST)
-From: York Sun <yorksun@freescale.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH 6/7] powerpc/t4240emu: Add device tree file for t4240emu
-Date: Fri, 6 Sep 2013 08:43:18 -0700
-Message-ID: <1378482199-10581-6-git-send-email-yorksun@freescale.com>
-In-Reply-To: <1378482199-10581-1-git-send-email-yorksun@freescale.com>
-References: <1378482199-10581-1-git-send-email-yorksun@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 9389F2C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2013 01:55:35 +1000 (EST)
+Message-ID: <1378482923.12204.193.camel@snotra.buserror.net>
+Subject: Re: [PATCH v8 1/3] DMA: Freescale: revise device tree binding document
+From: Scott Wood <scottwood@freescale.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Date: Fri, 6 Sep 2013 10:55:23 -0500
+In-Reply-To: <20130828124857.GB10250@e106331-lin.cambridge.arm.com>
+References: <1377600123-5746-1-git-send-email-hongbo.zhang@freescale.com>
+ <1377600123-5746-2-git-send-email-hongbo.zhang@freescale.com>
+ <20130827112509.GH19893@e106331-lin.cambridge.arm.com>
+ <521DB26F.8010501@freescale.com>
+ <20130828124857.GB10250@e106331-lin.cambridge.arm.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, York Sun <yorksun@freescale.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ Pawel Moll <Pawel.Moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ Hongbo Zhang <hongbo.zhang@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "vinod.koul@intel.com" <vinod.koul@intel.com>, "djbw@fb.com" <djbw@fb.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,303 +37,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T4240EMU is an emulator target with minimum peripherals. It is based on
-T4240QDS and trimmed down most peripherals due to either not modeled or
-lack of board level connections. The main purpose of this minimum dts is
-to speed up booting on emulator.
+On Wed, 2013-08-28 at 13:48 +0100, Mark Rutland wrote:
+> On Wed, Aug 28, 2013 at 09:18:55AM +0100, Hongbo Zhang wrote:
+> > On 08/27/2013 07:25 PM, Mark Rutland wrote:
+> > > On Tue, Aug 27, 2013 at 11:42:01AM +0100, hongbo.zhang@freescale.com wrote:
+> > >> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+> > >>
+> > >> This patch updates the discription of each type of DMA controller and its
+> > >> channels, it is preparation for adding another new DMA controller binding, it
+> > >> also fixes some defects of indent for text alignment at the same time.
+> > >>
+> > >> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+> > >> ---
+> > >>   .../devicetree/bindings/powerpc/fsl/dma.txt        |   62 +++++++++-----------
+> > >>   1 file changed, 27 insertions(+), 35 deletions(-)
+> > >>
+> > >> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+> > >> index 2a4b4bc..ddf17af 100644
+> > >> --- a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+> > >> +++ b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+> > >> @@ -1,33 +1,29 @@
+> > >> -* Freescale 83xx DMA Controller
+> > >> +* Freescale DMA Controllers
+> > >>   
+> > >> -Freescale PowerPC 83xx have on chip general purpose DMA controllers.
+> > >> +** Freescale Elo DMA Controller
+> > >> +   This is a little-endian DMA controller, used in Freescale mpc83xx series
+> > >> +   chips such as mpc8315, mpc8349, mpc8379 etc.
+> > >>   
+> > >>   Required properties:
+> > >>   
+> > >> -- compatible        : compatible list, contains 2 entries, first is
+> > >> -		 "fsl,CHIP-dma", where CHIP is the processor
+> > >> -		 (mpc8349, mpc8360, etc.) and the second is
+> > >> -		 "fsl,elo-dma"
+> > >> -- reg               : <registers mapping for DMA general status reg>
+> > >> -- ranges		: Should be defined as specified in 1) to describe the
+> > >> -		  DMA controller channels.
+> > >> +- compatible        : must include "fsl,elo-dma"
+> > > We should list the other values that may be in the list also, unless
+> > > they are really of no consequence, in which case their presence in dt is
+> > > questionable.
+> > Hmm.  Stephen questioned here too, it seems this is a default rule.
+> > Although Scott@freescale had explained our thoughts, I'd like to edit 
+> > this item like this:
+> > 
+> > "must include "fsl,eloplus-dma", and a "fsl,CHIP-dma" is optional, where 
+> > CHIP is the processor name"
+> > 
+> > We don't list all the chip name because we have tens of them and we 
+> > cannot list all of them, and it is unnecessary to list them because we 
+> > even don't use "fsl,CHIP-dma" in the new driver, add "fsl,CHIP-dma" here 
+> > just make it questionable when it presents in example and  old dts files.
+> > 
+> > I remove the examples in bracket "(mpc8349, mpc8360, etc.)" because we 
+> > can see the real example below.
+> > I don't say" if "fsl,CHIP-dma" presents, it should be the first one, and 
+> > the "fsl,eloplus-dma" should be the second" because it is common rule.
+> > the description language should be clear and concise too I think.
+> 
+> Actually, you've convinced me for the form as you originally converted
+> it (must include "fsl,elo-dma"), given that the other strings aren't
+> used to give information anywhere and "fsl,CHIP-dma" doesn't fully
+> define a valid string.
 
-Signed-off-by: York Sun <yorksun@freescale.com>
-Reviewed-by: Wood Scott-B07421 <scottwood@freescale.com>
-Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
-Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
----
- arch/powerpc/boot/dts/t4240emu.dts |  278 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 278 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/t4240emu.dts
+More generally, bindings should always specify "must include" rather
+than "must be" for compatible, since by the nature of compatible you
+could have a derivative device with more features that is compatible
+with the device described in the binding, and the binding shouldn't
+preclude identifying the derivative device.
 
-diff --git a/arch/powerpc/boot/dts/t4240emu.dts b/arch/powerpc/boot/dts/t4240emu.dts
-new file mode 100644
-index 0000000..35a9c91
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t4240emu.dts
-@@ -0,0 +1,278 @@
-+/*
-+ * T4240 emulator Device Tree Source
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/dts-v1/;
-+
-+/include/ "fsl/e6500_power_isa.dtsi"
-+/ {
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	aliases {
-+		ccsr = &soc;
-+
-+		serial0 = &serial0;
-+		serial1 = &serial1;
-+		serial2 = &serial2;
-+		serial3 = &serial3;
-+		dma0 = &dma0;
-+		dma1 = &dma1;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		/*
-+		 * Temporarily add next-level-cache info in each cpu node so
-+		 * that uboot can do L2 cache fixup. This can be removed once
-+		 * u-boot can create cpu node with cache info.
-+		 */
-+		cpu0: PowerPC,e6500@0 {
-+			device_type = "cpu";
-+			reg = <0 1>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		cpu1: PowerPC,e6500@2 {
-+			device_type = "cpu";
-+			reg = <2 3>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		cpu2: PowerPC,e6500@4 {
-+			device_type = "cpu";
-+			reg = <4 5>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		cpu3: PowerPC,e6500@6 {
-+			device_type = "cpu";
-+			reg = <6 7>;
-+			next-level-cache = <&L2_1>;
-+		};
-+
-+		cpu4: PowerPC,e6500@8 {
-+			device_type = "cpu";
-+			reg = <8 9>;
-+			next-level-cache = <&L2_2>;
-+		};
-+		cpu5: PowerPC,e6500@10 {
-+			device_type = "cpu";
-+			reg = <10 11>;
-+			next-level-cache = <&L2_2>;
-+		};
-+		cpu6: PowerPC,e6500@12 {
-+			device_type = "cpu";
-+			reg = <12 13>;
-+			next-level-cache = <&L2_2>;
-+		};
-+		cpu7: PowerPC,e6500@14 {
-+			device_type = "cpu";
-+			reg = <14 15>;
-+			next-level-cache = <&L2_2>;
-+		};
-+
-+		cpu8: PowerPC,e6500@16 {
-+			device_type = "cpu";
-+			reg = <16 17>;
-+			next-level-cache = <&L2_3>;
-+		};
-+		cpu9: PowerPC,e6500@18 {
-+			device_type = "cpu";
-+			reg = <18 19>;
-+			next-level-cache = <&L2_3>;
-+		};
-+		cpu10: PowerPC,e6500@20 {
-+			device_type = "cpu";
-+			reg = <20 21>;
-+			next-level-cache = <&L2_3>;
-+		};
-+		cpu11: PowerPC,e6500@22 {
-+			device_type = "cpu";
-+			reg = <22 23>;
-+			next-level-cache = <&L2_3>;
-+		};
-+	};
-+};
-+
-+/ {
-+	model = "fsl,T4240QDS";
-+	compatible = "fsl,t4240emu", "fsl,T4240QDS";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	ifc: localbus@ffe124000 {
-+		reg = <0xf 0xfe124000 0 0x2000>;
-+		ranges = <0 0 0xf 0xe8000000 0x08000000
-+			  2 0 0xf 0xff800000 0x00010000
-+			  3 0 0xf 0xffdf0000 0x00008000>;
-+
-+		nor@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <0x0 0x0 0x8000000>;
-+
-+			bank-width = <2>;
-+			device-width = <1>;
-+		};
-+
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	soc: soc@ffe000000 {
-+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-+		reg = <0xf 0xfe000000 0 0x00001000>;
-+
-+	};
-+
-+};
-+
-+&ifc {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	compatible = "fsl,ifc", "simple-bus";
-+	interrupts = <25 2 0 0>;
-+};
-+
-+&soc {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	device_type = "soc";
-+	compatible = "simple-bus";
-+
-+	soc-sram-error {
-+		compatible = "fsl,soc-sram-error";
-+		interrupts = <16 2 1 29>;
-+	};
-+
-+	corenet-law@0 {
-+		compatible = "fsl,corenet-law";
-+		reg = <0x0 0x1000>;
-+		fsl,num-laws = <32>;
-+	};
-+
-+	ddr1: memory-controller@8000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
-+		reg = <0x8000 0x1000>;
-+		interrupts = <16 2 1 23>;
-+	};
-+
-+	ddr2: memory-controller@9000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
-+		reg = <0x9000 0x1000>;
-+		interrupts = <16 2 1 22>;
-+	};
-+
-+	ddr3: memory-controller@a000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
-+		reg = <0xa000 0x1000>;
-+		interrupts = <16 2 1 21>;
-+	};
-+
-+	cpc: l3-cache-controller@10000 {
-+		compatible = "fsl,p5020-l3-cache-controller", "fsl,p4080-l3-cache-controller", "cache";
-+		reg = <0x10000 0x1000
-+		       0x11000 0x1000>;
-+		interrupts = <16 2 1 27
-+			      16 2 1 26>;
-+	};
-+
-+	corenet-cf@18000 {
-+		compatible = "fsl,corenet-cf";
-+		reg = <0x18000 0x1000>;
-+		interrupts = <16 2 1 31>;
-+		fsl,ccf-num-csdids = <32>;
-+		fsl,ccf-num-snoopids = <32>;
-+	};
-+
-+	iommu@20000 {
-+		compatible = "fsl,pamu-v1.0", "fsl,pamu";
-+		reg = <0x20000 0x6000>;
-+		interrupts = <
-+			24 2 0 0
-+			16 2 1 30>;
-+	};
-+
-+/include/ "fsl/qoriq-mpic.dtsi"
-+
-+	guts: global-utilities@e0000 {
-+		compatible = "fsl,t4240-device-config";
-+		reg = <0xe0000 0xe00>;
-+		fsl,has-rstcr;
-+		fsl,liodn-bits = <12>;
-+	};
-+
-+	clockgen: global-utilities@e1000 {
-+		compatible = "fsl,t4240-clockgen", "fsl,qoriq-clockgen-2";
-+		reg = <0xe1000 0x1000>;
-+	};
-+
-+/include/ "fsl/qoriq-dma-0.dtsi"
-+/include/ "fsl/qoriq-dma-1.dtsi"
-+
-+/include/ "fsl/qoriq-i2c-0.dtsi"
-+/include/ "fsl/qoriq-i2c-1.dtsi"
-+/include/ "fsl/qoriq-duart-0.dtsi"
-+/include/ "fsl/qoriq-duart-1.dtsi"
-+
-+
-+	/*
-+	 * Temporarily define cluster 1/2/3's L2 cache nodes in order to pass
-+	 * next-level-cache info to uboot to do L3 cache fixup. This can be
-+	 * removed once u-boot can create cpu node with cache info.
-+	 */
-+	L2_1: l2-cache-controller@c20000 {
-+		compatible = "fsl,t4240-l2-cache-controller";
-+		reg = <0xc20000 0x40000>;
-+		next-level-cache = <&cpc>;
-+	};
-+	L2_2: l2-cache-controller@c60000 {
-+		compatible = "fsl,t4240-l2-cache-controller";
-+		reg = <0xc60000 0x40000>;
-+		next-level-cache = <&cpc>;
-+	};
-+	L2_3: l2-cache-controller@ca0000 {
-+		compatible = "fsl,t4240-l2-cache-controller";
-+		reg = <0xca0000 0x40000>;
-+		next-level-cache = <&cpc>;
-+	};
-+};
-+
--- 
-1.7.9.5
+-Scott
