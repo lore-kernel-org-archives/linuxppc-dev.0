@@ -1,27 +1,21 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-yh0-x230.google.com (mail-yh0-x230.google.com
- [IPv6:2607:f8b0:4002:c01::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B75352C00EE
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2013 06:30:43 +1000 (EST)
-Received: by mail-yh0-f48.google.com with SMTP id f10so1385307yha.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Sep 2013 13:30:39 -0700 (PDT)
-Date: Fri, 6 Sep 2013 14:30:35 -0600
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Yijing Wang <wangyijing@huawei.com>
-Subject: Re: [PATCH v2 3/6] powerpc/pci: use pci_is_pcie() to simplify code
-Message-ID: <20130906203035.GA27940@google.com>
-References: <1378367730-25996-1-git-send-email-wangyijing@huawei.com>
- <1378367730-25996-3-git-send-email-wangyijing@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1378367730-25996-3-git-send-email-wangyijing@huawei.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <JBottomley@parallels.com>,
- Paul Mackerras <paulus@samba.org>, Hanjun Guo <guohanjun@huawei.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id F11132C0116
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2013 17:12:51 +1000 (EST)
+Message-ID: <1378537960.4539.9.camel@pasglop>
+Subject: Re: [git pull] Please pull powerpc.git next branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 07 Sep 2013 17:12:40 +1000
+In-Reply-To: <CA+55aFwvPNu6-PHJmDkqihiCgMy=TH_we8LtVKm31teWhmLQPw@mail.gmail.com>
+References: <1378434264.4321.209.camel@pasglop>
+ <CA+55aFwvPNu6-PHJmDkqihiCgMy=TH_we8LtVKm31teWhmLQPw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,58 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 05, 2013 at 03:55:27PM +0800, Yijing Wang wrote:
-> Use pci_is_pcie() to simplify code.
+On Fri, 2013-09-06 at 10:56 -0700, Linus Torvalds wrote:
+> On Thu, Sep 5, 2013 at 7:24 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> >
+> >  * A bunch of endian fixes ! We don't have full LE support yet in that
+> > release but this contains a lot of fixes all over arch/powerpc to use the
+> > proper accessors, call the firmware with the right endian mode, etc...
 > 
-> Acked-by: Kumar Gala <galak@kernel.crashing.org>
-> Reviewed-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-> Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->  arch/powerpc/kernel/eeh.c     |    3 +--
->  arch/powerpc/sysdev/fsl_pci.c |    2 +-
->  2 files changed, 2 insertions(+), 3 deletions(-)
+> Ok, this caused a conflict in arch/powerpc/kernel/prom.c, where some
+> of the OF CPU number accessors had been moved to generic OF code
+> instead.
 
-Ben, Paul, this has no dependencies on anything new to PCI or any
-other patches in this series, so you can take it through the POWERPC
-tree.  If you don't want to do that, let me know and I can take it.
+Ah yes, sorry, I completely forgot to tell you about that ! (I was in a
+hurry to leave for the snow :-)
 
-If you want it:
+> It *looks* to me like those accessors had already been made
+> endian-clean as part of the move to generic code, and so my conflict
+> resolution was to just ignore the parts of the changes the code that
+> no longer exists in prom.c, but you really should double-check my
+> resolution. Maybe I screwed it up.
 
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Ok, yes I had reviewed the new stuff and it should already be endian
+safe, so it should be all good, but I'll double check everything as soon
+as I'm back.
 
-> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> index 55593ee..6ebbe54 100644
-> --- a/arch/powerpc/kernel/eeh.c
-> +++ b/arch/powerpc/kernel/eeh.c
-> @@ -189,8 +189,7 @@ static size_t eeh_gather_pci_data(struct eeh_dev *edev, char * buf, size_t len)
->  	}
->  
->  	/* If PCI-E capable, dump PCI-E cap 10, and the AER */
-> -	cap = pci_find_capability(dev, PCI_CAP_ID_EXP);
-> -	if (cap) {
-> +	if (pci_is_pcie(dev)) {
->  		n += scnprintf(buf+n, len-n, "pci-e cap10:\n");
->  		printk(KERN_WARNING
->  		       "EEH: PCI-E capabilities and status follow:\n");
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index 46ac1dd..5402a1d 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -41,7 +41,7 @@ static void quirk_fsl_pcie_header(struct pci_dev *dev)
->  	u8 hdr_type;
->  
->  	/* if we aren't a PCIe don't bother */
-> -	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
-> +	if (!pci_is_pcie(dev))
->  		return;
->  
->  	/* if we aren't in host mode don't bother */
-> -- 
-> 1.7.1
-> 
-> 
+> But apparent'y the LE mode isn't finished, so hopefully even if I read
+> those changes wrong it won't affect you guys too badly. I didn't
+> test-compile any of it, yadda yadda..
+
+Yup, that's fine :-) We have a full LE tree internally of course but we
+are holding on some of the stuff until we decide what to do with the ABI
+(it would be nice to get rid of function descriptors for example) and
+fix some more bugs.
+
+So I decided to merge a batch of the "easy" stuff just to get it out of
+the way this time around, and hopefully the rest will be spread out
+across the next one or two merge windows.
+
+Cheers,
+Ben.
+
+>               Linus
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
