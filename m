@@ -1,29 +1,26 @@
-Return-Path: <shawn.guo@linaro.org>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2C6662C0113
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 00:32:57 +1000 (EST)
-Date: Mon, 9 Sep 2013 22:32:55 +0800
-From: Shawn Guo <shawn.guo@linaro.org>
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [PATCH v4 12/19] cpufreq: cpufreq-cpu0: remove device tree
- parsing for cpu nodes
-Message-ID: <20130909143253.GD4624@S2101-09.ap.freescale.net>
+Return-Path: <sudeep.karkadanagesha@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id 585BA2C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 01:23:26 +1000 (EST)
+Message-ID: <522DE822.3030907@arm.com>
+Date: Mon, 09 Sep 2013 16:24:18 +0100
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+MIME-Version: 1.0
+To: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v4 12/19] cpufreq: cpufreq-cpu0: remove device tree parsing
+ for cpu nodes
 References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376991021-12160-13-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <Pine.LNX.4.64.1309061539310.11068@axis700.grange>
- <522D93D7.4010307@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <522D93D7.4010307@arm.com>
+ <Pine.LNX.4.64.1309061539310.11068@axis700.grange> <522D93D7.4010307@arm.com>
+ <20130909143253.GD4624@S2101-09.ap.freescale.net>
+In-Reply-To: <20130909143253.GD4624@S2101-09.ap.freescale.net>
+Content-Type: text/plain; charset=WINDOWS-1252
 Cc: Jonas Bonn <jonas@southpole.se>,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  Michal Simek <monstr@monstr.eu>,
  "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
  Viresh Kumar <viresh.kumar@linaro.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
@@ -42,89 +39,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sudeep,
+On 09/09/13 15:32, Shawn Guo wrote:
+> Hi Sudeep,
+>=20
+> On Mon, Sep 09, 2013 at 10:24:39AM +0100, Sudeep KarkadaNagesha wrote:
+>> Hi Shawn,
+>>
+>> Can you please clarify ? The fix would be as below but I would like to
+>> know if setting cpu_dev to get_cpu_device(0) instead of &pdev->dev has
+>> any impact on other parts of code using cpu_dev ?
+>=20
+> I'm sorry.  I should have given it a test on hardware before ACKing the
+> changes.
+>=20
+> The fix below should not have other impact except the prefix of dev_err
+> [info, dbg] message output ('cpufreq-cpu0:' to 'cpu cpu0:'), which
+> shouldn't be a problem.
+>
+Hi Shawn,
 
-On Mon, Sep 09, 2013 at 10:24:39AM +0100, Sudeep KarkadaNagesha wrote:
-> Hi Shawn,
-> 
-> Can you please clarify ? The fix would be as below but I would like to
-> know if setting cpu_dev to get_cpu_device(0) instead of &pdev->dev has
-> any impact on other parts of code using cpu_dev ?
+Ok. But I am bit suspicious about devm_clk_get(cpu_dev, NULL).
+I don't understand completely as how the clock are registered(whether
+with dev_id or with connection_id).
 
-I'm sorry.  I should have given it a test on hardware before ACKing the
-changes.
+A quick grep revealed that i.mx and shmobile is using conection id while
+registering. If the clock is registered with connection id and retrieved
+with cpu_dev(now dev_id is cpu0 and not cpufreq-cpu0), IIUC that would
+break. If we pass pdev->dev for clk_get, it should be fine but again
+IIUC it breaks highbank which gets all the information from DT.
 
-The fix below should not have other impact except the prefix of dev_err
-[info, dbg] message output ('cpufreq-cpu0:' to 'cpu cpu0:'), which
-shouldn't be a problem.
+So only solution I can think of is to continue to have the code
+assigning (&pdev->dev)->of_node with cpu device node which is not clean
+and arguable as incorrect since there is no DT node for cpufreq-cpu0.
+I don't have a strong opinion though.
 
-> 
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index cbfffa9..871c336 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -177,7 +177,7 @@ static int cpu0_cpufreq_probe(struct platform_device
-> *pdev)
->         struct device_node *np;
->         int ret;
-> 
-> -       cpu_dev = &pdev->dev;
-> +       cpu_dev = get_cpu_device(0);
-> 
->         np = of_node_get(cpu_dev->of_node);
->         if (!np) {
-> 
+Let me know how would you like to fix this.
 
-The imx6q-cpufreq driver needs a similar fixing.  Please include the
-following changes into your fixing patches.  Thanks.
+>>
+>> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cp=
+u0.c
+>> index cbfffa9..871c336 100644
+>> --- a/drivers/cpufreq/cpufreq-cpu0.c
+>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+>> @@ -177,7 +177,7 @@ static int cpu0_cpufreq_probe(struct platform_device
+>> *pdev)
+>>         struct device_node *np;
+>>         int ret;
+>>
+>> -       cpu_dev =3D &pdev->dev;
+>> +       cpu_dev =3D get_cpu_device(0);
+>>
+>>         np =3D of_node_get(cpu_dev->of_node);
+>>         if (!np) {
+>>
+>=20
+> The imx6q-cpufreq driver needs a similar fixing.  Please include the
+> following changes into your fixing patches.  Thanks.
+>=20
+Ok no problem I can post the fix based on response for the above question.
 
-Shawn
-
----8<---------
-
-diff --git a/arch/arm/mach-imx/mach-imx6q.c b/arch/arm/mach-imx/mach-imx6q.c
-index 85a1b51..69fd4b6 100644
---- a/arch/arm/mach-imx/mach-imx6q.c
-+++ b/arch/arm/mach-imx/mach-imx6q.c
-@@ -233,9 +233,10 @@ put_node:
- 	of_node_put(np);
- }
- 
--static void __init imx6q_opp_init(struct device *cpu_dev)
-+static void __init imx6q_opp_init(void)
- {
- 	struct device_node *np;
-+	struct device *cpu_dev = get_cpu_device(0);
- 
- 	np = of_node_get(cpu_dev->of_node);
- 	if (!np) {
-@@ -268,7 +269,7 @@ static void __init imx6q_init_late(void)
- 		imx6q_cpuidle_init();
- 
- 	if (IS_ENABLED(CONFIG_ARM_IMX6Q_CPUFREQ)) {
--		imx6q_opp_init(&imx6q_cpufreq_pdev.dev);
-+		imx6q_opp_init();
- 		platform_device_register(&imx6q_cpufreq_pdev);
- 	}
- }
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 3e39654..d7ebd91 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -7,6 +7,7 @@
-  */
- 
- #include <linux/clk.h>
-+#include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/delay.h>
- #include <linux/err.h>
-@@ -202,7 +203,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 	unsigned long min_volt, max_volt;
- 	int num, ret;
- 
--	cpu_dev = &pdev->dev;
-+	cpu_dev = get_cpu_device(0);
- 
- 	np = of_node_get(cpu_dev->of_node);
- 	if (!np) {
+Regard,
+Sudeep
