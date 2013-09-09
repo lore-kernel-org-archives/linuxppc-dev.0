@@ -1,29 +1,21 @@
-Return-Path: <tmusta@us.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 66B1D2C0100
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 06:21:10 +1000 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tmusta@us.ibm.com>;
- Mon, 9 Sep 2013 14:21:07 -0600
-In-Reply-To: <OF5204CF2E.B2F7FFF8-ON86257BE1.0044FF5E-86257BE1.0046077F@us.ibm.com>
-References: <CAJ-hshaxuJBMCFquT7J50rjuDYWer_0i1=2QmnOKGAxx4n=FUw@mail.gmail.com>
- <20130908223559.GA495@iris.ozlabs.ibm.com> <1378721499.11525.5.camel@pasglop>
- <OF5204CF2E.B2F7FFF8-ON86257BE1.0044FF5E-86257BE1.0046077F@us.ibm.com>
-Subject: Re: [PATCH] powerpc: OE=1 Form Instructions Not Decoded Correctly
-To: Tom Musta <tmusta@us.ibm.com>
-Message-ID: <OF8A394047.DEDB25DC-ON86257BE1.0062D6C5-86257BE1.006FC8B8@us.ibm.com>
-From: Tom Musta <tmusta@us.ibm.com>
-Date: Mon, 9 Sep 2013 15:20:58 -0500
+Return-Path: <asamymuthupa@micron.com>
+Received: from mailout.micron.com (mailout.micron.com [137.201.242.129])
+ by ozlabs.org (Postfix) with ESMTP id B92072C011D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 10:07:29 +1000 (EST)
+Message-ID: <522E5FD5.40603@micron.com>
+Date: Mon, 9 Sep 2013 16:55:01 -0700
+From: Asai Thambi S P <asamymuthupa@micron.com>
 MIME-Version: 1.0
-Content-type: multipart/alternative;
- Boundary="0__=09BBF172DFF150558f9e8a93df938690918c09BBF172DFF15055"
-Cc: linuxppc-dev@lists.ozlabs.org,
- Linuxppc-dev <linuxppc-dev-bounces+tmusta=us.ibm.com@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>, Tom Musta <tommusta@gmail.com>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, Shivaprasad G Bhat
+ <sbhat@linux.vnet.ibm.com>
+Subject: Re: powerpc allmodconfig build broken due to commit 15863ff3b
+ (powerpc: Make chip-id information available to userspace)
+References: <522D163E.80106@roeck-us.net>
+In-Reply-To: <522D163E.80106@roeck-us.net>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,29 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0__=09BBF172DFF150558f9e8a93df938690918c09BBF172DFF15055
-Content-type: text/plain; charset=US-ASCII
-
-> > Isn't that code occasionally used with uprobes too nowadays  ?
+On 09/08/2013 5:28 PM, Guenter Roeck wrote:
+> Hi all,
 >
-> Yes. I believe so.
+> powerpc allmodconfig build on the latest upstream kernel results in:
+>
+> ERROR: ".cpu_to_chip_id" [drivers/block/mtip32xx/mtip32xx.ko] undefined!
+>
+> This is due to commit 15863ff3b (powerpc: Make chip-id information 
+> available to userspace).
+> Not surprising, as cpu_to_chip_id() is not exported.
+>
+Apart from the above error, I have a concern on the patch, purely based on the commit message.
+(to be honest, I am not familiar with the ppc architecture)
 
-I'm going to back-pedal a little.  I reread code and can connect
-single step code to kprobes but not necessarily to uprobes.  So
-I am not sure that this code is used with uprobes.
+Commit message of 15863ff3b has the following text.
 
---0__=09BBF172DFF150558f9e8a93df938690918c09BBF172DFF15055
-Content-type: text/html; charset=US-ASCII
-Content-Disposition: inline
+******************
+So far "/sys/devices/system/cpu/cpuX/topology/physical_package_id"
+was always default (-1) on ppc64 architecture.
 
-<html><body>
-<p><tt><font size="2">&gt; &gt; Isn't that code occasionally used with uprobes too nowadays &nbsp;?<br>
-&gt; <br>
-&gt; Yes. I believe so.<br>
-</font></tt><br>
-<tt><font size="2">I'm going to back-pedal a little. &nbsp;I reread code and can connect </font></tt><br>
-<tt><font size="2">single step code to kprobes but not necessarily to uprobes. &nbsp;So</font></tt><br>
-<tt><font size="2">I am not sure that this code is used with uprobes.</font></tt><br>
-<br>
-</body></html>
---0__=09BBF172DFF150558f9e8a93df938690918c09BBF172DFF15055--
+Now, some systems have an ibm,chip-id property in the cpu nodes in
+the device tree. On these systems, we now use this information to
+display physical_package_id
+******************
+
+Shouldn't the new definition of "topology_physical_package_id" apply only to those systems supporting ibm,chip-id property?
+
+
+> Reverting this commit fixes the problem. Any good idea how to fix it 
+> for real ?
+>
+> Guenter
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
