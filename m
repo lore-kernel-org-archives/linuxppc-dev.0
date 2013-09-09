@@ -1,20 +1,20 @@
-Return-Path: <B38951@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5BF982C012C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Sep 2013 20:07:16 +1000 (EST)
-From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
- <B07421@freescale.com>
-Subject: [PATCH V3] powerpc: Add I2C bus multiplexer node for B4 and T4240QDS
-Date: Mon, 9 Sep 2013 18:03:33 +0800
-Message-ID: <1378721013-20113-1-git-send-email-hongtao.jia@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: hongtao.jia@freescale.com, Wei.Yang@windriver.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 55A732C011E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Sep 2013 20:09:30 +1000 (EST)
+Message-ID: <1378721359.11525.3.camel@pasglop>
+Subject: Re: [PATCH] powerpc: OE=1 Form Instructions Not Decoded Correctly
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Date: Mon, 09 Sep 2013 20:09:19 +1000
+In-Reply-To: <20130908223559.GA495@iris.ozlabs.ibm.com>
+References: <CAJ-hshaxuJBMCFquT7J50rjuDYWer_0i1=2QmnOKGAxx4n=FUw@mail.gmail.com>
+ <20130908223559.GA495@iris.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Tom Musta <tommusta@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,163 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In both B4 and T4240QDS platform PCA9547 I2C bus multiplexer is used.
-The sub-nodes are also reorganized according to right I2C topology.
+On Mon, 2013-09-09 at 08:35 +1000, Paul Mackerras wrote:
+> On Fri, Sep 06, 2013 at 10:13:00AM -0500, Tom Musta wrote:
+> > To: linuxppc-dev@lists.ozlabs.org
+> > Subject: [PATCH] powerpc: OE=1 Form Instructions Not Decoded Correctly
+> > From: Tom Musta <tommusta@gmail.com>
+> > 
+> > PowerISA uses instruction bit 21 to indicate that the overflow (OV) bit
+> > of the XER is to be set, as well as its corresponding sticky bit (SO).
+> > This patch addresses two defects in the implementation of the PowerISA
+> > single step code for this category of instructions:  (a) the OE=1 case
+> > is not correctly accounted for in the case statement for the extended
+> > opcode handling.  (b) the implementation is not setting XER[OV] and
+> > XER[SO].
+> 
+> Are you seeing any actual problems arising from the OE=1 instructions
+> not being emulated?  This code was designed primarily for emulating
+> instructions in the kernel, which is written in C, and the C compiler
+> doesn't emit OE=1 instructions -- or at least it didn't in the past.
+> So, does the impetus for this change come because the C compiler is
+> now emitting these instructions, or because this code is being used on
+> non-kernel instructions, or just for completeness?  Your patch
+> description needs to include answers to these kinds of questions.
 
-Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
----
-V3 change log:
-* Change "channel" to "i2c" based on i2c-mux binding.
-* Update vendor from philips to nxp.
+Isn't that code occasionally used with uprobes too nowadays  ?
 
-V2 change log:
-* Reorganized the sub-nodes under I2C multiplexer to represent right topology.
+Cheers,
+Ben.
 
- arch/powerpc/boot/dts/b4qds.dtsi   | 51 +++++++++++++++++-----------
- arch/powerpc/boot/dts/t4240qds.dts | 69 ++++++++++++++++++++++----------------
- 2 files changed, 73 insertions(+), 47 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/b4qds.dtsi b/arch/powerpc/boot/dts/b4qds.dtsi
-index e6d2f8f..8b47edc 100644
---- a/arch/powerpc/boot/dts/b4qds.dtsi
-+++ b/arch/powerpc/boot/dts/b4qds.dtsi
-@@ -120,25 +120,38 @@
- 		};
- 
- 		i2c@118000 {
--			eeprom@50 {
--				compatible = "at24,24c64";
--				reg = <0x50>;
--			};
--			eeprom@51 {
--				compatible = "at24,24c256";
--				reg = <0x51>;
--			};
--			eeprom@53 {
--				compatible = "at24,24c256";
--				reg = <0x53>;
--			};
--			eeprom@57 {
--				compatible = "at24,24c256";
--				reg = <0x57>;
--			};
--			rtc@68 {
--				compatible = "dallas,ds3232";
--				reg = <0x68>;
-+			mux@77 {
-+				compatible = "nxp,pca9547";
-+				reg = <0x77>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+
-+				i2c@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+
-+					eeprom@50 {
-+						compatible = "at24,24c64";
-+						reg = <0x50>;
-+					};
-+					eeprom@51 {
-+						compatible = "at24,24c256";
-+						reg = <0x51>;
-+					};
-+					eeprom@53 {
-+						compatible = "at24,24c256";
-+						reg = <0x53>;
-+					};
-+					eeprom@57 {
-+						compatible = "at24,24c256";
-+						reg = <0x57>;
-+					};
-+					rtc@68 {
-+						compatible = "dallas,ds3232";
-+						reg = <0x68>;
-+					};
-+				};
- 			};
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/t4240qds.dts b/arch/powerpc/boot/dts/t4240qds.dts
-index 0555976..a35508f 100644
---- a/arch/powerpc/boot/dts/t4240qds.dts
-+++ b/arch/powerpc/boot/dts/t4240qds.dts
-@@ -118,34 +118,47 @@
- 		};
- 
- 		i2c@118000 {
--			eeprom@51 {
--				compatible = "at24,24c256";
--				reg = <0x51>;
--			};
--			eeprom@52 {
--				compatible = "at24,24c256";
--				reg = <0x52>;
--			};
--			eeprom@53 {
--				compatible = "at24,24c256";
--				reg = <0x53>;
--			};
--			eeprom@54 {
--				compatible = "at24,24c256";
--				reg = <0x54>;
--			};
--			eeprom@55 {
--				compatible = "at24,24c256";
--				reg = <0x55>;
--			};
--			eeprom@56 {
--				compatible = "at24,24c256";
--				reg = <0x56>;
--			};
--			rtc@68 {
--				compatible = "dallas,ds3232";
--				reg = <0x68>;
--				interrupts = <0x1 0x1 0 0>;
-+			mux@77 {
-+				compatible = "nxp,pca9547";
-+				reg = <0x77>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+
-+				i2c@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+
-+					eeprom@51 {
-+						compatible = "at24,24c256";
-+						reg = <0x51>;
-+					};
-+					eeprom@52 {
-+						compatible = "at24,24c256";
-+						reg = <0x52>;
-+					};
-+					eeprom@53 {
-+						compatible = "at24,24c256";
-+						reg = <0x53>;
-+					};
-+					eeprom@54 {
-+						compatible = "at24,24c256";
-+						reg = <0x54>;
-+					};
-+					eeprom@55 {
-+						compatible = "at24,24c256";
-+						reg = <0x55>;
-+					};
-+					eeprom@56 {
-+						compatible = "at24,24c256";
-+						reg = <0x56>;
-+					};
-+					rtc@68 {
-+						compatible = "dallas,ds3232";
-+						reg = <0x68>;
-+						interrupts = <0x1 0x1 0 0>;
-+					};
-+				};
- 			};
- 		};
- 	};
--- 
-1.8.0
+> Also, you need to indent your code correctly according to
+> Documentation/CodingStyle.
+> 
+> Paul.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
