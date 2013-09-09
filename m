@@ -1,27 +1,20 @@
 Return-Path: <B38951@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 24F7B2C00FA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Sep 2013 11:35:00 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH V2] powerpc: Add I2C bus multiplexer node for B4 and
- T4240QDS
-Date: Mon, 9 Sep 2013 01:34:52 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01D4C751@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1378348907-3137-1-git-send-email-hongtao.jia@freescale.com>
- <7BA50BB5-9A63-4EA5-91E4-D04576892AAF@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01D4824D@039-SN1MPN1-003.039d.mgd.msft.net>
- <AC1DB807-91FA-41F6-8468-371E02F41D35@kernel.crashing.org>
-In-Reply-To: <AC1DB807-91FA-41F6-8468-371E02F41D35@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 5804B2C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Sep 2013 11:45:14 +1000 (EST)
+From: Jia Hongtao <hongtao.jia@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
+ <B07421@freescale.com>
+Subject: [PATCH V3] powerpc: Add I2C bus multiplexer node for B4 and T4240QDS
+Date: Mon, 9 Sep 2013 09:41:31 +0800
+Message-ID: <1378690891-27029-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Wei.Yang@windriver.com" <Wei.Yang@windriver.com>
+Content-Type: text/plain
+Cc: hongtao.jia@freescale.com, Wei.Yang@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,231 +24,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Great thanks.
+In both B4 and T4240QDS platform PCA9547 I2C bus multiplexer is used.
+The sub-nodes are also reorganized according to right I2C topology.
 
-I will update the patch and send it soon.
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+---
+V3 change log:
+* change "channel" to "i2c" based on i2c-mux binding.
 
--Hongtao
+V2 change log:
+* Reorganized the sub-nodes under I2C multiplexer to represent right topology.
 
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-
-> bounces+b38951=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Kumar Gala
-> Sent: Saturday, September 07, 2013 12:10 AM
-> To: Jia Hongtao-B38951
-> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
-> Wei.Yang@windriver.com
-> Subject: Re: [PATCH V2] powerpc: Add I2C bus multiplexer node for B4 and
-> T4240QDS
->=20
->=20
-> On Sep 5, 2013, at 10:33 PM, Jia Hongtao-B38951 wrote:
->=20
-> >> -----Original Message-----
-> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> >> Sent: Friday, September 06, 2013 2:41 AM
-> >> To: Jia Hongtao-B38951
-> >> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
-> >> Wei.Yang@windriver.com
-> >> Subject: Re: [PATCH V2] powerpc: Add I2C bus multiplexer node for B4
-> >> and T4240QDS
-> >>
-> >>
-> >> On Sep 4, 2013, at 9:41 PM, Jia Hongtao wrote:
-> >>
-> >>> In both B4 and T4240QDS platform PCA9547 I2C bus multiplexer is used.
-> >>> The sub-nodes are also reorganized according to right I2C topology.
-> >>>
-> >>> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> >>> ---
-> >>> V2 change log:
-> >>> Reorganized the sub-nodes under I2C multiplexer to represent right
-> >> topology.
-> >>>
-> >>> arch/powerpc/boot/dts/b4qds.dtsi   | 49 +++++++++++++++++-----------
-> >>> arch/powerpc/boot/dts/t4240qds.dts | 67
-> >>> ++++++++++++++++++++++---------
-> >> -------
-> >>> 2 files changed, 69 insertions(+), 47 deletions(-)
-> >>>
-> >>> diff --git a/arch/powerpc/boot/dts/b4qds.dtsi
-> >> b/arch/powerpc/boot/dts/b4qds.dtsi
-> >>> index e6d2f8f..de8cb38 100644
-> >>> --- a/arch/powerpc/boot/dts/b4qds.dtsi
-> >>> +++ b/arch/powerpc/boot/dts/b4qds.dtsi
-> >>> @@ -120,25 +120,36 @@
-> >>> 		};
-> >>>
-> >>> 		i2c@118000 {
-> >>> -			eeprom@50 {
-> >>> -				compatible =3D "at24,24c64";
-> >>> -				reg =3D <0x50>;
-> >>> -			};
-> >>> -			eeprom@51 {
-> >>> -				compatible =3D "at24,24c256";
-> >>> -				reg =3D <0x51>;
-> >>> -			};
-> >>> -			eeprom@53 {
-> >>> -				compatible =3D "at24,24c256";
-> >>> -				reg =3D <0x53>;
-> >>> -			};
-> >>> -			eeprom@57 {
-> >>> -				compatible =3D "at24,24c256";
-> >>> -				reg =3D <0x57>;
-> >>> -			};
-> >>> -			rtc@68 {
-> >>> -				compatible =3D "dallas,ds3232";
-> >>> -				reg =3D <0x68>;
-> >>> +			pca9547@77 {
-> >>> +				compatible =3D "philips,pca9547";
-> >>
-> >> We seem to be using nxp instead of philips now.
->=20
-> This is based on Documentation/devicetree/bindings/vendor-prefixes.txt
->=20
-> >>
-> >>> +				reg =3D <0x77>;
-> >>> +				#address-cells =3D <1>;
-> >>> +				#size-cells =3D <0>;
-> >>> +				channel@0 {
-> >>
-> >> channel should probably be i2c
-> >
-> >
-> > Is there any standard for the name?
-> > i2c is ok but I think channel is more intuitional.
-> >
-> > Hi Scott,
-> > What do you think of it.
->=20
-> Basing my comments on Documentation/devicetree/bindings/i2c/i2c-mux.txt
->=20
->=20
-> >
-> > Thanks.
-> > -Hongtao
-> >
-> >
-> >>
-> >> [same comments below]
-> >>
-> >>> +					#address-cells =3D <1>;
-> >>> +					#size-cells =3D <0>;
-> >>> +					reg =3D <0>;
-> >>> +					eeprom@50 {
-> >>> +						compatible =3D "at24,24c64";
-> >>> +						reg =3D <0x50>;
-> >>> +					};
-> >>> +					eeprom@51 {
-> >>> +						compatible =3D "at24,24c256";
-> >>> +						reg =3D <0x51>;
-> >>> +					};
-> >>> +					eeprom@53 {
-> >>> +						compatible =3D "at24,24c256";
-> >>> +						reg =3D <0x53>;
-> >>> +					};
-> >>> +					eeprom@57 {
-> >>> +						compatible =3D "at24,24c256";
-> >>> +						reg =3D <0x57>;
-> >>> +					};
-> >>> +					rtc@68 {
-> >>> +						compatible =3D "dallas,ds3232";
-> >>> +						reg =3D <0x68>;
-> >>> +					};
-> >>> +				};
-> >>> 			};
-> >>> 		};
-> >>>
-> >>> diff --git a/arch/powerpc/boot/dts/t4240qds.dts
-> >> b/arch/powerpc/boot/dts/t4240qds.dts
-> >>> index 0555976..ae68595 100644
-> >>> --- a/arch/powerpc/boot/dts/t4240qds.dts
-> >>> +++ b/arch/powerpc/boot/dts/t4240qds.dts
-> >>> @@ -118,34 +118,45 @@
-> >>> 		};
-> >>>
-> >>> 		i2c@118000 {
-> >>> -			eeprom@51 {
-> >>> -				compatible =3D "at24,24c256";
-> >>> -				reg =3D <0x51>;
-> >>> -			};
-> >>> -			eeprom@52 {
-> >>> -				compatible =3D "at24,24c256";
-> >>> -				reg =3D <0x52>;
-> >>> -			};
-> >>> -			eeprom@53 {
-> >>> -				compatible =3D "at24,24c256";
-> >>> -				reg =3D <0x53>;
-> >>> -			};
-> >>> -			eeprom@54 {
-> >>> -				compatible =3D "at24,24c256";
-> >>> -				reg =3D <0x54>;
-> >>> -			};
-> >>> -			eeprom@55 {
-> >>> -				compatible =3D "at24,24c256";
-> >>> -				reg =3D <0x55>;
-> >>> -			};
-> >>> -			eeprom@56 {
-> >>> -				compatible =3D "at24,24c256";
-> >>> -				reg =3D <0x56>;
-> >>> -			};
-> >>> -			rtc@68 {
-> >>> -				compatible =3D "dallas,ds3232";
-> >>> -				reg =3D <0x68>;
-> >>> -				interrupts =3D <0x1 0x1 0 0>;
-> >>> +			pca9547@77 {
-> >>> +				compatible =3D "philips,pca9547";
-> >>> +				reg =3D <0x77>;
-> >>> +				#address-cells =3D <1>;
-> >>> +				#size-cells =3D <0>;
-> >>> +				channel@0 {
-> >>> +					#address-cells =3D <1>;
-> >>> +					#size-cells =3D <0>;
-> >>> +					reg =3D <0>;
-> >>> +					eeprom@51 {
-> >>> +						compatible =3D "at24,24c256";
-> >>> +						reg =3D <0x51>;
-> >>> +					};
-> >>> +					eeprom@52 {
-> >>> +						compatible =3D "at24,24c256";
-> >>> +						reg =3D <0x52>;
-> >>> +					};
-> >>> +					eeprom@53 {
-> >>> +						compatible =3D "at24,24c256";
-> >>> +						reg =3D <0x53>;
-> >>> +					};
-> >>> +					eeprom@54 {
-> >>> +						compatible =3D "at24,24c256";
-> >>> +						reg =3D <0x54>;
-> >>> +					};
-> >>> +					eeprom@55 {
-> >>> +						compatible =3D "at24,24c256";
-> >>> +						reg =3D <0x55>;
-> >>> +					};
-> >>> +					eeprom@56 {
-> >>> +						compatible =3D "at24,24c256";
-> >>> +						reg =3D <0x56>;
-> >>> +					};
-> >>> +					rtc@68 {
-> >>> +						compatible =3D "dallas,ds3232";
-> >>> +						reg =3D <0x68>;
-> >>> +						interrupts =3D <0x1 0x1 0 0>;
-> >>> +					};
-> >>> +				};
-> >>> 			};
-> >>> 		};
-> >>> 	};
-> >>> --
-> >>> 1.8.0
-> >>>
-> >>>
-> >>> _______________________________________________
-> >>> Linuxppc-dev mailing list
-> >>> Linuxppc-dev@lists.ozlabs.org
-> >>> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> >>
-> >
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+ arch/powerpc/boot/dts/b4qds.dtsi   | 51 +++++++++++++++++-----------
+ arch/powerpc/boot/dts/t4240qds.dts | 69 ++++++++++++++++++++++----------------
+ 2 files changed, 73 insertions(+), 47 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/b4qds.dtsi b/arch/powerpc/boot/dts/b4qds.dtsi
+index e6d2f8f..e2ab6cb 100644
+--- a/arch/powerpc/boot/dts/b4qds.dtsi
++++ b/arch/powerpc/boot/dts/b4qds.dtsi
+@@ -120,25 +120,38 @@
+ 		};
+ 
+ 		i2c@118000 {
+-			eeprom@50 {
+-				compatible = "at24,24c64";
+-				reg = <0x50>;
+-			};
+-			eeprom@51 {
+-				compatible = "at24,24c256";
+-				reg = <0x51>;
+-			};
+-			eeprom@53 {
+-				compatible = "at24,24c256";
+-				reg = <0x53>;
+-			};
+-			eeprom@57 {
+-				compatible = "at24,24c256";
+-				reg = <0x57>;
+-			};
+-			rtc@68 {
+-				compatible = "dallas,ds3232";
+-				reg = <0x68>;
++			mux@77 {
++				compatible = "philips,pca9547";
++				reg = <0x77>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				i2c@0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0>;
++
++					eeprom@50 {
++						compatible = "at24,24c64";
++						reg = <0x50>;
++					};
++					eeprom@51 {
++						compatible = "at24,24c256";
++						reg = <0x51>;
++					};
++					eeprom@53 {
++						compatible = "at24,24c256";
++						reg = <0x53>;
++					};
++					eeprom@57 {
++						compatible = "at24,24c256";
++						reg = <0x57>;
++					};
++					rtc@68 {
++						compatible = "dallas,ds3232";
++						reg = <0x68>;
++					};
++				};
+ 			};
+ 		};
+ 
+diff --git a/arch/powerpc/boot/dts/t4240qds.dts b/arch/powerpc/boot/dts/t4240qds.dts
+index 0555976..b354af5 100644
+--- a/arch/powerpc/boot/dts/t4240qds.dts
++++ b/arch/powerpc/boot/dts/t4240qds.dts
+@@ -118,34 +118,47 @@
+ 		};
+ 
+ 		i2c@118000 {
+-			eeprom@51 {
+-				compatible = "at24,24c256";
+-				reg = <0x51>;
+-			};
+-			eeprom@52 {
+-				compatible = "at24,24c256";
+-				reg = <0x52>;
+-			};
+-			eeprom@53 {
+-				compatible = "at24,24c256";
+-				reg = <0x53>;
+-			};
+-			eeprom@54 {
+-				compatible = "at24,24c256";
+-				reg = <0x54>;
+-			};
+-			eeprom@55 {
+-				compatible = "at24,24c256";
+-				reg = <0x55>;
+-			};
+-			eeprom@56 {
+-				compatible = "at24,24c256";
+-				reg = <0x56>;
+-			};
+-			rtc@68 {
+-				compatible = "dallas,ds3232";
+-				reg = <0x68>;
+-				interrupts = <0x1 0x1 0 0>;
++			mux@77 {
++				compatible = "philips,pca9547";
++				reg = <0x77>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				i2c@0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0>;
++
++					eeprom@51 {
++						compatible = "at24,24c256";
++						reg = <0x51>;
++					};
++					eeprom@52 {
++						compatible = "at24,24c256";
++						reg = <0x52>;
++					};
++					eeprom@53 {
++						compatible = "at24,24c256";
++						reg = <0x53>;
++					};
++					eeprom@54 {
++						compatible = "at24,24c256";
++						reg = <0x54>;
++					};
++					eeprom@55 {
++						compatible = "at24,24c256";
++						reg = <0x55>;
++					};
++					eeprom@56 {
++						compatible = "at24,24c256";
++						reg = <0x56>;
++					};
++					rtc@68 {
++						compatible = "dallas,ds3232";
++						reg = <0x68>;
++						interrupts = <0x1 0x1 0 0>;
++					};
++				};
+ 			};
+ 		};
+ 	};
+-- 
+1.8.0
