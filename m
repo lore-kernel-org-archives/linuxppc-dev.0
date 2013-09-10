@@ -1,19 +1,12 @@
 Return-Path: <murzin.v@gmail.com>
-Received: from mail-lb0-x230.google.com (mail-lb0-x230.google.com
- [IPv6:2a00:1450:4010:c04::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2947F2C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 02:42:51 +1000 (EST)
-Received: by mail-lb0-f176.google.com with SMTP id y6so6489005lbh.35
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 09:42:47 -0700 (PDT)
 From: Vladimir Murzin <murzin.v@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/3] powerpc: fix section mismatch warning for prom_rtas_call
-Date: Tue, 10 Sep 2013 18:42:07 +0200
-Message-Id: <1378831327-2263-1-git-send-email-murzin.v@gmail.com>
-Cc: Vladimir Murzin <murzin.v@gmail.com>, paulus@samba.org, anton@samba.org,
- nfont@linux.vnet.ibm.com
+To: linux-fbdev@vger.kernel.org, cbe-oss-dev@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 3/3] fbdev/ps3fb: fix section mismatch warning for ps3fb_probe
+Date: Tue, 10 Sep 2013 18:46:30 +0200
+Message-Id: <1378831590-2349-1-git-send-email-murzin.v@gmail.com>
+Cc: geoff@infradead.org, Vladimir Murzin <murzin.v@gmail.com>,
+ tomi.valkeinen@ti.com, plagnioj@jcrosoft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +18,58 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 While cross-building for PPC64 I've got
 
-WARNING: vmlinux.o(.text.unlikely+0x1ba): Section mismatch in
-reference from the function .prom_rtas_call() to the variable
-.init.data:dt_string_start The function .prom_rtas_call() references
-the variable __initdata dt_string_start.  This is often because
-.prom_rtas_call lacks a __initdata annotation or the annotation of
-dt_string_start is wrong.
+WARNING: drivers/video/built-in.o(.text+0x9f9ca): Section mismatch in
+reference from the function .ps3fb_probe() to th e variable
+.init.data:ps3fb_fix The function .ps3fb_probe() references the
+variable __initdata ps3fb_fix.  This is often because .ps3fb_probe
+lacks a __initdata annotation or the annotation of ps3fb_fix is wrong.
 
-WARNING: vmlinux.o(.meminit.text+0xeb0): Section mismatch in reference
-from the function .free_area_init_core.isra.47() to the function
-.init.text:.set_pageblock_order() The function __meminit
-.free_area_init_core.isra.47() references a function __init
-.set_pageblock_order().  If .set_pageblock_order is only used by
-.free_area_init_core.isra.47 then annotate .set_pageblock_order with a
-matching annotation.
+WARNING: drivers/video/built-in.o(.text+0x9f9d2): Section mismatch in
+reference from the function .ps3fb_probe() to the variable
+.init.data:ps3fb_fix The function .ps3fb_probe() references the
+variable __initdata ps3fb_fix.  This is often because .ps3fb_probe
+lacks a __initdata annotation or the annotation of ps3fb_fix is wrong.
 
-Fix it by proper annotation of prom_rtas_call.
+WARNING: drivers/built-in.o(.text+0xe222a): Section mismatch in
+reference from the function .ps3fb_probe() to the variable
+.init.data:ps3fb_fix The function .ps3fb_probe() references the
+variable __initdata ps3fb_fix.  This is often because .ps3fb_probe
+lacks a __initdata annotation or the annotation of ps3fb_fix is wrong.
+
+WARNING: drivers/built-in.o(.text+0xe2232): Section mismatch in
+reference from the function .ps3fb_probe() to the variable
+.init.data:ps3fb_fix The function .ps3fb_probe() references the
+variable __initdata ps3fb_fix.  This is often because .ps3fb_probe
+lacks a __initdata annotation or the annotation of ps3fb_fix is wrong.
+
+WARNING: vmlinux.o(.text+0x561d4a): Section mismatch in reference from
+the function .ps3fb_probe() to the variable .init.data:ps3fb_fix The
+function .ps3fb_probe() references the variable __initdata ps3fb_fix.
+This is often because .ps3fb_probe lacks a __initdata annotation or
+the annotation of ps3fb_fix is wrong.
+
+Mismatch was introduced with 48c68c4f "Drivers: video: remove __dev*
+attributes."
+
+Remove __init data annotation from ps3fb_fix.
 
 Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
 ---
- arch/powerpc/kernel/prom_init.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/ps3fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 7b6391b..12e656f 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1297,7 +1297,8 @@ static void __init prom_query_opal(void)
- 		prom_opal_align = 0x10000;
- }
+diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
+index dbfe2c1..b269abd 100644
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -952,7 +952,7 @@ static struct fb_ops ps3fb_ops = {
+ 	.fb_compat_ioctl = ps3fb_ioctl
+ };
  
--static int prom_rtas_call(int token, int nargs, int nret, int *outputs, ...)
-+static int __init prom_rtas_call(int token, int nargs, int nret,
-+				 int *outputs, ...)
- {
- 	struct rtas_args rtas_args;
- 	va_list list;
+-static struct fb_fix_screeninfo ps3fb_fix __initdata = {
++static struct fb_fix_screeninfo ps3fb_fix = {
+ 	.id =		DEVICE_NAME,
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_TRUECOLOR,
 -- 
 1.7.10.4
