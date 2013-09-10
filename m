@@ -1,21 +1,26 @@
-Return-Path: <STFD002@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+Return-Path: <r63061@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6C8112C0124
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Sep 2013 19:24:45 +1000 (EST)
-Message-ID: <522EE551.8030007@freescale.com>
-Date: Tue, 10 Sep 2013 12:24:33 +0300
-From: Diana Craciun <diana.craciun@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 767442C011E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 19:29:10 +1000 (EST)
+From: Xie Xiaobo-R63061 <r63061@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH V3 2/2] powerpc/85xx: Add TWR-P1025 board support
+Date: Tue, 10 Sep 2013 09:28:59 +0000
+Message-ID: <69EC9ED88E3CC04094A78F8074A7986D5D5DC5@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1378116699-18826-1-git-send-email-X.Xie@freescale.com>
+ <1378116699-18826-2-git-send-email-X.Xie@freescale.com>
+ <1378311953.12204.20.camel@snotra.buserror.net>
+ <69EC9ED88E3CC04094A78F8074A7986D5D23CE@039-SN1MPN1-003.039d.mgd.msft.net>
+ <1378481146.12204.183.camel@snotra.buserror.net>
+In-Reply-To: <1378481146.12204.183.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Ivan Krivonos <int0dster@gmail.com>
-Subject: Re: big latency while under HV
-References: <CAF10W3yi6UOjDN+Nh61OvOvVe6+veaFuXuz_Rx=oWsxPVRDYHQ@mail.gmail.com>
-In-Reply-To: <CAF10W3yi6UOjDN+Nh61OvOvVe6+veaFuXuz_Rx=oWsxPVRDYHQ@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Cc: Johnston Michael-R49610 <r49610@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-Just to be on the same page, are you using the Freescale Embedded 
-Hypervisor provided with the Freescale SDK or other embedded hypervisor?
-
-Anyway, the question is not much related with the Linux kernel, so you 
-should probably redirect your question to Freescale support. You can 
-reach Freescale support at support@freescale.com.
-
-Diana
-
-On 09/09/2013 06:19 PM, Ivan Krivonos wrote:
-> Hi,
->
-> i`m working on the embedded hypervisor targeting QorIQ platforms (p3041/p4080).
-> I have working prototype starting custom RTOS on just single core in the guest
-> space. What I see is the big latency (up to 3 times more) in RTOS running atop
-> of HV comparing to RTOS running bare-metal. I`m using lmbench utility.
-> It shows
->
-> nteger mul: 3.48 nanoseconds
-> integer div: 30.44 nanoseconds
-> integer mod: 13.92 nanoseconds
-> int64 bit: 1.75 nanoseconds
-> int64 add: 1.42 nanoseconds
-> int64 mul: 6.95 nanoseconds
-> HV:hvpriv_count 60000
-> int64 div: 447.56 nanoseconds
-> int64 mod: 385.42 nanoseconds
-> float add: 7.12 nanoseconds
-> float mul: 6.95 nanoseconds
-> float div: 33.05 nanoseconds
-> double add: 7.11 nanoseconds
-> double mul: 8.70 nanoseconds
-> double div: 57.36 nanoseconds
-> float bogomflops: 46.98 nanoseconds
-> double bogomflops: 73.09 nanoseconds
->
-> The bare-metal results are 3x better. Does anybody have any ideas on what
-> may be the source of such latency ? I forward all the exceptions to
-> the guest w/o
-> affecting HV. Only hvpriv is processed, it takes not more than 2 bus cycles.
-> Sorry for poor english
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+SGkgU2NvdHQsDQoNCkkgZGlzY3VzcyBpdCB3aXRoIExpdSBTaGVuZ3pob3UgYWdhaW4uIEkgdHJp
+ZWQgaW50ZXJydXB0cyA9IDwxIDEgMCAwPiBpbnN0ZWFkIG9mIGludGVycnVwdHMgPSA8MSAxPiBv
+biBQMTAyNVRXUiwgYW5kIGl0J3MgT0suIFNvIEkgd2lsbCBhZGQgMiBjZWxscyBmb3IgdGhlIGlu
+dGVycnVwdHMgcHJvcGVydHkuIFRoYW5rIHlvdS4NCg0KQmVzdCBSZWdhcmRzDQpYaWUgWGlhb2Jv
+DQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogV29vZCBTY290dC1CMDc0MjEgDQpT
+ZW50OiBGcmlkYXksIFNlcHRlbWJlciAwNiwgMjAxMyAxMToyNiBQTQ0KVG86IFhpZSBYaWFvYm8t
+UjYzMDYxDQpDYzogV29vZCBTY290dC1CMDc0MjE7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
+b3JnOyBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBKb2huc3RvbiBNaWNoYWVsLVI0OTYxMA0K
+U3ViamVjdDogUmU6IFtQQVRDSCBWMyAyLzJdIHBvd2VycGMvODV4eDogQWRkIFRXUi1QMTAyNSBi
+b2FyZCBzdXBwb3J0DQoNCk9uIEZyaSwgMjAxMy0wOS0wNiBhdCAwNTowMSAtMDUwMCwgWGllIFhp
+YW9iby1SNjMwNjEgd3JvdGU6DQo+IEhpIFNjb3R0LA0KPiANCj4gVGhhbmtzIGZvciB5b3VyIHJl
+bWluZGluZyBhbmQgYWR2aWNlLg0KPiANCj4gSSBkaXNjdXNzIHRoaXMgd2l0aCBMaXUgU2hlbmd6
+aG91KHRoZSBmaXJzdCBwZXJzb24gdGhhdCByZW1pbmQgbWUgDQo+ICNpbnRlcnJ1cHQtY2VsbHMg
+aXMgNCksIGhlIGFkdmlzZWQgcmVtb3ZpbmcgdGhlIGludGVycnVwdHMgcHJvcGVydHkgDQo+IGZy
+b20gdGhlIHBoeSBub2RlLCBiZWNhdXNlIHRoZSBtZGlvIHVzZWQgdGhlIHBvbGwgd2F5IHByZWZl
+cmVudGlhbGx5Lg0KDQpJIGRvbid0IGZvbGxvdy4uLiBpZiB0aGUgUEhZcyBoYXZlIGludGVycnVw
+dHMsIHdoeSB3b3VsZCB3ZSBwcmVmZXIgdG8gcG9sbD8NCg0KSW4gYW55IGNhc2UsIHRoZSBkZXZp
+Y2UgdHJlZSBkZXNjcmliZXMgdGhlIGhhcmR3YXJlLCBub3QgaG93IHlvdSdkIHByZWZlciB0byB1
+c2UgaXQuDQoNCi1TY290dA0KDQoNCg==
