@@ -1,19 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1D5292C00E8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 01:59:23 +1000 (EST)
-Subject: Re: [PATCH] powerpc/p1010rdb:update phy node in dts
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1378792243-27962-1-git-send-email-B45475@freescale.com>
-Date: Tue, 10 Sep 2013 10:59:22 -0500
-Message-Id: <BF26D8AA-103B-4824-88AD-085C7DE3D5B0@kernel.crashing.org>
-References: <1378792243-27962-1-git-send-email-B45475@freescale.com>
-To: Zhao Qiang <B45475@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Return-Path: <murzin.v@gmail.com>
+Received: from mail-lb0-x22b.google.com (mail-lb0-x22b.google.com
+ [IPv6:2a00:1450:4010:c04::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 150F42C010B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 02:39:43 +1000 (EST)
+Received: by mail-lb0-f171.google.com with SMTP id u14so6613803lbd.30
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 09:39:36 -0700 (PDT)
+From: Vladimir Murzin <murzin.v@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] powerpc: export cpu_to_chip_id
+Date: Tue, 10 Sep 2013 18:38:55 +0200
+Message-Id: <1378831135-2179-1-git-send-email-murzin.v@gmail.com>
+Cc: chenhui.zhao@freescale.com, Vladimir Murzin <murzin.v@gmail.com>,
+ paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,50 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+While cross-building for PPC64 I've got
 
-On Sep 10, 2013, at 12:50 AM, Zhao Qiang wrote:
+ERROR: ".cpu_to_chip_id" [drivers/block/mtip32xx/mtip32xx.ko] undefined!
 
-> Update phy node according to new P1010RDB-PB board.
->=20
-> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> ---
-> arch/powerpc/boot/dts/p1010rdb.dtsi | 4 ++--
-> 1 file changed, 2 insertions(+), 2 deletions(-)
+mtip32xx refer to topology_physical_package_id, which stands for
+cpu_to_chip-id.
 
-What about the old boards?
+Make cpu_to_chip-id (and topology_physical_package_id) available for
+external users.
 
-- k
+Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
+---
+ arch/powerpc/kernel/smp.c |    1 +
+ 1 file changed, 1 insertion(+)
 
->=20
-> diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi =
-b/arch/powerpc/boot/dts/p1010rdb.dtsi
-> index 7fc3402..8c675bf 100644
-> --- a/arch/powerpc/boot/dts/p1010rdb.dtsi
-> +++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
-> @@ -199,7 +199,7 @@
->=20
-> 	mdio@24000 {
-> 		phy0: ethernet-phy@0 {
-> -			interrupts =3D <3 1 0 0>;
-> +			interrupts =3D <0 1 0 0>;
-> 			reg =3D <0x1>;
-> 		};
->=20
-> @@ -209,7 +209,7 @@
-> 		};
->=20
-> 		phy2: ethernet-phy@2 {
-> -			interrupts =3D <2 1 0 0>;
-> +			interrupts =3D <1 1 0 0>;
-> 			reg =3D <0x2>;
-> 		};
->=20
-> --=20
-> 1.8.0
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 442d8e2..1d9c1c2 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -611,6 +611,7 @@ int cpu_to_chip_id(int cpu)
+ 	of_node_put(np);
+ 	return of_get_ibm_chip_id(np);
+ }
++EXPORT_SYMBOL_GPL(cpu_to_chip_id);
+ 
+ /* Helper routines for cpu to core mapping */
+ int cpu_core_index_of_thread(int cpu)
+-- 
+1.7.10.4
