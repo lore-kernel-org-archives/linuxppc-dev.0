@@ -1,21 +1,22 @@
-Return-Path: <linux@roeck-us.net>
-Received: from mail.active-venture.com (mail.active-venture.com
- [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 388892C0102
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 11:19:04 +1000 (EST)
-Message-ID: <522E7380.3090701@roeck-us.net>
-Date: Mon, 09 Sep 2013 18:18:56 -0700
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pd0-x22b.google.com (mail-pd0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c02::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8FC1B2C0116
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 11:38:11 +1000 (EST)
+Received: by mail-pd0-f171.google.com with SMTP id g10so6932833pdj.16
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Sep 2013 18:38:09 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
 From: Guenter Roeck <linux@roeck-us.net>
-MIME-Version: 1.0
-To: Asai Thambi S P <asamymuthupa@micron.com>
-Subject: Re: powerpc allmodconfig build broken due to commit 15863ff3b
- (powerpc: Make chip-id information available to userspace)
-References: <522D163E.80106@roeck-us.net> <522E5FD5.40603@micron.com>
-In-Reply-To: <522E5FD5.40603@micron.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Export cpu_to_chip_id() to fix build error
+Date: Mon,  9 Sep 2013 18:37:56 -0700
+Message-Id: <1378777076-4699-1-git-send-email-linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>,
  Shivaprasad G Bhat <sbhat@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,53 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/09/2013 04:55 PM, Asai Thambi S P wrote:
-> On 09/08/2013 5:28 PM, Guenter Roeck wrote:
->> Hi all,
->>
->> powerpc allmodconfig build on the latest upstream kernel results in:
->>
->> ERROR: ".cpu_to_chip_id" [drivers/block/mtip32xx/mtip32xx.ko] undefined!
->>
->> This is due to commit 15863ff3b (powerpc: Make chip-id information available to userspace).
->> Not surprising, as cpu_to_chip_id() is not exported.
->>
-> Apart from the above error, I have a concern on the patch, purely based on the commit message.
-> (to be honest, I am not familiar with the ppc architecture)
->
-> Commit message of 15863ff3b has the following text.
->
-> ******************
-> So far "/sys/devices/system/cpu/cpuX/topology/physical_package_id"
-> was always default (-1) on ppc64 architecture.
->
-> Now, some systems have an ibm,chip-id property in the cpu nodes in
-> the device tree. On these systems, we now use this information to
-> display physical_package_id
-> ******************
->
-> Shouldn't the new definition of "topology_physical_package_id" apply only to those systems supporting ibm,chip-id property?
->
-Looking into the code, I think that is what it does. For other platforms
-(ie if there is no ibm,chip-id property) it still returns -1.
+powerpc allmodconfig build fails with:
 
-Question for the fix is what path to take to fix the problem.
-Exporting cpu_to_chip_id() might be the easiest solution. Other
-platforms export the respective data, so it should not be a problem.
+ERROR: ".cpu_to_chip_id" [drivers/block/mtip32xx/mtip32xx.ko] undefined!
 
-I might submit a patch and see where it goes.
+The problem was introduced with commit 15863ff3b (powerpc: Make chip-id
+information available to userspace).
 
-Guenter
+Export the missing symbol.
 
->
->> Reverting this commit fixes the problem. Any good idea how to fix it for real ?
->>
->> Guenter
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->
->
->
+Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Cc: Shivaprasad G Bhat <sbhat@linux.vnet.ibm.com>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ arch/powerpc/kernel/smp.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 442d8e2..8e59abc 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -611,6 +611,7 @@ int cpu_to_chip_id(int cpu)
+ 	of_node_put(np);
+ 	return of_get_ibm_chip_id(np);
+ }
++EXPORT_SYMBOL(cpu_to_chip_id);
+ 
+ /* Helper routines for cpu to core mapping */
+ int cpu_core_index_of_thread(int cpu)
+-- 
+1.7.9.7
