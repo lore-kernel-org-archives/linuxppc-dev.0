@@ -1,17 +1,17 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 5A7262C0090
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 04:55:07 +1000 (EST)
-Subject: Re: [PATCH 5/6] KVM: PPC: Book3S: Load/save FP/VMX/VSX state directly
- to/from vcpu struct
+ by ozlabs.org (Postfix) with ESMTP id 0F7802C010E
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 04:57:58 +1000 (EST)
+Subject: Re: [PATCH 6/6] KVM: PPC: Book3S HV: Use load/store_fp_state
+ functions in HV guest entry/exit
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20130910102221.GF28145@iris.ozlabs.ibm.com>
-Date: Tue, 10 Sep 2013 13:54:59 -0500
-Message-Id: <0F09844A-2688-46DC-996F-022818F6E97B@suse.de>
+In-Reply-To: <20130910102259.GG28145@iris.ozlabs.ibm.com>
+Date: Tue, 10 Sep 2013 13:57:49 -0500
+Message-Id: <DEE639D3-E133-45BC-84E6-5290EAF3D150@suse.de>
 References: <20130910102000.GA28145@iris.ozlabs.ibm.com>
- <20130910102221.GF28145@iris.ozlabs.ibm.com>
+ <20130910102259.GG28145@iris.ozlabs.ibm.com>
 To: Paul Mackerras <paulus@samba.org>
 Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,50 +26,185 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On 10.09.2013, at 05:22, Paul Mackerras wrote:
 
-> Now that we have the vcpu floating-point and vector state stored in
-> the same type of struct as the main kernel uses, we can load that
-> state directly from the vcpu struct instead of having extra copies
-> to/from the thread_struct.  Similarly, when the guest state needs to
-> be saved, we can have it saved it directly to the vcpu struct by
-> setting the current->thread.fp_save_area and =
-current->thread.vr_save_area
-> pointers.  That also means that we don't need to back up and restore
-> userspace's FP/vector state.  This all makes the code simpler and
-> faster.
->=20
-> Note that it's not necessary to save or modify =
-current->thread.fpexc_mode,
-> since nothing in KVM uses or is affected by its value.  Nor is it
-> necessary to touch used_vr or used_vsr.
+> This modifies kvmppc_load_fp and kvmppc_save_fp to use the generic
+> FP/VSX and VMX load/store functions instead of open-coding the
+> FP/VSX/VMX load/store instructions.  Since kvmppc_load/save_fp don't
+> follow C calling conventions, we make them private symbols within
+> book3s_hv_rmhandlers.S.
 >=20
 > Signed-off-by: Paul Mackerras <paulus@samba.org>
 > ---
-> arch/powerpc/kvm/book3s_pr.c | 72 =
-++++++++++----------------------------------
-> arch/powerpc/kvm/booke.c     | 16 ----------
-> arch/powerpc/kvm/booke.h     |  4 ++-
-> 3 files changed, 19 insertions(+), 73 deletions(-)
+> arch/powerpc/kernel/asm-offsets.c       |  2 -
+> arch/powerpc/kvm/book3s_hv_rmhandlers.S | 82 =
+++++++++-------------------------
+> 2 files changed, 18 insertions(+), 66 deletions(-)
 >=20
-> diff --git a/arch/powerpc/kvm/book3s_pr.c =
-b/arch/powerpc/kvm/book3s_pr.c
-> index 90be91c..5eae919 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -462,16 +462,16 @@ void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, =
-ulong msr)
-> 		 * both the traditional FP registers and the added VSX
-> 		 * registers into thread.fp_state.fpr[].
-> 		 */
-> -		if (current->thread.regs->msr & MSR_FP)
-> +		if (t->regs->msr & MSR_FP)
-> 			giveup_fpu(current);
+> diff --git a/arch/powerpc/kernel/asm-offsets.c =
+b/arch/powerpc/kernel/asm-offsets.c
+> index 4c1609f..7982870 100644
+> --- a/arch/powerpc/kernel/asm-offsets.c
+> +++ b/arch/powerpc/kernel/asm-offsets.c
+> @@ -425,10 +425,8 @@ int main(void)
+> 	DEFINE(VCPU_GPRS, offsetof(struct kvm_vcpu, arch.gpr));
+> 	DEFINE(VCPU_VRSAVE, offsetof(struct kvm_vcpu, arch.vrsave));
+> 	DEFINE(VCPU_FPRS, offsetof(struct kvm_vcpu, arch.fp.fpr));
+> -	DEFINE(VCPU_FPSCR, offsetof(struct kvm_vcpu, arch.fp.fpscr));
+> #ifdef CONFIG_ALTIVEC
+> 	DEFINE(VCPU_VRS, offsetof(struct kvm_vcpu, arch.vr.vr));
+> -	DEFINE(VCPU_VSCR, offsetof(struct kvm_vcpu, arch.vr.vscr));
+> #endif
+> 	DEFINE(VCPU_XER, offsetof(struct kvm_vcpu, arch.xer));
+> 	DEFINE(VCPU_CTR, offsetof(struct kvm_vcpu, arch.ctr));
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S =
+b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index f5f2396..b5183ed 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -1102,7 +1102,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+>=20
+> 	/* save FP state */
+> 	mr	r3, r9
+> -	bl	.kvmppc_save_fp
+> +	bl	kvmppc_save_fp
+>=20
+> 	/* Increment yield count if they have a VPA */
+> 	ld	r8, VCPU_VPA(r9)	/* do they have a VPA? */
+> @@ -1591,7 +1591,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_206)
+> 	std	r31, VCPU_GPR(R31)(r3)
+>=20
+> 	/* save FP state */
+> -	bl	.kvmppc_save_fp
+> +	bl	kvmppc_save_fp
+>=20
+> 	/*
+> 	 * Take a nap until a decrementer or external interrupt occurs,
+> @@ -1767,7 +1767,9 @@ kvm_no_guest:
+>  * Save away FP, VMX and VSX registers.
+>  * r3 =3D vcpu pointer
+>  */
+> -_GLOBAL(kvmppc_save_fp)
+> +kvmppc_save_fp:
+> +	mflr	r30
+> +	mr	r31,r3
 
-If you make a second version of this call that also gets a state area as =
-parameter, you don't need the pointer in the thread struct anymore, no? =
-Or do you? Ah, you want to be able to grab the FPU for in-kernel FPU =
-using code, so it needs to be seamless.
+Please note somewhere that e30 and r31 get clobbered by this function.
 
-Fiar enough - pointer it is then :).
+> 	mfmsr	r5
+> 	ori	r8,r5,MSR_FP
+> #ifdef CONFIG_ALTIVEC
+> @@ -1782,42 +1784,17 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+> #endif
+> 	mtmsrd	r8
+> 	isync
+> -#ifdef CONFIG_VSX
+> -BEGIN_FTR_SECTION
+> -	reg =3D 0
+> -	.rept	32
+> -	li	r6,reg*16+VCPU_FPRS
+> -	STXVD2X(reg,R6,R3)
+> -	reg =3D reg + 1
+> -	.endr
+> -FTR_SECTION_ELSE
+> -#endif
+> -	reg =3D 0
+> -	.rept	32
+> -	stfd	reg,reg*8+VCPU_FPRS(r3)
+> -	reg =3D reg + 1
+> -	.endr
+> -#ifdef CONFIG_VSX
+> -ALT_FTR_SECTION_END_IFSET(CPU_FTR_VSX)
+> -#endif
+> -	mffs	fr0
+> -	stfd	fr0,VCPU_FPSCR(r3)
+> -
+> +	addi	r3,r3,VCPU_FPRS
+> +	bl	.store_fp_state
+> #ifdef CONFIG_ALTIVEC
+> BEGIN_FTR_SECTION
+> -	reg =3D 0
+> -	.rept	32
+> -	li	r6,reg*16+VCPU_VRS
+> -	stvx	reg,r6,r3
+> -	reg =3D reg + 1
+> -	.endr
+> -	mfvscr	vr0
+> -	li	r6,VCPU_VSCR
+> -	stvx	vr0,r6,r3
+> +	addi	r3,r31,VCPU_VRS
+> +	bl	.store_vr_state
+> END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+> #endif
+> 	mfspr	r6,SPRN_VRSAVE
+> 	stw	r6,VCPU_VRSAVE(r3)
+> +	mtlr	r30
+> 	mtmsrd	r5
+> 	isync
+> 	blr
+> @@ -1826,8 +1803,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+>  * Load up FP, VMX and VSX registers
+>  * r4 =3D vcpu pointer
+>  */
+> -	.globl	kvmppc_load_fp
+> kvmppc_load_fp:
+> +	mflr	r30
+> +	mr	r31,r4
+
+here too. It's also worth noting in the header comment that r4 is =
+preserved (unlike what you'd expect from the C ABI).
 
 
 Alex
+
+> 	mfmsr	r9
+> 	ori	r8,r9,MSR_FP
+> #ifdef CONFIG_ALTIVEC
+> @@ -1842,40 +1820,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+> #endif
+> 	mtmsrd	r8
+> 	isync
+> -	lfd	fr0,VCPU_FPSCR(r4)
+> -	MTFSF_L(fr0)
+> -#ifdef CONFIG_VSX
+> -BEGIN_FTR_SECTION
+> -	reg =3D 0
+> -	.rept	32
+> -	li	r7,reg*16+VCPU_FPRS
+> -	LXVD2X(reg,R7,R4)
+> -	reg =3D reg + 1
+> -	.endr
+> -FTR_SECTION_ELSE
+> -#endif
+> -	reg =3D 0
+> -	.rept	32
+> -	lfd	reg,reg*8+VCPU_FPRS(r4)
+> -	reg =3D reg + 1
+> -	.endr
+> -#ifdef CONFIG_VSX
+> -ALT_FTR_SECTION_END_IFSET(CPU_FTR_VSX)
+> -#endif
+> -
+> +	addi	r3,r4,VCPU_FPRS
+> +	bl	.load_fp_state
+> #ifdef CONFIG_ALTIVEC
+> BEGIN_FTR_SECTION
+> -	li	r7,VCPU_VSCR
+> -	lvx	vr0,r7,r4
+> -	mtvscr	vr0
+> -	reg =3D 0
+> -	.rept	32
+> -	li	r7,reg*16+VCPU_VRS
+> -	lvx	reg,r7,r4
+> -	reg =3D reg + 1
+> -	.endr
+> +	addi	r3,r31,VCPU_VRS
+> +	bl	.load_vr_state
+> END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+> #endif
+> 	lwz	r7,VCPU_VRSAVE(r4)
+> 	mtspr	SPRN_VRSAVE,r7
+> +	mtlr	r30
+> +	mr	r4,r31
+> 	blr
+> --=20
+> 1.8.4.rc3
+>=20
