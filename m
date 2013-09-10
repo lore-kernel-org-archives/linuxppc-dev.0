@@ -1,19 +1,28 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 0F7802C010E
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 04:57:58 +1000 (EST)
-Subject: Re: [PATCH 6/6] KVM: PPC: Book3S HV: Use load/store_fp_state
- functions in HV guest entry/exit
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20130910102259.GG28145@iris.ozlabs.ibm.com>
-Date: Tue, 10 Sep 2013 13:57:49 -0500
-Message-Id: <DEE639D3-E133-45BC-84E6-5290EAF3D150@suse.de>
-References: <20130910102000.GA28145@iris.ozlabs.ibm.com>
- <20130910102259.GG28145@iris.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 26B442C00ED
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 07:47:03 +1000 (EST)
+Message-ID: <1378849606.12204.359.camel@snotra.buserror.net>
+Subject: Re: [v3] powerpc/mpc85xx: Update the clock device tree nodes
+From: Scott Wood <scottwood@freescale.com>
+To: Tang Yuantian-B29983 <B29983@freescale.com>
+Date: Tue, 10 Sep 2013 16:46:46 -0500
+In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B1503F161@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1370480811-13700-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20130823200827.GA29737@home.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B1503BE58@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1377536416.3033.18.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B1503F161@039-SN2MPN1-012.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Mike Turquette <mturquette@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,188 +32,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2013-08-26 at 21:49 -0500, Tang Yuantian-B29983 wrote:
+> > > > > +		};
+> > > > > +		pll1: pll1@820 {
+> > > > > +			#clock-cells = <1>;
+> > > > > +			reg = <0x820>;
+> > > > > +			compatible = "fsl,core-pll-clock";
+> > > > > +			clocks = <&clockgen>;
+> > > > > +			clock-output-names = "pll1", "pll1-div2", "pll1-
+> > div4";
+> > > > > +		};
+> > > >
+> > > > Please leave a blank line between properties and nodes, and between
+> > nodes.
+> > > >
+> > > OK, will add.
+> > >
+> > > > What does reg represent?  Where is the binding for this?
+> > > >
+> > > > The compatible is too vague.
+> > > Reg is register offset.
+> > 
+> > With no size?
+> 
+> No size is needed.
 
-On 10.09.2013, at 05:22, Paul Mackerras wrote:
+Yes, it is.  Register blocks have size -- even if it's just a single
+register.
 
-> This modifies kvmppc_load_fp and kvmppc_save_fp to use the generic
-> FP/VSX and VMX load/store functions instead of open-coding the
-> FP/VSX/VMX load/store instructions.  Since kvmppc_load/save_fp don't
-> follow C calling conventions, we make them private symbols within
-> book3s_hv_rmhandlers.S.
->=20
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
-> arch/powerpc/kernel/asm-offsets.c       |  2 -
-> arch/powerpc/kvm/book3s_hv_rmhandlers.S | 82 =
-++++++++-------------------------
-> 2 files changed, 18 insertions(+), 66 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/asm-offsets.c =
-b/arch/powerpc/kernel/asm-offsets.c
-> index 4c1609f..7982870 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -425,10 +425,8 @@ int main(void)
-> 	DEFINE(VCPU_GPRS, offsetof(struct kvm_vcpu, arch.gpr));
-> 	DEFINE(VCPU_VRSAVE, offsetof(struct kvm_vcpu, arch.vrsave));
-> 	DEFINE(VCPU_FPRS, offsetof(struct kvm_vcpu, arch.fp.fpr));
-> -	DEFINE(VCPU_FPSCR, offsetof(struct kvm_vcpu, arch.fp.fpscr));
-> #ifdef CONFIG_ALTIVEC
-> 	DEFINE(VCPU_VRS, offsetof(struct kvm_vcpu, arch.vr.vr));
-> -	DEFINE(VCPU_VSCR, offsetof(struct kvm_vcpu, arch.vr.vscr));
-> #endif
-> 	DEFINE(VCPU_XER, offsetof(struct kvm_vcpu, arch.xer));
-> 	DEFINE(VCPU_CTR, offsetof(struct kvm_vcpu, arch.ctr));
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S =
-b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> index f5f2396..b5183ed 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -1102,7 +1102,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
->=20
-> 	/* save FP state */
-> 	mr	r3, r9
-> -	bl	.kvmppc_save_fp
-> +	bl	kvmppc_save_fp
->=20
-> 	/* Increment yield count if they have a VPA */
-> 	ld	r8, VCPU_VPA(r9)	/* do they have a VPA? */
-> @@ -1591,7 +1591,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_206)
-> 	std	r31, VCPU_GPR(R31)(r3)
->=20
-> 	/* save FP state */
-> -	bl	.kvmppc_save_fp
-> +	bl	kvmppc_save_fp
->=20
-> 	/*
-> 	 * Take a nap until a decrementer or external interrupt occurs,
-> @@ -1767,7 +1767,9 @@ kvm_no_guest:
->  * Save away FP, VMX and VSX registers.
->  * r3 =3D vcpu pointer
->  */
-> -_GLOBAL(kvmppc_save_fp)
-> +kvmppc_save_fp:
-> +	mflr	r30
-> +	mr	r31,r3
+> > > It is too later to change since the clock driver is merged for months
+> > > although I sent this patch first.
+> > 
+> > It should not have gone in without an approved binding.  It seems it went
+> > in via Mike Turquette (why is a non-ARM-specific tree using linux-arm-
+> > kernel as its list, BTW?).  No ack from Ben, Kumar, or me is shown in the
+> > commit.
+> The Linux common clock framework is not ARM specific. Any other arch can use it.
 
-Please note somewhere that e30 and r31 get clobbered by this function.
+Sure, it just seemed an odd choice of mailing list for something that
+isn't ARM-specific.
 
-> 	mfmsr	r5
-> 	ori	r8,r5,MSR_FP
-> #ifdef CONFIG_ALTIVEC
-> @@ -1782,42 +1784,17 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-> #endif
-> 	mtmsrd	r8
-> 	isync
-> -#ifdef CONFIG_VSX
-> -BEGIN_FTR_SECTION
-> -	reg =3D 0
-> -	.rept	32
-> -	li	r6,reg*16+VCPU_FPRS
-> -	STXVD2X(reg,R6,R3)
-> -	reg =3D reg + 1
-> -	.endr
-> -FTR_SECTION_ELSE
-> -#endif
-> -	reg =3D 0
-> -	.rept	32
-> -	stfd	reg,reg*8+VCPU_FPRS(r3)
-> -	reg =3D reg + 1
-> -	.endr
-> -#ifdef CONFIG_VSX
-> -ALT_FTR_SECTION_END_IFSET(CPU_FTR_VSX)
-> -#endif
-> -	mffs	fr0
-> -	stfd	fr0,VCPU_FPSCR(r3)
-> -
-> +	addi	r3,r3,VCPU_FPRS
-> +	bl	.store_fp_state
-> #ifdef CONFIG_ALTIVEC
-> BEGIN_FTR_SECTION
-> -	reg =3D 0
-> -	.rept	32
-> -	li	r6,reg*16+VCPU_VRS
-> -	stvx	reg,r6,r3
-> -	reg =3D reg + 1
-> -	.endr
-> -	mfvscr	vr0
-> -	li	r6,VCPU_VSCR
-> -	stvx	vr0,r6,r3
-> +	addi	r3,r31,VCPU_VRS
-> +	bl	.store_vr_state
-> END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
-> #endif
-> 	mfspr	r6,SPRN_VRSAVE
-> 	stw	r6,VCPU_VRSAVE(r3)
-> +	mtlr	r30
-> 	mtmsrd	r5
-> 	isync
-> 	blr
-> @@ -1826,8 +1803,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
->  * Load up FP, VMX and VSX registers
->  * r4 =3D vcpu pointer
->  */
-> -	.globl	kvmppc_load_fp
-> kvmppc_load_fp:
-> +	mflr	r30
-> +	mr	r31,r4
+> > In any case, you can preserve compatibility with existing trees without
+> > using this compatible in new trees.  The driver can check for both
+> > compatibles, with a comment indicating that "fsl,core-mux-clock" is
+> > deprecated and for compatibility only.
+> It is sub-clock node, is it really necessary to think about compatibility?
+> I think that's the node clockgen's responsibility.
 
-here too. It's also worth noting in the header comment that r4 is =
-preserved (unlike what you'd expect from the C ABI).
+It describes registers, so yes, you need to consider compatibility.  A
+clock provider is not responsible for figuring out how to program
+devices that consume its clocks, nor should it make any assumptions
+about such devices.
+ 
+> > > Besides, it is not too bad because other arch use the similar name.
+> > 
+> > I don't follow.  This is a specific Freescale register interface, not a
+> > general concept.
+> > 
+> > In any case, which "similar names" are you referring to?  A search in
+> > arch/arm/boot/dts for "mux" with "clk" or "clock" turns up
+> > "allwinner,sun4i-apb1-mux-clk" which is much more specific than
+> > "fsl,core-mux-clock".
+> Ok, I will change the compatible string.
+> Do you think "fsl,ppc-core-*" is ok?
 
+No.  How about "fsl,qoriq-chassis1-*" (for e500mc/e5500) and
+fsl,qoriq-chassis2-*" (for e6500)?
 
-Alex
-
-> 	mfmsr	r9
-> 	ori	r8,r9,MSR_FP
-> #ifdef CONFIG_ALTIVEC
-> @@ -1842,40 +1820,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-> #endif
-> 	mtmsrd	r8
-> 	isync
-> -	lfd	fr0,VCPU_FPSCR(r4)
-> -	MTFSF_L(fr0)
-> -#ifdef CONFIG_VSX
-> -BEGIN_FTR_SECTION
-> -	reg =3D 0
-> -	.rept	32
-> -	li	r7,reg*16+VCPU_FPRS
-> -	LXVD2X(reg,R7,R4)
-> -	reg =3D reg + 1
-> -	.endr
-> -FTR_SECTION_ELSE
-> -#endif
-> -	reg =3D 0
-> -	.rept	32
-> -	lfd	reg,reg*8+VCPU_FPRS(r4)
-> -	reg =3D reg + 1
-> -	.endr
-> -#ifdef CONFIG_VSX
-> -ALT_FTR_SECTION_END_IFSET(CPU_FTR_VSX)
-> -#endif
-> -
-> +	addi	r3,r4,VCPU_FPRS
-> +	bl	.load_fp_state
-> #ifdef CONFIG_ALTIVEC
-> BEGIN_FTR_SECTION
-> -	li	r7,VCPU_VSCR
-> -	lvx	vr0,r7,r4
-> -	mtvscr	vr0
-> -	reg =3D 0
-> -	.rept	32
-> -	li	r7,reg*16+VCPU_VRS
-> -	lvx	reg,r7,r4
-> -	reg =3D reg + 1
-> -	.endr
-> +	addi	r3,r31,VCPU_VRS
-> +	bl	.load_vr_state
-> END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
-> #endif
-> 	lwz	r7,VCPU_VRSAVE(r4)
-> 	mtspr	SPRN_VRSAVE,r7
-> +	mtlr	r30
-> +	mr	r4,r31
-> 	blr
-> --=20
-> 1.8.4.rc3
->=20
+-Scott
