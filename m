@@ -1,10 +1,11 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Tue, 10 Sep 2013 20:20:42 +1000
+Date: Tue, 10 Sep 2013 20:21:10 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Alexander Graf <agraf@suse.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/6] powerpc: Put FP/VSX and VR state into structures
-Message-ID: <20130910102041.GB28145@iris.ozlabs.ibm.com>
+Subject: [PATCH 2/6] powerpc: Provide for giveup_fpu/altivec to save state in
+ alternate location
+Message-ID: <20130910102110.GC28145@iris.ozlabs.ibm.com>
 References: <20130910102000.GA28145@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -19,1510 +20,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This creates new 'thread_fp_state' and 'thread_vr_state' structures
-to store FP/VSX state (including FPSCR) and Altivec/VSX state
-(including VSCR), and uses them in the thread_struct.  In the
-thread_fp_state, the FPRs and VSRs are represented as u64 rather
-than double, since we rarely perform floating-point computations
-on the values, and this will enable the structures to be used
-in KVM code as well.  Similarly FPSCR is now a u64 rather than
-a structure of two 32-bit values.
+This provides a facility which is intended for use by KVM, where the
+contents of the FP/VSX and VMX (Altivec) registers can be saved away
+to somewhere other than the thread_struct when kernel code wants to
+use floating point or VMX instructions.  This is done by providing a
+pointer in the thread_struct to indicate where the state should be
+saved to.  The giveup_fpu() and giveup_altivec() functions test these
+pointers and save state to the indicated location if they are non-NULL.
+Note that the MSR_FP/VEC bits in task->thread.regs->msr are still used
+to indicate whether the CPU register state is live, even when an
+alternate save location is being used.
 
-This takes the offsets out of the macros such as SAVE_32FPRS,
-REST_32FPRS, etc.  This enables the same macros to be used for normal
-and transactional state, enabling us to delete the transactional
-versions of the macros.   This also removes the unused do_load_up_fpu
-and do_load_up_altivec, which were in fact buggy since they didn't
-create large enough stack frames to account for the fact that
-load_up_fpu and load_up_altivec are not designed to be called from C
-and assume that their caller's stack frame is an interrupt frame.
+This also provides load_fp_state() and load_vr_state() functions, which
+load up FP/VSX and VMX state from memory into the CPU registers, and
+corresponding store_fp_state() and store_vr_state() functions, which
+store FP/VSX and VMX state into memory from the CPU registers.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/ppc_asm.h     | 95 +++-------------------------------
- arch/powerpc/include/asm/processor.h   | 40 +++++++-------
- arch/powerpc/include/asm/sfp-machine.h |  2 +-
- arch/powerpc/kernel/align.c            |  6 +--
- arch/powerpc/kernel/asm-offsets.c      | 25 +++------
- arch/powerpc/kernel/fpu.S              | 59 +++++----------------
- arch/powerpc/kernel/process.c          |  8 ++-
- arch/powerpc/kernel/ptrace.c           | 49 +++++++++---------
- arch/powerpc/kernel/ptrace32.c         | 11 ++--
- arch/powerpc/kernel/signal_32.c        | 72 +++++++++++++-------------
- arch/powerpc/kernel/signal_64.c        | 29 ++++++-----
- arch/powerpc/kernel/tm.S               | 41 ++++++++-------
- arch/powerpc/kernel/traps.c            | 10 ++--
- arch/powerpc/kernel/vecemu.c           |  6 +--
- arch/powerpc/kernel/vector.S           | 50 ++++++------------
- arch/powerpc/kvm/book3s_pr.c           | 36 ++++++-------
- arch/powerpc/kvm/booke.c               | 19 ++++---
- 17 files changed, 200 insertions(+), 358 deletions(-)
+ arch/powerpc/include/asm/processor.h |  7 +++++++
+ arch/powerpc/kernel/asm-offsets.c    |  2 ++
+ arch/powerpc/kernel/fpu.S            | 25 ++++++++++++++++++++++++-
+ arch/powerpc/kernel/ppc_ksyms.c      |  4 ++++
+ arch/powerpc/kernel/process.c        |  7 +++++++
+ arch/powerpc/kernel/vector.S         | 29 +++++++++++++++++++++++++++--
+ 6 files changed, 71 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 5995457..140f670 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -98,123 +98,40 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- #define REST_8GPRS(n, base)	REST_4GPRS(n, base); REST_4GPRS(n+4, base)
- #define REST_10GPRS(n, base)	REST_8GPRS(n, base); REST_2GPRS(n+8, base)
- 
--#define SAVE_FPR(n, base)	stfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+#define SAVE_FPR(n, base)	stfd	n,8*TS_FPRWIDTH*(n)(base)
- #define SAVE_2FPRS(n, base)	SAVE_FPR(n, base); SAVE_FPR(n+1, base)
- #define SAVE_4FPRS(n, base)	SAVE_2FPRS(n, base); SAVE_2FPRS(n+2, base)
- #define SAVE_8FPRS(n, base)	SAVE_4FPRS(n, base); SAVE_4FPRS(n+4, base)
- #define SAVE_16FPRS(n, base)	SAVE_8FPRS(n, base); SAVE_8FPRS(n+8, base)
- #define SAVE_32FPRS(n, base)	SAVE_16FPRS(n, base); SAVE_16FPRS(n+16, base)
--#define REST_FPR(n, base)	lfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+#define REST_FPR(n, base)	lfd	n,8*TS_FPRWIDTH*(n)(base)
- #define REST_2FPRS(n, base)	REST_FPR(n, base); REST_FPR(n+1, base)
- #define REST_4FPRS(n, base)	REST_2FPRS(n, base); REST_2FPRS(n+2, base)
- #define REST_8FPRS(n, base)	REST_4FPRS(n, base); REST_4FPRS(n+4, base)
- #define REST_16FPRS(n, base)	REST_8FPRS(n, base); REST_8FPRS(n+8, base)
- #define REST_32FPRS(n, base)	REST_16FPRS(n, base); REST_16FPRS(n+16, base)
- 
--#define SAVE_VR(n,b,base)	li b,THREAD_VR0+(16*(n));  stvx n,base,b
-+#define SAVE_VR(n,b,base)	li b,16*(n);  stvx n,base,b
- #define SAVE_2VRS(n,b,base)	SAVE_VR(n,b,base); SAVE_VR(n+1,b,base)
- #define SAVE_4VRS(n,b,base)	SAVE_2VRS(n,b,base); SAVE_2VRS(n+2,b,base)
- #define SAVE_8VRS(n,b,base)	SAVE_4VRS(n,b,base); SAVE_4VRS(n+4,b,base)
- #define SAVE_16VRS(n,b,base)	SAVE_8VRS(n,b,base); SAVE_8VRS(n+8,b,base)
- #define SAVE_32VRS(n,b,base)	SAVE_16VRS(n,b,base); SAVE_16VRS(n+16,b,base)
--#define REST_VR(n,b,base)	li b,THREAD_VR0+(16*(n)); lvx n,base,b
-+#define REST_VR(n,b,base)	li b,16*(n); lvx n,base,b
- #define REST_2VRS(n,b,base)	REST_VR(n,b,base); REST_VR(n+1,b,base)
- #define REST_4VRS(n,b,base)	REST_2VRS(n,b,base); REST_2VRS(n+2,b,base)
- #define REST_8VRS(n,b,base)	REST_4VRS(n,b,base); REST_4VRS(n+4,b,base)
- #define REST_16VRS(n,b,base)	REST_8VRS(n,b,base); REST_8VRS(n+8,b,base)
- #define REST_32VRS(n,b,base)	REST_16VRS(n,b,base); REST_16VRS(n+16,b,base)
- 
--/* Save/restore FPRs, VRs and VSRs from their checkpointed backups in
-- * thread_struct:
-- */
--#define SAVE_FPR_TRANSACT(n, base)	stfd n,THREAD_TRANSACT_FPR0+	\
--					8*TS_FPRWIDTH*(n)(base)
--#define SAVE_2FPRS_TRANSACT(n, base)	SAVE_FPR_TRANSACT(n, base);	\
--					SAVE_FPR_TRANSACT(n+1, base)
--#define SAVE_4FPRS_TRANSACT(n, base)	SAVE_2FPRS_TRANSACT(n, base);	\
--					SAVE_2FPRS_TRANSACT(n+2, base)
--#define SAVE_8FPRS_TRANSACT(n, base)	SAVE_4FPRS_TRANSACT(n, base);	\
--					SAVE_4FPRS_TRANSACT(n+4, base)
--#define SAVE_16FPRS_TRANSACT(n, base)	SAVE_8FPRS_TRANSACT(n, base);	\
--					SAVE_8FPRS_TRANSACT(n+8, base)
--#define SAVE_32FPRS_TRANSACT(n, base)	SAVE_16FPRS_TRANSACT(n, base);	\
--					SAVE_16FPRS_TRANSACT(n+16, base)
--
--#define REST_FPR_TRANSACT(n, base)	lfd	n,THREAD_TRANSACT_FPR0+	\
--					8*TS_FPRWIDTH*(n)(base)
--#define REST_2FPRS_TRANSACT(n, base)	REST_FPR_TRANSACT(n, base);	\
--					REST_FPR_TRANSACT(n+1, base)
--#define REST_4FPRS_TRANSACT(n, base)	REST_2FPRS_TRANSACT(n, base);	\
--					REST_2FPRS_TRANSACT(n+2, base)
--#define REST_8FPRS_TRANSACT(n, base)	REST_4FPRS_TRANSACT(n, base);	\
--					REST_4FPRS_TRANSACT(n+4, base)
--#define REST_16FPRS_TRANSACT(n, base)	REST_8FPRS_TRANSACT(n, base);	\
--					REST_8FPRS_TRANSACT(n+8, base)
--#define REST_32FPRS_TRANSACT(n, base)	REST_16FPRS_TRANSACT(n, base);	\
--					REST_16FPRS_TRANSACT(n+16, base)
--
--
--#define SAVE_VR_TRANSACT(n,b,base)	li b,THREAD_TRANSACT_VR0+(16*(n)); \
--					stvx n,b,base
--#define SAVE_2VRS_TRANSACT(n,b,base)	SAVE_VR_TRANSACT(n,b,base);	\
--					SAVE_VR_TRANSACT(n+1,b,base)
--#define SAVE_4VRS_TRANSACT(n,b,base)	SAVE_2VRS_TRANSACT(n,b,base);	\
--					SAVE_2VRS_TRANSACT(n+2,b,base)
--#define SAVE_8VRS_TRANSACT(n,b,base)	SAVE_4VRS_TRANSACT(n,b,base);	\
--					SAVE_4VRS_TRANSACT(n+4,b,base)
--#define SAVE_16VRS_TRANSACT(n,b,base)	SAVE_8VRS_TRANSACT(n,b,base);	\
--					SAVE_8VRS_TRANSACT(n+8,b,base)
--#define SAVE_32VRS_TRANSACT(n,b,base)	SAVE_16VRS_TRANSACT(n,b,base);	\
--					SAVE_16VRS_TRANSACT(n+16,b,base)
--
--#define REST_VR_TRANSACT(n,b,base)	li b,THREAD_TRANSACT_VR0+(16*(n)); \
--					lvx n,b,base
--#define REST_2VRS_TRANSACT(n,b,base)	REST_VR_TRANSACT(n,b,base);	\
--					REST_VR_TRANSACT(n+1,b,base)
--#define REST_4VRS_TRANSACT(n,b,base)	REST_2VRS_TRANSACT(n,b,base);	\
--					REST_2VRS_TRANSACT(n+2,b,base)
--#define REST_8VRS_TRANSACT(n,b,base)	REST_4VRS_TRANSACT(n,b,base);	\
--					REST_4VRS_TRANSACT(n+4,b,base)
--#define REST_16VRS_TRANSACT(n,b,base)	REST_8VRS_TRANSACT(n,b,base);	\
--					REST_8VRS_TRANSACT(n+8,b,base)
--#define REST_32VRS_TRANSACT(n,b,base)	REST_16VRS_TRANSACT(n,b,base);	\
--					REST_16VRS_TRANSACT(n+16,b,base)
--
--
--#define SAVE_VSR_TRANSACT(n,b,base)	li b,THREAD_TRANSACT_VSR0+(16*(n)); \
--					STXVD2X(n,R##base,R##b)
--#define SAVE_2VSRS_TRANSACT(n,b,base)	SAVE_VSR_TRANSACT(n,b,base);	\
--	                                SAVE_VSR_TRANSACT(n+1,b,base)
--#define SAVE_4VSRS_TRANSACT(n,b,base)	SAVE_2VSRS_TRANSACT(n,b,base);	\
--	                                SAVE_2VSRS_TRANSACT(n+2,b,base)
--#define SAVE_8VSRS_TRANSACT(n,b,base)	SAVE_4VSRS_TRANSACT(n,b,base);	\
--	                                SAVE_4VSRS_TRANSACT(n+4,b,base)
--#define SAVE_16VSRS_TRANSACT(n,b,base)	SAVE_8VSRS_TRANSACT(n,b,base);	\
--	                                SAVE_8VSRS_TRANSACT(n+8,b,base)
--#define SAVE_32VSRS_TRANSACT(n,b,base)	SAVE_16VSRS_TRANSACT(n,b,base);	\
--	                                SAVE_16VSRS_TRANSACT(n+16,b,base)
--
--#define REST_VSR_TRANSACT(n,b,base)	li b,THREAD_TRANSACT_VSR0+(16*(n)); \
--					LXVD2X(n,R##base,R##b)
--#define REST_2VSRS_TRANSACT(n,b,base)	REST_VSR_TRANSACT(n,b,base);    \
--	                                REST_VSR_TRANSACT(n+1,b,base)
--#define REST_4VSRS_TRANSACT(n,b,base)	REST_2VSRS_TRANSACT(n,b,base);	\
--	                                REST_2VSRS_TRANSACT(n+2,b,base)
--#define REST_8VSRS_TRANSACT(n,b,base)	REST_4VSRS_TRANSACT(n,b,base);	\
--	                                REST_4VSRS_TRANSACT(n+4,b,base)
--#define REST_16VSRS_TRANSACT(n,b,base)	REST_8VSRS_TRANSACT(n,b,base);	\
--	                                REST_8VSRS_TRANSACT(n+8,b,base)
--#define REST_32VSRS_TRANSACT(n,b,base)	REST_16VSRS_TRANSACT(n,b,base);	\
--	                                REST_16VSRS_TRANSACT(n+16,b,base)
--
- /* Save the lower 32 VSRs in the thread VSR region */
--#define SAVE_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n));  STXVD2X(n,R##base,R##b)
-+#define SAVE_VSR(n,b,base)	li b,16*(n);  STXVD2X(n,R##base,R##b)
- #define SAVE_2VSRS(n,b,base)	SAVE_VSR(n,b,base); SAVE_VSR(n+1,b,base)
- #define SAVE_4VSRS(n,b,base)	SAVE_2VSRS(n,b,base); SAVE_2VSRS(n+2,b,base)
- #define SAVE_8VSRS(n,b,base)	SAVE_4VSRS(n,b,base); SAVE_4VSRS(n+4,b,base)
- #define SAVE_16VSRS(n,b,base)	SAVE_8VSRS(n,b,base); SAVE_8VSRS(n+8,b,base)
- #define SAVE_32VSRS(n,b,base)	SAVE_16VSRS(n,b,base); SAVE_16VSRS(n+16,b,base)
--#define REST_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n)); LXVD2X(n,R##base,R##b)
-+#define REST_VSR(n,b,base)	li b,16*(n); LXVD2X(n,R##base,R##b)
- #define REST_2VSRS(n,b,base)	REST_VSR(n,b,base); REST_VSR(n+1,b,base)
- #define REST_4VSRS(n,b,base)	REST_2VSRS(n,b,base); REST_2VSRS(n+2,b,base)
- #define REST_8VSRS(n,b,base)	REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,base)
 diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index e378ccc..92f709d 100644
+index 92f709d..8bc9d66 100644
 --- a/arch/powerpc/include/asm/processor.h
 +++ b/arch/powerpc/include/asm/processor.h
-@@ -144,8 +144,20 @@ typedef struct {
- 
- #define TS_FPROFFSET 0
- #define TS_VSRLOWOFFSET 1
--#define TS_FPR(i) fpr[i][TS_FPROFFSET]
--#define TS_TRANS_FPR(i) transact_fpr[i][TS_FPROFFSET]
-+#define TS_FPR(i) fp_state.fpr[i][TS_FPROFFSET]
-+#define TS_TRANS_FPR(i) transact_fp.fpr[i][TS_FPROFFSET]
-+
-+/* FP and VSX 0-31 register set */
-+struct thread_fp_state {
-+	u64	fpr[32][TS_FPRWIDTH] __attribute__((aligned(16)));
-+	u64	fpscr;		/* Floating point status */
-+};
-+
-+/* Complete AltiVec register set including VSCR */
-+struct thread_vr_state {
-+	vector128	vr[32] __attribute__((aligned(16)));
-+	vector128	vscr __attribute__((aligned(16)));
-+};
- 
- struct thread_struct {
- 	unsigned long	ksp;		/* Kernel stack pointer */
-@@ -199,13 +211,7 @@ struct thread_struct {
- 	unsigned long	dvc2;
+@@ -212,6 +212,7 @@ struct thread_struct {
  #endif
  #endif
--	/* FP and VSX 0-31 register set */
--	double		fpr[32][TS_FPRWIDTH] __attribute__((aligned(16)));
--	struct {
--
--		unsigned int pad;
--		unsigned int val;	/* Floating point status */
--	} fpscr;
-+	struct thread_fp_state	fp_state;
+ 	struct thread_fp_state	fp_state;
++	struct thread_fp_state	*fp_save_area;
  	int		fpexc_mode;	/* floating-point exception mode */
  	unsigned int	align_ctl;	/* alignment handling control */
  #ifdef CONFIG_PPC64
-@@ -223,10 +229,7 @@ struct thread_struct {
- 	struct arch_hw_breakpoint hw_brk; /* info on the hardware breakpoint */
+@@ -230,6 +231,7 @@ struct thread_struct {
  	unsigned long	trap_nr;	/* last trap # on this thread */
  #ifdef CONFIG_ALTIVEC
--	/* Complete AltiVec register set */
--	vector128	vr[32] __attribute__((aligned(16)));
--	/* AltiVec status */
--	vector128	vscr __attribute__((aligned(16)));
-+	struct thread_vr_state vr_state;
+ 	struct thread_vr_state vr_state;
++	struct thread_vr_state *vr_save_area;
  	unsigned long	vrsave;
  	int		used_vr;	/* set if process has used altivec */
  #endif /* CONFIG_ALTIVEC */
-@@ -263,13 +266,8 @@ struct thread_struct {
- 	 * transact_fpr[] is the new set of transactional values.
- 	 * VRs work the same way.
- 	 */
--	double		transact_fpr[32][TS_FPRWIDTH];
--	struct {
--		unsigned int pad;
--		unsigned int val;	/* Floating point status */
--	} transact_fpscr;
--	vector128	transact_vr[32] __attribute__((aligned(16)));
--	vector128	transact_vscr __attribute__((aligned(16)));
-+	struct thread_fp_state transact_fp;
-+	struct thread_vr_state transact_vr;
- 	unsigned long	transact_vrsave;
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- #ifdef CONFIG_KVM_BOOK3S_32_HANDLER
-@@ -324,8 +322,6 @@ struct thread_struct {
- 	.ksp_limit = INIT_SP_LIMIT, \
- 	.regs = (struct pt_regs *)INIT_SP - 1, /* XXX bogus, I think */ \
- 	.fs = KERNEL_DS, \
--	.fpr = {{0}}, \
--	.fpscr = { .val = 0, }, \
- 	.fpexc_mode = 0, \
- 	.ppr = INIT_PPR, \
- }
-diff --git a/arch/powerpc/include/asm/sfp-machine.h b/arch/powerpc/include/asm/sfp-machine.h
-index 3a7a67a..d89beab 100644
---- a/arch/powerpc/include/asm/sfp-machine.h
-+++ b/arch/powerpc/include/asm/sfp-machine.h
-@@ -125,7 +125,7 @@
- #define FP_EX_DIVZERO         (1 << (31 - 5))
- #define FP_EX_INEXACT         (1 << (31 - 6))
+@@ -359,6 +361,11 @@ extern int set_endian(struct task_struct *tsk, unsigned int val);
+ extern int get_unalign_ctl(struct task_struct *tsk, unsigned long adr);
+ extern int set_unalign_ctl(struct task_struct *tsk, unsigned int val);
  
--#define __FPU_FPSCR	(current->thread.fpscr.val)
-+#define __FPU_FPSCR	(current->thread.fp_state.fpscr)
- 
- /* We only actually write to the destination register
-  * if exceptions signalled (if any) will not trap.
-diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index a27ccd5..eaa16bc 100644
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -660,7 +660,7 @@ static int emulate_vsx(unsigned char __user *addr, unsigned int reg,
- 	if (reg < 32)
- 		ptr = (char *) &current->thread.TS_FPR(reg);
- 	else
--		ptr = (char *) &current->thread.vr[reg - 32];
-+		ptr = (char *) &current->thread.vr_state.vr[reg - 32];
- 
- 	lptr = (unsigned long *) ptr;
- 
-@@ -897,7 +897,7 @@ int fix_alignment(struct pt_regs *regs)
- 				return -EFAULT;
- 		}
- 	} else if (flags & F) {
--		data.dd = current->thread.TS_FPR(reg);
-+		data.ll = current->thread.TS_FPR(reg);
- 		if (flags & S) {
- 			/* Single-precision FP store requires conversion... */
- #ifdef CONFIG_PPC_FPU
-@@ -975,7 +975,7 @@ int fix_alignment(struct pt_regs *regs)
- 		if (unlikely(ret))
- 			return -EFAULT;
- 	} else if (flags & F)
--		current->thread.TS_FPR(reg) = data.dd;
-+		current->thread.TS_FPR(reg) = data.ll;
- 	else
- 		regs->gpr[reg] = data.ll;
- 
++extern void load_fp_state(struct thread_fp_state *fp);
++extern void store_fp_state(struct thread_fp_state *fp);
++extern void load_vr_state(struct thread_vr_state *vr);
++extern void store_vr_state(struct thread_vr_state *vr);
++
+ static inline unsigned int __unpack_fe01(unsigned long msr_bits)
+ {
+ 	return ((msr_bits & MSR_FE0) >> 10) | ((msr_bits & MSR_FE1) >> 8);
 diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index d8958be..38ebe36 100644
+index 38ebe36..9049197 100644
 --- a/arch/powerpc/kernel/asm-offsets.c
 +++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -89,16 +89,15 @@ int main(void)
- 	DEFINE(THREAD_NORMSAVES, offsetof(struct thread_struct, normsave[0]));
+@@ -90,9 +90,11 @@ int main(void)
  #endif
  	DEFINE(THREAD_FPEXC_MODE, offsetof(struct thread_struct, fpexc_mode));
--	DEFINE(THREAD_FPR0, offsetof(struct thread_struct, fpr[0]));
--	DEFINE(THREAD_FPSCR, offsetof(struct thread_struct, fpscr));
-+	DEFINE(THREAD_FPSTATE, offsetof(struct thread_struct, fp_state));
-+	DEFINE(FPSTATE_FPSCR, offsetof(struct thread_fp_state, fpscr));
+ 	DEFINE(THREAD_FPSTATE, offsetof(struct thread_struct, fp_state));
++	DEFINE(THREAD_FPSAVEAREA, offsetof(struct thread_struct, fp_save_area));
+ 	DEFINE(FPSTATE_FPSCR, offsetof(struct thread_fp_state, fpscr));
  #ifdef CONFIG_ALTIVEC
--	DEFINE(THREAD_VR0, offsetof(struct thread_struct, vr[0]));
-+	DEFINE(THREAD_VRSTATE, offsetof(struct thread_struct, vr_state));
+ 	DEFINE(THREAD_VRSTATE, offsetof(struct thread_struct, vr_state));
++	DEFINE(THREAD_VRSAVEAREA, offsetof(struct thread_struct, vr_save_area));
  	DEFINE(THREAD_VRSAVE, offsetof(struct thread_struct, vrsave));
--	DEFINE(THREAD_VSCR, offsetof(struct thread_struct, vscr));
  	DEFINE(THREAD_USED_VR, offsetof(struct thread_struct, used_vr));
-+	DEFINE(VRSTATE_VSCR, offsetof(struct thread_vr_state, vscr));
- #endif /* CONFIG_ALTIVEC */
- #ifdef CONFIG_VSX
--	DEFINE(THREAD_VSR0, offsetof(struct thread_struct, fpr));
- 	DEFINE(THREAD_USED_VSR, offsetof(struct thread_struct, used_vsr));
- #endif /* CONFIG_VSX */
- #ifdef CONFIG_PPC64
-@@ -142,20 +141,12 @@ int main(void)
- 	DEFINE(THREAD_TM_PPR, offsetof(struct thread_struct, tm_ppr));
- 	DEFINE(THREAD_TM_DSCR, offsetof(struct thread_struct, tm_dscr));
- 	DEFINE(PT_CKPT_REGS, offsetof(struct thread_struct, ckpt_regs));
--	DEFINE(THREAD_TRANSACT_VR0, offsetof(struct thread_struct,
--					 transact_vr[0]));
--	DEFINE(THREAD_TRANSACT_VSCR, offsetof(struct thread_struct,
--					  transact_vscr));
-+	DEFINE(THREAD_TRANSACT_VRSTATE, offsetof(struct thread_struct,
-+						 transact_vr));
- 	DEFINE(THREAD_TRANSACT_VRSAVE, offsetof(struct thread_struct,
- 					    transact_vrsave));
--	DEFINE(THREAD_TRANSACT_FPR0, offsetof(struct thread_struct,
--					  transact_fpr[0]));
--	DEFINE(THREAD_TRANSACT_FPSCR, offsetof(struct thread_struct,
--					   transact_fpscr));
--#ifdef CONFIG_VSX
--	DEFINE(THREAD_TRANSACT_VSR0, offsetof(struct thread_struct,
--					  transact_fpr[0]));
--#endif
-+	DEFINE(THREAD_TRANSACT_FPSTATE, offsetof(struct thread_struct,
-+						 transact_fp));
- 	/* Local pt_regs on stack for Transactional Memory funcs. */
- 	DEFINE(TM_FRAME_SIZE, STACK_FRAME_OVERHEAD +
- 	       sizeof(struct pt_regs) + 16);
+ 	DEFINE(VRSTATE_VSCR, offsetof(struct thread_vr_state, vscr));
 diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index caeaabf..34b96e6 100644
+index 34b96e6..4dca05e 100644
 --- a/arch/powerpc/kernel/fpu.S
 +++ b/arch/powerpc/kernel/fpu.S
-@@ -35,15 +35,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
- 2:	REST_32VSRS(n,c,base);						\
- 3:
+@@ -81,6 +81,26 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
  
--#define __REST_32FPVSRS_TRANSACT(n,c,base)				\
--BEGIN_FTR_SECTION							\
--	b	2f;							\
--END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
--	REST_32FPRS_TRANSACT(n,base);					\
--	b	3f;							\
--2:	REST_32VSRS_TRANSACT(n,c,base);					\
--3:
--
- #define __SAVE_32FPVSRS(n,c,base)					\
- BEGIN_FTR_SECTION							\
- 	b	2f;							\
-@@ -54,40 +45,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
- 3:
- #else
- #define __REST_32FPVSRS(n,b,base)	REST_32FPRS(n, base)
--#define __REST_32FPVSRS_TRANSACT(n,b,base)	REST_32FPRS(n, base)
- #define __SAVE_32FPVSRS(n,b,base)	SAVE_32FPRS(n, base)
- #endif
- #define REST_32FPVSRS(n,c,base) __REST_32FPVSRS(n,__REG_##c,__REG_##base)
--#define REST_32FPVSRS_TRANSACT(n,c,base) \
--	__REST_32FPVSRS_TRANSACT(n,__REG_##c,__REG_##base)
- #define SAVE_32FPVSRS(n,c,base) __SAVE_32FPVSRS(n,__REG_##c,__REG_##base)
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--/*
-- * Wrapper to call load_up_fpu from C.
-- * void do_load_up_fpu(struct pt_regs *regs);
-- */
--_GLOBAL(do_load_up_fpu)
--	mflr	r0
--	std	r0, 16(r1)
--	stdu	r1, -112(r1)
--
--	subi	r6, r3, STACK_FRAME_OVERHEAD
--	/* load_up_fpu expects r12=MSR, r13=PACA, and returns
--	 * with r12 = new MSR.
--	 */
--	ld	r12,_MSR(r6)
--	GET_PACA(r13)
--
--	bl	load_up_fpu
--	std	r12,_MSR(r6)
--
--	ld	r0, 112+16(r1)
--	addi	r1, r1, 112
--	mtlr	r0
--	blr
--
--
- /* void do_load_up_transact_fpu(struct thread_struct *thread)
-  *
-  * This is similar to load_up_fpu but for the transactional version of the FP
-@@ -105,9 +68,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	SYNC
- 	MTMSRD(r5)
- 
--	lfd	fr0,THREAD_TRANSACT_FPSCR(r3)
-+	addi	r7,r3,THREAD_TRANSACT_FPSTATE
-+	lfd	fr0,FPSTATE_FPSCR(r7)
- 	MTFSF_L(fr0)
--	REST_32FPVSRS_TRANSACT(0, R4, R3)
-+	REST_32FPVSRS(0, R4, R7)
- 
- 	/* FP/VSX off again */
- 	MTMSRD(r6)
-@@ -147,9 +111,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	beq	1f
- 	toreal(r4)
- 	addi	r4,r4,THREAD		/* want last_task_used_math->thread */
--	SAVE_32FPVSRS(0, R5, R4)
-+	addi	r8,r4,THREAD_FPSTATE
-+	SAVE_32FPVSRS(0, R5, R8)
- 	mffs	fr0
--	stfd	fr0,THREAD_FPSCR(r4)
-+	stfd	fr0,FPSTATE_FPSCR(r8)
- 	PPC_LL	r5,PT_REGS(r4)
- 	toreal(r5)
- 	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
-@@ -160,7 +125,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- #endif /* CONFIG_SMP */
- 	/* enable use of FP after return */
- #ifdef CONFIG_PPC32
--	mfspr	r5,SPRN_SPRG_THREAD		/* current task's THREAD (phys) */
-+	mfspr	r5,SPRN_SPRG_THREAD	/* current task's THREAD (phys) */
- 	lwz	r4,THREAD_FPEXC_MODE(r5)
- 	ori	r9,r9,MSR_FP		/* enable FP for current */
- 	or	r9,r9,r4
-@@ -172,9 +137,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	or	r12,r12,r4
- 	std	r12,_MSR(r1)
- #endif
--	lfd	fr0,THREAD_FPSCR(r5)
-+	addi	r7,r5,THREAD_FPSTATE
-+	lfd	fr0,FPSTATE_FPSCR(r7)
- 	MTFSF_L(fr0)
--	REST_32FPVSRS(0, R4, R5)
-+	REST_32FPVSRS(0, R4, R7)
- #ifndef CONFIG_SMP
- 	subi	r4,r5,THREAD
- 	fromreal(r4)
-@@ -208,9 +174,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ /*
++ * Load state from memory into FP registers including FPSCR.
++ * Assumes the caller has enabled FP in the MSR.
++ */
++_GLOBAL(load_fp_state)
++	lfd	fr0,FPSTATE_FPSCR(r3)
++	MTFSF_L(fr0)
++	REST_32FPVSRS(0, R4, R3)
++	blr
++
++/*
++ * Store FP state into memory, including FPSCR
++ * Assumes the caller has enabled FP in the MSR.
++ */
++_GLOBAL(store_fp_state)
++	SAVE_32FPVSRS(0, R4, R3)
++	mffs	fr0
++	stfd	fr0,FPSTATE_FPSCR(r3)
++	blr
++
++/*
+  * This task wants to use the FPU now.
+  * On UP, disable FP for the task which had the FPU previously,
+  * and save its floating-point registers in its thread_struct.
+@@ -172,9 +192,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ 	PPC_LCMPI	0,r3,0
+ 	beqlr-				/* if no previous owner, done */
  	addi	r3,r3,THREAD	        /* want THREAD of task */
++	PPC_LL	r6,THREAD_FPSAVEAREA(r3)
  	PPC_LL	r5,PT_REGS(r3)
- 	PPC_LCMPI	0,r5,0
--	SAVE_32FPVSRS(0, R4 ,R3)
-+	addi	r6,r3,THREAD_FPSTATE
-+	SAVE_32FPVSRS(0, R4, R6)
+-	PPC_LCMPI	0,r5,0
++	PPC_LCMPI	0,r6,0
++	bne	2f
+ 	addi	r6,r3,THREAD_FPSTATE
++2:	PPC_LCMPI	0,r5,0
+ 	SAVE_32FPVSRS(0, R4, R6)
  	mffs	fr0
--	stfd	fr0,THREAD_FPSCR(r3)
-+	stfd	fr0,FPSTATE_FPSCR(r6)
- 	beq	1f
- 	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- 	li	r3,MSR_FP|MSR_FE0|MSR_FE1
+ 	stfd	fr0,FPSTATE_FPSCR(r6)
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 21646db..56a4bec 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -98,9 +98,13 @@ EXPORT_SYMBOL(start_thread);
+ 
+ #ifdef CONFIG_PPC_FPU
+ EXPORT_SYMBOL(giveup_fpu);
++EXPORT_SYMBOL(load_fp_state);
++EXPORT_SYMBOL(store_fp_state);
+ #endif
+ #ifdef CONFIG_ALTIVEC
+ EXPORT_SYMBOL(giveup_altivec);
++EXPORT_SYMBOL(load_vr_state);
++EXPORT_SYMBOL(store_vr_state);
+ #endif /* CONFIG_ALTIVEC */
+ #ifdef CONFIG_VSX
+ EXPORT_SYMBOL(giveup_vsx);
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 6f428da..94c1257 100644
+index 94c1257..69785a5 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -1112,12 +1112,10 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- #ifdef CONFIG_VSX
+@@ -1007,6 +1007,11 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+ 	p->thread.ptrace_bps[0] = NULL;
+ #endif
+ 
++	p->thread.fp_save_area = NULL;
++#ifdef CONFIG_ALTIVEC
++	p->thread.vr_save_area = NULL;
++#endif
++
+ #ifdef CONFIG_PPC_STD_MMU_64
+ 	if (mmu_has_feature(MMU_FTR_SLB)) {
+ 		unsigned long sp_vsid;
+@@ -1113,9 +1118,11 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
  	current->thread.used_vsr = 0;
  #endif
--	memset(current->thread.fpr, 0, sizeof(current->thread.fpr));
--	current->thread.fpscr.val = 0;
-+	memset(&current->thread.fp_state, 0, sizeof(current->thread.fp_state));
+ 	memset(&current->thread.fp_state, 0, sizeof(current->thread.fp_state));
++	current->thread.fp_save_area = NULL;
  #ifdef CONFIG_ALTIVEC
--	memset(current->thread.vr, 0, sizeof(current->thread.vr));
--	memset(&current->thread.vscr, 0, sizeof(current->thread.vscr));
--	current->thread.vscr.u[3] = 0x00010000; /* Java mode disabled */
-+	memset(&current->thread.vr_state, 0, sizeof(current->thread.vr_state));
-+	current->thread.vr_state.vscr.u[3] = 0x00010000; /* Java mode disabled */
+ 	memset(&current->thread.vr_state, 0, sizeof(current->thread.vr_state));
+ 	current->thread.vr_state.vscr.u[3] = 0x00010000; /* Java mode disabled */
++	current->thread.vr_save_area = NULL;
  	current->thread.vrsave = 0;
  	current->thread.used_vr = 0;
  #endif /* CONFIG_ALTIVEC */
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 9a0d24c..2385800 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -362,7 +362,7 @@ static int fpr_get(struct task_struct *target, const struct user_regset *regset,
- 		   void *kbuf, void __user *ubuf)
- {
- #ifdef CONFIG_VSX
--	double buf[33];
-+	u64 buf[33];
- 	int i;
- #endif
- 	flush_fp_to_thread(target);
-@@ -371,15 +371,15 @@ static int fpr_get(struct task_struct *target, const struct user_regset *regset,
- 	/* copy to local buffer then write that out */
- 	for (i = 0; i < 32 ; i++)
- 		buf[i] = target->thread.TS_FPR(i);
--	memcpy(&buf[32], &target->thread.fpscr, sizeof(double));
-+	buf[32] = target->thread.fp_state.fpscr;
- 	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
- 
- #else
--	BUILD_BUG_ON(offsetof(struct thread_struct, fpscr) !=
--		     offsetof(struct thread_struct, TS_FPR(32)));
-+	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
-+		     offsetof(struct thread_fp_state, fpr[32][0]));
- 
- 	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
--				   &target->thread.fpr, 0, -1);
-+				   &target->thread.fp_state, 0, -1);
- #endif
- }
- 
-@@ -388,7 +388,7 @@ static int fpr_set(struct task_struct *target, const struct user_regset *regset,
- 		   const void *kbuf, const void __user *ubuf)
- {
- #ifdef CONFIG_VSX
--	double buf[33];
-+	u64 buf[33];
- 	int i;
- #endif
- 	flush_fp_to_thread(target);
-@@ -400,14 +400,14 @@ static int fpr_set(struct task_struct *target, const struct user_regset *regset,
- 		return i;
- 	for (i = 0; i < 32 ; i++)
- 		target->thread.TS_FPR(i) = buf[i];
--	memcpy(&target->thread.fpscr, &buf[32], sizeof(double));
-+	target->thread.fp_state.fpscr = buf[32];
- 	return 0;
- #else
--	BUILD_BUG_ON(offsetof(struct thread_struct, fpscr) !=
--		     offsetof(struct thread_struct, TS_FPR(32)));
-+	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
-+		     offsetof(struct thread_fp_state, fpr[32][0]));
- 
- 	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--				  &target->thread.fpr, 0, -1);
-+				  &target->thread.fp_state, 0, -1);
- #endif
- }
- 
-@@ -440,11 +440,11 @@ static int vr_get(struct task_struct *target, const struct user_regset *regset,
- 
- 	flush_altivec_to_thread(target);
- 
--	BUILD_BUG_ON(offsetof(struct thread_struct, vscr) !=
--		     offsetof(struct thread_struct, vr[32]));
-+	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
-+		     offsetof(struct thread_vr_state, vr[32]));
- 
- 	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
--				  &target->thread.vr, 0,
-+				  &target->thread.vr_state, 0,
- 				  33 * sizeof(vector128));
- 	if (!ret) {
- 		/*
-@@ -471,11 +471,12 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
- 
- 	flush_altivec_to_thread(target);
- 
--	BUILD_BUG_ON(offsetof(struct thread_struct, vscr) !=
--		     offsetof(struct thread_struct, vr[32]));
-+	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
-+		     offsetof(struct thread_vr_state, vr[32]));
- 
- 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--				 &target->thread.vr, 0, 33 * sizeof(vector128));
-+				 &target->thread.vr_state, 0,
-+				 33 * sizeof(vector128));
- 	if (!ret && count > 0) {
- 		/*
- 		 * We use only the first word of vrsave.
-@@ -514,13 +515,13 @@ static int vsr_get(struct task_struct *target, const struct user_regset *regset,
- 		   unsigned int pos, unsigned int count,
- 		   void *kbuf, void __user *ubuf)
- {
--	double buf[32];
-+	u64 buf[32];
- 	int ret, i;
- 
- 	flush_vsx_to_thread(target);
- 
- 	for (i = 0; i < 32 ; i++)
--		buf[i] = target->thread.fpr[i][TS_VSRLOWOFFSET];
-+		buf[i] = target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET];
- 	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
- 				  buf, 0, 32 * sizeof(double));
- 
-@@ -531,7 +532,7 @@ static int vsr_set(struct task_struct *target, const struct user_regset *regset,
- 		   unsigned int pos, unsigned int count,
- 		   const void *kbuf, const void __user *ubuf)
- {
--	double buf[32];
-+	u64 buf[32];
- 	int ret,i;
- 
- 	flush_vsx_to_thread(target);
-@@ -539,7 +540,7 @@ static int vsr_set(struct task_struct *target, const struct user_regset *regset,
- 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
- 				 buf, 0, 32 * sizeof(double));
- 	for (i = 0; i < 32 ; i++)
--		target->thread.fpr[i][TS_VSRLOWOFFSET] = buf[i];
-+		target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];
- 
- 
- 	return ret;
-@@ -1554,10 +1555,10 @@ long arch_ptrace(struct task_struct *child, long request,
- 
- 			flush_fp_to_thread(child);
- 			if (fpidx < (PT_FPSCR - PT_FPR0))
--				tmp = ((unsigned long *)child->thread.fpr)
-+				tmp = ((unsigned long *)child->thread.fp_state.fpr)
- 					[fpidx * TS_FPRWIDTH];
- 			else
--				tmp = child->thread.fpscr.val;
-+				tmp = child->thread.fp_state.fpscr;
- 		}
- 		ret = put_user(tmp, datalp);
- 		break;
-@@ -1587,10 +1588,10 @@ long arch_ptrace(struct task_struct *child, long request,
- 
- 			flush_fp_to_thread(child);
- 			if (fpidx < (PT_FPSCR - PT_FPR0))
--				((unsigned long *)child->thread.fpr)
-+				((unsigned long *)child->thread.fp_state.fpr)
- 					[fpidx * TS_FPRWIDTH] = data;
- 			else
--				child->thread.fpscr.val = data;
-+				child->thread.fp_state.fpscr = data;
- 			ret = 0;
- 		}
- 		break;
-diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
-index f51599e..097f8dc 100644
---- a/arch/powerpc/kernel/ptrace32.c
-+++ b/arch/powerpc/kernel/ptrace32.c
-@@ -43,7 +43,6 @@
- #define FPRNUMBER(i) (((i) - PT_FPR0) >> 1)
- #define FPRHALF(i) (((i) - PT_FPR0) & 1)
- #define FPRINDEX(i) TS_FPRWIDTH * FPRNUMBER(i) * 2 + FPRHALF(i)
--#define FPRINDEX_3264(i) (TS_FPRWIDTH * ((i) - PT_FPR0))
- 
- long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
- 			compat_ulong_t caddr, compat_ulong_t cdata)
-@@ -105,7 +104,7 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
- 			 * to be an array of unsigned int (32 bits) - the
- 			 * index passed in is based on this assumption.
- 			 */
--			tmp = ((unsigned int *)child->thread.fpr)
-+			tmp = ((unsigned int *)child->thread.fp_state.fpr)
- 				[FPRINDEX(index)];
- 		}
- 		ret = put_user((unsigned int)tmp, (u32 __user *)data);
-@@ -147,8 +146,7 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
- 		if (numReg >= PT_FPR0) {
- 			flush_fp_to_thread(child);
- 			/* get 64 bit FPR */
--			tmp = ((u64 *)child->thread.fpr)
--				[FPRINDEX_3264(numReg)];
-+			tmp = child->thread.fp_state.fpr[numReg - PT_FPR0][0];
- 		} else { /* register within PT_REGS struct */
- 			unsigned long tmp2;
- 			ret = ptrace_get_reg(child, numReg, &tmp2);
-@@ -207,7 +205,7 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
- 			 * to be an array of unsigned int (32 bits) - the
- 			 * index passed in is based on this assumption.
- 			 */
--			((unsigned int *)child->thread.fpr)
-+			((unsigned int *)child->thread.fp_state.fpr)
- 				[FPRINDEX(index)] = data;
- 			ret = 0;
- 		}
-@@ -251,8 +249,7 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
- 			u64 *tmp;
- 			flush_fp_to_thread(child);
- 			/* get 64 bit FPR ... */
--			tmp = &(((u64 *)child->thread.fpr)
--				[FPRINDEX_3264(numReg)]);
-+			tmp = &child->thread.fp_state.fpr[numReg - PT_FPR0][0];
- 			/* ... write the 32 bit part we want */
- 			((u32 *)tmp)[index % 2] = data;
- 			ret = 0;
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index bebdf1a..ea25e45 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -265,27 +265,27 @@ struct rt_sigframe {
- unsigned long copy_fpr_to_user(void __user *to,
- 			       struct task_struct *task)
- {
--	double buf[ELF_NFPREG];
-+	u64 buf[ELF_NFPREG];
- 	int i;
- 
- 	/* save FPR copy to local buffer then write to the thread_struct */
- 	for (i = 0; i < (ELF_NFPREG - 1) ; i++)
- 		buf[i] = task->thread.TS_FPR(i);
--	memcpy(&buf[i], &task->thread.fpscr, sizeof(double));
-+	buf[i] = task->thread.fp_state.fpscr;
- 	return __copy_to_user(to, buf, ELF_NFPREG * sizeof(double));
- }
- 
- unsigned long copy_fpr_from_user(struct task_struct *task,
- 				 void __user *from)
- {
--	double buf[ELF_NFPREG];
-+	u64 buf[ELF_NFPREG];
- 	int i;
- 
- 	if (__copy_from_user(buf, from, ELF_NFPREG * sizeof(double)))
- 		return 1;
- 	for (i = 0; i < (ELF_NFPREG - 1) ; i++)
- 		task->thread.TS_FPR(i) = buf[i];
--	memcpy(&task->thread.fpscr, &buf[i], sizeof(double));
-+	task->thread.fp_state.fpscr = buf[i];
- 
- 	return 0;
- }
-@@ -293,25 +293,25 @@ unsigned long copy_fpr_from_user(struct task_struct *task,
- unsigned long copy_vsx_to_user(void __user *to,
- 			       struct task_struct *task)
- {
--	double buf[ELF_NVSRHALFREG];
-+	u64 buf[ELF_NVSRHALFREG];
- 	int i;
- 
- 	/* save FPR copy to local buffer then write to the thread_struct */
- 	for (i = 0; i < ELF_NVSRHALFREG; i++)
--		buf[i] = task->thread.fpr[i][TS_VSRLOWOFFSET];
-+		buf[i] = task->thread.fp_state.fpr[i][TS_VSRLOWOFFSET];
- 	return __copy_to_user(to, buf, ELF_NVSRHALFREG * sizeof(double));
- }
- 
- unsigned long copy_vsx_from_user(struct task_struct *task,
- 				 void __user *from)
- {
--	double buf[ELF_NVSRHALFREG];
-+	u64 buf[ELF_NVSRHALFREG];
- 	int i;
- 
- 	if (__copy_from_user(buf, from, ELF_NVSRHALFREG * sizeof(double)))
- 		return 1;
- 	for (i = 0; i < ELF_NVSRHALFREG ; i++)
--		task->thread.fpr[i][TS_VSRLOWOFFSET] = buf[i];
-+		task->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];
- 	return 0;
- }
- 
-@@ -319,27 +319,27 @@ unsigned long copy_vsx_from_user(struct task_struct *task,
- unsigned long copy_transact_fpr_to_user(void __user *to,
- 				  struct task_struct *task)
- {
--	double buf[ELF_NFPREG];
-+	u64 buf[ELF_NFPREG];
- 	int i;
- 
- 	/* save FPR copy to local buffer then write to the thread_struct */
- 	for (i = 0; i < (ELF_NFPREG - 1) ; i++)
- 		buf[i] = task->thread.TS_TRANS_FPR(i);
--	memcpy(&buf[i], &task->thread.transact_fpscr, sizeof(double));
-+	buf[i] = task->thread.transact_fp.fpscr;
- 	return __copy_to_user(to, buf, ELF_NFPREG * sizeof(double));
- }
- 
- unsigned long copy_transact_fpr_from_user(struct task_struct *task,
- 					  void __user *from)
- {
--	double buf[ELF_NFPREG];
-+	u64 buf[ELF_NFPREG];
- 	int i;
- 
- 	if (__copy_from_user(buf, from, ELF_NFPREG * sizeof(double)))
- 		return 1;
- 	for (i = 0; i < (ELF_NFPREG - 1) ; i++)
- 		task->thread.TS_TRANS_FPR(i) = buf[i];
--	memcpy(&task->thread.transact_fpscr, &buf[i], sizeof(double));
-+	task->thread.transact_fp.fpscr = buf[i];
- 
- 	return 0;
- }
-@@ -347,25 +347,25 @@ unsigned long copy_transact_fpr_from_user(struct task_struct *task,
- unsigned long copy_transact_vsx_to_user(void __user *to,
- 				  struct task_struct *task)
- {
--	double buf[ELF_NVSRHALFREG];
-+	u64 buf[ELF_NVSRHALFREG];
- 	int i;
- 
- 	/* save FPR copy to local buffer then write to the thread_struct */
- 	for (i = 0; i < ELF_NVSRHALFREG; i++)
--		buf[i] = task->thread.transact_fpr[i][TS_VSRLOWOFFSET];
-+		buf[i] = task->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET];
- 	return __copy_to_user(to, buf, ELF_NVSRHALFREG * sizeof(double));
- }
- 
- unsigned long copy_transact_vsx_from_user(struct task_struct *task,
- 					  void __user *from)
- {
--	double buf[ELF_NVSRHALFREG];
-+	u64 buf[ELF_NVSRHALFREG];
- 	int i;
- 
- 	if (__copy_from_user(buf, from, ELF_NVSRHALFREG * sizeof(double)))
- 		return 1;
- 	for (i = 0; i < ELF_NVSRHALFREG ; i++)
--		task->thread.transact_fpr[i][TS_VSRLOWOFFSET] = buf[i];
-+		task->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET] = buf[i];
- 	return 0;
- }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-@@ -373,14 +373,14 @@ unsigned long copy_transact_vsx_from_user(struct task_struct *task,
- inline unsigned long copy_fpr_to_user(void __user *to,
- 				      struct task_struct *task)
- {
--	return __copy_to_user(to, task->thread.fpr,
-+	return __copy_to_user(to, task->thread.fp_state.fpr,
- 			      ELF_NFPREG * sizeof(double));
- }
- 
- inline unsigned long copy_fpr_from_user(struct task_struct *task,
- 					void __user *from)
- {
--	return __copy_from_user(task->thread.fpr, from,
-+	return __copy_from_user(task->thread.fp_state.fpr, from,
- 			      ELF_NFPREG * sizeof(double));
- }
- 
-@@ -388,14 +388,14 @@ inline unsigned long copy_fpr_from_user(struct task_struct *task,
- inline unsigned long copy_transact_fpr_to_user(void __user *to,
- 					 struct task_struct *task)
- {
--	return __copy_to_user(to, task->thread.transact_fpr,
-+	return __copy_to_user(to, task->thread.transact_fp.fpr,
- 			      ELF_NFPREG * sizeof(double));
- }
- 
- inline unsigned long copy_transact_fpr_from_user(struct task_struct *task,
- 						 void __user *from)
- {
--	return __copy_from_user(task->thread.transact_fpr, from,
-+	return __copy_from_user(task->thread.transact_fp.fpr, from,
- 				ELF_NFPREG * sizeof(double));
- }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-@@ -423,7 +423,7 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
- 	/* save altivec registers */
- 	if (current->thread.used_vr) {
- 		flush_altivec_to_thread(current);
--		if (__copy_to_user(&frame->mc_vregs, current->thread.vr,
-+		if (__copy_to_user(&frame->mc_vregs, &current->thread.vr_state,
- 				   ELF_NVRREG * sizeof(vector128)))
- 			return 1;
- 		/* set MSR_VEC in the saved MSR value to indicate that
-@@ -534,17 +534,17 @@ static int save_tm_user_regs(struct pt_regs *regs,
- 	/* save altivec registers */
- 	if (current->thread.used_vr) {
- 		flush_altivec_to_thread(current);
--		if (__copy_to_user(&frame->mc_vregs, current->thread.vr,
-+		if (__copy_to_user(&frame->mc_vregs, &current->thread.vr_state,
- 				   ELF_NVRREG * sizeof(vector128)))
- 			return 1;
- 		if (msr & MSR_VEC) {
- 			if (__copy_to_user(&tm_frame->mc_vregs,
--					   current->thread.transact_vr,
-+					   &current->thread.transact_vr,
- 					   ELF_NVRREG * sizeof(vector128)))
- 				return 1;
- 		} else {
- 			if (__copy_to_user(&tm_frame->mc_vregs,
--					   current->thread.vr,
-+					   &current->thread.vr_state,
- 					   ELF_NVRREG * sizeof(vector128)))
- 				return 1;
- 		}
-@@ -692,11 +692,12 @@ static long restore_user_regs(struct pt_regs *regs,
- 	regs->msr &= ~MSR_VEC;
- 	if (msr & MSR_VEC) {
- 		/* restore altivec registers from the stack */
--		if (__copy_from_user(current->thread.vr, &sr->mc_vregs,
-+		if (__copy_from_user(&current->thread.vr_state, &sr->mc_vregs,
- 				     sizeof(sr->mc_vregs)))
- 			return 1;
- 	} else if (current->thread.used_vr)
--		memset(current->thread.vr, 0, ELF_NVRREG * sizeof(vector128));
-+		memset(&current->thread.vr_state, 0,
-+		       ELF_NVRREG * sizeof(vector128));
- 
- 	/* Always get VRSAVE back */
- 	if (__get_user(current->thread.vrsave, (u32 __user *)&sr->mc_vregs[32]))
-@@ -722,7 +723,7 @@ static long restore_user_regs(struct pt_regs *regs,
- 			return 1;
- 	} else if (current->thread.used_vsr)
- 		for (i = 0; i < 32 ; i++)
--			current->thread.fpr[i][TS_VSRLOWOFFSET] = 0;
-+			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
- #endif /* CONFIG_VSX */
- 	/*
- 	 * force the process to reload the FP registers from
-@@ -798,15 +799,16 @@ static long restore_tm_user_regs(struct pt_regs *regs,
- 	regs->msr &= ~MSR_VEC;
- 	if (msr & MSR_VEC) {
- 		/* restore altivec registers from the stack */
--		if (__copy_from_user(current->thread.vr, &sr->mc_vregs,
-+		if (__copy_from_user(&current->thread.vr_state, &sr->mc_vregs,
- 				     sizeof(sr->mc_vregs)) ||
--		    __copy_from_user(current->thread.transact_vr,
-+		    __copy_from_user(&current->thread.transact_vr,
- 				     &tm_sr->mc_vregs,
- 				     sizeof(sr->mc_vregs)))
- 			return 1;
- 	} else if (current->thread.used_vr) {
--		memset(current->thread.vr, 0, ELF_NVRREG * sizeof(vector128));
--		memset(current->thread.transact_vr, 0,
-+		memset(&current->thread.vr_state, 0,
-+		       ELF_NVRREG * sizeof(vector128));
-+		memset(&current->thread.transact_vr, 0,
- 		       ELF_NVRREG * sizeof(vector128));
- 	}
- 
-@@ -838,8 +840,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
- 			return 1;
- 	} else if (current->thread.used_vsr)
- 		for (i = 0; i < 32 ; i++) {
--			current->thread.fpr[i][TS_VSRLOWOFFSET] = 0;
--			current->thread.transact_fpr[i][TS_VSRLOWOFFSET] = 0;
-+			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
-+			current->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET] = 0;
- 		}
- #endif /* CONFIG_VSX */
- 
-@@ -1030,7 +1032,7 @@ int handle_rt_signal32(unsigned long sig, struct k_sigaction *ka,
- 		if (__put_user(0, &rt_sf->uc.uc_link))
- 			goto badframe;
- 
--	current->thread.fpscr.val = 0;	/* turn off all fp exceptions */
-+	current->thread.fp_state.fpscr = 0;	/* turn off all fp exceptions */
- 
- 	/* create a stack frame for the caller of the handler */
- 	newsp = ((unsigned long)rt_sf) - (__SIGNAL_FRAMESIZE + 16);
-@@ -1462,7 +1464,7 @@ int handle_signal32(unsigned long sig, struct k_sigaction *ka,
- 
- 	regs->link = tramp;
- 
--	current->thread.fpscr.val = 0;	/* turn off all fp exceptions */
-+	current->thread.fp_state.fpscr = 0;	/* turn off all fp exceptions */
- 
- 	/* create a stack frame for the caller of the handler */
- 	newsp = ((unsigned long)frame) - __SIGNAL_FRAMESIZE;
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index f93ec28..a3c1ed4 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -103,7 +103,8 @@ static long setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
- 	if (current->thread.used_vr) {
- 		flush_altivec_to_thread(current);
- 		/* Copy 33 vec registers (vr0..31 and vscr) to the stack */
--		err |= __copy_to_user(v_regs, current->thread.vr, 33 * sizeof(vector128));
-+		err |= __copy_to_user(v_regs, &current->thread.vr_state,
-+				      33 * sizeof(vector128));
- 		/* set MSR_VEC in the MSR value in the frame to indicate that sc->v_reg)
- 		 * contains valid data.
- 		 */
-@@ -195,18 +196,18 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
- 	if (current->thread.used_vr) {
- 		flush_altivec_to_thread(current);
- 		/* Copy 33 vec registers (vr0..31 and vscr) to the stack */
--		err |= __copy_to_user(v_regs, current->thread.vr,
-+		err |= __copy_to_user(v_regs, &current->thread.vr_state,
- 				      33 * sizeof(vector128));
- 		/* If VEC was enabled there are transactional VRs valid too,
- 		 * else they're a copy of the checkpointed VRs.
- 		 */
- 		if (msr & MSR_VEC)
- 			err |= __copy_to_user(tm_v_regs,
--					      current->thread.transact_vr,
-+					      &current->thread.transact_vr,
- 					      33 * sizeof(vector128));
- 		else
- 			err |= __copy_to_user(tm_v_regs,
--					      current->thread.vr,
-+					      &current->thread.vr_state,
- 					      33 * sizeof(vector128));
- 
- 		/* set MSR_VEC in the MSR value in the frame to indicate
-@@ -349,10 +350,10 @@ static long restore_sigcontext(struct pt_regs *regs, sigset_t *set, int sig,
- 		return -EFAULT;
- 	/* Copy 33 vec registers (vr0..31 and vscr) from the stack */
- 	if (v_regs != NULL && (msr & MSR_VEC) != 0)
--		err |= __copy_from_user(current->thread.vr, v_regs,
-+		err |= __copy_from_user(&current->thread.vr_state, v_regs,
- 					33 * sizeof(vector128));
- 	else if (current->thread.used_vr)
--		memset(current->thread.vr, 0, 33 * sizeof(vector128));
-+		memset(&current->thread.vr_state, 0, 33 * sizeof(vector128));
- 	/* Always get VRSAVE back */
- 	if (v_regs != NULL)
- 		err |= __get_user(current->thread.vrsave, (u32 __user *)&v_regs[33]);
-@@ -374,7 +375,7 @@ static long restore_sigcontext(struct pt_regs *regs, sigset_t *set, int sig,
- 		err |= copy_vsx_from_user(current, v_regs);
- 	else
- 		for (i = 0; i < 32 ; i++)
--			current->thread.fpr[i][TS_VSRLOWOFFSET] = 0;
-+			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
- #endif
- 	return err;
- }
-@@ -468,14 +469,14 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
- 		return -EFAULT;
- 	/* Copy 33 vec registers (vr0..31 and vscr) from the stack */
- 	if (v_regs != NULL && tm_v_regs != NULL && (msr & MSR_VEC) != 0) {
--		err |= __copy_from_user(current->thread.vr, v_regs,
-+		err |= __copy_from_user(&current->thread.vr_state, v_regs,
- 					33 * sizeof(vector128));
--		err |= __copy_from_user(current->thread.transact_vr, tm_v_regs,
-+		err |= __copy_from_user(&current->thread.transact_vr, tm_v_regs,
- 					33 * sizeof(vector128));
- 	}
- 	else if (current->thread.used_vr) {
--		memset(current->thread.vr, 0, 33 * sizeof(vector128));
--		memset(current->thread.transact_vr, 0, 33 * sizeof(vector128));
-+		memset(&current->thread.vr_state, 0, 33 * sizeof(vector128));
-+		memset(&current->thread.transact_vr, 0, 33 * sizeof(vector128));
- 	}
- 	/* Always get VRSAVE back */
- 	if (v_regs != NULL && tm_v_regs != NULL) {
-@@ -507,8 +508,8 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
- 		err |= copy_transact_vsx_from_user(current, tm_v_regs);
- 	} else {
- 		for (i = 0; i < 32 ; i++) {
--			current->thread.fpr[i][TS_VSRLOWOFFSET] = 0;
--			current->thread.transact_fpr[i][TS_VSRLOWOFFSET] = 0;
-+			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
-+			current->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET] = 0;
- 		}
- 	}
- #endif
-@@ -747,7 +748,7 @@ int handle_rt_signal64(int signr, struct k_sigaction *ka, siginfo_t *info,
- 		goto badframe;
- 
- 	/* Make sure signal handler doesn't get spurious FP exceptions */
--	current->thread.fpscr.val = 0;
-+	current->thread.fp_state.fpscr = 0;
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	/* Remove TM bits from thread's MSR.  The MSR in the sigcontext
- 	 * just indicates to userland that we were doing a transaction, but we
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index 7b60b98..d781ca5 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -12,16 +12,15 @@
- #include <asm/reg.h>
- 
- #ifdef CONFIG_VSX
--/* See fpu.S, this is very similar but to save/restore checkpointed FPRs/VSRs */
--#define __SAVE_32FPRS_VSRS_TRANSACT(n,c,base)	\
-+/* See fpu.S, this is borrowed from there */
-+#define __SAVE_32FPRS_VSRS(n,c,base)		\
- BEGIN_FTR_SECTION				\
- 	b	2f;				\
- END_FTR_SECTION_IFSET(CPU_FTR_VSX);		\
--	SAVE_32FPRS_TRANSACT(n,base);		\
-+	SAVE_32FPRS(n,base);			\
- 	b	3f;				\
--2:	SAVE_32VSRS_TRANSACT(n,c,base);		\
-+2:	SAVE_32VSRS(n,c,base);			\
- 3:
--/* ...and this is just plain borrowed from there. */
- #define __REST_32FPRS_VSRS(n,c,base)		\
- BEGIN_FTR_SECTION				\
- 	b	2f;				\
-@@ -31,11 +30,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);		\
- 2:	REST_32VSRS(n,c,base);			\
- 3:
- #else
--#define __SAVE_32FPRS_VSRS_TRANSACT(n,c,base) SAVE_32FPRS_TRANSACT(n, base)
--#define __REST_32FPRS_VSRS(n,c,base)	      REST_32FPRS(n, base)
-+#define __SAVE_32FPRS_VSRS(n,c,base)	SAVE_32FPRS(n, base)
-+#define __REST_32FPRS_VSRS(n,c,base)	REST_32FPRS(n, base)
- #endif
--#define SAVE_32FPRS_VSRS_TRANSACT(n,c,base) \
--	__SAVE_32FPRS_VSRS_TRANSACT(n,__REG_##c,__REG_##base)
-+#define SAVE_32FPRS_VSRS(n,c,base) \
-+	__SAVE_32FPRS_VSRS(n,__REG_##c,__REG_##base)
- #define REST_32FPRS_VSRS(n,c,base) \
- 	__REST_32FPRS_VSRS(n,__REG_##c,__REG_##base)
- 
-@@ -151,10 +150,11 @@ _GLOBAL(tm_reclaim)
- 	andis.		r0, r4, MSR_VEC@h
- 	beq	dont_backup_vec
- 
--	SAVE_32VRS_TRANSACT(0, r6, r3)	/* r6 scratch, r3 thread */
-+	addi	r7, r3, THREAD_TRANSACT_VRSTATE
-+	SAVE_32VRS(0, r6, r7)	/* r6 scratch, r7 transact vr state */
- 	mfvscr	vr0
--	li	r6, THREAD_TRANSACT_VSCR
--	stvx	vr0, r3, r6
-+	li	r6, VRSTATE_VSCR
-+	stvx	vr0, r7, r6
- dont_backup_vec:
- 	mfspr	r0, SPRN_VRSAVE
- 	std	r0, THREAD_TRANSACT_VRSAVE(r3)
-@@ -162,10 +162,11 @@ dont_backup_vec:
- 	andi.	r0, r4, MSR_FP
- 	beq	dont_backup_fp
- 
--	SAVE_32FPRS_VSRS_TRANSACT(0, R6, R3)	/* r6 scratch, r3 thread */
-+	addi	r7, r3, THREAD_TRANSACT_FPSTATE
-+	SAVE_32FPRS_VSRS(0, R6, R7)	/* r6 scratch, r7 transact fp state */
- 
- 	mffs    fr0
--	stfd    fr0,THREAD_TRANSACT_FPSCR(r3)
-+	stfd    fr0,FPSTATE_FPSCR(r7)
- 
- dont_backup_fp:
- 	/* The moment we treclaim, ALL of our GPRs will switch
-@@ -337,10 +338,11 @@ _GLOBAL(tm_recheckpoint)
- 	andis.	r0, r4, MSR_VEC@h
- 	beq	dont_restore_vec
- 
--	li	r5, THREAD_VSCR
--	lvx	vr0, r3, r5
-+	addi	r8, r3, THREAD_VRSTATE
-+	li	r5, VRSTATE_VSCR
-+	lvx	vr0, r8, r5
- 	mtvscr	vr0
--	REST_32VRS(0, r5, r3)			/* r5 scratch, r3 THREAD ptr */
-+	REST_32VRS(0, r5, r8)			/* r5 scratch, r8 ptr */
- dont_restore_vec:
- 	ld	r5, THREAD_VRSAVE(r3)
- 	mtspr	SPRN_VRSAVE, r5
-@@ -349,9 +351,10 @@ dont_restore_vec:
- 	andi.	r0, r4, MSR_FP
- 	beq	dont_restore_fp
- 
--	lfd	fr0, THREAD_FPSCR(r3)
-+	addi	r8, r3, THREAD_FPSTATE
-+	lfd	fr0, FPSTATE_FPSCR(r8)
- 	MTFSF_L(fr0)
--	REST_32FPRS_VSRS(0, R4, R3)
-+	REST_32FPRS_VSRS(0, R4, R8)
- 
- dont_restore_fp:
- 	mtmsr	r6				/* FP/Vec off again! */
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index f783c93..f0a6814 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -816,7 +816,7 @@ static void parse_fpe(struct pt_regs *regs)
- 
- 	flush_fp_to_thread(current);
- 
--	code = __parse_fpscr(current->thread.fpscr.val);
-+	code = __parse_fpscr(current->thread.fp_state.fpscr);
- 
- 	_exception(SIGFPE, regs, code, regs->nip);
- }
-@@ -1069,7 +1069,7 @@ static int emulate_math(struct pt_regs *regs)
- 		return 0;
- 	case 1: {
- 			int code = 0;
--			code = __parse_fpscr(current->thread.fpscr.val);
-+			code = __parse_fpscr(current->thread.fp_state.fpscr);
- 			_exception(SIGFPE, regs, code, regs->nip);
- 			return 0;
- 		}
-@@ -1371,8 +1371,6 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 
--extern void do_load_up_fpu(struct pt_regs *regs);
--
- void fp_unavailable_tm(struct pt_regs *regs)
- {
- 	/* Note:  This does not handle any kind of FP laziness. */
-@@ -1403,8 +1401,6 @@ void fp_unavailable_tm(struct pt_regs *regs)
- }
- 
- #ifdef CONFIG_ALTIVEC
--extern void do_load_up_altivec(struct pt_regs *regs);
--
- void altivec_unavailable_tm(struct pt_regs *regs)
- {
- 	/* See the comments in fp_unavailable_tm().  This function operates
-@@ -1634,7 +1630,7 @@ void altivec_assist_exception(struct pt_regs *regs)
- 		/* XXX quick hack for now: set the non-Java bit in the VSCR */
- 		printk_ratelimited(KERN_ERR "Unrecognized altivec instruction "
- 				   "in %s at %lx\n", current->comm, regs->nip);
--		current->thread.vscr.u[3] |= 0x10000;
-+		current->thread.vr_state.vscr.u[3] |= 0x10000;
- 	}
- }
- #endif /* CONFIG_ALTIVEC */
-diff --git a/arch/powerpc/kernel/vecemu.c b/arch/powerpc/kernel/vecemu.c
-index 604d094..c4bfadb 100644
---- a/arch/powerpc/kernel/vecemu.c
-+++ b/arch/powerpc/kernel/vecemu.c
-@@ -271,7 +271,7 @@ int emulate_altivec(struct pt_regs *regs)
- 	vb = (instr >> 11) & 0x1f;
- 	vc = (instr >> 6) & 0x1f;
- 
--	vrs = current->thread.vr;
-+	vrs = current->thread.vr_state.vr;
- 	switch (instr & 0x3f) {
- 	case 10:
- 		switch (vc) {
-@@ -320,12 +320,12 @@ int emulate_altivec(struct pt_regs *regs)
- 		case 14:	/* vctuxs */
- 			for (i = 0; i < 4; ++i)
- 				vrs[vd].u[i] = ctuxs(vrs[vb].u[i], va,
--						&current->thread.vscr.u[3]);
-+					&current->thread.vr_state.vscr.u[3]);
- 			break;
- 		case 15:	/* vctsxs */
- 			for (i = 0; i < 4; ++i)
- 				vrs[vd].u[i] = ctsxs(vrs[vb].u[i], va,
--						&current->thread.vscr.u[3]);
-+					&current->thread.vr_state.vscr.u[3]);
- 			break;
- 		default:
- 			return -EINVAL;
 diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index 9e20999..a48df87 100644
+index a48df87..eacda4e 100644
 --- a/arch/powerpc/kernel/vector.S
 +++ b/arch/powerpc/kernel/vector.S
-@@ -8,29 +8,6 @@
- #include <asm/ptrace.h>
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--/*
-- * Wrapper to call load_up_altivec from C.
-- * void do_load_up_altivec(struct pt_regs *regs);
-- */
--_GLOBAL(do_load_up_altivec)
--	mflr	r0
--	std	r0, 16(r1)
--	stdu	r1, -112(r1)
--
--	subi	r6, r3, STACK_FRAME_OVERHEAD
--	/* load_up_altivec expects r12=MSR, r13=PACA, and returns
--	 * with r12 = new MSR.
--	 */
--	ld	r12,_MSR(r6)
--	GET_PACA(r13)
--	bl	load_up_altivec
--	std	r12,_MSR(r6)
--
--	ld	r0, 112+16(r1)
--	addi	r1, r1, 112
--	mtlr	r0
--	blr
--
- /* void do_load_up_transact_altivec(struct thread_struct *thread)
-  *
-  * This is similar to load_up_altivec but for the transactional version of the
-@@ -46,10 +23,11 @@ _GLOBAL(do_load_up_transact_altivec)
- 	li	r4,1
- 	stw	r4,THREAD_USED_VR(r3)
- 
--	li	r10,THREAD_TRANSACT_VSCR
-+	li	r10,THREAD_TRANSACT_VRSTATE+VRSTATE_VSCR
- 	lvx	vr0,r10,r3
- 	mtvscr	vr0
--	REST_32VRS_TRANSACT(0,r4,r3)
-+	addi	r10,r3,THREAD_TRANSACT_VRSTATE
-+	REST_32VRS(0,r4,r10)
- 
- 	/* Disable VEC again. */
- 	MTMSRD(r6)
-@@ -59,7 +37,6 @@ _GLOBAL(do_load_up_transact_altivec)
+@@ -37,6 +37,28 @@ _GLOBAL(do_load_up_transact_altivec)
  #endif
  
  /*
-- * load_up_altivec(unused, unused, tsk)
++ * Load state from memory into VMX registers including VSCR.
++ * Assumes the caller has enabled VMX in the MSR.
++ */
++_GLOBAL(load_vr_state)
++	li	r4,VRSTATE_VSCR
++	lvx	vr0,r4,r3
++	mtvscr	vr0
++	REST_32VRS(0,r4,r3)
++	blr
++
++/*
++ * Store VMX state into memory, including VSCR.
++ * Assumes the caller has enabled VMX in the MSR.
++ */
++_GLOBAL(store_vr_state)
++	SAVE_32VRS(0, r4, r3)
++	mfvscr	vr0
++	li	r4, VRSTATE_VSCR
++	stvx	vr0, r4, r3
++	blr
++
++/*
   * Disable VMX for the task which had it previously,
   * and save its vector registers in its thread_struct.
   * Enables the VMX for use in the kernel on return.
-@@ -90,10 +67,11 @@ _GLOBAL(load_up_altivec)
- 	/* Save VMX state to last_task_used_altivec's THREAD struct */
- 	toreal(r4)
- 	addi	r4,r4,THREAD
--	SAVE_32VRS(0,r5,r4)
-+	addi	r7,r4,THREAD_VRSTATE
-+	SAVE_32VRS(0,r5,r7)
- 	mfvscr	vr0
--	li	r10,THREAD_VSCR
--	stvx	vr0,r10,r4
-+	li	r10,VRSTATE_VSCR
-+	stvx	vr0,r10,r7
- 	/* Disable VMX for last_task_used_altivec */
- 	PPC_LL	r5,PT_REGS(r4)
- 	toreal(r5)
-@@ -125,12 +103,13 @@ _GLOBAL(load_up_altivec)
- 	oris	r12,r12,MSR_VEC@h
- 	std	r12,_MSR(r1)
- #endif
-+	addi	r7,r5,THREAD_VRSTATE
- 	li	r4,1
--	li	r10,THREAD_VSCR
-+	li	r10,VRSTATE_VSCR
- 	stw	r4,THREAD_USED_VR(r5)
--	lvx	vr0,r10,r5
-+	lvx	vr0,r10,r7
- 	mtvscr	vr0
--	REST_32VRS(0,r4,r5)
-+	REST_32VRS(0,r4,r7)
- #ifndef CONFIG_SMP
- 	/* Update last_task_used_altivec to 'current' */
- 	subi	r4,r5,THREAD		/* Back to 'current' */
-@@ -165,12 +144,13 @@ _GLOBAL(giveup_altivec)
+@@ -144,9 +166,12 @@ _GLOBAL(giveup_altivec)
  	PPC_LCMPI	0,r3,0
  	beqlr				/* if no previous owner, done */
  	addi	r3,r3,THREAD		/* want THREAD of task */
-+	addi	r7,r3,THREAD_VRSTATE
+-	addi	r7,r3,THREAD_VRSTATE
++	PPC_LL	r7,THREAD_VRSAVEAREA(r3)
  	PPC_LL	r5,PT_REGS(r3)
- 	PPC_LCMPI	0,r5,0
--	SAVE_32VRS(0,r4,r3)
-+	SAVE_32VRS(0,r4,r7)
+-	PPC_LCMPI	0,r5,0
++	PPC_LCMPI	0,r7,0
++	bne	2f
++	addi	r7,r3,THREAD_VRSTATE
++2:	PPC_LCMPI	0,r5,0
+ 	SAVE_32VRS(0,r4,r7)
  	mfvscr	vr0
--	li	r4,THREAD_VSCR
--	stvx	vr0,r4,r3
-+	li	r4,VRSTATE_VSCR
-+	stvx	vr0,r4,r7
- 	beq	1f
- 	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- #ifdef CONFIG_VSX
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 27db1e6..c0b48f96 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -444,7 +444,7 @@ void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr)
- #ifdef CONFIG_VSX
- 	u64 *vcpu_vsx = vcpu->arch.vsr;
- #endif
--	u64 *thread_fpr = (u64*)t->fpr;
-+	u64 *thread_fpr = &t->fp_state.fpr[0][0];
- 	int i;
- 
- 	/*
-@@ -466,14 +466,14 @@ void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr)
- 		/*
- 		 * Note that on CPUs with VSX, giveup_fpu stores
- 		 * both the traditional FP registers and the added VSX
--		 * registers into thread.fpr[].
-+		 * registers into thread.fp_state.fpr[].
- 		 */
- 		if (current->thread.regs->msr & MSR_FP)
- 			giveup_fpu(current);
- 		for (i = 0; i < ARRAY_SIZE(vcpu->arch.fpr); i++)
- 			vcpu_fpr[i] = thread_fpr[get_fpr_index(i)];
- 
--		vcpu->arch.fpscr = t->fpscr.val;
-+		vcpu->arch.fpscr = t->fp_state.fpscr;
- 
- #ifdef CONFIG_VSX
- 		if (cpu_has_feature(CPU_FTR_VSX))
-@@ -486,8 +486,8 @@ void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr)
- 	if (msr & MSR_VEC) {
- 		if (current->thread.regs->msr & MSR_VEC)
- 			giveup_altivec(current);
--		memcpy(vcpu->arch.vr, t->vr, sizeof(vcpu->arch.vr));
--		vcpu->arch.vscr = t->vscr;
-+		memcpy(vcpu->arch.vr, t->vr_state.vr, sizeof(vcpu->arch.vr));
-+		vcpu->arch.vscr = t->vr_state.vscr;
- 	}
- #endif
- 
-@@ -539,7 +539,7 @@ static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
- #ifdef CONFIG_VSX
- 	u64 *vcpu_vsx = vcpu->arch.vsr;
- #endif
--	u64 *thread_fpr = (u64*)t->fpr;
-+	u64 *thread_fpr = &t->fp_state.fpr[0][0];
- 	int i;
- 
- 	/* When we have paired singles, we emulate in software */
-@@ -584,15 +584,15 @@ static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
- 		for (i = 0; i < ARRAY_SIZE(vcpu->arch.vsr) / 2; i++)
- 			thread_fpr[get_fpr_index(i) + 1] = vcpu_vsx[i];
- #endif
--		t->fpscr.val = vcpu->arch.fpscr;
-+		t->fp_state.fpscr = vcpu->arch.fpscr;
- 		t->fpexc_mode = 0;
- 		kvmppc_load_up_fpu();
- 	}
- 
- 	if (msr & MSR_VEC) {
- #ifdef CONFIG_ALTIVEC
--		memcpy(t->vr, vcpu->arch.vr, sizeof(vcpu->arch.vr));
--		t->vscr = vcpu->arch.vscr;
-+		memcpy(t->vr_state.vr, vcpu->arch.vr, sizeof(vcpu->arch.vr));
-+		t->vr_state.vscr = vcpu->arch.vscr;
- 		t->vrsave = -1;
- 		kvmppc_load_up_altivec();
- #endif
-@@ -1116,12 +1116,10 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
- int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- {
- 	int ret;
--	double fpr[32][TS_FPRWIDTH];
--	unsigned int fpscr;
-+	struct thread_fp_state fp;
- 	int fpexc_mode;
- #ifdef CONFIG_ALTIVEC
--	vector128 vr[32];
--	vector128 vscr;
-+	struct thread_vr_state vr;
- 	unsigned long uninitialized_var(vrsave);
- 	int used_vr;
- #endif
-@@ -1153,8 +1151,7 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 	/* Save FPU state in stack */
- 	if (current->thread.regs->msr & MSR_FP)
- 		giveup_fpu(current);
--	memcpy(fpr, current->thread.fpr, sizeof(current->thread.fpr));
--	fpscr = current->thread.fpscr.val;
-+	fp = current->thread.fp_state;
- 	fpexc_mode = current->thread.fpexc_mode;
- 
- #ifdef CONFIG_ALTIVEC
-@@ -1163,8 +1160,7 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 	if (used_vr) {
- 		if (current->thread.regs->msr & MSR_VEC)
- 			giveup_altivec(current);
--		memcpy(vr, current->thread.vr, sizeof(current->thread.vr));
--		vscr = current->thread.vscr;
-+		vr = current->thread.vr_state;
- 		vrsave = current->thread.vrsave;
- 	}
- #endif
-@@ -1196,15 +1192,13 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 	current->thread.regs->msr = ext_msr;
- 
- 	/* Restore FPU/VSX state from stack */
--	memcpy(current->thread.fpr, fpr, sizeof(current->thread.fpr));
--	current->thread.fpscr.val = fpscr;
-+	current->thread.fp_state = fp;
- 	current->thread.fpexc_mode = fpexc_mode;
- 
- #ifdef CONFIG_ALTIVEC
- 	/* Restore Altivec state from stack */
- 	if (used_vr && current->thread.used_vr) {
--		memcpy(current->thread.vr, vr, sizeof(current->thread.vr));
--		current->thread.vscr = vscr;
-+		current->thread.vr_state = vr;
- 		current->thread.vrsave = vrsave;
- 	}
- 	current->thread.used_vr = used_vr;
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 17722d8..5133199 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -656,9 +656,8 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- {
- 	int ret, s;
- #ifdef CONFIG_PPC_FPU
--	unsigned int fpscr;
-+	struct thread_fp_state fp;
- 	int fpexc_mode;
--	u64 fpr[32];
- #endif
- 
- 	if (!vcpu->arch.sane) {
-@@ -677,13 +676,13 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- #ifdef CONFIG_PPC_FPU
- 	/* Save userspace FPU state in stack */
- 	enable_kernel_fp();
--	memcpy(fpr, current->thread.fpr, sizeof(current->thread.fpr));
--	fpscr = current->thread.fpscr.val;
-+	fp = current->thread.fp_state;
- 	fpexc_mode = current->thread.fpexc_mode;
- 
- 	/* Restore guest FPU state to thread */
--	memcpy(current->thread.fpr, vcpu->arch.fpr, sizeof(vcpu->arch.fpr));
--	current->thread.fpscr.val = vcpu->arch.fpscr;
-+	memcpy(current->thread.fp_state.fpr, vcpu->arch.fpr,
-+	       sizeof(vcpu->arch.fpr));
-+	current->thread.fp_state.fpscr = vcpu->arch.fpscr;
- 
- 	/*
- 	 * Since we can't trap on MSR_FP in GS-mode, we consider the guest
-@@ -709,12 +708,12 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 	vcpu->fpu_active = 0;
- 
- 	/* Save guest FPU state from thread */
--	memcpy(vcpu->arch.fpr, current->thread.fpr, sizeof(vcpu->arch.fpr));
--	vcpu->arch.fpscr = current->thread.fpscr.val;
-+	memcpy(vcpu->arch.fpr, current->thread.fp_state.fpr,
-+	       sizeof(vcpu->arch.fpr));
-+	vcpu->arch.fpscr = current->thread.fp_state.fpscr;
- 
- 	/* Restore userspace FPU state from stack */
--	memcpy(current->thread.fpr, fpr, sizeof(current->thread.fpr));
--	current->thread.fpscr.val = fpscr;
-+	current->thread.fp_state = fp;
- 	current->thread.fpexc_mode = fpexc_mode;
- #endif
- 
+ 	li	r4,VRSTATE_VSCR
 -- 
 1.8.4.rc3
