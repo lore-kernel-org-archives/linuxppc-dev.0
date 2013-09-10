@@ -1,11 +1,11 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Tue, 10 Sep 2013 20:21:33 +1000
+Date: Tue, 10 Sep 2013 20:22:21 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Alexander Graf <agraf@suse.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 3/6] KVM: PPC: Use load_fp/vr_state rather than
- load_up_fpu/altivec
-Message-ID: <20130910102133.GD28145@iris.ozlabs.ibm.com>
+Subject: [PATCH 5/6] KVM: PPC: Book3S: Load/save FP/VMX/VSX state directly
+ to/from vcpu struct
+Message-ID: <20130910102221.GF28145@iris.ozlabs.ibm.com>
 References: <20130910102000.GA28145@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -20,181 +20,239 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The load_up_fpu and load_up_altivec functions were never intended to
-be called from C, and do things like modifying the MSR value in their
-callers' stack frames, which are assumed to be interrupt frames.  In
-addition, on 32-bit Book S they require the MMU to be off.
+Now that we have the vcpu floating-point and vector state stored in
+the same type of struct as the main kernel uses, we can load that
+state directly from the vcpu struct instead of having extra copies
+to/from the thread_struct.  Similarly, when the guest state needs to
+be saved, we can have it saved it directly to the vcpu struct by
+setting the current->thread.fp_save_area and current->thread.vr_save_area
+pointers.  That also means that we don't need to back up and restore
+userspace's FP/vector state.  This all makes the code simpler and
+faster.
 
-This makes KVM use the new load_fp_state() and load_vr_state() functions
-instead of load_up_fpu/altivec.  This means we can remove the assembler
-glue in book3s_rmhandlers.S, and potentially fixes a bug on Book E,
-where load_up_fpu was called directly from C.
+Note that it's not necessary to save or modify current->thread.fpexc_mode,
+since nothing in KVM uses or is affected by its value.  Nor is it
+necessary to touch used_vr or used_vsr.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/kvm_book3s.h |  3 ---
- arch/powerpc/include/asm/switch_to.h  |  2 --
- arch/powerpc/kvm/book3s_exports.c     |  4 ---
- arch/powerpc/kvm/book3s_pr.c          | 18 +++++++++-----
- arch/powerpc/kvm/book3s_rmhandlers.S  | 47 -----------------------------------
- arch/powerpc/kvm/booke.h              |  3 ++-
- 6 files changed, 14 insertions(+), 63 deletions(-)
+ arch/powerpc/kvm/book3s_pr.c | 72 ++++++++++----------------------------------
+ arch/powerpc/kvm/booke.c     | 16 ----------
+ arch/powerpc/kvm/booke.h     |  4 ++-
+ 3 files changed, 19 insertions(+), 73 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index fa19e2f..173cd31 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -175,9 +175,6 @@ extern long kvmppc_hv_get_dirty_log(struct kvm *kvm,
- 
- extern void kvmppc_entry_trampoline(void);
- extern void kvmppc_hv_entry_trampoline(void);
--extern void kvmppc_load_up_fpu(void);
--extern void kvmppc_load_up_altivec(void);
--extern void kvmppc_load_up_vsx(void);
- extern u32 kvmppc_alignment_dsisr(struct kvm_vcpu *vcpu, unsigned int inst);
- extern ulong kvmppc_alignment_dar(struct kvm_vcpu *vcpu, unsigned int inst);
- extern int kvmppc_h_pr(struct kvm_vcpu *vcpu, unsigned long cmd);
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 2be5618..91a6b74 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -25,10 +25,8 @@ static inline void save_tar(struct thread_struct *prev)
- static inline void save_tar(struct thread_struct *prev) {}
- #endif
- 
--extern void load_up_fpu(void);
- extern void enable_kernel_fp(void);
- extern void enable_kernel_altivec(void);
--extern void load_up_altivec(struct task_struct *);
- extern int emulate_altivec(struct pt_regs *);
- extern void __giveup_vsx(struct task_struct *);
- extern void giveup_vsx(struct task_struct *);
-diff --git a/arch/powerpc/kvm/book3s_exports.c b/arch/powerpc/kvm/book3s_exports.c
-index 7057a02..7ba5f78 100644
---- a/arch/powerpc/kvm/book3s_exports.c
-+++ b/arch/powerpc/kvm/book3s_exports.c
-@@ -24,9 +24,5 @@
- EXPORT_SYMBOL_GPL(kvmppc_hv_entry_trampoline);
- #else
- EXPORT_SYMBOL_GPL(kvmppc_entry_trampoline);
--EXPORT_SYMBOL_GPL(kvmppc_load_up_fpu);
--#ifdef CONFIG_ALTIVEC
--EXPORT_SYMBOL_GPL(kvmppc_load_up_altivec);
--#endif
- #endif
- 
 diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index c0b48f96..3c52b08 100644
+index 90be91c..5eae919 100644
 --- a/arch/powerpc/kvm/book3s_pr.c
 +++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -586,7 +586,8 @@ static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
+@@ -462,16 +462,16 @@ void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr)
+ 		 * both the traditional FP registers and the added VSX
+ 		 * registers into thread.fp_state.fpr[].
+ 		 */
+-		if (current->thread.regs->msr & MSR_FP)
++		if (t->regs->msr & MSR_FP)
+ 			giveup_fpu(current);
+-		vcpu->arch.fp = t->fp_state;
++		t->fp_save_area = NULL;
+ 	}
+ 
+ #ifdef CONFIG_ALTIVEC
+ 	if (msr & MSR_VEC) {
+ 		if (current->thread.regs->msr & MSR_VEC)
+ 			giveup_altivec(current);
+-		vcpu->arch.vr = t->vr_state;
++		t->vr_save_area = NULL;
+ 	}
  #endif
- 		t->fp_state.fpscr = vcpu->arch.fpscr;
- 		t->fpexc_mode = 0;
--		kvmppc_load_up_fpu();
-+		enable_kernel_fp();
-+		load_fp_state(&t->fp_state);
+ 
+@@ -556,22 +556,20 @@ static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
+ #endif
+ 
+ 	if (msr & MSR_FP) {
+-		t->fp_state = vcpu->arch.fp;
+-		t->fpexc_mode = 0;
+ 		enable_kernel_fp();
+-		load_fp_state(&t->fp_state);
++		load_fp_state(&vcpu->arch.fp);
++		t->fp_save_area = &vcpu->arch.fp;
  	}
  
  	if (msr & MSR_VEC) {
-@@ -594,7 +595,8 @@ static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
- 		memcpy(t->vr_state.vr, vcpu->arch.vr, sizeof(vcpu->arch.vr));
- 		t->vr_state.vscr = vcpu->arch.vscr;
- 		t->vrsave = -1;
--		kvmppc_load_up_altivec();
-+		enable_kernel_altivec();
-+		load_vr_state(&t->vr_state);
+ #ifdef CONFIG_ALTIVEC
+-		t->vr_state = vcpu->arch.vr;
+-		t->vrsave = -1;
+ 		enable_kernel_altivec();
+-		load_vr_state(&t->vr_state);
++		load_vr_state(&vcpu->arch.vr);
++		t->vr_save_area = &vcpu->arch.vr;
  #endif
  	}
  
-@@ -617,10 +619,14 @@ static void kvmppc_handle_lost_ext(struct kvm_vcpu *vcpu)
- 	if (!lost_ext)
- 		return;
+-	current->thread.regs->msr |= msr;
++	t->regs->msr |= msr;
+ 	vcpu->arch.guest_owned_ext |= msr;
+ 	kvmppc_recalc_shadow_msr(vcpu);
  
--	if (lost_ext & MSR_FP)
--		kvmppc_load_up_fpu();
--	if (lost_ext & MSR_VEC)
--		kvmppc_load_up_altivec();
-+	if (lost_ext & MSR_FP) {
-+		enable_kernel_fp();
-+		load_fp_state(&current->thread.fp_state);
-+	}
-+	if (lost_ext & MSR_VEC) {
-+		enable_kernel_altivec();
-+		load_vr_state(&current->thread.vr_state);
-+	}
+@@ -592,11 +590,11 @@ static void kvmppc_handle_lost_ext(struct kvm_vcpu *vcpu)
+ 
+ 	if (lost_ext & MSR_FP) {
+ 		enable_kernel_fp();
+-		load_fp_state(&current->thread.fp_state);
++		load_fp_state(&vcpu->arch.fp);
+ 	}
+ 	if (lost_ext & MSR_VEC) {
+ 		enable_kernel_altivec();
+-		load_vr_state(&current->thread.vr_state);
++		load_vr_state(&vcpu->arch.vr);
+ 	}
  	current->thread.regs->msr |= lost_ext;
  }
- 
-diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3s_rmhandlers.S
-index 8f7633e..7e8bb58 100644
---- a/arch/powerpc/kvm/book3s_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_rmhandlers.S
-@@ -188,51 +188,4 @@ _GLOBAL(kvmppc_entry_trampoline)
- 	mtsrr1	r6
- 	RFI
- 
--#if defined(CONFIG_PPC_BOOK3S_32)
--#define STACK_LR	INT_FRAME_SIZE+4
--
--/* load_up_xxx have to run with MSR_DR=0 on Book3S_32 */
--#define MSR_EXT_START						\
--	PPC_STL	r20, _NIP(r1);					\
--	mfmsr	r20;						\
--	LOAD_REG_IMMEDIATE(r3, MSR_DR|MSR_EE);			\
--	andc	r3,r20,r3;		/* Disable DR,EE */	\
--	mtmsr	r3;						\
--	sync
--
--#define MSR_EXT_END						\
--	mtmsr	r20;			/* Enable DR,EE */	\
--	sync;							\
--	PPC_LL	r20, _NIP(r1)
--
--#elif defined(CONFIG_PPC_BOOK3S_64)
--#define STACK_LR	_LINK
--#define MSR_EXT_START
--#define MSR_EXT_END
+@@ -1067,17 +1065,9 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ {
+ 	int ret;
+-	struct thread_fp_state fp;
+-	int fpexc_mode;
+ #ifdef CONFIG_ALTIVEC
+-	struct thread_vr_state vr;
+ 	unsigned long uninitialized_var(vrsave);
+-	int used_vr;
+ #endif
+-#ifdef CONFIG_VSX
+-	int used_vsr;
 -#endif
+-	ulong ext_msr;
+ 
+ 	/* Check if we can run the vcpu at all */
+ 	if (!vcpu->arch.sane) {
+@@ -1099,33 +1089,22 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 		goto out;
+ 	}
+ 
+-	/* Save FPU state in stack */
++	/* Save FPU state in thread_struct */
+ 	if (current->thread.regs->msr & MSR_FP)
+ 		giveup_fpu(current);
+-	fp = current->thread.fp_state;
+-	fpexc_mode = current->thread.fpexc_mode;
+ 
+ #ifdef CONFIG_ALTIVEC
+-	/* Save Altivec state in stack */
+-	used_vr = current->thread.used_vr;
+-	if (used_vr) {
+-		if (current->thread.regs->msr & MSR_VEC)
+-			giveup_altivec(current);
+-		vr = current->thread.vr_state;
+-		vrsave = current->thread.vrsave;
+-	}
++	/* Save Altivec state in thread_struct */
++	if (current->thread.regs->msr & MSR_VEC)
++		giveup_altivec(current);
+ #endif
+ 
+ #ifdef CONFIG_VSX
+-	/* Save VSX state in stack */
+-	used_vsr = current->thread.used_vsr;
+-	if (used_vsr && (current->thread.regs->msr & MSR_VSX))
++	/* Save VSX state in thread_struct */
++	if (current->thread.regs->msr & MSR_VSX)
+ 		__giveup_vsx(current);
+ #endif
+ 
+-	/* Remember the MSR with disabled extensions */
+-	ext_msr = current->thread.regs->msr;
 -
--/*
-- * Activate current's external feature (FPU/Altivec/VSX)
-- */
--#define define_load_up(what) 					\
--								\
--_GLOBAL(kvmppc_load_up_ ## what);				\
--	PPC_STLU r1, -INT_FRAME_SIZE(r1);			\
--	mflr	r3;						\
--	PPC_STL	r3, STACK_LR(r1);				\
--	MSR_EXT_START;						\
--								\
--	bl	FUNC(load_up_ ## what);				\
--								\
--	MSR_EXT_END;						\
--	PPC_LL	r3, STACK_LR(r1);				\
--	mtlr	r3;						\
--	addi	r1, r1, INT_FRAME_SIZE;				\
--	blr
+ 	/* Preload FPU if it's enabled */
+ 	if (vcpu->arch.shared->msr & MSR_FP)
+ 		kvmppc_handle_ext(vcpu, BOOK3S_INTERRUPT_FP_UNAVAIL, MSR_FP);
+@@ -1140,25 +1119,6 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 	/* Make sure we save the guest FPU/Altivec/VSX state */
+ 	kvmppc_giveup_ext(vcpu, MSR_FP | MSR_VEC | MSR_VSX);
+ 
+-	current->thread.regs->msr = ext_msr;
 -
--define_load_up(fpu)
+-	/* Restore FPU/VSX state from stack */
+-	current->thread.fp_state = fp;
+-	current->thread.fpexc_mode = fpexc_mode;
+-
 -#ifdef CONFIG_ALTIVEC
--define_load_up(altivec)
+-	/* Restore Altivec state from stack */
+-	if (used_vr && current->thread.used_vr) {
+-		current->thread.vr_state = vr;
+-		current->thread.vrsave = vrsave;
+-	}
+-	current->thread.used_vr = used_vr;
 -#endif
 -
- #include "book3s_segment.S"
+-#ifdef CONFIG_VSX
+-	current->thread.used_vsr = used_vsr;
+-#endif
+-
+ out:
+ 	vcpu->mode = OUTSIDE_GUEST_MODE;
+ 	return ret;
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 4998a65..34ae14e 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -655,10 +655,6 @@ int kvmppc_core_check_requests(struct kvm_vcpu *vcpu)
+ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ {
+ 	int ret, s;
+-#ifdef CONFIG_PPC_FPU
+-	struct thread_fp_state fp;
+-	int fpexc_mode;
+-#endif
+ 
+ 	if (!vcpu->arch.sane) {
+ 		kvm_run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
+@@ -676,11 +672,6 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ #ifdef CONFIG_PPC_FPU
+ 	/* Save userspace FPU state in stack */
+ 	enable_kernel_fp();
+-	fp = current->thread.fp_state;
+-	fpexc_mode = current->thread.fpexc_mode;
+-
+-	/* Restore guest FPU state to thread */
+-	current->thread.fp_state = vcpu->arch.fp;
+ 
+ 	/*
+ 	 * Since we can't trap on MSR_FP in GS-mode, we consider the guest
+@@ -704,13 +695,6 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 	kvmppc_save_guest_fp(vcpu);
+ 
+ 	vcpu->fpu_active = 0;
+-
+-	/* Save guest FPU state from thread */
+-	vcpu->arch.fp = current->thread.fp_state;
+-
+-	/* Restore userspace FPU state from stack */
+-	current->thread.fp_state = fp;
+-	current->thread.fpexc_mode = fpexc_mode;
+ #endif
+ 
+ out:
 diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
-index 5fd1ba6..7ffb699 100644
+index 7ffb699..4aab5cf 100644
 --- a/arch/powerpc/kvm/booke.h
 +++ b/arch/powerpc/kvm/booke.h
-@@ -112,7 +112,8 @@ static inline void kvmppc_load_guest_fp(struct kvm_vcpu *vcpu)
- {
+@@ -113,7 +113,8 @@ static inline void kvmppc_load_guest_fp(struct kvm_vcpu *vcpu)
  #ifdef CONFIG_PPC_FPU
  	if (vcpu->fpu_active && !(current->thread.regs->msr & MSR_FP)) {
--		load_up_fpu();
-+		enable_kernel_fp();
-+		load_fp_state(&current->thread.fp_state);
+ 		enable_kernel_fp();
+-		load_fp_state(&current->thread.fp_state);
++		load_fp_state(&vcpu->arch.fp);
++		current->thread.fp_save_area = &vcpu->arch.fp;
  		current->thread.regs->msr |= MSR_FP;
  	}
  #endif
+@@ -128,6 +129,7 @@ static inline void kvmppc_save_guest_fp(struct kvm_vcpu *vcpu)
+ #ifdef CONFIG_PPC_FPU
+ 	if (vcpu->fpu_active && (current->thread.regs->msr & MSR_FP))
+ 		giveup_fpu(current);
++	current->thread.fp_save_area = NULL;
+ #endif
+ }
+ #endif /* __KVM_BOOKE_H__ */
 -- 
 1.8.4.rc3
