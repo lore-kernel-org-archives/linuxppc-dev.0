@@ -1,38 +1,28 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CB1A92C012A
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Sep 2013 13:53:48 +1000 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 10 Sep 2013 13:42:12 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D6D8B2CE8054
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Sep 2013 13:53:43 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8A3bM0h63570018
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Sep 2013 13:37:22 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r8A3rg9q005672
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Sep 2013 13:53:43 +1000
-Message-ID: <522E9793.7060003@linux.vnet.ibm.com>
-Date: Tue, 10 Sep 2013 09:22:51 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <B45475@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BBB5C2C0129
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 15:54:32 +1000 (EST)
+Received: from mail58-ch1 (localhost [127.0.0.1])	by mail58-ch1-R.bigfish.com
+ (Postfix) with ESMTP id DB2CA4600FD	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 10 Sep 2013 05:54:26 +0000 (UTC)
+Received: from CH1EHSMHS012.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.240])	by mail58-ch1.bigfish.com (Postfix) with ESMTP id
+ 29B863C0043
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 05:54:25 +0000 (UTC)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/p1010rdb:update phy node in dts
+Date: Tue, 10 Sep 2013 13:50:43 +0800
+Message-ID: <1378792243-27962-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH V2 0/6] perf: New conditional branch filter
-References: <1377836690-32710-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1378778772.25578.1.camel@concordia>
-In-Reply-To: <1378778772.25578.1.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: sukadev@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- eranian@google.com, acme@redhat.com, linuxppc-dev@ozlabs.org,
- Michael Neuling <michael.neuling@au1.ibm.com>
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>,
+ Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,33 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/10/2013 07:36 AM, Michael Ellerman wrote:
-> On Fri, 2013-08-30 at 09:54 +0530, Anshuman Khandual wrote:
->> 	This patchset is the re-spin of the original branch stack sampling
->> patchset which introduced new PERF_SAMPLE_BRANCH_COND filter. This patchset
->> also enables SW based branch filtering support for PPC64 platforms which have
->> branch stack sampling support. With this new enablement, the branch filter support
->> for PPC64 platforms have been extended to include all these combinations discussed
->> below with a sample test application program.
-> 
-> ...
-> 
->> Mixed filters
->> -------------
->> (6) perf record -e branch-misses:u -j any_call,any_ret ./cprog
->> Error:
->> The perf.data file has no samples!
->>
->> NOTE: As expected. The HW filters all the branches which are calls and SW tries to find return
->> branches in that given set. Both the filters are mutually exclussive, so obviously no samples
->> found in the end profile.
-> 
-> The semantics of multiple filters is not clear to me. It could be an OR,
-> or an AND. You have implemented AND, does that match existing behaviour
-> on x86 for example?
+Update phy node according to new P1010RDB-PB board.
 
-I believe it does match. X86 code drops the branch records (originally captured
-in the LBR) while applying the SW filters.
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+ arch/powerpc/boot/dts/p1010rdb.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Regards
-Anshuman
+diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi b/arch/powerpc/boot/dts/p1010rdb.dtsi
+index 7fc3402..8c675bf 100644
+--- a/arch/powerpc/boot/dts/p1010rdb.dtsi
++++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
+@@ -199,7 +199,7 @@
+ 
+ 	mdio@24000 {
+ 		phy0: ethernet-phy@0 {
+-			interrupts = <3 1 0 0>;
++			interrupts = <0 1 0 0>;
+ 			reg = <0x1>;
+ 		};
+ 
+@@ -209,7 +209,7 @@
+ 		};
+ 
+ 		phy2: ethernet-phy@2 {
+-			interrupts = <2 1 0 0>;
++			interrupts = <1 1 0 0>;
+ 			reg = <0x2>;
+ 		};
+ 
+-- 
+1.8.0
