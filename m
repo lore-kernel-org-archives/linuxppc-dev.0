@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 497402C04C7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 08:03:48 +1000 (EST)
-Message-ID: <1378850610.4121.29.camel@pasglop>
-Subject: Re: [PATCH] powerpc: Export cpu_to_chip_id() to fix build error
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Date: Wed, 11 Sep 2013 08:03:30 +1000
-In-Reply-To: <1378777076-4699-1-git-send-email-linux@roeck-us.net>
-References: <1378777076-4699-1-git-send-email-linux@roeck-us.net>
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 600B32C0103
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 08:25:51 +1000 (EST)
+Message-ID: <1378851925.12204.362.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/7] powerpc/mpc85xx: Fix EDAC address capture
+From: Scott Wood <scottwood@freescale.com>
+To: York Sun <yorksun@freescale.com>
+Date: Tue, 10 Sep 2013 17:25:25 -0500
+In-Reply-To: <1378482199-10581-1-git-send-email-yorksun@freescale.com>
+References: <1378482199-10581-1-git-send-email-yorksun@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Shivaprasad G Bhat <sbhat@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-09-09 at 18:37 -0700, Guenter Roeck wrote:
-> powerpc allmodconfig build fails with:
+On Fri, 2013-09-06 at 08:43 -0700, York Sun wrote:
+> Extend err_addr to cover 64 bits for DDR errors.
 > 
-> ERROR: ".cpu_to_chip_id" [drivers/block/mtip32xx/mtip32xx.ko] undefined!
-> 
-> The problem was introduced with commit 15863ff3b (powerpc: Make chip-id
-> information available to userspace).
-
-Thanks, I'll send that to Linus asap.
-
-Ben.
-
-> Export the missing symbol.
-> 
-> Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-> Cc: Shivaprasad G Bhat <sbhat@linux.vnet.ibm.com>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> Signed-off-by: York Sun <yorksun@freescale.com>
+> Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
+> Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
 > ---
->  arch/powerpc/kernel/smp.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 442d8e2..8e59abc 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -611,6 +611,7 @@ int cpu_to_chip_id(int cpu)
->  	of_node_put(np);
->  	return of_get_ibm_chip_id(np);
->  }
-> +EXPORT_SYMBOL(cpu_to_chip_id);
->  
->  /* Helper routines for cpu to core mapping */
->  int cpu_core_index_of_thread(int cpu)
+>  drivers/edac/mpc85xx_edac.c |   10 +++++++---
+>  drivers/edac/mpc85xx_edac.h |    1 +
+>  2 files changed, 8 insertions(+), 3 deletions(-)
+
+EDAC patches should go via the linux-edac list and maintainer.
+
+BTW, were those "reviewed-by" and "tested-by" added by Andy manually, or
+are they from gerrit?  If the latter, please strip them before sending
+upstream.
+
+-Scott
