@@ -1,22 +1,16 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pd0-x22b.google.com (mail-pd0-x22b.google.com
- [IPv6:2607:f8b0:400e:c02::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8FC1B2C0116
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 11:38:11 +1000 (EST)
-Received: by mail-pd0-f171.google.com with SMTP id g10so6932833pdj.16
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Sep 2013 18:38:09 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-From: Guenter Roeck <linux@roeck-us.net>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Export cpu_to_chip_id() to fix build error
-Date: Mon,  9 Sep 2013 18:37:56 -0700
-Message-Id: <1378777076-4699-1-git-send-email-linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- Shivaprasad G Bhat <sbhat@linux.vnet.ibm.com>,
- Guenter Roeck <linux@roeck-us.net>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1378778772.25578.1.camel@concordia>
+Subject: Re: [PATCH V2 0/6] perf: New conditional branch filter
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Tue, 10 Sep 2013 12:06:12 +1000
+In-Reply-To: <1377836690-32710-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1377836690-32710-1-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: sukadev@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ eranian@google.com, acme@redhat.com, linuxppc-dev@ozlabs.org,
+ Michael Neuling <michael.neuling@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc allmodconfig build fails with:
+On Fri, 2013-08-30 at 09:54 +0530, Anshuman Khandual wrote:
+> 	This patchset is the re-spin of the original branch stack sampling
+> patchset which introduced new PERF_SAMPLE_BRANCH_COND filter. This patchset
+> also enables SW based branch filtering support for PPC64 platforms which have
+> branch stack sampling support. With this new enablement, the branch filter support
+> for PPC64 platforms have been extended to include all these combinations discussed
+> below with a sample test application program.
 
-ERROR: ".cpu_to_chip_id" [drivers/block/mtip32xx/mtip32xx.ko] undefined!
+...
 
-The problem was introduced with commit 15863ff3b (powerpc: Make chip-id
-information available to userspace).
+> Mixed filters
+> -------------
+> (6) perf record -e branch-misses:u -j any_call,any_ret ./cprog
+> Error:
+> The perf.data file has no samples!
+> 
+> NOTE: As expected. The HW filters all the branches which are calls and SW tries to find return
+> branches in that given set. Both the filters are mutually exclussive, so obviously no samples
+> found in the end profile.
 
-Export the missing symbol.
+The semantics of multiple filters is not clear to me. It could be an OR,
+or an AND. You have implemented AND, does that match existing behaviour
+on x86 for example?
 
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Cc: Shivaprasad G Bhat <sbhat@linux.vnet.ibm.com>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
- arch/powerpc/kernel/smp.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 442d8e2..8e59abc 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -611,6 +611,7 @@ int cpu_to_chip_id(int cpu)
- 	of_node_put(np);
- 	return of_get_ibm_chip_id(np);
- }
-+EXPORT_SYMBOL(cpu_to_chip_id);
- 
- /* Helper routines for cpu to core mapping */
- int cpu_core_index_of_thread(int cpu)
--- 
-1.7.9.7
+cheers
