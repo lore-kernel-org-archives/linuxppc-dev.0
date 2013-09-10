@@ -1,19 +1,19 @@
 Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 79C182C04A8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 08:26:24 +1000 (EST)
-Message-ID: <1378851975.12204.363.camel@snotra.buserror.net>
-Subject: Re: [PATCH 3/7] i2c/rtc-ds3232: Fix irq for probing
+ by ozlabs.org (Postfix) with ESMTPS id 863902C0102
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 08:31:20 +1000 (EST)
+Message-ID: <1378852272.12204.366.camel@snotra.buserror.net>
+Subject: Re: [PATCH 7/7] powerpc/b4860emu: Add device tree file for b4860emu
 From: Scott Wood <scottwood@freescale.com>
 To: York Sun <yorksun@freescale.com>
-Date: Tue, 10 Sep 2013 17:26:15 -0500
-In-Reply-To: <1378482199-10581-3-git-send-email-yorksun@freescale.com>
+Date: Tue, 10 Sep 2013 17:31:12 -0500
+In-Reply-To: <1378482199-10581-7-git-send-email-yorksun@freescale.com>
 References: <1378482199-10581-1-git-send-email-yorksun@freescale.com>
- <1378482199-10581-3-git-send-email-yorksun@freescale.com>
+ <1378482199-10581-7-git-send-email-yorksun@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -27,20 +27,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, 2013-09-06 at 08:43 -0700, York Sun wrote:
-> Driver shouldn't request irq when irq = 0. It is returned from parsing
-> device tree. 0 means no interrupt.
+> B4860EMU is a emualtor target with minimum peripherals. It is based on
+> B4860QDS and trimmed down most peripherals due to either not modeled or
+> lack of board level connections. The main purpose of this minimum dts is
+> to speed up booting on emulator.
 > 
 > Signed-off-by: York Sun <yorksun@freescale.com>
-> Reviewed-by: Zang Tiefei-R61911 <tie-fei.zang@freescale.com>
+> Reviewed-by: Wood Scott-B07421 <scottwood@freescale.com>
 > Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
 > Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
-> ---
->  drivers/rtc/rtc-ds3232.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 
-This should go via the i2c list and maintainer.  It's not a PPC patch at
-all.
+I did not give a reviewed-by in this context.  Please strip gerrit tags
+before posting.
 
-Please do not lump unrelated patches into a single patchset.
+> +	clockgen: global-utilities@e1000 {
+> +		compatible = "fsl,b4860-clockgen", "fsl,qoriq-clockgen-2";
+
+It's "fsl,qoriq-clockgen-2.0" now.
+
+Please be careful with copy-and-paste patches like this -- make sure
+that it's up-to-date with what you copied from.
 
 -Scott
