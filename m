@@ -1,17 +1,17 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 67BD22C00B3
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 03:12:56 +1000 (EST)
-Subject: Re: [PATCH 2/6] powerpc: Provide for giveup_fpu/altivec to save state
- in alternate location
+ by ozlabs.org (Postfix) with ESMTP id 5A7262C0090
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 04:55:07 +1000 (EST)
+Subject: Re: [PATCH 5/6] KVM: PPC: Book3S: Load/save FP/VMX/VSX state directly
+ to/from vcpu struct
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20130910102110.GC28145@iris.ozlabs.ibm.com>
-Date: Tue, 10 Sep 2013 12:12:47 -0500
-Message-Id: <675235E3-6991-4DB1-90A4-935E826F6413@suse.de>
+In-Reply-To: <20130910102221.GF28145@iris.ozlabs.ibm.com>
+Date: Tue, 10 Sep 2013 13:54:59 -0500
+Message-Id: <0F09844A-2688-46DC-996F-022818F6E97B@suse.de>
 References: <20130910102000.GA28145@iris.ozlabs.ibm.com>
- <20130910102110.GC28145@iris.ozlabs.ibm.com>
+ <20130910102221.GF28145@iris.ozlabs.ibm.com>
 To: Paul Mackerras <paulus@samba.org>
 Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,50 +24,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 10.09.2013, at 05:21, Paul Mackerras wrote:
+On 10.09.2013, at 05:22, Paul Mackerras wrote:
 
-> This provides a facility which is intended for use by KVM, where the
-> contents of the FP/VSX and VMX (Altivec) registers can be saved away
-> to somewhere other than the thread_struct when kernel code wants to
-> use floating point or VMX instructions.  This is done by providing a
-> pointer in the thread_struct to indicate where the state should be
-> saved to.  The giveup_fpu() and giveup_altivec() functions test these
-> pointers and save state to the indicated location if they are =
-non-NULL.
-> Note that the MSR_FP/VEC bits in task->thread.regs->msr are still used
-> to indicate whether the CPU register state is live, even when an
-> alternate save location is being used.
+> Now that we have the vcpu floating-point and vector state stored in
+> the same type of struct as the main kernel uses, we can load that
+> state directly from the vcpu struct instead of having extra copies
+> to/from the thread_struct.  Similarly, when the guest state needs to
+> be saved, we can have it saved it directly to the vcpu struct by
+> setting the current->thread.fp_save_area and =
+current->thread.vr_save_area
+> pointers.  That also means that we don't need to back up and restore
+> userspace's FP/vector state.  This all makes the code simpler and
+> faster.
 >=20
-> This also provides load_fp_state() and load_vr_state() functions, =
-which
-> load up FP/VSX and VMX state from memory into the CPU registers, and
-> corresponding store_fp_state() and store_vr_state() functions, which
-> store FP/VSX and VMX state into memory from the CPU registers.
+> Note that it's not necessary to save or modify =
+current->thread.fpexc_mode,
+> since nothing in KVM uses or is affected by its value.  Nor is it
+> necessary to touch used_vr or used_vsr.
 >=20
 > Signed-off-by: Paul Mackerras <paulus@samba.org>
 > ---
-> arch/powerpc/include/asm/processor.h |  7 +++++++
-> arch/powerpc/kernel/asm-offsets.c    |  2 ++
-> arch/powerpc/kernel/fpu.S            | 25 ++++++++++++++++++++++++-
-> arch/powerpc/kernel/ppc_ksyms.c      |  4 ++++
-> arch/powerpc/kernel/process.c        |  7 +++++++
-> arch/powerpc/kernel/vector.S         | 29 =
-+++++++++++++++++++++++++++--
-> 6 files changed, 71 insertions(+), 3 deletions(-)
+> arch/powerpc/kvm/book3s_pr.c | 72 =
+++++++++++----------------------------------
+> arch/powerpc/kvm/booke.c     | 16 ----------
+> arch/powerpc/kvm/booke.h     |  4 ++-
+> 3 files changed, 19 insertions(+), 73 deletions(-)
 >=20
-> diff --git a/arch/powerpc/include/asm/processor.h =
-b/arch/powerpc/include/asm/processor.h
-> index 92f709d..8bc9d66 100644
-> --- a/arch/powerpc/include/asm/processor.h
-> +++ b/arch/powerpc/include/asm/processor.h
-> @@ -212,6 +212,7 @@ struct thread_struct {
-> #endif
-> #endif
-> 	struct thread_fp_state	fp_state;
-> +	struct thread_fp_state	*fp_save_area;
+> diff --git a/arch/powerpc/kvm/book3s_pr.c =
+b/arch/powerpc/kvm/book3s_pr.c
+> index 90be91c..5eae919 100644
+> --- a/arch/powerpc/kvm/book3s_pr.c
+> +++ b/arch/powerpc/kvm/book3s_pr.c
+> @@ -462,16 +462,16 @@ void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, =
+ulong msr)
+> 		 * both the traditional FP registers and the added VSX
+> 		 * registers into thread.fp_state.fpr[].
+> 		 */
+> -		if (current->thread.regs->msr & MSR_FP)
+> +		if (t->regs->msr & MSR_FP)
+> 			giveup_fpu(current);
 
-Why do you need these pointers? Couldn't you handle everything you need =
-through preempt notifiers?
+If you make a second version of this call that also gets a state area as =
+parameter, you don't need the pointer in the thread struct anymore, no? =
+Or do you? Ah, you want to be able to grab the FPU for in-kernel FPU =
+using code, so it needs to be seamless.
+
+Fiar enough - pointer it is then :).
 
 
 Alex
