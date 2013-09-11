@@ -1,28 +1,27 @@
-Return-Path: <B29983@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+Return-Path: <B45475@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6B48C2C0095
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 13:24:43 +1000 (EST)
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [v3] powerpc/mpc85xx: Update the clock device tree nodes
-Date: Wed, 11 Sep 2013 03:24:35 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B15074280@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1370480811-13700-1-git-send-email-Yuantian.Tang@freescale.com>
- <20130823200827.GA29737@home.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B1503BE58@039-SN2MPN1-012.039d.mgd.msft.net>
- <1377536416.3033.18.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B1503F161@039-SN2MPN1-012.039d.mgd.msft.net>
- <1378849606.12204.359.camel@snotra.buserror.net>
-In-Reply-To: <1378849606.12204.359.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 0EFAC2C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 13:53:10 +1000 (EST)
+Received: from mail192-db9 (localhost [127.0.0.1])	by
+ mail192-db9-R.bigfish.com (Postfix) with ESMTP id D139E5000DE	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 03:53:04 +0000 (UTC)
+Received: from DB9EHSMHS027.bigfish.com (unknown [10.174.16.225])	by
+ mail192-db9.bigfish.com (Postfix) with ESMTP id 70D423C0085	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 03:53:02 +0000 (UTC)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/p1010rdb:remove interrupts of ethernet-phy in device
+ tree
+Date: Wed, 11 Sep 2013 11:49:14 +0800
+Message-ID: <1378871354-22763-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Mike Turquette <mturquette@linaro.org>
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>,
+ Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,58 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T0ssIHdpbGwgdXBkYXRlIHBlciB5b3VyIHN1Z2dlc3Rpb25zLg0KDQpUaGFua3MsDQpZdWFudGlh
-bg0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1C
-MDc0MjENCj4gU2VudDogMjAxM+W5tDnmnIgxMeaXpSDmmJ/mnJ/kuIkgNTo0Nw0KPiBUbzogVGFu
-ZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBnYWxha0BrZXJuZWwu
-Y3Jhc2hpbmcub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2
-QGxpc3RzLm96bGFicy5vcmc7IE1pa2UgVHVycXVldHRlDQo+IFN1YmplY3Q6IFJlOiBbdjNdIHBv
-d2VycGMvbXBjODV4eDogVXBkYXRlIHRoZSBjbG9jayBkZXZpY2UgdHJlZSBub2Rlcw0KPiANCj4g
-T24gTW9uLCAyMDEzLTA4LTI2IGF0IDIxOjQ5IC0wNTAwLCBUYW5nIFl1YW50aWFuLUIyOTk4MyB3
-cm90ZToNCj4gPiA+ID4gPiA+ICsJCX07DQo+ID4gPiA+ID4gPiArCQlwbGwxOiBwbGwxQDgyMCB7
-DQo+ID4gPiA+ID4gPiArCQkJI2Nsb2NrLWNlbGxzID0gPDE+Ow0KPiA+ID4gPiA+ID4gKwkJCXJl
-ZyA9IDwweDgyMD47DQo+ID4gPiA+ID4gPiArCQkJY29tcGF0aWJsZSA9ICJmc2wsY29yZS1wbGwt
-Y2xvY2siOw0KPiA+ID4gPiA+ID4gKwkJCWNsb2NrcyA9IDwmY2xvY2tnZW4+Ow0KPiA+ID4gPiA+
-ID4gKwkJCWNsb2NrLW91dHB1dC1uYW1lcyA9ICJwbGwxIiwgInBsbDEtZGl2MiIsICJwbGwxLQ0K
-PiA+ID4gZGl2NCI7DQo+ID4gPiA+ID4gPiArCQl9Ow0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gUGxl
-YXNlIGxlYXZlIGEgYmxhbmsgbGluZSBiZXR3ZWVuIHByb3BlcnRpZXMgYW5kIG5vZGVzLCBhbmQN
-Cj4gPiA+ID4gPiBiZXR3ZWVuDQo+ID4gPiBub2Rlcy4NCj4gPiA+ID4gPg0KPiA+ID4gPiBPSywg
-d2lsbCBhZGQuDQo+ID4gPiA+DQo+ID4gPiA+ID4gV2hhdCBkb2VzIHJlZyByZXByZXNlbnQ/ICBX
-aGVyZSBpcyB0aGUgYmluZGluZyBmb3IgdGhpcz8NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFRoZSBj
-b21wYXRpYmxlIGlzIHRvbyB2YWd1ZS4NCj4gPiA+ID4gUmVnIGlzIHJlZ2lzdGVyIG9mZnNldC4N
-Cj4gPiA+DQo+ID4gPiBXaXRoIG5vIHNpemU/DQo+ID4NCj4gPiBObyBzaXplIGlzIG5lZWRlZC4N
-Cj4gDQo+IFllcywgaXQgaXMuICBSZWdpc3RlciBibG9ja3MgaGF2ZSBzaXplIC0tIGV2ZW4gaWYg
-aXQncyBqdXN0IGEgc2luZ2xlDQo+IHJlZ2lzdGVyLg0KPiANCj4gPiA+ID4gSXQgaXMgdG9vIGxh
-dGVyIHRvIGNoYW5nZSBzaW5jZSB0aGUgY2xvY2sgZHJpdmVyIGlzIG1lcmdlZCBmb3INCj4gPiA+
-ID4gbW9udGhzIGFsdGhvdWdoIEkgc2VudCB0aGlzIHBhdGNoIGZpcnN0Lg0KPiA+ID4NCj4gPiA+
-IEl0IHNob3VsZCBub3QgaGF2ZSBnb25lIGluIHdpdGhvdXQgYW4gYXBwcm92ZWQgYmluZGluZy4g
-IEl0IHNlZW1zIGl0DQo+ID4gPiB3ZW50IGluIHZpYSBNaWtlIFR1cnF1ZXR0ZSAod2h5IGlzIGEg
-bm9uLUFSTS1zcGVjaWZpYyB0cmVlIHVzaW5nDQo+ID4gPiBsaW51eC1hcm0tIGtlcm5lbCBhcyBp
-dHMgbGlzdCwgQlRXPykuICBObyBhY2sgZnJvbSBCZW4sIEt1bWFyLCBvciBtZQ0KPiA+ID4gaXMg
-c2hvd24gaW4gdGhlIGNvbW1pdC4NCj4gPiBUaGUgTGludXggY29tbW9uIGNsb2NrIGZyYW1ld29y
-ayBpcyBub3QgQVJNIHNwZWNpZmljLiBBbnkgb3RoZXIgYXJjaA0KPiBjYW4gdXNlIGl0Lg0KPiAN
-Cj4gU3VyZSwgaXQganVzdCBzZWVtZWQgYW4gb2RkIGNob2ljZSBvZiBtYWlsaW5nIGxpc3QgZm9y
-IHNvbWV0aGluZyB0aGF0DQo+IGlzbid0IEFSTS1zcGVjaWZpYy4NCj4gDQo+ID4gPiBJbiBhbnkg
-Y2FzZSwgeW91IGNhbiBwcmVzZXJ2ZSBjb21wYXRpYmlsaXR5IHdpdGggZXhpc3RpbmcgdHJlZXMN
-Cj4gPiA+IHdpdGhvdXQgdXNpbmcgdGhpcyBjb21wYXRpYmxlIGluIG5ldyB0cmVlcy4gIFRoZSBk
-cml2ZXIgY2FuIGNoZWNrDQo+ID4gPiBmb3IgYm90aCBjb21wYXRpYmxlcywgd2l0aCBhIGNvbW1l
-bnQgaW5kaWNhdGluZyB0aGF0DQo+ID4gPiAiZnNsLGNvcmUtbXV4LWNsb2NrIiBpcyBkZXByZWNh
-dGVkIGFuZCBmb3IgY29tcGF0aWJpbGl0eSBvbmx5Lg0KPiA+IEl0IGlzIHN1Yi1jbG9jayBub2Rl
-LCBpcyBpdCByZWFsbHkgbmVjZXNzYXJ5IHRvIHRoaW5rIGFib3V0DQo+IGNvbXBhdGliaWxpdHk/
-DQo+ID4gSSB0aGluayB0aGF0J3MgdGhlIG5vZGUgY2xvY2tnZW4ncyByZXNwb25zaWJpbGl0eS4N
-Cj4gDQo+IEl0IGRlc2NyaWJlcyByZWdpc3RlcnMsIHNvIHllcywgeW91IG5lZWQgdG8gY29uc2lk
-ZXIgY29tcGF0aWJpbGl0eS4gIEENCj4gY2xvY2sgcHJvdmlkZXIgaXMgbm90IHJlc3BvbnNpYmxl
-IGZvciBmaWd1cmluZyBvdXQgaG93IHRvIHByb2dyYW0gZGV2aWNlcw0KPiB0aGF0IGNvbnN1bWUg
-aXRzIGNsb2Nrcywgbm9yIHNob3VsZCBpdCBtYWtlIGFueSBhc3N1bXB0aW9ucyBhYm91dCBzdWNo
-DQo+IGRldmljZXMuDQo+IA0KPiA+ID4gPiBCZXNpZGVzLCBpdCBpcyBub3QgdG9vIGJhZCBiZWNh
-dXNlIG90aGVyIGFyY2ggdXNlIHRoZSBzaW1pbGFyIG5hbWUuDQo+ID4gPg0KPiA+ID4gSSBkb24n
-dCBmb2xsb3cuICBUaGlzIGlzIGEgc3BlY2lmaWMgRnJlZXNjYWxlIHJlZ2lzdGVyIGludGVyZmFj
-ZSwNCj4gPiA+IG5vdCBhIGdlbmVyYWwgY29uY2VwdC4NCj4gPiA+DQo+ID4gPiBJbiBhbnkgY2Fz
-ZSwgd2hpY2ggInNpbWlsYXIgbmFtZXMiIGFyZSB5b3UgcmVmZXJyaW5nIHRvPyAgQSBzZWFyY2gN
-Cj4gPiA+IGluIGFyY2gvYXJtL2Jvb3QvZHRzIGZvciAibXV4IiB3aXRoICJjbGsiIG9yICJjbG9j
-ayIgdHVybnMgdXANCj4gPiA+ICJhbGx3aW5uZXIsc3VuNGktYXBiMS1tdXgtY2xrIiB3aGljaCBp
-cyBtdWNoIG1vcmUgc3BlY2lmaWMgdGhhbg0KPiA+ID4gImZzbCxjb3JlLW11eC1jbG9jayIuDQo+
-ID4gT2ssIEkgd2lsbCBjaGFuZ2UgdGhlIGNvbXBhdGlibGUgc3RyaW5nLg0KPiA+IERvIHlvdSB0
-aGluayAiZnNsLHBwYy1jb3JlLSoiIGlzIG9rPw0KPiANCj4gTm8uICBIb3cgYWJvdXQgImZzbCxx
-b3JpcS1jaGFzc2lzMS0qIiAoZm9yIGU1MDBtYy9lNTUwMCkgYW5kIGZzbCxxb3JpcS0NCj4gY2hh
-c3NpczItKiIgKGZvciBlNjUwMCk/DQo+IA0KPiAtU2NvdHQNCj4gDQoNCg==
+Since P1010RDB-PA and P1010RDB-PB boards use different external PHY
+interrupt signals.
+And actually the PHY interrupt is not used effectively with
+corresponding interrupt handler.
+So we can remove the interrupts node without side-effect to comply
+with both P1010RDB-PA and P1010RDB-PB.
+
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+ arch/powerpc/boot/dts/p1010rdb.dtsi | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi b/arch/powerpc/boot/dts/p1010rdb.dtsi
+index 7fc3402..2433ae4 100644
+--- a/arch/powerpc/boot/dts/p1010rdb.dtsi
++++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
+@@ -199,17 +199,14 @@
+ 
+ 	mdio@24000 {
+ 		phy0: ethernet-phy@0 {
+-			interrupts = <3 1 0 0>;
+ 			reg = <0x1>;
+ 		};
+ 
+ 		phy1: ethernet-phy@1 {
+-			interrupts = <2 1 0 0>;
+ 			reg = <0x0>;
+ 		};
+ 
+ 		phy2: ethernet-phy@2 {
+-			interrupts = <2 1 0 0>;
+ 			reg = <0x2>;
+ 		};
+ 
+-- 
+1.8.0
