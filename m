@@ -1,23 +1,41 @@
-Return-Path: <B40534@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9DFFC2C03C6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 16:00:49 +1000 (EST)
-From: Dongsheng Wang <dongsheng.wang@freescale.com>
-To: <scottwood@freescale.com>
-Subject: [PATCH v3 3/4] powerpc/85xx: add hardware automatically enter pw20
- state
-Date: Wed, 11 Sep 2013 13:56:43 +0800
-Message-ID: <1378879004-2446-3-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3C9972C010A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 16:36:11 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 11 Sep 2013 16:28:33 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 506B52BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 16:35:54 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8B6ZhtF3736000
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 16:35:43 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8B6ZrXv017169
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 16:35:54 +1000
+Message-ID: <52300F59.3070605@linux.vnet.ibm.com>
+Date: Wed, 11 Sep 2013 12:06:09 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: powerpc allmodconfig build broken due to commit 15863ff3b
+ (powerpc: Make chip-id information available to userspace)
+References: <522D163E.80106@roeck-us.net> <522E5FD5.40603@micron.com>
+ <1378850569.4121.28.camel@pasglop> <20130910225029.GA26981@roeck-us.net>
+In-Reply-To: <20130910225029.GA26981@roeck-us.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Benjamin Herrenschmidt <benh@au1.ibm.com>,
+ Asai Thambi S P <asamymuthupa@micron.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Shivaprasad G Bhat <sbhat@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,77 +45,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Dongsheng <dongsheng.wang@freescale.com>
+On 09/11/2013 04:20 AM, Guenter Roeck wrote:
+> On Wed, Sep 11, 2013 at 08:02:49AM +1000, Benjamin Herrenschmidt wrote:
+>> On Mon, 2013-09-09 at 16:55 -0700, Asai Thambi S P wrote:
+>>> On 09/08/2013 5:28 PM, Guenter Roeck wrote:
+>>>> Hi all,
+>>>>
 
-Using hardware features make core automatically enter PW20 state.
-Set a TB count to hardware, the effective count begins when PW10
-is entered. When the effective period has expired, the core will
-proceed from PW10 to PW20 if no exit conditions have occurred during
-the period.
+Guenter, Ben,
 
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
----
-*v3:
-Assembly code instead of C code.
+Sorry for the inconvenience. I never realized my patch could break somewhere :-(
 
-*v2:
-Remove:
-delete setup_idle_hw_governor function.
-delete "Fix erratum" for rev1.
+Thanks you very much for identifying and fixing this issue. Other patch looks 
+good to me.
 
-Move:
-move setup_* into __setup/restore_cpu_e6500.
+-Vasant
 
- arch/powerpc/kernel/cpu_setup_fsl_booke.S | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
 
-diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-index 3c03c109..7389d49 100644
---- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-+++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-@@ -54,6 +54,27 @@ _GLOBAL(__e500_dcache_setup)
- 	blr
-
- /*
-+ * FIXME - We don't know, what time should we let the core into PW20 state.
-+ * because we don't know the current state of the cpu load. And threads are
-+ * independent, so we can not know the state of different thread has been
-+ * idle.
-+ */
-+#define PW20_WAIT_IDLE_BIT		50 /* 1ms, TB frequency is 41.66MHZ */
-+_GLOBAL(setup_pw20_idle)
-+	mfspr	r3, SPRN_PWRMGTCR0
-+
-+	/* Set PW20_WAIT bit, enable pw20 state*/
-+	ori	r3, r3, PWRMGTCR0_PW20_WAIT
-+	li	r4, PW20_WAIT_IDLE_BIT
-+
-+	/* Set Automatic PW20 Core Idle Count */
-+	rlwimi	r3, r4, PWRMGTCR0_PW20_ENT_SHIFT, PWRMGTCR0_PW20_ENT
-+
-+	mtspr	SPRN_PWRMGTCR0, r3
-+
-+	blr
-+
-+/*
-  * FIXME - We don't know the AltiVec application scenarios.
-  */
- #define AV_WAIT_IDLE_BIT		50 /* 1ms, TB frequency is 41.66MHZ */
-@@ -76,6 +97,7 @@ _GLOBAL(__setup_cpu_e6500)
- #ifdef CONFIG_PPC64
- 	bl	.setup_altivec_ivors
- #endif
-+	bl	.setup_pw20_idle
- 	bl	.setup_altivec_idle
- 	bl	__setup_cpu_e5500
- 	mtlr	r6
-@@ -138,6 +160,7 @@ _GLOBAL(__setup_cpu_e5500)
- _GLOBAL(__restore_cpu_e6500)
- 	mflr	r5
- 	bl	.setup_altivec_ivors
-+	bl	.setup_pw20_idle
- 	bl	.setup_altivec_idle
- 	bl	__restore_cpu_e5500
- 	mtlr	r5
---
-1.8.0
+>>>> powerpc allmodconfig build on the latest upstream kernel results in:
+>>>>
+>>>> ERROR: ".cpu_to_chip_id" [drivers/block/mtip32xx/mtip32xx.ko] undefined!
+>>>>
+>>>> This is due to commit 15863ff3b (powerpc: Make chip-id information
+>>>> available to userspace).
+>>>> Not surprising, as cpu_to_chip_id() is not exported.
+>>>>
+>>> Apart from the above error, I have a concern on the patch, purely based on the commit message.
+>>> (to be honest, I am not familiar with the ppc architecture)
+>>>
+>>> Commit message of 15863ff3b has the following text.
+>>>
+>>> ******************
+>>> So far "/sys/devices/system/cpu/cpuX/topology/physical_package_id"
+>>> was always default (-1) on ppc64 architecture.
+>>>
+>>> Now, some systems have an ibm,chip-id property in the cpu nodes in
+>>> the device tree. On these systems, we now use this information to
+>>> display physical_package_id
+>>> ******************
+>>>
+>>> Shouldn't the new definition of "topology_physical_package_id" apply only to those systems supporting ibm,chip-id property?
+>>
+>> There should be no negative side effect (appart from the missing
+>> EXPORT_SYMBOL of course). If the property is not found in the
+>> device-tree, the new function returns -1, so it should work fine on all
+>> systems.
+>>
+> Good. I submitted a patch doing just that yesterday or so.
+> Hope you'll accept it ;).
+>
+> Thanks,
+> Guenter
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
