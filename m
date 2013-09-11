@@ -1,31 +1,31 @@
 Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5EB532C040C
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 22:07:33 +1000 (EST)
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4A3182C040F
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 22:07:55 +1000 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Wed, 11 Sep 2013 17:31:08 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9C8461258043
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 17:37:29 +0530 (IST)
+ Wed, 11 Sep 2013 17:25:55 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 683451258052
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 17:37:50 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8BC9Oqd29753406
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 17:39:24 +0530
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8BC9iNR44040216
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 17:39:44 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r8BC7Oxu027962
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 17:37:25 +0530
-Subject: [PATCH 2/3] pstore: Use zlib_inflateInit2 instead of zlib_inflateInit
+ r8BC7kDD029582
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 17:37:47 +0530
+Subject: [PATCH 3/3] pstore: Remove the messages related to compression failure
 To: linuxppc-dev@ozlabs.org, tony.luck@intel.com, seiji.aguchi@hds.com,
  linux-kernel@vger.kernel.org, keescook@chromium.org
 From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Wed, 11 Sep 2013 17:37:16 +0530
-Message-ID: <20130911120710.27730.30968.stgit@aruna-ThinkPad-T420>
+Date: Wed, 11 Sep 2013 17:37:43 +0530
+Message-ID: <20130911120729.27730.7479.stgit@aruna-ThinkPad-T420>
 In-Reply-To: <20130911120639.27730.8671.stgit@aruna-ThinkPad-T420>
 References: <20130911120639.27730.8671.stgit@aruna-ThinkPad-T420>
 MIME-Version: 1.0
@@ -41,25 +41,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since zlib_deflateInit2() is used for specifying window bit during compression,
-zlib_inflateInit2() is appropriate for decompression.
+Remove the messages indicating compression failure as it will
+add to the space during panic path.
 
 Reported-by: Seiji Aguchi <seiji.aguchi@hds.com>
 Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
 ---
- fs/pstore/platform.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/pstore/platform.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
 diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
-index 4efaa75..18924c7 100644
+index 18924c7..4ad8c93 100644
 --- a/fs/pstore/platform.c
 +++ b/fs/pstore/platform.c
-@@ -168,7 +168,7 @@ static int pstore_decompress(void *in, void *out, size_t inlen, size_t outlen)
- 	int err, ret;
- 
- 	ret = -EIO;
--	err = zlib_inflateInit(&stream);
-+	err = zlib_inflateInit2(&stream, WINDOW_BITS);
- 	if (err != Z_OK)
- 		goto error;
- 
+@@ -316,10 +316,6 @@ static void pstore_dump(struct kmsg_dumper *dumper,
+ 				compressed = true;
+ 				total_len = zipped_len;
+ 			} else {
+-				pr_err("pstore: compression failed for Part %d"
+-					" returned %d\n", part, zipped_len);
+-				pr_err("pstore: Capture uncompressed"
+-					" oops/panic report of Part %d\n", part);
+ 				compressed = false;
+ 				total_len = copy_kmsg_to_buffer(hsize, len);
+ 			}
