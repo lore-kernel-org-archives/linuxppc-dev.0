@@ -1,25 +1,15 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 842C02C0128
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 02:39:28 +1000 (EST)
-Message-ID: <1378917555.12204.385.camel@snotra.buserror.net>
-Subject: Re: [RFC PATCH v2 1/1] powerpc/embedded6xx: Add support for
- Motorola/Emerson MVME5100.
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 11 Sep 2013 11:39:15 -0500
-In-Reply-To: <1378862123.3783.5.camel@pasglop>
-References: <20130905055122.F256EE07B6@canberra.localdomain>
- <1378856847.12204.380.camel@snotra.buserror.net>
- <1378862123.3783.5.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Stephen Chivers <schivers@csc.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, cproctor@csc.com
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id 50FD02C016B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 02:43:45 +1000 (EST)
+Date: Wed, 11 Sep 2013 17:50:28 +0200
+Message-Id: <201309111550.r8BFoS4G015798@localhost.localdomain>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc 8xx: Reverting commit
+ e0908085fc2391c85b85fb814ae1df377c8e0dcb which has become useless
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +19,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-09-11 at 11:15 +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-09-10 at 18:47 -0500, Scott Wood wrote:
-> 
-> > No blank line before }
-> > 
-> > > +CONFIG_CMDLINE_BOOL=y
-> > > +CONFIG_CMDLINE="console=ttyS0,9600 ip=dhcp root=/dev/nfs"
-> > 
-> > I take it there's no way to pass a command line in from whatever loader
-> > this board uses... but you could put it in the dts instead.
-> 
-> No, please don't put that in the device-tree. Somebody might want
-> different settings, this is typically what .config is for.
+The commit e0908085fc2391c85b85fb814ae1df377c8e0dcb is not needed anymore.
+The issue was because dcbst wrongly sets the store bit when causing a DTLB
+error, but this is now fixed by commit 0a2ab51ffb8dfdf51402dcfb446629648c96bc78
+which handles the buggy dcbx instructions on data page faults on the 8xx.
 
-I figured that in the defconfig it presents a barrier to getting rid of
-the board-specific defconfig, while the dts is still going to be
-per-board.  In this case the device tree is not baked into firmware so
-it's just as easy to change things in /chosen as in .config (actually
-slightly easier since you only need to rewrap the kernel rather than
-rebuild).
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
--Scott
+diff -ur linux-3.11.org/arch/powerpc/mm/pgtable.c linux-3.11/arch/powerpc/mm/pgtable.c
+--- linux-3.11.org/arch/powerpc/mm/pgtable.c	2013-09-02 22:46:10.000000000 +0200
++++ linux-3.11/arch/powerpc/mm/pgtable.c	2013-09-09 11:25:57.000000000 +0200
+@@ -32,8 +32,6 @@
+ #include <asm/tlbflush.h>
+ #include <asm/tlb.h>
+ 
+-#include "mmu_decl.h"
+-
+ static inline int is_exec_fault(void)
+ {
+ 	return current->thread.regs && TRAP(current->thread.regs) == 0x400;
+@@ -72,7 +70,7 @@
+  * support falls into the same category.
+  */
+ 
+-static pte_t set_pte_filter(pte_t pte, unsigned long addr)
++static pte_t set_pte_filter(pte_t pte)
+ {
+ 	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
+ 	if (pte_looks_normal(pte) && !(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
+@@ -81,17 +79,6 @@
+ 		if (!pg)
+ 			return pte;
+ 		if (!test_bit(PG_arch_1, &pg->flags)) {
+-#ifdef CONFIG_8xx
+-			/* On 8xx, cache control instructions (particularly
+-			 * "dcbst" from flush_dcache_icache) fault as write
+-			 * operation if there is an unpopulated TLB entry
+-			 * for the address in question. To workaround that,
+-			 * we invalidate the TLB here, thus avoiding dcbst
+-			 * misbehaviour.
+-			 */
+-			/* 8xx doesn't care about PID, size or ind args */
+-			_tlbil_va(addr, 0, 0, 0);
+-#endif /* CONFIG_8xx */
+ 			flush_dcache_icache_page(pg);
+ 			set_bit(PG_arch_1, &pg->flags);
+ 		}
+@@ -111,7 +98,7 @@
+  * as we don't have two bits to spare for _PAGE_EXEC and _PAGE_HWEXEC so
+  * instead we "filter out" the exec permission for non clean pages.
+  */
+-static pte_t set_pte_filter(pte_t pte, unsigned long addr)
++static pte_t set_pte_filter(pte_t pte)
+ {
+ 	struct page *pg;
+ 
+@@ -193,7 +180,7 @@
+ 	 * this context might not have been activated yet when this
+ 	 * is called.
+ 	 */
+-	pte = set_pte_filter(pte, addr);
++	pte = set_pte_filter(pte);
+ 
+ 	/* Perform the setting of the PTE */
+ 	__set_pte_at(mm, addr, ptep, pte, 0);
+Only in linux-3.11/arch/powerpc/mm/: pgtable.c.orig
