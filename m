@@ -1,44 +1,18 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BB1892C0627
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 12:55:19 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 11 Sep 2013 03:55:16 +0100
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id C4B73C90041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 22:55:12 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8B2tCjk48693292
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 02:55:13 GMT
-Received: from d01av05.pok.ibm.com (loopback [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r8B2t949026699
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 22:55:12 -0400
-Subject: [PATCH V3 6/6] cpuidle/ppc: Nominate new broadcast cpu on hotplug
- of the old
-To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org,
- shangw@linux.vnet.ibm.com, rjw@sisk.pl, galak@kernel.crashing.org,
- fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
- linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au,
- john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com,
- deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Wed, 11 Sep 2013 08:22:26 +0530
-Message-ID: <20130911025226.27726.71053.stgit@preeti.in.ibm.com>
-In-Reply-To: <20130911024906.27726.4735.stgit@preeti.in.ibm.com>
-References: <20130911024906.27726.4735.stgit@preeti.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B005E2C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 13:22:35 +1000 (EST)
+Message-ID: <1378869743.3783.8.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 11 Sep 2013 13:22:23 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,97 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On hotplug of the broadcast cpu, cancel the hrtimer queued to do
-broadcast and nominate a new broadcast cpu to be the first cpu in the
-broadcast mask which includes all the cpus that have notified the broadcast
-framework about entering deep idle state.
+Hi Linus !
 
-Since the new broadcast cpu is one of the cpus in deep idle, send an ipi to
-wake it up to continue the duty of broadcast. The new broadcast cpu needs to
-find out if it woke up to resume broadcast. If so it needs to restart the
-broadcast hrtimer on itself.
+Here are a handful of small powerpc fixes. A couple of section mismatches
+(always worth fixing), a missing export of a new symbol causing build
+failures of modules, a page fault deadlock fix (interestingly that
+bug has been around for a LONG time, though it seems to be more easily
+triggered by KVM) and fixing pseries default idle loop in the absence of
+the cpuidle drivers (such as during boot).
 
-Its possible that the old broadcast cpu was hotplugged out when the broadcast
-hrtimer was about to fire on it. Therefore the newly nominated broadcast cpu
-should set the broadcast hrtimer on itself to expire immediately so as to not
-miss wakeups under such scenarios.
+Cheers,
+Ben.
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
+The following changes since commit 8d7551eb1916832f2a5b27346edf24e7b2382f67:
 
- arch/powerpc/include/asm/time.h     |    1 +
- arch/powerpc/kernel/time.c          |    1 +
- drivers/cpuidle/cpuidle-ibm-power.c |   22 ++++++++++++++++++++++
- 3 files changed, 24 insertions(+)
+  Merge tag 'cris-for-3.12' of git://jni.nu/cris (2013-09-10 14:55:16 -0700)
 
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index 38341fa..3bc0205 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -31,6 +31,7 @@ struct rtc_time;
- extern void to_tm(int tim, struct rtc_time * tm);
- extern void GregorianDay(struct rtc_time *tm);
- extern void decrementer_timer_interrupt(void);
-+extern void broadcast_irq_entry(void);
- 
- extern void generic_calibrate_decr(void);
- 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 44a76de..0ac2e11 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -853,6 +853,7 @@ void decrementer_timer_interrupt(void)
- {
- 	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
- 
-+	broadcast_irq_entry();
- 	*next_tb = get_tb_or_rtc();
- 	__timer_interrupt();
- }
-diff --git a/drivers/cpuidle/cpuidle-ibm-power.c b/drivers/cpuidle/cpuidle-ibm-power.c
-index ae47a0a..580ea04 100644
---- a/drivers/cpuidle/cpuidle-ibm-power.c
-+++ b/drivers/cpuidle/cpuidle-ibm-power.c
-@@ -282,6 +282,12 @@ static int longnap_loop(struct cpuidle_device *dev,
- 	return index;
- }
- 
-+void broadcast_irq_entry(void)
-+{
-+	if (smp_processor_id() == bc_cpu)
-+		hrtimer_start(bc_hrtimer, ns_to_ktime(0), HRTIMER_MODE_REL_PINNED);
-+}
-+
- /*
-  * States for dedicated partition case.
-  */
-@@ -360,6 +366,7 @@ static int power_cpuidle_add_cpu_notifier(struct notifier_block *n,
- 			unsigned long action, void *hcpu)
- {
- 	int hotcpu = (unsigned long)hcpu;
-+	unsigned long flags;
- 	struct cpuidle_device *dev =
- 			per_cpu(cpuidle_devices, hotcpu);
- 
-@@ -372,6 +379,21 @@ static int power_cpuidle_add_cpu_notifier(struct notifier_block *n,
- 			cpuidle_resume_and_unlock();
- 			break;
- 
-+		case CPU_DYING:
-+		case CPU_DYING_FROZEN:
-+			spin_lock_irqsave(&longnap_idle_lock, flags);
-+			if (hotcpu == bc_cpu) {
-+				bc_cpu = -1;
-+				hrtimer_cancel(bc_hrtimer);
-+				if (!cpumask_empty(tick_get_broadcast_oneshot_mask())) {
-+					bc_cpu = cpumask_first(
-+							tick_get_broadcast_oneshot_mask());
-+					arch_send_tick_broadcast(cpumask_of(bc_cpu));
-+				}
-+			}
-+			spin_unlock_irqrestore(&longnap_idle_lock, flags);
-+			break;
-+
- 		case CPU_DEAD:
- 		case CPU_DEAD_FROZEN:
- 			cpuidle_pause_and_lock();
+are available in the git repository at:
+
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 363edbe2614aa90df706c0f19ccfa2a6c06af0be:
+
+  powerpc: Default arch idle could cede processor on pseries (2013-09-11 11:41:54 +1000)
+
+----------------------------------------------------------------
+Aneesh Kumar K.V (1):
+      powerpc: Fix possible deadlock on page fault
+
+Guenter Roeck (1):
+      powerpc: Export cpu_to_chip_id() to fix build error
+
+Vaidyanathan Srinivasan (1):
+      powerpc: Default arch idle could cede processor on pseries
+
+Vladimir Murzin (2):
+      powerpc: Fix section mismatch warning for prom_rtas_call
+      fbdev/ps3fb: Fix section mismatch warning for ps3fb_probe
+
+ arch/powerpc/kernel/prom_init.c        |  3 ++-
+ arch/powerpc/kernel/smp.c              |  1 +
+ arch/powerpc/mm/fault.c                | 13 ++++++++++---
+ arch/powerpc/platforms/pseries/setup.c | 31 +++++++++++++++++++++----------
+ drivers/video/ps3fb.c                  |  2 +-
+ 5 files changed, 35 insertions(+), 15 deletions(-)
