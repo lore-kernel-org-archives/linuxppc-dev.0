@@ -1,19 +1,16 @@
 Return-Path: <B40534@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7AD812C035C
+ by ozlabs.org (Postfix) with ESMTPS id 7AA712C00C9
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 16:00:44 +1000 (EST)
 From: Dongsheng Wang <dongsheng.wang@freescale.com>
 To: <scottwood@freescale.com>
-Subject: [PATCH v3 2/4] powerpc/85xx: add hardware automatically enter altivec
- idle state
-Date: Wed, 11 Sep 2013 13:56:42 +0800
-Message-ID: <1378879004-2446-2-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
+Subject: [PATCH v3 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0 define
+Date: Wed, 11 Sep 2013 13:56:41 +0800
+Message-ID: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -29,69 +26,57 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-Each core's AltiVec unit may be placed into a power savings mode
-by turning off power to the unit. Core hardware will automatically
-power down the AltiVec unit after no AltiVec instructions have
-executed in N cycles. The AltiVec power-control is triggered by hardware.
+E6500 PVR and SPRN_PWRMGTCR0 will be used in subsequent pw20/altivec
+idle patches.
 
 Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 ---
 *v3:
-Assembly code instead of C code.
+Add bit definitions for PWRMGTCR0.
 
-*v2:
-Remove:
-delete setup_idle_hw_governor function.
-delete "Fix erratum" for rev1.
+ arch/powerpc/include/asm/reg.h       | 2 ++
+ arch/powerpc/include/asm/reg_booke.h | 9 +++++++++
+ 2 files changed, 11 insertions(+)
 
-Move:
-move setup_* into __setup/restore_cpu_e6500.
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 64264bf..d4160ca 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1053,6 +1053,8 @@
+ #define PVR_8560	0x80200000
+ #define PVR_VER_E500V1	0x8020
+ #define PVR_VER_E500V2	0x8021
++#define PVR_VER_E6500	0x8040
++
+ /*
+  * For the 8xx processors, all of them report the same PVR family for
+  * the PowerPC core. The various versions of these processors must be
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index ed8f836..4a6457e 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -170,6 +170,7 @@
+ #define SPRN_L2CSR1	0x3FA	/* L2 Data Cache Control and Status Register 1 */
+ #define SPRN_DCCR	0x3FA	/* Data Cache Cacheability Register */
+ #define SPRN_ICCR	0x3FB	/* Instruction Cache Cacheability Register */
++#define SPRN_PWRMGTCR0	0x3FB	/* Power management control register 0 */
+ #define SPRN_SVR	0x3FF	/* System Version Register */
 
- arch/powerpc/kernel/cpu_setup_fsl_booke.S | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ /*
+@@ -216,6 +217,14 @@
+ #define	CCR1_DPC	0x00000100 /* Disable L1 I-Cache/D-Cache parity checking */
+ #define	CCR1_TCS	0x00000080 /* Timer Clock Select */
 
-diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-index bfb18c7..3c03c109 100644
---- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-+++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-@@ -53,11 +53,30 @@ _GLOBAL(__e500_dcache_setup)
- 	isync
- 	blr
-
-+/*
-+ * FIXME - We don't know the AltiVec application scenarios.
-+ */
-+#define AV_WAIT_IDLE_BIT		50 /* 1ms, TB frequency is 41.66MHZ */
-+_GLOBAL(setup_altivec_idle)
-+	mfspr	r3, SPRN_PWRMGTCR0
++/* Bit definitions for PWRMGTCR0. */
++#define PWRMGTCR0_PW20_WAIT		(1 << 14) /* PW20 state enable bit */
++#define PWRMGTCR0_PW20_ENT_SHIFT	8
++#define PWRMGTCR0_PW20_ENT		0x3F00
++#define PWRMGTCR0_AV_IDLE_PD_EN		(1 << 22) /* Altivec idle enable */
++#define PWRMGTCR0_AV_IDLE_CNT_SHIFT	16
++#define PWRMGTCR0_AV_IDLE_CNT		0x3F0000
 +
-+	/* Enable Altivec Idle */
-+	oris	r3, r3, PWRMGTCR0_AV_IDLE_PD_EN@h
-+	li	r4, AV_WAIT_IDLE_BIT
-+
-+	/* Set Automatic AltiVec Idle Count */
-+	rlwimi	r3, r4, PWRMGTCR0_AV_IDLE_CNT_SHIFT, PWRMGTCR0_AV_IDLE_CNT
-+
-+	mtspr	SPRN_PWRMGTCR0, r3
-+
-+	blr
-+
- _GLOBAL(__setup_cpu_e6500)
- 	mflr	r6
- #ifdef CONFIG_PPC64
- 	bl	.setup_altivec_ivors
- #endif
-+	bl	.setup_altivec_idle
- 	bl	__setup_cpu_e5500
- 	mtlr	r6
- 	blr
-@@ -119,6 +138,7 @@ _GLOBAL(__setup_cpu_e5500)
- _GLOBAL(__restore_cpu_e6500)
- 	mflr	r5
- 	bl	.setup_altivec_ivors
-+	bl	.setup_altivec_idle
- 	bl	__restore_cpu_e5500
- 	mtlr	r5
- 	blr
+ /* Bit definitions for the MCSR. */
+ #define MCSR_MCS	0x80000000 /* Machine Check Summary */
+ #define MCSR_IB		0x40000000 /* Instruction PLB Error */
 --
 1.8.0
