@@ -1,30 +1,42 @@
-Return-Path: <B21284@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 41FE42C0099
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 12:07:26 +1000 (EST)
-Received: from mail26-ch1 (localhost [127.0.0.1])	by mail26-ch1-R.bigfish.com
- (Postfix) with ESMTP id EF42C3A00B3	for <linuxppc-dev@ozlabs.org>;
- Wed, 11 Sep 2013 02:07:22 +0000 (UTC)
-Received: from CH1EHSMHS036.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.249])	by mail26-ch1.bigfish.com (Postfix) with ESMTP id
- 2414F10006A
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 02:07:21 +0000 (UTC)
-From: Hu Mingkai-B21284 <B21284@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH] powerpc/85xx: DTS - re-organize the SPI partitions
- property
-Date: Wed, 11 Sep 2013 02:07:18 +0000
-Message-ID: <CF6CBFBA8EBBB949B6E321556F6E15090A135F45@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1378454743-17637-1-git-send-email-Mingkai.Hu@freescale.com>
- <1378856005.12204.372.camel@snotra.buserror.net>
-In-Reply-To: <1378856005.12204.372.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 37A682C00EF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 12:53:38 +1000 (EST)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Wed, 11 Sep 2013 03:53:35 +0100
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 6EF49C90043
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 22:53:32 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8B2rWZJ55771228
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 02:53:32 GMT
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r8B2rUtF013655
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2013 23:53:32 -0300
+Subject: [PATCH V3 0/6] cpuidle/ppc: Enable broadcast support for deep idle
+ states
+To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org,
+ shangw@linux.vnet.ibm.com, rjw@sisk.pl, galak@kernel.crashing.org,
+ fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
+ linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au,
+ john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com,
+ deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
+ linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
+ schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Wed, 11 Sep 2013 08:20:49 +0530
+Message-ID: <20130911024906.27726.4735.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,51 +46,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIgMTEsIDIwMTMgNzozMyBBTQ0KPiBUbzog
-SHUgTWluZ2thaS1CMjEyODQNCj4gQ2M6IGxpbnV4cHBjLWRldkBvemxhYnMub3JnDQo+IFN1Ympl
-Y3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvODV4eDogRFRTIC0gcmUtb3JnYW5pemUgdGhlIFNQSSBw
-YXJ0aXRpb25zDQo+IHByb3BlcnR5DQo+IA0KPiBPbiBGcmksIDIwMTMtMDktMDYgYXQgMTY6MDUg
-KzA4MDAsIE1pbmdrYWkgSHUgd3JvdGU6DQo+ID4gUmUtb3JnYW5pemUgdGhlIFNQSSBwYXJ0aXRp
-b25zIGFuZCB1c2UgdGhlIHNhbWUgU1BJIGZsYXNoIG1lbW9yeSBtYXANCj4gPiBmb3IgbW9zdCBv
-ZiB0aGUgcGxhdGZvcm1zIHdoaWNoIGhhdmUgMTZNQiBTUEkgZmxhc2ggbW91bnRlZC4NCj4gW3Nu
-aXBdDQo+ID4gQmFzZWQgb24gJ25leHQnIGJyYW5jaCBvbiBnaXQgdHJlZToNCj4gPiBnaXQ6Ly9n
-aXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvc2NvdHR3b29kL2xpbnV4Lmdp
-dA0KPiA+DQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9ic2M5MTMxcmRiLmR0c2kgIHwgMzUg
-KysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0NCj4gLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290
-L2R0cy9jMjkzcGNpZS5kdHMgICAgIHwgMzUgKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0NCj4g
-LS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9tcGM4NTM2ZHMuZHRzaSAgIHwgMTIgKysr
-KystLS0tLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMTByZGIuZHRzaSAgICB8IDQw
-ICsrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tDQo+IC0tLS0tLS0tDQo+ID4gIGFyY2gvcG93ZXJw
-Yy9ib290L2R0cy9wMTAyMHJkYi1wYy5kdHNpIHwgMjQgKysrKystLS0tLS0tLS0tLS0tLS0NCj4g
-PiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMjByZGItcGQuZHRzICB8IDM0ICsrKysrKysrKysr
-Ky0tLS0tLS0tLS0tLS0tLQ0KPiAtLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMjBy
-ZGIuZHRzaSAgICB8IDIzICsrKystLS0tLS0tLS0tLS0tLS0NCj4gPiAgYXJjaC9wb3dlcnBjL2Jv
-b3QvZHRzL3AxMDIxbWRzLmR0cyAgICAgfCAxNyArKysrKysrLS0tLS0tLS0NCj4gPiAgYXJjaC9w
-b3dlcnBjL2Jvb3QvZHRzL3AxMDIxcmRiLXBjLmR0c2kgfCAzMiArKysrKysrKystLS0tLS0tLS0t
-LS0tLS0tLQ0KPiAtDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMTAyMmRzLmR0c2kgICAg
-IHwgMjEgKysrKysrKysrLS0tLS0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMTAy
-M3Jkcy5kdHMgICAgIHwgMTAgKystLS0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9w
-MTAyNHJkYi5kdHNpICAgIHwgNDAgKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0NCj4gLS0tLS0t
-LS0NCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3AxMDI1cmRiLmR0c2kgICAgfCAyMyArKysr
-Ky0tLS0tLS0tLS0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMjAyMHJkYi1wYy5k
-dHNpIHwgNDAgKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0NCj4gLS0tLS0tLS0NCj4gPiAgYXJj
-aC9wb3dlcnBjL2Jvb3QvZHRzL3AyMDIwcmRiLmR0cyAgICAgfCAzOCArKysrKysrKysrLS0tLS0t
-LS0tLS0tLS0tLQ0KPiAtLS0tLS0NCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3AyMDQxcmRi
-LmR0cyAgICAgfCAxMiArKysrKy0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMzA0
-MWRzLmR0cyAgICAgIHwgMTIgKysrKystLS0tLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMv
-cDQwODBkcy5kdHMgICAgICB8IDEyICsrKysrLS0tLS0NCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3Qv
-ZHRzL3A1MDIwZHMuZHRzICAgICAgfCAxMiArKysrKy0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9i
-b290L2R0cy9wNTA0MGRzLmR0cyAgICAgIHwgMTMgKysrKysrLS0tLS0NCj4gDQo+IFdoYXQgaGFw
-cGVucyB0byBleHN0aW5nIHVzZXJzIHdob3NlIGZsYXNoIGlzIGxhaWQgb3V0IHRoZSBleGlzdGlu
-ZyB3YXksDQo+IHdoZW4gdGhleSB1cGdyYWRlIHRvIHRoZXNlIGRldmljZSB0cmVlcz8NCj4gDQoN
-ClRoZSBTUEkgZmxhc2ggbGF5b3V0IHNob3VsZCBiZSBtYXBwaW5nIHRoZSBuZXcgZGV2aWNlIHRy
-ZWUuDQoNCklmIHRoZSBleGlzdGluZyBkZXZpY2UgdHJlZSBpcyB1c2VkIHRvIGRlcGxveSB0aGUg
-U1BJIGZsYXNoLCB0aGUgZm9sbG93aW5nIGlzc3Vlcw0KbXVzdCBiZSBydW4gaW50byBhcyB0aGUg
-Y29tbWl0IG1lc3NhZ2UgZGVzY3JpYmVkOg0KDQoxLiBLZXJuZWwgaW1hZ2VzIHdvdWxkIGJlIG92
-ZXJsYXBwZWQgd2l0aCBVLUJvb3QgaW1hZ2UuDQoyLiBLZXJuZWwgaW1hZ2VzIHdvdWxkIGJlIG92
-ZXJsYXBwZWQgd2l0aCBGTUFOIHVjb2RlLg0KMy4gU2F2aW5nIGVudmlyb25tZW50IHZhcmlhYmxl
-cyB3aWxsIGNyYXNoIHRoZSBrZXJuZWwgaW1hZ2UuDQoNCj4gV2UgcmVhbGx5IHNob3VsZCBub3Qg
-YmUgcHV0dGluZyBwYXJ0aXRpb24gbGF5b3V0IGluZm8gaW4gdGhlIGRldmljZSB0cmVlDQo+IHRv
-IGJlZ2luIHdpdGguLi4NCj4gDQpPSywgSSB3aWxsIHJlbW92ZSB0aGUgbGF5b3V0IGRpYWdyYW0g
-aW4gdGhlIGNvbW1pdCBtZXNzYWdlLg0KDQpUaGFua3MsDQpNaW5na2FpDQo=
+On PowerPC, when CPUs enter deep idle states, their local timers get
+switched off. An external clock device needs to programmed to wake them
+up at their next timer event.
+	On PowerPC, we do not have an external device equivalent to HPET,
+which is currently used on architectures like x86 under the same scenario.
+Instead we assign the local timer of one of the CPUs to do this job.
+
+This patchset is an attempt to hook onto the existing timer broadcast
+framework in the kernel by using the local timer of one of the CPUs to do the
+job of the external clock device.
+
+On expiry of this device, the broadcast framework today has the infrastructure
+to send ipis to all such CPUs whose local timers have expired. Hence the term
+"broadcast" and the ipi sent is called the broadcast ipi.
+
+This patch series is ported ontop of 3.11-rc7 + the cpuidle driver backend
+for power posted by Deepthi Dharwar recently.
+http://comments.gmane.org/gmane.linux.ports.ppc.embedded/63556
+
+Changes in V3:
+
+1. Fix the way in which a broadcast ipi is handled on the idling cpus. Timer
+handling on a broadcast ipi is being done now without missing out any timer
+stats generation.
+
+2. Fix a bug in the programming of the hrtimer meant to do broadcast. Program
+it to trigger at the earlier of a "broadcast period", and the next wakeup
+event. By introducing the "broadcast period" as the maximum period after
+which the broadcast hrtimer can fire, we ensure that we do not miss
+wakeups in corner cases.
+
+3. On hotplug of a broadcast cpu, trigger the hrtimer meant to do broadcast
+to fire immediately on the new broadcast cpu. This will ensure we do not miss
+doing a broadcast pending in the nearest future.
+
+4. Change the type of allocation from GFP_KERNEL to GFP_NOWAIT while
+initializing bc_hrtimer since we are in an atomic context and cannot sleep.
+
+5. Use the broadcast ipi to wakeup the newly nominated broadcast cpu on
+hotplug of the old instead of smp_call_function_single(). This is because we
+are interrupt disabled at this point and should not be using
+smp_call_function_single or its children in this context to send an ipi.
+
+6. Move GENERIC_CLOCKEVENTS_BROADCAST to arch/powerpc/Kconfig.
+
+7. Fix coding style issues.
+
+Changes in V2: https://lkml.org/lkml/2013/8/14/239
+
+1. Dynamically pick a broadcast CPU, instead of having a dedicated one.
+2. Remove the constraint of having to disable tickless idle on the broadcast
+CPU by queueing a hrtimer dedicated to do broadcast.
+
+V1 posting: https://lkml.org/lkml/2013/7/25/740.
+
+The patchset has been tested for stability in idle and during multi threaded
+ebizzy runs.
+
+Many thanks to Ben H, Frederic Weisbecker, Li Yang, Srivatsa S. Bhat and
+Vaidyanathan Srinivasan for all their comments and suggestions so far.
+
+---
+
+Preeti U Murthy (4):
+      cpuidle/ppc: Split timer_interrupt() into timer handling and interrupt handling routines
+      cpuidle/ppc: Add basic infrastructure to support the broadcast framework on ppc
+      cpuidle/ppc: Introduce the deep idle state in which the local timers stop
+      cpuidle/ppc: Nominate new broadcast cpu on hotplug of the old
+
+Srivatsa S. Bhat (2):
+      powerpc: Free up the IPI message slot of ipi call function (PPC_MSG_CALL_FUNC)
+      powerpc: Implement broadcast timer interrupt as an IPI message
+
+
+ arch/powerpc/Kconfig                    |    1 
+ arch/powerpc/include/asm/smp.h          |    3 -
+ arch/powerpc/include/asm/time.h         |    4 +
+ arch/powerpc/kernel/smp.c               |   23 +++-
+ arch/powerpc/kernel/time.c              |  143 ++++++++++++++++++++------
+ arch/powerpc/platforms/cell/interrupt.c |    2 
+ arch/powerpc/platforms/ps3/smp.c        |    2 
+ drivers/cpuidle/cpuidle-ibm-power.c     |  172 +++++++++++++++++++++++++++++++
+ scripts/kconfig/streamline_config.pl    |    0 
+ 9 files changed, 307 insertions(+), 43 deletions(-)
+ mode change 100644 => 100755 scripts/kconfig/streamline_config.pl
