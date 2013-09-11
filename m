@@ -1,14 +1,27 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id CD7F12C03F7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 02:44:59 +1000 (EST)
-Date: Wed, 11 Sep 2013 18:44:56 +0200
-Message-Id: <201309111644.r8BGiuDZ016325@localhost.localdomain>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc 8xx: Fixing issue with CONFIG_PIN_TLB
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <geoff@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AA4392C015C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 02:50:38 +1000 (EST)
+Message-ID: <1378918198.19147.28.camel@smoke>
+Subject: Re: [PATCH V3 1/6] powerpc: Free up the IPI message slot of ipi
+ call function (PPC_MSG_CALL_FUNC)
+From: Geoff Levand <geoff@infradead.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Wed, 11 Sep 2013 09:49:58 -0700
+In-Reply-To: <20130911025100.27726.95866.stgit@preeti.in.ibm.com>
+References: <20130911024906.27726.4735.stgit@preeti.in.ibm.com>
+ <20130911025100.27726.95866.stgit@preeti.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com,
+ rjw@sisk.pl, fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
+ linux-pm@vger.kernel.org, rostedt@goodmis.org, john.stultz@linaro.org,
+ tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com,
+ r58472@freescale.com, linux-kernel@vger.kernel.org,
+ srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,23 +31,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Activating CONFIG_PIN_TLB is supposed to pin the IMMR and the first three
-8Mbytes pages. But the setting of the MD_CTR was missing so as the index is
-decremented every DTLB update, the pinning of the third 8Mbytes page was
-overwriting the DTLB entry for IMMR.
+On Wed, 2013-09-11 at 08:21 +0530, Preeti U Murthy wrote:
+>  arch/powerpc/platforms/ps3/smp.c        |    2 +-
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+The PS3 part is trivial and looks OK.
 
-diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S linux-3.11/arch/powerpc/kernel/head_8xx.S
---- linux-3.11.org/arch/powerpc/kernel/head_8xx.S	2013-09-02 22:46:10.000000000 +0200
-+++ linux-3.11/arch/powerpc/kernel/head_8xx.S	2013-09-09 11:28:54.000000000 +0200
-@@ -862,6 +862,9 @@
- 	addis	r11, r11, 0x0080	/* Add 8M */
- 	mtspr	SPRN_MD_RPN, r11
- 
-+	addi	r10, r10, 0x0100
-+	mtspr	SPRN_MD_CTR, r10
-+
- 	addis	r8, r8, 0x0080		/* Add 8M */
- 	mtspr	SPRN_MD_EPN, r8
- 	mtspr	SPRN_MD_TWC, r9
+Acked-by: Geoff Levand <geoff@infradead.org>
