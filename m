@@ -1,22 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 168132C00EB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 11:15:37 +1000 (EST)
-Message-ID: <1378862123.3783.5.camel@pasglop>
-Subject: Re: [RFC PATCH v2 1/1] powerpc/embedded6xx: Add support for
- Motorola/Emerson MVME5100.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Wed, 11 Sep 2013 11:15:23 +1000
-In-Reply-To: <1378856847.12204.380.camel@snotra.buserror.net>
-References: <20130905055122.F256EE07B6@canberra.localdomain>
- <1378856847.12204.380.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Stephen Chivers <schivers@csc.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, cproctor@csc.com
+Return-Path: <B21284@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 41FE42C0099
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 12:07:26 +1000 (EST)
+Received: from mail26-ch1 (localhost [127.0.0.1])	by mail26-ch1-R.bigfish.com
+ (Postfix) with ESMTP id EF42C3A00B3	for <linuxppc-dev@ozlabs.org>;
+ Wed, 11 Sep 2013 02:07:22 +0000 (UTC)
+Received: from CH1EHSMHS036.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.249])	by mail26-ch1.bigfish.com (Postfix) with ESMTP id
+ 2414F10006A
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 02:07:21 +0000 (UTC)
+From: Hu Mingkai-B21284 <B21284@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] powerpc/85xx: DTS - re-organize the SPI partitions
+ property
+Date: Wed, 11 Sep 2013 02:07:18 +0000
+Message-ID: <CF6CBFBA8EBBB949B6E321556F6E15090A135F45@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1378454743-17637-1-git-send-email-Mingkai.Hu@freescale.com>
+ <1378856005.12204.372.camel@snotra.buserror.net>
+In-Reply-To: <1378856005.12204.372.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,59 +34,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-09-10 at 18:47 -0500, Scott Wood wrote:
-
-> No blank line before }
-> 
-> > +CONFIG_CMDLINE_BOOL=y
-> > +CONFIG_CMDLINE="console=ttyS0,9600 ip=dhcp root=/dev/nfs"
-> 
-> I take it there's no way to pass a command line in from whatever loader
-> this board uses... but you could put it in the dts instead.
-
-No, please don't put that in the device-tree. Somebody might want
-different settings, this is typically what .config is for.
-
-> Did you ever figure out the problem with the combined defconfig?
-> 
-> > +	help
-> > +          This option enables support for the Motorola (now Emerson) MVME5100
-> > +	  board.
-> 
-> Whitespace
-> 
-> > +/* Board register addresses. */
-> > +#define	BOARD_STATUS_REG	0xfef88080
-> > +#define	BOARD_MODFAIL_REG	0xfef88090
-> > +#define	BOARD_MODRST_REG	0xfef880a0
-> > +#define	BOARD_TBEN_REG		0xfef880c0
-> > +#define BOARD_SW_READ_REG	0xfef880e0
-> > +#define	BOARD_GEO_ADDR_REG	0xfef880e8
-> > +#define	BOARD_EXT_FEATURE1_REG	0xfef880f0
-> > +#define	BOARD_EXT_FEATURE2_REG	0xfef88100
-> 
-> Use a space rather than a tab after #define.
-> 
-> > +static unsigned int pci_membase;
-> 
-> phys_addr_t
-> 
-> > +static void mvme5100_restart(char *cmd)
-> > +{
-> > +	u_char			*restart;
-> 
-> Is all that tabbing before "*restart" really necessary?
-> 
-> > +	restart = ioremap(BOARD_MODRST_REG, 4);
-> > +	local_irq_disable();
-> > +	mtmsr(mfmsr() | MSR_IP);
-> > +
-> > +	out_8((u_char *) restart, 0x01);
-> 
-> If ioremap() fails you'll panic here.
-> 
-> In any case, you should map things at boot time.
-> 
-> -Scott
-> 
-> 
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIgMTEsIDIwMTMgNzozMyBBTQ0KPiBUbzog
+SHUgTWluZ2thaS1CMjEyODQNCj4gQ2M6IGxpbnV4cHBjLWRldkBvemxhYnMub3JnDQo+IFN1Ympl
+Y3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvODV4eDogRFRTIC0gcmUtb3JnYW5pemUgdGhlIFNQSSBw
+YXJ0aXRpb25zDQo+IHByb3BlcnR5DQo+IA0KPiBPbiBGcmksIDIwMTMtMDktMDYgYXQgMTY6MDUg
+KzA4MDAsIE1pbmdrYWkgSHUgd3JvdGU6DQo+ID4gUmUtb3JnYW5pemUgdGhlIFNQSSBwYXJ0aXRp
+b25zIGFuZCB1c2UgdGhlIHNhbWUgU1BJIGZsYXNoIG1lbW9yeSBtYXANCj4gPiBmb3IgbW9zdCBv
+ZiB0aGUgcGxhdGZvcm1zIHdoaWNoIGhhdmUgMTZNQiBTUEkgZmxhc2ggbW91bnRlZC4NCj4gW3Nu
+aXBdDQo+ID4gQmFzZWQgb24gJ25leHQnIGJyYW5jaCBvbiBnaXQgdHJlZToNCj4gPiBnaXQ6Ly9n
+aXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvc2NvdHR3b29kL2xpbnV4Lmdp
+dA0KPiA+DQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9ic2M5MTMxcmRiLmR0c2kgIHwgMzUg
+KysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0NCj4gLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290
+L2R0cy9jMjkzcGNpZS5kdHMgICAgIHwgMzUgKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0NCj4g
+LS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9tcGM4NTM2ZHMuZHRzaSAgIHwgMTIgKysr
+KystLS0tLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMTByZGIuZHRzaSAgICB8IDQw
+ICsrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tDQo+IC0tLS0tLS0tDQo+ID4gIGFyY2gvcG93ZXJw
+Yy9ib290L2R0cy9wMTAyMHJkYi1wYy5kdHNpIHwgMjQgKysrKystLS0tLS0tLS0tLS0tLS0NCj4g
+PiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMjByZGItcGQuZHRzICB8IDM0ICsrKysrKysrKysr
+Ky0tLS0tLS0tLS0tLS0tLQ0KPiAtLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMjBy
+ZGIuZHRzaSAgICB8IDIzICsrKystLS0tLS0tLS0tLS0tLS0NCj4gPiAgYXJjaC9wb3dlcnBjL2Jv
+b3QvZHRzL3AxMDIxbWRzLmR0cyAgICAgfCAxNyArKysrKysrLS0tLS0tLS0NCj4gPiAgYXJjaC9w
+b3dlcnBjL2Jvb3QvZHRzL3AxMDIxcmRiLXBjLmR0c2kgfCAzMiArKysrKysrKystLS0tLS0tLS0t
+LS0tLS0tLQ0KPiAtDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMTAyMmRzLmR0c2kgICAg
+IHwgMjEgKysrKysrKysrLS0tLS0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMTAy
+M3Jkcy5kdHMgICAgIHwgMTAgKystLS0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9w
+MTAyNHJkYi5kdHNpICAgIHwgNDAgKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0NCj4gLS0tLS0t
+LS0NCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3AxMDI1cmRiLmR0c2kgICAgfCAyMyArKysr
+Ky0tLS0tLS0tLS0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMjAyMHJkYi1wYy5k
+dHNpIHwgNDAgKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0NCj4gLS0tLS0tLS0NCj4gPiAgYXJj
+aC9wb3dlcnBjL2Jvb3QvZHRzL3AyMDIwcmRiLmR0cyAgICAgfCAzOCArKysrKysrKysrLS0tLS0t
+LS0tLS0tLS0tLQ0KPiAtLS0tLS0NCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3AyMDQxcmRi
+LmR0cyAgICAgfCAxMiArKysrKy0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMzA0
+MWRzLmR0cyAgICAgIHwgMTIgKysrKystLS0tLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMv
+cDQwODBkcy5kdHMgICAgICB8IDEyICsrKysrLS0tLS0NCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3Qv
+ZHRzL3A1MDIwZHMuZHRzICAgICAgfCAxMiArKysrKy0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9i
+b290L2R0cy9wNTA0MGRzLmR0cyAgICAgIHwgMTMgKysrKysrLS0tLS0NCj4gDQo+IFdoYXQgaGFw
+cGVucyB0byBleHN0aW5nIHVzZXJzIHdob3NlIGZsYXNoIGlzIGxhaWQgb3V0IHRoZSBleGlzdGlu
+ZyB3YXksDQo+IHdoZW4gdGhleSB1cGdyYWRlIHRvIHRoZXNlIGRldmljZSB0cmVlcz8NCj4gDQoN
+ClRoZSBTUEkgZmxhc2ggbGF5b3V0IHNob3VsZCBiZSBtYXBwaW5nIHRoZSBuZXcgZGV2aWNlIHRy
+ZWUuDQoNCklmIHRoZSBleGlzdGluZyBkZXZpY2UgdHJlZSBpcyB1c2VkIHRvIGRlcGxveSB0aGUg
+U1BJIGZsYXNoLCB0aGUgZm9sbG93aW5nIGlzc3Vlcw0KbXVzdCBiZSBydW4gaW50byBhcyB0aGUg
+Y29tbWl0IG1lc3NhZ2UgZGVzY3JpYmVkOg0KDQoxLiBLZXJuZWwgaW1hZ2VzIHdvdWxkIGJlIG92
+ZXJsYXBwZWQgd2l0aCBVLUJvb3QgaW1hZ2UuDQoyLiBLZXJuZWwgaW1hZ2VzIHdvdWxkIGJlIG92
+ZXJsYXBwZWQgd2l0aCBGTUFOIHVjb2RlLg0KMy4gU2F2aW5nIGVudmlyb25tZW50IHZhcmlhYmxl
+cyB3aWxsIGNyYXNoIHRoZSBrZXJuZWwgaW1hZ2UuDQoNCj4gV2UgcmVhbGx5IHNob3VsZCBub3Qg
+YmUgcHV0dGluZyBwYXJ0aXRpb24gbGF5b3V0IGluZm8gaW4gdGhlIGRldmljZSB0cmVlDQo+IHRv
+IGJlZ2luIHdpdGguLi4NCj4gDQpPSywgSSB3aWxsIHJlbW92ZSB0aGUgbGF5b3V0IGRpYWdyYW0g
+aW4gdGhlIGNvbW1pdCBtZXNzYWdlLg0KDQpUaGFua3MsDQpNaW5na2FpDQo=
