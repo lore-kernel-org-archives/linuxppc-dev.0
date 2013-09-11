@@ -1,16 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 11 Sep 2013 09:52:28 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 1/6] powerpc: Put FP/VSX and VR state into structures
-Message-ID: <20130910235228.GC4455@iris.ozlabs.ibm.com>
-References: <20130910102000.GA28145@iris.ozlabs.ibm.com>
- <20130910102041.GB28145@iris.ozlabs.ibm.com>
- <992F9967-6DA8-4BDF-A6BC-A8F9E8F4FF7D@suse.de>
+Return-Path: <B07421@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 363D92C00EE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 10:25:22 +1000 (EST)
+Message-ID: <1378859106.12204.381.camel@snotra.buserror.net>
+Subject: Re: [PATCH][RFC][v2] pci: fsl: rework PCIe driver compatible with
+ Layerscape
+From: Scott Wood <scottwood@freescale.com>
+To: Minghuan Lian <Minghuan.Lian@freescale.com>
+Date: Tue, 10 Sep 2013 19:25:06 -0500
+In-Reply-To: <1377686572-3981-1-git-send-email-Minghuan.Lian@freescale.com>
+References: <1377686572-3981-1-git-send-email-Minghuan.Lian@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <992F9967-6DA8-4BDF-A6BC-A8F9E8F4FF7D@suse.de>
-Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Zang Roy-R61911 <r61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,39 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 10, 2013 at 12:07:46PM -0500, Alexander Graf wrote:
+On Wed, 2013-08-28 at 18:42 +0800, Minghuan Lian wrote:
+> The Freescale's Layerscape series processors will use ARM cores.
+> The LS1's PCIe controllers is the same as T4240's. So it's better
+> the PCIe controller driver can support PowerPC and ARM
+> simultaneously. This patch is for this purpose. It derives
+> the common functions from arch/powerpc/sysdev/fsl_pci.c to
+> drivers/pci/host/pcie-fsl.c and leaves several platform-dependent
+> functions which should be implemented in platform files.
 > 
-> On 10.09.2013, at 05:20, Paul Mackerras wrote:
-> > @@ -897,7 +897,7 @@ int fix_alignment(struct pt_regs *regs)
-> > 				return -EFAULT;
-> > 		}
-> > 	} else if (flags & F) {
-> > -		data.dd = current->thread.TS_FPR(reg);
-> > +		data.ll = current->thread.TS_FPR(reg);
+> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+> ---
+> Based on upstream master 3.11-rc7
+> The function has been tested on MPC8315ERDB MPC8572DS P5020DS P3041DS
+> and T4240QDS boards 
 > 
-> I don't understand this change. Could you please explain?
+> Change log:
+> v2:
+> 1. Use 'pci' instead of 'pcie' in new file name and file contents. 
+> 2. Use iowrite32be()/iowrite32() instead of out_be32/le32()
+> 3. Fix ppc_md.dma_set_mask setting
+> 4. Synchronizes host->first_busno and pci->first_busno.
+> 5. Fix PCI IO space settings
+> 6. Some small changes according to Scott's comments.
 
-It's simply that the type which we use to store the FPR values is now
-an unsigned integer type rather than a floating-point type.  If I
-didn't make this change, the compiler would try to convert that
-unsigned integer value into a floating-point value, which we don't
-want.
+Could you please split this into two patches, where one moves the code,
+and the other makes changes to it?
 
-> > --- a/arch/powerpc/kernel/tm.S
-> > +++ b/arch/powerpc/kernel/tm.S
-> > @@ -12,16 +12,15 @@
-> > #include <asm/reg.h>
-> > 
-> > #ifdef CONFIG_VSX
-> > -/* See fpu.S, this is very similar but to save/restore checkpointed FPRs/VSRs */
-> > -#define __SAVE_32FPRS_VSRS_TRANSACT(n,c,base)	\
-> > +/* See fpu.S, this is borrowed from there */
-> > +#define __SAVE_32FPRS_VSRS(n,c,base)		\
-> 
-> Should this really be in tm.S with its new name?
-
-Do you mean, could I merge it with __SAVE_32FPVSRS from fpu.S, put it
-in ppc_asm.h and avoid having two very similar macros defined in
-different places?  Yes I could, and that's a good idea.
-
-Paul.
+-Scott
