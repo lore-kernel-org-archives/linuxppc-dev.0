@@ -1,37 +1,20 @@
-Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4A3182C040F
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 22:07:55 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Wed, 11 Sep 2013 17:25:55 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 683451258052
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 17:37:50 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8BC9iNR44040216
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 17:39:44 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r8BC7kDD029582
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2013 17:37:47 +0530
-Subject: [PATCH 3/3] pstore: Remove the messages related to compression failure
-To: linuxppc-dev@ozlabs.org, tony.luck@intel.com, seiji.aguchi@hds.com,
- linux-kernel@vger.kernel.org, keescook@chromium.org
-From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
-Date: Wed, 11 Sep 2013 17:37:43 +0530
-Message-ID: <20130911120729.27730.7479.stgit@aruna-ThinkPad-T420>
-In-Reply-To: <20130911120639.27730.8671.stgit@aruna-ThinkPad-T420>
-References: <20130911120639.27730.8671.stgit@aruna-ThinkPad-T420>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: jkenisto@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com, ccross@android.com,
- cbouatmailru@gmail.com
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 334242C00DA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 01:13:20 +1000 (EST)
+Subject: Re: [PATCH] powerpc/p1010rdb:remove interrupts of ethernet-phy in
+ device tree
+Mime-Version: 1.0 (Apple Message framework v1283)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1378871354-22763-1-git-send-email-B45475@freescale.com>
+Date: Wed, 11 Sep 2013 10:12:59 -0500
+Message-Id: <CE821871-A927-4A65-AA69-05F63AF2C6A1@kernel.crashing.org>
+References: <1378871354-22763-1-git-send-email-B45475@freescale.com>
+To: Zhao Qiang <B45475@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,27 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the messages indicating compression failure as it will
-add to the space during panic path.
 
-Reported-by: Seiji Aguchi <seiji.aguchi@hds.com>
-Signed-off-by: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
----
- fs/pstore/platform.c |    4 ----
- 1 file changed, 4 deletions(-)
+On Sep 10, 2013, at 10:49 PM, Zhao Qiang wrote:
 
-diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
-index 18924c7..4ad8c93 100644
---- a/fs/pstore/platform.c
-+++ b/fs/pstore/platform.c
-@@ -316,10 +316,6 @@ static void pstore_dump(struct kmsg_dumper *dumper,
- 				compressed = true;
- 				total_len = zipped_len;
- 			} else {
--				pr_err("pstore: compression failed for Part %d"
--					" returned %d\n", part, zipped_len);
--				pr_err("pstore: Capture uncompressed"
--					" oops/panic report of Part %d\n", part);
- 				compressed = false;
- 				total_len = copy_kmsg_to_buffer(hsize, len);
- 			}
+> Since P1010RDB-PA and P1010RDB-PB boards use different external PHY
+> interrupt signals.
+> And actually the PHY interrupt is not used effectively with
+> corresponding interrupt handler.
+> So we can remove the interrupts node without side-effect to comply
+> with both P1010RDB-PA and P1010RDB-PB.
+>=20
+> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> Signed-off-by: Zhao Qiang <B45475@freescale.com>
+> ---
+> arch/powerpc/boot/dts/p1010rdb.dtsi | 3 ---
+> 1 file changed, 3 deletions(-)
+>=20
+
+NAK.  The device tree should represent the HW not what drivers decide to =
+do with it.
+
+If different board revs have different interrupt signals than create =
+dts's to handle the 2 board revs.
+
+- k
