@@ -1,21 +1,24 @@
-Return-Path: <wladislav.kw@gmail.com>
-Received: from mail-wi0-x22c.google.com (mail-wi0-x22c.google.com
- [IPv6:2a00:1450:400c:c05::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C3AE12C011D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 03:54:59 +1000 (EST)
-Received: by mail-wi0-f172.google.com with SMTP id c10so2502366wiw.17
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 10:54:53 -0700 (PDT)
-Message-ID: <5230AE03.6000202@gmail.com>
-Date: Wed, 11 Sep 2013 19:53:07 +0200
-From: Wladislav Wiebe <wladislav.kw@gmail.com>
+Return-Path: <tony.luck@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
+ by ozlabs.org (Postfix) with ESMTP id 395682C0112
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Sep 2013 04:35:27 +1000 (EST)
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>, "linuxppc-dev@ozlabs.org"
+ <linuxppc-dev@ozlabs.org>, "seiji.aguchi@hds.com" <seiji.aguchi@hds.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "keescook@chromium.org" <keescook@chromium.org>
+Subject: RE: [PATCH 1/3] pstore: Adjust buffer size for compression for
+ smaller registered buffers
+Date: Wed, 11 Sep 2013 18:34:59 +0000
+Message-ID: <3908561D78D1C84285E8C5FCA982C28F31CF4C85@ORSMSX106.amr.corp.intel.com>
+References: <20130911120639.27730.8671.stgit@aruna-ThinkPad-T420>
+In-Reply-To: <20130911120639.27730.8671.stgit@aruna-ThinkPad-T420>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: PPC: set default date on PPC without RTC
-References: <52303A6A.2050702@gmail.com>
-In-Reply-To: <52303A6A.2050702@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>,
+ "mahesh@linux.vnet.ibm.com" <mahesh@linux.vnet.ibm.com>,
+ "ccross@android.com" <ccross@android.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,48 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-no matter anymore - got it:
-
---- a/linux/arch/powerpc/kernel/time.c
-+++ b/linux/arch/powerpc/kernel/time.c
-@@ -832,7 +832,7 @@ static void __read_persistent_clock(struct timespec *ts)
- 		}
- 	}
- 	if (!ppc_md.get_rtc_time) {
--		ts->tv_sec = 0;
-+		ts->tv_sec = mktime(2011, 1, 1, 0, 0, 0);
- 		return;
- 	}
- 	ppc_md.get_rtc_time(&tm);
-
-
-On 11/09/13 11:39, Wladislav Wiebe wrote:
-> Hello guys,
-> 
-> would like to ask if there is a proper possibility on PPC to
-> set default date (basically the year). The board has no RTC chip,
-> and I would need instead of 1970 another year.
-> 
-> For some reason does e.g:
-> --- a/linux/arch/powerpc/kernel/time.c
-> +++ b/linux/arch/powerpc/kernel/time.c
-> @@ -1099,7 +1099,7 @@ void __init time_init(void)
-> 
-> 
->  #define FEBRUARY       2
-> -#define        STARTOFTIME     1970
-> +#define        STARTOFTIME     2013
->  #define SECDAY         86400L
->  #define SECYR          (SECDAY * 365)
->  #define        leapyear(year)          ((year) % 4 == 0 && \
-> 
-> 
-> not work to me. Is there also another place which should be changed?
-> (I know it can be changed from userspace also, but I would need it before userspace)
-> 
-> 
-> Thanks and BR,
-> Wladislav Wiebe
-> 
+LQliaWdfb29wc19idWZfc3ogPSAocHNpbmZvLT5idWZzaXplICogMTAwKSAvIDQ1Ow0KKwliaWdf
+b29wc19idWZfc3ogPSAocHNpbmZvLT5idWZzaXplICogMTAwKSAvIGNtcHI7DQoNClRlc3RlZCBv
+biBhbiBFUlNUIGJhY2tlZCBzeXN0ZW0uICBTZWVtcyB0byBiZSB3b3JraW5nICh3ZSBzYXZlIGEg
+bGl0dGxlIGxlc3MgaW5mb3JtYXRpb24NCnBlciBFUlNUIHJlY29yZCB0aGFuIGJlZm9yZSB0aGlz
+IGNoYW5nZSAodW5jb21wcmVzc2VkIHNpemUgZ29lcyBkb3duIGZyb20gfjE3NTAwIHRvDQp+MTY0
+MDAgYnl0ZXMpIC0gYnV0IHRoaXMgcGF0Y2ggc3dpdGNoZWQgdGhlIGRlbm9taW5hdG9yIGZyb20g
+NDUgdG8gNDggKGZvciBFUlNUKSAtIHNvIHRoYXQNCnNlZW1zIHBsYXVzaWJsZS4NCg0KU2Vpamk6
+IGxldCBtZSBrbm93IGhvdyB0aGUgZWZpdmFycyB0ZXN0cyBnby4NCg0KLVRvbnkNCg==
