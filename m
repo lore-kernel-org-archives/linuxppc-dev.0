@@ -1,24 +1,19 @@
 Return-Path: <murzin.v@gmail.com>
-Received: from mail-lb0-x22a.google.com (mail-lb0-x22a.google.com
- [IPv6:2a00:1450:4010:c04::22a])
+Received: from mail-lb0-x233.google.com (mail-lb0-x233.google.com
+ [IPv6:2a00:1450:4010:c04::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3ADD52C00FB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 02:03:45 +1000 (EST)
-Received: by mail-lb0-f170.google.com with SMTP id w7so7852574lbi.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 09:03:39 -0700 (PDT)
-Date: Wed, 11 Sep 2013 18:03:02 +0200
+ by ozlabs.org (Postfix) with ESMTPS id 7ED872C03E6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 02:04:16 +1000 (EST)
+Received: by mail-lb0-f179.google.com with SMTP id x18so7772944lbi.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 09:04:12 -0700 (PDT)
 From: Vladimir Murzin <murzin.v@gmail.com>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] powerpc: export cpu_to_chip_id
-Message-ID: <20130911160255.GA1967@hp530>
-References: <1378831135-2179-1-git-send-email-murzin.v@gmail.com>
- <52300FB9.5020104@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-In-Reply-To: <52300FB9.5020104@linux.vnet.ibm.com>
-Cc: paulus@samba.org, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- chenhui.zhao@freescale.com, srivatsa.bhat@linux.vnet.ibm.com
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: net: filter: fix DIVWU instruction opcode
+Date: Wed, 11 Sep 2013 18:03:30 +0200
+Message-Id: <1378915410-2262-1-git-send-email-murzin.v@gmail.com>
+Cc: mikey@neuling.org, paulus@samba.org, Vladimir Murzin <murzin.v@gmail.com>,
+ matt@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,53 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 11, 2013 at 12:07:45PM +0530, Vasant Hegde wrote:
-> On 09/10/2013 10:08 PM, Vladimir Murzin wrote:
-> > While cross-building for PPC64 I've got
-> >
-> Vladimir,
-> 
-> Below commit ID fixes this issue.
+Currently DIVWU stands for *signed* divw opcode:
 
-Great! For whatever reason I thought _GPL is default policy for exported
-symbols... but, never mind ;)
+7d 2a 4b 96 	divwu   r9,r10,r9
+7d 2a 4b d6 	divw    r9,r10,r9
 
-Sorry for the noise
-Vladimir
+Use the *unsigned* divw opcode for DIVWU.
 
-> 
-> commit 256588fda10f2a712631f8a4e72641a66adebdb8
-> Author: Guenter Roeck <linux@roeck-us.net>
-> Date:   Mon Sep 9 18:37:56 2013 -0700
-> 
->      powerpc: Export cpu_to_chip_id() to fix build error
-> 
-> -Vasant
-> 
-> > ERROR: ".cpu_to_chip_id" [drivers/block/mtip32xx/mtip32xx.ko] undefined!
-> >
-> > mtip32xx refer to topology_physical_package_id, which stands for
-> > cpu_to_chip-id.
-> >
-> > Make cpu_to_chip-id (and topology_physical_package_id) available for
-> > external users.
-> >
-> > Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
-> > ---
-> >   arch/powerpc/kernel/smp.c |    1 +
-> >   1 file changed, 1 insertion(+)
-> >
-> > diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> > index 442d8e2..1d9c1c2 100644
-> > --- a/arch/powerpc/kernel/smp.c
-> > +++ b/arch/powerpc/kernel/smp.c
-> > @@ -611,6 +611,7 @@ int cpu_to_chip_id(int cpu)
-> >   	of_node_put(np);
-> >   	return of_get_ibm_chip_id(np);
-> >   }
-> > +EXPORT_SYMBOL_GPL(cpu_to_chip_id);
-> >
-> >   /* Helper routines for cpu to core mapping */
-> >   int cpu_core_index_of_thread(int cpu)
-> >
-> 
+Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
+---
+ arch/powerpc/include/asm/ppc-opcode.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index d7fe9f5..c91842c 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -218,7 +218,7 @@
+ #define PPC_INST_MULLW			0x7c0001d6
+ #define PPC_INST_MULHWU			0x7c000016
+ #define PPC_INST_MULLI			0x1c000000
+-#define PPC_INST_DIVWU			0x7c0003d6
++#define PPC_INST_DIVWU			0x7c000396
+ #define PPC_INST_RLWINM			0x54000000
+ #define PPC_INST_RLDICR			0x78000004
+ #define PPC_INST_SLW			0x7c000030
+-- 
+1.7.10.4
