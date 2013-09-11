@@ -1,18 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B005E2C0082
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 13:22:35 +1000 (EST)
-Message-ID: <1378869743.3783.8.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 11 Sep 2013 13:22:23 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <B29983@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6B48C2C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 13:24:43 +1000 (EST)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [v3] powerpc/mpc85xx: Update the clock device tree nodes
+Date: Wed, 11 Sep 2013 03:24:35 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B15074280@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1370480811-13700-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20130823200827.GA29737@home.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B1503BE58@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1377536416.3033.18.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B1503F161@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1378849606.12204.359.camel@snotra.buserror.net>
+In-Reply-To: <1378849606.12204.359.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Mike Turquette <mturquette@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,48 +32,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
-
-Here are a handful of small powerpc fixes. A couple of section mismatches
-(always worth fixing), a missing export of a new symbol causing build
-failures of modules, a page fault deadlock fix (interestingly that
-bug has been around for a LONG time, though it seems to be more easily
-triggered by KVM) and fixing pseries default idle loop in the absence of
-the cpuidle drivers (such as during boot).
-
-Cheers,
-Ben.
-
-The following changes since commit 8d7551eb1916832f2a5b27346edf24e7b2382f67:
-
-  Merge tag 'cris-for-3.12' of git://jni.nu/cris (2013-09-10 14:55:16 -0700)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 363edbe2614aa90df706c0f19ccfa2a6c06af0be:
-
-  powerpc: Default arch idle could cede processor on pseries (2013-09-11 11:41:54 +1000)
-
-----------------------------------------------------------------
-Aneesh Kumar K.V (1):
-      powerpc: Fix possible deadlock on page fault
-
-Guenter Roeck (1):
-      powerpc: Export cpu_to_chip_id() to fix build error
-
-Vaidyanathan Srinivasan (1):
-      powerpc: Default arch idle could cede processor on pseries
-
-Vladimir Murzin (2):
-      powerpc: Fix section mismatch warning for prom_rtas_call
-      fbdev/ps3fb: Fix section mismatch warning for ps3fb_probe
-
- arch/powerpc/kernel/prom_init.c        |  3 ++-
- arch/powerpc/kernel/smp.c              |  1 +
- arch/powerpc/mm/fault.c                | 13 ++++++++++---
- arch/powerpc/platforms/pseries/setup.c | 31 +++++++++++++++++++++----------
- drivers/video/ps3fb.c                  |  2 +-
- 5 files changed, 35 insertions(+), 15 deletions(-)
+T0ssIHdpbGwgdXBkYXRlIHBlciB5b3VyIHN1Z2dlc3Rpb25zLg0KDQpUaGFua3MsDQpZdWFudGlh
+bg0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1C
+MDc0MjENCj4gU2VudDogMjAxM+W5tDnmnIgxMeaXpSDmmJ/mnJ/kuIkgNTo0Nw0KPiBUbzogVGFu
+ZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBnYWxha0BrZXJuZWwu
+Y3Jhc2hpbmcub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2
+QGxpc3RzLm96bGFicy5vcmc7IE1pa2UgVHVycXVldHRlDQo+IFN1YmplY3Q6IFJlOiBbdjNdIHBv
+d2VycGMvbXBjODV4eDogVXBkYXRlIHRoZSBjbG9jayBkZXZpY2UgdHJlZSBub2Rlcw0KPiANCj4g
+T24gTW9uLCAyMDEzLTA4LTI2IGF0IDIxOjQ5IC0wNTAwLCBUYW5nIFl1YW50aWFuLUIyOTk4MyB3
+cm90ZToNCj4gPiA+ID4gPiA+ICsJCX07DQo+ID4gPiA+ID4gPiArCQlwbGwxOiBwbGwxQDgyMCB7
+DQo+ID4gPiA+ID4gPiArCQkJI2Nsb2NrLWNlbGxzID0gPDE+Ow0KPiA+ID4gPiA+ID4gKwkJCXJl
+ZyA9IDwweDgyMD47DQo+ID4gPiA+ID4gPiArCQkJY29tcGF0aWJsZSA9ICJmc2wsY29yZS1wbGwt
+Y2xvY2siOw0KPiA+ID4gPiA+ID4gKwkJCWNsb2NrcyA9IDwmY2xvY2tnZW4+Ow0KPiA+ID4gPiA+
+ID4gKwkJCWNsb2NrLW91dHB1dC1uYW1lcyA9ICJwbGwxIiwgInBsbDEtZGl2MiIsICJwbGwxLQ0K
+PiA+ID4gZGl2NCI7DQo+ID4gPiA+ID4gPiArCQl9Ow0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gUGxl
+YXNlIGxlYXZlIGEgYmxhbmsgbGluZSBiZXR3ZWVuIHByb3BlcnRpZXMgYW5kIG5vZGVzLCBhbmQN
+Cj4gPiA+ID4gPiBiZXR3ZWVuDQo+ID4gPiBub2Rlcy4NCj4gPiA+ID4gPg0KPiA+ID4gPiBPSywg
+d2lsbCBhZGQuDQo+ID4gPiA+DQo+ID4gPiA+ID4gV2hhdCBkb2VzIHJlZyByZXByZXNlbnQ/ICBX
+aGVyZSBpcyB0aGUgYmluZGluZyBmb3IgdGhpcz8NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFRoZSBj
+b21wYXRpYmxlIGlzIHRvbyB2YWd1ZS4NCj4gPiA+ID4gUmVnIGlzIHJlZ2lzdGVyIG9mZnNldC4N
+Cj4gPiA+DQo+ID4gPiBXaXRoIG5vIHNpemU/DQo+ID4NCj4gPiBObyBzaXplIGlzIG5lZWRlZC4N
+Cj4gDQo+IFllcywgaXQgaXMuICBSZWdpc3RlciBibG9ja3MgaGF2ZSBzaXplIC0tIGV2ZW4gaWYg
+aXQncyBqdXN0IGEgc2luZ2xlDQo+IHJlZ2lzdGVyLg0KPiANCj4gPiA+ID4gSXQgaXMgdG9vIGxh
+dGVyIHRvIGNoYW5nZSBzaW5jZSB0aGUgY2xvY2sgZHJpdmVyIGlzIG1lcmdlZCBmb3INCj4gPiA+
+ID4gbW9udGhzIGFsdGhvdWdoIEkgc2VudCB0aGlzIHBhdGNoIGZpcnN0Lg0KPiA+ID4NCj4gPiA+
+IEl0IHNob3VsZCBub3QgaGF2ZSBnb25lIGluIHdpdGhvdXQgYW4gYXBwcm92ZWQgYmluZGluZy4g
+IEl0IHNlZW1zIGl0DQo+ID4gPiB3ZW50IGluIHZpYSBNaWtlIFR1cnF1ZXR0ZSAod2h5IGlzIGEg
+bm9uLUFSTS1zcGVjaWZpYyB0cmVlIHVzaW5nDQo+ID4gPiBsaW51eC1hcm0tIGtlcm5lbCBhcyBp
+dHMgbGlzdCwgQlRXPykuICBObyBhY2sgZnJvbSBCZW4sIEt1bWFyLCBvciBtZQ0KPiA+ID4gaXMg
+c2hvd24gaW4gdGhlIGNvbW1pdC4NCj4gPiBUaGUgTGludXggY29tbW9uIGNsb2NrIGZyYW1ld29y
+ayBpcyBub3QgQVJNIHNwZWNpZmljLiBBbnkgb3RoZXIgYXJjaA0KPiBjYW4gdXNlIGl0Lg0KPiAN
+Cj4gU3VyZSwgaXQganVzdCBzZWVtZWQgYW4gb2RkIGNob2ljZSBvZiBtYWlsaW5nIGxpc3QgZm9y
+IHNvbWV0aGluZyB0aGF0DQo+IGlzbid0IEFSTS1zcGVjaWZpYy4NCj4gDQo+ID4gPiBJbiBhbnkg
+Y2FzZSwgeW91IGNhbiBwcmVzZXJ2ZSBjb21wYXRpYmlsaXR5IHdpdGggZXhpc3RpbmcgdHJlZXMN
+Cj4gPiA+IHdpdGhvdXQgdXNpbmcgdGhpcyBjb21wYXRpYmxlIGluIG5ldyB0cmVlcy4gIFRoZSBk
+cml2ZXIgY2FuIGNoZWNrDQo+ID4gPiBmb3IgYm90aCBjb21wYXRpYmxlcywgd2l0aCBhIGNvbW1l
+bnQgaW5kaWNhdGluZyB0aGF0DQo+ID4gPiAiZnNsLGNvcmUtbXV4LWNsb2NrIiBpcyBkZXByZWNh
+dGVkIGFuZCBmb3IgY29tcGF0aWJpbGl0eSBvbmx5Lg0KPiA+IEl0IGlzIHN1Yi1jbG9jayBub2Rl
+LCBpcyBpdCByZWFsbHkgbmVjZXNzYXJ5IHRvIHRoaW5rIGFib3V0DQo+IGNvbXBhdGliaWxpdHk/
+DQo+ID4gSSB0aGluayB0aGF0J3MgdGhlIG5vZGUgY2xvY2tnZW4ncyByZXNwb25zaWJpbGl0eS4N
+Cj4gDQo+IEl0IGRlc2NyaWJlcyByZWdpc3RlcnMsIHNvIHllcywgeW91IG5lZWQgdG8gY29uc2lk
+ZXIgY29tcGF0aWJpbGl0eS4gIEENCj4gY2xvY2sgcHJvdmlkZXIgaXMgbm90IHJlc3BvbnNpYmxl
+IGZvciBmaWd1cmluZyBvdXQgaG93IHRvIHByb2dyYW0gZGV2aWNlcw0KPiB0aGF0IGNvbnN1bWUg
+aXRzIGNsb2Nrcywgbm9yIHNob3VsZCBpdCBtYWtlIGFueSBhc3N1bXB0aW9ucyBhYm91dCBzdWNo
+DQo+IGRldmljZXMuDQo+IA0KPiA+ID4gPiBCZXNpZGVzLCBpdCBpcyBub3QgdG9vIGJhZCBiZWNh
+dXNlIG90aGVyIGFyY2ggdXNlIHRoZSBzaW1pbGFyIG5hbWUuDQo+ID4gPg0KPiA+ID4gSSBkb24n
+dCBmb2xsb3cuICBUaGlzIGlzIGEgc3BlY2lmaWMgRnJlZXNjYWxlIHJlZ2lzdGVyIGludGVyZmFj
+ZSwNCj4gPiA+IG5vdCBhIGdlbmVyYWwgY29uY2VwdC4NCj4gPiA+DQo+ID4gPiBJbiBhbnkgY2Fz
+ZSwgd2hpY2ggInNpbWlsYXIgbmFtZXMiIGFyZSB5b3UgcmVmZXJyaW5nIHRvPyAgQSBzZWFyY2gN
+Cj4gPiA+IGluIGFyY2gvYXJtL2Jvb3QvZHRzIGZvciAibXV4IiB3aXRoICJjbGsiIG9yICJjbG9j
+ayIgdHVybnMgdXANCj4gPiA+ICJhbGx3aW5uZXIsc3VuNGktYXBiMS1tdXgtY2xrIiB3aGljaCBp
+cyBtdWNoIG1vcmUgc3BlY2lmaWMgdGhhbg0KPiA+ID4gImZzbCxjb3JlLW11eC1jbG9jayIuDQo+
+ID4gT2ssIEkgd2lsbCBjaGFuZ2UgdGhlIGNvbXBhdGlibGUgc3RyaW5nLg0KPiA+IERvIHlvdSB0
+aGluayAiZnNsLHBwYy1jb3JlLSoiIGlzIG9rPw0KPiANCj4gTm8uICBIb3cgYWJvdXQgImZzbCxx
+b3JpcS1jaGFzc2lzMS0qIiAoZm9yIGU1MDBtYy9lNTUwMCkgYW5kIGZzbCxxb3JpcS0NCj4gY2hh
+c3NpczItKiIgKGZvciBlNjUwMCk/DQo+IA0KPiAtU2NvdHQNCj4gDQoNCg==
