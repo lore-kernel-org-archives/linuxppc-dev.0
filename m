@@ -1,31 +1,23 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A175A2C01EA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 14:37:13 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Wed, 11 Sep 2013 05:37:10 +0100
-Date: Wed, 11 Sep 2013 10:07:33 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Tom Musta <tmusta@us.ibm.com>
-Subject: Re: [PATCH] powerpc: OE=1 Form Instructions Not Decoded Correctly
-Message-ID: <20130911043733.GA20006@in.ibm.com>
-References: <CAJ-hshaxuJBMCFquT7J50rjuDYWer_0i1=2QmnOKGAxx4n=FUw@mail.gmail.com>
- <20130908223559.GA495@iris.ozlabs.ibm.com>
- <1378721499.11525.5.camel@pasglop>
- <OF5204CF2E.B2F7FFF8-ON86257BE1.0044FF5E-86257BE1.0046077F@us.ibm.com>
- <OF8A394047.DEDB25DC-ON86257BE1.0062D6C5-86257BE1.006FC8B8@us.ibm.com>
+Return-Path: <B40534@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7AD812C035C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 16:00:44 +1000 (EST)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH v3 2/4] powerpc/85xx: add hardware automatically enter altivec
+ idle state
+Date: Wed, 11 Sep 2013 13:56:42 +0800
+Message-ID: <1378879004-2446-2-git-send-email-dongsheng.wang@freescale.com>
+In-Reply-To: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
+References: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF8A394047.DEDB25DC-ON86257BE1.0062D6C5-86257BE1.006FC8B8@us.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Linuxppc-dev <linuxppc-dev-bounces+tmusta=us.ibm.com@lists.ozlabs.org>,
- Tom Musta <tommusta@gmail.com>
-Reply-To: ananth@in.ibm.com
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,15 +27,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 09, 2013 at 03:20:58PM -0500, Tom Musta wrote:
-> > > Isn't that code occasionally used with uprobes too nowadays  ?
-> >
-> > Yes. I believe so.
-> 
-> I'm going to back-pedal a little.  I reread code and can connect
-> single step code to kprobes but not necessarily to uprobes.  So
-> I am not sure that this code is used with uprobes.
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-Yes, emulate_step() is used for uprobes too.
+Each core's AltiVec unit may be placed into a power savings mode
+by turning off power to the unit. Core hardware will automatically
+power down the AltiVec unit after no AltiVec instructions have
+executed in N cycles. The AltiVec power-control is triggered by hardware.
 
-Ananth
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
+*v3:
+Assembly code instead of C code.
+
+*v2:
+Remove:
+delete setup_idle_hw_governor function.
+delete "Fix erratum" for rev1.
+
+Move:
+move setup_* into __setup/restore_cpu_e6500.
+
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+index bfb18c7..3c03c109 100644
+--- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
++++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+@@ -53,11 +53,30 @@ _GLOBAL(__e500_dcache_setup)
+ 	isync
+ 	blr
+
++/*
++ * FIXME - We don't know the AltiVec application scenarios.
++ */
++#define AV_WAIT_IDLE_BIT		50 /* 1ms, TB frequency is 41.66MHZ */
++_GLOBAL(setup_altivec_idle)
++	mfspr	r3, SPRN_PWRMGTCR0
++
++	/* Enable Altivec Idle */
++	oris	r3, r3, PWRMGTCR0_AV_IDLE_PD_EN@h
++	li	r4, AV_WAIT_IDLE_BIT
++
++	/* Set Automatic AltiVec Idle Count */
++	rlwimi	r3, r4, PWRMGTCR0_AV_IDLE_CNT_SHIFT, PWRMGTCR0_AV_IDLE_CNT
++
++	mtspr	SPRN_PWRMGTCR0, r3
++
++	blr
++
+ _GLOBAL(__setup_cpu_e6500)
+ 	mflr	r6
+ #ifdef CONFIG_PPC64
+ 	bl	.setup_altivec_ivors
+ #endif
++	bl	.setup_altivec_idle
+ 	bl	__setup_cpu_e5500
+ 	mtlr	r6
+ 	blr
+@@ -119,6 +138,7 @@ _GLOBAL(__setup_cpu_e5500)
+ _GLOBAL(__restore_cpu_e6500)
+ 	mflr	r5
+ 	bl	.setup_altivec_ivors
++	bl	.setup_altivec_idle
+ 	bl	__restore_cpu_e5500
+ 	mtlr	r5
+ 	blr
+--
+1.8.0
