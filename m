@@ -1,22 +1,23 @@
 Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2DCDB2C0246
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 08:37:10 +1000 (EST)
-Message-ID: <1378939017.12204.409.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc 8xx: Fixing issue with CONFIG_PIN_TLB
+ by ozlabs.org (Postfix) with ESMTPS id 0AC212C0117
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 08:43:06 +1000 (EST)
+Message-ID: <1378939377.12204.412.camel@snotra.buserror.net>
+Subject: Re: [PATCH v3 2/4] powerpc/85xx: add hardware automatically enter
+ altivec idle state
 From: Scott Wood <scottwood@freescale.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Wed, 11 Sep 2013 17:36:57 -0500
-In-Reply-To: <201309111644.r8BGiuDZ016325@localhost.localdomain>
-References: <201309111644.r8BGiuDZ016325@localhost.localdomain>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Date: Wed, 11 Sep 2013 17:42:57 -0500
+In-Reply-To: <1378879004-2446-2-git-send-email-dongsheng.wang@freescale.com>
+References: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
+ <1378879004-2446-2-git-send-email-dongsheng.wang@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-09-11 at 18:44 +0200, Christophe Leroy wrote:
-> Activating CONFIG_PIN_TLB is supposed to pin the IMMR and the first three
-> 8Mbytes pages. But the setting of the MD_CTR was missing so as the index is
-> decremented every DTLB update, the pinning of the third 8Mbytes page was
-> overwriting the DTLB entry for IMMR.
+On Wed, 2013-09-11 at 13:56 +0800, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Each core's AltiVec unit may be placed into a power savings mode
+> by turning off power to the unit. Core hardware will automatically
+> power down the AltiVec unit after no AltiVec instructions have
+> executed in N cycles. The AltiVec power-control is triggered by hardware.
 > 
-> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S linux-3.11/arch/powerpc/kernel/head_8xx.S
-> --- linux-3.11.org/arch/powerpc/kernel/head_8xx.S	2013-09-02 22:46:10.000000000 +0200
-> +++ linux-3.11/arch/powerpc/kernel/head_8xx.S	2013-09-09 11:28:54.000000000 +0200
-> @@ -862,6 +862,9 @@
->  	addis	r11, r11, 0x0080	/* Add 8M */
->  	mtspr	SPRN_MD_RPN, r11
->  
-> +	addi	r10, r10, 0x0100
-> +	mtspr	SPRN_MD_CTR, r10
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ---
+> *v3:
+> Assembly code instead of C code.
+> 
+> *v2:
+> Remove:
+> delete setup_idle_hw_governor function.
+> delete "Fix erratum" for rev1.
+> 
+> Move:
+> move setup_* into __setup/restore_cpu_e6500.
+> 
+>  arch/powerpc/kernel/cpu_setup_fsl_booke.S | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> index bfb18c7..3c03c109 100644
+> --- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> +++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> @@ -53,11 +53,30 @@ _GLOBAL(__e500_dcache_setup)
+>  	isync
+>  	blr
+> 
+> +/*
+> + * FIXME - We don't know the AltiVec application scenarios.
+> + */
+> +#define AV_WAIT_IDLE_BIT		50 /* 1ms, TB frequency is 41.66MHZ */
+> +_GLOBAL(setup_altivec_idle)
+> +	mfspr	r3, SPRN_PWRMGTCR0
 > +
->  	addis	r8, r8, 0x0080		/* Add 8M */
->  	mtspr	SPRN_MD_EPN, r8
->  	mtspr	SPRN_MD_TWC, r9
+> +	/* Enable Altivec Idle */
+> +	oris	r3, r3, PWRMGTCR0_AV_IDLE_PD_EN@h
+> +	li	r4, AV_WAIT_IDLE_BIT
+> +
+> +	/* Set Automatic AltiVec Idle Count */
+> +	rlwimi	r3, r4, PWRMGTCR0_AV_IDLE_CNT_SHIFT, PWRMGTCR0_AV_IDLE_CNT
+> +
+> +	mtspr	SPRN_PWRMGTCR0, r3
+> +
+> +	blr
 
-I wonder why we don't start from entry 31 so we can actually make use of
-that autodecrement.  What will happen when we load the first normal TLB
-entry later on?  I don't see any setting of SPRN_MD_CTR after this code,
-so won't it overwrite entry 30 (the middle 8M) in the CONFIG_PIN_TLB
-case?
+The FIXME comment is not clear.  If you mean that we haven't yet done
+testing to determine a reasonable default value for AV_WAIT_IDLE_BIT,
+then just say that.  Likewise with the FIXME comment in the pw20 patch
+-- the uncertainty is due to a lack of investigation, not "because we
+don't know the current state of the cpu load".
 
-Ben, would patches like this be considered bugfixes as far as merging
-goes, or would they be for next given that it's something that's never
-really worked right and hasn't been touched in years?
+While some workloads may want a different value than whatever default we
+set, that's what the sysfs interface is for.  The only thing missing
+here is benchmarking to determine a good overall default.
 
 -Scott
