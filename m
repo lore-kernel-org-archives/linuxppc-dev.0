@@ -1,23 +1,23 @@
 Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0248.outbound.messaging.microsoft.com [213.199.154.248])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 00F642C00DE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 09:04:13 +1000 (EST)
-Message-ID: <1378940642.12204.427.camel@snotra.buserror.net>
-Subject: Re: [PATCH v3 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
+ by ozlabs.org (Postfix) with ESMTPS id 65F702C0178
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 09:24:25 +1000 (EST)
+Message-ID: <1378941854.12204.439.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/mpc85xx:Add initial device tree support of T104x
 From: Scott Wood <scottwood@freescale.com>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Date: Wed, 11 Sep 2013 18:04:02 -0500
-In-Reply-To: <1378879004-2446-4-git-send-email-dongsheng.wang@freescale.com>
-References: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
- <1378879004-2446-4-git-send-email-dongsheng.wang@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Date: Wed, 11 Sep 2013 18:24:14 -0500
+In-Reply-To: <1378882686-19454-1-git-send-email-prabhakar@freescale.com>
+References: <1378882686-19454-1-git-send-email-prabhakar@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Varun Sethi <Varun.Sethi@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,157 +27,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-09-11 at 13:56 +0800, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+On Wed, 2013-09-11 at 12:28 +0530, Prabhakar Kushwaha wrote:
+> The QorIQ T1040/T1042 processor support four integrated 64-bit e5500 PA
+> processor cores with high-performance data path acceleration architecture
+> and network peripheral interfaces required for networking & telecommunications.
 > 
-> Add a sys interface to enable/diable pw20 state or altivec idle, and
-> control the wait entry time.
+> T1042 personality is a reduced personality of T1040 without Integrated 8-port
+> Gigabit Ethernet switch.
 > 
-> Enable/Disable interface:
-> 0, disable. 1, enable.
-> /sys/devices/system/cpu/cpuX/pw20_state
-> /sys/devices/system/cpu/cpuX/altivec_idle
+> The T1040/T1042 SoC includes the following function and features:
 > 
-> Set wait entry bit interface:
-> bit value range 0~63, 0 bit is Mintime, 63 bit is Maxtime.
-> /sys/devices/system/cpu/cpuX/pw20_wait_entry_bit
-> /sys/devices/system/cpu/cpuX/altivec_idle_wait_entry_bit
-
-I'm no fan of the way powerpc does bit numbering, but don't flip it
-around here -- you'll just cause confusion.
-
-Better yet, this interface should take real time units rather than a
-timebase bit.
-
-Also, you disable the power saving mode if the maximum interval is
-selected, but the documentation doesn't say that -- and the
-documentation should be in the code (or other easily findable place),
-not just in the commit message.
-
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+>  - Four e5500 cores, each with a private 256 KB L2 cache
+>  - 256 KB shared L3 CoreNet platform cache (CPC)
+>  - Interconnect CoreNet platform
+>  - 32-/64-bit DDR3L/DDR4 SDRAM memory controller with ECC and interleaving
+>    support
+>  - Data Path Acceleration Architecture (DPAA) incorporating acceleration
+>  for the following functions:
+>     -  Packet parsing, classification, and distribution
+>     -  Queue management for scheduling, packet sequencing, and congestion
+>     	management
+>     -  Cryptography Acceleration (SEC 5.0)
+>     - RegEx Pattern Matching Acceleration (PME 2.2)
+>     - IEEE Std 1588 support
+>     - Hardware buffer management for buffer allocation and deallocation
+>  - Ethernet interfaces
+>     - Integrated 8-port Gigabit Ethernet switch (T1040 only)
+>     - Four 1 Gbps Ethernet controllers
+>  - Two RGMII interfaces or one RGMII and one MII interfaces
+>  - High speed peripheral interfaces
+>    - Four PCI Express 2.0 controllers running at up to 5 GHz
+>    - Two SATA controllers supporting 1.5 and 3.0 Gb/s operation
+>    - Upto two QSGMII interface
+>    - Upto six SGMII interface supporting 1000 Mbps
+>    - One SGMII interface supporting upto 2500 Mbps
+>  - Additional peripheral interfaces
+>    - Two USB 2.0 controllers with integrated PHY
+>    - SD/eSDHC/eMMC
+>    -  eSPI controller
+>    - Four I2C controllers
+>    - Four UARTs
+>    - Four GPIO controllers
+>    - Integrated flash controller (IFC)
+>    - Change this to  LCD/ HDMI interface (DIU) with 12 bit dual data rate
+>    - TDM interface
+>  - Multicore programmable interrupt controller (PIC)
+>  - Two 8-channel DMA engines
+>  - Single source clocking implementation
+>  - Deep Sleep power implementaion (wakeup from GPIO/Timer/Ethernet/USB)
+> 
+> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
 > ---
-> diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> index 7389d49..7395d79 100644
-> --- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> +++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> @@ -53,6 +53,21 @@ _GLOBAL(__e500_dcache_setup)
->  	isync
->  	blr
-> 
-> +_GLOBAL(has_pw20_altivec_idle)
-> +	/* 0 false, 1 true */
-> +	li	r3, 0
-> +
-> +	/* PW20 & AltiVec idle feature only exists for E6500 */
-> +	mfspr	r0, SPRN_PVR
-> +	rlwinm	r4, r0, 16, 16, 31
-> +	lis	r12, 0
-> +	ori	r12, r12, PVR_VER_E6500@l
-> +	cmpw	r4, r12
-> +	bne	2f
-> +	li	r3, 1
-> +2:
-> +	blr
+> Based upon git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
 
-Why is this in asm?  And shouldn't this go in the cputable somehow?
+Everything in there has already been pulled by Linus, so there's no
+reason to use that tree as a base right now.
 
-> +static void query_pwrmgtcr0(void *val)
-> +{
-> +	u32 *value = val;
+> +/include/ "t1042si-post.dtsi"
+[snip]
+> +	serdes: serdes@ea000 {
+> +		compatible = "fsl,t1040-serdes";
+> +		reg	   = <0xea000 0x4000>;
+> +	};
 > +
-> +	*value = mfspr(SPRN_PWRMGTCR0);
-> +}
-> +
-> +static ssize_t show_pw20_state(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	u32 value;
-> +	unsigned int cpu = dev->id;
-> +
-> +	smp_call_function_single(cpu, query_pwrmgtcr0, &value, 1);
-> +
-> +	value &= PWRMGTCR0_PW20_WAIT;
-> +
-> +	return sprintf(buf, "%u\n", value ? 1 : 0);
-> +}
-> +
-> +static void control_pw20_state(void *val)
-> +{
-> +	u32 *value = val;
-> +	u32 pw20_state;
-> +
-> +	pw20_state = mfspr(SPRN_PWRMGTCR0);
-> +
-> +	if (*value)
-> +		pw20_state |= PWRMGTCR0_PW20_WAIT;
-> +	else
-> +		pw20_state &= ~PWRMGTCR0_PW20_WAIT;
-> +
-> +	mtspr(SPRN_PWRMGTCR0, pw20_state);
-> +}
-> +
-> +static ssize_t store_pw20_state(struct device *dev,
-> +				struct device_attribute *attr,
-> +				const char *buf, size_t count)
+> +	sdhc@114000 {
+> +		compatible = "fsl,t1040-esdhc", "fsl,esdhc";
+> +		sdhci,auto-cmd12;
+> +	};
 
-The difference between query/show and control/store is a bit awkward...
-I'd s/query/do_show/ and s/control/do_store/ (or local_ or other
-appropriate prefix).
+Why does sdhci,auto-cmd12 need to be specified here?  It's already in
+t1042si-post.dtsi which you've included.  Likewise with reg on the
+serdes node.
 
-> +static ssize_t show_altivec_idle_wait_entry_bit(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	u32 value;
-> +	unsigned int cpu = dev->id;
-> +
-> +	smp_call_function_single(cpu, query_pwrmgtcr0, &value, 1);
-> +
-> +	value = MAX_BIT - ((value & PWRMGTCR0_AV_IDLE_CNT) >>
-> +				PWRMGTCR0_AV_IDLE_CNT_SHIFT);
-> +
-> +	return sprintf(buf, "wait entry bit is %u\n", value);
-> +}
+I also question the need to define separate t1040 compatible values for
+all of these, if the only difference is whether the onboard switch is
+enabled or not.
 
-Reading a sysfs value should just return the value, not a human-readable
-string.
+> +	clockgen: global-utilities@e1000 {
+> +		compatible = "fsl,t1042-clockgen", "fsl,qoriq-clockgen-2.0",
+> +				   "fixed-clock";
+> +		reg = <0xe1000 0x1000>;
+> +		clock-output-names = "sysclk";
+> +		#clock-cells = <0>;
+> +
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		pll0: pll0@800 {
+> +			#clock-cells = <1>;
+> +			reg = <0x800>;
+> +			compatible = "fsl,core-pll-clock";
+> +			clocks = <&clockgen>;
+> +			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
+> +		};
+> +		pll1: pll1@820 {
+> +			#clock-cells = <1>;
+> +			reg = <0x820>;
+> +			compatible = "fsl,core-pll-clock";
+> +			clocks = <&clockgen>;
+> +			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
+> +		};
+> +		mux0: mux0@0 {
+> +			#clock-cells = <0>;
+> +			reg = <0x0>;
+> +			compatible = "fsl,core-mux-clock";
 
-> +static DEVICE_ATTR(pw20_state, 0644, show_pw20_state, store_pw20_state);
-> +static DEVICE_ATTR(pw20_wait_entry_bit, 0644, show_pw20_wait_entry_bit,
-> +						store_pw20_wait_entry_bit);
-> +
-> +static DEVICE_ATTR(altivec_idle, 0644, show_altivec_idle, store_altivec_idle);
-> +static DEVICE_ATTR(altivec_idle_wait_entry_bit, 0644,
-> +			show_altivec_idle_wait_entry_bit,
-> +			store_altivec_idle_wait_entry_bit);
+Please update the clock stuff based on
+http://patchwork.ozlabs.org/patch/274134/
 
-I'd make these 0600, given their ability to spam other CPUs with IPIs
-even on read.
+> +/include/ "qoriq-dma-0.dtsi"
+> +	dma@100300 {
+> +		fsl,iommu-parent = <&pamu0>;
+> +		fsl,liodn-reg = <&guts 0x580>; /* DMA1LIODNR */
+> +	};
+> +
+> +/include/ "qoriq-dma-1.dtsi"
+> +	dma@101300 {
+> +		fsl,iommu-parent = <&pamu0>;
+> +		fsl,liodn-reg = <&guts 0x584>; /* DMA2LIODNR */
+> +	};
 
-> +static int __init create_pw20_altivec_sysfs(void)
-> +{
-> +	int i;
-> +	struct device *cpu_dev;
-> +
-> +	if (!has_pw20_altivec_idle())
-> +		return -ENODEV;
-> +
-> +	for_each_possible_cpu(i) {
-> +		cpu_dev = get_cpu_device(i);
-> +		device_create_file(cpu_dev, &dev_attr_pw20_state);
-> +		device_create_file(cpu_dev, &dev_attr_pw20_wait_entry_bit);
-> +
-> +		device_create_file(cpu_dev, &dev_attr_altivec_idle);
-> +		device_create_file(cpu_dev,
-> +					&dev_attr_altivec_idle_wait_entry_bit);
-> +	}
-> +
-> +	return 0;
-> +}
-> +device_initcall(create_pw20_altivec_sysfs);
+These are elo3:
+http://patchwork.ozlabs.org/patch/271238/
 
-I think I said this earlier, but it'd be nice to have a "late cpu setup"
-cputable callback -- but failing that, this should be called from
-register_cpu_online() which is where other CPU sysfs attributes are
-created.
+> +	display@180000 {
+> +                compatible = "fsl,diu", "fsl,t1042-diu";
+> +                reg = <0x180000 1000>;
+> +                interrupts = <74 2 0 0>;
+> +        };
+
+More specific compatibles come first.
 
 -Scott
