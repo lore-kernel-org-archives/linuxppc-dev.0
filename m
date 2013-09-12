@@ -1,16 +1,24 @@
-Return-Path: <matt@ozlabs.org>
-Subject: Re: [PATCH] ppc: bpf_jit: support MOD operation
-Mime-Version: 1.0 (Apple Message framework v1085)
-Content-Type: text/plain; charset=us-ascii
-From: Matt Evans <matt@ozlabs.org>
-In-Reply-To: <1378154750.3978.43.camel@pasglop>
-Date: Thu, 12 Sep 2013 02:18:37 +0100
-Message-Id: <C1FCF580-0B28-43FA-913B-9790BB76AAB7@ozlabs.org>
-References: <1377643792-10327-1-git-send-email-murzin.v@gmail.com>
- <20130902174842.GA1866@hp530> <1378154750.3978.43.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: paulus@samba.org, Vladimir Murzin <murzin.v@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, dborkman@redhat.com
+Return-Path: <B29983@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E7A252C01F0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 11:31:56 +1000 (EST)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v4] powerpc/mpc85xx: Update the clock device tree nodes
+Date: Thu, 12 Sep 2013 01:31:49 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B150748AA@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1378882632-9053-1-git-send-email-Yuantian.Tang@freescale.com>
+ <1378948229.12204.486.camel@snotra.buserror.net>
+In-Reply-To: <1378948229.12204.486.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-Leo-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,94 +28,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben, Vladimir,
-
-
-*dusts off very thick PPC cobwebs*  Sorry for the delay as I'm =
-travelling, didn't get to this until now.
-
-On 02/09/2013, at 9:45 PM, Benjamin Herrenschmidt wrote:
-
-> On Mon, 2013-09-02 at 19:48 +0200, Vladimir Murzin wrote:
->> Ping
->>=20
->> On Wed, Aug 28, 2013 at 02:49:52AM +0400, Vladimir Murzin wrote:
->>> commit b6069a9570 (filter: add MOD operation) added generic
->>> support for modulus operation in BPF.
->>>=20
-> Sorry, nobody got a chance to review that yet. Unfortunately Matt
-> doesn't work for us anymore and none of us has experience with the
-> BPF code, so somebody (possibly me) will need to spend a bit of time
-> figuring it out before verifying that is correct.
->=20
-> Do you have a test case/suite by any chance ?
->=20
-> Ben.
->=20
->>> This patch brings JIT support for PPC64
->>>=20
->>> Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
->>> ---
->>> arch/powerpc/net/bpf_jit_comp.c | 22 ++++++++++++++++++++++
->>> 1 file changed, 22 insertions(+)
->>>=20
->>> diff --git a/arch/powerpc/net/bpf_jit_comp.c =
-b/arch/powerpc/net/bpf_jit_comp.c
->>> index bf56e33..96f24dc 100644
->>> --- a/arch/powerpc/net/bpf_jit_comp.c
->>> +++ b/arch/powerpc/net/bpf_jit_comp.c
->>> @@ -193,6 +193,28 @@ static int bpf_jit_build_body(struct sk_filter =
-*fp, u32 *image,
->>> 				PPC_MUL(r_A, r_A, r_scratch1);
->>> 			}
->>> 			break;
->>> +		case BPF_S_ALU_MOD_X: /* A %=3D X; */
->>> +			ctx->seen |=3D SEEN_XREG;
->>> +			PPC_CMPWI(r_X, 0);
->>> +			if (ctx->pc_ret0 !=3D -1) {
->>> +				PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
->>> +			} else {
->>> +				PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
->>> +				PPC_LI(r_ret, 0);
->>> +				PPC_JMP(exit_addr);
->>> +			}
->>> +			PPC_DIVWU(r_scratch1, r_A, r_X);
->>> +			PPC_MUL(r_scratch1, r_X, r_scratch1);
->>> +			PPC_SUB(r_A, r_A, r_scratch1);
->>> +			break;
-
-Without having compiled & tested this, it looks fine to me (especially =
-with the corrected DIVWU opcode in the other patch, oops...).
-
->>> +		case BPF_S_ALU_MOD_K: /* A %=3D K; */
->>> +#define r_scratch2 (r_scratch1 + 1)
->>> +			PPC_LI32(r_scratch2, K);
->>> +			PPC_DIVWU(r_scratch1, r_A, r_scratch2);
->>> +			PPC_MUL(r_scratch1, r_scratch2, r_scratch1);
->>> +			PPC_SUB(r_A, r_A, r_scratch1);
->>> +#undef r_scratch2
->>> +			break;
-
-If you need another scratch register, it should really be defined in =
-bpf_jit.h instead.
-
-Once you define r_scratch2 in there,
-
-Acked-by: Matt Evans <matt@ozlabs.org>
-
-
-Thanks!
-
-
-Matt
-
-
-
-
->>> 		case BPF_S_ALU_DIV_X: /* A /=3D X; */
->>> 			ctx->seen |=3D SEEN_XREG;
->>> 			PPC_CMPWI(r_X, 0);
->>> --=20
->>> 1.8.1.5
->>>=20
->=20
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
+DQo+IFNlbnQ6IDIwMTPlubQ55pyIMTLml6Ug5pif5pyf5ZubIDk6MTANCj4gVG86IFRhbmcgWXVh
+bnRpYW4tQjI5OTgzDQo+IENjOiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBsaW51eHBwYy1k
+ZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IExpIFlh
+bmctTGVvLVI1ODQ3Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHY0XSBwb3dlcnBjL21wYzg1eHg6
+IFVwZGF0ZSB0aGUgY2xvY2sgZGV2aWNlIHRyZWUNCj4gbm9kZXMNCj4gDQo+IE9uIFdlZCwgMjAx
+My0wOS0xMSBhdCAxNDo1NyArMDgwMCwgWXVhbnRpYW4uVGFuZ0BmcmVlc2NhbGUuY29tIHdyb3Rl
+Og0KPiA+IEZyb206IFRhbmcgWXVhbnRpYW4gPHl1YW50aWFuLnRhbmdAZnJlZXNjYWxlLmNvbT4N
+Cj4gPg0KPiA+IFRoZSBmb2xsb3dpbmcgU29DcyB3aWxsIGJlIGFmZmVjdGVkOiBwMjA0MSwgcDMw
+NDEsIHA0MDgwLCBwNTAyMCwNCj4gPiBwNTA0MCwgYjQ0MjAsIGI0ODYwLCB0NDI0MA0KPiA+DQo+
+ID4gU2lnbmVkLW9mZi1ieTogVGFuZyBZdWFudGlhbiA8WXVhbnRpYW4uVGFuZ0BmcmVlc2NhbGUu
+Y29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IExpIFlhbmcgPGxlb2xpQGZyZWVzY2FsZS5jb20+DQo+
+ID4gLS0tDQo+ID4gdjQ6DQo+ID4gCS0gYWRkIGJpbmRpbmcgZG9jdW1lbnQNCj4gPiAJLSB1cGRh
+dGUgY29tcGF0aWJsZSBzdHJpbmcNCj4gPiAJLSB1cGRhdGUgdGhlIHJlZyBwcm9wZXJ0eQ0KPiA+
+IHYzOg0KPiA+IAktIGZpeCB0eXBvDQo+ID4gdjI6DQo+ID4gCS0gYWRkIHQ0MjQwLCBiNDQyMCwg
+YjQ4NjAgc3VwcG9ydA0KPiA+IAktIHJlbW92ZSBwbGwvNCBjbG9jayBmcm9tIHAyMDQxLCBwMzA0
+MSBhbmQgcDUwMjAgYm9hcmQNCj4gPg0KPiA+ICAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9jbG9j
+ay9jb3JlbmV0LWNsb2NrLnR4dCAgICB8ICA4MA0KPiArKysrKysrKysrKysrKysNCj4gPiAgYXJj
+aC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9iNDQyMHNpLXBvc3QuZHRzaSAgICAgICAgfCAgMzQgKysr
+KysrLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL2I0NDIwc2ktcHJlLmR0c2kgICAg
+ICAgICB8ICAgMiArDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvYjQ4NjBzaS1wb3N0
+LmR0c2kgICAgICAgIHwgIDM0ICsrKysrKy0NCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2Zz
+bC9iNDg2MHNpLXByZS5kdHNpICAgICAgICAgfCAgIDQgKw0KPiA+ICBhcmNoL3Bvd2VycGMvYm9v
+dC9kdHMvZnNsL3AyMDQxc2ktcG9zdC5kdHNpICAgICAgICB8ICA1OSArKysrKysrKysrLQ0KPiA+
+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3AyMDQxc2ktcHJlLmR0c2kgICAgICAgICB8ICAg
+NCArDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcDMwNDFzaS1wb3N0LmR0c2kgICAg
+ICAgIHwgIDU5ICsrKysrKysrKystDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcDMw
+NDFzaS1wcmUuZHRzaSAgICAgICAgIHwgICA0ICsNCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRz
+L2ZzbC9wNDA4MHNpLXBvc3QuZHRzaSAgICAgICAgfCAxMTENCj4gKysrKysrKysrKysrKysrKysr
+KystDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcDQwODBzaS1wcmUuZHRzaSAgICAg
+ICAgIHwgICA4ICsrDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcDUwMjBzaS1wb3N0
+LmR0c2kgICAgICAgIHwgIDQxICsrKysrKystDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9m
+c2wvcDUwMjBzaS1wcmUuZHRzaSAgICAgICAgIHwgICAyICsNCj4gPiAgYXJjaC9wb3dlcnBjL2Jv
+b3QvZHRzL2ZzbC9wNTA0MHNpLXBvc3QuZHRzaSAgICAgICAgfCAgNTkgKysrKysrKysrKy0NCj4g
+PiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9wNTA0MHNpLXByZS5kdHNpICAgICAgICAgfCAg
+IDQgKw0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Q0MjQwc2ktcG9zdC5kdHNpICAg
+ICAgICB8ICA4NA0KPiArKysrKysrKysrKysrKystDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0
+cy9mc2wvdDQyNDBzaS1wcmUuZHRzaSAgICAgICAgIHwgIDEyICsrKw0KPiA+ICAxNyBmaWxlcyBj
+aGFuZ2VkLCA1OTMgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkgIGNyZWF0ZSBtb2RlDQo+
+ID4gMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9jbG9jay9jb3JlbmV0
+LWNsb2NrLnR4dA0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJl
+ZS9iaW5kaW5ncy9jbG9jay9jb3JlbmV0LWNsb2NrLnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL2Nsb2NrL2NvcmVuZXQtY2xvY2sudHh0DQo+ID4gbmV3IGZpbGUg
+bW9kZSAxMDA2NDQNCj4gPiBpbmRleCAwMDAwMDAwLi41MWVhYjc1DQo+ID4gLS0tIC9kZXYvbnVs
+bA0KPiA+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9jbG9jay9jb3Jl
+bmV0LWNsb2NrLnR4dA0KPiA+IEBAIC0wLDAgKzEsODAgQEANCj4gPiArRGV2aWNlIFRyZWUgQ2xv
+Y2sgYmluZGluZ3MgZm9yIEZyZWVzY2FsZSBQb3dlclBDIGNvcmVuZXQgcGxhdGZvcm0NCj4gPiAr
+DQo+ID4gK1RoaXMgYmluZGluZyB1c2VzIHRoZSBjb21tb24gY2xvY2sgYmluZGluZ1sxXS4NCj4g
+PiArDQo+ID4gK1sxXSBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvY2xvY2svY2xv
+Y2stYmluZGluZ3MudHh0DQo+ID4gKw0KPiA+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiA+ICst
+IGNvbXBhdGlibGUgOiBzaGFsbCBiZSBvbmUgb3IgbW9yZSBvZiB0aGUgZm9sbG93aW5nOg0KPiAN
+Cj4gU2hhbGwgaW5jbHVkZS4uLg0KPiANCj4gPiArCS0gImZzbCw8Y2hpcD4tY2xvY2tnZW4iOiBm
+b3IgY2hpcCBzcGVjaWZpYyBjbG9jayBibG9jaw0KPiA+ICsJLSAiZnNsLHFvcmlxLWNsb2NrZ2Vu
+LVsxLDJdLjAiOiBmb3IgY2hhc3NpcyAxLjAgYW5kIDIuMCBjbG9jaw0KPiA+ICsJCWJsb2NrIHJl
+c3BlY3RpdmVseS4NCj4gPiArCS0gImZzbCxxb3JpcS1jaGFzc2lzWzEsMl0tY29yZS1wbGwiIC0g
+Zm9yIGEgY29yZSBQTEwgY2xvY2sNCj4gPiArCS0gImZzbCxxb3JpcS1jaGFzc2lzWzEsMl0tY29y
+ZS1tdXgiIC0gZm9yIGEgY29yZSBtdWx0aXBsZXhlciBjbG9jay4NCj4gPiArCQlEaXZpZGVkIGZy
+b20gdGhlIGNvcmUgUExMIGNsb2NrDQo+IA0KPiBIbW0sIHRoZXJlJ3MgYSBiaXQgb2YgYSBtaXNt
+YXRjaCBoZXJlIGJldHdlZW4gImNoYXNzaXMyIiBhbmQgdGhlICIyLjAiDQo+IG9uIHRoZSBjbG9j
+a2dlbiBub2RlLi4uIHBlcmhhcHMgaXQgc2hvdWxkIGJlICJmc2wscW9yaXEtY29yZS1wbGwtMi4w
+IiwNCj4gZXRjLg0KPiANCj4gPiArCS0gImZpeGVkLWNsb2NrIiAtIGZyb20gY29tbW9uIGNsb2Nr
+IGJpbmRpbmc7IHNob3VsZCBiZSBvdXRwdXQgY2xvY2sNCj4gPiArCQlvZiBvc2NpbGxhdG9yDQo+
+ID4gKy0gcmVnIDogc2hhbGwgYmUgdGhlIGNvbnRyb2wgcmVnaXN0ZXIgb2Zmc2V0IGZyb20gY2xv
+Y2sgYmxvY2sgYmFzZQ0KPiBhZGRyZXNzLg0KPiANCj4gVGhpcyBkZXNjcmlwdGlvbiBvZiAicmVn
+IiBpcyBvdmVybHkgc3BlY2lmaWMgKGFzc3VtZXMgaG93IHRoZSBwYXJlbnQNCj4gbm9kZSdzIHJh
+bmdlcyBhcmUgc2V0IHVwKSwgaW5jb21wbGV0ZSAodGhlcmUncyBhIHNpemUgYXMgd2VsbCBhcyB0
+aGUNCj4gb2Zmc2V0KSwgYW5kIGRvZXMgbm90IGFwcGx5IHRvIHRoZSBjbG9ja2dlbiBub2RlIGl0
+c2VsZiAoeW91IHByb2JhYmx5DQo+IHNob3VsZG4ndCBsdW1wIHRoZW0gdG9nZXRoZXIgbGlrZSB0
+aGlzKS4NCj4gDQpEbyB5b3UgbWVhbiBJIHNob3VsZCBleHBsYWluIHRoZSBSRUcgb2YgY2xvY2tn
+ZW4gYW5kIGl0cyBjaGlsZCBub2RlIHJlc3BlY3RpdmVseT8NCg0KPiA+ICstIGNsb2NrcyA6IHNo
+YWxsIGJlIHRoZSBpbnB1dCBwYXJlbnQgY2xvY2sgcGhhbmRsZSBmb3IgdGhlIGNsb2NrLg0KPiAN
+Cj4gTm90IHJlcXVpcmVkIG9uIHRoZSBjbG9ja2dlbiBub2RlDQo+IA0KUmVxdWlyZWQgYnkgY2hp
+bGQgbm9kZSBvZiBjbG9ja2dlbi4NCg0KUmVnYXJkcywNCll1YW50aWFuDQo+IC1TY290dA0KPiAN
+Cg0K
