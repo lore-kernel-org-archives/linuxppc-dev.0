@@ -1,24 +1,20 @@
-Return-Path: <B40534@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 358AD2C0114
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 13:49:09 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v3 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
-Date: Thu, 12 Sep 2013 03:48:59 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010652F1@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
- <1378879004-2446-4-git-send-email-dongsheng.wang@freescale.com>
- <1378940642.12204.427.camel@snotra.buserror.net>
-In-Reply-To: <1378940642.12204.427.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id B6C502C039E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 15:57:29 +1000 (EST)
+Message-ID: <523157C6.4010404@c-s.fr>
+Date: Thu, 12 Sep 2013 07:57:26 +0200
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc 8xx: Fixing issue with CONFIG_PIN_TLB
+References: <201309111644.r8BGiuDZ016325@localhost.localdomain>
+ <1378939017.12204.409.camel@snotra.buserror.net>
+ <1378944911.4066.12.camel@pasglop>
+In-Reply-To: <1378944911.4066.12.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,104 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAxMiwgMjAxMyA3OjA0IEFNDQo+IFRvOiBX
-YW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxp
-bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjMgNC80
-XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMCBzdGF0ZSBhbmQNCj4gYWx0aXZlYyBp
-ZGxlDQo+IA0KPiBPbiBXZWQsIDIwMTMtMDktMTEgYXQgMTM6NTYgKzA4MDAsIERvbmdzaGVuZyBX
-YW5nIHdyb3RlOg0KPiA+IEZyb206IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVl
-c2NhbGUuY29tPg0KPiA+DQo+ID4gQWRkIGEgc3lzIGludGVyZmFjZSB0byBlbmFibGUvZGlhYmxl
-IHB3MjAgc3RhdGUgb3IgYWx0aXZlYyBpZGxlLCBhbmQNCj4gPiBjb250cm9sIHRoZSB3YWl0IGVu
-dHJ5IHRpbWUuDQo+ID4NCj4gPiBFbmFibGUvRGlzYWJsZSBpbnRlcmZhY2U6DQo+ID4gMCwgZGlz
-YWJsZS4gMSwgZW5hYmxlLg0KPiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdVgvcHcyMF9z
-dGF0ZQ0KPiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdVgvYWx0aXZlY19pZGxlDQo+ID4N
-Cj4gPiBTZXQgd2FpdCBlbnRyeSBiaXQgaW50ZXJmYWNlOg0KPiA+IGJpdCB2YWx1ZSByYW5nZSAw
-fjYzLCAwIGJpdCBpcyBNaW50aW1lLCA2MyBiaXQgaXMgTWF4dGltZS4NCj4gPiAvc3lzL2Rldmlj
-ZXMvc3lzdGVtL2NwdS9jcHVYL3B3MjBfd2FpdF9lbnRyeV9iaXQNCj4gPiAvc3lzL2RldmljZXMv
-c3lzdGVtL2NwdS9jcHVYL2FsdGl2ZWNfaWRsZV93YWl0X2VudHJ5X2JpdA0KPiANCj4gSSdtIG5v
-IGZhbiBvZiB0aGUgd2F5IHBvd2VycGMgZG9lcyBiaXQgbnVtYmVyaW5nLCBidXQgZG9uJ3QgZmxp
-cCBpdA0KPiBhcm91bmQgaGVyZSAtLSB5b3UnbGwganVzdCBjYXVzZSBjb25mdXNpb24uDQo+IA0K
-T0suIDAgYml0IGlzIG1heHRpbWUsIDYzIGJpdCBpcyBtaW50aW1lLg0KDQo+IEJldHRlciB5ZXQs
-IHRoaXMgaW50ZXJmYWNlIHNob3VsZCB0YWtlIHJlYWwgdGltZSB1bml0cyByYXRoZXIgdGhhbiBh
-DQo+IHRpbWViYXNlIGJpdC4NCj4gDQpJIHRoaW5rIHRoZSByZWFsIHRpbWUgaXMgbm90IHN1aXRh
-YmxlLCBiZWNhdXNlIHRpbWViYXNlIGJpdCBkb2VzIG5vdCBjb3JyZXNwb25kIHdpdGgNCnJlYWwg
-dGltZS4NCiANCj4gQWxzbywgeW91IGRpc2FibGUgdGhlIHBvd2VyIHNhdmluZyBtb2RlIGlmIHRo
-ZSBtYXhpbXVtIGludGVydmFsIGlzDQo+IHNlbGVjdGVkLCANCkl0J3Mgbm90IGRpc2FibGUgdGhl
-IHB3MjAgc3RhdGUgb3IgYWx0aXZlYyBpZGxlLCBqdXN0IG1heC1kZWxheSBlbnRyeSB0aW1lLg0K
-DQo+YnV0IHRoZSBkb2N1bWVudGF0aW9uIGRvZXNuJ3Qgc2F5IHRoYXQgLS0gYW5kIHRoZSBkb2N1
-bWVudGF0aW9uDQo+IHNob3VsZCBiZSBpbiB0aGUgY29kZSAob3Igb3RoZXIgZWFzaWx5IGZpbmRh
-YmxlIHBsYWNlKSwgbm90IGp1c3QgaW4gdGhlDQo+IGNvbW1pdCBtZXNzYWdlLg0KPiANCkFsc28g
-YWRkIGEgY29tbWVudCBpbiB0aGUgODV4eC9jb21tb24uYyA/DQoNCj4gPiBTaWduZWQtb2ZmLWJ5
-OiBXYW5nIERvbmdzaGVuZyA8ZG9uZ3NoZW5nLndhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0N
-Cj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9jcHVfc2V0dXBfZnNsX2Jvb2tl
-LlMNCj4gPiBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvY3B1X3NldHVwX2ZzbF9ib29rZS5TDQo+ID4g
-aW5kZXggNzM4OWQ0OS4uNzM5NWQ3OSAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMva2Vy
-bmVsL2NwdV9zZXR1cF9mc2xfYm9va2UuUw0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwv
-Y3B1X3NldHVwX2ZzbF9ib29rZS5TDQo+ID4gQEAgLTUzLDYgKzUzLDIxIEBAIF9HTE9CQUwoX19l
-NTAwX2RjYWNoZV9zZXR1cCkNCj4gPiAgCWlzeW5jDQo+ID4gIAlibHINCj4gPg0KPiA+ICtfR0xP
-QkFMKGhhc19wdzIwX2FsdGl2ZWNfaWRsZSkNCj4gPiArCS8qIDAgZmFsc2UsIDEgdHJ1ZSAqLw0K
-PiA+ICsJbGkJcjMsIDANCj4gPiArDQo+ID4gKwkvKiBQVzIwICYgQWx0aVZlYyBpZGxlIGZlYXR1
-cmUgb25seSBleGlzdHMgZm9yIEU2NTAwICovDQo+ID4gKwltZnNwcglyMCwgU1BSTl9QVlINCj4g
-PiArCXJsd2lubQlyNCwgcjAsIDE2LCAxNiwgMzENCj4gPiArCWxpcwlyMTIsIDANCj4gPiArCW9y
-aQlyMTIsIHIxMiwgUFZSX1ZFUl9FNjUwMEBsDQo+ID4gKwljbXB3CXI0LCByMTINCj4gPiArCWJu
-ZQkyZg0KPiA+ICsJbGkJcjMsIDENCj4gPiArMjoNCj4gPiArCWJscg0KPiANCj4gV2h5IGlzIHRo
-aXMgaW4gYXNtPyAgQW5kIHNob3VsZG4ndCB0aGlzIGdvIGluIHRoZSBjcHV0YWJsZSBzb21laG93
-Pw0KPiANCk5vdCBhIHNwZWNpYWwgcmVhc29uIGZvciB0aGlzLCBqdXN0IGFzbS4uLg0KSSBzZWUg
-dGhhdCwgd2UgY2FuIHVzZSBjcHVfc3BlYy0+cHZyX3ZhbHVlIGluIGMgY29kZS4NCg0KPiA+ICtz
-dGF0aWMgdm9pZCBxdWVyeV9wd3JtZ3RjcjAodm9pZCAqdmFsKSB7DQo+ID4gKwl1MzIgKnZhbHVl
-ID0gdmFsOw0KPiA+ICsNCj4gPiArCSp2YWx1ZSA9IG1mc3ByKFNQUk5fUFdSTUdUQ1IwKTsNCj4g
-PiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIHNzaXplX3Qgc2hvd19wdzIwX3N0YXRlKHN0cnVjdCBk
-ZXZpY2UgKmRldiwNCj4gPiArCQkJCXN0cnVjdCBkZXZpY2VfYXR0cmlidXRlICphdHRyLCBjaGFy
-ICpidWYpIHsNCj4gPiArCXUzMiB2YWx1ZTsNCj4gPiArCXVuc2lnbmVkIGludCBjcHUgPSBkZXYt
-PmlkOw0KPiA+ICsNCj4gPiArCXNtcF9jYWxsX2Z1bmN0aW9uX3NpbmdsZShjcHUsIHF1ZXJ5X3B3
-cm1ndGNyMCwgJnZhbHVlLCAxKTsNCj4gPiArDQo+ID4gKwl2YWx1ZSAmPSBQV1JNR1RDUjBfUFcy
-MF9XQUlUOw0KPiA+ICsNCj4gPiArCXJldHVybiBzcHJpbnRmKGJ1ZiwgIiV1XG4iLCB2YWx1ZSA/
-IDEgOiAwKTsgfQ0KPiA+ICsNCj4gPiArc3RhdGljIHZvaWQgY29udHJvbF9wdzIwX3N0YXRlKHZv
-aWQgKnZhbCkgew0KPiA+ICsJdTMyICp2YWx1ZSA9IHZhbDsNCj4gPiArCXUzMiBwdzIwX3N0YXRl
-Ow0KPiA+ICsNCj4gPiArCXB3MjBfc3RhdGUgPSBtZnNwcihTUFJOX1BXUk1HVENSMCk7DQo+ID4g
-Kw0KPiA+ICsJaWYgKCp2YWx1ZSkNCj4gPiArCQlwdzIwX3N0YXRlIHw9IFBXUk1HVENSMF9QVzIw
-X1dBSVQ7DQo+ID4gKwllbHNlDQo+ID4gKwkJcHcyMF9zdGF0ZSAmPSB+UFdSTUdUQ1IwX1BXMjBf
-V0FJVDsNCj4gPiArDQo+ID4gKwltdHNwcihTUFJOX1BXUk1HVENSMCwgcHcyMF9zdGF0ZSk7DQo+
-ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBzc2l6ZV90IHN0b3JlX3B3MjBfc3RhdGUoc3RydWN0
-IGRldmljZSAqZGV2LA0KPiA+ICsJCQkJc3RydWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsDQo+
-ID4gKwkJCQljb25zdCBjaGFyICpidWYsIHNpemVfdCBjb3VudCkNCj4gDQo+IFRoZSBkaWZmZXJl
-bmNlIGJldHdlZW4gcXVlcnkvc2hvdyBhbmQgY29udHJvbC9zdG9yZSBpcyBhIGJpdCBhd2t3YXJk
-Li4uDQo+IEknZCBzL3F1ZXJ5L2RvX3Nob3cvIGFuZCBzL2NvbnRyb2wvZG9fc3RvcmUvIChvciBs
-b2NhbF8gb3Igb3RoZXINCj4gYXBwcm9wcmlhdGUgcHJlZml4KS4NCj4gDQpkb19zaG93L2RvX3N0
-b3JlIGxvb2tzIGJldHRlciB0aGFuIG90aGVycy4NCg0KPiA+ICtzdGF0aWMgc3NpemVfdCBzaG93
-X2FsdGl2ZWNfaWRsZV93YWl0X2VudHJ5X2JpdChzdHJ1Y3QgZGV2aWNlICpkZXYsDQo+ID4gKwkJ
-CQlzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVmKSB7DQo+ID4gKwl1MzIg
-dmFsdWU7DQo+ID4gKwl1bnNpZ25lZCBpbnQgY3B1ID0gZGV2LT5pZDsNCj4gPiArDQo+ID4gKwlz
-bXBfY2FsbF9mdW5jdGlvbl9zaW5nbGUoY3B1LCBxdWVyeV9wd3JtZ3RjcjAsICZ2YWx1ZSwgMSk7
-DQo+ID4gKw0KPiA+ICsJdmFsdWUgPSBNQVhfQklUIC0gKCh2YWx1ZSAmIFBXUk1HVENSMF9BVl9J
-RExFX0NOVCkgPj4NCj4gPiArCQkJCVBXUk1HVENSMF9BVl9JRExFX0NOVF9TSElGVCk7DQo+ID4g
-Kw0KPiA+ICsJcmV0dXJuIHNwcmludGYoYnVmLCAid2FpdCBlbnRyeSBiaXQgaXMgJXVcbiIsIHZh
-bHVlKTsgfQ0KPiANCj4gUmVhZGluZyBhIHN5c2ZzIHZhbHVlIHNob3VsZCBqdXN0IHJldHVybiB0
-aGUgdmFsdWUsIG5vdCBhIGh1bWFuLXJlYWRhYmxlDQo+IHN0cmluZy4NCj4gDQpUaGFua3MuDQoN
-Cj4gPiArc3RhdGljIERFVklDRV9BVFRSKHB3MjBfc3RhdGUsIDA2NDQsIHNob3dfcHcyMF9zdGF0
-ZSwNCj4gPiArc3RvcmVfcHcyMF9zdGF0ZSk7IHN0YXRpYyBERVZJQ0VfQVRUUihwdzIwX3dhaXRf
-ZW50cnlfYml0LCAwNjQ0LA0KPiBzaG93X3B3MjBfd2FpdF9lbnRyeV9iaXQsDQo+ID4gKwkJCQkJ
-CXN0b3JlX3B3MjBfd2FpdF9lbnRyeV9iaXQpOw0KPiA+ICsNCj4gPiArc3RhdGljIERFVklDRV9B
-VFRSKGFsdGl2ZWNfaWRsZSwgMDY0NCwgc2hvd19hbHRpdmVjX2lkbGUsDQo+ID4gK3N0b3JlX2Fs
-dGl2ZWNfaWRsZSk7IHN0YXRpYyBERVZJQ0VfQVRUUihhbHRpdmVjX2lkbGVfd2FpdF9lbnRyeV9i
-aXQsDQo+IDA2NDQsDQo+ID4gKwkJCXNob3dfYWx0aXZlY19pZGxlX3dhaXRfZW50cnlfYml0LA0K
-PiA+ICsJCQlzdG9yZV9hbHRpdmVjX2lkbGVfd2FpdF9lbnRyeV9iaXQpOw0KPiANCj4gSSdkIG1h
-a2UgdGhlc2UgMDYwMCwgZ2l2ZW4gdGhlaXIgYWJpbGl0eSB0byBzcGFtIG90aGVyIENQVXMgd2l0
-aCBJUElzDQo+IGV2ZW4gb24gcmVhZC4NCj4gDQpUaGFua3MuDQoNCj4gPiArc3RhdGljIGludCBf
-X2luaXQgY3JlYXRlX3B3MjBfYWx0aXZlY19zeXNmcyh2b2lkKSB7DQo+ID4gKwlpbnQgaTsNCj4g
-PiArCXN0cnVjdCBkZXZpY2UgKmNwdV9kZXY7DQo+ID4gKw0KPiA+ICsJaWYgKCFoYXNfcHcyMF9h
-bHRpdmVjX2lkbGUoKSkNCj4gPiArCQlyZXR1cm4gLUVOT0RFVjsNCj4gPiArDQo+ID4gKwlmb3Jf
-ZWFjaF9wb3NzaWJsZV9jcHUoaSkgew0KPiA+ICsJCWNwdV9kZXYgPSBnZXRfY3B1X2RldmljZShp
-KTsNCj4gPiArCQlkZXZpY2VfY3JlYXRlX2ZpbGUoY3B1X2RldiwgJmRldl9hdHRyX3B3MjBfc3Rh
-dGUpOw0KPiA+ICsJCWRldmljZV9jcmVhdGVfZmlsZShjcHVfZGV2LCAmZGV2X2F0dHJfcHcyMF93
-YWl0X2VudHJ5X2JpdCk7DQo+ID4gKw0KPiA+ICsJCWRldmljZV9jcmVhdGVfZmlsZShjcHVfZGV2
-LCAmZGV2X2F0dHJfYWx0aXZlY19pZGxlKTsNCj4gPiArCQlkZXZpY2VfY3JlYXRlX2ZpbGUoY3B1
-X2RldiwNCj4gPiArCQkJCQkmZGV2X2F0dHJfYWx0aXZlY19pZGxlX3dhaXRfZW50cnlfYml0KTsN
-Cj4gPiArCX0NCj4gPiArDQo+ID4gKwlyZXR1cm4gMDsNCj4gPiArfQ0KPiA+ICtkZXZpY2VfaW5p
-dGNhbGwoY3JlYXRlX3B3MjBfYWx0aXZlY19zeXNmcyk7DQo+IA0KPiBJIHRoaW5rIEkgc2FpZCB0
-aGlzIGVhcmxpZXIsIGJ1dCBpdCdkIGJlIG5pY2UgdG8gaGF2ZSBhICJsYXRlIGNwdSBzZXR1cCIN
-Cj4gY3B1dGFibGUgY2FsbGJhY2sgLS0gYnV0IGZhaWxpbmcgdGhhdCwgdGhpcyBzaG91bGQgYmUg
-Y2FsbGVkIGZyb20NCj4gcmVnaXN0ZXJfY3B1X29ubGluZSgpIHdoaWNoIGlzIHdoZXJlIG90aGVy
-IENQVSBzeXNmcyBhdHRyaWJ1dGVzIGFyZQ0KPiBjcmVhdGVkLg0KDQpZZXMsIHRoYW5rcy4gDQoN
-Ci1kb25nc2hlbmcNCg==
+
+Le 12/09/2013 02:15, Benjamin Herrenschmidt a écrit :
+> On Wed, 2013-09-11 at 17:36 -0500, Scott Wood wrote:
+>> I wonder why we don't start from entry 31 so we can actually make use of
+>> that autodecrement.  What will happen when we load the first normal TLB
+>> entry later on?  I don't see any setting of SPRN_MD_CTR after this code,
+>> so won't it overwrite entry 30 (the middle 8M) in the CONFIG_PIN_TLB
+>> case?
+>>
+>> Ben, would patches like this be considered bugfixes as far as merging
+>> goes, or would they be for next given that it's something that's never
+>> really worked right and hasn't been touched in years?
+> Since they don't affect anything outside of 8xx, I'm happy to take them
+> until around -rc2 or 3. But it's your call really.
+>
+>
+Scott, you're right, I didn't see that other consequence.
+I'll come with a more complete patch this afternoon.
+Thanks
