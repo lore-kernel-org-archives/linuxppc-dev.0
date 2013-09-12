@@ -1,26 +1,23 @@
-Return-Path: <seiji.aguchi@hds.com>
-Received: from usindpps05.hds.com (usindpps05.hds.com [207.126.252.18])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2B94A2C039F
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 02:23:09 +1000 (EST)
-From: Seiji Aguchi <seiji.aguchi@hds.com>
-To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>, "linuxppc-dev@ozlabs.org"
- <linuxppc-dev@ozlabs.org>, "tony.luck@intel.com" <tony.luck@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "keescook@chromium.org" <keescook@chromium.org>
-Subject: RE: [PATCH v2] pstore: Adjust buffer size for compression for
- smaller registered buffers
-Date: Thu, 12 Sep 2013 16:22:46 +0000
-Message-ID: <A5ED84D3BB3A384992CBB9C77DEDA4D443EC3AC9@USINDEM103.corp.hds.com>
-References: <20130912064832.15340.52422.stgit@aruna-ThinkPad-T420>
-In-Reply-To: <20130912064832.15340.52422.stgit@aruna-ThinkPad-T420>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>,
- "mahesh@linux.vnet.ibm.com" <mahesh@linux.vnet.ibm.com>,
- "ccross@android.com" <ccross@android.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id A9DA02C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 02:42:01 +1000 (EST)
+Subject: Re: [PATCH] powerpc/p1010rdb:remove interrupts of ethernet-phy in
+ device tree
+Mime-Version: 1.0 (Apple Message framework v1283)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <3F453DDFF675A64A89321A1F35281021ABA9F8@039-SN1MPN1-004.039d.mgd.msft.net>
+Date: Thu, 12 Sep 2013 11:41:55 -0500
+Message-Id: <D8AFFF30-31B1-4B3B-B9D0-DC209A5A3BCD@kernel.crashing.org>
+References: <1378871354-22763-1-git-send-email-B45475@freescale.com>
+ <CE821871-A927-4A65-AA69-05F63AF2C6A1@kernel.crashing.org>
+ <3F453DDFF675A64A89321A1F35281021ABA9F8@039-SN1MPN1-004.039d.mgd.msft.net>
+To: Liu Shengzhou-B36685 <B36685@freescale.com>
+Cc: Zhao Qiang-B45475 <B45475@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,46 +27,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ZWZpdmFycyB3b3JrcyBmaW5lIHdpdGggdGhpcyB2MiBwYXRjaC4NCg0KVGVzdGVkLWJ5OiBTZWlq
-aSBBZ3VjaGkgPHNlaWppLmFndWNoaUBoZHMuY29tPg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+IEZyb206IEFydW5hIEJhbGFrcmlzaG5haWFoIFttYWlsdG86YXJ1bmFAbGludXgu
-dm5ldC5pYm0uY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDEyLCAyMDEzIDI6NTEg
-QU0NCj4gVG86IGxpbnV4cHBjLWRldkBvemxhYnMub3JnOyB0b255Lmx1Y2tAaW50ZWwuY29tOyBT
-ZWlqaSBBZ3VjaGk7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGtlZXNjb29rQGNocm9t
-aXVtLm9yZw0KPiBDYzogamtlbmlzdG9AbGludXgudm5ldC5pYm0uY29tOyBtYWhlc2hAbGludXgu
-dm5ldC5pYm0uY29tOyBjYm91YXRtYWlscnVAZ21haWwuY29tOyBhbmFudGhAaW4uaWJtLmNvbTsg
-Y2Nyb3NzQGFuZHJvaWQuY29tDQo+IFN1YmplY3Q6IFtQQVRDSCB2Ml0gcHN0b3JlOiBBZGp1c3Qg
-YnVmZmVyIHNpemUgZm9yIGNvbXByZXNzaW9uIGZvciBzbWFsbGVyIHJlZ2lzdGVyZWQgYnVmZmVy
-cw0KPiANCj4gV2hlbiBiYWNrZW5kcyAoZXg6IGVmaXZhcnMpIGhhdmUgc21hbGxlciByZWdpc3Rl
-cmVkIGJ1ZmZlcnMsIHRoZSBiaWdfb29wc19idWYNCj4gaXMgcXVpdGUgdG9vIGJpZyBmb3IgdGhl
-bSBhcyBudW1iZXIgb2YgcmVwZWF0ZWQgb2NjdXJlbmNlcyBpbiB0aGUgdGV4dCBjYXB0dXJlZA0K
-PiB3aWxsIGJlIGxlc3MuIFBhdGNoIHRha2VzIGNhcmUgb2YgYWRqdXN0aW5nIHRoZSBidWZmZXIg
-c2l6ZSBiYXNlZCBvbiB0aGUNCj4gcmVnaXN0ZXJlZCBidWZmZXIgc2l6ZS4gY21wciB2YWx1ZXMg
-aGFzIGJlZW4gYXJyaXZlZCBhZnRlciBkb2luZyBleHBlcmltZW50cyB3aXRoDQo+IHBsYWluIHRl
-eHQgZm9yIGJ1ZmZlcnMgb2Ygc2l6ZSAxayAtIDRrIChTbWFsbGVyIHRoZSBidWZmZXIgc2l6ZSBy
-ZXBlYXRlZCBvY2N1cmVuY2UNCj4gd2lsbCBiZSBsZXNzKSBhbmQgd2l0aCBzYW1wbGUgY3Jhc2gg
-bG9nIGZvciBidWZmZXJzIHJhbmdpbmcgZnJvbSA0ayAtIDEway4NCj4gDQo+IFJlcG9ydGVkLWJ5
-OiBTZWlqaSBBZ3VjaGkgPHNlaWppLmFndWNoaUBoZHMuY29tPg0KPiBTaWduZWQtb2ZmLWJ5OiBB
-cnVuYSBCYWxha3Jpc2huYWlhaCA8YXJ1bmFAbGludXgudm5ldC5pYm0uY29tPg0KPiAtLS0NCj4g
-Q2hhbmdlcyBmcm9tIHYxOg0KPiAJUmV0YWluIHRoZSBjbXByID0gNDUgZm9yIGJ1ZmZlcnMgcmFu
-Z2luZyBvZiBzaXplIDRrIC0gMTBrLiA0NSBzZWVtcyB0byB3b3JrLg0KPiBJIGFkZGVkIGFuIGFk
-ZGl0aW9uYWwgaGVhZHJvb20gb2YgMyUuIFJldmVydCBpdCBiYWNrIHRvIDQ1Lg0KPiANCj4gIGZz
-L3BzdG9yZS9wbGF0Zm9ybS5jIHwgICAyMyArKysrKysrKysrKysrKysrKysrKysrLQ0KPiAgMSBm
-aWxlIGNoYW5nZWQsIDIyIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCj4gDQo+IGRpZmYg
-LS1naXQgYS9mcy9wc3RvcmUvcGxhdGZvcm0uYyBiL2ZzL3BzdG9yZS9wbGF0Zm9ybS5jDQo+IGlu
-ZGV4IDRmZmI3YWIuLjU3YjQyMTkgMTAwNjQ0DQo+IC0tLSBhL2ZzL3BzdG9yZS9wbGF0Zm9ybS5j
-DQo+ICsrKyBiL2ZzL3BzdG9yZS9wbGF0Zm9ybS5jDQo+IEBAIC0xOTUsOCArMTk1LDI5IEBAIGVy
-cm9yOg0KPiAgc3RhdGljIHZvaWQgYWxsb2NhdGVfYnVmX2Zvcl9jb21wcmVzc2lvbih2b2lkKQ0K
-PiAgew0KPiAgCXNpemVfdCBzaXplOw0KPiArCXNpemVfdCBjbXByOw0KPiArDQo+ICsJc3dpdGNo
-IChwc2luZm8tPmJ1ZnNpemUpIHsNCj4gKwkvKiBidWZmZXIgcmFuZ2UgZm9yIGVmaXZhcnMgKi8N
-Cj4gKwljYXNlIDEwMDAgLi4uIDIwMDA6DQo+ICsJCWNtcHIgPSA1NjsNCj4gKwkJYnJlYWs7DQo+
-ICsJY2FzZSAyMDAxIC4uLiAzMDAwOg0KPiArCQljbXByID0gNTQ7DQo+ICsJCWJyZWFrOw0KPiAr
-CWNhc2UgMzAwMSAuLi4gMzk5OToNCj4gKwkJY21wciA9IDUyOw0KPiArCQlicmVhazsNCj4gKwkv
-KiBidWZmZXIgcmFuZ2UgZm9yIG52cmFtLCBlcnN0ICovDQo+ICsJY2FzZSA0MDAwIC4uLiAxMDAw
-MDoNCj4gKwkJY21wciA9IDQ1Ow0KPiArCQlicmVhazsNCj4gKwlkZWZhdWx0Og0KPiArCQljbXBy
-ID0gNjA7DQo+ICsJCWJyZWFrOw0KPiArCX0NCj4gDQo+IC0JYmlnX29vcHNfYnVmX3N6ID0gKHBz
-aW5mby0+YnVmc2l6ZSAqIDEwMCkgLyA0NTsNCj4gKwliaWdfb29wc19idWZfc3ogPSAocHNpbmZv
-LT5idWZzaXplICogMTAwKSAvIGNtcHI7DQo+ICAJYmlnX29vcHNfYnVmID0ga21hbGxvYyhiaWdf
-b29wc19idWZfc3osIEdGUF9LRVJORUwpOw0KPiAgCWlmIChiaWdfb29wc19idWYpIHsNCj4gIAkJ
-c2l6ZSA9IG1heCh6bGliX2RlZmxhdGVfd29ya3NwYWNlc2l6ZShXSU5ET1dfQklUUywgTUVNX0xF
-VkVMKSwNCg0K
+
+On Sep 12, 2013, at 1:54 AM, Liu Shengzhou-B36685 wrote:
+
+>=20
+>=20
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Wednesday, September 11, 2013 11:13 PM
+>> To: Zhao Qiang-B45475
+>> Cc: linuxppc-dev@lists.ozlabs.org; Liu Shengzhou-B36685
+>> Subject: Re: [PATCH] powerpc/p1010rdb:remove interrupts of =
+ethernet-phy in
+>> device tree
+>>=20
+>>=20
+>> On Sep 10, 2013, at 10:49 PM, Zhao Qiang wrote:
+>>=20
+>>> Since P1010RDB-PA and P1010RDB-PB boards use different external PHY
+>>> interrupt signals.
+>>> And actually the PHY interrupt is not used effectively with
+>>> corresponding interrupt handler.
+>>> So we can remove the interrupts node without side-effect to comply
+>>> with both P1010RDB-PA and P1010RDB-PB.
+>>>=20
+>>> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+>>> Signed-off-by: Zhao Qiang <B45475@freescale.com>
+>>> ---
+>>> arch/powerpc/boot/dts/p1010rdb.dtsi | 3 ---
+>>> 1 file changed, 3 deletions(-)
+>>>=20
+>>=20
+>> NAK.  The device tree should represent the HW not what drivers decide =
+to do with
+>> it.
+>>=20
+>> If different board revs have different interrupt signals than create =
+dts's to
+>> handle the 2 board revs.
+>>=20
+>> - k
+>>=20
+> You mean we need to create p1010rdb-pa.dtsi and p1010rdb-pb.dtsi =
+replacing current p1010rdb.dtsi just because of the unused phy =
+interrupt?
+> and phy interrupt is not present in those dts of P3/P4/P5 platforms.
+> Actually currently many hardware are not present in dts, such as a lot =
+of i2c devices, temperature monitor, etc.
+>=20
+> -Shengzhou
+>=20
+
+I'm saying of the board revs are different w/regards to how the PHY =
+interrupt is wired, than create two .dts one for each of the board revs.
+
+If the p3/p4/p5 platforms are missing the phy interrupt in the .dts than =
+its an error.
+
+Other devices like i2c, temp mon, etc should be added.  There is a =
+difference between something not existing because people haven't gotten =
+around to it / there isn't a binding vs a using the lack of information =
+as a configuration mechanism.
+
+- k
