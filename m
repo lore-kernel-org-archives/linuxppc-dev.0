@@ -1,26 +1,26 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 659492C0200
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 00:44:30 +1000 (EST)
-Message-ID: <1378997052.2536.5.camel@snotra.buserror.net>
-Subject: Re: [PATCH v4] powerpc/mpc85xx: Update the clock device tree nodes
-From: Scott Wood <scottwood@freescale.com>
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Date: Thu, 12 Sep 2013 09:44:12 -0500
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B150748AA@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1378882632-9053-1-git-send-email-Yuantian.Tang@freescale.com>
- <1378948229.12204.486.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150748AA@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <seiji.aguchi@hds.com>
+Received: from usindpps05.hds.com (usindpps05.hds.com [207.126.252.18])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2B94A2C039F
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 02:23:09 +1000 (EST)
+From: Seiji Aguchi <seiji.aguchi@hds.com>
+To: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>, "linuxppc-dev@ozlabs.org"
+ <linuxppc-dev@ozlabs.org>, "tony.luck@intel.com" <tony.luck@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "keescook@chromium.org" <keescook@chromium.org>
+Subject: RE: [PATCH v2] pstore: Adjust buffer size for compression for
+ smaller registered buffers
+Date: Thu, 12 Sep 2013 16:22:46 +0000
+Message-ID: <A5ED84D3BB3A384992CBB9C77DEDA4D443EC3AC9@USINDEM103.corp.hds.com>
+References: <20130912064832.15340.52422.stgit@aruna-ThinkPad-T420>
+In-Reply-To: <20130912064832.15340.52422.stgit@aruna-ThinkPad-T420>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Li Yang-Leo-R58472 <r58472@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>,
+ "mahesh@linux.vnet.ibm.com" <mahesh@linux.vnet.ibm.com>,
+ "ccross@android.com" <ccross@android.com>,
+ "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,33 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-09-11 at 20:31 -0500, Tang Yuantian-B29983 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: 2013=E5=B9=B49=E6=9C=8812=E6=97=A5 =E6=98=9F=E6=9C=9F=E5=9B=9B =
-9:10
-> > To: Tang Yuantian-B29983
-> > Cc: galak@kernel.crashing.org; linuxppc-dev@lists.ozlabs.org;
-> > devicetree@vger.kernel.org; Li Yang-Leo-R58472
-> > Subject: Re: [PATCH v4] powerpc/mpc85xx: Update the clock device tree
-> > nodes
-> >=20
-> > This description of "reg" is overly specific (assumes how the parent
-> > node's ranges are set up), incomplete (there's a size as well as the
-> > offset), and does not apply to the clockgen node itself (you probably
-> > shouldn't lump them together like this).
-> >=20
-> Do you mean I should explain the REG of clockgen and its child node res=
-pectively?
->=20
-> > > +- clocks : shall be the input parent clock phandle for the clock.
-> >=20
-> > Not required on the clockgen node
-> >=20
-> Required by child node of clockgen.
-
-My point is that you're lumping several different types of nodes
-together with one binding, when some parts of the binding are not
-applicable to the clockgen node.
-
--Scott
+ZWZpdmFycyB3b3JrcyBmaW5lIHdpdGggdGhpcyB2MiBwYXRjaC4NCg0KVGVzdGVkLWJ5OiBTZWlq
+aSBBZ3VjaGkgPHNlaWppLmFndWNoaUBoZHMuY29tPg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQo+IEZyb206IEFydW5hIEJhbGFrcmlzaG5haWFoIFttYWlsdG86YXJ1bmFAbGludXgu
+dm5ldC5pYm0uY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDEyLCAyMDEzIDI6NTEg
+QU0NCj4gVG86IGxpbnV4cHBjLWRldkBvemxhYnMub3JnOyB0b255Lmx1Y2tAaW50ZWwuY29tOyBT
+ZWlqaSBBZ3VjaGk7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGtlZXNjb29rQGNocm9t
+aXVtLm9yZw0KPiBDYzogamtlbmlzdG9AbGludXgudm5ldC5pYm0uY29tOyBtYWhlc2hAbGludXgu
+dm5ldC5pYm0uY29tOyBjYm91YXRtYWlscnVAZ21haWwuY29tOyBhbmFudGhAaW4uaWJtLmNvbTsg
+Y2Nyb3NzQGFuZHJvaWQuY29tDQo+IFN1YmplY3Q6IFtQQVRDSCB2Ml0gcHN0b3JlOiBBZGp1c3Qg
+YnVmZmVyIHNpemUgZm9yIGNvbXByZXNzaW9uIGZvciBzbWFsbGVyIHJlZ2lzdGVyZWQgYnVmZmVy
+cw0KPiANCj4gV2hlbiBiYWNrZW5kcyAoZXg6IGVmaXZhcnMpIGhhdmUgc21hbGxlciByZWdpc3Rl
+cmVkIGJ1ZmZlcnMsIHRoZSBiaWdfb29wc19idWYNCj4gaXMgcXVpdGUgdG9vIGJpZyBmb3IgdGhl
+bSBhcyBudW1iZXIgb2YgcmVwZWF0ZWQgb2NjdXJlbmNlcyBpbiB0aGUgdGV4dCBjYXB0dXJlZA0K
+PiB3aWxsIGJlIGxlc3MuIFBhdGNoIHRha2VzIGNhcmUgb2YgYWRqdXN0aW5nIHRoZSBidWZmZXIg
+c2l6ZSBiYXNlZCBvbiB0aGUNCj4gcmVnaXN0ZXJlZCBidWZmZXIgc2l6ZS4gY21wciB2YWx1ZXMg
+aGFzIGJlZW4gYXJyaXZlZCBhZnRlciBkb2luZyBleHBlcmltZW50cyB3aXRoDQo+IHBsYWluIHRl
+eHQgZm9yIGJ1ZmZlcnMgb2Ygc2l6ZSAxayAtIDRrIChTbWFsbGVyIHRoZSBidWZmZXIgc2l6ZSBy
+ZXBlYXRlZCBvY2N1cmVuY2UNCj4gd2lsbCBiZSBsZXNzKSBhbmQgd2l0aCBzYW1wbGUgY3Jhc2gg
+bG9nIGZvciBidWZmZXJzIHJhbmdpbmcgZnJvbSA0ayAtIDEway4NCj4gDQo+IFJlcG9ydGVkLWJ5
+OiBTZWlqaSBBZ3VjaGkgPHNlaWppLmFndWNoaUBoZHMuY29tPg0KPiBTaWduZWQtb2ZmLWJ5OiBB
+cnVuYSBCYWxha3Jpc2huYWlhaCA8YXJ1bmFAbGludXgudm5ldC5pYm0uY29tPg0KPiAtLS0NCj4g
+Q2hhbmdlcyBmcm9tIHYxOg0KPiAJUmV0YWluIHRoZSBjbXByID0gNDUgZm9yIGJ1ZmZlcnMgcmFu
+Z2luZyBvZiBzaXplIDRrIC0gMTBrLiA0NSBzZWVtcyB0byB3b3JrLg0KPiBJIGFkZGVkIGFuIGFk
+ZGl0aW9uYWwgaGVhZHJvb20gb2YgMyUuIFJldmVydCBpdCBiYWNrIHRvIDQ1Lg0KPiANCj4gIGZz
+L3BzdG9yZS9wbGF0Zm9ybS5jIHwgICAyMyArKysrKysrKysrKysrKysrKysrKysrLQ0KPiAgMSBm
+aWxlIGNoYW5nZWQsIDIyIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCj4gDQo+IGRpZmYg
+LS1naXQgYS9mcy9wc3RvcmUvcGxhdGZvcm0uYyBiL2ZzL3BzdG9yZS9wbGF0Zm9ybS5jDQo+IGlu
+ZGV4IDRmZmI3YWIuLjU3YjQyMTkgMTAwNjQ0DQo+IC0tLSBhL2ZzL3BzdG9yZS9wbGF0Zm9ybS5j
+DQo+ICsrKyBiL2ZzL3BzdG9yZS9wbGF0Zm9ybS5jDQo+IEBAIC0xOTUsOCArMTk1LDI5IEBAIGVy
+cm9yOg0KPiAgc3RhdGljIHZvaWQgYWxsb2NhdGVfYnVmX2Zvcl9jb21wcmVzc2lvbih2b2lkKQ0K
+PiAgew0KPiAgCXNpemVfdCBzaXplOw0KPiArCXNpemVfdCBjbXByOw0KPiArDQo+ICsJc3dpdGNo
+IChwc2luZm8tPmJ1ZnNpemUpIHsNCj4gKwkvKiBidWZmZXIgcmFuZ2UgZm9yIGVmaXZhcnMgKi8N
+Cj4gKwljYXNlIDEwMDAgLi4uIDIwMDA6DQo+ICsJCWNtcHIgPSA1NjsNCj4gKwkJYnJlYWs7DQo+
+ICsJY2FzZSAyMDAxIC4uLiAzMDAwOg0KPiArCQljbXByID0gNTQ7DQo+ICsJCWJyZWFrOw0KPiAr
+CWNhc2UgMzAwMSAuLi4gMzk5OToNCj4gKwkJY21wciA9IDUyOw0KPiArCQlicmVhazsNCj4gKwkv
+KiBidWZmZXIgcmFuZ2UgZm9yIG52cmFtLCBlcnN0ICovDQo+ICsJY2FzZSA0MDAwIC4uLiAxMDAw
+MDoNCj4gKwkJY21wciA9IDQ1Ow0KPiArCQlicmVhazsNCj4gKwlkZWZhdWx0Og0KPiArCQljbXBy
+ID0gNjA7DQo+ICsJCWJyZWFrOw0KPiArCX0NCj4gDQo+IC0JYmlnX29vcHNfYnVmX3N6ID0gKHBz
+aW5mby0+YnVmc2l6ZSAqIDEwMCkgLyA0NTsNCj4gKwliaWdfb29wc19idWZfc3ogPSAocHNpbmZv
+LT5idWZzaXplICogMTAwKSAvIGNtcHI7DQo+ICAJYmlnX29vcHNfYnVmID0ga21hbGxvYyhiaWdf
+b29wc19idWZfc3osIEdGUF9LRVJORUwpOw0KPiAgCWlmIChiaWdfb29wc19idWYpIHsNCj4gIAkJ
+c2l6ZSA9IG1heCh6bGliX2RlZmxhdGVfd29ya3NwYWNlc2l6ZShXSU5ET1dfQklUUywgTUVNX0xF
+VkVMKSwNCg0K
