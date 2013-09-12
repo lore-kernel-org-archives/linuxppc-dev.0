@@ -1,24 +1,26 @@
-Return-Path: <B40534@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E1A7F2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 12:27:27 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v3 2/4] powerpc/85xx: add hardware automatically enter
- altivec idle state
-Date: Thu, 12 Sep 2013 02:27:18 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010632A4@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
- <1378879004-2446-2-git-send-email-dongsheng.wang@freescale.com>
- <1378939377.12204.412.camel@snotra.buserror.net>
-In-Reply-To: <1378939377.12204.412.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <murzin.v@gmail.com>
+Received: from mail-la0-x22f.google.com (mail-la0-x22f.google.com
+ [IPv6:2a00:1450:4010:c03::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 62F1F2C0396
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 12:53:21 +1000 (EST)
+Received: by mail-la0-f47.google.com with SMTP id eo20so8154753lab.34
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2013 19:53:16 -0700 (PDT)
+Date: Thu, 12 Sep 2013 04:52:45 +0200
+From: Vladimir Murzin <murzin.v@gmail.com>
+To: Matt Evans <matt@ozlabs.org>
+Subject: Re: [PATCH] powerpc: net: filter: fix DIVWU instruction opcode
+Message-ID: <20130912025241.GA1869@hp530>
+References: <1378915410-2262-1-git-send-email-murzin.v@gmail.com>
+ <7012.1378945979@ale.ozlabs.ibm.com>
+ <79BD1567-A588-4977-BF11-C03045B55884@ozlabs.org>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=koi8-r
+In-Reply-To: <79BD1567-A588-4977-BF11-C03045B55884@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "paulus@samba.org" <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAxMiwgMjAxMyA2OjQzIEFNDQo+IFRvOiBX
-YW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxp
-bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjMgMi80
-XSBwb3dlcnBjLzg1eHg6IGFkZCBoYXJkd2FyZSBhdXRvbWF0aWNhbGx5DQo+IGVudGVyIGFsdGl2
-ZWMgaWRsZSBzdGF0ZQ0KPiANCj4gT24gV2VkLCAyMDEzLTA5LTExIGF0IDEzOjU2ICswODAwLCBE
-b25nc2hlbmcgV2FuZyB3cm90ZToNCj4gPiBGcm9tOiBXYW5nIERvbmdzaGVuZyA8ZG9uZ3NoZW5n
-LndhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IEVhY2ggY29yZSdzIEFsdGlWZWMgdW5pdCBt
-YXkgYmUgcGxhY2VkIGludG8gYSBwb3dlciBzYXZpbmdzIG1vZGUNCj4gPiBieSB0dXJuaW5nIG9m
-ZiBwb3dlciB0byB0aGUgdW5pdC4gQ29yZSBoYXJkd2FyZSB3aWxsIGF1dG9tYXRpY2FsbHkNCj4g
-PiBwb3dlciBkb3duIHRoZSBBbHRpVmVjIHVuaXQgYWZ0ZXIgbm8gQWx0aVZlYyBpbnN0cnVjdGlv
-bnMgaGF2ZQ0KPiA+IGV4ZWN1dGVkIGluIE4gY3ljbGVzLiBUaGUgQWx0aVZlYyBwb3dlci1jb250
-cm9sIGlzIHRyaWdnZXJlZCBieQ0KPiBoYXJkd2FyZS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6
-IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0K
-PiA+ICp2MzoNCj4gPiBBc3NlbWJseSBjb2RlIGluc3RlYWQgb2YgQyBjb2RlLg0KPiA+DQo+ID4g
-KnYyOg0KPiA+IFJlbW92ZToNCj4gPiBkZWxldGUgc2V0dXBfaWRsZV9od19nb3Zlcm5vciBmdW5j
-dGlvbi4NCj4gPiBkZWxldGUgIkZpeCBlcnJhdHVtIiBmb3IgcmV2MS4NCj4gPg0KPiA+IE1vdmU6
-DQo+ID4gbW92ZSBzZXR1cF8qIGludG8gX19zZXR1cC9yZXN0b3JlX2NwdV9lNjUwMC4NCj4gPg0K
-PiA+ICBhcmNoL3Bvd2VycGMva2VybmVsL2NwdV9zZXR1cF9mc2xfYm9va2UuUyB8IDIwICsrKysr
-KysrKysrKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAyMCBpbnNlcnRpb25zKCspDQo+
-ID4NCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9jcHVfc2V0dXBfZnNsX2Jv
-b2tlLlMNCj4gYi9hcmNoL3Bvd2VycGMva2VybmVsL2NwdV9zZXR1cF9mc2xfYm9va2UuUw0KPiA+
-IGluZGV4IGJmYjE4YzcuLjNjMDNjMTA5IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9r
-ZXJuZWwvY3B1X3NldHVwX2ZzbF9ib29rZS5TDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2tlcm5l
-bC9jcHVfc2V0dXBfZnNsX2Jvb2tlLlMNCj4gPiBAQCAtNTMsMTEgKzUzLDMwIEBAIF9HTE9CQUwo
-X19lNTAwX2RjYWNoZV9zZXR1cCkNCj4gPiAgCWlzeW5jDQo+ID4gIAlibHINCj4gPg0KPiA+ICsv
-Kg0KPiA+ICsgKiBGSVhNRSAtIFdlIGRvbid0IGtub3cgdGhlIEFsdGlWZWMgYXBwbGljYXRpb24g
-c2NlbmFyaW9zLg0KPiA+ICsgKi8NCj4gPiArI2RlZmluZSBBVl9XQUlUX0lETEVfQklUCQk1MCAv
-KiAxbXMsIFRCIGZyZXF1ZW5jeSBpcyA0MS42Nk1IWg0KPiAqLw0KPiA+ICtfR0xPQkFMKHNldHVw
-X2FsdGl2ZWNfaWRsZSkNCj4gPiArCW1mc3ByCXIzLCBTUFJOX1BXUk1HVENSMA0KPiA+ICsNCj4g
-PiArCS8qIEVuYWJsZSBBbHRpdmVjIElkbGUgKi8NCj4gPiArCW9yaXMJcjMsIHIzLCBQV1JNR1RD
-UjBfQVZfSURMRV9QRF9FTkBoDQo+ID4gKwlsaQlyNCwgQVZfV0FJVF9JRExFX0JJVA0KPiA+ICsN
-Cj4gPiArCS8qIFNldCBBdXRvbWF0aWMgQWx0aVZlYyBJZGxlIENvdW50ICovDQo+ID4gKwlybHdp
-bWkJcjMsIHI0LCBQV1JNR1RDUjBfQVZfSURMRV9DTlRfU0hJRlQsDQo+IFBXUk1HVENSMF9BVl9J
-RExFX0NOVA0KPiA+ICsNCj4gPiArCW10c3ByCVNQUk5fUFdSTUdUQ1IwLCByMw0KPiA+ICsNCj4g
-PiArCWJscg0KPiANCj4gVGhlIEZJWE1FIGNvbW1lbnQgaXMgbm90IGNsZWFyLiAgSWYgeW91IG1l
-YW4gdGhhdCB3ZSBoYXZlbid0IHlldCBkb25lDQo+IHRlc3RpbmcgdG8gZGV0ZXJtaW5lIGEgcmVh
-c29uYWJsZSBkZWZhdWx0IHZhbHVlIGZvciBBVl9XQUlUX0lETEVfQklULA0KPiB0aGVuIGp1c3Qg
-c2F5IHRoYXQuICBMaWtld2lzZSB3aXRoIHRoZSBGSVhNRSBjb21tZW50IGluIHRoZSBwdzIwIHBh
-dGNoDQo+IC0tIHRoZSB1bmNlcnRhaW50eSBpcyBkdWUgdG8gYSBsYWNrIG9mIGludmVzdGlnYXRp
-b24sIG5vdCAiYmVjYXVzZSB3ZQ0KPiBkb24ndCBrbm93IHRoZSBjdXJyZW50IHN0YXRlIG9mIHRo
-ZSBjcHUgbG9hZCIuDQo+IA0KPiBXaGlsZSBzb21lIHdvcmtsb2FkcyBtYXkgd2FudCBhIGRpZmZl
-cmVudCB2YWx1ZSB0aGFuIHdoYXRldmVyIGRlZmF1bHQgd2UNCj4gc2V0LCB0aGF0J3Mgd2hhdCB0
-aGUgc3lzZnMgaW50ZXJmYWNlIGlzIGZvci4gIFRoZSBvbmx5IHRoaW5nIG1pc3NpbmcNCj4gaGVy
-ZSBpcyBiZW5jaG1hcmtpbmcgdG8gZGV0ZXJtaW5lIGEgZ29vZCBvdmVyYWxsIGRlZmF1bHQuDQo+
-IA0KVGhhbmtzLg0KDQo=
+On Thu, Sep 12, 2013 at 10:28:03AM +0930, Matt Evans wrote:
+> On 12 Sep 2013, at 10:02, Michael Neuling <mikey@neuling.org> wrote:
+> 
+> > Vladimir Murzin <murzin.v@gmail.com> wrote:
+> > 
+> >> Currently DIVWU stands for *signed* divw opcode:
+> >> 
+> >> 7d 2a 4b 96    divwu   r9,r10,r9
+> >> 7d 2a 4b d6    divw    r9,r10,r9
+> >> 
+> >> Use the *unsigned* divw opcode for DIVWU.
+> > 
+> > This looks like it's in only used in the BPF JIT code.  
+> > 
+> > Matt, any chance you an ACK/NACK this?
+> 
+> Sure, that looks sensible, thanks Vladimir. 
+> 
+> Acked-by: Matt Evans <matt@ozlabs.org>
+> 
+
+Thanks!
+
+Vladimir
+
+> > 
+> > Mikey
+> > 
+> >> 
+> >> Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
+> >> ---
+> >> arch/powerpc/include/asm/ppc-opcode.h |    2 +-
+> >> 1 file changed, 1 insertion(+), 1 deletion(-)
+> >> 
+> >> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+> >> index d7fe9f5..c91842c 100644
+> >> --- a/arch/powerpc/include/asm/ppc-opcode.h
+> >> +++ b/arch/powerpc/include/asm/ppc-opcode.h
+> >> @@ -218,7 +218,7 @@
+> >> #define PPC_INST_MULLW            0x7c0001d6
+> >> #define PPC_INST_MULHWU            0x7c000016
+> >> #define PPC_INST_MULLI            0x1c000000
+> >> -#define PPC_INST_DIVWU            0x7c0003d6
+> >> +#define PPC_INST_DIVWU            0x7c000396
+> >> #define PPC_INST_RLWINM            0x54000000
+> >> #define PPC_INST_RLDICR            0x78000004
+> >> #define PPC_INST_SLW            0x7c000030
+> >> -- 
+> >> 1.7.10.4
+> >> 
