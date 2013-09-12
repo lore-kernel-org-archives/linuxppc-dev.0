@@ -1,32 +1,16 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6449B2C00C0
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Sep 2013 11:15:51 +1000 (EST)
-Received: from mail59-ch1 (localhost [127.0.0.1])	by mail59-ch1-R.bigfish.com
- (Postfix) with ESMTP id E8C201201FD	for <linuxppc-dev@ozlabs.org>;
- Thu, 12 Sep 2013 01:15:47 +0000 (UTC)
-Received: from CH1EHSMHS018.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.240])	by mail59-ch1.bigfish.com (Postfix) with ESMTP id
- CBB262004D
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Sep 2013 01:15:45 +0000 (UTC)
-Message-ID: <1378948542.12204.490.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc/85xx: DTS - re-organize the SPI partitions
- property
-From: Scott Wood <scottwood@freescale.com>
-To: Hu Mingkai-B21284 <B21284@freescale.com>
-Date: Wed, 11 Sep 2013 20:15:42 -0500
-In-Reply-To: <CF6CBFBA8EBBB949B6E321556F6E15090A135F45@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1378454743-17637-1-git-send-email-Mingkai.Hu@freescale.com>
- <1378856005.12204.372.camel@snotra.buserror.net>
- <CF6CBFBA8EBBB949B6E321556F6E15090A135F45@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <matt@ozlabs.org>
+Subject: Re: [PATCH] ppc: bpf_jit: support MOD operation
+Mime-Version: 1.0 (Apple Message framework v1085)
+Content-Type: text/plain; charset=us-ascii
+From: Matt Evans <matt@ozlabs.org>
+In-Reply-To: <1378154750.3978.43.camel@pasglop>
+Date: Thu, 12 Sep 2013 02:18:37 +0100
+Message-Id: <C1FCF580-0B28-43FA-913B-9790BB76AAB7@ozlabs.org>
+References: <1377643792-10327-1-git-send-email-murzin.v@gmail.com>
+ <20130902174842.GA1866@hp530> <1378154750.3978.43.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: paulus@samba.org, Vladimir Murzin <murzin.v@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, dborkman@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,40 +20,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-09-10 at 21:07 -0500, Hu Mingkai-B21284 wrote:
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, September 11, 2013 7:33 AM
-> > To: Hu Mingkai-B21284
-> > Cc: linuxppc-dev@ozlabs.org
-> > Subject: Re: [PATCH] powerpc/85xx: DTS - re-organize the SPI partitions
-> > property
-> > 
-> > What happens to exsting users whose flash is laid out the existing way,
-> > when they upgrade to these device trees?
-> > 
-> 
-> The SPI flash layout should be mapping the new device tree.
-> 
-> If the existing device tree is used to deploy the SPI flash, the following issues
-> must be run into as the commit message described:
-> 
-> 1. Kernel images would be overlapped with U-Boot image.
-> 2. Kernel images would be overlapped with FMAN ucode.
-> 3. Saving environment variables will crash the kernel image.
+Hi Ben, Vladimir,
 
-Has the SPI U-Boot image always been larger than 512K for all these
-platforms?  Why, given that we're under 512K for other boot modes?
 
-> > We really should not be putting partition layout info in the device tree
-> > to begin with...
-> > 
-> OK, I will remove the layout diagram in the commit message.
+*dusts off very thick PPC cobwebs*  Sorry for the delay as I'm =
+travelling, didn't get to this until now.
 
-That's not what I meant.  I meant that the dts should be describing
-hardware, and this is the sort of trouble we run into when we deviate
-from that.  A better way would be to use the mtdparts command line
-option.  Even better would be some sort of on-flash partition table.
+On 02/09/2013, at 9:45 PM, Benjamin Herrenschmidt wrote:
 
--Scott
+> On Mon, 2013-09-02 at 19:48 +0200, Vladimir Murzin wrote:
+>> Ping
+>>=20
+>> On Wed, Aug 28, 2013 at 02:49:52AM +0400, Vladimir Murzin wrote:
+>>> commit b6069a9570 (filter: add MOD operation) added generic
+>>> support for modulus operation in BPF.
+>>>=20
+> Sorry, nobody got a chance to review that yet. Unfortunately Matt
+> doesn't work for us anymore and none of us has experience with the
+> BPF code, so somebody (possibly me) will need to spend a bit of time
+> figuring it out before verifying that is correct.
+>=20
+> Do you have a test case/suite by any chance ?
+>=20
+> Ben.
+>=20
+>>> This patch brings JIT support for PPC64
+>>>=20
+>>> Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
+>>> ---
+>>> arch/powerpc/net/bpf_jit_comp.c | 22 ++++++++++++++++++++++
+>>> 1 file changed, 22 insertions(+)
+>>>=20
+>>> diff --git a/arch/powerpc/net/bpf_jit_comp.c =
+b/arch/powerpc/net/bpf_jit_comp.c
+>>> index bf56e33..96f24dc 100644
+>>> --- a/arch/powerpc/net/bpf_jit_comp.c
+>>> +++ b/arch/powerpc/net/bpf_jit_comp.c
+>>> @@ -193,6 +193,28 @@ static int bpf_jit_build_body(struct sk_filter =
+*fp, u32 *image,
+>>> 				PPC_MUL(r_A, r_A, r_scratch1);
+>>> 			}
+>>> 			break;
+>>> +		case BPF_S_ALU_MOD_X: /* A %=3D X; */
+>>> +			ctx->seen |=3D SEEN_XREG;
+>>> +			PPC_CMPWI(r_X, 0);
+>>> +			if (ctx->pc_ret0 !=3D -1) {
+>>> +				PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
+>>> +			} else {
+>>> +				PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
+>>> +				PPC_LI(r_ret, 0);
+>>> +				PPC_JMP(exit_addr);
+>>> +			}
+>>> +			PPC_DIVWU(r_scratch1, r_A, r_X);
+>>> +			PPC_MUL(r_scratch1, r_X, r_scratch1);
+>>> +			PPC_SUB(r_A, r_A, r_scratch1);
+>>> +			break;
+
+Without having compiled & tested this, it looks fine to me (especially =
+with the corrected DIVWU opcode in the other patch, oops...).
+
+>>> +		case BPF_S_ALU_MOD_K: /* A %=3D K; */
+>>> +#define r_scratch2 (r_scratch1 + 1)
+>>> +			PPC_LI32(r_scratch2, K);
+>>> +			PPC_DIVWU(r_scratch1, r_A, r_scratch2);
+>>> +			PPC_MUL(r_scratch1, r_scratch2, r_scratch1);
+>>> +			PPC_SUB(r_A, r_A, r_scratch1);
+>>> +#undef r_scratch2
+>>> +			break;
+
+If you need another scratch register, it should really be defined in =
+bpf_jit.h instead.
+
+Once you define r_scratch2 in there,
+
+Acked-by: Matt Evans <matt@ozlabs.org>
+
+
+Thanks!
+
+
+Matt
+
+
+
+
+>>> 		case BPF_S_ALU_DIV_X: /* A /=3D X; */
+>>> 			ctx->seen |=3D SEEN_XREG;
+>>> 			PPC_CMPWI(r_X, 0);
+>>> --=20
+>>> 1.8.1.5
+>>>=20
+>=20
