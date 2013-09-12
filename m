@@ -1,21 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A3B422C0207
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 10:15:51 +1000 (EST)
-Message-ID: <1378944911.4066.12.camel@pasglop>
-Subject: Re: [PATCH] powerpc 8xx: Fixing issue with CONFIG_PIN_TLB
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Thu, 12 Sep 2013 10:15:11 +1000
-In-Reply-To: <1378939017.12204.409.camel@snotra.buserror.net>
-References: <201309111644.r8BGiuDZ016325@localhost.localdomain>
- <1378939017.12204.409.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Vladimir Murzin <murzin.v@gmail.com>
+Subject: Re: [PATCH] powerpc: net: filter: fix DIVWU instruction opcode
+In-reply-to: <1378915410-2262-1-git-send-email-murzin.v@gmail.com>
+References: <1378915410-2262-1-git-send-email-murzin.v@gmail.com>
+Date: Thu, 12 Sep 2013 10:32:59 +1000
+Message-ID: <7012.1378945979@ale.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +16,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-09-11 at 17:36 -0500, Scott Wood wrote:
-> I wonder why we don't start from entry 31 so we can actually make use of
-> that autodecrement.  What will happen when we load the first normal TLB
-> entry later on?  I don't see any setting of SPRN_MD_CTR after this code,
-> so won't it overwrite entry 30 (the middle 8M) in the CONFIG_PIN_TLB
-> case?
+Vladimir Murzin <murzin.v@gmail.com> wrote:
+
+> Currently DIVWU stands for *signed* divw opcode:
 > 
-> Ben, would patches like this be considered bugfixes as far as merging
-> goes, or would they be for next given that it's something that's never
-> really worked right and hasn't been touched in years?
+> 7d 2a 4b 96 	divwu   r9,r10,r9
+> 7d 2a 4b d6 	divw    r9,r10,r9
+> 
+> Use the *unsigned* divw opcode for DIVWU.
 
-Since they don't affect anything outside of 8xx, I'm happy to take them
-until around -rc2 or 3. But it's your call really.
+This looks like it's in only used in the BPF JIT code.  
 
-Cheers,
-Ben.
+Matt, any chance you an ACK/NACK this?
+
+Mikey
+
+> 
+> Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
+> ---
+>  arch/powerpc/include/asm/ppc-opcode.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+> index d7fe9f5..c91842c 100644
+> --- a/arch/powerpc/include/asm/ppc-opcode.h
+> +++ b/arch/powerpc/include/asm/ppc-opcode.h
+> @@ -218,7 +218,7 @@
+>  #define PPC_INST_MULLW			0x7c0001d6
+>  #define PPC_INST_MULHWU			0x7c000016
+>  #define PPC_INST_MULLI			0x1c000000
+> -#define PPC_INST_DIVWU			0x7c0003d6
+> +#define PPC_INST_DIVWU			0x7c000396
+>  #define PPC_INST_RLWINM			0x54000000
+>  #define PPC_INST_RLDICR			0x78000004
+>  #define PPC_INST_SLW			0x7c000030
+> -- 
+> 1.7.10.4
+> 
