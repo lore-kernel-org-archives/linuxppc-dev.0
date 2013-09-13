@@ -1,24 +1,22 @@
-Return-Path: <B32579@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BFB432C0109
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 17:36:07 +1000 (EST)
-From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 1/2] powerpc/fsl-booke: Add initial T104x_QDS board support
-Date: Fri, 13 Sep 2013 07:35:59 +0000
-Message-ID: <071A08F2C6A57E4E94D980ECA553F874F607E1@039-SN1MPN1-006.039d.mgd.msft.net>
-References: <1378882706-19488-1-git-send-email-prabhakar@freescale.com>
- <1378942885.12204.448.camel@snotra.buserror.net>
-In-Reply-To: <1378942885.12204.448.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <prvs=0968fdd40c=valentin.longchamp@keymile.com>
+Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 09E8C2C0182
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 19:22:03 +1000 (EST)
+Message-ID: <5232D778.20007@keymile.com>
+Date: Fri, 13 Sep 2013 11:14:32 +0200
+From: Valentin Longchamp <valentin.longchamp@keymile.com>
 MIME-Version: 1.0
-Cc: Jain Priyanka-B32167 <B32167@freescale.com>,
- Aggrwal Poonam-B10812 <B10812@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, scottwood@freescale.com
+Subject: Re: [PATCH] powerpc/mpc85xx:Add initial device tree support of T104x
+References: <1378882686-19454-1-git-send-email-prabhakar@freescale.com>
+In-Reply-To: <1378882686-19454-1-git-send-email-prabhakar@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Priyanka Jain <Priyanka.Jain@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ Varun Sethi <Varun.Sethi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,196 +26,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAxMiwgMjAxMyA1OjExIEFNDQo+IFRvOiBL
-dXNod2FoYSBQcmFiaGFrYXItQjMyNTc5DQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
-Lm9yZzsgZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZzsgSmFpbg0KPiBQcml5YW5rYS1CMzIxNjc7
-IEFnZ3J3YWwgUG9vbmFtLUIxMDgxMg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDEvMl0gcG93ZXJw
-Yy9mc2wtYm9va2U6IEFkZCBpbml0aWFsIFQxMDR4X1FEUyBib2FyZA0KPiBzdXBwb3J0DQo+IA0K
-PiBPbiBXZWQsIDIwMTMtMDktMTEgYXQgMTI6MjggKzA1MzAsIFByYWJoYWthciBLdXNod2FoYSB3
-cm90ZToNCj4gPiAgQWRkIHN1cHBvcnQgZm9yIFQxMDR4IGJvYXJkIGluIGJvYXJkIGZpbGUgdDEw
-NHhfcWRzLmMsIEl0IGlzIGNvbW1vbg0KPiA+IGZvciAgYm90aCBUMTA0MCBhbmQgVDEwNDIgYXMg
-dGhleSBzaGFyZSBzYW1lIFFEUyBib2FyZC4NCj4gPg0KPiA+ICBUMTA0MFFEUyBib2FyZCBPdmVy
-dmlldw0KPiA+ICAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiA+ICAtIFNFUkRFUyBDb25uZWN0
-aW9ucywgOCBsYW5lcyBzdXBwb3J0aW5nOg0KPiA+ICAgICAgIOKAlCBQQ0kgRXhwcmVzczogc3Vw
-cG9ydGluZyBHZW4gMSBhbmQgR2VuIDI7DQo+ID4gICAgICAg4oCUIFNHTUlJDQo+ID4gICAgICAg
-4oCUIFFTR01JSQ0KPiA+ICAgICAgIOKAlCBTQVRBIDIuMA0KPiA+ICAgICAgIOKAlCBBdXJvcmEg
-ZGVidWcgd2l0aCBkZWRpY2F0ZWQgY29ubmVjdG9ycyAoVDEwNDAgb25seSkNCj4gPiAgLSBERFIg
-Q29udHJvbGxlcg0KPiA+ICAgICAgLSBTdXBwb3J0cyByYXRlcyBvZiB1cCB0byAxNjAwIE1IeiBk
-YXRhLXJhdGUNCj4gPiAgICAgIC0gU3VwcG9ydHMgb25lIEREUjNMUCBVRElNTS9SRElNTXMsIG9m
-IHNpbmdsZS0sIGR1YWwtIG9yIHF1YWQtcmFuaw0KPiB0eXBlcy4NCj4gPiAgLUlGQy9Mb2NhbCBC
-dXMNCj4gPiAgICAgIC0gTkFORCBmbGFzaDogOC1iaXQsIGFzeW5jLCB1cCB0byAyR0IuDQo+ID4g
-ICAgICAtIE5PUjogOC1iaXQgb3IgMTYtYml0LCBub24tbXVsdGlwbGV4ZWQsIHVwIHRvIDUxMk1C
-DQo+ID4gICAgICAtIEdBU0lDOiBTaW1wbGUgKG1pbmltYWwpIHRhcmdldCB3aXRoaW4gUWl4aXMg
-RlBHQQ0KPiA+ICAgICAgLSBQcm9tSkVUIHJhcGlkIG1lbW9yeSBkb3dubG9hZCBzdXBwb3J0DQo+
-ID4gIC0gRXRoZXJuZXQNCj4gPiAgICAgIC0gVHdvIG9uLWJvYXJkIFJHTUlJIDEwLzEwMC8xRyBl
-dGhlcm5ldCBwb3J0cy4NCj4gPiAgICAgIC0gUEhZICMwIHJlbWFpbnMgcG93ZXJlZCB1cCBkdXJp
-bmcgZGVlcC1zbGVlcCAoVDEwNDAgb25seSkNCj4gPiAgLSBRSVhJUyBTeXN0ZW0gTG9naWMgRlBH
-QQ0KPiA+ICAtIENsb2Nrcw0KPiA+ICAgICAgLSBTeXN0ZW0gYW5kIEREUiBjbG9jayAoU1lTQ0xL
-LCDigJxERFJDTEvigJ0pDQo+ID4gICAgICAtIFNFUkRFUyBjbG9ja3MNCj4gPiAgLSBQb3dlciBT
-dXBwbGllcw0KPiA+ICAtIFZpZGVvDQo+ID4gICAgICAtIERJVSBzdXBwb3J0cyB2aWRlbyBhdCB1
-cCB0byAxMjgweDEwMjR4MzJicHANCj4gPiAgLSBVU0INCj4gPiAgICAgIC0gU3VwcG9ydHMgdHdv
-IFVTQiAyLjAgcG9ydHMgd2l0aCBpbnRlZ3JhdGVkIFBIWXMNCj4gPiAgICAgIOKAlCBUd28gdHlw
-ZSBBIHBvcnRzIHdpdGggNVZAMS41QSBwZXIgcG9ydC4NCj4gPiAgICAgIOKAlCBTZWNvbmQgcG9y
-dCBjYW4gYmUgY29udmVydGVkIHRvIE9URyBtaW5pLUFCDQo+ID4gIC0gU0RIQw0KPiA+ICAgICAg
-LSBTREhDIHBvcnQgY29ubmVjdHMgZGlyZWN0bHkgdG8gYW4gYWRhcHRlciBjYXJkIHNsb3QsIGZl
-YXR1cmluZzoNCj4gPiAgICAgIC0gU3VwcG9ydGluZyBTRCBzbG90cyBmb3I6IFNELCBTREhDICgx
-eCwgNHgsIDh4KSBhbmQvb3IgTU1DDQo+ID4gICAgICDigJQgU3VwcG9ydGluZyBlTU1DIG1lbW9y
-eSBkZXZpY2VzDQo+ID4gIC0gU1BJDQo+ID4gICAgIC0gIE9uLWJvYXJkIHN1cHBvcnQgb2YgMyBk
-aWZmZXJlbnQgZGV2aWNlcyBhbmQgc2l6ZXMNCj4gPiAgLSBPdGhlciBJTw0KPiA+ICAgICAtIFR3
-byBTZXJpYWwgcG9ydHMNCj4gPiAgICAgLSBQcm9maUJ1cyBwb3J0DQo+ID4gICAgIC0gRm91ciBJ
-MkMgcG9ydHMNCj4gPg0KPiA+ICBBZGQgVDEwNHhRRFMgc3VwcG9ydCBpbiBLY29uZmlnIGFuZCBN
-YWtlZmlsZS4gQWxzbyBjcmVhdGUgZGV2aWNlIHRyZWUuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5
-OiBQcml5YW5rYSBKYWluIDxQcml5YW5rYS5KYWluQGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVk
-LW9mZi1ieTogUG9vbmFtIEFnZ3J3YWwgPHBvb25hbS5hZ2dyd2FsQGZyZWVzY2FsZS5jb20+DQo+
-ID4gU2lnbmVkLW9mZi1ieTogUHJhYmhha2FyIEt1c2h3YWhhIDxwcmFiaGFrYXJAZnJlZXNjYWxl
-LmNvbT4NCj4gPiAtLS0NCj4gPiBCYXNlZCB1cG9uDQo+ID4gZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcv
-cHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L3Njb3R0d29vZC9saW51eC5naXQNCj4gPg0KPiA+IFRP
-RE86IEFkZCBub2RlZCBmb3IgZXRoZXJuZXQgYW5kIGJvYXJkIHN0dWZmDQo+IA0KPiAiYm9hcmQg
-c3R1ZmYiPw0KPiANCj4gSXNuJ3QgImJvYXJkIHN0dWZmIiB0aGUgd2hvbGUgcG9pbnQgb2YgdGhp
-cyBwYXRjaD8gOi0pDQo+IA0KDQo6KQ0KDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy90MTA0
-MHFkcy5kdHMgICAgICB8ICAyMDENCj4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0K
-PiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvdDEwNDJxZHMuZHRzICAgICAgfCAgMjAxDQo+ICsr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jt
-cy84NXh4L0tjb25maWcgICAgIHwgICAyMCArKysNCj4gPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jt
-cy84NXh4L01ha2VmaWxlICAgIHwgICAgMSArDQo+ID4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMv
-ODV4eC90MTA0eF9xZHMuYyB8ICAxMDIgKysrKysrKysrKysrKysrKw0KPiA+ICA1IGZpbGVzIGNo
-YW5nZWQsIDUyNSBpbnNlcnRpb25zKCspDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBhcmNoL3Bv
-d2VycGMvYm9vdC9kdHMvdDEwNDBxZHMuZHRzDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBhcmNo
-L3Bvd2VycGMvYm9vdC9kdHMvdDEwNDJxZHMuZHRzDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBh
-cmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvdDEwNHhfcWRzLmMNCj4gPg0KPiA+IGRpZmYgLS1n
-aXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvdDEwNDBxZHMuZHRzDQo+ID4gYi9hcmNoL3Bvd2Vy
-cGMvYm9vdC9kdHMvdDEwNDBxZHMuZHRzDQo+ID4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4gPiBp
-bmRleCAwMDAwMDAwLi5jZWE1NjMyDQo+ID4gLS0tIC9kZXYvbnVsbA0KPiA+ICsrKyBiL2FyY2gv
-cG93ZXJwYy9ib290L2R0cy90MTA0MHFkcy5kdHMNCj4gPiBAQCAtMCwwICsxLDIwMSBAQA0KPiA+
-ICsvKg0KPiA+ICsgKiBUMTA0MFFEUyBEZXZpY2UgVHJlZSBTb3VyY2UNCj4gPiArICoNCj4gPiAr
-ICogQ29weXJpZ2h0IDIwMTMgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IgSW5jLg0KPiA+ICsgKg0K
-PiA+ICsgKiBSZWRpc3RyaWJ1dGlvbiBhbmQgdXNlIGluIHNvdXJjZSBhbmQgYmluYXJ5IGZvcm1z
-LCB3aXRoIG9yIHdpdGhvdXQNCj4gPiArICogbW9kaWZpY2F0aW9uLCBhcmUgcGVybWl0dGVkIHBy
-b3ZpZGVkIHRoYXQgdGhlIGZvbGxvd2luZyBjb25kaXRpb25zDQo+IGFyZSBtZXQ6DQo+ID4gKyAq
-ICAgICAqIFJlZGlzdHJpYnV0aW9ucyBvZiBzb3VyY2UgY29kZSBtdXN0IHJldGFpbiB0aGUgYWJv
-dmUNCj4gY29weXJpZ2h0DQo+ID4gKyAqCSBub3RpY2UsIHRoaXMgbGlzdCBvZiBjb25kaXRpb25z
-IGFuZCB0aGUgZm9sbG93aW5nIGRpc2NsYWltZXIuDQo+ID4gKyAqICAgICAqIFJlZGlzdHJpYnV0
-aW9ucyBpbiBiaW5hcnkgZm9ybSBtdXN0IHJlcHJvZHVjZSB0aGUgYWJvdmUNCj4gY29weXJpZ2h0
-DQo+ID4gKyAqCSBub3RpY2UsIHRoaXMgbGlzdCBvZiBjb25kaXRpb25zIGFuZCB0aGUgZm9sbG93
-aW5nIGRpc2NsYWltZXIgaW4NCj4gdGhlDQo+ID4gKyAqCSBkb2N1bWVudGF0aW9uIGFuZC9vciBv
-dGhlciBtYXRlcmlhbHMgcHJvdmlkZWQgd2l0aCB0aGUNCj4gZGlzdHJpYnV0aW9uLg0KPiA+ICsg
-KiAgICAgKiBOZWl0aGVyIHRoZSBuYW1lIG9mIEZyZWVzY2FsZSBTZW1pY29uZHVjdG9yIG5vciB0
-aGUNCj4gPiArICoJIG5hbWVzIG9mIGl0cyBjb250cmlidXRvcnMgbWF5IGJlIHVzZWQgdG8gZW5k
-b3JzZSBvciBwcm9tb3RlDQo+IHByb2R1Y3RzDQo+ID4gKyAqCSBkZXJpdmVkIGZyb20gdGhpcyBz
-b2Z0d2FyZSB3aXRob3V0IHNwZWNpZmljIHByaW9yIHdyaXR0ZW4NCj4gcGVybWlzc2lvbi4NCj4g
-PiArICoNCj4gPiArICoNCj4gPiArICogQUxURVJOQVRJVkVMWSwgdGhpcyBzb2Z0d2FyZSBtYXkg
-YmUgZGlzdHJpYnV0ZWQgdW5kZXIgdGhlIHRlcm1zIG9mDQo+ID4gK3RoZQ0KPiA+ICsgKiBHTlUg
-R2VuZXJhbCBQdWJsaWMgTGljZW5zZSAoIkdQTCIpIGFzIHB1Ymxpc2hlZCBieSB0aGUgRnJlZQ0K
-PiA+ICtTb2Z0d2FyZQ0KPiA+ICsgKiBGb3VuZGF0aW9uLCBlaXRoZXIgdmVyc2lvbiAyIG9mIHRo
-YXQgTGljZW5zZSBvciAoYXQgeW91ciBvcHRpb24pDQo+ID4gK2FueQ0KPiA+ICsgKiBsYXRlciB2
-ZXJzaW9uLg0KPiA+ICsgKg0KPiA+ICsgKiBUSElTIFNPRlRXQVJFIElTIFBST1ZJREVEIEJZIEZy
-ZWVzY2FsZSBTZW1pY29uZHVjdG9yICJBUyBJUyIgQU5EDQo+ID4gK0FOWQ0KPiA+ICsgKiBFWFBS
-RVNTIE9SIElNUExJRUQgV0FSUkFOVElFUywgSU5DTFVESU5HLCBCVVQgTk9UIExJTUlURUQgVE8s
-IFRIRQ0KPiA+ICtJTVBMSUVEDQo+ID4gKyAqIFdBUlJBTlRJRVMgT0YgTUVSQ0hBTlRBQklMSVRZ
-IEFORCBGSVRORVNTIEZPUiBBIFBBUlRJQ1VMQVIgUFVSUE9TRQ0KPiA+ICtBUkUNCj4gPiArICog
-RElTQ0xBSU1FRC4gSU4gTk8gRVZFTlQgU0hBTEwgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IgQkUg
-TElBQkxFDQo+ID4gK0ZPUiBBTlkNCj4gPiArICogRElSRUNULCBJTkRJUkVDVCwgSU5DSURFTlRB
-TCwgU1BFQ0lBTCwgRVhFTVBMQVJZLCBPUiBDT05TRVFVRU5USUFMDQo+ID4gK0RBTUFHRVMNCj4g
-PiArICogKElOQ0xVRElORywgQlVUIE5PVCBMSU1JVEVEIFRPLCBQUk9DVVJFTUVOVCBPRiBTVUJT
-VElUVVRFIEdPT0RTIE9SDQo+ID4gK1NFUlZJQ0VTOw0KPiA+ICsgKiBMT1NTIE9GIFVTRSwgREFU
-QSwgT1IgUFJPRklUUzsgT1IgQlVTSU5FU1MgSU5URVJSVVBUSU9OKSBIT1dFVkVSDQo+ID4gK0NB
-VVNFRCBBTkQNCj4gPiArICogT04gQU5ZIFRIRU9SWSBPRiBMSUFCSUxJVFksIFdIRVRIRVIgSU4g
-Q09OVFJBQ1QsIFNUUklDVCBMSUFCSUxJVFksDQo+ID4gK09SIFRPUlQNCj4gPiArICogKElOQ0xV
-RElORyBORUdMSUdFTkNFIE9SIE9USEVSV0lTRSkgQVJJU0lORyBJTiBBTlkgV0FZIE9VVCBPRiBU
-SEUNCj4gPiArVVNFIE9GIFRISVMNCj4gPiArICogU09GVFdBUkUsIEVWRU4gSUYgQURWSVNFRCBP
-RiBUSEUgUE9TU0lCSUxJVFkgT0YgU1VDSCBEQU1BR0UuDQo+ID4gKyAqLw0KPiA+ICsNCj4gPiAr
-L2luY2x1ZGUvICJmc2wvdDEwNHhzaS1wcmUuZHRzaSINCj4gPiArDQo+ID4gKy8gew0KPiA+ICsJ
-bW9kZWwgPSAiZnNsLFQxMDQwUURTIjsNCj4gPiArCWNvbXBhdGlibGUgPSAiZnNsLFQxMDQwUURT
-IjsNCj4gPiArCSNhZGRyZXNzLWNlbGxzID0gPDI+Ow0KPiA+ICsJI3NpemUtY2VsbHMgPSA8Mj47
-DQo+ID4gKwlpbnRlcnJ1cHQtcGFyZW50ID0gPCZtcGljPjsNCj4gPiArDQo+ID4gKwlhbGlhc2Vz
-IHsNCj4gPiArCQkgLyogVE9ETyAqLw0KPiA+ICsJCX07DQo+IA0KPiBUT0RPPyAgRGlkIHlvdSBt
-ZWFuIHRoaXMgcGF0Y2ggYXMgYW4gUkZDPw0KPiANCg0KDQphY3R1YWxseSwgdGhpcyBwYXRjaCBp
-cyBub3QgYWRkaW5nIGluIGRwYWEgcmVsYXRlZCBub2RlKGZtYW4sYm1hbiBldGMpLg0KSSBhbSBr
-ZWVwaW5nIHBsYWNlIGhvbGRlciBmb3IgYWxpYXMgb2YgRXRoZXJuZXQgbm9kZXMuIA0KDQo+IEFs
-c28sIHdoaXRlc3BhY2UuDQo+IA0KDQpkb2VzIHdoaXRlc3BhY2UgaXMgbm90IGNhcHR1cmVkIGlu
-IGNoZWNrcGF0Y2g/DQoNCj4gPiArCQlpMmNAMTE4MDAwIHsNCj4gPiArICAgICAgICAgICAgICAg
-ICAgICAgICAgcGNhOTU0N0A3NyB7DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgY29tcGF0aWJsZSA9ICJwaGlsaXBzLHBjYTk1NDciOw0KPiA+ICsgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIHJlZyA9IDwweDc3PjsNCj4gPiArICAgICAgICAgICAgICAgICAgICAg
-ICAgfTsNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICBydGNANjggew0KPiA+ICsgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAiZGFsbGFzLGRzMzIzMiI7DQo+
-ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVnID0gPDB4Njg+Ow0KPiA+ICsg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGludGVycnVwdHMgPSA8MHgxIDB4MSAwIDA+
-Ow0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICB9Ow0KPiA+ICsJCX07DQo+ID4gKw0KPiA+
-ICsJfTsNCj4gDQo+IFdoaXRlc3BhY2UNCj4gDQo+ID4gKw0KPiA+ICsJcGNpMDogcGNpZUBmZmUy
-NDAwMDAgew0KPiA+ICsJCXJlZyA9IDwweGYgMHhmZTI0MDAwMCAwIDB4MTAwMDA+Ow0KPiA+ICsJ
-CXJhbmdlcyA9IDwweDAyMDAwMDAwIDAgMHhlMDAwMDAwMCAweGMgMHgwMDAwMDAwMCAweDANCj4g
-MHgxMDAwMDAwMA0KPiA+ICsJCQkgIDB4MDEwMDAwMDAgMCAweDAwMDAwMDAwIDB4ZiAweGY4MDAw
-MDAwIDB4MA0KPiAweDAwMDEwMDAwPjsNCj4gPiArCQlwY2llQDAgew0KPiA+ICsJCQlyYW5nZXMg
-PSA8MHgwMjAwMDAwMCAwIDB4ZTAwMDAwMDANCj4gPiArCQkJCSAgMHgwMjAwMDAwMCAwIDB4ZTAw
-MDAwMDANCj4gPiArCQkJCSAgMCAweDEwMDAwMDAwDQo+ID4gKw0KPiA+ICsJCQkJICAweDAxMDAw
-MDAwIDAgMHgwMDAwMDAwMA0KPiA+ICsJCQkJICAweDAxMDAwMDAwIDAgMHgwMDAwMDAwMA0KPiA+
-ICsJCQkJICAwIDB4MDAwMTAwMDA+Ow0KPiA+ICsJCX07DQo+ID4gKwl9Ow0KPiA+ICsNCj4gPiAr
-CXBjaTE6IHBjaWVAZmZlMjUwMDAwIHsNCj4gPiArCQlyZWcgPSA8MHhmIDB4ZmUyNTAwMDAgMCAw
-eDEwMDAwPjsNCj4gPiArCQlyYW5nZXMgPSA8MHgwMjAwMDAwMCAweDAgMHhlMDAwMDAwMCAweGMg
-MHgyMDAwMDAwMCAweDANCj4gMHgxMDAwMDAwMA0KPiA+ICsJCQkgIDB4MDEwMDAwMDAgMHgwIDB4
-MDAwMDAwMDAgMHhmIDB4ZjgwMTAwMDAgMHgwDQo+IDB4MDAwMTAwMDA+Ow0KPiA+ICsJCXBjaWVA
-MCB7DQo+ID4gKwkJCXJhbmdlcyA9IDwweDAyMDAwMDAwIDAgMHhlMDAwMDAwMA0KPiA+ICsJCQkJ
-ICAweDAyMDAwMDAwIDAgMHhlMDAwMDAwMA0KPiA+ICsJCQkJICAwIDB4MTAwMDAwMDANCj4gPiAr
-DQo+ID4gKwkJCQkgIDB4MDEwMDAwMDAgMCAweDAwMDAwMDAwDQo+ID4gKwkJCQkgIDB4MDEwMDAw
-MDAgMCAweDAwMDAwMDAwDQo+ID4gKwkJCQkgIDAgMHgwMDAxMDAwMD47DQo+ID4gKwkJfTsNCj4g
-PiArCX07DQo+ID4gKw0KPiA+ICsJcGNpMjogcGNpZUBmZmUyNjAwMDAgew0KPiA+ICsJCXJlZyA9
-IDwweGYgMHhmZTI2MDAwMCAwIDB4MTAwMD47DQo+ID4gKwkJcmFuZ2VzID0gPDB4MDIwMDAwMDAg
-MCAweGUwMDAwMDAwIDB4YyAweDQwMDAwMDAwIDAgMHgxMDAwMDAwMA0KPiA+ICsJCQkgIDB4MDEw
-MDAwMDAgMCAweDAwMDAwMDAwIDB4ZiAweGY4MDIwMDAwIDAgMHgwMDAxMDAwMD47DQo+ID4gKwkJ
-cGNpZUAwIHsNCj4gPiArCQkJcmFuZ2VzID0gPDB4MDIwMDAwMDAgMCAweGUwMDAwMDAwDQo+ID4g
-KwkJCQkgIDB4MDIwMDAwMDAgMCAweGUwMDAwMDAwDQo+ID4gKwkJCQkgIDAgMHgxMDAwMDAwMA0K
-PiA+ICsNCj4gPiArCQkJCSAgMHgwMTAwMDAwMCAwIDB4MDAwMDAwMDANCj4gPiArCQkJCSAgMHgw
-MTAwMDAwMCAwIDB4MDAwMDAwMDANCj4gPiArCQkJCSAgMCAweDAwMDEwMDAwPjsNCj4gPiArCQl9
-Ow0KPiA+ICsJfTsNCj4gPiArDQo+ID4gKwlwY2kzOiBwY2llQGZmZTI3MDAwMCB7DQo+ID4gKwkJ
-cmVnID0gPDB4ZiAweGZlMjcwMDAwIDAgMHgxMDAwMD47DQo+ID4gKwkJcmFuZ2VzID0gPDB4MDIw
-MDAwMDAgMCAweGUwMDAwMDAwIDB4YyAweDYwMDAwMDAwIDAgMHgxMDAwMDAwMA0KPiA+ICsJCQkg
-IDB4MDEwMDAwMDAgMCAweDAwMDAwMDAwIDB4ZiAweGY4MDMwMDAwIDAgMHgwMDAxMDAwMD47DQo+
-ID4gKwkJcGNpZUAwIHsNCj4gPiArCQkJcmFuZ2VzID0gPDB4MDIwMDAwMDAgMCAweGUwMDAwMDAw
-DQo+ID4gKwkJCQkgIDB4MDIwMDAwMDAgMCAweGUwMDAwMDAwDQo+ID4gKwkJCQkgIDAgMHgxMDAw
-MDAwMA0KPiA+ICsNCj4gPiArCQkJCSAgMHgwMTAwMDAwMCAwIDB4MDAwMDAwMDANCj4gPiArCQkJ
-CSAgMHgwMTAwMDAwMCAwIDB4MDAwMDAwMDANCj4gPiArCQkJCSAgMCAweDAwMDEwMDAwPjsNCj4g
-PiArCQl9Ow0KPiA+ICsJfTsNCj4gPiArfTsNCj4gDQo+IE1heWJlIHNvbWUgb2YgdGhpcyBzdHVm
-ZiBjb3VsZCBiZSBwdXQgaW4gYSBjb21tb24gZHRzaSBiZXR3ZWVuIHQxMDQwIGFuZA0KPiB0MTA0
-Mj8NCj4gDQo+IElkZWFsbHkgZm9yIHQxMDQyIHlvdSdkIGp1c3QgdGFrZSB0aGUgZW50aXJlIHQx
-MDQwIHRyZWUgYXMgYW4gaW5jbHVkZSwNCj4gYW5kIGFkZCB0aGUgc3dpdGNoDQo+IA0KDQptZWFu
-cywgSSBqdXN0IGNyZWF0ZSBUMTA0MnFkcy5kdHMgYW5kIGZvciBUMTA0MC5kdHMgaW5jbHVkZSB0
-MTA0MmR0cyArIHN3aXRjaA0KDQoNCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL3BsYXRm
-b3Jtcy84NXh4L3QxMDR4X3Fkcy5jDQo+ID4gYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgv
-dDEwNHhfcWRzLmMNCj4gPiBuZXcgZmlsZSBtb2RlIDEwMDY0NA0KPiA+IGluZGV4IDAwMDAwMDAu
-LmQyOGRhMTQNCj4gPiAtLS0gL2Rldi9udWxsDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL3BsYXRm
-b3Jtcy84NXh4L3QxMDR4X3Fkcy5jDQo+ID4gQEAgLTAsMCArMSwxMDIgQEANCj4gPiArLyoNCj4g
-PiArICogVDEwNHggUURTIFNldHVwDQo+ID4gKyAqIFNob3VsZCBhcHBseSBmb3IgUURTIHBsYXRm
-b3JtIG9mIFQxMDQwIGFuZCBpdCdzIHBlcnNvbmFsaXRpZXMuDQo+ID4gKyAqIHZpeiBUMTA0MC9U
-MTA0Mg0KPiA+ICsgKg0KPiA+ICsgKiBDb3B5cmlnaHQgMjAxMyBGcmVlc2NhbGUgU2VtaWNvbmR1
-Y3RvciBJbmMuDQo+ID4gKyAqDQo+ID4gKyAqIFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJl
-OyB5b3UgY2FuIHJlZGlzdHJpYnV0ZQlpdCBhbmQvb3INCj4gbW9kaWZ5IGl0DQo+ID4gKyAqIHVu
-ZGVyICB0aGUgdGVybXMgb2YJdGhlIEdOVSBHZW5lcmFsCSBQdWJsaWMgTGljZW5zZSBhcw0KPiBw
-dWJsaXNoZWQgYnkgdGhlDQo+ID4gKyAqIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbjsgIGVpdGhl
-ciB2ZXJzaW9uIDIgb2YgdGhlICBMaWNlbnNlLCBvcg0KPiA+ICsoYXQgeW91cg0KPiA+ICsgKiBv
-cHRpb24pIGFueSBsYXRlciB2ZXJzaW9uLg0KPiA+ICsgKi8NCj4gPiArDQo+ID4gKyNpbmNsdWRl
-IDxsaW51eC9rZXJuZWwuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L3BjaS5oPg0KPiA+ICsjaW5j
-bHVkZSA8bGludXgva2Rldl90Lmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9kZWxheS5oPg0KPiA+
-ICsjaW5jbHVkZSA8bGludXgvaW50ZXJydXB0Lmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9waHku
-aD4NCj4gPiArDQo+ID4gKyNpbmNsdWRlIDxhc20vdGltZS5oPg0KPiA+ICsjaW5jbHVkZSA8YXNt
-L21hY2hkZXAuaD4NCj4gPiArI2luY2x1ZGUgPGFzbS9wY2ktYnJpZGdlLmg+DQo+ID4gKyNpbmNs
-dWRlIDxtbS9tbXVfZGVjbC5oPg0KPiA+ICsjaW5jbHVkZSA8YXNtL3Byb20uaD4NCj4gPiArI2lu
-Y2x1ZGUgPGFzbS91ZGJnLmg+DQo+ID4gKyNpbmNsdWRlIDxhc20vbXBpYy5oPg0KPiA+ICsNCj4g
-PiArI2luY2x1ZGUgPGxpbnV4L29mX3BsYXRmb3JtLmg+DQo+ID4gKyNpbmNsdWRlIDxzeXNkZXYv
-ZnNsX3NvYy5oPg0KPiA+ICsjaW5jbHVkZSA8c3lzZGV2L2ZzbF9wY2kuaD4NCj4gPiArI2luY2x1
-ZGUgPGFzbS9laHZfcGljLmg+DQo+ID4gKw0KPiA+ICsjaW5jbHVkZSAiY29yZW5ldF9kcy5oIg0K
-PiANCj4gWW91IGRvbid0IG5lZWQgYWxsIG9mIHRoZXNlIGluY2x1ZGVzLg0KPiANCj4gPiArZGVm
-aW5lX21hY2hpbmUodDEwNHhfcWRzKSB7DQo+ID4gKwkubmFtZQkJCT0gIlQxMDR4IFFEUyIsDQo+
-ID4gKwkucHJvYmUJCQk9IHQxMDR4X3Fkc19wcm9iZSwNCj4gDQo+IFNob3VsZCB3ZSBoYXZlIHR3
-byBtYWNoaW5lIGRlc2NyaXB0aW9ucywgc28gdGhhdCB0aGUgcHJvcGVyIGNoaXAgbmFtZQ0KPiBz
-aG93cyB1cCAoZS5nLiBpbiAvcHJvYy9jcHVpbmZvKT8NCj4gDQo+ID4gKy8qIGNvcmVpbnQgZG9l
-c24ndCBwbGF5IG5pY2Ugd2l0aCBsYXp5IEVFLCB1c2UgbGVnYWN5IG1waWMgZm9yIG5vdyAqLw0K
-PiA+ICsjaWZkZWYgQ09ORklHX1BQQzY0DQo+ID4gKwkuZ2V0X2lycQkJPSBtcGljX2dldF9pcnEs
-DQo+ID4gKyNlbHNlDQo+ID4gKwkuZ2V0X2lycQkJPSBtcGljX2dldF9jb3JlaW50X2lycSwNCj4g
-PiArI2VuZGlmDQo+IA0KPiBUaGlzIGlzbid0IHRydWUgYW55IG1vcmUuICBXaGVuIHN1Ym1pdHRp
-bmcgY29kZSB0aGF0IHdhcyBjb3BpZWQgZnJvbQ0KPiBlbHNld2hlcmUsIHBsZWFzZSBjaGVjayB3
-aGV0aGVyIHRoZXJlIHdlcmUgYW55IHVwZGF0ZXMgaW4gdGhlIGNvZGUgdGhhdA0KPiB5b3UgY29w
-aWVkIGZyb20gKHVubGVzcyB5b3UgY29waWVkIGZyb20gYjRxZHMsIHdoaWNoIHRoZSB1cGRhdGUg
-bWlzc2VkDQo+IC0tIEkganVzdCBzZW50IGEgcGF0Y2ggdG8gZml4IHRoYXQpLg0KPiANCg0KSSB3
-aWxsIGNoZWNrIG9uIGxhdGVzdCBjb2RlIGJhc2UuDQoNClJlZ2FyZHMsDQpQcmFiaGFrYXINCg0K
+On 09/11/2013 08:58 AM, Prabhakar Kushwaha wrote:
+> The QorIQ T1040/T1042 processor support four integrated 64-bit e5500 PA
+> processor cores with high-performance data path acceleration architecture
+> and network peripheral interfaces required for networking & telecommunications.
+> 
+> T1042 personality is a reduced personality of T1040 without Integrated 8-port
+> Gigabit Ethernet switch.
+> 
+> The T1040/T1042 SoC includes the following function and features:
+> 
+>  - Four e5500 cores, each with a private 256 KB L2 cache
+>  - 256 KB shared L3 CoreNet platform cache (CPC)
+>  - Interconnect CoreNet platform
+>  - 32-/64-bit DDR3L/DDR4 SDRAM memory controller with ECC and interleaving
+>    support
+>  - Data Path Acceleration Architecture (DPAA) incorporating acceleration
+>  for the following functions:
+>     -  Packet parsing, classification, and distribution
+>     -  Queue management for scheduling, packet sequencing, and congestion
+>     	management
+>     -  Cryptography Acceleration (SEC 5.0)
+>     - RegEx Pattern Matching Acceleration (PME 2.2)
+>     - IEEE Std 1588 support
+>     - Hardware buffer management for buffer allocation and deallocation
+>  - Ethernet interfaces
+>     - Integrated 8-port Gigabit Ethernet switch (T1040 only)
+>     - Four 1 Gbps Ethernet controllers
+>  - Two RGMII interfaces or one RGMII and one MII interfaces
+>  - High speed peripheral interfaces
+>    - Four PCI Express 2.0 controllers running at up to 5 GHz
+>    - Two SATA controllers supporting 1.5 and 3.0 Gb/s operation
+>    - Upto two QSGMII interface
+>    - Upto six SGMII interface supporting 1000 Mbps
+>    - One SGMII interface supporting upto 2500 Mbps
+>  - Additional peripheral interfaces
+>    - Two USB 2.0 controllers with integrated PHY
+>    - SD/eSDHC/eMMC
+>    -  eSPI controller
+>    - Four I2C controllers
+>    - Four UARTs
+>    - Four GPIO controllers
+>    - Integrated flash controller (IFC)
+>    - Change this to  LCD/ HDMI interface (DIU) with 12 bit dual data rate
+>    - TDM interface
+>  - Multicore programmable interrupt controller (PIC)
+>  - Two 8-channel DMA engines
+>  - Single source clocking implementation
+>  - Deep Sleep power implementaion (wakeup from GPIO/Timer/Ethernet/USB)
+> 
+> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> ---
+> Based upon git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
+> 
+> TODO: Add noded for ethernet
+> 
+>  arch/powerpc/boot/dts/fsl/t1040si-post.dtsi |  116 ++++++++
+>  arch/powerpc/boot/dts/fsl/t1042si-post.dtsi |  430 +++++++++++++++++++++++++++
+>  arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi  |  111 +++++++
+>  3 files changed, 657 insertions(+)
+>  create mode 100644 arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+>  create mode 100644 arch/powerpc/boot/dts/fsl/t1042si-post.dtsi
+>  create mode 100644 arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
+> 
+
+I am currently working on a design bases on the p2041 but my issue seems to be
+generic to all the QorIQ dtsi files since the structure is exactly the same, so
+I pick the opportunity that such a file is submitted to the mailing-list to
+raise it.
+
+DISCLAIMER: I am no DTS expert, so there may be a way to achieve what I want to
+I have not seen.
+
+My understanding is that the SOC-NAMEsi-post.dtsi and SOC-NAMEsi-pre.dtsi are
+files that describe the SoC internals. They will be maintained when new drivers
+are merged or changed and therefore they should be used by all boards using the
+SoCs. Can someone confirm this or am I already wrong (since there are on
+Freescale boards that use them in mainline) ?
+
+[snip]
+
+> +
+> +&pci0 {
+> +	compatible = "fsl,t1042-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
+> +	device_type = "pci";
+> +	#size-cells = <2>;
+> +	#address-cells = <3>;
+> +	bus-range = <0x0 0xff>;
+> +	interrupts = <20 2 0 0>;
+> +	fsl,iommu-parent = <&pamu0>;
+> +	pcie@0 {
+> +		reg = <0 0 0 0 0>;
+> +		#interrupt-cells = <1>;
+> +		#size-cells = <2>;
+> +		#address-cells = <3>;
+> +		device_type = "pci";
+> +		interrupts = <20 2 0 0>;
+> +		interrupt-map-mask = <0xf800 0 0 7>;
+> +		interrupt-map = <
+> +			/* IDSEL 0x0 */
+> +			0000 0 0 1 &mpic 40 1 0 0
+> +			0000 0 0 2 &mpic 1 1 0 0
+> +			0000 0 0 3 &mpic 2 1 0 0
+> +			0000 0 0 4 &mpic 3 1 0 0
+> +			>;
+> +	};
+> +};
+> +
+> +&pci1 {
+> +	compatible = "fsl,t1042-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
+> +	device_type = "pci";
+> +	#size-cells = <2>;
+> +	#address-cells = <3>;
+> +	bus-range = <0 0xff>;
+> +	interrupts = <21 2 0 0>;
+> +	fsl,iommu-parent = <&pamu0>;
+> +	pcie@0 {
+> +		reg = <0 0 0 0 0>;
+> +		#interrupt-cells = <1>;
+> +		#size-cells = <2>;
+> +		#address-cells = <3>;
+> +		device_type = "pci";
+> +		interrupts = <21 2 0 0>;
+> +		interrupt-map-mask = <0xf800 0 0 7>;
+> +		interrupt-map = <
+> +			/* IDSEL 0x0 */
+> +			0000 0 0 1 &mpic 41 1 0 0
+> +			0000 0 0 2 &mpic 5 1 0 0
+> +			0000 0 0 3 &mpic 6 1 0 0
+> +			0000 0 0 4 &mpic 7 1 0 0
+> +			>;
+> +	};
+> +};
+> +
+> +&pci2 {
+> +	compatible = "fsl,t1042-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
+> +	device_type = "pci";
+> +	#size-cells = <2>;
+> +	#address-cells = <3>;
+> +	bus-range = <0x0 0xff>;
+> +	interrupts = <22 2 0 0>;
+> +	fsl,iommu-parent = <&pamu0>;
+> +	pcie@0 {
+> +		reg = <0 0 0 0 0>;
+> +		#interrupt-cells = <1>;
+> +		#size-cells = <2>;
+> +		#address-cells = <3>;
+> +		device_type = "pci";
+> +		interrupts = <22 2 0 0>;
+> +		interrupt-map-mask = <0xf800 0 0 7>;
+> +		interrupt-map = <
+> +			/* IDSEL 0x0 */
+> +			0000 0 0 1 &mpic 42 1 0 0
+> +			0000 0 0 2 &mpic 9 1 0 0
+> +			0000 0 0 3 &mpic 10 1 0 0
+> +			0000 0 0 4 &mpic 11 1 0 0
+> +			>;
+> +	};
+> +};
+> +
+> +&pci3 {
+> +	compatible = "fsl,t1042-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
+> +	device_type = "pci";
+> +	#size-cells = <2>;
+> +	#address-cells = <3>;
+> +	bus-range = <0x0 0xff>;
+> +	interrupts = <23 2 0 0>;
+> +	fsl,iommu-parent = <&pamu0>;
+> +	pcie@0 {
+> +		reg = <0 0 0 0 0>;
+> +		#interrupt-cells = <1>;
+> +		#size-cells = <2>;
+> +		#address-cells = <3>;
+> +		device_type = "pci";
+> +		interrupts = <23 2 0 0>;
+> +		interrupt-map-mask = <0xf800 0 0 7>;
+> +		interrupt-map = <
+> +			/* IDSEL 0x0 */
+> +			0000 0 0 1 &mpic 43 1 0 0
+> +			0000 0 0 2 &mpic 0 1 0 0
+> +			0000 0 0 3 &mpic 4 1 0 0
+> +			0000 0 0 4 &mpic 8 1 0 0
+> +			>;
+> +	};
+> +};
+> +
+
+The above 4 nodes have the consequence that it will then be mandatory that a
+board support .dts file that would like to inlcude the SOC-NAMEsi-post.dtsi
+defines the pci0, pci1, pci2, pci3 aliases.
+
+Now it is possible that a board does not implement pci1 for instance. So its
+.dts file would ideally not define a node for it, and thus not define the
+respective alias. However, this triggers this dtc compile error (which is correct):
+
+> [chlongv1@chber1-10533x linux-km]$ make kmp204x.dtb
+>   DTC     arch/powerpc/boot/kmp204x.dtb
+> Error: arch/powerpc/boot/dts/fsl/p2041si-post.dtsi:98.2-3 label or path, 'pci1', not found
+> FATAL ERROR: Syntax error parsing input tree
+> make[1]: *** [arch/powerpc/boot/kmp204x.dtb] Error 1
+> make: *** [kmp204x.dtb] Error 2
+
+The solution I have found is to define a "dummy" disabled node so that I can
+define the alias, but I am not really happy about this:
+
+> 	pci1: pcie@ffe201000 {
+> 		status = "disabled";
+> 	};
+
+I am here missing something obvious or shouldn't it be possible that such .dtsi
+files allow not to define unused/unnecessary nodes ?
+
+Valentin
