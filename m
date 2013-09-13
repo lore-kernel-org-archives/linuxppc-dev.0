@@ -1,44 +1,25 @@
-Return-Path: <aruna@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 681CE2C03C1
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 05:22:16 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aruna@linux.vnet.ibm.com>;
- Fri, 13 Sep 2013 00:45:46 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 7F5B83940058
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 00:51:55 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8CJOB2u35520514
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 00:54:11 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r8CJM6fd018332
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 00:52:07 +0530
-Message-ID: <5232145B.7070009@linux.vnet.ibm.com>
-Date: Fri, 13 Sep 2013 00:52:03 +0530
-From: Aruna Balakrishnaiah <aruna@linux.vnet.ibm.com>
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
+ [IPv6:2607:f8b0:400e:c02::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D099D2C03B5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 11:11:40 +1000 (EST)
+Received: by mail-pd0-f179.google.com with SMTP id v10so551796pde.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 18:11:38 -0700 (PDT)
+Date: Fri, 13 Sep 2013 09:11:28 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc/85xx: introduce cornet_generic machine
+Message-ID: <20130913011128.GA1859@pek-khao-d1.corp.ad.wrs.com>
+References: <1378969993-14991-1-git-send-email-haokexin@gmail.com>
+ <1378969993-14991-2-git-send-email-haokexin@gmail.com>
+ <1379011486.2536.46.camel@snotra.buserror.net>
 MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: [PATCH v2] pstore: Adjust buffer size for compression for smaller
- registered buffers
-References: <20130912064832.15340.52422.stgit@aruna-ThinkPad-T420>
- <3908561D78D1C84285E8C5FCA982C28F31CF6AB8@ORSMSX106.amr.corp.intel.com>
-In-Reply-To: <3908561D78D1C84285E8C5FCA982C28F31CF6AB8@ORSMSX106.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "jkenisto@linux.vnet.ibm.com" <jkenisto@linux.vnet.ibm.com>,
- "keescook@chromium.org" <keescook@chromium.org>,
- "mahesh@linux.vnet.ibm.com" <mahesh@linux.vnet.ibm.com>,
- "cbouatmailru@gmail.com" <cbouatmailru@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "ccross@android.com" <ccross@android.com>,
- "seiji.aguchi@hds.com" <seiji.aguchi@hds.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="jI8keyz6grp/JLjh"
+In-Reply-To: <1379011486.2536.46.camel@snotra.buserror.net>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,26 +29,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 12 September 2013 11:13 PM, Luck, Tony wrote:
-> +	default:
-> +		cmpr = 60;
-> +		break;
-> +	}
->
-> Is this the right "default"?  It may be a good choice for a backend with a really
-> tiny buffer (1 ... 999).  But less good for a (theoretical) backend with a larger
-> buffer (10001 ... infinity and beyond).  Which are you trying to catch here?
 
-Trying to catch lower buffers and also tried till 23k ( 10k * 100/45) of text with a
-sample crash logit achieved a good compression of 25%. Since the upper limit is 
-not known
-and compression behavior is not tested above 10k chose to keep a higher default 
-of 60.
+--jI8keyz6grp/JLjh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> -Tony
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+On Thu, Sep 12, 2013 at 01:44:46PM -0500, Scott Wood wrote:
+> On Thu, 2013-09-12 at 15:13 +0800, Kevin Hao wrote:
+> > In the current kernel, the board files for p2041rdb, p3041ds, p4080ds,
+> > p5020ds, p5040ds, t4240qds and b4qds are almost the same except the
+> > machine name. So this introduces a cornet_generic machine to support
+> > all these boards to avoid the code duplication.
+> >=20
+> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> > ---
+> > This patch is based on http://patchwork.ozlabs.org/patch/274390/
+> >=20
+> >  arch/powerpc/platforms/85xx/Kconfig      | 10 ++++
+> >  arch/powerpc/platforms/85xx/Makefile     |  8 +--
+> >  arch/powerpc/platforms/85xx/b4_qds.c     | 97 ------------------------=
+--------
+> >  arch/powerpc/platforms/85xx/corenet_ds.c | 86 ++++++++++++++++++++++++=
+++++
+> >  arch/powerpc/platforms/85xx/p2041_rdb.c  | 87 ------------------------=
+----
+> >  arch/powerpc/platforms/85xx/p3041_ds.c   | 89 ------------------------=
+-----
+> >  arch/powerpc/platforms/85xx/p4080_ds.c   | 87 ------------------------=
+----
+> >  arch/powerpc/platforms/85xx/p5020_ds.c   | 93 ------------------------=
+------
+> >  arch/powerpc/platforms/85xx/p5040_ds.c   | 84 ------------------------=
+---
+> >  arch/powerpc/platforms/85xx/t4240_qds.c  | 93 ------------------------=
+------
+> >  10 files changed, 97 insertions(+), 637 deletions(-)
+> >  delete mode 100644 arch/powerpc/platforms/85xx/b4_qds.c
+> >  delete mode 100644 arch/powerpc/platforms/85xx/p2041_rdb.c
+> >  delete mode 100644 arch/powerpc/platforms/85xx/p3041_ds.c
+> >  delete mode 100644 arch/powerpc/platforms/85xx/p4080_ds.c
+> >  delete mode 100644 arch/powerpc/platforms/85xx/p5020_ds.c
+> >  delete mode 100644 arch/powerpc/platforms/85xx/p5040_ds.c
+> >  delete mode 100644 arch/powerpc/platforms/85xx/t4240_qds.c
+>=20
+> Why not merge patch 2/2 with this?
+
+OK. I will fold the patch 2 into this one.
+
+>=20
+> Did you use -M -C with git format-patch?
+
+For this case, using '-M -C' or not would generate the same patch.
+
+>=20
+> > diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platfor=
+ms/85xx/Kconfig
+> >  config TQM85xx
+[...]
+> >  	bool
+> > +
+> > +config CORENET_GENERIC
+> > +	bool
+>=20
+> Why do we need separate kconfig symbols for each board, if they all
+> select the same code?
+
+I thought it would be more obvious for the board support if we have a separ=
+ate
+option for each board. We can also use this option for some board specific
+configuration if we have. Yes, it does seem a bit redundant. If you prefer I
+can drop these boards options.
+
+>=20
+> > +define_machine(corenet_generic) {
+> > +	.name			=3D "CORENET GENERIC",
+>=20
+> No allcaps please.
+
+How about "CORENET Generic"?
+
+BTW with these changes the file name "corenet_ds.c" seems not accurate anym=
+ore?
+How about change it to "corenet_generic.c"?
+
+Thanks,
+Kevin
+>=20
+> -Scott
+>=20
+>=20
+>=20
+
+--jI8keyz6grp/JLjh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJSMmZAAAoJEJNY7TDerrFx+tQH/3Zg03RboPt0va8JWwhHpqsQ
+woKRLw0lZAfObuKJmL7qeHM8NOW9cli7n5gpBSm3oqJ7H3LU+JGPLsXzwGGKHSBL
++oCITLvFAQskKzDTfRjOP2qYmkSQpUgFbylhLf2wP0g20+Yhq4aYWt1jKVLFp0q7
+eFn33Ow/Xdw30UjUBNZ+J9EUZ9x0cqI3sFibiVMqW4to46hkkjahP4cw8+avCZyD
+p0kHw+tKcy/YXGjlVqzEaYyfif00yb4rLQI+SN52GjtRu0XzazQpIVByHfl6H9sU
+obd+ByEA5wV3efIMS2ks8xsFKNkGKUA6AohHYqguJEt1Y4NikSmvOyvGnvy1DRg=
+=/EHX
+-----END PGP SIGNATURE-----
+
+--jI8keyz6grp/JLjh--
