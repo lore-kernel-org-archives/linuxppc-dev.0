@@ -1,35 +1,25 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C5E7F2C0171
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 15:19:39 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Fri, 13 Sep 2013 15:12:05 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id EE3142CE804D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 15:19:35 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8D53AET64159904
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 15:03:11 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r8D5JZ2Z004133
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 15:19:35 +1000
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] pci: fix interrupt-map for bridges
-In-Reply-To: <1378988717-15112-1-git-send-email-aik@ozlabs.ru>
-References: <1378988717-15112-1-git-send-email-aik@ozlabs.ru>
-Date: Fri, 13 Sep 2013 10:49:23 +0530
-Message-ID: <87ioy5i9ic.fsf@linux.vnet.ibm.com>
+Return-Path: <B32579@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BDEB62C0129
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 17:30:52 +1000 (EST)
+From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] powerpc/mpc85xx:Add initial device tree support of T104x
+Date: Fri, 13 Sep 2013 07:30:43 +0000
+Message-ID: <071A08F2C6A57E4E94D980ECA553F874F607C5@039-SN1MPN1-006.039d.mgd.msft.net>
+References: <1378882686-19454-1-git-send-email-prabhakar@freescale.com>
+ <1378941854.12204.439.camel@snotra.buserror.net>
+In-Reply-To: <1378941854.12204.439.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Sethi Varun-B16395 <B16395@freescale.com>,
+ Jain Priyanka-B32167 <B32167@freescale.com>,
+ Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,115 +29,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
-
-> The previous scheme always put 0 as a parent slot#. However it is
-> not always the case and QEMU's PCI bridge does not support putting
-> device at slot#0 as it claims SHPC support for hotplug.
->
-> This modifies the interrups map to let the linux guest resolve XICS
-> global interrupt number correctly.
->
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->
-> This is the example of working system:
->
-> [root@erif_root pci@1]# lspci
-> 0001:00:01.0 PCI bridge: Red Hat, Inc. Device 0001
-> 0001:01:02.0 PCI bridge: Red Hat, Inc. Device 0001
-> 0001:01:03.0 PCI bridge: Red Hat, Inc. Device 0001
-> 0001:02:01.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (Copper) (rev 06)
-> 0001:02:02.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (Copper) (rev 06)
-> 0001:03:01.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (Copper) (rev 06)
-> 0001:03:02.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (Copper) (rev 06)
-> [root@erif_root pci@1]# pwd
-> /proc/device-tree/pci@80000002000000f/pci@1
-> [root@erif_root pci@1]# hexdump -e '9/4 "%08x "' -e '"\n"' i*map
-> 00001000 00000000 00000000 00000001 3e57f7e0 00000800 00000000 00000000 00000003
-> 00001000 00000000 00000000 00000002 3e57f7e0 00000800 00000000 00000000 00000000
-> 00001000 00000000 00000000 00000003 3e57f7e0 00000800 00000000 00000000 00000001
-> 00001000 00000000 00000000 00000004 3e57f7e0 00000800 00000000 00000000 00000002
-> 00001800 00000000 00000000 00000001 3e57f7e0 00000800 00000000 00000000 00000000
-> 00001800 00000000 00000000 00000002 3e57f7e0 00000800 00000000 00000000 00000001
-> 00001800 00000000 00000000 00000003 3e57f7e0 00000800 00000000 00000000 00000002
-> 00001800 00000000 00000000 00000004 3e57f7e0 00000800 00000000 00000000 00000003
-> [root@erif_root pci@1]# cd pci@2/
-> [root@erif_root pci@2]# hexdump -e '9/4 "%08x "' -e '"\n"' i*map
-> 00000800 00000000 00000000 00000001 3e5a86f0 00001000 00000000 00000000 00000002
-> 00000800 00000000 00000000 00000002 3e5a86f0 00001000 00000000 00000000 00000003
-> 00000800 00000000 00000000 00000003 3e5a86f0 00001000 00000000 00000000 00000000
-> 00000800 00000000 00000000 00000004 3e5a86f0 00001000 00000000 00000000 00000001
-> 00001000 00000000 00000000 00000001 3e5a86f0 00001000 00000000 00000000 00000003
-> 00001000 00000000 00000000 00000002 3e5a86f0 00001000 00000000 00000000 00000000
-> 00001000 00000000 00000000 00000003 3e5a86f0 00001000 00000000 00000000 00000001
-> 00001000 00000000 00000000 00000004 3e5a86f0 00001000 00000000 00000000 00000002
-> [root@erif_root pci@2]# cd ethernet@
-> ethernet@1/ ethernet@2/
-> [root@erif_root pci@2]# cd ethernet@1/
-> [root@erif_root ethernet@1]# lsprop reg
-> reg              00020800 00000000 00000000 00000000 00000000
-> 		 02020810 00000000 00000000 00000000 00020000
->  		 02020814 00000000 00000000 00000000 00020000
->  		 01020818 00000000 00000000 00000000 00000020
->  		 02020830 00000000 00000000 00000000 00020000
-> [root@erif_root ethernet@1]# lsprop interrupts
-> interrupts       00000002
-> ---
->  board-qemu/slof/pci-interrupts.fs | 31 ++++++++++++++++++++-----------
->  1 file changed, 20 insertions(+), 11 deletions(-)
->
-> diff --git a/board-qemu/slof/pci-interrupts.fs b/board-qemu/slof/pci-interrupts.fs
-> index a12d7bb..62785a7 100644
-> --- a/board-qemu/slof/pci-interrupts.fs
-> +++ b/board-qemu/slof/pci-interrupts.fs
-> @@ -1,17 +1,26 @@
->
->  : pci-gen-irq-map-one ( prop-addr prop-len slot pin -- prop-addr prop-len )
-> -        2dup + 4 mod                                        ( prop-addr prop-len slot pin parentpin )
-> +        2dup + 4 mod                ( prop-addr prop-len slot pin parentpin )
-> +        >r >r >r                    ( prop-addr prop-len R: swizzledpin pin slot )
-> +
-> +        \ Child slot#
-> +        r> B lshift encode-int+     ( prop-addr prop-len R: swizzledpin pin )
-
-Redundant push to the R-Stack, can just be
-
-        >r >r                    ( prop-addr prop-len slot R: swizzledpin pin )
-
-        \ Child slot#
-        B lshift encode-int+     ( prop-addr prop-len R: swizzledpin pin )
-
-
-> +        \ Child 64bit BAR (not really used)
-> +        0 encode-64+
-> +        \ Chile pin#
-> +        r> encode-int+              ( prop-addr prop-len R: swizzledpin )
-> +
-> +        \ Parent phandle
-> +        get-parent encode-int+
-> +
-> +        \ Parent slot#
->          get-node >space
-> -        pci-addr2dev + 1- 4 mod 1+  \ do swizzling          ( prop-addr prop-len slot pin swizzledpin )
-> -        >r >r >r                                            ( prop-addr prop-len R: swizzledpin pin slot )
-> -
-> -        r> B lshift encode-int+
-> -        0 encode-64+                \ device slot           ( prop-addr prop-len R: swizzledpin pin )
-> -        r> encode-int+              \ device pin            ( prop-addr prop-len R: swizzledpin )
-> -
-> -        get-parent encode-int+      \ parent phandle
-> -        0 encode-int+ 0 encode-64+  \ parent slot
-> -        r> encode-int+              \ parent swizzled pin   ( prop-addr prop-len R: )
-> +        pci-addr2dev B lshift       ( prop-addr prop-len parent-slot R: swizzledpin )
-> +        encode-int+
-> +        \ Parent 64bit BAR (not really used)
-> +        0 encode-64+
-> +        \ Parent pin
-> +        r> encode-int+              ( prop-addr prop-len R: )
->  ;
->
->  : pci-gen-irq-entry ( prop-addr prop-len config-addr -- prop-addr prop-len )
-
-Regards,
-Nikunj
+dGhhbmtzIFNjb3R0IGZvciByZXZpZXcuDQoNClBsZWFzZSBmaW5kIG15IHJlcGx5IGluLWxpbmVk
+Lg0KDQpSZWdhcmRzLA0KUHJhYmhha2FyDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
+Cj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAx
+MiwgMjAxMyA0OjU0IEFNDQo+IFRvOiBLdXNod2FoYSBQcmFiaGFrYXItQjMyNTc5DQo+IENjOiBs
+aW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZzsg
+QWdncndhbA0KPiBQb29uYW0tQjEwODEyOyBKYWluIFByaXlhbmthLUIzMjE2NzsgU2V0aGkgVmFy
+dW4tQjE2Mzk1DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvbXBjODV4eDpBZGQgaW5p
+dGlhbCBkZXZpY2UgdHJlZSBzdXBwb3J0IG9mDQo+IFQxMDR4DQo+IA0KPiBPbiBXZWQsIDIwMTMt
+MDktMTEgYXQgMTI6MjggKzA1MzAsIFByYWJoYWthciBLdXNod2FoYSB3cm90ZToNCj4gPiBUaGUg
+UW9ySVEgVDEwNDAvVDEwNDIgcHJvY2Vzc29yIHN1cHBvcnQgZm91ciBpbnRlZ3JhdGVkIDY0LWJp
+dCBlNTUwMA0KPiA+IFBBIHByb2Nlc3NvciBjb3JlcyB3aXRoIGhpZ2gtcGVyZm9ybWFuY2UgZGF0
+YSBwYXRoIGFjY2VsZXJhdGlvbg0KPiA+IGFyY2hpdGVjdHVyZSBhbmQgbmV0d29yayBwZXJpcGhl
+cmFsIGludGVyZmFjZXMgcmVxdWlyZWQgZm9yIG5ldHdvcmtpbmcNCj4gJiB0ZWxlY29tbXVuaWNh
+dGlvbnMuDQo+ID4NCj4gPiBUMTA0MiBwZXJzb25hbGl0eSBpcyBhIHJlZHVjZWQgcGVyc29uYWxp
+dHkgb2YgVDEwNDAgd2l0aG91dCBJbnRlZ3JhdGVkDQo+ID4gOC1wb3J0IEdpZ2FiaXQgRXRoZXJu
+ZXQgc3dpdGNoLg0KPiA+DQo+ID4gVGhlIFQxMDQwL1QxMDQyIFNvQyBpbmNsdWRlcyB0aGUgZm9s
+bG93aW5nIGZ1bmN0aW9uIGFuZCBmZWF0dXJlczoNCj4gPg0KPiA+ICAtIEZvdXIgZTU1MDAgY29y
+ZXMsIGVhY2ggd2l0aCBhIHByaXZhdGUgMjU2IEtCIEwyIGNhY2hlDQo+ID4gIC0gMjU2IEtCIHNo
+YXJlZCBMMyBDb3JlTmV0IHBsYXRmb3JtIGNhY2hlIChDUEMpDQo+ID4gIC0gSW50ZXJjb25uZWN0
+IENvcmVOZXQgcGxhdGZvcm0NCj4gPiAgLSAzMi0vNjQtYml0IEREUjNML0REUjQgU0RSQU0gbWVt
+b3J5IGNvbnRyb2xsZXIgd2l0aCBFQ0MgYW5kDQo+IGludGVybGVhdmluZw0KPiA+ICAgIHN1cHBv
+cnQNCj4gPiAgLSBEYXRhIFBhdGggQWNjZWxlcmF0aW9uIEFyY2hpdGVjdHVyZSAoRFBBQSkgaW5j
+b3Jwb3JhdGluZw0KPiA+IGFjY2VsZXJhdGlvbiAgZm9yIHRoZSBmb2xsb3dpbmcgZnVuY3Rpb25z
+Og0KPiA+ICAgICAtICBQYWNrZXQgcGFyc2luZywgY2xhc3NpZmljYXRpb24sIGFuZCBkaXN0cmli
+dXRpb24NCj4gPiAgICAgLSAgUXVldWUgbWFuYWdlbWVudCBmb3Igc2NoZWR1bGluZywgcGFja2V0
+IHNlcXVlbmNpbmcsIGFuZA0KPiBjb25nZXN0aW9uDQo+ID4gICAgIAltYW5hZ2VtZW50DQo+ID4g
+ICAgIC0gIENyeXB0b2dyYXBoeSBBY2NlbGVyYXRpb24gKFNFQyA1LjApDQo+ID4gICAgIC0gUmVn
+RXggUGF0dGVybiBNYXRjaGluZyBBY2NlbGVyYXRpb24gKFBNRSAyLjIpDQo+ID4gICAgIC0gSUVF
+RSBTdGQgMTU4OCBzdXBwb3J0DQo+ID4gICAgIC0gSGFyZHdhcmUgYnVmZmVyIG1hbmFnZW1lbnQg
+Zm9yIGJ1ZmZlciBhbGxvY2F0aW9uIGFuZA0KPiA+IGRlYWxsb2NhdGlvbg0KPiA+ICAtIEV0aGVy
+bmV0IGludGVyZmFjZXMNCj4gPiAgICAgLSBJbnRlZ3JhdGVkIDgtcG9ydCBHaWdhYml0IEV0aGVy
+bmV0IHN3aXRjaCAoVDEwNDAgb25seSkNCj4gPiAgICAgLSBGb3VyIDEgR2JwcyBFdGhlcm5ldCBj
+b250cm9sbGVycw0KPiA+ICAtIFR3byBSR01JSSBpbnRlcmZhY2VzIG9yIG9uZSBSR01JSSBhbmQg
+b25lIE1JSSBpbnRlcmZhY2VzDQo+ID4gIC0gSGlnaCBzcGVlZCBwZXJpcGhlcmFsIGludGVyZmFj
+ZXMNCj4gPiAgICAtIEZvdXIgUENJIEV4cHJlc3MgMi4wIGNvbnRyb2xsZXJzIHJ1bm5pbmcgYXQg
+dXAgdG8gNSBHSHoNCj4gPiAgICAtIFR3byBTQVRBIGNvbnRyb2xsZXJzIHN1cHBvcnRpbmcgMS41
+IGFuZCAzLjAgR2IvcyBvcGVyYXRpb24NCj4gPiAgICAtIFVwdG8gdHdvIFFTR01JSSBpbnRlcmZh
+Y2UNCj4gPiAgICAtIFVwdG8gc2l4IFNHTUlJIGludGVyZmFjZSBzdXBwb3J0aW5nIDEwMDAgTWJw
+cw0KPiA+ICAgIC0gT25lIFNHTUlJIGludGVyZmFjZSBzdXBwb3J0aW5nIHVwdG8gMjUwMCBNYnBz
+DQo+ID4gIC0gQWRkaXRpb25hbCBwZXJpcGhlcmFsIGludGVyZmFjZXMNCj4gPiAgICAtIFR3byBV
+U0IgMi4wIGNvbnRyb2xsZXJzIHdpdGggaW50ZWdyYXRlZCBQSFkNCj4gPiAgICAtIFNEL2VTREhD
+L2VNTUMNCj4gPiAgICAtICBlU1BJIGNvbnRyb2xsZXINCj4gPiAgICAtIEZvdXIgSTJDIGNvbnRy
+b2xsZXJzDQo+ID4gICAgLSBGb3VyIFVBUlRzDQo+ID4gICAgLSBGb3VyIEdQSU8gY29udHJvbGxl
+cnMNCj4gPiAgICAtIEludGVncmF0ZWQgZmxhc2ggY29udHJvbGxlciAoSUZDKQ0KPiA+ICAgIC0g
+Q2hhbmdlIHRoaXMgdG8gIExDRC8gSERNSSBpbnRlcmZhY2UgKERJVSkgd2l0aCAxMiBiaXQgZHVh
+bCBkYXRhDQo+IHJhdGUNCj4gPiAgICAtIFRETSBpbnRlcmZhY2UNCj4gPiAgLSBNdWx0aWNvcmUg
+cHJvZ3JhbW1hYmxlIGludGVycnVwdCBjb250cm9sbGVyIChQSUMpDQo+ID4gIC0gVHdvIDgtY2hh
+bm5lbCBETUEgZW5naW5lcw0KPiA+ICAtIFNpbmdsZSBzb3VyY2UgY2xvY2tpbmcgaW1wbGVtZW50
+YXRpb24NCj4gPiAgLSBEZWVwIFNsZWVwIHBvd2VyIGltcGxlbWVudGFpb24gKHdha2V1cCBmcm9t
+DQo+ID4gR1BJTy9UaW1lci9FdGhlcm5ldC9VU0IpDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBQ
+b29uYW0gQWdncndhbCA8cG9vbmFtLmFnZ3J3YWxAZnJlZXNjYWxlLmNvbT4NCj4gPiBTaWduZWQt
+b2ZmLWJ5OiBQcml5YW5rYSBKYWluIDxQcml5YW5rYS5KYWluQGZyZWVzY2FsZS5jb20+DQo+ID4g
+U2lnbmVkLW9mZi1ieTogVmFydW4gU2V0aGkgPFZhcnVuLlNldGhpQGZyZWVzY2FsZS5jb20+DQo+
+ID4gU2lnbmVkLW9mZi1ieTogUHJhYmhha2FyIEt1c2h3YWhhIDxwcmFiaGFrYXJAZnJlZXNjYWxl
+LmNvbT4NCj4gPiAtLS0NCj4gPiBCYXNlZCB1cG9uDQo+ID4gZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcv
+cHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L3Njb3R0d29vZC9saW51eC5naXQNCj4gDQo+IEV2ZXJ5
+dGhpbmcgaW4gdGhlcmUgaGFzIGFscmVhZHkgYmVlbiBwdWxsZWQgYnkgTGludXMsIHNvIHRoZXJl
+J3Mgbm8NCj4gcmVhc29uIHRvIHVzZSB0aGF0IHRyZWUgYXMgYSBiYXNlIHJpZ2h0IG5vdy4NCj4g
+DQoNCkkgd2lsbCByZWJhc2UgdGhpcyBwYXRjaC4NCg0KPiA+ICsvaW5jbHVkZS8gInQxMDQyc2kt
+cG9zdC5kdHNpIg0KPiBbc25pcF0NCj4gPiArCXNlcmRlczogc2VyZGVzQGVhMDAwIHsNCj4gPiAr
+CQljb21wYXRpYmxlID0gImZzbCx0MTA0MC1zZXJkZXMiOw0KPiA+ICsJCXJlZwkgICA9IDwweGVh
+MDAwIDB4NDAwMD47DQo+ID4gKwl9Ow0KPiA+ICsNCj4gPiArCXNkaGNAMTE0MDAwIHsNCj4gPiAr
+CQljb21wYXRpYmxlID0gImZzbCx0MTA0MC1lc2RoYyIsICJmc2wsZXNkaGMiOw0KPiA+ICsJCXNk
+aGNpLGF1dG8tY21kMTI7DQo+ID4gKwl9Ow0KPiANCj4gV2h5IGRvZXMgc2RoY2ksYXV0by1jbWQx
+MiBuZWVkIHRvIGJlIHNwZWNpZmllZCBoZXJlPyAgSXQncyBhbHJlYWR5IGluDQo+IHQxMDQyc2kt
+cG9zdC5kdHNpIHdoaWNoIHlvdSd2ZSBpbmNsdWRlZC4gIExpa2V3aXNlIHdpdGggcmVnIG9uIHRo
+ZSBzZXJkZXMNCj4gbm9kZS4NCj4gDQoNCkkgd2lsbCB0YWtlIGNhcmUgb2YgdGhpcy4NCg0KPiBJ
+IGFsc28gcXVlc3Rpb24gdGhlIG5lZWQgdG8gZGVmaW5lIHNlcGFyYXRlIHQxMDQwIGNvbXBhdGli
+bGUgdmFsdWVzIGZvcg0KPiBhbGwgb2YgdGhlc2UsIGlmIHRoZSBvbmx5IGRpZmZlcmVuY2UgaXMg
+d2hldGhlciB0aGUgb25ib2FyZCBzd2l0Y2ggaXMNCj4gZW5hYmxlZCBvciBub3QuDQo+IA0KDQpz
+byBzaG91bGQgSSB1c2UgVDEwNHggYXMgY29tcGF0aWJsZSBmaWVsZC4gYW5kIGluIFQxMDQwIGRl
+dmljZSB0cmVlIGFkZCBleHRyYSBub2RlIGZvciBsMiBzd2l0Y2guIA0KDQo+ID4gKwljbG9ja2dl
+bjogZ2xvYmFsLXV0aWxpdGllc0BlMTAwMCB7DQo+ID4gKwkJY29tcGF0aWJsZSA9ICJmc2wsdDEw
+NDItY2xvY2tnZW4iLCAiZnNsLHFvcmlxLWNsb2NrZ2VuLTIuMCIsDQo+ID4gKwkJCQkgICAiZml4
+ZWQtY2xvY2siOw0KPiA+ICsJCXJlZyA9IDwweGUxMDAwIDB4MTAwMD47DQo+ID4gKwkJY2xvY2st
+b3V0cHV0LW5hbWVzID0gInN5c2NsayI7DQo+ID4gKwkJI2Nsb2NrLWNlbGxzID0gPDA+Ow0KPiA+
+ICsNCj4gPiArCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiArCQkjc2l6ZS1jZWxscyA9IDww
+PjsNCj4gPiArCQlwbGwwOiBwbGwwQDgwMCB7DQo+ID4gKwkJCSNjbG9jay1jZWxscyA9IDwxPjsN
+Cj4gPiArCQkJcmVnID0gPDB4ODAwPjsNCj4gPiArCQkJY29tcGF0aWJsZSA9ICJmc2wsY29yZS1w
+bGwtY2xvY2siOw0KPiA+ICsJCQljbG9ja3MgPSA8JmNsb2NrZ2VuPjsNCj4gPiArCQkJY2xvY2st
+b3V0cHV0LW5hbWVzID0gInBsbDAiLCAicGxsMC1kaXYyIiwgInBsbDAtZGl2NCI7DQo+ID4gKwkJ
+fTsNCj4gPiArCQlwbGwxOiBwbGwxQDgyMCB7DQo+ID4gKwkJCSNjbG9jay1jZWxscyA9IDwxPjsN
+Cj4gPiArCQkJcmVnID0gPDB4ODIwPjsNCj4gPiArCQkJY29tcGF0aWJsZSA9ICJmc2wsY29yZS1w
+bGwtY2xvY2siOw0KPiA+ICsJCQljbG9ja3MgPSA8JmNsb2NrZ2VuPjsNCj4gPiArCQkJY2xvY2st
+b3V0cHV0LW5hbWVzID0gInBsbDEiLCAicGxsMS1kaXYyIiwgInBsbDEtZGl2NCI7DQo+ID4gKwkJ
+fTsNCj4gPiArCQltdXgwOiBtdXgwQDAgew0KPiA+ICsJCQkjY2xvY2stY2VsbHMgPSA8MD47DQo+
+ID4gKwkJCXJlZyA9IDwweDA+Ow0KPiA+ICsJCQljb21wYXRpYmxlID0gImZzbCxjb3JlLW11eC1j
+bG9jayI7DQo+IA0KPiBQbGVhc2UgdXBkYXRlIHRoZSBjbG9jayBzdHVmZiBiYXNlZCBvbg0KPiBo
+dHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvMjc0MTM0Lw0KPiANCg0KdGhpcyBwYXRj
+aCBpcyBzdGlsbCB1bmRlciBkaXNjdXNzaW9uLiBNYXkgSSBoYXZlIHRvIHdhaXQgZm9yIHRoZSBm
+aW5hbCBwYXRjaC4NCm9yIG1heSBJIHJlYmFzZSBvbiB2NC4gDQoNCj4gPiArL2luY2x1ZGUvICJx
+b3JpcS1kbWEtMC5kdHNpIg0KPiA+ICsJZG1hQDEwMDMwMCB7DQo+ID4gKwkJZnNsLGlvbW11LXBh
+cmVudCA9IDwmcGFtdTA+Ow0KPiA+ICsJCWZzbCxsaW9kbi1yZWcgPSA8Jmd1dHMgMHg1ODA+OyAv
+KiBETUExTElPRE5SICovDQo+ID4gKwl9Ow0KPiA+ICsNCj4gPiArL2luY2x1ZGUvICJxb3JpcS1k
+bWEtMS5kdHNpIg0KPiA+ICsJZG1hQDEwMTMwMCB7DQo+ID4gKwkJZnNsLGlvbW11LXBhcmVudCA9
+IDwmcGFtdTA+Ow0KPiA+ICsJCWZzbCxsaW9kbi1yZWcgPSA8Jmd1dHMgMHg1ODQ+OyAvKiBETUEy
+TElPRE5SICovDQo+ID4gKwl9Ow0KPiANCj4gVGhlc2UgYXJlIGVsbzM6DQo+IGh0dHA6Ly9wYXRj
+aHdvcmsub3psYWJzLm9yZy9wYXRjaC8yNzEyMzgvDQoNClRoaXMgcGF0Y2ggaXMgc3RpbGwgdW5k
+ZXIgZGlzY3Vzc2lvbi4gDQpJIGFtIG5vdCBzdXJlLCBJIHNob3VsZCB3YWl0IGZvciBmaW5hbCBw
+YXRjaCBvciBjaGFuZ2UgY29kZSBhcyBwZXIgdjkgdmVyc2lvbi4gDQo+IA0KPiA+ICsJZGlzcGxh
+eUAxODAwMDAgew0KPiA+ICsgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJmc2wsZGl1Iiwg
+ImZzbCx0MTA0Mi1kaXUiOw0KPiA+ICsgICAgICAgICAgICAgICAgcmVnID0gPDB4MTgwMDAwIDEw
+MDA+Ow0KPiA+ICsgICAgICAgICAgICAgICAgaW50ZXJydXB0cyA9IDw3NCAyIDAgMD47DQo+ID4g
+KyAgICAgICAgfTsNCj4gDQo+IE1vcmUgc3BlY2lmaWMgY29tcGF0aWJsZXMgY29tZSBmaXJzdC4N
+Cj4gDQoNClN1cmUuDQoNClJlZ2FyZHMsDQpQcmFiaGFrYXINCg==
