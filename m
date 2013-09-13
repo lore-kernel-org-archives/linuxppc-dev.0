@@ -1,25 +1,26 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
- [IPv6:2607:f8b0:400e:c02::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D099D2C03B5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 11:11:40 +1000 (EST)
-Received: by mail-pd0-f179.google.com with SMTP id v10so551796pde.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2013 18:11:38 -0700 (PDT)
-Date: Fri, 13 Sep 2013 09:11:28 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc/85xx: introduce cornet_generic machine
-Message-ID: <20130913011128.GA1859@pek-khao-d1.corp.ad.wrs.com>
-References: <1378969993-14991-1-git-send-email-haokexin@gmail.com>
- <1378969993-14991-2-git-send-email-haokexin@gmail.com>
- <1379011486.2536.46.camel@snotra.buserror.net>
+Return-Path: <B29983@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BD8202C012F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 12:50:29 +1000 (EST)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v4] powerpc/mpc85xx: Update the clock device tree nodes
+Date: Fri, 13 Sep 2013 02:50:22 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B15089208@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1378882632-9053-1-git-send-email-Yuantian.Tang@freescale.com>
+ <1378948229.12204.486.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150748AA@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1378997052.2536.5.camel@snotra.buserror.net>
+In-Reply-To: <1378997052.2536.5.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="jI8keyz6grp/JLjh"
-In-Reply-To: <1379011486.2536.46.camel@snotra.buserror.net>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-Leo-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,111 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---jI8keyz6grp/JLjh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Sep 12, 2013 at 01:44:46PM -0500, Scott Wood wrote:
-> On Thu, 2013-09-12 at 15:13 +0800, Kevin Hao wrote:
-> > In the current kernel, the board files for p2041rdb, p3041ds, p4080ds,
-> > p5020ds, p5040ds, t4240qds and b4qds are almost the same except the
-> > machine name. So this introduces a cornet_generic machine to support
-> > all these boards to avoid the code duplication.
-> >=20
-> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> > ---
-> > This patch is based on http://patchwork.ozlabs.org/patch/274390/
-> >=20
-> >  arch/powerpc/platforms/85xx/Kconfig      | 10 ++++
-> >  arch/powerpc/platforms/85xx/Makefile     |  8 +--
-> >  arch/powerpc/platforms/85xx/b4_qds.c     | 97 ------------------------=
---------
-> >  arch/powerpc/platforms/85xx/corenet_ds.c | 86 ++++++++++++++++++++++++=
-++++
-> >  arch/powerpc/platforms/85xx/p2041_rdb.c  | 87 ------------------------=
-----
-> >  arch/powerpc/platforms/85xx/p3041_ds.c   | 89 ------------------------=
------
-> >  arch/powerpc/platforms/85xx/p4080_ds.c   | 87 ------------------------=
-----
-> >  arch/powerpc/platforms/85xx/p5020_ds.c   | 93 ------------------------=
-------
-> >  arch/powerpc/platforms/85xx/p5040_ds.c   | 84 ------------------------=
----
-> >  arch/powerpc/platforms/85xx/t4240_qds.c  | 93 ------------------------=
-------
-> >  10 files changed, 97 insertions(+), 637 deletions(-)
-> >  delete mode 100644 arch/powerpc/platforms/85xx/b4_qds.c
-> >  delete mode 100644 arch/powerpc/platforms/85xx/p2041_rdb.c
-> >  delete mode 100644 arch/powerpc/platforms/85xx/p3041_ds.c
-> >  delete mode 100644 arch/powerpc/platforms/85xx/p4080_ds.c
-> >  delete mode 100644 arch/powerpc/platforms/85xx/p5020_ds.c
-> >  delete mode 100644 arch/powerpc/platforms/85xx/p5040_ds.c
-> >  delete mode 100644 arch/powerpc/platforms/85xx/t4240_qds.c
->=20
-> Why not merge patch 2/2 with this?
-
-OK. I will fold the patch 2 into this one.
-
->=20
-> Did you use -M -C with git format-patch?
-
-For this case, using '-M -C' or not would generate the same patch.
-
->=20
-> > diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platfor=
-ms/85xx/Kconfig
-> >  config TQM85xx
-[...]
-> >  	bool
-> > +
-> > +config CORENET_GENERIC
-> > +	bool
->=20
-> Why do we need separate kconfig symbols for each board, if they all
-> select the same code?
-
-I thought it would be more obvious for the board support if we have a separ=
-ate
-option for each board. We can also use this option for some board specific
-configuration if we have. Yes, it does seem a bit redundant. If you prefer I
-can drop these boards options.
-
->=20
-> > +define_machine(corenet_generic) {
-> > +	.name			=3D "CORENET GENERIC",
->=20
-> No allcaps please.
-
-How about "CORENET Generic"?
-
-BTW with these changes the file name "corenet_ds.c" seems not accurate anym=
-ore?
-How about change it to "corenet_generic.c"?
-
-Thanks,
-Kevin
->=20
-> -Scott
->=20
->=20
->=20
-
---jI8keyz6grp/JLjh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJSMmZAAAoJEJNY7TDerrFx+tQH/3Zg03RboPt0va8JWwhHpqsQ
-woKRLw0lZAfObuKJmL7qeHM8NOW9cli7n5gpBSm3oqJ7H3LU+JGPLsXzwGGKHSBL
-+oCITLvFAQskKzDTfRjOP2qYmkSQpUgFbylhLf2wP0g20+Yhq4aYWt1jKVLFp0q7
-eFn33Ow/Xdw30UjUBNZ+J9EUZ9x0cqI3sFibiVMqW4to46hkkjahP4cw8+avCZyD
-p0kHw+tKcy/YXGjlVqzEaYyfif00yb4rLQI+SN52GjtRu0XzazQpIVByHfl6H9sU
-obd+ByEA5wV3efIMS2ks8xsFKNkGKUA6AohHYqguJEt1Y4NikSmvOyvGnvy1DRg=
-=/EHX
------END PGP SIGNATURE-----
-
---jI8keyz6grp/JLjh--
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
+DQo+IFNlbnQ6IDIwMTPlubQ55pyIMTLml6Ug5pif5pyf5ZubIDIyOjQ0DQo+IFRvOiBUYW5nIFl1
+YW50aWFuLUIyOTk4Mw0KPiBDYzogV29vZCBTY290dC1CMDc0MjE7IGdhbGFrQGtlcm5lbC5jcmFz
+aGluZy5vcmc7IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsgZGV2aWNldHJlZUB2
+Z2VyLmtlcm5lbC5vcmc7IExpIFlhbmctTGVvLVI1ODQ3Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENI
+IHY0XSBwb3dlcnBjL21wYzg1eHg6IFVwZGF0ZSB0aGUgY2xvY2sgZGV2aWNlIHRyZWUNCj4gbm9k
+ZXMNCj4gDQo+IE9uIFdlZCwgMjAxMy0wOS0xMSBhdCAyMDozMSAtMDUwMCwgVGFuZyBZdWFudGlh
+bi1CMjk5ODMgd3JvdGU6DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4g
+RnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IDIwMTPlubQ55pyIMTLml6Ug5pif
+5pyf5ZubIDk6MTANCj4gPiA+IFRvOiBUYW5nIFl1YW50aWFuLUIyOTk4Mw0KPiA+ID4gQ2M6IGdh
+bGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0K
+PiA+ID4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IExpIFlhbmctTGVvLVI1ODQ3Mg0KPiA+
+ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2NF0gcG93ZXJwYy9tcGM4NXh4OiBVcGRhdGUgdGhlIGNs
+b2NrIGRldmljZQ0KPiA+ID4gdHJlZSBub2Rlcw0KPiA+ID4NCj4gPiA+IFRoaXMgZGVzY3JpcHRp
+b24gb2YgInJlZyIgaXMgb3Zlcmx5IHNwZWNpZmljIChhc3N1bWVzIGhvdyB0aGUgcGFyZW50DQo+
+ID4gPiBub2RlJ3MgcmFuZ2VzIGFyZSBzZXQgdXApLCBpbmNvbXBsZXRlICh0aGVyZSdzIGEgc2l6
+ZSBhcyB3ZWxsIGFzIHRoZQ0KPiA+ID4gb2Zmc2V0KSwgYW5kIGRvZXMgbm90IGFwcGx5IHRvIHRo
+ZSBjbG9ja2dlbiBub2RlIGl0c2VsZiAoeW91DQo+ID4gPiBwcm9iYWJseSBzaG91bGRuJ3QgbHVt
+cCB0aGVtIHRvZ2V0aGVyIGxpa2UgdGhpcykuDQo+ID4gPg0KPiA+IERvIHlvdSBtZWFuIEkgc2hv
+dWxkIGV4cGxhaW4gdGhlIFJFRyBvZiBjbG9ja2dlbiBhbmQgaXRzIGNoaWxkIG5vZGUNCj4gcmVz
+cGVjdGl2ZWx5Pw0KPiA+DQo+ID4gPiA+ICstIGNsb2NrcyA6IHNoYWxsIGJlIHRoZSBpbnB1dCBw
+YXJlbnQgY2xvY2sgcGhhbmRsZSBmb3IgdGhlIGNsb2NrLg0KPiA+ID4NCj4gPiA+IE5vdCByZXF1
+aXJlZCBvbiB0aGUgY2xvY2tnZW4gbm9kZQ0KPiA+ID4NCj4gPiBSZXF1aXJlZCBieSBjaGlsZCBu
+b2RlIG9mIGNsb2NrZ2VuLg0KPiANCj4gTXkgcG9pbnQgaXMgdGhhdCB5b3UncmUgbHVtcGluZyBz
+ZXZlcmFsIGRpZmZlcmVudCB0eXBlcyBvZiBub2RlcyB0b2dldGhlcg0KPiB3aXRoIG9uZSBiaW5k
+aW5nLCB3aGVuIHNvbWUgcGFydHMgb2YgdGhlIGJpbmRpbmcgYXJlIG5vdCBhcHBsaWNhYmxlIHRv
+DQo+IHRoZSBjbG9ja2dlbiBub2RlLg0KPiANCk5vdCBzZXZlcmFsLCBqdXN0IHR3byB0eXBlcyBv
+ZiBub2Rlcy4NCk9uZSBpcyBjbG9ja2dlbiBub2RlLCB0aGUgb3RoZXIgaXMgUExMIGFuZCBtdXgg
+bm9kZXMuDQoNClRoZSByZWFzb24gdGhleSBsdW1wZWQgdG9nZXRoZXIgaXMgdGhhdCB0aGUgY2xv
+Y2tnZW4gbm9kZSBpcyBub3Qgb25seSBJUCBibG9jaw0KTm9kZSBidXQgYWxzbyBhIGNsb2NrIHBy
+b3ZpZGVyIG5vZGUuDQoNCkF0IGZpcnN0LCBJIHdhbnQgdG8gYWRkIGEgZXh0cmEgZml4ZWQtY2xv
+Y2sgbm9kZSBhbmQgbW92ZSB0aGUgY2xvY2stZnJlcXVlbmN5IG9mIGNsb2NrZ2VuIA0KTm9kZSB0
+byBpdCwgYnV0IGl0IGlzIGFnYWluc3QgdGhlIGJhY2t3YXJkIGNvbXBhdGliaWxpdHkgd2hpY2gg
+SSB0aGluayBpdCBpcyBub3QgYSBiaWcgZGVhbCwNCkJlY2F1c2Ugbm9ib2R5IGhhc24ndCB1c2Vk
+IGl0IHlldC4NCklmIEkgYWRkIGEgZXh0cmEgbm9kZSB3aXRoIHRoZSBjbG9jay1mcmVxdWVuY3kg
+cHJvcGVydHkgYW5kIGRvbid0IG1vdmUgdGhlDQpjbG9jay1mcmVxdWVuY3kgcHJvcGVydHkgb2Yg
+Y2xvY2tnZW4sIHRoYXQgd291bGQgYmUgcmVkdW5kYW50IGJlY2F1c2UgYm90aCBjbG9ja2dlbiBu
+b2RlDQphbmQgdGhlIGV4dHJhIG5vZGUgaGF2ZSB0aGUgc2FtZSBjbG9jay1mcmVxdWVuY3kgbm9k
+ZS4NClNvLCBJIGNob29zZSB3aGF0IEkgZGlkIG5vdy4NCiANCkNvdWxkIHlvdSBnaXZlIG1lIHNv
+bWUgc3VnZ2VzdGlvbnMgb24gdGhpcz8NClJlZ2FyZHMsDQpZdWFudGlhbg0KDQo+IC1TY290dA0K
+PiANCg0K
