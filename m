@@ -1,24 +1,24 @@
-Return-Path: <B40534@freescale.com>
+Return-Path: <B45475@freescale.com>
 Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7EE0F2C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 12:53:52 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v3 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
-Date: Fri, 13 Sep 2013 02:53:43 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F154392590107C5F0@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
- <1378879004-2446-4-git-send-email-dongsheng.wang@freescale.com>
- <1378940642.12204.427.camel@snotra.buserror.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010652F1@039-SN2MPN1-023.039d.mgd.msft.net>
- <1379009192.2536.19.camel@snotra.buserror.net>
-In-Reply-To: <1379009192.2536.19.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 6DCBD2C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2013 12:58:44 +1000 (EST)
+From: Zhao Qiang-B45475 <B45475@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Liu Shengzhou-B36685
+ <B36685@freescale.com>
+Subject: RE: [PATCH] powerpc/p1010rdb:remove interrupts of ethernet-phy in
+ device tree
+Date: Fri, 13 Sep 2013 02:58:36 +0000
+Message-ID: <36B508A30383C943B69CE30E685EB89CEA3494@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1378871354-22763-1-git-send-email-B45475@freescale.com>
+ <CE821871-A927-4A65-AA69-05F63AF2C6A1@kernel.crashing.org>
+ <3F453DDFF675A64A89321A1F35281021ABA9F8@039-SN1MPN1-004.039d.mgd.msft.net>
+ <D8AFFF30-31B1-4B3B-B9D0-DC209A5A3BCD@kernel.crashing.org>
+In-Reply-To: <D8AFFF30-31B1-4B3B-B9D0-DC209A5A3BCD@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,55 +30,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMTMsIDIwMTMgMjowNyBBTQ0KPiBUbzogV2Fu
-ZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgZ2FsYWtAa2VybmVs
-LmNyYXNoaW5nLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1Ympl
-Y3Q6IFJlOiBbUEFUQ0ggdjMgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMCBz
-dGF0ZSBhbmQNCj4gYWx0aXZlYyBpZGxlDQo+IA0KPiBPbiBXZWQsIDIwMTMtMDktMTEgYXQgMjI6
-NDggLTA1MDAsIFdhbmcgRG9uZ3NoZW5nLUI0MDUzNCB3cm90ZToNCj4gPg0KPiA+ID4gLS0tLS1P
-cmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4g
-PiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDEyLCAyMDEzIDc6MDQgQU0NCj4gPiA+IFRvOiBX
-YW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+IENjOiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3Jn
-OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRD
-SCB2MyA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBwdzIwIHN0YXRlDQo+ID4gPiBh
-bmQgYWx0aXZlYyBpZGxlDQo+ID4gPg0KPiA+ID4gT24gV2VkLCAyMDEzLTA5LTExIGF0IDEzOjU2
-ICswODAwLCBEb25nc2hlbmcgV2FuZyB3cm90ZToNCj4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hl
-bmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+DQo+ID4gPiA+IEFkZCBh
-IHN5cyBpbnRlcmZhY2UgdG8gZW5hYmxlL2RpYWJsZSBwdzIwIHN0YXRlIG9yIGFsdGl2ZWMgaWRs
-ZSwNCj4gPiA+ID4gYW5kIGNvbnRyb2wgdGhlIHdhaXQgZW50cnkgdGltZS4NCj4gPiA+ID4NCj4g
-PiA+ID4gRW5hYmxlL0Rpc2FibGUgaW50ZXJmYWNlOg0KPiA+ID4gPiAwLCBkaXNhYmxlLiAxLCBl
-bmFibGUuDQo+ID4gPiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdVgvcHcyMF9zdGF0ZQ0K
-PiA+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL2FsdGl2ZWNfaWRsZQ0KPiA+ID4g
-Pg0KPiA+ID4gPiBTZXQgd2FpdCBlbnRyeSBiaXQgaW50ZXJmYWNlOg0KPiA+ID4gPiBiaXQgdmFs
-dWUgcmFuZ2UgMH42MywgMCBiaXQgaXMgTWludGltZSwgNjMgYml0IGlzIE1heHRpbWUuDQo+ID4g
-PiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdVgvcHcyMF93YWl0X2VudHJ5X2JpdA0KPiA+
-ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL2FsdGl2ZWNfaWRsZV93YWl0X2VudHJ5
-X2JpdA0KPiA+ID4NCj4gPiA+IEknbSBubyBmYW4gb2YgdGhlIHdheSBwb3dlcnBjIGRvZXMgYml0
-IG51bWJlcmluZywgYnV0IGRvbid0IGZsaXAgaXQNCj4gPiA+IGFyb3VuZCBoZXJlIC0tIHlvdSds
-bCBqdXN0IGNhdXNlIGNvbmZ1c2lvbi4NCj4gPiA+DQo+ID4gT0suIDAgYml0IGlzIG1heHRpbWUs
-IDYzIGJpdCBpcyBtaW50aW1lLg0KPiA+DQo+ID4gPiBCZXR0ZXIgeWV0LCB0aGlzIGludGVyZmFj
-ZSBzaG91bGQgdGFrZSByZWFsIHRpbWUgdW5pdHMgcmF0aGVyIHRoYW4gYQ0KPiA+ID4gdGltZWJh
-c2UgYml0Lg0KPiA+ID4NCj4gPiBJIHRoaW5rIHRoZSByZWFsIHRpbWUgaXMgbm90IHN1aXRhYmxl
-LCBiZWNhdXNlIHRpbWViYXNlIGJpdCBkb2VzIG5vdA0KPiA+IGNvcnJlc3BvbmQgd2l0aCByZWFs
-IHRpbWUuDQo+IA0KPiBJdCdzIGEgYml0IHNsb3BweSBkdWUgdG8gaG93IHRoZSBoYXJkd2FyZSB3
-b3JrcywgYnV0IHlvdSBjb3VsZCBjb252ZXJ0IGl0DQo+IGxpa2UgeW91IGRpZCBpbiBlYXJsaWVy
-IHBhdGNoZXMuICBTZW1hbnRpY2FsbHkgaXQgc2hvdWxkIHByb2JhYmx5IGJlIHRoZQ0KPiBtaW5p
-bXVtIHRpbWUgdG8gd2FpdCBiZWZvcmUgZW50ZXJpbmcgdGhlIGxvdyBwb3dlciBzdGF0ZS4NCj4g
-DQpCdXQgdGhlcmUgaGFzIGEgcHJvYmxlbSwgd2UgY2FuJ3QgY29udmVydCBiaXQgdG8gdGhlIHJl
-YWwgdGltZSB3aGVuIHVzZXIgcmVhZCB0aGlzIHN5c2ZzLg0KTGlrZToNCmVjaG8gMTAwMCh1cykg
-PiAvc3lzLyovcHcyMF93YWl0X2VudHJ5X2JpdCwgYWZ0ZXIgY29udmVydCB3ZSBnZXQgYml0IGlz
-IDQ5Lg0KY2F0IC9zeXMvKi9wdzIwX3dhaXRfZW50cnlfYml0LCBhZnRlciBjb252ZXJ0IHRoZSB0
-aW1lIGlzIDE1OTgodXMpLg0KDQpUaGUgcmVhZCBvdXQgb2YgdGhlIHRpbWUgaXMgbm90IHJlYWwg
-dGltZS4gVW5sZXNzIHdlIGRlZmluZSBhIHZhcmlhYmxlIHRvIHNhdmUgdGhlIHJlYWwgdGltZS4N
-Cg0KPiA+ID4gQWxzbywgeW91IGRpc2FibGUgdGhlIHBvd2VyIHNhdmluZyBtb2RlIGlmIHRoZSBt
-YXhpbXVtIGludGVydmFsIGlzDQo+ID4gPiBzZWxlY3RlZCwNCj4gPiBJdCdzIG5vdCBkaXNhYmxl
-IHRoZSBwdzIwIHN0YXRlIG9yIGFsdGl2ZWMgaWRsZSwganVzdCBtYXgtZGVsYXkgZW50cnkNCj4g
-dGltZS4NCj4gDQo+IE5vLCB0aGUgY29kZSBjaGVja3MgZm9yIHplcm8gdG8gc2V0IG9yIGNsZWFy
-IHRoZSBlbmFibGluZyBiaXQgKGUuZy4NCj4gUFcyMF9XQUlUKS4NCj4gDQpUaGVyZSBoYXMgcHcy
-MF9zdGF0ZS9hbHRpdmVjX2lkbGUgc3lzIGludGVyZmFjZSB0byBjb250cm9sICJlbmFibGUvZGlz
-YWJsZSIsDQpUaGVyZSBpcyBvbmx5IHRvIGNvbnRyb2wgd2FpdCBiaXQuIERpZCB5b3UgbWVhbiBy
-ZW1vdmUgInB3MjBfc3RhdGUvYWx0aXZlY19pZGxlIg0Kc3lzIGludGVyZmFjZSwgYW5kIHJldXNl
-ICJwdzIwX3dhaXRfZW50cnlfYml0L2FsdGl2ZWNfaWRsZSoiIHN5cyBpbnRlcmZhY2U/DQpXaGVu
-IGVjaG8gemVybyBpbnRvICJwdzIwX3dhaXRfZW50cnlfYml0IiB3ZSBqdXN0IHRvIGRpc2FibGUg
-cHcyMCBzdGF0ZSwgSSB0aGluayB0aGF0IGlzIHJlYXNvbmFibGUuIDopDQo=
+Do you have any solutions?
+
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+Sent: Friday, September 13, 2013 12:42 AM
+To: Liu Shengzhou-B36685
+Cc: Zhao Qiang-B45475; linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/p1010rdb:remove interrupts of ethernet-phy in =
+device tree
+
+
+On Sep 12, 2013, at 1:54 AM, Liu Shengzhou-B36685 wrote:
+
+>=20
+>=20
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Wednesday, September 11, 2013 11:13 PM
+>> To: Zhao Qiang-B45475
+>> Cc: linuxppc-dev@lists.ozlabs.org; Liu Shengzhou-B36685
+>> Subject: Re: [PATCH] powerpc/p1010rdb:remove interrupts of=20
+>> ethernet-phy in device tree
+>>=20
+>>=20
+>> On Sep 10, 2013, at 10:49 PM, Zhao Qiang wrote:
+>>=20
+>>> Since P1010RDB-PA and P1010RDB-PB boards use different external PHY=20
+>>> interrupt signals.
+>>> And actually the PHY interrupt is not used effectively with=20
+>>> corresponding interrupt handler.
+>>> So we can remove the interrupts node without side-effect to comply=20
+>>> with both P1010RDB-PA and P1010RDB-PB.
+>>>=20
+>>> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+>>> Signed-off-by: Zhao Qiang <B45475@freescale.com>
+>>> ---
+>>> arch/powerpc/boot/dts/p1010rdb.dtsi | 3 ---
+>>> 1 file changed, 3 deletions(-)
+>>>=20
+>>=20
+>> NAK.  The device tree should represent the HW not what drivers decide=20
+>> to do with it.
+>>=20
+>> If different board revs have different interrupt signals than create=20
+>> dts's to handle the 2 board revs.
+>>=20
+>> - k
+>>=20
+> You mean we need to create p1010rdb-pa.dtsi and p1010rdb-pb.dtsi replacin=
+g current p1010rdb.dtsi just because of the unused phy interrupt?
+> and phy interrupt is not present in those dts of P3/P4/P5 platforms.
+> Actually currently many hardware are not present in dts, such as a lot of=
+ i2c devices, temperature monitor, etc.
+>=20
+> -Shengzhou
+>=20
+
+I'm saying of the board revs are different w/regards to how the PHY interru=
+pt is wired, than create two .dts one for each of the board revs.
+
+If the p3/p4/p5 platforms are missing the phy interrupt in the .dts than it=
+s an error.
+
+Other devices like i2c, temp mon, etc should be added.  There is a differen=
+ce between something not existing because people haven't gotten around to i=
+t / there isn't a binding vs a using the lack of information as a configura=
+tion mechanism.
+
+- k
