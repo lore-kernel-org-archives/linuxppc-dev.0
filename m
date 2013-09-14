@@ -1,32 +1,31 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D7BFB2C0164
- for <linuxppc-dev@ozlabs.org>; Sat, 14 Sep 2013 10:49:25 +1000 (EST)
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 038012C00F1
+ for <linuxppc-dev@ozlabs.org>; Sat, 14 Sep 2013 10:49:28 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 13 Sep 2013 20:49:23 -0400
+ Fri, 13 Sep 2013 18:49:26 -0600
 Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
  [9.57.198.25])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id BFD386E803F
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 20:49:21 -0400 (EDT)
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E186B6E8040
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 20:49:23 -0400 (EDT)
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
  by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8E0nMRL45875250
- for <linuxppc-dev@ozlabs.org>; Sat, 14 Sep 2013 00:49:22 GMT
+ r8E0nOLN44630042
+ for <linuxppc-dev@ozlabs.org>; Sat, 14 Sep 2013 00:49:24 GMT
 Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
  by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r8E0nKhb001540
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 21:49:21 -0300
+ r8E0nNvu001648
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 21:49:24 -0300
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/8][v4] powerpc/perf: Define big-endian version of
- perf_mem_data_src
-Date: Fri, 13 Sep 2013 17:49:11 -0700
-Message-Id: <1379119755-21025-5-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH 7/8][v4] power: implement is_instr_load_store().
+Date: Fri, 13 Sep 2013 17:49:14 -0700
+Message-Id: <1379119755-21025-8-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1379119755-21025-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1379119755-21025-1-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
@@ -41,102 +40,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-perf_mem_data_src is an union that is initialized via the ->val field
-and accessed via the bitmap fields. For this to work on big endian
-platforms, we also need a big-endian represenation of perf_mem_data_src.
+Implement is_instr_load_store() to detect whether a given instruction
+is one of the fixed-point or floating-point load/store instructions.
+This function will be used in a follow-on patch to save memory hierarchy
+information of the load/store.
 
-Cc: Stephane Eranian <eranian@google.com>
-Cc: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
-Changelog [v2]:
-	- [Vince Weaver, Michael Ellerman] No __KERNEL__ in uapi headers.
+ arch/powerpc/include/asm/code-patching.h |    1 +
+ arch/powerpc/lib/code-patching.c         |   90 ++++++++++++++++++++++++++++++
+ 2 files changed, 91 insertions(+)
 
- include/uapi/linux/perf_event.h |   58 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
-
-diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-index 62c25a2..7a4f9bb 100644
---- a/include/uapi/linux/perf_event.h
-+++ b/include/uapi/linux/perf_event.h
-@@ -19,6 +19,50 @@
- #include <asm/byteorder.h>
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index a6f8c7a..3e47fe0 100644
+--- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -34,6 +34,7 @@ int instr_is_branch_to_addr(const unsigned int *instr, unsigned long addr);
+ unsigned long branch_target(const unsigned int *instr);
+ unsigned int translate_branch(const unsigned int *dest,
+ 			      const unsigned int *src);
++int instr_is_load_store(const unsigned int *instr);
  
- /*
-+ * Kernel and userspace check for endianness in incompatible ways.
-+ * In user space, <endian.h> defines both __BIG_ENDIAN and __LITTLE_ENDIAN
-+ * but sets __BYTE_ORDER to one or the other. So user space uses checks are:
-+ *
-+ *	#if __BYTE_ORDER == __LITTLE_ENDIAN
-+ *
-+ * In the kernel, __BYTE_ORDER is undefined, so using the above check doesn't
-+ * work. Further, kernel code assumes that exactly one of __BIG_ENDIAN and
-+ * __LITTLE_ENDIAN is defined.  So the kernel checks are like:
-+ *
-+ *	#if defined(__LITTLE_ENDIAN)
-+ *
-+ * But we can't use that check in user space since __LITTLE_ENDIAN (and
-+ * __BIG_ENDIAN) are always defined.
-+ *
-+ * Since some perf data structures depend on endianness _and_ are shared
-+ * between kernel and user, perf needs its own notion of endian macros (at
-+ * least until user and kernel endian checks converge).
-+ */
-+#define __PERF_LE	1234
-+#define __PERF_BE	4321
-+
-+#if defined(__BYTE_ORDER)
-+
-+#if __BYTE_ORDER == __LITTLE_ENDIAN
-+#define __PERF_BYTE_ORDER	__PERF_LE
-+#elif __BYTE_ORDER == __BIG_ENDIAN
-+#define __PERF_BYTE_ORDER	__PERF_BE
-+#endif
-+
-+#else /* __BYTE_ORDER */
-+
-+#if defined(__LITTLE_ENDIAN) && defined(__BIG_ENDIAN)
-+#error "Cannot determine endianness"
-+#elif defined(__LITTLE_ENDIAN)
-+#define __PERF_BYTE_ORDER	__PERF_LE
-+#elif defined(__BIG_ENDIAN)
-+#define __PERF_BYTE_ORDER	__PERF_BE
-+#endif
-+
-+
-+#endif /* __BYTE_ORDER */
+ static inline unsigned long ppc_function_entry(void *func)
+ {
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 2bc9db3..7e5dc6f 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -159,6 +159,96 @@ unsigned int translate_branch(const unsigned int *dest, const unsigned int *src)
+ 	return 0;
+ }
+ 
++static unsigned int load_store_xval(const unsigned int instr)
++{
++	return (instr >> 1) & 0x3FF;	/* bits 21..30 */
++}
 +
 +/*
-  * User-space ABI bits:
-  */
- 
-@@ -659,6 +703,7 @@ enum perf_callchain_context {
- #define PERF_FLAG_FD_OUTPUT		(1U << 1)
- #define PERF_FLAG_PID_CGROUP		(1U << 2) /* pid=cgroup id, per-cpu mode only */
- 
-+#if __PERF_BYTE_ORDER == __PERF_LE
- union perf_mem_data_src {
- 	__u64 val;
- 	struct {
-@@ -670,6 +715,19 @@ union perf_mem_data_src {
- 			mem_rsvd:31;
- 	};
- };
-+#elif __PERF_BYTE_ORDER == __PERF_BE
-+union perf_mem_data_src {
-+	__u64 val;
-+	struct {
-+		__u64	mem_rsvd:31,
-+			mem_dtlb:7,	/* tlb access */
-+			mem_lock:2,	/* lock instr */
-+			mem_snoop:5,	/* snoop mode */
-+			mem_lvl:14,	/* memory hierarchy level */
-+			mem_op:5;	/* type of opcode */
-+	};
++ * Values of bits 21:30 of Fixed-point and Floating-point Load and Store
++ * instructions.
++ *
++ * Reference:	PowerISA_V2.06B_Public.pdf, Sections 3.3.2 through 3.3.6 and
++ *		4.6.2 through 4.6.4.
++ */
++#define	x_lbzx		87
++#define	x_lbzux		119
++#define	x_lhzx		279
++#define	x_lhzux		311
++#define	x_lhax		343
++#define	x_lhaux		375
++#define	x_lwzx		23
++#define	x_lwzux		55
++#define	x_lwax		341
++#define	x_lwaux		373
++#define	x_ldx		21
++#define	x_ldux		53
++#define	x_stbx		215
++#define	x_stbux		247
++#define	x_sthx		407
++#define	x_sthux		439
++#define	x_stwx		151
++#define	x_stwux		183
++#define	x_stdx		149
++#define	x_stdux		181
++#define	x_lhbrx		790
++#define	x_lwbrx		534
++#define	x_sthbrx	918
++#define	x_stwbrx	662
++#define	x_ldbrx		532
++#define	x_stdbrx	660
++#define	x_lswi		597
++#define	x_lswx		533
++#define	x_stswi		725
++#define	x_stswx		661
++#define	x_lfsx		535
++#define	x_lfsux		567
++#define	x_lfdx		599
++#define	x_lfdux		631
++#define	x_lfiwax	855
++#define	x_lfiwzx	887
++#define	x_stfsx		663
++#define	x_stfsux	695
++#define	x_stfdx		727
++#define	x_stfdux	759
++#define	x_stfiwax	983
++#define	x_lfdpx		791
++#define	x_stfdpx	919
++
++static unsigned int x_form_load_store[] = {
++	x_lbzx,     x_lbzux,    x_lhzx,     x_lhzux,    x_lhax,
++	x_lhaux,    x_lwzx,     x_lwzux,    x_lwax,     x_lwaux,
++	x_ldx,      x_ldux,     x_stbx,     x_stbux,    x_sthx,
++	x_sthux,    x_stwx,     x_stwux,    x_stdx,     x_stdux,
++	x_lhbrx,    x_lwbrx,    x_sthbrx,   x_stwbrx,   x_ldbrx,
++	x_stdbrx,   x_lswi,     x_lswx,     x_stswi,    x_stswx,
++	x_lfsx,     x_lfsux,    x_lfdx,     x_lfdux,    x_lfiwax,
++	x_lfiwzx,   x_stfsx,    x_stfsux,   x_stfdx,    x_stfdux,
++	x_stfiwax,  x_lfdpx,    x_stfdpx
 +};
-+#endif
++
++int instr_is_load_store(const unsigned int *instr)
++{
++	unsigned int op;
++	int i, n;
++
++	op = instr_opcode(*instr);
++
++	if ((op >= 32 && op <= 58) || (op == 61 || op == 62))
++		return 1;
++
++	if (op == 31) {
++		n = sizeof(x_form_load_store) / sizeof(int);
++
++		for (i = 0; i < n; i++) {
++			if (x_form_load_store[i] == load_store_xval(*instr))
++				return 1;
++		}
++	}
++
++	return 0;
++}
++
  
- /* type of opcode (load/store/prefetch,code) */
- #define PERF_MEM_OP_NA		0x01 /* not available */
+ #ifdef CONFIG_CODE_PATCHING_SELFTEST
+ 
 -- 
 1.7.9.5
