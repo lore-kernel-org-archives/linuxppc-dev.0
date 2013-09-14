@@ -1,31 +1,31 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D0DC12C015D
- for <linuxppc-dev@ozlabs.org>; Sat, 14 Sep 2013 10:49:24 +1000 (EST)
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D54E52C0163
+ for <linuxppc-dev@ozlabs.org>; Sat, 14 Sep 2013 10:49:25 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 13 Sep 2013 20:49:21 -0400
+ Fri, 13 Sep 2013 20:49:23 -0400
 Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
  [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 738A76E803F
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 20:49:18 -0400 (EDT)
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id C78A1C9003E
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 20:49:19 -0400 (EDT)
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
  by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8E0nImu47710370
- for <linuxppc-dev@ozlabs.org>; Sat, 14 Sep 2013 00:49:18 GMT
+ r8E0nJB241680950
+ for <linuxppc-dev@ozlabs.org>; Sat, 14 Sep 2013 00:49:19 GMT
 Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
  by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r8E0nHBl001389
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 21:49:18 -0300
+ r8E0nIfO001456
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 21:49:19 -0300
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/8][v4] powerpc/perf: Rename Power8 macros to start with PME
-Date: Fri, 13 Sep 2013 17:49:08 -0700
-Message-Id: <1379119755-21025-2-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH 2/8][v4] powerpc/perf: Export Power8 generic events in sysfs
+Date: Fri, 13 Sep 2013 17:49:09 -0700
+Message-Id: <1379119755-21025-3-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1379119755-21025-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1379119755-21025-1-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
@@ -40,56 +40,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We use helpers like GENERIC_EVENT_ATTR() to list the generic events in
-sysfs. To avoid name collisions, GENERIC_EVENT_ATTR() requires the perf
-event macros to start with PME.
+Export generic perf events for Power8 in sysfs.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/power8-pmu.c |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ arch/powerpc/perf/power8-pmu.c |   23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
 diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 96a64d6..30c6b12 100644
+index 30c6b12..ff98fb8 100644
 --- a/arch/powerpc/perf/power8-pmu.c
 +++ b/arch/powerpc/perf/power8-pmu.c
-@@ -18,12 +18,12 @@
- /*
-  * Some power8 event codes.
-  */
--#define PM_CYC				0x0001e
--#define PM_GCT_NOSLOT_CYC		0x100f8
--#define PM_CMPLU_STALL			0x4000a
--#define PM_INST_CMPL			0x00002
--#define PM_BRU_FIN			0x10068
--#define PM_BR_MPRED_CMPL		0x400f6
-+#define PME_PM_CYC				0x0001e
-+#define PME_PM_GCT_NOSLOT_CYC			0x100f8
-+#define PME_PM_CMPLU_STALL			0x4000a
-+#define PME_PM_INST_CMPL			0x00002
-+#define PME_PM_BRU_FIN				0x10068
-+#define PME_PM_BR_MPRED_CMPL			0x400f6
+@@ -510,6 +510,28 @@ static void power8_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+ 		mmcr[1] &= ~(0xffUL << MMCR1_PMCSEL_SHIFT(pmc + 1));
+ }
  
++GENERIC_EVENT_ATTR(cpu-cyles,			PM_CYC);
++GENERIC_EVENT_ATTR(stalled-cycles-frontend,	PM_GCT_NOSLOT_CYC);
++GENERIC_EVENT_ATTR(stalled-cycles-backend,	PM_CMPLU_STALL);
++GENERIC_EVENT_ATTR(instructions,		PM_INST_CMPL);
++GENERIC_EVENT_ATTR(branch-instructions,		PM_BRU_FIN);
++GENERIC_EVENT_ATTR(branch-misses,		PM_BR_MPRED_CMPL);
++
++static struct attribute *power8_events_attr[] = {
++	GENERIC_EVENT_PTR(PM_CYC),
++	GENERIC_EVENT_PTR(PM_GCT_NOSLOT_CYC),
++	GENERIC_EVENT_PTR(PM_CMPLU_STALL),
++	GENERIC_EVENT_PTR(PM_INST_CMPL),
++	GENERIC_EVENT_PTR(PM_BRU_FIN),
++	GENERIC_EVENT_PTR(PM_BR_MPRED_CMPL),
++	NULL
++};
++
++static struct attribute_group power8_pmu_events_group = {
++	.name = "events",
++	.attrs = power8_events_attr,
++};
++
+ PMU_FORMAT_ATTR(event,		"config:0-49");
+ PMU_FORMAT_ATTR(pmcxsel,	"config:0-7");
+ PMU_FORMAT_ATTR(mark,		"config:8");
+@@ -546,6 +568,7 @@ struct attribute_group power8_pmu_format_group = {
  
- /*
-@@ -550,12 +550,12 @@ static const struct attribute_group *power8_pmu_attr_groups[] = {
+ static const struct attribute_group *power8_pmu_attr_groups[] = {
+ 	&power8_pmu_format_group,
++	&power8_pmu_events_group,
+ 	NULL,
  };
  
- static int power8_generic_events[] = {
--	[PERF_COUNT_HW_CPU_CYCLES] =			PM_CYC,
--	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PM_GCT_NOSLOT_CYC,
--	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =	PM_CMPLU_STALL,
--	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_INST_CMPL,
--	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BRU_FIN,
--	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
-+	[PERF_COUNT_HW_CPU_CYCLES] =			PME_PM_CYC,
-+	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PME_PM_GCT_NOSLOT_CYC,
-+	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =	PME_PM_CMPLU_STALL,
-+	[PERF_COUNT_HW_INSTRUCTIONS] =			PME_PM_INST_CMPL,
-+	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PME_PM_BRU_FIN,
-+	[PERF_COUNT_HW_BRANCH_MISSES] =			PME_PM_BR_MPRED_CMPL,
- };
- 
- static u64 power8_bhrb_filter_map(u64 branch_sample_type)
 -- 
 1.7.9.5
