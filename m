@@ -1,37 +1,19 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 650A32C0144
- for <linuxppc-dev@ozlabs.org>; Sat, 14 Sep 2013 10:49:29 +1000 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 13 Sep 2013 20:49:27 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id EE1E4C9003E
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 20:49:24 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8E0nP3462390392
- for <linuxppc-dev@ozlabs.org>; Sat, 14 Sep 2013 00:49:25 GMT
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r8E0nOMD001691
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Sep 2013 21:49:24 -0300
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 8/8][v4] powerpc/perf: Export Power7 memory hierarchy info to
- user space.
-Date: Fri, 13 Sep 2013 17:49:15 -0700
-Message-Id: <1379119755-21025-9-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1379119755-21025-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1379119755-21025-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <michaele@au1.ibm.com>, Stephane Eranian <eranian@google.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 153F22C0158
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Sep 2013 13:50:34 +1000 (EST)
+From: Scott Wood <scottwood@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v2 1/3] powerpc/booke64: add sync after writing PTE
+Date: Fri, 13 Sep 2013 22:50:20 -0500
+Message-ID: <1379130622-17436-1-git-send-email-scottwood@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,191 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Power7, the DCACHE_SRC field in MMCRA register identifies the memory
-hierarchy level (eg: L2, L3 etc) from which a data-cache miss for a
-marked instruction was satisfied.
+The ISA says that a sync is needed to order a PTE write with a
+subsequent hardware tablewalk lookup.  On e6500, without this sync
+we've been observed to die with a DSI due to a PTE write not being seen
+by a subsequent access, even when everything happens on the same
+CPU.
 
-Use the 'perf_mem_data_src' object to export this hierarchy level to user
-space. Some memory hierarchy levels in Power7 don't map into the arch-neutral
-levels. However, since newer generation of the processor (i.e. Power8) uses
-fewer levels than in Power7, we don't really need to define new hierarchy
-levels just for Power7.
-
-We instead, map as many levels as possible and approximate the rest. See
-comments near dcache-src_map[] in the patch.
-
-Usage:
-
-	perf record -d -e 'cpu/PM_MRK_GRP_CMPL/' <application>
-	perf report -n --mem-mode --sort=mem,sym,dso,symbol_daddr,dso_daddr"
-
-		For samples involving load/store instructions, the memory
-		hierarchy level is shown as "L1 hit", "Remote RAM hit" etc.
-	# or
-
-	perf record --data <application>
-	perf report -D
-
-		Sample records contain a 'data_src' field which encodes the
-		memory hierarchy level: Eg: data_src 0x442 indicates
-		MEM_OP_LOAD, MEM_LVL_HIT, MEM_LVL_L2 (i.e load hit L2).
-
-Note that the PMU event PM_MRK_GRP_CMPL tracks all marked group completions
-events. While some of these are loads and stores, others like 'add'
-instructions may also be sampled.
-
-As such, the precise semantics of 'perf mem -t load' or 'perf mem -t store'
-(which require sampling only loads or only stores cannot be implemented on
-Power. (Sampling on PM_MRK_GRP_CMPL and throwing away non-loads and non-store
-samples could yield an inconsistent profile of the application).
-
-Thanks to input from Stephane Eranian, Michael Ellerman and Michael Neuling.
-
-Cc: Stephane Eranian <eranian@google.com>
-Cc: Michael Ellerman <michael@ellerman.id.au>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
-Changelog[v4]:
-	Drop support for 'perf mem' for Power (use perf-record and perf-report
-	directly)
+v2: new patch
 
-Changelog[v3]:
-	[Michael Ellerman] If newer levels that we defined in [v2] are not
-	needed for Power8, ignore the new levels for Power7 also, and
-	approximate them.
-	Separate the TLB level mapping to a separate patchset.
+Note that we saw this problem when running in emulation (died early in
+boot), but when I tried just now with the mb() removed on actual
+hardware, I didn't see any problem.  But since I'm not aware of any
+change having been made in the hardware relative to this, and since it
+is architecturally required, I'd be more comfortable leaving it in
+unlesss something has changed in the kernel recently such that a sync
+is happening somewhere else along the code path.
+---
+ arch/powerpc/include/asm/pgtable.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Changelog[v2]:
-        [Stephane Eranian] Define new levels rather than ORing the L2 and L3
-        with REM_CCE1 and REM_CCE2.
-        [Stephane Eranian] allocate a bit PERF_MEM_XLVL_NA for architectures
-        that don't use the ->mem_xlvl field.
-        Insert the TLB patch ahead so the new TLB bits are contigous with
-        existing TLB bits.
-
- arch/powerpc/perf/power7-pmu.c |   94 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 94 insertions(+)
-
-diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-index 56c67bc..ddfa548 100644
---- a/arch/powerpc/perf/power7-pmu.c
-+++ b/arch/powerpc/perf/power7-pmu.c
-@@ -11,8 +11,10 @@
- #include <linux/kernel.h>
- #include <linux/perf_event.h>
- #include <linux/string.h>
-+#include <linux/uaccess.h>
- #include <asm/reg.h>
- #include <asm/cputable.h>
-+#include <asm/code-patching.h>
- 
- /*
-  * Bits in event code for POWER7
-@@ -317,6 +319,97 @@ static void power7_disable_pmc(unsigned int pmc, unsigned long mmcr[])
- 		mmcr[1] &= ~(0xffUL << MMCR1_PMCSEL_SH(pmc));
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index 7d6eacf..0459077 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -143,6 +143,13 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 	 * cases, and 32-bit non-hash with 32-bit PTEs.
+ 	 */
+ 	*ptep = pte;
++#ifdef CONFIG_PPC_BOOK3E_64
++	/*
++	 * With hardware tablewalk, a sync is needed to ensure that
++	 * subsequent accesses see the PTE we just wrote.
++	 */
++	mb();
++#endif
+ #endif
  }
  
-+#define POWER7_MMCRA_DCACHE_MISS	(0x1LL << 55)
-+#define POWER7_MMCRA_DCACHE_SRC_SHIFT	51
-+#define POWER7_MMCRA_DCACHE_SRC_MASK	(0xFLL << POWER7_MMCRA_DCACHE_SRC_SHIFT)
-+
-+#define P(a, b)		PERF_MEM_S(a, b)
-+#define PLH(a, b)	(P(OP, LOAD) | P(LVL, HIT) | P(a, b))
-+/*
-+ * Map the Power7 DCACHE_SRC field (bits 9..12) in MMCRA register to the
-+ * architecture-neutral memory hierarchy levels. For the levels in Power7
-+ * that don't map to the arch-neutral levels, approximate to nearest
-+ * level.
-+ *
-+ *	1-hop:	indicates another core on the same chip (2.1 and 3.1 levels).
-+ *	2-hops:	indicates a different chip on same or different node (remote
-+ *		and distant levels).
-+ *
-+ * For consistency with this interpretation of the hops, we dont use
-+ * the REM_RAM1 level below.
-+ *
-+ * The *SHR and *MOD states of the cache are ignored/not exported to user.
-+ *
-+ * ### Levels marked with ### in comments below are approximated
-+ */
-+static u64 dcache_src_map[] = {
-+	PLH(LVL, L2),			/* 00: FROM_L2 */
-+	PLH(LVL, L3),			/* 01: FROM_L3 */
-+
-+	P(LVL, NA),			/* 02: Reserved */
-+	P(LVL, NA),			/* 03: Reserved */
-+
-+	PLH(LVL, REM_CCE1),		/* 04: FROM_L2.1_SHR ### */
-+	PLH(LVL, REM_CCE1),		/* 05: FROM_L2.1_MOD ### */
-+
-+	PLH(LVL, REM_CCE1),		/* 06: FROM_L3.1_SHR ### */
-+	PLH(LVL, REM_CCE1),		/* 07: FROM_L3.1_MOD ### */
-+
-+	PLH(LVL, REM_CCE2),		/* 08: FROM_RL2L3_SHR ### */
-+	PLH(LVL, REM_CCE2),		/* 09: FROM_RL2L3_MOD ### */
-+
-+	PLH(LVL, REM_CCE2),		/* 10: FROM_DL2L3_SHR ### */
-+	PLH(LVL, REM_CCE2),		/* 11: FROM_DL2L3_MOD ### */
-+
-+	PLH(LVL, LOC_RAM),		/* 12: FROM_LMEM */
-+	PLH(LVL, REM_RAM2),		/* 13: FROM_RMEM ### */
-+	PLH(LVL, REM_RAM2),		/* 14: FROM_DMEM */
-+
-+	P(LVL, NA),			/* 15: Reserved */
-+};
-+
-+/*
-+ * Determine the memory-hierarchy information (if applicable) for the
-+ * instruction/address we are sampling. If we encountered a DCACHE_MISS,
-+ * mmcra[DCACHE_SRC_MASK] specifies the memory level from which the operand
-+ * was loaded.
-+ *
-+ * Otherwise, it is an L1-hit, provided the instruction was a load/store.
-+ */
-+static void power7_get_mem_data_src(union perf_mem_data_src *dsrc,
-+			struct pt_regs *regs)
-+{
-+	u64 idx;
-+	u64 mmcra = regs->dsisr;
-+	u64 addr;
-+	int ret;
-+	unsigned int instr;
-+
-+	if (mmcra & POWER7_MMCRA_DCACHE_MISS) {
-+		idx = mmcra & POWER7_MMCRA_DCACHE_SRC_MASK;
-+		idx >>= POWER7_MMCRA_DCACHE_SRC_SHIFT;
-+
-+		dsrc->val |= dcache_src_map[idx];
-+		return;
-+	}
-+
-+	instr = 0;
-+	addr = perf_instruction_pointer(regs);
-+
-+	if (is_kernel_addr(addr))
-+		instr = *(unsigned int *)addr;
-+	else {
-+		pagefault_disable();
-+		ret = __get_user_inatomic(instr, (unsigned int __user *)addr);
-+		pagefault_enable();
-+		if (ret)
-+			instr = 0;
-+	}
-+	if (instr && instr_is_load_store(&instr))
-+		dsrc->val |= PLH(LVL, L1);
-+}
-+
-+
- static int power7_generic_events[] = {
- 	[PERF_COUNT_HW_CPU_CYCLES] =			PME_PM_CYC,
- 	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PME_PM_GCT_NOSLOT_CYC,
-@@ -437,6 +530,7 @@ static struct power_pmu power7_pmu = {
- 	.get_constraint		= power7_get_constraint,
- 	.get_alternatives	= power7_get_alternatives,
- 	.disable_pmc		= power7_disable_pmc,
-+	.get_mem_data_src	= power7_get_mem_data_src,
- 	.flags			= PPMU_ALT_SIPR,
- 	.attr_groups		= power7_pmu_attr_groups,
- 	.n_generic		= ARRAY_SIZE(power7_generic_events),
 -- 
-1.7.9.5
+1.8.1.2
