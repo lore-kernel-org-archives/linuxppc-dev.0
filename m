@@ -1,19 +1,19 @@
-Return-Path: <B32579@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ED9E42C01DE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2013 00:02:23 +1000 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH][v2] powerpc/configs: Enable T1040QDS by default in corenet
-Date: Sun, 15 Sep 2013 19:32:08 +0530
-Message-ID: <1379253728-11870-1-git-send-email-prabhakar@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Prabhakar Kushwaha <prabhakar@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 09E162C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2013 07:39:03 +1000 (EST)
+Message-ID: <1379281131.4098.48.camel@pasglop>
+Subject: Re: [PATCH v2 1/3] powerpc/booke64: add sync after writing PTE
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Mon, 16 Sep 2013 07:38:51 +1000
+In-Reply-To: <1379130622-17436-1-git-send-email-scottwood@freescale.com>
+References: <1379130622-17436-1-git-send-email-scottwood@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T1040 supports both 32 & 64 bit kernel.
-so enable T1040QDS by default in the config files.
+On Fri, 2013-09-13 at 22:50 -0500, Scott Wood wrote:
+> The ISA says that a sync is needed to order a PTE write with a
+> subsequent hardware tablewalk lookup.  On e6500, without this sync
+> we've been observed to die with a DSI due to a PTE write not being seen
+> by a subsequent access, even when everything happens on the same
+> CPU.
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
----
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
- Branch next
+This is gross, I didn't realize we had that bogosity in the
+architecture...
 
- Changes for v2: Sending as it is
- 	
- arch/powerpc/configs/corenet32_smp_defconfig |    1 +
- arch/powerpc/configs/corenet64_smp_defconfig |    1 +
- 2 files changed, 2 insertions(+)
+Did you measure the performance impact ?
 
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index 3dfab4c..19d1d31 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -28,6 +28,7 @@ CONFIG_P3041_DS=y
- CONFIG_P4080_DS=y
- CONFIG_P5020_DS=y
- CONFIG_P5040_DS=y
-+CONFIG_T104x_QDS=y
- CONFIG_HIGHMEM=y
- # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
- CONFIG_BINFMT_MISC=m
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index fa94fb3..d23ee10 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -24,6 +24,7 @@ CONFIG_MAC_PARTITION=y
- CONFIG_B4_QDS=y
- CONFIG_P5020_DS=y
- CONFIG_P5040_DS=y
-+CONFIG_T104x_QDS=y
- CONFIG_T4240_QDS=y
- # CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
- CONFIG_BINFMT_MISC=m
--- 
-1.7.9.5
+Cheers,
+Ben.
+
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+> v2: new patch
+> 
+> Note that we saw this problem when running in emulation (died early in
+> boot), but when I tried just now with the mb() removed on actual
+> hardware, I didn't see any problem.  But since I'm not aware of any
+> change having been made in the hardware relative to this, and since it
+> is architecturally required, I'd be more comfortable leaving it in
+> unlesss something has changed in the kernel recently such that a sync
+> is happening somewhere else along the code path.
+> ---
+>  arch/powerpc/include/asm/pgtable.h | 7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+> index 7d6eacf..0459077 100644
+> --- a/arch/powerpc/include/asm/pgtable.h
+> +++ b/arch/powerpc/include/asm/pgtable.h
+> @@ -143,6 +143,13 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
+>  	 * cases, and 32-bit non-hash with 32-bit PTEs.
+>  	 */
+>  	*ptep = pte;
+> +#ifdef CONFIG_PPC_BOOK3E_64
+> +	/*
+> +	 * With hardware tablewalk, a sync is needed to ensure that
+> +	 * subsequent accesses see the PTE we just wrote.
+> +	 */
+> +	mb();
+> +#endif
+>  #endif
+>  }
+>  
