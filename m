@@ -1,34 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 952512C00E8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2013 08:46:43 +1000 (EST)
-Message-ID: <1379371590.2536.187.camel@snotra.buserror.net>
-Subject: Re: [PATCH v9 2/3] DMA: Freescale: Add new 8-channel DMA engine
- device tree nodes
-From: Scott Wood <scottwood@freescale.com>
-To: Mark Rutland <mark.rutland@arm.com>
-Date: Mon, 16 Sep 2013 17:46:30 -0500
-In-Reply-To: <20130912171541.GH22013@e106331-lin.cambridge.arm.com>
-References: <1377861980-7027-1-git-send-email-hongbo.zhang@freescale.com>
- <1377861980-7027-3-git-send-email-hongbo.zhang@freescale.com>
- <20130902155636.GA18206@e106331-lin.cambridge.arm.com>
- <5225A57E.4030003@freescale.com>
- <20130912171541.GH22013@e106331-lin.cambridge.arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
+ [IPv6:2607:f8b0:400e:c02::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B7F802C00F7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2013 08:51:57 +1000 (EST)
+Received: by mail-pd0-f182.google.com with SMTP id r10so4751785pdi.27
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2013 15:51:53 -0700 (PDT)
+Date: Tue, 17 Sep 2013 06:51:42 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] powerpc/85xx: introduce cornet_generic machine
+Message-ID: <20130916225142.GA29772@pek-khao-d1.corp.ad.wrs.com>
+References: <1378969993-14991-1-git-send-email-haokexin@gmail.com>
+ <1378969993-14991-2-git-send-email-haokexin@gmail.com>
+ <1379011486.2536.46.camel@snotra.buserror.net>
+ <20130913011128.GA1859@pek-khao-d1.corp.ad.wrs.com>
+ <D81C91AE-0731-4BED-BBFA-5B9ED202C9FB@kernel.crashing.org>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- Pawel Moll <Pawel.Moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- Hongbo Zhang <hongbo.zhang@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "vinod.koul@intel.com" <vinod.koul@intel.com>, "djbw@fb.com" <djbw@fb.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="M9NhX3UHpAaciwkO"
+In-Reply-To: <D81C91AE-0731-4BED-BBFA-5B9ED202C9FB@kernel.crashing.org>
+Cc: Scott Wood <scottwood@freescale.com>,
+ linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,26 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-09-12 at 18:15 +0100, Mark Rutland wrote:
-> On Tue, Sep 03, 2013 at 10:01:50AM +0100, Hongbo Zhang wrote:
-> > On 09/02/2013 11:58 PM, Mark Rutland wrote:
-> > > May some channels be unusable for some reason, or will all eight
-> > > channels be wired on any given Elo3 DMA?
-> > Sorry, not get your point clearly, maybe you are clear now because of my
-> > previous explanations.
-> 
-> I assume that on any El03 DMA, there won't be a case where you can't
-> describe the channel at 0x80, for instance. It will always be present
-> (but it might not be wired up to anything any therefore be useful)?
-> 
-> This was related to my concerns about the status register description --
-> if the channels at 0x0,0x80,0x100,0x180 weren't wired, what would get
-> described in the dt? I guess that would never actually happen because
-> all 8 channels must always be present in the Elo3 IP block.
 
-If a channel is not usable for whatever reason (other than that "used
-for a different fixed purpose and thus described with a different
-compatible" thing that was mentioned earlier in these threads), wouldn't
-it just have status = "disabled" or similar, or be absent?
+--M9NhX3UHpAaciwkO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--Scott
+On Mon, Sep 16, 2013 at 11:10:27AM -0500, Kumar Gala wrote:
+>=20
+> On Sep 12, 2013, at 8:11 PM, Kevin Hao wrote:
+>=20
+> > On Thu, Sep 12, 2013 at 01:44:46PM -0500, Scott Wood wrote:
+> >> On Thu, 2013-09-12 at 15:13 +0800, Kevin Hao wrote:
+>=20
+> Just a nit, but subject is missing 'e' in 'cornet' :)
+
+Will fix.
+
+Thanks,
+Kevin
+
+> =20
+> - k
+>=20
+
+--M9NhX3UHpAaciwkO
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAEBAgAGBQJSN4t+AAoJEJNY7TDerrFxrZYIAINtXSJz/WwvjuzsdtnGnuHy
+AStjbAtqsE3iLhm7r1AC26eSt9gLzRl6Ng87JR+ucbbYwo0nhBz1VLc7Sub+nk4F
+XmEXTSQtzq9Ierla7IvGMItLI5zOQtlIgfSxHvwy5VnoS5PHmHLl2RpRoMePc3iO
+PoXrZnmsA+Uc33bT8FsF+2sqo6efR19219UV5I8dRbCpjUWUzzGEAFfxojop2uwR
+ZWm5NN93PjJlcPypA3o8Ai09RnvjX27liFSjOIz/bDMStL1uloZpFCZZUc0Cdu1b
+JQ2FyTi3d+aFyC3lgKAirVpT84ZpSY4wx8drG9oitelJasVcSXy3iHZzR8Vx3gQ=
+=ekYX
+-----END PGP SIGNATURE-----
+
+--M9NhX3UHpAaciwkO--
