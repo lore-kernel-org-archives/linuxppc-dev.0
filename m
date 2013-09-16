@@ -1,32 +1,32 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3669E2C02AD
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:31 +1000 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2F0932C02FB
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:39 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 16 Sep 2013 22:23:26 +1000
+ Mon, 16 Sep 2013 22:29:52 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7CFA73578053
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:28 +1000 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id DD29F3578053
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:35 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8GCOxU38388990
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:24:59 +1000
+ r8GCP6op2884018
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:25:06 +1000
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r8GCfRoN002240
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:27 +1000
-Subject: [RFC PATCH v4 04/12] powerpc/book3s: Return from interrupt if coming
- from evil context.
+ r8GCfYwX002796
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:35 +1000
+Subject: [RFC PATCH v4 05/12] powerpc/book3s: Introduce a early machine check
+ hook in cpu_spec.
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 16 Sep 2013 18:11:25 +0530
-Message-ID: <20130916124125.16111.64111.stgit@mars.in.ibm.com>
+Date: Mon, 16 Sep 2013 18:11:32 +0530
+Message-ID: <20130916124132.16111.8861.stgit@mars.in.ibm.com>
 In-Reply-To: <20130916123908.16111.4657.stgit@mars.in.ibm.com>
 References: <20130916123908.16111.4657.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
@@ -43,134 +43,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-We can get machine checks from any context. We need to make sure that
-we handle all of them correctly. If we are coming from hypervisor user-space,
-we can continue in host kernel in virtual mode to deliver the MC event.
-If we got woken up from power-saving mode then we may come in with one of
-the following state:
- a. No state loss
- b. Supervisor state loss
- c. Hypervisor state loss
-For (a) and (b), we go back to nap again. State (c) is fatal, keep spinning.
-
-For all other context which we not sure of queue up the MCE event and return
-from the interrupt.
+This patch adds the early machine check function pointer in cputable for
+CPU specific early machine check handling. The early machine handle routine
+will be called in real mode to handle SLB and TLB errors. We can not reuse
+the existing machine_check hook because it is always invoked in kernel
+virtual mode and we would already be in trouble if we get SLB or TLB errors.
+This patch just sets up a mechanism to invoke CPU specific handler. The
+subsequent patches will populate the function pointer.
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Acked-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/kernel/exceptions-64s.S |   82 ++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/idle_power7.S    |    1 
- 2 files changed, 83 insertions(+)
+ arch/powerpc/include/asm/cputable.h |    7 +++++++
+ arch/powerpc/kernel/traps.c         |    7 +++++--
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 87a70d2..0a92ba4 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -155,6 +155,24 @@ machine_check_pSeries_1:
- 	 */
- 	HMT_MEDIUM_PPR_DISCARD
- 	SET_SCRATCH0(r13)		/* save r13 */
-+#ifdef CONFIG_PPC_P7_NAP
-+BEGIN_FTR_SECTION
-+	/* Running native on arch 2.06 or later, check if we are
-+	 * waking up from nap. We only handle no state loss and
-+	 * supervisor state loss. We do -not- handle hypervisor
-+	 * state loss at this time.
-+	 */
-+	mfspr	r13,SPRN_SRR1
-+	rlwinm.	r13,r13,47-31,30,31
-+	beq	9f
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 6f3887d..d8c098e 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -90,6 +90,13 @@ struct cpu_spec {
+ 	 * if the error is fatal, 1 if it was fully recovered and 0 to
+ 	 * pass up (not CPU originated) */
+ 	int		(*machine_check)(struct pt_regs *regs);
 +
-+	/* waking up from powersave (nap) state */
-+	cmpwi	cr1,r13,2
-+	/* Total loss of HV state is fatal. let's just stay stuck here */
-+	bgt	cr1,.
-+9:
-+END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
-+#endif /* CONFIG_PPC_P7_NAP */
- 	EXCEPTION_PROLOG_0(PACA_EXMC)
- BEGIN_FTR_SECTION
- 	b	machine_check_pSeries_early
-@@ -787,6 +805,70 @@ BEGIN_FTR_SECTION
- 	bl	.save_nvgprs
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	.machine_check_early
-+	ld	r12,_MSR(r1)
-+#ifdef	CONFIG_PPC_P7_NAP
 +	/*
-+	 * Check if thread was in power saving mode. We come here when any
-+	 * of the following is true:
-+	 * a. thread wasn't in power saving mode
-+	 * b. thread was in power saving mode with no state loss or
-+	 *    supervisor state loss
-+	 *
-+	 * Go back to nap again if (b) is true.
++	 * Processor specific early machine check handler which is
++	 * called in real mode to handle SLB and TLB errors.
 +	 */
-+	rlwinm.	r11,r12,47-31,30,31	/* Was it in power saving mode? */
-+	beq	4f			/* No, it wasn;t */
-+	/* Thread was in power saving mode. Go back to nap again. */
-+	cmpwi	r11,2
-+	bne	3f
-+	/* Supervisor state loss */
-+	li	r0,1
-+	stb	r0,PACA_NAPSTATELOST(r13)
-+3:	MACHINE_CHECK_HANDLER_WINDUP
-+	GET_PACA(r13)
-+	ld	r1,PACAR1(r13)
-+	b	.power7_enter_nap_mode
-+4:
-+#endif
-+	/*
-+	 * Check if we are coming from hypervisor userspace. If yes then we
-+	 * continue in host kernel in V mode to deliver the MC event.
-+	 */
-+	rldicl.	r11,r12,4,63		/* See if MC hit while in HV mode. */
-+	beq	5f
-+	andi.	r11,r12,MSR_PR		/* See if coming from user. */
-+	bne	9f			/* continue in V mode if we are. */
++	long		(*machine_check_early)(struct pt_regs *regs);
 +
-+5:
-+#ifdef CONFIG_KVM_BOOK3S_64_HV
-+	/*
-+	 * We are coming from kernel context. Check if we are coming from
-+	 * guest. if yes, then we can continue. We will fall through
-+	 * do_kvm_200->kvmppc_interrupt to deliver the MC event to guest.
-+	 */
-+	lbz	r11,HSTATE_IN_GUEST(r13)
-+	cmpwi	r11,0			/* Check if coming from guest */
-+	bne	9f			/* continue if we are. */
-+#endif
-+	/*
-+	 * At this point we are not sure about what context we come from.
-+	 * Queue up the MCE event and return from the interrupt.
-+	 * But before that, check if this is an un-recoverable exception.
-+	 * If yes, then stay on emergency stack and panic.
-+	 */
-+	andi.	r11,r12,MSR_RI
-+	bne	2f
-+1:	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	.unrecoverable_exception
-+	b	1b
-+2:
-+	/*
-+	 * Return from MC interrupt.
-+	 * TODO: Queue up the MCE event so that we can log it later.
-+	 */
-+	MACHINE_CHECK_HANDLER_WINDUP
-+	rfid
-+9:
- 	/* Deliver the machine check to host kernel in V mode. */
- 	MACHINE_CHECK_HANDLER_WINDUP
- 	b	machine_check_pSeries
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index e11863f..c4b384d 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -84,6 +84,7 @@ _GLOBAL(power7_nap)
- 	std	r9,_MSR(r1)
- 	std	r1,PACAR1(r13)
+ };
  
-+_GLOBAL(power7_enter_nap_mode)
- #ifdef CONFIG_KVM_BOOK3S_64_HV
- 	/* Tell KVM we're napping */
- 	li	r4,KVM_HWTHREAD_IN_NAP
+ extern struct cpu_spec		*cur_cpu_spec;
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index e8d6bf1..8b0a946 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -292,8 +292,11 @@ void system_reset_exception(struct pt_regs *regs)
+  */
+ long machine_check_early(struct pt_regs *regs)
+ {
+-	/* TODO: handle/decode machine check reason */
+-	return 0;
++	long handled = 0;
++
++	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
++		handled = cur_cpu_spec->machine_check_early(regs);
++	return handled;
+ }
+ 
+ #endif
