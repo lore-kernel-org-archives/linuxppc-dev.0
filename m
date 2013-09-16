@@ -1,32 +1,32 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 593342C02BA
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:42:01 +1000 (EST)
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 02A3B2C041B
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:42:07 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 16 Sep 2013 22:42:00 +1000
+ Mon, 16 Sep 2013 22:31:02 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 314672CE8052
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:58 +1000 (EST)
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id CA9E42CE8053
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:42:05 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8GCPTTs4194560
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:25:29 +1000
+ r8GCPaxP9241044
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:25:36 +1000
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r8GCfvRC003162
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:57 +1000
-Subject: [RFC PATCH v4 08/12] powerpc/book3s: Flush SLB/TLBs if we get SLB/TLB
- machine check errors on power8.
+ r8GCg5mt003326
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:42:05 +1000
+Subject: [RFC PATCH v4 09/12] powerpc/book3s: Decode and save machine check
+ event.
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 16 Sep 2013 18:11:55 +0530
-Message-ID: <20130916124155.16111.1253.stgit@mars.in.ibm.com>
+Date: Mon, 16 Sep 2013 18:12:02 +0530
+Message-ID: <20130916124202.16111.20260.stgit@mars.in.ibm.com>
 In-Reply-To: <20130916123908.16111.4657.stgit@mars.in.ibm.com>
 References: <20130916123908.16111.4657.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
@@ -43,105 +43,706 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-This patch handles the memory errors on power8. If we get a machine check
-exception due to SLB or TLB errors, then flush SLBs/TLBs and reload SLBs to
-recover.
+Now that we handle machine check in linux, the MCE decoding should also
+take place in linux host. This info is crucial to log before we go down
+in case we can not handle the machine check errors. This patch decodes
+and populates a machine check event which contain high level meaning full
+MCE information.
+
+We do this in real mode C code with ME bit on. The MCE information is still
+available on emergency stack (in pt_regs structure format). Even if we take
+another exception at this point the MCE early handler will allocate a new
+stack frame on top of current one. So when we return back here we still have
+our MCE information safe on current stack.
+
+We use per cpu buffer to save high level MCE information. Each per cpu buffer
+is an array of machine check event structure indexed by per cpu counter
+mce_nest_count. The mce_nest_count is incremented every time we enter
+machine check early handler in real mode to get the current free slot
+(index = mce_nest_count - 1). The mce_nest_count is decremented once the
+MCE info is consumed by virtual mode machine exception handler.
+
+This patch provides save_mce_event(), get_mce_event() and release_mce_event()
+generic routines that can be used by machine check handlers to populate and
+retrieve the event. The routine release_mce_event() will free the event slot so
+that it can be reused. Caller can invoke get_mce_event() with a release flag
+either to release the event slot immediately OR keep it so that it can be
+fetched again. The event slot can be also released anytime by invoking
+release_mce_event().
+
+This patch also updates kvm code to invoke get_mce_event to retrieve generic
+mce event rather than paca->opal_mce_evt.
+
+The KVM code always calls get_mce_event() with release flags set to false so
+that event is available for linus host machine
+
+If machine check occurs while we are in guest, KVM tries to handle the error.
+If KVM is able to handle MC error successfully, it enters the guest and
+delivers the machine check to guest. If KVM is not able to handle MC error, it
+exists the guest and passes the control to linux host machine check handler
+which then logs MC event and decides how to handle it in linux host. In failure
+case, KVM needs to make sure that the MC event is available for linux host to
+consume. Hence KVM always calls get_mce_event() with release flags set to false
+and later it invokes release_mce_event() only if it succeeds to handle error.
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Acked-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/mce.h  |    3 +++
- arch/powerpc/kernel/cputable.c  |    4 ++++
- arch/powerpc/kernel/mce_power.c |   34 ++++++++++++++++++++++++++++++++++
- 3 files changed, 41 insertions(+)
+ arch/powerpc/include/asm/mce.h        |  124 +++++++++++++++++++++++++
+ arch/powerpc/kernel/Makefile          |    2 
+ arch/powerpc/kernel/mce.c             |  164 +++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/mce_power.c       |  116 ++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_hv_ras.c      |   32 ++++--
+ arch/powerpc/platforms/powernv/opal.c |   35 +++----
+ 6 files changed, 434 insertions(+), 39 deletions(-)
+ create mode 100644 arch/powerpc/kernel/mce.c
 
 diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-index 8157d4e..e3ffa82 100644
+index e3ffa82..87cad2a 100644
 --- a/arch/powerpc/include/asm/mce.h
 +++ b/arch/powerpc/include/asm/mce.h
-@@ -64,4 +64,7 @@
- 					 P7_DSISR_MC_SLB_MULTIHIT | \
- 					 P7_DSISR_MC_SLB_MULTIHIT_PARITY)
+@@ -66,5 +66,129 @@
  
-+#define P8_DSISR_MC_SLB_ERRORS		(P7_DSISR_MC_SLB_ERRORS | \
-+					 P8_DSISR_MC_ERAT_MULTIHIT_SEC)
+ #define P8_DSISR_MC_SLB_ERRORS		(P7_DSISR_MC_SLB_ERRORS | \
+ 					 P8_DSISR_MC_ERAT_MULTIHIT_SEC)
++enum MCE_Version {
++	MCE_V1 = 1,
++};
 +
++enum MCE_Severity {
++	MCE_SEV_NO_ERROR = 0,
++	MCE_SEV_WARNING = 1,
++	MCE_SEV_ERROR_SYNC = 2,
++	MCE_SEV_FATAL = 3,
++};
++
++enum MCE_Disposition {
++	MCE_DISPOSITION_RECOVERED = 0,
++	MCE_DISPOSITION_NOT_RECOVERED = 1,
++};
++
++enum MCE_Initiator {
++	MCE_INITIATOR_UNKNOWN = 0,
++	MCE_INITIATOR_CPU = 1,
++};
++
++enum MCE_ErrorType {
++	MCE_ERROR_TYPE_UNKNOWN = 0,
++	MCE_ERROR_TYPE_UE = 1,
++	MCE_ERROR_TYPE_SLB = 2,
++	MCE_ERROR_TYPE_ERAT = 3,
++	MCE_ERROR_TYPE_TLB = 4,
++};
++
++enum MCE_UeErrorType {
++	MCE_UE_ERROR_INDETERMINATE = 0,
++	MCE_UE_ERROR_IFETCH = 1,
++	MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH = 2,
++	MCE_UE_ERROR_LOAD_STORE = 3,
++	MCE_UE_ERROR_PAGE_TABLE_WALK_LOAD_STORE = 4,
++};
++
++enum MCE_SlbErrorType {
++	MCE_SLB_ERROR_INDETERMINATE = 0,
++	MCE_SLB_ERROR_PARITY = 1,
++	MCE_SLB_ERROR_MULTIHIT = 2,
++};
++
++enum MCE_EratErrorType {
++	MCE_ERAT_ERROR_INDETERMINATE = 0,
++	MCE_ERAT_ERROR_PARITY = 1,
++	MCE_ERAT_ERROR_MULTIHIT = 2,
++};
++
++enum MCE_TlbErrorType {
++	MCE_TLB_ERROR_INDETERMINATE = 0,
++	MCE_TLB_ERROR_PARITY = 1,
++	MCE_TLB_ERROR_MULTIHIT = 2,
++};
++
++struct machine_check_event {
++	enum MCE_Version	version:8;	/* 0x00 */
++	uint8_t			in_use;		/* 0x01 */
++	enum MCE_Severity	severity:8;	/* 0x02 */
++	enum MCE_Initiator	initiator:8;	/* 0x03 */
++	enum MCE_ErrorType	error_type:8;	/* 0x04 */
++	enum MCE_Disposition	disposition:8;	/* 0x05 */
++	uint8_t			reserved_1[2];	/* 0x06 */
++	uint64_t		gpr3;		/* 0x08 */
++	uint64_t		srr0;		/* 0x10 */
++	uint64_t		srr1;		/* 0x18 */
++	union {					/* 0x20 */
++		struct {
++			enum MCE_UeErrorType ue_error_type:8;
++			uint8_t		effective_address_provided;
++			uint8_t		physical_address_provided;
++			uint8_t		reserved_1[5];
++			uint64_t	effective_address;
++			uint64_t	physical_address;
++			uint8_t		reserved_2[8];
++		} ue_error;
++
++		struct {
++			enum MCE_SlbErrorType slb_error_type:8;
++			uint8_t		effective_address_provided;
++			uint8_t		reserved_1[6];
++			uint64_t	effective_address;
++			uint8_t		reserved_2[16];
++		} slb_error;
++
++		struct {
++			enum MCE_EratErrorType erat_error_type:8;
++			uint8_t		effective_address_provided;
++			uint8_t		reserved_1[6];
++			uint64_t	effective_address;
++			uint8_t		reserved_2[16];
++		} erat_error;
++
++		struct {
++			enum MCE_TlbErrorType tlb_error_type:8;
++			uint8_t		effective_address_provided;
++			uint8_t		reserved_1[6];
++			uint64_t	effective_address;
++			uint8_t		reserved_2[16];
++		} tlb_error;
++	} u;
++};
++
++struct mce_error_info {
++	enum MCE_ErrorType error_type:8;
++	union {
++		enum MCE_UeErrorType ue_error_type:8;
++		enum MCE_SlbErrorType slb_error_type:8;
++		enum MCE_EratErrorType erat_error_type:8;
++		enum MCE_TlbErrorType tlb_error_type:8;
++	} u;
++	uint8_t		reserved[2];
++};
++
++#define MAX_MC_EVT	100
++
++/* Release flags for get_mce_event() */
++#define MCE_EVENT_RELEASE	true
++#define MCE_EVENT_DONTRELEASE	false
++
++extern void save_mce_event(struct pt_regs *regs, long handled,
++			   struct mce_error_info *mce_err, uint64_t addr);
++extern int get_mce_event(struct machine_check_event *mce, bool release);
++extern void release_mce_event(void);
+ 
  #endif /* __ASM_PPC64_MCE_H__ */
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index c28cc2c..0195358 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -74,6 +74,7 @@ extern void __restore_cpu_a2(void);
- extern void __flush_tlb_power7(unsigned long inval_selector);
- extern void __flush_tlb_power8(unsigned long inval_selector);
- extern long __machine_check_early_realmode_p7(struct pt_regs *regs);
-+extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
- #endif /* CONFIG_PPC64 */
- #if defined(CONFIG_E500)
- extern void __setup_cpu_e5500(unsigned long offset, struct cpu_spec* spec);
-@@ -462,6 +463,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_power8,
- 		.cpu_restore		= __restore_cpu_power8,
- 		.flush_tlb		= __flush_tlb_power8,
-+		.machine_check_early	= __machine_check_early_realmode_p8,
- 		.platform		= "power8",
- 	},
- 	{	/* Power7 */
-@@ -521,6 +523,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_power8,
- 		.cpu_restore		= __restore_cpu_power8,
- 		.flush_tlb		= __flush_tlb_power8,
-+		.machine_check_early	= __machine_check_early_realmode_p8,
- 		.platform		= "power8",
- 	},
- 	{	/* Power8 */
-@@ -540,6 +543,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_power8,
- 		.cpu_restore		= __restore_cpu_power8,
- 		.flush_tlb		= __flush_tlb_power8,
-+		.machine_check_early	= __machine_check_early_realmode_p8,
- 		.platform		= "power8",
- 	},
- 	{	/* Cell Broadband Engine */
-diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-index 6905473..60a217f 100644
---- a/arch/powerpc/kernel/mce_power.c
-+++ b/arch/powerpc/kernel/mce_power.c
-@@ -148,3 +148,37 @@ long __machine_check_early_realmode_p7(struct pt_regs *regs)
- 	/* TODO: Decode machine check reason. */
- 	return handled;
- }
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index a1aba53..c3ae108 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -39,7 +39,7 @@ obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
+-obj-$(CONFIG_PPC_BOOK3S_64)	+= mce_power.o
++obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
+ obj64-$(CONFIG_RELOCATABLE)	+= reloc_64.o
+ obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
+ obj-$(CONFIG_PPC_A2)		+= cpu_setup_a2.o
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+new file mode 100644
+index 0000000..aeecdf1
+--- /dev/null
++++ b/arch/powerpc/kernel/mce.c
+@@ -0,0 +1,164 @@
++/*
++ * Machine check exception handling.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright 2013 IBM Corporation
++ * Author: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
++ */
 +
-+static long mce_handle_ierror_p8(uint64_t srr1)
++#undef DEBUG
++#define pr_fmt(fmt) "mce: " fmt
++
++#include <linux/types.h>
++#include <linux/ptrace.h>
++#include <linux/percpu.h>
++#include <linux/export.h>
++#include <asm/mce.h>
++
++static DEFINE_PER_CPU(int, mce_nest_count);
++static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event);
++
++static void mce_set_error_info(struct machine_check_event *mce,
++			       struct mce_error_info *mce_err)
 +{
-+	long handled = 0;
-+
-+	handled = mce_handle_common_ierror(srr1);
-+
-+	if (P7_SRR1_MC_IFETCH(srr1) == P8_SRR1_MC_IFETCH_ERAT_MULTIHIT) {
-+		flush_and_reload_slb();
-+		handled = 1;
++	mce->error_type = mce_err->error_type;
++	switch (mce_err->error_type) {
++	case MCE_ERROR_TYPE_UE:
++		mce->u.ue_error.ue_error_type = mce_err->u.ue_error_type;
++		break;
++	case MCE_ERROR_TYPE_SLB:
++		mce->u.slb_error.slb_error_type = mce_err->u.slb_error_type;
++		break;
++	case MCE_ERROR_TYPE_ERAT:
++		mce->u.erat_error.erat_error_type = mce_err->u.erat_error_type;
++		break;
++	case MCE_ERROR_TYPE_TLB:
++		mce->u.tlb_error.tlb_error_type = mce_err->u.tlb_error_type;
++		break;
++	case MCE_ERROR_TYPE_UNKNOWN:
++	default:
++		break;
 +	}
-+	return handled;
 +}
 +
-+static long mce_handle_derror_p8(uint64_t dsisr)
-+{
-+	return mce_handle_derror(dsisr, P8_DSISR_MC_SLB_ERRORS);
-+}
-+
-+long __machine_check_early_realmode_p8(struct pt_regs *regs)
++/*
++ * Decode and save high level MCE information into per cpu buffer which
++ * is an array of machine_check_event structure.
++ */
++void save_mce_event(struct pt_regs *regs, long handled,
++		    struct mce_error_info *mce_err,
++		    uint64_t addr)
 +{
 +	uint64_t srr1;
-+	long handled = 1;
++	int index = __get_cpu_var(mce_nest_count)++;
++	struct machine_check_event *mce = &__get_cpu_var(mce_event[index]);
++
++	/*
++	 * Return if we don't have enough space to log mce event.
++	 * mce_nest_count may go beyond MAX_MC_EVT but that's ok,
++	 * the check below will stop buffer overrun.
++	 */
++	if (index >= MAX_MC_EVT)
++		return;
++
++	/* Populate generic machine check info */
++	mce->version = MCE_V1;
++	mce->srr0 = regs->nip;
++	mce->srr1 = regs->msr;
++	mce->gpr3 = regs->gpr[3];
++	mce->in_use = 1;
++
++	mce->initiator = MCE_INITIATOR_CPU;
++	if (handled)
++		mce->disposition = MCE_DISPOSITION_RECOVERED;
++	else
++		mce->disposition = MCE_DISPOSITION_NOT_RECOVERED;
++	mce->severity = MCE_SEV_ERROR_SYNC;
 +
 +	srr1 = regs->msr;
 +
-+	if (P7_SRR1_MC_LOADSTORE(srr1))
-+		handled = mce_handle_derror_p8(regs->dsisr);
-+	else
-+		handled = mce_handle_ierror_p8(srr1);
++	/*
++	 * Populate the mce error_type and type-specific error_type.
++	 */
++	mce_set_error_info(mce, mce_err);
 +
-+	/* TODO: Decode machine check reason. */
-+	return handled;
++	if (!addr)
++		return;
++
++	if (mce->error_type == MCE_ERROR_TYPE_TLB) {
++		mce->u.tlb_error.effective_address_provided = true;
++		mce->u.tlb_error.effective_address = addr;
++	} else if (mce->error_type == MCE_ERROR_TYPE_SLB) {
++		mce->u.slb_error.effective_address_provided = true;
++		mce->u.slb_error.effective_address = addr;
++	} else if (mce->error_type == MCE_ERROR_TYPE_ERAT) {
++		mce->u.erat_error.effective_address_provided = true;
++		mce->u.erat_error.effective_address = addr;
++	} else if (mce->error_type == MCE_ERROR_TYPE_UE) {
++		mce->u.ue_error.effective_address_provided = true;
++		mce->u.ue_error.effective_address = addr;
++	}
++	return;
 +}
++
++/*
++ * get_mce_event:
++ *	mce	Pointer to machine_check_event structure to be filled.
++ *	release Flag to indicate whether to free the event slot or not.
++ *		0 <= do not release the mce event. Caller will invoke
++ *		     release_mce_event() once event has been consumed.
++ *		1 <= release the slot.
++ *
++ *	return	1 = success
++ *		0 = failure
++ *
++ * get_mce_event() will be called by platform specific machine check
++ * handle routine and in KVM.
++ * When we call get_mce_event(), we are still in interrupt context and
++ * preemption will not be scheduled until ret_from_expect() routine
++ * is called.
++ */
++int get_mce_event(struct machine_check_event *mce, bool release)
++{
++	int index = __get_cpu_var(mce_nest_count) - 1;
++	struct machine_check_event *mc_evt;
++	int ret = 0;
++
++	/* Sanity check */
++	if (index < 0)
++		return ret;
++
++	/* Check if we have MCE info to process. */
++	if (index < MAX_MC_EVT) {
++		mc_evt = &__get_cpu_var(mce_event[index]);
++		/* Copy the event structure and release the original */
++		if (mce)
++			*mce = *mc_evt;
++		if (release)
++			mc_evt->in_use = 0;
++		ret = 1;
++	}
++	/* Decrement the count to free the slot. */
++	if (release)
++		__get_cpu_var(mce_nest_count)--;
++
++	return ret;
++}
++
++void release_mce_event(void)
++{
++	get_mce_event(NULL, true);
++}
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index 60a217f..b36e777 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -133,22 +133,116 @@ static long mce_handle_ierror_p7(uint64_t srr1)
+ 	return handled;
+ }
+ 
++static void mce_get_common_ierror(struct mce_error_info *mce_err, uint64_t srr1)
++{
++	switch (P7_SRR1_MC_IFETCH(srr1)) {
++	case P7_SRR1_MC_IFETCH_SLB_PARITY:
++		mce_err->error_type = MCE_ERROR_TYPE_SLB;
++		mce_err->u.slb_error_type = MCE_SLB_ERROR_PARITY;
++		break;
++	case P7_SRR1_MC_IFETCH_SLB_MULTIHIT:
++		mce_err->error_type = MCE_ERROR_TYPE_SLB;
++		mce_err->u.slb_error_type = MCE_SLB_ERROR_MULTIHIT;
++		break;
++	case P7_SRR1_MC_IFETCH_TLB_MULTIHIT:
++		mce_err->error_type = MCE_ERROR_TYPE_TLB;
++		mce_err->u.tlb_error_type = MCE_TLB_ERROR_MULTIHIT;
++		break;
++	case P7_SRR1_MC_IFETCH_UE:
++	case P7_SRR1_MC_IFETCH_UE_IFU_INTERNAL:
++		mce_err->error_type = MCE_ERROR_TYPE_UE;
++		mce_err->u.ue_error_type = MCE_UE_ERROR_IFETCH;
++		break;
++	case P7_SRR1_MC_IFETCH_UE_TLB_RELOAD:
++		mce_err->error_type = MCE_ERROR_TYPE_UE;
++		mce_err->u.ue_error_type =
++				MCE_UE_ERROR_PAGE_TABLE_WALK_IFETCH;
++		break;
++	}
++}
++
++static void mce_get_ierror_p7(struct mce_error_info *mce_err, uint64_t srr1)
++{
++	mce_get_common_ierror(mce_err, srr1);
++	if (P7_SRR1_MC_IFETCH(srr1) == P7_SRR1_MC_IFETCH_SLB_BOTH) {
++		mce_err->error_type = MCE_ERROR_TYPE_SLB;
++		mce_err->u.slb_error_type = MCE_SLB_ERROR_INDETERMINATE;
++	}
++}
++
++static void mce_get_derror_p7(struct mce_error_info *mce_err, uint64_t dsisr)
++{
++	if (dsisr & P7_DSISR_MC_UE) {
++		mce_err->error_type = MCE_ERROR_TYPE_UE;
++		mce_err->u.ue_error_type = MCE_UE_ERROR_LOAD_STORE;
++	} else if (dsisr & P7_DSISR_MC_UE_TABLEWALK) {
++		mce_err->error_type = MCE_ERROR_TYPE_UE;
++		mce_err->u.ue_error_type =
++				MCE_UE_ERROR_PAGE_TABLE_WALK_LOAD_STORE;
++	} else if (dsisr & P7_DSISR_MC_ERAT_MULTIHIT) {
++		mce_err->error_type = MCE_ERROR_TYPE_ERAT;
++		mce_err->u.erat_error_type = MCE_ERAT_ERROR_MULTIHIT;
++	} else if (dsisr & P7_DSISR_MC_SLB_MULTIHIT) {
++		mce_err->error_type = MCE_ERROR_TYPE_SLB;
++		mce_err->u.slb_error_type = MCE_SLB_ERROR_MULTIHIT;
++	} else if (dsisr & P7_DSISR_MC_SLB_PARITY_MFSLB) {
++		mce_err->error_type = MCE_ERROR_TYPE_SLB;
++		mce_err->u.slb_error_type = MCE_SLB_ERROR_PARITY;
++	} else if (dsisr & P7_DSISR_MC_TLB_MULTIHIT_MFTLB) {
++		mce_err->error_type = MCE_ERROR_TYPE_TLB;
++		mce_err->u.tlb_error_type = MCE_TLB_ERROR_MULTIHIT;
++	} else if (dsisr & P7_DSISR_MC_SLB_MULTIHIT_PARITY) {
++		mce_err->error_type = MCE_ERROR_TYPE_SLB;
++		mce_err->u.slb_error_type = MCE_SLB_ERROR_INDETERMINATE;
++	}
++}
++
+ long __machine_check_early_realmode_p7(struct pt_regs *regs)
+ {
+-	uint64_t srr1;
++	uint64_t srr1, addr;
+ 	long handled = 1;
++	struct mce_error_info mce_error_info = { 0 };
+ 
+ 	srr1 = regs->msr;
+ 
+-	if (P7_SRR1_MC_LOADSTORE(srr1))
++	/*
++	 * Handle memory errors depending whether this was a load/store or
++	 * ifetch exception. Also, populate the mce error_type and
++	 * type-specific error_type from either SRR1 or DSISR, depending
++	 * whether this was a load/store or ifetch exception
++	 */
++	if (P7_SRR1_MC_LOADSTORE(srr1)) {
+ 		handled = mce_handle_derror_p7(regs->dsisr);
+-	else
++		mce_get_derror_p7(&mce_error_info, regs->dsisr);
++		addr = regs->dar;
++	} else {
+ 		handled = mce_handle_ierror_p7(srr1);
++		mce_get_ierror_p7(&mce_error_info, srr1);
++		addr = regs->nip;
++	}
+ 
+-	/* TODO: Decode machine check reason. */
++	save_mce_event(regs, handled, &mce_error_info, addr);
+ 	return handled;
+ }
+ 
++static void mce_get_ierror_p8(struct mce_error_info *mce_err, uint64_t srr1)
++{
++	mce_get_common_ierror(mce_err, srr1);
++	if (P7_SRR1_MC_IFETCH(srr1) == P8_SRR1_MC_IFETCH_ERAT_MULTIHIT) {
++		mce_err->error_type = MCE_ERROR_TYPE_ERAT;
++		mce_err->u.erat_error_type = MCE_ERAT_ERROR_MULTIHIT;
++	}
++}
++
++static void mce_get_derror_p8(struct mce_error_info *mce_err, uint64_t dsisr)
++{
++	mce_get_derror_p7(mce_err, dsisr);
++	if (dsisr & P8_DSISR_MC_ERAT_MULTIHIT_SEC) {
++		mce_err->error_type = MCE_ERROR_TYPE_ERAT;
++		mce_err->u.erat_error_type = MCE_ERAT_ERROR_MULTIHIT;
++	}
++}
++
+ static long mce_handle_ierror_p8(uint64_t srr1)
+ {
+ 	long handled = 0;
+@@ -169,16 +263,22 @@ static long mce_handle_derror_p8(uint64_t dsisr)
+ 
+ long __machine_check_early_realmode_p8(struct pt_regs *regs)
+ {
+-	uint64_t srr1;
++	uint64_t srr1, addr;
+ 	long handled = 1;
++	struct mce_error_info mce_error_info = { 0 };
+ 
+ 	srr1 = regs->msr;
+ 
+-	if (P7_SRR1_MC_LOADSTORE(srr1))
++	if (P7_SRR1_MC_LOADSTORE(srr1)) {
+ 		handled = mce_handle_derror_p8(regs->dsisr);
+-	else
++		mce_get_derror_p8(&mce_error_info, regs->dsisr);
++		addr = regs->dar;
++	} else {
+ 		handled = mce_handle_ierror_p8(srr1);
++		mce_get_ierror_p8(&mce_error_info, srr1);
++		addr = regs->nip;
++	}
+ 
+-	/* TODO: Decode machine check reason. */
++	save_mce_event(regs, handled, &mce_error_info, addr);
+ 	return handled;
+ }
+diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
+index 5c427b4..768a9f9 100644
+--- a/arch/powerpc/kvm/book3s_hv_ras.c
++++ b/arch/powerpc/kvm/book3s_hv_ras.c
+@@ -12,6 +12,7 @@
+ #include <linux/kvm_host.h>
+ #include <linux/kernel.h>
+ #include <asm/opal.h>
++#include <asm/mce.h>
+ 
+ /* SRR1 bits for machine check on POWER7 */
+ #define SRR1_MC_LDSTERR		(1ul << (63-42))
+@@ -67,9 +68,7 @@ static void reload_slb(struct kvm_vcpu *vcpu)
+ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
+ {
+ 	unsigned long srr1 = vcpu->arch.shregs.msr;
+-#ifdef CONFIG_PPC_POWERNV
+-	struct opal_machine_check_event *opal_evt;
+-#endif
++	struct machine_check_event mce_evt;
+ 	long handled = 1;
+ 
+ 	if (srr1 & SRR1_MC_LDSTERR) {
+@@ -109,22 +108,31 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
+ 		handled = 0;
+ 	}
+ 
+-#ifdef CONFIG_PPC_POWERNV
+ 	/*
+-	 * See if OPAL has already handled the condition.
+-	 * We assume that if the condition is recovered then OPAL
++	 * See if we have already handled the condition in the linux host.
++	 * We assume that if the condition is recovered then linux host
+ 	 * will have generated an error log event that we will pick
+ 	 * up and log later.
++	 * Don't release mce event now. In case if condition is not
++	 * recovered we do guest exit and go back to linux host machine
++	 * check handler. Hence we need make sure that current mce event
++	 * is available for linux host to consume.
+ 	 */
+-	opal_evt = local_paca->opal_mc_evt;
+-	if (opal_evt->version == OpalMCE_V1 &&
+-	    (opal_evt->severity == OpalMCE_SEV_NO_ERROR ||
+-	     opal_evt->disposition == OpalMCE_DISPOSITION_RECOVERED))
++	if (!get_mce_event(&mce_evt, MCE_EVENT_DONTRELEASE))
++		goto out;
++
++	if (mce_evt.version == MCE_V1 &&
++	    (mce_evt.severity == MCE_SEV_NO_ERROR ||
++	     mce_evt.disposition == MCE_DISPOSITION_RECOVERED))
+ 		handled = 1;
+ 
++out:
++	/*
++	 * If we have handled the error, then release the mce event because
++	 * we will be delivering machine check to guest.
++	 */
+ 	if (handled)
+-		opal_evt->in_use = 0;
+-#endif
++		release_mce_event();
+ 
+ 	return handled;
+ }
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 106301f..bcbbcdc 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -19,6 +19,7 @@
+ #include <linux/slab.h>
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
++#include <asm/mce.h>
+ 
+ #include "powernv.h"
+ 
+@@ -245,8 +246,7 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
+ 
+ int opal_machine_check(struct pt_regs *regs)
+ {
+-	struct opal_machine_check_event *opal_evt = get_paca()->opal_mc_evt;
+-	struct opal_machine_check_event evt;
++	struct machine_check_event evt;
+ 	const char *level, *sevstr, *subtype;
+ 	static const char *opal_mc_ue_types[] = {
+ 		"Indeterminate",
+@@ -271,30 +271,29 @@ int opal_machine_check(struct pt_regs *regs)
+ 		"Multihit",
+ 	};
+ 
+-	/* Copy the event structure and release the original */
+-	evt = *opal_evt;
+-	opal_evt->in_use = 0;
++	if (!get_mce_event(&evt, MCE_EVENT_RELEASE))
++		return 0;
+ 
+ 	/* Print things out */
+-	if (evt.version != OpalMCE_V1) {
++	if (evt.version != MCE_V1) {
+ 		pr_err("Machine Check Exception, Unknown event version %d !\n",
+ 		       evt.version);
+ 		return 0;
+ 	}
+ 	switch(evt.severity) {
+-	case OpalMCE_SEV_NO_ERROR:
++	case MCE_SEV_NO_ERROR:
+ 		level = KERN_INFO;
+ 		sevstr = "Harmless";
+ 		break;
+-	case OpalMCE_SEV_WARNING:
++	case MCE_SEV_WARNING:
+ 		level = KERN_WARNING;
+ 		sevstr = "";
+ 		break;
+-	case OpalMCE_SEV_ERROR_SYNC:
++	case MCE_SEV_ERROR_SYNC:
+ 		level = KERN_ERR;
+ 		sevstr = "Severe";
+ 		break;
+-	case OpalMCE_SEV_FATAL:
++	case MCE_SEV_FATAL:
+ 	default:
+ 		level = KERN_ERR;
+ 		sevstr = "Fatal";
+@@ -302,12 +301,12 @@ int opal_machine_check(struct pt_regs *regs)
+ 	}
+ 
+ 	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
+-	       evt.disposition == OpalMCE_DISPOSITION_RECOVERED ?
++	       evt.disposition == MCE_DISPOSITION_RECOVERED ?
+ 	       "Recovered" : "[Not recovered");
+ 	printk("%s  Initiator: %s\n", level,
+-	       evt.initiator == OpalMCE_INITIATOR_CPU ? "CPU" : "Unknown");
++	       evt.initiator == MCE_INITIATOR_CPU ? "CPU" : "Unknown");
+ 	switch(evt.error_type) {
+-	case OpalMCE_ERROR_TYPE_UE:
++	case MCE_ERROR_TYPE_UE:
+ 		subtype = evt.u.ue_error.ue_error_type <
+ 			ARRAY_SIZE(opal_mc_ue_types) ?
+ 			opal_mc_ue_types[evt.u.ue_error.ue_error_type]
+@@ -320,7 +319,7 @@ int opal_machine_check(struct pt_regs *regs)
+ 			printk("%s      Physial address: %016llx\n",
+ 			       level, evt.u.ue_error.physical_address);
+ 		break;
+-	case OpalMCE_ERROR_TYPE_SLB:
++	case MCE_ERROR_TYPE_SLB:
+ 		subtype = evt.u.slb_error.slb_error_type <
+ 			ARRAY_SIZE(opal_mc_slb_types) ?
+ 			opal_mc_slb_types[evt.u.slb_error.slb_error_type]
+@@ -330,7 +329,7 @@ int opal_machine_check(struct pt_regs *regs)
+ 			printk("%s    Effective address: %016llx\n",
+ 			       level, evt.u.slb_error.effective_address);
+ 		break;
+-	case OpalMCE_ERROR_TYPE_ERAT:
++	case MCE_ERROR_TYPE_ERAT:
+ 		subtype = evt.u.erat_error.erat_error_type <
+ 			ARRAY_SIZE(opal_mc_erat_types) ?
+ 			opal_mc_erat_types[evt.u.erat_error.erat_error_type]
+@@ -340,7 +339,7 @@ int opal_machine_check(struct pt_regs *regs)
+ 			printk("%s    Effective address: %016llx\n",
+ 			       level, evt.u.erat_error.effective_address);
+ 		break;
+-	case OpalMCE_ERROR_TYPE_TLB:
++	case MCE_ERROR_TYPE_TLB:
+ 		subtype = evt.u.tlb_error.tlb_error_type <
+ 			ARRAY_SIZE(opal_mc_tlb_types) ?
+ 			opal_mc_tlb_types[evt.u.tlb_error.tlb_error_type]
+@@ -351,11 +350,11 @@ int opal_machine_check(struct pt_regs *regs)
+ 			       level, evt.u.tlb_error.effective_address);
+ 		break;
+ 	default:
+-	case OpalMCE_ERROR_TYPE_UNKNOWN:
++	case MCE_ERROR_TYPE_UNKNOWN:
+ 		printk("%s  Error type: Unknown\n", level);
+ 		break;
+ 	}
+-	return evt.severity == OpalMCE_SEV_FATAL ? 0 : 1;
++	return evt.severity == MCE_SEV_FATAL ? 0 : 1;
+ }
+ 
+ static irqreturn_t opal_interrupt(int irq, void *data)
