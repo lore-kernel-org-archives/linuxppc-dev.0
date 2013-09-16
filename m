@@ -1,32 +1,32 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 732012C0156
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:25 +1000 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3669E2C02AD
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:31 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 16 Sep 2013 22:27:02 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B53963578053
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:20 +1000 (EST)
+ Mon, 16 Sep 2013 22:23:26 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7CFA73578053
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:28 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8GCf9nb58130616
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:09 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8GCOxU38388990
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:24:59 +1000
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r8GCfKtX001873
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:20 +1000
-Subject: [RFC PATCH v4 03/12] powerpc/book3s: handle machine check in Linux
- host.
+ r8GCfRoN002240
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Sep 2013 22:41:27 +1000
+Subject: [RFC PATCH v4 04/12] powerpc/book3s: Return from interrupt if coming
+ from evil context.
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 16 Sep 2013 18:11:17 +0530
-Message-ID: <20130916124117.16111.67572.stgit@mars.in.ibm.com>
+Date: Mon, 16 Sep 2013 18:11:25 +0530
+Message-ID: <20130916124125.16111.64111.stgit@mars.in.ibm.com>
 In-Reply-To: <20130916123908.16111.4657.stgit@mars.in.ibm.com>
 References: <20130916123908.16111.4657.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
@@ -43,251 +43,134 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Move machine check entry point into Linux. So far we were dependent on
-firmware to decode MCE error details and handover the high level info to OS.
+We can get machine checks from any context. We need to make sure that
+we handle all of them correctly. If we are coming from hypervisor user-space,
+we can continue in host kernel in virtual mode to deliver the MC event.
+If we got woken up from power-saving mode then we may come in with one of
+the following state:
+ a. No state loss
+ b. Supervisor state loss
+ c. Hypervisor state loss
+For (a) and (b), we go back to nap again. State (c) is fatal, keep spinning.
 
-This patch introduces early machine check routine that saves the MCE
-information (srr1, srr0, dar and dsisr) to the emergency stack. We allocate
-stack frame on emergency stack and set the r1 accordingly. This allows us to be
-prepared to take another exception without loosing context. One thing to note
-here that, if we get another machine check while ME bit is off then we risk a
-checkstop. Hence we restrict ourselves to save only MCE information and
-register saved on PACA_EXMC save are before we turn the ME bit on. We use
-paca->in_mce flag to differentiate between first entry and nested machine check
-entry which helps proper use of emergency stack. We increment paca->in_mce
-every time we enter in early machine check handler and decrement it while
-leaving. When we enter machine check early handler first time (paca->in_mce ==
-0), we are sure nobody is using MC emergency stack and allocate a stack frame
-at the start of the emergency stack. During subsequent entry (paca->in_mce >
-0), we know that r1 points inside emergency stack and we allocate separate
-stack frame accordingly. This prevents us from clobbering MCE information
-during nested machine checks.
-
-The early machine check handler changes are placed under CPU_FTR_HVMODE
-section. This makes sure that the early machine check handler will get executed
-only in hypervisor kernel.
-
-This is the code flow:
-
-		Machine Check Interrupt
-			|
-			V
-		   0x200 vector				  ME=0, IR=0, DR=0
-			|
-			V
-	+-----------------------------------------------+
-	|machine_check_pSeries_early:			| ME=0, IR=0, DR=0
-	|	Alloc frame on emergency stack		|
-	|	Save srr1, srr0, dar and dsisr on stack |
-	+-----------------------------------------------+
-			|
-		(ME=1, IR=0, DR=0, RFID)
-			|
-			V
-		machine_check_handle_early		  ME=1, IR=0, DR=0
-			|
-			V
-	+-----------------------------------------------+
-	|	machine_check_early (r3=pt_regs)	| ME=1, IR=0, DR=0
-	|	Things to do: (in next patches)		|
-	|		Flush SLB for SLB errors	|
-	|		Flush TLB for TLB errors	|
-	|		Decode and save MCE info	|
-	+-----------------------------------------------+
-			|
-	(Fall through existing exception handler routine.)
-			|
-			V
-		machine_check_pSerie			  ME=1, IR=0, DR=0
-			|
-		(ME=1, IR=1, DR=1, RFID)
-			|
-			V
-		machine_check_common			  ME=1, IR=1, DR=1
-			.
-			.
-			.
-
+For all other context which we not sure of queue up the MCE event and return
+from the interrupt.
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/asm-offsets.c    |    4 +
- arch/powerpc/kernel/exceptions-64s.S |  111 ++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/traps.c          |   12 ++++
- 3 files changed, 127 insertions(+)
+ arch/powerpc/kernel/exceptions-64s.S |   82 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/idle_power7.S    |    1 
+ 2 files changed, 83 insertions(+)
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 8207459..e0e8ebb 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -238,6 +238,10 @@ int main(void)
- 	DEFINE(PACA_DTL_RIDX, offsetof(struct paca_struct, dtl_ridx));
- #endif /* CONFIG_PPC_STD_MMU_64 */
- 	DEFINE(PACAEMERGSP, offsetof(struct paca_struct, emergency_sp));
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	DEFINE(PACAMCEMERGSP, offsetof(struct paca_struct, mc_emergency_sp));
-+	DEFINE(PACA_IN_MCE, offsetof(struct paca_struct, in_mce));
-+#endif
- 	DEFINE(PACAHWCPUID, offsetof(struct paca_struct, hw_cpu_id));
- 	DEFINE(PACAKEXECSTATE, offsetof(struct paca_struct, kexec_state));
- 	DEFINE(PACA_STARTTIME, offsetof(struct paca_struct, starttime));
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 902ca3c..87a70d2 100644
+index 87a70d2..0a92ba4 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -156,7 +156,11 @@ machine_check_pSeries_1:
+@@ -155,6 +155,24 @@ machine_check_pSeries_1:
+ 	 */
  	HMT_MEDIUM_PPR_DISCARD
  	SET_SCRATCH0(r13)		/* save r13 */
++#ifdef CONFIG_PPC_P7_NAP
++BEGIN_FTR_SECTION
++	/* Running native on arch 2.06 or later, check if we are
++	 * waking up from nap. We only handle no state loss and
++	 * supervisor state loss. We do -not- handle hypervisor
++	 * state loss at this time.
++	 */
++	mfspr	r13,SPRN_SRR1
++	rlwinm.	r13,r13,47-31,30,31
++	beq	9f
++
++	/* waking up from powersave (nap) state */
++	cmpwi	cr1,r13,2
++	/* Total loss of HV state is fatal. let's just stay stuck here */
++	bgt	cr1,.
++9:
++END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
++#endif /* CONFIG_PPC_P7_NAP */
  	EXCEPTION_PROLOG_0(PACA_EXMC)
-+BEGIN_FTR_SECTION
-+	b	machine_check_pSeries_early
-+FTR_SECTION_ELSE
- 	b	machine_check_pSeries_0
-+ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
- 
- 	. = 0x300
- 	.globl data_access_pSeries
-@@ -404,6 +408,64 @@ denorm_exception_hv:
- 
- 	.align	7
- 	/* moved from 0x200 */
-+machine_check_pSeries_early:
-+BEGIN_FTR_SECTION
-+	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
+ BEGIN_FTR_SECTION
+ 	b	machine_check_pSeries_early
+@@ -787,6 +805,70 @@ BEGIN_FTR_SECTION
+ 	bl	.save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	.machine_check_early
++	ld	r12,_MSR(r1)
++#ifdef	CONFIG_PPC_P7_NAP
 +	/*
-+	 * Register contents:
-+	 * R13		= PACA
-+	 * R9		= CR
-+	 * Original R9 to R13 is saved on PACA_EXMC
++	 * Check if thread was in power saving mode. We come here when any
++	 * of the following is true:
++	 * a. thread wasn't in power saving mode
++	 * b. thread was in power saving mode with no state loss or
++	 *    supervisor state loss
 +	 *
-+	 * Switch to mc_emergency stack and handle re-entrancy (though we
-+	 * currently don't test for overflow). Save MCE registers srr1,
-+	 * srr0, dar and dsisr and then set ME=1
-+	 *
-+	 * We use paca->in_mce to check whether this is the first entry or
-+	 * nested machine check. We increment paca->in_mce to track nested
-+	 * machine checks.
-+	 *
-+	 * If this is the first entry then set stack pointer to
-+	 * paca->mc_emergency_sp, otherwise r1 is already pointing to
-+	 * stack frame on mc_emergency stack.
-+	 *
-+	 * NOTE: We are here with MSR_ME=0 (off), which means we risk a
-+	 * checkstop if we get another machine check exception before we do
-+	 * rfid with MSR_ME=1.
++	 * Go back to nap again if (b) is true.
 +	 */
-+	mr	r11,r1			/* Save r1 */
-+	lhz	r10,PACA_IN_MCE(r13)
-+	cmpwi	r10,0			/* Are we in nested machine check */
-+	bne	0f			/* Yes, we are. */
-+	/* First machine check entry */
-+	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency stack */
-+0:	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame */
-+	addi	r10,r10,1		/* increment paca->in_mce */
-+	sth	r10,PACA_IN_MCE(r13)
-+	std	r11,GPR1(r1)		/* Save r1 on the stack. */
-+	std	r11,0(r1)		/* make stack chain pointer */
-+	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
-+	std	r11,_NIP(r1)
-+	mfspr	r11,SPRN_SRR1		/* Save SRR1 */
-+	std	r11,_MSR(r1)
-+	mfspr	r11,SPRN_DAR		/* Save DAR */
-+	std	r11,_DAR(r1)
-+	mfspr	r11,SPRN_DSISR		/* Save DSISR */
-+	std	r11,_DSISR(r1)
-+	std	r9,_CCR(r1)		/* Save CR in stackframe */
-+	/* Save r9 through r13 from EXMC save area to stack frame. */
-+	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
-+	mfmsr	r11			/* get MSR value */
-+	ori	r11,r11,MSR_ME		/* turn on ME bit */
-+	ori	r11,r11,MSR_RI		/* turn on RI bit */
-+	ld	r12,PACAKBASE(r13)	/* get high part of &label */
-+	LOAD_HANDLER(r12, machine_check_handle_early)
-+	mtspr	SPRN_SRR0,r12
-+	mtspr	SPRN_SRR1,r11
-+	rfid
-+	b	.	/* prevent speculative execution */
-+END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
-+
- machine_check_pSeries:
- 	.globl machine_check_fwnmi
- machine_check_fwnmi:
-@@ -681,6 +743,55 @@ machine_check_common:
- 	bl	.machine_check_exception
- 	b	.ret_from_except
- 
-+#define MACHINE_CHECK_HANDLER_WINDUP			\
-+	/* Clear MSR_RI before setting SRR0 and SRR1. */\
-+	li	r0,MSR_RI;				\
-+	mfmsr	r9;		/* get MSR value */	\
-+	andc	r9,r9,r0;				\
-+	mtmsrd	r9,1;		/* Clear MSR_RI */	\
-+	/* Move original SRR0 and SRR1 into the respective regs */	\
-+	ld	r9,_MSR(r1);				\
-+	mtspr	SPRN_SRR1,r9;				\
-+	ld	r3,_NIP(r1);				\
-+	mtspr	SPRN_SRR0,r3;				\
-+	ld	r9,_CTR(r1);				\
-+	mtctr	r9;					\
-+	ld	r9,_XER(r1);				\
-+	mtxer	r9;					\
-+	ld	r9,_LINK(r1);				\
-+	mtlr	r9;					\
-+	REST_GPR(0, r1);				\
-+	REST_8GPRS(2, r1);				\
-+	REST_GPR(10, r1);				\
-+	ld	r11,_CCR(r1);				\
-+	mtcr	r11;					\
-+	/* Decrement paca->in_mce. */			\
-+	lhz	r12,PACA_IN_MCE(r13);			\
-+	subi	r12,r12,1;				\
-+	sth	r12,PACA_IN_MCE(r13);			\
-+	REST_GPR(11, r1);				\
-+	REST_2GPRS(12, r1);				\
-+	/* restore original r1. */			\
-+	ld	r1,GPR1(r1)
-+
++	rlwinm.	r11,r12,47-31,30,31	/* Was it in power saving mode? */
++	beq	4f			/* No, it wasn;t */
++	/* Thread was in power saving mode. Go back to nap again. */
++	cmpwi	r11,2
++	bne	3f
++	/* Supervisor state loss */
++	li	r0,1
++	stb	r0,PACA_NAPSTATELOST(r13)
++3:	MACHINE_CHECK_HANDLER_WINDUP
++	GET_PACA(r13)
++	ld	r1,PACAR1(r13)
++	b	.power7_enter_nap_mode
++4:
++#endif
 +	/*
-+	 * Handle machine check early in real mode. We come here with
-+	 * ME=1, MMU (IR=0 and DR=0) off and using MC emergency stack.
++	 * Check if we are coming from hypervisor userspace. If yes then we
++	 * continue in host kernel in V mode to deliver the MC event.
 +	 */
-+	.align	7
-+	.globl machine_check_handle_early
-+machine_check_handle_early:
-+BEGIN_FTR_SECTION
-+	std	r0,GPR0(r1)	/* Save r0 */
-+	EXCEPTION_PROLOG_COMMON_3(0x200)
-+	bl	.save_nvgprs
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	.machine_check_early
-+	/* Deliver the machine check to host kernel in V mode. */
++	rldicl.	r11,r12,4,63		/* See if MC hit while in HV mode. */
++	beq	5f
++	andi.	r11,r12,MSR_PR		/* See if coming from user. */
++	bne	9f			/* continue in V mode if we are. */
++
++5:
++#ifdef CONFIG_KVM_BOOK3S_64_HV
++	/*
++	 * We are coming from kernel context. Check if we are coming from
++	 * guest. if yes, then we can continue. We will fall through
++	 * do_kvm_200->kvmppc_interrupt to deliver the MC event to guest.
++	 */
++	lbz	r11,HSTATE_IN_GUEST(r13)
++	cmpwi	r11,0			/* Check if coming from guest */
++	bne	9f			/* continue if we are. */
++#endif
++	/*
++	 * At this point we are not sure about what context we come from.
++	 * Queue up the MCE event and return from the interrupt.
++	 * But before that, check if this is an un-recoverable exception.
++	 * If yes, then stay on emergency stack and panic.
++	 */
++	andi.	r11,r12,MSR_RI
++	bne	2f
++1:	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	.unrecoverable_exception
++	b	1b
++2:
++	/*
++	 * Return from MC interrupt.
++	 * TODO: Queue up the MCE event so that we can log it later.
++	 */
 +	MACHINE_CHECK_HANDLER_WINDUP
-+	b	machine_check_pSeries
-+END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
-+
- 	STD_EXCEPTION_COMMON_ASYNC(0x500, hardware_interrupt, do_IRQ)
- 	STD_EXCEPTION_COMMON_ASYNC(0x900, decrementer, .timer_interrupt)
- 	STD_EXCEPTION_COMMON(0x980, hdecrementer, .hdec_interrupt)
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index e435bc0..e8d6bf1 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -284,6 +284,18 @@ void system_reset_exception(struct pt_regs *regs)
++	rfid
++9:
+ 	/* Deliver the machine check to host kernel in V mode. */
+ 	MACHINE_CHECK_HANDLER_WINDUP
+ 	b	machine_check_pSeries
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index e11863f..c4b384d 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -84,6 +84,7 @@ _GLOBAL(power7_nap)
+ 	std	r9,_MSR(r1)
+ 	std	r1,PACAR1(r13)
  
- 	/* What should we do here? We could issue a shutdown or hard reset. */
- }
-+
-+/*
-+ * This function is called in real mode. Strictly no printk's please.
-+ *
-+ * regs->nip and regs->msr contains srr0 and ssr1.
-+ */
-+long machine_check_early(struct pt_regs *regs)
-+{
-+	/* TODO: handle/decode machine check reason */
-+	return 0;
-+}
-+
- #endif
- 
- /*
++_GLOBAL(power7_enter_nap_mode)
+ #ifdef CONFIG_KVM_BOOK3S_64_HV
+ 	/* Tell KVM we're napping */
+ 	li	r4,KVM_HWTHREAD_IN_NAP
