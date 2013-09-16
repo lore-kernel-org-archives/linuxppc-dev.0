@@ -1,26 +1,23 @@
 Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33DBA2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2013 06:44:12 +1000 (EST)
-Message-ID: <1379364243.2536.154.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/2] powerpc/fsl-booke: Add initial T104x_QDS board support
+ by ozlabs.org (Postfix) with ESMTPS id 7685A2C00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2013 07:02:49 +1000 (EST)
+Message-ID: <1379365336.2536.166.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2] powerpc 8xx: Fixing issue with CONFIG_PIN_TLB
 From: Scott Wood <scottwood@freescale.com>
-To: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-Date: Mon, 16 Sep 2013 15:44:03 -0500
-In-Reply-To: <071A08F2C6A57E4E94D980ECA553F874F607E1@039-SN1MPN1-006.039d.mgd.msft.net>
-References: <1378882706-19488-1-git-send-email-prabhakar@freescale.com>
- <1378942885.12204.448.camel@snotra.buserror.net>
- <071A08F2C6A57E4E94D980ECA553F874F607E1@039-SN1MPN1-006.039d.mgd.msft.net>
+To: leroy christophe <christophe.leroy@c-s.fr>
+Date: Mon, 16 Sep 2013 16:02:16 -0500
+In-Reply-To: <52329CDF.9020103@c-s.fr>
+References: <201309121825.r8CIPrkI005690@localhost.localdomain>
+ <1379011469.2536.45.camel@snotra.buserror.net> <52329CDF.9020103@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Jain Priyanka-B32167 <B32167@freescale.com>,
- Aggrwal Poonam-B10812 <B10812@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,48 +27,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-09-13 at 02:35 -0500, Kushwaha Prabhakar-B32579 wrote:
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Thursday, September 12, 2013 5:11 AM
-> > To: Kushwaha Prabhakar-B32579
-> > Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Jain
-> > Priyanka-B32167; Aggrwal Poonam-B10812
-> > Subject: Re: [PATCH 1/2] powerpc/fsl-booke: Add initial T104x_QDS board
-> > support
-> > 
-> > On Wed, 2013-09-11 at 12:28 +0530, Prabhakar Kushwaha wrote:
-> > > +	aliases {
-> > > +		 /* TODO */
-> > > +		};
-> > 
-> > TODO?  Did you mean this patch as an RFC?
-> > 
-> 
-> 
-> actually, this patch is not adding in dpaa related node(fman,bman etc).
-> I am keeping place holder for alias of Ethernet nodes. 
+On Fri, 2013-09-13 at 07:04 +0200, leroy christophe wrote:
+> Le 12/09/2013 20:44, Scott Wood a =C3=A9crit :
+> > On Thu, 2013-09-12 at 20:25 +0200, Christophe Leroy wrote:
+> >> This is a reorganisation of the setup of the TLB at kernel startup, =
+in order
+> >> to handle the CONFIG_PIN_TLB case in accordance with chapter 8.10.3 =
+of MPC866
+> >> and MPC885 reference manuals.
+> >>
+> >> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> >>
+> >> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S linux-3.11/ar=
+ch/powerpc/kernel/head_8xx.S
+> >> --- linux-3.11.org/arch/powerpc/kernel/head_8xx.S	2013-09-02 22:46:1=
+0.000000000 +0200
+> >> +++ linux-3.11/arch/powerpc/kernel/head_8xx.S	2013-09-09 11:28:54.00=
+0000000 +0200
+> >> @@ -785,27 +785,24 @@
+> >>    * these mappings is mapped by page tables.
+> >>    */
+> >>   initial_mmu:
+> >> -	tlbia			/* Invalidate all TLB entries */
+> >> -/* Always pin the first 8 MB ITLB to prevent ITLB
+> >> -   misses while mucking around with SRR0/SRR1 in asm
+> >> -*/
+> >> -	lis	r8, MI_RSV4I@h
+> >> -	ori	r8, r8, 0x1c00
+> >> -
+> >> +	lis	r8, MI_RESETVAL@h
+> >>   	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
+> >>  =20
+> >> -#ifdef CONFIG_PIN_TLB
+> >> -	lis	r10, (MD_RSV4I | MD_RESETVAL)@h
+> >> -	ori	r10, r10, 0x1c00
+> >> -	mr	r8, r10
+> >> -#else
+> >>   	lis	r10, MD_RESETVAL@h
+> >> -#endif
+> >>   #ifndef CONFIG_8xx_COPYBACK
+> >>   	oris	r10, r10, MD_WTDEF@h
+> >>   #endif
+> >>   	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
+> >>  =20
+> >> +	tlbia			/* Invalidate all TLB entries */
+> > Is this change to make sure we invalidate everything even if the
+> > bootloader set RSV4I?
+> Most probably. It is step 2 of the process defined in MPC866 and MPC885=
+=20
+> Reference Manuals:
+>=20
+> =C2=A78.10.3 Loading Locked TLB Entries:
+> The process of loading a single reserved entry in the TLB is as follows=
+:
 
-If you don't have any board-level aliases yet, then just don't include
-the aliases node in this file.
+To minimize code churn we should just fix actual problems, rather than
+shuffle things around to conform to a suggested sequence.  After all,
+we're not just trying to load a single entry.
 
-> > Also, whitespace.
-> > 
-> 
-> does whitespace is not captured in checkpatch?
+> >> +	ori	r8, r8, 0x1c00
+> >> +	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
+> >> +#ifdef CONFIG_PIN_TLB
+> >> +	ori	r10, r10, 0x1c00
+> >> +	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
+> >> +#endif
+> > Still 0x1c00?
+> Yes, I kept the same entries in order to limit modifications:
+> * 28 =3D First 8Mbytes page
+> * 29 =3D IMMR
+> * 30 =3D Second 8Mbytes page
+> * 31 =3D Third 8Mbytes page
 
-Not in dts files.
+If you actually want to program them in increasing order then it looks
+like you're still missing a write to CTR between the last two 8M entries
+-- thus you'll overwrite the IMMR with the last 8M entry.  That was the
+same problem that v1 fixed -- did that change get lost accidentally?
 
-> > Maybe some of this stuff could be put in a common dtsi between t1040 and
-> > t1042?
-> > 
-> > Ideally for t1042 you'd just take the entire t1040 tree as an include,
-> > and add the switch
-> > 
-> 
-> means, I just create T1042qds.dts and for T1040.dts include t1042dts + switch
+The hardware wants to decrement; why fight it?
 
-Is it t1040 that has the switch or t1042?
+> >>   	/* Now map the lower 8 Meg into the TLBs.  For this quick hack,
+> >>   	 * we can load the instruction and data TLB registers with the
+> >>   	 * same values.
+> >> @@ -825,6 +822,12 @@
+> >>   	mtspr	SPRN_MI_AP, r8
+> >>   	mtspr	SPRN_MD_AP, r8
+> >>  =20
+> >> +	/* Always pin the first 8 MB ITLB to prevent ITLB
+> >> +	 * misses while mucking around with SRR0/SRR1 in asm
+> >> +	 */
+> >> +	lis	r8, (MI_RSV4I | MI_RESETVAL)@h
+> >> +	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
+> > Entry 0 is not pinnable.
+> Here we are not trying to pin entry 0.
+
+Sorry, misread the patch.
+
+> We are at step 8, we are setting=20
+> MI_RSV4I. At the same time, we set MD_CTR to 0 which is off the pinned=20
+> range, to be sure that we won't overwrite one of the pinned entries.
+>
+> The main difference compared to the previous implementation is that=20
+> before, we were setting the RSV4I bit before loading the TLB entries.=20
+> Now, as defined in the Reference Manuals, we are doing it at the end.
+
+Have you seen any evidence that it matters?
 
 -Scott
