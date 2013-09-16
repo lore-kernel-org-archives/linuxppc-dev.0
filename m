@@ -1,29 +1,28 @@
 Return-Path: <B07421@freescale.com>
 Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 259EA2C00C7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2013 05:43:07 +1000 (EST)
-Received: from mail225-tx2 (localhost [127.0.0.1])	by
- mail225-tx2-R.bigfish.com (Postfix) with ESMTP id 582EF9600EE	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2013 19:43:02 +0000 (UTC)
-Received: from TX2EHSMHS014.bigfish.com (unknown [10.9.14.254])	by
- mail225-tx2.bigfish.com (Postfix) with ESMTP id 0533520049	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2013 19:43:01 +0000 (UTC)
-Message-ID: <1379360577.2536.142.camel@snotra.buserror.net>
-Subject: Re: [PATCH] Powerpc/dts: Correct sdhci quirk for bsc9131
+ by ozlabs.org (Postfix) with ESMTPS id C026E2C00E2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2013 06:40:03 +1000 (EST)
+Message-ID: <1379363970.2536.151.camel@snotra.buserror.net>
+Subject: Re: [PATCH v4] powerpc/mpc85xx: Update the clock device tree nodes
 From: Scott Wood <scottwood@freescale.com>
-To: Zhang Haijun <B42677@freescale.com>
-Date: Mon, 16 Sep 2013 14:42:57 -0500
-In-Reply-To: <5236BD62.8050604@freescale.com>
-References: <1378118222-17338-1-git-send-email-Haijun.Zhang@freescale.com>
- <5236BD62.8050604@freescale.com>
+To: Tang Yuantian-B29983 <B29983@freescale.com>
+Date: Mon, 16 Sep 2013 15:39:30 -0500
+In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B15089208@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1378882632-9053-1-git-send-email-Yuantian.Tang@freescale.com>
+ <1378948229.12204.486.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150748AA@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1378997052.2536.5.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B15089208@039-SN2MPN1-011.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, X.Xie@freescale.com,
- Haijun Zhang <Haijun.Zhang@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Li Yang-Leo-R58472 <r58472@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,44 +32,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-09-16 at 16:12 +0800, Zhang Haijun wrote:
-> On 09/02/2013 06:37 PM, Haijun Zhang wrote:
-> > We use property "sdhci,auto-cmd12" instead of "fsl,sdhci-auto-cmd12"
-> > to distinguish if the sdhc host has quirk SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12.
-> >
-> > Signed-off-by: Haijun Zhang <Haijun.Zhang@freescale.com>
-> > ---
-> >   arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi | 2 +-
-> >   1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi b/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
-> > index 5180d9d..0c0efa9 100644
-> > --- a/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
-> > +++ b/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
-> > @@ -130,7 +130,7 @@ usb@22000 {
-> >
-> >   /include/ "pq3-esdhc-0.dtsi"
-> >   	sdhc@2e000 {
-> > -		fsl,sdhci-auto-cmd12;
-> > +		sdhci,auto-cmd12;
-> >   		interrupts = <41 0x2 0 0>;
-> >   	};
-> >
-> >
-> 
-> 
-> Hi, scott
-> 
-> Could you help review this patch?
+On Thu, 2013-09-12 at 21:50 -0500, Tang Yuantian-B29983 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: 2013=E5=B9=B49=E6=9C=8812=E6=97=A5 =E6=98=9F=E6=9C=9F=E5=9B=9B =
+22:44
+> > To: Tang Yuantian-B29983
+> > Cc: Wood Scott-B07421; galak@kernel.crashing.org; linuxppc-
+> > dev@lists.ozlabs.org; devicetree@vger.kernel.org; Li Yang-Leo-R58472
+> > Subject: Re: [PATCH v4] powerpc/mpc85xx: Update the clock device tree
+> > nodes
+> >=20
+> > On Wed, 2013-09-11 at 20:31 -0500, Tang Yuantian-B29983 wrote:
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: 2013=E5=B9=B49=E6=9C=8812=E6=97=A5 =E6=98=9F=E6=9C=9F=E5=9B=
+=9B 9:10
+> > > > To: Tang Yuantian-B29983
+> > > > Cc: galak@kernel.crashing.org; linuxppc-dev@lists.ozlabs.org;
+> > > > devicetree@vger.kernel.org; Li Yang-Leo-R58472
+> > > > Subject: Re: [PATCH v4] powerpc/mpc85xx: Update the clock device
+> > > > tree nodes
+> > > >
+> > > > This description of "reg" is overly specific (assumes how the par=
+ent
+> > > > node's ranges are set up), incomplete (there's a size as well as =
+the
+> > > > offset), and does not apply to the clockgen node itself (you
+> > > > probably shouldn't lump them together like this).
+> > > >
+> > > Do you mean I should explain the REG of clockgen and its child node
+> > respectively?
+> > >
+> > > > > +- clocks : shall be the input parent clock phandle for the clo=
+ck.
+> > > >
+> > > > Not required on the clockgen node
+> > > >
+> > > Required by child node of clockgen.
+> >=20
+> > My point is that you're lumping several different types of nodes toge=
+ther
+> > with one binding, when some parts of the binding are not applicable t=
+o
+> > the clockgen node.
+> >=20
+> Not several, just two types of nodes.
+> One is clockgen node, the other is PLL and mux nodes.
 
-I process patches in periodic batches.  There's no need for a reminder
-when it's only been two weeks, as long as it's still marked "new" or
-"under review" in patchwork (and you should include a patchwork link in
-any such reminder e-mail).  Especially for a trivial patch such as this,
-no comment often means I looked at it and saw no problems and will take
-it in the next batch.
+clockgen + PLL + mux =3D 3 =3D several :-)
 
-Though if you want a comment, don't capitalize "powerpc" in the
-subject. :-)
+> The reason they lumped together is that the clockgen node is not only I=
+P block
+> Node but also a clock provider node
+
+I don't understand why that merits lumping them together.
+
+Just describe them separately.
+
+> At first, I want to add a extra fixed-clock node and move the clock-fre=
+quency of clockgen=20
+> Node to it, but it is against the backward compatibility
+
+Right.
+
+> which I think it is not a big deal, Because nobody hasn't used it yet.
+
+The point is it will require updating U-Boot to use it, versus existing
+U-Boots which already patch up the clock-frequency in the clockgen node.
+And there's nothing semantically wrong with the way it currently is.
+
+> If I add a extra node with the clock-frequency property and don't move =
+the
+> clock-frequency property of clockgen, that would be redundant because b=
+oth clockgen node
+> and the extra node have the same clock-frequency node.
+> So, I choose what I did now.
+
+I'm not complaining about how you structured the nodes, just how you
+documented them.
 
 -Scott
