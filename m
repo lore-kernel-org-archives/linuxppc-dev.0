@@ -1,23 +1,28 @@
 Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7685A2C00E9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2013 07:02:49 +1000 (EST)
-Message-ID: <1379365336.2536.166.camel@snotra.buserror.net>
-Subject: Re: [PATCH v2] powerpc 8xx: Fixing issue with CONFIG_PIN_TLB
+ by ozlabs.org (Postfix) with ESMTPS id E8BCA2C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2013 07:09:40 +1000 (EST)
+Message-ID: <1379365769.2536.169.camel@snotra.buserror.net>
+Subject: Re: [PATCH v3 4/4] powerpc/85xx: add sysfs for pw20 state and
+ altivec idle
 From: Scott Wood <scottwood@freescale.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Date: Mon, 16 Sep 2013 16:02:16 -0500
-In-Reply-To: <52329CDF.9020103@c-s.fr>
-References: <201309121825.r8CIPrkI005690@localhost.localdomain>
- <1379011469.2536.45.camel@snotra.buserror.net> <52329CDF.9020103@c-s.fr>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Date: Mon, 16 Sep 2013 16:09:29 -0500
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F154392590107C5F0@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1378879004-2446-1-git-send-email-dongsheng.wang@freescale.com>
+ <1378879004-2446-4-git-send-email-dongsheng.wang@freescale.com>
+ <1378940642.12204.427.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010652F1@039-SN2MPN1-023.039d.mgd.msft.net>
+ <1379009192.2536.19.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F154392590107C5F0@039-SN2MPN1-021.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,109 +32,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-09-13 at 07:04 +0200, leroy christophe wrote:
-> Le 12/09/2013 20:44, Scott Wood a =C3=A9crit :
-> > On Thu, 2013-09-12 at 20:25 +0200, Christophe Leroy wrote:
-> >> This is a reorganisation of the setup of the TLB at kernel startup, =
-in order
-> >> to handle the CONFIG_PIN_TLB case in accordance with chapter 8.10.3 =
-of MPC866
-> >> and MPC885 reference manuals.
-> >>
-> >> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> >>
-> >> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S linux-3.11/ar=
-ch/powerpc/kernel/head_8xx.S
-> >> --- linux-3.11.org/arch/powerpc/kernel/head_8xx.S	2013-09-02 22:46:1=
-0.000000000 +0200
-> >> +++ linux-3.11/arch/powerpc/kernel/head_8xx.S	2013-09-09 11:28:54.00=
-0000000 +0200
-> >> @@ -785,27 +785,24 @@
-> >>    * these mappings is mapped by page tables.
-> >>    */
-> >>   initial_mmu:
-> >> -	tlbia			/* Invalidate all TLB entries */
-> >> -/* Always pin the first 8 MB ITLB to prevent ITLB
-> >> -   misses while mucking around with SRR0/SRR1 in asm
-> >> -*/
-> >> -	lis	r8, MI_RSV4I@h
-> >> -	ori	r8, r8, 0x1c00
-> >> -
-> >> +	lis	r8, MI_RESETVAL@h
-> >>   	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
-> >>  =20
-> >> -#ifdef CONFIG_PIN_TLB
-> >> -	lis	r10, (MD_RSV4I | MD_RESETVAL)@h
-> >> -	ori	r10, r10, 0x1c00
-> >> -	mr	r8, r10
-> >> -#else
-> >>   	lis	r10, MD_RESETVAL@h
-> >> -#endif
-> >>   #ifndef CONFIG_8xx_COPYBACK
-> >>   	oris	r10, r10, MD_WTDEF@h
-> >>   #endif
-> >>   	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
-> >>  =20
-> >> +	tlbia			/* Invalidate all TLB entries */
-> > Is this change to make sure we invalidate everything even if the
-> > bootloader set RSV4I?
-> Most probably. It is step 2 of the process defined in MPC866 and MPC885=
-=20
-> Reference Manuals:
->=20
-> =C2=A78.10.3 Loading Locked TLB Entries:
-> The process of loading a single reserved entry in the TLB is as follows=
-:
+On Thu, 2013-09-12 at 21:53 -0500, Wang Dongsheng-B40534 wrote:
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, September 13, 2013 2:07 AM
+> > To: Wang Dongsheng-B40534
+> > Cc: Wood Scott-B07421; galak@kernel.crashing.org; linuxppc-
+> > dev@lists.ozlabs.org
+> > Subject: Re: [PATCH v3 4/4] powerpc/85xx: add sysfs for pw20 state and
+> > altivec idle
+> > 
+> > On Wed, 2013-09-11 at 22:48 -0500, Wang Dongsheng-B40534 wrote:
+> > >
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Thursday, September 12, 2013 7:04 AM
+> > > > To: Wang Dongsheng-B40534
+> > > > Cc: galak@kernel.crashing.org; linuxppc-dev@lists.ozlabs.org
+> > > > Subject: Re: [PATCH v3 4/4] powerpc/85xx: add sysfs for pw20 state
+> > > > and altivec idle
+> > > >
+> > > > On Wed, 2013-09-11 at 13:56 +0800, Dongsheng Wang wrote:
+> > > > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > > >
+> > > > > Add a sys interface to enable/diable pw20 state or altivec idle,
+> > > > > and control the wait entry time.
+> > > > >
+> > > > > Enable/Disable interface:
+> > > > > 0, disable. 1, enable.
+> > > > > /sys/devices/system/cpu/cpuX/pw20_state
+> > > > > /sys/devices/system/cpu/cpuX/altivec_idle
+> > > > >
+> > > > > Set wait entry bit interface:
+> > > > > bit value range 0~63, 0 bit is Mintime, 63 bit is Maxtime.
+> > > > > /sys/devices/system/cpu/cpuX/pw20_wait_entry_bit
+> > > > > /sys/devices/system/cpu/cpuX/altivec_idle_wait_entry_bit
+> > > >
+> > > > I'm no fan of the way powerpc does bit numbering, but don't flip it
+> > > > around here -- you'll just cause confusion.
+> > > >
+> > > OK. 0 bit is maxtime, 63 bit is mintime.
+> > >
+> > > > Better yet, this interface should take real time units rather than a
+> > > > timebase bit.
+> > > >
+> > > I think the real time is not suitable, because timebase bit does not
+> > > correspond with real time.
+> > 
+> > It's a bit sloppy due to how the hardware works, but you could convert it
+> > like you did in earlier patches.  Semantically it should probably be the
+> > minimum time to wait before entering the low power state.
+> > 
+> But there has a problem, we can't convert bit to the real time when user read this sysfs.
+> Like:
+> echo 1000(us) > /sys/*/pw20_wait_entry_bit, after convert we get bit is 49.
+> cat /sys/*/pw20_wait_entry_bit, after convert the time is 1598(us).
+> 
+> The read out of the time is not real time. Unless we define a variable to save the real time.
 
-To minimize code churn we should just fix actual problems, rather than
-shuffle things around to conform to a suggested sequence.  After all,
-we're not just trying to load a single entry.
+It's not the end of the world if the value is different when read back.
+It just gets rounded up when you write it.
 
-> >> +	ori	r8, r8, 0x1c00
-> >> +	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
-> >> +#ifdef CONFIG_PIN_TLB
-> >> +	ori	r10, r10, 0x1c00
-> >> +	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
-> >> +#endif
-> > Still 0x1c00?
-> Yes, I kept the same entries in order to limit modifications:
-> * 28 =3D First 8Mbytes page
-> * 29 =3D IMMR
-> * 30 =3D Second 8Mbytes page
-> * 31 =3D Third 8Mbytes page
+> > > > Also, you disable the power saving mode if the maximum interval is
+> > > > selected,
+> > > It's not disable the pw20 state or altivec idle, just max-delay entry
+> > time.
+> > 
+> > No, the code checks for zero to set or clear the enabling bit (e.g.
+> > PW20_WAIT).
+> > 
+> There has pw20_state/altivec_idle sys interface to control "enable/disable",
+> There is only to control wait bit. Did you mean remove "pw20_state/altivec_idle"
+> sys interface, and reuse "pw20_wait_entry_bit/altivec_idle*" sys interface?
+> When echo zero into "pw20_wait_entry_bit" we just to disable pw20 state, I think that is reasonable. :)
 
-If you actually want to program them in increasing order then it looks
-like you're still missing a write to CTR between the last two 8M entries
--- thus you'll overwrite the IMMR with the last 8M entry.  That was the
-same problem that v1 fixed -- did that change get lost accidentally?
-
-The hardware wants to decrement; why fight it?
-
-> >>   	/* Now map the lower 8 Meg into the TLBs.  For this quick hack,
-> >>   	 * we can load the instruction and data TLB registers with the
-> >>   	 * same values.
-> >> @@ -825,6 +822,12 @@
-> >>   	mtspr	SPRN_MI_AP, r8
-> >>   	mtspr	SPRN_MD_AP, r8
-> >>  =20
-> >> +	/* Always pin the first 8 MB ITLB to prevent ITLB
-> >> +	 * misses while mucking around with SRR0/SRR1 in asm
-> >> +	 */
-> >> +	lis	r8, (MI_RSV4I | MI_RESETVAL)@h
-> >> +	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
-> > Entry 0 is not pinnable.
-> Here we are not trying to pin entry 0.
-
-Sorry, misread the patch.
-
-> We are at step 8, we are setting=20
-> MI_RSV4I. At the same time, we set MD_CTR to 0 which is off the pinned=20
-> range, to be sure that we won't overwrite one of the pinned entries.
->
-> The main difference compared to the previous implementation is that=20
-> before, we were setting the RSV4I bit before loading the TLB entries.=20
-> Now, as defined in the Reference Manuals, we are doing it at the end.
-
-Have you seen any evidence that it matters?
+Sorry, I misread the patch and didn't realize these were separate
+interfaces.
 
 -Scott
