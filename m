@@ -1,32 +1,26 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4CC812C00E6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2013 21:20:06 +1000 (EST)
-Date: Mon, 16 Sep 2013 12:22:11 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
-Message-ID: <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
-References: <20130905150259.GA30984@dhcp-26-207.brq.redhat.com>
- <20130905150442.GA24148@htj.dyndns.org>
- <20130905154041.GD30984@dhcp-26-207.brq.redhat.com>
- <20130905154436.GC24148@htj.dyndns.org>
- <20130905185440.GA13175@dhcp-26-207.brq.redhat.com>
- <20130905200608.GA3846@htj.dyndns.org>
- <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
- <20130906160621.GF22763@mtj.dyndns.org>
- <20130906233205.GF12956@google.com>
- <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
+Return-Path: <prvs=097182909d=valentin.longchamp@keymile.com>
+Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E13312C00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2013 22:11:03 +1000 (EST)
+Message-ID: <5236F54A.50102@keymile.com>
+Date: Mon, 16 Sep 2013 14:10:50 +0200
+From: Valentin Longchamp <valentin.longchamp@keymile.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Joerg Roedel <joro@8bytes.org>, "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- Jan Beulich <JBeulich@suse.com>, Tejun Heo <tj@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Ingo Molnar <mingo@kernel.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mpc85xx:Add initial device tree support of T104x
+References: <1378882686-19454-1-git-send-email-prabhakar@freescale.com>
+ <5232D778.20007@keymile.com>
+ <1B0AEBE4-FAE3-405C-8BAE-CACF5B12CB59@kernel.crashing.org>
+In-Reply-To: <1B0AEBE4-FAE3-405C-8BAE-CACF5B12CB59@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ Priyanka Jain <Priyanka.Jain@freescale.com>,
+ "scottwood@freescale.com" <scottwood@freescale.com>,
+ Varun Sethi <Varun.Sethi@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,29 +30,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 09, 2013 at 05:20:44PM +0200, Alexander Gordeev wrote:
-> On Fri, Sep 06, 2013 at 05:32:05PM -0600, Bjorn Helgaas wrote:
-> > I propose that you rework it that way, and at least find out what
-> > (if anything) would break if we do that.  Or maybe we just give up
-> > some optimization; it would be nice to quantify that, too.
+On 09/13/2013 04:53 PM, Kumar Gala wrote:
+> On Sep 13, 2013, at 4:14 AM, Valentin Longchamp wrote:
+>> On 09/11/2013 08:58 AM, Prabhakar Kushwaha wrote:
+>>> +
+>>> +&pci0 {
+>>> +	compatible = "fsl,t1042-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
+>>> +	device_type = "pci";
+>>> +	#size-cells = <2>;
+>>> +	#address-cells = <3>;
+>>> +	bus-range = <0x0 0xff>;
+>>> +	interrupts = <20 2 0 0>;
+>>> +	fsl,iommu-parent = <&pamu0>;
+>>> +	pcie@0 {
+>>> +		reg = <0 0 0 0 0>;
+>>> +		#interrupt-cells = <1>;
+>>> +		#size-cells = <2>;
+>>> +		#address-cells = <3>;
+>>> +		device_type = "pci";
+>>> +		interrupts = <20 2 0 0>;
+>>> +		interrupt-map-mask = <0xf800 0 0 7>;
+>>> +		interrupt-map = <
+>>> +			/* IDSEL 0x0 */
+>>> +			0000 0 0 1 &mpic 40 1 0 0
+>>> +			0000 0 0 2 &mpic 1 1 0 0
+>>> +			0000 0 0 3 &mpic 2 1 0 0
+>>> +			0000 0 0 4 &mpic 3 1 0 0
+>>> +			>;
+>>> +	};
+>>> +};
+>>> +
+>>> +&pci1 {
+>>> +	compatible = "fsl,t1042-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
+>>> +	device_type = "pci";
+>>> +	#size-cells = <2>;
+>>> +	#address-cells = <3>;
+>>> +	bus-range = <0 0xff>;
+>>> +	interrupts = <21 2 0 0>;
+>>> +	fsl,iommu-parent = <&pamu0>;
+>>> +	pcie@0 {
+>>> +		reg = <0 0 0 0 0>;
+>>> +		#interrupt-cells = <1>;
+>>> +		#size-cells = <2>;
+>>> +		#address-cells = <3>;
+>>> +		device_type = "pci";
+>>> +		interrupts = <21 2 0 0>;
+>>> +		interrupt-map-mask = <0xf800 0 0 7>;
+>>> +		interrupt-map = <
+>>> +			/* IDSEL 0x0 */
+>>> +			0000 0 0 1 &mpic 41 1 0 0
+>>> +			0000 0 0 2 &mpic 5 1 0 0
+>>> +			0000 0 0 3 &mpic 6 1 0 0
+>>> +			0000 0 0 4 &mpic 7 1 0 0
+>>> +			>;
+>>> +	};
+>>> +};
+>>> +
+>>> +&pci2 {
+>>> +	compatible = "fsl,t1042-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
+>>> +	device_type = "pci";
+>>> +	#size-cells = <2>;
+>>> +	#address-cells = <3>;
+>>> +	bus-range = <0x0 0xff>;
+>>> +	interrupts = <22 2 0 0>;
+>>> +	fsl,iommu-parent = <&pamu0>;
+>>> +	pcie@0 {
+>>> +		reg = <0 0 0 0 0>;
+>>> +		#interrupt-cells = <1>;
+>>> +		#size-cells = <2>;
+>>> +		#address-cells = <3>;
+>>> +		device_type = "pci";
+>>> +		interrupts = <22 2 0 0>;
+>>> +		interrupt-map-mask = <0xf800 0 0 7>;
+>>> +		interrupt-map = <
+>>> +			/* IDSEL 0x0 */
+>>> +			0000 0 0 1 &mpic 42 1 0 0
+>>> +			0000 0 0 2 &mpic 9 1 0 0
+>>> +			0000 0 0 3 &mpic 10 1 0 0
+>>> +			0000 0 0 4 &mpic 11 1 0 0
+>>> +			>;
+>>> +	};
+>>> +};
+>>> +
+>>> +&pci3 {
+>>> +	compatible = "fsl,t1042-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
+>>> +	device_type = "pci";
+>>> +	#size-cells = <2>;
+>>> +	#address-cells = <3>;
+>>> +	bus-range = <0x0 0xff>;
+>>> +	interrupts = <23 2 0 0>;
+>>> +	fsl,iommu-parent = <&pamu0>;
+>>> +	pcie@0 {
+>>> +		reg = <0 0 0 0 0>;
+>>> +		#interrupt-cells = <1>;
+>>> +		#size-cells = <2>;
+>>> +		#address-cells = <3>;
+>>> +		device_type = "pci";
+>>> +		interrupts = <23 2 0 0>;
+>>> +		interrupt-map-mask = <0xf800 0 0 7>;
+>>> +		interrupt-map = <
+>>> +			/* IDSEL 0x0 */
+>>> +			0000 0 0 1 &mpic 43 1 0 0
+>>> +			0000 0 0 2 &mpic 0 1 0 0
+>>> +			0000 0 0 3 &mpic 4 1 0 0
+>>> +			0000 0 0 4 &mpic 8 1 0 0
+>>> +			>;
+>>> +	};
+>>> +};
+>>> +
+>>
+>> The above 4 nodes have the consequence that it will then be mandatory that a
+>> board support .dts file that would like to inlcude the SOC-NAMEsi-post.dtsi
+>> defines the pci0, pci1, pci2, pci3 aliases.
+>>
+>> Now it is possible that a board does not implement pci1 for instance. So its
+>> .dts file would ideally not define a node for it, and thus not define the
+>> respective alias. However, this triggers this dtc compile error (which is correct):
+>>
+>>> [chlongv1@chber1-10533x linux-km]$ make kmp204x.dtb
+>>>  DTC     arch/powerpc/boot/kmp204x.dtb
+>>> Error: arch/powerpc/boot/dts/fsl/p2041si-post.dtsi:98.2-3 label or path, 'pci1', not found
+>>> FATAL ERROR: Syntax error parsing input tree
+>>> make[1]: *** [arch/powerpc/boot/kmp204x.dtb] Error 1
+>>> make: *** [kmp204x.dtb] Error 2
+>>
+>> The solution I have found is to define a "dummy" disabled node so that I can
+>> define the alias, but I am not really happy about this:
+>>
+>>> 	pci1: pcie@ffe201000 {
+>>> 		status = "disabled";
+>>> 	};
+>>
+>> I am here missing something obvious or shouldn't it be possible that such .dtsi
+>> files allow not to define unused/unnecessary nodes ?
 > 
-> Hi Bjorn,
+> Isn't this correct, that you are disabling the PCIe1 interface on the SoC for your board?
 > 
-> The series is what it seems a direction to take.
-> 
-> Looks like we need PPC folks to agree on the quota check update
-> for pSeries (yes, they do bail out with a positive return value
-> from arch_msi_check_device()):
 
-Hi Ben,
+Yes it is correct. So this confirms that a board .dts file must disable all not
+used interfaces/peripherals with such a "disabled" node.
 
-An initiative to simplify MSI/MSI-X allocation interface is brewing.
-It seems pSeries quota thing is an obstacle. If it could be given up
-(patch 2/9).
+I just wanted to be sure that this was the correct way of doing things and that
+I had not missed a "better" way (where you don't need to define such "disabled"
+nodes in .dts files).
 
-Thanks!
-
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+Valentin
