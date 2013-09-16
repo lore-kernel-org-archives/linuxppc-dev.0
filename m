@@ -1,16 +1,18 @@
 Return-Path: <R58495@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1B5342C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2013 09:38:19 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4AD0E2C00F8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2013 09:38:21 +1000 (EST)
 From: York Sun <yorksun@freescale.com>
 To: <galak@kernel.crashing.org>
-Subject: [Patch v2 1/2] powerpc/t4240emu: Add device tree file for t4240emu
-Date: Mon, 16 Sep 2013 16:38:06 -0700
-Message-ID: <1379374687-13922-1-git-send-email-yorksun@freescale.com>
+Subject: [Patch v2 2/2] powerpc/b4860emu: Add device tree file for b4860emu
+Date: Mon, 16 Sep 2013 16:38:07 -0700
+Message-ID: <1379374687-13922-2-git-send-email-yorksun@freescale.com>
+In-Reply-To: <1379374687-13922-1-git-send-email-yorksun@freescale.com>
+References: <1379374687-13922-1-git-send-email-yorksun@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
@@ -23,8 +25,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T4240EMU is an emulator target with minimum peripherals. It is based on
-T4240QDS and trimmed down most peripherals due to either not modeled or
+B4860EMU is a emualtor target with minimum peripherals. It is based on
+B4860QDS and trimmed down most peripherals due to either not modeled or
 lack of board level connections. The main purpose of this minimum dts is
 to speed up booting on emulator.
 
@@ -32,20 +34,20 @@ Signed-off-by: York Sun <yorksun@freescale.com>
 ---
 Change log:
  v2: remote reviewed-by and tested-by lines added by gerrit
-     resync with t4240qds.dts
+     resync with b4860qds.dts
 
- arch/powerpc/boot/dts/t4240emu.dts |  270 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 270 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/t4240emu.dts
+ arch/powerpc/boot/dts/b4860emu.dts |  219 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 219 insertions(+)
+ create mode 100644 arch/powerpc/boot/dts/b4860emu.dts
 
-diff --git a/arch/powerpc/boot/dts/t4240emu.dts b/arch/powerpc/boot/dts/t4240emu.dts
+diff --git a/arch/powerpc/boot/dts/b4860emu.dts b/arch/powerpc/boot/dts/b4860emu.dts
 new file mode 100644
-index 0000000..44c5a0d
+index 0000000..0f91230
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/t4240emu.dts
-@@ -0,0 +1,270 @@
++++ b/arch/powerpc/boot/dts/b4860emu.dts
+@@ -0,0 +1,219 @@
 +/*
-+ * T4240 emulator Device Tree Source
++ * B4860 emulator Device Tree Source
 + *
 + * Copyright 2013 Freescale Semiconductor Inc.
 + *
@@ -66,23 +68,24 @@ index 0000000..44c5a0d
 + * Foundation, either version 2 of that License or (at your option) any
 + * later version.
 + *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ * This software is provided by Freescale Semiconductor "as is" and any
++ * express or implied warranties, including, but not limited to, the implied
++ * warranties of merchantability and fitness for a particular purpose are
++ * disclaimed. In no event shall Freescale Semiconductor be liable for any
++ * direct, indirect, incidental, special, exemplary, or consequential damages
++ * (including, but not limited to, procurement of substitute goods or services;
++ * loss of use, data, or profits; or business interruption) however caused and
++ * on any theory of liability, whether in contract, strict liability, or tort
++ * (including negligence or otherwise) arising in any way out of the use of
++ * this software, even if advised of the possibility of such damage.
 + */
 +
 +/dts-v1/;
 +
 +/include/ "fsl/e6500_power_isa.dtsi"
++
 +/ {
-+	compatible = "fsl,T4240";
++	compatible = "fsl,B4860";
 +	#address-cells = <2>;
 +	#size-cells = <2>;
 +	interrupt-parent = <&mpic>;
@@ -105,71 +108,29 @@ index 0000000..44c5a0d
 +		cpu0: PowerPC,e6500@0 {
 +			device_type = "cpu";
 +			reg = <0 1>;
-+			next-level-cache = <&L2_1>;
++			next-level-cache = <&L2>;
 +		};
 +		cpu1: PowerPC,e6500@2 {
 +			device_type = "cpu";
 +			reg = <2 3>;
-+			next-level-cache = <&L2_1>;
++			next-level-cache = <&L2>;
 +		};
 +		cpu2: PowerPC,e6500@4 {
 +			device_type = "cpu";
 +			reg = <4 5>;
-+			next-level-cache = <&L2_1>;
++			next-level-cache = <&L2>;
 +		};
 +		cpu3: PowerPC,e6500@6 {
 +			device_type = "cpu";
 +			reg = <6 7>;
-+			next-level-cache = <&L2_1>;
-+		};
-+
-+		cpu4: PowerPC,e6500@8 {
-+			device_type = "cpu";
-+			reg = <8 9>;
-+			next-level-cache = <&L2_2>;
-+		};
-+		cpu5: PowerPC,e6500@10 {
-+			device_type = "cpu";
-+			reg = <10 11>;
-+			next-level-cache = <&L2_2>;
-+		};
-+		cpu6: PowerPC,e6500@12 {
-+			device_type = "cpu";
-+			reg = <12 13>;
-+			next-level-cache = <&L2_2>;
-+		};
-+		cpu7: PowerPC,e6500@14 {
-+			device_type = "cpu";
-+			reg = <14 15>;
-+			next-level-cache = <&L2_2>;
-+		};
-+
-+		cpu8: PowerPC,e6500@16 {
-+			device_type = "cpu";
-+			reg = <16 17>;
-+			next-level-cache = <&L2_3>;
-+		};
-+		cpu9: PowerPC,e6500@18 {
-+			device_type = "cpu";
-+			reg = <18 19>;
-+			next-level-cache = <&L2_3>;
-+		};
-+		cpu10: PowerPC,e6500@20 {
-+			device_type = "cpu";
-+			reg = <20 21>;
-+			next-level-cache = <&L2_3>;
-+		};
-+		cpu11: PowerPC,e6500@22 {
-+			device_type = "cpu";
-+			reg = <22 23>;
-+			next-level-cache = <&L2_3>;
++			next-level-cache = <&L2>;
 +		};
 +	};
 +};
 +
 +/ {
-+	model = "fsl,T4240QDS";
-+	compatible = "fsl,T4240EMU", "fsl,T4240QDS";
++	model = "fsl,B4860QDS";
++	compatible = "fsl,B4860EMU", "fsl,B4860QDS";
 +	#address-cells = <2>;
 +	#size-cells = <2>;
 +	interrupt-parent = <&mpic>;
@@ -185,11 +146,9 @@ index 0000000..44c5a0d
 +			#size-cells = <1>;
 +			compatible = "cfi-flash";
 +			reg = <0x0 0x0 0x8000000>;
-+
 +			bank-width = <2>;
 +			device-width = <1>;
 +		};
-+
 +	};
 +
 +	memory {
@@ -201,7 +160,6 @@ index 0000000..44c5a0d
 +		reg = <0xf 0xfe000000 0 0x00001000>;
 +
 +	};
-+
 +};
 +
 +&ifc {
@@ -219,7 +177,7 @@ index 0000000..44c5a0d
 +
 +	soc-sram-error {
 +		compatible = "fsl,soc-sram-error";
-+		interrupts = <16 2 1 29>;
++		interrupts = <16 2 1 2>;
 +	};
 +
 +	corenet-law@0 {
@@ -229,90 +187,83 @@ index 0000000..44c5a0d
 +	};
 +
 +	ddr1: memory-controller@8000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
++		compatible = "fsl,qoriq-memory-controller-v4.5", "fsl,qoriq-memory-controller";
 +		reg = <0x8000 0x1000>;
-+		interrupts = <16 2 1 23>;
++		interrupts = <16 2 1 8>;
 +	};
 +
 +	ddr2: memory-controller@9000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
++		compatible = "fsl,qoriq-memory-controller-v4.5","fsl,qoriq-memory-controller";
 +		reg = <0x9000 0x1000>;
-+		interrupts = <16 2 1 22>;
-+	};
-+
-+	ddr3: memory-controller@a000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
-+		reg = <0xa000 0x1000>;
-+		interrupts = <16 2 1 21>;
++		interrupts = <16 2 1 9>;
 +	};
 +
 +	cpc: l3-cache-controller@10000 {
-+		compatible = "fsl,t4240-l3-cache-controller", "cache";
++		compatible = "fsl,b4-l3-cache-controller", "cache";
 +		reg = <0x10000 0x1000
-+		       0x11000 0x1000
-+		       0x12000 0x1000>;
-+		interrupts = <16 2 1 27
-+			      16 2 1 26
-+			      16 2 1 25>;
++		       0x11000 0x1000>;
++		interrupts = <16 2 1 4>;
 +	};
 +
 +	corenet-cf@18000 {
-+		compatible = "fsl,corenet-cf";
++		compatible = "fsl,b4-corenet-cf";
 +		reg = <0x18000 0x1000>;
-+		interrupts = <16 2 1 31>;
++		interrupts = <16 2 1 0>;
 +		fsl,ccf-num-csdids = <32>;
 +		fsl,ccf-num-snoopids = <32>;
 +	};
 +
 +	iommu@20000 {
 +		compatible = "fsl,pamu-v1.0", "fsl,pamu";
-+		reg = <0x20000 0x6000>;
++		reg = <0x20000 0x4000>;
++		#address-cells = <1>;
++		#size-cells = <1>;
 +		interrupts = <
 +			24 2 0 0
-+			16 2 1 30>;
++			16 2 1 1>;
++		pamu0: pamu@0 {
++			reg = <0 0x1000>;
++			fsl,primary-cache-geometry = <8 1>;
++			fsl,secondary-cache-geometry = <32 2>;
++		};
 +	};
 +
 +/include/ "fsl/qoriq-mpic.dtsi"
 +
 +	guts: global-utilities@e0000 {
-+		compatible = "fsl,t4240-device-config", "fsl,qoriq-device-config-2.0";
++		compatible = "fsl,b4-device-config";
 +		reg = <0xe0000 0xe00>;
 +		fsl,has-rstcr;
 +		fsl,liodn-bits = <12>;
 +	};
 +
 +	clockgen: global-utilities@e1000 {
-+		compatible = "fsl,t4240-clockgen", "fsl,qoriq-clockgen-2.0";
++		compatible = "fsl,b4-clockgen", "fsl,qoriq-clockgen-2.0";
 +		reg = <0xe1000 0x1000>;
 +	};
 +
 +/include/ "fsl/qoriq-dma-0.dtsi"
++	dma@100300 {
++		fsl,iommu-parent = <&pamu0>;
++		fsl,liodn-reg = <&guts 0x580>; /* DMA1LIODNR */
++	};
++
 +/include/ "fsl/qoriq-dma-1.dtsi"
++	dma@101300 {
++		fsl,iommu-parent = <&pamu0>;
++		fsl,liodn-reg = <&guts 0x584>; /* DMA2LIODNR */
++	};
 +
 +/include/ "fsl/qoriq-i2c-0.dtsi"
 +/include/ "fsl/qoriq-i2c-1.dtsi"
 +/include/ "fsl/qoriq-duart-0.dtsi"
 +/include/ "fsl/qoriq-duart-1.dtsi"
 +
-+	L2_1: l2-cache-controller@c20000 {
-+		compatible = "fsl,t4240-l2-cache-controller";
-+		reg = <0xc20000 0x40000>;
-+		next-level-cache = <&cpc>;
-+	};
-+	L2_2: l2-cache-controller@c60000 {
-+		compatible = "fsl,t4240-l2-cache-controller";
-+		reg = <0xc60000 0x40000>;
-+		next-level-cache = <&cpc>;
-+	};
-+	L2_3: l2-cache-controller@ca0000 {
-+		compatible = "fsl,t4240-l2-cache-controller";
-+		reg = <0xca0000 0x40000>;
++	L2: l2-cache-controller@c20000 {
++		compatible = "fsl,b4-l2-cache-controller";
++		reg = <0xc20000 0x1000>;
 +		next-level-cache = <&cpc>;
 +	};
 +};
-+
 -- 
 1.7.9.5
