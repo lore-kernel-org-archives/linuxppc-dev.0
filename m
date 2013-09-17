@@ -1,30 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Wed, 18 Sep 2013 00:30:23 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
-Message-ID: <20130917143022.GA7707@concordia>
-References: <20130905150442.GA24148@htj.dyndns.org>
- <20130905154041.GD30984@dhcp-26-207.brq.redhat.com>
- <20130905154436.GC24148@htj.dyndns.org>
- <20130905185440.GA13175@dhcp-26-207.brq.redhat.com>
- <20130905200608.GA3846@htj.dyndns.org>
- <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
- <20130906160621.GF22763@mtj.dyndns.org>
- <20130906233205.GF12956@google.com>
- <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
- <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id 3F7EA2C00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 02:41:04 +1000 (EST)
+Message-ID: <5238860F.4030405@c-s.fr>
+Date: Tue, 17 Sep 2013 18:40:47 +0200
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Joerg Roedel <joro@8bytes.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- Jan Beulich <JBeulich@suse.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Tejun Heo <tj@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Ingo Molnar <mingo@kernel.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2] powerpc 8xx: Fixing issue with CONFIG_PIN_TLB
+References: <201309121825.r8CIPrkI005690@localhost.localdomain>
+ <1379011469.2536.45.camel@snotra.buserror.net> <52329CDF.9020103@c-s.fr>
+ <1379365336.2536.166.camel@snotra.buserror.net>
+In-Reply-To: <1379365336.2536.166.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,35 +24,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 16, 2013 at 12:22:11PM +0200, Alexander Gordeev wrote:
-> On Mon, Sep 09, 2013 at 05:20:44PM +0200, Alexander Gordeev wrote:
-> > On Fri, Sep 06, 2013 at 05:32:05PM -0600, Bjorn Helgaas wrote:
-> > > I propose that you rework it that way, and at least find out what
-> > > (if anything) would break if we do that.  Or maybe we just give up
-> > > some optimization; it would be nice to quantify that, too.
-> > 
-> > Hi Bjorn,
-> > 
-> > The series is what it seems a direction to take.
-> > 
-> > Looks like we need PPC folks to agree on the quota check update
-> > for pSeries (yes, they do bail out with a positive return value
-> > from arch_msi_check_device()):
-> 
-> Hi Ben,
-> 
-> An initiative to simplify MSI/MSI-X allocation interface is brewing.
-> It seems pSeries quota thing is an obstacle. If it could be given up
-> (patch 2/9).
 
-How about no?
+Le 16/09/2013 23:02, Scott Wood a écrit :
+> On Fri, 2013-09-13 at 07:04 +0200, leroy christophe wrote:
+>> Le 12/09/2013 20:44, Scott Wood a écrit :
+>>> On Thu, 2013-09-12 at 20:25 +0200, Christophe Leroy wrote:
+>>>> This is a reorganisation of the setup of the TLB at kernel startup, in order
+>>>> to handle the CONFIG_PIN_TLB case in accordance with chapter 8.10.3 of MPC866
+>>>> and MPC885 reference manuals.
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>>
+>>>> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S linux-3.11/arch/powerpc/kernel/head_8xx.S
+>>>> --- linux-3.11.org/arch/powerpc/kernel/head_8xx.S	2013-09-02 22:46:10.000000000 +0200
+>>>> +++ linux-3.11/arch/powerpc/kernel/head_8xx.S	2013-09-09 11:28:54.000000000 +0200
+>>>> @@ -785,27 +785,24 @@
+>>>>     * these mappings is mapped by page tables.
+>>>>     */
+>>>>    initial_mmu:
+>>>> -	tlbia			/* Invalidate all TLB entries */
+>>>> -/* Always pin the first 8 MB ITLB to prevent ITLB
+>>>> -   misses while mucking around with SRR0/SRR1 in asm
+>>>> -*/
+>>>> -	lis	r8, MI_RSV4I@h
+>>>> -	ori	r8, r8, 0x1c00
+>>>> -
+>>>> +	lis	r8, MI_RESETVAL@h
+>>>>    	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
+>>>>    
+>>>> -#ifdef CONFIG_PIN_TLB
+>>>> -	lis	r10, (MD_RSV4I | MD_RESETVAL)@h
+>>>> -	ori	r10, r10, 0x1c00
+>>>> -	mr	r8, r10
+>>>> -#else
+>>>>    	lis	r10, MD_RESETVAL@h
+>>>> -#endif
+>>>>    #ifndef CONFIG_8xx_COPYBACK
+>>>>    	oris	r10, r10, MD_WTDEF@h
+>>>>    #endif
+>>>>    	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
+>>>>    
+>>>> +	tlbia			/* Invalidate all TLB entries */
+>>> Is this change to make sure we invalidate everything even if the
+>>> bootloader set RSV4I?
+>> Most probably. It is step 2 of the process defined in MPC866 and MPC885
+>> Reference Manuals:
+>>
+>> §8.10.3 Loading Locked TLB Entries:
+>> The process of loading a single reserved entry in the TLB is as follows:
+> To minimize code churn we should just fix actual problems, rather than
+> shuffle things around to conform to a suggested sequence.  After all,
+> we're not just trying to load a single entry.
+Ok, I'll try again.
+>
+>>>> +	ori	r8, r8, 0x1c00
+>>>> +	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
+>>>> +#ifdef CONFIG_PIN_TLB
+>>>> +	ori	r10, r10, 0x1c00
+>>>> +	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
+>>>> +#endif
+>>> Still 0x1c00?
+>> Yes, I kept the same entries in order to limit modifications:
+>> * 28 = First 8Mbytes page
+>> * 29 = IMMR
+>> * 30 = Second 8Mbytes page
+>> * 31 = Third 8Mbytes page
+> If you actually want to program them in increasing order then it looks
+> like you're still missing a write to CTR between the last two 8M entries
+> -- thus you'll overwrite the IMMR with the last 8M entry.  That was the
+> same problem that v1 fixed -- did that change get lost accidentally?
+Oops, no, in fact I diffed from the version which was including it 
+already. My mistake.
+>
+> The hardware wants to decrement; why fight it?
+I see your point.
+However it is not clear in the documentation if the decrement is done 
+really after the update, or at xTLB interrupt. So I propose to still set 
+the CTR ourself as described in the reference Manual and not assume that 
+the HW decrements it.
+>
+>>>>    	/* Now map the lower 8 Meg into the TLBs.  For this quick hack,
+>>>>    	 * we can load the instruction and data TLB registers with the
+>>>>    	 * same values.
+>>>> @@ -825,6 +822,12 @@
+>>>>    	mtspr	SPRN_MI_AP, r8
+>>>>    	mtspr	SPRN_MD_AP, r8
+>>>>    
+>>>> +	/* Always pin the first 8 MB ITLB to prevent ITLB
+>>>> +	 * misses while mucking around with SRR0/SRR1 in asm
+>>>> +	 */
+>>>> +	lis	r8, (MI_RSV4I | MI_RESETVAL)@h
+>>>> +	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
+>>> Entry 0 is not pinnable.
+>> Here we are not trying to pin entry 0.
+> Sorry, misread the patch.
+>
+>> We are at step 8, we are setting
+>> MI_RSV4I. At the same time, we set MD_CTR to 0 which is off the pinned
+>> range, to be sure that we won't overwrite one of the pinned entries.
+>>
+>> The main difference compared to the previous implementation is that
+>> before, we were setting the RSV4I bit before loading the TLB entries.
+>> Now, as defined in the Reference Manuals, we are doing it at the end.
+> Have you seen any evidence that it matters?
+Not really.
 
-We have a small number of MSIs available, limited by hardware &
-firmware, if we don't impose a quota then the first device that probes
-will get most/all of the MSIs and other devices miss out.
+Ok, propose a new patch in a few minutes.
 
-Anyway I don't see what problem you're trying to solve? I agree the
--ve/0/+ve return value pattern is ugly, but it's hardly the end of the
-world.
-
-cheers
+Christophe
