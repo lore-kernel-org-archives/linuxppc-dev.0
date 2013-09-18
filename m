@@ -1,33 +1,22 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 3E13A2C00DF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 19:46:07 +1000 (EST)
-Date: Wed, 18 Sep 2013 11:48:00 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
-Message-ID: <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
-References: <20130905154041.GD30984@dhcp-26-207.brq.redhat.com>
- <20130905154436.GC24148@htj.dyndns.org>
- <20130905185440.GA13175@dhcp-26-207.brq.redhat.com>
- <20130905200608.GA3846@htj.dyndns.org>
- <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
- <20130906160621.GF22763@mtj.dyndns.org>
- <20130906233205.GF12956@google.com>
- <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
- <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
- <20130917143022.GA7707@concordia>
+Return-Path: <B45939@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ED5242C00E0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 20:16:11 +1000 (EST)
+From: <hongbo.zhang@freescale.com>
+To: <rob.herring@calxeda.com>, <pawel.moll@arm.com>, <mark.rutland@arm.com>,
+ <swarren@wwwdotorg.org>, <ian.campbell@citrix.com>, <vinod.koul@intel.com>,
+ <djbw@fb.com>
+Subject: [PATCH v10 0/3] DMA: Freescale: Add support for 8-channel DMA engine
+Date: Wed, 18 Sep 2013 18:15:30 +0800
+Message-ID: <1379499333-4745-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130917143022.GA7707@concordia>
-Cc: linuxppc-dev@lists.ozlabs.org, Joerg Roedel <joro@8bytes.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- Jan Beulich <JBeulich@suse.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Tejun Heo <tj@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain
+Cc: Hongbo Zhang <hongbo.zhang@freescale.com>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,72 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 18, 2013 at 12:30:23AM +1000, Michael Ellerman wrote:
-> How about no?
-> 
-> We have a small number of MSIs available, limited by hardware &
-> firmware, if we don't impose a quota then the first device that probes
-> will get most/all of the MSIs and other devices miss out.
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-Out of curiosity - how pSeries has had done it without quotas before
-448e2ca ("powerpc/pseries: Implement a quota system for MSIs")?
+Hi DMA and DT maintainers, please have a look at these V10 patches.
 
-> Anyway I don't see what problem you're trying to solve? I agree the
-> -ve/0/+ve return value pattern is ugly, but it's hardly the end of the
-> world.
+Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
+adds support this DMA engine.
 
-Well, the interface recently has been re-classified from "ugly" to
-"unnecessarily complex and actively harmful" in Tejun's words ;)
+V9->V10 changes:
+- update binding description text, mainly about the reg property and also Elo3
+  DMA controller specification
 
-Indeed, I checked most of the drivers and it is incredible how people
-are creative in misusing the interface: from innocent pci_disable_msix()
-calls when if pci_enable_msix() failed to assuming MSI-Xs were enabled
-if pci_enable_msix() returned a positive value (apparently untested).
+V8->V9 changes:
+- add "Acked-by: Mark Rutland <mark.rutland@arm.com>" into patch [1/3]
+- update reg entry <0x100300 0x4 0x100600 0x4> to two seperate ones
+  <0x100300 0x4>, <0x100600 0x4> in patch [2/3]
+- and also use "QorIQ Elo3 DMA" to mention previous "QorIQ DMA" in [2/3]
 
-Roughly third of the drivers just do not care and bail out once
-pci_enable_msix() has not succeeded. Not sure how many of these are
-mandated by the hardware.
+V7->V8 changes:
+- change the word "mapping" to "specifier" for reg and interrupts description
 
-Another quite common pattern is a call to pci_enable_msix() to figure out
-the number of MSI-Xs available and a repeated call of pci_enable_msix()
-to enable those MSI-Xs, this time.
+V6->V7 changes:
+- only remove unnecessary "CHIP-dma" explanations in [1/3]
 
-The last pattern makes most of sense to me and could be updated with a more
-clear sequence - a call to (bit modified) pci_msix_table_size() followed
-by a call to pci_enable_msix(). I think this pattern can effectively
-supersede the currently recommended "loop" practice.
+V5->V6 changes:
+- minor updates of descriptions in binding document and Kconfig
+- remove [4/4], that should be another patch in future
 
-But as pSeries quota is still required I propose to introduce a new interface
-pci_get_msix_limit() that combines pci_msix_table_size() and (also new)
-arch_get_msix_limit(). The latter would check the quota thing in case of
-pSeries and none in case of all other architectures.
+V4->V5 changes:
+- update description in the dt binding document, to make it more resonable
+- add new patch [4/4] to eliminate a compiling warning which already exists
+  for a long time
 
-The recommended practice would be:
+V3->V4 changes:
+- introduce new patch [1/3] to revise the legacy dma binding document
+- and then add new paragraph to describe new dt node binding in [2/3]
+- rebase to latest kernel v3.11-rc1
 
-	/*
-	 * Retrieving 'nvec' by means other than pci_msix_table_size()
-	 */
+V2->V3 changes:
+- edit Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+- edit text string in Kconfig and the driver files, using "elo series" to
+  mention all the current "elo*"
 
-	rc = pci_get_msix_limit(pdev);
-	if (rc < 0)
-		return rc;
+V1->V2 changes:
+- removed the codes handling the register dgsr1, since it isn't used currently
+- renamed the DMA DT compatible to "fsl,elo3-dma"
+- renamed the new dts files to "elo3-dma-<n>.dtsi"
 
-	/*
-	 * nvec = min(rc, nvec);
-	 */
+Hongbo Zhang (3):
+  DMA: Freescale: revise device tree binding document
+  DMA: Freescale: Add new 8-channel DMA engine device tree nodes
+  DMA: Freescale: update driver to support 8-channel DMA engine
 
-	for (i = 0; i < nvec; i++)
-		msix_entry[i].entry = i;
-
-	rc = pci_enable_msix(pdev, msix_entry, nvec);
-	if (rc)
-		return rc;
-
-Thoughts?
-
-> cheers
+ .../devicetree/bindings/powerpc/fsl/dma.txt        |  137 ++++++++++++++------
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
+ arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   82 ++++++++++++
+ arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   82 ++++++++++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
+ drivers/dma/Kconfig                                |    9 +-
+ drivers/dma/fsldma.c                               |    9 +-
+ drivers/dma/fsldma.h                               |    2 +-
+ 8 files changed, 280 insertions(+), 49 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
 
 -- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+1.7.9.5
