@@ -1,39 +1,27 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 68EF72C00DA
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Sep 2013 15:25:27 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 18 Sep 2013 15:25:26 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 79D382CE8052
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Sep 2013 15:25:22 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8I5PBDM8126736
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Sep 2013 15:25:11 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r8I5PLKr032414
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Sep 2013 15:25:22 +1000
-Message-ID: <52393904.4030800@linux.vnet.ibm.com>
-Date: Wed, 18 Sep 2013 10:54:20 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <B36685@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 157632C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 15:43:48 +1000 (EST)
+Received: from mail138-co9 (localhost [127.0.0.1])	by
+ mail138-co9-R.bigfish.com (Postfix) with ESMTP id E87D52E012C	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 05:43:43 +0000 (UTC)
+Received: from CO9EHSMHS006.bigfish.com (unknown [10.236.132.232])	by
+ mail138-co9.bigfish.com (Postfix) with ESMTP id 15E9232004C	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 05:43:43 +0000 (UTC)
+From: Liu Shengzhou-B36685 <B36685@freescale.com>
+To: Zhao Qiang-B45475 <B45475@freescale.com>
+Subject: RE: [PATCH v3] powerpc/p1010rdb-pb:make a new dts for p1010rdb-pb
+Date: Wed, 18 Sep 2013 05:43:41 +0000
+Message-ID: <3F453DDFF675A64A89321A1F35281021ADAA42@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1379480097-11698-1-git-send-email-B45475@freescale.com>
+In-Reply-To: <1379480097-11698-1-git-send-email-B45475@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/8][v4] powerpc/perf: Rename Power8 macros to start with
- PME
-References: <1379119755-21025-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1379119755-21025-2-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1379119755-21025-2-git-send-email-sukadev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <michaele@au1.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,28 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/14/2013 06:19 AM, Sukadev Bhattiprolu wrote:
-> We use helpers like GENERIC_EVENT_ATTR() to list the generic events in
-> sysfs. To avoid name collisions, GENERIC_EVENT_ATTR() requires the perf
-> event macros to start with PME.
 
-We got all the raw event codes covered for P7 with the help of power7-events-list.h
-enumeration.
 
-/*
- * Power7 event codes.
- */
-#define EVENT(_name, _code) \
-	PME_##_name = _code,
+> -----Original Message-----
+> From: Zhao Qiang-B45475
+> Sent: Wednesday, September 18, 2013 12:55 PM
+> To: linuxppc-dev@lists.ozlabs.org
+> Cc: Zhao Qiang-B45475; Liu Shengzhou-B36685
+> Subject: [PATCH v3] powerpc/p1010rdb-pb:make a new dts for p1010rdb-pb
+>=20
+> P1010RDB-PA and P1010RDB-PB boards use different external PHY interrupt s=
+ignals.
+> So make a new dts for P1010RDB-PB.
+>=20
+> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> Signed-off-by: Zhao Qiang <B45475@freescale.com>
+> ---
+> Changes for v2:
+> 	-Remove phy interrupts for p1010rdb-pb
+> Changes for v3:
+> 	-Maintain the phy interrupts p1010rdb-pa and make a new device
+> 	tree for p1010rdb-pb
+>=20
+>  arch/powerpc/boot/dts/p1010rdb-pa.dtsi | 11 ++++++
+> arch/powerpc/boot/dts/p1010rdb-pb.dts  | 67 +++++++++++++++++++++++++++++=
++++++
+>  arch/powerpc/boot/dts/p1010rdb-pb.dtsi | 11 ++++++
+>  arch/powerpc/boot/dts/p1010rdb.dts     |  1 +
+>  arch/powerpc/boot/dts/p1010rdb.dtsi    |  3 --
+>  arch/powerpc/platforms/85xx/p1010rdb.c | 29 +++++++++++++++
+>  6 files changed, 119 insertions(+), 3 deletions(-)  create mode 100644
+> arch/powerpc/boot/dts/p1010rdb-pa.dtsi
+>  create mode 100644 arch/powerpc/boot/dts/p1010rdb-pb.dts
+>  create mode 100644 arch/powerpc/boot/dts/p1010rdb-pb.dtsi
+>=20
 
-enum {
-#include "power7-events-list.h"
-};
-#undef EVENT
+Don't touch p1010rdb.c, create two p1010rdb-pa.dts and p1010rdb-pb.dts, whi=
+ch include the common p1010rdb.dtsi.
+Combine original p1010rdb.dts and p1010rdb.dtsi into new p1010rdb.dtsi with=
+ removing compatible part.
+Place phy node and following part in p1010rdb-pa.dts and p1010rdb-pb.dts.
+/ {
+        model =3D "fsl,P1010RDB-PA";
+        compatible =3D "fsl,P1010RDB";
+  }
 
-Just wondering if its a good idea to name change these selected macros to be consumed
-by GENERIC_EVENT_ATTR() right here for this purpose or we need to get the comprehensive
-list of raw events for P8 first. Just an idea.
+/ {
+        model =3D "fsl,P1010RDB-PB";
+        compatible =3D "fsl,P1010RDB";
+  }
 
-Regards
-Anshuman
+-Shengzhou
