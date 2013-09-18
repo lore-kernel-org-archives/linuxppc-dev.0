@@ -1,20 +1,20 @@
 Return-Path: <thierry.reding@gmail.com>
-Received: from mail-bk0-f46.google.com (mail-bk0-f46.google.com
- [209.85.214.46])
+Received: from mail-bk0-f42.google.com (mail-bk0-f42.google.com
+ [209.85.214.42])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C8FB72C0190
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 23:26:58 +1000 (EST)
-Received: by mail-bk0-f46.google.com with SMTP id 6so2810504bkj.33
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 06:26:25 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 236CE2C0180
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 23:27:02 +1000 (EST)
+Received: by mail-bk0-f42.google.com with SMTP id my10so2869100bkb.29
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 06:26:28 -0700 (PDT)
 From: Thierry Reding <thierry.reding@gmail.com>
 To: Rob Herring <rob.herring@calxeda.com>,
  Grant Likely <grant.likely@linaro.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH v2 05/10] of/irq: Introduce __irq_of_parse_and_map()
-Date: Wed, 18 Sep 2013 15:24:47 +0200
-Message-Id: <1379510692-32435-6-git-send-email-treding@nvidia.com>
+Subject: [PATCH v2 06/10] of/irq: Return errors from of_irq_to_resource()
+Date: Wed, 18 Sep 2013 15:24:48 +0200
+Message-Id: <1379510692-32435-7-git-send-email-treding@nvidia.com>
 In-Reply-To: <1379510692-32435-1-git-send-email-treding@nvidia.com>
 References: <1379510692-32435-1-git-send-email-treding@nvidia.com>
 Cc: linux-mips@linux-mips.org, Russell King <linux@arm.linux.org.uk>,
@@ -30,141 +30,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a version of irq_of_parse_and_map() that propagates the precise
-error code instead of returning 0 for all errors. It will be used in
-subsequent patches to allow further propagation of error codes.
+Update of_irq_to_resource() to return 0 on success and a negative error
+code on failure. This allows the precise nature of the failure to be
+determined in the caller and errors to be propagated appropriately.
 
-To avoid code duplication, implement irq_of_parse_and_map() as a static
-inline wrapper around the new __irq_of_parse_and_map(). Note that this
-is somewhat complicated by the fact that SPARC implement its own version
-of irq_of_parse_and_map(). Make SPARC implement __irq_of_parse_and_map()
-so that the static inline wrapper can be used on all platforms.
+While at it, make the index parameter unsigned. Accessing negative
+indices is invalid, so we might as well enforce that by using the right
+data type.
 
 Signed-off-by: Thierry Reding <treding@nvidia.com>
 ---
 Changes in v2:
-- rename of_irq_get() to __irq_of_parse_and_map()
+- convert existing callers instead of using compatible wrapper
 
- arch/sparc/kernel/of_device_common.c | 12 ++++++++----
- drivers/of/irq.c                     | 18 ++++++++++++------
- include/linux/of_irq.h               | 19 ++++++++++++++-----
- 3 files changed, 34 insertions(+), 15 deletions(-)
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c  |  2 +-
+ drivers/net/ethernet/marvell/mv643xx_eth.c |  5 +++--
+ drivers/of/irq.c                           | 14 +++++++++++---
+ include/linux/of_irq.h                     |  2 +-
+ 4 files changed, 16 insertions(+), 7 deletions(-)
 
-diff --git a/arch/sparc/kernel/of_device_common.c b/arch/sparc/kernel/of_device_common.c
-index de199bf..a69559f 100644
---- a/arch/sparc/kernel/of_device_common.c
-+++ b/arch/sparc/kernel/of_device_common.c
-@@ -11,16 +11,20 @@
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+index eff5baa..b198e73 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+@@ -89,7 +89,7 @@ static int __init of_fsl_spi_probe(char *type, char *compatible, u32 sysclk,
+ 			goto err;
  
- #include "of_device_common.h"
+ 		ret = of_irq_to_resource(np, 0, &res[1]);
+-		if (ret == NO_IRQ)
++		if (ret)
+ 			goto err;
  
--unsigned int irq_of_parse_and_map(struct device_node *node, int index)
-+int __irq_of_parse_and_map(struct device_node *node, unsigned int index,
-+			   unsigned int *virqp)
- {
- 	struct platform_device *op = of_find_device_by_node(node);
+ 		pdev = platform_device_alloc("mpc83xx_spi", i);
+diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
+index 7fb5677..bd713bd 100644
+--- a/drivers/net/ethernet/marvell/mv643xx_eth.c
++++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
+@@ -2489,9 +2489,10 @@ static int mv643xx_eth_shared_of_add_port(struct platform_device *pdev,
+ 	ppd.shared = pdev;
  
- 	if (!op || index >= op->archdata.num_irqs)
--		return 0;
-+		return !op ? -ENODEV : -EINVAL;
+ 	memset(&res, 0, sizeof(res));
+-	if (!of_irq_to_resource(pnp, 0, &res)) {
++	ret = of_irq_to_resource(pnp, 0, &res);
++	if (ret) {
+ 		dev_err(&pdev->dev, "missing interrupt on %s\n", pnp->name);
+-		return -EINVAL;
++		return ret;
+ 	}
  
--	return op->archdata.irqs[index];
-+	if (virqp)
-+		*virqp = op->archdata.irqs[index];
-+
-+	return 0;
- }
--EXPORT_SYMBOL(irq_of_parse_and_map);
-+EXPORT_SYMBOL(__irq_of_parse_and_map);
- 
- int of_address_to_resource(struct device_node *node, int index,
- 			   struct resource *r)
+ 	if (of_property_read_u32(pnp, "reg", &ppd.port_number)) {
 diff --git a/drivers/of/irq.c b/drivers/of/irq.c
-index 5f44388..6ad46fd 100644
+index 6ad46fd..e4f38c0 100644
 --- a/drivers/of/irq.c
 +++ b/drivers/of/irq.c
-@@ -27,24 +27,30 @@
- #include <linux/slab.h>
- 
- /**
-- * irq_of_parse_and_map - Parse and map an interrupt into linux virq space
-+ * __irq_of_parse_and_map - Parse and map an interrupt into linux virq space
-  * @dev: Device node of the device whose interrupt is to be mapped
-  * @index: Index of the interrupt to map
-+ * @virqp: Linux interrupt number filled by this function
-  *
-  * This function is a wrapper that chains of_irq_map_one() and
-  * irq_create_of_mapping() to make things easier to callers
+@@ -341,10 +341,18 @@ EXPORT_SYMBOL_GPL(of_irq_map_one);
+  * @dev: pointer to device tree node
+  * @index: zero-based index of the irq
+  * @r: pointer to resource structure to return result into.
 + *
-+ * Returns 0 on success or a negative error code on failure.
++ * Returns zero on success or a negative error code on failure.
   */
--unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
-+int __irq_of_parse_and_map(struct device_node *dev, unsigned int index,
-+			   unsigned int *virqp)
+-int of_irq_to_resource(struct device_node *dev, int index, struct resource *r)
++int of_irq_to_resource(struct device_node *dev, unsigned int index,
++		       struct resource *r)
  {
- 	struct of_irq oirq;
+-	int irq = irq_of_parse_and_map(dev, index);
++	unsigned int irq;
 +	int ret;
- 
--	if (of_irq_map_one(dev, index, &oirq))
--		return 0;
-+	ret = of_irq_map_one(dev, index, &oirq);
++
++	ret = __irq_of_parse_and_map(dev, index, &irq);
 +	if (ret)
 +		return ret;
  
- 	return irq_create_of_mapping(oirq.controller, oirq.specifier,
--				     oirq.size);
-+				     oirq.size, virqp);
- }
--EXPORT_SYMBOL_GPL(irq_of_parse_and_map);
-+EXPORT_SYMBOL_GPL(__irq_of_parse_and_map);
+ 	/* Only dereference the resource if both the
+ 	 * resource and the irq are valid. */
+@@ -364,7 +372,7 @@ int of_irq_to_resource(struct device_node *dev, int index, struct resource *r)
+ 		r->name = name ? name : dev->full_name;
+ 	}
  
- /**
-  * of_irq_find_parent - Given a device node, find its interrupt parent node
+-	return irq;
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(of_irq_to_resource);
+ 
 diff --git a/include/linux/of_irq.h b/include/linux/of_irq.h
-index 138266d..11da949 100644
+index 11da949..6d62b73 100644
 --- a/include/linux/of_irq.h
 +++ b/include/linux/of_irq.h
-@@ -11,11 +11,12 @@ struct of_irq;
- #include <linux/of.h>
- 
- /*
-- * irq_of_parse_and_map() is used by all OF enabled platforms; but SPARC
-+ * __irq_of_parse_and_map() is used by all OF enabled platforms; but SPARC
-  * implements it differently.  However, the prototype is the same for all,
-  * so declare it here regardless of the CONFIG_OF_IRQ setting.
-  */
--extern unsigned int irq_of_parse_and_map(struct device_node *node, int index);
-+extern int __irq_of_parse_and_map(struct device_node *node, unsigned int index,
-+				  unsigned int *virqp);
- 
- #if defined(CONFIG_OF_IRQ)
- /**
-@@ -78,10 +79,11 @@ extern void of_irq_init(const struct of_device_id *matches);
- #endif /* CONFIG_OF_IRQ */
- 
- #else /* !CONFIG_OF */
--static inline unsigned int irq_of_parse_and_map(struct device_node *dev,
--						int index)
-+static inline int __irq_of_parse_and_map(struct device_node *dev,
-+					 unsigned int index,
-+					 unsigned int *virqp)
- {
--	return 0;
-+	return -ENOSYS;
- }
- 
- static inline void *of_irq_find_parent(struct device_node *child)
-@@ -90,4 +92,11 @@ static inline void *of_irq_find_parent(struct device_node *child)
- }
- #endif /* !CONFIG_OF */
- 
-+static inline unsigned int irq_of_parse_and_map(struct device_node *node,
-+						unsigned int index)
-+{
-+	unsigned int irq;
-+	return (__irq_of_parse_and_map(node, index, &irq) < 0) ? 0 : irq;
-+}
-+
- #endif /* __OF_IRQ_H */
+@@ -67,7 +67,7 @@ extern int of_irq_map_one(struct device_node *device, int index,
+ extern int irq_create_of_mapping(struct device_node *controller,
+ 				 const u32 *intspec, unsigned int intsize,
+ 				 unsigned int *virqp);
+-extern int of_irq_to_resource(struct device_node *dev, int index,
++extern int of_irq_to_resource(struct device_node *dev, unsigned int index,
+ 			      struct resource *r);
+ extern int of_irq_count(struct device_node *dev);
+ extern int of_irq_to_resource_table(struct device_node *dev,
 -- 
 1.8.4
