@@ -1,13 +1,17 @@
 Return-Path: <Sudeep.KarkadaNagesha@arm.com>
 Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 47FEA2C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 20:52:53 +1000 (EST)
+ [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 201352C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 20:52:55 +1000 (EST)
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 To: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/2] move of_find_next_cache_node to DT core
-Date: Wed, 18 Sep 2013 11:53:03 +0100
-Message-Id: <1379501585-12532-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Cc: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+Subject: [PATCH 1/2] powerpc: remove big endianness assumption in
+ of_find_next_cache_node
+Date: Wed, 18 Sep 2013 11:53:04 +0100
+Message-Id: <1379501585-12532-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+In-Reply-To: <1379501585-12532-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+References: <1379501585-12532-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Cc: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>,
+ Rob Herring <rob.herring@calxeda.com>, Grant Likely <grant.likely@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,24 +23,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Hi,
+Currently big endianness of the device tree data is assumed in
+of_find_next_cache_node for 'handle' when calling of_find_node_by_phandle.
 
-The cache bindings are generic and used by many other architectures
-apart from PPC. These patches fixes and move the existing definition
-of of_find_next_cache_node to DT common code.
+In preparation to move this function to common code, this patch fixes
+the endianness using 'be32_to_cpup'
 
-Regards,
-Sudeep
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+---
+ arch/powerpc/kernel/prom.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Sudeep KarkadaNagesha (2):
-  powerpc: remove big endianness assumption in of_find_next_cache_node
-  of: move definition of of_find_next_cache_node into common code.
-
- arch/powerpc/include/asm/prom.h |  3 ---
- arch/powerpc/kernel/prom.c      | 31 -------------------------------
- drivers/of/base.c               | 31 +++++++++++++++++++++++++++++++
- include/linux/of.h              |  2 ++
- 4 files changed, 33 insertions(+), 34 deletions(-)
-
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index b7634ce..09be275 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -778,7 +778,7 @@ struct device_node *of_find_next_cache_node(struct device_node *np)
+ 		handle = of_get_property(np, "next-level-cache", NULL);
+ 
+ 	if (handle)
+-		return of_find_node_by_phandle(*handle);
++		return of_find_node_by_phandle(be32_to_cpup(handle));
+ 
+ 	/* OF on pmac has nodes instead of properties named "l2-cache"
+ 	 * beneath CPU nodes.
 -- 
 1.8.1.2
