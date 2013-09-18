@@ -1,27 +1,33 @@
-Return-Path: <B36685@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 157632C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 15:43:48 +1000 (EST)
-Received: from mail138-co9 (localhost [127.0.0.1])	by
- mail138-co9-R.bigfish.com (Postfix) with ESMTP id E87D52E012C	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 05:43:43 +0000 (UTC)
-Received: from CO9EHSMHS006.bigfish.com (unknown [10.236.132.232])	by
- mail138-co9.bigfish.com (Postfix) with ESMTP id 15E9232004C	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 05:43:43 +0000 (UTC)
-From: Liu Shengzhou-B36685 <B36685@freescale.com>
-To: Zhao Qiang-B45475 <B45475@freescale.com>
-Subject: RE: [PATCH v3] powerpc/p1010rdb-pb:make a new dts for p1010rdb-pb
-Date: Wed, 18 Sep 2013 05:43:41 +0000
-Message-ID: <3F453DDFF675A64A89321A1F35281021ADAA42@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1379480097-11698-1-git-send-email-B45475@freescale.com>
-In-Reply-To: <1379480097-11698-1-git-send-email-B45475@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <agordeev@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 3E13A2C00DF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 19:46:07 +1000 (EST)
+Date: Wed, 18 Sep 2013 11:48:00 +0200
+From: Alexander Gordeev <agordeev@redhat.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
+Message-ID: <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
+References: <20130905154041.GD30984@dhcp-26-207.brq.redhat.com>
+ <20130905154436.GC24148@htj.dyndns.org>
+ <20130905185440.GA13175@dhcp-26-207.brq.redhat.com>
+ <20130905200608.GA3846@htj.dyndns.org>
+ <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
+ <20130906160621.GF22763@mtj.dyndns.org>
+ <20130906233205.GF12956@google.com>
+ <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
+ <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
+ <20130917143022.GA7707@concordia>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130917143022.GA7707@concordia>
+Cc: linuxppc-dev@lists.ozlabs.org, Joerg Roedel <joro@8bytes.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ Jan Beulich <JBeulich@suse.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Tejun Heo <tj@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,54 +37,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Sep 18, 2013 at 12:30:23AM +1000, Michael Ellerman wrote:
+> How about no?
+> 
+> We have a small number of MSIs available, limited by hardware &
+> firmware, if we don't impose a quota then the first device that probes
+> will get most/all of the MSIs and other devices miss out.
 
+Out of curiosity - how pSeries has had done it without quotas before
+448e2ca ("powerpc/pseries: Implement a quota system for MSIs")?
 
-> -----Original Message-----
-> From: Zhao Qiang-B45475
-> Sent: Wednesday, September 18, 2013 12:55 PM
-> To: linuxppc-dev@lists.ozlabs.org
-> Cc: Zhao Qiang-B45475; Liu Shengzhou-B36685
-> Subject: [PATCH v3] powerpc/p1010rdb-pb:make a new dts for p1010rdb-pb
->=20
-> P1010RDB-PA and P1010RDB-PB boards use different external PHY interrupt s=
-ignals.
-> So make a new dts for P1010RDB-PB.
->=20
-> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> ---
-> Changes for v2:
-> 	-Remove phy interrupts for p1010rdb-pb
-> Changes for v3:
-> 	-Maintain the phy interrupts p1010rdb-pa and make a new device
-> 	tree for p1010rdb-pb
->=20
->  arch/powerpc/boot/dts/p1010rdb-pa.dtsi | 11 ++++++
-> arch/powerpc/boot/dts/p1010rdb-pb.dts  | 67 +++++++++++++++++++++++++++++=
-+++++
->  arch/powerpc/boot/dts/p1010rdb-pb.dtsi | 11 ++++++
->  arch/powerpc/boot/dts/p1010rdb.dts     |  1 +
->  arch/powerpc/boot/dts/p1010rdb.dtsi    |  3 --
->  arch/powerpc/platforms/85xx/p1010rdb.c | 29 +++++++++++++++
->  6 files changed, 119 insertions(+), 3 deletions(-)  create mode 100644
-> arch/powerpc/boot/dts/p1010rdb-pa.dtsi
->  create mode 100644 arch/powerpc/boot/dts/p1010rdb-pb.dts
->  create mode 100644 arch/powerpc/boot/dts/p1010rdb-pb.dtsi
->=20
+> Anyway I don't see what problem you're trying to solve? I agree the
+> -ve/0/+ve return value pattern is ugly, but it's hardly the end of the
+> world.
 
-Don't touch p1010rdb.c, create two p1010rdb-pa.dts and p1010rdb-pb.dts, whi=
-ch include the common p1010rdb.dtsi.
-Combine original p1010rdb.dts and p1010rdb.dtsi into new p1010rdb.dtsi with=
- removing compatible part.
-Place phy node and following part in p1010rdb-pa.dts and p1010rdb-pb.dts.
-/ {
-        model =3D "fsl,P1010RDB-PA";
-        compatible =3D "fsl,P1010RDB";
-  }
+Well, the interface recently has been re-classified from "ugly" to
+"unnecessarily complex and actively harmful" in Tejun's words ;)
 
-/ {
-        model =3D "fsl,P1010RDB-PB";
-        compatible =3D "fsl,P1010RDB";
-  }
+Indeed, I checked most of the drivers and it is incredible how people
+are creative in misusing the interface: from innocent pci_disable_msix()
+calls when if pci_enable_msix() failed to assuming MSI-Xs were enabled
+if pci_enable_msix() returned a positive value (apparently untested).
 
--Shengzhou
+Roughly third of the drivers just do not care and bail out once
+pci_enable_msix() has not succeeded. Not sure how many of these are
+mandated by the hardware.
+
+Another quite common pattern is a call to pci_enable_msix() to figure out
+the number of MSI-Xs available and a repeated call of pci_enable_msix()
+to enable those MSI-Xs, this time.
+
+The last pattern makes most of sense to me and could be updated with a more
+clear sequence - a call to (bit modified) pci_msix_table_size() followed
+by a call to pci_enable_msix(). I think this pattern can effectively
+supersede the currently recommended "loop" practice.
+
+But as pSeries quota is still required I propose to introduce a new interface
+pci_get_msix_limit() that combines pci_msix_table_size() and (also new)
+arch_get_msix_limit(). The latter would check the quota thing in case of
+pSeries and none in case of all other architectures.
+
+The recommended practice would be:
+
+	/*
+	 * Retrieving 'nvec' by means other than pci_msix_table_size()
+	 */
+
+	rc = pci_get_msix_limit(pdev);
+	if (rc < 0)
+		return rc;
+
+	/*
+	 * nvec = min(rc, nvec);
+	 */
+
+	for (i = 0; i < nvec; i++)
+		msix_entry[i].entry = i;
+
+	rc = pci_enable_msix(pdev, msix_entry, nvec);
+	if (rc)
+		return rc;
+
+Thoughts?
+
+> cheers
+
+-- 
+Regards,
+Alexander Gordeev
+agordeev@redhat.com
