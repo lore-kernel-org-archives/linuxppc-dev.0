@@ -1,32 +1,29 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id C1A002C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 02:48:46 +1000 (EST)
-Date: Wed, 18 Sep 2013 18:50:45 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
-Message-ID: <20130918165045.GB2353@dhcp-26-207.brq.redhat.com>
-References: <20130905185440.GA13175@dhcp-26-207.brq.redhat.com>
- <20130905200608.GA3846@htj.dyndns.org>
- <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
- <20130906160621.GF22763@mtj.dyndns.org>
- <20130906233205.GF12956@google.com>
- <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
- <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
- <20130917143022.GA7707@concordia>
- <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
- <20130918142231.GA21650@mtj.dyndns.org>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8A7A62C0110
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 02:48:49 +1000 (EST)
+Message-ID: <1379522916.8901.0.camel@aoeu.buserror.net>
+Subject: Re: [PATCH] powerpc/mpc85xx:Add initial device tree support of T104x
+From: Scott Wood <scottwood@freescale.com>
+To: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+Date: Wed, 18 Sep 2013 11:48:36 -0500
+In-Reply-To: <071A08F2C6A57E4E94D980ECA553F874F8CA17@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1378882686-19454-1-git-send-email-prabhakar@freescale.com>
+ <1378941854.12204.439.camel@snotra.buserror.net>
+ <071A08F2C6A57E4E94D980ECA553F874F607C5@039-SN1MPN1-006.039d.mgd.msft.net>
+ <1379366325.2536.178.camel@snotra.buserror.net>
+ <071A08F2C6A57E4E94D980ECA553F874F8CA17@039-SN1MPN1-005.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130918142231.GA21650@mtj.dyndns.org>
-Cc: Joerg Roedel <joro@8bytes.org>, "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- Jan Beulich <JBeulich@suse.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ Jain Priyanka-B32167 <B32167@freescale.com>,
+ Sethi Varun-B16395 <B16395@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,62 +33,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 18, 2013 at 09:22:31AM -0500, Tejun Heo wrote:
-> > > We have a small number of MSIs available, limited by hardware &
-> > > firmware, if we don't impose a quota then the first device that probes
-> > > will get most/all of the MSIs and other devices miss out.
+On Mon, 2013-09-16 at 21:11 -0500, Kushwaha Prabhakar-B32579 wrote:
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Tuesday, September 17, 2013 2:49 AM
+> > To: Kushwaha Prabhakar-B32579
+> > Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
+> > galak@kernel.crashing.org; Aggrwal Poonam-B10812; Jain Priyanka-B32167;
+> > Sethi Varun-B16395
+> > Subject: Re: [PATCH] powerpc/mpc85xx:Add initial device tree support of
+> > T104x
 > > 
-> > Out of curiosity - how pSeries has had done it without quotas before
-> > 448e2ca ("powerpc/pseries: Implement a quota system for MSIs")?
+> > On Fri, 2013-09-13 at 02:30 -0500, Kushwaha Prabhakar-B32579 wrote:
+> > > > I also question the need to define separate t1040 compatible values
+> > > > for all of these, if the only difference is whether the onboard
+> > > > switch is enabled or not.
+> > > >
+> > >
+> > > so should I use T104x as compatible field. and in T1040 device tree add
+> > extra node for l2 switch.
 > 
-> Hmmm... do we need to treat this any differently?  If the platform
-> can't allocate full range of requested MSIs, just failing should be
-> enough regardless of why such allocation can't be met, no?
-
-That depends from what "full range of requested MSIs" is. If that is
-a maximum number of MSIs the controller advertised, then no. As MSI
-design essentially allows devices to operate in lower-than-maximum
-modes it is responsibility of a caller to decide how many vectors to
-request. So in case of pSeries I think it is completely legitimate to
-request lessers to overcome the platform limitation and let all devices
-work.
-
-> I really think what we should do is
+> I am using T1042 as base dts and T1040 includes T1040 + l2switch. 
 > 
-> * Determine the number of MSIs the controller wants.  Don't worry
->   about quotas or limits or anything.  Just determine the number
->   necessary to enable enhanced interrupt handling.
+> so if I use T1042 in compatible. It will give wrong field for someone working on T1040QDS.
 
-Actually, I do not see much contradiction with what I proposed. The
-key words here "determine the number of MSIs the controller wants".
+What is wrong about it?  It is compatible, right?
 
-In general case it is not what pci_msix_table_size() returns (or at
-least we should not limit ourselves to it) - there could be non-
-standard means to report number of MSIs: hardcoded, version-dependant,
-device-specific registers etc.
-
-Next, if we opt to determine the number of MSIs by non-MSI standard
-means then there is no reason not to call pci_get_msix_limit() (or
-whatever) at this step.
-
-The question how I see it - do we want pci_get_msix_limit() interface
-as part of the MSI framework or do we want it pSeries-specific?
-
-> * Try allocating that number of MSIs.  If it fails, then just revert
->   to single interrupt mode.  It's not the end of the world and mostly
->   guaranteed to work.  Let's please not even try to do partial
->   multiple interrupts.  I really don't think it's worth the risk or
->   complexity.
-
-Being Captain Obvious here, but it is up to the device driver to handle
-a failure. There could be no such option as single MSI mode after all :)
-
-> Thanks.
-> 
-> -- 
-> tejun
-
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+-Scott
