@@ -1,25 +1,39 @@
-Return-Path: <B45939@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D685E2C011C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2013 20:16:24 +1000 (EST)
-From: <hongbo.zhang@freescale.com>
-To: <rob.herring@calxeda.com>, <pawel.moll@arm.com>, <mark.rutland@arm.com>,
- <swarren@wwwdotorg.org>, <ian.campbell@citrix.com>, <vinod.koul@intel.com>,
- <djbw@fb.com>
-Subject: [PATCH v10 3/3] DMA: Freescale: update driver to support 8-channel
- DMA engine
-Date: Wed, 18 Sep 2013 18:15:33 +0800
-Message-ID: <1379499333-4745-4-git-send-email-hongbo.zhang@freescale.com>
-In-Reply-To: <1379499333-4745-1-git-send-email-hongbo.zhang@freescale.com>
-References: <1379499333-4745-1-git-send-email-hongbo.zhang@freescale.com>
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 919042C00E0
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Sep 2013 20:48:26 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 18 Sep 2013 16:18:18 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 53DA6E0057
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Sep 2013 16:19:14 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8IAoLik41615502
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Sep 2013 16:20:22 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8IAmEnq018659
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Sep 2013 16:18:15 +0530
+Message-ID: <523984BB.70208@linux.vnet.ibm.com>
+Date: Wed, 18 Sep 2013 16:17:23 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Hongbo Zhang <hongbo.zhang@freescale.com>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 8/8][v4] powerpc/perf: Export Power7 memory hierarchy
+ info to user space.
+References: <1379119755-21025-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1379119755-21025-9-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1379119755-21025-9-git-send-email-sukadev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ Michael Ellerman <michaele@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,93 +43,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+On 09/14/2013 06:19 AM, Sukadev Bhattiprolu wrote:
+> On Power7, the DCACHE_SRC field in MMCRA register identifies the memory
+> hierarchy level (eg: L2, L3 etc) from which a data-cache miss for a
+> marked instruction was satisfied.
+> 
+> Use the 'perf_mem_data_src' object to export this hierarchy level to user
+> space. Some memory hierarchy levels in Power7 don't map into the arch-neutral
+> levels. However, since newer generation of the processor (i.e. Power8) uses
+> fewer levels than in Power7, we don't really need to define new hierarchy
+> levels just for Power7.
+> 
+> We instead, map as many levels as possible and approximate the rest. See
+> comments near dcache-src_map[] in the patch.
+> 
+> Usage:
+> 
+> 	perf record -d -e 'cpu/PM_MRK_GRP_CMPL/' <application>
+> 	perf report -n --mem-mode --sort=mem,sym,dso,symbol_daddr,dso_daddr"
+> 
+> 		For samples involving load/store instructions, the memory
+> 		hierarchy level is shown as "L1 hit", "Remote RAM hit" etc.
+> 	# or
+> 
+> 	perf record --data <application>
+> 	perf report -D
+> 
+> 		Sample records contain a 'data_src' field which encodes the
+> 		memory hierarchy level: Eg: data_src 0x442 indicates
+> 		MEM_OP_LOAD, MEM_LVL_HIT, MEM_LVL_L2 (i.e load hit L2).
 
-This patch adds support to 8-channel DMA engine, thus the driver works for both
-the new 8-channel and the legacy 4-channel DMA engines.
+Successfully built and boot tested this entire patchset both on a P7 and P8 system.
+Running some sample tests with ebizzy micro benchmark. Till now got only 0x142 and
+0x0 values for data_src object for the sample records. Will experiment around bit
+more on P7 and P8 systems and post the results.
 
-Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
----
- drivers/dma/Kconfig  |    9 +++++----
- drivers/dma/fsldma.c |    9 ++++++---
- drivers/dma/fsldma.h |    2 +-
- 3 files changed, 12 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 6825957..3979c65 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -89,14 +89,15 @@ config AT_HDMAC
- 	  Support the Atmel AHB DMA controller.
- 
- config FSL_DMA
--	tristate "Freescale Elo and Elo Plus DMA support"
-+	tristate "Freescale Elo series DMA support"
- 	depends on FSL_SOC
- 	select DMA_ENGINE
- 	select ASYNC_TX_ENABLE_CHANNEL_SWITCH
- 	---help---
--	  Enable support for the Freescale Elo and Elo Plus DMA controllers.
--	  The Elo is the DMA controller on some 82xx and 83xx parts, and the
--	  Elo Plus is the DMA controller on 85xx and 86xx parts.
-+	  Enable support for the Freescale Elo series DMA controllers.
-+	  The Elo is the DMA controller on some mpc82xx and mpc83xx parts, the
-+	  EloPlus is on mpc85xx and mpc86xx and Pxxx parts, and the Elo3 is on
-+	  some Txxx and Bxxx parts.
- 
- config MPC512X_DMA
- 	tristate "Freescale MPC512x built-in DMA engine support"
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 49e8fbd..16a9a48 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -1261,7 +1261,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
- 	WARN_ON(fdev->feature != chan->feature);
- 
- 	chan->dev = fdev->dev;
--	chan->id = ((res.start - 0x100) & 0xfff) >> 7;
-+	chan->id = (res.start & 0xfff) < 0x300 ?
-+		   ((res.start - 0x100) & 0xfff) >> 7 :
-+		   ((res.start - 0x200) & 0xfff) >> 7;
- 	if (chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
- 		dev_err(fdev->dev, "too many channels for device\n");
- 		err = -EINVAL;
-@@ -1434,6 +1436,7 @@ static int fsldma_of_remove(struct platform_device *op)
- }
- 
- static const struct of_device_id fsldma_of_ids[] = {
-+	{ .compatible = "fsl,elo3-dma", },
- 	{ .compatible = "fsl,eloplus-dma", },
- 	{ .compatible = "fsl,elo-dma", },
- 	{}
-@@ -1455,7 +1458,7 @@ static struct platform_driver fsldma_of_driver = {
- 
- static __init int fsldma_init(void)
- {
--	pr_info("Freescale Elo / Elo Plus DMA driver\n");
-+	pr_info("Freescale Elo series DMA driver\n");
- 	return platform_driver_register(&fsldma_of_driver);
- }
- 
-@@ -1467,5 +1470,5 @@ static void __exit fsldma_exit(void)
- subsys_initcall(fsldma_init);
- module_exit(fsldma_exit);
- 
--MODULE_DESCRIPTION("Freescale Elo / Elo Plus DMA driver");
-+MODULE_DESCRIPTION("Freescale Elo series DMA driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-index f5c3879..1ffc244 100644
---- a/drivers/dma/fsldma.h
-+++ b/drivers/dma/fsldma.h
-@@ -112,7 +112,7 @@ struct fsldma_chan_regs {
- };
- 
- struct fsldma_chan;
--#define FSL_DMA_MAX_CHANS_PER_DEVICE 4
-+#define FSL_DMA_MAX_CHANS_PER_DEVICE 8
- 
- struct fsldma_device {
- 	void __iomem *regs;	/* DGSR register base */
--- 
-1.7.9.5
+Regards
+Anshuman 
