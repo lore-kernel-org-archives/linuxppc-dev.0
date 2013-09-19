@@ -3,8 +3,8 @@ Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
  [78.32.30.218])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 86C422C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 09:08:55 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 84D162C00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 09:10:37 +1000 (EST)
 In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 From: Russell King <rmk+kernel@arm.linux.org.uk>
@@ -21,19 +21,12 @@ To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
  linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
  uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 06/51] DMA-API: net: intel/ixgb: fix 32-bit DMA mask handling
-Message-Id: <E1VMloR-0007fk-Ei@rmk-PC.arm.linux.org.uk>
+Subject: [PATCH 02/51] DMA-API: net: brocade/bna/bnad.c: fix 32-bit DMA mask
+ handling
+Message-Id: <E1VMlkY-0007fG-LM@rmk-PC.arm.linux.org.uk>
 Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 22:30:59 +0100
-Cc: Alex Duyck <alexander.h.duyck@intel.com>,
- Don Skidmore <donald.c.skidmore@intel.com>,
- Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
- Bruce Allan <bruce.w.allan@intel.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Greg Rose <gregory.v.rose@intel.com>, John Ronciak <john.ronciak@intel.com>,
- Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
- Carolyn Wyborny <carolyn.wyborny@intel.com>,
- Tushar Dave <tushar.n.dave@intel.com>
+Date: Thu, 19 Sep 2013 22:26:58 +0100
+Cc: Rasesh Mody <rmody@brocade.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,61 +37,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 The fallback to 32-bit DMA mask is rather odd:
-	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
-	if (!err) {
-		err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64));
-		if (!err)
-			pci_using_dac = 1;
+	if (!dma_set_mask(&pdev->dev, DMA_BIT_MASK(64)) &&
+	    !dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64))) {
+		*using_dac = true;
 	} else {
 		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
 		if (err) {
 			err = dma_set_coherent_mask(&pdev->dev,
 						    DMA_BIT_MASK(32));
-			if (err) {
-				pr_err("No usable DMA configuration, aborting\n");
-				goto err_dma_mask;
-			}
+			if (err)
+				goto release_regions;
 		}
-	}
-This means we only set the coherent DMA mask in the fallback path if
-the DMA mask set failed, which is silly.  This fixes it to set the
-coherent DMA mask only if dma_set_mask() succeeded, and to error out
-if either fails.
+
+This means we only try and set the coherent DMA mask if we failed to
+set a 32-bit DMA mask, and only if both fail do we fail the driver.
+Adjust this so that if either setting fails, we fail the driver - and
+thereby end up properly setting both the DMA mask and the coherent
+DMA mask in the fallback case.
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/net/ethernet/intel/ixgb/ixgb_main.c |   16 +++++-----------
- 1 files changed, 5 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/brocade/bna/bnad.c |   13 ++++---------
+ 1 files changed, 4 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-index 9f6b236..57e390c 100644
---- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-+++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-@@ -408,20 +408,14 @@ ixgb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		return err;
- 
- 	pci_using_dac = 0;
--	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
-+	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
- 	if (!err) {
--		err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64));
--		if (!err)
--			pci_using_dac = 1;
-+		pci_using_dac = 1;
+diff --git a/drivers/net/ethernet/brocade/bna/bnad.c b/drivers/net/ethernet/brocade/bna/bnad.c
+index b78e69e..45ce6e2 100644
+--- a/drivers/net/ethernet/brocade/bna/bnad.c
++++ b/drivers/net/ethernet/brocade/bna/bnad.c
+@@ -3300,17 +3300,12 @@ bnad_pci_init(struct bnad *bnad,
+ 	err = pci_request_regions(pdev, BNAD_NAME);
+ 	if (err)
+ 		goto disable_device;
+-	if (!dma_set_mask(&pdev->dev, DMA_BIT_MASK(64)) &&
+-	    !dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64))) {
++	if (!dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64))) {
+ 		*using_dac = true;
  	} else {
 -		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
-+		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 		if (err) {
+-		if (err) {
 -			err = dma_set_coherent_mask(&pdev->dev,
 -						    DMA_BIT_MASK(32));
--			if (err) {
--				pr_err("No usable DMA configuration, aborting\n");
--				goto err_dma_mask;
--			}
-+			pr_err("No usable DMA configuration, aborting\n");
-+			goto err_dma_mask;
- 		}
+-			if (err)
+-				goto release_regions;
+-		}
++		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
++		if (err)
++			goto release_regions;
+ 		*using_dac = false;
  	}
- 
+ 	pci_set_master(pdev);
 -- 
 1.7.4.4
