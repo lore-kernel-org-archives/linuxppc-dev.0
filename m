@@ -3,8 +3,8 @@ Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
  [78.32.30.218])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 560672C00F6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 09:06:32 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 12DEE2C0110
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 09:06:38 +1000 (EST)
 In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 From: Russell King <rmk+kernel@arm.linux.org.uk>
@@ -21,10 +21,10 @@ To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
  linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
  uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 04/51] DMA-API: net: intel/igb: fix 32-bit DMA mask handling
-Message-Id: <E1VMlmV-0007fU-75@rmk-PC.arm.linux.org.uk>
+Subject: [PATCH 03/51] DMA-API: net: intel/e1000e: fix 32-bit DMA mask handling
+Message-Id: <E1VMllX-0007fP-33@rmk-PC.arm.linux.org.uk>
 Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 22:28:59 +0100
+Date: Thu, 19 Sep 2013 22:27:59 +0100
 Cc: Alex Duyck <alexander.h.duyck@intel.com>,
  Don Skidmore <donald.c.skidmore@intel.com>,
  Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
@@ -68,14 +68,14 @@ if either fails.
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c |   18 ++++++------------
+ drivers/net/ethernet/intel/e1000e/netdev.c |   18 ++++++------------
  1 files changed, 6 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 8cf44f2..7579383 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2034,21 +2034,15 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index e87e9b0..519e293 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6553,21 +6553,15 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  		return err;
  
  	pci_using_dac = 0;
