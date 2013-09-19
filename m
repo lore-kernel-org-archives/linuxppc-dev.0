@@ -3,8 +3,8 @@ Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
  [IPv6:2002:4e20:1eda::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 105B02C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 22:58:29 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 1B1CE2C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 23:02:24 +1000 (EST)
 In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 From: Russell King <rmk+kernel@arm.linux.org.uk>
@@ -21,14 +21,12 @@ To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
  linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
  uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 37/51] DMA-API: usb: use new dma_coerce_mask_and_coherent()
-Message-Id: <E1VMmIV-0007jw-Gq@rmk-PC.arm.linux.org.uk>
+Subject: [PATCH 38/51] DMA-API: staging: use dma_set_coherent_mask()
+Message-Id: <E1VMmJT-0007kZ-Kw@rmk-PC.arm.linux.org.uk>
 Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 23:02:03 +0100
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>,
- Tony Prisk <linux@prisktech.co.nz>, Alan Stern <stern@rowland.harvard.edu>
+Date: Thu, 19 Sep 2013 23:03:03 +0100
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Paul Zimmerman <paulz@synopsys.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,280 +36,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The correct way for a driver to specify the coherent DMA mask is
+not to directly access the field in the struct device, but to use
+dma_set_coherent_mask().  Only arch and bus code should access this
+member directly.
+
+Convert all direct write accesses to using the correct API.
+
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/usb/chipidea/ci_hdrc_imx.c |    4 +---
- drivers/usb/dwc3/dwc3-exynos.c     |    4 +---
- drivers/usb/host/ehci-atmel.c      |    4 +---
- drivers/usb/host/ehci-omap.c       |    4 +---
- drivers/usb/host/ehci-orion.c      |    4 +---
- drivers/usb/host/ehci-platform.c   |    5 ++---
- drivers/usb/host/ehci-s5p.c        |    4 +---
- drivers/usb/host/ehci-spear.c      |    4 +---
- drivers/usb/host/ehci-tegra.c      |    4 +---
- drivers/usb/host/ohci-at91.c       |    4 +---
- drivers/usb/host/ohci-exynos.c     |    4 +---
- drivers/usb/host/ohci-nxp.c        |    3 +--
- drivers/usb/host/ohci-octeon.c     |    3 +--
- drivers/usb/host/ohci-omap3.c      |    4 +---
- drivers/usb/host/ohci-pxa27x.c     |    4 +---
- drivers/usb/host/ohci-spear.c      |    4 +---
- drivers/usb/host/uhci-platform.c   |    4 +---
- 17 files changed, 18 insertions(+), 49 deletions(-)
+ drivers/staging/dwc2/platform.c        |    5 +++--
+ drivers/staging/imx-drm/imx-drm-core.c |    8 ++++++--
+ drivers/staging/imx-drm/ipuv3-crtc.c   |    4 +++-
+ 3 files changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/usb/chipidea/ci_hdrc_imx.c b/drivers/usb/chipidea/ci_hdrc_imx.c
-index bf33bd3..af731db 100644
---- a/drivers/usb/chipidea/ci_hdrc_imx.c
-+++ b/drivers/usb/chipidea/ci_hdrc_imx.c
-@@ -121,9 +121,7 @@ static int ci_hdrc_imx_probe(struct platform_device *pdev)
- 
- 	pdata.phy = data->phy;
- 
--	if (!pdev->dev.dma_mask)
--		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	ret = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (ret)
- 		goto err_clk;
- 
-diff --git a/drivers/usb/dwc3/dwc3-exynos.c b/drivers/usb/dwc3/dwc3-exynos.c
-index c10b324..8b20c70 100644
---- a/drivers/usb/dwc3/dwc3-exynos.c
-+++ b/drivers/usb/dwc3/dwc3-exynos.c
-@@ -119,9 +119,7 @@ static int dwc3_exynos_probe(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we move to full device tree support this will vanish off.
+diff --git a/drivers/staging/dwc2/platform.c b/drivers/staging/dwc2/platform.c
+index 44cce2f..1d68c49 100644
+--- a/drivers/staging/dwc2/platform.c
++++ b/drivers/staging/dwc2/platform.c
+@@ -100,8 +100,9 @@ static int dwc2_driver_probe(struct platform_device *dev)
  	 */
--	if (!dev->dma_mask)
--		dev->dma_mask = &dev->coherent_dma_mask;
--	ret = dma_set_coherent_mask(dev, DMA_BIT_MASK(32));
-+	ret = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
- 	if (ret)
- 		goto err1;
+ 	if (!dev->dev.dma_mask)
+ 		dev->dev.dma_mask = &dev->dev.coherent_dma_mask;
+-	if (!dev->dev.coherent_dma_mask)
+-		dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
++	retval = dma_set_coherent_mask(&dev->dev, DMA_BIT_MASK(32));
++	if (retval)
++		return retval;
  
-diff --git a/drivers/usb/host/ehci-atmel.c b/drivers/usb/host/ehci-atmel.c
-index 5831a88..8e7323e 100644
---- a/drivers/usb/host/ehci-atmel.c
-+++ b/drivers/usb/host/ehci-atmel.c
-@@ -90,9 +90,7 @@ static int ehci_atmel_drv_probe(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we have dma capability bindings this can go away.
- 	 */
--	if (!pdev->dev.dma_mask)
--		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	retval = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	retval = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (retval)
- 		goto fail_create_hcd;
+ 	irq = platform_get_irq(dev, 0);
+ 	if (irq < 0) {
+diff --git a/drivers/staging/imx-drm/imx-drm-core.c b/drivers/staging/imx-drm/imx-drm-core.c
+index 47c5888..847f430 100644
+--- a/drivers/staging/imx-drm/imx-drm-core.c
++++ b/drivers/staging/imx-drm/imx-drm-core.c
+@@ -805,6 +805,12 @@ static struct drm_driver imx_drm_driver = {
  
-diff --git a/drivers/usb/host/ehci-omap.c b/drivers/usb/host/ehci-omap.c
-index d0759c5..6fa82d6 100644
---- a/drivers/usb/host/ehci-omap.c
-+++ b/drivers/usb/host/ehci-omap.c
-@@ -144,9 +144,7 @@ static int ehci_hcd_omap_probe(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we have dma capability bindings this can go away.
- 	 */
--	if (!dev->dma_mask)
--		dev->dma_mask = &dev->coherent_dma_mask;
--	ret = dma_set_coherent_mask(dev, DMA_BIT_MASK(32));
-+	ret = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
- 	if (ret)
- 		return ret;
- 
-diff --git a/drivers/usb/host/ehci-orion.c b/drivers/usb/host/ehci-orion.c
-index 5870206..2ba7673 100644
---- a/drivers/usb/host/ehci-orion.c
-+++ b/drivers/usb/host/ehci-orion.c
-@@ -180,9 +180,7 @@ static int ehci_orion_drv_probe(struct platform_device *pdev)
- 	 * set. Since shared usb code relies on it, set it here for
- 	 * now. Once we have dma capability bindings this can go away.
- 	 */
--	if (!pdev->dev.dma_mask)
--		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	err = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (err)
- 		goto err1;
- 
-diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-platform.c
-index 5b0cd2d..7f30b71 100644
---- a/drivers/usb/host/ehci-platform.c
-+++ b/drivers/usb/host/ehci-platform.c
-@@ -89,9 +89,8 @@ static int ehci_platform_probe(struct platform_device *dev)
- 	 */
- 	if (!dev_get_platdata(&dev->dev))
- 		dev->dev.platform_data = &ehci_platform_defaults;
--	if (!dev->dev.dma_mask)
--		dev->dev.dma_mask = &dev->dev.coherent_dma_mask;
--	err = dma_set_coherent_mask(&dev->dev, DMA_BIT_MASK(32));
+ static int imx_drm_platform_probe(struct platform_device *pdev)
+ {
++	int ret;
 +
-+	err = dma_coerce_mask_and_coherent(&dev->dev, DMA_BIT_MASK(32));
- 	if (err)
- 		return err;
++	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
++	if (ret)
++		return ret;
++
+ 	imx_drm_device->dev = &pdev->dev;
  
-diff --git a/drivers/usb/host/ehci-s5p.c b/drivers/usb/host/ehci-s5p.c
-index 10d6a2e..d919ed4 100644
---- a/drivers/usb/host/ehci-s5p.c
-+++ b/drivers/usb/host/ehci-s5p.c
-@@ -89,9 +89,7 @@ static int s5p_ehci_probe(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we move to full device tree support this will vanish off.
- 	 */
--	if (!pdev->dev.dma_mask)
--		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	err = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (err)
- 		return err;
- 
-diff --git a/drivers/usb/host/ehci-spear.c b/drivers/usb/host/ehci-spear.c
-index 6839e15..ee6f9ff 100644
---- a/drivers/usb/host/ehci-spear.c
-+++ b/drivers/usb/host/ehci-spear.c
-@@ -81,9 +81,7 @@ static int spear_ehci_hcd_drv_probe(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we have dma capability bindings this can go away.
- 	 */
--	if (!pdev->dev.dma_mask)
--		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	retval = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	retval = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (retval)
- 		goto fail;
- 
-diff --git a/drivers/usb/host/ehci-tegra.c b/drivers/usb/host/ehci-tegra.c
-index 3d9ee43..e74aaf3 100644
---- a/drivers/usb/host/ehci-tegra.c
-+++ b/drivers/usb/host/ehci-tegra.c
-@@ -362,9 +362,7 @@ static int tegra_ehci_probe(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we have dma capability bindings this can go away.
- 	 */
--	if (!pdev->dev.dma_mask)
--		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	err = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (err)
- 		return err;
- 
-diff --git a/drivers/usb/host/ohci-at91.c b/drivers/usb/host/ohci-at91.c
-index eb7a2cb..36423db 100644
---- a/drivers/usb/host/ohci-at91.c
-+++ b/drivers/usb/host/ohci-at91.c
-@@ -536,9 +536,7 @@ static int ohci_at91_of_init(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we have dma capability bindings this can go away.
- 	 */
--	if (!pdev->dev.dma_mask)
--		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	ret = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (ret)
- 		return ret;
- 
-diff --git a/drivers/usb/host/ohci-exynos.c b/drivers/usb/host/ohci-exynos.c
-index ed685cb..866f246 100644
---- a/drivers/usb/host/ohci-exynos.c
-+++ b/drivers/usb/host/ohci-exynos.c
-@@ -114,9 +114,7 @@ static int exynos_ohci_probe(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we move to full device tree support this will vanish off.
- 	 */
--	if (!pdev->dev.dma_mask)
--		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	err = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (err)
- 		return err;
- 
-diff --git a/drivers/usb/host/ohci-nxp.c b/drivers/usb/host/ohci-nxp.c
-index 5f82db4..df3eb3e 100644
---- a/drivers/usb/host/ohci-nxp.c
-+++ b/drivers/usb/host/ohci-nxp.c
-@@ -226,8 +226,7 @@ static int usb_hcd_nxp_probe(struct platform_device *pdev)
- 		return -EPROBE_DEFER;
+ 	return drm_platform_init(&imx_drm_driver, pdev);
+@@ -847,8 +853,6 @@ static int __init imx_drm_init(void)
+ 		goto err_pdev;
  	}
  
--	pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	ret = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+-	imx_drm_pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32),
+-
+ 	ret = platform_driver_register(&imx_drm_pdrv);
  	if (ret)
- 		goto fail_disable;
+ 		goto err_pdrv;
+diff --git a/drivers/staging/imx-drm/ipuv3-crtc.c b/drivers/staging/imx-drm/ipuv3-crtc.c
+index 6fd37a7..9e73e8d 100644
+--- a/drivers/staging/imx-drm/ipuv3-crtc.c
++++ b/drivers/staging/imx-drm/ipuv3-crtc.c
+@@ -523,7 +523,9 @@ static int ipu_drm_probe(struct platform_device *pdev)
+ 	if (!pdata)
+ 		return -EINVAL;
  
-diff --git a/drivers/usb/host/ohci-octeon.c b/drivers/usb/host/ohci-octeon.c
-index ac1dea1..6c16dce 100644
---- a/drivers/usb/host/ohci-octeon.c
-+++ b/drivers/usb/host/ohci-octeon.c
-@@ -127,8 +127,7 @@ static int ohci_octeon_drv_probe(struct platform_device *pdev)
- 	}
+-	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
++	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
++	if (ret)
++		return ret;
  
- 	/* Ohci is a 32-bit device. */
--	pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	ret = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (ret)
- 		return ret;
- 
-diff --git a/drivers/usb/host/ohci-omap3.c b/drivers/usb/host/ohci-omap3.c
-index 664f5dc..db9bd6b 100644
---- a/drivers/usb/host/ohci-omap3.c
-+++ b/drivers/usb/host/ohci-omap3.c
-@@ -166,9 +166,7 @@ static int ohci_hcd_omap3_probe(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we have dma capability bindings this can go away.
- 	 */
--	if (!dev->dma_mask)
--		dev->dma_mask = &dev->coherent_dma_mask;
--	ret = dma_set_coherent_mask(dev, DMA_BIT_MASK(32));
-+	ret = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
- 	if (ret)
- 		goto err_io;
- 
-diff --git a/drivers/usb/host/ohci-pxa27x.c b/drivers/usb/host/ohci-pxa27x.c
-index 74696ae..b64949b 100644
---- a/drivers/usb/host/ohci-pxa27x.c
-+++ b/drivers/usb/host/ohci-pxa27x.c
-@@ -296,9 +296,7 @@ static int ohci_pxa_of_init(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we have dma capability bindings this can go away.
- 	 */
--	if (!pdev->dev.dma_mask)
--		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	ret = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (ret)
- 		return ret;
- 
-diff --git a/drivers/usb/host/ohci-spear.c b/drivers/usb/host/ohci-spear.c
-index 195a0a1..075bb5e 100644
---- a/drivers/usb/host/ohci-spear.c
-+++ b/drivers/usb/host/ohci-spear.c
-@@ -111,9 +111,7 @@ static int spear_ohci_hcd_drv_probe(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we have dma capability bindings this can go away.
- 	 */
--	if (!pdev->dev.dma_mask)
--		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	retval = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	retval = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (retval)
- 		goto fail;
- 
-diff --git a/drivers/usb/host/uhci-platform.c b/drivers/usb/host/uhci-platform.c
-index 048912d..f8548b7 100644
---- a/drivers/usb/host/uhci-platform.c
-+++ b/drivers/usb/host/uhci-platform.c
-@@ -75,9 +75,7 @@ static int uhci_hcd_platform_probe(struct platform_device *pdev)
- 	 * Since shared usb code relies on it, set it here for now.
- 	 * Once we have dma capability bindings this can go away.
- 	 */
--	if (!pdev->dev.dma_mask)
--		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
--	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	ret = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 	if (ret)
- 		return ret;
- 
+ 	ipu_crtc = devm_kzalloc(&pdev->dev, sizeof(*ipu_crtc), GFP_KERNEL);
+ 	if (!ipu_crtc)
 -- 
 1.7.4.4
