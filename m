@@ -3,8 +3,8 @@ Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
  [IPv6:2002:4e20:1eda::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 94FCB2C0139
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 21:12:42 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 45A032C00FA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 21:18:51 +1000 (EST)
 In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 From: Russell King <rmk+kernel@arm.linux.org.uk>
@@ -21,14 +21,13 @@ To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
  linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
  uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 42/51] DMA-API: usb: musb: use
- platform_device_register_full() to avoid directly
- messing with dma masks
-Message-Id: <E1VMnQk-0007sX-Ty@rmk-PC.arm.linux.org.uk>
+Subject: [PATCH 41/51] DMA-API: crypto: remove last references to 'static
+ struct device *dev'
+Message-Id: <E1VMnPm-0007sP-Px@rmk-PC.arm.linux.org.uk>
 Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Fri, 20 Sep 2013 00:14:38 +0100
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Felipe Balbi <balbi@ti.com>
+Date: Fri, 20 Sep 2013 00:13:38 +0100
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,401 +37,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use platform_device_register_full() for those drivers which can, to
-avoid messing directly with DMA masks.  This can only be done when
-the driver does not need to access the allocated musb platform device
-from within its callbacks, which may be called during the musb
-device probing.
-
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/usb/musb/am35x.c    |   50 ++++++++++++++----------------------------
- drivers/usb/musb/da8xx.c    |   49 ++++++++++++++---------------------------
- drivers/usb/musb/davinci.c  |   48 ++++++++++++++--------------------------
- drivers/usb/musb/tusb6010.c |   49 ++++++++++++++---------------------------
- 4 files changed, 68 insertions(+), 128 deletions(-)
+ drivers/crypto/ixp4xx_crypto.c |   13 ++++++++-----
+ 1 files changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/usb/musb/am35x.c b/drivers/usb/musb/am35x.c
-index 5c310c6..790b22b 100644
---- a/drivers/usb/musb/am35x.c
-+++ b/drivers/usb/musb/am35x.c
-@@ -89,7 +89,6 @@ struct am35x_glue {
- 	struct clk		*phy_clk;
- 	struct clk		*clk;
- };
--#define glue_to_musb(g)		platform_get_drvdata(g->musb)
+diff --git a/drivers/crypto/ixp4xx_crypto.c b/drivers/crypto/ixp4xx_crypto.c
+index 8306185..214357e 100644
+--- a/drivers/crypto/ixp4xx_crypto.c
++++ b/drivers/crypto/ixp4xx_crypto.c
+@@ -221,7 +221,6 @@ static int support_aes = 1;
+ #define DRIVER_NAME "ixp4xx_crypto"
  
- /*
-  * am35x_musb_enable - enable interrupts
-@@ -452,14 +451,18 @@ static const struct musb_platform_ops am35x_ops = {
- 	.set_vbus	= am35x_musb_set_vbus,
- };
+ static struct platform_device *pdev;
+-static struct device *dev;
  
--static u64 am35x_dmamask = DMA_BIT_MASK(32);
-+static const struct platform_device_info am35x_dev_info = {
-+	.name		= "musb-hdrc",
-+	.id		= PLATFORM_DEVID_AUTO,
-+	.dma_mask	= DMA_BIT_MASK(32),
-+};
- 
- static int am35x_probe(struct platform_device *pdev)
+ static inline dma_addr_t crypt_virt2phys(struct crypt_ctl *virt)
  {
- 	struct musb_hdrc_platform_data	*pdata = dev_get_platdata(&pdev->dev);
- 	struct platform_device		*musb;
- 	struct am35x_glue		*glue;
--
-+	struct platform_device_info	pinfo;
- 	struct clk			*phy_clk;
- 	struct clk			*clk;
+@@ -250,6 +249,7 @@ static inline const struct ix_hash_algo *ix_hash(struct crypto_tfm *tfm)
  
-@@ -471,12 +474,6 @@ static int am35x_probe(struct platform_device *pdev)
- 		goto err0;
- 	}
- 
--	musb = platform_device_alloc("musb-hdrc", PLATFORM_DEVID_AUTO);
--	if (!musb) {
--		dev_err(&pdev->dev, "failed to allocate musb device\n");
--		goto err1;
--	}
--
- 	phy_clk = clk_get(&pdev->dev, "fck");
- 	if (IS_ERR(phy_clk)) {
- 		dev_err(&pdev->dev, "failed to get PHY clock\n");
-@@ -503,12 +500,7 @@ static int am35x_probe(struct platform_device *pdev)
- 		goto err6;
- 	}
- 
--	musb->dev.parent		= &pdev->dev;
--	musb->dev.dma_mask		= &am35x_dmamask;
--	musb->dev.coherent_dma_mask	= am35x_dmamask;
--
- 	glue->dev			= &pdev->dev;
--	glue->musb			= musb;
- 	glue->phy_clk			= phy_clk;
- 	glue->clk			= clk;
- 
-@@ -516,22 +508,17 @@ static int am35x_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, glue);
- 
--	ret = platform_device_add_resources(musb, pdev->resource,
--			pdev->num_resources);
--	if (ret) {
--		dev_err(&pdev->dev, "failed to add resources\n");
--		goto err7;
--	}
--
--	ret = platform_device_add_data(musb, pdata, sizeof(*pdata));
--	if (ret) {
--		dev_err(&pdev->dev, "failed to add platform_data\n");
--		goto err7;
--	}
--
--	ret = platform_device_add(musb);
--	if (ret) {
--		dev_err(&pdev->dev, "failed to register musb device\n");
-+	pinfo = am35x_dev_info;
-+	pinfo.parent = &pdev->dev;
-+	pinfo.res = pdev->resource;
-+	pinfo.num_res = pdev->num_resources;
-+	pinfo.data = pdata;
-+	pinfo.size_data = sizeof(*pdata);
-+
-+	glue->musb = musb = platform_device_register_full(&pinfo);
-+	if (IS_ERR(musb)) {
-+		ret = PTR_ERR(musb);
-+		dev_err(&pdev->dev, "failed to register musb device: %d\n", ret);
- 		goto err7;
- 	}
- 
-@@ -550,9 +537,6 @@ static int am35x_probe(struct platform_device *pdev)
- 	clk_put(phy_clk);
- 
- err3:
--	platform_device_put(musb);
--
--err1:
- 	kfree(glue);
- 
- err0:
-diff --git a/drivers/usb/musb/da8xx.c b/drivers/usb/musb/da8xx.c
-index d9ddf41..2f2c1cb 100644
---- a/drivers/usb/musb/da8xx.c
-+++ b/drivers/usb/musb/da8xx.c
-@@ -472,7 +472,11 @@ static const struct musb_platform_ops da8xx_ops = {
- 	.set_vbus	= da8xx_musb_set_vbus,
- };
- 
--static u64 da8xx_dmamask = DMA_BIT_MASK(32);
-+static const struct platform_device_info da8xx_dev_info = {
-+	.name		= "musb-hdrc",
-+	.id		= PLATFORM_DEVID_AUTO,
-+	.dma_mask	= DMA_BIT_MASK(32),
-+};
- 
- static int da8xx_probe(struct platform_device *pdev)
+ static int setup_crypt_desc(void)
  {
-@@ -480,7 +484,7 @@ static int da8xx_probe(struct platform_device *pdev)
- 	struct musb_hdrc_platform_data	*pdata = dev_get_platdata(&pdev->dev);
- 	struct platform_device		*musb;
- 	struct da8xx_glue		*glue;
--
-+	struct platform_device_info	pinfo;
- 	struct clk			*clk;
++	struct device *dev = &pdev->dev;
+ 	BUILD_BUG_ON(sizeof(struct crypt_ctl) != 64);
+ 	crypt_virt = dma_alloc_coherent(dev,
+ 			NPE_QLEN * sizeof(struct crypt_ctl),
+@@ -350,6 +350,7 @@ static void finish_scattered_hmac(struct crypt_ctl *crypt)
  
- 	int				ret = -ENOMEM;
-@@ -491,12 +495,6 @@ static int da8xx_probe(struct platform_device *pdev)
- 		goto err0;
- 	}
- 
--	musb = platform_device_alloc("musb-hdrc", PLATFORM_DEVID_AUTO);
--	if (!musb) {
--		dev_err(&pdev->dev, "failed to allocate musb device\n");
--		goto err1;
--	}
--
- 	clk = clk_get(&pdev->dev, "usb20");
- 	if (IS_ERR(clk)) {
- 		dev_err(&pdev->dev, "failed to get clock\n");
-@@ -510,12 +508,7 @@ static int da8xx_probe(struct platform_device *pdev)
- 		goto err4;
- 	}
- 
--	musb->dev.parent		= &pdev->dev;
--	musb->dev.dma_mask		= &da8xx_dmamask;
--	musb->dev.coherent_dma_mask	= da8xx_dmamask;
--
- 	glue->dev			= &pdev->dev;
--	glue->musb			= musb;
- 	glue->clk			= clk;
- 
- 	pdata->platform_ops		= &da8xx_ops;
-@@ -535,22 +528,17 @@ static int da8xx_probe(struct platform_device *pdev)
- 	musb_resources[1].end = pdev->resource[1].end;
- 	musb_resources[1].flags = pdev->resource[1].flags;
- 
--	ret = platform_device_add_resources(musb, musb_resources,
--			ARRAY_SIZE(musb_resources));
--	if (ret) {
--		dev_err(&pdev->dev, "failed to add resources\n");
--		goto err5;
--	}
--
--	ret = platform_device_add_data(musb, pdata, sizeof(*pdata));
--	if (ret) {
--		dev_err(&pdev->dev, "failed to add platform_data\n");
--		goto err5;
--	}
--
--	ret = platform_device_add(musb);
--	if (ret) {
--		dev_err(&pdev->dev, "failed to register musb device\n");
-+	pinfo = da8xx_dev_info;
-+	pinfo.parent = &pdev->dev;
-+	pinfo.res = musb_resources;
-+	pinfo.num_res = ARRAY_SIZE(musb_resources);
-+	pinfo.data = pdata;
-+	pinfo.size_data = sizeof(*pdata);
-+
-+	glue->musb = musb = platform_device_register_full(&pinfo);
-+	if (IS_ERR(musb)) {
-+		ret = PTR_ERR(musb);
-+		dev_err(&pdev->dev, "failed to register musb device: %d\n", ret);
- 		goto err5;
- 	}
- 
-@@ -563,9 +551,6 @@ static int da8xx_probe(struct platform_device *pdev)
- 	clk_put(clk);
- 
- err3:
--	platform_device_put(musb);
--
--err1:
- 	kfree(glue);
- 
- err0:
-diff --git a/drivers/usb/musb/davinci.c b/drivers/usb/musb/davinci.c
-index ed0834e..45aae0b 100644
---- a/drivers/usb/musb/davinci.c
-+++ b/drivers/usb/musb/davinci.c
-@@ -505,7 +505,11 @@ static const struct musb_platform_ops davinci_ops = {
- 	.set_vbus	= davinci_musb_set_vbus,
- };
- 
--static u64 davinci_dmamask = DMA_BIT_MASK(32);
-+static const struct platform_device_info davinci_dev_info = {
-+	.name		= "musb-hdrc",
-+	.id		= PLATFORM_DEVID_AUTO,
-+	.dma_mask	= DMA_BIT_MASK(32),
-+};
- 
- static int davinci_probe(struct platform_device *pdev)
+ static void one_packet(dma_addr_t phys)
  {
-@@ -513,6 +517,7 @@ static int davinci_probe(struct platform_device *pdev)
- 	struct musb_hdrc_platform_data	*pdata = dev_get_platdata(&pdev->dev);
- 	struct platform_device		*musb;
- 	struct davinci_glue		*glue;
-+	struct platform_device_info	pinfo;
- 	struct clk			*clk;
++	struct device *dev = &pdev->dev;
+ 	struct crypt_ctl *crypt;
+ 	struct ixp_ctx *ctx;
+ 	int failed;
+@@ -419,7 +420,7 @@ static void crypto_done_action(unsigned long arg)
+ 	tasklet_schedule(&crypto_done_tasklet);
+ }
  
- 	int				ret = -ENOMEM;
-@@ -523,12 +528,6 @@ static int davinci_probe(struct platform_device *pdev)
- 		goto err0;
- 	}
- 
--	musb = platform_device_alloc("musb-hdrc", PLATFORM_DEVID_AUTO);
--	if (!musb) {
--		dev_err(&pdev->dev, "failed to allocate musb device\n");
--		goto err1;
--	}
--
- 	clk = clk_get(&pdev->dev, "usb");
- 	if (IS_ERR(clk)) {
- 		dev_err(&pdev->dev, "failed to get clock\n");
-@@ -542,12 +541,7 @@ static int davinci_probe(struct platform_device *pdev)
- 		goto err4;
- 	}
- 
--	musb->dev.parent		= &pdev->dev;
--	musb->dev.dma_mask		= &davinci_dmamask;
--	musb->dev.coherent_dma_mask	= davinci_dmamask;
--
- 	glue->dev			= &pdev->dev;
--	glue->musb			= musb;
- 	glue->clk			= clk;
- 
- 	pdata->platform_ops		= &davinci_ops;
-@@ -567,22 +561,17 @@ static int davinci_probe(struct platform_device *pdev)
- 	musb_resources[1].end = pdev->resource[1].end;
- 	musb_resources[1].flags = pdev->resource[1].flags;
- 
--	ret = platform_device_add_resources(musb, musb_resources,
--			ARRAY_SIZE(musb_resources));
--	if (ret) {
--		dev_err(&pdev->dev, "failed to add resources\n");
--		goto err5;
--	}
--
--	ret = platform_device_add_data(musb, pdata, sizeof(*pdata));
--	if (ret) {
--		dev_err(&pdev->dev, "failed to add platform_data\n");
--		goto err5;
--	}
--
--	ret = platform_device_add(musb);
--	if (ret) {
--		dev_err(&pdev->dev, "failed to register musb device\n");
-+	pinfo = davinci_dev_info;
-+	pinfo.parent = &pdev->dev;
-+	pinfo.res = musb_resources;
-+	pinfo.num_res = ARRAY_SIZE(musb_resources);
-+	pinfo.data = pdata;
-+	pinfo.size_data = sizeof(*pdata);
-+
-+	glue->musb = musb = platform_device_register_full(&pinfo);
-+	if (IS_ERR(musb)) {
-+		ret = PTR_ERR(musb);
-+		dev_err(&pdev->dev, "failed to register musb device: %d\n", ret);
- 		goto err5;
- 	}
- 
-@@ -595,9 +584,6 @@ static int davinci_probe(struct platform_device *pdev)
- 	clk_put(clk);
- 
- err3:
--	platform_device_put(musb);
--
--err1:
- 	kfree(glue);
- 
- err0:
-diff --git a/drivers/usb/musb/tusb6010.c b/drivers/usb/musb/tusb6010.c
-index b3b3ed7..4432314 100644
---- a/drivers/usb/musb/tusb6010.c
-+++ b/drivers/usb/musb/tusb6010.c
-@@ -1152,7 +1152,11 @@ static const struct musb_platform_ops tusb_ops = {
- 	.set_vbus	= tusb_musb_set_vbus,
- };
- 
--static u64 tusb_dmamask = DMA_BIT_MASK(32);
-+static const struct platform_device_info tusb_dev_info = {
-+	.name		= "musb-hdrc",
-+	.id		= PLATFORM_DEVID_AUTO,
-+	.dma_mask	= DMA_BIT_MASK(32),
-+};
- 
- static int tusb_probe(struct platform_device *pdev)
+-static int init_ixp_crypto(void)
++static int init_ixp_crypto(struct device *dev)
  {
-@@ -1160,7 +1164,7 @@ static int tusb_probe(struct platform_device *pdev)
- 	struct musb_hdrc_platform_data	*pdata = dev_get_platdata(&pdev->dev);
- 	struct platform_device		*musb;
- 	struct tusb6010_glue		*glue;
--
-+	struct platform_device_info	pinfo;
- 	int				ret = -ENOMEM;
+ 	int ret = -ENODEV;
+ 	u32 msg[2] = { 0, 0 };
+@@ -506,7 +507,7 @@ static int init_ixp_crypto(void)
+ 	return ret;
+ }
  
- 	glue = kzalloc(sizeof(*glue), GFP_KERNEL);
-@@ -1169,18 +1173,7 @@ static int tusb_probe(struct platform_device *pdev)
- 		goto err0;
+-static void release_ixp_crypto(void)
++static void release_ixp_crypto(struct device *dev)
+ {
+ 	qmgr_disable_irq(RECV_QID);
+ 	tasklet_kill(&crypto_done_tasklet);
+@@ -873,6 +874,7 @@ static int ablk_perform(struct ablkcipher_request *req, int encrypt)
+ 	enum dma_data_direction src_direction = DMA_BIDIRECTIONAL;
+ 	struct ablk_ctx *req_ctx = ablkcipher_request_ctx(req);
+ 	struct buffer_desc src_hook;
++	struct device *dev = &pdev->dev;
+ 	gfp_t flags = req->base.flags & CRYPTO_TFM_REQ_MAY_SLEEP ?
+ 				GFP_KERNEL : GFP_ATOMIC;
+ 
+@@ -997,6 +999,7 @@ static int aead_perform(struct aead_request *req, int encrypt,
+ 	unsigned int cryptlen;
+ 	struct buffer_desc *buf, src_hook;
+ 	struct aead_ctx *req_ctx = aead_request_ctx(req);
++	struct device *dev = &pdev->dev;
+ 	gfp_t flags = req->base.flags & CRYPTO_TFM_REQ_MAY_SLEEP ?
+ 				GFP_KERNEL : GFP_ATOMIC;
+ 
+@@ -1426,7 +1429,7 @@ static int __init ixp_module_init(void)
+ 	spin_lock_init(&desc_lock);
+ 	spin_lock_init(&emerg_lock);
+ 
+-	err = init_ixp_crypto();
++	err = init_ixp_crypto(&pdev->dev);
+ 	if (err) {
+ 		platform_device_unregister(pdev);
+ 		return err;
+@@ -1492,7 +1495,7 @@ static void __exit ixp_module_exit(void)
+ 		if (ixp4xx_algos[i].registered)
+ 			crypto_unregister_alg(&ixp4xx_algos[i].crypto);
  	}
+-	release_ixp_crypto();
++	release_ixp_crypto(&pdev->dev);
+ 	platform_device_unregister(pdev);
+ }
  
--	musb = platform_device_alloc("musb-hdrc", PLATFORM_DEVID_AUTO);
--	if (!musb) {
--		dev_err(&pdev->dev, "failed to allocate musb device\n");
--		goto err1;
--	}
--
--	musb->dev.parent		= &pdev->dev;
--	musb->dev.dma_mask		= &tusb_dmamask;
--	musb->dev.coherent_dma_mask	= tusb_dmamask;
--
- 	glue->dev			= &pdev->dev;
--	glue->musb			= musb;
- 
- 	pdata->platform_ops		= &tusb_ops;
- 
-@@ -1204,31 +1197,23 @@ static int tusb_probe(struct platform_device *pdev)
- 	musb_resources[2].end = pdev->resource[2].end;
- 	musb_resources[2].flags = pdev->resource[2].flags;
- 
--	ret = platform_device_add_resources(musb, musb_resources,
--			ARRAY_SIZE(musb_resources));
--	if (ret) {
--		dev_err(&pdev->dev, "failed to add resources\n");
--		goto err3;
--	}
--
--	ret = platform_device_add_data(musb, pdata, sizeof(*pdata));
--	if (ret) {
--		dev_err(&pdev->dev, "failed to add platform_data\n");
--		goto err3;
--	}
--
--	ret = platform_device_add(musb);
--	if (ret) {
--		dev_err(&pdev->dev, "failed to register musb device\n");
-+	pinfo = tusb_dev_info;
-+	pinfo.parent = &pdev->dev;
-+	pinfo.res = musb_resources;
-+	pinfo.num_res = ARRAY_SIZE(musb_resources);
-+	pinfo.data = pdata;
-+	pinfo.size_data = sizeof(*pdata);
-+
-+	glue->musb = musb = platform_device_register_full(&pinfo);
-+	if (IS_ERR(musb)) {
-+		ret = PTR_ERR(musb);
-+		dev_err(&pdev->dev, "failed to register musb device: %d\n", ret);
- 		goto err3;
- 	}
- 
- 	return 0;
- 
- err3:
--	platform_device_put(musb);
--
--err1:
- 	kfree(glue);
- 
- err0:
 -- 
 1.7.4.4
