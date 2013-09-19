@@ -3,8 +3,8 @@ Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
  [78.32.30.218])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1FF312C0110
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 09:12:30 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DC47D2C0111
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 09:12:34 +1000 (EST)
 In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 From: Russell King <rmk+kernel@arm.linux.org.uk>
@@ -21,10 +21,11 @@ To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
  linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
  uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 07/51] DMA-API: net: intel/ixgbe: fix 32-bit DMA mask handling
-Message-Id: <E1VMlpP-0007fp-IC@rmk-PC.arm.linux.org.uk>
+Subject: [PATCH 08/51] DMA-API: net: intel/ixgbevf: fix 32-bit DMA mask
+ handling
+Message-Id: <E1VMlqN-0007fw-MQ@rmk-PC.arm.linux.org.uk>
 Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 22:31:59 +0100
+Date: Thu, 19 Sep 2013 22:32:59 +0100
 Cc: Alex Duyck <alexander.h.duyck@intel.com>,
  Don Skidmore <donald.c.skidmore@intel.com>,
  Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
@@ -53,8 +54,8 @@ The fallback to 32-bit DMA mask is rather odd:
 			err = dma_set_coherent_mask(&pdev->dev,
 						    DMA_BIT_MASK(32));
 			if (err) {
-				dev_err(&pdev->dev,
-					"No usable DMA configuration, aborting\n");
+				dev_err(&pdev->dev, "No usable DMA "
+					"configuration, aborting\n");
 				goto err_dma;
 			}
 		}
@@ -67,14 +68,14 @@ if either fails.
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   15 +++++----------
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   15 +++++----------
  1 files changed, 5 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 7aba452..b1dc844 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7475,19 +7475,14 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 59a62bb..e34c2da 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -3326,19 +3326,14 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  	if (err)
  		return err;
  
@@ -89,12 +90,12 @@ index 7aba452..b1dc844 100644
 -			err = dma_set_coherent_mask(&pdev->dev,
 -						    DMA_BIT_MASK(32));
 -			if (err) {
--				dev_err(&pdev->dev,
--					"No usable DMA configuration, aborting\n");
+-				dev_err(&pdev->dev, "No usable DMA "
+-					"configuration, aborting\n");
 -				goto err_dma;
 -			}
-+			dev_err(&pdev->dev,
-+				"No usable DMA configuration, aborting\n");
++			dev_err(&pdev->dev, "No usable DMA "
++				"configuration, aborting\n");
 +			goto err_dma;
  		}
  		pci_using_dac = 0;
