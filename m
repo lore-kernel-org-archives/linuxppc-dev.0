@@ -3,8 +3,8 @@ Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
  [IPv6:2002:4e20:1eda::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E897D2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 21:54:04 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E883A2C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 21:55:11 +1000 (EST)
 In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 From: Russell King <rmk+kernel@arm.linux.org.uk>
@@ -21,12 +21,13 @@ To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
  linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
  uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 10/51] DMA-API: net: broadcom/bnx2x: replace
+Subject: [PATCH 15/51] DMA-API: net: b43legacy: replace
  dma_set_mask()+dma_set_coherent_mask() with new helper
-Message-Id: <E1VMlsJ-0007g8-UO@rmk-PC.arm.linux.org.uk>
+Message-Id: <E1VMlxA-0007gs-Ll@rmk-PC.arm.linux.org.uk>
 Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 22:34:59 +0100
-Cc: Eilon Greenstein <eilong@broadcom.com>
+Date: Thu, 19 Sep 2013 22:40:00 +0100
+Cc: Stefano Brivio <stefano.brivio@polimi.it>,
+ Larry Finger <Larry.Finger@lwfinger.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,28 +46,28 @@ with a call to the new helper dma_set_mask_and_coherent().
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
+ drivers/net/wireless/b43legacy/dma.c |    9 +++------
+ 1 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-index 2f8dbbb..e6c3e66 100644
---- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-+++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-@@ -12072,13 +12072,9 @@ static int bnx2x_set_coherency_mask(struct bnx2x *bp)
- {
- 	struct device *dev = &bp->pdev->dev;
- 
--	if (dma_set_mask(dev, DMA_BIT_MASK(64)) == 0) {
-+	if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64)) == 0) {
- 		bp->flags |= USING_DAC_FLAG;
--		if (dma_set_coherent_mask(dev, DMA_BIT_MASK(64)) != 0) {
--			dev_err(dev, "dma_set_coherent_mask failed, aborting\n");
--			return -EIO;
+diff --git a/drivers/net/wireless/b43legacy/dma.c b/drivers/net/wireless/b43legacy/dma.c
+index 42eb26c..b2ed179 100644
+--- a/drivers/net/wireless/b43legacy/dma.c
++++ b/drivers/net/wireless/b43legacy/dma.c
+@@ -806,12 +806,9 @@ static int b43legacy_dma_set_mask(struct b43legacy_wldev *dev, u64 mask)
+ 	/* Try to set the DMA mask. If it fails, try falling back to a
+ 	 * lower mask, as we can always also support a lower one. */
+ 	while (1) {
+-		err = dma_set_mask(dev->dev->dma_dev, mask);
+-		if (!err) {
+-			err = dma_set_coherent_mask(dev->dev->dma_dev, mask);
+-			if (!err)
+-				break;
 -		}
--	} else if (dma_set_mask(dev, DMA_BIT_MASK(32)) != 0) {
-+	} else if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32)) != 0) {
- 		dev_err(dev, "System does not support DMA, aborting\n");
- 		return -EIO;
- 	}
++		err = dma_set_mask_and_coherent(dev->dev->dma_dev, mask);
++		if (!err)
++			break;
+ 		if (mask == DMA_BIT_MASK(64)) {
+ 			mask = DMA_BIT_MASK(32);
+ 			fallback = true;
 -- 
 1.7.4.4
