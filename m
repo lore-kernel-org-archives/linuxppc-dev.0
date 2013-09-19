@@ -1,19 +1,19 @@
 Return-Path: <R65777@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2A84F2C013F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 16:10:43 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id CD77E2C0121
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 16:10:54 +1000 (EST)
 From: Bharat Bhushan <r65777@freescale.com>
 To: <benh@kernel.crashing.org>, <agraf@suse.de>, <paulus@samba.org>,
  <kvm@vger.kernel.org>, <kvm-ppc@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 4/6 v5] kvm: powerpc: keep only pte search logic in
- lookup_linux_pte
-Date: Thu, 19 Sep 2013 11:32:44 +0530
-Message-ID: <1379570566-3715-5-git-send-email-Bharat.Bhushan@freescale.com>
+Subject: [PATCH 5/6 v5] kvm: booke: clear host tlb reference flag on guest tlb
+ invalidation
+Date: Thu, 19 Sep 2013 11:32:45 +0530
+Message-ID: <1379570566-3715-6-git-send-email-Bharat.Bhushan@freescale.com>
 In-Reply-To: <1379570566-3715-1-git-send-email-Bharat.Bhushan@freescale.com>
 References: <1379570566-3715-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
@@ -28,130 +28,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-lookup_linux_pte() was searching for a pte and also sets access
-flags is writable. This function now searches only pte while
-access flag setting is done explicitly.
+On booke, "struct tlbe_ref" contains host tlb mapping information
+(pfn: for guest-pfn to pfn, flags: attribute associated with this mapping)
+for a guest tlb entry. So when a guest creates a TLB entry then
+"struct tlbe_ref" is set to point to valid "pfn" and set attributes in
+"flags" field of the above said structure. When a guest TLB entry is
+invalidated then flags field of corresponding "struct tlbe_ref" is
+updated to point that this is no more valid, also we selectively clear
+some other attribute bits, example: if E500_TLB_BITMAP was set then we clear
+E500_TLB_BITMAP, if E500_TLB_TLB0 is set then we clear this.
 
-This pte lookup is not kvm specific, so moved to common code (asm/pgtable.h)
-My Followup patch will use this on booke.
+Ideally we should clear complete "flags" as this entry is invalid and does not
+have anything to re-used. The other part of the problem is that when we use
+the same entry again then also we do not clear (started doing or-ing etc).
+
+So far it was working because the selectively clearing mentioned above
+actually clears "flags" what was set during TLB mapping. But the problem
+starts coming when we add more attributes to this then we need to selectively
+clear them and which is not needed.
+
+This patch we do both
+        - Clear "flags" when invalidating;
+        - Clear "flags" when reusing same entry later
 
 Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
-v4->v5
- - No change
+v3-> v5
+ - New patch (found this issue when doing vfio-pci development)
 
- arch/powerpc/include/asm/pgtable.h  |   24 +++++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv_rm_mmu.c |   36 +++++++++++-----------------------
- 2 files changed, 36 insertions(+), 24 deletions(-)
+ arch/powerpc/kvm/e500_mmu_host.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index 7d6eacf..3a5de5c 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -223,6 +223,30 @@ extern int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
- #endif
- pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
- 				 unsigned *shift);
-+
-+static inline pte_t *lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
-+				     unsigned long *pte_sizep)
-+{
-+	pte_t *ptep;
-+	unsigned long ps = *pte_sizep;
-+	unsigned int shift;
-+
-+	ptep = find_linux_pte_or_hugepte(pgdir, hva, &shift);
-+	if (!ptep)
-+		return __pte(0);
-+	if (shift)
-+		*pte_sizep = 1ul << shift;
-+	else
-+		*pte_sizep = PAGE_SIZE;
-+
-+	if (ps > *pte_sizep)
-+		return __pte(0);
-+
-+	if (!pte_present(*ptep))
-+		return __pte(0);
-+
-+	return ptep;
-+}
- #endif /* __ASSEMBLY__ */
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index 1c6a9d7..60f5a3c 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -217,7 +217,8 @@ void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
+ 		}
+ 		mb();
+ 		vcpu_e500->g2h_tlb1_map[esel] = 0;
+-		ref->flags &= ~(E500_TLB_BITMAP | E500_TLB_VALID);
++		/* Clear flags as TLB is not backed by the host anymore */
++		ref->flags = 0;
+ 		local_irq_restore(flags);
+ 	}
  
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 45e30d6..74fa7f8 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -134,25 +134,6 @@ static void remove_revmap_chain(struct kvm *kvm, long pte_index,
- 	unlock_rmap(rmap);
+@@ -227,7 +228,8 @@ void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
+ 		 * rarely and is not worth optimizing. Invalidate everything.
+ 		 */
+ 		kvmppc_e500_tlbil_all(vcpu_e500);
+-		ref->flags &= ~(E500_TLB_TLB0 | E500_TLB_VALID);
++		/* Clear flags as TLB is not backed by the host anymore */
++		ref->flags = 0;
+ 	}
+ 
+ 	/* Already invalidated in between */
+@@ -237,8 +239,8 @@ void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
+ 	/* Guest tlbe is backed by at most one host tlbe per shadow pid. */
+ 	kvmppc_e500_tlbil_one(vcpu_e500, gtlbe);
+ 
+-	/* Mark the TLB as not backed by the host anymore */
+-	ref->flags &= ~E500_TLB_VALID;
++	/* Clear flags as TLB is not backed by the host anymore */
++	ref->flags = 0;
  }
  
--static pte_t lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
--			      int writing, unsigned long *pte_sizep)
--{
--	pte_t *ptep;
--	unsigned long ps = *pte_sizep;
--	unsigned int hugepage_shift;
--
--	ptep = find_linux_pte_or_hugepte(pgdir, hva, &hugepage_shift);
--	if (!ptep)
--		return __pte(0);
--	if (hugepage_shift)
--		*pte_sizep = 1ul << hugepage_shift;
--	else
--		*pte_sizep = PAGE_SIZE;
--	if (ps > *pte_sizep)
--		return __pte(0);
--	return kvmppc_read_update_linux_pte(ptep, writing, hugepage_shift);
--}
--
- static inline void unlock_hpte(unsigned long *hpte, unsigned long hpte_v)
+ static inline int tlbe_is_writable(struct kvm_book3e_206_tlb_entry *tlbe)
+@@ -251,7 +253,7 @@ static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
+ 					 pfn_t pfn)
  {
- 	asm volatile(PPC_RELEASE_BARRIER "" : : : "memory");
-@@ -173,6 +154,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
- 	unsigned long is_io;
- 	unsigned long *rmap;
- 	pte_t pte;
-+	pte_t *ptep;
- 	unsigned int writing;
- 	unsigned long mmu_seq;
- 	unsigned long rcbits;
-@@ -231,8 +213,9 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 	ref->pfn = pfn;
+-	ref->flags |= E500_TLB_VALID;
++	ref->flags = E500_TLB_VALID;
  
- 		/* Look up the Linux PTE for the backing page */
- 		pte_size = psize;
--		pte = lookup_linux_pte(pgdir, hva, writing, &pte_size);
--		if (pte_present(pte)) {
-+		ptep = lookup_linux_pte(pgdir, hva, &pte_size);
-+		if (pte_present(pte_val(*ptep))) {
-+			pte = kvmppc_read_update_linux_pte(ptep, writing);
- 			if (writing && !pte_write(pte))
- 				/* make the actual HPTE be read-only */
- 				ptel = hpte_make_readonly(ptel);
-@@ -661,15 +644,20 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 			struct kvm_memory_slot *memslot;
- 			pgd_t *pgdir = vcpu->arch.pgdir;
- 			pte_t pte;
-+			pte_t *ptep;
- 
- 			psize = hpte_page_size(v, r);
- 			gfn = ((r & HPTE_R_RPN) & ~(psize - 1)) >> PAGE_SHIFT;
- 			memslot = __gfn_to_memslot(kvm_memslots(kvm), gfn);
- 			if (memslot) {
- 				hva = __gfn_to_hva_memslot(memslot, gfn);
--				pte = lookup_linux_pte(pgdir, hva, 1, &psize);
--				if (pte_present(pte) && !pte_write(pte))
--					r = hpte_make_readonly(r);
-+				ptep = lookup_linux_pte(pgdir, hva, &psize);
-+				if (pte_present(pte_val(*ptep))) {
-+					pte = kvmppc_read_update_linux_pte(ptep,
-+									   1);
-+					if (pte_present(pte) && !pte_write(pte))
-+						r = hpte_make_readonly(r);
-+				}
- 			}
- 		}
- 	}
+ 	if (tlbe_is_writable(gtlbe))
+ 		kvm_set_pfn_dirty(pfn);
 -- 
 1.7.0.4
