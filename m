@@ -3,8 +3,8 @@ Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
  [IPv6:2002:4e20:1eda::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2ADE32C0175
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 01:04:47 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 502CF2C010B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 01:05:49 +1000 (EST)
 In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 From: Russell King <rmk+kernel@arm.linux.org.uk>
@@ -21,12 +21,12 @@ To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
  linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
  uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 14/51] DMA-API: net: b43: replace
+Subject: [PATCH 16/51] DMA-API: ppc: vio.c: replace
  dma_set_mask()+dma_set_coherent_mask() with new helper
-Message-Id: <E1VMlwC-0007gl-Ez@rmk-PC.arm.linux.org.uk>
+Message-Id: <E1VMly8-0007gy-Ru@rmk-PC.arm.linux.org.uk>
 Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 22:39:00 +0100
-Cc: Stefano Brivio <stefano.brivio@polimi.it>
+Date: Thu, 19 Sep 2013 22:41:00 +0100
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,28 +45,22 @@ with a call to the new helper dma_set_mask_and_coherent().
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/net/wireless/b43/dma.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/vio.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/wireless/b43/dma.c b/drivers/net/wireless/b43/dma.c
-index c51d2dc..1d7982a 100644
---- a/drivers/net/wireless/b43/dma.c
-+++ b/drivers/net/wireless/b43/dma.c
-@@ -1065,12 +1065,9 @@ static int b43_dma_set_mask(struct b43_wldev *dev, u64 mask)
- 	/* Try to set the DMA mask. If it fails, try falling back to a
- 	 * lower mask, as we can always also support a lower one. */
- 	while (1) {
--		err = dma_set_mask(dev->dev->dma_dev, mask);
--		if (!err) {
--			err = dma_set_coherent_mask(dev->dev->dma_dev, mask);
--			if (!err)
--				break;
--		}
-+		err = dma_set_mask_and_coherent(dev->dev->dma_dev, mask);
-+		if (!err)
-+			break;
- 		if (mask == DMA_BIT_MASK(64)) {
- 			mask = DMA_BIT_MASK(32);
- 			fallback = true;
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index 78a3506..96b6c97 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -1413,8 +1413,7 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
+ 
+ 		/* needed to ensure proper operation of coherent allocations
+ 		 * later, in case driver doesn't set it explicitly */
+-		dma_set_mask(&viodev->dev, DMA_BIT_MASK(64));
+-		dma_set_coherent_mask(&viodev->dev, DMA_BIT_MASK(64));
++		dma_set_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
+ 	}
+ 
+ 	/* register with generic device framework */
 -- 
 1.7.4.4
