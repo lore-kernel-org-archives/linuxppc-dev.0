@@ -1,25 +1,26 @@
-Return-Path: <B32579@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EA46A2C029F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 19:00:46 +1000 (EST)
-Received: from mail155-co9 (localhost [127.0.0.1])	by
- mail155-co9-R.bigfish.com (Postfix) with ESMTP id 01B9A180171	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 09:00:41 +0000 (UTC)
-Received: from CO9EHSMHS012.bigfish.com (unknown [10.236.132.246])	by
- mail155-co9.bigfish.com (Postfix) with ESMTP id D0A5920054	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 09:00:30 +0000 (UTC)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2][v3] powerpc/configs: Enable T1040QDS by default in corenet
-Date: Thu, 19 Sep 2013 14:30:21 +0530
-Message-ID: <1379581221-24458-1-git-send-email-prabhakar@freescale.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1D58E2C0119
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 19:20:25 +1000 (EST)
+Received: by mail-pa0-f41.google.com with SMTP id bj1so9431510pad.14
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 02:20:22 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Prabhakar Kushwaha <prabhakar@freescale.com>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1379412095-7213-1-git-send-email-geert@linux-m68k.org>
+References: <1379412095-7213-1-git-send-email-geert@linux-m68k.org>
+Date: Thu, 19 Sep 2013 11:20:22 +0200
+Message-ID: <CAMuHMdW8y9_=LXQ1PXjFaPyq-nYTPe+FodE5hQh4P3QSdnP_dg@mail.gmail.com>
+Subject: Re: Preliminary kexec support for Linux/m68k
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Anton Blanchard <anton@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>, kexec@lists.infradead.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T1040 supports both 32 & 64 bit kernel.
-so enable T1040QDS by default in the config files.
+On Tue, Sep 17, 2013 at 12:01 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> This is a preliminary set of patches to add kexec support for m68k.
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
----
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
- Branch next
+>   - [PATCH 1/3] m68k: Add preliminary kexec support
+>   - [PATCH 2/3] m68k: Add support to export bootinfo in procfs
+>   - [PATCH 3/3] [RFC] m68k: Add System RAM to /proc/iomem
+>
+> Notes:
+>   - The bootinfo is now saved and exported to /proc/bootinfo, so kexec-tools
+>     can read it and pass it (possibly after modification) to the new kernel.
+>     This is similar to /proc/atags on ARM.
 
- Changes for v2: Sending as it is
- Changes for v3: Sending as it is
- 	
- arch/powerpc/configs/corenet32_smp_defconfig |    1 +
- arch/powerpc/configs/corenet64_smp_defconfig |    1 +
- 2 files changed, 2 insertions(+)
+>   - I based [PATCH 3/3] on the PowerPC version, but it's no longer needed as we
+>     now get this information from the bootinfo.
+>     Does anyone think this is nice to have anyway?
 
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index 3dfab4c..19d1d31 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -28,6 +28,7 @@ CONFIG_P3041_DS=y
- CONFIG_P4080_DS=y
- CONFIG_P5020_DS=y
- CONFIG_P5040_DS=y
-+CONFIG_T104x_QDS=y
- CONFIG_HIGHMEM=y
- # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
- CONFIG_BINFMT_MISC=m
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index fa94fb3..d23ee10 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -24,6 +24,7 @@ CONFIG_MAC_PARTITION=y
- CONFIG_B4_QDS=y
- CONFIG_P5020_DS=y
- CONFIG_P5040_DS=y
-+CONFIG_T104x_QDS=y
- CONFIG_T4240_QDS=y
- # CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
- CONFIG_BINFMT_MISC=m
--- 
-1.7.9.5
+It seems kexec/kdump on ppc don't use /proc/iomem anymore, and only rely on
+/proc/device-tree these days?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
