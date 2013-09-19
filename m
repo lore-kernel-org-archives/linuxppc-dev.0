@@ -1,36 +1,27 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A54422C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 02:51:06 +1000 (EST)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 19 Sep 2013 10:51:02 -0600
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 5FAA01FF001A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 10:50:55 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8JGoxcP323818
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 10:50:59 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r8JGoutt032060
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 10:50:58 -0600
-Date: Thu, 19 Sep 2013 09:50:35 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Does iommu_init_table need to use GFP_ATOMIC allocations?
-Message-ID: <20130919165035.GA20144@linux.vnet.ibm.com>
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id 9322D2C0104
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 06:32:48 +1000 (EST)
+Received: from mail-vc0-f173.google.com (mail-vc0-f173.google.com
+ [209.85.220.173])
+ by muin.pair.com (Postfix) with ESMTPSA id 5C73D8FC12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 16:32:46 -0400 (EDT)
+Received: by mail-vc0-f173.google.com with SMTP id if17so6602408vcb.32
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 13:32:45 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>
+In-Reply-To: <1379581205-24424-1-git-send-email-prabhakar@freescale.com>
+References: <1379581205-24424-1-git-send-email-prabhakar@freescale.com>
+Date: Thu, 19 Sep 2013 15:32:45 -0500
+Message-ID: <CAOZdJXVBV0LvEwTua_eyTHXJdOcHZKQCjiTrYocqfcQY5hosUw@mail.gmail.com>
+Subject: Re: [PATCH 1/2][v3] powerpc/fsl-booke: Add initial T104x_QDS board
+ support
+From: Timur Tabi <timur@tabi.org>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>,
+ Priyanka Jain <Priyanka.Jain@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,23 +31,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Under heavy (DLPAR?) stress, we tripped this panic() in
-arch/powerpc/kernel/iommu.c::iommu_init_table():
+On Thu, Sep 19, 2013 at 4:00 AM, Prabhakar Kushwaha
+<prabhakar@freescale.com> wrote:
 
-        page = alloc_pages_node(nid, GFP_ATOMIC, get_order(sz));
-        if (!page)
-                panic("iommu_init_table: Can't allocate %ld bytes\n",
-sz);
+>  - Video
+>      - DIU supports video at up to 1280x1024x32bpp
 
-Before the panic() we got a page allocation failure for an order-2
-allocation. There appears to be memory free, but perhaps not in the
-ATOMIC context. I looked through all the call-sites of
-iommu_init_table() and didn't see any obvious reason to need an ATOMIC
-allocation. Most call-sites in fact have an explicit GFP_KERNEL
-allocation shortly before the call to iommu_init_table(), indicating we
-are not in an atomic context. There is some indirection for some paths,
-but I didn't see any locks indicating that GFP_KERNEL is inappropriate.
-Does anyone know if/why ATOMIC allocations are necessary here?
-
-Thanks,
-Nish
+You mention DIU support, except there's no DIU enablement in the
+platform file.  You need the T104x equivalent of
+p1022ds_set_pixel_clock() and the other functions.
