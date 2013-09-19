@@ -1,38 +1,32 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-yh0-x231.google.com (mail-yh0-x231.google.com
- [IPv6:2607:f8b0:4002:c01::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 615EC2C0100
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 22:27:48 +1000 (EST)
-Received: by mail-yh0-f49.google.com with SMTP id i57so86189yha.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 05:27:45 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Fri, 20 Sep 2013 07:27:36 -0500
-From: Tejun Heo <tj@kernel.org>
-To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
-Message-ID: <20130920122736.GD7630@mtj.dyndns.org>
-References: <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
- <20130906160621.GF22763@mtj.dyndns.org>
- <20130906233205.GF12956@google.com>
- <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
- <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
- <20130917143022.GA7707@concordia>
- <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
- <20130918142231.GA21650@mtj.dyndns.org>
- <20130918165045.GB2353@dhcp-26-207.brq.redhat.com>
- <20130920082458.GA10507@dhcp-26-207.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130920082458.GA10507@dhcp-26-207.brq.redhat.com>
-Cc: Joerg Roedel <joro@8bytes.org>, "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- Jan Beulich <JBeulich@suse.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+Return-Path: <rmk+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 151532C00E7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 22:47:39 +1000 (EST)
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
+ devel@driverdev.osuosl.org, devicetree@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net,
+ linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-ide@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org,
+ linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ uclinux-dist-devel@blackfin.uclinux.org
+Subject: [PATCH 32/51] DMA-API: mmc: sdhci-acpi: use
+ dma_coerce_mask_and_coherent()
+Message-Id: <E1VMmDe-0007j6-Tj@rmk-PC.arm.linux.org.uk>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 22:57:02 +0100
+Cc: Chris Ball <cjb@laptop.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,12 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 20, 2013 at 10:24:59AM +0200, Alexander Gordeev wrote:
-> * Make pci_enable_msix() return 0/-errno
+The code sequence:
+	dev->dma_mask = &dev->coherent_dma_mask;
+	dev->coherent_dma_mask = dma_mask;
+bypasses the architectures check on the DMA mask.  It can be replaced
+with dma_coerce_mask_and_coherent(), avoiding the direct initialization
+of this mask.
 
-My choice would be this one.
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/mmc/host/sdhci-acpi.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-Thanks.
-
+diff --git a/drivers/mmc/host/sdhci-acpi.c b/drivers/mmc/host/sdhci-acpi.c
+index cdd4ce0..ef19874 100644
+--- a/drivers/mmc/host/sdhci-acpi.c
++++ b/drivers/mmc/host/sdhci-acpi.c
+@@ -310,8 +310,9 @@ static int sdhci_acpi_probe(struct platform_device *pdev)
+ 			dma_mask = DMA_BIT_MASK(32);
+ 		}
+ 
+-		dev->dma_mask = &dev->coherent_dma_mask;
+-		dev->coherent_dma_mask = dma_mask;
++		err = dma_coerce_mask_and_coherent(dev, dma_mask);
++		if (err)
++			goto err_free;
+ 	}
+ 
+ 	if (c->slot) {
 -- 
-tejun
+1.7.4.4
