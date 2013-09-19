@@ -1,15 +1,21 @@
-Return-Path: <dorin1234@outlook.com>
-Received: from bay0-omc3-s11.bay0.hotmail.com (bay0-omc3-s11.bay0.hotmail.com
- [65.54.190.149]) by ozlabs.org (Postfix) with ESMTP id 1DB332C00D5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 12:48:52 +1000 (EST)
-Message-ID: <BAY176-W43D0B5AD1BD2454470D8AFA6210@phx.gbl>
-Content-Type: multipart/alternative;
- boundary="_7894ba37-3468-41a5-b817-c6f81125867c_"
-From: Dorin D <dorin1234@outlook.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Linux 2.6.32 PowerPC MTD partition mounted at boot
-Date: Wed, 18 Sep 2013 22:43:42 -0400
+Return-Path: <R65777@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8ACE72C0100
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2013 16:10:20 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <benh@kernel.crashing.org>, <agraf@suse.de>, <paulus@samba.org>,
+ <kvm@vger.kernel.org>, <kvm-ppc@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: [PATCH 0/6 v5] kvm: powerpc: use cache attributes from linux pte
+Date: Thu, 19 Sep 2013 11:32:40 +0530
+Message-ID: <1379570566-3715-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,98 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_7894ba37-3468-41a5-b817-c6f81125867c_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+From: Bharat Bhushan <bharat.bhushan@freescale.com>
 
-I am working on bringing up two Linux systems=2C both based on Freescale Po=
-werPC devices=2C one is a MPC8349=2C the other a P1020. I was able to build=
-=2C install and boot the kernel on both cards. The kernel is 2.6.32 and the=
-  toolchains  are coming from the LTIBs packages from Freescale. Both cards=
- have a 32 MByte NOR flash memory (AMD) boot flash. I have Uboot=2C kernel=
-=2C RAM disk image and DTB in the boot flash and I want to use the spare sp=
-ace (about 20 MBytes) as flash file system. I have the following problem : =
-the P1020 board boots fine using the RAM disk with the flash in the device =
-tree =2C shows the flash device partitions (JFFS2) and DOESN"T try to mount=
- a flash partition as root. The MPC8349 boots fine from the RAM disk but=2C=
- after identifying the flash partitions=2C the kernel panics because is loo=
-king for a flash partition to mount as root partition and none of them is u=
-sable (not formatted). If I remove the flash from the device tree=2C the ca=
-rd boots fine using the RAM disk.
-I am not too familiar with Linux boot scripts and I didn't figure out where=
- I can disable this tentative of mounting the MTD partition. I want the boa=
-rds to boot and mount the RAM disk=2C as the P1020 board does. The flash pa=
-rtition will be initialized and mounted at a later time=2C but not as root =
-partition.
-TIADorin
- 		 	   		  =
+First patch is a typo fix where book3e define _PAGE_LENDIAN while it
+should be defined as _PAGE_ENDIAN. This seems to show that this is never exercised :-)
 
---_7894ba37-3468-41a5-b817-c6f81125867c_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Second and third patch is to allow guest controlling "G"-Guarded and "E"-Endian TLB attributes respectively.
 
-<html>
-<head>
-<style><!--
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 12pt=3B
-font-family:Calibri
-}
---></style></head>
-<body class=3D'hmmessage'><div dir=3D'ltr'><p style=3D"margin-bottom: 1em=
-=3B border: 0px=3B font-size: 14px=3B vertical-align: baseline=3B clear: bo=
-th=3B word-wrap: break-word=3B font-family: Arial=2C 'Liberation Sans'=2C '=
-DejaVu Sans'=2C sans-serif=3B line-height: 18px=3B">I am working on bringin=
-g up two Linux systems=2C both based on Freescale PowerPC devices=2C one is=
- a MPC8349=2C the other a P1020. I was able to build=2C install and boot th=
-e kernel on both cards. The kernel is 2.6.32 and the &nbsp=3Btoolchains &nb=
-sp=3Bare coming from the LTIBs packages from Freescale.&nbsp=3B</p><p style=
-=3D"margin-bottom: 1em=3B border: 0px=3B font-size: 14px=3B vertical-align:=
- baseline=3B clear: both=3B word-wrap: break-word=3B font-family: Arial=2C =
-'Liberation Sans'=2C 'DejaVu Sans'=2C sans-serif=3B line-height: 18px=3B">B=
-oth cards have a 32 MByte NOR flash memory (AMD) boot flash. I have Uboot=
-=2C kernel=2C RAM disk image and DTB in the boot flash and I want to use th=
-e spare space (about 20 MBytes) as flash file system.&nbsp=3B</p><p style=
-=3D"margin-bottom: 1em=3B border: 0px=3B font-size: 14px=3B vertical-align:=
- baseline=3B clear: both=3B word-wrap: break-word=3B font-family: Arial=2C =
-'Liberation Sans'=2C 'DejaVu Sans'=2C sans-serif=3B line-height: 18px=3B">I=
- have the following problem : the P1020 board boots fine using the RAM disk=
- with the flash in the device tree =2C shows the flash device partitions (J=
-FFS2) and DOESN"T try to mount a flash partition as root. The MPC8349 boots=
- fine from the RAM disk but=2C after identifying the flash partitions=2C th=
-e kernel panics because is looking for a flash partition to mount as root p=
-artition and none of them is usable (not formatted). If I remove the flash =
-from the device tree=2C the card boots fine using the RAM disk.</p><p style=
-=3D"margin-bottom: 1em=3B border: 0px=3B font-size: 14px=3B vertical-align:=
- baseline=3B clear: both=3B word-wrap: break-word=3B font-family: Arial=2C =
-'Liberation Sans'=2C 'DejaVu Sans'=2C sans-serif=3B line-height: 18px=3B"><=
-br></p><p style=3D"margin-bottom: 1em=3B border: 0px=3B font-size: 14px=3B =
-vertical-align: baseline=3B clear: both=3B word-wrap: break-word=3B font-fa=
-mily: Arial=2C 'Liberation Sans'=2C 'DejaVu Sans'=2C sans-serif=3B line-hei=
-ght: 18px=3B">I am not too familiar with Linux boot scripts and I didn't fi=
-gure out where I can disable this tentative of mounting the MTD partition. =
-I want the boards to boot and mount the RAM disk=2C as the P1020 board does=
-. The flash partition will be initialized and mounted at a later time=2C bu=
-t not as root partition.</p><p style=3D"margin-bottom: 1em=3B border: 0px=
-=3B font-size: 14px=3B vertical-align: baseline=3B clear: both=3B word-wrap=
-: break-word=3B font-family: Arial=2C 'Liberation Sans'=2C 'DejaVu Sans'=2C=
- sans-serif=3B line-height: 18px=3B"><br></p><p style=3D"margin-bottom: 1em=
-=3B border: 0px=3B font-size: 14px=3B vertical-align: baseline=3B clear: bo=
-th=3B word-wrap: break-word=3B font-family: Arial=2C 'Liberation Sans'=2C '=
-DejaVu Sans'=2C sans-serif=3B line-height: 18px=3B">TIA</p><p style=3D"marg=
-in-bottom: 1em=3B border: 0px=3B font-size: 14px=3B vertical-align: baselin=
-e=3B clear: both=3B word-wrap: break-word=3B font-family: Arial=2C 'Liberat=
-ion Sans'=2C 'DejaVu Sans'=2C sans-serif=3B line-height: 18px=3B">Dorin</p>=
-<p style=3D"margin-bottom: 1em=3B border: 0px=3B font-size: 14px=3B vertica=
-l-align: baseline=3B clear: both=3B word-wrap: break-word=3B font-family: A=
-rial=2C 'Liberation Sans'=2C 'DejaVu Sans'=2C sans-serif=3B line-height: 18=
-px=3B"><br></p> 		 	   		  </div></body>
-</html>=
+Fourth patch is moving functions/logic in common code so they can be used on booke also.
 
---_7894ba37-3468-41a5-b817-c6f81125867c_--
+Fifth and Sixth patch is actually setting caching attributes (TLB.WIMGE) using corresponding Linux pte.
+
+v3->v5
+ - Fix tlb-reference-flag clearing issue (patch 4/6)
+ - There was a patch (4/6 powerpc: move linux pte/hugepte search to more generic file)
+   in the last series of this patchset which was moving pte/hugepte search functions to
+   generic file. That patch is no more needed as some other patch is already applied to fix that :)
+
+v2->v3
+ - now lookup_linux_pte() only have pte search logic and it does not
+   set any access flags in pte. There is already a function for setting
+   access flag which will be called explicitly where needed.
+   On booke we only need to search for pte to get WIMG.
+
+v1->v2
+ - Earlier caching attributes (WIMGE) were set based of page is RAM or not
+   But now we get these attributes from corresponding Linux PTE.
+
+Bharat Bhushan (6):
+  powerpc: book3e: _PAGE_LENDIAN must be _PAGE_ENDIAN
+  kvm: powerpc: allow guest control "E" attribute in mas2
+  kvm: powerpc: allow guest control "G" attribute in mas2
+  kvm: powerpc: keep only pte search logic in lookup_linux_pte
+  kvm: booke: clear host tlb reference flag on guest tlb invalidation
+  kvm: powerpc: use caching attributes as per linux pte
+
+ arch/powerpc/include/asm/kvm_host.h   |    2 +-
+ arch/powerpc/include/asm/pgtable.h    |   24 ++++++++++++++++
+ arch/powerpc/include/asm/pte-book3e.h |    2 +-
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c   |   36 ++++++++----------------
+ arch/powerpc/kvm/booke.c              |    2 +-
+ arch/powerpc/kvm/e500.h               |   10 ++++--
+ arch/powerpc/kvm/e500_mmu_host.c      |   50 +++++++++++++++++++--------------
+ 7 files changed, 74 insertions(+), 52 deletions(-)
