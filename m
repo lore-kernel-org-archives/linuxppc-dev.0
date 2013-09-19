@@ -1,25 +1,30 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5E8062C010F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 07:08:18 +1000 (EST)
-Message-ID: <1379624878.16231.3.camel@aoeu.buserror.net>
-Subject: Re: [PATCH 5/6 v5] kvm: booke: clear host tlb reference flag on
- guest tlb invalidation
-From: Scott Wood <scottwood@freescale.com>
-To: Bharat Bhushan <r65777@freescale.com>
-Date: Thu, 19 Sep 2013 16:07:58 -0500
-In-Reply-To: <1379570566-3715-6-git-send-email-Bharat.Bhushan@freescale.com>
-References: <1379570566-3715-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1379570566-3715-6-git-send-email-Bharat.Bhushan@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [78.32.30.218])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2A8832C00F6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 09:01:55 +1000 (EST)
+Date: Thu, 19 Sep 2013 22:22:35 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
+ devel@driverdev.osuosl.org, devicetree@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net,
+ linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-ide@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org,
+ linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ uclinux-dist-devel@blackfin.uclinux.org
+Subject: [PATCH 00/51] DMA mask changes
+Message-ID: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Cc: kvm@vger.kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- Bharat Bhushan <Bharat.Bhushan@freescale.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,56 +34,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-09-19 at 11:32 +0530, Bharat Bhushan wrote:
-> On booke, "struct tlbe_ref" contains host tlb mapping information
-> (pfn: for guest-pfn to pfn, flags: attribute associated with this mapping)
-> for a guest tlb entry. So when a guest creates a TLB entry then
-> "struct tlbe_ref" is set to point to valid "pfn" and set attributes in
-> "flags" field of the above said structure. When a guest TLB entry is
-> invalidated then flags field of corresponding "struct tlbe_ref" is
-> updated to point that this is no more valid, also we selectively clear
-> some other attribute bits, example: if E500_TLB_BITMAP was set then we clear
-> E500_TLB_BITMAP, if E500_TLB_TLB0 is set then we clear this.
-> 
-> Ideally we should clear complete "flags" as this entry is invalid and does not
-> have anything to re-used. The other part of the problem is that when we use
-> the same entry again then also we do not clear (started doing or-ing etc).
-> 
-> So far it was working because the selectively clearing mentioned above
-> actually clears "flags" what was set during TLB mapping. But the problem
-> starts coming when we add more attributes to this then we need to selectively
-> clear them and which is not needed.
-> 
-> This patch we do both
->         - Clear "flags" when invalidating;
->         - Clear "flags" when reusing same entry later
-> 
-> Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
-> ---
-> v3-> v5
->  - New patch (found this issue when doing vfio-pci development)
-> 
->  arch/powerpc/kvm/e500_mmu_host.c |   12 +++++++-----
->  1 files changed, 7 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-> index 1c6a9d7..60f5a3c 100644
-> --- a/arch/powerpc/kvm/e500_mmu_host.c
-> +++ b/arch/powerpc/kvm/e500_mmu_host.c
-> @@ -217,7 +217,8 @@ void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
->  		}
->  		mb();
->  		vcpu_e500->g2h_tlb1_map[esel] = 0;
-> -		ref->flags &= ~(E500_TLB_BITMAP | E500_TLB_VALID);
-> +		/* Clear flags as TLB is not backed by the host anymore */
-> +		ref->flags = 0;
->  		local_irq_restore(flags);
->  	}
+This started out as a request to look at the DMA mask situation, and how
+to solve the issues which we have on ARM - notably how the DMA mask
+should be setup.
 
-This breaks when you have both E500_TLB_BITMAP and E500_TLB_TLB0 set.
+However, I started off reviewing how the dma_mask and coherent_dma_mask
+was being used, and what I found was rather messy, and in some cases
+rather buggy.  I tried to get some of the bug fixes in before the last
+merge window, but it seems that the maintainers preferred to have the
+full solution rather than a simple -rc suitable bug fix.
 
-Instead, just convert the final E500_TLB_VALID clearing at the end into
-ref->flags = 0, and convert the early return a few lines earlier into
-conditional execution of the tlbil_one().
+So, this is an attempt to clean things up.
 
--Scott
+The first point here is that drivers performing DMA should be calling
+dma_set_mask()/dma_set_coherent_mask() in their probe function to verify
+that DMA can be performed.  Lots of ARM drivers omit this step; please
+refer to the DMA API documentation on this subject.
+
+What this means is that the DMA mask provided by bus code is a default
+value - nothing more.  It doesn't have to accurately reflect what the
+device is actually capable of.  Apart from the storage for dev->dma_mask
+being initialised for any device which is DMA capable, there is no other
+initialisation which is strictly necessary at device creation time.
+
+Now, these cleanups address two major areas:
+1. The setting of DMA masks, particularly when both the coherent and
+   streaming DMA masks are set together.
+
+2. The initialisation of DMA masks by drivers - this seems to be becoming
+   a popular habbit, one which may not be entirely the right solution.
+   Rather than having this scattered throughout the tree, I've pulled
+   that into a central location (and called it coercing the DMA mask -
+   because it really is about forcing the DMA mask to be that value.)
+
+3. Finally, addressing the long held misbelief that DMA masks somehow
+   correspond with physical addresses.  We already have established
+   long ago that dma_addr_t values returned from the DMA API are the
+   values which you program into the DMA controller, and so are the
+   bus addresses.  It is _only_ sane that DMA masks are also bus
+   related too, and not related to physical address spaces.
+
+(3) is a very important point for LPAE systems, which may still have
+less than 4GB of memory, but this memory is all located above the 4GB
+physical boundary.  This means with the current model, any device
+using a 32-bit DMA mask fails - even though the DMA controller is
+still only a 32-bit DMA controller but the 32-bit bus addresses map
+to system memory.  To put it another way, the bus addresses have a
+4GB physical offset on them.
+
+This email is only being sent to the mailing lists in question, not to
+anyone personally.  The list of individuals is far to great to do that.
+I'm hoping no mailing lists reject the patches based on the number of
+recipients.
+
+Patches based on v3.12-rc1.
+
+ Documentation/DMA-API-HOWTO.txt                   |   37 +++++++++------
+ Documentation/DMA-API.txt                         |    8 +++
+ arch/arm/include/asm/dma-mapping.h                |    8 +++
+ arch/arm/mm/dma-mapping.c                         |   49 ++++++++++++++++++--
+ arch/arm/mm/init.c                                |   12 +++---
+ arch/arm/mm/mm.h                                  |    2 +
+ arch/powerpc/kernel/vio.c                         |    3 +-
+ block/blk-settings.c                              |    8 ++--
+ drivers/amba/bus.c                                |    6 +--
+ drivers/ata/pata_ixp4xx_cf.c                      |    5 ++-
+ drivers/ata/pata_octeon_cf.c                      |    5 +-
+ drivers/block/nvme-core.c                         |   10 ++---
+ drivers/crypto/ixp4xx_crypto.c                    |   48 ++++++++++----------
+ drivers/dma/amba-pl08x.c                          |    5 ++
+ drivers/dma/dw/platform.c                         |    8 +--
+ drivers/dma/edma.c                                |    6 +--
+ drivers/dma/pl330.c                               |    4 ++
+ drivers/firmware/dcdbas.c                         |   23 +++++-----
+ drivers/firmware/google/gsmi.c                    |   13 +++--
+ drivers/gpu/drm/exynos/exynos_drm_drv.c           |    6 ++-
+ drivers/gpu/drm/omapdrm/omap_dmm_tiler.c          |    5 +-
+ drivers/media/platform/omap3isp/isp.c             |    6 +-
+ drivers/media/platform/omap3isp/isp.h             |    3 -
+ drivers/mmc/card/queue.c                          |    3 +-
+ drivers/mmc/host/sdhci-acpi.c                     |    5 +-
+ drivers/net/ethernet/broadcom/b44.c               |    3 +-
+ drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c  |    8 +---
+ drivers/net/ethernet/brocade/bna/bnad.c           |   13 ++----
+ drivers/net/ethernet/emulex/benet/be_main.c       |   12 +----
+ drivers/net/ethernet/intel/e1000/e1000_main.c     |    9 +---
+ drivers/net/ethernet/intel/e1000e/netdev.c        |   18 +++-----
+ drivers/net/ethernet/intel/igb/igb_main.c         |   18 +++-----
+ drivers/net/ethernet/intel/igbvf/netdev.c         |   18 +++-----
+ drivers/net/ethernet/intel/ixgb/ixgb_main.c       |   16 ++-----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |   15 ++----
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   15 ++----
+ drivers/net/ethernet/nxp/lpc_eth.c                |    6 ++-
+ drivers/net/ethernet/octeon/octeon_mgmt.c         |    5 +-
+ drivers/net/ethernet/sfc/efx.c                    |   12 +-----
+ drivers/net/wireless/b43/dma.c                    |    9 +---
+ drivers/net/wireless/b43legacy/dma.c              |    9 +---
+ drivers/of/platform.c                             |    3 -
+ drivers/parport/parport_pc.c                      |    8 +++-
+ drivers/scsi/scsi_lib.c                           |    2 +-
+ drivers/staging/dwc2/platform.c                   |    5 +-
+ drivers/staging/et131x/et131x.c                   |   17 +------
+ drivers/staging/imx-drm/imx-drm-core.c            |    8 +++-
+ drivers/staging/imx-drm/ipuv3-crtc.c              |    4 +-
+ drivers/staging/media/dt3155v4l/dt3155v4l.c       |    5 +--
+ drivers/usb/chipidea/ci_hdrc_imx.c                |    7 +--
+ drivers/usb/dwc3/dwc3-exynos.c                    |    7 +--
+ drivers/usb/gadget/lpc32xx_udc.c                  |    4 +-
+ drivers/usb/host/bcma-hcd.c                       |    3 +-
+ drivers/usb/host/ehci-atmel.c                     |    7 +--
+ drivers/usb/host/ehci-octeon.c                    |    4 +-
+ drivers/usb/host/ehci-omap.c                      |   10 ++--
+ drivers/usb/host/ehci-orion.c                     |    7 +--
+ drivers/usb/host/ehci-platform.c                  |   10 ++--
+ drivers/usb/host/ehci-s5p.c                       |    7 +--
+ drivers/usb/host/ehci-spear.c                     |    7 +--
+ drivers/usb/host/ehci-tegra.c                     |    7 +--
+ drivers/usb/host/ohci-at91.c                      |    9 ++--
+ drivers/usb/host/ohci-exynos.c                    |    7 +--
+ drivers/usb/host/ohci-nxp.c                       |    5 +-
+ drivers/usb/host/ohci-octeon.c                    |    5 +-
+ drivers/usb/host/ohci-omap3.c                     |   10 ++--
+ drivers/usb/host/ohci-pxa27x.c                    |    8 ++--
+ drivers/usb/host/ohci-sa1111.c                    |    6 +++
+ drivers/usb/host/ohci-spear.c                     |    7 +--
+ drivers/usb/host/ssb-hcd.c                        |    3 +-
+ drivers/usb/host/uhci-platform.c                  |    7 +--
+ drivers/usb/musb/am35x.c                          |   50 +++++++--------------
+ drivers/usb/musb/da8xx.c                          |   49 +++++++-------------
+ drivers/usb/musb/davinci.c                        |   48 +++++++-------------
+ drivers/usb/musb/tusb6010.c                       |   49 +++++++-------------
+ drivers/video/amba-clcd.c                         |    5 ++
+ include/linux/amba/bus.h                          |    2 -
+ include/linux/dma-mapping.h                       |   31 +++++++++++++
+ sound/arm/pxa2xx-pcm.c                            |    9 +---
+ sound/soc/atmel/atmel-pcm.c                       |   11 ++---
+ sound/soc/blackfin/bf5xx-ac97-pcm.c               |   11 ++---
+ sound/soc/blackfin/bf5xx-i2s-pcm.c                |   10 ++---
+ sound/soc/davinci/davinci-pcm.c                   |    9 +---
+ sound/soc/fsl/fsl_dma.c                           |    9 +---
+ sound/soc/fsl/mpc5200_dma.c                       |   10 ++---
+ sound/soc/jz4740/jz4740-pcm.c                     |   12 ++---
+ sound/soc/kirkwood/kirkwood-dma.c                 |    9 +---
+ sound/soc/nuc900/nuc900-pcm.c                     |    9 ++--
+ sound/soc/omap/omap-pcm.c                         |   11 ++---
+ sound/soc/pxa/pxa2xx-pcm.c                        |   11 ++---
+ sound/soc/s6000/s6000-pcm.c                       |    9 +---
+ sound/soc/samsung/dma.c                           |   11 ++---
+ sound/soc/samsung/idma.c                          |   11 ++---
+ 93 files changed, 493 insertions(+), 566 deletions(-)
