@@ -3,8 +3,8 @@ Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
  [IPv6:2002:4e20:1eda::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 585022C00CE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 22:14:06 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 33E2C2C014A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 22:15:08 +1000 (EST)
 In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 From: Russell King <rmk+kernel@arm.linux.org.uk>
@@ -21,12 +21,14 @@ To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
  linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
  uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 29/51] DMA-API: ata: pata_octeon_cf: convert to use
+Subject: [PATCH 30/51] DMA-API: dma: dw_dmac.c: convert to use
  dma_coerce_mask_and_coherent()
-Message-Id: <E1VMmAk-0007iq-IU@rmk-PC.arm.linux.org.uk>
+Message-Id: <E1VMmBi-0007iw-MP@rmk-PC.arm.linux.org.uk>
 Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 22:54:02 +0100
-Cc: Tejun Heo <tj@kernel.org>
+Date: Thu, 19 Sep 2013 22:55:02 +0100
+Cc: Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Viresh Kumar <viresh.linux@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,32 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Convert this code sequence:
-	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(64);
-	pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
-to use dma_coerce_mask_and_coherent() to avoid bypassing the architecture
-check on the DMA mask.
+This code sequence:
+	if (!pdev->dev.dma_mask) {
+		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
+		pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+	}
+bypasses the architectures check on the DMA mask.  It can be replaced
+with dma_coerce_mask_and_coherent(), avoiding the direct initialization
+of this mask.
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/ata/pata_octeon_cf.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/dma/dw/platform.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/ata/pata_octeon_cf.c b/drivers/ata/pata_octeon_cf.c
-index c51bbb9..6231d43 100644
---- a/drivers/ata/pata_octeon_cf.c
-+++ b/drivers/ata/pata_octeon_cf.c
-@@ -1014,8 +1014,9 @@ static int octeon_cf_probe(struct platform_device *pdev)
- 	}
- 	cf_port->c0 = ap->ioaddr.ctl_addr;
+diff --git a/drivers/dma/dw/platform.c b/drivers/dma/dw/platform.c
+index e35d975..453822c 100644
+--- a/drivers/dma/dw/platform.c
++++ b/drivers/dma/dw/platform.c
+@@ -191,11 +191,9 @@ static int dw_probe(struct platform_device *pdev)
+ 	if (IS_ERR(chip->regs))
+ 		return PTR_ERR(chip->regs);
  
--	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(64);
--	pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
-+	rv = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
-+	if (rv)
-+		return ret;
+-	/* Apply default dma_mask if needed */
+-	if (!dev->dma_mask) {
+-		dev->dma_mask = &dev->coherent_dma_mask;
+-		dev->coherent_dma_mask = DMA_BIT_MASK(32);
+-	}
++	err = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
++	if (err)
++		return err;
  
- 	ata_port_desc(ap, "cmd %p ctl %p", base, ap->ioaddr.ctl_addr);
- 
+ 	pdata = dev_get_platdata(dev);
+ 	if (!pdata)
 -- 
 1.7.4.4
