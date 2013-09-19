@@ -1,29 +1,33 @@
-Return-Path: <B32579@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9D0B82C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 18:47:52 +1000 (EST)
-Message-ID: <523C0B78.7050005@freescale.com>
-Date: Fri, 20 Sep 2013 14:16:48 +0530
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@tabi.org>, Kushwaha Prabhakar-B32579
- <B32579@freescale.com>
-Subject: Re: [PATCH 1/2][v3] powerpc/fsl-booke: Add initial T104x_QDS board
- support
-References: <1379581205-24424-1-git-send-email-prabhakar@freescale.com>
- <CAOZdJXVBV0LvEwTua_eyTHXJdOcHZKQCjiTrYocqfcQY5hosUw@mail.gmail.com>
- <071A08F2C6A57E4E94D980ECA553F874F9CF8D@039-SN1MPN1-005.039d.mgd.msft.net>
- <523BBC15.8030607@tabi.org>
-In-Reply-To: <523BBC15.8030607@tabi.org>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Jain Priyanka-B32167 <B32167@freescale.com>,
- Aggrwal Poonam-B10812 <B10812@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <rmk+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [78.32.30.218])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1501B2C012F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 20:55:47 +1000 (EST)
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
+ devel@driverdev.osuosl.org, devicetree@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net,
+ linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-ide@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org,
+ linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ uclinux-dist-devel@blackfin.uclinux.org
+Subject: [PATCH 51/51] ARM: 7805/1: mm: change max*pfn to include the
+ physical offset of memory
+Message-Id: <E1VMntH-0002EF-7Z@rmk-PC.arm.linux.org.uk>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Date: Fri, 20 Sep 2013 00:44:07 +0100
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,31 +37,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/20/2013 08:38 AM, Timur Tabi wrote:
-> Kushwaha Prabhakar-B32579 wrote:
->> My primary object is to put base patch in Linux. once it done other 
->> things can be enabled one by one.
->
-> Any features which are not enabled must be specified in the patch 
-> description.  The patch says that the board supports DIU, but the code 
-> doesn't, so that's misleading.
->
->> Also, I am not familiar with DIU driver:(.
->
-> I can help you with the DIU driver.
->
->> shall I remove the DIU node, and  while adding support of DIU, all 
->> modification will be sent.
->
-> I think it should be okay to leave the DIU node.  I think the kernel 
-> will crash if you try to enable a DIU console (video= on the kernel 
-> command line), but I think it's okay to ignore that for the moment.
->
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
 
-Got it.
-I think patch set is OK for now. No need to send v4.
+Most of the kernel code assumes that max*pfn is maximum pfns because
+the physical start of memory is expected to be PFN0. Since this
+assumption is not true on ARM architectures, the meaning of max*pfn
+is number of memory pages. This is done to keep drivers happy which
+are making use of of these variable to calculate the dma bounce limit
+using dma_mask.
 
-DIU support will be added later.
+Now since we have a architecture override possibility for DMAable
+maximum pfns, lets make meaning of max*pfns as maximum pnfs on ARM
+as well.
 
-Regards,
-Prabhakar
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ arch/arm/include/asm/dma-mapping.h |    8 ++++++++
+ arch/arm/mm/init.c                 |   10 ++++------
+ 2 files changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm/include/asm/dma-mapping.h b/arch/arm/include/asm/dma-mapping.h
+index 5b579b9..863cd84 100644
+--- a/arch/arm/include/asm/dma-mapping.h
++++ b/arch/arm/include/asm/dma-mapping.h
+@@ -64,6 +64,7 @@ static inline dma_addr_t virt_to_dma(struct device *dev, void *addr)
+ {
+ 	return (dma_addr_t)__virt_to_bus((unsigned long)(addr));
+ }
++
+ #else
+ static inline dma_addr_t pfn_to_dma(struct device *dev, unsigned long pfn)
+ {
+@@ -86,6 +87,13 @@ static inline dma_addr_t virt_to_dma(struct device *dev, void *addr)
+ }
+ #endif
+ 
++/* The ARM override for dma_max_pfn() */
++static inline unsigned long dma_max_pfn(struct device *dev)
++{
++	return PHYS_PFN_OFFSET + dma_to_pfn(dev, *dev->dma_mask);
++}
++#define dma_max_pfn(dev) dma_max_pfn(dev)
++
+ /*
+  * DMA errors are defined by all-bits-set in the DMA address.
+  */
+diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
+index 8aab24f..d50533c 100644
+--- a/arch/arm/mm/init.c
++++ b/arch/arm/mm/init.c
+@@ -426,12 +426,10 @@ void __init bootmem_init(void)
+ 	 * This doesn't seem to be used by the Linux memory manager any
+ 	 * more, but is used by ll_rw_block.  If we can get rid of it, we
+ 	 * also get rid of some of the stuff above as well.
+-	 *
+-	 * Note: max_low_pfn and max_pfn reflect the number of _pages_ in
+-	 * the system, not the maximum PFN.
+ 	 */
+-	max_low_pfn = max_low - PHYS_PFN_OFFSET;
+-	max_pfn = max_high - PHYS_PFN_OFFSET;
++	min_low_pfn = min;
++	max_low_pfn = max_low;
++	max_pfn = max_high;
+ }
+ 
+ /*
+@@ -537,7 +535,7 @@ static inline void free_area_high(unsigned long pfn, unsigned long end)
+ static void __init free_highpages(void)
+ {
+ #ifdef CONFIG_HIGHMEM
+-	unsigned long max_low = max_low_pfn + PHYS_PFN_OFFSET;
++	unsigned long max_low = max_low_pfn;
+ 	struct memblock_region *mem, *res;
+ 
+ 	/* set highmem page free */
+-- 
+1.7.4.4
