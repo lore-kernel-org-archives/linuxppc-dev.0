@@ -1,33 +1,25 @@
-Return-Path: <rmk+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
- [IPv6:2002:4e20:1eda::1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E883A2C00D1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 21:55:11 +1000 (EST)
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
- devel@driverdev.osuosl.org, devicetree@vger.kernel.org,
- dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net,
- linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-ide@vger.kernel.org, linux-media@vger.kernel.org,
- linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org,
- linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 15/51] DMA-API: net: b43legacy: replace
- dma_set_mask()+dma_set_coherent_mask() with new helper
-Message-Id: <E1VMlxA-0007gs-Ll@rmk-PC.arm.linux.org.uk>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 22:40:00 +0100
-Cc: Stefano Brivio <stefano.brivio@polimi.it>,
- Larry Finger <Larry.Finger@lwfinger.net>
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id 04B4F2C0136
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 21:56:03 +1000 (EST)
+Message-ID: <523C37CF.3030103@tabi.org>
+Date: Fri, 20 Sep 2013 06:55:59 -0500
+From: Timur Tabi <timur@tabi.org>
+MIME-Version: 1.0
+To: Prabhakar Kushwaha <prabhakar@freescale.com>,
+ Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+Subject: Re: [PATCH 1/2][v3] powerpc/fsl-booke: Add initial T104x_QDS board
+ support
+References: <1379581205-24424-1-git-send-email-prabhakar@freescale.com>
+ <CAOZdJXVBV0LvEwTua_eyTHXJdOcHZKQCjiTrYocqfcQY5hosUw@mail.gmail.com>
+ <071A08F2C6A57E4E94D980ECA553F874F9CF8D@039-SN1MPN1-005.039d.mgd.msft.net>
+ <523BBC15.8030607@tabi.org> <523C0B78.7050005@freescale.com>
+In-Reply-To: <523C0B78.7050005@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Jain Priyanka-B32167 <B32167@freescale.com>,
+ Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,37 +29,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace the following sequence:
+Prabhakar Kushwaha wrote:
+>
+> I think patch set is OK for now. No need to send v4.
 
-	dma_set_mask(dev, mask);
-	dma_set_coherent_mask(dev, mask);
-
-with a call to the new helper dma_set_mask_and_coherent().
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
----
- drivers/net/wireless/b43legacy/dma.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/wireless/b43legacy/dma.c b/drivers/net/wireless/b43legacy/dma.c
-index 42eb26c..b2ed179 100644
---- a/drivers/net/wireless/b43legacy/dma.c
-+++ b/drivers/net/wireless/b43legacy/dma.c
-@@ -806,12 +806,9 @@ static int b43legacy_dma_set_mask(struct b43legacy_wldev *dev, u64 mask)
- 	/* Try to set the DMA mask. If it fails, try falling back to a
- 	 * lower mask, as we can always also support a lower one. */
- 	while (1) {
--		err = dma_set_mask(dev->dev->dma_dev, mask);
--		if (!err) {
--			err = dma_set_coherent_mask(dev->dev->dma_dev, mask);
--			if (!err)
--				break;
--		}
-+		err = dma_set_mask_and_coherent(dev->dev->dma_dev, mask);
-+		if (!err)
-+			break;
- 		if (mask == DMA_BIT_MASK(64)) {
- 			mask = DMA_BIT_MASK(32);
- 			fallback = true;
--- 
-1.7.4.4
+It needs an updated patch description because the patch lies.  It 
+advertises DIU support, which is not true.
