@@ -1,27 +1,28 @@
-Return-Path: <R65777@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E7352C017C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 04:04:43 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 5/6 v5] kvm: booke: clear host tlb reference flag on
+ by ozlabs.org (Postfix) with ESMTPS id 6E28E2C018F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 04:08:20 +1000 (EST)
+Message-ID: <1379700490.16231.19.camel@aoeu.buserror.net>
+Subject: Re: [PATCH 5/6 v5] kvm: booke: clear host tlb reference flag on
  guest tlb invalidation
-Date: Fri, 20 Sep 2013 18:04:32 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0717AEA1@039-SN2MPN1-011.039d.mgd.msft.net>
+From: Scott Wood <scottwood@freescale.com>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Date: Fri, 20 Sep 2013 13:08:10 -0500
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0717AEA1@039-SN2MPN1-011.039d.mgd.msft.net>
 References: <1379570566-3715-1-git-send-email-Bharat.Bhushan@freescale.com>
  <1379570566-3715-6-git-send-email-Bharat.Bhushan@freescale.com>
  <1379624878.16231.3.camel@aoeu.buserror.net>
  <6A3DF150A5B70D4F9B66A25E3F7C888D07179BBE@039-SN2MPN1-011.039d.mgd.msft.net>
  <1379693889.16231.11.camel@aoeu.buserror.net>
-In-Reply-To: <1379693889.16231.11.camel@aoeu.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0717AEA1@039-SN2MPN1-011.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "agraf@suse.de" <agraf@suse.de>,
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "agraf@suse.de" <agraf@suse.de>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
  "paulus@samba.org" <paulus@samba.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
@@ -34,40 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMjAsIDIwMTMgOTo0OCBQTQ0KPiBUbzogQmh1
-c2hhbiBCaGFyYXQtUjY1Nzc3DQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgYmVuaEBrZXJuZWwu
-Y3Jhc2hpbmcub3JnOyBhZ3JhZkBzdXNlLmRlOw0KPiBwYXVsdXNAc2FtYmEub3JnOyBrdm1Admdl
-ci5rZXJuZWwub3JnOyBrdm0tcHBjQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBs
-aXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggNS82IHY1XSBrdm06IGJvb2tl
-OiBjbGVhciBob3N0IHRsYiByZWZlcmVuY2UgZmxhZyBvbiBndWVzdA0KPiB0bGIgaW52YWxpZGF0
-aW9uDQo+IA0KPiBPbiBUaHUsIDIwMTMtMDktMTkgYXQgMjM6MTkgLTA1MDAsIEJodXNoYW4gQmhh
-cmF0LVI2NTc3NyB3cm90ZToNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
-Cj4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiBTZW50OiBGcmlkYXksIFNlcHRl
-bWJlciAyMCwgMjAxMyAyOjM4IEFNDQo+ID4gPiBUbzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+
-ID4gPiBDYzogYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBhZ3JhZkBzdXNlLmRlOyBwYXVsdXNA
-c2FtYmEub3JnOw0KPiA+ID4ga3ZtQHZnZXIua2VybmVsLm9yZzsga3ZtLXBwY0B2Z2VyLmtlcm5l
-bC5vcmc7DQo+ID4gPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgQmh1c2hhbiBCaGFy
-YXQtUjY1Nzc3DQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDUvNiB2NV0ga3ZtOiBib29rZTog
-Y2xlYXIgaG9zdCB0bGIgcmVmZXJlbmNlDQo+ID4gPiBmbGFnIG9uIGd1ZXN0IHRsYiBpbnZhbGlk
-YXRpb24NCj4gPiA+DQo+ID4gPiBUaGlzIGJyZWFrcyB3aGVuIHlvdSBoYXZlIGJvdGggRTUwMF9U
-TEJfQklUTUFQIGFuZCBFNTAwX1RMQl9UTEIwIHNldC4NCj4gPg0KPiA+IEkgZG8gbm90IHNlZSBh
-bnkgY2FzZSB3aGVyZSB3ZSBzZXQgYm90aCBFNTAwX1RMQl9CSVRNQVAgYW5kDQo+ID4gRTUwMF9U
-TEJfVExCMC4NCj4gDQo+IFRoaXMgd291bGQgaGFwcGVuIGlmIHlvdSBoYXZlIGEgZ3Vlc3QgVExC
-MSBlbnRyeSB0aGF0IGlzIGJhY2tlZCBieSBzb21lIDRLIHBhZ2VzDQo+IGFuZCBzb21lIGxhcmdl
-ciBwYWdlcyAoZS5nLiBpZiB0aGUgZ3Vlc3QgbWFwcyBDQ1NSIHdpdGggb25lIGJpZw0KPiBUTEIx
-IGFuZCB0aGVyZSBhcmUgdmFyeWluZyBJL08gcGFzc3Rocm91Z2ggcmVnaW9ucyBtYXBwZWQpLiAg
-SXQncyBub3QgY29tbW9uLA0KPiBidXQgaXQncyBwb3NzaWJsZS4NCg0KQWdyZWUNCg0KPiANCj4g
-PiAgQWxzbyB3ZSBoYXZlIG5vdCBvcHRpbWl6ZWQgdGhhdCB5ZXQgKGtlZXBpbmcgdHJhY2sgb2Yg
-bXVsdGlwbGUgc2hhZG93DQo+ID4gVExCMCBlbnRyaWVzIGZvciBvbmUgZ3Vlc3QgVExCMSBlbnRy
-eSkNCj4gDQo+IFRoaXMgaXMgYWJvdXQgY29ycmVjdG5lc3MsIG5vdCBvcHRpbWl6YXRpb24uDQo+
-IA0KPiA+IFdlIHVzZXMgdGhlc2UgYml0IGZsYWdzIG9ubHkgZm9yIFRMQjEgYW5kIGlmIHNpemUg
-b2Ygc3RsYmUgaXMgNEsgdGhlbg0KPiA+IHdlIHNldCBFNTAwX1RMQl9UTEIwICBvdGhlcndpc2Ug
-d2Ugc2V0IEU1MDBfVExCX0JJVE1BUC4gQWx0aG91Z2ggSQ0KPiA+IHRoaW5rIHRoYXQgRTUwMF9U
-TEJfQklUTUFQIHNob3VsZCBiZSBzZXQgb25seSBpZiBzdGxiZSBzaXplIGlzIGxlc3MNCj4gPiB0
-aGFuIGd0bGJlIHNpemUuDQo+IA0KPiBXaHk/ICBFdmVuIGlmIHRoZXJlJ3Mgb25seSBvbmUgYml0
-IHNldCBpbiB0aGUgbWFwLCB3ZSBuZWVkIGl0IHRvIGtlZXAgdHJhY2sgb2YNCj4gd2hpY2ggZW50
-cnkgd2FzIHVzZWQuDQoNCklmIHRoZXJlIGlzIG9uZSBlbnRyeSB0aGVuIHdpbGwgbm90IHRoaXMg
-YmUgc2ltcGxlL2Zhc3RlciB0byBub3QgbG9va3VwIGJpdG1hcCBhbmQgZ3Vlc3QtPmhvc3QgYXJy
-YXk/DQpBIGZsYWcgaW5kaWNhdGUgaXQgaXMgMToxIG1hcCBhbmQgdGhpcyBpcyBwaHlzaWNhbCBh
-ZGRyZXNzLg0KDQotQmhhcmF0DQoNCj4gDQo+IC1TY290dA0KPiANCg0K
+On Fri, 2013-09-20 at 13:04 -0500, Bhushan Bharat-R65777 wrote:
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, September 20, 2013 9:48 PM
+> > To: Bhushan Bharat-R65777
+> > Cc: Wood Scott-B07421; benh@kernel.crashing.org; agraf@suse.de;
+> > paulus@samba.org; kvm@vger.kernel.org; kvm-ppc@vger.kernel.org; linuxppc-
+> > dev@lists.ozlabs.org
+> > Subject: Re: [PATCH 5/6 v5] kvm: booke: clear host tlb reference flag on guest
+> > tlb invalidation
+> > 
+> > On Thu, 2013-09-19 at 23:19 -0500, Bhushan Bharat-R65777 wrote:
+> > > We uses these bit flags only for TLB1 and if size of stlbe is 4K then
+> > > we set E500_TLB_TLB0  otherwise we set E500_TLB_BITMAP. Although I
+> > > think that E500_TLB_BITMAP should be set only if stlbe size is less
+> > > than gtlbe size.
+> > 
+> > Why?  Even if there's only one bit set in the map, we need it to keep track of
+> > which entry was used.
+> 
+> If there is one entry then will not this be simple/faster to not lookup bitmap and guest->host array?
+> A flag indicate it is 1:1 map and this is physical address.
+
+The difference would be negligible, and you'd have added overhead (both
+runtime and complexity) of making this a special case.
+
+-Scott
