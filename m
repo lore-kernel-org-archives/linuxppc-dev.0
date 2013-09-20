@@ -1,32 +1,37 @@
-Return-Path: <rmk+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
- [IPv6:2002:4e20:1eda::1])
+Return-Path: <balbi@ti.com>
+Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 12EE52C0119
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 23:03:04 +1000 (EST)
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+ (Client CN "mailhost.ti.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9F32C2C00E7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 23:24:10 +1000 (EST)
+Date: Fri, 20 Sep 2013 08:11:25 -0500
+From: Felipe Balbi <balbi@ti.com>
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [PATCH 42/51] DMA-API: usb: musb: use
+ platform_device_register_full() to avoid directly messing with dma masks
+Message-ID: <20130920131125.GO26101@radagast>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org,
- devel@driverdev.osuosl.org, devicetree@vger.kernel.org,
- dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net,
- linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-ide@vger.kernel.org, linux-media@vger.kernel.org,
- linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org,
- linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+ <E1VMnQk-0007sX-Ty@rmk-PC.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="S0GG+JvAI2G0KxBG"
+In-Reply-To: <E1VMnQk-0007sX-Ty@rmk-PC.arm.linux.org.uk>
+Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
+ devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
+ linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+ b43-dev@lists.infradead.org, linux-media@vger.kernel.org,
+ devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 09/51] DMA-API: net: broadcom/b44: replace
- dma_set_mask()+dma_set_coherent_mask() with new helper
-Message-Id: <E1VMlrL-0007g2-QQ@rmk-PC.arm.linux.org.uk>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 22:33:59 +0100
-Cc: Gary Zambrano <zambrano@broadcom.com>
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, Felipe Balbi <balbi@ti.com>,
+ linux-crypto@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,31 +41,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace the following sequence:
+--S0GG+JvAI2G0KxBG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	dma_set_mask(dev, mask);
-	dma_set_coherent_mask(dev, mask);
+Hi,
 
-with a call to the new helper dma_set_mask_and_coherent().
+On Fri, Sep 20, 2013 at 12:14:38AM +0100, Russell King wrote:
+> Use platform_device_register_full() for those drivers which can, to
+> avoid messing directly with DMA masks.  This can only be done when
+> the driver does not need to access the allocated musb platform device
+> from within its callbacks, which may be called during the musb
+> device probing.
+>=20
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
----
- drivers/net/ethernet/broadcom/b44.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+you want me to carry this one through my tree or you prefer getting my
+Acked-by ? Either way works for me:
 
-diff --git a/drivers/net/ethernet/broadcom/b44.c b/drivers/net/ethernet/broadcom/b44.c
-index 9b017d9..b4d2018 100644
---- a/drivers/net/ethernet/broadcom/b44.c
-+++ b/drivers/net/ethernet/broadcom/b44.c
-@@ -2183,8 +2183,7 @@ static int b44_init_one(struct ssb_device *sdev,
- 		goto err_out_free_dev;
- 	}
- 
--	if (dma_set_mask(sdev->dma_dev, DMA_BIT_MASK(30)) ||
--	    dma_set_coherent_mask(sdev->dma_dev, DMA_BIT_MASK(30))) {
-+	if (dma_set_mask_and_coherent(sdev->dma_dev, DMA_BIT_MASK(30))) {
- 		dev_err(sdev->dev,
- 			"Required 30BIT DMA mask unsupported by the system\n");
- 		goto err_out_powerdown;
--- 
-1.7.4.4
+Acked-by: Felipe Balbi <balbi@ti.com>
+
+there's also the third option of me setting up a branch with only this
+patch and we both merge it, that'd also work.
+
+cheers
+
+--=20
+balbi
+
+--S0GG+JvAI2G0KxBG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSPEl9AAoJEIaOsuA1yqREIKYP/0fcIrBOWMvkcjYUJYHm/Vg7
+E8Vfe5ZUQcfPTWoiz5Kzdg+2Y4NG4Zv7Y7TpZj5atvz97zpiT0JAhvy5yf1+q3sv
+qozJJL3JUtpbwcNP4R0/rD6v+2VvyS3lWuJeCI/NJY4zpZ6zYS8WsaR7QRnjUX8O
+wOSIrYcwbr8xNrKIQxWhmEld60Cs4wSZ3TS8fvV0UWBo5CTeZdGZns/gRW5MGmZW
+tdR1nB+KmCqpVga49niAMHKm0DqvBhrXyuZm3T7nrWxXnqY3/bhYM/sGNPAdeGU1
+hJ6Hfe4yNjQpDm9bkRStj3kONevdXFpmnx7ndqnMGA+qAcZYUZP2ZQIP4zKUgPq5
+iM/lX9z+NYtJPzUi2sV6XGHpU5+O2Imy0SP36IvsV3K9RbSv+MDsNqCQRdFzhQjX
+dvR2fzXM6eX5zeRR9fonD3odCCr7sDGj8b+ODFhyp/Imph/e3spE0NWc/1et6KhY
+OOXVb2MRpRBPwA8yjFOfLEn5rgu3u8awCHDe4rmknYVdmzzrZOowTSqw5q6UTK80
+Vz+bJques9CHoUs2StfOeJ4QOn6mzaYi00HjqXZ3BZlBQSTKoPAAzC4H3vS/vPTs
+9PSqsMPPkK4cFcq94JIViy9gzHUKWJREWjM9nmAKMfGdU+xxkTnYLurDBKZy6SAt
+8zFqQe3pzsCzGEpNuH+i
+=q3cb
+-----END PGP SIGNATURE-----
+
+--S0GG+JvAI2G0KxBG--
