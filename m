@@ -1,24 +1,38 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E5E6D2C014F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 04:50:26 +1000 (EST)
-Message-ID: <1379703009.16231.32.camel@aoeu.buserror.net>
-Subject: Re: [PATCH 5/6 v6] kvm: booke: clear host tlb reference flag on
- guest tlb invalidation
-From: Scott Wood <scottwood@freescale.com>
-To: Bharat Bhushan <r65777@freescale.com>
-Date: Fri, 20 Sep 2013 13:50:09 -0500
-In-Reply-To: <1379651122-26078-1-git-send-email-Bharat.Bhushan@freescale.com>
-References: <1379651122-26078-1-git-send-email-Bharat.Bhushan@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: kvm@vger.kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- Bharat Bhushan <Bharat.Bhushan@freescale.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <jeffrey.t.kirsher@intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by ozlabs.org (Postfix) with ESMTP id 0BF402C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 05:46:01 +1000 (EST)
+Message-ID: <1379706355.1972.8.camel@jtkirshe-mobl>
+Subject: Re: [PATCH 12/51] DMA-API: net: intel/e1000: replace
+ dma_set_mask()+dma_set_coherent_mask() with new helper
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Fri, 20 Sep 2013 12:45:55 -0700
+In-Reply-To: <E1VMluG-0007gV-6y@rmk-PC.arm.linux.org.uk>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+ <E1VMluG-0007gV-6y@rmk-PC.arm.linux.org.uk>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-IwGSEViKnlGxN4Ur4LPe"
+Mime-Version: 1.0
+Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
+ linux-mmc@vger.kernel.org,
+ Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+ linux-fbdev@vger.kernel.org, linux-nvme@lists.infradead.org,
+ linux-ide@vger.kernel.org, Carolyn Wyborny <carolyn.wyborny@intel.com>,
+ devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
+ linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+ Don Skidmore <donald.c.skidmore@intel.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, b43-dev@lists.infradead.org,
+ linux-media@vger.kernel.org, Alex Duyck <alexander.h.duyck@intel.com>,
+ devicetree@vger.kernel.org, Greg Rose <gregory.v.rose@intel.com>,
+ dri-devel@lists.freedesktop.org, linux-tegra@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, John Ronciak <john.ronciak@intel.com>,
+ linux-crypto@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+ Bruce Allan <bruce.w.allan@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ Tushar Dave <tushar.n.dave@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,65 +42,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-09-20 at 09:55 +0530, Bharat Bhushan wrote:
-> On booke, "struct tlbe_ref" contains host tlb mapping information
-> (pfn: for guest-pfn to pfn, flags: attribute associated with this mapping)
-> for a guest tlb entry. So when a guest creates a TLB entry then
-> "struct tlbe_ref" is set to point to valid "pfn" and set attributes in
-> "flags" field of the above said structure. When a guest TLB entry is
-> invalidated then flags field of corresponding "struct tlbe_ref" is
-> updated to point that this is no more valid, also we selectively clear
-> some other attribute bits, example: if E500_TLB_BITMAP was set then we clear
-> E500_TLB_BITMAP, if E500_TLB_TLB0 is set then we clear this.
-> 
-> Ideally we should clear complete "flags" as this entry is invalid and does not
-> have anything to re-used. The other part of the problem is that when we use
-> the same entry again then also we do not clear (started doing or-ing etc).
-> 
-> So far it was working because the selectively clearing mentioned above
-> actually clears "flags" what was set during TLB mapping. But the problem
-> starts coming when we add more attributes to this then we need to selectively
-> clear them and which is not needed.
-> 
-> This patch we do both
->         - Clear "flags" when invalidating;
->         - Clear "flags" when reusing same entry later
-> 
-> Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+
+--=-IwGSEViKnlGxN4Ur4LPe
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2013-09-19 at 22:37 +0100, Russell King wrote:
+> Replace the following sequence:
+>=20
+>         dma_set_mask(dev, mask);
+>         dma_set_coherent_mask(dev, mask);
+>=20
+> with a call to the new helper dma_set_mask_and_coherent().
+>=20
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 > ---
-> v5->v6
->  - Fix flag clearing comment
+>  drivers/net/ethernet/intel/e1000/e1000_main.c |    9 ++-------
+>  1 files changed, 2 insertions(+), 7 deletions(-)
 
-The changes between v5 and v6 are not just about comments...
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-> 
->  arch/powerpc/kvm/e500_mmu_host.c |   16 ++++++++--------
->  1 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-> index 1c6a9d7..7370e1c 100644
-> --- a/arch/powerpc/kvm/e500_mmu_host.c
-> +++ b/arch/powerpc/kvm/e500_mmu_host.c
-> @@ -230,15 +230,15 @@ void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
->  		ref->flags &= ~(E500_TLB_TLB0 | E500_TLB_VALID);
->  	}
->  
-> -	/* Already invalidated in between */
-> -	if (!(ref->flags & E500_TLB_VALID))
-> -		return;
-> -
-> -	/* Guest tlbe is backed by at most one host tlbe per shadow pid. */
-> -	kvmppc_e500_tlbil_one(vcpu_e500, gtlbe);
-> +	/*
-> +	 * Check whether TLB entry is already invalidated in between
-> +	 * Guest tlbe is backed by at most one host tlbe per shadow pid.
-> +	 */
-> +	if (ref->flags & E500_TLB_VALID)
-> +		kvmppc_e500_tlbil_one(vcpu_e500, gtlbe);
+--=-IwGSEViKnlGxN4Ur4LPe
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-I'd phrase this combined comment as "If it's still valid, it's a TLB0
-entry, and thus backed by at most one host tlbe per shadow pid".
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
 
-Otherwise looks good.
+iQIcBAABCgAGBQJSPKXzAAoJEOVv75VaS+3OXRMP/0inX8RE/LpymWBicNP8WD6j
+xJGDMRHzZ+Frac/Q0qSWiCNSvfBn/WZ9glR0uxnIz51/TjfFzITWZBzcsgeVJlAv
+BAQt/pIzXrw1Qwwcnm3ZGBJ6XhGFQ8rI+6Fv/1nQ7peb1PoVjpM+pkGszhgOD7AZ
+KU0EqTKIIGnRKxdVZwraXXEIrrwCwEnEJnHylot3scVYOEww+8UkQzp1ItDHeXuD
+FQurkbrCawaVB7bctDl45kmo66I+Pn6SLo22LFDI7m8Q92KePKR0pNHv4dLuRrh2
+5j6S2j1jeZca3DT0dFzyV1jgBjOzWmHfA38yHpk0FesH+3DAlTgkTxLc2PpARAww
+cKqu5d/i1rk0INt61H6tp3qYWH7HQ563PW9aIxX82PsRdXtedvTUjtxAZ/kIWAUQ
+uFX5Q0Y0u9XlfC8spRAcUvi9AxKATY/mDXcd1oBFO2yLYWcfo/2R4THAqz/yjhea
+KQQVh9gE2Uc06/fWbh2W+uGdluMNJJSEKTbkNxea2w9+MEGLV9+Cjdfb9x/w4oMf
+vT5rD9lIZh1k9xZGjB++HrOd6Gy6l9j+wYQqIiC0Ut9P5gOjrd2gyhg3xzvz894/
+eYO6FFFLJeQijLVHEU5nUVg+0IQQQaUc0Cq6WGr/USpjapQUq0xuQLLRCaph1uPM
+crlJOl4YrRaaUMl8RxDR
+=UEsD
+-----END PGP SIGNATURE-----
 
--Scott
+--=-IwGSEViKnlGxN4Ur4LPe--
