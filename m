@@ -1,40 +1,38 @@
 Return-Path: <htejun@gmail.com>
-Received: from mail-ye0-x232.google.com (mail-ye0-x232.google.com
- [IPv6:2607:f8b0:4002:c04::232])
+Received: from mail-ye0-x233.google.com (mail-ye0-x233.google.com
+ [IPv6:2607:f8b0:4002:c04::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C1A312C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 22:18:41 +1000 (EST)
-Received: by mail-ye0-f178.google.com with SMTP id m5so77228yen.23
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 05:18:38 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id E2A482C00E2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 22:26:12 +1000 (EST)
+Received: by mail-ye0-f179.google.com with SMTP id r6so82358yen.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 05:26:09 -0700 (PDT)
 Sender: Tejun Heo <htejun@gmail.com>
-Date: Fri, 20 Sep 2013 07:18:34 -0500
+Date: Fri, 20 Sep 2013 07:26:03 -0500
 From: Tejun Heo <tj@kernel.org>
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH 39/51] DMA-API: others: use dma_set_coherent_mask()
-Message-ID: <20130920121834.GB7630@mtj.dyndns.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMnNq-0007s4-HN@rmk-PC.arm.linux.org.uk>
- <20130920121652.GA7630@mtj.dyndns.org>
+To: Alexander Gordeev <agordeev@redhat.com>
+Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
+Message-ID: <20130920122603.GC7630@mtj.dyndns.org>
+References: <20130905200608.GA3846@htj.dyndns.org>
+ <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
+ <20130906160621.GF22763@mtj.dyndns.org>
+ <20130906233205.GF12956@google.com>
+ <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
+ <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
+ <20130917143022.GA7707@concordia>
+ <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
+ <20130918142231.GA21650@mtj.dyndns.org>
+ <20130918165045.GB2353@dhcp-26-207.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130920121652.GA7630@mtj.dyndns.org>
-Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, linux-mmc@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-nvme@lists.infradead.org,
- linux-ide@vger.kernel.org, devel@driverdev.osuosl.org,
- linux-samsung-soc@vger.kernel.org, Joonyoung Shim <jy0922.shim@samsung.com>,
- linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
- Seung-Woo Kim <sw0312.kim@samsung.com>, b43-dev@lists.infradead.org,
- linux-media@vger.kernel.org, devicetree@vger.kernel.org,
- Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>,
- dri-devel@lists.freedesktop.org, linux-tegra@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>,
- linux-crypto@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20130918165045.GB2353@dhcp-26-207.brq.redhat.com>
+Cc: Joerg Roedel <joro@8bytes.org>, "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ Jan Beulich <JBeulich@suse.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,24 +42,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 20, 2013 at 07:16:52AM -0500, Tejun Heo wrote:
-> On Fri, Sep 20, 2013 at 12:11:38AM +0100, Russell King wrote:
-> > The correct way for a driver to specify the coherent DMA mask is
-> > not to directly access the field in the struct device, but to use
-> > dma_set_coherent_mask().  Only arch and bus code should access this
-> > member directly.
-> > 
-> > Convert all direct write accesses to using the correct API.
-> > 
-> > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> 
-> Acked-by: Tejun Heo <tj@kernel.org>
-> 
-> The patch is pretty widely spread.  I don't mind how it gets routed
-> but what's the plan?
+Hello,
 
-Hmm... maybe hte pata_ixp4xx_cf.c part should be moved to the one
-which updates pata_octeon_cf.c?
+On Wed, Sep 18, 2013 at 06:50:45PM +0200, Alexander Gordeev wrote:
+> Actually, I do not see much contradiction with what I proposed. The
+> key words here "determine the number of MSIs the controller wants".
+> 
+> In general case it is not what pci_msix_table_size() returns (or at
+> least we should not limit ourselves to it) - there could be non-
+> standard means to report number of MSIs: hardcoded, version-dependant,
+> device-specific registers etc.
+> 
+> Next, if we opt to determine the number of MSIs by non-MSI standard
+> means then there is no reason not to call pci_get_msix_limit() (or
+> whatever) at this step.
+
+Yeah, that's all fine.  My point is that we shouldn't try to use
+"degraded" multiple MSI mode where the number of MSIs allocated is
+smaller than performing full multiple MSI operation.  How that number
+is determined doesn't really matter but that number is a property
+which is solely decided by the device driver, right?  If a device
+needs full multiple MSI mode, given specific configuration, it needs
+>= X number of MSIs and that's the number it should request.
+
+> Being Captain Obvious here, but it is up to the device driver to handle
+> a failure. There could be no such option as single MSI mode after all :)
+
+I don't think there actually is a mainstream device which can't
+fallback to single interrupt.  Anyways, the point is the same, let's
+please not try to create an interface which encourages complex retry
+logic in its users which are likely to involve less traveled and
+tested paths in both the driver and firmware.
 
 Thanks.
 
