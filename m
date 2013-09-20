@@ -1,24 +1,41 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F1BD52C0196
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 07:22:39 +1000 (EST)
-Message-ID: <1379712141.16231.36.camel@aoeu.buserror.net>
-Subject: Re: [PATCH v2] powerpc 8xx: Fixing issue with CONFIG_PIN_TLB
-From: Scott Wood <scottwood@freescale.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Date: Fri, 20 Sep 2013 16:22:21 -0500
-In-Reply-To: <5238860F.4030405@c-s.fr>
-References: <201309121825.r8CIPrkI005690@localhost.localdomain>
- <1379011469.2536.45.camel@snotra.buserror.net> <52329CDF.9020103@c-s.fr>
- <1379365336.2536.166.camel@snotra.buserror.net> <5238860F.4030405@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <htejun@gmail.com>
+Received: from mail-ye0-x22f.google.com (mail-ye0-x22f.google.com
+ [IPv6:2607:f8b0:4002:c04::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DDD3E2C0118
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 08:21:00 +1000 (EST)
+Received: by mail-ye0-f175.google.com with SMTP id q8so372550yen.20
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 15:20:57 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Fri, 20 Sep 2013 17:20:50 -0500
+From: Tejun Heo <tj@kernel.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 39/51] DMA-API: others: use dma_set_coherent_mask()
+Message-ID: <20130920222050.GA8763@mtj.dyndns.org>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+ <E1VMnNq-0007s4-HN@rmk-PC.arm.linux.org.uk>
+ <20130920121652.GA7630@mtj.dyndns.org>
+ <20130920140018.GP25647@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130920140018.GP25647@n2100.arm.linux.org.uk>
+Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, linux-mmc@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-nvme@lists.infradead.org,
+ linux-ide@vger.kernel.org, devel@driverdev.osuosl.org,
+ linux-samsung-soc@vger.kernel.org, Joonyoung Shim <jy0922.shim@samsung.com>,
+ linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+ Seung-Woo Kim <sw0312.kim@samsung.com>, b43-dev@lists.infradead.org,
+ linux-media@vger.kernel.org, devicetree@vger.kernel.org,
+ Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>,
+ dri-devel@lists.freedesktop.org, linux-tegra@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>,
+ linux-crypto@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,99 +45,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-09-17 at 18:40 +0200, leroy christophe wrote:
-> Le 16/09/2013 23:02, Scott Wood a =C3=A9crit :
-> > On Fri, 2013-09-13 at 07:04 +0200, leroy christophe wrote:
-> >> Le 12/09/2013 20:44, Scott Wood a =C3=A9crit :
-> >>> On Thu, 2013-09-12 at 20:25 +0200, Christophe Leroy wrote:
-> >>>> This is a reorganisation of the setup of the TLB at kernel startup=
-, in order
-> >>>> to handle the CONFIG_PIN_TLB case in accordance with chapter 8.10.=
-3 of MPC866
-> >>>> and MPC885 reference manuals.
-> >>>>
-> >>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> >>>>
-> >>>> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S linux-3.11/=
-arch/powerpc/kernel/head_8xx.S
-> >>>> --- linux-3.11.org/arch/powerpc/kernel/head_8xx.S	2013-09-02 22:46=
-:10.000000000 +0200
-> >>>> +++ linux-3.11/arch/powerpc/kernel/head_8xx.S	2013-09-09 11:28:54.=
-000000000 +0200
-> >>>> @@ -785,27 +785,24 @@
-> >>>>     * these mappings is mapped by page tables.
-> >>>>     */
-> >>>>    initial_mmu:
-> >>>> -	tlbia			/* Invalidate all TLB entries */
-> >>>> -/* Always pin the first 8 MB ITLB to prevent ITLB
-> >>>> -   misses while mucking around with SRR0/SRR1 in asm
-> >>>> -*/
-> >>>> -	lis	r8, MI_RSV4I@h
-> >>>> -	ori	r8, r8, 0x1c00
-> >>>> -
-> >>>> +	lis	r8, MI_RESETVAL@h
-> >>>>    	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
-> >>>>   =20
-> >>>> -#ifdef CONFIG_PIN_TLB
-> >>>> -	lis	r10, (MD_RSV4I | MD_RESETVAL)@h
-> >>>> -	ori	r10, r10, 0x1c00
-> >>>> -	mr	r8, r10
-> >>>> -#else
-> >>>>    	lis	r10, MD_RESETVAL@h
-> >>>> -#endif
-> >>>>    #ifndef CONFIG_8xx_COPYBACK
-> >>>>    	oris	r10, r10, MD_WTDEF@h
-> >>>>    #endif
-> >>>>    	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
-> >>>>   =20
-> >>>> +	tlbia			/* Invalidate all TLB entries */
-> >>> Is this change to make sure we invalidate everything even if the
-> >>> bootloader set RSV4I?
-> >> Most probably. It is step 2 of the process defined in MPC866 and MPC=
-885
-> >> Reference Manuals:
-> >>
-> >> =C2=A78.10.3 Loading Locked TLB Entries:
-> >> The process of loading a single reserved entry in the TLB is as foll=
-ows:
-> > To minimize code churn we should just fix actual problems, rather tha=
-n
-> > shuffle things around to conform to a suggested sequence.  After all,
-> > we're not just trying to load a single entry.
-> Ok, I'll try again.
-> >
-> >>>> +	ori	r8, r8, 0x1c00
-> >>>> +	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
-> >>>> +#ifdef CONFIG_PIN_TLB
-> >>>> +	ori	r10, r10, 0x1c00
-> >>>> +	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
-> >>>> +#endif
-> >>> Still 0x1c00?
-> >> Yes, I kept the same entries in order to limit modifications:
-> >> * 28 =3D First 8Mbytes page
-> >> * 29 =3D IMMR
-> >> * 30 =3D Second 8Mbytes page
-> >> * 31 =3D Third 8Mbytes page
-> > If you actually want to program them in increasing order then it look=
-s
-> > like you're still missing a write to CTR between the last two 8M entr=
-ies
-> > -- thus you'll overwrite the IMMR with the last 8M entry.  That was t=
-he
-> > same problem that v1 fixed -- did that change get lost accidentally?
-> Oops, no, in fact I diffed from the version which was including it=20
-> already. My mistake.
-> >
-> > The hardware wants to decrement; why fight it?
-> I see your point.
-> However it is not clear in the documentation if the decrement is done=20
-> really after the update, or at xTLB interrupt. So I propose to still se=
-t=20
-> the CTR ourself as described in the reference Manual and not assume tha=
-t=20
-> the HW decrements it.
+Hey,
 
-It says "every update" -- do you have any reason to believe that's
-wrong?  It could be tested...
+On Fri, Sep 20, 2013 at 03:00:18PM +0100, Russell King - ARM Linux wrote:
+> Another would be if subsystem maintainers are happy that I carry them,
+> I can add the acks, and then later on towards the end of the cycle,
+> provide a branch subsystem maintainers could pull.
+> 
+> Or... if you can think of something easier...
 
--Scott
+I'm happy with the latter method and it's likely that you'll end up
+carrying at least some of the patches through your tree anyway.
+Please feel free to add my acks to all libata related patches and
+carry them through your tree.
+
+Thanks and have fun routing.
+
+-- 
+tejun
