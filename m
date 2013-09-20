@@ -1,18 +1,18 @@
 Return-Path: <jeffrey.t.kirsher@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
- by ozlabs.org (Postfix) with ESMTP id 1A07C2C015E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 05:51:22 +1000 (EST)
-Message-ID: <1379706667.1972.13.camel@jtkirshe-mobl>
-Subject: Re: [PATCH 07/51] DMA-API: net: intel/ixgbe: fix 32-bit DMA mask
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by ozlabs.org (Postfix) with ESMTP id DE0F02C0844
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 05:51:43 +1000 (EST)
+Message-ID: <1379706699.1972.14.camel@jtkirshe-mobl>
+Subject: Re: [PATCH 08/51] DMA-API: net: intel/ixgbevf: fix 32-bit DMA mask
  handling
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 To: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Fri, 20 Sep 2013 12:51:07 -0700
-In-Reply-To: <E1VMlpP-0007fp-IC@rmk-PC.arm.linux.org.uk>
+Date: Fri, 20 Sep 2013 12:51:39 -0700
+In-Reply-To: <E1VMlqN-0007fw-MQ@rmk-PC.arm.linux.org.uk>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMlpP-0007fp-IC@rmk-PC.arm.linux.org.uk>
+ <E1VMlqN-0007fw-MQ@rmk-PC.arm.linux.org.uk>
 Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-Ffnl3xLzjnyC7fSFea2u"
+ protocol="application/pgp-signature"; boundary="=-lefeYEeJBf7y/i8K0Ul/"
 Mime-Version: 1.0
 Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
  linux-mmc@vger.kernel.org,
@@ -43,11 +43,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-Ffnl3xLzjnyC7fSFea2u
+--=-lefeYEeJBf7y/i8K0Ul/
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2013-09-19 at 22:31 +0100, Russell King wrote:
+On Thu, 2013-09-19 at 22:32 +0100, Russell King wrote:
 > The fallback to 32-bit DMA mask is rather odd:
 >         if (!dma_set_mask(&pdev->dev, DMA_BIT_MASK(64)) &&
 >             !dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64))) {
@@ -58,9 +58,8 @@ On Thu, 2013-09-19 at 22:31 +0100, Russell King wrote:
 >                         err =3D dma_set_coherent_mask(&pdev->dev,
 >                                                     DMA_BIT_MASK(32));
 >                         if (err) {
->                                 dev_err(&pdev->dev,
->                                         "No usable DMA configuration,
-> aborting\n");
+>                                 dev_err(&pdev->dev, "No usable DMA "
+>                                         "configuration, aborting\n");
 >                                 goto err_dma;
 >                         }
 >                 }
@@ -73,12 +72,13 @@ On Thu, 2013-09-19 at 22:31 +0100, Russell King wrote:
 >=20
 > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   15 +++++----------
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   15
+> +++++----------
 >  1 files changed, 5 insertions(+), 10 deletions(-)
 
 Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
---=-Ffnl3xLzjnyC7fSFea2u
+--=-lefeYEeJBf7y/i8K0Ul/
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -86,19 +86,19 @@ Content-Transfer-Encoding: 7bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.14 (GNU/Linux)
 
-iQIcBAABCgAGBQJSPKcrAAoJEOVv75VaS+3O5wkQAJl6vEbpRaqMs6YHrykXxtT3
-KlYAmYfZgASG3sUQpLwSAVQ3kmQ3+peW+gXzjftqiiarDD3bOiKK/Ax0Vaa54NwT
-i/HwlhahUj7jPN4KISXEsyoGSEvFg9lJ9I4P2Tdobe46WcW2SxX7GLe/O9GNuqkS
-t/OyfLmZEhEuSXrEUnzeYPJFZs5r6yB+hYrtYx24fkzqeZ5V1r16TSMQ64uhP6YQ
-9WY8VC7oY+CnXFB1fEs3ZtD8v1SmqpYl/Tre5ZEIxBb6tVZnK2gSxWdnQyM1FXHk
-R5df8zkrNwDTuqwV4GJ0H1FDgoPBAg02ieCgn5rTErge9eTknJSMxsF5Sybok85Z
-nxGjG+B/qyrh4PPKakhpQXIi5i8CMNpTiQvimCNNztXIacrJVzXtaouP9XLkw44W
-I/RXTP5LN8v1bPqd0jo2dHQR0mb70XqPivZhtXMbRyjk6UzLWOHqZkjSlSiGzSHn
-2XiqFdCLj3qPCRKhQV+TECQBNBI3dTAA1oZmt/5oOYML3QJ4E1Kad5826ScXg/Jx
-74WZVoy4wv+g2NyiY+F703VpWHtaf0zKCiDnMDgwNRIginDaXqTp80WoLhWNMDqd
-6dOWdcceVlUyg8iEBEJ7+MTgIECCGVQxxB5lJ5Z8bftA11eN8D0xplpf9JfsC1p/
-BWN/CuOShCgKe3ju3DNB
-=NF+f
+iQIcBAABCgAGBQJSPKdLAAoJEOVv75VaS+3Opm4P/Axfj+CMCJQfBxBXYypk3qb+
++nJwp6C07IeuHbmilE4pqiWzl68PUidSbdAgnARntgiUhCRx/PAQbeEWO2FPVxw8
+DY9i0wUYpo3ffllzIqOaUc/hlGEQjzbvrP//oKU3r3Zx+eB8IO5VwbqF7aeKp97/
+Swlj4HJSHjRblLWIsUDlmvDXZEdZFT9re+NNQSnI3W0n4Fobx2L671hHvm7EQccb
+1/hf1lFlvdJWz3CFsmsGjYk1oUhtkn+0wYHb5LRI1cfgsbhUqZCwko8V0V0b3a+D
+OXYsDDM0xJDXC7CWxSLf/OgNbim3Imulc5Rmy44xku7mfBNNw/SbIPT5Cd93B5nA
+TsDp9iTkr0mjc3d8LHIiE26A99MUHRsP4HPcJBPETUtA4uXP3JQH37hDsbsSmcZj
++fsdrpVbiZF29s5YSy8fWX+3i5YerZCh3v/ItX0chcfAKLuSqWEYV2s/JuQVTgtA
+agpTxRpNIgHi58vk8ilVcF1KPMtyKLrvbRD+v6Bni6hpcD7IT5SaXtppLP+FuZ8K
+2u160Hns1kFN6ZAIRpbq1nW6ZgYNcdjOF3V3Ea2qliHgDKwhbZgC6zGBOQAFdPXV
+sVbVqp6G0ORBU1Fyyjcu0fk/sbQ3aEzVlpzv+xKKb5JyJWV36o/JxjrskJpjF2tf
+51e74m3k3ad4cw7ztMYz
+=+CYc
 -----END PGP SIGNATURE-----
 
---=-Ffnl3xLzjnyC7fSFea2u--
+--=-lefeYEeJBf7y/i8K0Ul/--
