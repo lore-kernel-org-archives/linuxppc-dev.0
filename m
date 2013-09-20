@@ -1,28 +1,22 @@
 Return-Path: <R65777@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B24D32C0118
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 14:19:14 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 5/6 v5] kvm: booke: clear host tlb reference flag on
- guest tlb invalidation
-Date: Fri, 20 Sep 2013 04:19:03 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D07179BBE@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1379570566-3715-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1379570566-3715-6-git-send-email-Bharat.Bhushan@freescale.com>
- <1379624878.16231.3.camel@aoeu.buserror.net>
-In-Reply-To: <1379624878.16231.3.camel@aoeu.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 2BC582C0118
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 14:32:53 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <benh@kernel.crashing.org>, <agraf@suse.de>, <paulus@samba.org>,
+ <kvm@vger.kernel.org>, <kvm-ppc@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: [PATCH 5/6 v6] kvm: booke: clear host tlb reference flag on guest tlb
+ invalidation
+Date: Fri, 20 Sep 2013 09:55:22 +0530
+Message-ID: <1379651122-26078-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
-Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,64 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMjAsIDIwMTMgMjozOCBBTQ0KPiBUbzogQmh1
-c2hhbiBCaGFyYXQtUjY1Nzc3DQo+IENjOiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IGFncmFm
-QHN1c2UuZGU7IHBhdWx1c0BzYW1iYS5vcmc7DQo+IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGt2bS1w
-cGNAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gQmh1
-c2hhbiBCaGFyYXQtUjY1Nzc3DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggNS82IHY1XSBrdm06IGJv
-b2tlOiBjbGVhciBob3N0IHRsYiByZWZlcmVuY2UgZmxhZyBvbiBndWVzdA0KPiB0bGIgaW52YWxp
-ZGF0aW9uDQo+IA0KPiBPbiBUaHUsIDIwMTMtMDktMTkgYXQgMTE6MzIgKzA1MzAsIEJoYXJhdCBC
-aHVzaGFuIHdyb3RlOg0KPiA+IE9uIGJvb2tlLCAic3RydWN0IHRsYmVfcmVmIiBjb250YWlucyBo
-b3N0IHRsYiBtYXBwaW5nIGluZm9ybWF0aW9uDQo+ID4gKHBmbjogZm9yIGd1ZXN0LXBmbiB0byBw
-Zm4sIGZsYWdzOiBhdHRyaWJ1dGUgYXNzb2NpYXRlZCB3aXRoIHRoaXMNCj4gPiBtYXBwaW5nKSBm
-b3IgYSBndWVzdCB0bGIgZW50cnkuIFNvIHdoZW4gYSBndWVzdCBjcmVhdGVzIGEgVExCIGVudHJ5
-DQo+ID4gdGhlbiAic3RydWN0IHRsYmVfcmVmIiBpcyBzZXQgdG8gcG9pbnQgdG8gdmFsaWQgInBm
-biIgYW5kIHNldA0KPiA+IGF0dHJpYnV0ZXMgaW4gImZsYWdzIiBmaWVsZCBvZiB0aGUgYWJvdmUg
-c2FpZCBzdHJ1Y3R1cmUuIFdoZW4gYSBndWVzdA0KPiA+IFRMQiBlbnRyeSBpcyBpbnZhbGlkYXRl
-ZCB0aGVuIGZsYWdzIGZpZWxkIG9mIGNvcnJlc3BvbmRpbmcgInN0cnVjdA0KPiA+IHRsYmVfcmVm
-IiBpcyB1cGRhdGVkIHRvIHBvaW50IHRoYXQgdGhpcyBpcyBubyBtb3JlIHZhbGlkLCBhbHNvIHdl
-DQo+ID4gc2VsZWN0aXZlbHkgY2xlYXIgc29tZSBvdGhlciBhdHRyaWJ1dGUgYml0cywgZXhhbXBs
-ZTogaWYNCj4gPiBFNTAwX1RMQl9CSVRNQVAgd2FzIHNldCB0aGVuIHdlIGNsZWFyIEU1MDBfVExC
-X0JJVE1BUCwgaWYgRTUwMF9UTEJfVExCMCBpcyBzZXQNCj4gdGhlbiB3ZSBjbGVhciB0aGlzLg0K
-PiA+DQo+ID4gSWRlYWxseSB3ZSBzaG91bGQgY2xlYXIgY29tcGxldGUgImZsYWdzIiBhcyB0aGlz
-IGVudHJ5IGlzIGludmFsaWQgYW5kDQo+ID4gZG9lcyBub3QgaGF2ZSBhbnl0aGluZyB0byByZS11
-c2VkLiBUaGUgb3RoZXIgcGFydCBvZiB0aGUgcHJvYmxlbSBpcw0KPiA+IHRoYXQgd2hlbiB3ZSB1
-c2UgdGhlIHNhbWUgZW50cnkgYWdhaW4gdGhlbiBhbHNvIHdlIGRvIG5vdCBjbGVhciAoc3RhcnRl
-ZCBkb2luZw0KPiBvci1pbmcgZXRjKS4NCj4gPg0KPiA+IFNvIGZhciBpdCB3YXMgd29ya2luZyBi
-ZWNhdXNlIHRoZSBzZWxlY3RpdmVseSBjbGVhcmluZyBtZW50aW9uZWQgYWJvdmUNCj4gPiBhY3R1
-YWxseSBjbGVhcnMgImZsYWdzIiB3aGF0IHdhcyBzZXQgZHVyaW5nIFRMQiBtYXBwaW5nLiBCdXQg
-dGhlDQo+ID4gcHJvYmxlbSBzdGFydHMgY29taW5nIHdoZW4gd2UgYWRkIG1vcmUgYXR0cmlidXRl
-cyB0byB0aGlzIHRoZW4gd2UgbmVlZA0KPiA+IHRvIHNlbGVjdGl2ZWx5IGNsZWFyIHRoZW0gYW5k
-IHdoaWNoIGlzIG5vdCBuZWVkZWQuDQo+ID4NCj4gPiBUaGlzIHBhdGNoIHdlIGRvIGJvdGgNCj4g
-PiAgICAgICAgIC0gQ2xlYXIgImZsYWdzIiB3aGVuIGludmFsaWRhdGluZzsNCj4gPiAgICAgICAg
-IC0gQ2xlYXIgImZsYWdzIiB3aGVuIHJldXNpbmcgc2FtZSBlbnRyeSBsYXRlcg0KPiA+DQo+ID4g
-U2lnbmVkLW9mZi1ieTogQmhhcmF0IEJodXNoYW4gPGJoYXJhdC5iaHVzaGFuQGZyZWVzY2FsZS5j
-b20+DQo+ID4gLS0tDQo+ID4gdjMtPiB2NQ0KPiA+ICAtIE5ldyBwYXRjaCAoZm91bmQgdGhpcyBp
-c3N1ZSB3aGVuIGRvaW5nIHZmaW8tcGNpIGRldmVsb3BtZW50KQ0KPiA+DQo+ID4gIGFyY2gvcG93
-ZXJwYy9rdm0vZTUwMF9tbXVfaG9zdC5jIHwgICAxMiArKysrKysrLS0tLS0NCj4gPiAgMSBmaWxl
-cyBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKyksIDUgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZm
-IC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2t2bS9lNTAwX21tdV9ob3N0LmMNCj4gPiBiL2FyY2gvcG93
-ZXJwYy9rdm0vZTUwMF9tbXVfaG9zdC5jDQo+ID4gaW5kZXggMWM2YTlkNy4uNjBmNWEzYyAxMDA2
-NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMva3ZtL2U1MDBfbW11X2hvc3QuYw0KPiA+ICsrKyBi
-L2FyY2gvcG93ZXJwYy9rdm0vZTUwMF9tbXVfaG9zdC5jDQo+ID4gQEAgLTIxNyw3ICsyMTcsOCBA
-QCB2b2lkIGludmFsX2d0bGJlX29uX2hvc3Qoc3RydWN0IGt2bXBwY192Y3B1X2U1MDANCj4gKnZj
-cHVfZTUwMCwgaW50IHRsYnNlbCwNCj4gPiAgCQl9DQo+ID4gIAkJbWIoKTsNCj4gPiAgCQl2Y3B1
-X2U1MDAtPmcyaF90bGIxX21hcFtlc2VsXSA9IDA7DQo+ID4gLQkJcmVmLT5mbGFncyAmPSB+KEU1
-MDBfVExCX0JJVE1BUCB8IEU1MDBfVExCX1ZBTElEKTsNCj4gPiArCQkvKiBDbGVhciBmbGFncyBh
-cyBUTEIgaXMgbm90IGJhY2tlZCBieSB0aGUgaG9zdCBhbnltb3JlICovDQo+ID4gKwkJcmVmLT5m
-bGFncyA9IDA7DQo+ID4gIAkJbG9jYWxfaXJxX3Jlc3RvcmUoZmxhZ3MpOw0KPiA+ICAJfQ0KPiAN
-Cj4gVGhpcyBicmVha3Mgd2hlbiB5b3UgaGF2ZSBib3RoIEU1MDBfVExCX0JJVE1BUCBhbmQgRTUw
-MF9UTEJfVExCMCBzZXQuDQoNCkkgZG8gbm90IHNlZSBhbnkgY2FzZSB3aGVyZSB3ZSBzZXQgYm90
-aCBFNTAwX1RMQl9CSVRNQVAgYW5kIEU1MDBfVExCX1RMQjAuIEFsc28gd2UgaGF2ZSBub3Qgb3B0
-aW1pemVkIHRoYXQgeWV0IChrZWVwaW5nIHRyYWNrIG9mIG11bHRpcGxlIHNoYWRvdyBUTEIwIGVu
-dHJpZXMgZm9yIG9uZSBndWVzdCBUTEIxIGVudHJ5KQ0KDQpXZSB1c2VzIHRoZXNlIGJpdCBmbGFn
-cyBvbmx5IGZvciBUTEIxIGFuZCBpZiBzaXplIG9mIHN0bGJlIGlzIDRLIHRoZW4gd2Ugc2V0IEU1
-MDBfVExCX1RMQjAgIG90aGVyd2lzZSB3ZSBzZXQgRTUwMF9UTEJfQklUTUFQLiBBbHRob3VnaCBJ
-IHRoaW5rIHRoYXQgRTUwMF9UTEJfQklUTUFQIHNob3VsZCBiZSBzZXQgb25seSBpZiBzdGxiZSBz
-aXplIGlzIGxlc3MgdGhhbiBndGxiZSBzaXplLg0KDQo+IA0KPiBJbnN0ZWFkLCBqdXN0IGNvbnZl
-cnQgdGhlIGZpbmFsIEU1MDBfVExCX1ZBTElEIGNsZWFyaW5nIGF0IHRoZSBlbmQgaW50bw0KPiBy
-ZWYtPmZsYWdzID0gMCwgYW5kIGNvbnZlcnQgdGhlIGVhcmx5IHJldHVybiBhIGZldyBsaW5lcyBl
-YXJsaWVyIGludG8NCj4gY29uZGl0aW9uYWwgZXhlY3V0aW9uIG9mIHRoZSB0bGJpbF9vbmUoKS4N
-Cg0KVGhpcyBsb29rcyBiZXR0ZXIsIHdpbGwgc2VuZCB0aGUgcGF0Y2ggc2hvcnRseS4NCg0KVGhh
-bmtzDQotQmhhcmF0DQoNCj4gDQo+IC1TY290dA0KPiANCg0K
+On booke, "struct tlbe_ref" contains host tlb mapping information
+(pfn: for guest-pfn to pfn, flags: attribute associated with this mapping)
+for a guest tlb entry. So when a guest creates a TLB entry then
+"struct tlbe_ref" is set to point to valid "pfn" and set attributes in
+"flags" field of the above said structure. When a guest TLB entry is
+invalidated then flags field of corresponding "struct tlbe_ref" is
+updated to point that this is no more valid, also we selectively clear
+some other attribute bits, example: if E500_TLB_BITMAP was set then we clear
+E500_TLB_BITMAP, if E500_TLB_TLB0 is set then we clear this.
+
+Ideally we should clear complete "flags" as this entry is invalid and does not
+have anything to re-used. The other part of the problem is that when we use
+the same entry again then also we do not clear (started doing or-ing etc).
+
+So far it was working because the selectively clearing mentioned above
+actually clears "flags" what was set during TLB mapping. But the problem
+starts coming when we add more attributes to this then we need to selectively
+clear them and which is not needed.
+
+This patch we do both
+        - Clear "flags" when invalidating;
+        - Clear "flags" when reusing same entry later
+
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+---
+v5->v6
+ - Fix flag clearing comment
+
+ arch/powerpc/kvm/e500_mmu_host.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index 1c6a9d7..7370e1c 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -230,15 +230,15 @@ void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
+ 		ref->flags &= ~(E500_TLB_TLB0 | E500_TLB_VALID);
+ 	}
+ 
+-	/* Already invalidated in between */
+-	if (!(ref->flags & E500_TLB_VALID))
+-		return;
+-
+-	/* Guest tlbe is backed by at most one host tlbe per shadow pid. */
+-	kvmppc_e500_tlbil_one(vcpu_e500, gtlbe);
++	/*
++	 * Check whether TLB entry is already invalidated in between
++	 * Guest tlbe is backed by at most one host tlbe per shadow pid.
++	 */
++	if (ref->flags & E500_TLB_VALID)
++		kvmppc_e500_tlbil_one(vcpu_e500, gtlbe);
+ 
+ 	/* Mark the TLB as not backed by the host anymore */
+-	ref->flags &= ~E500_TLB_VALID;
++	ref->flags = 0;
+ }
+ 
+ static inline int tlbe_is_writable(struct kvm_book3e_206_tlb_entry *tlbe)
+@@ -251,7 +251,7 @@ static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
+ 					 pfn_t pfn)
+ {
+ 	ref->pfn = pfn;
+-	ref->flags |= E500_TLB_VALID;
++	ref->flags = E500_TLB_VALID;
+ 
+ 	if (tlbe_is_writable(gtlbe))
+ 		kvm_set_pfn_dirty(pfn);
+-- 
+1.7.0.4
