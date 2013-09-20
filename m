@@ -1,22 +1,32 @@
-Return-Path: <R65777@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2BC582C0118
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 14:32:53 +1000 (EST)
-From: Bharat Bhushan <r65777@freescale.com>
-To: <benh@kernel.crashing.org>, <agraf@suse.de>, <paulus@samba.org>,
- <kvm@vger.kernel.org>, <kvm-ppc@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 5/6 v6] kvm: booke: clear host tlb reference flag on guest tlb
- invalidation
-Date: Fri, 20 Sep 2013 09:55:22 +0530
-Message-ID: <1379651122-26078-1-git-send-email-Bharat.Bhushan@freescale.com>
+Return-Path: <agordeev@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 2BCF92C012B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 18:22:58 +1000 (EST)
+Date: Fri, 20 Sep 2013 10:24:59 +0200
+From: Alexander Gordeev <agordeev@redhat.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
+Message-ID: <20130920082458.GA10507@dhcp-26-207.brq.redhat.com>
+References: <20130905200608.GA3846@htj.dyndns.org>
+ <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
+ <20130906160621.GF22763@mtj.dyndns.org>
+ <20130906233205.GF12956@google.com>
+ <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
+ <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
+ <20130917143022.GA7707@concordia>
+ <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
+ <20130918142231.GA21650@mtj.dyndns.org>
+ <20130918165045.GB2353@dhcp-26-207.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130918165045.GB2353@dhcp-26-207.brq.redhat.com>
+Cc: Joerg Roedel <joro@8bytes.org>, "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ Jan Beulich <JBeulich@suse.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Tejun Heo <tj@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,72 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On booke, "struct tlbe_ref" contains host tlb mapping information
-(pfn: for guest-pfn to pfn, flags: attribute associated with this mapping)
-for a guest tlb entry. So when a guest creates a TLB entry then
-"struct tlbe_ref" is set to point to valid "pfn" and set attributes in
-"flags" field of the above said structure. When a guest TLB entry is
-invalidated then flags field of corresponding "struct tlbe_ref" is
-updated to point that this is no more valid, also we selectively clear
-some other attribute bits, example: if E500_TLB_BITMAP was set then we clear
-E500_TLB_BITMAP, if E500_TLB_TLB0 is set then we clear this.
+Michael et al.
 
-Ideally we should clear complete "flags" as this entry is invalid and does not
-have anything to re-used. The other part of the problem is that when we use
-the same entry again then also we do not clear (started doing or-ing etc).
+The identifiable options sounded so far were:
 
-So far it was working because the selectively clearing mentioned above
-actually clears "flags" what was set during TLB mapping. But the problem
-starts coming when we add more attributes to this then we need to selectively
-clear them and which is not needed.
+* Do not change anything
 
-This patch we do both
-        - Clear "flags" when invalidating;
-        - Clear "flags" when reusing same entry later
+* Make pci_enable_msix() return 0/-errno
 
-Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
----
-v5->v6
- - Fix flag clearing comment
+* Make pci_enable_msix() return 0/-errno and introduce arch_get_msix_limit()/
+  arch_get_msi_limit()
 
- arch/powerpc/kvm/e500_mmu_host.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+* Make pci_enable_msix() return 0/-errno and introduce pci_get_msix_limit()/
+  pci_get_msi_limit() and arch_get_msix_limit()/arch_get_msi_limit() so that:
+	pci_get_msix_limit() = min(arch_get_msix_limit(), pci_msix_table_size())
+	pci_get_msi_limit()  = min(arch_get_msi_limit(),  pci_get_msi_cap())
 
-diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-index 1c6a9d7..7370e1c 100644
---- a/arch/powerpc/kvm/e500_mmu_host.c
-+++ b/arch/powerpc/kvm/e500_mmu_host.c
-@@ -230,15 +230,15 @@ void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
- 		ref->flags &= ~(E500_TLB_TLB0 | E500_TLB_VALID);
- 	}
- 
--	/* Already invalidated in between */
--	if (!(ref->flags & E500_TLB_VALID))
--		return;
--
--	/* Guest tlbe is backed by at most one host tlbe per shadow pid. */
--	kvmppc_e500_tlbil_one(vcpu_e500, gtlbe);
-+	/*
-+	 * Check whether TLB entry is already invalidated in between
-+	 * Guest tlbe is backed by at most one host tlbe per shadow pid.
-+	 */
-+	if (ref->flags & E500_TLB_VALID)
-+		kvmppc_e500_tlbil_one(vcpu_e500, gtlbe);
- 
- 	/* Mark the TLB as not backed by the host anymore */
--	ref->flags &= ~E500_TLB_VALID;
-+	ref->flags = 0;
- }
- 
- static inline int tlbe_is_writable(struct kvm_book3e_206_tlb_entry *tlbe)
-@@ -251,7 +251,7 @@ static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
- 					 pfn_t pfn)
- {
- 	ref->pfn = pfn;
--	ref->flags |= E500_TLB_VALID;
-+	ref->flags = E500_TLB_VALID;
- 
- 	if (tlbe_is_writable(gtlbe))
- 		kvm_set_pfn_dirty(pfn);
+Can we have a conclusion here?
+
+Thanks!
+
 -- 
-1.7.0.4
+Regards,
+Alexander Gordeev
+agordeev@redhat.com
