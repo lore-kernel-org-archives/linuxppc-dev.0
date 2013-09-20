@@ -1,35 +1,26 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from webmail.solarflare.com (webmail.solarflare.com [12.187.104.25])
+Return-Path: <B32579@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "WEBMAIL.SOLARFLARE.COM",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D85AF2C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 11:27:20 +1000 (EST)
-Message-ID: <1379640097.2500.4.camel@bwh-desktop.uk.level5networks.com>
-Subject: Re: [PATCH 01/51] DMA-API: provide a helper to set both DMA and
- coherent DMA masks
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Fri, 20 Sep 2013 02:21:37 +0100
-In-Reply-To: <E1VMlja-0007fA-HU@rmk-PC.arm.linux.org.uk>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMlja-0007fA-HU@rmk-PC.arm.linux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BB35D2C010F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 11:38:32 +1000 (EST)
+From: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+To: Timur Tabi <timur@tabi.org>
+Subject: RE: [PATCH 1/2][v3] powerpc/fsl-booke: Add initial T104x_QDS board
+ support
+Date: Fri, 20 Sep 2013 01:38:13 +0000
+Message-ID: <071A08F2C6A57E4E94D980ECA553F874F9CF8D@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1379581205-24424-1-git-send-email-prabhakar@freescale.com>
+ <CAOZdJXVBV0LvEwTua_eyTHXJdOcHZKQCjiTrYocqfcQY5hosUw@mail.gmail.com>
+In-Reply-To: <CAOZdJXVBV0LvEwTua_eyTHXJdOcHZKQCjiTrYocqfcQY5hosUw@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
- linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
- b43-dev@lists.infradead.org, linux-media@vger.kernel.org,
- devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-tegra@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Solarflare
- linux maintainers <linux-net-drivers@solarflare.com>, netdev@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
- Vinod Koul <vinod.koul@intel.com>, linux-crypto@vger.kernel.org,
- Rob Landley <rob@landley.net>, uclinux-dist-devel@blackfin.uclinux.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Jain Priyanka-B32167 <B32167@freescale.com>,
+ Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,39 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-09-19 at 22:25 +0100, Russell King wrote:
-> Provide a helper to set both the DMA and coherent DMA masks to the
-> same value - this avoids duplicated code in a number of drivers,
-> sometimes with buggy error handling, and also allows us identify
-> which drivers do things differently.
-> 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->  Documentation/DMA-API-HOWTO.txt |   37 ++++++++++++++++++++++---------------
->  Documentation/DMA-API.txt       |    8 ++++++++
->  include/linux/dma-mapping.h     |   14 ++++++++++++++
->  3 files changed, 44 insertions(+), 15 deletions(-)
-> 
-> diff --git a/Documentation/DMA-API-HOWTO.txt b/Documentation/DMA-API-HOWTO.txt
-> index 14129f1..5e98303 100644
-> --- a/Documentation/DMA-API-HOWTO.txt
-> +++ b/Documentation/DMA-API-HOWTO.txt
-[...]
-> -dma_set_coherent_mask() will always be able to set the same or a
-> -smaller mask as dma_set_mask(). However for the rare case that a
-> +The coherent coherent mask will always be able to set the same or a
-> +smaller mask as the streaming mask. However for the rare case that a
-[...]
+Hi Tabi,
 
-The new wording doesn't make sense; a mask doesn't set itself.  I would
-suggest:
+> -----Original Message-----
+> From: Timur Tabi [mailto:timur@tabi.org]
+> Sent: Friday, September 20, 2013 2:03 AM
+> To: Kushwaha Prabhakar-B32579
+> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Jain Priyanka-
+> B32167; Aggrwal Poonam-B10812
+> Subject: Re: [PATCH 1/2][v3] powerpc/fsl-booke: Add initial T104x_QDS
+> board support
+>=20
+> On Thu, Sep 19, 2013 at 4:00 AM, Prabhakar Kushwaha
+> <prabhakar@freescale.com> wrote:
+>=20
+> >  - Video
+> >      - DIU supports video at up to 1280x1024x32bpp
+>=20
+> You mention DIU support, except there's no DIU enablement in the platform
+> file.  You need the T104x equivalent of
+> p1022ds_set_pixel_clock() and the other functions.
 
-"The coherent mask can always be set to the same or a smaller mask than
-the streaming mask."
+My primary object is to put base patch in Linux. once it done other things =
+can be enabled one by one.
+Also, I am not familiar with DIU driver :(.=20
 
-Ben.
+or
 
--- 
-Ben Hutchings, Staff Engineer, Solarflare
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+shall I remove the DIU node, and  while adding support of DIU, all modifica=
+tion will be sent.
+
+Please advice.=20
+
+Regards,
+Prabhakar
