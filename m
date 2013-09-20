@@ -1,38 +1,24 @@
-Return-Path: <jeffrey.t.kirsher@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by ozlabs.org (Postfix) with ESMTP id DE0F02C0844
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 05:51:43 +1000 (EST)
-Message-ID: <1379706699.1972.14.camel@jtkirshe-mobl>
-Subject: Re: [PATCH 08/51] DMA-API: net: intel/ixgbevf: fix 32-bit DMA mask
- handling
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Fri, 20 Sep 2013 12:51:39 -0700
-In-Reply-To: <E1VMlqN-0007fw-MQ@rmk-PC.arm.linux.org.uk>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMlqN-0007fw-MQ@rmk-PC.arm.linux.org.uk>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-lefeYEeJBf7y/i8K0Ul/"
-Mime-Version: 1.0
-Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
- linux-mmc@vger.kernel.org,
- Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
- linux-fbdev@vger.kernel.org, linux-nvme@lists.infradead.org,
- linux-ide@vger.kernel.org, Carolyn Wyborny <carolyn.wyborny@intel.com>,
- devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
- Don Skidmore <donald.c.skidmore@intel.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>, b43-dev@lists.infradead.org,
- linux-media@vger.kernel.org, Alex Duyck <alexander.h.duyck@intel.com>,
- devicetree@vger.kernel.org, Greg Rose <gregory.v.rose@intel.com>,
- dri-devel@lists.freedesktop.org, linux-tegra@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, John Ronciak <john.ronciak@intel.com>,
- linux-crypto@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
- Bruce Allan <bruce.w.allan@intel.com>, linuxppc-dev@lists.ozlabs.org,
- Tushar Dave <tushar.n.dave@intel.com>
+Return-Path: <B07421@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F1BD52C0196
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 07:22:39 +1000 (EST)
+Message-ID: <1379712141.16231.36.camel@aoeu.buserror.net>
+Subject: Re: [PATCH v2] powerpc 8xx: Fixing issue with CONFIG_PIN_TLB
+From: Scott Wood <scottwood@freescale.com>
+To: leroy christophe <christophe.leroy@c-s.fr>
+Date: Fri, 20 Sep 2013 16:22:21 -0500
+In-Reply-To: <5238860F.4030405@c-s.fr>
+References: <201309121825.r8CIPrkI005690@localhost.localdomain>
+ <1379011469.2536.45.camel@snotra.buserror.net> <52329CDF.9020103@c-s.fr>
+ <1379365336.2536.166.camel@snotra.buserror.net> <5238860F.4030405@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,63 +28,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2013-09-17 at 18:40 +0200, leroy christophe wrote:
+> Le 16/09/2013 23:02, Scott Wood a =C3=A9crit :
+> > On Fri, 2013-09-13 at 07:04 +0200, leroy christophe wrote:
+> >> Le 12/09/2013 20:44, Scott Wood a =C3=A9crit :
+> >>> On Thu, 2013-09-12 at 20:25 +0200, Christophe Leroy wrote:
+> >>>> This is a reorganisation of the setup of the TLB at kernel startup=
+, in order
+> >>>> to handle the CONFIG_PIN_TLB case in accordance with chapter 8.10.=
+3 of MPC866
+> >>>> and MPC885 reference manuals.
+> >>>>
+> >>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> >>>>
+> >>>> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S linux-3.11/=
+arch/powerpc/kernel/head_8xx.S
+> >>>> --- linux-3.11.org/arch/powerpc/kernel/head_8xx.S	2013-09-02 22:46=
+:10.000000000 +0200
+> >>>> +++ linux-3.11/arch/powerpc/kernel/head_8xx.S	2013-09-09 11:28:54.=
+000000000 +0200
+> >>>> @@ -785,27 +785,24 @@
+> >>>>     * these mappings is mapped by page tables.
+> >>>>     */
+> >>>>    initial_mmu:
+> >>>> -	tlbia			/* Invalidate all TLB entries */
+> >>>> -/* Always pin the first 8 MB ITLB to prevent ITLB
+> >>>> -   misses while mucking around with SRR0/SRR1 in asm
+> >>>> -*/
+> >>>> -	lis	r8, MI_RSV4I@h
+> >>>> -	ori	r8, r8, 0x1c00
+> >>>> -
+> >>>> +	lis	r8, MI_RESETVAL@h
+> >>>>    	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
+> >>>>   =20
+> >>>> -#ifdef CONFIG_PIN_TLB
+> >>>> -	lis	r10, (MD_RSV4I | MD_RESETVAL)@h
+> >>>> -	ori	r10, r10, 0x1c00
+> >>>> -	mr	r8, r10
+> >>>> -#else
+> >>>>    	lis	r10, MD_RESETVAL@h
+> >>>> -#endif
+> >>>>    #ifndef CONFIG_8xx_COPYBACK
+> >>>>    	oris	r10, r10, MD_WTDEF@h
+> >>>>    #endif
+> >>>>    	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
+> >>>>   =20
+> >>>> +	tlbia			/* Invalidate all TLB entries */
+> >>> Is this change to make sure we invalidate everything even if the
+> >>> bootloader set RSV4I?
+> >> Most probably. It is step 2 of the process defined in MPC866 and MPC=
+885
+> >> Reference Manuals:
+> >>
+> >> =C2=A78.10.3 Loading Locked TLB Entries:
+> >> The process of loading a single reserved entry in the TLB is as foll=
+ows:
+> > To minimize code churn we should just fix actual problems, rather tha=
+n
+> > shuffle things around to conform to a suggested sequence.  After all,
+> > we're not just trying to load a single entry.
+> Ok, I'll try again.
+> >
+> >>>> +	ori	r8, r8, 0x1c00
+> >>>> +	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
+> >>>> +#ifdef CONFIG_PIN_TLB
+> >>>> +	ori	r10, r10, 0x1c00
+> >>>> +	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
+> >>>> +#endif
+> >>> Still 0x1c00?
+> >> Yes, I kept the same entries in order to limit modifications:
+> >> * 28 =3D First 8Mbytes page
+> >> * 29 =3D IMMR
+> >> * 30 =3D Second 8Mbytes page
+> >> * 31 =3D Third 8Mbytes page
+> > If you actually want to program them in increasing order then it look=
+s
+> > like you're still missing a write to CTR between the last two 8M entr=
+ies
+> > -- thus you'll overwrite the IMMR with the last 8M entry.  That was t=
+he
+> > same problem that v1 fixed -- did that change get lost accidentally?
+> Oops, no, in fact I diffed from the version which was including it=20
+> already. My mistake.
+> >
+> > The hardware wants to decrement; why fight it?
+> I see your point.
+> However it is not clear in the documentation if the decrement is done=20
+> really after the update, or at xTLB interrupt. So I propose to still se=
+t=20
+> the CTR ourself as described in the reference Manual and not assume tha=
+t=20
+> the HW decrements it.
 
---=-lefeYEeJBf7y/i8K0Ul/
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+It says "every update" -- do you have any reason to believe that's
+wrong?  It could be tested...
 
-On Thu, 2013-09-19 at 22:32 +0100, Russell King wrote:
-> The fallback to 32-bit DMA mask is rather odd:
->         if (!dma_set_mask(&pdev->dev, DMA_BIT_MASK(64)) &&
->             !dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64))) {
->                 pci_using_dac =3D 1;
->         } else {
->                 err =3D dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
->                 if (err) {
->                         err =3D dma_set_coherent_mask(&pdev->dev,
->                                                     DMA_BIT_MASK(32));
->                         if (err) {
->                                 dev_err(&pdev->dev, "No usable DMA "
->                                         "configuration, aborting\n");
->                                 goto err_dma;
->                         }
->                 }
->                 pci_using_dac =3D 0;
->         }
-> This means we only set the coherent DMA mask in the fallback path if
-> the DMA mask set failed, which is silly.  This fixes it to set the
-> coherent DMA mask only if dma_set_mask() succeeded, and to error out
-> if either fails.
->=20
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   15
-> +++++----------
->  1 files changed, 5 insertions(+), 10 deletions(-)
-
-Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-
---=-lefeYEeJBf7y/i8K0Ul/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-
-iQIcBAABCgAGBQJSPKdLAAoJEOVv75VaS+3Opm4P/Axfj+CMCJQfBxBXYypk3qb+
-+nJwp6C07IeuHbmilE4pqiWzl68PUidSbdAgnARntgiUhCRx/PAQbeEWO2FPVxw8
-DY9i0wUYpo3ffllzIqOaUc/hlGEQjzbvrP//oKU3r3Zx+eB8IO5VwbqF7aeKp97/
-Swlj4HJSHjRblLWIsUDlmvDXZEdZFT9re+NNQSnI3W0n4Fobx2L671hHvm7EQccb
-1/hf1lFlvdJWz3CFsmsGjYk1oUhtkn+0wYHb5LRI1cfgsbhUqZCwko8V0V0b3a+D
-OXYsDDM0xJDXC7CWxSLf/OgNbim3Imulc5Rmy44xku7mfBNNw/SbIPT5Cd93B5nA
-TsDp9iTkr0mjc3d8LHIiE26A99MUHRsP4HPcJBPETUtA4uXP3JQH37hDsbsSmcZj
-+fsdrpVbiZF29s5YSy8fWX+3i5YerZCh3v/ItX0chcfAKLuSqWEYV2s/JuQVTgtA
-agpTxRpNIgHi58vk8ilVcF1KPMtyKLrvbRD+v6Bni6hpcD7IT5SaXtppLP+FuZ8K
-2u160Hns1kFN6ZAIRpbq1nW6ZgYNcdjOF3V3Ea2qliHgDKwhbZgC6zGBOQAFdPXV
-sVbVqp6G0ORBU1Fyyjcu0fk/sbQ3aEzVlpzv+xKKb5JyJWV36o/JxjrskJpjF2tf
-51e74m3k3ad4cw7ztMYz
-=+CYc
------END PGP SIGNATURE-----
-
---=-lefeYEeJBf7y/i8K0Ul/--
+-Scott
