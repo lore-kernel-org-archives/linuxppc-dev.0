@@ -1,17 +1,24 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [173.228.107.16])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5A28D2C0170
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 04:42:24 +1000 (EST)
-From: Eugene Surovegin <ebs@ebshome.net>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc: make ftrace endian-safe.
-Date: Fri, 20 Sep 2013 11:42:21 -0700
-Message-Id: <1379702541-28372-2-git-send-email-ebs@ebshome.net>
-In-Reply-To: <1379702541-28372-1-git-send-email-ebs@ebshome.net>
-References: <1379702541-28372-1-git-send-email-ebs@ebshome.net>
-Cc: Anton Blanchard <anton@samba.org>
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E5E6D2C014F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 04:50:26 +1000 (EST)
+Message-ID: <1379703009.16231.32.camel@aoeu.buserror.net>
+Subject: Re: [PATCH 5/6 v6] kvm: booke: clear host tlb reference flag on
+ guest tlb invalidation
+From: Scott Wood <scottwood@freescale.com>
+To: Bharat Bhushan <r65777@freescale.com>
+Date: Fri, 20 Sep 2013 13:50:09 -0500
+In-Reply-To: <1379651122-26078-1-git-send-email-Bharat.Bhushan@freescale.com>
+References: <1379651122-26078-1-git-send-email-Bharat.Bhushan@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: kvm@vger.kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ Bharat Bhushan <Bharat.Bhushan@freescale.com>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,26 +28,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Eugene Surovegin <surovegin@google.com>
----
- arch/powerpc/kernel/ftrace.c | 4 ++++
- 1 file changed, 4 insertions(+)
+On Fri, 2013-09-20 at 09:55 +0530, Bharat Bhushan wrote:
+> On booke, "struct tlbe_ref" contains host tlb mapping information
+> (pfn: for guest-pfn to pfn, flags: attribute associated with this mapping)
+> for a guest tlb entry. So when a guest creates a TLB entry then
+> "struct tlbe_ref" is set to point to valid "pfn" and set attributes in
+> "flags" field of the above said structure. When a guest TLB entry is
+> invalidated then flags field of corresponding "struct tlbe_ref" is
+> updated to point that this is no more valid, also we selectively clear
+> some other attribute bits, example: if E500_TLB_BITMAP was set then we clear
+> E500_TLB_BITMAP, if E500_TLB_TLB0 is set then we clear this.
+> 
+> Ideally we should clear complete "flags" as this entry is invalid and does not
+> have anything to re-used. The other part of the problem is that when we use
+> the same entry again then also we do not clear (started doing or-ing etc).
+> 
+> So far it was working because the selectively clearing mentioned above
+> actually clears "flags" what was set during TLB mapping. But the problem
+> starts coming when we add more attributes to this then we need to selectively
+> clear them and which is not needed.
+> 
+> This patch we do both
+>         - Clear "flags" when invalidating;
+>         - Clear "flags" when reusing same entry later
+> 
+> Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+> ---
+> v5->v6
+>  - Fix flag clearing comment
 
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 1fb7856..9b27b29 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -174,7 +174,11 @@ __ftrace_make_nop(struct module *mod,
- 
- 	pr_devel(" %08x %08x\n", jmp[0], jmp[1]);
- 
-+#ifdef __LITTLE_ENDIAN__
-+	ptr = ((unsigned long)jmp[1] << 32) + jmp[0];
-+#else
- 	ptr = ((unsigned long)jmp[0] << 32) + jmp[1];
-+#endif
- 
- 	/* This should match what was called */
- 	if (ptr != ppc_function_entry((void *)addr)) {
--- 
-1.8.1.5
+The changes between v5 and v6 are not just about comments...
+
+> 
+>  arch/powerpc/kvm/e500_mmu_host.c |   16 ++++++++--------
+>  1 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+> index 1c6a9d7..7370e1c 100644
+> --- a/arch/powerpc/kvm/e500_mmu_host.c
+> +++ b/arch/powerpc/kvm/e500_mmu_host.c
+> @@ -230,15 +230,15 @@ void inval_gtlbe_on_host(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
+>  		ref->flags &= ~(E500_TLB_TLB0 | E500_TLB_VALID);
+>  	}
+>  
+> -	/* Already invalidated in between */
+> -	if (!(ref->flags & E500_TLB_VALID))
+> -		return;
+> -
+> -	/* Guest tlbe is backed by at most one host tlbe per shadow pid. */
+> -	kvmppc_e500_tlbil_one(vcpu_e500, gtlbe);
+> +	/*
+> +	 * Check whether TLB entry is already invalidated in between
+> +	 * Guest tlbe is backed by at most one host tlbe per shadow pid.
+> +	 */
+> +	if (ref->flags & E500_TLB_VALID)
+> +		kvmppc_e500_tlbil_one(vcpu_e500, gtlbe);
+
+I'd phrase this combined comment as "If it's still valid, it's a TLB0
+entry, and thus backed by at most one host tlbe per shadow pid".
+
+Otherwise looks good.
+
+-Scott
