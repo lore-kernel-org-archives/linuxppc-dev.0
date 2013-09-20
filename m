@@ -1,39 +1,30 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 19D042C011E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 02:38:17 +1000 (EST)
-Date: Fri, 20 Sep 2013 17:36:54 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Message-ID: <20130920163654.GN21013@sirena.org.uk>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMm9m-0007ij-ER@rmk-PC.arm.linux.org.uk>
+Return-Path: <R65777@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0E7352C017C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 04:04:43 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 5/6 v5] kvm: booke: clear host tlb reference flag on
+ guest tlb invalidation
+Date: Fri, 20 Sep 2013 18:04:32 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0717AEA1@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1379570566-3715-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379570566-3715-6-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379624878.16231.3.camel@aoeu.buserror.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07179BBE@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1379693889.16231.11.camel@aoeu.buserror.net>
+In-Reply-To: <1379693889.16231.11.camel@aoeu.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="NbUNL4d9A9kY58qh"
-In-Reply-To: <E1VMm9m-0007ij-ER@rmk-PC.arm.linux.org.uk>
-Subject: Re: [PATCH 28/51] DMA-API: sound: fix dma mask handling in a lot of
- drivers
-Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
- Takashi Iwai <tiwai@suse.de>, linux-mmc@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-nvme@lists.infradead.org,
- Jaroslav Kysela <perex@perex.cz>, Peter Ujfalusi <peter.ujfalusi@ti.com>,
- linux-ide@vger.kernel.org, devel@driverdev.osuosl.org,
- linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org,
- e1000-devel@lists.sourceforge.net, b43-dev@lists.infradead.org,
- linux-media@vger.kernel.org, devicetree@vger.kernel.org,
- Haojian Zhuang <haojian.zhuang@gmail.com>, Timur Tabi <timur@tabi.org>,
- Kukjin Kim <kgene.kim@samsung.com>, dri-devel@lists.freedesktop.org,
- Ben Dooks <ben-linux@fluff.org>, linux-tegra@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- Eric Miao <eric.y.miao@gmail.com>, Sangbeom Kim <sbkim73@samsung.com>,
- netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>,
- linux-crypto@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
- linuxppc-dev@lists.ozlabs.org, Jarkko Nikula <jarkko.nikula@bitmer.com>
+Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,42 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---NbUNL4d9A9kY58qh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Sep 19, 2013 at 10:53:02PM +0100, Russell King wrote:
-> This code sequence is unsafe in modules:
->=20
-> static u64 mask =3D DMA_BIT_MASK(something);
-> ...
-> 	if (!dev->dma_mask)
-> 		dev->dma_mask =3D &mask;
-
-Acked-by: Mark Brown <broonie@linaro.org>
-
---NbUNL4d9A9kY58qh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.21 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSPHmjAAoJELSic+t+oim9WB4QAINsf282vDwWmQYHGXTeorHo
-q0pJ/9bTwBrSE0KzOK9H6UvL7oxCgzMPOT8RiSjWcdEXX/FavpH1TCf+ETkaYyEA
-NaPvO/uUV/99qWhM/PJQvtv4yxhIR7ENiZKywUuFnWQuc44yGUWBLK8ooA4xXtme
-WMcWyy7SMMcP/+9eBd9aNe1FPYFirsqSrrCpWSR/fD+TWFKMB6HG+OZGNYRFMrRm
-Xet5sWMGwzBiL453M0ujAEHKd/g4VOkweCydEq+2Rt2am6ph+SrMuoQvCDZ1bvbh
-71nyYA+j2xNy8jb7AA9PukWoeXyAI0xRY8zh939Uvdxf4SPUIVgw9wJE5rMRGoT5
-k4We/z2A4m1DGCtg1JQN86HAe7jv3YlGLoPOhsrOnOEV55VnXIz0Lm9x3HjTNfvG
-LcJXBGeHmU3Jvj3JEpA57YDbOhpwx0klK7RS5v6BjIJrJUSwjATqt1WQVr528HDp
-rXQpUqxUL3KObdlA5TYweR2I0KxWe47rw612XGqhRiI+equSdTDP770QsO1nXlsA
-qCfn3Gh7t+hyB3yFZUquWEXwKVv0YMh3Ds/bR2RtZluSl3SzM9n/Dp45w6SMu1LN
-oSpxUS7KNzTPXQp0kns7dDFnJJWXid7mUScjK4rc5pSyBF4NSEqJsmqHm0whd/qL
-uR8J7AFq8DkXx3g+/4gf
-=H53r
------END PGP SIGNATURE-----
-
---NbUNL4d9A9kY58qh--
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMjAsIDIwMTMgOTo0OCBQTQ0KPiBUbzogQmh1
+c2hhbiBCaGFyYXQtUjY1Nzc3DQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgYmVuaEBrZXJuZWwu
+Y3Jhc2hpbmcub3JnOyBhZ3JhZkBzdXNlLmRlOw0KPiBwYXVsdXNAc2FtYmEub3JnOyBrdm1Admdl
+ci5rZXJuZWwub3JnOyBrdm0tcHBjQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBs
+aXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggNS82IHY1XSBrdm06IGJvb2tl
+OiBjbGVhciBob3N0IHRsYiByZWZlcmVuY2UgZmxhZyBvbiBndWVzdA0KPiB0bGIgaW52YWxpZGF0
+aW9uDQo+IA0KPiBPbiBUaHUsIDIwMTMtMDktMTkgYXQgMjM6MTkgLTA1MDAsIEJodXNoYW4gQmhh
+cmF0LVI2NTc3NyB3cm90ZToNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
+Cj4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiBTZW50OiBGcmlkYXksIFNlcHRl
+bWJlciAyMCwgMjAxMyAyOjM4IEFNDQo+ID4gPiBUbzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+
+ID4gPiBDYzogYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBhZ3JhZkBzdXNlLmRlOyBwYXVsdXNA
+c2FtYmEub3JnOw0KPiA+ID4ga3ZtQHZnZXIua2VybmVsLm9yZzsga3ZtLXBwY0B2Z2VyLmtlcm5l
+bC5vcmc7DQo+ID4gPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgQmh1c2hhbiBCaGFy
+YXQtUjY1Nzc3DQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDUvNiB2NV0ga3ZtOiBib29rZTog
+Y2xlYXIgaG9zdCB0bGIgcmVmZXJlbmNlDQo+ID4gPiBmbGFnIG9uIGd1ZXN0IHRsYiBpbnZhbGlk
+YXRpb24NCj4gPiA+DQo+ID4gPiBUaGlzIGJyZWFrcyB3aGVuIHlvdSBoYXZlIGJvdGggRTUwMF9U
+TEJfQklUTUFQIGFuZCBFNTAwX1RMQl9UTEIwIHNldC4NCj4gPg0KPiA+IEkgZG8gbm90IHNlZSBh
+bnkgY2FzZSB3aGVyZSB3ZSBzZXQgYm90aCBFNTAwX1RMQl9CSVRNQVAgYW5kDQo+ID4gRTUwMF9U
+TEJfVExCMC4NCj4gDQo+IFRoaXMgd291bGQgaGFwcGVuIGlmIHlvdSBoYXZlIGEgZ3Vlc3QgVExC
+MSBlbnRyeSB0aGF0IGlzIGJhY2tlZCBieSBzb21lIDRLIHBhZ2VzDQo+IGFuZCBzb21lIGxhcmdl
+ciBwYWdlcyAoZS5nLiBpZiB0aGUgZ3Vlc3QgbWFwcyBDQ1NSIHdpdGggb25lIGJpZw0KPiBUTEIx
+IGFuZCB0aGVyZSBhcmUgdmFyeWluZyBJL08gcGFzc3Rocm91Z2ggcmVnaW9ucyBtYXBwZWQpLiAg
+SXQncyBub3QgY29tbW9uLA0KPiBidXQgaXQncyBwb3NzaWJsZS4NCg0KQWdyZWUNCg0KPiANCj4g
+PiAgQWxzbyB3ZSBoYXZlIG5vdCBvcHRpbWl6ZWQgdGhhdCB5ZXQgKGtlZXBpbmcgdHJhY2sgb2Yg
+bXVsdGlwbGUgc2hhZG93DQo+ID4gVExCMCBlbnRyaWVzIGZvciBvbmUgZ3Vlc3QgVExCMSBlbnRy
+eSkNCj4gDQo+IFRoaXMgaXMgYWJvdXQgY29ycmVjdG5lc3MsIG5vdCBvcHRpbWl6YXRpb24uDQo+
+IA0KPiA+IFdlIHVzZXMgdGhlc2UgYml0IGZsYWdzIG9ubHkgZm9yIFRMQjEgYW5kIGlmIHNpemUg
+b2Ygc3RsYmUgaXMgNEsgdGhlbg0KPiA+IHdlIHNldCBFNTAwX1RMQl9UTEIwICBvdGhlcndpc2Ug
+d2Ugc2V0IEU1MDBfVExCX0JJVE1BUC4gQWx0aG91Z2ggSQ0KPiA+IHRoaW5rIHRoYXQgRTUwMF9U
+TEJfQklUTUFQIHNob3VsZCBiZSBzZXQgb25seSBpZiBzdGxiZSBzaXplIGlzIGxlc3MNCj4gPiB0
+aGFuIGd0bGJlIHNpemUuDQo+IA0KPiBXaHk/ICBFdmVuIGlmIHRoZXJlJ3Mgb25seSBvbmUgYml0
+IHNldCBpbiB0aGUgbWFwLCB3ZSBuZWVkIGl0IHRvIGtlZXAgdHJhY2sgb2YNCj4gd2hpY2ggZW50
+cnkgd2FzIHVzZWQuDQoNCklmIHRoZXJlIGlzIG9uZSBlbnRyeSB0aGVuIHdpbGwgbm90IHRoaXMg
+YmUgc2ltcGxlL2Zhc3RlciB0byBub3QgbG9va3VwIGJpdG1hcCBhbmQgZ3Vlc3QtPmhvc3QgYXJy
+YXk/DQpBIGZsYWcgaW5kaWNhdGUgaXQgaXMgMToxIG1hcCBhbmQgdGhpcyBpcyBwaHlzaWNhbCBh
+ZGRyZXNzLg0KDQotQmhhcmF0DQoNCj4gDQo+IC1TY290dA0KPiANCg0K
