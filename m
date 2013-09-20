@@ -1,39 +1,31 @@
-Return-Path: <balbi@ti.com>
-Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailhost.ti.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D27CF2C0117
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 01:17:48 +1000 (EST)
-Date: Fri, 20 Sep 2013 10:15:52 -0500
-From: Felipe Balbi <balbi@ti.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 42/51] DMA-API: usb: musb: use
- platform_device_register_full() to avoid directly messing with dma masks
-Message-ID: <20130920151552.GQ26101@radagast>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMnQk-0007sX-Ty@rmk-PC.arm.linux.org.uk>
- <20130920131125.GO26101@radagast>
- <20130920134938.GO25647@n2100.arm.linux.org.uk>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DD80B2C0132
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 02:07:10 +1000 (EST)
+Message-ID: <1379693218.16231.7.camel@aoeu.buserror.net>
+Subject: Re: [PATCH 1/2][v3] powerpc/fsl-booke: Add initial T104x_QDS board
+ support
+From: Scott Wood <scottwood@freescale.com>
+To: Timur Tabi <timur@tabi.org>
+Date: Fri, 20 Sep 2013 11:06:58 -0500
+In-Reply-To: <523C37CF.3030103@tabi.org>
+References: <1379581205-24424-1-git-send-email-prabhakar@freescale.com>
+ <CAOZdJXVBV0LvEwTua_eyTHXJdOcHZKQCjiTrYocqfcQY5hosUw@mail.gmail.com>
+ <071A08F2C6A57E4E94D980ECA553F874F9CF8D@039-SN1MPN1-005.039d.mgd.msft.net>
+ <523BBC15.8030607@tabi.org> <523C0B78.7050005@freescale.com>
+ <523C37CF.3030103@tabi.org>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="rKoHqF+aPLVth8b2"
-In-Reply-To: <20130920134938.GO25647@n2100.arm.linux.org.uk>
-Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
- linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
- b43-dev@lists.infradead.org, linux-media@vger.kernel.org,
- devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, Felipe Balbi <balbi@ti.com>,
- linux-crypto@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
-Reply-To: balbi@ti.com
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ Jain Priyanka-B32167 <B32167@freescale.com>,
+ Kushwaha Prabhakar-B32579 <B32579@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,64 +35,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---rKoHqF+aPLVth8b2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2013-09-20 at 06:55 -0500, Timur Tabi wrote:
+> Prabhakar Kushwaha wrote:
+> >
+> > I think patch set is OK for now. No need to send v4.
+> 
+> It needs an updated patch description because the patch lies.  It 
+> advertises DIU support, which is not true.
 
-Hi,
+The patch is not "lying".  It is describing the board, not what the
+patch supports.  This was something you used to constantly tell people
+to do...
 
-On Fri, Sep 20, 2013 at 02:49:38PM +0100, Russell King - ARM Linux wrote:
-> On Fri, Sep 20, 2013 at 08:11:25AM -0500, Felipe Balbi wrote:
-> > Hi,
-> >=20
-> > On Fri, Sep 20, 2013 at 12:14:38AM +0100, Russell King wrote:
-> > > Use platform_device_register_full() for those drivers which can, to
-> > > avoid messing directly with DMA masks.  This can only be done when
-> > > the driver does not need to access the allocated musb platform device
-> > > from within its callbacks, which may be called during the musb
-> > > device probing.
-> > >=20
-> > > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> >=20
-> > you want me to carry this one through my tree or you prefer getting my
-> > Acked-by ? Either way works for me:
-> >=20
-> > Acked-by: Felipe Balbi <balbi@ti.com>
-> >=20
-> > there's also the third option of me setting up a branch with only this
-> > patch and we both merge it, that'd also work.
->=20
-> I think this patch is sufficiently stand-alone that it should be fine
-> if you want to take it through your tree.  That may be better in the
-> long run to avoid conflicts with this patch and any future work in
-> this area during this cycle.
+There are other things in that description that Linux doesn't do
+anything with, such as QIXIS.
 
-awesome, i'll take this one early next week.
-
---=20
-balbi
-
---rKoHqF+aPLVth8b2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSPGaoAAoJEIaOsuA1yqREE+MP/2yK4ec5lzVPs6fLeF9dUQHh
-yWwfvqZLfu9D9lFIzGOOgfPm03or8ubh7i/ryfKBHxyKiGysUyo2yen3AwOwFgq1
-2VbJzj55Zz5fejj7T9YE2hJPXU3ofUTdkNSJkbOGqnROvzNcCBYorIgcsAceohqP
-biXh7G8wuxJmJqe967o/LVi9M4GL9ny+GqXdqT7TzuPeFzIwnlDpRL2+vgQDD3Y8
-maW6NOBkrF8W7g2qM5qG4oT/LPNyIEAFpJqOYSQ14EgDp0VxviUl4kMDSqihMOM7
-iPMQJPMhNKRx8vSUilrRxGCY636T0bSXZd1x6L+AIQ0XsTzEtFT73v929byiFNso
-bzQpIOgJjrDgUfBi4MnOemhm98+/UhamcqoXq7v6FQ2FyhEMeIgArAIwwr3VxOf1
-E7iiKaT7jVMRMcNZ+7UJsb+09vie5hGleu4M7YBayoxDEEtlWI8t0aOcngW8oVO4
-DHD3uff/mpbTt9UYf7009WRToHXQwLMhbAimBcXbtya9Nxa79LNxT6aWEzfB2uVS
-Ju5j7FEQZUsAMHQdJIUu+kpcEjrc5IKWWsedQul4piraIFh2Jb+8ODrGLEQvMq9e
-8Jxl6hajoiw6zWfr+HMSqJa3MkDtaZ9GEOyvZqlnrBnpNS4dI3jZKDfresiz1fkq
-o5bj9gHe6QmYbP9tPOOz
-=V876
------END PGP SIGNATURE-----
-
---rKoHqF+aPLVth8b2--
+-Scott
