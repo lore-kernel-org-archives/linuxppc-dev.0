@@ -1,22 +1,27 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by ozlabs.org (Postfix) with ESMTP id 4A1472C0111
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 13:08:09 +1000 (EST)
-Message-ID: <523BBC15.8030607@tabi.org>
-Date: Thu, 19 Sep 2013 22:08:05 -0500
-From: Timur Tabi <timur@tabi.org>
+Return-Path: <R65777@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B24D32C0118
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2013 14:19:14 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 5/6 v5] kvm: booke: clear host tlb reference flag on
+ guest tlb invalidation
+Date: Fri, 20 Sep 2013 04:19:03 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D07179BBE@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1379570566-3715-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379570566-3715-6-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379624878.16231.3.camel@aoeu.buserror.net>
+In-Reply-To: <1379624878.16231.3.camel@aoeu.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-Subject: Re: [PATCH 1/2][v3] powerpc/fsl-booke: Add initial T104x_QDS board
- support
-References: <1379581205-24424-1-git-send-email-prabhakar@freescale.com>
- <CAOZdJXVBV0LvEwTua_eyTHXJdOcHZKQCjiTrYocqfcQY5hosUw@mail.gmail.com>
- <071A08F2C6A57E4E94D980ECA553F874F9CF8D@039-SN1MPN1-005.039d.mgd.msft.net>
-In-Reply-To: <071A08F2C6A57E4E94D980ECA553F874F9CF8D@039-SN1MPN1-005.039d.mgd.msft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Jain Priyanka-B32167 <B32167@freescale.com>,
- Aggrwal Poonam-B10812 <B10812@freescale.com>,
+Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,19 +32,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kushwaha Prabhakar-B32579 wrote:
-> My primary object is to put base patch in Linux. once it done other things can be enabled one by one.
-
-Any features which are not enabled must be specified in the patch 
-description.  The patch says that the board supports DIU, but the code 
-doesn't, so that's misleading.
-
-> Also, I am not familiar with DIU driver:(.
-
-I can help you with the DIU driver.
-
-> shall I remove the DIU node, and  while adding support of DIU, all modification will be sent.
-
-I think it should be okay to leave the DIU node.  I think the kernel 
-will crash if you try to enable a DIU console (video= on the kernel 
-command line), but I think it's okay to ignore that for the moment.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMjAsIDIwMTMgMjozOCBBTQ0KPiBUbzogQmh1
+c2hhbiBCaGFyYXQtUjY1Nzc3DQo+IENjOiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IGFncmFm
+QHN1c2UuZGU7IHBhdWx1c0BzYW1iYS5vcmc7DQo+IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGt2bS1w
+cGNAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gQmh1
+c2hhbiBCaGFyYXQtUjY1Nzc3DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggNS82IHY1XSBrdm06IGJv
+b2tlOiBjbGVhciBob3N0IHRsYiByZWZlcmVuY2UgZmxhZyBvbiBndWVzdA0KPiB0bGIgaW52YWxp
+ZGF0aW9uDQo+IA0KPiBPbiBUaHUsIDIwMTMtMDktMTkgYXQgMTE6MzIgKzA1MzAsIEJoYXJhdCBC
+aHVzaGFuIHdyb3RlOg0KPiA+IE9uIGJvb2tlLCAic3RydWN0IHRsYmVfcmVmIiBjb250YWlucyBo
+b3N0IHRsYiBtYXBwaW5nIGluZm9ybWF0aW9uDQo+ID4gKHBmbjogZm9yIGd1ZXN0LXBmbiB0byBw
+Zm4sIGZsYWdzOiBhdHRyaWJ1dGUgYXNzb2NpYXRlZCB3aXRoIHRoaXMNCj4gPiBtYXBwaW5nKSBm
+b3IgYSBndWVzdCB0bGIgZW50cnkuIFNvIHdoZW4gYSBndWVzdCBjcmVhdGVzIGEgVExCIGVudHJ5
+DQo+ID4gdGhlbiAic3RydWN0IHRsYmVfcmVmIiBpcyBzZXQgdG8gcG9pbnQgdG8gdmFsaWQgInBm
+biIgYW5kIHNldA0KPiA+IGF0dHJpYnV0ZXMgaW4gImZsYWdzIiBmaWVsZCBvZiB0aGUgYWJvdmUg
+c2FpZCBzdHJ1Y3R1cmUuIFdoZW4gYSBndWVzdA0KPiA+IFRMQiBlbnRyeSBpcyBpbnZhbGlkYXRl
+ZCB0aGVuIGZsYWdzIGZpZWxkIG9mIGNvcnJlc3BvbmRpbmcgInN0cnVjdA0KPiA+IHRsYmVfcmVm
+IiBpcyB1cGRhdGVkIHRvIHBvaW50IHRoYXQgdGhpcyBpcyBubyBtb3JlIHZhbGlkLCBhbHNvIHdl
+DQo+ID4gc2VsZWN0aXZlbHkgY2xlYXIgc29tZSBvdGhlciBhdHRyaWJ1dGUgYml0cywgZXhhbXBs
+ZTogaWYNCj4gPiBFNTAwX1RMQl9CSVRNQVAgd2FzIHNldCB0aGVuIHdlIGNsZWFyIEU1MDBfVExC
+X0JJVE1BUCwgaWYgRTUwMF9UTEJfVExCMCBpcyBzZXQNCj4gdGhlbiB3ZSBjbGVhciB0aGlzLg0K
+PiA+DQo+ID4gSWRlYWxseSB3ZSBzaG91bGQgY2xlYXIgY29tcGxldGUgImZsYWdzIiBhcyB0aGlz
+IGVudHJ5IGlzIGludmFsaWQgYW5kDQo+ID4gZG9lcyBub3QgaGF2ZSBhbnl0aGluZyB0byByZS11
+c2VkLiBUaGUgb3RoZXIgcGFydCBvZiB0aGUgcHJvYmxlbSBpcw0KPiA+IHRoYXQgd2hlbiB3ZSB1
+c2UgdGhlIHNhbWUgZW50cnkgYWdhaW4gdGhlbiBhbHNvIHdlIGRvIG5vdCBjbGVhciAoc3RhcnRl
+ZCBkb2luZw0KPiBvci1pbmcgZXRjKS4NCj4gPg0KPiA+IFNvIGZhciBpdCB3YXMgd29ya2luZyBi
+ZWNhdXNlIHRoZSBzZWxlY3RpdmVseSBjbGVhcmluZyBtZW50aW9uZWQgYWJvdmUNCj4gPiBhY3R1
+YWxseSBjbGVhcnMgImZsYWdzIiB3aGF0IHdhcyBzZXQgZHVyaW5nIFRMQiBtYXBwaW5nLiBCdXQg
+dGhlDQo+ID4gcHJvYmxlbSBzdGFydHMgY29taW5nIHdoZW4gd2UgYWRkIG1vcmUgYXR0cmlidXRl
+cyB0byB0aGlzIHRoZW4gd2UgbmVlZA0KPiA+IHRvIHNlbGVjdGl2ZWx5IGNsZWFyIHRoZW0gYW5k
+IHdoaWNoIGlzIG5vdCBuZWVkZWQuDQo+ID4NCj4gPiBUaGlzIHBhdGNoIHdlIGRvIGJvdGgNCj4g
+PiAgICAgICAgIC0gQ2xlYXIgImZsYWdzIiB3aGVuIGludmFsaWRhdGluZzsNCj4gPiAgICAgICAg
+IC0gQ2xlYXIgImZsYWdzIiB3aGVuIHJldXNpbmcgc2FtZSBlbnRyeSBsYXRlcg0KPiA+DQo+ID4g
+U2lnbmVkLW9mZi1ieTogQmhhcmF0IEJodXNoYW4gPGJoYXJhdC5iaHVzaGFuQGZyZWVzY2FsZS5j
+b20+DQo+ID4gLS0tDQo+ID4gdjMtPiB2NQ0KPiA+ICAtIE5ldyBwYXRjaCAoZm91bmQgdGhpcyBp
+c3N1ZSB3aGVuIGRvaW5nIHZmaW8tcGNpIGRldmVsb3BtZW50KQ0KPiA+DQo+ID4gIGFyY2gvcG93
+ZXJwYy9rdm0vZTUwMF9tbXVfaG9zdC5jIHwgICAxMiArKysrKysrLS0tLS0NCj4gPiAgMSBmaWxl
+cyBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKyksIDUgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZm
+IC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2t2bS9lNTAwX21tdV9ob3N0LmMNCj4gPiBiL2FyY2gvcG93
+ZXJwYy9rdm0vZTUwMF9tbXVfaG9zdC5jDQo+ID4gaW5kZXggMWM2YTlkNy4uNjBmNWEzYyAxMDA2
+NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMva3ZtL2U1MDBfbW11X2hvc3QuYw0KPiA+ICsrKyBi
+L2FyY2gvcG93ZXJwYy9rdm0vZTUwMF9tbXVfaG9zdC5jDQo+ID4gQEAgLTIxNyw3ICsyMTcsOCBA
+QCB2b2lkIGludmFsX2d0bGJlX29uX2hvc3Qoc3RydWN0IGt2bXBwY192Y3B1X2U1MDANCj4gKnZj
+cHVfZTUwMCwgaW50IHRsYnNlbCwNCj4gPiAgCQl9DQo+ID4gIAkJbWIoKTsNCj4gPiAgCQl2Y3B1
+X2U1MDAtPmcyaF90bGIxX21hcFtlc2VsXSA9IDA7DQo+ID4gLQkJcmVmLT5mbGFncyAmPSB+KEU1
+MDBfVExCX0JJVE1BUCB8IEU1MDBfVExCX1ZBTElEKTsNCj4gPiArCQkvKiBDbGVhciBmbGFncyBh
+cyBUTEIgaXMgbm90IGJhY2tlZCBieSB0aGUgaG9zdCBhbnltb3JlICovDQo+ID4gKwkJcmVmLT5m
+bGFncyA9IDA7DQo+ID4gIAkJbG9jYWxfaXJxX3Jlc3RvcmUoZmxhZ3MpOw0KPiA+ICAJfQ0KPiAN
+Cj4gVGhpcyBicmVha3Mgd2hlbiB5b3UgaGF2ZSBib3RoIEU1MDBfVExCX0JJVE1BUCBhbmQgRTUw
+MF9UTEJfVExCMCBzZXQuDQoNCkkgZG8gbm90IHNlZSBhbnkgY2FzZSB3aGVyZSB3ZSBzZXQgYm90
+aCBFNTAwX1RMQl9CSVRNQVAgYW5kIEU1MDBfVExCX1RMQjAuIEFsc28gd2UgaGF2ZSBub3Qgb3B0
+aW1pemVkIHRoYXQgeWV0IChrZWVwaW5nIHRyYWNrIG9mIG11bHRpcGxlIHNoYWRvdyBUTEIwIGVu
+dHJpZXMgZm9yIG9uZSBndWVzdCBUTEIxIGVudHJ5KQ0KDQpXZSB1c2VzIHRoZXNlIGJpdCBmbGFn
+cyBvbmx5IGZvciBUTEIxIGFuZCBpZiBzaXplIG9mIHN0bGJlIGlzIDRLIHRoZW4gd2Ugc2V0IEU1
+MDBfVExCX1RMQjAgIG90aGVyd2lzZSB3ZSBzZXQgRTUwMF9UTEJfQklUTUFQLiBBbHRob3VnaCBJ
+IHRoaW5rIHRoYXQgRTUwMF9UTEJfQklUTUFQIHNob3VsZCBiZSBzZXQgb25seSBpZiBzdGxiZSBz
+aXplIGlzIGxlc3MgdGhhbiBndGxiZSBzaXplLg0KDQo+IA0KPiBJbnN0ZWFkLCBqdXN0IGNvbnZl
+cnQgdGhlIGZpbmFsIEU1MDBfVExCX1ZBTElEIGNsZWFyaW5nIGF0IHRoZSBlbmQgaW50bw0KPiBy
+ZWYtPmZsYWdzID0gMCwgYW5kIGNvbnZlcnQgdGhlIGVhcmx5IHJldHVybiBhIGZldyBsaW5lcyBl
+YXJsaWVyIGludG8NCj4gY29uZGl0aW9uYWwgZXhlY3V0aW9uIG9mIHRoZSB0bGJpbF9vbmUoKS4N
+Cg0KVGhpcyBsb29rcyBiZXR0ZXIsIHdpbGwgc2VuZCB0aGUgcGF0Y2ggc2hvcnRseS4NCg0KVGhh
+bmtzDQotQmhhcmF0DQoNCj4gDQo+IC1TY290dA0KPiANCg0K
