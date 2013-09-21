@@ -1,28 +1,20 @@
-Return-Path: <eranian@google.com>
-Received: from mail-ob0-x236.google.com (mail-ob0-x236.google.com
- [IPv6:2607:f8b0:4003:c01::236])
+Return-Path: <murzin.v@gmail.com>
+Received: from mail-lb0-x22c.google.com (mail-lb0-x22c.google.com
+ [IPv6:2a00:1450:4010:c04::22c])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BC2882C019E
- for <linuxppc-dev@ozlabs.org>; Sat, 21 Sep 2013 16:55:41 +1000 (EST)
-Received: by mail-ob0-f182.google.com with SMTP id wo20so1657460obc.13
- for <linuxppc-dev@ozlabs.org>; Fri, 20 Sep 2013 23:55:38 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1378778772.25578.1.camel@concordia>
-References: <1377836690-32710-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1378778772.25578.1.camel@concordia>
-Date: Sat, 21 Sep 2013 08:55:37 +0200
-Message-ID: <CABPqkBREXH5VUkULAsWvmpCer-s4SCxuof6LdqRO0i-iBOG8pA@mail.gmail.com>
-Subject: Re: [PATCH V2 0/6] perf: New conditional branch filter
-From: Stephane Eranian <eranian@google.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Michael Neuling <michael.neuling@au1.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id A8E802C01B3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 17:26:55 +1000 (EST)
+Received: by mail-lb0-f172.google.com with SMTP id x18so1265334lbi.31
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 00:26:50 -0700 (PDT)
+From: Vladimir Murzin <murzin.v@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RESEND PATCH 1/2] powerpc: net: filter: fix DIVWU instruction opcode
+Date: Sat, 21 Sep 2013 09:25:33 +0200
+Message-Id: <1379748334-3313-1-git-send-email-murzin.v@gmail.com>
+Cc: matt@ozlabs.org, netdev@vger.kernel.org,
+ Vladimir Murzin <murzin.v@gmail.com>, dborkman@redhat.com, edumazet@google.com,
+ paulus@samba.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,39 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 10, 2013 at 4:06 AM, Michael Ellerman
-<michael@ellerman.id.au> wrote:
->
-> On Fri, 2013-08-30 at 09:54 +0530, Anshuman Khandual wrote:
-> >       This patchset is the re-spin of the original branch stack sampling
-> > patchset which introduced new PERF_SAMPLE_BRANCH_COND filter. This patchset
-> > also enables SW based branch filtering support for PPC64 platforms which have
-> > branch stack sampling support. With this new enablement, the branch filter support
-> > for PPC64 platforms have been extended to include all these combinations discussed
-> > below with a sample test application program.
->
-> ...
->
-> > Mixed filters
-> > -------------
-> > (6) perf record -e branch-misses:u -j any_call,any_ret ./cprog
-> > Error:
-> > The perf.data file has no samples!
-> >
-> > NOTE: As expected. The HW filters all the branches which are calls and SW tries to find return
-> > branches in that given set. Both the filters are mutually exclussive, so obviously no samples
-> > found in the end profile.
->
-> The semantics of multiple filters is not clear to me. It could be an OR,
-> or an AND. You have implemented AND, does that match existing behaviour
-> on x86 for example?
->
-The semantic on the API is OR. AND does not make sense: CALL & RETURN?
-On x86, the HW filter is an OR (default: ALL, set bit to disable a
-type). I suspect
-it is similar on PPC.
+Currently DIVWU stands for *signed* divw opcode:
 
->
-> cheers
->
->
+7d 2a 4b 96 	divwu   r9,r10,r9
+7d 2a 4b d6 	divw    r9,r10,r9
+
+Use the *unsigned* divw opcode for DIVWU.
+
+Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
+Acked-by: Matt Evans <matt@ozlabs.org>
+---
+ arch/powerpc/include/asm/ppc-opcode.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index d7fe9f5..c91842c 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -218,7 +218,7 @@
+ #define PPC_INST_MULLW			0x7c0001d6
+ #define PPC_INST_MULHWU			0x7c000016
+ #define PPC_INST_MULLI			0x1c000000
+-#define PPC_INST_DIVWU			0x7c0003d6
++#define PPC_INST_DIVWU			0x7c000396
+ #define PPC_INST_RLWINM			0x54000000
+ #define PPC_INST_RLDICR			0x78000004
+ #define PPC_INST_SLW			0x7c000030
+-- 
+1.7.10.4
