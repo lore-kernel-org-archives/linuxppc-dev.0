@@ -1,35 +1,27 @@
-Return-Path: <heiko@sntech.de>
-Received: from gloria.sntech.de (gloria.sntech.de [95.129.55.99])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6B3C72C017C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 03:55:33 +1000 (EST)
-From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH 24/51] DMA-API: dma: pl330: add
- dma_set_mask_and_coherent() call
-Date: Fri, 20 Sep 2013 19:26:27 +0200
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMm5t-0007i5-V7@rmk-PC.arm.linux.org.uk>
-In-Reply-To: <E1VMm5t-0007i5-V7@rmk-PC.arm.linux.org.uk>
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id BB3AA2C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2013 10:23:55 +1000 (EST)
+Message-ID: <523CE716.70909@tabi.org>
+Date: Fri, 20 Sep 2013 19:23:50 -0500
+From: Timur Tabi <timur@tabi.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <201309201926.29084.heiko@sntech.de>
-Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
- linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
- b43-dev@lists.infradead.org, linux-media@vger.kernel.org,
- devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-tegra@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, Vinod Koul <vinod.koul@intel.com>,
- linux-crypto@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
- linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/2][v3] powerpc/fsl-booke: Add initial T104x_QDS board
+ support
+References: <1379581205-24424-1-git-send-email-prabhakar@freescale.com>	
+ <CAOZdJXVBV0LvEwTua_eyTHXJdOcHZKQCjiTrYocqfcQY5hosUw@mail.gmail.com>	
+ <071A08F2C6A57E4E94D980ECA553F874F9CF8D@039-SN1MPN1-005.039d.mgd.msft.net>	
+ <523BBC15.8030607@tabi.org> <523C0B78.7050005@freescale.com>	
+ <523C37CF.3030103@tabi.org> <1379693218.16231.7.camel@aoeu.buserror.net>
+In-Reply-To: <1379693218.16231.7.camel@aoeu.buserror.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ Jain Priyanka-B32167 <B32167@freescale.com>,
+ Kushwaha Prabhakar-B32579 <B32579@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,31 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Donnerstag, 19. September 2013, 23:49:01 schrieb Russell King:
-> The DMA API requires drivers to call the appropriate dma_set_mask()
-> functions before doing any DMA mapping.  Add this required call to
-> the AMBA PL08x driver.
-			^--- copy and paste error - should of course be PL330
+Scott Wood wrote:
+> The patch is not "lying".  It is describing the board, not what the
+> patch supports.  This was something you used to constantly tell people
+> to do...
 
+The patch says:
 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->  drivers/dma/pl330.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
-> index a562d24..df8b10f 100644
-> --- a/drivers/dma/pl330.c
-> +++ b/drivers/dma/pl330.c
-> @@ -2903,6 +2903,10 @@ pl330_probe(struct amba_device *adev, const struct
-> amba_id *id)
-> 
->  	pdat = dev_get_platdata(&adev->dev);
-> 
-> +	ret = dma_set_mask_and_coherent(&adev->dev, DMA_BIT_MASK(32));
-> +	if (ret)
-> +		return ret;
-> +
->  	/* Allocate a new DMAC and its Channels */
->  	pdmac = devm_kzalloc(&adev->dev, sizeof(*pdmac), GFP_KERNEL);
->  	if (!pdmac) {
+	"DIU supports video at up to 1280x1024x32bpp"
+
+How is this not misleading?
+
+I understand that the patch describes the board, and that's correct.  It 
+should also indicate which major functionality is not supported.  I was 
+expecting something like this:
+
+- Video
+      - DIU hardware is capable of video up to 1280x1024x32bpp
+      - DIU support is currently not implemented
+
+> There are other things in that description that Linux doesn't do
+> anything with, such as QIXIS.
+
+Fair enough, but the QIXIS is not something that would generally be 
+supported by Linux, as there is no "QIXIS driver".  There is a DIU 
+driver, however.
+
+The patch description should state which major components are not 
+currently supported by software, but would be expected to be supported.
