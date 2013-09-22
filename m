@@ -1,34 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-wg0-f51.google.com (mail-wg0-f51.google.com [74.125.82.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 473D22C008F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2013 23:29:03 +1000 (EST)
-Received: by mail-wg0-f51.google.com with SMTP id c11so2175439wgh.30
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2013 06:28:59 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH 22/51] DMA-API: amba: get rid of separate dma_mask
-To: Russell King <rmk+kernel@arm.linux.org.uk>, alsa-devel@alsa-project.org,
- b43-dev@lists.infradead.org, devel@driverdev.osuosl.org,
- devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
- e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org,
- linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org,
- linux-media@vger.kernel.org, linux-mmc@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
- netdev@vger.kernel.org,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- uclinux-dist-devel@blackfin.uclinux.org
-In-Reply-To: <E1VMm3x-0007hp-Lv@rmk-PC.arm.linux.org.uk>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMm3x-0007hp-Lv@rmk-PC.arm.linux.org.uk>
-Date: Sun, 22 Sep 2013 07:18:28 -0500
-Message-Id: <20130922121828.58F02C42373@trevor.secretlab.ca>
-Cc: Rob Herring <rob.herring@calxeda.com>
+Return-Path: <matt@ozlabs.org>
+References: <1379748334-3313-1-git-send-email-murzin.v@gmail.com>
+ <1379748334-3313-2-git-send-email-murzin.v@gmail.com>
+In-Reply-To: <1379748334-3313-2-git-send-email-murzin.v@gmail.com>
+Mime-Version: 1.0 (1.0)
+Content-Type: text/plain;
+	charset=us-ascii
+Message-Id: <F41DB09C-2D43-48DA-AE0A-4988B887F65C@ozlabs.org>
+From: Matt Evans <matt@ozlabs.org>
+Subject: Re: [RESEND PATCH 2/2] ppc: bpf_jit: support MOD operation
+Date: Mon, 23 Sep 2013 01:13:45 +1000
+To: Vladimir Murzin <murzin.v@gmail.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Vladimir Murzin <murzin.v@gmail.com>,
+ "dborkman@redhat.com" <dborkman@redhat.com>,
+ "edumazet@google.com" <edumazet@google.com>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,13 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 19 Sep 2013 22:47:01 +0100, Russell King <rmk+kernel@arm.linux.org.uk> wrote:
-> AMBA Primecell devices always treat streaming and coherent DMA exactly
-> the same, so there's no point in having the masks separated.
-> 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Hi Vladimir,
 
-for the drivers/of/platform.c portion:
-Acked-by: Grant Likely <grant.likely@linaro.org>
+On 21 Sep 2013, at 17:25, Vladimir Murzin <murzin.v@gmail.com> wrote:
 
-g.
+> commit b6069a9570 (filter: add MOD operation) added generic
+> support for modulus operation in BPF.
+>=20
+> This patch brings JIT support for PPC64
+>=20
+> Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
+> Acked-by: Matt Evans <matt@ozlabs.org>
+
+Not this version, though; see below.=20
+
+> ---
+> arch/powerpc/net/bpf_jit_comp.c | 22 ++++++++++++++++++++++
+> 1 file changed, 22 insertions(+)
+>=20
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_co=
+mp.c
+> index bf56e33..96f24dc 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
+> @@ -193,6 +193,28 @@ static int bpf_jit_build_body(struct sk_filter *fp, u=
+32 *image,
+>                PPC_MUL(r_A, r_A, r_scratch1);
+>            }
+>            break;
+> +        case BPF_S_ALU_MOD_X: /* A %=3D X; */
+> +            ctx->seen |=3D SEEN_XREG;
+> +            PPC_CMPWI(r_X, 0);
+> +            if (ctx->pc_ret0 !=3D -1) {
+> +                PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
+> +            } else {
+> +                PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
+> +                PPC_LI(r_ret, 0);
+> +                PPC_JMP(exit_addr);
+> +            }
+> +            PPC_DIVWU(r_scratch1, r_A, r_X);
+> +            PPC_MUL(r_scratch1, r_X, r_scratch1);
+> +            PPC_SUB(r_A, r_A, r_scratch1);
+> +            break;
+> +        case BPF_S_ALU_MOD_K: /* A %=3D K; */
+> +#define r_scratch2 (r_scratch1 + 1)
+
+Old version of this patch, still?  I had hoped that r_scratch2 would be defi=
+ned in the header.
+
+> +            PPC_LI32(r_scratch2, K);
+> +            PPC_DIVWU(r_scratch1, r_A, r_scratch2);
+> +            PPC_MUL(r_scratch1, r_scratch2, r_scratch1);
+> +            PPC_SUB(r_A, r_A, r_scratch1);
+> +#undef r_scratch2
+
+And remember this guy too.. :)
+
+
+Matt
+
+> +            break;
+>        case BPF_S_ALU_DIV_X: /* A /=3D X; */
+>            ctx->seen |=3D SEEN_XREG;
+>            PPC_CMPWI(r_X, 0);
+> --=20
+> 1.8.1.5
