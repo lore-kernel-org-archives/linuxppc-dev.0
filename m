@@ -1,29 +1,33 @@
-Return-Path: <murzin.v@gmail.com>
-Received: from mail-la0-x235.google.com (mail-la0-x235.google.com
- [IPv6:2a00:1450:4010:c03::235])
+Return-Path: <robherring2@gmail.com>
+Received: from mail-qa0-x229.google.com (mail-qa0-x229.google.com
+ [IPv6:2607:f8b0:400d:c00::229])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 468902C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 01:36:31 +1000 (EST)
-Received: by mail-la0-f53.google.com with SMTP id el20so1734105lab.26
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2013 08:36:26 -0700 (PDT)
-Date: Sun, 22 Sep 2013 17:35:46 +0200
-From: Vladimir Murzin <murzin.v@gmail.com>
-To: Matt Evans <matt@ozlabs.org>
-Subject: Re: [RESEND PATCH 2/2] ppc: bpf_jit: support MOD operation
-Message-ID: <20130922153542.GA2010@hp530>
-References: <1379748334-3313-1-git-send-email-murzin.v@gmail.com>
- <1379748334-3313-2-git-send-email-murzin.v@gmail.com>
- <F41DB09C-2D43-48DA-AE0A-4988B887F65C@ozlabs.org>
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 087B72C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 07:08:31 +1000 (EST)
+Received: by mail-qa0-f41.google.com with SMTP id ii20so998972qab.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2013 14:08:26 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-In-Reply-To: <F41DB09C-2D43-48DA-AE0A-4988B887F65C@ozlabs.org>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "dborkman@redhat.com" <dborkman@redhat.com>,
- "edumazet@google.com" <edumazet@google.com>,
- "paulus@samba.org" <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+In-Reply-To: <1379510692-32435-8-git-send-email-treding@nvidia.com>
+References: <1379510692-32435-1-git-send-email-treding@nvidia.com>
+ <1379510692-32435-8-git-send-email-treding@nvidia.com>
+Date: Sun, 22 Sep 2013 16:08:26 -0500
+Message-ID: <CAL_JsqJ+4P26hRrJcrbBmwfNPDAS+1GhXj12B+UvqmZZGjqT0g@mail.gmail.com>
+Subject: Re: [PATCH v2 07/10] of/irq: Propagate errors in
+ of_irq_to_resource_table()
+From: Rob Herring <robherring2@gmail.com>
+To: Thierry Reding <thierry.reding@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Russell King <linux@arm.linux.org.uk>, linux-mips@linux-mips.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, sparclinux@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, Grant Likely <grant.likely@linaro.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,135 +37,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 23, 2013 at 01:13:45AM +1000, Matt Evans wrote:
-> Hi Vladimir,
-> 
-> On 21 Sep 2013, at 17:25, Vladimir Murzin <murzin.v@gmail.com> wrote:
-> 
-> > commit b6069a9570 (filter: add MOD operation) added generic
-> > support for modulus operation in BPF.
-> > 
-> > This patch brings JIT support for PPC64
-> > 
-> > Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
-> > Acked-by: Matt Evans <matt@ozlabs.org>
-> 
-> Not this version, though; see below. 
-> 
-> > ---
-> > arch/powerpc/net/bpf_jit_comp.c | 22 ++++++++++++++++++++++
-> > 1 file changed, 22 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> > index bf56e33..96f24dc 100644
-> > --- a/arch/powerpc/net/bpf_jit_comp.c
-> > +++ b/arch/powerpc/net/bpf_jit_comp.c
-> > @@ -193,6 +193,28 @@ static int bpf_jit_build_body(struct sk_filter *fp, u32 *image,
-> >                PPC_MUL(r_A, r_A, r_scratch1);
-> >            }
-> >            break;
-> > +        case BPF_S_ALU_MOD_X: /* A %= X; */
-> > +            ctx->seen |= SEEN_XREG;
-> > +            PPC_CMPWI(r_X, 0);
-> > +            if (ctx->pc_ret0 != -1) {
-> > +                PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
-> > +            } else {
-> > +                PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
-> > +                PPC_LI(r_ret, 0);
-> > +                PPC_JMP(exit_addr);
-> > +            }
-> > +            PPC_DIVWU(r_scratch1, r_A, r_X);
-> > +            PPC_MUL(r_scratch1, r_X, r_scratch1);
-> > +            PPC_SUB(r_A, r_A, r_scratch1);
-> > +            break;
-> > +        case BPF_S_ALU_MOD_K: /* A %= K; */
-> > +#define r_scratch2 (r_scratch1 + 1)
-> 
-> Old version of this patch, still?  I had hoped that r_scratch2 would be defined in the header.
+On Wed, Sep 18, 2013 at 8:24 AM, Thierry Reding
+<thierry.reding@gmail.com> wrote:
+> Now that all helpers return precise error codes, this function can
+> propagate these errors to the caller properly.
+>
+> Signed-off-by: Thierry Reding <treding@nvidia.com>
+> ---
+> Changes in v2:
+> - return 0 on success or a negative error code on failure
+> - convert callers to new calling convention
 
-Oops.. been keeping the old version.. sorry for that, Matt :(
+[snip]
 
-> 
-> > +            PPC_LI32(r_scratch2, K);
-> > +            PPC_DIVWU(r_scratch1, r_A, r_scratch2);
-> > +            PPC_MUL(r_scratch1, r_scratch2, r_scratch1);
-> > +            PPC_SUB(r_A, r_A, r_scratch1);
-> > +#undef r_scratch2
-> 
-> And remember this guy too.. :)
+> diff --git a/drivers/of/irq.c b/drivers/of/irq.c
+> index e4f38c0..6d7f824 100644
+> --- a/drivers/of/irq.c
+> +++ b/drivers/of/irq.c
+> @@ -397,18 +397,20 @@ int of_irq_count(struct device_node *dev)
+>   * @res: array of resources to fill in
+>   * @nr_irqs: the number of IRQs (and upper bound for num of @res elements)
 
-I've included the patch below. Nothing is missed this time, I hope ;) 
+You are effectively changing this to require an exact match rather
+than an upper bound. That seems to be okay since that is what all the
+callers want, but the documentation should be updated.
 
-> 
-> 
-> Matt
-> 
-> > +            break;
-> >        case BPF_S_ALU_DIV_X: /* A /= X; */
-> >            ctx->seen |= SEEN_XREG;
-> >            PPC_CMPWI(r_X, 0);
-> > -- 
-> > 1.8.1.5
+>   *
+> - * Returns the size of the filled in table (up to @nr_irqs).
+> + * Returns 0 on success or a negative error code on failure.
+>   */
+>  int of_irq_to_resource_table(struct device_node *dev, struct resource *res,
+>                 int nr_irqs)
+>  {
+> -       int i;
+> +       int i, ret;
+>
+> -       for (i = 0; i < nr_irqs; i++, res++)
+> -               if (!of_irq_to_resource(dev, i, res))
 
----
-From: Vladimir Murzin <murzin.v@gmail.com>
-Date: Wed, 28 Aug 2013 01:29:39 +0400
-Subject: [PATCH 2/2] ppc: bpf_jit: support MOD operation
+The error handling here needs to be updated in the previous patch.
 
-commit b6069a9570 (filter: add MOD operation) added generic
-support for modulus operation in BPF.
-
-This patch brings JIT support for PPC64
-
-Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
-Acked-by: Matt Evans <matt@ozlabs.org>
----
- arch/powerpc/net/bpf_jit.h      |  1 +
- arch/powerpc/net/bpf_jit_comp.c | 20 ++++++++++++++++++++
- 2 files changed, 21 insertions(+)
-
-diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index 8a5dfaf..42a115a 100644
---- a/arch/powerpc/net/bpf_jit.h
-+++ b/arch/powerpc/net/bpf_jit.h
-@@ -39,6 +39,7 @@
- #define r_X		5
- #define r_addr		6
- #define r_scratch1	7
-+#define r_scratch2	8
- #define r_D		14
- #define r_HL		15
- #define r_M		16
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index bf56e33..cbb2702 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -193,6 +193,26 @@ static int bpf_jit_build_body(struct sk_filter *fp, u32 *image,
- 				PPC_MUL(r_A, r_A, r_scratch1);
- 			}
- 			break;
-+		case BPF_S_ALU_MOD_X: /* A %= X; */
-+			ctx->seen |= SEEN_XREG;
-+			PPC_CMPWI(r_X, 0);
-+			if (ctx->pc_ret0 != -1) {
-+				PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
-+			} else {
-+				PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
-+				PPC_LI(r_ret, 0);
-+				PPC_JMP(exit_addr);
-+			}
-+			PPC_DIVWU(r_scratch1, r_A, r_X);
-+			PPC_MUL(r_scratch1, r_X, r_scratch1);
-+			PPC_SUB(r_A, r_A, r_scratch1);
-+			break;
-+		case BPF_S_ALU_MOD_K: /* A %= K; */
-+			PPC_LI32(r_scratch2, K);
-+			PPC_DIVWU(r_scratch1, r_A, r_scratch2);
-+			PPC_MUL(r_scratch1, r_scratch2, r_scratch1);
-+			PPC_SUB(r_A, r_A, r_scratch1);
-+			break;
- 		case BPF_S_ALU_DIV_X: /* A /= X; */
- 			ctx->seen |= SEEN_XREG;
- 			PPC_CMPWI(r_X, 0);
--- 
-1.8.1.5
+> -                       break;
+> +       for (i = 0; i < nr_irqs; i++, res++) {
+> +               ret = of_irq_to_resource(dev, i, res);
+> +               if (ret < 0)
+> +                       return ret;
+> +       }
+>
+> -       return i;
+> +       return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(of_irq_to_resource_table);
+>
