@@ -1,29 +1,18 @@
-Return-Path: <B45475@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 388072C007B
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2013 12:33:54 +1000 (EST)
-Received: from mail95-ch1 (localhost [127.0.0.1])	by mail95-ch1-R.bigfish.com
- (Postfix) with ESMTP id 16695440288	for
- <linuxppc-dev@lists.ozlabs.org>; Sun,
- 22 Sep 2013 02:33:49 +0000 (UTC)
-Received: from CH1EHSMHS037.bigfish.com (snatpool2.int.messaging.microsoft.com
- [10.43.68.234])	by mail95-ch1.bigfish.com (Postfix) with ESMTP id
- F0401420056
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2013 02:33:45 +0000 (UTC)
-From: Zhao Qiang <B45475@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/p1010rdb:update dts to adapt to both old and new
- p1010rdb
-Date: Sun, 22 Sep 2013 10:28:39 +0800
-Message-ID: <1379816919-13851-1-git-send-email-B45475@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhao Qiang <B45475@freescale.com>,
- Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pb0-x22f.google.com (mail-pb0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c01::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1C1CE2C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2013 17:42:52 +1000 (EST)
+Received: by mail-pb0-f47.google.com with SMTP id rr4so1997613pbb.6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2013 00:42:50 -0700 (PDT)
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: [PATCH v2 0/2] powerpc/85xx: introduce corenet_generic machine
+Date: Sun, 22 Sep 2013 15:42:28 +0800
+Message-Id: <1379835750-23999-1-git-send-email-haokexin@gmail.com>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,258 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-P1010rdb-pa and p1010rdb-pb have different phy interrupts.
-So update dts to adapt to both p1010rdb-pa and p1010rdb-pb.
+v2:
+  - Fold the original patch 2 into patch 1.
+  - Update the patch 1 according to Scott and Kumar's comments.
+  - Introduce a new patch to rename the corenet_ds.c to corenet_generic.c.
 
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Signed-off-by: Zhao Qiang <B45475@freescale.com>
----
- arch/powerpc/boot/dts/p1010rdb-pa.dts | 33 ++++++++++++++++++
- arch/powerpc/boot/dts/p1010rdb-pb.dts | 33 ++++++++++++++++++
- arch/powerpc/boot/dts/p1010rdb.dts    | 66 -----------------------------------
- arch/powerpc/boot/dts/p1010rdb.dtsi   | 51 ++++++++++++++++++++++++---
- 4 files changed, 112 insertions(+), 71 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p1010rdb-pa.dts
- create mode 100644 arch/powerpc/boot/dts/p1010rdb-pb.dts
- delete mode 100644 arch/powerpc/boot/dts/p1010rdb.dts
+v1:
+This patch series introduces a common machine to support p2041rdb, p3041ds,
+p4080ds, p5020ds, p5040ds, t4240qds and b4qds to avoid the code duplication.
+Boot test on p5020ds and p4080ds.
 
-diff --git a/arch/powerpc/boot/dts/p1010rdb-pa.dts b/arch/powerpc/boot/dts/p1010rdb-pa.dts
-new file mode 100644
-index 0000000..e1688d4
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1010rdb-pa.dts
-@@ -0,0 +1,33 @@
-+/*
-+ * P1010 RDB-PA Device Tree Source
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/include/ "fsl/p1010si-pre.dtsi"
-+
-+/ {
-+	model = "fsl,P1010RDB-PA";
-+	compatible = "fsl,P1010RDB";
-+
-+	/include/ "p1010rdb.dtsi"
-+};
-+
-+&phy0 {
-+	interrupts = <3 1 0 0>;
-+};
-+
-+&phy1 {
-+	interrupts = <2 1 0 0>;
-+};
-+
-+&phy2 {
-+	interrupts = <2 1 0 0>;
-+};
-+
-+/include/ "fsl/p1010si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p1010rdb-pb.dts b/arch/powerpc/boot/dts/p1010rdb-pb.dts
-new file mode 100644
-index 0000000..37f9366
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1010rdb-pb.dts
-@@ -0,0 +1,33 @@
-+/*
-+ * P1010 RDB-PB Device Tree Source
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/include/ "fsl/p1010si-pre.dtsi"
-+
-+/ {
-+	model = "fsl,P1010RDB-PB";
-+	compatible = "fsl,P1010RDB";
-+
-+	/include/ "p1010rdb.dtsi"
-+};
-+
-+&phy0 {
-+	interrupts = <0 1 0 0>;
-+};
-+
-+&phy1 {
-+	interrupts = <2 1 0 0>;
-+};
-+
-+&phy2 {
-+	interrupts = <1 1 0 0>;
-+};
-+
-+/include/ "fsl/p1010si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p1010rdb.dts b/arch/powerpc/boot/dts/p1010rdb.dts
-deleted file mode 100644
-index b868d22..0000000
---- a/arch/powerpc/boot/dts/p1010rdb.dts
-+++ /dev/null
-@@ -1,66 +0,0 @@
--/*
-- * P1010 RDB Device Tree Source
-- *
-- * Copyright 2011 Freescale Semiconductor Inc.
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--/include/ "fsl/p1010si-pre.dtsi"
--
--/ {
--	model = "fsl,P1010RDB";
--	compatible = "fsl,P1010RDB";
--
--	memory {
--		device_type = "memory";
--	};
--
--	board_ifc: ifc: ifc@ffe1e000 {
--		/* NOR, NAND Flashes and CPLD on board */
--		ranges = <0x0 0x0 0x0 0xee000000 0x02000000
--			  0x1 0x0 0x0 0xff800000 0x00010000
--			  0x3 0x0 0x0 0xffb00000 0x00000020>;
--		reg = <0x0 0xffe1e000 0 0x2000>;
--	};
--
--	board_soc: soc: soc@ffe00000 {
--		ranges = <0x0 0x0 0xffe00000 0x100000>;
--	};
--
--	pci0: pcie@ffe09000 {
--		reg = <0 0xffe09000 0 0x1000>;
--		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
--		pcie@0 {
--			ranges = <0x2000000 0x0 0xa0000000
--				  0x2000000 0x0 0xa0000000
--				  0x0 0x20000000
--
--				  0x1000000 0x0 0x0
--				  0x1000000 0x0 0x0
--				  0x0 0x100000>;
--		};
--	};
--
--	pci1: pcie@ffe0a000 {
--		reg = <0 0xffe0a000 0 0x1000>;
--		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
--		pcie@0 {
--			ranges = <0x2000000 0x0 0x80000000
--				  0x2000000 0x0 0x80000000
--				  0x0 0x20000000
--
--				  0x1000000 0x0 0x0
--				  0x1000000 0x0 0x0
--				  0x0 0x100000>;
--		};
--	};
--};
--
--/include/ "p1010rdb.dtsi"
--/include/ "fsl/p1010si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi b/arch/powerpc/boot/dts/p1010rdb.dtsi
-index 7fc3402..5e5ca56 100644
---- a/arch/powerpc/boot/dts/p1010rdb.dtsi
-+++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
-@@ -32,7 +32,17 @@
-  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  */
- 
--&board_ifc {
-+memory {
-+	device_type = "memory";
-+};
-+
-+board_ifc: ifc: ifc@ffe1e000 {
-+	/* NOR, NAND Flashes and CPLD on board */
-+	ranges = <0x0 0x0 0x0 0xee000000 0x02000000
-+		  0x1 0x0 0x0 0xff800000 0x00010000
-+		  0x3 0x0 0x0 0xffb00000 0x00000020>;
-+	reg = <0x0 0xffe1e000 0 0x2000>;
-+
- 	nor@0,0 {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
-@@ -124,7 +134,9 @@
- 	};
- };
- 
--&board_soc {
-+board_soc: soc: soc@ffe00000 {
-+	ranges = <0x0 0x0 0xffe00000 0x100000>;
-+
- 	i2c@3000 {
- 		eeprom@50 {
- 			compatible = "st,24c256";
-@@ -199,17 +211,14 @@
- 
- 	mdio@24000 {
- 		phy0: ethernet-phy@0 {
--			interrupts = <3 1 0 0>;
- 			reg = <0x1>;
- 		};
- 
- 		phy1: ethernet-phy@1 {
--			interrupts = <2 1 0 0>;
- 			reg = <0x0>;
- 		};
- 
- 		phy2: ethernet-phy@2 {
--			interrupts = <2 1 0 0>;
- 			reg = <0x2>;
- 		};
- 
-@@ -261,3 +270,35 @@
- 		ptimer-handle = <&ptp_timer>;
- 	};
- };
-+
-+pci0: pcie@ffe09000 {
-+	reg = <0 0xffe09000 0 0x1000>;
-+	ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
-+		  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
-+
-+	pcie@0 {
-+		ranges = <0x2000000 0x0 0xa0000000
-+			  0x2000000 0x0 0xa0000000
-+			  0x0 0x20000000
-+
-+			  0x1000000 0x0 0x0
-+			  0x1000000 0x0 0x0
-+			  0x0 0x100000>;
-+	};
-+};
-+
-+pci1: pcie@ffe0a000 {
-+	reg = <0 0xffe0a000 0 0x1000>;
-+	ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
-+		  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
-+
-+	pcie@0 {
-+		ranges = <0x2000000 0x0 0x80000000
-+			  0x2000000 0x0 0x80000000
-+			  0x0 0x20000000
-+
-+			  0x1000000 0x0 0x0
-+			  0x1000000 0x0 0x0
-+			  0x0 0x100000>;
-+	};
-+};
+Kevin Hao (2):
+  powerpc/85xx: introduce corenet_generic machine
+  powerpc/85xx: rename the corenet_ds.c to corenet_generic.c
+
+ arch/powerpc/platforms/85xx/Kconfig           |  10 ++
+ arch/powerpc/platforms/85xx/Makefile          |   8 +-
+ arch/powerpc/platforms/85xx/b4_qds.c          |  97 --------------
+ arch/powerpc/platforms/85xx/corenet_ds.c      |  96 --------------
+ arch/powerpc/platforms/85xx/corenet_ds.h      |  19 ---
+ arch/powerpc/platforms/85xx/corenet_generic.c | 182 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/p2041_rdb.c       |  87 ------------
+ arch/powerpc/platforms/85xx/p3041_ds.c        |  89 -------------
+ arch/powerpc/platforms/85xx/p4080_ds.c        |  87 ------------
+ arch/powerpc/platforms/85xx/p5020_ds.c        |  93 -------------
+ arch/powerpc/platforms/85xx/p5040_ds.c        |  84 ------------
+ arch/powerpc/platforms/85xx/t4240_qds.c       |  93 -------------
+ 12 files changed, 193 insertions(+), 752 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/85xx/b4_qds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/corenet_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/corenet_ds.h
+ create mode 100644 arch/powerpc/platforms/85xx/corenet_generic.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p2041_rdb.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p3041_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p4080_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p5020_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p5040_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/t4240_qds.c
+
 -- 
-1.8.0
+1.8.3.1
