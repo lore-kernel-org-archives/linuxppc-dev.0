@@ -1,37 +1,35 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp12.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1146D2C0112
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 22:19:23 +1000 (EST)
-Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Mon, 23 Sep 2013 13:19:16 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 32B611B0805D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 13:19:15 +0100 (BST)
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
- [9.149.37.247])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8NCJ1gr53543102
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 12:19:01 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r8NCJCp8024439
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 06:19:13 -0600
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
-Subject: [PATCH] powerpc/kernel: fix endian issue in rtas_pci
-Date: Mon, 23 Sep 2013 14:17:54 +0200
-Message-Id: <1379938674-4165-1-git-send-email-clg@fr.ibm.com>
+Return-Path: <Nicolas.FERRE@atmel.com>
+Received: from eusmtp01.atmel.com (eusmtp01.atmel.com [212.144.249.242])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4355B2C0105
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 22:36:41 +1000 (EST)
+Message-ID: <52403478.6010305@atmel.com>
+Date: Mon, 23 Sep 2013 14:30:48 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+To: Russell King <rmk+kernel@arm.linux.org.uk>, <alsa-devel@alsa-project.org>,
+ <b43-dev@lists.infradead.org>, <devel@driverdev.osuosl.org>,
+ <devicetree@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+ <e1000-devel@lists.sourceforge.net>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-crypto@vger.kernel.org>, <linux-doc@vger.kernel.org>,
+ <linux-fbdev@vger.kernel.org>, <linux-ide@vger.kernel.org>,
+ <linux-media@vger.kernel.org>, <linux-mmc@vger.kernel.org>,
+ <linux-nvme@lists.infradead.org>, <linux-omap@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-samsung-soc@vger.kernel.org>,
+ <linux-scsi@vger.kernel.org>, <linux-tegra@vger.kernel.org>,
+ <linux-usb@vger.kernel.org>, <linux-wireless@vger.kernel.org>,
+ <netdev@vger.kernel.org>, Solarflare linux maintainers
+ <linux-net-drivers@solarflare.com>, <uclinux-dist-devel@blackfin.uclinux.org>
+Subject: Re: [PATCH 36/51] DMA-API: usb: use dma_set_coherent_mask()
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+ <E1VMmHX-0007jq-Cj@rmk-PC.arm.linux.org.uk>
+In-Reply-To: <E1VMmHX-0007jq-Cj@rmk-PC.arm.linux.org.uk>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>,
+ Alan Stern <stern@rowland.harvard.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,34 +39,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
----
- arch/powerpc/kernel/rtas_pci.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On 20/09/2013 00:01, Russell King :
+> The correct way for a driver to specify the coherent DMA mask is
+> not to directly access the field in the struct device, but to use
+> dma_set_coherent_mask().  Only arch and bus code should access this
+> member directly.
+>
+> Convert all direct write accesses to using the correct API.
+>
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> ---
+>   drivers/usb/chipidea/ci_hdrc_imx.c |    5 +++--
+>   drivers/usb/dwc3/dwc3-exynos.c     |    5 +++--
+>   drivers/usb/gadget/lpc32xx_udc.c   |    4 +++-
+>   drivers/usb/host/ehci-atmel.c      |    5 +++--
 
-diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-index 6e7b7cd..7d4c717 100644
---- a/arch/powerpc/kernel/rtas_pci.c
-+++ b/arch/powerpc/kernel/rtas_pci.c
-@@ -223,7 +223,7 @@ unsigned long get_phb_buid(struct device_node *phb)
- static int phb_set_bus_ranges(struct device_node *dev,
- 			      struct pci_controller *phb)
- {
--	const int *bus_range;
-+	const __be32 *bus_range;
- 	unsigned int len;
- 
- 	bus_range = of_get_property(dev, "bus-range", &len);
-@@ -231,8 +231,8 @@ static int phb_set_bus_ranges(struct device_node *dev,
- 		return 1;
-  	}
- 
--	phb->first_busno =  bus_range[0];
--	phb->last_busno  =  bus_range[1];
-+	phb->first_busno = be32_to_cpu(bus_range[0]);
-+	phb->last_busno  = be32_to_cpu(bus_range[1]);
- 
- 	return 0;
- }
+For Atmel driver:
+
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+
+[..]
+
+> diff --git a/drivers/usb/host/ehci-atmel.c b/drivers/usb/host/ehci-atmel.c
+> index 3b645ff..5831a88 100644
+> --- a/drivers/usb/host/ehci-atmel.c
+> +++ b/drivers/usb/host/ehci-atmel.c
+> @@ -92,8 +92,9 @@ static int ehci_atmel_drv_probe(struct platform_device *pdev)
+>   	 */
+>   	if (!pdev->dev.dma_mask)
+>   		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
+> -	if (!pdev->dev.coherent_dma_mask)
+> -		pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+> +	retval = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
+> +	if (retval)
+> +		goto fail_create_hcd;
+>
+>   	hcd = usb_create_hcd(driver, &pdev->dev, dev_name(&pdev->dev));
+>   	if (!hcd) {
+
+[..]
+
+Thanks,
 -- 
-1.7.10.4
+Nicolas Ferre
