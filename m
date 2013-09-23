@@ -2,13 +2,13 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 19/39] powerpc: uname should return ppc64le/ppcle on little
- endian builds
-Date: Mon, 23 Sep 2013 12:04:53 +1000
-Message-Id: <1379901913-5945-20-git-send-email-anton@samba.org>
+Subject: [PATCH 20/39] powerpc: Little endian fixes for
+ platforms/powernv/opal.c
+Date: Mon, 23 Sep 2013 12:04:54 +1000
+Message-Id: <1379901913-5945-21-git-send-email-anton@samba.org>
 In-Reply-To: <1379901913-5945-1-git-send-email-anton@samba.org>
 References: <1379901913-5945-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,46 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to distinguish between big endian and little endian
-environments, so fix uname to return the right thing.
+From: Alistair Popple <alistair@popple.id.au>
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- arch/powerpc/Makefile | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/opal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 51cfb78..debfa2b 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -36,17 +36,26 @@ KBUILD_DEFCONFIG := ppc64_defconfig
- endif
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 2911abe..4ffa75e 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -372,7 +372,7 @@ static irqreturn_t opal_interrupt(int irq, void *data)
+ static int __init opal_init(void)
+ {
+ 	struct device_node *np, *consoles;
+-	const u32 *irqs;
++	const __be32 *irqs;
+ 	int rc, i, irqlen;
  
- ifeq ($(CONFIG_PPC64),y)
--OLDARCH	:= ppc64
--
- new_nm := $(shell if $(NM) --help 2>&1 | grep -- '--synthetic' > /dev/null; then echo y; else echo n; fi)
- 
- ifeq ($(new_nm),y)
- NM		:= $(NM) --synthetic
- endif
-+endif
- 
-+ifeq ($(CONFIG_PPC64),y)
-+ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
-+OLDARCH	:= ppc64le
-+else
-+OLDARCH	:= ppc64
-+endif
-+else
-+ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
-+OLDARCH	:= ppcle
- else
- OLDARCH	:= ppc
- endif
-+endif
- 
- # It seems there are times we use this Makefile without
- # including the config file, but this replicates the old behaviour
+ 	opal_node = of_find_node_by_path("/ibm,opal");
 -- 
 1.8.1.2
