@@ -1,32 +1,32 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7FE062C0120
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 04:06:41 +1000 (EST)
-Message-ID: <1379959590.24959.10.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/2][v3] powerpc/fsl-booke: Add initial T104x_QDS board
- support
-From: Scott Wood <scottwood@freescale.com>
-To: Timur Tabi <timur@tabi.org>
-Date: Mon, 23 Sep 2013 13:06:30 -0500
-In-Reply-To: <523CE716.70909@tabi.org>
-References: <1379581205-24424-1-git-send-email-prabhakar@freescale.com>
- <CAOZdJXVBV0LvEwTua_eyTHXJdOcHZKQCjiTrYocqfcQY5hosUw@mail.gmail.com>
- <071A08F2C6A57E4E94D980ECA553F874F9CF8D@039-SN1MPN1-005.039d.mgd.msft.net>
- <523BBC15.8030607@tabi.org> <523C0B78.7050005@freescale.com>
- <523C37CF.3030103@tabi.org> <1379693218.16231.7.camel@aoeu.buserror.net>
- <523CE716.70909@tabi.org>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <stern+525d0a46@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+ by ozlabs.org (Postfix) with SMTP id 689D82C00E4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 04:34:21 +1000 (EST)
+Date: Mon, 23 Sep 2013 14:27:39 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [PATCH 36/51] DMA-API: usb: use dma_set_coherent_mask()
+In-Reply-To: <E1VMmHX-0007jq-Cj@rmk-PC.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.44L0.1309231418030.1348-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Aggrwal Poonam-B10812 <B10812@freescale.com>,
- Jain Priyanka-B32167 <B32167@freescale.com>,
- Kushwaha Prabhakar-B32579 <B32579@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Prabhakar Kushwaha <prabhakar@freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
+ devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
+ linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+ b43-dev@lists.infradead.org, linux-media@vger.kernel.org,
+ devicetree@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>,
+ Kukjin Kim <kgene.kim@samsung.com>, dri-devel@lists.freedesktop.org,
+ linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, Felipe Balbi <balbi@ti.com>,
+ Tony Prisk <linux@prisktech.co.nz>, linux-crypto@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,32 +36,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-09-20 at 19:23 -0500, Timur Tabi wrote:
-> Scott Wood wrote:
-> > The patch is not "lying".  It is describing the board, not what the
-> > patch supports.  This was something you used to constantly tell people
-> > to do...
-> 
-> The patch says:
-> 
-> 	"DIU supports video at up to 1280x1024x32bpp"
-> 
-> How is this not misleading?
+On Thu, 19 Sep 2013, Russell King wrote:
 
-Does it have different limits on this board?
-
-> I understand that the patch describes the board, and that's correct.  It 
-> should also indicate which major functionality is not supported.  I was 
-> expecting something like this:
+> The correct way for a driver to specify the coherent DMA mask is
+> not to directly access the field in the struct device, but to use
+> dma_set_coherent_mask().  Only arch and bus code should access this
+> member directly.
 > 
-> - Video
->       - DIU hardware is capable of video up to 1280x1024x32bpp
->       - DIU support is currently not implemented
+> Convert all direct write accesses to using the correct API.
+> 
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-Sure, it would be nice to point out notable limitations in the board
-support.  That doesn't mean that it's lying as is, as it's quite
-obviously a cut and paste from some other document rather than a
-meaningful description of the patch itself.  I've never been a fan of
-this sort of changelog, as we've discussed in the past.
+> diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-platform.c
+> index f6b790c..5b0cd2d 100644
+> --- a/drivers/usb/host/ehci-platform.c
+> +++ b/drivers/usb/host/ehci-platform.c
 
--Scott
+> @@ -91,8 +91,9 @@ static int ehci_platform_probe(struct platform_device *dev)
+>  		dev->dev.platform_data = &ehci_platform_defaults;
+>  	if (!dev->dev.dma_mask)
+>  		dev->dev.dma_mask = &dev->dev.coherent_dma_mask;
+> -	if (!dev->dev.coherent_dma_mask)
+> -		dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+> +	err = dma_set_coherent_mask(&dev->dev, DMA_BIT_MASK(32));
+> +	if (err)
+> +		return err;
+>  
+>  	pdata = dev_get_platdata(&dev->dev);
+
+ehci-platform.c is a generic file, intended for use by multiple
+platforms.  Is it not possible that on some platforms, the arch or bus
+code may already have initialized the DMA masks?  Isn't something like 
+this (i.e., DMA bindings) planned for Device Tree?
+
+By eliminating the tests above and calling dma_set_coherent_mask or
+dma_coerce_mask_and_coherent unconditionally, this patch (and the next)
+would overwrite those initial settings.
+
+I don't know to what extent the same may be true for the other,
+platform-specific, drivers changed by this patch.  But it's something 
+to be aware of.
+
+Alan Stern
