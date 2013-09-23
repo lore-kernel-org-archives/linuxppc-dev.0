@@ -1,34 +1,23 @@
-Return-Path: <thierry.reding@gmail.com>
-Received: from mail-bk0-x22d.google.com (mail-bk0-x22d.google.com
- [IPv6:2a00:1450:4008:c01::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 901792C00FE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 18:37:31 +1000 (EST)
-Received: by mail-bk0-f45.google.com with SMTP id mx11so1055012bkb.32
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 01:37:26 -0700 (PDT)
-Date: Mon, 23 Sep 2013 10:36:06 +0200
-From: Thierry Reding <thierry.reding@gmail.com>
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH v2 07/10] of/irq: Propagate errors in
- of_irq_to_resource_table()
-Message-ID: <20130923083605.GC11881@ulmo>
-References: <1379510692-32435-1-git-send-email-treding@nvidia.com>
- <1379510692-32435-8-git-send-email-treding@nvidia.com>
- <CAL_JsqJ+4P26hRrJcrbBmwfNPDAS+1GhXj12B+UvqmZZGjqT0g@mail.gmail.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id D96C52C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 18:50:04 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 14928-07 for <linuxppc-dev@lists.ozlabs.org>;
+ Mon, 23 Sep 2013 09:49:52 +0100 (BST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="H8ygTp4AXg6deix2"
-In-Reply-To: <CAL_JsqJ+4P26hRrJcrbBmwfNPDAS+1GhXj12B+UvqmZZGjqT0g@mail.gmail.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Russell King <linux@arm.linux.org.uk>, linux-mips@linux-mips.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>, sparclinux@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, Grant Likely <grant.likely@linaro.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH 1/2] powerpc: make kernel module helper endian-safe.
+Date: Mon, 23 Sep 2013 09:34:15 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B734F@saturn3.aculab.com>
+In-Reply-To: <1379702541-28372-1-git-send-email-ebs@ebshome.net>
+References: <1379702541-28372-1-git-send-email-ebs@ebshome.net>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Eugene Surovegin" <ebs@ebshome.net>,
+	<linuxppc-dev@lists.ozlabs.org>
+Cc: Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,81 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> --- a/arch/powerpc/kernel/module_64.c
+> +++ b/arch/powerpc/kernel/module_64.c
+> @@ -62,6 +62,16 @@ struct ppc64_stub_entry
+>     r2) into the stub. */
+>  static struct ppc64_stub_entry ppc64_stub =3D
+>  { .jump =3D {
+> +#ifdef __LITTLE_ENDIAN__
+> +	0x00, 0x00, 0x82, 0x3d, /* addis   r12,r2, <high> */
+> +	0x00, 0x00, 0x8c, 0x39, /* addi    r12,r12, <low> */
+> +	/* Save current r2 value in magic place on the stack. */
+> +	0x28, 0x00, 0x41, 0xf8, /* std     r2,40(r1) */
+> +	0x20, 0x00, 0x6c, 0xe9, /* ld      r11,32(r12) */
+> +	0x28, 0x00, 0x4c, 0xe8, /* ld      r2,40(r12) */
+> +	0xa6, 0x03, 0x69, 0x7d, /* mtctr   r11 */
+> +	0x20, 0x04, 0x80, 0x4e  /* bctr */
+> +#else
+>  	0x3d, 0x82, 0x00, 0x00, /* addis   r12,r2, <high> */
+>  	0x39, 0x8c, 0x00, 0x00, /* addi    r12,r12, <low> */
+>  	/* Save current r2 value in magic place on the stack. */
+> @@ -70,6 +80,7 @@ static struct ppc64_stub_entry ppc64_stub =3D
+>  	0xe8, 0x4c, 0x00, 0x28, /* ld      r2,40(r12) */
+>  	0x7d, 0x69, 0x03, 0xa6, /* mtctr   r11 */
+>  	0x4e, 0x80, 0x04, 0x20  /* bctr */
+> +#endif
 
---H8ygTp4AXg6deix2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Seems to me that should be a list of 32bit constants.
 
-On Sun, Sep 22, 2013 at 04:08:26PM -0500, Rob Herring wrote:
-> On Wed, Sep 18, 2013 at 8:24 AM, Thierry Reding
-> <thierry.reding@gmail.com> wrote:
-> > Now that all helpers return precise error codes, this function can
-> > propagate these errors to the caller properly.
-> >
-> > Signed-off-by: Thierry Reding <treding@nvidia.com>
-> > ---
-> > Changes in v2:
-> > - return 0 on success or a negative error code on failure
-> > - convert callers to new calling convention
->=20
-> [snip]
->=20
-> > diff --git a/drivers/of/irq.c b/drivers/of/irq.c
-> > index e4f38c0..6d7f824 100644
-> > --- a/drivers/of/irq.c
-> > +++ b/drivers/of/irq.c
-> > @@ -397,18 +397,20 @@ int of_irq_count(struct device_node *dev)
-> >   * @res: array of resources to fill in
-> >   * @nr_irqs: the number of IRQs (and upper bound for num of @res eleme=
-nts)
->=20
-> You are effectively changing this to require an exact match rather
-> than an upper bound. That seems to be okay since that is what all the
-> callers want, but the documentation should be updated.
-
-Done.
-
-> >   *
-> > - * Returns the size of the filled in table (up to @nr_irqs).
-> > + * Returns 0 on success or a negative error code on failure.
-> >   */
-> >  int of_irq_to_resource_table(struct device_node *dev, struct resource =
-*res,
-> >                 int nr_irqs)
-> >  {
-> > -       int i;
-> > +       int i, ret;
-> >
-> > -       for (i =3D 0; i < nr_irqs; i++, res++)
-> > -               if (!of_irq_to_resource(dev, i, res))
->=20
-> The error handling here needs to be updated in the previous patch.
-
-Yes, you're right.
-
-Thanks,
-Thierry
-
---H8ygTp4AXg6deix2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.21 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSP/11AAoJEN0jrNd/PrOh9SkP/0eqpECG/DCrq/PRvyVz1O5b
-HRQn8Z6vwNDHfFBuxndtGEyyp28LmnxqIsFkooksR+VP/ZPnvcL68Db8p7ta3r2l
-9AK8X2uESqu8/zIsqYHM0bjNICoVmwlRfuEUKkMXbta5j2jVH+Z6cgBcf2rhd7Dm
-GAXRuRdnvrRy43GwUS0WzGYWH/zeihR1lI/dzPjaW4AYmfb8PSB43+sHV+Cev5j+
-mldi6zYZa9N+ozEEhD4yY7hhGr5epkLypKFN4ihms9NUuPdBs/vZN1MBc+01PlTd
-Etmy0NfoZDc/0yV+cQczelQ4dweAWFt+7mqNVpPtYWSLY4TiVqMqhTjXHmV8A1lV
-1TMvhzABTRuTqQt9AvKkeFuarNRqBMp5CKLlHYhYJ9ggiXlA8G3xUAUaNoNQqeVG
-OmoMFLpHzfntFyv8k5+WSi5L/aukFh0UPaVk4/O68IK3tfh+cGOGptgszLV2k2Aw
-nKn8xPq3K7ByyEF5F1wmzceSNCiFm8irFVhKWWAIk8HIBHAs5hw1nqPQsscmcIDT
-63AHK92IqEQo+YwO63Z7S8PFgZ3JSl+1LpzpjjP9v68B+UI9jQiaJaQ4sD3CP4L5
-cdF6MYLhPjxwsFY4LkZWRjFBopaI7+l8XMjkobiKed9cQKJyg2DuJAEu19nRMP8s
-txsDsmA/HZfN7bgreMBW
-=bK7L
------END PGP SIGNATURE-----
-
---H8ygTp4AXg6deix2--
+	David
