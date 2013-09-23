@@ -2,10 +2,10 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 29/39] powerpc/powernv: Fix OPAL entry and exit in little
- endian mode
-Date: Mon, 23 Sep 2013 12:05:03 +1000
-Message-Id: <1379901913-5945-30-git-send-email-anton@samba.org>
+Subject: [PATCH 30/39] powerpc/powernv: Don't register exception handlers in
+ little endian mode
+Date: Mon, 23 Sep 2013 12:05:04 +1000
+Message-Id: <1379901913-5945-31-git-send-email-anton@samba.org>
 In-Reply-To: <1379901913-5945-1-git-send-email-anton@samba.org>
 References: <1379901913-5945-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -20,37 +20,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
+The powernv exception handlers are not ready to take exceptions
+in little endian mode, so disable them.
+
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/powernv/opal-wrappers.S | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/opal.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 8f38445..2a03e1e 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -34,7 +34,7 @@
- 	mtmsrd	r12,1;			\
- 	LOAD_REG_ADDR(r0,.opal_return);	\
- 	mtlr	r0;			\
--	li	r0,MSR_DR|MSR_IR;	\
-+	li	r0,MSR_DR|MSR_IR|MSR_LE;\
- 	andc	r12,r12,r0;		\
- 	li	r0,token;		\
- 	mtspr	SPRN_HSRR1,r12;		\
-@@ -45,6 +45,13 @@
- 	hrfid
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index eb7bf3b..c2391bb 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -77,6 +77,7 @@ int __init early_init_dt_scan_opal(unsigned long node,
  
- _STATIC(opal_return)
-+	/*
-+	 * Fixup endian on OPAL return... we should be able to simplify
-+	 * this by instead converting the below trampoline to a set of
-+	 * bytes (always BE) since MSR:LE will end up fixed up as a side
-+	 * effect of the rfid.
-+	 */
-+	FIXUP_ENDIAN
- 	ld	r2,PACATOC(r13);
- 	ld	r4,8(r1);
- 	ld	r5,16(r1);
+ static int __init opal_register_exception_handlers(void)
+ {
++#ifdef __BIG_ENDIAN__
+ 	u64 glue;
+ 
+ 	if (!(powerpc_firmware_features & FW_FEATURE_OPAL))
+@@ -94,6 +95,7 @@ static int __init opal_register_exception_handlers(void)
+ 					0, glue);
+ 	glue += 128;
+ 	opal_register_exception_handler(OPAL_SOFTPATCH_HANDLER, 0, glue);
++#endif
+ 
+ 	return 0;
+ }
 -- 
 1.8.1.2
