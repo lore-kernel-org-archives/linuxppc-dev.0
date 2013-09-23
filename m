@@ -1,41 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 235B02C00E6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 06:52:42 +1000 (EST)
-Message-ID: <1379969467.11249.21.camel@pasglop>
-Subject: Re: [PATCH] powerpc/irq: Run softirqs off the top of the irq stack
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 24 Sep 2013 06:51:07 +1000
-In-Reply-To: <CA+55aFwcPU+fAqDGp0QhSYip7MYPBB+kQiU4GHEdgMo82i7RVg@mail.gmail.com>
-References: <1379620267-25191-1-git-send-email-fweisbec@gmail.com>
- <CA+55aFyXf370Ds6FH5wPPycZLSPD5qiP7rjWqxwDetfHfKjg1w@mail.gmail.com>
- <alpine.DEB.2.02.1309201244080.4089@ionos.tec.linutronix.de>
- <20130920162603.GA30381@localhost.localdomain>
- <CA+55aFyBcjP2U6ipzZay=FdhzA4oFNwE4tU0OcJJhwFvgoeALw@mail.gmail.com>
- <CAFTL4hzucS5nJbCrArPv9zfY=QpyUESMK2Th0tKFHVCjDP7-eA@mail.gmail.com>
- <1379799901.24090.6.camel@pasglop> <523E4F8A.7020708@zytor.com>
- <1379824754.24090.11.camel@pasglop> <1379824861.24090.12.camel@pasglop>
- <20130922162410.GA10649@laptop.programming.kicks-ass.net>
- <1379887000.24090.19.camel@pasglop>
- <CA+55aFwaf_Wst=AS75ydBJVQ6aJxPfAzXdt-UXj3qC9WeUt7kw@mail.gmail.com>
- <1379889489.24090.34.camel@pasglop> <1379910958.6625.3.camel@pasglop>
- <CA+55aFwcPU+fAqDGp0QhSYip7MYPBB+kQiU4GHEdgMo82i7RVg@mail.gmail.com>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5B1D32C00B1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 08:32:43 +1000 (EST)
+Message-ID: <1379975475.24959.45.camel@snotra.buserror.net>
+Subject: Re: [PATCH 5/6 v7] kvm: booke: clear host tlb reference flag on
+ guest tlb invalidation
+From: Scott Wood <scottwood@freescale.com>
+To: Bharat Bhushan <r65777@freescale.com>
+Date: Mon, 23 Sep 2013 17:31:15 -0500
+In-Reply-To: <1379907769-31452-1-git-send-email-Bharat.Bhushan@freescale.com>
+References: <1379907769-31452-1-git-send-email-Bharat.Bhushan@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: James Hogan <james.hogan@imgtec.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>, Peter Zijlstra <peterz@infradead.org>,
- Frederic Weisbecker <fweisbec@gmail.com>, Helge Deller <deller@gmx.de>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, "James
- E.J. Bottomley" <jejb@parisc-linux.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@au1.ibm.com>
+MIME-Version: 1.0
+Cc: kvm@vger.kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ Bharat Bhushan <Bharat.Bhushan@freescale.com>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,21 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-09-23 at 09:47 -0700, Linus Torvalds wrote:
-> On Sun, Sep 22, 2013 at 9:35 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> >
-> > This is the "band aid" discussed so far for the stack overflow
-> > problem for powerpc.
+On Mon, 2013-09-23 at 09:12 +0530, Bharat Bhushan wrote:
+> On booke, "struct tlbe_ref" contains host tlb mapping information
+> (pfn: for guest-pfn to pfn, flags: attribute associated with this mapping)
+> for a guest tlb entry. So when a guest creates a TLB entry then
+> "struct tlbe_ref" is set to point to valid "pfn" and set attributes in
+> "flags" field of the above said structure. When a guest TLB entry is
+> invalidated then flags field of corresponding "struct tlbe_ref" is
+> updated to point that this is no more valid, also we selectively clear
+> some other attribute bits, example: if E500_TLB_BITMAP was set then we clear
+> E500_TLB_BITMAP, if E500_TLB_TLB0 is set then we clear this.
 > 
-> I don't think it's a "band-aid" in any way, except perhaps in the
-> sense that there are certainly other things we can also do in this
-> series (ie I liked Frederic's cleanups etc).
+> Ideally we should clear complete "flags" as this entry is invalid and does not
+> have anything to re-used. The other part of the problem is that when we use
+> the same entry again then also we do not clear (started doing or-ing etc).
+> 
+> So far it was working because the selectively clearing mentioned above
+> actually clears "flags" what was set during TLB mapping. But the problem
+> starts coming when we add more attributes to this then we need to selectively
+> clear them and which is not needed.
+> 
+> This patch we do both
+>         - Clear "flags" when invalidating;
+>         - Clear "flags" when reusing same entry later
+> 
+> Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+> ---
+> v6->7
+>  - Comment re-phrased
 
-Ah yes, I thought of it as a band-aid in the sense that a better
-approach would be to switch to the irq stack earlier like x86_64 does
-but that would be a lot more invasive. Definitely something I would look
-into if I was to tackle changing how we do per-cpu and the PACA though.
+Reviewed-by: Scott Wood <scottwood@freescale.com>
 
-Cheers,
-Ben.
+-Scott
