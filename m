@@ -2,10 +2,10 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 13/39] powerpc: Remove hard coded FP offsets in alignment
- handler
-Date: Mon, 23 Sep 2013 12:04:47 +1000
-Message-Id: <1379901913-5945-14-git-send-email-anton@samba.org>
+Subject: [PATCH 14/39] powerpc: Alignment handler shouldn't access VSX
+ registers with TS_FPR
+Date: Mon, 23 Sep 2013 12:04:48 +1000
+Message-Id: <1379901913-5945-15-git-send-email-anton@samba.org>
 In-Reply-To: <1379901913-5945-1-git-send-email-anton@samba.org>
 References: <1379901913-5945-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -18,36 +18,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The alignment handler assumes big endian ordering when selecting
-the low word of a 64bit floating point value. Use the existing
-union which works in both little and big endian.
+The TS_FPR macro selects the FPR component of a VSX register (the
+high doubleword). emulate_vsx is using this macro to get the
+address of the associated VSX register. This happens to work on big
+endian, but fails on little endian.
+
+Replace it with an explicit array access.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/kernel/align.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/align.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index af830df..25d8d8b 100644
+index 25d8d8b..3049bd0 100644
 --- a/arch/powerpc/kernel/align.c
 +++ b/arch/powerpc/kernel/align.c
-@@ -895,7 +895,7 @@ int fix_alignment(struct pt_regs *regs)
- #ifdef CONFIG_PPC_FPU
- 			preempt_disable();
- 			enable_kernel_fp();
--			cvt_df(&data.dd, (float *)&data.v[4]);
-+			cvt_df(&data.dd, (float *)&data.x32.low32);
- 			preempt_enable();
- #else
- 			return 0;
-@@ -935,7 +935,7 @@ int fix_alignment(struct pt_regs *regs)
- #ifdef CONFIG_PPC_FPU
- 		preempt_disable();
- 		enable_kernel_fp();
--		cvt_fd((float *)&data.v[4], &data.dd);
-+		cvt_fd((float *)&data.x32.low32, &data.dd);
- 		preempt_enable();
- #else
- 		return 0;
+@@ -650,7 +650,7 @@ static int emulate_vsx(unsigned char __user *addr, unsigned int reg,
+ 	flush_vsx_to_thread(current);
+ 
+ 	if (reg < 32)
+-		ptr = (char *) &current->thread.TS_FPR(reg);
++		ptr = (char *) &current->thread.fpr[reg][0];
+ 	else
+ 		ptr = (char *) &current->thread.vr[reg - 32];
+ 
 -- 
 1.8.1.2
