@@ -2,10 +2,9 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 16/39] powerpc: Handle VSX alignment faults in little endian
- mode
-Date: Mon, 23 Sep 2013 12:04:50 +1000
-Message-Id: <1379901913-5945-17-git-send-email-anton@samba.org>
+Subject: [PATCH 17/39] powerpc: Use generic checksum code in little endian
+Date: Mon, 23 Sep 2013 12:04:51 +1000
+Message-Id: <1379901913-5945-18-git-send-email-anton@samba.org>
 In-Reply-To: <1379901913-5945-1-git-send-email-anton@samba.org>
 References: <1379901913-5945-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -18,106 +17,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Things are complicated by the fact that VSX elements are big
-endian ordered even in little endian mode. 8 byte loads and
-stores also write to the top 8 bytes of the register.
+We need to fix some endian issues in our checksum code. For now
+just enable the generic checksum routines for little endian builds.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/kernel/align.c | 41 +++++++++++++++++++++++++++++++++--------
- 1 file changed, 33 insertions(+), 8 deletions(-)
+ arch/powerpc/Kconfig                | 3 +++
+ arch/powerpc/include/asm/checksum.h | 5 +++++
+ arch/powerpc/kernel/ppc_ksyms.c     | 2 ++
+ arch/powerpc/lib/Makefile           | 9 +++++++--
+ 4 files changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index cce82b1..59f70ad 100644
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -630,7 +630,7 @@ static int emulate_spe(struct pt_regs *regs, unsigned int reg,
- }
- #endif /* CONFIG_SPE */
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 6b7530f..d232c84 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -140,6 +140,9 @@ config PPC
+ 	select OLD_SIGACTION if PPC32
+ 	select HAVE_DEBUG_STACKOVERFLOW
  
--#if defined(CONFIG_VSX) && defined(__BIG_ENDIAN__)
-+#ifdef CONFIG_VSX
- /*
-  * Emulate VSX instructions...
++config GENERIC_CSUM
++	def_bool CPU_LITTLE_ENDIAN
++
+ config EARLY_PRINTK
+ 	bool
+ 	default y
+diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
+index ce0c284..8251a3b 100644
+--- a/arch/powerpc/include/asm/checksum.h
++++ b/arch/powerpc/include/asm/checksum.h
+@@ -14,6 +14,9 @@
+  * which always checksum on 4 octet boundaries.  ihl is the number
+  * of 32-bit words and is always >= 5.
   */
-@@ -658,8 +658,25 @@ static int emulate_vsx(unsigned char __user *addr, unsigned int reg,
- 
- 	lptr = (unsigned long *) ptr;
- 
-+#ifdef __LITTLE_ENDIAN__
-+	if (flags & SW) {
-+		elsize = length;
-+		sw = length-1;
-+	} else {
-+		/*
-+		 * The elements are BE ordered, even in LE mode, so process
-+		 * them in reverse order.
-+		 */
-+		addr += length - elsize;
-+
-+		/* 8 byte memory accesses go in the top 8 bytes of the VR */
-+		if (length == 8)
-+			ptr += 8;
-+	}
++#ifdef CONFIG_GENERIC_CSUM
++#include <asm-generic/checksum.h>
 +#else
- 	if (flags & SW)
- 		sw = elsize-1;
-+#endif
+ extern __sum16 ip_fast_csum(const void *iph, unsigned int ihl);
  
- 	for (j = 0; j < length; j += elsize) {
- 		for (i = 0; i < elsize; ++i) {
-@@ -669,19 +686,31 @@ static int emulate_vsx(unsigned char __user *addr, unsigned int reg,
- 				ret |= __get_user(ptr[i^sw], addr + i);
- 		}
- 		ptr  += elsize;
-+#ifdef __LITTLE_ENDIAN__
-+		addr -= elsize;
-+#else
- 		addr += elsize;
-+#endif
- 	}
- 
-+#ifdef __BIG_ENDIAN__
-+#define VSX_HI 0
-+#define VSX_LO 1
-+#else
-+#define VSX_HI 1
-+#define VSX_LO 0
-+#endif
-+
- 	if (!ret) {
- 		if (flags & U)
- 			regs->gpr[areg] = regs->dar;
- 
- 		/* Splat load copies the same data to top and bottom 8 bytes */
- 		if (flags & SPLT)
--			lptr[1] = lptr[0];
--		/* For 8 byte loads, zero the top 8 bytes */
-+			lptr[VSX_LO] = lptr[VSX_HI];
-+		/* For 8 byte loads, zero the low 8 bytes */
- 		else if (!(flags & ST) && (8 == length))
--			lptr[1] = 0;
-+			lptr[VSX_LO] = 0;
- 	} else
- 		return -EFAULT;
- 
-@@ -805,7 +834,6 @@ int fix_alignment(struct pt_regs *regs)
- 	/* DAR has the operand effective address */
- 	addr = (unsigned char __user *)regs->dar;
- 
--#ifdef __BIG_ENDIAN__
- #ifdef CONFIG_VSX
- 	if ((instruction & 0xfc00003e) == 0x7c000018) {
- 		unsigned int elsize;
-@@ -840,9 +868,6 @@ int fix_alignment(struct pt_regs *regs)
- 		return emulate_vsx(addr, reg, areg, regs, flags, nb, elsize);
- 	}
+ /*
+@@ -123,5 +126,7 @@ static inline __wsum csum_tcpudp_nofold(__be32 saddr, __be32 daddr,
+ 	return sum;
  #endif
--#else
--	return -EFAULT;
--#endif
- 	/* A size of 0 indicates an instruction we don't support, with
- 	 * the exception of DCBZ which is handled as a special case here
- 	 */
+ }
++
++#endif
+ #endif /* __KERNEL__ */
+ #endif
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 21646db..3b485c5 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -79,10 +79,12 @@ EXPORT_SYMBOL(strlen);
+ EXPORT_SYMBOL(strcmp);
+ EXPORT_SYMBOL(strncmp);
+ 
++#ifndef CONFIG_GENERIC_CSUM
+ EXPORT_SYMBOL(csum_partial);
+ EXPORT_SYMBOL(csum_partial_copy_generic);
+ EXPORT_SYMBOL(ip_fast_csum);
+ EXPORT_SYMBOL(csum_tcpudp_magic);
++#endif
+ 
+ EXPORT_SYMBOL(__copy_tofrom_user);
+ EXPORT_SYMBOL(__clear_user);
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 4504332..33ab261 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -10,15 +10,20 @@ CFLAGS_REMOVE_code-patching.o = -pg
+ CFLAGS_REMOVE_feature-fixups.o = -pg
+ 
+ obj-y			:= string.o alloc.o \
+-			   checksum_$(CONFIG_WORD_SIZE).o crtsavres.o
++			   crtsavres.o
+ obj-$(CONFIG_PPC32)	+= div64.o copy_32.o
+ obj-$(CONFIG_HAS_IOMEM)	+= devres.o
+ 
+ obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
+ 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
+-			   checksum_wrappers_64.o hweight_64.o \
++			   hweight_64.o \
+ 			   copyuser_power7.o string_64.o copypage_power7.o \
+ 			   memcpy_power7.o
++ifeq ($(CONFIG_GENERIC_CSUM),)
++obj-y			+= checksum_$(CONFIG_WORD_SIZE).o
++obj-$(CONFIG_PPC64)	+= checksum_wrappers_64.o
++endif
++
+ obj-$(CONFIG_PPC_EMULATE_SSTEP)	+= sstep.o ldstfp.o
+ 
+ ifeq ($(CONFIG_PPC64),y)
 -- 
 1.8.1.2
