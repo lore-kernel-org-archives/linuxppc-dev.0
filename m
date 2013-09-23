@@ -2,18 +2,16 @@ Return-Path: <gang.chen@asianux.com>
 Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 84F572C00D4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 13:37:29 +1000 (EST)
-Message-ID: <523FB735.2060906@asianux.com>
-Date: Mon, 23 Sep 2013 11:36:21 +0800
+ by ozlabs.org (Postfix) with ESMTPS id AFA8C2C00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 13:47:15 +1000 (EST)
+Message-ID: <523FB47C.8010800@asianux.com>
+Date: Mon, 23 Sep 2013 11:24:44 +0800
 From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
 To: lgirdwood@gmail.com, Mark Brown <broonie@kernel.org>, perex@perex.cz,
  Takashi Iwai <tiwai@suse.de>
-Subject: [PATCH v2] sound/soc/fsl/fsl_ssi.c: let check zero instead of check
- NO_IRQ
-References: <523FB47C.8010800@asianux.com> <523FB6F4.60803@asianux.com>
-In-Reply-To: <523FB6F4.60803@asianux.com>
+Subject: [PATCH] sound/soc/fsl/fsl_ssi.c: let checking none-zero instead of
+ checking NO_IRQ
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: alsa-devel@alsa-project.org,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
@@ -30,9 +28,9 @@ NO_IRQ may be defined as '(unsigned int) -1' in some architectures
 (arm, sh ...), and either may not be defined in some architectures
 which can enable SND_SOC_FSL_SSI (e.g. allmodconfig for arc).
 
-When irq_of_parse_and_map() fails, it will always return 0, so need
-check zero instead of NO_IRQ, or will cause compiling issue or run
-time bug in some architectures.
+When irq_of_parse_and_map() fails, it will always return 0, so need let
+checking none-zero instead of checking NO_IRQ, or will cause compiling
+issue or run time bug in some architectures.
 
 
 Signed-off-by: Chen Gang <gang.chen@asianux.com>
