@@ -2,13 +2,12 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 23/39] powerpc: Little endian sparse clean up for
- arch/powerpc/platforms/powernv/pci-ioda.c
-Date: Mon, 23 Sep 2013 12:04:57 +1000
-Message-Id: <1379901913-5945-24-git-send-email-anton@samba.org>
+Subject: [PATCH 24/39] powerpc/powernv: Fix endian issues in OPAL RTC driver
+Date: Mon, 23 Sep 2013 12:04:58 +1000
+Message-Id: <1379901913-5945-25-git-send-email-anton@samba.org>
 In-Reply-To: <1379901913-5945-1-git-send-email-anton@samba.org>
 References: <1379901913-5945-1-git-send-email-anton@samba.org>
-Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,34 +17,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alistair Popple <alistair@popple.id.au>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/opal-rtc.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 74a5a57..9a903ed 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1106,7 +1106,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	struct pci_controller *hose;
- 	struct pnv_phb *phb;
- 	unsigned long size, m32map_off, iomap_off, pemap_off;
--	const u64 *prop64;
-+	const __be64 *prop64;
- 	const u32 *prop32;
- 	int len;
- 	u64 phb_id;
-@@ -1285,7 +1285,7 @@ void __init pnv_pci_init_ioda2_phb(struct device_node *np)
- void __init pnv_pci_init_ioda_hub(struct device_node *np)
- {
- 	struct device_node *phbn;
--	const u64 *prop64;
-+	const __be64 *prop64;
- 	u64 hub_id;
+diff --git a/arch/powerpc/platforms/powernv/opal-rtc.c b/arch/powerpc/platforms/powernv/opal-rtc.c
+index 2aa7641..dbfdba3 100644
+--- a/arch/powerpc/platforms/powernv/opal-rtc.c
++++ b/arch/powerpc/platforms/powernv/opal-rtc.c
+@@ -48,6 +48,8 @@ unsigned long __init opal_get_boot_time(void)
+ 	}
+ 	if (rc != OPAL_SUCCESS)
+ 		return 0;
++	y_m_d = be32_to_cpu(y_m_d);
++	h_m_s_ms = be64_to_cpu(h_m_s_ms);
+ 	opal_to_tm(y_m_d, h_m_s_ms, &tm);
+ 	return mktime(tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+ 		      tm.tm_hour, tm.tm_min, tm.tm_sec);
+@@ -68,6 +70,8 @@ void opal_get_rtc_time(struct rtc_time *tm)
+ 	}
+ 	if (rc != OPAL_SUCCESS)
+ 		return;
++	y_m_d = be32_to_cpu(y_m_d);
++	h_m_s_ms = be64_to_cpu(h_m_s_ms);
+ 	opal_to_tm(y_m_d, h_m_s_ms, tm);
+ }
  
- 	pr_info("Probing IODA IO-Hub %s\n", np->full_name);
+@@ -86,6 +90,9 @@ int opal_set_rtc_time(struct rtc_time *tm)
+ 	h_m_s_ms |= ((u64)bin2bcd(tm->tm_min)) << 48;
+ 	h_m_s_ms |= ((u64)bin2bcd(tm->tm_sec)) << 40;
+ 
++	y_m_d = cpu_to_be32(y_m_d);
++	h_m_s_ms = cpu_to_be64(h_m_s_ms);
++
+ 	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+ 		rc = opal_rtc_write(y_m_d, h_m_s_ms);
+ 		if (rc == OPAL_BUSY_EVENT)
 -- 
 1.8.1.2
