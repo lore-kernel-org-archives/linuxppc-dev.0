@@ -1,35 +1,18 @@
-Return-Path: <Nicolas.FERRE@atmel.com>
-Received: from eusmtp01.atmel.com (eusmtp01.atmel.com [212.144.249.243])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C5D822C0133
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 22:36:54 +1000 (EST)
-Message-ID: <5240355A.9010609@atmel.com>
-Date: Mon, 23 Sep 2013 14:34:34 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-MIME-Version: 1.0
-To: Russell King <rmk+kernel@arm.linux.org.uk>, <alsa-devel@alsa-project.org>,
- <b43-dev@lists.infradead.org>, <devel@driverdev.osuosl.org>,
- <devicetree@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
- <e1000-devel@lists.sourceforge.net>, <linux-arm-kernel@lists.infradead.org>,
- <linux-crypto@vger.kernel.org>, <linux-doc@vger.kernel.org>,
- <linux-fbdev@vger.kernel.org>, <linux-ide@vger.kernel.org>,
- <linux-media@vger.kernel.org>, <linux-mmc@vger.kernel.org>,
- <linux-nvme@lists.infradead.org>, <linux-omap@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-samsung-soc@vger.kernel.org>,
- <linux-scsi@vger.kernel.org>, <linux-tegra@vger.kernel.org>,
- <linux-usb@vger.kernel.org>, <linux-wireless@vger.kernel.org>,
- <netdev@vger.kernel.org>, Solarflare linux maintainers
- <linux-net-drivers@solarflare.com>, <uclinux-dist-devel@blackfin.uclinux.org>
-Subject: Re: [PATCH 37/51] DMA-API: usb: use new dma_coerce_mask_and_coherent()
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMmIV-0007jw-Gq@rmk-PC.arm.linux.org.uk>
-In-Reply-To: <E1VMmIV-0007jw-Gq@rmk-PC.arm.linux.org.uk>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>,
- Tony Prisk <linux@prisktech.co.nz>, Alan Stern <stern@rowland.harvard.edu>
+Return-Path: <prarit@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id F3F402C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 23:16:33 +1000 (EST)
+Received: from int-mx02.intmail.prod.int.phx2.redhat.com
+ (int-mx02.intmail.prod.int.phx2.redhat.com [10.5.11.12])
+ by mx1.redhat.com (8.14.4/8.14.4) with ESMTP id r8NDGVXv020124
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 09:16:31 -0400
+From: Prarit Bhargava <prarit@redhat.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] ppc, vio fix modalias_show return values
+Date: Mon, 23 Sep 2013 09:16:10 -0400
+Message-Id: <1379942170-22458-1-git-send-email-prarit@redhat.com>
+Cc: Prarit Bhargava <prarit@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,37 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20/09/2013 00:02, Russell King :
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->   drivers/usb/chipidea/ci_hdrc_imx.c |    4 +---
->   drivers/usb/dwc3/dwc3-exynos.c     |    4 +---
->   drivers/usb/host/ehci-atmel.c      |    4 +---
+modalias_show() should return an empty string on error, not -ENODEV.
 
-For Atmel driver:
+This causes the following false and annoying error:
 
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> find /sys/devices -name modalias -print0 | xargs -0 cat >/dev/null
+cat: /sys/devices/vio/4000/modalias: No such device
+cat: /sys/devices/vio/4001/modalias: No such device
+cat: /sys/devices/vio/4002/modalias: No such device
+cat: /sys/devices/vio/4004/modalias: No such device
+cat: /sys/devices/vio/modalias: No such device
 
-[..]
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+---
+ arch/powerpc/kernel/vio.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-> diff --git a/drivers/usb/host/ehci-atmel.c b/drivers/usb/host/ehci-atmel.c
-> index 5831a88..8e7323e 100644
-> --- a/drivers/usb/host/ehci-atmel.c
-> +++ b/drivers/usb/host/ehci-atmel.c
-> @@ -90,9 +90,7 @@ static int ehci_atmel_drv_probe(struct platform_device *pdev)
->   	 * Since shared usb code relies on it, set it here for now.
->   	 * Once we have dma capability bindings this can go away.
->   	 */
-> -	if (!pdev->dev.dma_mask)
-> -		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
-> -	retval = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-> +	retval = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
->   	if (retval)
->   		goto fail_create_hcd;
->
-
-[..]
-
-Thanks Russell,
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index 78a3506..d38cc08 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -1530,11 +1530,15 @@ static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
+ 	const char *cp;
+ 
+ 	dn = dev->of_node;
+-	if (!dn)
+-		return -ENODEV;
++	if (!dn) {
++		strcat(buf, "\n");
++		return strlen(buf);
++	}
+ 	cp = of_get_property(dn, "compatible", NULL);
+-	if (!cp)
+-		return -ENODEV;
++	if (!cp) {
++		strcat(buf, "\n");
++		return strlen(buf);
++	}
+ 
+ 	return sprintf(buf, "vio:T%sS%s\n", vio_dev->type, cp);
+ }
 -- 
-Nicolas Ferre
+1.7.9.3
