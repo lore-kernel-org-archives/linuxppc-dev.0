@@ -1,17 +1,43 @@
-Return-Path: <aida.mynzhasova@skitlab.ru>
-Received: from mail.skitlab.ru (mail.skitlab.ru [217.65.220.135])
- by ozlabs.org (Postfix) with ESMTP id 102582C0103
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 17:45:17 +1000 (EST)
-Message-ID: <523FEFCD.70409@skitlab.ru>
-Date: Mon, 23 Sep 2013 11:37:49 +0400
-From: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Device tree node for Freescale Gianfar PTP reference clock source
- selection
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, Richard Cochran <richardcochran@gmail.com>,
- Claudiu Manoil <claudiu.manoil@freescale.com>, devicetree@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 580162C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 17:56:38 +1000 (EST)
+Date: Mon, 23 Sep 2013 17:56:21 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/irq: Run softirqs off the top of the irq stack
+Message-Id: <20130923175621.e9bab9ff0e6545457666602f@canb.auug.org.au>
+In-Reply-To: <1379910958.6625.3.camel@pasglop>
+References: <1379620267-25191-1-git-send-email-fweisbec@gmail.com>
+ <CA+55aFyXf370Ds6FH5wPPycZLSPD5qiP7rjWqxwDetfHfKjg1w@mail.gmail.com>
+ <alpine.DEB.2.02.1309201244080.4089@ionos.tec.linutronix.de>
+ <20130920162603.GA30381@localhost.localdomain>
+ <CA+55aFyBcjP2U6ipzZay=FdhzA4oFNwE4tU0OcJJhwFvgoeALw@mail.gmail.com>
+ <CAFTL4hzucS5nJbCrArPv9zfY=QpyUESMK2Th0tKFHVCjDP7-eA@mail.gmail.com>
+ <1379799901.24090.6.camel@pasglop> <523E4F8A.7020708@zytor.com>
+ <1379824754.24090.11.camel@pasglop>
+ <1379824861.24090.12.camel@pasglop>
+ <20130922162410.GA10649@laptop.programming.kicks-ass.net>
+ <1379887000.24090.19.camel@pasglop>
+ <CA+55aFwaf_Wst=AS75ydBJVQ6aJxPfAzXdt-UXj3qC9WeUt7kw@mail.gmail.com>
+ <1379889489.24090.34.camel@pasglop>
+ <1379910958.6625.3.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__23_Sep_2013_17_56_21_+1000_EXBcDQzK7fOR66L4"
+Cc: James Hogan <james.hogan@imgtec.com>, Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>, Helge Deller <deller@gmx.de>,
+ "H. Peter Anvin" <hpa@zytor.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@au1.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,46 +47,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+--Signature=_Mon__23_Sep_2013_17_56_21_+1000_EXBcDQzK7fOR66L4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Currently, Freescale Gianfar PTP reference clock source is determined 
-through hard-coded value in gianfar_ptp driver. I don't think that 
-recompilation of the entire module (or even worse - the kernel) is a god 
-idea when we want to change one clock source to another. So, I want to 
-add new device tree binding, which can be used as:
+Hi Ben,
 
-	ptp_clock@24E00 {
-		compatible = "fsl,etsec-ptp";
-		reg = <0x24E00 0xB0>;
-		interrupts = <12 0x8 13 0x8>;
-		interrupt-parent = < &ipic >;
-		fsl,cksel = <0>; /* <-- New entry */
-		fsl,tclk-period = <10>;
-		fsl,tmr-prsc    = <100>;
-		fsl,tmr-add     = <0x999999A4>;
-		fsl,tmr-fiper1  = <0x3B9AC9F6>;
-		fsl,tmr-fiper2  = <0x00018696>;
-		fsl,max-adj     = <659999998>;
-	};
+On Mon, 23 Sep 2013 14:35:58 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index c69440c..0c9646f 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -443,46 +443,7 @@ void migrate_irqs(void)
+> =20
+>  static inline void handle_one_irq(unsigned int irq)
+>  {
+> -	struct thread_info *curtp, *irqtp;
+> -	unsigned long saved_sp_limit;
+> -	struct irq_desc *desc;
+> -
+> -	desc =3D irq_to_desc(irq);
+> -	if (!desc)
+> -		return;
+> -
+> -	/* Switch to the irq stack to handle this */
+> -	curtp =3D current_thread_info();
+> -	irqtp =3D hardirq_ctx[smp_processor_id()];
+> -
+> -	if (curtp =3D=3D irqtp) {
+> -		/* We're already on the irq stack, just handle it */
+> -		desc->handle_irq(irq, desc);
+> -		return;
+> -	}
+> -
+> -	saved_sp_limit =3D current->thread.ksp_limit;
+> -
+> -	irqtp->task =3D curtp->task;
+> -	irqtp->flags =3D 0;
+> -
+> -	/* Copy the softirq bits in preempt_count so that the
+> -	 * softirq checks work in the hardirq context. */
+> -	irqtp->preempt_count =3D (irqtp->preempt_count & ~SOFTIRQ_MASK) |
+> -			       (curtp->preempt_count & SOFTIRQ_MASK);
+> =20
+> -	current->thread.ksp_limit =3D (unsigned long)irqtp +
+> -		_ALIGN_UP(sizeof(struct thread_info), 16);
+> -
+> -	call_handle_irq(irq, desc, irqtp, desc->handle_irq);
+> -	current->thread.ksp_limit =3D saved_sp_limit;
+> -	irqtp->task =3D NULL;
+> -
+> -	/* Set any flag that may have been set on the
+> -	 * alternate stack
+> -	 */
+> -	if (irqtp->flags)
+> -		set_bits(irqtp->flags, &curtp->flags);
+>  }
 
-fsl,cksel acceptable values:
+This function ends up as a single blank line ...
 
-<0> for external clock;
-<1> for eTSEC system clock;
-<2> for eTSEC1 transmit clock;
-<3> for RTC clock input.
+> @@ -519,18 +480,64 @@ void do_IRQ(struct pt_regs *regs)
+>  	 */
+>  	irq =3D ppc_md.get_irq();
+> =20
+> -	/* We can hard enable interrupts now */
+> +	/* We can hard enable interrupts now to allow perf interrupts */
+>  	may_hard_irq_enable();
+> =20
+>  	/* And finally process it */
+> -	if (irq !=3D NO_IRQ)
+> -		handle_one_irq(irq);
 
-I am new in this mailing list, and as far as I know, I have to discuss 
-all updates for device tree files here before sending patch, which uses 
-new attributes.
+then you remove the only call, so why not just remove the function
+completely?
 
-Also, should I define new bindings in some special way? I want to add 
-description of cksel attribute in 
-/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt. Is it enough or 
-not?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Thanks!
+--Signature=_Mon__23_Sep_2013_17_56_21_+1000_EXBcDQzK7fOR66L4
+Content-Type: application/pgp-signature
 
--- 
-Regards,
-Aida
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.21 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSP/QqAAoJEECxmPOUX5FE2SQP/i9v00jfdhVMuZ/rRcHJ7d7V
+MxlqUpRetFOwFu6pk+DDPpfwiGBaVyv14A2AlOJK4X14Qf49WgcfGZFYDbtMC7XY
+AzAOaut+A7W7PocazNqs9Do51JAkGB3culEB8CZ08+f2zIU3NpBrStlztoiwA37D
+R2ogmQrAdfvkh3tDnUZd00umrz3zgBaWzFDyaGQc+GEvgask8KFImGgWB3hUlWeg
+oi66J4fd46ZOexe6zhg1/ieR8BSB/RmBEP8pS2OLXZnFWppo0228aAZlwj+Fj3N7
+kZxwhLO5wHEd+cDZ298M8UeosMap4WikcOnRYoT3BeGzzeXP3rr0QMHxts2B4AMU
+hPCKENDNzH6ZQoHDcO1L4170Db11AxGRYKwtbAb1XznKdIj34/gF2ReIS64WoIqg
+8x1JUjUMqrtYzgeJzQqGPMxmBxMIWkWkhSkEJzChAtDQ+qRCVPbEfqMBHcbzXhTC
+757ySB+2wjaG8o2IHO7/GpYs/kRpFLfu1csmOpi28F7we4hoDRo/pFTDFPeOsQbZ
+I0N8DcLGToSmuYsoLVlJa28CXuajS3ee7R3+q5ekTqoGnU95CjDvio/6OgQv8b5I
+byvKT5TV8pXUePPPTMn6JOArYe9K9wPPzVjHYEwD/l8fYsanzvBhvoektWJrh8ac
+OJUP+C3PNW5p0yuLTOm7
+=hgo+
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__23_Sep_2013_17_56_21_+1000_EXBcDQzK7fOR66L4--
