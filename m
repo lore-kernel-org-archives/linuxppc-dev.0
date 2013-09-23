@@ -1,43 +1,35 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 580162C0091
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 17:56:38 +1000 (EST)
-Date: Mon, 23 Sep 2013 17:56:21 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/irq: Run softirqs off the top of the irq stack
-Message-Id: <20130923175621.e9bab9ff0e6545457666602f@canb.auug.org.au>
-In-Reply-To: <1379910958.6625.3.camel@pasglop>
-References: <1379620267-25191-1-git-send-email-fweisbec@gmail.com>
- <CA+55aFyXf370Ds6FH5wPPycZLSPD5qiP7rjWqxwDetfHfKjg1w@mail.gmail.com>
- <alpine.DEB.2.02.1309201244080.4089@ionos.tec.linutronix.de>
- <20130920162603.GA30381@localhost.localdomain>
- <CA+55aFyBcjP2U6ipzZay=FdhzA4oFNwE4tU0OcJJhwFvgoeALw@mail.gmail.com>
- <CAFTL4hzucS5nJbCrArPv9zfY=QpyUESMK2Th0tKFHVCjDP7-eA@mail.gmail.com>
- <1379799901.24090.6.camel@pasglop> <523E4F8A.7020708@zytor.com>
- <1379824754.24090.11.camel@pasglop>
- <1379824861.24090.12.camel@pasglop>
- <20130922162410.GA10649@laptop.programming.kicks-ass.net>
- <1379887000.24090.19.camel@pasglop>
- <CA+55aFwaf_Wst=AS75ydBJVQ6aJxPfAzXdt-UXj3qC9WeUt7kw@mail.gmail.com>
- <1379889489.24090.34.camel@pasglop>
- <1379910958.6625.3.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__23_Sep_2013_17_56_21_+1000_EXBcDQzK7fOR66L4"
-Cc: James Hogan <james.hogan@imgtec.com>, Peter Zijlstra <peterz@infradead.org>,
- Frederic Weisbecker <fweisbec@gmail.com>, Helge Deller <deller@gmx.de>,
- "H. Peter Anvin" <hpa@zytor.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@au1.ibm.com>,
- Ingo Molnar <mingo@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>,
+Return-Path: <thierry.reding@gmail.com>
+Received: from mail-bk0-x22e.google.com (mail-bk0-x22e.google.com
+ [IPv6:2a00:1450:4008:c01::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3592C2C010C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 18:15:04 +1000 (EST)
+Received: by mail-bk0-f46.google.com with SMTP id 6so1019779bkj.33
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 01:14:59 -0700 (PDT)
+Date: Mon, 23 Sep 2013 10:13:38 +0200
+From: Thierry Reding <thierry.reding@gmail.com>
+To: Rob Herring <robherring2@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2 04/10] irqdomain: Return errors from
+ irq_create_of_mapping()
+Message-ID: <20130923081337.GB11881@ulmo>
+References: <1379510692-32435-1-git-send-email-treding@nvidia.com>
+ <1379510692-32435-5-git-send-email-treding@nvidia.com>
+ <CAL_JsqLQeAQD460f8Lk9eDE2dCzLusC1mXZ-_uaKVFLfhJNryg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="Pd0ReVV5GZGQvF3a"
+In-Reply-To: <CAL_JsqLQeAQD460f8Lk9eDE2dCzLusC1mXZ-_uaKVFLfhJNryg@mail.gmail.com>
+Cc: linux-mips@linux-mips.org, Russell King <linux@arm.linux.org.uk>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Rob Herring <rob.herring@calxeda.com>, sparclinux@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Grant Likely <grant.likely@linaro.org>,
  Thomas Gleixner <tglx@linutronix.de>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,106 +39,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__23_Sep_2013_17_56_21_+1000_EXBcDQzK7fOR66L4
-Content-Type: text/plain; charset=US-ASCII
+
+--Pd0ReVV5GZGQvF3a
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Ben,
+On Sun, Sep 22, 2013 at 04:14:43PM -0500, Rob Herring wrote:
+> On Wed, Sep 18, 2013 at 8:24 AM, Thierry Reding
+> <thierry.reding@gmail.com> wrote:
+> > Instead of returning 0 for all errors, allow the precise error code to
+> > be propagated. This will be used in subsequent patches to allow further
+> > propagation of error codes.
+> >
+> > The interrupt number corresponding to the new mapping is returned in an
+> > output parameter so that the return value is reserved to signal success
+> > (=3D=3D 0) or failure (< 0).
+> >
+> > Signed-off-by: Thierry Reding <treding@nvidia.com>
+>=20
+> One comment below, otherwise:
+>=20
+> Acked-by: Rob Herring <rob.herring@calxeda.com>
+>=20
+> > diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci=
+-common.c
+> > index 905a24b..ae71b14 100644
+> > --- a/arch/powerpc/kernel/pci-common.c
+> > +++ b/arch/powerpc/kernel/pci-common.c
+> > @@ -230,6 +230,7 @@ static int pci_read_irq_line(struct pci_dev *pci_de=
+v)
+> >  {
+> >         struct of_irq oirq;
+> >         unsigned int virq;
+> > +       int ret;
+> >
+> >         pr_debug("PCI: Try to map irq for %s...\n", pci_name(pci_dev));
+> >
+> > @@ -266,8 +267,10 @@ static int pci_read_irq_line(struct pci_dev *pci_d=
+ev)
+> >                          oirq.size, oirq.specifier[0], oirq.specifier[1=
+],
+> >                          of_node_full_name(oirq.controller));
+> >
+> > -               virq =3D irq_create_of_mapping(oirq.controller, oirq.sp=
+ecifier,
+> > -                                            oirq.size);
+> > +               ret =3D irq_create_of_mapping(oirq.controller, oirq.spe=
+cifier,
+> > +                                           oirq.size, &virq);
+> > +               if (ret)
+> > +                       virq =3D NO_IRQ;
+> >         }
+> >         if(virq =3D=3D NO_IRQ) {
+> >                 pr_debug(" Failed to map !\n");
+>=20
+> Can you get rid of NO_IRQ usage here instead of adding to it.
 
-On Mon, 23 Sep 2013 14:35:58 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index c69440c..0c9646f 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -443,46 +443,7 @@ void migrate_irqs(void)
-> =20
->  static inline void handle_one_irq(unsigned int irq)
->  {
-> -	struct thread_info *curtp, *irqtp;
-> -	unsigned long saved_sp_limit;
-> -	struct irq_desc *desc;
-> -
-> -	desc =3D irq_to_desc(irq);
-> -	if (!desc)
-> -		return;
-> -
-> -	/* Switch to the irq stack to handle this */
-> -	curtp =3D current_thread_info();
-> -	irqtp =3D hardirq_ctx[smp_processor_id()];
-> -
-> -	if (curtp =3D=3D irqtp) {
-> -		/* We're already on the irq stack, just handle it */
-> -		desc->handle_irq(irq, desc);
-> -		return;
-> -	}
-> -
-> -	saved_sp_limit =3D current->thread.ksp_limit;
-> -
-> -	irqtp->task =3D curtp->task;
-> -	irqtp->flags =3D 0;
-> -
-> -	/* Copy the softirq bits in preempt_count so that the
-> -	 * softirq checks work in the hardirq context. */
-> -	irqtp->preempt_count =3D (irqtp->preempt_count & ~SOFTIRQ_MASK) |
-> -			       (curtp->preempt_count & SOFTIRQ_MASK);
-> =20
-> -	current->thread.ksp_limit =3D (unsigned long)irqtp +
-> -		_ALIGN_UP(sizeof(struct thread_info), 16);
-> -
-> -	call_handle_irq(irq, desc, irqtp, desc->handle_irq);
-> -	current->thread.ksp_limit =3D saved_sp_limit;
-> -	irqtp->task =3D NULL;
-> -
-> -	/* Set any flag that may have been set on the
-> -	 * alternate stack
-> -	 */
-> -	if (irqtp->flags)
-> -		set_bits(irqtp->flags, &curtp->flags);
->  }
+I was trying to stay consistent with the remainder of the code. PowerPC
+is a pretty heavy user of NO_IRQ. Of all 348 references, more than half
+(182) are in arch/powerpc, so I'd rather like to get a go-ahead from
+Benjamin on this.
 
-This function ends up as a single blank line ...
+That said, perhaps we should just go all the way and get rid of NO_IRQ
+for good. Things could get somewhat messy, though. There are a couple of
+these spread through the code:
 
-> @@ -519,18 +480,64 @@ void do_IRQ(struct pt_regs *regs)
->  	 */
->  	irq =3D ppc_md.get_irq();
-> =20
-> -	/* We can hard enable interrupts now */
-> +	/* We can hard enable interrupts now to allow perf interrupts */
->  	may_hard_irq_enable();
-> =20
->  	/* And finally process it */
-> -	if (irq !=3D NO_IRQ)
-> -		handle_one_irq(irq);
+	#ifndef NO_IRQ
+	#define NO_IRQ (-1)
+	#endif
 
-then you remove the only call, so why not just remove the function
-completely?
+And this isn't very encouraging either:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+	$ git grep 'irq.*=3D.*-1' | wc -l
+	638
 
---Signature=_Mon__23_Sep_2013_17_56_21_+1000_EXBcDQzK7fOR66L4
+Thierry
+
+--Pd0ReVV5GZGQvF3a
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.21 (GNU/Linux)
 
-iQIcBAEBCAAGBQJSP/QqAAoJEECxmPOUX5FE2SQP/i9v00jfdhVMuZ/rRcHJ7d7V
-MxlqUpRetFOwFu6pk+DDPpfwiGBaVyv14A2AlOJK4X14Qf49WgcfGZFYDbtMC7XY
-AzAOaut+A7W7PocazNqs9Do51JAkGB3culEB8CZ08+f2zIU3NpBrStlztoiwA37D
-R2ogmQrAdfvkh3tDnUZd00umrz3zgBaWzFDyaGQc+GEvgask8KFImGgWB3hUlWeg
-oi66J4fd46ZOexe6zhg1/ieR8BSB/RmBEP8pS2OLXZnFWppo0228aAZlwj+Fj3N7
-kZxwhLO5wHEd+cDZ298M8UeosMap4WikcOnRYoT3BeGzzeXP3rr0QMHxts2B4AMU
-hPCKENDNzH6ZQoHDcO1L4170Db11AxGRYKwtbAb1XznKdIj34/gF2ReIS64WoIqg
-8x1JUjUMqrtYzgeJzQqGPMxmBxMIWkWkhSkEJzChAtDQ+qRCVPbEfqMBHcbzXhTC
-757ySB+2wjaG8o2IHO7/GpYs/kRpFLfu1csmOpi28F7we4hoDRo/pFTDFPeOsQbZ
-I0N8DcLGToSmuYsoLVlJa28CXuajS3ee7R3+q5ekTqoGnU95CjDvio/6OgQv8b5I
-byvKT5TV8pXUePPPTMn6JOArYe9K9wPPzVjHYEwD/l8fYsanzvBhvoektWJrh8ac
-OJUP+C3PNW5p0yuLTOm7
-=hgo+
+iQIcBAEBAgAGBQJSP/gxAAoJEN0jrNd/PrOhiNUP/jOZBHSu3iWeYBqVkPQQP52r
+BDEGdRc+LKm5aBO9XwhxGDTRX3igBcFXfYlkvwmllnhJaPU8J6HCxWWffm8qwCZ2
+voRIWxXH7q76QKAE/i7RZwJoASgg1KpLUS0Yv/MVchyOhMMbM2y4GG6IxBRMhA+2
+j37HKuSPPnTNvWdD0vCHv064VD44fBLeIog+a4Y5Ha3FHTkd09s6No364wr+/Hko
+ILMl+Erg38QqDm9Tr5qW37tMqzJ+I0ik6ye+C12iL2Zpiqo9LS8445M2URts18L6
+uPw4xkwCLPA0qcMl/aqpwAlpn48TXLZEmbxZRxBgdJnF7uapdLUeLr4XphpWT4f/
+JqWXZqVepBFu24h1NpPFJ2Mi6muhGyhXDYJ+y43OWtfi5dK6olgx3/Nk7b6URxo1
+cTlfAemyOrho1a32N4L3rjfR79Ub2qnLcrEVRZ9a72t2qFhBjpV5D8WoO4mQaXtd
+27VEKFPFWDL7VIuiUH2mp8hwk7AIWx5h9Ahkdrsxg5KREHsX+vAnkNfEu6IID2nK
+nyEmBH0Nn4exzchhiNd3ONQhU5MIuqtudsAv14EchBpUP+8nWNkGAokV9JHfziW/
+hBO/rq8r6DE6kzrY66mVR3b5734wHY9TidAN9suWcZkHvsFbZJdyr3NWiZxqatoh
+Yb0ygk/unpG2YJa3evJI
+=BnFo
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__23_Sep_2013_17_56_21_+1000_EXBcDQzK7fOR66L4--
+--Pd0ReVV5GZGQvF3a--
