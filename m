@@ -1,40 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B4FF32C00FD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 14:37:26 +1000 (EST)
-Message-ID: <1379910958.6625.3.camel@pasglop>
-Subject: [PATCH] powerpc/irq: Run softirqs off the top of the irq stack
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 23 Sep 2013 14:35:58 +1000
-In-Reply-To: <1379889489.24090.34.camel@pasglop>
-References: <1379620267-25191-1-git-send-email-fweisbec@gmail.com>
- <CA+55aFyXf370Ds6FH5wPPycZLSPD5qiP7rjWqxwDetfHfKjg1w@mail.gmail.com>
- <alpine.DEB.2.02.1309201244080.4089@ionos.tec.linutronix.de>
- <20130920162603.GA30381@localhost.localdomain>
- <CA+55aFyBcjP2U6ipzZay=FdhzA4oFNwE4tU0OcJJhwFvgoeALw@mail.gmail.com>
- <CAFTL4hzucS5nJbCrArPv9zfY=QpyUESMK2Th0tKFHVCjDP7-eA@mail.gmail.com>
- <1379799901.24090.6.camel@pasglop> <523E4F8A.7020708@zytor.com>
- <1379824754.24090.11.camel@pasglop> <1379824861.24090.12.camel@pasglop>
- <20130922162410.GA10649@laptop.programming.kicks-ass.net>
- <1379887000.24090.19.camel@pasglop>
- <CA+55aFwaf_Wst=AS75ydBJVQ6aJxPfAzXdt-UXj3qC9WeUt7kw@mail.gmail.com>
- <1379889489.24090.34.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: James Hogan <james.hogan@imgtec.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>, Peter Zijlstra <peterz@infradead.org>,
- Frederic Weisbecker <fweisbec@gmail.com>, Helge Deller <deller@gmx.de>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Paul Mackerras <paulus@au1.ibm.com>
+Return-Path: <aida.mynzhasova@skitlab.ru>
+Received: from mail.skitlab.ru (mail.skitlab.ru [217.65.220.135])
+ by ozlabs.org (Postfix) with ESMTP id 102582C0103
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 17:45:17 +1000 (EST)
+Message-ID: <523FEFCD.70409@skitlab.ru>
+Date: Mon, 23 Sep 2013 11:37:49 +0400
+From: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Device tree node for Freescale Gianfar PTP reference clock source
+ selection
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, Richard Cochran <richardcochran@gmail.com>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>, devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,237 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nowadays, irq_exit() calls __do_softirq() pretty much directly
-instead of calling do_softirq() which switches to the decicated
-softirq stack.
+Hi,
 
-This has lead to observed stack overflows on powerpc since we call
-irq_enter() and irq_exit() outside of the scope that switches to
-the irq stack.
+Currently, Freescale Gianfar PTP reference clock source is determined 
+through hard-coded value in gianfar_ptp driver. I don't think that 
+recompilation of the entire module (or even worse - the kernel) is a god 
+idea when we want to change one clock source to another. So, I want to 
+add new device tree binding, which can be used as:
 
-This fixes it by moving the stack switching up a level, making
-irq_enter() and irq_exit() run off the irq stack.
+	ptp_clock@24E00 {
+		compatible = "fsl,etsec-ptp";
+		reg = <0x24E00 0xB0>;
+		interrupts = <12 0x8 13 0x8>;
+		interrupt-parent = < &ipic >;
+		fsl,cksel = <0>; /* <-- New entry */
+		fsl,tclk-period = <10>;
+		fsl,tmr-prsc    = <100>;
+		fsl,tmr-add     = <0x999999A4>;
+		fsl,tmr-fiper1  = <0x3B9AC9F6>;
+		fsl,tmr-fiper2  = <0x00018696>;
+		fsl,max-adj     = <659999998>;
+	};
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+fsl,cksel acceptable values:
 
-This is the "band aid" discussed so far for the stack overflow
-problem for powerpc. I assume sparc and i386 at least need
-something similar (I had a quick look at ARM and it doesn't
-seem to have irq stacks at all).
+<0> for external clock;
+<1> for eTSEC system clock;
+<2> for eTSEC1 transmit clock;
+<3> for RTC clock input.
 
-Unless objection in the next day or so, I intend to send that to
-Linus and to -stable ASAP.
+I am new in this mailing list, and as far as I know, I have to discuss 
+all updates for device tree files here before sending patch, which uses 
+new attributes.
 
- arch/powerpc/include/asm/irq.h |  4 +-
- arch/powerpc/kernel/irq.c      | 99 ++++++++++++++++++++++--------------------
- arch/powerpc/kernel/misc_32.S  |  9 ++--
- arch/powerpc/kernel/misc_64.S  | 10 ++---
- 4 files changed, 62 insertions(+), 60 deletions(-)
+Also, should I define new bindings in some special way? I want to add 
+description of cksel attribute in 
+/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt. Is it enough or 
+not?
 
-diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index 0e40843..41f13ce 100644
---- a/arch/powerpc/include/asm/irq.h
-+++ b/arch/powerpc/include/asm/irq.h
-@@ -69,9 +69,9 @@ extern struct thread_info *softirq_ctx[NR_CPUS];
- 
- extern void irq_ctx_init(void);
- extern void call_do_softirq(struct thread_info *tp);
--extern int call_handle_irq(int irq, void *p1,
--			   struct thread_info *tp, void *func);
-+extern void call_do_irq(struct pt_regs *regs, struct thread_info *tp);
- extern void do_IRQ(struct pt_regs *regs);
-+extern void __do_irq(struct pt_regs *regs);
- 
- int irq_choose_cpu(const struct cpumask *mask);
- 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index c69440c..0c9646f 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -443,46 +443,7 @@ void migrate_irqs(void)
- 
- static inline void handle_one_irq(unsigned int irq)
- {
--	struct thread_info *curtp, *irqtp;
--	unsigned long saved_sp_limit;
--	struct irq_desc *desc;
--
--	desc = irq_to_desc(irq);
--	if (!desc)
--		return;
--
--	/* Switch to the irq stack to handle this */
--	curtp = current_thread_info();
--	irqtp = hardirq_ctx[smp_processor_id()];
--
--	if (curtp == irqtp) {
--		/* We're already on the irq stack, just handle it */
--		desc->handle_irq(irq, desc);
--		return;
--	}
--
--	saved_sp_limit = current->thread.ksp_limit;
--
--	irqtp->task = curtp->task;
--	irqtp->flags = 0;
--
--	/* Copy the softirq bits in preempt_count so that the
--	 * softirq checks work in the hardirq context. */
--	irqtp->preempt_count = (irqtp->preempt_count & ~SOFTIRQ_MASK) |
--			       (curtp->preempt_count & SOFTIRQ_MASK);
- 
--	current->thread.ksp_limit = (unsigned long)irqtp +
--		_ALIGN_UP(sizeof(struct thread_info), 16);
--
--	call_handle_irq(irq, desc, irqtp, desc->handle_irq);
--	current->thread.ksp_limit = saved_sp_limit;
--	irqtp->task = NULL;
--
--	/* Set any flag that may have been set on the
--	 * alternate stack
--	 */
--	if (irqtp->flags)
--		set_bits(irqtp->flags, &curtp->flags);
- }
- 
- static inline void check_stack_overflow(void)
-@@ -501,9 +462,9 @@ static inline void check_stack_overflow(void)
- #endif
- }
- 
--void do_IRQ(struct pt_regs *regs)
-+void __do_irq(struct pt_regs *regs)
- {
--	struct pt_regs *old_regs = set_irq_regs(regs);
-+	struct irq_desc *desc;
- 	unsigned int irq;
- 
- 	irq_enter();
-@@ -519,18 +480,64 @@ void do_IRQ(struct pt_regs *regs)
- 	 */
- 	irq = ppc_md.get_irq();
- 
--	/* We can hard enable interrupts now */
-+	/* We can hard enable interrupts now to allow perf interrupts */
- 	may_hard_irq_enable();
- 
- 	/* And finally process it */
--	if (irq != NO_IRQ)
--		handle_one_irq(irq);
--	else
-+	if (unlikely(irq == NO_IRQ))
- 		__get_cpu_var(irq_stat).spurious_irqs++;
-+	else {
-+		desc = irq_to_desc(irq);
-+		if (likely(desc))
-+			desc->handle_irq(irq, desc);
-+	}
- 
- 	trace_irq_exit(regs);
- 
- 	irq_exit();
-+}
-+
-+void do_IRQ(struct pt_regs *regs)
-+{
-+	struct pt_regs *old_regs = set_irq_regs(regs);
-+	struct thread_info *curtp, *irqtp;
-+	unsigned long saved_sp_limit;
-+
-+	/* Switch to the irq stack to handle this */
-+	curtp = current_thread_info();
-+	irqtp = hardirq_ctx[raw_smp_processor_id()];
-+
-+	/* Already there ? */
-+	if (unlikely(curtp == irqtp)) {
-+		__do_irq(regs);
-+		set_irq_regs(old_regs);
-+		return;
-+	}
-+
-+	/* Adjust the stack limit */
-+	saved_sp_limit = current->thread.ksp_limit;
-+	current->thread.ksp_limit = (unsigned long)irqtp +
-+		_ALIGN_UP(sizeof(struct thread_info), 16);
-+
-+
-+	/* Prepare the thread_info in the irq stack */
-+	irqtp->task = curtp->task;
-+	irqtp->flags = 0;
-+
-+	/* Copy the preempt_count so that the [soft]irq checks work. */
-+	irqtp->preempt_count = curtp->preempt_count;
-+
-+	/* Switch stack and call */
-+	call_do_irq(regs, irqtp);
-+
-+	/* Restore stack limit */
-+	current->thread.ksp_limit = saved_sp_limit;
-+	irqtp->task = NULL;
-+
-+	/* Copy back updates to the thread_info */
-+	if (irqtp->flags)
-+		set_bits(irqtp->flags, &curtp->flags);
-+
- 	set_irq_regs(old_regs);
- }
- 
-@@ -592,12 +599,10 @@ void irq_ctx_init(void)
- 		memset((void *)softirq_ctx[i], 0, THREAD_SIZE);
- 		tp = softirq_ctx[i];
- 		tp->cpu = i;
--		tp->preempt_count = 0;
- 
- 		memset((void *)hardirq_ctx[i], 0, THREAD_SIZE);
- 		tp = hardirq_ctx[i];
- 		tp->cpu = i;
--		tp->preempt_count = HARDIRQ_OFFSET;
- 	}
- }
- 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 777d999..7da3882 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -47,13 +47,12 @@ _GLOBAL(call_do_softirq)
- 	mtlr	r0
- 	blr
- 
--_GLOBAL(call_handle_irq)
-+_GLOBAL(call_do_irq)
- 	mflr	r0
- 	stw	r0,4(r1)
--	mtctr	r6
--	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r5)
--	mr	r1,r5
--	bctrl
-+	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
-+	mr	r1,r4
-+	bl	__do_irq
- 	lwz	r1,0(r1)
- 	lwz	r0,4(r1)
- 	mtlr	r0
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index 971d7e7..e59caf8 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -40,14 +40,12 @@ _GLOBAL(call_do_softirq)
- 	mtlr	r0
- 	blr
- 
--_GLOBAL(call_handle_irq)
--	ld	r8,0(r6)
-+_GLOBAL(call_do_irq)
- 	mflr	r0
- 	std	r0,16(r1)
--	mtctr	r8
--	stdu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r5)
--	mr	r1,r5
--	bctrl
-+	stdu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
-+	mr	r1,r4
-+	bl	.__do_irq
- 	ld	r1,0(r1)
- 	ld	r0,16(r1)
- 	mtlr	r0
+Thanks!
+
+-- 
+Regards,
+Aida
