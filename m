@@ -1,40 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D00972C010E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 20:15:09 +1000 (EST)
-Message-ID: <1379931214.11249.10.camel@pasglop>
-Subject: Re: [PATCH] powerpc/irq: Run softirqs off the top of the irq stack
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 23 Sep 2013 20:13:34 +1000
-In-Reply-To: <20130923175621.e9bab9ff0e6545457666602f@canb.auug.org.au>
-References: <1379620267-25191-1-git-send-email-fweisbec@gmail.com>
- <CA+55aFyXf370Ds6FH5wPPycZLSPD5qiP7rjWqxwDetfHfKjg1w@mail.gmail.com>
- <alpine.DEB.2.02.1309201244080.4089@ionos.tec.linutronix.de>
- <20130920162603.GA30381@localhost.localdomain>
- <CA+55aFyBcjP2U6ipzZay=FdhzA4oFNwE4tU0OcJJhwFvgoeALw@mail.gmail.com>
- <CAFTL4hzucS5nJbCrArPv9zfY=QpyUESMK2Th0tKFHVCjDP7-eA@mail.gmail.com>
- <1379799901.24090.6.camel@pasglop> <523E4F8A.7020708@zytor.com>
- <1379824754.24090.11.camel@pasglop> <1379824861.24090.12.camel@pasglop>
- <20130922162410.GA10649@laptop.programming.kicks-ass.net>
- <1379887000.24090.19.camel@pasglop>
- <CA+55aFwaf_Wst=AS75ydBJVQ6aJxPfAzXdt-UXj3qC9WeUt7kw@mail.gmail.com>
- <1379889489.24090.34.camel@pasglop> <1379910958.6625.3.camel@pasglop>
- <20130923175621.e9bab9ff0e6545457666602f@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: James Hogan <james.hogan@imgtec.com>, Peter Zijlstra <peterz@infradead.org>,
- Frederic Weisbecker <fweisbec@gmail.com>, Helge Deller <deller@gmx.de>,
- "H. Peter Anvin" <hpa@zytor.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@au1.ibm.com>,
- Ingo Molnar <mingo@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>,
- Thomas Gleixner <tglx@linutronix.de>, "James E.J.
- Bottomley" <jejb@parisc-linux.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "David
- S. Miller" <davem@davemloft.net>
+Return-Path: <vinod.koul@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by ozlabs.org (Postfix) with ESMTP id 48C222C00E6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 21:03:08 +1000 (EST)
+Date: Mon, 23 Sep 2013 15:42:22 +0530
+From: Vinod Koul <vinod.koul@intel.com>
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [alsa-devel] [PATCH 23/51] DMA-API: dma: pl08x: add
+ dma_set_mask_and_coherent() call
+Message-ID: <20130923101222.GH17188@intel.com>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+ <E1VMm4v-0007hz-RC@rmk-PC.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1VMm4v-0007hz-RC@rmk-PC.arm.linux.org.uk>
+Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
+ devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
+ linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+ b43-dev@lists.infradead.org, linux-media@vger.kernel.org,
+ devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-tegra@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-crypto@vger.kernel.org,
+ uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,82 +35,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-09-23 at 17:56 +1000, Stephen Rothwell wrote:
-> Hi Ben,
+On Thu, Sep 19, 2013 at 10:48:01PM +0100, Russell King wrote:
+> The DMA API requires drivers to call the appropriate dma_set_mask()
+> functions before doing any DMA mapping.  Add this required call to
+> the AMBA PL08x driver.
 > 
-> On Mon, 23 Sep 2013 14:35:58 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >
-> > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> > index c69440c..0c9646f 100644
-> > --- a/arch/powerpc/kernel/irq.c
-> > +++ b/arch/powerpc/kernel/irq.c
-> > @@ -443,46 +443,7 @@ void migrate_irqs(void)
-> >  
-> >  static inline void handle_one_irq(unsigned int irq)
-> >  {
-> > -	struct thread_info *curtp, *irqtp;
-> > -	unsigned long saved_sp_limit;
-> > -	struct irq_desc *desc;
-> > -
-> > -	desc = irq_to_desc(irq);
-> > -	if (!desc)
-> > -		return;
-> > -
-> > -	/* Switch to the irq stack to handle this */
-> > -	curtp = current_thread_info();
-> > -	irqtp = hardirq_ctx[smp_processor_id()];
-> > -
-> > -	if (curtp == irqtp) {
-> > -		/* We're already on the irq stack, just handle it */
-> > -		desc->handle_irq(irq, desc);
-> > -		return;
-> > -	}
-> > -
-> > -	saved_sp_limit = current->thread.ksp_limit;
-> > -
-> > -	irqtp->task = curtp->task;
-> > -	irqtp->flags = 0;
-> > -
-> > -	/* Copy the softirq bits in preempt_count so that the
-> > -	 * softirq checks work in the hardirq context. */
-> > -	irqtp->preempt_count = (irqtp->preempt_count & ~SOFTIRQ_MASK) |
-> > -			       (curtp->preempt_count & SOFTIRQ_MASK);
-> >  
-> > -	current->thread.ksp_limit = (unsigned long)irqtp +
-> > -		_ALIGN_UP(sizeof(struct thread_info), 16);
-> > -
-> > -	call_handle_irq(irq, desc, irqtp, desc->handle_irq);
-> > -	current->thread.ksp_limit = saved_sp_limit;
-> > -	irqtp->task = NULL;
-> > -
-> > -	/* Set any flag that may have been set on the
-> > -	 * alternate stack
-> > -	 */
-> > -	if (irqtp->flags)
-> > -		set_bits(irqtp->flags, &curtp->flags);
-> >  }
-> 
-> This function ends up as a single blank line ...
-> 
-> > @@ -519,18 +480,64 @@ void do_IRQ(struct pt_regs *regs)
-> >  	 */
-> >  	irq = ppc_md.get_irq();
-> >  
-> > -	/* We can hard enable interrupts now */
-> > +	/* We can hard enable interrupts now to allow perf interrupts */
-> >  	may_hard_irq_enable();
-> >  
-> >  	/* And finally process it */
-> > -	if (irq != NO_IRQ)
-> > -		handle_one_irq(irq);
-> 
-> then you remove the only call, so why not just remove the function
-> completely?
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Acked-by: Vinod Koul <vinod.koul@intel.com>
 
-Because I'm an idiot ? :-)
+~Vinod
+> ---
+>  drivers/dma/amba-pl08x.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/dma/amba-pl08x.c b/drivers/dma/amba-pl08x.c
+> index fce46c5..e51a983 100644
+> --- a/drivers/dma/amba-pl08x.c
+> +++ b/drivers/dma/amba-pl08x.c
+> @@ -2055,6 +2055,11 @@ static int pl08x_probe(struct amba_device *adev, const struct amba_id *id)
+>  	if (ret)
+>  		return ret;
+>  
+> +	/* Ensure that we can do DMA */
+> +	ret = dma_set_mask_and_coherent(&adev->dev, DMA_BIT_MASK(32));
+> +	if (ret)
+> +		goto out_no_pl08x;
+> +
+>  	/* Create the driver state holder */
+>  	pl08x = kzalloc(sizeof(*pl08x), GFP_KERNEL);
+>  	if (!pl08x) {
+> -- 
+> 1.7.4.4
+> 
+> _______________________________________________
+> Alsa-devel mailing list
+> Alsa-devel@alsa-project.org
+> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
 
-I moved bits and pieces to do_IRQ and forgot to remove the remainder
-(and gcc didn't warn :-)
-
-Cheers,
-Ben.
+-- 
