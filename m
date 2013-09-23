@@ -1,36 +1,37 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
- [IPv6:2002:4e20:1eda::1])
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 01BE72C011A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 21:42:37 +1000 (EST)
-Date: Mon, 23 Sep 2013 12:37:55 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [alsa-devel] [PATCH 43/51] DMA-API: dma: edma.c: no need to
- explicitly initialize DMA masks
-Message-ID: <20130923113755.GT25647@n2100.arm.linux.org.uk>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMnRj-0007sg-1Z@rmk-PC.arm.linux.org.uk>
- <20130923102533.GI17188@intel.com>
+ (Client CN "e06smtp12.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1146D2C0112
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 22:19:23 +1000 (EST)
+Received: from /spool/local
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Mon, 23 Sep 2013 13:19:16 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 32B611B0805D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 13:19:15 +0100 (BST)
+Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
+ [9.149.37.247])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8NCJ1gr53543102
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 12:19:01 GMT
+Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8NCJCp8024439
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 06:19:13 -0600
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+Subject: [PATCH] powerpc/kernel: fix endian issue in rtas_pci
+Date: Mon, 23 Sep 2013 14:17:54 +0200
+Message-Id: <1379938674-4165-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130923102533.GI17188@intel.com>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
- linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
- b43-dev@lists.infradead.org, linux-media@vger.kernel.org,
- devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-tegra@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, linux-crypto@vger.kernel.org,
- uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,100 +41,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 23, 2013 at 03:55:33PM +0530, Vinod Koul wrote:
-> On Fri, Sep 20, 2013 at 12:15:39AM +0100, Russell King wrote:
-> > register_platform_device_full() can setup the DMA mask provided the
-> > appropriate member is set in struct platform_device_info.  So lets
-> > make that be the case.  This avoids a direct reference to the DMA
-> > masks by this driver.
-> > 
-> > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> Acked-by: Vinod Koul <vinod.koul@intel.com>
-> 
-> This also brings me question that should we force the driver to use the
-> dma_set_mask_and_coherent() API or they have below flexiblity too?
-
-There's two issues here:
-1. dma_set_mask_and_coherent() will only work if dev->dma_mask points at
-   some storage for the mask.  This needs to have .dma_mask in the
-   platform_device_info initialised.
-
-2. Yes, this driver should also be calling the appropriate DMA mask setting
-   functions in addition to having the mask initialized at device creation
-   time.
-
-Here's a replacement patch, though maybe it would be better to roll all
-the additions of dma_set_mask_and_coherent() in drivers/dma into one
-patch?  In other words, combine the addition of this with these two
-patches:
-
-	dma: pl330: add dma_set_mask_and_coherent() call
-	dma: pl08x: add dma_set_mask_and_coherent() call
-
-8<=====
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH] DMA-API: dma: edma.c: no need to explicitly initialize DMA
- masks
-
-register_platform_device_full() can setup the DMA mask provided the
-appropriate member is set in struct platform_device_info.  So lets
-make that be the case.  This avoids a direct reference to the DMA
-masks by this driver.
-
-While here, add the dma_set_mask_and_coherent() call which the DMA API
-requires DMA-using drivers to call.
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- drivers/dma/edma.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/rtas_pci.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/dma/edma.c b/drivers/dma/edma.c
-index ff50ff4..fd5e48c 100644
---- a/drivers/dma/edma.c
-+++ b/drivers/dma/edma.c
-@@ -631,6 +631,10 @@ static int edma_probe(struct platform_device *pdev)
- 	struct edma_cc *ecc;
- 	int ret;
+diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
+index 6e7b7cd..7d4c717 100644
+--- a/arch/powerpc/kernel/rtas_pci.c
++++ b/arch/powerpc/kernel/rtas_pci.c
+@@ -223,7 +223,7 @@ unsigned long get_phb_buid(struct device_node *phb)
+ static int phb_set_bus_ranges(struct device_node *dev,
+ 			      struct pci_controller *phb)
+ {
+-	const int *bus_range;
++	const __be32 *bus_range;
+ 	unsigned int len;
  
-+	ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
-+	if (ret)
-+		return ret;
-+
- 	ecc = devm_kzalloc(&pdev->dev, sizeof(*ecc), GFP_KERNEL);
- 	if (!ecc) {
- 		dev_err(&pdev->dev, "Can't allocate controller\n");
-@@ -702,11 +706,13 @@ static struct platform_device *pdev0, *pdev1;
- static const struct platform_device_info edma_dev_info0 = {
- 	.name = "edma-dma-engine",
- 	.id = 0,
-+	.dma_mask = DMA_BIT_MASK(32),
- };
+ 	bus_range = of_get_property(dev, "bus-range", &len);
+@@ -231,8 +231,8 @@ static int phb_set_bus_ranges(struct device_node *dev,
+ 		return 1;
+  	}
  
- static const struct platform_device_info edma_dev_info1 = {
- 	.name = "edma-dma-engine",
- 	.id = 1,
-+	.dma_mask = DMA_BIT_MASK(32),
- };
+-	phb->first_busno =  bus_range[0];
+-	phb->last_busno  =  bus_range[1];
++	phb->first_busno = be32_to_cpu(bus_range[0]);
++	phb->last_busno  = be32_to_cpu(bus_range[1]);
  
- static int edma_init(void)
-@@ -720,8 +726,6 @@ static int edma_init(void)
- 			ret = PTR_ERR(pdev0);
- 			goto out;
- 		}
--		pdev0->dev.dma_mask = &pdev0->dev.coherent_dma_mask;
--		pdev0->dev.coherent_dma_mask = DMA_BIT_MASK(32);
- 	}
- 
- 	if (EDMA_CTLRS == 2) {
-@@ -731,8 +735,6 @@ static int edma_init(void)
- 			platform_device_unregister(pdev0);
- 			ret = PTR_ERR(pdev1);
- 		}
--		pdev1->dev.dma_mask = &pdev1->dev.coherent_dma_mask;
--		pdev1->dev.coherent_dma_mask = DMA_BIT_MASK(32);
- 	}
- 
- out:
+ 	return 0;
+ }
 -- 
-1.7.4.4
+1.7.10.4
