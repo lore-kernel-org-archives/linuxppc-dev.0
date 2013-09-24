@@ -1,26 +1,20 @@
-Return-Path: <B40534@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E2422C00D4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 12:34:35 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, Bhushan Bharat-R65777
- <R65777@freescale.com>
-Subject: RE: [PATCH v4 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0
- define
-Date: Wed, 25 Sep 2013 02:34:27 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F154392590108FCD8@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1380014871-22937-1-git-send-email-dongsheng.wang@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0717DD00@039-SN2MPN1-011.039d.mgd.msft.net>
- <D3D5E237-6C31-424C-A340-E79F6AF5B0B2@kernel.crashing.org>
-In-Reply-To: <D3D5E237-6C31-424C-A340-E79F6AF5B0B2@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <timothy.c.pepper@linux.intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by ozlabs.org (Postfix) with ESMTP id 15C362C00D4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 07:23:57 +1000 (EST)
+From: "Timothy Pepper" <timothy.c.pepper@linux.intel.com>
+To: 
+Subject: mm: insure topdown mmap chooses addresses above security minimum
+Date: Tue, 24 Sep 2013 14:23:31 -0700
+Message-Id: <1380057811-5352-1-git-send-email-timothy.c.pepper@linux.intel.com>
+Cc: linux-mips@linux-mips.org, Russell King <linux@arm.linux.org.uk>,
+ Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org, x86@kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, linux-mm@kvack.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Tim Pepper <timothy.c.pepper@linux.intel.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +24,185 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> >> /*
-> >>  * For the 8xx processors, all of them report the same PVR family for
-> >>  * the PowerPC core. The various versions of these processors must be
-> >> diff -- git a/arch/powerpc/include/asm/reg_booke.h
-> >> b/arch/powerpc/include/asm/reg_booke.h
-> >> index ed8f836..4a6457e 100644
-> >> --- a/arch/powerpc/include/asm/reg_booke.h
-> >> +++ b/arch/powerpc/include/asm/reg_booke.h
-> >> @@ -170,6 +170,7 @@
-> >> #define SPRN_L2CSR1	0x3FA	/* L2 Data Cache Control and Status
-> Register 1
-> >> */
-> >> #define SPRN_DCCR	0x3FA	/* Data Cache Cacheability Register */
-> >> #define SPRN_ICCR	0x3FB	/* Instruction Cache Cacheability Register
-> */
-> >> +#define SPRN_PWRMGTCR0	0x3FB	/* Power management control register
-> 0 */
-> >
-> > Is this generic for booke or e6500 specific? I can't see this register
-> either in ISA and EREF.
+A security check is performed on mmap addresses in
+security/security.c:security_mmap_addr().  It uses mmap_min_addr to insure
+mmaps don't get addresses lower than a user configurable guard value
+(/proc/sys/vm/mmap_min_addr).  The arch specific mmap topdown searches
+look for a map candidate address all the way down to a low_limit that is
+currently hard coded as PAGE_SIZE.  Depending on compile time options
+and userspace setting the procfs tunable, the security check's view of
+the minimum allowable address may be something greater than PAGE_SIZE.
+This leaves a gap where get_unmapped_area()'s call to get_area() might
+return an address above PAGE_SIZE, but below mmap_min_addr, and thus
+get_unmapped_area() fails.
 
-Yes, now only e6500 have this register. There is no problem in this definit=
-ion,
-because no conflict in FSL platform.
+This was seen on x86_64 in the case of a topdown address space and a large
+stack rlimit, with mmap_min_addr having been set to 32k by the distro.
+This left a 28k gap where the get area search intends to place a small
+mmap, but then get_unmapped_area() stumbles at the security check.
 
-> > Also I can see SPRN_ICCR also with same SPRN, how that is possible?
->=20
-> Its possibly because the register maybe in implementation specific region=
-.
-> I'm guessing ICCR is a 40x specific register.
+What should have happened is the address search wraps back to a higher
+address, the search continues and perhaps succeeds.  Indeed an mmap of
+a larger size gets a topdown search that does wrap around back up into
+the rlimit stack reserve and succeeds assuming suitable free space.
+But a small mmap fits in the low gap and always fails.  It becomes
+possible to make large mmaps but not small ones.
 
-Yes, kumar is right. Its use only in 4xx series of chips.
+When an explicit address hint is given, mm/mmap.c's round_hint_to_min()
+will round up to mmap_min_addr.
 
-ICTC(arch/powerpc/include/asm/reg.h) also use 0x3FB, Its use only in 6xx se=
-ries of chips.
+A topdown search's low_limit should similarly consider mmap_min_addr
+instead of just PAGE_SIZE.
 
--dongsheng
+Signed-off-by: Tim Pepper <timothy.c.pepper@linux.intel.com>
+Cc: linux-mm@kvack.org
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh@vger.kernel.org
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+--
+ arch/arm/mm/mmap.c               | 3 ++-
+ arch/mips/mm/mmap.c              | 3 ++-
+ arch/powerpc/mm/slice.c          | 3 ++-
+ arch/sh/mm/mmap.c                | 3 ++-
+ arch/sparc/kernel/sys_sparc_64.c | 3 ++-
+ arch/x86/kernel/sys_x86_64.c     | 3 ++-
+ 6 files changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm/mm/mmap.c b/arch/arm/mm/mmap.c
+index 0c63562..0e7355d 100644
+--- a/arch/arm/mm/mmap.c
++++ b/arch/arm/mm/mmap.c
+@@ -9,6 +9,7 @@
+ #include <linux/io.h>
+ #include <linux/personality.h>
+ #include <linux/random.h>
++#include <linux/security.h>
+ #include <asm/cachetype.h>
+ 
+ #define COLOUR_ALIGN(addr,pgoff)		\
+@@ -146,7 +147,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
+ 
+ 	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+ 	info.length = len;
+-	info.low_limit = PAGE_SIZE;
++	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+ 	info.high_limit = mm->mmap_base;
+ 	info.align_mask = do_align ? (PAGE_MASK & (SHMLBA - 1)) : 0;
+ 	info.align_offset = pgoff << PAGE_SHIFT;
+diff --git a/arch/mips/mm/mmap.c b/arch/mips/mm/mmap.c
+index f1baadd..8c0deb7 100644
+--- a/arch/mips/mm/mmap.c
++++ b/arch/mips/mm/mmap.c
+@@ -14,6 +14,7 @@
+ #include <linux/personality.h>
+ #include <linux/random.h>
+ #include <linux/sched.h>
++#include <linux/security.h>
+ 
+ unsigned long shm_align_mask = PAGE_SIZE - 1;	/* Sane caches */
+ EXPORT_SYMBOL(shm_align_mask);
+@@ -102,7 +103,7 @@ static unsigned long arch_get_unmapped_area_common(struct file *filp,
+ 
+ 	if (dir == DOWN) {
+ 		info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+-		info.low_limit = PAGE_SIZE;
++		info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+ 		info.high_limit = mm->mmap_base;
+ 		addr = vm_unmapped_area(&info);
+ 
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 3e99c14..34fc601 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -30,6 +30,7 @@
+ #include <linux/err.h>
+ #include <linux/spinlock.h>
+ #include <linux/export.h>
++#include <linux/security.h>
+ #include <asm/mman.h>
+ #include <asm/mmu.h>
+ #include <asm/spu.h>
+@@ -338,7 +339,7 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
+ 			addr = prev;
+ 			goto prev_slice;
+ 		}
+-		info.low_limit = addr;
++		info.low_limit = max(addr, PAGE_ALIGN(mmap_min_addr));
+ 
+ 		found = vm_unmapped_area(&info);
+ 		if (!(found & ~PAGE_MASK))
+diff --git a/arch/sh/mm/mmap.c b/arch/sh/mm/mmap.c
+index 6777177..1e0c53d 100644
+--- a/arch/sh/mm/mmap.c
++++ b/arch/sh/mm/mmap.c
+@@ -11,6 +11,7 @@
+ #include <linux/mm.h>
+ #include <linux/mman.h>
+ #include <linux/module.h>
++#include <linux/security.h>
+ #include <asm/page.h>
+ #include <asm/processor.h>
+ 
+@@ -119,7 +120,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
+ 
+ 	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+ 	info.length = len;
+-	info.low_limit = PAGE_SIZE;
++	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+ 	info.high_limit = mm->mmap_base;
+ 	info.align_mask = do_colour_align ? (PAGE_MASK & shm_align_mask) : 0;
+ 	info.align_offset = pgoff << PAGE_SHIFT;
+diff --git a/arch/sparc/kernel/sys_sparc_64.c b/arch/sparc/kernel/sys_sparc_64.c
+index 51561b8..dab0a5d 100644
+--- a/arch/sparc/kernel/sys_sparc_64.c
++++ b/arch/sparc/kernel/sys_sparc_64.c
+@@ -24,6 +24,7 @@
+ #include <linux/personality.h>
+ #include <linux/random.h>
+ #include <linux/export.h>
++#include <linux/security.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/utrap.h>
+@@ -188,7 +189,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
+ 
+ 	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+ 	info.length = len;
+-	info.low_limit = PAGE_SIZE;
++	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+ 	info.high_limit = mm->mmap_base;
+ 	info.align_mask = do_color_align ? (PAGE_MASK & (SHMLBA - 1)) : 0;
+ 	info.align_offset = pgoff << PAGE_SHIFT;
+diff --git a/arch/x86/kernel/sys_x86_64.c b/arch/x86/kernel/sys_x86_64.c
+index 30277e2..93e563e 100644
+--- a/arch/x86/kernel/sys_x86_64.c
++++ b/arch/x86/kernel/sys_x86_64.c
+@@ -15,6 +15,7 @@
+ #include <linux/random.h>
+ #include <linux/uaccess.h>
+ #include <linux/elf.h>
++#include <linux/security.h>
+ 
+ #include <asm/ia32.h>
+ #include <asm/syscalls.h>
+@@ -172,7 +173,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
+ 
+ 	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+ 	info.length = len;
+-	info.low_limit = PAGE_SIZE;
++	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+ 	info.high_limit = mm->mmap_base;
+ 	info.align_mask = filp ? get_align_mask() : 0;
+ 	info.align_offset = pgoff << PAGE_SHIFT;
