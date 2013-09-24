@@ -1,17 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 99A122C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 16:22:36 +1000 (EST)
-Message-ID: <1380003745.5443.30.camel@pasglop>
-Subject: [PATCH] powerpc/zImage: make the "OF" wrapper support ePAPR boot
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1FCDA2C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 17:22:25 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Tue, 24 Sep 2013 17:22:24 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2E2B73578040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 17:22:20 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8O75euZ56885340
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 17:05:41 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8O7MHKc028182
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 17:22:17 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 24 Sep 2013 16:22:25 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Anton Blanchard <anton@au1.ibm.com>
+Subject: [PATCH v2] pci: fix interrupt-map for bridges
+Date: Tue, 24 Sep 2013 17:22:14 +1000
+Message-Id: <1380007334-466-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,142 +36,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes the "OF" zImage wrapper (zImage.pseries, zImage.pmac,
-zImage.maple) work if booted via a flat device-tree (ePAPR boot
-mode), and thus potentially usable with kexec.
+The previous scheme always put 0 as a parent slot#. However it is
+not always the case and QEMU's PCI bridge does not support putting
+device at slot#0 as it claims SHPC support for hotplug.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+This modifies the interrups map to let the linux guest resolve XICS
+global interrupt number correctly.
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/boot/Makefile        |  4 ++--
- arch/powerpc/boot/epapr-wrapper.c |  9 +++++++++
- arch/powerpc/boot/epapr.c         |  4 ++--
- arch/powerpc/boot/of.c            | 16 +++++++++++++++-
- arch/powerpc/boot/wrapper         |  9 +++++----
- 5 files changed, 33 insertions(+), 9 deletions(-)
- create mode 100644 arch/powerpc/boot/epapr-wrapper.c
+Changes:
+v2:
+* removed redundand r-stack push-pop
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 6a15c96..15ca225 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -74,7 +74,7 @@ src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c
- src-wlib-$(CONFIG_PPC_82xx) += pq2.c fsl-soc.c planetcore.c
- src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c mv64x60_i2c.c ugecon.c
+---
+
+This is the example of working system:
+
+[root@erif_root pci@1]# lspci
+0001:00:01.0 PCI bridge: Red Hat, Inc. Device 0001
+0001:01:02.0 PCI bridge: Red Hat, Inc. Device 0001
+0001:01:03.0 PCI bridge: Red Hat, Inc. Device 0001
+0001:02:01.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (Copper) (rev 06)
+0001:02:02.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (Copper) (rev 06)
+0001:03:01.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (Copper) (rev 06)
+0001:03:02.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (Copper) (rev 06)
+[root@erif_root pci@1]# pwd
+/proc/device-tree/pci@80000002000000f/pci@1
+[root@erif_root pci@1]# hexdump -e '9/4 "%08x "' -e '"\n"' i*map
+00001000 00000000 00000000 00000001 3e57f7e0 00000800 00000000 00000000 00000003
+00001000 00000000 00000000 00000002 3e57f7e0 00000800 00000000 00000000 00000000
+00001000 00000000 00000000 00000003 3e57f7e0 00000800 00000000 00000000 00000001
+00001000 00000000 00000000 00000004 3e57f7e0 00000800 00000000 00000000 00000002
+00001800 00000000 00000000 00000001 3e57f7e0 00000800 00000000 00000000 00000000
+00001800 00000000 00000000 00000002 3e57f7e0 00000800 00000000 00000000 00000001
+00001800 00000000 00000000 00000003 3e57f7e0 00000800 00000000 00000000 00000002
+00001800 00000000 00000000 00000004 3e57f7e0 00000800 00000000 00000000 00000003
+[root@erif_root pci@1]# cd pci@2/
+[root@erif_root pci@2]# hexdump -e '9/4 "%08x "' -e '"\n"' i*map
+00000800 00000000 00000000 00000001 3e5a86f0 00001000 00000000 00000000 00000002
+00000800 00000000 00000000 00000002 3e5a86f0 00001000 00000000 00000000 00000003
+00000800 00000000 00000000 00000003 3e5a86f0 00001000 00000000 00000000 00000000
+00000800 00000000 00000000 00000004 3e5a86f0 00001000 00000000 00000000 00000001
+00001000 00000000 00000000 00000001 3e5a86f0 00001000 00000000 00000000 00000003
+00001000 00000000 00000000 00000002 3e5a86f0 00001000 00000000 00000000 00000000
+00001000 00000000 00000000 00000003 3e5a86f0 00001000 00000000 00000000 00000001
+00001000 00000000 00000000 00000004 3e5a86f0 00001000 00000000 00000000 00000002
+[root@erif_root pci@2]# cd ethernet@
+ethernet@1/ ethernet@2/
+[root@erif_root pci@2]# cd ethernet@1/
+[root@erif_root ethernet@1]# lsprop reg
+reg              00020800 00000000 00000000 00000000 00000000
+		 02020810 00000000 00000000 00000000 00020000
+ 		 02020814 00000000 00000000 00000000 00020000
+ 		 01020818 00000000 00000000 00000000 00000020
+ 		 02020830 00000000 00000000 00000000 00020000
+[root@erif_root ethernet@1]# lsprop interrupts
+interrupts       00000002
+---
+ board-qemu/slof/pci-interrupts.fs | 31 ++++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
+
+diff --git a/board-qemu/slof/pci-interrupts.fs b/board-qemu/slof/pci-interrupts.fs
+index a12d7bb..e11b779 100644
+--- a/board-qemu/slof/pci-interrupts.fs
++++ b/board-qemu/slof/pci-interrupts.fs
+@@ -1,17 +1,26 @@
  
--src-plat-y := of.c
-+src-plat-y := of.c epapr.c
- src-plat-$(CONFIG_40x) += fixed-head.S ep405.c cuboot-hotfoot.c \
- 				treeboot-walnut.c cuboot-acadia.c \
- 				cuboot-kilauea.c simpleboot.c \
-@@ -97,7 +97,7 @@ src-plat-$(CONFIG_EMBEDDED6xx) += cuboot-pq2.c cuboot-mpc7448hpc2.c \
- 					prpmc2800.c
- src-plat-$(CONFIG_AMIGAONE) += cuboot-amigaone.c
- src-plat-$(CONFIG_PPC_PS3) += ps3-head.S ps3-hvcall.S ps3.c
--src-plat-$(CONFIG_EPAPR_BOOT) += epapr.c
-+src-plat-$(CONFIG_EPAPR_BOOT) += epapr.c epapr-wrapper.c
- 
- src-wlib := $(sort $(src-wlib-y))
- src-plat := $(sort $(src-plat-y))
-diff --git a/arch/powerpc/boot/epapr-wrapper.c b/arch/powerpc/boot/epapr-wrapper.c
-new file mode 100644
-index 0000000..c101910
---- /dev/null
-+++ b/arch/powerpc/boot/epapr-wrapper.c
-@@ -0,0 +1,9 @@
-+extern void epapr_platform_init(unsigned long r3, unsigned long r4,
-+				unsigned long r5, unsigned long r6,
-+				unsigned long r7);
+ : pci-gen-irq-map-one ( prop-addr prop-len slot pin -- prop-addr prop-len )
+-        2dup + 4 mod                                        ( prop-addr prop-len slot pin parentpin )
++        2dup + 4 mod                ( prop-addr prop-len slot pin parentpin )
++        >r >r                       ( prop-addr prop-len slot R: swizzledpin pin )
 +
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+		   unsigned long r6, unsigned long r7)
-+{
-+	epapr_platform_init(r3, r4, r5, r6, r7);
-+}
-diff --git a/arch/powerpc/boot/epapr.c b/arch/powerpc/boot/epapr.c
-index 06c1961..02e91aa 100644
---- a/arch/powerpc/boot/epapr.c
-+++ b/arch/powerpc/boot/epapr.c
-@@ -48,8 +48,8 @@ static void platform_fixups(void)
- 		       fdt_addr, fdt_totalsize((void *)fdt_addr), ima_size);
- }
- 
--void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
--		   unsigned long r6, unsigned long r7)
-+void epapr_platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+			 unsigned long r6, unsigned long r7)
- {
- 	epapr_magic = r6;
- 	ima_size = r7;
-diff --git a/arch/powerpc/boot/of.c b/arch/powerpc/boot/of.c
-index 61d9899..62e2f43 100644
---- a/arch/powerpc/boot/of.c
-+++ b/arch/powerpc/boot/of.c
-@@ -26,6 +26,9 @@
- 
- static unsigned long claim_base;
- 
-+void epapr_platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+			 unsigned long r6, unsigned long r7);
++        \ Child slot#
++        B lshift encode-int+        ( prop-addr prop-len R: swizzledpin pin )
++        \ Child 64bit BAR (not really used)
++        0 encode-64+
++        \ Chile pin#
++        r> encode-int+              ( prop-addr prop-len R: swizzledpin )
 +
- static void *of_try_claim(unsigned long size)
- {
- 	unsigned long addr = 0;
-@@ -61,7 +64,7 @@ static void of_image_hdr(const void *hdr)
- 	}
- }
- 
--void platform_init(unsigned long a1, unsigned long a2, void *promptr)
-+static void of_platform_init(unsigned long a1, unsigned long a2, void *promptr)
- {
- 	platform_ops.image_hdr = of_image_hdr;
- 	platform_ops.malloc = of_try_claim;
-@@ -81,3 +84,14 @@ void platform_init(unsigned long a1, unsigned long a2, void *promptr)
- 		loader_info.initrd_size = a2;
- 	}
- }
++        \ Parent phandle
++        get-parent encode-int+
 +
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+		   unsigned long r6, unsigned long r7)
-+{
-+	/* Detect OF vs. ePAPR boot */
-+	if (r5)
-+		of_platform_init(r3, r4, (void *)r5);
-+	else
-+		epapr_platform_init(r3, r4, r5, r6, r7);
-+}
-+
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 6761c74..cd7af84 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -148,18 +148,18 @@ make_space=y
++        \ Parent slot#
+         get-node >space
+-        pci-addr2dev + 1- 4 mod 1+  \ do swizzling          ( prop-addr prop-len slot pin swizzledpin )
+-        >r >r >r                                            ( prop-addr prop-len R: swizzledpin pin slot )
+-
+-        r> B lshift encode-int+
+-        0 encode-64+                \ device slot           ( prop-addr prop-len R: swizzledpin pin )
+-        r> encode-int+              \ device pin            ( prop-addr prop-len R: swizzledpin )
+-
+-        get-parent encode-int+      \ parent phandle
+-        0 encode-int+ 0 encode-64+  \ parent slot
+-        r> encode-int+              \ parent swizzled pin   ( prop-addr prop-len R: )
++        pci-addr2dev B lshift       ( prop-addr prop-len parent-slot R: swizzledpin )
++        encode-int+
++        \ Parent 64bit BAR (not really used)
++        0 encode-64+
++        \ Parent pin
++        r> encode-int+              ( prop-addr prop-len R: )
+ ;
  
- case "$platform" in
- pseries)
--    platformo=$object/of.o
-+    platformo="$object/of.o $object/epapr.o"
-     link_address='0x4000000'
-     ;;
- maple)
--    platformo=$object/of.o
-+    platformo="$object/of.o $object/epapr.o"
-     link_address='0x400000'
-     ;;
- pmac|chrp)
--    platformo=$object/of.o
-+    platformo="$object/of.o $object/epapr.o"
-     ;;
- coff)
--    platformo="$object/crt0.o $object/of.o"
-+    platformo="$object/crt0.o $object/of.o $object/epapr.o"
-     lds=$object/zImage.coff.lds
-     link_address='0x500000'
-     pie=
-@@ -253,6 +253,7 @@ treeboot-iss4xx-mpic)
-     platformo="$object/treeboot-iss4xx.o"
-     ;;
- epapr)
-+    platformo="$object/epapr.o $object/epapr-wrapper.o"
-     link_address='0x20000000'
-     pie=-pie
-     ;;
+ : pci-gen-irq-entry ( prop-addr prop-len config-addr -- prop-addr prop-len )
+-- 
+1.8.4.rc4
