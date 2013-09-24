@@ -1,24 +1,17 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x231.google.com (mail-pd0-x231.google.com
- [IPv6:2607:f8b0:400e:c02::231])
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E7D5F2C00BF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 12:31:14 +1000 (EST)
-Received: by mail-pd0-f177.google.com with SMTP id y10so3947341pdj.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 19:31:11 -0700 (PDT)
-Date: Tue, 24 Sep 2013 10:31:03 +0800
+ by ozlabs.org (Postfix) with ESMTPS id D49412C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 13:05:39 +1000 (EST)
+Received: by mail-pa0-f41.google.com with SMTP id bj1so4398402pad.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2013 20:05:37 -0700 (PDT)
 From: Kevin Hao <haokexin@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 1/2] powerpc/85xx: introduce corenet_generic machine
-Message-ID: <20130924023103.GA2123@pek-khao-d1.corp.ad.wrs.com>
-References: <1379835750-23999-1-git-send-email-haokexin@gmail.com>
- <1379835750-23999-2-git-send-email-haokexin@gmail.com>
- <1379975638.24959.47.camel@snotra.buserror.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
-In-Reply-To: <1379975638.24959.47.camel@snotra.buserror.net>
+Subject: [PATCH v3 0/3] powerpc/85xx: introduce corenet_generic machine
+Date: Tue, 24 Sep 2013 11:03:14 +0800
+Message-Id: <1379991797-29222-1-git-send-email-haokexin@gmail.com>
 Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,89 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+v3:
+  - Update the patch 1 according to Scoot's comment.
+  - Introduce one new patch to combine the board kernel options into one.
 
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+v2:
+  - Fold the original patch 2 into patch 1.
+  - Update the patch 1 according to Scott and Kumar's comments.
+  - Introduce a new patch to rename the corenet_ds.c to corenet_generic.c.
 
-On Mon, Sep 23, 2013 at 05:33:58PM -0500, Scott Wood wrote:
-> On Sun, 2013-09-22 at 15:42 +0800, Kevin Hao wrote:
-> > In the current kernel, the board files for p2041rdb, p3041ds, p4080ds,
-> > p5020ds, p5040ds, t4240qds and b4qds are almost the same except the
-> > machine name. So this introduces a cornet_generic machine to support
-> > all these boards to avoid the code duplication.
-> >=20
-> > With these changes the file corenet_ds.h becomes useless. Just delete
-> > it.
-> >=20
-> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> > ---
-> > v2:
-> >   - Fix the typo in subject.
-> >   - Fold the original patch 2 into this one.
-> >   - Change the machine name from "CORENET GENERIC" to "CORENET Generic".
->=20
-> CoreNet shouldn't be allcaps either.
+v1:
+This patch series introduces a common machine to support p2041rdb, p3041ds,
+p4080ds, p5020ds, p5040ds, t4240qds and b4qds to avoid the code duplication.
+Boot test on p5020ds and p4080ds.
 
-OK. Will change it to "CoreNet Generic".
+Kevin Hao (3):
+  powerpc/85xx: introduce corenet_generic machine
+  powerpc/85xx: rename the corenet_ds.c to corenet_generic.c
+  powerpc/85xx: use one kernel option for all the CoreNet_Generic boards
 
->=20
-> > diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platfor=
-ms/85xx/Kconfig
-> > index de2eb93..3bee943 100644
-> > --- a/arch/powerpc/platforms/85xx/Kconfig
-> > +++ b/arch/powerpc/platforms/85xx/Kconfig
-> > @@ -228,6 +228,7 @@ config P2041_RDB
-> >  	select GPIO_MPC8XXX
-> >  	select HAS_RAPIDIO
-> >  	select PPC_EPAPR_HV_PIC
-> > +	select CORENET_GENERIC
-> >  	help
-> >  	  This option enables support for the P2041 RDB board
-> > =20
-> > @@ -241,6 +242,7 @@ config P3041_DS
-> >  	select GPIO_MPC8XXX
-> >  	select HAS_RAPIDIO
-> >  	select PPC_EPAPR_HV_PIC
-> > +	select CORENET_GENERIC
-> >  	help
-> >  	  This option enables support for the P3041 DS board
-> > =20
-> > @@ -254,6 +256,7 @@ config P4080_DS
-> >  	select GPIO_MPC8XXX
-> >  	select HAS_RAPIDIO
-> >  	select PPC_EPAPR_HV_PIC
-> > +	select CORENET_GENERIC
-> >  	help
-> >  	  This option enables support for the P4080 DS board
->=20
-> As discussed earlier, I'd prefer if this were combined into one kconfig
-> option.  The help text can list boards that are known to work with it.
+ arch/powerpc/configs/corenet32_smp_defconfig  |   6 +-
+ arch/powerpc/configs/corenet64_smp_defconfig  |   5 +-
+ arch/powerpc/configs/ppc64e_defconfig         |   2 +-
+ arch/powerpc/platforms/85xx/Kconfig           |  87 ++----------
+ arch/powerpc/platforms/85xx/Makefile          |   8 +-
+ arch/powerpc/platforms/85xx/b4_qds.c          |  97 --------------
+ arch/powerpc/platforms/85xx/corenet_ds.c      |  96 --------------
+ arch/powerpc/platforms/85xx/corenet_ds.h      |  19 ---
+ arch/powerpc/platforms/85xx/corenet_generic.c | 182 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/p2041_rdb.c       |  87 ------------
+ arch/powerpc/platforms/85xx/p3041_ds.c        |  89 -------------
+ arch/powerpc/platforms/85xx/p4080_ds.c        |  87 ------------
+ arch/powerpc/platforms/85xx/p5020_ds.c        |  93 -------------
+ arch/powerpc/platforms/85xx/p5040_ds.c        |  84 ------------
+ arch/powerpc/platforms/85xx/t4240_qds.c       |  93 -------------
+ 15 files changed, 195 insertions(+), 840 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/85xx/b4_qds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/corenet_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/corenet_ds.h
+ create mode 100644 arch/powerpc/platforms/85xx/corenet_generic.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p2041_rdb.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p3041_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p4080_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p5020_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p5040_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/t4240_qds.c
 
-OK, will do.
-
-Thanks,
-Kevin
->=20
-> -Scott
->=20
->=20
->=20
-
---rwEMma7ioTxnRzrJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJSQPlnAAoJEJNY7TDerrFx1MUIAMI7VE0RsTpPJLV2KPHEoOLU
-7lXJSc/aCeqaTLv7d9RPyaPCw81o2Ece71bdaPVSgTKzWXDZ1/aNYlx1EEPxVQqs
-7TA8wrPtGN1CtIzN8OAj6OlZyzAL0PP/2g/4FLJKJ9loxF8aeHeTluAoXna+Q9Su
-Mc95iMBS2TrKsU3zdYlJWLPuMyOIuTvF9IgSzxboPRi3SU3a+DF52fFIFoaFruug
-lJz9dSeyN1bdlEHJoLBu4auiWp9Kj6PjncRYUXcOEIN4Nl84xkPb4Iegbl9CuV5b
-wqkmRWPX7dbSJ1RdolMmRgjddvSEopB4OEW4sf/CYGfLaJ+ZuzfdQE/r9svf1CQ=
-=IfRr
------END PGP SIGNATURE-----
-
---rwEMma7ioTxnRzrJ--
+-- 
+1.8.3.1
