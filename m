@@ -2,18 +2,39 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 91D7B2C00BF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 15:43:19 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r8O5hEwt004948
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 00:43:15 -0500
-Message-ID: <1380001393.5443.29.camel@pasglop>
-Subject: [PATCH] powerpc: Remove ksp_limit on ppc64
+ by ozlabs.org (Postfix) with ESMTPS id 3B49A2C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 15:44:19 +1000 (EST)
+Message-ID: <1380001379.5443.28.camel@pasglop>
+Subject: [PATCH v2] powerpc/irq: Run softirqs off the top of the irq stack
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 24 Sep 2013 15:43:13 +1000
+Date: Tue, 24 Sep 2013 15:42:59 +1000
+In-Reply-To: <1379889489.24090.34.camel@pasglop>
+References: <1379620267-25191-1-git-send-email-fweisbec@gmail.com>
+ <CA+55aFyXf370Ds6FH5wPPycZLSPD5qiP7rjWqxwDetfHfKjg1w@mail.gmail.com>
+ <alpine.DEB.2.02.1309201244080.4089@ionos.tec.linutronix.de>
+ <20130920162603.GA30381@localhost.localdomain>
+ <CA+55aFyBcjP2U6ipzZay=FdhzA4oFNwE4tU0OcJJhwFvgoeALw@mail.gmail.com>
+ <CAFTL4hzucS5nJbCrArPv9zfY=QpyUESMK2Th0tKFHVCjDP7-eA@mail.gmail.com>
+ <1379799901.24090.6.camel@pasglop> <523E4F8A.7020708@zytor.com>
+ <1379824754.24090.11.camel@pasglop> <1379824861.24090.12.camel@pasglop>
+ <20130922162410.GA10649@laptop.programming.kicks-ass.net>
+ <1379887000.24090.19.camel@pasglop>
+ <CA+55aFwaf_Wst=AS75ydBJVQ6aJxPfAzXdt-UXj3qC9WeUt7kw@mail.gmail.com>
+ <1379889489.24090.34.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Cc: James Hogan <james.hogan@imgtec.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>, Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>, Helge Deller <deller@gmx.de>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Paul Mackerras <paulus@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,214 +44,235 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We've been keeping that field in thread_struct for a while, it contains
-the "limit" of the current stack pointer and is meant to be used for
-detecting stack overflows.
+Nowadays, irq_exit() calls __do_softirq() pretty much directly
+instead of calling do_softirq() which switches to the decicated
+softirq stack.
 
-It has a few problems however:
+This has lead to observed stack overflows on powerpc since we call
+irq_enter() and irq_exit() outside of the scope that switches to
+the irq stack.
 
- - First, it was never actually *used* on 64-bit. Set and updated but
-not actually exploited
-
- - When switching stack to/from irq and softirq stacks, it's update
-is racy unless we hard disable interrupts, which is costly. This
-is fine on 32-bit as we don't soft-disable there but not on 64-bit.
-
-Thus rather than fixing 2 in order to implement 1 in some hypothetical
-future, let's remove the code completely from 64-bit. In order to avoid
-a clutter of ifdef's, we remove the updates from C code completely
-during interrupt stack switching, and instead maintain it from the
-asm helper that is used to do the stack switching in the first place.
+This fixes it by moving the stack switching up a level, making
+irq_enter() and irq_exit() run off the irq stack.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+v2: Garbage collect now empty handle_one_irq()
+
 ---
+ arch/powerpc/include/asm/irq.h |   4 +-
+ arch/powerpc/kernel/irq.c      | 104 ++++++++++++++++++++---------------------
+ arch/powerpc/kernel/misc_32.S  |   9 ++--
+ arch/powerpc/kernel/misc_64.S  |  10 ++--
+ 4 files changed, 62 insertions(+), 65 deletions(-)
 
-Applies on top of "powerpc/irq: Run softirqs off the top of the irq stack"
-
- arch/powerpc/include/asm/processor.h |  4 +---
- arch/powerpc/kernel/asm-offsets.c    |  3 ++-
- arch/powerpc/kernel/irq.c            | 12 ------------
- arch/powerpc/kernel/misc_32.S        | 16 ++++++++++++++++
- arch/powerpc/kernel/process.c        |  3 ++-
- arch/powerpc/lib/sstep.c             |  3 ++-
- 6 files changed, 23 insertions(+), 18 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index e378ccc..ce4de5a 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -149,8 +149,6 @@ typedef struct {
+diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+index 0e40843..41f13ce 100644
+--- a/arch/powerpc/include/asm/irq.h
++++ b/arch/powerpc/include/asm/irq.h
+@@ -69,9 +69,9 @@ extern struct thread_info *softirq_ctx[NR_CPUS];
  
- struct thread_struct {
- 	unsigned long	ksp;		/* Kernel stack pointer */
--	unsigned long	ksp_limit;	/* if ksp <= ksp_limit stack overflow */
--
- #ifdef CONFIG_PPC64
- 	unsigned long	ksp_vsid;
- #endif
-@@ -162,6 +160,7 @@ struct thread_struct {
- #endif
- #ifdef CONFIG_PPC32
- 	void		*pgdir;		/* root of page-table tree */
-+	unsigned long	ksp_limit;	/* if ksp <= ksp_limit stack overflow */
- #endif
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 	/*
-@@ -321,7 +320,6 @@ struct thread_struct {
- #else
- #define INIT_THREAD  { \
- 	.ksp = INIT_SP, \
--	.ksp_limit = INIT_SP_LIMIT, \
- 	.regs = (struct pt_regs *)INIT_SP - 1, /* XXX bogus, I think */ \
- 	.fs = KERNEL_DS, \
- 	.fpr = {{0}}, \
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index d8958be..502c7a4 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -80,10 +80,11 @@ int main(void)
- 	DEFINE(TASKTHREADPPR, offsetof(struct task_struct, thread.ppr));
- #else
- 	DEFINE(THREAD_INFO, offsetof(struct task_struct, stack));
-+	DEFINE(THREAD_INFO_GAP, _ALIGN_UP(sizeof(struct thread_info), 16));
-+	DEFINE(KSP_LIMIT, offsetof(struct thread_struct, ksp_limit));
- #endif /* CONFIG_PPC64 */
+ extern void irq_ctx_init(void);
+ extern void call_do_softirq(struct thread_info *tp);
+-extern int call_handle_irq(int irq, void *p1,
+-			   struct thread_info *tp, void *func);
++extern void call_do_irq(struct pt_regs *regs, struct thread_info *tp);
+ extern void do_IRQ(struct pt_regs *regs);
++extern void __do_irq(struct pt_regs *regs);
  
- 	DEFINE(KSP, offsetof(struct thread_struct, ksp));
--	DEFINE(KSP_LIMIT, offsetof(struct thread_struct, ksp_limit));
- 	DEFINE(PT_REGS, offsetof(struct thread_struct, regs));
- #ifdef CONFIG_BOOKE
- 	DEFINE(THREAD_NORMSAVES, offsetof(struct thread_struct, normsave[0]));
+ int irq_choose_cpu(const struct cpumask *mask);
+ 
 diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 2234a12..57d286a 100644
+index c69440c..2234a12 100644
 --- a/arch/powerpc/kernel/irq.c
 +++ b/arch/powerpc/kernel/irq.c
-@@ -496,7 +496,6 @@ void do_IRQ(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
- 	struct thread_info *curtp, *irqtp;
+@@ -441,50 +441,6 @@ void migrate_irqs(void)
+ }
+ #endif
+ 
+-static inline void handle_one_irq(unsigned int irq)
+-{
+-	struct thread_info *curtp, *irqtp;
 -	unsigned long saved_sp_limit;
- 
- 	/* Switch to the irq stack to handle this */
- 	curtp = current_thread_info();
-@@ -509,12 +508,6 @@ void do_IRQ(struct pt_regs *regs)
- 		return;
- 	}
- 
--	/* Adjust the stack limit */
+-	struct irq_desc *desc;
+-
+-	desc = irq_to_desc(irq);
+-	if (!desc)
+-		return;
+-
+-	/* Switch to the irq stack to handle this */
+-	curtp = current_thread_info();
+-	irqtp = hardirq_ctx[smp_processor_id()];
+-
+-	if (curtp == irqtp) {
+-		/* We're already on the irq stack, just handle it */
+-		desc->handle_irq(irq, desc);
+-		return;
+-	}
+-
 -	saved_sp_limit = current->thread.ksp_limit;
+-
+-	irqtp->task = curtp->task;
+-	irqtp->flags = 0;
+-
+-	/* Copy the softirq bits in preempt_count so that the
+-	 * softirq checks work in the hardirq context. */
+-	irqtp->preempt_count = (irqtp->preempt_count & ~SOFTIRQ_MASK) |
+-			       (curtp->preempt_count & SOFTIRQ_MASK);
+-
 -	current->thread.ksp_limit = (unsigned long)irqtp +
 -		_ALIGN_UP(sizeof(struct thread_info), 16);
 -
+-	call_handle_irq(irq, desc, irqtp, desc->handle_irq);
+-	current->thread.ksp_limit = saved_sp_limit;
+-	irqtp->task = NULL;
 -
- 	/* Prepare the thread_info in the irq stack */
- 	irqtp->task = curtp->task;
- 	irqtp->flags = 0;
-@@ -526,7 +519,6 @@ void do_IRQ(struct pt_regs *regs)
- 	call_do_irq(regs, irqtp);
- 
- 	/* Restore stack limit */
--	current->thread.ksp_limit = saved_sp_limit;
- 	irqtp->task = NULL;
- 
- 	/* Copy back updates to the thread_info */
-@@ -604,16 +596,12 @@ void irq_ctx_init(void)
- static inline void do_softirq_onstack(void)
+-	/* Set any flag that may have been set on the
+-	 * alternate stack
+-	 */
+-	if (irqtp->flags)
+-		set_bits(irqtp->flags, &curtp->flags);
+-}
+-
+ static inline void check_stack_overflow(void)
  {
- 	struct thread_info *curtp, *irqtp;
--	unsigned long saved_sp_limit = current->thread.ksp_limit;
+ #ifdef CONFIG_DEBUG_STACKOVERFLOW
+@@ -501,9 +457,9 @@ static inline void check_stack_overflow(void)
+ #endif
+ }
  
- 	curtp = current_thread_info();
- 	irqtp = softirq_ctx[smp_processor_id()];
- 	irqtp->task = curtp->task;
- 	irqtp->flags = 0;
--	current->thread.ksp_limit = (unsigned long)irqtp +
--				    _ALIGN_UP(sizeof(struct thread_info), 16);
- 	call_do_softirq(irqtp);
--	current->thread.ksp_limit = saved_sp_limit;
- 	irqtp->task = NULL;
+-void do_IRQ(struct pt_regs *regs)
++void __do_irq(struct pt_regs *regs)
+ {
+-	struct pt_regs *old_regs = set_irq_regs(regs);
++	struct irq_desc *desc;
+ 	unsigned int irq;
  
- 	/* Set any flag that may have been set on the
+ 	irq_enter();
+@@ -519,18 +475,64 @@ void do_IRQ(struct pt_regs *regs)
+ 	 */
+ 	irq = ppc_md.get_irq();
+ 
+-	/* We can hard enable interrupts now */
++	/* We can hard enable interrupts now to allow perf interrupts */
+ 	may_hard_irq_enable();
+ 
+ 	/* And finally process it */
+-	if (irq != NO_IRQ)
+-		handle_one_irq(irq);
+-	else
++	if (unlikely(irq == NO_IRQ))
+ 		__get_cpu_var(irq_stat).spurious_irqs++;
++	else {
++		desc = irq_to_desc(irq);
++		if (likely(desc))
++			desc->handle_irq(irq, desc);
++	}
+ 
+ 	trace_irq_exit(regs);
+ 
+ 	irq_exit();
++}
++
++void do_IRQ(struct pt_regs *regs)
++{
++	struct pt_regs *old_regs = set_irq_regs(regs);
++	struct thread_info *curtp, *irqtp;
++	unsigned long saved_sp_limit;
++
++	/* Switch to the irq stack to handle this */
++	curtp = current_thread_info();
++	irqtp = hardirq_ctx[raw_smp_processor_id()];
++
++	/* Already there ? */
++	if (unlikely(curtp == irqtp)) {
++		__do_irq(regs);
++		set_irq_regs(old_regs);
++		return;
++	}
++
++	/* Adjust the stack limit */
++	saved_sp_limit = current->thread.ksp_limit;
++	current->thread.ksp_limit = (unsigned long)irqtp +
++		_ALIGN_UP(sizeof(struct thread_info), 16);
++
++
++	/* Prepare the thread_info in the irq stack */
++	irqtp->task = curtp->task;
++	irqtp->flags = 0;
++
++	/* Copy the preempt_count so that the [soft]irq checks work. */
++	irqtp->preempt_count = curtp->preempt_count;
++
++	/* Switch stack and call */
++	call_do_irq(regs, irqtp);
++
++	/* Restore stack limit */
++	current->thread.ksp_limit = saved_sp_limit;
++	irqtp->task = NULL;
++
++	/* Copy back updates to the thread_info */
++	if (irqtp->flags)
++		set_bits(irqtp->flags, &curtp->flags);
++
+ 	set_irq_regs(old_regs);
+ }
+ 
+@@ -592,12 +594,10 @@ void irq_ctx_init(void)
+ 		memset((void *)softirq_ctx[i], 0, THREAD_SIZE);
+ 		tp = softirq_ctx[i];
+ 		tp->cpu = i;
+-		tp->preempt_count = 0;
+ 
+ 		memset((void *)hardirq_ctx[i], 0, THREAD_SIZE);
+ 		tp = hardirq_ctx[i];
+ 		tp->cpu = i;
+-		tp->preempt_count = HARDIRQ_OFFSET;
+ 	}
+ }
+ 
 diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 7da3882..2b0ad98 100644
+index 777d999..7da3882 100644
 --- a/arch/powerpc/kernel/misc_32.S
 +++ b/arch/powerpc/kernel/misc_32.S
-@@ -36,25 +36,41 @@
- 
- 	.text
- 
-+/*
-+ * We store the saved ksp_limit in the unused part
-+ * of the STACK_FRAME_OVERHEAD
-+ */
- _GLOBAL(call_do_softirq)
- 	mflr	r0
- 	stw	r0,4(r1)
-+	lwz	r10,THREAD+KSP_LIMIT(r2)
-+	addi	r11,r3,THREAD_INFO_GAP
- 	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r3)
- 	mr	r1,r3
-+	stw	r10,8(r1)
-+	stw	r11,THREAD+KSP_LIMIT(r2)
- 	bl	__do_softirq
-+	lwz	r10,8(r1)
- 	lwz	r1,0(r1)
- 	lwz	r0,4(r1)
-+	stw	r10,THREAD+KSP_LIMIT(r2)
+@@ -47,13 +47,12 @@ _GLOBAL(call_do_softirq)
  	mtlr	r0
  	blr
  
- _GLOBAL(call_do_irq)
+-_GLOBAL(call_handle_irq)
++_GLOBAL(call_do_irq)
  	mflr	r0
  	stw	r0,4(r1)
-+	lwz	r10,THREAD+KSP_LIMIT(r2)
-+	addi	r11,r3,THREAD_INFO_GAP
- 	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
- 	mr	r1,r4
-+	stw	r10,8(r1)
-+	stw	r11,THREAD+KSP_LIMIT(r2)
- 	bl	__do_irq
-+	lwz	r10,8(r1)
+-	mtctr	r6
+-	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r5)
+-	mr	r1,r5
+-	bctrl
++	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
++	mr	r1,r4
++	bl	__do_irq
  	lwz	r1,0(r1)
  	lwz	r0,4(r1)
-+	stw	r10,THREAD+KSP_LIMIT(r2)
+ 	mtlr	r0
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index 971d7e7..e59caf8 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -40,14 +40,12 @@ _GLOBAL(call_do_softirq)
  	mtlr	r0
  	blr
  
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 6f428da..96d2fdf 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1000,9 +1000,10 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
- 	kregs = (struct pt_regs *) sp;
- 	sp -= STACK_FRAME_OVERHEAD;
- 	p->thread.ksp = sp;
-+#ifdef CONFIG_PPC32
- 	p->thread.ksp_limit = (unsigned long)task_stack_page(p) +
- 				_ALIGN_UP(sizeof(struct thread_info), 16);
--
-+#endif
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
- 	p->thread.ptrace_bps[0] = NULL;
- #endif
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index a7ee978..b1faa15 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -1505,6 +1505,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 		 */
- 		if ((ra == 1) && !(regs->msr & MSR_PR) \
- 			&& (val3 >= (regs->gpr[1] - STACK_INT_FRAME_SIZE))) {
-+#ifdef CONFIG_PPC32
- 			/*
- 			 * Check if we will touch kernel sack overflow
- 			 */
-@@ -1513,7 +1514,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 				err = -EINVAL;
- 				break;
- 			}
--
-+#endif /* CONFIG_PPC32 */
- 			/*
- 			 * Check if we already set since that means we'll
- 			 * lose the previous value.
+-_GLOBAL(call_handle_irq)
+-	ld	r8,0(r6)
++_GLOBAL(call_do_irq)
+ 	mflr	r0
+ 	std	r0,16(r1)
+-	mtctr	r8
+-	stdu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r5)
+-	mr	r1,r5
+-	bctrl
++	stdu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
++	mr	r1,r4
++	bl	.__do_irq
+ 	ld	r1,0(r1)
+ 	ld	r0,16(r1)
+ 	mtlr	r0
