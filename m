@@ -1,30 +1,20 @@
-Return-Path: <R65777@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5B2522C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 21:22:08 +1000 (EST)
-Received: from mail213-co1 (localhost [127.0.0.1])	by
- mail213-co1-R.bigfish.com (Postfix) with ESMTP id E669AD8015D	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 11:22:03 +0000 (UTC)
-Received: from CO1EHSMHS015.bigfish.com (unknown [10.243.78.225])	by
- mail213-co1.bigfish.com (Postfix) with ESMTP id 3B73A4C0041	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 11:22:01 +0000 (UTC)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: [PATCH v4 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0
- define
-Date: Tue, 24 Sep 2013 11:21:59 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0717DD00@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1380014871-22937-1-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1380014871-22937-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Wang Dongsheng-B40534 <B40534@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <felix@linux.vnet.ibm.com>
+Received: from e06smtp18.uk.ibm.com (e06smtp18.uk.ibm.com [195.75.94.114])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp18.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9DD862C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 22:13:52 +1000 (EST)
+Received: from /spool/local
+ by e06smtp18.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Tue, 24 Sep 2013 13:13:48 +0100
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+To: Linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: BPF JIT compiler for 64bit LE
+Date: Tue, 24 Sep 2013 14:13:35 +0200
+Message-Id: <1380024815-10881-1-git-send-email-felix@linux.vnet.ibm.com>
+Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,90 +24,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This enables the Berkeley Packet Filter JIT compiler
+for the PowerPC running in 64bit Little Endian.
 
+Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/ppc-opcode.h |    1 +
+ arch/powerpc/net/bpf_jit.h            |   10 ++++++++++
+ arch/powerpc/net/bpf_jit_64.S         |    9 ++++++++-
+ arch/powerpc/net/bpf_jit_comp.c       |   17 ++---------------
+ 4 files changed, 21 insertions(+), 16 deletions(-)
 
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-
-> bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Don=
-gsheng
-> Wang
-> Sent: Tuesday, September 24, 2013 2:58 PM
-> To: Wood Scott-B07421
-> Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> Subject: [PATCH v4 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0 def=
-ine
->=20
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
->=20
-> E6500 PVR and SPRN_PWRMGTCR0 will be used in subsequent pw20/altivec idle
-> patches.
->=20
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> ---
-> *v3:
-> Add bit definitions for PWRMGTCR0.
->=20
->  arch/powerpc/include/asm/reg.h       | 2 ++
->  arch/powerpc/include/asm/reg_booke.h | 9 +++++++++
->  2 files changed, 11 insertions(+)
->=20
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/re=
-g.h
-> index 64264bf..d4160ca 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -1053,6 +1053,8 @@
->  #define PVR_8560	0x80200000
->  #define PVR_VER_E500V1	0x8020
->  #define PVR_VER_E500V2	0x8021
-> +#define PVR_VER_E6500	0x8040
-> +
->  /*
->   * For the 8xx processors, all of them report the same PVR family for
->   * the PowerPC core. The various versions of these processors must be di=
-ff --
-> git a/arch/powerpc/include/asm/reg_booke.h
-> b/arch/powerpc/include/asm/reg_booke.h
-> index ed8f836..4a6457e 100644
-> --- a/arch/powerpc/include/asm/reg_booke.h
-> +++ b/arch/powerpc/include/asm/reg_booke.h
-> @@ -170,6 +170,7 @@
->  #define SPRN_L2CSR1	0x3FA	/* L2 Data Cache Control and Status Register 1
-> */
->  #define SPRN_DCCR	0x3FA	/* Data Cache Cacheability Register */
->  #define SPRN_ICCR	0x3FB	/* Instruction Cache Cacheability Register */
-> +#define SPRN_PWRMGTCR0	0x3FB	/* Power management control register 0 */
-
-Is this generic for booke or e6500 specific? I can't see this register eith=
-er in ISA and EREF.
-Also I can see SPRN_ICCR also with same SPRN, how that is possible?
-
--Bharat
-
->  #define SPRN_SVR	0x3FF	/* System Version Register */
->=20
->  /*
-> @@ -216,6 +217,14 @@
->  #define	CCR1_DPC	0x00000100 /* Disable L1 I-Cache/D-Cache parity
-> checking */
->  #define	CCR1_TCS	0x00000080 /* Timer Clock Select */
->=20
-> +/* Bit definitions for PWRMGTCR0. */
-> +#define PWRMGTCR0_PW20_WAIT		(1 << 14) /* PW20 state enable bit */
-> +#define PWRMGTCR0_PW20_ENT_SHIFT	8
-> +#define PWRMGTCR0_PW20_ENT		0x3F00
-> +#define PWRMGTCR0_AV_IDLE_PD_EN		(1 << 22) /* Altivec idle enable */
-> +#define PWRMGTCR0_AV_IDLE_CNT_SHIFT	16
-> +#define PWRMGTCR0_AV_IDLE_CNT		0x3F0000
-> +
->  /* Bit definitions for the MCSR. */
->  #define MCSR_MCS	0x80000000 /* Machine Check Summary */
->  #define MCSR_IB		0x40000000 /* Instruction PLB Error */
-> --
-> 1.8.0
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 247fa1d..23c2b63 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -154,6 +154,7 @@
+ /* Misc instructions for BPF compiler */
+ #define PPC_INST_LD			0xe8000000
+ #define PPC_INST_LHZ			0xa0000000
++#define PPC_INST_LHBRX			0x7c00062c
+ #define PPC_INST_LWZ			0x80000000
+ #define PPC_INST_STD			0xf8000000
+ #define PPC_INST_STDU			0xf8000001
+diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
+index 8a5dfaf..0baf2b8 100644
+--- a/arch/powerpc/net/bpf_jit.h
++++ b/arch/powerpc/net/bpf_jit.h
+@@ -92,6 +92,8 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+ 				     ___PPC_RA(base) | IMM_L(i))
+ #define PPC_LHZ(r, base, i)	EMIT(PPC_INST_LHZ | ___PPC_RT(r) |	      \
+ 				     ___PPC_RA(base) | IMM_L(i))
++#define PPC_LHBRX(r, base, b)	EMIT(PPC_INST_LHBRX | ___PPC_RT(r) |	      \
++				     ___PPC_RA(base) | ___PPC_RB(b))
+ /* Convenience helpers for the above with 'far' offsets: */
+ #define PPC_LD_OFFS(r, base, i) do { if ((i) < 32768) PPC_LD(r, base, i);     \
+ 		else {	PPC_ADDIS(r, base, IMM_HA(i));			      \
+@@ -186,6 +188,14 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+ 				PPC_ORI(d, d, (uintptr_t)(i) & 0xffff);	      \
+ 		} } while (0);
+ 
++#define PPC_LHBRX_OFFS(r, base, i) \
++		do { PPC_LI32(r, i); PPC_LHBRX(r, r, base); } while(0)
++#ifdef __LITTLE_ENDIAN__
++#define PPC_NTOHS_OFFS(r, base, i)	PPC_LHBRX_OFFS(r, base, i)
++#else
++#define PPC_NTOHS_OFFS(r, base, i)	PPC_LHZ_OFFS(r, base, i)
++#endif
++
+ static inline bool is_nearbranch(int offset)
+ {
+ 	return (offset < 32768) && (offset >= -32768);
+diff --git a/arch/powerpc/net/bpf_jit_64.S b/arch/powerpc/net/bpf_jit_64.S
+index 7d3a3b5..e76eba7 100644
+--- a/arch/powerpc/net/bpf_jit_64.S
++++ b/arch/powerpc/net/bpf_jit_64.S
+@@ -43,8 +43,11 @@ sk_load_word_positive_offset:
+ 	cmpd	r_scratch1, r_addr
+ 	blt	bpf_slow_path_word
+ 	/* Nope, just hitting the header.  cr0 here is eq or gt! */
++#ifdef __LITTLE_ENDIAN__
++	lwbrx	r_A, r_D, r_addr
++#else
+ 	lwzx	r_A, r_D, r_addr
+-	/* When big endian we don't need to byteswap. */
++#endif
+ 	blr	/* Return success, cr0 != LT */
+ 
+ 	.globl	sk_load_half
+@@ -56,7 +59,11 @@ sk_load_half_positive_offset:
+ 	subi	r_scratch1, r_HL, 2
+ 	cmpd	r_scratch1, r_addr
+ 	blt	bpf_slow_path_half
++#ifdef __LITTLE_ENDIAN__
++	lhbrx	r_A, r_D, r_addr
++#else
+ 	lhzx	r_A, r_D, r_addr
++#endif
+ 	blr
+ 
+ 	.globl	sk_load_byte
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index c427ae3..9e212f9 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -17,14 +17,8 @@
+ 
+ #include "bpf_jit.h"
+ 
+-#ifndef __BIG_ENDIAN
+-/* There are endianness assumptions herein. */
+-#error "Little-endian PPC not supported in BPF compiler"
+-#endif
+-
+ int bpf_jit_enable __read_mostly;
+ 
+-
+ static inline void bpf_flush_icache(void *start, void *end)
+ {
+ 	smp_wmb();
+@@ -346,18 +340,11 @@ static int bpf_jit_build_body(struct sk_filter *fp, u32 *image,
+ 			break;
+ 
+ 			/*** Ancillary info loads ***/
+-
+-			/* None of the BPF_S_ANC* codes appear to be passed by
+-			 * sk_chk_filter().  The interpreter and the x86 BPF
+-			 * compiler implement them so we do too -- they may be
+-			 * planted in future.
+-			 */
+ 		case BPF_S_ANC_PROTOCOL: /* A = ntohs(skb->protocol); */
+ 			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff,
+ 						  protocol) != 2);
+-			PPC_LHZ_OFFS(r_A, r_skb, offsetof(struct sk_buff,
+-							  protocol));
+-			/* ntohs is a NOP with BE loads. */
++			PPC_NTOHS_OFFS(r_A, r_skb, offsetof(struct sk_buff,
++							    protocol));
+ 			break;
+ 		case BPF_S_ANC_IFINDEX:
+ 			PPC_LD_OFFS(r_scratch1, r_skb, offsetof(struct sk_buff,
+-- 
+1.7.10.4
