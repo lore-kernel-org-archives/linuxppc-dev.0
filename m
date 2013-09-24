@@ -1,35 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E38D2C00A2
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Sep 2013 05:37:23 +1000 (EST)
-Received: from mail179-db8 (localhost [127.0.0.1])	by
- mail179-db8-R.bigfish.com (Postfix) with ESMTP id 7EDFB4C01EF	for
- <linuxppc-dev@ozlabs.org>; Tue, 24 Sep 2013 19:37:19 +0000 (UTC)
-Received: from DB8EHSMHS002.bigfish.com (unknown [10.174.8.242])	by
- mail179-db8.bigfish.com (Postfix) with ESMTP id A356BA80048	for
- <linuxppc-dev@ozlabs.org>; Tue, 24 Sep 2013 19:37:17 +0000 (UTC)
-Message-ID: <1380051431.24959.114.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc/85xx: DTS - re-organize the SPI partitions
- property
-From: Scott Wood <scottwood@freescale.com>
-To: Hu Mingkai-B21284 <B21284@freescale.com>
-Date: Tue, 24 Sep 2013 14:37:11 -0500
-In-Reply-To: <CF6CBFBA8EBBB949B6E321556F6E15090A1517D2@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1378454743-17637-1-git-send-email-Mingkai.Hu@freescale.com>
- <1378856005.12204.372.camel@snotra.buserror.net>
- <CF6CBFBA8EBBB949B6E321556F6E15090A135F45@039-SN2MPN1-011.039d.mgd.msft.net>
- <1378948542.12204.490.camel@snotra.buserror.net>
- <CF6CBFBA8EBBB949B6E321556F6E15090A14E997@039-SN2MPN1-012.039d.mgd.msft.net>
- <1379977371.24959.57.camel@snotra.buserror.net>
- <CF6CBFBA8EBBB949B6E321556F6E15090A1517D2@039-SN2MPN1-012.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [IPv6:2002:4e20:1eda::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3249D2C00CF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 07:35:40 +1000 (EST)
+Date: Tue, 24 Sep 2013 22:28:53 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Timothy Pepper <timothy.c.pepper@linux.intel.com>
+Subject: Re: mm: insure topdown mmap chooses addresses above security minimum
+Message-ID: <20130924212853.GK12758@n2100.arm.linux.org.uk>
+References: <1380057811-5352-1-git-send-email-timothy.c.pepper@linux.intel.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1380057811-5352-1-git-send-email-timothy.c.pepper@linux.intel.com>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-mips@linux-mips.org, Paul Mundt <lethal@linux-sh.org>,
+ linux-sh@vger.kernel.org, x86@kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,107 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-09-24 at 05:27 -0500, Hu Mingkai-B21284 wrote:
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Tuesday, September 24, 2013 7:03 AM
-> > To: Hu Mingkai-B21284
-> > Cc: Wood Scott-B07421; linuxppc-dev@ozlabs.org
-> > Subject: Re: [PATCH] powerpc/85xx: DTS - re-organize the SPI partitions
-> > property
-> > 
-> > On Tue, 2013-09-17 at 06:06 -0500, Hu Mingkai-B21284 wrote:
-> > > Scott,
-> > > Sorry for the delayed response.
-> > > Please fine my comments.
-> > > Thanks,
-> > > Mingkai
-> > >
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Thursday, September 12, 2013 9:16 AM
-> > > > To: Hu Mingkai-B21284
-> > > > Cc: Wood Scott-B07421; linuxppc-dev@ozlabs.org
-> > > > Subject: Re: [PATCH] powerpc/85xx: DTS - re-organize the SPI
-> > > > partitions property
-> > > >
-> > > > On Tue, 2013-09-10 at 21:07 -0500, Hu Mingkai-B21284 wrote:
-> > > > >
-> > > > > > -----Original Message-----
-> > > > > > From: Wood Scott-B07421
-> > > > > > Sent: Wednesday, September 11, 2013 7:33 AM
-> > > > > > To: Hu Mingkai-B21284
-> > > > > > Cc: linuxppc-dev@ozlabs.org
-> > > > > > Subject: Re: [PATCH] powerpc/85xx: DTS - re-organize the SPI
-> > > > > > partitions property
-> > > > > >
-> > > > > > What happens to exsting users whose flash is laid out the
-> > > > > > existing way, when they upgrade to these device trees?
-> > > > > >
-> > > > >
-> > > > > The SPI flash layout should be mapping the new device tree.
-> > > > >
-> > > > > If the existing device tree is used to deploy the SPI flash, the
-> > > > > following issues must be run into as the commit message described:
-> > > > >
-> > > > > 1. Kernel images would be overlapped with U-Boot image.
-> > > > > 2. Kernel images would be overlapped with FMAN ucode.
-> > > > > 3. Saving environment variables will crash the kernel image.
-> > > >
-> > > > Has the SPI U-Boot image always been larger than 512K for all these
-> > > > platforms?  Why, given that we're under 512K for other boot modes?
-> > > >
-> > >
-> > > For DPAA platform, the ld script used to link the u-boot image is
-> > > "./arch/powerpc/cpu/mpc85xx/u-boot.lds" which will generate the 512K
-> > > u-boot Image. This image will be split into 64bytes and appended PBL
-> > > command for Each 64bytes pieces, so the size of final image must be
-> > greater than 512K.
-> > 
-> > What is the entry point in SRAM when you load from PBL?  If it is (or can
-> > be made to be) the beginning of the image rather than the end, then turn
-> > off the resetvec and the fixed image size that results.
-> > 
-> 
-> 1. Thus a special ld script need to be provided.
+On Tue, Sep 24, 2013 at 02:23:31PM -0700, Timothy Pepper wrote:
+> diff --git a/arch/arm/mm/mmap.c b/arch/arm/mm/mmap.c
+> index 0c63562..0e7355d 100644
+> --- a/arch/arm/mm/mmap.c
+> +++ b/arch/arm/mm/mmap.c
+> @@ -9,6 +9,7 @@
+>  #include <linux/io.h>
+>  #include <linux/personality.h>
+>  #include <linux/random.h>
+> +#include <linux/security.h>
+>  #include <asm/cachetype.h>
+>  
+>  #define COLOUR_ALIGN(addr,pgoff)		\
+> @@ -146,7 +147,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
+>  
+>  	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+>  	info.length = len;
+> -	info.low_limit = PAGE_SIZE;
+> +	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+>  	info.high_limit = mm->mmap_base;
+>  	info.align_mask = do_align ? (PAGE_MASK & (SHMLBA - 1)) : 0;
+>  	info.align_offset = pgoff << PAGE_SHIFT;
 
-This is already supported.  See CONFIG_SYS_MPC85XX_NO_RESETVEC.
+This looks sane for ARM.
 
-> 2. Now the spi image size is about 540KB, that's to say the PBL needs about ~30K
->    for PBL commands. It's hard to save such a big space even we turn off the
->    resetvec.
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-Turning off the resetvec doesn't just eliminate the resetvec code; it
-eliminates the padding to 512K (or if it doesn't, that's a bug to be
-fixed).
-
-> > > > > > We really should not be putting partition layout info in the
-> > > > > > device tree to begin with...
-> > > > > >
-> > > > > OK, I will remove the layout diagram in the commit message.
-> > > >
-> > > > That's not what I meant.  I meant that the dts should be describing
-> > > > hardware, and this is the sort of trouble we run into when we
-> > > > deviate from that.  A better way would be to use the mtdparts command
-> > line option.
-> > > > Even better would be some sort of on-flash partition table.
-> > > >
-> > >
-> > > You're right, but maybe some customer has already used the device tree
-> > partition table...
-> > 
-> > My main point was to encourage us to shift away from this rather than to
-> > rip it out right this instant.
-> > 
-> 
-> Yes, that's the correct way we should go.
-> Would you please pick up this patch first to resolve current issue we faced?
-> And we can consider to use the mtdparts or on-flash partition table for long term.
-
-Fixing U-Boot would make the problem go away without any issues with
-partition compatibility.  Are you sure nobody's using these SPI
-partitions without booting from SPI?  Even if nobody's using this, it
-seems a wasteful solution.  These are pretty small flashes.
-
--Scott
+Thanks.
