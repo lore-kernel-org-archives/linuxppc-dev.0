@@ -1,35 +1,34 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D98092C0077
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 19:43:15 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Tue, 24 Sep 2013 19:43:09 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7512F2CE8053
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 19:42:56 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8O9Q8Dh30998602
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 19:26:09 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r8O9gtDV018244
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 19:42:55 +1000
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] pci: fix interrupt-map for bridges
-In-Reply-To: <1380007334-466-1-git-send-email-aik@ozlabs.ru>
-References: <1380007334-466-1-git-send-email-aik@ozlabs.ru>
-Date: Tue, 24 Sep 2013 15:12:46 +0530
-Message-ID: <87ioxqa73d.fsf@abhimanyu.in.ibm.com>
+Return-Path: <B21284@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2E10E2C00BB
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Sep 2013 20:27:43 +1000 (EST)
+Received: from mail62-ch1 (localhost [127.0.0.1])	by mail62-ch1-R.bigfish.com
+ (Postfix) with ESMTP id 90F66C00A6	for <linuxppc-dev@ozlabs.org>;
+ Tue, 24 Sep 2013 10:27:40 +0000 (UTC)
+Received: from CH1EHSMHS017.bigfish.com (snatpool2.int.messaging.microsoft.com
+ [10.43.68.232])	by mail62-ch1.bigfish.com (Postfix) with ESMTP id
+ CB3AC16003F
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Sep 2013 10:27:37 +0000 (UTC)
+From: Hu Mingkai-B21284 <B21284@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] powerpc/85xx: DTS - re-organize the SPI partitions
+ property
+Date: Tue, 24 Sep 2013 10:27:36 +0000
+Message-ID: <CF6CBFBA8EBBB949B6E321556F6E15090A1517D2@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1378454743-17637-1-git-send-email-Mingkai.Hu@freescale.com>
+ <1378856005.12204.372.camel@snotra.buserror.net>
+ <CF6CBFBA8EBBB949B6E321556F6E15090A135F45@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1378948542.12204.490.camel@snotra.buserror.net>
+ <CF6CBFBA8EBBB949B6E321556F6E15090A14E997@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1379977371.24959.57.camel@snotra.buserror.net>
+In-Reply-To: <1379977371.24959.57.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,24 +38,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
-
-> The previous scheme always put 0 as a parent slot#. However it is
-> not always the case and QEMU's PCI bridge does not support putting
-> device at slot#0 as it claims SHPC support for hotplug.
->
-> This modifies the interrups map to let the linux guest resolve XICS
-> global interrupt number correctly.
->
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-Thanks, Will pull this for next build.
-
-Regards
-Nikunj
-
-> ---
-> Changes:
-> v2:
-> * removed redundand r-stack push-pop
->
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgU2VwdGVtYmVyIDI0LCAyMDEzIDc6MDMgQU0NCj4gVG86IEh1
+IE1pbmdrYWktQjIxMjg0DQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMtZGV2QG96
+bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gcG93ZXJwYy84NXh4OiBEVFMgLSByZS1v
+cmdhbml6ZSB0aGUgU1BJIHBhcnRpdGlvbnMNCj4gcHJvcGVydHkNCj4gDQo+IE9uIFR1ZSwgMjAx
+My0wOS0xNyBhdCAwNjowNiAtMDUwMCwgSHUgTWluZ2thaS1CMjEyODQgd3JvdGU6DQo+ID4gU2Nv
+dHQsDQo+ID4gU29ycnkgZm9yIHRoZSBkZWxheWVkIHJlc3BvbnNlLg0KPiA+IFBsZWFzZSBmaW5l
+IG15IGNvbW1lbnRzLg0KPiA+IFRoYW5rcywNCj4gPiBNaW5na2FpDQo+ID4NCj4gPiA+IC0tLS0t
+T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+
+ID4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAxMiwgMjAxMyA5OjE2IEFNDQo+ID4gPiBUbzog
+SHUgTWluZ2thaS1CMjEyODQNCj4gPiA+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMt
+ZGV2QG96bGFicy5vcmcNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvODV4eDog
+RFRTIC0gcmUtb3JnYW5pemUgdGhlIFNQSQ0KPiA+ID4gcGFydGl0aW9ucyBwcm9wZXJ0eQ0KPiA+
+ID4NCj4gPiA+IE9uIFR1ZSwgMjAxMy0wOS0xMCBhdCAyMTowNyAtMDUwMCwgSHUgTWluZ2thaS1C
+MjEyODQgd3JvdGU6DQo+ID4gPiA+DQo+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0t
+LS0NCj4gPiA+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+IFNlbnQ6IFdl
+ZG5lc2RheSwgU2VwdGVtYmVyIDExLCAyMDEzIDc6MzMgQU0NCj4gPiA+ID4gPiBUbzogSHUgTWlu
+Z2thaS1CMjEyODQNCj4gPiA+ID4gPiBDYzogbGludXhwcGMtZGV2QG96bGFicy5vcmcNCj4gPiA+
+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXSBwb3dlcnBjLzg1eHg6IERUUyAtIHJlLW9yZ2FuaXpl
+IHRoZSBTUEkNCj4gPiA+ID4gPiBwYXJ0aXRpb25zIHByb3BlcnR5DQo+ID4gPiA+ID4NCj4gPiA+
+ID4gPiBXaGF0IGhhcHBlbnMgdG8gZXhzdGluZyB1c2VycyB3aG9zZSBmbGFzaCBpcyBsYWlkIG91
+dCB0aGUNCj4gPiA+ID4gPiBleGlzdGluZyB3YXksIHdoZW4gdGhleSB1cGdyYWRlIHRvIHRoZXNl
+IGRldmljZSB0cmVlcz8NCj4gPiA+ID4gPg0KPiA+ID4gPg0KPiA+ID4gPiBUaGUgU1BJIGZsYXNo
+IGxheW91dCBzaG91bGQgYmUgbWFwcGluZyB0aGUgbmV3IGRldmljZSB0cmVlLg0KPiA+ID4gPg0K
+PiA+ID4gPiBJZiB0aGUgZXhpc3RpbmcgZGV2aWNlIHRyZWUgaXMgdXNlZCB0byBkZXBsb3kgdGhl
+IFNQSSBmbGFzaCwgdGhlDQo+ID4gPiA+IGZvbGxvd2luZyBpc3N1ZXMgbXVzdCBiZSBydW4gaW50
+byBhcyB0aGUgY29tbWl0IG1lc3NhZ2UgZGVzY3JpYmVkOg0KPiA+ID4gPg0KPiA+ID4gPiAxLiBL
+ZXJuZWwgaW1hZ2VzIHdvdWxkIGJlIG92ZXJsYXBwZWQgd2l0aCBVLUJvb3QgaW1hZ2UuDQo+ID4g
+PiA+IDIuIEtlcm5lbCBpbWFnZXMgd291bGQgYmUgb3ZlcmxhcHBlZCB3aXRoIEZNQU4gdWNvZGUu
+DQo+ID4gPiA+IDMuIFNhdmluZyBlbnZpcm9ubWVudCB2YXJpYWJsZXMgd2lsbCBjcmFzaCB0aGUg
+a2VybmVsIGltYWdlLg0KPiA+ID4NCj4gPiA+IEhhcyB0aGUgU1BJIFUtQm9vdCBpbWFnZSBhbHdh
+eXMgYmVlbiBsYXJnZXIgdGhhbiA1MTJLIGZvciBhbGwgdGhlc2UNCj4gPiA+IHBsYXRmb3Jtcz8g
+IFdoeSwgZ2l2ZW4gdGhhdCB3ZSdyZSB1bmRlciA1MTJLIGZvciBvdGhlciBib290IG1vZGVzPw0K
+PiA+ID4NCj4gPg0KPiA+IEZvciBEUEFBIHBsYXRmb3JtLCB0aGUgbGQgc2NyaXB0IHVzZWQgdG8g
+bGluayB0aGUgdS1ib290IGltYWdlIGlzDQo+ID4gIi4vYXJjaC9wb3dlcnBjL2NwdS9tcGM4NXh4
+L3UtYm9vdC5sZHMiIHdoaWNoIHdpbGwgZ2VuZXJhdGUgdGhlIDUxMksNCj4gPiB1LWJvb3QgSW1h
+Z2UuIFRoaXMgaW1hZ2Ugd2lsbCBiZSBzcGxpdCBpbnRvIDY0Ynl0ZXMgYW5kIGFwcGVuZGVkIFBC
+TA0KPiA+IGNvbW1hbmQgZm9yIEVhY2ggNjRieXRlcyBwaWVjZXMsIHNvIHRoZSBzaXplIG9mIGZp
+bmFsIGltYWdlIG11c3QgYmUNCj4gZ3JlYXRlciB0aGFuIDUxMksuDQo+IA0KPiBXaGF0IGlzIHRo
+ZSBlbnRyeSBwb2ludCBpbiBTUkFNIHdoZW4geW91IGxvYWQgZnJvbSBQQkw/ICBJZiBpdCBpcyAo
+b3IgY2FuDQo+IGJlIG1hZGUgdG8gYmUpIHRoZSBiZWdpbm5pbmcgb2YgdGhlIGltYWdlIHJhdGhl
+ciB0aGFuIHRoZSBlbmQsIHRoZW4gdHVybg0KPiBvZmYgdGhlIHJlc2V0dmVjIGFuZCB0aGUgZml4
+ZWQgaW1hZ2Ugc2l6ZSB0aGF0IHJlc3VsdHMuDQo+IA0KDQoxLiBUaHVzIGEgc3BlY2lhbCBsZCBz
+Y3JpcHQgbmVlZCB0byBiZSBwcm92aWRlZC4NCjIuIE5vdyB0aGUgc3BpIGltYWdlIHNpemUgaXMg
+YWJvdXQgNTQwS0IsIHRoYXQncyB0byBzYXkgdGhlIFBCTCBuZWVkcyBhYm91dCB+MzBLDQogICBm
+b3IgUEJMIGNvbW1hbmRzLiBJdCdzIGhhcmQgdG8gc2F2ZSBzdWNoIGEgYmlnIHNwYWNlIGV2ZW4g
+d2UgdHVybiBvZmYgdGhlDQogICByZXNldHZlYy4NCg0KPiA+ID4gPiA+IFdlIHJlYWxseSBzaG91
+bGQgbm90IGJlIHB1dHRpbmcgcGFydGl0aW9uIGxheW91dCBpbmZvIGluIHRoZQ0KPiA+ID4gPiA+
+IGRldmljZSB0cmVlIHRvIGJlZ2luIHdpdGguLi4NCj4gPiA+ID4gPg0KPiA+ID4gPiBPSywgSSB3
+aWxsIHJlbW92ZSB0aGUgbGF5b3V0IGRpYWdyYW0gaW4gdGhlIGNvbW1pdCBtZXNzYWdlLg0KPiA+
+ID4NCj4gPiA+IFRoYXQncyBub3Qgd2hhdCBJIG1lYW50LiAgSSBtZWFudCB0aGF0IHRoZSBkdHMg
+c2hvdWxkIGJlIGRlc2NyaWJpbmcNCj4gPiA+IGhhcmR3YXJlLCBhbmQgdGhpcyBpcyB0aGUgc29y
+dCBvZiB0cm91YmxlIHdlIHJ1biBpbnRvIHdoZW4gd2UNCj4gPiA+IGRldmlhdGUgZnJvbSB0aGF0
+LiAgQSBiZXR0ZXIgd2F5IHdvdWxkIGJlIHRvIHVzZSB0aGUgbXRkcGFydHMgY29tbWFuZA0KPiBs
+aW5lIG9wdGlvbi4NCj4gPiA+IEV2ZW4gYmV0dGVyIHdvdWxkIGJlIHNvbWUgc29ydCBvZiBvbi1m
+bGFzaCBwYXJ0aXRpb24gdGFibGUuDQo+ID4gPg0KPiA+DQo+ID4gWW91J3JlIHJpZ2h0LCBidXQg
+bWF5YmUgc29tZSBjdXN0b21lciBoYXMgYWxyZWFkeSB1c2VkIHRoZSBkZXZpY2UgdHJlZQ0KPiBw
+YXJ0aXRpb24gdGFibGUuLi4NCj4gDQo+IE15IG1haW4gcG9pbnQgd2FzIHRvIGVuY291cmFnZSB1
+cyB0byBzaGlmdCBhd2F5IGZyb20gdGhpcyByYXRoZXIgdGhhbiB0bw0KPiByaXAgaXQgb3V0IHJp
+Z2h0IHRoaXMgaW5zdGFudC4NCj4gDQoNClllcywgdGhhdCdzIHRoZSBjb3JyZWN0IHdheSB3ZSBz
+aG91bGQgZ28uDQpXb3VsZCB5b3UgcGxlYXNlIHBpY2sgdXAgdGhpcyBwYXRjaCBmaXJzdCB0byBy
+ZXNvbHZlIGN1cnJlbnQgaXNzdWUgd2UgZmFjZWQ/DQpBbmQgd2UgY2FuIGNvbnNpZGVyIHRvIHVz
+ZSB0aGUgbXRkcGFydHMgb3Igb24tZmxhc2ggcGFydGl0aW9uIHRhYmxlIGZvciBsb25nIHRlcm0u
+DQoNClRoYW5rcywNCk1pbmdrYWkNCg==
