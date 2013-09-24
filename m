@@ -1,23 +1,20 @@
-Return-Path: <Ian.Campbell@citrix.com>
-Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "mail.citrix.com",
- Issuer "Cybertrust Public SureServer SV CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9B7822C009C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 19:21:56 +1000 (EST)
-Message-ID: <1380013846.23688.9.camel@kazak.uk.xensource.com>
-Subject: Re: [PATCH] powerpc/4xx: Fix warning in kilauea.dtb
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: Josh Boyer <jwboyer@gmail.com>
-Date: Tue, 24 Sep 2013 10:10:46 +0100
-In-Reply-To: <20130603133633.GA18391@zod>
-References: <1370257224-23805-1-git-send-email-ian.campbell@citrix.com>
- <20130603133633.GA18391@zod>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <B40534@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BF0422C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2013 19:33:27 +1000 (EST)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH v4 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0 define
+Date: Tue, 24 Sep 2013 17:27:48 +0800
+Message-ID: <1380014871-22937-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-Cc: Tirumala R Marri <tmarri@apm.com>, Rupjyoti Sarmah <rsarmah@apm.com>,
- linux-kernel@vger.kernel.org, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,56 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-06-03 at 09:36 -0400, Josh Boyer wrote:
-> On Mon, Jun 03, 2013 at 12:00:24PM +0100, Ian Campbell wrote:
-> >Currently I see:
-> >  DTC     arch/powerpc/boot/kilauea.dtb
-> >Warning (reg_format): "reg" property in /plb/ppc4xx-msi@C10000000 has invalid length (12 bytes) (#address-cells == 1, #size-cells == 1)
-> >
-> >It appears that unlike the other plarforms handled by 3fb7933850fa
-> >"powerpc/4xx: Adding PCIe MSI support" this platform does not use address-cells=2.
-> 
-> Right, it's a 405, not a 440.  I should have caught that in the initial
-> review.
-> 
-> >Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-> >Cc: Rupjyoti Sarmah <rsarmah@apm.com>
-> >Cc: Tirumala R Marri <tmarri@apm.com>
-> >Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> 
-> That address should bounce.  It hasn't been active in almost 2 years.
-> 
-> >Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >Cc: Paul Mackerras <paulus@samba.org>
-> >Cc: linuxppc-dev@lists.ozlabs.org
-> >Cc: linux-kernel@vger.kernel.org
-> 
-> Acked-by: Josh Boyer <jwboyer@gmail.com>
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-This still doesn't appear to be fixed v3.12-rc2. Ping?
+E6500 PVR and SPRN_PWRMGTCR0 will be used in subsequent pw20/altivec
+idle patches.
 
-> 
-> >---
-> > arch/powerpc/boot/dts/kilauea.dts |    2 +-
-> > 1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> >diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
-> >index 1613d6e..5ba7f01 100644
-> >--- a/arch/powerpc/boot/dts/kilauea.dts
-> >+++ b/arch/powerpc/boot/dts/kilauea.dts
-> >@@ -406,7 +406,7 @@
-> > 
-> > 		MSI: ppc4xx-msi@C10000000 {
-> > 			compatible = "amcc,ppc4xx-msi", "ppc4xx-msi";
-> >-			reg = < 0x0 0xEF620000 0x100>;
-> >+			reg = <0xEF620000 0x100>;
-> > 			sdr-base = <0x4B0>;
-> > 			msi-data = <0x00000000>;
-> > 			msi-mask = <0x44440000>;
-> >-- 
-> >1.7.10.4
-> >
-> >_______________________________________________
-> >Linuxppc-dev mailing list
-> >Linuxppc-dev@lists.ozlabs.org
-> >https://lists.ozlabs.org/listinfo/linuxppc-dev
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
+*v3:
+Add bit definitions for PWRMGTCR0.
+
+ arch/powerpc/include/asm/reg.h       | 2 ++
+ arch/powerpc/include/asm/reg_booke.h | 9 +++++++++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 64264bf..d4160ca 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1053,6 +1053,8 @@
+ #define PVR_8560	0x80200000
+ #define PVR_VER_E500V1	0x8020
+ #define PVR_VER_E500V2	0x8021
++#define PVR_VER_E6500	0x8040
++
+ /*
+  * For the 8xx processors, all of them report the same PVR family for
+  * the PowerPC core. The various versions of these processors must be
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index ed8f836..4a6457e 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -170,6 +170,7 @@
+ #define SPRN_L2CSR1	0x3FA	/* L2 Data Cache Control and Status Register 1 */
+ #define SPRN_DCCR	0x3FA	/* Data Cache Cacheability Register */
+ #define SPRN_ICCR	0x3FB	/* Instruction Cache Cacheability Register */
++#define SPRN_PWRMGTCR0	0x3FB	/* Power management control register 0 */
+ #define SPRN_SVR	0x3FF	/* System Version Register */
+ 
+ /*
+@@ -216,6 +217,14 @@
+ #define	CCR1_DPC	0x00000100 /* Disable L1 I-Cache/D-Cache parity checking */
+ #define	CCR1_TCS	0x00000080 /* Timer Clock Select */
+ 
++/* Bit definitions for PWRMGTCR0. */
++#define PWRMGTCR0_PW20_WAIT		(1 << 14) /* PW20 state enable bit */
++#define PWRMGTCR0_PW20_ENT_SHIFT	8
++#define PWRMGTCR0_PW20_ENT		0x3F00
++#define PWRMGTCR0_AV_IDLE_PD_EN		(1 << 22) /* Altivec idle enable */
++#define PWRMGTCR0_AV_IDLE_CNT_SHIFT	16
++#define PWRMGTCR0_AV_IDLE_CNT		0x3F0000
++
+ /* Bit definitions for the MCSR. */
+ #define MCSR_MCS	0x80000000 /* Machine Check Summary */
+ #define MCSR_IB		0x40000000 /* Instruction PLB Error */
+-- 
+1.8.0
