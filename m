@@ -1,21 +1,26 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1380075585.14938.4.camel@concordia>
-Subject: Re: [PATCH V2 0/6] perf: New conditional branch filter
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 25 Sep 2013 12:19:45 +1000
-In-Reply-To: <524006C4.3010006@linux.vnet.ibm.com>
-References: <1377836690-32710-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1378778772.25578.1.camel@concordia>
- <CABPqkBREXH5VUkULAsWvmpCer-s4SCxuof6LdqRO0i-iBOG8pA@mail.gmail.com>
- <524006C4.3010006@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>, Stephane Eranian <eranian@google.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Michael Neuling <michael.neuling@au1.ibm.com>
+Return-Path: <B40534@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0E2422C00D4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 12:34:35 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Bhushan Bharat-R65777
+ <R65777@freescale.com>
+Subject: RE: [PATCH v4 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0
+ define
+Date: Wed, 25 Sep 2013 02:34:27 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F154392590108FCD8@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1380014871-22937-1-git-send-email-dongsheng.wang@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0717DD00@039-SN2MPN1-011.039d.mgd.msft.net>
+ <D3D5E237-6C31-424C-A340-E79F6AF5B0B2@kernel.crashing.org>
+In-Reply-To: <D3D5E237-6C31-424C-A340-E79F6AF5B0B2@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,54 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-09-23 at 14:45 +0530, Anshuman Khandual wrote:
-> On 09/21/2013 12:25 PM, Stephane Eranian wrote:
-> > On Tue, Sep 10, 2013 at 4:06 AM, Michael Ellerman
-> > <michael@ellerman.id.au> wrote:
-> >> >
-> >> > On Fri, 2013-08-30 at 09:54 +0530, Anshuman Khandual wrote:
-> >>> > >       This patchset is the re-spin of the original branch stack sampling
-> >>> > > patchset which introduced new PERF_SAMPLE_BRANCH_COND filter. This patchset
-> >>> > > also enables SW based branch filtering support for PPC64 platforms which have
-> >>> > > branch stack sampling support. With this new enablement, the branch filter support
-> >>> > > for PPC64 platforms have been extended to include all these combinations discussed
-> >>> > > below with a sample test application program.
-> >> >
-> >> > ...
-> >> >
-> >>> > > Mixed filters
-> >>> > > -------------
-> >>> > > (6) perf record -e branch-misses:u -j any_call,any_ret ./cprog
-> >>> > > Error:
-> >>> > > The perf.data file has no samples!
-> >>> > >
-> >>> > > NOTE: As expected. The HW filters all the branches which are calls and SW tries to find return
-> >>> > > branches in that given set. Both the filters are mutually exclussive, so obviously no samples
-> >>> > > found in the end profile.
-> >> >
-> >> > The semantics of multiple filters is not clear to me. It could be an OR,
-> >> > or an AND. You have implemented AND, does that match existing behaviour
-> >> > on x86 for example?
+> >> /*
+> >>  * For the 8xx processors, all of them report the same PVR family for
+> >>  * the PowerPC core. The various versions of these processors must be
+> >> diff -- git a/arch/powerpc/include/asm/reg_booke.h
+> >> b/arch/powerpc/include/asm/reg_booke.h
+> >> index ed8f836..4a6457e 100644
+> >> --- a/arch/powerpc/include/asm/reg_booke.h
+> >> +++ b/arch/powerpc/include/asm/reg_booke.h
+> >> @@ -170,6 +170,7 @@
+> >> #define SPRN_L2CSR1	0x3FA	/* L2 Data Cache Control and Status
+> Register 1
+> >> */
+> >> #define SPRN_DCCR	0x3FA	/* Data Cache Cacheability Register */
+> >> #define SPRN_ICCR	0x3FB	/* Instruction Cache Cacheability Register
+> */
+> >> +#define SPRN_PWRMGTCR0	0x3FB	/* Power management control register
+> 0 */
 > >
-> > The semantic on the API is OR. AND does not make sense: CALL & RETURN?
-> > On x86, the HW filter is an OR (default: ALL, set bit to disable a
-> > type). I suspect
-> > it is similar on PPC.
-> 
-> Given the situation as explained here, which semantic would be better for single
-> HW and multiple SW filters. Accordingly validate_instruction() function will have
-> to be re-implemented. But I believe OR-ing the SW filters will be preferable.
-> 
-> 	(1) (HW_FILTER_1) && (SW_FILTER_1) && (SW_FILTER_2)
-> 	or
-> 	(2) (HW_FILTER_1) && (SW_FILTER_1 || SW_FILTER_2)
-> 
-> Please let me know your inputs and suggestions on this. Thank you.
+> > Is this generic for booke or e6500 specific? I can't see this register
+> either in ISA and EREF.
 
-You need to implement the correct semantics, regardless of how the
-hardware happens to work.
+Yes, now only e6500 have this register. There is no problem in this definit=
+ion,
+because no conflict in FSL platform.
 
-That means if multiple filters are specified you need to do all the
-filtering in software.
+> > Also I can see SPRN_ICCR also with same SPRN, how that is possible?
+>=20
+> Its possibly because the register maybe in implementation specific region=
+.
+> I'm guessing ICCR is a 40x specific register.
 
-cheers
+Yes, kumar is right. Its use only in 4xx series of chips.
+
+ICTC(arch/powerpc/include/asm/reg.h) also use 0x3FB, Its use only in 6xx se=
+ries of chips.
+
+-dongsheng
