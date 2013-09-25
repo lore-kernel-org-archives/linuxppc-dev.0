@@ -1,15 +1,30 @@
-Return-Path: <aida.mynzhasova@skitlab.ru>
-Received: from mail.skitlab.ru (mail.skitlab.ru [217.65.220.135])
- by ozlabs.org (Postfix) with ESMTP id 4C6F72C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 17:24:29 +1000 (EST)
-From: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/83xx: gianfar_ptp: select 1588 clock source
- through dts file
-Date: Wed, 25 Sep 2013 11:24:23 +0400
-Message-Id: <1380093863-5388-1-git-send-email-aida.mynzhasova@skitlab.ru>
-Cc: devicetree@vger.kernel.org, richardcochran@gmail.com,
- netdev@vger.kernel.org
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-ee0-x22e.google.com (mail-ee0-x22e.google.com
+ [IPv6:2a00:1450:4013:c00::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CAF262C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 17:30:57 +1000 (EST)
+Received: by mail-ee0-f46.google.com with SMTP id c13so2976095eek.33
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 00:30:53 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Wed, 25 Sep 2013 09:30:49 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Timothy Pepper <timothy.c.pepper@linux.intel.com>
+Subject: Re: mm: insure topdown mmap chooses addresses above security minimum
+Message-ID: <20130925073048.GB27960@gmail.com>
+References: <1380057811-5352-1-git-send-email-timothy.c.pepper@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1380057811-5352-1-git-send-email-timothy.c.pepper@linux.intel.com>
+Cc: linux-mips@linux-mips.org, Russell King <linux@arm.linux.org.uk>,
+ Andrew Morton <akpm@linux-foundation.org>, Paul Mundt <lethal@linux-sh.org>,
+ linux-sh@vger.kernel.org, x86@kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ linux-mm@kvack.org, Linus Torvalds <torvalds@linux-foundation.org>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,94 +34,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently IEEE 1588 timer reference clock source is determined through
-hard-coded value in gianfar_ptp driver. This patch allows to select ptp
-clock source by means of device tree file node.
 
-For instance:
+* Timothy Pepper <timothy.c.pepper@linux.intel.com> wrote:
 
-	fsl,cksel = <0>;
+> A security check is performed on mmap addresses in
+> security/security.c:security_mmap_addr().  It uses mmap_min_addr to insure
+> mmaps don't get addresses lower than a user configurable guard value
+> (/proc/sys/vm/mmap_min_addr).  The arch specific mmap topdown searches
+> look for a map candidate address all the way down to a low_limit that is
+> currently hard coded as PAGE_SIZE.  Depending on compile time options
+> and userspace setting the procfs tunable, the security check's view of
+> the minimum allowable address may be something greater than PAGE_SIZE.
+> This leaves a gap where get_unmapped_area()'s call to get_area() might
+> return an address above PAGE_SIZE, but below mmap_min_addr, and thus
+> get_unmapped_area() fails.
+> 
+> This was seen on x86_64 in the case of a topdown address space and a large
+> stack rlimit, with mmap_min_addr having been set to 32k by the distro.
+> This left a 28k gap where the get area search intends to place a small
+> mmap, but then get_unmapped_area() stumbles at the security check.
+> 
+> What should have happened is the address search wraps back to a higher
+> address, the search continues and perhaps succeeds.  Indeed an mmap of
+> a larger size gets a topdown search that does wrap around back up into
+> the rlimit stack reserve and succeeds assuming suitable free space.
+> But a small mmap fits in the low gap and always fails.  It becomes
+> possible to make large mmaps but not small ones.
+> 
+> When an explicit address hint is given, mm/mmap.c's round_hint_to_min()
+> will round up to mmap_min_addr.
+> 
+> A topdown search's low_limit should similarly consider mmap_min_addr
+> instead of just PAGE_SIZE.
+> 
+> Signed-off-by: Tim Pepper <timothy.c.pepper@linux.intel.com>
+> Cc: linux-mm@kvack.org
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: linux-mips@linux-mips.org
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: linux-sh@vger.kernel.org
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: sparclinux@vger.kernel.org
+> --
+>  arch/arm/mm/mmap.c               | 3 ++-
+>  arch/mips/mm/mmap.c              | 3 ++-
+>  arch/powerpc/mm/slice.c          | 3 ++-
+>  arch/sh/mm/mmap.c                | 3 ++-
+>  arch/sparc/kernel/sys_sparc_64.c | 3 ++-
+>  arch/x86/kernel/sys_x86_64.c     | 3 ++-
+>  6 files changed, 12 insertions(+), 6 deletions(-)
+> 
+> +	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+>  	info.high_limit = mm->mmap_base;
+>  	info.align_mask = do_align ? (PAGE_MASK & (SHMLBA - 1)) : 0;
+>  	info.align_offset = pgoff << PAGE_SHIFT;
 
-for using external (TSEC_TMR_CLK input) high precision timer
-reference clock.
+>  		info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+> -		info.low_limit = PAGE_SIZE;
+> +		info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+>  		info.high_limit = mm->mmap_base;
+>  		addr = vm_unmapped_area(&info);
 
-Other acceptable values:
+> -		info.low_limit = addr;
+> +		info.low_limit = max(addr, PAGE_ALIGN(mmap_min_addr));
 
-	<1> : eTSEC system clock
-	<2> : eTSEC1 transmit clock
-	<3> : RTC clock input
+>  	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+>  	info.length = len;
+> -	info.low_limit = PAGE_SIZE;
+> +	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+>  	info.high_limit = mm->mmap_base;
+>  	info.align_mask = do_colour_align ? (PAGE_MASK & shm_align_mask) : 0;
+>  	info.align_offset = pgoff << PAGE_SHIFT;
 
-When this attribute isn't used, eTSEC system clock will serve as
-IEEE 1588 timer reference clock.
+>  	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+>  	info.length = len;
+> -	info.low_limit = PAGE_SIZE;
+> +	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+>  	info.high_limit = mm->mmap_base;
+>  	info.align_mask = do_color_align ? (PAGE_MASK & (SHMLBA - 1)) : 0;
+>  	info.align_offset = pgoff << PAGE_SHIFT;
 
-Signed-off-by: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
----
- Documentation/devicetree/bindings/net/fsl-tsec-phy.txt | 16 +++++++++++++++-
- drivers/net/ethernet/freescale/gianfar_ptp.c           |  4 +++-
- 2 files changed, 18 insertions(+), 2 deletions(-)
+>  	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+>  	info.length = len;
+> -	info.low_limit = PAGE_SIZE;
+> +	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+>  	info.high_limit = mm->mmap_base;
+>  	info.align_mask = filp ? get_align_mask() : 0;
+>  	info.align_offset = pgoff << PAGE_SHIFT;
 
-diff --git a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-index 2c6be03..eb06059 100644
---- a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-+++ b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-@@ -86,6 +86,7 @@ General Properties:
- 
- Clock Properties:
- 
-+  - fsl,cksel        Timer reference clock source.
-   - fsl,tclk-period  Timer reference clock period in nanoseconds.
-   - fsl,tmr-prsc     Prescaler, divides the output clock.
-   - fsl,tmr-add      Frequency compensation value.
-@@ -97,7 +98,7 @@ Clock Properties:
-   clock. You must choose these carefully for the clock to work right.
-   Here is how to figure good values:
- 
--  TimerOsc     = system clock               MHz
-+  TimerOsc     = selected reference clock   MHz
-   tclk_period  = desired clock period       nanoseconds
-   NominalFreq  = 1000 / tclk_period         MHz
-   FreqDivRatio = TimerOsc / NominalFreq     (must be greater that 1.0)
-@@ -114,6 +115,18 @@ Clock Properties:
-   Pulse Per Second (PPS) signal, since this will be offered to the PPS
-   subsystem to synchronize the Linux clock.
- 
-+  "fsl,cksel" property allows to select different reference clock
-+  sources:
-+
-+  <0> - external high precision timer reference clock (TSEC_TMR_CLK
-+        input is used for this purpose);
-+  <1> - eTSEC system clock;
-+  <2> - eTSEC1 transmit clock;
-+  <3> - RTC clock input.
-+
-+  When this attribute is not used, eTSEC system clock will serve as
-+  IEEE 1588 timer reference clock.
-+
- Example:
- 
- 	ptp_clock@24E00 {
-@@ -121,6 +134,7 @@ Example:
- 		reg = <0x24E00 0xB0>;
- 		interrupts = <12 0x8 13 0x8>;
- 		interrupt-parent = < &ipic >;
-+		fsl,cksel       = <1>;
- 		fsl,tclk-period = <10>;
- 		fsl,tmr-prsc    = <100>;
- 		fsl,tmr-add     = <0x999999A4>;
-diff --git a/drivers/net/ethernet/freescale/gianfar_ptp.c b/drivers/net/ethernet/freescale/gianfar_ptp.c
-index 098f133..e006a09 100644
---- a/drivers/net/ethernet/freescale/gianfar_ptp.c
-+++ b/drivers/net/ethernet/freescale/gianfar_ptp.c
-@@ -452,7 +452,9 @@ static int gianfar_ptp_probe(struct platform_device *dev)
- 	err = -ENODEV;
- 
- 	etsects->caps = ptp_gianfar_caps;
--	etsects->cksel = DEFAULT_CKSEL;
-+
-+	if (get_of_u32(node, "fsl,cksel", &etsects->cksel))
-+		etsects->cksel = DEFAULT_CKSEL;
- 
- 	if (get_of_u32(node, "fsl,tclk-period", &etsects->tclk_period) ||
- 	    get_of_u32(node, "fsl,tmr-prsc", &etsects->tmr_prsc) ||
--- 
-1.8.1.2
+There appears to be a lot of repetition in these methods - instead of 
+changing 6 places it would be more future-proof to first factor out the 
+common bits and then to apply the fix to the shared implementation.
+
+Thanks,
+
+	Ingo
