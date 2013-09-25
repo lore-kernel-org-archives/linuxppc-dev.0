@@ -1,19 +1,34 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 43C4D2C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 06:26:16 +1000 (EST)
-Date: Wed, 25 Sep 2013 13:26:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: build failure after merge of the akpm tree
-Message-Id: <20130925132612.d1685bc8fb72558eef6fb09d@linux-foundation.org>
-In-Reply-To: <20130925110643.db5fa154bea3838ed6affa45@canb.auug.org.au>
-References: <20130925110643.db5fa154bea3838ed6affa45@canb.auug.org.au>
+Return-Path: <toshi.kani@hp.com>
+Received: from g4t0017.houston.hp.com (g4t0017.houston.hp.com [15.201.24.20])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "smtp.hp.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 561A62C016B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 06:47:02 +1000 (EST)
+Message-ID: <1380141899.14046.18.camel@misato.fc.hp.com>
+Subject: Re: [PATCH v2 4/4] hotplug, powerpc, x86: Remove
+ cpu_hotplug_driver_lock()
+From: Toshi Kani <toshi.kani@hp.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Wed, 25 Sep 2013 14:44:59 -0600
+In-Reply-To: <7232059.d6LGFPRAoP@vostro.rjw.lan>
+References: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
+ <1377822129-4143-5-git-send-email-toshi.kani@hp.com>
+ <7232059.d6LGFPRAoP@vostro.rjw.lan>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
- Sergei Trofimovich <slyfox@gentoo.org>, linux-next@vger.kernel.org,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Timur Tabi <timur@freescale.com>
+Cc: "fenghua.yu@intel.com" <fenghua.yu@intel.com>, "bp@suse.de" <bp@suse.de>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ "isimatu.yasuaki@jp.fujitsu.com" <isimatu.yasuaki@jp.fujitsu.com>,
+ "mingo@redhat.com" <mingo@redhat.com>,
+ "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>,
+ "nfont@linux.vnet.ibm.com" <nfont@linux.vnet.ibm.com>,
+ "tglx@linutronix.de" <tglx@linutronix.de>,
+ "hpa@linux.intel.com" <hpa@linux.intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,61 +38,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 25 Sep 2013 11:06:43 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> Hi Andrew,
+On Wed, 2013-09-25 at 08:27 +0000, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> After merging the akpm tree, linux-next builds (powerpc allmodconfig)
-> fail like this:
-
-I can't get powerpc to build at all at present:
-
-  CHK     include/config/kernel.release
-  CHK     include/generated/uapi/linux/version.h
-  CHK     include/generated/utsrelease.h
-  CC      arch/powerpc/kernel/asm-offsets.s
-In file included from include/linux/vtime.h:6,
-                 from include/linux/hardirq.h:7,
-                 from include/linux/memcontrol.h:24,
-                 from include/linux/swap.h:8,
-                 from include/linux/suspend.h:4,
-                 from arch/powerpc/kernel/asm-offsets.c:24:
-arch/powerpc/include/generated/asm/vtime.h:1:31: error: asm-generic/vtime.h: No such file or directory
-
-> drivers/tty/ehv_bytechan.c:362:1: error: type defaults to 'int' in declaration of 'console_initcall' [-Werror=implicit-int]
+> On Thursday, August 29, 2013 06:22:09 PM Toshi Kani wrote:
+> > cpu_hotplug_driver_lock() serializes CPU online/offline operations
+> > when ARCH_CPU_PROBE_RELEASE is set.  This lock interface is no longer
+> > necessary with the following reason:
+> > 
+> >  - lock_device_hotplug() now protects CPU online/offline operations,
+> >    including the probe & release interfaces enabled by
+> >    ARCH_CPU_PROBE_RELEASE.  The use of cpu_hotplug_driver_lock() is
+> >    redundant.
+> >  - cpu_hotplug_driver_lock() is only valid when ARCH_CPU_PROBE_RELEASE
+> >    is defined, which is misleading and is only enabled on powerpc.
+> > 
+> > This patch removes the cpu_hotplug_driver_lock() interface.  As
+> > a result, ARCH_CPU_PROBE_RELEASE only enables / disables the cpu
+> > probe & release interface as intended.  There is no functional change
+> > in this patch.
+> > 
+> > Signed-off-by: Toshi Kani <toshi.kani@hp.com>
+> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 > 
-> Caused by commit 0f01cf96c2d4 ("./Makefile: enable -Werror=implicit-int
-> and -Werror=strict-prototypes by default") which has bee in linux-next
-> since Aug 16.  This commit exposed that fact that
-> drivers/tty/ehv_bytechan.c can be built as a module, but has a
-> console_initcall (which is not available to modules).  This was
-> originally introduced in commit dcd83aaff1c8 ("tty/powerpc: introduce the
-> ePAPR embedded hypervisor byte channel driver") in v3.2.
-> 
-> Anyone got a good solution?
+> Can you please rebase this patch on top of 3.12-rc2?  It doesn't apply for
+> me any more.
 
-console_initcall() is a macro defined in init.h.  But we forgot to
-provide a version for #ifdef MODULE.
+Yes, I will send this patch on top of 3.12-rc2.
 
-At include/linux/init.h line 284 we see:
-
-/* Don't use these in loadable modules, but some people do... */
-#define early_initcall(fn)		module_init(fn)
-#define core_initcall(fn)		module_init(fn)
-...
-
-So we *could* add console_initcall() there.  But the problem is that it
-won't work as desired - when the driver is loaded as a module,
-ehv_bc_console_init() will be called at modprobe time, which is far far
-later than console_initcall-time.
-
-So the ehv_bytechan.c developers need to work out what they want to do
-here.  Do we disallow building that driver as a module?  Or do we
-permit that, and run ehv_bc_console_init() at modprobe time (needs
-testing!).
-
-If the latter then I'd be reluctant to add a modular version of
-console_initcall() because the thing's very presence is misleading. 
-otoh, drivers which use such a console_initcall() _might_ work, and
-everyone tests their drivers both built-in and as modules, don't they? 
-Don't they?
+Thanks,
+-Toshi
