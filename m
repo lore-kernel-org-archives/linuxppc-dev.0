@@ -1,15 +1,15 @@
 Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id D775D2C012E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 02:40:37 +1000 (EST)
-Message-ID: <1380127227.3030.316.camel@ul30vt.home>
-Subject: Re: [PATCH 5/7] iommu: supress loff_t compilation error on powerpc
+ by ozlabs.org (Postfix) with ESMTP id 94C202C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 02:45:45 +1000 (EST)
+Message-ID: <1380127533.3030.319.camel@ul30vt.home>
+Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a device
 From: Alex Williamson <alex.williamson@redhat.com>
 To: Bharat Bhushan <r65777@freescale.com>
-Date: Wed, 25 Sep 2013 10:40:27 -0600
-In-Reply-To: <1379575763-2091-6-git-send-email-Bharat.Bhushan@freescale.com>
+Date: Wed, 25 Sep 2013 10:45:33 -0600
+In-Reply-To: <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
 References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1379575763-2091-6-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: agraf@suse.de, linux-pci@vger.kernel.org, joro@8bytes.org,
@@ -26,24 +26,71 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, 2013-09-19 at 12:59 +0530, Bharat Bhushan wrote:
+> This api return the iommu domain to which the device is attached.
+> The iommu_domain is required for making API calls related to iommu.
+> Follow up patches which use this API to know iommu maping.
+> 
 > Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 > ---
->  drivers/vfio/pci/vfio_pci_rdwr.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+>  drivers/iommu/iommu.c |   10 ++++++++++
+>  include/linux/iommu.h |    7 +++++++
+>  2 files changed, 17 insertions(+), 0 deletions(-)
 > 
-> diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c b/drivers/vfio/pci/vfio_pci_rdwr.c
-> index 210db24..8a8156a 100644
-> --- a/drivers/vfio/pci/vfio_pci_rdwr.c
-> +++ b/drivers/vfio/pci/vfio_pci_rdwr.c
-> @@ -181,7 +181,8 @@ ssize_t vfio_pci_vga_rw(struct vfio_pci_device *vdev, char __user *buf,
->  			       size_t count, loff_t *ppos, bool iswrite)
->  {
->  	int ret;
-> -	loff_t off, pos = *ppos & VFIO_PCI_OFFSET_MASK;
-> +	loff_t off;
-> +	u64 pos = (u64 )(*ppos & VFIO_PCI_OFFSET_MASK);
->  	void __iomem *iomem = NULL;
->  	unsigned int rsrc;
->  	bool is_ioport;
+> diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
+> index fbe9ca7..6ac5f50 100644
+> --- a/drivers/iommu/iommu.c
+> +++ b/drivers/iommu/iommu.c
+> @@ -696,6 +696,16 @@ void iommu_detach_device(struct iommu_domain *domain, struct device *dev)
+>  }
+>  EXPORT_SYMBOL_GPL(iommu_detach_device);
+>  
+> +struct iommu_domain *iommu_get_dev_domain(struct device *dev)
+> +{
+> +	struct iommu_ops *ops = dev->bus->iommu_ops;
+> +
+> +	if (unlikely(ops == NULL || ops->get_dev_iommu_domain == NULL))
+> +		return NULL;
+> +
+> +	return ops->get_dev_iommu_domain(dev);
+> +}
+> +EXPORT_SYMBOL_GPL(iommu_get_dev_domain);
 
-What's the compile error that this fixes?
+What prevents this from racing iommu_domain_free()?  There's no
+references acquired, so there's no reason for the caller to assume the
+pointer is valid.
+
+>  /*
+>   * IOMMU groups are really the natrual working unit of the IOMMU, but
+>   * the IOMMU API works on domains and devices.  Bridge that gap by
+> diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+> index 7ea319e..fa046bd 100644
+> --- a/include/linux/iommu.h
+> +++ b/include/linux/iommu.h
+> @@ -127,6 +127,7 @@ struct iommu_ops {
+>  	int (*domain_set_windows)(struct iommu_domain *domain, u32 w_count);
+>  	/* Get the numer of window per domain */
+>  	u32 (*domain_get_windows)(struct iommu_domain *domain);
+> +	struct iommu_domain *(*get_dev_iommu_domain)(struct device *dev);
+>  
+>  	unsigned long pgsize_bitmap;
+>  };
+> @@ -190,6 +191,7 @@ extern int iommu_domain_window_enable(struct iommu_domain *domain, u32 wnd_nr,
+>  				      phys_addr_t offset, u64 size,
+>  				      int prot);
+>  extern void iommu_domain_window_disable(struct iommu_domain *domain, u32 wnd_nr);
+> +extern struct iommu_domain *iommu_get_dev_domain(struct device *dev);
+>  /**
+>   * report_iommu_fault() - report about an IOMMU fault to the IOMMU framework
+>   * @domain: the iommu domain where the fault has happened
+> @@ -284,6 +286,11 @@ static inline void iommu_domain_window_disable(struct iommu_domain *domain,
+>  {
+>  }
+>  
+> +static inline struct iommu_domain *iommu_get_dev_domain(struct device *dev)
+> +{
+> +	return NULL;
+> +}
+> +
+>  static inline phys_addr_t iommu_iova_to_phys(struct iommu_domain *domain, dma_addr_t iova)
+>  {
+>  	return 0;
