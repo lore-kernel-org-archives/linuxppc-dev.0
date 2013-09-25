@@ -1,26 +1,17 @@
-Return-Path: <R65777@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9F0B42C00C9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 13:42:50 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH v4 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0
- define
-Date: Wed, 25 Sep 2013 03:42:40 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0717F7DC@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1380014871-22937-1-git-send-email-dongsheng.wang@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0717DD00@039-SN2MPN1-011.039d.mgd.msft.net>
- <D3D5E237-6C31-424C-A340-E79F6AF5B0B2@kernel.crashing.org>
-In-Reply-To: <D3D5E237-6C31-424C-A340-E79F6AF5B0B2@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Wang Dongsheng-B40534 <B40534@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A0AD42C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 14:06:17 +1000 (EST)
+Message-ID: <1380081964.5443.79.camel@pasglop>
+Subject: [PATCH] powerpc/pseries: Do not start secondaries in Open Firmware
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 25 Sep 2013 14:06:04 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,89 +21,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Starting secondary CPUs early on from Open Firmware and placing them
+in a holding spin loop slows down the boot process significantly under
+some hypervisors such as KVM.
 
+This is also unnecessary when RTAS supports querying the CPU state
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Tuesday, September 24, 2013 9:19 PM
-> To: Bhushan Bharat-R65777
-> Cc: Wang Dongsheng-B40534; Wood Scott-B07421; linuxppc-dev@lists.ozlabs.o=
-rg
-> Subject: Re: [PATCH v4 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0=
- define
->=20
->=20
-> On Sep 24, 2013, at 6:21 AM, Bhushan Bharat-R65777 wrote:
->=20
-> >
-> >
-> >> -----Original Message-----
-> >> From: Linuxppc-dev [mailto:linuxppc-dev-
-> >> bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
-> >> bounces+Dongsheng
-> >> Wang
-> >> Sent: Tuesday, September 24, 2013 2:58 PM
-> >> To: Wood Scott-B07421
-> >> Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> >> Subject: [PATCH v4 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0
-> >> define
-> >>
-> >> From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> >>
-> >> E6500 PVR and SPRN_PWRMGTCR0 will be used in subsequent pw20/altivec
-> >> idle patches.
-> >>
-> >> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> >> ---
-> >> *v3:
-> >> Add bit definitions for PWRMGTCR0.
-> >>
-> >> arch/powerpc/include/asm/reg.h       | 2 ++
-> >> arch/powerpc/include/asm/reg_booke.h | 9 +++++++++
-> >> 2 files changed, 11 insertions(+)
-> >>
-> >> diff --git a/arch/powerpc/include/asm/reg.h
-> >> b/arch/powerpc/include/asm/reg.h index 64264bf..d4160ca 100644
-> >> --- a/arch/powerpc/include/asm/reg.h
-> >> +++ b/arch/powerpc/include/asm/reg.h
-> >> @@ -1053,6 +1053,8 @@
-> >> #define PVR_8560	0x80200000
-> >> #define PVR_VER_E500V1	0x8020
-> >> #define PVR_VER_E500V2	0x8021
-> >> +#define PVR_VER_E6500	0x8040
-> >> +
-> >> /*
-> >>  * For the 8xx processors, all of them report the same PVR family for
-> >>  * the PowerPC core. The various versions of these processors must be
-> >> diff -- git a/arch/powerpc/include/asm/reg_booke.h
-> >> b/arch/powerpc/include/asm/reg_booke.h
-> >> index ed8f836..4a6457e 100644
-> >> --- a/arch/powerpc/include/asm/reg_booke.h
-> >> +++ b/arch/powerpc/include/asm/reg_booke.h
-> >> @@ -170,6 +170,7 @@
-> >> #define SPRN_L2CSR1	0x3FA	/* L2 Data Cache Control and Status Register=
- 1
-> >> */
-> >> #define SPRN_DCCR	0x3FA	/* Data Cache Cacheability Register */
-> >> #define SPRN_ICCR	0x3FB	/* Instruction Cache Cacheability Register */
-> >> +#define SPRN_PWRMGTCR0	0x3FB	/* Power management control register 0 *=
-/
-> >
-> > Is this generic for booke or e6500 specific? I can't see this register =
-either
-> in ISA and EREF.
-> > Also I can see SPRN_ICCR also with same SPRN, how that is possible?
->=20
-> Its possibly because the register maybe in implementation specific region=
-.  I'm
-> guessing ICCR is a 40x specific register.
+So let's not do it.
 
-Kumar, this seems to create confusion? Although I do not like so many heade=
-r files but still I think we can have reg_4xx.h, reg_fsl_booke.h etc for im=
-plementation specific definitions.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/prom_init.c      | 21 +++++++++++++++++++++
+ arch/powerpc/platforms/pseries/smp.c | 26 ++++++++++++++++----------
+ 2 files changed, 37 insertions(+), 10 deletions(-)
 
--Bharat
-
->=20
-> - k
->=20
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 12e656f..5fe2842 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -196,6 +196,8 @@ static int __initdata mem_reserve_cnt;
+ 
+ static cell_t __initdata regbuf[1024];
+ 
++static bool rtas_has_query_cpu_stopped;
++
+ 
+ /*
+  * Error results ... some OF calls will return "-1" on error, some
+@@ -1574,6 +1576,11 @@ static void __init prom_instantiate_rtas(void)
+ 	prom_setprop(rtas_node, "/rtas", "linux,rtas-entry",
+ 		     &val, sizeof(val));
+ 
++	/* Check if it supports "query-cpu-stopped-state" */
++	if (prom_getprop(rtas_node, "query-cpu-stopped-state",
++			 &val, sizeof(val)) != PROM_ERROR)
++		rtas_has_query_cpu_stopped = true;
++
+ #if defined(CONFIG_PPC_POWERNV) && defined(__BIG_ENDIAN__)
+ 	/* PowerVN takeover hack */
+ 	prom_rtas_data = base;
+@@ -1815,6 +1822,18 @@ static void __init prom_hold_cpus(void)
+ 		= (void *) LOW_ADDR(__secondary_hold_acknowledge);
+ 	unsigned long secondary_hold = LOW_ADDR(__secondary_hold);
+ 
++	/*
++	 * On pseries, if RTAS supports "query-cpu-stopped-state",
++	 * we skip this stage, the CPUs will be started by the
++	 * kernel using RTAS.
++	 */
++	if ((of_platform == PLATFORM_PSERIES ||
++	     of_platform == PLATFORM_PSERIES_LPAR) &&
++	    rtas_has_query_cpu_stopped) {
++		prom_printf("prom_hold_cpus: skipped\n");
++		return;
++	}
++
+ 	prom_debug("prom_hold_cpus: start...\n");
+ 	prom_debug("    1) spinloop       = 0x%x\n", (unsigned long)spinloop);
+ 	prom_debug("    1) *spinloop      = 0x%x\n", *spinloop);
+@@ -3011,6 +3030,8 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
+ 	 * On non-powermacs, put all CPUs in spin-loops.
+ 	 *
+ 	 * PowerMacs use a different mechanism to spin CPUs
++	 *
++	 * (This must be done after instanciating RTAS)
+ 	 */
+ 	if (of_platform != PLATFORM_POWERMAC &&
+ 	    of_platform != PLATFORM_OPAL)
+diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+index 1c1771a..24f58cb 100644
+--- a/arch/powerpc/platforms/pseries/smp.c
++++ b/arch/powerpc/platforms/pseries/smp.c
+@@ -233,18 +233,24 @@ static void __init smp_init_pseries(void)
+ 
+ 	alloc_bootmem_cpumask_var(&of_spin_mask);
+ 
+-	/* Mark threads which are still spinning in hold loops. */
+-	if (cpu_has_feature(CPU_FTR_SMT)) {
+-		for_each_present_cpu(i) { 
+-			if (cpu_thread_in_core(i) == 0)
+-				cpumask_set_cpu(i, of_spin_mask);
+-		}
+-	} else {
+-		cpumask_copy(of_spin_mask, cpu_present_mask);
++	/*
++	 * Mark threads which are still spinning in hold loops
++	 *
++	 * We know prom_init will not have started them if RTAS supports
++	 * query-cpu-stopped-state.
++	 */
++	if (rtas_token("query-cpu-stopped-state") == RTAS_UNKNOWN_SERVICE) {
++		if (cpu_has_feature(CPU_FTR_SMT)) {
++			for_each_present_cpu(i) {
++				if (cpu_thread_in_core(i) == 0)
++					cpumask_set_cpu(i, of_spin_mask);
++			}
++		} else
++			cpumask_copy(of_spin_mask, cpu_present_mask);
++
++		cpumask_clear_cpu(boot_cpuid, of_spin_mask);
+ 	}
+ 
+-	cpumask_clear_cpu(boot_cpuid, of_spin_mask);
+-
+ 	/* Non-lpar has additional take/give timebase */
+ 	if (rtas_token("freeze-time-base") != RTAS_UNKNOWN_SERVICE) {
+ 		smp_ops->give_timebase = rtas_give_timebase;
