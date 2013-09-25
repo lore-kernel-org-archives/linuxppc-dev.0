@@ -1,23 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 422E92C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 01:52:05 +1000 (EST)
-Subject: Re: [PATCH] powerpc/kvm: Handle the boundary condition correctly
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <87vc1odi10.fsf@linux.vnet.ibm.com>
-Date: Wed, 25 Sep 2013 17:51:58 +0200
-Message-Id: <9E72F2C3-04DB-4B0B-B195-2E3442981BB7@suse.de>
-References: <1377171479-25738-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1683D101-052D-4BEB-8ED1-6F32C6904850@suse.de>
- <87haeh13s2.fsf@linux.vnet.ibm.com>
- <527D8312-EA18-4962-9069-B54FA738F5FA@suse.de>
- <87wqn9dtbi.fsf@linux.vnet.ibm.com>
- <932EC6E7-BC15-474F-9E8B-4321B2126BE4@suse.de>
- <87k3j8ejjq.fsf@linux.vnet.ibm.com> <87vc1odi10.fsf@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id D775D2C012E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 02:40:37 +1000 (EST)
+Message-ID: <1380127227.3030.316.camel@ul30vt.home>
+Subject: Re: [PATCH 5/7] iommu: supress loff_t compilation error on powerpc
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Bharat Bhushan <r65777@freescale.com>
+Date: Wed, 25 Sep 2013 10:40:27 -0600
+In-Reply-To: <1379575763-2091-6-git-send-email-Bharat.Bhushan@freescale.com>
+References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379575763-2091-6-git-send-email-Bharat.Bhushan@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: agraf@suse.de, linux-pci@vger.kernel.org, joro@8bytes.org,
+ linux-kernel@vger.kernel.org, Bharat Bhushan <Bharat.Bhushan@freescale.com>,
+ iommu@lists.linux-foundation.org, scottwood@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2013-09-19 at 12:59 +0530, Bharat Bhushan wrote:
+> Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+> ---
+>  drivers/vfio/pci/vfio_pci_rdwr.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c b/drivers/vfio/pci/vfio_pci_rdwr.c
+> index 210db24..8a8156a 100644
+> --- a/drivers/vfio/pci/vfio_pci_rdwr.c
+> +++ b/drivers/vfio/pci/vfio_pci_rdwr.c
+> @@ -181,7 +181,8 @@ ssize_t vfio_pci_vga_rw(struct vfio_pci_device *vdev, char __user *buf,
+>  			       size_t count, loff_t *ppos, bool iswrite)
+>  {
+>  	int ret;
+> -	loff_t off, pos = *ppos & VFIO_PCI_OFFSET_MASK;
+> +	loff_t off;
+> +	u64 pos = (u64 )(*ppos & VFIO_PCI_OFFSET_MASK);
+>  	void __iomem *iomem = NULL;
+>  	unsigned int rsrc;
+>  	bool is_ioport;
 
-On 25.09.2013, at 17:42, Aneesh Kumar K.V wrote:
-
->=20
-> Hi Alex,
->=20
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->>>>> Ok, please give me an example with real numbers and why it breaks.
->>>>>=20
->>>>>>=20
->>>>>> =
-http://mid.gmane.org/1376995766-16526-4-git-send-email-aneesh.kumar@linux.=
-vnet.ibm.com
->>>>>>=20
->>>>=20
->>>> Didn't quiet get what you are looking for. As explained before, we =
-now
->>>> need to pass an array with array size 3 even though we know we need =
-to
->>>> read only 2 entries because kernel doesn't loop correctly.
->>>=20
->>> But we need to do that regardless, because newer QEMU needs to be =
-able to run on older kernels, no?
->>>=20
->>=20
->> yes. So use space will have to pass an array of size 3. But that =
-should
->> not prevent us from fixing this right ?
->>=20
->=20
-> Do we still want this patch or should I drop this ?
-
-If we really want it we need to be able to tell user space that we =
-support this feature through a CAP, so that it can act accordingly. =
-Given the additional complexity of this and the fact that we do want to =
-support older KVM versions regardless, I don't think it's worth the =
-hassle.
-
-
-Alex
+What's the compile error that this fixes?
