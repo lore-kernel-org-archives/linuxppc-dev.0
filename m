@@ -1,28 +1,24 @@
-Return-Path: <timothy.c.pepper@linux.intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id DD9DC2C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 03:12:58 +1000 (EST)
-From: "Timothy Pepper" <timothy.c.pepper@linux.intel.com>
-Date: Wed, 25 Sep 2013 10:12:43 -0700
-To: Ingo Molnar <mingo@kernel.org>
-Subject: Re: mm: insure topdown mmap chooses addresses above security minimum
-Message-ID: <20130925171243.GA7428@tcpepper-desk.jf.intel.com>
-References: <1380057811-5352-1-git-send-email-timothy.c.pepper@linux.intel.com>
- <20130925073048.GB27960@gmail.com>
+Return-Path: <richardcochran@gmail.com>
+Received: from mail-ea0-x233.google.com (mail-ea0-x233.google.com
+ [IPv6:2a00:1450:4013:c01::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B7D7C2C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 03:13:51 +1000 (EST)
+Received: by mail-ea0-f179.google.com with SMTP id b10so3297911eae.24
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 10:13:47 -0700 (PDT)
+Date: Wed, 25 Sep 2013 19:13:38 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
+Subject: Re: [PATCH v2] powerpc/83xx: gianfar_ptp: select 1588 clock source
+ through dts file
+Message-ID: <20130925170904.GC4333@netboy>
+References: <1380093863-5388-1-git-send-email-aida.mynzhasova@skitlab.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130925073048.GB27960@gmail.com>
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, Michel Lespinasse <walken@google.com>,
- Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, Rik van Riel <riel@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>, James Morris <james.l.morris@oracle.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, Ralf Baechle <ralf@linux-mips.org>,
- Paul Mundt <lethal@linux-sh.org>, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <1380093863-5388-1-git-send-email-aida.mynzhasova@skitlab.ru>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,73 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 25 Sep at 09:30:49 +0200 mingo@kernel.org said:
-> >  	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
-> >  	info.length = len;
-> > -	info.low_limit = PAGE_SIZE;
-> > +	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
-> >  	info.high_limit = mm->mmap_base;
-> >  	info.align_mask = filp ? get_align_mask() : 0;
-> >  	info.align_offset = pgoff << PAGE_SHIFT;
-> 
-> There appears to be a lot of repetition in these methods - instead of 
-> changing 6 places it would be more future-proof to first factor out the 
-> common bits and then to apply the fix to the shared implementation.
+On Wed, Sep 25, 2013 at 11:24:23AM +0400, Aida Mynzhasova wrote:
+> Currently IEEE 1588 timer reference clock source is determined through
+> hard-coded value in gianfar_ptp driver. This patch allows to select ptp
+> clock source by means of device tree file node.
 
-Besides that existing redundancy in the multiple somewhat similar
-arch_get_unmapped_area_topdown() functions, I was expecting people might
-question the added redundancy of the six instances of:
+Looks okay to me now.
 
-	max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
-
-There's also a seventh similar instance if you consider
-mm/mmap.c:round_hint_to_min() and its call stack.  I'm inclined to
-think mmap_min_addr should be validated/aligned in one place, namely on
-initialization and input in security/min_addr.c:update_mmap_min_addr(),
-with mmap_min_addr always stored as an aligned value.
-
-In the past commit 40401530 Al Viro arguably moved that checking out
-of the security code and toward the mmap code.  Granted at that point
-though there was only the round_hint_to_min() insuring the value in
-mmap_min_addr was page aligned before use in that call path.  I'm thinking
-something like:
-
-diff --git a/security/min_addr.c b/security/min_addr.c
---- a/security/min_addr.c
-+++ b/security/min_addr.c
-@@ -14,14 +14,16 @@ unsigned long dac_mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
-  */
- static void update_mmap_min_addr(void)
- {
-+	unsigned long addr;
- #ifdef CONFIG_LSM_MMAP_MIN_ADDR
- 	if (dac_mmap_min_addr > CONFIG_LSM_MMAP_MIN_ADDR)
--		mmap_min_addr = dac_mmap_min_addr;
-+		addr = dac_mmap_min_addr;
- 	else
--		mmap_min_addr = CONFIG_LSM_MMAP_MIN_ADDR;
-+		addr = CONFIG_LSM_MMAP_MIN_ADDR;
- #else
--	mmap_min_addr = dac_mmap_min_addr;
-+	addr = dac_mmap_min_addr;
- #endif
-+	mmap_min_addr = max(PAGE_SIZE, PAGE_ALIGN(addr));
- }
- 
- /*
-
-But this possibly has implications beyond the mmap code.
-
-Al Viro, James Morris: any thoughts on the above?
-
-Michel, Rik: what do you think of common helpers called by
-ARM, MIPS, SH, Sparc, x86_64 arch_get_unmapped_area_topdown()
-and arch_get_unmapped_area() to handle initialization of struct
-vm_unmapped_area_info info fields which are currently mostly common?
-Given the nuances of "mostly common" I'm not sure the result would
-actually be positive for overall readability / self-documenting-ness of
-the per arch files.
-
--- 
-Tim Pepper <timothy.c.pepper@linux.intel.com>
-Intel Open Source Technology Center
+Acked-by: Richard Cochran <richardcochran@gmail.com>
