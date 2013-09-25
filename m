@@ -1,27 +1,31 @@
-Return-Path: <B45939@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+Return-Path: <B40534@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7AFE62C0085
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 17:35:53 +1000 (EST)
-Message-ID: <52429252.10009@freescale.com>
-Date: Wed, 25 Sep 2013 15:35:46 +0800
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id D16742C00CC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 18:10:16 +1000 (EST)
+Received: from mail112-co9 (localhost [127.0.0.1])	by
+ mail112-co9-R.bigfish.com (Postfix) with ESMTP id CB68E6C006D	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 08:10:12 +0000 (UTC)
+Received: from CO9EHSMHS009.bigfish.com (unknown [10.236.132.225])	by
+ mail112-co9.bigfish.com (Postfix) with ESMTP id CC26F940041	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 08:10:09 +0000 (UTC)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+ altivec idle
+Date: Wed, 25 Sep 2013 08:10:07 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F154392590108FF41@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1380014925-23300-2-git-send-email-dongsheng.wang@freescale.com>
+ <1380014925-23300-4-git-send-email-dongsheng.wang@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0717F8F9@039-SN2MPN1-011.039d.mgd.msft.net>
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0717F8F9@039-SN2MPN1-011.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH v10 2/3] DMA: Freescale: Add new 8-channel DMA engine
- device tree nodes
-References: <1379499333-4745-1-git-send-email-hongbo.zhang@freescale.com>
- <1379499333-4745-3-git-send-email-hongbo.zhang@freescale.com>
- <524074A7.7000001@wwwdotorg.org> <524169E3.7030408@freescale.com>
- <5241CC60.5070204@wwwdotorg.org>
-In-Reply-To: <5241CC60.5070204@wwwdotorg.org>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, ian.campbell@citrix.com,
- pawel.moll@arm.com, vinod.koul@intel.com, linux-kernel@vger.kernel.org,
- rob.herring@calxeda.com, djbw@fb.com, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,51 +35,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/25/2013 01:31 AM, Stephen Warren wrote:
-> On 09/24/2013 04:30 AM, Hongbo Zhang wrote:
->> On 09/24/2013 01:04 AM, Stephen Warren wrote:
->>> On 09/18/2013 04:15 AM, hongbo.zhang@freescale.com wrote:
->>>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
->>>>
->>>> Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this
->>>> patch adds
->>>> the device tree nodes for them.
->>>> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
->>>> b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
->>>> +Required properties:
->>>> +
->>>> +- compatible        : must include "fsl,elo3-dma"
->>>> +- reg               : DMA General Status Registers, i.e. DGSR0 which
->>>> contains
->>>> +                      status for channel 1~4, and DGSR1 for channel 5~8
->>> Is that a single entry, which is large enough to cover both registers,
->>> or a pair of entries, one per register? Reading the text, I might assume
->>> the former, but looking at the examples, it's the latter.
->> My impression is that I cannot tell it is one larger entry or two
->> entries by reading the description text, but the example gives the answer.
->> Is it so important to specify it is only one entry or entries list?
->> I prefer language as concise as possible, especially for the common
->> properties such as reg and interrupt (eg the reg is implicitly offset
->> and length of registers, can be continuous or not), it is difficult or
->> unnecessary or impossible to describe much details, the example can also
->> work as a complementary description, otherwise no need to put an example
->> in the binding document.
-> The description of the properties should fully describe them. The
-> example is just an example, not a specification of the properties.
->
-It is OK for me to update the description like this:
-reg:    containing two entries for DMA General Status Registers, i.e. 
-DGSR0 which contains + status for channel 1~4, and DGSR1 for channel 5~8
 
-and let me wait one or more days to see if other reviewers/maintainers 
-have further comments before I send our another iteration.
 
-By the way, I know maybe it is difficult, but why not introduce a 
-document of maintaining rules for the dt binding docs? we have dedicated 
-maintainers for this part now. Description language from one submitter 
-cannot satisfy every reviewer/maintainer, for a reg property, is it 
-necessary to say "offset and length", to say "how many entries", to say 
-"register functions and even names"? If there is specific rules (even 
-with good examples), it will be convenient for both submitter and 
-reviewers. Without rules/guidelines, new submitter would like to follow 
-old bad samples.
+> -----Original Message-----
+> From: Bhushan Bharat-R65777
+> Sent: Wednesday, September 25, 2013 2:23 PM
+> To: Wang Dongsheng-B40534; Wood Scott-B07421
+> Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+> altivec idle
+>=20
+>=20
+>=20
+> > -----Original Message-----
+> > From: Linuxppc-dev [mailto:linuxppc-dev-
+> > bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
+> > bounces+Dongsheng
+> > Wang
+> > Sent: Tuesday, September 24, 2013 2:59 PM
+> > To: Wood Scott-B07421
+> > Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> > Subject: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+> > altivec idle
+> >
+> > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> >
+> > Add a sys interface to enable/diable pw20 state or altivec idle, and
+> > control the wait entry time.
+> >
+> > Enable/Disable interface:
+> > 0, disable. 1, enable.
+> > /sys/devices/system/cpu/cpuX/pw20_state
+> > /sys/devices/system/cpu/cpuX/altivec_idle
+> >
+> > Set wait time interface:(Nanosecond)
+> > /sys/devices/system/cpu/cpuX/pw20_wait_time
+> > /sys/devices/system/cpu/cpuX/altivec_idle_wait_time
+> > Example: Base on TBfreq is 41MHZ.
+> > 1~47(ns): TB[63]
+> > 48~95(ns): TB[62]
+> > 96~191(ns): TB[61]
+> > 192~383(ns): TB[62]
+> > 384~767(ns): TB[60]
+> > ...
+> >
+> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > ---
+> > *v4:
+> > Move code from 85xx/common.c to kernel/sysfs.c.
+> >
+> > Remove has_pw20_altivec_idle function.
+> >
+> > Change wait "entry_bit" to wait time.
+> >
+> >  arch/powerpc/kernel/sysfs.c | 291
+> > ++++++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 291 insertions(+)
+> >
+> > diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+> > index 27a90b9..23fece6 100644
+> > --- a/arch/powerpc/kernel/sysfs.c
+> > +++ b/arch/powerpc/kernel/sysfs.c
+> > @@ -85,6 +85,279 @@ __setup("smt-snooze-delay=3D",
+> > setup_smt_snooze_delay);
+> >
+> >  #endif /* CONFIG_PPC64 */
+> >
+> > +#ifdef CONFIG_FSL_SOC
+> > +#define MAX_BIT		63
+> > +
+> > +static u64 pw20_wt;
+> > +static u64 altivec_idle_wt;
+> > +
+> > +static unsigned int get_idle_ticks_bit(u64 ns) {
+> > +	u64 cycle;
+> > +
+> > +	cycle =3D div_u64(ns, 1000 / tb_ticks_per_usec);
+>=20
+> When tb_ticks_per_usec  > 1000 (timebase frequency > 1GHz) then this will
+> always be ns, which is not correct, no?
+>=20
+"1000 / tb_ticks_per_usec" means nsec_ticks_per_tb
+
+If timebase frequency > 1GHz, this should be "tb_ticks_per_usec / 1000" and=
+ to get tb_ticks_per_nsec.
+This should be changed to "cycle =3D ns * tb_ticks_per_nsec;"
+
+But at present we do not have such a platform that timebase frequency more =
+than 1GHz. And I think it is not need to support such a situation. Because =
+we have no environment to test it.
+
+If later there will be more than 1GHZ platform at that time to add this sup=
+port.
+
+Thanks.
+
+-dongsheng
