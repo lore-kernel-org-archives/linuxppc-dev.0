@@ -1,23 +1,32 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id 99F112C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 18:23:00 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Toshi Kani <toshi.kani@hp.com>
-Subject: Re: [PATCH v2 4/4] hotplug, powerpc,
- x86: Remove cpu_hotplug_driver_lock()
-Date: Wed, 25 Sep 2013 10:27:49 +0200
-Message-ID: <7232059.d6LGFPRAoP@vostro.rjw.lan>
-In-Reply-To: <1377822129-4143-5-git-send-email-toshi.kani@hp.com>
-References: <1377822129-4143-1-git-send-email-toshi.kani@hp.com>
- <1377822129-4143-5-git-send-email-toshi.kani@hp.com>
+Return-Path: <R65777@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9F5F92C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 18:33:52 +1000 (EST)
+Received: from mail100-va3 (localhost [127.0.0.1])	by
+ mail100-va3-R.bigfish.com (Postfix) with ESMTP id 9BEAD140067	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 08:33:46 +0000 (UTC)
+Received: from VA3EHSMHS020.bigfish.com (unknown [10.7.14.227])	by
+ mail100-va3.bigfish.com (Postfix) with ESMTP id 689161A0041	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 08:33:44 +0000 (UTC)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+ altivec idle
+Date: Wed, 25 Sep 2013 08:33:43 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0717FAF5@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1380014925-23300-2-git-send-email-dongsheng.wang@freescale.com>
+ <1380014925-23300-4-git-send-email-dongsheng.wang@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0717F8F9@039-SN2MPN1-011.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F154392590108FF41@039-SN2MPN1-021.039d.mgd.msft.net>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F154392590108FF41@039-SN2MPN1-021.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: fenghua.yu@intel.com, bp@suse.de, gregkh@linuxfoundation.org,
- x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, mingo@redhat.com,
- srivatsa.bhat@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com, tglx@linutronix.de,
- hpa@linux.intel.com, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,251 +36,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Thursday, August 29, 2013 06:22:09 PM Toshi Kani wrote:
-> cpu_hotplug_driver_lock() serializes CPU online/offline operations
-> when ARCH_CPU_PROBE_RELEASE is set.  This lock interface is no longer
-> necessary with the following reason:
-> 
->  - lock_device_hotplug() now protects CPU online/offline operations,
->    including the probe & release interfaces enabled by
->    ARCH_CPU_PROBE_RELEASE.  The use of cpu_hotplug_driver_lock() is
->    redundant.
->  - cpu_hotplug_driver_lock() is only valid when ARCH_CPU_PROBE_RELEASE
->    is defined, which is misleading and is only enabled on powerpc.
-> 
-> This patch removes the cpu_hotplug_driver_lock() interface.  As
-> a result, ARCH_CPU_PROBE_RELEASE only enables / disables the cpu
-> probe & release interface as intended.  There is no functional change
-> in this patch.
-> 
-> Signed-off-by: Toshi Kani <toshi.kani@hp.com>
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-
-Can you please rebase this patch on top of 3.12-rc2?  It doesn't apply for
-me any more.
-
-Thanks,
-Rafael
 
 
-> ---
-> Performed build test only on powerpc.
-> ---
->  arch/powerpc/kernel/smp.c              |   12 ----------
->  arch/powerpc/platforms/pseries/dlpar.c |   40 ++++++++++++--------------------
->  arch/x86/kernel/topology.c             |    2 --
->  drivers/base/cpu.c                     |   10 +-------
->  include/linux/cpu.h                    |   13 ----------
->  5 files changed, 16 insertions(+), 61 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 38b0ba6..1667269 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -763,18 +763,6 @@ void __cpu_die(unsigned int cpu)
->  		smp_ops->cpu_die(cpu);
->  }
->  
-> -static DEFINE_MUTEX(powerpc_cpu_hotplug_driver_mutex);
-> -
-> -void cpu_hotplug_driver_lock()
-> -{
-> -	mutex_lock(&powerpc_cpu_hotplug_driver_mutex);
-> -}
-> -
-> -void cpu_hotplug_driver_unlock()
-> -{
-> -	mutex_unlock(&powerpc_cpu_hotplug_driver_mutex);
-> -}
-> -
->  void cpu_die(void)
->  {
->  	if (ppc_md.cpu_die)
-> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> index a1a7b9a..e39325d 100644
-> --- a/arch/powerpc/platforms/pseries/dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> @@ -387,18 +387,13 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
->  	char *cpu_name;
->  	int rc;
->  
-> -	cpu_hotplug_driver_lock();
->  	rc = strict_strtoul(buf, 0, &drc_index);
-> -	if (rc) {
-> -		rc = -EINVAL;
-> -		goto out;
-> -	}
-> +	if (rc)
-> +		return -EINVAL;
->  
->  	dn = dlpar_configure_connector(drc_index);
-> -	if (!dn) {
-> -		rc = -EINVAL;
-> -		goto out;
-> -	}
-> +	if (!dn)
-> +		return -EINVAL;
->  
->  	/* configure-connector reports cpus as living in the base
->  	 * directory of the device tree.  CPUs actually live in the
-> @@ -407,8 +402,7 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
->  	cpu_name = kasprintf(GFP_KERNEL, "/cpus%s", dn->full_name);
->  	if (!cpu_name) {
->  		dlpar_free_cc_nodes(dn);
-> -		rc = -ENOMEM;
-> -		goto out;
-> +		return -ENOMEM;
->  	}
->  
->  	kfree(dn->full_name);
-> @@ -417,22 +411,21 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
->  	rc = dlpar_acquire_drc(drc_index);
->  	if (rc) {
->  		dlpar_free_cc_nodes(dn);
-> -		rc = -EINVAL;
-> -		goto out;
-> +		return -EINVAL;
->  	}
->  
->  	rc = dlpar_attach_node(dn);
->  	if (rc) {
->  		dlpar_release_drc(drc_index);
->  		dlpar_free_cc_nodes(dn);
-> -		goto out;
-> +		return rc;
->  	}
->  
->  	rc = dlpar_online_cpu(dn);
-> -out:
-> -	cpu_hotplug_driver_unlock();
-> +	if (rc)
-> +		return rc;
->  
-> -	return rc ? rc : count;
-> +	return count;
->  }
->  
->  static int dlpar_offline_cpu(struct device_node *dn)
-> @@ -505,30 +498,27 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->  		return -EINVAL;
->  	}
->  
-> -	cpu_hotplug_driver_lock();
->  	rc = dlpar_offline_cpu(dn);
->  	if (rc) {
->  		of_node_put(dn);
-> -		rc = -EINVAL;
-> -		goto out;
-> +		return -EINVAL;
->  	}
->  
->  	rc = dlpar_release_drc(*drc_index);
->  	if (rc) {
->  		of_node_put(dn);
-> -		goto out;
-> +		return rc;
->  	}
->  
->  	rc = dlpar_detach_node(dn);
->  	if (rc) {
->  		dlpar_acquire_drc(*drc_index);
-> -		goto out;
-> +		return rc;
->  	}
->  
->  	of_node_put(dn);
-> -out:
-> -	cpu_hotplug_driver_unlock();
-> -	return rc ? rc : count;
-> +
-> +	return count;
->  }
->  
->  static int __init pseries_dlpar_init(void)
-> diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
-> index a3f35eb..649b010 100644
-> --- a/arch/x86/kernel/topology.c
-> +++ b/arch/x86/kernel/topology.c
-> @@ -66,7 +66,6 @@ int __ref _debug_hotplug_cpu(int cpu, int action)
->  		return -EINVAL;
->  
->  	lock_device_hotplug();
-> -	cpu_hotplug_driver_lock();
->  
->  	switch (action) {
->  	case 0:
-> @@ -91,7 +90,6 @@ int __ref _debug_hotplug_cpu(int cpu, int action)
->  		ret = -EINVAL;
->  	}
->  
-> -	cpu_hotplug_driver_unlock();
->  	unlock_device_hotplug();
->  
->  	return ret;
-> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-> index dc78e45..9745f03 100644
-> --- a/drivers/base/cpu.c
-> +++ b/drivers/base/cpu.c
-> @@ -46,8 +46,6 @@ static int __ref cpu_subsys_online(struct device *dev)
->  	int from_nid, to_nid;
->  	int ret;
->  
-> -	cpu_hotplug_driver_lock();
-> -
->  	from_nid = cpu_to_node(cpuid);
->  	ret = cpu_up(cpuid);
->  	/*
-> @@ -58,18 +56,12 @@ static int __ref cpu_subsys_online(struct device *dev)
->  	if (from_nid != to_nid)
->  		change_cpu_under_node(cpu, from_nid, to_nid);
->  
-> -	cpu_hotplug_driver_unlock();
->  	return ret;
->  }
->  
->  static int cpu_subsys_offline(struct device *dev)
->  {
-> -	int ret;
-> -
-> -	cpu_hotplug_driver_lock();
-> -	ret = cpu_down(dev->id);
-> -	cpu_hotplug_driver_unlock();
-> -	return ret;
-> +	return cpu_down(dev->id);
->  }
->  
->  void unregister_cpu(struct cpu *cpu)
-> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-> index 801ff9e..3434ef7 100644
-> --- a/include/linux/cpu.h
-> +++ b/include/linux/cpu.h
-> @@ -185,19 +185,6 @@ extern void cpu_hotplug_enable(void);
->  void clear_tasks_mm_cpumask(int cpu);
->  int cpu_down(unsigned int cpu);
->  
-> -#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-> -extern void cpu_hotplug_driver_lock(void);
-> -extern void cpu_hotplug_driver_unlock(void);
-> -#else
-> -static inline void cpu_hotplug_driver_lock(void)
-> -{
-> -}
-> -
-> -static inline void cpu_hotplug_driver_unlock(void)
-> -{
-> -}
-> -#endif
-> -
->  #else		/* CONFIG_HOTPLUG_CPU */
->  
->  static inline void cpu_hotplug_begin(void) {}
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> -----Original Message-----
+> From: Wang Dongsheng-B40534
+> Sent: Wednesday, September 25, 2013 1:40 PM
+> To: Bhushan Bharat-R65777; Wood Scott-B07421
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and al=
+tivec
+> idle
+>=20
+>=20
+>=20
+> > -----Original Message-----
+> > From: Bhushan Bharat-R65777
+> > Sent: Wednesday, September 25, 2013 2:23 PM
+> > To: Wang Dongsheng-B40534; Wood Scott-B07421
+> > Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> > Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+> > altivec idle
+> >
+> >
+> >
+> > > -----Original Message-----
+> > > From: Linuxppc-dev [mailto:linuxppc-dev-
+> > > bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
+> > > bounces+Dongsheng
+> > > Wang
+> > > Sent: Tuesday, September 24, 2013 2:59 PM
+> > > To: Wood Scott-B07421
+> > > Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> > > Subject: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+> > > altivec idle
+> > >
+> > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > >
+> > > Add a sys interface to enable/diable pw20 state or altivec idle, and
+> > > control the wait entry time.
+> > >
+> > > Enable/Disable interface:
+> > > 0, disable. 1, enable.
+> > > /sys/devices/system/cpu/cpuX/pw20_state
+> > > /sys/devices/system/cpu/cpuX/altivec_idle
+> > >
+> > > Set wait time interface:(Nanosecond)
+> > > /sys/devices/system/cpu/cpuX/pw20_wait_time
+> > > /sys/devices/system/cpu/cpuX/altivec_idle_wait_time
+> > > Example: Base on TBfreq is 41MHZ.
+> > > 1~47(ns): TB[63]
+> > > 48~95(ns): TB[62]
+> > > 96~191(ns): TB[61]
+> > > 192~383(ns): TB[62]
+> > > 384~767(ns): TB[60]
+> > > ...
+> > >
+> > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > ---
+> > > *v4:
+> > > Move code from 85xx/common.c to kernel/sysfs.c.
+> > >
+> > > Remove has_pw20_altivec_idle function.
+> > >
+> > > Change wait "entry_bit" to wait time.
+> > >
+> > >  arch/powerpc/kernel/sysfs.c | 291
+> > > ++++++++++++++++++++++++++++++++++++++++++++
+> > >  1 file changed, 291 insertions(+)
+> > >
+> > > diff --git a/arch/powerpc/kernel/sysfs.c
+> > > b/arch/powerpc/kernel/sysfs.c index 27a90b9..23fece6 100644
+> > > --- a/arch/powerpc/kernel/sysfs.c
+> > > +++ b/arch/powerpc/kernel/sysfs.c
+> > > @@ -85,6 +85,279 @@ __setup("smt-snooze-delay=3D",
+> > > setup_smt_snooze_delay);
+> > >
+> > >  #endif /* CONFIG_PPC64 */
+> > >
+> > > +#ifdef CONFIG_FSL_SOC
+> > > +#define MAX_BIT		63
+> > > +
+> > > +static u64 pw20_wt;
+> > > +static u64 altivec_idle_wt;
+> > > +
+> > > +static unsigned int get_idle_ticks_bit(u64 ns) {
+> > > +	u64 cycle;
+> > > +
+> > > +	cycle =3D div_u64(ns, 1000 / tb_ticks_per_usec);
+> >
+> > When tb_ticks_per_usec  > 1000 (timebase frequency > 1GHz) then this
+> > will always be ns, which is not correct, no?
+> >
+> "1000 / tb_ticks_per_usec" means nsec_ticks_per_tb
+>=20
+> If timebase frequency > 1GHz, this should be "tb_ticks_per_usec / 1000" a=
+nd to
+> get tb_ticks_per_nsec.
+> This should be changed to "cycle =3D ns * tb_ticks_per_nsec;"
+
+Yes, we need to change this to two line.
+
+>=20
+> But at present we do not have such a platform that timebase frequency mor=
+e than
+> 1GHz. And I think it is not need to support such a situation. Because we =
+have no
+> environment to test it.
+>=20
+> If later there will be more than 1GHZ platform at that time to add this s=
+upport.
+
+Would like to leave it to Scott, but personally I think that if there is so=
+mething simple to fix then it must be fixed rather than waiting for some er=
+ror to happen and then fixing.
+
+-Bharat
+
+>=20
+> Thanks.
+>=20
+> -dongsheng
