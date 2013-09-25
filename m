@@ -1,15 +1,32 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 26 Sep 2013 08:31:18 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/kvmbook3s_hv: propagate H_SET_MODE to the host
-Message-ID: <20130925223118.GA2844@iris.ozlabs.ibm.com>
-References: <1379901913-5945-37-git-send-email-anton@samba.org>
- <20130925121027.29504.19269.stgit@nimbus>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 57F892C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 09:09:48 +1000 (EST)
+Received: from mail111-co9 (localhost [127.0.0.1])	by
+ mail111-co9-R.bigfish.com (Postfix) with ESMTP id D0465A40117	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 23:09:43 +0000 (UTC)
+Received: from CO9EHSMHS022.bigfish.com (unknown [10.236.132.239])	by
+ mail111-co9.bigfish.com (Postfix) with ESMTP id 0EFDB100040	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 23:09:42 +0000 (UTC)
+Message-ID: <1380150578.24959.213.camel@snotra.buserror.net>
+Subject: Re: [PATCH V4 3/3] powerpc/85xx: Add TWR-P1025 board support
+From: Scott Wood <scottwood@freescale.com>
+To: Xie Xiaobo-R63061 <r63061@freescale.com>
+Date: Wed, 25 Sep 2013 18:09:38 -0500
+In-Reply-To: <69EC9ED88E3CC04094A78F8074A7986D5FF91C@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1380019739-8196-1-git-send-email-X.Xie@freescale.com>
+ <1380019739-8196-3-git-send-email-X.Xie@freescale.com>
+ <1380064944.24959.143.camel@snotra.buserror.net>
+ <69EC9ED88E3CC04094A78F8074A7986D5FF91C@039-SN1MPN1-003.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130925121027.29504.19269.stgit@nimbus>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Johnston Michael-R49610 <r49610@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,38 +36,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 25, 2013 at 02:10:27PM +0200, Laurent Dufour wrote:
-> Follow-up to Anton's H_SET_MODE patch, the host should be taken aware of
-> guest endianess change.
+On Wed, 2013-09-25 at 04:50 -0500, Xie Xiaobo-R63061 wrote:
+> Hi Scott,
 > 
-> The hcall H_SET_MODE is processed in kvm then in the host.
+> See the reply inline.
 > 
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kvm/book3s_hv.c |    8 ++++++++
->  1 file changed, 8 insertions(+)
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Wednesday, September 25, 2013 7:22 AM
+> > To: Xie Xiaobo-R63061
+> > Cc: linuxppc-dev@lists.ozlabs.org; Johnston Michael-R49610
+> > Subject: Re: [PATCH V4 3/3] powerpc/85xx: Add TWR-P1025 board support
+> > 
+> > On Tue, 2013-09-24 at 18:48 +0800, Xie Xiaobo wrote:
+> > > +		partition@80000 {
+> > > +			/* 3.5 MB for Linux Kernel Image */
+> > > +			reg = <0x00080000 0x00380000>;
+> > > +			label = "NOR Linux Kernel Image";
+> > > +		};
+> > 
+> > Is this enough?
 > 
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 998cad3..4a47c74 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -599,6 +599,14 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
->  					kvmppc_get_gpr(vcpu, 5),
->  					kvmppc_get_gpr(vcpu, 6),
->  					kvmppc_get_gpr(vcpu, 7));
-> +		/*
-> +		 * If the hcall succeeded, we propagate it to the host.
-> +		 * This way, it will be aware of the endianess's change too.
-> +		 * The assumption is made that the hcall will succeed in the
-> +		 * host.
-> +		 */
-> +		if (ret == H_SUCCESS)
-> +			return RESUME_HOST;
->  		break;
+> I will enlarge it to 6MB.
+>  
+> > 
+> > > +		partition@400000 {
+> > > +			/* 58.75MB for JFFS2 based Root file System */
+> > > +			reg = <0x00400000 0x03ac0000>;
+> > > +			label = "NOR Root File System";
+> > > +		};
+> > 
+> > Don't specify jffs2.
+> 
+> OK, I will remove "jffs2"
+> 
+> > 
+> > > +	/* CS2 for Display */
+> > > +	ssd1289@2,0 {
+> > > +		#address-cells = <1>;
+> > > +		#size-cells = <1>;
+> > > +		compatible = "ssd1289";
+> > > +		reg = <0x2 0x0000 0x0002
+> > > +		       0x2 0x0002 0x0002>;
+> > > +	};
+> > 
+> > Node names should be generic.  What does ssd1289 do?  If this is actually
+> > the display device, then it should be called "display@2,0".
+> 
+> OK. The ssd1289 is a LCD controller.
+> 
+> > 
+> > How about a vendor prefix on that compatible?  Why #address-cells/#size-
+> > cells despite no child nodes?  Where is a binding that says what each of
+> > those two reg resources mean?
+> 
+> I will add the vendor prefix. I review the ssd1289 driver, and the #address-cells/#size-cells were un-used. I will remove them.
 
-The problem with this is that H_SET_MODE isn't just used for setting
-endianness; it also does breakpoint setting (DAWR/X and CIABR), which
-might happen very frequently, so we don't want them being punted up to
-userspace.
+And a binding?
 
-Paul.
+Why do you need two separate reg resources rather than just <2 0 4>?
+Will they ever be discontiguous?
+
+-Scott
