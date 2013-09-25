@@ -1,15 +1,15 @@
 Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 94C202C0090
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 02:45:45 +1000 (EST)
-Message-ID: <1380127533.3030.319.camel@ul30vt.home>
-Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a device
+ by ozlabs.org (Postfix) with ESMTP id 633D52C0246
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 03:02:59 +1000 (EST)
+Message-ID: <1380128566.3030.327.camel@ul30vt.home>
+Subject: Re: [PATCH 6/7] vfio: moving some functions in common file
 From: Alex Williamson <alex.williamson@redhat.com>
 To: Bharat Bhushan <r65777@freescale.com>
-Date: Wed, 25 Sep 2013 10:45:33 -0600
-In-Reply-To: <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
+Date: Wed, 25 Sep 2013 11:02:46 -0600
+In-Reply-To: <1379575763-2091-7-git-send-email-Bharat.Bhushan@freescale.com>
 References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379575763-2091-7-git-send-email-Bharat.Bhushan@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: agraf@suse.de, linux-pci@vger.kernel.org, joro@8bytes.org,
@@ -26,71 +26,552 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, 2013-09-19 at 12:59 +0530, Bharat Bhushan wrote:
-> This api return the iommu domain to which the device is attached.
-> The iommu_domain is required for making API calls related to iommu.
-> Follow up patches which use this API to know iommu maping.
+> Some function defined in vfio_iommu_type1.c were common and
+> we want to use these for FSL IOMMU (PAMU) and iommu-none driver.
+> So some of them are moved to vfio_iommu_common.c
+> 
+> I think we can do more of that but we will take this step by step.
 > 
 > Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 > ---
->  drivers/iommu/iommu.c |   10 ++++++++++
->  include/linux/iommu.h |    7 +++++++
->  2 files changed, 17 insertions(+), 0 deletions(-)
+>  drivers/vfio/Makefile            |    4 +-
+>  drivers/vfio/vfio_iommu_common.c |  235 ++++++++++++++++++++++++++++++++++++++
+>  drivers/vfio/vfio_iommu_common.h |   30 +++++
+>  drivers/vfio/vfio_iommu_type1.c  |  206 +---------------------------------
+>  4 files changed, 268 insertions(+), 207 deletions(-)
+>  create mode 100644 drivers/vfio/vfio_iommu_common.c
+>  create mode 100644 drivers/vfio/vfio_iommu_common.h
 > 
-> diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-> index fbe9ca7..6ac5f50 100644
-> --- a/drivers/iommu/iommu.c
-> +++ b/drivers/iommu/iommu.c
-> @@ -696,6 +696,16 @@ void iommu_detach_device(struct iommu_domain *domain, struct device *dev)
->  }
->  EXPORT_SYMBOL_GPL(iommu_detach_device);
->  
-> +struct iommu_domain *iommu_get_dev_domain(struct device *dev)
-> +{
-> +	struct iommu_ops *ops = dev->bus->iommu_ops;
+> diff --git a/drivers/vfio/Makefile b/drivers/vfio/Makefile
+> index 72bfabc..c5792ec 100644
+> --- a/drivers/vfio/Makefile
+> +++ b/drivers/vfio/Makefile
+> @@ -1,4 +1,4 @@
+>  obj-$(CONFIG_VFIO) += vfio.o
+> -obj-$(CONFIG_VFIO_IOMMU_TYPE1) += vfio_iommu_type1.o
+> -obj-$(CONFIG_VFIO_IOMMU_SPAPR_TCE) += vfio_iommu_spapr_tce.o
+> +obj-$(CONFIG_VFIO_IOMMU_TYPE1) += vfio_iommu_common.o vfio_iommu_type1.o
+> +obj-$(CONFIG_VFIO_IOMMU_SPAPR_TCE) += vfio_iommu_common.o vfio_iommu_spapr_tce.o
+>  obj-$(CONFIG_VFIO_PCI) += pci/
+> diff --git a/drivers/vfio/vfio_iommu_common.c b/drivers/vfio/vfio_iommu_common.c
+> new file mode 100644
+> index 0000000..8bdc0ea
+> --- /dev/null
+> +++ b/drivers/vfio/vfio_iommu_common.c
+> @@ -0,0 +1,235 @@
+> +/*
+> + * VFIO: Common code for vfio IOMMU support
+> + *
+> + * Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
+> + *     Author: Alex Williamson <alex.williamson@redhat.com>
+> + *     Author: Bharat Bhushan <bharat.bhushan@freescale.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * Derived from original vfio:
+> + * Copyright 2010 Cisco Systems, Inc.  All rights reserved.
+> + * Author: Tom Lyon, pugs@cisco.com
+> + */
 > +
-> +	if (unlikely(ops == NULL || ops->get_dev_iommu_domain == NULL))
-> +		return NULL;
-> +
-> +	return ops->get_dev_iommu_domain(dev);
-> +}
-> +EXPORT_SYMBOL_GPL(iommu_get_dev_domain);
+> +#include <linux/compat.h>
+> +#include <linux/device.h>
+> +#include <linux/fs.h>
+> +#include <linux/iommu.h>
+> +#include <linux/module.h>
+> +#include <linux/mm.h>
+> +#include <linux/pci.h>		/* pci_bus_type */
+> +#include <linux/rbtree.h>
+> +#include <linux/sched.h>
+> +#include <linux/slab.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/vfio.h>
+> +#include <linux/workqueue.h>
 
-What prevents this from racing iommu_domain_free()?  There's no
-references acquired, so there's no reason for the caller to assume the
-pointer is valid.
+Please cleanup includes on both the source and target files.  You
+obviously don't need linux/pci.h here for one.
 
->  /*
->   * IOMMU groups are really the natrual working unit of the IOMMU, but
->   * the IOMMU API works on domains and devices.  Bridge that gap by
-> diff --git a/include/linux/iommu.h b/include/linux/iommu.h
-> index 7ea319e..fa046bd 100644
-> --- a/include/linux/iommu.h
-> +++ b/include/linux/iommu.h
-> @@ -127,6 +127,7 @@ struct iommu_ops {
->  	int (*domain_set_windows)(struct iommu_domain *domain, u32 w_count);
->  	/* Get the numer of window per domain */
->  	u32 (*domain_get_windows)(struct iommu_domain *domain);
-> +	struct iommu_domain *(*get_dev_iommu_domain)(struct device *dev);
->  
->  	unsigned long pgsize_bitmap;
->  };
-> @@ -190,6 +191,7 @@ extern int iommu_domain_window_enable(struct iommu_domain *domain, u32 wnd_nr,
->  				      phys_addr_t offset, u64 size,
->  				      int prot);
->  extern void iommu_domain_window_disable(struct iommu_domain *domain, u32 wnd_nr);
-> +extern struct iommu_domain *iommu_get_dev_domain(struct device *dev);
->  /**
->   * report_iommu_fault() - report about an IOMMU fault to the IOMMU framework
->   * @domain: the iommu domain where the fault has happened
-> @@ -284,6 +286,11 @@ static inline void iommu_domain_window_disable(struct iommu_domain *domain,
->  {
->  }
->  
-> +static inline struct iommu_domain *iommu_get_dev_domain(struct device *dev)
+> +
+> +static bool disable_hugepages;
+> +module_param_named(disable_hugepages,
+> +		   disable_hugepages, bool, S_IRUGO | S_IWUSR);
+> +MODULE_PARM_DESC(disable_hugepages,
+> +		 "Disable VFIO IOMMU support for IOMMU hugepages.");
+> +
+> +struct vwork {
+> +	struct mm_struct	*mm;
+> +	long			npage;
+> +	struct work_struct	work;
+> +};
+> +
+> +/* delayed decrement/increment for locked_vm */
+> +void vfio_lock_acct_bg(struct work_struct *work)
 > +{
-> +	return NULL;
+> +	struct vwork *vwork = container_of(work, struct vwork, work);
+> +	struct mm_struct *mm;
+> +
+> +	mm = vwork->mm;
+> +	down_write(&mm->mmap_sem);
+> +	mm->locked_vm += vwork->npage;
+> +	up_write(&mm->mmap_sem);
+> +	mmput(mm);
+> +	kfree(vwork);
 > +}
 > +
->  static inline phys_addr_t iommu_iova_to_phys(struct iommu_domain *domain, dma_addr_t iova)
+> +void vfio_lock_acct(long npage)
+> +{
+> +	struct vwork *vwork;
+> +	struct mm_struct *mm;
+> +
+> +	if (!current->mm || !npage)
+> +		return; /* process exited or nothing to do */
+> +
+> +	if (down_write_trylock(&current->mm->mmap_sem)) {
+> +		current->mm->locked_vm += npage;
+> +		up_write(&current->mm->mmap_sem);
+> +		return;
+> +	}
+> +
+> +	/*
+> +	 * Couldn't get mmap_sem lock, so must setup to update
+> +	 * mm->locked_vm later. If locked_vm were atomic, we
+> +	 * wouldn't need this silliness
+> +	 */
+> +	vwork = kmalloc(sizeof(struct vwork), GFP_KERNEL);
+> +	if (!vwork)
+> +		return;
+> +	mm = get_task_mm(current);
+> +	if (!mm) {
+> +		kfree(vwork);
+> +		return;
+> +	}
+> +	INIT_WORK(&vwork->work, vfio_lock_acct_bg);
+> +	vwork->mm = mm;
+> +	vwork->npage = npage;
+> +	schedule_work(&vwork->work);
+> +}
+> +
+> +/*
+> + * Some mappings aren't backed by a struct page, for example an mmap'd
+> + * MMIO range for our own or another device.  These use a different
+> + * pfn conversion and shouldn't be tracked as locked pages.
+> + */
+> +bool is_invalid_reserved_pfn(unsigned long pfn)
+> +{
+> +	if (pfn_valid(pfn)) {
+> +		bool reserved;
+> +		struct page *tail = pfn_to_page(pfn);
+> +		struct page *head = compound_trans_head(tail);
+> +		reserved = !!(PageReserved(head));
+> +		if (head != tail) {
+> +			/*
+> +			 * "head" is not a dangling pointer
+> +			 * (compound_trans_head takes care of that)
+> +			 * but the hugepage may have been split
+> +			 * from under us (and we may not hold a
+> +			 * reference count on the head page so it can
+> +			 * be reused before we run PageReferenced), so
+> +			 * we've to check PageTail before returning
+> +			 * what we just read.
+> +			 */
+> +			smp_rmb();
+> +			if (PageTail(tail))
+> +				return reserved;
+> +		}
+> +		return PageReserved(tail);
+> +	}
+> +
+> +	return true;
+> +}
+> +
+> +int put_pfn(unsigned long pfn, int prot)
+> +{
+> +	if (!is_invalid_reserved_pfn(pfn)) {
+> +		struct page *page = pfn_to_page(pfn);
+> +		if (prot & IOMMU_WRITE)
+> +			SetPageDirty(page);
+> +		put_page(page);
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int vaddr_get_pfn(unsigned long vaddr, int prot, unsigned long *pfn)
+> +{
+> +	struct page *page[1];
+> +	struct vm_area_struct *vma;
+> +	int ret = -EFAULT;
+> +
+> +	if (get_user_pages_fast(vaddr, 1, !!(prot & IOMMU_WRITE), page) == 1) {
+> +		*pfn = page_to_pfn(page[0]);
+> +		return 0;
+> +	}
+> +
+> +	printk("via vma\n");
+> +	down_read(&current->mm->mmap_sem);
+> +
+> +	vma = find_vma_intersection(current->mm, vaddr, vaddr + 1);
+> +
+> +	if (vma && vma->vm_flags & VM_PFNMAP) {
+> +		*pfn = ((vaddr - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
+> +		if (is_invalid_reserved_pfn(*pfn))
+> +			ret = 0;
+> +	}
+> +
+> +	up_read(&current->mm->mmap_sem);
+> +
+> +	return ret;
+> +}
+> +
+> +/*
+> + * Attempt to pin pages.  We really don't want to track all the pfns and
+> + * the iommu can only map chunks of consecutive pfns anyway, so get the
+> + * first page and all consecutive pages with the same locking.
+> + */
+> +long vfio_pin_pages(unsigned long vaddr, long npage,
+> +			   int prot, unsigned long *pfn_base)
+> +{
+> +	unsigned long limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+> +	bool lock_cap = capable(CAP_IPC_LOCK);
+> +	long ret, i;
+> +
+> +	if (!current->mm)
+> +		return -ENODEV;
+> +
+> +	ret = vaddr_get_pfn(vaddr, prot, pfn_base);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (is_invalid_reserved_pfn(*pfn_base))
+> +		return 1;
+> +
+> +	if (!lock_cap && current->mm->locked_vm + 1 > limit) {
+> +		put_pfn(*pfn_base, prot);
+> +		pr_warn("%s: RLIMIT_MEMLOCK (%ld) exceeded\n", __func__,
+> +			limit << PAGE_SHIFT);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	if (unlikely(disable_hugepages)) {
+> +		vfio_lock_acct(1);
+> +		return 1;
+> +	}
+> +
+> +	/* Lock all the consecutive pages from pfn_base */
+> +	for (i = 1, vaddr += PAGE_SIZE; i < npage; i++, vaddr += PAGE_SIZE) {
+> +		unsigned long pfn = 0;
+> +
+> +		ret = vaddr_get_pfn(vaddr, prot, &pfn);
+> +		if (ret)
+> +			break;
+> +
+> +		if (pfn != *pfn_base + i || is_invalid_reserved_pfn(pfn)) {
+> +			put_pfn(pfn, prot);
+> +			break;
+> +		}
+> +
+> +		if (!lock_cap && current->mm->locked_vm + i + 1 > limit) {
+> +			put_pfn(pfn, prot);
+> +			pr_warn("%s: RLIMIT_MEMLOCK (%ld) exceeded\n",
+> +				__func__, limit << PAGE_SHIFT);
+> +			break;
+> +		}
+> +	}
+> +
+> +	vfio_lock_acct(i);
+> +
+> +	return i;
+> +}
+> +
+> +long vfio_unpin_pages(unsigned long pfn, long npage,
+> +			     int prot, bool do_accounting)
+> +{
+> +	unsigned long unlocked = 0;
+> +	long i;
+> +
+> +	for (i = 0; i < npage; i++)
+> +		unlocked += put_pfn(pfn++, prot);
+> +
+> +	if (do_accounting)
+> +		vfio_lock_acct(-unlocked);
+> +
+> +	return unlocked;
+> +}
+> diff --git a/drivers/vfio/vfio_iommu_common.h b/drivers/vfio/vfio_iommu_common.h
+> new file mode 100644
+> index 0000000..4738391
+> --- /dev/null
+> +++ b/drivers/vfio/vfio_iommu_common.h
+> @@ -0,0 +1,30 @@
+> +/*
+> + * Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
+> + * Copyright (C) 2013 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License version 2 as published
+> + * by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+> + */
+> +
+> +#ifndef _VFIO_IOMMU_COMMON_H
+> +#define _VFIO_IOMMU_COMMON_H
+> +
+> +void vfio_lock_acct_bg(struct work_struct *work);
+
+Does this need to be exposed?
+
+> +void vfio_lock_acct(long npage);
+> +bool is_invalid_reserved_pfn(unsigned long pfn);
+> +int put_pfn(unsigned long pfn, int prot);
+
+Why are these exposed, they only seem to be used by functions in the new
+common file.
+
+> +long vfio_pin_pages(unsigned long vaddr, long npage, int prot,
+> +		    unsigned long *pfn_base);
+> +long vfio_unpin_pages(unsigned long pfn, long npage,
+> +		      int prot, bool do_accounting);
+
+Can we get by with just these two and vfio_lock_acct()?
+
+> +#endif
+> diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type1.c
+> index a9807de..e9a58fa 100644
+> --- a/drivers/vfio/vfio_iommu_type1.c
+> +++ b/drivers/vfio/vfio_iommu_type1.c
+> @@ -37,6 +37,7 @@
+>  #include <linux/uaccess.h>
+>  #include <linux/vfio.h>
+>  #include <linux/workqueue.h>
+> +#include "vfio_iommu_common.h"
+>  
+>  #define DRIVER_VERSION  "0.2"
+>  #define DRIVER_AUTHOR   "Alex Williamson <alex.williamson@redhat.com>"
+> @@ -48,12 +49,6 @@ module_param_named(allow_unsafe_interrupts,
+>  MODULE_PARM_DESC(allow_unsafe_interrupts,
+>  		 "Enable VFIO IOMMU support for on platforms without interrupt remapping support.");
+>  
+> -static bool disable_hugepages;
+> -module_param_named(disable_hugepages,
+> -		   disable_hugepages, bool, S_IRUGO | S_IWUSR);
+> -MODULE_PARM_DESC(disable_hugepages,
+> -		 "Disable VFIO IOMMU support for IOMMU hugepages.");
+> -
+>  struct vfio_iommu {
+>  	struct iommu_domain	*domain;
+>  	struct mutex		lock;
+> @@ -123,205 +118,6 @@ static void vfio_remove_dma(struct vfio_iommu *iommu, struct vfio_dma *old)
+>  	rb_erase(&old->node, &iommu->dma_list);
+>  }
+>  
+> -struct vwork {
+> -	struct mm_struct	*mm;
+> -	long			npage;
+> -	struct work_struct	work;
+> -};
+> -
+> -/* delayed decrement/increment for locked_vm */
+> -static void vfio_lock_acct_bg(struct work_struct *work)
+> -{
+> -	struct vwork *vwork = container_of(work, struct vwork, work);
+> -	struct mm_struct *mm;
+> -
+> -	mm = vwork->mm;
+> -	down_write(&mm->mmap_sem);
+> -	mm->locked_vm += vwork->npage;
+> -	up_write(&mm->mmap_sem);
+> -	mmput(mm);
+> -	kfree(vwork);
+> -}
+> -
+> -static void vfio_lock_acct(long npage)
+> -{
+> -	struct vwork *vwork;
+> -	struct mm_struct *mm;
+> -
+> -	if (!current->mm || !npage)
+> -		return; /* process exited or nothing to do */
+> -
+> -	if (down_write_trylock(&current->mm->mmap_sem)) {
+> -		current->mm->locked_vm += npage;
+> -		up_write(&current->mm->mmap_sem);
+> -		return;
+> -	}
+> -
+> -	/*
+> -	 * Couldn't get mmap_sem lock, so must setup to update
+> -	 * mm->locked_vm later. If locked_vm were atomic, we
+> -	 * wouldn't need this silliness
+> -	 */
+> -	vwork = kmalloc(sizeof(struct vwork), GFP_KERNEL);
+> -	if (!vwork)
+> -		return;
+> -	mm = get_task_mm(current);
+> -	if (!mm) {
+> -		kfree(vwork);
+> -		return;
+> -	}
+> -	INIT_WORK(&vwork->work, vfio_lock_acct_bg);
+> -	vwork->mm = mm;
+> -	vwork->npage = npage;
+> -	schedule_work(&vwork->work);
+> -}
+> -
+> -/*
+> - * Some mappings aren't backed by a struct page, for example an mmap'd
+> - * MMIO range for our own or another device.  These use a different
+> - * pfn conversion and shouldn't be tracked as locked pages.
+> - */
+> -static bool is_invalid_reserved_pfn(unsigned long pfn)
+> -{
+> -	if (pfn_valid(pfn)) {
+> -		bool reserved;
+> -		struct page *tail = pfn_to_page(pfn);
+> -		struct page *head = compound_trans_head(tail);
+> -		reserved = !!(PageReserved(head));
+> -		if (head != tail) {
+> -			/*
+> -			 * "head" is not a dangling pointer
+> -			 * (compound_trans_head takes care of that)
+> -			 * but the hugepage may have been split
+> -			 * from under us (and we may not hold a
+> -			 * reference count on the head page so it can
+> -			 * be reused before we run PageReferenced), so
+> -			 * we've to check PageTail before returning
+> -			 * what we just read.
+> -			 */
+> -			smp_rmb();
+> -			if (PageTail(tail))
+> -				return reserved;
+> -		}
+> -		return PageReserved(tail);
+> -	}
+> -
+> -	return true;
+> -}
+> -
+> -static int put_pfn(unsigned long pfn, int prot)
+> -{
+> -	if (!is_invalid_reserved_pfn(pfn)) {
+> -		struct page *page = pfn_to_page(pfn);
+> -		if (prot & IOMMU_WRITE)
+> -			SetPageDirty(page);
+> -		put_page(page);
+> -		return 1;
+> -	}
+> -	return 0;
+> -}
+> -
+> -static int vaddr_get_pfn(unsigned long vaddr, int prot, unsigned long *pfn)
+> -{
+> -	struct page *page[1];
+> -	struct vm_area_struct *vma;
+> -	int ret = -EFAULT;
+> -
+> -	if (get_user_pages_fast(vaddr, 1, !!(prot & IOMMU_WRITE), page) == 1) {
+> -		*pfn = page_to_pfn(page[0]);
+> -		return 0;
+> -	}
+> -
+> -	down_read(&current->mm->mmap_sem);
+> -
+> -	vma = find_vma_intersection(current->mm, vaddr, vaddr + 1);
+> -
+> -	if (vma && vma->vm_flags & VM_PFNMAP) {
+> -		*pfn = ((vaddr - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
+> -		if (is_invalid_reserved_pfn(*pfn))
+> -			ret = 0;
+> -	}
+> -
+> -	up_read(&current->mm->mmap_sem);
+> -
+> -	return ret;
+> -}
+> -
+> -/*
+> - * Attempt to pin pages.  We really don't want to track all the pfns and
+> - * the iommu can only map chunks of consecutive pfns anyway, so get the
+> - * first page and all consecutive pages with the same locking.
+> - */
+> -static long vfio_pin_pages(unsigned long vaddr, long npage,
+> -			   int prot, unsigned long *pfn_base)
+> -{
+> -	unsigned long limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+> -	bool lock_cap = capable(CAP_IPC_LOCK);
+> -	long ret, i;
+> -
+> -	if (!current->mm)
+> -		return -ENODEV;
+> -
+> -	ret = vaddr_get_pfn(vaddr, prot, pfn_base);
+> -	if (ret)
+> -		return ret;
+> -
+> -	if (is_invalid_reserved_pfn(*pfn_base))
+> -		return 1;
+> -
+> -	if (!lock_cap && current->mm->locked_vm + 1 > limit) {
+> -		put_pfn(*pfn_base, prot);
+> -		pr_warn("%s: RLIMIT_MEMLOCK (%ld) exceeded\n", __func__,
+> -			limit << PAGE_SHIFT);
+> -		return -ENOMEM;
+> -	}
+> -
+> -	if (unlikely(disable_hugepages)) {
+> -		vfio_lock_acct(1);
+> -		return 1;
+> -	}
+> -
+> -	/* Lock all the consecutive pages from pfn_base */
+> -	for (i = 1, vaddr += PAGE_SIZE; i < npage; i++, vaddr += PAGE_SIZE) {
+> -		unsigned long pfn = 0;
+> -
+> -		ret = vaddr_get_pfn(vaddr, prot, &pfn);
+> -		if (ret)
+> -			break;
+> -
+> -		if (pfn != *pfn_base + i || is_invalid_reserved_pfn(pfn)) {
+> -			put_pfn(pfn, prot);
+> -			break;
+> -		}
+> -
+> -		if (!lock_cap && current->mm->locked_vm + i + 1 > limit) {
+> -			put_pfn(pfn, prot);
+> -			pr_warn("%s: RLIMIT_MEMLOCK (%ld) exceeded\n",
+> -				__func__, limit << PAGE_SHIFT);
+> -			break;
+> -		}
+> -	}
+> -
+> -	vfio_lock_acct(i);
+> -
+> -	return i;
+> -}
+> -
+> -static long vfio_unpin_pages(unsigned long pfn, long npage,
+> -			     int prot, bool do_accounting)
+> -{
+> -	unsigned long unlocked = 0;
+> -	long i;
+> -
+> -	for (i = 0; i < npage; i++)
+> -		unlocked += put_pfn(pfn++, prot);
+> -
+> -	if (do_accounting)
+> -		vfio_lock_acct(-unlocked);
+> -
+> -	return unlocked;
+> -}
+> -
+>  static int vfio_unmap_unpin(struct vfio_iommu *iommu, struct vfio_dma *dma,
+>  			    dma_addr_t iova, size_t *size)
 >  {
->  	return 0;
