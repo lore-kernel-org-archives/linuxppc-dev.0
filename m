@@ -1,32 +1,25 @@
 Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 57F892C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 09:09:48 +1000 (EST)
-Received: from mail111-co9 (localhost [127.0.0.1])	by
- mail111-co9-R.bigfish.com (Postfix) with ESMTP id D0465A40117	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 23:09:43 +0000 (UTC)
-Received: from CO9EHSMHS022.bigfish.com (unknown [10.236.132.239])	by
- mail111-co9.bigfish.com (Postfix) with ESMTP id 0EFDB100040	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2013 23:09:42 +0000 (UTC)
-Message-ID: <1380150578.24959.213.camel@snotra.buserror.net>
-Subject: Re: [PATCH V4 3/3] powerpc/85xx: Add TWR-P1025 board support
+ by ozlabs.org (Postfix) with ESMTPS id C2BC02C0246
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 09:11:35 +1000 (EST)
+Message-ID: <1380150683.24959.215.camel@snotra.buserror.net>
+Subject: Re: [PATCH v3 3/3] powerpc/85xx: use one kernel option for all the
+ CoreNet_Generic boards
 From: Scott Wood <scottwood@freescale.com>
-To: Xie Xiaobo-R63061 <r63061@freescale.com>
-Date: Wed, 25 Sep 2013 18:09:38 -0500
-In-Reply-To: <69EC9ED88E3CC04094A78F8074A7986D5FF91C@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1380019739-8196-1-git-send-email-X.Xie@freescale.com>
- <1380019739-8196-3-git-send-email-X.Xie@freescale.com>
- <1380064944.24959.143.camel@snotra.buserror.net>
- <69EC9ED88E3CC04094A78F8074A7986D5FF91C@039-SN1MPN1-003.039d.mgd.msft.net>
+To: Kevin Hao <haokexin@gmail.com>
+Date: Wed, 25 Sep 2013 18:11:23 -0500
+In-Reply-To: <20130925005843.GA20572@pek-khao-d1.corp.ad.wrs.com>
+References: <1379991797-29222-1-git-send-email-haokexin@gmail.com>
+ <1379991797-29222-4-git-send-email-haokexin@gmail.com>
+ <1380062492.24959.123.camel@snotra.buserror.net>
+ <20130925005843.GA20572@pek-khao-d1.corp.ad.wrs.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Johnston Michael-R49610 <r49610@freescale.com>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,65 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-09-25 at 04:50 -0500, Xie Xiaobo-R63061 wrote:
-> Hi Scott,
-> 
-> See the reply inline.
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, September 25, 2013 7:22 AM
-> > To: Xie Xiaobo-R63061
-> > Cc: linuxppc-dev@lists.ozlabs.org; Johnston Michael-R49610
-> > Subject: Re: [PATCH V4 3/3] powerpc/85xx: Add TWR-P1025 board support
+On Wed, 2013-09-25 at 08:58 +0800, Kevin Hao wrote:
+> On Tue, Sep 24, 2013 at 05:41:32PM -0500, Scott Wood wrote:
+> > On Tue, 2013-09-24 at 11:03 +0800, Kevin Hao wrote:
+> > > +	  and B4 QDS boards
+> [...]
 > > 
-> > On Tue, 2013-09-24 at 18:48 +0800, Xie Xiaobo wrote:
-> > > +		partition@80000 {
-> > > +			/* 3.5 MB for Linux Kernel Image */
-> > > +			reg = <0x00080000 0x00380000>;
-> > > +			label = "NOR Linux Kernel Image";
-> > > +		};
-> > 
-> > Is this enough?
+> > Is there any difference between the 32-bit and 64-bit versions of this
+> > config symbol, other than the help text?
 > 
-> I will enlarge it to 6MB.
->  
-> > 
-> > > +		partition@400000 {
-> > > +			/* 58.75MB for JFFS2 based Root file System */
-> > > +			reg = <0x00400000 0x03ac0000>;
-> > > +			label = "NOR Root File System";
-> > > +		};
-> > 
-> > Don't specify jffs2.
-> 
-> OK, I will remove "jffs2"
-> 
-> > 
-> > > +	/* CS2 for Display */
-> > > +	ssd1289@2,0 {
-> > > +		#address-cells = <1>;
-> > > +		#size-cells = <1>;
-> > > +		compatible = "ssd1289";
-> > > +		reg = <0x2 0x0000 0x0002
-> > > +		       0x2 0x0002 0x0002>;
-> > > +	};
-> > 
-> > Node names should be generic.  What does ssd1289 do?  If this is actually
-> > the display device, then it should be called "display@2,0".
-> 
-> OK. The ssd1289 is a LCD controller.
-> 
-> > 
-> > How about a vendor prefix on that compatible?  Why #address-cells/#size-
-> > cells despite no child nodes?  Where is a binding that says what each of
-> > those two reg resources mean?
-> 
-> I will add the vendor prefix. I review the ssd1289 driver, and the #address-cells/#size-cells were un-used. I will remove them.
+> No. As you know some of these boards only support 32bit kernel and some of
+> them only support 64bit kernel. It will definitely cause confusion when using
+> only one kernel option for all these boards. So I divide this into two options
+> (even the same name) for 32bit and 64bit respectively.
 
-And a binding?
-
-Why do you need two separate reg resources rather than just <2 0 4>?
-Will they ever be discontiguous?
+You could just mention in the help text which boards are 32-bit, which
+are 64-bit, and which can work with either.
 
 -Scott
