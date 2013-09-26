@@ -1,35 +1,31 @@
-Return-Path: <R65777@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Return-Path: <B45939@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8217A2C0094
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 14:23:24 +1000 (EST)
-Received: from mail46-co1 (localhost [127.0.0.1])	by mail46-co1-R.bigfish.com
- (Postfix) with ESMTP id 9E3808401B1	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,
- 26 Sep 2013 04:23:19 +0000 (UTC)
-Received: from CO1EHSMHS011.bigfish.com (unknown [10.243.78.229])	by
- mail46-co1.bigfish.com (Postfix) with ESMTP id B837460004B	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 04:23:17 +0000 (UTC)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
-Date: Thu, 26 Sep 2013 04:23:15 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D07183D0B@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1380014925-23300-2-git-send-email-dongsheng.wang@freescale.com>
- <1380014925-23300-4-git-send-email-dongsheng.wang@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0717F8F9@039-SN2MPN1-011.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F154392590108FF41@039-SN2MPN1-021.039d.mgd.msft.net>
- <1380131815.24959.185.camel@snotra.buserror.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010909C3@039-SN2MPN1-021.039d.mgd.msft.net>
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259010909C3@039-SN2MPN1-021.039d.mgd.msft.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 101AC2C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 15:06:31 +1000 (EST)
+Message-ID: <5243C0D1.4070808@freescale.com>
+Date: Thu, 26 Sep 2013 13:06:25 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH v10 2/3] DMA: Freescale: Add new 8-channel DMA engine
+ device tree nodes
+References: <1379499333-4745-1-git-send-email-hongbo.zhang@freescale.com>
+ <1379499333-4745-3-git-send-email-hongbo.zhang@freescale.com>
+ <524074A7.7000001@wwwdotorg.org> <524169E3.7030408@freescale.com>
+ <5241CC60.5070204@wwwdotorg.org> <52429252.10009@freescale.com>
+ <1380159992.24959.248.camel@snotra.buserror.net>
+ <20130926022859.GL9625@voom.redhat.com>
+In-Reply-To: <20130926022859.GL9625@voom.redhat.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, ian.campbell@citrix.com,
+ pawel.moll@arm.com, Stephen Warren <swarren@wwwdotorg.org>,
+ vinod.koul@intel.com, linux-kernel@vger.kernel.org, rob.herring@calxeda.com,
+ djbw@fb.com, Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,109 +35,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV2FuZyBEb25nc2hlbmct
-QjQwNTM0DQo+IFNlbnQ6IFRodXJzZGF5LCBTZXB0ZW1iZXIgMjYsIDIwMTMgODowMiBBTQ0KPiBU
-bzogV29vZCBTY290dC1CMDc0MjENCj4gQ2M6IEJodXNoYW4gQmhhcmF0LVI2NTc3NzsgbGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUkU6IFtQQVRDSCB2NCA0LzRdIHBv
-d2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBwdzIwIHN0YXRlIGFuZCBhbHRpdmVjDQo+IGlkbGUN
-Cj4gDQo+IA0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206IFdv
-b2QgU2NvdHQtQjA3NDIxDQo+ID4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAyNiwgMjAxMyAx
-OjU3IEFNDQo+ID4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+IENjOiBCaHVzaGFuIEJo
-YXJhdC1SNjU3Nzc7IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51eHBwYy0NCj4gPiBkZXZAbGlzdHMu
-b3psYWJzLm9yZw0KPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjQgNC80XSBwb3dlcnBjLzg1eHg6
-IGFkZCBzeXNmcyBmb3IgcHcyMCBzdGF0ZSBhbmQNCj4gPiBhbHRpdmVjIGlkbGUNCj4gPg0KPiA+
-IE9uIFdlZCwgMjAxMy0wOS0yNSBhdCAwMzoxMCAtMDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0
-IHdyb3RlOg0KPiA+ID4NCj4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+
-ID4gRnJvbTogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiA+IFNlbnQ6IFdlZG5lc2RheSwg
-U2VwdGVtYmVyIDI1LCAyMDEzIDI6MjMgUE0NCj4gPiA+ID4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0
-MDUzNDsgV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5v
-emxhYnMub3JnOyBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+ID4gU3ViamVjdDogUkU6IFtQ
-QVRDSCB2NCA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBwdzIwIHN0YXRlDQo+ID4g
-PiA+IGFuZCBhbHRpdmVjIGlkbGUNCj4gPiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4g
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+IEZyb206IExpbnV4cHBjLWRl
-diBbbWFpbHRvOmxpbnV4cHBjLWRldi0NCj4gPiA+ID4gPiBib3VuY2VzK2JoYXJhdC5iaHVzaGFu
-PWZyZWVzY2FsZS5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmDQo+ID4gPiA+ID4gYm91
-bmNlcytPZiBEb25nc2hlbmcNCj4gPiA+ID4gPiBXYW5nDQo+ID4gPiA+ID4gU2VudDogVHVlc2Rh
-eSwgU2VwdGVtYmVyIDI0LCAyMDEzIDI6NTkgUE0NCj4gPiA+ID4gPiBUbzogV29vZCBTY290dC1C
-MDc0MjENCj4gPiA+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdhbmcg
-RG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4gPiA+IFN1YmplY3Q6IFtQQVRDSCB2NCA0LzRdIHBvd2Vy
-cGMvODV4eDogYWRkIHN5c2ZzIGZvciBwdzIwIHN0YXRlDQo+ID4gPiA+ID4gYW5kIGFsdGl2ZWMg
-aWRsZQ0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVu
-Zy53YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBBZGQgYSBzeXMgaW50
-ZXJmYWNlIHRvIGVuYWJsZS9kaWFibGUgcHcyMCBzdGF0ZSBvciBhbHRpdmVjIGlkbGUsDQo+ID4g
-PiA+ID4gYW5kIGNvbnRyb2wgdGhlIHdhaXQgZW50cnkgdGltZS4NCj4gPiA+ID4gPg0KPiA+ID4g
-PiA+IEVuYWJsZS9EaXNhYmxlIGludGVyZmFjZToNCj4gPiA+ID4gPiAwLCBkaXNhYmxlLiAxLCBl
-bmFibGUuDQo+ID4gPiA+ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1WC9wdzIwX3N0YXRl
-DQo+ID4gPiA+ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1WC9hbHRpdmVjX2lkbGUNCj4g
-PiA+ID4gPg0KPiA+ID4gPiA+IFNldCB3YWl0IHRpbWUgaW50ZXJmYWNlOihOYW5vc2Vjb25kKQ0K
-PiA+ID4gPiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdVgvcHcyMF93YWl0X3RpbWUNCj4g
-PiA+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL2FsdGl2ZWNfaWRsZV93YWl0X3Rp
-bWUNCj4gPiA+ID4gPiBFeGFtcGxlOiBCYXNlIG9uIFRCZnJlcSBpcyA0MU1IWi4NCj4gPiA+ID4g
-PiAxfjQ3KG5zKTogVEJbNjNdDQo+ID4gPiA+ID4gNDh+OTUobnMpOiBUQls2Ml0NCj4gPiA+ID4g
-PiA5Nn4xOTEobnMpOiBUQls2MV0NCj4gPiA+ID4gPiAxOTJ+MzgzKG5zKTogVEJbNjJdDQo+ID4g
-PiA+ID4gMzg0fjc2Nyhucyk6IFRCWzYwXQ0KPiA+ID4gPiA+IC4uLg0KPiA+ID4gPiA+DQo+ID4g
-PiA+ID4gU2lnbmVkLW9mZi1ieTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVz
-Y2FsZS5jb20+DQo+ID4gPiA+ID4gLS0tDQo+ID4gPiA+ID4gKnY0Og0KPiA+ID4gPiA+IE1vdmUg
-Y29kZSBmcm9tIDg1eHgvY29tbW9uLmMgdG8ga2VybmVsL3N5c2ZzLmMuDQo+ID4gPiA+ID4NCj4g
-PiA+ID4gPiBSZW1vdmUgaGFzX3B3MjBfYWx0aXZlY19pZGxlIGZ1bmN0aW9uLg0KPiA+ID4gPiA+
-DQo+ID4gPiA+ID4gQ2hhbmdlIHdhaXQgImVudHJ5X2JpdCIgdG8gd2FpdCB0aW1lLg0KPiA+ID4g
-PiA+DQo+ID4gPiA+ID4gIGFyY2gvcG93ZXJwYy9rZXJuZWwvc3lzZnMuYyB8IDI5MQ0KPiA+ID4g
-PiA+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ID4gPiA+
-ID4gIDEgZmlsZSBjaGFuZ2VkLCAyOTEgaW5zZXJ0aW9ucygrKQ0KPiA+ID4gPiA+DQo+ID4gPiA+
-ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9rZXJuZWwvc3lzZnMuYw0KPiA+ID4gPiA+IGIv
-YXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jIGluZGV4IDI3YTkwYjkuLjIzZmVjZTYgMTAwNjQ0
-DQo+ID4gPiA+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jDQo+ID4gPiA+ID4g
-KysrIGIvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jDQo+ID4gPiA+ID4gQEAgLTg1LDYgKzg1
-LDI3OSBAQCBfX3NldHVwKCJzbXQtc25vb3plLWRlbGF5PSIsDQo+ID4gPiA+ID4gc2V0dXBfc210
-X3Nub296ZV9kZWxheSk7DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiAgI2VuZGlmIC8qIENPTkZJR19Q
-UEM2NCAqLw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gKyNpZmRlZiBDT05GSUdfRlNMX1NPQw0KPiA+
-ID4gPiA+ICsjZGVmaW5lIE1BWF9CSVQJCTYzDQo+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ICtzdGF0
-aWMgdTY0IHB3MjBfd3Q7DQo+ID4gPiA+ID4gK3N0YXRpYyB1NjQgYWx0aXZlY19pZGxlX3d0Ow0K
-PiA+ID4gPiA+ICsNCj4gPiA+ID4gPiArc3RhdGljIHVuc2lnbmVkIGludCBnZXRfaWRsZV90aWNr
-c19iaXQodTY0IG5zKSB7DQo+ID4gPiA+ID4gKwl1NjQgY3ljbGU7DQo+ID4gPiA+ID4gKw0KPiA+
-ID4gPiA+ICsJY3ljbGUgPSBkaXZfdTY0KG5zLCAxMDAwIC8gdGJfdGlja3NfcGVyX3VzZWMpOw0K
-PiA+ID4gPg0KPiA+ID4gPiBXaGVuIHRiX3RpY2tzX3Blcl91c2VjICA+IDEwMDAgKHRpbWViYXNl
-IGZyZXF1ZW5jeSA+IDFHSHopIHRoZW4NCj4gPiA+ID4gdGhpcyB3aWxsIGFsd2F5cyBiZSBucywg
-d2hpY2ggaXMgbm90IGNvcnJlY3QsIG5vPw0KPiA+DQo+ID4gQWN0dWFsbHkgaXQnbGwgYmUgYSBk
-aXZpZGUgYnkgemVybyBpbiB0aGF0IGNhc2UuDQo+ID4NCj4gdGJfdGlja3NfcGVyX3VzZWMgPSBw
-cGNfdGJfZnJlcSAvIDEwMDAwMDA7IE1lYW5zIFRCIGZyZXEgc2hvdWxkIGJlIG1vcmUgdGhhbg0K
-PiAxTUhaLg0KPiANCj4gaWYgcHBjX3RiX2ZyZXEgbGVzcyB0aGFuIDEwMDAwMDAsIHRoZSB0Yl90
-aWNrc19wZXJfdXNlYyB3aWxsIGJlIGEgZGl2aWRlIGJ5DQo+IHplcm8uDQo+IElmIHRoaXMgY29u
-ZGl0aW9uIGlzIGVzdGFibGlzaGVkLCBJIHRoaW5rIGtlcm5lbCBjYW5ub3Qgd29yayBhcyBhIG5v
-cm1hbC4NCj4gDQo+IFNvIEkgdGhpbmsgd2UgbmVlZCB0byBiZWxpZXZlIHRoYXQgdGhlIHZhcmlh
-YmxlIGlzIG5vdCB6ZXJvLg0KDQpXZSBkbyBiZWxpZXZlIGl0IGlzIG5vbi16ZXJvIGJ1dCBncmVh
-dGVyIHRoYW4gMTAwMCA6KQ0KDQo+IEFuZCBJIHRoaW5rIFRCIGZyZXENCj4gc2hvdWxkIG5vdCBs
-ZXNzIHRoYW4gMU1IWiBvbiBQUEMgcGxhdGZvcm0sIGJlY2F1c2UgaWYgVEIgZnJlcSBsZXNzIHRo
-YW4gMU1IWiwNCj4gdGhlIHByZWNpc2lvbiB0aW1lIHdpbGwgYmVjb21lIHZlcnkgcG9vciBhbmQg
-c3lzdGVtIHJlc3BvbnNlIHRpbWUgd2lsbCBiZQ0KPiBzbG93ZXIuDQoNCk5vdCBzdXJlIHdoYXQg
-eW91IGFyZSBkZXNjcmliaW5nIGhlcmUgcmVsYXRlZCB0byBkaXZpZGUgYnkgemVybyB3ZSBhcmUg
-bWVudGlvbmluZy4NCllvdSBhcmUgdGFsa2luZyBhYm91dCBpZiB0Yl90aWNrc19wZXJfdXNlYyBp
-cyBaRVJPIGFuZCB3ZSBhcmUgdGFsa2luZyBhYm91dCBpZiAoMTAwMC90Yl90aWNrc19wZXJfdXNl
-Yykgd2lsbCBiZSB6ZXJvLg0KDQpCVFcsIGRpdl91NjQoKSBoYW5kbGUgdGhlIGNhc2Ugd2hlcmUg
-ZGl2aWRlciBpcyB6ZXJvLg0KDQo+IA0KPiA+ID4gIjEwMDAgLyB0Yl90aWNrc19wZXJfdXNlYyIg
-bWVhbnMgbnNlY190aWNrc19wZXJfdGINCj4gPiA+DQo+ID4gPiBJZiB0aW1lYmFzZSBmcmVxdWVu
-Y3kgPiAxR0h6LCB0aGlzIHNob3VsZCBiZSAidGJfdGlja3NfcGVyX3VzZWMgLyAxMDAwIg0KPiA+
-IGFuZCB0byBnZXQgdGJfdGlja3NfcGVyX25zZWMuDQo+ID4gPiBUaGlzIHNob3VsZCBiZSBjaGFu
-Z2VkIHRvICJjeWNsZSA9IG5zICogdGJfdGlja3NfcGVyX25zZWM7Ig0KPiA+ID4NCj4gPiA+IEJ1
-dCBhdCBwcmVzZW50IHdlIGRvIG5vdCBoYXZlIHN1Y2ggYSBwbGF0Zm9ybSB0aGF0IHRpbWViYXNl
-DQo+ID4gPiBmcmVxdWVuY3kgbW9yZSB0aGFuIDFHSHouIEFuZCBJIHRoaW5rIGl0IGlzIG5vdCBu
-ZWVkIHRvIHN1cHBvcnQgc3VjaCBhDQo+IHNpdHVhdGlvbi4NCj4gPiA+IEJlY2F1c2Ugd2UgaGF2
-ZSBubyBlbnZpcm9ubWVudCB0byB0ZXN0IGl0Lg0KPiA+DQo+ID4gWW91IGNhbiB0ZXN0IGl0IGJ5
-IGhhY2tpbmcgYSB3cm9uZyB0aW1lYmFzZSBmcmVxdWVuY3kgaW4gYW5kIHNlZWluZw0KPiA+IHdo
-YXQgdGhlIGNhbGN1bGF0aW9uIGRvZXMuDQo+ID4NCj4gPiBPciBkbyBzb21ldGhpbmcgbGlrZSB0
-aGlzOg0KPiA+DQo+ID4gCWlmIChucyA+PSAxMDAwMCkNCgleXl4NCg0KPiA+IAkJY3ljbGUgPSAo
-KG5zICsgNTAwKSAvIDEwMDApICogdGJfdGlja3NfcGVyX3VzZWM7DQo+ID4gCWVsc2UNCj4gPiAJ
-CWN5Y2xlID0gZGl2X3U2NCgodTY0KW5zICogdGJfdGlja3NfcGVyX3VzZWMsIDEwMDApOw0KPiA+
-DQo+IFdlIGNhbm5vdCBkbyB0aGlzLCBiZWNhdXNlIGlmIChucys1MDApIDwgMTAwMCwgd2UgY2Fu
-bm90IGdldCB0aGUgZW50cnkgYml0LA0KPiBpdCdsbCBhbHdheXMgemVybyBiaXQuDQoNClRoZXJl
-IGlzIGEgaWYgY29uZGl0aW9uIG9mIG5zID49IDEwMDAwLCBzbyBucys1MDAgY2FuIG5vdCBiZSBs
-ZXNzIHRoYW4gMTAwMC4NCg0KPiANCj4gV2UgbXVzdCB0byB1c2UgcGVyX25zZWNfdGJfdGlja3Ms
-IGxpa2UgbXkgY29kZSAxMDAwIC8gdGJfdGlja3NfcGVyX3VzZWMuDQo+IA0KPiA+IC4uLndoaWNo
-IGNhbiBiZSB0ZXN0ZWQganVzdCBieSB2YXJ5aW5nIG5zLg0KPiA+DQo+ID4gPiBJZiBsYXRlciB0
-aGVyZSB3aWxsIGJlIG1vcmUgdGhhbiAxR0haIHBsYXRmb3JtIGF0IHRoYXQgdGltZSB0byBhZGQN
-Cj4gPiA+IHRoaXMNCj4gPiBzdXBwb3J0Lg0KPiA+DQo+IFllcywgSSBhZ3JlZSB0aGlzIHBvaW50
-LiA6KQ0KDQpPbmUgc2hvdWxkIGFncmVlIHdpdGggaGltc2VsZiA6KQ0KDQotQmhhcmF0DQoNCj4g
-DQo+IC1kb25nc2hlbmcNCj4gDQo+ID4gVGhlcmUgYWxtb3N0IGNlcnRhaW5seSB3b24ndCBiZSB0
-aW1lYmFzZXMgdGhhdCBydW4gdGhhdCBmYXN0LCBidXQNCj4gPiBkaXZpZGUgYnkgemVybyBpcyBh
-IHJhdGhlciBuYXN0eSB3YXkgb2YgcmVzcG9uZGluZyBpZiBzdWNoIGEgdGhpbmcgZG9lcw0KPiBo
-YXBwZW4uDQo+ID4NCj4gPiAtU2NvdHQNCj4gPg0KDQo=
+On 09/26/2013 10:28 AM, David Gibson wrote:
+> On Wed, Sep 25, 2013 at 08:46:32PM -0500, Scott Wood wrote:
+>> On Wed, 2013-09-25 at 15:35 +0800, Hongbo Zhang wrote:
+>>> By the way, I know maybe it is difficult, but why not introduce a
+>>> document of maintaining rules for the dt binding docs? we have dedicated
+>>> maintainers for this part now. Description language from one submitter
+>>> cannot satisfy every reviewer/maintainer, for a reg property, is it
+>>> necessary to say "offset and length",
+>> Don't say "offset and length".  It's both redundant with the base
+>> definition of the reg property, and overly specific because it makes
+>> assumptions about how the parent node's ranges are set up (sometimes we
+>> want to be that specific, but usually not).
+
+Thanks for your answer Scott.
+In fact my questions are mainly sample questions to file the necessary 
+rules of dt binding.
+> To look at it another way, the format of the 'reg' property is defined
+> by the parent bus's binding, not the binding of the node itself.
+>
+Whatever the rule is, if it is reasonable and accepted, just as I said, 
+we need to file it.
