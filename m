@@ -1,35 +1,38 @@
 Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 96C512C00D1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 07:27:30 +1000 (EST)
-Received: from mail91-db8 (localhost [127.0.0.1])	by mail91-db8-R.bigfish.com
- (Postfix) with ESMTP id E8FB1DA01D1	for
+ by ozlabs.org (Postfix) with ESMTPS id 912812C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 07:37:32 +1000 (EST)
+Received: from mail62-va3 (localhost [127.0.0.1])	by mail62-va3-R.bigfish.com
+ (Postfix) with ESMTP id C7A72260210	for
  <linuxppc-dev@lists.ozlabs.org>; Thu,
- 26 Sep 2013 21:27:24 +0000 (UTC)
-Received: from DB8EHSMHS030.bigfish.com (unknown [10.174.8.243])	by
- mail91-db8.bigfish.com (Postfix) with ESMTP id 322D0D8004B	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 21:27:22 +0000 (UTC)
-Message-ID: <1380230838.24959.322.camel@snotra.buserror.net>
-Subject: Re: [PATCH V4 3/3] powerpc/85xx: Add TWR-P1025 board support
+ 26 Sep 2013 21:37:27 +0000 (UTC)
+Received: from VA3EHSMHS033.bigfish.com (unknown [10.7.14.235])	by
+ mail62-va3.bigfish.com (Postfix) with ESMTP id E8402180177	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 21:37:25 +0000 (UTC)
+Message-ID: <1380231435.24959.328.camel@snotra.buserror.net>
+Subject: Re: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+ altivec idle
 From: Scott Wood <scottwood@freescale.com>
-To: Xie Xiaobo-R63061 <r63061@freescale.com>
-Date: Thu, 26 Sep 2013 16:27:18 -0500
-In-Reply-To: <69EC9ED88E3CC04094A78F8074A7986D600530@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1380019739-8196-1-git-send-email-X.Xie@freescale.com>
- <1380019739-8196-3-git-send-email-X.Xie@freescale.com>
- <1380064944.24959.143.camel@snotra.buserror.net>
- <69EC9ED88E3CC04094A78F8074A7986D5FF91C@039-SN1MPN1-003.039d.mgd.msft.net>
- <1380150578.24959.213.camel@snotra.buserror.net>
- <69EC9ED88E3CC04094A78F8074A7986D600530@039-SN1MPN1-003.039d.mgd.msft.net>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Date: Thu, 26 Sep 2013 16:37:15 -0500
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F1543925901090B4F@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1380014925-23300-2-git-send-email-dongsheng.wang@freescale.com>
+ <1380014925-23300-4-git-send-email-dongsheng.wang@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0717F8F9@039-SN2MPN1-011.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F154392590108FF41@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1380131815.24959.185.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010909C3@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07183D0B@039-SN2MPN1-011.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F1543925901090B4F@039-SN2MPN1-021.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Johnston Michael-R49610 <r49610@freescale.com>
+ Bhushan Bharat-R65777 <R65777@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,88 +42,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-09-26 at 04:27 -0500, Xie Xiaobo-R63061 wrote:
+On Thu, 2013-09-26 at 01:18 -0500, Wang Dongsheng-B40534 wrote:
+> 
 > > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Thursday, September 26, 2013 7:10 AM
-> > To: Xie Xiaobo-R63061
-> > Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Johnston Michael-
-> > R49610
-> > Subject: Re: [PATCH V4 3/3] powerpc/85xx: Add TWR-P1025 board support
+> > From: Bhushan Bharat-R65777
+> > Sent: Thursday, September 26, 2013 12:23 PM
+> > To: Wang Dongsheng-B40534; Wood Scott-B07421
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+> > altivec idle
 > > 
-> > On Wed, 2013-09-25 at 04:50 -0500, Xie Xiaobo-R63061 wrote:
-> > > Hi Scott,
+> > 
+> > 
+> > > -----Original Message-----
+> > > From: Wang Dongsheng-B40534
+> > > Sent: Thursday, September 26, 2013 8:02 AM
+> > > To: Wood Scott-B07421
+> > > Cc: Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org
+> > > Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+> > > altivec idle
 > > >
-> > > See the reply inline.
+> > >
 > > >
 > > > > -----Original Message-----
 > > > > From: Wood Scott-B07421
-> > > > Sent: Wednesday, September 25, 2013 7:22 AM
-> > > > To: Xie Xiaobo-R63061
-> > > > Cc: linuxppc-dev@lists.ozlabs.org; Johnston Michael-R49610
-> > > > Subject: Re: [PATCH V4 3/3] powerpc/85xx: Add TWR-P1025 board
-> > > > support
+> > > > Sent: Thursday, September 26, 2013 1:57 AM
+> > > > To: Wang Dongsheng-B40534
+> > > > Cc: Bhushan Bharat-R65777; Wood Scott-B07421; linuxppc-
+> > > > dev@lists.ozlabs.org
+> > > > Subject: Re: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state
+> > > > and altivec idle
 > > > >
-> > > > On Tue, 2013-09-24 at 18:48 +0800, Xie Xiaobo wrote:
-> > > > > +		partition@80000 {
-> > > > > +			/* 3.5 MB for Linux Kernel Image */
-> > > > > +			reg = <0x00080000 0x00380000>;
-> > > > > +			label = "NOR Linux Kernel Image";
-> > > > > +		};
+> > > > On Wed, 2013-09-25 at 03:10 -0500, Wang Dongsheng-B40534 wrote:
+> > > > >
+> > > > > > -----Original Message-----
+> > > > > > From: Bhushan Bharat-R65777
+> > > > > > Sent: Wednesday, September 25, 2013 2:23 PM
+> > > > > > To: Wang Dongsheng-B40534; Wood Scott-B07421
+> > > > > > Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> > > > > > Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20
+> > > > > > state and altivec idle
+> > > > > >
+> > > > > >
+> > > > > >
+> > > > > > > -----Original Message-----
+> > > > > > > From: Linuxppc-dev [mailto:linuxppc-dev-
+> > > > > > > bounces+bharat.bhushan=freescale.com@lists.ozlabs.org] On
+> > > > > > > bounces+Behalf Of Dongsheng
+> > > > > > > Wang
+> > > > > > > Sent: Tuesday, September 24, 2013 2:59 PM
+> > > > > > > To: Wood Scott-B07421
+> > > > > > > Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> > > > > > > Subject: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state
+> > > > > > > and altivec idle
+> > > > > > >
+> > > > > > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > > > > >
+> > > > > > > Add a sys interface to enable/diable pw20 state or altivec
+> > > > > > > idle, and control the wait entry time.
+> > > > > > >
+> > > > > > > Enable/Disable interface:
+> > > > > > > 0, disable. 1, enable.
+> > > > > > > /sys/devices/system/cpu/cpuX/pw20_state
+> > > > > > > /sys/devices/system/cpu/cpuX/altivec_idle
+> > > > > > >
+> > > > > > > Set wait time interface:(Nanosecond)
+> > > > > > > /sys/devices/system/cpu/cpuX/pw20_wait_time
+> > > > > > > /sys/devices/system/cpu/cpuX/altivec_idle_wait_time
+> > > > > > > Example: Base on TBfreq is 41MHZ.
+> > > > > > > 1~47(ns): TB[63]
+> > > > > > > 48~95(ns): TB[62]
+> > > > > > > 96~191(ns): TB[61]
+> > > > > > > 192~383(ns): TB[62]
+> > > > > > > 384~767(ns): TB[60]
+> > > > > > > ...
+> > > > > > >
+> > > > > > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > > > > > ---
+> > > > > > > *v4:
+> > > > > > > Move code from 85xx/common.c to kernel/sysfs.c.
+> > > > > > >
+> > > > > > > Remove has_pw20_altivec_idle function.
+> > > > > > >
+> > > > > > > Change wait "entry_bit" to wait time.
+> > > > > > >
+> > > > > > >  arch/powerpc/kernel/sysfs.c | 291
+> > > > > > > ++++++++++++++++++++++++++++++++++++++++++++
+> > > > > > >  1 file changed, 291 insertions(+)
+> > > > > > >
+> > > > > > > diff --git a/arch/powerpc/kernel/sysfs.c
+> > > > > > > b/arch/powerpc/kernel/sysfs.c index 27a90b9..23fece6 100644
+> > > > > > > --- a/arch/powerpc/kernel/sysfs.c
+> > > > > > > +++ b/arch/powerpc/kernel/sysfs.c
+> > > > > > > @@ -85,6 +85,279 @@ __setup("smt-snooze-delay=",
+> > > > > > > setup_smt_snooze_delay);
+> > > > > > >
+> > > > > > >  #endif /* CONFIG_PPC64 */
+> > > > > > >
+> > > > > > > +#ifdef CONFIG_FSL_SOC
+> > > > > > > +#define MAX_BIT		63
+> > > > > > > +
+> > > > > > > +static u64 pw20_wt;
+> > > > > > > +static u64 altivec_idle_wt;
+> > > > > > > +
+> > > > > > > +static unsigned int get_idle_ticks_bit(u64 ns) {
+> > > > > > > +	u64 cycle;
+> > > > > > > +
+> > > > > > > +	cycle = div_u64(ns, 1000 / tb_ticks_per_usec);
+> > > > > >
+> > > > > > When tb_ticks_per_usec  > 1000 (timebase frequency > 1GHz) then
+> > > > > > this will always be ns, which is not correct, no?
 > > > >
-> > > > Is this enough?
-> > >
-> > > I will enlarge it to 6MB.
-> > >
+> > > > Actually it'll be a divide by zero in that case.
 > > > >
-> > > > > +		partition@400000 {
-> > > > > +			/* 58.75MB for JFFS2 based Root file System */
-> > > > > +			reg = <0x00400000 0x03ac0000>;
-> > > > > +			label = "NOR Root File System";
-> > > > > +		};
-> > > >
-> > > > Don't specify jffs2.
+> > > tb_ticks_per_usec = ppc_tb_freq / 1000000; Means TB freq should be
+> > > more than 1MHZ.
 > > >
-> > > OK, I will remove "jffs2"
+> > > if ppc_tb_freq less than 1000000, the tb_ticks_per_usec will be a
+> > > divide by zero.
+> > > If this condition is established, I think kernel cannot work as a
+> > normal.
 > > >
-> > > >
-> > > > > +	/* CS2 for Display */
-> > > > > +	ssd1289@2,0 {
-> > > > > +		#address-cells = <1>;
-> > > > > +		#size-cells = <1>;
-> > > > > +		compatible = "ssd1289";
-> > > > > +		reg = <0x2 0x0000 0x0002
-> > > > > +		       0x2 0x0002 0x0002>;
-> > > > > +	};
-> > > >
-> > > > Node names should be generic.  What does ssd1289 do?  If this is
-> > > > actually the display device, then it should be called "display@2,0".
-> > >
-> > > OK. The ssd1289 is a LCD controller.
-> > >
-> > > >
-> > > > How about a vendor prefix on that compatible?  Why
-> > > > #address-cells/#size- cells despite no child nodes?  Where is a
-> > > > binding that says what each of those two reg resources mean?
-> > >
-> > > I will add the vendor prefix. I review the ssd1289 driver, and the
-> > #address-cells/#size-cells were un-used. I will remove them.
+> > > So I think we need to believe that the variable is not zero.
 > > 
-> > And a binding?
+> > We do believe it is non-zero but greater than 1000 :)
 > > 
-> > Why do you need two separate reg resources rather than just <2 0 4>?
-> > Will they ever be discontiguous?
+> > > And I think TB freq
+> > > should not less than 1MHZ on PPC platform, because if TB freq less
+> > > than 1MHZ, the precision time will become very poor and system
+> > > response time will be slower.
+> > 
+> > Not sure what you are describing here related to divide by zero we are
+> > mentioning.
+> > You are talking about if tb_ticks_per_usec is ZERO and we are talking
+> > about if (1000/tb_ticks_per_usec) will be zero.
+> > 
+> > BTW, div_u64() handle the case where divider is zero.
+
+How?  When I checked yesterday it looked like div_u64() mapped to a
+hardware division on 64-bit targets.  In any case it's not good to rely
+on such behavior.
+
+> cycle = div_u64(ns, 1000 / tb_ticks_per_usec);
+> For this, I think we were discussing the two issues:
 > 
-> [Xie] I review the ssd1289 driver code, and found the driver need two reg resources, 
+> 1. Scott talking about, when the tb_ticks_per_usec is a zero.
 
-The device tree describes the hardware, not the current state of Linux
-drivers.  Especially drivers that aren't yet in Linux. :-)
+No I wasn't.  I was talking about when tb_ticks_per_usec > 1000, and
+thus "1000 / tb_ticks_per_usec" is zero.  You said that the result would
+be ns in that case.
 
-> if change the dts, the driver also should be modified accordingly. So I
-> remove the ssd1289 node from this patch. I will submit new patch
-> include the dts modification, ssd1289 driver and the binding.   
+> 2. You are talking about 1000/tb_ticks_per_usec is a zero.
+> This situation is about TB freq > 1GHZ.
+> 
+> I will fix this issue. Like I said before,
+> "If timebase frequency > 1GHz, this should be "tb_ticks_per_usec / 1000" and to get tb_ticks_per_nsec.
+> This should be changed to "cycle = ns * tb_ticks_per_nsec;""
+> 
+> #define TB_FREQ_1GHZ	1000
+> 
+> If (tb_ticks_per_usec > TB_FREQ_1GHZ)
+> 	cycle = ns * (tb_ticks_per_usec / 1000);
+> else
+> 	cycle = div_u64(ns, 1000 / tb_ticks_per_usec);
+> 
+> how about this? :)
 
-Ideally all devices (and bindings) should be described when the device
-tree is initally added, regardless of whether you have a driver yet.
+I suggested an alternative to satisfy your complaint that it's hard to
+test one of those if/else branches.
+
+Plus, your version will be quite inaccurate if (e.g.) tb_ticks_per_usec
+is 501, or 1999.
 
 -Scott
