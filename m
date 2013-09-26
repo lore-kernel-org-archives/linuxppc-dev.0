@@ -1,21 +1,29 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pb0-x22f.google.com (mail-pb0-x22f.google.com
- [IPv6:2607:f8b0:400e:c01::22f])
+Return-Path: <paolo.bonzini@gmail.com>
+Received: from mail-qa0-x22b.google.com (mail-qa0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c00::22b])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DE7FC2C00CC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 18:42:29 +1000 (EST)
-Received: by mail-pb0-f47.google.com with SMTP id rr4so833135pbb.20
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 01:42:27 -0700 (PDT)
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/ppc64: remove the unneeded load of ti_flags in
- resume_kernel
-Date: Thu, 26 Sep 2013 16:41:34 +0800
-Message-Id: <1380184894-19862-1-git-send-email-haokexin@gmail.com>
-Cc: Tiejun Chen <tiejun.chen@windriver.com>,
- linuxppc <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 6B3BF2C032F
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Sep 2013 19:06:48 +1000 (EST)
+Received: by mail-qa0-f43.google.com with SMTP id k15so4164214qaq.2
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Sep 2013 02:06:45 -0700 (PDT)
+Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
+Message-ID: <5243F933.7000907@redhat.com>
+Date: Thu, 26 Sep 2013 11:06:59 +0200
+From: Paolo Bonzini <pbonzini@redhat.com>
+MIME-Version: 1.0
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
+ some powernv systems
+References: <1380177066-3835-1-git-send-email-michael@ellerman.id.au>
+ <1380177066-3835-3-git-send-email-michael@ellerman.id.au>
+In-Reply-To: <1380177066-3835-3-git-send-email-michael@ellerman.id.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: tytso@mit.edu, herbert@gondor.apana.org.au, gleb@redhat.com,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, agraf@suse.de,
+ linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ kvm@vger.kernel.org, mpm@selenic.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +33,317 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We already got the value of current_thread_info and ti_flags and store
-them into r9 and r4 respectively before jumping to resume_kernel. So
-there is no reason to reload them again.
+Il 26/09/2013 08:31, Michael Ellerman ha scritto:
+> Some powernv systems include a hwrng. Guests can access it via the
+> H_RANDOM hcall.
+> 
+> We add a real mode implementation of H_RANDOM when a hwrng is found.
+> Userspace can detect the presence of the hwrng by quering the
+> KVM_CAP_PPC_HWRNG capability.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
+>  arch/powerpc/include/asm/archrandom.h   |  11 ++-
+>  arch/powerpc/include/asm/kvm_ppc.h      |   2 +
+>  arch/powerpc/kvm/book3s_hv_builtin.c    |  15 ++++
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 119 ++++++++++++++++++++++++++++++++
+>  arch/powerpc/kvm/powerpc.c              |   3 +
+>  arch/powerpc/platforms/powernv/rng.c    |  25 +++++++
+>  include/uapi/linux/kvm.h                |   1 +
+>  7 files changed, 174 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/archrandom.h b/arch/powerpc/include/asm/archrandom.h
+> index d853d16..86296d5 100644
+> --- a/arch/powerpc/include/asm/archrandom.h
+> +++ b/arch/powerpc/include/asm/archrandom.h
+> @@ -25,8 +25,15 @@ static inline int arch_get_random_int(unsigned int *v)
+>  	return rc;
+>  }
+>  
+> -int powernv_get_random_long(unsigned long *v);
+> -
+>  #endif /* CONFIG_ARCH_RANDOM */
+>  
+> +#ifdef CONFIG_PPC_POWERNV
+> +int powernv_hwrng_present(void);
+> +int powernv_get_random_long(unsigned long *v);
+> +int powernv_get_random_real_mode(unsigned long *v);
+> +#else
+> +static inline int powernv_hwrng_present(void) { return 0; }
+> +static inline int powernv_get_random_real_mode(unsigned long *v) { return 0; }
+> +#endif
+> +
+>  #endif /* _ASM_POWERPC_ARCHRANDOM_H */
+> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+> index b15554a..51966fd 100644
+> --- a/arch/powerpc/include/asm/kvm_ppc.h
+> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> @@ -177,6 +177,8 @@ extern int kvmppc_xics_get_xive(struct kvm *kvm, u32 irq, u32 *server,
+>  extern int kvmppc_xics_int_on(struct kvm *kvm, u32 irq);
+>  extern int kvmppc_xics_int_off(struct kvm *kvm, u32 irq);
+>  
+> +extern int kvmppc_hwrng_present(void);
+> +
+>  /*
+>   * Cuts out inst bits with ordering according to spec.
+>   * That means the leftmost bit is zero. All given bits are included.
+> diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
+> index 8cd0dae..de12592 100644
+> --- a/arch/powerpc/kvm/book3s_hv_builtin.c
+> +++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+> @@ -19,6 +19,7 @@
+>  #include <asm/cputable.h>
+>  #include <asm/kvm_ppc.h>
+>  #include <asm/kvm_book3s.h>
+> +#include <asm/archrandom.h>
+>  
+>  #include "book3s_hv_cma.h"
+>  /*
+> @@ -181,3 +182,17 @@ void __init kvm_cma_reserve(void)
+>  		kvm_cma_declare_contiguous(selected_size, align_size);
+>  	}
+>  }
+> +
+> +int kvmppc_hwrng_present(void)
+> +{
+> +	return powernv_hwrng_present();
+> +}
+> +EXPORT_SYMBOL_GPL(kvmppc_hwrng_present);
+> +
+> +long kvmppc_h_random(struct kvm_vcpu *vcpu)
+> +{
+> +	if (powernv_get_random_real_mode(&vcpu->arch.gpr[4]))
+> +		return H_SUCCESS;
+> +
+> +	return H_HARDWARE;
+> +}
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index 294b7af..35ce59e 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -1502,6 +1502,125 @@ hcall_real_table:
+>  	.long	0		/* 0x11c */
+>  	.long	0		/* 0x120 */
+>  	.long	.kvmppc_h_bulk_remove - hcall_real_table
+> +	.long	0		/* 0x128 */
+> +	.long	0		/* 0x12c */
+> +	.long	0		/* 0x130 */
+> +	.long	0		/* 0x134 */
+> +	.long	0		/* 0x138 */
+> +	.long	0		/* 0x13c */
+> +	.long	0		/* 0x140 */
+> +	.long	0		/* 0x144 */
+> +	.long	0		/* 0x148 */
+> +	.long	0		/* 0x14c */
+> +	.long	0		/* 0x150 */
+> +	.long	0		/* 0x154 */
+> +	.long	0		/* 0x158 */
+> +	.long	0		/* 0x15c */
+> +	.long	0		/* 0x160 */
+> +	.long	0		/* 0x164 */
+> +	.long	0		/* 0x168 */
+> +	.long	0		/* 0x16c */
+> +	.long	0		/* 0x170 */
+> +	.long	0		/* 0x174 */
+> +	.long	0		/* 0x178 */
+> +	.long	0		/* 0x17c */
+> +	.long	0		/* 0x180 */
+> +	.long	0		/* 0x184 */
+> +	.long	0		/* 0x188 */
+> +	.long	0		/* 0x18c */
+> +	.long	0		/* 0x190 */
+> +	.long	0		/* 0x194 */
+> +	.long	0		/* 0x198 */
+> +	.long	0		/* 0x19c */
+> +	.long	0		/* 0x1a0 */
+> +	.long	0		/* 0x1a4 */
+> +	.long	0		/* 0x1a8 */
+> +	.long	0		/* 0x1ac */
+> +	.long	0		/* 0x1b0 */
+> +	.long	0		/* 0x1b4 */
+> +	.long	0		/* 0x1b8 */
+> +	.long	0		/* 0x1bc */
+> +	.long	0		/* 0x1c0 */
+> +	.long	0		/* 0x1c4 */
+> +	.long	0		/* 0x1c8 */
+> +	.long	0		/* 0x1cc */
+> +	.long	0		/* 0x1d0 */
+> +	.long	0		/* 0x1d4 */
+> +	.long	0		/* 0x1d8 */
+> +	.long	0		/* 0x1dc */
+> +	.long	0		/* 0x1e0 */
+> +	.long	0		/* 0x1e4 */
+> +	.long	0		/* 0x1e8 */
+> +	.long	0		/* 0x1ec */
+> +	.long	0		/* 0x1f0 */
+> +	.long	0		/* 0x1f4 */
+> +	.long	0		/* 0x1f8 */
+> +	.long	0		/* 0x1fc */
+> +	.long	0		/* 0x200 */
+> +	.long	0		/* 0x204 */
+> +	.long	0		/* 0x208 */
+> +	.long	0		/* 0x20c */
+> +	.long	0		/* 0x210 */
+> +	.long	0		/* 0x214 */
+> +	.long	0		/* 0x218 */
+> +	.long	0		/* 0x21c */
+> +	.long	0		/* 0x220 */
+> +	.long	0		/* 0x224 */
+> +	.long	0		/* 0x228 */
+> +	.long	0		/* 0x22c */
+> +	.long	0		/* 0x230 */
+> +	.long	0		/* 0x234 */
+> +	.long	0		/* 0x238 */
+> +	.long	0		/* 0x23c */
+> +	.long	0		/* 0x240 */
+> +	.long	0		/* 0x244 */
+> +	.long	0		/* 0x248 */
+> +	.long	0		/* 0x24c */
+> +	.long	0		/* 0x250 */
+> +	.long	0		/* 0x254 */
+> +	.long	0		/* 0x258 */
+> +	.long	0		/* 0x25c */
+> +	.long	0		/* 0x260 */
+> +	.long	0		/* 0x264 */
+> +	.long	0		/* 0x268 */
+> +	.long	0		/* 0x26c */
+> +	.long	0		/* 0x270 */
+> +	.long	0		/* 0x274 */
+> +	.long	0		/* 0x278 */
+> +	.long	0		/* 0x27c */
+> +	.long	0		/* 0x280 */
+> +	.long	0		/* 0x284 */
+> +	.long	0		/* 0x288 */
+> +	.long	0		/* 0x28c */
+> +	.long	0		/* 0x290 */
+> +	.long	0		/* 0x294 */
+> +	.long	0		/* 0x298 */
+> +	.long	0		/* 0x29c */
+> +	.long	0		/* 0x2a0 */
+> +	.long	0		/* 0x2a4 */
+> +	.long	0		/* 0x2a8 */
+> +	.long	0		/* 0x2ac */
+> +	.long	0		/* 0x2b0 */
+> +	.long	0		/* 0x2b4 */
+> +	.long	0		/* 0x2b8 */
+> +	.long	0		/* 0x2bc */
+> +	.long	0		/* 0x2c0 */
+> +	.long	0		/* 0x2c4 */
+> +	.long	0		/* 0x2c8 */
+> +	.long	0		/* 0x2cc */
+> +	.long	0		/* 0x2d0 */
+> +	.long	0		/* 0x2d4 */
+> +	.long	0		/* 0x2d8 */
+> +	.long	0		/* 0x2dc */
+> +	.long	0		/* 0x2e0 */
+> +	.long	0		/* 0x2e4 */
+> +	.long	0		/* 0x2e8 */
+> +	.long	0		/* 0x2ec */
+> +	.long	0		/* 0x2f0 */
+> +	.long	0		/* 0x2f4 */
+> +	.long	0		/* 0x2f8 */
+> +	.long	0		/* 0x2fc */
+> +	.long	.kvmppc_h_random - hcall_real_table
+>  hcall_real_table_end:
+>  
+>  ignore_hdec:
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index 07c0106..0d7208e 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -356,6 +356,9 @@ int kvm_dev_ioctl_check_extension(long ext)
+>  		if (cpu_has_feature(CPU_FTR_ARCH_201))
+>  			r = 2;
+>  		break;
+> +	case KVM_CAP_PPC_HWRNG:
+> +		r = kvmppc_hwrng_present();
+> +		break;
+>  #endif
+>  	case KVM_CAP_SYNC_MMU:
+>  #ifdef CONFIG_KVM_BOOK3S_64_HV
+> diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
+> index 51d2e6a..ea7e5cd 100644
+> --- a/arch/powerpc/platforms/powernv/rng.c
+> +++ b/arch/powerpc/platforms/powernv/rng.c
+> @@ -20,12 +20,18 @@
+>  
+>  struct powernv_rng {
+>  	void __iomem *regs;
+> +	void __iomem *regs_real;
+>  	unsigned long mask;
+>  };
+>  
+>  static DEFINE_PER_CPU(struct powernv_rng *, powernv_rng);
+>  
+>  
+> +int powernv_hwrng_present(void)
+> +{
+> +	return __raw_get_cpu_var(powernv_rng) != NULL;
+> +}
+> +
+>  static unsigned long rng_whiten(struct powernv_rng *rng, unsigned long val)
+>  {
+>  	unsigned long parity;
+> @@ -42,6 +48,17 @@ static unsigned long rng_whiten(struct powernv_rng *rng, unsigned long val)
+>  	return val;
+>  }
+>  
+> +int powernv_get_random_real_mode(unsigned long *v)
+> +{
+> +	struct powernv_rng *rng;
+> +
+> +	rng = __raw_get_cpu_var(powernv_rng);
+> +
+> +	*v = rng_whiten(rng, in_rm64(rng->regs_real));
+> +
+> +	return 1;
+> +}
+> +
+>  int powernv_get_random_long(unsigned long *v)
+>  {
+>  	struct powernv_rng *rng;
+> @@ -76,12 +93,20 @@ static __init void rng_init_per_cpu(struct powernv_rng *rng,
+>  static __init int rng_create(struct device_node *dn)
+>  {
+>  	struct powernv_rng *rng;
+> +	struct resource res;
+>  	unsigned long val;
+>  
+>  	rng = kzalloc(sizeof(*rng), GFP_KERNEL);
+>  	if (!rng)
+>  		return -ENOMEM;
+>  
+> +	if (of_address_to_resource(dn, 0, &res)) {
+> +		kfree(rng);
+> +		return -ENXIO;
+> +	}
+> +
+> +	rng->regs_real = (void __iomem *)res.start;
+> +
+>  	rng->regs = of_iomap(dn, 0);
+>  	if (!rng->regs) {
+>  		kfree(rng);
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index 99c2533..493a409 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -668,6 +668,7 @@ struct kvm_ppc_smmu_info {
+>  #define KVM_CAP_IRQ_XICS 92
+>  #define KVM_CAP_ARM_EL1_32BIT 93
+>  #define KVM_CAP_SPAPR_MULTITCE 94
+> +#define KVM_CAP_PPC_HWRNG 95
+>  
+>  #ifdef KVM_CAP_IRQ_ROUTING
+>  
+> 
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
- arch/powerpc/kernel/entry_64.S | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+Is there any reason to do this in the kernel?  It does not have to be a
+particularly fast path; on x86, we are simply forwarding /dev/hwrng or
+/dev/random data to the guest.  You can simply use virtio-rng.
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index c04cdf7..2fe620f 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -673,9 +673,7 @@ _GLOBAL(ret_from_except_lite)
- 
- resume_kernel:
- 	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
--	CURRENT_THREAD_INFO(r9, r1)
--	ld	r8,TI_FLAGS(r9)
--	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
-+	andis.	r8,r4,_TIF_EMULATE_STACK_STORE@h
- 	beq+	1f
- 
- 	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
--- 
-1.8.3.1
+If you really want to have the hypercall, implementing it in QEMU means
+that you can support it on all systems, in fact even when running
+without KVM.  The QEMU command line would be something like "-object
+rng-random,filename=/dev/random,id=rng0 -device spapr-rng,rng=rng0".
+
+Paolo
