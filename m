@@ -1,38 +1,23 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 912812C00D1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 07:37:32 +1000 (EST)
-Received: from mail62-va3 (localhost [127.0.0.1])	by mail62-va3-R.bigfish.com
- (Postfix) with ESMTP id C7A72260210	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,
- 26 Sep 2013 21:37:27 +0000 (UTC)
-Received: from VA3EHSMHS033.bigfish.com (unknown [10.7.14.235])	by
- mail62-va3.bigfish.com (Postfix) with ESMTP id E8402180177	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 21:37:25 +0000 (UTC)
-Message-ID: <1380231435.24959.328.camel@snotra.buserror.net>
-Subject: Re: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
-From: Scott Wood <scottwood@freescale.com>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Date: Thu, 26 Sep 2013 16:37:15 -0500
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F1543925901090B4F@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1380014925-23300-2-git-send-email-dongsheng.wang@freescale.com>
- <1380014925-23300-4-git-send-email-dongsheng.wang@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0717F8F9@039-SN2MPN1-011.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F154392590108FF41@039-SN2MPN1-021.039d.mgd.msft.net>
- <1380131815.24959.185.camel@snotra.buserror.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010909C3@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D07183D0B@039-SN2MPN1-011.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F1543925901090B4F@039-SN2MPN1-021.039d.mgd.msft.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 126212C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 08:01:07 +1000 (EST)
+Message-ID: <1380232830.28561.71.camel@pasglop>
+Subject: Re: [PATCH] hvc_vio: Do not override preferred console set by
+ kernel parameter
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Fri, 27 Sep 2013 08:00:30 +1000
+In-Reply-To: <20130926212254.GA12564@kroah.com>
+References: <1378052656.25743.33.camel@deadeye.wl.decadent.org.uk>
+ <1378079740.3978.13.camel@pasglop> <20130926212254.GA12564@kroah.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Bhushan Bharat-R65777 <R65777@freescale.com>
+Mime-Version: 1.0
+Cc: Bastian Blank <waldi@debian.org>, Jiri Slaby <jslaby@suse.cz>,
+ Ben Hutchings <ben@decadent.org.uk>, linuxppc-dev@lists.ozlabs.org,
+ Debian kernel maintainers <debian-kernel@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,176 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-09-26 at 01:18 -0500, Wang Dongsheng-B40534 wrote:
-> 
-> > -----Original Message-----
-> > From: Bhushan Bharat-R65777
-> > Sent: Thursday, September 26, 2013 12:23 PM
-> > To: Wang Dongsheng-B40534; Wood Scott-B07421
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
-> > altivec idle
-> > 
-> > 
-> > 
-> > > -----Original Message-----
-> > > From: Wang Dongsheng-B40534
-> > > Sent: Thursday, September 26, 2013 8:02 AM
-> > > To: Wood Scott-B07421
-> > > Cc: Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org
-> > > Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
-> > > altivec idle
-> > >
-> > >
-> > >
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Thursday, September 26, 2013 1:57 AM
-> > > > To: Wang Dongsheng-B40534
-> > > > Cc: Bhushan Bharat-R65777; Wood Scott-B07421; linuxppc-
-> > > > dev@lists.ozlabs.org
-> > > > Subject: Re: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state
-> > > > and altivec idle
-> > > >
-> > > > On Wed, 2013-09-25 at 03:10 -0500, Wang Dongsheng-B40534 wrote:
-> > > > >
-> > > > > > -----Original Message-----
-> > > > > > From: Bhushan Bharat-R65777
-> > > > > > Sent: Wednesday, September 25, 2013 2:23 PM
-> > > > > > To: Wang Dongsheng-B40534; Wood Scott-B07421
-> > > > > > Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> > > > > > Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20
-> > > > > > state and altivec idle
-> > > > > >
-> > > > > >
-> > > > > >
-> > > > > > > -----Original Message-----
-> > > > > > > From: Linuxppc-dev [mailto:linuxppc-dev-
-> > > > > > > bounces+bharat.bhushan=freescale.com@lists.ozlabs.org] On
-> > > > > > > bounces+Behalf Of Dongsheng
-> > > > > > > Wang
-> > > > > > > Sent: Tuesday, September 24, 2013 2:59 PM
-> > > > > > > To: Wood Scott-B07421
-> > > > > > > Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> > > > > > > Subject: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state
-> > > > > > > and altivec idle
-> > > > > > >
-> > > > > > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > > > > > >
-> > > > > > > Add a sys interface to enable/diable pw20 state or altivec
-> > > > > > > idle, and control the wait entry time.
-> > > > > > >
-> > > > > > > Enable/Disable interface:
-> > > > > > > 0, disable. 1, enable.
-> > > > > > > /sys/devices/system/cpu/cpuX/pw20_state
-> > > > > > > /sys/devices/system/cpu/cpuX/altivec_idle
-> > > > > > >
-> > > > > > > Set wait time interface:(Nanosecond)
-> > > > > > > /sys/devices/system/cpu/cpuX/pw20_wait_time
-> > > > > > > /sys/devices/system/cpu/cpuX/altivec_idle_wait_time
-> > > > > > > Example: Base on TBfreq is 41MHZ.
-> > > > > > > 1~47(ns): TB[63]
-> > > > > > > 48~95(ns): TB[62]
-> > > > > > > 96~191(ns): TB[61]
-> > > > > > > 192~383(ns): TB[62]
-> > > > > > > 384~767(ns): TB[60]
-> > > > > > > ...
-> > > > > > >
-> > > > > > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > > > > > > ---
-> > > > > > > *v4:
-> > > > > > > Move code from 85xx/common.c to kernel/sysfs.c.
-> > > > > > >
-> > > > > > > Remove has_pw20_altivec_idle function.
-> > > > > > >
-> > > > > > > Change wait "entry_bit" to wait time.
-> > > > > > >
-> > > > > > >  arch/powerpc/kernel/sysfs.c | 291
-> > > > > > > ++++++++++++++++++++++++++++++++++++++++++++
-> > > > > > >  1 file changed, 291 insertions(+)
-> > > > > > >
-> > > > > > > diff --git a/arch/powerpc/kernel/sysfs.c
-> > > > > > > b/arch/powerpc/kernel/sysfs.c index 27a90b9..23fece6 100644
-> > > > > > > --- a/arch/powerpc/kernel/sysfs.c
-> > > > > > > +++ b/arch/powerpc/kernel/sysfs.c
-> > > > > > > @@ -85,6 +85,279 @@ __setup("smt-snooze-delay=",
-> > > > > > > setup_smt_snooze_delay);
-> > > > > > >
-> > > > > > >  #endif /* CONFIG_PPC64 */
-> > > > > > >
-> > > > > > > +#ifdef CONFIG_FSL_SOC
-> > > > > > > +#define MAX_BIT		63
-> > > > > > > +
-> > > > > > > +static u64 pw20_wt;
-> > > > > > > +static u64 altivec_idle_wt;
-> > > > > > > +
-> > > > > > > +static unsigned int get_idle_ticks_bit(u64 ns) {
-> > > > > > > +	u64 cycle;
-> > > > > > > +
-> > > > > > > +	cycle = div_u64(ns, 1000 / tb_ticks_per_usec);
-> > > > > >
-> > > > > > When tb_ticks_per_usec  > 1000 (timebase frequency > 1GHz) then
-> > > > > > this will always be ns, which is not correct, no?
-> > > >
-> > > > Actually it'll be a divide by zero in that case.
-> > > >
-> > > tb_ticks_per_usec = ppc_tb_freq / 1000000; Means TB freq should be
-> > > more than 1MHZ.
-> > >
-> > > if ppc_tb_freq less than 1000000, the tb_ticks_per_usec will be a
-> > > divide by zero.
-> > > If this condition is established, I think kernel cannot work as a
-> > normal.
-> > >
-> > > So I think we need to believe that the variable is not zero.
-> > 
-> > We do believe it is non-zero but greater than 1000 :)
-> > 
-> > > And I think TB freq
-> > > should not less than 1MHZ on PPC platform, because if TB freq less
-> > > than 1MHZ, the precision time will become very poor and system
-> > > response time will be slower.
-> > 
-> > Not sure what you are describing here related to divide by zero we are
-> > mentioning.
-> > You are talking about if tb_ticks_per_usec is ZERO and we are talking
-> > about if (1000/tb_ticks_per_usec) will be zero.
-> > 
-> > BTW, div_u64() handle the case where divider is zero.
+On Thu, 2013-09-26 at 14:22 -0700, Greg Kroah-Hartman wrote:
 
-How?  When I checked yesterday it looked like div_u64() mapped to a
-hardware division on 64-bit targets.  In any case it's not good to rely
-on such behavior.
+> So, I shouldn't apply this patch?  We should do something to fix this,
+> if Debian has to drag this patch on for 5 years, that's an indication
+> that this might be one solution we should use, right?
 
-> cycle = div_u64(ns, 1000 / tb_ticks_per_usec);
-> For this, I think we were discussing the two issues:
-> 
-> 1. Scott talking about, when the tb_ticks_per_usec is a zero.
+Ah sorry, dropped the ball on that one. Yes the patch is an acceptable
+band-aid but somebody should work on a better solution :-)
 
-No I wasn't.  I was talking about when tb_ticks_per_usec > 1000, and
-thus "1000 / tb_ticks_per_usec" is zero.  You said that the result would
-be ns in that case.
-
-> 2. You are talking about 1000/tb_ticks_per_usec is a zero.
-> This situation is about TB freq > 1GHZ.
-> 
-> I will fix this issue. Like I said before,
-> "If timebase frequency > 1GHz, this should be "tb_ticks_per_usec / 1000" and to get tb_ticks_per_nsec.
-> This should be changed to "cycle = ns * tb_ticks_per_nsec;""
-> 
-> #define TB_FREQ_1GHZ	1000
-> 
-> If (tb_ticks_per_usec > TB_FREQ_1GHZ)
-> 	cycle = ns * (tb_ticks_per_usec / 1000);
-> else
-> 	cycle = div_u64(ns, 1000 / tb_ticks_per_usec);
-> 
-> how about this? :)
-
-I suggested an alternative to satisfy your complaint that it's hard to
-test one of those if/else branches.
-
-Plus, your version will be quite inaccurate if (e.g.) tb_ticks_per_usec
-is 501, or 1999.
-
--Scott
+Cheers,
+Ben.
