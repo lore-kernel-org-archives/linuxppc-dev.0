@@ -1,38 +1,24 @@
-Return-Path: <zajec5@gmail.com>
-Received: from mail-we0-x232.google.com (mail-we0-x232.google.com
- [IPv6:2a00:1450:400c:c03::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 752EE2C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 06:23:14 +1000 (EST)
-Received: by mail-we0-f178.google.com with SMTP id u57so1768389wes.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 13:23:08 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3FDC62C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 07:11:48 +1000 (EST)
+Message-ID: <1380229898.24959.318.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/fsl/defconfig: enable CONFIG_AT803X_PHY
+From: Scott Wood <scottwood@freescale.com>
+To: Liu Shengzhou-B36685 <B36685@freescale.com>
+Date: Thu, 26 Sep 2013 16:11:38 -0500
+In-Reply-To: <3F453DDFF675A64A89321A1F35281021ADFACA@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1378196906-9850-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <1380158651.24959.239.camel@snotra.buserror.net>
+ <3F453DDFF675A64A89321A1F35281021ADFACA@039-SN1MPN1-003.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-Date: Thu, 26 Sep 2013 22:23:08 +0200
-Message-ID: <CACna6rxkpYzdD8_Jfi22vA2suUa3k-JM65_gCySQpp4crVCoPg@mail.gmail.com>
-Subject: Re: [PATCH 00/51] DMA mask changes
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
- linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
- linux-samsung-soc@vger.kernel.org,
- Linux SCSI List <linux-scsi@vger.kernel.org>,
- e1000-devel@lists.sourceforge.net, b43-dev <b43-dev@lists.infradead.org>,
- linux-media@vger.kernel.org, devicetree@vger.kernel.org,
- dri-devel <dri-devel@lists.freedesktop.org>, linux-tegra@vger.kernel.org,
- linux-omap@vger.kernel.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- Network Development <netdev@vger.kernel.org>, linux-usb@vger.kernel.org,
- "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
- linux-crypto@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
- linux ppc dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,22 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2013/9/19 Russell King - ARM Linux <linux@arm.linux.org.uk>:
-> This email is only being sent to the mailing lists in question, not to
-> anyone personally.  The list of individuals is far to great to do that.
-> I'm hoping no mailing lists reject the patches based on the number of
-> recipients.
+On Wed, 2013-09-25 at 22:02 -0500, Liu Shengzhou-B36685 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, September 26, 2013 9:24 AM
+> > To: Liu Shengzhou-B36685
+> > Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
+> > Subject: Re: [PATCH] powerpc/fsl/defconfig: enable CONFIG_AT803X_PHY
+> > 
+> > On Tue, 2013-09-03 at 16:28 +0800, Shengzhou Liu wrote:
+> > > Enable CONFIG_AT803X_PHY to support AR8030/8033/8035 PHY.
+> > >
+> > > Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> > > ---
+> > >  arch/powerpc/configs/corenet32_smp_defconfig |    1 +
+> > >  arch/powerpc/configs/mpc85xx_defconfig       |    1 +
+> > >  arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 +
+> > >  3 files changed, 3 insertions(+), 0 deletions(-)
+> > 
+> > Why not corenet64_smp_defconfig?  Which boards have this PHY?
+> > 
+> > -Scott
+> > 
+> Currently AT803X exists on P1010RDB, P1025TWR, etc.
+> It seems we don't use AT803X for those boards of corenet64.
 
-Huh, I think it was enough to send only 3 patches to the b43-dev@. Like:
-[PATCH 01/51] DMA-API: provide a helper to set both DMA and coherent DMA ma=
-sks
-[PATCH 14/51] DMA-API: net: b43: (...)
-[PATCH 15/51] DMA-API: net: b43legacy: (...)
-;)
+Neither of those boards are corenet32 either.
 
-I believe Joe has some nice script for doing it that way. When fixing
-some coding style / formatting, he sends only related patches to the
-given ML.
-
---=20
-Rafa=C5=82
+-Scott
