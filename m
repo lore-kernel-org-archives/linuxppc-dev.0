@@ -1,20 +1,24 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zoneX.GCU-Squad.org [194.213.125.0])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 805CB2C00C2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 20:10:16 +1000 (EST)
-Date: Thu, 26 Sep 2013 11:39:36 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Christian Kujau <lists@nerdbynature.de>
-Subject: Re: therm_adt746x: -3 invalid for parameter limit_adjust
-Message-ID: <20130926113936.24c10b78@endymion.delvare>
-In-Reply-To: <alpine.DEB.2.11.1309260202480.6519@trent.utfs.org>
-References: <alpine.DEB.2.11.1309260202480.6519@trent.utfs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: colin@colino.net, Andrew Morton <akpm@linux-foundation.org>,
- Jingoo Han <jg1.han@samsung.com>, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 20D3A2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 20:29:23 +1000 (EST)
+Date: Thu, 26 Sep 2013 11:29:14 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Chen Gang <gang.chen@asianux.com>
+Message-ID: <20130926102914.GG19304@sirena.org.uk>
+References: <523FB47C.8010800@asianux.com> <523FB6F4.60803@asianux.com>
+ <523FB735.2060906@asianux.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="DWg365Y4B18r8evw"
+In-Reply-To: <523FB735.2060906@asianux.com>
+Subject: Re: [PATCH v2] sound/soc/fsl/fsl_ssi.c: let check zero instead of
+ check NO_IRQ
+Cc: Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ lgirdwood@gmail.com, perex@perex.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,88 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christian,
 
-On Thu, 26 Sep 2013 02:16:16 -0700 (PDT), Christian Kujau wrote:
-> Hi,
-> 
-> after upgrading from 3.11 to 3.12-rc2, the therm_adt746x module could not 
-> be loaded any more:
-> 
->   therm_adt746x: `-2' invalid for parameter `limit_adjust'
-> 
-> I've alwasy passed "limit_adjust=-3" (negative 3) to the module via 
-> modprobe.conf, to lower the max temperature. Up until 3.11, loading the 
-> module would print:
-> 
->   adt746x: Lowering max temperatures from 73, 80, 109 to 67, 47, 67
-> 
-> I can load the module without limit_adjust or with positive values, but 
-> really wanted to lower the temperature, so that the fan would kick in 
-> earlier. For reference, this is what happens in 3.12-rc2:
-> 
->  v--- limit_adjust
->  |
->  0: adt746x: Lowering max temperatures from 73, 80, 109 to 70, 50, 70
->  1: adt746x: Lowering max temperatures from 73, 80, 109 to 71, 51, 71
->  2: adt746x: Lowering max temperatures from 73, 80, 109 to 72, 52, 72
->  3: adt746x: Lowering max temperatures from 73, 80, 109 to 73, 53, 73
->  4: adt746x: Lowering max temperatures from 73, 80, 109 to 74, 54, 74
-> 10: adt746x: Lowering max temperatures from 73, 80, 109 to 80, 60, 80
-> 
-> Was passing negative values to therm_adt746x ever supported?
+--DWg365Y4B18r8evw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-As far as I can see, yes.
+On Mon, Sep 23, 2013 at 11:36:21AM +0800, Chen Gang wrote:
+> NO_IRQ may be defined as '(unsigned int) -1' in some architectures
+> (arm, sh ...), and either may not be defined in some architectures
+> which can enable SND_SOC_FSL_SSI (e.g. allmodconfig for arc).
 
-> drivers/macintosh/therm_adt746x.c hasn't been touched in a while, this 
-> means some other change did it.
-> 
-> Before I attempt a full git bisect, any hints what could have caused this?
+Applied, thanks.
 
-I think it is a bug in:
+--DWg365Y4B18r8evw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-commit 6072ddc8520b86adfac6939ca32fb6e6c4de017a
-Author: Jingoo Han <jg1.han@samsung.com>
-Date:   Thu Sep 12 15:14:07 2013 -0700
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.21 (GNU/Linux)
 
-    kernel: replace strict_strto*() with kstrto*()
+iQIcBAEBAgAGBQJSRAx3AAoJELSic+t+oim9r3kP/Ax6TVOp8elPTn8GKNefAis2
+tJboRw92DQZSoqvXHiALYnb2iii2WBtXCnklDoUNXBDyar+KkpBBkIwD6Xy9F9US
+kWJ6NxfKlyq8X1GBoqSBzTZNjvoyE41hHToR9468Mz376f4HXDc2oloKauVu7hLH
+04Xm7K/G/1Cwyu7fQDRwgzV5cMm3njrqoruLtuzqpX14eF46B4YYl8ZMrfbKhR06
+ASLNsn5SkoDsQXQzBKuGHmr6wVzBWWC6eYTXLaoDF3+AiB3K5rycCkSV6Y7PMH4i
+n2G0zgW8FRchbbqxSYCkb+EwG0DTFdnZZTCQIhjKjqOz/GYCeWMeqor5xMKD6jt/
+bSA2SB7uJllUiBriUlwunbXzBRRzfHCNncK+W/y0W3auZD8F4t9S5BxOM1UZlVRj
+5i0qjIJct5n+caqjHzslb3vI8sgN6rWx9kGq1vPoCGjNfqgLWO8Lis+r5zDm46Js
+8G7Vk9mRTQETbzdjNmfPGzDdIBNx+7HOlEym7P4bSmHXLo4cwoImjQ8gq9wV4Upn
+gWTru2Q0Gr3GME92IOQgxJP6ycTW1HqNTZj4iYcEP5pbY3PrD5XRiNjk1fYZDQDf
+H16+w4tg+2hYWbuq0DNe33UpZiwaMXIFPkSUyZVCY+Pfmt8aC9t6kxQnbJSjp/Ac
+cSTS7bV6vxKX8eRgknY2
+=u0E3
+-----END PGP SIGNATURE-----
 
-The change was a good idea but the code itself is not, it has kstrtoul
-in many places where kstrtol should be used. Please try the following
-patch, hopefully that should fix your problem:
-
-From: Jean Delvare <khali@linux-fr.org>
-Subject: kernel/params: Fix handling of signed integer types
-
-Commit 6072ddc8520b86adfac6939ca32fb6e6c4de017a broke the handling
-of signed integer types, fix it.
-
-Reported-by: Christian Kujau <lists@nerdbynature.de>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- kernel/params.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
---- linux-3.12-rc2.orig/kernel/params.c	2013-09-24 00:41:09.000000000 +0200
-+++ linux-3.12-rc2/kernel/params.c	2013-09-26 11:32:43.434586197 +0200
-@@ -254,11 +254,11 @@ int parse_args(const char *doing,
- 
- 
- STANDARD_PARAM_DEF(byte, unsigned char, "%hhu", unsigned long, kstrtoul);
--STANDARD_PARAM_DEF(short, short, "%hi", long, kstrtoul);
-+STANDARD_PARAM_DEF(short, short, "%hi", long, kstrtol);
- STANDARD_PARAM_DEF(ushort, unsigned short, "%hu", unsigned long, kstrtoul);
--STANDARD_PARAM_DEF(int, int, "%i", long, kstrtoul);
-+STANDARD_PARAM_DEF(int, int, "%i", long, kstrtol);
- STANDARD_PARAM_DEF(uint, unsigned int, "%u", unsigned long, kstrtoul);
--STANDARD_PARAM_DEF(long, long, "%li", long, kstrtoul);
-+STANDARD_PARAM_DEF(long, long, "%li", long, kstrtol);
- STANDARD_PARAM_DEF(ulong, unsigned long, "%lu", unsigned long, kstrtoul);
- 
- int param_set_charp(const char *val, const struct kernel_param *kp)
-
-
--- 
-Jean Delvare
+--DWg365Y4B18r8evw--
