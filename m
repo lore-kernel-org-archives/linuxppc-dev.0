@@ -1,35 +1,14 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id A8DF52C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 19:20:52 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 17330-10 for <linuxppc-dev@lists.ozlabs.org>;
- Thu, 26 Sep 2013 10:20:48 +0100 (BST)
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id 1C7A32C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 19:24:49 +1000 (EST)
+Date: Thu, 26 Sep 2013 02:16:16 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: colin@colino.net, khali@linux-fr.org, linuxppc-dev@lists.ozlabs.org
+Subject: therm_adt746x: -3 invalid for parameter limit_adjust
+Message-ID: <alpine.DEB.2.11.1309260202480.6519@trent.utfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
-Date: Thu, 26 Sep 2013 09:58:53 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B735D@saturn3.aculab.com>
-In-Reply-To: <20130926074646.GA16774@dhcp-26-207.brq.redhat.com>
-References: <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
- <20130917143022.GA7707@concordia>
- <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
- <20130918142231.GA21650@mtj.dyndns.org>
- <20130918165045.GB2353@dhcp-26-207.brq.redhat.com>
- <20130920082458.GA10507@dhcp-26-207.brq.redhat.com>
- <20130920122736.GD7630@mtj.dyndns.org> <20130925180220.GB26273@google.com>
- <20130925205804.GA21737@dhcp-26-207.brq.redhat.com>
- <20130925210016.GA8926@htj.dyndns.org>
- <20130926074646.GA16774@dhcp-26-207.brq.redhat.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Alexander Gordeev" <agordeev@redhat.com>,
-	"Tejun Heo" <tj@kernel.org>
-Cc: linux-pci@vger.kernel.org, Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
- linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
- Jan Beulich <JBeulich@suse.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,30 +18,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() =
-interface
->=20
-> On Wed, Sep 25, 2013 at 05:00:16PM -0400, Tejun Heo wrote:
-> > Hello,
-> >
-> > On Wed, Sep 25, 2013 at 10:58:05PM +0200, Alexander Gordeev wrote:
-> > > Unfortunately, pSeries is a shows-topper here :( It seems we have =
-to
-> > > introduce pci_get_msi{,x}_limit() interfaces to honour the quota
-> > > thing.  I just hope the hardware set for pSeries is limited and we
-> > > won't need to use it for all drivers.
-> >
-> > Can you please go into a bit of detail on that?  Why does it matter?
->=20
-> Because otherwise we will re-introduce a problem described by Michael:
-> "We have a small number of MSIs available, limited by hardware &
-> firmware, if we don't impose a quota then the first device that probes
-> will get most/all of the MSIs and other devices miss out."
+Hi,
 
-Would it be possible to do some kind of 2-stage allocation.
-In the first pass the driver would pass a minimum and desired
-number of MSI-X interrupts, but not actually be given any.
-Interrupts could then be allocated after it is known how many
-are required and how many are available.
+after upgrading from 3.11 to 3.12-rc2, the therm_adt746x module could not 
+be loaded any more:
 
-	David
+  therm_adt746x: `-2' invalid for parameter `limit_adjust'
+
+I've alwasy passed "limit_adjust=-3" (negative 3) to the module via 
+modprobe.conf, to lower the max temperature. Up until 3.11, loading the 
+module would print:
+
+  adt746x: Lowering max temperatures from 73, 80, 109 to 67, 47, 67
+
+I can load the module without limit_adjust or with positive values, but 
+really wanted to lower the temperature, so that the fan would kick in 
+earlier. For reference, this is what happens in 3.12-rc2:
+
+ v--- limit_adjust
+ |
+ 0: adt746x: Lowering max temperatures from 73, 80, 109 to 70, 50, 70
+ 1: adt746x: Lowering max temperatures from 73, 80, 109 to 71, 51, 71
+ 2: adt746x: Lowering max temperatures from 73, 80, 109 to 72, 52, 72
+ 3: adt746x: Lowering max temperatures from 73, 80, 109 to 73, 53, 73
+ 4: adt746x: Lowering max temperatures from 73, 80, 109 to 74, 54, 74
+10: adt746x: Lowering max temperatures from 73, 80, 109 to 80, 60, 80
+
+Was passing negative values to therm_adt746x ever supported? 
+
+drivers/macintosh/therm_adt746x.c hasn't been touched in a while, this 
+means some other change did it.
+
+Before I attempt a full git bisect, any hints what could have caused this?
+
+Thanks,
+Christian.
+-- 
+BOFH excuse #339:
+
+manager in the cable duct
