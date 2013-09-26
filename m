@@ -1,33 +1,22 @@
-Return-Path: <r63061@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
+Return-Path: <B45939@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E69482C00D1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 19:28:03 +1000 (EST)
-Received: from mail54-va3 (localhost [127.0.0.1])	by mail54-va3-R.bigfish.com
- (Postfix) with ESMTP id 5D17148009F	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,
- 26 Sep 2013 09:27:59 +0000 (UTC)
-Received: from VA3EHSMHS001.bigfish.com (unknown [10.7.14.231])	by
- mail54-va3.bigfish.com (Postfix) with ESMTP id B51F5440041	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 09:27:56 +0000 (UTC)
-From: Xie Xiaobo-R63061 <r63061@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH V4 3/3] powerpc/85xx: Add TWR-P1025 board support
-Date: Thu, 26 Sep 2013 09:27:54 +0000
-Message-ID: <69EC9ED88E3CC04094A78F8074A7986D600530@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1380019739-8196-1-git-send-email-X.Xie@freescale.com>
- <1380019739-8196-3-git-send-email-X.Xie@freescale.com>
- <1380064944.24959.143.camel@snotra.buserror.net>
- <69EC9ED88E3CC04094A78F8074A7986D5FF91C@039-SN1MPN1-003.039d.mgd.msft.net>
- <1380150578.24959.213.camel@snotra.buserror.net>
-In-Reply-To: <1380150578.24959.213.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 691CB2C0331
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 19:34:17 +1000 (EST)
+From: <hongbo.zhang@freescale.com>
+To: <rob.herring@calxeda.com>, <pawel.moll@arm.com>, <mark.rutland@arm.com>,
+ <swarren@wwwdotorg.org>, <ian.campbell@citrix.com>, <vinod.koul@intel.com>,
+ <djbw@fb.com>
+Subject: [PATCH v11 0/3] DMA: Freescale: Add support for 8-channel DMA engine
+Date: Thu, 26 Sep 2013 17:33:40 +0800
+Message-ID: <1380188023-3936-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Cc: Johnston Michael-R49610 <r49610@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Hongbo Zhang <hongbo.zhang@freescale.com>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,48 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDI2LCAyMDEzIDc6MTAgQU0NCj4gVG86IFhpZSBY
-aWFvYm8tUjYzMDYxDQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMtZGV2QGxpc3Rz
-Lm96bGFicy5vcmc7IEpvaG5zdG9uIE1pY2hhZWwtDQo+IFI0OTYxMA0KPiBTdWJqZWN0OiBSZTog
-W1BBVENIIFY0IDMvM10gcG93ZXJwYy84NXh4OiBBZGQgVFdSLVAxMDI1IGJvYXJkIHN1cHBvcnQN
-Cj4gDQo+IE9uIFdlZCwgMjAxMy0wOS0yNSBhdCAwNDo1MCAtMDUwMCwgWGllIFhpYW9iby1SNjMw
-NjEgd3JvdGU6DQo+ID4gSGkgU2NvdHQsDQo+ID4NCj4gPiBTZWUgdGhlIHJlcGx5IGlubGluZS4N
-Cj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFdvb2Qg
-U2NvdHQtQjA3NDIxDQo+ID4gPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAyNSwgMjAxMyA3
-OjIyIEFNDQo+ID4gPiBUbzogWGllIFhpYW9iby1SNjMwNjENCj4gPiA+IENjOiBsaW51eHBwYy1k
-ZXZAbGlzdHMub3psYWJzLm9yZzsgSm9obnN0b24gTWljaGFlbC1SNDk2MTANCj4gPiA+IFN1Ympl
-Y3Q6IFJlOiBbUEFUQ0ggVjQgMy8zXSBwb3dlcnBjLzg1eHg6IEFkZCBUV1ItUDEwMjUgYm9hcmQN
-Cj4gPiA+IHN1cHBvcnQNCj4gPiA+DQo+ID4gPiBPbiBUdWUsIDIwMTMtMDktMjQgYXQgMTg6NDgg
-KzA4MDAsIFhpZSBYaWFvYm8gd3JvdGU6DQo+ID4gPiA+ICsJCXBhcnRpdGlvbkA4MDAwMCB7DQo+
-ID4gPiA+ICsJCQkvKiAzLjUgTUIgZm9yIExpbnV4IEtlcm5lbCBJbWFnZSAqLw0KPiA+ID4gPiAr
-CQkJcmVnID0gPDB4MDAwODAwMDAgMHgwMDM4MDAwMD47DQo+ID4gPiA+ICsJCQlsYWJlbCA9ICJO
-T1IgTGludXggS2VybmVsIEltYWdlIjsNCj4gPiA+ID4gKwkJfTsNCj4gPiA+DQo+ID4gPiBJcyB0
-aGlzIGVub3VnaD8NCj4gPg0KPiA+IEkgd2lsbCBlbmxhcmdlIGl0IHRvIDZNQi4NCj4gPg0KPiA+
-ID4NCj4gPiA+ID4gKwkJcGFydGl0aW9uQDQwMDAwMCB7DQo+ID4gPiA+ICsJCQkvKiA1OC43NU1C
-IGZvciBKRkZTMiBiYXNlZCBSb290IGZpbGUgU3lzdGVtICovDQo+ID4gPiA+ICsJCQlyZWcgPSA8
-MHgwMDQwMDAwMCAweDAzYWMwMDAwPjsNCj4gPiA+ID4gKwkJCWxhYmVsID0gIk5PUiBSb290IEZp
-bGUgU3lzdGVtIjsNCj4gPiA+ID4gKwkJfTsNCj4gPiA+DQo+ID4gPiBEb24ndCBzcGVjaWZ5IGpm
-ZnMyLg0KPiA+DQo+ID4gT0ssIEkgd2lsbCByZW1vdmUgImpmZnMyIg0KPiA+DQo+ID4gPg0KPiA+
-ID4gPiArCS8qIENTMiBmb3IgRGlzcGxheSAqLw0KPiA+ID4gPiArCXNzZDEyODlAMiwwIHsNCj4g
-PiA+ID4gKwkJI2FkZHJlc3MtY2VsbHMgPSA8MT47DQo+ID4gPiA+ICsJCSNzaXplLWNlbGxzID0g
-PDE+Ow0KPiA+ID4gPiArCQljb21wYXRpYmxlID0gInNzZDEyODkiOw0KPiA+ID4gPiArCQlyZWcg
-PSA8MHgyIDB4MDAwMCAweDAwMDINCj4gPiA+ID4gKwkJICAgICAgIDB4MiAweDAwMDIgMHgwMDAy
-PjsNCj4gPiA+ID4gKwl9Ow0KPiA+ID4NCj4gPiA+IE5vZGUgbmFtZXMgc2hvdWxkIGJlIGdlbmVy
-aWMuICBXaGF0IGRvZXMgc3NkMTI4OSBkbz8gIElmIHRoaXMgaXMNCj4gPiA+IGFjdHVhbGx5IHRo
-ZSBkaXNwbGF5IGRldmljZSwgdGhlbiBpdCBzaG91bGQgYmUgY2FsbGVkICJkaXNwbGF5QDIsMCIu
-DQo+ID4NCj4gPiBPSy4gVGhlIHNzZDEyODkgaXMgYSBMQ0QgY29udHJvbGxlci4NCj4gPg0KPiA+
-ID4NCj4gPiA+IEhvdyBhYm91dCBhIHZlbmRvciBwcmVmaXggb24gdGhhdCBjb21wYXRpYmxlPyAg
-V2h5DQo+ID4gPiAjYWRkcmVzcy1jZWxscy8jc2l6ZS0gY2VsbHMgZGVzcGl0ZSBubyBjaGlsZCBu
-b2Rlcz8gIFdoZXJlIGlzIGENCj4gPiA+IGJpbmRpbmcgdGhhdCBzYXlzIHdoYXQgZWFjaCBvZiB0
-aG9zZSB0d28gcmVnIHJlc291cmNlcyBtZWFuPw0KPiA+DQo+ID4gSSB3aWxsIGFkZCB0aGUgdmVu
-ZG9yIHByZWZpeC4gSSByZXZpZXcgdGhlIHNzZDEyODkgZHJpdmVyLCBhbmQgdGhlDQo+ICNhZGRy
-ZXNzLWNlbGxzLyNzaXplLWNlbGxzIHdlcmUgdW4tdXNlZC4gSSB3aWxsIHJlbW92ZSB0aGVtLg0K
-PiANCj4gQW5kIGEgYmluZGluZz8NCj4gDQo+IFdoeSBkbyB5b3UgbmVlZCB0d28gc2VwYXJhdGUg
-cmVnIHJlc291cmNlcyByYXRoZXIgdGhhbiBqdXN0IDwyIDAgND4/DQo+IFdpbGwgdGhleSBldmVy
-IGJlIGRpc2NvbnRpZ3VvdXM/DQoNCltYaWVdIEkgcmV2aWV3IHRoZSBzc2QxMjg5IGRyaXZlciBj
-b2RlLCBhbmQgZm91bmQgdGhlIGRyaXZlciBuZWVkIHR3byByZWcgcmVzb3VyY2VzLCBpZiBjaGFu
-Z2UgdGhlIGR0cywgdGhlIGRyaXZlciBhbHNvIHNob3VsZCBiZSBtb2RpZmllZCBhY2NvcmRpbmds
-eS4gU28gSSByZW1vdmUgdGhlIHNzZDEyODkgbm9kZSBmcm9tIHRoaXMgcGF0Y2guIEkgd2lsbCBz
-dWJtaXQgbmV3IHBhdGNoIGluY2x1ZGUgdGhlIGR0cyBtb2RpZmljYXRpb24sIHNzZDEyODkgZHJp
-dmVyIGFuZCB0aGUgYmluZGluZy4gICANCg0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
+
+Hi DMA and DT maintainers, please have a look at these V11 patches.
+
+Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch set
+adds support this DMA engine.
+
+V10->V11 changes:
+- add "contains two entries" for reg description in patch [2/3]
+
+V9->V10 changes:
+- update binding description text, mainly about the reg property and also Elo3
+  DMA controller specification
+
+V8->V9 changes:
+- add "Acked-by: Mark Rutland <mark.rutland@arm.com>" into patch [1/3]
+- update reg entry <0x100300 0x4 0x100600 0x4> to two seperate ones
+  <0x100300 0x4>, <0x100600 0x4> in patch [2/3]
+- and also use "QorIQ Elo3 DMA" to mention previous "QorIQ DMA" in [2/3]
+
+V7->V8 changes:
+- change the word "mapping" to "specifier" for reg and interrupts description
+
+V6->V7 changes:
+- only remove unnecessary "CHIP-dma" explanations in [1/3]
+
+V5->V6 changes:
+- minor updates of descriptions in binding document and Kconfig
+- remove [4/4], that should be another patch in future
+
+V4->V5 changes:
+- update description in the dt binding document, to make it more resonable
+- add new patch [4/4] to eliminate a compiling warning which already exists
+  for a long time
+
+V3->V4 changes:
+- introduce new patch [1/3] to revise the legacy dma binding document
+- and then add new paragraph to describe new dt node binding in [2/3]
+- rebase to latest kernel v3.11-rc1
+
+V2->V3 changes:
+- edit Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+- edit text string in Kconfig and the driver files, using "elo series" to
+  mention all the current "elo*"
+
+V1->V2 changes:
+- removed the codes handling the register dgsr1, since it isn't used currently
+- renamed the DMA DT compatible to "fsl,elo3-dma"
+- renamed the new dts files to "elo3-dma-<n>.dtsi"
+
+Hongbo Zhang (3):
+  DMA: Freescale: revise device tree binding document
+  DMA: Freescale: Add new 8-channel DMA engine device tree nodes
+  DMA: Freescale: update driver to support 8-channel DMA engine
+
+ .../devicetree/bindings/powerpc/fsl/dma.txt        |  138 ++++++++++++++------
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
+ arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   82 ++++++++++++
+ arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   82 ++++++++++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
+ drivers/dma/Kconfig                                |    9 +-
+ drivers/dma/fsldma.c                               |    9 +-
+ drivers/dma/fsldma.h                               |    2 +-
+ 8 files changed, 281 insertions(+), 49 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+
+-- 
+1.7.9.5
