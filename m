@@ -1,22 +1,21 @@
 Return-Path: <B32579@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0B83F2C019C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 15:45:46 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C4A612C041D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 15:46:09 +1000 (EST)
 From: Prabhakar Kushwaha <prabhakar@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH][v6] powerpc/mpc85xx:Add initial device tree support of T104x
-Date: Thu, 26 Sep 2013 11:15:14 +0530
-Message-ID: <1380174315-10977-1-git-send-email-prabhakar@freescale.com>
+Subject: =?UTF-8?q?=5BPATCH=5D=5Bv6=5D=20powerpc/fsl-booke=3A=20Add=20initial=20T104x=5FQDS=20board=20support?=
+Date: Thu, 26 Sep 2013 11:15:42 +0530
+Message-ID: <1380174342-11028-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Priyanka Jain <Priyanka.Jain@freescale.com>, scottwood@freescale.com,
- Varun Sethi <Varun.Sethi@freescale.com>,
- Prabhakar Kushwaha <prabhakar@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: scottwood@freescale.com, Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ Prabhakar Kushwaha <prabhakar@freescale.com>,
+ Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,676 +25,467 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The QorIQ T1040/T1042 processor support four integrated 64-bit e5500 PA
-processor cores with high-performance data path acceleration architecture
-and network peripheral interfaces required for networking & telecommunications.
+ Add support for T104x board in board file t104x_qds.c, It is common for
+ both T1040 and T1042 as they share same QDS board.
 
-T1042 personality is a reduced personality of T1040 without Integrated 8-port
-Gigabit Ethernet switch.
+ T1040QDS board Overview
+ -----------------------
+ - SERDES Connections, 8 lanes supporting:
+      =E2=80=94 PCI Express: supporting Gen 1 and Gen 2;
+      =E2=80=94 SGMII
+      =E2=80=94 QSGMII
+      =E2=80=94 SATA 2.0
+      =E2=80=94 Aurora debug with dedicated connectors (T1040 only)
+ - DDR Controller
+     - Supports rates of up to 1600 MHz data-rate
+     - Supports one DDR3LP UDIMM/RDIMMs, of single-, dual- or quad-rank t=
+ypes.
+ -IFC/Local Bus
+     - NAND flash: 8-bit, async, up to 2GB.
+     - NOR: 8-bit or 16-bit, non-multiplexed, up to 512MB
+     - GASIC: Simple (minimal) target within Qixis FPGA
+     - PromJET rapid memory download support
+ - Ethernet
+     - Two on-board RGMII 10/100/1G ethernet ports.
+     - PHY #0 remains powered up during deep-sleep (T1040 only)
+ - QIXIS System Logic FPGA
+ - Clocks
+     - System and DDR clock (SYSCLK, =E2=80=9CDDRCLK=E2=80=9D)
+     - SERDES clocks
+ - Power Supplies
+ - Video
+     - DIU supports video at up to 1280x1024x32bpp
+ - USB
+     - Supports two USB 2.0 ports with integrated PHYs
+     =E2=80=94 Two type A ports with 5V@1.5A per port.
+     =E2=80=94 Second port can be converted to OTG mini-AB
+ - SDHC
+     - SDHC port connects directly to an adapter card slot, featuring:
+     - Supporting SD slots for: SD, SDHC (1x, 4x, 8x) and/or MMC
+     =E2=80=94 Supporting eMMC memory devices
+ - SPI
+    -  On-board support of 3 different devices and sizes
+ - Other IO
+    - Two Serial ports
+    - ProfiBus port
+    - Four I2C ports
 
-The T1040/T1042 SoC includes the following function and features:
+Add T104xQDS support in Kconfig and Makefile. Also create device tree.
+Following features are currently not implmented.=20
+  - SerDes: Aurora
+  - IFC: GASIC, Promjet
+  - QIXIS
+  - Ethernet
+  - DIU
+  - power supplies management
+  - ProfiBus
 
- - Four e5500 cores, each with a private 256 KB L2 cache
- - 256 KB shared L3 CoreNet platform cache (CPC)
- - Interconnect CoreNet platform
- - 32-/64-bit DDR3L/DDR4 SDRAM memory controller with ECC and interleaving
-   support
- - Data Path Acceleration Architecture (DPAA) incorporating acceleration
- for the following functions:
-    -  Packet parsing, classification, and distribution
-    -  Queue management for scheduling, packet sequencing, and congestion
-    	management
-    -  Cryptography Acceleration (SEC 5.0)
-    - RegEx Pattern Matching Acceleration (PME 2.2)
-    - IEEE Std 1588 support
-    - Hardware buffer management for buffer allocation and deallocation
- - Ethernet interfaces
-    - Integrated 8-port Gigabit Ethernet switch (T1040 only)
-    - Four 1 Gbps Ethernet controllers
- - Two RGMII interfaces or one RGMII and one MII interfaces
- - High speed peripheral interfaces
-   - Four PCI Express 2.0 controllers running at up to 5 GHz
-   - Two SATA controllers supporting 1.5 and 3.0 Gb/s operation
-   - Upto two QSGMII interface
-   - Upto six SGMII interface supporting 1000 Mbps
-   - One SGMII interface supporting upto 2500 Mbps
- - Additional peripheral interfaces
-   - Two USB 2.0 controllers with integrated PHY
-   - SD/eSDHC/eMMC
-   -  eSPI controller
-   - Four I2C controllers
-   - Four UARTs
-   - Four GPIO controllers
-   - Integrated flash controller (IFC)
-   - Change this to  LCD/ HDMI interface (DIU) with 12 bit dual data rate
-   - TDM interface
- - Multicore programmable interrupt controller (PIC)
- - Two 8-channel DMA engines
- - Single source clocking implementation
- - Deep Sleep power implementaion (wakeup from GPIO/Timer/Ethernet/USB)
-
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
 Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
 Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
 ---
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
+ Based upon git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.gi=
+t
  Branch merge
 
-Changes for v2: Incorporated Scott's comments
-	- Update t1040si-post.dtsi
-    - update clock device tree node as per
-      http://patchwork.ozlabs.org/patch/274134/
-    - removed DMA node, It will be added later as per
-      http://patchwork.ozlabs.org/patch/271238/
-    - Updated display compatible field
- 
- Changes for v3: Incorporated Scott's comments
-   - Updated soc compatible field
-   - updated clock compatible field
+ Changes for v2: Incorporated Scott's comments
+	- Created t104xqds.dtsi, both t1040qds & t1042qds include it
+	- Updated get_irq=20
+ Changes for v3: Sending as it is
+ Changes for v4: Updated description
+ Changes for v5: Incorporated Scott's comments
+ 	- Ported on top of Kevin's patch
+ Changes for v6: Updated depedencies
+=20
+ This patch depends upon followng patches in mentioned order
+ 1) powerpc/b4qds: enable coreint
+   http://patchwork.ozlabs.org/patch/274390/
 
- Changes for v4: Sending as it is 
- Changes for v5: Sending as it is 
- Changes for v6: Updated branch of creation 
+ 2) powerpc/85xx: introduce corenet_generic machine
+   http://patchwork.ozlabs.org/patch/278067/
 
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi |  423 +++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t1042si-post.dtsi |   41 +++
- arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi  |  109 +++++++
- 3 files changed, 573 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/t1042si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
+ 3) powerpc/85xx: rename the corenet_ds.c to corenet_generic.c
+   http://patchwork.ozlabs.org/patch/278072/
 
-diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+ 4) powerpc/85xx: use one kernel option for all the CoreNet_Generic board=
+s
+   http://patchwork.ozlabs.org/patch/278073/
+
+
+ arch/powerpc/boot/dts/t1040qds.dts            |   46 ++++++
+ arch/powerpc/boot/dts/t1042qds.dts            |   46 ++++++
+ arch/powerpc/boot/dts/t104xqds.dtsi           |  192 +++++++++++++++++++=
+++++++
+ arch/powerpc/platforms/85xx/corenet_generic.c |    4 +
+ 4 files changed, 288 insertions(+)
+ create mode 100644 arch/powerpc/boot/dts/t1040qds.dts
+ create mode 100644 arch/powerpc/boot/dts/t1042qds.dts
+ create mode 100644 arch/powerpc/boot/dts/t104xqds.dtsi
+
+diff --git a/arch/powerpc/boot/dts/t1040qds.dts b/arch/powerpc/boot/dts/t=
+1040qds.dts
 new file mode 100644
-index 0000000..b16b528
+index 0000000..973c29c
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-@@ -0,0 +1,423 @@
++++ b/arch/powerpc/boot/dts/t1040qds.dts
+@@ -0,0 +1,46 @@
 +/*
-+ * T1040 Silicon/SoC Device Tree Source (post include)
++ * T1040QDS Device Tree Source
 + *
 + * Copyright 2013 Freescale Semiconductor Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
++ * modification, are permitted provided that the following conditions ar=
+e met:
 + *     * Redistributions of source code must retain the above copyright
 + *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
++ *     * Redistributions in binary form must reproduce the above copyrig=
+ht
 + *	 notice, this list of conditions and the following disclaimer in the
 + *	 documentation and/or other materials provided with the distribution.
 + *     * Neither the name of Freescale Semiconductor nor the
 + *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
++ *	 derived from this software without specific prior written permission=
+.
 + *
 + *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * ALTERNATIVELY, this software may be distributed under the terms of th=
+e
 + * GNU General Public License ("GPL") as published by the Free Software
 + * Foundation, either version 2 of that License or (at your option) any
 + * later version.
 + *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
+LIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
+E
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
+NY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
+MAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
+RVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
+ED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
+ TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
+ OF THIS
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+&ifc {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	compatible = "fsl,ifc", "simple-bus";
-+	interrupts = <25 2 0 0>;
-+};
-+
-+&pci0 {
-+	compatible = "fsl,t1040-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <20 2 0 0>;
-+	fsl,iommu-parent = <&pamu0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <20 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 40 1 0 0
-+			0000 0 0 2 &mpic 1 1 0 0
-+			0000 0 0 3 &mpic 2 1 0 0
-+			0000 0 0 4 &mpic 3 1 0 0
-+			>;
-+	};
-+};
-+
-+&pci1 {
-+	compatible = "fsl,t1040-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0 0xff>;
-+	interrupts = <21 2 0 0>;
-+	fsl,iommu-parent = <&pamu0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <21 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 41 1 0 0
-+			0000 0 0 2 &mpic 5 1 0 0
-+			0000 0 0 3 &mpic 6 1 0 0
-+			0000 0 0 4 &mpic 7 1 0 0
-+			>;
-+	};
-+};
-+
-+&pci2 {
-+	compatible = "fsl,t1040-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <22 2 0 0>;
-+	fsl,iommu-parent = <&pamu0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <22 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 42 1 0 0
-+			0000 0 0 2 &mpic 9 1 0 0
-+			0000 0 0 3 &mpic 10 1 0 0
-+			0000 0 0 4 &mpic 11 1 0 0
-+			>;
-+	};
-+};
-+
-+&pci3 {
-+	compatible = "fsl,t1040-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <23 2 0 0>;
-+	fsl,iommu-parent = <&pamu0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <23 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 43 1 0 0
-+			0000 0 0 2 &mpic 0 1 0 0
-+			0000 0 0 3 &mpic 4 1 0 0
-+			0000 0 0 4 &mpic 8 1 0 0
-+			>;
-+	};
-+};
-+
-+&dcsr {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	compatible = "fsl,dcsr", "simple-bus";
-+
-+	dcsr-epu@0 {
-+		compatible = "fsl,t1040-dcsr-epu", "fsl,dcsr-epu";
-+		interrupts = <52 2 0 0
-+			      84 2 0 0
-+			      85 2 0 0>;
-+		reg = <0x0 0x1000>;
-+	};
-+	dcsr-npc {
-+		compatible = "fsl,t1040-dcsr-cnpc", "fsl,dcsr-cnpc";
-+		reg = <0x1000 0x1000 0x1002000 0x10000>;
-+	};
-+	dcsr-nxc@2000 {
-+		compatible = "fsl,dcsr-nxc";
-+		reg = <0x2000 0x1000>;
-+	};
-+	dcsr-corenet {
-+		compatible = "fsl,dcsr-corenet";
-+		reg = <0x8000 0x1000 0x1A000 0x1000>;
-+	};
-+	dcsr-dpaa@9000 {
-+		compatible = "fsl,t1040-dcsr-dpaa", "fsl,dcsr-dpaa";
-+		reg = <0x9000 0x1000>;
-+	};
-+	dcsr-ocn@11000 {
-+		compatible = "fsl,t1040-dcsr-ocn", "fsl,dcsr-ocn";
-+		reg = <0x11000 0x1000>;
-+	};
-+	dcsr-ddr@12000 {
-+		compatible = "fsl,dcsr-ddr";
-+		dev-handle = <&ddr1>;
-+		reg = <0x12000 0x1000>;
-+	};
-+	dcsr-nal@18000 {
-+		compatible = "fsl,t1040-dcsr-nal", "fsl,dcsr-nal";
-+		reg = <0x18000 0x1000>;
-+	};
-+	dcsr-rcpm@22000 {
-+		compatible = "fsl,t1040-dcsr-rcpm", "fsl,dcsr-rcpm";
-+		reg = <0x22000 0x1000>;
-+	};
-+	dcsr-snpc@30000 {
-+		compatible = "fsl,t1040-dcsr-snpc", "fsl,dcsr-snpc";
-+		reg = <0x30000 0x1000 0x1022000 0x10000>;
-+	};
-+	dcsr-snpc@31000 {
-+		compatible = "fsl,t1040-dcsr-snpc", "fsl,dcsr-snpc";
-+		reg = <0x31000 0x1000 0x1042000 0x10000>;
-+	};
-+	dcsr-cpu-sb-proxy@100000 {
-+		compatible = "fsl,dcsr-e5500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu0>;
-+		reg = <0x100000 0x1000 0x101000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@108000 {
-+		compatible = "fsl,dcsr-e5500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu1>;
-+		reg = <0x108000 0x1000 0x109000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@110000 {
-+		compatible = "fsl,dcsr-e5500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu2>;
-+		reg = <0x110000 0x1000 0x111000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@118000 {
-+		compatible = "fsl,dcsr-e5500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu3>;
-+		reg = <0x118000 0x1000 0x119000 0x1000>;
-+	};
-+};
-+
-+&soc {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	device_type = "soc";
-+	compatible = "simple-bus";
-+
-+	soc-sram-error {
-+		compatible = "fsl,soc-sram-error";
-+		interrupts = <16 2 1 29>;
-+	};
-+
-+	corenet-law@0 {
-+		compatible = "fsl,corenet-law";
-+		reg = <0x0 0x1000>;
-+		fsl,num-laws = <16>;
-+	};
-+
-+	ddr1: memory-controller@8000 {
-+		compatible = "fsl,qoriq-memory-controller-v5.0",
-+				"fsl,qoriq-memory-controller";
-+		reg = <0x8000 0x1000>;
-+		interrupts = <16 2 1 23>;
-+	};
-+
-+	cpc: l3-cache-controller@10000 {
-+		compatible = "fsl,t1040-l3-cache-controller", "cache";
-+		reg = <0x10000 0x1000>;
-+		interrupts = <16 2 1 27>;
-+	};
-+
-+	corenet-cf@18000 {
-+		compatible = "fsl,corenet2-cf";
-+		reg = <0x18000 0x1000>;
-+		interrupts = <16 2 1 31>;
-+		fsl,ccf-num-csdids = <32>;
-+		fsl,ccf-num-snoopids = <32>;
-+	};
-+
-+	iommu@20000 {
-+		compatible = "fsl,pamu-v1.0", "fsl,pamu";
-+		reg = <0x20000 0x1000>;
-+		ranges = <0 0x20000 0x1000>;
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		interrupts = <
-+			24 2 0 0
-+			16 2 1 30>;
-+		pamu0: pamu@0 {
-+			reg = <0 0x1000>;
-+			fsl,primary-cache-geometry = <128 1>;
-+			fsl,secondary-cache-geometry = <16 2>;
-+		};
-+	};
-+
-+/include/ "qoriq-mpic.dtsi"
-+
-+	guts: global-utilities@e0000 {
-+		compatible = "fsl,t1040-device-config", "fsl,qoriq-device-config-2.0";
-+		reg = <0xe0000 0xe00>;
-+		fsl,has-rstcr;
-+		fsl,liodn-bits = <12>;
-+	};
-+
-+	clockgen: global-utilities@e1000 {
-+		compatible = "fsl,t1040-clockgen", "fsl,qoriq-clockgen-2.0",
-+				   "fixed-clock";
-+		reg = <0xe1000 0x1000>;
-+		clock-output-names = "sysclk";
-+		#clock-cells = <0>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800 4>;
-+			compatible = "fsl,qoriq-core-pll-2.0";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
-+		};
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820 4>;
-+			compatible = "fsl,qoriq-core-pll-2.0";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
-+		};
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0 4>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				"pll1_0", "pll1_1", "pll1_2";
-+			clock-output-names = "cmux0";
-+		};
-+		mux1: mux1@20 {
-+			#clock-cells = <0>;
-+			reg = <0x20 4>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				"pll1_0", "pll1_1", "pll1_2";
-+			clock-output-names = "cmux1";
-+		};
-+		mux2: mux2@40 {
-+			#clock-cells = <0>;
-+			reg = <0x40 4>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				"pll1_0", "pll1_1", "pll1_2";
-+			clock-output-names = "cmux2";
-+		};
-+		mux3: mux3@60 {
-+			#clock-cells = <0>;
-+			reg = <0x60 4>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				"pll1_0", "pll1_1", "pll1_2";
-+			clock-output-names = "cmux3";
-+		};
-+	};
-+
-+	rcpm: global-utilities@e2000 {
-+		compatible = "fsl,t1040-rcpm", "fsl,qoriq-rcpm-2.0";
-+		reg = <0xe2000 0x1000>;
-+	};
-+
-+	sfp: sfp@e8000 {
-+		compatible = "fsl,t1040-sfp";
-+		reg	   = <0xe8000 0x1000>;
-+	};
-+
-+	serdes: serdes@ea000 {
-+		compatible = "fsl,t1040-serdes";
-+		reg	   = <0xea000 0x4000>;
-+	};
-+
-+/include/ "qoriq-espi-0.dtsi"
-+	spi@110000 {
-+		fsl,espi-num-chipselects = <4>;
-+	};
-+
-+/include/ "qoriq-esdhc-0.dtsi"
-+	sdhc@114000 {
-+		compatible = "fsl,t1040-esdhc", "fsl,esdhc";
-+		fsl,iommu-parent = <&pamu0>;
-+		fsl,liodn-reg = <&guts 0x530>; /* eSDHCLIODNR */
-+		sdhci,auto-cmd12;
-+	};
-+/include/ "qoriq-i2c-0.dtsi"
-+/include/ "qoriq-i2c-1.dtsi"
-+/include/ "qoriq-duart-0.dtsi"
-+/include/ "qoriq-duart-1.dtsi"
-+/include/ "qoriq-gpio-0.dtsi"
-+/include/ "qoriq-gpio-1.dtsi"
-+/include/ "qoriq-gpio-2.dtsi"
-+/include/ "qoriq-gpio-3.dtsi"
-+/include/ "qoriq-usb2-mph-0.dtsi"
-+		usb0: usb@210000 {
-+			compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
-+			fsl,iommu-parent = <&pamu0>;
-+			fsl,liodn-reg = <&guts 0x520>; /* USB1LIODNR */
-+			phy_type = "utmi";
-+			port0;
-+		};
-+/include/ "qoriq-usb2-dr-0.dtsi"
-+		usb1: usb@211000 {
-+			compatible = "fsl-usb2-dr-v2.4", "fsl-usb2-dr";
-+			fsl,iommu-parent = <&pamu0>;
-+			fsl,liodn-reg = <&guts 0x524>; /* USB2LIODNR */
-+			dr_mode = "host";
-+			phy_type = "utmi";
-+		};
-+
-+	display@180000 {
-+                compatible = "fsl,t1040-diu", "fsl,diu";
-+                reg = <0x180000 1000>;
-+                interrupts = <74 2 0 0>;
-+        };
-+
-+/include/ "qoriq-sata2-0.dtsi"
-+sata@220000 {
-+			fsl,iommu-parent = <&pamu0>;
-+			fsl,liodn-reg = <&guts 0x550>; /* SATA1LIODNR */
-+};
-+/include/ "qoriq-sata2-1.dtsi"
-+sata@221000 {
-+			fsl,iommu-parent = <&pamu0>;
-+			fsl,liodn-reg = <&guts 0x554>; /* SATA2LIODNR */
-+};
-+/include/ "qoriq-sec5.0-0.dtsi"
-+
-+l2switch@800000 {
-+			compatible = "fsl,t1040-l2s";
-+			reg = <0x800000 0x400000>;
-+};
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t1042si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1042si-post.dtsi
-new file mode 100644
-index 0000000..cc8f133
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/t1042si-post.dtsi
-@@ -0,0 +1,41 @@
-+/*
-+ * T1042 Silicon/SoC Device Tree Source (post include)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "t1040si-post.dtsi"
-+
-+&soc {
-+	l2switch@800000 {
-+		status = "disabled";
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
-new file mode 100644
-index 0000000..5cd8cc3
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
-@@ -0,0 +1,109 @@
-+/*
-+ * T1040/T1042 Silicon/SoC Device Tree Source (pre include)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/dts-v1/;
-+
-+/include/ "e5500_power_isa.dtsi"
++/include/ "fsl/t104xsi-pre.dtsi"
++/include/ "t104xqds.dtsi"
 +
 +/ {
-+	compatible = "fsl,T104x";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
++	model =3D "fsl,T1040QDS";
++	compatible =3D "fsl,T1040QDS";
++	#address-cells =3D <2>;
++	#size-cells =3D <2>;
++	interrupt-parent =3D <&mpic>;
++};
 +
-+	aliases {
-+		ccsr = &soc;
-+		dcsr = &dcsr;
++/include/ "fsl/t1040si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t1042qds.dts b/arch/powerpc/boot/dts/t=
+1042qds.dts
+new file mode 100644
+index 0000000..45bd037
+--- /dev/null
++++ b/arch/powerpc/boot/dts/t1042qds.dts
+@@ -0,0 +1,46 @@
++/*
++ * T1042QDS Device Tree Source
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions ar=
+e met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyrig=
+ht
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission=
+.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of th=
+e
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
+LIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
+E
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
+NY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
+MAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
+RVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
+ED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
+ TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
+ OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
 +
-+		serial0 = &serial0;
-+		serial1 = &serial1;
-+		serial2 = &serial2;
-+		serial3 = &serial3;
-+		pci0 = &pci0;
-+		pci1 = &pci1;
-+		pci2 = &pci2;
-+		pci3 = &pci3;
-+		usb0 = &usb0;
-+		usb1 = &usb1;
-+		sdhc = &sdhc;
++/include/ "fsl/t104xsi-pre.dtsi"
++/include/ "t104xqds.dtsi"
 +
-+		crypto = &crypto;
++/ {
++	model =3D "fsl,T1042QDS";
++	compatible =3D "fsl,T1042QDS";
++	#address-cells =3D <2>;
++	#size-cells =3D <2>;
++	interrupt-parent =3D <&mpic>;
++};
 +
++/include/ "fsl/t1042si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t104xqds.dtsi b/arch/powerpc/boot/dts/=
+t104xqds.dtsi
+new file mode 100644
+index 0000000..5a518b3
+--- /dev/null
++++ b/arch/powerpc/boot/dts/t104xqds.dtsi
+@@ -0,0 +1,192 @@
++/*
++ * T104xQDS Device Tree Source
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions ar=
+e met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyrig=
+ht
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission=
+.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of th=
+e
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
+LIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
+E
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
+NY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
+MAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
+RVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
+ED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
+ TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
+ OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/ {
++	model =3D "fsl,T1040QDS";
++	compatible =3D "fsl,T1040QDS";
++	#address-cells =3D <2>;
++	#size-cells =3D <2>;
++	interrupt-parent =3D <&mpic>;
++
++	ifc: localbus@ffe124000 {
++		reg =3D <0xf 0xfe124000 0 0x2000>;
++		ranges =3D <0 0 0xf 0xe8000000 0x08000000
++			  2 0 0xf 0xff800000 0x00010000
++			  3 0 0xf 0xffdf0000 0x00008000>;
++
++		nor@0,0 {
++			#address-cells =3D <1>;
++			#size-cells =3D <1>;
++			compatible =3D "cfi-flash";
++			reg =3D <0x0 0x0 0x8000000>;
++
++			bank-width =3D <2>;
++			device-width =3D <1>;
++		};
++
++		nand@2,0 {
++			#address-cells =3D <1>;
++			#size-cells =3D <1>;
++			compatible =3D "fsl,ifc-nand";
++			reg =3D <0x2 0x0 0x10000>;
++
++			partition@0 {
++				/* This location must not be altered  */
++				/* 1MB for u-boot Bootloader Image */
++				reg =3D <0x0 0x00100000>;
++				label =3D "NAND U-Boot Image";
++				read-only;
++			};
++
++			partition@100000 {
++				/* 1MB for DTB Image */
++				reg =3D <0x00100000 0x00100000>;
++				label =3D "NAND DTB Image";
++			};
++
++			partition@200000 {
++				/* 10MB for Linux Kernel Image */
++				reg =3D <0x00200000 0x00A00000>;
++				label =3D "NAND Linux Kernel Image";
++			};
++
++			partition@C00000 {
++				/* 500MB for Root file System Image */
++				reg =3D <0x00c00000 0x1F400000>;
++				label =3D "NAND RFS Image";
++			};
++		};
++
++		board-control@3,0 {
++			#address-cells =3D <1>;
++			#size-cells =3D <1>;
++			compatible =3D "fsl,tetra-fpga", "fsl,fpga-qixis";
++			reg =3D <3 0 0x300>;
++		};
 +	};
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++	memory {
++		device_type =3D "memory";
++	};
 +
-+		cpu0: PowerPC,e5500@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			clocks = <&mux0>;
-+			next-level-cache = <&L2_1>;
-+			L2_1: l2-cache {
-+				next-level-cache = <&cpc>;
-+			};
-+		};
-+		cpu1: PowerPC,e5500@1 {
-+			device_type = "cpu";
-+			reg = <1>;
-+			clocks = <&mux1>;
-+			next-level-cache = <&L2_2>;
-+			L2_2: l2-cache {
-+				next-level-cache = <&cpc>;
-+			};
++	dcsr: dcsr@f00000000 {
++		ranges =3D <0x00000000 0xf 0x00000000 0x01072000>;
++	};
 +
-+		};
-+		cpu2: PowerPC,e5500@2 {
-+			device_type = "cpu";
-+			reg = <2>;
-+			clocks = <&mux2>;
-+			next-level-cache = <&L2_3>;
-+			L2_3: l2-cache {
-+				next-level-cache = <&cpc>;
-+			};
-+
-+		};
-+		cpu3: PowerPC,e5500@3 {
-+			device_type = "cpu";
-+			reg = <3>;
-+			clocks = <&mux3>;
-+			next-level-cache = <&L2_4>;
-+			L2_4: l2-cache {
-+				next-level-cache = <&cpc>;
++	soc: soc@ffe000000 {
++		ranges =3D <0x00000000 0xf 0xfe000000 0x1000000>;
++		reg =3D <0xf 0xfe000000 0 0x00001000>;
++		spi@110000 {
++			flash@0 {
++				#address-cells =3D <1>;
++				#size-cells =3D <1>;
++				compatible =3D "micron,n25q512a";
++				reg =3D <0>;
++				spi-max-frequency =3D <10000000>; /* input clock */
 +			};
 +		};
 +
++		i2c@118000 {
++			pca9547@77 {
++				compatible =3D "philips,pca9547";
++				reg =3D <0x77>;
++			};
++			rtc@68 {
++				compatible =3D "dallas,ds3232";
++				reg =3D <0x68>;
++				interrupts =3D <0x1 0x1 0 0>;
++			};
++		};
++	};
++
++	pci0: pcie@ffe240000 {
++		reg =3D <0xf 0xfe240000 0 0x10000>;
++		ranges =3D <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
++		pcie@0 {
++			ranges =3D <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci1: pcie@ffe250000 {
++		reg =3D <0xf 0xfe250000 0 0x10000>;
++		ranges =3D <0x02000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x10000000
++			  0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 0x00010000>;
++		pcie@0 {
++			ranges =3D <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci2: pcie@ffe260000 {
++		reg =3D <0xf 0xfe260000 0 0x1000>;
++		ranges =3D <0x02000000 0 0xe0000000 0xc 0x40000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
++		pcie@0 {
++			ranges =3D <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci3: pcie@ffe270000 {
++		reg =3D <0xf 0xfe270000 0 0x10000>;
++		ranges =3D <0x02000000 0 0xe0000000 0xc 0x60000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8030000 0 0x00010000>;
++		pcie@0 {
++			ranges =3D <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
 +	};
 +};
--- 
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc=
+/platforms/85xx/corenet_generic.c
+index fbd871e..f4a7621 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -106,6 +106,8 @@ static const char * const boards[] __initconst =3D {
+ 	"fsl,B4860QDS",
+ 	"fsl,B4420QDS",
+ 	"fsl,B4220QDS",
++	"fsl,T1040QDS",
++	"fsl,T1042QDS",
+ 	NULL
+ };
+=20
+@@ -119,6 +121,8 @@ static const char * const hv_boards[] __initconst =3D=
+ {
+ 	"fsl,B4860QDS-hv",
+ 	"fsl,B4420QDS-hv",
+ 	"fsl,B4220QDS-hv",
++	"fsl,T1040QDS-hv",
++	"fsl,T1042QDS-hv",
+ 	NULL
+ };
+=20
+--=20
 1.7.9.5
