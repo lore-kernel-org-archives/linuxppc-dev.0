@@ -1,20 +1,13 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp11.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C91A22C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 16:30:24 +1000 (EST)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Thu, 26 Sep 2013 07:30:19 +0100
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-To: Linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: word-at-a-time optimization for 64bit LE
-Date: Thu, 26 Sep 2013 08:30:09 +0200
-Message-Id: <1380177009-9640-1-git-send-email-felix@linux.vnet.ibm.com>
-Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] powerpc: Implement arch_get_random_long/int() for powernv
+Date: Thu, 26 Sep 2013 16:31:04 +1000
+Message-Id: <1380177066-3835-1-git-send-email-michael@ellerman.id.au>
+Cc: tytso@mit.edu, herbert@gondor.apana.org.au, gleb@redhat.com, agraf@suse.de,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org, mpm@selenic.com,
+ pbonzini@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,114 +17,242 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an optimization for the PowerPC in 64-bit
-little-endian. Bit counting is used in find_zero(), instead
-of the multiply and shift.
+Add the plumbing to implement arch_get_random_long/int(). It didn't seem
+worth adding an extra ppc_md hook for int, so we reuse the one for long.
 
-It is modelled after Alan Modra's PowerPC LE strlen patch
-http://sourceware.org/ml/libc-alpha/2013-08/msg00097.html.
+Add an implementation for powernv based on the hwrng found in power7+
+systems. We whiten the output of the hwrng, and the result passes all
+the dieharder tests.
 
-Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/include/asm/word-at-a-time.h |   57 ++++++++++++++++-------------
- 1 file changed, 32 insertions(+), 25 deletions(-)
+ arch/powerpc/Kconfig                    |   3 +
+ arch/powerpc/include/asm/archrandom.h   |  32 +++++++++
+ arch/powerpc/include/asm/machdep.h      |   4 ++
+ arch/powerpc/platforms/powernv/Kconfig  |   1 +
+ arch/powerpc/platforms/powernv/Makefile |   2 +-
+ arch/powerpc/platforms/powernv/rng.c    | 122 ++++++++++++++++++++++++++++++++
+ 6 files changed, 163 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/include/asm/archrandom.h
+ create mode 100644 arch/powerpc/platforms/powernv/rng.c
 
-diff --git a/arch/powerpc/include/asm/word-at-a-time.h b/arch/powerpc/include/asm/word-at-a-time.h
-index 213a5f2..9a5c928 100644
---- a/arch/powerpc/include/asm/word-at-a-time.h
-+++ b/arch/powerpc/include/asm/word-at-a-time.h
-@@ -42,13 +42,6 @@ static inline bool has_zero(unsigned long val, unsigned long *data, const struct
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 38f3b7e..45f16f7 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -1009,6 +1009,9 @@ config PHYSICAL_START
+ 	default "0x00000000"
+ endif
  
- #else
++config	ARCH_RANDOM
++	def_bool n
++
+ source "net/Kconfig"
  
--/*
-- * This is largely generic for little-endian machines, but the
-- * optimal byte mask counting is probably going to be something
-- * that is architecture-specific. If you have a reliably fast
-- * bit count instruction, that might be better than the multiply
-- * and shift, for example.
-- */
- struct word_at_a_time {
- 	const unsigned long one_bits, high_bits;
+ source "drivers/Kconfig"
+diff --git a/arch/powerpc/include/asm/archrandom.h b/arch/powerpc/include/asm/archrandom.h
+new file mode 100644
+index 0000000..d853d16
+--- /dev/null
++++ b/arch/powerpc/include/asm/archrandom.h
+@@ -0,0 +1,32 @@
++#ifndef _ASM_POWERPC_ARCHRANDOM_H
++#define _ASM_POWERPC_ARCHRANDOM_H
++
++#ifdef CONFIG_ARCH_RANDOM
++
++#include <asm/machdep.h>
++
++static inline int arch_get_random_long(unsigned long *v)
++{
++	if (ppc_md.get_random_long)
++		return ppc_md.get_random_long(v);
++
++	return 0;
++}
++
++static inline int arch_get_random_int(unsigned int *v)
++{
++	unsigned long val;
++	int rc;
++
++	rc = arch_get_random_long(&val);
++	if (rc)
++		*v = val;
++
++	return rc;
++}
++
++int powernv_get_random_long(unsigned long *v);
++
++#endif /* CONFIG_ARCH_RANDOM */
++
++#endif /* _ASM_POWERPC_ARCHRANDOM_H */
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 8b48090..ce6cc2a 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -263,6 +263,10 @@ struct machdep_calls {
+ 	ssize_t (*cpu_probe)(const char *, size_t);
+ 	ssize_t (*cpu_release)(const char *, size_t);
+ #endif
++
++#ifdef CONFIG_ARCH_RANDOM
++	int (*get_random_long)(unsigned long *v);
++#endif
  };
-@@ -57,19 +50,32 @@ struct word_at_a_time {
  
- #ifdef CONFIG_64BIT
+ extern void e500_idle(void);
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 6fae5eb..2108464 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -9,6 +9,7 @@ config PPC_POWERNV
+ 	select EPAPR_BOOT
+ 	select PPC_INDIRECT_PIO
+ 	select PPC_UDBG_16550
++	select ARCH_RANDOM
+ 	default y
  
--/*
-- * Jan Achrenius on G+: microoptimized version of
-- * the simpler "(mask & ONEBYTES) * ONEBYTES >> 56"
-- * that works for the bytemasks without having to
-- * mask them first.
-- */
--static inline long count_masked_bytes(unsigned long mask)
-+/* Alan Modra's little-endian strlen tail for 64-bit */
-+#define create_zero_mask(mask) (mask)
-+
-+static inline unsigned long find_zero(unsigned long mask)
- {
--	return mask*0x0001020304050608ul >> 56;
-+	unsigned long leading_zero_bits;
-+	long trailing_zero_bit_mask;
-+
-+	asm ("addi %1,%2,-1\n\t"
-+	     "andc %1,%1,%2\n\t"
-+	     "popcntd %0,%1"
-+	     : "=r" (leading_zero_bits), "=&r" (trailing_zero_bit_mask)
-+	     : "r" (mask));
-+	return leading_zero_bits >> 3;
- }
+ config POWERNV_MSI
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index 300c437..6760a86 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -1,5 +1,5 @@
+ obj-y			+= setup.o opal-takeover.o opal-wrappers.o opal.o
+-obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o
++obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o rng.o
  
- #else	/* 32-bit case */
- 
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
+diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
+new file mode 100644
+index 0000000..51d2e6a
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/rng.c
+@@ -0,0 +1,122 @@
 +/*
-+ * This is largely generic for little-endian machines, but the
-+ * optimal byte mask counting is probably going to be something
-+ * that is architecture-specific. If you have a reliably fast
-+ * bit count instruction, that might be better than the multiply
-+ * and shift, for example.
++ * Copyright 2013, Michael Ellerman, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
 + */
 +
- /* Carl Chatfield / Jan Achrenius G+ version for 32-bit */
- static inline long count_masked_bytes(long mask)
- {
-@@ -79,6 +85,17 @@ static inline long count_masked_bytes(long mask)
- 	return a & mask;
- }
- 
-+static inline unsigned long create_zero_mask(unsigned long bits)
++#define pr_fmt(fmt)	"powernv-rng: " fmt
++
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <linux/slab.h>
++#include <asm/archrandom.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++
++
++struct powernv_rng {
++	void __iomem *regs;
++	unsigned long mask;
++};
++
++static DEFINE_PER_CPU(struct powernv_rng *, powernv_rng);
++
++
++static unsigned long rng_whiten(struct powernv_rng *rng, unsigned long val)
 +{
-+	bits = (bits - 1) & ~bits;
-+	return bits >> 7;
++	unsigned long parity;
++
++	/* Calculate the parity of the value */
++	asm ("popcntd %0,%1" : "=r" (parity) : "r" (val));
++
++	/* xor our value with the previous mask */
++	val ^= rng->mask;
++
++	/* update the mask based on the parity of this value */
++	rng->mask = (rng->mask << 1) | (parity & 1);
++
++	return val;
 +}
 +
-+static inline unsigned long find_zero(unsigned long mask)
++int powernv_get_random_long(unsigned long *v)
 +{
-+	return count_masked_bytes(mask);
++	struct powernv_rng *rng;
++
++	rng = get_cpu_var(powernv_rng);
++
++	*v = rng_whiten(rng, in_be64(rng->regs));
++
++	put_cpu_var(rng);
++
++	return 1;
++}
++EXPORT_SYMBOL_GPL(powernv_get_random_long);
++
++static __init void rng_init_per_cpu(struct powernv_rng *rng,
++				    struct device_node *dn)
++{
++	int chip_id, cpu;
++
++	chip_id = of_get_ibm_chip_id(dn);
++	if (chip_id == -1)
++		pr_warn("no ibm,chip-id found for %s\n", dn->full_name);
++
++	for_each_possible_cpu(cpu) {
++		if (per_cpu(powernv_rng, cpu) == NULL ||
++		    cpu_to_chip_id(cpu) == chip_id) {
++			per_cpu(powernv_rng, cpu) = rng;
++		}
++	}
 +}
 +
- #endif
- 
- /* Return nonzero if it has a zero */
-@@ -94,19 +111,9 @@ static inline unsigned long prep_zero_mask(unsigned long a, unsigned long bits,
- 	return bits;
- }
- 
--static inline unsigned long create_zero_mask(unsigned long bits)
--{
--	bits = (bits - 1) & ~bits;
--	return bits >> 7;
--}
--
- /* The mask we created is directly usable as a bytemask */
- #define zero_bytemask(mask) (mask)
- 
--static inline unsigned long find_zero(unsigned long mask)
--{
--	return count_masked_bytes(mask);
--}
- #endif
- 
- #endif /* _ASM_WORD_AT_A_TIME_H */
++static __init int rng_create(struct device_node *dn)
++{
++	struct powernv_rng *rng;
++	unsigned long val;
++
++	rng = kzalloc(sizeof(*rng), GFP_KERNEL);
++	if (!rng)
++		return -ENOMEM;
++
++	rng->regs = of_iomap(dn, 0);
++	if (!rng->regs) {
++		kfree(rng);
++		return -ENXIO;
++	}
++
++	val = in_be64(rng->regs);
++	rng->mask = val;
++
++	rng_init_per_cpu(rng, dn);
++
++	pr_info_once("registering arch random hook\n");
++
++	ppc_md.get_random_long = powernv_get_random_long;
++
++	return 0;
++}
++
++static __init int rng_init(void)
++{
++	struct device_node *dn;
++	int rc;
++
++	for_each_compatible_node(dn, NULL, "ibm,power-rng") {
++		rc = rng_create(dn);
++		if (rc) {
++			pr_err("failed creating rng for %s (%d)\n",
++				dn->full_name, rc);
++			continue;
++		}
++
++		/* Create devices for hwrng driver */
++		of_platform_device_create(dn, NULL, NULL);
++	}
++
++	return 0;
++}
++subsys_initcall(rng_init);
 -- 
-1.7.10.4
+1.8.1.2
