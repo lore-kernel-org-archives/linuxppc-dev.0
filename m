@@ -1,24 +1,11 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 26 Sep 2013 12:28:59 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v10 2/3] DMA: Freescale: Add new 8-channel DMA engine
- device tree nodes
-Message-ID: <20130926022859.GL9625@voom.redhat.com>
-References: <1379499333-4745-1-git-send-email-hongbo.zhang@freescale.com>
- <1379499333-4745-3-git-send-email-hongbo.zhang@freescale.com>
- <524074A7.7000001@wwwdotorg.org> <524169E3.7030408@freescale.com>
- <5241CC60.5070204@wwwdotorg.org> <52429252.10009@freescale.com>
- <1380159992.24959.248.camel@snotra.buserror.net>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: benh@kernel.crashing.org
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="Qgd2S+2VS1hsWwXW"
-In-Reply-To: <1380159992.24959.248.camel@snotra.buserror.net>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, ian.campbell@citrix.com,
- pawel.moll@arm.com, Stephen Warren <swarren@wwwdotorg.org>,
- Hongbo Zhang <hongbo.zhang@freescale.com>, linux-kernel@vger.kernel.org,
- rob.herring@calxeda.com, vinod.koul@intel.com, djbw@fb.com,
- linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/tm: Switch out userspace PPR and DSCR sooner
+Date: Thu, 26 Sep 2013 13:29:09 +1000
+Message-ID: <15239.1380166149@ale.ozlabs.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, anton@samba.org, matt@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,55 +15,202 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When we do a treclaim or trecheckpoint we end up running with userspace
+PPR and DSCR values.  Currently we don't do anything special to avoid
+running with user values which could cause a severe performance
+degradation.
 
---Qgd2S+2VS1hsWwXW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch moves the PPR and DSCR save and restore around treclaim and
+trecheckpoint so that we run with user values for a much shorter period.
+More care is taken with the PPR as it's impact is greater than the DSCR.
 
-On Wed, Sep 25, 2013 at 08:46:32PM -0500, Scott Wood wrote:
-> On Wed, 2013-09-25 at 15:35 +0800, Hongbo Zhang wrote:
-> > By the way, I know maybe it is difficult, but why not introduce a=20
-> > document of maintaining rules for the dt binding docs? we have dedicate=
-d=20
-> > maintainers for this part now. Description language from one submitter=
-=20
-> > cannot satisfy every reviewer/maintainer, for a reg property, is it=20
-> > necessary to say "offset and length",
->=20
-> Don't say "offset and length".  It's both redundant with the base
-> definition of the reg property, and overly specific because it makes
-> assumptions about how the parent node's ranges are set up (sometimes we
-> want to be that specific, but usually not).
+This is similar to user exceptions, where we run HTM_MEDIUM early to
+ensure that we don't run with a userspace PPR values in the kernel.
 
-To look at it another way, the format of the 'reg' property is defined
-by the parent bus's binding, not the binding of the node itself.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---Qgd2S+2VS1hsWwXW
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSQ5vrAAoJEGw4ysog2bOSOX8P/27knqdD1mcveFLQPRZp92Ch
-8/jLSM0q+JsX9kxNs/Syri7Or7kblg/NhcE4JzlJgFwPVw5QoePwtbnij50azTDD
-mS0414Kbk3DBNOeVvP/WQXD+cSF7bxXIlfhYYtK11m4nZDQZViJ8rGEb+YwDmVR3
-OXDOYoe8l9PjInNwEm/QcW2FWDKgQvNqMlwVlR2uM8EaRo2372S/y1ePgqPSTH1w
-JK8l3ZCYP8Zv5jXVuT7SNFyq9CFOCVFwdf6/eeZMj7bK9qCqKRYA1zo5dTCJnAgT
-RSXajamRYA9A2ScSHPuL9M9w2qFICA2XcaXnovcn0iologxSqLWTxzosYBJ9LF+X
-Rf36rVT5A8eE5DvgAGVtVRQxB8aWvrUG6DplMvjd0/IcxYEfLACAIxFxItv2+jhB
-c9S+U55EAdFeYdHCfjA14YBmGg2EPSb24EcD2Im5LMQVq7RCeEoFl0TRwzUzxTzU
-EhTcDl/G2EKO7si34JUADRYkrTxUVbmafbUygH4AlB/o2atbxECVgFAgE+B8s1xp
-JwaekYU7WDoTz2as2FsMsnAwglZSXM7wVxAoAHCBNPF3kx/Kj0tjt3TfiMbIIQ3y
-xjN4ReWVjmLBDCWlTgjHWkxJyosKuMsgOgPup4Po8vpbQpB6JE67y/W2CnoS0e/T
-IuvJsiD/dGTNak4+Y+he
-=6ZZH
------END PGP SIGNATURE-----
-
---Qgd2S+2VS1hsWwXW--
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index d781ca5..b627f9f 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -78,6 +78,11 @@ _GLOBAL(tm_abort)
+ 	TABORT(R3)
+ 	blr
+ 
++	.section	".toc","aw"
++DSCR_DEFAULT:
++	.tc dscr_default[TC],dscr_default
++
++	.section	".text"
+ 
+ /* void tm_reclaim(struct thread_struct *thread,
+  *                 unsigned long orig_msr,
+@@ -188,11 +193,18 @@ dont_backup_fp:
+ 	std	r1, PACATMSCRATCH(r13)
+ 	ld	r1, PACAR1(r13)
+ 
++	/* Store the PPR in r11 and reset to decent value */
++	std	r11, GPR11(r1)			/* Temporary stash */
++	mfspr	r11, SPRN_PPR
++	HMT_MEDIUM
++
+ 	/* Now get some more GPRS free */
+ 	std	r7, GPR7(r1)			/* Temporary stash */
+ 	std	r12, GPR12(r1)			/* ''   ''    ''   */
+ 	ld	r12, STACK_PARAM(0)(r1)		/* Param 0, thread_struct * */
+ 
++	std	r11, THREAD_TM_PPR(r12)		/* Store PPR and free r11 */
++
+ 	addi	r7, r12, PT_CKPT_REGS		/* Thread's ckpt_regs */
+ 
+ 	/* Make r7 look like an exception frame so that we
+@@ -204,15 +216,19 @@ dont_backup_fp:
+ 	SAVE_GPR(0, r7)				/* user r0 */
+ 	SAVE_GPR(2, r7)			/* user r2 */
+ 	SAVE_4GPRS(3, r7)			/* user r3-r6 */
+-	SAVE_4GPRS(8, r7)			/* user r8-r11 */
++	SAVE_GPR(8, r7)				/* user r8 */
++	SAVE_GPR(9, r7)				/* user r9 */
++	SAVE_GPR(10, r7)			/* user r10 */
+ 	ld	r3, PACATMSCRATCH(r13)		/* user r1 */
+ 	ld	r4, GPR7(r1)			/* user r7 */
+-	ld	r5, GPR12(r1)			/* user r12 */
+-	GET_SCRATCH0(6)				/* user r13 */
++	ld	r5, GPR11(r1)			/* user r11 */
++	ld	r6, GPR12(r1)			/* user r12 */
++	GET_SCRATCH0(8)				/* user r13 */
+ 	std	r3, GPR1(r7)
+ 	std	r4, GPR7(r7)
+-	std	r5, GPR12(r7)
+-	std	r6, GPR13(r7)
++	std	r5, GPR11(r7)
++	std	r6, GPR12(r7)
++	std	r8, GPR13(r7)
+ 
+ 	SAVE_NVGPRS(r7)				/* user r14-r31 */
+ 
+@@ -235,14 +251,12 @@ dont_backup_fp:
+ 	std	r6, _XER(r7)
+ 
+ 
+-	/* ******************** TAR, PPR, DSCR ********** */
++	/* ******************** TAR, DSCR ********** */
+ 	mfspr	r3, SPRN_TAR
+-	mfspr	r4, SPRN_PPR
+-	mfspr	r5, SPRN_DSCR
++	mfspr	r4, SPRN_DSCR
+ 
+ 	std	r3, THREAD_TM_TAR(r12)
+-	std	r4, THREAD_TM_PPR(r12)
+-	std	r5, THREAD_TM_DSCR(r12)
++	std	r4, THREAD_TM_DSCR(r12)
+ 
+ 	/* MSR and flags:  We don't change CRs, and we don't need to alter
+ 	 * MSR.
+@@ -259,7 +273,7 @@ dont_backup_fp:
+ 	std	r3, THREAD_TM_TFHAR(r12)
+ 	std	r4, THREAD_TM_TFIAR(r12)
+ 
+-	/* AMR and PPR are checkpointed too, but are unsupported by Linux. */
++	/* AMR is checkpointed too, but is unsupported by Linux. */
+ 
+ 	/* Restore original MSR/IRQ state & clear TM mode */
+ 	ld	r14, TM_FRAME_L0(r1)		/* Orig MSR */
+@@ -275,6 +289,12 @@ dont_backup_fp:
+ 	mtcr	r4
+ 	mtlr	r0
+ 	ld	r2, 40(r1)
++
++	/* Load system default DSCR */
++	ld	r4, DSCR_DEFAULT@toc(r2)
++	ld	r0, 0(r4)
++	mtspr	SPRN_DSCR, r0
++
+ 	blr
+ 
+ 
+@@ -361,25 +381,24 @@ dont_restore_fp:
+ 
+ restore_gprs:
+ 
+-	/* ******************** TAR, PPR, DSCR ********** */
+-	ld	r4, THREAD_TM_TAR(r3)
+-	ld	r5, THREAD_TM_PPR(r3)
+-	ld	r6, THREAD_TM_DSCR(r3)
++	/* ******************** CR,LR,CCR,MSR ********** */
++	ld	r4, _CTR(r7)
++	ld	r5, _LINK(r7)
++	ld	r6, _CCR(r7)
++	ld	r8, _XER(r7)
+ 
+-	mtspr	SPRN_TAR,	r4
+-	mtspr	SPRN_PPR,	r5
+-	mtspr	SPRN_DSCR,	r6
++	mtctr	r4
++	mtlr	r5
++	mtcr	r6
++	mtxer	r8
+ 
+-	/* ******************** CR,LR,CCR,MSR ********** */
+-	ld	r3, _CTR(r7)
+-	ld	r4, _LINK(r7)
+-	ld	r5, _CCR(r7)
+-	ld	r6, _XER(r7)
++	/* ******************** TAR ******************** */
++	ld	r4, THREAD_TM_TAR(r3)
++	mtspr	SPRN_TAR,	r4
+ 
+-	mtctr	r3
+-	mtlr	r4
+-	mtcr	r5
+-	mtxer	r6
++	/* Load up the PPR and DSCR in GPRs only at this stage */
++	ld	r5, THREAD_TM_DSCR(r3)
++	ld	r6, THREAD_TM_PPR(r3)
+ 
+ 	/* Clear the MSR RI since we are about to change R1.  EE is already off
+ 	 */
+@@ -387,19 +406,26 @@ restore_gprs:
+ 	mtmsrd	r4, 1
+ 
+ 	REST_4GPRS(0, r7)			/* GPR0-3 */
+-	REST_GPR(4, r7)				/* GPR4-6 */
+-	REST_GPR(5, r7)
+-	REST_GPR(6, r7)
++	REST_GPR(4, r7)				/* GPR4 */
+ 	REST_4GPRS(8, r7)			/* GPR8-11 */
+ 	REST_2GPRS(12, r7)			/* GPR12-13 */
+ 
+ 	REST_NVGPRS(r7)				/* GPR14-31 */
+ 
+-	ld	r7, GPR7(r7)			/* GPR7 */
++	/* Load up PPR and DSCR here so we don't run with user values for long
++	 */
++	mtspr	SPRN_DSCR, r5
++	mtspr	SPRN_PPR, r6
++
++	REST_GPR(5, r7)				/* GPR5-7 */
++	REST_GPR(6, r7)
++	ld	r7, GPR7(r7)
+ 
+ 	/* Commit register state as checkpointed state: */
+ 	TRECHKPT
+ 
++	HMT_MEDIUM
++
+ 	/* Our transactional state has now changed.
+ 	 *
+ 	 * Now just get out of here.  Transactional (current) state will be
+@@ -422,6 +448,12 @@ restore_gprs:
+ 	mtcr	r4
+ 	mtlr	r0
+ 	ld	r2, 40(r1)
++
++	/* Load system default DSCR */
++	ld	r4, DSCR_DEFAULT@toc(r2)
++	ld	r0, 0(r4)
++	mtspr	SPRN_DSCR, r0
++
+ 	blr
+ 
+ 	/* ****************************************************************** */
