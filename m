@@ -1,35 +1,20 @@
-Return-Path: <B40534@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 81D932C0337
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 16:19:06 +1000 (EST)
-Received: from mail199-co9 (localhost [127.0.0.1])	by
- mail199-co9-R.bigfish.com (Postfix) with ESMTP id 45C808800E2	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 06:19:02 +0000 (UTC)
-Received: from CO9EHSMHS011.bigfish.com (unknown [10.236.132.240])	by
- mail199-co9.bigfish.com (Postfix) with ESMTP id 8919E560212	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 06:18:59 +0000 (UTC)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
-Date: Thu, 26 Sep 2013 06:18:58 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F1543925901090B4F@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1380014925-23300-2-git-send-email-dongsheng.wang@freescale.com>
- <1380014925-23300-4-git-send-email-dongsheng.wang@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0717F8F9@039-SN2MPN1-011.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F154392590108FF41@039-SN2MPN1-021.039d.mgd.msft.net>
- <1380131815.24959.185.camel@snotra.buserror.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010909C3@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D07183D0B@039-SN2MPN1-011.039d.mgd.msft.net>
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D07183D0B@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <felix@linux.vnet.ibm.com>
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp11.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C91A22C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 16:30:24 +1000 (EST)
+Received: from /spool/local
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Thu, 26 Sep 2013 07:30:19 +0100
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+To: Linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: word-at-a-time optimization for 64bit LE
+Date: Thu, 26 Sep 2013 08:30:09 +0200
+Message-Id: <1380177009-9640-1-git-send-email-felix@linux.vnet.ibm.com>
+Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,136 +24,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmh1c2hhbiBCaGFyYXQt
-UjY1Nzc3DQo+IFNlbnQ6IFRodXJzZGF5LCBTZXB0ZW1iZXIgMjYsIDIwMTMgMTI6MjMgUE0NCj4g
-VG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNDsgV29vZCBTY290dC1CMDc0MjENCj4gQ2M6IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjQgNC80XSBw
-b3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMCBzdGF0ZSBhbmQNCj4gYWx0aXZlYyBpZGxl
-DQo+IA0KPiANCj4gDQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBX
-YW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDI2LCAy
-MDEzIDg6MDIgQU0NCj4gPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gPiBDYzogQmh1c2hhbiBC
-aGFyYXQtUjY1Nzc3OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+IFN1YmplY3Q6
-IFJFOiBbUEFUQ0ggdjQgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMCBzdGF0
-ZSBhbmQNCj4gPiBhbHRpdmVjIGlkbGUNCj4gPg0KPiA+DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2lu
-YWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2Vu
-dDogVGh1cnNkYXksIFNlcHRlbWJlciAyNiwgMjAxMyAxOjU3IEFNDQo+ID4gPiBUbzogV2FuZyBE
-b25nc2hlbmctQjQwNTM0DQo+ID4gPiBDYzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3OyBXb29kIFNj
-b3R0LUIwNzQyMTsgbGludXhwcGMtDQo+ID4gPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4g
-U3ViamVjdDogUmU6IFtQQVRDSCB2NCA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBw
-dzIwIHN0YXRlDQo+ID4gPiBhbmQgYWx0aXZlYyBpZGxlDQo+ID4gPg0KPiA+ID4gT24gV2VkLCAy
-MDEzLTA5LTI1IGF0IDAzOjEwIC0wNTAwLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+
-ID4gPiA+DQo+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiBG
-cm9tOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gPiA+ID4gPiBTZW50OiBXZWRuZXNkYXksIFNl
-cHRlbWJlciAyNSwgMjAxMyAyOjIzIFBNDQo+ID4gPiA+ID4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0
-MDUzNDsgV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3Rz
-Lm96bGFicy5vcmc7IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4gPiA+IFN1YmplY3Q6IFJF
-OiBbUEFUQ0ggdjQgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMA0KPiA+ID4g
-PiA+IHN0YXRlIGFuZCBhbHRpdmVjIGlkbGUNCj4gPiA+ID4gPg0KPiA+ID4gPiA+DQo+ID4gPiA+
-ID4NCj4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiBG
-cm9tOiBMaW51eHBwYy1kZXYgW21haWx0bzpsaW51eHBwYy1kZXYtDQo+ID4gPiA+ID4gPiBib3Vu
-Y2VzK2JoYXJhdC5iaHVzaGFuPWZyZWVzY2FsZS5jb21AbGlzdHMub3psYWJzLm9yZ10gT24NCj4g
-PiA+ID4gPiA+IGJvdW5jZXMrQmVoYWxmIE9mIERvbmdzaGVuZw0KPiA+ID4gPiA+ID4gV2FuZw0K
-PiA+ID4gPiA+ID4gU2VudDogVHVlc2RheSwgU2VwdGVtYmVyIDI0LCAyMDEzIDI6NTkgUE0NCj4g
-PiA+ID4gPiA+IFRvOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+ID4gQ2M6IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnOyBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+ID4gPiA+
-IFN1YmplY3Q6IFtQQVRDSCB2NCA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBwdzIw
-IHN0YXRlDQo+ID4gPiA+ID4gPiBhbmQgYWx0aXZlYyBpZGxlDQo+ID4gPiA+ID4gPg0KPiA+ID4g
-PiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+
-DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gQWRkIGEgc3lzIGludGVyZmFjZSB0byBlbmFibGUv
-ZGlhYmxlIHB3MjAgc3RhdGUgb3IgYWx0aXZlYw0KPiA+ID4gPiA+ID4gaWRsZSwgYW5kIGNvbnRy
-b2wgdGhlIHdhaXQgZW50cnkgdGltZS4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBFbmFibGUv
-RGlzYWJsZSBpbnRlcmZhY2U6DQo+ID4gPiA+ID4gPiAwLCBkaXNhYmxlLiAxLCBlbmFibGUuDQo+
-ID4gPiA+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL3B3MjBfc3RhdGUNCj4gPiA+
-ID4gPiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdVgvYWx0aXZlY19pZGxlDQo+ID4gPiA+
-ID4gPg0KPiA+ID4gPiA+ID4gU2V0IHdhaXQgdGltZSBpbnRlcmZhY2U6KE5hbm9zZWNvbmQpDQo+
-ID4gPiA+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL3B3MjBfd2FpdF90aW1lDQo+
-ID4gPiA+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL2FsdGl2ZWNfaWRsZV93YWl0
-X3RpbWUNCj4gPiA+ID4gPiA+IEV4YW1wbGU6IEJhc2Ugb24gVEJmcmVxIGlzIDQxTUhaLg0KPiA+
-ID4gPiA+ID4gMX40Nyhucyk6IFRCWzYzXQ0KPiA+ID4gPiA+ID4gNDh+OTUobnMpOiBUQls2Ml0N
-Cj4gPiA+ID4gPiA+IDk2fjE5MShucyk6IFRCWzYxXQ0KPiA+ID4gPiA+ID4gMTkyfjM4Myhucyk6
-IFRCWzYyXQ0KPiA+ID4gPiA+ID4gMzg0fjc2Nyhucyk6IFRCWzYwXQ0KPiA+ID4gPiA+ID4gLi4u
-DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gU2lnbmVkLW9mZi1ieTogV2FuZyBEb25nc2hlbmcg
-PGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+ID4gPiAtLS0NCj4gPiA+ID4g
-PiA+ICp2NDoNCj4gPiA+ID4gPiA+IE1vdmUgY29kZSBmcm9tIDg1eHgvY29tbW9uLmMgdG8ga2Vy
-bmVsL3N5c2ZzLmMuDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gUmVtb3ZlIGhhc19wdzIwX2Fs
-dGl2ZWNfaWRsZSBmdW5jdGlvbi4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBDaGFuZ2Ugd2Fp
-dCAiZW50cnlfYml0IiB0byB3YWl0IHRpbWUuDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gIGFy
-Y2gvcG93ZXJwYy9rZXJuZWwvc3lzZnMuYyB8IDI5MQ0KPiA+ID4gPiA+ID4gKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gPiA+ID4gPiA+ICAxIGZpbGUgY2hh
-bmdlZCwgMjkxIGluc2VydGlvbnMoKykNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBkaWZmIC0t
-Z2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jDQo+ID4gPiA+ID4gPiBiL2FyY2gvcG93
-ZXJwYy9rZXJuZWwvc3lzZnMuYyBpbmRleCAyN2E5MGI5Li4yM2ZlY2U2IDEwMDY0NA0KPiA+ID4g
-PiA+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jDQo+ID4gPiA+ID4gPiArKysg
-Yi9hcmNoL3Bvd2VycGMva2VybmVsL3N5c2ZzLmMNCj4gPiA+ID4gPiA+IEBAIC04NSw2ICs4NSwy
-NzkgQEAgX19zZXR1cCgic210LXNub296ZS1kZWxheT0iLA0KPiA+ID4gPiA+ID4gc2V0dXBfc210
-X3Nub296ZV9kZWxheSk7DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gICNlbmRpZiAvKiBDT05G
-SUdfUFBDNjQgKi8NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiArI2lmZGVmIENPTkZJR19GU0xf
-U09DDQo+ID4gPiA+ID4gPiArI2RlZmluZSBNQVhfQklUCQk2Mw0KPiA+ID4gPiA+ID4gKw0KPiA+
-ID4gPiA+ID4gK3N0YXRpYyB1NjQgcHcyMF93dDsNCj4gPiA+ID4gPiA+ICtzdGF0aWMgdTY0IGFs
-dGl2ZWNfaWRsZV93dDsNCj4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ICtzdGF0aWMgdW5zaWdu
-ZWQgaW50IGdldF9pZGxlX3RpY2tzX2JpdCh1NjQgbnMpIHsNCj4gPiA+ID4gPiA+ICsJdTY0IGN5
-Y2xlOw0KPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gKwljeWNsZSA9IGRpdl91NjQobnMsIDEw
-MDAgLyB0Yl90aWNrc19wZXJfdXNlYyk7DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBXaGVuIHRiX3Rp
-Y2tzX3Blcl91c2VjICA+IDEwMDAgKHRpbWViYXNlIGZyZXF1ZW5jeSA+IDFHSHopIHRoZW4NCj4g
-PiA+ID4gPiB0aGlzIHdpbGwgYWx3YXlzIGJlIG5zLCB3aGljaCBpcyBub3QgY29ycmVjdCwgbm8/
-DQo+ID4gPg0KPiA+ID4gQWN0dWFsbHkgaXQnbGwgYmUgYSBkaXZpZGUgYnkgemVybyBpbiB0aGF0
-IGNhc2UuDQo+ID4gPg0KPiA+IHRiX3RpY2tzX3Blcl91c2VjID0gcHBjX3RiX2ZyZXEgLyAxMDAw
-MDAwOyBNZWFucyBUQiBmcmVxIHNob3VsZCBiZQ0KPiA+IG1vcmUgdGhhbiAxTUhaLg0KPiA+DQo+
-ID4gaWYgcHBjX3RiX2ZyZXEgbGVzcyB0aGFuIDEwMDAwMDAsIHRoZSB0Yl90aWNrc19wZXJfdXNl
-YyB3aWxsIGJlIGENCj4gPiBkaXZpZGUgYnkgemVyby4NCj4gPiBJZiB0aGlzIGNvbmRpdGlvbiBp
-cyBlc3RhYmxpc2hlZCwgSSB0aGluayBrZXJuZWwgY2Fubm90IHdvcmsgYXMgYQ0KPiBub3JtYWwu
-DQo+ID4NCj4gPiBTbyBJIHRoaW5rIHdlIG5lZWQgdG8gYmVsaWV2ZSB0aGF0IHRoZSB2YXJpYWJs
-ZSBpcyBub3QgemVyby4NCj4gDQo+IFdlIGRvIGJlbGlldmUgaXQgaXMgbm9uLXplcm8gYnV0IGdy
-ZWF0ZXIgdGhhbiAxMDAwIDopDQo+IA0KPiA+IEFuZCBJIHRoaW5rIFRCIGZyZXENCj4gPiBzaG91
-bGQgbm90IGxlc3MgdGhhbiAxTUhaIG9uIFBQQyBwbGF0Zm9ybSwgYmVjYXVzZSBpZiBUQiBmcmVx
-IGxlc3MNCj4gPiB0aGFuIDFNSFosIHRoZSBwcmVjaXNpb24gdGltZSB3aWxsIGJlY29tZSB2ZXJ5
-IHBvb3IgYW5kIHN5c3RlbQ0KPiA+IHJlc3BvbnNlIHRpbWUgd2lsbCBiZSBzbG93ZXIuDQo+IA0K
-PiBOb3Qgc3VyZSB3aGF0IHlvdSBhcmUgZGVzY3JpYmluZyBoZXJlIHJlbGF0ZWQgdG8gZGl2aWRl
-IGJ5IHplcm8gd2UgYXJlDQo+IG1lbnRpb25pbmcuDQo+IFlvdSBhcmUgdGFsa2luZyBhYm91dCBp
-ZiB0Yl90aWNrc19wZXJfdXNlYyBpcyBaRVJPIGFuZCB3ZSBhcmUgdGFsa2luZw0KPiBhYm91dCBp
-ZiAoMTAwMC90Yl90aWNrc19wZXJfdXNlYykgd2lsbCBiZSB6ZXJvLg0KPiANCj4gQlRXLCBkaXZf
-dTY0KCkgaGFuZGxlIHRoZSBjYXNlIHdoZXJlIGRpdmlkZXIgaXMgemVyby4NCj4gDQpjeWNsZSA9
-IGRpdl91NjQobnMsIDEwMDAgLyB0Yl90aWNrc19wZXJfdXNlYyk7DQpGb3IgdGhpcywgSSB0aGlu
-ayB3ZSB3ZXJlIGRpc2N1c3NpbmcgdGhlIHR3byBpc3N1ZXM6DQoNCjEuIFNjb3R0IHRhbGtpbmcg
-YWJvdXQsIHdoZW4gdGhlIHRiX3RpY2tzX3Blcl91c2VjIGlzIGEgemVyby4NClRoaXMgc2l0dWF0
-aW9uIGlzIGFib3V0IHRiX3RpY2tzX3Blcl91c2VjLCBhbmQgcG9zc2libGUgdG8gemVyby4gU28g
-SSBhbnN3ZXJlZCBTY290dC4NCklmIEkgbWlzdW5kZXJzdGFuZCBzY290dCwgcGxlYXNlIGlnbm9y
-ZSBpdC4gOikNCg0KMi4gWW91IGFyZSB0YWxraW5nIGFib3V0IDEwMDAvdGJfdGlja3NfcGVyX3Vz
-ZWMgaXMgYSB6ZXJvLg0KVGhpcyBzaXR1YXRpb24gaXMgYWJvdXQgVEIgZnJlcSA+IDFHSFouDQoN
-Ckkgd2lsbCBmaXggdGhpcyBpc3N1ZS4gTGlrZSBJIHNhaWQgYmVmb3JlLA0KIklmIHRpbWViYXNl
-IGZyZXF1ZW5jeSA+IDFHSHosIHRoaXMgc2hvdWxkIGJlICJ0Yl90aWNrc19wZXJfdXNlYyAvIDEw
-MDAiIGFuZCB0byBnZXQgdGJfdGlja3NfcGVyX25zZWMuDQpUaGlzIHNob3VsZCBiZSBjaGFuZ2Vk
-IHRvICJjeWNsZSA9IG5zICogdGJfdGlja3NfcGVyX25zZWM7IiINCg0KI2RlZmluZSBUQl9GUkVR
-XzFHSFoJMTAwMA0KDQpJZiAodGJfdGlja3NfcGVyX3VzZWMgPiBUQl9GUkVRXzFHSFopDQoJY3lj
-bGUgPSBucyAqICh0Yl90aWNrc19wZXJfdXNlYyAvIDEwMDApOw0KZWxzZQ0KCWN5Y2xlID0gZGl2
-X3U2NChucywgMTAwMCAvIHRiX3RpY2tzX3Blcl91c2VjKTsNCg0KaG93IGFib3V0IHRoaXM/IDop
-DQoNCj4gPg0KPiA+ID4gPiAiMTAwMCAvIHRiX3RpY2tzX3Blcl91c2VjIiBtZWFucyBuc2VjX3Rp
-Y2tzX3Blcl90Yg0KPiA+ID4gPg0KPiA+ID4gPiBJZiB0aW1lYmFzZSBmcmVxdWVuY3kgPiAxR0h6
-LCB0aGlzIHNob3VsZCBiZSAidGJfdGlja3NfcGVyX3VzZWMgLw0KPiAxMDAwIg0KPiA+ID4gYW5k
-IHRvIGdldCB0Yl90aWNrc19wZXJfbnNlYy4NCj4gPiA+ID4gVGhpcyBzaG91bGQgYmUgY2hhbmdl
-ZCB0byAiY3ljbGUgPSBucyAqIHRiX3RpY2tzX3Blcl9uc2VjOyINCj4gPiA+ID4NCj4gPiA+ID4g
-QnV0IGF0IHByZXNlbnQgd2UgZG8gbm90IGhhdmUgc3VjaCBhIHBsYXRmb3JtIHRoYXQgdGltZWJh
-c2UNCj4gPiA+ID4gZnJlcXVlbmN5IG1vcmUgdGhhbiAxR0h6LiBBbmQgSSB0aGluayBpdCBpcyBu
-b3QgbmVlZCB0byBzdXBwb3J0DQo+ID4gPiA+IHN1Y2ggYQ0KPiA+IHNpdHVhdGlvbi4NCj4gPiA+
-ID4gQmVjYXVzZSB3ZSBoYXZlIG5vIGVudmlyb25tZW50IHRvIHRlc3QgaXQuDQo+ID4gPg0KPiA+
-ID4gWW91IGNhbiB0ZXN0IGl0IGJ5IGhhY2tpbmcgYSB3cm9uZyB0aW1lYmFzZSBmcmVxdWVuY3kg
-aW4gYW5kIHNlZWluZw0KPiA+ID4gd2hhdCB0aGUgY2FsY3VsYXRpb24gZG9lcy4NCj4gPiA+DQo+
-ID4gPiBPciBkbyBzb21ldGhpbmcgbGlrZSB0aGlzOg0KPiA+ID4NCj4gPiA+IAlpZiAobnMgPj0g
-MTAwMDApDQo+IAleXl4NCj4gDQo+ID4gPiAJCWN5Y2xlID0gKChucyArIDUwMCkgLyAxMDAwKSAq
-IHRiX3RpY2tzX3Blcl91c2VjOw0KPiA+ID4gCWVsc2UNCj4gPiA+IAkJY3ljbGUgPSBkaXZfdTY0
-KCh1NjQpbnMgKiB0Yl90aWNrc19wZXJfdXNlYywgMTAwMCk7DQo+ID4gPg0KPiA+IFdlIGNhbm5v
-dCBkbyB0aGlzLCBiZWNhdXNlIGlmIChucys1MDApIDwgMTAwMCwgd2UgY2Fubm90IGdldCB0aGUg
-ZW50cnkNCj4gPiBiaXQsIGl0J2xsIGFsd2F5cyB6ZXJvIGJpdC4NCj4gDQo+IFRoZXJlIGlzIGEg
-aWYgY29uZGl0aW9uIG9mIG5zID49IDEwMDAwLCBzbyBucys1MDAgY2FuIG5vdCBiZSBsZXNzIHRo
-YW4NCj4gMTAwMC4NCj4gDQpTb3JyeSBhYm91dCB0aGF0LCBJIG1pc3JlYWQgaXQuIDopDQoNCj4g
-Pg0KPiA+IFdlIG11c3QgdG8gdXNlIHBlcl9uc2VjX3RiX3RpY2tzLCBsaWtlIG15IGNvZGUgMTAw
-MCAvIHRiX3RpY2tzX3Blcl91c2VjLg0KPiA+DQo+ID4gPiAuLi53aGljaCBjYW4gYmUgdGVzdGVk
-IGp1c3QgYnkgdmFyeWluZyBucy4NCj4gPiA+DQo+ID4gPiA+IElmIGxhdGVyIHRoZXJlIHdpbGwg
-YmUgbW9yZSB0aGFuIDFHSFogcGxhdGZvcm0gYXQgdGhhdCB0aW1lIHRvIGFkZA0KPiA+ID4gPiB0
-aGlzDQo+ID4gPiBzdXBwb3J0Lg0KPiA+ID4NCj4gPiBZZXMsIEkgYWdyZWUgdGhpcyBwb2ludC4g
-OikNCj4gDQo+IE9uZSBzaG91bGQgYWdyZWUgd2l0aCBoaW1zZWxmIDopDQo+IA0KPiAtQmhhcmF0
-DQo+IA0KPiA+DQo+ID4gLWRvbmdzaGVuZw0KPiA+DQo+ID4gPiBUaGVyZSBhbG1vc3QgY2VydGFp
-bmx5IHdvbid0IGJlIHRpbWViYXNlcyB0aGF0IHJ1biB0aGF0IGZhc3QsIGJ1dA0KPiA+ID4gZGl2
-aWRlIGJ5IHplcm8gaXMgYSByYXRoZXIgbmFzdHkgd2F5IG9mIHJlc3BvbmRpbmcgaWYgc3VjaCBh
-IHRoaW5nDQo+ID4gPiBkb2VzDQo+ID4gaGFwcGVuLg0KPiA+ID4NCj4gPiA+IC1TY290dA0KPiA+
-ID4NCg0K
+This is an optimization for the PowerPC in 64-bit
+little-endian. Bit counting is used in find_zero(), instead
+of the multiply and shift.
+
+It is modelled after Alan Modra's PowerPC LE strlen patch
+http://sourceware.org/ml/libc-alpha/2013-08/msg00097.html.
+
+Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/word-at-a-time.h |   57 ++++++++++++++++-------------
+ 1 file changed, 32 insertions(+), 25 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/word-at-a-time.h b/arch/powerpc/include/asm/word-at-a-time.h
+index 213a5f2..9a5c928 100644
+--- a/arch/powerpc/include/asm/word-at-a-time.h
++++ b/arch/powerpc/include/asm/word-at-a-time.h
+@@ -42,13 +42,6 @@ static inline bool has_zero(unsigned long val, unsigned long *data, const struct
+ 
+ #else
+ 
+-/*
+- * This is largely generic for little-endian machines, but the
+- * optimal byte mask counting is probably going to be something
+- * that is architecture-specific. If you have a reliably fast
+- * bit count instruction, that might be better than the multiply
+- * and shift, for example.
+- */
+ struct word_at_a_time {
+ 	const unsigned long one_bits, high_bits;
+ };
+@@ -57,19 +50,32 @@ struct word_at_a_time {
+ 
+ #ifdef CONFIG_64BIT
+ 
+-/*
+- * Jan Achrenius on G+: microoptimized version of
+- * the simpler "(mask & ONEBYTES) * ONEBYTES >> 56"
+- * that works for the bytemasks without having to
+- * mask them first.
+- */
+-static inline long count_masked_bytes(unsigned long mask)
++/* Alan Modra's little-endian strlen tail for 64-bit */
++#define create_zero_mask(mask) (mask)
++
++static inline unsigned long find_zero(unsigned long mask)
+ {
+-	return mask*0x0001020304050608ul >> 56;
++	unsigned long leading_zero_bits;
++	long trailing_zero_bit_mask;
++
++	asm ("addi %1,%2,-1\n\t"
++	     "andc %1,%1,%2\n\t"
++	     "popcntd %0,%1"
++	     : "=r" (leading_zero_bits), "=&r" (trailing_zero_bit_mask)
++	     : "r" (mask));
++	return leading_zero_bits >> 3;
+ }
+ 
+ #else	/* 32-bit case */
+ 
++/*
++ * This is largely generic for little-endian machines, but the
++ * optimal byte mask counting is probably going to be something
++ * that is architecture-specific. If you have a reliably fast
++ * bit count instruction, that might be better than the multiply
++ * and shift, for example.
++ */
++
+ /* Carl Chatfield / Jan Achrenius G+ version for 32-bit */
+ static inline long count_masked_bytes(long mask)
+ {
+@@ -79,6 +85,17 @@ static inline long count_masked_bytes(long mask)
+ 	return a & mask;
+ }
+ 
++static inline unsigned long create_zero_mask(unsigned long bits)
++{
++	bits = (bits - 1) & ~bits;
++	return bits >> 7;
++}
++
++static inline unsigned long find_zero(unsigned long mask)
++{
++	return count_masked_bytes(mask);
++}
++
+ #endif
+ 
+ /* Return nonzero if it has a zero */
+@@ -94,19 +111,9 @@ static inline unsigned long prep_zero_mask(unsigned long a, unsigned long bits,
+ 	return bits;
+ }
+ 
+-static inline unsigned long create_zero_mask(unsigned long bits)
+-{
+-	bits = (bits - 1) & ~bits;
+-	return bits >> 7;
+-}
+-
+ /* The mask we created is directly usable as a bytemask */
+ #define zero_bytemask(mask) (mask)
+ 
+-static inline unsigned long find_zero(unsigned long mask)
+-{
+-	return count_masked_bytes(mask);
+-}
+ #endif
+ 
+ #endif /* _ASM_WORD_AT_A_TIME_H */
+-- 
+1.7.10.4
