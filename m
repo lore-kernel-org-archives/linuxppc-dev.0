@@ -1,11 +1,12 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-MIME-Version: 1.0
-Subject: [PATCH] powerpc/tm: Switch out userspace PPR and DSCR sooner
-Date: Thu, 26 Sep 2013 13:29:09 +1000
-Message-ID: <15239.1380166149@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, anton@samba.org, matt@ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Thu, 26 Sep 2013 13:30:04 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Add VMX optimised xor for RAID5
+Message-ID: <20130926133004.1bff1bd4@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,202 +16,290 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we do a treclaim or trecheckpoint we end up running with userspace
-PPR and DSCR values.  Currently we don't do anything special to avoid
-running with user values which could cause a severe performance
-degradation.
 
-This patch moves the PPR and DSCR save and restore around treclaim and
-trecheckpoint so that we run with user values for a much shorter period.
-More care is taken with the PPR as it's impact is greater than the DSCR.
+Add a VMX optimised xor, used primarily for RAID5. On a POWER7 blade
+this is a decent win:
 
-This is similar to user exceptions, where we run HTM_MEDIUM early to
-ensure that we don't run with a userspace PPR values in the kernel.
+   32regs    : 17932.800 MB/sec
+   altivec   : 19724.800 MB/sec
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+The bigger gain is when the same test is run in SMT4 mode, as it
+would if the machine was busy:
 
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index d781ca5..b627f9f 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -78,6 +78,11 @@ _GLOBAL(tm_abort)
- 	TABORT(R3)
- 	blr
- 
-+	.section	".toc","aw"
-+DSCR_DEFAULT:
-+	.tc dscr_default[TC],dscr_default
+   8regs     :  8377.600 MB/sec
+   altivec   : 15801.600 MB/sec
+
+I tested this against an array created without the patch, and also
+verified it worked as expected on a little endian kernel.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: le-kernel/arch/powerpc/include/asm/xor.h
+===================================================================
+--- le-kernel.orig/arch/powerpc/include/asm/xor.h
++++ le-kernel/arch/powerpc/include/asm/xor.h
+@@ -1 +1,68 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
++ *
++ * Copyright (C) IBM Corporation, 2012
++ *
++ * Author: Anton Blanchard <anton@au.ibm.com>
++ */
++#ifndef _ASM_POWERPC_XOR_H
++#define _ASM_POWERPC_XOR_H
 +
-+	.section	".text"
- 
- /* void tm_reclaim(struct thread_struct *thread,
-  *                 unsigned long orig_msr,
-@@ -188,11 +193,18 @@ dont_backup_fp:
- 	std	r1, PACATMSCRATCH(r13)
- 	ld	r1, PACAR1(r13)
- 
-+	/* Store the PPR in r11 and reset to decent value */
-+	std	r11, GPR11(r1)			/* Temporary stash */
-+	mfspr	r11, SPRN_PPR
-+	HMT_MEDIUM
++#ifdef CONFIG_ALTIVEC
 +
- 	/* Now get some more GPRS free */
- 	std	r7, GPR7(r1)			/* Temporary stash */
- 	std	r12, GPR12(r1)			/* ''   ''    ''   */
- 	ld	r12, STACK_PARAM(0)(r1)		/* Param 0, thread_struct * */
- 
-+	std	r11, THREAD_TM_PPR(r12)		/* Store PPR and free r11 */
++#include <asm/cputable.h>
 +
- 	addi	r7, r12, PT_CKPT_REGS		/* Thread's ckpt_regs */
- 
- 	/* Make r7 look like an exception frame so that we
-@@ -204,15 +216,19 @@ dont_backup_fp:
- 	SAVE_GPR(0, r7)				/* user r0 */
- 	SAVE_GPR(2, r7)			/* user r2 */
- 	SAVE_4GPRS(3, r7)			/* user r3-r6 */
--	SAVE_4GPRS(8, r7)			/* user r8-r11 */
-+	SAVE_GPR(8, r7)				/* user r8 */
-+	SAVE_GPR(9, r7)				/* user r9 */
-+	SAVE_GPR(10, r7)			/* user r10 */
- 	ld	r3, PACATMSCRATCH(r13)		/* user r1 */
- 	ld	r4, GPR7(r1)			/* user r7 */
--	ld	r5, GPR12(r1)			/* user r12 */
--	GET_SCRATCH0(6)				/* user r13 */
-+	ld	r5, GPR11(r1)			/* user r11 */
-+	ld	r6, GPR12(r1)			/* user r12 */
-+	GET_SCRATCH0(8)				/* user r13 */
- 	std	r3, GPR1(r7)
- 	std	r4, GPR7(r7)
--	std	r5, GPR12(r7)
--	std	r6, GPR13(r7)
-+	std	r5, GPR11(r7)
-+	std	r6, GPR12(r7)
-+	std	r8, GPR13(r7)
- 
- 	SAVE_NVGPRS(r7)				/* user r14-r31 */
- 
-@@ -235,14 +251,12 @@ dont_backup_fp:
- 	std	r6, _XER(r7)
- 
- 
--	/* ******************** TAR, PPR, DSCR ********** */
-+	/* ******************** TAR, DSCR ********** */
- 	mfspr	r3, SPRN_TAR
--	mfspr	r4, SPRN_PPR
--	mfspr	r5, SPRN_DSCR
-+	mfspr	r4, SPRN_DSCR
- 
- 	std	r3, THREAD_TM_TAR(r12)
--	std	r4, THREAD_TM_PPR(r12)
--	std	r5, THREAD_TM_DSCR(r12)
-+	std	r4, THREAD_TM_DSCR(r12)
- 
- 	/* MSR and flags:  We don't change CRs, and we don't need to alter
- 	 * MSR.
-@@ -259,7 +273,7 @@ dont_backup_fp:
- 	std	r3, THREAD_TM_TFHAR(r12)
- 	std	r4, THREAD_TM_TFIAR(r12)
- 
--	/* AMR and PPR are checkpointed too, but are unsupported by Linux. */
-+	/* AMR is checkpointed too, but is unsupported by Linux. */
- 
- 	/* Restore original MSR/IRQ state & clear TM mode */
- 	ld	r14, TM_FRAME_L0(r1)		/* Orig MSR */
-@@ -275,6 +289,12 @@ dont_backup_fp:
- 	mtcr	r4
- 	mtlr	r0
- 	ld	r2, 40(r1)
++void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
++		   unsigned long *v2_in);
++void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
++		   unsigned long *v2_in, unsigned long *v3_in);
++void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
++		   unsigned long *v2_in, unsigned long *v3_in,
++		   unsigned long *v4_in);
++void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
++		   unsigned long *v2_in, unsigned long *v3_in,
++		   unsigned long *v4_in, unsigned long *v5_in);
 +
-+	/* Load system default DSCR */
-+	ld	r4, DSCR_DEFAULT@toc(r2)
-+	ld	r0, 0(r4)
-+	mtspr	SPRN_DSCR, r0
++static struct xor_block_template xor_block_altivec = {
++	.name = "altivec",
++	.do_2 = xor_altivec_2,
++	.do_3 = xor_altivec_3,
++	.do_4 = xor_altivec_4,
++	.do_5 = xor_altivec_5,
++};
 +
- 	blr
- 
- 
-@@ -361,25 +381,24 @@ dont_restore_fp:
- 
- restore_gprs:
- 
--	/* ******************** TAR, PPR, DSCR ********** */
--	ld	r4, THREAD_TM_TAR(r3)
--	ld	r5, THREAD_TM_PPR(r3)
--	ld	r6, THREAD_TM_DSCR(r3)
-+	/* ******************** CR,LR,CCR,MSR ********** */
-+	ld	r4, _CTR(r7)
-+	ld	r5, _LINK(r7)
-+	ld	r6, _CCR(r7)
-+	ld	r8, _XER(r7)
- 
--	mtspr	SPRN_TAR,	r4
--	mtspr	SPRN_PPR,	r5
--	mtspr	SPRN_DSCR,	r6
-+	mtctr	r4
-+	mtlr	r5
-+	mtcr	r6
-+	mtxer	r8
- 
--	/* ******************** CR,LR,CCR,MSR ********** */
--	ld	r3, _CTR(r7)
--	ld	r4, _LINK(r7)
--	ld	r5, _CCR(r7)
--	ld	r6, _XER(r7)
-+	/* ******************** TAR ******************** */
-+	ld	r4, THREAD_TM_TAR(r3)
-+	mtspr	SPRN_TAR,	r4
- 
--	mtctr	r3
--	mtlr	r4
--	mtcr	r5
--	mtxer	r6
-+	/* Load up the PPR and DSCR in GPRs only at this stage */
-+	ld	r5, THREAD_TM_DSCR(r3)
-+	ld	r6, THREAD_TM_PPR(r3)
- 
- 	/* Clear the MSR RI since we are about to change R1.  EE is already off
- 	 */
-@@ -387,19 +406,26 @@ restore_gprs:
- 	mtmsrd	r4, 1
- 
- 	REST_4GPRS(0, r7)			/* GPR0-3 */
--	REST_GPR(4, r7)				/* GPR4-6 */
--	REST_GPR(5, r7)
--	REST_GPR(6, r7)
-+	REST_GPR(4, r7)				/* GPR4 */
- 	REST_4GPRS(8, r7)			/* GPR8-11 */
- 	REST_2GPRS(12, r7)			/* GPR12-13 */
- 
- 	REST_NVGPRS(r7)				/* GPR14-31 */
- 
--	ld	r7, GPR7(r7)			/* GPR7 */
-+	/* Load up PPR and DSCR here so we don't run with user values for long
-+	 */
-+	mtspr	SPRN_DSCR, r5
-+	mtspr	SPRN_PPR, r6
++#define XOR_SPEED_ALTIVEC()				\
++	do {						\
++		if (cpu_has_feature(CPU_FTR_ALTIVEC))	\
++			xor_speed(&xor_block_altivec);	\
++	} while (0)
++#else
++#define XOR_SPEED_ALTIVEC
++#endif
 +
-+	REST_GPR(5, r7)				/* GPR5-7 */
-+	REST_GPR(6, r7)
-+	ld	r7, GPR7(r7)
- 
- 	/* Commit register state as checkpointed state: */
- 	TRECHKPT
- 
-+	HMT_MEDIUM
++/* Also try the generic routines. */
+ #include <asm-generic/xor.h>
 +
- 	/* Our transactional state has now changed.
- 	 *
- 	 * Now just get out of here.  Transactional (current) state will be
-@@ -422,6 +448,12 @@ restore_gprs:
- 	mtcr	r4
- 	mtlr	r0
- 	ld	r2, 40(r1)
++#undef XOR_TRY_TEMPLATES
++#define XOR_TRY_TEMPLATES				\
++do {							\
++	xor_speed(&xor_block_8regs);			\
++	xor_speed(&xor_block_8regs_p);			\
++	xor_speed(&xor_block_32regs);			\
++	xor_speed(&xor_block_32regs_p);			\
++	XOR_SPEED_ALTIVEC();				\
++} while (0)
 +
-+	/* Load system default DSCR */
-+	ld	r4, DSCR_DEFAULT@toc(r2)
-+	ld	r0, 0(r4)
-+	mtspr	SPRN_DSCR, r0
++#endif /* _ASM_POWERPC_XOR_H */
+Index: le-kernel/arch/powerpc/lib/Makefile
+===================================================================
+--- le-kernel.orig/arch/powerpc/lib/Makefile
++++ le-kernel/arch/powerpc/lib/Makefile
+@@ -39,3 +39,6 @@ obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
+ obj-y			+= code-patching.o
+ obj-y			+= feature-fixups.o
+ obj-$(CONFIG_FTR_FIXUP_SELFTEST) += feature-fixups-test.o
 +
- 	blr
- 
- 	/* ****************************************************************** */
++obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o
++CFLAGS_xor_vmx.o += -maltivec -mabi=altivec
+Index: le-kernel/arch/powerpc/lib/xor_vmx.c
+===================================================================
+--- /dev/null
++++ le-kernel/arch/powerpc/lib/xor_vmx.c
+@@ -0,0 +1,177 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
++ *
++ * Copyright (C) IBM Corporation, 2012
++ *
++ * Author: Anton Blanchard <anton@au.ibm.com>
++ */
++#include <altivec.h>
++
++#include <linux/preempt.h>
++#include <linux/export.h>
++#include <linux/sched.h>
++#include <asm/switch_to.h>
++
++typedef vector signed char unative_t;
++
++#define DEFINE(V)				\
++	unative_t *V = (unative_t *)V##_in;	\
++	unative_t V##_0, V##_1, V##_2, V##_3
++
++#define LOAD(V)			\
++	do {			\
++		V##_0 = V[0];	\
++		V##_1 = V[1];	\
++		V##_2 = V[2];	\
++		V##_3 = V[3];	\
++	} while (0)
++
++#define STORE(V)		\
++	do {			\
++		V[0] = V##_0;	\
++		V[1] = V##_1;	\
++		V[2] = V##_2;	\
++		V[3] = V##_3;	\
++	} while (0)
++
++#define XOR(V1, V2)					\
++	do {						\
++		V1##_0 = vec_xor(V1##_0, V2##_0);	\
++		V1##_1 = vec_xor(V1##_1, V2##_1);	\
++		V1##_2 = vec_xor(V1##_2, V2##_2);	\
++		V1##_3 = vec_xor(V1##_3, V2##_3);	\
++	} while (0)
++
++void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
++		   unsigned long *v2_in)
++{
++	DEFINE(v1);
++	DEFINE(v2);
++	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
++
++	preempt_disable();
++	enable_kernel_altivec();
++
++	do {
++		LOAD(v1);
++		LOAD(v2);
++		XOR(v1, v2);
++		STORE(v1);
++
++		v1 += 4;
++		v2 += 4;
++	} while (--lines > 0);
++
++	preempt_enable();
++}
++EXPORT_SYMBOL(xor_altivec_2);
++
++void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
++		   unsigned long *v2_in, unsigned long *v3_in)
++{
++	DEFINE(v1);
++	DEFINE(v2);
++	DEFINE(v3);
++	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
++
++	preempt_disable();
++	enable_kernel_altivec();
++
++	do {
++		LOAD(v1);
++		LOAD(v2);
++		LOAD(v3);
++		XOR(v1, v2);
++		XOR(v1, v3);
++		STORE(v1);
++
++		v1 += 4;
++		v2 += 4;
++		v3 += 4;
++	} while (--lines > 0);
++
++	preempt_enable();
++}
++EXPORT_SYMBOL(xor_altivec_3);
++
++void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
++		   unsigned long *v2_in, unsigned long *v3_in,
++		   unsigned long *v4_in)
++{
++	DEFINE(v1);
++	DEFINE(v2);
++	DEFINE(v3);
++	DEFINE(v4);
++	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
++
++	preempt_disable();
++	enable_kernel_altivec();
++
++	do {
++		LOAD(v1);
++		LOAD(v2);
++		LOAD(v3);
++		LOAD(v4);
++		XOR(v1, v2);
++		XOR(v3, v4);
++		XOR(v1, v3);
++		STORE(v1);
++
++		v1 += 4;
++		v2 += 4;
++		v3 += 4;
++		v4 += 4;
++	} while (--lines > 0);
++
++	preempt_enable();
++}
++EXPORT_SYMBOL(xor_altivec_4);
++
++void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
++		   unsigned long *v2_in, unsigned long *v3_in,
++		   unsigned long *v4_in, unsigned long *v5_in)
++{
++	DEFINE(v1);
++	DEFINE(v2);
++	DEFINE(v3);
++	DEFINE(v4);
++	DEFINE(v5);
++	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
++
++	preempt_disable();
++	enable_kernel_altivec();
++
++	do {
++		LOAD(v1);
++		LOAD(v2);
++		LOAD(v3);
++		LOAD(v4);
++		LOAD(v5);
++		XOR(v1, v2);
++		XOR(v3, v4);
++		XOR(v1, v5);
++		XOR(v1, v3);
++		STORE(v1);
++
++		v1 += 4;
++		v2 += 4;
++		v3 += 4;
++		v4 += 4;
++		v5 += 4;
++	} while (--lines > 0);
++
++	preempt_enable();
++}
++EXPORT_SYMBOL(xor_altivec_5);
