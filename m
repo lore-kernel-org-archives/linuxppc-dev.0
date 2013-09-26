@@ -1,28 +1,20 @@
-Return-Path: <r63061@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1F40B2C034C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 19:43:19 +1000 (EST)
-Received: from mail221-va3 (localhost [127.0.0.1])	by
- mail221-va3-R.bigfish.com (Postfix) with ESMTP id 15908C0390	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 09:43:14 +0000 (UTC)
-Received: from VA3EHSMHS010.bigfish.com (unknown [10.7.14.249])	by
- mail221-va3.bigfish.com (Postfix) with ESMTP id D62CF440040	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 09:43:12 +0000 (UTC)
-From: Xie Xiaobo <X.Xie@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH V5 2/2] powerpc/85xx: Add TWR-P1025 board support
-Date: Thu, 26 Sep 2013 17:37:33 +0800
-Message-ID: <1380188253-4710-2-git-send-email-X.Xie@freescale.com>
-In-Reply-To: <1380188253-4710-1-git-send-email-X.Xie@freescale.com>
-References: <1380188253-4710-1-git-send-email-X.Xie@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Michael Johnston <michael.johnston@freescale.com>,
- Xie Xiaobo <X.Xie@freescale.com>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zoneX.GCU-Squad.org [194.213.125.0])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 805CB2C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 20:10:16 +1000 (EST)
+Date: Thu, 26 Sep 2013 11:39:36 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Christian Kujau <lists@nerdbynature.de>
+Subject: Re: therm_adt746x: -3 invalid for parameter limit_adjust
+Message-ID: <20130926113936.24c10b78@endymion.delvare>
+In-Reply-To: <alpine.DEB.2.11.1309260202480.6519@trent.utfs.org>
+References: <alpine.DEB.2.11.1309260202480.6519@trent.utfs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: colin@colino.net, Andrew Morton <akpm@linux-foundation.org>,
+ Jingoo Han <jg1.han@samsung.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,596 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-TWR-P1025 Overview
- -----------------
- 512Mbyte DDR3 (on board DDR)
- 64MB Nor Flash
- eTSEC1: Connected to RGMII PHY AR8035
- eTSEC3: Connected to RGMII PHY AR8035
- Two USB2.0 Type A
- One microSD Card slot
- One mini-PCIe slot
- One mini-USB TypeB dual UART
+Hi Christian,
 
-Signed-off-by: Michael Johnston <michael.johnston@freescale.com>
-Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
+On Thu, 26 Sep 2013 02:16:16 -0700 (PDT), Christian Kujau wrote:
+> Hi,
+> 
+> after upgrading from 3.11 to 3.12-rc2, the therm_adt746x module could not 
+> be loaded any more:
+> 
+>   therm_adt746x: `-2' invalid for parameter `limit_adjust'
+> 
+> I've alwasy passed "limit_adjust=-3" (negative 3) to the module via 
+> modprobe.conf, to lower the max temperature. Up until 3.11, loading the 
+> module would print:
+> 
+>   adt746x: Lowering max temperatures from 73, 80, 109 to 67, 47, 67
+> 
+> I can load the module without limit_adjust or with positive values, but 
+> really wanted to lower the temperature, so that the fan would kick in 
+> earlier. For reference, this is what happens in 3.12-rc2:
+> 
+>  v--- limit_adjust
+>  |
+>  0: adt746x: Lowering max temperatures from 73, 80, 109 to 70, 50, 70
+>  1: adt746x: Lowering max temperatures from 73, 80, 109 to 71, 51, 71
+>  2: adt746x: Lowering max temperatures from 73, 80, 109 to 72, 52, 72
+>  3: adt746x: Lowering max temperatures from 73, 80, 109 to 73, 53, 73
+>  4: adt746x: Lowering max temperatures from 73, 80, 109 to 74, 54, 74
+> 10: adt746x: Lowering max temperatures from 73, 80, 109 to 80, 60, 80
+> 
+> Was passing negative values to therm_adt746x ever supported?
+
+As far as I can see, yes.
+
+> drivers/macintosh/therm_adt746x.c hasn't been touched in a while, this 
+> means some other change did it.
+> 
+> Before I attempt a full git bisect, any hints what could have caused this?
+
+I think it is a bug in:
+
+commit 6072ddc8520b86adfac6939ca32fb6e6c4de017a
+Author: Jingoo Han <jg1.han@samsung.com>
+Date:   Thu Sep 12 15:14:07 2013 -0700
+
+    kernel: replace strict_strto*() with kstrto*()
+
+The change was a good idea but the code itself is not, it has kstrtoul
+in many places where kstrtol should be used. Please try the following
+patch, hopefully that should fix your problem:
+
+From: Jean Delvare <khali@linux-fr.org>
+Subject: kernel/params: Fix handling of signed integer types
+
+Commit 6072ddc8520b86adfac6939ca32fb6e6c4de017a broke the handling
+of signed integer types, fix it.
+
+Reported-by: Christian Kujau <lists@nerdbynature.de>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
-Patch V5: Miscellaneous modification. e.g. move the qe ucc node into dtsi.
-Patch V4: Fix the mdio phy interrupt issue in dts
-Patch V3: fix pcie range issue in dts
-Patch V2: QE related init codes were factored out to a common file
+ kernel/params.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
- arch/powerpc/boot/dts/p1025twr.dtsi     | 274 ++++++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1025twr_32b.dts  |  94 +++++++++++
- arch/powerpc/platforms/85xx/Kconfig     |   6 +
- arch/powerpc/platforms/85xx/Makefile    |   1 +
- arch/powerpc/platforms/85xx/twr_p102x.c | 147 +++++++++++++++++
- 5 files changed, 522 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/p1025twr.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1025twr_32b.dts
- create mode 100644 arch/powerpc/platforms/85xx/twr_p102x.c
-
-diff --git a/arch/powerpc/boot/dts/p1025twr.dtsi b/arch/powerpc/boot/dts/p1025twr.dtsi
-new file mode 100644
-index 0000000..30cdf8d
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1025twr.dtsi
-@@ -0,0 +1,274 @@
-+/*
-+ * P1025 TWR Device Tree Source stub (no addresses or top-level ranges)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/{
-+       aliases {
-+		ethernet3 = &enet3;
-+		ethernet4 = &enet4;
-+       };
-+};
-+
-+&lbc {
-+	nor@0,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "cfi-flash";
-+		reg = <0x0 0x0 0x4000000>;
-+		bank-width = <2>;
-+		device-width = <1>;
-+
-+		partition@0 {
-+			/* This location must not be altered  */
-+			/* 256KB for Vitesse 7385 Switch firmware */
-+			reg = <0x0 0x00040000>;
-+			label = "NOR Vitesse-7385 Firmware";
-+			read-only;
-+		};
-+
-+		partition@40000 {
-+			/* 256KB for DTB Image */
-+			reg = <0x00040000 0x00040000>;
-+			label = "NOR DTB Image";
-+		};
-+
-+		partition@80000 {
-+			/* 5.5 MB for Linux Kernel Image */
-+			reg = <0x00080000 0x00580000>;
-+			label = "NOR Linux Kernel Image";
-+		};
-+
-+		partition@400000 {
-+			/* 56.75MB for Root file System */
-+			reg = <0x00600000 0x038c0000>;
-+			label = "NOR Root File System";
-+		};
-+
-+		partition@ec0000 {
-+			/* This location must not be altered  */
-+			/* 256KB for QE ucode firmware*/
-+			reg = <0x03ec0000 0x00040000>;
-+			label = "NOR QE microcode firmware";
-+			read-only;
-+		};
-+
-+		partition@f00000 {
-+			/* This location must not be altered  */
-+			/* 512KB for u-boot Bootloader Image */
-+			/* 512KB for u-boot Environment Variables */
-+			reg = <0x03f00000 0x00100000>;
-+			label = "NOR U-Boot Image";
-+			read-only;
-+		};
-+	};
-+
-+};
-+
-+&soc {
-+	usb@22000 {
-+		phy_type = "ulpi";
-+	};
-+
-+	mdio@24000 {
-+		phy0: ethernet-phy@2 {
-+			interrupt-parent = <&mpic>;
-+			interrupts = <1 1 0 0>;
-+			reg = <0x2>;
-+		};
-+
-+		phy1: ethernet-phy@1 {
-+			interrupt-parent = <&mpic>;
-+			interrupts = <2 1 0 0>;
-+			reg = <0x1>;
-+		};
-+
-+		tbi0: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	mdio@25000 {
-+		tbi1: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	mdio@26000 {
-+		tbi2: tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	enet0: ethernet@b0000 {
-+		phy-handle = <&phy0>;
-+		phy-connection-type = "rgmii-id";
-+
-+	};
-+
-+	enet1: ethernet@b1000 {
-+		status = "disabled";
-+	};
-+
-+	enet2: ethernet@b2000 {
-+		phy-handle = <&phy1>;
-+		phy-connection-type = "rgmii-id";
-+	};
-+
-+	par_io@e0100 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		reg = <0xe0100 0x60>;
-+		ranges = <0x0 0xe0100 0x60>;
-+		device_type = "par_io";
-+		num-ports = <3>;
-+		pio1: ucc_pin@01 {
-+			pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+				0x1  0x13 0x1  0x0  0x1  0x0    /* QE_MUX_MDC */
-+				0x1  0x14 0x3  0x0  0x1  0x0    /* QE_MUX_MDIO */
-+				0x0  0x17 0x2  0x0  0x2  0x0    /* CLK12 */
-+				0x0  0x18 0x2  0x0  0x1  0x0    /* CLK9 */
-+				0x0  0x7  0x1  0x0  0x2  0x0    /* ENET1_TXD0_SER1_TXD0 */
-+				0x0  0x9  0x1  0x0  0x2  0x0    /* ENET1_TXD1_SER1_TXD1 */
-+				0x0  0xb  0x1  0x0  0x2  0x0    /* ENET1_TXD2_SER1_TXD2 */
-+				0x0  0xc  0x1  0x0  0x2  0x0    /* ENET1_TXD3_SER1_TXD3 */
-+				0x0  0x6  0x2  0x0  0x2  0x0    /* ENET1_RXD0_SER1_RXD0 */
-+				0x0  0xa  0x2  0x0  0x2  0x0    /* ENET1_RXD1_SER1_RXD1 */
-+				0x0  0xe  0x2  0x0  0x2  0x0    /* ENET1_RXD2_SER1_RXD2 */
-+				0x0  0xf  0x2  0x0  0x2  0x0    /* ENET1_RXD3_SER1_RXD3 */
-+				0x0  0x5  0x1  0x0  0x2  0x0    /* ENET1_TX_EN_SER1_RTS_B */
-+				0x0  0xd  0x1  0x0  0x2  0x0    /* ENET1_TX_ER */
-+				0x0  0x4  0x2  0x0  0x2  0x0    /* ENET1_RX_DV_SER1_CTS_B */
-+				0x0  0x8  0x2  0x0  0x2  0x0    /* ENET1_RX_ER_SER1_CD_B */
-+				0x0  0x11 0x2  0x0  0x2  0x0    /* ENET1_CRS */
-+				0x0  0x10 0x2  0x0  0x2  0x0>;    /* ENET1_COL */
-+		};
-+
-+		pio2: ucc_pin@02 {
-+			pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+				0x1  0x13 0x1  0x0  0x1  0x0    /* QE_MUX_MDC */
-+				0x1  0x14 0x3  0x0  0x1  0x0    /* QE_MUX_MDIO */
-+				0x1  0xb  0x2  0x0  0x1  0x0    /* CLK13 */
-+				0x1  0x7  0x1  0x0  0x2  0x0    /* ENET5_TXD0_SER5_TXD0 */
-+				0x1  0xa  0x1  0x0  0x2  0x0    /* ENET5_TXD1_SER5_TXD1 */
-+				0x1  0x6  0x2  0x0  0x2  0x0    /* ENET5_RXD0_SER5_RXD0 */
-+				0x1  0x9  0x2  0x0  0x2  0x0    /* ENET5_RXD1_SER5_RXD1 */
-+				0x1  0x5  0x1  0x0  0x2  0x0    /* ENET5_TX_EN_SER5_RTS_B */
-+				0x1  0x4  0x2  0x0  0x2  0x0    /* ENET5_RX_DV_SER5_CTS_B */
-+				0x1  0x8  0x2  0x0  0x2  0x0>;    /* ENET5_RX_ER_SER5_CD_B */
-+		};
-+
-+		pio3: ucc_pin@03 {
-+			pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+				0x0  0x16 0x2  0x0  0x2  0x0    /* SER7_CD_B*/
-+				0x0  0x12 0x2  0x0  0x2  0x0    /* SER7_CTS_B*/
-+				0x0  0x13 0x1  0x0  0x2  0x0    /* SER7_RTS_B*/
-+				0x0  0x14 0x2  0x0  0x2  0x0    /* SER7_RXD0*/
-+				0x0  0x15 0x1  0x0  0x2  0x0>;    /* SER7_TXD0*/
-+		};
-+
-+		pio4: ucc_pin@04 {
-+			pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+				0x1  0x0  0x2  0x0  0x2  0x0    /* SER3_CD_B*/
-+				0x0  0x1c 0x2  0x0  0x2  0x0    /* SER3_CTS_B*/
-+				0x0  0x1d 0x1  0x0  0x2  0x0    /* SER3_RTS_B*/
-+				0x0  0x1e 0x2  0x0  0x2  0x0    /* SER3_RXD0*/
-+				0x0  0x1f 0x1  0x0  0x2  0x0>;    /* SER3_TXD0*/
-+		};
-+	};
-+};
-+
-+&qe {
-+	enet3: ucc@2000 {
-+		device_type = "network";
-+		compatible = "ucc_geth";
-+		rx-clock-name = "clk12";
-+		tx-clock-name = "clk9";
-+		pio-handle = <&pio1>;
-+		phy-handle = <&qe_phy0>;
-+		phy-connection-type = "mii";
-+	};
-+
-+	mdio@2120 {
-+		qe_phy0: ethernet-phy@18 {
-+			interrupt-parent = <&mpic>;
-+			interrupts = <4 1 0 0>;
-+			reg = <0x18>;
-+			device_type = "ethernet-phy";
-+		};
-+		qe_phy1: ethernet-phy@19 {
-+			interrupt-parent = <&mpic>;
-+			interrupts = <5 1 0 0>;
-+			reg = <0x19>;
-+			device_type = "ethernet-phy";
-+		};
-+		tbi-phy@11 {
-+			reg = <0x11>;
-+			device_type = "tbi-phy";
-+		};
-+	};
-+
-+	enet4: ucc@2400 {
-+		device_type = "network";
-+		compatible = "ucc_geth";
-+		rx-clock-name = "none";
-+		tx-clock-name = "clk13";
-+		pio-handle = <&pio2>;
-+		phy-handle = <&qe_phy1>;
-+		phy-connection-type = "rmii";
-+	};
-+
-+	serial2: ucc@2600 {
-+		device_type = "serial";
-+		compatible = "ucc_uart";
-+		port-number = <0>;
-+		rx-clock-name = "brg6";
-+		tx-clock-name = "brg6";
-+		pio-handle = <&pio3>;
-+	};
-+
-+	serial3: ucc@2200 {
-+		device_type = "serial";
-+		compatible = "ucc_uart";
-+		port-number = <1>;
-+		rx-clock-name = "brg2";
-+		tx-clock-name = "brg2";
-+		pio-handle = <&pio4>;
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/p1025twr_32b.dts b/arch/powerpc/boot/dts/p1025twr_32b.dts
-new file mode 100644
-index 0000000..9acf019
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1025twr_32b.dts
-@@ -0,0 +1,94 @@
-+/*
-+ * P1025 TWR Device Tree Source (32-bit address map)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p1021si-pre.dtsi"
-+/ {
-+	model = "fsl,P1025";
-+	compatible = "fsl,TWR-P1025";
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	lbc: localbus@ffe05000 {
-+		reg = <0 0xffe05000 0 0x1000>;
-+
-+		/* NOR Flash */
-+		ranges = <0x0 0x0 0x0 0xec000000 0x04000000>;
-+	};
-+
-+	soc: soc@ffe00000 {
-+		ranges = <0x0 0x0 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@ffe09000 {
-+		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
-+		reg = <0 0xffe09000 0 0x1000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0xa0000000
-+				  0x2000000 0x0 0xa0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe0a000 {
-+		reg = <0 0xffe0a000 0 0x1000>;
-+		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges = <0x2000000 0x0 0x80000000
-+				  0x2000000 0x0 0x80000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	qe: qe@ffe80000 {
-+		ranges = <0x0 0x0 0xffe80000 0x40000>;
-+		reg = <0 0xffe80000 0 0x480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <0>;
-+	};
-+};
-+
-+/include/ "p1025twr.dtsi"
-+/include/ "fsl/p1021si-post.dtsi"
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index de2eb93..b1a7d0a 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -123,6 +123,12 @@ config P1023_RDS
- 	help
- 	  This option enables support for the P1023 RDS and RDB boards
+--- linux-3.12-rc2.orig/kernel/params.c	2013-09-24 00:41:09.000000000 +0200
++++ linux-3.12-rc2/kernel/params.c	2013-09-26 11:32:43.434586197 +0200
+@@ -254,11 +254,11 @@ int parse_args(const char *doing,
  
-+config TWR_P102x
-+	bool "Freescale TWR-P102x"
-+	select DEFAULT_UIMAGE
-+	help
-+	  This option enables support for the TWR-P1025 board.
-+
- config SOCRATES
- 	bool "Socrates"
- 	select DEFAULT_UIMAGE
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 53c9f75..228c4dd 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -18,6 +18,7 @@ obj-$(CONFIG_P1010_RDB)   += p1010rdb.o
- obj-$(CONFIG_P1022_DS)    += p1022_ds.o
- obj-$(CONFIG_P1022_RDK)   += p1022_rdk.o
- obj-$(CONFIG_P1023_RDS)   += p1023_rds.o
-+obj-$(CONFIG_TWR_P102x)   += twr_p102x.o
- obj-$(CONFIG_P2041_RDB)   += p2041_rdb.o corenet_ds.o
- obj-$(CONFIG_P3041_DS)    += p3041_ds.o corenet_ds.o
- obj-$(CONFIG_P4080_DS)    += p4080_ds.o corenet_ds.o
-diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-new file mode 100644
-index 0000000..4d264e3
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -0,0 +1,147 @@
-+/*
-+ * Copyright 2010-2011, 2013 Freescale Semiconductor, Inc.
-+ *
-+ * Author: Michael Johnston <michael.johnston@freescale.com>
-+ *
-+ * Description:
-+ * TWR-P102x Board Setup
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/pci.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/pci-bridge.h>
-+#include <asm/udbg.h>
-+#include <asm/mpic.h>
-+#include <asm/qe.h>
-+#include <asm/qe_ic.h>
-+#include <asm/fsl_guts.h>
-+
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
-+#include "smp.h"
-+
-+#include "mpc85xx.h"
-+
-+static void __init twr_p1025_pic_init(void)
-+{
-+	struct mpic *mpic;
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	struct device_node *np;
-+#endif
-+
-+	mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN |
-+			MPIC_SINGLE_DEST_CPU,
-+			0, 256, " OpenPIC  ");
-+
-+	BUG_ON(mpic == NULL);
-+	mpic_init(mpic);
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-+	if (np) {
-+		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-+				qe_ic_cascade_high_mpic);
-+		of_node_put(np);
-+	} else
-+		pr_err("Could not find qe-ic node\n");
-+#endif
-+}
-+
-+/* ************************************************************************
-+ *
-+ * Setup the architecture
-+ *
-+ */
-+static void __init twr_p1025_setup_arch(void)
-+{
-+#ifdef CONFIG_QUICC_ENGINE
-+	struct device_node *np;
-+#endif
-+
-+	if (ppc_md.progress)
-+		ppc_md.progress("twr_p1025_setup_arch()", 0);
-+
-+	mpc85xx_smp_init();
-+
-+	fsl_pci_assign_primary();
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	mpc85xx_qe_init();
-+
-+#if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
-+	if (machine_is(twr_p1025)) {
-+		struct ccsr_guts __iomem *guts;
-+
-+		np = of_find_compatible_node(NULL, NULL, "fsl,p1021-guts");
-+		if (np) {
-+			guts = of_iomap(np, 0);
-+			if (!guts)
-+				pr_err("twr_p1025: could not map global utilities register\n");
-+			else {
-+			/* P1025 has pins muxed for QE and other functions. To
-+			 * enable QE UEC mode, we need to set bit QE0 for UCC1
-+			 * in Eth mode, QE0 and QE3 for UCC5 in Eth mode, QE9
-+			 * and QE12 for QE MII management signals in PMUXCR
-+			 * register.
-+			 * Set QE mux bits in PMUXCR */
-+			setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE(0) |
-+					MPC85xx_PMUXCR_QE(3) |
-+					MPC85xx_PMUXCR_QE(9) |
-+					MPC85xx_PMUXCR_QE(12));
-+			iounmap(guts);
-+
-+#if defined(CONFIG_SERIAL_QE)
-+			/* On P1025TWR board, the UCC7 acted as UART port.
-+			 * However, The UCC7's CTS pin is low level in default,
-+			 * it will impact the transmission in full duplex
-+			 * communication. So disable the Flow control pin PA18.
-+			 * The UCC7 UART just can use RXD and TXD pins.
-+			 */
-+			par_io_config_pin(0, 18, 0, 0, 0, 0);
-+#endif
-+			/* Drive PB29 to CPLD low - CPLD will then change
-+			 * muxing from LBC to QE */
-+			par_io_config_pin(1, 29, 1, 0, 0, 0);
-+			par_io_data_set(1, 29, 0);
-+			}
-+			of_node_put(np);
-+		}
-+	}
-+#endif
-+#endif	/* CONFIG_QUICC_ENGINE */
-+
-+	printk(KERN_INFO "TWR-P1025 board from Freescale Semiconductor\n");
-+}
-+
-+machine_arch_initcall(twr_p1025, mpc85xx_common_publish_devices);
-+
-+static int __init twr_p1025_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return of_flat_dt_is_compatible(root, "fsl,TWR-P1025");
-+}
-+
-+define_machine(twr_p1025) {
-+	.name			= "TWR-P1025",
-+	.probe			= twr_p1025_probe,
-+	.setup_arch		= twr_p1025_setup_arch,
-+	.init_IRQ		= twr_p1025_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+	.get_irq		= mpic_get_irq,
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
+ 
+ STANDARD_PARAM_DEF(byte, unsigned char, "%hhu", unsigned long, kstrtoul);
+-STANDARD_PARAM_DEF(short, short, "%hi", long, kstrtoul);
++STANDARD_PARAM_DEF(short, short, "%hi", long, kstrtol);
+ STANDARD_PARAM_DEF(ushort, unsigned short, "%hu", unsigned long, kstrtoul);
+-STANDARD_PARAM_DEF(int, int, "%i", long, kstrtoul);
++STANDARD_PARAM_DEF(int, int, "%i", long, kstrtol);
+ STANDARD_PARAM_DEF(uint, unsigned int, "%u", unsigned long, kstrtoul);
+-STANDARD_PARAM_DEF(long, long, "%li", long, kstrtoul);
++STANDARD_PARAM_DEF(long, long, "%li", long, kstrtol);
+ STANDARD_PARAM_DEF(ulong, unsigned long, "%lu", unsigned long, kstrtoul);
+ 
+ int param_set_charp(const char *val, const struct kernel_param *kp)
+
+
 -- 
-1.8.0
+Jean Delvare
