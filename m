@@ -1,28 +1,35 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
+Return-Path: <B40534@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E9A252C0337
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 11:47:39 +1000 (EST)
-Message-ID: <1380159992.24959.248.camel@snotra.buserror.net>
-Subject: Re: [PATCH v10 2/3] DMA: Freescale: Add new 8-channel DMA engine
- device tree nodes
-From: Scott Wood <scottwood@freescale.com>
-To: Hongbo Zhang <hongbo.zhang@freescale.com>
-Date: Wed, 25 Sep 2013 20:46:32 -0500
-In-Reply-To: <52429252.10009@freescale.com>
-References: <1379499333-4745-1-git-send-email-hongbo.zhang@freescale.com>
- <1379499333-4745-3-git-send-email-hongbo.zhang@freescale.com>
- <524074A7.7000001@wwwdotorg.org> <524169E3.7030408@freescale.com>
- <5241CC60.5070204@wwwdotorg.org> <52429252.10009@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id DF79C2C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 12:32:20 +1000 (EST)
+Received: from mail26-ch1 (localhost [127.0.0.1])	by mail26-ch1-R.bigfish.com
+ (Postfix) with ESMTP id 18A443A009D	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,
+ 26 Sep 2013 02:32:15 +0000 (UTC)
+Received: from CH1EHSMHS037.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.251])	by mail26-ch1.bigfish.com (Postfix) with ESMTP id
+ 68B83100060
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2013 02:32:13 +0000 (UTC)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+ altivec idle
+Date: Thu, 26 Sep 2013 02:32:12 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010909C3@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1380014925-23300-2-git-send-email-dongsheng.wang@freescale.com>
+ <1380014925-23300-4-git-send-email-dongsheng.wang@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0717F8F9@039-SN2MPN1-011.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F154392590108FF41@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1380131815.24959.185.camel@snotra.buserror.net>
+In-Reply-To: <1380131815.24959.185.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, ian.campbell@citrix.com,
- pawel.moll@arm.com, Stephen Warren <swarren@wwwdotorg.org>,
- vinod.koul@intel.com, linux-kernel@vger.kernel.org, rob.herring@calxeda.com,
- djbw@fb.com, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,21 +39,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-09-25 at 15:35 +0800, Hongbo Zhang wrote:
-> By the way, I know maybe it is difficult, but why not introduce a 
-> document of maintaining rules for the dt binding docs? we have dedicated 
-> maintainers for this part now. Description language from one submitter 
-> cannot satisfy every reviewer/maintainer, for a reg property, is it 
-> necessary to say "offset and length",
-
-Don't say "offset and length".  It's both redundant with the base
-definition of the reg property, and overly specific because it makes
-assumptions about how the parent node's ranges are set up (sometimes we
-want to be that specific, but usually not).
-
-> to say "how many entries", to say "register functions and even names"?
-
-If there's more than one
-entry/resource/whatever-we-decide-to-call-it-but-let's-pick-something-canonical, then say how many there are and what each one means.
-
--Scott
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAyNiwgMjAxMyAxOjU3IEFNDQo+IFRvOiBX
+YW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IEJodXNoYW4gQmhhcmF0LVI2NTc3NzsgV29vZCBT
+Y290dC1CMDc0MjE7IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0
+OiBSZTogW1BBVENIIHY0IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjAgc3Rh
+dGUgYW5kDQo+IGFsdGl2ZWMgaWRsZQ0KPiANCj4gT24gV2VkLCAyMDEzLTA5LTI1IGF0IDAzOjEw
+IC0wNTAwLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3Jp
+Z2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4g
+PiA+IFNlbnQ6IFdlZG5lc2RheSwgU2VwdGVtYmVyIDI1LCAyMDEzIDI6MjMgUE0NCj4gPiA+IFRv
+OiBXYW5nIERvbmdzaGVuZy1CNDA1MzQ7IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiBDYzogbGlu
+dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4g
+U3ViamVjdDogUkU6IFtQQVRDSCB2NCA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBw
+dzIwIHN0YXRlDQo+ID4gPiBhbmQgYWx0aXZlYyBpZGxlDQo+ID4gPg0KPiA+ID4NCj4gPiA+DQo+
+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+IEZyb206IExpbnV4cHBj
+LWRldiBbbWFpbHRvOmxpbnV4cHBjLWRldi0NCj4gPiA+ID4gYm91bmNlcytiaGFyYXQuYmh1c2hh
+bj1mcmVlc2NhbGUuY29tQGxpc3RzLm96bGFicy5vcmddIE9uIEJlaGFsZg0KPiA+ID4gPiBib3Vu
+Y2VzK09mIERvbmdzaGVuZw0KPiA+ID4gPiBXYW5nDQo+ID4gPiA+IFNlbnQ6IFR1ZXNkYXksIFNl
+cHRlbWJlciAyNCwgMjAxMyAyOjU5IFBNDQo+ID4gPiA+IFRvOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiA+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdhbmcgRG9uZ3NoZW5n
+LUI0MDUzNA0KPiA+ID4gPiBTdWJqZWN0OiBbUEFUQ0ggdjQgNC80XSBwb3dlcnBjLzg1eHg6IGFk
+ZCBzeXNmcyBmb3IgcHcyMCBzdGF0ZSBhbmQNCj4gPiA+ID4gYWx0aXZlYyBpZGxlDQo+ID4gPiA+
+DQo+ID4gPiA+IEZyb206IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUu
+Y29tPg0KPiA+ID4gPg0KPiA+ID4gPiBBZGQgYSBzeXMgaW50ZXJmYWNlIHRvIGVuYWJsZS9kaWFi
+bGUgcHcyMCBzdGF0ZSBvciBhbHRpdmVjIGlkbGUsDQo+ID4gPiA+IGFuZCBjb250cm9sIHRoZSB3
+YWl0IGVudHJ5IHRpbWUuDQo+ID4gPiA+DQo+ID4gPiA+IEVuYWJsZS9EaXNhYmxlIGludGVyZmFj
+ZToNCj4gPiA+ID4gMCwgZGlzYWJsZS4gMSwgZW5hYmxlLg0KPiA+ID4gPiAvc3lzL2RldmljZXMv
+c3lzdGVtL2NwdS9jcHVYL3B3MjBfc3RhdGUNCj4gPiA+ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9j
+cHUvY3B1WC9hbHRpdmVjX2lkbGUNCj4gPiA+ID4NCj4gPiA+ID4gU2V0IHdhaXQgdGltZSBpbnRl
+cmZhY2U6KE5hbm9zZWNvbmQpDQo+ID4gPiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdVgv
+cHcyMF93YWl0X3RpbWUNCj4gPiA+ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1WC9hbHRp
+dmVjX2lkbGVfd2FpdF90aW1lDQo+ID4gPiA+IEV4YW1wbGU6IEJhc2Ugb24gVEJmcmVxIGlzIDQx
+TUhaLg0KPiA+ID4gPiAxfjQ3KG5zKTogVEJbNjNdDQo+ID4gPiA+IDQ4fjk1KG5zKTogVEJbNjJd
+DQo+ID4gPiA+IDk2fjE5MShucyk6IFRCWzYxXQ0KPiA+ID4gPiAxOTJ+MzgzKG5zKTogVEJbNjJd
+DQo+ID4gPiA+IDM4NH43NjcobnMpOiBUQls2MF0NCj4gPiA+ID4gLi4uDQo+ID4gPiA+DQo+ID4g
+PiA+IFNpZ25lZC1vZmYtYnk6IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2Nh
+bGUuY29tPg0KPiA+ID4gPiAtLS0NCj4gPiA+ID4gKnY0Og0KPiA+ID4gPiBNb3ZlIGNvZGUgZnJv
+bSA4NXh4L2NvbW1vbi5jIHRvIGtlcm5lbC9zeXNmcy5jLg0KPiA+ID4gPg0KPiA+ID4gPiBSZW1v
+dmUgaGFzX3B3MjBfYWx0aXZlY19pZGxlIGZ1bmN0aW9uLg0KPiA+ID4gPg0KPiA+ID4gPiBDaGFu
+Z2Ugd2FpdCAiZW50cnlfYml0IiB0byB3YWl0IHRpbWUuDQo+ID4gPiA+DQo+ID4gPiA+ICBhcmNo
+L3Bvd2VycGMva2VybmVsL3N5c2ZzLmMgfCAyOTENCj4gPiA+ID4gKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCAyOTEg
+aW5zZXJ0aW9ucygrKQ0KPiA+ID4gPg0KPiA+ID4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBj
+L2tlcm5lbC9zeXNmcy5jDQo+ID4gPiA+IGIvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jIGlu
+ZGV4IDI3YTkwYjkuLjIzZmVjZTYgMTAwNjQ0DQo+ID4gPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9r
+ZXJuZWwvc3lzZnMuYw0KPiA+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMva2VybmVsL3N5c2ZzLmMN
+Cj4gPiA+ID4gQEAgLTg1LDYgKzg1LDI3OSBAQCBfX3NldHVwKCJzbXQtc25vb3plLWRlbGF5PSIs
+DQo+ID4gPiA+IHNldHVwX3NtdF9zbm9vemVfZGVsYXkpOw0KPiA+ID4gPg0KPiA+ID4gPiAgI2Vu
+ZGlmIC8qIENPTkZJR19QUEM2NCAqLw0KPiA+ID4gPg0KPiA+ID4gPiArI2lmZGVmIENPTkZJR19G
+U0xfU09DDQo+ID4gPiA+ICsjZGVmaW5lIE1BWF9CSVQJCTYzDQo+ID4gPiA+ICsNCj4gPiA+ID4g
+K3N0YXRpYyB1NjQgcHcyMF93dDsNCj4gPiA+ID4gK3N0YXRpYyB1NjQgYWx0aXZlY19pZGxlX3d0
+Ow0KPiA+ID4gPiArDQo+ID4gPiA+ICtzdGF0aWMgdW5zaWduZWQgaW50IGdldF9pZGxlX3RpY2tz
+X2JpdCh1NjQgbnMpIHsNCj4gPiA+ID4gKwl1NjQgY3ljbGU7DQo+ID4gPiA+ICsNCj4gPiA+ID4g
+KwljeWNsZSA9IGRpdl91NjQobnMsIDEwMDAgLyB0Yl90aWNrc19wZXJfdXNlYyk7DQo+ID4gPg0K
+PiA+ID4gV2hlbiB0Yl90aWNrc19wZXJfdXNlYyAgPiAxMDAwICh0aW1lYmFzZSBmcmVxdWVuY3kg
+PiAxR0h6KSB0aGVuIHRoaXMNCj4gPiA+IHdpbGwgYWx3YXlzIGJlIG5zLCB3aGljaCBpcyBub3Qg
+Y29ycmVjdCwgbm8/DQo+IA0KPiBBY3R1YWxseSBpdCdsbCBiZSBhIGRpdmlkZSBieSB6ZXJvIGlu
+IHRoYXQgY2FzZS4NCj4gDQp0Yl90aWNrc19wZXJfdXNlYyA9IHBwY190Yl9mcmVxIC8gMTAwMDAw
+MDsgTWVhbnMgVEIgZnJlcSBzaG91bGQgYmUgbW9yZSB0aGFuIDFNSFouDQoNCmlmIHBwY190Yl9m
+cmVxIGxlc3MgdGhhbiAxMDAwMDAwLCB0aGUgdGJfdGlja3NfcGVyX3VzZWMgd2lsbCBiZSBhIGRp
+dmlkZSBieSB6ZXJvLg0KSWYgdGhpcyBjb25kaXRpb24gaXMgZXN0YWJsaXNoZWQsIEkgdGhpbmsg
+a2VybmVsIGNhbm5vdCB3b3JrIGFzIGEgbm9ybWFsLg0KDQpTbyBJIHRoaW5rIHdlIG5lZWQgdG8g
+YmVsaWV2ZSB0aGF0IHRoZSB2YXJpYWJsZSBpcyBub3QgemVyby4gQW5kIEkgdGhpbmsgVEIgZnJl
+cSBzaG91bGQgbm90IGxlc3MgdGhhbiAxTUhaIG9uIFBQQyBwbGF0Zm9ybSwgYmVjYXVzZSBpZiBU
+QiBmcmVxIGxlc3MgdGhhbiAxTUhaLCB0aGUgcHJlY2lzaW9uIHRpbWUgd2lsbCBiZWNvbWUgdmVy
+eSBwb29yIGFuZCBzeXN0ZW0gcmVzcG9uc2UgdGltZSB3aWxsIGJlIHNsb3dlci4NCg0KPiA+ICIx
+MDAwIC8gdGJfdGlja3NfcGVyX3VzZWMiIG1lYW5zIG5zZWNfdGlja3NfcGVyX3RiDQo+ID4NCj4g
+PiBJZiB0aW1lYmFzZSBmcmVxdWVuY3kgPiAxR0h6LCB0aGlzIHNob3VsZCBiZSAidGJfdGlja3Nf
+cGVyX3VzZWMgLyAxMDAwIg0KPiBhbmQgdG8gZ2V0IHRiX3RpY2tzX3Blcl9uc2VjLg0KPiA+IFRo
+aXMgc2hvdWxkIGJlIGNoYW5nZWQgdG8gImN5Y2xlID0gbnMgKiB0Yl90aWNrc19wZXJfbnNlYzsi
+DQo+ID4NCj4gPiBCdXQgYXQgcHJlc2VudCB3ZSBkbyBub3QgaGF2ZSBzdWNoIGEgcGxhdGZvcm0g
+dGhhdCB0aW1lYmFzZSBmcmVxdWVuY3kNCj4gPiBtb3JlIHRoYW4gMUdIei4gQW5kIEkgdGhpbmsg
+aXQgaXMgbm90IG5lZWQgdG8gc3VwcG9ydCBzdWNoIGEgc2l0dWF0aW9uLg0KPiA+IEJlY2F1c2Ug
+d2UgaGF2ZSBubyBlbnZpcm9ubWVudCB0byB0ZXN0IGl0Lg0KPiANCj4gWW91IGNhbiB0ZXN0IGl0
+IGJ5IGhhY2tpbmcgYSB3cm9uZyB0aW1lYmFzZSBmcmVxdWVuY3kgaW4gYW5kIHNlZWluZyB3aGF0
+DQo+IHRoZSBjYWxjdWxhdGlvbiBkb2VzLg0KPiANCj4gT3IgZG8gc29tZXRoaW5nIGxpa2UgdGhp
+czoNCj4gDQo+IAlpZiAobnMgPj0gMTAwMDApDQo+IAkJY3ljbGUgPSAoKG5zICsgNTAwKSAvIDEw
+MDApICogdGJfdGlja3NfcGVyX3VzZWM7DQo+IAllbHNlDQo+IAkJY3ljbGUgPSBkaXZfdTY0KCh1
+NjQpbnMgKiB0Yl90aWNrc19wZXJfdXNlYywgMTAwMCk7DQo+IA0KV2UgY2Fubm90IGRvIHRoaXMs
+IGJlY2F1c2UgaWYgKG5zKzUwMCkgPCAxMDAwLCB3ZSBjYW5ub3QgZ2V0IHRoZSBlbnRyeSBiaXQs
+IGl0J2xsIGFsd2F5cyB6ZXJvIGJpdC4NCg0KV2UgbXVzdCB0byB1c2UgcGVyX25zZWNfdGJfdGlj
+a3MsIGxpa2UgbXkgY29kZSAxMDAwIC8gdGJfdGlja3NfcGVyX3VzZWMuDQoNCj4gLi4ud2hpY2gg
+Y2FuIGJlIHRlc3RlZCBqdXN0IGJ5IHZhcnlpbmcgbnMuDQo+IA0KPiA+IElmIGxhdGVyIHRoZXJl
+IHdpbGwgYmUgbW9yZSB0aGFuIDFHSFogcGxhdGZvcm0gYXQgdGhhdCB0aW1lIHRvIGFkZCB0aGlz
+DQo+IHN1cHBvcnQuDQo+IA0KWWVzLCBJIGFncmVlIHRoaXMgcG9pbnQuIDopDQoNCi1kb25nc2hl
+bmcNCg0KPiBUaGVyZSBhbG1vc3QgY2VydGFpbmx5IHdvbid0IGJlIHRpbWViYXNlcyB0aGF0IHJ1
+biB0aGF0IGZhc3QsIGJ1dCBkaXZpZGUNCj4gYnkgemVybyBpcyBhIHJhdGhlciBuYXN0eSB3YXkg
+b2YgcmVzcG9uZGluZyBpZiBzdWNoIGEgdGhpbmcgZG9lcyBoYXBwZW4uDQo+IA0KPiAtU2NvdHQN
+Cj4gDQoNCg==
