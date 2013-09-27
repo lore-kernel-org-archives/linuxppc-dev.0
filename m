@@ -1,20 +1,39 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8D9E02C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 18:05:13 +1000 (EST)
-Message-ID: <1380269103.27811.0.camel@pasglop>
-Subject: Re: [PATCH] powerpc/kernel/sysfs: disable writing to purr in
- non-powernv
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Fri, 27 Sep 2013 18:05:03 +1000
-In-Reply-To: <1380268926-21338-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1380268926-21338-1-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ (Client CN "e06smtp13.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7E84F2C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 18:14:26 +1000 (EST)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Fri, 27 Sep 2013 09:14:21 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 98361219006A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 09:14:18 +0100 (BST)
+Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
+ [9.149.37.247])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8R8E6kg58785832
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 08:14:06 GMT
+Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8R8EH8t023140
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 02:14:18 -0600
+Message-ID: <52453E57.3000304@linux.vnet.ibm.com>
+Date: Fri, 27 Sep 2013 10:14:15 +0200
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc/kvmbook3s_hv: propagate H_SET_MODE to the host
+References: <1379901913-5945-37-git-send-email-anton@samba.org>
+ <20130925121027.29504.19269.stgit@nimbus>
+ <20130925223118.GA2844@iris.ozlabs.ibm.com>
+In-Reply-To: <20130925223118.GA2844@iris.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,94 +43,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-09-27 at 13:32 +0530, Madhavan Srinivasan wrote:
-> powerpc/kernel/sysfs.c exports purr with write permission.
-> This may be valid for powernv kernel since purr is Hyp resource.
-> But writing to the file in PowerVM lpar causes crash.
-
-Testing powernv isn't right, you should test for hypervisor mode.
-
-Cheers,
-Ben.
-
-> # echo 0 > purr
-> cpu 0x0: Vector: 700 (Program Check) at [c000000000d072b0]
->     pc: c00000000001770c: .write_purr+0x1c/0x40
->     lr: c000000000017708: .write_purr+0x18/0x40
->     sp: c000000000d07530
->    msr: 8000000000049032
->   current = 0xc000000000c53de0
->   paca    = 0xc00000000ec70000	 softe: 0	 irq_happened: 0x01
->     pid   = 0, comm = swapper/0
-> enter ? for help
-> [c000000000d075b0] c0000000000fba64
-> .generic_smp_call_function_single_interrupt+0x104/0x190
-> [c000000000d07650] c000000000037748 .smp_ipi_demux+0xa8/0xf0
-> [c000000000d076e0] c000000000035314 .doorbell_exception+0x74/0xb0
-> [c000000000d07760] c000000000002950 doorbell_super_common+0x150/0x180
-> --- Exception: a01 (Doorbell) at c000000000060904
-> .plpar_hcall_norets+0x84/0xd4
-> [link register   ] c00000000006dbd4 .check_and_cede_processor+0x24/0x40
-> [c000000000d07a50] c000000001002558 (unreliable)
-> [c000000000d07ac0] c00000000006dd0c .shared_cede_loop+0x2c/0x70
-> [c000000000d07b40] c0000000006ae954 .cpuidle_enter_state+0x64/0x150
-> [c000000000d07c00] c0000000006aeb30 .cpuidle_idle_call+0xf0/0x300
-> [c000000000d07cb0] c000000000062fa0 .pseries_lpar_idle+0x10/0x50
-> [c000000000d07d20] c000000000016d14 .arch_cpu_idle+0x64/0x150
-> [c000000000d07da0] c0000000000e0060 .cpu_startup_entry+0x1a0/0x2c0
-> [c000000000d07e80] c00000000000bca4 .rest_init+0x94/0xb0
-> [c000000000d07ef0] c000000000b54530 .start_kernel+0x478/0x494
-> [c000000000d07f90] c000000000009be0 .start_here_common+0x20/0x40
-> 0:mon>
+On 26/09/2013 00:31, Paul Mackerras wrote:
+> On Wed, Sep 25, 2013 at 02:10:27PM +0200, Laurent Dufour wrote:
+>> Follow-up to Anton's H_SET_MODE patch, the host should be taken aware of
+>> guest endianess change.
+>>
+>> The hcall H_SET_MODE is processed in kvm then in the host.
+>>
+>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/kvm/book3s_hv.c |    8 ++++++++
+>>  1 file changed, 8 insertions(+)
+>>
+>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+>> index 998cad3..4a47c74 100644
+>> --- a/arch/powerpc/kvm/book3s_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_hv.c
+>> @@ -599,6 +599,14 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+>>  					kvmppc_get_gpr(vcpu, 5),
+>>  					kvmppc_get_gpr(vcpu, 6),
+>>  					kvmppc_get_gpr(vcpu, 7));
+>> +		/*
+>> +		 * If the hcall succeeded, we propagate it to the host.
+>> +		 * This way, it will be aware of the endianess's change too.
+>> +		 * The assumption is made that the hcall will succeed in the
+>> +		 * host.
+>> +		 */
+>> +		if (ret == H_SUCCESS)
+>> +			return RESUME_HOST;
+>>  		break;
 > 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/sysfs.c |   19 +++++++++++++++++--
->  1 file changed, 17 insertions(+), 2 deletions(-)
+> The problem with this is that H_SET_MODE isn't just used for setting
+> endianness; it also does breakpoint setting (DAWR/X and CIABR), which
+> might happen very frequently, so we don't want them being punted up to
+> userspace.
 > 
-> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-> index 27a90b9..d7097c2 100644
-> --- a/arch/powerpc/kernel/sysfs.c
-> +++ b/arch/powerpc/kernel/sysfs.c
-> @@ -179,15 +179,27 @@ SYSFS_PMCSETUP(spurr, SPRN_SPURR);
->  SYSFS_PMCSETUP(dscr, SPRN_DSCR);
->  SYSFS_PMCSETUP(pir, SPRN_PIR);
->  
-> +/*
-> +  Lets only enable Read for Hyp resources and
-> +  enable Write when needed with a separate function.
-> +  Lets be conservative and default to pseries.
-> +*/
->  static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
->  static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
->  static DEVICE_ATTR(dscr, 0600, show_dscr, store_dscr);
-> -static DEVICE_ATTR(purr, 0600, show_purr, store_purr);
-> +static DEVICE_ATTR(purr, 0400, show_purr, store_purr);
->  static DEVICE_ATTR(pir, 0400, show_pir, NULL);
->  
->  unsigned long dscr_default = 0;
->  EXPORT_SYMBOL(dscr_default);
->  
-> +static void add_write_permission_dev_attr(void *ptr)
-> +{
-> +	struct device_attribute *attr = (struct device_attribute *)ptr;
-> +
-> +	attr->attr.mode |= (unsigned short) 0200;
-> +}
-> +
->  static ssize_t show_dscr_default(struct device *dev,
->  		struct device_attribute *attr, char *buf)
->  {
-> @@ -394,8 +406,11 @@ static void register_cpu_online(unsigned int cpu)
->  	if (cpu_has_feature(CPU_FTR_MMCRA))
->  		device_create_file(s, &dev_attr_mmcra);
->  
-> -	if (cpu_has_feature(CPU_FTR_PURR))
-> +	if (cpu_has_feature(CPU_FTR_PURR)) {
-> +		if (machine_is(powernv))
-> +			add_write_permission_dev_attr((void *)&dev_attr_purr);
->  		device_create_file(s, &dev_attr_purr);
-> +	}
->  
->  	if (cpu_has_feature(CPU_FTR_SPURR))
->  		device_create_file(s, &dev_attr_spurr);
+> Paul.
+
+Hi Paul,
+
+My mistake, the patch was based on a too old kernel missing yours and
+Michael's latest patches on H_SET_MODE handling.
+
+I'll propose a new one asap.
+
+Thanks,
+Laurent.
