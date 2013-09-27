@@ -1,19 +1,21 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 787A32C0356
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 22:26:02 +1000 (EST)
-Subject: Re: [RFC PATCH 08/11] kvm: powerpc: book3s: Support building HV and
- PR KVM as module
+ by ozlabs.org (Postfix) with ESMTP id E77CD2C036B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 22:32:01 +1000 (EST)
+Subject: Re: [RFC PATCH 09/11] kvm: simplify processor compat check
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1380276233-17095-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Fri, 27 Sep 2013 14:25:57 +0200
-Message-Id: <32B8402B-25D1-41F4-A3FB-B945B72EDC4C@suse.de>
+In-Reply-To: <1380276233-17095-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Fri, 27 Sep 2013 14:31:56 +0200
+Message-Id: <E5A81672-864D-4E33-B15A-5F6927CC7C13@suse.de>
 References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1380276233-17095-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1380276233-17095-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Cc: "<kvm@vger.kernel.org> list" <kvm@vger.kernel.org>,
+ Gleb Natapov <gleb@redhat.com>, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,383 +29,321 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 On 27.09.2013, at 12:03, Aneesh Kumar K.V wrote:
 
 > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->=20
+
+Missing patch description.
+
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
-> arch/powerpc/kvm/Kconfig              |  6 +++---
-> arch/powerpc/kvm/Makefile             | 12 ++++++++----
-> arch/powerpc/kvm/book3s.c             | 19 ++++++++++++++++++-
-> arch/powerpc/kvm/book3s_64_mmu_host.c |  1 +
-> arch/powerpc/kvm/book3s_emulate.c     |  2 +-
-> arch/powerpc/kvm/book3s_hv.c          |  4 ++++
-> arch/powerpc/kvm/book3s_pr.c          |  5 ++++-
-> arch/powerpc/kvm/book3s_rtas.c        |  1 +
-> arch/powerpc/kvm/emulate.c            |  1 +
-> arch/powerpc/kvm/powerpc.c            |  6 ++++++
-> virt/kvm/kvm_main.c                   |  3 +++
-> 11 files changed, 50 insertions(+), 10 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-> index 5c62459..f63fd8f 100644
-> --- a/arch/powerpc/kvm/Kconfig
-> +++ b/arch/powerpc/kvm/Kconfig
-> @@ -73,7 +73,7 @@ config KVM_BOOK3S_64
-> 	  If unsure, say N.
->=20
-> config KVM_BOOK3S_64_HV
-> -	bool "KVM support for POWER7 and PPC970 using hypervisor mode in =
-host"
-> +	tristate "KVM support for POWER7 and PPC970 using hypervisor =
-mode in host"
-> 	depends on KVM_BOOK3S_64
-> 	select KVM_BOOK3S_HV
-> 	select MMU_NOTIFIER
-> @@ -94,8 +94,8 @@ config KVM_BOOK3S_64_HV
-> 	  If unsure, say N.
->=20
-> config KVM_BOOK3S_64_PR
-> -	bool "KVM support without using hypervisor mode in host"
-> -	depends on KVM_BOOK3S_64 && !KVM_BOOK3S_64_HV
-> +	tristate "KVM support without using hypervisor mode in host"
-> +	depends on KVM_BOOK3S_64
-> 	select KVM_BOOK3S_PR
-> 	---help---
-> 	  Support running guest kernels in virtual machines on =
-processors
-> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-> index a514ecd..861b8da 100644
-> --- a/arch/powerpc/kvm/Makefile
-> +++ b/arch/powerpc/kvm/Makefile
-> @@ -56,8 +56,7 @@ kvm-objs-$(CONFIG_KVM_E500MC) :=3D =
-$(kvm-e500mc-objs)
-> kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) :=3D \
-> 	book3s_64_vio_hv.o
->=20
-> -kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_PR) :=3D \
-> -	$(KVM)/coalesced_mmio.o \
-> +kvm-pr-y :=3D \
-> 	fpu.o \
-> 	book3s_paired_singles.o \
-> 	book3s_pr.o \
-> @@ -77,7 +76,7 @@ =
-kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) +=3D \
-> 	book3s_rmhandlers.o
-> endif
->=20
-> -kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_HV)  +=3D \
-> +kvm-hv-y +=3D \
-> 	book3s_hv.o \
-> 	book3s_hv_interrupts.o \
-> 	book3s_64_mmu_hv.o
-> @@ -85,13 +84,15 @@ kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_HV)  +=3D =
-\
-> kvm-book3s_64-builtin-xics-objs-$(CONFIG_KVM_XICS) :=3D \
-> 	book3s_hv_rm_xics.o
->=20
-> -kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) +=3D \
-> +ifdef CONFIG_KVM_BOOK3S_HV
-> +kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) +=3D \
-> 	book3s_hv_rmhandlers.o \
-> 	book3s_hv_rm_mmu.o \
-> 	book3s_hv_ras.o \
-> 	book3s_hv_builtin.o \
-> 	book3s_hv_cma.o \
-> 	$(kvm-book3s_64-builtin-xics-objs-y)
-> +endif
->=20
-> kvm-book3s_64-objs-$(CONFIG_KVM_XICS) +=3D \
-> 	book3s_xics.o
-> @@ -132,4 +133,7 @@ obj-$(CONFIG_KVM_E500MC) +=3D kvm.o
-> obj-$(CONFIG_KVM_BOOK3S_64) +=3D kvm.o
-> obj-$(CONFIG_KVM_BOOK3S_32) +=3D kvm.o
->=20
-> +obj-$(CONFIG_KVM_BOOK3S_64_PR) +=3D kvm-pr.o
-> +obj-$(CONFIG_KVM_BOOK3S_64_HV) +=3D kvm-hv.o
-> +
-> obj-y +=3D $(kvm-book3s_64-builtin-objs-y)
-> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> index 12f94bf..ca617e1 100644
-> --- a/arch/powerpc/kvm/book3s.c
-> +++ b/arch/powerpc/kvm/book3s.c
-> @@ -170,13 +170,14 @@ void kvmppc_book3s_queue_irqprio(struct kvm_vcpu =
-*vcpu, unsigned int vec)
-> 	printk(KERN_INFO "Queueing interrupt %x\n", vec);
-> #endif
-> }
-> -
-> +EXPORT_SYMBOL_GPL(kvmppc_book3s_queue_irqprio);
->=20
-> void kvmppc_core_queue_program(struct kvm_vcpu *vcpu, ulong flags)
-> {
-> 	/* might as well deliver this straight away */
-> 	kvmppc_inject_interrupt(vcpu, BOOK3S_INTERRUPT_PROGRAM, flags);
-> }
-> +EXPORT_SYMBOL_GPL(kvmppc_core_queue_program);
->=20
-> void kvmppc_core_queue_dec(struct kvm_vcpu *vcpu)
-> {
-> @@ -351,6 +352,7 @@ pfn_t kvmppc_gfn_to_pfn(struct kvm_vcpu *vcpu, =
-gfn_t gfn)
->=20
-> 	return gfn_to_pfn(vcpu->kvm, gfn);
-> }
-> +EXPORT_SYMBOL_GPL(kvmppc_gfn_to_pfn);
->=20
-> static int kvmppc_xlate(struct kvm_vcpu *vcpu, ulong eaddr, bool data,
-> 			 struct kvmppc_pte *pte)
-> @@ -418,6 +420,7 @@ int kvmppc_st(struct kvm_vcpu *vcpu, ulong *eaddr, =
-int size, void *ptr,
->=20
-> 	return EMULATE_DONE;
-> }
-> +EXPORT_SYMBOL_GPL(kvmppc_st);
->=20
-> int kvmppc_ld(struct kvm_vcpu *vcpu, ulong *eaddr, int size, void =
-*ptr,
-> 		      bool data)
-> @@ -448,6 +451,7 @@ nopte:
-> mmio:
-> 	return EMULATE_DO_MMIO;
-> }
-> +EXPORT_SYMBOL_GPL(kvmppc_ld);
->=20
-> int kvm_arch_vcpu_setup(struct kvm_vcpu *vcpu)
-> {
-> @@ -693,6 +697,7 @@ void kvmppc_set_msr(struct kvm_vcpu *vcpu, u64 =
-msr)
-> {
-> 	kvmppc_ops->set_msr(vcpu, msr);
-> }
-> +EXPORT_SYMBOL_GPL(kvmppc_set_msr);
->=20
-> int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
-> {
-> @@ -774,6 +779,7 @@ int kvm_unmap_hva(struct kvm *kvm, unsigned long =
-hva)
-> {
-> 	return kvmppc_ops->unmap_hva(kvm, hva);
-> }
-> +EXPORT_SYMBOL_GPL(kvm_unmap_hva);
->=20
-> int kvm_unmap_hva_range(struct kvm *kvm, unsigned long start, unsigned =
-long end)
-> {
-> @@ -825,3 +831,14 @@ int kvmppc_core_check_processor_compat(void)
-> {
-> 	return kvmppc_ops->check_processor_compat();
-> }
-> +
-> +EXPORT_SYMBOL_GPL(kvm_get_dirty_log);
-> +EXPORT_SYMBOL_GPL(kvmppc_core_pending_dec);
-> +EXPORT_SYMBOL_GPL(kvmppc_init_lpid);
-> +EXPORT_SYMBOL_GPL(kvmppc_core_dequeue_dec);
-> +EXPORT_SYMBOL_GPL(kvmppc_claim_lpid);
-> +EXPORT_SYMBOL_GPL(kvmppc_alloc_lpid);
-> +EXPORT_SYMBOL_GPL(kvmppc_core_prepare_to_enter);
-> +EXPORT_SYMBOL_GPL(kvmppc_core_queue_dec);
-> +EXPORT_SYMBOL_GPL(kvmppc_free_lpid);
-> +
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c =
-b/arch/powerpc/kvm/book3s_64_mmu_host.c
-> index fd5b393..775d368 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_host.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
-> @@ -27,6 +27,7 @@
-> #include <asm/machdep.h>
-> #include <asm/mmu_context.h>
-> #include <asm/hw_irq.h>
-> +
 
-Stray whitespace change
+I fail to see how this really simplifies things, but at the end of the =
+day it's Gleb's and Paolo's call.
 
-> #include "trace_pr.h"
->=20
-> #define PTE_SIZE 12
-> diff --git a/arch/powerpc/kvm/book3s_emulate.c =
-b/arch/powerpc/kvm/book3s_emulate.c
-> index b9841ad..20d03c2 100644
-> --- a/arch/powerpc/kvm/book3s_emulate.c
-> +++ b/arch/powerpc/kvm/book3s_emulate.c
-> @@ -172,7 +172,7 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, =
-struct kvm_vcpu *vcpu,
-> 			vcpu->arch.mmu.tlbie(vcpu, addr, large);
-> 			break;
-> 		}
-> -#ifdef CONFIG_KVM_BOOK3S_64_PR
-> +#ifdef CONFIG_KVM_BOOK3S_PR
-
-Why?
-
-> 		case OP_31_XOP_FAKE_SC1:
-> 		{
-> 			/* SC 1 papr hypercalls */
-> diff --git a/arch/powerpc/kvm/book3s_hv.c =
-b/arch/powerpc/kvm/book3s_hv.c
-> index eec353d..ff57be8 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -53,6 +53,8 @@
-> #include <linux/highmem.h>
-> #include <linux/hugetlb.h>
->=20
-> +#include <linux/module.h>
-> +
-> /* #define EXIT_DEBUG */
-> /* #define EXIT_DEBUG_SIMPLE */
-> /* #define EXIT_DEBUG_INT */
-> @@ -2104,3 +2106,5 @@ static void kvmppc_book3s_exit_hv(void)
->=20
-> module_init(kvmppc_book3s_init_hv);
-> module_exit(kvmppc_book3s_exit_hv);
-> +
-> +MODULE_LICENSE("GPL");
-> diff --git a/arch/powerpc/kvm/book3s_pr.c =
-b/arch/powerpc/kvm/book3s_pr.c
-> index 99d0839..df48d89 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -40,6 +40,7 @@
-> #include <linux/sched.h>
-> #include <linux/vmalloc.h>
-> #include <linux/highmem.h>
-> +#include <linux/module.h>
->=20
-> #define CREATE_TRACE_POINTS
-> #include "trace_pr.h"
-> @@ -871,7 +872,7 @@ program_interrupt:
-> 			ulong cmd =3D kvmppc_get_gpr(vcpu, 3);
-> 			int i;
->=20
-> -#ifdef CONFIG_KVM_BOOK3S_64_PR
-> +#ifdef CONFIG_PPC_BOOK3S_64
-
-Why?
+Which brings me to the next issue: You forgot to CC kvm@vger on your =
+patch set. Gleb and Paolo don't read kvm-ppc@vger. And they shouldn't =
+have to. Every kvm patch that you want review on or that should get =
+applied needs to be sent to kvm@vger. If you want to tag it as PPC =
+specific patch, do so by CC'ing kvm-ppc@vger.
 
 
 Alex
 
-> 			if (kvmppc_h_pr(vcpu, cmd) =3D=3D EMULATE_DONE) =
-{
-> 				r =3D RESUME_GUEST;
-> 				break;
-> @@ -1567,3 +1568,5 @@ static void kvmppc_book3s_exit_pr(void)
+> ---
+> arch/arm/kvm/arm.c                 |  4 ++--
+> arch/ia64/kvm/kvm-ia64.c           |  4 ++--
+> arch/mips/kvm/kvm_mips.c           |  6 ++----
+> arch/powerpc/include/asm/kvm_ppc.h |  2 +-
+> arch/powerpc/kvm/44x.c             |  2 +-
+> arch/powerpc/kvm/book3s.c          | 15 ++++++++++++---
+> arch/powerpc/kvm/book3s_hv.c       |  9 ++++++---
+> arch/powerpc/kvm/book3s_pr.c       |  5 +++--
+> arch/powerpc/kvm/e500.c            |  2 +-
+> arch/powerpc/kvm/e500mc.c          |  2 +-
+> arch/powerpc/kvm/powerpc.c         |  5 -----
+> arch/s390/kvm/kvm-s390.c           |  3 ++-
+> arch/x86/kvm/x86.c                 | 13 +++++++++++--
+> include/linux/kvm_host.h           |  2 +-
+> virt/kvm/kvm_main.c                | 14 +++++---------
+> 15 files changed, 50 insertions(+), 38 deletions(-)
 >=20
-> module_init(kvmppc_book3s_init_pr);
-> module_exit(kvmppc_book3s_exit_pr);
-> +
-> +MODULE_LICENSE("GPL");
-> diff --git a/arch/powerpc/kvm/book3s_rtas.c =
-b/arch/powerpc/kvm/book3s_rtas.c
-> index 3219ba8..cf95cde 100644
-> --- a/arch/powerpc/kvm/book3s_rtas.c
-> +++ b/arch/powerpc/kvm/book3s_rtas.c
-> @@ -260,6 +260,7 @@ fail:
-> 	 */
-> 	return rc;
-> }
-> +EXPORT_SYMBOL_GPL(kvmppc_rtas_hcall);
->=20
-> void kvmppc_rtas_tokens_free(struct kvm *kvm)
+> diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
+> index 9c697db..cccb121 100644
+> --- a/arch/arm/kvm/arm.c
+> +++ b/arch/arm/kvm/arm.c
+> @@ -109,9 +109,9 @@ void kvm_arch_hardware_unsetup(void)
 > {
-> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-> index 81762eb..de9a340 100644
-> --- a/arch/powerpc/kvm/emulate.c
-> +++ b/arch/powerpc/kvm/emulate.c
-> @@ -483,3 +483,4 @@ int kvmppc_emulate_instruction(struct kvm_run =
-*run, struct kvm_vcpu *vcpu)
->=20
-> 	return emulated;
 > }
-> +EXPORT_SYMBOL_GPL(kvmppc_emulate_instruction);
+>=20
+> -void kvm_arch_check_processor_compat(void *rtn)
+> +int kvm_arch_check_processor_compat(void *opaque)
+> {
+> -	*(int *)rtn =3D 0;
+> +	return 0;
+> }
+>=20
+> void kvm_arch_sync_events(struct kvm *kvm)
+> diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
+> index bdfd878..065942c 100644
+> --- a/arch/ia64/kvm/kvm-ia64.c
+> +++ b/arch/ia64/kvm/kvm-ia64.c
+> @@ -185,9 +185,9 @@ void kvm_arch_hardware_disable(void *garbage)
+> 	ia64_ptr_entry(0x3, slot);
+> }
+>=20
+> -void kvm_arch_check_processor_compat(void *rtn)
+> +int kvm_arch_check_processor_compat(void *opaque)
+> {
+> -	*(int *)rtn =3D 0;
+> +	return 0;
+> }
+>=20
+> int kvm_dev_ioctl_check_extension(long ext)
+> diff --git a/arch/mips/kvm/kvm_mips.c b/arch/mips/kvm/kvm_mips.c
+> index a7b0445..4512739 100644
+> --- a/arch/mips/kvm/kvm_mips.c
+> +++ b/arch/mips/kvm/kvm_mips.c
+> @@ -97,11 +97,9 @@ void kvm_arch_hardware_unsetup(void)
+> {
+> }
+>=20
+> -void kvm_arch_check_processor_compat(void *rtn)
+> +int kvm_arch_check_processor_compat(void *opaque)
+> {
+> -	int *r =3D (int *)rtn;
+> -	*r =3D 0;
+> -	return;
+> +	return 0;
+> }
+>=20
+> static void kvm_mips_init_tlbs(struct kvm *kvm)
+> diff --git a/arch/powerpc/include/asm/kvm_ppc.h =
+b/arch/powerpc/include/asm/kvm_ppc.h
+> index 58e732f..592501b 100644
+> --- a/arch/powerpc/include/asm/kvm_ppc.h
+> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> @@ -204,7 +204,7 @@ struct kvmppc_ops {
+> 			      unsigned long npages);
+> 	int (*init_vm)(struct kvm *kvm);
+> 	void (*destroy_vm)(struct kvm *kvm);
+> -	int (*check_processor_compat)(void);
+> +	void (*check_processor_compat)(void *r);
+> 	int (*get_smmu_info)(struct kvm *kvm, struct kvm_ppc_smmu_info =
+*info);
+> 	int (*emulate_op)(struct kvm_run *run, struct kvm_vcpu *vcpu,
+> 			  unsigned int inst, int *advance);
+> diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
+> index 2f5c6b6..a1f4e60 100644
+> --- a/arch/powerpc/kvm/44x.c
+> +++ b/arch/powerpc/kvm/44x.c
+> @@ -43,7 +43,7 @@ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
+> 	kvmppc_booke_vcpu_put(vcpu);
+> }
+>=20
+> -int kvmppc_core_check_processor_compat(void)
+> +int kvm_arch_check_processor_compat(void *opaque)
+> {
+> 	int r;
+>=20
+> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+> index ca617e1..485a6ff 100644
+> --- a/arch/powerpc/kvm/book3s.c
+> +++ b/arch/powerpc/kvm/book3s.c
+> @@ -827,9 +827,18 @@ void kvmppc_core_destroy_vm(struct kvm *kvm)
+> #endif
+> }
+>=20
+> -int kvmppc_core_check_processor_compat(void)
+> -{
+> -	return kvmppc_ops->check_processor_compat();
+> +int kvm_arch_check_processor_compat(void *opaque)
+> +{
+> +	int r,cpu;
+> +	struct kvmppc_ops *kvm_ops =3D (struct kvmppc_ops *)opaque;
+> +	for_each_online_cpu(cpu) {
+> +		smp_call_function_single(cpu,
+> +					 =
+kvm_ops->check_processor_compat,
+> +					 &r, 1);
+> +		if (r < 0)
+> +			break;
+> +	}
+> +	return r;
+> }
+>=20
+> EXPORT_SYMBOL_GPL(kvm_get_dirty_log);
+> diff --git a/arch/powerpc/kvm/book3s_hv.c =
+b/arch/powerpc/kvm/book3s_hv.c
+> index ff57be8..4322db4 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -1980,11 +1980,14 @@ static int kvmppc_core_emulate_mfspr_hv(struct =
+kvm_vcpu *vcpu, int sprn,
+> 	return EMULATE_FAIL;
+> }
+>=20
+> -static int kvmppc_core_check_processor_compat_hv(void)
+> +
+> +static void kvmppc_core_check_processor_compat_hv(void *r)
+> {
+> 	if (!cpu_has_feature(CPU_FTR_HVMODE))
+> -		return -EIO;
+> -	return 0;
+> +		*(int *)r =3D -EIO;
+> +	else
+> +		*(int *)r =3D 0;
+> +	return;
+> }
+>=20
+> static long kvm_arch_vm_ioctl_hv(struct file *filp,
+> diff --git a/arch/powerpc/kvm/book3s_pr.c =
+b/arch/powerpc/kvm/book3s_pr.c
+> index df48d89..127b961 100644
+> --- a/arch/powerpc/kvm/book3s_pr.c
+> +++ b/arch/powerpc/kvm/book3s_pr.c
+> @@ -1490,10 +1490,11 @@ static void kvmppc_core_destroy_vm_pr(struct =
+kvm *kvm)
+> 	enable_relon_interrupts(kvm);
+> }
+>=20
+> -static int kvmppc_core_check_processor_compat_pr(void)
+> +static void kvmppc_core_check_processor_compat_pr(void *r)
+> {
+> 	/* we are always compatible */
+> -	return 0;
+> +	*(int *)r =3D 0;
+> +	return;
+> }
+>=20
+> static long kvm_arch_vm_ioctl_pr(struct file *filp,
+> diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+> index ce6b73c..0681cb1 100644
+> --- a/arch/powerpc/kvm/e500.c
+> +++ b/arch/powerpc/kvm/e500.c
+> @@ -323,7 +323,7 @@ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
+> 	kvmppc_booke_vcpu_put(vcpu);
+> }
+>=20
+> -int kvmppc_core_check_processor_compat(void)
+> +int kvm_arch_check_processor_compat(void *opaque)
+> {
+> 	int r;
+>=20
+> diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+> index 19c8379..48b3ba5 100644
+> --- a/arch/powerpc/kvm/e500mc.c
+> +++ b/arch/powerpc/kvm/e500mc.c
+> @@ -169,7 +169,7 @@ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
+> 	kvmppc_booke_vcpu_put(vcpu);
+> }
+>=20
+> -int kvmppc_core_check_processor_compat(void)
+> +int kvm_arch_check_processor_compat(void *opaque)
+> {
+> 	int r;
+>=20
 > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 00a96fc..3019edc 100644
+> index 3019edc..1404f4d 100644
 > --- a/arch/powerpc/kvm/powerpc.c
 > +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -126,6 +126,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
->=20
-> 	return r;
-> }
-> +EXPORT_SYMBOL_GPL(kvmppc_prepare_to_enter);
->=20
-> int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
+> @@ -264,11 +264,6 @@ void kvm_arch_hardware_unsetup(void)
 > {
-> @@ -179,6 +180,7 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
->=20
-> 	return r;
 > }
-> +EXPORT_SYMBOL_GPL(kvmppc_kvm_pv);
 >=20
-> int kvmppc_sanity_check(struct kvm_vcpu *vcpu)
+> -void kvm_arch_check_processor_compat(void *rtn)
+> -{
+> -	*(int *)rtn =3D kvmppc_core_check_processor_compat();
+> -}
+> -
+> int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
 > {
-> @@ -207,6 +209,7 @@ out:
-> 	vcpu->arch.sane =3D r;
-> 	return r ? 0 : -EINVAL;
+> 	if (type)
+> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+> index 776dafe..01d4000 100644
+> --- a/arch/s390/kvm/kvm-s390.c
+> +++ b/arch/s390/kvm/kvm-s390.c
+> @@ -119,8 +119,9 @@ void kvm_arch_hardware_unsetup(void)
+> 	gmap_unregister_ipte_notifier(&gmap_notifier);
 > }
-> +EXPORT_SYMBOL_GPL(kvmppc_sanity_check);
 >=20
-> int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu)
+> -void kvm_arch_check_processor_compat(void *rtn)
+> +int kvm_arch_check_processor_compat(void *opaque)
 > {
-> @@ -241,6 +244,7 @@ int kvmppc_emulate_mmio(struct kvm_run *run, =
-struct kvm_vcpu *vcpu)
->=20
-> 	return r;
+> +	return 0;
 > }
-> +EXPORT_SYMBOL_GPL(kvmppc_emulate_mmio);
 >=20
-> int kvm_arch_hardware_enable(void *garbage)
+> int kvm_arch_init(void *opaque)
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index e5ca72a..53c8308 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -6873,9 +6873,18 @@ void kvm_arch_hardware_unsetup(void)
+> 	kvm_x86_ops->hardware_unsetup();
+> }
+>=20
+> -void kvm_arch_check_processor_compat(void *rtn)
+> +int kvm_arch_check_processor_compat(void *opaque)
 > {
-> @@ -665,6 +669,7 @@ int kvmppc_handle_load(struct kvm_run *run, struct =
-kvm_vcpu *vcpu,
->=20
-> 	return EMULATE_DO_MMIO;
+> -	kvm_x86_ops->check_processor_compatibility(rtn);
+> +	int r,cpu;
+> +
+> +	for_each_online_cpu(cpu) {
+> +		smp_call_function_single(cpu,
+> +			 kvm_x86_ops->check_processor_compatibility,
+> +			 &r, 1);
+> +		if (r < 0)
+> +			break;
+> +	}
+> +	return r;
 > }
-> +EXPORT_SYMBOL_GPL(kvmppc_handle_load);
 >=20
-> /* Same as above, but sign extends */
-> int kvmppc_handle_loads(struct kvm_run *run, struct kvm_vcpu *vcpu,
-> @@ -726,6 +731,7 @@ int kvmppc_handle_store(struct kvm_run *run, =
-struct kvm_vcpu *vcpu,
+> bool kvm_vcpu_compatible(struct kvm_vcpu *vcpu)
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index ca645a0..459b359 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -649,7 +649,7 @@ int kvm_arch_hardware_enable(void *garbage);
+> void kvm_arch_hardware_disable(void *garbage);
+> int kvm_arch_hardware_setup(void);
+> void kvm_arch_hardware_unsetup(void);
+> -void kvm_arch_check_processor_compat(void *rtn);
+> +int kvm_arch_check_processor_compat(void *opaque);
+> int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu);
+> int kvm_arch_vcpu_should_kick(struct kvm_vcpu *vcpu);
 >=20
-> 	return EMULATE_DO_MMIO;
-> }
-> +EXPORT_SYMBOL_GPL(kvmppc_handle_store);
->=20
-> int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run =
-*run)
-> {
 > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index bf040c4..66df1d2 100644
+> index 66df1d2..0594b22 100644
 > --- a/virt/kvm/kvm_main.c
 > +++ b/virt/kvm/kvm_main.c
-> @@ -186,6 +186,7 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
-> 		++kvm->stat.remote_tlb_flush;
-> 	cmpxchg(&kvm->tlbs_dirty, dirty_count, 0);
+> @@ -3166,10 +3166,9 @@ static void kvm_sched_out(struct =
+preempt_notifier *pn,
 > }
-> +EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
 >=20
-> void kvm_reload_remote_mmus(struct kvm *kvm)
+> int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
+> -		  struct module *module)
+> +	     struct module *module)
 > {
-> @@ -1648,6 +1649,7 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
-> 	memslot =3D gfn_to_memslot(kvm, gfn);
-> 	mark_page_dirty_in_slot(kvm, memslot, gfn);
-> }
-> +EXPORT_SYMBOL_GPL(mark_page_dirty);
+> 	int r;
+> -	int cpu;
 >=20
-> /*
->  * The vCPU has executed a HLT instruction with in-kernel mode =
-enabled.
-> @@ -1673,6 +1675,7 @@ void kvm_vcpu_block(struct kvm_vcpu *vcpu)
+> 	r =3D kvm_arch_init(opaque);
+> 	if (r)
+> @@ -3195,13 +3194,10 @@ int kvm_init(void *opaque, unsigned vcpu_size, =
+unsigned vcpu_align,
+> 	if (r < 0)
+> 		goto out_free_0a;
 >=20
-> 	finish_wait(&vcpu->wq, &wait);
-> }
-> +EXPORT_SYMBOL_GPL(kvm_vcpu_block);
+> -	for_each_online_cpu(cpu) {
+> -		smp_call_function_single(cpu,
+> -				kvm_arch_check_processor_compat,
+> -				&r, 1);
+> -		if (r < 0)
+> -			goto out_free_1;
+> -	}
+> +
+> +	r =3D kvm_arch_check_processor_compat(opaque);
+> +	if (r < 0)
+> +		goto out_free_1;
 >=20
-> #ifndef CONFIG_S390
-> /*
+> 	r =3D register_cpu_notifier(&kvm_cpu_notifier);
+> 	if (r)
 > --=20
 > 1.8.1.2
 >=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
