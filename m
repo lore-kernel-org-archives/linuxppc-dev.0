@@ -1,38 +1,40 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2BA452C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 23:08:46 +1000 (EST)
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C712D2C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 23:13:17 +1000 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 27 Sep 2013 18:38:43 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4493EE0053
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 18:39:48 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8RD8dk545613240
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 18:38:39 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r8RD8fXK012923
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 18:38:41 +0530
+ Fri, 27 Sep 2013 18:43:15 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 031D8125803F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 18:43:28 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8RDFXkX16973904
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 18:45:33 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8RDD9fT003846
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 18:43:10 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [RFC PATCH 08/11] kvm: powerpc: book3s: Support building HV and
- PR KVM as module
-In-Reply-To: <32B8402B-25D1-41F4-A3FB-B945B72EDC4C@suse.de>
+Subject: Re: [RFC PATCH 09/11] kvm: simplify processor compat check
+In-Reply-To: <E5A81672-864D-4E33-B15A-5F6927CC7C13@suse.de>
 References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1380276233-17095-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <32B8402B-25D1-41F4-A3FB-B945B72EDC4C@suse.de>
-Date: Fri, 27 Sep 2013 18:38:40 +0530
-Message-ID: <87txh69ztz.fsf@linux.vnet.ibm.com>
+ <1380276233-17095-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <E5A81672-864D-4E33-B15A-5F6927CC7C13@suse.de>
+Date: Fri, 27 Sep 2013 18:43:09 +0530
+Message-ID: <87r4ca9zmi.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Cc: "<kvm@vger.kernel.org> list" <kvm@vger.kernel.org>,
+ Gleb Natapov <gleb@redhat.com>, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,40 +48,62 @@ Alexander Graf <agraf@suse.de> writes:
 
 > On 27.09.2013, at 12:03, Aneesh Kumar K.V wrote:
 >
->> diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
->> index fd5b393..775d368 100644
->> --- a/arch/powerpc/kvm/book3s_64_mmu_host.c
->> +++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
->> @@ -27,6 +27,7 @@
->> #include <asm/machdep.h>
->> #include <asm/mmu_context.h>
->> #include <asm/hw_irq.h>
->> +
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 >
-> Stray whitespace change
+> Missing patch description.
 >
-
-will fix
-
->> #include "trace_pr.h"
->> 
->> #define PTE_SIZE 12
->> diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
->> index b9841ad..20d03c2 100644
->> --- a/arch/powerpc/kvm/book3s_emulate.c
->> +++ b/arch/powerpc/kvm/book3s_emulate.c
->> @@ -172,7 +172,7 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
->> 			vcpu->arch.mmu.tlbie(vcpu, addr, large);
->> 			break;
->> 		}
->> -#ifdef CONFIG_KVM_BOOK3S_64_PR
->> +#ifdef CONFIG_KVM_BOOK3S_PR
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 >
-> Why?
+> I fail to see how this really simplifies things, but at the end of the
+> day it's Gleb's and Paolo's call.
 
-If i have CONFIG_KVM_BOOK3S_64_PR=m  #ifdef CONFIG_KVM_BOOK3S_64_PR will
-not work. There is a runtime check I can use IS_ENABLED(). But didn't
-want to do those. Hence moved to the symbol which will be set as
-CONFIG_KVM_BOOK3S_PR = y
+will do. It avoid calling 
+
+	for_each_online_cpu(cpu) {
+		smp_call_function_single() 
+
+on multiple architecture.
+
+We also want to make the smp call function a callback of opaque. Hence
+this should be made arch specific. 
+
+int kvm_arch_check_processor_compat(void *opaque)
+{
+	int r,cpu;
+	struct kvmppc_ops *kvm_ops = (struct kvmppc_ops *)opaque;
+	for_each_online_cpu(cpu) {
+		smp_call_function_single(cpu,
+					 kvm_ops->check_processor_compat,
+					 &r, 1);
+		if (r < 0)
+			break;
+	}
+	return r;
+}
+
+against
+
+-	for_each_online_cpu(cpu) {
+-		smp_call_function_single(cpu,
+-				kvm_arch_check_processor_compat,
+-				&r, 1);
+-		if (r < 0)
+-			goto out_free_1;
+-	}
++
++	r = kvm_arch_check_processor_compat(opaque);
++	if (r < 0)
++		goto out_free_1;
+
+
+
+>
+> Which brings me to the next issue: You forgot to CC kvm@vger on your
+> patch set. Gleb and Paolo don't read kvm-ppc@vger. And they shouldn't
+> have to. Every kvm patch that you want review on or that should get
+> applied needs to be sent to kvm@vger. If you want to tag it as PPC
+> specific patch, do so by CC'ing kvm-ppc@vger.
+
+Will do in the next update
 
 -aneesh
