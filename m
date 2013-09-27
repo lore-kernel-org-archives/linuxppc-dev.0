@@ -1,38 +1,32 @@
-Return-Path: <B40534@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E4322C0339
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 13:35:00 +1000 (EST)
-Received: from mail91-db8 (localhost [127.0.0.1])	by mail91-db8-R.bigfish.com
- (Postfix) with ESMTP id 3E6CADA01CE	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,
- 27 Sep 2013 03:34:54 +0000 (UTC)
-Received: from DB8EHSMHS030.bigfish.com (unknown [10.174.8.251])	by
- mail91-db8.bigfish.com (Postfix) with ESMTP id 5B1B7D80041	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 03:34:52 +0000 (UTC)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
-Date: Fri, 27 Sep 2013 03:34:50 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010911C2@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1380014925-23300-2-git-send-email-dongsheng.wang@freescale.com>
- <1380014925-23300-4-git-send-email-dongsheng.wang@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0717F8F9@039-SN2MPN1-011.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F154392590108FF41@039-SN2MPN1-021.039d.mgd.msft.net>
- <1380131815.24959.185.camel@snotra.buserror.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010909C3@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D07183D0B@039-SN2MPN1-011.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F1543925901090B4F@039-SN2MPN1-021.039d.mgd.msft.net>
- <1380231435.24959.328.camel@snotra.buserror.net>
-In-Reply-To: <1380231435.24959.328.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Bhushan Bharat-R65777 <R65777@freescale.com>
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9840B2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 18:02:21 +1000 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Fri, 27 Sep 2013 13:32:14 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 78500E0058
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 13:33:17 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8R828Qd41549920
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 13:32:09 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8R829SH027463
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 13:32:09 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/kernel/sysfs: disable writing to purr in non-powernv
+Date: Fri, 27 Sep 2013 13:32:06 +0530
+Message-Id: <1380268926-21338-1-git-send-email-maddy@linux.vnet.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,137 +36,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMjcsIDIwMTMgNTozNyBBTQ0KPiBUbzogV2Fu
-ZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7IFdvb2QgU2Nv
-dHQtQjA3NDIxOyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDog
-UmU6IFtQQVRDSCB2NCA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBwdzIwIHN0YXRl
-IGFuZA0KPiBhbHRpdmVjIGlkbGUNCj4gDQo+IE9uIFRodSwgMjAxMy0wOS0yNiBhdCAwMToxOCAt
-MDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdp
-bmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4g
-PiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDI2LCAyMDEzIDEyOjIzIFBNDQo+ID4gPiBUbzog
-V2FuZyBEb25nc2hlbmctQjQwNTM0OyBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gQ2M6IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+ID4gPiBTdWJqZWN0OiBSRTogW1BBVENIIHY0IDQv
-NF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjAgc3RhdGUNCj4gPiA+IGFuZCBhbHRp
-dmVjIGlkbGUNCj4gPiA+DQo+ID4gPg0KPiA+ID4NCj4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNz
-YWdlLS0tLS0NCj4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+IFNl
-bnQ6IFRodXJzZGF5LCBTZXB0ZW1iZXIgMjYsIDIwMTMgODowMiBBTQ0KPiA+ID4gPiBUbzogV29v
-ZCBTY290dC1CMDc0MjENCj4gPiA+ID4gQ2M6IEJodXNoYW4gQmhhcmF0LVI2NTc3NzsgbGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+ID4gU3ViamVjdDogUkU6IFtQQVRDSCB2NCA0
-LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBwdzIwIHN0YXRlDQo+ID4gPiA+IGFuZCBh
-bHRpdmVjIGlkbGUNCj4gPiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4gPiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+
-ID4gPiA+ID4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAyNiwgMjAxMyAxOjU3IEFNDQo+ID4g
-PiA+ID4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4gPiA+IENjOiBCaHVzaGFuIEJo
-YXJhdC1SNjU3Nzc7IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51eHBwYy0NCj4gPiA+ID4gPiBkZXZA
-bGlzdHMub3psYWJzLm9yZw0KPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjQgNC80XSBw
-b3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMA0KPiA+ID4gPiA+IHN0YXRlIGFuZCBhbHRp
-dmVjIGlkbGUNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IE9uIFdlZCwgMjAxMy0wOS0yNSBhdCAwMzox
-MCAtMDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0KPiA+ID4gPiA+ID4NCj4gPiA+
-ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiA+ID4gRnJvbTog
-Qmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiA+ID4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgU2Vw
-dGVtYmVyIDI1LCAyMDEzIDI6MjMgUE0NCj4gPiA+ID4gPiA+ID4gVG86IFdhbmcgRG9uZ3NoZW5n
-LUI0MDUzNDsgV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiA+ID4gQ2M6IGxpbnV4cHBjLWRl
-dkBsaXN0cy5vemxhYnMub3JnOyBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+ID4gPiA+ID4g
-U3ViamVjdDogUkU6IFtQQVRDSCB2NCA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBw
-dzIwDQo+ID4gPiA+ID4gPiA+IHN0YXRlIGFuZCBhbHRpdmVjIGlkbGUNCj4gPiA+ID4gPiA+ID4N
-Cj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiAtLS0tLU9yaWdp
-bmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+IEZyb206IExpbnV4cHBjLWRldiBbbWFp
-bHRvOmxpbnV4cHBjLWRldi0NCj4gPiA+ID4gPiA+ID4gPiBib3VuY2VzK2JoYXJhdC5iaHVzaGFu
-PWZyZWVzY2FsZS5jb21AbGlzdHMub3psYWJzLm9yZ10gT24NCj4gPiA+ID4gPiA+ID4gPiBib3Vu
-Y2VzK0JlaGFsZiBPZiBEb25nc2hlbmcNCj4gPiA+ID4gPiA+ID4gPiBXYW5nDQo+ID4gPiA+ID4g
-PiA+ID4gU2VudDogVHVlc2RheSwgU2VwdGVtYmVyIDI0LCAyMDEzIDI6NTkgUE0NCj4gPiA+ID4g
-PiA+ID4gPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiA+ID4gPiBDYzogbGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4gPiA+
-ID4gPiA+IFN1YmplY3Q6IFtQQVRDSCB2NCA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZv
-ciBwdzIwDQo+ID4gPiA+ID4gPiA+ID4gc3RhdGUgYW5kIGFsdGl2ZWMgaWRsZQ0KPiA+ID4gPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53
-YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiBBZGQg
-YSBzeXMgaW50ZXJmYWNlIHRvIGVuYWJsZS9kaWFibGUgcHcyMCBzdGF0ZSBvciBhbHRpdmVjDQo+
-ID4gPiA+ID4gPiA+ID4gaWRsZSwgYW5kIGNvbnRyb2wgdGhlIHdhaXQgZW50cnkgdGltZS4NCj4g
-PiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IEVuYWJsZS9EaXNhYmxlIGludGVyZmFjZToN
-Cj4gPiA+ID4gPiA+ID4gPiAwLCBkaXNhYmxlLiAxLCBlbmFibGUuDQo+ID4gPiA+ID4gPiA+ID4g
-L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1WC9wdzIwX3N0YXRlDQo+ID4gPiA+ID4gPiA+ID4g
-L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1WC9hbHRpdmVjX2lkbGUNCj4gPiA+ID4gPiA+ID4g
-Pg0KPiA+ID4gPiA+ID4gPiA+IFNldCB3YWl0IHRpbWUgaW50ZXJmYWNlOihOYW5vc2Vjb25kKQ0K
-PiA+ID4gPiA+ID4gPiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdVgvcHcyMF93YWl0X3Rp
-bWUNCj4gPiA+ID4gPiA+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL2FsdGl2ZWNf
-aWRsZV93YWl0X3RpbWUNCj4gPiA+ID4gPiA+ID4gPiBFeGFtcGxlOiBCYXNlIG9uIFRCZnJlcSBp
-cyA0MU1IWi4NCj4gPiA+ID4gPiA+ID4gPiAxfjQ3KG5zKTogVEJbNjNdDQo+ID4gPiA+ID4gPiA+
-ID4gNDh+OTUobnMpOiBUQls2Ml0NCj4gPiA+ID4gPiA+ID4gPiA5Nn4xOTEobnMpOiBUQls2MV0N
-Cj4gPiA+ID4gPiA+ID4gPiAxOTJ+MzgzKG5zKTogVEJbNjJdDQo+ID4gPiA+ID4gPiA+ID4gMzg0
-fjc2Nyhucyk6IFRCWzYwXQ0KPiA+ID4gPiA+ID4gPiA+IC4uLg0KPiA+ID4gPiA+ID4gPiA+DQo+
-ID4gPiA+ID4gPiA+ID4gU2lnbmVkLW9mZi1ieTogV2FuZyBEb25nc2hlbmcNCj4gPiA+ID4gPiA+
-ID4gPiA8ZG9uZ3NoZW5nLndhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gPiA+ID4gPiAtLS0N
-Cj4gPiA+ID4gPiA+ID4gPiAqdjQ6DQo+ID4gPiA+ID4gPiA+ID4gTW92ZSBjb2RlIGZyb20gODV4
-eC9jb21tb24uYyB0byBrZXJuZWwvc3lzZnMuYy4NCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+
-ID4gPiA+IFJlbW92ZSBoYXNfcHcyMF9hbHRpdmVjX2lkbGUgZnVuY3Rpb24uDQo+ID4gPiA+ID4g
-PiA+ID4NCj4gPiA+ID4gPiA+ID4gPiBDaGFuZ2Ugd2FpdCAiZW50cnlfYml0IiB0byB3YWl0IHRp
-bWUuDQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiAgYXJjaC9wb3dlcnBjL2tlcm5l
-bC9zeXNmcy5jIHwgMjkxDQo+ID4gPiA+ID4gPiA+ID4gKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysNCj4gPiA+ID4gPiA+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDI5
-MSBpbnNlcnRpb25zKCspDQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiBkaWZmIC0t
-Z2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jDQo+ID4gPiA+ID4gPiA+ID4gYi9hcmNo
-L3Bvd2VycGMva2VybmVsL3N5c2ZzLmMgaW5kZXggMjdhOTBiOS4uMjNmZWNlNg0KPiA+ID4gPiA+
-ID4gPiA+IDEwMDY0NA0KPiA+ID4gPiA+ID4gPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9rZXJuZWwv
-c3lzZnMuYw0KPiA+ID4gPiA+ID4gPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvc3lzZnMu
-Yw0KPiA+ID4gPiA+ID4gPiA+IEBAIC04NSw2ICs4NSwyNzkgQEAgX19zZXR1cCgic210LXNub296
-ZS1kZWxheT0iLA0KPiA+ID4gPiA+ID4gPiA+IHNldHVwX3NtdF9zbm9vemVfZGVsYXkpOw0KPiA+
-ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gICNlbmRpZiAvKiBDT05GSUdfUFBDNjQgKi8N
-Cj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ICsjaWZkZWYgQ09ORklHX0ZTTF9TT0MN
-Cj4gPiA+ID4gPiA+ID4gPiArI2RlZmluZSBNQVhfQklUCQk2Mw0KPiA+ID4gPiA+ID4gPiA+ICsN
-Cj4gPiA+ID4gPiA+ID4gPiArc3RhdGljIHU2NCBwdzIwX3d0Ow0KPiA+ID4gPiA+ID4gPiA+ICtz
-dGF0aWMgdTY0IGFsdGl2ZWNfaWRsZV93dDsNCj4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4g
-PiA+ID4gK3N0YXRpYyB1bnNpZ25lZCBpbnQgZ2V0X2lkbGVfdGlja3NfYml0KHU2NCBucykgew0K
-PiA+ID4gPiA+ID4gPiA+ICsJdTY0IGN5Y2xlOw0KPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4g
-PiA+ID4gPiArCWN5Y2xlID0gZGl2X3U2NChucywgMTAwMCAvIHRiX3RpY2tzX3Blcl91c2VjKTsN
-Cj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gV2hlbiB0Yl90aWNrc19wZXJfdXNlYyAgPiAx
-MDAwICh0aW1lYmFzZSBmcmVxdWVuY3kgPiAxR0h6KQ0KPiA+ID4gPiA+ID4gPiB0aGVuIHRoaXMg
-d2lsbCBhbHdheXMgYmUgbnMsIHdoaWNoIGlzIG5vdCBjb3JyZWN0LCBubz8NCj4gPiA+ID4gPg0K
-PiA+ID4gPiA+IEFjdHVhbGx5IGl0J2xsIGJlIGEgZGl2aWRlIGJ5IHplcm8gaW4gdGhhdCBjYXNl
-Lg0KPiA+ID4gPiA+DQo+ID4gPiA+IHRiX3RpY2tzX3Blcl91c2VjID0gcHBjX3RiX2ZyZXEgLyAx
-MDAwMDAwOyBNZWFucyBUQiBmcmVxIHNob3VsZCBiZQ0KPiA+ID4gPiBtb3JlIHRoYW4gMU1IWi4N
-Cj4gPiA+ID4NCj4gPiA+ID4gaWYgcHBjX3RiX2ZyZXEgbGVzcyB0aGFuIDEwMDAwMDAsIHRoZSB0
-Yl90aWNrc19wZXJfdXNlYyB3aWxsIGJlIGENCj4gPiA+ID4gZGl2aWRlIGJ5IHplcm8uDQo+ID4g
-PiA+IElmIHRoaXMgY29uZGl0aW9uIGlzIGVzdGFibGlzaGVkLCBJIHRoaW5rIGtlcm5lbCBjYW5u
-b3Qgd29yayBhcyBhDQo+ID4gPiBub3JtYWwuDQo+ID4gPiA+DQo+ID4gPiA+IFNvIEkgdGhpbmsg
-d2UgbmVlZCB0byBiZWxpZXZlIHRoYXQgdGhlIHZhcmlhYmxlIGlzIG5vdCB6ZXJvLg0KPiA+ID4N
-Cj4gPiA+IFdlIGRvIGJlbGlldmUgaXQgaXMgbm9uLXplcm8gYnV0IGdyZWF0ZXIgdGhhbiAxMDAw
-IDopDQo+ID4gPg0KPiA+ID4gPiBBbmQgSSB0aGluayBUQiBmcmVxDQo+ID4gPiA+IHNob3VsZCBu
-b3QgbGVzcyB0aGFuIDFNSFogb24gUFBDIHBsYXRmb3JtLCBiZWNhdXNlIGlmIFRCIGZyZXEgbGVz
-cw0KPiA+ID4gPiB0aGFuIDFNSFosIHRoZSBwcmVjaXNpb24gdGltZSB3aWxsIGJlY29tZSB2ZXJ5
-IHBvb3IgYW5kIHN5c3RlbQ0KPiA+ID4gPiByZXNwb25zZSB0aW1lIHdpbGwgYmUgc2xvd2VyLg0K
-PiA+ID4NCj4gPiA+IE5vdCBzdXJlIHdoYXQgeW91IGFyZSBkZXNjcmliaW5nIGhlcmUgcmVsYXRl
-ZCB0byBkaXZpZGUgYnkgemVybyB3ZQ0KPiA+ID4gYXJlIG1lbnRpb25pbmcuDQo+ID4gPiBZb3Ug
-YXJlIHRhbGtpbmcgYWJvdXQgaWYgdGJfdGlja3NfcGVyX3VzZWMgaXMgWkVSTyBhbmQgd2UgYXJl
-DQo+ID4gPiB0YWxraW5nIGFib3V0IGlmICgxMDAwL3RiX3RpY2tzX3Blcl91c2VjKSB3aWxsIGJl
-IHplcm8uDQo+ID4gPg0KPiA+ID4gQlRXLCBkaXZfdTY0KCkgaGFuZGxlIHRoZSBjYXNlIHdoZXJl
-IGRpdmlkZXIgaXMgemVyby4NCj4gDQo+IEhvdz8gIFdoZW4gSSBjaGVja2VkIHllc3RlcmRheSBp
-dCBsb29rZWQgbGlrZSBkaXZfdTY0KCkgbWFwcGVkIHRvIGENCj4gaGFyZHdhcmUgZGl2aXNpb24g
-b24gNjQtYml0IHRhcmdldHMuICBJbiBhbnkgY2FzZSBpdCdzIG5vdCBnb29kIHRvIHJlbHkNCj4g
-b24gc3VjaCBiZWhhdmlvci4NCj4gDQo+ID4gY3ljbGUgPSBkaXZfdTY0KG5zLCAxMDAwIC8gdGJf
-dGlja3NfcGVyX3VzZWMpOyBGb3IgdGhpcywgSSB0aGluayB3ZQ0KPiA+IHdlcmUgZGlzY3Vzc2lu
-ZyB0aGUgdHdvIGlzc3VlczoNCj4gPg0KPiA+IDEuIFNjb3R0IHRhbGtpbmcgYWJvdXQsIHdoZW4g
-dGhlIHRiX3RpY2tzX3Blcl91c2VjIGlzIGEgemVyby4NCj4gDQo+IE5vIEkgd2Fzbid0LiAgSSB3
-YXMgdGFsa2luZyBhYm91dCB3aGVuIHRiX3RpY2tzX3Blcl91c2VjID4gMTAwMCwgYW5kIHRodXMN
-Cj4gIjEwMDAgLyB0Yl90aWNrc19wZXJfdXNlYyIgaXMgemVyby4gIFlvdSBzYWlkIHRoYXQgdGhl
-IHJlc3VsdCB3b3VsZCBiZSBucw0KPiBpbiB0aGF0IGNhc2UuDQo+IA0KPiA+IDIuIFlvdSBhcmUg
-dGFsa2luZyBhYm91dCAxMDAwL3RiX3RpY2tzX3Blcl91c2VjIGlzIGEgemVyby4NCj4gPiBUaGlz
-IHNpdHVhdGlvbiBpcyBhYm91dCBUQiBmcmVxID4gMUdIWi4NCj4gPg0KPiA+IEkgd2lsbCBmaXgg
-dGhpcyBpc3N1ZS4gTGlrZSBJIHNhaWQgYmVmb3JlLCAiSWYgdGltZWJhc2UgZnJlcXVlbmN5ID4N
-Cj4gPiAxR0h6LCB0aGlzIHNob3VsZCBiZSAidGJfdGlja3NfcGVyX3VzZWMgLyAxMDAwIiBhbmQg
-dG8gZ2V0DQo+IHRiX3RpY2tzX3Blcl9uc2VjLg0KPiA+IFRoaXMgc2hvdWxkIGJlIGNoYW5nZWQg
-dG8gImN5Y2xlID0gbnMgKiB0Yl90aWNrc19wZXJfbnNlYzsiIg0KPiA+DQo+ID4gI2RlZmluZSBU
-Ql9GUkVRXzFHSFoJMTAwMA0KPiA+DQo+ID4gSWYgKHRiX3RpY2tzX3Blcl91c2VjID4gVEJfRlJF
-UV8xR0haKQ0KPiA+IAljeWNsZSA9IG5zICogKHRiX3RpY2tzX3Blcl91c2VjIC8gMTAwMCk7IGVs
-c2UNCj4gPiAJY3ljbGUgPSBkaXZfdTY0KG5zLCAxMDAwIC8gdGJfdGlja3NfcGVyX3VzZWMpOw0K
-PiA+DQo+ID4gaG93IGFib3V0IHRoaXM/IDopDQo+IA0KPiBJIHN1Z2dlc3RlZCBhbiBhbHRlcm5h
-dGl2ZSB0byBzYXRpc2Z5IHlvdXIgY29tcGxhaW50IHRoYXQgaXQncyBoYXJkIHRvDQo+IHRlc3Qg
-b25lIG9mIHRob3NlIGlmL2Vsc2UgYnJhbmNoZXMuDQo+IA0KPiBQbHVzLCB5b3VyIHZlcnNpb24g
-d2lsbCBiZSBxdWl0ZSBpbmFjY3VyYXRlIGlmIChlLmcuKSB0Yl90aWNrc19wZXJfdXNlYw0KPiBp
-cyA1MDEsIG9yIDE5OTkuDQo+IA0KY3ljbGUgPSBkaXZfdTY0KG5zICogdGJfdGlja3NfcGVyX3Vz
-ZWMsIDEwMDApOyBJdCdzIGxvb2sgZ29vZC4NCkJ1dCB3aHkgd2UgbmVlZDoNCglpZiAobnMgPj0g
-MTAwMDApDQoJCWN5Y2xlID0gKChucyArIDUwMCkgLyAxMDAwKSAqIHRiX3RpY2tzX3Blcl91c2Vj
-Ow0KPw0KDQpJIHRoaW5rICJjeWNsZSA9IGRpdl91NjQobnMgKiB0Yl90aWNrc19wZXJfdXNlYywg
-MTAwMCkiIGlzIGdvb2QgZW5vdWdoLiA6KQ0KDQotZG9uZ3NoZW5nDQoNCj4gLVNjb3R0DQo+IA0K
-DQo=
+powerpc/kernel/sysfs.c exports purr with write permission.
+This may be valid for powernv kernel since purr is Hyp resource.
+But writing to the file in PowerVM lpar causes crash.
+
+# echo 0 > purr
+cpu 0x0: Vector: 700 (Program Check) at [c000000000d072b0]
+    pc: c00000000001770c: .write_purr+0x1c/0x40
+    lr: c000000000017708: .write_purr+0x18/0x40
+    sp: c000000000d07530
+   msr: 8000000000049032
+  current = 0xc000000000c53de0
+  paca    = 0xc00000000ec70000	 softe: 0	 irq_happened: 0x01
+    pid   = 0, comm = swapper/0
+enter ? for help
+[c000000000d075b0] c0000000000fba64
+.generic_smp_call_function_single_interrupt+0x104/0x190
+[c000000000d07650] c000000000037748 .smp_ipi_demux+0xa8/0xf0
+[c000000000d076e0] c000000000035314 .doorbell_exception+0x74/0xb0
+[c000000000d07760] c000000000002950 doorbell_super_common+0x150/0x180
+--- Exception: a01 (Doorbell) at c000000000060904
+.plpar_hcall_norets+0x84/0xd4
+[link register   ] c00000000006dbd4 .check_and_cede_processor+0x24/0x40
+[c000000000d07a50] c000000001002558 (unreliable)
+[c000000000d07ac0] c00000000006dd0c .shared_cede_loop+0x2c/0x70
+[c000000000d07b40] c0000000006ae954 .cpuidle_enter_state+0x64/0x150
+[c000000000d07c00] c0000000006aeb30 .cpuidle_idle_call+0xf0/0x300
+[c000000000d07cb0] c000000000062fa0 .pseries_lpar_idle+0x10/0x50
+[c000000000d07d20] c000000000016d14 .arch_cpu_idle+0x64/0x150
+[c000000000d07da0] c0000000000e0060 .cpu_startup_entry+0x1a0/0x2c0
+[c000000000d07e80] c00000000000bca4 .rest_init+0x94/0xb0
+[c000000000d07ef0] c000000000b54530 .start_kernel+0x478/0x494
+[c000000000d07f90] c000000000009be0 .start_here_common+0x20/0x40
+0:mon>
+
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/sysfs.c |   19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 27a90b9..d7097c2 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -179,15 +179,27 @@ SYSFS_PMCSETUP(spurr, SPRN_SPURR);
+ SYSFS_PMCSETUP(dscr, SPRN_DSCR);
+ SYSFS_PMCSETUP(pir, SPRN_PIR);
+ 
++/*
++  Lets only enable Read for Hyp resources and
++  enable Write when needed with a separate function.
++  Lets be conservative and default to pseries.
++*/
+ static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
+ static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
+ static DEVICE_ATTR(dscr, 0600, show_dscr, store_dscr);
+-static DEVICE_ATTR(purr, 0600, show_purr, store_purr);
++static DEVICE_ATTR(purr, 0400, show_purr, store_purr);
+ static DEVICE_ATTR(pir, 0400, show_pir, NULL);
+ 
+ unsigned long dscr_default = 0;
+ EXPORT_SYMBOL(dscr_default);
+ 
++static void add_write_permission_dev_attr(void *ptr)
++{
++	struct device_attribute *attr = (struct device_attribute *)ptr;
++
++	attr->attr.mode |= (unsigned short) 0200;
++}
++
+ static ssize_t show_dscr_default(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+@@ -394,8 +406,11 @@ static void register_cpu_online(unsigned int cpu)
+ 	if (cpu_has_feature(CPU_FTR_MMCRA))
+ 		device_create_file(s, &dev_attr_mmcra);
+ 
+-	if (cpu_has_feature(CPU_FTR_PURR))
++	if (cpu_has_feature(CPU_FTR_PURR)) {
++		if (machine_is(powernv))
++			add_write_permission_dev_attr((void *)&dev_attr_purr);
+ 		device_create_file(s, &dev_attr_purr);
++	}
+ 
+ 	if (cpu_has_feature(CPU_FTR_SPURR))
+ 		device_create_file(s, &dev_attr_spurr);
+-- 
+1.7.10.4
