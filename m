@@ -1,27 +1,35 @@
-Return-Path: <B45475@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 19E522C0340
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 11:27:34 +1000 (EST)
-Received: from mail150-co9 (localhost [127.0.0.1])	by
- mail150-co9-R.bigfish.com (Postfix) with ESMTP id E272D2001E8	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 01:27:29 +0000 (UTC)
-Received: from CO9EHSMHS018.bigfish.com (unknown [10.236.132.243])	by
- mail150-co9.bigfish.com (Postfix) with ESMTP id 925B560062	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 01:27:28 +0000 (UTC)
-From: Zhao Qiang <B45475@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/p1010rdb:update mtd of nand to adapt to both old and
- new p1010rdb
-Date: Fri, 27 Sep 2013 09:21:46 +0800
-Message-ID: <1380244906-28792-1-git-send-email-B45475@freescale.com>
+Return-Path: <laurent.pinchart@ideasonboard.com>
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com
+ [95.142.166.194])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 67E0F2C0339
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 12:04:33 +1000 (EST)
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [PATCH 31/51] DMA-API: media: omap3isp: use
+ dma_coerce_mask_and_coherent()
+Date: Fri, 27 Sep 2013 03:56:13 +0200
+Message-ID: <4110555.qb0XUyFHNE@avalon>
+In-Reply-To: <E1VMmCg-0007j1-Pi@rmk-PC.arm.linux.org.uk>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+ <E1VMmCg-0007j1-Pi@rmk-PC.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhao Qiang <B45475@freescale.com>, B36685@freescale.com,
- R61911@freescale.com
+Content-Type: text/plain; charset="us-ascii"
+Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
+ devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
+ linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+ b43-dev@lists.infradead.org, linux-media@vger.kernel.org,
+ devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-crypto@vger.kernel.org,
+ uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,166 +39,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-P1010rdb-pa and p1010rdb-pb have different mtd of nand.
-So update dts to adapt to both p1010rdb-pa and p1010rdb-pb.
+Hi Russell,
 
-Signed-off-by: Zhao Qiang <B45475@freescale.com>
----
- arch/powerpc/boot/dts/p1010rdb-pa.dts | 40 +++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1010rdb-pb.dts | 34 +++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p1010rdb.dtsi   | 40 +----------------------------------
- 3 files changed, 75 insertions(+), 39 deletions(-)
+Thank you for the patch.
 
-diff --git a/arch/powerpc/boot/dts/p1010rdb-pa.dts b/arch/powerpc/boot/dts/p1010rdb-pa.dts
-index e1688d4..9b4ca89 100644
---- a/arch/powerpc/boot/dts/p1010rdb-pa.dts
-+++ b/arch/powerpc/boot/dts/p1010rdb-pa.dts
-@@ -18,6 +18,46 @@
- 	/include/ "p1010rdb.dtsi"
- };
- 
-+&ifc_nand {
-+	partition@0 {
-+		/* This location must not be altered  */
-+		/* 1MB for u-boot Bootloader Image */
-+		reg = <0x0 0x00100000>;
-+		label = "NAND U-Boot Image";
-+		read-only;
-+	};
-+
-+	partition@100000 {
-+		/* 1MB for DTB Image */
-+		reg = <0x00100000 0x00100000>;
-+		label = "NAND DTB Image";
-+	};
-+
-+	partition@200000 {
-+		/* 4MB for Linux Kernel Image */
-+		reg = <0x00200000 0x00400000>;
-+		label = "NAND Linux Kernel Image";
-+	};
-+
-+	partition@600000 {
-+		/* 4MB for Compressed Root file System Image */
-+		reg = <0x00600000 0x00400000>;
-+		label = "NAND Compressed RFS Image";
-+	};
-+
-+	partition@a00000 {
-+		/* 15MB for JFFS2 based Root file System */
-+		reg = <0x00a00000 0x00f00000>;
-+		label = "NAND JFFS2 Root File System";
-+	};
-+
-+	partition@1900000 {
-+		/* 7MB for User Area */
-+		reg = <0x01900000 0x00700000>;
-+		label = "NAND User area";
-+	};
-+};
-+
- &phy0 {
- 	interrupts = <3 1 0 0>;
- };
-diff --git a/arch/powerpc/boot/dts/p1010rdb-pb.dts b/arch/powerpc/boot/dts/p1010rdb-pb.dts
-index 37f9366..f4c97fd 100644
---- a/arch/powerpc/boot/dts/p1010rdb-pb.dts
-+++ b/arch/powerpc/boot/dts/p1010rdb-pb.dts
-@@ -18,6 +18,40 @@
- 	/include/ "p1010rdb.dtsi"
- };
- 
-+&ifc_nand {
-+	partition@0 {
-+		/* This location must not be altered  */
-+		/* 2MB for u-boot Image and environment */
-+		reg = <0x0 0x00200000>;
-+		label = "NAND U-Boot Image and env";
-+		read-only;
-+	};
-+
-+	partition@200000 {
-+		/* 1MB for DTB Image */
-+		reg = <0x00200000 0x00100000>;
-+		label = "NAND DTB Image";
-+	};
-+
-+	partition@300000 {
-+		/* 5MB for Linux Kernel Image */
-+		reg = <0x00300000 0x00500000>;
-+		label = "NAND Linux Kernel Image";
-+	};
-+
-+	partition@800000 {
-+		/* 56MB for Compressed Root file System Image */
-+		reg = <0x00800000 0x03800000>;
-+		label = "NAND  ROOTFS";
-+	};
-+
-+	partition@4000000 {
-+		/* 1984MB for User Area */
-+		reg = <0x04000000 0x7c000000>;
-+		label = "NAND User area";
-+	};
-+};
-+
- &phy0 {
- 	interrupts = <0 1 0 0>;
- };
-diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi b/arch/powerpc/boot/dts/p1010rdb.dtsi
-index 5e5ca56..61abc18 100644
---- a/arch/powerpc/boot/dts/p1010rdb.dtsi
-+++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
-@@ -79,49 +79,11 @@ board_ifc: ifc: ifc@ffe1e000 {
- 		};
- 	};
- 
--	nand@1,0 {
-+	ifc_nand: nand@1,0 {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		compatible = "fsl,ifc-nand";
- 		reg = <0x1 0x0 0x10000>;
--
--		partition@0 {
--			/* This location must not be altered  */
--			/* 1MB for u-boot Bootloader Image */
--			reg = <0x0 0x00100000>;
--			label = "NAND U-Boot Image";
--			read-only;
--		};
--
--		partition@100000 {
--			/* 1MB for DTB Image */
--			reg = <0x00100000 0x00100000>;
--			label = "NAND DTB Image";
--		};
--
--		partition@200000 {
--			/* 4MB for Linux Kernel Image */
--			reg = <0x00200000 0x00400000>;
--			label = "NAND Linux Kernel Image";
--		};
--
--		partition@600000 {
--			/* 4MB for Compressed Root file System Image */
--			reg = <0x00600000 0x00400000>;
--			label = "NAND Compressed RFS Image";
--		};
--
--		partition@a00000 {
--			/* 15MB for JFFS2 based Root file System */
--			reg = <0x00a00000 0x00f00000>;
--			label = "NAND JFFS2 Root File System";
--		};
--
--		partition@1900000 {
--			/* 7MB for User Area */
--			reg = <0x01900000 0x00700000>;
--			label = "NAND User area";
--		};
- 	};
- 
- 	cpld@3,0 {
+On Thursday 19 September 2013 22:56:02 Russell King wrote:
+> The code sequence:
+> 	isp->raw_dmamask = DMA_BIT_MASK(32);
+> 	isp->dev->dma_mask = &isp->raw_dmamask;
+> 	isp->dev->coherent_dma_mask = DMA_BIT_MASK(32);
+> bypasses the architectures check on the DMA mask.  It can be replaced
+> with dma_coerce_mask_and_coherent(), avoiding the direct initialization
+> of this mask.
+> 
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+
+> ---
+>  drivers/media/platform/omap3isp/isp.c |    6 +++---
+>  drivers/media/platform/omap3isp/isp.h |    3 ---
+>  2 files changed, 3 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/media/platform/omap3isp/isp.c
+> b/drivers/media/platform/omap3isp/isp.c index df3a0ec..1c36080 100644
+> --- a/drivers/media/platform/omap3isp/isp.c
+> +++ b/drivers/media/platform/omap3isp/isp.c
+> @@ -2182,9 +2182,9 @@ static int isp_probe(struct platform_device *pdev)
+>  	isp->pdata = pdata;
+>  	isp->ref_count = 0;
+> 
+> -	isp->raw_dmamask = DMA_BIT_MASK(32);
+> -	isp->dev->dma_mask = &isp->raw_dmamask;
+> -	isp->dev->coherent_dma_mask = DMA_BIT_MASK(32);
+> +	ret = dma_coerce_mask_and_coherent(isp->dev, DMA_BIT_MASK(32));
+> +	if (ret)
+> +		return ret;
+> 
+>  	platform_set_drvdata(pdev, isp);
+> 
+> diff --git a/drivers/media/platform/omap3isp/isp.h
+> b/drivers/media/platform/omap3isp/isp.h index cd3eff4..ce65d3a 100644
+> --- a/drivers/media/platform/omap3isp/isp.h
+> +++ b/drivers/media/platform/omap3isp/isp.h
+> @@ -152,7 +152,6 @@ struct isp_xclk {
+>   * @mmio_base_phys: Array with physical L4 bus addresses for ISP register
+>   *                  regions.
+>   * @mmio_size: Array with ISP register regions size in bytes.
+> - * @raw_dmamask: Raw DMA mask
+>   * @stat_lock: Spinlock for handling statistics
+>   * @isp_mutex: Mutex for serializing requests to ISP.
+>   * @crashed: Bitmask of crashed entities (indexed by entity ID)
+> @@ -190,8 +189,6 @@ struct isp_device {
+>  	unsigned long mmio_base_phys[OMAP3_ISP_IOMEM_LAST];
+>  	resource_size_t mmio_size[OMAP3_ISP_IOMEM_LAST];
+> 
+> -	u64 raw_dmamask;
+> -
+>  	/* ISP Obj */
+>  	spinlock_t stat_lock;	/* common lock for statistic drivers */
+>  	struct mutex isp_mutex;	/* For handling ref_count field */
 -- 
-1.8.0
+Regards,
+
+Laurent Pinchart
