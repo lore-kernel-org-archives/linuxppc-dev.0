@@ -1,31 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 178D42C034F
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 08F712C0346
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 20:04:13 +1000 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Fri, 27 Sep 2013 15:34:07 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 89BFB3940062
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 15:33:47 +0530 (IST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id BBBFB1258054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 15:34:18 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8RA41jr45809824
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 15:34:01 +0530
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8RA6MYr40763530
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 15:36:22 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r8RA42vx020105
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 15:34:03 +0530
+ r8RA43ha020297
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 15:34:04 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC PATCH 04/11] kvm: powerpc: book3s: Add a new config variable
- CONFIG_KVM_BOOK3S_HV
-Date: Fri, 27 Sep 2013 15:33:46 +0530
-Message-Id: <1380276233-17095-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 08/11] kvm: powerpc: book3s: Support building HV and PR
+ KVM as module
+Date: Fri, 27 Sep 2013 15:33:50 +0530
+Message-Id: <1380276233-17095-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,244 +41,339 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This help ups to select the relevant code in the kernel code
-when we later move HV and PR bits as seperate modules.
-
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/kvm_book3s_64.h  |  6 +++---
- arch/powerpc/include/asm/kvm_book3s_asm.h |  2 +-
- arch/powerpc/include/asm/kvm_host.h       | 10 +++++-----
- arch/powerpc/include/asm/kvm_ppc.h        |  2 +-
- arch/powerpc/kernel/asm-offsets.c         |  8 ++++----
- arch/powerpc/kernel/exceptions-64s.S      |  2 +-
- arch/powerpc/kernel/idle_power7.S         |  2 +-
- arch/powerpc/kvm/Kconfig                  |  4 ++++
- arch/powerpc/kvm/book3s_exports.c         |  5 +++--
- arch/powerpc/kvm/book3s_xics.c            |  4 ++--
- 10 files changed, 25 insertions(+), 20 deletions(-)
+ arch/powerpc/kvm/Kconfig              |  6 +++---
+ arch/powerpc/kvm/Makefile             | 12 ++++++++----
+ arch/powerpc/kvm/book3s.c             | 19 ++++++++++++++++++-
+ arch/powerpc/kvm/book3s_64_mmu_host.c |  1 +
+ arch/powerpc/kvm/book3s_emulate.c     |  2 +-
+ arch/powerpc/kvm/book3s_hv.c          |  4 ++++
+ arch/powerpc/kvm/book3s_pr.c          |  5 ++++-
+ arch/powerpc/kvm/book3s_rtas.c        |  1 +
+ arch/powerpc/kvm/emulate.c            |  1 +
+ arch/powerpc/kvm/powerpc.c            |  6 ++++++
+ virt/kvm/kvm_main.c                   |  3 +++
+ 11 files changed, 50 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 86d638a..37af4ae 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -35,7 +35,7 @@ static inline void svcpu_put(struct kvmppc_book3s_shadow_vcpu *svcpu)
- 
- #define SPAPR_TCE_SHIFT		12
- 
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- #define KVM_DEFAULT_HPT_ORDER	24	/* 16MB HPT by default */
- extern unsigned long kvm_rma_pages;
- #endif
-@@ -278,7 +278,7 @@ static inline int is_vrma_hpte(unsigned long hpte_v)
- 		(HPTE_V_1TB_SEG | (VRMA_VSID << (40 - 16)));
- }
- 
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- /*
-  * Note modification of an HPTE; set the HPTE modified bit
-  * if anyone is interested.
-@@ -289,6 +289,6 @@ static inline void note_hpte_modification(struct kvm *kvm,
- 	if (atomic_read(&kvm->arch.hpte_mod_interest))
- 		rev->guest_rpte |= HPTE_GR_MODIFIED;
- }
--#endif /* CONFIG_KVM_BOOK3S_64_HV */
-+#endif /* CONFIG_KVM_BOOK3S_HV */
- 
- #endif /* __ASM_KVM_BOOK3S_64_H__ */
-diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
-index 360742a..1272178 100644
---- a/arch/powerpc/include/asm/kvm_book3s_asm.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
-@@ -84,7 +84,7 @@ struct kvmppc_host_state {
- 	u8 restore_hid5;
- 	u8 napping;
- 
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- 	u8 hwthread_req;
- 	u8 hwthread_state;
- 	u8 host_ipi;
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 78627c2..283e52e 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -229,15 +229,15 @@ struct revmap_entry {
- #define KVMPPC_GOT_PAGE		0x80
- 
- struct kvm_arch_memory_slot {
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- 	unsigned long *rmap;
- 	unsigned long *slot_phys;
--#endif /* CONFIG_KVM_BOOK3S_64_HV */
-+#endif /* CONFIG_KVM_BOOK3S_HV */
- };
- 
- struct kvm_arch {
- 	unsigned int lpid;
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- 	unsigned long hpt_virt;
- 	struct revmap_entry *revmap;
- 	unsigned int host_lpid;
-@@ -261,7 +261,7 @@ struct kvm_arch {
- 	cpumask_t need_tlb_flush;
- 	struct kvmppc_vcore *vcores[KVM_MAX_VCORES];
- 	int hpt_cma_alloc;
--#endif /* CONFIG_KVM_BOOK3S_64_HV */
-+#endif /* CONFIG_KVM_BOOK3S_HV */
- #ifdef CONFIG_KVM_BOOK3S_PR
- 	struct mutex hpt_mutex;
- 	bool relon_disabled;
-@@ -598,7 +598,7 @@ struct kvm_vcpu_arch {
- 	struct kvmppc_icp *icp; /* XICS presentation controller */
- #endif
- 
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- 	struct kvm_vcpu_arch_shared shregs;
- 
- 	unsigned long pgfault_addr;
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index b15554a..9161bd1 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -260,7 +260,7 @@ void kvmppc_set_pid(struct kvm_vcpu *vcpu, u32 pid);
- 
- struct openpic;
- 
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- extern void kvm_cma_reserve(void) __init;
- static inline void kvmppc_set_xics_phys(int cpu, unsigned long addr)
- {
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 67b5d56..dd7ad4a 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -445,7 +445,7 @@ int main(void)
- 	DEFINE(VCPU_LR, offsetof(struct kvm_vcpu, arch.lr));
- 	DEFINE(VCPU_CR, offsetof(struct kvm_vcpu, arch.cr));
- 	DEFINE(VCPU_PC, offsetof(struct kvm_vcpu, arch.pc));
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- 	DEFINE(VCPU_MSR, offsetof(struct kvm_vcpu, arch.shregs.msr));
- 	DEFINE(VCPU_SRR0, offsetof(struct kvm_vcpu, arch.shregs.srr0));
- 	DEFINE(VCPU_SRR1, offsetof(struct kvm_vcpu, arch.shregs.srr1));
-@@ -476,7 +476,7 @@ int main(void)
- 	DEFINE(KVM_LPID, offsetof(struct kvm, arch.lpid));
- 
- 	/* book3s */
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- 	DEFINE(KVM_SDR1, offsetof(struct kvm, arch.sdr1));
- 	DEFINE(KVM_HOST_LPID, offsetof(struct kvm, arch.host_lpid));
- 	DEFINE(KVM_HOST_LPCR, offsetof(struct kvm, arch.host_lpcr));
-@@ -581,7 +581,7 @@ int main(void)
- 	HSTATE_FIELD(HSTATE_RESTORE_HID5, restore_hid5);
- 	HSTATE_FIELD(HSTATE_NAPPING, napping);
- 
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- 	HSTATE_FIELD(HSTATE_HWTHREAD_REQ, hwthread_req);
- 	HSTATE_FIELD(HSTATE_HWTHREAD_STATE, hwthread_state);
- 	HSTATE_FIELD(HSTATE_KVM_VCPU, kvm_vcpu);
-@@ -597,7 +597,7 @@ int main(void)
- 	HSTATE_FIELD(HSTATE_DABR, dabr);
- 	HSTATE_FIELD(HSTATE_DECEXP, dec_expires);
- 	DEFINE(IPI_PRIORITY, IPI_PRIORITY);
--#endif /* CONFIG_KVM_BOOK3S_64_HV */
-+#endif /* CONFIG_KVM_BOOK3S_HV */
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- 	HSTATE_FIELD(HSTATE_CFAR, cfar);
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 2a273be..9f2f352 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -126,7 +126,7 @@ BEGIN_FTR_SECTION
- 	bgt	cr1,.
- 	GET_PACA(r13)
- 
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- 	li	r0,KVM_HWTHREAD_IN_KERNEL
- 	stb	r0,HSTATE_HWTHREAD_STATE(r13)
- 	/* Order setting hwthread_state vs. testing hwthread_req */
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index e11863f..6aa4477 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -84,7 +84,7 @@ _GLOBAL(power7_nap)
- 	std	r9,_MSR(r1)
- 	std	r1,PACAR1(r13)
- 
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- 	/* Tell KVM we're napping */
- 	li	r4,KVM_HWTHREAD_IN_NAP
- 	stb	r4,HSTATE_HWTHREAD_STATE(r13)
 diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index ffaef2c..719c946 100644
+index 5c62459..f63fd8f 100644
 --- a/arch/powerpc/kvm/Kconfig
 +++ b/arch/powerpc/kvm/Kconfig
-@@ -39,6 +39,9 @@ config KVM_BOOK3S_PR
- 	select KVM_MMIO
- 	select MMU_NOTIFIER
+@@ -73,7 +73,7 @@ config KVM_BOOK3S_64
+ 	  If unsure, say N.
  
-+config KVM_BOOK3S_HV
-+	bool
-+
- config KVM_BOOK3S_32
- 	tristate "KVM support for PowerPC book3s_32 processors"
- 	depends on PPC_BOOK3S_32 && !SMP && !PTE_64BIT
-@@ -71,6 +74,7 @@ config KVM_BOOK3S_64
  config KVM_BOOK3S_64_HV
- 	bool "KVM support for POWER7 and PPC970 using hypervisor mode in host"
+-	bool "KVM support for POWER7 and PPC970 using hypervisor mode in host"
++	tristate "KVM support for POWER7 and PPC970 using hypervisor mode in host"
  	depends on KVM_BOOK3S_64
-+	select KVM_BOOK3S_HV
+ 	select KVM_BOOK3S_HV
  	select MMU_NOTIFIER
- 	select CMA
+@@ -94,8 +94,8 @@ config KVM_BOOK3S_64_HV
+ 	  If unsure, say N.
+ 
+ config KVM_BOOK3S_64_PR
+-	bool "KVM support without using hypervisor mode in host"
+-	depends on KVM_BOOK3S_64 && !KVM_BOOK3S_64_HV
++	tristate "KVM support without using hypervisor mode in host"
++	depends on KVM_BOOK3S_64
+ 	select KVM_BOOK3S_PR
  	---help---
-diff --git a/arch/powerpc/kvm/book3s_exports.c b/arch/powerpc/kvm/book3s_exports.c
-index 7057a02..99504db 100644
---- a/arch/powerpc/kvm/book3s_exports.c
-+++ b/arch/powerpc/kvm/book3s_exports.c
-@@ -20,9 +20,10 @@
- #include <linux/export.h>
- #include <asm/kvm_book3s.h>
+ 	  Support running guest kernels in virtual machines on processors
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index a514ecd..861b8da 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -56,8 +56,7 @@ kvm-objs-$(CONFIG_KVM_E500MC) := $(kvm-e500mc-objs)
+ kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) := \
+ 	book3s_64_vio_hv.o
  
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- EXPORT_SYMBOL_GPL(kvmppc_hv_entry_trampoline);
--#else
-+#endif
-+#ifdef CONFIG_KVM_BOOK3S_PR
- EXPORT_SYMBOL_GPL(kvmppc_entry_trampoline);
- EXPORT_SYMBOL_GPL(kvmppc_load_up_fpu);
- #ifdef CONFIG_ALTIVEC
-diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
-index a3a5cb8..f0c732e 100644
---- a/arch/powerpc/kvm/book3s_xics.c
-+++ b/arch/powerpc/kvm/book3s_xics.c
-@@ -1250,13 +1250,13 @@ static int kvmppc_xics_create(struct kvm_device *dev, u32 type)
+-kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_PR) := \
+-	$(KVM)/coalesced_mmio.o \
++kvm-pr-y := \
+ 	fpu.o \
+ 	book3s_paired_singles.o \
+ 	book3s_pr.o \
+@@ -77,7 +76,7 @@ kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) += \
+ 	book3s_rmhandlers.o
+ endif
  
- 	xics_debugfs_init(xics);
+-kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_HV)  += \
++kvm-hv-y += \
+ 	book3s_hv.o \
+ 	book3s_hv_interrupts.o \
+ 	book3s_64_mmu_hv.o
+@@ -85,13 +84,15 @@ kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_HV)  += \
+ kvm-book3s_64-builtin-xics-objs-$(CONFIG_KVM_XICS) := \
+ 	book3s_hv_rm_xics.o
  
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_HV
- 	if (cpu_has_feature(CPU_FTR_ARCH_206)) {
- 		/* Enable real mode support */
- 		xics->real_mode = ENABLE_REALMODE;
- 		xics->real_mode_dbg = DEBUG_REALMODE;
- 	}
--#endif /* CONFIG_KVM_BOOK3S_64_HV */
-+#endif /* CONFIG_KVM_BOOK3S_HV */
+-kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) += \
++ifdef CONFIG_KVM_BOOK3S_HV
++kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) += \
+ 	book3s_hv_rmhandlers.o \
+ 	book3s_hv_rm_mmu.o \
+ 	book3s_hv_ras.o \
+ 	book3s_hv_builtin.o \
+ 	book3s_hv_cma.o \
+ 	$(kvm-book3s_64-builtin-xics-objs-y)
++endif
  
- 	return 0;
+ kvm-book3s_64-objs-$(CONFIG_KVM_XICS) += \
+ 	book3s_xics.o
+@@ -132,4 +133,7 @@ obj-$(CONFIG_KVM_E500MC) += kvm.o
+ obj-$(CONFIG_KVM_BOOK3S_64) += kvm.o
+ obj-$(CONFIG_KVM_BOOK3S_32) += kvm.o
+ 
++obj-$(CONFIG_KVM_BOOK3S_64_PR) += kvm-pr.o
++obj-$(CONFIG_KVM_BOOK3S_64_HV) += kvm-hv.o
++
+ obj-y += $(kvm-book3s_64-builtin-objs-y)
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 12f94bf..ca617e1 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -170,13 +170,14 @@ void kvmppc_book3s_queue_irqprio(struct kvm_vcpu *vcpu, unsigned int vec)
+ 	printk(KERN_INFO "Queueing interrupt %x\n", vec);
+ #endif
  }
+-
++EXPORT_SYMBOL_GPL(kvmppc_book3s_queue_irqprio);
+ 
+ void kvmppc_core_queue_program(struct kvm_vcpu *vcpu, ulong flags)
+ {
+ 	/* might as well deliver this straight away */
+ 	kvmppc_inject_interrupt(vcpu, BOOK3S_INTERRUPT_PROGRAM, flags);
+ }
++EXPORT_SYMBOL_GPL(kvmppc_core_queue_program);
+ 
+ void kvmppc_core_queue_dec(struct kvm_vcpu *vcpu)
+ {
+@@ -351,6 +352,7 @@ pfn_t kvmppc_gfn_to_pfn(struct kvm_vcpu *vcpu, gfn_t gfn)
+ 
+ 	return gfn_to_pfn(vcpu->kvm, gfn);
+ }
++EXPORT_SYMBOL_GPL(kvmppc_gfn_to_pfn);
+ 
+ static int kvmppc_xlate(struct kvm_vcpu *vcpu, ulong eaddr, bool data,
+ 			 struct kvmppc_pte *pte)
+@@ -418,6 +420,7 @@ int kvmppc_st(struct kvm_vcpu *vcpu, ulong *eaddr, int size, void *ptr,
+ 
+ 	return EMULATE_DONE;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_st);
+ 
+ int kvmppc_ld(struct kvm_vcpu *vcpu, ulong *eaddr, int size, void *ptr,
+ 		      bool data)
+@@ -448,6 +451,7 @@ nopte:
+ mmio:
+ 	return EMULATE_DO_MMIO;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_ld);
+ 
+ int kvm_arch_vcpu_setup(struct kvm_vcpu *vcpu)
+ {
+@@ -693,6 +697,7 @@ void kvmppc_set_msr(struct kvm_vcpu *vcpu, u64 msr)
+ {
+ 	kvmppc_ops->set_msr(vcpu, msr);
+ }
++EXPORT_SYMBOL_GPL(kvmppc_set_msr);
+ 
+ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ {
+@@ -774,6 +779,7 @@ int kvm_unmap_hva(struct kvm *kvm, unsigned long hva)
+ {
+ 	return kvmppc_ops->unmap_hva(kvm, hva);
+ }
++EXPORT_SYMBOL_GPL(kvm_unmap_hva);
+ 
+ int kvm_unmap_hva_range(struct kvm *kvm, unsigned long start, unsigned long end)
+ {
+@@ -825,3 +831,14 @@ int kvmppc_core_check_processor_compat(void)
+ {
+ 	return kvmppc_ops->check_processor_compat();
+ }
++
++EXPORT_SYMBOL_GPL(kvm_get_dirty_log);
++EXPORT_SYMBOL_GPL(kvmppc_core_pending_dec);
++EXPORT_SYMBOL_GPL(kvmppc_init_lpid);
++EXPORT_SYMBOL_GPL(kvmppc_core_dequeue_dec);
++EXPORT_SYMBOL_GPL(kvmppc_claim_lpid);
++EXPORT_SYMBOL_GPL(kvmppc_alloc_lpid);
++EXPORT_SYMBOL_GPL(kvmppc_core_prepare_to_enter);
++EXPORT_SYMBOL_GPL(kvmppc_core_queue_dec);
++EXPORT_SYMBOL_GPL(kvmppc_free_lpid);
++
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+index fd5b393..775d368 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+@@ -27,6 +27,7 @@
+ #include <asm/machdep.h>
+ #include <asm/mmu_context.h>
+ #include <asm/hw_irq.h>
++
+ #include "trace_pr.h"
+ 
+ #define PTE_SIZE 12
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index b9841ad..20d03c2 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -172,7 +172,7 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 			vcpu->arch.mmu.tlbie(vcpu, addr, large);
+ 			break;
+ 		}
+-#ifdef CONFIG_KVM_BOOK3S_64_PR
++#ifdef CONFIG_KVM_BOOK3S_PR
+ 		case OP_31_XOP_FAKE_SC1:
+ 		{
+ 			/* SC 1 papr hypercalls */
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index eec353d..ff57be8 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -53,6 +53,8 @@
+ #include <linux/highmem.h>
+ #include <linux/hugetlb.h>
+ 
++#include <linux/module.h>
++
+ /* #define EXIT_DEBUG */
+ /* #define EXIT_DEBUG_SIMPLE */
+ /* #define EXIT_DEBUG_INT */
+@@ -2104,3 +2106,5 @@ static void kvmppc_book3s_exit_hv(void)
+ 
+ module_init(kvmppc_book3s_init_hv);
+ module_exit(kvmppc_book3s_exit_hv);
++
++MODULE_LICENSE("GPL");
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 99d0839..df48d89 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -40,6 +40,7 @@
+ #include <linux/sched.h>
+ #include <linux/vmalloc.h>
+ #include <linux/highmem.h>
++#include <linux/module.h>
+ 
+ #define CREATE_TRACE_POINTS
+ #include "trace_pr.h"
+@@ -871,7 +872,7 @@ program_interrupt:
+ 			ulong cmd = kvmppc_get_gpr(vcpu, 3);
+ 			int i;
+ 
+-#ifdef CONFIG_KVM_BOOK3S_64_PR
++#ifdef CONFIG_PPC_BOOK3S_64
+ 			if (kvmppc_h_pr(vcpu, cmd) == EMULATE_DONE) {
+ 				r = RESUME_GUEST;
+ 				break;
+@@ -1567,3 +1568,5 @@ static void kvmppc_book3s_exit_pr(void)
+ 
+ module_init(kvmppc_book3s_init_pr);
+ module_exit(kvmppc_book3s_exit_pr);
++
++MODULE_LICENSE("GPL");
+diff --git a/arch/powerpc/kvm/book3s_rtas.c b/arch/powerpc/kvm/book3s_rtas.c
+index 3219ba8..cf95cde 100644
+--- a/arch/powerpc/kvm/book3s_rtas.c
++++ b/arch/powerpc/kvm/book3s_rtas.c
+@@ -260,6 +260,7 @@ fail:
+ 	 */
+ 	return rc;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_rtas_hcall);
+ 
+ void kvmppc_rtas_tokens_free(struct kvm *kvm)
+ {
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index 81762eb..de9a340 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -483,3 +483,4 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 
+ 	return emulated;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_emulate_instruction);
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 00a96fc..3019edc 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -126,6 +126,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
+ 
+ 	return r;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_prepare_to_enter);
+ 
+ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
+ {
+@@ -179,6 +180,7 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
+ 
+ 	return r;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_kvm_pv);
+ 
+ int kvmppc_sanity_check(struct kvm_vcpu *vcpu)
+ {
+@@ -207,6 +209,7 @@ out:
+ 	vcpu->arch.sane = r;
+ 	return r ? 0 : -EINVAL;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_sanity_check);
+ 
+ int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ {
+@@ -241,6 +244,7 @@ int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 
+ 	return r;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_emulate_mmio);
+ 
+ int kvm_arch_hardware_enable(void *garbage)
+ {
+@@ -665,6 +669,7 @@ int kvmppc_handle_load(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 
+ 	return EMULATE_DO_MMIO;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_handle_load);
+ 
+ /* Same as above, but sign extends */
+ int kvmppc_handle_loads(struct kvm_run *run, struct kvm_vcpu *vcpu,
+@@ -726,6 +731,7 @@ int kvmppc_handle_store(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 
+ 	return EMULATE_DO_MMIO;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_handle_store);
+ 
+ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ {
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index bf040c4..66df1d2 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -186,6 +186,7 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
+ 		++kvm->stat.remote_tlb_flush;
+ 	cmpxchg(&kvm->tlbs_dirty, dirty_count, 0);
+ }
++EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
+ 
+ void kvm_reload_remote_mmus(struct kvm *kvm)
+ {
+@@ -1648,6 +1649,7 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
+ 	memslot = gfn_to_memslot(kvm, gfn);
+ 	mark_page_dirty_in_slot(kvm, memslot, gfn);
+ }
++EXPORT_SYMBOL_GPL(mark_page_dirty);
+ 
+ /*
+  * The vCPU has executed a HLT instruction with in-kernel mode enabled.
+@@ -1673,6 +1675,7 @@ void kvm_vcpu_block(struct kvm_vcpu *vcpu)
+ 
+ 	finish_wait(&vcpu->wq, &wait);
+ }
++EXPORT_SYMBOL_GPL(kvm_vcpu_block);
+ 
+ #ifndef CONFIG_S390
+ /*
 -- 
 1.8.1.2
