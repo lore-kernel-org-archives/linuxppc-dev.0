@@ -1,34 +1,35 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 290422C050C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 20:07:55 +1000 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 000EE2C0332
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 20:52:11 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 27 Sep 2013 20:07:54 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 141773578054
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 20:07:52 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8RA7f5N9896296
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 20:07:41 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r8RA7pQK008039
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 20:07:51 +1000
+ Fri, 27 Sep 2013 16:22:10 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id E40C4394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 16:21:51 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8RAsPYP44695794
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 16:24:25 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8RAq6s9021310
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 16:22:07 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 2/2] powerpc: Free up _PAGE_COHERENCE for numa fault use later
-Date: Fri, 27 Sep 2013 15:37:38 +0530
-Message-Id: <1380276458-18833-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1380276458-18833-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1380276458-18833-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [RFC PATCH 00/11 Allow PR and HV KVM to coexist in one kernel
+In-Reply-To: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Fri, 27 Sep 2013 16:22:05 +0530
+Message-ID: <878uyibkq2.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,106 +39,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-only hash 64 config we always set memory coherence, If
-a platform cannot have memory coherence always set they
-can infer that from _PAGE_NO_CACHE and _PAGE_WRITETHRU
-like in lpar. So we dont' really need a separate bit
-for tracking _PAGE_COHERENCE.
+> Hi All,
+>
+> This patch series support enabling HV and PR KVM together in the same kernel. We
+> extend machine property with new property "kvm_type". A value of 1 will force HV
+> KVM and 2 PR KVM. The default value is 0 which will select the fastest KVM mode.
+> ie, HV if that is supported otherwise PR.
+>
+> With Qemu command line having
+>
+>  -machine pseries,accel=kvm,kvm_type=1
+>
+> [root@llmp24l02 qemu]# bash ../qemu
+> failed to initialize KVM: Invalid argument
+> [root@llmp24l02 qemu]# modprobe kvm-pr
+> [root@llmp24l02 qemu]# bash ../qemu
+> failed to initialize KVM: Invalid argument
+> [root@llmp24l02 qemu]# modprobe  kvm-hv
+> [root@llmp24l02 qemu]# bash ../qemu
+>
+> now with
+>
+>  -machine pseries,accel=kvm,kvm_type=2
+>
+> [root@llmp24l02 qemu]# rmmod kvm-pr
+> [root@llmp24l02 qemu]# bash ../qemu
+> failed to initialize KVM: Invalid argument
+> [root@llmp24l02 qemu]#
+> [root@llmp24l02 qemu]# modprobe kvm-pr
+> [root@llmp24l02 qemu]# bash ../qemu
+>
+> if don't specify kvm_type machine property, it will take a default value 0,
+> which means fastest supported.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pte-hash64.h |  2 +-
- arch/powerpc/mm/hash_low_64.S         | 15 ++++++++++++---
- arch/powerpc/mm/hugepage-hash64.c     |  6 +++++-
- arch/powerpc/mm/hugetlbpage-hash64.c  |  4 ++++
- 4 files changed, 22 insertions(+), 5 deletions(-)
+Related qemu patch
 
-diff --git a/arch/powerpc/include/asm/pte-hash64.h b/arch/powerpc/include/asm/pte-hash64.h
-index 0419eeb..55aea0c 100644
---- a/arch/powerpc/include/asm/pte-hash64.h
-+++ b/arch/powerpc/include/asm/pte-hash64.h
-@@ -19,7 +19,7 @@
- #define _PAGE_FILE		0x0002 /* (!present only) software: pte holds file offset */
- #define _PAGE_EXEC		0x0004 /* No execute on POWER4 and newer (we invert) */
- #define _PAGE_GUARDED		0x0008
--#define _PAGE_COHERENT		0x0010 /* M: enforce memory coherence (SMP systems) */
-+/* We can derive Memory coherence from _PAGE_NO_CACHE */
- #define _PAGE_NO_CACHE		0x0020 /* I: cache inhibit */
- #define _PAGE_WRITETHRU		0x0040 /* W: cache write-through */
- #define _PAGE_DIRTY		0x0080 /* C: page changed */
-diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
-index d3cbda6..1136d26 100644
---- a/arch/powerpc/mm/hash_low_64.S
-+++ b/arch/powerpc/mm/hash_low_64.S
-@@ -148,7 +148,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
- 	andc	r0,r30,r0		/* r0 = pte & ~r0 */
- 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
--	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
-+	/*
-+	 * Always add "C" bit for perf. Memory coherence is always enabled
-+	 */
-+	ori	r3,r3,HPTE_R_C | HPTE_R_M
+commit 8d139053177d48a70cb710b211ea4c2843eccdfb
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Mon Sep 23 12:28:37 2013 +0530
+
+    kvm: Add a new machine property kvm_type
+    
+    Targets like ppc64 support different type of KVM, one which use
+    hypervisor mode and the other which doesn't. Add a new machine
+    property kvm_type that helps in selecting the respective ones
+    
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+diff --git a/kvm-all.c b/kvm-all.c
+index b87215c..a061eda 100644
+--- a/kvm-all.c
++++ b/kvm-all.c
+@@ -1350,7 +1350,7 @@ int kvm_init(void)
+     KVMState *s;
+     const KVMCapabilityInfo *missing_cap;
+     int ret;
+-    int i;
++    int i, kvm_type;
+     int max_vcpus;
  
- 	/* We eventually do the icache sync here (maybe inline that
- 	 * code rather than call a C function...) 
-@@ -457,7 +460,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
- 	andc	r0,r3,r0		/* r0 = pte & ~r0 */
- 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
--	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
-+	/*
-+	 * Always add "C" bit for perf. Memory coherence is always enabled
-+	 */
-+	ori	r3,r3,HPTE_R_C | HPTE_R_M
+     s = g_malloc0(sizeof(KVMState));
+@@ -1407,7 +1407,8 @@ int kvm_init(void)
+         goto err;
+     }
  
- 	/* We eventually do the icache sync here (maybe inline that
- 	 * code rather than call a C function...)
-@@ -795,7 +801,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
- 	andc	r0,r30,r0		/* r0 = pte & ~r0 */
- 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
--	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
-+	/*
-+	 * Always add "C" bit for perf. Memory coherence is always enabled
-+	 */
-+	ori	r3,r3,HPTE_R_C | HPTE_R_M
- 
- 	/* We eventually do the icache sync here (maybe inline that
- 	 * code rather than call a C function...)
-diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
-index 34de9e0..b640595 100644
---- a/arch/powerpc/mm/hugepage-hash64.c
-+++ b/arch/powerpc/mm/hugepage-hash64.c
-@@ -127,7 +127,11 @@ repeat:
- 
- 		/* Add in WIMG bits */
- 		rflags |= (new_pmd & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
--				      _PAGE_COHERENT | _PAGE_GUARDED));
-+				      _PAGE_GUARDED));
-+		/*
-+		 * enable the memory coherence always
-+		 */
-+		rflgs |= HPTE_R_M;
- 
- 		/* Insert into the hash table, primary slot */
- 		slot = ppc_md.hpte_insert(hpte_group, vpn, pa, rflags, 0,
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 0b7fb67..a5bcf93 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -99,6 +99,10 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 		/* Add in WIMG bits */
- 		rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
- 				      _PAGE_COHERENT | _PAGE_GUARDED));
-+		/*
-+		 * enable the memory coherence always
-+		 */
-+		rflags |= HPTE_R_M;
- 
- 		slot = hpte_insert_repeating(hash, vpn, pa, rflags, 0,
- 					     mmu_psize, ssize);
--- 
-1.8.1.2
+-    s->vmfd = kvm_ioctl(s, KVM_CREATE_VM, 0);
++    kvm_type = qemu_opt_get_number(qemu_get_machine_opts(), "kvm_type", 0);
++    s->vmfd = kvm_ioctl(s, KVM_CREATE_VM, kvm_type);
+     if (s->vmfd < 0) {
+ #ifdef TARGET_S390X
+         fprintf(stderr, "Please add the 'switch_amode' kernel parameter to "
+diff --git a/vl.c b/vl.c
+index 4e709d5..4374b17 100644
+--- a/vl.c
++++ b/vl.c
+@@ -427,7 +427,12 @@ static QemuOptsList qemu_machine_opts = {
+             .name = "usb",
+             .type = QEMU_OPT_BOOL,
+             .help = "Set on/off to enable/disable usb",
++        },{
++            .name = "kvm_type",
++            .type = QEMU_OPT_NUMBER,
++            .help = "Set to kvm type to be used in create vm ioctl",
+         },
++
+         { /* End of list */ }
+     },
+ };
