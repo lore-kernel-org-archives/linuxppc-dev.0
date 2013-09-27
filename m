@@ -1,30 +1,20 @@
-Return-Path: <timothy.c.pepper@linux.intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id 79BF62C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 01:40:15 +1000 (EST)
-From: "Timothy Pepper" <timothy.c.pepper@linux.intel.com>
-Date: Fri, 27 Sep 2013 08:39:52 -0700
-To: Ingo Molnar <mingo@kernel.org>
-Subject: Re: mm: insure topdown mmap chooses addresses above security minimum
-Message-ID: <20130927153951.GA15257@tcpepper-desk.jf.intel.com>
-References: <1380057811-5352-1-git-send-email-timothy.c.pepper@linux.intel.com>
- <20130925073048.GB27960@gmail.com>
- <20130925171243.GA7428@tcpepper-desk.jf.intel.com>
- <20130925174436.GA14037@gmail.com>
-MIME-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B455F2C012E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 01:53:05 +1000 (EST)
+Subject: Re: [PATCH] powerpc/mpic: Disable preemption when calling
+ mpic_processor_id()
+Mime-Version: 1.0 (Apple Message framework v1283)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130925174436.GA14037@gmail.com>
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, Michel Lespinasse <walken@google.com>,
- Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, Rik van Riel <riel@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>, James Morris <james.l.morris@oracle.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, Ralf Baechle <ralf@linux-mips.org>,
- Paul Mundt <lethal@linux-sh.org>, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1380241098-7561-1-git-send-email-scottwood@freescale.com>
+Date: Fri, 27 Sep 2013 10:52:52 -0500
+Message-Id: <37986E99-BC99-4B67-9327-36CABA8E1A04@kernel.crashing.org>
+References: <1380241098-7561-1-git-send-email-scottwood@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,41 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 25 Sep at 19:44:36 +0200 mingo@kernel.org said:
-> 
-> * Timothy Pepper <timothy.c.pepper@linux.intel.com> wrote:
-> 
-> > On Wed 25 Sep at 09:30:49 +0200 mingo@kernel.org said:
-> > > >  	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
-> > > >  	info.length = len;
-> > > > -	info.low_limit = PAGE_SIZE;
-> > > > +	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
-> > > >  	info.high_limit = mm->mmap_base;
-> > > >  	info.align_mask = filp ? get_align_mask() : 0;
-> > > >  	info.align_offset = pgoff << PAGE_SHIFT;
-> > > 
-> > > There appears to be a lot of repetition in these methods - instead of 
-> > > changing 6 places it would be more future-proof to first factor out the 
-> > > common bits and then to apply the fix to the shared implementation.
-> > 
-> > Besides that existing redundancy in the multiple somewhat similar
-> > arch_get_unmapped_area_topdown() functions, I was expecting people might
-> > question the added redundancy of the six instances of:
-> > 
-> > 	max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
-> 
-> That redundancy would be automatically addressed by my suggestion.
 
-Yes.
+On Sep 26, 2013, at 7:18 PM, Scott Wood wrote:
 
-I'm looking at the cleanup and will post a bisectable series that
-introduces a common helper, addes the calls to use that helper where
-applicable (looks like it might be a few dozen per arch locations), and
-then the single line change for the topdown case within the common helper
-to do:
+> Otherwise, we get a debug traceback due to the use of
+> smp_processor_id() (or get_paca()) inside hard_smp_processor_id().
+> mpic_host_map() is just looking for a default CPU, so it doesn't =
+matter
+> if we migrate after getting the CPU ID.
+>=20
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+> arch/powerpc/sysdev/mpic.c | 8 +++++++-
+> 1 file changed, 7 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 1be54fa..bdcb858 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -1088,8 +1088,14 @@ static int mpic_host_map(struct irq_domain *h, =
+unsigned int virq,
+> 	 * is done here.
+> 	 */
+> 	if (!mpic_is_ipi(mpic, hw) && (mpic->flags & MPIC_NO_RESET)) {
+> +		int cpu;
+> +
+> +		preempt_disable();
+> +		cpu =3D mpic_processor_id(mpic);
+> +		preempt_enable();
+> +
 
-	info->low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+Any reason you didn't stick this inside of mpic_processor_id() ?
 
--- 
-Tim Pepper <timothy.c.pepper@linux.intel.com>
-Intel Open Source Technology Center
+> 		mpic_set_vector(virq, hw);
+> -		mpic_set_destination(virq, mpic_processor_id(mpic));
+> +		mpic_set_destination(virq, cpu);
+> 		mpic_irq_set_priority(virq, 8);
+> 	}
+>=20
+> --=20
+> 1.8.1.2
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
