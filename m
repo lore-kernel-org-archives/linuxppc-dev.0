@@ -1,28 +1,23 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from mail-ie0-x22c.google.com (mail-ie0-x22c.google.com
- [IPv6:2607:f8b0:4001:c03::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 916752C019C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 02:01:19 +1000 (EST)
-Received: by mail-ie0-f172.google.com with SMTP id x13so4417021ief.31
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 09:01:16 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2C4492C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 02:15:24 +1000 (EST)
+Message-ID: <1380298512.24959.384.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/mpic: Disable preemption when calling
+ mpic_processor_id()
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Date: Fri, 27 Sep 2013 11:15:12 -0500
+In-Reply-To: <37986E99-BC99-4B67-9327-36CABA8E1A04@kernel.crashing.org>
+References: <1380241098-7561-1-git-send-email-scottwood@freescale.com>
+ <37986E99-BC99-4B67-9327-36CABA8E1A04@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Sender: yhlu.kernel@gmail.com
-In-Reply-To: <1380270519.27811.10.camel@pasglop>
-References: <1380270519.27811.10.camel@pasglop>
-Date: Fri, 27 Sep 2013 09:01:16 -0700
-Message-ID: <CAE9FiQVkW7d7vFx_kPJG-FEvO71SZjZmpR+dnwVm61wkYK=0YA@mail.gmail.com>
-Subject: Re: Please revert 928bea964827d7824b548c1f8e06eccbbc4d0d7d
-From: Yinghai Lu <yinghai@kernel.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,53 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 27, 2013 at 1:28 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> Hi Linus, Yinghai !
->
-> Please consider reverting:
->
-> 928bea964827d7824b548c1f8e06eccbbc4d0d7d
-> PCI: Delay enabling bridges until they're needed
->
-> (I'd suggest to revert now and maybe merge a better patch later)
->
-> This breaks PCI on the PowerPC "powernv" platform (which is booted via
-> kexec) and probably x86 as well under similar circumstances. It will
-> basically break PCIe if the bus master bit of the bridge isn't set at
-> boot (by the firmware for example, or because kexec'ing cleared it).
->
-> The reason is that the PCIe port driver will call pci_enable_device() on
-> the bridge (on everything under the sun actually), which will marked the
-> device enabled (but will not do a set_master).
->
-> Because of that, pci_enable_bridge() later on (called as a result of the
-> child device driver doing pci_enable_device) will see the bridge as
-> already enabled and will not call pci_set_master() on it.
->
-> Now, this could probably be fixed by simply doing pci_set_master() in
-> the PCIe port driver, but I find the whole logic very fragile (anything
-> that "enables" the bridge without setting master or for some reason
-> clears master will forever fail to re-enable it).
->
-> Maybe a better option is to unconditionally do pci_set_mater() in
-> pci_enable_bridge(), ie, move the call to before the enabled test.
->
-> However I am not too happy with that either. My experience with bridges
-> is that if bus master isn't set, they will also fail to report AER
-> errors and other similar upstream transactions. We might want to get
-> these reported properly even if no downstream device got successfully
-> enabled.
->
-> So I think the premises of the patches are flawed, at least on PCI
-> express, and we should stick to always enabling bridges (at least the
-> bus master bit on them).
+On Fri, 2013-09-27 at 10:52 -0500, Kumar Gala wrote:
+> On Sep 26, 2013, at 7:18 PM, Scott Wood wrote:
+> 
+> > Otherwise, we get a debug traceback due to the use of
+> > smp_processor_id() (or get_paca()) inside hard_smp_processor_id().
+> > mpic_host_map() is just looking for a default CPU, so it doesn't matter
+> > if we migrate after getting the CPU ID.
+> > 
+> > Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > ---
+> > arch/powerpc/sysdev/mpic.c | 8 +++++++-
+> > 1 file changed, 7 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> > index 1be54fa..bdcb858 100644
+> > --- a/arch/powerpc/sysdev/mpic.c
+> > +++ b/arch/powerpc/sysdev/mpic.c
+> > @@ -1088,8 +1088,14 @@ static int mpic_host_map(struct irq_domain *h, unsigned int virq,
+> > 	 * is done here.
+> > 	 */
+> > 	if (!mpic_is_ipi(mpic, hw) && (mpic->flags & MPIC_NO_RESET)) {
+> > +		int cpu;
+> > +
+> > +		preempt_disable();
+> > +		cpu = mpic_processor_id(mpic);
+> > +		preempt_enable();
+> > +
+> 
+> Any reason you didn't stick this inside of mpic_processor_id() ?
 
-there is pci_set_master everywhere in pci drivers.
+Because the debug check might be valid for other callers and we don't
+want to defeat it.  In this caller it's used only as a heuristic and
+thus it doesn't matter if we re-enable preemption before using the
+result.
 
-So i would like to use the first way that you suggest : call pci_set_master
-PCIe port driver.
-
-Thanks
-
-Yinghai
+-Scott
