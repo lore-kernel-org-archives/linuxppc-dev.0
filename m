@@ -1,35 +1,24 @@
-Return-Path: <laurent.pinchart@ideasonboard.com>
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com
- [95.142.166.194])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 67E0F2C0339
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 12:04:33 +1000 (EST)
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH 31/51] DMA-API: media: omap3isp: use
- dma_coerce_mask_and_coherent()
-Date: Fri, 27 Sep 2013 03:56:13 +0200
-Message-ID: <4110555.qb0XUyFHNE@avalon>
-In-Reply-To: <E1VMmCg-0007j1-Pi@rmk-PC.arm.linux.org.uk>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMmCg-0007j1-Pi@rmk-PC.arm.linux.org.uk>
+Return-Path: <B36685@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B8EC72C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 12:51:56 +1000 (EST)
+From: Liu Shengzhou-B36685 <B36685@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] powerpc/fsl/defconfig: enable CONFIG_AT803X_PHY
+Date: Fri, 27 Sep 2013 02:51:48 +0000
+Message-ID: <3F453DDFF675A64A89321A1F35281021AE0312@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1378196906-9850-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <1380158651.24959.239.camel@snotra.buserror.net>
+ <3F453DDFF675A64A89321A1F35281021ADFACA@039-SN1MPN1-003.039d.mgd.msft.net>
+ <1380229898.24959.318.camel@snotra.buserror.net>
+In-Reply-To: <1380229898.24959.318.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
- linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
- b43-dev@lists.infradead.org, linux-media@vger.kernel.org,
- devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, linux-crypto@vger.kernel.org,
- uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,67 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Russell,
-
-Thank you for the patch.
-
-On Thursday 19 September 2013 22:56:02 Russell King wrote:
-> The code sequence:
-> 	isp->raw_dmamask = DMA_BIT_MASK(32);
-> 	isp->dev->dma_mask = &isp->raw_dmamask;
-> 	isp->dev->coherent_dma_mask = DMA_BIT_MASK(32);
-> bypasses the architectures check on the DMA mask.  It can be replaced
-> with dma_coerce_mask_and_coherent(), avoiding the direct initialization
-> of this mask.
-> 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
-> ---
->  drivers/media/platform/omap3isp/isp.c |    6 +++---
->  drivers/media/platform/omap3isp/isp.h |    3 ---
->  2 files changed, 3 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/media/platform/omap3isp/isp.c
-> b/drivers/media/platform/omap3isp/isp.c index df3a0ec..1c36080 100644
-> --- a/drivers/media/platform/omap3isp/isp.c
-> +++ b/drivers/media/platform/omap3isp/isp.c
-> @@ -2182,9 +2182,9 @@ static int isp_probe(struct platform_device *pdev)
->  	isp->pdata = pdata;
->  	isp->ref_count = 0;
-> 
-> -	isp->raw_dmamask = DMA_BIT_MASK(32);
-> -	isp->dev->dma_mask = &isp->raw_dmamask;
-> -	isp->dev->coherent_dma_mask = DMA_BIT_MASK(32);
-> +	ret = dma_coerce_mask_and_coherent(isp->dev, DMA_BIT_MASK(32));
-> +	if (ret)
-> +		return ret;
-> 
->  	platform_set_drvdata(pdev, isp);
-> 
-> diff --git a/drivers/media/platform/omap3isp/isp.h
-> b/drivers/media/platform/omap3isp/isp.h index cd3eff4..ce65d3a 100644
-> --- a/drivers/media/platform/omap3isp/isp.h
-> +++ b/drivers/media/platform/omap3isp/isp.h
-> @@ -152,7 +152,6 @@ struct isp_xclk {
->   * @mmio_base_phys: Array with physical L4 bus addresses for ISP register
->   *                  regions.
->   * @mmio_size: Array with ISP register regions size in bytes.
-> - * @raw_dmamask: Raw DMA mask
->   * @stat_lock: Spinlock for handling statistics
->   * @isp_mutex: Mutex for serializing requests to ISP.
->   * @crashed: Bitmask of crashed entities (indexed by entity ID)
-> @@ -190,8 +189,6 @@ struct isp_device {
->  	unsigned long mmio_base_phys[OMAP3_ISP_IOMEM_LAST];
->  	resource_size_t mmio_size[OMAP3_ISP_IOMEM_LAST];
-> 
-> -	u64 raw_dmamask;
-> -
->  	/* ISP Obj */
->  	spinlock_t stat_lock;	/* common lock for statistic drivers */
->  	struct mutex isp_mutex;	/* For handling ref_count field */
--- 
-Regards,
-
-Laurent Pinchart
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
+DQo+IFNlbnQ6IEZyaWRheSwgU2VwdGVtYmVyIDI3LCAyMDEzIDU6MTIgQU0NCj4gVG86IExpdSBT
+aGVuZ3pob3UtQjM2Njg1DQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmc7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmcNCj4gU3ViamVjdDogUmU6
+IFtQQVRDSF0gcG93ZXJwYy9mc2wvZGVmY29uZmlnOiBlbmFibGUgQ09ORklHX0FUODAzWF9QSFkN
+Cj4gDQo+IE9uIFdlZCwgMjAxMy0wOS0yNSBhdCAyMjowMiAtMDUwMCwgTGl1IFNoZW5nemhvdS1C
+MzY2ODUgd3JvdGU6DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJv
+bTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IFRodXJzZGF5LCBTZXB0ZW1iZXIgMjYs
+IDIwMTMgOToyNCBBTQ0KPiA+ID4gVG86IExpdSBTaGVuZ3pob3UtQjM2Njg1DQo+ID4gPiBDYzog
+bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmcN
+Cj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvZnNsL2RlZmNvbmZpZzogZW5hYmxl
+IENPTkZJR19BVDgwM1hfUEhZDQo+ID4gPg0KPiA+ID4gT24gVHVlLCAyMDEzLTA5LTAzIGF0IDE2
+OjI4ICswODAwLCBTaGVuZ3pob3UgTGl1IHdyb3RlOg0KPiA+ID4gPiBFbmFibGUgQ09ORklHX0FU
+ODAzWF9QSFkgdG8gc3VwcG9ydCBBUjgwMzAvODAzMy84MDM1IFBIWS4NCj4gPiA+ID4NCj4gPiA+
+ID4gU2lnbmVkLW9mZi1ieTogU2hlbmd6aG91IExpdSA8U2hlbmd6aG91LkxpdUBmcmVlc2NhbGUu
+Y29tPg0KPiA+ID4gPiAtLS0NCj4gPiA+ID4gIGFyY2gvcG93ZXJwYy9jb25maWdzL2NvcmVuZXQz
+Ml9zbXBfZGVmY29uZmlnIHwgICAgMSArDQo+ID4gPiA+ICBhcmNoL3Bvd2VycGMvY29uZmlncy9t
+cGM4NXh4X2RlZmNvbmZpZyAgICAgICB8ICAgIDEgKw0KPiA+ID4gPiAgYXJjaC9wb3dlcnBjL2Nv
+bmZpZ3MvbXBjODV4eF9zbXBfZGVmY29uZmlnICAgfCAgICAxICsNCj4gPiA+ID4gIDMgZmlsZXMg
+Y2hhbmdlZCwgMyBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQ0KPiA+ID4NCj4gPiA+IFdo
+eSBub3QgY29yZW5ldDY0X3NtcF9kZWZjb25maWc/ICBXaGljaCBib2FyZHMgaGF2ZSB0aGlzIFBI
+WT8NCj4gPiA+DQo+ID4gPiAtU2NvdHQNCj4gPiA+DQo+ID4gQ3VycmVudGx5IEFUODAzWCBleGlz
+dHMgb24gUDEwMTBSREIsIFAxMDI1VFdSLCBldGMuDQo+ID4gSXQgc2VlbXMgd2UgZG9uJ3QgdXNl
+IEFUODAzWCBmb3IgdGhvc2UgYm9hcmRzIG9mIGNvcmVuZXQ2NC4NCj4gDQo+IE5laXRoZXIgb2Yg
+dGhvc2UgYm9hcmRzIGFyZSBjb3JlbmV0MzIgZWl0aGVyLg0KPiANCkdlbmVyYWxseSwgd2UgdXNl
+IEFUODAzWCBhcyBsb3ctY29zdCBzb2x1dGlvbiwgaXQncyBwb3NzaWJsZSB0byB1c2UgaXQgb24g
+UDEvUDIvUDMgc2VyaWFsLCBjb3JlbmV0NjQgaXMgZm9yIGhpZ2gtZW5kIGNhc2UsIHRoYXQncyB3
+aHkgSSBkaWRuJ3QgZW5hYmxlIGl0IGZvciBjb3JlbmV0NjQuDQotU2hlbmd6aG91DQo=
