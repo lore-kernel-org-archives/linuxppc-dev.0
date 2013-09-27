@@ -1,23 +1,27 @@
 Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4D1D92C0333
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 02:54:19 +1000 (EST)
-Message-ID: <1380300847.24959.394.camel@snotra.buserror.net>
-Subject: Re: [PATCH 2/2] pci: fsl: rework PCI driver compatible with Layerscape
+ by ozlabs.org (Postfix) with ESMTPS id 923892C0335
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 03:00:47 +1000 (EST)
+Received: from mail100-co9 (localhost [127.0.0.1])	by
+ mail100-co9-R.bigfish.com (Postfix) with ESMTP id 5187BB00314	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 17:00:43 +0000 (UTC)
+Received: from CO9EHSMHS007.bigfish.com (unknown [10.236.132.230])	by
+ mail100-co9.bigfish.com (Postfix) with ESMTP id 9412E940051	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 17:00:40 +0000 (UTC)
+Message-ID: <1380301237.24959.397.camel@snotra.buserror.net>
+Subject: Re: [PATCH V5 1/2] powerpc/85xx: Add QE common init function
 From: Scott Wood <scottwood@freescale.com>
-To: Minghuan Lian <Minghuan.Lian@freescale.com>
-Date: Fri, 27 Sep 2013 11:54:07 -0500
-In-Reply-To: <1379502122-20792-2-git-send-email-Minghuan.Lian@freescale.com>
-References: <1379502122-20792-1-git-send-email-Minghuan.Lian@freescale.com>
- <1379502122-20792-2-git-send-email-Minghuan.Lian@freescale.com>
+To: Xie Xiaobo <X.Xie@freescale.com>
+Date: Fri, 27 Sep 2013 12:00:37 -0500
+In-Reply-To: <1380188253-4710-1-git-send-email-X.Xie@freescale.com>
+References: <1380188253-4710-1-git-send-email-X.Xie@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Zang Roy-R61911 <r61911@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-09-18 at 19:02 +0800, Minghuan Lian wrote:
-> @@ -592,6 +719,7 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs)
->  #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
->  
->  struct device_node *fsl_pci_primary;
-> +extern const struct of_device_id fsl_pci_ids[];
-
-Externs go in headers.
-
-> -static int fsl_pci_probe(struct platform_device *pdev)
-> +static int __init fsl_pci_probe(struct platform_device *pdev)
->  {
->  	int ret;
-> -	struct device_node *node;
-> +	struct fsl_pci *pci;
+On Thu, 2013-09-26 at 17:37 +0800, Xie Xiaobo wrote:
+> +#ifdef CONFIG_QUICC_ENGINE
+> +void __init mpc85xx_qe_init(void)
+> +{
+> +	struct device_node *np;
 > +
-> +	if (!of_device_is_available(pdev->dev.of_node)) {
-> +		dev_warn(&pdev->dev, "disabled\n");
-> +		return -ENODEV;
+> +	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
+> +	if (!np) {
+> +		np = of_find_node_by_name(NULL, "qe");
+> +		if (!np) {
+> +			pr_err("%s: Could not find Quicc Engine node\n",
+> +					__func__);
+> +			return;
+> +		}
 > +	}
-
-This should be dev_dbg().
-
-> -#ifdef CONFIG_PM
-> -static int fsl_pci_resume(struct device *dev)
-> +static int __exit fsl_pci_remove(struct platform_device *pdev)
-
-Why __exit?  What happens if someone unbinds the PCI controller via
-sysfs?
- 
-> +/*
-> + * Structure of a PCI controller (host bridge)
-> + */
-> +struct fsl_pci {
-> +	struct list_head node;
-> +	int is_pcie;
-
-bool is_pcie;
-
-> +/* Return link status 0-> link, 1-> no link */
-> +int fsl_pci_check_link(struct fsl_pci *pci);
-
-bool
-
 > +
-> +/*
-> + * The fsl_arch_* functions are arch hooks. Those functions are
-> + * implemented as weak symbols so that they can be overridden by
-> + * architecture specific code if needed.
-> + */
-> +
-> +/* Return PCI64 DMA offset */
-> +u64 fsl_arch_pci64_dma_offset(void);
+> +	qe_reset();
+> +	of_node_put(np);
 
-Is this always guaranteed to exist?
+You're missing the of_device_is_available() check:
 
-> +/* Register PCI/PCIe controller to architecture system */
-> +int __weak fsl_arch_pci_sys_register(struct fsl_pci *pci);
-> +
-> +/* Remove PCI/PCIe controller from architecture system */
-> +void __weak fsl_arch_pci_sys_remove(struct fsl_pci *pci);
-
-Why do these need to be weak?  Won't there be exactly one implementation
-per supported arch?
+> -	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
+> -	if (!np) {
+> -		np = of_find_node_by_name(NULL, "qe");
+> -		if (!np)
+> -			return;
+> -	}
+> -
+> -	if (!of_device_is_available(np)) {
+> -		of_node_put(np);
+> -		return;
+> -	}
+> -
+> -	qe_reset();
+> -	of_node_put(np);
 
 -Scott
