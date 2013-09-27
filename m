@@ -1,15 +1,30 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9E4752C019C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 01:29:05 +1000 (EST)
-From: Gerhard Sittig <gsi@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v1] powerpc/mpc512x: silence build warning upon disabled DIU
-Date: Fri, 27 Sep 2013 17:28:38 +0200
-Message-Id: <1380295718-10700-1-git-send-email-gsi@denx.de>
-Cc: Gerhard Sittig <gsi@denx.de>, Anatolij Gustschin <agust@denx.de>
+Return-Path: <timothy.c.pepper@linux.intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by ozlabs.org (Postfix) with ESMTP id 79BF62C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 01:40:15 +1000 (EST)
+From: "Timothy Pepper" <timothy.c.pepper@linux.intel.com>
+Date: Fri, 27 Sep 2013 08:39:52 -0700
+To: Ingo Molnar <mingo@kernel.org>
+Subject: Re: mm: insure topdown mmap chooses addresses above security minimum
+Message-ID: <20130927153951.GA15257@tcpepper-desk.jf.intel.com>
+References: <1380057811-5352-1-git-send-email-timothy.c.pepper@linux.intel.com>
+ <20130925073048.GB27960@gmail.com>
+ <20130925171243.GA7428@tcpepper-desk.jf.intel.com>
+ <20130925174436.GA14037@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130925174436.GA14037@gmail.com>
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, Michel Lespinasse <walken@google.com>,
+ Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Rik van Riel <riel@redhat.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, James Morris <james.l.morris@oracle.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Mundt <lethal@linux-sh.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,51 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-a disabled Kconfig option results in a reference to a not implemented
-routine when the IS_ENABLED() macro is used for both conditional
-implementation of the routine as well as a C language source code test
-at the call site -- the "if (0) func();" construct only gets eliminated
-later by the optimizer, while the compiler already has emitted its
-warning about "func()" being undeclared
+On Wed 25 Sep at 19:44:36 +0200 mingo@kernel.org said:
+> 
+> * Timothy Pepper <timothy.c.pepper@linux.intel.com> wrote:
+> 
+> > On Wed 25 Sep at 09:30:49 +0200 mingo@kernel.org said:
+> > > >  	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+> > > >  	info.length = len;
+> > > > -	info.low_limit = PAGE_SIZE;
+> > > > +	info.low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+> > > >  	info.high_limit = mm->mmap_base;
+> > > >  	info.align_mask = filp ? get_align_mask() : 0;
+> > > >  	info.align_offset = pgoff << PAGE_SHIFT;
+> > > 
+> > > There appears to be a lot of repetition in these methods - instead of 
+> > > changing 6 places it would be more future-proof to first factor out the 
+> > > common bits and then to apply the fix to the shared implementation.
+> > 
+> > Besides that existing redundancy in the multiple somewhat similar
+> > arch_get_unmapped_area_topdown() functions, I was expecting people might
+> > question the added redundancy of the six instances of:
+> > 
+> > 	max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
+> 
+> That redundancy would be automatically addressed by my suggestion.
 
-provide an empty implementation for the mpc512x_setup_diu() and
-mpc512x_init_diu() routines in case of the disabled option, to avoid the
-compiler warning which is considered fatal and breaks compilation
+Yes.
 
-the bug appeared with commit 2abbbb63c90ab55ca3f054772c2e5ba7df810c48
-"powerpc/mpc512x: move common code to shared.c file", how to reproduce:
+I'm looking at the cleanup and will post a bisectable series that
+introduces a common helper, addes the calls to use that helper where
+applicable (looks like it might be a few dozen per arch locations), and
+then the single line change for the topdown case within the common helper
+to do:
 
-  make mpc512x_defconfig
-  echo CONFIG_FB_FSL_DIU=n >> .config && make olddefconfig
-  make
+	info->low_limit = max(PAGE_SIZE, PAGE_ALIGN(mmap_min_addr));
 
-    CC      arch/powerpc/platforms/512x/mpc512x_shared.o
-  .../arch/powerpc/platforms/512x/mpc512x_shared.c: In function 'mpc512x_init_early':
-  .../arch/powerpc/platforms/512x/mpc512x_shared.c:456:3: error: implicit declaration of function 'mpc512x_init_diu' [-Werror=implicit-function-declaration]
-  .../arch/powerpc/platforms/512x/mpc512x_shared.c: In function 'mpc512x_setup_arch':
-  .../arch/powerpc/platforms/512x/mpc512x_shared.c:469:3: error: implicit declaration of function 'mpc512x_setup_diu' [-Werror=implicit-function-declaration]
-  cc1: all warnings being treated as errors
-  make[4]: *** [arch/powerpc/platforms/512x/mpc512x_shared.o] Error 1
-
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
-CC: <stable@vger.kernel.org> # v3.11
----
- arch/powerpc/platforms/512x/mpc512x_shared.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index a82a41b..1a7b1d0 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -303,6 +303,9 @@ void __init mpc512x_setup_diu(void)
- 	diu_ops.release_bootmem		= mpc512x_release_bootmem;
- }
- 
-+#else
-+void __init mpc512x_setup_diu(void) { /* EMPTY */ }
-+void __init mpc512x_init_diu(void) { /* EMPTY */ }
- #endif
- 
- void __init mpc512x_init_IRQ(void)
 -- 
-1.7.10.4
+Tim Pepper <timothy.c.pepper@linux.intel.com>
+Intel Open Source Technology Center
