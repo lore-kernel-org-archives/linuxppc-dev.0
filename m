@@ -1,15 +1,38 @@
-Return-Path: <aida.mynzhasova@skitlab.ru>
-Received: from mail.skitlab.ru (mail.skitlab.ru [217.65.220.135])
- by ozlabs.org (Postfix) with ESMTP id 5B51E2C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 23:40:35 +1000 (EST)
-From: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3] powerpc/83xx: gianfar_ptp: select 1588 clock source
- through dts file
-Date: Fri, 27 Sep 2013 17:40:27 +0400
-Message-Id: <1380289227-12029-1-git-send-email-aida.mynzhasova@skitlab.ru>
-Cc: devicetree@vger.kernel.org, richardcochran@gmail.com,
- netdev@vger.kernel.org
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp18.uk.ibm.com (e06smtp18.uk.ibm.com [195.75.94.114])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp18.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 271792C0333
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 23:59:43 +1000 (EST)
+Received: from /spool/local
+ by e06smtp18.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Fri, 27 Sep 2013 14:59:34 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5DA2B17D805C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 14:59:48 +0100 (BST)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8RDxK3856099070
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 13:59:20 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8RDxWxv018904
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 07:59:32 -0600
+Subject: [PATCH V2] powerpc/kvm/book3s_hv: propagate H_SET_MODE_RESOURCE_LE to
+ the host
+To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Fri, 27 Sep 2013 15:59:30 +0200
+Message-ID: <20130927135930.10288.86526.stgit@nimbus>
+In-Reply-To: <20130925223118.GA2844@iris.ozlabs.ibm.com>
+References: <20130925223118.GA2844@iris.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,96 +42,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently IEEE 1588 timer reference clock source is determined through
-hard-coded value in gianfar_ptp driver. This patch allows to select ptp
-clock source by means of device tree file node.
+Follow-up to Anton's H_SET_MODE patch, the host should be taken aware of
+guest endianess change.
 
-For instance:
+The hcall H_SET_MODE/H_SET_MODE_RESOURCE_LE is processed in kvm and then
+propagated to the host.
 
-	fsl,cksel = <0>;
+v2: taking in account the Paul Mackerras's comment, using H_TOO_HARD to
+propagate only H_SET_MODE_RESOURCE_LE to the host.
 
-for using external (TSEC_TMR_CLK input) high precision timer
-reference clock.
-
-Other acceptable values:
-
-	<1> : eTSEC system clock
-	<2> : eTSEC1 transmit clock
-	<3> : RTC clock input
-
-When this attribute isn't used, eTSEC system clock will serve as
-IEEE 1588 timer reference clock.
-
-Signed-off-by: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- Documentation/devicetree/bindings/net/fsl-tsec-phy.txt | 18 +++++++++++++++++-
- drivers/net/ethernet/freescale/gianfar_ptp.c           |  4 +++-
- 2 files changed, 20 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/book3s_hv.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-index 2c6be03..d2ea460 100644
---- a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-+++ b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-@@ -86,6 +86,7 @@ General Properties:
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 998cad3..be0af39 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -523,14 +523,14 @@ static int kvmppc_h_set_mode(struct kvm_vcpu *vcpu, unsigned long mflags,
+ 			kvm_for_each_vcpu(n, v, kvm)
+ 				v->arch.intr_msr &= ~MSR_LE;
+ 			kick_all_cpus_sync();
+-			return H_SUCCESS;
++			return H_TOO_HARD; /* propagating to the host */
  
- Clock Properties:
+ 		case 1:
+ 			kvm->arch.lpcr |= LPCR_ILE;
+ 			kvm_for_each_vcpu(n, v, kvm)
+ 				v->arch.intr_msr |= MSR_LE;
+ 			kick_all_cpus_sync();
+-			return H_SUCCESS;
++			return H_TOO_HARD; /* propagating to the host */
  
-+  - fsl,cksel        Timer reference clock source.
-   - fsl,tclk-period  Timer reference clock period in nanoseconds.
-   - fsl,tmr-prsc     Prescaler, divides the output clock.
-   - fsl,tmr-add      Frequency compensation value.
-@@ -97,7 +98,7 @@ Clock Properties:
-   clock. You must choose these carefully for the clock to work right.
-   Here is how to figure good values:
+ 		default:
+ 			return H_UNSUPPORTED_FLAG_START;
+@@ -599,6 +599,8 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ 					kvmppc_get_gpr(vcpu, 5),
+ 					kvmppc_get_gpr(vcpu, 6),
+ 					kvmppc_get_gpr(vcpu, 7));
++		if (ret == H_TOO_HARD)
++			return RESUME_HOST;
+ 		break;
  
--  TimerOsc     = system clock               MHz
-+  TimerOsc     = selected reference clock   MHz
-   tclk_period  = desired clock period       nanoseconds
-   NominalFreq  = 1000 / tclk_period         MHz
-   FreqDivRatio = TimerOsc / NominalFreq     (must be greater that 1.0)
-@@ -114,6 +115,20 @@ Clock Properties:
-   Pulse Per Second (PPS) signal, since this will be offered to the PPS
-   subsystem to synchronize the Linux clock.
- 
-+  Reference clock source is determined by the value, which is holded
-+  in CKSEL bits in TMR_CTRL register. "fsl,cksel" property keeps the
-+  value, which will be directly written in those bits, that is why,
-+  according to reference manual, the next clock sources can be used:
-+
-+  <0> - external high precision timer reference clock (TSEC_TMR_CLK
-+        input is used for this purpose);
-+  <1> - eTSEC system clock;
-+  <2> - eTSEC1 transmit clock;
-+  <3> - RTC clock input.
-+
-+  When this attribute is not used, eTSEC system clock will serve as
-+  IEEE 1588 timer reference clock.
-+
- Example:
- 
- 	ptp_clock@24E00 {
-@@ -121,6 +136,7 @@ Example:
- 		reg = <0x24E00 0xB0>;
- 		interrupts = <12 0x8 13 0x8>;
- 		interrupt-parent = < &ipic >;
-+		fsl,cksel       = <1>;
- 		fsl,tclk-period = <10>;
- 		fsl,tmr-prsc    = <100>;
- 		fsl,tmr-add     = <0x999999A4>;
-diff --git a/drivers/net/ethernet/freescale/gianfar_ptp.c b/drivers/net/ethernet/freescale/gianfar_ptp.c
-index 098f133..e006a09 100644
---- a/drivers/net/ethernet/freescale/gianfar_ptp.c
-+++ b/drivers/net/ethernet/freescale/gianfar_ptp.c
-@@ -452,7 +452,9 @@ static int gianfar_ptp_probe(struct platform_device *dev)
- 	err = -ENODEV;
- 
- 	etsects->caps = ptp_gianfar_caps;
--	etsects->cksel = DEFAULT_CKSEL;
-+
-+	if (get_of_u32(node, "fsl,cksel", &etsects->cksel))
-+		etsects->cksel = DEFAULT_CKSEL;
- 
- 	if (get_of_u32(node, "fsl,tclk-period", &etsects->tclk_period) ||
- 	    get_of_u32(node, "fsl,tmr-prsc", &etsects->tmr_prsc) ||
--- 
-1.8.1.2
+ 	case H_XIRR:
