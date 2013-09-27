@@ -1,30 +1,36 @@
-Return-Path: <paolo.bonzini@gmail.com>
-Received: from mail-qa0-x236.google.com (mail-qa0-x236.google.com
- [IPv6:2607:f8b0:400d:c00::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 557D02C0341
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 01:14:27 +1000 (EST)
-Received: by mail-qa0-f54.google.com with SMTP id bv4so561365qab.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 08:14:23 -0700 (PDT)
-Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
-Message-ID: <5245A0DD.9070205@redhat.com>
-Date: Fri, 27 Sep 2013 17:14:37 +0200
-From: Paolo Bonzini <pbonzini@redhat.com>
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 22CB42C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 01:18:18 +1000 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Fri, 27 Sep 2013 20:48:15 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 7BD8BE0053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 20:49:19 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8RFKZvL41156826
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 20:50:35 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8RFIB8D015703
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 20:48:11 +0530
+Received: from [9.41.105.192] ([9.41.105.192])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ r8RFIAUf015558
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 20:48:11 +0530
+Message-ID: <5245A1B1.4090308@linux.vnet.ibm.com>
+Date: Fri, 27 Sep 2013 10:18:09 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 09/11] kvm: simplify processor compat check
-References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1380276233-17095-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <E5A81672-864D-4E33-B15A-5F6927CC7C13@suse.de>
- <87r4ca9zmi.fsf@linux.vnet.ibm.com>
-In-Reply-To: <87r4ca9zmi.fsf@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] Correct memory hotplug for ppc with sparse vmemmap
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Gleb Natapov <gleb@redhat.com>,
- "<kvm@vger.kernel.org> list" <kvm@vger.kernel.org>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,88 +40,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Il 27/09/2013 15:13, Aneesh Kumar K.V ha scritto:
-> Alexander Graf <agraf@suse.de> writes:
-> 
->> On 27.09.2013, at 12:03, Aneesh Kumar K.V wrote:
->>
->>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->>
->> Missing patch description.
->>
->>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>
->> I fail to see how this really simplifies things, but at the end of the
->> day it's Gleb's and Paolo's call.
-> 
-> will do. It avoid calling 
-> 
-> 	for_each_online_cpu(cpu) {
-> 		smp_call_function_single() 
-> 
-> on multiple architecture.
+Previous commit 46723bfa540... introduced a new config option
+HAVE_BOOTMEM_INFO_NODE that ended up breaking memory hot-remove for ppc
+when sparse vmemmap is not defined.
 
-I agree with Alex.
+This patch defines HAVE_BOOTMEM_INFO_NODE for ppc and adds the call to
+register_page_bootmem_info_node. Without this we get a BUG_ON for memory
+hot remove in put_page_bootmem().
 
-The current code is not specially awesome; having
-kvm_arch_check_processor_compat take an int* disguised as a void* is a
-bit ugly indeed.
+This also adds a stub for register_page_bootmem_memmap to allow ppc to build
+with sparse vmemmap defined. Leaving this as a stub is fine since the same
+vmemmap addresses are also handled in vmemmap_populate and as such are
+properly mapped.
 
-However, the API makes sense and tells you that it is being passed as a
-callback (to smp_call_function_single in this case).
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/init_64.c |    4 ++++
+ arch/powerpc/mm/mem.c     |    9 +++++++++
+ mm/Kconfig                |    2 +-
+ 3 files changed, 14 insertions(+), 1 deletion(-)
 
-You are making the API more complicated to use on the arch layer
-(because arch maintainers now have to think "do I need to check this on
-all online CPUs?") and making the "leaf" POWER code less legible because
-it still has the weird void()(void *) calling convention.
+Index: powerpc/arch/powerpc/mm/init_64.c
+===================================================================
+--- powerpc.orig/arch/powerpc/mm/init_64.c
++++ powerpc/arch/powerpc/mm/init_64.c
+@@ -300,5 +300,9 @@ void vmemmap_free(unsigned long start, u
+ {
+ }
 
-If anything, you could change kvm_arch_check_processor_compat to return
-an int and accept no argument, and introduce a wrapper that kvm_init
-passes to smp_call_function_single.
++void register_page_bootmem_memmap(unsigned long section_nr,
++				  struct page *start_page, unsigned long size)
++{
++}
+ #endif /* CONFIG_SPARSEMEM_VMEMMAP */
 
-Paolo
+Index: powerpc/arch/powerpc/mm/mem.c
+===================================================================
+--- powerpc.orig/arch/powerpc/mm/mem.c
++++ powerpc/arch/powerpc/mm/mem.c
+@@ -297,12 +297,21 @@ void __init paging_init(void)
+ }
+ #endif /* ! CONFIG_NEED_MULTIPLE_NODES */
 
-> We also want to make the smp call function a callback of opaque. Hence
-> this should be made arch specific. 
-> 
-> int kvm_arch_check_processor_compat(void *opaque)
-> {
-> 	int r,cpu;
-> 	struct kvmppc_ops *kvm_ops = (struct kvmppc_ops *)opaque;
-> 	for_each_online_cpu(cpu) {
-> 		smp_call_function_single(cpu,
-> 					 kvm_ops->check_processor_compat,
-> 					 &r, 1);
-> 		if (r < 0)
-> 			break;
-> 	}
-> 	return r;
-> }
-> 
-> against
-> 
-> -	for_each_online_cpu(cpu) {
-> -		smp_call_function_single(cpu,
-> -				kvm_arch_check_processor_compat,
-> -				&r, 1);
-> -		if (r < 0)
-> -			goto out_free_1;
-> -	}
-> +
-> +	r = kvm_arch_check_processor_compat(opaque);
-> +	if (r < 0)
-> +		goto out_free_1;
-> 
-> 
-> 
->>
->> Which brings me to the next issue: You forgot to CC kvm@vger on your
->> patch set. Gleb and Paolo don't read kvm-ppc@vger. And they shouldn't
->> have to. Every kvm patch that you want review on or that should get
->> applied needs to be sent to kvm@vger. If you want to tag it as PPC
->> specific patch, do so by CC'ing kvm-ppc@vger.
-> 
-> Will do in the next update
-> 
-> -aneesh
-> 
++static void __init register_page_bootmem_info(void)
++{
++	int i;
++
++	for_each_online_node(i)
++		register_page_bootmem_info_node(NODE_DATA(i));
++}
++
+ void __init mem_init(void)
+ {
+ #ifdef CONFIG_SWIOTLB
+ 	swiotlb_init(0);
+ #endif
+
++	register_page_bootmem_info();
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+ 	set_max_mapnr(max_pfn);
+ 	free_all_bootmem();
+Index: powerpc/mm/Kconfig
+===================================================================
+--- powerpc.orig/mm/Kconfig
++++ powerpc/mm/Kconfig
+@@ -183,7 +183,7 @@ config MEMORY_HOTPLUG_SPARSE
+ config MEMORY_HOTREMOVE
+ 	bool "Allow for memory hot remove"
+ 	select MEMORY_ISOLATION
+-	select HAVE_BOOTMEM_INFO_NODE if X86_64
++	select HAVE_BOOTMEM_INFO_NODE if (X86_64 || PPC64)
+ 	depends on MEMORY_HOTPLUG && ARCH_ENABLE_MEMORY_HOTREMOVE
+ 	depends on MIGRATION
