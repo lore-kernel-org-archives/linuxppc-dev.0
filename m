@@ -1,21 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 882EF2C019C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 01:28:08 +1000 (EST)
-Subject: Re: [PATCH v3] powerpc/83xx: gianfar_ptp: select 1588 clock source
- through dts file
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1380289227-12029-1-git-send-email-aida.mynzhasova@skitlab.ru>
-Date: Fri, 27 Sep 2013 10:28:01 -0500
-Message-Id: <21CA07A6-8B3D-49E9-8D9A-F63607FAC8EF@kernel.crashing.org>
-References: <1380289227-12029-1-git-send-email-aida.mynzhasova@skitlab.ru>
-To: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
-Cc: devicetree@vger.kernel.org, richardcochran@gmail.com,
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 9E4752C019C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 01:29:05 +1000 (EST)
+From: Gerhard Sittig <gsi@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v1] powerpc/mpc512x: silence build warning upon disabled DIU
+Date: Fri, 27 Sep 2013 17:28:38 +0200
+Message-Id: <1380295718-10700-1-git-send-email-gsi@denx.de>
+Cc: Gerhard Sittig <gsi@denx.de>, Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+a disabled Kconfig option results in a reference to a not implemented
+routine when the IS_ENABLED() macro is used for both conditional
+implementation of the routine as well as a C language source code test
+at the call site -- the "if (0) func();" construct only gets eliminated
+later by the optimizer, while the compiler already has emitted its
+warning about "func()" being undeclared
 
-On Sep 27, 2013, at 8:40 AM, Aida Mynzhasova wrote:
+provide an empty implementation for the mpc512x_setup_diu() and
+mpc512x_init_diu() routines in case of the disabled option, to avoid the
+compiler warning which is considered fatal and breaks compilation
 
-> Currently IEEE 1588 timer reference clock source is determined through
-> hard-coded value in gianfar_ptp driver. This patch allows to select =
-ptp
-> clock source by means of device tree file node.
->=20
-> For instance:
->=20
-> 	fsl,cksel =3D <0>;
->=20
-> for using external (TSEC_TMR_CLK input) high precision timer
-> reference clock.
->=20
-> Other acceptable values:
->=20
-> 	<1> : eTSEC system clock
-> 	<2> : eTSEC1 transmit clock
-> 	<3> : RTC clock input
->=20
-> When this attribute isn't used, eTSEC system clock will serve as
-> IEEE 1588 timer reference clock.
->=20
-> Signed-off-by: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
-> ---
-> Documentation/devicetree/bindings/net/fsl-tsec-phy.txt | 18 =
-+++++++++++++++++-
-> drivers/net/ethernet/freescale/gianfar_ptp.c           |  4 +++-
-> 2 files changed, 20 insertions(+), 2 deletions(-)
+the bug appeared with commit 2abbbb63c90ab55ca3f054772c2e5ba7df810c48
+"powerpc/mpc512x: move common code to shared.c file", how to reproduce:
 
-Acked-by: Kumar Gala <galak@codeaurora.org>
+  make mpc512x_defconfig
+  echo CONFIG_FB_FSL_DIU=n >> .config && make olddefconfig
+  make
 
-- k=
+    CC      arch/powerpc/platforms/512x/mpc512x_shared.o
+  .../arch/powerpc/platforms/512x/mpc512x_shared.c: In function 'mpc512x_init_early':
+  .../arch/powerpc/platforms/512x/mpc512x_shared.c:456:3: error: implicit declaration of function 'mpc512x_init_diu' [-Werror=implicit-function-declaration]
+  .../arch/powerpc/platforms/512x/mpc512x_shared.c: In function 'mpc512x_setup_arch':
+  .../arch/powerpc/platforms/512x/mpc512x_shared.c:469:3: error: implicit declaration of function 'mpc512x_setup_diu' [-Werror=implicit-function-declaration]
+  cc1: all warnings being treated as errors
+  make[4]: *** [arch/powerpc/platforms/512x/mpc512x_shared.o] Error 1
+
+Signed-off-by: Gerhard Sittig <gsi@denx.de>
+CC: <stable@vger.kernel.org> # v3.11
+---
+ arch/powerpc/platforms/512x/mpc512x_shared.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+index a82a41b..1a7b1d0 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_shared.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -303,6 +303,9 @@ void __init mpc512x_setup_diu(void)
+ 	diu_ops.release_bootmem		= mpc512x_release_bootmem;
+ }
+ 
++#else
++void __init mpc512x_setup_diu(void) { /* EMPTY */ }
++void __init mpc512x_init_diu(void) { /* EMPTY */ }
+ #endif
+ 
+ void __init mpc512x_init_IRQ(void)
+-- 
+1.7.10.4
