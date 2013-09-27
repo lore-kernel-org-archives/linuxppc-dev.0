@@ -1,28 +1,24 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from mail-ie0-x22a.google.com (mail-ie0-x22a.google.com
- [IPv6:2607:f8b0:4001:c03::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 198182C032F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 08:56:39 +1000 (EST)
-Received: by mail-ie0-f170.google.com with SMTP id x13so5483997ief.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 15:56:35 -0700 (PDT)
-MIME-Version: 1.0
-Sender: yhlu.kernel@gmail.com
-In-Reply-To: <1380321480.27811.53.camel@pasglop>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 91DCC2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 09:19:35 +1000 (EST)
+Message-ID: <1380323960.27811.67.camel@pasglop>
+Subject: Re: Please revert 928bea964827d7824b548c1f8e06eccbbc4d0d7d
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Date: Sat, 28 Sep 2013 09:19:20 +1000
+In-Reply-To: <CAE9FiQWm7ALPO5k_2nV+fuZw4oNNiw+_PEx8EWkb52ymN+EYUg@mail.gmail.com>
 References: <1380270519.27811.10.camel@pasglop>
  <CAE9FiQVkW7d7vFx_kPJG-FEvO71SZjZmpR+dnwVm61wkYK=0YA@mail.gmail.com>
  <CA+55aFyDfMdAeaniQwkoeW6F-xd3JxrzGYwtFb6N9+NA6aRCMg@mail.gmail.com>
  <1380318405.27811.37.camel@pasglop>
  <CAE9FiQXXvkfTak6oEpUog_RYs_Gwpdji7N5UJ=R11Q61==N97A@mail.gmail.com>
  <1380321480.27811.53.camel@pasglop>
-Date: Fri, 27 Sep 2013 15:56:34 -0700
-Message-ID: <CAE9FiQWm7ALPO5k_2nV+fuZw4oNNiw+_PEx8EWkb52ymN+EYUg@mail.gmail.com>
-Subject: Re: Please revert 928bea964827d7824b548c1f8e06eccbbc4d0d7d
-From: Yinghai Lu <yinghai@kernel.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: multipart/mixed; boundary=047d7bd758daeec56404e765651b
+ <CAE9FiQWm7ALPO5k_2nV+fuZw4oNNiw+_PEx8EWkb52ymN+EYUg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: Bjorn Helgaas <bhelgaas@google.com>,
  "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
  Linus Torvalds <torvalds@linux-foundation.org>,
@@ -37,67 +33,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7bd758daeec56404e765651b
-Content-Type: text/plain; charset=ISO-8859-1
+On Fri, 2013-09-27 at 15:56 -0700, Yinghai Lu wrote:
 
-On Fri, Sep 27, 2013 at 3:38 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Fri, 2013-09-27 at 14:54 -0700, Yinghai Lu wrote:
->> On Fri, Sep 27, 2013 at 2:46 PM, Benjamin Herrenschmidt
->> <benh@kernel.crashing.org> wrote:
->>
->> > Wouldn't it be better to simply have pci_enable_device() always set bus
->> > master on a bridge? I don't see any case where it makes sense to have
->> > an enabled bridge without the master bit set on it...
->>
->> Do you mean attached?
->
-> So this patch works and fixes the problem. I think it makes the whole
-> thing more robust and should be applied.
+> ok, please if you are ok attached one instead. It will print some warning about
+> driver skipping pci_set_master, so we can catch more problem with drivers.
 
-good.
+Except that the message is pretty cryptic :-) Especially since the
+driver causing the message to be printed is not the one that did
+the mistake in the first place, it's the next one coming up that
+trips the warning.
 
->
-> I still don't know why the bridge doesn't get enabled properly without
-> it yes, tracking it down (the machine in question takes a LONG time to
-> reboot :-)
+In any case, the root cause is indeed the PCIe port driver:
 
-ok, please if you are ok attached one instead. It will print some warning about
-driver skipping pci_set_master, so we can catch more problem with drivers.
+We don't have ACPI, so pcie_port_platform_notify() isn't implemented,
+and pcie_ports_auto is true, so we end up with capabilities set to 0.
 
-Thanks
+Thus the port driver bails out before calling pci_set_master(). The fix
+is to call pci_set_master() unconditionally. However that lead me to
+find to a few interesting oddities in that port driver code:
 
-Yinghai
+ - If capabilities is 0, it returns after enabling the device and
+doesn't disable it. But if it fails for any other reason later on (such
+as failing to enable interrupts), it *will* disable the device. This is
+inconsistent. In fact, if it had disabled the device as a result of the
+0 capabilities, the problem would also not have happened (the subsequent
+enable_bridge done by the e1000e driver would have done the right
+thing). I've tested "fixing" that instead of moving the set_master call
+and it fixes my problem as well.
 
---047d7bd758daeec56404e765651b
-Content-Type: application/octet-stream; name="pci_set_master_again_v2.patch"
-Content-Disposition: attachment; filename="pci_set_master_again_v2.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hm40exvl0
+ - In get_port_device_capability(), all capabilities are gated by a
+combination of the bit in cap_mask and a corresponding HW check of
+the presence of the relevant PCIe capability or similar... except
+for the VC one, which is solely read from the HW capability. That means
+that the platform pcie_port_platform_notify() has no ability to prevent
+the VC capability (so if I have a broken bridge that advertises it but
+my platform wants to block it, it can't).
 
-U3ViamVjdDogW1BBVENIXSBQQ0k6IFdvcmthcm91bmQgbWlzc2luZyBwY2lfc2V0X21hc3RlciBp
-biBwY2kgZHJpdmVycwoKQmVuSCBmb3VuZDoKfCA5MjhiZWE5NjQ4MjdkNzgyNGI1NDhjMWY4ZTA2
-ZWNjYmJjNGQwZDdkCnwgUENJOiBEZWxheSBlbmFibGluZyBicmlkZ2VzIHVudGlsIHRoZXkncmUg
-bmVlZGVkCgpicmVhayBQQ0kgb24gcG93ZXJwYy4gIFRoZSByZWFzb24gaXMgdGhhdCB0aGUgUENJ
-ZSBwb3J0IGRyaXZlciB3aWxsCmNhbGwgcGNpX2VuYWJsZV9kZXZpY2UoKSBvbiB0aGUgYnJpZGdl
-LCBzbyBkZXZpY2UgZW5hYmxlZCAoYnV0IHNraXAKcGNpX3NldF9tYXN0ZXIgc29tZWhvdykuCgpC
-ZWNhdXNlIG9mIHRoYXQsIHBjaV9lbmFibGVfYnJpZGdlKCkgbGF0ZXIgb24gKGNhbGxlZCBhcyBh
-IHJlc3VsdCBvZiB0aGUKY2hpbGQgZGV2aWNlIGRyaXZlciBkb2luZyBwY2lfZW5hYmxlX2Rldmlj
-ZSkgd2lsbCBzZWUgdGhlIGJyaWRnZSBhcwphbHJlYWR5IGVuYWJsZWQgYW5kIHdpbGwgbm90IGNh
-bGwgcGNpX3NldF9tYXN0ZXIoKSBvbiBpdC4KCkZpeGVkIGJ5IGFkZCBjaGVja2luZyBpbiBwY2lf
-ZW5hYmxlX2JyaWRnZSwgYW5kIGNhbGwgcGNpX3NldF9tYXN0ZXIKaWYgZHJpdmVyIHNraXAgdGhh
-dC4KClJlcG9ydGVkLWJ5OiBCZW5qYW1pbiBIZXJyZW5zY2htaWR0IDxiZW5oQGtlcm5lbC5jcmFz
-aGluZy5vcmc+ClNpZ25lZC1vZmYtYnk6IFlpbmdoYWkgTHUgPHlpbmdoYWlAa2VybmVsLm9yZz4K
-Ci0tLQogZHJpdmVycy9wY2kvcGNpLmMgfCAgICA4ICsrKysrKystCiAxIGZpbGUgY2hhbmdlZCwg
-NyBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pCgpJbmRleDogbGludXgtMi42L2RyaXZlcnMv
-cGNpL3BjaS5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMvcGNpL3BjaS5j
-CisrKyBsaW51eC0yLjYvZHJpdmVycy9wY2kvcGNpLmMKQEAgLTExNTYsOCArMTE1NiwxNCBAQCBz
-dGF0aWMgdm9pZCBwY2lfZW5hYmxlX2JyaWRnZShzdHJ1Y3QgcGNpCiAKIAlwY2lfZW5hYmxlX2Jy
-aWRnZShkZXYtPmJ1cy0+c2VsZik7CiAKLQlpZiAocGNpX2lzX2VuYWJsZWQoZGV2KSkKKwlpZiAo
-cGNpX2lzX2VuYWJsZWQoZGV2KSkgeworCQlpZiAoIWRldi0+aXNfYnVzbWFzdGVyKSB7CisJCQlk
-ZXZfd2FybigmZGV2LT5kZXYsICJkcml2ZXIgc2tpcCBwY2lfc2V0X21hc3RlciwgZml4IGl0IVxu
-Iik7CisJCQlwY2lfc2V0X21hc3RlcihkZXYpOworCQl9CiAJCXJldHVybjsKKwl9CisKIAlyZXR2
-YWwgPSBwY2lfZW5hYmxlX2RldmljZShkZXYpOwogCWlmIChyZXR2YWwpCiAJCWRldl9lcnIoJmRl
-di0+ZGV2LCAiRXJyb3IgZW5hYmxpbmcgYnJpZGdlICglZCksIGNvbnRpbnVpbmdcbiIsCg==
---047d7bd758daeec56404e765651b--
+ - I am quite nervous with the PCIe port driver disabling bridges. I
+understand the intent but what if that bridge has some system device
+behind it ? Something you don't even know about (used by ACPI, behind an
+ISA bridge for example ?).
+
+I think disabling bridges is a VERY risky proposition at all times
+(including during PM) and I don't think the port driver should do it.
+
+Maybe a more robust approach would be to detect one way or another that
+the bridge was already enabled and only disable it if it wasn't or
+something along those lines (ie ,restore it in the state it was)...
+
+This is not my problem right now of course (in my case the bridge was
+disabled to begin with) but I have a long experience with system stuff
+hiding behind bridges and the code as it is written makes me a bit
+nervous.
+
+Cheers,
+Ben.
