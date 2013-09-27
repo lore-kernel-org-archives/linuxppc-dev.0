@@ -1,40 +1,40 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Return-Path: <gkurz@linux.vnet.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 357302C0342
- for <linuxppc-dev@ozlabs.org>; Sat, 28 Sep 2013 00:16:59 +1000 (EST)
+ (Client CN "e06smtp17.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E76502C034A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 00:45:46 +1000 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 27 Sep 2013 19:46:57 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 79FE61258055
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Sep 2013 19:47:08 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8REJCZv31850520
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Sep 2013 19:49:13 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r8REGq7Y018479
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Sep 2013 19:46:53 +0530
-Message-ID: <52459311.4010104@linux.vnet.ibm.com>
-Date: Fri, 27 Sep 2013 19:45:45 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
- some powernv systems
-References: <1380177066-3835-1-git-send-email-michael@ellerman.id.au>
- <1380177066-3835-3-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1380177066-3835-3-git-send-email-michael@ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: tytso@mit.edu, herbert@gondor.apana.org.au, gleb@redhat.com, agraf@suse.de,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org, mpm@selenic.com,
- pbonzini@redhat.com
+ for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
+ Fri, 27 Sep 2013 15:45:42 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 3563A2190056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 15:45:40 +0100 (BST)
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+ [9.149.37.228])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8REjRTd58982632
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 14:45:27 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8REjdSH018837
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 08:45:39 -0600
+Date: Fri, 27 Sep 2013 16:45:35 +0200
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] powerpc/kvm/book3s_hv: propagate
+ H_SET_MODE_RESOURCE_LE to the host
+Message-ID: <20130927164535.6dbeface@bahia.local>
+In-Reply-To: <20130927135930.10288.86526.stgit@nimbus>
+References: <20130925223118.GA2844@iris.ozlabs.ibm.com>
+ <20130927135930.10288.86526.stgit@nimbus>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,30 +44,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/26/2013 12:01 PM, Michael Ellerman wrote:
-> +int powernv_hwrng_present(void)
-> +{
-> +	return __raw_get_cpu_var(powernv_rng) != NULL;
-> +}
-> +
->  static unsigned long rng_whiten(struct powernv_rng *rng, unsigned long val)
->  {
->  	unsigned long parity;
-> @@ -42,6 +48,17 @@ static unsigned long rng_whiten(struct powernv_rng *rng, unsigned long val)
->  	return val;
->  }
+On Fri, 27 Sep 2013 15:59:30 +0200
+Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+
+> Follow-up to Anton's H_SET_MODE patch, the host should be taken aware
+> of guest endianess change.
 > 
-> +int powernv_get_random_real_mode(unsigned long *v)
-> +{
-> +	struct powernv_rng *rng;
-> +
-> +	rng = __raw_get_cpu_var(powernv_rng);
-> +
-> +	*v = rng_whiten(rng, in_rm64(rng->regs_real));
-> +
+> The hcall H_SET_MODE/H_SET_MODE_RESOURCE_LE is processed in kvm and
+> then propagated to the host.
+> 
 
-Will it be in_be64() instead of in_rm64() ? Its failing the build here. Except this
-all individual patches build correctly.
+Even if it seems a bit odd to get H_SET_MODE handled both by kvm and
+qemu, it is a simple way to get the job done. Unless we expect tons of
+calls to H_SET_MODE_RESOURCE_LE to occur, I do not see a better way for
+the host code to know the guest endianess.
 
-Regards
-Anshuman
+FYI, with this patch, Rusty's (Cc'ed) virtio endianess patchset for
+qemu works like a charm: my guest kernel calls h_set_mode once at boot
+time, qemu gets notified and keeps the information. Do we need more ?
+
+> v2: taking in account the Paul Mackerras's comment, using H_TOO_HARD
+> to propagate only H_SET_MODE_RESOURCE_LE to the host.
+> 
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> ---
+
+Tested-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+
+>  arch/powerpc/kvm/book3s_hv.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv.c
+> b/arch/powerpc/kvm/book3s_hv.c index 998cad3..be0af39 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -523,14 +523,14 @@ static int kvmppc_h_set_mode(struct kvm_vcpu
+> *vcpu, unsigned long mflags, kvm_for_each_vcpu(n, v, kvm)
+>  				v->arch.intr_msr &= ~MSR_LE;
+>  			kick_all_cpus_sync();
+> -			return H_SUCCESS;
+> +			return H_TOO_HARD; /* propagating to the
+> host */
+> 
+>  		case 1:
+>  			kvm->arch.lpcr |= LPCR_ILE;
+>  			kvm_for_each_vcpu(n, v, kvm)
+>  				v->arch.intr_msr |= MSR_LE;
+>  			kick_all_cpus_sync();
+> -			return H_SUCCESS;
+> +			return H_TOO_HARD; /* propagating to the
+> host */
+> 
+>  		default:
+>  			return H_UNSUPPORTED_FLAG_START;
+> @@ -599,6 +599,8 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+>  					kvmppc_get_gpr(vcpu, 5),
+>  					kvmppc_get_gpr(vcpu, 6),
+>  					kvmppc_get_gpr(vcpu, 7));
+> +		if (ret == H_TOO_HARD)
+> +			return RESUME_HOST;
+>  		break;
+> 
+>  	case H_XIRR:
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+
+
+
+-- 
+Gregory Kurz                                     kurzgreg@fr.ibm.com
+                                                 gkurz@linux.vnet.ibm.com
+Software Engineer @ IBM/Meiosys                  http://www.ibm.com
+Tel +33 (0)562 165 496
+
+"Anarchy is about taking complete responsibility for yourself."
+        Alan Moore.
