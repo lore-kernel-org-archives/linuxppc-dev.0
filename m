@@ -4,27 +4,19 @@ Received: from ch1outboundpool.messaging.microsoft.com
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 081E52C0333
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 07:35:15 +1000 (EST)
-Received: from mail33-ch1 (localhost [127.0.0.1])	by mail33-ch1-R.bigfish.com
- (Postfix) with ESMTP id 2917D2201AA	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,
- 27 Sep 2013 21:35:10 +0000 (UTC)
-Received: from CH1EHSMHS019.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.243])	by mail33-ch1.bigfish.com (Postfix) with ESMTP id
- AC84432005A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2013 21:35:07 +0000 (UTC)
-Message-ID: <1380317704.24959.491.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc/p1010rdb:update dts to adapt to both old and
- new p1010rdb
+ by ozlabs.org (Postfix) with ESMTPS id 5EEEE2C019C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 07:44:02 +1000 (EST)
+Message-ID: <1380318232.24959.495.camel@snotra.buserror.net>
+Subject: Re: [PATCH v4] powerpc 8xx: Fixing issue with CONFIG_PIN_TLB
 From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang <B45475@freescale.com>
-Date: Fri, 27 Sep 2013 16:35:04 -0500
-In-Reply-To: <1379816919-13851-1-git-send-email-B45475@freescale.com>
-References: <1379816919-13851-1-git-send-email-B45475@freescale.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Fri, 27 Sep 2013 16:43:52 -0500
+In-Reply-To: <201309240818.r8O8IdF9016374@localhost.localdomain>
+References: <201309240818.r8O8IdF9016374@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,22 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-09-22 at 10:28 +0800, Zhao Qiang wrote:
-> P1010rdb-pa and p1010rdb-pb have different phy interrupts.
-> So update dts to adapt to both p1010rdb-pa and p1010rdb-pb.
-> 
-> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> ---
->  arch/powerpc/boot/dts/p1010rdb-pa.dts | 33 ++++++++++++++++++
->  arch/powerpc/boot/dts/p1010rdb-pb.dts | 33 ++++++++++++++++++
->  arch/powerpc/boot/dts/p1010rdb.dts    | 66 -----------------------------------
->  arch/powerpc/boot/dts/p1010rdb.dtsi   | 51 ++++++++++++++++++++++++---
->  4 files changed, 112 insertions(+), 71 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/p1010rdb-pa.dts
->  create mode 100644 arch/powerpc/boot/dts/p1010rdb-pb.dts
->  delete mode 100644 arch/powerpc/boot/dts/p1010rdb.dts
+On Tue, 2013-09-24 at 10:18 +0200, Christophe Leroy wrote:
+> Activating CONFIG_PIN_TLB is supposed to pin the IMMR and the first three
+> 8Mbytes pages. But the setting of MD_CTR to a pinnable entry was missing before
+> the pinning of the third 8Mb page. As the index is decremented module 28
+> (MD_RSV4D is set) after every DTLB update, the third 8Mbytes page was
+> not pinned.
 
-What about p1010rdb_36b.dts?
+The examples you showed weren't quite modulo 28, more like "if (x >= 28)
+x -= 4".  I'll fix up the changelog on applying, to read something like
+"As the index is decremented to a value within the first 28 entries
+(MD_RSV4D is set)...".
 
 -Scott
