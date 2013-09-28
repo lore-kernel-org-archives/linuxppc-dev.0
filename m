@@ -1,31 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8B0FD2C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 13:06:10 +1000 (EST)
-Message-ID: <1380337550.27811.71.camel@pasglop>
-Subject: Re: Please revert 928bea964827d7824b548c1f8e06eccbbc4d0d7d
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Date: Sat, 28 Sep 2013 13:05:50 +1000
-In-Reply-To: <CAE9FiQV8ipnQ_vV68S-QHMrUrQTWQT_XObxyBeR=dOuw6fG1eg@mail.gmail.com>
-References: <1380270519.27811.10.camel@pasglop>
- <CAE9FiQVkW7d7vFx_kPJG-FEvO71SZjZmpR+dnwVm61wkYK=0YA@mail.gmail.com>
- <CA+55aFyDfMdAeaniQwkoeW6F-xd3JxrzGYwtFb6N9+NA6aRCMg@mail.gmail.com>
- <1380318405.27811.37.camel@pasglop>
- <CAE9FiQXXvkfTak6oEpUog_RYs_Gwpdji7N5UJ=R11Q61==N97A@mail.gmail.com>
- <1380321480.27811.53.camel@pasglop>
- <CAE9FiQWm7ALPO5k_2nV+fuZw4oNNiw+_PEx8EWkb52ymN+EYUg@mail.gmail.com>
- <1380323960.27811.67.camel@pasglop>
- <CAE9FiQV8ipnQ_vV68S-QHMrUrQTWQT_XObxyBeR=dOuw6fG1eg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bhelgaas@google.com>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <murzin.v@gmail.com>
+Received: from mail-lb0-x234.google.com (mail-lb0-x234.google.com
+ [IPv6:2a00:1450:4010:c04::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 203F02C0246
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 18:22:59 +1000 (EST)
+Received: by mail-lb0-f180.google.com with SMTP id q8so2973937lbi.39
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 01:22:55 -0700 (PDT)
+From: Vladimir Murzin <murzin.v@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/2] powerpc: net: filter: fix DIVWU instruction opcode
+Date: Sat, 28 Sep 2013 10:22:00 +0200
+Message-Id: <1380356521-3432-1-git-send-email-murzin.v@gmail.com>
+Cc: matt@ozlabs.org, netdev@vger.kernel.org,
+ Vladimir Murzin <murzin.v@gmail.com>, dborkman@redhat.com, edumazet@google.com,
+ paulus@samba.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,23 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-09-27 at 16:44 -0700, Yinghai Lu wrote:
+Currently DIVWU stands for *signed* divw opcode:
 
-> > Thus the port driver bails out before calling pci_set_master(). The fix
-> > is to call pci_set_master() unconditionally. However that lead me to
-> > find to a few interesting oddities in that port driver code:
-> 
-> can we revert that partially change ? aka we should check get_port....
-> at first...
-> 
-> like attached.
+7d 2a 4b 96 	divwu   r9,r10,r9
+7d 2a 4b d6 	divw    r9,r10,r9
 
-In the meantime, can you properly submit the other one with the warning
-to Linus ? It will make things more robust overall...
+Use the *unsigned* divw opcode for DIVWU.
 
-Also, please read my other comments. I think we are treading on very
-fragile ground with that whole business of potentially disabling bridges
-in the pcieport driver ...
+Suggested-by: Vassili Karpov <av1474@comtv.ru>
+Reviewed-by: Vassili Karpov <av1474@comtv.ru>
+Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
+Acked-by: Matt Evans <matt@ozlabs.org>
+---
+Changelog
 
-Cheers,
-Ben.
+v1->v2
+
+Added credit to Vassili Karpov (malc) who kindly reviewed generated assembly
+[1] and highlighted usage of signed division.
+Note: temporary, for technical reason, he's not able to receive email.
+
+[1]http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg71635.html
+
+ arch/powerpc/include/asm/ppc-opcode.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index eccfc16..0a4a683 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -171,7 +171,7 @@
+ #define PPC_INST_MULLW			0x7c0001d6
+ #define PPC_INST_MULHWU			0x7c000016
+ #define PPC_INST_MULLI			0x1c000000
+-#define PPC_INST_DIVWU			0x7c0003d6
++#define PPC_INST_DIVWU			0x7c000396
+ #define PPC_INST_RLWINM			0x54000000
+ #define PPC_INST_RLDICR			0x78000004
+ #define PPC_INST_SLW			0x7c000030
+-- 
+1.8.1.5
