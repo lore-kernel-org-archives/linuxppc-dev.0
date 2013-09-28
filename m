@@ -1,23 +1,41 @@
-Return-Path: <murzin.v@gmail.com>
-Received: from mail-la0-x230.google.com (mail-la0-x230.google.com
- [IPv6:2a00:1450:4010:c03::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 890E92C010A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 18:23:43 +1000 (EST)
-Received: by mail-la0-f48.google.com with SMTP id er20so2866682lab.7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 01:23:39 -0700 (PDT)
-From: Vladimir Murzin <murzin.v@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/2] ppc: bpf_jit: support MOD operation
-Date: Sat, 28 Sep 2013 10:22:01 +0200
-Message-Id: <1380356521-3432-2-git-send-email-murzin.v@gmail.com>
-In-Reply-To: <1380356521-3432-1-git-send-email-murzin.v@gmail.com>
-References: <1380356521-3432-1-git-send-email-murzin.v@gmail.com>
-Cc: matt@ozlabs.org, netdev@vger.kernel.org,
- Vladimir Murzin <murzin.v@gmail.com>, dborkman@redhat.com, edumazet@google.com,
- paulus@samba.org, davem@davemloft.net
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E96692C010C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Sep 2013 01:37:07 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sat, 28 Sep 2013 21:06:53 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4CF94E0053
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 21:07:58 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8SFdDjw41943188
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 21:09:14 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8SFamHV010232
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2013 21:06:48 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: [RFC PATCH 09/11] kvm: simplify processor compat check
+In-Reply-To: <5245A0DD.9070205@redhat.com>
+References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1380276233-17095-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <E5A81672-864D-4E33-B15A-5F6927CC7C13@suse.de>
+ <87r4ca9zmi.fsf@linux.vnet.ibm.com> <5245A0DD.9070205@redhat.com>
+Date: Sat, 28 Sep 2013 21:06:47 +0530
+Message-ID: <87mwmx9cvk.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Gleb Natapov <gleb@redhat.com>,
+ "<kvm@vger.kernel.org> list" <kvm@vger.kernel.org>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,66 +45,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit b6069a9570 (filter: add MOD operation) added generic
-support for modulus operation in BPF.
+Paolo Bonzini <pbonzini@redhat.com> writes:
 
-This patch brings JIT support for PPC64
+> Il 27/09/2013 15:13, Aneesh Kumar K.V ha scritto:
+>> Alexander Graf <agraf@suse.de> writes:
+>> 
+>>> On 27.09.2013, at 12:03, Aneesh Kumar K.V wrote:
+>>>
+>>>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>>>
+>>> Missing patch description.
+>>>
+>>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>>>
+>>> I fail to see how this really simplifies things, but at the end of the
+>>> day it's Gleb's and Paolo's call.
+>> 
+>> will do. It avoid calling 
+>> 
+>> 	for_each_online_cpu(cpu) {
+>> 		smp_call_function_single() 
+>> 
+>> on multiple architecture.
+>
+> I agree with Alex.
+>
+> The current code is not specially awesome; having
+> kvm_arch_check_processor_compat take an int* disguised as a void* is a
+> bit ugly indeed.
+>
+> However, the API makes sense and tells you that it is being passed as a
+> callback (to smp_call_function_single in this case).
 
-Signed-off-by: Vladimir Murzin <murzin.v@gmail.com>
-Acked-by: Matt Evans <matt@ozlabs.org>
----
-Changelog
+But whether to check on all cpus or not is arch dependent right?.
+IIUC only x86 and ppc64 need to do that. Also on ppc64 it really
+depends on whether HV or PR. We need to check on all cpus only if it is
+HV. 
 
-v1->v2
+>
+> You are making the API more complicated to use on the arch layer
+> (because arch maintainers now have to think "do I need to check this on
+> all online CPUs?") and making the "leaf" POWER code less legible because
+> it still has the weird void()(void *) calling convention.
+>
 
-Definition for r_scratch2 was moved to header file.
+IIUC what we wanted to check is to find out whether kvm can run on this
+system. That is really an arch specific check. So for core kvm the call
+should be a simple 
 
- arch/powerpc/net/bpf_jit.h      |  1 +
- arch/powerpc/net/bpf_jit_comp.c | 20 ++++++++++++++++++++
- 2 files changed, 21 insertions(+)
+if (kvm_arch_check_process_compat() < 0)
+        error;
 
-diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index 8a5dfaf..42a115a 100644
---- a/arch/powerpc/net/bpf_jit.h
-+++ b/arch/powerpc/net/bpf_jit.h
-@@ -39,6 +39,7 @@
- #define r_X		5
- #define r_addr		6
- #define r_scratch1	7
-+#define r_scratch2	8
- #define r_D		14
- #define r_HL		15
- #define r_M		16
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index bf56e33..cbb2702 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -193,6 +193,26 @@ static int bpf_jit_build_body(struct sk_filter *fp, u32 *image,
- 				PPC_MUL(r_A, r_A, r_scratch1);
- 			}
- 			break;
-+		case BPF_S_ALU_MOD_X: /* A %= X; */
-+			ctx->seen |= SEEN_XREG;
-+			PPC_CMPWI(r_X, 0);
-+			if (ctx->pc_ret0 != -1) {
-+				PPC_BCC(COND_EQ, addrs[ctx->pc_ret0]);
-+			} else {
-+				PPC_BCC_SHORT(COND_NE, (ctx->idx*4)+12);
-+				PPC_LI(r_ret, 0);
-+				PPC_JMP(exit_addr);
-+			}
-+			PPC_DIVWU(r_scratch1, r_A, r_X);
-+			PPC_MUL(r_scratch1, r_X, r_scratch1);
-+			PPC_SUB(r_A, r_A, r_scratch1);
-+			break;
-+		case BPF_S_ALU_MOD_K: /* A %= K; */
-+			PPC_LI32(r_scratch2, K);
-+			PPC_DIVWU(r_scratch1, r_A, r_scratch2);
-+			PPC_MUL(r_scratch1, r_scratch2, r_scratch1);
-+			PPC_SUB(r_A, r_A, r_scratch1);
-+			break;
- 		case BPF_S_ALU_DIV_X: /* A /= X; */
- 			ctx->seen |= SEEN_XREG;
- 			PPC_CMPWI(r_X, 0);
--- 
-1.8.1.5
+Now how each arch figure out whether kvm can run on this system should
+be arch specific. For x86 we do need to check all the cpus. On ppc64 for
+HV we need to. For other archs we always allow kvm. 
+
+
+> If anything, you could change kvm_arch_check_processor_compat to return
+> an int and accept no argument, and introduce a wrapper that kvm_init
+> passes to smp_call_function_single.
+
+What i am suggesting in the patch is to avoid calling
+smp_call_function_single from kvm_init and let arch decide whether to
+check on all cpus or not.
+
+-aneesh
