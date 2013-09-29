@@ -1,26 +1,26 @@
-Return-Path: <gleb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4FF862C00F8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 01:11:21 +1000 (EST)
-Date: Sun, 29 Sep 2013 18:11:15 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 09/11] kvm: simplify processor compat check
-Message-ID: <20130929151115.GA4964@redhat.com>
-References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1380276233-17095-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <E5A81672-864D-4E33-B15A-5F6927CC7C13@suse.de>
- <87r4ca9zmi.fsf@linux.vnet.ibm.com> <5245A0DD.9070205@redhat.com>
- <87mwmx9cvk.fsf@linux.vnet.ibm.com>
- <20130929085800.GO17294@redhat.com>
- <87siwnbrdf.fsf@linux.vnet.ibm.com>
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id 8C55D2C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 09:56:21 +1000 (EST)
+Received: from mail-ve0-f169.google.com (mail-ve0-f169.google.com
+ [209.85.128.169])
+ by muin.pair.com (Postfix) with ESMTPSA id 6EBF98FC3E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Sep 2013 19:56:19 -0400 (EDT)
+Received: by mail-ve0-f169.google.com with SMTP id db12so3520369veb.14
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Sep 2013 16:56:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87siwnbrdf.fsf@linux.vnet.ibm.com>
-Cc: "<kvm@vger.kernel.org> list" <kvm@vger.kernel.org>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1379502122-20792-2-git-send-email-Minghuan.Lian@freescale.com>
+References: <1379502122-20792-1-git-send-email-Minghuan.Lian@freescale.com>
+ <1379502122-20792-2-git-send-email-Minghuan.Lian@freescale.com>
+Date: Sun, 29 Sep 2013 18:56:18 -0500
+Message-ID: <CAOZdJXUF3ibW5iuB-2p5bhPp-Uw9MVKzqZiDdukMfi4f1d3Phw@mail.gmail.com>
+Subject: Re: [PATCH 2/2] pci: fsl: rework PCI driver compatible with Layerscape
+From: Timur Tabi <timur@tabi.org>
+To: Minghuan Lian <Minghuan.Lian@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Zang Roy-R61911 <r61911@freescale.com>, Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,85 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Sep 29, 2013 at 08:35:16PM +0530, Aneesh Kumar K.V wrote:
-> Gleb Natapov <gleb@redhat.com> writes:
-> 
-> > On Sat, Sep 28, 2013 at 09:06:47PM +0530, Aneesh Kumar K.V wrote:
-> >> Paolo Bonzini <pbonzini@redhat.com> writes:
-> >> 
-> >> > Il 27/09/2013 15:13, Aneesh Kumar K.V ha scritto:
-> >> >> Alexander Graf <agraf@suse.de> writes:
-> >> >> 
-> >> >>> On 27.09.2013, at 12:03, Aneesh Kumar K.V wrote:
-> >> >>>
-> >> >>>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> >> >>>
-> >> >>> Missing patch description.
-> >> >>>
-> >> >>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> >> >>>
-> >> >>> I fail to see how this really simplifies things, but at the end of the
-> >> >>> day it's Gleb's and Paolo's call.
-> >> >> 
-> >> >> will do. It avoid calling 
-> >> >> 
-> >> >> 	for_each_online_cpu(cpu) {
-> >> >> 		smp_call_function_single() 
-> >> >> 
-> >> >> on multiple architecture.
-> >> >
-> >> > I agree with Alex.
-> >> >
-> >> > The current code is not specially awesome; having
-> >> > kvm_arch_check_processor_compat take an int* disguised as a void* is a
-> >> > bit ugly indeed.
-> >> >
-> >> > However, the API makes sense and tells you that it is being passed as a
-> >> > callback (to smp_call_function_single in this case).
-> >> 
-> >> But whether to check on all cpus or not is arch dependent right?.
-> >> IIUC only x86 and ppc64 need to do that. Also on ppc64 it really
-> >> depends on whether HV or PR. We need to check on all cpus only if it is
-> >> HV. 
-> >> 
-> >> >
-> >> > You are making the API more complicated to use on the arch layer
-> >> > (because arch maintainers now have to think "do I need to check this on
-> >> > all online CPUs?") and making the "leaf" POWER code less legible because
-> >> > it still has the weird void()(void *) calling convention.
-> >> >
-> >> 
-> >> IIUC what we wanted to check is to find out whether kvm can run on this
-> >> system. That is really an arch specific check. So for core kvm the call
-> >> should be a simple 
-> >> 
-> >> if (kvm_arch_check_process_compat() < 0)
-> >>         error;
-> > We have that already, just return error from kvm_arch_hardware_setup. This
-> > is specific processor compatibility check and you are arguing that the
-> > processor check should be part of kvm_arch_hardware_setup().
-> 
-> 
-> What about the success case ?. ie, on arch like arm we do
-> 
-> void kvm_arch_check_processor_compat(void *rtn)
-> {
-> 	*(int *)rtn = 0;
-> }
-> 
-> for_each_online_cpu(cpu) {
-As I said they opted out from doing the check. They may reconsider after
-first bad HW will be discovered.
+On Wed, Sep 18, 2013 at 6:02 AM, Minghuan Lian
+<Minghuan.Lian@freescale.com> wrote:
 
-> 	smp_call_function_single(cpu,
-> 			kvm_arch_check_processor_compat,
-> 			&r, 1);
-> 	if (r < 0)
-> 		goto out_free_1;
-> }
-> 
-> There is no need to do that for loop for arm. 
-It's done once during module initialisation. Why is this a big deal?
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 38f3b7e..6fd6348 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -690,6 +690,7 @@ config FSL_SOC
+>
+>  config FSL_PCI
+>         bool
+> +       select PCI_FSL if FSL_SOC_BOOKE || PPC_86xx
 
---
-			Gleb.
+I think having two config options, one called FSL_PCI and the other
+PCI_FSL, is very confusing.  Surely, you can pick better names than
+that?
