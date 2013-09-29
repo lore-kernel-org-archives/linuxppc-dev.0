@@ -1,24 +1,25 @@
-Return-Path: <gleb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4D2942C00E4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Sep 2013 18:58:08 +1000 (EST)
-Date: Sun, 29 Sep 2013 11:58:00 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 09/11] kvm: simplify processor compat check
-Message-ID: <20130929085800.GO17294@redhat.com>
-References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1380276233-17095-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <E5A81672-864D-4E33-B15A-5F6927CC7C13@suse.de>
- <87r4ca9zmi.fsf@linux.vnet.ibm.com> <5245A0DD.9070205@redhat.com>
- <87mwmx9cvk.fsf@linux.vnet.ibm.com>
+Return-Path: <B31939@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A07712C00E2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Sep 2013 21:50:28 +1000 (EST)
+Message-ID: <5248144A.6070307@freescale.com>
+Date: Sun, 29 Sep 2013 19:51:38 +0800
+From: Lian Minghuan-b31939 <B31939@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87mwmx9cvk.fsf@linux.vnet.ibm.com>
-Cc: "<kvm@vger.kernel.org> list" <kvm@vger.kernel.org>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>, Minghuan Lian
+ <Minghuan.Lian@freescale.com>
+Subject: Re: [PATCH 2/2] pci: fsl: rework PCI driver compatible with Layerscape
+References: <1379502122-20792-1-git-send-email-Minghuan.Lian@freescale.com>	
+ <1379502122-20792-2-git-send-email-Minghuan.Lian@freescale.com>
+ <1380300847.24959.394.camel@snotra.buserror.net>
+In-Reply-To: <1380300847.24959.394.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Zang Roy-R61911 <r61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,83 +29,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 28, 2013 at 09:06:47PM +0530, Aneesh Kumar K.V wrote:
-> Paolo Bonzini <pbonzini@redhat.com> writes:
-> 
-> > Il 27/09/2013 15:13, Aneesh Kumar K.V ha scritto:
-> >> Alexander Graf <agraf@suse.de> writes:
-> >> 
-> >>> On 27.09.2013, at 12:03, Aneesh Kumar K.V wrote:
-> >>>
-> >>>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> >>>
-> >>> Missing patch description.
-> >>>
-> >>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> >>>
-> >>> I fail to see how this really simplifies things, but at the end of the
-> >>> day it's Gleb's and Paolo's call.
-> >> 
-> >> will do. It avoid calling 
-> >> 
-> >> 	for_each_online_cpu(cpu) {
-> >> 		smp_call_function_single() 
-> >> 
-> >> on multiple architecture.
-> >
-> > I agree with Alex.
-> >
-> > The current code is not specially awesome; having
-> > kvm_arch_check_processor_compat take an int* disguised as a void* is a
-> > bit ugly indeed.
-> >
-> > However, the API makes sense and tells you that it is being passed as a
-> > callback (to smp_call_function_single in this case).
-> 
-> But whether to check on all cpus or not is arch dependent right?.
-> IIUC only x86 and ppc64 need to do that. Also on ppc64 it really
-> depends on whether HV or PR. We need to check on all cpus only if it is
-> HV. 
-> 
-> >
-> > You are making the API more complicated to use on the arch layer
-> > (because arch maintainers now have to think "do I need to check this on
-> > all online CPUs?") and making the "leaf" POWER code less legible because
-> > it still has the weird void()(void *) calling convention.
-> >
-> 
-> IIUC what we wanted to check is to find out whether kvm can run on this
-> system. That is really an arch specific check. So for core kvm the call
-> should be a simple 
-> 
-> if (kvm_arch_check_process_compat() < 0)
->         error;
-We have that already, just return error from kvm_arch_hardware_setup. This
-is specific processor compatibility check and you are arguing that the
-processor check should be part of kvm_arch_hardware_setup().
+Hi Scott,
 
-> 
-> Now how each arch figure out whether kvm can run on this system should
-> be arch specific. For x86 we do need to check all the cpus. On ppc64 for
-> HV we need to. For other archs we always allow kvm. 
-> 
-This is really a sanity check. Theoretically on x86 we also should
-not need to check all cpus since SMP configuration with different cpu
-models is not supported by the architecture (AFAIK), but bugs happen
-(BIOS bugs may cause difference in capabilities for instance). So some
-arches opted out from this sanity check for now and this is their choice,
-but the code makes it explicit what are we checking here.
+please see my comments inline.
 
-> 
-> > If anything, you could change kvm_arch_check_processor_compat to return
-> > an int and accept no argument, and introduce a wrapper that kvm_init
-> > passes to smp_call_function_single.
-> 
-> What i am suggesting in the patch is to avoid calling
-> smp_call_function_single from kvm_init and let arch decide whether to
-> check on all cpus or not.
-> 
-> -aneesh
-
---
-			Gleb.
+On 09/28/2013 12:54 AM, Scott Wood wrote:
+> On Wed, 2013-09-18 at 19:02 +0800, Minghuan Lian wrote:
+>> @@ -592,6 +719,7 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs)
+>>   #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+>>   
+>>   struct device_node *fsl_pci_primary;
+>> +extern const struct of_device_id fsl_pci_ids[];
+> Externs go in headers.
+[Minghuan] ok.
+>
+>> -static int fsl_pci_probe(struct platform_device *pdev)
+>> +static int __init fsl_pci_probe(struct platform_device *pdev)
+>>   {
+>>   	int ret;
+>> -	struct device_node *node;
+>> +	struct fsl_pci *pci;
+>> +
+>> +	if (!of_device_is_available(pdev->dev.of_node)) {
+>> +		dev_warn(&pdev->dev, "disabled\n");
+>> +		return -ENODEV;
+>> +	}
+> This should be dev_dbg().
+[Minghuan] ok.
+>> -#ifdef CONFIG_PM
+>> -static int fsl_pci_resume(struct device *dev)
+>> +static int __exit fsl_pci_remove(struct platform_device *pdev)
+> Why __exit?  What happens if someone unbinds the PCI controller via
+> sysfs?
+>   
+[Minghuan] Sorry. should remove __exit
+>> +/*
+>> + * Structure of a PCI controller (host bridge)
+>> + */
+>> +struct fsl_pci {
+>> +	struct list_head node;
+>> +	int is_pcie;
+> bool is_pcie;
+[Minghuan] ok.
+>> +/* Return link status 0-> link, 1-> no link */
+>> +int fsl_pci_check_link(struct fsl_pci *pci);
+> bool
+[Minghuan] ok.
+>> +
+>> +/*
+>> + * The fsl_arch_* functions are arch hooks. Those functions are
+>> + * implemented as weak symbols so that they can be overridden by
+>> + * architecture specific code if needed.
+>> + */
+>> +
+>> +/* Return PCI64 DMA offset */
+>> +u64 fsl_arch_pci64_dma_offset(void);
+> Is this always guaranteed to exist?
+[Minghuan] Yes. I define a __weak implementation in pci-fsl.c
+>> +/* Register PCI/PCIe controller to architecture system */
+>> +int __weak fsl_arch_pci_sys_register(struct fsl_pci *pci);
+>> +
+>> +/* Remove PCI/PCIe controller from architecture system */
+>> +void __weak fsl_arch_pci_sys_remove(struct fsl_pci *pci);
+> Why do these need to be weak?  Won't there be exactly one implementation
+> per supported arch?
+[Minghuan] I added __weak for compiling kernel when selecting pci-fsl 
+module but
+there is no related arch pci implementation.
+I can remove the __weak, and use
+"depends on FSL_SOC_BOOKE || PPC_86xx" in Kconfig to make sure there is 
+one implementation
+of supported arch.
+> -Scott
+>
+>
