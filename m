@@ -1,21 +1,21 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 3B4372C008E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 00:51:09 +1000 (EST)
-Message-ID: <52498FD9.6060809@suse.de>
-Date: Mon, 30 Sep 2013 16:51:05 +0200
+ by ozlabs.org (Postfix) with ESMTP id 3CEBE2C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 00:51:51 +1000 (EST)
+Message-ID: <52499003.1090405@suse.de>
+Date: Mon, 30 Sep 2013 16:51:47 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 06/11] kvm: powerpc: book3s: Add is_hv_enabled to
- kvmppc_ops
+Subject: Re: [RFC PATCH 07/11] kvm: powerpc: book3s: pr: move PR related
+ tracepoints to a separate header
 References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1380276233-17095-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <9BAA779D-FE0C-4971-992B-57D80F945906@suse.de>
- <87zjqya025.fsf@linux.vnet.ibm.com>
- <F87036DE-6077-4B79-965F-C52F84DD994D@suse.de>
- <87pprqbh96.fsf@linux.vnet.ibm.com>
-In-Reply-To: <87pprqbh96.fsf@linux.vnet.ibm.com>
+ <1380276233-17095-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <C02177CF-C8A0-4E84-82FE-1994742B8EBD@suse.de>
+ <87wqm29zxk.fsf@linux.vnet.ibm.com>
+ <BAB3B542-A47C-49A8-B2D5-26C461A4E12D@suse.de>
+ <87mwmubh70.fsf@linux.vnet.ibm.com>
+In-Reply-To: <87mwmubh70.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,47 +27,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/30/2013 02:56 PM, Aneesh Kumar K.V wrote:
+On 09/30/2013 02:57 PM, Aneesh Kumar K.V wrote:
 > Alexander Graf<agraf@suse.de>  writes:
 >
->> On 27.09.2013, at 15:03, Aneesh Kumar K.V wrote:
+>> On 27.09.2013, at 15:06, Aneesh Kumar K.V wrote:
 >>
 >>> Alexander Graf<agraf@suse.de>  writes:
 >>>
->>>
->>>>> diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
->>>>> index 1abe478..e0229dd 100644
->>>>> --- a/arch/powerpc/kvm/book3s_segment.S
->>>>> +++ b/arch/powerpc/kvm/book3s_segment.S
->>>>> @@ -161,9 +161,14 @@ kvmppc_handler_trampoline_enter_end:
->>>>> .global kvmppc_handler_trampoline_exit
->>>>> kvmppc_handler_trampoline_exit:
+>>>> On 27.09.2013, at 12:03, Aneesh Kumar K.V wrote:
+>>>>
+>>>>> From: "Aneesh Kumar K.V"<aneesh.kumar@linux.vnet.ibm.com>
 >>>>>
->>>>> +#if defined(CONFIG_KVM_BOOK3S_HV)
->>>>> +.global kvmppc_interrupt_pr
->>>>> +kvmppc_interrupt_pr:
->>>>> +	ld	r9, HSTATE_SCRATCH2(r13)
->>>>> +#else
->>>>> .global kvmppc_interrupt
->>>>> kvmppc_interrupt:
->>>> Just always call it kvmppc_interrupt_pr and thus share at least that
->>>> part of the code :).
->>> But if i don't have HV enabled, we don't compile book3s_hv_rmhandlers.S
->>> Hence don't have the kvmppc_interrupt symbol defined.
->> Ah, because we're always jumping to kvmppc_interrupt. Can we make this
->> slightly less magical? How about we always call kvmppc_interrupt_hv
->> when CONFIG_KVM_BOOK3S_HV_POSSIBLE and always kvmppc_interrupt_pr when
->> CONFIG_KVM_BOOK3S_PR_POSSIBLE and then branch to kvmppc_interrupt_pr
->> from kvmppc_interrupt_hv?
->>
->> IMHO that would make the code flow more obvious.
->
-> To make sure I understand you correctly, what you are suggesting is
-> to update __KVM_HANDLER to call kvmppc_interupt_pr when HV is not
-> enabled ?
+>>>>> This patch moves PR related tracepoints to a separate header. This
+>>>>> enables in converting PR to a kernel module which will be done in
+>>>>> later patches
+>>>>>
+>>>>> Signed-off-by: Aneesh Kumar K.V<aneesh.kumar@linux.vnet.ibm.com>
+>>>>> ---
+>>>>> arch/powerpc/kvm/book3s_64_mmu_host.c |   2 +-
+>>>>> arch/powerpc/kvm/book3s_mmu_hpte.c    |   2 +-
+>>>>> arch/powerpc/kvm/book3s_pr.c          |   3 +-
+>>>>> arch/powerpc/kvm/trace.h              | 234 +--------------------------
+>>>>> arch/powerpc/kvm/trace_pr.h           | 297 ++++++++++++++++++++++++++++++++++
+>>>>> 5 files changed, 308 insertions(+), 230 deletions(-)
+>>>>> create mode 100644 arch/powerpc/kvm/trace_pr.h
+>>>>>
+>>>>> diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+>>>>> index 329a978..fd5b393 100644
+>>>>> --- a/arch/powerpc/kvm/book3s_64_mmu_host.c
+>>>>> +++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+>>>>> @@ -27,7 +27,7 @@
+>>>>> #include<asm/machdep.h>
+>>>>> #include<asm/mmu_context.h>
+>>>>> #include<asm/hw_irq.h>
+>>>>> -#include "trace.h"
+>>>>> +#include "trace_pr.h"
+>>>>>
+>>>>> #define PTE_SIZE 12
+>>>>>
+>>>>> diff --git a/arch/powerpc/kvm/book3s_mmu_hpte.c b/arch/powerpc/kvm/book3s_mmu_hpte.c
+>>>>> index d2d280b..4556168 100644
+>>>>> --- a/arch/powerpc/kvm/book3s_mmu_hpte.c
+>>>>> +++ b/arch/powerpc/kvm/book3s_mmu_hpte.c
+>>>>> @@ -28,7 +28,7 @@
+>>>>> #include<asm/mmu_context.h>
+>>>>> #include<asm/hw_irq.h>
+>>>>>
+>>>>> -#include "trace.h"
+>>>>> +#include "trace_pr.h"
+>>>>>
+>>>>> #define PTE_SIZE	12
+>>>>>
+>>>>> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+>>>>> index 2a97279..99d0839 100644
+>>>>> --- a/arch/powerpc/kvm/book3s_pr.c
+>>>>> +++ b/arch/powerpc/kvm/book3s_pr.c
+>>>>> @@ -41,7 +41,8 @@
+>>>>> #include<linux/vmalloc.h>
+>>>>> #include<linux/highmem.h>
+>>>>>
+>>>>> -#include "trace.h"
+>>>>> +#define CREATE_TRACE_POINTS
+>>>>> +#include "trace_pr.h"
+>>>>>
+>>>>> /* #define EXIT_DEBUG */
+>>>>> /* #define DEBUG_EXT */
+>>>>> diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
+>>>>> index a088e9a..7d5a136 100644
+>>>>> --- a/arch/powerpc/kvm/trace.h
+>>>>> +++ b/arch/powerpc/kvm/trace.h
+>>>>> @@ -85,6 +85,12 @@ TRACE_EVENT(kvm_ppc_instr,
+>>>>> 	{41, "HV_PRIV"}
+>>>>> #endif
+>>>>>
+>>>>> +#ifndef CONFIG_KVM_BOOK3S_PR
+>>>>> +/*
+>>>>> + * For pr we define this in trace_pr.h since it pr can be built as
+>>>>> + * a module
+>>>> Not sure I understand the need. If the config option is available, so
+>>>> should the struct field. Worst case that happens with HV is that we
+>>>> get empty shadow_srr1 values in our trace, no?
+>>> That is not the real reason. trace.h get built as part of kvm.ko or as
+>>> part of kernel. These trace functions actually get called from
+>>> kvm-pr.ko. To make they build i would either need EXPORT_SYMBOL or move
+>>> the definition of them to kvm-pr.ko. I did the later and moved only pr
+>>> related traces to kvm-pr.ko
+>> I fail to see why we wouldn't have a trace_hv.h file then, as that can
+>> also be built as a module, no? And at that point I don't see why we
+>> would need any conditionals at all in trace.h anymore, as it would
+>> only cover generic code.
+> Currently HV module is not using any tracepoints. Once it start using
+> tracepoints we would have trace_hv.h
 
-Yes, I think that makes the code flow more obvious. Every function 
-always has the same name regardless of config options then.
+So why would there be an #ifndef in trace.h?
 
 
 Alex
