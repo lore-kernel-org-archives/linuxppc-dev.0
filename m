@@ -1,16 +1,15 @@
 Return-Path: <aaro.koskinen@iki.fi>
 Received: from filtteri6.pp.htv.fi (filtteri6.pp.htv.fi [213.243.153.189])
- by ozlabs.org (Postfix) with ESMTP id 15DC42C0143
+ by ozlabs.org (Postfix) with ESMTP id 179CC2C0146
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 06:45:21 +1000 (EST)
 From: Aaro Koskinen <aaro.koskinen@iki.fi>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 RESEND 1/3] cpufreq: pmac64: speed up frequency switch
-Date: Mon, 30 Sep 2013 23:44:31 +0300
-Message-Id: <1380573873-14448-2-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1380573873-14448-1-git-send-email-aaro.koskinen@iki.fi>
-References: <1380573873-14448-1-git-send-email-aaro.koskinen@iki.fi>
+Subject: [PATCH v2 RESEND 0/3] cpufreq/ondemand support for Xserve G5 & iMac
+ G5 iSight
+Date: Mon, 30 Sep 2013 23:44:30 +0300
+Message-Id: <1380573873-14448-1-git-send-email-aaro.koskinen@iki.fi>
 Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,53 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some functions on switch path use msleep() which is inaccurate, and
-depends on HZ. With HZ=100 msleep(1) takes actually over ten times longer.
-Using usleep_range() we get more accurate sleeps.
+Hi,
 
-I measured the "pfunc_slewing_done" polling to take 300us at max (on
-2.3GHz dual-processor Xserve G5), so using 500us sleep there should
-be fine.
+This is a resend of the v2 patchset:
 
-With the patch, g5_switch_freq() duration drops from ~50ms to ~10ms on
-Xserve with HZ=100.
+	http://marc.info/?t=137797013200001&r=1&w=2
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/pmac64-cpufreq.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+No changes except rebasing. Any chance to get these into v3.13?
 
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-index 3a51ad7..46ae223 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -142,7 +142,7 @@ static void g5_vdnap_switch_volt(int speed_mode)
- 		pmf_call_one(pfunc_vdnap0_complete, &args);
- 		if (done)
- 			break;
--		msleep(1);
-+		usleep_range(1000, 1000);
- 	}
- 	if (done == 0)
- 		printk(KERN_WARNING "cpufreq: Timeout in clock slewing !\n");
-@@ -241,7 +241,7 @@ static void g5_pfunc_switch_volt(int speed_mode)
- 		if (pfunc_cpu1_volt_low)
- 			pmf_call_one(pfunc_cpu1_volt_low, NULL);
- 	}
--	msleep(10); /* should be faster , to fix */
-+	usleep_range(10000, 10000); /* should be faster , to fix */
- }
- 
- /*
-@@ -286,7 +286,7 @@ static int g5_pfunc_switch_freq(int speed_mode)
- 		pmf_call_one(pfunc_slewing_done, &args);
- 		if (done)
- 			break;
--		msleep(1);
-+		usleep_range(500, 500);
- 	}
- 	if (done == 0)
- 		printk(KERN_WARNING "cpufreq: Timeout in clock slewing !\n");
+Aaro Koskinen (3):
+  cpufreq: pmac64: speed up frequency switch
+  cpufreq: pmac64: provide cpufreq transition latency for older G5
+    models
+  cpufreq: pmac64: enable cpufreq on iMac G5 (iSight) model
+
+ drivers/cpufreq/pmac64-cpufreq.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
 -- 
 1.8.4.rc3
