@@ -1,21 +1,35 @@
-Return-Path: <B32579@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+Return-Path: <B21284@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4B76F2C0143
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 16:54:40 +1000 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: =?UTF-8?q?=5BPATCH=202/2=5D=5Bv7=5D=20powerpc/fsl-booke=3A=20Add=20initial=20T104x=5FQDS=20board=20support?=
-Date: Mon, 30 Sep 2013 12:24:23 +0530
-Message-ID: <1380524063-13754-1-git-send-email-prabhakar@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id D11102C00C5
+ for <linuxppc-dev@ozlabs.org>; Mon, 30 Sep 2013 18:33:00 +1000 (EST)
+Received: from mail143-tx2 (localhost [127.0.0.1])	by
+ mail143-tx2-R.bigfish.com (Postfix) with ESMTP id 3FC6C3A0120	for
+ <linuxppc-dev@ozlabs.org>; Mon, 30 Sep 2013 08:32:57 +0000 (UTC)
+Received: from TX2EHSMHS019.bigfish.com (unknown [10.9.14.234])	by
+ mail143-tx2.bigfish.com (Postfix) with ESMTP id 86AC460272	for
+ <linuxppc-dev@ozlabs.org>; Mon, 30 Sep 2013 08:31:33 +0000 (UTC)
+From: Hu Mingkai-B21284 <B21284@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] powerpc/85xx: DTS - re-organize the SPI partitions
+ property
+Date: Mon, 30 Sep 2013 08:31:29 +0000
+Message-ID: <CF6CBFBA8EBBB949B6E321556F6E15090A157023@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1378454743-17637-1-git-send-email-Mingkai.Hu@freescale.com>
+ <1378856005.12204.372.camel@snotra.buserror.net>
+ <CF6CBFBA8EBBB949B6E321556F6E15090A135F45@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1378948542.12204.490.camel@snotra.buserror.net>
+ <CF6CBFBA8EBBB949B6E321556F6E15090A14E997@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1379977371.24959.57.camel@snotra.buserror.net>
+ <CF6CBFBA8EBBB949B6E321556F6E15090A1517D2@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1380051431.24959.114.camel@snotra.buserror.net>
+In-Reply-To: <1380051431.24959.114.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Cc: scottwood@freescale.com, Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Prabhakar Kushwaha <prabhakar@freescale.com>,
- Priyanka Jain <Priyanka.Jain@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,469 +39,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- Add support for T104x board in board file t104x_qds.c, It is common for
- both T1040 and T1042 as they share same QDS board.
-
- T1040QDS board Overview
- -----------------------
- - SERDES Connections, 8 lanes supporting:
-      =E2=80=94 PCI Express: supporting Gen 1 and Gen 2;
-      =E2=80=94 SGMII
-      =E2=80=94 QSGMII
-      =E2=80=94 SATA 2.0
-      =E2=80=94 Aurora debug with dedicated connectors (T1040 only)
- - DDR Controller
-     - Supports rates of up to 1600 MHz data-rate
-     - Supports one DDR3LP UDIMM/RDIMMs, of single-, dual- or quad-rank t=
-ypes.
- -IFC/Local Bus
-     - NAND flash: 8-bit, async, up to 2GB.
-     - NOR: 8-bit or 16-bit, non-multiplexed, up to 512MB
-     - GASIC: Simple (minimal) target within Qixis FPGA
-     - PromJET rapid memory download support
- - Ethernet
-     - Two on-board RGMII 10/100/1G ethernet ports.
-     - PHY #0 remains powered up during deep-sleep (T1040 only)
- - QIXIS System Logic FPGA
- - Clocks
-     - System and DDR clock (SYSCLK, =E2=80=9CDDRCLK=E2=80=9D)
-     - SERDES clocks
- - Power Supplies
- - Video
-     - DIU supports video at up to 1280x1024x32bpp
- - USB
-     - Supports two USB 2.0 ports with integrated PHYs
-     =E2=80=94 Two type A ports with 5V@1.5A per port.
-     =E2=80=94 Second port can be converted to OTG mini-AB
- - SDHC
-     - SDHC port connects directly to an adapter card slot, featuring:
-     - Supporting SD slots for: SD, SDHC (1x, 4x, 8x) and/or MMC
-     =E2=80=94 Supporting eMMC memory devices
- - SPI
-    -  On-board support of 3 different devices and sizes
- - Other IO
-    - Two Serial ports
-    - ProfiBus port
-    - Four I2C ports
-
-Add T104xQDS support in Kconfig and Makefile. Also create device tree.
-Following features are currently not implmented.=20
-  - SerDes: Aurora
-  - IFC: GASIC, Promjet
-  - QIXIS
-  - Ethernet
-  - DIU
-  - power supplies management
-  - ProfiBus
-
-Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
----
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.gi=
-t
- Branch merge
-
- Changes for v2: Incorporated Scott's comments
-	- Created t104xqds.dtsi, both t1040qds & t1042qds include it
-	- Updated get_irq=20
- Changes for v3: Sending as it is
- Changes for v4: Updated description
- Changes for v5: Incorporated Scott's comments
- 	- Ported on top of Kevin's patch
- Changes for v6: Updated depedencies
- Changes for v7: Incororated Scott's commetns
-    - Create patch set
-=20
- This patch depends upon followng patches in mentioned order
- 1) powerpc/b4qds: enable coreint
-   http://patchwork.ozlabs.org/patch/274390/
-
- 2) powerpc/85xx: introduce corenet_generic machine
-   http://patchwork.ozlabs.org/patch/278067/
-
- 3) powerpc/85xx: rename the corenet_ds.c to corenet_generic.c
-   http://patchwork.ozlabs.org/patch/278072/
-
- 4) powerpc/85xx: use one kernel option for all the CoreNet_Generic board=
-s
-   http://patchwork.ozlabs.org/patch/278073/
-
-
- arch/powerpc/boot/dts/t1040qds.dts            |   46 ++++++
- arch/powerpc/boot/dts/t1042qds.dts            |   46 ++++++
- arch/powerpc/boot/dts/t104xqds.dtsi           |  192 +++++++++++++++++++=
-++++++
- arch/powerpc/platforms/85xx/corenet_generic.c |    4 +
- 4 files changed, 288 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/t1040qds.dts
- create mode 100644 arch/powerpc/boot/dts/t1042qds.dts
- create mode 100644 arch/powerpc/boot/dts/t104xqds.dtsi
-
-diff --git a/arch/powerpc/boot/dts/t1040qds.dts b/arch/powerpc/boot/dts/t=
-1040qds.dts
-new file mode 100644
-index 0000000..973c29c
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t1040qds.dts
-@@ -0,0 +1,46 @@
-+/*
-+ * T1040QDS Device Tree Source
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions ar=
-e met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyrig=
-ht
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission=
-.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of th=
-e
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
-LIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
-E
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
-NY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
-MAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
-RVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
-ED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
- TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
- OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/t104xsi-pre.dtsi"
-+/include/ "t104xqds.dtsi"
-+
-+/ {
-+	model =3D "fsl,T1040QDS";
-+	compatible =3D "fsl,T1040QDS";
-+	#address-cells =3D <2>;
-+	#size-cells =3D <2>;
-+	interrupt-parent =3D <&mpic>;
-+};
-+
-+/include/ "fsl/t1040si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/t1042qds.dts b/arch/powerpc/boot/dts/t=
-1042qds.dts
-new file mode 100644
-index 0000000..45bd037
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t1042qds.dts
-@@ -0,0 +1,46 @@
-+/*
-+ * T1042QDS Device Tree Source
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions ar=
-e met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyrig=
-ht
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission=
-.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of th=
-e
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
-LIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
-E
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
-NY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
-MAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
-RVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
-ED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
- TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
- OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/t104xsi-pre.dtsi"
-+/include/ "t104xqds.dtsi"
-+
-+/ {
-+	model =3D "fsl,T1042QDS";
-+	compatible =3D "fsl,T1042QDS";
-+	#address-cells =3D <2>;
-+	#size-cells =3D <2>;
-+	interrupt-parent =3D <&mpic>;
-+};
-+
-+/include/ "fsl/t1042si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/t104xqds.dtsi b/arch/powerpc/boot/dts/=
-t104xqds.dtsi
-new file mode 100644
-index 0000000..5a518b3
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t104xqds.dtsi
-@@ -0,0 +1,192 @@
-+/*
-+ * T104xQDS Device Tree Source
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions ar=
-e met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyrig=
-ht
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission=
-.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of th=
-e
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
-LIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
-E
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
-NY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
-MAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
-RVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
-ED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
- TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
- OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/ {
-+	model =3D "fsl,T1040QDS";
-+	compatible =3D "fsl,T1040QDS";
-+	#address-cells =3D <2>;
-+	#size-cells =3D <2>;
-+	interrupt-parent =3D <&mpic>;
-+
-+	ifc: localbus@ffe124000 {
-+		reg =3D <0xf 0xfe124000 0 0x2000>;
-+		ranges =3D <0 0 0xf 0xe8000000 0x08000000
-+			  2 0 0xf 0xff800000 0x00010000
-+			  3 0 0xf 0xffdf0000 0x00008000>;
-+
-+		nor@0,0 {
-+			#address-cells =3D <1>;
-+			#size-cells =3D <1>;
-+			compatible =3D "cfi-flash";
-+			reg =3D <0x0 0x0 0x8000000>;
-+
-+			bank-width =3D <2>;
-+			device-width =3D <1>;
-+		};
-+
-+		nand@2,0 {
-+			#address-cells =3D <1>;
-+			#size-cells =3D <1>;
-+			compatible =3D "fsl,ifc-nand";
-+			reg =3D <0x2 0x0 0x10000>;
-+
-+			partition@0 {
-+				/* This location must not be altered  */
-+				/* 1MB for u-boot Bootloader Image */
-+				reg =3D <0x0 0x00100000>;
-+				label =3D "NAND U-Boot Image";
-+				read-only;
-+			};
-+
-+			partition@100000 {
-+				/* 1MB for DTB Image */
-+				reg =3D <0x00100000 0x00100000>;
-+				label =3D "NAND DTB Image";
-+			};
-+
-+			partition@200000 {
-+				/* 10MB for Linux Kernel Image */
-+				reg =3D <0x00200000 0x00A00000>;
-+				label =3D "NAND Linux Kernel Image";
-+			};
-+
-+			partition@C00000 {
-+				/* 500MB for Root file System Image */
-+				reg =3D <0x00c00000 0x1F400000>;
-+				label =3D "NAND RFS Image";
-+			};
-+		};
-+
-+		board-control@3,0 {
-+			#address-cells =3D <1>;
-+			#size-cells =3D <1>;
-+			compatible =3D "fsl,tetra-fpga", "fsl,fpga-qixis";
-+			reg =3D <3 0 0x300>;
-+		};
-+	};
-+
-+	memory {
-+		device_type =3D "memory";
-+	};
-+
-+	dcsr: dcsr@f00000000 {
-+		ranges =3D <0x00000000 0xf 0x00000000 0x01072000>;
-+	};
-+
-+	soc: soc@ffe000000 {
-+		ranges =3D <0x00000000 0xf 0xfe000000 0x1000000>;
-+		reg =3D <0xf 0xfe000000 0 0x00001000>;
-+		spi@110000 {
-+			flash@0 {
-+				#address-cells =3D <1>;
-+				#size-cells =3D <1>;
-+				compatible =3D "micron,n25q512a";
-+				reg =3D <0>;
-+				spi-max-frequency =3D <10000000>; /* input clock */
-+			};
-+		};
-+
-+		i2c@118000 {
-+			pca9547@77 {
-+				compatible =3D "philips,pca9547";
-+				reg =3D <0x77>;
-+			};
-+			rtc@68 {
-+				compatible =3D "dallas,ds3232";
-+				reg =3D <0x68>;
-+				interrupts =3D <0x1 0x1 0 0>;
-+			};
-+		};
-+	};
-+
-+	pci0: pcie@ffe240000 {
-+		reg =3D <0xf 0xfe240000 0 0x10000>;
-+		ranges =3D <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
-+		pcie@0 {
-+			ranges =3D <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe250000 {
-+		reg =3D <0xf 0xfe250000 0 0x10000>;
-+		ranges =3D <0x02000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x10000000
-+			  0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 0x00010000>;
-+		pcie@0 {
-+			ranges =3D <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci2: pcie@ffe260000 {
-+		reg =3D <0xf 0xfe260000 0 0x1000>;
-+		ranges =3D <0x02000000 0 0xe0000000 0xc 0x40000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
-+		pcie@0 {
-+			ranges =3D <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci3: pcie@ffe270000 {
-+		reg =3D <0xf 0xfe270000 0 0x10000>;
-+		ranges =3D <0x02000000 0 0xe0000000 0xc 0x60000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8030000 0 0x00010000>;
-+		pcie@0 {
-+			ranges =3D <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc=
-/platforms/85xx/corenet_generic.c
-index fbd871e..f4a7621 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -106,6 +106,8 @@ static const char * const boards[] __initconst =3D {
- 	"fsl,B4860QDS",
- 	"fsl,B4420QDS",
- 	"fsl,B4220QDS",
-+	"fsl,T1040QDS",
-+	"fsl,T1042QDS",
- 	NULL
- };
-=20
-@@ -119,6 +121,8 @@ static const char * const hv_boards[] __initconst =3D=
- {
- 	"fsl,B4860QDS-hv",
- 	"fsl,B4420QDS-hv",
- 	"fsl,B4220QDS-hv",
-+	"fsl,T1040QDS-hv",
-+	"fsl,T1042QDS-hv",
- 	NULL
- };
-=20
---=20
-1.7.9.5
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIgMjUsIDIwMTMgMzozNyBBTQ0KPiBUbzog
+SHUgTWluZ2thaS1CMjEyODQNCj4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51eHBwYy1kZXZA
+b3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBwb3dlcnBjLzg1eHg6IERUUyAtIHJl
+LW9yZ2FuaXplIHRoZSBTUEkgcGFydGl0aW9ucw0KPiBwcm9wZXJ0eQ0KPiANCj4gT24gVHVlLCAy
+MDEzLTA5LTI0IGF0IDA1OjI3IC0wNTAwLCBIdSBNaW5na2FpLUIyMTI4NCB3cm90ZToNCj4gPg0K
+PiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFdvb2QgU2NvdHQt
+QjA3NDIxDQo+ID4gPiBTZW50OiBUdWVzZGF5LCBTZXB0ZW1iZXIgMjQsIDIwMTMgNzowMyBBTQ0K
+PiA+ID4gVG86IEh1IE1pbmdrYWktQjIxMjg0DQo+ID4gPiBDYzogV29vZCBTY290dC1CMDc0MjE7
+IGxpbnV4cHBjLWRldkBvemxhYnMub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXSBwb3dl
+cnBjLzg1eHg6IERUUyAtIHJlLW9yZ2FuaXplIHRoZSBTUEkNCj4gPiA+IHBhcnRpdGlvbnMgcHJv
+cGVydHkNCj4gPiA+DQo+ID4gPiBPbiBUdWUsIDIwMTMtMDktMTcgYXQgMDY6MDYgLTA1MDAsIEh1
+IE1pbmdrYWktQjIxMjg0IHdyb3RlOg0KPiA+ID4gPiBTY290dCwNCj4gPiA+ID4gU29ycnkgZm9y
+IHRoZSBkZWxheWVkIHJlc3BvbnNlLg0KPiA+ID4gPiBQbGVhc2UgZmluZSBteSBjb21tZW50cy4N
+Cj4gPiA+ID4gVGhhbmtzLA0KPiA+ID4gPiBNaW5na2FpDQo+ID4gPiA+DQo+ID4gPiA+ID4gLS0t
+LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQy
+MQ0KPiA+ID4gPiA+IFNlbnQ6IFRodXJzZGF5LCBTZXB0ZW1iZXIgMTIsIDIwMTMgOToxNiBBTQ0K
+PiA+ID4gPiA+IFRvOiBIdSBNaW5na2FpLUIyMTI4NA0KPiA+ID4gPiA+IENjOiBXb29kIFNjb3R0
+LUIwNzQyMTsgbGludXhwcGMtZGV2QG96bGFicy5vcmcNCj4gPiA+ID4gPiBTdWJqZWN0OiBSZTog
+W1BBVENIXSBwb3dlcnBjLzg1eHg6IERUUyAtIHJlLW9yZ2FuaXplIHRoZSBTUEkNCj4gPiA+ID4g
+PiBwYXJ0aXRpb25zIHByb3BlcnR5DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBPbiBUdWUsIDIwMTMt
+MDktMTAgYXQgMjE6MDcgLTA1MDAsIEh1IE1pbmdrYWktQjIxMjg0IHdyb3RlOg0KPiA+ID4gPiA+
+ID4NCj4gPiA+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiA+
+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiA+ID4gU2VudDogV2VkbmVzZGF5
+LCBTZXB0ZW1iZXIgMTEsIDIwMTMgNzozMyBBTQ0KPiA+ID4gPiA+ID4gPiBUbzogSHUgTWluZ2th
+aS1CMjEyODQNCj4gPiA+ID4gPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBvemxhYnMub3JnDQo+ID4g
+PiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvODV4eDogRFRTIC0gcmUtb3Jn
+YW5pemUgdGhlIFNQSQ0KPiA+ID4gPiA+ID4gPiBwYXJ0aXRpb25zIHByb3BlcnR5DQo+ID4gPiA+
+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IFdoYXQgaGFwcGVucyB0byBleHN0aW5nIHVzZXJzIHdob3Nl
+IGZsYXNoIGlzIGxhaWQgb3V0IHRoZQ0KPiA+ID4gPiA+ID4gPiBleGlzdGluZyB3YXksIHdoZW4g
+dGhleSB1cGdyYWRlIHRvIHRoZXNlIGRldmljZSB0cmVlcz8NCj4gPiA+ID4gPiA+ID4NCj4gPiA+
+ID4gPiA+DQo+ID4gPiA+ID4gPiBUaGUgU1BJIGZsYXNoIGxheW91dCBzaG91bGQgYmUgbWFwcGlu
+ZyB0aGUgbmV3IGRldmljZSB0cmVlLg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IElmIHRoZSBl
+eGlzdGluZyBkZXZpY2UgdHJlZSBpcyB1c2VkIHRvIGRlcGxveSB0aGUgU1BJIGZsYXNoLA0KPiA+
+ID4gPiA+ID4gdGhlIGZvbGxvd2luZyBpc3N1ZXMgbXVzdCBiZSBydW4gaW50byBhcyB0aGUgY29t
+bWl0IG1lc3NhZ2UNCj4gZGVzY3JpYmVkOg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IDEuIEtl
+cm5lbCBpbWFnZXMgd291bGQgYmUgb3ZlcmxhcHBlZCB3aXRoIFUtQm9vdCBpbWFnZS4NCj4gPiA+
+ID4gPiA+IDIuIEtlcm5lbCBpbWFnZXMgd291bGQgYmUgb3ZlcmxhcHBlZCB3aXRoIEZNQU4gdWNv
+ZGUuDQo+ID4gPiA+ID4gPiAzLiBTYXZpbmcgZW52aXJvbm1lbnQgdmFyaWFibGVzIHdpbGwgY3Jh
+c2ggdGhlIGtlcm5lbCBpbWFnZS4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEhhcyB0aGUgU1BJIFUt
+Qm9vdCBpbWFnZSBhbHdheXMgYmVlbiBsYXJnZXIgdGhhbiA1MTJLIGZvciBhbGwNCj4gPiA+ID4g
+PiB0aGVzZSBwbGF0Zm9ybXM/ICBXaHksIGdpdmVuIHRoYXQgd2UncmUgdW5kZXIgNTEySyBmb3Ig
+b3RoZXIgYm9vdA0KPiBtb2Rlcz8NCj4gPiA+ID4gPg0KPiA+ID4gPg0KPiA+ID4gPiBGb3IgRFBB
+QSBwbGF0Zm9ybSwgdGhlIGxkIHNjcmlwdCB1c2VkIHRvIGxpbmsgdGhlIHUtYm9vdCBpbWFnZSBp
+cw0KPiA+ID4gPiAiLi9hcmNoL3Bvd2VycGMvY3B1L21wYzg1eHgvdS1ib290LmxkcyIgd2hpY2gg
+d2lsbCBnZW5lcmF0ZSB0aGUNCj4gPiA+ID4gNTEySyB1LWJvb3QgSW1hZ2UuIFRoaXMgaW1hZ2Ug
+d2lsbCBiZSBzcGxpdCBpbnRvIDY0Ynl0ZXMgYW5kDQo+ID4gPiA+IGFwcGVuZGVkIFBCTCBjb21t
+YW5kIGZvciBFYWNoIDY0Ynl0ZXMgcGllY2VzLCBzbyB0aGUgc2l6ZSBvZiBmaW5hbA0KPiA+ID4g
+PiBpbWFnZSBtdXN0IGJlDQo+ID4gPiBncmVhdGVyIHRoYW4gNTEySy4NCj4gPiA+DQo+ID4gPiBX
+aGF0IGlzIHRoZSBlbnRyeSBwb2ludCBpbiBTUkFNIHdoZW4geW91IGxvYWQgZnJvbSBQQkw/ICBJ
+ZiBpdCBpcw0KPiA+ID4gKG9yIGNhbiBiZSBtYWRlIHRvIGJlKSB0aGUgYmVnaW5uaW5nIG9mIHRo
+ZSBpbWFnZSByYXRoZXIgdGhhbiB0aGUNCj4gPiA+IGVuZCwgdGhlbiB0dXJuIG9mZiB0aGUgcmVz
+ZXR2ZWMgYW5kIHRoZSBmaXhlZCBpbWFnZSBzaXplIHRoYXQgcmVzdWx0cy4NCj4gPiA+DQo+ID4N
+Cj4gPiAxLiBUaHVzIGEgc3BlY2lhbCBsZCBzY3JpcHQgbmVlZCB0byBiZSBwcm92aWRlZC4NCj4g
+DQo+IFRoaXMgaXMgYWxyZWFkeSBzdXBwb3J0ZWQuICBTZWUgQ09ORklHX1NZU19NUEM4NVhYX05P
+X1JFU0VUVkVDLg0KPiANCj4gPiAyLiBOb3cgdGhlIHNwaSBpbWFnZSBzaXplIGlzIGFib3V0IDU0
+MEtCLCB0aGF0J3MgdG8gc2F5IHRoZSBQQkwgbmVlZHMNCj4gYWJvdXQgfjMwSw0KPiA+ICAgIGZv
+ciBQQkwgY29tbWFuZHMuIEl0J3MgaGFyZCB0byBzYXZlIHN1Y2ggYSBiaWcgc3BhY2UgZXZlbiB3
+ZSB0dXJuDQo+IG9mZiB0aGUNCj4gPiAgICByZXNldHZlYy4NCj4gDQo+IFR1cm5pbmcgb2ZmIHRo
+ZSByZXNldHZlYyBkb2Vzbid0IGp1c3QgZWxpbWluYXRlIHRoZSByZXNldHZlYyBjb2RlOyBpdA0K
+PiBlbGltaW5hdGVzIHRoZSBwYWRkaW5nIHRvIDUxMksgKG9yIGlmIGl0IGRvZXNuJ3QsIHRoYXQn
+cyBhIGJ1ZyB0byBiZQ0KPiBmaXhlZCkuDQo+IA0KPiA+ID4gPiA+ID4gPiBXZSByZWFsbHkgc2hv
+dWxkIG5vdCBiZSBwdXR0aW5nIHBhcnRpdGlvbiBsYXlvdXQgaW5mbyBpbiB0aGUNCj4gPiA+ID4g
+PiA+ID4gZGV2aWNlIHRyZWUgdG8gYmVnaW4gd2l0aC4uLg0KPiA+ID4gPiA+ID4gPg0KPiA+ID4g
+PiA+ID4gT0ssIEkgd2lsbCByZW1vdmUgdGhlIGxheW91dCBkaWFncmFtIGluIHRoZSBjb21taXQg
+bWVzc2FnZS4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFRoYXQncyBub3Qgd2hhdCBJIG1lYW50LiAg
+SSBtZWFudCB0aGF0IHRoZSBkdHMgc2hvdWxkIGJlDQo+ID4gPiA+ID4gZGVzY3JpYmluZyBoYXJk
+d2FyZSwgYW5kIHRoaXMgaXMgdGhlIHNvcnQgb2YgdHJvdWJsZSB3ZSBydW4gaW50bw0KPiA+ID4g
+PiA+IHdoZW4gd2UgZGV2aWF0ZSBmcm9tIHRoYXQuICBBIGJldHRlciB3YXkgd291bGQgYmUgdG8g
+dXNlIHRoZQ0KPiA+ID4gPiA+IG10ZHBhcnRzIGNvbW1hbmQNCj4gPiA+IGxpbmUgb3B0aW9uLg0K
+PiA+ID4gPiA+IEV2ZW4gYmV0dGVyIHdvdWxkIGJlIHNvbWUgc29ydCBvZiBvbi1mbGFzaCBwYXJ0
+aXRpb24gdGFibGUuDQo+ID4gPiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4gWW91J3JlIHJpZ2h0LCBi
+dXQgbWF5YmUgc29tZSBjdXN0b21lciBoYXMgYWxyZWFkeSB1c2VkIHRoZSBkZXZpY2UNCj4gPiA+
+ID4gdHJlZQ0KPiA+ID4gcGFydGl0aW9uIHRhYmxlLi4uDQo+ID4gPg0KPiA+ID4gTXkgbWFpbiBw
+b2ludCB3YXMgdG8gZW5jb3VyYWdlIHVzIHRvIHNoaWZ0IGF3YXkgZnJvbSB0aGlzIHJhdGhlcg0K
+PiA+ID4gdGhhbiB0byByaXAgaXQgb3V0IHJpZ2h0IHRoaXMgaW5zdGFudC4NCj4gPiA+DQo+ID4N
+Cj4gPiBZZXMsIHRoYXQncyB0aGUgY29ycmVjdCB3YXkgd2Ugc2hvdWxkIGdvLg0KPiA+IFdvdWxk
+IHlvdSBwbGVhc2UgcGljayB1cCB0aGlzIHBhdGNoIGZpcnN0IHRvIHJlc29sdmUgY3VycmVudCBp
+c3N1ZSB3ZQ0KPiBmYWNlZD8NCj4gPiBBbmQgd2UgY2FuIGNvbnNpZGVyIHRvIHVzZSB0aGUgbXRk
+cGFydHMgb3Igb24tZmxhc2ggcGFydGl0aW9uIHRhYmxlIGZvcg0KPiBsb25nIHRlcm0uDQo+IA0K
+PiBGaXhpbmcgVS1Cb290IHdvdWxkIG1ha2UgdGhlIHByb2JsZW0gZ28gYXdheSB3aXRob3V0IGFu
+eSBpc3N1ZXMgd2l0aA0KPiBwYXJ0aXRpb24gY29tcGF0aWJpbGl0eS4gIEFyZSB5b3Ugc3VyZSBu
+b2JvZHkncyB1c2luZyB0aGVzZSBTUEkNCj4gcGFydGl0aW9ucyB3aXRob3V0IGJvb3RpbmcgZnJv
+bSBTUEk/ICBFdmVuIGlmIG5vYm9keSdzIHVzaW5nIHRoaXMsIGl0DQo+IHNlZW1zIGEgd2FzdGVm
+dWwgc29sdXRpb24uICBUaGVzZSBhcmUgcHJldHR5IHNtYWxsIGZsYXNoZXMuDQo+IA0KU2NvdHQs
+DQoNCkkgd2lsbCBzdWJtaXQgYSBwYXRjaCBpbiBVLUJvb3QgdG8gZml4IHRoaXMgaXNzdWUuIFNv
+bWUgcXVpY2sgcXVlc3Rpb25zOg0KMS4gU2hvdWxkIHdlIHNldCB0aGUgU1BJIGZsYXNoIGFzIE1U
+RFBBUlRTX0RFRkFVTFQ/DQoyLiBTaG91bGQgd2UgY29uc2lkZXIgdGhlIHBhcnRpdGlvbiBmb3Ig
+TkFORC9OT1IgaW4gbXRkcGFydHM/DQozLiBXZSBuZWVkIHRvIHJlbW92ZSB0aGUgcGFydGl0aW9u
+IHRhYmxlIGluIGRldmljZSB0cmVlLCByaWdodD8NCg0KVGhhbmtzLA0KTWluZ2thaQ0K
