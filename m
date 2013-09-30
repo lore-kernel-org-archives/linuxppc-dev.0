@@ -1,33 +1,26 @@
-Return-Path: <hverkuil@xs4all.nl>
-Received: from smtp-vbr8.xs4all.nl (smtp-vbr8.xs4all.nl [194.109.24.28])
- by ozlabs.org (Postfix) with ESMTP id DD2932C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 22:10:33 +1000 (EST)
-Message-ID: <5249673B.5020705@xs4all.nl>
-Date: Mon, 30 Sep 2013 13:57:47 +0200
-From: Hans Verkuil <hverkuil@xs4all.nl>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id D1DE42C00C5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 00:21:47 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 16990-01 for <linuxppc-dev@lists.ozlabs.org>;
+ Mon, 30 Sep 2013 15:21:37 +0100 (BST)
 MIME-Version: 1.0
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH 19/51] DMA-API: media: dt3155v4l: replace
- dma_set_mask()+dma_set_coherent_mask() with new helper
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMm13-0007hO-9l@rmk-PC.arm.linux.org.uk>
-In-Reply-To: <E1VMm13-0007hO-9l@rmk-PC.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
- linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
- b43-dev@lists.infradead.org, linux-media@vger.kernel.org,
- devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, linux-crypto@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH] powerpc/8xx: tqm8xx: fix incorrect placement of
+ __initdata tag
+Date: Mon, 30 Sep 2013 15:20:29 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B736B@saturn3.aculab.com>
+In-Reply-To: <1589399.KSlGuZSdd2@amdc1032>
+References: <1589399.KSlGuZSdd2@amdc1032>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Bartlomiej Zolnierkiewicz" <b.zolnierkie@samsung.com>,
+ "Vitaly Bordug" <vitb@kernel.crashing.org>
+Cc: Marcelo Tosatti <marcelo@kvack.org>,
+ Kyungmin Park <kyungmin.park@samsung.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,40 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/19/2013 11:44 PM, Russell King wrote:
-> Replace the following sequence:
-> 
-> 	dma_set_mask(dev, mask);
-> 	dma_set_coherent_mask(dev, mask);
-> 
-> with a call to the new helper dma_set_mask_and_coherent().
-> 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> __initdata tag should be placed between the variable name and equal
+> sign for the variable to be placed in the intended .init.data section.
+...
+> -static struct __initdata cpm_pin tqm8xx_pins[] =3D {
+> +static struct cpm_pin tqm8xx_pins[] __initdata =3D {
 
-Acked-by: Hans Verkuil <hans.verkuil@cisco.com>
+As far as gcc is concerned it can go almost anywhere before the '=3D',
+even before the 'static'.
+Splitting 'struct cpm_pin' does seem an odd choice.
 
-Regards,
+The Linux coding standards might suggest a location.
+I'd have thought that either before or after the 'static' would be best
+(ie as a storage class qualifier).
 
-	Hans
-
-> ---
->  drivers/staging/media/dt3155v4l/dt3155v4l.c |    5 +----
->  1 files changed, 1 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/staging/media/dt3155v4l/dt3155v4l.c b/drivers/staging/media/dt3155v4l/dt3155v4l.c
-> index 90d6ac4..081407b 100644
-> --- a/drivers/staging/media/dt3155v4l/dt3155v4l.c
-> +++ b/drivers/staging/media/dt3155v4l/dt3155v4l.c
-> @@ -901,10 +901,7 @@ dt3155_probe(struct pci_dev *pdev, const struct pci_device_id *id)
->  	int err;
->  	struct dt3155_priv *pd;
->  
-> -	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
-> -	if (err)
-> -		return -ENODEV;
-> -	err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-> +	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
->  	if (err)
->  		return -ENODEV;
->  	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
-> 
+	David
