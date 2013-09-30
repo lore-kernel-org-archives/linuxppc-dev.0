@@ -1,26 +1,26 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9C6992C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 08:50:54 +1000 (EST)
-Message-ID: <1380581443.24959.531.camel@snotra.buserror.net>
-Subject: Re: [PATCH 2/2] pci: fsl: rework PCI driver compatible with Layerscape
-From: Scott Wood <scottwood@freescale.com>
-To: Lian Minghuan-b31939 <B31939@freescale.com>
-Date: Mon, 30 Sep 2013 17:50:43 -0500
-In-Reply-To: <5248144A.6070307@freescale.com>
-References: <1379502122-20792-1-git-send-email-Minghuan.Lian@freescale.com>
- <1379502122-20792-2-git-send-email-Minghuan.Lian@freescale.com>
- <1380300847.24959.394.camel@snotra.buserror.net>
- <5248144A.6070307@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C699D2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 08:53:12 +1000 (EST)
+Message-ID: <1380581522.6396.20.camel@pasglop>
+Subject: Re: Avoiding the dentry d_lock on final dput(), part deux:
+ transactional memory
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 01 Oct 2013 08:52:02 +1000
+In-Reply-To: <CA+55aFwp-RAKEMVvbMG53C=kTMqS09NPXy1eP4xEUYZpvV8X5Q@mail.gmail.com>
+References: <CA+55aFwp-RAKEMVvbMG53C=kTMqS09NPXy1eP4xEUYZpvV8X5Q@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linux-pci@vger.kernel.org, Zang Roy-R61911 <r61911@freescale.com>,
- Minghuan Lian <Minghuan.Lian@freescale.com>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Mime-Version: 1.0
+Cc: Waiman Long <Waiman.Long@hp.com>, Peter Zijlstra <peterz@infradead.org>,
+ "Norton, Scott J" <scott.norton@hp.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Chandramouleeswaran,
+ Aswin" <aswin@hp.com>, Michael Neuling <michael.neuling@au1.ibm.com>,
+ George Spelvin <linux@horizon.com>,
+ linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-09-29 at 19:51 +0800, Lian Minghuan-b31939 wrote:
-> >> +/*
-> >> + * The fsl_arch_* functions are arch hooks. Those functions are
-> >> + * implemented as weak symbols so that they can be overridden by
-> >> + * architecture specific code if needed.
-> >> + */
-> >> +
-> >> +/* Return PCI64 DMA offset */
-> >> +u64 fsl_arch_pci64_dma_offset(void);
-> > Is this always guaranteed to exist?
-> [Minghuan] Yes. I define a __weak implementation in pci-fsl.c
+On Mon, 2013-09-30 at 12:29 -0700, Linus Torvalds wrote:
+> 
+> But I'm cc'ing the POWER people, because I don't know the POWER8
+> interfaces, and I don't want to necessarily call this "xbegin"/"xend"
+> when I actually wrap it in some helper functions.
 
-I meant is it guaranteed that such a mapping exists?  The API doesn't
-give a way to say "no".
+The main problem with powerpc TM is that we need to handle interrupts
+happening while in transactional state. We currently only handle that
+for userspace.
 
-Also you should describe what "PCI64 DMA offset" means.
+Mikey, how hard would it be to detect the in-kernel TM case and just
+simulate an abort in the exception entry ? (return to tbegin basically)
 
-> >> +/* Register PCI/PCIe controller to architecture system */
-> >> +int __weak fsl_arch_pci_sys_register(struct fsl_pci *pci);
-> >> +
-> >> +/* Remove PCI/PCIe controller from architecture system */
-> >> +void __weak fsl_arch_pci_sys_remove(struct fsl_pci *pci);
-> > Why do these need to be weak?  Won't there be exactly one implementation
-> > per supported arch?
-> [Minghuan] I added __weak for compiling kernel when selecting pci-fsl 
-> module but
-> there is no related arch pci implementation.
+Transactions in kernel make me nervous because of the PC jumping around
+on aborts and how easy we can get that stuff wrong :-) They also have
+interesting ordering semantics vs. locks, we need to be a tad careful
+(as long as we don't access a lock variable transactionally we should be
+ok. If we do, then spin_unlock needs a stronger barrier).
 
-The module should not be buildable on arches that don't have support.
+The basic semantic for us is tbegin. [...] tend instructions. If the
+transaction fails, control returns to tbegin. (can happen at any point)
+which returns a CC code indicating success or failure.
 
--Scott
+Things get really complicated if you take an interrupt however, the
+transaction gets into some special "suspended" state, it doesn't just
+die so we need to handle things in our interrupt entry (even if it's
+just to make the transaction abort cleanly) and right now we don't when
+coming from kernel space.
+
+Cheers,
+Ben.
