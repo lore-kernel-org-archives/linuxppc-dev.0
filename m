@@ -1,26 +1,23 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id D1DE42C00C5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 00:21:47 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 16990-01 for <linuxppc-dev@lists.ozlabs.org>;
- Mon, 30 Sep 2013 15:21:37 +0100 (BST)
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 3B4372C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 00:51:09 +1000 (EST)
+Message-ID: <52498FD9.6060809@suse.de>
+Date: Mon, 30 Sep 2013 16:51:05 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: [PATCH] powerpc/8xx: tqm8xx: fix incorrect placement of
- __initdata tag
-Date: Mon, 30 Sep 2013 15:20:29 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B736B@saturn3.aculab.com>
-In-Reply-To: <1589399.KSlGuZSdd2@amdc1032>
-References: <1589399.KSlGuZSdd2@amdc1032>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Bartlomiej Zolnierkiewicz" <b.zolnierkie@samsung.com>,
- "Vitaly Bordug" <vitb@kernel.crashing.org>
-Cc: Marcelo Tosatti <marcelo@kvack.org>,
- Kyungmin Park <kyungmin.park@samsung.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 06/11] kvm: powerpc: book3s: Add is_hv_enabled to
+ kvmppc_ops
+References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1380276233-17095-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <9BAA779D-FE0C-4971-992B-57D80F945906@suse.de>
+ <87zjqya025.fsf@linux.vnet.ibm.com>
+ <F87036DE-6077-4B79-965F-C52F84DD994D@suse.de>
+ <87pprqbh96.fsf@linux.vnet.ibm.com>
+In-Reply-To: <87pprqbh96.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,18 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> __initdata tag should be placed between the variable name and equal
-> sign for the variable to be placed in the intended .init.data section.
-...
-> -static struct __initdata cpm_pin tqm8xx_pins[] =3D {
-> +static struct cpm_pin tqm8xx_pins[] __initdata =3D {
+On 09/30/2013 02:56 PM, Aneesh Kumar K.V wrote:
+> Alexander Graf<agraf@suse.de>  writes:
+>
+>> On 27.09.2013, at 15:03, Aneesh Kumar K.V wrote:
+>>
+>>> Alexander Graf<agraf@suse.de>  writes:
+>>>
+>>>
+>>>>> diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
+>>>>> index 1abe478..e0229dd 100644
+>>>>> --- a/arch/powerpc/kvm/book3s_segment.S
+>>>>> +++ b/arch/powerpc/kvm/book3s_segment.S
+>>>>> @@ -161,9 +161,14 @@ kvmppc_handler_trampoline_enter_end:
+>>>>> .global kvmppc_handler_trampoline_exit
+>>>>> kvmppc_handler_trampoline_exit:
+>>>>>
+>>>>> +#if defined(CONFIG_KVM_BOOK3S_HV)
+>>>>> +.global kvmppc_interrupt_pr
+>>>>> +kvmppc_interrupt_pr:
+>>>>> +	ld	r9, HSTATE_SCRATCH2(r13)
+>>>>> +#else
+>>>>> .global kvmppc_interrupt
+>>>>> kvmppc_interrupt:
+>>>> Just always call it kvmppc_interrupt_pr and thus share at least that
+>>>> part of the code :).
+>>> But if i don't have HV enabled, we don't compile book3s_hv_rmhandlers.S
+>>> Hence don't have the kvmppc_interrupt symbol defined.
+>> Ah, because we're always jumping to kvmppc_interrupt. Can we make this
+>> slightly less magical? How about we always call kvmppc_interrupt_hv
+>> when CONFIG_KVM_BOOK3S_HV_POSSIBLE and always kvmppc_interrupt_pr when
+>> CONFIG_KVM_BOOK3S_PR_POSSIBLE and then branch to kvmppc_interrupt_pr
+>> from kvmppc_interrupt_hv?
+>>
+>> IMHO that would make the code flow more obvious.
+>
+> To make sure I understand you correctly, what you are suggesting is
+> to update __KVM_HANDLER to call kvmppc_interupt_pr when HV is not
+> enabled ?
 
-As far as gcc is concerned it can go almost anywhere before the '=3D',
-even before the 'static'.
-Splitting 'struct cpm_pin' does seem an odd choice.
+Yes, I think that makes the code flow more obvious. Every function 
+always has the same name regardless of config options then.
 
-The Linux coding standards might suggest a location.
-I'd have thought that either before or after the 'static' would be best
-(ie as a storage class qualifier).
 
-	David
+Alex
