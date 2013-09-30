@@ -1,37 +1,37 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C6CB32C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 22:56:16 +1000 (EST)
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0B0AB2C00E4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 22:57:31 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 30 Sep 2013 22:56:15 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6A4D82BB0056
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 22:56:12 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r8UCtx6Y10879306
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 22:56:01 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r8UCuAwS007953
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 22:56:10 +1000
+ Mon, 30 Sep 2013 18:27:28 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id EE4D2E0056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 18:28:34 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8UCxlVQ26673170
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 18:29:48 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8UCvOb2000860
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 18:27:24 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [RFC PATCH 06/11] kvm: powerpc: book3s: Add is_hv_enabled to
- kvmppc_ops
-In-Reply-To: <F87036DE-6077-4B79-965F-C52F84DD994D@suse.de>
+Subject: Re: [RFC PATCH 07/11] kvm: powerpc: book3s: pr: move PR related
+ tracepoints to a separate header
+In-Reply-To: <BAB3B542-A47C-49A8-B2D5-26C461A4E12D@suse.de>
 References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1380276233-17095-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <9BAA779D-FE0C-4971-992B-57D80F945906@suse.de>
- <87zjqya025.fsf@linux.vnet.ibm.com>
- <F87036DE-6077-4B79-965F-C52F84DD994D@suse.de>
-Date: Mon, 30 Sep 2013 18:26:05 +0530
-Message-ID: <87pprqbh96.fsf@linux.vnet.ibm.com>
+ <1380276233-17095-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <C02177CF-C8A0-4E84-82FE-1994742B8EBD@suse.de>
+ <87wqm29zxk.fsf@linux.vnet.ibm.com>
+ <BAB3B542-A47C-49A8-B2D5-26C461A4E12D@suse.de>
+Date: Mon, 30 Sep 2013 18:27:23 +0530
+Message-ID: <87mwmubh70.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
@@ -46,44 +46,97 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Alexander Graf <agraf@suse.de> writes:
 
-> On 27.09.2013, at 15:03, Aneesh Kumar K.V wrote:
+> On 27.09.2013, at 15:06, Aneesh Kumar K.V wrote:
 >
 >> Alexander Graf <agraf@suse.de> writes:
 >> 
->> 
->>>> diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
->>>> index 1abe478..e0229dd 100644
->>>> --- a/arch/powerpc/kvm/book3s_segment.S
->>>> +++ b/arch/powerpc/kvm/book3s_segment.S
->>>> @@ -161,9 +161,14 @@ kvmppc_handler_trampoline_enter_end:
->>>> .global kvmppc_handler_trampoline_exit
->>>> kvmppc_handler_trampoline_exit:
->>>> 
->>>> +#if defined(CONFIG_KVM_BOOK3S_HV)
->>>> +.global kvmppc_interrupt_pr
->>>> +kvmppc_interrupt_pr:
->>>> +	ld	r9, HSTATE_SCRATCH2(r13)
->>>> +#else
->>>> .global kvmppc_interrupt
->>>> kvmppc_interrupt:
+>>> On 27.09.2013, at 12:03, Aneesh Kumar K.V wrote:
 >>> 
->>> Just always call it kvmppc_interrupt_pr and thus share at least that
->>> part of the code :).
+>>>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>>>> 
+>>>> This patch moves PR related tracepoints to a separate header. This
+>>>> enables in converting PR to a kernel module which will be done in
+>>>> later patches
+>>>> 
+>>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>>>> ---
+>>>> arch/powerpc/kvm/book3s_64_mmu_host.c |   2 +-
+>>>> arch/powerpc/kvm/book3s_mmu_hpte.c    |   2 +-
+>>>> arch/powerpc/kvm/book3s_pr.c          |   3 +-
+>>>> arch/powerpc/kvm/trace.h              | 234 +--------------------------
+>>>> arch/powerpc/kvm/trace_pr.h           | 297 ++++++++++++++++++++++++++++++++++
+>>>> 5 files changed, 308 insertions(+), 230 deletions(-)
+>>>> create mode 100644 arch/powerpc/kvm/trace_pr.h
+>>>> 
+>>>> diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+>>>> index 329a978..fd5b393 100644
+>>>> --- a/arch/powerpc/kvm/book3s_64_mmu_host.c
+>>>> +++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+>>>> @@ -27,7 +27,7 @@
+>>>> #include <asm/machdep.h>
+>>>> #include <asm/mmu_context.h>
+>>>> #include <asm/hw_irq.h>
+>>>> -#include "trace.h"
+>>>> +#include "trace_pr.h"
+>>>> 
+>>>> #define PTE_SIZE 12
+>>>> 
+>>>> diff --git a/arch/powerpc/kvm/book3s_mmu_hpte.c b/arch/powerpc/kvm/book3s_mmu_hpte.c
+>>>> index d2d280b..4556168 100644
+>>>> --- a/arch/powerpc/kvm/book3s_mmu_hpte.c
+>>>> +++ b/arch/powerpc/kvm/book3s_mmu_hpte.c
+>>>> @@ -28,7 +28,7 @@
+>>>> #include <asm/mmu_context.h>
+>>>> #include <asm/hw_irq.h>
+>>>> 
+>>>> -#include "trace.h"
+>>>> +#include "trace_pr.h"
+>>>> 
+>>>> #define PTE_SIZE	12
+>>>> 
+>>>> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+>>>> index 2a97279..99d0839 100644
+>>>> --- a/arch/powerpc/kvm/book3s_pr.c
+>>>> +++ b/arch/powerpc/kvm/book3s_pr.c
+>>>> @@ -41,7 +41,8 @@
+>>>> #include <linux/vmalloc.h>
+>>>> #include <linux/highmem.h>
+>>>> 
+>>>> -#include "trace.h"
+>>>> +#define CREATE_TRACE_POINTS
+>>>> +#include "trace_pr.h"
+>>>> 
+>>>> /* #define EXIT_DEBUG */
+>>>> /* #define DEBUG_EXT */
+>>>> diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
+>>>> index a088e9a..7d5a136 100644
+>>>> --- a/arch/powerpc/kvm/trace.h
+>>>> +++ b/arch/powerpc/kvm/trace.h
+>>>> @@ -85,6 +85,12 @@ TRACE_EVENT(kvm_ppc_instr,
+>>>> 	{41, "HV_PRIV"}
+>>>> #endif
+>>>> 
+>>>> +#ifndef CONFIG_KVM_BOOK3S_PR
+>>>> +/*
+>>>> + * For pr we define this in trace_pr.h since it pr can be built as
+>>>> + * a module
+>>> 
+>>> Not sure I understand the need. If the config option is available, so
+>>> should the struct field. Worst case that happens with HV is that we
+>>> get empty shadow_srr1 values in our trace, no?
 >> 
->> But if i don't have HV enabled, we don't compile book3s_hv_rmhandlers.S
->> Hence don't have the kvmppc_interrupt symbol defined.
+>> That is not the real reason. trace.h get built as part of kvm.ko or as
+>> part of kernel. These trace functions actually get called from
+>> kvm-pr.ko. To make they build i would either need EXPORT_SYMBOL or move
+>> the definition of them to kvm-pr.ko. I did the later and moved only pr
+>> related traces to kvm-pr.ko
 >
-> Ah, because we're always jumping to kvmppc_interrupt. Can we make this
-> slightly less magical? How about we always call kvmppc_interrupt_hv
-> when CONFIG_KVM_BOOK3S_HV_POSSIBLE and always kvmppc_interrupt_pr when
-> CONFIG_KVM_BOOK3S_PR_POSSIBLE and then branch to kvmppc_interrupt_pr
-> from kvmppc_interrupt_hv?
->
-> IMHO that would make the code flow more obvious.
+> I fail to see why we wouldn't have a trace_hv.h file then, as that can
+> also be built as a module, no? And at that point I don't see why we
+> would need any conditionals at all in trace.h anymore, as it would
+> only cover generic code.
 
-
-To make sure I understand you correctly, what you are suggesting is
-to update __KVM_HANDLER to call kvmppc_interupt_pr when HV is not
-enabled ?
+Currently HV module is not using any tracepoints. Once it start using
+tracepoints we would have trace_hv.h
 
 -aneesh
