@@ -1,26 +1,41 @@
-Return-Path: <b.zolnierkie@samsung.com>
-Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
- by ozlabs.org (Postfix) with ESMTP id A31062C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 01:06:06 +1000 (EST)
-Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout2.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0MTY00LXV1Y3STZ0@mailout2.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 01 Oct 2013 00:06:03 +0900 (KST)
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-To: David Laight <David.Laight@aculab.com>
-Subject: Re: [PATCH] powerpc/8xx: tqm8xx: fix incorrect placement of __initdata
- tag
-Date: Mon, 30 Sep 2013 17:05:51 +0200
-Message-id: <9412116.FMJVEO7gkK@amdc1032>
-In-reply-to: <AE90C24D6B3A694183C094C60CF0A2F6026B736B@saturn3.aculab.com>
-References: <1589399.KSlGuZSdd2@amdc1032>
- <AE90C24D6B3A694183C094C60CF0A2F6026B736B@saturn3.aculab.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=Windows-1252
-Cc: Marcelo Tosatti <marcelo@kvack.org>,
- Kyungmin Park <kyungmin.park@samsung.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7D51E2C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 01:53:22 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 30 Sep 2013 21:23:17 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3EA53E0053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 21:24:23 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8UFrA2D34472066
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 21:23:10 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8UFrCgv019372
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 21:23:12 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [RFC PATCH 07/11] kvm: powerpc: book3s: pr: move PR related
+ tracepoints to a separate header
+In-Reply-To: <52499003.1090405@suse.de>
+References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1380276233-17095-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <C02177CF-C8A0-4E84-82FE-1994742B8EBD@suse.de>
+ <87wqm29zxk.fsf@linux.vnet.ibm.com>
+ <BAB3B542-A47C-49A8-B2D5-26C461A4E12D@suse.de>
+ <87mwmubh70.fsf@linux.vnet.ibm.com> <52499003.1090405@suse.de>
+Date: Mon, 30 Sep 2013 21:23:11 +0530
+Message-ID: <87bo3ab920.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +45,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, September 30, 2013 03:20:29 PM David Laight wrote:
-> > __initdata tag should be placed between the variable name and equal
-> > sign for the variable to be placed in the intended .init.data section.
-> ...
-> > -static struct __initdata cpm_pin tqm8xx_pins[] = {
-> > +static struct cpm_pin tqm8xx_pins[] __initdata = {
-> 
-> As far as gcc is concerned it can go almost anywhere before the '=',
-> even before the 'static'.
-> Splitting 'struct cpm_pin' does seem an odd choice.
+Alexander Graf <agraf@suse.de> writes:
 
-It is not only an odd choice, it just doesn't work as it should in
-the practice (as tested with gcc-4.6.3 from Ubuntu 12.04).
+> On 09/30/2013 02:57 PM, Aneesh Kumar K.V wrote:
+>> Alexander Graf<agraf@suse.de>  writes:
+>>>>>> diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
+>>>>>> index a088e9a..7d5a136 100644
+>>>>>> --- a/arch/powerpc/kvm/trace.h
+>>>>>> +++ b/arch/powerpc/kvm/trace.h
+>>>>>> @@ -85,6 +85,12 @@ TRACE_EVENT(kvm_ppc_instr,
+>>>>>> 	{41, "HV_PRIV"}
+>>>>>> #endif
+>>>>>>
+>>>>>> +#ifndef CONFIG_KVM_BOOK3S_PR
+>>>>>> +/*
+>>>>>> + * For pr we define this in trace_pr.h since it pr can be built as
+>>>>>> + * a module
+>>>>> Not sure I understand the need. If the config option is available, so
+>>>>> should the struct field. Worst case that happens with HV is that we
+>>>>> get empty shadow_srr1 values in our trace, no?
+>>>> That is not the real reason. trace.h get built as part of kvm.ko or as
+>>>> part of kernel. These trace functions actually get called from
+>>>> kvm-pr.ko. To make they build i would either need EXPORT_SYMBOL or move
+>>>> the definition of them to kvm-pr.ko. I did the later and moved only pr
+>>>> related traces to kvm-pr.ko
+>>> I fail to see why we wouldn't have a trace_hv.h file then, as that can
+>>> also be built as a module, no? And at that point I don't see why we
+>>> would need any conditionals at all in trace.h anymore, as it would
+>>> only cover generic code.
+>> Currently HV module is not using any tracepoints. Once it start using
+>> tracepoints we would have trace_hv.h
+>
+> So why would there be an #ifndef in trace.h?
+>
 
-> The Linux coding standards might suggest a location.
-> I'd have thought that either before or after the 'static' would be best
-> (ie as a storage class qualifier).
+to handle things like trace_kvm_exit in booke.c. For that we still don't
+have kernel module, and booke.c include trace.h.
 
-The majority of the kernel code uses __initdata before equal sign
-and the __initdata documentation in <linux/init.h> recommends such
-usage:
-
-"
- * For initialized data:
- * You should insert __initdata or __initconst between the variable name
- * and equal sign followed by value, e.g.:
- *
- * static int init_variable __initdata = 0;
- * static const char linux_logo[] __initconst = { 0x32, 0x36, ... };
-"
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+-aneesh
