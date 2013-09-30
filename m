@@ -1,21 +1,33 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 106EA2C0094
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 20:16:19 +1000 (EST)
-Subject: Re: [RFC PATCH 00/11 Allow PR and HV KVM to coexist in one kernel
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <878uyibkq2.fsf@linux.vnet.ibm.com>
-Date: Mon, 30 Sep 2013 12:16:14 +0200
-Message-Id: <48337EF0-471D-4BDB-8088-FC072FF82753@suse.de>
-References: <1380276233-17095-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <878uyibkq2.fsf@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: "<kvm@vger.kernel.org> list" <kvm@vger.kernel.org>,
- Gleb Natapov <gleb@redhat.com>, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 19EFA2C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 21:17:44 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 30 Sep 2013 16:47:35 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 0B945394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 16:47:16 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r8UBHUwK48693476
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 16:47:30 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r8UBHVa4005226
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2013 16:47:31 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/kernel/sysfs: cleanup set up macros for pmc/non pmc
+ sprs
+Date: Mon, 30 Sep 2013 16:47:29 +0530
+Message-Id: <1380539849-6162-1-git-send-email-maddy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,120 +37,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Currently pmc setup macros are used for non pmc sprs. This patch
+add new set of macros and cleans up the code to use the new setup macro
+for non pmc sprs.
 
-On 27.09.2013, at 12:52, Aneesh Kumar K.V wrote:
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/sysfs.c |   95 ++++++++++++++++++++++++++++---------------
+ 1 file changed, 63 insertions(+), 32 deletions(-)
 
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->=20
->> Hi All,
->>=20
->> This patch series support enabling HV and PR KVM together in the same =
-kernel. We
->> extend machine property with new property "kvm_type". A value of 1 =
-will force HV
->> KVM and 2 PR KVM. The default value is 0 which will select the =
-fastest KVM mode.
->> ie, HV if that is supported otherwise PR.
->>=20
->> With Qemu command line having
->>=20
->> -machine pseries,accel=3Dkvm,kvm_type=3D1
->>=20
->> [root@llmp24l02 qemu]# bash ../qemu
->> failed to initialize KVM: Invalid argument
->> [root@llmp24l02 qemu]# modprobe kvm-pr
->> [root@llmp24l02 qemu]# bash ../qemu
->> failed to initialize KVM: Invalid argument
->> [root@llmp24l02 qemu]# modprobe  kvm-hv
->> [root@llmp24l02 qemu]# bash ../qemu
->>=20
->> now with
->>=20
->> -machine pseries,accel=3Dkvm,kvm_type=3D2
->>=20
->> [root@llmp24l02 qemu]# rmmod kvm-pr
->> [root@llmp24l02 qemu]# bash ../qemu
->> failed to initialize KVM: Invalid argument
->> [root@llmp24l02 qemu]#
->> [root@llmp24l02 qemu]# modprobe kvm-pr
->> [root@llmp24l02 qemu]# bash ../qemu
->>=20
->> if don't specify kvm_type machine property, it will take a default =
-value 0,
->> which means fastest supported.
->=20
-> Related qemu patch
->=20
-> commit 8d139053177d48a70cb710b211ea4c2843eccdfb
-> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Date:   Mon Sep 23 12:28:37 2013 +0530
->=20
->    kvm: Add a new machine property kvm_type
->=20
->    Targets like ppc64 support different type of KVM, one which use
->    hypervisor mode and the other which doesn't. Add a new machine
->    property kvm_type that helps in selecting the respective ones
->=20
->    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 27a90b9..73b6f9f 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -139,6 +139,37 @@ static ssize_t __used \
+ 	return count; \
+ }
 
-This really is too early, as we can't possibly run in HV mode for =
-non-pseries machines, so the interpretation (or at least sanity =
-checking) of what values are reasonable should occur in the machine. =
-That's why it's a variable in the "machine opts".
++#define SYSFS_SPRSETUP(NAME, ADDRESS) \
++static void read_##NAME(void *val) \
++{ \
++	*(unsigned long *)val = mfspr(ADDRESS);	\
++} \
++static void write_##NAME(void *val) \
++{ \
++	mtspr(ADDRESS, *(unsigned long *)val);	\
++} \
++static ssize_t show_##NAME(struct device *dev, \
++			struct device_attribute *attr, \
++			char *buf) \
++{ \
++	struct cpu *cpu = container_of(dev, struct cpu, dev); \
++	unsigned long val; \
++	smp_call_function_single(cpu->dev.id, read_##NAME, &val, 1);	\
++	return sprintf(buf, "%lx\n", val); \
++} \
++static ssize_t __used \
++	store_##NAME(struct device *dev, struct device_attribute *attr, \
++			const char *buf, size_t count) \
++{ \
++	struct cpu *cpu = container_of(dev, struct cpu, dev); \
++	unsigned long val; \
++	int ret = sscanf(buf, "%lx", &val); \
++	if (ret != 1) \
++		return -EINVAL; \
++	smp_call_function_single(cpu->dev.id, write_##NAME, &val, 1); \
++	return count; \
++}
++
+ 
+ /* Let's define all possible registers, we'll only hook up the ones
+  * that are implemented on the current processor
+@@ -174,10 +205,10 @@ SYSFS_PMCSETUP(pmc7, SPRN_PMC7);
+ SYSFS_PMCSETUP(pmc8, SPRN_PMC8);
+ 
+ SYSFS_PMCSETUP(mmcra, SPRN_MMCRA);
+-SYSFS_PMCSETUP(purr, SPRN_PURR);
+-SYSFS_PMCSETUP(spurr, SPRN_SPURR);
+-SYSFS_PMCSETUP(dscr, SPRN_DSCR);
+-SYSFS_PMCSETUP(pir, SPRN_PIR);
++SYSFS_SPRSETUP(purr, SPRN_PURR);
++SYSFS_SPRSETUP(spurr, SPRN_SPURR);
++SYSFS_SPRSETUP(dscr, SPRN_DSCR);
++SYSFS_SPRSETUP(pir, SPRN_PIR);
+ 
+ static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
+ static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
+@@ -238,34 +269,34 @@ SYSFS_PMCSETUP(pa6t_pmc3, SPRN_PA6T_PMC3);
+ SYSFS_PMCSETUP(pa6t_pmc4, SPRN_PA6T_PMC4);
+ SYSFS_PMCSETUP(pa6t_pmc5, SPRN_PA6T_PMC5);
+ #ifdef CONFIG_DEBUG_KERNEL
+-SYSFS_PMCSETUP(hid0, SPRN_HID0);
+-SYSFS_PMCSETUP(hid1, SPRN_HID1);
+-SYSFS_PMCSETUP(hid4, SPRN_HID4);
+-SYSFS_PMCSETUP(hid5, SPRN_HID5);
+-SYSFS_PMCSETUP(ima0, SPRN_PA6T_IMA0);
+-SYSFS_PMCSETUP(ima1, SPRN_PA6T_IMA1);
+-SYSFS_PMCSETUP(ima2, SPRN_PA6T_IMA2);
+-SYSFS_PMCSETUP(ima3, SPRN_PA6T_IMA3);
+-SYSFS_PMCSETUP(ima4, SPRN_PA6T_IMA4);
+-SYSFS_PMCSETUP(ima5, SPRN_PA6T_IMA5);
+-SYSFS_PMCSETUP(ima6, SPRN_PA6T_IMA6);
+-SYSFS_PMCSETUP(ima7, SPRN_PA6T_IMA7);
+-SYSFS_PMCSETUP(ima8, SPRN_PA6T_IMA8);
+-SYSFS_PMCSETUP(ima9, SPRN_PA6T_IMA9);
+-SYSFS_PMCSETUP(imaat, SPRN_PA6T_IMAAT);
+-SYSFS_PMCSETUP(btcr, SPRN_PA6T_BTCR);
+-SYSFS_PMCSETUP(pccr, SPRN_PA6T_PCCR);
+-SYSFS_PMCSETUP(rpccr, SPRN_PA6T_RPCCR);
+-SYSFS_PMCSETUP(der, SPRN_PA6T_DER);
+-SYSFS_PMCSETUP(mer, SPRN_PA6T_MER);
+-SYSFS_PMCSETUP(ber, SPRN_PA6T_BER);
+-SYSFS_PMCSETUP(ier, SPRN_PA6T_IER);
+-SYSFS_PMCSETUP(sier, SPRN_PA6T_SIER);
+-SYSFS_PMCSETUP(siar, SPRN_PA6T_SIAR);
+-SYSFS_PMCSETUP(tsr0, SPRN_PA6T_TSR0);
+-SYSFS_PMCSETUP(tsr1, SPRN_PA6T_TSR1);
+-SYSFS_PMCSETUP(tsr2, SPRN_PA6T_TSR2);
+-SYSFS_PMCSETUP(tsr3, SPRN_PA6T_TSR3);
++SYSFS_SPRSETUP(hid0, SPRN_HID0);
++SYSFS_SPRSETUP(hid1, SPRN_HID1);
++SYSFS_SPRSETUP(hid4, SPRN_HID4);
++SYSFS_SPRSETUP(hid5, SPRN_HID5);
++SYSFS_SPRSETUP(ima0, SPRN_PA6T_IMA0);
++SYSFS_SPRSETUP(ima1, SPRN_PA6T_IMA1);
++SYSFS_SPRSETUP(ima2, SPRN_PA6T_IMA2);
++SYSFS_SPRSETUP(ima3, SPRN_PA6T_IMA3);
++SYSFS_SPRSETUP(ima4, SPRN_PA6T_IMA4);
++SYSFS_SPRSETUP(ima5, SPRN_PA6T_IMA5);
++SYSFS_SPRSETUP(ima6, SPRN_PA6T_IMA6);
++SYSFS_SPRSETUP(ima7, SPRN_PA6T_IMA7);
++SYSFS_SPRSETUP(ima8, SPRN_PA6T_IMA8);
++SYSFS_SPRSETUP(ima9, SPRN_PA6T_IMA9);
++SYSFS_SPRSETUP(imaat, SPRN_PA6T_IMAAT);
++SYSFS_SPRSETUP(btcr, SPRN_PA6T_BTCR);
++SYSFS_SPRSETUP(pccr, SPRN_PA6T_PCCR);
++SYSFS_SPRSETUP(rpccr, SPRN_PA6T_RPCCR);
++SYSFS_SPRSETUP(der, SPRN_PA6T_DER);
++SYSFS_SPRSETUP(mer, SPRN_PA6T_MER);
++SYSFS_SPRSETUP(ber, SPRN_PA6T_BER);
++SYSFS_SPRSETUP(ier, SPRN_PA6T_IER);
++SYSFS_SPRSETUP(sier, SPRN_PA6T_SIER);
++SYSFS_SPRSETUP(siar, SPRN_PA6T_SIAR);
++SYSFS_SPRSETUP(tsr0, SPRN_PA6T_TSR0);
++SYSFS_SPRSETUP(tsr1, SPRN_PA6T_TSR1);
++SYSFS_SPRSETUP(tsr2, SPRN_PA6T_TSR2);
++SYSFS_SPRSETUP(tsr3, SPRN_PA6T_TSR3);
+ #endif /* CONFIG_DEBUG_KERNEL */
+ #endif /* HAS_PPC_PMC_PA6T */
 
-Also, users don't want to say type=3D0. They want to say type=3DPR or =
-type=3DHV or type=3DHV,PR. In fact, can't you make this a property of =
--accel? Then it's truly accel specific and everything should be well.
-
-
-Alex
-
->=20
-> diff --git a/kvm-all.c b/kvm-all.c
-> index b87215c..a061eda 100644
-> --- a/kvm-all.c
-> +++ b/kvm-all.c
-> @@ -1350,7 +1350,7 @@ int kvm_init(void)
->     KVMState *s;
->     const KVMCapabilityInfo *missing_cap;
->     int ret;
-> -    int i;
-> +    int i, kvm_type;
->     int max_vcpus;
->=20
->     s =3D g_malloc0(sizeof(KVMState));
-> @@ -1407,7 +1407,8 @@ int kvm_init(void)
->         goto err;
->     }
->=20
-> -    s->vmfd =3D kvm_ioctl(s, KVM_CREATE_VM, 0);
-> +    kvm_type =3D qemu_opt_get_number(qemu_get_machine_opts(), =
-"kvm_type", 0);
-> +    s->vmfd =3D kvm_ioctl(s, KVM_CREATE_VM, kvm_type);
->     if (s->vmfd < 0) {
-> #ifdef TARGET_S390X
->         fprintf(stderr, "Please add the 'switch_amode' kernel =
-parameter to "
-> diff --git a/vl.c b/vl.c
-> index 4e709d5..4374b17 100644
-> --- a/vl.c
-> +++ b/vl.c
-> @@ -427,7 +427,12 @@ static QemuOptsList qemu_machine_opts =3D {
->             .name =3D "usb",
->             .type =3D QEMU_OPT_BOOL,
->             .help =3D "Set on/off to enable/disable usb",
-> +        },{
-> +            .name =3D "kvm_type",
-> +            .type =3D QEMU_OPT_NUMBER,
-> +            .help =3D "Set to kvm type to be used in create vm =
-ioctl",
->         },
-> +
->         { /* End of list */ }
->     },
-> };
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--
+1.7.10.4
