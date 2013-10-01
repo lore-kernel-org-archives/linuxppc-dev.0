@@ -1,30 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Tue, 1 Oct 2013 17:51:33 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
-Message-ID: <20131001075133.GJ17966@concordia>
-References: <20130905154436.GC24148@htj.dyndns.org>
- <20130905185440.GA13175@dhcp-26-207.brq.redhat.com>
- <20130905200608.GA3846@htj.dyndns.org>
- <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
- <20130906160621.GF22763@mtj.dyndns.org>
- <20130906233205.GF12956@google.com>
- <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
- <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
- <20130917143022.GA7707@concordia>
- <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
+Return-Path: <bigeasy@linutronix.de>
+Received: from Galois.linutronix.de (www.linutronix.de [62.245.132.108])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 648D52C00EF
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Oct 2013 17:54:58 +1000 (EST)
+Message-ID: <524A7FCB.3020406@linutronix.de>
+Date: Tue, 01 Oct 2013 09:54:51 +0200
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Joerg Roedel <joro@8bytes.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- Jan Beulich <JBeulich@suse.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Tejun Heo <tj@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Ingo Molnar <mingo@kernel.org>
+To: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH] Revert "powerpc: 52xx: provide a default in
+ mpc52xx_irqhost_map()"
+References: <1380612366-13504-1-git-send-email-wsa@the-dreams.de>
+In-Reply-To: <1380612366-13504-1-git-send-email-wsa@the-dreams.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
+ linux-rt-users@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,88 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 18, 2013 at 11:48:00AM +0200, Alexander Gordeev wrote:
-> On Wed, Sep 18, 2013 at 12:30:23AM +1000, Michael Ellerman wrote:
-> > How about no?
-> > 
-> > We have a small number of MSIs available, limited by hardware &
-> > firmware, if we don't impose a quota then the first device that probes
-> > will get most/all of the MSIs and other devices miss out.
+On 10/01/2013 09:26 AM, Wolfram Sang wrote:
+> This reverts commit 6391f697d4892a6f233501beea553e13f7745a23. The
+> compiler warning it wants to fix does not appear with my gcc 4.6.2. IMO
+> we don't need superfluous (and here even misleading) code to make old
+> compilers happy. Fixing the printout was bogus, too. We want to know
+> WHICH critical irq failed, not which level it had.
+
+According to minimal Doc*/Changes minimal gcc is 3.2. Mine was 4.3.5.
+Why miss leading code? Default here does the same as unhandled and crit
+where it does nothing. Any why do you want to see l2irq since it was
+not in the case statement? l2 holds the number, l1 the level.
+
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Cc: Anatolij Gustschin <agust@denx.de>
+> ---
 > 
-> Out of curiosity - how pSeries has had done it without quotas before
-> 448e2ca ("powerpc/pseries: Implement a quota system for MSIs")?
+> Have I been on CC when the original patch was sent?
+
+You were but your email bounced. I wasn't aware of this new email
+address you are using now.
+
 > 
-> > Anyway I don't see what problem you're trying to solve? I agree the
-> > -ve/0/+ve return value pattern is ugly, but it's hardly the end of the
-> > world.
+>  arch/powerpc/platforms/52xx/mpc52xx_pic.c |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> Well, the interface recently has been re-classified from "ugly" to
-> "unnecessarily complex and actively harmful" in Tejun's words ;)
+> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
+> index b69221b..b89ef65 100644
+> --- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
+> +++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
+> @@ -373,9 +373,8 @@ static int mpc52xx_irqhost_map(struct irq_domain *h, unsigned int virq,
+>  	case MPC52xx_IRQ_L1_PERP: irqchip = &mpc52xx_periph_irqchip; break;
+>  	case MPC52xx_IRQ_L1_SDMA: irqchip = &mpc52xx_sdma_irqchip; break;
+>  	case MPC52xx_IRQ_L1_CRIT:
+> -	default:
+>  		pr_warn("%s: Critical IRQ #%d is unsupported! Nopping it.\n",
+> -			__func__, l1irq);
+> +			__func__, l2irq);
+>  		irq_set_chip(virq, &no_irq_chip);
+>  		return 0;
+>  	}
 > 
-> Indeed, I checked most of the drivers and it is incredible how people
-> are creative in misusing the interface: from innocent pci_disable_msix()
-> calls when if pci_enable_msix() failed to assuming MSI-Xs were enabled
-> if pci_enable_msix() returned a positive value (apparently untested).
 
-OK, but we have the source to the drivers, we could just fix them.
-
-We could even add:
-
-  pci_enable_msix_i_am_stupid()
-
-Which swallows the positive return and just gives back -ve/0.
-
-> Roughly third of the drivers just do not care and bail out once
-> pci_enable_msix() has not succeeded. Not sure how many of these are
-> mandated by the hardware.
-
-Sure, that's fine if those drivers do that, it's up to the drivers after
-all.
-
-> Another quite common pattern is a call to pci_enable_msix() to figure out
-> the number of MSI-Xs available and a repeated call of pci_enable_msix()
-> to enable those MSI-Xs, this time.
-
-Also fine, though as the documentation suggests a loop is the best
-construct rather than two explicit calls.
-
-> The recommended practice would be:
-> 
-> 	/*
-> 	 * Retrieving 'nvec' by means other than pci_msix_table_size()
-> 	 */
-> 
-> 	rc = pci_get_msix_limit(pdev);
-> 	if (rc < 0)
-> 		return rc;
-> 
-> 	/*
-> 	 * nvec = min(rc, nvec);
-> 	 */
-> 
-> 	for (i = 0; i < nvec; i++)
-> 		msix_entry[i].entry = i;
-> 
-> 	rc = pci_enable_msix(pdev, msix_entry, nvec);
-> 	if (rc)
-> 		return rc;
-> 
-> Thoughts?
-
-We could probably make that work.
-
-The disadvantage is that any restriction imposed on us above the quota
-can only be reported as an error from pci_enable_msix().
-
-The quota code, called from pci_get_msix_limit(), can only do so much to
-interogate firmware about the limitations. The ultimate way to check if
-firmware will give us enough MSIs is to try and allocate them. But we
-can't do that from pci_get_msix_limit() because the driver is not asking
-us to enable MSIs, just query them.
-
-You'll also need to add another arch hook, for the quota check, and
-we'll have to add it to our per-platform indirection as well.
-
-All a lot of bother for no real gain IMHO.
-
-cheers
+Sebastian
