@@ -1,13 +1,20 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 1 Oct 2013 17:11:35 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, paulmck@linux.vnet.ibm.com
-Subject: [PATCH] Restore registers on error exit from
- csum_partial_copy_generic()
-Message-ID: <20131001171135.56d9cc94@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail05.adl6.internode.on.net (ipmail05.adl6.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:6:5])
+ by ozlabs.org (Postfix) with ESMTP id AB1DC2C00DE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 17:13:06 +1000 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] iommu: Update platform initialisation of iommu to use
+ it_page_shift
+Date: Tue, 01 Oct 2013 17:13:16 +1000
+Message-ID: <1815031.vnRpi07Wk2@mexican>
+In-Reply-To: <20131001041228.GB17966@concordia>
+References: <1380599650-9541-1-git-send-email-alistair@popple.id.au>
+ <1380599650-9541-3-git-send-email-alistair@popple.id.au>
+ <20131001041228.GB17966@concordia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,152 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+On Tue, 1 Oct 2013 14:12:29 Michael Ellerman wrote:
+> On Tue, Oct 01, 2013 at 01:54:10PM +1000, Alistair Popple wrote:
+> > This patch initialises the iommu page size used for vio, cell, powernv
+> > and pseries platforms to 4K.  It has been boot tested on a pseries
+> > machine with vio.
+> 
+> This patch fixes the build errors introduced by the previous patch
+> right?
+> 
+> In which case you need to rework it so that you introduce the new
+> constants, use them everywhere, before removing the old constants. ie.
+> the build should never break.
 
-The csum_partial_copy_generic() function saves the PowerPC non-volatile
-r14, r15, and r16 registers for the main checksum-and-copy loop.
-Unfortunately, it fails to restore them upon error exit from this loop,
-which results in silent corruption of these registers in the presumably
-rare event of an access exception within that loop.
+Thanks, I'll rework and resubmit.
 
-This commit therefore restores these register on error exit from the loop.
+Alistair
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: stable@vger.kernel.org
----
-
-Index: b/arch/powerpc/lib/checksum_64.S
-===================================================================
---- a/arch/powerpc/lib/checksum_64.S
-+++ b/arch/powerpc/lib/checksum_64.S
-@@ -226,19 +226,35 @@ _GLOBAL(csum_partial)
- 	blr
- 
- 
--	.macro source
-+	.macro srcnr
- 100:
- 	.section __ex_table,"a"
- 	.align 3
--	.llong 100b,.Lsrc_error
-+	.llong 100b,.Lsrc_error_nr
- 	.previous
- 	.endm
- 
--	.macro dest
-+	.macro source
-+150:
-+	.section __ex_table,"a"
-+	.align 3
-+	.llong 150b,.Lsrc_error
-+	.previous
-+	.endm
-+
-+	.macro dstnr
- 200:
- 	.section __ex_table,"a"
- 	.align 3
--	.llong 200b,.Ldest_error
-+	.llong 200b,.Ldest_error_nr
-+	.previous
-+	.endm
-+
-+	.macro dest
-+250:
-+	.section __ex_table,"a"
-+	.align 3
-+	.llong 250b,.Ldest_error
- 	.previous
- 	.endm
- 
-@@ -274,11 +290,11 @@ _GLOBAL(csum_partial_copy_generic)
- 	mtctr	r6
- 
- 1:
--source;	lhz	r6,0(r3)		/* align to doubleword */
-+srcnr;	lhz	r6,0(r3)		/* align to doubleword */
- 	subi	r5,r5,2
- 	addi	r3,r3,2
- 	adde	r0,r0,r6
--dest;	sth	r6,0(r4)
-+dstnr;	sth	r6,0(r4)
- 	addi	r4,r4,2
- 	bdnz	1b
- 
-@@ -392,10 +408,10 @@ dest;	std	r16,56(r4)
- 
- 	mtctr	r6
- 3:
--source;	ld	r6,0(r3)
-+srcnr;	ld	r6,0(r3)
- 	addi	r3,r3,8
- 	adde	r0,r0,r6
--dest;	std	r6,0(r4)
-+dstnr;	std	r6,0(r4)
- 	addi	r4,r4,8
- 	bdnz	3b
- 
-@@ -405,10 +421,10 @@ dest;	std	r6,0(r4)
- 	srdi.	r6,r5,2
- 	beq	.Lcopy_tail_halfword
- 
--source;	lwz	r6,0(r3)
-+srcnr;	lwz	r6,0(r3)
- 	addi	r3,r3,4
- 	adde	r0,r0,r6
--dest;	stw	r6,0(r4)
-+dstnr;	stw	r6,0(r4)
- 	addi	r4,r4,4
- 	subi	r5,r5,4
- 
-@@ -416,10 +432,10 @@ dest;	stw	r6,0(r4)
- 	srdi.	r6,r5,1
- 	beq	.Lcopy_tail_byte
- 
--source;	lhz	r6,0(r3)
-+srcnr;	lhz	r6,0(r3)
- 	addi	r3,r3,2
- 	adde	r0,r0,r6
--dest;	sth	r6,0(r4)
-+dstnr;	sth	r6,0(r4)
- 	addi	r4,r4,2
- 	subi	r5,r5,2
- 
-@@ -427,10 +443,10 @@ dest;	sth	r6,0(r4)
- 	andi.	r6,r5,1
- 	beq	.Lcopy_finish
- 
--source;	lbz	r6,0(r3)
-+srcnr;	lbz	r6,0(r3)
- 	sldi	r9,r6,8			/* Pad the byte out to 16 bits */
- 	adde	r0,r0,r9
--dest;	stb	r6,0(r4)
-+dstnr;	stb	r6,0(r4)
- 
- .Lcopy_finish:
- 	addze	r0,r0			/* add in final carry */
-@@ -440,6 +456,11 @@ dest;	stb	r6,0(r4)
- 	blr
- 
- .Lsrc_error:
-+	ld	r14,STK_REG(R14)(r1)
-+	ld	r15,STK_REG(R15)(r1)
-+	ld	r16,STK_REG(R16)(r1)
-+	addi	r1,r1,STACKFRAMESIZE
-+.Lsrc_error_nr:
- 	cmpdi	0,r7,0
- 	beqlr
- 	li	r6,-EFAULT
-@@ -447,6 +468,11 @@ dest;	stb	r6,0(r4)
- 	blr
- 
- .Ldest_error:
-+	ld	r14,STK_REG(R14)(r1)
-+	ld	r15,STK_REG(R15)(r1)
-+	ld	r16,STK_REG(R16)(r1)
-+	addi	r1,r1,STACKFRAMESIZE
-+.Ldest_error_nr:
- 	cmpdi	0,r8,0
- 	beqlr
- 	li	r6,-EFAULT
+> cheers
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
