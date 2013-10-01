@@ -1,20 +1,20 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Tue, 1 Oct 2013 18:25:48 +1000
+Date: Tue, 1 Oct 2013 18:34:26 +1000
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] hwrng: Add a driver for the hwrng found in power7+
- systems
-Message-ID: <20131001082547.GA27484@concordia>
+To: Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
+ some powernv systems
+Message-ID: <20131001083426.GB27484@concordia>
 References: <1380177066-3835-1-git-send-email-michael@ellerman.id.au>
- <1380177066-3835-2-git-send-email-michael@ellerman.id.au>
- <1380182487.28561.22.camel@pasglop>
+ <1380177066-3835-3-git-send-email-michael@ellerman.id.au>
+ <5243F933.7000907@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1380182487.28561.22.camel@pasglop>
-Cc: tytso@mit.edu, kvm@vger.kernel.org, gleb@redhat.com,
- linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- agraf@suse.de, herbert@gondor.hengli.com.au, Paul Mackerras <paulus@samba.org>,
- mpm@selenic.com, pbonzini@redhat.com
+In-Reply-To: <5243F933.7000907@redhat.com>
+Cc: tytso@mit.edu, herbert@gondor.apana.org.au, gleb@redhat.com,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, agraf@suse.de,
+ linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ kvm@vger.kernel.org, mpm@selenic.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 26, 2013 at 06:01:27PM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-09-26 at 16:31 +1000, Michael Ellerman wrote:
+On Thu, Sep 26, 2013 at 11:06:59AM +0200, Paolo Bonzini wrote:
+> Il 26/09/2013 08:31, Michael Ellerman ha scritto:
+> > Some powernv systems include a hwrng. Guests can access it via the
+> > H_RANDOM hcall.
 > 
-> > +       pr_info("registered powernv hwrng.\n");
-> 
-> First letter of a line should get a capital :-) Also since
-> it's per-device, at least indicate the OF path or the chip number or
-> something ...
+> Is there any reason to do this in the kernel?  
 
-It's not the first letter, it looks like this:
+It's less code, and it's faster :)
 
-  powernv-rng: registered powernv hwrng.
+> It does not have to be a particularly fast path;
 
-Which looks nice to me, but I can make it this if you prefer:
+Sure, but do we have to make it slow on purpose?
 
-  powernv-rng: Registered powernv hwrng.
+> on x86, we are simply forwarding /dev/hwrng or
+> /dev/random data to the guest.  You can simply use virtio-rng.
 
+Not all guests support virtio-rng.
 
-And it's not per-device due to the trick in the probe routine. It's a
-bit sneaky but we need to make it a proper driver for module loading to
-work, but we only want to register one hwrng device.
+> If you really want to have the hypercall, implementing it in QEMU means
+> that you can support it on all systems, in fact even when running
+> without KVM.  
+
+Sure, I can add a fallback to /dev/hwrng for full emulation.
+
+> The QEMU command line would be something like "-object
+> rng-random,filename=/dev/random,id=rng0 -device spapr-rng,rng=rng0".
+
+We can't use /dev/random like that. The PAPR specification, which is
+what we're implementing, implies that H_RANDOM provides data from a
+hardware source.
 
 cheers
