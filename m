@@ -1,13 +1,13 @@
 Return-Path: <B32579@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E3C42C009A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 13:27:06 +1000 (EST)
-Message-ID: <524A40F4.9040406@freescale.com>
-Date: Tue, 1 Oct 2013 08:56:44 +0530
+ by ozlabs.org (Postfix) with ESMTPS id 25E982C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 13:50:16 +1000 (EST)
+Message-ID: <524A4664.7080008@freescale.com>
+Date: Tue, 1 Oct 2013 09:19:56 +0530
 From: Prabhakar Kushwaha <prabhakar@freescale.com>
 MIME-Version: 1.0
 To: Scott Wood <scottwood@freescale.com>
@@ -38,9 +38,9 @@ I am not aware of bindings required for l2switch as we are not working
 on the driver.
 Earlier I thought of putting a place holder. but as you suggested to put 
 bindings in documentation.
-It will be good if it is put by actual driver owner.
+it will require proper discussion this may delay the base patch acceptance.
+so It will be good if it is put by actual driver owner.
 
->
 >> +sata@220000 {
 >> +			fsl,iommu-parent = <&pamu0>;
 >> +			fsl,liodn-reg = <&guts 0x550>; /* SATA1LIODNR */
@@ -103,9 +103,11 @@ it is a very silly mistake which I am doing continuously :(
 > hold the l2 switch node.
 
 yes. Ideally it should be.
-but if I put a comment then I believe this patch will not be completed. 
+but if i put a comment then I believe this patch will not be completed. 
 it will think as a RFC.
 as I believe putting of TODO is generally for RFC patches.
+
+should I put comment without TODO?
 
 >> +	aliases {
 >> +		ccsr = &soc;
@@ -139,7 +141,12 @@ as I believe putting of TODO is generally for RFC patches.
 >> +	};
 >> +};
 > Don't leave a blank line before a closing brace.
-my mistake. I will take care.
+>
+>
+>
+>    
+>
+My mistake. I will take care.
 
-Thanks,
+thanks,
 Prabhakar
