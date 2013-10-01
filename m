@@ -1,39 +1,49 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-qe0-x231.google.com (mail-qe0-x231.google.com
- [IPv6:2607:f8b0:400d:c02::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33F312C00E9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 21:55:10 +1000 (EST)
-Received: by mail-qe0-f49.google.com with SMTP id s14so4829724qeb.36
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Oct 2013 04:55:07 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Tue, 1 Oct 2013 07:55:03 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
-Message-ID: <20131001115503.GA23722@mtj.dyndns.org>
-References: <20130905200608.GA3846@htj.dyndns.org>
- <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
- <20130906160621.GF22763@mtj.dyndns.org>
- <20130906233205.GF12956@google.com>
- <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
- <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
- <20130917143022.GA7707@concordia>
- <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
- <20130918142231.GA21650@mtj.dyndns.org>
- <20131001073548.GI17966@concordia>
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C071F2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 22:17:03 +1000 (EST)
+Received: from /spool/local
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Tue, 1 Oct 2013 06:17:01 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id EEA503E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 06:16:57 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r91CGvL5343144
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Oct 2013 06:16:57 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r91CK18V026855
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Oct 2013 06:20:02 -0600
+Date: Tue, 1 Oct 2013 05:16:54 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: Avoiding the dentry d_lock on final dput(), part deux:
+ transactional memory
+Message-ID: <20131001121654.GX19582@linux.vnet.ibm.com>
+References: <CA+55aFwp-RAKEMVvbMG53C=kTMqS09NPXy1eP4xEUYZpvV8X5Q@mail.gmail.com>
+ <1380581522.6396.20.camel@pasglop>
+ <23118.1380587771@ale.ozlabs.ibm.com>
+ <CA+55aFwi5sZK4mFxs3PT1wU4_vNzsLOFiocqi3g14fPamKXYsw@mail.gmail.com>
+ <1380593103.6396.38.camel@pasglop>
+ <20131001031356.GP19582@linux.vnet.ibm.com>
+ <CAEjGV6xuscOh=t6BhbdRKAPcZ1DOJkD6ZcB1wgTf9-AedKSaxA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131001073548.GI17966@concordia>
-Cc: Joerg Roedel <joro@8bytes.org>, "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- Alexander Gordeev <agordeev@redhat.com>, Jan Beulich <JBeulich@suse.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+In-Reply-To: <CAEjGV6xuscOh=t6BhbdRKAPcZ1DOJkD6ZcB1wgTf9-AedKSaxA@mail.gmail.com>
+Cc: Waiman Long <Waiman.Long@hp.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Peter Zijlstra <peterz@infradead.org>, George Spelvin <linux@horizon.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Chandramouleeswaran,
+ Aswin" <aswin@hp.com>, "Norton, Scott J" <scott.norton@hp.com>,
+ linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,48 +53,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
-
-On Tue, Oct 01, 2013 at 05:35:48PM +1000, Michael Ellerman wrote:
-> > > Roughly third of the drivers just do not care and bail out once
-> > > pci_enable_msix() has not succeeded. Not sure how many of these are
-> > > mandated by the hardware.
-> > 
-> > Yeah, I mean, this type of interface is a trap.  People have to
-> > actively resist to avoid doing silly stuff which is a lot to ask.
+On Tue, Oct 01, 2013 at 02:52:28PM +1000, Michael Neuling wrote:
+> >> Well we don't have to, I think Mikey wasn't totally clear about that
+> >> "making all registers volatile" business :-) This is just something we
+> >> need to handle in assembly if we are going to reclaim the suspended
+> >> transaction.
 > 
-> I really think you're overstating the complexity here.
+> Yeah, sorry.  The slow path with all registers as volatile is only
+> needed if we get pre-empted during the transaction.
 > 
-> Functions typically return a boolean   -> nothing to see here
-> This function returns a tristate value -> brain explosion!
-
-It is an interface which forces the driver writers to write
-complicated fallback code which won't usually be excercised.  The same
-goes for the hardware.  In isolation, it doesn't look like much but
-things like this are bound to lead to subtle bugs which are diffiuclt
-to trigger.
-
-> > * Determine the number of MSIs the controller wants.  Don't worry
-> >   about quotas or limits or anything.  Just determine the number
-> >   necessary to enable enhanced interrupt handling.
-> > 	
-> > * Try allocating that number of MSIs.  If it fails, then just revert
-> >   to single interrupt mode.  It's not the end of the world and mostly
-> >   guaranteed to work.  Let's please not even try to do partial
-> >   multiple interrupts.  I really don't think it's worth the risk or
-> >   complexity.
+> >>
+> >> So basically, what we need is something along the lines of
+> >> enable_kernel_tm() which checks if there's a suspended user transaction
+> >> and if yes, kills/reclaims it.
+> >>
+> >> Then we also need to handle in our interrupt handlers that we have an
+> >> active/suspended transaction from a kernel state, which we don't deal
+> >> with at this point, and do whatever has to be done to kill it... we
+> >> might get away with something simple if we can state that we only allow
+> >> kernel transactions at task level and not from interrupt/softirq
+> >> contexts, at least initially.
+> >
+> > Call me a coward, but this is starting to sound a bit scary.  ;-)
 > 
-> It will potentially break existing setups on our hardware.
+> We are just wanting to prototype it for now to see if we could make it
+> go faster.  If it's worth it, then we'd consider the additional
+> complexity this would bring.
+> 
+> I don't think it'll be that bad, but I'd certainly want to make sure
+> it's worth it before trying :-)
 
-I think it'd be much better to have a separate interface for the
-drivers which actually require it *in practice* rather than forcing
-everyone to go "oh this interface supports that, I don't know if I
-need it but let's implement fallback logic which I won't and have no
-means of testing".  Are we talking about some limited number of device
-drivers here?  Also, is the quota still necessary for machines in
-production today?
+OK, fair point.  ;-)
 
-Thanks.
-
--- 
-tejun
+							Thanx, Paul
