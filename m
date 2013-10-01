@@ -1,26 +1,37 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7F1802C0089
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2013 05:57:01 +1000 (EST)
-Message-ID: <1380657408.10618.52.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/2][v7] powerpc/mpc85xx:Add initial device tree support
- of T104x
-From: Scott Wood <scottwood@freescale.com>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Date: Tue, 1 Oct 2013 14:56:48 -0500
-In-Reply-To: <524A40F4.9040406@freescale.com>
-References: <1380524042-13720-1-git-send-email-prabhakar@freescale.com>
- <1380570471.24959.517.camel@snotra.buserror.net>
- <524A40F4.9040406@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BF1AD2C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2013 07:05:05 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 1 Oct 2013 15:05:03 -0600
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 387D138C8047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 17:04:59 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r91L4xJp60752112
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Oct 2013 21:04:59 GMT
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r91L4vKg018500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Oct 2013 17:04:59 -0400
+Date: Tue, 1 Oct 2013 14:04:53 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/iommu: use GFP_KERNEL instead of GFP_ATOMIC in
+ iommu_init_table()
+Message-ID: <20131001210453.GB4065@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Priyanka Jain <Priyanka.Jain@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,52 +41,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-10-01 at 08:56 +0530, Prabhakar Kushwaha wrote:
-> On 10/01/2013 01:17 AM, Scott Wood wrote:
-> > On Mon, 2013-09-30 at 12:24 +0530, Prabhakar Kushwaha wrote:
-> >>      - Removed l2switch. It will be added later
-> > Why?
-> 
-> I am not aware of bindings required for l2switch as we are not working 
-> on the driver.
-> Earlier I thought of putting a place holder. but as you suggested to put 
-> bindings in documentation.
-> It will be good if it is put by actual driver owner.
+Under heavy (DLPAR?) stress, we tripped this panic() in
+arch/powerpc/kernel/iommu.c::iommu_init_table():
+    
+	page = alloc_pages_node(nid, GFP_ATOMIC, get_order(sz));
+	if (!page)
+		panic("iommu_init_table: Can't allocate %ld bytes\n",
+    sz);
+    
+Before the panic() we got a page allocation failure for an order-2
+allocation. There appears to be memory free, but perhaps not in the
+ATOMIC context. I looked through all the call-sites of
+iommu_init_table() and didn't see any obvious reason to need an ATOMIC
+allocation. Most call-sites in fact have an explicit GFP_KERNEL
+allocation shortly before the call to iommu_init_table(), indicating we
+are not in an atomic context. There is some indirection for some paths,
+but I didn't see any locks indicating that GFP_KERNEL is inappropriate.
 
-Is there a reason to believe the binding will be complicated?
+With this change under the same conditions, we have not been able to
+reproduce the panic.
+    
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-Does any such "driver owner" exist yet?
-
-
-> >> +sata@220000 {
-> >> +			fsl,iommu-parent = <&pamu0>;
-> >> +			fsl,liodn-reg = <&guts 0x550>; /* SATA1LIODNR */
-> >> +};
-> >> +/include/ "qoriq-sata2-1.dtsi"
-> >> +sata@221000 {
-> >> +			fsl,iommu-parent = <&pamu0>;
-> >> +			fsl,liodn-reg = <&guts 0x554>; /* SATA2LIODNR */
-> >> +};
-> > Whitespace
-> 
-> do we have any scripts which check for whitespace as checkpatch never 
-> give any warning/error.
-> it is a very silly mistake which I am doing continuously :(
-
-checkpatch doesn't check dts files.
-
-> >> +/include/ "t1040si-post.dtsi"
-> > Should at least have a comment indicating that eventually this should
-> > hold the l2 switch node.
-> 
-> yes. Ideally it should be.
-> but if I put a comment then I believe this patch will not be completed. 
-> it will think as a RFC.
-> as I believe putting of TODO is generally for RFC patches.
-
-As is, one would wonder why the separate file exists at all.
-
-The TODO is there whether you have a comment acknowledging it or
-not. :-)
-
--Scott
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 0adab06..572bb5b 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -661,7 +661,7 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
+ 	/* number of bytes needed for the bitmap */
+ 	sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
+ 
+-	page = alloc_pages_node(nid, GFP_ATOMIC, get_order(sz));
++	page = alloc_pages_node(nid, GFP_KERNEL, get_order(sz));
+ 	if (!page)
+ 		panic("iommu_init_table: Can't allocate %ld bytes\n", sz);
+ 	tbl->it_map = page_address(page);
