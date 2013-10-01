@@ -1,17 +1,16 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
- [IPv6:2001:44b8:8060:ff02:300:1:2:6])
- by ozlabs.org (Postfix) with ESMTP id A4E2B2C0430
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 13:54:58 +1000 (EST)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] iommu: Update platform initialisation of iommu to use
- it_page_shift
-Date: Tue,  1 Oct 2013 13:54:10 +1000
-Message-Id: <1380599650-9541-3-git-send-email-alistair@popple.id.au>
-In-Reply-To: <1380599650-9541-1-git-send-email-alistair@popple.id.au>
-References: <1380599650-9541-1-git-send-email-alistair@popple.id.au>
-Cc: Alistair Popple <alistair@popple.id.au>
+Return-Path: <michael@ellerman.id.au>
+Date: Tue, 1 Oct 2013 14:09:40 +1000
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: Does iommu_init_table need to use GFP_ATOMIC allocations?
+Message-ID: <20131001040940.GA17966@concordia>
+References: <20130919165035.GA20144@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130919165035.GA20144@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,262 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch initialises the iommu page size used for vio, cell, powernv
-and pseries platforms to 4K.  It has been boot tested on a pseries
-machine with vio.
+On Thu, Sep 19, 2013 at 09:50:35AM -0700, Nishanth Aravamudan wrote:
+> Under heavy (DLPAR?) stress, we tripped this panic() in
+> arch/powerpc/kernel/iommu.c::iommu_init_table():
+> 
+>         page = alloc_pages_node(nid, GFP_ATOMIC, get_order(sz));
+>         if (!page)
+>                 panic("iommu_init_table: Can't allocate %ld bytes\n",
+> sz);
+> 
+> Before the panic() we got a page allocation failure for an order-2
+> allocation. There appears to be memory free, but perhaps not in the
+> ATOMIC context. I looked through all the call-sites of
+> iommu_init_table() and didn't see any obvious reason to need an ATOMIC
+> allocation. Most call-sites in fact have an explicit GFP_KERNEL
+> allocation shortly before the call to iommu_init_table(), indicating we
+> are not in an atomic context. There is some indirection for some paths,
+> but I didn't see any locks indicating that GFP_KERNEL is inappropriate.
+> Does anyone know if/why ATOMIC allocations are necessary here?
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
----
- arch/powerpc/kernel/vio.c              |   20 +++++++++++---------
- arch/powerpc/platforms/cell/iommu.c    |   14 ++++++++------
- arch/powerpc/platforms/powernv/pci.c   |    3 ++-
- arch/powerpc/platforms/pseries/iommu.c |   10 ++++++----
- arch/powerpc/platforms/pseries/setup.c |    4 ++--
- drivers/net/ethernet/ibm/ibmveth.c     |    9 +++++----
- 6 files changed, 34 insertions(+), 26 deletions(-)
+I can't see any reason for it.
 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index 536016d..1dbab4e 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -520,14 +520,14 @@ static dma_addr_t vio_dma_iommu_map_page(struct device *dev, struct page *page,
- 	struct vio_dev *viodev = to_vio_dev(dev);
- 	dma_addr_t ret = DMA_ERROR_CODE;
- 
--	if (vio_cmo_alloc(viodev, roundup(size, IOMMU_PAGE_SIZE))) {
-+	if (vio_cmo_alloc(viodev, roundup(size, IOMMU_PAGE_SIZE_4K))) {
- 		atomic_inc(&viodev->cmo.allocs_failed);
- 		return ret;
- 	}
- 
- 	ret = dma_iommu_ops.map_page(dev, page, offset, size, direction, attrs);
- 	if (unlikely(dma_mapping_error(dev, ret))) {
--		vio_cmo_dealloc(viodev, roundup(size, IOMMU_PAGE_SIZE));
-+		vio_cmo_dealloc(viodev, roundup(size, IOMMU_PAGE_SIZE_4K));
- 		atomic_inc(&viodev->cmo.allocs_failed);
- 	}
- 
-@@ -543,7 +543,7 @@ static void vio_dma_iommu_unmap_page(struct device *dev, dma_addr_t dma_handle,
- 
- 	dma_iommu_ops.unmap_page(dev, dma_handle, size, direction, attrs);
- 
--	vio_cmo_dealloc(viodev, roundup(size, IOMMU_PAGE_SIZE));
-+	vio_cmo_dealloc(viodev, roundup(size, IOMMU_PAGE_SIZE_4K));
- }
- 
- static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
-@@ -556,7 +556,7 @@ static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
- 	size_t alloc_size = 0;
- 
- 	for (sgl = sglist; count < nelems; count++, sgl++)
--		alloc_size += roundup(sgl->length, IOMMU_PAGE_SIZE);
-+		alloc_size += roundup(sgl->length, IOMMU_PAGE_SIZE_4K);
- 
- 	if (vio_cmo_alloc(viodev, alloc_size)) {
- 		atomic_inc(&viodev->cmo.allocs_failed);
-@@ -572,7 +572,7 @@ static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
- 	}
- 
- 	for (sgl = sglist, count = 0; count < ret; count++, sgl++)
--		alloc_size -= roundup(sgl->dma_length, IOMMU_PAGE_SIZE);
-+		alloc_size -= roundup(sgl->dma_length, IOMMU_PAGE_SIZE_4K);
- 	if (alloc_size)
- 		vio_cmo_dealloc(viodev, alloc_size);
- 
-@@ -590,7 +590,7 @@ static void vio_dma_iommu_unmap_sg(struct device *dev,
- 	int count = 0;
- 
- 	for (sgl = sglist; count < nelems; count++, sgl++)
--		alloc_size += roundup(sgl->dma_length, IOMMU_PAGE_SIZE);
-+		alloc_size += roundup(sgl->dma_length, IOMMU_PAGE_SIZE_4K);
- 
- 	dma_iommu_ops.unmap_sg(dev, sglist, nelems, direction, attrs);
- 
-@@ -736,7 +736,8 @@ static int vio_cmo_bus_probe(struct vio_dev *viodev)
- 			return -EINVAL;
- 		}
- 
--		viodev->cmo.desired = IOMMU_PAGE_ALIGN(viodrv->get_desired_dma(viodev));
-+		viodev->cmo.desired =
-+			IOMMU_PAGE_ALIGN_4K(viodrv->get_desired_dma(viodev));
- 		if (viodev->cmo.desired < VIO_CMO_MIN_ENT)
- 			viodev->cmo.desired = VIO_CMO_MIN_ENT;
- 		size = VIO_CMO_MIN_ENT;
-@@ -1170,9 +1171,10 @@ static struct iommu_table *vio_build_iommu_table(struct vio_dev *dev)
- 			    &tbl->it_index, &offset, &size);
- 
- 	/* TCE table size - measured in tce entries */
--	tbl->it_size = size >> IOMMU_PAGE_SHIFT;
-+	tbl->it_page_shift = IOMMU_PAGE_SHIFT_4K;
-+	tbl->it_size = size >> tbl->it_page_shift;
- 	/* offset for VIO should always be 0 */
--	tbl->it_offset = offset >> IOMMU_PAGE_SHIFT;
-+	tbl->it_offset = offset >> tbl->it_page_shift;
- 	tbl->it_busno = 0;
- 	tbl->it_type = TCE_VB;
- 	tbl->it_blocksize = 16;
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index 946306b..c0bb88a 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -197,7 +197,7 @@ static int tce_build_cell(struct iommu_table *tbl, long index, long npages,
- 
- 	io_pte = (unsigned long *)tbl->it_base + (index - tbl->it_offset);
- 
--	for (i = 0; i < npages; i++, uaddr += IOMMU_PAGE_SIZE)
-+	for (i = 0; i < npages; i++, uaddr += tbl->it_page_shift)
- 		io_pte[i] = base_pte | (__pa(uaddr) & CBE_IOPTE_RPN_Mask);
- 
- 	mb();
-@@ -430,7 +430,7 @@ static void cell_iommu_setup_hardware(struct cbe_iommu *iommu,
- {
- 	cell_iommu_setup_stab(iommu, base, size, 0, 0);
- 	iommu->ptab = cell_iommu_alloc_ptab(iommu, base, size, 0, 0,
--					    IOMMU_PAGE_SHIFT);
-+					    IOMMU_PAGE_SHIFT_4K);
- 	cell_iommu_enable_hardware(iommu);
- }
- 
-@@ -487,8 +487,10 @@ cell_iommu_setup_window(struct cbe_iommu *iommu, struct device_node *np,
- 	window->table.it_blocksize = 16;
- 	window->table.it_base = (unsigned long)iommu->ptab;
- 	window->table.it_index = iommu->nid;
--	window->table.it_offset = (offset >> IOMMU_PAGE_SHIFT) + pte_offset;
--	window->table.it_size = size >> IOMMU_PAGE_SHIFT;
-+	window->table.it_page_shift = IOMMU_PAGE_SHIFT_4K
-+	window->table.it_offset =
-+		(offset >> window->table.it_page_shift) + pte_offset;
-+	window->table.it_size = size >> window->table.it_page_shift;
- 
- 	iommu_init_table(&window->table, iommu->nid);
- 
-@@ -773,7 +775,7 @@ static void __init cell_iommu_init_one(struct device_node *np,
- 
- 	/* Setup the iommu_table */
- 	cell_iommu_setup_window(iommu, np, base, size,
--				offset >> IOMMU_PAGE_SHIFT);
-+				offset >> IOMMU_PAGE_SHIFT_4K);
- }
- 
- static void __init cell_disable_iommus(void)
-@@ -1122,7 +1124,7 @@ static int __init cell_iommu_fixed_mapping_init(void)
- 
- 		cell_iommu_setup_stab(iommu, dbase, dsize, fbase, fsize);
- 		iommu->ptab = cell_iommu_alloc_ptab(iommu, dbase, dsize, 0, 0,
--						    IOMMU_PAGE_SHIFT);
-+						    IOMMU_PAGE_SHIFT_4K);
- 		cell_iommu_setup_fixed_ptab(iommu, np, dbase, dsize,
- 					     fbase, fsize);
- 		cell_iommu_enable_hardware(iommu);
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index a28d3b5..cfab147 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -452,7 +452,8 @@ void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
- {
- 	tbl->it_blocksize = 16;
- 	tbl->it_base = (unsigned long)tce_mem;
--	tbl->it_offset = dma_offset >> IOMMU_PAGE_SHIFT;
-+	tbl->it_page_shift = IOMMU_PAGE_SHIFT_4K;
-+	tbl->it_offset = dma_offset >> tbl->it_page_shift;
- 	tbl->it_index = 0;
- 	tbl->it_size = tce_size >> 3;
- 	tbl->it_busno = 0;
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 23fc1dc..7a18f24 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -486,9 +486,10 @@ static void iommu_table_setparms(struct pci_controller *phb,
- 		memset((void *)tbl->it_base, 0, *sizep);
- 
- 	tbl->it_busno = phb->bus->number;
-+	tbl->it_page_shift = IOMMU_PAGE_SHIFT_4K;
- 
- 	/* Units of tce entries */
--	tbl->it_offset = phb->dma_window_base_cur >> IOMMU_PAGE_SHIFT;
-+	tbl->it_offset = phb->dma_window_base_cur >> tbl->it_page_shift;
- 
- 	/* Test if we are going over 2GB of DMA space */
- 	if (phb->dma_window_base_cur + phb->dma_window_size > 0x80000000ul) {
-@@ -499,7 +500,7 @@ static void iommu_table_setparms(struct pci_controller *phb,
- 	phb->dma_window_base_cur += phb->dma_window_size;
- 
- 	/* Set the tce table size - measured in entries */
--	tbl->it_size = phb->dma_window_size >> IOMMU_PAGE_SHIFT;
-+	tbl->it_size = phb->dma_window_size >> tbl->it_page_shift;
- 
- 	tbl->it_index = 0;
- 	tbl->it_blocksize = 16;
-@@ -537,11 +538,12 @@ static void iommu_table_setparms_lpar(struct pci_controller *phb,
- 	of_parse_dma_window(dn, dma_window, &tbl->it_index, &offset, &size);
- 
- 	tbl->it_busno = phb->bus->number;
-+	tbl->it_page_shift = IOMMU_PAGE_SHIFT_4K;
- 	tbl->it_base   = 0;
- 	tbl->it_blocksize  = 16;
- 	tbl->it_type = TCE_PCI;
--	tbl->it_offset = offset >> IOMMU_PAGE_SHIFT;
--	tbl->it_size = size >> IOMMU_PAGE_SHIFT;
-+	tbl->it_offset = offset >> tbl->it_page_shift;
-+	tbl->it_size = size >> tbl->it_page_shift;
- }
- 
- static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index c11c823..a1b9e40 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -72,7 +72,7 @@
- 
- int CMO_PrPSP = -1;
- int CMO_SecPSP = -1;
--unsigned long CMO_PageSize = (ASM_CONST(1) << IOMMU_PAGE_SHIFT);
-+unsigned long CMO_PageSize = (ASM_CONST(1) << IOMMU_PAGE_SHIFT_4K);
- EXPORT_SYMBOL(CMO_PageSize);
- 
- int fwnmi_active;  /* TRUE if an FWNMI handler is present */
-@@ -532,7 +532,7 @@ void pSeries_cmo_feature_init(void)
- {
- 	char *ptr, *key, *value, *end;
- 	int call_status;
--	int page_order = IOMMU_PAGE_SHIFT;
-+	int page_order = IOMMU_PAGE_SHIFT_4K;
- 
- 	pr_debug(" -> fw_cmo_feature_init()\n");
- 	spin_lock(&rtas_data_buf_lock);
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index 70fd559..465c7b0 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1282,24 +1282,25 @@ static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev)
- 
- 	/* netdev inits at probe time along with the structures we need below*/
- 	if (netdev == NULL)
--		return IOMMU_PAGE_ALIGN(IBMVETH_IO_ENTITLEMENT_DEFAULT);
-+		return IOMMU_PAGE_ALIGN_4K(IBMVETH_IO_ENTITLEMENT_DEFAULT);
- 
- 	adapter = netdev_priv(netdev);
- 
- 	ret = IBMVETH_BUFF_LIST_SIZE + IBMVETH_FILT_LIST_SIZE;
--	ret += IOMMU_PAGE_ALIGN(netdev->mtu);
-+	ret += IOMMU_PAGE_ALIGN_4K(netdev->mtu);
- 
- 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
- 		/* add the size of the active receive buffers */
- 		if (adapter->rx_buff_pool[i].active)
- 			ret +=
- 			    adapter->rx_buff_pool[i].size *
--			    IOMMU_PAGE_ALIGN(adapter->rx_buff_pool[i].
-+			    IOMMU_PAGE_ALIGN_4K(adapter->rx_buff_pool[i].
- 			            buff_size);
- 		rxqentries += adapter->rx_buff_pool[i].size;
- 	}
- 	/* add the size of the receive queue entries */
--	ret += IOMMU_PAGE_ALIGN(rxqentries * sizeof(struct ibmveth_rx_q_entry));
-+	ret += IOMMU_PAGE_ALIGN_4K(
-+		rxqentries * sizeof(struct ibmveth_rx_q_entry));
- 
- 	return ret;
- }
--- 
-1.7.10.4
+It was GFP_ATOMIC in the initial ppc64 code submission, so there's no
+explanation in the commit history for it.
+
+cheers
