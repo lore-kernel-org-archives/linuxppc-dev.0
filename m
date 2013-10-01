@@ -1,33 +1,31 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 192412C032F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 20:33:27 +1000 (EST)
-Date: Tue, 1 Oct 2013 12:35:27 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
-Message-ID: <20131001103526.GA5053@dhcp-26-207.brq.redhat.com>
-References: <20130905185440.GA13175@dhcp-26-207.brq.redhat.com>
- <20130905200608.GA3846@htj.dyndns.org>
- <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
- <20130906160621.GF22763@mtj.dyndns.org>
- <20130906233205.GF12956@google.com>
- <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
- <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
- <20130917143022.GA7707@concordia>
- <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
- <20131001075133.GJ17966@concordia>
+Return-Path: <paolo.bonzini@gmail.com>
+Received: from mail-ea0-x22d.google.com (mail-ea0-x22d.google.com
+ [IPv6:2a00:1450:4013:c01::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 634CD2C019C
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Oct 2013 21:18:55 +1000 (EST)
+Received: by mail-ea0-f173.google.com with SMTP id g10so3339216eak.4
+ for <linuxppc-dev@ozlabs.org>; Tue, 01 Oct 2013 04:18:49 -0700 (PDT)
+Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
+Message-ID: <524AAFAA.3010801@redhat.com>
+Date: Tue, 01 Oct 2013 13:19:06 +0200
+From: Paolo Bonzini <pbonzini@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131001075133.GJ17966@concordia>
-Cc: linuxppc-dev@lists.ozlabs.org, Joerg Roedel <joro@8bytes.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- Jan Beulich <JBeulich@suse.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Tejun Heo <tj@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Ingo Molnar <mingo@kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
+ some powernv systems
+References: <1380177066-3835-1-git-send-email-michael@ellerman.id.au>
+ <1380177066-3835-3-git-send-email-michael@ellerman.id.au>
+ <5243F933.7000907@redhat.com> <20131001083426.GB27484@concordia>
+ <20131001083908.GA17294@redhat.com> <1380620338.645.22.camel@pasglop>
+In-Reply-To: <1380620338.645.22.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: tytso@mit.edu, kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
+ linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ agraf@suse.de, herbert@gondor.hengli.com.au, Paul Mackerras <paulus@samba.org>,
+ mpm@selenic.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,44 +35,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 01, 2013 at 05:51:33PM +1000, Michael Ellerman wrote:
-> The disadvantage is that any restriction imposed on us above the quota
-> can only be reported as an error from pci_enable_msix().
-> 
-> The quota code, called from pci_get_msix_limit(), can only do so much to
-> interogate firmware about the limitations. The ultimate way to check if
-> firmware will give us enough MSIs is to try and allocate them. But we
-> can't do that from pci_get_msix_limit() because the driver is not asking
-> us to enable MSIs, just query them.
+Il 01/10/2013 11:38, Benjamin Herrenschmidt ha scritto:
+> So for the sake of that dogma you are going to make us do something that
+> is about 100 times slower ? (and possibly involves more lines of code)
 
-If things are this way then pci_enable_msix() already exposed to this
-problem internally on pSeries.
+If it's 100 times slower there is something else that's wrong.  It's
+most likely not 100 times slower, and this makes me wonder if you or
+Michael actually timed the code at all.
 
-I see that even successful quota checks in rtas_msi_check_device() and
-rtas_setup_msi_irqs() do not guarantee (as you say) that firmware will
-give enough MSIs. Hence, pci_enable_msix() might fail even though the
-its quota checks succeeded.
+> It's not just speed ... H_RANDOM is going to be called by the guest
+> kernel. A round trip to qemu is going to introduce a kernel jitter
+> (complete stop of operations of the kernel on that virtual processor) of
+> a full exit + round trip to qemu + back to the kernel to get to some
+> source of random number ...  this is going to be in the dozens of ns at
+> least.
 
-Therefore, nothing will really change if we make pci_get_msix_limit() check
-quota and hope the follow-up call to pci_enable_msix() succeeded.
+I guess you mean dozens of *micro*seconds, which is somewhat exaggerated
+but not too much.  On x86 some reasonable timings are:
 
-(Of course, we could allocate-deallocate MSIs at check time, but I think it
-is an overkill).
+  100 cycles            bare metal rdrand
+  2000 cycles           guest->hypervisor->guest
+  15000 cycles          guest->userspace->guest
 
-> You'll also need to add another arch hook, for the quota check, and
-> we'll have to add it to our per-platform indirection as well.
+(100 cycles = 40 ns = 200 MB/sec; 2000 cycles = ~1 microseconds; 15000
+cycles = ~7.5 microseconds).  Even on 5 year old hardware, a userspace
+roundtrip is around a dozen microseconds.
 
-Already, in a branch, hidden from Bjorn & Tejun eyes ;)
 
-> All a lot of bother for no real gain IMHO.
+Anyhow, I would like to know more about this hwrng and hypercall.
 
-Well, I do not have a strong opinion here. I leave it to the ones who have :)
-But few drivers have became clearer as result of this change (and messy ones
-are still messy).
+Does the hwrng return random numbers (like rdrand) or real entropy (like
+rdseed that Intel will add in Broadwell)?  What about the hypercall?
+For example virtio-rng is specified to return actual entropy, it doesn't
+matter if it is from hardware or software.
 
-> cheers
+In either case, the patches have problems.
 
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+1) If the hwrng returns random numbers, the whitening you're doing is
+totally insufficient and patch 2 is forging entropy that doesn't exist.
+
+2) If the hwrng returns entropy, a read from the hwrng is going to even
+more expensive than an x86 rdrand (perhaps ~2000 cycles).  Hence, doing
+the emulation in the kernel is even less necessary.  Also, if the hwrng
+returns entropy patch 1 is unnecessary: you do not need to waste
+precious entropy bits by passing them to arch_get_random_long; just run
+rngd in the host as that will put the entropy to much better use.
+
+3) If the hypercall returns random numbers, then it is a pretty
+braindead interface since returning 8 bytes at a time limits the
+throughput to a handful of MB/s (compare to 200 MB/sec for x86 rdrand).
+ But more important: in this case drivers/char/hw_random/pseries-rng.c
+is completely broken and insecure, just like patch 2 in case (1) above.
+
+4) If the hypercall returns entropy (same as virtio-rng), the same
+considerations on speed apply.  If you can only produce entropy at say 1
+MB/s (so reading 8 bytes take 8 microseconds---which is actually very
+fast), it doesn't matter that much to spend 7 microseconds on a
+userspace roundtrip.  It's going to be only half the speed of bare
+metal, not 100 times slower.
+
+
+Also, you will need _anyway_ extra code that is not present here to
+either disable the rng based on userspace command-line, or to emulate
+the rng from userspace.  It is absolutely _not_ acceptable to have a
+hypercall disappear across migration.  You're repeatedly ignoring these
+issues, but rest assured that they will come back and bite you
+spectacularly.
+
+Based on all this, I would simply ignore the part of the spec where they
+say "the hypercall should return numbers from a hardware source".  All
+that matters in virtualization is to have a good source of _entropy_.
+Then you can run rngd without randomness checks, which will more than
+recover the cost of userspace roundtrips.
+
+In any case, deciding where to get that entropy from is definitely
+outside the scope of KVM, and in fact QEMU already has a configurable
+mechanism for that.
+
+Paolo
