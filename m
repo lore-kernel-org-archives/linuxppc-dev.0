@@ -1,29 +1,22 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Tue, 1 Oct 2013 17:35:48 +1000
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
-Message-ID: <20131001073548.GI17966@concordia>
-References: <20130905185440.GA13175@dhcp-26-207.brq.redhat.com>
- <20130905200608.GA3846@htj.dyndns.org>
- <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
- <20130906160621.GF22763@mtj.dyndns.org>
- <20130906233205.GF12956@google.com>
- <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
- <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
- <20130917143022.GA7707@concordia>
- <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
- <20130918142231.GA21650@mtj.dyndns.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130918142231.GA21650@mtj.dyndns.org>
-Cc: Joerg Roedel <joro@8bytes.org>, "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- Alexander Gordeev <agordeev@redhat.com>, Jan Beulich <JBeulich@suse.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 501752C00EF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2013 17:50:46 +1000 (EST)
+Message-ID: <1380613830.645.18.camel@pasglop>
+Subject: Re: [PATCH V2] powerpc/kernel/sysfs: disable writing to purr in
+ non-powernv
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 01 Oct 2013 17:50:30 +1000
+In-Reply-To: <20131001063129.GF17966@concordia>
+References: <1380281634-9921-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <20131001063129.GF17966@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,84 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 18, 2013 at 09:22:31AM -0500, Tejun Heo wrote:
-> Hello,
-> 
-> On Wed, Sep 18, 2013 at 11:48:00AM +0200, Alexander Gordeev wrote:
-> > On Wed, Sep 18, 2013 at 12:30:23AM +1000, Michael Ellerman wrote:
-> > > How about no?
-> > > 
-> > > We have a small number of MSIs available, limited by hardware &
-> > > firmware, if we don't impose a quota then the first device that probes
-> > > will get most/all of the MSIs and other devices miss out.
-> > 
-> > Out of curiosity - how pSeries has had done it without quotas before
-> > 448e2ca ("powerpc/pseries: Implement a quota system for MSIs")?
-> 
-> Hmmm... do we need to treat this any differently?  If the platform
-> can't allocate full range of requested MSIs, just failing should be
-> enough regardless of why such allocation can't be met, no?
-> 
-> > > Anyway I don't see what problem you're trying to solve? I agree the
-> > > -ve/0/+ve return value pattern is ugly, but it's hardly the end of the
-> > > world.
-> > 
-> > Well, the interface recently has been re-classified from "ugly" to
-> > "unnecessarily complex and actively harmful" in Tejun's words ;)
-> 
-> LOL. :)
-> 
-> > Indeed, I checked most of the drivers and it is incredible how people
-> > are creative in misusing the interface: from innocent pci_disable_msix()
-> > calls when if pci_enable_msix() failed to assuming MSI-Xs were enabled
-> > if pci_enable_msix() returned a positive value (apparently untested).
-> > 
-> > Roughly third of the drivers just do not care and bail out once
-> > pci_enable_msix() has not succeeded. Not sure how many of these are
-> > mandated by the hardware.
-> 
-> Yeah, I mean, this type of interface is a trap.  People have to
-> actively resist to avoid doing silly stuff which is a lot to ask.
+On Tue, 2013-10-01 at 16:31 +1000, Michael Ellerman wrote:
 
-I really think you're overstating the complexity here.
-
-Functions typically return a boolean   -> nothing to see here
-This function returns a tristate value -> brain explosion!
-
-
-> > 	/*
-> > 	 * Retrieving 'nvec' by means other than pci_msix_table_size()
-> > 	 */
-> > 
-> > 	rc = pci_get_msix_limit(pdev);
-> > 	if (rc < 0)
-> > 		return rc;
-> > 
-> > 	/*
-> > 	 * nvec = min(rc, nvec);
-> > 	 */
-> > 
-> > 	for (i = 0; i < nvec; i++)
-> > 		msix_entry[i].entry = i;
-> > 
-> > 	rc = pci_enable_msix(pdev, msix_entry, nvec);
-> > 	if (rc)
-> > 		return rc;
+> > 1)Changed the test for to hypervisor mode instead of platform
 > 
-> I really think what we should do is
+> I think Ben's wrong about that.
 > 
-> * Determine the number of MSIs the controller wants.  Don't worry
->   about quotas or limits or anything.  Just determine the number
->   necessary to enable enhanced interrupt handling.
-> 	
-> * Try allocating that number of MSIs.  If it fails, then just revert
->   to single interrupt mode.  It's not the end of the world and mostly
->   guaranteed to work.  Let's please not even try to do partial
->   multiple interrupts.  I really don't think it's worth the risk or
->   complexity.
+> Almost all existing code uses FW_FEATURE_LPAR to differentiate
+> hypervisor vs guest mode, so I think we should do the same here.
 
-It will potentially break existing setups on our hardware.
+I didn't object to using the FW test, it's a reasonable way to do it, I
+objected to using the platform as an indication (powernv vs. pseries)
 
-Can I make that any clearer?
+Ben.
 
-cheers
+> So it would be:
+> 
+> > +	if (cpu_has_feature(CPU_FTR_PURR)) {
+> > +		if (!firmware_has_feature(FW_FEATURE_LPAR))
+> > +			add_write_permission_dev_attr((void *)&dev_attr_purr);
+> >  		device_create_file(s, &dev_attr_purr);
+> > +	}
+> 
+> 
+> > +static void add_write_permission_dev_attr(void *ptr)
+> > +{
+> > +	struct device_attribute *attr = (struct device_attribute *)ptr;
+> > +
+> > +	attr->attr.mode |= (unsigned short) 0200;
+> > +}
+> 
+> Why does it take a void *, which then requires a cast at the call site?
+> 
+> And do you need the cast to short? If so shouldn't you use umode_t
+> directly?
+> 
+> cheers
