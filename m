@@ -1,16 +1,14 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Tue, 1 Oct 2013 16:13:25 +1000
+Date: Tue, 1 Oct 2013 16:18:19 +1000
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] powerpc/legacy_serial: fix incorrect placement of
- __initdata tag
-Message-ID: <20131001061325.GD17966@concordia>
-References: <35419229.o6Cv8JYbpg@amdc1032>
+To: Vladimir Murzin <murzin.v@gmail.com>
+Subject: Re: [PATCH] powerpc: fix section mismatch warning in free_lppacas
+Message-ID: <20131001061818.GE17966@concordia>
+References: <1380458478-2324-1-git-send-email-murzin.v@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <35419229.o6Cv8JYbpg@amdc1032>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1380458478-2324-1-git-send-email-murzin.v@gmail.com>
+Cc: geoff@infradead.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,11 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 30, 2013 at 03:11:42PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> __initdata tag should be placed between the variable name and equal
-> sign for the variable to be placed in the intended .init.data section.
+On Sun, Sep 29, 2013 at 02:41:18PM +0200, Vladimir Murzin wrote:
+> While cross-building for PPC64 I've got bunch of
+> 
+> WARNING: arch/powerpc/kernel/built-in.o(.text.unlikely+0x2d2): Section
+> mismatch in reference from the function .free_lppacas() to the variable
+> .init.data:lppaca_size The function .free_lppacas() references the variable
+> __initdata lppaca_size. This is often because .free_lppacas lacks a __initdata
+> annotation or the annotation of lppaca_size is wrong.
+> 
+> Fix it by using proper annotation for free_lppacas. Additionally, annotate
+> {allocate,new}_llpcas properly.
 
-I see lots of other occurences of that in arch/powerpc. Why not send a
-single patch to update them all?
+Yep looks good.
+
+Acked-by: Michael Ellerman <michael@ellerman.id.au>
 
 cheers
