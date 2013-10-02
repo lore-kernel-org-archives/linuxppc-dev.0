@@ -2,14 +2,13 @@ Return-Path: <agordeev@dhcp-26-207.brq.redhat.com>
 Received: from dhcp-26-207.brq.redhat.com (unknown [89.24.186.221])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6C3502C1017
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 03:54:47 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 2EF732C1998
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 03:55:11 +1000 (EST)
 From: Alexander Gordeev <agordeev@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 43/77] lpfc: Return -ENOSPC when not enough MSI-X vectors
- available
-Date: Wed,  2 Oct 2013 12:48:59 +0200
-Message-Id: <90e19597e04fa29c5f435d1f43059b69ae7314d4.1380703263.git.agordeev@redhat.com>
+Subject: [PATCH RFC 53/77] ntb: Fix missed call to pci_enable_msix()
+Date: Wed,  2 Oct 2013 12:49:09 +0200
+Message-Id: <0590d63c3432229a3824bada71e07a08fb955498.1380703263.git.agordeev@redhat.com>
 In-Reply-To: <cover.1380703262.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
@@ -34,31 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Current MSI-X enablement code assumes MSI-Xs were successfully
+allocated in case less than requested vectors were available.
+That assumption is wrong, since MSI-Xs should be enabled with
+a repeated call to pci_enable_msix(). This update fixes this.
+
 Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 ---
- drivers/scsi/lpfc/lpfc_init.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/ntb/ntb_hw.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/scsi/lpfc/lpfc_init.c b/drivers/scsi/lpfc/lpfc_init.c
-index d83a1a3..0ec8008 100644
---- a/drivers/scsi/lpfc/lpfc_init.c
-+++ b/drivers/scsi/lpfc/lpfc_init.c
-@@ -8645,9 +8645,13 @@ lpfc_sli4_enable_msix(struct lpfc_hba *phba)
- 		goto msg_fail_out;
- 
- 	vectors = min(vectors, rc);
--	if (vectors > 1)
--		rc = pci_enable_msix(phba->pcidev, phba->sli4_hba.msix_entries,
--				     vectors);
-+	if (vectors < 2) {
-+		rc = -ENOSPC;
-+		goto msg_fail_out;
-+	}
+diff --git a/drivers/ntb/ntb_hw.c b/drivers/ntb/ntb_hw.c
+index 1cb6e51..de2062c 100644
+--- a/drivers/ntb/ntb_hw.c
++++ b/drivers/ntb/ntb_hw.c
+@@ -1075,6 +1075,10 @@ static int ntb_setup_msix(struct ntb_device *ndev)
+ 			 "Only %d MSI-X vectors.  Limiting the number of queues to that number.\n",
+ 			 rc);
+ 		msix_entries = rc;
 +
-+	rc = pci_enable_msix(phba->pcidev, phba->sli4_hba.msix_entries,
-+			     vectors);
- 	if (rc) {
- msg_fail_out:
- 		lpfc_printf_log(phba, KERN_INFO, LOG_INIT,
++		rc = pci_enable_msix(pdev, ndev->msix_entries, msix_entries);
++		if (rc)
++			goto err1;
+ 	}
+ 
+ 	for (i = 0; i < msix_entries; i++) {
 -- 
 1.7.7.6
