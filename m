@@ -1,27 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B3F4E2C0085
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Oct 2013 07:44:57 +1000 (EST)
-Message-ID: <1380663871.645.44.camel@pasglop>
-Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
- some powernv systems
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paolo Bonzini <pbonzini@redhat.com>
-Date: Wed, 02 Oct 2013 07:44:31 +1000
-In-Reply-To: <524AAFAA.3010801@redhat.com>
-References: <1380177066-3835-1-git-send-email-michael@ellerman.id.au>
- <1380177066-3835-3-git-send-email-michael@ellerman.id.au>
- <5243F933.7000907@redhat.com> <20131001083426.GB27484@concordia>
- <20131001083908.GA17294@redhat.com> <1380620338.645.22.camel@pasglop>
- <524AAFAA.3010801@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: tytso@mit.edu, kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
- linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- agraf@suse.de, herbert@gondor.hengli.com.au, Paul Mackerras <paulus@samba.org>,
- mpm@selenic.com
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1F97D2C00B6
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Oct 2013 10:15:32 +1000 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 1 Oct 2013 18:15:30 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 6CF1D3E4003F
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Oct 2013 18:15:27 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r920FRfC332422
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Oct 2013 18:15:27 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r920IV6t028005
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Oct 2013 18:18:32 -0600
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: 
+Date: Tue,  1 Oct 2013 17:15:01 -0700
+Message-Id: <1380672911-12812-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,129 +39,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-10-01 at 13:19 +0200, Paolo Bonzini wrote:
-> Il 01/10/2013 11:38, Benjamin Herrenschmidt ha scritto:
-> > So for the sake of that dogma you are going to make us do something that
-> > is about 100 times slower ? (and possibly involves more lines of code)
-> 
-> If it's 100 times slower there is something else that's wrong.  It's
-> most likely not 100 times slower, and this makes me wonder if you or
-> Michael actually timed the code at all.
+Subject: [PATCH 0/9][v5] powerpc/perf: Export memory hierarchy level in Power7/8.
 
-We haven't but it's pretty obvious:
+Power7 and Power8 processors save the memory hierarchy level (eg: L2, L3)
+from which a load or store instruction was satisfied. Export this hierarchy
+information to the user via the perf_mem_data_src object.
 
- - The KVM real mode implementation: guest issues the hcall, we remain
-in real mode, within the MMU context of the guest, all secondary threads
-on the core are still running in the guest, and we do an MMIO & return.
+Thanks to input from Stephane Eranian, Michael Ellerman, Michael Neuling
+and Anshuman Khandual.
 
- - The qemu variant: guest issues the hcall we need to exit the guest,
-which means bring *all* threads on the core out of KVM, switch the full
-MMU context back to host (which among others involves flushing the ERAT,
-aka level 1 TLB), while sending the secondary threads into idle loops.
-Then we return to qemu user context, which will then use /dev/random ->
-back into the kernel and out, at which point we can return to the guest,
-so back into the kernel, back into run which means IPI the secondary
-threads on the core, switch the MMU context again until we can finally
-go back to executing guest instructions.
+Sukadev Bhattiprolu (9):
+  powerpc/perf: Rename Power8 macros to start with PME
+  powerpc/perf: Export Power8 generic events in sysfs
+  powerpc/perf: Add Power8 event PM_MRK_GRP_CMPL to sysfs.
+  powerpc: Rename branch_opcode() to instr_opcode()
+  powerpc: implement is_instr_load_store().
+  powerpc/perf: Define big-endian version of perf_mem_data_src
+  powerpc/perf: Export Power8 memory hierarchy info to user space.
+  powerpc/perf: Export Power7 memory hierarchy info to user space.
+  powerpc/perf: Update perf-mem man page for Power
 
-So no we haven't measured. But it is going to be VERY VERY VERY much
-slower. Our exit latencies are bad with our current MMU *and* any exit
-is going to cause all secondary threads on the core to have to exit as
-well (remember P7 is 4 threads, P8 is 8)
+ arch/powerpc/include/asm/code-patching.h     |    1 +
+ arch/powerpc/include/asm/perf_event_server.h |    2 +
+ arch/powerpc/lib/code-patching.c             |   96 ++++++++++++++++++++++-
+ arch/powerpc/perf/core-book3s.c              |   11 +++
+ arch/powerpc/perf/power7-pmu.c               |   94 +++++++++++++++++++++++
+ arch/powerpc/perf/power8-pmu.c               |  105 +++++++++++++++++++++++---
+ include/uapi/linux/perf_event.h              |   58 ++++++++++++++
+ tools/perf/Documentation/perf-mem.txt        |   11 +++
+ tools/perf/util/include/asm/byteorder.h      |    1 +
+ 9 files changed, 364 insertions(+), 15 deletions(-)
 
-> > It's not just speed ... H_RANDOM is going to be called by the guest
-> > kernel. A round trip to qemu is going to introduce a kernel jitter
-> > (complete stop of operations of the kernel on that virtual processor) of
-> > a full exit + round trip to qemu + back to the kernel to get to some
-> > source of random number ...  this is going to be in the dozens of ns at
-> > least.
-> 
-> I guess you mean dozens of *micro*seconds, which is somewhat exaggerated
-> but not too much.  On x86 some reasonable timings are:
-
-Yes.
-
->   100 cycles            bare metal rdrand
->   2000 cycles           guest->hypervisor->guest
->   15000 cycles          guest->userspace->guest
-> 
-> (100 cycles = 40 ns = 200 MB/sec; 2000 cycles = ~1 microseconds; 15000
-> cycles = ~7.5 microseconds).  Even on 5 year old hardware, a userspace
-> roundtrip is around a dozen microseconds.
-
-So in your case going to qemu to "emulate" rdrand would indeed be 150
-times slower, I don't see in what universe that would be considered a
-good idea.
-
-> Anyhow, I would like to know more about this hwrng and hypercall.
-> 
-> Does the hwrng return random numbers (like rdrand) or real entropy (like
-> rdseed that Intel will add in Broadwell)?
-
-It's a random number obtained from sampling a set of oscillators. It's
-slightly biased but we have very simple code (I believe shared with the
-host kernel implementation) for whitening it as is required by PAPR.
- 
->   What about the hypercall?
-> For example virtio-rng is specified to return actual entropy, it doesn't
-> matter if it is from hardware or software.
-> 
-> In either case, the patches have problems.
-> 
-> 1) If the hwrng returns random numbers, the whitening you're doing is
-> totally insufficient and patch 2 is forging entropy that doesn't exist.
-
-I will let Paul to comment on the whitening, it passes all the tests
-we've been running it through.
-
-> 2) If the hwrng returns entropy, a read from the hwrng is going to even
-> more expensive than an x86 rdrand (perhaps ~2000 cycles).
-
-Depends how often you read, the HW I think is sampling asynchronously so
-you only block on the MMIO if you already consumed the previous sample
-but I'll let Paulus provide more details here.
-
->   Hence, doing
-> the emulation in the kernel is even less necessary.  Also, if the hwrng
-> returns entropy patch 1 is unnecessary: you do not need to waste
-> precious entropy bits by passing them to arch_get_random_long; just run
-> rngd in the host as that will put the entropy to much better use.
->
-> 3) If the hypercall returns random numbers, then it is a pretty
-> braindead interface since returning 8 bytes at a time limits the
-> throughput to a handful of MB/s (compare to 200 MB/sec for x86 rdrand).
->  But more important: in this case drivers/char/hw_random/pseries-rng.c
-> is completely broken and insecure, just like patch 2 in case (1) above.
-
-How so ?
-
-> 4) If the hypercall returns entropy (same as virtio-rng), the same
-> considerations on speed apply.  If you can only produce entropy at say 1
-> MB/s (so reading 8 bytes take 8 microseconds---which is actually very
-> fast), it doesn't matter that much to spend 7 microseconds on a
-> userspace roundtrip.  It's going to be only half the speed of bare
-> metal, not 100 times slower.
-> 
-> 
-> Also, you will need _anyway_ extra code that is not present here to
-> either disable the rng based on userspace command-line, or to emulate
-> the rng from userspace.  It is absolutely _not_ acceptable to have a
-> hypercall disappear across migration.  You're repeatedly ignoring these
-> issues, but rest assured that they will come back and bite you
-> spectacularly.
-> 
-> Based on all this, I would simply ignore the part of the spec where they
-> say "the hypercall should return numbers from a hardware source".  All
-> that matters in virtualization is to have a good source of _entropy_.
-> Then you can run rngd without randomness checks, which will more than
-> recover the cost of userspace roundtrips.
-> 
-> In any case, deciding where to get that entropy from is definitely
-> outside the scope of KVM, and in fact QEMU already has a configurable
-> mechanism for that.
->
-> Paolo
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+1.7.9.5
