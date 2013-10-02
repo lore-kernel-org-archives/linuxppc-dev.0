@@ -2,14 +2,14 @@ Return-Path: <agordeev@dhcp-26-207.brq.redhat.com>
 Received: from dhcp-26-207.brq.redhat.com (unknown [89.24.186.221])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 91A032C098B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 03:40:27 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 823F72C0AB2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 03:42:13 +1000 (EST)
 From: Alexander Gordeev <agordeev@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 54/77] ntb: Ensure number of MSIs on SNB is enough for the
- link interrupt
-Date: Wed,  2 Oct 2013 12:49:10 +0200
-Message-Id: <5d9c5b2d3bbc444ff32bddeece7a239d046bd79c.1380703263.git.agordeev@redhat.com>
+Subject: [PATCH RFC 19/77] csiostor: Do not call pci_disable_msix() if
+ pci_enable_msix() failed
+Date: Wed,  2 Oct 2013 12:48:35 +0200
+Message-Id: <3697708ec423a6b6f3d924ea4af9a56874f5787a.1380703262.git.agordeev@redhat.com>
 In-Reply-To: <cover.1380703262.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
@@ -36,21 +36,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 ---
- drivers/ntb/ntb_hw.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/scsi/csiostor/csio_isr.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/ntb/ntb_hw.c b/drivers/ntb/ntb_hw.c
-index de2062c..eccd5e5 100644
---- a/drivers/ntb/ntb_hw.c
-+++ b/drivers/ntb/ntb_hw.c
-@@ -1066,7 +1066,7 @@ static int ntb_setup_msix(struct ntb_device *ndev)
- 		/* On SNB, the link interrupt is always tied to 4th vector.  If
- 		 * we can't get all 4, then we can't use MSI-X.
- 		 */
--		if (ndev->hw_type != BWD_HW) {
-+		if ((rc < SNB_MSIX_CNT) && (ndev->hw_type != BWD_HW)) {
- 			rc = -EIO;
- 			goto err1;
+diff --git a/drivers/scsi/csiostor/csio_isr.c b/drivers/scsi/csiostor/csio_isr.c
+index 7ee9777..91ba91d 100644
+--- a/drivers/scsi/csiostor/csio_isr.c
++++ b/drivers/scsi/csiostor/csio_isr.c
+@@ -529,10 +529,8 @@ csio_enable_msix(struct csio_hw *hw)
+ 			csio_reduce_sqsets(hw, cnt - extra);
  		}
+ 	} else {
+-		if (rv > 0) {
+-			pci_disable_msix(hw->pdev);
++		if (rv > 0)
+ 			csio_info(hw, "Not using MSI-X, remainder:%d\n", rv);
+-		}
+ 
+ 		kfree(entries);
+ 		return -ENOMEM;
 -- 
 1.7.7.6
