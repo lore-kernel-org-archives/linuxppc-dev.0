@@ -2,13 +2,13 @@ Return-Path: <agordeev@dhcp-26-207.brq.redhat.com>
 Received: from dhcp-26-207.brq.redhat.com (unknown [89.24.186.221])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D68EF2C0614
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 03:38:49 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 5BA342C096A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 03:40:17 +1000 (EST)
 From: Alexander Gordeev <agordeev@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 72/77] vmxnet3: Fixup a weird loop exit
-Date: Wed,  2 Oct 2013 12:49:28 +0200
-Message-Id: <93fde8941d272e952e796abbf6526f19dc2d265f.1380703263.git.agordeev@redhat.com>
+Subject: [PATCH RFC 30/77] hpsa: Update a misleading comment on interrupt usage
+Date: Wed,  2 Oct 2013 12:48:46 +0200
+Message-Id: <3e551608cba10cab0f33f5201a29e67905b3cd02.1380703262.git.agordeev@redhat.com>
 In-Reply-To: <cover.1380703262.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
@@ -35,21 +35,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 ---
- drivers/net/vmxnet3/vmxnet3_drv.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/scsi/hpsa.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/vmxnet3/vmxnet3_drv.c b/drivers/net/vmxnet3/vmxnet3_drv.c
-index 5b8ea71..3518173 100644
---- a/drivers/net/vmxnet3/vmxnet3_drv.c
-+++ b/drivers/net/vmxnet3/vmxnet3_drv.c
-@@ -2750,7 +2750,7 @@ vmxnet3_acquire_msix_vectors(struct vmxnet3_adapter *adapter,
- 		} else if (err < 0) {
- 			dev_err(&adapter->netdev->dev,
- 				   "Failed to enable MSI-X, error: %d\n", err);
--			vectors = 0;
-+			return err;
- 		} else if (err < vector_threshold) {
- 			break;
- 		} else {
+diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
+index 891c86b..393c8db 100644
+--- a/drivers/scsi/hpsa.c
++++ b/drivers/scsi/hpsa.c
+@@ -4141,7 +4141,11 @@ static void hpsa_interrupt_mode(struct ctlr_info *h)
+ 	}
+ default_int_mode:
+ #endif				/* CONFIG_PCI_MSI */
+-	/* if we get here we're going to use the default interrupt mode */
++	/*
++	 * If we get here we're going to use either the
++	 * default interrupt mode or single MSI mode
++	 */
++
+ 	h->intr[h->intr_mode] = h->pdev->irq;
+ }
+ 
 -- 
 1.7.7.6
