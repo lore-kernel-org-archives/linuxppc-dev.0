@@ -1,45 +1,30 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AD8E62C009D
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 07:58:53 +1000 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
- Thu, 3 Oct 2013 07:58:51 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C27012CE8052
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 07:58:38 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r92Lfe7O64356486
- for <linuxppc-dev@ozlabs.org>; Thu, 3 Oct 2013 07:41:41 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r92LwbH9027326
- for <linuxppc-dev@ozlabs.org>; Thu, 3 Oct 2013 07:58:38 +1000
-Message-ID: <1380751112.645.64.camel@pasglop>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DCEFE2C00A7
+ for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 08:02:47 +1000 (EST)
+Message-ID: <1380751340.645.68.camel@pasglop>
 Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
  some powernv systems
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Alexander Graf <agraf@suse.de>
-Date: Thu, 03 Oct 2013 07:58:32 +1000
-In-Reply-To: <668E4650-BC22-4CBF-A282-E7875DF29DB6@suse.de>
-References: <1380177066-3835-1-git-send-email-michael@ellerman.id.au>
- <1380177066-3835-3-git-send-email-michael@ellerman.id.au>
- <5243F933.7000907@redhat.com> <20131001083426.GB27484@concordia>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gleb Natapov <gleb@redhat.com>
+Date: Thu, 03 Oct 2013 08:02:20 +1000
+In-Reply-To: <20131002100224.GF17294@redhat.com>
+References: <5243F933.7000907@redhat.com> <20131001083426.GB27484@concordia>
  <20131001083908.GA17294@redhat.com> <1380620338.645.22.camel@pasglop>
  <524AAFAA.3010801@redhat.com> <20131002050940.GA25363@drongo>
  <524BDD73.3020106@redhat.com> <1380704789.645.57.camel@pasglop>
  <668E4650-BC22-4CBF-A282-E7875DF29DB6@suse.de>
+ <3CBF5732-E7EE-4C96-8132-6D7B77270DAF@suse.de>
+ <20131002100224.GF17294@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: tytso@mit.edu, kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
- linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- herbert@gondor.hengli.com.au, Paul Mackerras <paulus@samba.org>,
- mpm@selenic.com, Paolo Bonzini <pbonzini@redhat.com>
+Cc: tytso@mit.edu, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, herbert@gondor.hengli.com.au,
+ Paul Mackerras <paulus@samba.org>, mpm@selenic.com,
+ Paolo Bonzini <pbonzini@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,18 +34,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-10-02 at 11:11 +0200, Alexander Graf wrote:
+On Wed, 2013-10-02 at 13:02 +0300, Gleb Natapov wrote:
 
-> Right, and the difference for the patch in question is really whether
-> we handle in in kernel virtual mode or in QEMU, so the bulk of the
-> overhead (kicking threads out of  guest context, switching MMU
-> context, etc) happens either way.
-> 
-> So the additional overhead when handling it in QEMU here really boils
-> down to the user space roundtrip (plus another random number read
-> roundtrip).
+> Yes, I alluded to it in my email to Paul and Paolo asked also. How this
+> interface is disabled? Also hwrnd is MMIO in a host why guest needs to
+> use hypercall instead of emulating the device (in kernel or somewhere
+> else?).
 
-Hrm, Michael had a real mode version ... not sure where it went then.
+Migration will have to be dealt with one way or another, I suppose we
+will indeed need a qemu fallback.
 
-Cheers,
+As for why hypercall instead of MMIO, well, you'd have to ask the folks
+who wrote the PAPR spec :-) It's specified as a hypercall and
+implemented as such in pHyp (PowerVM). The existing guests expect it
+that way.
+
+It might have to do with the required whitening done by the hypervisor
+(H_RANDOM output is supposed to be clean). It also abstracts us from the
+underlying HW implementation which could in theory change.
+ 
+>  Another things is that on a host hwrnd is protected from
+> direct userspace access by virtue of been a device, but guest code (event
+> kernel mode) is userspace as far as hosts security model goes, so by
+> implementing this hypercall in a way that directly access hwrnd you
+> expose hwrnd to a userspace unconditionally. Why is this a good idea? 
+
+Why would this be a bad idea ?
+
 Ben.
+
+> --
+> 			Gleb.
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
