@@ -1,32 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E44212C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 00:38:56 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 2 Oct 2013 20:08:50 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3A587E0053
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2013 20:09:59 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r92EfH0232768058
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Oct 2013 20:11:17 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r92EckKL002637
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Oct 2013 20:08:47 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] kvm: powerpc: book3s: Fix build break for BOOK3S_32
-Date: Wed,  2 Oct 2013 20:08:44 +0530
-Message-Id: <1380724724-12892-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <andi@firstfloor.org>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by ozlabs.org (Postfix) with ESMTP id 09D002C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 00:57:02 +1000 (EST)
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Avoiding the dentry d_lock on final dput(),
+ part deux: transactional memory
+References: <CA+55aFwp-RAKEMVvbMG53C=kTMqS09NPXy1eP4xEUYZpvV8X5Q@mail.gmail.com>
+ <5249D897.1010109@hp.com>
+ <CA+55aFw6tOVMw=pKE_knj4BOwTi_JAX=4N=-5_WduykNPotdww@mail.gmail.com>
+Date: Wed, 02 Oct 2013 07:56:50 -0700
+In-Reply-To: <CA+55aFw6tOVMw=pKE_knj4BOwTi_JAX=4N=-5_WduykNPotdww@mail.gmail.com>
+ (Linus Torvalds's message of "Mon, 30 Sep 2013 13:04:34 -0700")
+Message-ID: <87y56boh59.fsf@tassilo.jf.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Waiman Long <waiman.long@hp.com>, Peter Zijlstra <peterz@infradead.org>,
+ "Norton, Scott J" <scott.norton@hp.com>, George Spelvin <linux@horizon.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Chandramouleeswaran,
+ Aswin" <aswin@hp.com>, linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,31 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-This was introduced by 85a0d845d8bb5df5d2669416212f56cbe1474c6b
+> On Mon, Sep 30, 2013 at 1:01 PM, Waiman Long <waiman.long@hp.com> wrote:
+>>
+>> I think this patch is worth a trial if relevant hardware is more widely
+>> available. The TSX code certainly need to be moved to an architecture
+>> specific area and should be runtime enabled using a static key. We also need
+>> more TSX support infrastructure in place first.
+>
+> I think we can pick that up from Andi's patches, he should have that.
+> Although that did have very x86-specific naming (ie "xbegin"). And I
+> don't think he used "asm goto" to quite the same advantage as this -
+> and I think we do want to make sure that the overhead is minimal.
 
-arch/powerpc/kvm/book3s_pr.c: In function 'kvmppc_core_vcpu_create':
-arch/powerpc/kvm/book3s_pr.c:1182:30: error: 'struct kvmppc_vcpu_book3s' has no member named 'shadow_vcpu'
-make[1]: *** [arch/powerpc/kvm/book3s_pr.o] Error 1
+FWIW my version #0 used asm goto directly, but I later switched to not
+using it to support more compilers and higher level abstractions (locks
+etc.) and use the same intrinsics as the user level guys are using.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/kvm/book3s_pr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The two extra instructions from not using asm goto for xbegin
+don't matter all that much in the end.
 
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 8941885..6075dbd 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -1179,7 +1179,7 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- 
- #ifdef CONFIG_KVM_BOOK3S_32
- 	vcpu->arch.shadow_vcpu =
--		kzalloc(sizeof(*vcpu_book3s->shadow_vcpu), GFP_KERNEL);
-+		kzalloc(sizeof(*vcpu->arch.shadow_vcpu), GFP_KERNEL);
- 	if (!vcpu->arch.shadow_vcpu)
- 		goto free_vcpu3s;
- #endif
+That's the old asm goto stuff I wrote originally
+(user level version):
+
+https://github.com/andikleen/tsx-tools/blob/master/include/rtm-goto.h
+
+There was also a kernel version of it that patched, right 
+now this is done in the main TSX patchkit like this:
+
+https://git.kernel.org/cgit/linux/kernel/git/ak/linux-misc.git/commit/?h=hle312/rtm-base&id=9190346d57a9bc89e746aee774d07e54cd1e6e75
+
+Essentially without RTM it just becomes and unconditional jump
+to the abort handler, xabort is a nop, and xtest always returns 0.
+
+-Andi
 -- 
-1.8.1.2
+ak@linux.intel.com -- Speaking for myself only
