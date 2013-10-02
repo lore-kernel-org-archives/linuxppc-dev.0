@@ -1,24 +1,10 @@
-Return-Path: <bigeasy@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E79D42C007E
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Oct 2013 17:12:20 +1000 (EST)
-Message-ID: <524BC750.1090401@linutronix.de>
-Date: Wed, 02 Oct 2013 09:12:16 +0200
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-MIME-Version: 1.0
-To: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH] Revert "powerpc: 52xx: provide a default in
- mpc52xx_irqhost_map()"
-References: <1380612366-13504-1-git-send-email-wsa@the-dreams.de>
- <524A7FCB.3020406@linutronix.de> <20131001091115.GB2993@katana>
- <524AF913.6020007@linutronix.de> <20131001190344.GA3006@katana>
-In-Reply-To: <20131001190344.GA3006@katana>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
- linux-rt-users@vger.kernel.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc/tm: Remove interrupt disable in __switch_to()
+Date: Wed,  2 Oct 2013 17:15:14 +1000
+Message-Id: <1380698115-25841-1-git-send-email-mikey@neuling.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +14,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/01/2013 09:03 PM, Wolfram Sang wrote:
-> 
-> Yup. But I just remembered a better solution:
-> 
-> From: Wolfram Sang <wsa@the-dreams.de> Subject: [PATCH] ppc:
-> mpc52xx: silence false positive from old GCC
-> 
-> So people can compile with -Werror.
-> 
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de> --- 
-> arch/powerpc/platforms/52xx/mpc52xx_pic.c |    2 +- 1 file changed,
-> 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-> b/arch/powerpc/platforms/52xx/mpc52xx_pic.c index b89ef65..2898b73
-> 100644 --- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c +++
-> b/arch/powerpc/platforms/52xx/mpc52xx_pic.c @@ -340,7 +340,7 @@
-> static int mpc52xx_irqhost_map(struct irq_domain *h, unsigned int
-> virq, { int l1irq; int l2irq; -	struct irq_chip *irqchip; +	struct
-> irq_chip *uninitialized_var(irqchip); void *hndlr; int type; u32
-> reg;
-> 
-> 
-> uninitialized_var was created for exactly that purpose IIRC.
+We currently turn IRQs off in __switch_to(0 but this is unnecessary as it's
+already disabled in the caller.
 
-Yup, looks good, thanks.
+This removes the IRQ disable but adds a check to make sure it is really off
+in case this changes in future.
 
-> 
-> Thanks,
-> 
-> Wolfram
-> 
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kernel/process.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-Sebastian
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 96d2fdf..384c27e 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -596,12 +596,13 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	struct task_struct *new)
+ {
+ 	struct thread_struct *new_thread, *old_thread;
+-	unsigned long flags;
+ 	struct task_struct *last;
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	struct ppc64_tlb_batch *batch;
+ #endif
+ 
++	WARN_ON(!irqs_disabled());
++
+ 	/* Back up the TAR across context switches.
+ 	 * Note that the TAR is not available for use in the kernel.  (To
+ 	 * provide this, the TAR should be backed up/restored on exception
+@@ -721,8 +722,6 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	}
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ 
+-	local_irq_save(flags);
+-
+ 	/*
+ 	 * We can't take a PMU exception inside _switch() since there is a
+ 	 * window where the kernel stack SLB and the kernel stack are out
+@@ -742,8 +741,6 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	}
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ 
+-	local_irq_restore(flags);
+-
+ 	return last;
+ }
+ 
+-- 
+1.8.1.2
