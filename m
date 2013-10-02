@@ -2,13 +2,13 @@ Return-Path: <agordeev@dhcp-26-207.brq.redhat.com>
 Received: from dhcp-26-207.brq.redhat.com (unknown [89.24.186.221])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 976F52C2055
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 04:12:37 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 246352C14DC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 04:13:00 +1000 (EST)
 From: Alexander Gordeev <agordeev@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 58/77] qib: Update MSI/MSI-X interrupts enablement code
-Date: Wed,  2 Oct 2013 12:49:14 +0200
-Message-Id: <5dac1d5d1329cb290043f93b250d26290e553be9.1380703263.git.agordeev@redhat.com>
+Subject: [PATCH RFC 34/77] ioat: Update MSI/MSI-X interrupts enablement code
+Date: Wed,  2 Oct 2013 12:48:50 +0200
+Message-Id: <63caad476ca6b7f3481d5512febcb4ef3db72209.1380703263.git.agordeev@redhat.com>
 In-Reply-To: <cover.1380703262.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
@@ -38,23 +38,35 @@ obtain a optimal number of MSI/MSI-X interrupts required.
 
 Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 ---
- drivers/infiniband/hw/qib/qib_pcie.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+ drivers/dma/ioat/dma.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/infiniband/hw/qib/qib_pcie.c b/drivers/infiniband/hw/qib/qib_pcie.c
-index 3f14009..9580903 100644
---- a/drivers/infiniband/hw/qib/qib_pcie.c
-+++ b/drivers/infiniband/hw/qib/qib_pcie.c
-@@ -218,10 +218,6 @@ static void qib_msix_setup(struct qib_devdata *dd, int pos, u32 *msixcnt,
- 	if (tabsize > *msixcnt)
- 		tabsize = *msixcnt;
- 	ret = pci_enable_msix(dd->pcidev, msix_entry, tabsize);
--	if (ret > 0) {
--		tabsize = ret;
--		ret = pci_enable_msix(dd->pcidev, msix_entry, tabsize);
--	}
- do_intx:
- 	if (ret) {
- 		qib_dev_err(dd,
+diff --git a/drivers/dma/ioat/dma.c b/drivers/dma/ioat/dma.c
+index acee3b2..b352ee6 100644
+--- a/drivers/dma/ioat/dma.c
++++ b/drivers/dma/ioat/dma.c
+@@ -915,15 +915,19 @@ int ioat_dma_setup_interrupts(struct ioatdma_device *device)
+ 
+ msix:
+ 	/* The number of MSI-X vectors should equal the number of channels */
++	err = pci_msix_table_size(pdev);
++	if (err < 0)
++		goto msi;
++	if (err < device->common.chancnt)
++		goto msix_single_vector;
++
+ 	msixcnt = device->common.chancnt;
+ 	for (i = 0; i < msixcnt; i++)
+ 		device->msix_entries[i].entry = i;
+ 
+ 	err = pci_enable_msix(pdev, device->msix_entries, msixcnt);
+-	if (err < 0)
++	if (err)
+ 		goto msi;
+-	if (err > 0)
+-		goto msix_single_vector;
+ 
+ 	for (i = 0; i < msixcnt; i++) {
+ 		msix = &device->msix_entries[i];
 -- 
 1.7.7.6
