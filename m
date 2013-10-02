@@ -2,14 +2,13 @@ Return-Path: <agordeev@dhcp-26-207.brq.redhat.com>
 Received: from dhcp-26-207.brq.redhat.com (unknown [89.24.186.221])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B064C2C0D07
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 04:12:09 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 976F52C2055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 04:12:37 +1000 (EST)
 From: Alexander Gordeev <agordeev@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 11/77] benet: Return -ENOSPC when not enough MSI-Xs
- available
-Date: Wed,  2 Oct 2013 12:48:27 +0200
-Message-Id: <4c73b38e38e37857e85e28a38279a2917bfcc01b.1380703262.git.agordeev@redhat.com>
+Subject: [PATCH RFC 58/77] qib: Update MSI/MSI-X interrupts enablement code
+Date: Wed,  2 Oct 2013 12:49:14 +0200
+Message-Id: <5dac1d5d1329cb290043f93b250d26290e553be9.1380703263.git.agordeev@redhat.com>
 In-Reply-To: <cover.1380703262.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
@@ -33,23 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+As result of recent re-design of the MSI/MSI-X interrupts enabling
+pattern this driver has to be updated to use the new technique to
+obtain a optimal number of MSI/MSI-X interrupts required.
+
 Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 ---
- drivers/net/ethernet/emulex/benet/be_main.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/infiniband/hw/qib/qib_pcie.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/emulex/benet/be_main.c b/drivers/net/ethernet/emulex/benet/be_main.c
-index 100b528..3e2c834 100644
---- a/drivers/net/ethernet/emulex/benet/be_main.c
-+++ b/drivers/net/ethernet/emulex/benet/be_main.c
-@@ -2378,6 +2378,8 @@ static int be_msix_enable(struct be_adapter *adapter)
- 					 num_vec);
- 		if (!status)
- 			goto done;
-+	} else (status > 0) {
-+		status = -ENOSPC;
- 	}
- 
- 	dev_warn(dev, "MSIx enable failed\n");
+diff --git a/drivers/infiniband/hw/qib/qib_pcie.c b/drivers/infiniband/hw/qib/qib_pcie.c
+index 3f14009..9580903 100644
+--- a/drivers/infiniband/hw/qib/qib_pcie.c
++++ b/drivers/infiniband/hw/qib/qib_pcie.c
+@@ -218,10 +218,6 @@ static void qib_msix_setup(struct qib_devdata *dd, int pos, u32 *msixcnt,
+ 	if (tabsize > *msixcnt)
+ 		tabsize = *msixcnt;
+ 	ret = pci_enable_msix(dd->pcidev, msix_entry, tabsize);
+-	if (ret > 0) {
+-		tabsize = ret;
+-		ret = pci_enable_msix(dd->pcidev, msix_entry, tabsize);
+-	}
+ do_intx:
+ 	if (ret) {
+ 		qib_dev_err(dd,
 -- 
 1.7.7.6
