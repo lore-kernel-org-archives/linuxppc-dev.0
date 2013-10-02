@@ -2,13 +2,14 @@ Return-Path: <agordeev@dhcp-26-207.brq.redhat.com>
 Received: from dhcp-26-207.brq.redhat.com (unknown [89.24.186.221])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A4C942C1643
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 03:50:01 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 0E3F32C0ED3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 03:51:23 +1000 (EST)
 From: Alexander Gordeev <agordeev@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 62/77] qlcnic: Remove redundant return operator
-Date: Wed,  2 Oct 2013 12:49:18 +0200
-Message-Id: <c89bd7ba946d731935ea59108c7a169a16624c5d.1380703263.git.agordeev@redhat.com>
+Subject: [PATCH RFC 25/77] cxgb4: Return -ENOSPC when not enough MSI-X vectors
+ available
+Date: Wed,  2 Oct 2013 12:48:41 +0200
+Message-Id: <3c7f347b79afdce03af1fadf4f50f7906979ee94.1380703262.git.agordeev@redhat.com>
 In-Reply-To: <cover.1380703262.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
@@ -35,20 +36,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 ---
- drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c
-index ff6a78b..b94e679 100644
---- a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c
-+++ b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c
-@@ -613,7 +613,6 @@ int qlcnic_enable_msix(struct qlcnic_adapter *adapter, u32 num_msix)
- 				adapter->max_sds_rings = max_sds_rings;
- 			}
- 			dev_info(&pdev->dev, "using msi-x interrupts\n");
--			return err;
- 		} else if (err > 0) {
- 			dev_info(&pdev->dev,
- 				 "Unable to allocate %d MSI-X interrupt vectors\n",
+diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
+index c73cabd..9425bc6 100644
+--- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
++++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
+@@ -5732,9 +5732,11 @@ static int enable_msix(struct adapter *adap)
+ 		}
+ 		for (i = 0; i < want; ++i)
+ 			adap->msix_info[i].vec = entries[i].vector;
+-	} else if (err > 0)
++	} else if (err > 0) {
+ 		dev_info(adap->pdev_dev,
+ 			 "only %d MSI-X vectors left, not using MSI-X\n", err);
++		err = -ENOSPC;
++	}
+ 	return err;
+ }
+ 
 -- 
 1.7.7.6
