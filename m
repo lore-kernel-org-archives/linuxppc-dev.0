@@ -1,31 +1,32 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 21B562C00B9
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Oct 2013 10:15:32 +1000 (EST)
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2639D2C00BB
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Oct 2013 10:15:34 +1000 (EST)
 Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 1 Oct 2013 18:15:30 -0600
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 54485C40003
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Oct 2013 18:15:20 -0600 (MDT)
+ Tue, 1 Oct 2013 18:15:32 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id EA6F3C40003
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Oct 2013 18:15:22 -0600 (MDT)
 Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r920FRqT315680
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Oct 2013 18:15:27 -0600
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r920FTiE368534
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Oct 2013 18:15:29 -0600
 Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
  by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r920IW96028039
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Oct 2013 18:18:33 -0600
+ r920IYOP028189
+ for <linuxppc-dev@ozlabs.org>; Tue, 1 Oct 2013 18:18:35 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: [PATCH 1/9][v5] powerpc/perf: Rename Power8 macros to start with PME
-Date: Tue,  1 Oct 2013 17:15:02 -0700
-Message-Id: <1380672911-12812-2-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH 6/9][v5] powerpc/perf: Define big-endian version of
+ perf_mem_data_src
+Date: Tue,  1 Oct 2013 17:15:07 -0700
+Message-Id: <1380672911-12812-7-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1380672911-12812-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1380672911-12812-1-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
@@ -41,57 +42,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We use helpers like GENERIC_EVENT_ATTR() to list the generic events in
-sysfs. To avoid name collisions, GENERIC_EVENT_ATTR() requires the perf
-event macros to start with PME.
+perf_mem_data_src is an union that is initialized via the ->val field
+and accessed via the bitmap fields. For this to work on big endian
+platforms, we also need a big-endian represenation of perf_mem_data_src.
 
+Cc: Stephane Eranian <eranian@google.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/power8-pmu.c |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 2ee4a70..976c203 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -18,12 +18,12 @@
+Changelog [v5]:
+	- include <endian.h> in local byteorder.h
+
+Changelog [v4]:
+	- perf_event.h includes <byteorder.h> which pulls in the local
+	  byteorder.h when building the perf tool. This local byteorder.h
+	  leaves __LITTLE_ENDIAN and __BIG_ENDIAN undefined.
+	  Include <endian.h> explicitly in the local byteorder.h.
+
+Changelog [v2]:
+	- [Vince Weaver, Michael Ellerman] No __KERNEL__ in uapi headers.
+
+ include/uapi/linux/perf_event.h         |   58 +++++++++++++++++++++++++++++++
+ tools/perf/util/include/asm/byteorder.h |    1 +
+ 2 files changed, 59 insertions(+)
+
+diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+index ca1d90b..846f399 100644
+--- a/include/uapi/linux/perf_event.h
++++ b/include/uapi/linux/perf_event.h
+@@ -19,6 +19,50 @@
+ #include <asm/byteorder.h>
+ 
  /*
-  * Some power8 event codes.
++ * Kernel and userspace check for endianness in incompatible ways.
++ * In user space, <endian.h> defines both __BIG_ENDIAN and __LITTLE_ENDIAN
++ * but sets __BYTE_ORDER to one or the other. So user space uses checks are:
++ *
++ *	#if __BYTE_ORDER == __LITTLE_ENDIAN
++ *
++ * In the kernel, __BYTE_ORDER is undefined, so using the above check doesn't
++ * work. Further, kernel code assumes that exactly one of __BIG_ENDIAN and
++ * __LITTLE_ENDIAN is defined.  So the kernel checks are like:
++ *
++ *	#if defined(__LITTLE_ENDIAN)
++ *
++ * But we can't use that check in user space since __LITTLE_ENDIAN (and
++ * __BIG_ENDIAN) are always defined.
++ *
++ * Since some perf data structures depend on endianness _and_ are shared
++ * between kernel and user, perf needs its own notion of endian macros (at
++ * least until user and kernel endian checks converge).
++ */
++#define __PERF_LE	1234
++#define __PERF_BE	4321
++
++#if defined(__BYTE_ORDER)
++
++#if __BYTE_ORDER == __LITTLE_ENDIAN
++#define __PERF_BYTE_ORDER	__PERF_LE
++#elif __BYTE_ORDER == __BIG_ENDIAN
++#define __PERF_BYTE_ORDER	__PERF_BE
++#endif
++
++#else /* __BYTE_ORDER */
++
++#if defined(__LITTLE_ENDIAN) && defined(__BIG_ENDIAN)
++#error "Cannot determine endianness"
++#elif defined(__LITTLE_ENDIAN)
++#define __PERF_BYTE_ORDER	__PERF_LE
++#elif defined(__BIG_ENDIAN)
++#define __PERF_BYTE_ORDER	__PERF_BE
++#endif
++
++
++#endif /* __BYTE_ORDER */
++
++/*
+  * User-space ABI bits:
   */
--#define PM_CYC				0x0001e
--#define PM_GCT_NOSLOT_CYC		0x100f8
--#define PM_CMPLU_STALL			0x4000a
--#define PM_INST_CMPL			0x00002
--#define PM_BRU_FIN			0x10068
--#define PM_BR_MPRED_CMPL		0x400f6
-+#define PME_PM_CYC				0x0001e
-+#define PME_PM_GCT_NOSLOT_CYC			0x100f8
-+#define PME_PM_CMPLU_STALL			0x4000a
-+#define PME_PM_INST_CMPL			0x00002
-+#define PME_PM_BRU_FIN				0x10068
-+#define PME_PM_BR_MPRED_CMPL			0x400f6
  
+@@ -695,6 +739,7 @@ enum perf_callchain_context {
+ #define PERF_FLAG_FD_OUTPUT		(1U << 1)
+ #define PERF_FLAG_PID_CGROUP		(1U << 2) /* pid=cgroup id, per-cpu mode only */
  
- /*
-@@ -550,12 +550,12 @@ static const struct attribute_group *power8_pmu_attr_groups[] = {
++#if __PERF_BYTE_ORDER == __PERF_LE
+ union perf_mem_data_src {
+ 	__u64 val;
+ 	struct {
+@@ -706,6 +751,19 @@ union perf_mem_data_src {
+ 			mem_rsvd:31;
+ 	};
  };
++#elif __PERF_BYTE_ORDER == __PERF_BE
++union perf_mem_data_src {
++	__u64 val;
++	struct {
++		__u64	mem_rsvd:31,
++			mem_dtlb:7,	/* tlb access */
++			mem_lock:2,	/* lock instr */
++			mem_snoop:5,	/* snoop mode */
++			mem_lvl:14,	/* memory hierarchy level */
++			mem_op:5;	/* type of opcode */
++	};
++};
++#endif
  
- static int power8_generic_events[] = {
--	[PERF_COUNT_HW_CPU_CYCLES] =			PM_CYC,
--	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PM_GCT_NOSLOT_CYC,
--	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =	PM_CMPLU_STALL,
--	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_INST_CMPL,
--	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BRU_FIN,
--	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
-+	[PERF_COUNT_HW_CPU_CYCLES] =			PME_PM_CYC,
-+	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PME_PM_GCT_NOSLOT_CYC,
-+	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =	PME_PM_CMPLU_STALL,
-+	[PERF_COUNT_HW_INSTRUCTIONS] =			PME_PM_INST_CMPL,
-+	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PME_PM_BRU_FIN,
-+	[PERF_COUNT_HW_BRANCH_MISSES] =			PME_PM_BR_MPRED_CMPL,
- };
- 
- static u64 power8_bhrb_filter_map(u64 branch_sample_type)
+ /* type of opcode (load/store/prefetch,code) */
+ #define PERF_MEM_OP_NA		0x01 /* not available */
+diff --git a/tools/perf/util/include/asm/byteorder.h b/tools/perf/util/include/asm/byteorder.h
+index 2a9bdc0..7112913 100644
+--- a/tools/perf/util/include/asm/byteorder.h
++++ b/tools/perf/util/include/asm/byteorder.h
+@@ -1,2 +1,3 @@
+ #include <asm/types.h>
+ #include "../../../../include/uapi/linux/swab.h"
++#include <endian.h>
 -- 
 1.7.9.5
