@@ -1,10 +1,32 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/perf: Fix handling of FAB events
-Date: Wed,  2 Oct 2013 18:04:06 +1000
-Message-Id: <1380701046-8542-1-git-send-email-michael@ellerman.id.au>
-Cc: soonair3@in.ibm.com
+Return-Path: <paolo.bonzini@gmail.com>
+Received: from mail-ee0-x229.google.com (mail-ee0-x229.google.com
+ [IPv6:2a00:1450:4013:c00::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 51DC62C00BA
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Oct 2013 18:38:08 +1000 (EST)
+Received: by mail-ee0-f41.google.com with SMTP id d17so221987eek.0
+ for <linuxppc-dev@ozlabs.org>; Wed, 02 Oct 2013 01:38:04 -0700 (PDT)
+Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
+Message-ID: <524BDB7D.8000708@redhat.com>
+Date: Wed, 02 Oct 2013 10:38:21 +0200
+From: Paolo Bonzini <pbonzini@redhat.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
+ some powernv systems
+References: <1380177066-3835-1-git-send-email-michael@ellerman.id.au>
+ <1380177066-3835-3-git-send-email-michael@ellerman.id.au>
+ <5243F933.7000907@redhat.com> <20131001083426.GB27484@concordia>
+ <20131001083908.GA17294@redhat.com> <1380620338.645.22.camel@pasglop>
+ <524AAFAA.3010801@redhat.com> <1380663871.645.44.camel@pasglop>
+In-Reply-To: <1380663871.645.44.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: tytso@mit.edu, kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
+ linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ agraf@suse.de, herbert@gondor.hengli.com.au, Paul Mackerras <paulus@samba.org>,
+ mpm@selenic.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -14,50 +36,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 4df4899 "Add power8 EBB support" included a bug in the handling
-of the FAB_CRESP_MATCH and FAB_TYPE_MATCH fields.
+Il 01/10/2013 23:44, Benjamin Herrenschmidt ha scritto:
+> On Tue, 2013-10-01 at 13:19 +0200, Paolo Bonzini wrote:
+>> Il 01/10/2013 11:38, Benjamin Herrenschmidt ha scritto:
+>>> So for the sake of that dogma you are going to make us do something that
+>>> is about 100 times slower ? (and possibly involves more lines of code)
+>>
+>> If it's 100 times slower there is something else that's wrong.  It's
+>> most likely not 100 times slower, and this makes me wonder if you or
+>> Michael actually timed the code at all.
+> 
+> So no we haven't measured. But it is going to be VERY VERY VERY much
+> slower. Our exit latencies are bad with our current MMU *and* any exit
+> is going to cause all secondary threads on the core to have to exit as
+> well (remember P7 is 4 threads, P8 is 8)
 
-These values are pulled out of the event code using EVENT_THR_CTL_SHIFT,
-however we were then or'ing that value directly into MMCR1.
+Ok, this is indeed the main difference between Power and x86.
 
-This meant we were failing to set the FAB fields correctly, and also
-potentially corrupting the value for PMC4SEL. Leading to no counts for
-the FAB events and incorrect counts for PMC4.
+>>   100 cycles            bare metal rdrand
+>>   2000 cycles           guest->hypervisor->guest
+>>   15000 cycles          guest->userspace->guest
+>>
+>> (100 cycles = 40 ns = 200 MB/sec; 2000 cycles = ~1 microseconds; 15000
+>> cycles = ~7.5 microseconds).  Even on 5 year old hardware, a userspace
+>> roundtrip is around a dozen microseconds.
+> 
+> So in your case going to qemu to "emulate" rdrand would indeed be 150
+> times slower, I don't see in what universe that would be considered a
+> good idea.
 
-The fix is simply to shift left the FAB value correctly before or'ing it
-with MMCR1.
+rdrand is not privileged on x86, guests can use it.  But my point is
+that going to the kernel is already 20 times slower.  Getting entropy
+(not just a pseudo-random number seeded by the HWRNG) with rdrand is
+~1000 times slower according to Intel's recommendations, so the
+roundtrip to userspace is entirely invisible in that case.
 
-Reported-by: Sooraj Ravindran Nair <soonair3@in.ibm.com>
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-Cc: <stable@vger.kernel.org> # 3.10+
----
- arch/powerpc/perf/power8-pmu.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+The numbers for PPC seem to be a bit different though (it's faster to
+read entropy, and slower to do a userspace exit).
 
-Ben for 3.13 please.
+> It's a random number obtained from sampling a set of oscillators. It's
+> slightly biased but we have very simple code (I believe shared with the
+> host kernel implementation) for whitening it as is required by PAPR.
 
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 2ee4a70..a3f7abd 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -199,6 +199,7 @@
- #define MMCR1_UNIT_SHIFT(pmc)		(60 - (4 * ((pmc) - 1)))
- #define MMCR1_COMBINE_SHIFT(pmc)	(35 - ((pmc) - 1))
- #define MMCR1_PMCSEL_SHIFT(pmc)		(24 - (((pmc) - 1)) * 8)
-+#define MMCR1_FAB_SHIFT			36
- #define MMCR1_DC_QUAL_SHIFT		47
- #define MMCR1_IC_QUAL_SHIFT		46
- 
-@@ -388,8 +389,8 @@ static int power8_compute_mmcr(u64 event[], int n_ev,
- 		 * the threshold bits are used for the match value.
- 		 */
- 		if (event_is_fab_match(event[i])) {
--			mmcr1 |= (event[i] >> EVENT_THR_CTL_SHIFT) &
--				  EVENT_THR_CTL_MASK;
-+			mmcr1 |= ((event[i] >> EVENT_THR_CTL_SHIFT) &
-+				  EVENT_THR_CTL_MASK) << MMCR1_FAB_SHIFT;
- 		} else {
- 			val = (event[i] >> EVENT_THR_CTL_SHIFT) & EVENT_THR_CTL_MASK;
- 			mmcra |= val << MMCRA_THR_CTL_SHIFT;
--- 
-1.8.1.2
+Good.  Actually, passing the dieharder tests does not mean much (an
+AES-encrypted counter should also pass them with flashing colors), but
+if it's specified by the architecture gods it's likely to have received
+some scrutiny.
+
+>> 2) If the hwrng returns entropy, a read from the hwrng is going to even
+>> more expensive than an x86 rdrand (perhaps ~2000 cycles).
+> 
+> Depends how often you read, the HW I think is sampling asynchronously so
+> you only block on the MMIO if you already consumed the previous sample
+> but I'll let Paulus provide more details here.
+
+Given Paul's description, there's indeed very little extra cost compared
+to a "nop" hypercall.  That's nice.
+
+Still, considering that QEMU code has to be there anyway for
+compatibility, kernel emulation is not particularly necessary IMHO.  I
+would of course like to see actual performance numbers, but besides that
+are you ever going to ever see this in the profile except if you run "dd
+if=/dev/hwrng of=/dev/null"?
+
+Can you instrument pHyp to find out how many times per second is this
+hypercall called by a "normal" Linux or AIX guest?
+
+>> 3) If the hypercall returns random numbers, then it is a pretty
+>> braindead interface since returning 8 bytes at a time limits the
+>> throughput to a handful of MB/s (compare to 200 MB/sec for x86 rdrand).
+>>  But more important: in this case drivers/char/hw_random/pseries-rng.c
+>> is completely broken and insecure, just like patch 2 in case (1) above.
+> 
+> How so ?
+
+Paul confirmed that it returns real entropy so this is moot.
+
+Paolo
