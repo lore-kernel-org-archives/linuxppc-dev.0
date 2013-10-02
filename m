@@ -2,13 +2,13 @@ Return-Path: <agordeev@dhcp-26-207.brq.redhat.com>
 Received: from dhcp-26-207.brq.redhat.com (unknown [89.24.186.221])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 000752C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 02:36:06 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D1A3A2C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 02:37:49 +1000 (EST)
 From: Alexander Gordeev <agordeev@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 51/77] mthca: Update MSI/MSI-X interrupts enablement code
-Date: Wed,  2 Oct 2013 12:49:07 +0200
-Message-Id: <9d424912ef78993dc75e2af5006cd12913e9e7e7.1380703263.git.agordeev@redhat.com>
+Subject: [PATCH RFC 70/77] vmci: Update MSI/MSI-X interrupts enablement code
+Date: Wed,  2 Oct 2013 12:49:26 +0200
+Message-Id: <654a7884b9ad6fbe777d00bb0a226010e421b3b9.1380703263.git.agordeev@redhat.com>
 In-Reply-To: <cover.1380703262.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
@@ -38,41 +38,47 @@ obtain a optimal number of MSI/MSI-X interrupts required.
 
 Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 ---
- drivers/infiniband/hw/mthca/mthca_main.c |   16 +++++++++++-----
- 1 files changed, 11 insertions(+), 5 deletions(-)
+ drivers/misc/vmw_vmci/vmci_guest.c |   22 +++++++++++++++-------
+ 1 files changed, 15 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/infiniband/hw/mthca/mthca_main.c b/drivers/infiniband/hw/mthca/mthca_main.c
-index 87897b9..3d44ca4 100644
---- a/drivers/infiniband/hw/mthca/mthca_main.c
-+++ b/drivers/infiniband/hw/mthca/mthca_main.c
-@@ -854,17 +854,23 @@ static int mthca_enable_msi_x(struct mthca_dev *mdev)
- 	struct msix_entry entries[3];
- 	int err;
+diff --git a/drivers/misc/vmw_vmci/vmci_guest.c b/drivers/misc/vmw_vmci/vmci_guest.c
+index b3a2b76..af5caf8 100644
+--- a/drivers/misc/vmw_vmci/vmci_guest.c
++++ b/drivers/misc/vmw_vmci/vmci_guest.c
+@@ -377,19 +377,27 @@ static int vmci_enable_msix(struct pci_dev *pdev,
+ {
+ 	int i;
+ 	int result;
++	int nvec;
  
-+	err = pci_msix_table_size(mdev->pdev);
-+	if (err < 0)
-+		return err;
-+	if (err < ARRAY_SIZE(entries)) {
-+		mthca_info(mdev, "Only %d MSI-X vectors available, "
-+			   "not using MSI-X\n", err);
+-	for (i = 0; i < VMCI_MAX_INTRS; ++i) {
++	result = pci_msix_table_size(pdev);
++	if (result < 0)
++		return result;
 +
-+		return -ENOSPC;
-+	}
++	nvec = min(result, VMCI_MAX_INTRS);
++	if (nvec < VMCI_MAX_INTRS)
++		nvec = 1;
 +
- 	entries[0].entry = 0;
- 	entries[1].entry = 1;
- 	entries[2].entry = 2;
++	for (i = 0; i < nvec; ++i) {
+ 		vmci_dev->msix_entries[i].entry = i;
+ 		vmci_dev->msix_entries[i].vector = i;
+ 	}
  
- 	err = pci_enable_msix(mdev->pdev, entries, ARRAY_SIZE(entries));
--	if (err) {
--		if (err > 0)
--			mthca_info(mdev, "Only %d MSI-X vectors available, "
--				   "not using MSI-X\n", err);
-+	if (err)
- 		return err;
--	}
+-	result = pci_enable_msix(pdev, vmci_dev->msix_entries, VMCI_MAX_INTRS);
+-	if (result == 0)
+-		vmci_dev->exclusive_vectors = true;
+-	else if (result > 0)
+-		result = pci_enable_msix(pdev, vmci_dev->msix_entries, 1);
++	result = pci_enable_msix(pdev, vmci_dev->msix_entries, nvec);
++	if (result)
++		return result;
  
- 	mdev->eq_table.eq[MTHCA_EQ_COMP ].msi_x_vector = entries[0].vector;
- 	mdev->eq_table.eq[MTHCA_EQ_ASYNC].msi_x_vector = entries[1].vector;
+-	return result;
++	vmci_dev->exclusive_vectors = true;
++	return 0;
+ }
+ 
+ /*
 -- 
 1.7.7.6
