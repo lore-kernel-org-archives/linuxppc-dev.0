@@ -1,27 +1,25 @@
-Return-Path: <B32579@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9C5422C03B4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2013 22:33:03 +1000 (EST)
-Message-ID: <524C1238.1060001@freescale.com>
-Date: Wed, 2 Oct 2013 18:01:52 +0530
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/2][v7] powerpc/mpc85xx:Add initial device tree support
- of T104x
-References: <1380524042-13720-1-git-send-email-prabhakar@freescale.com>	
- <1380570471.24959.517.camel@snotra.buserror.net>	
- <524A40F4.9040406@freescale.com>
- <1380657408.10618.52.camel@snotra.buserror.net>
-In-Reply-To: <1380657408.10618.52.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Priyanka Jain <Priyanka.Jain@freescale.com>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1380722275.12149.28.camel@concordia>
+Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
+ some powernv systems
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Gleb Natapov <gleb@redhat.com>
+Date: Wed, 02 Oct 2013 23:57:55 +1000
+In-Reply-To: <20131002100224.GF17294@redhat.com>
+References: <5243F933.7000907@redhat.com> <20131001083426.GB27484@concordia>
+ <20131001083908.GA17294@redhat.com> <1380620338.645.22.camel@pasglop>
+ <524AAFAA.3010801@redhat.com> <20131002050940.GA25363@drongo>
+ <524BDD73.3020106@redhat.com> <1380704789.645.57.camel@pasglop>
+ <668E4650-BC22-4CBF-A282-E7875DF29DB6@suse.de>
+ <3CBF5732-E7EE-4C96-8132-6D7B77270DAF@suse.de>
+ <20131002100224.GF17294@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: tytso@mit.edu, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, herbert@gondor.hengli.com.au,
+ Paul Mackerras <paulus@samba.org>, mpm@selenic.com,
+ Paolo Bonzini <pbonzini@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,54 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/02/2013 01:26 AM, Scott Wood wrote:
-> On Tue, 2013-10-01 at 08:56 +0530, Prabhakar Kushwaha wrote:
->> On 10/01/2013 01:17 AM, Scott Wood wrote:
->>> On Mon, 2013-09-30 at 12:24 +0530, Prabhakar Kushwaha wrote:
->>>>       - Removed l2switch. It will be added later
->>> Why?
->> I am not aware of bindings required for l2switch as we are not working
->> on the driver.
->> Earlier I thought of putting a place holder. but as you suggested to put
->> bindings in documentation.
->> It will be good if it is put by actual driver owner.
-> Is there a reason to believe the binding will be complicated?
->
-> Does any such "driver owner" exist yet?
+On Wed, 2013-10-02 at 13:02 +0300, Gleb Natapov wrote:
+> On Wed, Oct 02, 2013 at 11:50:50AM +0200, Alexander Graf wrote:
+> > 
+> > On 02.10.2013, at 11:11, Alexander Graf wrote:
+> > 
+> > So how do you solve live migration between a kernel that has this patch and one that doesn't?
+> > 
+> Yes, I alluded to it in my email to Paul and Paolo asked also. How this
+> interface is disabled? 
 
-I don't know, as I am unaware of l2switch driver.
+Yes that is a valid point.
 
->
->>>> +sata@220000 {
->>>> +			fsl,iommu-parent = <&pamu0>;
->>>> +			fsl,liodn-reg = <&guts 0x550>; /* SATA1LIODNR */
->>>> +};
->>>> +/include/ "qoriq-sata2-1.dtsi"
->>>> +sata@221000 {
->>>> +			fsl,iommu-parent = <&pamu0>;
->>>> +			fsl,liodn-reg = <&guts 0x554>; /* SATA2LIODNR */
->>>> +};
->>> Whitespace
->> do we have any scripts which check for whitespace as checkpatch never
->> give any warning/error.
->> it is a very silly mistake which I am doing continuously :(
-> checkpatch doesn't check dts files.
-Manual check :(
+We can't disable the interface at runtime, the guest detects its
+presence at boot.
 
->>>> +/include/ "t1040si-post.dtsi"
->>> Should at least have a comment indicating that eventually this should
->>> hold the l2 switch node.
->> yes. Ideally it should be.
->> but if I put a comment then I believe this patch will not be completed.
->> it will think as a RFC.
->> as I believe putting of TODO is generally for RFC patches.
-> As is, one would wonder why the separate file exists at all.
->
-> The TODO is there whether you have a comment acknowledging it or
-> not. :-)
->
->
-I agree. I will add a comments.
+What will happen is the hcall will come through to QEMU, which will
+reject it with H_FUNCTION (~= ENOSYS).
 
-Regards,
-Prabhakar
+The current pseries-rng driver does not handle that case well, which is
+exactly why I sent patches to fix it recently.
+
+The only other option would be to feed it with /dev/random.
+
+> Also hwrnd is MMIO in a host why guest needs to
+> use hypercall instead of emulating the device (in kernel or somewhere
+> else?). 
+
+Because PAPR is a platform specification and it specifies that the
+interface is a hypervisor call. We can't just decide we want to do it
+differently.
+
+> Another things is that on a host hwrnd is protected from
+> direct userspace access by virtue of been a device, but guest code (event
+> kernel mode) is userspace as far as hosts security model goes, so by
+> implementing this hypercall in a way that directly access hwrnd you
+> expose hwrnd to a userspace unconditionally. Why is this a good idea? 
+
+I'm not sure I follow you.
+
+The hwrng is accessible by host userspace via /dev/mem.
+
+cheers
