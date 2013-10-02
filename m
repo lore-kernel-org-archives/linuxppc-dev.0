@@ -2,14 +2,13 @@ Return-Path: <agordeev@dhcp-26-207.brq.redhat.com>
 Received: from dhcp-26-207.brq.redhat.com (unknown [89.24.186.221])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 585302C0ACF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 03:42:20 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DEB682C0BC8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 03:43:51 +1000 (EST)
 From: Alexander Gordeev <agordeev@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 23/77] cxgb3: Return -ENOSPC when not enough MSI-X vectors
- available
-Date: Wed,  2 Oct 2013 12:48:39 +0200
-Message-Id: <cbdbe5f2d6d9d8826c9c234ba45bd52c059cf66e.1380703262.git.agordeev@redhat.com>
+Subject: [PATCH RFC 02/77] PCI/MSI/PPC: Fix wrong RTAS error code reporting
+Date: Wed,  2 Oct 2013 12:48:18 +0200
+Message-Id: <d9da231bddf5e54ad1ff81e19c9c8ed4dc234946.1380703262.git.agordeev@redhat.com>
 In-Reply-To: <cover.1380703262.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
@@ -36,21 +35,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 ---
- drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c |    2 +-
+ arch/powerpc/platforms/pseries/msi.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c b/drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c
-index 9bd3099..915729c 100644
---- a/drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c
-+++ b/drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c
-@@ -3099,7 +3099,7 @@ static int cxgb_enable_msix(struct adapter *adap)
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 6d2f0ab..009ec73 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -467,7 +467,7 @@ again:
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
+ 		hwirq = rtas_query_irq_number(pdn, i++);
+ 		if (hwirq < 0) {
+-			pr_debug("rtas_msi: error (%d) getting hwirq\n", rc);
++			pr_debug("rtas_msi: error (%d) getting hwirq\n", hwirq);
+ 			return hwirq;
+ 		}
  
- 	if (!err && vectors < (adap->params.nports + 1)) {
- 		pci_disable_msix(adap->pdev);
--		err = -1;
-+		err = -ENOSPC;
- 	}
- 
- 	if (!err) {
 -- 
 1.7.7.6
