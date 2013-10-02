@@ -1,21 +1,33 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 2 Oct 2013 15:09:40 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Paolo Bonzini <pbonzini@redhat.com>
-Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
- some powernv systems
-Message-ID: <20131002050940.GA25363@drongo>
-References: <1380177066-3835-1-git-send-email-michael@ellerman.id.au>
- <1380177066-3835-3-git-send-email-michael@ellerman.id.au>
- <5243F933.7000907@redhat.com> <20131001083426.GB27484@concordia>
- <20131001083908.GA17294@redhat.com>
- <1380620338.645.22.camel@pasglop> <524AAFAA.3010801@redhat.com>
+Return-Path: <agordeev@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id E43422C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2013 17:08:02 +1000 (EST)
+Date: Wed, 2 Oct 2013 09:10:00 +0200
+From: Alexander Gordeev <agordeev@redhat.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
+Message-ID: <20131002071000.GA29860@dhcp-26-207.brq.redhat.com>
+References: <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
+ <20130906160621.GF22763@mtj.dyndns.org>
+ <20130906233205.GF12956@google.com>
+ <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
+ <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
+ <20130917143022.GA7707@concordia>
+ <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
+ <20131001075133.GJ17966@concordia>
+ <20131001103526.GA5053@dhcp-26-207.brq.redhat.com>
+ <20131002024324.GC22748@concordia>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <524AAFAA.3010801@redhat.com>
-Cc: tytso@mit.edu, kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
- linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- agraf@suse.de, herbert@gondor.hengli.com.au, mpm@selenic.com
+In-Reply-To: <20131002024324.GC22748@concordia>
+Cc: linuxppc-dev@lists.ozlabs.org, Joerg Roedel <joro@8bytes.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ Jan Beulich <JBeulich@suse.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Tejun Heo <tj@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,76 +37,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 01, 2013 at 01:19:06PM +0200, Paolo Bonzini wrote:
-
-> Anyhow, I would like to know more about this hwrng and hypercall.
+On Wed, Oct 02, 2013 at 12:43:24PM +1000, Michael Ellerman wrote:
+> On Tue, Oct 01, 2013 at 12:35:27PM +0200, Alexander Gordeev wrote:
+> > On Tue, Oct 01, 2013 at 05:51:33PM +1000, Michael Ellerman wrote:
+> > > The disadvantage is that any restriction imposed on us above the quota
+> > > can only be reported as an error from pci_enable_msix().
+> > > 
+> > > The quota code, called from pci_get_msix_limit(), can only do so much to
+> > > interogate firmware about the limitations. The ultimate way to check if
+> > > firmware will give us enough MSIs is to try and allocate them. But we
+> > > can't do that from pci_get_msix_limit() because the driver is not asking
+> > > us to enable MSIs, just query them.
+> > 
+> > If things are this way then pci_enable_msix() already exposed to this
+> > problem internally on pSeries.
+> > 
+> > I see that even successful quota checks in rtas_msi_check_device() and
+> > rtas_setup_msi_irqs() do not guarantee (as you say) that firmware will
+> > give enough MSIs. Hence, pci_enable_msix() might fail even though the
+> > its quota checks succeeded.
 > 
-> Does the hwrng return random numbers (like rdrand) or real entropy (like
-> rdseed that Intel will add in Broadwell)?  What about the hypercall?
+> Yes, but it can report that failure to the caller, which can then retry.
 
-Well, firstly, your terminology is inaccurate.  Real entropy will give
-you random numbers.  I think when you say "random numbers" you
-actually mean "pseudo-random numbers".
+If a driver wants to retry after a failure it is up to the driver (but why?).
+The current guidlines state:
 
-Secondly, the RNG produces real entropy.  The way it works is that
-there are 64 ring oscillators running at different frequencies (above
-1GHz).  They get sampled at (typically) 1MHz and the samples get put
-in a 64-entry FIFO, which is read by MMIO.  There is practically no
-correlation between bits or between adjacent samples.  The only
-deficiency is that the distribution of each bit is not always
-precisely 50% zero / 50% one (it is somewhere between 40/60 and
-60/40).
+"If this function returns a negative number, it indicates an error and
+the driver should not attempt to allocate any more MSI-X interrupts for
+this device."
 
-The whitening addresses this bias.  Looking at the stream of values
-for a given bit, we XOR that stream with another stream that is
-uncorrelated and has a 50/50 distribution (or very very close to
-that), which gives a stream whose distribution is closer to 50/50 than
-either input stream.  The second stream is effectively derived by
-XORing together all 64 bits of some previous sample.  XORing together
-many uncorrelated streams that are each close to 50/50 distribution
-gives a stream that is much closer to a 50/50 distribution (by the
-"piling up lemma").  The result passes all the dieharder tests.
+Anyway, what number could the driver retry with after it got a negative errno?
 
-> For example virtio-rng is specified to return actual entropy, it doesn't
-> matter if it is from hardware or software.
+> > Therefore, nothing will really change if we make pci_get_msix_limit() check
+> > quota and hope the follow-up call to pci_enable_msix() succeeded.
 > 
-> In either case, the patches have problems.
-> 
-> 1) If the hwrng returns random numbers, the whitening you're doing is
-> totally insufficient and patch 2 is forging entropy that doesn't exist.
-> 
-> 2) If the hwrng returns entropy, a read from the hwrng is going to even
-> more expensive than an x86 rdrand (perhaps ~2000 cycles).  Hence, doing
+> No that's not equivalent. Under your scheme if pci_enable_msix() fails
+> then the caller just bails, it will never try again with a lower number.
 
-The MMIO itself is reasonably quick if the FIFO is not empty, but the
-long-term overall rate is limited by the sampling rate.
+Currently under the very same circumstances (the quota check within
+rtas_setup_msi_irqs() returned Q vectors while the firmware has only F
+vectors to allocate and Q > F) rtas_setup_msi_irqs() fails, pci_enable_msix()
+fails, the caller bails and never try again with a lower number.
 
-> the emulation in the kernel is even less necessary.  Also, if the hwrng
-> returns entropy patch 1 is unnecessary: you do not need to waste
-> precious entropy bits by passing them to arch_get_random_long; just run
-> rngd in the host as that will put the entropy to much better use.
+Am I missing something here?
 
-Not sure why they are particularly "precious"; we get 64 bits per
-microsecond whether we use them or not.  What are you suggesting
-arch_get_random_long() should do instead?
+> cheers
 
-> 3) If the hypercall returns random numbers, then it is a pretty
-> braindead interface since returning 8 bytes at a time limits the
-> throughput to a handful of MB/s (compare to 200 MB/sec for x86 rdrand).
->  But more important: in this case drivers/char/hw_random/pseries-rng.c
-> is completely broken and insecure, just like patch 2 in case (1) above.
-
-Assuming that by "random numbers" you actually mean "pseudo-random
-numbers", then this doesn't apply.
-
-> 4) If the hypercall returns entropy (same as virtio-rng), the same
-> considerations on speed apply.  If you can only produce entropy at say 1
-> MB/s (so reading 8 bytes take 8 microseconds---which is actually very
-> fast), it doesn't matter that much to spend 7 microseconds on a
-> userspace roundtrip.  It's going to be only half the speed of bare
-> metal, not 100 times slower.
-
-8 bytes takes at most 1 microsecond, so the round-trip to userspace is
-definitely noticeable.
-
-Paul.
+-- 
+Regards,
+Alexander Gordeev
+agordeev@redhat.com
