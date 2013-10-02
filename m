@@ -1,25 +1,28 @@
-Return-Path: <andi@firstfloor.org>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by ozlabs.org (Postfix) with ESMTP id 09D002C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 00:57:02 +1000 (EST)
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Avoiding the dentry d_lock on final dput(),
- part deux: transactional memory
-References: <CA+55aFwp-RAKEMVvbMG53C=kTMqS09NPXy1eP4xEUYZpvV8X5Q@mail.gmail.com>
- <5249D897.1010109@hp.com>
- <CA+55aFw6tOVMw=pKE_knj4BOwTi_JAX=4N=-5_WduykNPotdww@mail.gmail.com>
-Date: Wed, 02 Oct 2013 07:56:50 -0700
-In-Reply-To: <CA+55aFw6tOVMw=pKE_knj4BOwTi_JAX=4N=-5_WduykNPotdww@mail.gmail.com>
- (Linus Torvalds's message of "Mon, 30 Sep 2013 13:04:34 -0700")
-Message-ID: <87y56boh59.fsf@tassilo.jf.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Waiman Long <waiman.long@hp.com>, Peter Zijlstra <peterz@infradead.org>,
- "Norton, Scott J" <scott.norton@hp.com>, George Spelvin <linux@horizon.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Chandramouleeswaran,
- Aswin" <aswin@hp.com>, linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+Return-Path: <agordeev@dhcp-26-207.brq.redhat.com>
+Received: from dhcp-26-207.brq.redhat.com (unknown [89.24.186.221])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8445A2C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 02:34:20 +1000 (EST)
+From: Alexander Gordeev <agordeev@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH RFC 52/77] niu: Update MSI/MSI-X interrupts enablement code
+Date: Wed,  2 Oct 2013 12:49:08 +0200
+Message-Id: <9808b7b5600043632fab8fa19f5b8e7845637de0.1380703263.git.agordeev@redhat.com>
+In-Reply-To: <cover.1380703262.git.agordeev@redhat.com>
+References: <cover.1380703262.git.agordeev@redhat.com>
+Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
+ linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
+ linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
+ linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
+ Alexander Gordeev <agordeev@redhat.com>, linux-pci@vger.kernel.org,
+ iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
+ Jon Mason <jon.mason@intel.com>, Ingo Molnar <mingo@redhat.com>,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ e1000-devel@lists.sourceforge.net, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+As result of recent re-design of the MSI/MSI-X interrupts enabling
+pattern this driver has to be updated to use the new technique to
+obtain a optimal number of MSI/MSI-X interrupts required.
 
-> On Mon, Sep 30, 2013 at 1:01 PM, Waiman Long <waiman.long@hp.com> wrote:
->>
->> I think this patch is worth a trial if relevant hardware is more widely
->> available. The TSX code certainly need to be moved to an architecture
->> specific area and should be runtime enabled using a static key. We also need
->> more TSX support infrastructure in place first.
->
-> I think we can pick that up from Andi's patches, he should have that.
-> Although that did have very x86-specific naming (ie "xbegin"). And I
-> don't think he used "asm goto" to quite the same advantage as this -
-> and I think we do want to make sure that the overhead is minimal.
+Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
+---
+ drivers/net/ethernet/sun/niu.c |   20 +++++++++++---------
+ 1 files changed, 11 insertions(+), 9 deletions(-)
 
-FWIW my version #0 used asm goto directly, but I later switched to not
-using it to support more compilers and higher level abstractions (locks
-etc.) and use the same intrinsics as the user level guys are using.
-
-The two extra instructions from not using asm goto for xbegin
-don't matter all that much in the end.
-
-That's the old asm goto stuff I wrote originally
-(user level version):
-
-https://github.com/andikleen/tsx-tools/blob/master/include/rtm-goto.h
-
-There was also a kernel version of it that patched, right 
-now this is done in the main TSX patchkit like this:
-
-https://git.kernel.org/cgit/linux/kernel/git/ak/linux-misc.git/commit/?h=hle312/rtm-base&id=9190346d57a9bc89e746aee774d07e54cd1e6e75
-
-Essentially without RTM it just becomes and unconditional jump
-to the abort handler, xabort is a nop, and xtest always returns 0.
-
--Andi
+diff --git a/drivers/net/ethernet/sun/niu.c b/drivers/net/ethernet/sun/niu.c
+index f28460c..54c41b9 100644
+--- a/drivers/net/ethernet/sun/niu.c
++++ b/drivers/net/ethernet/sun/niu.c
+@@ -9051,26 +9051,28 @@ static void niu_try_msix(struct niu *np, u8 *ldg_num_map)
+ 		    (np->port == 0 ? 3 : 1));
+ 	BUG_ON(num_irqs > (NIU_NUM_LDG / parent->num_ports));
+ 
+-retry:
++	err = pci_msix_table_size(pdev);
++	if (err < 0)
++		goto fail;
++
++	num_irqs = min(num_irqs, err);
+ 	for (i = 0; i < num_irqs; i++) {
+ 		msi_vec[i].vector = 0;
+ 		msi_vec[i].entry = i;
+ 	}
+ 
+ 	err = pci_enable_msix(pdev, msi_vec, num_irqs);
+-	if (err < 0) {
+-		np->flags &= ~NIU_FLAGS_MSIX;
+-		return;
+-	}
+-	if (err > 0) {
+-		num_irqs = err;
+-		goto retry;
+-	}
++	if (err)
++		goto fail;
+ 
+ 	np->flags |= NIU_FLAGS_MSIX;
+ 	for (i = 0; i < num_irqs; i++)
+ 		np->ldg[i].irq = msi_vec[i].vector;
+ 	np->num_ldg = num_irqs;
++	return;
++
++fail:
++	np->flags &= ~NIU_FLAGS_MSIX;
+ }
+ 
+ static int niu_n2_irq_init(struct niu *np, u8 *ldg_num_map)
 -- 
-ak@linux.intel.com -- Speaking for myself only
+1.7.7.6
