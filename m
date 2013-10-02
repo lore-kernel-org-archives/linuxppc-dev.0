@@ -2,14 +2,14 @@ Return-Path: <agordeev@dhcp-26-207.brq.redhat.com>
 Received: from dhcp-26-207.brq.redhat.com (unknown [89.24.186.221])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4F3B62C1C58
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 04:00:10 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C63102C0429
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 04:01:32 +1000 (EST)
 From: Alexander Gordeev <agordeev@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 18/77] cciss: Fallback to single MSI mode in case MSI-X
- failed
-Date: Wed,  2 Oct 2013 12:48:34 +0200
-Message-Id: <a0fa5fa4243512602a9ef71a81dec396d6d3d00e.1380703262.git.agordeev@redhat.com>
+Subject: [PATCH RFC 73/77] vmxnet3: Return -ENOSPC when not enough MSI-X
+ vectors available
+Date: Wed,  2 Oct 2013 12:49:29 +0200
+Message-Id: <a24303b6fa85cfb01b4e1b6c67ff26825824d7f7.1380703263.git.agordeev@redhat.com>
 In-Reply-To: <cover.1380703262.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
@@ -36,31 +36,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 ---
- drivers/block/cciss.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/vmxnet3/vmxnet3_drv.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index bf11540..0eea035 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -4081,7 +4081,7 @@ static void cciss_interrupt_mode(ctlr_info_t *h)
- 	if (pci_find_capability(h->pdev, PCI_CAP_ID_MSIX)) {
- 		err = pci_msix_table_size(h->pdev);
- 		if (err < ARRAY_SIZE(cciss_msix_entries))
--			goto default_int_mode;
-+			goto single_msi_mode;
- 		err = pci_enable_msix(h->pdev, cciss_msix_entries,
- 				      ARRAY_SIZE(cciss_msix_entries));
- 		if (!err) {
-@@ -4093,8 +4093,8 @@ static void cciss_interrupt_mode(ctlr_info_t *h)
- 			return;
+diff --git a/drivers/net/vmxnet3/vmxnet3_drv.c b/drivers/net/vmxnet3/vmxnet3_drv.c
+index 3518173..3df7f32 100644
+--- a/drivers/net/vmxnet3/vmxnet3_drv.c
++++ b/drivers/net/vmxnet3/vmxnet3_drv.c
+@@ -2752,7 +2752,10 @@ vmxnet3_acquire_msix_vectors(struct vmxnet3_adapter *adapter,
+ 				   "Failed to enable MSI-X, error: %d\n", err);
+ 			return err;
+ 		} else if (err < vector_threshold) {
+-			break;
++			dev_info(&adapter->pdev->dev,
++				 "Number of MSI-Xs which can be allocated "
++				 "is lower than min threshold required.\n");
++			return -ENOSPC;
+ 		} else {
+ 			/* If fails to enable required number of MSI-x vectors
+ 			 * try enabling minimum number of vectors required.
+@@ -2764,9 +2767,6 @@ vmxnet3_acquire_msix_vectors(struct vmxnet3_adapter *adapter,
  		}
- 		dev_warn(&h->pdev->dev, "MSI-X init failed %d\n", err);
--		goto default_int_mode;
  	}
-+single_msi_mode:
- 	if (pci_find_capability(h->pdev, PCI_CAP_ID_MSI)) {
- 		if (!pci_enable_msi(h->pdev))
- 			h->msi_vector = 1;
+ 
+-	dev_info(&adapter->pdev->dev,
+-		 "Number of MSI-X interrupts which can be allocated "
+-		 "is lower than min threshold required.\n");
+ 	return err;
+ }
+ 
 -- 
 1.7.7.6
