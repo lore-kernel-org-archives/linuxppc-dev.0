@@ -1,29 +1,32 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4C23A2C00BA
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 00:38:11 +1000 (EST)
-Message-ID: <524C2FDB.4080203@redhat.com>
-Date: Wed, 02 Oct 2013 16:38:19 +0200
-From: Paolo Bonzini <pbonzini@redhat.com>
-MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
- some powernv systems
-References: <5243F933.7000907@redhat.com> <20131001083426.GB27484@concordia>
- <20131001083908.GA17294@redhat.com> <1380620338.645.22.camel@pasglop>
- <524AAFAA.3010801@redhat.com> <20131002050940.GA25363@drongo>
- <524BDD73.3020106@redhat.com> <1380704789.645.57.camel@pasglop>
- <668E4650-BC22-4CBF-A282-E7875DF29DB6@suse.de>
- <3CBF5732-E7EE-4C96-8132-6D7B77270DAF@suse.de>
- <20131002100224.GF17294@redhat.com> <1380722275.12149.28.camel@concordia>
- <029A8D6C-C23C-42B2-8C26-D76B59E2C9DD@suse.de> <524C2EAE.7090209@redhat.com>
- <C4834CF8-F81C-4B82-B1A7-1751D50AADB7@suse.de>
-In-Reply-To: <C4834CF8-F81C-4B82-B1A7-1751D50AADB7@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: tytso@mit.edu, kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
- linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- herbert@gondor.hengli.com.au, Paul Mackerras <paulus@samba.org>,
- mpm@selenic.com
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E44212C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 00:38:56 +1000 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 2 Oct 2013 20:08:50 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3A587E0053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2013 20:09:59 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r92EfH0232768058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Oct 2013 20:11:17 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r92EckKL002637
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Oct 2013 20:08:47 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] kvm: powerpc: book3s: Fix build break for BOOK3S_32
+Date: Wed,  2 Oct 2013 20:08:44 +0530
+Message-Id: <1380724724-12892-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,19 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Il 02/10/2013 16:36, Alexander Graf ha scritto:
->> > 
->> > With Michael's earlier patch in this series, the hwrng is accessible by
->> > host userspace via /dev/hwrng, no?
-> Yes, but there's not token from user space that gets passed into the
-> kernel to check whether access is ok or not. So while QEMU may not have
-> permission to open /dev/hwrng it could spawn a guest that opens it,
-> drains all entropy out of it and thus stall other processes which try to
-> fetch entropy, no?
-> 
-> Maybe I haven't fully grasped the interface yet though :).
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Yes, that's right.  I don't think it's a huge problem, but it's another
-point in favor of just doing the hypercall in userspace.
+This was introduced by 85a0d845d8bb5df5d2669416212f56cbe1474c6b
 
-Paolo
+arch/powerpc/kvm/book3s_pr.c: In function 'kvmppc_core_vcpu_create':
+arch/powerpc/kvm/book3s_pr.c:1182:30: error: 'struct kvmppc_vcpu_book3s' has no member named 'shadow_vcpu'
+make[1]: *** [arch/powerpc/kvm/book3s_pr.o] Error 1
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/kvm/book3s_pr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 8941885..6075dbd 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -1179,7 +1179,7 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 
+ #ifdef CONFIG_KVM_BOOK3S_32
+ 	vcpu->arch.shadow_vcpu =
+-		kzalloc(sizeof(*vcpu_book3s->shadow_vcpu), GFP_KERNEL);
++		kzalloc(sizeof(*vcpu->arch.shadow_vcpu), GFP_KERNEL);
+ 	if (!vcpu->arch.shadow_vcpu)
+ 		goto free_vcpu3s;
+ #endif
+-- 
+1.8.1.2
