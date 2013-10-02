@@ -1,15 +1,29 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Wed, 2 Oct 2013 12:18:14 +1000
+Date: Wed, 2 Oct 2013 12:33:38 +1000
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc/kernel/sysfs: cleanup set up macros for
- PMC/non-PMC sprs
-Message-ID: <20131002021813.GA22748@concordia>
-References: <1380619393-1984-1-git-send-email-maddy@linux.vnet.ibm.com>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
+Message-ID: <20131002023337.GB22748@concordia>
+References: <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
+ <20130906160621.GF22763@mtj.dyndns.org>
+ <20130906233205.GF12956@google.com>
+ <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
+ <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
+ <20130917143022.GA7707@concordia>
+ <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
+ <20130918142231.GA21650@mtj.dyndns.org>
+ <20131001073548.GI17966@concordia>
+ <20131001115503.GA23722@mtj.dyndns.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1380619393-1984-1-git-send-email-maddy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20131001115503.GA23722@mtj.dyndns.org>
+Cc: Joerg Roedel <joro@8bytes.org>, "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ Alexander Gordeev <agordeev@redhat.com>, Jan Beulich <JBeulich@suse.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,139 +33,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 01, 2013 at 02:53:13PM +0530, Madhavan Srinivasan wrote:
-> Currently PMC (Performance Monitor Counter) setup macros are used
-> for other sprs. Since not all sprs are PMC related, this patch
-> modifies the exisiting macro and uses it to setup both PMC and
-> non PMC sprs accordingly.
-
-"SPR" and "SPRs" :)
-
-Also you should add olof@lixom.net to CC as he is the maintainer of the
-pasemi platform, which most of the SPRs you're changing are for (PA6T).
-
-> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-> index 27a90b9..cb971c4 100644
-> --- a/arch/powerpc/kernel/sysfs.c
-> +++ b/arch/powerpc/kernel/sysfs.c
-> @@ -107,14 +107,14 @@ void ppc_enable_pmcs(void)
->  }
->  EXPORT_SYMBOL(ppc_enable_pmcs);
+On Tue, Oct 01, 2013 at 07:55:03AM -0400, Tejun Heo wrote:
+> Hello,
 > 
-> -#define SYSFS_PMCSETUP(NAME, ADDRESS) \
-> +#define _SYSFS_SPRSETUP(NAME, ADDRESS, EXTRA) \
-
-Usual style for this would be a double leading underscore, eg:
-
-> +#define __SYSFS_SPRSETUP(NAME, ADDRESS, EXTRA) \
-
->  static void read_##NAME(void *val) \
->  { \
->  	*(unsigned long *)val = mfspr(ADDRESS);	\
->  } \
->  static void write_##NAME(void *val) \
->  { \
-> -	ppc_enable_pmcs(); \
-> +	EXTRA; \
->  	mtspr(ADDRESS, *(unsigned long *)val);	\
->  } \
->  static ssize_t show_##NAME(struct device *dev, \
-> @@ -139,6 +139,11 @@ static ssize_t __used \
->  	return count; \
->  }
+> On Tue, Oct 01, 2013 at 05:35:48PM +1000, Michael Ellerman wrote:
+> > > > Roughly third of the drivers just do not care and bail out once
+> > > > pci_enable_msix() has not succeeded. Not sure how many of these are
+> > > > mandated by the hardware.
+> > > 
+> > > Yeah, I mean, this type of interface is a trap.  People have to
+> > > actively resist to avoid doing silly stuff which is a lot to ask.
+> > 
+> > I really think you're overstating the complexity here.
+> > 
+> > Functions typically return a boolean   -> nothing to see here
+> > This function returns a tristate value -> brain explosion!
 > 
-> +#define SYSFS_EMPTY
+> It is an interface which forces the driver writers to write
+> complicated fallback code which won't usually be excercised.  
 
-You shouldn't need this.
+It does not force anyone to do anything. That's just bull.
 
-> +#define SYSFS_PMCSETUP(NAME, ADDRESS)	\
-> +	_SYSFS_SPRSETUP(NAME, ADDRESS, ppc_enable_pmcs())
-> +#define SYSFS_SPRSETUP(NAME, ADDRESS)	\
-> +	_SYSFS_SPRSETUP(NAME, ADDRESS, SYSFS_EMPTY)
+Code which is unwilling or unable to cope with the extra complexity
+can simply do:
 
-Just passing "" should work.
+if (pci_enable_msix(..))
+	goto fail;
 
+It's as simple as that.
+
+> > > * Determine the number of MSIs the controller wants.  Don't worry
+> > >   about quotas or limits or anything.  Just determine the number
+> > >   necessary to enable enhanced interrupt handling.
+> > > 	
+> > > * Try allocating that number of MSIs.  If it fails, then just revert
+> > >   to single interrupt mode.  It's not the end of the world and mostly
+> > >   guaranteed to work.  Let's please not even try to do partial
+> > >   multiple interrupts.  I really don't think it's worth the risk or
+> > >   complexity.
+> > 
+> > It will potentially break existing setups on our hardware.
 > 
->  /* Let's define all possible registers, we'll only hook up the ones
->   * that are implemented on the current processor
-> @@ -174,10 +179,10 @@ SYSFS_PMCSETUP(pmc7, SPRN_PMC7);
->  SYSFS_PMCSETUP(pmc8, SPRN_PMC8);
-> 
->  SYSFS_PMCSETUP(mmcra, SPRN_MMCRA);
-> -SYSFS_PMCSETUP(purr, SPRN_PURR);
-> -SYSFS_PMCSETUP(spurr, SPRN_SPURR);
-> -SYSFS_PMCSETUP(dscr, SPRN_DSCR);
-> -SYSFS_PMCSETUP(pir, SPRN_PIR);
-> +SYSFS_SPRSETUP(purr, SPRN_PURR);
-> +SYSFS_SPRSETUP(spurr, SPRN_SPURR);
-> +SYSFS_SPRSETUP(dscr, SPRN_DSCR);
-> +SYSFS_SPRSETUP(pir, SPRN_PIR);
-> 
->  static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
->  static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
-> @@ -238,34 +243,34 @@ SYSFS_PMCSETUP(pa6t_pmc3, SPRN_PA6T_PMC3);
->  SYSFS_PMCSETUP(pa6t_pmc4, SPRN_PA6T_PMC4);
->  SYSFS_PMCSETUP(pa6t_pmc5, SPRN_PA6T_PMC5);
->  #ifdef CONFIG_DEBUG_KERNEL
-> -SYSFS_PMCSETUP(hid0, SPRN_HID0);
-> -SYSFS_PMCSETUP(hid1, SPRN_HID1);
-> -SYSFS_PMCSETUP(hid4, SPRN_HID4);
-> -SYSFS_PMCSETUP(hid5, SPRN_HID5);
-> -SYSFS_PMCSETUP(ima0, SPRN_PA6T_IMA0);
-> -SYSFS_PMCSETUP(ima1, SPRN_PA6T_IMA1);
-> -SYSFS_PMCSETUP(ima2, SPRN_PA6T_IMA2);
-> -SYSFS_PMCSETUP(ima3, SPRN_PA6T_IMA3);
-> -SYSFS_PMCSETUP(ima4, SPRN_PA6T_IMA4);
-> -SYSFS_PMCSETUP(ima5, SPRN_PA6T_IMA5);
-> -SYSFS_PMCSETUP(ima6, SPRN_PA6T_IMA6);
-> -SYSFS_PMCSETUP(ima7, SPRN_PA6T_IMA7);
-> -SYSFS_PMCSETUP(ima8, SPRN_PA6T_IMA8);
-> -SYSFS_PMCSETUP(ima9, SPRN_PA6T_IMA9);
-> -SYSFS_PMCSETUP(imaat, SPRN_PA6T_IMAAT);
-> -SYSFS_PMCSETUP(btcr, SPRN_PA6T_BTCR);
-> -SYSFS_PMCSETUP(pccr, SPRN_PA6T_PCCR);
-> -SYSFS_PMCSETUP(rpccr, SPRN_PA6T_RPCCR);
-> -SYSFS_PMCSETUP(der, SPRN_PA6T_DER);
-> -SYSFS_PMCSETUP(mer, SPRN_PA6T_MER);
-> -SYSFS_PMCSETUP(ber, SPRN_PA6T_BER);
-> -SYSFS_PMCSETUP(ier, SPRN_PA6T_IER);
-> -SYSFS_PMCSETUP(sier, SPRN_PA6T_SIER);
-> -SYSFS_PMCSETUP(siar, SPRN_PA6T_SIAR);
-> -SYSFS_PMCSETUP(tsr0, SPRN_PA6T_TSR0);
-> -SYSFS_PMCSETUP(tsr1, SPRN_PA6T_TSR1);
-> -SYSFS_PMCSETUP(tsr2, SPRN_PA6T_TSR2);
-> -SYSFS_PMCSETUP(tsr3, SPRN_PA6T_TSR3);
-> +SYSFS_SPRSETUP(hid0, SPRN_HID0);
-> +SYSFS_SPRSETUP(hid1, SPRN_HID1);
-> +SYSFS_SPRSETUP(hid4, SPRN_HID4);
-> +SYSFS_SPRSETUP(hid5, SPRN_HID5);
-> +SYSFS_SPRSETUP(ima0, SPRN_PA6T_IMA0);
-> +SYSFS_SPRSETUP(ima1, SPRN_PA6T_IMA1);
-> +SYSFS_SPRSETUP(ima2, SPRN_PA6T_IMA2);
-> +SYSFS_SPRSETUP(ima3, SPRN_PA6T_IMA3);
-> +SYSFS_SPRSETUP(ima4, SPRN_PA6T_IMA4);
-> +SYSFS_SPRSETUP(ima5, SPRN_PA6T_IMA5);
-> +SYSFS_SPRSETUP(ima6, SPRN_PA6T_IMA6);
-> +SYSFS_SPRSETUP(ima7, SPRN_PA6T_IMA7);
-> +SYSFS_SPRSETUP(ima8, SPRN_PA6T_IMA8);
-> +SYSFS_SPRSETUP(ima9, SPRN_PA6T_IMA9);
-> +SYSFS_SPRSETUP(imaat, SPRN_PA6T_IMAAT);
-> +SYSFS_SPRSETUP(btcr, SPRN_PA6T_BTCR);
-> +SYSFS_SPRSETUP(pccr, SPRN_PA6T_PCCR);
-> +SYSFS_SPRSETUP(rpccr, SPRN_PA6T_RPCCR);
-> +SYSFS_SPRSETUP(der, SPRN_PA6T_DER);
-> +SYSFS_SPRSETUP(mer, SPRN_PA6T_MER);
-> +SYSFS_SPRSETUP(ber, SPRN_PA6T_BER);
-> +SYSFS_SPRSETUP(ier, SPRN_PA6T_IER);
-> +SYSFS_SPRSETUP(sier, SPRN_PA6T_SIER);
-> +SYSFS_SPRSETUP(siar, SPRN_PA6T_SIAR);
-> +SYSFS_SPRSETUP(tsr0, SPRN_PA6T_TSR0);
-> +SYSFS_SPRSETUP(tsr1, SPRN_PA6T_TSR1);
-> +SYSFS_SPRSETUP(tsr2, SPRN_PA6T_TSR2);
-> +SYSFS_SPRSETUP(tsr3, SPRN_PA6T_TSR3);
->  #endif /* CONFIG_DEBUG_KERNEL */
->  #endif /* HAS_PPC_PMC_PA6T */
-> 
-> --
-> 1.7.10.4
-> 
+> I think it'd be much better to have a separate interface for the
+> drivers which actually require it *in practice* rather than forcing
+> everyone to go "oh this interface supports that, I don't know if I
+> need it but let's implement fallback logic which I won't and have no
+> means of testing".  
+
+Sure, that's easy:
+
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index d5f90d6..48d0252 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -988,6 +988,18 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
+ }
+ EXPORT_SYMBOL(pci_enable_msix);
+ 
++int pci_enable_msix_or_fail(struct pci_dev *dev, struct msix_entry *entries,
++                           int nvec)
++{
++       int rc;
++
++       rc = pci_enable_msix(dev, entries, nvec);
++       if (rc > 0)
++               rc = -ENOSPC;
++
++       return rc;
++}
++
+ void pci_msix_shutdown(struct pci_dev *dev)
+ {
+        struct msi_desc *entry;
+
+
+> Are we talking about some limited number of device drivers here?  
+
+I don't have a list, but yeah there are certain drivers that folks care about.
+
+> Also, is the quota still necessary for machines in production today?
+
+As far as I know yes. The number of MSIs is growing on modern systems, but so
+is the number of cpus and devices.
+
+cheers
