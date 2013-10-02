@@ -1,32 +1,31 @@
 Return-Path: <paolo.bonzini@gmail.com>
-Received: from mail-ee0-x229.google.com (mail-ee0-x229.google.com
- [IPv6:2a00:1450:4013:c00::229])
+Received: from mail-ee0-x232.google.com (mail-ee0-x232.google.com
+ [IPv6:2a00:1450:4013:c00::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 51DC62C00BA
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Oct 2013 18:38:08 +1000 (EST)
-Received: by mail-ee0-f41.google.com with SMTP id d17so221987eek.0
- for <linuxppc-dev@ozlabs.org>; Wed, 02 Oct 2013 01:38:04 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 2474C2C0097
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Oct 2013 18:46:29 +1000 (EST)
+Received: by mail-ee0-f50.google.com with SMTP id d51so227036eek.9
+ for <linuxppc-dev@ozlabs.org>; Wed, 02 Oct 2013 01:46:26 -0700 (PDT)
 Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
-Message-ID: <524BDB7D.8000708@redhat.com>
-Date: Wed, 02 Oct 2013 10:38:21 +0200
+Message-ID: <524BDD73.3020106@redhat.com>
+Date: Wed, 02 Oct 2013 10:46:43 +0200
 From: Paolo Bonzini <pbonzini@redhat.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
  some powernv systems
 References: <1380177066-3835-1-git-send-email-michael@ellerman.id.au>
  <1380177066-3835-3-git-send-email-michael@ellerman.id.au>
  <5243F933.7000907@redhat.com> <20131001083426.GB27484@concordia>
  <20131001083908.GA17294@redhat.com> <1380620338.645.22.camel@pasglop>
- <524AAFAA.3010801@redhat.com> <1380663871.645.44.camel@pasglop>
-In-Reply-To: <1380663871.645.44.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
+ <524AAFAA.3010801@redhat.com> <20131002050940.GA25363@drongo>
+In-Reply-To: <20131002050940.GA25363@drongo>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: tytso@mit.edu, kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
  linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- agraf@suse.de, herbert@gondor.hengli.com.au, Paul Mackerras <paulus@samba.org>,
- mpm@selenic.com
+ agraf@suse.de, herbert@gondor.hengli.com.au, mpm@selenic.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,71 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Il 01/10/2013 23:44, Benjamin Herrenschmidt ha scritto:
-> On Tue, 2013-10-01 at 13:19 +0200, Paolo Bonzini wrote:
->> Il 01/10/2013 11:38, Benjamin Herrenschmidt ha scritto:
->>> So for the sake of that dogma you are going to make us do something that
->>> is about 100 times slower ? (and possibly involves more lines of code)
+Il 02/10/2013 07:09, Paul Mackerras ha scritto:
+> On Tue, Oct 01, 2013 at 01:19:06PM +0200, Paolo Bonzini wrote:
+> 
+>> Anyhow, I would like to know more about this hwrng and hypercall.
 >>
->> If it's 100 times slower there is something else that's wrong.  It's
->> most likely not 100 times slower, and this makes me wonder if you or
->> Michael actually timed the code at all.
+>> Does the hwrng return random numbers (like rdrand) or real entropy (like
+>> rdseed that Intel will add in Broadwell)?  What about the hypercall?
 > 
-> So no we haven't measured. But it is going to be VERY VERY VERY much
-> slower. Our exit latencies are bad with our current MMU *and* any exit
-> is going to cause all secondary threads on the core to have to exit as
-> well (remember P7 is 4 threads, P8 is 8)
+> Well, firstly, your terminology is inaccurate.  Real entropy will give
+> you random numbers.  I think when you say "random numbers" you
+> actually mean "pseudo-random numbers".
 
-Ok, this is indeed the main difference between Power and x86.
+Yes---I meant pseudo-random numbers where the generator is periodically
+seeded by a random number.
 
->>   100 cycles            bare metal rdrand
->>   2000 cycles           guest->hypervisor->guest
->>   15000 cycles          guest->userspace->guest
->>
->> (100 cycles = 40 ns = 200 MB/sec; 2000 cycles = ~1 microseconds; 15000
->> cycles = ~7.5 microseconds).  Even on 5 year old hardware, a userspace
->> roundtrip is around a dozen microseconds.
-> 
-> So in your case going to qemu to "emulate" rdrand would indeed be 150
-> times slower, I don't see in what universe that would be considered a
-> good idea.
+> Secondly, the RNG produces real entropy.
 
-rdrand is not privileged on x86, guests can use it.  But my point is
-that going to the kernel is already 20 times slower.  Getting entropy
-(not just a pseudo-random number seeded by the HWRNG) with rdrand is
-~1000 times slower according to Intel's recommendations, so the
-roundtrip to userspace is entirely invisible in that case.
+Good to know, thanks.
 
-The numbers for PPC seem to be a bit different though (it's faster to
-read entropy, and slower to do a userspace exit).
+> Not sure why they are particularly "precious"; we get 64 bits per
+> microsecond whether we use them or not.  What are you suggesting
+> arch_get_random_long() should do instead?
 
-> It's a random number obtained from sampling a set of oscillators. It's
-> slightly biased but we have very simple code (I believe shared with the
-> host kernel implementation) for whitening it as is required by PAPR.
-
-Good.  Actually, passing the dieharder tests does not mean much (an
-AES-encrypted counter should also pass them with flashing colors), but
-if it's specified by the architecture gods it's likely to have received
-some scrutiny.
-
->> 2) If the hwrng returns entropy, a read from the hwrng is going to even
->> more expensive than an x86 rdrand (perhaps ~2000 cycles).
-> 
-> Depends how often you read, the HW I think is sampling asynchronously so
-> you only block on the MMIO if you already consumed the previous sample
-> but I'll let Paulus provide more details here.
-
-Given Paul's description, there's indeed very little extra cost compared
-to a "nop" hypercall.  That's nice.
-
-Still, considering that QEMU code has to be there anyway for
-compatibility, kernel emulation is not particularly necessary IMHO.  I
-would of course like to see actual performance numbers, but besides that
-are you ever going to ever see this in the profile except if you run "dd
-if=/dev/hwrng of=/dev/null"?
-
-Can you instrument pHyp to find out how many times per second is this
-hypercall called by a "normal" Linux or AIX guest?
+If you are running rngd, there is no need to have arch_get_random_long()
+at all.
 
 >> 3) If the hypercall returns random numbers, then it is a pretty
 >> braindead interface since returning 8 bytes at a time limits the
@@ -108,8 +67,23 @@ hypercall called by a "normal" Linux or AIX guest?
 >>  But more important: in this case drivers/char/hw_random/pseries-rng.c
 >> is completely broken and insecure, just like patch 2 in case (1) above.
 > 
-> How so ?
+> Assuming that by "random numbers" you actually mean "pseudo-random
+> numbers", then this doesn't apply.
 
-Paul confirmed that it returns real entropy so this is moot.
+Indeed.
+
+>> 4) If the hypercall returns entropy (same as virtio-rng), the same
+>> considerations on speed apply.  If you can only produce entropy at say 1
+>> MB/s (so reading 8 bytes take 8 microseconds---which is actually very
+>> fast), it doesn't matter that much to spend 7 microseconds on a
+>> userspace roundtrip.  It's going to be only half the speed of bare
+>> metal, not 100 times slower.
+> 
+> 8 bytes takes at most 1 microsecond, so the round-trip to userspace is
+> definitely noticeable.
+
+Thanks.  Any chance you can give some numbers of a kernel hypercall and
+a userspace hypercall on Power, so we have actual data?  For example a
+hypercall that returns H_PARAMETER as soon as possible.
 
 Paolo
