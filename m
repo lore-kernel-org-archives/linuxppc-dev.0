@@ -1,30 +1,25 @@
-Return-Path: <gleb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 6D6FC2C0092
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 22:09:04 +1000 (EST)
-Date: Thu, 3 Oct 2013 15:08:48 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
- some powernv systems
-Message-ID: <20131003120847.GE17294@redhat.com>
-References: <668E4650-BC22-4CBF-A282-E7875DF29DB6@suse.de>
- <3CBF5732-E7EE-4C96-8132-6D7B77270DAF@suse.de>
- <20131002100224.GF17294@redhat.com>
- <1380722275.12149.28.camel@concordia>
- <029A8D6C-C23C-42B2-8C26-D76B59E2C9DD@suse.de>
- <524C2EAE.7090209@redhat.com>
- <C4834CF8-F81C-4B82-B1A7-1751D50AADB7@suse.de>
- <20131002224542.GA10016@iris.ozlabs.ibm.com>
- <20131003054803.GU17294@redhat.com>
- <20131003100630.GA27821@iris.ozlabs.ibm.com>
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-wg0-x232.google.com (mail-wg0-x232.google.com
+ [IPv6:2a00:1450:400c:c00::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4C6CB2C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 00:00:29 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131003100630.GA27821@iris.ozlabs.ibm.com>
-Cc: tytso@mit.edu, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, herbert@gondor.hengli.com.au, mpm@selenic.com,
- Paolo Bonzini <pbonzini@redhat.com>
+In-Reply-To: <1373803321-11628-1-git-send-email-gsi@denx.de>
+References: <1373642781-32631-1-git-send-email-gsi@denx.de>
+ <1373803321-11628-1-git-send-email-gsi@denx.de>
+Date: Thu, 3 Oct 2013 18:00:22 +0400
+Message-ID: <CAF0T0X6NE=wFYMzVEm4F9CQWXN-Bu201Z8duEH9kevOhB53jCg@mail.gmail.com>
+Subject: Re: [PATCH RFC v2 0/5] MPC512x DMA slave s/g support, OF DMA lookup
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Gerhard Sittig <gsi@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
+ Vinod Koul <vinod.koul@intel.com>, devicetree-discuss@lists.ozlabs.org,
+ Alexander Popov <a13xp0p0v88@gmail.com>, Dan Williams <djbw@fb.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,46 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 03, 2013 at 08:06:30PM +1000, Paul Mackerras wrote:
-> On Thu, Oct 03, 2013 at 08:48:03AM +0300, Gleb Natapov wrote:
-> > On Thu, Oct 03, 2013 at 08:45:42AM +1000, Paul Mackerras wrote:
-> > > On Wed, Oct 02, 2013 at 04:36:05PM +0200, Alexander Graf wrote:
-> > > > 
-> > > > On 02.10.2013, at 16:33, Paolo Bonzini wrote:
-> > > > 
-> > > > > Il 02/10/2013 16:08, Alexander Graf ha scritto:
-> > > > >>> The hwrng is accessible by host userspace via /dev/mem.
-> > > > >> 
-> > > > >> A guest should live on the same permission level as a user space
-> > > > >> application. If you run QEMU as UID 1000 without access to /dev/mem, why
-> > > > >> should the guest suddenly be able to directly access a memory location
-> > > > >> (MMIO) it couldn't access directly through a normal user space interface.
-> > > > >> 
-> > > > >> It's basically a layering violation.
-> > > > > 
-> > > > > With Michael's earlier patch in this series, the hwrng is accessible by
-> > > > > host userspace via /dev/hwrng, no?
-> > > > 
-> > > > Yes, but there's not token from user space that gets passed into the kernel to check whether access is ok or not. So while QEMU may not have permission to open /dev/hwrng it could spawn a guest that opens it, drains all entropy out of it and thus stall other processes which try to fetch entropy, no?
-> > > 
-> > > Even if you drain all entropy out of it, wait 64 microseconds and it
-> > > will be full again. :)  Basically it produces 64 bits every
-> > > microsecond and puts that in a 64 entry x 64-bit FIFO buffer, which is
-> > > what is read by the MMIO.  So there is no danger of stalling other
-> > > processes for any significant amount of time.
-> > > 
-> > Even if user crates 100s guests each one of which reads hwrng in a loop?
-> 
-> Well, you can't actually have more guests running than there are cores
-> in a system.  POWER7+ has one RNG per chip and 8 cores per chip, each
-> of which can run 4 threads (which have to be in the same guest).
-> 
-> Michael's code uses the RNG on the same chip.  Worst case therefore is
-> 32 threads accessing the same RNG, so a given thread might have to
-> wait up to 32 microseconds for its data.
-> 
-OK, thanks. Even if it become an issue for some reason it is always possible
-to rate limit it.
+v2013/7/14 Gerhard Sittig <gsi@denx.de>:
+> this series
+> - introduces slave s/g support (that's support for DMA transfers which
+>   involve peripherals in contrast to mem-to-mem transfers)
+> - adds device tree based lookup support for DMA channels
+> - combines floating patches and related feedback which already covered
+>   several aspects of what the suggested LPB driver needs, to demonstrate
+>   how integration might be done
+> - carries Q&D SD card support to enable another DMA client during test,
+>   while this patch needs to get dropped upon pickup
+>
+> changes since v1:
+> - re-order mpc8308 related code paths for improved readability, no
+>   change in behaviour, introduction of symbolic channel names here
+>   already
+> - squash 'execute() start condition' and 'terminate all' into the
+>   introduction of 'slave s/g prep' and 'device control' support; refuse
+>   s/g lists with more than one item since slave support is operational
+>   yet proper s/g support is missing (can get addressed later)
+> - always start transfers from software on MPC8308 as there are no
+>   external request lines for peripheral flow control
+> - drop dt-bindings header file and symbolic channel names in OF nodes
 
---
-			Gleb.
+Changes since v2 (RFC v3 was badly formed, excuse me for that):
+Part 1/5:
+- use #define instead of enum since individual channels don't require
+special handling.
+Part 2/5:
+- add a flag "will_access_peripheral" to DMA transfer descriptor
+  according recommendations of Gerhard Sittig.
+  This flag is set in mpc_dma_prep_memcpy() and mpc_dma_prep_slave_sg()
+  and is evaluated in mpc_dma_execute() to choose a type of start for
+the transfer.
+- prevent descriptors of transfers which involve peripherals from
+being chained together;
+  each of such transfers needs hardware initiated start.
+- add locking while working with struct mpc_dma_chan
+  according recommendations of Lars-Peter Clausen.
+- remove default nbytes value. Client kernel modules must set
+  src_maxburst and dst_maxburst fields of struct dma_slave_config (dmaengine.h).
+Part 6/8:
+  unchanged.
+Part 7/8:
+  unchanged.
+Part 8/8:
+  unchanged.
+
+These changes are tested on MPC5125
+- with SCLPC driver (transfers between dev and mem work fine).
+- with dmatest module (all 64 DMA channels can perform mem-to-mem transfers
+  which can be chained in one DMA transaction).
+
+> known issues:
+> - it's yet to get confirmed whether MPC8308 can use slave support or
+>   whether the DMA controller's driver shall actively reject it, the
+>   information that's available so far suggests that peripheral transfers
+>   to IP bus attached I/O is useful and shall not get blocked right away
+>
