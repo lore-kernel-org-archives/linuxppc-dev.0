@@ -1,36 +1,31 @@
-Return-Path: <eli@dev.mellanox.co.il>
-Received: from mail-ee0-f48.google.com (mail-ee0-f48.google.com [74.125.83.48])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2AD162C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 17:14:39 +1000 (EST)
-Received: by mail-ee0-f48.google.com with SMTP id l10so874811eei.21
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 00:14:36 -0700 (PDT)
-Date: Thu, 3 Oct 2013 10:14:33 +0300
-From: Eli Cohen <eli@dev.mellanox.co.il>
-To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH RFC 50/77] mlx5: Update MSI/MSI-X interrupts enablement
- code
-Message-ID: <20131003071433.GA7299@mtldesk30>
-References: <cover.1380703262.git.agordeev@redhat.com>
- <9650a7dfbcfd5f1da21f7b093665abf4b1041071.1380703263.git.agordeev@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9650a7dfbcfd5f1da21f7b093665abf4b1041071.1380703263.git.agordeev@redhat.com>
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
- iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2FF4D2C007A
+ for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 17:23:21 +1000 (EST)
+Message-ID: <1380784979.645.87.camel@pasglop>
+Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
+ some powernv systems
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gleb Natapov <gleb@redhat.com>
+Date: Thu, 03 Oct 2013 17:22:59 +1000
+In-Reply-To: <20131003054355.GT17294@redhat.com>
+References: <20131001083908.GA17294@redhat.com>
+ <1380620338.645.22.camel@pasglop> <524AAFAA.3010801@redhat.com>
+ <20131002050940.GA25363@drongo> <524BDD73.3020106@redhat.com>
+ <1380704789.645.57.camel@pasglop>
+ <668E4650-BC22-4CBF-A282-E7875DF29DB6@suse.de>
+ <3CBF5732-E7EE-4C96-8132-6D7B77270DAF@suse.de>
+ <20131002100224.GF17294@redhat.com> <1380751340.645.68.camel@pasglop>
+ <20131003054355.GT17294@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: tytso@mit.edu, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, herbert@gondor.hengli.com.au,
+ Paul Mackerras <paulus@samba.org>, mpm@selenic.com,
+ Paolo Bonzini <pbonzini@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,54 +35,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 02, 2013 at 12:49:06PM +0200, Alexander Gordeev wrote:
->  
-> +	err = pci_msix_table_size(dev->pdev);
-> +	if (err < 0)
-> +		return err;
-> +
->  	nvec = dev->caps.num_ports * num_online_cpus() + MLX5_EQ_VEC_COMP_BASE;
->  	nvec = min_t(int, nvec, num_eqs);
-> +	nvec = min_t(int, nvec, err);
->  	if (nvec <= MLX5_EQ_VEC_COMP_BASE)
->  		return -ENOSPC;
+On Thu, 2013-10-03 at 08:43 +0300, Gleb Natapov wrote:
+> Why it can be a bad idea? User can drain hwrng continuously making other
+> users of it much slower, or even worse, making them fall back to another
+> much less reliable, source of entropy.
 
-Making sure we don't request more vectors then the device's is capable
-of -- looks good.
->  
-> @@ -131,20 +136,15 @@ static int mlx5_enable_msix(struct mlx5_core_dev *dev)
->  	for (i = 0; i < nvec; i++)
->  		table->msix_arr[i].entry = i;
->  
-> -retry:
-> -	table->num_comp_vectors = nvec - MLX5_EQ_VEC_COMP_BASE;
->  	err = pci_enable_msix(dev->pdev, table->msix_arr, nvec);
-> -	if (err <= 0) {
-> +	if (err) {
-> +		kfree(table->msix_arr);
->  		return err;
-> -	} else if (err > MLX5_EQ_VEC_COMP_BASE) {
-> -		nvec = err;
-> -		goto retry;
->  	}
->  
+Not in a very significant way, we generate entropy at 1Mhz after all, which
+is pretty good.
 
-According to latest sources, pci_enable_msix() may still fail so why
-do you want to remove this code?
-
-> -	mlx5_core_dbg(dev, "received %d MSI vectors out of %d requested\n", err, nvec);
-> -	kfree(table->msix_arr);
-> +	table->num_comp_vectors = nvec - MLX5_EQ_VEC_COMP_BASE;
->  
-> -	return -ENOSPC;
-> +	return 0;
->  }
->  
->  static void mlx5_disable_msix(struct mlx5_core_dev *dev)
-> -- 
-> 1.7.7.6
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Cheers,
+Ben.
