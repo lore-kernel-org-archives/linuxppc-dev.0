@@ -1,24 +1,32 @@
-Return-Path: <jon.mason@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
- by ozlabs.org (Postfix) with ESMTP id 194632C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 11:02:32 +1000 (EST)
-Date: Wed, 2 Oct 2013 18:02:30 -0700
-From: Jon Mason <jon.mason@intel.com>
+Return-Path: <jackm@dev.mellanox.co.il>
+Received: from mail-ea0-f178.google.com (mail-ea0-f178.google.com
+ [209.85.215.178])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A246A2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 18:03:02 +1000 (EST)
+Received: by mail-ea0-f178.google.com with SMTP id a15so904903eae.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 01:02:58 -0700 (PDT)
+Date: Thu, 3 Oct 2013 11:02:54 +0300
+From: Jack Morgenstein <jackm@dev.mellanox.co.il>
 To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH RFC 55/77] ntb: Update MSI/MSI-X interrupts enablement code
-Message-ID: <20131003010230.GN6768@jonmason-lab>
+Subject: Re: [PATCH RFC 46/77] mlx4: Update MSI/MSI-X interrupts enablement
+ code
+Message-ID: <20131003110254.5f10fbb8@jpm-OptiPlex-GX620>
+In-Reply-To: <b0a9f6f455aa03b7769e6d9cc2e7fdbc06732b2f.1380703263.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
- <49eb592e15aaec804f9c11ca132d2b85c516aefa.1380703263.git.agordeev@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49eb592e15aaec804f9c11ca132d2b85c516aefa.1380703263.git.agordeev@redhat.com>
+ <b0a9f6f455aa03b7769e6d9cc2e7fdbc06732b2f.1380703263.git.agordeev@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
+ linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org, eli@mellanox.com,
  linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
  linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
  Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
  iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
  Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
+ Jon Mason <jon.mason@intel.com>, ogerlitz@mellanox.com,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
@@ -33,110 +41,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 02, 2013 at 12:49:11PM +0200, Alexander Gordeev wrote:
+On Wed,  2 Oct 2013 12:49:02 +0200
+Alexander Gordeev <agordeev@redhat.com> wrote:
+
+NACK.  This change does not do anything logically as far as I can tell.
+pci_enable_msix in the current upstream kernel itself calls
+pci_msix_table_size.  The current code yields the same results
+as the code suggested below. (i.e., the suggested code has no effect on
+optimality).
+
+BTW, pci_msix_table_size never returns a value < 0 (if msix is not
+enabled, it returns 0 for the table size), so the (err < 0) check here
+is not correct. (I also do not like using "err" here anyway for the
+value returned by pci_msix_table_size().  There is no error here, and
+it is simply confusing.
+
+-Jack
+
 > As result of recent re-design of the MSI/MSI-X interrupts enabling
 > pattern this driver has to be updated to use the new technique to
 > obtain a optimal number of MSI/MSI-X interrupts required.
 > 
 > Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 > ---
->  drivers/ntb/ntb_hw.c |   41 +++++++++++++----------------------------
->  drivers/ntb/ntb_hw.h |    2 --
->  2 files changed, 13 insertions(+), 30 deletions(-)
+>  drivers/net/ethernet/mellanox/mlx4/main.c |   17 ++++++++---------
+>  1 files changed, 8 insertions(+), 9 deletions(-)
 > 
-> diff --git a/drivers/ntb/ntb_hw.c b/drivers/ntb/ntb_hw.c
-> index eccd5e5..7776429 100644
-> --- a/drivers/ntb/ntb_hw.c
-> +++ b/drivers/ntb/ntb_hw.c
-> @@ -1032,23 +1032,26 @@ static int ntb_setup_msix(struct ntb_device *ndev)
->  	struct msix_entry *msix;
->  	int msix_entries;
->  	int rc, i;
-> -	u16 val;
+> diff --git a/drivers/net/ethernet/mellanox/mlx4/main.c
+> b/drivers/net/ethernet/mellanox/mlx4/main.c index 60c9f4f..377a5ea
+> 100644 --- a/drivers/net/ethernet/mellanox/mlx4/main.c
+> +++ b/drivers/net/ethernet/mellanox/mlx4/main.c
+> @@ -1852,8 +1852,16 @@ static void mlx4_enable_msi_x(struct mlx4_dev
+> *dev) int i;
 >  
-> -	if (!pdev->msix_cap) {
-> -		rc = -EIO;
-> +	rc = pci_msix_table_size(pdev);
-> +	if (rc < 0)
->  		goto err;
-> -	}
->  
-> -	rc = pci_read_config_word(pdev, pdev->msix_cap + PCI_MSIX_FLAGS, &val);
-> -	if (rc)
-> +	/*
-> +	 * On SNB, the link interrupt is always tied to 4th vector.  If
-> +	 * we can't get all 4, then we can't use MSI-X.
-> +	 */
-> +	if ((rc < SNB_MSIX_CNT) && (ndev->hw_type != BWD_HW)) {
-
-Please check for the HW type first, and then compare to
-ndev->limits.msix_cnt (which will be SNB_MSIX_CNT on SNB HW).  Also,
-put the comment inside the if statement and remove the unecessary "()"
-around the comparisons.  OCD on my part, but I like it that way.  
-
-> +		rc = -ENOSPC;
->  		goto err;
-> -
-> -	msix_entries = msix_table_size(val);
-> -	if (msix_entries > ndev->limits.msix_cnt) {
-> +	}
-
-else if...
-
-> +	if (rc > ndev->limits.msix_cnt) {
->  		rc = -EINVAL;
->  		goto err;
->  	}
->  
-> +	msix_entries = rc;
+>  	if (msi_x) {
+> +		err = pci_msix_table_size(dev->pdev);
+> +		if (err < 0)
+> +			goto no_msi;
 > +
->  	ndev->msix_entries = kmalloc(sizeof(struct msix_entry) * msix_entries,
->  				     GFP_KERNEL);
->  	if (!ndev->msix_entries) {
-> @@ -1060,26 +1063,8 @@ static int ntb_setup_msix(struct ntb_device *ndev)
->  		ndev->msix_entries[i].entry = i;
+> +		/* Try if at least 2 vectors are available */
+>  		nreq = min_t(int, dev->caps.num_eqs -
+> dev->caps.reserved_eqs, nreq);
+> +		nreq = min_t(int, nreq, err);
+> +		if (nreq < 2)
+> +			goto no_msi;
 >  
->  	rc = pci_enable_msix(pdev, ndev->msix_entries, msix_entries);
-> -	if (rc < 0)
-> +	if (rc)
->  		goto err1;
-> -	if (rc > 0) {
-> -		/* On SNB, the link interrupt is always tied to 4th vector.  If
-> -		 * we can't get all 4, then we can't use MSI-X.
-> -		 */
-> -		if ((rc < SNB_MSIX_CNT) && (ndev->hw_type != BWD_HW)) {
-> -			rc = -EIO;
-> -			goto err1;
-> -		}
-> -
-> -		dev_warn(&pdev->dev,
-> -			 "Only %d MSI-X vectors.  Limiting the number of queues to that number.\n",
-> -			 rc);
-> -		msix_entries = rc;
-> -
-> -		rc = pci_enable_msix(pdev, ndev->msix_entries, msix_entries);
-> -		if (rc)
-> -			goto err1;
-> -	}
+>  		entries = kcalloc(nreq, sizeof *entries, GFP_KERNEL);
+>  		if (!entries)
+> @@ -1862,17 +1870,8 @@ static void mlx4_enable_msi_x(struct mlx4_dev
+> *dev) for (i = 0; i < nreq; ++i)
+>  			entries[i].entry = i;
 >  
->  	for (i = 0; i < msix_entries; i++) {
->  		msix = &ndev->msix_entries[i];
-> diff --git a/drivers/ntb/ntb_hw.h b/drivers/ntb/ntb_hw.h
-> index 0a31ced..50bd760 100644
-> --- a/drivers/ntb/ntb_hw.h
-> +++ b/drivers/ntb/ntb_hw.h
-> @@ -60,8 +60,6 @@
->  #define PCI_DEVICE_ID_INTEL_NTB_SS_HSX		0x2F0F
->  #define PCI_DEVICE_ID_INTEL_NTB_B2B_BWD		0x0C4E
->  
-> -#define msix_table_size(control)	((control & PCI_MSIX_FLAGS_QSIZE)+1)
-
-Good riddance!  :-)
-
-> -
->  #ifndef readq
->  static inline u64 readq(void __iomem *addr)
->  {
-> -- 
-> 1.7.7.6
-> 
+> -	retry:
+>  		err = pci_enable_msix(dev->pdev, entries, nreq);
+>  		if (err) {
+> -			/* Try again if at least 2 vectors are
+> available */
+> -			if (err > 1) {
+> -				mlx4_info(dev, "Requested %d
+> vectors, "
+> -					  "but only %d MSI-X vectors
+> available, "
+> -					  "trying again\n", nreq,
+> err);
+> -				nreq = err;
+> -				goto retry;
+> -			}
+>  			kfree(entries);
+>  			goto no_msi;
+>  		}
