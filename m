@@ -1,25 +1,20 @@
 Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wg0-x232.google.com (mail-wg0-x232.google.com
- [IPv6:2a00:1450:400c:c00::232])
+Received: from mail-la0-x22d.google.com (mail-la0-x22d.google.com
+ [IPv6:2a00:1450:4010:c03::22d])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4C6CB2C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 00:00:29 +1000 (EST)
-MIME-Version: 1.0
-In-Reply-To: <1373803321-11628-1-git-send-email-gsi@denx.de>
-References: <1373642781-32631-1-git-send-email-gsi@denx.de>
- <1373803321-11628-1-git-send-email-gsi@denx.de>
-Date: Thu, 3 Oct 2013 18:00:22 +0400
-Message-ID: <CAF0T0X6NE=wFYMzVEm4F9CQWXN-Bu201Z8duEH9kevOhB53jCg@mail.gmail.com>
-Subject: Re: [PATCH RFC v2 0/5] MPC512x DMA slave s/g support, OF DMA lookup
+ by ozlabs.org (Postfix) with ESMTPS id 158152C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 00:02:43 +1000 (EST)
 From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Vinod Koul <vinod.koul@intel.com>, devicetree-discuss@lists.ozlabs.org,
- Alexander Popov <a13xp0p0v88@gmail.com>, Dan Williams <djbw@fb.com>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+To: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ devicetree-discuss@lists.ozlabs.org, Dan Williams <djbw@fb.com>,
+ Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
+ Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
+ Alexander Popov <a13xp0p0v88@gmail.com>
+Subject: [PATCH RFC v4 1/5] dma: mpc512x: reorder mpc8308 specific instructions
+Date: Thu,  3 Oct 2013 18:05:44 +0400
+Message-Id: <1380809144-16150-1-git-send-email-a13xp0p0v88@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,61 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v2013/7/14 Gerhard Sittig <gsi@denx.de>:
-> this series
-> - introduces slave s/g support (that's support for DMA transfers which
->   involve peripherals in contrast to mem-to-mem transfers)
-> - adds device tree based lookup support for DMA channels
-> - combines floating patches and related feedback which already covered
->   several aspects of what the suggested LPB driver needs, to demonstrate
->   how integration might be done
-> - carries Q&D SD card support to enable another DMA client during test,
->   while this patch needs to get dropped upon pickup
->
-> changes since v1:
-> - re-order mpc8308 related code paths for improved readability, no
->   change in behaviour, introduction of symbolic channel names here
->   already
-> - squash 'execute() start condition' and 'terminate all' into the
->   introduction of 'slave s/g prep' and 'device control' support; refuse
->   s/g lists with more than one item since slave support is operational
->   yet proper s/g support is missing (can get addressed later)
-> - always start transfers from software on MPC8308 as there are no
->   external request lines for peripheral flow control
-> - drop dt-bindings header file and symbolic channel names in OF nodes
+Concentrate the specific code for MPC8308 in the 'if' branch
+and handle MPC512x in the 'else' branch.
+This modification only reorders instructions but doesn't change behaviour.
 
-Changes since v2 (RFC v3 was badly formed, excuse me for that):
-Part 1/5:
-- use #define instead of enum since individual channels don't require
-special handling.
-Part 2/5:
-- add a flag "will_access_peripheral" to DMA transfer descriptor
-  according recommendations of Gerhard Sittig.
-  This flag is set in mpc_dma_prep_memcpy() and mpc_dma_prep_slave_sg()
-  and is evaluated in mpc_dma_execute() to choose a type of start for
-the transfer.
-- prevent descriptors of transfers which involve peripherals from
-being chained together;
-  each of such transfers needs hardware initiated start.
-- add locking while working with struct mpc_dma_chan
-  according recommendations of Lars-Peter Clausen.
-- remove default nbytes value. Client kernel modules must set
-  src_maxburst and dst_maxburst fields of struct dma_slave_config (dmaengine.h).
-Part 6/8:
-  unchanged.
-Part 7/8:
-  unchanged.
-Part 8/8:
-  unchanged.
+Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
+---
+ drivers/dma/mpc512x_dma.c | 42 +++++++++++++++++++++++++-----------------
+ 1 file changed, 25 insertions(+), 17 deletions(-)
 
-These changes are tested on MPC5125
-- with SCLPC driver (transfers between dev and mem work fine).
-- with dmatest module (all 64 DMA channels can perform mem-to-mem transfers
-  which can be chained in one DMA transaction).
-
-> known issues:
-> - it's yet to get confirmed whether MPC8308 can use slave support or
->   whether the DMA controller's driver shall actively reject it, the
->   information that's available so far suggests that peripheral transfers
->   to IP bus attached I/O is useful and shall not get blocked right away
->
+diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
+index 2fe4353..f41639f 100644
+--- a/drivers/dma/mpc512x_dma.c
++++ b/drivers/dma/mpc512x_dma.c
+@@ -50,9 +50,17 @@
+ #define MPC_DMA_DESCRIPTORS	64
+ 
+ /* Macro definitions */
+-#define MPC_DMA_CHANNELS	64
+ #define MPC_DMA_TCD_OFFSET	0x1000
+ 
++/*
++ * Maximum channel counts for individual hardware variants
++ * and the maximum channel count over all supported controllers,
++ * used for data structure size
++ */
++#define MPC8308_DMACHAN_MAX	16
++#define MPC512x_DMACHAN_MAX	64
++#define MPC_DMA_CHANNELS	64
++
+ /* Arbitration mode of group and channel */
+ #define MPC_DMA_DMACR_EDCG	(1 << 31)
+ #define MPC_DMA_DMACR_ERGA	(1 << 3)
+@@ -708,10 +716,10 @@ static int mpc_dma_probe(struct platform_device *op)
+ 
+ 	dma = &mdma->dma;
+ 	dma->dev = dev;
+-	if (!mdma->is_mpc8308)
+-		dma->chancnt = MPC_DMA_CHANNELS;
++	if (mdma->is_mpc8308)
++		dma->chancnt = MPC8308_DMACHAN_MAX;
+ 	else
+-		dma->chancnt = 16; /* MPC8308 DMA has only 16 channels */
++		dma->chancnt = MPC512x_DMACHAN_MAX;
+ 	dma->device_alloc_chan_resources = mpc_dma_alloc_chan_resources;
+ 	dma->device_free_chan_resources = mpc_dma_free_chan_resources;
+ 	dma->device_issue_pending = mpc_dma_issue_pending;
+@@ -745,7 +753,19 @@ static int mpc_dma_probe(struct platform_device *op)
+ 	 * - Round-robin group arbitration,
+ 	 * - Round-robin channel arbitration.
+ 	 */
+-	if (!mdma->is_mpc8308) {
++	if (mdma->is_mpc8308) {
++		/* MPC8308 has 16 channels and lacks some registers */
++		out_be32(&mdma->regs->dmacr, MPC_DMA_DMACR_ERCA);
++
++		/* enable snooping */
++		out_be32(&mdma->regs->dmagpor, MPC_DMA_DMAGPOR_SNOOP_ENABLE);
++		/* Disable error interrupts */
++		out_be32(&mdma->regs->dmaeeil, 0);
++
++		/* Clear interrupts status */
++		out_be32(&mdma->regs->dmaintl, 0xFFFF);
++		out_be32(&mdma->regs->dmaerrl, 0xFFFF);
++	} else {
+ 		out_be32(&mdma->regs->dmacr, MPC_DMA_DMACR_EDCG |
+ 					MPC_DMA_DMACR_ERGA | MPC_DMA_DMACR_ERCA);
+ 
+@@ -766,18 +786,6 @@ static int mpc_dma_probe(struct platform_device *op)
+ 		/* Route interrupts to IPIC */
+ 		out_be32(&mdma->regs->dmaihsa, 0);
+ 		out_be32(&mdma->regs->dmailsa, 0);
+-	} else {
+-		/* MPC8308 has 16 channels and lacks some registers */
+-		out_be32(&mdma->regs->dmacr, MPC_DMA_DMACR_ERCA);
+-
+-		/* enable snooping */
+-		out_be32(&mdma->regs->dmagpor, MPC_DMA_DMAGPOR_SNOOP_ENABLE);
+-		/* Disable error interrupts */
+-		out_be32(&mdma->regs->dmaeeil, 0);
+-
+-		/* Clear interrupts status */
+-		out_be32(&mdma->regs->dmaintl, 0xFFFF);
+-		out_be32(&mdma->regs->dmaerrl, 0xFFFF);
+ 	}
+ 
+ 	/* Register DMA engine */
+-- 
+1.7.11.3
