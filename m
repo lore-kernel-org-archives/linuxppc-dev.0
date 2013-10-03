@@ -1,28 +1,28 @@
 Return-Path: <gleb@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4AEEC2C00A3
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 15:48:13 +1000 (EST)
-Date: Thu, 3 Oct 2013 08:48:03 +0300
+ by ozlabs.org (Postfix) with ESMTP id 904CF2C0085
+ for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 16:08:54 +1000 (EST)
+Date: Thu, 3 Oct 2013 09:08:40 +0300
 From: Gleb Natapov <gleb@redhat.com>
-To: Paul Mackerras <paulus@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
  some powernv systems
-Message-ID: <20131003054803.GU17294@redhat.com>
+Message-ID: <20131003060840.GA4017@redhat.com>
 References: <524BDD73.3020106@redhat.com> <1380704789.645.57.camel@pasglop>
  <668E4650-BC22-4CBF-A282-E7875DF29DB6@suse.de>
  <3CBF5732-E7EE-4C96-8132-6D7B77270DAF@suse.de>
  <20131002100224.GF17294@redhat.com>
  <1380722275.12149.28.camel@concordia>
  <029A8D6C-C23C-42B2-8C26-D76B59E2C9DD@suse.de>
- <524C2EAE.7090209@redhat.com>
- <C4834CF8-F81C-4B82-B1A7-1751D50AADB7@suse.de>
- <20131002224542.GA10016@iris.ozlabs.ibm.com>
+ <524C2EAE.7090209@redhat.com> <20131002143720.GK17294@redhat.com>
+ <1380752480.645.74.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131002224542.GA10016@iris.ozlabs.ibm.com>
+In-Reply-To: <1380752480.645.74.camel@pasglop>
 Cc: tytso@mit.edu, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org,
  Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, herbert@gondor.hengli.com.au, mpm@selenic.com,
+ linux-kernel@vger.kernel.org, herbert@gondor.hengli.com.au,
+ Paul Mackerras <paulus@samba.org>, mpm@selenic.com,
  Paolo Bonzini <pbonzini@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,33 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 03, 2013 at 08:45:42AM +1000, Paul Mackerras wrote:
-> On Wed, Oct 02, 2013 at 04:36:05PM +0200, Alexander Graf wrote:
-> > 
-> > On 02.10.2013, at 16:33, Paolo Bonzini wrote:
-> > 
+On Thu, Oct 03, 2013 at 08:21:20AM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2013-10-02 at 17:37 +0300, Gleb Natapov wrote:
+> > On Wed, Oct 02, 2013 at 04:33:18PM +0200, Paolo Bonzini wrote:
 > > > Il 02/10/2013 16:08, Alexander Graf ha scritto:
-> > >>> The hwrng is accessible by host userspace via /dev/mem.
-> > >> 
-> > >> A guest should live on the same permission level as a user space
-> > >> application. If you run QEMU as UID 1000 without access to /dev/mem, why
-> > >> should the guest suddenly be able to directly access a memory location
-> > >> (MMIO) it couldn't access directly through a normal user space interface.
-> > >> 
-> > >> It's basically a layering violation.
+> > > > > The hwrng is accessible by host userspace via /dev/mem.
+> > > > 
+> > > > A guest should live on the same permission level as a user space
+> > > > application. If you run QEMU as UID 1000 without access to /dev/mem, why
+> > > > should the guest suddenly be able to directly access a memory location
+> > > > (MMIO) it couldn't access directly through a normal user space interface.
+> > > > 
+> > > > It's basically a layering violation.
 > > > 
 > > > With Michael's earlier patch in this series, the hwrng is accessible by
 > > > host userspace via /dev/hwrng, no?
-> > 
-> > Yes, but there's not token from user space that gets passed into the kernel to check whether access is ok or not. So while QEMU may not have permission to open /dev/hwrng it could spawn a guest that opens it, drains all entropy out of it and thus stall other processes which try to fetch entropy, no?
+> > > 
+> > Access to which can be controlled by its permission. Permission of
+> > /dev/kvm may be different. If we route hypercall via userspace and
+> > configure qemu to get entropy from /dev/hwrng everything will fall
+> > nicely together (except performance).
 > 
-> Even if you drain all entropy out of it, wait 64 microseconds and it
-> will be full again. :)  Basically it produces 64 bits every
-> microsecond and puts that in a 64 entry x 64-bit FIFO buffer, which is
-> what is read by the MMIO.  So there is no danger of stalling other
-> processes for any significant amount of time.
+> Yes, except abysmall performance and a lot more code for something
+> completely and utterly pointless .... nice.
 > 
-Even if user crates 100s guests each one of which reads hwrng in a loop?
+Pointless? You yourself said that fallback to userspace will be required
+for migration, so the code have to be there regardless. About abysmal
+performance this is what you repeatedly refused to prove. All you
+said is that exit to userspace is expensive, we all know that, it is
+slow for all arch and all devices implemented in usrerspace, but we do
+not move all of them to the kernel. We do move some, most performance
+critical, so all you need to show that for typical guest workload having
+device in the kernel speed up things measurably. Why not do that instead
+of writing rude emails?
 
 --
 			Gleb.
