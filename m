@@ -1,33 +1,27 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 259822C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 19:28:03 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 3 Oct 2013 14:57:58 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 18CA6394005A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 14:57:37 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r939Rpph45744380
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Oct 2013 14:57:52 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r939RqWW030591
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Oct 2013 14:57:53 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH v3] powerpc/kernel/sysfs: cleanup set up macros for
- PMC/non-PMC SPRs
-Date: Thu,  3 Oct 2013 14:57:35 +0530
-Message-Id: <1380792456-19128-1-git-send-email-maddy@linux.vnet.ibm.com>
-Cc: olof@lixom.net, linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 3 Oct 2013 20:06:30 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Gleb Natapov <gleb@redhat.com>
+Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
+ some powernv systems
+Message-ID: <20131003100630.GA27821@iris.ozlabs.ibm.com>
+References: <1380704789.645.57.camel@pasglop>
+ <668E4650-BC22-4CBF-A282-E7875DF29DB6@suse.de>
+ <3CBF5732-E7EE-4C96-8132-6D7B77270DAF@suse.de>
+ <20131002100224.GF17294@redhat.com>
+ <1380722275.12149.28.camel@concordia>
+ <029A8D6C-C23C-42B2-8C26-D76B59E2C9DD@suse.de>
+ <524C2EAE.7090209@redhat.com>
+ <C4834CF8-F81C-4B82-B1A7-1751D50AADB7@suse.de>
+ <20131002224542.GA10016@iris.ozlabs.ibm.com>
+ <20131003054803.GU17294@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131003054803.GU17294@redhat.com>
+Cc: tytso@mit.edu, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, herbert@gondor.hengli.com.au, mpm@selenic.com,
+ Paolo Bonzini <pbonzini@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,136 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently PMC (Performance Monitor Counter) setup macros are used
-for other SPRs. Since not all SPRs are PMC related, this patch
-modifies the exisiting macro and uses it to setup both PMC and
-non PMC SPRs accordingly.
+On Thu, Oct 03, 2013 at 08:48:03AM +0300, Gleb Natapov wrote:
+> On Thu, Oct 03, 2013 at 08:45:42AM +1000, Paul Mackerras wrote:
+> > On Wed, Oct 02, 2013 at 04:36:05PM +0200, Alexander Graf wrote:
+> > > 
+> > > On 02.10.2013, at 16:33, Paolo Bonzini wrote:
+> > > 
+> > > > Il 02/10/2013 16:08, Alexander Graf ha scritto:
+> > > >>> The hwrng is accessible by host userspace via /dev/mem.
+> > > >> 
+> > > >> A guest should live on the same permission level as a user space
+> > > >> application. If you run QEMU as UID 1000 without access to /dev/mem, why
+> > > >> should the guest suddenly be able to directly access a memory location
+> > > >> (MMIO) it couldn't access directly through a normal user space interface.
+> > > >> 
+> > > >> It's basically a layering violation.
+> > > > 
+> > > > With Michael's earlier patch in this series, the hwrng is accessible by
+> > > > host userspace via /dev/hwrng, no?
+> > > 
+> > > Yes, but there's not token from user space that gets passed into the kernel to check whether access is ok or not. So while QEMU may not have permission to open /dev/hwrng it could spawn a guest that opens it, drains all entropy out of it and thus stall other processes which try to fetch entropy, no?
+> > 
+> > Even if you drain all entropy out of it, wait 64 microseconds and it
+> > will be full again. :)  Basically it produces 64 bits every
+> > microsecond and puts that in a 64 entry x 64-bit FIFO buffer, which is
+> > what is read by the MMIO.  So there is no danger of stalling other
+> > processes for any significant amount of time.
+> > 
+> Even if user crates 100s guests each one of which reads hwrng in a loop?
 
-V3 changes:
+Well, you can't actually have more guests running than there are cores
+in a system.  POWER7+ has one RNG per chip and 8 cores per chip, each
+of which can run 4 threads (which have to be in the same guest).
 
-1) No logic change, just renamed generic macro and removed #define for empty string
-2) Changes in the comment to explain better.
+Michael's code uses the RNG on the same chip.  Worst case therefore is
+32 threads accessing the same RNG, so a given thread might have to
+wait up to 32 microseconds for its data.
 
-V2 changes:
-
-1) Modified SYSFS_PMCSETUP to a generic macro with additional parameter
-2) Added PMC and SPR macro to call the generic macro
-3) Changes in the comment to explain better.
-
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/sysfs.c |   72 +++++++++++++++++++++++--------------------
- 1 file changed, 38 insertions(+), 34 deletions(-)
-
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 27a90b9..39e864a 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -107,14 +107,14 @@ void ppc_enable_pmcs(void)
- }
- EXPORT_SYMBOL(ppc_enable_pmcs);
- 
--#define SYSFS_PMCSETUP(NAME, ADDRESS) \
-+#define __SYSFS_SPRSETUP(NAME, ADDRESS, EXTRA) \
- static void read_##NAME(void *val) \
- { \
- 	*(unsigned long *)val = mfspr(ADDRESS);	\
- } \
- static void write_##NAME(void *val) \
- { \
--	ppc_enable_pmcs(); \
-+	EXTRA; \
- 	mtspr(ADDRESS, *(unsigned long *)val);	\
- } \
- static ssize_t show_##NAME(struct device *dev, \
-@@ -139,6 +139,10 @@ static ssize_t __used \
- 	return count; \
- }
- 
-+#define SYSFS_PMCSETUP(NAME, ADDRESS)	\
-+	__SYSFS_SPRSETUP(NAME, ADDRESS, ppc_enable_pmcs())
-+#define SYSFS_SPRSETUP(NAME, ADDRESS)	\
-+	__SYSFS_SPRSETUP(NAME, ADDRESS, )
- 
- /* Let's define all possible registers, we'll only hook up the ones
-  * that are implemented on the current processor
-@@ -174,10 +178,10 @@ SYSFS_PMCSETUP(pmc7, SPRN_PMC7);
- SYSFS_PMCSETUP(pmc8, SPRN_PMC8);
- 
- SYSFS_PMCSETUP(mmcra, SPRN_MMCRA);
--SYSFS_PMCSETUP(purr, SPRN_PURR);
--SYSFS_PMCSETUP(spurr, SPRN_SPURR);
--SYSFS_PMCSETUP(dscr, SPRN_DSCR);
--SYSFS_PMCSETUP(pir, SPRN_PIR);
-+SYSFS_SPRSETUP(purr, SPRN_PURR);
-+SYSFS_SPRSETUP(spurr, SPRN_SPURR);
-+SYSFS_SPRSETUP(dscr, SPRN_DSCR);
-+SYSFS_SPRSETUP(pir, SPRN_PIR);
- 
- static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
- static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
-@@ -238,34 +242,34 @@ SYSFS_PMCSETUP(pa6t_pmc3, SPRN_PA6T_PMC3);
- SYSFS_PMCSETUP(pa6t_pmc4, SPRN_PA6T_PMC4);
- SYSFS_PMCSETUP(pa6t_pmc5, SPRN_PA6T_PMC5);
- #ifdef CONFIG_DEBUG_KERNEL
--SYSFS_PMCSETUP(hid0, SPRN_HID0);
--SYSFS_PMCSETUP(hid1, SPRN_HID1);
--SYSFS_PMCSETUP(hid4, SPRN_HID4);
--SYSFS_PMCSETUP(hid5, SPRN_HID5);
--SYSFS_PMCSETUP(ima0, SPRN_PA6T_IMA0);
--SYSFS_PMCSETUP(ima1, SPRN_PA6T_IMA1);
--SYSFS_PMCSETUP(ima2, SPRN_PA6T_IMA2);
--SYSFS_PMCSETUP(ima3, SPRN_PA6T_IMA3);
--SYSFS_PMCSETUP(ima4, SPRN_PA6T_IMA4);
--SYSFS_PMCSETUP(ima5, SPRN_PA6T_IMA5);
--SYSFS_PMCSETUP(ima6, SPRN_PA6T_IMA6);
--SYSFS_PMCSETUP(ima7, SPRN_PA6T_IMA7);
--SYSFS_PMCSETUP(ima8, SPRN_PA6T_IMA8);
--SYSFS_PMCSETUP(ima9, SPRN_PA6T_IMA9);
--SYSFS_PMCSETUP(imaat, SPRN_PA6T_IMAAT);
--SYSFS_PMCSETUP(btcr, SPRN_PA6T_BTCR);
--SYSFS_PMCSETUP(pccr, SPRN_PA6T_PCCR);
--SYSFS_PMCSETUP(rpccr, SPRN_PA6T_RPCCR);
--SYSFS_PMCSETUP(der, SPRN_PA6T_DER);
--SYSFS_PMCSETUP(mer, SPRN_PA6T_MER);
--SYSFS_PMCSETUP(ber, SPRN_PA6T_BER);
--SYSFS_PMCSETUP(ier, SPRN_PA6T_IER);
--SYSFS_PMCSETUP(sier, SPRN_PA6T_SIER);
--SYSFS_PMCSETUP(siar, SPRN_PA6T_SIAR);
--SYSFS_PMCSETUP(tsr0, SPRN_PA6T_TSR0);
--SYSFS_PMCSETUP(tsr1, SPRN_PA6T_TSR1);
--SYSFS_PMCSETUP(tsr2, SPRN_PA6T_TSR2);
--SYSFS_PMCSETUP(tsr3, SPRN_PA6T_TSR3);
-+SYSFS_SPRSETUP(hid0, SPRN_HID0);
-+SYSFS_SPRSETUP(hid1, SPRN_HID1);
-+SYSFS_SPRSETUP(hid4, SPRN_HID4);
-+SYSFS_SPRSETUP(hid5, SPRN_HID5);
-+SYSFS_SPRSETUP(ima0, SPRN_PA6T_IMA0);
-+SYSFS_SPRSETUP(ima1, SPRN_PA6T_IMA1);
-+SYSFS_SPRSETUP(ima2, SPRN_PA6T_IMA2);
-+SYSFS_SPRSETUP(ima3, SPRN_PA6T_IMA3);
-+SYSFS_SPRSETUP(ima4, SPRN_PA6T_IMA4);
-+SYSFS_SPRSETUP(ima5, SPRN_PA6T_IMA5);
-+SYSFS_SPRSETUP(ima6, SPRN_PA6T_IMA6);
-+SYSFS_SPRSETUP(ima7, SPRN_PA6T_IMA7);
-+SYSFS_SPRSETUP(ima8, SPRN_PA6T_IMA8);
-+SYSFS_SPRSETUP(ima9, SPRN_PA6T_IMA9);
-+SYSFS_SPRSETUP(imaat, SPRN_PA6T_IMAAT);
-+SYSFS_SPRSETUP(btcr, SPRN_PA6T_BTCR);
-+SYSFS_SPRSETUP(pccr, SPRN_PA6T_PCCR);
-+SYSFS_SPRSETUP(rpccr, SPRN_PA6T_RPCCR);
-+SYSFS_SPRSETUP(der, SPRN_PA6T_DER);
-+SYSFS_SPRSETUP(mer, SPRN_PA6T_MER);
-+SYSFS_SPRSETUP(ber, SPRN_PA6T_BER);
-+SYSFS_SPRSETUP(ier, SPRN_PA6T_IER);
-+SYSFS_SPRSETUP(sier, SPRN_PA6T_SIER);
-+SYSFS_SPRSETUP(siar, SPRN_PA6T_SIAR);
-+SYSFS_SPRSETUP(tsr0, SPRN_PA6T_TSR0);
-+SYSFS_SPRSETUP(tsr1, SPRN_PA6T_TSR1);
-+SYSFS_SPRSETUP(tsr2, SPRN_PA6T_TSR2);
-+SYSFS_SPRSETUP(tsr3, SPRN_PA6T_TSR3);
- #endif /* CONFIG_DEBUG_KERNEL */
- #endif /* HAS_PPC_PMC_PA6T */
- 
--- 
-1.7.10.4
+Paul.
