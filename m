@@ -1,32 +1,33 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 707372C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 17:58:59 +1000 (EST)
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 259822C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 19:28:03 +1000 (EST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 3 Oct 2013 13:28:53 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1FF37E0058
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 13:30:02 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9381GBp6619260
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Oct 2013 13:31:16 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r937wmto018619
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Oct 2013 13:28:49 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V2] kvm: powerpc: book3s: Fix build break for BOOK3S_32
-Date: Thu,  3 Oct 2013 13:28:43 +0530
-Message-Id: <1380787123-32646-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Thu, 3 Oct 2013 14:57:58 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 18CA6394005A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 14:57:37 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r939Rpph45744380
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Oct 2013 14:57:52 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r939RqWW030591
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Oct 2013 14:57:53 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH v3] powerpc/kernel/sysfs: cleanup set up macros for
+ PMC/non-PMC SPRs
+Date: Thu,  3 Oct 2013 14:57:35 +0530
+Message-Id: <1380792456-19128-1-git-send-email-maddy@linux.vnet.ibm.com>
+Cc: olof@lixom.net, linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,33 +37,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Currently PMC (Performance Monitor Counter) setup macros are used
+for other SPRs. Since not all SPRs are PMC related, this patch
+modifies the exisiting macro and uses it to setup both PMC and
+non PMC SPRs accordingly.
 
-This was introduced by 85a0d845d8 ("KVM: PPC: Book3S PR: Allocate
-kvm_vcpu structs from kvm_vcpu_cache").
+V3 changes:
 
-arch/powerpc/kvm/book3s_pr.c: In function 'kvmppc_core_vcpu_create':
-arch/powerpc/kvm/book3s_pr.c:1182:30: error: 'struct kvmppc_vcpu_book3s' has no member named 'shadow_vcpu'
-make[1]: *** [arch/powerpc/kvm/book3s_pr.o] Error 1
+1) No logic change, just renamed generic macro and removed #define for empty string
+2) Changes in the comment to explain better.
 
-Acked-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+V2 changes:
+
+1) Modified SYSFS_PMCSETUP to a generic macro with additional parameter
+2) Added PMC and SPR macro to call the generic macro
+3) Changes in the comment to explain better.
+
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/kvm/book3s_pr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/sysfs.c |   72 +++++++++++++++++++++++--------------------
+ 1 file changed, 38 insertions(+), 34 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 8941885..6075dbd 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -1179,7 +1179,7 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 27a90b9..39e864a 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -107,14 +107,14 @@ void ppc_enable_pmcs(void)
+ }
+ EXPORT_SYMBOL(ppc_enable_pmcs);
  
- #ifdef CONFIG_KVM_BOOK3S_32
- 	vcpu->arch.shadow_vcpu =
--		kzalloc(sizeof(*vcpu_book3s->shadow_vcpu), GFP_KERNEL);
-+		kzalloc(sizeof(*vcpu->arch.shadow_vcpu), GFP_KERNEL);
- 	if (!vcpu->arch.shadow_vcpu)
- 		goto free_vcpu3s;
- #endif
+-#define SYSFS_PMCSETUP(NAME, ADDRESS) \
++#define __SYSFS_SPRSETUP(NAME, ADDRESS, EXTRA) \
+ static void read_##NAME(void *val) \
+ { \
+ 	*(unsigned long *)val = mfspr(ADDRESS);	\
+ } \
+ static void write_##NAME(void *val) \
+ { \
+-	ppc_enable_pmcs(); \
++	EXTRA; \
+ 	mtspr(ADDRESS, *(unsigned long *)val);	\
+ } \
+ static ssize_t show_##NAME(struct device *dev, \
+@@ -139,6 +139,10 @@ static ssize_t __used \
+ 	return count; \
+ }
+ 
++#define SYSFS_PMCSETUP(NAME, ADDRESS)	\
++	__SYSFS_SPRSETUP(NAME, ADDRESS, ppc_enable_pmcs())
++#define SYSFS_SPRSETUP(NAME, ADDRESS)	\
++	__SYSFS_SPRSETUP(NAME, ADDRESS, )
+ 
+ /* Let's define all possible registers, we'll only hook up the ones
+  * that are implemented on the current processor
+@@ -174,10 +178,10 @@ SYSFS_PMCSETUP(pmc7, SPRN_PMC7);
+ SYSFS_PMCSETUP(pmc8, SPRN_PMC8);
+ 
+ SYSFS_PMCSETUP(mmcra, SPRN_MMCRA);
+-SYSFS_PMCSETUP(purr, SPRN_PURR);
+-SYSFS_PMCSETUP(spurr, SPRN_SPURR);
+-SYSFS_PMCSETUP(dscr, SPRN_DSCR);
+-SYSFS_PMCSETUP(pir, SPRN_PIR);
++SYSFS_SPRSETUP(purr, SPRN_PURR);
++SYSFS_SPRSETUP(spurr, SPRN_SPURR);
++SYSFS_SPRSETUP(dscr, SPRN_DSCR);
++SYSFS_SPRSETUP(pir, SPRN_PIR);
+ 
+ static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
+ static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
+@@ -238,34 +242,34 @@ SYSFS_PMCSETUP(pa6t_pmc3, SPRN_PA6T_PMC3);
+ SYSFS_PMCSETUP(pa6t_pmc4, SPRN_PA6T_PMC4);
+ SYSFS_PMCSETUP(pa6t_pmc5, SPRN_PA6T_PMC5);
+ #ifdef CONFIG_DEBUG_KERNEL
+-SYSFS_PMCSETUP(hid0, SPRN_HID0);
+-SYSFS_PMCSETUP(hid1, SPRN_HID1);
+-SYSFS_PMCSETUP(hid4, SPRN_HID4);
+-SYSFS_PMCSETUP(hid5, SPRN_HID5);
+-SYSFS_PMCSETUP(ima0, SPRN_PA6T_IMA0);
+-SYSFS_PMCSETUP(ima1, SPRN_PA6T_IMA1);
+-SYSFS_PMCSETUP(ima2, SPRN_PA6T_IMA2);
+-SYSFS_PMCSETUP(ima3, SPRN_PA6T_IMA3);
+-SYSFS_PMCSETUP(ima4, SPRN_PA6T_IMA4);
+-SYSFS_PMCSETUP(ima5, SPRN_PA6T_IMA5);
+-SYSFS_PMCSETUP(ima6, SPRN_PA6T_IMA6);
+-SYSFS_PMCSETUP(ima7, SPRN_PA6T_IMA7);
+-SYSFS_PMCSETUP(ima8, SPRN_PA6T_IMA8);
+-SYSFS_PMCSETUP(ima9, SPRN_PA6T_IMA9);
+-SYSFS_PMCSETUP(imaat, SPRN_PA6T_IMAAT);
+-SYSFS_PMCSETUP(btcr, SPRN_PA6T_BTCR);
+-SYSFS_PMCSETUP(pccr, SPRN_PA6T_PCCR);
+-SYSFS_PMCSETUP(rpccr, SPRN_PA6T_RPCCR);
+-SYSFS_PMCSETUP(der, SPRN_PA6T_DER);
+-SYSFS_PMCSETUP(mer, SPRN_PA6T_MER);
+-SYSFS_PMCSETUP(ber, SPRN_PA6T_BER);
+-SYSFS_PMCSETUP(ier, SPRN_PA6T_IER);
+-SYSFS_PMCSETUP(sier, SPRN_PA6T_SIER);
+-SYSFS_PMCSETUP(siar, SPRN_PA6T_SIAR);
+-SYSFS_PMCSETUP(tsr0, SPRN_PA6T_TSR0);
+-SYSFS_PMCSETUP(tsr1, SPRN_PA6T_TSR1);
+-SYSFS_PMCSETUP(tsr2, SPRN_PA6T_TSR2);
+-SYSFS_PMCSETUP(tsr3, SPRN_PA6T_TSR3);
++SYSFS_SPRSETUP(hid0, SPRN_HID0);
++SYSFS_SPRSETUP(hid1, SPRN_HID1);
++SYSFS_SPRSETUP(hid4, SPRN_HID4);
++SYSFS_SPRSETUP(hid5, SPRN_HID5);
++SYSFS_SPRSETUP(ima0, SPRN_PA6T_IMA0);
++SYSFS_SPRSETUP(ima1, SPRN_PA6T_IMA1);
++SYSFS_SPRSETUP(ima2, SPRN_PA6T_IMA2);
++SYSFS_SPRSETUP(ima3, SPRN_PA6T_IMA3);
++SYSFS_SPRSETUP(ima4, SPRN_PA6T_IMA4);
++SYSFS_SPRSETUP(ima5, SPRN_PA6T_IMA5);
++SYSFS_SPRSETUP(ima6, SPRN_PA6T_IMA6);
++SYSFS_SPRSETUP(ima7, SPRN_PA6T_IMA7);
++SYSFS_SPRSETUP(ima8, SPRN_PA6T_IMA8);
++SYSFS_SPRSETUP(ima9, SPRN_PA6T_IMA9);
++SYSFS_SPRSETUP(imaat, SPRN_PA6T_IMAAT);
++SYSFS_SPRSETUP(btcr, SPRN_PA6T_BTCR);
++SYSFS_SPRSETUP(pccr, SPRN_PA6T_PCCR);
++SYSFS_SPRSETUP(rpccr, SPRN_PA6T_RPCCR);
++SYSFS_SPRSETUP(der, SPRN_PA6T_DER);
++SYSFS_SPRSETUP(mer, SPRN_PA6T_MER);
++SYSFS_SPRSETUP(ber, SPRN_PA6T_BER);
++SYSFS_SPRSETUP(ier, SPRN_PA6T_IER);
++SYSFS_SPRSETUP(sier, SPRN_PA6T_SIER);
++SYSFS_SPRSETUP(siar, SPRN_PA6T_SIAR);
++SYSFS_SPRSETUP(tsr0, SPRN_PA6T_TSR0);
++SYSFS_SPRSETUP(tsr1, SPRN_PA6T_TSR1);
++SYSFS_SPRSETUP(tsr2, SPRN_PA6T_TSR2);
++SYSFS_SPRSETUP(tsr3, SPRN_PA6T_TSR3);
+ #endif /* CONFIG_DEBUG_KERNEL */
+ #endif /* HAS_PPC_PMC_PA6T */
+ 
 -- 
-1.8.1.2
+1.7.10.4
