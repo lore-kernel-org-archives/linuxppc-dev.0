@@ -1,15 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 3 Oct 2013 14:14:15 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] kvm: powerpc: book3s: Fix build break for BOOK3S_32
-Message-ID: <20131003041415.GA2801@iris.ozlabs.ibm.com>
-References: <1380724724-12892-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1380724724-12892-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pb0-x22d.google.com (mail-pb0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c01::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7A3302C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 14:15:32 +1000 (EST)
+Received: by mail-pb0-f45.google.com with SMTP id mc17so1861087pbc.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Oct 2013 21:15:29 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+To: alsa-devel@alsa-project.org
+Subject: [PATCH] ASoC: fsl_ssi: Fix irq_of_parse_and_map() return value check
+Date: Wed,  2 Oct 2013 21:15:22 -0700
+Message-Id: <1380773722-1295-1-git-send-email-linux@roeck-us.net>
+Cc: Timur Tabi <timur@tabi.org>, Takashi Iwai <tiwai@suse.de>,
+ linux-kernel@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Mark Brown <broonie@kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,24 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 02, 2013 at 08:08:44PM +0530, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> This was introduced by 85a0d845d8bb5df5d2669416212f56cbe1474c6b
+irq_of_parse_and_map() returns 0 on error, not NO_IRQ.
 
-It's a good idea to give the headline of the commit as well as the ID.
-I also like to trim the ID to 10 characters or so.  So it should look
-like this:
+Fix the following xtensa:allmodconfig build error.
 
-This was introduced by 85a0d845d8 ("KVM: PPC: Book3S PR: Allocate
-kvm_vcpu structs from kvm_vcpu_cache").
+sound/soc/fsl/fsl_ssi.c:705:26: error: 'NO_IRQ' undeclared (first use in this function)
+make[4]: *** [sound/soc/fsl/fsl_ssi.o] Error 1
 
-> arch/powerpc/kvm/book3s_pr.c: In function 'kvmppc_core_vcpu_create':
-> arch/powerpc/kvm/book3s_pr.c:1182:30: error: 'struct kvmppc_vcpu_book3s' has no member named 'shadow_vcpu'
-> make[1]: *** [arch/powerpc/kvm/book3s_pr.o] Error 1
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Grant Likely <grant.likely@linaro.org>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+Previously submitted by Grant Likely as part of a different patch set.
+See https://lkml.org/lkml/2012/1/11/342.
+Also see https://lkml.org/lkml/2013/7/25/642.
 
-Acked-by: Paul Mackerras <paulus@samba.org>
+ sound/soc/fsl/fsl_ssi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Paul.
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index c6b7439..6b81d0c 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -936,7 +936,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	ssi_private->ssi_phys = res.start;
+ 
+ 	ssi_private->irq = irq_of_parse_and_map(np, 0);
+-	if (ssi_private->irq == NO_IRQ) {
++	if (ssi_private->irq == 0) {
+ 		dev_err(&pdev->dev, "no irq for node %s\n", np->full_name);
+ 		return -ENXIO;
+ 	}
+-- 
+1.7.9.7
