@@ -1,29 +1,43 @@
-Return-Path: <gleb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 904CF2C0085
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 16:08:54 +1000 (EST)
-Date: Thu, 3 Oct 2013 09:08:40 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
- some powernv systems
-Message-ID: <20131003060840.GA4017@redhat.com>
-References: <524BDD73.3020106@redhat.com> <1380704789.645.57.camel@pasglop>
- <668E4650-BC22-4CBF-A282-E7875DF29DB6@suse.de>
- <3CBF5732-E7EE-4C96-8132-6D7B77270DAF@suse.de>
- <20131002100224.GF17294@redhat.com>
- <1380722275.12149.28.camel@concordia>
- <029A8D6C-C23C-42B2-8C26-D76B59E2C9DD@suse.de>
- <524C2EAE.7090209@redhat.com> <20131002143720.GK17294@redhat.com>
- <1380752480.645.74.camel@pasglop>
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 79D0C2C00A9
+ for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 16:20:36 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Thu, 3 Oct 2013 00:20:33 -0600
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 6BC4A6E803C
+ for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 02:20:31 -0400 (EDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r936KVPB5439868
+ for <linuxppc-dev@ozlabs.org>; Thu, 3 Oct 2013 06:20:32 GMT
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r936KSnT004980
+ for <linuxppc-dev@ozlabs.org>; Thu, 3 Oct 2013 00:20:31 -0600
+Date: Wed, 2 Oct 2013 23:20:14 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 6/9][v5] powerpc/perf: Define big-endian version of
+ perf_mem_data_src
+Message-ID: <20131003062014.GA13237@us.ibm.com>
+References: <1380672911-12812-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1380672911-12812-7-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20131003053944.GD17237@concordia>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1380752480.645.74.camel@pasglop>
-Cc: tytso@mit.edu, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, herbert@gondor.hengli.com.au,
- Paul Mackerras <paulus@samba.org>, mpm@selenic.com,
- Paolo Bonzini <pbonzini@redhat.com>
+In-Reply-To: <20131003053944.GD17237@concordia>
+Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,39 +47,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 03, 2013 at 08:21:20AM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2013-10-02 at 17:37 +0300, Gleb Natapov wrote:
-> > On Wed, Oct 02, 2013 at 04:33:18PM +0200, Paolo Bonzini wrote:
-> > > Il 02/10/2013 16:08, Alexander Graf ha scritto:
-> > > > > The hwrng is accessible by host userspace via /dev/mem.
-> > > > 
-> > > > A guest should live on the same permission level as a user space
-> > > > application. If you run QEMU as UID 1000 without access to /dev/mem, why
-> > > > should the guest suddenly be able to directly access a memory location
-> > > > (MMIO) it couldn't access directly through a normal user space interface.
-> > > > 
-> > > > It's basically a layering violation.
-> > > 
-> > > With Michael's earlier patch in this series, the hwrng is accessible by
-> > > host userspace via /dev/hwrng, no?
-> > > 
-> > Access to which can be controlled by its permission. Permission of
-> > /dev/kvm may be different. If we route hypercall via userspace and
-> > configure qemu to get entropy from /dev/hwrng everything will fall
-> > nicely together (except performance).
-> 
-> Yes, except abysmall performance and a lot more code for something
-> completely and utterly pointless .... nice.
-> 
-Pointless? You yourself said that fallback to userspace will be required
-for migration, so the code have to be there regardless. About abysmal
-performance this is what you repeatedly refused to prove. All you
-said is that exit to userspace is expensive, we all know that, it is
-slow for all arch and all devices implemented in usrerspace, but we do
-not move all of them to the kernel. We do move some, most performance
-critical, so all you need to show that for typical guest workload having
-device in the kernel speed up things measurably. Why not do that instead
-of writing rude emails?
+Michael Ellerman [michael@ellerman.id.au] wrote:
+| On Tue, Oct 01, 2013 at 05:15:07PM -0700, Sukadev Bhattiprolu wrote:
+| > perf_mem_data_src is an union that is initialized via the ->val field
+| > and accessed via the bitmap fields. For this to work on big endian
+| > platforms, we also need a big-endian represenation of perf_mem_data_src.
+| > 
+| > diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+| > index ca1d90b..846f399 100644
+| > --- a/include/uapi/linux/perf_event.h
+| > +++ b/include/uapi/linux/perf_event.h
+| > @@ -19,6 +19,50 @@
+| >  #include <asm/byteorder.h>
+| >  
+| >  /*
+| > + * Kernel and userspace check for endianness in incompatible ways.
+| > + * In user space, <endian.h> defines both __BIG_ENDIAN and __LITTLE_ENDIAN
+| > + * but sets __BYTE_ORDER to one or the other. So user space uses checks are:
+| 
+| 
+| Why can't you use __BIG_ENDIAN_BITFIELD ?
 
---
-			Gleb.
+That macro is not available when building the perf tool - bc there is
+a util/include/asm/byterorder.h which gets included instead of the
+usual <asm/byteorder.h>.
+
+| 
+| cheers
