@@ -1,27 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 3 Oct 2013 20:06:30 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Gleb Natapov <gleb@redhat.com>
-Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
- some powernv systems
-Message-ID: <20131003100630.GA27821@iris.ozlabs.ibm.com>
-References: <1380704789.645.57.camel@pasglop>
- <668E4650-BC22-4CBF-A282-E7875DF29DB6@suse.de>
- <3CBF5732-E7EE-4C96-8132-6D7B77270DAF@suse.de>
- <20131002100224.GF17294@redhat.com>
- <1380722275.12149.28.camel@concordia>
- <029A8D6C-C23C-42B2-8C26-D76B59E2C9DD@suse.de>
- <524C2EAE.7090209@redhat.com>
- <C4834CF8-F81C-4B82-B1A7-1751D50AADB7@suse.de>
- <20131002224542.GA10016@iris.ozlabs.ibm.com>
- <20131003054803.GU17294@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131003054803.GU17294@redhat.com>
-Cc: tytso@mit.edu, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, herbert@gondor.hengli.com.au, mpm@selenic.com,
- Paolo Bonzini <pbonzini@redhat.com>
+Return-Path: <b.zolnierkie@samsung.com>
+Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
+ by ozlabs.org (Postfix) with ESMTP id 914AE2C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 21:51:34 +1000 (EST)
+Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout4.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0MU300DUVCXVLLL0@mailout4.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 03 Oct 2013 20:51:31 +0900 (KST)
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/legacy_serial: fix incorrect placement of
+ __initdata tag
+Date: Thu, 03 Oct 2013 13:51:27 +0200
+Message-id: <1600459.LJx7sBeEJs@amdc1032>
+In-reply-to: <20131001061325.GD17966@concordia>
+References: <35419229.o6Cv8JYbpg@amdc1032> <20131001061325.GD17966@concordia>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 03, 2013 at 08:48:03AM +0300, Gleb Natapov wrote:
-> On Thu, Oct 03, 2013 at 08:45:42AM +1000, Paul Mackerras wrote:
-> > On Wed, Oct 02, 2013 at 04:36:05PM +0200, Alexander Graf wrote:
-> > > 
-> > > On 02.10.2013, at 16:33, Paolo Bonzini wrote:
-> > > 
-> > > > Il 02/10/2013 16:08, Alexander Graf ha scritto:
-> > > >>> The hwrng is accessible by host userspace via /dev/mem.
-> > > >> 
-> > > >> A guest should live on the same permission level as a user space
-> > > >> application. If you run QEMU as UID 1000 without access to /dev/mem, why
-> > > >> should the guest suddenly be able to directly access a memory location
-> > > >> (MMIO) it couldn't access directly through a normal user space interface.
-> > > >> 
-> > > >> It's basically a layering violation.
-> > > > 
-> > > > With Michael's earlier patch in this series, the hwrng is accessible by
-> > > > host userspace via /dev/hwrng, no?
-> > > 
-> > > Yes, but there's not token from user space that gets passed into the kernel to check whether access is ok or not. So while QEMU may not have permission to open /dev/hwrng it could spawn a guest that opens it, drains all entropy out of it and thus stall other processes which try to fetch entropy, no?
-> > 
-> > Even if you drain all entropy out of it, wait 64 microseconds and it
-> > will be full again. :)  Basically it produces 64 bits every
-> > microsecond and puts that in a 64 entry x 64-bit FIFO buffer, which is
-> > what is read by the MMIO.  So there is no danger of stalling other
-> > processes for any significant amount of time.
-> > 
-> Even if user crates 100s guests each one of which reads hwrng in a loop?
+On Tuesday, October 01, 2013 04:13:25 PM Michael Ellerman wrote:
+> On Mon, Sep 30, 2013 at 03:11:42PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > __initdata tag should be placed between the variable name and equal
+> > sign for the variable to be placed in the intended .init.data section.
+> 
+> I see lots of other occurences of that in arch/powerpc. Why not send a
+> single patch to update them all?
 
-Well, you can't actually have more guests running than there are cores
-in a system.  POWER7+ has one RNG per chip and 8 cores per chip, each
-of which can run 4 threads (which have to be in the same guest).
+The other occurences while not following the preferred kernel coding style
+are (probably) working OK with gcc. This particular occurence just doesn't
+work as it should.
 
-Michael's code uses the RNG on the same chip.  Worst case therefore is
-32 threads accessing the same RNG, so a given thread might have to
-wait up to 32 microseconds for its data.
-
-Paul.
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
