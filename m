@@ -1,27 +1,35 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wi0-x235.google.com (mail-wi0-x235.google.com
- [IPv6:2a00:1450:400c:c05::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E05182C014D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 00:07:00 +1000 (EST)
-MIME-Version: 1.0
-In-Reply-To: <1373803321-11628-6-git-send-email-gsi@denx.de>
-References: <1373642781-32631-1-git-send-email-gsi@denx.de>
- <1373803321-11628-1-git-send-email-gsi@denx.de>
- <1373803321-11628-6-git-send-email-gsi@denx.de>
-Date: Thu, 3 Oct 2013 18:06:56 +0400
-Message-ID: <CAF0T0X4wiwvYX2RkNXajLUv685wdOdPDQJbEy-eHZhFiJ1mg6w@mail.gmail.com>
-Subject: Re: [PATCH RFC v2 5/5] HACK mmc: mxcmmc: enable clocks for the MPC512x
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Vinod Koul <vinod.koul@intel.com>, devicetree-discuss@lists.ozlabs.org,
- Alexander Popov <a13xp0p0v88@gmail.com>,
- Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8FD5B2C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 00:22:41 +1000 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 3 Oct 2013 19:52:30 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 052BB394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 19:52:11 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r93EMOPN36176126
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Oct 2013 19:52:24 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r93EMQBK020565
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Oct 2013 19:52:26 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH -V2 2/2] powerpc: Free up _PAGE_COHERENCE for numa fault use
+ later
+Date: Thu,  3 Oct 2013 19:52:20 +0530
+Message-Id: <1380810140-11015-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1380810140-11015-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1380810140-11015-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,101 +39,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Gerhard Sittig <gsi@denx.de>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Q&D HACK to enable SD card support without correct COMMON_CLK support,
-best viewed with 'git diff -w -b', NOT acceptable for mainline (NAKed)
+Set  memory coherence always on hash64 config. If
+a platform cannot have memory coherence always set they
+can infer that from _PAGE_NO_CACHE and _PAGE_WRITETHRU
+like in lpar. So we dont' really need a separate bit
+for tracking _PAGE_COHERENCE.
 
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- drivers/mmc/host/mxcmmc.c |   41 +++++++++++++++++++++++++++---
------------
- 1 file changed, 27 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/mmc/host/mxcmmc.c b/drivers/mmc/host/mxcmmc.c
-index d503635..b9d21cc 100644
---- a/drivers/mmc/host/mxcmmc.c
-+++ b/drivers/mmc/host/mxcmmc.c
-@@ -1121,20 +1121,29 @@ static int mxcmci_probe(struct platform_device *pdev)
-        host->res = r;
-        host->irq = irq;
+Changes from v1:
+Fix boot issue with Phyp, because of missing HPTE_R_M on bolted entries.
 
--       host->clk_ipg = devm_clk_get(&pdev->dev, "ipg");
--       if (IS_ERR(host->clk_ipg)) {
--               ret = PTR_ERR(host->clk_ipg);
--               goto out_iounmap;
--       }
-+       if (!is_mpc512x_mmc(host)) {
-+               host->clk_ipg = devm_clk_get(&pdev->dev, "ipg");
-+               if (IS_ERR(host->clk_ipg)) {
-+                       ret = PTR_ERR(host->clk_ipg);
-+                       goto out_iounmap;
-+               }
+ arch/powerpc/include/asm/pte-hash64.h |  2 +-
+ arch/powerpc/mm/hash_low_64.S         | 15 ++++++++++++---
+ arch/powerpc/mm/hash_utils_64.c       |  7 ++++---
+ arch/powerpc/mm/hugepage-hash64.c     |  6 +++++-
+ arch/powerpc/mm/hugetlbpage-hash64.c  |  4 ++++
+ 5 files changed, 26 insertions(+), 8 deletions(-)
 
--       host->clk_per = devm_clk_get(&pdev->dev, "per");
--       if (IS_ERR(host->clk_per)) {
--               ret = PTR_ERR(host->clk_per);
--               goto out_iounmap;
-+               host->clk_per = devm_clk_get(&pdev->dev, "per");
-+               if (IS_ERR(host->clk_per)) {
-+                       ret = PTR_ERR(host->clk_per);
-+                       goto out_iounmap;
-+               }
-+       } else {
-+               host->clk_per = devm_clk_get(&pdev->dev, "sdhc_clk");
-+               if (IS_ERR(host->clk_per)) {
-+                       ret = PTR_ERR(host->clk_per);
-+                       goto out_iounmap;
-+               }
-        }
-
-        clk_prepare_enable(host->clk_per);
--       clk_prepare_enable(host->clk_ipg);
-+       if (host->clk_ipg)
-+               clk_prepare_enable(host->clk_ipg);
-
-        mxcmci_softreset(host);
-
-@@ -1204,7 +1213,8 @@ out_free_dma:
-                dma_release_channel(host->dma);
- out_clk_put:
-        clk_disable_unprepare(host->clk_per);
--       clk_disable_unprepare(host->clk_ipg);
-+       if (host->clk_ipg)
-+               clk_disable_unprepare(host->clk_ipg);
- out_iounmap:
-        iounmap(host->base);
- out_free:
-@@ -1236,7 +1246,8 @@ static int mxcmci_remove(struct platform_device *pdev)
-                dma_release_channel(host->dma);
-
-        clk_disable_unprepare(host->clk_per);
--       clk_disable_unprepare(host->clk_ipg);
-+       if (host->clk_ipg)
-+               clk_disable_unprepare(host->clk_ipg);
-
-        release_mem_region(host->res->start, resource_size(host->res));
-
-@@ -1255,7 +1266,8 @@ static int mxcmci_suspend(struct device *dev)
-        if (mmc)
-                ret = mmc_suspend_host(mmc);
-        clk_disable_unprepare(host->clk_per);
--       clk_disable_unprepare(host->clk_ipg);
-+       if (host->clk_ipg)
-+               clk_disable_unprepare(host->clk_ipg);
-
-        return ret;
+diff --git a/arch/powerpc/include/asm/pte-hash64.h b/arch/powerpc/include/asm/pte-hash64.h
+index 0419eeb..55aea0c 100644
+--- a/arch/powerpc/include/asm/pte-hash64.h
++++ b/arch/powerpc/include/asm/pte-hash64.h
+@@ -19,7 +19,7 @@
+ #define _PAGE_FILE		0x0002 /* (!present only) software: pte holds file offset */
+ #define _PAGE_EXEC		0x0004 /* No execute on POWER4 and newer (we invert) */
+ #define _PAGE_GUARDED		0x0008
+-#define _PAGE_COHERENT		0x0010 /* M: enforce memory coherence (SMP systems) */
++/* We can derive Memory coherence from _PAGE_NO_CACHE */
+ #define _PAGE_NO_CACHE		0x0020 /* I: cache inhibit */
+ #define _PAGE_WRITETHRU		0x0040 /* W: cache write-through */
+ #define _PAGE_DIRTY		0x0080 /* C: page changed */
+diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
+index d3cbda6..1136d26 100644
+--- a/arch/powerpc/mm/hash_low_64.S
++++ b/arch/powerpc/mm/hash_low_64.S
+@@ -148,7 +148,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+ 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
+ 	andc	r0,r30,r0		/* r0 = pte & ~r0 */
+ 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
+-	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
++	/*
++	 * Always add "C" bit for perf. Memory coherence is always enabled
++	 */
++	ori	r3,r3,HPTE_R_C | HPTE_R_M
+ 
+ 	/* We eventually do the icache sync here (maybe inline that
+ 	 * code rather than call a C function...) 
+@@ -457,7 +460,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+ 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
+ 	andc	r0,r3,r0		/* r0 = pte & ~r0 */
+ 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
+-	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
++	/*
++	 * Always add "C" bit for perf. Memory coherence is always enabled
++	 */
++	ori	r3,r3,HPTE_R_C | HPTE_R_M
+ 
+ 	/* We eventually do the icache sync here (maybe inline that
+ 	 * code rather than call a C function...)
+@@ -795,7 +801,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+ 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
+ 	andc	r0,r30,r0		/* r0 = pte & ~r0 */
+ 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
+-	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
++	/*
++	 * Always add "C" bit for perf. Memory coherence is always enabled
++	 */
++	ori	r3,r3,HPTE_R_C | HPTE_R_M
+ 
+ 	/* We eventually do the icache sync here (maybe inline that
+ 	 * code rather than call a C function...)
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 6ecc38b..4e9b932 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -169,9 +169,10 @@ static unsigned long htab_convert_pte_flags(unsigned long pteflags)
+ 	if ((pteflags & _PAGE_USER) && !((pteflags & _PAGE_RW) &&
+ 					 (pteflags & _PAGE_DIRTY)))
+ 		rflags |= 1;
+-
+-	/* Always add C */
+-	return rflags | HPTE_R_C;
++	/*
++	 * Always add "C" bit for perf. Memory coherence is always enabled
++	 */
++	return rflags | HPTE_R_C | HPTE_R_M;
  }
-@@ -1267,7 +1279,8 @@ static int mxcmci_resume(struct device *dev)
-        int ret = 0;
-
-        clk_prepare_enable(host->clk_per);
--       clk_prepare_enable(host->clk_ipg);
-+       if (host->clk_ipg)
-+               clk_prepare_enable(host->clk_ipg);
-        if (mmc)
-                ret = mmc_resume_host(mmc);
-
-
---
-1.7.10.4
+ 
+ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
+diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
+index 34de9e0..b640595 100644
+--- a/arch/powerpc/mm/hugepage-hash64.c
++++ b/arch/powerpc/mm/hugepage-hash64.c
+@@ -127,7 +127,11 @@ repeat:
+ 
+ 		/* Add in WIMG bits */
+ 		rflags |= (new_pmd & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				      _PAGE_COHERENT | _PAGE_GUARDED));
++				      _PAGE_GUARDED));
++		/*
++		 * enable the memory coherence always
++		 */
++		rflgs |= HPTE_R_M;
+ 
+ 		/* Insert into the hash table, primary slot */
+ 		slot = ppc_md.hpte_insert(hpte_group, vpn, pa, rflags, 0,
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index 0b7fb67..a5bcf93 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -99,6 +99,10 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		/* Add in WIMG bits */
+ 		rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+ 				      _PAGE_COHERENT | _PAGE_GUARDED));
++		/*
++		 * enable the memory coherence always
++		 */
++		rflags |= HPTE_R_M;
+ 
+ 		slot = hpte_insert_repeating(hash, vpn, pa, rflags, 0,
+ 					     mmu_psize, ssize);
+-- 
+1.8.1.2
