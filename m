@@ -1,29 +1,36 @@
-Return-Path: <gleb@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id C35162C00BB
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Oct 2013 16:29:11 +1000 (EST)
-Date: Thu, 3 Oct 2013 09:28:59 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] KVM: PPC: Book3S: Add support for hwrng found on
- some powernv systems
-Message-ID: <20131003062859.GV17294@redhat.com>
-References: <20131001083908.GA17294@redhat.com>
- <1380620338.645.22.camel@pasglop> <524AAFAA.3010801@redhat.com>
- <20131002050940.GA25363@drongo> <524BDD73.3020106@redhat.com>
- <1380704789.645.57.camel@pasglop>
- <668E4650-BC22-4CBF-A282-E7875DF29DB6@suse.de>
- <3CBF5732-E7EE-4C96-8132-6D7B77270DAF@suse.de>
- <20131002100224.GF17294@redhat.com>
- <1380751642.645.71.camel@pasglop>
+Return-Path: <eli@dev.mellanox.co.il>
+Received: from mail-ee0-f48.google.com (mail-ee0-f48.google.com [74.125.83.48])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2AD162C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 17:14:39 +1000 (EST)
+Received: by mail-ee0-f48.google.com with SMTP id l10so874811eei.21
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 00:14:36 -0700 (PDT)
+Date: Thu, 3 Oct 2013 10:14:33 +0300
+From: Eli Cohen <eli@dev.mellanox.co.il>
+To: Alexander Gordeev <agordeev@redhat.com>
+Subject: Re: [PATCH RFC 50/77] mlx5: Update MSI/MSI-X interrupts enablement
+ code
+Message-ID: <20131003071433.GA7299@mtldesk30>
+References: <cover.1380703262.git.agordeev@redhat.com>
+ <9650a7dfbcfd5f1da21f7b093665abf4b1041071.1380703263.git.agordeev@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1380751642.645.71.camel@pasglop>
-Cc: tytso@mit.edu, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, herbert@gondor.hengli.com.au,
- Paul Mackerras <paulus@samba.org>, mpm@selenic.com,
- Paolo Bonzini <pbonzini@redhat.com>
+In-Reply-To: <9650a7dfbcfd5f1da21f7b093665abf4b1041071.1380703263.git.agordeev@redhat.com>
+Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
+ linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
+ linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
+ linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
+ iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
+ Jon Mason <jon.mason@intel.com>,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,53 +40,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 03, 2013 at 08:07:22AM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2013-10-02 at 13:02 +0300, Gleb Natapov wrote:
-> 
-> > Yes, I alluded to it in my email to Paul and Paolo asked also. How this
-> > interface is disabled? Also hwrnd is MMIO in a host why guest needs to
-> > use hypercall instead of emulating the device (in kernel or somewhere
-> > else?). Another things is that on a host hwrnd is protected from
-> > direct userspace access by virtue of been a device, but guest code (event
-> > kernel mode) is userspace as far as hosts security model goes, so by
-> > implementing this hypercall in a way that directly access hwrnd you
-> > expose hwrnd to a userspace unconditionally. Why is this a good idea? 
-> 
-> BTW. Is this always going to be like this ?
-> 
-If something questionable will be noticed explanation will be required.
-It is like that for all arches and all parts of kernel.
+On Wed, Oct 02, 2013 at 12:49:06PM +0200, Alexander Gordeev wrote:
+>  
+> +	err = pci_msix_table_size(dev->pdev);
+> +	if (err < 0)
+> +		return err;
+> +
+>  	nvec = dev->caps.num_ports * num_online_cpus() + MLX5_EQ_VEC_COMP_BASE;
+>  	nvec = min_t(int, nvec, num_eqs);
+> +	nvec = min_t(int, nvec, err);
+>  	if (nvec <= MLX5_EQ_VEC_COMP_BASE)
+>  		return -ENOSPC;
 
-> Every *single* architectural or design decision we make for our
-> architecture has to be justified 30 times over, every piece of code bike
-> shedded to oblivion for month, etc... ?
-> 
-This is simply not true, most powerpc patches go in without any comments.
+Making sure we don't request more vectors then the device's is capable
+of -- looks good.
+>  
+> @@ -131,20 +136,15 @@ static int mlx5_enable_msix(struct mlx5_core_dev *dev)
+>  	for (i = 0; i < nvec; i++)
+>  		table->msix_arr[i].entry = i;
+>  
+> -retry:
+> -	table->num_comp_vectors = nvec - MLX5_EQ_VEC_COMP_BASE;
+>  	err = pci_enable_msix(dev->pdev, table->msix_arr, nvec);
+> -	if (err <= 0) {
+> +	if (err) {
+> +		kfree(table->msix_arr);
+>  		return err;
+> -	} else if (err > MLX5_EQ_VEC_COMP_BASE) {
+> -		nvec = err;
+> -		goto retry;
+>  	}
+>  
 
-> Do we always have to finally get to some kind of agreement on design, go
-> to the 6 month bike-shedding phase, just to have somebody else come up
-> and start re-questioning the whole original design (without any
-> understanding of our specific constraints of course) ?
-> 
-Do you really think that nobody here understands that exit to userspace
-is slow?
+According to latest sources, pci_enable_msix() may still fail so why
+do you want to remove this code?
 
-> You guys are the most horrendous community I have ever got to work with.
-> It's simply impossible to get anything done in any reasonable time
-> frame .
+> -	mlx5_core_dbg(dev, "received %d MSI vectors out of %d requested\n", err, nvec);
+> -	kfree(table->msix_arr);
+> +	table->num_comp_vectors = nvec - MLX5_EQ_VEC_COMP_BASE;
+>  
+> -	return -ENOSPC;
+> +	return 0;
+>  }
+>  
+>  static void mlx5_disable_msix(struct mlx5_core_dev *dev)
+> -- 
+> 1.7.7.6
 > 
-> At this stage, it would have taken us an order of magnitude less time to
-> simply rewrite an entire hypervisor from scratch.
-Of course, it is always much easier to ignore other people input and do
-everything your way. Why listen to people who deal with migration issues
-for many years if you can commit the patch and forget about it until
-migration fails, but who cares, you got there in an order of magnitude
-less time and this is what counts.
-
-> 
-> This is sad.
-> 
-Agree.
-
---
-			Gleb.
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
