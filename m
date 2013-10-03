@@ -1,18 +1,19 @@
 Return-Path: <jackm@dev.mellanox.co.il>
-Received: from mail-ee0-f52.google.com (mail-ee0-f52.google.com [74.125.83.52])
+Received: from mail-ea0-f177.google.com (mail-ea0-f177.google.com
+ [209.85.215.177])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D97B92C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 18:27:10 +1000 (EST)
-Received: by mail-ee0-f52.google.com with SMTP id c41so902330eek.25
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 01:27:05 -0700 (PDT)
-Date: Thu, 3 Oct 2013 11:27:02 +0300
+ by ozlabs.org (Postfix) with ESMTPS id 04F272C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 18:39:38 +1000 (EST)
+Received: by mail-ea0-f177.google.com with SMTP id f15so902135eak.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 01:39:34 -0700 (PDT)
+Date: Thu, 3 Oct 2013 11:39:32 +0300
 From: Jack Morgenstein <jackm@dev.mellanox.co.il>
 To: Alexander Gordeev <agordeev@redhat.com>
 Subject: Re: [PATCH RFC 46/77] mlx4: Update MSI/MSI-X interrupts enablement
  code
-Message-ID: <20131003112702.6f3210b0@jpm-OptiPlex-GX620>
+Message-ID: <20131003113932.065b9b63@jpm-OptiPlex-GX620>
 In-Reply-To: <b0a9f6f455aa03b7769e6d9cc2e7fdbc06732b2f.1380703263.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
  <b0a9f6f455aa03b7769e6d9cc2e7fdbc06732b2f.1380703263.git.agordeev@redhat.com>
@@ -43,79 +44,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 On Wed,  2 Oct 2013 12:49:02 +0200
 Alexander Gordeev <agordeev@redhat.com> wrote:
 
-UPDATING THIS REPLY.
-Your change log confused me. The change below is not from a "recent
-re-design", it is required due to an earlier patch in this patch set.
-=46rom the log, I assumed that the change you are talking about is already
-upstream.
-
-I will re-review.
-
--Jack
-
-NACK.  This change does not do anything logically as far as I can tell.
-pci_enable_msix in the current upstream kernel itself calls
-pci_msix_table_size.  The current code yields the same resultswill
-as the code suggested below. (i.e., the suggested code has no effect on
-optimality).
-
-BTW, pci_msix_table_size never returns a value < 0 (if msix is not
-enabled, it returns 0 for the table size), so the (err < 0) check here
-is not correct. (I also do not like using "err" here anyway for the
-value returned by pci_msix_table_size().  There is no error here, and
-it is simply confusing.
-
--Jack
-
 > As result of recent re-design of the MSI/MSI-X interrupts enabling
 > pattern this driver has to be updated to use the new technique to
 > obtain a optimal number of MSI/MSI-X interrupts required.
->=20
+> 
 > Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
-> ---
->  drivers/net/ethernet/mellanox/mlx4/main.c |   17 ++++++++---------
->  1 files changed, 8 insertions(+), 9 deletions(-)
->=20
-> diff --git a/drivers/net/ethernet/mellanox/mlx4/main.c
-> b/drivers/net/ethernet/mellanox/mlx4/main.c index 60c9f4f..377a5ea
-> 100644 --- a/drivers/net/ethernet/mellanox/mlx4/main.c
-> +++ b/drivers/net/ethernet/mellanox/mlx4/main.c
-> @@ -1852,8 +1852,16 @@ static void mlx4_enable_msi_x(struct mlx4_dev
-> *dev) int i;
-> =20
->  	if (msi_x) {
-> +		err =3D pci_msix_table_size(dev->pdev);
-> +		if (err < 0)
-> +			goto no_msi;
-> +
-> +		/* Try if at least 2 vectors are available */
->  		nreq =3D min_t(int, dev->caps.num_eqs -
-> dev->caps.reserved_eqs, nreq);
-> +		nreq =3D min_t(int, nreq, err);
-> +		if (nreq < 2)
-> +			goto no_msi;
-> =20
->  		entries =3D kcalloc(nreq, sizeof *entries, GFP_KERNEL);
->  		if (!entries)
-> @@ -1862,17 +1870,8 @@ static void mlx4_enable_msi_x(struct mlx4_dev
-> *dev) for (i =3D 0; i < nreq; ++i)
->  			entries[i].entry =3D i;
-> =20
-> -	retry:
->  		err =3D pci_enable_msix(dev->pdev, entries, nreq);
->  		if (err) {
-> -			/* Try again if at least 2 vectors are
-> available */
-> -			if (err > 1) {
-> -				mlx4_info(dev, "Requested %d
-> vectors, "
-> -					  "but only %d MSI-X vectors
-> available, "
-> -					  "trying again\n", nreq,
-> err);
-> -				nreq =3D err;
-> -				goto retry;
-> -			}
->  			kfree(entries);
->  			goto no_msi;
->  		}
+
+New review -- ACK (i.e., patch is OK), subject to acceptance of patches
+05 and 07 of this patch set.
+
+I sent my previous review (NACK) when I was not yet aware that
+changes proposed were due to the two earlier patches (mentioned above)
+in the current patch set.
+
+The change log here should actually read something like the following:
+
+As a result of changes to the MSI/MSI_X enabling procedures, this driver
+must be modified in order to preserve its current msi/msi_x enablement
+logic.
+
+-Jack
