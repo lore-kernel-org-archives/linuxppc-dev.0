@@ -1,19 +1,18 @@
 Return-Path: <jackm@dev.mellanox.co.il>
-Received: from mail-ea0-f178.google.com (mail-ea0-f178.google.com
- [209.85.215.178])
+Received: from mail-ee0-f52.google.com (mail-ee0-f52.google.com [74.125.83.52])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A246A2C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 18:03:02 +1000 (EST)
-Received: by mail-ea0-f178.google.com with SMTP id a15so904903eae.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 01:02:58 -0700 (PDT)
-Date: Thu, 3 Oct 2013 11:02:54 +0300
+ by ozlabs.org (Postfix) with ESMTPS id D97B92C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 18:27:10 +1000 (EST)
+Received: by mail-ee0-f52.google.com with SMTP id c41so902330eek.25
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 01:27:05 -0700 (PDT)
+Date: Thu, 3 Oct 2013 11:27:02 +0300
 From: Jack Morgenstein <jackm@dev.mellanox.co.il>
 To: Alexander Gordeev <agordeev@redhat.com>
 Subject: Re: [PATCH RFC 46/77] mlx4: Update MSI/MSI-X interrupts enablement
  code
-Message-ID: <20131003110254.5f10fbb8@jpm-OptiPlex-GX620>
+Message-ID: <20131003112702.6f3210b0@jpm-OptiPlex-GX620>
 In-Reply-To: <b0a9f6f455aa03b7769e6d9cc2e7fdbc06732b2f.1380703263.git.agordeev@redhat.com>
 References: <cover.1380703262.git.agordeev@redhat.com>
  <b0a9f6f455aa03b7769e6d9cc2e7fdbc06732b2f.1380703263.git.agordeev@redhat.com>
@@ -44,9 +43,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 On Wed,  2 Oct 2013 12:49:02 +0200
 Alexander Gordeev <agordeev@redhat.com> wrote:
 
+UPDATING THIS REPLY.
+Your change log confused me. The change below is not from a "recent
+re-design", it is required due to an earlier patch in this patch set.
+=46rom the log, I assumed that the change you are talking about is already
+upstream.
+
+I will re-review.
+
+-Jack
+
 NACK.  This change does not do anything logically as far as I can tell.
 pci_enable_msix in the current upstream kernel itself calls
-pci_msix_table_size.  The current code yields the same results
+pci_msix_table_size.  The current code yields the same resultswill
 as the code suggested below. (i.e., the suggested code has no effect on
 optimality).
 
@@ -61,39 +70,39 @@ it is simply confusing.
 > As result of recent re-design of the MSI/MSI-X interrupts enabling
 > pattern this driver has to be updated to use the new technique to
 > obtain a optimal number of MSI/MSI-X interrupts required.
-> 
+>=20
 > Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
 > ---
 >  drivers/net/ethernet/mellanox/mlx4/main.c |   17 ++++++++---------
 >  1 files changed, 8 insertions(+), 9 deletions(-)
-> 
+>=20
 > diff --git a/drivers/net/ethernet/mellanox/mlx4/main.c
 > b/drivers/net/ethernet/mellanox/mlx4/main.c index 60c9f4f..377a5ea
 > 100644 --- a/drivers/net/ethernet/mellanox/mlx4/main.c
 > +++ b/drivers/net/ethernet/mellanox/mlx4/main.c
 > @@ -1852,8 +1852,16 @@ static void mlx4_enable_msi_x(struct mlx4_dev
 > *dev) int i;
->  
+> =20
 >  	if (msi_x) {
-> +		err = pci_msix_table_size(dev->pdev);
+> +		err =3D pci_msix_table_size(dev->pdev);
 > +		if (err < 0)
 > +			goto no_msi;
 > +
 > +		/* Try if at least 2 vectors are available */
->  		nreq = min_t(int, dev->caps.num_eqs -
+>  		nreq =3D min_t(int, dev->caps.num_eqs -
 > dev->caps.reserved_eqs, nreq);
-> +		nreq = min_t(int, nreq, err);
+> +		nreq =3D min_t(int, nreq, err);
 > +		if (nreq < 2)
 > +			goto no_msi;
->  
->  		entries = kcalloc(nreq, sizeof *entries, GFP_KERNEL);
+> =20
+>  		entries =3D kcalloc(nreq, sizeof *entries, GFP_KERNEL);
 >  		if (!entries)
 > @@ -1862,17 +1870,8 @@ static void mlx4_enable_msi_x(struct mlx4_dev
-> *dev) for (i = 0; i < nreq; ++i)
->  			entries[i].entry = i;
->  
+> *dev) for (i =3D 0; i < nreq; ++i)
+>  			entries[i].entry =3D i;
+> =20
 > -	retry:
->  		err = pci_enable_msix(dev->pdev, entries, nreq);
+>  		err =3D pci_enable_msix(dev->pdev, entries, nreq);
 >  		if (err) {
 > -			/* Try again if at least 2 vectors are
 > available */
@@ -104,7 +113,7 @@ it is simply confusing.
 > available, "
 > -					  "trying again\n", nreq,
 > err);
-> -				nreq = err;
+> -				nreq =3D err;
 > -				goto retry;
 > -			}
 >  			kfree(entries);
