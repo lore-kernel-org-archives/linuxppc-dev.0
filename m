@@ -1,26 +1,29 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
- [IPv6:2607:f8b0:400e:c02::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8DBAE2C0095
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 15:16:42 +1000 (EST)
-Received: by mail-pd0-f182.google.com with SMTP id r10so3512168pdi.27
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 22:16:39 -0700 (PDT)
-Message-ID: <1380863798.3564.12.camel@edumazet-glaptop.roam.corp.google.com>
-Subject: Re: [PATCH v3 net-next] fix unsafe set_memory_rw from softirq
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Alexei Starovoitov <ast@plumgrid.com>
-Date: Thu, 03 Oct 2013 22:16:38 -0700
-In-Reply-To: <1380859875-31025-1-git-send-email-ast@plumgrid.com>
-References: <1380859875-31025-1-git-send-email-ast@plumgrid.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-s390@vger.kernel.org, netdev@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, Daniel Borkmann <dborkman@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <R65777@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 917E32C00DE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 15:19:20 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: RE: [PATCH 1/7] powerpc: Add interface to get msi region information
+Date: Fri, 4 Oct 2013 05:19:10 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0718FA58@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379575763-2091-2-git-send-email-Bharat.Bhushan@freescale.com>
+ <20130924235812.GD9302@google.com>
+In-Reply-To: <20130924235812.GD9302@google.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "agraf@suse.de" <agraf@suse.de>, Wood Scott-B07421 <B07421@freescale.com>,
+ "joro@8bytes.org" <joro@8bytes.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,83 +33,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-10-03 at 21:11 -0700, Alexei Starovoitov wrote:
-
-> diff --git a/include/linux/filter.h b/include/linux/filter.h
-> index a6ac848..5d66cd9 100644
-> --- a/include/linux/filter.h
-> +++ b/include/linux/filter.h
-> @@ -25,15 +25,20 @@ struct sk_filter
->  {
->  	atomic_t		refcnt;
->  	unsigned int         	len;	/* Number of filter blocks */
-> +	struct rcu_head		rcu;
->  	unsigned int		(*bpf_func)(const struct sk_buff *skb,
->  					    const struct sock_filter *filter);
-> -	struct rcu_head		rcu;
-> +	/* insns start right after bpf_func, so that sk_run_filter() fetches
-> +	 * first insn from the same cache line that was used to call into
-> +	 * sk_run_filter()
-> +	 */
->  	struct sock_filter     	insns[0];
->  };
->  
->  static inline unsigned int sk_filter_len(const struct sk_filter *fp)
->  {
-> -	return fp->len * sizeof(struct sock_filter) + sizeof(*fp);
-> +	return max(fp->len * sizeof(struct sock_filter),
-> +		   sizeof(struct work_struct)) + sizeof(*fp);
->  }
-
-I would use for include/linux/filter.h this (untested) diff :
-
-(Note the include <linux/workqueue.h>)
-
-I also remove your comment about cache lines, since there is nothing
-to align stuff on a cache line boundary.
-
-diff --git a/include/linux/filter.h b/include/linux/filter.h
-index a6ac848..281b05c 100644
---- a/include/linux/filter.h
-+++ b/include/linux/filter.h
-@@ -6,6 +6,7 @@
- 
- #include <linux/atomic.h>
- #include <linux/compat.h>
-+#include <linux/workqueue.h>
- #include <uapi/linux/filter.h>
- 
- #ifdef CONFIG_COMPAT
-@@ -25,15 +26,20 @@ struct sk_filter
- {
- 	atomic_t		refcnt;
- 	unsigned int         	len;	/* Number of filter blocks */
-+	struct rcu_head		rcu;
- 	unsigned int		(*bpf_func)(const struct sk_buff *skb,
- 					    const struct sock_filter *filter);
--	struct rcu_head		rcu;
--	struct sock_filter     	insns[0];
-+	union {
-+		struct work_struct	work;
-+		struct sock_filter	insns[0];
-+	};
- };
- 
--static inline unsigned int sk_filter_len(const struct sk_filter *fp)
-+static inline unsigned int sk_filter_size(const struct sk_filter *fp,
-+					  unsigned int proglen)
- {
--	return fp->len * sizeof(struct sock_filter) + sizeof(*fp);
-+	return max(sizeof(*fp),
-+		   offsetof(struct sk_filter, insns[proglen]));
- }
- 
- extern int sk_filter(struct sock *sk, struct sk_buff *skb);
 
 
+> -----Original Message-----
+> From: linux-pci-owner@vger.kernel.org [mailto:linux-pci-owner@vger.kernel=
+.org]
+> On Behalf Of Bjorn Helgaas
+> Sent: Wednesday, September 25, 2013 5:28 AM
+> To: Bhushan Bharat-R65777
+> Cc: alex.williamson@redhat.com; joro@8bytes.org; benh@kernel.crashing.org=
+;
+> galak@kernel.crashing.org; linux-kernel@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; linux-pci@vger.kernel.org; agraf@suse.de; Wood Scot=
+t-
+> B07421; iommu@lists.linux-foundation.org; Bhushan Bharat-R65777
+> Subject: Re: [PATCH 1/7] powerpc: Add interface to get msi region informa=
+tion
+>=20
+> On Thu, Sep 19, 2013 at 12:59:17PM +0530, Bharat Bhushan wrote:
+> > This patch adds interface to get following information
+> >   - Number of MSI regions (which is number of MSI banks for powerpc).
+> >   - Get the region address range: Physical page which have the
+> >      address/addresses used for generating MSI interrupt
+> >      and size of the page.
+> >
+> > These are required to create IOMMU (Freescale PAMU) mapping for
+> > devices which are directly assigned using VFIO.
+> >
+> > Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+> > ---
+> >  arch/powerpc/include/asm/machdep.h |    8 +++++++
+> >  arch/powerpc/include/asm/pci.h     |    2 +
+> >  arch/powerpc/kernel/msi.c          |   18 ++++++++++++++++
+> >  arch/powerpc/sysdev/fsl_msi.c      |   39 ++++++++++++++++++++++++++++=
++++++--
+> >  arch/powerpc/sysdev/fsl_msi.h      |   11 ++++++++-
+> >  drivers/pci/msi.c                  |   26 ++++++++++++++++++++++++
+> >  include/linux/msi.h                |    8 +++++++
+> >  include/linux/pci.h                |   13 ++++++++++++
+> >  8 files changed, 120 insertions(+), 5 deletions(-)
+> >
+> > ...
+>=20
+> > diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c index
+> > aca7578..6d85c15 100644
+> > --- a/drivers/pci/msi.c
+> > +++ b/drivers/pci/msi.c
+> > @@ -30,6 +30,20 @@ static int pci_msi_enable =3D 1;
+> >
+> >  /* Arch hooks */
+> >
+> > +#ifndef arch_msi_get_region_count
+> > +int arch_msi_get_region_count(void)
+> > +{
+> > +	return 0;
+> > +}
+> > +#endif
+> > +
+> > +#ifndef arch_msi_get_region
+> > +int arch_msi_get_region(int region_num, struct msi_region *region) {
+> > +	return 0;
+> > +}
+> > +#endif
+>=20
+> This #define strategy is gone; see 4287d824 ("PCI: use weak functions for=
+ MSI
+> arch-specific functions").  Please use the weak function strategy for you=
+r new
+> MSI region functions.
 
-This way, you can use sk_filter_size(fp, fprog->len)
-instead of doing the max() games in sk_attach_filter() and
-sk_unattached_filter_create()
+ok
 
-Other than that, I think your patch is fine.
+>=20
+> > +
+> >  #ifndef arch_msi_check_device
+> >  int arch_msi_check_device(struct pci_dev *dev, int nvec, int type)  {
+> > @@ -903,6 +917,18 @@ void pci_disable_msi(struct pci_dev *dev)  }
+> > EXPORT_SYMBOL(pci_disable_msi);
+> >
+> > +int msi_get_region_count(void)
+> > +{
+> > +	return arch_msi_get_region_count();
+> > +}
+> > +EXPORT_SYMBOL(msi_get_region_count);
+> > +
+> > +int msi_get_region(int region_num, struct msi_region *region) {
+> > +	return arch_msi_get_region(region_num, region); }
+> > +EXPORT_SYMBOL(msi_get_region);
+>=20
+> Please split these interface additions, i.e., the drivers/pci/msi.c,
+> include/linux/msi.h, and include/linux/pci.h changes, into a separate pat=
+ch.
+
+ok
+
+>=20
+> I don't know enough about VFIO to understand why these new interfaces are
+> needed.  Is this the first VFIO IOMMU driver?  I see vfio_iommu_spapr_tce=
+.c and
+> vfio_iommu_type1.c but I don't know if they're comparable to the Freescal=
+e PAMU.
+> Do other VFIO IOMMU implementations support MSI?  If so, do they handle t=
+he
+> problem of mapping the MSI regions in a different way?
+
+PAMU is an aperture type of IOMMU while other are paging type, So they are =
+completely different from what PAMU is and handle that differently.
+
+>=20
+> >  /**
+> >   * pci_msix_table_size - return the number of device's MSI-X table ent=
+ries
+> >   * @dev: pointer to the pci_dev data structure of MSI-X device
+> > function diff --git a/include/linux/msi.h b/include/linux/msi.h index
+> > ee66f3a..ae32601 100644
+> > --- a/include/linux/msi.h
+> > +++ b/include/linux/msi.h
+> > @@ -50,6 +50,12 @@ struct msi_desc {
+> >  	struct kobject kobj;
+> >  };
+> >
+> > +struct msi_region {
+> > +	int region_num;
+> > +	dma_addr_t addr;
+> > +	size_t size;
+> > +};
+>=20
+> This needs some sort of explanatory comment.
+
+Ok
+
+-Bharat
+
+>=20
+> >  /*
+> >   * The arch hook for setup up msi irqs
+> >   */
+> > @@ -58,5 +64,7 @@ void arch_teardown_msi_irq(unsigned int irq);  int
+> > arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);  void
+> > arch_teardown_msi_irqs(struct pci_dev *dev);  int
+> > arch_msi_check_device(struct pci_dev* dev, int nvec, int type);
+> > +int arch_msi_get_region_count(void);
+> > +int arch_msi_get_region(int region_num, struct msi_region *region);
+> >
+> >  #endif /* LINUX_MSI_H */
+> > diff --git a/include/linux/pci.h b/include/linux/pci.h index
+> > 186540d..2b26a59 100644
+> > --- a/include/linux/pci.h
+> > +++ b/include/linux/pci.h
+> > @@ -1126,6 +1126,7 @@ struct msix_entry {
+> >  	u16	entry;	/* driver uses to specify entry, OS writes */
+> >  };
+> >
+> > +struct msi_region;
+> >
+> >  #ifndef CONFIG_PCI_MSI
+> >  static inline int pci_enable_msi_block(struct pci_dev *dev, unsigned
+> > int nvec) @@ -1168,6 +1169,16 @@ static inline int
+> > pci_msi_enabled(void)  {
+> >  	return 0;
+> >  }
+> > +
+> > +static inline int msi_get_region_count(void) {
+> > +	return 0;
+> > +}
+> > +
+> > +static inline int msi_get_region(int region_num, struct msi_region
+> > +*region) {
+> > +	return 0;
+> > +}
+> >  #else
+> >  int pci_enable_msi_block(struct pci_dev *dev, unsigned int nvec);
+> > int pci_enable_msi_block_auto(struct pci_dev *dev, unsigned int
+> > *maxvec); @@ -1180,6 +1191,8 @@ void pci_disable_msix(struct pci_dev
+> > *dev);  void msi_remove_pci_irq_vectors(struct pci_dev *dev);  void
+> > pci_restore_msi_state(struct pci_dev *dev);  int
+> > pci_msi_enabled(void);
+> > +int msi_get_region_count(void);
+> > +int msi_get_region(int region_num, struct msi_region *region);
+> >  #endif
+> >
+> >  #ifdef CONFIG_PCIEPORTBUS
+> > --
+> > 1.7.0.4
+> >
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pci"
+> > in the body of a message to majordomo@vger.kernel.org More majordomo
+> > info at  http://vger.kernel.org/majordomo-info.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in t=
+he body
+> of a message to majordomo@vger.kernel.org More majordomo info at
+> http://vger.kernel.org/majordomo-info.html
