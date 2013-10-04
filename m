@@ -1,24 +1,21 @@
-Return-Path: <R65777@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A5252C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 02:48:29 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: RE: [PATCH 2/7] iommu: add api to get iommu_domain of a device
-Date: Fri, 4 Oct 2013 16:47:33 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D07190F35@039-SN2MPN1-011.039d.mgd.msft.net>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 56C052C00C7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 03:13:03 +1000 (EST)
+Message-ID: <1380906772.25705.19.camel@ul30vt.home>
+Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a device
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Date: Fri, 04 Oct 2013 11:12:52 -0600
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D07190F35@039-SN2MPN1-011.039d.mgd.msft.net>
 References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
  <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
  <1380127533.3030.319.camel@ul30vt.home>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0718FD1C@039-SN2MPN1-011.039d.mgd.msft.net>
  <1380901507.2673.204.camel@ul30vt.home>
-In-Reply-To: <1380901507.2673.204.camel@ul30vt.home>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07190F35@039-SN2MPN1-011.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: "agraf@suse.de" <agraf@suse.de>, Wood Scott-B07421 <B07421@freescale.com>,
  "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
  "joro@8bytes.org" <joro@8bytes.org>,
@@ -34,120 +31,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
-IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IEZyaWRheSwgT2N0
-b2JlciAwNCwgMjAxMyA5OjE1IFBNDQo+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gQ2M6
-IGpvcm9AOGJ5dGVzLm9yZzsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBnYWxha0BrZXJuZWwu
-Y3Jhc2hpbmcub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMt
-ZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0KPiBwY2lAdmdlci5rZXJuZWwub3JnOyBhZ3Jh
-ZkBzdXNlLmRlOyBXb29kIFNjb3R0LUIwNzQyMTsgaW9tbXVAbGlzdHMubGludXgtDQo+IGZvdW5k
-YXRpb24ub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi83XSBpb21tdTogYWRkIGFwaSB0byBn
-ZXQgaW9tbXVfZG9tYWluIG9mIGEgZGV2aWNlDQo+IA0KPiBPbiBGcmksIDIwMTMtMTAtMDQgYXQg
-MDk6NTQgKzAwMDAsIEJodXNoYW4gQmhhcmF0LVI2NTc3NyB3cm90ZToNCj4gPg0KPiA+ID4gLS0t
-LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IGxpbnV4LXBjaS1vd25lckB2Z2Vy
-Lmtlcm5lbC5vcmcNCj4gPiA+IFttYWlsdG86bGludXgtcGNpLW93bmVyQHZnZXIua2VybmVsLm9y
-Z10NCj4gPiA+IE9uIEJlaGFsZiBPZiBBbGV4IFdpbGxpYW1zb24NCj4gPiA+IFNlbnQ6IFdlZG5l
-c2RheSwgU2VwdGVtYmVyIDI1LCAyMDEzIDEwOjE2IFBNDQo+ID4gPiBUbzogQmh1c2hhbiBCaGFy
-YXQtUjY1Nzc3DQo+ID4gPiBDYzogam9yb0A4Ynl0ZXMub3JnOyBiZW5oQGtlcm5lbC5jcmFzaGlu
-Zy5vcmc7DQo+ID4gPiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBsaW51eC0ga2VybmVsQHZn
-ZXIua2VybmVsLm9yZzsNCj4gPiA+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51
-eC0gcGNpQHZnZXIua2VybmVsLm9yZzsNCj4gPiA+IGFncmFmQHN1c2UuZGU7IFdvb2QgU2NvdHQt
-QjA3NDIxOyBpb21tdUBsaXN0cy5saW51eC0gZm91bmRhdGlvbi5vcmc7DQo+ID4gPiBCaHVzaGFu
-IEJoYXJhdC1SNjU3NzcNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi83XSBpb21tdTogYWRk
-IGFwaSB0byBnZXQgaW9tbXVfZG9tYWluIG9mIGENCj4gPiA+IGRldmljZQ0KPiA+ID4NCj4gPiA+
-IE9uIFRodSwgMjAxMy0wOS0xOSBhdCAxMjo1OSArMDUzMCwgQmhhcmF0IEJodXNoYW4gd3JvdGU6
-DQo+ID4gPiA+IFRoaXMgYXBpIHJldHVybiB0aGUgaW9tbXUgZG9tYWluIHRvIHdoaWNoIHRoZSBk
-ZXZpY2UgaXMgYXR0YWNoZWQuDQo+ID4gPiA+IFRoZSBpb21tdV9kb21haW4gaXMgcmVxdWlyZWQg
-Zm9yIG1ha2luZyBBUEkgY2FsbHMgcmVsYXRlZCB0byBpb21tdS4NCj4gPiA+ID4gRm9sbG93IHVw
-IHBhdGNoZXMgd2hpY2ggdXNlIHRoaXMgQVBJIHRvIGtub3cgaW9tbXUgbWFwaW5nLg0KPiA+ID4g
-Pg0KPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBCaGFyYXQgQmh1c2hhbiA8YmhhcmF0LmJodXNoYW5A
-ZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gLS0tDQo+ID4gPiA+ICBkcml2ZXJzL2lvbW11L2lvbW11
-LmMgfCAgIDEwICsrKysrKysrKysNCj4gPiA+ID4gIGluY2x1ZGUvbGludXgvaW9tbXUuaCB8ICAg
-IDcgKysrKysrKw0KPiA+ID4gPiAgMiBmaWxlcyBjaGFuZ2VkLCAxNyBpbnNlcnRpb25zKCspLCAw
-IGRlbGV0aW9ucygtKQ0KPiA+ID4gPg0KPiA+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pb21t
-dS9pb21tdS5jIGIvZHJpdmVycy9pb21tdS9pb21tdS5jIGluZGV4DQo+ID4gPiA+IGZiZTljYTcu
-LjZhYzVmNTAgMTAwNjQ0DQo+ID4gPiA+IC0tLSBhL2RyaXZlcnMvaW9tbXUvaW9tbXUuYw0KPiA+
-ID4gPiArKysgYi9kcml2ZXJzL2lvbW11L2lvbW11LmMNCj4gPiA+ID4gQEAgLTY5Niw2ICs2OTYs
-MTYgQEAgdm9pZCBpb21tdV9kZXRhY2hfZGV2aWNlKHN0cnVjdCBpb21tdV9kb21haW4NCj4gPiA+
-ID4gKmRvbWFpbiwgc3RydWN0IGRldmljZSAqZGV2KSAgfQ0KPiA+ID4gPiBFWFBPUlRfU1lNQk9M
-X0dQTChpb21tdV9kZXRhY2hfZGV2aWNlKTsNCj4gPiA+ID4NCj4gPiA+ID4gK3N0cnVjdCBpb21t
-dV9kb21haW4gKmlvbW11X2dldF9kZXZfZG9tYWluKHN0cnVjdCBkZXZpY2UgKmRldikgew0KPiA+
-ID4gPiArCXN0cnVjdCBpb21tdV9vcHMgKm9wcyA9IGRldi0+YnVzLT5pb21tdV9vcHM7DQo+ID4g
-PiA+ICsNCj4gPiA+ID4gKwlpZiAodW5saWtlbHkob3BzID09IE5VTEwgfHwgb3BzLT5nZXRfZGV2
-X2lvbW11X2RvbWFpbiA9PSBOVUxMKSkNCj4gPiA+ID4gKwkJcmV0dXJuIE5VTEw7DQo+ID4gPiA+
-ICsNCj4gPiA+ID4gKwlyZXR1cm4gb3BzLT5nZXRfZGV2X2lvbW11X2RvbWFpbihkZXYpOyB9DQo+
-ID4gPiA+ICtFWFBPUlRfU1lNQk9MX0dQTChpb21tdV9nZXRfZGV2X2RvbWFpbik7DQo+ID4gPg0K
-PiA+ID4gV2hhdCBwcmV2ZW50cyB0aGlzIGZyb20gcmFjaW5nIGlvbW11X2RvbWFpbl9mcmVlKCk/
-ICBUaGVyZSdzIG5vDQo+ID4gPiByZWZlcmVuY2VzIGFjcXVpcmVkLCBzbyB0aGVyZSdzIG5vIHJl
-YXNvbiBmb3IgdGhlIGNhbGxlciB0byBhc3N1bWUgdGhlDQo+IHBvaW50ZXIgaXMgdmFsaWQuDQo+
-ID4NCj4gPiBTb3JyeSBmb3IgbGF0ZSBxdWVyeSwgc29tZWhvdyB0aGlzIGVtYWlsIHdlbnQgaW50
-byBhIGZvbGRlciBhbmQNCj4gPiBlc2NhcGVkOw0KPiA+DQo+ID4gSnVzdCB0byBiZSBzdXJlLCB0
-aGVyZSBpcyBub3QgbG9jayBhdCBnZW5lcmljICJzdHJ1Y3QgaW9tbXVfZG9tYWluIiwgYnV0IElQ
-DQo+IHNwZWNpZmljIHN0cnVjdHVyZSAobGluayBGU0wgZG9tYWluKSBsaW5rZWQgaW4gaW9tbXVf
-ZG9tYWluLT5wcml2IGhhdmUgYSBsb2NrLA0KPiBzbyB3ZSBuZWVkIHRvIGVuc3VyZSB0aGlzIHJh
-Y2UgaW4gRlNMIGlvbW11IGNvZGUgKHNheQ0KPiBkcml2ZXJzL2lvbW11L2ZzbF9wYW11X2RvbWFp
-bi5jKSwgcmlnaHQ/DQo+IA0KPiBObywgaXQncyBub3Qgc3VmZmljaWVudCB0byBtYWtlIHN1cmUg
-dGhhdCB5b3VyIHVzZSBvZiB0aGUgaW50ZXJmYWNlIGlzIHJhY2UNCj4gZnJlZS4gIFRoZSBpbnRl
-cmZhY2UgaXRzZWxmIG5lZWRzIHRvIGJlIGRlc2lnbmVkIHNvIHRoYXQgaXQncyBkaWZmaWN1bHQg
-dG8gdXNlDQo+IGluY29ycmVjdGx5Lg0KDQpTbyB3ZSBjYW4gZGVmaW5lIGlvbW11X2dldF9kZXZf
-ZG9tYWluKCkvaW9tbXVfcHV0X2Rldl9kb21haW4oKTsgIGlvbW11X2dldF9kZXZfZG9tYWluKCkg
-d2lsbCByZXR1cm4gZG9tYWluIHdpdGggdGhlIGxvY2sgaGVsZCwgYW5kIGlvbW11X3B1dF9kZXZf
-ZG9tYWluKCkgd2lsbCByZWxlYXNlIHRoZSBsb2NrPyBBbmQgaW9tbXVfZ2V0X2Rldl9kb21haW4o
-KSBtdXN0IGFsd2F5cyBiZSBmb2xsb3dlZCBieSBpb21tdV9nZXRfZGV2X2RvbWFpbigpLg0KDQoN
-Cj4gVGhhdCdzIG5vdCB0aGUgY2FzZSBoZXJlLiAgVGhpcyBpcyBhIGJhY2tkb29yIHRvIGdldCB0
-aGUgaW9tbXUNCj4gZG9tYWluIGZyb20gdGhlIGlvbW11IGRyaXZlciByZWdhcmRsZXNzIG9mIHdo
-byBpcyB1c2luZyBpdCBvciBob3cuICBUaGUgaW9tbXUNCj4gZG9tYWluIGlzIGNyZWF0ZWQgYW5k
-IG1hbmFnZWQgYnkgdmZpbywgc28gc2hvdWxkbid0IHdlIGJlIGxvb2tpbmcgYXQgaG93IHRvIGRv
-DQo+IHRoaXMgdGhyb3VnaCB2ZmlvPw0KDQpMZXQgbWUgZmlyc3QgZGVzY3JpYmUgd2hhdCB3ZSBh
-cmUgZG9pbmcgaGVyZToNCkR1cmluZyBpbml0aWFsaXphdGlvbjotDQogLSB2ZmlvIHRhbGtzIHRv
-IE1TSSBzeXN0ZW0gdG8ga25vdyB0aGUgTVNJLXBhZ2UgYW5kIHNpemUNCiAtIHZmaW8gdGhlbiBp
-bnRlcmFjdHMgd2l0aCBpb21tdSB0byBtYXAgdGhlIE1TSS1wYWdlIGluIGlvbW11IChJT1ZBIGlz
-IGRlY2lkZWQgYnkgdXNlcnNwYWNlIGFuZCBwaHlzaWNhbCBhZGRyZXNzIGlzIHRoZSBNU0ktcGFn
-ZSkNCiAtIFNvIHRoZSBJT1ZBIHN1YndpbmRvdyBtYXBwaW5nIGlzIGNyZWF0ZWQgaW4gaW9tbXUg
-YW5kIHllcyBWRklPIGtub3cgYWJvdXQgdGhpcyBtYXBwaW5nLg0KDQpOb3cgZG8gU0VUX0lSUShN
-U0kvTVNJWCkgaW9jdGw6DQogLSBjYWxscyBwY2lfZW5hYmxlX21zaXgoKS9wY2lfZW5hYmxlX21z
-aV9ibG9jaygpOiB3aGljaCBpcyBzdXBwb3NlZCB0byBzZXQgTVNJIGFkZHJlc3MvZGF0YSBpbiBk
-ZXZpY2UuDQogLSBTbyBpbiBjdXJyZW50IGltcGxlbWVudGF0aW9uICh0aGlzIHBhdGNoc2V0KSBt
-c2ktc3Vic3lzdGVtIGdldHMgdGhlIElPVkEgZnJvbSBpb21tdSB2aWEgdGhpcyBkZWZpbmVkIGlu
-dGVyZmFjZS4NCiAtIEFyZSB5b3Ugc2F5aW5nIHRoYXQgcmF0aGVyIHRoYW4gZ2V0dGluZyB0aGlz
-IGZyb20gaW9tbXUsIHdlIHNob3VsZCBnZXQgdGhpcyBmcm9tIHZmaW8/IFdoYXQgZGlmZmVyZW5j
-ZSBkb2VzIHRoaXMgbWFrZT8NCg0KVGhhbmtzDQotQmhhcmF0DQoNCj4gSXQgc2VlbXMgbGlrZSB5
-b3UnZCB3YW50IHRvIHVzZSB5b3VyIGRldmljZSB0byBnZXQgYSB2ZmlvDQo+IGdyb3VwIHJlZmVy
-ZW5jZSwgZnJvbSB3aGljaCB5b3UgY291bGQgZG8gc29tZXRoaW5nIHdpdGggdGhlIHZmaW8gZXh0
-ZXJuYWwgdXNlcg0KPiBpbnRlcmZhY2UgYW5kIGdldCB0aGUgaW9tbXUgZG9tYWluIHJlZmVyZW5j
-ZS4gIFRoYW5rcywNCj4gDQo+IEFsZXgNCj4gDQo+ID4gPiA+ICAvKg0KPiA+ID4gPiAgICogSU9N
-TVUgZ3JvdXBzIGFyZSByZWFsbHkgdGhlIG5hdHJ1YWwgd29ya2luZyB1bml0IG9mIHRoZSBJT01N
-VSwgYnV0DQo+ID4gPiA+ICAgKiB0aGUgSU9NTVUgQVBJIHdvcmtzIG9uIGRvbWFpbnMgYW5kIGRl
-dmljZXMuICBCcmlkZ2UgdGhhdCBnYXANCj4gPiA+ID4gYnkgZGlmZiAtLWdpdCBhL2luY2x1ZGUv
-bGludXgvaW9tbXUuaCBiL2luY2x1ZGUvbGludXgvaW9tbXUuaA0KPiA+ID4gPiBpbmRleCA3ZWEz
-MTllLi5mYTA0NmJkIDEwMDY0NA0KPiA+ID4gPiAtLS0gYS9pbmNsdWRlL2xpbnV4L2lvbW11LmgN
-Cj4gPiA+ID4gKysrIGIvaW5jbHVkZS9saW51eC9pb21tdS5oDQo+ID4gPiA+IEBAIC0xMjcsNiAr
-MTI3LDcgQEAgc3RydWN0IGlvbW11X29wcyB7DQo+ID4gPiA+ICAJaW50ICgqZG9tYWluX3NldF93
-aW5kb3dzKShzdHJ1Y3QgaW9tbXVfZG9tYWluICpkb21haW4sIHUzMg0KPiB3X2NvdW50KTsNCj4g
-PiA+ID4gIAkvKiBHZXQgdGhlIG51bWVyIG9mIHdpbmRvdyBwZXIgZG9tYWluICovDQo+ID4gPiA+
-ICAJdTMyICgqZG9tYWluX2dldF93aW5kb3dzKShzdHJ1Y3QgaW9tbXVfZG9tYWluICpkb21haW4p
-Ow0KPiA+ID4gPiArCXN0cnVjdCBpb21tdV9kb21haW4gKigqZ2V0X2Rldl9pb21tdV9kb21haW4p
-KHN0cnVjdCBkZXZpY2UNCj4gPiA+ID4gKypkZXYpOw0KPiA+ID4gPg0KPiA+ID4gPiAgCXVuc2ln
-bmVkIGxvbmcgcGdzaXplX2JpdG1hcDsNCj4gPiA+ID4gIH07DQo+ID4gPiA+IEBAIC0xOTAsNiAr
-MTkxLDcgQEAgZXh0ZXJuIGludCBpb21tdV9kb21haW5fd2luZG93X2VuYWJsZShzdHJ1Y3QNCj4g
-PiA+ID4gaW9tbXVfZG9tYWluDQo+ID4gPiAqZG9tYWluLCB1MzIgd25kX25yLA0KPiA+ID4gPiAg
-CQkJCSAgICAgIHBoeXNfYWRkcl90IG9mZnNldCwgdTY0IHNpemUsDQo+ID4gPiA+ICAJCQkJICAg
-ICAgaW50IHByb3QpOw0KPiA+ID4gPiAgZXh0ZXJuIHZvaWQgaW9tbXVfZG9tYWluX3dpbmRvd19k
-aXNhYmxlKHN0cnVjdCBpb21tdV9kb21haW4NCj4gPiA+ID4gKmRvbWFpbiwNCj4gPiA+ID4gdTMy
-IHduZF9ucik7DQo+ID4gPiA+ICtleHRlcm4gc3RydWN0IGlvbW11X2RvbWFpbiAqaW9tbXVfZ2V0
-X2Rldl9kb21haW4oc3RydWN0IGRldmljZQ0KPiA+ID4gPiArKmRldik7DQo+ID4gPiA+ICAvKioN
-Cj4gPiA+ID4gICAqIHJlcG9ydF9pb21tdV9mYXVsdCgpIC0gcmVwb3J0IGFib3V0IGFuIElPTU1V
-IGZhdWx0IHRvIHRoZSBJT01NVQ0KPiBmcmFtZXdvcmsNCj4gPiA+ID4gICAqIEBkb21haW46IHRo
-ZSBpb21tdSBkb21haW4gd2hlcmUgdGhlIGZhdWx0IGhhcyBoYXBwZW5lZCBAQA0KPiA+ID4gPiAt
-Mjg0LDYNCj4gPiA+ID4gKzI4NiwxMSBAQCBzdGF0aWMgaW5saW5lIHZvaWQgaW9tbXVfZG9tYWlu
-X3dpbmRvd19kaXNhYmxlKHN0cnVjdA0KPiA+ID4gPiBpb21tdV9kb21haW4gKmRvbWFpbiwgIHsg
-IH0NCj4gPiA+ID4NCj4gPiA+ID4gK3N0YXRpYyBpbmxpbmUgc3RydWN0IGlvbW11X2RvbWFpbiAq
-aW9tbXVfZ2V0X2Rldl9kb21haW4oc3RydWN0DQo+ID4gPiA+ICtkZXZpY2UNCj4gPiA+ID4gKypk
-ZXYpIHsNCj4gPiA+ID4gKwlyZXR1cm4gTlVMTDsNCj4gPiA+ID4gK30NCj4gPiA+ID4gKw0KPiA+
-ID4gPiAgc3RhdGljIGlubGluZSBwaHlzX2FkZHJfdCBpb21tdV9pb3ZhX3RvX3BoeXMoc3RydWN0
-IGlvbW11X2RvbWFpbg0KPiA+ID4gPiAqZG9tYWluLCBkbWFfYWRkcl90IGlvdmEpICB7DQo+ID4g
-PiA+ICAJcmV0dXJuIDA7DQo+ID4gPg0KPiA+ID4NCj4gPiA+DQo+ID4gPiAtLQ0KPiA+ID4gVG8g
-dW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxp
-bnV4LXBjaSINCj4gPiA+IGluIHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdl
-ci5rZXJuZWwub3JnIE1vcmUgbWFqb3Jkb21vDQo+ID4gPiBpbmZvIGF0IGh0dHA6Ly92Z2VyLmtl
-cm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KPiA+DQo+IA0KPiANCj4gDQoNCg==
+On Fri, 2013-10-04 at 16:47 +0000, Bhushan Bharat-R65777 wrote:
+> 
+> > -----Original Message-----
+> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > Sent: Friday, October 04, 2013 9:15 PM
+> > To: Bhushan Bharat-R65777
+> > Cc: joro@8bytes.org; benh@kernel.crashing.org; galak@kernel.crashing.org; linux-
+> > kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> > pci@vger.kernel.org; agraf@suse.de; Wood Scott-B07421; iommu@lists.linux-
+> > foundation.org
+> > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a device
+> > 
+> > On Fri, 2013-10-04 at 09:54 +0000, Bhushan Bharat-R65777 wrote:
+> > >
+> > > > -----Original Message-----
+> > > > From: linux-pci-owner@vger.kernel.org
+> > > > [mailto:linux-pci-owner@vger.kernel.org]
+> > > > On Behalf Of Alex Williamson
+> > > > Sent: Wednesday, September 25, 2013 10:16 PM
+> > > > To: Bhushan Bharat-R65777
+> > > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
+> > > > galak@kernel.crashing.org; linux- kernel@vger.kernel.org;
+> > > > linuxppc-dev@lists.ozlabs.org; linux- pci@vger.kernel.org;
+> > > > agraf@suse.de; Wood Scott-B07421; iommu@lists.linux- foundation.org;
+> > > > Bhushan Bharat-R65777
+> > > > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a
+> > > > device
+> > > >
+> > > > On Thu, 2013-09-19 at 12:59 +0530, Bharat Bhushan wrote:
+> > > > > This api return the iommu domain to which the device is attached.
+> > > > > The iommu_domain is required for making API calls related to iommu.
+> > > > > Follow up patches which use this API to know iommu maping.
+> > > > >
+> > > > > Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+> > > > > ---
+> > > > >  drivers/iommu/iommu.c |   10 ++++++++++
+> > > > >  include/linux/iommu.h |    7 +++++++
+> > > > >  2 files changed, 17 insertions(+), 0 deletions(-)
+> > > > >
+> > > > > diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c index
+> > > > > fbe9ca7..6ac5f50 100644
+> > > > > --- a/drivers/iommu/iommu.c
+> > > > > +++ b/drivers/iommu/iommu.c
+> > > > > @@ -696,6 +696,16 @@ void iommu_detach_device(struct iommu_domain
+> > > > > *domain, struct device *dev)  }
+> > > > > EXPORT_SYMBOL_GPL(iommu_detach_device);
+> > > > >
+> > > > > +struct iommu_domain *iommu_get_dev_domain(struct device *dev) {
+> > > > > +	struct iommu_ops *ops = dev->bus->iommu_ops;
+> > > > > +
+> > > > > +	if (unlikely(ops == NULL || ops->get_dev_iommu_domain == NULL))
+> > > > > +		return NULL;
+> > > > > +
+> > > > > +	return ops->get_dev_iommu_domain(dev); }
+> > > > > +EXPORT_SYMBOL_GPL(iommu_get_dev_domain);
+> > > >
+> > > > What prevents this from racing iommu_domain_free()?  There's no
+> > > > references acquired, so there's no reason for the caller to assume the
+> > pointer is valid.
+> > >
+> > > Sorry for late query, somehow this email went into a folder and
+> > > escaped;
+> > >
+> > > Just to be sure, there is not lock at generic "struct iommu_domain", but IP
+> > specific structure (link FSL domain) linked in iommu_domain->priv have a lock,
+> > so we need to ensure this race in FSL iommu code (say
+> > drivers/iommu/fsl_pamu_domain.c), right?
+> > 
+> > No, it's not sufficient to make sure that your use of the interface is race
+> > free.  The interface itself needs to be designed so that it's difficult to use
+> > incorrectly.
+> 
+> So we can define iommu_get_dev_domain()/iommu_put_dev_domain();
+> iommu_get_dev_domain() will return domain with the lock held, and
+> iommu_put_dev_domain() will release the lock? And
+> iommu_get_dev_domain() must always be followed by
+> iommu_get_dev_domain().
+
+What lock?  get/put are generally used for reference counting, not
+locking in the kernel.
+
+> > That's not the case here.  This is a backdoor to get the iommu
+> > domain from the iommu driver regardless of who is using it or how.  The iommu
+> > domain is created and managed by vfio, so shouldn't we be looking at how to do
+> > this through vfio?
+> 
+> Let me first describe what we are doing here:
+> During initialization:-
+>  - vfio talks to MSI system to know the MSI-page and size
+>  - vfio then interacts with iommu to map the MSI-page in iommu (IOVA is decided by userspace and physical address is the MSI-page)
+>  - So the IOVA subwindow mapping is created in iommu and yes VFIO know about this mapping.
+> 
+> Now do SET_IRQ(MSI/MSIX) ioctl:
+>  - calls pci_enable_msix()/pci_enable_msi_block(): which is supposed to set MSI address/data in device.
+>  - So in current implementation (this patchset) msi-subsystem gets the IOVA from iommu via this defined interface.
+>  - Are you saying that rather than getting this from iommu, we should get this from vfio? What difference does this make?
+
+Yes, you just said above that vfio knows the msi to iova mapping, so why
+go outside of vfio to find it later?  The difference is one case you can
+have a proper reference to data structures to make sure the pointer you
+get back actually has meaning at the time you're using it vs the code
+here where you're defining an API that returns a meaningless value
+because you can't check or enforce that an arbitrary caller is using it
+correctly.  It's not maintainable.  Thanks,
+
+Alex
+
+> > It seems like you'd want to use your device to get a vfio
+> > group reference, from which you could do something with the vfio external user
+> > interface and get the iommu domain reference.  Thanks,
+> > 
+> > Alex
+> > 
+> > > > >  /*
+> > > > >   * IOMMU groups are really the natrual working unit of the IOMMU, but
+> > > > >   * the IOMMU API works on domains and devices.  Bridge that gap
+> > > > > by diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+> > > > > index 7ea319e..fa046bd 100644
+> > > > > --- a/include/linux/iommu.h
+> > > > > +++ b/include/linux/iommu.h
+> > > > > @@ -127,6 +127,7 @@ struct iommu_ops {
+> > > > >  	int (*domain_set_windows)(struct iommu_domain *domain, u32
+> > w_count);
+> > > > >  	/* Get the numer of window per domain */
+> > > > >  	u32 (*domain_get_windows)(struct iommu_domain *domain);
+> > > > > +	struct iommu_domain *(*get_dev_iommu_domain)(struct device
+> > > > > +*dev);
+> > > > >
+> > > > >  	unsigned long pgsize_bitmap;
+> > > > >  };
+> > > > > @@ -190,6 +191,7 @@ extern int iommu_domain_window_enable(struct
+> > > > > iommu_domain
+> > > > *domain, u32 wnd_nr,
+> > > > >  				      phys_addr_t offset, u64 size,
+> > > > >  				      int prot);
+> > > > >  extern void iommu_domain_window_disable(struct iommu_domain
+> > > > > *domain,
+> > > > > u32 wnd_nr);
+> > > > > +extern struct iommu_domain *iommu_get_dev_domain(struct device
+> > > > > +*dev);
+> > > > >  /**
+> > > > >   * report_iommu_fault() - report about an IOMMU fault to the IOMMU
+> > framework
+> > > > >   * @domain: the iommu domain where the fault has happened @@
+> > > > > -284,6
+> > > > > +286,11 @@ static inline void iommu_domain_window_disable(struct
+> > > > > iommu_domain *domain,  {  }
+> > > > >
+> > > > > +static inline struct iommu_domain *iommu_get_dev_domain(struct
+> > > > > +device
+> > > > > +*dev) {
+> > > > > +	return NULL;
+> > > > > +}
+> > > > > +
+> > > > >  static inline phys_addr_t iommu_iova_to_phys(struct iommu_domain
+> > > > > *domain, dma_addr_t iova)  {
+> > > > >  	return 0;
+> > > >
+> > > >
+> > > >
+> > > > --
+> > > > To unsubscribe from this list: send the line "unsubscribe linux-pci"
+> > > > in the body of a message to majordomo@vger.kernel.org More majordomo
+> > > > info at http://vger.kernel.org/majordomo-info.html
+> > >
+> > 
+> > 
+> > 
+> 
