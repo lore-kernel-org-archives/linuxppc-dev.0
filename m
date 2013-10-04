@@ -1,39 +1,51 @@
-Return-Path: <saurav.kashyap@qlogic.com>
-Received: from mx0a-0016ce01.pphosted.com (mx0a-0016ce01.pphosted.com
- [67.231.148.157])
+Return-Path: <heiko.carstens@de.ibm.com>
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 583A02C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 04:17:06 +1000 (EST)
-From: Saurav Kashyap <saurav.kashyap@qlogic.com>
-To: Alexander Gordeev <agordeev@redhat.com>, linux-kernel
- <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC 59/77] qla2xxx: Update MSI/MSI-X interrupts
- enablement code
-Date: Thu, 3 Oct 2013 17:42:33 +0000
-Message-ID: <F5D084D6342F9B479C34599BB0A03E4D8982E209@AVMB1.qlogic.org>
-In-Reply-To: <54f6b89372f51cd27a6adf6ecc91b8bf6bb5ba74.1380703263.git.agordeev@redhat.com>
-Content-Type: text/plain; charset="us-ascii"
+ (Client CN "e06smtp16.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 09A212C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 16:47:15 +1000 (EST)
+Received: from /spool/local
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
+ Fri, 4 Oct 2013 07:47:11 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 805B517D805A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 07:47:26 +0100 (BST)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r946ktW753608504
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Oct 2013 06:46:55 GMT
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r946l5Di024113
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Oct 2013 00:47:07 -0600
+Date: Fri, 4 Oct 2013 08:47:05 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Alexei Starovoitov <ast@plumgrid.com>
+Subject: Re: [PATCH v3 net-next] fix unsafe set_memory_rw from softirq
+Message-ID: <20131004064705.GA4143@osiris>
+References: <1380853446-30537-1-git-send-email-ast@plumgrid.com>
 MIME-Version: 1.0
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>, "VMware,
- Inc." <pv-drivers@vmware.com>,
- "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Andy King <acking@vmware.com>, linux-scsi <linux-scsi@vger.kernel.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- linux-pci <linux-pci@vger.kernel.org>,
- "iss_storagedev@hp.com" <iss_storagedev@hp.com>,
- Dept-Eng Linux Driver <Linux-Driver@qlogic.com>, Tejun Heo <tj@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev <netdev@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
- "e1000-devel@lists.sourceforge.net" <e1000-devel@lists.sourceforge.net>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- "linux390@de.ibm.com" <linux390@de.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1380853446-30537-1-git-send-email-ast@plumgrid.com>
+Cc: Eric Dumazet <edumazet@google.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Nicolas Dichtel <nicolas.dichtel@6wind.com>, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
+ James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>,
+ Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Xi Wang <xi.wang@gmail.com>,
+ Matt Evans <matt@ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Stelian Nirlu <steliannirlu@gmail.com>,
+ Nicolas Schichan <nschichan@freebox.fr>,
+ Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+ Mircea Gherzan <mgherzan@gmail.com>, Daniel Borkmann <dborkman@redhat.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, Patrick McHardy <kaber@trash.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,56 +55,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Saurav Kashyap <saurav.kashyap@qlogic.com>
+On Thu, Oct 03, 2013 at 07:24:06PM -0700, Alexei Starovoitov wrote:
+> diff --git a/arch/s390/net/bpf_jit_comp.c b/arch/s390/net/bpf_jit_comp.c
+> index 7092392..a5df511 100644
+> --- a/arch/s390/net/bpf_jit_comp.c
+> +++ b/arch/s390/net/bpf_jit_comp.c
+> @@ -881,7 +881,9 @@ void bpf_jit_free(struct sk_filter *fp)
+>  	struct bpf_binary_header *header = (void *)addr;
+> 
+>  	if (fp->bpf_func == sk_run_filter)
+> -		return;
+> +		goto free_filter;
+>  	set_memory_rw(addr, header->pages);
+>  	module_free(NULL, header);
+> +free_filter:
+> +	kfree(fp);
+>  }
 
+For the s390 part:
 
->As result of recent re-design of the MSI/MSI-X interrupts enabling
->pattern this driver has to be updated to use the new technique to
->obtain a optimal number of MSI/MSI-X interrupts required.
->
->Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
->---
-> drivers/scsi/qla2xxx/qla_isr.c |   18 +++++++++++-------
-> 1 files changed, 11 insertions(+), 7 deletions(-)
->
->diff --git a/drivers/scsi/qla2xxx/qla_isr.c
->b/drivers/scsi/qla2xxx/qla_isr.c
->index df1b30b..6c11ab9 100644
->--- a/drivers/scsi/qla2xxx/qla_isr.c
->+++ b/drivers/scsi/qla2xxx/qla_isr.c
->@@ -2836,16 +2836,20 @@ qla24xx_enable_msix(struct qla_hw_data *ha,
->struct rsp_que *rsp)
-> 	for (i =3D 0; i < ha->msix_count; i++)
-> 		entries[i].entry =3D i;
->=20
->-	ret =3D pci_enable_msix(ha->pdev, entries, ha->msix_count);
->-	if (ret) {
->+	ret =3D pci_msix_table_size(ha->pdev);
->+	if (ret < 0) {
->+		goto msix_failed;
->+	} else {
-> 		if (ret < MIN_MSIX_COUNT)
-> 			goto msix_failed;
->=20
->-		ql_log(ql_log_warn, vha, 0x00c6,
->-		    "MSI-X: Failed to enable support "
->-		    "-- %d/%d\n Retry with %d vectors.\n",
->-		    ha->msix_count, ret, ret);
->-		ha->msix_count =3D ret;
->+		if (ret < ha->msix_count) {
->+			ql_log(ql_log_warn, vha, 0x00c6,
->+			    "MSI-X: Failed to enable support "
->+			    "-- %d/%d\n Retry with %d vectors.\n",
->+			    ha->msix_count, ret, ret);
->+			ha->msix_count =3D ret;
->+		}
-> 		ret =3D pci_enable_msix(ha->pdev, entries, ha->msix_count);
-> 		if (ret) {
-> msix_failed:
->--=20
->1.7.7.6
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
