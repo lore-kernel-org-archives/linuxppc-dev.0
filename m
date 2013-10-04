@@ -1,21 +1,20 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 1AC352C03D8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 20:42:45 +1000 (EST)
-Message-ID: <524E9BA9.4000506@arm.com>
-Date: Fri, 04 Oct 2013 11:42:49 +0100
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-MIME-Version: 1.0
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
- Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 0/2] move of_find_next_cache_node to DT core
-References: <1379501585-12532-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <20130918145116.D53A5C42CDF@trevor.secretlab.ca> <5239D26E.5090505@arm.com>
-In-Reply-To: <5239D26E.5090505@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Rob Herring <robherring2@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 6E3672C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 22:23:36 +1000 (EST)
+Subject: Re: [PATCH] kvm: powerpc: book3s: Fix build break for BOOK3S_32
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <20131003041415.GA2801@iris.ozlabs.ibm.com>
+Date: Fri, 4 Oct 2013 14:23:29 +0200
+Message-Id: <EB193553-5B3C-4669-9C71-BACC6882D18B@suse.de>
+References: <1380724724-12892-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20131003041415.GA2801@iris.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant,
 
-On 18/09/13 17:18, Sudeep KarkadaNagesha wrote:
-> On 18/09/13 15:51, Grant Likely wrote:
->> On Wed, 18 Sep 2013 11:53:03 +0100, Sudeep KarkadaNagesha <Sudeep.Karkad=
-aNagesha@arm.com> wrote:
->>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>
->>> Hi,
->>>
->>> The cache bindings are generic and used by many other architectures
->>> apart from PPC. These patches fixes and move the existing definition
->>> of of_find_next_cache_node to DT common code.
->>>
->>> Regards,
->>> Sudeep
->>
->> Acked-by: Grant Likely <grant.likely@secretlab.ca>
->>
->> However, do you have a user for this function on other architectures
->> yet? I'd like to see a user for the function in the same patch series..
->>
+On 03.10.2013, at 06:14, Paul Mackerras wrote:
+
+> On Wed, Oct 02, 2013 at 08:08:44PM +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>>=20
+>> This was introduced by 85a0d845d8bb5df5d2669416212f56cbe1474c6b
 >=20
-> Yes I have posted an RFC[1] following this series implementing cacheinfo
-> for ARM similar to x86 implementation. I was not sure if it's good idea
-> to combine it as its still initial RFC version.
+> It's a good idea to give the headline of the commit as well as the ID.
+> I also like to trim the ID to 10 characters or so.  So it should look
+> like this:
 >=20
+> This was introduced by 85a0d845d8 ("KVM: PPC: Book3S PR: Allocate
+> kvm_vcpu structs from kvm_vcpu_cache").
+>=20
+>> arch/powerpc/kvm/book3s_pr.c: In function 'kvmppc_core_vcpu_create':
+>> arch/powerpc/kvm/book3s_pr.c:1182:30: error: 'struct =
+kvmppc_vcpu_book3s' has no member named 'shadow_vcpu'
+>> make[1]: *** [arch/powerpc/kvm/book3s_pr.o] Error 1
+>>=20
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>=20
+> Acked-by: Paul Mackerras <paulus@samba.org>
 
-Do you prefer to have this a independent change or to go with the cache top=
-ology
-support patches[1] on ARM ?
+Would you guys mind if I merge this into the offending patch? It's not =
+trickled into -next yet, so rebasing should work.
 
-Regards,
-Sudeep
+If not, please resend with the fixed commit message.
 
-[1] https://lkml.org/lkml/2013/9/18/340
+
+Alex
