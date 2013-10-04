@@ -1,34 +1,28 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 533352C00E4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 19:19:41 +1000 (EST)
-Date: Fri, 4 Oct 2013 11:21:09 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-Message-ID: <20131004092108.GB4536@dhcp-26-207.brq.redhat.com>
-References: <cover.1380703262.git.agordeev@redhat.com>
- <1380840585.3419.50.camel@bwh-desktop.uk.level5networks.com>
- <20131004082920.GA4536@dhcp-26-207.brq.redhat.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B7371@saturn3.aculab.com>
+Return-Path: <R65777@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 826E02C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 19:54:32 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: RE: [PATCH 2/7] iommu: add api to get iommu_domain of a device
+Date: Fri, 4 Oct 2013 09:54:22 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0718FD1C@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
+ <1380127533.3030.319.camel@ul30vt.home>
+In-Reply-To: <1380127533.3030.319.camel@ul30vt.home>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B7371@saturn3.aculab.com>
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-pci@vger.kernel.org, linux-nvme@lists.infradead.org,
- linux-ide@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, iss_storagedev@hp.com,
- linuxppc-dev@lists.ozlabs.org, linux-driver@qlogic.com,
- Ben Hutchings <bhutchings@solarflare.com>,
- Dan Williams <dan.j.williams@intel.com>, Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Tejun Heo <tj@kernel.org>, linux390@de.ibm.com,
- Bjorn Helgaas <bhelgaas@google.com>
+Cc: "agraf@suse.de" <agraf@suse.de>, Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "joro@8bytes.org" <joro@8bytes.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,23 +32,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 04, 2013 at 09:31:49AM +0100, David Laight wrote:
-> > Mmmm.. I am not sure I am getting it. Could you please rephrase?
-> 
-> One possibility is for drivers than can use a lot of interrupts to
-> request a minimum number initially and then request the additional
-> ones much later on.
-> That would make it less likely that none will be available for
-> devices/drivers that need them but are initialised later.
-
-It sounds as a whole new topic for me. Isn't it?
-
-Anyway, what prevents the above from being done with pci_enable_msix(nvec1) -
-pci_disable_msix() - pci_enable_msix(nvec2) where nvec1 < nvec2?
-
-> 	David
-
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtcGNpLW93bmVy
+QHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LXBjaS1vd25lckB2Z2VyLmtlcm5lbC5vcmdd
+DQo+IE9uIEJlaGFsZiBPZiBBbGV4IFdpbGxpYW1zb24NCj4gU2VudDogV2VkbmVzZGF5LCBTZXB0
+ZW1iZXIgMjUsIDIwMTMgMTA6MTYgUE0NCj4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiBD
+Yzogam9yb0A4Ynl0ZXMub3JnOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IGdhbGFrQGtlcm5l
+bC5jcmFzaGluZy5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBw
+Yy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtDQo+IHBjaUB2Z2VyLmtlcm5lbC5vcmc7IGFn
+cmFmQHN1c2UuZGU7IFdvb2QgU2NvdHQtQjA3NDIxOyBpb21tdUBsaXN0cy5saW51eC0NCj4gZm91
+bmRhdGlvbi5vcmc7IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiBTdWJqZWN0OiBSZTogW1BBVENI
+IDIvN10gaW9tbXU6IGFkZCBhcGkgdG8gZ2V0IGlvbW11X2RvbWFpbiBvZiBhIGRldmljZQ0KPiAN
+Cj4gT24gVGh1LCAyMDEzLTA5LTE5IGF0IDEyOjU5ICswNTMwLCBCaGFyYXQgQmh1c2hhbiB3cm90
+ZToNCj4gPiBUaGlzIGFwaSByZXR1cm4gdGhlIGlvbW11IGRvbWFpbiB0byB3aGljaCB0aGUgZGV2
+aWNlIGlzIGF0dGFjaGVkLg0KPiA+IFRoZSBpb21tdV9kb21haW4gaXMgcmVxdWlyZWQgZm9yIG1h
+a2luZyBBUEkgY2FsbHMgcmVsYXRlZCB0byBpb21tdS4NCj4gPiBGb2xsb3cgdXAgcGF0Y2hlcyB3
+aGljaCB1c2UgdGhpcyBBUEkgdG8ga25vdyBpb21tdSBtYXBpbmcuDQo+ID4NCj4gPiBTaWduZWQt
+b2ZmLWJ5OiBCaGFyYXQgQmh1c2hhbiA8YmhhcmF0LmJodXNoYW5AZnJlZXNjYWxlLmNvbT4NCj4g
+PiAtLS0NCj4gPiAgZHJpdmVycy9pb21tdS9pb21tdS5jIHwgICAxMCArKysrKysrKysrDQo+ID4g
+IGluY2x1ZGUvbGludXgvaW9tbXUuaCB8ICAgIDcgKysrKysrKw0KPiA+ICAyIGZpbGVzIGNoYW5n
+ZWQsIDE3IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0
+IGEvZHJpdmVycy9pb21tdS9pb21tdS5jIGIvZHJpdmVycy9pb21tdS9pb21tdS5jIGluZGV4DQo+
+ID4gZmJlOWNhNy4uNmFjNWY1MCAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2lvbW11L2lvbW11
+LmMNCj4gPiArKysgYi9kcml2ZXJzL2lvbW11L2lvbW11LmMNCj4gPiBAQCAtNjk2LDYgKzY5Niwx
+NiBAQCB2b2lkIGlvbW11X2RldGFjaF9kZXZpY2Uoc3RydWN0IGlvbW11X2RvbWFpbg0KPiA+ICpk
+b21haW4sIHN0cnVjdCBkZXZpY2UgKmRldikgIH0NCj4gPiBFWFBPUlRfU1lNQk9MX0dQTChpb21t
+dV9kZXRhY2hfZGV2aWNlKTsNCj4gPg0KPiA+ICtzdHJ1Y3QgaW9tbXVfZG9tYWluICppb21tdV9n
+ZXRfZGV2X2RvbWFpbihzdHJ1Y3QgZGV2aWNlICpkZXYpIHsNCj4gPiArCXN0cnVjdCBpb21tdV9v
+cHMgKm9wcyA9IGRldi0+YnVzLT5pb21tdV9vcHM7DQo+ID4gKw0KPiA+ICsJaWYgKHVubGlrZWx5
+KG9wcyA9PSBOVUxMIHx8IG9wcy0+Z2V0X2Rldl9pb21tdV9kb21haW4gPT0gTlVMTCkpDQo+ID4g
+KwkJcmV0dXJuIE5VTEw7DQo+ID4gKw0KPiA+ICsJcmV0dXJuIG9wcy0+Z2V0X2Rldl9pb21tdV9k
+b21haW4oZGV2KTsgfQ0KPiA+ICtFWFBPUlRfU1lNQk9MX0dQTChpb21tdV9nZXRfZGV2X2RvbWFp
+bik7DQo+IA0KPiBXaGF0IHByZXZlbnRzIHRoaXMgZnJvbSByYWNpbmcgaW9tbXVfZG9tYWluX2Zy
+ZWUoKT8gIFRoZXJlJ3Mgbm8gcmVmZXJlbmNlcw0KPiBhY3F1aXJlZCwgc28gdGhlcmUncyBubyBy
+ZWFzb24gZm9yIHRoZSBjYWxsZXIgdG8gYXNzdW1lIHRoZSBwb2ludGVyIGlzIHZhbGlkLg0KDQpT
+b3JyeSBmb3IgbGF0ZSBxdWVyeSwgc29tZWhvdyB0aGlzIGVtYWlsIHdlbnQgaW50byBhIGZvbGRl
+ciBhbmQgZXNjYXBlZDsNCg0KSnVzdCB0byBiZSBzdXJlLCB0aGVyZSBpcyBub3QgbG9jayBhdCBn
+ZW5lcmljICJzdHJ1Y3QgaW9tbXVfZG9tYWluIiwgYnV0IElQIHNwZWNpZmljIHN0cnVjdHVyZSAo
+bGluayBGU0wgZG9tYWluKSBsaW5rZWQgaW4gaW9tbXVfZG9tYWluLT5wcml2IGhhdmUgYSBsb2Nr
+LCBzbyB3ZSBuZWVkIHRvIGVuc3VyZSB0aGlzIHJhY2UgaW4gRlNMIGlvbW11IGNvZGUgKHNheSBk
+cml2ZXJzL2lvbW11L2ZzbF9wYW11X2RvbWFpbi5jKSwgcmlnaHQ/DQoNClRoYW5rcw0KLUJoYXJh
+dA0KDQo+IA0KPiA+ICAvKg0KPiA+ICAgKiBJT01NVSBncm91cHMgYXJlIHJlYWxseSB0aGUgbmF0
+cnVhbCB3b3JraW5nIHVuaXQgb2YgdGhlIElPTU1VLCBidXQNCj4gPiAgICogdGhlIElPTU1VIEFQ
+SSB3b3JrcyBvbiBkb21haW5zIGFuZCBkZXZpY2VzLiAgQnJpZGdlIHRoYXQgZ2FwIGJ5DQo+ID4g
+ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvaW9tbXUuaCBiL2luY2x1ZGUvbGludXgvaW9tbXUu
+aCBpbmRleA0KPiA+IDdlYTMxOWUuLmZhMDQ2YmQgMTAwNjQ0DQo+ID4gLS0tIGEvaW5jbHVkZS9s
+aW51eC9pb21tdS5oDQo+ID4gKysrIGIvaW5jbHVkZS9saW51eC9pb21tdS5oDQo+ID4gQEAgLTEy
+Nyw2ICsxMjcsNyBAQCBzdHJ1Y3QgaW9tbXVfb3BzIHsNCj4gPiAgCWludCAoKmRvbWFpbl9zZXRf
+d2luZG93cykoc3RydWN0IGlvbW11X2RvbWFpbiAqZG9tYWluLCB1MzIgd19jb3VudCk7DQo+ID4g
+IAkvKiBHZXQgdGhlIG51bWVyIG9mIHdpbmRvdyBwZXIgZG9tYWluICovDQo+ID4gIAl1MzIgKCpk
+b21haW5fZ2V0X3dpbmRvd3MpKHN0cnVjdCBpb21tdV9kb21haW4gKmRvbWFpbik7DQo+ID4gKwlz
+dHJ1Y3QgaW9tbXVfZG9tYWluICooKmdldF9kZXZfaW9tbXVfZG9tYWluKShzdHJ1Y3QgZGV2aWNl
+ICpkZXYpOw0KPiA+DQo+ID4gIAl1bnNpZ25lZCBsb25nIHBnc2l6ZV9iaXRtYXA7DQo+ID4gIH07
+DQo+ID4gQEAgLTE5MCw2ICsxOTEsNyBAQCBleHRlcm4gaW50IGlvbW11X2RvbWFpbl93aW5kb3df
+ZW5hYmxlKHN0cnVjdCBpb21tdV9kb21haW4NCj4gKmRvbWFpbiwgdTMyIHduZF9uciwNCj4gPiAg
+CQkJCSAgICAgIHBoeXNfYWRkcl90IG9mZnNldCwgdTY0IHNpemUsDQo+ID4gIAkJCQkgICAgICBp
+bnQgcHJvdCk7DQo+ID4gIGV4dGVybiB2b2lkIGlvbW11X2RvbWFpbl93aW5kb3dfZGlzYWJsZShz
+dHJ1Y3QgaW9tbXVfZG9tYWluICpkb21haW4sDQo+ID4gdTMyIHduZF9ucik7DQo+ID4gK2V4dGVy
+biBzdHJ1Y3QgaW9tbXVfZG9tYWluICppb21tdV9nZXRfZGV2X2RvbWFpbihzdHJ1Y3QgZGV2aWNl
+ICpkZXYpOw0KPiA+ICAvKioNCj4gPiAgICogcmVwb3J0X2lvbW11X2ZhdWx0KCkgLSByZXBvcnQg
+YWJvdXQgYW4gSU9NTVUgZmF1bHQgdG8gdGhlIElPTU1VIGZyYW1ld29yaw0KPiA+ICAgKiBAZG9t
+YWluOiB0aGUgaW9tbXUgZG9tYWluIHdoZXJlIHRoZSBmYXVsdCBoYXMgaGFwcGVuZWQgQEAgLTI4
+NCw2DQo+ID4gKzI4NiwxMSBAQCBzdGF0aWMgaW5saW5lIHZvaWQgaW9tbXVfZG9tYWluX3dpbmRv
+d19kaXNhYmxlKHN0cnVjdA0KPiA+IGlvbW11X2RvbWFpbiAqZG9tYWluLCAgeyAgfQ0KPiA+DQo+
+ID4gK3N0YXRpYyBpbmxpbmUgc3RydWN0IGlvbW11X2RvbWFpbiAqaW9tbXVfZ2V0X2Rldl9kb21h
+aW4oc3RydWN0IGRldmljZQ0KPiA+ICsqZGV2KSB7DQo+ID4gKwlyZXR1cm4gTlVMTDsNCj4gPiAr
+fQ0KPiA+ICsNCj4gPiAgc3RhdGljIGlubGluZSBwaHlzX2FkZHJfdCBpb21tdV9pb3ZhX3RvX3Bo
+eXMoc3RydWN0IGlvbW11X2RvbWFpbg0KPiA+ICpkb21haW4sIGRtYV9hZGRyX3QgaW92YSkgIHsN
+Cj4gPiAgCXJldHVybiAwOw0KPiANCj4gDQo+IA0KPiAtLQ0KPiBUbyB1bnN1YnNjcmliZSBmcm9t
+IHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtcGNpIiBpbiB0aGUg
+Ym9keQ0KPiBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1h
+am9yZG9tbyBpbmZvIGF0DQo+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8u
+aHRtbA0KDQo=
