@@ -1,35 +1,21 @@
 Return-Path: <ast@plumgrid.com>
-Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
- [209.85.220.42])
+Received: from mail-pb0-f47.google.com (mail-pb0-f47.google.com
+ [209.85.160.47])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C49982C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 12:24:14 +1000 (EST)
-Received: by mail-pa0-f42.google.com with SMTP id lj1so3493935pab.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 19:24:11 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id E11A12C00E2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 14:11:27 +1000 (EST)
+Received: by mail-pb0-f47.google.com with SMTP id rr4so3360776pbb.20
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 21:11:25 -0700 (PDT)
 From: Alexei Starovoitov <ast@plumgrid.com>
 To: "David S. Miller" <davem@davemloft.net>
 Subject: [PATCH v3 net-next] fix unsafe set_memory_rw from softirq
-Date: Thu,  3 Oct 2013 19:24:06 -0700
-Message-Id: <1380853446-30537-1-git-send-email-ast@plumgrid.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
- Eric Dumazet <edumazet@google.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Nicolas Dichtel <nicolas.dichtel@6wind.com>,
- Alexei Starovoitov <ast@plumgrid.com>, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
- James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>,
- Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Xi Wang <xi.wang@gmail.com>,
- Matt Evans <matt@ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Stelian Nirlu <steliannirlu@gmail.com>,
- Nicolas Schichan <nschichan@freebox.fr>,
- Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Mircea Gherzan <mgherzan@gmail.com>,
- Daniel Borkmann <dborkman@redhat.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org, Patrick McHardy <kaber@trash.net>
+Date: Thu,  3 Oct 2013 21:11:15 -0700
+Message-Id: <1380859875-31025-1-git-send-email-ast@plumgrid.com>
+Cc: linux-s390@vger.kernel.org, netdev@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>, Daniel Borkmann <dborkman@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
