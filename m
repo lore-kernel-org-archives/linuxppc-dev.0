@@ -1,39 +1,35 @@
-Return-Path: <ast@plumgrid.com>
-Received: from mail-we0-f179.google.com (mail-we0-f179.google.com
- [74.125.82.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1DB492C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 03:49:27 +1000 (EST)
-Received: by mail-we0-f179.google.com with SMTP id x55so4958228wes.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Oct 2013 10:49:23 -0700 (PDT)
+Return-Path: <bhutchings@solarflare.com>
+Received: from webmail.solarflare.com (webmail.solarflare.com [12.187.104.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "WEBMAIL.SOLARFLARE.COM",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 367722C0F5B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 07:29:26 +1000 (EST)
+Message-ID: <1380922156.3214.49.camel@bwh-desktop.uk.level5networks.com>
+Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
+ pattern
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Alexander Gordeev <agordeev@redhat.com>
+Date: Fri, 4 Oct 2013 22:29:16 +0100
+In-Reply-To: <20131004082920.GA4536@dhcp-26-207.brq.redhat.com>
+References: <cover.1380703262.git.agordeev@redhat.com>
+ <1380840585.3419.50.camel@bwh-desktop.uk.level5networks.com>
+ <20131004082920.GA4536@dhcp-26-207.brq.redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <20131004075133.GA12313@gmail.com>
-References: <1380853446-30537-1-git-send-email-ast@plumgrid.com>
- <20131004075133.GA12313@gmail.com>
-Date: Fri, 4 Oct 2013 10:49:23 -0700
-Message-ID: <CAMEtUuy0mpdUHJjztK31mHjNVahnoZ8CHo2sLLyJmt=p5+gq0w@mail.gmail.com>
-Subject: Re: [PATCH v3 net-next] fix unsafe set_memory_rw from softirq
-From: Alexei Starovoitov <ast@plumgrid.com>
-To: Ingo Molnar <mingo@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
- Eric Dumazet <edumazet@google.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Nicolas Dichtel <nicolas.dichtel@6wind.com>, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
- James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>,
- Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Xi Wang <xi.wang@gmail.com>,
- Matt Evans <matt@ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Stelian Nirlu <steliannirlu@gmail.com>,
- Nicolas Schichan <nschichan@freebox.fr>,
- Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- Mircea Gherzan <mgherzan@gmail.com>, Daniel Borkmann <dborkman@redhat.com>,
+Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
+ linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
+ linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
+ linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
+ iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
+ Jon Mason <jon.mason@intel.com>,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
  Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org, Patrick McHardy <kaber@trash.net>
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,165 +39,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 4, 2013 at 12:51 AM, Ingo Molnar <mingo@kernel.org> wrote:
->> +static void bpf_jit_free_deferred(struct work_struct *work)
->> +{
->> +     struct sk_filter *fp = container_of((void *)work, struct sk_filter,
->> +                                         insns);
->> +     unsigned long addr = (unsigned long)fp->bpf_func & PAGE_MASK;
->> +     struct bpf_binary_header *header = (void *)addr;
->> +
->> +     set_memory_rw(addr, header->pages);
->> +     module_free(NULL, header);
->> +     kfree(fp);
->> +}
+On Fri, 2013-10-04 at 10:29 +0200, Alexander Gordeev wrote:
+> On Thu, Oct 03, 2013 at 11:49:45PM +0100, Ben Hutchings wrote:
+> > On Wed, 2013-10-02 at 12:48 +0200, Alexander Gordeev wrote:
+> > > This update converts pci_enable_msix() and pci_enable_msi_block()
+> > > interfaces to canonical kernel functions and makes them return a
+> > > error code in case of failure or 0 in case of success.
+> > [...]
+> > 
+> > I think this is fundamentally flawed: pci_msix_table_size() and
+> > pci_get_msi_cap() can only report the limits of the *device* (which the
+> > driver usually already knows), whereas MSI allocation can also be
+> > constrained due to *global* limits on the number of distinct IRQs.
+> 
+> Even the current implementation by no means addresses it. Although it
+> might seem a case for architectures to report the number of IRQs available
+> for a driver to retry, in fact they all just fail. The same applies to
+> *any* other type of resource involved: irq_desc's, CPU interrupt vector
+> space, msi_desc's etc. No platform cares about it and just bails out once
+> a constrain met (please correct me if I am wrong here). Given that Linux
+> has been doing well even on embedded I think we should not change it.
 >
-> Using the data type suggestions I make further below, this could be
-> written in a simpler form, as:
->
->         struct sk_filter *fp = container_of(work, struct sk_filter, work);
+> The only exception to the above is pSeries platform which takes advantage
+> of the current design (to implement MSI quota). There are indications we
+> can satisfy pSeries requirements, but the design proposed in this RFC
+> is not going to change drastically anyway. The start of the discusstion
+> is here: https://lkml.org/lkml/2013/9/5/293
 
-yes. I've made it already as part of V4
+All I can see there is that Tejun didn't think that the global limits
+and positive return values were implemented by any architecture.  But
+you have a counter-example, so I'm not sure what your point is.
 
-> Also, a question, why do you mask with PAGE_MASK here:
->
->         unsigned long addr = (unsigned long)fp->bpf_func & PAGE_MASK;
->
-> ?
->
-> AFAICS bpf_func is the module_alloc() result - and module code is page
-> aligned. So ->bpf_func is always page aligned here. (The sk_run_filter
-> special case cannot happen here.)
+It has been quite a while since I saw this happen on x86.  But I just
+checked on a test system running RHEL 5 i386 (Linux 2.6.18).  If I ask
+for 16 MSI-X vectors on a device that supports 1024, the return value is
+8, and indeed I can then successfully allocate 8.
 
-randomization of bpf_func start is a prevention of jit spraying
-attacks as Eric pointed out.
+Now that's going quite a way back, and it may be that global limits
+aren't a significant problem any more.  With the x86_64 build of RHEL 5
+on an identical system, I can allocate 16 or even 32, so this is
+apparently not a hardware limit in this case.
 
->>  void bpf_jit_free(struct sk_filter *fp)
->>  {
->>       if (fp->bpf_func != sk_run_filter) {
->> -             unsigned long addr = (unsigned long)fp->bpf_func & PAGE_MASK;
->> -             struct bpf_binary_header *header = (void *)addr;
->> -
->> -             set_memory_rw(addr, header->pages);
->> -             module_free(NULL, header);
->> +             struct work_struct *work = (struct work_struct *)fp->insns;
->> +             INIT_WORK(work, bpf_jit_free_deferred);
->
-> Missing newline between local variables and statements.
+> > Currently pci_enable_msix() will report a positive value if it fails due
+> > to the global limit.  Your patch 7 removes that.  pci_enable_msi_block()
+> > unfortunately doesn't appear to do this.
+> 
+> pci_enable_msi_block() can do more than one MSI only on x86 (with IOMMU),
+> but it does not bother to return positive numbers, indeed.
+> 
+> > It seems to me that a more useful interface would take a minimum and
+> > maximum number of vectors from the driver.  This wouldn't allow the
+> > driver to specify that it could only accept, say, any even number within
+> > a certain range, but you could still leave the current functions
+> > available for any driver that needs that.
+> 
+> Mmmm.. I am not sure I am getting it. Could you please rephrase?
 
-yes. noted and fixed in V4.
+Most drivers seem to either:
+(a) require exactly a certain number of MSI vectors, or
+(b) require a minimum number of MSI vectors, usually want to allocate
+more, and work with any number in between
 
->>       unsigned int            (*bpf_func)(const struct sk_buff *skb,
->>                                           const struct sock_filter *filter);
->> -     struct rcu_head         rcu;
->> +     /* insns start right after bpf_func, so that sk_run_filter() fetches
->> +      * first insn from the same cache line that was used to call into
->> +      * sk_run_filter()
->> +      */
->>       struct sock_filter      insns[0];
->
-> Please use the customary (multi-line) comment style:
->
->   /*
->    * Comment .....
->    * ...... goes here.
->    */
->
-> specified in Documentation/CodingStyle.
+We can support drivers in both classes by adding new allocation
+functions that allow specifying a minimum (required) and maximum
+(wanted) number of MSI vectors.  Those in class (a) would just specify
+the same value for both.  These new functions can take account of any
+global limit or allocation policy without any further changes to the
+drivers that use them.
 
-I believe filter.h belongs to networking comment style, that's why
-checkpatch didn't complain.
-But I removed the comment in V4
+The few drivers with more specific requirements would still need to
+implement the currently recommended loop, using the old allocation
+functions.
 
->>  static inline unsigned int sk_filter_len(const struct sk_filter *fp)
->>  {
->> -     return fp->len * sizeof(struct sock_filter) + sizeof(*fp);
->> +     return max(fp->len * sizeof(struct sock_filter),
->> +                sizeof(struct work_struct)) + sizeof(*fp);
->
-> So, "sizeof(struct work_struct)) + sizeof(*fp)" is a pattern that repeats
-> a couple of times. Might make sense to stick that into a helper of its own
-> - but in general this open coded overlay allocation method looks a bit
-> fragile and not very obvious in isolation.
->
-> So it could be done a bit cleaner, using an anonymous union:
->
->         /*
->          * These two overlay, the work struct is used during workqueue
->          * driven teardown, when the instructions are not used anymore:
->          */
->         union {
->                 struct sock_filter      insns[0];
->                 struct work_struct      work;
->         };
->
-> And then all the sizeof() calculations become obvious and sk_filter_len()
-> could be eliminated - I've marked the conversions in the code further
-> below.
+Ben.
 
-Eric made exactly the same comment. Agreed and fixed in V4
-
->>  #else
->> +#include <linux/slab.h>
->
-> Inlines in the middle of header files are generally frowned upon.
->
-> The standard pattern is to put them at the top, that way it's easier to
-> see the dependencies and there's also less .config dependent inclusion,
-> which makes header hell cleanup work easier.
-
-Agree. I only followed the style that is already in filter.h 20 lines above.
-#ifdef CONFIG_BPF_JIT
-#include <stdarg.h>
-#include <linux/linkage.h>
-#include <linux/printk.h>
-
-as part of the cleanup can move all of them to the top. In the separate commit?
-
->>       struct sk_filter *fp;
->>       unsigned int fsize = sizeof(struct sock_filter) * fprog->len;
->> +     unsigned int sk_fsize = max_t(u32, fsize, sizeof(struct work_struct))
->> +             + sizeof(*fp);
->
-> Using the structure definition I suggested, this could be replaced with
-> the more obvious:
->
->         unsigned int sk_fsize = max(fsize, sizeof(*fp));
-
-with helper function it's even cleaner. Fixed in V4
-
-> A couple of questions/suggestions:
->
-> 1)
->
-> I took a brief look at arch/x86/net/bpf_jit_comp.c while reviewing this
-> patch.
->
-> You need to split up bpf_jit_compile(), it's an obscenely large, ~600
-> lines long function. We don't do that in modern, maintainable kernel code.
-
-I had the same thought, therefore in my proposed generalization of bpf:
-http://patchwork.ozlabs.org/patch/279280/
-It is split into two. do_jit() is still a bit large at 400 lines. Can
-split it further.
-
-> 3)
->
-> It's nice code altogether! Are there any plans to generalize its
-> interfaces, to allow arbitrary bytecode to be used by other kernel
-> subsystems as well? In particular tracing filters could make use of it,
-> but it would also allow safe probe points.
-
-That was exactly the reasons to generalize bpf as I proposed.
-"extended BPF is a set of pseudo instructions that stitch kernel provided
-data in the form of bpf_context with kernel provided set of functions in a safe
-and deterministic way with minimal performance overhead vs native code"
-Not sure what 'tracing filters' you have in mind, but I'm happy to try
-them with extended bpf model.
-imo existing bpf with two registers is too limiting for performance
-and argument passing.
-That's why going to 10 made it a lot more flexible and generically usable.
-Sorry to hijack the thread.
-
-Thanks
-Alexei
+-- 
+Ben Hutchings, Staff Engineer, Solarflare
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
