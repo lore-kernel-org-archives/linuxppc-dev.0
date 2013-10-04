@@ -1,33 +1,19 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id C52712C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Oct 2013 00:19:30 +1000 (EST)
-Date: Sat, 5 Oct 2013 16:20:55 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-Message-ID: <20131005142054.GA11270@dhcp-26-207.brq.redhat.com>
-References: <cover.1380703262.git.agordeev@redhat.com>
- <1380840585.3419.50.camel@bwh-desktop.uk.level5networks.com>
- <20131004082920.GA4536@dhcp-26-207.brq.redhat.com>
- <1380922156.3214.49.camel@bwh-desktop.uk.level5networks.com>
+Return-Path: <joseph_myers@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "relay1.mentorg.com",
+ Issuer "Entrust Certification Authority - L1C" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4CCFD2C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 09:16:17 +1000 (EST)
+Date: Fri, 4 Oct 2013 22:51:54 +0000
+From: "Joseph S. Myers" <joseph@codesourcery.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc: fix e500 SPE float rounding inexactness detection
+Message-ID: <Pine.LNX.4.64.1310042250420.27874@digraph.polyomino.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1380922156.3214.49.camel@bwh-desktop.uk.level5networks.com>
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
- iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Sender: Joseph Myers <joseph@codesourcery.com>
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,107 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 04, 2013 at 10:29:16PM +0100, Ben Hutchings wrote:
-> On Fri, 2013-10-04 at 10:29 +0200, Alexander Gordeev wrote:
-> All I can see there is that Tejun didn't think that the global limits
-> and positive return values were implemented by any architecture.
+From: Joseph Myers <joseph@codesourcery.com>
 
-I would say more than just that :) I picked few quotes which in my
-reading represent the guys positions:
+The e500 SPE floating-point emulation code for the rounding modes
+rounding to positive or negative infinity (which may not be
+implemented in hardware) tries to avoid emulating rounding if the
+result was inexact.  However, it tests inexactness using the sticky
+bit with the cumulative result of previous operations, rather than
+with the non-sticky bits relating to the operation that generated the
+interrupt.  Furthermore, when a vector operation generates the
+interrupt, it's possible that only one of the low and high parts is
+inexact, and so only that part should have rounding emulated.  This
+results in incorrect rounding of exact results in these modes when the
+sticky bit is set from a previous operation.
 
-Tejun Heo: "...do we really
-care about possible partial success?  This sort of interface is
-unnecessarily complex and actively harmful.  It forces all users to
-wonder what could possibly happen and implement all sorts of nutty
-fallback logic which is highly likely to be error-prone on both the
-software and hardware side.  Seriously, how much testing would such
-code path would get both on the driver and firmware sides?"
+(I'm not sure why the rounding interrupts are generated at all when
+the result is exact, but empirically the hardware does generate them.)
 
-Bjorn Helgaas: "I agree, that would be much simpler.
-I propose that you rework it that way, and at least find out what
-(if anything) would break if we do that."
+This patch checks for inexactness using the correct bits of SPEFSCR,
+and ensures that rounding only occurs when the relevant part of the
+result was actually inexact.
 
-Michael Ellerman: "I really think you're overstating the complexity here.
-Functions typically return a boolean   -> nothing to see here
-This function returns a tristate value -> brain explosion!";
-"All a lot of bother for no real gain IMHO."
+Signed-off-by: Joseph Myers <joseph@codesourcery.com>
 
-> But you have a counter-example, so I'm not sure what your point is.
+---
 
-I concur with Tejun. I think we need to get rid of the loop.
-
-As of the counter-example I think we could honour the pSeries quota by
-inroducing an interface to interrogate what you call global limits -
-pci_get_msix_limit(), i.e.:
-
-	rc = pci_msix_table_size(pdev, nvec);
-	if (rc < 0)
-		return rc;
-
-	nvec = min(rc, nvec);
-
-	rc = pci_get_msix_limit(pdev, nvec);
-	if (rc < 0)
-		return rc;
-
-	nvec = min(rc, nvec);
-
-	for (i = 0; i < nvec; i++)
-		msix_entry[i].entry = i;
-
-	rc = pci_enable_msix(pdev, msix_entry, nvec);
-	if (rc)
-		return rc;
-
-The latest state of those discussion is somewhere around Michael's:
-"We could probably make that work." and Tejun's: "Are we talking about
-some limited number of device drivers here? Also, is the quota still
-necessary for machines in production today?"
-
-So my point is - drivers should first obtain a number of MSIs they *can*
-get, then *derive* a number of MSIs the device is fine with and only then
-request that number. Not terribly different from memory or any other type
-of resource allocation ;)
-
-> It has been quite a while since I saw this happen on x86.  But I just
-> checked on a test system running RHEL 5 i386 (Linux 2.6.18).  If I ask
-> for 16 MSI-X vectors on a device that supports 1024, the return value is
-> 8, and indeed I can then successfully allocate 8.
-> 
-> Now that's going quite a way back, and it may be that global limits
-> aren't a significant problem any more.  With the x86_64 build of RHEL 5
-> on an identical system, I can allocate 16 or even 32, so this is
-> apparently not a hardware limit in this case.
-
-Well, I do not know how to comment here. 2.6.18 has a significantly
-different codebase wrt MSIs. What about a recent version?
-
-> Most drivers seem to either:
-> (a) require exactly a certain number of MSI vectors, or
-> (b) require a minimum number of MSI vectors, usually want to allocate
-> more, and work with any number in between
-> 
-> We can support drivers in both classes by adding new allocation
-> functions that allow specifying a minimum (required) and maximum
-> (wanted) number of MSI vectors.  Those in class (a) would just specify
-> the same value for both.  These new functions can take account of any
-> global limit or allocation policy without any further changes to the
-> drivers that use them.
-
-I think such interface is redundant wrt the current pci_enable_msix()
-implementation.. and you propose to leave it. IMO it unnecessarily blows
-the generic MSI API with no demand from drivers.
-
-> The few drivers with more specific requirements would still need to
-> implement the currently recommended loop, using the old allocation
-> functions.
-
-Although the classes of drivers you specified indeed exist, I do believe
-just a single interface is enough to handle them all.
-
-> Ben.
+diff --git a/arch/powerpc/math-emu/math_efp.c b/arch/powerpc/math-emu/math_efp.c
+index a73f088..ecdf35d 100644
+--- a/arch/powerpc/math-emu/math_efp.c
++++ b/arch/powerpc/math-emu/math_efp.c
+@@ -662,7 +680,8 @@ int speround_handler(struct pt_regs *regs)
+ {
+ 	union dw_union fgpr;
+ 	int s_lo, s_hi;
+-	unsigned long speinsn, type, fc;
++	int lo_inexact, hi_inexact;
++	unsigned long speinsn, type, fc, fptype;
+ 
+ 	if (get_user(speinsn, (unsigned int __user *) regs->nip))
+ 		return -EFAULT;
+@@ -675,8 +694,12 @@ int speround_handler(struct pt_regs *regs)
+ 	__FPU_FPSCR = mfspr(SPRN_SPEFSCR);
+ 	pr_debug("speinsn:%08lx spefscr:%08lx\n", speinsn, __FPU_FPSCR);
+ 
++	fptype = (speinsn >> 5) & 0x7;
++
+ 	/* No need to round if the result is exact */
+-	if (!(__FPU_FPSCR & FP_EX_INEXACT))
++	lo_inexact = __FPU_FPSCR & (SPEFSCR_FG | SPEFSCR_FX);
++	hi_inexact = __FPU_FPSCR & (SPEFSCR_FGH | SPEFSCR_FXH);
++	if (!(lo_inexact || (hi_inexact && fptype == VCT)))
+ 		return 0;
+ 
+ 	fc = (speinsn >> 21) & 0x1f;
+@@ -687,7 +710,7 @@ int speround_handler(struct pt_regs *regs)
+ 
+ 	pr_debug("round fgpr: %08x  %08x\n", fgpr.wp[0], fgpr.wp[1]);
+ 
+-	switch ((speinsn >> 5) & 0x7) {
++	switch (fptype) {
+ 	/* Since SPE instructions on E500 core can handle round to nearest
+ 	 * and round toward zero with IEEE-754 complied, we just need
+ 	 * to handle round toward +Inf and round toward -Inf by software.
+@@ -710,11 +733,15 @@ int speround_handler(struct pt_regs *regs)
+ 
+ 	case VCT:
+ 		if (FP_ROUNDMODE == FP_RND_PINF) {
+-			if (!s_lo) fgpr.wp[1]++; /* Z_low > 0, choose Z1 */
+-			if (!s_hi) fgpr.wp[0]++; /* Z_high word > 0, choose Z1 */
++			if (lo_inexact && !s_lo)
++				fgpr.wp[1]++; /* Z_low > 0, choose Z1 */
++			if (hi_inexact && !s_hi)
++				fgpr.wp[0]++; /* Z_high word > 0, choose Z1 */
+ 		} else { /* round to -Inf */
+-			if (s_lo) fgpr.wp[1]++; /* Z_low < 0, choose Z2 */
+-			if (s_hi) fgpr.wp[0]++; /* Z_high < 0, choose Z2 */
++			if (lo_inexact && s_lo)
++				fgpr.wp[1]++; /* Z_low < 0, choose Z2 */
++			if (hi_inexact && s_hi)
++				fgpr.wp[0]++; /* Z_high < 0, choose Z2 */
+ 		}
+ 		break;
+ 
 
 -- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+Joseph S. Myers
+joseph@codesourcery.com
