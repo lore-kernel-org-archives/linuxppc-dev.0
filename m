@@ -1,27 +1,20 @@
-Return-Path: <R65777@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A596D2C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 20:42:33 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>, Alex Williamson
- <alex.williamson@redhat.com>
-Subject: RE: [PATCH 2/7] iommu: add api to get iommu_domain of a device
-Date: Fri, 4 Oct 2013 10:42:23 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0718FDC3@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
- <1380127533.3030.319.camel@ul30vt.home>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <sudeep.karkadanagesha@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id 1AC352C03D8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 20:42:45 +1000 (EST)
+Message-ID: <524E9BA9.4000506@arm.com>
+Date: Fri, 04 Oct 2013 11:42:49 +0100
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
 MIME-Version: 1.0
-Cc: "agraf@suse.de" <agraf@suse.de>, Wood Scott-B07421 <B07421@freescale.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "joro@8bytes.org" <joro@8bytes.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>,
+ Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 0/2] move of_find_next_cache_node to DT core
+References: <1379501585-12532-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <20130918145116.D53A5C42CDF@trevor.secretlab.ca> <5239D26E.5090505@arm.com>
+In-Reply-To: <5239D26E.5090505@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Rob Herring <robherring2@gmail.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,96 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmh1c2hhbiBCaGFyYXQt
-UjY1Nzc3DQo+IFNlbnQ6IEZyaWRheSwgT2N0b2JlciAwNCwgMjAxMyAzOjI0IFBNDQo+IFRvOiAn
-QWxleCBXaWxsaWFtc29uJw0KPiBDYzogam9yb0A4Ynl0ZXMub3JnOyBiZW5oQGtlcm5lbC5jcmFz
-aGluZy5vcmc7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdl
-ci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtDQo+IHBj
-aUB2Z2VyLmtlcm5lbC5vcmc7IGFncmFmQHN1c2UuZGU7IFdvb2QgU2NvdHQtQjA3NDIxOyBpb21t
-dUBsaXN0cy5saW51eC0NCj4gZm91bmRhdGlvbi5vcmcNCj4gU3ViamVjdDogUkU6IFtQQVRDSCAy
-LzddIGlvbW11OiBhZGQgYXBpIHRvIGdldCBpb21tdV9kb21haW4gb2YgYSBkZXZpY2UNCj4gDQo+
-IA0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206IGxpbnV4LXBj
-aS1vd25lckB2Z2VyLmtlcm5lbC5vcmcNCj4gPiBbbWFpbHRvOmxpbnV4LXBjaS1vd25lckB2Z2Vy
-Lmtlcm5lbC5vcmddDQo+ID4gT24gQmVoYWxmIE9mIEFsZXggV2lsbGlhbXNvbg0KPiA+IFNlbnQ6
-IFdlZG5lc2RheSwgU2VwdGVtYmVyIDI1LCAyMDEzIDEwOjE2IFBNDQo+ID4gVG86IEJodXNoYW4g
-QmhhcmF0LVI2NTc3Nw0KPiA+IENjOiBqb3JvQDhieXRlcy5vcmc7IGJlbmhAa2VybmVsLmNyYXNo
-aW5nLm9yZzsNCj4gPiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBsaW51eC0ga2VybmVsQHZn
-ZXIua2VybmVsLm9yZzsNCj4gPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgt
-IHBjaUB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gYWdyYWZAc3VzZS5kZTsgV29vZCBTY290dC1CMDc0
-MjE7IGlvbW11QGxpc3RzLmxpbnV4LSBmb3VuZGF0aW9uLm9yZzsNCj4gPiBCaHVzaGFuIEJoYXJh
-dC1SNjU3NzcNCj4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvN10gaW9tbXU6IGFkZCBhcGkgdG8g
-Z2V0IGlvbW11X2RvbWFpbiBvZiBhDQo+ID4gZGV2aWNlDQo+ID4NCj4gPiBPbiBUaHUsIDIwMTMt
-MDktMTkgYXQgMTI6NTkgKzA1MzAsIEJoYXJhdCBCaHVzaGFuIHdyb3RlOg0KPiA+ID4gVGhpcyBh
-cGkgcmV0dXJuIHRoZSBpb21tdSBkb21haW4gdG8gd2hpY2ggdGhlIGRldmljZSBpcyBhdHRhY2hl
-ZC4NCj4gPiA+IFRoZSBpb21tdV9kb21haW4gaXMgcmVxdWlyZWQgZm9yIG1ha2luZyBBUEkgY2Fs
-bHMgcmVsYXRlZCB0byBpb21tdS4NCj4gPiA+IEZvbGxvdyB1cCBwYXRjaGVzIHdoaWNoIHVzZSB0
-aGlzIEFQSSB0byBrbm93IGlvbW11IG1hcGluZy4NCj4gPiA+DQo+ID4gPiBTaWduZWQtb2ZmLWJ5
-OiBCaGFyYXQgQmh1c2hhbiA8YmhhcmF0LmJodXNoYW5AZnJlZXNjYWxlLmNvbT4NCj4gPiA+IC0t
-LQ0KPiA+ID4gIGRyaXZlcnMvaW9tbXUvaW9tbXUuYyB8ICAgMTAgKysrKysrKysrKw0KPiA+ID4g
-IGluY2x1ZGUvbGludXgvaW9tbXUuaCB8ICAgIDcgKysrKysrKw0KPiA+ID4gIDIgZmlsZXMgY2hh
-bmdlZCwgMTcgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkNCj4gPiA+DQo+ID4gPiBkaWZm
-IC0tZ2l0IGEvZHJpdmVycy9pb21tdS9pb21tdS5jIGIvZHJpdmVycy9pb21tdS9pb21tdS5jIGlu
-ZGV4DQo+ID4gPiBmYmU5Y2E3Li42YWM1ZjUwIDEwMDY0NA0KPiA+ID4gLS0tIGEvZHJpdmVycy9p
-b21tdS9pb21tdS5jDQo+ID4gPiArKysgYi9kcml2ZXJzL2lvbW11L2lvbW11LmMNCj4gPiA+IEBA
-IC02OTYsNiArNjk2LDE2IEBAIHZvaWQgaW9tbXVfZGV0YWNoX2RldmljZShzdHJ1Y3QgaW9tbXVf
-ZG9tYWluDQo+ID4gPiAqZG9tYWluLCBzdHJ1Y3QgZGV2aWNlICpkZXYpICB9DQo+ID4gPiBFWFBP
-UlRfU1lNQk9MX0dQTChpb21tdV9kZXRhY2hfZGV2aWNlKTsNCj4gPiA+DQo+ID4gPiArc3RydWN0
-IGlvbW11X2RvbWFpbiAqaW9tbXVfZ2V0X2Rldl9kb21haW4oc3RydWN0IGRldmljZSAqZGV2KSB7
-DQo+ID4gPiArCXN0cnVjdCBpb21tdV9vcHMgKm9wcyA9IGRldi0+YnVzLT5pb21tdV9vcHM7DQo+
-ID4gPiArDQo+ID4gPiArCWlmICh1bmxpa2VseShvcHMgPT0gTlVMTCB8fCBvcHMtPmdldF9kZXZf
-aW9tbXVfZG9tYWluID09IE5VTEwpKQ0KPiA+ID4gKwkJcmV0dXJuIE5VTEw7DQo+ID4gPiArDQo+
-ID4gPiArCXJldHVybiBvcHMtPmdldF9kZXZfaW9tbXVfZG9tYWluKGRldik7IH0NCj4gPiA+ICtF
-WFBPUlRfU1lNQk9MX0dQTChpb21tdV9nZXRfZGV2X2RvbWFpbik7DQo+ID4NCj4gPiBXaGF0IHBy
-ZXZlbnRzIHRoaXMgZnJvbSByYWNpbmcgaW9tbXVfZG9tYWluX2ZyZWUoKT8gIFRoZXJlJ3Mgbm8N
-Cj4gPiByZWZlcmVuY2VzIGFjcXVpcmVkLCBzbyB0aGVyZSdzIG5vIHJlYXNvbiBmb3IgdGhlIGNh
-bGxlciB0byBhc3N1bWUgdGhlIHBvaW50ZXINCj4gaXMgdmFsaWQuDQo+IA0KPiBTb3JyeSBmb3Ig
-bGF0ZSBxdWVyeSwgc29tZWhvdyB0aGlzIGVtYWlsIHdlbnQgaW50byBhIGZvbGRlciBhbmQgZXNj
-YXBlZDsNCj4gDQo+IEp1c3QgdG8gYmUgc3VyZSwgdGhlcmUgaXMgbm90IGxvY2sgYXQgZ2VuZXJp
-YyAic3RydWN0IGlvbW11X2RvbWFpbiIsIGJ1dCBJUA0KPiBzcGVjaWZpYyBzdHJ1Y3R1cmUgKGxp
-bmsgRlNMIGRvbWFpbikgbGlua2VkIGluIGlvbW11X2RvbWFpbi0+cHJpdiBoYXZlIGEgbG9jaywN
-Cj4gc28gd2UgbmVlZCB0byBlbnN1cmUgdGhpcyByYWNlIGluIEZTTCBpb21tdSBjb2RlIChzYXkN
-Cj4gZHJpdmVycy9pb21tdS9mc2xfcGFtdV9kb21haW4uYyksIHJpZ2h0Pw0KDQpGdXJ0aGVyIHRo
-aW5raW5nIG9mIHRoaXMsIHRoZXJlIGFyZSBtb3JlIHByb2JsZW1zIGhlcmU6DQogLSBMaWtlIE1T
-SSBzdWJzeXN0ZW0gd2lsbCBjYWxsIGlvbW11X2dldF9kZXZfZG9tYWluKCksIHdoaWNoIHdpbGwg
-dGFrZSBhIGxvY2ssIGZpbmQgdGhlIGRvbWFpbiBwb2ludGVyLCByZWxlYXNlIHRoZSBsb2NrLCBh
-bmQgcmV0dXJuIHRoZSBkb21haW4NCiAtIE5vdyBpZiBkb21haW4gaW4gZnJlZWQgdXANCiAtIFdo
-aWxlIE1TSSBzdWJzeXN0ZW0gdHJpZXMgdG8gZG8gd29yayBvbiBkb21haW4gKGxpa2UgZ2V0X2F0
-dHJpYnV0ZS9zZXRfYXR0cmlidXRlIGV0YykgPz8/DQoNClNvIGNhbiB3ZSBkbyBsaWtlIGlvbW11
-X2dldF9kZXZfZG9tYWluKCkgd2lsbCByZXR1cm4gZG9tYWluIHdpdGggdGhlIGxvY2sgaGVsZCwg
-YW5kIGlvbW11X3B1dF9kZXZfZG9tYWluKCkgd2lsbCByZWxlYXNlIHRoZSBsb2NrPyBBbmQgaW9t
-bXVfZ2V0X2Rldl9kb21haW4oKSBtdXN0IGFsd2F5cyBiZSBmb2xsb3dlZCBieSBpb21tdV9nZXRf
-ZGV2X2RvbWFpbigpDQoNClRoYW5rcw0KLUJoYXJhdA0KDQo+IA0KPiBUaGFua3MNCj4gLUJoYXJh
-dA0KPiANCj4gPg0KPiA+ID4gIC8qDQo+ID4gPiAgICogSU9NTVUgZ3JvdXBzIGFyZSByZWFsbHkg
-dGhlIG5hdHJ1YWwgd29ya2luZyB1bml0IG9mIHRoZSBJT01NVSwgYnV0DQo+ID4gPiAgICogdGhl
-IElPTU1VIEFQSSB3b3JrcyBvbiBkb21haW5zIGFuZCBkZXZpY2VzLiAgQnJpZGdlIHRoYXQgZ2Fw
-IGJ5DQo+ID4gPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9pb21tdS5oIGIvaW5jbHVkZS9s
-aW51eC9pb21tdS5oIGluZGV4DQo+ID4gPiA3ZWEzMTllLi5mYTA0NmJkIDEwMDY0NA0KPiA+ID4g
-LS0tIGEvaW5jbHVkZS9saW51eC9pb21tdS5oDQo+ID4gPiArKysgYi9pbmNsdWRlL2xpbnV4L2lv
-bW11LmgNCj4gPiA+IEBAIC0xMjcsNiArMTI3LDcgQEAgc3RydWN0IGlvbW11X29wcyB7DQo+ID4g
-PiAgCWludCAoKmRvbWFpbl9zZXRfd2luZG93cykoc3RydWN0IGlvbW11X2RvbWFpbiAqZG9tYWlu
-LCB1MzIgd19jb3VudCk7DQo+ID4gPiAgCS8qIEdldCB0aGUgbnVtZXIgb2Ygd2luZG93IHBlciBk
-b21haW4gKi8NCj4gPiA+ICAJdTMyICgqZG9tYWluX2dldF93aW5kb3dzKShzdHJ1Y3QgaW9tbXVf
-ZG9tYWluICpkb21haW4pOw0KPiA+ID4gKwlzdHJ1Y3QgaW9tbXVfZG9tYWluICooKmdldF9kZXZf
-aW9tbXVfZG9tYWluKShzdHJ1Y3QgZGV2aWNlICpkZXYpOw0KPiA+ID4NCj4gPiA+ICAJdW5zaWdu
-ZWQgbG9uZyBwZ3NpemVfYml0bWFwOw0KPiA+ID4gIH07DQo+ID4gPiBAQCAtMTkwLDYgKzE5MSw3
-IEBAIGV4dGVybiBpbnQgaW9tbXVfZG9tYWluX3dpbmRvd19lbmFibGUoc3RydWN0DQo+ID4gPiBp
-b21tdV9kb21haW4NCj4gPiAqZG9tYWluLCB1MzIgd25kX25yLA0KPiA+ID4gIAkJCQkgICAgICBw
-aHlzX2FkZHJfdCBvZmZzZXQsIHU2NCBzaXplLA0KPiA+ID4gIAkJCQkgICAgICBpbnQgcHJvdCk7
-DQo+ID4gPiAgZXh0ZXJuIHZvaWQgaW9tbXVfZG9tYWluX3dpbmRvd19kaXNhYmxlKHN0cnVjdCBp
-b21tdV9kb21haW4NCj4gPiA+ICpkb21haW4sDQo+ID4gPiB1MzIgd25kX25yKTsNCj4gPiA+ICtl
-eHRlcm4gc3RydWN0IGlvbW11X2RvbWFpbiAqaW9tbXVfZ2V0X2Rldl9kb21haW4oc3RydWN0IGRl
-dmljZQ0KPiA+ID4gKypkZXYpOw0KPiA+ID4gIC8qKg0KPiA+ID4gICAqIHJlcG9ydF9pb21tdV9m
-YXVsdCgpIC0gcmVwb3J0IGFib3V0IGFuIElPTU1VIGZhdWx0IHRvIHRoZSBJT01NVQ0KPiBmcmFt
-ZXdvcmsNCj4gPiA+ICAgKiBAZG9tYWluOiB0aGUgaW9tbXUgZG9tYWluIHdoZXJlIHRoZSBmYXVs
-dCBoYXMgaGFwcGVuZWQgQEAgLTI4NCw2DQo+ID4gPiArMjg2LDExIEBAIHN0YXRpYyBpbmxpbmUg
-dm9pZCBpb21tdV9kb21haW5fd2luZG93X2Rpc2FibGUoc3RydWN0DQo+ID4gPiBpb21tdV9kb21h
-aW4gKmRvbWFpbiwgIHsgIH0NCj4gPiA+DQo+ID4gPiArc3RhdGljIGlubGluZSBzdHJ1Y3QgaW9t
-bXVfZG9tYWluICppb21tdV9nZXRfZGV2X2RvbWFpbihzdHJ1Y3QNCj4gPiA+ICtkZXZpY2UNCj4g
-PiA+ICsqZGV2KSB7DQo+ID4gPiArCXJldHVybiBOVUxMOw0KPiA+ID4gK30NCj4gPiA+ICsNCj4g
-PiA+ICBzdGF0aWMgaW5saW5lIHBoeXNfYWRkcl90IGlvbW11X2lvdmFfdG9fcGh5cyhzdHJ1Y3Qg
-aW9tbXVfZG9tYWluDQo+ID4gPiAqZG9tYWluLCBkbWFfYWRkcl90IGlvdmEpICB7DQo+ID4gPiAg
-CXJldHVybiAwOw0KPiA+DQo+ID4NCj4gPg0KPiA+IC0tDQo+ID4gVG8gdW5zdWJzY3JpYmUgZnJv
-bSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LXBjaSINCj4gPiBp
-biB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3Jl
-IG1ham9yZG9tbw0KPiA+IGluZm8gYXQgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8t
-aW5mby5odG1sDQoNCg==
+Hi Grant,
+
+On 18/09/13 17:18, Sudeep KarkadaNagesha wrote:
+> On 18/09/13 15:51, Grant Likely wrote:
+>> On Wed, 18 Sep 2013 11:53:03 +0100, Sudeep KarkadaNagesha <Sudeep.Karkad=
+aNagesha@arm.com> wrote:
+>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>>
+>>> Hi,
+>>>
+>>> The cache bindings are generic and used by many other architectures
+>>> apart from PPC. These patches fixes and move the existing definition
+>>> of of_find_next_cache_node to DT common code.
+>>>
+>>> Regards,
+>>> Sudeep
+>>
+>> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>>
+>> However, do you have a user for this function on other architectures
+>> yet? I'd like to see a user for the function in the same patch series..
+>>
+>=20
+> Yes I have posted an RFC[1] following this series implementing cacheinfo
+> for ARM similar to x86 implementation. I was not sure if it's good idea
+> to combine it as its still initial RFC version.
+>=20
+
+Do you prefer to have this a independent change or to go with the cache top=
+ology
+support patches[1] on ARM ?
+
+Regards,
+Sudeep
+
+[1] https://lkml.org/lkml/2013/9/18/340
