@@ -1,20 +1,19 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 93A712C00D1
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 00:02:53 +1000 (EST)
-Subject: Re: [PATCH 0/4 v6] KVM :PPC: Userspace Debug support
+ by ozlabs.org (Postfix) with ESMTP id 4DAD02C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 00:03:55 +1000 (EST)
+Subject: Re: [PATCH 0/6 v5] kvm: powerpc: use cache attributes from linux pte
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1372921067-19678-1-git-send-email-Bharat.Bhushan@freescale.com>
-Date: Fri, 4 Oct 2013 16:02:46 +0200
-Message-Id: <B93277EB-FD72-4FDB-AF99-2ADCA51C16D3@suse.de>
-References: <1372921067-19678-1-git-send-email-Bharat.Bhushan@freescale.com>
+In-Reply-To: <1379570566-3715-1-git-send-email-Bharat.Bhushan@freescale.com>
+Date: Fri, 4 Oct 2013 16:03:50 +0200
+Message-Id: <FEE418C8-D0E0-48D3-B951-28D8855CE80B@suse.de>
+References: <1379570566-3715-1-git-send-email-Bharat.Bhushan@freescale.com>
 To: Bharat Bhushan <r65777@freescale.com>
-Cc: sfr@canb.auug.org.au, mikey@neuling.org, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Bharat Bhushan <bharat.bhushan@freescale.com>,
- tiejun.chen@windriver.com, scottwood@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Bharat Bhushan <bharat.bhushan@freescale.com>, paulus@samba.org,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,75 +24,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 04.07.2013, at 08:57, Bharat Bhushan wrote:
+On 19.09.2013, at 08:02, Bharat Bhushan wrote:
 
 > From: Bharat Bhushan <bharat.bhushan@freescale.com>
 >=20
-> Note: These patches depends on https://lkml.org/lkml/2013/7/4/49.
+> First patch is a typo fix where book3e define _PAGE_LENDIAN while it
+> should be defined as _PAGE_ENDIAN. This seems to show that this is =
+never exercised :-)
 >=20
-> This patchset adds the userspace debug support for booke/bookehv.
-> this is tested on powerpc e500v2/e500mc devices.
+> Second and third patch is to allow guest controlling "G"-Guarded and =
+"E"-Endian TLB attributes respectively.
+>=20
+> Fourth patch is moving functions/logic in common code so they can be =
+used on booke also.
+>=20
+> Fifth and Sixth patch is actually setting caching attributes =
+(TLB.WIMGE) using corresponding Linux pte.
 
-Thanks, applied to kvm-ppc-queue.
+Thanks, applied 1/6 - 3/6 to kvm-ppc-queue.
 
 
 Alex
 
 >=20
-> We are now assuming that debug resource will not be used by kernel for
-> its own debugging. It will be used for only kernel user process =
-debugging.
-> So the kernel debug load interface during context_to is used to load
-> debug conext for that selected process.
->=20
-> v5->v6
-> - Earlier it was a patchset of six patches. Now this is devided into
->   two parts: 1) powerpc spcific changes 2) kvm specific changes.
->   This patchset now contains only KVM specific changes.
-> - using "ehpriv 1" (earlier using "ehpriv") for software breakpoint
-> -
->=20
-> v4->v5
-> - Some comments reworded and other cleanup (like change of function =
-name etc)
-> - Added a function for setting MSRP rather than inline
->=20
-> v3->v4
-> - 4 out of 7 patches of initial patchset were applied.
->   This patchset is on and above those 4 patches
-> - KVM local "struct kvmppc_booke_debug_reg" is replaced by
->   powerpc global "struct debug_reg"
-> - use switch_booke_debug_regs() for debug register context switch.
-> - Save DBSR before kernel pre-emption is enabled.
-> - Some more cleanup
+> v3->v5
+> - Fix tlb-reference-flag clearing issue (patch 4/6)
+> - There was a patch (4/6 powerpc: move linux pte/hugepte search to =
+more generic file)
+>   in the last series of this patchset which was moving pte/hugepte =
+search functions to
+>   generic file. That patch is no more needed as some other patch is =
+already applied to fix that :)
 >=20
 > v2->v3
-> - We are now assuming that debug resource will not be used by
->   kernel for its own debugging.
->   It will be used for only kernel user process debugging.
->   So the kernel debug load interface during context_to is
->   used to load debug conext for that selected process.
+> - now lookup_linux_pte() only have pte search logic and it does not
+>   set any access flags in pte. There is already a function for setting
+>   access flag which will be called explicitly where needed.
+>   On booke we only need to search for pte to get WIMG.
 >=20
 > v1->v2
-> - Debug registers are save/restore in vcpu_put/vcpu_get.
->   Earlier the debug registers are saved/restored in guest entry/exit
+> - Earlier caching attributes (WIMGE) were set based of page is RAM or =
+not
+>   But now we get these attributes from corresponding Linux PTE.
 >=20
-> Bharat Bhushan (4):
->  powerpc: export debug registers save function for KVM
->  KVM: PPC: exit to user space on "ehpriv 1" instruction
->  KVM: PPC: Using "struct debug_reg"
->  KVM: PPC: Add userspace debug stub support
+> Bharat Bhushan (6):
+>  powerpc: book3e: _PAGE_LENDIAN must be _PAGE_ENDIAN
+>  kvm: powerpc: allow guest control "E" attribute in mas2
+>  kvm: powerpc: allow guest control "G" attribute in mas2
+>  kvm: powerpc: keep only pte search logic in lookup_linux_pte
+>  kvm: booke: clear host tlb reference flag on guest tlb invalidation
+>  kvm: powerpc: use caching attributes as per linux pte
 >=20
-> arch/powerpc/include/asm/disassemble.h |    4 +
-> arch/powerpc/include/asm/kvm_booke.h   |    7 +-
-> arch/powerpc/include/asm/kvm_host.h    |   16 +--
-> arch/powerpc/include/asm/switch_to.h   |    1 +
-> arch/powerpc/include/uapi/asm/kvm.h    |   22 ++-
-> arch/powerpc/kernel/process.c          |    3 +-
-> arch/powerpc/kvm/booke.c               |  275 =
-++++++++++++++++++++++++++++----
-> arch/powerpc/kvm/booke.h               |    5 +
-> arch/powerpc/kvm/e500_emulate.c        |   26 +++
-> 9 files changed, 312 insertions(+), 47 deletions(-)
+> arch/powerpc/include/asm/kvm_host.h   |    2 +-
+> arch/powerpc/include/asm/pgtable.h    |   24 ++++++++++++++++
+> arch/powerpc/include/asm/pte-book3e.h |    2 +-
+> arch/powerpc/kvm/book3s_hv_rm_mmu.c   |   36 ++++++++----------------
+> arch/powerpc/kvm/booke.c              |    2 +-
+> arch/powerpc/kvm/e500.h               |   10 ++++--
+> arch/powerpc/kvm/e500_mmu_host.c      |   50 =
++++++++++++++++++++--------------
+> 7 files changed, 74 insertions(+), 52 deletions(-)
 >=20
 >=20
