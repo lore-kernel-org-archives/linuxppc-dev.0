@@ -1,23 +1,18 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 1F9242C00CE
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 00:41:02 +1000 (EST)
-Subject: Re: [PATCH 0/2] powerpc: allow kvm to use kerel debug framework
+ by ozlabs.org (Postfix) with ESMTP id 5745A2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 00:43:47 +1000 (EST)
+Subject: Re: [PATCH -V2] kvm: powerpc: book3s: Fix build break for BOOK3S_32
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <21895.1373441122@ale.ozlabs.ibm.com>
-Date: Fri, 4 Oct 2013 16:40:55 +0200
-Message-Id: <A0DA1F6E-02F2-4CFC-B4B4-2D545E96DF32@suse.de>
-References: <1372918546-15075-1-git-send-email-Bharat.Bhushan@freescale.com>
- <C4D71A1A-3D5B-4C9C-A26B-9EAFFD9D87C5@suse.de>
- <14504.1373343872@ale.ozlabs.ibm.com>
- <636D011A-6C50-4E74-B4B2-658EC4E53E9C@suse.de>
- <21895.1373441122@ale.ozlabs.ibm.com>
-To: Michael Neuling <mikey@neuling.org>
-Cc: linux-kernel@vger.kernel.org, Bharat Bhushan <bharat.bhushan@freescale.com>,
- Bharat Bhushan <r65777@freescale.com>, scottwood@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1380787123-32646-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Fri, 4 Oct 2013 16:43:41 +0200
+Message-Id: <85675099-BA83-4F23-BA9E-02BF8173067C@suse.de>
+References: <1380787123-32646-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,54 +23,49 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 10.07.2013, at 09:25, Michael Neuling wrote:
+On 03.10.2013, at 09:58, Aneesh Kumar K.V wrote:
 
-> Alexander Graf <agraf@suse.de> wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 >=20
->>=20
->> On 09.07.2013, at 06:24, Michael Neuling wrote:
->>=20
->>> Alexander Graf <agraf@suse.de> wrote:
->>>=20
->>>>=20
->>>> On 04.07.2013, at 08:15, Bharat Bhushan wrote:
->>>>=20
->>>>> From: Bharat Bhushan <bharat.bhushan@freescale.com>
->>>>>=20
->>>>> This patchset moves the debug registers in a structure, which =
-allows
->>>>> kvm to use same structure for debug emulation.
->>>>>=20
->>>>> Note: Earilier a patchset =
-"https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-June/108132.html"
->>>>> was sent which is a bunch of six patches. That patchset is divided =
-into two parts:
->>>>> 	1) powerpc specific changes (These 2 patches are actually have =
-those changes)
->>>>> 	2) KVM specific changes (will send separate patch on agraf =
-repository)
->>>>=20
->>>> Mikey, if you like those could you please apply the into a topic
->>>> branch and get that one merged with Ben? I'd also pull it into my =
-tree
->>>> then.
->>>=20
->>> benh would pull these directly. =20
->>>=20
->>> I'll have a chat with him to see if he wants my ACK before he does =
-that.
->>=20
->> I have a bunch of patches that I need to apply on top, so I need a =
-topic branch.
+> This was introduced by 85a0d845d8 ("KVM: PPC: Book3S PR: Allocate
+> kvm_vcpu structs from kvm_vcpu_cache").
 >=20
-> I've acked the PPC specific bits of the v6 version of these patches.
+> arch/powerpc/kvm/book3s_pr.c: In function 'kvmppc_core_vcpu_create':
+> arch/powerpc/kvm/book3s_pr.c:1182:30: error: 'struct =
+kvmppc_vcpu_book3s' has no member named 'shadow_vcpu'
+> make[1]: *** [arch/powerpc/kvm/book3s_pr.o] Error 1
 >=20
-> benh said he'll open a topic branch for you sometime next week and =
-he'll
-> stick them in there. =20
+> Acked-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-After talking to Ben about it, I've just put these into kvm-ppc-queue, =
-so they will hit Linus' tree through the kvm tree.
+Thanks, squashed into the offending commit in kvm-ppc-queue.
 
 
 Alex
+
+> ---
+> arch/powerpc/kvm/book3s_pr.c | 2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/kvm/book3s_pr.c =
+b/arch/powerpc/kvm/book3s_pr.c
+> index 8941885..6075dbd 100644
+> --- a/arch/powerpc/kvm/book3s_pr.c
+> +++ b/arch/powerpc/kvm/book3s_pr.c
+> @@ -1179,7 +1179,7 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct =
+kvm *kvm, unsigned int id)
+>=20
+> #ifdef CONFIG_KVM_BOOK3S_32
+> 	vcpu->arch.shadow_vcpu =3D
+> -		kzalloc(sizeof(*vcpu_book3s->shadow_vcpu), GFP_KERNEL);
+> +		kzalloc(sizeof(*vcpu->arch.shadow_vcpu), GFP_KERNEL);
+> 	if (!vcpu->arch.shadow_vcpu)
+> 		goto free_vcpu3s;
+> #endif
+> --=20
+> 1.8.1.2
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
