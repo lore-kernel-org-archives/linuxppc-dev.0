@@ -1,19 +1,30 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id C70522C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 02:05:04 +1000 (EST)
-Message-ID: <1380902702.25705.11.camel@ul30vt.home>
-Subject: Re: [RFC PATCH] PPC: KVM: vfio kvm device: support spapr tce
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Fri, 04 Oct 2013 10:05:02 -0600
-In-Reply-To: <1380889450-25550-1-git-send-email-aik@ozlabs.ru>
-References: <20131001200757.31715.22994.stgit@bling.home>
- <1380889450-25550-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Return-Path: <R65777@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9A5252C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 02:48:29 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: RE: [PATCH 2/7] iommu: add api to get iommu_domain of a device
+Date: Fri, 4 Oct 2013 16:47:33 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D07190F35@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
+ <1380127533.3030.319.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0718FD1C@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1380901507.2673.204.camel@ul30vt.home>
+In-Reply-To: <1380901507.2673.204.camel@ul30vt.home>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "agraf@suse.de" <agraf@suse.de>, Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "joro@8bytes.org" <joro@8bytes.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,289 +34,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-10-04 at 22:24 +1000, Alexey Kardashevskiy wrote:
-> This is a very rough change set required for ppc64 to use this KVM device.
-> 
-> vfio_rm.c is a piece of code which is going to be called from the realmode (MMU off),
-> and I will put everything spapr-related under #ifdef CONFIG_SPAPR_TCE_IOMMU,
-> it is just friday and I have to run :)
-> 
-> This is an RFC but it works.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/kvm/Kconfig  |  1 +
->  arch/powerpc/kvm/Makefile |  4 ++++
->  include/linux/kvm_host.h  |  8 ++++---
->  include/linux/vfio.h      |  3 +++
->  include/uapi/linux/kvm.h  |  1 +
->  virt/kvm/vfio.c           | 46 ++++++++++++++++++++++++++++++++++++++++
->  virt/kvm/vfio_rm.c        | 54 +++++++++++++++++++++++++++++++++++++++++++++++
->  7 files changed, 114 insertions(+), 3 deletions(-)
->  create mode 100644 virt/kvm/vfio_rm.c
-> 
-> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-> index 61b3535..d1b7f64 100644
-> --- a/arch/powerpc/kvm/Kconfig
-> +++ b/arch/powerpc/kvm/Kconfig
-> @@ -60,6 +60,7 @@ config KVM_BOOK3S_64
->  	select KVM_BOOK3S_64_HANDLER
->  	select KVM
->  	select SPAPR_TCE_IOMMU
-> +	select KVM_VFIO
->  	---help---
->  	  Support running unmodified book3s_64 and book3s_32 guest kernels
->  	  in virtual machines on book3s_64 host processors.
-> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-> index 6646c95..fc2878b 100644
-> --- a/arch/powerpc/kvm/Makefile
-> +++ b/arch/powerpc/kvm/Makefile
-> @@ -55,6 +55,8 @@ kvm-objs-$(CONFIG_KVM_E500MC) := $(kvm-e500mc-objs)
->  
->  kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_PR) := \
->  	$(KVM)/coalesced_mmio.o \
-> +	$(KVM)/vfio.o \
-> +	$(KVM)/vfio_rm.o \
->  	fpu.o \
->  	book3s_paired_singles.o \
->  	book3s_pr.o \
-> @@ -76,6 +78,7 @@ kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
->  kvm-book3s_64-builtin-xics-objs-$(CONFIG_KVM_XICS) := \
->  	book3s_hv_rm_xics.o
->  kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
-> +	$(KVM)/vfio_rm.o \
->  	book3s_hv_rmhandlers.o \
->  	book3s_hv_rm_mmu.o \
->  	book3s_64_vio_hv.o \
-> @@ -89,6 +92,7 @@ kvm-book3s_64-objs-$(CONFIG_KVM_XICS) += \
->  
->  kvm-book3s_64-module-objs := \
->  	$(KVM)/kvm_main.o \
-> +	$(KVM)/vfio.o \
->  	$(KVM)/eventfd.o \
->  	powerpc.o \
->  	emulate.o \
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index ad2b581..43c0290 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -407,6 +407,8 @@ struct kvm {
->  #endif
->  	long tlbs_dirty;
->  	struct list_head devices;
-> +
-> +	struct kvm_vfio *vfio;
-
-
-<cringe> can't this be on kvm->arch?
-
->  };
->  
->  #define kvm_err(fmt, ...) \
-> @@ -677,15 +679,15 @@ void kvm_arch_register_noncoherent_dma(struct kvm *kvm);
->  void kvm_arch_unregister_noncoherent_dma(struct kvm *kvm);
->  bool kvm_arch_has_noncoherent_dma(struct kvm *kvm);
->  #else
-> -static inline void kvm_arch_register_noncoherent_dma(void)
-> +static inline void kvm_arch_register_noncoherent_dma(struct kvm *kvm)
->  {
->  }
->  
-> -static inline void kvm_arch_unregister_noncoherent_dma(void)
-> +static inline void kvm_arch_unregister_noncoherent_dma(struct kvm *kvm)
->  {
->  }
->  
-> -static inline bool kvm_arch_has_noncoherent_dma(void)
-> +static inline bool kvm_arch_has_noncoherent_dma(struct kvm *kvm)
->  {
->  	return false;
->  }
-
-Will fix in my series.
-
-> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> index 24579a0..681e19b 100644
-> --- a/include/linux/vfio.h
-> +++ b/include/linux/vfio.h
-> @@ -97,4 +97,7 @@ extern struct vfio_group *vfio_group_get_external_user(struct file *filep);
->  extern void vfio_group_put_external_user(struct vfio_group *group);
->  extern int vfio_external_user_iommu_id(struct vfio_group *group);
->  
-> +extern struct iommu_group *vfio_find_group_by_liobn(struct kvm *kvm,
-> +		unsigned long liobn);
-> +
-
-Wrong header file.
-
->  #endif /* VFIO_H */
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 7c1a349..a74ad16 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -847,6 +847,7 @@ struct kvm_device_attr {
->  #define  KVM_DEV_VFIO_GROUP			1
->  #define   KVM_DEV_VFIO_GROUP_ADD			1
->  #define   KVM_DEV_VFIO_GROUP_DEL			2
-> +#define  KVM_DEV_VFIO_SPAPR_TCE_LIOBN		2
->  
->  /*
->   * ioctls for VM fds
-> diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
-> index 2e336a7..39dea9f 100644
-> --- a/virt/kvm/vfio.c
-> +++ b/virt/kvm/vfio.c
-> @@ -22,6 +22,7 @@
->  struct kvm_vfio_group {
->  	struct list_head node;
->  	struct vfio_group *vfio_group;
-> +	uint64_t liobn; /* sPAPR */
-
-Perhaps an arch pointer or at least a union.
-
->  };
->  
->  struct kvm_vfio {
-> @@ -188,12 +189,52 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
->  	return -ENXIO;
->  }
->  
-> +static int kvm_vfio_set_spapr_tce_liobn(struct kvm_device *dev,
-> +		long attr, u64 arg)
-> +{
-> +	struct kvm_vfio *kv = dev->private;
-> +	struct vfio_group *vfio_group;
-> +	struct kvm_vfio_group *kvg;
-> +	void __user *argp = (void __user *)arg;
-> +	struct fd f;
-> +	int32_t fd;
-> +	uint64_t liobn = attr;
-> +
-> +	if (get_user(fd, (int32_t __user *)argp))
-> +		return -EFAULT;
-> +
-> +	f = fdget(fd);
-> +	if (!f.file)
-> +		return -EBADF;
-> +
-> +	vfio_group = kvm_vfio_group_get_external_user(f.file);
-> +	fdput(f);
-> +
-> +	list_for_each_entry(kvg, &kv->group_list, node) {
-> +		if (kvg->vfio_group == vfio_group) {
-> +			WARN_ON(kvg->liobn);
-
-Users shouldn't be able to trigger WARN_ON so easily, return -EBUSY,
-allow it to be unset and re-set, or just allow the overwrite.
-
-> +			kvg->liobn = liobn;
-> +			kvm_vfio_group_put_external_user(vfio_group);
-> +			return 0;
-> +		}
-> +	}
-> +
-> +	kvm_vfio_group_put_external_user(vfio_group);
-> +
-> +	return -ENXIO;
-> +}
-> +
->  static int kvm_vfio_set_attr(struct kvm_device *dev,
->  			     struct kvm_device_attr *attr)
->  {
->  	switch (attr->group) {
->  	case KVM_DEV_VFIO_GROUP:
->  		return kvm_vfio_set_group(dev, attr->attr, attr->addr);
-> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> +	case KVM_DEV_VFIO_SPAPR_TCE_LIOBN:
-> +		return kvm_vfio_set_spapr_tce_liobn(dev, attr->attr,
-> +				attr->addr);
-> +#endif
->  	}
->  
->  	return -ENXIO;
-> @@ -211,6 +252,10 @@ static int kvm_vfio_has_attr(struct kvm_device *dev,
->  		}
->  
->  		break;
-> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> +	case KVM_DEV_VFIO_SPAPR_TCE_LIOBN:
-> +		return 0;
-> +#endif
->  	}
->  
->  	return -ENXIO;
-> @@ -250,6 +295,7 @@ static int kvm_vfio_create(struct kvm_device *dev, u32 type)
->  	mutex_init(&kv->lock);
->  
->  	dev->private = kv;
-> +	dev->kvm->vfio = kv;
->  
->  	return 0;
->  }
-> diff --git a/virt/kvm/vfio_rm.c b/virt/kvm/vfio_rm.c
-> new file mode 100644
-> index 0000000..ee9fd96
-> --- /dev/null
-> +++ b/virt/kvm/vfio_rm.c
-> @@ -0,0 +1,54 @@
-> +#include <linux/errno.h>
-> +#include <linux/file.h>
-> +#include <linux/kvm_host.h>
-> +#include <linux/list.h>
-> +#include <linux/module.h>
-> +#include <linux/mutex.h>
-> +#include <linux/slab.h>
-> +#include <linux/uaccess.h>
-> +#include <linux/vfio.h>
-> +
-> +struct kvm_vfio_group {
-> +	struct list_head node;
-> +	struct vfio_group *vfio_group;
-> +	uint64_t liobn; /* sPAPR */
-> +};
-> +
-> +struct kvm_vfio {
-> +	struct list_head group_list;
-> +	struct mutex lock;
-> +	bool noncoherent;
-> +};
-> +
-> +struct vfio_group {
-> +	struct kref			kref;
-> +	int				minor;
-> +	atomic_t			container_users;
-> +	struct iommu_group		*iommu_group;
-> +	struct vfio_container		*container;
-> +	struct list_head		device_list;
-> +	struct mutex			device_lock;
-> +	struct device			*dev;
-> +	struct notifier_block		nb;
-> +	struct list_head		vfio_next;
-> +	struct list_head		container_next;
-> +	atomic_t			opened;
-> +};
-> +
-> +struct iommu_group *vfio_find_group_by_liobn(struct kvm *kvm, unsigned long liobn)
-> +{
-> +	struct kvm_vfio_group *kvg;
-> +
-> +	if (!kvm->vfio)
-> +		return NULL;
-> +
-> +	list_for_each_entry(kvg, &kvm->vfio->group_list, node) {
-> +		if (kvg->liobn == liobn)
-> +			return kvg->vfio_group->iommu_group;
-> +	}
-> +
-> +	return NULL;
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_find_group_by_liobn);
-> +
-> +
-
-You're kidding, right?  These are intentionally private data structures
-that are blatantly copied so that you can extract what you want.  NACK.
-The iommu_group is available off struct device, do you even need vfio or
-this kvm-vfio device to get from liobn to iommu_group?  Thanks,
-
-Alex
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
+IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IEZyaWRheSwgT2N0
+b2JlciAwNCwgMjAxMyA5OjE1IFBNDQo+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gQ2M6
+IGpvcm9AOGJ5dGVzLm9yZzsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBnYWxha0BrZXJuZWwu
+Y3Jhc2hpbmcub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMt
+ZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0KPiBwY2lAdmdlci5rZXJuZWwub3JnOyBhZ3Jh
+ZkBzdXNlLmRlOyBXb29kIFNjb3R0LUIwNzQyMTsgaW9tbXVAbGlzdHMubGludXgtDQo+IGZvdW5k
+YXRpb24ub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi83XSBpb21tdTogYWRkIGFwaSB0byBn
+ZXQgaW9tbXVfZG9tYWluIG9mIGEgZGV2aWNlDQo+IA0KPiBPbiBGcmksIDIwMTMtMTAtMDQgYXQg
+MDk6NTQgKzAwMDAsIEJodXNoYW4gQmhhcmF0LVI2NTc3NyB3cm90ZToNCj4gPg0KPiA+ID4gLS0t
+LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IGxpbnV4LXBjaS1vd25lckB2Z2Vy
+Lmtlcm5lbC5vcmcNCj4gPiA+IFttYWlsdG86bGludXgtcGNpLW93bmVyQHZnZXIua2VybmVsLm9y
+Z10NCj4gPiA+IE9uIEJlaGFsZiBPZiBBbGV4IFdpbGxpYW1zb24NCj4gPiA+IFNlbnQ6IFdlZG5l
+c2RheSwgU2VwdGVtYmVyIDI1LCAyMDEzIDEwOjE2IFBNDQo+ID4gPiBUbzogQmh1c2hhbiBCaGFy
+YXQtUjY1Nzc3DQo+ID4gPiBDYzogam9yb0A4Ynl0ZXMub3JnOyBiZW5oQGtlcm5lbC5jcmFzaGlu
+Zy5vcmc7DQo+ID4gPiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBsaW51eC0ga2VybmVsQHZn
+ZXIua2VybmVsLm9yZzsNCj4gPiA+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51
+eC0gcGNpQHZnZXIua2VybmVsLm9yZzsNCj4gPiA+IGFncmFmQHN1c2UuZGU7IFdvb2QgU2NvdHQt
+QjA3NDIxOyBpb21tdUBsaXN0cy5saW51eC0gZm91bmRhdGlvbi5vcmc7DQo+ID4gPiBCaHVzaGFu
+IEJoYXJhdC1SNjU3NzcNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi83XSBpb21tdTogYWRk
+IGFwaSB0byBnZXQgaW9tbXVfZG9tYWluIG9mIGENCj4gPiA+IGRldmljZQ0KPiA+ID4NCj4gPiA+
+IE9uIFRodSwgMjAxMy0wOS0xOSBhdCAxMjo1OSArMDUzMCwgQmhhcmF0IEJodXNoYW4gd3JvdGU6
+DQo+ID4gPiA+IFRoaXMgYXBpIHJldHVybiB0aGUgaW9tbXUgZG9tYWluIHRvIHdoaWNoIHRoZSBk
+ZXZpY2UgaXMgYXR0YWNoZWQuDQo+ID4gPiA+IFRoZSBpb21tdV9kb21haW4gaXMgcmVxdWlyZWQg
+Zm9yIG1ha2luZyBBUEkgY2FsbHMgcmVsYXRlZCB0byBpb21tdS4NCj4gPiA+ID4gRm9sbG93IHVw
+IHBhdGNoZXMgd2hpY2ggdXNlIHRoaXMgQVBJIHRvIGtub3cgaW9tbXUgbWFwaW5nLg0KPiA+ID4g
+Pg0KPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBCaGFyYXQgQmh1c2hhbiA8YmhhcmF0LmJodXNoYW5A
+ZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gLS0tDQo+ID4gPiA+ICBkcml2ZXJzL2lvbW11L2lvbW11
+LmMgfCAgIDEwICsrKysrKysrKysNCj4gPiA+ID4gIGluY2x1ZGUvbGludXgvaW9tbXUuaCB8ICAg
+IDcgKysrKysrKw0KPiA+ID4gPiAgMiBmaWxlcyBjaGFuZ2VkLCAxNyBpbnNlcnRpb25zKCspLCAw
+IGRlbGV0aW9ucygtKQ0KPiA+ID4gPg0KPiA+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pb21t
+dS9pb21tdS5jIGIvZHJpdmVycy9pb21tdS9pb21tdS5jIGluZGV4DQo+ID4gPiA+IGZiZTljYTcu
+LjZhYzVmNTAgMTAwNjQ0DQo+ID4gPiA+IC0tLSBhL2RyaXZlcnMvaW9tbXUvaW9tbXUuYw0KPiA+
+ID4gPiArKysgYi9kcml2ZXJzL2lvbW11L2lvbW11LmMNCj4gPiA+ID4gQEAgLTY5Niw2ICs2OTYs
+MTYgQEAgdm9pZCBpb21tdV9kZXRhY2hfZGV2aWNlKHN0cnVjdCBpb21tdV9kb21haW4NCj4gPiA+
+ID4gKmRvbWFpbiwgc3RydWN0IGRldmljZSAqZGV2KSAgfQ0KPiA+ID4gPiBFWFBPUlRfU1lNQk9M
+X0dQTChpb21tdV9kZXRhY2hfZGV2aWNlKTsNCj4gPiA+ID4NCj4gPiA+ID4gK3N0cnVjdCBpb21t
+dV9kb21haW4gKmlvbW11X2dldF9kZXZfZG9tYWluKHN0cnVjdCBkZXZpY2UgKmRldikgew0KPiA+
+ID4gPiArCXN0cnVjdCBpb21tdV9vcHMgKm9wcyA9IGRldi0+YnVzLT5pb21tdV9vcHM7DQo+ID4g
+PiA+ICsNCj4gPiA+ID4gKwlpZiAodW5saWtlbHkob3BzID09IE5VTEwgfHwgb3BzLT5nZXRfZGV2
+X2lvbW11X2RvbWFpbiA9PSBOVUxMKSkNCj4gPiA+ID4gKwkJcmV0dXJuIE5VTEw7DQo+ID4gPiA+
+ICsNCj4gPiA+ID4gKwlyZXR1cm4gb3BzLT5nZXRfZGV2X2lvbW11X2RvbWFpbihkZXYpOyB9DQo+
+ID4gPiA+ICtFWFBPUlRfU1lNQk9MX0dQTChpb21tdV9nZXRfZGV2X2RvbWFpbik7DQo+ID4gPg0K
+PiA+ID4gV2hhdCBwcmV2ZW50cyB0aGlzIGZyb20gcmFjaW5nIGlvbW11X2RvbWFpbl9mcmVlKCk/
+ICBUaGVyZSdzIG5vDQo+ID4gPiByZWZlcmVuY2VzIGFjcXVpcmVkLCBzbyB0aGVyZSdzIG5vIHJl
+YXNvbiBmb3IgdGhlIGNhbGxlciB0byBhc3N1bWUgdGhlDQo+IHBvaW50ZXIgaXMgdmFsaWQuDQo+
+ID4NCj4gPiBTb3JyeSBmb3IgbGF0ZSBxdWVyeSwgc29tZWhvdyB0aGlzIGVtYWlsIHdlbnQgaW50
+byBhIGZvbGRlciBhbmQNCj4gPiBlc2NhcGVkOw0KPiA+DQo+ID4gSnVzdCB0byBiZSBzdXJlLCB0
+aGVyZSBpcyBub3QgbG9jayBhdCBnZW5lcmljICJzdHJ1Y3QgaW9tbXVfZG9tYWluIiwgYnV0IElQ
+DQo+IHNwZWNpZmljIHN0cnVjdHVyZSAobGluayBGU0wgZG9tYWluKSBsaW5rZWQgaW4gaW9tbXVf
+ZG9tYWluLT5wcml2IGhhdmUgYSBsb2NrLA0KPiBzbyB3ZSBuZWVkIHRvIGVuc3VyZSB0aGlzIHJh
+Y2UgaW4gRlNMIGlvbW11IGNvZGUgKHNheQ0KPiBkcml2ZXJzL2lvbW11L2ZzbF9wYW11X2RvbWFp
+bi5jKSwgcmlnaHQ/DQo+IA0KPiBObywgaXQncyBub3Qgc3VmZmljaWVudCB0byBtYWtlIHN1cmUg
+dGhhdCB5b3VyIHVzZSBvZiB0aGUgaW50ZXJmYWNlIGlzIHJhY2UNCj4gZnJlZS4gIFRoZSBpbnRl
+cmZhY2UgaXRzZWxmIG5lZWRzIHRvIGJlIGRlc2lnbmVkIHNvIHRoYXQgaXQncyBkaWZmaWN1bHQg
+dG8gdXNlDQo+IGluY29ycmVjdGx5Lg0KDQpTbyB3ZSBjYW4gZGVmaW5lIGlvbW11X2dldF9kZXZf
+ZG9tYWluKCkvaW9tbXVfcHV0X2Rldl9kb21haW4oKTsgIGlvbW11X2dldF9kZXZfZG9tYWluKCkg
+d2lsbCByZXR1cm4gZG9tYWluIHdpdGggdGhlIGxvY2sgaGVsZCwgYW5kIGlvbW11X3B1dF9kZXZf
+ZG9tYWluKCkgd2lsbCByZWxlYXNlIHRoZSBsb2NrPyBBbmQgaW9tbXVfZ2V0X2Rldl9kb21haW4o
+KSBtdXN0IGFsd2F5cyBiZSBmb2xsb3dlZCBieSBpb21tdV9nZXRfZGV2X2RvbWFpbigpLg0KDQoN
+Cj4gVGhhdCdzIG5vdCB0aGUgY2FzZSBoZXJlLiAgVGhpcyBpcyBhIGJhY2tkb29yIHRvIGdldCB0
+aGUgaW9tbXUNCj4gZG9tYWluIGZyb20gdGhlIGlvbW11IGRyaXZlciByZWdhcmRsZXNzIG9mIHdo
+byBpcyB1c2luZyBpdCBvciBob3cuICBUaGUgaW9tbXUNCj4gZG9tYWluIGlzIGNyZWF0ZWQgYW5k
+IG1hbmFnZWQgYnkgdmZpbywgc28gc2hvdWxkbid0IHdlIGJlIGxvb2tpbmcgYXQgaG93IHRvIGRv
+DQo+IHRoaXMgdGhyb3VnaCB2ZmlvPw0KDQpMZXQgbWUgZmlyc3QgZGVzY3JpYmUgd2hhdCB3ZSBh
+cmUgZG9pbmcgaGVyZToNCkR1cmluZyBpbml0aWFsaXphdGlvbjotDQogLSB2ZmlvIHRhbGtzIHRv
+IE1TSSBzeXN0ZW0gdG8ga25vdyB0aGUgTVNJLXBhZ2UgYW5kIHNpemUNCiAtIHZmaW8gdGhlbiBp
+bnRlcmFjdHMgd2l0aCBpb21tdSB0byBtYXAgdGhlIE1TSS1wYWdlIGluIGlvbW11IChJT1ZBIGlz
+IGRlY2lkZWQgYnkgdXNlcnNwYWNlIGFuZCBwaHlzaWNhbCBhZGRyZXNzIGlzIHRoZSBNU0ktcGFn
+ZSkNCiAtIFNvIHRoZSBJT1ZBIHN1YndpbmRvdyBtYXBwaW5nIGlzIGNyZWF0ZWQgaW4gaW9tbXUg
+YW5kIHllcyBWRklPIGtub3cgYWJvdXQgdGhpcyBtYXBwaW5nLg0KDQpOb3cgZG8gU0VUX0lSUShN
+U0kvTVNJWCkgaW9jdGw6DQogLSBjYWxscyBwY2lfZW5hYmxlX21zaXgoKS9wY2lfZW5hYmxlX21z
+aV9ibG9jaygpOiB3aGljaCBpcyBzdXBwb3NlZCB0byBzZXQgTVNJIGFkZHJlc3MvZGF0YSBpbiBk
+ZXZpY2UuDQogLSBTbyBpbiBjdXJyZW50IGltcGxlbWVudGF0aW9uICh0aGlzIHBhdGNoc2V0KSBt
+c2ktc3Vic3lzdGVtIGdldHMgdGhlIElPVkEgZnJvbSBpb21tdSB2aWEgdGhpcyBkZWZpbmVkIGlu
+dGVyZmFjZS4NCiAtIEFyZSB5b3Ugc2F5aW5nIHRoYXQgcmF0aGVyIHRoYW4gZ2V0dGluZyB0aGlz
+IGZyb20gaW9tbXUsIHdlIHNob3VsZCBnZXQgdGhpcyBmcm9tIHZmaW8/IFdoYXQgZGlmZmVyZW5j
+ZSBkb2VzIHRoaXMgbWFrZT8NCg0KVGhhbmtzDQotQmhhcmF0DQoNCj4gSXQgc2VlbXMgbGlrZSB5
+b3UnZCB3YW50IHRvIHVzZSB5b3VyIGRldmljZSB0byBnZXQgYSB2ZmlvDQo+IGdyb3VwIHJlZmVy
+ZW5jZSwgZnJvbSB3aGljaCB5b3UgY291bGQgZG8gc29tZXRoaW5nIHdpdGggdGhlIHZmaW8gZXh0
+ZXJuYWwgdXNlcg0KPiBpbnRlcmZhY2UgYW5kIGdldCB0aGUgaW9tbXUgZG9tYWluIHJlZmVyZW5j
+ZS4gIFRoYW5rcywNCj4gDQo+IEFsZXgNCj4gDQo+ID4gPiA+ICAvKg0KPiA+ID4gPiAgICogSU9N
+TVUgZ3JvdXBzIGFyZSByZWFsbHkgdGhlIG5hdHJ1YWwgd29ya2luZyB1bml0IG9mIHRoZSBJT01N
+VSwgYnV0DQo+ID4gPiA+ICAgKiB0aGUgSU9NTVUgQVBJIHdvcmtzIG9uIGRvbWFpbnMgYW5kIGRl
+dmljZXMuICBCcmlkZ2UgdGhhdCBnYXANCj4gPiA+ID4gYnkgZGlmZiAtLWdpdCBhL2luY2x1ZGUv
+bGludXgvaW9tbXUuaCBiL2luY2x1ZGUvbGludXgvaW9tbXUuaA0KPiA+ID4gPiBpbmRleCA3ZWEz
+MTllLi5mYTA0NmJkIDEwMDY0NA0KPiA+ID4gPiAtLS0gYS9pbmNsdWRlL2xpbnV4L2lvbW11LmgN
+Cj4gPiA+ID4gKysrIGIvaW5jbHVkZS9saW51eC9pb21tdS5oDQo+ID4gPiA+IEBAIC0xMjcsNiAr
+MTI3LDcgQEAgc3RydWN0IGlvbW11X29wcyB7DQo+ID4gPiA+ICAJaW50ICgqZG9tYWluX3NldF93
+aW5kb3dzKShzdHJ1Y3QgaW9tbXVfZG9tYWluICpkb21haW4sIHUzMg0KPiB3X2NvdW50KTsNCj4g
+PiA+ID4gIAkvKiBHZXQgdGhlIG51bWVyIG9mIHdpbmRvdyBwZXIgZG9tYWluICovDQo+ID4gPiA+
+ICAJdTMyICgqZG9tYWluX2dldF93aW5kb3dzKShzdHJ1Y3QgaW9tbXVfZG9tYWluICpkb21haW4p
+Ow0KPiA+ID4gPiArCXN0cnVjdCBpb21tdV9kb21haW4gKigqZ2V0X2Rldl9pb21tdV9kb21haW4p
+KHN0cnVjdCBkZXZpY2UNCj4gPiA+ID4gKypkZXYpOw0KPiA+ID4gPg0KPiA+ID4gPiAgCXVuc2ln
+bmVkIGxvbmcgcGdzaXplX2JpdG1hcDsNCj4gPiA+ID4gIH07DQo+ID4gPiA+IEBAIC0xOTAsNiAr
+MTkxLDcgQEAgZXh0ZXJuIGludCBpb21tdV9kb21haW5fd2luZG93X2VuYWJsZShzdHJ1Y3QNCj4g
+PiA+ID4gaW9tbXVfZG9tYWluDQo+ID4gPiAqZG9tYWluLCB1MzIgd25kX25yLA0KPiA+ID4gPiAg
+CQkJCSAgICAgIHBoeXNfYWRkcl90IG9mZnNldCwgdTY0IHNpemUsDQo+ID4gPiA+ICAJCQkJICAg
+ICAgaW50IHByb3QpOw0KPiA+ID4gPiAgZXh0ZXJuIHZvaWQgaW9tbXVfZG9tYWluX3dpbmRvd19k
+aXNhYmxlKHN0cnVjdCBpb21tdV9kb21haW4NCj4gPiA+ID4gKmRvbWFpbiwNCj4gPiA+ID4gdTMy
+IHduZF9ucik7DQo+ID4gPiA+ICtleHRlcm4gc3RydWN0IGlvbW11X2RvbWFpbiAqaW9tbXVfZ2V0
+X2Rldl9kb21haW4oc3RydWN0IGRldmljZQ0KPiA+ID4gPiArKmRldik7DQo+ID4gPiA+ICAvKioN
+Cj4gPiA+ID4gICAqIHJlcG9ydF9pb21tdV9mYXVsdCgpIC0gcmVwb3J0IGFib3V0IGFuIElPTU1V
+IGZhdWx0IHRvIHRoZSBJT01NVQ0KPiBmcmFtZXdvcmsNCj4gPiA+ID4gICAqIEBkb21haW46IHRo
+ZSBpb21tdSBkb21haW4gd2hlcmUgdGhlIGZhdWx0IGhhcyBoYXBwZW5lZCBAQA0KPiA+ID4gPiAt
+Mjg0LDYNCj4gPiA+ID4gKzI4NiwxMSBAQCBzdGF0aWMgaW5saW5lIHZvaWQgaW9tbXVfZG9tYWlu
+X3dpbmRvd19kaXNhYmxlKHN0cnVjdA0KPiA+ID4gPiBpb21tdV9kb21haW4gKmRvbWFpbiwgIHsg
+IH0NCj4gPiA+ID4NCj4gPiA+ID4gK3N0YXRpYyBpbmxpbmUgc3RydWN0IGlvbW11X2RvbWFpbiAq
+aW9tbXVfZ2V0X2Rldl9kb21haW4oc3RydWN0DQo+ID4gPiA+ICtkZXZpY2UNCj4gPiA+ID4gKypk
+ZXYpIHsNCj4gPiA+ID4gKwlyZXR1cm4gTlVMTDsNCj4gPiA+ID4gK30NCj4gPiA+ID4gKw0KPiA+
+ID4gPiAgc3RhdGljIGlubGluZSBwaHlzX2FkZHJfdCBpb21tdV9pb3ZhX3RvX3BoeXMoc3RydWN0
+IGlvbW11X2RvbWFpbg0KPiA+ID4gPiAqZG9tYWluLCBkbWFfYWRkcl90IGlvdmEpICB7DQo+ID4g
+PiA+ICAJcmV0dXJuIDA7DQo+ID4gPg0KPiA+ID4NCj4gPiA+DQo+ID4gPiAtLQ0KPiA+ID4gVG8g
+dW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxp
+bnV4LXBjaSINCj4gPiA+IGluIHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdl
+ci5rZXJuZWwub3JnIE1vcmUgbWFqb3Jkb21vDQo+ID4gPiBpbmZvIGF0IGh0dHA6Ly92Z2VyLmtl
+cm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KPiA+DQo+IA0KPiANCj4gDQoNCg==
