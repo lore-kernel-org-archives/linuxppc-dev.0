@@ -1,35 +1,21 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from webmail.solarflare.com (webmail.solarflare.com [12.187.104.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "WEBMAIL.SOLARFLARE.COM",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 367722C0F5B
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 07:29:26 +1000 (EST)
-Message-ID: <1380922156.3214.49.camel@bwh-desktop.uk.level5networks.com>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Alexander Gordeev <agordeev@redhat.com>
-Date: Fri, 4 Oct 2013 22:29:16 +0100
-In-Reply-To: <20131004082920.GA4536@dhcp-26-207.brq.redhat.com>
-References: <cover.1380703262.git.agordeev@redhat.com>
- <1380840585.3419.50.camel@bwh-desktop.uk.level5networks.com>
- <20131004082920.GA4536@dhcp-26-207.brq.redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <paulus@ozlabs.org>
+Date: Sat, 5 Oct 2013 09:45:09 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] kvm: powerpc: book3s: Fix build break for BOOK3S_32
+Message-ID: <20131004234509.GB2256@iris.ozlabs.ibm.com>
+References: <1380724724-12892-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20131003041415.GA2801@iris.ozlabs.ibm.com>
+ <EB193553-5B3C-4669-9C71-BACC6882D18B@suse.de>
+ <36F00CBE-E313-465A-BD93-A8E1B96FD2A9@suse.de>
+ <20131004123545.GC26884@iris.ozlabs.ibm.com>
+ <1945837D-825F-4509-9D7C-D839917863A9@suse.de>
 MIME-Version: 1.0
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
- iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1945837D-825F-4509-9D7C-D839917863A9@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,81 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-10-04 at 10:29 +0200, Alexander Gordeev wrote:
-> On Thu, Oct 03, 2013 at 11:49:45PM +0100, Ben Hutchings wrote:
-> > On Wed, 2013-10-02 at 12:48 +0200, Alexander Gordeev wrote:
-> > > This update converts pci_enable_msix() and pci_enable_msi_block()
-> > > interfaces to canonical kernel functions and makes them return a
-> > > error code in case of failure or 0 in case of success.
-> > [...]
+On Fri, Oct 04, 2013 at 03:00:11PM +0200, Alexander Graf wrote:
+> 
+> On 04.10.2013, at 14:35, Paul Mackerras wrote:
+> 
+> > On Fri, Oct 04, 2013 at 02:27:02PM +0200, Alexander Graf wrote:
+> >> 
+> >> On 04.10.2013, at 14:23, Alexander Graf wrote:
+> >> 
+> >>> 
+> >>> On 03.10.2013, at 06:14, Paul Mackerras wrote:
+> >>> 
+> >>>> On Wed, Oct 02, 2013 at 08:08:44PM +0530, Aneesh Kumar K.V wrote:
+> >>>>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> >>>>> 
+> >>>>> This was introduced by 85a0d845d8bb5df5d2669416212f56cbe1474c6b
+> >>>> 
+> >>>> It's a good idea to give the headline of the commit as well as the ID.
+> >>>> I also like to trim the ID to 10 characters or so.  So it should look
+> >>>> like this:
+> >>>> 
+> >>>> This was introduced by 85a0d845d8 ("KVM: PPC: Book3S PR: Allocate
+> >>>> kvm_vcpu structs from kvm_vcpu_cache").
+> >>>> 
+> >>>>> arch/powerpc/kvm/book3s_pr.c: In function 'kvmppc_core_vcpu_create':
+> >>>>> arch/powerpc/kvm/book3s_pr.c:1182:30: error: 'struct kvmppc_vcpu_book3s' has no member named 'shadow_vcpu'
+> >>>>> make[1]: *** [arch/powerpc/kvm/book3s_pr.o] Error 1
+> >>>>> 
+> >>>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> >>>> 
+> >>>> Acked-by: Paul Mackerras <paulus@samba.org>
+> >>> 
+> >>> Would you guys mind if I merge this into the offending patch? It's not trickled into -next yet, so rebasing should work.
+> >>> 
+> >>> If not, please resend with the fixed commit message.
+> >> 
+> >> Eh - I must've missed v2 :). So that leaves only the question on whether you'd be ok to squash the patch instead. It'd help bisectability.
 > > 
-> > I think this is fundamentally flawed: pci_msix_table_size() and
-> > pci_get_msi_cap() can only report the limits of the *device* (which the
-> > driver usually already knows), whereas MSI allocation can also be
-> > constrained due to *global* limits on the number of distinct IRQs.
+> > I'm OK with that.  If you do, why don't you squash the first of the
+> > two patches that I just sent into the commit it fixes as well?
 > 
-> Even the current implementation by no means addresses it. Although it
-> might seem a case for architectures to report the number of IRQs available
-> for a driver to retry, in fact they all just fail. The same applies to
-> *any* other type of resource involved: irq_desc's, CPU interrupt vector
-> space, msi_desc's etc. No platform cares about it and just bails out once
-> a constrain met (please correct me if I am wrong here). Given that Linux
-> has been doing well even on embedded I think we should not change it.
->
-> The only exception to the above is pSeries platform which takes advantage
-> of the current design (to implement MSI quota). There are indications we
-> can satisfy pSeries requirements, but the design proposed in this RFC
-> is not going to change drastically anyway. The start of the discusstion
-> is here: https://lkml.org/lkml/2013/9/5/293
+> Because patch 1/2 spans two separate commits it would have to get squashed into (6aa82e, 70afec) and patch 2/2 doesn't make sense to get squashed anywhere :).
 
-All I can see there is that Tejun didn't think that the global limits
-and positive return values were implemented by any architecture.  But
-you have a counter-example, so I'm not sure what your point is.
+Actually 70afec is fine, if you look at it, it's only 6aa82e that
+needs fixing.
 
-It has been quite a while since I saw this happen on x86.  But I just
-checked on a test system running RHEL 5 i386 (Linux 2.6.18).  If I ask
-for 16 MSI-X vectors on a device that supports 1024, the return value is
-8, and indeed I can then successfully allocate 8.
-
-Now that's going quite a way back, and it may be that global limits
-aren't a significant problem any more.  With the x86_64 build of RHEL 5
-on an identical system, I can allocate 16 or even 32, so this is
-apparently not a hardware limit in this case.
-
-> > Currently pci_enable_msix() will report a positive value if it fails due
-> > to the global limit.  Your patch 7 removes that.  pci_enable_msi_block()
-> > unfortunately doesn't appear to do this.
-> 
-> pci_enable_msi_block() can do more than one MSI only on x86 (with IOMMU),
-> but it does not bother to return positive numbers, indeed.
-> 
-> > It seems to me that a more useful interface would take a minimum and
-> > maximum number of vectors from the driver.  This wouldn't allow the
-> > driver to specify that it could only accept, say, any even number within
-> > a certain range, but you could still leave the current functions
-> > available for any driver that needs that.
-> 
-> Mmmm.. I am not sure I am getting it. Could you please rephrase?
-
-Most drivers seem to either:
-(a) require exactly a certain number of MSI vectors, or
-(b) require a minimum number of MSI vectors, usually want to allocate
-more, and work with any number in between
-
-We can support drivers in both classes by adding new allocation
-functions that allow specifying a minimum (required) and maximum
-(wanted) number of MSI vectors.  Those in class (a) would just specify
-the same value for both.  These new functions can take account of any
-global limit or allocation policy without any further changes to the
-drivers that use them.
-
-The few drivers with more specific requirements would still need to
-implement the currently recommended loop, using the old allocation
-functions.
-
-Ben.
-
--- 
-Ben Hutchings, Staff Engineer, Solarflare
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+Paul.
