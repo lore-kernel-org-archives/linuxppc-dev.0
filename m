@@ -1,18 +1,18 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 5745A2C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 00:43:47 +1000 (EST)
-Subject: Re: [PATCH -V2] kvm: powerpc: book3s: Fix build break for BOOK3S_32
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1380787123-32646-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Fri, 4 Oct 2013 16:43:41 +0200
-Message-Id: <85675099-BA83-4F23-BA9E-02BF8173067C@suse.de>
-References: <1380787123-32646-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CA7102C00A2
+ for <linuxppc-dev@ozlabs.org>; Sat,  5 Oct 2013 01:37:18 +1000 (EST)
+From: Wolfram Sang <wsa@the-dreams.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Kind of revert "powerpc: 52xx: provide a default in
+ mpc52xx_irqhost_map()"
+Date: Fri,  4 Oct 2013 17:37:09 +0200
+Message-Id: <1380901029-3548-1-git-send-email-wsa@the-dreams.de>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Anatolij Gustschin <agust@denx.de>, linux-rt-users@vger.kernel.org,
+ Wolfram Sang <wsa@the-dreams.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,50 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This more or less reverts commit 6391f697d4892a6f233501beea553e13f7745a23.
+Instead of adding an unneeded 'default', mark the variable to prevent
+the false positive 'uninitialized var'. The other change (fixing the
+printout) needs revert, too. We want to know WHICH critical irq failed,
+not which level it had.
 
-On 03.10.2013, at 09:58, Aneesh Kumar K.V wrote:
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Anatolij Gustschin <agust@denx.de>
+---
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->=20
-> This was introduced by 85a0d845d8 ("KVM: PPC: Book3S PR: Allocate
-> kvm_vcpu structs from kvm_vcpu_cache").
->=20
-> arch/powerpc/kvm/book3s_pr.c: In function 'kvmppc_core_vcpu_create':
-> arch/powerpc/kvm/book3s_pr.c:1182:30: error: 'struct =
-kvmppc_vcpu_book3s' has no member named 'shadow_vcpu'
-> make[1]: *** [arch/powerpc/kvm/book3s_pr.o] Error 1
->=20
-> Acked-by: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-Thanks, squashed into the offending commit in kvm-ppc-queue.
-
-
-Alex
-
-> ---
-> arch/powerpc/kvm/book3s_pr.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_pr.c =
-b/arch/powerpc/kvm/book3s_pr.c
-> index 8941885..6075dbd 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -1179,7 +1179,7 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct =
-kvm *kvm, unsigned int id)
->=20
-> #ifdef CONFIG_KVM_BOOK3S_32
-> 	vcpu->arch.shadow_vcpu =3D
-> -		kzalloc(sizeof(*vcpu_book3s->shadow_vcpu), GFP_KERNEL);
-> +		kzalloc(sizeof(*vcpu->arch.shadow_vcpu), GFP_KERNEL);
-> 	if (!vcpu->arch.shadow_vcpu)
-> 		goto free_vcpu3s;
-> #endif
-> --=20
-> 1.8.1.2
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
+index b69221b..2898b73 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
+@@ -340,7 +340,7 @@ static int mpc52xx_irqhost_map(struct irq_domain *h, unsigned int virq,
+ {
+ 	int l1irq;
+ 	int l2irq;
+-	struct irq_chip *irqchip;
++	struct irq_chip *uninitialized_var(irqchip);
+ 	void *hndlr;
+ 	int type;
+ 	u32 reg;
+@@ -373,9 +373,8 @@ static int mpc52xx_irqhost_map(struct irq_domain *h, unsigned int virq,
+ 	case MPC52xx_IRQ_L1_PERP: irqchip = &mpc52xx_periph_irqchip; break;
+ 	case MPC52xx_IRQ_L1_SDMA: irqchip = &mpc52xx_sdma_irqchip; break;
+ 	case MPC52xx_IRQ_L1_CRIT:
+-	default:
+ 		pr_warn("%s: Critical IRQ #%d is unsupported! Nopping it.\n",
+-			__func__, l1irq);
++			__func__, l2irq);
+ 		irq_set_chip(virq, &no_irq_chip);
+ 		return 0;
+ 	}
+-- 
+1.7.10.4
