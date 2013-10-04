@@ -1,34 +1,35 @@
-Return-Path: <jon.mason@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by ozlabs.org (Postfix) with ESMTP id 58FF02C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 10:59:17 +1000 (EST)
-Date: Thu, 3 Oct 2013 17:59:13 -0700
-From: Jon Mason <jon.mason@intel.com>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Subject: Re: [PATCH RFC 01/77] PCI/MSI: Fix return value when
- populate_msi_sysfs() failed
-Message-ID: <20131004005912.GB4787@jonmason-lab>
-References: <cover.1380703262.git.agordeev@redhat.com>
- <3ff5236944aae69f2cd934b5b6da7c1c269df7c1.1380703262.git.agordeev@redhat.com>
- <20131003003905.GK6768@jonmason-lab>
- <1380836781.3419.17.camel@bwh-desktop.uk.level5networks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1380836781.3419.17.camel@bwh-desktop.uk.level5networks.com>
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- stable@vger.kernel.org, linux-s390@vger.kernel.org,
- Andy King <acking@vmware.com>, linux-scsi@vger.kernel.org,
- linux-rdma@vger.kernel.org, x86@kernel.org,
- Alexander Gordeev <agordeev@redhat.com>, linux-pci@vger.kernel.org,
- iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Ingo Molnar <mingo@redhat.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
+Return-Path: <ast@plumgrid.com>
+Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
+ [209.85.220.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C49982C00E3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 12:24:14 +1000 (EST)
+Received: by mail-pa0-f42.google.com with SMTP id lj1so3493935pab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 19:24:11 -0700 (PDT)
+From: Alexei Starovoitov <ast@plumgrid.com>
+To: "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH v3 net-next] fix unsafe set_memory_rw from softirq
+Date: Thu,  3 Oct 2013 19:24:06 -0700
+Message-Id: <1380853446-30537-1-git-send-email-ast@plumgrid.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Eric Dumazet <edumazet@google.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Nicolas Dichtel <nicolas.dichtel@6wind.com>,
+ Alexei Starovoitov <ast@plumgrid.com>, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>, x86@kernel.org,
+ James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>,
+ Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Xi Wang <xi.wang@gmail.com>,
+ Matt Evans <matt@ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Stelian Nirlu <steliannirlu@gmail.com>,
+ Nicolas Schichan <nschichan@freebox.fr>,
+ Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Mircea Gherzan <mgherzan@gmail.com>,
+ Daniel Borkmann <dborkman@redhat.com>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ linuxppc-dev@lists.ozlabs.org, Patrick McHardy <kaber@trash.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,32 +39,244 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 03, 2013 at 10:46:21PM +0100, Ben Hutchings wrote:
-> On Wed, 2013-10-02 at 17:39 -0700, Jon Mason wrote:
-> > On Wed, Oct 02, 2013 at 12:48:17PM +0200, Alexander Gordeev wrote:
-> > > Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
-> > 
-> > Since you are changing the behavior of the msix_capability_init
-> > function on populate_msi_sysfs error, a comment describing why in this
-> > commit would be nice.
-> [...]
-> 
-> This function was already treating that error as fatal, and freeing the
-> MSIs.  The change in behaviour is that it now returns the error code in
-> this case, rather than 0.  This is obviously correct and properly
-> described by the one-line summary.
+on x86 system with net.core.bpf_jit_enable = 1
 
-If someone dumb, like me, is looking at this commit and trying to
-figure out what is happening, having ANY commit message is good.  "Fix
-the return value" doesn't tell me anything.  Documenting what issue(s)
-would've been seen had the error case been encountered and what will
-now been seen would be very nice.
+sudo tcpdump -i eth1 'tcp port 22'
 
-> 
-> Ben.
-> 
-> -- 
-> Ben Hutchings, Staff Engineer, Solarflare
-> Not speaking for my employer; that's the marketing department's job.
-> They asked us to note that Solarflare product names are trademarked.
-> 
+causes the warning:
+[   56.766097]  Possible unsafe locking scenario:
+[   56.766097]
+[   56.780146]        CPU0
+[   56.786807]        ----
+[   56.793188]   lock(&(&vb->lock)->rlock);
+[   56.799593]   <Interrupt>
+[   56.805889]     lock(&(&vb->lock)->rlock);
+[   56.812266]
+[   56.812266]  *** DEADLOCK ***
+[   56.812266]
+[   56.830670] 1 lock held by ksoftirqd/1/13:
+[   56.836838]  #0:  (rcu_read_lock){.+.+..}, at: [<ffffffff8118f44c>] vm_unmap_aliases+0x8c/0x380
+[   56.849757]
+[   56.849757] stack backtrace:
+[   56.862194] CPU: 1 PID: 13 Comm: ksoftirqd/1 Not tainted 3.12.0-rc3+ #45
+[   56.868721] Hardware name: System manufacturer System Product Name/P8Z77 WS, BIOS 3007 07/26/2012
+[   56.882004]  ffffffff821944c0 ffff88080bbdb8c8 ffffffff8175a145 0000000000000007
+[   56.895630]  ffff88080bbd5f40 ffff88080bbdb928 ffffffff81755b14 0000000000000001
+[   56.909313]  ffff880800000001 ffff880800000000 ffffffff8101178f 0000000000000001
+[   56.923006] Call Trace:
+[   56.929532]  [<ffffffff8175a145>] dump_stack+0x55/0x76
+[   56.936067]  [<ffffffff81755b14>] print_usage_bug+0x1f7/0x208
+[   56.942445]  [<ffffffff8101178f>] ? save_stack_trace+0x2f/0x50
+[   56.948932]  [<ffffffff810cc0a0>] ? check_usage_backwards+0x150/0x150
+[   56.955470]  [<ffffffff810ccb52>] mark_lock+0x282/0x2c0
+[   56.961945]  [<ffffffff810ccfed>] __lock_acquire+0x45d/0x1d50
+[   56.968474]  [<ffffffff810cce6e>] ? __lock_acquire+0x2de/0x1d50
+[   56.975140]  [<ffffffff81393bf5>] ? cpumask_next_and+0x55/0x90
+[   56.981942]  [<ffffffff810cef72>] lock_acquire+0x92/0x1d0
+[   56.988745]  [<ffffffff8118f52a>] ? vm_unmap_aliases+0x16a/0x380
+[   56.995619]  [<ffffffff817628f1>] _raw_spin_lock+0x41/0x50
+[   57.002493]  [<ffffffff8118f52a>] ? vm_unmap_aliases+0x16a/0x380
+[   57.009447]  [<ffffffff8118f52a>] vm_unmap_aliases+0x16a/0x380
+[   57.016477]  [<ffffffff8118f44c>] ? vm_unmap_aliases+0x8c/0x380
+[   57.023607]  [<ffffffff810436b0>] change_page_attr_set_clr+0xc0/0x460
+[   57.030818]  [<ffffffff810cfb8d>] ? trace_hardirqs_on+0xd/0x10
+[   57.037896]  [<ffffffff811a8330>] ? kmem_cache_free+0xb0/0x2b0
+[   57.044789]  [<ffffffff811b59c3>] ? free_object_rcu+0x93/0xa0
+[   57.051720]  [<ffffffff81043d9f>] set_memory_rw+0x2f/0x40
+[   57.058727]  [<ffffffff8104e17c>] bpf_jit_free+0x2c/0x40
+[   57.065577]  [<ffffffff81642cba>] sk_filter_release_rcu+0x1a/0x30
+[   57.072338]  [<ffffffff811108e2>] rcu_process_callbacks+0x202/0x7c0
+[   57.078962]  [<ffffffff81057f17>] __do_softirq+0xf7/0x3f0
+[   57.085373]  [<ffffffff81058245>] run_ksoftirqd+0x35/0x70
+
+cannot reuse jited filter memory, since it's readonly,
+so use original bpf insns memory to hold work_struct
+
+defer kfree of sk_filter until jit completed freeing
+
+tested on x86_64 and i386
+
+Signed-off-by: Alexei Starovoitov <ast@plumgrid.com>
+---
+ arch/arm/net/bpf_jit_32.c       |    1 +
+ arch/powerpc/net/bpf_jit_comp.c |    1 +
+ arch/s390/net/bpf_jit_comp.c    |    4 +++-
+ arch/sparc/net/bpf_jit_comp.c   |    1 +
+ arch/x86/net/bpf_jit_comp.c     |   20 +++++++++++++++-----
+ include/linux/filter.h          |   11 +++++++++--
+ net/core/filter.c               |   11 +++++++----
+ 7 files changed, 37 insertions(+), 12 deletions(-)
+
+diff --git a/arch/arm/net/bpf_jit_32.c b/arch/arm/net/bpf_jit_32.c
+index f50d223..99b44e0 100644
+--- a/arch/arm/net/bpf_jit_32.c
++++ b/arch/arm/net/bpf_jit_32.c
+@@ -930,4 +930,5 @@ void bpf_jit_free(struct sk_filter *fp)
+ {
+ 	if (fp->bpf_func != sk_run_filter)
+ 		module_free(NULL, fp->bpf_func);
++	kfree(fp);
+ }
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index bf56e33..2345bdb 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -691,4 +691,5 @@ void bpf_jit_free(struct sk_filter *fp)
+ {
+ 	if (fp->bpf_func != sk_run_filter)
+ 		module_free(NULL, fp->bpf_func);
++	kfree(fp);
+ }
+diff --git a/arch/s390/net/bpf_jit_comp.c b/arch/s390/net/bpf_jit_comp.c
+index 7092392..a5df511 100644
+--- a/arch/s390/net/bpf_jit_comp.c
++++ b/arch/s390/net/bpf_jit_comp.c
+@@ -881,7 +881,9 @@ void bpf_jit_free(struct sk_filter *fp)
+ 	struct bpf_binary_header *header = (void *)addr;
+ 
+ 	if (fp->bpf_func == sk_run_filter)
+-		return;
++		goto free_filter;
+ 	set_memory_rw(addr, header->pages);
+ 	module_free(NULL, header);
++free_filter:
++	kfree(fp);
+ }
+diff --git a/arch/sparc/net/bpf_jit_comp.c b/arch/sparc/net/bpf_jit_comp.c
+index 9c7be59..218b6b2 100644
+--- a/arch/sparc/net/bpf_jit_comp.c
++++ b/arch/sparc/net/bpf_jit_comp.c
+@@ -808,4 +808,5 @@ void bpf_jit_free(struct sk_filter *fp)
+ {
+ 	if (fp->bpf_func != sk_run_filter)
+ 		module_free(NULL, fp->bpf_func);
++	kfree(fp);
+ }
+diff --git a/arch/x86/net/bpf_jit_comp.c b/arch/x86/net/bpf_jit_comp.c
+index 79c216a..1396a0a 100644
+--- a/arch/x86/net/bpf_jit_comp.c
++++ b/arch/x86/net/bpf_jit_comp.c
+@@ -772,13 +772,23 @@ out:
+ 	return;
+ }
+ 
++static void bpf_jit_free_deferred(struct work_struct *work)
++{
++	struct sk_filter *fp = container_of((void *)work, struct sk_filter,
++					    insns);
++	unsigned long addr = (unsigned long)fp->bpf_func & PAGE_MASK;
++	struct bpf_binary_header *header = (void *)addr;
++
++	set_memory_rw(addr, header->pages);
++	module_free(NULL, header);
++	kfree(fp);
++}
++
+ void bpf_jit_free(struct sk_filter *fp)
+ {
+ 	if (fp->bpf_func != sk_run_filter) {
+-		unsigned long addr = (unsigned long)fp->bpf_func & PAGE_MASK;
+-		struct bpf_binary_header *header = (void *)addr;
+-
+-		set_memory_rw(addr, header->pages);
+-		module_free(NULL, header);
++		struct work_struct *work = (struct work_struct *)fp->insns;
++		INIT_WORK(work, bpf_jit_free_deferred);
++		schedule_work(work);
+ 	}
+ }
+diff --git a/include/linux/filter.h b/include/linux/filter.h
+index a6ac848..5d66cd9 100644
+--- a/include/linux/filter.h
++++ b/include/linux/filter.h
+@@ -25,15 +25,20 @@ struct sk_filter
+ {
+ 	atomic_t		refcnt;
+ 	unsigned int         	len;	/* Number of filter blocks */
++	struct rcu_head		rcu;
+ 	unsigned int		(*bpf_func)(const struct sk_buff *skb,
+ 					    const struct sock_filter *filter);
+-	struct rcu_head		rcu;
++	/* insns start right after bpf_func, so that sk_run_filter() fetches
++	 * first insn from the same cache line that was used to call into
++	 * sk_run_filter()
++	 */
+ 	struct sock_filter     	insns[0];
+ };
+ 
+ static inline unsigned int sk_filter_len(const struct sk_filter *fp)
+ {
+-	return fp->len * sizeof(struct sock_filter) + sizeof(*fp);
++	return max(fp->len * sizeof(struct sock_filter),
++		   sizeof(struct work_struct)) + sizeof(*fp);
+ }
+ 
+ extern int sk_filter(struct sock *sk, struct sk_buff *skb);
+@@ -67,11 +72,13 @@ static inline void bpf_jit_dump(unsigned int flen, unsigned int proglen,
+ }
+ #define SK_RUN_FILTER(FILTER, SKB) (*FILTER->bpf_func)(SKB, FILTER->insns)
+ #else
++#include <linux/slab.h>
+ static inline void bpf_jit_compile(struct sk_filter *fp)
+ {
+ }
+ static inline void bpf_jit_free(struct sk_filter *fp)
+ {
++	kfree(fp);
+ }
+ #define SK_RUN_FILTER(FILTER, SKB) sk_run_filter(SKB, FILTER->insns)
+ #endif
+diff --git a/net/core/filter.c b/net/core/filter.c
+index 6438f29..ad5eaba 100644
+--- a/net/core/filter.c
++++ b/net/core/filter.c
+@@ -644,7 +644,6 @@ void sk_filter_release_rcu(struct rcu_head *rcu)
+ 	struct sk_filter *fp = container_of(rcu, struct sk_filter, rcu);
+ 
+ 	bpf_jit_free(fp);
+-	kfree(fp);
+ }
+ EXPORT_SYMBOL(sk_filter_release_rcu);
+ 
+@@ -677,13 +676,15 @@ int sk_unattached_filter_create(struct sk_filter **pfp,
+ {
+ 	struct sk_filter *fp;
+ 	unsigned int fsize = sizeof(struct sock_filter) * fprog->len;
++	unsigned int sk_fsize = max_t(u32, fsize, sizeof(struct work_struct))
++		+ sizeof(*fp);
+ 	int err;
+ 
+ 	/* Make sure new filter is there and in the right amounts. */
+ 	if (fprog->filter == NULL)
+ 		return -EINVAL;
+ 
+-	fp = kmalloc(fsize + sizeof(*fp), GFP_KERNEL);
++	fp = kmalloc(sk_fsize, GFP_KERNEL);
+ 	if (!fp)
+ 		return -ENOMEM;
+ 	memcpy(fp->insns, fprog->filter, fsize);
+@@ -723,6 +724,8 @@ int sk_attach_filter(struct sock_fprog *fprog, struct sock *sk)
+ {
+ 	struct sk_filter *fp, *old_fp;
+ 	unsigned int fsize = sizeof(struct sock_filter) * fprog->len;
++	unsigned int sk_fsize = max_t(u32, fsize, sizeof(struct work_struct))
++		+ sizeof(*fp);
+ 	int err;
+ 
+ 	if (sock_flag(sk, SOCK_FILTER_LOCKED))
+@@ -732,11 +735,11 @@ int sk_attach_filter(struct sock_fprog *fprog, struct sock *sk)
+ 	if (fprog->filter == NULL)
+ 		return -EINVAL;
+ 
+-	fp = sock_kmalloc(sk, fsize+sizeof(*fp), GFP_KERNEL);
++	fp = sock_kmalloc(sk, sk_fsize, GFP_KERNEL);
+ 	if (!fp)
+ 		return -ENOMEM;
+ 	if (copy_from_user(fp->insns, fprog->filter, fsize)) {
+-		sock_kfree_s(sk, fp, fsize+sizeof(*fp));
++		sock_kfree_s(sk, fp, sk_fsize);
+ 		return -EFAULT;
+ 	}
+ 
+-- 
+1.7.9.5
