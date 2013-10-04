@@ -1,32 +1,29 @@
-Return-Path: <jackm@dev.mellanox.co.il>
-Received: from mail-ea0-f178.google.com (mail-ea0-f178.google.com
- [209.85.215.178])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9FE332C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 02:11:08 +1000 (EST)
-Received: by mail-ea0-f178.google.com with SMTP id a15so1196672eae.23
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 09:11:04 -0700 (PDT)
-Date: Thu, 3 Oct 2013 19:11:00 +0300
-From: Jack Morgenstein <jackm@dev.mellanox.co.il>
-To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH RFC 51/77] mthca: Update MSI/MSI-X interrupts enablement
- code
-Message-ID: <20131003191100.3e3e3bfd@jpm-OptiPlex-GX620>
-In-Reply-To: <9d424912ef78993dc75e2af5006cd12913e9e7e7.1380703263.git.agordeev@redhat.com>
+Return-Path: <jon.mason@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by ozlabs.org (Postfix) with ESMTP id 58FF02C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 10:59:17 +1000 (EST)
+Date: Thu, 3 Oct 2013 17:59:13 -0700
+From: Jon Mason <jon.mason@intel.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Subject: Re: [PATCH RFC 01/77] PCI/MSI: Fix return value when
+ populate_msi_sysfs() failed
+Message-ID: <20131004005912.GB4787@jonmason-lab>
 References: <cover.1380703262.git.agordeev@redhat.com>
- <9d424912ef78993dc75e2af5006cd12913e9e7e7.1380703263.git.agordeev@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ <3ff5236944aae69f2cd934b5b6da7c1c269df7c1.1380703262.git.agordeev@redhat.com>
+ <20131003003905.GK6768@jonmason-lab>
+ <1380836781.3419.17.camel@bwh-desktop.uk.level5networks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1380836781.3419.17.camel@bwh-desktop.uk.level5networks.com>
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
  linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
+ stable@vger.kernel.org, linux-s390@vger.kernel.org,
+ Andy King <acking@vmware.com>, linux-scsi@vger.kernel.org,
+ linux-rdma@vger.kernel.org, x86@kernel.org,
+ Alexander Gordeev <agordeev@redhat.com>, linux-pci@vger.kernel.org,
  iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
  Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
+ Ingo Molnar <mingo@redhat.com>,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
@@ -41,21 +38,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed,  2 Oct 2013 12:49:07 +0200
-Alexander Gordeev <agordeev@redhat.com> wrote:
-
-> Subject: [PATCH RFC 51/77] mthca: Update MSI/MSI-X interrupts
-> enablement code Date: Wed,  2 Oct 2013 12:49:07 +0200
-> Sender: linux-rdma-owner@vger.kernel.org
-> X-Mailer: git-send-email 1.7.7.6
+On Thu, Oct 03, 2013 at 10:46:21PM +0100, Ben Hutchings wrote:
+> On Wed, 2013-10-02 at 17:39 -0700, Jon Mason wrote:
+> > On Wed, Oct 02, 2013 at 12:48:17PM +0200, Alexander Gordeev wrote:
+> > > Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
+> > 
+> > Since you are changing the behavior of the msix_capability_init
+> > function on populate_msi_sysfs error, a comment describing why in this
+> > commit would be nice.
+> [...]
 > 
-> As result of recent re-design of the MSI/MSI-X interrupts enabling
-> pattern this driver has to be updated to use the new technique to
-> obtain a optimal number of MSI/MSI-X interrupts required.
+> This function was already treating that error as fatal, and freeing the
+> MSIs.  The change in behaviour is that it now returns the error code in
+> this case, rather than 0.  This is obviously correct and properly
+> described by the one-line summary.
+
+If someone dumb, like me, is looking at this commit and trying to
+figure out what is happening, having ANY commit message is good.  "Fix
+the return value" doesn't tell me anything.  Documenting what issue(s)
+would've been seen had the error case been encountered and what will
+now been seen would be very nice.
+
 > 
-> Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
-> ---
-
-ACK.
-
--Jack
+> Ben.
+> 
+> -- 
+> Ben Hutchings, Staff Engineer, Solarflare
+> Not speaking for my employer; that's the marketing department's job.
+> They asked us to note that Solarflare product names are trademarked.
+> 
