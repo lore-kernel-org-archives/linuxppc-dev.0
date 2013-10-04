@@ -1,30 +1,24 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by ozlabs.org (Postfix) with ESMTP id AE1E62C009D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 13:16:54 +1000 (EST)
-Received: from mail-vb0-f42.google.com (mail-vb0-f42.google.com
- [209.85.212.42])
- by muin.pair.com (Postfix) with ESMTPSA id 039408FC12
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2013 23:16:51 -0400 (EDT)
-Received: by mail-vb0-f42.google.com with SMTP id e12so2085766vbg.29
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 20:16:51 -0700 (PDT)
+Return-Path: <olof@lixom.net>
+Received: from mail-we0-f172.google.com (mail-we0-f172.google.com
+ [74.125.82.172])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 537E82C00E4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2013 14:19:17 +1000 (EST)
+Received: by mail-we0-f172.google.com with SMTP id w61so3924241wes.31
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2013 21:19:13 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <524A4664.7080008@freescale.com>
-References: <1380524042-13720-1-git-send-email-prabhakar@freescale.com>
- <1380570471.24959.517.camel@snotra.buserror.net>
- <524A4664.7080008@freescale.com>
-Date: Thu, 3 Oct 2013 22:16:51 -0500
-Message-ID: <CAOZdJXUXSHwYkhr9OG22ZaHQSKhpbQW1ADRU_X+x4301TjE9pA@mail.gmail.com>
-Subject: Re: [PATCH 1/2][v7] powerpc/mpc85xx:Add initial device tree support
- of T104x
-From: Timur Tabi <timur@tabi.org>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
+In-Reply-To: <1380792456-19128-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1380792456-19128-1-git-send-email-maddy@linux.vnet.ibm.com>
+Date: Thu, 3 Oct 2013 21:19:13 -0700
+Message-ID: <CAOesGMj6hWgJQ=hELJ9J1XTJnSTf+15FrxJuBZs=_U4RRMMB+g@mail.gmail.com>
+Subject: Re: [PATCH v3] powerpc/kernel/sysfs: cleanup set up macros for
+ PMC/non-PMC SPRs
+From: Olof Johansson <olof@lixom.net>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>,
- Varun Sethi <Varun.Sethi@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Priyanka Jain <Priyanka.Jain@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,14 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 30, 2013 at 10:49 PM, Prabhakar Kushwaha
-<prabhakar@freescale.com> wrote:
+On Thu, Oct 3, 2013 at 2:27 AM, Madhavan Srinivasan
+<maddy@linux.vnet.ibm.com> wrote:
+> Currently PMC (Performance Monitor Counter) setup macros are used
+> for other SPRs. Since not all SPRs are PMC related, this patch
+> modifies the exisiting macro and uses it to setup both PMC and
+> non PMC SPRs accordingly.
 >
-> do we have any scripts which check for whitespace as checkpatch never give
-> any warning/error.
-> it is a very silly mistake which I am doing continuously :(
+> V3 changes:
+>
+> 1) No logic change, just renamed generic macro and removed #define for empty string
+> 2) Changes in the comment to explain better.
+>
+> V2 changes:
+>
+> 1) Modified SYSFS_PMCSETUP to a generic macro with additional parameter
+> 2) Added PMC and SPR macro to call the generic macro
+> 3) Changes in the comment to explain better.
+>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-Use a proper code editor.  I've never had this problem, so I'm
-guessing your editor is not good enough.
+Acked-by: Olof Johansson <olof@lixom.net>
 
-I use Slickedit, but there are others that work just as well.
+For the pa6t parts
+
+
+-Olof
