@@ -1,25 +1,26 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 0DF102C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 09:59:12 +1000 (EST)
-Subject: Re: [PATCH] kvm: powerpc: book3s: Fix build break for BOOK3S_32
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20131004234509.GB2256@iris.ozlabs.ibm.com>
-Date: Sat, 5 Oct 2013 01:59:03 +0200
-Message-Id: <FF88FE16-68D9-447E-8F42-CD18A3C81777@suse.de>
-References: <1380724724-12892-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20131003041415.GA2801@iris.ozlabs.ibm.com>
- <EB193553-5B3C-4669-9C71-BACC6882D18B@suse.de>
- <36F00CBE-E313-465A-BD93-A8E1B96FD2A9@suse.de>
- <20131004123545.GC26884@iris.ozlabs.ibm.com>
- <1945837D-825F-4509-9D7C-D839917863A9@suse.de>
- <20131004234509.GB2256@iris.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f180.google.com (mail-pd0-f180.google.com
+ [209.85.192.180])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3A0772C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 11:52:19 +1000 (EST)
+Received: by mail-pd0-f180.google.com with SMTP id y10so4717170pdj.39
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Oct 2013 18:52:16 -0700 (PDT)
+Message-ID: <524F70D0.4050502@ozlabs.ru>
+Date: Sat, 05 Oct 2013 11:52:16 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [RFC PATCH] PPC: KVM: vfio kvm device: support spapr tce
+References: <20131001200757.31715.22994.stgit@bling.home>	
+ <1380889450-25550-1-git-send-email-aik@ozlabs.ru>
+ <1380902702.25705.11.camel@ul30vt.home>
+In-Reply-To: <1380902702.25705.11.camel@ul30vt.home>
+Content-Type: text/plain; charset=KOI8-R
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,65 +30,309 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 05.10.2013 2:05, Alex Williamson wrote:
+> On Fri, 2013-10-04 at 22:24 +1000, Alexey Kardashevskiy wrote:
+>> This is a very rough change set required for ppc64 to use this KVM device.
+>>
+>> vfio_rm.c is a piece of code which is going to be called from the realmode (MMU off),
+>> and I will put everything spapr-related under #ifdef CONFIG_SPAPR_TCE_IOMMU,
+>> it is just friday and I have to run :)
+>>
+>> This is an RFC but it works.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  arch/powerpc/kvm/Kconfig  |  1 +
+>>  arch/powerpc/kvm/Makefile |  4 ++++
+>>  include/linux/kvm_host.h  |  8 ++++---
+>>  include/linux/vfio.h      |  3 +++
+>>  include/uapi/linux/kvm.h  |  1 +
+>>  virt/kvm/vfio.c           | 46 ++++++++++++++++++++++++++++++++++++++++
+>>  virt/kvm/vfio_rm.c        | 54 +++++++++++++++++++++++++++++++++++++++++++++++
+>>  7 files changed, 114 insertions(+), 3 deletions(-)
+>>  create mode 100644 virt/kvm/vfio_rm.c
+>>
+>> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+>> index 61b3535..d1b7f64 100644
+>> --- a/arch/powerpc/kvm/Kconfig
+>> +++ b/arch/powerpc/kvm/Kconfig
+>> @@ -60,6 +60,7 @@ config KVM_BOOK3S_64
+>>  	select KVM_BOOK3S_64_HANDLER
+>>  	select KVM
+>>  	select SPAPR_TCE_IOMMU
+>> +	select KVM_VFIO
+>>  	---help---
+>>  	  Support running unmodified book3s_64 and book3s_32 guest kernels
+>>  	  in virtual machines on book3s_64 host processors.
+>> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+>> index 6646c95..fc2878b 100644
+>> --- a/arch/powerpc/kvm/Makefile
+>> +++ b/arch/powerpc/kvm/Makefile
+>> @@ -55,6 +55,8 @@ kvm-objs-$(CONFIG_KVM_E500MC) := $(kvm-e500mc-objs)
+>>  
+>>  kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_PR) := \
+>>  	$(KVM)/coalesced_mmio.o \
+>> +	$(KVM)/vfio.o \
+>> +	$(KVM)/vfio_rm.o \
+>>  	fpu.o \
+>>  	book3s_paired_singles.o \
+>>  	book3s_pr.o \
+>> @@ -76,6 +78,7 @@ kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
+>>  kvm-book3s_64-builtin-xics-objs-$(CONFIG_KVM_XICS) := \
+>>  	book3s_hv_rm_xics.o
+>>  kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
+>> +	$(KVM)/vfio_rm.o \
+>>  	book3s_hv_rmhandlers.o \
+>>  	book3s_hv_rm_mmu.o \
+>>  	book3s_64_vio_hv.o \
+>> @@ -89,6 +92,7 @@ kvm-book3s_64-objs-$(CONFIG_KVM_XICS) += \
+>>  
+>>  kvm-book3s_64-module-objs := \
+>>  	$(KVM)/kvm_main.o \
+>> +	$(KVM)/vfio.o \
+>>  	$(KVM)/eventfd.o \
+>>  	powerpc.o \
+>>  	emulate.o \
+>> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+>> index ad2b581..43c0290 100644
+>> --- a/include/linux/kvm_host.h
+>> +++ b/include/linux/kvm_host.h
+>> @@ -407,6 +407,8 @@ struct kvm {
+>>  #endif
+>>  	long tlbs_dirty;
+>>  	struct list_head devices;
+>> +
+>> +	struct kvm_vfio *vfio;
+> 
+> 
+> <cringe> can't this be on kvm->arch?
 
-On 05.10.2013, at 01:45, Paul Mackerras wrote:
-
-> On Fri, Oct 04, 2013 at 03:00:11PM +0200, Alexander Graf wrote:
->>=20
->> On 04.10.2013, at 14:35, Paul Mackerras wrote:
->>=20
->>> On Fri, Oct 04, 2013 at 02:27:02PM +0200, Alexander Graf wrote:
->>>>=20
->>>> On 04.10.2013, at 14:23, Alexander Graf wrote:
->>>>=20
->>>>>=20
->>>>> On 03.10.2013, at 06:14, Paul Mackerras wrote:
->>>>>=20
->>>>>> On Wed, Oct 02, 2013 at 08:08:44PM +0530, Aneesh Kumar K.V wrote:
->>>>>>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->>>>>>>=20
->>>>>>> This was introduced by 85a0d845d8bb5df5d2669416212f56cbe1474c6b
->>>>>>=20
->>>>>> It's a good idea to give the headline of the commit as well as =
-the ID.
->>>>>> I also like to trim the ID to 10 characters or so.  So it should =
-look
->>>>>> like this:
->>>>>>=20
->>>>>> This was introduced by 85a0d845d8 ("KVM: PPC: Book3S PR: Allocate
->>>>>> kvm_vcpu structs from kvm_vcpu_cache").
->>>>>>=20
->>>>>>> arch/powerpc/kvm/book3s_pr.c: In function =
-'kvmppc_core_vcpu_create':
->>>>>>> arch/powerpc/kvm/book3s_pr.c:1182:30: error: 'struct =
-kvmppc_vcpu_book3s' has no member named 'shadow_vcpu'
->>>>>>> make[1]: *** [arch/powerpc/kvm/book3s_pr.o] Error 1
->>>>>>>=20
->>>>>>> Signed-off-by: Aneesh Kumar K.V =
-<aneesh.kumar@linux.vnet.ibm.com>
->>>>>>=20
->>>>>> Acked-by: Paul Mackerras <paulus@samba.org>
->>>>>=20
->>>>> Would you guys mind if I merge this into the offending patch? It's =
-not trickled into -next yet, so rebasing should work.
->>>>>=20
->>>>> If not, please resend with the fixed commit message.
->>>>=20
->>>> Eh - I must've missed v2 :). So that leaves only the question on =
-whether you'd be ok to squash the patch instead. It'd help =
-bisectability.
->>>=20
->>> I'm OK with that.  If you do, why don't you squash the first of the
->>> two patches that I just sent into the commit it fixes as well?
->>=20
->> Because patch 1/2 spans two separate commits it would have to get =
-squashed into (6aa82e, 70afec) and patch 2/2 doesn't make sense to get =
-squashed anywhere :).
->=20
-> Actually 70afec is fine, if you look at it, it's only 6aa82e that
-> needs fixing.
-
-True. Squashed them :).
+It can, I just thought since it is valid for more than just one
+platform, it can go here.
 
 
-Alex
+>>  };
+>>  
+>>  #define kvm_err(fmt, ...) \
+>> @@ -677,15 +679,15 @@ void kvm_arch_register_noncoherent_dma(struct kvm *kvm);
+>>  void kvm_arch_unregister_noncoherent_dma(struct kvm *kvm);
+>>  bool kvm_arch_has_noncoherent_dma(struct kvm *kvm);
+>>  #else
+>> -static inline void kvm_arch_register_noncoherent_dma(void)
+>> +static inline void kvm_arch_register_noncoherent_dma(struct kvm *kvm)
+>>  {
+>>  }
+>>  
+>> -static inline void kvm_arch_unregister_noncoherent_dma(void)
+>> +static inline void kvm_arch_unregister_noncoherent_dma(struct kvm *kvm)
+>>  {
+>>  }
+>>  
+>> -static inline bool kvm_arch_has_noncoherent_dma(void)
+>> +static inline bool kvm_arch_has_noncoherent_dma(struct kvm *kvm)
+>>  {
+>>  	return false;
+>>  }
+> 
+> Will fix in my series.
+> 
+>> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+>> index 24579a0..681e19b 100644
+>> --- a/include/linux/vfio.h
+>> +++ b/include/linux/vfio.h
+>> @@ -97,4 +97,7 @@ extern struct vfio_group *vfio_group_get_external_user(struct file *filep);
+>>  extern void vfio_group_put_external_user(struct vfio_group *group);
+>>  extern int vfio_external_user_iommu_id(struct vfio_group *group);
+>>  
+>> +extern struct iommu_group *vfio_find_group_by_liobn(struct kvm *kvm,
+>> +		unsigned long liobn);
+>> +
+> 
+> Wrong header file.
+> 
+>>  #endif /* VFIO_H */
+>> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+>> index 7c1a349..a74ad16 100644
+>> --- a/include/uapi/linux/kvm.h
+>> +++ b/include/uapi/linux/kvm.h
+>> @@ -847,6 +847,7 @@ struct kvm_device_attr {
+>>  #define  KVM_DEV_VFIO_GROUP			1
+>>  #define   KVM_DEV_VFIO_GROUP_ADD			1
+>>  #define   KVM_DEV_VFIO_GROUP_DEL			2
+>> +#define  KVM_DEV_VFIO_SPAPR_TCE_LIOBN		2
+>>  
+>>  /*
+>>   * ioctls for VM fds
+>> diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
+>> index 2e336a7..39dea9f 100644
+>> --- a/virt/kvm/vfio.c
+>> +++ b/virt/kvm/vfio.c
+>> @@ -22,6 +22,7 @@
+>>  struct kvm_vfio_group {
+>>  	struct list_head node;
+>>  	struct vfio_group *vfio_group;
+>> +	uint64_t liobn; /* sPAPR */
+> 
+> Perhaps an arch pointer or at least a union.
+> 
+>>  };
+>>  
+>>  struct kvm_vfio {
+>> @@ -188,12 +189,52 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
+>>  	return -ENXIO;
+>>  }
+>>  
+>> +static int kvm_vfio_set_spapr_tce_liobn(struct kvm_device *dev,
+>> +		long attr, u64 arg)
+>> +{
+>> +	struct kvm_vfio *kv = dev->private;
+>> +	struct vfio_group *vfio_group;
+>> +	struct kvm_vfio_group *kvg;
+>> +	void __user *argp = (void __user *)arg;
+>> +	struct fd f;
+>> +	int32_t fd;
+>> +	uint64_t liobn = attr;
+>> +
+>> +	if (get_user(fd, (int32_t __user *)argp))
+>> +		return -EFAULT;
+>> +
+>> +	f = fdget(fd);
+>> +	if (!f.file)
+>> +		return -EBADF;
+>> +
+>> +	vfio_group = kvm_vfio_group_get_external_user(f.file);
+>> +	fdput(f);
+>> +
+>> +	list_for_each_entry(kvg, &kv->group_list, node) {
+>> +		if (kvg->vfio_group == vfio_group) {
+>> +			WARN_ON(kvg->liobn);
+> 
+> Users shouldn't be able to trigger WARN_ON so easily, return -EBUSY,
+> allow it to be unset and re-set, or just allow the overwrite.
+> 
+>> +			kvg->liobn = liobn;
+>> +			kvm_vfio_group_put_external_user(vfio_group);
+>> +			return 0;
+>> +		}
+>> +	}
+>> +
+>> +	kvm_vfio_group_put_external_user(vfio_group);
+>> +
+>> +	return -ENXIO;
+>> +}
+>> +
+>>  static int kvm_vfio_set_attr(struct kvm_device *dev,
+>>  			     struct kvm_device_attr *attr)
+>>  {
+>>  	switch (attr->group) {
+>>  	case KVM_DEV_VFIO_GROUP:
+>>  		return kvm_vfio_set_group(dev, attr->attr, attr->addr);
+>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>> +	case KVM_DEV_VFIO_SPAPR_TCE_LIOBN:
+>> +		return kvm_vfio_set_spapr_tce_liobn(dev, attr->attr,
+>> +				attr->addr);
+>> +#endif
+>>  	}
+>>  
+>>  	return -ENXIO;
+>> @@ -211,6 +252,10 @@ static int kvm_vfio_has_attr(struct kvm_device *dev,
+>>  		}
+>>  
+>>  		break;
+>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>> +	case KVM_DEV_VFIO_SPAPR_TCE_LIOBN:
+>> +		return 0;
+>> +#endif
+>>  	}
+>>  
+>>  	return -ENXIO;
+>> @@ -250,6 +295,7 @@ static int kvm_vfio_create(struct kvm_device *dev, u32 type)
+>>  	mutex_init(&kv->lock);
+>>  
+>>  	dev->private = kv;
+>> +	dev->kvm->vfio = kv;
+>>  
+>>  	return 0;
+>>  }
+>> diff --git a/virt/kvm/vfio_rm.c b/virt/kvm/vfio_rm.c
+>> new file mode 100644
+>> index 0000000..ee9fd96
+>> --- /dev/null
+>> +++ b/virt/kvm/vfio_rm.c
+>> @@ -0,0 +1,54 @@
+>> +#include <linux/errno.h>
+>> +#include <linux/file.h>
+>> +#include <linux/kvm_host.h>
+>> +#include <linux/list.h>
+>> +#include <linux/module.h>
+>> +#include <linux/mutex.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/uaccess.h>
+>> +#include <linux/vfio.h>
+>> +
+>> +struct kvm_vfio_group {
+>> +	struct list_head node;
+>> +	struct vfio_group *vfio_group;
+>> +	uint64_t liobn; /* sPAPR */
+>> +};
+>> +
+>> +struct kvm_vfio {
+>> +	struct list_head group_list;
+>> +	struct mutex lock;
+>> +	bool noncoherent;
+>> +};
+>> +
+>> +struct vfio_group {
+>> +	struct kref			kref;
+>> +	int				minor;
+>> +	atomic_t			container_users;
+>> +	struct iommu_group		*iommu_group;
+>> +	struct vfio_container		*container;
+>> +	struct list_head		device_list;
+>> +	struct mutex			device_lock;
+>> +	struct device			*dev;
+>> +	struct notifier_block		nb;
+>> +	struct list_head		vfio_next;
+>> +	struct list_head		container_next;
+>> +	atomic_t			opened;
+>> +};
+>> +
+>> +struct iommu_group *vfio_find_group_by_liobn(struct kvm *kvm, unsigned long liobn)
+>> +{
+>> +	struct kvm_vfio_group *kvg;
+>> +
+>> +	if (!kvm->vfio)
+>> +		return NULL;
+>> +
+>> +	list_for_each_entry(kvg, &kvm->vfio->group_list, node) {
+>> +		if (kvg->liobn == liobn)
+>> +			return kvg->vfio_group->iommu_group;
+>> +	}
+>> +
+>> +	return NULL;
+>> +}
+>> +EXPORT_SYMBOL_GPL(vfio_find_group_by_liobn);
+>> +
+>> +
+> 
+> You're kidding, right?  These are intentionally private data structures
+> that are blatantly copied so that you can extract what you want.  NACK.
+> The iommu_group is available off struct device, do you even need vfio or
+> this kvm-vfio device to get from liobn to iommu_group?  Thanks,
+
+
+This is an RFC. I am not saying this is what can go to upstream or
+anything. I am not kidding (why everyone assumes that?), I am showing
+what API I would like to have in the VFIO KVM device. I need the way to
+get iommu_table (which is in a private data of iommu_group) by LIOBN and
+the VFIO KVM device is the _only_ entity which will know about this
+connection (LIOBN is made up by the qemu and told to the guest) and it
+cannot go to the kvm.ko - and the patch like this is the best way to
+show it as my english obviously sucks.
+
+
+
+-- 
+With best regards
+
+Alexey Kardashevskiy -- icq: 52150396
