@@ -1,19 +1,32 @@
-Return-Path: <joseph_myers@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "relay1.mentorg.com",
- Issuer "Entrust Certification Authority - L1C" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2627D2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Oct 2013 09:47:28 +1000 (EST)
-Date: Fri, 4 Oct 2013 22:50:40 +0000
-From: "Joseph S. Myers" <joseph@codesourcery.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc: fix exception clearing in e500 SPE float emulation
-Message-ID: <Pine.LNX.4.64.1310042246430.27874@digraph.polyomino.org.uk>
+Return-Path: <agordeev@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id B9E1B2C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Oct 2013 08:41:44 +1100 (EST)
+Date: Sat, 5 Oct 2013 23:43:04 +0200
+From: Alexander Gordeev <agordeev@redhat.com>
+To: Jon Mason <jon.mason@intel.com>
+Subject: Re: [PATCH RFC 54/77] ntb: Ensure number of MSIs on SNB is enough
+ for the link interrupt
+Message-ID: <20131005214303.GA21589@dhcp-26-207.brq.redhat.com>
+References: <cover.1380703262.git.agordeev@redhat.com>
+ <5d9c5b2d3bbc444ff32bddeece7a239d046bd79c.1380703263.git.agordeev@redhat.com>
+ <20131003004805.GL6768@jonmason-lab>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Sender: Joseph Myers <joseph@codesourcery.com>
-Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131003004805.GL6768@jonmason-lab>
+Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
+ linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
+ stable@vger.kernel.org, linux-s390@vger.kernel.org,
+ Andy King <acking@vmware.com>, linux-scsi@vger.kernel.org,
+ linux-rdma@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ linux-pci@vger.kernel.org, iss_storagedev@hp.com, linux-driver@qlogic.com,
+ Tejun Heo <tj@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,135 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Joseph Myers <joseph@codesourcery.com>
+On Wed, Oct 02, 2013 at 05:48:05PM -0700, Jon Mason wrote:
+> On Wed, Oct 02, 2013 at 12:49:10PM +0200, Alexander Gordeev wrote:
+> > Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
+> > ---
+> >  drivers/ntb/ntb_hw.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/ntb/ntb_hw.c b/drivers/ntb/ntb_hw.c
+> > index de2062c..eccd5e5 100644
+> > --- a/drivers/ntb/ntb_hw.c
+> > +++ b/drivers/ntb/ntb_hw.c
+> > @@ -1066,7 +1066,7 @@ static int ntb_setup_msix(struct ntb_device *ndev)
+> >  		/* On SNB, the link interrupt is always tied to 4th vector.  If
+> >  		 * we can't get all 4, then we can't use MSI-X.
+> >  		 */
+> > -		if (ndev->hw_type != BWD_HW) {
+> > +		if ((rc < SNB_MSIX_CNT) && (ndev->hw_type != BWD_HW)) {
+> 
+> Nack, this check is unnecessary.
 
-The e500 SPE floating-point emulation code clears existing exceptions
-(__FPU_FPSCR &= ~FP_EX_MASK;) before ORing in the exceptions from the
-emulated operation.  However, these exception bits are the "sticky",
-cumulative exception bits, and should only be cleared by the user
-program setting SPEFSCR, not implicitly by any floating-point
-instruction (whether executed purely by the hardware or emulated).
-The spurious clearing of these bits shows up as missing exceptions in
-glibc testing.
-
-Fixing this, however, is not as simple as just not clearing the bits,
-because while the bits may be from previous floating-point operations
-(in which case they should not be cleared), the processor can also set
-the sticky bits itself before the interrupt for an exception occurs,
-and this can happen in cases when IEEE 754 semantics are that the
-sticky bit should not be set.  Specifically, the "invalid" sticky bit
-is set in various cases with non-finite operands, where IEEE 754
-semantics do not involve raising such an exception, and the
-"underflow" sticky bit is set in cases of exact underflow, whereas
-IEEE 754 semantics are that this flag is set only for inexact
-underflow.  Thus, for correct emulation the kernel needs to know the
-setting of these two sticky bits before the instruction being
-emulated.
-
-When a floating-point operation raises an exception, the kernel can
-note the state of the sticky bits immediately afterwards.  Some
-<fenv.h> functions that affect the state of these bits, such as
-fesetenv and feholdexcept, need to use prctl with PR_GET_FPEXC and
-PR_SET_FPEXC anyway, and so it is natural to record the state of those
-bits during that call into the kernel and so avoid any need for a
-separate call into the kernel to inform it of a change to those bits.
-Thus, the interface I chose to use (in this patch and the glibc port
-on which I am working; the old EGLIBC port, based on Aldy's SPE
-add-on, has many deficiencies in its <fenv.h> functions
-implementation, so that they do not interact correctly with any Linux
-kernel version) is that one of those prctl calls must be made after
-any userspace change to those sticky bits, other than through a
-floating-point operation that traps into the kernel anyway.
-feclearexcept and fesetexceptflag duly make those calls, which would
-not be required were it not for this issue.
-
-Signed-off-by: Joseph Myers <joseph@codesourcery.com>
-
----
-
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index ce4de5a..0b02e23 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -237,6 +237,8 @@ struct thread_struct {
- 	unsigned long	evr[32];	/* upper 32-bits of SPE regs */
- 	u64		acc;		/* Accumulator */
- 	unsigned long	spefscr;	/* SPE & eFP status */
-+	unsigned long	spefscr_last;	/* SPEFSCR value on last prctl
-+					   call or trap return */
- 	int		used_spe;	/* set if process has used spe */
- #endif /* CONFIG_SPE */
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-@@ -303,7 +305,9 @@ struct thread_struct {
- 	(_ALIGN_UP(sizeof(init_thread_info), 16) + (unsigned long) &init_stack)
- 
- #ifdef CONFIG_SPE
--#define SPEFSCR_INIT .spefscr = SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE | SPEFSCR_FOVFE,
-+#define SPEFSCR_INIT \
-+	.spefscr = SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE | SPEFSCR_FOVFE, \
-+	.spefscr_last = SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE | SPEFSCR_FOVFE,
- #else
- #define SPEFSCR_INIT
- #endif
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 96d2fdf..e3b91f1 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1151,6 +1151,7 @@ int set_fpexc_mode(struct task_struct *tsk, unsigned int val)
- 	if (val & PR_FP_EXC_SW_ENABLE) {
- #ifdef CONFIG_SPE
- 		if (cpu_has_feature(CPU_FTR_SPE)) {
-+			tsk->thread.spefscr_last = mfspr(SPRN_SPEFSCR);
- 			tsk->thread.fpexc_mode = val &
- 				(PR_FP_EXC_SW_ENABLE | PR_FP_ALL_EXCEPT);
- 			return 0;
-@@ -1182,9 +1183,10 @@ int get_fpexc_mode(struct task_struct *tsk, unsigned long adr)
- 
- 	if (tsk->thread.fpexc_mode & PR_FP_EXC_SW_ENABLE)
- #ifdef CONFIG_SPE
--		if (cpu_has_feature(CPU_FTR_SPE))
-+		if (cpu_has_feature(CPU_FTR_SPE)) {
-+			tsk->thread.spefscr_last = mfspr(SPRN_SPEFSCR);
- 			val = tsk->thread.fpexc_mode;
--		else
-+		} else
- 			return -EINVAL;
- #else
- 		return -EINVAL;
-diff --git a/arch/powerpc/math-emu/math_efp.c b/arch/powerpc/math-emu/math_efp.c
-index a73f088..59835c6 100644
---- a/arch/powerpc/math-emu/math_efp.c
-+++ b/arch/powerpc/math-emu/math_efp.c
-@@ -630,9 +630,27 @@ update_ccr:
- 	regs->ccr |= (IR << ((7 - ((speinsn >> 23) & 0x7)) << 2));
- 
- update_regs:
--	__FPU_FPSCR &= ~FP_EX_MASK;
-+	/*
-+	 * If the "invalid" exception sticky bit was set by the
-+	 * processor for non-finite input, but was not set before the
-+	 * instruction being emulated, clear it.  Likewise for the
-+	 * "underflow" bit, which may have been set by the processor
-+	 * for exact underflow, not just inexact underflow when the
-+	 * flag should be set for IEEE 754 semantics.  Other sticky
-+	 * exceptions will only be set by the processor when they are
-+	 * correct according to IEEE 754 semantics, and we must not
-+	 * clear sticky bits that were already set before the emulated
-+	 * instruction as they represent the user-visible sticky
-+	 * exception status.  "inexact" traps to kernel are not
-+	 * required for IEEE semantics and are not enabled by default,
-+	 * so the "inexact" sticky bit may have been set by a previous
-+	 * instruction without the kernel being aware of it.
-+	 */
-+	__FPU_FPSCR
-+	  &= ~(FP_EX_INVALID | FP_EX_UNDERFLOW) | current->thread.spefscr_last;
- 	__FPU_FPSCR |= (FP_CUR_EXCEPTIONS & FP_EX_MASK);
- 	mtspr(SPRN_SPEFSCR, __FPU_FPSCR);
-+	current->thread.spefscr_last = __FPU_FPSCR;
- 
- 	current->thread.evr[fc] = vc.wp[0];
- 	regs->gpr[fc] = vc.wp[1];
+If SNB can do more than SNB_MSIX_CNT MSI-Xs then this check is needed
+to enable less than maximum MSI-Xs in case the maximum was not allocated.
+Otherwise SNB will fallback to single MSI instead of multiple MSI-Xs.
 
 -- 
-Joseph S. Myers
-joseph@codesourcery.com
+Regards,
+Alexander Gordeev
+agordeev@redhat.com
