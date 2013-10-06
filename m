@@ -1,38 +1,24 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id B912D2C00B7
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Oct 2013 18:09:09 +1100 (EST)
-Date: Sun, 6 Oct 2013 09:10:30 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-Message-ID: <20131006071027.GA29143@dhcp-26-207.brq.redhat.com>
-References: <cover.1380703262.git.agordeev@redhat.com>
- <1380840585.3419.50.camel@bwh-desktop.uk.level5networks.com>
- <20131004082920.GA4536@dhcp-26-207.brq.redhat.com>
- <1380922156.3214.49.camel@bwh-desktop.uk.level5networks.com>
- <20131005142054.GA11270@dhcp-26-207.brq.redhat.com>
- <1381009586.645.141.camel@pasglop>
- <20131006060243.GB28142@dhcp-26-207.brq.redhat.com>
- <1381040386.645.143.camel@pasglop>
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A2FEF2C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Oct 2013 21:01:38 +1100 (EST)
+Date: Sun, 6 Oct 2013 12:01:23 +0200
+From: Gerhard Sittig <gsi@denx.de>
+To: Alexander Popov <a13xp0p0v88@gmail.com>
+Subject: Re: [PATCH RFC v2 0/5] MPC512x DMA slave s/g support, OF DMA lookup
+Message-ID: <20131006100123.GM14747@book.gsilab.sittig.org>
+References: <1373642781-32631-1-git-send-email-gsi@denx.de>
+ <1373803321-11628-1-git-send-email-gsi@denx.de>
+ <CAF0T0X6NE=wFYMzVEm4F9CQWXN-Bu201Z8duEH9kevOhB53jCg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1381040386.645.143.camel@pasglop>
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-pci@vger.kernel.org, linux-nvme@lists.infradead.org,
- linux-ide@vger.kernel.org, linux-s390@vger.kernel.org,
- Andy King <acking@vmware.com>, linux-scsi@vger.kernel.org,
- linux-rdma@vger.kernel.org, x86@kernel.org,
- Ben Hutchings <bhutchings@solarflare.com>, Ingo Molnar <mingo@redhat.com>,
- iss_storagedev@hp.com, linux-driver@qlogic.com,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Tejun Heo <tj@kernel.org>, linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <CAF0T0X6NE=wFYMzVEm4F9CQWXN-Bu201Z8duEH9kevOhB53jCg@mail.gmail.com>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
+ Vinod Koul <vinod.koul@intel.com>, devicetree-discuss@lists.ozlabs.org,
+ Dan Williams <djbw@fb.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,33 +28,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Oct 06, 2013 at 05:19:46PM +1100, Benjamin Herrenschmidt wrote:
-> On Sun, 2013-10-06 at 08:02 +0200, Alexander Gordeev wrote:
-> > In fact, in the current design to address the quota race decently the
-> > drivers would have to protect the *loop* to prevent the quota change
-> > between a pci_enable_msix() returned a positive number and the the next
-> > call to pci_enable_msix() with that number. Is it doable?
+On Thu, Oct 03, 2013 at 18:00 +0400, Alexander Popov wrote:
 > 
-> I am not advocating for the current design, simply saying that your
-> proposal doesn't address this issue while Ben's does.
+> v2013/7/14 Gerhard Sittig <gsi@denx.de>:
+> > this series
+> > - introduces slave s/g support (that's support for DMA transfers which
+> >   involve peripherals in contrast to mem-to-mem transfers)
+> > - adds device tree based lookup support for DMA channels
+> > - combines floating patches and related feedback which already covered
+> >   several aspects of what the suggested LPB driver needs, to demonstrate
+> >   how integration might be done
+> > - carries Q&D SD card support to enable another DMA client during test,
+> >   while this patch needs to get dropped upon pickup
+> >
+> > changes since v1:
+> > - re-order mpc8308 related code paths for improved readability, no
+> >   change in behaviour, introduction of symbolic channel names here
+> >   already
+> > - squash 'execute() start condition' and 'terminate all' into the
+> >   introduction of 'slave s/g prep' and 'device control' support; refuse
+> >   s/g lists with more than one item since slave support is operational
+> >   yet proper s/g support is missing (can get addressed later)
+> > - always start transfers from software on MPC8308 as there are no
+> >   external request lines for peripheral flow control
+> > - drop dt-bindings header file and symbolic channel names in OF nodes
+> 
+> Changes since v2 (RFC v3 was badly formed, excuse me for that):
+> Part 1/5:
+> - use #define instead of enum since individual channels don't require
+> special handling.
+> Part 2/5:
+> - add a flag "will_access_peripheral" to DMA transfer descriptor
+>   according recommendations of Gerhard Sittig.
+>   This flag is set in mpc_dma_prep_memcpy() and mpc_dma_prep_slave_sg()
+>   and is evaluated in mpc_dma_execute() to choose a type of start for
+> the transfer.
+> - prevent descriptors of transfers which involve peripherals from
+> being chained together;
+>   each of such transfers needs hardware initiated start.
+> - add locking while working with struct mpc_dma_chan
+>   according recommendations of Lars-Peter Clausen.
+> - remove default nbytes value. Client kernel modules must set
+>   src_maxburst and dst_maxburst fields of struct dma_slave_config (dmaengine.h).
+> Part 6/8:
+>   unchanged.
+> Part 7/8:
+>   unchanged.
+> Part 8/8:
+>   unchanged.
+> 
+> These changes are tested on MPC5125
+> - with SCLPC driver (transfers between dev and mem work fine).
+> - with dmatest module (all 64 DMA channels can perform mem-to-mem transfers
+>   which can be chained in one DMA transaction).
+> 
+> > known issues:
+> > - it's yet to get confirmed whether MPC8308 can use slave support or
+> >   whether the DMA controller's driver shall actively reject it, the
+> >   information that's available so far suggests that peripheral transfers
+> >   to IP bus attached I/O is useful and shall not get blocked right away
 
-There is one major flaw in min-max approach - the generic MSI layer
-will have to take decisions on exact number of MSIs to request, not
-device drivers.
 
-This will never work for all devices, because there might be specific
-requirements which are not covered by the min-max. That is what Ben
-described "...say, any even number within a certain range". Ben suggests
-to leave the existing loop scheme to cover such devices, which I think is
-not right.
+I'm not certain whether keeping the "cover letter" in threaded
+form is appropriate.  But speaking about non-existent parts
+(6-8/8), not saying what the current version is, missing stats
+certainly isn't right.
 
-What about introducing pci_lock_msi() and pci_unlock_msi() and let device
-drivers care about their ranges and specifics in race-safe manner?
-I do not call to introduce it right now (since it appears pSeries has not
-been hitting the race for years) just as a possible alternative to Ben's
-proposal.
+Your submission style adds more work to doing review and
+providing feedback than what's necessary.  You assume that others
+would keep the history for you, or would do the archeology and
+collect individual pieces from the past, to recover what you fail
+to send out.
 
+The messages show up in an unexpected order here (3, 4, 5, 0
+first on one thread, 1, 2 then in another thread, with some 2800
+messages between them) and carry conflicting subjects or version
+numbers.  Formatting was broken in transport, patches won't apply.
+
+Please do consider checking what you send out, and how you can
+improve the reception's side of the process.  Try to help those
+people you want to receive help from.  Try to support both kinds
+of review for people coming new to the subject as well as those
+who have seen a former version.
+
+
+virtually yours
+Gerhard Sittig
 -- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
