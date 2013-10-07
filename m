@@ -1,32 +1,34 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 624042C00BD
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Oct 2013 15:31:50 +1100 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 7 Oct 2013 14:31:50 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0D99B2BB0054
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Oct 2013 15:31:37 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r974EW4s9699594
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Oct 2013 15:14:34 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r974VY5O014536
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Oct 2013 15:31:34 +1100
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc,
- perf: Configure BHRB filter before enabling PMU interrupts
-Date: Mon,  7 Oct 2013 10:00:26 +0530
-Message-Id: <1381120226-14838-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org
+Return-Path: <R65777@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 37F5A2C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Oct 2013 16:46:31 +1100 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: RE: [PATCH 2/7] iommu: add api to get iommu_domain of a device
+Date: Mon, 7 Oct 2013 05:46:23 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0719385B@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
+ <1380127533.3030.319.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0718FD1C@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1380901507.2673.204.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07190F35@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1380906772.25705.19.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07191143@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1380910322.25705.56.camel@ul30vt.home>
+In-Reply-To: <1380910322.25705.56.camel@ul30vt.home>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "agraf@suse.de" <agraf@suse.de>, Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "joro@8bytes.org" <joro@8bytes.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,92 +38,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Right now the `config_bhrb` PMU specific call happens after write_mmcr0
-which actually enables the PMU for event counting and interrupt. So
-there is a small window of time where the PMU and BHRB runs without the
-required HW branch filter (if any) enabled in BHRB. This can cause some
-of the branch samples to be collected through BHRB without any filter
-being applied and hence affecting the correctness of the results. This
-patch moves the BHRB config function call before enabling the interrupts.
-
-Here are some data points captured via trace prints which depicts how we
-could get PMU interrupts with BHRB filter NOT enabled with a standard
-perf record command line (asking for branch record information as well).
-
-	perf record -j any_call ls
-
-Before the patch:-
-
-              ls-1962  [003] d...  2065.299590: .perf_event_interrupt: MMCRA: 40000000000
-              ls-1962  [003] d...  2065.299603: .perf_event_interrupt: MMCRA: 40000000000
-              ls-1962  [003] d...  2065.299611: .perf_event_interrupt: MMCRA: 40000000000
-              ls-1962  [003] d...  2065.299618: .perf_event_interrupt: MMCRA: 40000000000
-              ls-1962  [003] d...  2065.299625: .perf_event_interrupt: MMCRA: 40000000000
-              ls-1962  [003] d...  2065.299632: .perf_event_interrupt: MMCRA: 40000000000
-              ls-1962  [003] d...  2065.299639: .perf_event_interrupt: MMCRA: 40000000000
-
-	      --> All the PMU interrupts before this point did not have the
-	      --> requested HW branch filter enabled in the MMCRA.
-
-              ls-1962  [003] d...  2065.299647: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1962  [003] d...  2065.299662: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1962  [003] d...  2065.299700: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1962  [003] d...  2065.299798: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1962  [003] d...  2065.299956: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1962  [003] d...  2065.300145: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1962  [003] d...  2065.300347: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1962  [003] d...  2065.300556: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1962  [003] d...  2065.300771: .perf_event_interrupt: MMCRA: 40040000000
-
-After the patch:-
-
-              ls-1850  [008] d...   190.311828: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.311848: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.311856: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.311863: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.311869: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.311876: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.311884: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.311892: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.311907: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.311945: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.312044: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.312206: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.312397: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d..2   190.312626: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.312814: .perf_event_interrupt: MMCRA: 40040000000
-              ls-1850  [008] d...   190.313004: .perf_event_interrupt: MMCRA: 40040000000
-
-	      --> All the PMU interrupts have the requested
-	      --> HW BHRB branch filter enabled in MMCRA.
-
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/perf/core-book3s.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 29b89e8..7d2f13c 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -1147,6 +1147,9 @@ static void power_pmu_enable(struct pmu *pmu)
- 	mmcr0 = ebb_switch_in(ebb, cpuhw->mmcr[0]);
- 
- 	mb();
-+	if (cpuhw->bhrb_users)
-+		ppmu->config_bhrb(cpuhw->bhrb_filter);
-+	
- 	write_mmcr0(cpuhw, mmcr0);
- 
- 	/*
-@@ -1158,8 +1161,6 @@ static void power_pmu_enable(struct pmu *pmu)
- 	}
- 
-  out:
--	if (cpuhw->bhrb_users)
--		ppmu->config_bhrb(cpuhw->bhrb_filter);
- 
- 	local_irq_restore(flags);
- }
--- 
-1.7.11.7
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
+IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IEZyaWRheSwgT2N0
+b2JlciAwNCwgMjAxMyAxMTo0MiBQTQ0KPiBUbzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+IENj
+OiBqb3JvQDhieXRlcy5vcmc7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgZ2FsYWtAa2VybmVs
+LmNyYXNoaW5nLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBj
+LWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj4gcGNpQHZnZXIua2VybmVsLm9yZzsgYWdy
+YWZAc3VzZS5kZTsgV29vZCBTY290dC1CMDc0MjE7IGlvbW11QGxpc3RzLmxpbnV4LQ0KPiBmb3Vu
+ZGF0aW9uLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvN10gaW9tbXU6IGFkZCBhcGkgdG8g
+Z2V0IGlvbW11X2RvbWFpbiBvZiBhIGRldmljZQ0KPiANCj4gT24gRnJpLCAyMDEzLTEwLTA0IGF0
+IDE3OjIzICswMDAwLCBCaHVzaGFuIEJoYXJhdC1SNjU3Nzcgd3JvdGU6DQo+ID4NCj4gPiA+IC0t
+LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBBbGV4IFdpbGxpYW1zb24gW21h
+aWx0bzphbGV4LndpbGxpYW1zb25AcmVkaGF0LmNvbV0NCj4gPiA+IFNlbnQ6IEZyaWRheSwgT2N0
+b2JlciAwNCwgMjAxMyAxMDo0MyBQTQ0KPiA+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0K
+PiA+ID4gQ2M6IGpvcm9AOGJ5dGVzLm9yZzsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiA+
+ID4gZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZzsgbGludXgtIGtlcm5lbEB2Z2VyLmtlcm5lbC5v
+cmc7DQo+ID4gPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtIHBjaUB2Z2Vy
+Lmtlcm5lbC5vcmc7DQo+ID4gPiBhZ3JhZkBzdXNlLmRlOyBXb29kIFNjb3R0LUIwNzQyMTsgaW9t
+bXVAbGlzdHMubGludXgtIGZvdW5kYXRpb24ub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENI
+IDIvN10gaW9tbXU6IGFkZCBhcGkgdG8gZ2V0IGlvbW11X2RvbWFpbiBvZiBhDQo+ID4gPiBkZXZp
+Y2UNCj4gPiA+DQo+ID4gPiBPbiBGcmksIDIwMTMtMTAtMDQgYXQgMTY6NDcgKzAwMDAsIEJodXNo
+YW4gQmhhcmF0LVI2NTc3NyB3cm90ZToNCj4gPiA+ID4NCj4gPiA+ID4gPiAtLS0tLU9yaWdpbmFs
+IE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+IEZyb206IEFsZXggV2lsbGlhbXNvbiBbbWFpbHRvOmFs
+ZXgud2lsbGlhbXNvbkByZWRoYXQuY29tXQ0KPiA+ID4gPiA+IFNlbnQ6IEZyaWRheSwgT2N0b2Jl
+ciAwNCwgMjAxMyA5OjE1IFBNDQo+ID4gPiA+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0K
+PiA+ID4gPiA+IENjOiBqb3JvQDhieXRlcy5vcmc7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsN
+Cj4gPiA+ID4gPiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBsaW51eC0ga2VybmVsQHZnZXIu
+a2VybmVsLm9yZzsNCj4gPiA+ID4gPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGlu
+dXgtIHBjaUB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiA+ID4gYWdyYWZAc3VzZS5kZTsgV29vZCBT
+Y290dC1CMDc0MjE7IGlvbW11QGxpc3RzLmxpbnV4LQ0KPiA+ID4gPiA+IGZvdW5kYXRpb24ub3Jn
+DQo+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzddIGlvbW11OiBhZGQgYXBpIHRvIGdl
+dCBpb21tdV9kb21haW4gb2YgYQ0KPiA+ID4gPiA+IGRldmljZQ0KPiA+ID4gPiA+DQo+ID4gPiA+
+ID4gT24gRnJpLCAyMDEzLTEwLTA0IGF0IDA5OjU0ICswMDAwLCBCaHVzaGFuIEJoYXJhdC1SNjU3
+Nzcgd3JvdGU6DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3Nh
+Z2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiBGcm9tOiBsaW51eC1wY2ktb3duZXJAdmdlci5rZXJuZWwu
+b3JnDQo+ID4gPiA+ID4gPiA+IFttYWlsdG86bGludXgtcGNpLW93bmVyQHZnZXIua2VybmVsLm9y
+Z10NCj4gPiA+ID4gPiA+ID4gT24gQmVoYWxmIE9mIEFsZXggV2lsbGlhbXNvbg0KPiA+ID4gPiA+
+ID4gPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAyNSwgMjAxMyAxMDoxNiBQTQ0KPiA+ID4g
+PiA+ID4gPiBUbzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiA+ID4gPiA+IENjOiBqb3Jv
+QDhieXRlcy5vcmc7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsNCj4gPiA+ID4gPiA+ID4gZ2Fs
+YWtAa2VybmVsLmNyYXNoaW5nLm9yZzsgbGludXgtIGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+
+ID4gPiA+ID4gPiA+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0gcGNpQHZn
+ZXIua2VybmVsLm9yZzsNCj4gPiA+ID4gPiA+ID4gYWdyYWZAc3VzZS5kZTsgV29vZCBTY290dC1C
+MDc0MjE7IGlvbW11QGxpc3RzLmxpbnV4LQ0KPiA+ID4gPiA+ID4gPiBmb3VuZGF0aW9uLm9yZzsg
+Qmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0gg
+Mi83XSBpb21tdTogYWRkIGFwaSB0byBnZXQgaW9tbXVfZG9tYWluDQo+ID4gPiA+ID4gPiA+IG9m
+IGEgZGV2aWNlDQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IE9uIFRodSwgMjAxMy0wOS0x
+OSBhdCAxMjo1OSArMDUzMCwgQmhhcmF0IEJodXNoYW4gd3JvdGU6DQo+ID4gPiA+ID4gPiA+ID4g
+VGhpcyBhcGkgcmV0dXJuIHRoZSBpb21tdSBkb21haW4gdG8gd2hpY2ggdGhlIGRldmljZSBpcyBh
+dHRhY2hlZC4NCj4gPiA+ID4gPiA+ID4gPiBUaGUgaW9tbXVfZG9tYWluIGlzIHJlcXVpcmVkIGZv
+ciBtYWtpbmcgQVBJIGNhbGxzIHJlbGF0ZWQgdG8NCj4gaW9tbXUuDQo+ID4gPiA+ID4gPiA+ID4g
+Rm9sbG93IHVwIHBhdGNoZXMgd2hpY2ggdXNlIHRoaXMgQVBJIHRvIGtub3cgaW9tbXUgbWFwaW5n
+Lg0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gU2lnbmVkLW9mZi1ieTogQmhhcmF0
+IEJodXNoYW4NCj4gPiA+ID4gPiA+ID4gPiA8YmhhcmF0LmJodXNoYW5AZnJlZXNjYWxlLmNvbT4N
+Cj4gPiA+ID4gPiA+ID4gPiAtLS0NCj4gPiA+ID4gPiA+ID4gPiAgZHJpdmVycy9pb21tdS9pb21t
+dS5jIHwgICAxMCArKysrKysrKysrDQo+ID4gPiA+ID4gPiA+ID4gIGluY2x1ZGUvbGludXgvaW9t
+bXUuaCB8ICAgIDcgKysrKysrKw0KPiA+ID4gPiA+ID4gPiA+ICAyIGZpbGVzIGNoYW5nZWQsIDE3
+IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pDQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4g
+PiA+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pb21tdS9pb21tdS5jIGIvZHJpdmVycy9pb21t
+dS9pb21tdS5jDQo+ID4gPiA+ID4gPiA+ID4gaW5kZXgNCj4gPiA+ID4gPiA+ID4gPiBmYmU5Y2E3
+Li42YWM1ZjUwIDEwMDY0NA0KPiA+ID4gPiA+ID4gPiA+IC0tLSBhL2RyaXZlcnMvaW9tbXUvaW9t
+bXUuYw0KPiA+ID4gPiA+ID4gPiA+ICsrKyBiL2RyaXZlcnMvaW9tbXUvaW9tbXUuYw0KPiA+ID4g
+PiA+ID4gPiA+IEBAIC02OTYsNiArNjk2LDE2IEBAIHZvaWQgaW9tbXVfZGV0YWNoX2RldmljZShz
+dHJ1Y3QNCj4gPiA+ID4gPiA+ID4gPiBpb21tdV9kb21haW4gKmRvbWFpbiwgc3RydWN0IGRldmlj
+ZSAqZGV2KSAgfQ0KPiA+ID4gPiA+ID4gPiA+IEVYUE9SVF9TWU1CT0xfR1BMKGlvbW11X2RldGFj
+aF9kZXZpY2UpOw0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gK3N0cnVjdCBpb21t
+dV9kb21haW4gKmlvbW11X2dldF9kZXZfZG9tYWluKHN0cnVjdCBkZXZpY2UgKmRldikgew0KPiA+
+ID4gPiA+ID4gPiA+ICsJc3RydWN0IGlvbW11X29wcyAqb3BzID0gZGV2LT5idXMtPmlvbW11X29w
+czsNCj4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gKwlpZiAodW5saWtlbHkob3Bz
+ID09IE5VTEwgfHwgb3BzLT5nZXRfZGV2X2lvbW11X2RvbWFpbiA9PQ0KPiBOVUxMKSkNCj4gPiA+
+ID4gPiA+ID4gPiArCQlyZXR1cm4gTlVMTDsNCj4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4g
+PiA+ID4gKwlyZXR1cm4gb3BzLT5nZXRfZGV2X2lvbW11X2RvbWFpbihkZXYpOyB9DQo+ID4gPiA+
+ID4gPiA+ID4gK0VYUE9SVF9TWU1CT0xfR1BMKGlvbW11X2dldF9kZXZfZG9tYWluKTsNCj4gPiA+
+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gV2hhdCBwcmV2ZW50cyB0aGlzIGZyb20gcmFjaW5nIGlv
+bW11X2RvbWFpbl9mcmVlKCk/ICBUaGVyZSdzDQo+ID4gPiA+ID4gPiA+IG5vIHJlZmVyZW5jZXMg
+YWNxdWlyZWQsIHNvIHRoZXJlJ3Mgbm8gcmVhc29uIGZvciB0aGUgY2FsbGVyDQo+ID4gPiA+ID4g
+PiA+IHRvIGFzc3VtZSB0aGUNCj4gPiA+ID4gPiBwb2ludGVyIGlzIHZhbGlkLg0KPiA+ID4gPiA+
+ID4NCj4gPiA+ID4gPiA+IFNvcnJ5IGZvciBsYXRlIHF1ZXJ5LCBzb21laG93IHRoaXMgZW1haWwg
+d2VudCBpbnRvIGEgZm9sZGVyDQo+ID4gPiA+ID4gPiBhbmQgZXNjYXBlZDsNCj4gPiA+ID4gPiA+
+DQo+ID4gPiA+ID4gPiBKdXN0IHRvIGJlIHN1cmUsIHRoZXJlIGlzIG5vdCBsb2NrIGF0IGdlbmVy
+aWMgInN0cnVjdA0KPiA+ID4gPiA+ID4gaW9tbXVfZG9tYWluIiwgYnV0IElQDQo+ID4gPiA+ID4g
+c3BlY2lmaWMgc3RydWN0dXJlIChsaW5rIEZTTCBkb21haW4pIGxpbmtlZCBpbg0KPiA+ID4gPiA+
+IGlvbW11X2RvbWFpbi0+cHJpdiBoYXZlIGEgbG9jaywgc28gd2UgbmVlZCB0byBlbnN1cmUgdGhp
+cyByYWNlDQo+ID4gPiA+ID4gaW4gRlNMIGlvbW11IGNvZGUgKHNheSBkcml2ZXJzL2lvbW11L2Zz
+bF9wYW11X2RvbWFpbi5jKSwgcmlnaHQ/DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBObywgaXQncyBu
+b3Qgc3VmZmljaWVudCB0byBtYWtlIHN1cmUgdGhhdCB5b3VyIHVzZSBvZiB0aGUNCj4gPiA+ID4g
+PiBpbnRlcmZhY2UgaXMgcmFjZSBmcmVlLiAgVGhlIGludGVyZmFjZSBpdHNlbGYgbmVlZHMgdG8g
+YmUNCj4gPiA+ID4gPiBkZXNpZ25lZCBzbyB0aGF0IGl0J3MgZGlmZmljdWx0IHRvIHVzZSBpbmNv
+cnJlY3RseS4NCj4gPiA+ID4NCj4gPiA+ID4gU28gd2UgY2FuIGRlZmluZSBpb21tdV9nZXRfZGV2
+X2RvbWFpbigpL2lvbW11X3B1dF9kZXZfZG9tYWluKCk7DQo+ID4gPiA+IGlvbW11X2dldF9kZXZf
+ZG9tYWluKCkgd2lsbCByZXR1cm4gZG9tYWluIHdpdGggdGhlIGxvY2sgaGVsZCwgYW5kDQo+ID4g
+PiA+IGlvbW11X3B1dF9kZXZfZG9tYWluKCkgd2lsbCByZWxlYXNlIHRoZSBsb2NrPyBBbmQNCj4g
+PiA+ID4gaW9tbXVfZ2V0X2Rldl9kb21haW4oKSBtdXN0IGFsd2F5cyBiZSBmb2xsb3dlZCBieQ0K
+PiA+ID4gPiBpb21tdV9nZXRfZGV2X2RvbWFpbigpLg0KPiA+ID4NCj4gPiA+IFdoYXQgbG9jaz8g
+IGdldC9wdXQgYXJlIGdlbmVyYWxseSB1c2VkIGZvciByZWZlcmVuY2UgY291bnRpbmcsIG5vdA0K
+PiA+ID4gbG9ja2luZyBpbiB0aGUga2VybmVsLg0KPiA+ID4NCj4gPiA+ID4gPiBUaGF0J3Mgbm90
+IHRoZSBjYXNlIGhlcmUuICBUaGlzIGlzIGEgYmFja2Rvb3IgdG8gZ2V0IHRoZSBpb21tdQ0KPiA+
+ID4gPiA+IGRvbWFpbiBmcm9tIHRoZSBpb21tdSBkcml2ZXIgcmVnYXJkbGVzcyBvZiB3aG8gaXMg
+dXNpbmcgaXQgb3IgaG93Lg0KPiA+ID4gPiA+IFRoZSBpb21tdSBkb21haW4gaXMgY3JlYXRlZCBh
+bmQgbWFuYWdlZCBieSB2ZmlvLCBzbyBzaG91bGRuJ3Qgd2UNCj4gPiA+ID4gPiBiZSBsb29raW5n
+IGF0IGhvdyB0byBkbyB0aGlzIHRocm91Z2ggdmZpbz8NCj4gPiA+ID4NCj4gPiA+ID4gTGV0IG1l
+IGZpcnN0IGRlc2NyaWJlIHdoYXQgd2UgYXJlIGRvaW5nIGhlcmU6DQo+ID4gPiA+IER1cmluZyBp
+bml0aWFsaXphdGlvbjotDQo+ID4gPiA+ICAtIHZmaW8gdGFsa3MgdG8gTVNJIHN5c3RlbSB0byBr
+bm93IHRoZSBNU0ktcGFnZSBhbmQgc2l6ZQ0KPiA+ID4gPiAgLSB2ZmlvIHRoZW4gaW50ZXJhY3Rz
+IHdpdGggaW9tbXUgdG8gbWFwIHRoZSBNU0ktcGFnZSBpbiBpb21tdQ0KPiA+ID4gPiAoSU9WQSBp
+cyBkZWNpZGVkIGJ5IHVzZXJzcGFjZSBhbmQgcGh5c2ljYWwgYWRkcmVzcyBpcyB0aGUNCj4gPiA+
+ID4gTVNJLXBhZ2UpDQo+ID4gPiA+ICAtIFNvIHRoZSBJT1ZBIHN1YndpbmRvdyBtYXBwaW5nIGlz
+IGNyZWF0ZWQgaW4gaW9tbXUgYW5kIHllcyBWRklPDQo+ID4gPiA+IGtub3cgYWJvdXQNCj4gPiA+
+IHRoaXMgbWFwcGluZy4NCj4gPiA+ID4NCj4gPiA+ID4gTm93IGRvIFNFVF9JUlEoTVNJL01TSVgp
+IGlvY3RsOg0KPiA+ID4gPiAgLSBjYWxscyBwY2lfZW5hYmxlX21zaXgoKS9wY2lfZW5hYmxlX21z
+aV9ibG9jaygpOiB3aGljaCBpcw0KPiA+ID4gPiBzdXBwb3NlZCB0byBzZXQNCj4gPiA+IE1TSSBh
+ZGRyZXNzL2RhdGEgaW4gZGV2aWNlLg0KPiA+ID4gPiAgLSBTbyBpbiBjdXJyZW50IGltcGxlbWVu
+dGF0aW9uICh0aGlzIHBhdGNoc2V0KSBtc2ktc3Vic3lzdGVtIGdldHMNCj4gPiA+ID4gdGhlIElP
+VkENCj4gPiA+IGZyb20gaW9tbXUgdmlhIHRoaXMgZGVmaW5lZCBpbnRlcmZhY2UuDQo+ID4gPiA+
+ICAtIEFyZSB5b3Ugc2F5aW5nIHRoYXQgcmF0aGVyIHRoYW4gZ2V0dGluZyB0aGlzIGZyb20gaW9t
+bXUsIHdlDQo+ID4gPiA+IHNob3VsZCBnZXQgdGhpcw0KPiA+ID4gZnJvbSB2ZmlvPyBXaGF0IGRp
+ZmZlcmVuY2UgZG9lcyB0aGlzIG1ha2U/DQo+ID4gPg0KPiA+ID4gWWVzLCB5b3UganVzdCBzYWlk
+IGFib3ZlIHRoYXQgdmZpbyBrbm93cyB0aGUgbXNpIHRvIGlvdmEgbWFwcGluZywgc28NCj4gPiA+
+IHdoeSBnbyBvdXRzaWRlIG9mIHZmaW8gdG8gZmluZCBpdCBsYXRlcj8gIFRoZSBkaWZmZXJlbmNl
+IGlzIG9uZSBjYXNlDQo+ID4gPiB5b3UgY2FuIGhhdmUgYSBwcm9wZXIgcmVmZXJlbmNlIHRvIGRh
+dGEgc3RydWN0dXJlcyB0byBtYWtlIHN1cmUgdGhlDQo+ID4gPiBwb2ludGVyIHlvdSBnZXQgYmFj
+ayBhY3R1YWxseSBoYXMgbWVhbmluZyBhdCB0aGUgdGltZSB5b3UncmUgdXNpbmcNCj4gPiA+IGl0
+IHZzIHRoZSBjb2RlIGhlcmUgd2hlcmUgeW91J3JlIGRlZmluaW5nIGFuIEFQSSB0aGF0IHJldHVy
+bnMgYQ0KPiA+ID4gbWVhbmluZ2xlc3MgdmFsdWUNCj4gPg0KPiA+IFdpdGggRlNMLVBBTVUgd2Ug
+d2lsbCBhbHdheXMgZ2V0IGNvbnNpc3RhbnQgZGF0YSBmcm9tIGlvbW11IG9yIHZmaW8tZGF0YQ0K
+PiBzdHJ1Y3R1cmUuDQo+IA0KPiBHcmVhdCwgYnV0IHlvdSdyZSB0cnlpbmcgdG8gYWRkIGEgZ2Vu
+ZXJpYyBBUEkgdG8gdGhlIElPTU1VIHN1YnN5c3RlbSB0aGF0J3MNCj4gZGlmZmljdWx0IHRvIHVz
+ZSBjb3JyZWN0bHkuICBUaGUgZmFjdCB0aGF0IHlvdSB1c2UgaXQgY29ycmVjdGx5IGRvZXMgbm90
+IGp1c3RpZnkNCj4gdGhlIEFQSS4NCj4gDQo+ID4gPiBiZWNhdXNlIHlvdSBjYW4ndCBjaGVjayBv
+cg0KPiA+ID4gZW5mb3JjZSB0aGF0IGFuIGFyYml0cmFyeSBjYWxsZXIgaXMgdXNpbmcgaXQgY29y
+cmVjdGx5Lg0KPiA+DQo+ID4gSSBhbSBub3Qgc3VyZSB3aGF0IGlzIGFyYml0cmFyeSBjYWxsZXI/
+IHBkZXYgaXMga25vd24gdG8gdmZpbywgc28gdmZpbw0KPiA+IHdpbGwgb25seSBtYWtlIHBjaV9l
+bmFibGVfbXNpeCgpL3BjaV9lbmFibGVfbXNpX2Jsb2NrKCkgZm9yIHRoaXMgcGRldi4NCj4gPiBJ
+ZiBhbnlvdGhlciBjb2RlIG1ha2VzIHRoZW4gaXQgaXMgc29tZSBvdGhlciB1bmV4cGVjdGVkbHkg
+dGhpbmcNCj4gPiBoYXBwZW5pbmcgaW4gc3lzdGVtLCBubz8NCj4gDQo+IFdoYXQncyBwcm9wb3Nl
+ZCBoZXJlIGlzIGEgZ2VuZXJpYyBJT01NVSBBUEkuICBBbnlib2R5IGNhbiBjYWxsIHRoaXMuDQo+
+IFdoYXQgaWYgdGhlIGhvc3QgU0NTSSBkcml2ZXIgZGVjaWRlcyB0byBnbyBnZXQgdGhlIGlvbW11
+IGRvbWFpbiBmb3IgaXQncyBkZXZpY2UNCj4gKG9yIGFueSBvdGhlciBkZXZpY2UpPyAgRG9lcyB0
+aGF0IGZpdCB5b3VyIHVzYWdlIG1vZGVsPw0KPiANCj4gPiA+ICBJdCdzIG5vdCBtYWludGFpbmFi
+bGUuDQo+ID4gPiBUaGFua3MsDQo+ID4NCj4gPiBJIGRvIG5vdCBoYXZlIGFueSBpc3N1ZSB3aXRo
+IHRoaXMgYXMgd2VsbCwgY2FuIHlvdSBhbHNvIGRlc2NyaWJlIHRoZQ0KPiA+IHR5cGUgb2YgQVBJ
+IHlvdSBhcmUgZW52aXNpb25pbmc7IEkgY2FuIHRoaW5rIG9mIGRlZmluaW5nIHNvbWUgZnVuY3Rp
+b24NCj4gPiBpbiB2ZmlvLmMvdmZpb19pb21tdSouYywgbWFrZSB0aGVtIGdsb2JhbCBhbmQgZGVj
+bGFyZSB0aGVuIGluDQo+ID4gaW5jbHVkZS9MaW51eC92ZmlvLmggQW5kIGluY2x1ZGUgPExpbnV4
+L3ZmaW8uaD4gaW4gY2FsbGVyIGZpbGUNCj4gPiAoYXJjaC9wb3dlcnBjL2tlcm5lbC9tc2kuYykN
+Cj4gDQo+IERvIHlvdSByZWFsbHkgd2FudCBtb2R1bGUgZGVwZW5kZW5jaWVzIGJldHdlZW4gdmZp
+byBhbmQgeW91ciBjb3JlIGtlcm5lbCBNU0kNCj4gc2V0dXA/ICBMb29rIGF0IHRoZSB2ZmlvIGV4
+dGVybmFsIHVzZXIgaW50ZXJmYWNlIHRoYXQgd2UndmUgYWxyZWFkeSBkZWZpbmVkLg0KPiBUaGF0
+IGFsbG93cyBvdGhlciBjb21wb25lbnRzIG9mIHRoZSBrZXJuZWwgdG8gZ2V0IGEgcHJvcGVyIHJl
+ZmVyZW5jZSB0byBhIHZmaW8NCj4gZ3JvdXAuICBGcm9tIHRoZXJlIHlvdSBjYW4gd29yayBvdXQg
+aG93IHRvIGdldCB3aGF0IHlvdSB3YW50LiAgQW5vdGhlcg0KPiBhbHRlcm5hdGl2ZSBpcyB0aGF0
+IHZmaW8gY291bGQgcmVnaXN0ZXIgYW4gTVNJIHRvIElPVkEgbWFwcGluZyB3aXRoIGFyY2hpdGVj
+dHVyZQ0KPiBjb2RlIHdoZW4gdGhlIG1hcHBpbmcgaXMgY3JlYXRlZC4gIFRoZSBNU0kgc2V0dXAg
+cGF0aCBjb3VsZCB0aGVuIGRvIGEgbG9va3VwIGluDQo+IGFyY2hpdGVjdHVyZSBjb2RlIGZvciB0
+aGUgbWFwcGluZy4gIFlvdSBjb3VsZCBldmVuIHN0b3JlIHRoZSBNU0kgdG8gSU9WQSBtYXBwaW5n
+DQo+IGluIFZGSU8gYW5kIGNyZWF0ZSBhbiBpbnRlcmZhY2Ugd2hlcmUgU0VUX0lSUSBwYXNzZXMg
+dGhhdCBtYXBwaW5nIGludG8gc2V0dXANCj4gY29kZS4NCg0KT2ssIFdoYXQgSSB3YW50IGlzIHRv
+IGdldCBJT1ZBIGFzc29jaWF0ZWQgd2l0aCBhIHBoeXNpY2FsIGFkZHJlc3MgKHBoeXNpY2FsIGFk
+ZHJlc3Mgb2YgTVNJLWJhbmspLg0KQW5kIGN1cnJlbnRseSBJIGRvIG5vdCBzZWUgYSB3YXkgdG8g
+a25vdyBJT1ZBIG9mIGEgcGh5c2ljYWwgYWRkcmVzcyBhbmQgZG9pbmcgYWxsIHRoaXMgZG9tYWlu
+IGdldCBhbmQgdGhlbiBzZWFyY2ggdGhyb3VnaCBhbGwgb2YgaW9tbXUtd2luZG93cyBvZiB0aGF0
+IGRvbWFpbi4NCg0KV2hhdCBpZiB3ZSBhZGQgYW4gaW9tbXUtQVBJIHdoaWNoIGNhbiByZXR1cm4g
+dGhlIElPVkEgbWFwcGluZyBvZiBhIHBoeXNpY2FsIGFkZHJlc3MuIEN1cnJlbnQgdXNlIGNhc2Ug
+aXMgc2V0dGluZyB1cCBNU0kncyBmb3IgYXBlcnR1cmUgdHlwZSBvZiBJT01NVSBhbHNvIGdldHRp
+bmcgYSBwaHlzX3RvX2lvdmEoKSBtYXBwaW5nIGlzIGluZGVwZW5kZW50IG9mIFZGSU8sIHlvdXIg
+dGhvdWdodD8NCg0KVGhhbmtzDQotQmhhcmF0DQoNCj4gVGhhbmtzLA0KPiANCj4gQWxleA0KPiAN
+Cg0K
