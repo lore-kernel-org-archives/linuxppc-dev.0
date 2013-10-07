@@ -1,41 +1,18 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from webmail.solarflare.com (webmail.solarflare.com [12.187.104.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "WEBMAIL.SOLARFLARE.COM",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EC5B62C0338
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 07:48:10 +1100 (EST)
-Message-ID: <1381178881.1536.28.camel@bwh-desktop.uk.level5networks.com>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Alexander Gordeev <agordeev@redhat.com>
-Date: Mon, 7 Oct 2013 21:48:01 +0100
-In-Reply-To: <20131006071027.GA29143@dhcp-26-207.brq.redhat.com>
-References: <cover.1380703262.git.agordeev@redhat.com>
- <1380840585.3419.50.camel@bwh-desktop.uk.level5networks.com>
- <20131004082920.GA4536@dhcp-26-207.brq.redhat.com>
- <1380922156.3214.49.camel@bwh-desktop.uk.level5networks.com>
- <20131005142054.GA11270@dhcp-26-207.brq.redhat.com>
- <1381009586.645.141.camel@pasglop>
- <20131006060243.GB28142@dhcp-26-207.brq.redhat.com>
- <1381040386.645.143.camel@pasglop>
- <20131006071027.GA29143@dhcp-26-207.brq.redhat.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9E6602C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 08:08:40 +1100 (EST)
+Message-ID: <1381180104.645.176.camel@pasglop>
+Subject: [PATCH] powerpc/irq: Don't switch to irq stack from softirq stack
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 08 Oct 2013 08:08:24 +1100
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
- iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ralf
- Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Mime-Version: 1.0
+Cc: =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,28 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-10-06 at 09:10 +0200, Alexander Gordeev wrote:
-> On Sun, Oct 06, 2013 at 05:19:46PM +1100, Benjamin Herrenschmidt wrote:
-> > On Sun, 2013-10-06 at 08:02 +0200, Alexander Gordeev wrote:
-> > > In fact, in the current design to address the quota race decently the
-> > > drivers would have to protect the *loop* to prevent the quota change
-> > > between a pci_enable_msix() returned a positive number and the the next
-> > > call to pci_enable_msix() with that number. Is it doable?
-> > 
-> > I am not advocating for the current design, simply saying that your
-> > proposal doesn't address this issue while Ben's does.
-> 
-> There is one major flaw in min-max approach - the generic MSI layer
-> will have to take decisions on exact number of MSIs to request, not
-> device drivers.
-[...
+irq_exit() is now called on the irq stack, which can trigger a switch
+to the softirq stack from the irq stack. If an interrupt happens at
+that point, we will not properly detect the re-entrancy and clobber
+the original return context on the irq stack.
 
-No, the min-max functions should be implemented using the same loop that
-drivers are expected to use now.
+This fixes it. The side effect is to prevent all nesting from softirq
+stack to irq stack even in the "safe" case but it's simpler that way
+and matches what x86_64 does.
 
+Reported-by: Cédric Le Goater <clg@fr.ibm.com>
+Tested-by: Cédric Le Goater <clg@fr.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+Linus, I don't have my git repo at hand right now and this is pretty
+urgent, can you apply it directly please ?
+
+Cheers,
 Ben.
 
+ arch/powerpc/kernel/irq.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 57d286a..c7cb8c2 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -495,14 +495,15 @@ void __do_irq(struct pt_regs *regs)
+ void do_IRQ(struct pt_regs *regs)
+ {
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
+-	struct thread_info *curtp, *irqtp;
++	struct thread_info *curtp, *irqtp, *sirqtp;
+ 
+ 	/* Switch to the irq stack to handle this */
+ 	curtp = current_thread_info();
+ 	irqtp = hardirq_ctx[raw_smp_processor_id()];
++	sirqtp = softirq_ctx[raw_smp_processor_id()];
+ 
+ 	/* Already there ? */
+-	if (unlikely(curtp == irqtp)) {
++	if (unlikely(curtp == irqtp || curtp == sirqtp)) {
+ 		__do_irq(regs);
+ 		set_irq_regs(old_regs);
+ 		return;
 -- 
-Ben Hutchings, Staff Engineer, Solarflare
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+1.7.10.4
