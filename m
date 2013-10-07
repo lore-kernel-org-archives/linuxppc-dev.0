@@ -1,30 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6D1AC2C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 03:49:01 +1100 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 016B42C011C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 03:50:38 +1100 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 8 Oct 2013 02:49:01 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3DB032CE8053
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 03:48:59 +1100 (EST)
+ Tue, 8 Oct 2013 02:50:36 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6424C2CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 03:50:09 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r97GmlOc8192472
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 03:48:47 +1100
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r97GW4Eu57409614
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 03:32:32 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r97GmwPG025299
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 03:48:58 +1100
+ r97GmjPD025011
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 03:48:46 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V2 14/14] kvm: powerpc: book3s: drop is_hv_enabled
-Date: Mon,  7 Oct 2013 22:18:02 +0530
-Message-Id: <1381164482-31001-15-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V2 09/14] kvm: powerpc: book3s: pr: move PR related
+ tracepoints to a separate header
+Date: Mon,  7 Oct 2013 22:17:57 +0530
+Message-Id: <1381164482-31001-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1381164482-31001-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1381164482-31001-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
@@ -40,122 +41,649 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-drop is_hv_enabled, because that should not be a callback property
+This patch moves PR related tracepoints to a separate header. This
+enables in converting PR to a kernel module which will be done in
+later patches
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/kvm_ppc.h | 6 +++++-
- arch/powerpc/kvm/book3s.c          | 6 +++---
- arch/powerpc/kvm/book3s_hv.c       | 1 -
- arch/powerpc/kvm/book3s_pr.c       | 1 -
- arch/powerpc/kvm/book3s_xics.c     | 2 +-
- arch/powerpc/kvm/powerpc.c         | 2 +-
- 6 files changed, 10 insertions(+), 8 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_host.c |   2 +-
+ arch/powerpc/kvm/book3s_mmu_hpte.c    |   2 +-
+ arch/powerpc/kvm/book3s_pr.c          |   4 +-
+ arch/powerpc/kvm/trace.h              | 234 +--------------------------
+ arch/powerpc/kvm/trace_pr.h           | 297 ++++++++++++++++++++++++++++++++++
+ 5 files changed, 309 insertions(+), 230 deletions(-)
+ create mode 100644 arch/powerpc/kvm/trace_pr.h
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 3069cf4..c8317fb 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -183,7 +183,6 @@ union kvmppc_one_reg {
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+index 819672c..0d513af 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+@@ -27,7 +27,7 @@
+ #include <asm/machdep.h>
+ #include <asm/mmu_context.h>
+ #include <asm/hw_irq.h>
+-#include "trace.h"
++#include "trace_pr.h"
  
- struct kvmppc_ops {
- 	struct module *owner;
--	bool is_hv_enabled;
- 	int (*get_sregs)(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs);
- 	int (*set_sregs)(struct kvm_vcpu *vcpu, struct kvm_sregs *sregs);
- 	int (*get_one_reg)(struct kvm_vcpu *vcpu, u64 id,
-@@ -232,6 +231,11 @@ struct kvmppc_ops {
- extern struct kvmppc_ops *kvmppc_hv_ops;
- extern struct kvmppc_ops *kvmppc_pr_ops;
+ #define PTE_SIZE 12
  
-+static inline bool is_kvmppc_hv_enabled(struct kvm *kvm)
-+{
-+	return kvm->arch.kvm_ops == kvmppc_hv_ops;
-+}
-+
- /*
-  * Cuts out inst bits with ordering according to spec.
-  * That means the leftmost bit is zero. All given bits are included.
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index ad8f6ed..8912608 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -72,7 +72,7 @@ void kvmppc_core_load_guest_debugstate(struct kvm_vcpu *vcpu)
+diff --git a/arch/powerpc/kvm/book3s_mmu_hpte.c b/arch/powerpc/kvm/book3s_mmu_hpte.c
+index 6b79bfc..5a1ab12 100644
+--- a/arch/powerpc/kvm/book3s_mmu_hpte.c
++++ b/arch/powerpc/kvm/book3s_mmu_hpte.c
+@@ -28,7 +28,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/hw_irq.h>
  
- static inline unsigned long kvmppc_interrupt_offset(struct kvm_vcpu *vcpu)
- {
--	if (!vcpu->kvm->arch.kvm_ops->is_hv_enabled)
-+	if (!is_kvmppc_hv_enabled(vcpu->kvm))
- 		return to_book3s(vcpu)->hior;
- 	return 0;
- }
-@@ -80,7 +80,7 @@ static inline unsigned long kvmppc_interrupt_offset(struct kvm_vcpu *vcpu)
- static inline void kvmppc_update_int_pending(struct kvm_vcpu *vcpu,
- 			unsigned long pending_now, unsigned long old_pending)
- {
--	if (vcpu->kvm->arch.kvm_ops->is_hv_enabled)
-+	if (is_kvmppc_hv_enabled(vcpu->kvm))
- 		return;
- 	if (pending_now)
- 		vcpu->arch.shared->int_pending = 1;
-@@ -94,7 +94,7 @@ static inline bool kvmppc_critical_section(struct kvm_vcpu *vcpu)
- 	ulong crit_r1;
- 	bool crit;
+-#include "trace.h"
++#include "trace_pr.h"
  
--	if (vcpu->kvm->arch.kvm_ops->is_hv_enabled)
-+	if (is_kvmppc_hv_enabled(vcpu->kvm))
- 		return false;
+ #define PTE_SIZE	12
  
- 	crit_raw = vcpu->arch.shared->critical;
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 31922d5..b5229eb 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2160,7 +2160,6 @@ static long kvm_arch_vm_ioctl_hv(struct file *filp,
- }
- 
- static struct kvmppc_ops kvm_ops_hv = {
--	.is_hv_enabled = true,
- 	.get_sregs = kvm_arch_vcpu_ioctl_get_sregs_hv,
- 	.set_sregs = kvm_arch_vcpu_ioctl_set_sregs_hv,
- 	.get_one_reg = kvmppc_get_one_reg_hv,
 diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index fbd985f..df36cf2 100644
+index b6a525d..ca6c73d 100644
 --- a/arch/powerpc/kvm/book3s_pr.c
 +++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -1526,7 +1526,6 @@ static long kvm_arch_vm_ioctl_pr(struct file *filp,
- }
+@@ -42,7 +42,9 @@
+ #include <linux/highmem.h>
  
- static struct kvmppc_ops kvm_ops_pr = {
--	.is_hv_enabled = false,
- 	.get_sregs = kvm_arch_vcpu_ioctl_get_sregs_pr,
- 	.set_sregs = kvm_arch_vcpu_ioctl_set_sregs_pr,
- 	.get_one_reg = kvmppc_get_one_reg_pr,
-diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
-index 76ef525..20d56ec 100644
---- a/arch/powerpc/kvm/book3s_xics.c
-+++ b/arch/powerpc/kvm/book3s_xics.c
-@@ -818,7 +818,7 @@ int kvmppc_xics_hcall(struct kvm_vcpu *vcpu, u32 req)
- 	}
+ #include "book3s.h"
+-#include "trace.h"
++
++#define CREATE_TRACE_POINTS
++#include "trace_pr.h"
  
- 	/* Check for real mode returning too hard */
--	if (xics->real_mode && vcpu->kvm->arch.kvm_ops->is_hv_enabled)
-+	if (xics->real_mode && is_kvmppc_hv_enabled(vcpu->kvm))
- 		return kvmppc_xics_rm_complete(vcpu, req);
+ /* #define EXIT_DEBUG */
+ /* #define DEBUG_EXT */
+diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
+index 9e8368e..80f252a 100644
+--- a/arch/powerpc/kvm/trace.h
++++ b/arch/powerpc/kvm/trace.h
+@@ -85,6 +85,12 @@ TRACE_EVENT(kvm_ppc_instr,
+ 	{41, "HV_PRIV"}
+ #endif
  
- 	switch (req) {
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 00a995a..058f9d6 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -200,7 +200,7 @@ int kvmppc_sanity_check(struct kvm_vcpu *vcpu)
- 		goto out;
++#ifndef CONFIG_KVM_BOOK3S_PR_POSSIBLE
++/*
++ * For pr we define this in trace_pr.h since it pr can be built as
++ * a module
++ */
++
+ TRACE_EVENT(kvm_exit,
+ 	TP_PROTO(unsigned int exit_nr, struct kvm_vcpu *vcpu),
+ 	TP_ARGS(exit_nr, vcpu),
+@@ -94,9 +100,6 @@ TRACE_EVENT(kvm_exit,
+ 		__field(	unsigned long,	pc		)
+ 		__field(	unsigned long,	msr		)
+ 		__field(	unsigned long,	dar		)
+-#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+-		__field(	unsigned long,	srr1		)
+-#endif
+ 		__field(	unsigned long,	last_inst	)
+ 	),
  
- 	/* HV KVM can only do PAPR mode for now */
--	if (!vcpu->arch.papr_enabled && vcpu->kvm->arch.kvm_ops->is_hv_enabled)
-+	if (!vcpu->arch.papr_enabled && is_kvmppc_hv_enabled(vcpu->kvm))
- 		goto out;
+@@ -105,9 +108,6 @@ TRACE_EVENT(kvm_exit,
+ 		__entry->pc		= kvmppc_get_pc(vcpu);
+ 		__entry->dar		= kvmppc_get_fault_dar(vcpu);
+ 		__entry->msr		= vcpu->arch.shared->msr;
+-#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+-		__entry->srr1		= vcpu->arch.shadow_srr1;
+-#endif
+ 		__entry->last_inst	= vcpu->arch.last_inst;
+ 	),
  
- #ifdef CONFIG_KVM_BOOKE_HV
+@@ -115,18 +115,12 @@ TRACE_EVENT(kvm_exit,
+ 		" | pc=0x%lx"
+ 		" | msr=0x%lx"
+ 		" | dar=0x%lx"
+-#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+-		" | srr1=0x%lx"
+-#endif
+ 		" | last_inst=0x%lx"
+ 		,
+ 		__print_symbolic(__entry->exit_nr, kvm_trace_symbol_exit),
+ 		__entry->pc,
+ 		__entry->msr,
+ 		__entry->dar,
+-#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+-		__entry->srr1,
+-#endif
+ 		__entry->last_inst
+ 		)
+ );
+@@ -145,6 +139,7 @@ TRACE_EVENT(kvm_unmap_hva,
+ 
+ 	TP_printk("unmap hva 0x%lx\n", __entry->hva)
+ );
++#endif
+ 
+ TRACE_EVENT(kvm_stlb_inval,
+ 	TP_PROTO(unsigned int stlb_index),
+@@ -231,221 +226,6 @@ TRACE_EVENT(kvm_check_requests,
+ 		__entry->cpu_nr, __entry->requests)
+ );
+ 
+-
+-/*************************************************************************
+- *                         Book3S trace points                           *
+- *************************************************************************/
+-
+-#ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+-
+-TRACE_EVENT(kvm_book3s_reenter,
+-	TP_PROTO(int r, struct kvm_vcpu *vcpu),
+-	TP_ARGS(r, vcpu),
+-
+-	TP_STRUCT__entry(
+-		__field(	unsigned int,	r		)
+-		__field(	unsigned long,	pc		)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->r		= r;
+-		__entry->pc		= kvmppc_get_pc(vcpu);
+-	),
+-
+-	TP_printk("reentry r=%d | pc=0x%lx", __entry->r, __entry->pc)
+-);
+-
+-#ifdef CONFIG_PPC_BOOK3S_64
+-
+-TRACE_EVENT(kvm_book3s_64_mmu_map,
+-	TP_PROTO(int rflags, ulong hpteg, ulong va, pfn_t hpaddr,
+-		 struct kvmppc_pte *orig_pte),
+-	TP_ARGS(rflags, hpteg, va, hpaddr, orig_pte),
+-
+-	TP_STRUCT__entry(
+-		__field(	unsigned char,		flag_w		)
+-		__field(	unsigned char,		flag_x		)
+-		__field(	unsigned long,		eaddr		)
+-		__field(	unsigned long,		hpteg		)
+-		__field(	unsigned long,		va		)
+-		__field(	unsigned long long,	vpage		)
+-		__field(	unsigned long,		hpaddr		)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->flag_w	= ((rflags & HPTE_R_PP) == 3) ? '-' : 'w';
+-		__entry->flag_x	= (rflags & HPTE_R_N) ? '-' : 'x';
+-		__entry->eaddr	= orig_pte->eaddr;
+-		__entry->hpteg	= hpteg;
+-		__entry->va	= va;
+-		__entry->vpage	= orig_pte->vpage;
+-		__entry->hpaddr	= hpaddr;
+-	),
+-
+-	TP_printk("KVM: %c%c Map 0x%lx: [%lx] 0x%lx (0x%llx) -> %lx",
+-		  __entry->flag_w, __entry->flag_x, __entry->eaddr,
+-		  __entry->hpteg, __entry->va, __entry->vpage, __entry->hpaddr)
+-);
+-
+-#endif /* CONFIG_PPC_BOOK3S_64 */
+-
+-TRACE_EVENT(kvm_book3s_mmu_map,
+-	TP_PROTO(struct hpte_cache *pte),
+-	TP_ARGS(pte),
+-
+-	TP_STRUCT__entry(
+-		__field(	u64,		host_vpn	)
+-		__field(	u64,		pfn		)
+-		__field(	ulong,		eaddr		)
+-		__field(	u64,		vpage		)
+-		__field(	ulong,		raddr		)
+-		__field(	int,		flags		)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->host_vpn	= pte->host_vpn;
+-		__entry->pfn		= pte->pfn;
+-		__entry->eaddr		= pte->pte.eaddr;
+-		__entry->vpage		= pte->pte.vpage;
+-		__entry->raddr		= pte->pte.raddr;
+-		__entry->flags		= (pte->pte.may_read ? 0x4 : 0) |
+-					  (pte->pte.may_write ? 0x2 : 0) |
+-					  (pte->pte.may_execute ? 0x1 : 0);
+-	),
+-
+-	TP_printk("Map: hvpn=%llx pfn=%llx ea=%lx vp=%llx ra=%lx [%x]",
+-		  __entry->host_vpn, __entry->pfn, __entry->eaddr,
+-		  __entry->vpage, __entry->raddr, __entry->flags)
+-);
+-
+-TRACE_EVENT(kvm_book3s_mmu_invalidate,
+-	TP_PROTO(struct hpte_cache *pte),
+-	TP_ARGS(pte),
+-
+-	TP_STRUCT__entry(
+-		__field(	u64,		host_vpn	)
+-		__field(	u64,		pfn		)
+-		__field(	ulong,		eaddr		)
+-		__field(	u64,		vpage		)
+-		__field(	ulong,		raddr		)
+-		__field(	int,		flags		)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->host_vpn	= pte->host_vpn;
+-		__entry->pfn		= pte->pfn;
+-		__entry->eaddr		= pte->pte.eaddr;
+-		__entry->vpage		= pte->pte.vpage;
+-		__entry->raddr		= pte->pte.raddr;
+-		__entry->flags		= (pte->pte.may_read ? 0x4 : 0) |
+-					  (pte->pte.may_write ? 0x2 : 0) |
+-					  (pte->pte.may_execute ? 0x1 : 0);
+-	),
+-
+-	TP_printk("Flush: hva=%llx pfn=%llx ea=%lx vp=%llx ra=%lx [%x]",
+-		  __entry->host_vpn, __entry->pfn, __entry->eaddr,
+-		  __entry->vpage, __entry->raddr, __entry->flags)
+-);
+-
+-TRACE_EVENT(kvm_book3s_mmu_flush,
+-	TP_PROTO(const char *type, struct kvm_vcpu *vcpu, unsigned long long p1,
+-		 unsigned long long p2),
+-	TP_ARGS(type, vcpu, p1, p2),
+-
+-	TP_STRUCT__entry(
+-		__field(	int,			count		)
+-		__field(	unsigned long long,	p1		)
+-		__field(	unsigned long long,	p2		)
+-		__field(	const char *,		type		)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->count		= to_book3s(vcpu)->hpte_cache_count;
+-		__entry->p1		= p1;
+-		__entry->p2		= p2;
+-		__entry->type		= type;
+-	),
+-
+-	TP_printk("Flush %d %sPTEs: %llx - %llx",
+-		  __entry->count, __entry->type, __entry->p1, __entry->p2)
+-);
+-
+-TRACE_EVENT(kvm_book3s_slb_found,
+-	TP_PROTO(unsigned long long gvsid, unsigned long long hvsid),
+-	TP_ARGS(gvsid, hvsid),
+-
+-	TP_STRUCT__entry(
+-		__field(	unsigned long long,	gvsid		)
+-		__field(	unsigned long long,	hvsid		)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->gvsid		= gvsid;
+-		__entry->hvsid		= hvsid;
+-	),
+-
+-	TP_printk("%llx -> %llx", __entry->gvsid, __entry->hvsid)
+-);
+-
+-TRACE_EVENT(kvm_book3s_slb_fail,
+-	TP_PROTO(u16 sid_map_mask, unsigned long long gvsid),
+-	TP_ARGS(sid_map_mask, gvsid),
+-
+-	TP_STRUCT__entry(
+-		__field(	unsigned short,		sid_map_mask	)
+-		__field(	unsigned long long,	gvsid		)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->sid_map_mask	= sid_map_mask;
+-		__entry->gvsid		= gvsid;
+-	),
+-
+-	TP_printk("%x/%x: %llx", __entry->sid_map_mask,
+-		  SID_MAP_MASK - __entry->sid_map_mask, __entry->gvsid)
+-);
+-
+-TRACE_EVENT(kvm_book3s_slb_map,
+-	TP_PROTO(u16 sid_map_mask, unsigned long long gvsid,
+-		 unsigned long long hvsid),
+-	TP_ARGS(sid_map_mask, gvsid, hvsid),
+-
+-	TP_STRUCT__entry(
+-		__field(	unsigned short,		sid_map_mask	)
+-		__field(	unsigned long long,	guest_vsid	)
+-		__field(	unsigned long long,	host_vsid	)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->sid_map_mask	= sid_map_mask;
+-		__entry->guest_vsid	= gvsid;
+-		__entry->host_vsid	= hvsid;
+-	),
+-
+-	TP_printk("%x: %llx -> %llx", __entry->sid_map_mask,
+-		  __entry->guest_vsid, __entry->host_vsid)
+-);
+-
+-TRACE_EVENT(kvm_book3s_slbmte,
+-	TP_PROTO(u64 slb_vsid, u64 slb_esid),
+-	TP_ARGS(slb_vsid, slb_esid),
+-
+-	TP_STRUCT__entry(
+-		__field(	u64,	slb_vsid	)
+-		__field(	u64,	slb_esid	)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->slb_vsid	= slb_vsid;
+-		__entry->slb_esid	= slb_esid;
+-	),
+-
+-	TP_printk("%llx, %llx", __entry->slb_vsid, __entry->slb_esid)
+-);
+-
+-#endif /* CONFIG_PPC_BOOK3S */
+-
+-
+ /*************************************************************************
+  *                         Book3E trace points                           *
+  *************************************************************************/
+diff --git a/arch/powerpc/kvm/trace_pr.h b/arch/powerpc/kvm/trace_pr.h
+new file mode 100644
+index 0000000..8b22e47
+--- /dev/null
++++ b/arch/powerpc/kvm/trace_pr.h
+@@ -0,0 +1,297 @@
++
++#if !defined(_TRACE_KVM_PR_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_KVM_PR_H
++
++#include <linux/tracepoint.h>
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM kvm_pr
++#define TRACE_INCLUDE_PATH .
++#define TRACE_INCLUDE_FILE trace_pr
++
++#define kvm_trace_symbol_exit \
++	{0x100, "SYSTEM_RESET"}, \
++	{0x200, "MACHINE_CHECK"}, \
++	{0x300, "DATA_STORAGE"}, \
++	{0x380, "DATA_SEGMENT"}, \
++	{0x400, "INST_STORAGE"}, \
++	{0x480, "INST_SEGMENT"}, \
++	{0x500, "EXTERNAL"}, \
++	{0x501, "EXTERNAL_LEVEL"}, \
++	{0x502, "EXTERNAL_HV"}, \
++	{0x600, "ALIGNMENT"}, \
++	{0x700, "PROGRAM"}, \
++	{0x800, "FP_UNAVAIL"}, \
++	{0x900, "DECREMENTER"}, \
++	{0x980, "HV_DECREMENTER"}, \
++	{0xc00, "SYSCALL"}, \
++	{0xd00, "TRACE"}, \
++	{0xe00, "H_DATA_STORAGE"}, \
++	{0xe20, "H_INST_STORAGE"}, \
++	{0xe40, "H_EMUL_ASSIST"}, \
++	{0xf00, "PERFMON"}, \
++	{0xf20, "ALTIVEC"}, \
++	{0xf40, "VSX"}
++
++TRACE_EVENT(kvm_book3s_reenter,
++	TP_PROTO(int r, struct kvm_vcpu *vcpu),
++	TP_ARGS(r, vcpu),
++
++	TP_STRUCT__entry(
++		__field(	unsigned int,	r		)
++		__field(	unsigned long,	pc		)
++	),
++
++	TP_fast_assign(
++		__entry->r		= r;
++		__entry->pc		= kvmppc_get_pc(vcpu);
++	),
++
++	TP_printk("reentry r=%d | pc=0x%lx", __entry->r, __entry->pc)
++);
++
++#ifdef CONFIG_PPC_BOOK3S_64
++
++TRACE_EVENT(kvm_book3s_64_mmu_map,
++	TP_PROTO(int rflags, ulong hpteg, ulong va, pfn_t hpaddr,
++		 struct kvmppc_pte *orig_pte),
++	TP_ARGS(rflags, hpteg, va, hpaddr, orig_pte),
++
++	TP_STRUCT__entry(
++		__field(	unsigned char,		flag_w		)
++		__field(	unsigned char,		flag_x		)
++		__field(	unsigned long,		eaddr		)
++		__field(	unsigned long,		hpteg		)
++		__field(	unsigned long,		va		)
++		__field(	unsigned long long,	vpage		)
++		__field(	unsigned long,		hpaddr		)
++	),
++
++	TP_fast_assign(
++		__entry->flag_w	= ((rflags & HPTE_R_PP) == 3) ? '-' : 'w';
++		__entry->flag_x	= (rflags & HPTE_R_N) ? '-' : 'x';
++		__entry->eaddr	= orig_pte->eaddr;
++		__entry->hpteg	= hpteg;
++		__entry->va	= va;
++		__entry->vpage	= orig_pte->vpage;
++		__entry->hpaddr	= hpaddr;
++	),
++
++	TP_printk("KVM: %c%c Map 0x%lx: [%lx] 0x%lx (0x%llx) -> %lx",
++		  __entry->flag_w, __entry->flag_x, __entry->eaddr,
++		  __entry->hpteg, __entry->va, __entry->vpage, __entry->hpaddr)
++);
++
++#endif /* CONFIG_PPC_BOOK3S_64 */
++
++TRACE_EVENT(kvm_book3s_mmu_map,
++	TP_PROTO(struct hpte_cache *pte),
++	TP_ARGS(pte),
++
++	TP_STRUCT__entry(
++		__field(	u64,		host_vpn	)
++		__field(	u64,		pfn		)
++		__field(	ulong,		eaddr		)
++		__field(	u64,		vpage		)
++		__field(	ulong,		raddr		)
++		__field(	int,		flags		)
++	),
++
++	TP_fast_assign(
++		__entry->host_vpn	= pte->host_vpn;
++		__entry->pfn		= pte->pfn;
++		__entry->eaddr		= pte->pte.eaddr;
++		__entry->vpage		= pte->pte.vpage;
++		__entry->raddr		= pte->pte.raddr;
++		__entry->flags		= (pte->pte.may_read ? 0x4 : 0) |
++					  (pte->pte.may_write ? 0x2 : 0) |
++					  (pte->pte.may_execute ? 0x1 : 0);
++	),
++
++	TP_printk("Map: hvpn=%llx pfn=%llx ea=%lx vp=%llx ra=%lx [%x]",
++		  __entry->host_vpn, __entry->pfn, __entry->eaddr,
++		  __entry->vpage, __entry->raddr, __entry->flags)
++);
++
++TRACE_EVENT(kvm_book3s_mmu_invalidate,
++	TP_PROTO(struct hpte_cache *pte),
++	TP_ARGS(pte),
++
++	TP_STRUCT__entry(
++		__field(	u64,		host_vpn	)
++		__field(	u64,		pfn		)
++		__field(	ulong,		eaddr		)
++		__field(	u64,		vpage		)
++		__field(	ulong,		raddr		)
++		__field(	int,		flags		)
++	),
++
++	TP_fast_assign(
++		__entry->host_vpn	= pte->host_vpn;
++		__entry->pfn		= pte->pfn;
++		__entry->eaddr		= pte->pte.eaddr;
++		__entry->vpage		= pte->pte.vpage;
++		__entry->raddr		= pte->pte.raddr;
++		__entry->flags		= (pte->pte.may_read ? 0x4 : 0) |
++					  (pte->pte.may_write ? 0x2 : 0) |
++					  (pte->pte.may_execute ? 0x1 : 0);
++	),
++
++	TP_printk("Flush: hva=%llx pfn=%llx ea=%lx vp=%llx ra=%lx [%x]",
++		  __entry->host_vpn, __entry->pfn, __entry->eaddr,
++		  __entry->vpage, __entry->raddr, __entry->flags)
++);
++
++TRACE_EVENT(kvm_book3s_mmu_flush,
++	TP_PROTO(const char *type, struct kvm_vcpu *vcpu, unsigned long long p1,
++		 unsigned long long p2),
++	TP_ARGS(type, vcpu, p1, p2),
++
++	TP_STRUCT__entry(
++		__field(	int,			count		)
++		__field(	unsigned long long,	p1		)
++		__field(	unsigned long long,	p2		)
++		__field(	const char *,		type		)
++	),
++
++	TP_fast_assign(
++		__entry->count		= to_book3s(vcpu)->hpte_cache_count;
++		__entry->p1		= p1;
++		__entry->p2		= p2;
++		__entry->type		= type;
++	),
++
++	TP_printk("Flush %d %sPTEs: %llx - %llx",
++		  __entry->count, __entry->type, __entry->p1, __entry->p2)
++);
++
++TRACE_EVENT(kvm_book3s_slb_found,
++	TP_PROTO(unsigned long long gvsid, unsigned long long hvsid),
++	TP_ARGS(gvsid, hvsid),
++
++	TP_STRUCT__entry(
++		__field(	unsigned long long,	gvsid		)
++		__field(	unsigned long long,	hvsid		)
++	),
++
++	TP_fast_assign(
++		__entry->gvsid		= gvsid;
++		__entry->hvsid		= hvsid;
++	),
++
++	TP_printk("%llx -> %llx", __entry->gvsid, __entry->hvsid)
++);
++
++TRACE_EVENT(kvm_book3s_slb_fail,
++	TP_PROTO(u16 sid_map_mask, unsigned long long gvsid),
++	TP_ARGS(sid_map_mask, gvsid),
++
++	TP_STRUCT__entry(
++		__field(	unsigned short,		sid_map_mask	)
++		__field(	unsigned long long,	gvsid		)
++	),
++
++	TP_fast_assign(
++		__entry->sid_map_mask	= sid_map_mask;
++		__entry->gvsid		= gvsid;
++	),
++
++	TP_printk("%x/%x: %llx", __entry->sid_map_mask,
++		  SID_MAP_MASK - __entry->sid_map_mask, __entry->gvsid)
++);
++
++TRACE_EVENT(kvm_book3s_slb_map,
++	TP_PROTO(u16 sid_map_mask, unsigned long long gvsid,
++		 unsigned long long hvsid),
++	TP_ARGS(sid_map_mask, gvsid, hvsid),
++
++	TP_STRUCT__entry(
++		__field(	unsigned short,		sid_map_mask	)
++		__field(	unsigned long long,	guest_vsid	)
++		__field(	unsigned long long,	host_vsid	)
++	),
++
++	TP_fast_assign(
++		__entry->sid_map_mask	= sid_map_mask;
++		__entry->guest_vsid	= gvsid;
++		__entry->host_vsid	= hvsid;
++	),
++
++	TP_printk("%x: %llx -> %llx", __entry->sid_map_mask,
++		  __entry->guest_vsid, __entry->host_vsid)
++);
++
++TRACE_EVENT(kvm_book3s_slbmte,
++	TP_PROTO(u64 slb_vsid, u64 slb_esid),
++	TP_ARGS(slb_vsid, slb_esid),
++
++	TP_STRUCT__entry(
++		__field(	u64,	slb_vsid	)
++		__field(	u64,	slb_esid	)
++	),
++
++	TP_fast_assign(
++		__entry->slb_vsid	= slb_vsid;
++		__entry->slb_esid	= slb_esid;
++	),
++
++	TP_printk("%llx, %llx", __entry->slb_vsid, __entry->slb_esid)
++);
++
++TRACE_EVENT(kvm_exit,
++	TP_PROTO(unsigned int exit_nr, struct kvm_vcpu *vcpu),
++	TP_ARGS(exit_nr, vcpu),
++
++	TP_STRUCT__entry(
++		__field(	unsigned int,	exit_nr		)
++		__field(	unsigned long,	pc		)
++		__field(	unsigned long,	msr		)
++		__field(	unsigned long,	dar		)
++		__field(	unsigned long,	srr1		)
++		__field(	unsigned long,	last_inst	)
++	),
++
++	TP_fast_assign(
++		__entry->exit_nr	= exit_nr;
++		__entry->pc		= kvmppc_get_pc(vcpu);
++		__entry->dar		= kvmppc_get_fault_dar(vcpu);
++		__entry->msr		= vcpu->arch.shared->msr;
++		__entry->srr1		= vcpu->arch.shadow_srr1;
++		__entry->last_inst	= vcpu->arch.last_inst;
++	),
++
++	TP_printk("exit=%s"
++		" | pc=0x%lx"
++		" | msr=0x%lx"
++		" | dar=0x%lx"
++		" | srr1=0x%lx"
++		" | last_inst=0x%lx"
++		,
++		__print_symbolic(__entry->exit_nr, kvm_trace_symbol_exit),
++		__entry->pc,
++		__entry->msr,
++		__entry->dar,
++		__entry->srr1,
++		__entry->last_inst
++		)
++);
++
++TRACE_EVENT(kvm_unmap_hva,
++	TP_PROTO(unsigned long hva),
++	TP_ARGS(hva),
++
++	TP_STRUCT__entry(
++		__field(	unsigned long,	hva		)
++	),
++
++	TP_fast_assign(
++		__entry->hva		= hva;
++	),
++
++	TP_printk("unmap hva 0x%lx\n", __entry->hva)
++);
++
++#endif /* _TRACE_KVM_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
 -- 
 1.8.1.2
