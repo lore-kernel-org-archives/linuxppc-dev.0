@@ -1,31 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5471A2C008F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 03:48:54 +1100 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DA3B12C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 03:48:55 +1100 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 8 Oct 2013 02:48:53 +1000
+ Tue, 8 Oct 2013 02:48:55 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 88D9C2BB0066
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 03:48:51 +1100 (EST)
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0688A2CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 03:48:54 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r97Gmdmf5374428
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 03:48:40 +1100
+ r97Gmgt89240880
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 03:48:42 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r97Gmogl025122
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 03:48:51 +1100
+ r97Gmr9C025204
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 03:48:53 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V2 11/14] kvm: powerpc: book3s: Support building HV and PR
- KVM as module
-Date: Mon,  7 Oct 2013 22:17:59 +0530
-Message-Id: <1381164482-31001-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V2 12/14] kvm: Add struct kvm arg to memslot APIs
+Date: Mon,  7 Oct 2013 22:18:00 +0530
+Message-Id: <1381164482-31001-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1381164482-31001-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1381164482-31001-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
@@ -41,369 +40,280 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
+We will use that in the later patch to find the kvm ops handler
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/kvm/Kconfig          |  6 +++---
- arch/powerpc/kvm/Makefile         | 11 ++++++++---
- arch/powerpc/kvm/book3s.c         | 12 +++++++++++-
- arch/powerpc/kvm/book3s_emulate.c |  2 +-
- arch/powerpc/kvm/book3s_hv.c      |  2 ++
- arch/powerpc/kvm/book3s_pr.c      |  5 ++++-
- arch/powerpc/kvm/book3s_rtas.c    |  1 +
- arch/powerpc/kvm/emulate.c        |  1 +
- arch/powerpc/kvm/powerpc.c        | 10 ++++++++++
- virt/kvm/kvm_main.c               |  4 ++++
- 10 files changed, 45 insertions(+), 9 deletions(-)
+ arch/arm/kvm/arm.c                 |  5 +++--
+ arch/ia64/kvm/kvm-ia64.c           |  5 +++--
+ arch/mips/kvm/kvm_mips.c           |  5 +++--
+ arch/powerpc/include/asm/kvm_ppc.h |  6 ++++--
+ arch/powerpc/kvm/book3s.c          |  4 ++--
+ arch/powerpc/kvm/booke.c           |  4 ++--
+ arch/powerpc/kvm/powerpc.c         |  9 +++++----
+ arch/s390/kvm/kvm-s390.c           |  5 +++--
+ arch/x86/kvm/x86.c                 |  5 +++--
+ include/linux/kvm_host.h           |  5 +++--
+ virt/kvm/kvm_main.c                | 12 ++++++------
+ 11 files changed, 37 insertions(+), 28 deletions(-)
 
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index a96d7c3..8aeeda1 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -73,7 +73,7 @@ config KVM_BOOK3S_64
- 	  If unsure, say N.
- 
- config KVM_BOOK3S_64_HV
--	bool "KVM support for POWER7 and PPC970 using hypervisor mode in host"
-+	tristate "KVM support for POWER7 and PPC970 using hypervisor mode in host"
- 	depends on KVM_BOOK3S_64
- 	select KVM_BOOK3S_HV_POSSIBLE
- 	select MMU_NOTIFIER
-@@ -94,8 +94,8 @@ config KVM_BOOK3S_64_HV
- 	  If unsure, say N.
- 
- config KVM_BOOK3S_64_PR
--	bool "KVM support without using hypervisor mode in host"
--	depends on KVM_BOOK3S_64 && !KVM_BOOK3S_64_HV
-+	tristate "KVM support without using hypervisor mode in host"
-+	depends on KVM_BOOK3S_64
- 	select KVM_BOOK3S_PR_POSSIBLE
- 	---help---
- 	  Support running guest kernels in virtual machines on processors
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index fa17b33..ce569b6 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -56,7 +56,7 @@ kvm-objs-$(CONFIG_KVM_E500MC) := $(kvm-e500mc-objs)
- kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) := \
- 	book3s_64_vio_hv.o
- 
--kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_PR) := \
-+kvm-pr-y := \
- 	fpu.o \
- 	book3s_paired_singles.o \
- 	book3s_pr.o \
-@@ -76,7 +76,7 @@ kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) += \
- 	book3s_rmhandlers.o
- endif
- 
--kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_HV)  += \
-+kvm-hv-y += \
- 	book3s_hv.o \
- 	book3s_hv_interrupts.o \
- 	book3s_64_mmu_hv.o
-@@ -84,13 +84,15 @@ kvm-book3s_64-objs-$(CONFIG_KVM_BOOK3S_64_HV)  += \
- kvm-book3s_64-builtin-xics-objs-$(CONFIG_KVM_XICS) := \
- 	book3s_hv_rm_xics.o
- 
--kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) += \
-+ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) += \
- 	book3s_hv_rmhandlers.o \
- 	book3s_hv_rm_mmu.o \
- 	book3s_hv_ras.o \
- 	book3s_hv_builtin.o \
- 	book3s_hv_cma.o \
- 	$(kvm-book3s_64-builtin-xics-objs-y)
-+endif
- 
- kvm-book3s_64-objs-$(CONFIG_KVM_XICS) += \
- 	book3s_xics.o
-@@ -131,4 +133,7 @@ obj-$(CONFIG_KVM_E500MC) += kvm.o
- obj-$(CONFIG_KVM_BOOK3S_64) += kvm.o
- obj-$(CONFIG_KVM_BOOK3S_32) += kvm.o
- 
-+obj-$(CONFIG_KVM_BOOK3S_64_PR) += kvm-pr.o
-+obj-$(CONFIG_KVM_BOOK3S_64_HV) += kvm-hv.o
-+
- obj-y += $(kvm-book3s_64-builtin-objs-y)
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 493aff7..39d2994 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -170,28 +170,32 @@ void kvmppc_book3s_queue_irqprio(struct kvm_vcpu *vcpu, unsigned int vec)
- 	printk(KERN_INFO "Queueing interrupt %x\n", vec);
- #endif
+diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
+index 9c697db..e96c48f 100644
+--- a/arch/arm/kvm/arm.c
++++ b/arch/arm/kvm/arm.c
+@@ -152,12 +152,13 @@ int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+ 	return VM_FAULT_SIGBUS;
  }
--
-+EXPORT_SYMBOL_GPL(kvmppc_book3s_queue_irqprio);
  
- void kvmppc_core_queue_program(struct kvm_vcpu *vcpu, ulong flags)
+-void kvm_arch_free_memslot(struct kvm_memory_slot *free,
++void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free,
+ 			   struct kvm_memory_slot *dont)
  {
- 	/* might as well deliver this straight away */
- 	kvmppc_inject_interrupt(vcpu, BOOK3S_INTERRUPT_PROGRAM, flags);
  }
-+EXPORT_SYMBOL_GPL(kvmppc_core_queue_program);
  
- void kvmppc_core_queue_dec(struct kvm_vcpu *vcpu)
+-int kvm_arch_create_memslot(struct kvm_memory_slot *slot, unsigned long npages)
++int kvm_arch_create_memslot(struct kvm *kvm, struct kvm_memory_slot *slot,
++			    unsigned long npages)
  {
- 	kvmppc_book3s_queue_irqprio(vcpu, BOOK3S_INTERRUPT_DECREMENTER);
- }
-+EXPORT_SYMBOL_GPL(kvmppc_core_queue_dec);
- 
- int kvmppc_core_pending_dec(struct kvm_vcpu *vcpu)
- {
- 	return test_bit(BOOK3S_IRQPRIO_DECREMENTER, &vcpu->arch.pending_exceptions);
- }
-+EXPORT_SYMBOL_GPL(kvmppc_core_pending_dec);
- 
- void kvmppc_core_dequeue_dec(struct kvm_vcpu *vcpu)
- {
- 	kvmppc_book3s_dequeue_irqprio(vcpu, BOOK3S_INTERRUPT_DECREMENTER);
- }
-+EXPORT_SYMBOL_GPL(kvmppc_core_dequeue_dec);
- 
- void kvmppc_core_queue_external(struct kvm_vcpu *vcpu,
-                                 struct kvm_interrupt *irq)
-@@ -329,6 +333,7 @@ int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
- 
  	return 0;
  }
-+EXPORT_SYMBOL_GPL(kvmppc_core_prepare_to_enter);
- 
- pfn_t kvmppc_gfn_to_pfn(struct kvm_vcpu *vcpu, gfn_t gfn, bool writing,
- 			bool *writable)
-@@ -354,6 +359,7 @@ pfn_t kvmppc_gfn_to_pfn(struct kvm_vcpu *vcpu, gfn_t gfn, bool writing,
- 
- 	return gfn_to_pfn_prot(vcpu->kvm, gfn, writing, writable);
+diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
+index bdfd878..985bf80 100644
+--- a/arch/ia64/kvm/kvm-ia64.c
++++ b/arch/ia64/kvm/kvm-ia64.c
+@@ -1550,12 +1550,13 @@ int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+ 	return VM_FAULT_SIGBUS;
  }
-+EXPORT_SYMBOL_GPL(kvmppc_gfn_to_pfn);
  
- static int kvmppc_xlate(struct kvm_vcpu *vcpu, ulong eaddr, bool data,
- 			bool iswrite, struct kvmppc_pte *pte)
-@@ -421,6 +427,7 @@ int kvmppc_st(struct kvm_vcpu *vcpu, ulong *eaddr, int size, void *ptr,
- 
- 	return EMULATE_DONE;
- }
-+EXPORT_SYMBOL_GPL(kvmppc_st);
- 
- int kvmppc_ld(struct kvm_vcpu *vcpu, ulong *eaddr, int size, void *ptr,
- 		      bool data)
-@@ -451,6 +458,7 @@ nopte:
- mmio:
- 	return EMULATE_DO_MMIO;
- }
-+EXPORT_SYMBOL_GPL(kvmppc_ld);
- 
- int kvm_arch_vcpu_setup(struct kvm_vcpu *vcpu)
+-void kvm_arch_free_memslot(struct kvm_memory_slot *free,
++void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free,
+ 			   struct kvm_memory_slot *dont)
  {
-@@ -706,6 +714,7 @@ void kvmppc_set_msr(struct kvm_vcpu *vcpu, u64 msr)
- {
- 	kvmppc_ops->set_msr(vcpu, msr);
  }
-+EXPORT_SYMBOL_GPL(kvmppc_set_msr);
  
- int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+-int kvm_arch_create_memslot(struct kvm_memory_slot *slot, unsigned long npages)
++int kvm_arch_create_memslot(struct kvm *kvm, struct kvm_memory_slot *slot,
++			    unsigned long npages)
  {
-@@ -787,6 +796,7 @@ int kvm_unmap_hva(struct kvm *kvm, unsigned long hva)
- {
- 	return kvmppc_ops->unmap_hva(kvm, hva);
+ 	return 0;
  }
-+EXPORT_SYMBOL_GPL(kvm_unmap_hva);
- 
- int kvm_unmap_hva_range(struct kvm *kvm, unsigned long start, unsigned long end)
- {
-diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index b9841ad..99d40f8 100644
---- a/arch/powerpc/kvm/book3s_emulate.c
-+++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -172,7 +172,7 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			vcpu->arch.mmu.tlbie(vcpu, addr, large);
- 			break;
- 		}
--#ifdef CONFIG_KVM_BOOK3S_64_PR
-+#ifdef CONFIG_PPC_BOOK3S_64
- 		case OP_31_XOP_FAKE_SC1:
- 		{
- 			/* SC 1 papr hypercalls */
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 540438d..47fca8c 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -52,6 +52,7 @@
- #include <linux/vmalloc.h>
- #include <linux/highmem.h>
- #include <linux/hugetlb.h>
-+#include <linux/module.h>
- 
- #include "book3s.h"
- 
-@@ -2215,3 +2216,4 @@ static void kvmppc_book3s_exit_hv(void)
- 
- module_init(kvmppc_book3s_init_hv);
- module_exit(kvmppc_book3s_exit_hv);
-+MODULE_LICENSE("GPL");
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index ca6c73d..7f583a4 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -40,6 +40,7 @@
- #include <linux/sched.h>
- #include <linux/vmalloc.h>
- #include <linux/highmem.h>
-+#include <linux/module.h>
- 
- #include "book3s.h"
- 
-@@ -918,7 +919,7 @@ program_interrupt:
- 			ulong cmd = kvmppc_get_gpr(vcpu, 3);
- 			int i;
- 
--#ifdef CONFIG_KVM_BOOK3S_64_PR
-+#ifdef CONFIG_PPC_BOOK3S_64
- 			if (kvmppc_h_pr(vcpu, cmd) == EMULATE_DONE) {
- 				r = RESUME_GUEST;
- 				break;
-@@ -1582,3 +1583,5 @@ static void kvmppc_book3s_exit_pr(void)
- 
- module_init(kvmppc_book3s_init_pr);
- module_exit(kvmppc_book3s_exit_pr);
-+
-+MODULE_LICENSE("GPL");
-diff --git a/arch/powerpc/kvm/book3s_rtas.c b/arch/powerpc/kvm/book3s_rtas.c
-index 3219ba8..cf95cde 100644
---- a/arch/powerpc/kvm/book3s_rtas.c
-+++ b/arch/powerpc/kvm/book3s_rtas.c
-@@ -260,6 +260,7 @@ fail:
- 	 */
- 	return rc;
+diff --git a/arch/mips/kvm/kvm_mips.c b/arch/mips/kvm/kvm_mips.c
+index a7b0445..73b3482 100644
+--- a/arch/mips/kvm/kvm_mips.c
++++ b/arch/mips/kvm/kvm_mips.c
+@@ -198,12 +198,13 @@ kvm_arch_dev_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
+ 	return -ENOIOCTLCMD;
  }
-+EXPORT_SYMBOL_GPL(kvmppc_rtas_hcall);
  
- void kvmppc_rtas_tokens_free(struct kvm *kvm)
+-void kvm_arch_free_memslot(struct kvm_memory_slot *free,
++void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free,
+ 			   struct kvm_memory_slot *dont)
  {
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index fe3e0c5..230b4e9 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -526,3 +526,4 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 
- 	return emulated;
  }
-+EXPORT_SYMBOL_GPL(kvmppc_emulate_instruction);
+ 
+-int kvm_arch_create_memslot(struct kvm_memory_slot *slot, unsigned long npages)
++int kvm_arch_create_memslot(struct kvm *kvm, struct kvm_memory_slot *slot,
++			    unsigned long npages)
+ {
+ 	return 0;
+ }
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index c13f15d..20f4616 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -134,9 +134,11 @@ extern struct page *kvm_alloc_hpt(unsigned long nr_pages);
+ extern void kvm_release_hpt(struct page *page, unsigned long nr_pages);
+ extern int kvmppc_core_init_vm(struct kvm *kvm);
+ extern void kvmppc_core_destroy_vm(struct kvm *kvm);
+-extern void kvmppc_core_free_memslot(struct kvm_memory_slot *free,
++extern void kvmppc_core_free_memslot(struct kvm *kvm,
++				     struct kvm_memory_slot *free,
+ 				     struct kvm_memory_slot *dont);
+-extern int kvmppc_core_create_memslot(struct kvm_memory_slot *slot,
++extern int kvmppc_core_create_memslot(struct kvm *kvm,
++				      struct kvm_memory_slot *slot,
+ 				      unsigned long npages);
+ extern int kvmppc_core_prepare_memory_region(struct kvm *kvm,
+ 				struct kvm_memory_slot *memslot,
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 39d2994..130fe1d 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -761,13 +761,13 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log)
+ 	return kvmppc_ops->get_dirty_log(kvm, log);
+ }
+ 
+-void kvmppc_core_free_memslot(struct kvm_memory_slot *free,
++void kvmppc_core_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free,
+ 			      struct kvm_memory_slot *dont)
+ {
+ 	kvmppc_ops->free_memslot(free, dont);
+ }
+ 
+-int kvmppc_core_create_memslot(struct kvm_memory_slot *slot,
++int kvmppc_core_create_memslot(struct kvm *kvm, struct kvm_memory_slot *slot,
+ 			       unsigned long npages)
+ {
+ 	return kvmppc_ops->create_memslot(slot, npages);
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 1769354..cb2d986 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -1662,12 +1662,12 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log)
+ 	return -ENOTSUPP;
+ }
+ 
+-void kvmppc_core_free_memslot(struct kvm_memory_slot *free,
++void kvmppc_core_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free,
+ 			      struct kvm_memory_slot *dont)
+ {
+ }
+ 
+-int kvmppc_core_create_memslot(struct kvm_memory_slot *slot,
++int kvmppc_core_create_memslot(struct kvm *kvm, struct kvm_memory_slot *slot,
+ 			       unsigned long npages)
+ {
+ 	return 0;
 diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 4481417..1258c1f 100644
+index 1258c1f..db48a7f 100644
 --- a/arch/powerpc/kvm/powerpc.c
 +++ b/arch/powerpc/kvm/powerpc.c
-@@ -126,6 +126,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
- 
- 	return r;
+@@ -417,15 +417,16 @@ long kvm_arch_dev_ioctl(struct file *filp,
+ 	return -EINVAL;
  }
-+EXPORT_SYMBOL_GPL(kvmppc_prepare_to_enter);
  
- int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
+-void kvm_arch_free_memslot(struct kvm_memory_slot *free,
++void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free,
+ 			   struct kvm_memory_slot *dont)
  {
-@@ -179,6 +180,7 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
- 
- 	return r;
+-	kvmppc_core_free_memslot(free, dont);
++	kvmppc_core_free_memslot(kvm, free, dont);
  }
-+EXPORT_SYMBOL_GPL(kvmppc_kvm_pv);
  
- int kvmppc_sanity_check(struct kvm_vcpu *vcpu)
+-int kvm_arch_create_memslot(struct kvm_memory_slot *slot, unsigned long npages)
++int kvm_arch_create_memslot(struct kvm *kvm, struct kvm_memory_slot *slot,
++			    unsigned long npages)
  {
-@@ -207,6 +209,7 @@ out:
- 	vcpu->arch.sane = r;
- 	return r ? 0 : -EINVAL;
+-	return kvmppc_core_create_memslot(slot, npages);
++	return kvmppc_core_create_memslot(kvm, slot, npages);
  }
-+EXPORT_SYMBOL_GPL(kvmppc_sanity_check);
  
- int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ void kvm_arch_memslots_updated(struct kvm *kvm)
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index ac8e667..09ceea0 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -1053,12 +1053,13 @@ int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+ 	return VM_FAULT_SIGBUS;
+ }
+ 
+-void kvm_arch_free_memslot(struct kvm_memory_slot *free,
++void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free,
+ 			   struct kvm_memory_slot *dont)
  {
-@@ -241,6 +244,7 @@ int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 
- 	return r;
  }
-+EXPORT_SYMBOL_GPL(kvmppc_emulate_mmio);
  
- int kvm_arch_hardware_enable(void *garbage)
+-int kvm_arch_create_memslot(struct kvm_memory_slot *slot, unsigned long npages)
++int kvm_arch_create_memslot(struct kvm *kvm, struct kvm_memory_slot *slot,
++			    unsigned long npages)
  {
-@@ -665,6 +669,7 @@ int kvmppc_handle_load(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 
- 	return EMULATE_DO_MMIO;
+ 	return 0;
  }
-+EXPORT_SYMBOL_GPL(kvmppc_handle_load);
- 
- /* Same as above, but sign extends */
- int kvmppc_handle_loads(struct kvm_run *run, struct kvm_vcpu *vcpu,
-@@ -726,6 +731,7 @@ int kvmppc_handle_store(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 
- 	return EMULATE_DO_MMIO;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index e5ca72a..73b23a2 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -7065,7 +7065,7 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
+ 	kfree(rcu_dereference_check(kvm->arch.apic_map, 1));
  }
-+EXPORT_SYMBOL_GPL(kvmppc_handle_store);
  
- int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *run)
+-void kvm_arch_free_memslot(struct kvm_memory_slot *free,
++void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free,
+ 			   struct kvm_memory_slot *dont)
  {
-@@ -1074,22 +1080,26 @@ long kvmppc_alloc_lpid(void)
- 
- 	return lpid;
+ 	int i;
+@@ -7086,7 +7086,8 @@ void kvm_arch_free_memslot(struct kvm_memory_slot *free,
+ 	}
  }
-+EXPORT_SYMBOL_GPL(kvmppc_alloc_lpid);
  
- void kvmppc_claim_lpid(long lpid)
+-int kvm_arch_create_memslot(struct kvm_memory_slot *slot, unsigned long npages)
++int kvm_arch_create_memslot(struct kvm *kvm, struct kvm_memory_slot *slot,
++			    unsigned long npages)
  {
- 	set_bit(lpid, lpid_inuse);
- }
-+EXPORT_SYMBOL_GPL(kvmppc_claim_lpid);
+ 	int i;
  
- void kvmppc_free_lpid(long lpid)
- {
- 	clear_bit(lpid, lpid_inuse);
- }
-+EXPORT_SYMBOL_GPL(kvmppc_free_lpid);
- 
- void kvmppc_init_lpid(unsigned long nr_lpids_param)
- {
- 	nr_lpids = min_t(unsigned long, KVMPPC_NR_LPIDS, nr_lpids_param);
- 	memset(lpid_inuse, 0, sizeof(lpid_inuse));
- }
-+EXPORT_SYMBOL_GPL(kvmppc_init_lpid);
- 
- int kvm_arch_init(void *opaque)
- {
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index ca645a0..28bfed9 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -508,9 +508,10 @@ int kvm_set_memory_region(struct kvm *kvm,
+ 			  struct kvm_userspace_memory_region *mem);
+ int __kvm_set_memory_region(struct kvm *kvm,
+ 			    struct kvm_userspace_memory_region *mem);
+-void kvm_arch_free_memslot(struct kvm_memory_slot *free,
++void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free,
+ 			   struct kvm_memory_slot *dont);
+-int kvm_arch_create_memslot(struct kvm_memory_slot *slot, unsigned long npages);
++int kvm_arch_create_memslot(struct kvm *kvm, struct kvm_memory_slot *slot,
++			    unsigned long npages);
+ void kvm_arch_memslots_updated(struct kvm *kvm);
+ int kvm_arch_prepare_memory_region(struct kvm *kvm,
+ 				struct kvm_memory_slot *memslot,
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index bf040c4..482b9c5 100644
+index 482b9c5..42cba68 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -186,6 +186,7 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
- 		++kvm->stat.remote_tlb_flush;
- 	cmpxchg(&kvm->tlbs_dirty, dirty_count, 0);
- }
-+EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
- 
- void kvm_reload_remote_mmus(struct kvm *kvm)
+@@ -541,13 +541,13 @@ static void kvm_destroy_dirty_bitmap(struct kvm_memory_slot *memslot)
+ /*
+  * Free any memory in @free but not in @dont.
+  */
+-static void kvm_free_physmem_slot(struct kvm_memory_slot *free,
++static void kvm_free_physmem_slot(struct kvm *kvm, struct kvm_memory_slot *free,
+ 				  struct kvm_memory_slot *dont)
  {
-@@ -964,6 +965,7 @@ int kvm_get_dirty_log(struct kvm *kvm,
+ 	if (!dont || free->dirty_bitmap != dont->dirty_bitmap)
+ 		kvm_destroy_dirty_bitmap(free);
+ 
+-	kvm_arch_free_memslot(free, dont);
++	kvm_arch_free_memslot(kvm, free, dont);
+ 
+ 	free->npages = 0;
+ }
+@@ -558,7 +558,7 @@ void kvm_free_physmem(struct kvm *kvm)
+ 	struct kvm_memory_slot *memslot;
+ 
+ 	kvm_for_each_memslot(memslot, slots)
+-		kvm_free_physmem_slot(memslot, NULL);
++		kvm_free_physmem_slot(kvm, memslot, NULL);
+ 
+ 	kfree(kvm->memslots);
+ }
+@@ -822,7 +822,7 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ 	if (change == KVM_MR_CREATE) {
+ 		new.userspace_addr = mem->userspace_addr;
+ 
+-		if (kvm_arch_create_memslot(&new, npages))
++		if (kvm_arch_create_memslot(kvm, &new, npages))
+ 			goto out_free;
+ 	}
+ 
+@@ -898,7 +898,7 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ 
+ 	kvm_arch_commit_memory_region(kvm, mem, &old, change);
+ 
+-	kvm_free_physmem_slot(&old, &new);
++	kvm_free_physmem_slot(kvm, &old, &new);
+ 	kfree(old_memslots);
+ 
+ 	return 0;
+@@ -906,7 +906,7 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ out_slots:
+ 	kfree(slots);
+ out_free:
+-	kvm_free_physmem_slot(&new, &old);
++	kvm_free_physmem_slot(kvm, &new, &old);
  out:
  	return r;
  }
-+EXPORT_SYMBOL_GPL(kvm_get_dirty_log);
- 
- bool kvm_largepages_enabled(void)
- {
-@@ -1648,6 +1650,7 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
- 	memslot = gfn_to_memslot(kvm, gfn);
- 	mark_page_dirty_in_slot(kvm, memslot, gfn);
- }
-+EXPORT_SYMBOL_GPL(mark_page_dirty);
- 
- /*
-  * The vCPU has executed a HLT instruction with in-kernel mode enabled.
-@@ -1673,6 +1676,7 @@ void kvm_vcpu_block(struct kvm_vcpu *vcpu)
- 
- 	finish_wait(&vcpu->wq, &wait);
- }
-+EXPORT_SYMBOL_GPL(kvm_vcpu_block);
- 
- #ifndef CONFIG_S390
- /*
 -- 
 1.8.1.2
