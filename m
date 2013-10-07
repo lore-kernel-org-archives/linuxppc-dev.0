@@ -1,22 +1,51 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0C8B92C00BC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 17:52:03 +1100 (EST)
-Message-ID: <1381301512.645.272.camel@pasglop>
-Subject: Re: [PATCH] powerpc/powernv: Add a debugfs file to read the
- firmware console
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 09 Oct 2013 17:51:52 +1100
-In-Reply-To: <20131009060613.GC28160@concordia>
-References: <1381218400.645.204.camel@pasglop>
- <20131009032314.GD23780@concordia> <1381292601.645.258.camel@pasglop>
- <20131009060613.GC28160@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <peter.p.waskiewicz.jr@intel.com>
+Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
+ by ozlabs.org (Postfix) with ESMTP id E26862C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 09:21:53 +1100 (EST)
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [E1000-devel] [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts
+ enablement pattern
+Date: Mon, 7 Oct 2013 22:21:49 +0000
+Message-ID: <1381184508.16853.20.camel@ppwaskie-mobl2>
+References: <cover.1380703262.git.agordeev@redhat.com>
+ <1380840585.3419.50.camel@bwh-desktop.uk.level5networks.com>
+ <20131004082920.GA4536@dhcp-26-207.brq.redhat.com>
+ <1380922156.3214.49.camel@bwh-desktop.uk.level5networks.com>
+ <20131005142054.GA11270@dhcp-26-207.brq.redhat.com>
+ <1381009586.645.141.camel@pasglop>
+ <20131006060243.GB28142@dhcp-26-207.brq.redhat.com>
+ <1381040386.645.143.camel@pasglop>
+ <20131006071027.GA29143@dhcp-26-207.brq.redhat.com>
+ <20131007180111.GC2481@htj.dyndns.org> <1381176656.645.171.camel@pasglop>
+In-Reply-To: <1381176656.645.171.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>, "VMware,
+ Inc." <pv-drivers@vmware.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ King <acking@vmware.com>,
+ "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>, Molnar <mingo@redhat.com>,
+ "iss_storagedev@hp.com" <iss_storagedev@hp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Tejun Heo <tj@kernel.org>, Ben
+ Hutchings <bhutchings@solarflare.com>, "Williams,
+ Dan J" <dan.j.williams@intel.com>, "Mason, Jon" <jon.mason@intel.com>,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ Alexander Gordeev <agordeev@redhat.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "e1000-devel@lists.sourceforge.net" <e1000-devel@lists.sourceforge.net>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-driver@qlogic.com" <linux-driver@qlogic.com>,
+ "linux390@de.ibm.com" <linux390@de.ibm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +55,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-10-09 at 17:06 +1100, Michael Ellerman wrote:
-> Call it twice.
-> 
-> And you wonder why no one reviews your patches?
-
-Not that easy :-) I had a look at using it and unless I did something
-stupid, it wasn't actually that trivial to figure out what arg to pass
-it for calling it twice, ie, it didn't simplify the code
-significantly ... I had another problem too but I don't remember what
-it was. But it could be that I had a very dumb moment...
-
-Cheers,
-Ben.
+T24gVHVlLCAyMDEzLTEwLTA4IGF0IDA3OjEwICsxMTAwLCBCZW5qYW1pbiBIZXJyZW5zY2htaWR0
+IHdyb3RlOg0KPiBPbiBNb24sIDIwMTMtMTAtMDcgYXQgMTQ6MDEgLTA0MDAsIFRlanVuIEhlbyB3
+cm90ZToNCj4gPiBJIGRvbid0IHRoaW5rIHRoZSBzYW1lIHJhY2UgY29uZGl0aW9uIHdvdWxkIGhh
+cHBlbiB3aXRoIHRoZSBsb29wLiAgVGhlDQo+ID4gcHJvYmxlbSBjYXNlIGlzIHdoZXJlIG11bHRp
+cGxlIG1zaSh4KSBhbGxvY2F0aW9uIGZhaWxzIGNvbXBsZXRlbHkNCj4gPiBiZWNhdXNlIHRoZSBn
+bG9iYWwgbGltaXQgd2VudCBkb3duIGJlZm9yZSBpbnF1aXJ5IGFuZCBhbGxvY2F0aW9uLiAgSW4N
+Cj4gPiB0aGUgbG9vcCBiYXNlZCBpbnRlcmZhY2UsIGl0J2QgcmV0cnkgd2l0aCB0aGUgbG93ZXIg
+bnVtYmVyLg0KPiA+IA0KPiA+IEFzIGxvbmcgYXMgdGhlIG51bWJlciBvZiBkcml2ZXJzIHdoaWNo
+IG5lZWQgdGhpcyBzb3J0IG9mIGFkYXB0aXZlDQo+ID4gYWxsb2NhdGlvbiBpc24ndCB0b28gaGln
+aCBhbmQgdGhlIGNvbW1vbiBjYXNlcyBjYW4gYmUgbWFkZSBzaW1wbGUsIEkNCj4gPiBkb24ndCB0
+aGluayB0aGUgImNvbXBsZXgiIHBhcnQgb2YgaW50ZXJmYWNlIGlzIGFsbCB0aGF0IGltcG9ydGFu
+dC4NCj4gPiBNYXliZSB3ZSBjYW4gaGF2ZSByZXNlcnZlIC8gY2FuY2VsIHR5cGUgaW50ZXJmYWNl
+IG9yIGp1c3Qga2VlcCB0aGUNCj4gPiBsb29wIHdpdGggbW9yZSBleHBsaWNpdCBmdW5jdGlvbiBu
+YW1lcyAoaWUuIHRyeV9lbmFibGUgb3Igc29tZXRoaW5nDQo+ID4gbGlrZSB0aGF0KS4NCj4gDQo+
+IFdlIHdhbnQgdG8gYmUgYWJsZSB0byByZXF1ZXN0IGFuIE1TSS1YIGF0IHJ1bnRpbWUgYW55d2F5
+IC4uLiBpZiBJIHdhbnQNCj4gdG8gZHluYW1pY2FsbHkgYWRkIGEgcXVldWUgdG8gbXkgbmV0d29y
+ayBpbnRlcmZhY2UsIEkgd2FudCBpdCB0byBiZSBhYmxlDQo+IHRvIHBvcCBhIG5ldyBhcmJpdHJh
+cnkgTVNJLVguDQoNCklmIHlvdSB3YW50IHRvIGR5bmFtaWNhbGx5IGFsbG9jYXRlIGFub3RoZXIg
+cXVldWUsIHlvdSdkIGVpdGhlciBuZWVkIHRvDQpoYXZlIHRoZW0gYWxsIHByZS1hbGxvY2F0ZWQg
+YXQgYWxsb2NfZXRoZXJkZXZfbXFzKCksIG9yIGFkZCBhIG5ldyBBUEkgdG8NCm5ldGRldiB0aGF0
+IGFsbG93cyBhZGRpbmcgbmV3IHF1ZXVlcyBvbiB0aGUgZmx5Lg0KDQpIb3cgdGhpbmdzIGFyZSBk
+b25lIHRvZGF5LCB0aGUgVHggcXVldWVzIGFyZSBhbGwgdGFja2VkIG9udG8gdGhlIGVuZCBvZg0K
+dGhlIG5ldGRldiBzdHJ1Y3QuICBUaGF0IHdvdWxkIGhhdmUgdG8gY2hhbmdlIHRvIHByb2JhYmx5
+IGEgbGlua2VkIGxpc3QNCm9mIHF1ZXVlcyB0aGF0IGNvdWxkIGJlIGdyb3duIG9yIHNocnVuayBv
+biB0aGUgZmx5Lg0KbmV0aWZfYWxsb2NfbmV0ZGV2X3F1ZXVlcygpIHdvdWxkIG5lZWQgdG8gY2hh
+bmdlIHRoZSBremFsbG9jKCkgdG8gYSBsaXN0DQphbGxvY2F0aW9uLg0KDQpDaGVlcnMsDQotUEoN
+Cg==
