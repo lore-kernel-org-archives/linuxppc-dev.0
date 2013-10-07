@@ -1,22 +1,24 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (unknown
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by ozlabs.org (Postfix) with ESMTP id 064732C011C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 06:17:28 +1100 (EST)
-Date: Mon, 07 Oct 2013 15:17:23 -0400 (EDT)
-Message-Id: <20131007.151723.1874328502711969492.davem@davemloft.net>
-To: eric.dumazet@gmail.com
-Subject: Re: [PATCH v4 net-next] fix unsafe set_memory_rw from softirq
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1381078592.12191.0.camel@edumazet-glaptop.roam.corp.google.com>
-References: <1380870846-3357-1-git-send-email-ast@plumgrid.com>
- <1381078592.12191.0.camel@edumazet-glaptop.roam.corp.google.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-s390@vger.kernel.org, netdev@vger.kernel.org,
- heiko.carstens@de.ibm.com, edumazet@google.com, dborkman@redhat.com,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- ast@plumgrid.com
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ie0-x236.google.com (mail-ie0-x236.google.com
+ [IPv6:2607:f8b0:4001:c03::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 006182C013B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 06:27:10 +1100 (EST)
+Received: by mail-ie0-f182.google.com with SMTP id aq17so17161054iec.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Oct 2013 12:27:07 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1381173828-3877-1-git-send-email-geert@linux-m68k.org>
+References: <1381173828-3877-1-git-send-email-geert@linux-m68k.org>
+Date: Mon, 7 Oct 2013 21:27:06 +0200
+Message-ID: <CAMuHMdVF=-RRRgDPjwc6C6=_2=hQJGyCUGtqBvRHCUjZftNrEg@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.12-rc4
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Sun, 06 Oct 2013 09:56:32 -0700
+On Mon, Oct 7, 2013 at 9:23 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.12-rc4 to v3.12-rc3[3], the summaries are:
+>   - build errors: +6/-10
 
-> On Fri, 2013-10-04 at 00:14 -0700, Alexei Starovoitov wrote:
->> on x86 system with net.core.bpf_jit_enable = 1
-> 
->> cannot reuse jited filter memory, since it's readonly,
->> so use original bpf insns memory to hold work_struct
->> 
->> defer kfree of sk_filter until jit completed freeing
->> 
->> tested on x86_64 and i386
->> 
->> Signed-off-by: Alexei Starovoitov <ast@plumgrid.com>
-> 
-> Acked-by: Eric Dumazet <edumazet@google.com>
+  + /scratch/kisskb/src/arch/powerpc/xmon/xmon.c: error: implicit
+declaration of function 'dump_tlb_44x'
+[-Werror=implicit-function-declaration]:  => 897:4
+  + /scratch/kisskb/src/drivers/tty/serial/nwpserial.c: error:
+implicit declaration of function 'udelay'
+[-Werror=implicit-function-declaration]:  => 53:3
 
-I've decided to apply this to 'net', thanks.
+powerpc-randconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/6753/ (all 120 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/6727/ (all 120 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
