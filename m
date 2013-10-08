@@ -1,42 +1,21 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 620E42C00C8
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Oct 2013 06:31:43 +1100 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 8 Oct 2013 15:31:40 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id CFC226E803F
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Oct 2013 15:31:36 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r98JVbPO55705700
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Oct 2013 19:31:37 GMT
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r98JVaoT020668
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Oct 2013 15:31:37 -0400
-Date: Tue, 8 Oct 2013 12:31:17 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 5/9][v5] powerpc: implement is_instr_load_store().
-Message-ID: <20131008193117.GA699@us.ibm.com>
-References: <1380672911-12812-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1380672911-12812-6-git-send-email-sukadev@linux.vnet.ibm.com>
- <20131003053519.GC17237@concordia>
+Return-Path: <B07421@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 369FD2C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 08:48:28 +1100 (EST)
+Message-ID: <1381268850.7979.279.camel@snotra.buserror.net>
+Subject: Re: Linux 2.6.32 PowerPC MTD partition mounted at boot
+From: Scott Wood <scottwood@freescale.com>
+To: Dorin D <dorin1234@outlook.com>
+Date: Tue, 8 Oct 2013 16:47:30 -0500
+In-Reply-To: <BAY176-W43D0B5AD1BD2454470D8AFA6210@phx.gbl>
+References: <BAY176-W43D0B5AD1BD2454470D8AFA6210@phx.gbl>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131003053519.GC17237@concordia>
-Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,28 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman [michael@ellerman.id.au] wrote:
-| bool is_load_store(int ext_opcode)
-| {
-|         upper = ext_opcode >> 5;
-|         lower = ext_opcode & 0x1f;
-| 
-|         /* Short circuit as many misses as we can */
-|         if (lower < 3 || lower > 23)
-|             return false;
+On Wed, 2013-09-18 at 22:43 -0400, Dorin D wrote:
+> I am working on bringing up two Linux systems, both based on Freescale
+> PowerPC devices, one is a MPC8349, the other a P1020. I was able to
+> build, install and boot the kernel on both cards. The kernel is 2.6.32
+> and the  toolchains  are coming from the LTIBs packages from
+> Freescale. 
+> 
+> Both cards have a 32 MByte NOR flash memory (AMD) boot flash. I have
+> Uboot, kernel, RAM disk image and DTB in the boot flash and I want to
+> use the spare space (about 20 MBytes) as flash file system. 
+> 
+> I have the following problem : the P1020 board boots fine using the
+> RAM disk with the flash in the device tree , shows the flash device
+> partitions (JFFS2) and DOESN"T try to mount a flash partition as root.
+> The MPC8349 boots fine from the RAM disk but, after identifying the
+> flash partitions, the kernel panics because is looking for a flash
+> partition to mount as root partition and none of them is usable (not
+> formatted). If I remove the flash from the device tree, the card boots
+> fine using the RAM disk.
+> 
+> 
+> I am not too familiar with Linux boot scripts and I didn't figure out
+> where I can disable this tentative of mounting the MTD partition. I
+> want the boards to boot and mount the RAM disk, as the P1020 board
+> does. The flash partition will be initialized and mounted at a later
+> time, but not as root partition.
 
-I see some loads/stores like these which are not covered by
-the above check. Is it ok to ignore them ?
+Compare the kernel command line and kernel config for the two boards;
+there's probably a relevant difference there (especially with the
+"root=" parameter).
 
-	lower == 29: ldepx, stdepx, eviddepx, evstddepx
-
-	lower == 31: lwepx, lbepx, lfdepx, stfdepx,
-
-Looking through the opcode maps, I also see these for primary
-op code 4:
-
-	evldd, evlddx, evldwx, evldw, evldh, evldhx.
-
-Should we include those also ?
-
-Sukadev
+-Scott
