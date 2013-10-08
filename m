@@ -1,25 +1,29 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0248.outbound.messaging.microsoft.com [213.199.154.248])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2758F2C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 09:57:30 +1100 (EST)
-Message-ID: <1381273037.7979.298.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/7] powerpc: Add interface to get msi region information
-From: Scott Wood <scottwood@freescale.com>
-To: Bharat Bhushan <r65777@freescale.com>
-Date: Tue, 8 Oct 2013 17:57:17 -0500
-In-Reply-To: <1379575763-2091-2-git-send-email-Bharat.Bhushan@freescale.com>
-References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1379575763-2091-2-git-send-email-Bharat.Bhushan@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ie0-x22d.google.com (mail-ie0-x22d.google.com
+ [IPv6:2607:f8b0:4001:c03::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B41FF2C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 10:10:21 +1100 (EST)
+Received: by mail-ie0-f173.google.com with SMTP id ar20so11677iec.32
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Oct 2013 16:10:17 -0700 (PDT)
 MIME-Version: 1.0
-Cc: agraf@suse.de, joro@8bytes.org, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org,
- Bharat Bhushan <Bharat.Bhushan@freescale.com>, alex.williamson@redhat.com,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1381272382.7979.292.camel@snotra.buserror.net>
+References: <1380531175-14836-1-git-send-email-Minghuan.Lian@freescale.com>
+ <CAErSpo7LXqXmrw1gPwKHsJkKaAcDr2W_+tcC8b9T_5Mab1Arnw@mail.gmail.com>
+ <1381272382.7979.292.camel@snotra.buserror.net>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 8 Oct 2013 17:09:56 -0600
+Message-ID: <CAErSpo76_w+wK76m73kkdYS1PouhYcGfZus_FYF5E2FHJTA6gQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2][v2] pci: fsl: derive the common PCI driver to
+ drivers/pci/host
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Zang Roy-R61911 <r61911@freescale.com>,
+ Minghuan Lian <Minghuan.Lian@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,69 +33,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-09-19 at 12:59 +0530, Bharat Bhushan wrote:
-> @@ -376,6 +405,7 @@ static int fsl_of_msi_probe(struct platform_device *dev)
->  	int len;
->  	u32 offset;
->  	static const u32 all_avail[] = { 0, NR_MSI_IRQS };
-> +	static int bank_index;
->  
->  	match = of_match_device(fsl_of_msi_ids, &dev->dev);
->  	if (!match)
-> @@ -419,8 +449,8 @@ static int fsl_of_msi_probe(struct platform_device *dev)
->  				dev->dev.of_node->full_name);
->  			goto error_out;
->  		}
-> -		msi->msiir_offset =
-> -			features->msiir_offset + (res.start & 0xfffff);
-> +		msi->msiir = res.start + features->msiir_offset;
-> +		printk("msi->msiir = %llx\n", msi->msiir);
+On Tue, Oct 8, 2013 at 4:46 PM, Scott Wood <scottwood@freescale.com> wrote:
+> On Tue, 2013-10-08 at 13:13 -0600, Bjorn Helgaas wrote:
+>> [+cc Ben, Paul, linuxppc-dev]
+>>
+>> On Mon, Sep 30, 2013 at 04:52:54PM +0800, Minghuan Lian wrote:
+>> > The Freescale's Layerscape series processors will use ARM cores.
+>> > The LS1's PCIe controllers is the same as T4240's. So it's better
+>> > the PCIe controller driver can support PowerPC and ARM
+>> > simultaneously. This patch is for this purpose. It derives
+>> > the common functions from arch/powerpc/sysdev/fsl_pci.c to
+>> > drivers/pci/host/pci-fsl-common.c and leaves the architecture
+>> > specific functions which should be implemented in arch related files.
+>> >
+>> > Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+>>
+>> I cc'd the powerpc maintainers so we can work out which tree this
+>> should go through.
+>>
+>> > ---
+>> > change log:
+>> > v1-v2:
+>> > 1. rename pci.h to pci-common.h
+>> > 2. rename pci-fsl.c to pci-fsl-common.c
+>> >
+>> > Based on upstream master.
+>> > Based on the discussion of RFC version here
+>> > http://patchwork.ozlabs.org/patch/274487/
+>> >
+>> >  arch/powerpc/sysdev/fsl_pci.c                      | 521 +-----------------
+>> >  arch/powerpc/sysdev/fsl_pci.h                      |  89 ----
+>> >  .../fsl_pci.c => drivers/pci/host/pci-fsl-common.c | 591 +--------------------
+>> >  .../fsl_pci.h => include/linux/fsl/pci-common.h    |  45 +-
+>>
+>> Is there any way to avoid putting this file in include/linux?  I know
+>> you want to share it beyond PowerPC, and I know there are similar
+>> examples there already, but this is all arch-specific or
+>> chipset-specific stuff that seems like it should be in some
+>> not-so-public place.  It doesn't seem scalable to add an include/linux
+>> subdirectory for every chipset that might be shared across
+>> architectures.
+>
+> What specifically is the problem with it, as long as it's properly
+> namespaced?
 
-dev_dbg or remove
+Well, as I said above, it doesn't seem scalable, and it doesn't seem
+to be the common existing practice.  Possibly this is just because
+sharing chipsets across arches isn't very common yet.
 
->  	}
->  
->  	msi->feature = features->fsl_pic_ip;
-> @@ -470,6 +500,7 @@ static int fsl_of_msi_probe(struct platform_device *dev)
->  		}
->  	}
->  
-> +	msi->bank_index = bank_index++;
+I hadn't noticed that include/linux/fsl exists already; I thought you
+were adding it.  Given that it *does* exist already, I guess I'm OK
+with putting more stuff in it.
 
-What if multiple MSIs are boing probed in parallel?  bank_index is not
-atomic.
+So I'll apply these given an ack from the powerpc folks.
 
-> diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-> index 8225f86..6bd5cfc 100644
-> --- a/arch/powerpc/sysdev/fsl_msi.h
-> +++ b/arch/powerpc/sysdev/fsl_msi.h
-> @@ -29,12 +29,19 @@ struct fsl_msi {
->  	struct irq_domain *irqhost;
->  
->  	unsigned long cascade_irq;
-> -
-> -	u32 msiir_offset; /* Offset of MSIIR, relative to start of CCSR */
-> +	dma_addr_t msiir; /* MSIIR Address in CCSR */
-
-Are you sure dma_addr_t is right here, versus phys_addr_t?  It implies
-that it's the output of the DMA API, but I don't think the DMA API is
-used in the MSI driver.  Perhaps it should be, but we still want the raw
-physical address to pass on to VFIO.
-
->  	void __iomem *msi_regs;
->  	u32 feature;
->  	int msi_virqs[NR_MSI_REG];
->  
-> +	/*
-> +	 * During probe each bank is assigned a index number.
-> +	 * index number ranges from 0 to 2^32.
-> +	 * Example  MSI bank 1 = 0
-> +	 * MSI bank 2 = 1, and so on.
-> +	 */
-> +	int bank_index;
-
-2^32 doesn't fit in "int" (nor does 2^32 - 1).
-
-Just say that indices start at 0.
-
--Scott
+Bjorn
