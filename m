@@ -1,51 +1,41 @@
-Return-Path: <peter.p.waskiewicz.jr@intel.com>
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
- by ozlabs.org (Postfix) with ESMTP id E26862C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 09:21:53 +1100 (EST)
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [E1000-devel] [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts
- enablement pattern
-Date: Mon, 7 Oct 2013 22:21:49 +0000
-Message-ID: <1381184508.16853.20.camel@ppwaskie-mobl2>
+Return-Path: <himanshu.madhani@qlogic.com>
+Received: from mx0b-0016ce01.pphosted.com (mx0b-0016ce01.pphosted.com
+ [67.231.156.153])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5CBF62C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 10:01:11 +1100 (EST)
+From: Himanshu Madhani <himanshu.madhani@qlogic.com>
+To: Alexander Gordeev <agordeev@redhat.com>, linux-kernel
+ <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH RFC 63/77] qlcnic: Update MSI/MSI-X interrupts
+ enablement code
+Date: Tue, 8 Oct 2013 22:46:51 +0000
+Message-ID: <ADFE82A996F10145934E45547759F7638C923C26@avmb3.qlogic.org>
 References: <cover.1380703262.git.agordeev@redhat.com>
- <1380840585.3419.50.camel@bwh-desktop.uk.level5networks.com>
- <20131004082920.GA4536@dhcp-26-207.brq.redhat.com>
- <1380922156.3214.49.camel@bwh-desktop.uk.level5networks.com>
- <20131005142054.GA11270@dhcp-26-207.brq.redhat.com>
- <1381009586.645.141.camel@pasglop>
- <20131006060243.GB28142@dhcp-26-207.brq.redhat.com>
- <1381040386.645.143.camel@pasglop>
- <20131006071027.GA29143@dhcp-26-207.brq.redhat.com>
- <20131007180111.GC2481@htj.dyndns.org> <1381176656.645.171.camel@pasglop>
-In-Reply-To: <1381176656.645.171.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+ <c92efbde96541d08f37510422c096d543bb01279.1380703263.git.agordeev@redhat.com>
+In-Reply-To: <c92efbde96541d08f37510422c096d543bb01279.1380703263.git.agordeev@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>, "VMware,
  Inc." <pv-drivers@vmware.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
  "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
  "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
  "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- King <acking@vmware.com>,
- "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+ Andy King <acking@vmware.com>, linux-scsi <linux-scsi@vger.kernel.org>,
  "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>, Molnar <mingo@redhat.com>,
+ "x86@kernel.org" <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ linux-pci <linux-pci@vger.kernel.org>,
  "iss_storagedev@hp.com" <iss_storagedev@hp.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Tejun Heo <tj@kernel.org>, Ben
- Hutchings <bhutchings@solarflare.com>, "Williams,
- Dan J" <dan.j.williams@intel.com>, "Mason, Jon" <jon.mason@intel.com>,
+ Dept-Eng Linux Driver <Linux-Driver@qlogic.com>, Tejun Heo <tj@kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
+ Jon Mason <jon.mason@intel.com>,
  Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- Alexander Gordeev <agordeev@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>,
+ netdev <netdev@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
  "e1000-devel@lists.sourceforge.net" <e1000-devel@lists.sourceforge.net>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-driver@qlogic.com" <linux-driver@qlogic.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
  "linux390@de.ibm.com" <linux390@de.ibm.com>,
- Bjorn Helgaas <bhelgaas@google.com>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,30 +45,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gVHVlLCAyMDEzLTEwLTA4IGF0IDA3OjEwICsxMTAwLCBCZW5qYW1pbiBIZXJyZW5zY2htaWR0
-IHdyb3RlOg0KPiBPbiBNb24sIDIwMTMtMTAtMDcgYXQgMTQ6MDEgLTA0MDAsIFRlanVuIEhlbyB3
-cm90ZToNCj4gPiBJIGRvbid0IHRoaW5rIHRoZSBzYW1lIHJhY2UgY29uZGl0aW9uIHdvdWxkIGhh
-cHBlbiB3aXRoIHRoZSBsb29wLiAgVGhlDQo+ID4gcHJvYmxlbSBjYXNlIGlzIHdoZXJlIG11bHRp
-cGxlIG1zaSh4KSBhbGxvY2F0aW9uIGZhaWxzIGNvbXBsZXRlbHkNCj4gPiBiZWNhdXNlIHRoZSBn
-bG9iYWwgbGltaXQgd2VudCBkb3duIGJlZm9yZSBpbnF1aXJ5IGFuZCBhbGxvY2F0aW9uLiAgSW4N
-Cj4gPiB0aGUgbG9vcCBiYXNlZCBpbnRlcmZhY2UsIGl0J2QgcmV0cnkgd2l0aCB0aGUgbG93ZXIg
-bnVtYmVyLg0KPiA+IA0KPiA+IEFzIGxvbmcgYXMgdGhlIG51bWJlciBvZiBkcml2ZXJzIHdoaWNo
-IG5lZWQgdGhpcyBzb3J0IG9mIGFkYXB0aXZlDQo+ID4gYWxsb2NhdGlvbiBpc24ndCB0b28gaGln
-aCBhbmQgdGhlIGNvbW1vbiBjYXNlcyBjYW4gYmUgbWFkZSBzaW1wbGUsIEkNCj4gPiBkb24ndCB0
-aGluayB0aGUgImNvbXBsZXgiIHBhcnQgb2YgaW50ZXJmYWNlIGlzIGFsbCB0aGF0IGltcG9ydGFu
-dC4NCj4gPiBNYXliZSB3ZSBjYW4gaGF2ZSByZXNlcnZlIC8gY2FuY2VsIHR5cGUgaW50ZXJmYWNl
-IG9yIGp1c3Qga2VlcCB0aGUNCj4gPiBsb29wIHdpdGggbW9yZSBleHBsaWNpdCBmdW5jdGlvbiBu
-YW1lcyAoaWUuIHRyeV9lbmFibGUgb3Igc29tZXRoaW5nDQo+ID4gbGlrZSB0aGF0KS4NCj4gDQo+
-IFdlIHdhbnQgdG8gYmUgYWJsZSB0byByZXF1ZXN0IGFuIE1TSS1YIGF0IHJ1bnRpbWUgYW55d2F5
-IC4uLiBpZiBJIHdhbnQNCj4gdG8gZHluYW1pY2FsbHkgYWRkIGEgcXVldWUgdG8gbXkgbmV0d29y
-ayBpbnRlcmZhY2UsIEkgd2FudCBpdCB0byBiZSBhYmxlDQo+IHRvIHBvcCBhIG5ldyBhcmJpdHJh
-cnkgTVNJLVguDQoNCklmIHlvdSB3YW50IHRvIGR5bmFtaWNhbGx5IGFsbG9jYXRlIGFub3RoZXIg
-cXVldWUsIHlvdSdkIGVpdGhlciBuZWVkIHRvDQpoYXZlIHRoZW0gYWxsIHByZS1hbGxvY2F0ZWQg
-YXQgYWxsb2NfZXRoZXJkZXZfbXFzKCksIG9yIGFkZCBhIG5ldyBBUEkgdG8NCm5ldGRldiB0aGF0
-IGFsbG93cyBhZGRpbmcgbmV3IHF1ZXVlcyBvbiB0aGUgZmx5Lg0KDQpIb3cgdGhpbmdzIGFyZSBk
-b25lIHRvZGF5LCB0aGUgVHggcXVldWVzIGFyZSBhbGwgdGFja2VkIG9udG8gdGhlIGVuZCBvZg0K
-dGhlIG5ldGRldiBzdHJ1Y3QuICBUaGF0IHdvdWxkIGhhdmUgdG8gY2hhbmdlIHRvIHByb2JhYmx5
-IGEgbGlua2VkIGxpc3QNCm9mIHF1ZXVlcyB0aGF0IGNvdWxkIGJlIGdyb3duIG9yIHNocnVuayBv
-biB0aGUgZmx5Lg0KbmV0aWZfYWxsb2NfbmV0ZGV2X3F1ZXVlcygpIHdvdWxkIG5lZWQgdG8gY2hh
-bmdlIHRoZSBremFsbG9jKCkgdG8gYSBsaXN0DQphbGxvY2F0aW9uLg0KDQpDaGVlcnMsDQotUEoN
-Cg==
+> -----Original Message-----
+> From: Alexander Gordeev [mailto:agordeev@redhat.com]
+> Sent: Wednesday, October 02, 2013 3:49 AM
+> To: linux-kernel
+> Cc: Alexander Gordeev; Bjorn Helgaas; Ralf Baechle; Michael Ellerman;
+> Benjamin Herrenschmidt; Martin Schwidefsky; Ingo Molnar; Tejun Heo; Dan
+> Williams; Andy King; Jon Mason; Matt Porter; linux-pci; linux-mips@linux-
+> mips.org; linuxppc-dev@lists.ozlabs.org; linux390@de.ibm.com; linux-
+> s390@vger.kernel.org; x86@kernel.org; linux-ide@vger.kernel.org;
+> iss_storagedev@hp.com; linux-nvme@lists.infradead.org; linux-
+> rdma@vger.kernel.org; netdev; e1000-devel@lists.sourceforge.net; Dept-
+> Eng Linux Driver; Solarflare linux maintainers; VMware, Inc.; linux-scsi
+> Subject: [PATCH RFC 63/77] qlcnic: Update MSI/MSI-X interrupts enablement
+> code
+>=20
+> As result of recent re-design of the MSI/MSI-X interrupts enabling patter=
+n
+> this driver has to be updated to use the new technique to obtain a optima=
+l
+> number of MSI/MSI-X interrupts required.
+>=20
+ "We will test this change for the driver and provide feedback."
+
+> Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
+
+Thanks,
+Himanshu
