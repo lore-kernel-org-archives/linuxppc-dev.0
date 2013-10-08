@@ -1,21 +1,15 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Tue, 8 Oct 2013 15:00:17 +1100
+Date: Tue, 8 Oct 2013 15:17:02 +1100
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/9][v5] powerpc: implement is_instr_load_store().
-Message-ID: <20131008040016.GC31666@concordia>
-References: <1380672911-12812-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1380672911-12812-6-git-send-email-sukadev@linux.vnet.ibm.com>
- <20131003053519.GC17237@concordia>
- <20131003190325.GB21561@us.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] powerpc/kernel/sysfs: cleanup set up macros for
+ PMC/non-PMC SPRs
+Message-ID: <20131008041702.GD31666@concordia>
+References: <1380792456-19128-1-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131003190325.GB21561@us.ibm.com>
-Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+In-Reply-To: <1380792456-19128-1-git-send-email-maddy@linux.vnet.ibm.com>
+Cc: olof@lixom.net, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 03, 2013 at 12:03:25PM -0700, Sukadev Bhattiprolu wrote:
-> Michael Ellerman [michael@ellerman.id.au] wrote:
-> | On Tue, Oct 01, 2013 at 05:15:06PM -0700, Sukadev Bhattiprolu wrote:
-> | > Implement is_instr_load_store() to detect whether a given instruction
-> | > is one of the fixed-point or floating-point load/store instructions.
-> | > This function will be used in a follow-on patch to save memory hierarchy
-> | > information of the load/store.
-> | 
-> | Anyway, I think the following logic is all we need for opcode 31:
-> | 
-> | bool is_load_store(int ext_opcode)
+On Thu, Oct 03, 2013 at 02:57:35PM +0530, Madhavan Srinivasan wrote:
+> Currently PMC (Performance Monitor Counter) setup macros are used
+> for other SPRs. Since not all SPRs are PMC related, this patch
+> modifies the exisiting macro and uses it to setup both PMC and
+> non PMC SPRs accordingly.
 > 
-> how about I call this is_load_store_2_06() and add a comment. Horrible
-> but minimizes chance of misuse.
+> V3 changes:
+> 
+> 1) No logic change, just renamed generic macro and removed #define for empty string
+> 2) Changes in the comment to explain better.
+> 
+> V2 changes:
+> 
+> 1) Modified SYSFS_PMCSETUP to a generic macro with additional parameter
+> 2) Added PMC and SPR macro to call the generic macro
+> 3) Changes in the comment to explain better.
+> 
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-Actually it's is_opcode_31_load_store_2_06() - which is even more
-horrible :)
+Acked-by: Michael Ellerman <michael@ellerman.id.au>
 
-But you can probably fold it in to the main routine and then call that
-is_load_store_2_06(). Or whatever seems best, but yeah I think we should
-make it very clear that it's only for 2.06.
+Thanks for putting up with all the bike-shedding.
 
 cheers
