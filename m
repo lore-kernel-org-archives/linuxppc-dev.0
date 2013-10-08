@@ -1,22 +1,41 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Tue, 8 Oct 2013 14:58:11 +1100
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/9][v5] powerpc/perf: Export Power8 generic events in
- sysfs
-Message-ID: <20131008035810.GB31666@concordia>
-References: <1380672911-12812-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1380672911-12812-3-git-send-email-sukadev@linux.vnet.ibm.com>
- <20131003040431.GB17237@concordia>
- <20131003175757.GA21561@us.ibm.com>
+Return-Path: <B40534@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 57D3A2C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 14:58:50 +1100 (EST)
+Received: from mail34-am1 (localhost [127.0.0.1])	by mail34-am1-R.bigfish.com
+ (Postfix) with ESMTP id 8640C6005A	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 03:58:44 +0000 (UTC)
+Received: from AM1EHSMHS001.bigfish.com (unknown [10.3.201.225])	by
+ mail34-am1.bigfish.com (Postfix) with ESMTP id 61CFA4A0082	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 03:58:42 +0000 (UTC)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+ altivec idle
+Date: Tue, 8 Oct 2013 03:58:40 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F1543925901094898@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1380014925-23300-2-git-send-email-dongsheng.wang@freescale.com>
+ <1380014925-23300-4-git-send-email-dongsheng.wang@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0717F8F9@039-SN2MPN1-011.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F154392590108FF41@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1380131815.24959.185.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010909C3@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07183D0B@039-SN2MPN1-011.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F1543925901090B4F@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1380231435.24959.328.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010911C2@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1380317594.24959.490.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010920B0@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1380582385.24959.542.camel@snotra.buserror.net>
+In-Reply-To: <1380582385.24959.542.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131003175757.GA21561@us.ibm.com>
-Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +45,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 03, 2013 at 10:57:57AM -0700, Sukadev Bhattiprolu wrote:
-> Michael Ellerman [michael@ellerman.id.au] wrote:
-> | On Tue, Oct 01, 2013 at 05:15:03PM -0700, Sukadev Bhattiprolu wrote:
-> | > Export generic perf events for Power8 in sysfs.
-> | > 
-> | > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> | > Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> | > ---
-> | >  arch/powerpc/perf/power8-pmu.c |   23 +++++++++++++++++++++++
-> | >  1 file changed, 23 insertions(+)
-> | > 
-> | > diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-> | > index 976c203..b991b2e 100644
-> | > --- a/arch/powerpc/perf/power8-pmu.c
-> | > +++ b/arch/powerpc/perf/power8-pmu.c
-> | > @@ -510,6 +510,28 @@ static void power8_disable_pmc(unsigned int pmc, unsigned long mmcr[])
-> | >  		mmcr[1] &= ~(0xffUL << MMCR1_PMCSEL_SHIFT(pmc + 1));
-> | >  }
-> | >  
-> | > +GENERIC_EVENT_ATTR(cpu-cyles,			PM_CYC);
-> | > +GENERIC_EVENT_ATTR(stalled-cycles-frontend,	PM_GCT_NOSLOT_CYC);
-> | > +GENERIC_EVENT_ATTR(stalled-cycles-backend,	PM_CMPLU_STALL);
-> | > +GENERIC_EVENT_ATTR(instructions,		PM_INST_CMPL);
-> | > +GENERIC_EVENT_ATTR(branch-instructions,		PM_BRU_FIN);
-> | > +GENERIC_EVENT_ATTR(branch-misses,		PM_BR_MPRED_CMPL);
-> | 
-> | And here you use PM_ not PME_ - I'm confused.
-> 
-> It is a bit confusing. The GENERIC_EVENT_ATTR() adds the PME_ prefix.
-
-So doesn't that give you PME_PM_CYC ?
-
-cheers
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgT2N0b2JlciAwMSwgMjAxMyA3OjA2IEFNDQo+IFRvOiBXYW5n
+IERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBCaHVzaGFuIEJoYXJh
+dC1SNjU3Nzc7IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBS
+ZTogW1BBVENIIHY0IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjAgc3RhdGUg
+YW5kDQo+IGFsdGl2ZWMgaWRsZQ0KPiANCj4gT24gU3VuLCAyMDEzLTA5LTI5IGF0IDAxOjU3IC0w
+NTAwLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2Vu
+dDogU2F0dXJkYXksIFNlcHRlbWJlciAyOCwgMjAxMyA1OjMzIEFNDQo+ID4gPiBUbzogV2FuZyBE
+b25nc2hlbmctQjQwNTM0DQo+ID4gPiBDYzogV29vZCBTY290dC1CMDc0MjE7IEJodXNoYW4gQmhh
+cmF0LVI2NTc3NzsgbGludXhwcGMtDQo+ID4gPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4g
+U3ViamVjdDogUmU6IFtQQVRDSCB2NCA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBw
+dzIwIHN0YXRlDQo+ID4gPiBhbmQgYWx0aXZlYyBpZGxlDQo+ID4gPg0KPiA+ID4gT24gVGh1LCAy
+MDEzLTA5LTI2IGF0IDIyOjM0IC0wNTAwLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+
+ID4gPiA+IGN5Y2xlID0gZGl2X3U2NChucyAqIHRiX3RpY2tzX3Blcl91c2VjLCAxMDAwKTsgSXQn
+cyBsb29rIGdvb2QuDQo+ID4gPiA+IEJ1dCB3aHkgd2UgbmVlZDoNCj4gPiA+ID4gCWlmIChucyA+
+PSAxMDAwMCkNCj4gPiA+ID4gCQljeWNsZSA9ICgobnMgKyA1MDApIC8gMTAwMCkgKiB0Yl90aWNr
+c19wZXJfdXNlYzsgPw0KPiA+ID4gPg0KPiA+ID4gPiBJIHRoaW5rICJjeWNsZSA9IGRpdl91NjQo
+bnMgKiB0Yl90aWNrc19wZXJfdXNlYywgMTAwMCkiIGlzIGdvb2QNCj4gPiA+ID4gZW5vdWdoLiA6
+KQ0KPiA+ID4NCj4gPiA+IEl0J3MgdG8gZGVhbCB3aXRoIG92ZXJmbG93IGlmIGEgdmVyeSBsYXJn
+ZSB2YWx1ZSBvZiBucyBpcyBwcm92aWRlZA0KPiA+ID4gKGFuZC9vciB0Yl90aWNrc19wZXJfdXNl
+YyBpcyBsYXJnZXIgdGhhbiB3ZSBleHBlY3QpLg0KPiA+ID4NCj4gPiA6KSwgYXMgSSB0aGluaywg
+aXQncyB0byBkZWFsIHdpdGggb3ZlcmZsb3cuIEJ1dCB5b3UgdmVyc2lvbiBjYW5ub3QgZG8NCj4g
+ZGVhbCB3aXRoIGl0Lg0KPiA+IEJlY2F1c2UgbnMgaXMgdTY0LCBpZiBucyA+IDB4ZmZmZmZmZmZf
+ZmZmZmZlMGIsIG5zICsgNTAwIHdpbGwgb3ZlcmZsb3csDQo+IEFuZCBpZiB0Yl90aWNrc19wZXJf
+dXNlYyA+IDEwMDAgYW5kIG5zID4gKDB4ZmZmZmZmZmZfZmZmZmZmZmYgLyAxMCkgY3ljbGUNCj4g
+YWxzbyB3aWxsIG92ZXJmbG93Lg0KPiANCj4gU2lnaC4uLiBJdCBzaWduaWZpY2FudGx5IGluY3Jl
+YXNlcyB0aGUgdmFsdWUgb2YgbnMgYXQgd2hpY2ggeW91J2xsIGdldA0KPiBvdmVyZmxvdyBwcm9i
+bGVtcy4gOi0pICBJIHdhcyBtb3JlIGNvbmNlcm5lZCB3aXRoIGxhcmdlLWJ1dC1zb21ld2hhdC0N
+Cj4gcmVhc29uYWJsZSB2YWx1ZXMgb2YgbnMgKGUuZy4gdGhhbiB3aXRoIHRyeWluZyB0byBoYW5k
+bGUgZXZlcnkgcG9zc2libGUNCj4gaW5wdXQuICBFdmVuIHdpdGhvdXQgdGhhdCB0ZXN0LCBnZXR0
+aW5nIG92ZXJmbG93IGlzIHN0cmV0Y2hpbmcgdGhlIGJvdW5kcw0KPiBvZiByZWFzb25hYmxlbmVz
+cyAoZS5nLiBhIDEgR0h6IHRpbWViYXNlIHdvdWxkIHJlcXVpcmUgYSB0aW1lb3V0IG9mIG92ZXIN
+Cj4gNyBtb250aHMgdG8gb3ZlcmZsb3cpLCBidXQgaXQgd2FzIGxvdy1oYW5naW5nIGZydWl0LiAg
+QW5kIHRoZSB3b3JzdCBjYXNlDQo+IGlzIHdlIGdvIHRvIHB3MjAgc29vbmVyIHRoYW4gdGhlIHVz
+ZXIgd2FudGVkLCBzbyBsZXQncyBub3QgZ28gdG9vDQo+IG92ZXJib2FyZC4NCj4gDQo+IEkgZG91
+YnQgeW91IHdvdWxkIHNlZSA+IDB4ZmZmZmZmZmZfZmZmZmZlMGIgZXhjZXB0IGlmIHNvbWVvbmUg
+aXMgdHJ5aW5nDQo+IHRvIGRpc2FibGUgaXQgYnkgc2V0dGluZyAweGZmZmZmZmZmX2ZmZmZmZmZm
+IGV2ZW4gdGhvdWdoIGEgc2VwYXJhdGUgQVBJDQo+IGlzIHByb3ZpZGVkIHRvIGNsZWFubHkgZGlz
+YWJsZSBpdC4NCj4gDQo+ID4gSSB0aGluayB3ZSBuZWVkIHRvIGRvIHRoaXM6DQo+ID4NCj4gPiAj
+ZGVmaW5lIFU2NF9MT1dfTUFTSyAgICAgICAgICAgIDB4ZmZmZmZmZmZVTEwNCj4gPiAjZGVmaW5l
+IFU2NF9NQVNLICAgICAgICAgICAgICAgIDB4ZmZmZmZmZmZmZmZmZmZmZlVMTA0KPiA+DQo+ID4g
+ICAgICAgICB1MzIgdG1wX3JlbTsNCj4gPiAgICAgICAgIHU2NCBuc191X3JlbSwgbnNfdSwgbnNf
+bCwgbnNfbF9jYXJyeTsNCj4gPiAgICAgICAgIHU2NCBjeWNsZTsNCj4gPg0KPiA+ICAgICAgICAg
+bnNfdSA9IG5zID4+IDMyOw0KPiA+ICAgICAgICAgbnNfbCA9IG5zICYgVTY0X0xPV19NQVNLOw0K
+PiA+DQo+ID4gICAgICAgICBuc19sICo9IHRiX3RpY2tzX3Blcl91c2VjOw0KPiA+ICAgICAgICAg
+bnNfbF9jYXJyeSA9IG5zX2wgPj4gMzI7DQo+ID4gICAgICAgICBuc191ICo9IHRiX3RpY2tzX3Bl
+cl91c2VjOw0KPiA+ICAgICAgICAgbnNfdSArPSBuc19sX2NhcnJ5Ow0KPiA+DQo+ID4gICAgICAg
+ICBuc191ID0gZGl2X3U2NF9yZW0obnNfdSwgMTAwMCwgJnRtcF9yZW0pOw0KPiA+ICAgICAgICAg
+bnNfdV9yZW0gPSB0bXBfcmVtOw0KPiA+ICAgICAgICAgbnNfbCA9IChuc19sICYgVTY0X0xPV19N
+QVNLKSB8ICgobnNfdV9yZW0pIDw8IDMyKTsNCj4gPiAgICAgICAgIG5zX2wgPSBkaXZfdTY0KG5z
+X2wsIDEwMDApOw0KPiA+DQo+ID4gICAgICAgICBpZiAobnNfdSA+PiAzMikNCj4gPiAgICAgICAg
+ICAgICAgICAgY3ljbGUgPSBVNjRfTUFTSzsNCj4gPiAgICAgICAgIGVsc2UNCj4gPiAgICAgICAg
+ICAgICAgICAgY3ljbGUgPSAobnNfdSA8PCAzMikgfCAobnNfbCAmIFU2NF9MT1dfTUFTSyk7DQo+
+ID4NCj4gPiBJIGhhcyBhbHJlYWR5IHRlc3RlZCB0aGlzIGNvZGUsIGFuZCB3b3JrcyBnb29kLiA6
+KQ0KPiANCj4gVWdoLiAgSSBkb24ndCB0aGluayB3ZSBuZWVkIHRvIGdldCB0aGlzIGNvbXBsaWNh
+dGVkIChhbmQgSSdkIHJhdGhlciBub3QNCj4gc3BlbmQgdGhlIHRpbWUgdmVyaWZ5aW5nIHRoZSBj
+b3JyZWN0bmVzcyBvZiB0aGlzKS4NCj4gDQo+IElmIGZvciBzb21lIHJlYXNvbiB3ZSBkaWQgbmVl
+ZCBzb21ldGhpbmcgbGlrZSB0aGlzIGluIHNvbWUgb3RoZXIgY29udGV4dA0KPiAoSSBkb24ndCB3
+YW50IHRvIHNlZSBpdCBqdXN0IGZvciBwdzIwKSwgSSdkIGJlIG1vcmUgaW5jbGluZWQgdG8gc2Vl
+DQo+IGdlbmVyYWwgMTI4LWJpdCBtdWx0L2RpdmlkZSBzdXBwb3J0Lg0KPiANCkkgd291bGQgbGlr
+ZSB0byB1c2UgbXkgdmVyc2lvbiw6KSwgYmVjYXVzZSBpdCBjYW4gaGFuZGxlIGFueSBzaXR1YXRp
+b24gYW5kIHdlIGRvIG5vdCBuZWVkIHRvIHJlc3RyaWN0IHVzZXJzLg0KSGVyZSBpcyBhIGtpbmQg
+b2Ygc3BlY2lhbCB3YXkgdG8gZ2V0IHRoZSBjeWNsZS4gSWYgdGhpcyAxMjgtYml0IHNpdHVhdGlv
+biBpcyBtb3JlIGFuZCBtb3JlLCBhdCB0aGF0IHRpbWUgd2UgZ28gdG8gc3VwcG9ydCBpdC4NCg0K
+LWRvbmdzaGVuZw0KDQo+IC1TY290dA0KPiANCg0K
