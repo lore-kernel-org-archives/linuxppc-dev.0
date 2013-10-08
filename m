@@ -1,31 +1,20 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 3471C2C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 18:31:33 +1100 (EST)
-Date: Tue, 8 Oct 2013 09:33:02 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-Message-ID: <20131008073301.GC10669@dhcp-26-207.brq.redhat.com>
-References: <cover.1380703262.git.agordeev@redhat.com>
- <20131008043330.GF31666@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131008043330.GF31666@concordia>
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
- iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C7DE82C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 18:46:51 +1100 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r987kjmx014283
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 02:46:46 -0500
+Message-ID: <1381218400.645.204.camel@pasglop>
+Subject: [PATCH] powerpc/powernv: Add a debugfs file to read the firmware
+ console
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 08 Oct 2013 18:46:40 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,34 +24,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 08, 2013 at 03:33:30PM +1100, Michael Ellerman wrote:
-> On Wed, Oct 02, 2013 at 12:29:04PM +0200, Alexander Gordeev wrote:
-> > This technique proved to be confusing and error-prone. Vast share
-> > of device drivers simply fail to follow the described guidelines.
-> 
-> To clarify "Vast share of device drivers":
-> 
->  - 58 drivers call pci_enable_msix()
->  - 24 try a single allocation and then fallback to MSI/LSI
->  - 19 use the loop style allocation as above
->  - 14 try an allocation, and if it fails retry once
->  - 1  incorrectly continues when pci_enable_msix() returns > 0
-> 
-> So 33 drivers (> 50%) successfully make use of the "confusing and
-> error-prone" return value.
+With OPALv3, the firmware can provide the address of it's internal console
+to Linux, which we can then display using debugfs. This is handy for
+diagnostics and debugging.
 
-Ok, you caught me - 'vast share' is incorrect and is a subject to
-rewording. But out of 19/58 how many drivers tested fallbacks on the
-real hardware? IOW, which drivers are affected by the pSeries quota?
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-> And yes, one is buggy, so obviously the interface is too complex. Thanks
-> drivers/ntb/ntb_hw.c
-
-vmxnet3 would be the best example.
-
-> cheers
-
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 2911abe..10d7894 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -17,6 +17,8 @@
+ #include <linux/interrupt.h>
+ #include <linux/notifier.h>
+ #include <linux/slab.h>
++#include <linux/debugfs.h>
++#include <linux/uaccess.h>
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
+ 
+@@ -27,6 +29,21 @@ struct opal {
+ 	u64 entry;
+ } opal;
+ 
++/* OPAL in-memory console */
++struct memcons {
++	uint64_t magic;
++#define MEMCONS_MAGIC	0x6630696567726173
++	uint64_t obuf_phys;
++	uint64_t ibuf_phys;
++	uint32_t obuf_size;
++	uint32_t ibuf_size;
++	uint32_t out_pos;
++#define MEMCONS_OUT_POS_WRAP	0x80000000u
++#define MEMCONS_OUT_POS_MASK	0x00ffffffu
++	uint32_t in_prod;
++	uint32_t in_cons;
++};
++
+ static struct device_node *opal_node;
+ static DEFINE_SPINLOCK(opal_write_lock);
+ extern u64 opal_mc_secondary_handler[];
+@@ -369,6 +386,90 @@ static irqreturn_t opal_interrupt(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
+ 
++#ifdef CONFIG_DEBUG_FS
++static ssize_t opal_memcons_read(struct file *file, char __user *to,
++				 size_t count, loff_t *ppos)
++{
++	struct memcons *mc = file->private_data;
++	size_t available, ret, chunk0, chunk1, lcount;
++	const char *start, *conbuf = __va(mc->obuf_phys);
++	loff_t opos, pos;
++
++	/*
++	 * Find out how much is in the buffer. If it has wrapped
++	 * the whole buffer, else just the beginning. It has wrapped
++	 * if the next character is not \0
++	 */
++	if (mc->out_pos & MEMCONS_OUT_POS_WRAP) {
++		available = mc->obuf_size;
++		chunk1 = mc->out_pos & MEMCONS_OUT_POS_MASK;
++		start = conbuf + chunk1;
++		chunk0 = mc->obuf_size - chunk1;
++	} else {
++		available = mc->out_pos;
++		start = conbuf;
++		chunk0 = available;
++		chunk1 = 0;
++	}
++
++	opos = pos = *ppos;
++
++	/* Sanity check arguments */
++	if (pos < 0)
++		return -EINVAL;
++	if (pos >= available || !count)
++		return 0;
++	if (count > available - pos)
++		count = available - pos;
++
++	/* Handle first chunk */
++	if (pos < chunk0) {
++		lcount = min(count, chunk0 - (size_t)pos);
++		ret = copy_to_user(to, start + pos, lcount);
++		if (ret == lcount)
++			return -EFAULT;
++		lcount -= ret;
++		count -= lcount;
++		*ppos += lcount;
++		to += lcount;
++		pos = 0;
++	} else {
++		*ppos += chunk0;
++		pos -= chunk0;
++		ret = 0;
++	}
++
++	/* Handle second chunk */
++	if (count && chunk1 && ret == 0) {
++		lcount = min(count, chunk1 - (size_t)pos);
++		ret = copy_to_user(to, conbuf + pos, lcount);
++		if (ret == lcount)
++			return -EFAULT;
++		lcount -= ret;
++		*ppos += lcount;
++	}
++	return *ppos - opos;
++
++}
++
++static const struct file_operations opal_fops_memcons = {
++	.read =		opal_memcons_read,
++	.open =		simple_open,
++	.llseek =	default_llseek,
++};
++
++static void opal_init_debugfs(void)
++{
++	u64 mcaddr;
++
++	if (of_property_read_u64(opal_node, "ibm,opal-memcons", &mcaddr) == 0)
++		debugfs_create_file("opal-log", 0400, powerpc_debugfs_root,
++				    __va(mcaddr), &opal_fops_memcons);
++}
++#else
++static void opal_init_debugfs(void) { }
++#endif /* CONFIG_DEBUG_FS */
++
+ static int __init opal_init(void)
+ {
+ 	struct device_node *np, *consoles;
+@@ -414,6 +515,9 @@ static int __init opal_init(void)
+ 				   " (0x%x)\n", rc, irq, hwirq);
+ 		opal_irqs[i] = irq;
+ 	}
++
++	opal_init_debugfs();
++
+ 	return 0;
+ }
+ subsys_initcall(opal_init);
