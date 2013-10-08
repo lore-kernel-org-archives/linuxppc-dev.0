@@ -1,20 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C7DE82C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 18:46:51 +1100 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r987kjmx014283
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 02:46:46 -0500
-Message-ID: <1381218400.645.204.camel@pasglop>
-Subject: [PATCH] powerpc/powernv: Add a debugfs file to read the firmware
- console
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 08 Oct 2013 18:46:40 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <agordeev@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id AF73D2C038C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 18:46:58 +1100 (EST)
+Date: Tue, 8 Oct 2013 09:48:26 +0200
+From: Alexander Gordeev <agordeev@redhat.com>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH RFC 07/77] PCI/MSI: Re-design MSI/MSI-X interrupts
+ enablement pattern
+Message-ID: <20131008074826.GD10669@dhcp-26-207.brq.redhat.com>
+References: <cover.1380703262.git.agordeev@redhat.com>
+ <d8c36203ada6efbfa9f7ce92c2f713ee3b6d6b8d.1380703262.git.agordeev@redhat.com>
+ <20131007181749.GB27396@htj.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131007181749.GB27396@htj.dyndns.org>
+Cc: linux-mips@linux-mips.org, linux-doc@vger.kernel.org, "VMware,
+ Inc." <pv-drivers@vmware.com>, linux-nvme@lists.infradead.org,
+ linux-ide@vger.kernel.org, linux-s390@vger.kernel.org,
+ Andy King <acking@vmware.com>, linux-scsi@vger.kernel.org,
+ linux-rdma@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ linux-pci@vger.kernel.org, iss_storagedev@hp.com, linux-driver@qlogic.com,
+ Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
+ Jon Mason <jon.mason@intel.com>,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,146 +36,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With OPALv3, the firmware can provide the address of it's internal console
-to Linux, which we can then display using debugfs. This is handy for
-diagnostics and debugging.
+On Mon, Oct 07, 2013 at 02:17:49PM -0400, Tejun Heo wrote:
+> Hello,
+> 
+> On Wed, Oct 02, 2013 at 12:48:23PM +0200, Alexander Gordeev wrote:
+> > +static int foo_driver_enable_msi(struct foo_adapter *adapter, int nvec)
+> > +{
+> > +	rc = pci_get_msi_cap(adapter->pdev);
+> > +	if (rc < 0)
+> > +		return rc;
+> > +
+> > +	nvec = min(nvec, rc);
+> > +	if (nvec < FOO_DRIVER_MINIMUM_NVEC) {
+> > +		return -ENOSPC;
+> > +
+> > +	rc = pci_enable_msi_block(adapter->pdev, nvec);
+> > +	return rc;
+> > +}
+> 
+> If there are many which duplicate the above pattern, it'd probably be
+> worthwhile to provide a helper?  It's usually a good idea to reduce
+> the amount of boilerplate code in drivers.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+I wanted to limit discussion in v1 to as little changes as possible.
+I 'planned' those helper(s) for a separate effort if/when the most
+important change is accepted and soaked a bit.
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 2911abe..10d7894 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -17,6 +17,8 @@
- #include <linux/interrupt.h>
- #include <linux/notifier.h>
- #include <linux/slab.h>
-+#include <linux/debugfs.h>
-+#include <linux/uaccess.h>
- #include <asm/opal.h>
- #include <asm/firmware.h>
- 
-@@ -27,6 +29,21 @@ struct opal {
- 	u64 entry;
- } opal;
- 
-+/* OPAL in-memory console */
-+struct memcons {
-+	uint64_t magic;
-+#define MEMCONS_MAGIC	0x6630696567726173
-+	uint64_t obuf_phys;
-+	uint64_t ibuf_phys;
-+	uint32_t obuf_size;
-+	uint32_t ibuf_size;
-+	uint32_t out_pos;
-+#define MEMCONS_OUT_POS_WRAP	0x80000000u
-+#define MEMCONS_OUT_POS_MASK	0x00ffffffu
-+	uint32_t in_prod;
-+	uint32_t in_cons;
-+};
-+
- static struct device_node *opal_node;
- static DEFINE_SPINLOCK(opal_write_lock);
- extern u64 opal_mc_secondary_handler[];
-@@ -369,6 +386,90 @@ static irqreturn_t opal_interrupt(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
-+#ifdef CONFIG_DEBUG_FS
-+static ssize_t opal_memcons_read(struct file *file, char __user *to,
-+				 size_t count, loff_t *ppos)
-+{
-+	struct memcons *mc = file->private_data;
-+	size_t available, ret, chunk0, chunk1, lcount;
-+	const char *start, *conbuf = __va(mc->obuf_phys);
-+	loff_t opos, pos;
-+
-+	/*
-+	 * Find out how much is in the buffer. If it has wrapped
-+	 * the whole buffer, else just the beginning. It has wrapped
-+	 * if the next character is not \0
-+	 */
-+	if (mc->out_pos & MEMCONS_OUT_POS_WRAP) {
-+		available = mc->obuf_size;
-+		chunk1 = mc->out_pos & MEMCONS_OUT_POS_MASK;
-+		start = conbuf + chunk1;
-+		chunk0 = mc->obuf_size - chunk1;
-+	} else {
-+		available = mc->out_pos;
-+		start = conbuf;
-+		chunk0 = available;
-+		chunk1 = 0;
-+	}
-+
-+	opos = pos = *ppos;
-+
-+	/* Sanity check arguments */
-+	if (pos < 0)
-+		return -EINVAL;
-+	if (pos >= available || !count)
-+		return 0;
-+	if (count > available - pos)
-+		count = available - pos;
-+
-+	/* Handle first chunk */
-+	if (pos < chunk0) {
-+		lcount = min(count, chunk0 - (size_t)pos);
-+		ret = copy_to_user(to, start + pos, lcount);
-+		if (ret == lcount)
-+			return -EFAULT;
-+		lcount -= ret;
-+		count -= lcount;
-+		*ppos += lcount;
-+		to += lcount;
-+		pos = 0;
-+	} else {
-+		*ppos += chunk0;
-+		pos -= chunk0;
-+		ret = 0;
-+	}
-+
-+	/* Handle second chunk */
-+	if (count && chunk1 && ret == 0) {
-+		lcount = min(count, chunk1 - (size_t)pos);
-+		ret = copy_to_user(to, conbuf + pos, lcount);
-+		if (ret == lcount)
-+			return -EFAULT;
-+		lcount -= ret;
-+		*ppos += lcount;
-+	}
-+	return *ppos - opos;
-+
-+}
-+
-+static const struct file_operations opal_fops_memcons = {
-+	.read =		opal_memcons_read,
-+	.open =		simple_open,
-+	.llseek =	default_llseek,
-+};
-+
-+static void opal_init_debugfs(void)
-+{
-+	u64 mcaddr;
-+
-+	if (of_property_read_u64(opal_node, "ibm,opal-memcons", &mcaddr) == 0)
-+		debugfs_create_file("opal-log", 0400, powerpc_debugfs_root,
-+				    __va(mcaddr), &opal_fops_memcons);
-+}
-+#else
-+static void opal_init_debugfs(void) { }
-+#endif /* CONFIG_DEBUG_FS */
-+
- static int __init opal_init(void)
- {
- 	struct device_node *np, *consoles;
-@@ -414,6 +515,9 @@ static int __init opal_init(void)
- 				   " (0x%x)\n", rc, irq, hwirq);
- 		opal_irqs[i] = irq;
- 	}
-+
-+	opal_init_debugfs();
-+
- 	return 0;
- }
- subsys_initcall(opal_init);
+> > @@ -975,7 +951,7 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
+> >  	if (nr_entries < 0)
+> >  		return nr_entries;
+> >  	if (nvec > nr_entries)
+> > -		return nr_entries;
+> > +		return -EINVAL;
+> >  
+> >  	/* Check for any invalid entries */
+> >  	for (i = 0; i < nvec; i++) {
+> 
+> If we do things this way, it breaks all drivers using this interface
+> until they're converted, right?
+
+Right. And the rest of the series does it.
+
+> Also, it probably isn't the best idea
+> to flip the behavior like this as this can go completely unnoticed (no
+> compiler warning or anything, the same function just behaves
+> differently).  Maybe it'd be a better idea to introduce a simpler
+> interface that most can be converted to?
+
+Well, an *other* interface is a good idea. What do you mean with the
+simpler here?
+
+> tejun
+
+-- 
+Regards,
+Alexander Gordeev
+agordeev@redhat.com
