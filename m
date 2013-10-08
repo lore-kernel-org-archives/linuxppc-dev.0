@@ -1,19 +1,28 @@
-Return-Path: <joseph_myers@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "relay1.mentorg.com",
- Issuer "Entrust Certification Authority - L1C" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D0BBC2C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 10:12:34 +1100 (EST)
-Date: Tue, 8 Oct 2013 23:12:27 +0000
-From: "Joseph S. Myers" <joseph@codesourcery.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] math-emu: fix floating-point to integer unsigned saturation
-Message-ID: <Pine.LNX.4.64.1310082310120.23637@digraph.polyomino.org.uk>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7C0B42C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 10:20:55 +1100 (EST)
+Message-ID: <1381274440.7979.309.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/2][v2] pci: fsl: derive the common PCI driver to
+ drivers/pci/host
+From: Scott Wood <scottwood@freescale.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 8 Oct 2013 18:20:40 -0500
+In-Reply-To: <CAErSpo76_w+wK76m73kkdYS1PouhYcGfZus_FYF5E2FHJTA6gQ@mail.gmail.com>
+References: <1380531175-14836-1-git-send-email-Minghuan.Lian@freescale.com>
+ <CAErSpo7LXqXmrw1gPwKHsJkKaAcDr2W_+tcC8b9T_5Mab1Arnw@mail.gmail.com>
+ <1381272382.7979.292.camel@snotra.buserror.net>
+ <CAErSpo76_w+wK76m73kkdYS1PouhYcGfZus_FYF5E2FHJTA6gQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Sender: Joseph Myers <joseph@codesourcery.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Zang Roy-R61911 <r61911@freescale.com>,
+ Minghuan Lian <Minghuan.Lian@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,52 +32,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Joseph Myers <joseph@codesourcery.com>
+On Tue, 2013-10-08 at 17:09 -0600, Bjorn Helgaas wrote:
+> On Tue, Oct 8, 2013 at 4:46 PM, Scott Wood <scottwood@freescale.com> wrote:
+> > On Tue, 2013-10-08 at 13:13 -0600, Bjorn Helgaas wrote:
+> >> [+cc Ben, Paul, linuxppc-dev]
+> >>
+> >> On Mon, Sep 30, 2013 at 04:52:54PM +0800, Minghuan Lian wrote:
+> >> > The Freescale's Layerscape series processors will use ARM cores.
+> >> > The LS1's PCIe controllers is the same as T4240's. So it's better
+> >> > the PCIe controller driver can support PowerPC and ARM
+> >> > simultaneously. This patch is for this purpose. It derives
+> >> > the common functions from arch/powerpc/sysdev/fsl_pci.c to
+> >> > drivers/pci/host/pci-fsl-common.c and leaves the architecture
+> >> > specific functions which should be implemented in arch related files.
+> >> >
+> >> > Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+> >>
+> >> I cc'd the powerpc maintainers so we can work out which tree this
+> >> should go through.
+> >>
+> >> > ---
+> >> > change log:
+> >> > v1-v2:
+> >> > 1. rename pci.h to pci-common.h
+> >> > 2. rename pci-fsl.c to pci-fsl-common.c
+> >> >
+> >> > Based on upstream master.
+> >> > Based on the discussion of RFC version here
+> >> > http://patchwork.ozlabs.org/patch/274487/
+> >> >
+> >> >  arch/powerpc/sysdev/fsl_pci.c                      | 521 +-----------------
+> >> >  arch/powerpc/sysdev/fsl_pci.h                      |  89 ----
+> >> >  .../fsl_pci.c => drivers/pci/host/pci-fsl-common.c | 591 +--------------------
+> >> >  .../fsl_pci.h => include/linux/fsl/pci-common.h    |  45 +-
+> >>
+> >> Is there any way to avoid putting this file in include/linux?  I know
+> >> you want to share it beyond PowerPC, and I know there are similar
+> >> examples there already, but this is all arch-specific or
+> >> chipset-specific stuff that seems like it should be in some
+> >> not-so-public place.  It doesn't seem scalable to add an include/linux
+> >> subdirectory for every chipset that might be shared across
+> >> architectures.
+> >
+> > What specifically is the problem with it, as long as it's properly
+> > namespaced?
+> 
+> Well, as I said above, it doesn't seem scalable,
 
-The math-emu macros _FP_TO_INT and _FP_TO_INT_ROUND are supposed to
-saturate their results for out-of-range arguments, except in the case
-rsigned == 2 (when instead the low bits of the result are taken).
-However, in the case rsigned == 0 (converting to unsigned integers),
-they mistakenly produce 0 for positive results and the maximum
-unsigned integer for negative results, the opposite of correct
-unsigned saturation.  This patch fixes the logic.
+I'm not sure what scaling problems you're picturing, assuming proper
+namespacing and organization within include/linux/.
 
-Signed-off-by: Joseph Myers <joseph@codesourcery.com>
+>  and it doesn't seem to be the common existing practice. 
+>
+> Possibly this is just because sharing chipsets across arches isn't very common yet.
+> 
+> I hadn't noticed that include/linux/fsl exists already; I thought you
+> were adding it.  Given that it *does* exist already, I guess I'm OK
+> with putting more stuff in it.
 
----
+I see other existing practice as well.  Besides plenty of
+"include/linux/fsl*" that ought to be moved to "include/linux/fsl/", I
+see things like include/linux/amba/, include/linux/scx200*,
+include/linux/clksrc-dbx500-prcmu.h, include/linux/com202020.h, etc.
+These are just a few random examples out of many.
 
-I intend to make the corresponding changes to the glibc/libgcc copy of
-this code, given that it would be desirable to resync the Linux and
-glibc/libgcc copies (the latter has had many enhancements and bug
-fixes since it was copied into Linux), although strictly this
-incorrect saturation is only a bug when trying to emulate particular
-instruction semantics, not when used in userspace to implement C
-operations where the results of out-of-range conversions are
-unspecified or undefined.
+> So I'll apply these given an ack from the powerpc folks.
 
-diff --git a/include/math-emu/op-common.h b/include/math-emu/op-common.h
-index 9696a5e..70fe5e9 100644
---- a/include/math-emu/op-common.h
-+++ b/include/math-emu/op-common.h
-@@ -685,7 +685,7 @@ do {									\
- 	    else								\
- 	      {									\
- 		r = 0;								\
--		if (X##_s)							\
-+		if (!X##_s)							\
- 		  r = ~r;							\
- 	      }									\
- 	    FP_SET_EXCEPTION(FP_EX_INVALID);					\
-@@ -762,7 +762,7 @@ do {									\
- 	    if (!rsigned)							\
- 	      {									\
- 		r = 0;								\
--		if (X##_s)							\
-+		if (!X##_s)							\
- 		  r = ~r;							\
- 	      }									\
- 	    else if (rsigned != 2)						\
+ACK this patch.  The second one I'd like to see broken up into
+digestible chunks so I can better review it.
 
--- 
-Joseph S. Myers
-joseph@codesourcery.com
+-Scott
