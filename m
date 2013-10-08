@@ -1,31 +1,36 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id B790E2C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 14:13:14 +1100 (EST)
-Message-ID: <1381201980.6330.4.camel@ul30vt.home>
-Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a device
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>
-Date: Mon, 07 Oct 2013 21:13:00 -0600
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0719385B@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
- <1380127533.3030.319.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0718FD1C@039-SN2MPN1-011.039d.mgd.msft.net>
- <1380901507.2673.204.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D07190F35@039-SN2MPN1-011.039d.mgd.msft.net>
- <1380906772.25705.19.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D07191143@039-SN2MPN1-011.039d.mgd.msft.net>
- <1380910322.25705.56.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0719385B@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "agraf@suse.de" <agraf@suse.de>, Wood Scott-B07421 <B07421@freescale.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "joro@8bytes.org" <joro@8bytes.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 92EC12C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 14:15:52 +1100 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 8 Oct 2013 13:15:52 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id EED993578040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2013 14:15:43 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r982wmwV61931534
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 13:58:48 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r983FhOw017535
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Oct 2013 14:15:43 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH -V2 1/2] powerpc: Use HPTE constants when updating hpte
+ bits
+In-Reply-To: <1380810140-11015-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1380810140-11015-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 08 Oct 2013 08:45:38 +0530
+Message-ID: <87eh7wo3l1.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,207 +40,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-10-07 at 05:46 +0000, Bhushan Bharat-R65777 wrote:
-> 
-> > -----Original Message-----
-> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > Sent: Friday, October 04, 2013 11:42 PM
-> > To: Bhushan Bharat-R65777
-> > Cc: joro@8bytes.org; benh@kernel.crashing.org; galak@kernel.crashing.org; linux-
-> > kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> > pci@vger.kernel.org; agraf@suse.de; Wood Scott-B07421; iommu@lists.linux-
-> > foundation.org
-> > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a device
-> > 
-> > On Fri, 2013-10-04 at 17:23 +0000, Bhushan Bharat-R65777 wrote:
-> > >
-> > > > -----Original Message-----
-> > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > > > Sent: Friday, October 04, 2013 10:43 PM
-> > > > To: Bhushan Bharat-R65777
-> > > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
-> > > > galak@kernel.crashing.org; linux- kernel@vger.kernel.org;
-> > > > linuxppc-dev@lists.ozlabs.org; linux- pci@vger.kernel.org;
-> > > > agraf@suse.de; Wood Scott-B07421; iommu@lists.linux- foundation.org
-> > > > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a
-> > > > device
-> > > >
-> > > > On Fri, 2013-10-04 at 16:47 +0000, Bhushan Bharat-R65777 wrote:
-> > > > >
-> > > > > > -----Original Message-----
-> > > > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > > > > > Sent: Friday, October 04, 2013 9:15 PM
-> > > > > > To: Bhushan Bharat-R65777
-> > > > > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
-> > > > > > galak@kernel.crashing.org; linux- kernel@vger.kernel.org;
-> > > > > > linuxppc-dev@lists.ozlabs.org; linux- pci@vger.kernel.org;
-> > > > > > agraf@suse.de; Wood Scott-B07421; iommu@lists.linux-
-> > > > > > foundation.org
-> > > > > > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a
-> > > > > > device
-> > > > > >
-> > > > > > On Fri, 2013-10-04 at 09:54 +0000, Bhushan Bharat-R65777 wrote:
-> > > > > > >
-> > > > > > > > -----Original Message-----
-> > > > > > > > From: linux-pci-owner@vger.kernel.org
-> > > > > > > > [mailto:linux-pci-owner@vger.kernel.org]
-> > > > > > > > On Behalf Of Alex Williamson
-> > > > > > > > Sent: Wednesday, September 25, 2013 10:16 PM
-> > > > > > > > To: Bhushan Bharat-R65777
-> > > > > > > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
-> > > > > > > > galak@kernel.crashing.org; linux- kernel@vger.kernel.org;
-> > > > > > > > linuxppc-dev@lists.ozlabs.org; linux- pci@vger.kernel.org;
-> > > > > > > > agraf@suse.de; Wood Scott-B07421; iommu@lists.linux-
-> > > > > > > > foundation.org; Bhushan Bharat-R65777
-> > > > > > > > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain
-> > > > > > > > of a device
-> > > > > > > >
-> > > > > > > > On Thu, 2013-09-19 at 12:59 +0530, Bharat Bhushan wrote:
-> > > > > > > > > This api return the iommu domain to which the device is attached.
-> > > > > > > > > The iommu_domain is required for making API calls related to
-> > iommu.
-> > > > > > > > > Follow up patches which use this API to know iommu maping.
-> > > > > > > > >
-> > > > > > > > > Signed-off-by: Bharat Bhushan
-> > > > > > > > > <bharat.bhushan@freescale.com>
-> > > > > > > > > ---
-> > > > > > > > >  drivers/iommu/iommu.c |   10 ++++++++++
-> > > > > > > > >  include/linux/iommu.h |    7 +++++++
-> > > > > > > > >  2 files changed, 17 insertions(+), 0 deletions(-)
-> > > > > > > > >
-> > > > > > > > > diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-> > > > > > > > > index
-> > > > > > > > > fbe9ca7..6ac5f50 100644
-> > > > > > > > > --- a/drivers/iommu/iommu.c
-> > > > > > > > > +++ b/drivers/iommu/iommu.c
-> > > > > > > > > @@ -696,6 +696,16 @@ void iommu_detach_device(struct
-> > > > > > > > > iommu_domain *domain, struct device *dev)  }
-> > > > > > > > > EXPORT_SYMBOL_GPL(iommu_detach_device);
-> > > > > > > > >
-> > > > > > > > > +struct iommu_domain *iommu_get_dev_domain(struct device *dev) {
-> > > > > > > > > +	struct iommu_ops *ops = dev->bus->iommu_ops;
-> > > > > > > > > +
-> > > > > > > > > +	if (unlikely(ops == NULL || ops->get_dev_iommu_domain ==
-> > NULL))
-> > > > > > > > > +		return NULL;
-> > > > > > > > > +
-> > > > > > > > > +	return ops->get_dev_iommu_domain(dev); }
-> > > > > > > > > +EXPORT_SYMBOL_GPL(iommu_get_dev_domain);
-> > > > > > > >
-> > > > > > > > What prevents this from racing iommu_domain_free()?  There's
-> > > > > > > > no references acquired, so there's no reason for the caller
-> > > > > > > > to assume the
-> > > > > > pointer is valid.
-> > > > > > >
-> > > > > > > Sorry for late query, somehow this email went into a folder
-> > > > > > > and escaped;
-> > > > > > >
-> > > > > > > Just to be sure, there is not lock at generic "struct
-> > > > > > > iommu_domain", but IP
-> > > > > > specific structure (link FSL domain) linked in
-> > > > > > iommu_domain->priv have a lock, so we need to ensure this race
-> > > > > > in FSL iommu code (say drivers/iommu/fsl_pamu_domain.c), right?
-> > > > > >
-> > > > > > No, it's not sufficient to make sure that your use of the
-> > > > > > interface is race free.  The interface itself needs to be
-> > > > > > designed so that it's difficult to use incorrectly.
-> > > > >
-> > > > > So we can define iommu_get_dev_domain()/iommu_put_dev_domain();
-> > > > > iommu_get_dev_domain() will return domain with the lock held, and
-> > > > > iommu_put_dev_domain() will release the lock? And
-> > > > > iommu_get_dev_domain() must always be followed by
-> > > > > iommu_get_dev_domain().
-> > > >
-> > > > What lock?  get/put are generally used for reference counting, not
-> > > > locking in the kernel.
-> > > >
-> > > > > > That's not the case here.  This is a backdoor to get the iommu
-> > > > > > domain from the iommu driver regardless of who is using it or how.
-> > > > > > The iommu domain is created and managed by vfio, so shouldn't we
-> > > > > > be looking at how to do this through vfio?
-> > > > >
-> > > > > Let me first describe what we are doing here:
-> > > > > During initialization:-
-> > > > >  - vfio talks to MSI system to know the MSI-page and size
-> > > > >  - vfio then interacts with iommu to map the MSI-page in iommu
-> > > > > (IOVA is decided by userspace and physical address is the
-> > > > > MSI-page)
-> > > > >  - So the IOVA subwindow mapping is created in iommu and yes VFIO
-> > > > > know about
-> > > > this mapping.
-> > > > >
-> > > > > Now do SET_IRQ(MSI/MSIX) ioctl:
-> > > > >  - calls pci_enable_msix()/pci_enable_msi_block(): which is
-> > > > > supposed to set
-> > > > MSI address/data in device.
-> > > > >  - So in current implementation (this patchset) msi-subsystem gets
-> > > > > the IOVA
-> > > > from iommu via this defined interface.
-> > > > >  - Are you saying that rather than getting this from iommu, we
-> > > > > should get this
-> > > > from vfio? What difference does this make?
-> > > >
-> > > > Yes, you just said above that vfio knows the msi to iova mapping, so
-> > > > why go outside of vfio to find it later?  The difference is one case
-> > > > you can have a proper reference to data structures to make sure the
-> > > > pointer you get back actually has meaning at the time you're using
-> > > > it vs the code here where you're defining an API that returns a
-> > > > meaningless value
-> > >
-> > > With FSL-PAMU we will always get consistant data from iommu or vfio-data
-> > structure.
-> > 
-> > Great, but you're trying to add a generic API to the IOMMU subsystem that's
-> > difficult to use correctly.  The fact that you use it correctly does not justify
-> > the API.
-> > 
-> > > > because you can't check or
-> > > > enforce that an arbitrary caller is using it correctly.
-> > >
-> > > I am not sure what is arbitrary caller? pdev is known to vfio, so vfio
-> > > will only make pci_enable_msix()/pci_enable_msi_block() for this pdev.
-> > > If anyother code makes then it is some other unexpectedly thing
-> > > happening in system, no?
-> > 
-> > What's proposed here is a generic IOMMU API.  Anybody can call this.
-> > What if the host SCSI driver decides to go get the iommu domain for it's device
-> > (or any other device)?  Does that fit your usage model?
-> > 
-> > > >  It's not maintainable.
-> > > > Thanks,
-> > >
-> > > I do not have any issue with this as well, can you also describe the
-> > > type of API you are envisioning; I can think of defining some function
-> > > in vfio.c/vfio_iommu*.c, make them global and declare then in
-> > > include/Linux/vfio.h And include <Linux/vfio.h> in caller file
-> > > (arch/powerpc/kernel/msi.c)
-> > 
-> > Do you really want module dependencies between vfio and your core kernel MSI
-> > setup?  Look at the vfio external user interface that we've already defined.
-> > That allows other components of the kernel to get a proper reference to a vfio
-> > group.  From there you can work out how to get what you want.  Another
-> > alternative is that vfio could register an MSI to IOVA mapping with architecture
-> > code when the mapping is created.  The MSI setup path could then do a lookup in
-> > architecture code for the mapping.  You could even store the MSI to IOVA mapping
-> > in VFIO and create an interface where SET_IRQ passes that mapping into setup
-> > code.
-> 
-> Ok, What I want is to get IOVA associated with a physical address
-> (physical address of MSI-bank).
-> And currently I do not see a way to know IOVA of a physical address
-> and doing all this domain get and then search through all of
-> iommu-windows of that domain.
-> 
-> What if we add an iommu-API which can return the IOVA mapping of a
-> physical address. Current use case is setting up MSI's for aperture
-> type of IOMMU also getting a phys_to_iova() mapping is independent of
-> VFIO, your thought?
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-A physical address can be mapped to multiple IOVAs, so the interface
-seems flawed by design.  It also has the same problem as above, it's a
-backdoor that can be called asynchronous to the owner of the domain, so
-what reason is there to believe the result?  It just replaces an
-iommu_domain pointer with an IOVA.  VFIO knows this mapping, so why are
-we trying to go behind its back and ask the IOMMU?  Thanks,
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>
+> Even though we have same value for linux PTE bits and hash PTE pits
+> use the hash pte bits wen updating hash pte
 
-Alex
+...
+> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+> index 02d6e21..78f2c59 100644
+> --- a/arch/powerpc/platforms/pseries/lpar.c
+> +++ b/arch/powerpc/platforms/pseries/lpar.c
+> @@ -146,8 +146,9 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
+>  	flags = 0;
+>
+>  	/* Make pHyp happy */
+> -	if ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU))
+> -		hpte_r &= ~_PAGE_COHERENT;
+> +	if ((rflags & _PAGE_NO_CACHE) && !(rflags & _PAGE_WRITETHRU))
+> +		hpte_r &= ~HPTE_R_M;
+> +
+
+-	if ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU))
++	if ((rflags & _PAGE_NO_CACHE) && !(rflags & _PAGE_WRITETHRU))
+
+the if loop part of the change is already done in upstream. Since V2
+was generated after moving V1 patch to a different tree (kvm tree),
+ended up with that additional change. Let me know if you want me
+respin the patch
+
+>  	if (firmware_has_feature(FW_FEATURE_XCMO) && !(hpte_r & HPTE_R_N))
+>  		flags |= H_COALESCE_CAND;
+>
+
+-aneesh
