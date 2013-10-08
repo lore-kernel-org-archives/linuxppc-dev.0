@@ -1,17 +1,22 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Tue, 8 Oct 2013 14:56:23 +1100
+Date: Tue, 8 Oct 2013 14:58:11 +1100
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] powerpc/legacy_serial: fix incorrect placement of
- __initdata tag
-Message-ID: <20131008035623.GA31666@concordia>
-References: <35419229.o6Cv8JYbpg@amdc1032> <20131001061325.GD17966@concordia>
- <1600459.LJx7sBeEJs@amdc1032>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/9][v5] powerpc/perf: Export Power8 generic events in
+ sysfs
+Message-ID: <20131008035810.GB31666@concordia>
+References: <1380672911-12812-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1380672911-12812-3-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20131003040431.GB17237@concordia>
+ <20131003175757.GA21561@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1600459.LJx7sBeEJs@amdc1032>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20131003175757.GA21561@us.ibm.com>
+Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,22 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 03, 2013 at 01:51:27PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Tuesday, October 01, 2013 04:13:25 PM Michael Ellerman wrote:
-> > On Mon, Sep 30, 2013 at 03:11:42PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > __initdata tag should be placed between the variable name and equal
-> > > sign for the variable to be placed in the intended .init.data section.
-> > 
-> > I see lots of other occurences of that in arch/powerpc. Why not send a
-> > single patch to update them all?
+On Thu, Oct 03, 2013 at 10:57:57AM -0700, Sukadev Bhattiprolu wrote:
+> Michael Ellerman [michael@ellerman.id.au] wrote:
+> | On Tue, Oct 01, 2013 at 05:15:03PM -0700, Sukadev Bhattiprolu wrote:
+> | > Export generic perf events for Power8 in sysfs.
+> | > 
+> | > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> | > Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> | > ---
+> | >  arch/powerpc/perf/power8-pmu.c |   23 +++++++++++++++++++++++
+> | >  1 file changed, 23 insertions(+)
+> | > 
+> | > diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+> | > index 976c203..b991b2e 100644
+> | > --- a/arch/powerpc/perf/power8-pmu.c
+> | > +++ b/arch/powerpc/perf/power8-pmu.c
+> | > @@ -510,6 +510,28 @@ static void power8_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+> | >  		mmcr[1] &= ~(0xffUL << MMCR1_PMCSEL_SHIFT(pmc + 1));
+> | >  }
+> | >  
+> | > +GENERIC_EVENT_ATTR(cpu-cyles,			PM_CYC);
+> | > +GENERIC_EVENT_ATTR(stalled-cycles-frontend,	PM_GCT_NOSLOT_CYC);
+> | > +GENERIC_EVENT_ATTR(stalled-cycles-backend,	PM_CMPLU_STALL);
+> | > +GENERIC_EVENT_ATTR(instructions,		PM_INST_CMPL);
+> | > +GENERIC_EVENT_ATTR(branch-instructions,		PM_BRU_FIN);
+> | > +GENERIC_EVENT_ATTR(branch-misses,		PM_BR_MPRED_CMPL);
+> | 
+> | And here you use PM_ not PME_ - I'm confused.
 > 
-> The other occurences while not following the preferred kernel coding style
-> are (probably) working OK with gcc. This particular occurence just doesn't
-> work as it should.
+> It is a bit confusing. The GENERIC_EVENT_ATTR() adds the PME_ prefix.
 
-Why would the other occurrences work but not this one?
-
-Regardless, why don't we just do a single patch to clean them all up to
-match coding style and (probably) do what they're intended.
+So doesn't that give you PME_PM_CYC ?
 
 cheers
