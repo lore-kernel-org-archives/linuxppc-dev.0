@@ -1,20 +1,22 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F2D7A2C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 08:50:54 +1100 (EST)
-Date: Tue, 8 Oct 2013 23:42:08 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: [PATCH v1] powerpc/mpc512x: silence build warning upon disabled
- DIU
-Message-ID: <20131008234208.456c8e84@crub>
-In-Reply-To: <1380295718-10700-1-git-send-email-gsi@denx.de>
-References: <1380295718-10700-1-git-send-email-gsi@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B07421@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B7B572C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 08:52:50 +1100 (EST)
+Message-ID: <1381269153.7979.281.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/powernv: Reduce panic timeout from 180s to 10s
+From: Scott Wood <scottwood@freescale.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 8 Oct 2013 16:52:33 -0500
+In-Reply-To: <20131001083918.GD27484@concordia>
+References: <20130926211719.7b99740a@kryten> <20131001083918.GD27484@concordia>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,14 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 27 Sep 2013 17:28:38 +0200
-Gerhard Sittig <gsi@denx.de> wrote:
+On Tue, 2013-10-01 at 18:39 +1000, Michael Ellerman wrote:
+> On Thu, Sep 26, 2013 at 09:17:19PM +1000, Anton Blanchard wrote:
+> > 
+> > We made this change to pseries in 2011 and I think it makes
+> > sense to do the same on powernv.
+> 
+> I'd vote we set it to 10s for all 64-bit machines in
+> arch/powerpc/kernel/setup_64.c.
 
-> a disabled Kconfig option results in a reference to a not implemented
-> routine when the IS_ENABLED() macro is used for both conditional
-> implementation of the routine as well as a C language source code test
-> at the call site -- the "if (0) func();" construct only gets eliminated
-> later by the optimizer, while the compiler already has emitted its
-> warning about "func()" being undeclared
+Why is 64-bit relevant?  And wouldn't such a short delay be a problem if
+the crash is displayed on a monitor?
 
-applied, thanks!
+-Scott
