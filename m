@@ -1,20 +1,19 @@
-Return-Path: <R65777@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 758092C0196
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 16:18:18 +1100 (EST)
-From: Bharat Bhushan <r65777@freescale.com>
-To: <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
- <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Added __cmpdi2 for signed 64bit comparision
-Date: Wed, 9 Oct 2013 10:41:17 +0530
-Message-ID: <1381295477-7281-1-git-send-email-Bharat.Bhushan@freescale.com>
+Return-Path: <michael@ellerman.id.au>
+Date: Wed, 9 Oct 2013 17:03:23 +1100
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc, perf: Configure BHRB filter before enabling PMU
+ interrupts
+Message-ID: <20131009060321.GB28160@concordia>
+References: <1381120226-14838-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <20131008042137.GE31666@concordia>
+ <5253B26E.3020800@linux.vnet.ibm.com>
+ <20131009012130.GA23780@concordia>
+ <5254DFA8.2050100@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5254DFA8.2050100@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,53 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This was missing on powerpc and I am getting compilation error
-drivers/vfio/pci/vfio_pci_rdwr.c:193: undefined reference to `__cmpdi2'
-drivers/vfio/pci/vfio_pci_rdwr.c:193: undefined reference to `__cmpdi2'
+On Wed, Oct 09, 2013 at 10:16:32AM +0530, Anshuman Khandual wrote:
+> On 10/09/2013 06:51 AM, Michael Ellerman wrote:
+> > On Tue, Oct 08, 2013 at 12:51:18PM +0530, Anshuman Khandual wrote:
+> >> On 10/08/2013 09:51 AM, Michael Ellerman wrote:
+> >>> On Mon, Oct 07, 2013 at 10:00:26AM +0530, Anshuman Khandual wrote:
+> >>>> Right now the `config_bhrb` PMU specific call happens after write_mmcr0
+> >>>> which actually enables the PMU for event counting and interrupt. So
+> >>>> there is a small window of time where the PMU and BHRB runs without the
+> >>>> required HW branch filter (if any) enabled in BHRB. This can cause some
+> >>>> of the branch samples to be collected through BHRB without any filter
+> >>>> being applied and hence affecting the correctness of the results. This
+> >>>> patch moves the BHRB config function call before enabling the interrupts.
+> >>>
+> >>> Patch looks good.
+> >>>
+> >>> But it reminds me I have an item in my TODO list:
+> >>>  - "Why can't config_bhrb() be done in compute_mmcr()" ?
+> >>>
+> >>
+> >> compute_mmcr() function deals with generic MMCR* configs for normal PMU
+> >> events. Even if BHRB config touches MMCRA register, it's configuration
+> >> does not interfere with the PMU config for general events. So its best
+> >> to keep them separate. 
+> > 
+> > I'm unconvinced. If they'd been together to begin with this bug never
+> > would have happened.
+> 
+> This is an ordering of configuration problem. Putting them together in the
+> same function does not rule out the chances of this ordering problem. Could
+> you please kindly explain how this could have been avoided ?
 
-Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
----
- arch/powerpc/kernel/misc_32.S   |   14 ++++++++++++++
- arch/powerpc/kernel/ppc_ksyms.c |    2 ++
- 2 files changed, 16 insertions(+), 0 deletions(-)
+The existing code already makes sure to write MMCRA before MMCR0.
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 777d999..7c0eec2 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -644,6 +644,20 @@ _GLOBAL(__lshrdi3)
- 	blr
- 
- /*
-+ * 64-bit comparison: __cmpdi2(s64 a, s64 b)
-+ * Returns 0 if a < b, 1 if a == b, 2 if a > b.
-+ */
-+_GLOBAL(__cmpdi2)
-+	cmpw	r3,r5
-+	li	r3,1
-+	bne	1f
-+	cmplw	r4,r6
-+	beqlr
-+1:	li	r3,0
-+	bltlr
-+	li	r3,2
-+	blr
-+/*
-  * 64-bit comparison: __ucmpdi2(u64 a, u64 b)
-  * Returns 0 if a < b, 1 if a == b, 2 if a > b.
-  */
-diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-index 21646db..5674c00 100644
---- a/arch/powerpc/kernel/ppc_ksyms.c
-+++ b/arch/powerpc/kernel/ppc_ksyms.c
-@@ -143,6 +143,8 @@ EXPORT_SYMBOL(__ashldi3);
- EXPORT_SYMBOL(__lshrdi3);
- int __ucmpdi2(unsigned long long, unsigned long long);
- EXPORT_SYMBOL(__ucmpdi2);
-+int __cmpdi2(long long, long long);
-+EXPORT_SYMBOL(__cmpdi2);
- #endif
- long long __bswapdi2(long long);
- EXPORT_SYMBOL(__bswapdi2);
--- 
-1.7.0.4
+cheers
