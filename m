@@ -1,32 +1,21 @@
-Return-Path: <hpa@zytor.com>
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B13722C008A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 15:08:44 +1100 (EST)
-Message-ID: <5254D397.9030307@zytor.com>
-Date: Tue, 08 Oct 2013 20:55:03 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-MIME-Version: 1.0
-To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-References: <cover.1380703262.git.agordeev@redhat.com>
-In-Reply-To: <cover.1380703262.git.agordeev@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mips@linux-mips.org, VMware@dhcp-26-207.brq.redhat.com,
- "Inc." <pv-drivers@vmware.com>, linux-nvme@lists.infradead.org,
- linux-ide@vger.kernel.org, linux-s390@vger.kernel.org,
- Andy King <acking@vmware.com>, linux-scsi@vger.kernel.org,
- linux-rdma@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- linux-pci@vger.kernel.org, iss_storagedev@hp.com, linux-driver@qlogic.com,
- Tejun Heo <tj@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Dan Williams <dan.j.williams@intel.com>, Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 3CDC32C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 15:23:33 +1100 (EST)
+Message-ID: <1381292601.645.258.camel@pasglop>
+Subject: Re: [PATCH] powerpc/powernv: Add a debugfs file to read the
+ firmware console
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Wed, 09 Oct 2013 15:23:21 +1100
+In-Reply-To: <20131009032314.GD23780@concordia>
+References: <1381218400.645.204.camel@pasglop>
+ <20131009032314.GD23780@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,36 +25,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/02/2013 03:29 AM, Alexander Gordeev wrote:
+On Wed, 2013-10-09 at 14:23 +1100, Michael Ellerman wrote:
+> On Tue, Oct 08, 2013 at 06:46:40PM +1100, Benjamin Herrenschmidt wrote:
+> > With OPALv3, the firmware can provide the address of it's internal console
+> > to Linux, which we can then display using debugfs. This is handy for
+> > diagnostics and debugging.
+> > 
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+> > 
+> > diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+> > index 2911abe..10d7894 100644
+> > --- a/arch/powerpc/platforms/powernv/opal.c
+> > +++ b/arch/powerpc/platforms/powernv/opal.c
+> > @@ -17,6 +17,8 @@
+> >  #include <linux/interrupt.h>
+> >  #include <linux/notifier.h>
+> >  #include <linux/slab.h>
+> > +#include <linux/debugfs.h>
+> > +#include <linux/uaccess.h>
+> >  #include <asm/opal.h>
+> >  #include <asm/firmware.h>
+> >  
+> > @@ -27,6 +29,21 @@ struct opal {
+> >  	u64 entry;
+> >  } opal;
+> >  
+> > +/* OPAL in-memory console */
 > 
-> As result, device drivers will cease to use the overcomplicated
-> repeated fallbacks technique and resort to a straightforward
-> pattern - determine the number of MSI/MSI-X interrupts required
-> before calling pci_enable_msi_block() and pci_enable_msix()
-> interfaces:
-> 
-> 
-> 	rc = pci_msix_table_size(adapter->pdev);
-> 	if (rc < 0)
-> 		return rc;
-> 
-> 	nvec = min(nvec, rc);
-> 	if (nvec < FOO_DRIVER_MINIMUM_NVEC) {
-> 		return -ENOSPC;
-> 
-> 	for (i = 0; i < nvec; i++)
-> 		adapter->msix_entries[i].entry = i;
-> 
-> 	rc = pci_enable_msix(adapter->pdev,
-> 			     adapter->msix_entries, nvec);
-> 	return rc;
-> 
+> It might be nice to point out that the format of the struct is defined
+> by OPAL and must be in sync with what OPAL is using.
 
-Why not add a minimum number to pci_enable_msix(), i.e.:
+Yes, we could move the structure definition to opal.h...
 
-pci_enable_msix(pdev, msix_entries, nvec, minvec)
+> > +struct memcons {
+> > +	uint64_t magic;
+> 
+> u64 ?
 
-... which means "nvec" is the number of interrupts *requested*, and
-"minvec" is the minimum acceptable number (otherwise fail).
+Who cares ? Especially if it goes into opal.h it should stick to the
+types used in that file.
 
-	-hpa
+> > +#define MEMCONS_MAGIC	0x6630696567726173
+> > +	uint64_t obuf_phys;
+> > +	uint64_t ibuf_phys;
+> > +	uint32_t obuf_size;
+> > +	uint32_t ibuf_size;
+> > +	uint32_t out_pos;
+> > +#define MEMCONS_OUT_POS_WRAP	0x80000000u
+> > +#define MEMCONS_OUT_POS_MASK	0x00ffffffu
+> 
+> Where does this come from?
+
+My a** :-) I made it up as I wrote the OPAL side one, why ?
+
+> > +	uint32_t in_prod;
+> > +	uint32_t in_cons;
+> > +};
+> 
+> Should it be packed?
+
+Nope, no need. It's all nice and naturally aligned.
+
+> > @@ -369,6 +386,90 @@ static irqreturn_t opal_interrupt(int irq, void *data)
+> >  	return IRQ_HANDLED;
+> >  }
+> >  
+> > +#ifdef CONFIG_DEBUG_FS
+> > +static ssize_t opal_memcons_read(struct file *file, char __user *to,
+> > +				 size_t count, loff_t *ppos)
+> > +{
+> > +	struct memcons *mc = file->private_data;
+> > +	size_t available, ret, chunk0, chunk1, lcount;
+> > +	const char *start, *conbuf = __va(mc->obuf_phys);
+> > +	loff_t opos, pos;
+> > +
+> > +	/*
+> > +	 * Find out how much is in the buffer. If it has wrapped
+> > +	 * the whole buffer, else just the beginning. It has wrapped
+> > +	 * if the next character is not \0
+> > +	 */
+> > +	if (mc->out_pos & MEMCONS_OUT_POS_WRAP) {
+> > +		available = mc->obuf_size;
+> > +		chunk1 = mc->out_pos & MEMCONS_OUT_POS_MASK;
+> > +		start = conbuf + chunk1;
+> > +		chunk0 = mc->obuf_size - chunk1;
+> > +	} else {
+> > +		available = mc->out_pos;
+> > +		start = conbuf;
+> > +		chunk0 = available;
+> > +		chunk1 = 0;
+> > +	}
+> 
+> Surely simple_read_from_buffer() could make some of this simpler?
+
+If you can find a way to make it deal with a ring buffer...
+
+Cheers,
+Ben.
