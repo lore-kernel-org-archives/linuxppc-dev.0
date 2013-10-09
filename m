@@ -1,15 +1,16 @@
 Return-Path: <davem@davemloft.net>
 Received: from shards.monkeyblade.net (unknown
  [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by ozlabs.org (Postfix) with ESMTP id 1AB232C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2013 05:02:48 +1100 (EST)
-Date: Wed, 09 Oct 2013 14:02:44 -0400 (EDT)
-Message-Id: <20131009.140244.1085107412533674383.davem@davemloft.net>
+ by ozlabs.org (Postfix) with ESMTP id C4CE12C0354
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2013 05:02:53 +1100 (EST)
+Date: Wed, 09 Oct 2013 14:02:51 -0400 (EDT)
+Message-Id: <20131009.140251.1669096107735357420.davem@davemloft.net>
 To: claudiu.manoil@freescale.com
-Subject: Re: [PATCH 1/3] gianfar: Enable eTSEC-A002 erratum w/a for all parts
+Subject: Re: [PATCH 2/3] gianfar: Use mpc85xx support for errata detection
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1381339242-32030-1-git-send-email-claudiu.manoil@freescale.com>
+In-Reply-To: <1381339242-32030-2-git-send-email-claudiu.manoil@freescale.com>
 References: <1381339242-32030-1-git-send-email-claudiu.manoil@freescale.com>
+ <1381339242-32030-2-git-send-email-claudiu.manoil@freescale.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -23,15 +24,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Claudiu Manoil <claudiu.manoil@freescale.com>
-Date: Wed, 9 Oct 2013 20:20:40 +0300
+Date: Wed, 9 Oct 2013 20:20:41 +0300
 
-> A002 is still in "no plans to fix" state, and applies to all
-> the current P1/P2 parts as well, so it's resonable to enable
-> its workaround by default, for all the soc's with etsec.
-> The impact of not enabling this workaround for affected parts
-> is that under certain conditons (runt frames or even frames
-> with RX error detected at PHY level) during controller reset,
-> the controller might fail to indicate Rx reset (GRS) completion.
+> Use the macros and defines from mpc85xx.h to simplify
+> and prevent errors in identifying a mpc85xx based SoC
+> for errata detection.
+> This should help enabling (and identifying) workarounds
+> for various mpc85xx based chips and revisions.
+> For instance, express MPC8548 Rev.2 as:
+> (SVR_SOC_VER(svr) == SVR_8548) && (SVR_REV(svr) == 0x20)
+> instead of:
+> (pvr == 0x80210020 && mod == 0x8030 && rev == 0x0020)
 > 
 > Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
 
