@@ -1,19 +1,17 @@
 Return-Path: <michael@ellerman.id.au>
-Message-ID: <1381280599.15322.1.camel@concordia>
-Subject: Re: [PATCH 5/9][v5] powerpc: implement is_instr_load_store().
+Date: Wed, 9 Oct 2013 12:21:30 +1100
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Wed, 09 Oct 2013 12:03:19 +1100
-In-Reply-To: <20131008193117.GA699@us.ibm.com>
-References: <1380672911-12812-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1380672911-12812-6-git-send-email-sukadev@linux.vnet.ibm.com>
- <20131003053519.GC17237@concordia> <20131008193117.GA699@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
- linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc, perf: Configure BHRB filter before enabling PMU
+ interrupts
+Message-ID: <20131009012130.GA23780@concordia>
+References: <1381120226-14838-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <20131008042137.GE31666@concordia>
+ <5253B26E.3020800@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5253B26E.3020800@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,34 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-10-08 at 12:31 -0700, Sukadev Bhattiprolu wrote:
-> Michael Ellerman [michael@ellerman.id.au] wrote:
-> | bool is_load_store(int ext_opcode)
-> | {
-> |         upper = ext_opcode >> 5;
-> |         lower = ext_opcode & 0x1f;
-> | 
-> |         /* Short circuit as many misses as we can */
-> |         if (lower < 3 || lower > 23)
-> |             return false;
+On Tue, Oct 08, 2013 at 12:51:18PM +0530, Anshuman Khandual wrote:
+> On 10/08/2013 09:51 AM, Michael Ellerman wrote:
+> > On Mon, Oct 07, 2013 at 10:00:26AM +0530, Anshuman Khandual wrote:
+> >> Right now the `config_bhrb` PMU specific call happens after write_mmcr0
+> >> which actually enables the PMU for event counting and interrupt. So
+> >> there is a small window of time where the PMU and BHRB runs without the
+> >> required HW branch filter (if any) enabled in BHRB. This can cause some
+> >> of the branch samples to be collected through BHRB without any filter
+> >> being applied and hence affecting the correctness of the results. This
+> >> patch moves the BHRB config function call before enabling the interrupts.
+> > 
+> > Patch looks good.
+> > 
+> > But it reminds me I have an item in my TODO list:
+> >  - "Why can't config_bhrb() be done in compute_mmcr()" ?
+> > 
 > 
-> I see some loads/stores like these which are not covered by
-> the above check. Is it ok to ignore them ?
-> 
-> 	lower == 29: ldepx, stdepx, eviddepx, evstddepx
-> 
-> 	lower == 31: lwepx, lbepx, lfdepx, stfdepx,
+> compute_mmcr() function deals with generic MMCR* configs for normal PMU
+> events. Even if BHRB config touches MMCRA register, it's configuration
+> does not interfere with the PMU config for general events. So its best
+> to keep them separate. 
 
-Those are the external process ID instructions, which I've never heard
-of anyone using, I think we can ignore them.
+I'm unconvinced. If they'd been together to begin with this bug never
+would have happened.
 
-> Looking through the opcode maps, I also see these for primary
-> op code 4:
-> 
-> 	evldd, evlddx, evldwx, evldw, evldh, evldhx.
-> 
-> Should we include those also ?
+And there's the added overhead of another indirect function call.
 
-Yes I think so. I didn't check any of the other opcodes for you.
+> Besides, we can always look at these code consolidation
+> issues in future. 
+
+The future is now.
+
+> But this patch solves a problem which is happening right now.
+
+Sure, I'm not saying we shouldn't merge it as a fix. But I think we
+should do the cleanup to move it into compute_mmcr() for 3.13.
 
 cheers
