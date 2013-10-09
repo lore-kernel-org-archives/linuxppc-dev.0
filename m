@@ -1,19 +1,17 @@
 Return-Path: <michael@ellerman.id.au>
-Date: Wed, 9 Oct 2013 17:03:23 +1100
+Date: Wed, 9 Oct 2013 17:06:14 +1100
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc, perf: Configure BHRB filter before enabling PMU
- interrupts
-Message-ID: <20131009060321.GB28160@concordia>
-References: <1381120226-14838-1-git-send-email-khandual@linux.vnet.ibm.com>
- <20131008042137.GE31666@concordia>
- <5253B26E.3020800@linux.vnet.ibm.com>
- <20131009012130.GA23780@concordia>
- <5254DFA8.2050100@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/powernv: Add a debugfs file to read the firmware
+ console
+Message-ID: <20131009060613.GC28160@concordia>
+References: <1381218400.645.204.camel@pasglop>
+ <20131009032314.GD23780@concordia>
+ <1381292601.645.258.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5254DFA8.2050100@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org
+In-Reply-To: <1381292601.645.258.camel@pasglop>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,37 +21,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 09, 2013 at 10:16:32AM +0530, Anshuman Khandual wrote:
-> On 10/09/2013 06:51 AM, Michael Ellerman wrote:
-> > On Tue, Oct 08, 2013 at 12:51:18PM +0530, Anshuman Khandual wrote:
-> >> On 10/08/2013 09:51 AM, Michael Ellerman wrote:
-> >>> On Mon, Oct 07, 2013 at 10:00:26AM +0530, Anshuman Khandual wrote:
-> >>>> Right now the `config_bhrb` PMU specific call happens after write_mmcr0
-> >>>> which actually enables the PMU for event counting and interrupt. So
-> >>>> there is a small window of time where the PMU and BHRB runs without the
-> >>>> required HW branch filter (if any) enabled in BHRB. This can cause some
-> >>>> of the branch samples to be collected through BHRB without any filter
-> >>>> being applied and hence affecting the correctness of the results. This
-> >>>> patch moves the BHRB config function call before enabling the interrupts.
-> >>>
-> >>> Patch looks good.
-> >>>
-> >>> But it reminds me I have an item in my TODO list:
-> >>>  - "Why can't config_bhrb() be done in compute_mmcr()" ?
-> >>>
-> >>
-> >> compute_mmcr() function deals with generic MMCR* configs for normal PMU
-> >> events. Even if BHRB config touches MMCRA register, it's configuration
-> >> does not interfere with the PMU config for general events. So its best
-> >> to keep them separate. 
+On Wed, Oct 09, 2013 at 03:23:21PM +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2013-10-09 at 14:23 +1100, Michael Ellerman wrote:
+> > On Tue, Oct 08, 2013 at 06:46:40PM +1100, Benjamin Herrenschmidt wrote:
+> > > With OPALv3, the firmware can provide the address of it's internal console
+> > > to Linux, which we can then display using debugfs. This is handy for
+> > > diagnostics and debugging.
+> > > 
+> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > ---
+> > > 
+> > > diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+> > > index 2911abe..10d7894 100644
+> > > --- a/arch/powerpc/platforms/powernv/opal.c
+> > > +++ b/arch/powerpc/platforms/powernv/opal.c
+> > > @@ -17,6 +17,8 @@
+> > >  #include <linux/interrupt.h>
+> > >  #include <linux/notifier.h>
+> > >  #include <linux/slab.h>
+> > > +#include <linux/debugfs.h>
+> > > +#include <linux/uaccess.h>
+> > >  #include <asm/opal.h>
+> > >  #include <asm/firmware.h>
+> > >  
+> > > @@ -27,6 +29,21 @@ struct opal {
+> > >  	u64 entry;
+> > >  } opal;
+> > >  
+> > > +/* OPAL in-memory console */
 > > 
-> > I'm unconvinced. If they'd been together to begin with this bug never
-> > would have happened.
+> > It might be nice to point out that the format of the struct is defined
+> > by OPAL and must be in sync with what OPAL is using.
 > 
-> This is an ordering of configuration problem. Putting them together in the
-> same function does not rule out the chances of this ordering problem. Could
-> you please kindly explain how this could have been avoided ?
+> Yes, we could move the structure definition to opal.h...
+> 
+> > > +struct memcons {
+> > > +	uint64_t magic;
+> > 
+> > u64 ?
+> 
+> Who cares ? 
 
-The existing code already makes sure to write MMCRA before MMCR0.
+That's what we use in the kernel. But no I don't care.
+
+> > > +#define MEMCONS_MAGIC	0x6630696567726173
+> > > +	uint64_t obuf_phys;
+> > > +	uint64_t ibuf_phys;
+> > > +	uint32_t obuf_size;
+> > > +	uint32_t ibuf_size;
+> > > +	uint32_t out_pos;
+> > > +#define MEMCONS_OUT_POS_WRAP	0x80000000u
+> > > +#define MEMCONS_OUT_POS_MASK	0x00ffffffu
+> > 
+> > Where does this come from?
+> 
+> My a** :-) I made it up as I wrote the OPAL side one, why ?
+
+...
+ 
+> > > +	uint32_t in_prod;
+> > > +	uint32_t in_cons;
+> > > +};
+> > 
+> > Should it be packed?
+> 
+> Nope, no need. It's all nice and naturally aligned.
+
+Sure, that's obvious.
+ 
+> > > @@ -369,6 +386,90 @@ static irqreturn_t opal_interrupt(int irq, void *data)
+> > >  	return IRQ_HANDLED;
+> > >  }
+> > >  
+> > > +#ifdef CONFIG_DEBUG_FS
+> > > +static ssize_t opal_memcons_read(struct file *file, char __user *to,
+> > > +				 size_t count, loff_t *ppos)
+> > > +{
+> > > +	struct memcons *mc = file->private_data;
+> > > +	size_t available, ret, chunk0, chunk1, lcount;
+> > > +	const char *start, *conbuf = __va(mc->obuf_phys);
+> > > +	loff_t opos, pos;
+> > > +
+> > > +	/*
+> > > +	 * Find out how much is in the buffer. If it has wrapped
+> > > +	 * the whole buffer, else just the beginning. It has wrapped
+> > > +	 * if the next character is not \0
+> > > +	 */
+> > > +	if (mc->out_pos & MEMCONS_OUT_POS_WRAP) {
+> > > +		available = mc->obuf_size;
+> > > +		chunk1 = mc->out_pos & MEMCONS_OUT_POS_MASK;
+> > > +		start = conbuf + chunk1;
+> > > +		chunk0 = mc->obuf_size - chunk1;
+> > > +	} else {
+> > > +		available = mc->out_pos;
+> > > +		start = conbuf;
+> > > +		chunk0 = available;
+> > > +		chunk1 = 0;
+> > > +	}
+> > 
+> > Surely simple_read_from_buffer() could make some of this simpler?
+> 
+> If you can find a way to make it deal with a ring buffer...
+
+Call it twice.
+
+And you wonder why no one reviews your patches?
 
 cheers
