@@ -1,39 +1,19 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-yh0-x22c.google.com (mail-yh0-x22c.google.com
- [IPv6:2607:f8b0:4002:c01::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7B6952C03BC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2013 02:58:01 +1100 (EST)
-Received: by mail-yh0-f44.google.com with SMTP id f10so209859yha.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Oct 2013 08:57:58 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Wed, 9 Oct 2013 11:57:52 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-Message-ID: <20131009155752.GE22495@htj.dyndns.org>
-References: <cover.1380703262.git.agordeev@redhat.com>
- <20131007182117.GC27396@htj.dyndns.org>
- <20131008090716.GA10561@dhcp-26-207.brq.redhat.com>
+Return-Path: <b08782@fsr-fed1764-016.ea.freescale.net>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BC2682C00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2013 04:25:42 +1100 (EST)
+From: Claudiu Manoil <claudiu.manoil@freescale.com>
+To: <netdev@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH 1/3] gianfar: Enable eTSEC-A002 erratum w/a for all parts
+Date: Wed, 9 Oct 2013 20:20:40 +0300
+Message-ID: <1381339242-32030-1-git-send-email-claudiu.manoil@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131008090716.GA10561@dhcp-26-207.brq.redhat.com>
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
- iss_storagedev@hp.com, linux-driver@qlogic.com,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,25 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+A002 is still in "no plans to fix" state, and applies to all
+the current P1/P2 parts as well, so it's resonable to enable
+its workaround by default, for all the soc's with etsec.
+The impact of not enabling this workaround for affected parts
+is that under certain conditons (runt frames or even frames
+with RX error detected at PHY level) during controller reset,
+the controller might fail to indicate Rx reset (GRS) completion.
 
-On Tue, Oct 08, 2013 at 11:07:16AM +0200, Alexander Gordeev wrote:
-> Multipe MSIs is just a handful of drivers, really. MSI-X impact still
+Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
+---
+ drivers/net/ethernet/freescale/gianfar.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-Yes, so it's pretty nice to try out things there before going full-on.
-
-> will be huge. But if we opt a different name for the new pci_enable_msix()
-> then we could first update pci/msi, then drivers (in few stages possibly)
-> and finally remove the old implementation.
-
-Yes, that probably should be the steps to follow eventually.  My point
-was that you don't have to submit patches for all 7x conversions for
-an RFC round.  Scanning them and seeing what would be necessary
-definitely is a good idea but just giving summary of the full
-conversion with several examples should be good enough before settling
-on the way forward, which should be easier for all involved.
-
-Thanks a lot for your effort!
-
+diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
+index c4eaade..db5fc7b 100644
+--- a/drivers/net/ethernet/freescale/gianfar.c
++++ b/drivers/net/ethernet/freescale/gianfar.c
+@@ -947,6 +947,9 @@ static void gfar_detect_errata(struct gfar_private *priv)
+ 	unsigned int mod = (svr >> 16) & 0xfff6; /* w/o E suffix */
+ 	unsigned int rev = svr & 0xffff;
+ 
++	/* no plans to fix */
++	priv->errata |= GFAR_ERRATA_A002;
++
+ 	/* MPC8313 Rev 2.0 and higher; All MPC837x */
+ 	if ((pvr == 0x80850010 && mod == 0x80b0 && rev >= 0x0020) ||
+ 	    (pvr == 0x80861010 && (mod & 0xfff9) == 0x80c0))
+@@ -957,11 +960,6 @@ static void gfar_detect_errata(struct gfar_private *priv)
+ 	    (pvr == 0x80861010 && (mod & 0xfff9) == 0x80c0))
+ 		priv->errata |= GFAR_ERRATA_76;
+ 
+-	/* MPC8313 and MPC837x all rev */
+-	if ((pvr == 0x80850010 && mod == 0x80b0) ||
+-	    (pvr == 0x80861010 && (mod & 0xfff9) == 0x80c0))
+-		priv->errata |= GFAR_ERRATA_A002;
+-
+ 	/* MPC8313 Rev < 2.0, MPC8548 rev 2.0 */
+ 	if ((pvr == 0x80850010 && mod == 0x80b0 && rev < 0x0020) ||
+ 	    (pvr == 0x80210020 && mod == 0x8030 && rev == 0x0020))
+@@ -1599,7 +1597,7 @@ static int __gfar_is_rx_idle(struct gfar_private *priv)
+ 	/* Normaly TSEC should not hang on GRS commands, so we should
+ 	 * actually wait for IEVENT_GRSC flag.
+ 	 */
+-	if (likely(!gfar_has_errata(priv, GFAR_ERRATA_A002)))
++	if (!gfar_has_errata(priv, GFAR_ERRATA_A002))
+ 		return 0;
+ 
+ 	/* Read the eTSEC register at offset 0xD1C. If bits 7-14 are
 -- 
-tejun
+1.7.11.7
