@@ -1,38 +1,28 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A4A02C00B3
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Oct 2013 15:47:37 +1100 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 9 Oct 2013 10:17:34 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id AA83A125803F
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Oct 2013 10:17:52 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r994o3ng31064164
- for <linuxppc-dev@ozlabs.org>; Wed, 9 Oct 2013 10:20:04 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r994lS2n008439
- for <linuxppc-dev@ozlabs.org>; Wed, 9 Oct 2013 10:17:29 +0530
-Message-ID: <5254DFA8.2050100@linux.vnet.ibm.com>
-Date: Wed, 09 Oct 2013 10:16:32 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <R65777@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 687F42C0430
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 15:48:07 +1100 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 1/7] powerpc: Add interface to get msi region information
+Date: Wed, 9 Oct 2013 04:47:19 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D071A1526@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379575763-2091-2-git-send-email-Bharat.Bhushan@freescale.com>
+ <1381273037.7979.298.camel@snotra.buserror.net>
+In-Reply-To: <1381273037.7979.298.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc, perf: Configure BHRB filter before enabling
- PMU interrupts
-References: <1381120226-14838-1-git-send-email-khandual@linux.vnet.ibm.com>
- <20131008042137.GE31666@concordia> <5253B26E.3020800@linux.vnet.ibm.com>
- <20131009012130.GA23780@concordia>
-In-Reply-To: <20131009012130.GA23780@concordia>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org
+Cc: "agraf@suse.de" <agraf@suse.de>, "joro@8bytes.org" <joro@8bytes.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,61 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/09/2013 06:51 AM, Michael Ellerman wrote:
-> On Tue, Oct 08, 2013 at 12:51:18PM +0530, Anshuman Khandual wrote:
->> On 10/08/2013 09:51 AM, Michael Ellerman wrote:
->>> On Mon, Oct 07, 2013 at 10:00:26AM +0530, Anshuman Khandual wrote:
->>>> Right now the `config_bhrb` PMU specific call happens after write_mmcr0
->>>> which actually enables the PMU for event counting and interrupt. So
->>>> there is a small window of time where the PMU and BHRB runs without the
->>>> required HW branch filter (if any) enabled in BHRB. This can cause some
->>>> of the branch samples to be collected through BHRB without any filter
->>>> being applied and hence affecting the correctness of the results. This
->>>> patch moves the BHRB config function call before enabling the interrupts.
->>>
->>> Patch looks good.
->>>
->>> But it reminds me I have an item in my TODO list:
->>>  - "Why can't config_bhrb() be done in compute_mmcr()" ?
->>>
->>
->> compute_mmcr() function deals with generic MMCR* configs for normal PMU
->> events. Even if BHRB config touches MMCRA register, it's configuration
->> does not interfere with the PMU config for general events. So its best
->> to keep them separate. 
-> 
-> I'm unconvinced. If they'd been together to begin with this bug never
-> would have happened.
-
-This is an ordering of configuration problem. Putting them together in the
-same function does not rule out the chances of this ordering problem. Could
-you please kindly explain how this could have been avoided ?
-
-> 
-> And there's the added overhead of another indirect function call.
->
-
-This overhead should be minimal given the fact that we already call so
-many PMU specific indirect calls. BHRB is a different part of the PMU
-hardware, so a separate call for this purpose is not a bad idea. AFAIK,
-X86 does that too for LBR. But yes it is debatable.
-
->> Besides, we can always look at these code consolidation
->> issues in future. 
-> 
-> The future is now.
-
-What I meant was functional correctness has always more priority than
-code consolidation efforts. Yes I will look into this after book3s
-software branch filtering code has been merged.
-
-> 
->> But this patch solves a problem which is happening right now.
-> 
-> Sure, I'm not saying we shouldn't merge it as a fix. But I think we
-> should do the cleanup to move it into compute_mmcr() for 3.13.
-
-yeah that sounds reasonable.
-
-Regards
-Anshuman
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBPY3RvYmVyIDA5LCAyMDEzIDQ6MjcgQU0NCj4gVG86IEJo
+dXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiBDYzogYWxleC53aWxsaWFtc29uQHJlZGhhdC5jb207IGpv
+cm9AOGJ5dGVzLm9yZzsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiBnYWxha0BrZXJuZWwu
+Y3Jhc2hpbmcub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy0NCj4g
+ZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LXBjaUB2Z2VyLmtlcm5lbC5vcmc7IGFncmFmQHN1
+c2UuZGU7DQo+IGlvbW11QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnOyBCaHVzaGFuIEJoYXJh
+dC1SNjU3NzcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzddIHBvd2VycGM6IEFkZCBpbnRlcmZh
+Y2UgdG8gZ2V0IG1zaSByZWdpb24gaW5mb3JtYXRpb24NCj4gDQo+IE9uIFRodSwgMjAxMy0wOS0x
+OSBhdCAxMjo1OSArMDUzMCwgQmhhcmF0IEJodXNoYW4gd3JvdGU6DQo+ID4gQEAgLTM3Niw2ICs0
+MDUsNyBAQCBzdGF0aWMgaW50IGZzbF9vZl9tc2lfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2Rldmlj
+ZSAqZGV2KQ0KPiA+ICAJaW50IGxlbjsNCj4gPiAgCXUzMiBvZmZzZXQ7DQo+ID4gIAlzdGF0aWMg
+Y29uc3QgdTMyIGFsbF9hdmFpbFtdID0geyAwLCBOUl9NU0lfSVJRUyB9Ow0KPiA+ICsJc3RhdGlj
+IGludCBiYW5rX2luZGV4Ow0KPiA+DQo+ID4gIAltYXRjaCA9IG9mX21hdGNoX2RldmljZShmc2xf
+b2ZfbXNpX2lkcywgJmRldi0+ZGV2KTsNCj4gPiAgCWlmICghbWF0Y2gpDQo+ID4gQEAgLTQxOSw4
+ICs0NDksOCBAQCBzdGF0aWMgaW50IGZzbF9vZl9tc2lfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2Rl
+dmljZSAqZGV2KQ0KPiA+ICAJCQkJZGV2LT5kZXYub2Zfbm9kZS0+ZnVsbF9uYW1lKTsNCj4gPiAg
+CQkJZ290byBlcnJvcl9vdXQ7DQo+ID4gIAkJfQ0KPiA+IC0JCW1zaS0+bXNpaXJfb2Zmc2V0ID0N
+Cj4gPiAtCQkJZmVhdHVyZXMtPm1zaWlyX29mZnNldCArIChyZXMuc3RhcnQgJiAweGZmZmZmKTsN
+Cj4gPiArCQltc2ktPm1zaWlyID0gcmVzLnN0YXJ0ICsgZmVhdHVyZXMtPm1zaWlyX29mZnNldDsN
+Cj4gPiArCQlwcmludGsoIm1zaS0+bXNpaXIgPSAlbGx4XG4iLCBtc2ktPm1zaWlyKTsNCj4gDQo+
+IGRldl9kYmcgb3IgcmVtb3ZlDQoNCk9vcHMsIHNvcnJ5IGl0IHdhcyBsZWZ0b3ZlciBvZiBkZWJ1
+Z2dpbmcgOigNCg0KPiANCj4gPiAgCX0NCj4gPg0KPiA+ICAJbXNpLT5mZWF0dXJlID0gZmVhdHVy
+ZXMtPmZzbF9waWNfaXA7IEBAIC00NzAsNiArNTAwLDcgQEAgc3RhdGljIGludA0KPiA+IGZzbF9v
+Zl9tc2lfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqZGV2KQ0KPiA+ICAJCX0NCj4gPiAg
+CX0NCj4gPg0KPiA+ICsJbXNpLT5iYW5rX2luZGV4ID0gYmFua19pbmRleCsrOw0KPiANCj4gV2hh
+dCBpZiBtdWx0aXBsZSBNU0lzIGFyZSBib2luZyBwcm9iZWQgaW4gcGFyYWxsZWw/DQoNCk9oaCwg
+SSBoYXZlIG5vdCB0aG91Z2h0IHRoYXQgaXQgY2FuIGJlIGNhbGxlZCBpbiBwYXJhbGxlbA0KDQo+
+ICBiYW5rX2luZGV4IGlzIG5vdCBhdG9taWMuDQoNCldpbGwgZGVjbGFyZSBiYW5rX2ludGV4IGFz
+IGF0b21pY190IGFuZCB1c2UgYXRvbWljX2luY19yZXR1cm4oJmJhbmtfaW5kZXgpDQoNCj4gDQo+
+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX21zaS5oDQo+ID4gYi9hcmNo
+L3Bvd2VycGMvc3lzZGV2L2ZzbF9tc2kuaCBpbmRleCA4MjI1Zjg2Li42YmQ1Y2ZjIDEwMDY0NA0K
+PiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX21zaS5oDQo+ID4gKysrIGIvYXJjaC9w
+b3dlcnBjL3N5c2Rldi9mc2xfbXNpLmgNCj4gPiBAQCAtMjksMTIgKzI5LDE5IEBAIHN0cnVjdCBm
+c2xfbXNpIHsNCj4gPiAgCXN0cnVjdCBpcnFfZG9tYWluICppcnFob3N0Ow0KPiA+DQo+ID4gIAl1
+bnNpZ25lZCBsb25nIGNhc2NhZGVfaXJxOw0KPiA+IC0NCj4gPiAtCXUzMiBtc2lpcl9vZmZzZXQ7
+IC8qIE9mZnNldCBvZiBNU0lJUiwgcmVsYXRpdmUgdG8gc3RhcnQgb2YgQ0NTUiAqLw0KPiA+ICsJ
+ZG1hX2FkZHJfdCBtc2lpcjsgLyogTVNJSVIgQWRkcmVzcyBpbiBDQ1NSICovDQo+IA0KPiBBcmUg
+eW91IHN1cmUgZG1hX2FkZHJfdCBpcyByaWdodCBoZXJlLCB2ZXJzdXMgcGh5c19hZGRyX3Q/ICBJ
+dCBpbXBsaWVzIHRoYXQgaXQncw0KPiB0aGUgb3V0cHV0IG9mIHRoZSBETUEgQVBJLCBidXQgSSBk
+b24ndCB0aGluayB0aGUgRE1BIEFQSSBpcyB1c2VkIGluIHRoZSBNU0kNCj4gZHJpdmVyLiAgUGVy
+aGFwcyBpdCBzaG91bGQgYmUsIGJ1dCB3ZSBzdGlsbCB3YW50IHRoZSByYXcgcGh5c2ljYWwgYWRk
+cmVzcyB0bw0KPiBwYXNzIG9uIHRvIFZGSU8uDQoNCkxvb2tpbmcgdGhyb3VnaCB0aGUgY29udmVy
+c2F0aW9uIEkgd2lsbCBtYWtlIHRoaXMgcGh5c19hZGRyX3QNCg0KPiANCj4gPiAgCXZvaWQgX19p
+b21lbSAqbXNpX3JlZ3M7DQo+ID4gIAl1MzIgZmVhdHVyZTsNCj4gPiAgCWludCBtc2lfdmlycXNb
+TlJfTVNJX1JFR107DQo+ID4NCj4gPiArCS8qDQo+ID4gKwkgKiBEdXJpbmcgcHJvYmUgZWFjaCBi
+YW5rIGlzIGFzc2lnbmVkIGEgaW5kZXggbnVtYmVyLg0KPiA+ICsJICogaW5kZXggbnVtYmVyIHJh
+bmdlcyBmcm9tIDAgdG8gMl4zMi4NCj4gPiArCSAqIEV4YW1wbGUgIE1TSSBiYW5rIDEgPSAwDQo+
+ID4gKwkgKiBNU0kgYmFuayAyID0gMSwgYW5kIHNvIG9uLg0KPiA+ICsJICovDQo+ID4gKwlpbnQg
+YmFua19pbmRleDsNCj4gDQo+IDJeMzIgZG9lc24ndCBmaXQgaW4gImludCIgKG5vciBkb2VzIDJe
+MzIgLSAxKS4NCg0KUmlnaHQgOigNCg0KPiANCj4gSnVzdCBzYXkgdGhhdCBpbmRpY2VzIHN0YXJ0
+IGF0IDAuDQoNCldpbGwgY29ycmVjdCB0aGlzDQoNClRoYW5rcw0KLUJoYXJhdA0KDQo+IA0KPiAt
+U2NvdHQNCj4gDQoNCg==
