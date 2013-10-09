@@ -1,15 +1,19 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 9 Oct 2013 10:56:19 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/powernv: Reduce panic timeout from 180s to 10s
-Message-ID: <20131009105619.1189c050@kryten>
-In-Reply-To: <1381269153.7979.281.camel@snotra.buserror.net>
-References: <20130926211719.7b99740a@kryten> <20131001083918.GD27484@concordia>
- <1381269153.7979.281.camel@snotra.buserror.net>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1381280599.15322.1.camel@concordia>
+Subject: Re: [PATCH 5/9][v5] powerpc: implement is_instr_load_store().
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Wed, 09 Oct 2013 12:03:19 +1100
+In-Reply-To: <20131008193117.GA699@us.ibm.com>
+References: <1380672911-12812-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1380672911-12812-6-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20131003053519.GC17237@concordia> <20131008193117.GA699@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+Cc: linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
+ linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,21 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-> > > We made this change to pseries in 2011 and I think it makes
-> > > sense to do the same on powernv.
-> > 
-> > I'd vote we set it to 10s for all 64-bit machines in
-> > arch/powerpc/kernel/setup_64.c.
+On Tue, 2013-10-08 at 12:31 -0700, Sukadev Bhattiprolu wrote:
+> Michael Ellerman [michael@ellerman.id.au] wrote:
+> | bool is_load_store(int ext_opcode)
+> | {
+> |         upper = ext_opcode >> 5;
+> |         lower = ext_opcode & 0x1f;
+> | 
+> |         /* Short circuit as many misses as we can */
+> |         if (lower < 3 || lower > 23)
+> |             return false;
 > 
-> Why is 64-bit relevant?  And wouldn't such a short delay be a problem
-> if the crash is displayed on a monitor?
+> I see some loads/stores like these which are not covered by
+> the above check. Is it ok to ignore them ?
+> 
+> 	lower == 29: ldepx, stdepx, eviddepx, evstddepx
+> 
+> 	lower == 31: lwepx, lbepx, lfdepx, stfdepx,
 
-That is why we made it pseries specific in the past. Almost all our
-boxes are on a virtual console and the 3 minutes of pausing just hurt
-our uptimes.
+Those are the external process ID instructions, which I've never heard
+of anyone using, I think we can ignore them.
 
-If other platform maintainers prefer to keep the 3 minute pause, then
-we just change the PowerNV platform.
+> Looking through the opcode maps, I also see these for primary
+> op code 4:
+> 
+> 	evldd, evlddx, evldwx, evldw, evldh, evldhx.
+> 
+> Should we include those also ?
 
-Anton
+Yes I think so. I didn't check any of the other opcodes for you.
+
+cheers
