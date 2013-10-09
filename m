@@ -1,20 +1,20 @@
 Return-Path: <htejun@gmail.com>
-Received: from mail-qe0-x22d.google.com (mail-qe0-x22d.google.com
- [IPv6:2607:f8b0:400d:c02::22d])
+Received: from mail-qa0-x22c.google.com (mail-qa0-x22c.google.com
+ [IPv6:2607:f8b0:400d:c00::22c])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B6F652C010C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2013 02:41:26 +1100 (EST)
-Received: by mail-qe0-f45.google.com with SMTP id 8so739856qea.18
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Oct 2013 08:41:21 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id C98532C0127
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2013 02:43:30 +1100 (EST)
+Received: by mail-qa0-f44.google.com with SMTP id cm18so1079898qab.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Oct 2013 08:43:27 -0700 (PDT)
 Sender: Tejun Heo <htejun@gmail.com>
-Date: Wed, 9 Oct 2013 11:41:17 -0400
+Date: Wed, 9 Oct 2013 11:43:23 -0400
 From: Tejun Heo <tj@kernel.org>
 To: Alexander Gordeev <agordeev@redhat.com>
 Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
  pattern
-Message-ID: <20131009154117.GA22495@htj.dyndns.org>
+Message-ID: <20131009154323.GB22495@htj.dyndns.org>
 References: <1380840585.3419.50.camel@bwh-desktop.uk.level5networks.com>
  <20131004082920.GA4536@dhcp-26-207.brq.redhat.com>
  <1380922156.3214.49.camel@bwh-desktop.uk.level5networks.com>
@@ -24,10 +24,10 @@ References: <1380840585.3419.50.camel@bwh-desktop.uk.level5networks.com>
  <1381040386.645.143.camel@pasglop>
  <20131006071027.GA29143@dhcp-26-207.brq.redhat.com>
  <20131007180111.GC2481@htj.dyndns.org>
- <20131008122215.GA14389@dhcp-26-207.brq.redhat.com>
+ <20131009125715.GC32733@dhcp-26-207.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131008122215.GA14389@dhcp-26-207.brq.redhat.com>
+In-Reply-To: <20131009125715.GC32733@dhcp-26-207.brq.redhat.com>
 Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
  linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
  linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
@@ -52,36 +52,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hello,
 
-On Tue, Oct 08, 2013 at 02:22:16PM +0200, Alexander Gordeev wrote:
-> If we talk about pSeries quota, then the current pSeries pci_enable_msix()
-> implementation is racy internally and could fail if the quota went down
-> *while* pci_enable_msix() is executing. In this case the loop will have to
-> exit rather than retry with a lower number (what number?).
-
-Ah, okay, so that one is already broken.
-
-> In this regard the new scheme does not bring anything new and relies on
-> the fact this race does not hit and therefore does not worry.
+On Wed, Oct 09, 2013 at 02:57:16PM +0200, Alexander Gordeev wrote:
+> On Mon, Oct 07, 2013 at 02:01:11PM -0400, Tejun Heo wrote:
+> > Hmmm... yean, the race condition could be an issue as multiple msi
+> > allocation might fail even if the driver can and explicitly handle
+> > multiple allocation if the quota gets reduced inbetween.
 > 
-> If we talk about quota as it has to be, then yes - the loop scheme seems
-> more preferable.
-> 
-> Overall, looks like we just need to fix the pSeries implementation,
-> if the guys want it, he-he :)
+> BTW, should we care about the quota getting increased inbetween?
+> That would entail.. kind of pci_get_msi_limit() :), but IMHO it is
+> not worth it.
 
-If we can't figure out a better interface for the retry case, I think
-what can really help is having a simple interface for the simpler
-cases.
-
-> > The problem case is where multiple msi(x) allocation fails completely
-> > because the global limit went down before inquiry and allocation.  In
-> > the loop based interface, it'd retry with the lower number.
-> 
-> I am probably missing something here. If the global limit went down before
-> inquiry then the inquiry will get what is available and try to allocate with
-> than number.
-
-Oh, I should have written between inquiry and allocation.  Sorry.
+I think we shouldn't.  If the resource was low during a point in time
+during allocation, it's fine to base the result on that - the resource
+was actually low and which answer we return is just a question of
+timing and both are correct.  The only reason the existing race
+condition is problematic is because it may fail even if the resource
+never falls below the failure point.
 
 Thanks.
 
