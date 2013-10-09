@@ -1,28 +1,20 @@
 Return-Path: <R65777@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 687F42C0430
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 15:48:07 +1100 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 1/7] powerpc: Add interface to get msi region information
-Date: Wed, 9 Oct 2013 04:47:19 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D071A1526@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1379575763-2091-2-git-send-email-Bharat.Bhushan@freescale.com>
- <1381273037.7979.298.camel@snotra.buserror.net>
-In-Reply-To: <1381273037.7979.298.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 827EE2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2013 16:15:46 +1100 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <benh@kernel.crashing.org>
+Subject: [PATCH 1/4] powerpc: Added __cmpdi2 for signed 64bit comparision
+Date: Wed, 9 Oct 2013 10:38:42 +0530
+Message-ID: <1381295322-7197-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
-Cc: "agraf@suse.de" <agraf@suse.de>, "joro@8bytes.org" <joro@8bytes.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,56 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBPY3RvYmVyIDA5LCAyMDEzIDQ6MjcgQU0NCj4gVG86IEJo
-dXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiBDYzogYWxleC53aWxsaWFtc29uQHJlZGhhdC5jb207IGpv
-cm9AOGJ5dGVzLm9yZzsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiBnYWxha0BrZXJuZWwu
-Y3Jhc2hpbmcub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy0NCj4g
-ZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LXBjaUB2Z2VyLmtlcm5lbC5vcmc7IGFncmFmQHN1
-c2UuZGU7DQo+IGlvbW11QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnOyBCaHVzaGFuIEJoYXJh
-dC1SNjU3NzcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzddIHBvd2VycGM6IEFkZCBpbnRlcmZh
-Y2UgdG8gZ2V0IG1zaSByZWdpb24gaW5mb3JtYXRpb24NCj4gDQo+IE9uIFRodSwgMjAxMy0wOS0x
-OSBhdCAxMjo1OSArMDUzMCwgQmhhcmF0IEJodXNoYW4gd3JvdGU6DQo+ID4gQEAgLTM3Niw2ICs0
-MDUsNyBAQCBzdGF0aWMgaW50IGZzbF9vZl9tc2lfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2Rldmlj
-ZSAqZGV2KQ0KPiA+ICAJaW50IGxlbjsNCj4gPiAgCXUzMiBvZmZzZXQ7DQo+ID4gIAlzdGF0aWMg
-Y29uc3QgdTMyIGFsbF9hdmFpbFtdID0geyAwLCBOUl9NU0lfSVJRUyB9Ow0KPiA+ICsJc3RhdGlj
-IGludCBiYW5rX2luZGV4Ow0KPiA+DQo+ID4gIAltYXRjaCA9IG9mX21hdGNoX2RldmljZShmc2xf
-b2ZfbXNpX2lkcywgJmRldi0+ZGV2KTsNCj4gPiAgCWlmICghbWF0Y2gpDQo+ID4gQEAgLTQxOSw4
-ICs0NDksOCBAQCBzdGF0aWMgaW50IGZzbF9vZl9tc2lfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2Rl
-dmljZSAqZGV2KQ0KPiA+ICAJCQkJZGV2LT5kZXYub2Zfbm9kZS0+ZnVsbF9uYW1lKTsNCj4gPiAg
-CQkJZ290byBlcnJvcl9vdXQ7DQo+ID4gIAkJfQ0KPiA+IC0JCW1zaS0+bXNpaXJfb2Zmc2V0ID0N
-Cj4gPiAtCQkJZmVhdHVyZXMtPm1zaWlyX29mZnNldCArIChyZXMuc3RhcnQgJiAweGZmZmZmKTsN
-Cj4gPiArCQltc2ktPm1zaWlyID0gcmVzLnN0YXJ0ICsgZmVhdHVyZXMtPm1zaWlyX29mZnNldDsN
-Cj4gPiArCQlwcmludGsoIm1zaS0+bXNpaXIgPSAlbGx4XG4iLCBtc2ktPm1zaWlyKTsNCj4gDQo+
-IGRldl9kYmcgb3IgcmVtb3ZlDQoNCk9vcHMsIHNvcnJ5IGl0IHdhcyBsZWZ0b3ZlciBvZiBkZWJ1
-Z2dpbmcgOigNCg0KPiANCj4gPiAgCX0NCj4gPg0KPiA+ICAJbXNpLT5mZWF0dXJlID0gZmVhdHVy
-ZXMtPmZzbF9waWNfaXA7IEBAIC00NzAsNiArNTAwLDcgQEAgc3RhdGljIGludA0KPiA+IGZzbF9v
-Zl9tc2lfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqZGV2KQ0KPiA+ICAJCX0NCj4gPiAg
-CX0NCj4gPg0KPiA+ICsJbXNpLT5iYW5rX2luZGV4ID0gYmFua19pbmRleCsrOw0KPiANCj4gV2hh
-dCBpZiBtdWx0aXBsZSBNU0lzIGFyZSBib2luZyBwcm9iZWQgaW4gcGFyYWxsZWw/DQoNCk9oaCwg
-SSBoYXZlIG5vdCB0aG91Z2h0IHRoYXQgaXQgY2FuIGJlIGNhbGxlZCBpbiBwYXJhbGxlbA0KDQo+
-ICBiYW5rX2luZGV4IGlzIG5vdCBhdG9taWMuDQoNCldpbGwgZGVjbGFyZSBiYW5rX2ludGV4IGFz
-IGF0b21pY190IGFuZCB1c2UgYXRvbWljX2luY19yZXR1cm4oJmJhbmtfaW5kZXgpDQoNCj4gDQo+
-ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX21zaS5oDQo+ID4gYi9hcmNo
-L3Bvd2VycGMvc3lzZGV2L2ZzbF9tc2kuaCBpbmRleCA4MjI1Zjg2Li42YmQ1Y2ZjIDEwMDY0NA0K
-PiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX21zaS5oDQo+ID4gKysrIGIvYXJjaC9w
-b3dlcnBjL3N5c2Rldi9mc2xfbXNpLmgNCj4gPiBAQCAtMjksMTIgKzI5LDE5IEBAIHN0cnVjdCBm
-c2xfbXNpIHsNCj4gPiAgCXN0cnVjdCBpcnFfZG9tYWluICppcnFob3N0Ow0KPiA+DQo+ID4gIAl1
-bnNpZ25lZCBsb25nIGNhc2NhZGVfaXJxOw0KPiA+IC0NCj4gPiAtCXUzMiBtc2lpcl9vZmZzZXQ7
-IC8qIE9mZnNldCBvZiBNU0lJUiwgcmVsYXRpdmUgdG8gc3RhcnQgb2YgQ0NTUiAqLw0KPiA+ICsJ
-ZG1hX2FkZHJfdCBtc2lpcjsgLyogTVNJSVIgQWRkcmVzcyBpbiBDQ1NSICovDQo+IA0KPiBBcmUg
-eW91IHN1cmUgZG1hX2FkZHJfdCBpcyByaWdodCBoZXJlLCB2ZXJzdXMgcGh5c19hZGRyX3Q/ICBJ
-dCBpbXBsaWVzIHRoYXQgaXQncw0KPiB0aGUgb3V0cHV0IG9mIHRoZSBETUEgQVBJLCBidXQgSSBk
-b24ndCB0aGluayB0aGUgRE1BIEFQSSBpcyB1c2VkIGluIHRoZSBNU0kNCj4gZHJpdmVyLiAgUGVy
-aGFwcyBpdCBzaG91bGQgYmUsIGJ1dCB3ZSBzdGlsbCB3YW50IHRoZSByYXcgcGh5c2ljYWwgYWRk
-cmVzcyB0bw0KPiBwYXNzIG9uIHRvIFZGSU8uDQoNCkxvb2tpbmcgdGhyb3VnaCB0aGUgY29udmVy
-c2F0aW9uIEkgd2lsbCBtYWtlIHRoaXMgcGh5c19hZGRyX3QNCg0KPiANCj4gPiAgCXZvaWQgX19p
-b21lbSAqbXNpX3JlZ3M7DQo+ID4gIAl1MzIgZmVhdHVyZTsNCj4gPiAgCWludCBtc2lfdmlycXNb
-TlJfTVNJX1JFR107DQo+ID4NCj4gPiArCS8qDQo+ID4gKwkgKiBEdXJpbmcgcHJvYmUgZWFjaCBi
-YW5rIGlzIGFzc2lnbmVkIGEgaW5kZXggbnVtYmVyLg0KPiA+ICsJICogaW5kZXggbnVtYmVyIHJh
-bmdlcyBmcm9tIDAgdG8gMl4zMi4NCj4gPiArCSAqIEV4YW1wbGUgIE1TSSBiYW5rIDEgPSAwDQo+
-ID4gKwkgKiBNU0kgYmFuayAyID0gMSwgYW5kIHNvIG9uLg0KPiA+ICsJICovDQo+ID4gKwlpbnQg
-YmFua19pbmRleDsNCj4gDQo+IDJeMzIgZG9lc24ndCBmaXQgaW4gImludCIgKG5vciBkb2VzIDJe
-MzIgLSAxKS4NCg0KUmlnaHQgOigNCg0KPiANCj4gSnVzdCBzYXkgdGhhdCBpbmRpY2VzIHN0YXJ0
-IGF0IDAuDQoNCldpbGwgY29ycmVjdCB0aGlzDQoNClRoYW5rcw0KLUJoYXJhdA0KDQo+IA0KPiAt
-U2NvdHQNCj4gDQoNCg==
+This was missing on powerpc and I am getting compilation error
+drivers/vfio/pci/vfio_pci_rdwr.c:193: undefined reference to `__cmpdi2'
+drivers/vfio/pci/vfio_pci_rdwr.c:193: undefined reference to `__cmpdi2'
+
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+---
+ arch/powerpc/kernel/misc_32.S   |   14 ++++++++++++++
+ arch/powerpc/kernel/ppc_ksyms.c |    2 ++
+ 2 files changed, 16 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 777d999..7c0eec2 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -644,6 +644,20 @@ _GLOBAL(__lshrdi3)
+ 	blr
+ 
+ /*
++ * 64-bit comparison: __cmpdi2(s64 a, s64 b)
++ * Returns 0 if a < b, 1 if a == b, 2 if a > b.
++ */
++_GLOBAL(__cmpdi2)
++	cmpw	r3,r5
++	li	r3,1
++	bne	1f
++	cmplw	r4,r6
++	beqlr
++1:	li	r3,0
++	bltlr
++	li	r3,2
++	blr
++/*
+  * 64-bit comparison: __ucmpdi2(u64 a, u64 b)
+  * Returns 0 if a < b, 1 if a == b, 2 if a > b.
+  */
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 21646db..5674c00 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -143,6 +143,8 @@ EXPORT_SYMBOL(__ashldi3);
+ EXPORT_SYMBOL(__lshrdi3);
+ int __ucmpdi2(unsigned long long, unsigned long long);
+ EXPORT_SYMBOL(__ucmpdi2);
++int __cmpdi2(long long, long long);
++EXPORT_SYMBOL(__cmpdi2);
+ #endif
+ long long __bswapdi2(long long);
+ EXPORT_SYMBOL(__bswapdi2);
+-- 
+1.7.0.4
