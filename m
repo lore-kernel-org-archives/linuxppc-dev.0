@@ -1,33 +1,25 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 658C92C010A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 05:06:44 +1100 (EST)
-Date: Thu, 10 Oct 2013 20:07:05 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-Message-ID: <20131010180704.GA15719@dhcp-26-207.brq.redhat.com>
-References: <cover.1380703262.git.agordeev@redhat.com>
- <5254D397.9030307@zytor.com> <1381292648.645.259.camel@pasglop>
- <20131010101704.GC11874@dhcp-26-207.brq.redhat.com>
- <5256D5AB.4050105@zytor.com>
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-oa0-x231.google.com (mail-oa0-x231.google.com
+ [IPv6:2607:f8b0:4003:c02::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9961B2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 05:23:58 +1100 (EST)
+Received: by mail-oa0-f49.google.com with SMTP id i4so1641989oah.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2013 11:23:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5256D5AB.4050105@zytor.com>
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
- iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20131010180948.4350ebda@crub>
+References: <1380295718-10700-1-git-send-email-gsi@denx.de>
+ <20131009192931.GC23337@ld-irv-0074.broadcom.com>
+ <20131010180948.4350ebda@crub>
+Date: Thu, 10 Oct 2013 11:23:55 -0700
+Message-ID: <CAN8TOE8o-34zFP=0q3NjondqpA6UA1szitN+kgKcbaNOWhrscg@mail.gmail.com>
+Subject: Re: [v1] powerpc/mpc512x: silence build warning upon disabled DIU
+From: Brian Norris <computersforpeace@gmail.com>
+To: Anatolij Gustschin <agust@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,45 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 10, 2013 at 09:28:27AM -0700, H. Peter Anvin wrote:
-> On 10/10/2013 03:17 AM, Alexander Gordeev wrote:
-> > On Wed, Oct 09, 2013 at 03:24:08PM +1100, Benjamin Herrenschmidt wrote:
-> > 
-> > Ok, this suggestion sounded in one or another form by several people.
-> > What about name it pcim_enable_msix_range() and wrap in couple more
-> > helpers to complete an API:
-> > 
-> > int pcim_enable_msix_range(pdev, msix_entries, nvec, minvec);
-> > 	<0 - error code
-> > 	>0 - number of MSIs allocated, where minvec >= result <= nvec
-> > 
-> > int pcim_enable_msix(pdev, msix_entries, nvec);
-> > 	<0 - error code
-> > 	>0 - number of MSIs allocated, where 1 >= result <= nvec 
-> > 
-> > int pcim_enable_msix_exact(pdev, msix_entries, nvec);
-> > 	<0 - error code
-> > 	>0 - number of MSIs allocated, where result == nvec
-> > 
-> > The latter's return value seems odd, but I can not help to make
-> > it consistent with the first two.
-> > 
-> 
-> Is there a reason for the wrappers, as opposed to just specifying either
-> 1 or nvec as the minimum?
+Hello,
 
-The wrappers are more handy IMO.
+On Thu, Oct 10, 2013 at 9:09 AM, Anatolij Gustschin <agust@denx.de> wrote:
+> On Wed, 9 Oct 2013 12:29:31 -0700
+> Brian Norris <computersforpeace@gmail.com> wrote:
+> ...
+>> > +#else
+>> > +void __init mpc512x_setup_diu(void) { /* EMPTY */ }
+>> > +void __init mpc512x_init_diu(void) { /* EMPTY */ }
+>> >  #endif
+>> >
+>> >  void __init mpc512x_init_IRQ(void)
+>>
+>> I see an alternative solution:
+>>
+>> Can't almost all of the code in mpc512x_shared.c be declared 'static'?
+>
+> making mpc512x_setup_diu(), mpc512x_release_bootmem(),
+> mpc512x_valid_monitor_port() and void mpc512x_set_pixel_clock()
+> should be okay.
 
-I.e. can imagine people start struggling to figure out what minvec to provide:
-1 or 0? Why 1? Oh.. okay.. Or should we tolerate 0 (as opposite to -ERANGE)?
+And mpc512x_init_diu()?
 
-Well, do not know.. pcim_enable_msix(pdev, msix_entries, nvec, nvec) is 
-less readable for me than just pcim_enable_msix_exact(pdev, msix_entries,
-nvec).
+>> Then, you can get the real benefit of IS_ENABLED() by removing the
+>>
+>>     #if IS_ENABLED(CONFIG_FB_FSL_DIU)
+>>
+>> from around all the DIU code, and it will automatically be removed by
+>> the compiler when it is not used.
+>>
+>> I think the current patch is necessary for immediate use, and it can be
+>> sent to stable. But I might suggest a follow-up patch or 2 that makes
+>> the functions static and kills the #ifdef entirely.
+>
+> Yes, we also have to remove CONFIG_FB_FSL_DIU ifdef in
+> arch/powerpc/sysdev/fsl_soc.h and building should work then.
 
-> 	-hpa
+Still want it around this line, probably, so we'll get compiler errors
+and not linker errors if someone tries to use it?
 
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+    extern struct platform_diu_data_ops diu_ops;
+
+But otherwise that looks OK to me. Shall I send a patch?
+
+Brian
