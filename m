@@ -1,34 +1,24 @@
-Return-Path: <kernel@start.ca>
-Received: from mouse.start.ca (mouse.start.ca [64.140.120.56])
- by ozlabs.org (Postfix) with ESMTP id 2DBE42C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 10:18:14 +1100 (EST)
-Message-ID: <5257357E.8080506@start.ca>
-Date: Thu, 10 Oct 2013 19:17:18 -0400
-From: Mark Lord <kernel@start.ca>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0EBEC2C00E4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 10:25:42 +1100 (EST)
+Message-ID: <1381447532.7979.488.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2 1/3] powerpc/booke64: add sync after writing PTE
+From: Scott Wood <scottwood@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 10 Oct 2013 18:25:32 -0500
+In-Reply-To: <1381444273.7979.473.camel@snotra.buserror.net>
+References: <1379130622-17436-1-git-send-email-scottwood@freescale.com>
+ <1379281131.4098.48.camel@pasglop>
+ <1379376371.2536.218.camel@snotra.buserror.net>
+ <1381444273.7979.473.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Alexander Gordeev <agordeev@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-References: <cover.1380703262.git.agordeev@redhat.com>
- <5254D397.9030307@zytor.com> <1381292648.645.259.camel@pasglop>
- <20131010101704.GC11874@dhcp-26-207.brq.redhat.com>
- <5256D5AB.4050105@zytor.com>
- <20131010180704.GA15719@dhcp-26-207.brq.redhat.com>
-In-Reply-To: <20131010180704.GA15719@dhcp-26-207.brq.redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
- iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Just to help us all understand "the loop" issue..
+On Thu, 2013-10-10 at 17:31 -0500, Scott Wood wrote:
+> On Mon, 2013-09-16 at 19:06 -0500, Scott Wood wrote:
+> > On Mon, 2013-09-16 at 07:38 +1000, Benjamin Herrenschmidt wrote:
+> > > On Fri, 2013-09-13 at 22:50 -0500, Scott Wood wrote:
+> > > > The ISA says that a sync is needed to order a PTE write with a
+> > > > subsequent hardware tablewalk lookup.  On e6500, without this sync
+> > > > we've been observed to die with a DSI due to a PTE write not being seen
+> > > > by a subsequent access, even when everything happens on the same
+> > > > CPU.
+> > > 
+> > > This is gross, I didn't realize we had that bogosity in the
+> > > architecture...
+> > > 
+> > > Did you measure the performance impact ?
+> > 
+> > I didn't see a noticeable impact on the tests I ran, but those were
+> > aimed at measuring TLB miss overhead.  I'll need to try it with a
+> > benchmark that's more oriented around lots of page table updates.
+> 
+> Lmbench's fork test runs about 2% slower with the sync.  I've been told
+> that nothing relevant has changed since we saw the failure during
+> emulation; it's probably luck and/or timing, or maybe a sync got added
+> somewhere else since then?  I think it's only really a problem for
+> kernel page tables, since user page tables will retry if do_page_fault()
+> sees a valid PTE.  So maybe we should put an mb() in map_kernel_page()
+> instead.
 
-Here's an example of driver code which uses the existing MSI-X interfaces,
-for a device which can work with either 16, 8, 4, 2, or 1 MSI-X interrupt.
-This is from a new driver I'm working on right now:
+Looking at some of the code in mm/, I suspect that the normal callers of
+set_pte_at() already have an unlock (and thus a sync) already, so we may
+not even be relying on those retries.  Certainly some of them do; it
+would take some effort to verify all of them.
 
+Also, without such a sync in map_kernel_page(), even with software
+tablewalk, couldn't we theoretically have a situation where a store to
+pointer X that exposes a new mapping gets reordered before the PTE store
+as seen by another CPU?  The other CPU could see non-NULL X and
+dereference it, but get the stale PTE.  Callers of ioremap() generally
+don't do a barrier of their own prior to exposing the result.
 
-static int xx_alloc_msix_irqs (struct xx_dev *dev, int nvec)
-{
-        xx_disable_all_irqs(dev);
-        do {
-                if (nvec < 2)
-                        xx_prep_for_1_msix_vector(dev);
-                else if (nvec < 4)
-                        xx_prep_for_2_msix_vectors(dev);
-                else if (nvec < 8)
-                        xx_prep_for_4_msix_vectors(dev);
-                else if (nvec < 16)
-                        xx_prep_for_8_msix_vectors(dev);
-                else
-                        xx_prep_for_16_msix_vectors(dev);
-                nvec = pci_enable_msix(dev->pdev, dev->irqs, dev->num_vectors);
-        } while (nvec > 0);
-
-        if (nvec) {
-                kerr(dev->name, "pci_enable_msix() failed, err=%d", nvec);
-                dev->num_vectors = 0;
-                return nvec;
-        }
-        return 0;       /* success */
-}
+-Scott
