@@ -1,43 +1,19 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 194062C012E
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Oct 2013 16:05:30 +1100 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 10 Oct 2013 10:35:23 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 842FC394005B
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Oct 2013 10:34:57 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9A55CQg42926276
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Oct 2013 10:35:12 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9A55EAB012100
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Oct 2013 10:35:14 +0530
-Message-ID: <52563550.3070002@linux.vnet.ibm.com>
-Date: Thu, 10 Oct 2013 10:34:16 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Stephane Eranian <eranian@google.com>
-Subject: Re: [PATCH V2 0/6] perf: New conditional branch filter
-References: <1377836690-32710-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1378778772.25578.1.camel@concordia>
- <CABPqkBREXH5VUkULAsWvmpCer-s4SCxuof6LdqRO0i-iBOG8pA@mail.gmail.com>
- <524006C4.3010006@linux.vnet.ibm.com>
- <CABPqkBR0koi7Swzqxg2nhjDsXyfLCSdR5qtB7XuBwxfCxaRO0A@mail.gmail.com>
-In-Reply-To: <CABPqkBR0koi7Swzqxg2nhjDsXyfLCSdR5qtB7XuBwxfCxaRO0A@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Michael Neuling <michael.neuling@au1.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3BDC82C0146
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2013 19:18:13 +1100 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r9A8I4Yp023972
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2013 03:18:06 -0500
+Message-ID: <1381393082.4330.38.camel@pasglop>
+Subject: [PATCH 1/3] powerpc/scom: Enable 64-bit addresses
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 10 Oct 2013 19:18:02 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,37 +23,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/26/2013 04:44 PM, Stephane Eranian wrote:
-> So you are saying that the HW filter is exclusive. That seems odd. But
-> I think it is
-> because of the choices is ANY. ANY covers all the types of branches. Therefore
-> it does not make a difference whether you add COND or not. And
-> vice-versa, if you
-> set COND, you need to disable ANY. I bet if you add other filters such
-> as CALL, RETURN,
-> then you could OR them and say: I want RETURN or CALLS.
-> 
-> But that's okay. The API operates in OR mode but if the HW does not
-> support it, you
-> can check the mask and reject if more than one type is set. That is
-> arch-specific code.
-> The alternative, if to only capture ANY and emulate the filter in SW.
-> This will work, of
-> course. But the downside, is that you lose the way to appreciate how
-> many, for instance,
-> COND branches you sampled out of the total number of COND branches
-> retired. Unless
-> you can count COND branches separately.
+On P8, XSCOM addresses has a special "indirect" form that
+requires more than 32-bits, so let's use u64 everywhere in
+the code instead of u32.
 
-Hey Stephane,
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Thanks for your reply. I am working on a solution where PMU will process
-all the requested branch filters in HW only if it can filter all of them in an
-OR manner else it will just leave the entire thing upto the SW to process and
-do no filtering itself. This implies that branch filtering will either happen
-completely in HW or completely in SW and never in a mixed manner. This way
-it will conform to the OR mode defined in the API. I will post the revised
-patch set soon.
+This applies on top of my previously posted scom series
 
-Regards
-Anshuman
+ arch/powerpc/include/asm/scom.h             | 8 ++++----
+ arch/powerpc/platforms/powernv/opal-xscom.c | 6 +++---
+ arch/powerpc/platforms/wsp/scom_wsp.c       | 4 ++--
+ 3 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/scom.h b/arch/powerpc/include/asm/scom.h
+index 07dcdcf..f5cde45 100644
+--- a/arch/powerpc/include/asm/scom.h
++++ b/arch/powerpc/include/asm/scom.h
+@@ -54,8 +54,8 @@ struct scom_controller {
+ 	scom_map_t (*map)(struct device_node *ctrl_dev, u64 reg, u64 count);
+ 	void (*unmap)(scom_map_t map);
+ 
+-	int (*read)(scom_map_t map, u32 reg, u64 *value);
+-	int (*write)(scom_map_t map, u32 reg, u64 value);
++	int (*read)(scom_map_t map, u64 reg, u64 *value);
++	int (*write)(scom_map_t map, u64 reg, u64 value);
+ };
+ 
+ extern const struct scom_controller *scom_controller;
+@@ -137,7 +137,7 @@ static inline void scom_unmap(scom_map_t map)
+  *
+  * Returns 0 (success) or a negative error code
+  */
+-static inline int scom_read(scom_map_t map, u32 reg, u64 *value)
++static inline int scom_read(scom_map_t map, u64 reg, u64 *value)
+ {
+ 	int rc;
+ 
+@@ -155,7 +155,7 @@ static inline int scom_read(scom_map_t map, u32 reg, u64 *value)
+  *
+  * Returns 0 (success) or a negative error code
+  */
+-static inline int scom_write(scom_map_t map, u32 reg, u64 value)
++static inline int scom_write(scom_map_t map, u64 reg, u64 value)
+ {
+ 	return scom_controller->write(map, reg, value);
+ }
+diff --git a/arch/powerpc/platforms/powernv/opal-xscom.c b/arch/powerpc/platforms/powernv/opal-xscom.c
+index 3ed5c64..09a90d8 100644
+--- a/arch/powerpc/platforms/powernv/opal-xscom.c
++++ b/arch/powerpc/platforms/powernv/opal-xscom.c
+@@ -27,7 +27,7 @@
+  */
+ struct opal_scom_map {
+ 	uint32_t chip;
+-	uint32_t addr;
++	uint64_t addr;
+ };
+ 
+ static scom_map_t opal_scom_map(struct device_node *dev, u64 reg, u64 count)
+@@ -71,7 +71,7 @@ static int opal_xscom_err_xlate(int64_t rc)
+ 	}
+ }
+ 
+-static int opal_scom_read(scom_map_t map, u32 reg, u64 *value)
++static int opal_scom_read(scom_map_t map, u64 reg, u64 *value)
+ {
+ 	struct opal_scom_map *m = map;
+ 	int64_t rc;
+@@ -80,7 +80,7 @@ static int opal_scom_read(scom_map_t map, u32 reg, u64 *value)
+ 	return opal_xscom_err_xlate(rc);
+ }
+ 
+-static int opal_scom_write(scom_map_t map, u32 reg, u64 value)
++static int opal_scom_write(scom_map_t map, u64 reg, u64 value)
+ {
+ 	struct opal_scom_map *m = map;
+ 	int64_t rc;
+diff --git a/arch/powerpc/platforms/wsp/scom_wsp.c b/arch/powerpc/platforms/wsp/scom_wsp.c
+index 54172c4..8928507 100644
+--- a/arch/powerpc/platforms/wsp/scom_wsp.c
++++ b/arch/powerpc/platforms/wsp/scom_wsp.c
+@@ -50,7 +50,7 @@ static void wsp_scom_unmap(scom_map_t map)
+ 	iounmap((void *)map);
+ }
+ 
+-static int wsp_scom_read(scom_map_t map, u32 reg, u64 *value)
++static int wsp_scom_read(scom_map_t map, u64 reg, u64 *value)
+ {
+ 	u64 __iomem *addr = (u64 __iomem *)map;
+ 
+@@ -59,7 +59,7 @@ static int wsp_scom_read(scom_map_t map, u32 reg, u64 *value)
+ 	return 0;
+ }
+ 
+-static int wsp_scom_write(scom_map_t map, u32 reg, u64 value)
++static int wsp_scom_write(scom_map_t map, u64 reg, u64 value)
+ {
+ 	u64 __iomem *addr = (u64 __iomem *)map;
+ 
