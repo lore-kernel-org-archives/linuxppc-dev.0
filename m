@@ -1,23 +1,43 @@
-Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 21D362C016B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2013 07:14:26 +1100 (EST)
-Message-ID: <1381349653.7979.366.camel@snotra.buserror.net>
-Subject: Re: [PATCH 2/3] gianfar: Use mpc85xx support for errata detection
-From: Scott Wood <scottwood@freescale.com>
-To: Claudiu Manoil <claudiu.manoil@freescale.com>
-Date: Wed, 9 Oct 2013 15:14:13 -0500
-In-Reply-To: <1381339242-32030-2-git-send-email-claudiu.manoil@freescale.com>
-References: <1381339242-32030-1-git-send-email-claudiu.manoil@freescale.com>
- <1381339242-32030-2-git-send-email-claudiu.manoil@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 194062C012E
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Oct 2013 16:05:30 +1100 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 10 Oct 2013 10:35:23 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 842FC394005B
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Oct 2013 10:34:57 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9A55CQg42926276
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Oct 2013 10:35:12 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9A55EAB012100
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Oct 2013 10:35:14 +0530
+Message-ID: <52563550.3070002@linux.vnet.ibm.com>
+Date: Thu, 10 Oct 2013 10:34:16 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+To: Stephane Eranian <eranian@google.com>
+Subject: Re: [PATCH V2 0/6] perf: New conditional branch filter
+References: <1377836690-32710-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1378778772.25578.1.camel@concordia>
+ <CABPqkBREXH5VUkULAsWvmpCer-s4SCxuof6LdqRO0i-iBOG8pA@mail.gmail.com>
+ <524006C4.3010006@linux.vnet.ibm.com>
+ <CABPqkBR0koi7Swzqxg2nhjDsXyfLCSdR5qtB7XuBwxfCxaRO0A@mail.gmail.com>
+In-Reply-To: <CABPqkBR0koi7Swzqxg2nhjDsXyfLCSdR5qtB7XuBwxfCxaRO0A@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Michael Neuling <michael.neuling@au1.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +47,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-10-09 at 20:20 +0300, Claudiu Manoil wrote:
-> +static void gfar_detect_errata(struct gfar_private *priv)
-> +{
-> +	struct device *dev = &priv->ofdev->dev;
-> +
-> +	/* no plans to fix */
-> +	priv->errata |= GFAR_ERRATA_A002;
-> +
-> +	if (pvr_version_is(PVR_VER_E500V1) || pvr_version_is(PVR_VER_E500V2))
-> +		__gfar_detect_errata_85xx(priv);
-> +	else /* non-mpc85xx parts, i.e. e300 core based */
-> +		__gfar_detect_errata_83xx(priv);
+On 09/26/2013 04:44 PM, Stephane Eranian wrote:
+> So you are saying that the HW filter is exclusive. That seems odd. But
+> I think it is
+> because of the choices is ANY. ANY covers all the types of branches. Therefore
+> it does not make a difference whether you add COND or not. And
+> vice-versa, if you
+> set COND, you need to disable ANY. I bet if you add other filters such
+> as CALL, RETURN,
+> then you could OR them and say: I want RETURN or CALLS.
+> 
+> But that's okay. The API operates in OR mode but if the HW does not
+> support it, you
+> can check the mask and reject if more than one type is set. That is
+> arch-specific code.
+> The alternative, if to only capture ANY and emulate the filter in SW.
+> This will work, of
+> course. But the downside, is that you lose the way to appreciate how
+> many, for instance,
+> COND branches you sampled out of the total number of COND branches
+> retired. Unless
+> you can count COND branches separately.
 
-It would be better to use CONFIG_E500 here (note that we do not support
-building e500 and 83xx/86xx in the same kernel), on the off chance that
-we put a gianfar in a chip with a newer e500 derivative.  I suppose it's
-harmless as long as the 83xx version checks the full PVR, until such a
-chip exists and has an erratum workaround (other than A002) added for
-it.
+Hey Stephane,
 
-What about 86xx?  Are there any gianfar errata there besides A002?
+Thanks for your reply. I am working on a solution where PMU will process
+all the requested branch filters in HW only if it can filter all of them in an
+OR manner else it will just leave the entire thing upto the SW to process and
+do no filtering itself. This implies that branch filtering will either happen
+completely in HW or completely in SW and never in a mixed manner. This way
+it will conform to the OR mode defined in the API. I will post the revised
+patch set soon.
 
--Scott
+Regards
+Anshuman
