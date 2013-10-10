@@ -1,34 +1,15 @@
-Return-Path: <hpa@zytor.com>
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DD2622C0246
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 03:29:43 +1100 (EST)
-Message-ID: <5256D5AB.4050105@zytor.com>
-Date: Thu, 10 Oct 2013 09:28:27 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+Return-Path: <sumeshkkn@hotmail.com>
+Received: from snt0-omc3-s30.snt0.hotmail.com (snt0-omc3-s30.snt0.hotmail.com
+ [65.55.90.169]) by ozlabs.org (Postfix) with ESMTP id D17212C0330
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2013 19:52:40 +1100 (EST)
+Message-ID: <SNT145-W100B62E3580B96CDF6ED340B41E0@phx.gbl>
+Content-Type: multipart/alternative;
+ boundary="_5f6d327a-16fa-4a36-bb56-29e018f2bb96_"
+From: Sumesh Kaana <sumeshkkn@hotmail.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Loading and executing non-Linux kernel outside Linux memory.
+Date: Thu, 10 Oct 2013 08:47:28 +0000
 MIME-Version: 1.0
-To: Alexander Gordeev <agordeev@redhat.com>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-References: <cover.1380703262.git.agordeev@redhat.com>
- <5254D397.9030307@zytor.com> <1381292648.645.259.camel@pasglop>
- <20131010101704.GC11874@dhcp-26-207.brq.redhat.com>
-In-Reply-To: <20131010101704.GC11874@dhcp-26-207.brq.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- linux-s390@vger.kernel.org, Andy King <acking@vmware.com>,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org,
- iss_storagedev@hp.com, linux-driver@qlogic.com, Tejun Heo <tj@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>,
- Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,30 +19,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/10/2013 03:17 AM, Alexander Gordeev wrote:
-> On Wed, Oct 09, 2013 at 03:24:08PM +1100, Benjamin Herrenschmidt wrote:
-> 
-> Ok, this suggestion sounded in one or another form by several people.
-> What about name it pcim_enable_msix_range() and wrap in couple more
-> helpers to complete an API:
-> 
-> int pcim_enable_msix_range(pdev, msix_entries, nvec, minvec);
-> 	<0 - error code
-> 	>0 - number of MSIs allocated, where minvec >= result <= nvec
-> 
-> int pcim_enable_msix(pdev, msix_entries, nvec);
-> 	<0 - error code
-> 	>0 - number of MSIs allocated, where 1 >= result <= nvec 
-> 
-> int pcim_enable_msix_exact(pdev, msix_entries, nvec);
-> 	<0 - error code
-> 	>0 - number of MSIs allocated, where result == nvec
-> 
-> The latter's return value seems odd, but I can not help to make
-> it consistent with the first two.
-> 
+--_5f6d327a-16fa-4a36-bb56-29e018f2bb96_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Is there a reason for the wrappers, as opposed to just specifying either
-1 or nvec as the minimum?
+Hi=2C
+I'm running Linux on a PowerPC-44x based board with 256 Megabytes of RAM at=
+ 0x5000.0000 - 0x6000.0000.Upon an error interrupt=2C I should load my reco=
+very module(non-Linux kernel) at 0x4000.0000 and jump the execution to this=
+.
+Any suggestions for this implementation?=20
+Would kexec allow me to load an image ouside linux's memory?
 
-	-hpa
+
+
+Thanks=2CSumesh.  		 	   		  =
+
+--_5f6d327a-16fa-4a36-bb56-29e018f2bb96_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 12pt=3B
+font-family:Calibri
+}
+--></style></head>
+<body class=3D'hmmessage'><div dir=3D'ltr'>Hi=2C<div><br></div><div>I'm run=
+ning Linux on a PowerPC-44x based board with 256 Megabytes of RAM at 0x5000=
+.0000 - 0x6000.0000.</div><div>Upon an error interrupt=2C I should load my =
+recovery module(non-Linux kernel) at 0x4000.0000 and jump the execution to =
+this.</div><div><br></div><div>Any suggestions for this implementation?&nbs=
+p=3B</div><div><br></div><div>Would kexec allow me to load an image ouside =
+linux's memory?</div><div><br></div><div><br></div><div><br></div><div><br>=
+</div><div>Thanks=2C</div><div>Sumesh.&nbsp=3B</div> 		 	   		  </div></bod=
+y>
+</html>=
+
+--_5f6d327a-16fa-4a36-bb56-29e018f2bb96_--
