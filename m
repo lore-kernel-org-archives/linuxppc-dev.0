@@ -1,22 +1,37 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id ED6CD2C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 06:37:52 +1100 (EST)
-Date: Thu, 10 Oct 2013 21:37:47 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: Brian Norris <computersforpeace@gmail.com>
-Subject: Re: [v1] powerpc/mpc512x: silence build warning upon disabled DIU
-Message-ID: <20131010213747.4e56ca1f@crub>
-In-Reply-To: <CAN8TOE8o-34zFP=0q3NjondqpA6UA1szitN+kgKcbaNOWhrscg@mail.gmail.com>
-References: <1380295718-10700-1-git-send-email-gsi@denx.de>
- <20131009192931.GC23337@ld-irv-0074.broadcom.com>
- <20131010180948.4350ebda@crub>
- <CAN8TOE8o-34zFP=0q3NjondqpA6UA1szitN+kgKcbaNOWhrscg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B16395@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 744DA2C00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 07:09:12 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>, Bhushan Bharat-R65777
+ <R65777@freescale.com>
+Subject: RE: [PATCH 2/7] iommu: add api to get iommu_domain of a device
+Date: Thu, 10 Oct 2013 20:09:04 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D0A52BAC7@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
+ <1380127533.3030.319.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0718FD1C@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1380901507.2673.204.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07190F35@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1380906772.25705.19.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07191143@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1380910322.25705.56.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0719385B@039-SN2MPN1-011.039d.mgd.msft.net>
+ <1381201980.6330.4.camel@ul30vt.home>
+In-Reply-To: <1381201980.6330.4.camel@ul30vt.home>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +41,225 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
 
-On Thu, 10 Oct 2013 11:23:55 -0700
-Brian Norris <computersforpeace@gmail.com> wrote:
-...
-> > making mpc512x_setup_diu(), mpc512x_release_bootmem(),
-> > mpc512x_valid_monitor_port() and void mpc512x_set_pixel_clock()
-> > should be okay.
-> 
-> And mpc512x_init_diu()?
 
-yes, it can be static, too.
-
-> 
-> >> Then, you can get the real benefit of IS_ENABLED() by removing the
-> >>
-> >>     #if IS_ENABLED(CONFIG_FB_FSL_DIU)
-> >>
-> >> from around all the DIU code, and it will automatically be removed by
-> >> the compiler when it is not used.
-> >>
-> >> I think the current patch is necessary for immediate use, and it can be
-> >> sent to stable. But I might suggest a follow-up patch or 2 that makes
-> >> the functions static and kills the #ifdef entirely.
+> -----Original Message-----
+> From: iommu-bounces@lists.linux-foundation.org [mailto:iommu-
+> bounces@lists.linux-foundation.org] On Behalf Of Alex Williamson
+> Sent: Tuesday, October 08, 2013 8:43 AM
+> To: Bhushan Bharat-R65777
+> Cc: agraf@suse.de; Wood Scott-B07421; linux-pci@vger.kernel.org;
+> galak@kernel.crashing.org; linux-kernel@vger.kernel.org;
+> iommu@lists.linux-foundation.org; benh@kernel.crashing.org; linuxppc-
+> dev@lists.ozlabs.org
+> Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a device
+>=20
+> On Mon, 2013-10-07 at 05:46 +0000, Bhushan Bharat-R65777 wrote:
 > >
-> > Yes, we also have to remove CONFIG_FB_FSL_DIU ifdef in
-> > arch/powerpc/sysdev/fsl_soc.h and building should work then.
-> 
-> Still want it around this line, probably, so we'll get compiler errors
-> and not linker errors if someone tries to use it?
-> 
->     extern struct platform_diu_data_ops diu_ops;
-> 
-> But otherwise that looks OK to me. Shall I send a patch?
+> > > -----Original Message-----
+> > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > > Sent: Friday, October 04, 2013 11:42 PM
+> > > To: Bhushan Bharat-R65777
+> > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
+> > > galak@kernel.crashing.org; linux- kernel@vger.kernel.org;
+> > > linuxppc-dev@lists.ozlabs.org; linux- pci@vger.kernel.org;
+> > > agraf@suse.de; Wood Scott-B07421; iommu@lists.linux- foundation.org
+> > > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a
+> > > device
+> > >
+> > > On Fri, 2013-10-04 at 17:23 +0000, Bhushan Bharat-R65777 wrote:
+> > > >
+> > > > > -----Original Message-----
+> > > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > > > > Sent: Friday, October 04, 2013 10:43 PM
+> > > > > To: Bhushan Bharat-R65777
+> > > > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
+> > > > > galak@kernel.crashing.org; linux- kernel@vger.kernel.org;
+> > > > > linuxppc-dev@lists.ozlabs.org; linux- pci@vger.kernel.org;
+> > > > > agraf@suse.de; Wood Scott-B07421; iommu@lists.linux-
+> > > > > foundation.org
+> > > > > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a
+> > > > > device
+> > > > >
+> > > > > On Fri, 2013-10-04 at 16:47 +0000, Bhushan Bharat-R65777 wrote:
+> > > > > >
+> > > > > > > -----Original Message-----
+> > > > > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > > > > > > Sent: Friday, October 04, 2013 9:15 PM
+> > > > > > > To: Bhushan Bharat-R65777
+> > > > > > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
+> > > > > > > galak@kernel.crashing.org; linux- kernel@vger.kernel.org;
+> > > > > > > linuxppc-dev@lists.ozlabs.org; linux- pci@vger.kernel.org;
+> > > > > > > agraf@suse.de; Wood Scott-B07421; iommu@lists.linux-
+> > > > > > > foundation.org
+> > > > > > > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain
+> > > > > > > of a device
+> > > > > > >
+> > > > > > > On Fri, 2013-10-04 at 09:54 +0000, Bhushan Bharat-R65777
+> wrote:
+> > > > > > > >
+> > > > > > > > > -----Original Message-----
+> > > > > > > > > From: linux-pci-owner@vger.kernel.org
+> > > > > > > > > [mailto:linux-pci-owner@vger.kernel.org]
+> > > > > > > > > On Behalf Of Alex Williamson
+> > > > > > > > > Sent: Wednesday, September 25, 2013 10:16 PM
+> > > > > > > > > To: Bhushan Bharat-R65777
+> > > > > > > > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
+> > > > > > > > > galak@kernel.crashing.org; linux-
+> > > > > > > > > kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > > > > > > linux- pci@vger.kernel.org; agraf@suse.de; Wood
+> > > > > > > > > Scott-B07421; iommu@lists.linux- foundation.org; Bhushan
+> > > > > > > > > Bharat-R65777
+> > > > > > > > > Subject: Re: [PATCH 2/7] iommu: add api to get
+> > > > > > > > > iommu_domain of a device
+> > > > > > > > >
+> > > > > > > > > On Thu, 2013-09-19 at 12:59 +0530, Bharat Bhushan wrote:
+> > > > > > > > > > This api return the iommu domain to which the device is
+> attached.
+> > > > > > > > > > The iommu_domain is required for making API calls
+> > > > > > > > > > related to
+> > > iommu.
+> > > > > > > > > > Follow up patches which use this API to know iommu
+> maping.
+> > > > > > > > > >
+> > > > > > > > > > Signed-off-by: Bharat Bhushan
+> > > > > > > > > > <bharat.bhushan@freescale.com>
+> > > > > > > > > > ---
+> > > > > > > > > >  drivers/iommu/iommu.c |   10 ++++++++++
+> > > > > > > > > >  include/linux/iommu.h |    7 +++++++
+> > > > > > > > > >  2 files changed, 17 insertions(+), 0 deletions(-)
+> > > > > > > > > >
+> > > > > > > > > > diff --git a/drivers/iommu/iommu.c
+> > > > > > > > > > b/drivers/iommu/iommu.c index
+> > > > > > > > > > fbe9ca7..6ac5f50 100644
+> > > > > > > > > > --- a/drivers/iommu/iommu.c
+> > > > > > > > > > +++ b/drivers/iommu/iommu.c
+> > > > > > > > > > @@ -696,6 +696,16 @@ void iommu_detach_device(struct
+> > > > > > > > > > iommu_domain *domain, struct device *dev)  }
+> > > > > > > > > > EXPORT_SYMBOL_GPL(iommu_detach_device);
+> > > > > > > > > >
+> > > > > > > > > > +struct iommu_domain *iommu_get_dev_domain(struct
+> device *dev) {
+> > > > > > > > > > +	struct iommu_ops *ops =3D dev->bus->iommu_ops;
+> > > > > > > > > > +
+> > > > > > > > > > +	if (unlikely(ops =3D=3D NULL ||
+> > > > > > > > > > +ops->get_dev_iommu_domain =3D=3D
+> > > NULL))
+> > > > > > > > > > +		return NULL;
+> > > > > > > > > > +
+> > > > > > > > > > +	return ops->get_dev_iommu_domain(dev); }
+> > > > > > > > > > +EXPORT_SYMBOL_GPL(iommu_get_dev_domain);
+> > > > > > > > >
+> > > > > > > > > What prevents this from racing iommu_domain_free()?
+> > > > > > > > > There's no references acquired, so there's no reason for
+> > > > > > > > > the caller to assume the
+> > > > > > > pointer is valid.
+> > > > > > > >
+> > > > > > > > Sorry for late query, somehow this email went into a
+> > > > > > > > folder and escaped;
+> > > > > > > >
+> > > > > > > > Just to be sure, there is not lock at generic "struct
+> > > > > > > > iommu_domain", but IP
+> > > > > > > specific structure (link FSL domain) linked in
+> > > > > > > iommu_domain->priv have a lock, so we need to ensure this
+> > > > > > > race in FSL iommu code (say drivers/iommu/fsl_pamu_domain.c),
+> right?
+> > > > > > >
+> > > > > > > No, it's not sufficient to make sure that your use of the
+> > > > > > > interface is race free.  The interface itself needs to be
+> > > > > > > designed so that it's difficult to use incorrectly.
+> > > > > >
+> > > > > > So we can define
+> > > > > > iommu_get_dev_domain()/iommu_put_dev_domain();
+> > > > > > iommu_get_dev_domain() will return domain with the lock held,
+> > > > > > and
+> > > > > > iommu_put_dev_domain() will release the lock? And
+> > > > > > iommu_get_dev_domain() must always be followed by
+> > > > > > iommu_get_dev_domain().
+> > > > >
+> > > > > What lock?  get/put are generally used for reference counting,
+> > > > > not locking in the kernel.
+> > > > >
+> > > > > > > That's not the case here.  This is a backdoor to get the
+> > > > > > > iommu domain from the iommu driver regardless of who is using
+> it or how.
+> > > > > > > The iommu domain is created and managed by vfio, so
+> > > > > > > shouldn't we be looking at how to do this through vfio?
+> > > > > >
+> > > > > > Let me first describe what we are doing here:
+> > > > > > During initialization:-
+> > > > > >  - vfio talks to MSI system to know the MSI-page and size
+> > > > > >  - vfio then interacts with iommu to map the MSI-page in iommu
+> > > > > > (IOVA is decided by userspace and physical address is the
+> > > > > > MSI-page)
+> > > > > >  - So the IOVA subwindow mapping is created in iommu and yes
+> > > > > > VFIO know about
+> > > > > this mapping.
+> > > > > >
+> > > > > > Now do SET_IRQ(MSI/MSIX) ioctl:
+> > > > > >  - calls pci_enable_msix()/pci_enable_msi_block(): which is
+> > > > > > supposed to set
+> > > > > MSI address/data in device.
+> > > > > >  - So in current implementation (this patchset) msi-subsystem
+> > > > > > gets the IOVA
+> > > > > from iommu via this defined interface.
+> > > > > >  - Are you saying that rather than getting this from iommu, we
+> > > > > > should get this
+> > > > > from vfio? What difference does this make?
+> > > > >
+> > > > > Yes, you just said above that vfio knows the msi to iova
+> > > > > mapping, so why go outside of vfio to find it later?  The
+> > > > > difference is one case you can have a proper reference to data
+> > > > > structures to make sure the pointer you get back actually has
+> > > > > meaning at the time you're using it vs the code here where
+> > > > > you're defining an API that returns a meaningless value
+> > > >
+> > > > With FSL-PAMU we will always get consistant data from iommu or
+> > > > vfio-data
+> > > structure.
+> > >
+> > > Great, but you're trying to add a generic API to the IOMMU subsystem
+> > > that's difficult to use correctly.  The fact that you use it
+> > > correctly does not justify the API.
+> > >
+> > > > > because you can't check or
+> > > > > enforce that an arbitrary caller is using it correctly.
+> > > >
+> > > > I am not sure what is arbitrary caller? pdev is known to vfio, so
+> > > > vfio will only make pci_enable_msix()/pci_enable_msi_block() for
+> this pdev.
+> > > > If anyother code makes then it is some other unexpectedly thing
+> > > > happening in system, no?
+> > >
+> > > What's proposed here is a generic IOMMU API.  Anybody can call this.
+> > > What if the host SCSI driver decides to go get the iommu domain for
+> > > it's device (or any other device)?  Does that fit your usage model?
+> > >
+> > > > >  It's not maintainable.
+> > > > > Thanks,
+> > > >
+> > > > I do not have any issue with this as well, can you also describe
+> > > > the type of API you are envisioning; I can think of defining some
+> > > > function in vfio.c/vfio_iommu*.c, make them global and declare
+> > > > then in include/Linux/vfio.h And include <Linux/vfio.h> in caller
+> > > > file
+> > > > (arch/powerpc/kernel/msi.c)
+> > >
+> > > Do you really want module dependencies between vfio and your core
+> > > kernel MSI setup?  Look at the vfio external user interface that
+> we've already defined.
+> > > That allows other components of the kernel to get a proper reference
+> > > to a vfio group.  From there you can work out how to get what you
+> > > want.  Another alternative is that vfio could register an MSI to
+> > > IOVA mapping with architecture code when the mapping is created.
+> > > The MSI setup path could then do a lookup in architecture code for
+> > > the mapping.  You could even store the MSI to IOVA mapping in VFIO
+> > > and create an interface where SET_IRQ passes that mapping into setup
+> code.
+[Sethi Varun-B16395] What you are suggesting is that the MSI setup path que=
+ries the vfio subsystem for the mapping, rather than directly querying the =
+iommu subsystem. So, say if we add an interface for getting MSI to IOVA map=
+ping in the msi setup path, wouldn't this again be specific to vfio? I reck=
+on that this interface would again ppc machine specific interface.
 
-yes, please.
-
-Thanks,
-
-Anatolij
+-Varun
