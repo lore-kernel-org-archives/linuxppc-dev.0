@@ -1,26 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 881892C032E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 07:43:44 +1100 (EST)
-Message-ID: <1381524204.5630.91.camel@pasglop>
-Subject: Re: [PATCH 1/2] tty/hvc_console: Add DTR/RTS callback to handle
- HUPCL control
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Date: Sat, 12 Oct 2013 07:43:24 +1100
-In-Reply-To: <20131011124707.GA6082@linux.vnet.ibm.com>
-References: <1372777635-10423-1-git-send-email-brueckner@linux.vnet.ibm.com>
- <1372777635-10423-2-git-send-email-brueckner@linux.vnet.ibm.com>
- <1381475711.5630.67.camel@pasglop>
- <20131011124707.GA6082@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-s390@vger.kernel.org, gregkh@linuxfoundation.org,
- heiko.carstens@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, brueckner@linux.vnet.com, schwidefsky@de.ibm.com,
- jslaby@suse.cz
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ie0-x233.google.com (mail-ie0-x233.google.com
+ [IPv6:2607:f8b0:4001:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2794B2C0337
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 09:02:11 +1100 (EST)
+Received: by mail-ie0-f179.google.com with SMTP id aq17so7129552iec.24
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 15:02:08 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CAErSpo6zGZkL7hWmBOVzd2=MWvY18v5xLO1qg7jVfSgqa8wHzw@mail.gmail.com>
+References: <CAPWoNkJ3NKM-_g93LdRpjvdNFtLt-Pjpg4d4oEKC9CvkpzZ-Wg@mail.gmail.com>
+ <CAPWoNkLQUbFG2vZ7wqoqqVNj4uxKz3Fa_vsSH=1_TDD=XC1f2A@mail.gmail.com>
+ <CAErSpo5ZZgdpkK+QdQUEnNCEXcG_T+QBWTVoQnMTghxkX7n2HA@mail.gmail.com>
+ <CAPWoNkJtnE3ASH0AdgfAD-3soa13DyH-zZAyzWMg9K2=nCX87Q@mail.gmail.com>
+ <CAPWoNkLTC+1ba3vwY0xiJVmmebvuXZBTwiyH5HAFfE8mRReaRQ@mail.gmail.com>
+ <CAErSpo6zGZkL7hWmBOVzd2=MWvY18v5xLO1qg7jVfSgqa8wHzw@mail.gmail.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Fri, 11 Oct 2013 16:01:47 -0600
+Message-ID: <CAErSpo49ZLfxkEanmrrwwiqHR8koiCakqe9h8My2Mu1yA4R1Ww@mail.gmail.com>
+Subject: Re: PCIE device errors after linux kernel upgrade
+To: Leon Ravich <lravich@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,19 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-10-11 at 14:47 +0200, Hendrik Brueckner wrote:
-> The tiocmget/tiocmset callbacks are used to set and get modem status and
-> triggered through an tty ioctl.
-> 
-> The dtr_rts() callback is different and it is used for DTS/RTS handshaking
-> between the hvc_console (or any other tty_port) and the tty layer.  The tty
-> port layer uses this callback to signal the hvc_console whether to raise or
-> lower the DTR/RTS lines.  This is different than the ioctl interface to
-> controls the modem status.
+On Fri, Aug 16, 2013 at 4:05 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
+> On Tue, Aug 6, 2013 at 11:41 PM, Leon Ravich <lravich@gmail.com> wrote:
+>> From comparison of pci printout from the two kernel ,
+>> beside the EDAC errors I noticed other strange differences:
+>>
+>> In 3.8.13 I got BAR 7 and BAR 8:
+>> [   39.017749] pci 0000:00:00.0: BAR 8: assigned [mem 0xc0000000-0xdfffffff]
+>> [   39.024530] pci 0000:00:00.0: BAR 7: can't assign io (size 0x10000)
+>>
+>> In 3.8.13 I am getting:
+>> [   38.931873] pci_bus 0000:01: busn_res: can not insert [bus 01-ff]
+>> under [bus 00-01] (conflicts with (null) [bus 00-01])
+>>
+>>
+>> On 6 August 2013 09:32, Leon Ravich <lravich@gmail.com> wrote:
+>>> Thanks Bjorn.
+>
+> Is this still a problem, or have you found a solution in the meantime?
+>
+>>> 1) If I understand it right this patch only removes the "pci
+>>> 0000:00:00.0: ignoring class 0x0b2000 (doesn't
+>>> match header type 01)" message , don't  care about it , had it before .
+>
+> It also affects how the PCI core handles the device.  But as you said,
+> if you had the message before, it's probably not the cause of the
+> current problem.
+>
+>>> 2) regarding the comparing of printouts:
+>
+> Can you post the complete logs somewhere, maybe in a bugzilla or similar?
+>
+> Where are the "PCIE ERR_CAP_STAT" and similar messages from?  My quick
+> grep didn't find them.
 
-Well, DTR at least is the same via both callbacks... Also normal handshaking
-is normally RTS/CTS, only some HW setups "hijacks" DTR for RTS (old Macs come
-to mind).
+Did this problem ever get resolved?  Is there anything we need to look at?
 
-Cheers,
-Ben.
+Bjorn
