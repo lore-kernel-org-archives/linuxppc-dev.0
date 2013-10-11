@@ -1,26 +1,43 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher DES-CBC3-SHA (168/168 bits))
- (Client CN "myname.my.domain", Issuer "www.mirapoint.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7BC6D2C00CC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 18:30:51 +1100 (EST)
-Message-ID: <5257A882.1070809@huawei.com>
-Date: Fri, 11 Oct 2013 15:28:02 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+Return-Path: <B40534@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AC9EF2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 18:43:54 +1100 (EST)
+Received: from mail161-co1 (localhost [127.0.0.1])	by
+ mail161-co1-R.bigfish.com (Postfix) with ESMTP id 721CAA80194	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 07:43:49 +0000 (UTC)
+Received: from CO1EHSMHS014.bigfish.com (unknown [10.243.78.236])	by
+ mail161-co1.bigfish.com (Postfix) with ESMTP id 4642720068	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 07:43:47 +0000 (UTC)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v4 4/4] powerpc/85xx: add sysfs for pw20 state and
+ altivec idle
+Date: Fri, 11 Oct 2013 07:43:45 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010AA2D8@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1380014925-23300-2-git-send-email-dongsheng.wang@freescale.com>
+ <1380014925-23300-4-git-send-email-dongsheng.wang@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0717F8F9@039-SN2MPN1-011.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F154392590108FF41@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1380131815.24959.185.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010909C3@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07183D0B@039-SN2MPN1-011.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F1543925901090B4F@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1380231435.24959.328.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010911C2@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1380317594.24959.490.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010920B0@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1380582385.24959.542.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F1543925901094898@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1381243807.7979.198.camel@snotra.buserror.net>
+In-Reply-To: <1381243807.7979.198.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 3/6] powerpc/pci: use pci_is_pcie() to simplify code
-References: <1378367730-25996-1-git-send-email-wangyijing@huawei.com>
- <1378367730-25996-3-git-send-email-wangyijing@huawei.com>
- <20130906203035.GA27940@google.com> <1381470596.5630.61.camel@pasglop>
- <20131011061654.GA561@shangw.(null)> <52579BD6.40802@huawei.com>
- <20131011065329.GA5013@shangw.(null)>
-In-Reply-To: <20131011065329.GA5013@shangw.(null)>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <JBottomley@parallels.com>,
- Paul Mackerras <paulus@samba.org>, Hanjun Guo <guohanjun@huawei.com>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,103 +47,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2013/10/11 14:53, Gavin Shan wrote:
-> On Fri, Oct 11, 2013 at 02:33:58PM +0800, Yijing Wang wrote:
->> On 2013/10/11 14:16, Gavin Shan wrote:
->>> On Fri, Oct 11, 2013 at 04:49:56PM +1100, Benjamin Herrenschmidt wrote:
->>>> On Fri, 2013-09-06 at 14:30 -0600, Bjorn Helgaas wrote:
->>>>> On Thu, Sep 05, 2013 at 03:55:27PM +0800, Yijing Wang wrote:
-> 
-> .../...
-> 
->>>>>> Use pci_is_pcie() to simplify code.
->>>>>> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->>>>>> index 55593ee..6ebbe54 100644
->>>>>> --- a/arch/powerpc/kernel/eeh.c
->>>>>> +++ b/arch/powerpc/kernel/eeh.c
->>>>>> @@ -189,8 +189,7 @@ static size_t eeh_gather_pci_data(struct eeh_dev *edev, char * buf, size_t len)
->>>>>>  	}
->>>>>>  
->>>>>>  	/* If PCI-E capable, dump PCI-E cap 10, and the AER */
->>>>>> -	cap = pci_find_capability(dev, PCI_CAP_ID_EXP);
->>>>>> -	if (cap) {
->>>>>> +	if (pci_is_pcie(dev)) {
->>>>>>  		n += scnprintf(buf+n, len-n, "pci-e cap10:\n");
->>>>>>  		printk(KERN_WARNING
->>>>>>  		       "EEH: PCI-E capabilities and status follow:\n");
->>>>
->>>> So we remove reading of "cap", but slightly further down the code does:
->>>>
->>>> 		for (i=0; i<=8; i++) {
->>>> 			eeh_ops->read_config(dn, cap+4*i, 4, &cfg);
->>>> 			n += scnprintf(buf+n, len-n, "%02x:%x\n", 4*i, cfg);
->>>> 			printk(KERN_WARNING "EEH: PCI-E %02x: %08x\n", i, cfg);
->>>> 		}
->>>>
->>>> Which actually *uses* the value of "cap" ... oops :-)
->>>>
->>>
->>> It's my fault and I should have looked into the changes more closely.
->>> How about changing it like this:
->>>
->>> 	cap = pci_is_pcie(dev) ? pci_pcie_cap(dev) :
->>> 	      pci_find_capability(dev, PCI_CAP_ID_EXP);
->>> 	if (cap) {
->>> 		...
->>> 	}
->>>
->>> It would save some PCI-CFG access cycles for most cases :-)
->>
->> Hi Gavin,  it's not your fault, it's my fault. :)
->>
->> Because pci_pcie_cap(dev) == dev->pcie_cap == pci_find_capability(dev, PCI_CAP_ID_EXP);
->>
->> so I think it's ok to use dev->pcie_cap instead of stale "cap".
->>
-> 
-> Yijing, There has one exception: dev->pcie_cap isn't updated yet.
-
-In my idea, dev->pcie_cap(here is pci_dev->pcie_cap) will update in set_pcie_port_type() function,
-and this function always be called after allocate pci device. We get pci_dev by eeh_dev_to_pci_dev(),
-I think pci_dev has been initialized completely.
-
-> This function has possibility to be invoked before that. However,
-> we don't have the binding (eeh device <-> PCI device) for the case.
-> So the piece of code shouldn't be running
-
-In PCI core, I knew
-
-pci_scan_device()
-   pci_setup_device()
-       set_pcie_port_type()
-            pci_dev->pcie_cap = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-
-In powerpc, I also found
-
-of_scan_pci_dev()
-   of_create_pci_dev()
-       set_pcie_port_type()
-	    pci_dev->pcie_cap = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-> 
-> However, it's a bit safer to have pci_find_capability(dev, PCI_CAP_ID_EXP)
-> as well even though we needn't it for 99.9% cases if you agree :-)
-
-I agree, this function is not the performance bottleneck,
-safety is more important. :)
-So if Bjorn and Benjamin think it's not safe, it's ok to drop it. :)
-
-Thanks!
-Yijing.
-
-> 
-> Thanks,
-> Gavin
-> 
-> 
-> .
-> 
-
-
--- 
-Thanks!
-Yijing
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgT2N0b2JlciAwOCwgMjAxMyAxMDo1MCBQTQ0KPiBUbzogV2Fu
+ZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgQmh1c2hhbiBCaGFy
+YXQtUjY1Nzc3OyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDog
+UmU6IFtQQVRDSCB2NCA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBwdzIwIHN0YXRl
+IGFuZA0KPiBhbHRpdmVjIGlkbGUNCj4gDQo+IE9uIE1vbiwgMjAxMy0xMC0wNyBhdCAyMjo1OCAt
+MDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdp
+bmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNl
+bnQ6IFR1ZXNkYXksIE9jdG9iZXIgMDEsIDIwMTMgNzowNiBBTQ0KPiA+ID4gVG86IFdhbmcgRG9u
+Z3NoZW5nLUI0MDUzNA0KPiA+ID4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBCaHVzaGFuIEJoYXJh
+dC1SNjU3Nzc7IGxpbnV4cHBjLQ0KPiA+ID4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+IFN1
+YmplY3Q6IFJlOiBbUEFUQ0ggdjQgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcy
+MCBzdGF0ZQ0KPiBhbmQNCj4gPiA+IGFsdGl2ZWMgaWRsZQ0KPiA+ID4NCj4gPiA+IE9uIFN1biwg
+MjAxMy0wOS0yOSBhdCAwMTo1NyAtMDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0K
+PiA+ID4gPiBJIHRoaW5rIHdlIG5lZWQgdG8gZG8gdGhpczoNCj4gPiA+ID4NCj4gPiA+ID4gI2Rl
+ZmluZSBVNjRfTE9XX01BU0sgICAgICAgICAgICAweGZmZmZmZmZmVUxMDQo+ID4gPiA+ICNkZWZp
+bmUgVTY0X01BU0sgICAgICAgICAgICAgICAgMHhmZmZmZmZmZmZmZmZmZmZmVUxMDQo+ID4gPiA+
+DQo+ID4gPiA+ICAgICAgICAgdTMyIHRtcF9yZW07DQo+ID4gPiA+ICAgICAgICAgdTY0IG5zX3Vf
+cmVtLCBuc191LCBuc19sLCBuc19sX2NhcnJ5Ow0KPiA+ID4gPiAgICAgICAgIHU2NCBjeWNsZTsN
+Cj4gPiA+ID4NCj4gPiA+ID4gICAgICAgICBuc191ID0gbnMgPj4gMzI7DQo+ID4gPiA+ICAgICAg
+ICAgbnNfbCA9IG5zICYgVTY0X0xPV19NQVNLOw0KPiA+ID4gPg0KPiA+ID4gPiAgICAgICAgIG5z
+X2wgKj0gdGJfdGlja3NfcGVyX3VzZWM7DQo+ID4gPiA+ICAgICAgICAgbnNfbF9jYXJyeSA9IG5z
+X2wgPj4gMzI7DQo+ID4gPiA+ICAgICAgICAgbnNfdSAqPSB0Yl90aWNrc19wZXJfdXNlYzsNCj4g
+PiA+ID4gICAgICAgICBuc191ICs9IG5zX2xfY2Fycnk7DQo+ID4gPiA+DQo+ID4gPiA+ICAgICAg
+ICAgbnNfdSA9IGRpdl91NjRfcmVtKG5zX3UsIDEwMDAsICZ0bXBfcmVtKTsNCj4gPiA+ID4gICAg
+ICAgICBuc191X3JlbSA9IHRtcF9yZW07DQo+ID4gPiA+ICAgICAgICAgbnNfbCA9IChuc19sICYg
+VTY0X0xPV19NQVNLKSB8ICgobnNfdV9yZW0pIDw8IDMyKTsNCj4gPiA+ID4gICAgICAgICBuc19s
+ID0gZGl2X3U2NChuc19sLCAxMDAwKTsNCj4gPiA+ID4NCj4gPiA+ID4gICAgICAgICBpZiAobnNf
+dSA+PiAzMikNCj4gPiA+ID4gICAgICAgICAgICAgICAgIGN5Y2xlID0gVTY0X01BU0s7DQo+ID4g
+PiA+ICAgICAgICAgZWxzZQ0KPiA+ID4gPiAgICAgICAgICAgICAgICAgY3ljbGUgPSAobnNfdSA8
+PCAzMikgfCAobnNfbCAmIFU2NF9MT1dfTUFTSyk7DQo+ID4gPiA+DQo+ID4gPiA+IEkgaGFzIGFs
+cmVhZHkgdGVzdGVkIHRoaXMgY29kZSwgYW5kIHdvcmtzIGdvb2QuIDopDQo+ID4gPg0KPiA+ID4g
+VWdoLiAgSSBkb24ndCB0aGluayB3ZSBuZWVkIHRvIGdldCB0aGlzIGNvbXBsaWNhdGVkIChhbmQg
+SSdkIHJhdGhlcg0KPiBub3QNCj4gPiA+IHNwZW5kIHRoZSB0aW1lIHZlcmlmeWluZyB0aGUgY29y
+cmVjdG5lc3Mgb2YgdGhpcykuDQo+ID4gPg0KPiA+ID4gSWYgZm9yIHNvbWUgcmVhc29uIHdlIGRp
+ZCBuZWVkIHNvbWV0aGluZyBsaWtlIHRoaXMgaW4gc29tZSBvdGhlcg0KPiBjb250ZXh0DQo+ID4g
+PiAoSSBkb24ndCB3YW50IHRvIHNlZSBpdCBqdXN0IGZvciBwdzIwKSwgSSdkIGJlIG1vcmUgaW5j
+bGluZWQgdG8gc2VlDQo+ID4gPiBnZW5lcmFsIDEyOC1iaXQgbXVsdC9kaXZpZGUgc3VwcG9ydC4N
+Cj4gPiA+DQo+ID4gSSB3b3VsZCBsaWtlIHRvIHVzZSBteSB2ZXJzaW9uLDopLCBiZWNhdXNlIGl0
+IGNhbiBoYW5kbGUgYW55IHNpdHVhdGlvbg0KPiBhbmQgd2UgZG8gbm90IG5lZWQgdG8gcmVzdHJp
+Y3QgdXNlcnMuDQo+IA0KPiBJdCBhbHNvIHdvdWxkIHRha2UgbW9yZSB0aW1lIHRvIHJldmlldyB0
+aGFuIEkgaGF2ZSB0byBzcGVuZCBvbiBpdCwgbm90DQo+IHRvIG1lbnRpb24gdGhlIGltcGFjdCBv
+biBhbnlvbmUgaW4gdGhlIGZ1dHVyZSB0aGF0IHdhbnRzIHRvIHVuZGVyc3RhbmQNCj4gb3IgbWFp
+bnRhaW4gdGhpcyBjb2RlIC0tIGFsbCBmb3IgdmVyeSB1bmxpa2VseSBzaXR1YXRpb25zIChhbmQg
+dGhlDQo+ICJmYWlsdXJlIiBpbiB0aG9zZSB2ZXJ5IHVubGlrZWx5IHNpdHVhdGlvbnMgaXMganVz
+dCB0aGF0IHdlIGdvIGludG8gUFcyMA0KPiBtb3JlIG9mdGVuIHRoYW4gaW50ZW5kZWQpLg0KPiAN
+Ck9LLCBJIHdpbGwgdXNlIHlvdXIgdmVyaXNvbiwgOikNCg0KICAgICAgICBpZiAobnMgPj0gMTAw
+MDApDQogICAgICAgICAgICAgICAgY3ljbGUgPSAoKG5zICsgNTAwKSAvIDEwMDApICogdGJfdGlj
+a3NfcGVyX3VzZWM7DQogICAgICAgIGVsc2UNCiAgICAgICAgICAgICAgICBjeWNsZSA9IGRpdl91
+NjQoKHU2NClucyAqIHRiX3RpY2tzX3Blcl91c2VjLCAxMDAwKTsNCg0KLWRvbmdzaGVuZw0KDQo+
+IC1TY290dA0KPiANCg0K
