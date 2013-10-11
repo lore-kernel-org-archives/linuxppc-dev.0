@@ -1,26 +1,20 @@
-Return-Path: <ivan.mercier@gmail.com>
-Received: from mail-la0-x22a.google.com (mail-la0-x22a.google.com
- [IPv6:2a00:1450:4010:c03::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4A0AC2C0141
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 02:04:14 +1100 (EST)
-Received: by mail-la0-f42.google.com with SMTP id ep20so3576987lab.29
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 08:04:10 -0700 (PDT)
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9B5922C032F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 02:13:21 +1100 (EST)
+In-Reply-To: <201310111256.r9BCuepM006243@localhost.localdomain>
+References: <201310111256.r9BCuepM006243@localhost.localdomain>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <1381418079.7979.396.camel@snotra.buserror.net>
-References: <CAMc2ieqYDBE8HYzmEvfKxw8o7AdYVGN_ew6tvsn_TsRcpEgL8g@mail.gmail.com>
- <1381271655.7979.290.camel@snotra.buserror.net>
- <CAMc2ieqXg1C6twTaqL9irJoLceSw-fFyTseifW5dmCmnXHWLCw@mail.gmail.com>
- <1381418079.7979.396.camel@snotra.buserror.net>
-From: Mercier Ivan <ivan.mercier@gmail.com>
-Date: Fri, 11 Oct 2013 17:03:30 +0200
-Message-ID: <CAMc2ieqO5eKiXdGh0qraJy3FKPMbzkpTGgWrSwwGHh7sn2iCFw@mail.gmail.com>
-Subject: Re: Elbc device driver
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc 8xx: Fixing memory init issue with CONFIG_PIN_TLB
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Message-ID: <OFF3401910.4A8AA6D0-ONC1257C01.0052FC82-C1257C01.00539C55@transmode.se>
+Date: Fri, 11 Oct 2013 17:13:15 +0200
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,92 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-this should be correct (I'm using chip select 3 for this device)
-        lbc: localbus@ffe124000 {
-                reg = <0xf 0xfe124000 0 0x1000>;
-                ranges = <3 0 0xf 0xe0000000 0x08000000>;
+"Linuxppc-dev" 
+<linuxppc-dev-bounces+joakim.tjernlund=transmode.se@lists.ozlabs.org> 
+wrote on 2013/10/11 14:56:40:
+> 
+> Activating CONFIG_PIN_TLB allows access to the 24 first Mbytes of memory 
+at
+> bootup instead of 8. It is needed for "big" kernels for instance when 
+activating
+> CONFIG_LOCKDEP_SUPPORT. This needs to be taken into account in init_32 
+too,
+> otherwise memory allocation soon fails after startup.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> 
+> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S 
+linux-3.11/arch/powerpc/kernel/head_8xx.S
+> --- linux-3.11.org/arch/powerpc/mm/init_32.c   2013-09-02 
+22:46:10.000000000 +0200
+> +++ linux-3.11/arch/powerpc/mm/init_32.c   2013-09-09 11:28:54.000000000 
++0200
+> @@ -213,7 +213,12 @@
+>      */
+>     BUG_ON(first_memblock_base != 0);
+> 
+> +#ifdef CONFIG_PIN_TLB
+> +   /* 8xx can only access 24MB at the moment */
+> +   memblock_set_current_limit(min_t(u64, first_memblock_size, 
+0x01800000));
+> +#else
+>     /* 8xx can only access 8MB at the moment */
+>     memblock_set_current_limit(min_t(u64, first_memblock_size, 
+0x00800000));
+> +#endif
+>  }
+>  #endif /* CONFIG_8xx */
 
-                a3p400{
-                        #address-cells = <1>;
-                        #size-cells = <1>;
-                        compatible = "my_a3p_driver";
-                        reg = <0x0 0x0 0x800000>;
-                };
-        };
+hmm, I think you should always map 24 MB (or less if RAM < 24 MB) and do 
+the same
+in head_8xx.S.
 
-yeah, I'm including p3041-post.dtsi.
+Or to keep it simple, just always map at least 16 MB here and in 
+head_8xx.S, assuming 
+that 16 MB is min RAM for any 8xx system running 3.x kernels.
 
-so it I get it, I should code my driver doing basically:
-{
-        static u8 __iomem * a3p
-        struct device_node *np;
+Much of the need for pinning would go away if you adopted my 8MB pages 
+from 2.4 to 3.x 
 
-         np = of_find_compatible_node(NULL, NULL, "my_a3p_driver");
-        if (!np) {
-                printk(KERN_CRIT "Could not find my_a3p_driver node\n");
-                return;
-        }
-
-        a3p_bcsr = of_iomap(np, 0);
-        of_node_put(np);
-
-        if (!a3p_bcsr) {
-                printk(KERN_CRIT "Could not remap BCSR\n");
-                return;
-        }
-}
-
-Thanks for your help Scott
-
-
-2013/10/10 Scott Wood <scottwood@freescale.com>:
-> On Thu, 2013-10-10 at 16:54 +0200, Mercier Ivan wrote:
->> Hi,
->> I've got a KERN_INFO msg: "fsl-lbc a3p400.11: failed to get memory
->> region" corresponding to my elbc device that I try to map.
->>                 a3p400@3,0 {
->>                         compatible = "fsl,elbc";
->>                         reg = <0 0xe0000000 0x1000000>;
->>                 };
->
-> The node name and unit address do not match the contents of the node.
-> The former describes a device that sits on the localbus, while the
-> latter has a compatible describes the localbus itself.  I don't know
-> what that reg is, but it doesn't match the unit address.
->
->> The corresponding law on ELBC is 0xe0000000 ->0xf0000000.
->> I want to map my device on 0xe0000000 ->0xe8000000 as it has 16 adress bits.
->>
->> Now the controler registers are properly set,but how do I map the device?
->
-> Your eLBC node should look something like this (I'm assuming CCSR is at
-> 0xffe000000, and that you actually meant 0x0e0000000 and not
-> 0xfe0000000, though probably one of those assumptions is wrong):
->
->         localbus@ffe124000 {
->                 compatible = "fsl,elbc", "simple-bus";
->                 reg = <0xf 0xfe124000 0 0x1000>;
->                 interrupts = <25 2 0 0>;
->                 #address-cells = <2>;
->                 #size-cells = <1>;
->
->                 ranges = <3 0 0 0xe0000000 0x08000000>;
->
->                 /* If at all possible, replace "a3p400" in the node name with
-> something generic */
->                 a3p400@3,0 {
->                         compatible = "something appropriate here";
->                         reg = <3 0 0x08000000>;
->                 };
->         };
->
-> Note that at the dts level, you should be including
-> arch/powerpc/boot/dts/fsl/p3041-post.dtsi and thus your board dts would
-> only need to supply reg, ranges, and the a3p400 node (see
-> arch/powerpc/boot/dts/p3041ds.dts for an example).
->
-> -Scott
->
->
->
+   Jocke
