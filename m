@@ -1,29 +1,26 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ie0-x233.google.com (mail-ie0-x233.google.com
- [IPv6:2607:f8b0:4001:c03::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2794B2C0337
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 09:02:11 +1100 (EST)
-Received: by mail-ie0-f179.google.com with SMTP id aq17so7129552iec.24
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 15:02:08 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 911482C0336
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 09:07:58 +1100 (EST)
+Message-ID: <1381529267.7979.582.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2 1/3] powerpc/booke64: add sync after writing PTE
+From: Scott Wood <scottwood@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 11 Oct 2013 17:07:47 -0500
+In-Reply-To: <1381449086.5630.42.camel@pasglop>
+References: <1379130622-17436-1-git-send-email-scottwood@freescale.com>
+ <1379281131.4098.48.camel@pasglop>
+ <1379376371.2536.218.camel@snotra.buserror.net>
+ <1381444273.7979.473.camel@snotra.buserror.net>
+ <1381447532.7979.488.camel@snotra.buserror.net>
+ <1381449086.5630.42.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <CAErSpo6zGZkL7hWmBOVzd2=MWvY18v5xLO1qg7jVfSgqa8wHzw@mail.gmail.com>
-References: <CAPWoNkJ3NKM-_g93LdRpjvdNFtLt-Pjpg4d4oEKC9CvkpzZ-Wg@mail.gmail.com>
- <CAPWoNkLQUbFG2vZ7wqoqqVNj4uxKz3Fa_vsSH=1_TDD=XC1f2A@mail.gmail.com>
- <CAErSpo5ZZgdpkK+QdQUEnNCEXcG_T+QBWTVoQnMTghxkX7n2HA@mail.gmail.com>
- <CAPWoNkJtnE3ASH0AdgfAD-3soa13DyH-zZAyzWMg9K2=nCX87Q@mail.gmail.com>
- <CAPWoNkLTC+1ba3vwY0xiJVmmebvuXZBTwiyH5HAFfE8mRReaRQ@mail.gmail.com>
- <CAErSpo6zGZkL7hWmBOVzd2=MWvY18v5xLO1qg7jVfSgqa8wHzw@mail.gmail.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 11 Oct 2013 16:01:47 -0600
-Message-ID: <CAErSpo49ZLfxkEanmrrwwiqHR8koiCakqe9h8My2Mu1yA4R1Ww@mail.gmail.com>
-Subject: Re: PCIE device errors after linux kernel upgrade
-To: Leon Ravich <lravich@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,40 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 16, 2013 at 4:05 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> On Tue, Aug 6, 2013 at 11:41 PM, Leon Ravich <lravich@gmail.com> wrote:
->> From comparison of pci printout from the two kernel ,
->> beside the EDAC errors I noticed other strange differences:
->>
->> In 3.8.13 I got BAR 7 and BAR 8:
->> [   39.017749] pci 0000:00:00.0: BAR 8: assigned [mem 0xc0000000-0xdfffffff]
->> [   39.024530] pci 0000:00:00.0: BAR 7: can't assign io (size 0x10000)
->>
->> In 3.8.13 I am getting:
->> [   38.931873] pci_bus 0000:01: busn_res: can not insert [bus 01-ff]
->> under [bus 00-01] (conflicts with (null) [bus 00-01])
->>
->>
->> On 6 August 2013 09:32, Leon Ravich <lravich@gmail.com> wrote:
->>> Thanks Bjorn.
->
-> Is this still a problem, or have you found a solution in the meantime?
->
->>> 1) If I understand it right this patch only removes the "pci
->>> 0000:00:00.0: ignoring class 0x0b2000 (doesn't
->>> match header type 01)" message , don't  care about it , had it before .
->
-> It also affects how the PCI core handles the device.  But as you said,
-> if you had the message before, it's probably not the cause of the
-> current problem.
->
->>> 2) regarding the comparing of printouts:
->
-> Can you post the complete logs somewhere, maybe in a bugzilla or similar?
->
-> Where are the "PCIE ERR_CAP_STAT" and similar messages from?  My quick
-> grep didn't find them.
+On Fri, 2013-10-11 at 10:51 +1100, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-10-10 at 18:25 -0500, Scott Wood wrote:
+> 
+> > Looking at some of the code in mm/, I suspect that the normal callers of
+> > set_pte_at() already have an unlock (and thus a sync) 
+> 
+> Unlock is lwsync actually...
 
-Did this problem ever get resolved?  Is there anything we need to look at?
+Oops, I was seeing the conditional sync from SYNC_IO in the disassembly.
+BTW, it's a bug that we don't do SYNC_IO on e500mc -- the assumption
+that lwsync is 64-bit-only is no longer true.
 
-Bjorn
+> > already, so we may
+> > not even be relying on those retries.  Certainly some of them do; it
+> > would take some effort to verify all of them.
+> > 
+> > Also, without such a sync in map_kernel_page(), even with software
+> > tablewalk, couldn't we theoretically have a situation where a store to
+> > pointer X that exposes a new mapping gets reordered before the PTE store
+> > as seen by another CPU?  The other CPU could see non-NULL X and
+> > dereference it, but get the stale PTE.  Callers of ioremap() generally
+> > don't do a barrier of their own prior to exposing the result.
+> 
+> Hrm, we transition to the new PTE either restricts the access permission
+> in which case it flushes the TLB (and synchronizes with other CPUs) or
+> extends access (adds dirty, set pte from 0 -> populated, ...) in which
+> case the worst case is we see the old one and take a spurrious fault.
+
+Yes, and the lwsync is good enough for software reading the PTE.  So it
+becomes a question of how much spurious faults with hardware tablewalk
+hurt performance, and at least for the lmbench fork test, the sync is
+worse (or maybe lwsync happens to be good enough for hw tablewalk on
+e6500?).
+
+> So the problem would only be with kernel mappings and in that case I
+> think we are fine. A driver doing an ioremap shouldn't then start using
+> that mapping on another CPU before having *informed* that other CPU of
+> the existence of the mapping and that should be ordered.
+
+But are callers of ioremap() expected to use a barrier before exposing
+the pointer (and what type)?  I don't think that's common practice.
+
+map_kernel_page() should not be performance critical, so it shouldn't be
+a big deal to put mb() in there.
+
+-Scott
