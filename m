@@ -1,45 +1,24 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2E4B12C00C2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 17:53:47 +1100 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Fri, 11 Oct 2013 02:53:44 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 98D4838C803B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 02:53:41 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9B6rgBx42401908
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 06:53:42 GMT
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r9B6rfnP029956
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 03:53:42 -0300
-Date: Fri, 11 Oct 2013 14:53:29 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Yijing Wang <wangyijing@huawei.com>
-Subject: Re: [PATCH v2 3/6] powerpc/pci: use pci_is_pcie() to simplify code
-Message-ID: <20131011065329.GA5013@shangw.(null)>
-References: <1378367730-25996-1-git-send-email-wangyijing@huawei.com>
- <1378367730-25996-3-git-send-email-wangyijing@huawei.com>
- <20130906203035.GA27940@google.com>
- <1381470596.5630.61.camel@pasglop>
- <20131011061654.GA561@shangw.(null)> <52579BD6.40802@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52579BD6.40802@huawei.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, Hanjun Guo <guohanjun@huawei.com>,
- linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <JBottomley@parallels.com>,
- Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B60012C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 18:15:35 +1100 (EST)
+Message-ID: <1381475711.5630.67.camel@pasglop>
+Subject: Re: [PATCH 1/2] tty/hvc_console: Add DTR/RTS callback to handle
+ HUPCL control
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Date: Fri, 11 Oct 2013 18:15:11 +1100
+In-Reply-To: <1372777635-10423-2-git-send-email-brueckner@linux.vnet.ibm.com>
+References: <1372777635-10423-1-git-send-email-brueckner@linux.vnet.ibm.com>
+ <1372777635-10423-2-git-send-email-brueckner@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-s390@vger.kernel.org, gregkh@linuxfoundation.org,
+ heiko.carstens@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, brueckner@linux.vnet.com, schwidefsky@de.ibm.com,
+ jslaby@suse.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,66 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 11, 2013 at 02:33:58PM +0800, Yijing Wang wrote:
->On 2013/10/11 14:16, Gavin Shan wrote:
->> On Fri, Oct 11, 2013 at 04:49:56PM +1100, Benjamin Herrenschmidt wrote:
->>> On Fri, 2013-09-06 at 14:30 -0600, Bjorn Helgaas wrote:
->>>> On Thu, Sep 05, 2013 at 03:55:27PM +0800, Yijing Wang wrote:
+On Tue, 2013-07-02 at 17:07 +0200, Hendrik Brueckner wrote:
+> Introduce a new callback to explicitly handle the HUPCL termios control flag.
+> This prepares for a follow-up commit for the hvc_iucv device driver to
+> improve handling when to drop an established network connection.
+> 
+> The callback naming is based on the recently added tty_port interface to
+> facilitate a potential refactoring of the hvc_console to use tty_port
+> functions.
 
-.../...
+I only just noticed that ... oops. Why add those dtr_rts() calls ? We
+already have tiocmset in there which is used to set DTR on HVSI consoles
+such as hvc_opal when using hvsi_lib...
 
->>>>> Use pci_is_pcie() to simplify code.
->>>>> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->>>>> index 55593ee..6ebbe54 100644
->>>>> --- a/arch/powerpc/kernel/eeh.c
->>>>> +++ b/arch/powerpc/kernel/eeh.c
->>>>> @@ -189,8 +189,7 @@ static size_t eeh_gather_pci_data(struct eeh_dev *edev, char * buf, size_t len)
->>>>>  	}
->>>>>  
->>>>>  	/* If PCI-E capable, dump PCI-E cap 10, and the AER */
->>>>> -	cap = pci_find_capability(dev, PCI_CAP_ID_EXP);
->>>>> -	if (cap) {
->>>>> +	if (pci_is_pcie(dev)) {
->>>>>  		n += scnprintf(buf+n, len-n, "pci-e cap10:\n");
->>>>>  		printk(KERN_WARNING
->>>>>  		       "EEH: PCI-E capabilities and status follow:\n");
->>>
->>> So we remove reading of "cap", but slightly further down the code does:
->>>
->>> 		for (i=0; i<=8; i++) {
->>> 			eeh_ops->read_config(dn, cap+4*i, 4, &cfg);
->>> 			n += scnprintf(buf+n, len-n, "%02x:%x\n", 4*i, cfg);
->>> 			printk(KERN_WARNING "EEH: PCI-E %02x: %08x\n", i, cfg);
->>> 		}
->>>
->>> Which actually *uses* the value of "cap" ... oops :-)
->>>
->> 
->> It's my fault and I should have looked into the changes more closely.
->> How about changing it like this:
->> 
->> 	cap = pci_is_pcie(dev) ? pci_pcie_cap(dev) :
->> 	      pci_find_capability(dev, PCI_CAP_ID_EXP);
->> 	if (cap) {
->> 		...
->> 	}
->> 
->> It would save some PCI-CFG access cycles for most cases :-)
->
->Hi Gavin,  it's not your fault, it's my fault. :)
->
->Because pci_pcie_cap(dev) == dev->pcie_cap == pci_find_capability(dev, PCI_CAP_ID_EXP);
->
->so I think it's ok to use dev->pcie_cap instead of stale "cap".
->
+Any reason why a separate callback was needed ?
 
-Yijing, There has one exception: dev->pcie_cap isn't updated yet.
-This function has possibility to be invoked before that. However,
-we don't have the binding (eeh device <-> PCI device) for the case.
-So the piece of code shouldn't be running
+Cheers,
+Ben.
 
-However, it's a bit safer to have pci_find_capability(dev, PCI_CAP_ID_EXP)
-as well even though we needn't it for 99.9% cases if you agree :-)
-
-Thanks,
-Gavin
+> Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+> ---
+>  drivers/tty/hvc/hvc_console.c |   11 ++++++++++-
+>  drivers/tty/hvc/hvc_console.h |    3 +++
+>  2 files changed, 13 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+> index eb255e8..9eba119 100644
+> --- a/drivers/tty/hvc/hvc_console.c
+> +++ b/drivers/tty/hvc/hvc_console.c
+> @@ -361,7 +361,12 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+>  		tty->driver_data = NULL;
+>  		tty_port_put(&hp->port);
+>  		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
+> -	}
+> +	} else
+> +		/* We are ready... raise DTR/RTS */
+> +		if (C_BAUD(tty))
+> +			if (hp->ops->dtr_rts)
+> +				hp->ops->dtr_rts(hp, 1);
+> +
+>  	/* Force wakeup of the polling thread */
+>  	hvc_kick();
+>  
+> @@ -393,6 +398,10 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+>  		/* We are done with the tty pointer now. */
+>  		tty_port_tty_set(&hp->port, NULL);
+>  
+> +		if (C_HUPCL(tty))
+> +			if (hp->ops->dtr_rts)
+> +				hp->ops->dtr_rts(hp, 0);
+> +
+>  		if (hp->ops->notifier_del)
+>  			hp->ops->notifier_del(hp, hp->data);
+>  
+> diff --git a/drivers/tty/hvc/hvc_console.h b/drivers/tty/hvc/hvc_console.h
+> index 674d23c..9131019 100644
+> --- a/drivers/tty/hvc/hvc_console.h
+> +++ b/drivers/tty/hvc/hvc_console.h
+> @@ -75,6 +75,9 @@ struct hv_ops {
+>  	/* tiocmget/set implementation */
+>  	int (*tiocmget)(struct hvc_struct *hp);
+>  	int (*tiocmset)(struct hvc_struct *hp, unsigned int set, unsigned int clear);
+> +
+> +	/* Callbacks to handle tty ports */
+> +	void (*dtr_rts)(struct hvc_struct *hp, int raise);
+>  };
+>  
+>  /* Register a vterm and a slot index for use as a console (console_init) */
