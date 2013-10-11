@@ -1,22 +1,21 @@
 Return-Path: <computersforpeace@gmail.com>
-Received: from mail-oa0-x22d.google.com (mail-oa0-x22d.google.com
- [IPv6:2607:f8b0:4003:c02::22d])
+Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
+ [IPv6:2607:f8b0:4001:c03::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1B9302C0342
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 04:37:07 +1100 (EST)
-Received: by mail-oa0-f45.google.com with SMTP id o17so2657378oag.32
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 10:37:04 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1381512777-13966-1-git-send-email-computersforpeace@gmail.com>
-References: <1381512777-13966-1-git-send-email-computersforpeace@gmail.com>
-Date: Fri, 11 Oct 2013 10:37:04 -0700
-Message-ID: <CAN8TOE-TQxL1DS38HQ0OwXzOhfrSK3GF1CNt4jybaR-HOUQppA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/mpc512x: remove unnecessary #if
+ by ozlabs.org (Postfix) with ESMTPS id BADCA2C0332
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 04:38:05 +1100 (EST)
+Received: by mail-ie0-f178.google.com with SMTP id to1so8984360ieb.37
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 10:38:02 -0700 (PDT)
 From: Brian Norris <computersforpeace@gmail.com>
 To: Anatolij Gustschin <agust@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH v2] powerpc/mpc512x: remove unnecessary #if
+Date: Fri, 11 Oct 2013 10:37:38 -0700
+Message-Id: <1381513058-14164-1-git-send-email-computersforpeace@gmail.com>
+In-Reply-To: <1381512777-13966-1-git-send-email-computersforpeace@gmail.com>
+References: <1381512777-13966-1-git-send-email-computersforpeace@gmail.com>
+In-Reply-To: <1381512777-13966-1-git-send-email-computersforpeace@gmail.com>
 Cc: Gerhard Sittig <gsi@denx.de>, Brian Norris <computersforpeace@gmail.com>,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,38 +27,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Several functions are only ever referenced locally, so make them static.
+Of those functions, many of them are protected by an #if. However, the
+code which can compile fine in either case.
 
-I'm sorry, ignore this version. I left out a diff I meant to include.
+Now that (1) the unneeded code is marked 'static' and (2) the code is
+only used under a C 'if (IS_ENABLED(CONFIG_FB_FSL_DIU))', the compiler
+can automatically remove the unneeded code, and we don't need the #if or
+the empty stub functions.
 
-On Fri, Oct 11, 2013 at 10:32 AM, Brian Norris
-<computersforpeace@gmail.com> wrote:
-> Several functions are only ever referenced locally, so make them static.
-> Of those functions, many of them are protected by an #if. However, the
-> code which can compile fine in either case.
->
-> Now that (1) the unneeded code is marked 'static' and (2) the code is
-> only used under a C 'if (IS_ENABLED(CONFIG_FB_FSL_DIU))', the compiler
-> can automatically remove the unneeded code, and we don't need the #if or
-> the empty stub functions.
->
-> Signed-off-by: Brian Norris <computersforpeace@gmail.com>
-> ---
-> Based off of Gerhard Sittig's patch:
->   powerpc/mpc512x: silence build warning upon disabled DIU
->
-> Compile-tested with CONFIG_FB_FSL_DIU=n
+Signed-off-by: Brian Norris <computersforpeace@gmail.com>
+---
+v2: left out a diff I was holding locally (to remove an #if/#endif
+    completely). Sorry for the noise.
 
-...
+Based off of Gerhard Sittig's patch:
+  powerpc/mpc512x: silence build warning upon disabled DIU
 
-> @@ -42,6 +40,7 @@ struct platform_diu_data_ops {
->         void (*release_bootmem)(void);
->  };
->
-> +#if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
->  extern struct platform_diu_data_ops diu_ops;
->  #endif
+Compile-tested with CONFIG_FB_FSL_DIU=n
 
-The above hunk is incorrect. I will send v2.
+ arch/powerpc/platforms/512x/mpc512x_shared.c | 21 +++++++--------------
+ arch/powerpc/sysdev/fsl_soc.h                |  3 ---
+ 2 files changed, 7 insertions(+), 17 deletions(-)
 
-Brian
+diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+index 1a7b1d0..36b5652 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_shared.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -60,8 +60,6 @@ void mpc512x_restart(char *cmd)
+ 		;
+ }
+ 
+-#if IS_ENABLED(CONFIG_FB_FSL_DIU)
+-
+ struct fsl_diu_shared_fb {
+ 	u8		gamma[0x300];	/* 32-bit aligned! */
+ 	struct diu_ad	ad0;		/* 32-bit aligned! */
+@@ -71,7 +69,7 @@ struct fsl_diu_shared_fb {
+ };
+ 
+ #define DIU_DIV_MASK	0x000000ff
+-void mpc512x_set_pixel_clock(unsigned int pixclock)
++static void mpc512x_set_pixel_clock(unsigned int pixclock)
+ {
+ 	unsigned long bestval, bestfreq, speed, busfreq;
+ 	unsigned long minpixclock, maxpixclock, pixval;
+@@ -164,7 +162,7 @@ void mpc512x_set_pixel_clock(unsigned int pixclock)
+ 	iounmap(ccm);
+ }
+ 
+-enum fsl_diu_monitor_port
++static enum fsl_diu_monitor_port
+ mpc512x_valid_monitor_port(enum fsl_diu_monitor_port port)
+ {
+ 	return FSL_DIU_PORT_DVI;
+@@ -179,7 +177,7 @@ static inline void mpc512x_free_bootmem(struct page *page)
+ 	free_reserved_page(page);
+ }
+ 
+-void mpc512x_release_bootmem(void)
++static void mpc512x_release_bootmem(void)
+ {
+ 	unsigned long addr = diu_shared_fb.fb_phys & PAGE_MASK;
+ 	unsigned long size = diu_shared_fb.fb_len;
+@@ -205,7 +203,7 @@ void mpc512x_release_bootmem(void)
+  * address range will be reserved in setup_arch() after bootmem
+  * allocator is up.
+  */
+-void __init mpc512x_init_diu(void)
++static void __init mpc512x_init_diu(void)
+ {
+ 	struct device_node *np;
+ 	struct diu __iomem *diu_reg;
+@@ -274,7 +272,7 @@ out:
+ 	iounmap(diu_reg);
+ }
+ 
+-void __init mpc512x_setup_diu(void)
++static void __init mpc512x_setup_diu(void)
+ {
+ 	int ret;
+ 
+@@ -303,11 +301,6 @@ void __init mpc512x_setup_diu(void)
+ 	diu_ops.release_bootmem		= mpc512x_release_bootmem;
+ }
+ 
+-#else
+-void __init mpc512x_setup_diu(void) { /* EMPTY */ }
+-void __init mpc512x_init_diu(void) { /* EMPTY */ }
+-#endif
+-
+ void __init mpc512x_init_IRQ(void)
+ {
+ 	struct device_node *np;
+@@ -340,7 +333,7 @@ static struct of_device_id __initdata of_bus_ids[] = {
+ 	{},
+ };
+ 
+-void __init mpc512x_declare_of_platform_devices(void)
++static void __init mpc512x_declare_of_platform_devices(void)
+ {
+ 	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
+ 		printk(KERN_ERR __FILE__ ": "
+@@ -390,7 +383,7 @@ static unsigned int __init get_fifo_size(struct device_node *np,
+ 		    ((u32)(_base) + sizeof(struct mpc52xx_psc)))
+ 
+ /* Init PSC FIFO space for TX and RX slices */
+-void __init mpc512x_psc_fifo_init(void)
++static void __init mpc512x_psc_fifo_init(void)
+ {
+ 	struct device_node *np;
+ 	void __iomem *psc;
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index c6d0073..4c5a19e 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -21,8 +21,6 @@ struct device_node;
+ 
+ extern void fsl_rstcr_restart(char *cmd);
+ 
+-#if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
+-
+ /* The different ports that the DIU can be connected to */
+ enum fsl_diu_monitor_port {
+ 	FSL_DIU_PORT_DVI,	/* DVI */
+@@ -43,7 +41,6 @@ struct platform_diu_data_ops {
+ };
+ 
+ extern struct platform_diu_data_ops diu_ops;
+-#endif
+ 
+ void fsl_hv_restart(char *cmd);
+ void fsl_hv_halt(void);
+-- 
+1.8.4
