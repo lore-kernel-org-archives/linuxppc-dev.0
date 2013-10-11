@@ -1,9 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/3] powerpc: Implement arch_get_random_long/int() for powernv
-Date: Fri, 11 Oct 2013 14:07:57 +1100
-Message-Id: <1381460879-2814-1-git-send-email-michael@ellerman.id.au>
+Subject: [PATCH 2/3] hwrng: Add a driver for the hwrng found in power7+ systems
+Date: Fri, 11 Oct 2013 14:07:58 +1100
+Message-Id: <1381460879-2814-2-git-send-email-michael@ellerman.id.au>
+In-Reply-To: <1381460879-2814-1-git-send-email-michael@ellerman.id.au>
+References: <1381460879-2814-1-git-send-email-michael@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,123 +15,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the plumbing to implement arch_get_random_long/int(). It didn't seem
-worth adding an extra ppc_md hook for int, so we reuse the one for long.
+Add a driver for the hwrng found in power7+ systems, based on the
+existing code for the arch_get_random_long() hook.
 
-Add an implementation for powernv based on the hwrng found in power7+
-systems. We whiten the output of the hwrng, and the result passes all
-the dieharder tests.
+We only register a single instance of the driver, not one per device,
+because we use the existing per_cpu array of devices in the arch code.
+This means we always read from the "closest" device, avoiding inter-chip
+memory traffic.
 
+Signed-off-by: Guo Chao <yan@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/Kconfig                    |   3 +
- arch/powerpc/include/asm/archrandom.h   |  32 +++++++++
- arch/powerpc/include/asm/machdep.h      |   4 ++
- arch/powerpc/platforms/powernv/Kconfig  |   1 +
- arch/powerpc/platforms/powernv/Makefile |   2 +-
- arch/powerpc/platforms/powernv/rng.c    | 122 ++++++++++++++++++++++++++++++++
- 6 files changed, 163 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/include/asm/archrandom.h
- create mode 100644 arch/powerpc/platforms/powernv/rng.c
+ drivers/char/hw_random/Kconfig       | 13 ++++++
+ drivers/char/hw_random/Makefile      |  1 +
+ drivers/char/hw_random/powernv-rng.c | 81 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 95 insertions(+)
+ create mode 100644 drivers/char/hw_random/powernv-rng.c
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 38f3b7e..45f16f7 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -1009,6 +1009,9 @@ config PHYSICAL_START
- 	default "0x00000000"
- endif
+diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
+index 0aa9d91..c206de2 100644
+--- a/drivers/char/hw_random/Kconfig
++++ b/drivers/char/hw_random/Kconfig
+@@ -290,6 +290,19 @@ config HW_RANDOM_PSERIES
  
-+config	ARCH_RANDOM
-+	def_bool n
+ 	  If unsure, say Y.
+ 
++config HW_RANDOM_POWERNV
++	tristate "PowerNV Random Number Generator support"
++	depends on HW_RANDOM && PPC_POWERNV
++	default HW_RANDOM
++	---help---
++	  This is the driver for Random Number Generator hardware found
++	  in POWER7+ and above machines for PowerNV platform.
 +
- source "net/Kconfig"
- 
- source "drivers/Kconfig"
-diff --git a/arch/powerpc/include/asm/archrandom.h b/arch/powerpc/include/asm/archrandom.h
++	  To compile this driver as a module, choose M here: the
++	  module will be called powernv-rng.
++
++	  If unsure, say Y.
++
+ config HW_RANDOM_EXYNOS
+ 	tristate "EXYNOS HW random number generator support"
+ 	depends on HW_RANDOM && HAS_IOMEM && HAVE_CLK
+diff --git a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
+index bed467c..d7d2435 100644
+--- a/drivers/char/hw_random/Makefile
++++ b/drivers/char/hw_random/Makefile
+@@ -24,6 +24,7 @@ obj-$(CONFIG_HW_RANDOM_NOMADIK) += nomadik-rng.o
+ obj-$(CONFIG_HW_RANDOM_PICOXCELL) += picoxcell-rng.o
+ obj-$(CONFIG_HW_RANDOM_PPC4XX) += ppc4xx-rng.o
+ obj-$(CONFIG_HW_RANDOM_PSERIES) += pseries-rng.o
++obj-$(CONFIG_HW_RANDOM_POWERNV) += powernv-rng.o
+ obj-$(CONFIG_HW_RANDOM_EXYNOS)	+= exynos-rng.o
+ obj-$(CONFIG_HW_RANDOM_TPM) += tpm-rng.o
+ obj-$(CONFIG_HW_RANDOM_BCM2835) += bcm2835-rng.o
+diff --git a/drivers/char/hw_random/powernv-rng.c b/drivers/char/hw_random/powernv-rng.c
 new file mode 100644
-index 0000000..d853d16
+index 0000000..3f4f632
 --- /dev/null
-+++ b/arch/powerpc/include/asm/archrandom.h
-@@ -0,0 +1,32 @@
-+#ifndef _ASM_POWERPC_ARCHRANDOM_H
-+#define _ASM_POWERPC_ARCHRANDOM_H
-+
-+#ifdef CONFIG_ARCH_RANDOM
-+
-+#include <asm/machdep.h>
-+
-+static inline int arch_get_random_long(unsigned long *v)
-+{
-+	if (ppc_md.get_random_long)
-+		return ppc_md.get_random_long(v);
-+
-+	return 0;
-+}
-+
-+static inline int arch_get_random_int(unsigned int *v)
-+{
-+	unsigned long val;
-+	int rc;
-+
-+	rc = arch_get_random_long(&val);
-+	if (rc)
-+		*v = val;
-+
-+	return rc;
-+}
-+
-+int powernv_get_random_long(unsigned long *v);
-+
-+#endif /* CONFIG_ARCH_RANDOM */
-+
-+#endif /* _ASM_POWERPC_ARCHRANDOM_H */
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 8b48090..ce6cc2a 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -263,6 +263,10 @@ struct machdep_calls {
- 	ssize_t (*cpu_probe)(const char *, size_t);
- 	ssize_t (*cpu_release)(const char *, size_t);
- #endif
-+
-+#ifdef CONFIG_ARCH_RANDOM
-+	int (*get_random_long)(unsigned long *v);
-+#endif
- };
- 
- extern void e500_idle(void);
-diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-index 6fae5eb..2108464 100644
---- a/arch/powerpc/platforms/powernv/Kconfig
-+++ b/arch/powerpc/platforms/powernv/Kconfig
-@@ -9,6 +9,7 @@ config PPC_POWERNV
- 	select EPAPR_BOOT
- 	select PPC_INDIRECT_PIO
- 	select PPC_UDBG_16550
-+	select ARCH_RANDOM
- 	default y
- 
- config POWERNV_MSI
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 300c437..6760a86 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -1,5 +1,5 @@
- obj-y			+= setup.o opal-takeover.o opal-wrappers.o opal.o
--obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o
-+obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o rng.o
- 
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
-diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
-new file mode 100644
-index 0000000..02db7d7
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/rng.c
-@@ -0,0 +1,122 @@
++++ b/drivers/char/hw_random/powernv-rng.c
+@@ -0,0 +1,81 @@
 +/*
-+ * Copyright 2013, Michael Ellerman, IBM Corporation.
++ * Copyright 2013 Michael Ellerman, Guo Chao, IBM Corp.
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License
@@ -137,118 +83,77 @@ index 0000000..02db7d7
 + * 2 of the License, or (at your option) any later version.
 + */
 +
-+#define pr_fmt(fmt)	"powernv-rng: " fmt
++#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
 +
++#include <linux/module.h>
 +#include <linux/kernel.h>
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/slab.h>
-+#include <asm/archrandom.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
++#include <linux/platform_device.h>
++#include <linux/random.h>
++#include <linux/hw_random.h>
 +
++static int powernv_rng_read(struct hwrng *rng, void *data, size_t max, bool wait)
++{
++	unsigned long *buf;
++	int i, len;
 +
-+struct powernv_rng {
-+	void __iomem *regs;
-+	unsigned long mask;
++	/* We rely on rng_buffer_size() being >= sizeof(unsigned long) */
++	len = max / sizeof(unsigned long);
++
++	buf = (unsigned long *)data;
++
++	for (i = 0; i < len; i++)
++		powernv_get_random_long(buf++);
++
++	return len * sizeof(unsigned long);
++}
++
++static struct hwrng powernv_hwrng = {
++	.name = "powernv-rng",
++	.read = powernv_rng_read,
 +};
 +
-+static DEFINE_PER_CPU(struct powernv_rng *, powernv_rng);
-+
-+
-+static unsigned long rng_whiten(struct powernv_rng *rng, unsigned long val)
++static int powernv_rng_remove(struct platform_device *pdev)
 +{
-+	unsigned long parity;
-+
-+	/* Calculate the parity of the value */
-+	asm ("popcntd %0,%1" : "=r" (parity) : "r" (val));
-+
-+	/* xor our value with the previous mask */
-+	val ^= rng->mask;
-+
-+	/* update the mask based on the parity of this value */
-+	rng->mask = (rng->mask << 1) | (parity & 1);
-+
-+	return val;
-+}
-+
-+int powernv_get_random_long(unsigned long *v)
-+{
-+	struct powernv_rng *rng;
-+
-+	rng = get_cpu_var(powernv_rng);
-+
-+	*v = rng_whiten(rng, in_be64(rng->regs));
-+
-+	put_cpu_var(rng);
-+
-+	return 1;
-+}
-+EXPORT_SYMBOL_GPL(powernv_get_random_long);
-+
-+static __init void rng_init_per_cpu(struct powernv_rng *rng,
-+				    struct device_node *dn)
-+{
-+	int chip_id, cpu;
-+
-+	chip_id = of_get_ibm_chip_id(dn);
-+	if (chip_id == -1)
-+		pr_warn("No ibm,chip-id found for %s.\n", dn->full_name);
-+
-+	for_each_possible_cpu(cpu) {
-+		if (per_cpu(powernv_rng, cpu) == NULL ||
-+		    cpu_to_chip_id(cpu) == chip_id) {
-+			per_cpu(powernv_rng, cpu) = rng;
-+		}
-+	}
-+}
-+
-+static __init int rng_create(struct device_node *dn)
-+{
-+	struct powernv_rng *rng;
-+	unsigned long val;
-+
-+	rng = kzalloc(sizeof(*rng), GFP_KERNEL);
-+	if (!rng)
-+		return -ENOMEM;
-+
-+	rng->regs = of_iomap(dn, 0);
-+	if (!rng->regs) {
-+		kfree(rng);
-+		return -ENXIO;
-+	}
-+
-+	val = in_be64(rng->regs);
-+	rng->mask = val;
-+
-+	rng_init_per_cpu(rng, dn);
-+
-+	pr_info_once("Registering arch random hook.\n");
-+
-+	ppc_md.get_random_long = powernv_get_random_long;
++	hwrng_unregister(&powernv_hwrng);
 +
 +	return 0;
 +}
 +
-+static __init int rng_init(void)
++static int powernv_rng_probe(struct platform_device *pdev)
 +{
-+	struct device_node *dn;
 +	int rc;
 +
-+	for_each_compatible_node(dn, NULL, "ibm,power-rng") {
-+		rc = rng_create(dn);
-+		if (rc) {
-+			pr_err("Failed creating rng for %s (%d).\n",
-+				dn->full_name, rc);
-+			continue;
-+		}
++	rc = hwrng_register(&powernv_hwrng);
++	if (rc) {
++		/* We only register one device, ignore any others */
++		if (rc == -EEXIST)
++			rc = -ENODEV;
 +
-+		/* Create devices for hwrng driver */
-+		of_platform_device_create(dn, NULL, NULL);
++		return rc;
 +	}
++
++	pr_info("Registered powernv hwrng.\n");
 +
 +	return 0;
 +}
-+subsys_initcall(rng_init);
++
++static struct of_device_id powernv_rng_match[] = {
++	{ .compatible	= "ibm,power-rng",},
++	{},
++};
++MODULE_DEVICE_TABLE(of, powernv_rng_match);
++
++static struct platform_driver powernv_rng_driver = {
++	.driver = {
++		.name = "powernv_rng",
++		.of_match_table = powernv_rng_match,
++	},
++	.probe	= powernv_rng_probe,
++	.remove = powernv_rng_remove,
++};
++module_platform_driver(powernv_rng_driver);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("Bare metal HWRNG driver for POWER7+ and above");
 -- 
 1.8.1.2
