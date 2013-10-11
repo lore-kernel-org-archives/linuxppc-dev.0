@@ -2,24 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7A6772C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 16:51:45 +1100 (EST)
-Message-ID: <1381470596.5630.61.camel@pasglop>
-Subject: Re: [PATCH v2 3/6] powerpc/pci: use pci_is_pcie() to simplify code
+ by ozlabs.org (Postfix) with ESMTPS id E369A2C00CC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 16:54:04 +1100 (EST)
+Message-ID: <1381470838.5630.62.camel@pasglop>
+Subject: Re: [PATCH] powerpc: Add VMX optimised xor for RAID5
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 11 Oct 2013 16:49:56 +1100
-In-Reply-To: <20130906203035.GA27940@google.com>
-References: <1378367730-25996-1-git-send-email-wangyijing@huawei.com>
- <1378367730-25996-3-git-send-email-wangyijing@huawei.com>
- <20130906203035.GA27940@google.com>
+To: Anton Blanchard <anton@samba.org>
+Date: Fri, 11 Oct 2013 16:53:58 +1100
+In-Reply-To: <20130926133004.1bff1bd4@kryten>
+References: <20130926133004.1bff1bd4@kryten>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <JBottomley@parallels.com>,
- Paul Mackerras <paulus@samba.org>, Hanjun Guo <guohanjun@huawei.com>,
- Yijing Wang <wangyijing@huawei.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,74 +23,292 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-09-06 at 14:30 -0600, Bjorn Helgaas wrote:
-> On Thu, Sep 05, 2013 at 03:55:27PM +0800, Yijing Wang wrote:
-> > Use pci_is_pcie() to simplify code.
-> > 
-> > Acked-by: Kumar Gala <galak@kernel.crashing.org>
-> > Reviewed-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-> > Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-> > Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Cc: linux-kernel@vger.kernel.org
-> > ---
-> >  arch/powerpc/kernel/eeh.c     |    3 +--
-> >  arch/powerpc/sysdev/fsl_pci.c |    2 +-
-> >  2 files changed, 2 insertions(+), 3 deletions(-)
+On Thu, 2013-09-26 at 13:30 +1000, Anton Blanchard wrote:
+> Add a VMX optimised xor, used primarily for RAID5. On a POWER7 blade
+> this is a decent win:
 > 
-> Ben, Paul, this has no dependencies on anything new to PCI or any
-> other patches in this series, so you can take it through the POWERPC
-> tree.  If you don't want to do that, let me know and I can take it.
+>    32regs    : 17932.800 MB/sec
+>    altivec   : 19724.800 MB/sec
 > 
-> If you want it:
+> The bigger gain is when the same test is run in SMT4 mode, as it
+> would if the machine was busy:
 > 
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+>    8regs     :  8377.600 MB/sec
+>    altivec   : 15801.600 MB/sec
+> 
+> I tested this against an array created without the patch, and also
+> verified it worked as expected on a little endian kernel.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
 
-It's also quite broken :-)
+Patch got busticated on the way to the list ...
 
-See below:
-
-> > diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> > index 55593ee..6ebbe54 100644
-> > --- a/arch/powerpc/kernel/eeh.c
-> > +++ b/arch/powerpc/kernel/eeh.c
-> > @@ -189,8 +189,7 @@ static size_t eeh_gather_pci_data(struct eeh_dev *edev, char * buf, size_t len)
-> >  	}
-> >  
-> >  	/* If PCI-E capable, dump PCI-E cap 10, and the AER */
-> > -	cap = pci_find_capability(dev, PCI_CAP_ID_EXP);
-> > -	if (cap) {
-> > +	if (pci_is_pcie(dev)) {
-> >  		n += scnprintf(buf+n, len-n, "pci-e cap10:\n");
-> >  		printk(KERN_WARNING
-> >  		       "EEH: PCI-E capabilities and status follow:\n");
-
-So we remove reading of "cap", but slightly further down the code does:
-
-		for (i=0; i<=8; i++) {
-			eeh_ops->read_config(dn, cap+4*i, 4, &cfg);
-			n += scnprintf(buf+n, len-n, "%02x:%x\n", 4*i, cfg);
-			printk(KERN_WARNING "EEH: PCI-E %02x: %08x\n", i, cfg);
-		}
-
-Which actually *uses* the value of "cap" ... oops :-)
-
-> > diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> > index 46ac1dd..5402a1d 100644
-> > --- a/arch/powerpc/sysdev/fsl_pci.c
-> > +++ b/arch/powerpc/sysdev/fsl_pci.c
-> > @@ -41,7 +41,7 @@ static void quirk_fsl_pcie_header(struct pci_dev *dev)
-> >  	u8 hdr_type;
-> >  
-> >  	/* if we aren't a PCIe don't bother */
-> > -	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
-> > +	if (!pci_is_pcie(dev))
-> >  		return;
-> >  
-> >  	/* if we aren't in host mode don't bother */
-> > -- 
-> > 1.7.1
-> > 
-> > 
+> Index: le-kernel/arch/powerpc/include/asm/xor.h
+> ===================================================================
+> --- le-kernel.orig/arch/powerpc/include/asm/xor.h
+> +++ le-kernel/arch/powerpc/include/asm/xor.h
+> @@ -1 +1,68 @@
+> +/*
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+> 02111-1307, USA.
+> + *
+> + * Copyright (C) IBM Corporation, 2012
+> + *
+> + * Author: Anton Blanchard <anton@au.ibm.com>
+> + */
+> +#ifndef _ASM_POWERPC_XOR_H
+> +#define _ASM_POWERPC_XOR_H
+> +
+> +#ifdef CONFIG_ALTIVEC
+> +
+> +#include <asm/cputable.h>
+> +
+> +void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
+> +		   unsigned long *v2_in);
+> +void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
+> +		   unsigned long *v2_in, unsigned long *v3_in);
+> +void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
+> +		   unsigned long *v2_in, unsigned long *v3_in,
+> +		   unsigned long *v4_in);
+> +void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
+> +		   unsigned long *v2_in, unsigned long *v3_in,
+> +		   unsigned long *v4_in, unsigned long *v5_in);
+> +
+> +static struct xor_block_template xor_block_altivec = {
+> +	.name = "altivec",
+> +	.do_2 = xor_altivec_2,
+> +	.do_3 = xor_altivec_3,
+> +	.do_4 = xor_altivec_4,
+> +	.do_5 = xor_altivec_5,
+> +};
+> +
+> +#define XOR_SPEED_ALTIVEC()				\
+> +	do {						\
+> +		if (cpu_has_feature(CPU_FTR_ALTIVEC))	\
+> +			xor_speed(&xor_block_altivec);	\
+> +	} while (0)
+> +#else
+> +#define XOR_SPEED_ALTIVEC
+> +#endif
+> +
+> +/* Also try the generic routines. */
+>  #include <asm-generic/xor.h>
+> +
+> +#undef XOR_TRY_TEMPLATES
+> +#define XOR_TRY_TEMPLATES				\
+> +do {							\
+> +	xor_speed(&xor_block_8regs);			\
+> +	xor_speed(&xor_block_8regs_p);			\
+> +	xor_speed(&xor_block_32regs);			\
+> +	xor_speed(&xor_block_32regs_p);			\
+> +	XOR_SPEED_ALTIVEC();				\
+> +} while (0)
+> +
+> +#endif /* _ASM_POWERPC_XOR_H */
+> Index: le-kernel/arch/powerpc/lib/Makefile
+> ===================================================================
+> --- le-kernel.orig/arch/powerpc/lib/Makefile
+> +++ le-kernel/arch/powerpc/lib/Makefile
+> @@ -39,3 +39,6 @@ obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
+>  obj-y			+= code-patching.o
+>  obj-y			+= feature-fixups.o
+>  obj-$(CONFIG_FTR_FIXUP_SELFTEST) += feature-fixups-test.o
+> +
+> +obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o
+> +CFLAGS_xor_vmx.o += -maltivec -mabi=altivec
+> Index: le-kernel/arch/powerpc/lib/xor_vmx.c
+> ===================================================================
+> --- /dev/null
+> +++ le-kernel/arch/powerpc/lib/xor_vmx.c
+> @@ -0,0 +1,177 @@
+> +/*
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+> 02111-1307, USA.
+> + *
+> + * Copyright (C) IBM Corporation, 2012
+> + *
+> + * Author: Anton Blanchard <anton@au.ibm.com>
+> + */
+> +#include <altivec.h>
+> +
+> +#include <linux/preempt.h>
+> +#include <linux/export.h>
+> +#include <linux/sched.h>
+> +#include <asm/switch_to.h>
+> +
+> +typedef vector signed char unative_t;
+> +
+> +#define DEFINE(V)				\
+> +	unative_t *V = (unative_t *)V##_in;	\
+> +	unative_t V##_0, V##_1, V##_2, V##_3
+> +
+> +#define LOAD(V)			\
+> +	do {			\
+> +		V##_0 = V[0];	\
+> +		V##_1 = V[1];	\
+> +		V##_2 = V[2];	\
+> +		V##_3 = V[3];	\
+> +	} while (0)
+> +
+> +#define STORE(V)		\
+> +	do {			\
+> +		V[0] = V##_0;	\
+> +		V[1] = V##_1;	\
+> +		V[2] = V##_2;	\
+> +		V[3] = V##_3;	\
+> +	} while (0)
+> +
+> +#define XOR(V1, V2)					\
+> +	do {						\
+> +		V1##_0 = vec_xor(V1##_0, V2##_0);	\
+> +		V1##_1 = vec_xor(V1##_1, V2##_1);	\
+> +		V1##_2 = vec_xor(V1##_2, V2##_2);	\
+> +		V1##_3 = vec_xor(V1##_3, V2##_3);	\
+> +	} while (0)
+> +
+> +void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
+> +		   unsigned long *v2_in)
+> +{
+> +	DEFINE(v1);
+> +	DEFINE(v2);
+> +	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
+> +
+> +	preempt_disable();
+> +	enable_kernel_altivec();
+> +
+> +	do {
+> +		LOAD(v1);
+> +		LOAD(v2);
+> +		XOR(v1, v2);
+> +		STORE(v1);
+> +
+> +		v1 += 4;
+> +		v2 += 4;
+> +	} while (--lines > 0);
+> +
+> +	preempt_enable();
+> +}
+> +EXPORT_SYMBOL(xor_altivec_2);
+> +
+> +void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
+> +		   unsigned long *v2_in, unsigned long *v3_in)
+> +{
+> +	DEFINE(v1);
+> +	DEFINE(v2);
+> +	DEFINE(v3);
+> +	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
+> +
+> +	preempt_disable();
+> +	enable_kernel_altivec();
+> +
+> +	do {
+> +		LOAD(v1);
+> +		LOAD(v2);
+> +		LOAD(v3);
+> +		XOR(v1, v2);
+> +		XOR(v1, v3);
+> +		STORE(v1);
+> +
+> +		v1 += 4;
+> +		v2 += 4;
+> +		v3 += 4;
+> +	} while (--lines > 0);
+> +
+> +	preempt_enable();
+> +}
+> +EXPORT_SYMBOL(xor_altivec_3);
+> +
+> +void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
+> +		   unsigned long *v2_in, unsigned long *v3_in,
+> +		   unsigned long *v4_in)
+> +{
+> +	DEFINE(v1);
+> +	DEFINE(v2);
+> +	DEFINE(v3);
+> +	DEFINE(v4);
+> +	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
+> +
+> +	preempt_disable();
+> +	enable_kernel_altivec();
+> +
+> +	do {
+> +		LOAD(v1);
+> +		LOAD(v2);
+> +		LOAD(v3);
+> +		LOAD(v4);
+> +		XOR(v1, v2);
+> +		XOR(v3, v4);
+> +		XOR(v1, v3);
+> +		STORE(v1);
+> +
+> +		v1 += 4;
+> +		v2 += 4;
+> +		v3 += 4;
+> +		v4 += 4;
+> +	} while (--lines > 0);
+> +
+> +	preempt_enable();
+> +}
+> +EXPORT_SYMBOL(xor_altivec_4);
+> +
+> +void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
+> +		   unsigned long *v2_in, unsigned long *v3_in,
+> +		   unsigned long *v4_in, unsigned long *v5_in)
+> +{
+> +	DEFINE(v1);
+> +	DEFINE(v2);
+> +	DEFINE(v3);
+> +	DEFINE(v4);
+> +	DEFINE(v5);
+> +	unsigned long lines = bytes / (sizeof(unative_t)) / 4;
+> +
+> +	preempt_disable();
+> +	enable_kernel_altivec();
+> +
+> +	do {
+> +		LOAD(v1);
+> +		LOAD(v2);
+> +		LOAD(v3);
+> +		LOAD(v4);
+> +		LOAD(v5);
+> +		XOR(v1, v2);
+> +		XOR(v3, v4);
+> +		XOR(v1, v5);
+> +		XOR(v1, v3);
+> +		STORE(v1);
+> +
+> +		v1 += 4;
+> +		v2 += 4;
+> +		v3 += 4;
+> +		v4 += 4;
+> +		v5 += 4;
+> +	} while (--lines > 0);
+> +
+> +	preempt_enable();
+> +}
+> +EXPORT_SYMBOL(xor_altivec_5);
