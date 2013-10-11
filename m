@@ -1,23 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 134AE2C010A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 10:51:36 +1100 (EST)
-Message-ID: <1381449086.5630.42.camel@pasglop>
-Subject: Re: [PATCH v2 1/3] powerpc/booke64: add sync after writing PTE
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Fri, 11 Oct 2013 10:51:26 +1100
-In-Reply-To: <1381447532.7979.488.camel@snotra.buserror.net>
-References: <1379130622-17436-1-git-send-email-scottwood@freescale.com>
- <1379281131.4098.48.camel@pasglop>
- <1379376371.2536.218.camel@snotra.buserror.net>
- <1381444273.7979.473.camel@snotra.buserror.net>
- <1381447532.7979.488.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Date: Fri, 11 Oct 2013 13:11:31 +1100
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc, perf: Configure BHRB filter before enabling PMU
+ interrupts
+Message-ID: <20131011021131.GA26561@concordia>
+References: <1381120226-14838-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <20131008042137.GE31666@concordia>
+ <5253B26E.3020800@linux.vnet.ibm.com>
+ <20131009012130.GA23780@concordia>
+ <5254DFA8.2050100@linux.vnet.ibm.com>
+ <20131009060321.GB28160@concordia>
+ <52566A4E.2000409@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <52566A4E.2000409@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-10-10 at 18:25 -0500, Scott Wood wrote:
-
-> Looking at some of the code in mm/, I suspect that the normal callers of
-> set_pte_at() already have an unlock (and thus a sync) 
-
-Unlock is lwsync actually...
-
-> already, so we may
-> not even be relying on those retries.  Certainly some of them do; it
-> would take some effort to verify all of them.
+On Thu, Oct 10, 2013 at 02:20:22PM +0530, Anshuman Khandual wrote:
+> On 10/09/2013 11:33 AM, Michael Ellerman wrote:
+> > On Wed, Oct 09, 2013 at 10:16:32AM +0530, Anshuman Khandual wrote:
+> >> On 10/09/2013 06:51 AM, Michael Ellerman wrote:
+> >>> On Tue, Oct 08, 2013 at 12:51:18PM +0530, Anshuman Khandual wrote:
+> >>>> On 10/08/2013 09:51 AM, Michael Ellerman wrote:
+> >>>>> On Mon, Oct 07, 2013 at 10:00:26AM +0530, Anshuman Khandual wrote:
+> >>>>>> Right now the `config_bhrb` PMU specific call happens after write_mmcr0
+> >>>>>> which actually enables the PMU for event counting and interrupt. So
+> >>>>>> there is a small window of time where the PMU and BHRB runs without the
+> >>>>>> required HW branch filter (if any) enabled in BHRB. This can cause some
+> >>>>>> of the branch samples to be collected through BHRB without any filter
+> >>>>>> being applied and hence affecting the correctness of the results. This
+> >>>>>> patch moves the BHRB config function call before enabling the interrupts.
+> >>>>>
+> >>>>> Patch looks good.
+> >>>>>
+> >>>>> But it reminds me I have an item in my TODO list:
+> >>>>>  - "Why can't config_bhrb() be done in compute_mmcr()" ?
+> >>>>>
+> >>>>
+> >>>> compute_mmcr() function deals with generic MMCR* configs for normal PMU
+> >>>> events. Even if BHRB config touches MMCRA register, it's configuration
+> >>>> does not interfere with the PMU config for general events. So its best
+> >>>> to keep them separate. 
+> >>>
+> >>> I'm unconvinced. If they'd been together to begin with this bug never
+> >>> would have happened.
+> >>
+> >> This is an ordering of configuration problem. Putting them together in the
+> >> same function does not rule out the chances of this ordering problem. Could
+> >> you please kindly explain how this could have been avoided ?
+> > 
+> > The existing code already makes sure to write MMCRA before MMCR0.
 > 
-> Also, without such a sync in map_kernel_page(), even with software
-> tablewalk, couldn't we theoretically have a situation where a store to
-> pointer X that exposes a new mapping gets reordered before the PTE store
-> as seen by another CPU?  The other CPU could see non-NULL X and
-> dereference it, but get the stale PTE.  Callers of ioremap() generally
-> don't do a barrier of their own prior to exposing the result.
+> Thats not true. One example being here at power_pmu_enable function.
+>
+>         write_mmcr0(cpuhw, mmcr0);
+> 
+>         /*
+>          * Enable instruction sampling if necessary
+>          */
+>         if (cpuhw->mmcr[2] & MMCRA_SAMPLE_ENABLE) {
+>                 mb();
+>                 mtspr(SPRN_MMCRA, cpuhw->mmcr[2]);
+>         }
 
-Hrm, we transition to the new PTE either restricts the access permission
-in which case it flushes the TLB (and synchronizes with other CPUs) or
-extends access (adds dirty, set pte from 0 -> populated, ...) in which
-case the worst case is we see the old one and take a spurrious fault.
+The only example.
 
-So the problem would only be with kernel mappings and in that case I
-think we are fine. A driver doing an ioremap shouldn't then start using
-that mapping on another CPU before having *informed* that other CPU of
-the existence of the mapping and that should be ordered.
+The BHRB config would have been applied prior to that:
 
-Ben.
+	mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
+	mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
+	mtspr(SPRN_MMCR0, (cpuhw->mmcr[0] & ~(MMCR0_PMC1CE | MMCR0_PMCjCE))
+				| MMCR0_FC);
+
+
+So as I said, if the BHRB config was in cpuhw->mmcr[2] then the ordering would
+have been correct.
+
+> Even I think this is not right. Instruction sampling should have been
+> enabled before we enable PMU interrupts. Else there is a small window
+> of time where we could have the PMU enabled with events (which requires
+> sampling) without the sampling itself being enabled in MMCRA.
+
+Yes I agree. That's a separate bug, which we'll need to test on all the book3s
+platforms we have perf support for.
+
+cheers
