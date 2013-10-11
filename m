@@ -1,23 +1,24 @@
-Return-Path: <computersforpeace@gmail.com>
-Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
- [IPv6:2607:f8b0:4001:c03::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BADCA2C0332
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 04:38:05 +1100 (EST)
-Received: by mail-ie0-f178.google.com with SMTP id to1so8984360ieb.37
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 10:38:02 -0700 (PDT)
-From: Brian Norris <computersforpeace@gmail.com>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v2] powerpc/mpc512x: remove unnecessary #if
-Date: Fri, 11 Oct 2013 10:37:38 -0700
-Message-Id: <1381513058-14164-1-git-send-email-computersforpeace@gmail.com>
-In-Reply-To: <1381512777-13966-1-git-send-email-computersforpeace@gmail.com>
-References: <1381512777-13966-1-git-send-email-computersforpeace@gmail.com>
-In-Reply-To: <1381512777-13966-1-git-send-email-computersforpeace@gmail.com>
-Cc: Gerhard Sittig <gsi@denx.de>, Brian Norris <computersforpeace@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <B07421@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0D0F52C0332
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 04:49:27 +1100 (EST)
+Message-ID: <1381513748.7979.503.camel@snotra.buserror.net>
+Subject: Re: Gianfar driver crashes in Kernel v3.10
+From: Scott Wood <scottwood@freescale.com>
+To: Thomas =?ISO-8859-1?Q?H=FChn?= <thomas@net.t-labs.tu-berlin.de>
+Date: Fri, 11 Oct 2013 12:49:08 -0500
+In-Reply-To: <B1062BEC-9A3C-49DC-B97A-9E0A6EE9CD49@net.t-labs.tu-berlin.de>
+References: <8EF35D6A-A132-458C-A3B4-80D4D2C5BA4C@dai-labor.de>
+ <1381270140.7979.287.camel@snotra.buserror.net>
+ <B1062BEC-9A3C-49DC-B97A-9E0A6EE9CD49@net.t-labs.tu-berlin.de>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "claudiu.manoil@freescale.com" <claudiu.manoil@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,137 +28,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Several functions are only ever referenced locally, so make them static.
-Of those functions, many of them are protected by an #if. However, the
-code which can compile fine in either case.
+On Fri, 2013-10-11 at 11:17 +0200, Thomas H=C3=BChn wrote:
+> Hi Scott,
+>=20
+> On 09.10.2013, at 00:09, Scott Wood <scottwood@freescale.com> wrote:
+>=20
+> > On Fri, 2013-10-04 at 12:03 +0000, Thomas H=C3=BChn wrote:
+> >> [code]
+> >> [ 2671.841927] Oops: Exception in kernel mode, sig: 5 [#1]
+> >> [ 2671.847141] Freescale P1014
+> >> [ 2671.849925] Modules linked in: ath9k pppoe ppp_async iptable_nat =
+ath9k_common pppox p
+> >> e xt_tcpudp xt_tcpmss xt_string xt_statistic xt_state xt_recent xt_q=
+uota xt_pkttype xt_o
+> >> mark xt_connbytes xt_comment xt_addrtype xt_TCPMSS xt_REDIRECT xt_NE=
+TMAP xt_LOG xt_IPMAR
+> >> ms_datafab ums_cypress ums_alauda slhc nf_nat_tftp nf_nat_snmp_basic=
+ nf_nat_sip nf_nat_r
+> >> ntrack_sip nf_conntrack_rtsp nf_conntrack_proto_gre nf_conntrack_irc=
+ nf_conntrack_h323 n
+> >> compat_xtables compat ath sch_teql sch_tbf sch_sfq sch_red sch_prio =
+sch_htb sch_gred sc
+> >> skbedit act_mirred em_u32 cls_u32 cls_tcindex cls_flow cls_route cls=
+_fw sch_hfsc sch_ing
+> >> r usb_storage leds_gpio ohci_hcd ehci_platform ehci_hcd sd_mod scsi_=
+mod fsl_mph_dr_of gp
+> >> [ 2671.988946] CPU: 0 PID: 5209 Comm: iftop Not tainted 3.10.13 #2
+> >> [ 2671.994859] task: c4b22220 ti: c7ff8000 task.ti: c477e000
+> >> [ 2672.000250] NIP: c018c7a0 LR: c018c794 CTR: c000b070
+> >> [ 2672.005206] REGS: c7ff9f10 TRAP: 3202   Not tainted  (3.10.13)
+> >=20
+> > Trap 0x3202 is a watchdog timer.
+> >=20
+> > Did you get a "Bad trap at=E2=80=A6" line before the above dump? =20
+>=20
+> I need to setup my test scenario again as I just copied the crash lines=
+ out of it without saving the full file with all lines.
+>=20
+> > Do you have
+> > any idea why the watchdog would have been armed without CONFIG_BOOKE_=
+WDT
+> > being set? =20
+>=20
+> > Is CONFIG_BOOKE_WDT set?
+> >=20
+> This config option is not set. Should I try with the CONFIG_BOOK_WDT en=
+abled ?
 
-Now that (1) the unneeded code is marked 'static' and (2) the code is
-only used under a C 'if (IS_ENABLED(CONFIG_FB_FSL_DIU))', the compiler
-can automatically remove the unneeded code, and we don't need the #if or
-the empty stub functions.
+Instead, could you try to track down where TCR[WE] is getting set, and
+dump TCR in unknown_exception()?
 
-Signed-off-by: Brian Norris <computersforpeace@gmail.com>
----
-v2: left out a diff I was holding locally (to remove an #if/#endif
-    completely). Sorry for the noise.
-
-Based off of Gerhard Sittig's patch:
-  powerpc/mpc512x: silence build warning upon disabled DIU
-
-Compile-tested with CONFIG_FB_FSL_DIU=n
-
- arch/powerpc/platforms/512x/mpc512x_shared.c | 21 +++++++--------------
- arch/powerpc/sysdev/fsl_soc.h                |  3 ---
- 2 files changed, 7 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index 1a7b1d0..36b5652 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -60,8 +60,6 @@ void mpc512x_restart(char *cmd)
- 		;
- }
- 
--#if IS_ENABLED(CONFIG_FB_FSL_DIU)
--
- struct fsl_diu_shared_fb {
- 	u8		gamma[0x300];	/* 32-bit aligned! */
- 	struct diu_ad	ad0;		/* 32-bit aligned! */
-@@ -71,7 +69,7 @@ struct fsl_diu_shared_fb {
- };
- 
- #define DIU_DIV_MASK	0x000000ff
--void mpc512x_set_pixel_clock(unsigned int pixclock)
-+static void mpc512x_set_pixel_clock(unsigned int pixclock)
- {
- 	unsigned long bestval, bestfreq, speed, busfreq;
- 	unsigned long minpixclock, maxpixclock, pixval;
-@@ -164,7 +162,7 @@ void mpc512x_set_pixel_clock(unsigned int pixclock)
- 	iounmap(ccm);
- }
- 
--enum fsl_diu_monitor_port
-+static enum fsl_diu_monitor_port
- mpc512x_valid_monitor_port(enum fsl_diu_monitor_port port)
- {
- 	return FSL_DIU_PORT_DVI;
-@@ -179,7 +177,7 @@ static inline void mpc512x_free_bootmem(struct page *page)
- 	free_reserved_page(page);
- }
- 
--void mpc512x_release_bootmem(void)
-+static void mpc512x_release_bootmem(void)
- {
- 	unsigned long addr = diu_shared_fb.fb_phys & PAGE_MASK;
- 	unsigned long size = diu_shared_fb.fb_len;
-@@ -205,7 +203,7 @@ void mpc512x_release_bootmem(void)
-  * address range will be reserved in setup_arch() after bootmem
-  * allocator is up.
-  */
--void __init mpc512x_init_diu(void)
-+static void __init mpc512x_init_diu(void)
- {
- 	struct device_node *np;
- 	struct diu __iomem *diu_reg;
-@@ -274,7 +272,7 @@ out:
- 	iounmap(diu_reg);
- }
- 
--void __init mpc512x_setup_diu(void)
-+static void __init mpc512x_setup_diu(void)
- {
- 	int ret;
- 
-@@ -303,11 +301,6 @@ void __init mpc512x_setup_diu(void)
- 	diu_ops.release_bootmem		= mpc512x_release_bootmem;
- }
- 
--#else
--void __init mpc512x_setup_diu(void) { /* EMPTY */ }
--void __init mpc512x_init_diu(void) { /* EMPTY */ }
--#endif
--
- void __init mpc512x_init_IRQ(void)
- {
- 	struct device_node *np;
-@@ -340,7 +333,7 @@ static struct of_device_id __initdata of_bus_ids[] = {
- 	{},
- };
- 
--void __init mpc512x_declare_of_platform_devices(void)
-+static void __init mpc512x_declare_of_platform_devices(void)
- {
- 	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
- 		printk(KERN_ERR __FILE__ ": "
-@@ -390,7 +383,7 @@ static unsigned int __init get_fifo_size(struct device_node *np,
- 		    ((u32)(_base) + sizeof(struct mpc52xx_psc)))
- 
- /* Init PSC FIFO space for TX and RX slices */
--void __init mpc512x_psc_fifo_init(void)
-+static void __init mpc512x_psc_fifo_init(void)
- {
- 	struct device_node *np;
- 	void __iomem *psc;
-diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-index c6d0073..4c5a19e 100644
---- a/arch/powerpc/sysdev/fsl_soc.h
-+++ b/arch/powerpc/sysdev/fsl_soc.h
-@@ -21,8 +21,6 @@ struct device_node;
- 
- extern void fsl_rstcr_restart(char *cmd);
- 
--#if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
--
- /* The different ports that the DIU can be connected to */
- enum fsl_diu_monitor_port {
- 	FSL_DIU_PORT_DVI,	/* DVI */
-@@ -43,7 +41,6 @@ struct platform_diu_data_ops {
- };
- 
- extern struct platform_diu_data_ops diu_ops;
--#endif
- 
- void fsl_hv_restart(char *cmd);
- void fsl_hv_halt(void);
--- 
-1.8.4
+-Scott
