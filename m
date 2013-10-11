@@ -1,20 +1,20 @@
 Return-Path: <thomas@net.t-labs.tu-berlin.de>
 Received: from mail.net.t-labs.tu-berlin.de (mail.net.t-labs.tu-berlin.de
  [IPv6:2001:470:96b9:4:130:149:220:252])
- by ozlabs.org (Postfix) with ESMTP id D72DE2C00E4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 19:59:40 +1100 (EST)
-Received: from dai175.aot.tu-berlin.de (dai175.aot.tu-berlin.de
- [130.149.232.175])
- by mail.net.t-labs.tu-berlin.de (Postfix) with ESMTPSA id 657284C0502
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 10:59:34 +0200 (CEST)
-From: =?iso-8859-1?Q?Thomas_H=FChn?= <thomas@net.t-labs.tu-berlin.de>
-Content-Type: text/plain; charset=iso-8859-1
-Subject: Fwd: Gianfar driver crashes in Kernel v3.10
-Date: Fri, 11 Oct 2013 10:59:34 +0200
-References: <90BE8C5D-E23B-41B5-BB52-8A0C0758931D@net.t-labs.tu-berlin.de>
-To: linuxppc-dev@lists.ozlabs.org
-Message-Id: <760FFC38-597B-46CB-BA4C-620A1D663C8A@net.t-labs.tu-berlin.de>
+ by ozlabs.org (Postfix) with ESMTP id A05D52C00E4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 20:17:05 +1100 (EST)
+Content-Type: text/plain; charset=windows-1252
 Mime-Version: 1.0 (Mac OS X Mail 6.6 \(1510\))
+Subject: Re: Gianfar driver crashes in Kernel v3.10
+From: =?windows-1252?Q?Thomas_H=FChn?= <thomas@net.t-labs.tu-berlin.de>
+In-Reply-To: <1381270140.7979.287.camel@snotra.buserror.net>
+Date: Fri, 11 Oct 2013 11:17:03 +0200
+Message-Id: <B1062BEC-9A3C-49DC-B97A-9E0A6EE9CD49@net.t-labs.tu-berlin.de>
+References: <8EF35D6A-A132-458C-A3B4-80D4D2C5BA4C@dai-labor.de>
+ <1381270140.7979.287.camel@snotra.buserror.net>
+To: Scott Wood <scottwood@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "claudiu.manoil@freescale.com" <claudiu.manoil@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,54 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Claudiu,
+Hi Scott,
 
-> Does this show up on a half duplex (100Mb/s) link?
+On 09.10.2013, at 00:09, Scott Wood <scottwood@freescale.com> wrote:
 
-In my testsetup I always used 1GBit Ethernet connections, so no 100MBit =
-tested yet.
-Should I do so ?
-
-> Could you provide following for the gianfar interface, on your setup:
-
-sure:=20
-> # ethtool ethX
-root@Bluse-home:~# ethtool eth0
-Settings for eth0:
-       Supported ports: [ ]
-       Supported link modes:   1000baseT/Full=20
-       Supported pause frame use: No
-       Supports auto-negotiation: No
-       Advertised link modes:  1000baseT/Full=20
-       Advertised pause frame use: No
-       Advertised auto-negotiation: No
-       Speed: 1000Mb/s
-       Duplex: Full
-       Port: MII
-       PHYAD: 0
-       Transceiver: external
-       Auto-negotiation: on
-       Current message level: 0x0000003f (63)
-                              drv probe link timer ifdown ifup
-       Link detected: yes
-
-> and
-> # ethtool -d ethX | grep 500
+> On Fri, 2013-10-04 at 12:03 +0000, Thomas H=FChn wrote:
+>> [code]
+>> [ 2671.841927] Oops: Exception in kernel mode, sig: 5 [#1]
+>> [ 2671.847141] Freescale P1014
+>> [ 2671.849925] Modules linked in: ath9k pppoe ppp_async iptable_nat =
+ath9k_common pppox p
+>> e xt_tcpudp xt_tcpmss xt_string xt_statistic xt_state xt_recent =
+xt_quota xt_pkttype xt_o
+>> mark xt_connbytes xt_comment xt_addrtype xt_TCPMSS xt_REDIRECT =
+xt_NETMAP xt_LOG xt_IPMAR
+>> ms_datafab ums_cypress ums_alauda slhc nf_nat_tftp nf_nat_snmp_basic =
+nf_nat_sip nf_nat_r
+>> ntrack_sip nf_conntrack_rtsp nf_conntrack_proto_gre nf_conntrack_irc =
+nf_conntrack_h323 n
+>> compat_xtables compat ath sch_teql sch_tbf sch_sfq sch_red sch_prio =
+sch_htb sch_gred sc
+>> skbedit act_mirred em_u32 cls_u32 cls_tcindex cls_flow cls_route =
+cls_fw sch_hfsc sch_ing
+>> r usb_storage leds_gpio ohci_hcd ehci_platform ehci_hcd sd_mod =
+scsi_mod fsl_mph_dr_of gp
+>> [ 2671.988946] CPU: 0 PID: 5209 Comm: iftop Not tainted 3.10.13 #2
+>> [ 2671.994859] task: c4b22220 ti: c7ff8000 task.ti: c477e000
+>> [ 2672.000250] NIP: c018c7a0 LR: c018c794 CTR: c000b070
+>> [ 2672.005206] REGS: c7ff9f10 TRAP: 3202   Not tainted  (3.10.13)
 >=20
-root@Bluse-home:~# ethtool -d eth0 | grep 500
-0x0500:         00 00 00 3f 00 00 72 05 40 60 50 60 00 a1 f0 37=20
-
-
-> Is there any other indication before this Oops? Like a tx timeout =
-WARN?
+> Trap 0x3202 is a watchdog timer.
 >=20
+> Did you get a "Bad trap at=85" line before the above dump? =20
 
-Nothing there about any timeout.
+I need to setup my test scenario again as I just copied the crash lines =
+out of it without saving the full file with all lines.
+
+> Do you have
+> any idea why the watchdog would have been armed without =
+CONFIG_BOOKE_WDT
+> being set? =20
+
+> Is CONFIG_BOOKE_WDT set?
+>=20
+This config option is not set. Should I try with the CONFIG_BOOK_WDT =
+enabled ?
 
 Greetings Thomas
 
-> Thanks,
-> Claudiu
+> -Scott
+>=20
 >=20
 >=20
 > _______________________________________________
