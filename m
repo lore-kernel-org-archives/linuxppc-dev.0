@@ -1,20 +1,21 @@
 Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D0F52C0332
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 04:49:27 +1100 (EST)
-Message-ID: <1381513748.7979.503.camel@snotra.buserror.net>
+ by ozlabs.org (Postfix) with ESMTPS id E22862C03AD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 04:49:45 +1100 (EST)
+Message-ID: <1381513773.7979.504.camel@snotra.buserror.net>
 Subject: Re: Gianfar driver crashes in Kernel v3.10
 From: Scott Wood <scottwood@freescale.com>
 To: Thomas =?ISO-8859-1?Q?H=FChn?= <thomas@net.t-labs.tu-berlin.de>
-Date: Fri, 11 Oct 2013 12:49:08 -0500
-In-Reply-To: <B1062BEC-9A3C-49DC-B97A-9E0A6EE9CD49@net.t-labs.tu-berlin.de>
+Date: Fri, 11 Oct 2013 12:49:33 -0500
+In-Reply-To: <1381513748.7979.503.camel@snotra.buserror.net>
 References: <8EF35D6A-A132-458C-A3B4-80D4D2C5BA4C@dai-labor.de>
  <1381270140.7979.287.camel@snotra.buserror.net>
  <B1062BEC-9A3C-49DC-B97A-9E0A6EE9CD49@net.t-labs.tu-berlin.de>
+ <1381513748.7979.503.camel@snotra.buserror.net>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -28,54 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-10-11 at 11:17 +0200, Thomas H=C3=BChn wrote:
-> Hi Scott,
->=20
-> On 09.10.2013, at 00:09, Scott Wood <scottwood@freescale.com> wrote:
->=20
-> > On Fri, 2013-10-04 at 12:03 +0000, Thomas H=C3=BChn wrote:
-> >> [code]
-> >> [ 2671.841927] Oops: Exception in kernel mode, sig: 5 [#1]
-> >> [ 2671.847141] Freescale P1014
-> >> [ 2671.849925] Modules linked in: ath9k pppoe ppp_async iptable_nat =
-ath9k_common pppox p
-> >> e xt_tcpudp xt_tcpmss xt_string xt_statistic xt_state xt_recent xt_q=
-uota xt_pkttype xt_o
-> >> mark xt_connbytes xt_comment xt_addrtype xt_TCPMSS xt_REDIRECT xt_NE=
-TMAP xt_LOG xt_IPMAR
-> >> ms_datafab ums_cypress ums_alauda slhc nf_nat_tftp nf_nat_snmp_basic=
- nf_nat_sip nf_nat_r
-> >> ntrack_sip nf_conntrack_rtsp nf_conntrack_proto_gre nf_conntrack_irc=
- nf_conntrack_h323 n
-> >> compat_xtables compat ath sch_teql sch_tbf sch_sfq sch_red sch_prio =
-sch_htb sch_gred sc
-> >> skbedit act_mirred em_u32 cls_u32 cls_tcindex cls_flow cls_route cls=
-_fw sch_hfsc sch_ing
-> >> r usb_storage leds_gpio ohci_hcd ehci_platform ehci_hcd sd_mod scsi_=
-mod fsl_mph_dr_of gp
-> >> [ 2671.988946] CPU: 0 PID: 5209 Comm: iftop Not tainted 3.10.13 #2
-> >> [ 2671.994859] task: c4b22220 ti: c7ff8000 task.ti: c477e000
-> >> [ 2672.000250] NIP: c018c7a0 LR: c018c794 CTR: c000b070
-> >> [ 2672.005206] REGS: c7ff9f10 TRAP: 3202   Not tainted  (3.10.13)
+On Fri, 2013-10-11 at 12:49 -0500, Scott Wood wrote:
+> On Fri, 2013-10-11 at 11:17 +0200, Thomas H=C3=BChn wrote:
+> > Hi Scott,
 > >=20
-> > Trap 0x3202 is a watchdog timer.
+> > On 09.10.2013, at 00:09, Scott Wood <scottwood@freescale.com> wrote:
 > >=20
-> > Did you get a "Bad trap at=E2=80=A6" line before the above dump? =20
->=20
-> I need to setup my test scenario again as I just copied the crash lines=
- out of it without saving the full file with all lines.
->=20
-> > Do you have
-> > any idea why the watchdog would have been armed without CONFIG_BOOKE_=
-WDT
-> > being set? =20
->=20
-> > Is CONFIG_BOOKE_WDT set?
+> > > On Fri, 2013-10-04 at 12:03 +0000, Thomas H=C3=BChn wrote:
+> > >> [code]
+> > >> [ 2671.841927] Oops: Exception in kernel mode, sig: 5 [#1]
+> > >> [ 2671.847141] Freescale P1014
+> > >> [ 2671.849925] Modules linked in: ath9k pppoe ppp_async iptable_na=
+t ath9k_common pppox p
+> > >> e xt_tcpudp xt_tcpmss xt_string xt_statistic xt_state xt_recent xt=
+_quota xt_pkttype xt_o
+> > >> mark xt_connbytes xt_comment xt_addrtype xt_TCPMSS xt_REDIRECT xt_=
+NETMAP xt_LOG xt_IPMAR
+> > >> ms_datafab ums_cypress ums_alauda slhc nf_nat_tftp nf_nat_snmp_bas=
+ic nf_nat_sip nf_nat_r
+> > >> ntrack_sip nf_conntrack_rtsp nf_conntrack_proto_gre nf_conntrack_i=
+rc nf_conntrack_h323 n
+> > >> compat_xtables compat ath sch_teql sch_tbf sch_sfq sch_red sch_pri=
+o sch_htb sch_gred sc
+> > >> skbedit act_mirred em_u32 cls_u32 cls_tcindex cls_flow cls_route c=
+ls_fw sch_hfsc sch_ing
+> > >> r usb_storage leds_gpio ohci_hcd ehci_platform ehci_hcd sd_mod scs=
+i_mod fsl_mph_dr_of gp
+> > >> [ 2671.988946] CPU: 0 PID: 5209 Comm: iftop Not tainted 3.10.13 #2
+> > >> [ 2671.994859] task: c4b22220 ti: c7ff8000 task.ti: c477e000
+> > >> [ 2672.000250] NIP: c018c7a0 LR: c018c794 CTR: c000b070
+> > >> [ 2672.005206] REGS: c7ff9f10 TRAP: 3202   Not tainted  (3.10.13)
+> > >=20
+> > > Trap 0x3202 is a watchdog timer.
+> > >=20
+> > > Did you get a "Bad trap at=E2=80=A6" line before the above dump? =20
 > >=20
-> This config option is not set. Should I try with the CONFIG_BOOK_WDT en=
-abled ?
+> > I need to setup my test scenario again as I just copied the crash lin=
+es out of it without saving the full file with all lines.
+> >=20
+> > > Do you have
+> > > any idea why the watchdog would have been armed without CONFIG_BOOK=
+E_WDT
+> > > being set? =20
+> >=20
+> > > Is CONFIG_BOOKE_WDT set?
+> > >=20
+> > This config option is not set. Should I try with the CONFIG_BOOK_WDT =
+enabled ?
+>=20
+> Instead, could you try to track down where TCR[WE] is getting set, and
+> dump TCR in unknown_exception()?
 
-Instead, could you try to track down where TCR[WE] is getting set, and
-dump TCR in unknown_exception()?
+Sorry, that should be TCR[WIE].
 
 -Scott
