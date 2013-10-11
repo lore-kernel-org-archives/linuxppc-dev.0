@@ -1,24 +1,46 @@
-Return-Path: <B08782@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EDA0C2C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 18:50:06 +1100 (EST)
-Message-ID: <5257AD9D.10707@freescale.com>
-Date: Fri, 11 Oct 2013 10:49:49 +0300
-From: Claudiu Manoil <claudiu.manoil@freescale.com>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 498D82C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 18:56:53 +1100 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Fri, 11 Oct 2013 03:56:50 -0400
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 05BD36E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 03:56:48 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9B7unUw44630222
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 07:56:49 GMT
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r9B7uldE020933
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2013 04:56:48 -0300
+Date: Fri, 11 Oct 2013 15:56:42 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH v2 3/6] powerpc/pci: use pci_is_pcie() to simplify code
+Message-ID: <20131011075642.GA20443@shangw.(null)>
+References: <1378367730-25996-1-git-send-email-wangyijing@huawei.com>
+ <1378367730-25996-3-git-send-email-wangyijing@huawei.com>
+ <20130906203035.GA27940@google.com>
+ <1381470596.5630.61.camel@pasglop>
+ <20131011061654.GA561@shangw.(null)> <52579BD6.40802@huawei.com>
+ <20131011065329.GA5013@shangw.(null)> <5257A882.1070809@huawei.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Gianfar driver crashes in Kernel v3.10
-References: <E0CAE3C8-5883-4D20-8A95-CCC88B4A811C@net.t-labs.tu-berlin.de>
- <52568A7A.6090909@freescale.com>
- <1381441287.7979.455.camel@snotra.buserror.net>
-In-Reply-To: <1381441287.7979.455.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: =?UTF-8?B?VGhvbWFzIEjDvGhu?= <thomas@net.t-labs.tu-berlin.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5257A882.1070809@huawei.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, Hanjun Guo <guohanjun@huawei.com>,
+ linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <JBottomley@parallels.com>,
+ Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,105 +50,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 10/11/2013 12:41 AM, Scott Wood wrote:
-> On Thu, 2013-10-10 at 14:07 +0300, Claudiu Manoil wrote:
->> On 10/4/2013 3:28 PM, Thomas H=C3=BChn wrote:
+On Fri, Oct 11, 2013 at 03:28:02PM +0800, Yijing Wang wrote:
+>On 2013/10/11 14:53, Gavin Shan wrote:
+>> On Fri, Oct 11, 2013 at 02:33:58PM +0800, Yijing Wang wrote:
+>>> On 2013/10/11 14:16, Gavin Shan wrote:
+>>>> On Fri, Oct 11, 2013 at 04:49:56PM +1100, Benjamin Herrenschmidt wrote:
+>>>>> On Fri, 2013-09-06 at 14:30 -0600, Bjorn Helgaas wrote:
+>>>>>> On Thu, Sep 05, 2013 at 03:55:27PM +0800, Yijing Wang wrote:
+>> 
+>> .../...
+>> 
+>>>>>>> Use pci_is_pcie() to simplify code.
+>>>>>>> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>>>>>>> index 55593ee..6ebbe54 100644
+>>>>>>> --- a/arch/powerpc/kernel/eeh.c
+>>>>>>> +++ b/arch/powerpc/kernel/eeh.c
+>>>>>>> @@ -189,8 +189,7 @@ static size_t eeh_gather_pci_data(struct eeh_dev *edev, char * buf, size_t len)
+>>>>>>>  	}
+>>>>>>>  
+>>>>>>>  	/* If PCI-E capable, dump PCI-E cap 10, and the AER */
+>>>>>>> -	cap = pci_find_capability(dev, PCI_CAP_ID_EXP);
+>>>>>>> -	if (cap) {
+>>>>>>> +	if (pci_is_pcie(dev)) {
+>>>>>>>  		n += scnprintf(buf+n, len-n, "pci-e cap10:\n");
+>>>>>>>  		printk(KERN_WARNING
+>>>>>>>  		       "EEH: PCI-E capabilities and status follow:\n");
+>>>>>
+>>>>> So we remove reading of "cap", but slightly further down the code does:
+>>>>>
+>>>>> 		for (i=0; i<=8; i++) {
+>>>>> 			eeh_ops->read_config(dn, cap+4*i, 4, &cfg);
+>>>>> 			n += scnprintf(buf+n, len-n, "%02x:%x\n", 4*i, cfg);
+>>>>> 			printk(KERN_WARNING "EEH: PCI-E %02x: %08x\n", i, cfg);
+>>>>> 		}
+>>>>>
+>>>>> Which actually *uses* the value of "cap" ... oops :-)
+>>>>>
+>>>>
+>>>> It's my fault and I should have looked into the changes more closely.
+>>>> How about changing it like this:
+>>>>
+>>>> 	cap = pci_is_pcie(dev) ? pci_pcie_cap(dev) :
+>>>> 	      pci_find_capability(dev, PCI_CAP_ID_EXP);
+>>>> 	if (cap) {
+>>>> 		...
+>>>> 	}
+>>>>
+>>>> It would save some PCI-CFG access cycles for most cases :-)
 >>>
->>> [code]
->>> [ 2671.841927] Oops: Exception in kernel mode, sig: 5 [#1]
->>> [ 2671.847141] Freescale P1014
->>> [ 2671.849925] Modules linked in: ath9k pppoe ppp_async iptable_nat
->>> ath9k_common pppox p
->>> e xt_tcpudp xt_tcpmss xt_string xt_statistic xt_state xt_recent xt_qu=
-ota
->>> xt_pkttype xt_o
->>> mark xt_connbytes xt_comment xt_addrtype xt_TCPMSS xt_REDIRECT xt_NET=
-MAP
->>> xt_LOG xt_IPMAR
->>> ms_datafab ums_cypress ums_alauda slhc nf_nat_tftp nf_nat_snmp_basic
->>> nf_nat_sip nf_nat_r
->>> ntrack_sip nf_conntrack_rtsp nf_conntrack_proto_gre nf_conntrack_irc
->>> nf_conntrack_h323 n
->>> compat_xtables compat ath sch_teql sch_tbf sch_sfq sch_red sch_prio
->>> sch_htb sch_gred sc
->>> skbedit act_mirred em_u32 cls_u32 cls_tcindex cls_flow cls_route cls_=
-fw
->>> sch_hfsc sch_ing
->>> r usb_storage leds_gpio ohci_hcd ehci_platform ehci_hcd sd_mod scsi_m=
-od
->>> fsl_mph_dr_of gp
->>> [ 2671.988946] CPU: 0 PID: 5209 Comm: iftop Not tainted 3.10.13 #2
->>> [ 2671.994859] task: c4b22220 ti: c7ff8000 task.ti: c477e000
->>> [ 2672.000250] NIP: c018c7a0 LR: c018c794 CTR: c000b070
->>> [ 2672.005206] REGS: c7ff9f10 TRAP: 3202   Not tainted  (3.10.13)
->>> [ 2672.011028] MSR: 00029000 <CE,EE,ME>  CR: 48000024  XER: 20000000
->>> [ 2672.017125]
->>> GPR00: 000000ff c477fde0 c4b22220 00000000 00000000 000000ff 00000000
->>> 70000000
->>> GPR08: ffffffff 00000008 00000000 ffffffff 00000046 10022248 00000000
->>> 00000008
->>> GPR16: c781b3c0 c781b3c0 000000ff 00000000 00000001 0000021c 00000086
->>> fffff800
->>> GPR24: c7980300 00000000 00000001 00000040 00000003 c4b33000 00000000
->>> 00000001
->>> [ 2672.046832] NIP [c018c7a0] gfar_poll+0x424/0x520
->>> [ 2672.051442] LR [c018c794] gfar_poll+0x418/0x520
->>> [ 2672.055962] Call Trace:
->>> [ 2672.058402] [c477fde0] [c018c674] gfar_poll+0x2f8/0x520 (unreliabl=
-e)
->>> [ 2672.064762] [c477fe80] [c01b0ce8] net_rx_action+0x6c/0x158
->>> [ 2672.070249] [c477feb0] [c0027dc4] __do_softirq+0xbc/0x16c
->>> [ 2672.075642] [c477ff00] [c0027f7c] irq_exit+0x4c/0x68
->>> [ 2672.080604] [c477ff10] [c00041f8] do_IRQ+0xf4/0x10c
->>> [ 2672.085478] [c477ff40] [c000ca3c] ret_from_except+0x0/0x18
->>> [ 2672.090991] --- Exception: 501 at 0x48083c28
->>> [ 2672.090991]     LR =3D 0x48083bf8
->>> [ 2672.098378] Instruction dump:
->>> [ 2672.101338] 7f8f2040 419cfcc4 80900000 38a00000 8061004c 7e118378
->>> 81c10050 7ffafb78
->>> [ 2672.109092] 4bf9eaa1 83810034 7c7e1b78 8361003c <83210038> 83a1004=
-c
->>> 48000060 41a2004c
->>> [ 2672.117021] ---[ end trace 565fb54528d305fa ]---
->>> [ 2672.121628]
->>> [ 2673.103130] Kernel panic - not syncing: Fatal exception in interru=
-pt
->>> [ 2673.109474] Rebooting in 3 seconds..
+>>> Hi Gavin,  it's not your fault, it's my fault. :)
 >>>
->>> U-Boot 2010.12-svn15934 (Dec 11 2012 - 16:23:49)
->>> [/code]
+>>> Because pci_pcie_cap(dev) == dev->pcie_cap == pci_find_capability(dev, PCI_CAP_ID_EXP);
 >>>
->>
->> Hi,
->>
->> Does this show up on a half duplex (100Mb/s) link?
->> Could you provide following for the gianfar interface, on your setup:
->> # ethtool ethX
->> and
->> # ethtool -d ethX | grep 500
->>
->> Is there any other indication before this Oops? Like a tx timeout WARN=
-?
+>>> so I think it's ok to use dev->pcie_cap instead of stale "cap".
+>>>
+>> 
+>> Yijing, There has one exception: dev->pcie_cap isn't updated yet.
 >
-> It's a watchdog interrupt (CPU watchdog, not netdev).  I think it's onl=
-y
-> showing up in the gianfar code because that's what's running (unless th=
-e
-> gianfar code is causing the watchdog daemon to not run).
+>In my idea, dev->pcie_cap(here is pci_dev->pcie_cap) will update in set_pcie_port_type() function,
+>and this function always be called after allocate pci device. We get pci_dev by eeh_dev_to_pci_dev(),
+>I think pci_dev has been initialized completely.
+>
+>> This function has possibility to be invoked before that. However,
+>> we don't have the binding (eeh device <-> PCI device) for the case.
+>> So the piece of code shouldn't be running
+>
+>In PCI core, I knew
+>
+>pci_scan_device()
+>   pci_setup_device()
+>       set_pcie_port_type()
+>            pci_dev->pcie_cap = pci_find_capability(pdev, PCI_CAP_ID_EXP);
+>
+>In powerpc, I also found
+>
+>of_scan_pci_dev()
+>   of_create_pci_dev()
+>       set_pcie_port_type()
+>	    pci_dev->pcie_cap = pci_find_capability(pdev, PCI_CAP_ID_EXP);
+>> 
+>> However, it's a bit safer to have pci_find_capability(dev, PCI_CAP_ID_EXP)
+>> as well even though we needn't it for 99.9% cases if you agree :-)
+>
+>I agree, this function is not the performance bottleneck,
+>safety is more important. :)
+>So if Bjorn and Benjamin think it's not safe, it's ok to drop it. :)
 >
 
-Hi Scott,
-Good to know that the exception is triggered by the watchdog, and at
-this point I assume they simply enabled the watchdog support in kernel
-(as you know, it's not enabled by the default config) and that the
-exception triggered as the system froze.  Since this reportedly happens
-under certain traffic conditions (not "high network load, or routing
-traffic") I think that information about the link state (whether
-it's 100 Mb/s half duplex or not) is relevant here.  Any other
-indication on top of that (if there is any) is also useful.
+No, it's not what I mean. Anyway, "v3" looks good to me.
+At least, it can save PCI-CFG access cycles find locate
+the PCIe capability position :-)
 
-Thanks.
-
-Claudiu
+Thanks,
+Gavin
