@@ -1,21 +1,9 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Fri, 11 Oct 2013 13:11:31 +1100
+Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc, perf: Configure BHRB filter before enabling PMU
- interrupts
-Message-ID: <20131011021131.GA26561@concordia>
-References: <1381120226-14838-1-git-send-email-khandual@linux.vnet.ibm.com>
- <20131008042137.GE31666@concordia>
- <5253B26E.3020800@linux.vnet.ibm.com>
- <20131009012130.GA23780@concordia>
- <5254DFA8.2050100@linux.vnet.ibm.com>
- <20131009060321.GB28160@concordia>
- <52566A4E.2000409@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52566A4E.2000409@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/3] powerpc: Implement arch_get_random_long/int() for powernv
+Date: Fri, 11 Oct 2013 14:07:57 +1100
+Message-Id: <1381460879-2814-1-git-send-email-michael@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,72 +13,242 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 10, 2013 at 02:20:22PM +0530, Anshuman Khandual wrote:
-> On 10/09/2013 11:33 AM, Michael Ellerman wrote:
-> > On Wed, Oct 09, 2013 at 10:16:32AM +0530, Anshuman Khandual wrote:
-> >> On 10/09/2013 06:51 AM, Michael Ellerman wrote:
-> >>> On Tue, Oct 08, 2013 at 12:51:18PM +0530, Anshuman Khandual wrote:
-> >>>> On 10/08/2013 09:51 AM, Michael Ellerman wrote:
-> >>>>> On Mon, Oct 07, 2013 at 10:00:26AM +0530, Anshuman Khandual wrote:
-> >>>>>> Right now the `config_bhrb` PMU specific call happens after write_mmcr0
-> >>>>>> which actually enables the PMU for event counting and interrupt. So
-> >>>>>> there is a small window of time where the PMU and BHRB runs without the
-> >>>>>> required HW branch filter (if any) enabled in BHRB. This can cause some
-> >>>>>> of the branch samples to be collected through BHRB without any filter
-> >>>>>> being applied and hence affecting the correctness of the results. This
-> >>>>>> patch moves the BHRB config function call before enabling the interrupts.
-> >>>>>
-> >>>>> Patch looks good.
-> >>>>>
-> >>>>> But it reminds me I have an item in my TODO list:
-> >>>>>  - "Why can't config_bhrb() be done in compute_mmcr()" ?
-> >>>>>
-> >>>>
-> >>>> compute_mmcr() function deals with generic MMCR* configs for normal PMU
-> >>>> events. Even if BHRB config touches MMCRA register, it's configuration
-> >>>> does not interfere with the PMU config for general events. So its best
-> >>>> to keep them separate. 
-> >>>
-> >>> I'm unconvinced. If they'd been together to begin with this bug never
-> >>> would have happened.
-> >>
-> >> This is an ordering of configuration problem. Putting them together in the
-> >> same function does not rule out the chances of this ordering problem. Could
-> >> you please kindly explain how this could have been avoided ?
-> > 
-> > The existing code already makes sure to write MMCRA before MMCR0.
-> 
-> Thats not true. One example being here at power_pmu_enable function.
->
->         write_mmcr0(cpuhw, mmcr0);
-> 
->         /*
->          * Enable instruction sampling if necessary
->          */
->         if (cpuhw->mmcr[2] & MMCRA_SAMPLE_ENABLE) {
->                 mb();
->                 mtspr(SPRN_MMCRA, cpuhw->mmcr[2]);
->         }
+Add the plumbing to implement arch_get_random_long/int(). It didn't seem
+worth adding an extra ppc_md hook for int, so we reuse the one for long.
 
-The only example.
+Add an implementation for powernv based on the hwrng found in power7+
+systems. We whiten the output of the hwrng, and the result passes all
+the dieharder tests.
 
-The BHRB config would have been applied prior to that:
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/Kconfig                    |   3 +
+ arch/powerpc/include/asm/archrandom.h   |  32 +++++++++
+ arch/powerpc/include/asm/machdep.h      |   4 ++
+ arch/powerpc/platforms/powernv/Kconfig  |   1 +
+ arch/powerpc/platforms/powernv/Makefile |   2 +-
+ arch/powerpc/platforms/powernv/rng.c    | 122 ++++++++++++++++++++++++++++++++
+ 6 files changed, 163 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/include/asm/archrandom.h
+ create mode 100644 arch/powerpc/platforms/powernv/rng.c
 
-	mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
-	mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
-	mtspr(SPRN_MMCR0, (cpuhw->mmcr[0] & ~(MMCR0_PMC1CE | MMCR0_PMCjCE))
-				| MMCR0_FC);
-
-
-So as I said, if the BHRB config was in cpuhw->mmcr[2] then the ordering would
-have been correct.
-
-> Even I think this is not right. Instruction sampling should have been
-> enabled before we enable PMU interrupts. Else there is a small window
-> of time where we could have the PMU enabled with events (which requires
-> sampling) without the sampling itself being enabled in MMCRA.
-
-Yes I agree. That's a separate bug, which we'll need to test on all the book3s
-platforms we have perf support for.
-
-cheers
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 38f3b7e..45f16f7 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -1009,6 +1009,9 @@ config PHYSICAL_START
+ 	default "0x00000000"
+ endif
+ 
++config	ARCH_RANDOM
++	def_bool n
++
+ source "net/Kconfig"
+ 
+ source "drivers/Kconfig"
+diff --git a/arch/powerpc/include/asm/archrandom.h b/arch/powerpc/include/asm/archrandom.h
+new file mode 100644
+index 0000000..d853d16
+--- /dev/null
++++ b/arch/powerpc/include/asm/archrandom.h
+@@ -0,0 +1,32 @@
++#ifndef _ASM_POWERPC_ARCHRANDOM_H
++#define _ASM_POWERPC_ARCHRANDOM_H
++
++#ifdef CONFIG_ARCH_RANDOM
++
++#include <asm/machdep.h>
++
++static inline int arch_get_random_long(unsigned long *v)
++{
++	if (ppc_md.get_random_long)
++		return ppc_md.get_random_long(v);
++
++	return 0;
++}
++
++static inline int arch_get_random_int(unsigned int *v)
++{
++	unsigned long val;
++	int rc;
++
++	rc = arch_get_random_long(&val);
++	if (rc)
++		*v = val;
++
++	return rc;
++}
++
++int powernv_get_random_long(unsigned long *v);
++
++#endif /* CONFIG_ARCH_RANDOM */
++
++#endif /* _ASM_POWERPC_ARCHRANDOM_H */
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 8b48090..ce6cc2a 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -263,6 +263,10 @@ struct machdep_calls {
+ 	ssize_t (*cpu_probe)(const char *, size_t);
+ 	ssize_t (*cpu_release)(const char *, size_t);
+ #endif
++
++#ifdef CONFIG_ARCH_RANDOM
++	int (*get_random_long)(unsigned long *v);
++#endif
+ };
+ 
+ extern void e500_idle(void);
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 6fae5eb..2108464 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -9,6 +9,7 @@ config PPC_POWERNV
+ 	select EPAPR_BOOT
+ 	select PPC_INDIRECT_PIO
+ 	select PPC_UDBG_16550
++	select ARCH_RANDOM
+ 	default y
+ 
+ config POWERNV_MSI
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index 300c437..6760a86 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -1,5 +1,5 @@
+ obj-y			+= setup.o opal-takeover.o opal-wrappers.o opal.o
+-obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o
++obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o rng.o
+ 
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
+diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
+new file mode 100644
+index 0000000..02db7d7
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/rng.c
+@@ -0,0 +1,122 @@
++/*
++ * Copyright 2013, Michael Ellerman, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define pr_fmt(fmt)	"powernv-rng: " fmt
++
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <linux/slab.h>
++#include <asm/archrandom.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++
++
++struct powernv_rng {
++	void __iomem *regs;
++	unsigned long mask;
++};
++
++static DEFINE_PER_CPU(struct powernv_rng *, powernv_rng);
++
++
++static unsigned long rng_whiten(struct powernv_rng *rng, unsigned long val)
++{
++	unsigned long parity;
++
++	/* Calculate the parity of the value */
++	asm ("popcntd %0,%1" : "=r" (parity) : "r" (val));
++
++	/* xor our value with the previous mask */
++	val ^= rng->mask;
++
++	/* update the mask based on the parity of this value */
++	rng->mask = (rng->mask << 1) | (parity & 1);
++
++	return val;
++}
++
++int powernv_get_random_long(unsigned long *v)
++{
++	struct powernv_rng *rng;
++
++	rng = get_cpu_var(powernv_rng);
++
++	*v = rng_whiten(rng, in_be64(rng->regs));
++
++	put_cpu_var(rng);
++
++	return 1;
++}
++EXPORT_SYMBOL_GPL(powernv_get_random_long);
++
++static __init void rng_init_per_cpu(struct powernv_rng *rng,
++				    struct device_node *dn)
++{
++	int chip_id, cpu;
++
++	chip_id = of_get_ibm_chip_id(dn);
++	if (chip_id == -1)
++		pr_warn("No ibm,chip-id found for %s.\n", dn->full_name);
++
++	for_each_possible_cpu(cpu) {
++		if (per_cpu(powernv_rng, cpu) == NULL ||
++		    cpu_to_chip_id(cpu) == chip_id) {
++			per_cpu(powernv_rng, cpu) = rng;
++		}
++	}
++}
++
++static __init int rng_create(struct device_node *dn)
++{
++	struct powernv_rng *rng;
++	unsigned long val;
++
++	rng = kzalloc(sizeof(*rng), GFP_KERNEL);
++	if (!rng)
++		return -ENOMEM;
++
++	rng->regs = of_iomap(dn, 0);
++	if (!rng->regs) {
++		kfree(rng);
++		return -ENXIO;
++	}
++
++	val = in_be64(rng->regs);
++	rng->mask = val;
++
++	rng_init_per_cpu(rng, dn);
++
++	pr_info_once("Registering arch random hook.\n");
++
++	ppc_md.get_random_long = powernv_get_random_long;
++
++	return 0;
++}
++
++static __init int rng_init(void)
++{
++	struct device_node *dn;
++	int rc;
++
++	for_each_compatible_node(dn, NULL, "ibm,power-rng") {
++		rc = rng_create(dn);
++		if (rc) {
++			pr_err("Failed creating rng for %s (%d).\n",
++				dn->full_name, rc);
++			continue;
++		}
++
++		/* Create devices for hwrng driver */
++		of_platform_device_create(dn, NULL, NULL);
++	}
++
++	return 0;
++}
++subsys_initcall(rng_init);
+-- 
+1.8.1.2
