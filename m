@@ -1,16 +1,19 @@
 Return-Path: <B07421@freescale.com>
 Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 05CD02C035C
+ by ozlabs.org (Postfix) with ESMTPS id D24622C0375
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2013 11:22:55 +1100 (EST)
 From: Scott Wood <scottwood@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v3 1/3] powerpc: add barrier after writing kernel PTE
-Date: Fri, 11 Oct 2013 19:22:37 -0500
-Message-ID: <1381537359-22863-1-git-send-email-scottwood@freescale.com>
+Subject: [PATCH v3 3/3] powerpc/fsl-book3e-64: Use paca for hugetlb TLB1 entry
+ selection
+Date: Fri, 11 Oct 2013 19:22:39 -0500
+Message-ID: <1381537359-22863-3-git-send-email-scottwood@freescale.com>
+In-Reply-To: <1381537359-22863-1-git-send-email-scottwood@freescale.com>
+References: <1381537359-22863-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
@@ -23,64 +26,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is no barrier between something like ioremap() writing to
-a PTE, and returning the value to a caller that may then store the
-pointer in a place that is visible to other CPUs.  Such callers
-generally don't perform barriers of their own.
-
-Even if callers of ioremap() and similar things did use barriers,
-the most logical choise would be smp_wmb(), which is not
-architecturally sufficient when BookE hardware tablewalk is used.  A
-full sync is specified by the architecture.
-
-For userspace mappings, OTOH, we generally already have an lwsync due
-to locking, and if we occasionally take a spurious fault due to not
-having a full sync with hardware tablewalk, it will not be fatal
-because we will retry rather than oops.
+This keeps usage coordinated for hugetlb and indirect entries, which
+should make entry selection more predictable and probably improve overall
+performance when mixing the two.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
-v3: Only add a sync for kernel mappings, and add lwsync to kernel
-mappings even on targets that can't have BookE hardware tablewalk.
----
- arch/powerpc/mm/pgtable_32.c |  1 +
- arch/powerpc/mm/pgtable_64.c | 12 ++++++++++++
- 2 files changed, 13 insertions(+)
+v3: no changes
 
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 6c856fb..bc4806c 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -296,6 +296,7 @@ int map_page(unsigned long va, phys_addr_t pa, int flags)
- 		set_pte_at(&init_mm, va, pg, pfn_pte(pa >> PAGE_SHIFT,
- 						     __pgprot(flags)));
- 	}
-+	smp_wmb();
- 	return err;
- }
+v2: new patch
+---
+ arch/powerpc/mm/hugetlbpage-book3e.c | 51 +++++++++++++++++++++++++++++-------
+ 1 file changed, 41 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/mm/hugetlbpage-book3e.c b/arch/powerpc/mm/hugetlbpage-book3e.c
+index 3bc7006..ee57ac2 100644
+--- a/arch/powerpc/mm/hugetlbpage-book3e.c
++++ b/arch/powerpc/mm/hugetlbpage-book3e.c
+@@ -8,6 +8,44 @@
+ #include <linux/mm.h>
+ #include <linux/hugetlb.h>
  
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 536eec72..de83a39 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -153,6 +153,18 @@ int map_kernel_page(unsigned long ea, unsigned long pa, int flags)
- 		}
- #endif /* !CONFIG_PPC_MMU_NOHASH */
- 	}
++#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC64
++static inline int tlb1_next(void)
++{
++	struct paca_struct *paca = get_paca();
++	struct tlb_core_data *tcd;
++	int this, next;
 +
-+#ifdef CONFIG_PPC_BOOK3E_64
-+	/*
-+	 * With hardware tablewalk, a sync is needed to ensure that
-+	 * subsequent accesses see the PTE we just wrote.  Unlike userspace
-+	 * mappings, we can't tolerate spurious faults, so make sure
-+	 * the new PTE will be seen the first time.
-+	 */
-+	mb();
++	tcd = paca->tcd_ptr;
++	this = tcd->esel_next;
++
++	next = this + 1;
++	if (next >= tcd->esel_max)
++		next = tcd->esel_first;
++
++	tcd->esel_next = next;
++	return this;
++}
 +#else
-+	smp_wmb();
-+#endif
- 	return 0;
- }
++static inline int tlb1_next(void)
++{
++	int index, ncams;
++
++	ncams = mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY;
++
++	index = __get_cpu_var(next_tlbcam_idx);
++
++	/* Just round-robin the entries and wrap when we hit the end */
++	if (unlikely(index == ncams - 1))
++		__get_cpu_var(next_tlbcam_idx) = tlbcam_index;
++	else
++		__get_cpu_var(next_tlbcam_idx)++;
++
++	return index;
++}
++#endif /* !PPC64 */
++#endif /* FSL */
++
+ static inline int mmu_get_tsize(int psize)
+ {
+ 	return mmu_psize_defs[psize].enc;
+@@ -47,7 +85,7 @@ void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
+ 	struct mm_struct *mm;
  
+ #ifdef CONFIG_PPC_FSL_BOOK3E
+-	int index, ncams;
++	int index;
+ #endif
+ 
+ 	if (unlikely(is_kernel_addr(ea)))
+@@ -77,18 +115,11 @@ void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
+ 	}
+ 
+ #ifdef CONFIG_PPC_FSL_BOOK3E
+-	ncams = mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY;
+-
+ 	/* We have to use the CAM(TLB1) on FSL parts for hugepages */
+-	index = __get_cpu_var(next_tlbcam_idx);
++	index = tlb1_next();
+ 	mtspr(SPRN_MAS0, MAS0_ESEL(index) | MAS0_TLBSEL(1));
+-
+-	/* Just round-robin the entries and wrap when we hit the end */
+-	if (unlikely(index == ncams - 1))
+-		__get_cpu_var(next_tlbcam_idx) = tlbcam_index;
+-	else
+-		__get_cpu_var(next_tlbcam_idx)++;
+ #endif
++
+ 	mas1 = MAS1_VALID | MAS1_TID(mm->context.id) | MAS1_TSIZE(tsize);
+ 	mas2 = ea & ~((1UL << shift) - 1);
+ 	mas2 |= (pte_val(pte) >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
 -- 
 1.8.1.2
