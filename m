@@ -1,16 +1,22 @@
-Return-Path: <aida.mynzhasova@skitlab.ru>
-Received: from mail.skitlab.ru (mail.skitlab.ru [217.65.220.135])
- by ozlabs.org (Postfix) with ESMTP id 4001D2C034A
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Oct 2013 01:54:45 +1100 (EST)
-Message-ID: <525962B2.8010100@skitlab.ru>
-Date: Sat, 12 Oct 2013 18:54:42 +0400
-From: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
+Return-Path: <B16395@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7EBC22C0346
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Oct 2013 07:45:47 +1100 (EST)
+From: Varun Sethi <Varun.Sethi@freescale.com>
+To: <joro@8bytes.org>, <iommu@lists.linux-foundation.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <stuart.yoder@freescale.com>, <scottwood@freescale.com>,
+ <alex.williamson@redhat.com>, <r65777@freescale.com>
+Subject: [PATCH 0/3] iommu/fsl: PAMU driver fixes.
+Date: Sun, 13 Oct 2013 02:02:31 +0530
+Message-ID: <1381609954-15283-1-git-send-email-Varun.Sethi@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: "powerpc/83xx: gianfar_ptp: select 1588 clock source through dts
- file" was added twice
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: devicetree@vger.kernel.org, davem@davemloft.net, Greg KH <greg@kroah.com>
+Content-Type: text/plain
+Cc: Varun Sethi <Varun.Sethi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+The first patch fixes a build failure, when we try to build for a Freescale
+platform without PCI support.
 
-recently I looked through commits in kernel/git/torvalds/linux.git and I 
-noticed that my patch (old and new version) was added twice (by David S. 
-Miller):
+The second patch enables a default DMA window for the device, once it's
+detached from a domain. In case of vfio, once device is detached from a
+guest it can be again used by the host.
 
-e58f6f4fb4eada7867014bfaec898f03afbce5c2
-894116bd0e9b7749a0c4b6c62dec13c2a0ccef68
+The last patch adds the maintainer entry for the Freescale PAMU driver.
 
-I think this is not good, and only 
-e58f6f4fb4eada7867014bfaec898f03afbce5c2 should be added.
+Varun Sethi (3):
+  iommu/fsl: Factor out PCI specific code.
+  iommu/fsl: Enable default DMA window for PCIe devices once detached
+  Add maintainers entry for the Freescale PAMU driver.
 
-Thanks!
+ MAINTAINERS                     |    7 +++
+ drivers/iommu/fsl_pamu.c        |   43 ++++++++++++---
+ drivers/iommu/fsl_pamu.h        |    1 +
+ drivers/iommu/fsl_pamu_domain.c |  116 +++++++++++++++++++++++++--------------
+ 4 files changed, 117 insertions(+), 50 deletions(-)
 
 -- 
-Regards,
-Aida
+1.7.9.5
