@@ -1,24 +1,19 @@
-Return-Path: <B16395@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EB6D22C064D
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Oct 2013 07:47:43 +1100 (EST)
-From: Varun Sethi <Varun.Sethi@freescale.com>
-To: <joro@8bytes.org>, <iommu@lists.linux-foundation.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <stuart.yoder@freescale.com>, <scottwood@freescale.com>,
- <alex.williamson@redhat.com>, <r65777@freescale.com>
-Subject: [PATCH 3/3] Add maintainers entry for the Freescale PAMU driver.
-Date: Sun, 13 Oct 2013 02:02:34 +0530
-Message-ID: <1381609954-15283-4-git-send-email-Varun.Sethi@freescale.com>
-In-Reply-To: <1381609954-15283-1-git-send-email-Varun.Sethi@freescale.com>
-References: <1381609954-15283-1-git-send-email-Varun.Sethi@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Varun Sethi <Varun.Sethi@freescale.com>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (unknown
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by ozlabs.org (Postfix) with ESMTP id 8409C2C0356
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Oct 2013 08:11:15 +1100 (EST)
+Date: Sat, 12 Oct 2013 17:11:10 -0400 (EDT)
+Message-Id: <20131012.171110.246440214474931440.davem@davemloft.net>
+To: aida.mynzhasova@skitlab.ru
+Subject: Re: "powerpc/83xx: gianfar_ptp: select 1588 clock source through
+ dts file" was added twice
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <525962B2.8010100@skitlab.ru>
+References: <525962B2.8010100@skitlab.ru>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, greg@kroah.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
----
- MAINTAINERS |    7 +++++++
- 1 file changed, 7 insertions(+)
+From: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
+Date: Sat, 12 Oct 2013 18:54:42 +0400
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8a0cbf3..5b6ea5c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3511,6 +3511,13 @@ S:	Maintained
- F:	drivers/net/ethernet/freescale/fs_enet/
- F:	include/linux/fs_enet_pd.h
- 
-+FREESCALE PAMU DRIVER
-+M:	Varun Sethi <varun.sethi@freescale.com>
-+L:	linuxppc-dev@lists.ozlabs.org
-+L:	iommu@lists.linux-foundation.org
-+S:	Maintained
-+F:	drivers/iommu/fsl_pamu*
-+
- FREESCALE QUICC ENGINE LIBRARY
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Orphan
--- 
-1.7.9.5
+> Hi,
+> 
+> recently I looked through commits in kernel/git/torvalds/linux.git and
+> I noticed that my patch (old and new version) was added twice (by
+> David S. Miller):
+> 
+> e58f6f4fb4eada7867014bfaec898f03afbce5c2
+> 894116bd0e9b7749a0c4b6c62dec13c2a0ccef68
+> 
+> I think this is not good, and only
+> e58f6f4fb4eada7867014bfaec898f03afbce5c2 should be added.
+
+Read the code history properly.
+
+First 894116bd0e9b7749a0c4b6c62dec13c2a0ccef68 got applied, as you say
+accidently.  Then I reverted it, see commit
+3f3f0960aff951c5df6e42ce292d1593a2520646.
+
+Then I applied the correct version which is commit
+e58f6f4fb4eada7867014bfaec898f03afbce5c2.
+
+I didn't respond at all the first time you pointed this out hoping
+you would figure it out on your own.
