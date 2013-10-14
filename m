@@ -1,23 +1,25 @@
-Return-Path: <michael@ellerman.id.au>
-Date: Mon, 14 Oct 2013 17:19:58 +1100
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc, perf: Configure BHRB filter before enabling PMU
- interrupts
-Message-ID: <20131014061958.GA8300@concordia>
-References: <1381120226-14838-1-git-send-email-khandual@linux.vnet.ibm.com>
- <20131008042137.GE31666@concordia>
- <5253B26E.3020800@linux.vnet.ibm.com>
- <20131009012130.GA23780@concordia>
- <5254DFA8.2050100@linux.vnet.ibm.com>
- <20131009060321.GB28160@concordia>
- <52566A4E.2000409@linux.vnet.ibm.com>
- <20131011021131.GA26561@concordia>
- <52577F5C.6000704@linux.vnet.ibm.com>
+Return-Path: <B45475@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 900912C00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2013 17:54:08 +1100 (EST)
+Received: from mail109-co1 (localhost [127.0.0.1])	by
+ mail109-co1-R.bigfish.com (Postfix) with ESMTP id F3B8CD601FB	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2013 06:54:03 +0000 (UTC)
+Received: from CO1EHSMHS020.bigfish.com (unknown [10.243.78.248])	by
+ mail109-co1.bigfish.com (Postfix) with ESMTP id 7CB35300057	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2013 06:54:01 +0000 (UTC)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/2] powerpc/p1010rdb:add P1010RDB-PB platform support
+Date: Mon, 14 Oct 2013 14:46:13 +0800
+Message-ID: <1381733174-17384-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52577F5C.6000704@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>, R61911@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 11, 2013 at 10:02:28AM +0530, Anshuman Khandual wrote:
-> On 10/11/2013 07:41 AM, Michael Ellerman wrote:
-> > On Thu, Oct 10, 2013 at 02:20:22PM +0530, Anshuman Khandual wrote:
-> > 
-> >> Even I think this is not right. Instruction sampling should have been
-> >> enabled before we enable PMU interrupts. Else there is a small window
-> >> of time where we could have the PMU enabled with events (which requires
-> >> sampling) without the sampling itself being enabled in MMCRA.
-> > 
-> > Yes I agree. That's a separate bug, which we'll need to test on all the book3s
-> > platforms we have perf support for.
-> 
-> Okay, I guess any platform which supports sampling will definitely want to have
-> it enabled before we can set the events to count on PMU. Can you think of any
-> problem which can arise if we move it before the enabling the PMU back ? Else
-> we can fix this easily.
+The P1010RDB-PB is similar to P1010RDB(P1010RDB-PA).
+So, P1010RDB-PB use the same platform file as P1010RDB.
+Then Add support for P1010RDB-PB platform.
 
-In theory it should be a trivial change. But hardware can behave in
-strange ways, it's possible on some old chip we need to do it the
-current way for some reason.
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+ arch/powerpc/platforms/85xx/p1010rdb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-So although I don't think it will be a problem, it could be, so we
-will need to test it thoroughly.
-
-cheers
+diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c b/arch/powerpc/platforms/85xx/p1010rdb.c
+index 0252961..d6a3dd3 100644
+--- a/arch/powerpc/platforms/85xx/p1010rdb.c
++++ b/arch/powerpc/platforms/85xx/p1010rdb.c
+@@ -66,6 +66,8 @@ static int __init p1010_rdb_probe(void)
+ 
+ 	if (of_flat_dt_is_compatible(root, "fsl,P1010RDB"))
+ 		return 1;
++	if (of_flat_dt_is_compatible(root, "fsl,P1010RDB-PB"))
++		return 1;
+ 	return 0;
+ }
+ 
+-- 
+1.8.0
