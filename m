@@ -1,16 +1,13 @@
-Return-Path: <B16395@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 925F12C00C7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2013 23:58:52 +1100 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: RE: [PATCH 2/7] iommu: add api to get iommu_domain of a device
-Date: Mon, 14 Oct 2013 12:58:40 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D0A535437@039-SN2MPN1-013.039d.mgd.msft.net>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 029DD2C0363
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 01:20:26 +1100 (EST)
+Message-ID: <1381760412.2796.90.camel@ul30vt.home>
+Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a device
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Sethi Varun-B16395 <B16395@freescale.com>
+Date: Mon, 14 Oct 2013 08:20:12 -0600
+In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D0A535437@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
  <1379575763-2091-3-git-send-email-Bharat.Bhushan@freescale.com>
  <1380127533.3030.319.camel@ul30vt.home>
@@ -24,9 +21,9 @@ References: <1379575763-2091-1-git-send-email-Bharat.Bhushan@freescale.com>
  <1381201980.6330.4.camel@ul30vt.home>
  <C5ECD7A89D1DC44195F34B25E172658D0A52BAC7@039-SN2MPN1-013.039d.mgd.msft.net>
  <1381437698.2796.53.camel@ul30vt.home>
-In-Reply-To: <1381437698.2796.53.camel@ul30vt.home>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ <C5ECD7A89D1DC44195F34B25E172658D0A535437@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
  "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -43,231 +40,269 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
-IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IEZyaWRheSwgT2N0
-b2JlciAxMSwgMjAxMyAyOjEyIEFNDQo+IFRvOiBTZXRoaSBWYXJ1bi1CMTYzOTUNCj4gQ2M6IEJo
-dXNoYW4gQmhhcmF0LVI2NTc3NzsgYWdyYWZAc3VzZS5kZTsgV29vZCBTY290dC1CMDc0MjE7IGxp
-bnV4LQ0KPiBwY2lAdmdlci5rZXJuZWwub3JnOyBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBs
-aW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgaW9tbXVAbGlzdHMubGludXgtZm91bmRh
-dGlvbi5vcmc7DQo+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgbGludXhwcGMtZGV2QGxpc3Rz
-Lm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzddIGlvbW11OiBhZGQgYXBpIHRv
-IGdldCBpb21tdV9kb21haW4gb2YgYSBkZXZpY2UNCj4gDQo+IE9uIFRodSwgMjAxMy0xMC0xMCBh
-dCAyMDowOSArMDAwMCwgU2V0aGkgVmFydW4tQjE2Mzk1IHdyb3RlOg0KPiA+DQo+ID4gPiAtLS0t
-LU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogaW9tbXUtYm91bmNlc0BsaXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZyBbbWFpbHRvOmlvbW11LQ0KPiA+ID4gYm91bmNlc0BsaXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZ10gT24gQmVoYWxmIE9mIEFsZXggV2lsbGlhbXNvbg0KPiA+ID4g
-U2VudDogVHVlc2RheSwgT2N0b2JlciAwOCwgMjAxMyA4OjQzIEFNDQo+ID4gPiBUbzogQmh1c2hh
-biBCaGFyYXQtUjY1Nzc3DQo+ID4gPiBDYzogYWdyYWZAc3VzZS5kZTsgV29vZCBTY290dC1CMDc0
-MjE7IGxpbnV4LXBjaUB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiBnYWxha0BrZXJuZWwuY3Jhc2hp
-bmcub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gaW9tbXVAbGlzdHMu
-bGludXgtZm91bmRhdGlvbi5vcmc7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsNCj4gPiA+IGxp
-bnV4cHBjLSBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAy
-LzddIGlvbW11OiBhZGQgYXBpIHRvIGdldCBpb21tdV9kb21haW4gb2YgYQ0KPiA+ID4gZGV2aWNl
-DQo+ID4gPg0KPiA+ID4gT24gTW9uLCAyMDEzLTEwLTA3IGF0IDA1OjQ2ICswMDAwLCBCaHVzaGFu
-IEJoYXJhdC1SNjU3Nzcgd3JvdGU6DQo+ID4gPiA+DQo+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBN
-ZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiBGcm9tOiBBbGV4IFdpbGxpYW1zb24gW21haWx0bzphbGV4
-LndpbGxpYW1zb25AcmVkaGF0LmNvbV0NCj4gPiA+ID4gPiBTZW50OiBGcmlkYXksIE9jdG9iZXIg
-MDQsIDIwMTMgMTE6NDIgUE0NCj4gPiA+ID4gPiBUbzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+
-ID4gPiA+ID4gQ2M6IGpvcm9AOGJ5dGVzLm9yZzsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0K
-PiA+ID4gPiA+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4LSBrZXJuZWxAdmdlci5r
-ZXJuZWwub3JnOw0KPiA+ID4gPiA+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51
-eC0gcGNpQHZnZXIua2VybmVsLm9yZzsNCj4gPiA+ID4gPiBhZ3JhZkBzdXNlLmRlOyBXb29kIFNj
-b3R0LUIwNzQyMTsgaW9tbXVAbGlzdHMubGludXgtDQo+ID4gPiA+ID4gZm91bmRhdGlvbi5vcmcN
-Cj4gPiA+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvN10gaW9tbXU6IGFkZCBhcGkgdG8gZ2V0
-IGlvbW11X2RvbWFpbiBvZiBhDQo+ID4gPiA+ID4gZGV2aWNlDQo+ID4gPiA+ID4NCj4gPiA+ID4g
-PiBPbiBGcmksIDIwMTMtMTAtMDQgYXQgMTc6MjMgKzAwMDAsIEJodXNoYW4gQmhhcmF0LVI2NTc3
-NyB3cm90ZToNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+ID4gPiA+ID4gPiA+IEZyb206IEFsZXggV2lsbGlhbXNvbiBbbWFpbHRvOmFsZXgu
-d2lsbGlhbXNvbkByZWRoYXQuY29tXQ0KPiA+ID4gPiA+ID4gPiBTZW50OiBGcmlkYXksIE9jdG9i
-ZXIgMDQsIDIwMTMgMTA6NDMgUE0NCj4gPiA+ID4gPiA+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2
-NTc3Nw0KPiA+ID4gPiA+ID4gPiBDYzogam9yb0A4Ynl0ZXMub3JnOyBiZW5oQGtlcm5lbC5jcmFz
-aGluZy5vcmc7DQo+ID4gPiA+ID4gPiA+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4
-LSBrZXJuZWxAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gPiA+ID4gPiBsaW51eHBwYy1kZXZAbGlz
-dHMub3psYWJzLm9yZzsgbGludXgtIHBjaUB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiA+ID4gPiA+
-IGFncmFmQHN1c2UuZGU7IFdvb2QgU2NvdHQtQjA3NDIxOyBpb21tdUBsaXN0cy5saW51eC0NCj4g
-PiA+ID4gPiA+ID4gZm91bmRhdGlvbi5vcmcNCj4gPiA+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQ
-QVRDSCAyLzddIGlvbW11OiBhZGQgYXBpIHRvIGdldCBpb21tdV9kb21haW4NCj4gPiA+ID4gPiA+
-ID4gb2YgYSBkZXZpY2UNCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gT24gRnJpLCAyMDEz
-LTEwLTA0IGF0IDE2OjQ3ICswMDAwLCBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gd3JvdGU6DQo+
-ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+ID4gPiA+ID4gPiA+ID4gPiBGcm9tOiBBbGV4IFdpbGxpYW1zb24NCj4gPiA+ID4gPiA+
-ID4gPiA+IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+ID4gPiA+ID4gPiA+
-ID4gPiBTZW50OiBGcmlkYXksIE9jdG9iZXIgMDQsIDIwMTMgOToxNSBQTQ0KPiA+ID4gPiA+ID4g
-PiA+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+ID4gPiA+ID4gPiA+ID4gQ2M6IGpv
-cm9AOGJ5dGVzLm9yZzsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiA+ID4gPiA+ID4gPiA+
-ID4gZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZzsgbGludXgtDQo+ID4gPiA+ID4gPiA+ID4gPiBr
-ZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4g
-PiA+ID4gPiA+ID4gPiA+IGxpbnV4LSBwY2lAdmdlci5rZXJuZWwub3JnOyBhZ3JhZkBzdXNlLmRl
-OyBXb29kDQo+ID4gPiA+ID4gPiA+ID4gPiBTY290dC1CMDc0MjE7IGlvbW11QGxpc3RzLmxpbnV4
-LSBmb3VuZGF0aW9uLm9yZw0KPiA+ID4gPiA+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAy
-LzddIGlvbW11OiBhZGQgYXBpIHRvIGdldA0KPiA+ID4gPiA+ID4gPiA+ID4gaW9tbXVfZG9tYWlu
-IG9mIGEgZGV2aWNlDQo+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gT24gRnJp
-LCAyMDEzLTEwLTA0IGF0IDA5OjU0ICswMDAwLCBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gPiA+
-IHdyb3RlOg0KPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IC0tLS0t
-T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gRnJvbTogbGludXgt
-cGNpLW93bmVyQHZnZXIua2VybmVsLm9yZw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IFttYWlsdG86
-bGludXgtcGNpLW93bmVyQHZnZXIua2VybmVsLm9yZ10NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBP
-biBCZWhhbGYgT2YgQWxleCBXaWxsaWFtc29uDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gU2VudDog
-V2VkbmVzZGF5LCBTZXB0ZW1iZXIgMjUsIDIwMTMgMTA6MTYgUE0NCj4gPiA+ID4gPiA+ID4gPiA+
-ID4gPiBUbzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gQ2M6
-IGpvcm9AOGJ5dGVzLm9yZzsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiA+ID4gPiA+ID4g
-PiA+ID4gPiA+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4LQ0KPiA+ID4gPiA+ID4g
-PiA+ID4gPiA+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
-bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gbGlu
-dXgtIHBjaUB2Z2VyLmtlcm5lbC5vcmc7IGFncmFmQHN1c2UuZGU7IFdvb2QNCj4gPiA+ID4gPiA+
-ID4gPiA+ID4gPiBTY290dC1CMDc0MjE7IGlvbW11QGxpc3RzLmxpbnV4LSBmb3VuZGF0aW9uLm9y
-ZzsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBCaHVzaGFuDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
-QmhhcmF0LVI2NTc3Nw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0gg
-Mi83XSBpb21tdTogYWRkIGFwaSB0byBnZXQNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBpb21tdV9k
-b21haW4gb2YgYSBkZXZpY2UNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+
-ID4gPiA+IE9uIFRodSwgMjAxMy0wOS0xOSBhdCAxMjo1OSArMDUzMCwgQmhhcmF0IEJodXNoYW4N
-Cj4gd3JvdGU6DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBUaGlzIGFwaSByZXR1cm4gdGhlIGlv
-bW11IGRvbWFpbiB0byB3aGljaCB0aGUNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IGRldmljZSBp
-cw0KPiA+ID4gYXR0YWNoZWQuDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBUaGUgaW9tbXVfZG9t
-YWluIGlzIHJlcXVpcmVkIGZvciBtYWtpbmcgQVBJIGNhbGxzDQo+ID4gPiA+ID4gPiA+ID4gPiA+
-ID4gPiByZWxhdGVkIHRvDQo+ID4gPiA+ID4gaW9tbXUuDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
-PiBGb2xsb3cgdXAgcGF0Y2hlcyB3aGljaCB1c2UgdGhpcyBBUEkgdG8ga25vdyBpb21tdQ0KPiA+
-ID4gbWFwaW5nLg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4g
-PiA+IFNpZ25lZC1vZmYtYnk6IEJoYXJhdCBCaHVzaGFuDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
-PiA8YmhhcmF0LmJodXNoYW5AZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
-IC0tLQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gIGRyaXZlcnMvaW9tbXUvaW9tbXUuYyB8ICAg
-MTAgKysrKysrKysrKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gIGluY2x1ZGUvbGludXgvaW9t
-bXUuaCB8ICAgIDcgKysrKysrKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gIDIgZmlsZXMgY2hh
-bmdlZCwgMTcgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkNCj4gPiA+ID4gPiA+ID4gPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pb21t
-dS9pb21tdS5jDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBiL2RyaXZlcnMvaW9tbXUvaW9tbXUu
-YyBpbmRleA0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gZmJlOWNhNy4uNmFjNWY1MCAxMDA2NDQN
-Cj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IC0tLSBhL2RyaXZlcnMvaW9tbXUvaW9tbXUuYw0KPiA+
-ID4gPiA+ID4gPiA+ID4gPiA+ID4gKysrIGIvZHJpdmVycy9pb21tdS9pb21tdS5jDQo+ID4gPiA+
-ID4gPiA+ID4gPiA+ID4gPiBAQCAtNjk2LDYgKzY5NiwxNiBAQCB2b2lkDQo+ID4gPiA+ID4gPiA+
-ID4gPiA+ID4gPiBpb21tdV9kZXRhY2hfZGV2aWNlKHN0cnVjdCBpb21tdV9kb21haW4gKmRvbWFp
-biwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IHN0cnVjdCBkZXZpY2UgKmRldikgIH0NCj4gPiA+
-ID4gPiA+ID4gPiA+ID4gPiA+IEVYUE9SVF9TWU1CT0xfR1BMKGlvbW11X2RldGFjaF9kZXZpY2Up
-Ow0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICtzdHJ1
-Y3QgaW9tbXVfZG9tYWluICppb21tdV9nZXRfZGV2X2RvbWFpbihzdHJ1Y3QNCj4gPiA+IGRldmlj
-ZSAqZGV2KSB7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCXN0cnVjdCBpb21tdV9vcHMgKm9w
-cyA9IGRldi0+YnVzLT5pb21tdV9vcHM7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4g
-PiA+ID4gPiA+ID4gPiA+ID4gPiArCWlmICh1bmxpa2VseShvcHMgPT0gTlVMTCB8fA0KPiA+ID4g
-PiA+ID4gPiA+ID4gPiA+ID4gK29wcy0+Z2V0X2Rldl9pb21tdV9kb21haW4gPT0NCj4gPiA+ID4g
-PiBOVUxMKSkNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJCXJldHVybiBOVUxMOw0KPiA+ID4g
-PiA+ID4gPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwlyZXR1cm4gb3Bz
-LT5nZXRfZGV2X2lvbW11X2RvbWFpbihkZXYpOyB9DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiAr
-RVhQT1JUX1NZTUJPTF9HUEwoaW9tbXVfZ2V0X2Rldl9kb21haW4pOw0KPiA+ID4gPiA+ID4gPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gV2hhdCBwcmV2ZW50cyB0aGlzIGZyb20gcmFj
-aW5nIGlvbW11X2RvbWFpbl9mcmVlKCk/DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gVGhlcmUncyBu
-byByZWZlcmVuY2VzIGFjcXVpcmVkLCBzbyB0aGVyZSdzIG5vIHJlYXNvbg0KPiA+ID4gPiA+ID4g
-PiA+ID4gPiA+IGZvciB0aGUgY2FsbGVyIHRvIGFzc3VtZSB0aGUNCj4gPiA+ID4gPiA+ID4gPiA+
-IHBvaW50ZXIgaXMgdmFsaWQuDQo+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4g
-PiA+IFNvcnJ5IGZvciBsYXRlIHF1ZXJ5LCBzb21laG93IHRoaXMgZW1haWwgd2VudCBpbnRvIGEN
-Cj4gPiA+ID4gPiA+ID4gPiA+ID4gZm9sZGVyIGFuZCBlc2NhcGVkOw0KPiA+ID4gPiA+ID4gPiA+
-ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiBKdXN0IHRvIGJlIHN1cmUsIHRoZXJlIGlzIG5vdCBs
-b2NrIGF0IGdlbmVyaWMgInN0cnVjdA0KPiA+ID4gPiA+ID4gPiA+ID4gPiBpb21tdV9kb21haW4i
-LCBidXQgSVANCj4gPiA+ID4gPiA+ID4gPiA+IHNwZWNpZmljIHN0cnVjdHVyZSAobGluayBGU0wg
-ZG9tYWluKSBsaW5rZWQgaW4NCj4gPiA+ID4gPiA+ID4gPiA+IGlvbW11X2RvbWFpbi0+cHJpdiBo
-YXZlIGEgbG9jaywgc28gd2UgbmVlZCB0byBlbnN1cmUNCj4gPiA+ID4gPiA+ID4gPiA+IHRoaXMg
-cmFjZSBpbiBGU0wgaW9tbXUgY29kZSAoc2F5DQo+ID4gPiA+ID4gPiA+ID4gPiBkcml2ZXJzL2lv
-bW11L2ZzbF9wYW11X2RvbWFpbi5jKSwNCj4gPiA+IHJpZ2h0Pw0KPiA+ID4gPiA+ID4gPiA+ID4N
-Cj4gPiA+ID4gPiA+ID4gPiA+IE5vLCBpdCdzIG5vdCBzdWZmaWNpZW50IHRvIG1ha2Ugc3VyZSB0
-aGF0IHlvdXIgdXNlIG9mDQo+ID4gPiA+ID4gPiA+ID4gPiB0aGUgaW50ZXJmYWNlIGlzIHJhY2Ug
-ZnJlZS4gIFRoZSBpbnRlcmZhY2UgaXRzZWxmIG5lZWRzDQo+ID4gPiA+ID4gPiA+ID4gPiB0byBi
-ZSBkZXNpZ25lZCBzbyB0aGF0IGl0J3MgZGlmZmljdWx0IHRvIHVzZSBpbmNvcnJlY3RseS4NCj4g
-PiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IFNvIHdlIGNhbiBkZWZpbmUNCj4gPiA+ID4g
-PiA+ID4gPiBpb21tdV9nZXRfZGV2X2RvbWFpbigpL2lvbW11X3B1dF9kZXZfZG9tYWluKCk7DQo+
-ID4gPiA+ID4gPiA+ID4gaW9tbXVfZ2V0X2Rldl9kb21haW4oKSB3aWxsIHJldHVybiBkb21haW4g
-d2l0aCB0aGUgbG9jaw0KPiA+ID4gPiA+ID4gPiA+IGhlbGQsIGFuZA0KPiA+ID4gPiA+ID4gPiA+
-IGlvbW11X3B1dF9kZXZfZG9tYWluKCkgd2lsbCByZWxlYXNlIHRoZSBsb2NrPyBBbmQNCj4gPiA+
-ID4gPiA+ID4gPiBpb21tdV9nZXRfZGV2X2RvbWFpbigpIG11c3QgYWx3YXlzIGJlIGZvbGxvd2Vk
-IGJ5DQo+ID4gPiA+ID4gPiA+ID4gaW9tbXVfZ2V0X2Rldl9kb21haW4oKS4NCj4gPiA+ID4gPiA+
-ID4NCj4gPiA+ID4gPiA+ID4gV2hhdCBsb2NrPyAgZ2V0L3B1dCBhcmUgZ2VuZXJhbGx5IHVzZWQg
-Zm9yIHJlZmVyZW5jZQ0KPiA+ID4gPiA+ID4gPiBjb3VudGluZywgbm90IGxvY2tpbmcgaW4gdGhl
-IGtlcm5lbC4NCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+IFRoYXQncyBub3QgdGhl
-IGNhc2UgaGVyZS4gIFRoaXMgaXMgYSBiYWNrZG9vciB0byBnZXQgdGhlDQo+ID4gPiA+ID4gPiA+
-ID4gPiBpb21tdSBkb21haW4gZnJvbSB0aGUgaW9tbXUgZHJpdmVyIHJlZ2FyZGxlc3Mgb2Ygd2hv
-IGlzDQo+ID4gPiA+ID4gPiA+ID4gPiB1c2luZw0KPiA+ID4gaXQgb3IgaG93Lg0KPiA+ID4gPiA+
-ID4gPiA+ID4gVGhlIGlvbW11IGRvbWFpbiBpcyBjcmVhdGVkIGFuZCBtYW5hZ2VkIGJ5IHZmaW8s
-IHNvDQo+ID4gPiA+ID4gPiA+ID4gPiBzaG91bGRuJ3Qgd2UgYmUgbG9va2luZyBhdCBob3cgdG8g
-ZG8gdGhpcyB0aHJvdWdoIHZmaW8/DQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiBM
-ZXQgbWUgZmlyc3QgZGVzY3JpYmUgd2hhdCB3ZSBhcmUgZG9pbmcgaGVyZToNCj4gPiA+ID4gPiA+
-ID4gPiBEdXJpbmcgaW5pdGlhbGl6YXRpb246LQ0KPiA+ID4gPiA+ID4gPiA+ICAtIHZmaW8gdGFs
-a3MgdG8gTVNJIHN5c3RlbSB0byBrbm93IHRoZSBNU0ktcGFnZSBhbmQgc2l6ZQ0KPiA+ID4gPiA+
-ID4gPiA+ICAtIHZmaW8gdGhlbiBpbnRlcmFjdHMgd2l0aCBpb21tdSB0byBtYXAgdGhlIE1TSS1w
-YWdlIGluDQo+ID4gPiA+ID4gPiA+ID4gaW9tbXUgKElPVkEgaXMgZGVjaWRlZCBieSB1c2Vyc3Bh
-Y2UgYW5kIHBoeXNpY2FsIGFkZHJlc3MNCj4gPiA+ID4gPiA+ID4gPiBpcyB0aGUNCj4gPiA+ID4g
-PiA+ID4gPiBNU0ktcGFnZSkNCj4gPiA+ID4gPiA+ID4gPiAgLSBTbyB0aGUgSU9WQSBzdWJ3aW5k
-b3cgbWFwcGluZyBpcyBjcmVhdGVkIGluIGlvbW11IGFuZA0KPiA+ID4gPiA+ID4gPiA+IHllcyBW
-RklPIGtub3cgYWJvdXQNCj4gPiA+ID4gPiA+ID4gdGhpcyBtYXBwaW5nLg0KPiA+ID4gPiA+ID4g
-PiA+DQo+ID4gPiA+ID4gPiA+ID4gTm93IGRvIFNFVF9JUlEoTVNJL01TSVgpIGlvY3RsOg0KPiA+
-ID4gPiA+ID4gPiA+ICAtIGNhbGxzIHBjaV9lbmFibGVfbXNpeCgpL3BjaV9lbmFibGVfbXNpX2Js
-b2NrKCk6IHdoaWNoDQo+ID4gPiA+ID4gPiA+ID4gaXMgc3VwcG9zZWQgdG8gc2V0DQo+ID4gPiA+
-ID4gPiA+IE1TSSBhZGRyZXNzL2RhdGEgaW4gZGV2aWNlLg0KPiA+ID4gPiA+ID4gPiA+ICAtIFNv
-IGluIGN1cnJlbnQgaW1wbGVtZW50YXRpb24gKHRoaXMgcGF0Y2hzZXQpDQo+ID4gPiA+ID4gPiA+
-ID4gbXNpLXN1YnN5c3RlbSBnZXRzIHRoZSBJT1ZBDQo+ID4gPiA+ID4gPiA+IGZyb20gaW9tbXUg
-dmlhIHRoaXMgZGVmaW5lZCBpbnRlcmZhY2UuDQo+ID4gPiA+ID4gPiA+ID4gIC0gQXJlIHlvdSBz
-YXlpbmcgdGhhdCByYXRoZXIgdGhhbiBnZXR0aW5nIHRoaXMgZnJvbQ0KPiA+ID4gPiA+ID4gPiA+
-IGlvbW11LCB3ZSBzaG91bGQgZ2V0IHRoaXMNCj4gPiA+ID4gPiA+ID4gZnJvbSB2ZmlvPyBXaGF0
-IGRpZmZlcmVuY2UgZG9lcyB0aGlzIG1ha2U/DQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+
-IFllcywgeW91IGp1c3Qgc2FpZCBhYm92ZSB0aGF0IHZmaW8ga25vd3MgdGhlIG1zaSB0byBpb3Zh
-DQo+ID4gPiA+ID4gPiA+IG1hcHBpbmcsIHNvIHdoeSBnbyBvdXRzaWRlIG9mIHZmaW8gdG8gZmlu
-ZCBpdCBsYXRlcj8gIFRoZQ0KPiA+ID4gPiA+ID4gPiBkaWZmZXJlbmNlIGlzIG9uZSBjYXNlIHlv
-dSBjYW4gaGF2ZSBhIHByb3BlciByZWZlcmVuY2UgdG8NCj4gPiA+ID4gPiA+ID4gZGF0YSBzdHJ1
-Y3R1cmVzIHRvIG1ha2Ugc3VyZSB0aGUgcG9pbnRlciB5b3UgZ2V0IGJhY2sNCj4gPiA+ID4gPiA+
-ID4gYWN0dWFsbHkgaGFzIG1lYW5pbmcgYXQgdGhlIHRpbWUgeW91J3JlIHVzaW5nIGl0IHZzIHRo
-ZSBjb2RlDQo+ID4gPiA+ID4gPiA+IGhlcmUgd2hlcmUgeW91J3JlIGRlZmluaW5nIGFuIEFQSSB0
-aGF0IHJldHVybnMgYSBtZWFuaW5nbGVzcw0KPiA+ID4gPiA+ID4gPiB2YWx1ZQ0KPiA+ID4gPiA+
-ID4NCj4gPiA+ID4gPiA+IFdpdGggRlNMLVBBTVUgd2Ugd2lsbCBhbHdheXMgZ2V0IGNvbnNpc3Rh
-bnQgZGF0YSBmcm9tIGlvbW11IG9yDQo+ID4gPiA+ID4gPiB2ZmlvLWRhdGENCj4gPiA+ID4gPiBz
-dHJ1Y3R1cmUuDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBHcmVhdCwgYnV0IHlvdSdyZSB0cnlpbmcg
-dG8gYWRkIGEgZ2VuZXJpYyBBUEkgdG8gdGhlIElPTU1VDQo+ID4gPiA+ID4gc3Vic3lzdGVtIHRo
-YXQncyBkaWZmaWN1bHQgdG8gdXNlIGNvcnJlY3RseS4gIFRoZSBmYWN0IHRoYXQgeW91DQo+ID4g
-PiA+ID4gdXNlIGl0IGNvcnJlY3RseSBkb2VzIG5vdCBqdXN0aWZ5IHRoZSBBUEkuDQo+ID4gPiA+
-ID4NCj4gPiA+ID4gPiA+ID4gYmVjYXVzZSB5b3UgY2FuJ3QgY2hlY2sgb3INCj4gPiA+ID4gPiA+
-ID4gZW5mb3JjZSB0aGF0IGFuIGFyYml0cmFyeSBjYWxsZXIgaXMgdXNpbmcgaXQgY29ycmVjdGx5
-Lg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IEkgYW0gbm90IHN1cmUgd2hhdCBpcyBhcmJpdHJh
-cnkgY2FsbGVyPyBwZGV2IGlzIGtub3duIHRvIHZmaW8sDQo+ID4gPiA+ID4gPiBzbyB2ZmlvIHdp
-bGwgb25seSBtYWtlDQo+ID4gPiA+ID4gPiBwY2lfZW5hYmxlX21zaXgoKS9wY2lfZW5hYmxlX21z
-aV9ibG9jaygpIGZvcg0KPiA+ID4gdGhpcyBwZGV2Lg0KPiA+ID4gPiA+ID4gSWYgYW55b3RoZXIg
-Y29kZSBtYWtlcyB0aGVuIGl0IGlzIHNvbWUgb3RoZXIgdW5leHBlY3RlZGx5DQo+ID4gPiA+ID4g
-PiB0aGluZyBoYXBwZW5pbmcgaW4gc3lzdGVtLCBubz8NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFdo
-YXQncyBwcm9wb3NlZCBoZXJlIGlzIGEgZ2VuZXJpYyBJT01NVSBBUEkuICBBbnlib2R5IGNhbiBj
-YWxsDQo+IHRoaXMuDQo+ID4gPiA+ID4gV2hhdCBpZiB0aGUgaG9zdCBTQ1NJIGRyaXZlciBkZWNp
-ZGVzIHRvIGdvIGdldCB0aGUgaW9tbXUgZG9tYWluDQo+ID4gPiA+ID4gZm9yIGl0J3MgZGV2aWNl
-IChvciBhbnkgb3RoZXIgZGV2aWNlKT8gIERvZXMgdGhhdCBmaXQgeW91ciB1c2FnZQ0KPiBtb2Rl
-bD8NCj4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiAgSXQncyBub3QgbWFpbnRhaW5hYmxlLg0KPiA+
-ID4gPiA+ID4gPiBUaGFua3MsDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gSSBkbyBub3QgaGF2
-ZSBhbnkgaXNzdWUgd2l0aCB0aGlzIGFzIHdlbGwsIGNhbiB5b3UgYWxzbw0KPiA+ID4gPiA+ID4g
-ZGVzY3JpYmUgdGhlIHR5cGUgb2YgQVBJIHlvdSBhcmUgZW52aXNpb25pbmc7IEkgY2FuIHRoaW5r
-IG9mDQo+ID4gPiA+ID4gPiBkZWZpbmluZyBzb21lIGZ1bmN0aW9uIGluIHZmaW8uYy92ZmlvX2lv
-bW11Ki5jLCBtYWtlIHRoZW0NCj4gPiA+ID4gPiA+IGdsb2JhbCBhbmQgZGVjbGFyZSB0aGVuIGlu
-IGluY2x1ZGUvTGludXgvdmZpby5oIEFuZCBpbmNsdWRlDQo+ID4gPiA+ID4gPiA8TGludXgvdmZp
-by5oPiBpbiBjYWxsZXIgZmlsZQ0KPiA+ID4gPiA+ID4gKGFyY2gvcG93ZXJwYy9rZXJuZWwvbXNp
-LmMpDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBEbyB5b3UgcmVhbGx5IHdhbnQgbW9kdWxlIGRlcGVu
-ZGVuY2llcyBiZXR3ZWVuIHZmaW8gYW5kIHlvdXINCj4gPiA+ID4gPiBjb3JlIGtlcm5lbCBNU0kg
-c2V0dXA/ICBMb29rIGF0IHRoZSB2ZmlvIGV4dGVybmFsIHVzZXIgaW50ZXJmYWNlDQo+ID4gPiA+
-ID4gdGhhdA0KPiA+ID4gd2UndmUgYWxyZWFkeSBkZWZpbmVkLg0KPiA+ID4gPiA+IFRoYXQgYWxs
-b3dzIG90aGVyIGNvbXBvbmVudHMgb2YgdGhlIGtlcm5lbCB0byBnZXQgYSBwcm9wZXINCj4gPiA+
-ID4gPiByZWZlcmVuY2UgdG8gYSB2ZmlvIGdyb3VwLiAgRnJvbSB0aGVyZSB5b3UgY2FuIHdvcmsg
-b3V0IGhvdyB0bw0KPiA+ID4gPiA+IGdldCB3aGF0IHlvdSB3YW50LiAgQW5vdGhlciBhbHRlcm5h
-dGl2ZSBpcyB0aGF0IHZmaW8gY291bGQNCj4gPiA+ID4gPiByZWdpc3RlciBhbiBNU0kgdG8gSU9W
-QSBtYXBwaW5nIHdpdGggYXJjaGl0ZWN0dXJlIGNvZGUgd2hlbiB0aGUNCj4gbWFwcGluZyBpcyBj
-cmVhdGVkLg0KPiA+ID4gPiA+IFRoZSBNU0kgc2V0dXAgcGF0aCBjb3VsZCB0aGVuIGRvIGEgbG9v
-a3VwIGluIGFyY2hpdGVjdHVyZSBjb2RlDQo+ID4gPiA+ID4gZm9yIHRoZSBtYXBwaW5nLiAgWW91
-IGNvdWxkIGV2ZW4gc3RvcmUgdGhlIE1TSSB0byBJT1ZBIG1hcHBpbmcNCj4gPiA+ID4gPiBpbiBW
-RklPIGFuZCBjcmVhdGUgYW4gaW50ZXJmYWNlIHdoZXJlIFNFVF9JUlEgcGFzc2VzIHRoYXQNCj4g
-PiA+ID4gPiBtYXBwaW5nIGludG8gc2V0dXANCj4gPiA+IGNvZGUuDQo+ID4gW1NldGhpIFZhcnVu
-LUIxNjM5NV0gV2hhdCB5b3UgYXJlIHN1Z2dlc3RpbmcgaXMgdGhhdCB0aGUgTVNJIHNldHVwDQo+
-ID4gcGF0aCBxdWVyaWVzIHRoZSB2ZmlvIHN1YnN5c3RlbSBmb3IgdGhlIG1hcHBpbmcsIHJhdGhl
-ciB0aGFuIGRpcmVjdGx5DQo+ID4gcXVlcnlpbmcgdGhlIGlvbW11IHN1YnN5c3RlbS4gU28sIHNh
-eSBpZiB3ZSBhZGQgYW4gaW50ZXJmYWNlIGZvcg0KPiA+IGdldHRpbmcgTVNJIHRvIElPVkEgbWFw
-cGluZyBpbiB0aGUgbXNpIHNldHVwIHBhdGgsIHdvdWxkbid0IHRoaXMgYWdhaW4NCj4gPiBiZSBz
-cGVjaWZpYyB0byB2ZmlvPyBJIHJlY2tvbiB0aGF0IHRoaXMgaW50ZXJmYWNlIHdvdWxkIGFnYWlu
-IHBwYw0KPiA+IG1hY2hpbmUgc3BlY2lmaWMgaW50ZXJmYWNlLg0KPiANCj4gU3VyZSwgaWYgdGhp
-cyBpcyBhIGdlbmVyaWMgTVNJIHNldHVwIHBhdGggdGhlbiBjbGVhcmx5IHZmaW8gc2hvdWxkIG5v
-dCBiZQ0KPiBpbnZvbHZlZC4gIEJ1dCBieSB0aGF0IHNhbWUgbm90aW9uLCBpZiB0aGlzIGlzIGEg
-Z2VuZXJpYyBNU0kgc2V0dXAgcGF0aCwNCj4gaG93IGNhbiB0aGUgcHJvcG9zZWQgc29sdXRpb25z
-IGd1YXJhbnRlZSB0aGF0IHRoZSBpb21tdV9kb21haW4gb3IgaW92YQ0KPiByZXR1cm5lZCBpcyBz
-dGlsbCB2YWxpZCBpbiBhbGwgY2FzZXM/ICBJdCdzIHJhY3kuICBJZiB0aGUgY2FsbGVyIHRyeWlu
-Zw0KPiB0byBzZXR1cCBNU0kgaGFzIHRoZSBpbmZvcm1hdGlvbiBuZWVkZWQsIHdoeSBkb2Vzbid0
-IGl0IHBhc3MgaXQgaW4gYXMNCj4gcGFydCBvZiB0aGUgc2V0dXA/ICBUaGFua3MsDQpbU2V0aGkg
-VmFydW4tQjE2Mzk1XSBBZ3JlZWQsIHRoZSBwcm9wb3NlZCBpbnRlcmZhY2UgaXMgbm90IGNsZWFu
-LiBCdXQsIHdlIHN0aWxsIG5lZWQgYW4gaW50ZXJmYWNlIHRocm91Z2ggd2hpY2ggTVNJIGRyaXZl
-ciBjYW4gY2FsbCBpbiB0byB0aGUgdmZpbyBsYXllci4NCg0KLVZhcnVuDQoNCg0K
+On Mon, 2013-10-14 at 12:58 +0000, Sethi Varun-B16395 wrote:
+> 
+> > -----Original Message-----
+> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > Sent: Friday, October 11, 2013 2:12 AM
+> > To: Sethi Varun-B16395
+> > Cc: Bhushan Bharat-R65777; agraf@suse.de; Wood Scott-B07421; linux-
+> > pci@vger.kernel.org; galak@kernel.crashing.org; linux-
+> > kernel@vger.kernel.org; iommu@lists.linux-foundation.org;
+> > benh@kernel.crashing.org; linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a device
+> > 
+> > On Thu, 2013-10-10 at 20:09 +0000, Sethi Varun-B16395 wrote:
+> > >
+> > > > -----Original Message-----
+> > > > From: iommu-bounces@lists.linux-foundation.org [mailto:iommu-
+> > > > bounces@lists.linux-foundation.org] On Behalf Of Alex Williamson
+> > > > Sent: Tuesday, October 08, 2013 8:43 AM
+> > > > To: Bhushan Bharat-R65777
+> > > > Cc: agraf@suse.de; Wood Scott-B07421; linux-pci@vger.kernel.org;
+> > > > galak@kernel.crashing.org; linux-kernel@vger.kernel.org;
+> > > > iommu@lists.linux-foundation.org; benh@kernel.crashing.org;
+> > > > linuxppc- dev@lists.ozlabs.org
+> > > > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a
+> > > > device
+> > > >
+> > > > On Mon, 2013-10-07 at 05:46 +0000, Bhushan Bharat-R65777 wrote:
+> > > > >
+> > > > > > -----Original Message-----
+> > > > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > > > > > Sent: Friday, October 04, 2013 11:42 PM
+> > > > > > To: Bhushan Bharat-R65777
+> > > > > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
+> > > > > > galak@kernel.crashing.org; linux- kernel@vger.kernel.org;
+> > > > > > linuxppc-dev@lists.ozlabs.org; linux- pci@vger.kernel.org;
+> > > > > > agraf@suse.de; Wood Scott-B07421; iommu@lists.linux-
+> > > > > > foundation.org
+> > > > > > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain of a
+> > > > > > device
+> > > > > >
+> > > > > > On Fri, 2013-10-04 at 17:23 +0000, Bhushan Bharat-R65777 wrote:
+> > > > > > >
+> > > > > > > > -----Original Message-----
+> > > > > > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > > > > > > > Sent: Friday, October 04, 2013 10:43 PM
+> > > > > > > > To: Bhushan Bharat-R65777
+> > > > > > > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
+> > > > > > > > galak@kernel.crashing.org; linux- kernel@vger.kernel.org;
+> > > > > > > > linuxppc-dev@lists.ozlabs.org; linux- pci@vger.kernel.org;
+> > > > > > > > agraf@suse.de; Wood Scott-B07421; iommu@lists.linux-
+> > > > > > > > foundation.org
+> > > > > > > > Subject: Re: [PATCH 2/7] iommu: add api to get iommu_domain
+> > > > > > > > of a device
+> > > > > > > >
+> > > > > > > > On Fri, 2013-10-04 at 16:47 +0000, Bhushan Bharat-R65777
+> > wrote:
+> > > > > > > > >
+> > > > > > > > > > -----Original Message-----
+> > > > > > > > > > From: Alex Williamson
+> > > > > > > > > > [mailto:alex.williamson@redhat.com]
+> > > > > > > > > > Sent: Friday, October 04, 2013 9:15 PM
+> > > > > > > > > > To: Bhushan Bharat-R65777
+> > > > > > > > > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
+> > > > > > > > > > galak@kernel.crashing.org; linux-
+> > > > > > > > > > kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > > > > > > > linux- pci@vger.kernel.org; agraf@suse.de; Wood
+> > > > > > > > > > Scott-B07421; iommu@lists.linux- foundation.org
+> > > > > > > > > > Subject: Re: [PATCH 2/7] iommu: add api to get
+> > > > > > > > > > iommu_domain of a device
+> > > > > > > > > >
+> > > > > > > > > > On Fri, 2013-10-04 at 09:54 +0000, Bhushan Bharat-R65777
+> > > > wrote:
+> > > > > > > > > > >
+> > > > > > > > > > > > -----Original Message-----
+> > > > > > > > > > > > From: linux-pci-owner@vger.kernel.org
+> > > > > > > > > > > > [mailto:linux-pci-owner@vger.kernel.org]
+> > > > > > > > > > > > On Behalf Of Alex Williamson
+> > > > > > > > > > > > Sent: Wednesday, September 25, 2013 10:16 PM
+> > > > > > > > > > > > To: Bhushan Bharat-R65777
+> > > > > > > > > > > > Cc: joro@8bytes.org; benh@kernel.crashing.org;
+> > > > > > > > > > > > galak@kernel.crashing.org; linux-
+> > > > > > > > > > > > kernel@vger.kernel.org;
+> > > > > > > > > > > > linuxppc-dev@lists.ozlabs.org;
+> > > > > > > > > > > > linux- pci@vger.kernel.org; agraf@suse.de; Wood
+> > > > > > > > > > > > Scott-B07421; iommu@lists.linux- foundation.org;
+> > > > > > > > > > > > Bhushan
+> > > > > > > > > > > > Bharat-R65777
+> > > > > > > > > > > > Subject: Re: [PATCH 2/7] iommu: add api to get
+> > > > > > > > > > > > iommu_domain of a device
+> > > > > > > > > > > >
+> > > > > > > > > > > > On Thu, 2013-09-19 at 12:59 +0530, Bharat Bhushan
+> > wrote:
+> > > > > > > > > > > > > This api return the iommu domain to which the
+> > > > > > > > > > > > > device is
+> > > > attached.
+> > > > > > > > > > > > > The iommu_domain is required for making API calls
+> > > > > > > > > > > > > related to
+> > > > > > iommu.
+> > > > > > > > > > > > > Follow up patches which use this API to know iommu
+> > > > maping.
+> > > > > > > > > > > > >
+> > > > > > > > > > > > > Signed-off-by: Bharat Bhushan
+> > > > > > > > > > > > > <bharat.bhushan@freescale.com>
+> > > > > > > > > > > > > ---
+> > > > > > > > > > > > >  drivers/iommu/iommu.c |   10 ++++++++++
+> > > > > > > > > > > > >  include/linux/iommu.h |    7 +++++++
+> > > > > > > > > > > > >  2 files changed, 17 insertions(+), 0 deletions(-)
+> > > > > > > > > > > > >
+> > > > > > > > > > > > > diff --git a/drivers/iommu/iommu.c
+> > > > > > > > > > > > > b/drivers/iommu/iommu.c index
+> > > > > > > > > > > > > fbe9ca7..6ac5f50 100644
+> > > > > > > > > > > > > --- a/drivers/iommu/iommu.c
+> > > > > > > > > > > > > +++ b/drivers/iommu/iommu.c
+> > > > > > > > > > > > > @@ -696,6 +696,16 @@ void
+> > > > > > > > > > > > > iommu_detach_device(struct iommu_domain *domain,
+> > > > > > > > > > > > > struct device *dev)  }
+> > > > > > > > > > > > > EXPORT_SYMBOL_GPL(iommu_detach_device);
+> > > > > > > > > > > > >
+> > > > > > > > > > > > > +struct iommu_domain *iommu_get_dev_domain(struct
+> > > > device *dev) {
+> > > > > > > > > > > > > +	struct iommu_ops *ops = dev->bus->iommu_ops;
+> > > > > > > > > > > > > +
+> > > > > > > > > > > > > +	if (unlikely(ops == NULL ||
+> > > > > > > > > > > > > +ops->get_dev_iommu_domain ==
+> > > > > > NULL))
+> > > > > > > > > > > > > +		return NULL;
+> > > > > > > > > > > > > +
+> > > > > > > > > > > > > +	return ops->get_dev_iommu_domain(dev); }
+> > > > > > > > > > > > > +EXPORT_SYMBOL_GPL(iommu_get_dev_domain);
+> > > > > > > > > > > >
+> > > > > > > > > > > > What prevents this from racing iommu_domain_free()?
+> > > > > > > > > > > > There's no references acquired, so there's no reason
+> > > > > > > > > > > > for the caller to assume the
+> > > > > > > > > > pointer is valid.
+> > > > > > > > > > >
+> > > > > > > > > > > Sorry for late query, somehow this email went into a
+> > > > > > > > > > > folder and escaped;
+> > > > > > > > > > >
+> > > > > > > > > > > Just to be sure, there is not lock at generic "struct
+> > > > > > > > > > > iommu_domain", but IP
+> > > > > > > > > > specific structure (link FSL domain) linked in
+> > > > > > > > > > iommu_domain->priv have a lock, so we need to ensure
+> > > > > > > > > > this race in FSL iommu code (say
+> > > > > > > > > > drivers/iommu/fsl_pamu_domain.c),
+> > > > right?
+> > > > > > > > > >
+> > > > > > > > > > No, it's not sufficient to make sure that your use of
+> > > > > > > > > > the interface is race free.  The interface itself needs
+> > > > > > > > > > to be designed so that it's difficult to use incorrectly.
+> > > > > > > > >
+> > > > > > > > > So we can define
+> > > > > > > > > iommu_get_dev_domain()/iommu_put_dev_domain();
+> > > > > > > > > iommu_get_dev_domain() will return domain with the lock
+> > > > > > > > > held, and
+> > > > > > > > > iommu_put_dev_domain() will release the lock? And
+> > > > > > > > > iommu_get_dev_domain() must always be followed by
+> > > > > > > > > iommu_get_dev_domain().
+> > > > > > > >
+> > > > > > > > What lock?  get/put are generally used for reference
+> > > > > > > > counting, not locking in the kernel.
+> > > > > > > >
+> > > > > > > > > > That's not the case here.  This is a backdoor to get the
+> > > > > > > > > > iommu domain from the iommu driver regardless of who is
+> > > > > > > > > > using
+> > > > it or how.
+> > > > > > > > > > The iommu domain is created and managed by vfio, so
+> > > > > > > > > > shouldn't we be looking at how to do this through vfio?
+> > > > > > > > >
+> > > > > > > > > Let me first describe what we are doing here:
+> > > > > > > > > During initialization:-
+> > > > > > > > >  - vfio talks to MSI system to know the MSI-page and size
+> > > > > > > > >  - vfio then interacts with iommu to map the MSI-page in
+> > > > > > > > > iommu (IOVA is decided by userspace and physical address
+> > > > > > > > > is the
+> > > > > > > > > MSI-page)
+> > > > > > > > >  - So the IOVA subwindow mapping is created in iommu and
+> > > > > > > > > yes VFIO know about
+> > > > > > > > this mapping.
+> > > > > > > > >
+> > > > > > > > > Now do SET_IRQ(MSI/MSIX) ioctl:
+> > > > > > > > >  - calls pci_enable_msix()/pci_enable_msi_block(): which
+> > > > > > > > > is supposed to set
+> > > > > > > > MSI address/data in device.
+> > > > > > > > >  - So in current implementation (this patchset)
+> > > > > > > > > msi-subsystem gets the IOVA
+> > > > > > > > from iommu via this defined interface.
+> > > > > > > > >  - Are you saying that rather than getting this from
+> > > > > > > > > iommu, we should get this
+> > > > > > > > from vfio? What difference does this make?
+> > > > > > > >
+> > > > > > > > Yes, you just said above that vfio knows the msi to iova
+> > > > > > > > mapping, so why go outside of vfio to find it later?  The
+> > > > > > > > difference is one case you can have a proper reference to
+> > > > > > > > data structures to make sure the pointer you get back
+> > > > > > > > actually has meaning at the time you're using it vs the code
+> > > > > > > > here where you're defining an API that returns a meaningless
+> > > > > > > > value
+> > > > > > >
+> > > > > > > With FSL-PAMU we will always get consistant data from iommu or
+> > > > > > > vfio-data
+> > > > > > structure.
+> > > > > >
+> > > > > > Great, but you're trying to add a generic API to the IOMMU
+> > > > > > subsystem that's difficult to use correctly.  The fact that you
+> > > > > > use it correctly does not justify the API.
+> > > > > >
+> > > > > > > > because you can't check or
+> > > > > > > > enforce that an arbitrary caller is using it correctly.
+> > > > > > >
+> > > > > > > I am not sure what is arbitrary caller? pdev is known to vfio,
+> > > > > > > so vfio will only make
+> > > > > > > pci_enable_msix()/pci_enable_msi_block() for
+> > > > this pdev.
+> > > > > > > If anyother code makes then it is some other unexpectedly
+> > > > > > > thing happening in system, no?
+> > > > > >
+> > > > > > What's proposed here is a generic IOMMU API.  Anybody can call
+> > this.
+> > > > > > What if the host SCSI driver decides to go get the iommu domain
+> > > > > > for it's device (or any other device)?  Does that fit your usage
+> > model?
+> > > > > >
+> > > > > > > >  It's not maintainable.
+> > > > > > > > Thanks,
+> > > > > > >
+> > > > > > > I do not have any issue with this as well, can you also
+> > > > > > > describe the type of API you are envisioning; I can think of
+> > > > > > > defining some function in vfio.c/vfio_iommu*.c, make them
+> > > > > > > global and declare then in include/Linux/vfio.h And include
+> > > > > > > <Linux/vfio.h> in caller file
+> > > > > > > (arch/powerpc/kernel/msi.c)
+> > > > > >
+> > > > > > Do you really want module dependencies between vfio and your
+> > > > > > core kernel MSI setup?  Look at the vfio external user interface
+> > > > > > that
+> > > > we've already defined.
+> > > > > > That allows other components of the kernel to get a proper
+> > > > > > reference to a vfio group.  From there you can work out how to
+> > > > > > get what you want.  Another alternative is that vfio could
+> > > > > > register an MSI to IOVA mapping with architecture code when the
+> > mapping is created.
+> > > > > > The MSI setup path could then do a lookup in architecture code
+> > > > > > for the mapping.  You could even store the MSI to IOVA mapping
+> > > > > > in VFIO and create an interface where SET_IRQ passes that
+> > > > > > mapping into setup
+> > > > code.
+> > > [Sethi Varun-B16395] What you are suggesting is that the MSI setup
+> > > path queries the vfio subsystem for the mapping, rather than directly
+> > > querying the iommu subsystem. So, say if we add an interface for
+> > > getting MSI to IOVA mapping in the msi setup path, wouldn't this again
+> > > be specific to vfio? I reckon that this interface would again ppc
+> > > machine specific interface.
+> > 
+> > Sure, if this is a generic MSI setup path then clearly vfio should not be
+> > involved.  But by that same notion, if this is a generic MSI setup path,
+> > how can the proposed solutions guarantee that the iommu_domain or iova
+> > returned is still valid in all cases?  It's racy.  If the caller trying
+> > to setup MSI has the information needed, why doesn't it pass it in as
+> > part of the setup?  Thanks,
+> [Sethi Varun-B16395] Agreed, the proposed interface is not clean. But, we still need an interface through which MSI driver can call in to the vfio layer.
+
+Or one that allows vfio to pass in the iova when the interrupt is being
+setup.  I'm afraid any kind of reverse interface where MSI calls back
+into vfio is going to be racy.  Thanks,
+
+Alex
