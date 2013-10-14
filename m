@@ -2,21 +2,23 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EF40E2C016E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 06:36:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6BABD2C0343
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 06:40:54 +1100 (EST)
 Subject: Re: [PATCH] powerpc/qe_lib: Share the qe_lib for the others
  architecture
 Mime-Version: 1.0 (Apple Message framework v1283)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
 In-Reply-To: <8559CF98-88E4-4271-A873-1409359EFE5C@kernel.crashing.org>
-Date: Mon, 14 Oct 2013 14:36:38 -0500
-Message-Id: <408A0A65-8C77-4B8C-A28A-EA035A01C739@kernel.crashing.org>
+Date: Mon, 14 Oct 2013 14:40:44 -0500
+Message-Id: <3F4D4A39-3063-45F5-8B0E-3CD5F36B4035@kernel.crashing.org>
 References: <1381750622-1150-1-git-send-email-X.Xie@freescale.com>
  <8559CF98-88E4-4271-A873-1409359EFE5C@kernel.crashing.org>
-To: Xie Xiaobo <X.Xie@freescale.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>,
+ Xie Xiaobo <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -63,7 +65,70 @@ On Oct 14, 2013, at 2:26 PM, Kumar Gala wrote:
 >> arch/powerpc/sysdev/qe_lib/ucc_fast.c        | 364 ------------
 >> arch/powerpc/sysdev/qe_lib/ucc_slow.c        | 380 -------------
 >> arch/powerpc/sysdev/qe_lib/usb.c             |  56 --
-
+>> drivers/Kconfig                              |   2 +
+>> drivers/Makefile                             |   3 +
+>> drivers/net/ethernet/freescale/fsl_pq_mdio.c |   2 +-
+>> drivers/net/ethernet/freescale/ucc_geth.c    |   8 +-
+>> drivers/net/ethernet/freescale/ucc_geth.h    |   8 +-
+>> drivers/qe/Kconfig                           |  51 ++
+>> drivers/qe/Makefile                          |  10 +
+>> drivers/qe/gpio.c                            | 317 +++++++++++
+>> drivers/qe/qe.c                              | 708 =
+++++++++++++++++++++++++
+>> drivers/qe/qe_common.c                       | 187 +++++++
+>> drivers/qe/qe_ic.c                           | 501 +++++++++++++++++
+>> drivers/qe/qe_ic.h                           | 103 ++++
+>> drivers/qe/qe_io.c                           | 218 ++++++++
+>> drivers/qe/ucc.c                             | 213 +++++++
+>> drivers/qe/ucc_fast.c                        | 364 ++++++++++++
+>> drivers/qe/ucc_slow.c                        | 380 +++++++++++++
+>> drivers/qe/usb.c                             |  56 ++
+>> drivers/spi/spi-fsl-cpm.c                    |   2 +-
+>> drivers/tty/serial/ucc_uart.c                |   2 +-
+>> include/qe/immap_qe.h                        | 491 +++++++++++++++++
+>> include/qe/qe.h                              | 794 =
++++++++++++++++++++++++++++
+>> include/qe/qe_ic.h                           | 144 +++++
+>> include/qe/ucc.h                             |  64 +++
+>> include/qe/ucc_fast.h                        | 244 ++++++++
+>> include/qe/ucc_slow.h                        | 290 ++++++++++
+>> 47 files changed, 5155 insertions(+), 4907 deletions(-)
+>> delete mode 100644 arch/powerpc/include/asm/immap_qe.h
+>> delete mode 100644 arch/powerpc/include/asm/qe.h
+>> delete mode 100644 arch/powerpc/include/asm/qe_ic.h
+>> delete mode 100644 arch/powerpc/include/asm/ucc.h
+>> delete mode 100644 arch/powerpc/include/asm/ucc_fast.h
+>> delete mode 100644 arch/powerpc/include/asm/ucc_slow.h
+>> delete mode 100644 arch/powerpc/sysdev/qe_lib/Kconfig
+>> delete mode 100644 arch/powerpc/sysdev/qe_lib/Makefile
+>> delete mode 100644 arch/powerpc/sysdev/qe_lib/gpio.c
+>> delete mode 100644 arch/powerpc/sysdev/qe_lib/qe.c
+>> delete mode 100644 arch/powerpc/sysdev/qe_lib/qe_ic.c
+>> delete mode 100644 arch/powerpc/sysdev/qe_lib/qe_ic.h
+>> delete mode 100644 arch/powerpc/sysdev/qe_lib/qe_io.c
+>> delete mode 100644 arch/powerpc/sysdev/qe_lib/ucc.c
+>> delete mode 100644 arch/powerpc/sysdev/qe_lib/ucc_fast.c
+>> delete mode 100644 arch/powerpc/sysdev/qe_lib/ucc_slow.c
+>> delete mode 100644 arch/powerpc/sysdev/qe_lib/usb.c
+>> create mode 100644 drivers/qe/Kconfig
+>> create mode 100644 drivers/qe/Makefile
+>> create mode 100644 drivers/qe/gpio.c
+>> create mode 100644 drivers/qe/qe.c
+>> create mode 100644 drivers/qe/qe_common.c
+>> create mode 100644 drivers/qe/qe_ic.c
+>> create mode 100644 drivers/qe/qe_ic.h
+>> create mode 100644 drivers/qe/qe_io.c
+>> create mode 100644 drivers/qe/ucc.c
+>> create mode 100644 drivers/qe/ucc_fast.c
+>> create mode 100644 drivers/qe/ucc_slow.c
+>> create mode 100644 drivers/qe/usb.c
+>> create mode 100644 include/qe/immap_qe.h
+>> create mode 100644 include/qe/qe.h
+>> create mode 100644 include/qe/qe_ic.h
+>> create mode 100644 include/qe/ucc.h
+>> create mode 100644 include/qe/ucc_fast.h
+>> create mode 100644 include/qe/ucc_slow.h
+>=20
 > Before this is moved you should address the PPC specific issues in the =
 code.  Use of PPC_LIB_RHEAP, the IO macros which are not cross platform, =
 etc.
@@ -71,14 +136,18 @@ etc.
 > Also, copy linux-kernel list as I'm not sure drivers/qe would be the =
 recommendation location for this to end up at.
 
-Additionally, some of this should move to using standard driver models =
-that now exist.  For example qe_ic.{c,h} should possibly look at going =
-into drivers/irqchip/.  gpio.c should be looked to use gpiolib and move =
-into drivers/gpio.  Some of the pinmux that exists in qe.c and ucc.c =
-should look at the drivers/pinctrl and there is some amount of clk =
-config that I wonder if it could move the common clk API and =
-drivers/clk.
+Greg,
 
-There will still be some qe_lib specific code, but vastly reduced.
+Wondering your thoughts on drivers/qe vs something like =
+drivers/soc/fsl/qe.  The QuiccEngine (qe) is a communication core on =
+some of the Freescale networking SoCs that provides the ability to do =
+various networking/communication functionality.  "Channels" on the QE =
+can be used for various different things from ethernet, ATM, UART, or =
+other functions.
 
-- k=20
+I've already commented that some of what is in qe_lib today needs to =
+move to things like drivers/irqchip, drivers/pinctrl, drivers/gpio, etc. =
+ However, there will still be some qe specific code that doesn't have a =
+natural home in drivers/ today.
+
+- k=
