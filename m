@@ -1,19 +1,23 @@
-Return-Path: <aida.mynzhasova@skitlab.ru>
-Received: from mail.skitlab.ru (mail.skitlab.ru [217.65.220.135])
- by ozlabs.org (Postfix) with ESMTP id 730092C0369
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2013 16:52:15 +1100 (EST)
-Message-ID: <525B868D.9080806@skitlab.ru>
-Date: Mon, 14 Oct 2013 09:52:13 +0400
-From: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
+Return-Path: <michael@ellerman.id.au>
+Date: Mon, 14 Oct 2013 17:19:58 +1100
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc, perf: Configure BHRB filter before enabling PMU
+ interrupts
+Message-ID: <20131014061958.GA8300@concordia>
+References: <1381120226-14838-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <20131008042137.GE31666@concordia>
+ <5253B26E.3020800@linux.vnet.ibm.com>
+ <20131009012130.GA23780@concordia>
+ <5254DFA8.2050100@linux.vnet.ibm.com>
+ <20131009060321.GB28160@concordia>
+ <52566A4E.2000409@linux.vnet.ibm.com>
+ <20131011021131.GA26561@concordia>
+ <52577F5C.6000704@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: "powerpc/83xx: gianfar_ptp: select 1588 clock source through
- dts file" was added twice
-References: <525962B2.8010100@skitlab.ru>
- <20131012.171110.246440214474931440.davem@davemloft.net>
-In-Reply-To: <20131012.171110.246440214474931440.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, greg@kroah.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <52577F5C.6000704@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,34 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13.10.2013 01:11, David Miller wrote:
-> From: Aida Mynzhasova <aida.mynzhasova@skitlab.ru>
-> Date: Sat, 12 Oct 2013 18:54:42 +0400
->
->> Hi,
->>
->> recently I looked through commits in kernel/git/torvalds/linux.git and
->> I noticed that my patch (old and new version) was added twice (by
->> David S. Miller):
->>
->> e58f6f4fb4eada7867014bfaec898f03afbce5c2
->> 894116bd0e9b7749a0c4b6c62dec13c2a0ccef68
->>
->> I think this is not good, and only
->> e58f6f4fb4eada7867014bfaec898f03afbce5c2 should be added.
->
-> Read the code history properly.
->
-> First 894116bd0e9b7749a0c4b6c62dec13c2a0ccef68 got applied, as you say
-> accidently.  Then I reverted it, see commit
-> 3f3f0960aff951c5df6e42ce292d1593a2520646.
->
-> Then I applied the correct version which is commit
-> e58f6f4fb4eada7867014bfaec898f03afbce5c2.
->
-> I didn't respond at all the first time you pointed this out hoping
-> you would figure it out on your own.
->
+On Fri, Oct 11, 2013 at 10:02:28AM +0530, Anshuman Khandual wrote:
+> On 10/11/2013 07:41 AM, Michael Ellerman wrote:
+> > On Thu, Oct 10, 2013 at 02:20:22PM +0530, Anshuman Khandual wrote:
+> > 
+> >> Even I think this is not right. Instruction sampling should have been
+> >> enabled before we enable PMU interrupts. Else there is a small window
+> >> of time where we could have the PMU enabled with events (which requires
+> >> sampling) without the sampling itself being enabled in MMCRA.
+> > 
+> > Yes I agree. That's a separate bug, which we'll need to test on all the book3s
+> > platforms we have perf support for.
+> 
+> Okay, I guess any platform which supports sampling will definitely want to have
+> it enabled before we can set the events to count on PMU. Can you think of any
+> problem which can arise if we move it before the enabling the PMU back ? Else
+> we can fix this easily.
 
-Oh...right...
-Please accept my apology.
+In theory it should be a trivial change. But hardware can behave in
+strange ways, it's possible on some old chip we need to do it the
+current way for some reason.
+
+So although I don't think it will be a problem, it could be, so we
+will need to test it thoroughly.
+
+cheers
