@@ -1,32 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2A9962C007B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 04:41:16 +1100 (EST)
-Message-ID: <1381858855.7979.693.camel@snotra.buserror.net>
-Subject: Re: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in device tree
-From: Scott Wood <scottwood@freescale.com>
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Date: Tue, 15 Oct 2013 12:40:55 -0500
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B150C2B08@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1381300704-4238-1-git-send-email-Yuantian.Tang@freescale.com>
- <20131010100331.GE26954@e106331-lin.cambridge.arm.com>
- <D07C73A334FF604B95B3CBD2A545D07B150BD137@039-SN2MPN1-013.039d.mgd.msft.net>
- <20131011092526.GE3910@e106331-lin.cambridge.arm.com>
- <1381518433.7979.536.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C24BD@039-SN2MPN1-013.039d.mgd.msft.net>
- <1381788786.7979.643.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C2B08@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <mohicks@gmail.com>
+Received: from mail-ie0-x22c.google.com (mail-ie0-x22c.google.com
+ [IPv6:2607:f8b0:4001:c03::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9665E2C0344
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 05:44:50 +1100 (EST)
+Received: by mail-ie0-f172.google.com with SMTP id tp5so1464055ieb.17
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 11:44:46 -0700 (PDT)
 MIME-Version: 1.0
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-Leo-R58472 <r58472@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Sender: mohicks@gmail.com
+In-Reply-To: <1381851009.17841.14.camel@pasglop>
+References: <CAJUS3Xn4tHKvDK8tzLw09+zsEAJHEScV2DbZhH9KkYL-5iCmUA@mail.gmail.com>
+ <CAJUS3X=LVHDMa+CTFS=O=F=DfU1=0cgcNzn-mEvXGaDXEZ+CBA@mail.gmail.com>
+ <1381851009.17841.14.camel@pasglop>
+Date: Tue, 15 Oct 2013 14:44:46 -0400
+Message-ID: <CAJUS3XmN2WNJ1cnorb5vfas7mB6tdNLxuupFja=u_wYS=cxmdQ@mail.gmail.com>
+Subject: Re: Perf not resolving all symbols, showing 0x7ffffxxx
+From: Martin Hicks <mort@bork.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,61 +31,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-10-14 at 20:59 -0500, Tang Yuantian-B29983 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: 2013=E5=B9=B410=E6=9C=8815=E6=97=A5 =E6=98=9F=E6=9C=9F=E4=BA=8C=
- 6:13
-> > To: Tang Yuantian-B29983
-> > Cc: Wood Scott-B07421; Mark Rutland; devicetree@vger.kernel.org;
-> > linuxppc-dev@lists.ozlabs.org; Li Yang-Leo-R58472
-> > Subject: Re: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in de=
-vice
-> > tree
-> >=20
-> > On Fri, 2013-10-11 at 21:52 -0500, Tang Yuantian-B29983 wrote:
-> > > Thanks for your review.
-> > >
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: 2013=E5=B9=B410=E6=9C=8812=E6=97=A5 =E6=98=9F=E6=9C=9F=E5=85=
-=AD 3:07
-> > > > To: Mark Rutland
-> > > > Cc: Tang Yuantian-B29983; devicetree@vger.kernel.org; linuxppc-
-> > > > dev@lists.ozlabs.org; Li Yang-Leo-R58472
-> > > > Subject: Re: [PATCH v5] powerpc/mpc85xx: Update the clock nodes i=
-n
-> > > > device tree
-> > > >
-> > > > I'm not sure I understand the "_0"/"_1" part, though.  Doesn't ea=
-ch
-> > > > PLL just have one output, which the consumer may choose to divide=
- by
-> > > > 2 (or in some cases 4)?  Why does that division need to be expose=
-d
-> > > > in the device tree as separate connections to the parent clock?
-> > > >
-> > > The device tree makes that quite clear.
-> >=20
-> > You chose to model it that way in the device tree; that doesn't make =
-it
-> > clear that the hardware works that way or that it's a good way to mod=
-el
-> > it.
-> >=20
-> > > Each PLL has several output which MUX node can take from.
-> >=20
-> > Point out where in the hardware documentation it says this.  What I s=
-ee
-> > is a PLL that has one output, and a MUX register that can choose from
-> > multiple PLL and divider options.
-> >=20
-> Take T4240 for example: see section 4.6.5.1 , (Page 141) in T4240RM Rev=
-. D, 09/2012.
+On Tue, Oct 15, 2013 at 11:30 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2013-10-15 at 09:59 -0400, Martin Hicks wrote:
+>> I've tracked the start of the strange instruction pointers in 'perf
+>> report' to a commit by Anton:
+>>
+>> commit 75382aa72f06823db7312ad069c3bae2eb3f8548
+>> Author: Anton Blanchard <anton@samba.org>
+>> Date:   Tue Jun 26 01:01:36 2012 +0000
+>>
+>>     powerpc/perf: Move code to select SIAR or pt_regs into perf_read_regs
+>>
+>> I don't know enough about PPC to know what's going on, but reverting
+>> the changes to perf_instruction_pointer() gets me reasonable 'perf
+>> report' output with 3.11.
+>
+> This is an e300 core right ? (603...). Do that have an SIAR at all
+> (Scott ?)
 
-That shows the dividers as being somewhere in between the PLL and the
-MUX.  The MUX is where the divider is selected.  There's nothing in the
-PLL's programming interface that relates to the dividers.  As such it's
-simpler to model it as being part of the MUX.
+Yes, e300c3.
 
--Scott
+mh
+
+-- 
+Martin Hicks P.Eng.      |         mort@bork.org
+Bork Consulting Inc.     |   +1 (613) 266-2296
