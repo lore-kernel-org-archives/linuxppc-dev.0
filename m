@@ -1,24 +1,25 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0248.outbound.messaging.microsoft.com [213.199.154.248])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0C8192C009E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 07:33:56 +1100 (EST)
-Message-ID: <1381869216.7979.718.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc 8xx: Fixing memory init issue with CONFIG_PIN_TLB
-From: Scott Wood <scottwood@freescale.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Date: Tue, 15 Oct 2013 15:33:36 -0500
-In-Reply-To: <525D6CD4.5090403@c-s.fr>
-References: <201310111256.r9BCuepM006243@localhost.localdomain>
- <OFF3401910.4A8AA6D0-ONC1257C01.0052FC82-C1257C01.00539C55@transmode.se>
- <525D6CD4.5090403@c-s.fr>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2E60B2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 07:39:58 +1100 (EST)
+Message-ID: <1381869590.17841.23.camel@pasglop>
+Subject: Re: Perf not resolving all symbols, showing 0x7ffffxxx
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Tue, 15 Oct 2013 15:39:50 -0500
+In-Reply-To: <1381868527.7979.713.camel@snotra.buserror.net>
+References: <CAJUS3Xn4tHKvDK8tzLw09+zsEAJHEScV2DbZhH9KkYL-5iCmUA@mail.gmail.com>
+ <CAJUS3X=LVHDMa+CTFS=O=F=DfU1=0cgcNzn-mEvXGaDXEZ+CBA@mail.gmail.com>
+ <1381851009.17841.14.camel@pasglop>
+ <CAJUS3XmN2WNJ1cnorb5vfas7mB6tdNLxuupFja=u_wYS=cxmdQ@mail.gmail.com>
+ <1381866837.17841.21.camel@pasglop>
+ <1381868527.7979.713.camel@snotra.buserror.net>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Cc: Martin Hicks <mort@bork.org>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,74 +29,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-10-15 at 18:27 +0200, leroy christophe wrote:
-> Le 11/10/2013 17:13, Joakim Tjernlund a =C3=A9crit :
-> > "Linuxppc-dev"
-> > <linuxppc-dev-bounces+joakim.tjernlund=3Dtransmode.se@lists.ozlabs.or=
-g>
-> > wrote on 2013/10/11 14:56:40:
-> >> Activating CONFIG_PIN_TLB allows access to the 24 first Mbytes of me=
-mory
-> > at
-> >> bootup instead of 8. It is needed for "big" kernels for instance whe=
-n
-> > activating
-> >> CONFIG_LOCKDEP_SUPPORT. This needs to be taken into account in init_=
-32
-> > too,
-> >> otherwise memory allocation soon fails after startup.
-> >>
-> >> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> >>
-> >> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S
-> > linux-3.11/arch/powerpc/kernel/head_8xx.S
-> >> --- linux-3.11.org/arch/powerpc/mm/init_32.c   2013-09-02
-> > 22:46:10.000000000 +0200
-> >> +++ linux-3.11/arch/powerpc/mm/init_32.c   2013-09-09 11:28:54.00000=
-0000
-> > +0200
-> >> @@ -213,7 +213,12 @@
-> >>       */
-> >>      BUG_ON(first_memblock_base !=3D 0);
-> >>
-> >> +#ifdef CONFIG_PIN_TLB
-> >> +   /* 8xx can only access 24MB at the moment */
-> >> +   memblock_set_current_limit(min_t(u64, first_memblock_size,
-> > 0x01800000));
-> >> +#else
-> >>      /* 8xx can only access 8MB at the moment */
-> >>      memblock_set_current_limit(min_t(u64, first_memblock_size,
-> > 0x00800000));
-> >> +#endif
-> >>   }
-> >>   #endif /* CONFIG_8xx */
-> > hmm, I think you should always map 24 MB (or less if RAM < 24 MB) and=
- do
-> > the same
-> > in head_8xx.S.
-> >
-> > Or to keep it simple, just always map at least 16 MB here and in
-> > head_8xx.S, assuming
-> > that 16 MB is min RAM for any 8xx system running 3.x kernels.
-> Yes we could do a more elaborated modification in the future. However i=
-t=20
-> also has an impact on the boot loader, so I'm not sure we should make i=
-t=20
-> the default without thinking twice.
->=20
-> In the meantime, my patch does take into account the existing situation=
-=20
-> where you have 8Mb by default and 24Mb when you activate CONFIG_PIN_TLB=
-.
-> I see it as a bug fix and I believe we should include it at least in=20
-> order to allow including in the stable releases.
->=20
-> Do you see any issue with this approach ?
+On Tue, 2013-10-15 at 15:22 -0500, Scott Wood wrote:
+> On Tue, 2013-10-15 at 14:53 -0500, Benjamin Herrenschmidt wrote:
+> > On Tue, 2013-10-15 at 14:44 -0400, Martin Hicks wrote:
+> > > On Tue, Oct 15, 2013 at 11:30 AM, Benjamin Herrenschmidt
+> > > <benh@kernel.crashing.org> wrote:
+> > > > On Tue, 2013-10-15 at 09:59 -0400, Martin Hicks wrote:
+> > > >> I've tracked the start of the strange instruction pointers in 'perf
+> > > >> report' to a commit by Anton:
+> > > >>
+> > > >> commit 75382aa72f06823db7312ad069c3bae2eb3f8548
+> > > >> Author: Anton Blanchard <anton@samba.org>
+> > > >> Date:   Tue Jun 26 01:01:36 2012 +0000
+> > > >>
+> > > >>     powerpc/perf: Move code to select SIAR or pt_regs into perf_read_regs
+> > > >>
+> > > >> I don't know enough about PPC to know what's going on, but reverting
+> > > >> the changes to perf_instruction_pointer() gets me reasonable 'perf
+> > > >> report' output with 3.11.
+> > > >
+> > > > This is an e300 core right ? (603...). Do that have an SIAR at all
+> > > > (Scott ?)
+> > > 
+> > > Yes, e300c3.
+> > 
+> > Ok so I have a hard time figuring out how that patch can make a
+> > difference since for all I can see, there is no perf backend upstream
+> > for e300 at all :-(
+> > 
+> > I must certainly be missing something ... Scott, can you have a look ?
+> 
+> e300c3 has a core-fsl-emb style performance monitor (though Linux
+> doesn't support it yet).  If a bug was bisected to a change in
+> core-book3s.c, then it's probably a coincidence due to moving code
+> around.
 
-The patch is fine, but I don't think it's stable material (BTW, if it
-were, you should have marked it as such when submitting).  If I
-understand the situation correctly, there's no regression, and nothing
-fails to work with CONFIG_PIN_TLB that would have worked without it.
-It's just making CONFIG_PIN_TLB more useful.
+Mort, can you see if just that change is enough to cause the problem ?
 
--Scott
+------------------- arch/powerpc/include/asm/perf_event.h --------------------
+index 5c16b89..0bb2372 100644
+@@ -26,8 +26,13 @@
+ #include <asm/ptrace.h>
+ #include <asm/reg.h>
+ 
++/*
++ * Overload regs->result to specify whether we should use the MSR (result
++ * is zero) or the SIAR (result is non zero).
++ */
+ #define perf_arch_fetch_caller_regs(regs, __ip)			\
+ 	do {							\
++		(regs)->result = 0;				\
+ 		(regs)->nip = __ip;				\
+ 		(regs)->gpr[1] = *(unsigned long *)__get_SP();	\
+ 		asm volatile("mfmsr %0" : "=r" ((regs)->msr));	\
+
+Ben.
