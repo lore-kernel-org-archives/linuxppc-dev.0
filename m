@@ -1,30 +1,26 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 564A72C0335
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 09:13:18 +1100 (EST)
-Message-ID: <1381788786.7979.643.camel@snotra.buserror.net>
-Subject: Re: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in device tree
-From: Scott Wood <scottwood@freescale.com>
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Date: Mon, 14 Oct 2013 17:13:06 -0500
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B150C24BD@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1381300704-4238-1-git-send-email-Yuantian.Tang@freescale.com>
- <20131010100331.GE26954@e106331-lin.cambridge.arm.com>
- <D07C73A334FF604B95B3CBD2A545D07B150BD137@039-SN2MPN1-013.039d.mgd.msft.net>
- <20131011092526.GE3910@e106331-lin.cambridge.arm.com>
- <1381518433.7979.536.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C24BD@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ie0-x231.google.com (mail-ie0-x231.google.com
+ [IPv6:2607:f8b0:4001:c03::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 510ED2C010A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 11:16:18 +1100 (EST)
+Received: by mail-ie0-f177.google.com with SMTP id e14so10243786iej.36
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2013 17:16:14 -0700 (PDT)
+Date: Mon, 14 Oct 2013 18:16:11 -0600
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Subject: Re: [PATCH 1/3] iommu/fsl: Factor out PCI specific code.
+Message-ID: <20131015001611.GA9203@google.com>
+References: <1381609954-15283-1-git-send-email-Varun.Sethi@freescale.com>
+ <1381609954-15283-2-git-send-email-Varun.Sethi@freescale.com>
 MIME-Version: 1.0
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-Leo-R58472 <r58472@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1381609954-15283-2-git-send-email-Varun.Sethi@freescale.com>
+Cc: alex.williamson@redhat.com, joro@8bytes.org, stuart.yoder@freescale.com,
+ linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+ r65777@freescale.com, scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,42 +30,222 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-10-11 at 21:52 -0500, Tang Yuantian-B29983 wrote:
-> Thanks for your review.
->=20
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: 2013=E5=B9=B410=E6=9C=8812=E6=97=A5 =E6=98=9F=E6=9C=9F=E5=85=AD=
- 3:07
-> > To: Mark Rutland
-> > Cc: Tang Yuantian-B29983; devicetree@vger.kernel.org; linuxppc-
-> > dev@lists.ozlabs.org; Li Yang-Leo-R58472
-> > Subject: Re: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in de=
-vice
-> > tree
-> >=20
-> > I'm not sure I understand the "_0"/"_1" part, though.  Doesn't each P=
-LL
-> > just have one output, which the consumer may choose to divide by 2 (o=
-r in
-> > some cases 4)?  Why does that division need to be exposed in the devi=
-ce
-> > tree as separate connections to the parent clock?
-> >=20
-> The device tree makes that quite clear.=20
+On Sun, Oct 13, 2013 at 02:02:32AM +0530, Varun Sethi wrote:
+> Factor out PCI specific code in the PAMU driver.
+> 
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> ---
+>  drivers/iommu/fsl_pamu_domain.c |   81 +++++++++++++++++++--------------------
+>  1 file changed, 40 insertions(+), 41 deletions(-)
+> 
+> diff --git a/drivers/iommu/fsl_pamu_domain.c b/drivers/iommu/fsl_pamu_domain.c
+> index c857c30..e02e1de 100644
+> --- a/drivers/iommu/fsl_pamu_domain.c
+> +++ b/drivers/iommu/fsl_pamu_domain.c
+> @@ -677,13 +677,9 @@ static int handle_attach_device(struct fsl_dma_domain *dma_domain,
+>  	return ret;
+>  }
+>  
+> -static int fsl_pamu_attach_device(struct iommu_domain *domain,
+> -				  struct device *dev)
+> +static void check_for_pci_dma_device(struct device **dev)
 
-You chose to model it that way in the device tree; that doesn't make it
-clear that the hardware works that way or that it's a good way to model
-it.
+"check_for_pci_dma_device()" doesn't give a good clue about what the
+function returns.  And why return something via a reference parameter
+when you could return it directly?
 
-> Each PLL has several output which MUX node can take from.
+>  {
+> -	struct fsl_dma_domain *dma_domain = domain->priv;
+> -	const u32 *liodn;
+> -	u32 liodn_cnt;
+> -	int len, ret = 0;
+> +#ifdef CONFIG_PCI
+>  	struct pci_dev *pdev = NULL;
+>  	struct pci_controller *pci_ctl;
 
-Point out where in the hardware documentation it says this.  What I see
-is a PLL that has one output, and a MUX register that can choose from
-multiple PLL and divider options.
+This is sort of a goofy looking function.  It would read much better as
+something like this:
 
->  It is not a runtime decision.
+      struct device *dma_dev = dev;
 
-Hmm?  It's a register you write to.
+  #ifdef CONFIG_PCI
+      if (...) {
+          dma_dev = ...;
+      }
+  #endif
 
--Scott
+      return dma_dev;
+
+Does this need to care about reference counting when you return a pointer
+to a different device?
+
+Bjorn
+
+>  
+> @@ -691,25 +687,38 @@ static int fsl_pamu_attach_device(struct iommu_domain *domain,
+>  	 * Use LIODN of the PCI controller while attaching a
+>  	 * PCI device.
+>  	 */
+> -	if (dev->bus == &pci_bus_type) {
+> -		pdev = to_pci_dev(dev);
+> +	if ((*dev)->bus == &pci_bus_type) {
+> +		pdev = to_pci_dev(*dev);
+>  		pci_ctl = pci_bus_to_host(pdev->bus);
+>  		/*
+>  		 * make dev point to pci controller device
+>  		 * so we can get the LIODN programmed by
+>  		 * u-boot.
+>  		 */
+> -		dev = pci_ctl->parent;
+> +		*dev = pci_ctl->parent;
+>  	}
+> +#endif
+> +}
+>  
+> -	liodn = of_get_property(dev->of_node, "fsl,liodn", &len);
+> +static int fsl_pamu_attach_device(struct iommu_domain *domain,
+> +				  struct device *dev)
+> +{
+> +	struct fsl_dma_domain *dma_domain = domain->priv;
+> +	struct device *dma_dev = dev;
+> +	const u32 *liodn;
+> +	u32 liodn_cnt;
+> +	int len, ret = 0;
+> +
+> +	check_for_pci_dma_device(&dma_dev);
+> +
+> +	liodn = of_get_property(dma_dev->of_node, "fsl,liodn", &len);
+>  	if (liodn) {
+>  		liodn_cnt = len / sizeof(u32);
+>  		ret = handle_attach_device(dma_domain, dev,
+>  					 liodn, liodn_cnt);
+>  	} else {
+>  		pr_debug("missing fsl,liodn property at %s\n",
+> -		          dev->of_node->full_name);
+> +		          dma_dev->of_node->full_name);
+>  			ret = -EINVAL;
+>  	}
+>  
+> @@ -720,32 +729,18 @@ static void fsl_pamu_detach_device(struct iommu_domain *domain,
+>  				      struct device *dev)
+>  {
+>  	struct fsl_dma_domain *dma_domain = domain->priv;
+> +	struct device *dma_dev = dev;
+>  	const u32 *prop;
+>  	int len;
+> -	struct pci_dev *pdev = NULL;
+> -	struct pci_controller *pci_ctl;
+>  
+> -	/*
+> -	 * Use LIODN of the PCI controller while detaching a
+> -	 * PCI device.
+> -	 */
+> -	if (dev->bus == &pci_bus_type) {
+> -		pdev = to_pci_dev(dev);
+> -		pci_ctl = pci_bus_to_host(pdev->bus);
+> -		/*
+> -		 * make dev point to pci controller device
+> -		 * so we can get the LIODN programmed by
+> -		 * u-boot.
+> -		 */
+> -		dev = pci_ctl->parent;
+> -	}
+> +	check_for_pci_dma_device(&dma_dev);
+>  
+> -	prop = of_get_property(dev->of_node, "fsl,liodn", &len);
+> +	prop = of_get_property(dma_dev->of_node, "fsl,liodn", &len);
+>  	if (prop)
+>  		detach_device(dev, dma_domain);
+>  	else
+>  		pr_debug("missing fsl,liodn property at %s\n",
+> -		          dev->of_node->full_name);
+> +		          dma_dev->of_node->full_name);
+>  }
+>  
+>  static  int configure_domain_geometry(struct iommu_domain *domain, void *data)
+> @@ -905,6 +900,7 @@ static struct iommu_group *get_device_iommu_group(struct device *dev)
+>  	return group;
+>  }
+>  
+> +#ifdef CONFIG_PCI
+>  static  bool check_pci_ctl_endpt_part(struct pci_controller *pci_ctl)
+>  {
+>  	u32 version;
+> @@ -945,13 +941,18 @@ static struct iommu_group *get_shared_pci_device_group(struct pci_dev *pdev)
+>  	return NULL;
+>  }
+>  
+> -static struct iommu_group *get_pci_device_group(struct pci_dev *pdev)
+> +static struct iommu_group *get_pci_device_group(struct device *dev)
+>  {
+>  	struct pci_controller *pci_ctl;
+>  	bool pci_endpt_partioning;
+>  	struct iommu_group *group = NULL;
+> -	struct pci_dev *bridge, *dma_pdev = NULL;
+> +	struct pci_dev *bridge, *pdev;
+> +	struct pci_dev *dma_pdev = NULL;
+>  
+> +	pdev = to_pci_dev(dev);
+> +	/* Don't create device groups for virtual PCI bridges */
+> +	if (pdev->subordinate)
+> +		return NULL;
+>  	pci_ctl = pci_bus_to_host(pdev->bus);
+>  	pci_endpt_partioning = check_pci_ctl_endpt_part(pci_ctl);
+>  	/* We can partition PCIe devices so assign device group to the device */
+> @@ -1044,11 +1045,11 @@ root_bus:
+>  
+>  	return group;
+>  }
+> +#endif
+>  
+>  static int fsl_pamu_add_device(struct device *dev)
+>  {
+>  	struct iommu_group *group = NULL;
+> -	struct pci_dev *pdev;
+>  	const u32 *prop;
+>  	int ret, len;
+>  
+> @@ -1056,19 +1057,15 @@ static int fsl_pamu_add_device(struct device *dev)
+>  	 * For platform devices we allocate a separate group for
+>  	 * each of the devices.
+>  	 */
+> -	if (dev->bus == &pci_bus_type) {
+> -		pdev = to_pci_dev(dev);
+> -		/* Don't create device groups for virtual PCI bridges */
+> -		if (pdev->subordinate)
+> -			return 0;
+> -
+> -		group = get_pci_device_group(pdev);
+> -
+> -	} else {
+> +	if (dev->bus == &platform_bus_type) {
+>  		prop = of_get_property(dev->of_node, "fsl,liodn", &len);
+>  		if (prop)
+>  			group = get_device_iommu_group(dev);
+>  	}
+> +#ifdef CONFIG_PCI
+> +	else
+> +		group = get_pci_device_group(dev);
+> +#endif
+>  
+>  	if (!group || IS_ERR(group))
+>  		return PTR_ERR(group);
+> @@ -1166,7 +1163,9 @@ int pamu_domain_init()
+>  		return ret;
+>  
+>  	bus_set_iommu(&platform_bus_type, &fsl_pamu_ops);
+> +#ifdef CONFIG_PCI
+>  	bus_set_iommu(&pci_bus_type, &fsl_pamu_ops);
+> +#endif
+>  
+>  	return ret;
+>  }
+> -- 
+> 1.7.9.5
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
