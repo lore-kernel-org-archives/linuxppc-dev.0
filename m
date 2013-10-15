@@ -1,21 +1,46 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <brueckner@linux.vnet.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 235B02C0346
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 02:30:25 +1100 (EST)
-Message-ID: <1381851009.17841.14.camel@pasglop>
-Subject: Re: Perf not resolving all symbols, showing 0x7ffffxxx
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Martin Hicks <mort@bork.org>
-Date: Tue, 15 Oct 2013 10:30:09 -0500
-In-Reply-To: <CAJUS3X=LVHDMa+CTFS=O=F=DfU1=0cgcNzn-mEvXGaDXEZ+CBA@mail.gmail.com>
-References: <CAJUS3Xn4tHKvDK8tzLw09+zsEAJHEScV2DbZhH9KkYL-5iCmUA@mail.gmail.com>
- <CAJUS3X=LVHDMa+CTFS=O=F=DfU1=0cgcNzn-mEvXGaDXEZ+CBA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
+ (Client CN "e06smtp17.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E29492C0345
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 02:41:05 +1100 (EST)
+Received: from /spool/local
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brueckner@linux.vnet.ibm.com>;
+ Tue, 15 Oct 2013 16:40:50 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2770A17D8630
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 16:38:07 +0100 (BST)
+Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
+ [9.149.37.229])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9FFaFW356230124
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 15:36:15 GMT
+Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9FFaQ5O023688
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 09:36:27 -0600
+Date: Tue, 15 Oct 2013 17:36:26 +0200
+From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] tty/hvc_console: Add DTR/RTS callback to handle
+ HUPCL control
+Message-ID: <20131015153626.GA6129@linux.vnet.ibm.com>
+References: <1372777635-10423-1-git-send-email-brueckner@linux.vnet.ibm.com>
+ <1372777635-10423-2-git-send-email-brueckner@linux.vnet.ibm.com>
+ <1381475711.5630.67.camel@pasglop>
+ <20131011124707.GA6082@linux.vnet.ibm.com>
+ <1381524204.5630.91.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1381524204.5630.91.camel@pasglop>
+Cc: linux-s390@vger.kernel.org, brueckner@linux.vnet.com,
+ gregkh@linuxfoundation.org, heiko.carstens@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Hendrik Brueckner <brueckner@linux.vnet.ibm.com>, schwidefsky@de.ibm.com,
+ jslaby@suse.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,97 +50,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-10-15 at 09:59 -0400, Martin Hicks wrote:
-> I've tracked the start of the strange instruction pointers in 'perf
-> report' to a commit by Anton:
-> 
-> commit 75382aa72f06823db7312ad069c3bae2eb3f8548
-> Author: Anton Blanchard <anton@samba.org>
-> Date:   Tue Jun 26 01:01:36 2012 +0000
-> 
->     powerpc/perf: Move code to select SIAR or pt_regs into perf_read_regs
-> 
-> I don't know enough about PPC to know what's going on, but reverting
-> the changes to perf_instruction_pointer() gets me reasonable 'perf
-> report' output with 3.11.
+Hi Benjamin,
 
-This is an e300 core right ? (603...). Do that have an SIAR at all
-(Scott ?)
+On Sat, Oct 12, 2013 at 07:43:24AM +1100, Benjamin Herrenschmidt wrote:
+> On Fri, 2013-10-11 at 14:47 +0200, Hendrik Brueckner wrote:
+> > The tiocmget/tiocmset callbacks are used to set and get modem status and
+> > triggered through an tty ioctl.
+> > 
+> > The dtr_rts() callback is different and it is used for DTS/RTS handshaking
+> > between the hvc_console (or any other tty_port) and the tty layer.  The tty
+> > port layer uses this callback to signal the hvc_console whether to raise or
+> > lower the DTR/RTS lines.  This is different than the ioctl interface to
+> > controls the modem status.
+> 
+> Well, DTR at least is the same via both callbacks... Also normal handshaking
+> is normally RTS/CTS, only some HW setups "hijacks" DTR for RTS (old Macs come
+> to mind).
 
+Yep. DTR is changed in both callbacks but from different layers.  The
+tiocmget/tiocmset are triggered through the ioctl.  The dtr_rts() callback is
+called in hvc_close() to properly handle HUPCL to lower modem control lines
+after last process closes the device (hang up).
 
-Cheers,
-Ben.
+This is also done in the hvsilib_close() in hvsi_lib.c:
 
-> Thanks,
-> mh
-> 
-> 
-> On Thu, Oct 3, 2013 at 10:21 AM, Martin Hicks <mort@bork.org> wrote:
-> > Hi,
-> >
-> > I've been trying to track down a performance regression that started
-> > leading up to the v3.6 kernel, and while doing this I've been
-> > gathering perf data on v3.6-rc and comparing it to v3.11 perf reports
-> > of the same workload.
-> >
-> > With v3.6-rc kernels I get all symbols resolved like this:
-> >
-> > # Events: 39K cpu-clock-msecs
-> > #
-> > # Overhead      Command           Shared Object
-> >             Symbol
-> > # ........  ...........  ......................
-> > ........................................
-> > #
-> >      9.69%         nfsd  [kernel.kallsyms]       [k] csum_partial
-> >      5.64%         nfsd  [kernel.kallsyms]       [k] __do_softirq
-> >      3.12%         nfsd  [sunrpc]                [k] svc_create
-> >      2.38%         nfsd  [kernel.kallsyms]       [k] __queue_work
-> >      1.91%         nfsd  [gianfar_driver]        [k] gfar_poll
-> >      1.73%         nfsd  [kernel.kallsyms]       [k] memset
-> >      1.54%         nfsd  [nfsd]                  [k] nfsd_vfs_read.isra.16
-> >      1.40%  ksoftirqd/0  [kernel.kallsyms]       [k] finish_task_switch.isra.54
-> >      1.30%         nfsd  [kernel.kallsyms]       [k] get_page_from_freelist
-> >      1.21%         nfsd  [gianfar_driver]        [k] gfar_start_xmit
-> >      1.20%         nfsd  [sunrpc]                [k] svc_xprt_received
-> >
-> >
-> > But when I perf on v3.11 kernels I see a lot of unresolved symbols:
-> >
-> > # Events: 69K cpu-clock-msecs
-> > #
-> > # Overhead       Command          Shared Object
-> >        Symbol
-> > # ........  ............  .....................
-> > ...................................
-> > #
-> >     73.80%          nfsd  [unknown]              [k] 0x7ffff7fa
-> >      7.57%          nfsd  [kernel.kallsyms]      [k] csum_partial
-> >      4.59%   kworker/0:1  [unknown]              [k] 0x7ffff832
-> >      3.76%   ksoftirqd/0  [unknown]              [k] 0x7ffff96e
-> >      0.94%       kswapd0  [unknown]              [k] 0x7ffffcc2
-> >      0.92%       swapper  [unknown]              [k] 0x7ffffa54
-> >      0.62%          nfsd  [kernel.kallsyms]      [k] __udp4_lib_lookup
-> >      0.49%          nfsd  [kernel.kallsyms]      [k] ip_append_page
-> >      0.48%          nfsd  [kernel.kallsyms]      [k] __do_softirq
-> >      0.36%      eventmon  [unknown]              [k] 0x7ffff9c4
-> >      0.32%          nfsd  [kernel.kallsyms]      [k] __getnstimeofday
-> >
-> >
-> > Any ideas?  Have I overlooked some necessary kernel config change?
-> > Does perf need some binary that I may not have installed on this
-> > embedded platform?
-> >
-> > Freescale mpc8379 (e300c4)
-> > Gcc-4.7.2 uClibC built with ct-ng 1.18.0
-> > binutils 2.22
-> >
-> > Thanks,
-> > mh
-> >
-> > --
-> > Martin Hicks P.Eng.      |         mort@bork.org
-> > Bork Consulting Inc.     |   +1 (613) 266-2296
-> 
-> 
-> 
+	/* Clear our own DTR */
+	if (!pv->tty || (pv->tty->termios.c_cflag & HUPCL))
+		hvsilib_write_mctrl(pv, 0); 
+
+This is actually what the dtr_rts() callback should trigger and I wonder
+whether it would be worth to introduce the dtr_rts() callback to encapsulate
+the "hvsilib_write_mctrl(pv, 0);" call from above.
+
+On the other hand, the dtr_rts() callback is a good encapsulation to not
+directly access the hp->tty to potentially prevent a layering violation. At
+least for the hvc_iucv() I do not want to deal with the "underlying" tty layer
+and introduce additional reference accounting.
+
+I hope this helps you to understand my rational for introducing the dtr_rts()
+callback.
+
+Thanks and kind regards,
+  Hendrik
