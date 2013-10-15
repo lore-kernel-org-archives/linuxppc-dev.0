@@ -1,46 +1,19 @@
-Return-Path: <brueckner@linux.vnet.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp17.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E29492C0345
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 02:41:05 +1100 (EST)
-Received: from /spool/local
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brueckner@linux.vnet.ibm.com>;
- Tue, 15 Oct 2013 16:40:50 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2770A17D8630
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 16:38:07 +0100 (BST)
-Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
- [9.149.37.229])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9FFaFW356230124
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 15:36:15 GMT
-Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9FFaQ5O023688
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 09:36:27 -0600
-Date: Tue, 15 Oct 2013 17:36:26 +0200
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] tty/hvc_console: Add DTR/RTS callback to handle
- HUPCL control
-Message-ID: <20131015153626.GA6129@linux.vnet.ibm.com>
-References: <1372777635-10423-1-git-send-email-brueckner@linux.vnet.ibm.com>
- <1372777635-10423-2-git-send-email-brueckner@linux.vnet.ibm.com>
- <1381475711.5630.67.camel@pasglop>
- <20131011124707.GA6082@linux.vnet.ibm.com>
- <1381524204.5630.91.camel@pasglop>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id A7F002C0335
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 03:27:06 +1100 (EST)
+Message-ID: <525D6CD4.5090403@c-s.fr>
+Date: Tue, 15 Oct 2013 18:27:00 +0200
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1381524204.5630.91.camel@pasglop>
-Cc: linux-s390@vger.kernel.org, brueckner@linux.vnet.com,
- gregkh@linuxfoundation.org, heiko.carstens@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Hendrik Brueckner <brueckner@linux.vnet.ibm.com>, schwidefsky@de.ibm.com,
- jslaby@suse.cz
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH] powerpc 8xx: Fixing memory init issue with CONFIG_PIN_TLB
+References: <201310111256.r9BCuepM006243@localhost.localdomain>
+ <OFF3401910.4A8AA6D0-ONC1257C01.0052FC82-C1257C01.00539C55@transmode.se>
+In-Reply-To: <OFF3401910.4A8AA6D0-ONC1257C01.0052FC82-C1257C01.00539C55@transmode.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,45 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Benjamin,
 
-On Sat, Oct 12, 2013 at 07:43:24AM +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2013-10-11 at 14:47 +0200, Hendrik Brueckner wrote:
-> > The tiocmget/tiocmset callbacks are used to set and get modem status and
-> > triggered through an tty ioctl.
-> > 
-> > The dtr_rts() callback is different and it is used for DTS/RTS handshaking
-> > between the hvc_console (or any other tty_port) and the tty layer.  The tty
-> > port layer uses this callback to signal the hvc_console whether to raise or
-> > lower the DTR/RTS lines.  This is different than the ioctl interface to
-> > controls the modem status.
-> 
-> Well, DTR at least is the same via both callbacks... Also normal handshaking
-> is normally RTS/CTS, only some HW setups "hijacks" DTR for RTS (old Macs come
-> to mind).
+Le 11/10/2013 17:13, Joakim Tjernlund a écrit :
+> "Linuxppc-dev"
+> <linuxppc-dev-bounces+joakim.tjernlund=transmode.se@lists.ozlabs.org>
+> wrote on 2013/10/11 14:56:40:
+>> Activating CONFIG_PIN_TLB allows access to the 24 first Mbytes of memory
+> at
+>> bootup instead of 8. It is needed for "big" kernels for instance when
+> activating
+>> CONFIG_LOCKDEP_SUPPORT. This needs to be taken into account in init_32
+> too,
+>> otherwise memory allocation soon fails after startup.
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>
+>> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S
+> linux-3.11/arch/powerpc/kernel/head_8xx.S
+>> --- linux-3.11.org/arch/powerpc/mm/init_32.c   2013-09-02
+> 22:46:10.000000000 +0200
+>> +++ linux-3.11/arch/powerpc/mm/init_32.c   2013-09-09 11:28:54.000000000
+> +0200
+>> @@ -213,7 +213,12 @@
+>>       */
+>>      BUG_ON(first_memblock_base != 0);
+>>
+>> +#ifdef CONFIG_PIN_TLB
+>> +   /* 8xx can only access 24MB at the moment */
+>> +   memblock_set_current_limit(min_t(u64, first_memblock_size,
+> 0x01800000));
+>> +#else
+>>      /* 8xx can only access 8MB at the moment */
+>>      memblock_set_current_limit(min_t(u64, first_memblock_size,
+> 0x00800000));
+>> +#endif
+>>   }
+>>   #endif /* CONFIG_8xx */
+> hmm, I think you should always map 24 MB (or less if RAM < 24 MB) and do
+> the same
+> in head_8xx.S.
+>
+> Or to keep it simple, just always map at least 16 MB here and in
+> head_8xx.S, assuming
+> that 16 MB is min RAM for any 8xx system running 3.x kernels.
+Yes we could do a more elaborated modification in the future. However it 
+also has an impact on the boot loader, so I'm not sure we should make it 
+the default without thinking twice.
 
-Yep. DTR is changed in both callbacks but from different layers.  The
-tiocmget/tiocmset are triggered through the ioctl.  The dtr_rts() callback is
-called in hvc_close() to properly handle HUPCL to lower modem control lines
-after last process closes the device (hang up).
+In the meantime, my patch does take into account the existing situation 
+where you have 8Mb by default and 24Mb when you activate CONFIG_PIN_TLB.
+I see it as a bug fix and I believe we should include it at least in 
+order to allow including in the stable releases.
 
-This is also done in the hvsilib_close() in hvsi_lib.c:
+Do you see any issue with this approach ?
 
-	/* Clear our own DTR */
-	if (!pv->tty || (pv->tty->termios.c_cflag & HUPCL))
-		hvsilib_write_mctrl(pv, 0); 
-
-This is actually what the dtr_rts() callback should trigger and I wonder
-whether it would be worth to introduce the dtr_rts() callback to encapsulate
-the "hvsilib_write_mctrl(pv, 0);" call from above.
-
-On the other hand, the dtr_rts() callback is a good encapsulation to not
-directly access the hp->tty to potentially prevent a layering violation. At
-least for the hvc_iucv() I do not want to deal with the "underlying" tty layer
-and introduce additional reference accounting.
-
-I hope this helps you to understand my rational for introducing the dtr_rts()
-callback.
-
-Thanks and kind regards,
-  Hendrik
+>
+> Much of the need for pinning would go away if you adopted my 8MB pages
+> from 2.4 to 3.x
+>
+>     Jocke
+>
+Christophe
