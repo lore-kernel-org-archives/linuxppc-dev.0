@@ -1,37 +1,21 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id DA8952C032E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 02:29:23 +1100 (EST)
-Date: Tue, 15 Oct 2013 17:30:29 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Mark Lord <kernel@start.ca>
-Subject: Re: [PATCH RFC 00/77] Re-design MSI/MSI-X interrupts enablement
- pattern
-Message-ID: <20131015153028.GB17687@dhcp-26-207.brq.redhat.com>
-References: <cover.1380703262.git.agordeev@redhat.com>
- <5254D397.9030307@zytor.com> <1381292648.645.259.camel@pasglop>
- <20131010101704.GC11874@dhcp-26-207.brq.redhat.com>
- <5256D5AB.4050105@zytor.com>
- <20131010180704.GA15719@dhcp-26-207.brq.redhat.com>
- <5257357E.8080506@start.ca>
- <20131011084108.GA25702@dhcp-26-207.brq.redhat.com>
- <52585FB3.7080508@start.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52585FB3.7080508@start.ca>
-Cc: linux-mips@linux-mips.org, "VMware, Inc." <pv-drivers@vmware.com>,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, linux-s390@vger.kernel.org,
- Andy King <acking@vmware.com>, linux-scsi@vger.kernel.org,
- linux-rdma@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- linux-pci@vger.kernel.org, iss_storagedev@hp.com, linux-driver@qlogic.com,
- Tejun Heo <tj@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Dan Williams <dan.j.williams@intel.com>, Jon Mason <jon.mason@intel.com>,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, e1000-devel@lists.sourceforge.net,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 235B02C0346
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 02:30:25 +1100 (EST)
+Message-ID: <1381851009.17841.14.camel@pasglop>
+Subject: Re: Perf not resolving all symbols, showing 0x7ffffxxx
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Martin Hicks <mort@bork.org>
+Date: Tue, 15 Oct 2013 10:30:09 -0500
+In-Reply-To: <CAJUS3X=LVHDMa+CTFS=O=F=DfU1=0cgcNzn-mEvXGaDXEZ+CBA@mail.gmail.com>
+References: <CAJUS3Xn4tHKvDK8tzLw09+zsEAJHEScV2DbZhH9KkYL-5iCmUA@mail.gmail.com>
+ <CAJUS3X=LVHDMa+CTFS=O=F=DfU1=0cgcNzn-mEvXGaDXEZ+CBA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,54 +25,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 11, 2013 at 04:29:39PM -0400, Mark Lord wrote:
-> > static int xx_alloc_msix_irqs(struct xx_dev *dev, int nvec)
-> > {
-> > 	nvec = roundup_pow_of_two(nvec);	/* assume 0 > nvec <= 16 */
-> > 
-> > 	xx_disable_all_irqs(dev);
-> > 
-> > 	pci_lock_msi(dev->pdev);
-> > 
-> > 	rc = pci_get_msix_limit(dev->pdev, nvec);
-> > 	if (rc < 0)
-> > 		goto err;
-> > 
-> > 	nvec = min(nvec, rc);		/* if limit is more than requested */
-> > 	nvec = rounddown_pow_of_two(nvec);	/* (a) */
-> > 
-> > 	xx_prep_for_msix_vectors(dev, nvec);
-> > 
-> > 	rc = pci_enable_msix(dev->pdev, dev->irqs, nvec);	/* (b)	*/
-> > 	if (rc < 0)
-> > 		goto err;
-> > 
-> > 	pci_unlock_msi(dev->pdev);
-> > 
-> > 	dev->num_vectors = nvec;		/* (b) */
-> > 	return 0;
-> > 
-> > err:
-> > 	pci_unlock_msi(dev->pdev);
-> > 
-> >         kerr(dev->name, "pci_enable_msix() failed, err=%d", rc);
-> >         dev->num_vectors = 0;
-> >         return rc;
-> > }
+On Tue, 2013-10-15 at 09:59 -0400, Martin Hicks wrote:
+> I've tracked the start of the strange instruction pointers in 'perf
+> report' to a commit by Anton:
 > 
-> That would still need a loop, to handle the natural race between
-> the calls to pci_get_msix_limit() and pci_enable_msix() -- the driver and device
-> can and should fall back to a smaller number of vectors when pci_enable_msix() fails.
+> commit 75382aa72f06823db7312ad069c3bae2eb3f8548
+> Author: Anton Blanchard <anton@samba.org>
+> Date:   Tue Jun 26 01:01:36 2012 +0000
+> 
+>     powerpc/perf: Move code to select SIAR or pt_regs into perf_read_regs
+> 
+> I don't know enough about PPC to know what's going on, but reverting
+> the changes to perf_instruction_pointer() gets me reasonable 'perf
+> report' output with 3.11.
 
-Could you please explain why the value returned by pci_get_msix_limit()
-might change before pci_enable_msix() returned, while both protected by
-pci_lock_msi()?
+This is an e300 core right ? (603...). Do that have an SIAR at all
+(Scott ?)
 
-Anyway, although the loop-free code (IMHO) reads better, pci_lock_msi()
-it is not a part of the original proposal and the more I think about it
-the less I like it.
 
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+Cheers,
+Ben.
+
+> Thanks,
+> mh
+> 
+> 
+> On Thu, Oct 3, 2013 at 10:21 AM, Martin Hicks <mort@bork.org> wrote:
+> > Hi,
+> >
+> > I've been trying to track down a performance regression that started
+> > leading up to the v3.6 kernel, and while doing this I've been
+> > gathering perf data on v3.6-rc and comparing it to v3.11 perf reports
+> > of the same workload.
+> >
+> > With v3.6-rc kernels I get all symbols resolved like this:
+> >
+> > # Events: 39K cpu-clock-msecs
+> > #
+> > # Overhead      Command           Shared Object
+> >             Symbol
+> > # ........  ...........  ......................
+> > ........................................
+> > #
+> >      9.69%         nfsd  [kernel.kallsyms]       [k] csum_partial
+> >      5.64%         nfsd  [kernel.kallsyms]       [k] __do_softirq
+> >      3.12%         nfsd  [sunrpc]                [k] svc_create
+> >      2.38%         nfsd  [kernel.kallsyms]       [k] __queue_work
+> >      1.91%         nfsd  [gianfar_driver]        [k] gfar_poll
+> >      1.73%         nfsd  [kernel.kallsyms]       [k] memset
+> >      1.54%         nfsd  [nfsd]                  [k] nfsd_vfs_read.isra.16
+> >      1.40%  ksoftirqd/0  [kernel.kallsyms]       [k] finish_task_switch.isra.54
+> >      1.30%         nfsd  [kernel.kallsyms]       [k] get_page_from_freelist
+> >      1.21%         nfsd  [gianfar_driver]        [k] gfar_start_xmit
+> >      1.20%         nfsd  [sunrpc]                [k] svc_xprt_received
+> >
+> >
+> > But when I perf on v3.11 kernels I see a lot of unresolved symbols:
+> >
+> > # Events: 69K cpu-clock-msecs
+> > #
+> > # Overhead       Command          Shared Object
+> >        Symbol
+> > # ........  ............  .....................
+> > ...................................
+> > #
+> >     73.80%          nfsd  [unknown]              [k] 0x7ffff7fa
+> >      7.57%          nfsd  [kernel.kallsyms]      [k] csum_partial
+> >      4.59%   kworker/0:1  [unknown]              [k] 0x7ffff832
+> >      3.76%   ksoftirqd/0  [unknown]              [k] 0x7ffff96e
+> >      0.94%       kswapd0  [unknown]              [k] 0x7ffffcc2
+> >      0.92%       swapper  [unknown]              [k] 0x7ffffa54
+> >      0.62%          nfsd  [kernel.kallsyms]      [k] __udp4_lib_lookup
+> >      0.49%          nfsd  [kernel.kallsyms]      [k] ip_append_page
+> >      0.48%          nfsd  [kernel.kallsyms]      [k] __do_softirq
+> >      0.36%      eventmon  [unknown]              [k] 0x7ffff9c4
+> >      0.32%          nfsd  [kernel.kallsyms]      [k] __getnstimeofday
+> >
+> >
+> > Any ideas?  Have I overlooked some necessary kernel config change?
+> > Does perf need some binary that I may not have installed on this
+> > embedded platform?
+> >
+> > Freescale mpc8379 (e300c4)
+> > Gcc-4.7.2 uClibC built with ct-ng 1.18.0
+> > binutils 2.22
+> >
+> > Thanks,
+> > mh
+> >
+> > --
+> > Martin Hicks P.Eng.      |         mort@bork.org
+> > Bork Consulting Inc.     |   +1 (613) 266-2296
+> 
+> 
+> 
