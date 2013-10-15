@@ -1,26 +1,30 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ie0-x231.google.com (mail-ie0-x231.google.com
- [IPv6:2607:f8b0:4001:c03::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 510ED2C010A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 11:16:18 +1100 (EST)
-Received: by mail-ie0-f177.google.com with SMTP id e14so10243786iej.36
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2013 17:16:14 -0700 (PDT)
-Date: Mon, 14 Oct 2013 18:16:11 -0600
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Subject: Re: [PATCH 1/3] iommu/fsl: Factor out PCI specific code.
-Message-ID: <20131015001611.GA9203@google.com>
-References: <1381609954-15283-1-git-send-email-Varun.Sethi@freescale.com>
- <1381609954-15283-2-git-send-email-Varun.Sethi@freescale.com>
+Return-Path: <B29983@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0F4152C0146
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 12:59:43 +1100 (EST)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in device tree
+Date: Tue, 15 Oct 2013 01:59:33 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B150C2B08@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1381300704-4238-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20131010100331.GE26954@e106331-lin.cambridge.arm.com>
+ <D07C73A334FF604B95B3CBD2A545D07B150BD137@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20131011092526.GE3910@e106331-lin.cambridge.arm.com>
+ <1381518433.7979.536.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C24BD@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381788786.7979.643.camel@snotra.buserror.net>
+In-Reply-To: <1381788786.7979.643.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1381609954-15283-2-git-send-email-Varun.Sethi@freescale.com>
-Cc: alex.williamson@redhat.com, joro@8bytes.org, stuart.yoder@freescale.com,
- linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
- r65777@freescale.com, scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-Leo-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,222 +34,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Oct 13, 2013 at 02:02:32AM +0530, Varun Sethi wrote:
-> Factor out PCI specific code in the PAMU driver.
-> 
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
->  drivers/iommu/fsl_pamu_domain.c |   81 +++++++++++++++++++--------------------
->  1 file changed, 40 insertions(+), 41 deletions(-)
-> 
-> diff --git a/drivers/iommu/fsl_pamu_domain.c b/drivers/iommu/fsl_pamu_domain.c
-> index c857c30..e02e1de 100644
-> --- a/drivers/iommu/fsl_pamu_domain.c
-> +++ b/drivers/iommu/fsl_pamu_domain.c
-> @@ -677,13 +677,9 @@ static int handle_attach_device(struct fsl_dma_domain *dma_domain,
->  	return ret;
->  }
->  
-> -static int fsl_pamu_attach_device(struct iommu_domain *domain,
-> -				  struct device *dev)
-> +static void check_for_pci_dma_device(struct device **dev)
-
-"check_for_pci_dma_device()" doesn't give a good clue about what the
-function returns.  And why return something via a reference parameter
-when you could return it directly?
-
->  {
-> -	struct fsl_dma_domain *dma_domain = domain->priv;
-> -	const u32 *liodn;
-> -	u32 liodn_cnt;
-> -	int len, ret = 0;
-> +#ifdef CONFIG_PCI
->  	struct pci_dev *pdev = NULL;
->  	struct pci_controller *pci_ctl;
-
-This is sort of a goofy looking function.  It would read much better as
-something like this:
-
-      struct device *dma_dev = dev;
-
-  #ifdef CONFIG_PCI
-      if (...) {
-          dma_dev = ...;
-      }
-  #endif
-
-      return dma_dev;
-
-Does this need to care about reference counting when you return a pointer
-to a different device?
-
-Bjorn
-
->  
-> @@ -691,25 +687,38 @@ static int fsl_pamu_attach_device(struct iommu_domain *domain,
->  	 * Use LIODN of the PCI controller while attaching a
->  	 * PCI device.
->  	 */
-> -	if (dev->bus == &pci_bus_type) {
-> -		pdev = to_pci_dev(dev);
-> +	if ((*dev)->bus == &pci_bus_type) {
-> +		pdev = to_pci_dev(*dev);
->  		pci_ctl = pci_bus_to_host(pdev->bus);
->  		/*
->  		 * make dev point to pci controller device
->  		 * so we can get the LIODN programmed by
->  		 * u-boot.
->  		 */
-> -		dev = pci_ctl->parent;
-> +		*dev = pci_ctl->parent;
->  	}
-> +#endif
-> +}
->  
-> -	liodn = of_get_property(dev->of_node, "fsl,liodn", &len);
-> +static int fsl_pamu_attach_device(struct iommu_domain *domain,
-> +				  struct device *dev)
-> +{
-> +	struct fsl_dma_domain *dma_domain = domain->priv;
-> +	struct device *dma_dev = dev;
-> +	const u32 *liodn;
-> +	u32 liodn_cnt;
-> +	int len, ret = 0;
-> +
-> +	check_for_pci_dma_device(&dma_dev);
-> +
-> +	liodn = of_get_property(dma_dev->of_node, "fsl,liodn", &len);
->  	if (liodn) {
->  		liodn_cnt = len / sizeof(u32);
->  		ret = handle_attach_device(dma_domain, dev,
->  					 liodn, liodn_cnt);
->  	} else {
->  		pr_debug("missing fsl,liodn property at %s\n",
-> -		          dev->of_node->full_name);
-> +		          dma_dev->of_node->full_name);
->  			ret = -EINVAL;
->  	}
->  
-> @@ -720,32 +729,18 @@ static void fsl_pamu_detach_device(struct iommu_domain *domain,
->  				      struct device *dev)
->  {
->  	struct fsl_dma_domain *dma_domain = domain->priv;
-> +	struct device *dma_dev = dev;
->  	const u32 *prop;
->  	int len;
-> -	struct pci_dev *pdev = NULL;
-> -	struct pci_controller *pci_ctl;
->  
-> -	/*
-> -	 * Use LIODN of the PCI controller while detaching a
-> -	 * PCI device.
-> -	 */
-> -	if (dev->bus == &pci_bus_type) {
-> -		pdev = to_pci_dev(dev);
-> -		pci_ctl = pci_bus_to_host(pdev->bus);
-> -		/*
-> -		 * make dev point to pci controller device
-> -		 * so we can get the LIODN programmed by
-> -		 * u-boot.
-> -		 */
-> -		dev = pci_ctl->parent;
-> -	}
-> +	check_for_pci_dma_device(&dma_dev);
->  
-> -	prop = of_get_property(dev->of_node, "fsl,liodn", &len);
-> +	prop = of_get_property(dma_dev->of_node, "fsl,liodn", &len);
->  	if (prop)
->  		detach_device(dev, dma_domain);
->  	else
->  		pr_debug("missing fsl,liodn property at %s\n",
-> -		          dev->of_node->full_name);
-> +		          dma_dev->of_node->full_name);
->  }
->  
->  static  int configure_domain_geometry(struct iommu_domain *domain, void *data)
-> @@ -905,6 +900,7 @@ static struct iommu_group *get_device_iommu_group(struct device *dev)
->  	return group;
->  }
->  
-> +#ifdef CONFIG_PCI
->  static  bool check_pci_ctl_endpt_part(struct pci_controller *pci_ctl)
->  {
->  	u32 version;
-> @@ -945,13 +941,18 @@ static struct iommu_group *get_shared_pci_device_group(struct pci_dev *pdev)
->  	return NULL;
->  }
->  
-> -static struct iommu_group *get_pci_device_group(struct pci_dev *pdev)
-> +static struct iommu_group *get_pci_device_group(struct device *dev)
->  {
->  	struct pci_controller *pci_ctl;
->  	bool pci_endpt_partioning;
->  	struct iommu_group *group = NULL;
-> -	struct pci_dev *bridge, *dma_pdev = NULL;
-> +	struct pci_dev *bridge, *pdev;
-> +	struct pci_dev *dma_pdev = NULL;
->  
-> +	pdev = to_pci_dev(dev);
-> +	/* Don't create device groups for virtual PCI bridges */
-> +	if (pdev->subordinate)
-> +		return NULL;
->  	pci_ctl = pci_bus_to_host(pdev->bus);
->  	pci_endpt_partioning = check_pci_ctl_endpt_part(pci_ctl);
->  	/* We can partition PCIe devices so assign device group to the device */
-> @@ -1044,11 +1045,11 @@ root_bus:
->  
->  	return group;
->  }
-> +#endif
->  
->  static int fsl_pamu_add_device(struct device *dev)
->  {
->  	struct iommu_group *group = NULL;
-> -	struct pci_dev *pdev;
->  	const u32 *prop;
->  	int ret, len;
->  
-> @@ -1056,19 +1057,15 @@ static int fsl_pamu_add_device(struct device *dev)
->  	 * For platform devices we allocate a separate group for
->  	 * each of the devices.
->  	 */
-> -	if (dev->bus == &pci_bus_type) {
-> -		pdev = to_pci_dev(dev);
-> -		/* Don't create device groups for virtual PCI bridges */
-> -		if (pdev->subordinate)
-> -			return 0;
-> -
-> -		group = get_pci_device_group(pdev);
-> -
-> -	} else {
-> +	if (dev->bus == &platform_bus_type) {
->  		prop = of_get_property(dev->of_node, "fsl,liodn", &len);
->  		if (prop)
->  			group = get_device_iommu_group(dev);
->  	}
-> +#ifdef CONFIG_PCI
-> +	else
-> +		group = get_pci_device_group(dev);
-> +#endif
->  
->  	if (!group || IS_ERR(group))
->  		return PTR_ERR(group);
-> @@ -1166,7 +1163,9 @@ int pamu_domain_init()
->  		return ret;
->  
->  	bus_set_iommu(&platform_bus_type, &fsl_pamu_ops);
-> +#ifdef CONFIG_PCI
->  	bus_set_iommu(&pci_bus_type, &fsl_pamu_ops);
-> +#endif
->  
->  	return ret;
->  }
-> -- 
-> 1.7.9.5
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
+DQo+IFNlbnQ6IDIwMTPlubQxMOaciDE15pelIOaYn+acn+S6jCA2OjEzDQo+IFRvOiBUYW5nIFl1
+YW50aWFuLUIyOTk4Mw0KPiBDYzogV29vZCBTY290dC1CMDc0MjE7IE1hcmsgUnV0bGFuZDsgZGV2
+aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
+OyBMaSBZYW5nLUxlby1SNTg0NzINCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2NV0gcG93ZXJwYy9t
+cGM4NXh4OiBVcGRhdGUgdGhlIGNsb2NrIG5vZGVzIGluIGRldmljZQ0KPiB0cmVlDQo+IA0KPiBP
+biBGcmksIDIwMTMtMTAtMTEgYXQgMjE6NTIgLTA1MDAsIFRhbmcgWXVhbnRpYW4tQjI5OTgzIHdy
+b3RlOg0KPiA+IFRoYW5rcyBmb3IgeW91ciByZXZpZXcuDQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2Vu
+dDogMjAxM+W5tDEw5pyIMTLml6Ug5pif5pyf5YWtIDM6MDcNCj4gPiA+IFRvOiBNYXJrIFJ1dGxh
+bmQNCj4gPiA+IENjOiBUYW5nIFl1YW50aWFuLUIyOTk4MzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5l
+bC5vcmc7IGxpbnV4cHBjLQ0KPiA+ID4gZGV2QGxpc3RzLm96bGFicy5vcmc7IExpIFlhbmctTGVv
+LVI1ODQ3Mg0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2NV0gcG93ZXJwYy9tcGM4NXh4OiBV
+cGRhdGUgdGhlIGNsb2NrIG5vZGVzIGluDQo+ID4gPiBkZXZpY2UgdHJlZQ0KPiA+ID4NCj4gPiA+
+IEknbSBub3Qgc3VyZSBJIHVuZGVyc3RhbmQgdGhlICJfMCIvIl8xIiBwYXJ0LCB0aG91Z2guICBE
+b2Vzbid0IGVhY2gNCj4gPiA+IFBMTCBqdXN0IGhhdmUgb25lIG91dHB1dCwgd2hpY2ggdGhlIGNv
+bnN1bWVyIG1heSBjaG9vc2UgdG8gZGl2aWRlIGJ5DQo+ID4gPiAyIChvciBpbiBzb21lIGNhc2Vz
+IDQpPyAgV2h5IGRvZXMgdGhhdCBkaXZpc2lvbiBuZWVkIHRvIGJlIGV4cG9zZWQNCj4gPiA+IGlu
+IHRoZSBkZXZpY2UgdHJlZSBhcyBzZXBhcmF0ZSBjb25uZWN0aW9ucyB0byB0aGUgcGFyZW50IGNs
+b2NrPw0KPiA+ID4NCj4gPiBUaGUgZGV2aWNlIHRyZWUgbWFrZXMgdGhhdCBxdWl0ZSBjbGVhci4N
+Cj4gDQo+IFlvdSBjaG9zZSB0byBtb2RlbCBpdCB0aGF0IHdheSBpbiB0aGUgZGV2aWNlIHRyZWU7
+IHRoYXQgZG9lc24ndCBtYWtlIGl0DQo+IGNsZWFyIHRoYXQgdGhlIGhhcmR3YXJlIHdvcmtzIHRo
+YXQgd2F5IG9yIHRoYXQgaXQncyBhIGdvb2Qgd2F5IHRvIG1vZGVsDQo+IGl0Lg0KPiANCj4gPiBF
+YWNoIFBMTCBoYXMgc2V2ZXJhbCBvdXRwdXQgd2hpY2ggTVVYIG5vZGUgY2FuIHRha2UgZnJvbS4N
+Cj4gDQo+IFBvaW50IG91dCB3aGVyZSBpbiB0aGUgaGFyZHdhcmUgZG9jdW1lbnRhdGlvbiBpdCBz
+YXlzIHRoaXMuICBXaGF0IEkgc2VlDQo+IGlzIGEgUExMIHRoYXQgaGFzIG9uZSBvdXRwdXQsIGFu
+ZCBhIE1VWCByZWdpc3RlciB0aGF0IGNhbiBjaG9vc2UgZnJvbQ0KPiBtdWx0aXBsZSBQTEwgYW5k
+IGRpdmlkZXIgb3B0aW9ucy4NCj4gDQpUYWtlIFQ0MjQwIGZvciBleGFtcGxlOiBzZWUgc2VjdGlv
+biA0LjYuNS4xICwgKFBhZ2UgMTQxKSBpbiBUNDI0MFJNIFJldi4gRCwgMDkvMjAxMi4NCg0KPiA+
+ICBJdCBpcyBub3QgYSBydW50aW1lIGRlY2lzaW9uLg0KPiANCj4gSG1tPyAgSXQncyBhIHJlZ2lz
+dGVyIHlvdSB3cml0ZSB0by4NCj4gDQpJIG1lYW4gdGhlIG51bWJlciBvZiBQTEwgb3V0cHV0IG9y
+IHRoZSBkaXZpc2lvbiBvZiBQTEwgaXMgbm90IGEgcnVudGltZSBkZWNpc2lvbi4NCldoaWNoIG91
+dHB1dCBvZiBQTEwgdGhlIE1VWCBjYW4gdGFrZSBpcyBhIHJ1bnRpbWUgZGVjaXNpb24uDQoNClJl
+Z2FyZHMsDQpZdWFudGlhbg0KDQo+IC1TY290dA0KPiANCg0K
