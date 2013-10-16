@@ -1,32 +1,32 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 22BBB2C0373
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 13:07:17 +1100 (EST)
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4F96C2C0381
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 13:07:18 +1100 (EST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 15 Oct 2013 20:07:16 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 83FEC3E4004E
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Oct 2013 20:07:13 -0600 (MDT)
+ Tue, 15 Oct 2013 22:07:16 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id E68CE38C8042
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Oct 2013 22:07:11 -0400 (EDT)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9G27Dap300600
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Oct 2013 20:07:13 -0600
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9G27CfJ8913214
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 02:07:12 GMT
 Received: from d03av04.boulder.ibm.com (localhost [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9G27CwJ022902
+ r9G27BHb022844
  for <linuxppc-dev@ozlabs.org>; Tue, 15 Oct 2013 20:07:12 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: [PATCH 08/10][v6] powerpc/perf: Define big-endian version of
- perf_mem_data_src
-Date: Tue, 15 Oct 2013 19:06:40 -0700
-Message-Id: <1381889202-16826-9-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH 07/10][v6] powerpc/perf: Add Power8 event PM_MRK_GRP_CMPL to
+ sysfs.
+Date: Tue, 15 Oct 2013 19:06:39 -0700
+Message-Id: <1381889202-16826-8-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1381889202-16826-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1381889202-16826-1-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
@@ -42,63 +42,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-perf_mem_data_src is an union that is initialized via the ->val field
-and accessed via the bitmap fields. For this to work on big endian
-platforms, we also need a big-endian represenation of perf_mem_data_src.
+The perf event PM_MRK_GRP_CMPL is useful in analyzing memory hierarchy
+of applications.
 
-Cc: Stephane Eranian <eranian@google.com>
-Cc: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
-Changelog [v6]
-	- [Michael Ellerman] Use __BIG_ENDIAN_BITFIELD to simplify the
-	  endian check.
+Changelog[v6]:
+	- [Michael Ellerman]: Drop redundant PME_ prefix from event name.
 
-Changelog [v5]:
-	- perf_event.h includes <byteorder.h> which pulls in the local
-	  byteorder.h when building the perf tool. This local byteorder.h
-	  leaves __LITTLE_ENDIAN and __BIG_ENDIAN undefined.
-	  Include <endian.h> explicitly in the local byteorder.h.
+ arch/powerpc/perf/power8-events-list.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-Changelog [v2]:
-	- [Vince Weaver, Michael Ellerman] No __KERNEL__ in uapi headers.
-
- include/uapi/linux/perf_event.h |   16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
-
-diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-index ca1d90b..383052b7 100644
---- a/include/uapi/linux/perf_event.h
-+++ b/include/uapi/linux/perf_event.h
-@@ -695,6 +695,7 @@ enum perf_callchain_context {
- #define PERF_FLAG_FD_OUTPUT		(1U << 1)
- #define PERF_FLAG_PID_CGROUP		(1U << 2) /* pid=cgroup id, per-cpu mode only */
- 
-+#if defined(__LITTLE_ENDIAN_BITFIELD)
- union perf_mem_data_src {
- 	__u64 val;
- 	struct {
-@@ -706,6 +707,21 @@ union perf_mem_data_src {
- 			mem_rsvd:31;
- 	};
- };
-+#elif defined(__BIG_ENDIAN_BITFIELD)
-+union perf_mem_data_src {
-+	__u64 val;
-+	struct {
-+		__u64	mem_rsvd:31,
-+			mem_dtlb:7,	/* tlb access */
-+			mem_lock:2,	/* lock instr */
-+			mem_snoop:5,	/* snoop mode */
-+			mem_lvl:14,	/* memory hierarchy level */
-+			mem_op:5;	/* type of opcode */
-+	};
-+};
-+#else
-+#error "Unknown endianness"
-+#endif
- 
- /* type of opcode (load/store/prefetch,code) */
- #define PERF_MEM_OP_NA		0x01 /* not available */
+diff --git a/arch/powerpc/perf/power8-events-list.h b/arch/powerpc/perf/power8-events-list.h
+index 1368547..b39e117 100644
+--- a/arch/powerpc/perf/power8-events-list.h
++++ b/arch/powerpc/perf/power8-events-list.h
+@@ -18,3 +18,4 @@ EVENT(PM_CMPLU_STALL,			0x4000a)
+ EVENT(PM_INST_CMPL,			0x00002)
+ EVENT(PM_BRU_FIN,			0x10068)
+ EVENT(PM_BR_MPRED_CMPL,			0x400f6)
++EVENT(PM_MRK_GRP_CMPL,			0x40130)
 -- 
 1.7.9.5
