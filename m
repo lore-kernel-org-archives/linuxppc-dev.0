@@ -1,31 +1,29 @@
-Return-Path: <R65777@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
+Return-Path: <B16395@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 04CE62C0079
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 04:01:35 +1100 (EST)
-Received: from mail63-db8 (localhost [127.0.0.1])	by mail63-db8-R.bigfish.com
- (Postfix) with ESMTP id CAD77620052	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,
- 16 Oct 2013 17:01:29 +0000 (UTC)
-Received: from DB8EHSMHS003.bigfish.com (unknown [10.174.8.236])	by
- mail63-db8.bigfish.com (Postfix) with ESMTP id 52220480041	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 17:01:27 +0000 (UTC)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
-Date: Wed, 16 Oct 2013 17:01:25 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D071C08E4@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1381828871-17110-1-git-send-email-dongsheng.wang@freescale.com>
- <1381828871-17110-4-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1381828871-17110-4-git-send-email-dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 1AEFC2C012D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 04:07:30 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>, "joro@8bytes.org"
+ <joro@8bytes.org>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Yoder Stuart-B08248 <B08248@freescale.com>,
+ Wood Scott-B07421 <B07421@freescale.com>, "alex.williamson@redhat.com"
+ <alex.williamson@redhat.com>
+Subject: RE: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe
+ devices
+Date: Wed, 16 Oct 2013 17:07:17 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D0A5426C6@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1381922582-28724-1-git-send-email-Varun.Sethi@freescale.com>
+ <1381922582-28724-3-git-send-email-Varun.Sethi@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C0835@039-SN2MPN1-013.039d.mgd.msft.net>
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D071C0835@039-SN2MPN1-013.039d.mgd.msft.net>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,370 +36,209 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 > -----Original Message-----
-> From: Wang Dongsheng-B40534
-> Sent: Tuesday, October 15, 2013 2:51 PM
-> To: Wood Scott-B07421
-> Cc: Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-=
-B40534
-> Subject: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and altive=
-c idle
+> From: Bhushan Bharat-R65777
+> Sent: Wednesday, October 16, 2013 10:20 PM
+> To: Sethi Varun-B16395; joro@8bytes.org; iommu@lists.linux-
+> foundation.org; linuxppc-dev@lists.ozlabs.org; linux-
+> kernel@vger.kernel.org; Yoder Stuart-B08248; Wood Scott-B07421;
+> alex.williamson@redhat.com
+> Subject: RE: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe
+> devices
 >=20
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
 >=20
-> Add a sys interface to enable/diable pw20 state or altivec idle, and cont=
-rol the
-> wait entry time.
 >=20
-> Enable/Disable interface:
-> 0, disable. 1, enable.
-> /sys/devices/system/cpu/cpuX/pw20_state
-> /sys/devices/system/cpu/cpuX/altivec_idle
+> > -----Original Message-----
+> > From: Sethi Varun-B16395
+> > Sent: Wednesday, October 16, 2013 4:53 PM
+> > To: joro@8bytes.org; iommu@lists.linux-foundation.org; linuxppc-
+> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Yoder
+> > Stuart-B08248; Wood Scott-B07421; alex.williamson@redhat.com; Bhushan
+> > Bharat-R65777
+> > Cc: Sethi Varun-B16395
+> > Subject: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe
+> > devices
+> >
+> > Once the PCIe device assigned to a guest VM (via VFIO) gets detached
+> > from the iommu domain (when guest terminates), its PAMU table entry is
+> > disabled. So, this would prevent the device from being used once it's
+> assigned back to the host.
+> >
+> > This patch allows for creation of a default DMA window corresponding
+> > to the device and subsequently enabling the PAMU table entry. Before
+> > we enable the entry, we ensure that the device's bus master capability
+> > is disabled (device quiesced).
+> >
+> > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> > ---
+> >  drivers/iommu/fsl_pamu.c        |   43 ++++++++++++++++++++++++++++---
+> -----
+> >  drivers/iommu/fsl_pamu.h        |    1 +
+> >  drivers/iommu/fsl_pamu_domain.c |   46
+> ++++++++++++++++++++++++++++++++++++---
+> >  3 files changed, 78 insertions(+), 12 deletions(-)
+> >
+> > diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c index
+> > cba0498..fb4a031 100644
+> > --- a/drivers/iommu/fsl_pamu.c
+> > +++ b/drivers/iommu/fsl_pamu.c
+> > @@ -225,6 +225,21 @@ static struct paace *pamu_get_spaace(struct paace
+> > *paace,
+> > u32 wnum)
+> >  	return spaace;
+> >  }
+> >
+> > +/*
+> > + * Defaul PPAACE settings for an LIODN.
+> > + */
+> > +static void setup_default_ppaace(struct paace *ppaace) {
+> > +	pamu_init_ppaace(ppaace);
+> > +	/* window size is 2^(WSE+1) bytes */
+> > +	set_bf(ppaace->addr_bitfields, PPAACE_AF_WSE, 35);
+> > +	ppaace->wbah =3D 0;
+> > +	set_bf(ppaace->addr_bitfields, PPAACE_AF_WBAL, 0);
+> > +	set_bf(ppaace->impl_attr, PAACE_IA_ATM,
+> > +		PAACE_ATM_NO_XLATE);
+> > +	set_bf(ppaace->addr_bitfields, PAACE_AF_AP,
+> > +		PAACE_AP_PERMS_ALL);
+> > +}
+> >  /**
+> >   * pamu_get_fspi_and_allocate() - Allocates fspi index and reserves
+> subwindows
+> >   *                                required for primary PAACE in the
+> secondary
+> > @@ -253,6 +268,24 @@ static unsigned long
+> > pamu_get_fspi_and_allocate(u32
+> > subwin_cnt)
+> >  	return (spaace_addr - (unsigned long)spaact) / (sizeof(struct
+> > paace));  }
+> >
+> > +/* Reset the PAACE entry to the default state */ void
+> > +enable_default_dma_window(int liodn) {
+> > +	struct paace *ppaace;
+> > +
+> > +	ppaace =3D pamu_get_ppaace(liodn);
+> > +	if (!ppaace) {
+> > +		pr_debug("Invalid liodn entry\n");
+> > +		return;
+> > +	}
+> > +
+> > +	memset(ppaace, 0, sizeof(struct paace));
+> > +
+> > +	setup_default_ppaace(ppaace);
+> > +	mb();
+> > +	pamu_enable_liodn(liodn);
+> > +}
+> > +
+> >  /* Release the subwindows reserved for a particular LIODN */  void
+> > pamu_free_subwins(int liodn)  { @@ -752,15 +785,7 @@ static void
+> > __init
+> > setup_liodns(void)
+> >  				continue;
+> >  			}
+> >  			ppaace =3D pamu_get_ppaace(liodn);
+> > -			pamu_init_ppaace(ppaace);
+> > -			/* window size is 2^(WSE+1) bytes */
+> > -			set_bf(ppaace->addr_bitfields, PPAACE_AF_WSE, 35);
+> > -			ppaace->wbah =3D 0;
+> > -			set_bf(ppaace->addr_bitfields, PPAACE_AF_WBAL, 0);
+> > -			set_bf(ppaace->impl_attr, PAACE_IA_ATM,
+> > -				PAACE_ATM_NO_XLATE);
+> > -			set_bf(ppaace->addr_bitfields, PAACE_AF_AP,
+> > -				PAACE_AP_PERMS_ALL);
+> > +			setup_default_ppaace(ppaace);
+> >  			if (of_device_is_compatible(node, "fsl,qman-portal"))
+> >  				setup_qbman_paace(ppaace, QMAN_PORTAL_PAACE);
+> >  			if (of_device_is_compatible(node, "fsl,qman")) diff --
+> git
+> > a/drivers/iommu/fsl_pamu.h b/drivers/iommu/fsl_pamu.h index
+> > 8fc1a12..0edcbbbb
+> > 100644
+> > --- a/drivers/iommu/fsl_pamu.h
+> > +++ b/drivers/iommu/fsl_pamu.h
+> > @@ -406,5 +406,6 @@ void get_ome_index(u32 *omi_index, struct device
+> > *dev);  int pamu_update_paace_stash(int liodn, u32 subwin, u32 value);
+> > int pamu_disable_spaace(int liodn, u32 subwin);
+> >  u32 pamu_get_max_subwin_cnt(void);
+> > +void enable_default_dma_window(int liodn);
+> >
+> >  #endif  /* __FSL_PAMU_H */
+> > diff --git a/drivers/iommu/fsl_pamu_domain.c
+> > b/drivers/iommu/fsl_pamu_domain.c index 966ae70..dd6cafc 100644
+> > --- a/drivers/iommu/fsl_pamu_domain.c
+> > +++ b/drivers/iommu/fsl_pamu_domain.c
+> > @@ -340,17 +340,57 @@ static inline struct device_domain_info
+> > *find_domain(struct device *dev)
+> >  	return dev->archdata.iommu_domain;
+> >  }
+> >
+> > +/* Disable device DMA capability and enable default DMA window */
+> > +static void disable_device_dma(struct device_domain_info *info,
+> > +				int enable_dma_window)
+> > +{
+> > +#ifdef CONFIG_PCI
+> > +	if (info->dev->bus =3D=3D &pci_bus_type) {
+> > +		struct pci_dev *pdev =3D NULL;
+> > +		pdev =3D to_pci_dev(info->dev);
+> > +		if (pci_is_enabled(pdev))
+> > +			pci_disable_device(pdev);
+> > +	}
+> > +#endif
+> > +
+> > +	if (enable_dma_window)
+> > +		enable_default_dma_window(info->liodn);
+> > +}
+> > +
+> > +static int check_for_shared_liodn(struct device_domain_info *info) {
+> > +	struct device_domain_info *tmp;
+> > +
+> > +	/*
+> > +	 * Sanity check, to ensure that this is not a
+> > +	 * shared LIODN. In case of a PCIe controller
+> > +	 * it's possible that all PCIe devices share
+> > +	 * the same LIODN.
+> > +	 */
+> > +	list_for_each_entry(tmp, &info->domain->devices, link) {
+> > +		if (info->liodn =3D=3D tmp->liodn)
+> > +			return 1;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >  static void remove_device_ref(struct device_domain_info *info, u32
+> win_cnt)  {
+> >  	unsigned long flags;
+> > +	int enable_dma_window =3D 0;
+> >
+> >  	list_del(&info->link);
+> >  	spin_lock_irqsave(&iommu_lock, flags);
+> > -	if (win_cnt > 1)
+> > -		pamu_free_subwins(info->liodn);
+> > -	pamu_disable_liodn(info->liodn);
+> > +	if (!check_for_shared_liodn(info)) {
 >=20
-> Set wait time interface:(Nanosecond)
-> /sys/devices/system/cpu/cpuX/pw20_wait_time
-> /sys/devices/system/cpu/cpuX/altivec_idle_wait_time
-> Example: Base on TBfreq is 41MHZ.
-> 1~48(ns): TB[63]
-> 49~97(ns): TB[62]
-> 98~195(ns): TB[61]
-> 196~390(ns): TB[60]
-> 391~780(ns): TB[59]
-> 781~1560(ns): TB[58]
-> ...
+> One query; Do we really need to check for this?
 >=20
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> ---
-> *v5:
-> Change get_idle_ticks_bit function implementation.
->=20
-> *v4:
-> Move code from 85xx/common.c to kernel/sysfs.c.
->=20
-> Remove has_pw20_altivec_idle function.
->=20
-> Change wait "entry_bit" to wait time.
->=20
-> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c in=
-dex
-> 27a90b9..10d1128 100644
-> --- a/arch/powerpc/kernel/sysfs.c
-> +++ b/arch/powerpc/kernel/sysfs.c
-> @@ -85,6 +85,284 @@ __setup("smt-snooze-delay=3D", setup_smt_snooze_delay=
-);
->=20
->  #endif /* CONFIG_PPC64 */
->=20
-> +#ifdef CONFIG_FSL_SOC
-> +#define MAX_BIT				63
-> +
-> +static u64 pw20_wt;
-> +static u64 altivec_idle_wt;
-> +
-> +static unsigned int get_idle_ticks_bit(u64 ns) {
-> +	u64 cycle;
-> +
-> +	if (ns >=3D 10000)
-> +		cycle =3D div_u64(ns + 500, 1000) * tb_ticks_per_usec;
-> +	else
-> +		cycle =3D div_u64(ns * tb_ticks_per_usec, 1000);
-> +
-> +	if (!cycle)
-> +		return 0;
-> +
-> +	return ilog2(cycle);
-> +}
-> +
-> +static void do_show_pwrmgtcr0(void *val) {
-> +	u32 *value =3D val;
-> +
-> +	*value =3D mfspr(SPRN_PWRMGTCR0);
-> +}
-> +
-> +static ssize_t show_pw20_state(struct device *dev,
-> +				struct device_attribute *attr, char *buf) {
-> +	u32 value;
-> +	unsigned int cpu =3D dev->id;
-> +
-> +	smp_call_function_single(cpu, do_show_pwrmgtcr0, &value, 1);
-> +
-> +	value &=3D PWRMGTCR0_PW20_WAIT;
-> +
-> +	return sprintf(buf, "%u\n", value ? 1 : 0); }
-> +
-> +static void do_store_pw20_state(void *val) {
-> +	u32 *value =3D val;
-> +	u32 pw20_state;
-> +
-> +	pw20_state =3D mfspr(SPRN_PWRMGTCR0);
-> +
-> +	if (*value)
-> +		pw20_state |=3D PWRMGTCR0_PW20_WAIT;
-> +	else
-> +		pw20_state &=3D ~PWRMGTCR0_PW20_WAIT;
-> +
-> +	mtspr(SPRN_PWRMGTCR0, pw20_state);
-> +}
-> +
-> +static ssize_t store_pw20_state(struct device *dev,
-> +				struct device_attribute *attr,
-> +				const char *buf, size_t count)
-> +{
-> +	u32 value;
-> +	unsigned int cpu =3D dev->id;
-> +
-> +	if (kstrtou32(buf, 0, &value))
-> +		return -EINVAL;
-> +
-> +	if (value > 1)
-> +		return -EINVAL;
-> +
-> +	smp_call_function_single(cpu, do_store_pw20_state, &value, 1);
-> +
-> +	return count;
-> +}
-> +
-> +static ssize_t show_pw20_wait_time(struct device *dev,
-> +				struct device_attribute *attr, char *buf) {
-> +	u32 value;
-> +	u64 tb_cycle;
-> +	s64 time;
-> +
-> +	unsigned int cpu =3D dev->id;
-> +
-> +	if (!pw20_wt) {
-> +		smp_call_function_single(cpu, do_show_pwrmgtcr0, &value, 1);
-> +		value =3D (value & PWRMGTCR0_PW20_ENT) >>
-> +					PWRMGTCR0_PW20_ENT_SHIFT;
-> +
-> +		tb_cycle =3D (1 << (MAX_BIT - value)) * 2;
+[Sethi Varun-B16395] Yes, just a sanity check to ensure that there are no m=
+ore devices linked to this LIODN and we can disable it.
 
-Is value =3D 0 and value =3D 1 legal? These will make tb_cycle =3D 0,
+-Varun
 
-> +		time =3D div_u64(tb_cycle * 1000, tb_ticks_per_usec) - 1;
-
-And time =3D -1;
-
-
-> +	} else {
-> +		time =3D pw20_wt;
-> +	}
-> +
-> +	return sprintf(buf, "%llu\n", time > 0 ? time : 0);
-> }
-> +
-> +static void set_pw20_wait_entry_bit(void *val) {
-> +	u32 *value =3D val;
-> +	u32 pw20_idle;
-> +
-> +	pw20_idle =3D mfspr(SPRN_PWRMGTCR0);
-> +
-> +	/* Set Automatic PW20 Core Idle Count */
-> +	/* clear count */
-> +	pw20_idle &=3D ~PWRMGTCR0_PW20_ENT;
-> +
-> +	/* set count */
-> +	pw20_idle |=3D ((MAX_BIT - *value) << PWRMGTCR0_PW20_ENT_SHIFT);
-> +
-> +	mtspr(SPRN_PWRMGTCR0, pw20_idle);
-> +}
-> +
-> +static ssize_t store_pw20_wait_time(struct device *dev,
-> +				struct device_attribute *attr,
-> +				const char *buf, size_t count)
-> +{
-> +	u32 entry_bit;
-> +	u64 value;
-> +
-> +	unsigned int cpu =3D dev->id;
-> +
-> +	if (kstrtou64(buf, 0, &value))
-> +		return -EINVAL;
-> +
-> +	if (!value)
-> +		return -EINVAL;
-> +
-> +	entry_bit =3D get_idle_ticks_bit(value);
-> +	if (entry_bit > MAX_BIT)
-> +		return -EINVAL;
-> +
-> +	pw20_wt =3D value;
-> +	smp_call_function_single(cpu, set_pw20_wait_entry_bit,
-> +				&entry_bit, 1);
-> +
-> +	return count;
-> +}
-> +
-> +static ssize_t show_altivec_idle(struct device *dev,
-> +				struct device_attribute *attr, char *buf) {
-> +	u32 value;
-> +	unsigned int cpu =3D dev->id;
-> +
-> +	smp_call_function_single(cpu, do_show_pwrmgtcr0, &value, 1);
-> +
-> +	value &=3D PWRMGTCR0_AV_IDLE_PD_EN;
-> +
-> +	return sprintf(buf, "%u\n", value ? 1 : 0); }
-> +
-> +static void do_store_altivec_idle(void *val) {
-> +	u32 *value =3D val;
-> +	u32 altivec_idle;
-> +
-> +	altivec_idle =3D mfspr(SPRN_PWRMGTCR0);
-> +
-> +	if (*value)
-> +		altivec_idle |=3D PWRMGTCR0_AV_IDLE_PD_EN;
-> +	else
-> +		altivec_idle &=3D ~PWRMGTCR0_AV_IDLE_PD_EN;
-> +
-> +	mtspr(SPRN_PWRMGTCR0, altivec_idle);
-> +}
-> +
-> +static ssize_t store_altivec_idle(struct device *dev,
-> +				struct device_attribute *attr,
-> +				const char *buf, size_t count)
-> +{
-> +	u32 value;
-> +	unsigned int cpu =3D dev->id;
-> +
-> +	if (kstrtou32(buf, 0, &value))
-> +		return -EINVAL;
-> +
-> +	if (value > 1)
-> +		return -EINVAL;
-> +
-> +	smp_call_function_single(cpu, do_store_altivec_idle, &value, 1);
-> +
-> +	return count;
-> +}
-> +
-> +static ssize_t show_altivec_idle_wait_time(struct device *dev,
-> +				struct device_attribute *attr, char *buf) {
-> +	u32 value;
-> +	u64 tb_cycle;
-> +	s64 time;
-> +
-> +	unsigned int cpu =3D dev->id;
-> +
-> +	if (!altivec_idle_wt) {
-> +		smp_call_function_single(cpu, do_show_pwrmgtcr0, &value, 1);
-> +		value =3D (value & PWRMGTCR0_AV_IDLE_CNT) >>
-> +					PWRMGTCR0_AV_IDLE_CNT_SHIFT;
-> +
-> +		tb_cycle =3D (1 << (MAX_BIT - value)) * 2;
-> +		time =3D div_u64(tb_cycle * 1000, tb_ticks_per_usec) - 1;
-
-Likewise
-
-Thanks
--Bharat
-
-> +	} else {
-> +		time =3D altivec_idle_wt;
-> +	}
-> +
-> +	return sprintf(buf, "%llu\n", time > 0 ? time : 0); }
-> +
-> +static void set_altivec_idle_wait_entry_bit(void *val) {
-> +	u32 *value =3D val;
-> +	u32 altivec_idle;
-> +
-> +	altivec_idle =3D mfspr(SPRN_PWRMGTCR0);
-> +
-> +	/* Set Automatic AltiVec Idle Count */
-> +	/* clear count */
-> +	altivec_idle &=3D ~PWRMGTCR0_AV_IDLE_CNT;
-> +
-> +	/* set count */
-> +	altivec_idle |=3D ((MAX_BIT - *value) << PWRMGTCR0_AV_IDLE_CNT_SHIFT);
-> +
-> +	mtspr(SPRN_PWRMGTCR0, altivec_idle);
-> +}
-> +
-> +static ssize_t store_altivec_idle_wait_time(struct device *dev,
-> +				struct device_attribute *attr,
-> +				const char *buf, size_t count)
-> +{
-> +	u32 entry_bit;
-> +	u64 value;
-> +
-> +	unsigned int cpu =3D dev->id;
-> +
-> +	if (kstrtou64(buf, 0, &value))
-> +		return -EINVAL;
-> +
-> +	if (!value)
-> +		return -EINVAL;
-> +
-> +	entry_bit =3D get_idle_ticks_bit(value);
-> +	if (entry_bit > MAX_BIT)
-> +		return -EINVAL;
-> +
-> +	altivec_idle_wt =3D value;
-> +	smp_call_function_single(cpu, set_altivec_idle_wait_entry_bit,
-> +				&entry_bit, 1);
-> +
-> +	return count;
-> +}
-> +
-> +/*
-> + * Enable/Disable interface:
-> + * 0, disable. 1, enable.
-> + */
-> +static DEVICE_ATTR(pw20_state, 0600, show_pw20_state,
-> +store_pw20_state); static DEVICE_ATTR(altivec_idle, 0600,
-> +show_altivec_idle, store_altivec_idle);
-> +
-> +/*
-> + * Set wait time interface:(Nanosecond)
-> + * Example: Base on TBfreq is 41MHZ.
-> + * 1~48(ns): TB[63]
-> + * 49~97(ns): TB[62]
-> + * 98~195(ns): TB[61]
-> + * 196~390(ns): TB[60]
-> + * 391~780(ns): TB[59]
-> + * 781~1560(ns): TB[58]
-> + * ...
-> + */
-> +static DEVICE_ATTR(pw20_wait_time, 0600,
-> +			show_pw20_wait_time,
-> +			store_pw20_wait_time);
-> +static DEVICE_ATTR(altivec_idle_wait_time, 0600,
-> +			show_altivec_idle_wait_time,
-> +			store_altivec_idle_wait_time);
-> +#endif
-> +
->  /*
->   * Enabling PMCs will slow partition context switch times so we only do
->   * it the first time we write to the PMCs.
-> @@ -407,6 +685,15 @@ static void register_cpu_online(unsigned int cpu)
->  		device_create_file(s, &dev_attr_pir);  #endif /* CONFIG_PPC64 */
+> Otherwise this patch series looks good to me.
 >=20
-> +#ifdef CONFIG_FSL_SOC
-> +	if (PVR_VER(cur_cpu_spec->pvr_value) =3D=3D PVR_VER_E6500) {
-> +		device_create_file(s, &dev_attr_pw20_state);
-> +		device_create_file(s, &dev_attr_pw20_wait_time);
-> +
-> +		device_create_file(s, &dev_attr_altivec_idle);
-> +		device_create_file(s, &dev_attr_altivec_idle_wait_time);
-> +	}
-> +#endif
->  	cacheinfo_cpu_online(cpu);
->  }
+> Thanks
+> -Bharat
 >=20
-> @@ -479,6 +766,15 @@ static void unregister_cpu_online(unsigned int cpu)
->  		device_remove_file(s, &dev_attr_pir);  #endif /* CONFIG_PPC64 */
->=20
-> +#ifdef CONFIG_FSL_SOC
-> +	if (PVR_VER(cur_cpu_spec->pvr_value) =3D=3D PVR_VER_E6500) {
-> +		device_remove_file(s, &dev_attr_pw20_state);
-> +		device_remove_file(s, &dev_attr_pw20_wait_time);
-> +
-> +		device_remove_file(s, &dev_attr_altivec_idle);
-> +		device_remove_file(s, &dev_attr_altivec_idle_wait_time);
-> +	}
-> +#endif
->  	cacheinfo_cpu_offline(cpu);
->  }
->=20
-> --
-> 1.8.0
+> > +		if (win_cnt > 1)
+> > +			pamu_free_subwins(info->liodn);
+> > +		pamu_disable_liodn(info->liodn);
+> > +		enable_dma_window =3D 1;
+> > +	}
+> >  	spin_unlock_irqrestore(&iommu_lock, flags);
+> >  	spin_lock_irqsave(&device_domain_lock, flags);
+> > +	disable_device_dma(info, enable_dma_window);
+> >  	info->dev->archdata.iommu_domain =3D NULL;
+> >  	kmem_cache_free(iommu_devinfo_cache, info);
+> >  	spin_unlock_irqrestore(&device_domain_lock, flags);
+> > --
+> > 1.7.9.5
