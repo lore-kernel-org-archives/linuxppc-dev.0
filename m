@@ -1,25 +1,33 @@
-Return-Path: <B07421@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 17D892C00E4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 06:56:53 +1100 (EST)
-Message-ID: <1381952434.7979.739.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc 8xx: Fixing memory init issue with CONFIG_PIN_TLB
-From: Scott Wood <scottwood@freescale.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Date: Wed, 16 Oct 2013 14:40:34 -0500
-In-Reply-To: <525E27ED.4000005@c-s.fr>
-References: <201310111256.r9BCuepM006243@localhost.localdomain>
- <OFF3401910.4A8AA6D0-ONC1257C01.0052FC82-C1257C01.00539C55@transmode.se>
- <525D6CD4.5090403@c-s.fr> <1381869216.7979.718.camel@snotra.buserror.net>
- <525E27ED.4000005@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <mohicks@gmail.com>
+Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
+ [IPv6:2607:f8b0:4001:c03::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 126C42C0199
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 08:16:45 +1100 (EST)
+Received: by mail-ie0-f178.google.com with SMTP id to1so3225989ieb.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 14:16:43 -0700 (PDT)
 MIME-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Sender: mohicks@gmail.com
+In-Reply-To: <1381948928.17841.38.camel@pasglop>
+References: <CAJUS3Xn4tHKvDK8tzLw09+zsEAJHEScV2DbZhH9KkYL-5iCmUA@mail.gmail.com>
+ <CAJUS3X=LVHDMa+CTFS=O=F=DfU1=0cgcNzn-mEvXGaDXEZ+CBA@mail.gmail.com>
+ <1381851009.17841.14.camel@pasglop>
+ <CAJUS3XmN2WNJ1cnorb5vfas7mB6tdNLxuupFja=u_wYS=cxmdQ@mail.gmail.com>
+ <1381866837.17841.21.camel@pasglop>
+ <1381868527.7979.713.camel@snotra.buserror.net>
+ <1381869590.17841.23.camel@pasglop>
+ <CAJUS3Xm6-Mojvu6WkZNT+31oDazcx5HCr3n0asNqv3+uFbO0JQ@mail.gmail.com>
+ <1381948928.17841.38.camel@pasglop>
+Date: Wed, 16 Oct 2013 17:16:42 -0400
+Message-ID: <CAJUS3Xk6jVHWvWugLGD0LNWgw0+XZeP6z+=U4Xa6_GTGNvObBQ@mail.gmail.com>
+Subject: Re: Perf not resolving all symbols, showing 0x7ffffxxx
+From: Martin Hicks <mort@bork.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,109 +37,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-10-16 at 07:45 +0200, leroy christophe wrote:
-> Le 15/10/2013 22:33, Scott Wood a =C3=A9crit :
-> > On Tue, 2013-10-15 at 18:27 +0200, leroy christophe wrote:
-> >> Le 11/10/2013 17:13, Joakim Tjernlund a =C3=A9crit :
-> >>> "Linuxppc-dev"
-> >>> <linuxppc-dev-bounces+joakim.tjernlund=3Dtransmode.se@lists.ozlabs.=
-org>
-> >>> wrote on 2013/10/11 14:56:40:
-> >>>> Activating CONFIG_PIN_TLB allows access to the 24 first Mbytes of =
-memory
-> >>> at
-> >>>> bootup instead of 8. It is needed for "big" kernels for instance w=
-hen
-> >>> activating
-> >>>> CONFIG_LOCKDEP_SUPPORT. This needs to be taken into account in ini=
-t_32
-> >>> too,
-> >>>> otherwise memory allocation soon fails after startup.
-> >>>>
-> >>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> >>>>
-> >>>> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S
-> >>> linux-3.11/arch/powerpc/kernel/head_8xx.S
-> >>>> --- linux-3.11.org/arch/powerpc/mm/init_32.c   2013-09-02
-> >>> 22:46:10.000000000 +0200
-> >>>> +++ linux-3.11/arch/powerpc/mm/init_32.c   2013-09-09 11:28:54.000=
-000000
-> >>> +0200
-> >>>> @@ -213,7 +213,12 @@
-> >>>>        */
-> >>>>       BUG_ON(first_memblock_base !=3D 0);
-> >>>>
-> >>>> +#ifdef CONFIG_PIN_TLB
-> >>>> +   /* 8xx can only access 24MB at the moment */
-> >>>> +   memblock_set_current_limit(min_t(u64, first_memblock_size,
-> >>> 0x01800000));
-> >>>> +#else
-> >>>>       /* 8xx can only access 8MB at the moment */
-> >>>>       memblock_set_current_limit(min_t(u64, first_memblock_size,
-> >>> 0x00800000));
-> >>>> +#endif
-> >>>>    }
-> >>>>    #endif /* CONFIG_8xx */
-> >>> hmm, I think you should always map 24 MB (or less if RAM < 24 MB) a=
-nd do
-> >>> the same
-> >>> in head_8xx.S.
-> >>>
-> >>> Or to keep it simple, just always map at least 16 MB here and in
-> >>> head_8xx.S, assuming
-> >>> that 16 MB is min RAM for any 8xx system running 3.x kernels.
-> >> Yes we could do a more elaborated modification in the future. Howeve=
-r it
-> >> also has an impact on the boot loader, so I'm not sure we should mak=
-e it
-> >> the default without thinking twice.
-> >>
-> >> In the meantime, my patch does take into account the existing situat=
-ion
-> >> where you have 8Mb by default and 24Mb when you activate CONFIG_PIN_=
-TLB.
-> >> I see it as a bug fix and I believe we should include it at least in
-> >> order to allow including in the stable releases.
-> >>
-> >> Do you see any issue with this approach ?
-> > The patch is fine, but I don't think it's stable material (BTW, if it
-> > were, you should have marked it as such when submitting).  If I
-> > understand the situation correctly, there's no regression, and nothin=
-g
-> > fails to work with CONFIG_PIN_TLB that would have worked without it.
-> > It's just making CONFIG_PIN_TLB more useful.
-> >
-> >
-> Yes the patch is definitly stable.
+On Wed, Oct 16, 2013 at 2:42 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Wed, 2013-10-16 at 11:05 -0400, Martin Hicks wrote:
+>> Actually, I was wrong, the mpc8379 is an e300c4.
+>>
+>> So it seems clear to me that we compile in the book3s code because
+>> this is an 83xx CPU part.  I also see that Kconfig knows that I have
+>> an core-fsl-emb but we don't actually compile the PMU backend for it
+>> because there's no support for anything but e500.
+>>
+>> mort@chinook:~/src/s4v2-glibc/linux-mpc$ grep PERF .config
+>> CONFIG_FSL_EMB_PERFMON=y
+>> CONFIG_PPC_PERF_CTRS=y
+>> CONFIG_HAVE_PERF_EVENTS=y
+>> CONFIG_PERF_EVENTS=y
+>> # CONFIG_DEBUG_PERF_USE_VMALLOC is not set
+>> mort@chinook:~/src/s4v2-glibc/linux-mpc$ grep BOOK3S .config
+>> CONFIG_PPC_BOOK3S_32=y
+>> CONFIG_PPC_BOOK3S=y
+>>
+>> more below...
+>>
+>> On Tue, Oct 15, 2013 at 4:39 PM, Benjamin Herrenschmidt
+>> <benh@kernel.crashing.org> wrote:
+>> > On Tue, 2013-10-15 at 15:22 -0500, Scott Wood wrote:
+>> >> On Tue, 2013-10-15 at 14:53 -0500, Benjamin Herrenschmidt wrote:
+>> >> > On Tue, 2013-10-15 at 14:44 -0400, Martin Hicks wrote:
+>> >> > > >
+>> >> > > > This is an e300 core right ? (603...). Do that have an SIAR at all
+>> >> > > > (Scott ?)
+>> >> > >
+>> >> > > Yes, e300c3.
+>> >> >
+>> >> > Ok so I have a hard time figuring out how that patch can make a
+>> >> > difference since for all I can see, there is no perf backend upstream
+>> >> > for e300 at all :-(
+>> >> >
+>> >> > I must certainly be missing something ... Scott, can you have a look ?
+>> >>
+>> >> e300c3 has a core-fsl-emb style performance monitor (though Linux
+>> >> doesn't support it yet).  If a bug was bisected to a change in
+>> >> core-book3s.c, then it's probably a coincidence due to moving code
+>> >> around.
+>>
+>> CONFIG_PPC_PERF_CTRS seems to give the mpc8379 some kind of basic
+>> performance measuring.  Is this through dummy_perf() in
+>> arch/powerpc/kernel/pmc.c?
+>>
+>> >
+>> > Mort, can you see if just that change is enough to cause the problem ?
+>>
+>> It is not.  The patch that does get IPs working again in my 3.11 tree
+>> is this one:
+>>
+>> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+>> index eeae308..9a3f572 100644
+>> --- a/arch/powerpc/perf/core-book3s.c
+>> +++ b/arch/powerpc/perf/core-book3s.c
+>> @@ -122,10 +122,6 @@ void power_pmu_flush_branch_stack(void) {}
+>>  static inline void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw) {}
+>>  #endif /* CONFIG_PPC32 */
+>>
+>> -static bool regs_use_siar(struct pt_regs *regs)
+>> -{
+>> -       return !!regs->result;
+>> -}
+>
+> Can you try instead just chaning regs_use_siar to return false always ?
+> Do that help ?
+>
 
-It's not about whether the patch itself is "stable", but whether it is a
-critical bugfix that should be applied to the 3.11.x stable tree and the
-3.12 release, rather than being queued for 3.13.
+That does fix the problem.  v3.11 with the following:
 
->  How should I have mark it ?
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index eeae308..e91cf67 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -124,7 +124,7 @@ static inline void power_pmu_bhrb_read(struct
+cpu_hw_events *cpuhw) {}
 
-https://www.kernel.org/doc/Documentation/stable_kernel_rules.txt
+ static bool regs_use_siar(struct pt_regs *regs)
+ {
+-       return !!regs->result;
++       return 0; //!!regs->result;
+ }
 
-> The situation is that in 2010, I discovered that I was not able to star=
-t=20
-> a big Kernel because of the 8Mb limit.
-> You told me (see attached mail) that in order to get rid of that limit =
-I=20
-> shall use CONFIG_PIN_TLB: it was the first step, it helped pass the=20
-> memory zeroize at init, but it was not enough as I then got problems=20
-> with the Device Tree being erased because being put inside the first 8M=
-b=20
-> area too. Then I temporarely gave up at that time.
->=20
-> Recently I started again. After fixing my bootloader to get the device=20
-> tree somewhere else, I discovered this 8Mb limit hardcoded in=20
-> mm/init_32.c for the 8xx
-> With the patch I submitted I can now boot a kernel which is bigger than=
- 8Mb.
->=20
-> So, I'm a bit lost here on what to do.
+ /*
 
-There's nothing you need to do -- I'll apply the patch and send it to
-Ben for 3.13.
 
--Scott
+mh
+
+-- 
+Martin Hicks P.Eng.      |         mort@bork.org
+Bork Consulting Inc.     |   +1 (613) 266-2296
