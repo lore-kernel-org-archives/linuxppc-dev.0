@@ -1,33 +1,37 @@
-Return-Path: <B45939@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 78A9C2C034C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 12:59:47 +1100 (EST)
-Message-ID: <525DF2FD.3070007@freescale.com>
-Date: Wed, 16 Oct 2013 09:59:25 +0800
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
-MIME-Version: 1.0
-To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v11 2/3] DMA: Freescale: Add new 8-channel DMA engine
- device tree nodes
-References: <1380188023-3936-1-git-send-email-hongbo.zhang@freescale.com>
- <1380188023-3936-3-git-send-email-hongbo.zhang@freescale.com>
- <52537A5F.7090802@freescale.com>
- <20131015133849.GH19196@e106331-lin.cambridge.arm.com>
-In-Reply-To: <20131015133849.GH19196@e106331-lin.cambridge.arm.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- Pawel Moll <Pawel.Moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "vinod.koul@intel.com" <vinod.koul@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "djbw@fb.com" <djbw@fb.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 18CED2C00C8
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 13:07:10 +1100 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 15 Oct 2013 20:07:09 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 91C2F3E40042
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Oct 2013 20:07:07 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9G277MD300012
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Oct 2013 20:07:07 -0600
+Received: from d03av04.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9G276LO022480
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Oct 2013 20:07:06 -0600
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: [PATCH 01/10][v6] powerpc: Rename branch_opcode() to instr_opcode()
+Date: Tue, 15 Oct 2013 19:06:33 -0700
+Message-Id: <1381889202-16826-2-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1381889202-16826-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1381889202-16826-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,331 +41,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/15/2013 09:38 PM, Mark Rutland wrote:
-> On Tue, Oct 08, 2013 at 04:22:07AM +0100, Hongbo Zhang wrote:
->> Hi Mark, Stephen and other DT maintainers?
->>
->> The 1/3 had already been acked by Mark, and please have a further look
->> at this patch 2/3.
->> The DMA maintainer Vinod  needs ack for the DT related patches so that
->> he can take all this patch set.
-> Sorry for the delay.
->
-> This looks ok to me.
->
-> Acked-by: Mark Rutland <mark.rutland@arm.com>
+The logic used in branch_opcode() to extract the opcode for an instruction
+applies to non branch instructions also. So rename to instr_opcode().
 
-Thanks, Mark.
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/lib/code-patching.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
->> On 09/26/2013 05:33 PM, hongbo.zhang@freescale.com wrote:
->>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
->>>
->>> Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch adds
->>> the device tree nodes for them.
->>>
->>> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
->>> ---
->>>    .../devicetree/bindings/powerpc/fsl/dma.txt        |   70 +++++++++++++++++
->>>    arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
->>>    arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   82 ++++++++++++++++++++
->>>    arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   82 ++++++++++++++++++++
->>>    arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
->>>    5 files changed, 238 insertions(+), 4 deletions(-)
->>>    create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
->>>    create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
->>>
->>> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
->>> index 0584168..7fc1b01 100644
->>> --- a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
->>> +++ b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
->>> @@ -128,6 +128,76 @@ Example:
->>>                };
->>>        };
->>>
->>> +** Freescale Elo3 DMA Controller
->>> +   DMA controller which has same function as EloPlus except that Elo3 has 8
->>> +   channels while EloPlus has only 4, it is used in Freescale Txxx and Bxxx
->>> +   series chips, such as t1040, t4240, b4860.
->>> +
->>> +Required properties:
->>> +
->>> +- compatible        : must include "fsl,elo3-dma"
->>> +- reg               : contains two entries for DMA General Status Registers,
->>> +                      i.e. DGSR0 which includes status for channel 1~4, and
->>> +                      DGSR1 for channel 5~8
->>> +- ranges            : describes the mapping between the address space of the
->>> +                      DMA channels and the address space of the DMA controller
->>> +
->>> +- DMA channel nodes:
->>> +        - compatible        : must include "fsl,eloplus-dma-channel"
->>> +        - reg               : DMA channel specific registers
->>> +        - interrupts        : interrupt specifier for DMA channel IRQ
->>> +        - interrupt-parent  : optional, if needed for interrupt mapping
->>> +
->>> +Example:
->>> +dma@100300 {
->>> +     #address-cells = <1>;
->>> +     #size-cells = <1>;
->>> +     compatible = "fsl,elo3-dma";
->>> +     reg = <0x100300 0x4>,
->>> +           <0x100600 0x4>;
->>> +     ranges = <0x0 0x100100 0x500>;
->>> +     dma-channel@0 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x0 0x80>;
->>> +             interrupts = <28 2 0 0>;
->>> +     };
->>> +     dma-channel@80 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x80 0x80>;
->>> +             interrupts = <29 2 0 0>;
->>> +     };
->>> +     dma-channel@100 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x100 0x80>;
->>> +             interrupts = <30 2 0 0>;
->>> +     };
->>> +     dma-channel@180 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x180 0x80>;
->>> +             interrupts = <31 2 0 0>;
->>> +     };
->>> +     dma-channel@300 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x300 0x80>;
->>> +             interrupts = <76 2 0 0>;
->>> +     };
->>> +     dma-channel@380 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x380 0x80>;
->>> +             interrupts = <77 2 0 0>;
->>> +     };
->>> +     dma-channel@400 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x400 0x80>;
->>> +             interrupts = <78 2 0 0>;
->>> +     };
->>> +     dma-channel@480 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x480 0x80>;
->>> +             interrupts = <79 2 0 0>;
->>> +     };
->>> +};
->>> +
->>>    Note on DMA channel compatible properties: The compatible property must say
->>>    "fsl,elo-dma-channel" or "fsl,eloplus-dma-channel" to be used by the Elo DMA
->>>    driver (fsldma).  Any DMA channel used by fsldma cannot be used by another
->>> diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
->>> index 7399154..ea53ea1 100644
->>> --- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
->>> +++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
->>> @@ -223,13 +223,13 @@
->>>                reg = <0xe2000 0x1000>;
->>>        };
->>>
->>> -/include/ "qoriq-dma-0.dtsi"
->>> +/include/ "elo3-dma-0.dtsi"
->>>        dma@100300 {
->>>                fsl,iommu-parent = <&pamu0>;
->>>                fsl,liodn-reg = <&guts 0x580>; /* DMA1LIODNR */
->>>        };
->>>
->>> -/include/ "qoriq-dma-1.dtsi"
->>> +/include/ "elo3-dma-1.dtsi"
->>>        dma@101300 {
->>>                fsl,iommu-parent = <&pamu0>;
->>>                fsl,liodn-reg = <&guts 0x584>; /* DMA2LIODNR */
->>> diff --git a/arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi b/arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
->>> new file mode 100644
->>> index 0000000..3c210e0
->>> --- /dev/null
->>> +++ b/arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
->>> @@ -0,0 +1,82 @@
->>> +/*
->>> + * QorIQ Elo3 DMA device tree stub [ controller @ offset 0x100000 ]
->>> + *
->>> + * Copyright 2013 Freescale Semiconductor Inc.
->>> + *
->>> + * Redistribution and use in source and binary forms, with or without
->>> + * modification, are permitted provided that the following conditions are met:
->>> + *     * Redistributions of source code must retain the above copyright
->>> + *       notice, this list of conditions and the following disclaimer.
->>> + *     * Redistributions in binary form must reproduce the above copyright
->>> + *       notice, this list of conditions and the following disclaimer in the
->>> + *       documentation and/or other materials provided with the distribution.
->>> + *     * Neither the name of Freescale Semiconductor nor the
->>> + *       names of its contributors may be used to endorse or promote products
->>> + *       derived from this software without specific prior written permission.
->>> + *
->>> + *
->>> + * ALTERNATIVELY, this software may be distributed under the terms of the
->>> + * GNU General Public License ("GPL") as published by the Free Software
->>> + * Foundation, either version 2 of that License or (at your option) any
->>> + * later version.
->>> + *
->>> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
->>> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
->>> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
->>> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
->>> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
->>> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
->>> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
->>> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
->>> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
->>> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
->>> + */
->>> +
->>> +dma0: dma@100300 {
->>> +     #address-cells = <1>;
->>> +     #size-cells = <1>;
->>> +     compatible = "fsl,elo3-dma";
->>> +     reg = <0x100300 0x4>,
->>> +           <0x100600 0x4>;
->>> +     ranges = <0x0 0x100100 0x500>;
->>> +     dma-channel@0 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x0 0x80>;
->>> +             interrupts = <28 2 0 0>;
->>> +     };
->>> +     dma-channel@80 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x80 0x80>;
->>> +             interrupts = <29 2 0 0>;
->>> +     };
->>> +     dma-channel@100 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x100 0x80>;
->>> +             interrupts = <30 2 0 0>;
->>> +     };
->>> +     dma-channel@180 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x180 0x80>;
->>> +             interrupts = <31 2 0 0>;
->>> +     };
->>> +     dma-channel@300 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x300 0x80>;
->>> +             interrupts = <76 2 0 0>;
->>> +     };
->>> +     dma-channel@380 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x380 0x80>;
->>> +             interrupts = <77 2 0 0>;
->>> +     };
->>> +     dma-channel@400 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x400 0x80>;
->>> +             interrupts = <78 2 0 0>;
->>> +     };
->>> +     dma-channel@480 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x480 0x80>;
->>> +             interrupts = <79 2 0 0>;
->>> +     };
->>> +};
->>> diff --git a/arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi b/arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
->>> new file mode 100644
->>> index 0000000..cccf3bb
->>> --- /dev/null
->>> +++ b/arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
->>> @@ -0,0 +1,82 @@
->>> +/*
->>> + * QorIQ Elo3 DMA device tree stub [ controller @ offset 0x101000 ]
->>> + *
->>> + * Copyright 2013 Freescale Semiconductor Inc.
->>> + *
->>> + * Redistribution and use in source and binary forms, with or without
->>> + * modification, are permitted provided that the following conditions are met:
->>> + *     * Redistributions of source code must retain the above copyright
->>> + *       notice, this list of conditions and the following disclaimer.
->>> + *     * Redistributions in binary form must reproduce the above copyright
->>> + *       notice, this list of conditions and the following disclaimer in the
->>> + *       documentation and/or other materials provided with the distribution.
->>> + *     * Neither the name of Freescale Semiconductor nor the
->>> + *       names of its contributors may be used to endorse or promote products
->>> + *       derived from this software without specific prior written permission.
->>> + *
->>> + *
->>> + * ALTERNATIVELY, this software may be distributed under the terms of the
->>> + * GNU General Public License ("GPL") as published by the Free Software
->>> + * Foundation, either version 2 of that License or (at your option) any
->>> + * later version.
->>> + *
->>> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
->>> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
->>> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
->>> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
->>> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
->>> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
->>> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
->>> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
->>> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
->>> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
->>> + */
->>> +
->>> +dma1: dma@101300 {
->>> +     #address-cells = <1>;
->>> +     #size-cells = <1>;
->>> +     compatible = "fsl,elo3-dma";
->>> +     reg = <0x101300 0x4>,
->>> +           <0x101600 0x4>;
->>> +     ranges = <0x0 0x101100 0x500>;
->>> +     dma-channel@0 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x0 0x80>;
->>> +             interrupts = <32 2 0 0>;
->>> +     };
->>> +     dma-channel@80 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x80 0x80>;
->>> +             interrupts = <33 2 0 0>;
->>> +     };
->>> +     dma-channel@100 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x100 0x80>;
->>> +             interrupts = <34 2 0 0>;
->>> +     };
->>> +     dma-channel@180 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x180 0x80>;
->>> +             interrupts = <35 2 0 0>;
->>> +     };
->>> +     dma-channel@300 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x300 0x80>;
->>> +             interrupts = <80 2 0 0>;
->>> +     };
->>> +     dma-channel@380 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x380 0x80>;
->>> +             interrupts = <81 2 0 0>;
->>> +     };
->>> +     dma-channel@400 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x400 0x80>;
->>> +             interrupts = <82 2 0 0>;
->>> +     };
->>> +     dma-channel@480 {
->>> +             compatible = "fsl,eloplus-dma-channel";
->>> +             reg = <0x480 0x80>;
->>> +             interrupts = <83 2 0 0>;
->>> +     };
->>> +};
->>> diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
->>> index bd611a9..ec95c60 100644
->>> --- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
->>> +++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
->>> @@ -387,8 +387,8 @@
->>>                reg        = <0xea000 0x4000>;
->>>        };
->>>
->>> -/include/ "qoriq-dma-0.dtsi"
->>> -/include/ "qoriq-dma-1.dtsi"
->>> +/include/ "elo3-dma-0.dtsi"
->>> +/include/ "elo3-dma-1.dtsi"
->>>
->>>    /include/ "qoriq-espi-0.dtsi"
->>>        spi@110000 {
->>
->>
->>
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 17e5b23..2bc9db3 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -72,19 +72,19 @@ unsigned int create_cond_branch(const unsigned int *addr,
+ 	return instruction;
+ }
+ 
+-static unsigned int branch_opcode(unsigned int instr)
++static unsigned int instr_opcode(unsigned int instr)
+ {
+ 	return (instr >> 26) & 0x3F;
+ }
+ 
+ static int instr_is_branch_iform(unsigned int instr)
+ {
+-	return branch_opcode(instr) == 18;
++	return instr_opcode(instr) == 18;
+ }
+ 
+ static int instr_is_branch_bform(unsigned int instr)
+ {
+-	return branch_opcode(instr) == 16;
++	return instr_opcode(instr) == 16;
+ }
+ 
+ int instr_is_relative_branch(unsigned int instr)
+-- 
+1.7.9.5
