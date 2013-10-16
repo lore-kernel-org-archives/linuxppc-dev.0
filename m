@@ -1,34 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+Return-Path: <R65777@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AFF982C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 03:48:03 +1100 (EST)
-Message-ID: <1381942009.7979.727.camel@snotra.buserror.net>
-Subject: Re: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in device tree
-From: Scott Wood <scottwood@freescale.com>
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Date: Wed, 16 Oct 2013 11:46:49 -0500
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B150C312F@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1381300704-4238-1-git-send-email-Yuantian.Tang@freescale.com>
- <20131010100331.GE26954@e106331-lin.cambridge.arm.com>
- <D07C73A334FF604B95B3CBD2A545D07B150BD137@039-SN2MPN1-013.039d.mgd.msft.net>
- <20131011092526.GE3910@e106331-lin.cambridge.arm.com>
- <1381518433.7979.536.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C24BD@039-SN2MPN1-013.039d.mgd.msft.net>
- <1381788786.7979.643.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C2B08@039-SN2MPN1-013.039d.mgd.msft.net>
- <1381858855.7979.693.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C312F@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 882842C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 03:50:12 +1100 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Sethi Varun-B16395 <B16395@freescale.com>, "joro@8bytes.org"
+ <joro@8bytes.org>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Yoder Stuart-B08248 <B08248@freescale.com>,
+ Wood Scott-B07421 <B07421@freescale.com>, "alex.williamson@redhat.com"
+ <alex.williamson@redhat.com>
+Subject: RE: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe
+ devices
+Date: Wed, 16 Oct 2013 16:50:02 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D071C0835@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1381922582-28724-1-git-send-email-Varun.Sethi@freescale.com>
+ <1381922582-28724-3-git-send-email-Varun.Sethi@freescale.com>
+In-Reply-To: <1381922582-28724-3-git-send-email-Varun.Sethi@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-Leo-R58472 <r58472@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,46 +32,199 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-10-15 at 21:57 -0500, Tang Yuantian-B29983 wrote:
-> > > > > >
-> > > > > The device tree makes that quite clear.
-> > > >
-> > > > You chose to model it that way in the device tree; that doesn't make
-> > > > it clear that the hardware works that way or that it's a good way to
-> > > > model it.
-> > > >
-> > > > > Each PLL has several output which MUX node can take from.
-> > > >
-> > > > Point out where in the hardware documentation it says this.  What I
-> > > > see is a PLL that has one output, and a MUX register that can choose
-> > > > from multiple PLL and divider options.
-> > > >
-> > > Take T4240 for example: see section 4.6.5.1 , (Page 141) in T4240RM Rev.
-> > D, 09/2012.
-> > 
-> > That shows the dividers as being somewhere in between the PLL and the MUX.
-> > The MUX is where the divider is selected.  There's nothing in the PLL's
-> > programming interface that relates to the dividers.  As such it's simpler
-> > to model it as being part of the MUX.
-> > 
-> > -Scott
-> > 
-> I don't know whether it is simpler, but "modeling divider as being part of the MUX"
-> is your guess, right?
-> If the "divider" is included in MUX, the MUX would not be called "MUX".
 
-It's still selecting from multiple PLLs.
 
-> I don't know whether "divider" module exists or not. If it exists, it should be part
-> of PLL or between PLL and MUX. wherever it was, the device tree binding is appropriate.
+> -----Original Message-----
+> From: Sethi Varun-B16395
+> Sent: Wednesday, October 16, 2013 4:53 PM
+> To: joro@8bytes.org; iommu@lists.linux-foundation.org; linuxppc-
+> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Yoder Stuart-B08248; =
+Wood
+> Scott-B07421; alex.williamson@redhat.com; Bhushan Bharat-R65777
+> Cc: Sethi Varun-B16395
+> Subject: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe dev=
+ices
+>=20
+> Once the PCIe device assigned to a guest VM (via VFIO) gets detached from=
+ the
+> iommu domain (when guest terminates), its PAMU table entry is disabled. S=
+o, this
+> would prevent the device from being used once it's assigned back to the h=
+ost.
+>=20
+> This patch allows for creation of a default DMA window corresponding to t=
+he
+> device and subsequently enabling the PAMU table entry. Before we enable t=
+he
+> entry, we ensure that the device's bus master capability is disabled (dev=
+ice
+> quiesced).
+>=20
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> ---
+>  drivers/iommu/fsl_pamu.c        |   43 ++++++++++++++++++++++++++++-----=
+---
+>  drivers/iommu/fsl_pamu.h        |    1 +
+>  drivers/iommu/fsl_pamu_domain.c |   46 +++++++++++++++++++++++++++++++++=
++++---
+>  3 files changed, 78 insertions(+), 12 deletions(-)
+>=20
+> diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c index
+> cba0498..fb4a031 100644
+> --- a/drivers/iommu/fsl_pamu.c
+> +++ b/drivers/iommu/fsl_pamu.c
+> @@ -225,6 +225,21 @@ static struct paace *pamu_get_spaace(struct paace *p=
+aace,
+> u32 wnum)
+>  	return spaace;
+>  }
+>=20
+> +/*
+> + * Defaul PPAACE settings for an LIODN.
+> + */
+> +static void setup_default_ppaace(struct paace *ppaace) {
+> +	pamu_init_ppaace(ppaace);
+> +	/* window size is 2^(WSE+1) bytes */
+> +	set_bf(ppaace->addr_bitfields, PPAACE_AF_WSE, 35);
+> +	ppaace->wbah =3D 0;
+> +	set_bf(ppaace->addr_bitfields, PPAACE_AF_WBAL, 0);
+> +	set_bf(ppaace->impl_attr, PAACE_IA_ATM,
+> +		PAACE_ATM_NO_XLATE);
+> +	set_bf(ppaace->addr_bitfields, PAACE_AF_AP,
+> +		PAACE_AP_PERMS_ALL);
+> +}
+>  /**
+>   * pamu_get_fspi_and_allocate() - Allocates fspi index and reserves subw=
+indows
+>   *                                required for primary PAACE in the seco=
+ndary
+> @@ -253,6 +268,24 @@ static unsigned long pamu_get_fspi_and_allocate(u32
+> subwin_cnt)
+>  	return (spaace_addr - (unsigned long)spaact) / (sizeof(struct paace)); =
+ }
+>=20
+> +/* Reset the PAACE entry to the default state */ void
+> +enable_default_dma_window(int liodn) {
+> +	struct paace *ppaace;
+> +
+> +	ppaace =3D pamu_get_ppaace(liodn);
+> +	if (!ppaace) {
+> +		pr_debug("Invalid liodn entry\n");
+> +		return;
+> +	}
+> +
+> +	memset(ppaace, 0, sizeof(struct paace));
+> +
+> +	setup_default_ppaace(ppaace);
+> +	mb();
+> +	pamu_enable_liodn(liodn);
+> +}
+> +
+>  /* Release the subwindows reserved for a particular LIODN */  void
+> pamu_free_subwins(int liodn)  { @@ -752,15 +785,7 @@ static void __init
+> setup_liodns(void)
+>  				continue;
+>  			}
+>  			ppaace =3D pamu_get_ppaace(liodn);
+> -			pamu_init_ppaace(ppaace);
+> -			/* window size is 2^(WSE+1) bytes */
+> -			set_bf(ppaace->addr_bitfields, PPAACE_AF_WSE, 35);
+> -			ppaace->wbah =3D 0;
+> -			set_bf(ppaace->addr_bitfields, PPAACE_AF_WBAL, 0);
+> -			set_bf(ppaace->impl_attr, PAACE_IA_ATM,
+> -				PAACE_ATM_NO_XLATE);
+> -			set_bf(ppaace->addr_bitfields, PAACE_AF_AP,
+> -				PAACE_AP_PERMS_ALL);
+> +			setup_default_ppaace(ppaace);
+>  			if (of_device_is_compatible(node, "fsl,qman-portal"))
+>  				setup_qbman_paace(ppaace, QMAN_PORTAL_PAACE);
+>  			if (of_device_is_compatible(node, "fsl,qman")) diff --git
+> a/drivers/iommu/fsl_pamu.h b/drivers/iommu/fsl_pamu.h index 8fc1a12..0edc=
+bbbb
+> 100644
+> --- a/drivers/iommu/fsl_pamu.h
+> +++ b/drivers/iommu/fsl_pamu.h
+> @@ -406,5 +406,6 @@ void get_ome_index(u32 *omi_index, struct device *dev=
+);  int
+> pamu_update_paace_stash(int liodn, u32 subwin, u32 value);  int
+> pamu_disable_spaace(int liodn, u32 subwin);
+>  u32 pamu_get_max_subwin_cnt(void);
+> +void enable_default_dma_window(int liodn);
+>=20
+>  #endif  /* __FSL_PAMU_H */
+> diff --git a/drivers/iommu/fsl_pamu_domain.c b/drivers/iommu/fsl_pamu_dom=
+ain.c
+> index 966ae70..dd6cafc 100644
+> --- a/drivers/iommu/fsl_pamu_domain.c
+> +++ b/drivers/iommu/fsl_pamu_domain.c
+> @@ -340,17 +340,57 @@ static inline struct device_domain_info
+> *find_domain(struct device *dev)
+>  	return dev->archdata.iommu_domain;
+>  }
+>=20
+> +/* Disable device DMA capability and enable default DMA window */
+> +static void disable_device_dma(struct device_domain_info *info,
+> +				int enable_dma_window)
+> +{
+> +#ifdef CONFIG_PCI
+> +	if (info->dev->bus =3D=3D &pci_bus_type) {
+> +		struct pci_dev *pdev =3D NULL;
+> +		pdev =3D to_pci_dev(info->dev);
+> +		if (pci_is_enabled(pdev))
+> +			pci_disable_device(pdev);
+> +	}
+> +#endif
+> +
+> +	if (enable_dma_window)
+> +		enable_default_dma_window(info->liodn);
+> +}
+> +
+> +static int check_for_shared_liodn(struct device_domain_info *info) {
+> +	struct device_domain_info *tmp;
+> +
+> +	/*
+> +	 * Sanity check, to ensure that this is not a
+> +	 * shared LIODN. In case of a PCIe controller
+> +	 * it's possible that all PCIe devices share
+> +	 * the same LIODN.
+> +	 */
+> +	list_for_each_entry(tmp, &info->domain->devices, link) {
+> +		if (info->liodn =3D=3D tmp->liodn)
+> +			return 1;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static void remove_device_ref(struct device_domain_info *info, u32 win_c=
+nt)  {
+>  	unsigned long flags;
+> +	int enable_dma_window =3D 0;
+>=20
+>  	list_del(&info->link);
+>  	spin_lock_irqsave(&iommu_lock, flags);
+> -	if (win_cnt > 1)
+> -		pamu_free_subwins(info->liodn);
+> -	pamu_disable_liodn(info->liodn);
+> +	if (!check_for_shared_liodn(info)) {
 
-The device tree binding is unnecessarily complicated.
+One query; Do we really need to check for this?
 
-> The P3041RM shows exactly each PLL has 2 outputs which definitely have no "divider" at all.
+Otherwise this patch series looks good to me.
 
-That diagram is a bit weird -- one of the outputs is used as is, and the
-other is split into 1/2 and 1/4.  It doesn't really matter though; the
-end result is the same.  We're describing the programming interface, not
-artwork choices in the manual.
+Thanks
+-Bharat
 
--Scott
+> +		if (win_cnt > 1)
+> +			pamu_free_subwins(info->liodn);
+> +		pamu_disable_liodn(info->liodn);
+> +		enable_dma_window =3D 1;
+> +	}
+>  	spin_unlock_irqrestore(&iommu_lock, flags);
+>  	spin_lock_irqsave(&device_domain_lock, flags);
+> +	disable_device_dma(info, enable_dma_window);
+>  	info->dev->archdata.iommu_domain =3D NULL;
+>  	kmem_cache_free(iommu_devinfo_cache, info);
+>  	spin_unlock_irqrestore(&device_domain_lock, flags);
+> --
+> 1.7.9.5
