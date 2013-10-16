@@ -1,20 +1,31 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id 66A552C014D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 16:45:27 +1100 (EST)
-Message-ID: <525E27ED.4000005@c-s.fr>
-Date: Wed, 16 Oct 2013 07:45:17 +0200
-From: leroy christophe <christophe.leroy@c-s.fr>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc 8xx: Fixing memory init issue with CONFIG_PIN_TLB
-References: <201310111256.r9BCuepM006243@localhost.localdomain>	
- <OFF3401910.4A8AA6D0-ONC1257C01.0052FC82-C1257C01.00539C55@transmode.se>	
- <525D6CD4.5090403@c-s.fr> <1381869216.7979.718.camel@snotra.buserror.net>
-In-Reply-To: <1381869216.7979.718.camel@snotra.buserror.net>
-Content-Type: multipart/mixed; boundary="------------030308070004050808080304"
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BB1F82C00BE
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 16:54:05 +1100 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 16 Oct 2013 11:24:02 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 651F0394005E
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 11:23:41 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9G5uh4432768134
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 11:26:43 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9G5rxB2002196
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 11:23:59 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/2] Export POWER8 PMU raw event codes through sysfs
+Date: Wed, 16 Oct 2013 11:22:58 +0530
+Message-Id: <1381902780-2719-1-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, sukadev@linux.vnet.ibm.com, michaele@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,240 +35,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030308070004050808080304
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	This patchset adds some missing event list for POWER7 PMU raw
+events which are exported through sysfs interface. Also adds a new
+set of raw PMU events list for POWER8. I have completed some amount
+of initial testing to verify the working of POWER8 raw event codes
+through sysfs.
 
+Before the patch
+================
+directory contents: /sys/bus/event_source/devices/cpu/
+format  perf_event_mux_interval_ms power  subsystem  type  uevent
 
-Le 15/10/2013 22:33, Scott Wood a écrit :
-> On Tue, 2013-10-15 at 18:27 +0200, leroy christophe wrote:
->> Le 11/10/2013 17:13, Joakim Tjernlund a écrit :
->>> "Linuxppc-dev"
->>> <linuxppc-dev-bounces+joakim.tjernlund=transmode.se@lists.ozlabs.org>
->>> wrote on 2013/10/11 14:56:40:
->>>> Activating CONFIG_PIN_TLB allows access to the 24 first Mbytes of memory
->>> at
->>>> bootup instead of 8. It is needed for "big" kernels for instance when
->>> activating
->>>> CONFIG_LOCKDEP_SUPPORT. This needs to be taken into account in init_32
->>> too,
->>>> otherwise memory allocation soon fails after startup.
->>>>
->>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>>>
->>>> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S
->>> linux-3.11/arch/powerpc/kernel/head_8xx.S
->>>> --- linux-3.11.org/arch/powerpc/mm/init_32.c   2013-09-02
->>> 22:46:10.000000000 +0200
->>>> +++ linux-3.11/arch/powerpc/mm/init_32.c   2013-09-09 11:28:54.000000000
->>> +0200
->>>> @@ -213,7 +213,12 @@
->>>>        */
->>>>       BUG_ON(first_memblock_base != 0);
->>>>
->>>> +#ifdef CONFIG_PIN_TLB
->>>> +   /* 8xx can only access 24MB at the moment */
->>>> +   memblock_set_current_limit(min_t(u64, first_memblock_size,
->>> 0x01800000));
->>>> +#else
->>>>       /* 8xx can only access 8MB at the moment */
->>>>       memblock_set_current_limit(min_t(u64, first_memblock_size,
->>> 0x00800000));
->>>> +#endif
->>>>    }
->>>>    #endif /* CONFIG_8xx */
->>> hmm, I think you should always map 24 MB (or less if RAM < 24 MB) and do
->>> the same
->>> in head_8xx.S.
->>>
->>> Or to keep it simple, just always map at least 16 MB here and in
->>> head_8xx.S, assuming
->>> that 16 MB is min RAM for any 8xx system running 3.x kernels.
->> Yes we could do a more elaborated modification in the future. However it
->> also has an impact on the boot loader, so I'm not sure we should make it
->> the default without thinking twice.
->>
->> In the meantime, my patch does take into account the existing situation
->> where you have 8Mb by default and 24Mb when you activate CONFIG_PIN_TLB.
->> I see it as a bug fix and I believe we should include it at least in
->> order to allow including in the stable releases.
->>
->> Do you see any issue with this approach ?
-> The patch is fine, but I don't think it's stable material (BTW, if it
-> were, you should have marked it as such when submitting).  If I
-> understand the situation correctly, there's no regression, and nothing
-> fails to work with CONFIG_PIN_TLB that would have worked without it.
-> It's just making CONFIG_PIN_TLB more useful.
->
->
-Yes the patch is definitly stable. How should I have mark it ?
+After the patch
+===============
+(1) directory contents: /sys/bus/event_source/devices/cpu/
+'events'  format  perf_event_mux_interval_ms power  subsystem  type  uevent
 
-The situation is that in 2010, I discovered that I was not able to start 
-a big Kernel because of the 8Mb limit.
-You told me (see attached mail) that in order to get rid of that limit I 
-shall use CONFIG_PIN_TLB: it was the first step, it helped pass the 
-memory zeroize at init, but it was not enough as I then got problems 
-with the Device Tree being erased because being put inside the first 8Mb 
-area too. Then I temporarely gave up at that time.
+(2) contents inside new directory: /sys/bus/event_source/devices/cpu/events/
+............................
+............................
+............................
+PM_ANY_THRD_RUN_CYC
+PM_BR_2PATH
+PM_BR_CMPL
+PM_BR_MRK_2PATH
+PM_BR_TAKEN_CMPL
+PM_CMPLU_STALL_BRU
+PM_CMPLU_STALL_BRU_CRU
+PM_CMPLU_STALL_COQ_FULL
+PM_CMPLU_STALL_DCACHE_MISS
+PM_CMPLU_STALL_DMISS_L21_L31
+PM_CMPLU_STALL_DMISS_L2L3
+PM_CMPLU_STALL_DMISS_L2L3_CONFLICT
+PM_CMPLU_STALL_DMISS_L3MISS
+PM_CMPLU_STALL_DMISS_LMEM
+PM_CMPLU_STALL_DMISS_REMOTE
+PM_CMPLU_STALL_ERAT_MISS
+PM_CMPLU_STALL_FLUSH
+PM_CMPLU_STALL_FXLONG
+PM_CMPLU_STALL_FXU
+PM_CMPLU_STALL_HWSYNC
+PM_CMPLU_STALL_LOAD_FINISH
+...........................
+............................
+............................
 
-Recently I started again. After fixing my bootloader to get the device 
-tree somewhere else, I discovered this 8Mb limit hardcoded in 
-mm/init_32.c for the 8xx
-With the patch I submitted I can now boot a kernel which is bigger than 8Mb.
+Sample tests:
+================================================================
+perf stat -e 'cpu/PM_CMPLU_STALL_ERAT_MISS/'  ls
 
-So, I'm a bit lost here on what to do.
+ Performance counter stats for 'ls':
 
---------------030308070004050808080304
-Content-Type: message/rfc822;
- name="Message joint"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="Message joint"
+             56762 cpu/PM_CMPLU_STALL_ERAT_MISS/                                   
 
-Return-Path: <B07421@freescale.com>
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 73531C7392
-	for <christophe.leroy@c-s.fr>; Tue, 15 Oct 2013 22:33:56 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id t-uOp0jzNl3a for <christophe.leroy@c-s.fr>;
-	Tue, 15 Oct 2013 22:33:56 +0200 (CEST)
-Received: from mailhub1.si.c-s.fr (mailhub1.si.c-s.fr [192.168.12.233])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3E19CC7391
-	for <chleroy@messagerie.si.c-s.fr>; Tue, 15 Oct 2013 22:33:56 +0200 (CEST)
-Received: from mailhub1.si.c-s.fr (mailhub1 [192.168.12.233])
-	by localhost (Postfix) with ESMTP id CE4BB3C006
-	for <chleroy@messagerie.si.c-s.fr>; Tue, 15 Oct 2013 22:33:50 +0200 (CEST)
-X-Spam-Status: No, score=-1.8 required=6.0 tests=AWL,BAYES_00,URIBL_BLOCKED
-	autolearn=ham version=3.3.2
-X-Spam-Level: 
-X-Spam-Checker-Version: SpamAssassin 3.3.2 (2011-06-06) on mailhub1.si.c-s.fr
-Received: from localhost (mailhub1 [192.168.12.233])
-	by pegase1.c-s.fr (Postfix) with ESMTP id CBCB83C005
-	for <chleroy@messagerie.si.c-s.fr>; Tue, 15 Oct 2013 22:33:50 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from mailhub1.si.c-s.fr ([192.168.12.233])
-	by localhost (mailhub1.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id TEKUaA562H7I for <chleroy@messagerie.si.c-s.fr>;
-	Tue, 15 Oct 2013 22:33:50 +0200 (CEST)
-Received: from db9outboundpool.messaging.microsoft.com (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 9A3173C004
-	for <christophe.leroy@c-s.fr>; Tue, 15 Oct 2013 22:33:50 +0200 (CEST)
-Received: from mail51-db9-R.bigfish.com (10.174.16.242) by
- DB9EHSOBE014.bigfish.com (10.174.14.77) with Microsoft SMTP Server id
- 14.1.225.22; Tue, 15 Oct 2013 20:33:50 +0000
-Received: from mail51-db9 (localhost [127.0.0.1])	by mail51-db9-R.bigfish.com
- (Postfix) with ESMTP id 3F155120188;	Tue, 15 Oct 2013 20:33:50 +0000 (UTC)
-X-Forefront-Antispam-Report: CIP:70.37.183.190;KIP:(null);UIP:(null);IPV:NLI;H:mail.freescale.net;RD:none;EFVD:NLI
-X-SpamScore: -7
-X-BigFish: VS-7(zzbb2dI98dIc89bh936eI15bfK1432Izz1f42h208ch1ee6h1de0h1fdah2073h1202h1e76h1d1ah1d2ah1fc6hzz1de098h1de097h8275dhz2dh2a8h839h93fhd24hf0ah1288h12a5h12a9h12bdh137ah139eh13b6h1441h1504h1537h162dh1631h1758h1898h18e1h1946h19b5h1ad9h1b0ah1b2fh1fb3h1d0ch1d2eh1d3fh1dfeh1dffh1e23h1fe8h1ff5h1155h)
-Received: from mail51-db9 (localhost.localdomain [127.0.0.1]) by mail51-db9
- (MessageSwitch) id 1381869228487453_32172; Tue, 15 Oct 2013 20:33:48 +0000
- (UTC)
-Received: from DB9EHSMHS026.bigfish.com (unknown [10.174.16.236])	by
- mail51-db9.bigfish.com (Postfix) with ESMTP id 62E714E00E9;	Tue, 15 Oct 2013
- 20:33:48 +0000 (UTC)
-Received: from mail.freescale.net (70.37.183.190) by DB9EHSMHS026.bigfish.com
- (10.174.14.36) with Microsoft SMTP Server (TLS) id 14.16.227.3; Tue, 15 Oct
- 2013 20:33:48 +0000
-Received: from tx30smr01.am.freescale.net (10.81.153.31) by
- 039-SN1MMR1-003.039d.mgd.msft.net (10.84.1.16) with Microsoft SMTP Server
- (TLS) id 14.3.158.2; Tue, 15 Oct 2013 20:33:46 +0000
-Received: from [10.214.83.72] ([10.214.83.72])	by tx30smr01.am.freescale.net
- (8.14.3/8.14.0) with ESMTP id r9FKXaOB017060;	Tue, 15 Oct 2013 13:33:43 -0700
-Message-ID: <1381869216.7979.718.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc 8xx: Fixing memory init issue with
- CONFIG_PIN_TLB
-From: Scott Wood <scottwood@freescale.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-CC: Joakim Tjernlund <joakim.tjernlund@transmode.se>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, Paul
- Mackerras <paulus@samba.org>
-Date: Tue, 15 Oct 2013 15:33:36 -0500
-In-Reply-To: <525D6CD4.5090403@c-s.fr>
-References: <201310111256.r9BCuepM006243@localhost.localdomain>
-	 <OFF3401910.4A8AA6D0-ONC1257C01.0052FC82-C1257C01.00539C55@transmode.se>
-	 <525D6CD4.5090403@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.6.4-0ubuntu1 
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-OriginatorOrg: freescale.com
-X-FOPE-CONNECTOR: Id%0$Dn%*$RO%0$TLS%0$FQDN%$TlsDn%
+       0.003643785 seconds time elapsed
+       
+perf stat -e 'cpu/PM_CMPLU_STALL_BRU/' ls
 
-On Tue, 2013-10-15 at 18:27 +0200, leroy christophe wrote:
-> Le 11/10/2013 17:13, Joakim Tjernlund a =C3=A9crit :
-> > "Linuxppc-dev"
-> > <linuxppc-dev-bounces+joakim.tjernlund=3Dtransmode.se@lists.ozlabs.or=
-g>
-> > wrote on 2013/10/11 14:56:40:
-> >> Activating CONFIG_PIN_TLB allows access to the 24 first Mbytes of me=
-mory
-> > at
-> >> bootup instead of 8. It is needed for "big" kernels for instance whe=
-n
-> > activating
-> >> CONFIG_LOCKDEP_SUPPORT. This needs to be taken into account in init_=
-32
-> > too,
-> >> otherwise memory allocation soon fails after startup.
-> >>
-> >> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> >>
-> >> diff -ur linux-3.11.org/arch/powerpc/kernel/head_8xx.S
-> > linux-3.11/arch/powerpc/kernel/head_8xx.S
-> >> --- linux-3.11.org/arch/powerpc/mm/init_32.c   2013-09-02
-> > 22:46:10.000000000 +0200
-> >> +++ linux-3.11/arch/powerpc/mm/init_32.c   2013-09-09 11:28:54.00000=
-0000
-> > +0200
-> >> @@ -213,7 +213,12 @@
-> >>       */
-> >>      BUG_ON(first_memblock_base !=3D 0);
-> >>
-> >> +#ifdef CONFIG_PIN_TLB
-> >> +   /* 8xx can only access 24MB at the moment */
-> >> +   memblock_set_current_limit(min_t(u64, first_memblock_size,
-> > 0x01800000));
-> >> +#else
-> >>      /* 8xx can only access 8MB at the moment */
-> >>      memblock_set_current_limit(min_t(u64, first_memblock_size,
-> > 0x00800000));
-> >> +#endif
-> >>   }
-> >>   #endif /* CONFIG_8xx */
-> > hmm, I think you should always map 24 MB (or less if RAM < 24 MB) and=
- do
-> > the same
-> > in head_8xx.S.
-> >
-> > Or to keep it simple, just always map at least 16 MB here and in
-> > head_8xx.S, assuming
-> > that 16 MB is min RAM for any 8xx system running 3.x kernels.
-> Yes we could do a more elaborated modification in the future. However i=
-t=20
-> also has an impact on the boot loader, so I'm not sure we should make i=
-t=20
-> the default without thinking twice.
->=20
-> In the meantime, my patch does take into account the existing situation=
-=20
-> where you have 8Mb by default and 24Mb when you activate CONFIG_PIN_TLB=
-.
-> I see it as a bug fix and I believe we should include it at least in=20
-> order to allow including in the stable releases.
->=20
-> Do you see any issue with this approach ?
+ Performance counter stats for 'ls':
 
-The patch is fine, but I don't think it's stable material (BTW, if it
-were, you should have marked it as such when submitting).  If I
-understand the situation correctly, there's no regression, and nothing
-fails to work with CONFIG_PIN_TLB that would have worked without it.
-It's just making CONFIG_PIN_TLB more useful.
+            208615 cpu/PM_CMPLU_STALL_BRU/                                     
 
--Scott
+       0.003600713 seconds time elapsed
+=================================================================
 
+Anshuman Khandual (2):
+  power7, perf: Make some new raw event codes available in sysfs
+  power8, perf: Export raw event codes through sysfs interface
 
---------------030308070004050808080304--
+ arch/powerpc/perf/power7-events-list.h |  10 +++
+ arch/powerpc/perf/power8-events-list.h | 146 +++++++++++++++++++++++++++++++++
+ arch/powerpc/perf/power8-pmu.c         |  30 +++++++
+ 3 files changed, 186 insertions(+)
+ create mode 100644 arch/powerpc/perf/power8-events-list.h
+
+-- 
+1.7.11.7
