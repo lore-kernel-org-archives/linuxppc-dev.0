@@ -1,33 +1,20 @@
-Return-Path: <mohicks@gmail.com>
-Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
- [IPv6:2607:f8b0:4001:c03::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 126C42C0199
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 08:16:45 +1100 (EST)
-Received: by mail-ie0-f178.google.com with SMTP id to1so3225989ieb.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 14:16:43 -0700 (PDT)
-MIME-Version: 1.0
-Sender: mohicks@gmail.com
-In-Reply-To: <1381948928.17841.38.camel@pasglop>
-References: <CAJUS3Xn4tHKvDK8tzLw09+zsEAJHEScV2DbZhH9KkYL-5iCmUA@mail.gmail.com>
- <CAJUS3X=LVHDMa+CTFS=O=F=DfU1=0cgcNzn-mEvXGaDXEZ+CBA@mail.gmail.com>
- <1381851009.17841.14.camel@pasglop>
- <CAJUS3XmN2WNJ1cnorb5vfas7mB6tdNLxuupFja=u_wYS=cxmdQ@mail.gmail.com>
- <1381866837.17841.21.camel@pasglop>
- <1381868527.7979.713.camel@snotra.buserror.net>
- <1381869590.17841.23.camel@pasglop>
- <CAJUS3Xm6-Mojvu6WkZNT+31oDazcx5HCr3n0asNqv3+uFbO0JQ@mail.gmail.com>
- <1381948928.17841.38.camel@pasglop>
-Date: Wed, 16 Oct 2013 17:16:42 -0400
-Message-ID: <CAJUS3Xk6jVHWvWugLGD0LNWgw0+XZeP6z+=U4Xa6_GTGNvObBQ@mail.gmail.com>
-Subject: Re: Perf not resolving all symbols, showing 0x7ffffxxx
-From: Martin Hicks <mort@bork.org>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id 5041C2C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 09:58:01 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH v2 RESEND 0/3] cpufreq/ondemand support for Xserve G5 &
+ iMac G5 iSight
+Date: Thu, 17 Oct 2013 01:09:50 +0200
+Message-ID: <2001270.akeXIGSPAx@vostro.rjw.lan>
+In-Reply-To: <1381465935.5630.53.camel@pasglop>
+References: <1380573873-14448-1-git-send-email-aaro.koskinen@iki.fi>
+ <1381465935.5630.53.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Aaro Koskinen <aaro.koskinen@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,97 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 16, 2013 at 2:42 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2013-10-16 at 11:05 -0400, Martin Hicks wrote:
->> Actually, I was wrong, the mpc8379 is an e300c4.
->>
->> So it seems clear to me that we compile in the book3s code because
->> this is an 83xx CPU part.  I also see that Kconfig knows that I have
->> an core-fsl-emb but we don't actually compile the PMU backend for it
->> because there's no support for anything but e500.
->>
->> mort@chinook:~/src/s4v2-glibc/linux-mpc$ grep PERF .config
->> CONFIG_FSL_EMB_PERFMON=y
->> CONFIG_PPC_PERF_CTRS=y
->> CONFIG_HAVE_PERF_EVENTS=y
->> CONFIG_PERF_EVENTS=y
->> # CONFIG_DEBUG_PERF_USE_VMALLOC is not set
->> mort@chinook:~/src/s4v2-glibc/linux-mpc$ grep BOOK3S .config
->> CONFIG_PPC_BOOK3S_32=y
->> CONFIG_PPC_BOOK3S=y
->>
->> more below...
->>
->> On Tue, Oct 15, 2013 at 4:39 PM, Benjamin Herrenschmidt
->> <benh@kernel.crashing.org> wrote:
->> > On Tue, 2013-10-15 at 15:22 -0500, Scott Wood wrote:
->> >> On Tue, 2013-10-15 at 14:53 -0500, Benjamin Herrenschmidt wrote:
->> >> > On Tue, 2013-10-15 at 14:44 -0400, Martin Hicks wrote:
->> >> > > >
->> >> > > > This is an e300 core right ? (603...). Do that have an SIAR at all
->> >> > > > (Scott ?)
->> >> > >
->> >> > > Yes, e300c3.
->> >> >
->> >> > Ok so I have a hard time figuring out how that patch can make a
->> >> > difference since for all I can see, there is no perf backend upstream
->> >> > for e300 at all :-(
->> >> >
->> >> > I must certainly be missing something ... Scott, can you have a look ?
->> >>
->> >> e300c3 has a core-fsl-emb style performance monitor (though Linux
->> >> doesn't support it yet).  If a bug was bisected to a change in
->> >> core-book3s.c, then it's probably a coincidence due to moving code
->> >> around.
->>
->> CONFIG_PPC_PERF_CTRS seems to give the mpc8379 some kind of basic
->> performance measuring.  Is this through dummy_perf() in
->> arch/powerpc/kernel/pmc.c?
->>
->> >
->> > Mort, can you see if just that change is enough to cause the problem ?
->>
->> It is not.  The patch that does get IPs working again in my 3.11 tree
->> is this one:
->>
->> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
->> index eeae308..9a3f572 100644
->> --- a/arch/powerpc/perf/core-book3s.c
->> +++ b/arch/powerpc/perf/core-book3s.c
->> @@ -122,10 +122,6 @@ void power_pmu_flush_branch_stack(void) {}
->>  static inline void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw) {}
->>  #endif /* CONFIG_PPC32 */
->>
->> -static bool regs_use_siar(struct pt_regs *regs)
->> -{
->> -       return !!regs->result;
->> -}
->
-> Can you try instead just chaning regs_use_siar to return false always ?
-> Do that help ?
->
+On Friday, October 11, 2013 03:32:15 PM Benjamin Herrenschmidt wrote:
+> On Mon, 2013-09-30 at 23:44 +0300, Aaro Koskinen wrote:
+> > Hi,
+> > 
+> > This is a resend of the v2 patchset:
+> > 
+> > 	http://marc.info/?t=137797013200001&r=1&w=2
+> > 
+> > No changes except rebasing. Any chance to get these into v3.13?
+> 
+> BTW. Ack from me, Rafael feel free to merge these.
 
-That does fix the problem.  v3.11 with the following:
+Queued up for 3.13, sorry for the delay.
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index eeae308..e91cf67 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -124,7 +124,7 @@ static inline void power_pmu_bhrb_read(struct
-cpu_hw_events *cpuhw) {}
-
- static bool regs_use_siar(struct pt_regs *regs)
- {
--       return !!regs->result;
-+       return 0; //!!regs->result;
- }
-
- /*
-
-
-mh
+Thanks!
 
 -- 
-Martin Hicks P.Eng.      |         mort@bork.org
-Bork Consulting Inc.     |   +1 (613) 266-2296
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
