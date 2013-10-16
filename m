@@ -1,28 +1,46 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D350F2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 10:20:12 +1100 (EST)
-Received: from mail175-ch1 (localhost [127.0.0.1])	by
- mail175-ch1-R.bigfish.com (Postfix) with ESMTP id 0DF3942006B	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 23:20:07 +0000 (UTC)
-Received: from CH1EHSMHS037.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.245])	by mail175-ch1.bigfish.com (Postfix) with ESMTP id
- E666B2C0114	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 23:20:05
- +0000 (UTC)
-Date: Wed, 16 Oct 2013 18:20:03 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: chenhui zhao <chenhui.zhao@freescale.com>
-Subject: Re: [4/4] powerpc/mpc8548: Add workaround for erratum NMG_SRIO135
-Message-ID: <20131016232003.GA27543@home.buserror.net>
-References: <1331025056-15983-4-git-send-email-chenhui.zhao@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1331025056-15983-4-git-send-email-chenhui.zhao@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4FAF32C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 10:21:26 +1100 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Thu, 17 Oct 2013 09:21:25 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1C6F02BB0053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 10:21:19 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9GNL73L10355174
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 10:21:07 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9GNLInK030844
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 10:21:18 +1100
+Message-ID: <1381965672.17841.71.camel@pasglop>
+Subject: Re: [PATCH 1/2] tty/hvc_console: Add DTR/RTS callback to handle
+ HUPCL control
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Date: Wed, 16 Oct 2013 18:21:12 -0500
+In-Reply-To: <20131016090432.GA6053@linux.vnet.ibm.com>
+References: <1372777635-10423-1-git-send-email-brueckner@linux.vnet.ibm.com>
+ <1372777635-10423-2-git-send-email-brueckner@linux.vnet.ibm.com>
+ <1381475711.5630.67.camel@pasglop>
+ <20131011124707.GA6082@linux.vnet.ibm.com>
+ <1381524204.5630.91.camel@pasglop>
+ <20131015153626.GA6129@linux.vnet.ibm.com>
+ <1381870070.17841.24.camel@pasglop>
+ <20131016090432.GA6053@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-s390@vger.kernel.org, gregkh@linuxfoundation.org,
+ heiko.carstens@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, brueckner@linux.vnet.com, schwidefsky@de.ibm.com,
+ jslaby@suse.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,49 +50,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 06, 2012 at 05:10:56PM +0800, chenhui zhao wrote:
-> From: chenhui zhao <chenhui.zhao@freescale.com>
+On Wed, 2013-10-16 at 11:04 +0200, Hendrik Brueckner wrote:
+> Indeed, two callbacks change the DTR line.  The main difference is that
+> tiocmget/tiocmset can be called from user space by ioctl.  That's not the case
+> for the dtr_cts callback.  Also, tiocmget/tiocmset provide more flags that can
+> be changed (ST, SR, CTS, CD, RNG, RI,  ...)
 > 
-> Issue:
-> Applications using lwarx/stwcx instructions in the core to
-> compete for a software lock or semaphore with a device on
-> RapidIO using read atomic set, clr, inc, or dec in a similar
-> manner may falsely result in both masters seeing the lock
-> as "available". This could result in data corruption as
-> both masters try to modify the same piece of data protected
-> by the lock.
+> Assume we would like to unify them have a single callback to change DTR, then
+> we have to take care of these differences.  So the question to you now is
+> whether you plan for a) other modem flags to be changed and b) if changing the
+> DTR line (or other control flags) through an ioctl?
 > 
-> Workaround:
-> Set bits 13 and 29 of CCSR offset 0x01010 (EEBPCR register
-> of the ECM) during initialization and leave them set
-> indefinitely. This may slightly degrade overall system
-> performance.
-> 
-> Refer to SRIO39 in MPC8548 errata document.
-> 
-> Signed-off-by: Gong Chen <g.chen@freescale.com>
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> 
-> ---
-> arch/powerpc/sysdev/fsl_rio.c |   44 +++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 44 insertions(+), 0 deletions(-)
-[snip]
-> @@ -358,6 +391,17 @@ int fsl_rio_setup(struct platform_device *dev)
->  				dev->dev.of_node->full_name);
->  		return -EFAULT;
->  	}
-> +
-> +	/* Fix erratum NMG_SRIO135 */
-> +	if (fsl_svr_is(SVR_8548) || fsl_svr_is(SVR_8548_E)) {
-> +		rc = fixup_erratum_srio135(&dev->dev);
-> +		if (rc) {
-> +			dev_err(&dev->dev,
-> +				"Failed to fix the erratum NMG_SRIO135.");
-> +			return rc;
-> +		}
-> +	}
+> Depending on your results, I could work on sth that helps us both and reduces
+> the callbacks.
 
-This needs to be respun based on the current tree.
+Can we not just have the users of dtr_cts just call the backend's tiocmset ?
 
--Scott
+If they need to filter or clamp bits, we could handle all that in hvc_console
+by caching the user intended value and passing a cooked value down to the backend..
+
+None of that is urgent or anything, it's just odd and would be nice to cleanup.
+
+Cheers,
+Ben.
