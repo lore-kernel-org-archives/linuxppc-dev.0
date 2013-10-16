@@ -1,31 +1,42 @@
-Return-Path: <mohicks@gmail.com>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8CAE32C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 02:05:45 +1100 (EST)
-Received: by mail-pa0-f44.google.com with SMTP id lf10so1196775pab.31
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 08:05:42 -0700 (PDT)
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2F5E92C00E3
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Oct 2013 02:28:15 +1100 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 16 Oct 2013 09:28:14 -0600
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 9D9DBC9006A
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 11:28:07 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9GFS6W357933996
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 15:28:06 GMT
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r9GFS5VE005077
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 12:28:06 -0300
+Date: Wed, 16 Oct 2013 08:27:42 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: David Laight <David.Laight@aculab.com>
+Subject: Re: [PATCH 02/10][v6] powerpc/Power7: detect load/store instructions
+Message-ID: <20131016152742.GB25073@us.ibm.com>
+References: <1381889202-16826-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1381889202-16826-3-git-send-email-sukadev@linux.vnet.ibm.com>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B738E@saturn3.aculab.com>
 MIME-Version: 1.0
-Sender: mohicks@gmail.com
-In-Reply-To: <1381869590.17841.23.camel@pasglop>
-References: <CAJUS3Xn4tHKvDK8tzLw09+zsEAJHEScV2DbZhH9KkYL-5iCmUA@mail.gmail.com>
- <CAJUS3X=LVHDMa+CTFS=O=F=DfU1=0cgcNzn-mEvXGaDXEZ+CBA@mail.gmail.com>
- <1381851009.17841.14.camel@pasglop>
- <CAJUS3XmN2WNJ1cnorb5vfas7mB6tdNLxuupFja=u_wYS=cxmdQ@mail.gmail.com>
- <1381866837.17841.21.camel@pasglop>
- <1381868527.7979.713.camel@snotra.buserror.net>
- <1381869590.17841.23.camel@pasglop>
-Date: Wed, 16 Oct 2013 11:05:42 -0400
-Message-ID: <CAJUS3Xm6-Mojvu6WkZNT+31oDazcx5HCr3n0asNqv3+uFbO0JQ@mail.gmail.com>
-Subject: Re: Perf not resolving all symbols, showing 0x7ffffxxx
-From: Martin Hicks <mort@bork.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B738E@saturn3.aculab.com>
+Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,97 +46,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Actually, I was wrong, the mpc8379 is an e300c4.
+David Laight [David.Laight@aculab.com] wrote:
+| 
+| I can't help feeling the code could do with some comments about
+| which actual instructions are selected where.
 
-So it seems clear to me that we compile in the book3s code because
-this is an 83xx CPU part.  I also see that Kconfig knows that I have
-an core-fsl-emb but we don't actually compile the PMU backend for it
-because there's no support for anything but e500.
+At a high level, only the load and store instructions are selected.
 
-mort@chinook:~/src/s4v2-glibc/linux-mpc$ grep PERF .config
-CONFIG_FSL_EMB_PERFMON=y
-CONFIG_PPC_PERF_CTRS=y
-CONFIG_HAVE_PERF_EVENTS=y
-CONFIG_PERF_EVENTS=y
-# CONFIG_DEBUG_PERF_USE_VMALLOC is not set
-mort@chinook:~/src/s4v2-glibc/linux-mpc$ grep BOOK3S .config
-CONFIG_PPC_BOOK3S_32=y
-CONFIG_PPC_BOOK3S=y
+I added a reference to the Appendix F (Opcode maps) in the function
+header.  The opcode maps is a table of upper x lower values. From
+that table it should be fairly straightforward which instructions
+are selected.
 
-more below...
+How about I add this to the function header ?
 
-On Tue, Oct 15, 2013 at 4:39 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Tue, 2013-10-15 at 15:22 -0500, Scott Wood wrote:
->> On Tue, 2013-10-15 at 14:53 -0500, Benjamin Herrenschmidt wrote:
->> > On Tue, 2013-10-15 at 14:44 -0400, Martin Hicks wrote:
->> > > >
->> > > > This is an e300 core right ? (603...). Do that have an SIAR at all
->> > > > (Scott ?)
->> > >
->> > > Yes, e300c3.
->> >
->> > Ok so I have a hard time figuring out how that patch can make a
->> > difference since for all I can see, there is no perf backend upstream
->> > for e300 at all :-(
->> >
->> > I must certainly be missing something ... Scott, can you have a look ?
->>
->> e300c3 has a core-fsl-emb style performance monitor (though Linux
->> doesn't support it yet).  If a bug was bisected to a change in
->> core-book3s.c, then it's probably a coincidence due to moving code
->> around.
+ * Please use the table in Appendix F (opcode maps) to determine
+ * events selected by this function.
 
-CONFIG_PPC_PERF_CTRS seems to give the mpc8379 some kind of basic
-performance measuring.  Is this through dummy_perf() in
-arch/powerpc/kernel/pmc.c?
+There are over 100 instructions selected by this list and wasn't
+sure if we should list them all.
 
->
-> Mort, can you see if just that change is enough to cause the problem ?
-
-It is not.  The patch that does get IPs working again in my 3.11 tree
-is this one:
-
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index eeae308..9a3f572 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -122,10 +122,6 @@ void power_pmu_flush_branch_stack(void) {}
- static inline void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw) {}
- #endif /* CONFIG_PPC32 */
-
--static bool regs_use_siar(struct pt_regs *regs)
--{
--       return !!regs->result;
--}
-
- /*
-  * Things that are specific to 64-bit implementations.
-@@ -1802,14 +1798,13 @@ unsigned long perf_misc_flags(struct pt_regs *regs)
-  */
- unsigned long perf_instruction_pointer(struct pt_regs *regs)
- {
--       bool use_siar = regs_use_siar(regs);
--
--       if (use_siar && siar_valid(regs))
--               return mfspr(SPRN_SIAR) + perf_ip_adjust(regs);
--       else if (use_siar)
--               return 0;               // no valid instruction pointer
--       else
-+       unsigned long mmcra = regs->dsisr;
-+       if (TRAP(regs) != 0xf00)
-+               return regs->nip;
-+       if ((ppmu->flags & PPMU_NO_CONT_SAMPLING) &&
-+           !(mmcra & MMCRA_SAMPLE_ENABLE))
-                return regs->nip;
-+       return mfspr(SPRN_SIAR) + perf_ip_adjust(regs);
- }
-
- static bool pmc_overflow_power7(unsigned long val)
-
-
-mh
-
--- 
-Martin Hicks P.Eng.      |         mort@bork.org
-Bork Consulting Inc.     |   +1 (613) 266-2296
+Sukadev
