@@ -1,33 +1,28 @@
-Return-Path: <B16395@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0248.outbound.messaging.microsoft.com [213.199.154.248])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E32E32C00B7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 04:23:27 +1100 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>, "joro@8bytes.org"
- <joro@8bytes.org>, "iommu@lists.linux-foundation.org"
- <iommu@lists.linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, Yoder Stuart-B08248 <B08248@freescale.com>,
- Wood Scott-B07421 <B07421@freescale.com>, "alex.williamson@redhat.com"
- <alex.williamson@redhat.com>
-Subject: RE: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe
- devices
-Date: Wed, 16 Oct 2013 17:22:53 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D0A5427A1@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1381922582-28724-1-git-send-email-Varun.Sethi@freescale.com>
- <1381922582-28724-3-git-send-email-Varun.Sethi@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C0835@039-SN2MPN1-013.039d.mgd.msft.net>
- <C5ECD7A89D1DC44195F34B25E172658D0A5426C6@039-SN2MPN1-013.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C09E2@039-SN2MPN1-013.039d.mgd.msft.net>
- <C5ECD7A89D1DC44195F34B25E172658D0A54275D@039-SN2MPN1-013.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C0A84@039-SN2MPN1-013.039d.mgd.msft.net>
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D071C0A84@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D40952C00E0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 05:13:33 +1100 (EST)
+Subject: Re: [PATCH] powerpc/qe_lib: Share the qe_lib for the others
+ architecture
+Mime-Version: 1.0 (Apple Message framework v1283)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20131015131606.GA2700@book.gsilab.sittig.org>
+Date: Wed, 16 Oct 2013 13:12:59 -0500
+Message-Id: <385E3F55-85BB-4E28-A396-FA54DEE1B1AB@kernel.crashing.org>
+References: <1381750622-1150-1-git-send-email-X.Xie@freescale.com>
+ <8559CF98-88E4-4271-A873-1409359EFE5C@kernel.crashing.org>
+ <3F4D4A39-3063-45F5-8B0E-3CD5F36B4035@kernel.crashing.org>
+ <20131014200952.GA20517@kroah.com>
+ <20131015131606.GA2700@book.gsilab.sittig.org>
+To: Gerhard Sittig <gsi@denx.de>
+Cc: Scott Wood <scottwood@freescale.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>,
+ Xie Xiaobo <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,230 +33,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+On Oct 15, 2013, at 8:16 AM, Gerhard Sittig wrote:
 
-> -----Original Message-----
-> From: Bhushan Bharat-R65777
-> Sent: Wednesday, October 16, 2013 10:52 PM
-> To: Sethi Varun-B16395; joro@8bytes.org; iommu@lists.linux-
-> foundation.org; linuxppc-dev@lists.ozlabs.org; linux-
-> kernel@vger.kernel.org; Yoder Stuart-B08248; Wood Scott-B07421;
-> alex.williamson@redhat.com
-> Subject: RE: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe
-> devices
+> On Mon, Oct 14, 2013 at 13:09 -0700, Greg Kroah-Hartman wrote:
+>>=20
+>> On Mon, Oct 14, 2013 at 02:40:44PM -0500, Kumar Gala wrote:
+>>>=20
+>>> Greg,
+>>>=20
+>>> Wondering your thoughts on drivers/qe vs something like
+>>> drivers/soc/fsl/qe.  The QuiccEngine (qe) is a communication core on
+>>> some of the Freescale networking SoCs that provides the ability to =
+do
+>>> various networking/communication functionality.  "Channels" on the =
+QE
+>>> can be used for various different things from ethernet, ATM, UART, =
+or
+>>> other functions.
+>>=20
+>> What makes the code "QE" specific?  Are these devices that live on =
+the
+>> QE "bus", or are they controlling the QE controller?
 >=20
+> You may think of the QUICC as a "programmable bitbang machine" if
+> you like.  The very same component runs arbitrary and rather
+> different protocols depending on how you setup its parameters.
 >=20
-> > >
-> > > > >
-> > > > >
-> > > > > > -----Original Message-----
-> > > > > > From: Sethi Varun-B16395
-> > > > > > Sent: Wednesday, October 16, 2013 4:53 PM
-> > > > > > To: joro@8bytes.org; iommu@lists.linux-foundation.org;
-> > > > > > linuxppc- dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
-> > > > > > Yoder Stuart-B08248; Wood Scott-B07421;
-> > > > > > alex.williamson@redhat.com; Bhushan
-> > > > > > Bharat-R65777
-> > > > > > Cc: Sethi Varun-B16395
-> > > > > > Subject: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window
-> > > > > > for PCIe devices
-> > > > > >
-> > > > > > Once the PCIe device assigned to a guest VM (via VFIO) gets
-> > > > > > detached from the iommu domain (when guest terminates), its
-> > > > > > PAMU table entry is disabled. So, this would prevent the
-> > > > > > device from being used once it's
-> > > > > assigned back to the host.
-> > > > > >
-> > > > > > This patch allows for creation of a default DMA window
-> > > > > > corresponding to the device and subsequently enabling the PAMU
-> > > > > > table entry. Before we enable the entry, we ensure that the
-> > > > > > device's bus master capability is disabled (device quiesced).
-> > > > > >
-> > > > > > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> > > > > > ---
-> > > > > >  drivers/iommu/fsl_pamu.c        |   43
-> > > ++++++++++++++++++++++++++++---
-> > > > > -----
-> > > > > >  drivers/iommu/fsl_pamu.h        |    1 +
-> > > > > >  drivers/iommu/fsl_pamu_domain.c |   46
-> > > > > ++++++++++++++++++++++++++++++++++++---
-> > > > > >  3 files changed, 78 insertions(+), 12 deletions(-)
-> > > > > >
-> > > > > > diff --git a/drivers/iommu/fsl_pamu.c
-> > > > > > b/drivers/iommu/fsl_pamu.c index
-> > > > > > cba0498..fb4a031 100644
-> > > > > > --- a/drivers/iommu/fsl_pamu.c
-> > > > > > +++ b/drivers/iommu/fsl_pamu.c
-> > > > > > @@ -225,6 +225,21 @@ static struct paace
-> > > > > > *pamu_get_spaace(struct paace *paace,
-> > > > > > u32 wnum)
-> > > > > >  	return spaace;
-> > > > > >  }
-> > > > > >
-> > > > > > +/*
-> > > > > > + * Defaul PPAACE settings for an LIODN.
-> > > > > > + */
-> > > > > > +static void setup_default_ppaace(struct paace *ppaace) {
-> > > > > > +	pamu_init_ppaace(ppaace);
-> > > > > > +	/* window size is 2^(WSE+1) bytes */
-> > > > > > +	set_bf(ppaace->addr_bitfields, PPAACE_AF_WSE, 35);
-> > > > > > +	ppaace->wbah =3D 0;
-> > > > > > +	set_bf(ppaace->addr_bitfields, PPAACE_AF_WBAL, 0);
-> > > > > > +	set_bf(ppaace->impl_attr, PAACE_IA_ATM,
-> > > > > > +		PAACE_ATM_NO_XLATE);
-> > > > > > +	set_bf(ppaace->addr_bitfields, PAACE_AF_AP,
-> > > > > > +		PAACE_AP_PERMS_ALL);
-> > > > > > +}
-> > > > > >  /**
-> > > > > >   * pamu_get_fspi_and_allocate() - Allocates fspi index and
-> > > > > > reserves
-> > > > > subwindows
-> > > > > >   *                                required for primary PAACE
-> in
-> > > the
-> > > > > secondary
-> > > > > > @@ -253,6 +268,24 @@ static unsigned long
-> > > > > > pamu_get_fspi_and_allocate(u32
-> > > > > > subwin_cnt)
-> > > > > >  	return (spaace_addr - (unsigned long)spaact) /
-> > > > > > (sizeof(struct paace));  }
-> > > > > >
-> > > > > > +/* Reset the PAACE entry to the default state */ void
-> > > > > > +enable_default_dma_window(int liodn) {
-> > > > > > +	struct paace *ppaace;
-> > > > > > +
-> > > > > > +	ppaace =3D pamu_get_ppaace(liodn);
-> > > > > > +	if (!ppaace) {
-> > > > > > +		pr_debug("Invalid liodn entry\n");
-> > > > > > +		return;
-> > > > > > +	}
-> > > > > > +
-> > > > > > +	memset(ppaace, 0, sizeof(struct paace));
-> > > > > > +
-> > > > > > +	setup_default_ppaace(ppaace);
-> > > > > > +	mb();
-> > > > > > +	pamu_enable_liodn(liodn);
-> > > > > > +}
-> > > > > > +
-> > > > > >  /* Release the subwindows reserved for a particular LIODN */
-> > > > > > void pamu_free_subwins(int liodn)  { @@ -752,15 +785,7 @@
-> > > > > > static void __init
-> > > > > > setup_liodns(void)
-> > > > > >  				continue;
-> > > > > >  			}
-> > > > > >  			ppaace =3D pamu_get_ppaace(liodn);
-> > > > > > -			pamu_init_ppaace(ppaace);
-> > > > > > -			/* window size is 2^(WSE+1) bytes */
-> > > > > > -			set_bf(ppaace->addr_bitfields, PPAACE_AF_WSE,
-> > > 35);
-> > > > > > -			ppaace->wbah =3D 0;
-> > > > > > -			set_bf(ppaace->addr_bitfields, PPAACE_AF_WBAL,
-> > > 0);
-> > > > > > -			set_bf(ppaace->impl_attr, PAACE_IA_ATM,
-> > > > > > -				PAACE_ATM_NO_XLATE);
-> > > > > > -			set_bf(ppaace->addr_bitfields, PAACE_AF_AP,
-> > > > > > -				PAACE_AP_PERMS_ALL);
-> > > > > > +			setup_default_ppaace(ppaace);
-> > > > > >  			if (of_device_is_compatible(node, "fsl,qman-
-> > > portal"))
-> > > > > >  				setup_qbman_paace(ppaace,
-> > > QMAN_PORTAL_PAACE);
-> > > > > >  			if (of_device_is_compatible(node, "fsl,qman"))
-> > > diff --
-> > > > > git
-> > > > > > a/drivers/iommu/fsl_pamu.h b/drivers/iommu/fsl_pamu.h index
-> > > > > > 8fc1a12..0edcbbbb
-> > > > > > 100644
-> > > > > > --- a/drivers/iommu/fsl_pamu.h
-> > > > > > +++ b/drivers/iommu/fsl_pamu.h
-> > > > > > @@ -406,5 +406,6 @@ void get_ome_index(u32 *omi_index, struct
-> > > > > > device *dev);  int pamu_update_paace_stash(int liodn, u32
-> > > > > > subwin,
-> > > > > > u32 value); int pamu_disable_spaace(int liodn, u32 subwin);
-> > > > > >  u32 pamu_get_max_subwin_cnt(void);
-> > > > > > +void enable_default_dma_window(int liodn);
-> > > > > >
-> > > > > >  #endif  /* __FSL_PAMU_H */
-> > > > > > diff --git a/drivers/iommu/fsl_pamu_domain.c
-> > > > > > b/drivers/iommu/fsl_pamu_domain.c index 966ae70..dd6cafc
-> > > > > > 100644
-> > > > > > --- a/drivers/iommu/fsl_pamu_domain.c
-> > > > > > +++ b/drivers/iommu/fsl_pamu_domain.c
-> > > > > > @@ -340,17 +340,57 @@ static inline struct device_domain_info
-> > > > > > *find_domain(struct device *dev)
-> > > > > >  	return dev->archdata.iommu_domain;  }
-> > > > > >
-> > > > > > +/* Disable device DMA capability and enable default DMA
-> > > > > > +window */ static void disable_device_dma(struct
-> device_domain_info *info,
-> > > > > > +				int enable_dma_window)
-> > > > > > +{
-> > > > > > +#ifdef CONFIG_PCI
-> > > > > > +	if (info->dev->bus =3D=3D &pci_bus_type) {
-> > > > > > +		struct pci_dev *pdev =3D NULL;
-> > > > > > +		pdev =3D to_pci_dev(info->dev);
-> > > > > > +		if (pci_is_enabled(pdev))
-> > > > > > +			pci_disable_device(pdev);
-> > > > > > +	}
-> > > > > > +#endif
-> > > > > > +
-> > > > > > +	if (enable_dma_window)
-> > > > > > +		enable_default_dma_window(info->liodn);
-> > > > > > +}
-> > > > > > +
-> > > > > > +static int check_for_shared_liodn(struct device_domain_info
-> > > > > > +*info)
-> > > {
-> > > > > > +	struct device_domain_info *tmp;
-> > > > > > +
-> > > > > > +	/*
-> > > > > > +	 * Sanity check, to ensure that this is not a
-> > > > > > +	 * shared LIODN. In case of a PCIe controller
-> > > > > > +	 * it's possible that all PCIe devices share
-> > > > > > +	 * the same LIODN.
-> > > > > > +	 */
-> > > > > > +	list_for_each_entry(tmp, &info->domain->devices, link) {
-> > > > > > +		if (info->liodn =3D=3D tmp->liodn)
-> > > > > > +			return 1;
-> > > > > > +	}
-> > > > > > +
-> > > > > > +	return 0;
-> > > > > > +}
-> > > > > > +
-> > > > > >  static void remove_device_ref(struct device_domain_info
-> > > > > > *info,
-> > > > > > u32
-> > > > > win_cnt)  {
-> > > > > >  	unsigned long flags;
-> > > > > > +	int enable_dma_window =3D 0;
-> > > > > >
-> > > > > >  	list_del(&info->link);
-> > > > > >  	spin_lock_irqsave(&iommu_lock, flags);
-> > > > > > -	if (win_cnt > 1)
-> > > > > > -		pamu_free_subwins(info->liodn);
-> > > > > > -	pamu_disable_liodn(info->liodn);
-> > > > > > +	if (!check_for_shared_liodn(info)) {
-> > > > >
-> > > > > One query; Do we really need to check for this?
-> > > > >
-> > > > [Sethi Varun-B16395] Yes, just a sanity check to ensure that there
-> > > > are no more devices linked to this LIODN and we can disable it.
-> > >
-> > > Varun, trying to understand this; say there are two device under a
-> > > PCI controller which share the LIODN of PCI controller, So both of
-> > > the device must be unbound from kernel driver and then bind both to
-> VFIO.
-> > >
-> > > Now when guest terminated then remove_device_ref() will be called
-> > > for both of device but the sanity check will pass for the one which
-> > > will be called later, is this right?
-> > >
-> > Yes, when the first device is detached PAMU LIODN table entry is not
-> disabled.
-> > The LIODN would only be disabled once all devices are detached.
+> There have been serial controllers capable of different protocols
+> like UART or SPI or I2S, but all of them are "serial
+> communication".  There have been memory controllers which could
+> bitbang different protocols (NAND, NOR/SRAM, DRAM), but all of
+> them are "memory".
 >=20
-> Ok, thanks for clarification
+> The QUICC is just a little more versatile, and appears to cover
+> cases which reside in different Linux kernel subsystems (like:
+> it's neither serial nor network exclusively, but can be either
+> and potentially more).
 >=20
-> Patch series looks good to me.
-Thanks.
+> IIUC the question which Kumar Gala was asking is where to put
+> code for the component which is neither a strict subset of any
+> subsystem.  Please correct me if I'm wrong.
 
--Varun
+Thanks for the description.
+
+Yeah, the actual ethernet, usb, serial drivers that exist with QE live =
+today in proper drivers/ dirs.  This is the infrastructure that those =
+drivers utilize that isn't quite related to an existing subsystem.  =
+Mostly set up of channel state/cfg/etc.
+
+- k=
