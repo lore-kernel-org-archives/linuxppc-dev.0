@@ -1,48 +1,41 @@
-Return-Path: <brueckner@linux.vnet.ibm.com>
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp16.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9B02C2C036D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 20:04:44 +1100 (EST)
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BFB492C00C3
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 20:39:08 +1100 (EST)
 Received: from /spool/local
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brueckner@linux.vnet.ibm.com>;
- Wed, 16 Oct 2013 10:04:41 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id B1CAA17D805C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 10:05:03 +0100 (BST)
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
- [9.149.37.228])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9G94Qpb59179182
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 09:04:26 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9G94ZTj013180
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 03:04:38 -0600
-Date: Wed, 16 Oct 2013 11:04:32 +0200
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: [PATCH 1/2] tty/hvc_console: Add DTR/RTS callback to handle
- HUPCL control
-Message-ID: <20131016090432.GA6053@linux.vnet.ibm.com>
-References: <1372777635-10423-1-git-send-email-brueckner@linux.vnet.ibm.com>
- <1372777635-10423-2-git-send-email-brueckner@linux.vnet.ibm.com>
- <1381475711.5630.67.camel@pasglop>
- <20131011124707.GA6082@linux.vnet.ibm.com>
- <1381524204.5630.91.camel@pasglop>
- <20131015153626.GA6129@linux.vnet.ibm.com>
- <1381870070.17841.24.camel@pasglop>
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 16 Oct 2013 15:09:05 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id BB652125803F
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 15:09:30 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9G9cxY123789748
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 15:09:00 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9G9d0iV003489
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 15:09:01 +0530
+Message-ID: <525E5E79.6010905@linux.vnet.ibm.com>
+Date: Wed, 16 Oct 2013 15:08:01 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1381870070.17841.24.camel@pasglop>
-Cc: linux-s390@vger.kernel.org, brueckner@linux.vnet.com,
- gregkh@linuxfoundation.org, heiko.carstens@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Hendrik Brueckner <brueckner@linux.vnet.ibm.com>, schwidefsky@de.ibm.com,
- jslaby@suse.cz
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH 02/10][v6] powerpc/Power7: detect load/store instructions
+References: <1381889202-16826-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1381889202-16826-3-git-send-email-sukadev@linux.vnet.ibm.com>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B738E@saturn3.aculab.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B738E@saturn3.aculab.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,62 +45,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 15, 2013 at 03:47:50PM -0500, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-10-15 at 17:36 +0200, Hendrik Brueckner wrote:
-> > On Sat, Oct 12, 2013 at 07:43:24AM +1100, Benjamin Herrenschmidt wrote:
-> > > On Fri, 2013-10-11 at 14:47 +0200, Hendrik Brueckner wrote:
-> > > > The tiocmget/tiocmset callbacks are used to set and get modem status and
-> > > > triggered through an tty ioctl.
-> > > > 
-> > > > The dtr_rts() callback is different and it is used for DTS/RTS handshaking
-> > > > between the hvc_console (or any other tty_port) and the tty layer.  The tty
-> > > > port layer uses this callback to signal the hvc_console whether to raise or
-> > > > lower the DTR/RTS lines.  This is different than the ioctl interface to
-> > > > controls the modem status.
-> > > 
-> > > Well, DTR at least is the same via both callbacks... Also normal handshaking
-> > > is normally RTS/CTS, only some HW setups "hijacks" DTR for RTS (old Macs come
-> > > to mind).
-> > 
-> > Yep. DTR is changed in both callbacks but from different layers.  The
-> > tiocmget/tiocmset are triggered through the ioctl.  The dtr_rts() callback is
-> > called in hvc_close() to properly handle HUPCL to lower modem control lines
-> > after last process closes the device (hang up).
-> > 
-> > This is also done in the hvsilib_close() in hvsi_lib.c:
-> > 
-> > 	/* Clear our own DTR */
-> > 	if (!pv->tty || (pv->tty->termios.c_cflag & HUPCL))
-> > 		hvsilib_write_mctrl(pv, 0); 
-> > 
-> > This is actually what the dtr_rts() callback should trigger and I wonder
-> > whether it would be worth to introduce the dtr_rts() callback to encapsulate
-> > the "hvsilib_write_mctrl(pv, 0);" call from above.
-> > 
-> > On the other hand, the dtr_rts() callback is a good encapsulation to not
-> > directly access the hp->tty to potentially prevent a layering violation. At
-> > least for the hvc_iucv() I do not want to deal with the "underlying" tty layer
-> > and introduce additional reference accounting.
-> > 
-> > I hope this helps you to understand my rational for introducing the dtr_rts()
-> > callback.
+On 10/16/2013 01:55 PM, David Laight wrote:
+>> Implement instr_is_load_store_2_06() to detect whether a given instruction
+>> is one of the fixed-point or floating-point load/store instructions in the
+>> POWER Instruction Set Architecture v2.06.
+> ...
+
+The op code encoding is dependent on the ISA version ? Does the basic load
+and store instructions change with newer ISA versions ? BTW we have got a
+newer version for the ISA "PowerISA_V2.07_PUBLIC.pdf" here at power.org
+
+https://www.power.org/documentation/power-isa-version-2-07/
+
+Does not sound like a good idea to analyse the instructions with functions
+names which specify ISA version number. Besides, this function does not
+belong to specific processor or platform. It has to be bit generic.
+ 
+>> +int instr_is_load_store_2_06(const unsigned int *instr)
+>> +{
+>> +	unsigned int op, upper, lower;
+>> +
+>> +	op = instr_opcode(*instr);
+>> +
+>> +	if ((op >= 32 && op <= 58) || (op == 61 || op == 62))
+>> +		return true;
+>> +
+>> +	if (op != 31)
+>> +		return false;
+>> +
+>> +	upper = op >> 5;
+>> +	lower = op & 0x1f;
+>> +
+>> +	/* Short circuit as many misses as we can */
+>> +	if (lower < 3 || lower > 23)
+>> +		return false;
+>> +
+>> +	if (lower == 3) {
+>> +		if (upper >= 16)
+>> +			return true;
+>> +
+>> +		return false;
+>> +	}
+>> +
+>> +	if (lower == 7 || lower == 12)
+>> +		return true;
+>> +
+>> +	if (lower >= 20) /* && lower <= 23 (implicit) */
+>> +		return true;
+>> +
+>> +	return false;
+>> +}
 > 
-> I'm not sure :) We still end up basically with 2 callbacks to do the
-> same thing ... change the DTR line. It's odd at best, I still don't
-> quite see why hvc_console couldn't just use mctrl...
-> 
-Indeed, two callbacks change the DTR line.  The main difference is that
-tiocmget/tiocmset can be called from user space by ioctl.  That's not the case
-for the dtr_cts callback.  Also, tiocmget/tiocmset provide more flags that can
-be changed (ST, SR, CTS, CD, RNG, RI,  ...)
+> I can't help feeling the code could do with some comments about
+> which actual instructions are selected where.
 
-Assume we would like to unify them have a single callback to change DTR, then
-we have to take care of these differences.  So the question to you now is
-whether you plan for a) other modem flags to be changed and b) if changing the
-DTR line (or other control flags) through an ioctl?
-
-Depending on your results, I could work on sth that helps us both and reduces
-the callbacks.
-
-Thanks and kind regards,
-  Hendrik
+Yeah, I agree. At least which category of load-store instructions are
+getting selected in each case.
