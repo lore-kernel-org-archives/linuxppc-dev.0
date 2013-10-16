@@ -1,29 +1,33 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-wg0-f48.google.com (mail-wg0-f48.google.com [74.125.82.48])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D3B612C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 10:24:43 +1100 (EST)
-Received: by mail-wg0-f48.google.com with SMTP id b13so8179642wgh.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2013 16:24:40 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH v2 08/10] of/platform: Resolve interrupt references at
- probe time
-To: Thierry Reding <thierry.reding@gmail.com>,
- Rob Herring <rob.herring@calxeda.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1379510692-32435-9-git-send-email-treding@nvidia.com>
-References: <1379510692-32435-1-git-send-email-treding@nvidia.com>
- <1379510692-32435-9-git-send-email-treding@nvidia.com>
-Date: Wed, 16 Oct 2013 00:24:36 +0100
-Message-Id: <20131015232436.19F61C40099@trevor.secretlab.ca>
-Cc: linux-mips@linux-mips.org, Russell King <linux@arm.linux.org.uk>,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <B45939@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 78A9C2C034C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 12:59:47 +1100 (EST)
+Message-ID: <525DF2FD.3070007@freescale.com>
+Date: Wed, 16 Oct 2013 09:59:25 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
+MIME-Version: 1.0
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v11 2/3] DMA: Freescale: Add new 8-channel DMA engine
+ device tree nodes
+References: <1380188023-3936-1-git-send-email-hongbo.zhang@freescale.com>
+ <1380188023-3936-3-git-send-email-hongbo.zhang@freescale.com>
+ <52537A5F.7090802@freescale.com>
+ <20131015133849.GH19196@e106331-lin.cambridge.arm.com>
+In-Reply-To: <20131015133849.GH19196@e106331-lin.cambridge.arm.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ Pawel Moll <Pawel.Moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "vinod.koul@intel.com" <vinod.koul@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "djbw@fb.com" <djbw@fb.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,238 +37,331 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 18 Sep 2013 15:24:50 +0200, Thierry Reding <thierry.reding@gmail.com> wrote:
-> Interrupt references are currently resolved very early (when a device is
-> created). This has the disadvantage that it will fail in cases where the
-> interrupt parent hasn't been probed and no IRQ domain for it has been
-> registered yet. To work around that various drivers use explicit
-> initcall ordering to force interrupt parents to be probed before devices
-> that need them are created. That's error prone and doesn't always work.
-> If a platform device uses an interrupt line connected to a different
-> platform device (such as a GPIO controller), both will be created in the
-> same batch, and the GPIO controller won't have been probed by its driver
-> when the depending platform device is created. Interrupt resolution will
-> fail in that case.
+On 10/15/2013 09:38 PM, Mark Rutland wrote:
+> On Tue, Oct 08, 2013 at 04:22:07AM +0100, Hongbo Zhang wrote:
+>> Hi Mark, Stephen and other DT maintainers?
+>>
+>> The 1/3 had already been acked by Mark, and please have a further look
+>> at this patch 2/3.
+>> The DMA maintainer Vinod  needs ack for the DT related patches so that
+>> he can take all this patch set.
+> Sorry for the delay.
+>
+> This looks ok to me.
+>
+> Acked-by: Mark Rutland <mark.rutland@arm.com>
 
-What is the reason for all the rework on the irq parsing return values?
-A return value of '0' is always an error on irq parsing, regardless of
-architecture even if NO_IRQ is defined as -1. I may have missed it, but
-I don't see any checking for specific error values in the return paths
-of the functions.
+Thanks, Mark.
 
-If the specific return value isn't required (and I don't think it is),
-then you can simplify the whole series by getting rid of the rework
-patches.
-
-g.
-
-> 
-> Another common workaround is for drivers to explicitly resolve interrupt
-> references at probe time. This is suboptimal, however, because it will
-> require every driver to duplicate the code.
-> 
-> This patch adds support for late interrupt resolution to the platform
-> driver core, by resolving the references right before a device driver's
-> .probe() function will be called. This not only delays the resolution
-> until a much later time (giving interrupt parents a better chance of
-> being probed in the meantime), but it also allows the platform driver
-> core to queue the device for deferred probing if the interrupt parent
-> hasn't registered its IRQ domain yet.
-> 
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
-> ---
-> Changes in v2:
-> - split off IRQ parsing into separate function to make code flow simpler
-> - add comments to point out some aspects of the implementation
-> - make code idempotent (as pointed out by Grygorii Strashko
-> 
->  drivers/base/platform.c     |   4 ++
->  drivers/of/platform.c       | 107 +++++++++++++++++++++++++++++++++++++++++---
->  include/linux/of_platform.h |   7 +++
->  3 files changed, 112 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-> index 4f8bef3..8dcf835 100644
-> --- a/drivers/base/platform.c
-> +++ b/drivers/base/platform.c
-> @@ -481,6 +481,10 @@ static int platform_drv_probe(struct device *_dev)
->  	struct platform_device *dev = to_platform_device(_dev);
->  	int ret;
->  
-> +	ret = of_platform_probe(dev);
-> +	if (ret)
-> +		return ret;
-> +
->  	if (ACPI_HANDLE(_dev))
->  		acpi_dev_pm_attach(_dev, true);
->  
-> diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-> index 9b439ac..df6d56e 100644
-> --- a/drivers/of/platform.c
-> +++ b/drivers/of/platform.c
-> @@ -142,7 +142,7 @@ struct platform_device *of_device_alloc(struct device_node *np,
->  				  struct device *parent)
->  {
->  	struct platform_device *dev;
-> -	int rc, i, num_reg = 0, num_irq;
-> +	int rc, i, num_reg = 0;
->  	struct resource *res, temp_res;
->  
->  	dev = platform_device_alloc("", -1);
-> @@ -153,23 +153,21 @@ struct platform_device *of_device_alloc(struct device_node *np,
->  	if (of_can_translate_address(np))
->  		while (of_address_to_resource(np, num_reg, &temp_res) == 0)
->  			num_reg++;
-> -	num_irq = of_irq_count(np);
->  
->  	/* Populate the resource table */
-> -	if (num_irq || num_reg) {
-> -		res = kzalloc(sizeof(*res) * (num_irq + num_reg), GFP_KERNEL);
-> +	if (num_reg) {
-> +		res = kzalloc(sizeof(*res) * num_reg, GFP_KERNEL);
->  		if (!res) {
->  			platform_device_put(dev);
->  			return NULL;
->  		}
->  
-> -		dev->num_resources = num_reg + num_irq;
-> +		dev->num_resources = num_reg;
->  		dev->resource = res;
->  		for (i = 0; i < num_reg; i++, res++) {
->  			rc = of_address_to_resource(np, i, res);
->  			WARN_ON(rc);
->  		}
-> -		WARN_ON(of_irq_to_resource_table(np, res, num_irq) != num_irq);
->  	}
->  
->  	dev->dev.of_node = of_node_get(np);
-> @@ -490,4 +488,101 @@ int of_platform_populate(struct device_node *root,
->  	return rc;
->  }
->  EXPORT_SYMBOL_GPL(of_platform_populate);
-> +
-> +/**
-> + * of_platform_parse_irq() - parse interrupt resource from device node
-> + * @pdev: pointer to platform device
-> + *
-> + * Returns 0 on success or a negative error code on failure.
-> + */
-> +static int of_platform_parse_irq(struct platform_device *pdev)
-> +{
-> +	struct device_node *np = pdev->dev.of_node;
-> +	unsigned int num_res = pdev->num_resources;
-> +	struct resource *res = pdev->resource;
-> +	unsigned int num_irq, num, c;
-> +	int ret = 0;
-> +
-> +	num_irq = of_irq_count(pdev->dev.of_node);
-> +	if (!num_irq)
-> +		return 0;
-> +
-> +	/*
-> +	 * Deferred probing may cause this function to be called multiple
-> +	 * times, so check if all interrupts have been parsed already and
-> +	 * return early.
-> +	 */
-> +	for (c = 0; c < num_irq; c++)
-> +		if (platform_get_irq(pdev, c) < 0)
-> +			break;
-> +
-> +	if (c == num_irq)
-> +		return 0;
-> +
-> +	num = num_res + num_irq;
-> +
-> +	/*
-> +	 * Note that in case we're called twice on the same device (due to
-> +	 * deferred probing for example) this will simply be a nop because
-> +	 * krealloc() returns the input pointer if the size of the memory
-> +	 * block that it points to is larger than or equal to the new size
-> +	 * being requested.
-> +	 */
-> +	res = krealloc(res, num * sizeof(*res), GFP_KERNEL);
-> +	if (!res)
-> +		return -ENOMEM;
-> +
-> +	pdev->resource = res;
-> +	res += num_res;
-> +
-> +	/*
-> +	 * It is possible for this to fail. If so, not that the number of
-> +	 * resources is not updated, so that the next call to this function
-> +	 * will parse all interrupts again. Otherwise we can't keep track of
-> +	 * how many we've parsed so far.
-> +	 */
-> +	ret = of_irq_to_resource_table(np, res, num_irq);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	/*
-> +	 * All interrupts are guaranteed to have been parsed and stored in
-> +	 * the resource table, so the number of resources can now safely be
-> +	 * updated.
-> +	 */
-> +	pdev->num_resources += num_irq;
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * of_platform_probe() - OF specific initialization at probe time
-> + * @pdev: pointer to a platform device
-> + *
-> + * This function is called by the driver core to perform devicetree-specific
-> + * setup for a given platform device at probe time. If a device's resources
-> + * as specified in the device tree are not available yet, this function can
-> + * return -EPROBE_DEFER and cause the device to be probed again later, when
-> + * other drivers that potentially provide the missing resources have been
-> + * probed in turn.
-> + *
-> + * Note that because of the above, all code executed by this function must
-> + * be prepared to be run multiple times on the same device (i.e. it must be
-> + * idempotent).
-> + *
-> + * Returns 0 on success or a negative error code on failure.
-> + */
-> +int of_platform_probe(struct platform_device *pdev)
-> +{
-> +	int ret;
-> +
-> +	if (!pdev->dev.of_node)
-> +		return 0;
-> +
-> +	ret = of_platform_parse_irq(pdev);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	return 0;
-> +}
->  #endif /* CONFIG_OF_ADDRESS */
-> diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
-> index 05cb4a9..92fc4f6 100644
-> --- a/include/linux/of_platform.h
-> +++ b/include/linux/of_platform.h
-> @@ -72,6 +72,8 @@ extern int of_platform_populate(struct device_node *root,
->  				const struct of_device_id *matches,
->  				const struct of_dev_auxdata *lookup,
->  				struct device *parent);
-> +
-> +extern int of_platform_probe(struct platform_device *pdev);
->  #else
->  static inline int of_platform_populate(struct device_node *root,
->  					const struct of_device_id *matches,
-> @@ -80,6 +82,11 @@ static inline int of_platform_populate(struct device_node *root,
->  {
->  	return -ENODEV;
->  }
-> +
-> +static inline int of_platform_probe(struct platform_device *pdev)
-> +{
-> +	return 0;
-> +}
->  #endif
->  
->  #endif	/* _LINUX_OF_PLATFORM_H */
-> -- 
-> 1.8.4
-> 
+>> On 09/26/2013 05:33 PM, hongbo.zhang@freescale.com wrote:
+>>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+>>>
+>>> Freescale QorIQ T4 and B4 introduce new 8-channel DMA engines, this patch adds
+>>> the device tree nodes for them.
+>>>
+>>> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+>>> ---
+>>>    .../devicetree/bindings/powerpc/fsl/dma.txt        |   70 +++++++++++++++++
+>>>    arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |    4 +-
+>>>    arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi          |   82 ++++++++++++++++++++
+>>>    arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi          |   82 ++++++++++++++++++++
+>>>    arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |    4 +-
+>>>    5 files changed, 238 insertions(+), 4 deletions(-)
+>>>    create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+>>>    create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+>>> index 0584168..7fc1b01 100644
+>>> --- a/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+>>> +++ b/Documentation/devicetree/bindings/powerpc/fsl/dma.txt
+>>> @@ -128,6 +128,76 @@ Example:
+>>>                };
+>>>        };
+>>>
+>>> +** Freescale Elo3 DMA Controller
+>>> +   DMA controller which has same function as EloPlus except that Elo3 has 8
+>>> +   channels while EloPlus has only 4, it is used in Freescale Txxx and Bxxx
+>>> +   series chips, such as t1040, t4240, b4860.
+>>> +
+>>> +Required properties:
+>>> +
+>>> +- compatible        : must include "fsl,elo3-dma"
+>>> +- reg               : contains two entries for DMA General Status Registers,
+>>> +                      i.e. DGSR0 which includes status for channel 1~4, and
+>>> +                      DGSR1 for channel 5~8
+>>> +- ranges            : describes the mapping between the address space of the
+>>> +                      DMA channels and the address space of the DMA controller
+>>> +
+>>> +- DMA channel nodes:
+>>> +        - compatible        : must include "fsl,eloplus-dma-channel"
+>>> +        - reg               : DMA channel specific registers
+>>> +        - interrupts        : interrupt specifier for DMA channel IRQ
+>>> +        - interrupt-parent  : optional, if needed for interrupt mapping
+>>> +
+>>> +Example:
+>>> +dma@100300 {
+>>> +     #address-cells = <1>;
+>>> +     #size-cells = <1>;
+>>> +     compatible = "fsl,elo3-dma";
+>>> +     reg = <0x100300 0x4>,
+>>> +           <0x100600 0x4>;
+>>> +     ranges = <0x0 0x100100 0x500>;
+>>> +     dma-channel@0 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x0 0x80>;
+>>> +             interrupts = <28 2 0 0>;
+>>> +     };
+>>> +     dma-channel@80 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x80 0x80>;
+>>> +             interrupts = <29 2 0 0>;
+>>> +     };
+>>> +     dma-channel@100 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x100 0x80>;
+>>> +             interrupts = <30 2 0 0>;
+>>> +     };
+>>> +     dma-channel@180 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x180 0x80>;
+>>> +             interrupts = <31 2 0 0>;
+>>> +     };
+>>> +     dma-channel@300 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x300 0x80>;
+>>> +             interrupts = <76 2 0 0>;
+>>> +     };
+>>> +     dma-channel@380 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x380 0x80>;
+>>> +             interrupts = <77 2 0 0>;
+>>> +     };
+>>> +     dma-channel@400 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x400 0x80>;
+>>> +             interrupts = <78 2 0 0>;
+>>> +     };
+>>> +     dma-channel@480 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x480 0x80>;
+>>> +             interrupts = <79 2 0 0>;
+>>> +     };
+>>> +};
+>>> +
+>>>    Note on DMA channel compatible properties: The compatible property must say
+>>>    "fsl,elo-dma-channel" or "fsl,eloplus-dma-channel" to be used by the Elo DMA
+>>>    driver (fsldma).  Any DMA channel used by fsldma cannot be used by another
+>>> diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+>>> index 7399154..ea53ea1 100644
+>>> --- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+>>> +++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+>>> @@ -223,13 +223,13 @@
+>>>                reg = <0xe2000 0x1000>;
+>>>        };
+>>>
+>>> -/include/ "qoriq-dma-0.dtsi"
+>>> +/include/ "elo3-dma-0.dtsi"
+>>>        dma@100300 {
+>>>                fsl,iommu-parent = <&pamu0>;
+>>>                fsl,liodn-reg = <&guts 0x580>; /* DMA1LIODNR */
+>>>        };
+>>>
+>>> -/include/ "qoriq-dma-1.dtsi"
+>>> +/include/ "elo3-dma-1.dtsi"
+>>>        dma@101300 {
+>>>                fsl,iommu-parent = <&pamu0>;
+>>>                fsl,liodn-reg = <&guts 0x584>; /* DMA2LIODNR */
+>>> diff --git a/arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi b/arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+>>> new file mode 100644
+>>> index 0000000..3c210e0
+>>> --- /dev/null
+>>> +++ b/arch/powerpc/boot/dts/fsl/elo3-dma-0.dtsi
+>>> @@ -0,0 +1,82 @@
+>>> +/*
+>>> + * QorIQ Elo3 DMA device tree stub [ controller @ offset 0x100000 ]
+>>> + *
+>>> + * Copyright 2013 Freescale Semiconductor Inc.
+>>> + *
+>>> + * Redistribution and use in source and binary forms, with or without
+>>> + * modification, are permitted provided that the following conditions are met:
+>>> + *     * Redistributions of source code must retain the above copyright
+>>> + *       notice, this list of conditions and the following disclaimer.
+>>> + *     * Redistributions in binary form must reproduce the above copyright
+>>> + *       notice, this list of conditions and the following disclaimer in the
+>>> + *       documentation and/or other materials provided with the distribution.
+>>> + *     * Neither the name of Freescale Semiconductor nor the
+>>> + *       names of its contributors may be used to endorse or promote products
+>>> + *       derived from this software without specific prior written permission.
+>>> + *
+>>> + *
+>>> + * ALTERNATIVELY, this software may be distributed under the terms of the
+>>> + * GNU General Public License ("GPL") as published by the Free Software
+>>> + * Foundation, either version 2 of that License or (at your option) any
+>>> + * later version.
+>>> + *
+>>> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
+>>> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+>>> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+>>> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
+>>> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+>>> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+>>> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+>>> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+>>> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+>>> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+>>> + */
+>>> +
+>>> +dma0: dma@100300 {
+>>> +     #address-cells = <1>;
+>>> +     #size-cells = <1>;
+>>> +     compatible = "fsl,elo3-dma";
+>>> +     reg = <0x100300 0x4>,
+>>> +           <0x100600 0x4>;
+>>> +     ranges = <0x0 0x100100 0x500>;
+>>> +     dma-channel@0 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x0 0x80>;
+>>> +             interrupts = <28 2 0 0>;
+>>> +     };
+>>> +     dma-channel@80 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x80 0x80>;
+>>> +             interrupts = <29 2 0 0>;
+>>> +     };
+>>> +     dma-channel@100 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x100 0x80>;
+>>> +             interrupts = <30 2 0 0>;
+>>> +     };
+>>> +     dma-channel@180 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x180 0x80>;
+>>> +             interrupts = <31 2 0 0>;
+>>> +     };
+>>> +     dma-channel@300 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x300 0x80>;
+>>> +             interrupts = <76 2 0 0>;
+>>> +     };
+>>> +     dma-channel@380 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x380 0x80>;
+>>> +             interrupts = <77 2 0 0>;
+>>> +     };
+>>> +     dma-channel@400 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x400 0x80>;
+>>> +             interrupts = <78 2 0 0>;
+>>> +     };
+>>> +     dma-channel@480 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x480 0x80>;
+>>> +             interrupts = <79 2 0 0>;
+>>> +     };
+>>> +};
+>>> diff --git a/arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi b/arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+>>> new file mode 100644
+>>> index 0000000..cccf3bb
+>>> --- /dev/null
+>>> +++ b/arch/powerpc/boot/dts/fsl/elo3-dma-1.dtsi
+>>> @@ -0,0 +1,82 @@
+>>> +/*
+>>> + * QorIQ Elo3 DMA device tree stub [ controller @ offset 0x101000 ]
+>>> + *
+>>> + * Copyright 2013 Freescale Semiconductor Inc.
+>>> + *
+>>> + * Redistribution and use in source and binary forms, with or without
+>>> + * modification, are permitted provided that the following conditions are met:
+>>> + *     * Redistributions of source code must retain the above copyright
+>>> + *       notice, this list of conditions and the following disclaimer.
+>>> + *     * Redistributions in binary form must reproduce the above copyright
+>>> + *       notice, this list of conditions and the following disclaimer in the
+>>> + *       documentation and/or other materials provided with the distribution.
+>>> + *     * Neither the name of Freescale Semiconductor nor the
+>>> + *       names of its contributors may be used to endorse or promote products
+>>> + *       derived from this software without specific prior written permission.
+>>> + *
+>>> + *
+>>> + * ALTERNATIVELY, this software may be distributed under the terms of the
+>>> + * GNU General Public License ("GPL") as published by the Free Software
+>>> + * Foundation, either version 2 of that License or (at your option) any
+>>> + * later version.
+>>> + *
+>>> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
+>>> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+>>> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+>>> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
+>>> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+>>> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+>>> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+>>> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+>>> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+>>> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+>>> + */
+>>> +
+>>> +dma1: dma@101300 {
+>>> +     #address-cells = <1>;
+>>> +     #size-cells = <1>;
+>>> +     compatible = "fsl,elo3-dma";
+>>> +     reg = <0x101300 0x4>,
+>>> +           <0x101600 0x4>;
+>>> +     ranges = <0x0 0x101100 0x500>;
+>>> +     dma-channel@0 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x0 0x80>;
+>>> +             interrupts = <32 2 0 0>;
+>>> +     };
+>>> +     dma-channel@80 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x80 0x80>;
+>>> +             interrupts = <33 2 0 0>;
+>>> +     };
+>>> +     dma-channel@100 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x100 0x80>;
+>>> +             interrupts = <34 2 0 0>;
+>>> +     };
+>>> +     dma-channel@180 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x180 0x80>;
+>>> +             interrupts = <35 2 0 0>;
+>>> +     };
+>>> +     dma-channel@300 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x300 0x80>;
+>>> +             interrupts = <80 2 0 0>;
+>>> +     };
+>>> +     dma-channel@380 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x380 0x80>;
+>>> +             interrupts = <81 2 0 0>;
+>>> +     };
+>>> +     dma-channel@400 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x400 0x80>;
+>>> +             interrupts = <82 2 0 0>;
+>>> +     };
+>>> +     dma-channel@480 {
+>>> +             compatible = "fsl,eloplus-dma-channel";
+>>> +             reg = <0x480 0x80>;
+>>> +             interrupts = <83 2 0 0>;
+>>> +     };
+>>> +};
+>>> diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+>>> index bd611a9..ec95c60 100644
+>>> --- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+>>> +++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+>>> @@ -387,8 +387,8 @@
+>>>                reg        = <0xea000 0x4000>;
+>>>        };
+>>>
+>>> -/include/ "qoriq-dma-0.dtsi"
+>>> -/include/ "qoriq-dma-1.dtsi"
+>>> +/include/ "elo3-dma-0.dtsi"
+>>> +/include/ "elo3-dma-1.dtsi"
+>>>
+>>>    /include/ "qoriq-espi-0.dtsi"
+>>>        spi@110000 {
+>>
+>>
+>>
