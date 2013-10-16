@@ -1,42 +1,34 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B95D62C0092
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Oct 2013 02:39:57 +1100 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 16 Oct 2013 11:39:55 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 6F3276E8041
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 11:39:52 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9GFdrng58720328
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 15:39:53 GMT
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r9GFdqEe019123
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 11:39:53 -0400
-Date: Wed, 16 Oct 2013 08:39:29 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH 02/10][v6] powerpc/Power7: detect load/store instructions
-Message-ID: <20131016153929.GC25073@us.ibm.com>
-References: <1381889202-16826-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1381889202-16826-3-git-send-email-sukadev@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B738E@saturn3.aculab.com>
- <525E5E79.6010905@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AFF982C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 03:48:03 +1100 (EST)
+Message-ID: <1381942009.7979.727.camel@snotra.buserror.net>
+Subject: Re: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in device tree
+From: Scott Wood <scottwood@freescale.com>
+To: Tang Yuantian-B29983 <B29983@freescale.com>
+Date: Wed, 16 Oct 2013 11:46:49 -0500
+In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B150C312F@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1381300704-4238-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20131010100331.GE26954@e106331-lin.cambridge.arm.com>
+ <D07C73A334FF604B95B3CBD2A545D07B150BD137@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20131011092526.GE3910@e106331-lin.cambridge.arm.com>
+ <1381518433.7979.536.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C24BD@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381788786.7979.643.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C2B08@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381858855.7979.693.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C312F@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <525E5E79.6010905@linux.vnet.ibm.com>
-Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- David Laight <David.Laight@ACULAB.COM>, Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-Leo-R58472 <r58472@freescale.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,79 +38,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual [khandual@linux.vnet.ibm.com] wrote:
-| On 10/16/2013 01:55 PM, David Laight wrote:
-| >> Implement instr_is_load_store_2_06() to detect whether a given instruction
-| >> is one of the fixed-point or floating-point load/store instructions in the
-| >> POWER Instruction Set Architecture v2.06.
-| > ...
-| 
-| The op code encoding is dependent on the ISA version ? Does the basic load
-| and store instructions change with newer ISA versions ?
+On Tue, 2013-10-15 at 21:57 -0500, Tang Yuantian-B29983 wrote:
+> > > > > >
+> > > > > The device tree makes that quite clear.
+> > > >
+> > > > You chose to model it that way in the device tree; that doesn't make
+> > > > it clear that the hardware works that way or that it's a good way to
+> > > > model it.
+> > > >
+> > > > > Each PLL has several output which MUX node can take from.
+> > > >
+> > > > Point out where in the hardware documentation it says this.  What I
+> > > > see is a PLL that has one output, and a MUX register that can choose
+> > > > from multiple PLL and divider options.
+> > > >
+> > > Take T4240 for example: see section 4.6.5.1 , (Page 141) in T4240RM Rev.
+> > D, 09/2012.
+> > 
+> > That shows the dividers as being somewhere in between the PLL and the MUX.
+> > The MUX is where the divider is selected.  There's nothing in the PLL's
+> > programming interface that relates to the dividers.  As such it's simpler
+> > to model it as being part of the MUX.
+> > 
+> > -Scott
+> > 
+> I don't know whether it is simpler, but "modeling divider as being part of the MUX"
+> is your guess, right?
+> If the "divider" is included in MUX, the MUX would not be called "MUX".
 
-TBH, I don't know whether the encoding is dependent on the ISA version.
+It's still selecting from multiple PLLs.
 
-We need this for a very narrow/specific purpose on Power7 _and_ did not
-want to set up expectations that it will work with all versions. Hence
-the horribly named function :-)
+> I don't know whether "divider" module exists or not. If it exists, it should be part
+> of PLL or between PLL and MUX. wherever it was, the device tree binding is appropriate.
 
-| BTW we have got a
-| newer version for the ISA "PowerISA_V2.07_PUBLIC.pdf" here at power.org
-| 
-| https://www.power.org/documentation/power-isa-version-2-07/
+The device tree binding is unnecessarily complicated.
 
-Yes, but on Power8 there is a bit in the SIER that tells us whether it
-is a load or store instruction. We use that and don't need to determine
-in software.
+> The P3041RM shows exactly each PLL has 2 outputs which definitely have no "divider" at all.
 
-Power7 does not have such a bit and we need this only for Power7. We are
-not targetting this "memory hierarchy" feature for Power6 or older processors.
+That diagram is a bit weird -- one of the outputs is used as is, and the
+other is split into 1/2 and 1/4.  It doesn't really matter though; the
+end result is the same.  We're describing the programming interface, not
+artwork choices in the manual.
 
-| 
-| Does not sound like a good idea to analyse the instructions with functions
-| names which specify ISA version number. Besides, this function does not
-| belong to specific processor or platform. It has to be bit generic.
-| 
-| >> +int instr_is_load_store_2_06(const unsigned int *instr)
-| >> +{
-| >> +	unsigned int op, upper, lower;
-| >> +
-| >> +	op = instr_opcode(*instr);
-| >> +
-| >> +	if ((op >= 32 && op <= 58) || (op == 61 || op == 62))
-| >> +		return true;
-| >> +
-| >> +	if (op != 31)
-| >> +		return false;
-| >> +
-| >> +	upper = op >> 5;
-| >> +	lower = op & 0x1f;
-| >> +
-| >> +	/* Short circuit as many misses as we can */
-| >> +	if (lower < 3 || lower > 23)
-| >> +		return false;
-| >> +
-| >> +	if (lower == 3) {
-| >> +		if (upper >= 16)
-| >> +			return true;
-| >> +
-| >> +		return false;
-| >> +	}
-| >> +
-| >> +	if (lower == 7 || lower == 12)
-| >> +		return true;
-| >> +
-| >> +	if (lower >= 20) /* && lower <= 23 (implicit) */
-| >> +		return true;
-| >> +
-| >> +	return false;
-| >> +}
-| > 
-| > I can't help feeling the code could do with some comments about
-| > which actual instructions are selected where.
-| 
-| Yeah, I agree. At least which category of load-store instructions are
-| getting selected in each case.
-
-Like I mentioned in the other message, how about adding a couple
-of lines in the function header ?
+-Scott
