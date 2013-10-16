@@ -1,35 +1,22 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C62F62C039E
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 17:58:13 +1100 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 16 Oct 2013 12:28:10 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 13924394004E
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 12:27:49 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9G70iWq23724180
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 12:30:45 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9G6vthP029031
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 12:27:57 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [V3 01/10] perf: New conditional branch filter criteria in branch
- stack sampling
-Date: Wed, 16 Oct 2013 12:26:48 +0530
-Message-Id: <1381906617-11392-2-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1381906617-11392-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1381906617-11392-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org, sukadev@linux.vnet.ibm.com, michaele@au1.ibm.com,
- eranian@google.com
+Return-Path: <B08782@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 934172C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 18:10:32 +1100 (EST)
+Message-ID: <525E3BD7.1020208@freescale.com>
+Date: Wed, 16 Oct 2013 10:10:15 +0300
+From: Claudiu Manoil <claudiu.manoil@freescale.com>
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Thomas_H=FChn?= <thomas@net.t-labs.tu-berlin.de>
+Subject: Re: Fwd: Gianfar driver crashes in Kernel v3.10
+References: <90BE8C5D-E23B-41B5-BB52-8A0C0758931D@net.t-labs.tu-berlin.de>
+ <760FFC38-597B-46CB-BA4C-620A1D663C8A@net.t-labs.tu-berlin.de>
+In-Reply-To: <760FFC38-597B-46CB-BA4C-620A1D663C8A@net.t-labs.tu-berlin.de>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,32 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER8 PMU based BHRB supports filtering for conditional branches.
-This patch introduces new branch filter PERF_SAMPLE_BRANCH_COND which
-will extend the existing perf ABI. Other architectures can provide
-this functionality with either HW filtering support (if present) or
-with SW filtering of instructions.
+On 10/11/2013 11:59 AM, Thomas H=FChn wrote:
+> Hi Claudiu,
+>
+>> Does this show up on a half duplex (100Mb/s) link?
+>
+> In my testsetup I always used 1GBit Ethernet connections, so no 100MBit=
+ tested yet.
+> Should I do so ?
+>
+>> Could you provide following for the gianfar interface, on your setup:
+>
+> sure:
+>> # ethtool ethX
+> root@Bluse-home:~# ethtool eth0
+> Settings for eth0:
+>         Supported ports: [ ]
+>         Supported link modes:   1000baseT/Full
+>         Supported pause frame use: No
+>         Supports auto-negotiation: No
+>         Advertised link modes:  1000baseT/Full
+>         Advertised pause frame use: No
+>         Advertised auto-negotiation: No
+>         Speed: 1000Mb/s
+>         Duplex: Full
+>         Port: MII
+>         PHYAD: 0
+>         Transceiver: external
+>         Auto-negotiation: on
+>         Current message level: 0x0000003f (63)
+>                                drv probe link timer ifdown ifup
+>         Link detected: yes
+>
+>> and
+>> # ethtool -d ethX | grep 500
+>>
+> root@Bluse-home:~# ethtool -d eth0 | grep 500
+> 0x0500:         00 00 00 3f 00 00 72 05 40 60 50 60 00 a1 f0 37
+>
+>
+>> Is there any other indication before this Oops? Like a tx timeout WARN=
+?
+>>
+>
+> Nothing there about any timeout.
+>
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Reviewed-by: Stephane Eranian <eranian@google.com>
----
- include/uapi/linux/perf_event.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Please try the following patch:
+http://patchwork.ozlabs.org/patch/283235/
 
-diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-index 0b1df41..5da52b6 100644
---- a/include/uapi/linux/perf_event.h
-+++ b/include/uapi/linux/perf_event.h
-@@ -160,8 +160,9 @@ enum perf_branch_sample_type {
- 	PERF_SAMPLE_BRANCH_ABORT_TX	= 1U << 7, /* transaction aborts */
- 	PERF_SAMPLE_BRANCH_IN_TX	= 1U << 8, /* in transaction */
- 	PERF_SAMPLE_BRANCH_NO_TX	= 1U << 9, /* not in transaction */
-+	PERF_SAMPLE_BRANCH_COND		= 1U << 10, /* conditional branches */
- 
--	PERF_SAMPLE_BRANCH_MAX		= 1U << 10, /* non-ABI */
-+	PERF_SAMPLE_BRANCH_MAX		= 1U << 11, /* non-ABI */
- };
- 
- #define PERF_SAMPLE_BRANCH_PLM_ALL \
--- 
-1.7.11.7
+It should help with your issue.
+
+claudiu
