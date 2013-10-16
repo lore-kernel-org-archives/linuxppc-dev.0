@@ -1,38 +1,32 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2FD132C0356
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 13:07:19 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 15 Oct 2013 22:07:17 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 99DCF38C804A
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Oct 2013 22:07:14 -0400 (EDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9G27F8t2752784
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Oct 2013 02:07:15 GMT
-Received: from d03av04.boulder.ibm.com (localhost [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9G27D8k022967
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Oct 2013 20:07:14 -0600
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: [PATCH 10/10][v6] powerpc/perf: Export Power7 memory hierarchy info
- to user space.
-Date: Tue, 15 Oct 2013 19:06:42 -0700
-Message-Id: <1381889202-16826-11-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1381889202-16826-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1381889202-16826-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <B29983@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BE1A52C0199
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2013 13:57:18 +1100 (EST)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in device tree
+Date: Wed, 16 Oct 2013 02:57:07 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B150C312F@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1381300704-4238-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20131010100331.GE26954@e106331-lin.cambridge.arm.com>
+ <D07C73A334FF604B95B3CBD2A545D07B150BD137@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20131011092526.GE3910@e106331-lin.cambridge.arm.com>
+ <1381518433.7979.536.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C24BD@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381788786.7979.643.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C2B08@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381858855.7979.693.camel@snotra.buserror.net>
+In-Reply-To: <1381858855.7979.693.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-Leo-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,191 +36,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Power7, the DCACHE_SRC field in MMCRA register identifies the memory
-hierarchy level (eg: L2, L3 etc) from which a data-cache miss for a
-marked instruction was satisfied.
-
-Use the 'perf_mem_data_src' object to export this hierarchy level to user
-space. Some memory hierarchy levels in Power7 don't map into the arch-neutral
-levels. However, since newer generation of the processor (i.e. Power8) uses
-fewer levels than in Power7, we don't really need to define new hierarchy
-levels just for Power7.
-
-We instead, map as many levels as possible and approximate the rest. See
-comments near dcache-src_map[] in the patch.
-
-Usage:
-
-	perf record -d -e 'cpu/PM_MRK_GRP_CMPL/' <application>
-	perf report -n --mem-mode --sort=mem,sym,dso,symbol_daddr,dso_daddr"
-
-		For samples involving load/store instructions, the memory
-		hierarchy level is shown as "L1 hit", "Remote RAM hit" etc.
-	# or
-
-	perf record --data <application>
-	perf report -D
-
-		Sample records contain a 'data_src' field which encodes the
-		memory hierarchy level: Eg: data_src 0x442 indicates
-		MEM_OP_LOAD, MEM_LVL_HIT, MEM_LVL_L2 (i.e load hit L2).
-
-Note that the PMU event PM_MRK_GRP_CMPL tracks all marked group completions
-events. While some of these are loads and stores, others like 'add'
-instructions may also be sampled.
-
-As such, the precise semantics of 'perf mem -t load' or 'perf mem -t store'
-(which require sampling only loads or only stores cannot be implemented on
-Power. (Sampling on PM_MRK_GRP_CMPL and throwing away non-loads and non-store
-samples could yield an inconsistent profile of the application).
-
-Thanks to input from Stephane Eranian, Michael Ellerman and Michael Neuling.
-
-Cc: Stephane Eranian <eranian@google.com>
-Cc: Michael Ellerman <michael@ellerman.id.au>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
-Changelog[v4]:
-	Drop support for 'perf mem' for Power (use perf-record and perf-report
-	directly)
-
-Changelog[v3]:
-	[Michael Ellerman] If newer levels that we defined in [v2] are not
-	needed for Power8, ignore the new levels for Power7 also, and
-	approximate them.
-	Separate the TLB level mapping to a separate patchset.
-
-Changelog[v2]:
-        [Stephane Eranian] Define new levels rather than ORing the L2 and L3
-        with REM_CCE1 and REM_CCE2.
-        [Stephane Eranian] allocate a bit PERF_MEM_XLVL_NA for architectures
-        that don't use the ->mem_xlvl field.
-        Insert the TLB patch ahead so the new TLB bits are contigous with
-        existing TLB bits.
-
- arch/powerpc/perf/power7-pmu.c |   94 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 94 insertions(+)
-
-diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-index ae24dfc..3e86bb8 100644
---- a/arch/powerpc/perf/power7-pmu.c
-+++ b/arch/powerpc/perf/power7-pmu.c
-@@ -11,8 +11,10 @@
- #include <linux/kernel.h>
- #include <linux/perf_event.h>
- #include <linux/string.h>
-+#include <linux/uaccess.h>
- #include <asm/reg.h>
- #include <asm/cputable.h>
-+#include <asm/code-patching.h>
- 
- /*
-  * Bits in event code for POWER7
-@@ -317,6 +319,97 @@ static void power7_disable_pmc(unsigned int pmc, unsigned long mmcr[])
- 		mmcr[1] &= ~(0xffUL << MMCR1_PMCSEL_SH(pmc));
- }
- 
-+#define POWER7_MMCRA_DCACHE_MISS	(0x1LL << 55)
-+#define POWER7_MMCRA_DCACHE_SRC_SHIFT	51
-+#define POWER7_MMCRA_DCACHE_SRC_MASK	(0xFLL << POWER7_MMCRA_DCACHE_SRC_SHIFT)
-+
-+#define P(a, b)		PERF_MEM_S(a, b)
-+#define PLH(a, b)	(P(OP, LOAD) | P(LVL, HIT) | P(a, b))
-+/*
-+ * Map the Power7 DCACHE_SRC field (bits 9..12) in MMCRA register to the
-+ * architecture-neutral memory hierarchy levels. For the levels in Power7
-+ * that don't map to the arch-neutral levels, approximate to nearest
-+ * level.
-+ *
-+ *	1-hop:	indicates another core on the same chip (2.1 and 3.1 levels).
-+ *	2-hops:	indicates a different chip on same or different node (remote
-+ *		and distant levels).
-+ *
-+ * For consistency with this interpretation of the hops, we dont use
-+ * the REM_RAM1 level below.
-+ *
-+ * The *SHR and *MOD states of the cache are ignored/not exported to user.
-+ *
-+ * ### Levels marked with ### in comments below are approximated
-+ */
-+static u64 dcache_src_map[] = {
-+	PLH(LVL, L2),			/* 00: FROM_L2 */
-+	PLH(LVL, L3),			/* 01: FROM_L3 */
-+
-+	P(LVL, NA),			/* 02: Reserved */
-+	P(LVL, NA),			/* 03: Reserved */
-+
-+	PLH(LVL, REM_CCE1),		/* 04: FROM_L2.1_SHR ### */
-+	PLH(LVL, REM_CCE1),		/* 05: FROM_L2.1_MOD ### */
-+
-+	PLH(LVL, REM_CCE1),		/* 06: FROM_L3.1_SHR ### */
-+	PLH(LVL, REM_CCE1),		/* 07: FROM_L3.1_MOD ### */
-+
-+	PLH(LVL, REM_CCE2),		/* 08: FROM_RL2L3_SHR ### */
-+	PLH(LVL, REM_CCE2),		/* 09: FROM_RL2L3_MOD ### */
-+
-+	PLH(LVL, REM_CCE2),		/* 10: FROM_DL2L3_SHR ### */
-+	PLH(LVL, REM_CCE2),		/* 11: FROM_DL2L3_MOD ### */
-+
-+	PLH(LVL, LOC_RAM),		/* 12: FROM_LMEM */
-+	PLH(LVL, REM_RAM2),		/* 13: FROM_RMEM ### */
-+	PLH(LVL, REM_RAM2),		/* 14: FROM_DMEM */
-+
-+	P(LVL, NA),			/* 15: Reserved */
-+};
-+
-+/*
-+ * Determine the memory-hierarchy information (if applicable) for the
-+ * instruction/address we are sampling. If we encountered a DCACHE_MISS,
-+ * mmcra[DCACHE_SRC_MASK] specifies the memory level from which the operand
-+ * was loaded.
-+ *
-+ * Otherwise, it is an L1-hit, provided the instruction was a load/store.
-+ */
-+static void power7_get_mem_data_src(union perf_mem_data_src *dsrc,
-+			struct pt_regs *regs)
-+{
-+	u64 idx;
-+	u64 mmcra = regs->dsisr;
-+	u64 addr;
-+	int ret;
-+	unsigned int instr;
-+
-+	if (mmcra & POWER7_MMCRA_DCACHE_MISS) {
-+		idx = mmcra & POWER7_MMCRA_DCACHE_SRC_MASK;
-+		idx >>= POWER7_MMCRA_DCACHE_SRC_SHIFT;
-+
-+		dsrc->val |= dcache_src_map[idx];
-+		return;
-+	}
-+
-+	instr = 0;
-+	addr = perf_instruction_pointer(regs);
-+
-+	if (is_kernel_addr(addr))
-+		instr = *(unsigned int *)addr;
-+	else {
-+		pagefault_disable();
-+		ret = __get_user_inatomic(instr, (unsigned int __user *)addr);
-+		pagefault_enable();
-+		if (ret)
-+			instr = 0;
-+	}
-+	if (instr && instr_is_load_store_2_06(&instr))
-+		dsrc->val |= PLH(LVL, L1);
-+}
-+
-+
- static int power7_generic_events[] = {
- 	[PERF_COUNT_HW_CPU_CYCLES] =			PM_CYC,
- 	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PM_GCT_NOSLOT_CYC,
-@@ -437,6 +530,7 @@ static struct power_pmu power7_pmu = {
- 	.get_constraint		= power7_get_constraint,
- 	.get_alternatives	= power7_get_alternatives,
- 	.disable_pmc		= power7_disable_pmc,
-+	.get_mem_data_src	= power7_get_mem_data_src,
- 	.flags			= PPMU_ALT_SIPR,
- 	.attr_groups		= power7_pmu_attr_groups,
- 	.n_generic		= ARRAY_SIZE(power7_generic_events),
--- 
-1.7.9.5
+PiA+ID4gPiA+DQo+ID4gPiA+IFRoZSBkZXZpY2UgdHJlZSBtYWtlcyB0aGF0IHF1aXRlIGNsZWFy
+Lg0KPiA+ID4NCj4gPiA+IFlvdSBjaG9zZSB0byBtb2RlbCBpdCB0aGF0IHdheSBpbiB0aGUgZGV2
+aWNlIHRyZWU7IHRoYXQgZG9lc24ndCBtYWtlDQo+ID4gPiBpdCBjbGVhciB0aGF0IHRoZSBoYXJk
+d2FyZSB3b3JrcyB0aGF0IHdheSBvciB0aGF0IGl0J3MgYSBnb29kIHdheSB0bw0KPiA+ID4gbW9k
+ZWwgaXQuDQo+ID4gPg0KPiA+ID4gPiBFYWNoIFBMTCBoYXMgc2V2ZXJhbCBvdXRwdXQgd2hpY2gg
+TVVYIG5vZGUgY2FuIHRha2UgZnJvbS4NCj4gPiA+DQo+ID4gPiBQb2ludCBvdXQgd2hlcmUgaW4g
+dGhlIGhhcmR3YXJlIGRvY3VtZW50YXRpb24gaXQgc2F5cyB0aGlzLiAgV2hhdCBJDQo+ID4gPiBz
+ZWUgaXMgYSBQTEwgdGhhdCBoYXMgb25lIG91dHB1dCwgYW5kIGEgTVVYIHJlZ2lzdGVyIHRoYXQg
+Y2FuIGNob29zZQ0KPiA+ID4gZnJvbSBtdWx0aXBsZSBQTEwgYW5kIGRpdmlkZXIgb3B0aW9ucy4N
+Cj4gPiA+DQo+ID4gVGFrZSBUNDI0MCBmb3IgZXhhbXBsZTogc2VlIHNlY3Rpb24gNC42LjUuMSAs
+IChQYWdlIDE0MSkgaW4gVDQyNDBSTSBSZXYuDQo+IEQsIDA5LzIwMTIuDQo+IA0KPiBUaGF0IHNo
+b3dzIHRoZSBkaXZpZGVycyBhcyBiZWluZyBzb21ld2hlcmUgaW4gYmV0d2VlbiB0aGUgUExMIGFu
+ZCB0aGUgTVVYLg0KPiBUaGUgTVVYIGlzIHdoZXJlIHRoZSBkaXZpZGVyIGlzIHNlbGVjdGVkLiAg
+VGhlcmUncyBub3RoaW5nIGluIHRoZSBQTEwncw0KPiBwcm9ncmFtbWluZyBpbnRlcmZhY2UgdGhh
+dCByZWxhdGVzIHRvIHRoZSBkaXZpZGVycy4gIEFzIHN1Y2ggaXQncyBzaW1wbGVyDQo+IHRvIG1v
+ZGVsIGl0IGFzIGJlaW5nIHBhcnQgb2YgdGhlIE1VWC4NCj4gDQo+IC1TY290dA0KPiANCkkgZG9u
+J3Qga25vdyB3aGV0aGVyIGl0IGlzIHNpbXBsZXIsIGJ1dCAibW9kZWxpbmcgZGl2aWRlciBhcyBi
+ZWluZyBwYXJ0IG9mIHRoZSBNVVgiDQppcyB5b3VyIGd1ZXNzLCByaWdodD8NCklmIHRoZSAiZGl2
+aWRlciIgaXMgaW5jbHVkZWQgaW4gTVVYLCB0aGUgTVVYIHdvdWxkIG5vdCBiZSBjYWxsZWQgIk1V
+WCIuDQpJIGRvbid0IGtub3cgd2hldGhlciAiZGl2aWRlciIgbW9kdWxlIGV4aXN0cyBvciBub3Qu
+IElmIGl0IGV4aXN0cywgaXQgc2hvdWxkIGJlIHBhcnQNCm9mIFBMTCBvciBiZXR3ZWVuIFBMTCBh
+bmQgTVVYLiB3aGVyZXZlciBpdCB3YXMsIHRoZSBkZXZpY2UgdHJlZSBiaW5kaW5nIGlzIGFwcHJv
+cHJpYXRlLg0KVGhlIFAzMDQxUk0gc2hvd3MgZXhhY3RseSBlYWNoIFBMTCBoYXMgMiBvdXRwdXRz
+IHdoaWNoIGRlZmluaXRlbHkgaGF2ZSBubyAiZGl2aWRlciIgYXQgYWxsLg0KDQpSZWdhcmRzLA0K
+WXVhbnRpYW4NCg==
