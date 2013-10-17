@@ -1,27 +1,32 @@
-Return-Path: <lars@metafoo.de>
-Received: from smtp-out-234.synserver.de (smtp-out-234.synserver.de
- [212.40.185.234]) by ozlabs.org (Postfix) with ESMTP id BF4182C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 04:41:10 +1100 (EST)
-Message-ID: <526021B0.6050206@metafoo.de>
-Date: Thu, 17 Oct 2013 19:43:12 +0200
-From: Lars-Peter Clausen <lars@metafoo.de>
-MIME-Version: 1.0
-To: Xiubo Li <Li.Xiubo@freescale.com>
-Subject: Re: [alsa-devel] [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio
- Interface driver.
-References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
- <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
-In-Reply-To: <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
- linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
- lgirdwood@gmail.com, r65073@freescale.com, LW@KARO-electronics.de,
- linux@arm.linux.org.uk, b42378@freescale.com, oskar@scara.com,
- grant.likely@linaro.org, devicetree@vger.kernel.org, ian.campbell@citrix.com,
- pawel.moll@arm.com, swarren@wwwdotorg.org, rob.herring@calxeda.com,
- broonie@kernel.org, linux-arm-kernel@lists.infradead.org,
- fabio.estevam@freescale.com, linux-kernel@vger.kernel.org, rob@landley.net,
- r64188@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <rostedt@goodmis.org>
+Received: from cdptpa-oedge-vip.email.rr.com
+ (cdptpa-outbound-snat.email.rr.com [107.14.166.226])
+ by ozlabs.org (Postfix) with ESMTP id 32EEB2C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 04:42:53 +1100 (EST)
+Date: Thu, 17 Oct 2013 13:35:43 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: rkrcmar@redhat.com
+Subject: Re: [PATCH 5/7] jump_label: relax branch hinting restrictions
+Message-ID: <20131017133543.7e4e8d45@gandalf.local.home>
+In-Reply-To: <1382004631-25895-6-git-send-email-rkrcmar@redhat.com>
+References: <1382004631-25895-1-git-send-email-rkrcmar@redhat.com>
+ <1382004631-25895-6-git-send-email-rkrcmar@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-doc@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, sparclinux@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>,
+ Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Andrew Jones <drjones@redhat.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Richard Henderson <rth@twiddle.net>, Jiri Kosina <jkosina@suse.cz>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Rob Landley <rob@landley.net>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org, "David S.
+ Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,135 +36,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/17/2013 11:01 AM, Xiubo Li wrote:
-[...]
-> +static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
-> +		struct snd_pcm_hw_params *params,
-> +		struct snd_soc_dai *cpu_dai)
-> +{
-> +	int ret;
-> +
-> +	ret = fsl_sai_hw_params_tr(substream, params, cpu_dai,
-> +				FSL_FMT_TRANSMITTER);
-> +	if (ret) {
-> +		dev_err(cpu_dai->dev,
-> +				"Cannot set sai transmitter hw params: %d\n",
-> +				ret);
-> +		return ret;
-> +	}
-> +
-> +	ret = fsl_sai_hw_params_tr(substream, params, cpu_dai,
-> +				FSL_FMT_RECEIVER);
-> +	if (ret) {
-> +		dev_err(cpu_dai->dev,
-> +				"Cannot set sai's receiver hw params: %d\n",
-> +				ret);
-> +		return ret;
-> +	}
+On Thu, 17 Oct 2013 12:10:28 +0200
+Radim Kr=C4=8Dm=C3=A1=C5=99 <rkrcmar@redhat.com> wrote:
 
-Shouldn't, depending on the substream direction, either transmit or receiver
-be configured, instead of always configuring both?
+> We implemented the optimized branch selection in higher levels of api.
+> That made static_keys very unintuitive, so this patch introduces another
+> element to jump_table, carrying one bit that tells the underlying code
+> which branch to optimize.
+>=20
+> It is now possible to select optimized branch for every jump_entry.
+>=20
+> Current side effect is 1/3 increase increase in space, we could:
+> * use bitmasks and selectors on 2+ aligned code/struct.
+>   - aligning jump target is easy, but because it is not done by default
+>     and few bytes in .text are much worse that few kilos in .data,
+>     I chose not to
+>   - data is probably aligned by default on all current architectures,
+>     but programmer can force misalignment of static_key
+> * optimize each architecture independently
+>   - I can't test everything and this patch shouldn't break anything, so
+>     others can contribute in the future
+> * choose something worse, like packing or splitting
+> * ignore
+>=20
+> proof: example & x86_64 disassembly: (F =3D ffffffff)
+>=20
+>   struct static_key flexible_feature;
+>   noinline void jump_label_experiment(void) {
+>   	if ( static_key_false(&flexible_feature))
+>   	     asm ("push 0xa1");
+>   	else asm ("push 0xa0");
+>   	if (!static_key_false(&flexible_feature))
+>   	     asm ("push 0xb0");
+>   	else asm ("push 0xb1");
+>   	if ( static_key_true(&flexible_feature))
+>   	     asm ("push 0xc1");
+>   	else asm ("push 0xc0");
+>   	if (!static_key_true(&flexible_feature))
+>   	     asm ("push 0xd0");
+>   	else asm ("push 0xd1");
+>   }
+>=20
+>   Disassembly of section .text: (push marked by "->")
+>=20
+>   F81002000 <jump_label_experiment>:
+>   F81002000:       e8 7b 29 75 00          callq  F81754980 <__fentry__>
+>   F81002005:       55                      push   %rbp
+>   F81002006:       48 89 e5                mov    %rsp,%rbp
+>   F81002009:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+>   F8100200e: ->    ff 34 25 a0 00 00 00    pushq  0xa0
+>   F81002015:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+>   F8100201a: ->    ff 34 25 b0 00 00 00    pushq  0xb0
+>   F81002021:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+>   F81002026: ->    ff 34 25 c1 00 00 00    pushq  0xc1
+>   F8100202d:       0f 1f 00                nopl   (%rax)
+>   F81002030:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+>   F81002035: ->    ff 34 25 d1 00 00 00    pushq  0xd1
+>   F8100203c:       5d                      pop    %rbp
+>   F8100203d:       0f 1f 00                nopl   (%rax)
+>   F81002040:       c3                      retq
 
-> +
-> +	return 0;
-> +}
-> +
-> +static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
-> +		struct snd_soc_dai *dai)
-> +{
-> +	struct fsl_sai *sai = snd_soc_dai_get_drvdata(dai);
-> +	unsigned int tcsr, rcsr;
-> +
-> +	tcsr = readl(sai->base + SAI_TCSR);
-> +	rcsr = readl(sai->base + SAI_RCSR);
-> +
-> +	switch (cmd) {
-> +	case SNDRV_PCM_TRIGGER_START:
-> +	case SNDRV_PCM_TRIGGER_RESUME:
-> +	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-> +		rcsr |= SAI_CSR_TERE | SAI_CSR_FRDE;
-> +		tcsr |= SAI_CSR_TERE | SAI_CSR_FRDE;
-> +		writel(rcsr, sai->base + SAI_RCSR);
-> +		udelay(10);
-> +		writel(tcsr, sai->base + SAI_TCSR);
-> +		break;
-> +
-> +	case SNDRV_PCM_TRIGGER_STOP:
-> +	case SNDRV_PCM_TRIGGER_SUSPEND:
-> +	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-> +		tcsr &= ~(SAI_CSR_TERE | SAI_CSR_FRDE);
-> +		rcsr &= ~(SAI_CSR_TERE | SAI_CSR_FRDE);
-> +		writel(tcsr, sai->base + SAI_TCSR);
-> +		udelay(10);
-> +		writel(rcsr, sai->base + SAI_RCSR);
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
+This looks exactly like what we want. I take it this is with your
+patch. What was the result before the patch?
 
-Same here, shouldn't tx and rx be started independently depending on the
-substream direction?
+-- Steve
 
-> +	return 0;
-> +}
-> +
-> +static struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
-
-const
-
-> +	.set_sysclk	= fsl_sai_set_dai_sysclk,
-> +	.set_clkdiv	= fsl_sai_set_dai_clkdiv,
-> +	.set_fmt	= fsl_sai_set_dai_fmt,
-> +	.set_tdm_slot	= fsl_sai_set_dai_tdm_slot,
-> +	.hw_params	= fsl_sai_hw_params,
-> +	.trigger	= fsl_sai_trigger,
-> +};
-[...]
-> +static const struct snd_soc_component_driver fsl_component = {
-> +	.name           = "fsl-sai",
-> +};
-> +
-> +static int fsl_sai_probe(struct platform_device *pdev)
-> +{
-[...]
-> +
-> +	sai->dma_params_rx.addr = res->start + SAI_RDR;
-> +	sai->dma_params_rx.maxburst = 6;
-> +	index = of_property_match_string(np, "dma-names", "rx");
-> +	ret = of_parse_phandle_with_args(np, "dmas", "#dma-cells", index,
-> +				&dma_args);
-> +	if (ret)
-> +		return ret;
-> +	sai->dma_params_rx.slave_id = dma_args.args[1];
-> +
-> +	sai->dma_params_tx.addr = res->start + SAI_TDR;
-> +	sai->dma_params_tx.maxburst = 6;
-> +	index = of_property_match_string(np, "dma-names", "tx");
-> +	ret = of_parse_phandle_with_args(np, "dmas", "#dma-cells", index,
-> +				&dma_args);
-> +	if (ret)
-> +		return ret;
-> +	sai->dma_params_tx.slave_id = dma_args.args[1];
-
-The driver should not have to manually parse the dma devicetree properties,
-this is something that should be handled by the dma engine driver.
-
-> +
-> +	ret = snd_soc_register_component(&pdev->dev, &fsl_component,
-> +			&fsl_sai_dai, 1);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = fsl_pcm_dma_init(pdev);
-> +	if (ret)
-> +		goto out;
-> +
-> +	platform_set_drvdata(pdev, sai);
-> +
-> +	return 0;
-> +
-> +out:
-> +	snd_soc_unregister_component(&pdev->dev);
-> +	return ret;
-> +}
+>   F81002041:       0f 1f 80 00 00 00 00    nopl   0x0(%rax)
+>   F81002048: ->    ff 34 25 d0 00 00 00    pushq  0xd0
+>   F8100204f:       5d                      pop    %rbp
+>   F81002050:       c3                      retq
+>   F81002051:       0f 1f 80 00 00 00 00    nopl   0x0(%rax)
+>   F81002058: ->    ff 34 25 c0 00 00 00    pushq  0xc0
+>   F8100205f:       90                      nop
+>   F81002060:       eb cb                   jmp    F8100202d <[...]+0x2d>
+>   F81002062:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
+>   F81002068: ->    ff 34 25 b1 00 00 00    pushq  0xb1
+>   F8100206f:       90                      nop
+>   F81002070:       eb af                   jmp    F81002021 <[...]+0x21>
+>   F81002072:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
+>   F81002078: ->    ff 34 25 a1 00 00 00    pushq  0xa1
+>   F8100207f:       90                      nop
+>   F81002080:       eb 93                   jmp    F81002015 <[...]+0x15>
+>   F81002082:       66 66 66 66 66 2e 0f    [...]
+>   F81002089:       1f 84 00 00 00 00 00
+>=20
+>   Contents of section .data: (relevant part of embedded __jump_table)
