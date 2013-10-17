@@ -1,43 +1,27 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2C4182C00C8
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Oct 2013 04:21:21 +1100 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 17 Oct 2013 11:21:20 -0600
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 22EDC6E804C
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Oct 2013 13:21:14 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9HHLFdq53608672
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Oct 2013 17:21:15 GMT
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r9HHLECT005096
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Oct 2013 13:21:14 -0400
-Date: Thu, 17 Oct 2013 10:20:50 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: David Laight <David.Laight@aculab.com>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH 02/10][v6] powerpc/Power7: detect load/store instructions
-Message-ID: <20131017172050.GB9229@us.ibm.com>
-References: <1381889202-16826-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1381889202-16826-3-git-send-email-sukadev@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B738E@saturn3.aculab.com>
- <20131016152742.GB25073@us.ibm.com>
+Return-Path: <lars@metafoo.de>
+Received: from smtp-out-234.synserver.de (smtp-out-234.synserver.de
+ [212.40.185.234]) by ozlabs.org (Postfix) with ESMTP id BF4182C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 04:41:10 +1100 (EST)
+Message-ID: <526021B0.6050206@metafoo.de>
+Date: Thu, 17 Oct 2013 19:43:12 +0200
+From: Lars-Peter Clausen <lars@metafoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131016152742.GB25073@us.ibm.com>
-Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: Xiubo Li <Li.Xiubo@freescale.com>
+Subject: Re: [alsa-devel] [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio
+ Interface driver.
+References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
+ <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
+In-Reply-To: <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
+ linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
+ lgirdwood@gmail.com, r65073@freescale.com, LW@KARO-electronics.de,
+ linux@arm.linux.org.uk, b42378@freescale.com, oskar@scara.com,
+ grant.likely@linaro.org, devicetree@vger.kernel.org, ian.campbell@citrix.com,
+ pawel.moll@arm.com, swarren@wwwdotorg.org, rob.herring@calxeda.com,
+ broonie@kernel.org, linux-arm-kernel@lists.infradead.org,
+ fabio.estevam@freescale.com, linux-kernel@vger.kernel.org, rob@landley.net,
+ r64188@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,114 +31,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-| 
-| How about I add this to the function header ?
-| 
-|  * Please use the table in Appendix F (opcode maps) to determine
-|  * events selected by this function.
+On 10/17/2013 11:01 AM, Xiubo Li wrote:
+[...]
+> +static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+> +		struct snd_pcm_hw_params *params,
+> +		struct snd_soc_dai *cpu_dai)
+> +{
+> +	int ret;
+> +
+> +	ret = fsl_sai_hw_params_tr(substream, params, cpu_dai,
+> +				FSL_FMT_TRANSMITTER);
+> +	if (ret) {
+> +		dev_err(cpu_dai->dev,
+> +				"Cannot set sai transmitter hw params: %d\n",
+> +				ret);
+> +		return ret;
+> +	}
+> +
+> +	ret = fsl_sai_hw_params_tr(substream, params, cpu_dai,
+> +				FSL_FMT_RECEIVER);
+> +	if (ret) {
+> +		dev_err(cpu_dai->dev,
+> +				"Cannot set sai's receiver hw params: %d\n",
+> +				ret);
+> +		return ret;
+> +	}
 
-Here is the updated patch with the comment.
----
+Shouldn't, depending on the substream direction, either transmit or receiver
+be configured, instead of always configuring both?
 
->From 38d1f9ac67a7f50db593e5875a8de6a2ecbea8e0 Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Fri, 23 Aug 2013 18:35:02 -0700
-Subject: [PATCH 6/10][v6] powerpc/Power7: detect load/store instructions
+> +
+> +	return 0;
+> +}
+> +
+> +static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+> +		struct snd_soc_dai *dai)
+> +{
+> +	struct fsl_sai *sai = snd_soc_dai_get_drvdata(dai);
+> +	unsigned int tcsr, rcsr;
+> +
+> +	tcsr = readl(sai->base + SAI_TCSR);
+> +	rcsr = readl(sai->base + SAI_RCSR);
+> +
+> +	switch (cmd) {
+> +	case SNDRV_PCM_TRIGGER_START:
+> +	case SNDRV_PCM_TRIGGER_RESUME:
+> +	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
+> +		rcsr |= SAI_CSR_TERE | SAI_CSR_FRDE;
+> +		tcsr |= SAI_CSR_TERE | SAI_CSR_FRDE;
+> +		writel(rcsr, sai->base + SAI_RCSR);
+> +		udelay(10);
+> +		writel(tcsr, sai->base + SAI_TCSR);
+> +		break;
+> +
+> +	case SNDRV_PCM_TRIGGER_STOP:
+> +	case SNDRV_PCM_TRIGGER_SUSPEND:
+> +	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
+> +		tcsr &= ~(SAI_CSR_TERE | SAI_CSR_FRDE);
+> +		rcsr &= ~(SAI_CSR_TERE | SAI_CSR_FRDE);
+> +		writel(tcsr, sai->base + SAI_TCSR);
+> +		udelay(10);
+> +		writel(rcsr, sai->base + SAI_RCSR);
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
 
-Implement instr_is_load_store_2_06() to detect whether a given instruction
-is one of the fixed-point or floating-point load/store instructions in the
-POWER Instruction Set Architecture v2.06.
+Same here, shouldn't tx and rx be started independently depending on the
+substream direction?
 
-This function will be used in a follow-on patch to save memory hierarchy
-information of the load/store on a Power7 system. (Power8 systems set some
-bits in the SIER to identify load/store operations and hence don't need a
-similar functionality).
+> +	return 0;
+> +}
+> +
+> +static struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
 
-Based on optimized code from Michael Ellerman and comments from Tom Musta.
+const
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
-Changelog[v6]
-	- [David Laight, Anshuman Khandual] Add a comment in function
-	  header to help better understand which instructions are selected
-	  by the instr_is_load_store_2_06().
-	- [Michael Ellerman, Tom Musta]: Optmize the implementation to
-	  avoid for loop.
+> +	.set_sysclk	= fsl_sai_set_dai_sysclk,
+> +	.set_clkdiv	= fsl_sai_set_dai_clkdiv,
+> +	.set_fmt	= fsl_sai_set_dai_fmt,
+> +	.set_tdm_slot	= fsl_sai_set_dai_tdm_slot,
+> +	.hw_params	= fsl_sai_hw_params,
+> +	.trigger	= fsl_sai_trigger,
+> +};
+[...]
+> +static const struct snd_soc_component_driver fsl_component = {
+> +	.name           = "fsl-sai",
+> +};
+> +
+> +static int fsl_sai_probe(struct platform_device *pdev)
+> +{
+[...]
+> +
+> +	sai->dma_params_rx.addr = res->start + SAI_RDR;
+> +	sai->dma_params_rx.maxburst = 6;
+> +	index = of_property_match_string(np, "dma-names", "rx");
+> +	ret = of_parse_phandle_with_args(np, "dmas", "#dma-cells", index,
+> +				&dma_args);
+> +	if (ret)
+> +		return ret;
+> +	sai->dma_params_rx.slave_id = dma_args.args[1];
+> +
+> +	sai->dma_params_tx.addr = res->start + SAI_TDR;
+> +	sai->dma_params_tx.maxburst = 6;
+> +	index = of_property_match_string(np, "dma-names", "tx");
+> +	ret = of_parse_phandle_with_args(np, "dmas", "#dma-cells", index,
+> +				&dma_args);
+> +	if (ret)
+> +		return ret;
+> +	sai->dma_params_tx.slave_id = dma_args.args[1];
 
- arch/powerpc/include/asm/code-patching.h |    1 +
- arch/powerpc/lib/code-patching.c         |   48 ++++++++++++++++++++++++++++++
- 2 files changed, 49 insertions(+)
+The driver should not have to manually parse the dma devicetree properties,
+this is something that should be handled by the dma engine driver.
 
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-index a6f8c7a..9cc3ef1 100644
---- a/arch/powerpc/include/asm/code-patching.h
-+++ b/arch/powerpc/include/asm/code-patching.h
-@@ -34,6 +34,7 @@ int instr_is_branch_to_addr(const unsigned int *instr, unsigned long addr);
- unsigned long branch_target(const unsigned int *instr);
- unsigned int translate_branch(const unsigned int *dest,
- 			      const unsigned int *src);
-+int instr_is_load_store_2_06(const unsigned int *instr);
- 
- static inline unsigned long ppc_function_entry(void *func)
- {
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 2bc9db3..84571aa 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -159,6 +159,54 @@ unsigned int translate_branch(const unsigned int *dest, const unsigned int *src)
- 	return 0;
- }
- 
-+/*
-+ * Determine if the op code in the instruction corresponds to a load or
-+ * store instruction. Ignore the vector load instructions like evlddepx,
-+ * evstddepx for now.
-+ *
-+ * This function is valid for POWER ISA 2.06.
-+ *
-+ * Reference:	PowerISA_V2.06B_Public.pdf, Sections 3.3.2 through 3.3.6
-+ *		and 4.6.2 through 4.6.4, Appendix F (Opcode Maps).
-+ *
-+ *		Use the tables in Appendix F (Opcode Maps) to identify
-+ *		instructions selected by this function.
-+ */
-+int instr_is_load_store_2_06(const unsigned int *instr)
-+{
-+	unsigned int op, upper, lower;
-+
-+	op = instr_opcode(*instr);
-+
-+	if ((op >= 32 && op <= 58) || (op == 61 || op == 62))
-+		return true;
-+
-+	if (op != 31)
-+		return false;
-+
-+	upper = op >> 5;
-+	lower = op & 0x1f;
-+
-+	/* Short circuit as many misses as we can */
-+	if (lower < 3 || lower > 23)
-+		return false;
-+
-+	if (lower == 3) {
-+		if (upper >= 16)
-+			return true;
-+
-+		return false;
-+	}
-+
-+	if (lower == 7 || lower == 12)
-+		return true;
-+
-+	if (lower >= 20) /* && lower <= 23 (implicit) */
-+		return true;
-+
-+	return false;
-+}
-+
- 
- #ifdef CONFIG_CODE_PATCHING_SELFTEST
- 
--- 
-1.7.9.5
+> +
+> +	ret = snd_soc_register_component(&pdev->dev, &fsl_component,
+> +			&fsl_sai_dai, 1);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = fsl_pcm_dma_init(pdev);
+> +	if (ret)
+> +		goto out;
+> +
+> +	platform_set_drvdata(pdev, sai);
+> +
+> +	return 0;
+> +
+> +out:
+> +	snd_soc_unregister_component(&pdev->dev);
+> +	return ret;
+> +}
