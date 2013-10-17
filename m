@@ -1,19 +1,19 @@
-Return-Path: <lars@metafoo.de>
-Received: from smtp-out-233.synserver.de (smtp-out-233.synserver.de
- [212.40.185.233]) by ozlabs.org (Postfix) with ESMTP id E42A42C016E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 23:29:33 +1100 (EST)
-Message-ID: <525FD65B.3040004@metafoo.de>
-Date: Thu, 17 Oct 2013 14:21:47 +0200
-From: Lars-Peter Clausen <lars@metafoo.de>
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id DC07F2C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 00:22:23 +1100 (EST)
+Message-ID: <525FE48B.7020709@tabi.org>
+Date: Thu, 17 Oct 2013 08:22:19 -0500
+From: Timur Tabi <timur@tabi.org>
 MIME-Version: 1.0
-To: Timur Tabi <timur@tabi.org>
+To: Lars-Peter Clausen <lars@metafoo.de>
 Subject: Re: [alsa-devel] [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio
  Interface driver.
 References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
  <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
- <525FD4C7.3050806@tabi.org>
-In-Reply-To: <525FD4C7.3050806@tabi.org>
-Content-Type: text/plain; charset=ISO-8859-1
+ <525FD4C7.3050806@tabi.org> <525FD65B.3040004@metafoo.de>
+In-Reply-To: <525FD65B.3040004@metafoo.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
  linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com,
  linux-kernel@vger.kernel.org, r65073@freescale.com, LW@KARO-electronics.de,
@@ -33,13 +33,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/17/2013 02:15 PM, Timur Tabi wrote:
-> Xiubo Li wrote:
->> +    res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->> +    sai->base = devm_ioremap_resource(&pdev->dev, res);
-> 
-> Why not use of_iomap()?
+Lars-Peter Clausen wrote:
+>>> >>+    res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>>> >>+    sai->base = devm_ioremap_resource(&pdev->dev, res);
+>> >
+>> >Why not use of_iomap()?
+> Because it won't check for conflicting resource regions.
 
-Because it won't check for conflicting resource regions.
-
-- Lars
+Maybe I've been out of the loop for too long, but why is that a 
+particular problem with this driver?
