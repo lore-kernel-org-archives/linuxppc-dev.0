@@ -1,23 +1,27 @@
-Return-Path: <tommusta@gmail.com>
-Received: from mail-ob0-x22c.google.com (mail-ob0-x22c.google.com
- [IPv6:2607:f8b0:4003:c01::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C83952C00BC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2013 06:44:22 +1100 (EST)
-Received: by mail-ob0-f172.google.com with SMTP id gq1so65761obb.17
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 12:44:19 -0700 (PDT)
-Message-ID: <1382125457.2206.28.camel@tmusta-sc.rchland.ibm.com>
-Subject: [PATCH 3/3] powerpc: Fix Unaligned LE Floating Point Loads and Stores
-From: Tom Musta <tommusta@gmail.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 18 Oct 2013 14:44:17 -0500
-In-Reply-To: <1382125125.2206.22.camel@tmusta-sc.rchland.ibm.com>
-References: <1382125125.2206.22.camel@tmusta-sc.rchland.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: tmusta@gmail.com
+Return-Path: <B47053@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 479F42C00C5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 20:11:17 +1100 (EST)
+From: Xiubo Li <Li.Xiubo@freescale.com>
+To: <r65073@freescale.com>, <timur@tabi.org>, <lgirdwood@gmail.com>,
+ <broonie@kernel.org>
+Subject: [PATCHv1 0/8] ALSA: Add SAI driver and enable SGT15000 codec.
+Date: Thu, 17 Oct 2013 17:01:09 +0800
+Message-ID: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
+ linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, perex@perex.cz,
+ LW@KARO-electronics.de, linux@arm.linux.org.uk, b42378@freescale.com,
+ oskar@scara.com, grant.likely@linaro.org, devicetree@vger.kernel.org,
+ ian.campbell@citrix.com, pawel.moll@arm.com, swarren@wwwdotorg.org,
+ rob.herring@calxeda.com, linux-arm-kernel@lists.infradead.org,
+ fabio.estevam@freescale.com, linux-kernel@vger.kernel.org, rob@landley.net,
+ r64188@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,111 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch addresses unaligned single precision floating point loads
-and stores in the single-step code.  The old implementation
-improperly treated an 8 byte structure as an array of two 4 byte
-words, which is a classic little endian bug.
+This patch series is mostly Freescale's SAI SoC Digital Audio Interface driver implementation. And the implementation is only compatible with device tree definition.
 
-Signed-off-by: Tom Musta <tmusta@gmail.com>
----
- arch/powerpc/lib/sstep.c |   52 +++++++++++++++++++++++++++++++++++----------
- 1 files changed, 40 insertions(+), 12 deletions(-)
+This patch series is based on linux-next and has been tested on Vybrid VF610 Tower board using device tree.
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 570f2af..f6f17aa 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -355,22 +355,36 @@ static int __kprobes do_fp_load(int rn, int (*func)(int, unsigned long),
- 				struct pt_regs *regs)
- {
- 	int err;
--	unsigned long val[sizeof(double) / sizeof(long)];
-+	union {
-+		double dbl;
-+		unsigned long ul[2];
-+		struct {
-+#ifdef __BIG_ENDIAN__
-+			unsigned _pad_;
-+			unsigned word;
-+#endif
-+#ifdef __LITTLE_ENDIAN__
-+			unsigned word;
-+			unsigned _pad_;
-+#endif
-+		} single;
-+	} data;
- 	unsigned long ptr;
- 
- 	if (!address_ok(regs, ea, nb))
- 		return -EFAULT;
- 	if ((ea & 3) == 0)
- 		return (*func)(rn, ea);
--	ptr = (unsigned long) &val[0];
-+	ptr = (unsigned long) &data.ul;
- 	if (sizeof(unsigned long) == 8 || nb == 4) {
--		err = read_mem_unaligned(&val[0], ea, nb, regs);
--		ptr += sizeof(unsigned long) - nb;
-+		err = read_mem_unaligned(&data.ul[0], ea, nb, regs);
-+		if (nb == 4)
-+			ptr = (unsigned long)&(data.single.word);
- 	} else {
- 		/* reading a double on 32-bit */
--		err = read_mem_unaligned(&val[0], ea, 4, regs);
-+		err = read_mem_unaligned(&data.ul[0], ea, 4, regs);
- 		if (!err)
--			err = read_mem_unaligned(&val[1], ea + 4, 4, regs);
-+			err = read_mem_unaligned(&data.ul[1], ea + 4, 4, regs);
- 	}
- 	if (err)
- 		return err;
-@@ -382,28 +396,42 @@ static int __kprobes do_fp_store(int rn, int (*func)(int, unsigned long),
- 				 struct pt_regs *regs)
- {
- 	int err;
--	unsigned long val[sizeof(double) / sizeof(long)];
-+	union {
-+		double dbl;
-+		unsigned long ul[2];
-+		struct {
-+#ifdef __BIG_ENDIAN__
-+			unsigned _pad_;
-+			unsigned word;
-+#endif
-+#ifdef __LITTLE_ENDIAN__
-+			unsigned word;
-+			unsigned _pad_;
-+#endif
-+		} single;
-+	} data;
- 	unsigned long ptr;
- 
- 	if (!address_ok(regs, ea, nb))
- 		return -EFAULT;
- 	if ((ea & 3) == 0)
- 		return (*func)(rn, ea);
--	ptr = (unsigned long) &val[0];
-+	ptr = (unsigned long) &data.ul[0];
- 	if (sizeof(unsigned long) == 8 || nb == 4) {
--		ptr += sizeof(unsigned long) - nb;
-+		if (nb == 4)
-+			ptr = (unsigned long)&(data.single.word);
- 		err = (*func)(rn, ptr);
- 		if (err)
- 			return err;
--		err = write_mem_unaligned(val[0], ea, nb, regs);
-+		err = write_mem_unaligned(data.ul[0], ea, nb, regs);
- 	} else {
- 		/* writing a double on 32-bit */
- 		err = (*func)(rn, ptr);
- 		if (err)
- 			return err;
--		err = write_mem_unaligned(val[0], ea, 4, regs);
-+		err = write_mem_unaligned(data.ul[0], ea, 4, regs);
- 		if (!err)
--			err = write_mem_unaligned(val[1], ea + 4, 4, regs);
-+			err = write_mem_unaligned(data.ul[1], ea + 4, 4, regs);
- 	}
- 	return err;
- }
--- 
-1.7.1
+
+Added in v1:
+- Add SAI SoC Digital Audio Interface driver.
+- Add Freescale SAI ALSA SoC Digital Audio Interface node for VF610.
+- Enables SAI ALSA SoC DAI device for Vybrid VF610 TOWER board.
+- Add device tree bindings for Freescale SAI.
+- Revise the bugs about the sgt15000 codec.
+- Add SGT15000 based audio machine driver.
+- Enable SGT15000 codec based audio driver node for VF610.
+- Add device tree bindings for Freescale VF610 sound.
