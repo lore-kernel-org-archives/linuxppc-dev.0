@@ -1,19 +1,20 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by ozlabs.org (Postfix) with ESMTP id DC07F2C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 00:22:23 +1100 (EST)
-Message-ID: <525FE48B.7020709@tabi.org>
-Date: Thu, 17 Oct 2013 08:22:19 -0500
-From: Timur Tabi <timur@tabi.org>
+Return-Path: <lars@metafoo.de>
+Received: from smtp-out-233.synserver.de (smtp-out-233.synserver.de
+ [212.40.185.233]) by ozlabs.org (Postfix) with ESMTP id D5FFD2C00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 00:31:48 +1100 (EST)
+Message-ID: <525FE728.90403@metafoo.de>
+Date: Thu, 17 Oct 2013 15:33:28 +0200
+From: Lars-Peter Clausen <lars@metafoo.de>
 MIME-Version: 1.0
-To: Lars-Peter Clausen <lars@metafoo.de>
+To: Timur Tabi <timur@tabi.org>
 Subject: Re: [alsa-devel] [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio
  Interface driver.
 References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
  <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
  <525FD4C7.3050806@tabi.org> <525FD65B.3040004@metafoo.de>
-In-Reply-To: <525FD65B.3040004@metafoo.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+ <525FE48B.7020709@tabi.org>
+In-Reply-To: <525FE48B.7020709@tabi.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
  linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com,
  linux-kernel@vger.kernel.org, r65073@freescale.com, LW@KARO-electronics.de,
@@ -33,12 +34,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Lars-Peter Clausen wrote:
->>> >>+    res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->>> >>+    sai->base = devm_ioremap_resource(&pdev->dev, res);
->> >
->> >Why not use of_iomap()?
-> Because it won't check for conflicting resource regions.
+On 10/17/2013 03:22 PM, Timur Tabi wrote:
+> Lars-Peter Clausen wrote:
+>>>> >>+    res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>>>> >>+    sai->base = devm_ioremap_resource(&pdev->dev, res);
+>>> >
+>>> >Why not use of_iomap()?
+>> Because it won't check for conflicting resource regions.
+> 
+> Maybe I've been out of the loop for too long, but why is that a particular
+> problem with this driver?
 
-Maybe I've been out of the loop for too long, but why is that a 
-particular problem with this driver?
+It is usually something you'd want to check in general to make sure that you
+don't have multiple device that access the same iomem region at the same time.
+
+- Lars
