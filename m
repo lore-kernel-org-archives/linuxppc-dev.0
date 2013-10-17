@@ -1,27 +1,17 @@
-Return-Path: <LW@KARO-electronics.de>
-Received: from mail.karo-electronics.de (mail.karo-electronics.de
- [81.173.242.67]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E9DA92C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 21:24:14 +1100 (EST)
-Date: Thu, 17 Oct 2013 12:22:30 +0200
-From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
-To: Xiubo Li <Li.Xiubo@freescale.com>
-Subject: Re: [PATCHv1 0/8] ALSA: Add SAI driver and enable SGT15000 codec.
-Message-ID: <20131017122230.314ab555@ipc1.ka-ro>
-In-Reply-To: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
-References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
-Mime-Version: 1.0
+Return-Path: <prarit@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 7C2FC2C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 22:50:34 +1100 (EST)
+Message-ID: <525FCEFF.9060702@redhat.com>
+Date: Thu, 17 Oct 2013 07:50:23 -0400
+From: Prarit Bhargava <prarit@redhat.com>
+MIME-Version: 1.0
+To: Ben Hutchings <ben@decadent.org.uk>
+Subject: Re: [PATCH] powerpc/vio: Fix modalias_show return values
+References: <1381982024.3267.14.camel@deadeye.wl.decadent.org.uk>
+In-Reply-To: <1381982024.3267.14.camel@deadeye.wl.decadent.org.uk>
 Content-Type: text/plain; charset=UTF-8
-Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
- linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
- perex@perex.cz, r65073@freescale.com, linux@arm.linux.org.uk,
- b42378@freescale.com, linux-arm-kernel@lists.infradead.org,
- grant.likely@linaro.org, devicetree@vger.kernel.org, ian.campbell@citrix.com,
- pawel.moll@arm.com, swarren@wwwdotorg.org, rob.herring@calxeda.com,
- broonie@kernel.org, oskar@scara.com, fabio.estevam@freescale.com,
- lgirdwood@gmail.com, linux-kernel@vger.kernel.org, rob@landley.net,
- r64188@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-Xiubo Li <Li.Xiubo@freescale.com> wrote:
-
-The subject has a wrong name for the codec "SGT1..." instead of
-"SGTL...", which will make it difficult to search for this thread in
-mail archives or in commit messages once this patches should be applied!
 
 
-Lothar Wa=C3=9Fmann
---=20
-___________________________________________________________
+On 10/16/2013 11:53 PM, Ben Hutchings wrote:
+> Commit e82b89a6f19bae73fb064d1b3dd91fcefbb478f4 introduces a trivial
+> local denial of service.
+> 
+>> --- a/arch/powerpc/kernel/vio.c
+>> +++ b/arch/powerpc/kernel/vio.c
+>> @@ -1351,11 +1351,15 @@ static ssize_t modalias_show(struct devi
+>>  	const char *cp;
+>>  
+>>  	dn = dev->of_node;
+>> -	if (!dn)
+>> -		return -ENODEV;
+>> +	if (!dn) {
+>> +		strcat(buf, "\n");
+> 
+> Every read from the same sysfs file handle uses the same buffer, which
+> gets zero-initialised just once.  So if I open the file, read it and
+> seek back to 0 repeatedly, I can make modalias_show() write arbitrary
+> numbers of newlines into *and beyond* that page-sized buffer.
+> 
+> Obviously strcat() should be strcpy().
+> 
 
-Ka-Ro electronics GmbH | Pascalstra=C3=9Fe 22 | D - 52076 Aachen
-Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
-Gesch=C3=A4ftsf=C3=BChrer: Matthias Kaussen
-Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
+D'oh!  Of course -- I wasn't thinking clearly about that.  I'll send out a new
+patch.
 
-www.karo-electronics.de | info@karo-electronics.de
-___________________________________________________________
+P.
+
+> Ben.
+> 
+>> +		return strlen(buf);
+>> +	}
+>>  	cp = of_get_property(dn, "compatible", NULL);
+>> -	if (!cp)
+>> -		return -ENODEV;
+>> +	if (!cp) {
+>> +		strcat(buf, "\n");
+>> +		return strlen(buf);
+>> +	}
+>>  
+>>  	return sprintf(buf, "vio:T%sS%s\n", vio_dev->type, cp);
+>>  }
+> 
