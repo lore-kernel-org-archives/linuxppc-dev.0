@@ -1,27 +1,28 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <LW@KARO-electronics.de>
+Received: from mail.karo-electronics.de (mail.karo-electronics.de
+ [81.173.242.67]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3ECA32C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 20:41:02 +1100 (EST)
-Date: Thu, 17 Oct 2013 10:40:54 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <20131017094054.GJ2443@sirena.org.uk>
-References: <1380773722-1295-1-git-send-email-linux@roeck-us.net>
- <20131003155816.GU27287@sirena.org.uk>
- <525F4421.3090404@roeck-us.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="agVz1gqRg0BwYviO"
-In-Reply-To: <525F4421.3090404@roeck-us.net>
-Subject: Re: [PATCH] ASoC: fsl_ssi: Fix irq_of_parse_and_map() return value
- check
-Cc: alsa-devel@alsa-project.org, Timur Tabi <timur@tabi.org>,
- Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org,
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 75CA02C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 20:57:25 +1100 (EST)
+Date: Thu, 17 Oct 2013 11:42:08 +0200
+From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
+To: Xiubo Li <Li.Xiubo@freescale.com>
+Subject: Re: [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
+Message-ID: <20131017114208.595a4224@ipc1.ka-ro>
+In-Reply-To: <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
+References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
+ <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
+ linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
+ perex@perex.cz, r65073@freescale.com, linux@arm.linux.org.uk,
+ b42378@freescale.com, linux-arm-kernel@lists.infradead.org,
+ grant.likely@linaro.org, devicetree@vger.kernel.org, ian.campbell@citrix.com,
+ pawel.moll@arm.com, swarren@wwwdotorg.org, rob.herring@calxeda.com,
+ broonie@kernel.org, oskar@scara.com, fabio.estevam@freescale.com,
+ lgirdwood@gmail.com, linux-kernel@vger.kernel.org, rob@landley.net,
+ r64188@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +32,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
---agVz1gqRg0BwYviO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Xiubo Li <Li.Xiubo@freescale.com> wrote:
+[...]
+> diff --git a/sound/soc/fsl/fsl-pcm-dma.c b/sound/soc/fsl/fsl-pcm-dma.c
+> new file mode 100644
+> index 0000000..c4d925e
+> --- /dev/null
+> +++ b/sound/soc/fsl/fsl-pcm-dma.c
+> @@ -0,0 +1,51 @@
+[...]
+> +
+> +static int fsl_sai_probe(struct platform_device *pdev)
+> +{
+> +	struct of_phandle_args	dma_args;
+> +	int index;
+> +	struct resource *res;
+> +	struct fsl_sai *sai;
+> +	int ret =3D 0;
+> +	struct device_node *np =3D pdev->dev.of_node;
+> +
+> +	sai =3D devm_kzalloc(&pdev->dev, sizeof(*sai), GFP_KERNEL);
+> +	if (!sai)
+> +		return -ENOMEM;
+> +
+> +	sai->fbt =3D FSL_SAI_FBT_MSB;
+> +
+> +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	sai->base =3D devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(sai->base)) {
+> +		ret =3D PTR_ERR(sai->base);
+> +		return ret;
+>
+could be:
+		return PTR_ERR(sai->base);
 
-On Wed, Oct 16, 2013 at 06:57:53PM -0700, Guenter Roeck wrote:
+[...]
+> +static const struct of_device_id fsl_sai_ids[] =3D {
+> +	{ .compatible =3D "fsl,vf610-sai", },
+> +	{ /*sentinel*/ },
+>
+The comma after the last entry in a struct initializer is there to make
+patches that append another entry cleaner. Since this entry is and
+always must be the last entry, the comma is useless here.
 
-> do you plan to send this patch upstream anytime soon ?
+> diff --git a/sound/soc/fsl/fsl-sai.h b/sound/soc/fsl/fsl-sai.h
+> new file mode 100644
+> index 0000000..ab76a8e
+> --- /dev/null
+> +++ b/sound/soc/fsl/fsl-sai.h
+> @@ -0,0 +1,127 @@
+> +/*
+> + * Copyright 2012-2013 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#ifndef __FSL_SAI_H
+> +#define __FSL_SAI_H
+> +
+> +#include <sound/dmaengine_pcm.h>
+> +
+> +#define FSL_SAI_FORMATS (SNDRV_PCM_FMTBIT_S16_LE |\
+> +			 SNDRV_PCM_FMTBIT_S20_3LE |\
+> +			 SNDRV_PCM_FMTBIT_S24_LE)
+> +
+> +#define FSL_SAI_DMABUF_SIZE	(32 * 1024)
+> +#define TCD_NUMBER		4
+> +#define EDMA_PRIO_HIGH          6
+> +
+strange indentation with mixed spaces and tabs.
 
-It'll go next time I send stuff if it hasn't already.
+> +/* SAI Transmit and Recieve Configuration 2 Register */
+> +#define SAI_TCR2		0x08
+> +#define SAI_RCR2		0x88
+> +#define SAI_CR2_SYNC		BIT(30)
+> +#define SAI_CR2_MSEL_MASK	(0xff << 26)
+> +#define SAI_CR2_MSEL_BUS	0
+> +#define SAI_CR2_MSEL_MCLK1	BIT(26)
+> +#define SAI_CR2_MSEL_MCLK2	BIT(27)
+> +#define SAI_CR2_MSEL_MCLK3	(BIT(26)|BIT(27))
+>
+spaces around '|'?
 
---agVz1gqRg0BwYviO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Lothar Wa=C3=9Fmann
+--=20
+___________________________________________________________
 
-iQIcBAEBAgAGBQJSX7CjAAoJELSic+t+oim9ZvMP/iguM/JmDhW+NeRgbccLUquR
-tGkh7Sr4EfaYAM80Z2jcRX2Z+WKB9zGZsNvT/y3sEM6UJnyyoY0Nhzfn0ZirHorJ
-sNjvufySJvJWl4UwlPGekNo42Jp+8o0EFXzhDe5fThC2utJlT9F/Dtzqsh6veaCY
-zz4LQkImJNjfx5OfjS1mfn4fqZnt/q/q1TJmFcwaJiU+2rYzVu0VWZqsIjFDxGI7
-QD9jLRt1Y7IvZOFT/fbheR8B8pmx+5g/dh0ymdOVPJbLo2NmNPCMGimz7723R/Qh
-QPBXIisyFkLJq9GjBXCYRlt4/fk8cIoynObJ2ihBOEXFGLcJ3qgUjmWaSd+hWumr
-bHjLrgSB83mHU/yvBtcLsH7MUziVyyfg7JtvuenwAVVPfSha2N/3/Tz/vvQX/Rha
-GC47KdnrH8+a69S0E/c6C5b9qK+BCY/lBGnWp08PR2r2NHc5Ob43QtsRBjCSK48v
-sRbq+yXjV4BmWE1FHTvAFx2UbCQZCgkd/keTcQDDqcXClFvH31A4GY0VAyZXscqt
-T5Xt23IAsSVf1M+fS728YBpPQ47DaLOZqvGqHxEBkk9SqjLUXpfCmxuWy1HZJKWy
-e//AYo7jyi8845cCL97+vPG+kN/hO0VUpoj4sl/wgl2BwT4qGLW1u8OLwUCBixI8
-bMfvi1xQmhyTzgI//y9M
-=gIzk
------END PGP SIGNATURE-----
+Ka-Ro electronics GmbH | Pascalstra=C3=9Fe 22 | D - 52076 Aachen
+Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
+Gesch=C3=A4ftsf=C3=BChrer: Matthias Kaussen
+Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
 
---agVz1gqRg0BwYviO--
+www.karo-electronics.de | info@karo-electronics.de
+___________________________________________________________
