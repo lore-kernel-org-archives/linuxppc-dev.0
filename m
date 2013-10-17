@@ -1,17 +1,18 @@
 Return-Path: <B47053@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E92302C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 20:11:58 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B52902C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 20:12:12 +1100 (EST)
 From: Xiubo Li <Li.Xiubo@freescale.com>
 To: <r65073@freescale.com>, <timur@tabi.org>, <lgirdwood@gmail.com>,
  <broonie@kernel.org>
-Subject: [PATCHv1 6/8] ASoC: fsl: add SGT15000 based audio machine driver.
-Date: Thu, 17 Oct 2013 17:01:15 +0800
-Message-ID: <1382000477-17304-7-git-send-email-Li.Xiubo@freescale.com>
+Subject: [PATCHv1 7/8] ARM: dts: Enable SGT15000 codec based audio driver node
+ for VF610.
+Date: Thu, 17 Oct 2013 17:01:16 +0800
+Message-ID: <1382000477-17304-8-git-send-email-Li.Xiubo@freescale.com>
 In-Reply-To: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
 References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
 MIME-Version: 1.0
@@ -33,265 +34,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is the SGTl5000 codec based audio driver supported with both
-playback and capture dai link implemention.
+This patch add and enable SGT15000 codec support, and also specified
+the corresponding SAI node.
 
-This implementation is only compatible with device tree definition.
-
-Signed-off-by: Alison Wang <b18965@freescale.com
 Signed-off-by: Xiubo Li <Li.Xiubo@freescale.com>
+Signed-off-by: Alison Wang <b18965@freescale.com
 ---
- sound/soc/fsl/Kconfig        |  10 +++
- sound/soc/fsl/Makefile       |   2 +
- sound/soc/fsl/fsl-sgtl5000.c | 208 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 220 insertions(+)
- create mode 100644 sound/soc/fsl/fsl-sgtl5000.c
+ arch/arm/boot/dts/vf610-twr.dts | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index a49b386..3fbbbf2 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -220,4 +220,14 @@ config SND_SOC_FSL_PCM
- 	tristate
- 	select SND_SOC_GENERIC_DMAENGINE_PCM
+diff --git a/arch/arm/boot/dts/vf610-twr.dts b/arch/arm/boot/dts/vf610-twr.dts
+index e4106dd..a2d9214 100644
+--- a/arch/arm/boot/dts/vf610-twr.dts
++++ b/arch/arm/boot/dts/vf610-twr.dts
+@@ -34,6 +34,19 @@
+ 		};
+ 	};
  
-+config SND_SOC_FSL_SGTL5000
-+	tristate "SoC Audio support for FSL boards with sgtl5000"
-+	depends on OF && I2C
-+	select SND_SOC_FSL_SAI
-+	select SND_SOC_FSL_PCM
-+	select SND_SOC_SGTL5000
-+	help
-+	  Say Y if you want to add support for SoC audio on an FSL board with
-+	  a sgtl5000 codec.
++	sound {
++		compatible = "fsl,vf610-sgtl5000";
++		model = "vf610-sgtl5000";
++		saif-controller = <&sai2>;
++		audio-codec = <&codec>;
++		audio-routing =
++			"MIC_IN", "Mic Jack",
++			"Mic Jack", "Mic Bias",
++			"LINE_IN", "Line In Jack",
++			"Headphone Jack", "HP_OUT",
++			"Ext Spk", "LINE_OUT";
++	};
 +
- endif # SND_FSL_SOC
-diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index 865ac23..e8bf0bd 100644
---- a/sound/soc/fsl/Makefile
-+++ b/sound/soc/fsl/Makefile
-@@ -58,6 +58,8 @@ obj-$(CONFIG_SND_SOC_IMX_MC13783) += snd-soc-imx-mc13783.o
- # FSL ARM SAI/SGT15000 Platform Support
- snd-soc-fsl-sai-objs := fsl-sai.o
- snd-soc-fsl-pcm-objs := fsl-pcm-dma.o
-+snd-soc-fsl-sgtl5000-objs := fsl-sgtl5000.o
+ };
  
- obj-$(CONFIG_SND_SOC_FSL_SAI) += snd-soc-fsl-sai.o
- obj-$(CONFIG_SND_SOC_FSL_PCM) += snd-soc-fsl-pcm.o
-+obj-$(CONFIG_SND_SOC_FSL_SGTL5000) += snd-soc-fsl-sgtl5000.o
-diff --git a/sound/soc/fsl/fsl-sgtl5000.c b/sound/soc/fsl/fsl-sgtl5000.c
-new file mode 100644
-index 0000000..bab85ec
---- /dev/null
-+++ b/sound/soc/fsl/fsl-sgtl5000.c
-@@ -0,0 +1,208 @@
-+/*
-+ * Freeacale ALSA SoC Audio using SGT1500 as codec.
-+ *
-+ * Copyright 2012-2013 Freescale Semiconductor, Inc.
-+ *
-+ * The code contained herein is licensed under the GNU General Public
-+ * License. You may obtain a copy of the GNU General Public License
-+ * Version 2 or later at the following locations:
-+ *
-+ */
+ &fec0 {
+@@ -55,6 +68,12 @@
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_i2c0_1>;
+ 	status = "okay";
 +
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/i2c.h>
-+#include <linux/clk.h>
-+
-+#include "../codecs/sgtl5000.h"
-+#include "fsl-sai.h"
-+
-+static unsigned int sysclk_rate;
-+
-+static int fsl_sgtl5000_dai_init(struct snd_soc_pcm_runtime *rtd)
-+{
-+	int ret;
-+	struct device *dev = rtd->card->dev;
-+
-+	ret = snd_soc_dai_set_sysclk(rtd->codec_dai, SGTL5000_SYSCLK,
-+				     sysclk_rate, SND_SOC_CLOCK_IN);
-+	if (ret) {
-+		dev_err(dev, "could not set codec driver clock params :%d\n",
-+				ret);
-+		return ret;
-+	}
-+
-+	ret = snd_soc_dai_set_sysclk(rtd->cpu_dai, FSL_SAI_CLK_BUS,
-+				     sysclk_rate, SND_SOC_CLOCK_OUT);
-+	if (ret) {
-+		dev_err(dev, "could not set cpu dai driver clock params :%d\n",
-+				ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int sgtl5000_params(struct snd_pcm_substream *substream,
-+		struct snd_pcm_hw_params *params)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
-+	unsigned int channels = params_channels(params);
-+
-+	/* TODO: The SAI driver should figure this out for us */
-+	switch (channels) {
-+	case 2:
-+		snd_soc_dai_set_tdm_slot(cpu_dai, 0xfffffffc, 0xfffffffc, 2, 0);
-+		break;
-+	case 1:
-+		snd_soc_dai_set_tdm_slot(cpu_dai, 0xfffffffe, 0xfffffffe, 1, 0);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static struct snd_soc_ops fsl_sgtl5000_hifi_ops = {
-+	.hw_params = sgtl5000_params,
-+};
-+
-+static struct snd_soc_dai_link fsl_sgtl5000_dai = {
-+	.name = "HiFi",
-+	.stream_name = "HiFi",
-+	.codec_dai_name = "sgtl5000",
-+	.init = &fsl_sgtl5000_dai_init,
-+	.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-+		SND_SOC_DAIFMT_CBM_CFM,
-+	.ops = &fsl_sgtl5000_hifi_ops,
-+};
-+
-+static const struct snd_soc_dapm_widget fsl_sgtl5000_dapm_widgets[] = {
-+	SND_SOC_DAPM_MIC("Mic Jack", NULL),
-+	SND_SOC_DAPM_LINE("Line In Jack", NULL),
-+	SND_SOC_DAPM_HP("Headphone Jack", NULL),
-+	SND_SOC_DAPM_SPK("Line Out Jack", NULL),
-+	SND_SOC_DAPM_SPK("Ext Spk", NULL),
-+};
-+
-+static struct snd_soc_card fsl_sgt1500_card = {
-+	.owner = THIS_MODULE,
-+	.num_links = 1,
-+	.dai_link = &fsl_sgtl5000_dai,
-+	.dapm_widgets = fsl_sgtl5000_dapm_widgets,
-+	.num_dapm_widgets = ARRAY_SIZE(fsl_sgtl5000_dapm_widgets),
-+};
-+
-+static int fsl_sgtl5000_parse_dt(struct platform_device *pdev)
-+{
-+	int ret;
-+	struct device_node *sai_np, *codec_np;
-+	struct clk *codec_clk;
-+	struct i2c_client *codec_dev;
-+	struct device_node *np = pdev->dev.of_node;
-+
-+	ret = snd_soc_of_parse_card_name(&fsl_sgt1500_card, "model");
-+	if (ret)
-+		return ret;
-+
-+	ret = snd_soc_of_parse_audio_routing(&fsl_sgt1500_card,
-+			"audio-routing");
-+	if (ret)
-+		return ret;
-+
-+	sai_np = of_parse_phandle(np, "saif-controller", 0);
-+	if (!sai_np) {
-+		dev_err(&pdev->dev, "\"saif-controller\" phandle missing or "
-+				"invalid\n");
-+		return -EINVAL;
-+	}
-+	fsl_sgtl5000_dai.cpu_of_node = sai_np;
-+	fsl_sgtl5000_dai.platform_of_node = sai_np;
-+
-+	codec_np = of_parse_phandle(np, "audio-codec", 0);
-+	if (!codec_np) {
-+		dev_err(&pdev->dev, "\"audio-codec\" phandle missing or "
-+				"invalid\n");
-+		ret = -EINVAL;
-+		goto sai_np_fail;
-+	}
-+	fsl_sgtl5000_dai.codec_of_node = codec_np;
-+
-+	codec_dev = of_find_i2c_device_by_node(codec_np);
-+	if (!codec_dev) {
-+		dev_err(&pdev->dev, "failed to find codec platform device\n");
-+		ret = PTR_ERR(codec_dev);
-+		goto codec_np_fail;
-+	}
-+
-+	codec_clk = devm_clk_get(&codec_dev->dev, NULL);
-+	if (IS_ERR(codec_clk)) {
-+		dev_err(&pdev->dev, "failed to get codec clock\n");
-+		ret = PTR_ERR(codec_clk);
-+		goto codec_np_fail;
-+	}
-+
-+	sysclk_rate = clk_get_rate(codec_clk);
-+
-+codec_np_fail:
-+	of_node_put(codec_np);
-+sai_np_fail:
-+	of_node_put(sai_np);
-+
-+	return ret;
-+}
-+
-+static int fsl_sgtl5000_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+
-+	fsl_sgt1500_card.dev = &pdev->dev;
-+
-+	ret = fsl_sgtl5000_parse_dt(pdev);
-+	if (ret) {
-+		dev_err(&pdev->dev,
-+				"parse sgtl5000 device tree failed :%d\n",
-+				ret);
-+		return ret;
-+	}
-+
-+	ret = snd_soc_register_card(&fsl_sgt1500_card);
-+	if (ret) {
-+		dev_err(&pdev->dev, "register soc sound card failed :%d\n",
-+				ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int fsl_sgtl5000_remove(struct platform_device *pdev)
-+{
-+	snd_soc_unregister_card(&fsl_sgt1500_card);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id fsl_sgtl5000_dt_ids[] = {
-+	{ .compatible = "fsl,vf610-sgtl5000", },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, fsl_sgtl5000_dt_ids);
-+
-+static struct platform_driver fsl_sgtl5000_driver = {
-+	.driver = {
-+		.name = "fsl-sgtl5000",
-+		.owner = THIS_MODULE,
-+		.of_match_table = fsl_sgtl5000_dt_ids,
-+	},
-+	.probe = fsl_sgtl5000_probe,
-+	.remove = fsl_sgtl5000_remove,
-+};
-+module_platform_driver(fsl_sgtl5000_driver);
-+
-+MODULE_AUTHOR("Xiubo Li <Li.Xiubo@freescale.com>");
-+MODULE_DESCRIPTION("Freescale SGTL5000 ASoC driver");
-+MODULE_LICENSE("GPL");
++	codec: sgtl5000@0a {
++		compatible = "fsl,sgtl5000";
++		reg = <0x0a>;
++		clocks = <&clks VF610_CLK_SAI2>;
++	};
+ };
+ 
+ &sai2 {
 -- 
 1.8.0
