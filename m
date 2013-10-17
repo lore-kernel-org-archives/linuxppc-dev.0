@@ -1,20 +1,37 @@
-Return-Path: <ben@decadent.org.uk>
-Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
- [88.96.1.126])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6DD012C0079
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 15:22:53 +1100 (EST)
-Message-ID: <1381982024.3267.14.camel@deadeye.wl.decadent.org.uk>
-Subject: Re: [PATCH] powerpc/vio: Fix modalias_show return values
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Prarit Bhargava <prarit@redhat.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-Date: Thu, 17 Oct 2013 04:53:44 +0100
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-VHdDC/Jxi8KnPAAR2tD6"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0E0432C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 16:12:00 +1100 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 17 Oct 2013 10:41:57 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id ECB211258051
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 10:42:22 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9H5BpxI43647040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 10:41:51 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9H5Br5w001074
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 10:41:53 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH -V2 11/14] kvm: powerpc: book3s: Support building HV and
+ PR KVM as module
+In-Reply-To: <1381164482-31001-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1381164482-31001-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1381164482-31001-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 17 Oct 2013 10:41:51 +0530
+Message-ID: <87ppr4qy5k.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,72 +42,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-VHdDC/Jxi8KnPAAR2tD6
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+The below patch fix a compile issue with KVM_XICS. Please fold
 
-Commit e82b89a6f19bae73fb064d1b3dd91fcefbb478f4 introduces a trivial
-local denial of service.
-
-> --- a/arch/powerpc/kernel/vio.c
-> +++ b/arch/powerpc/kernel/vio.c
-> @@ -1351,11 +1351,15 @@ static ssize_t modalias_show(struct devi
->  	const char *cp;
-> =20
->  	dn =3D dev->of_node;
-> -	if (!dn)
-> -		return -ENODEV;
-> +	if (!dn) {
-> +		strcat(buf, "\n");
-
-Every read from the same sysfs file handle uses the same buffer, which
-gets zero-initialised just once.  So if I open the file, read it and
-seek back to 0 repeatedly, I can make modalias_show() write arbitrary
-numbers of newlines into *and beyond* that page-sized buffer.
-
-Obviously strcat() should be strcpy().
-
-Ben.
-
-> +		return strlen(buf);
-> +	}
->  	cp =3D of_get_property(dn, "compatible", NULL);
-> -	if (!cp)
-> -		return -ENODEV;
-> +	if (!cp) {
-> +		strcat(buf, "\n");
-> +		return strlen(buf);
-> +	}
-> =20
->  	return sprintf(buf, "vio:T%sS%s\n", vio_dev->type, cp);
->  }
-
---=20
-Ben Hutchings
-Horngren's Observation:
-                   Among economists, the real world is often a special case=
-.
-
---=-VHdDC/Jxi8KnPAAR2tD6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-
-iQIVAwUAUl9fSOe/yOyVhhEJAQraiBAA1BFN06kQry43JgUMCuoVB3T9zBues3x8
-Th1kzFmv18vcGkOYvnSIRTpLfZRwbux4kStWgdTP9Wf4AfC9lVNk9gzmSjdCF0TB
-yMmXQVSBowqR1E+PGZ/aMclGJB5jYvtwg5C4fwBZ+XGuH4MQ7sBZ/J19eLpiT7fC
-secd0ETfMOqMPDzcqSYrMH1650QJspYUpf2ar34B/inGFaerWRVAmGZcFQ+ZfNeu
-tTOVv2Neg3C7yeUxNPgM7OBMTrIHlI1Q4wTXqSkRUKqEpJ9SLm265NBabfCgGnWf
-pgXMnwEWuSSAFCrlH65I3LsVCadRMgtv+FU6YR7oTR7YMQThfJElSPFjlcxKBSib
-qXMgp4ZyxD723b+H6b9wTajt3F9RnRNLNa96WsErVjNom6dEv0RNSKQIagJHRfDU
-Q1n/sv197RkiVK1vygyRBRJMwA5cBoEOFP1sqIkfoSBzi6+1ygUXrPikrP4+rmeV
-dQzqtgY2+QcgKiENWEGyPc7e5CxQReLsks7wgPfqkPKJ9DrCZoxInHc+g1LWlJue
-oTVhgahecUgOlQKlIVbEFFUG/GwzZefL//ye6ie3HBGLJ1FdCzXuir5QrQu1XbNT
-vgZJRbbaUc2lk0rtYPDP/ZGVYUnIjqig7xxw1OdqnPtv4tkelpAD3XQlSsJLbM0M
-G5rBQuTB6bE=
-=djlN
------END PGP SIGNATURE-----
-
---=-VHdDC/Jxi8KnPAAR2tD6--
+diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
+index cef3de9..c3c832b 100644
+--- a/arch/powerpc/kvm/book3s_xics.c
++++ b/arch/powerpc/kvm/book3s_xics.c
+@@ -840,6 +840,7 @@ int kvmppc_xics_hcall(struct kvm_vcpu *vcpu, u32 req)
+ 
+ 	return rc;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_xics_hcall);
+ 
+ 
+ /* -- Initialisation code etc. -- */
