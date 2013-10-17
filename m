@@ -1,26 +1,12 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by ozlabs.org (Postfix) with ESMTP id BB4A22C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 23:15:08 +1100 (EST)
-Message-ID: <525FD4C7.3050806@tabi.org>
-Date: Thu, 17 Oct 2013 07:15:03 -0500
-From: Timur Tabi <timur@tabi.org>
-MIME-Version: 1.0
-To: Xiubo Li <Li.Xiubo@freescale.com>, r65073@freescale.com,
- lgirdwood@gmail.com, broonie@kernel.org
-Subject: Re: [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
-References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
- <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
-In-Reply-To: <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
- linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, perex@perex.cz,
- LW@KARO-electronics.de, linux@arm.linux.org.uk, b42378@freescale.com,
- oskar@scara.com, grant.likely@linaro.org, devicetree@vger.kernel.org,
- ian.campbell@citrix.com, pawel.moll@arm.com, swarren@wwwdotorg.org,
- rob.herring@calxeda.com, linux-arm-kernel@lists.infradead.org,
- fabio.estevam@freescale.com, linux-kernel@vger.kernel.org, rob@landley.net,
- r64188@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Thu, 17 Oct 2013 23:19:43 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, tony@bakeyournoodle.com
+Subject: powerpc: Fix little endian issue in OF PCI scan
+Message-ID: <20131017231943.5bf24559@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,8 +16,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Xiubo Li wrote:
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	sai->base = devm_ioremap_resource(&pdev->dev, res);
+    
+This issue was causing the QEMU emulated USB device to fail dring
+PCI probe.
+    
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Why not use of_iomap()?
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 4368ec6..ac0b034 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -302,7 +302,7 @@ static struct pci_dev *of_scan_pci_dev(struct pci_bus *bus,
+ 			    struct device_node *dn)
+ {
+ 	struct pci_dev *dev = NULL;
+-	const u32 *reg;
++	const __be32 *reg;
+ 	int reglen, devfn;
+ 
+ 	pr_debug("  * %s\n", dn->full_name);
+@@ -312,7 +312,7 @@ static struct pci_dev *of_scan_pci_dev(struct pci_bus *bus,
+ 	reg = of_get_property(dn, "reg", &reglen);
+ 	if (reg == NULL || reglen < 20)
+ 		return NULL;
+-	devfn = (reg[0] >> 8) & 0xff;
++	devfn = (of_read_number(reg, 1) >> 8) & 0xff;
+ 
+ 	/* Check if the PCI device is already there */
+ 	dev = pci_get_slot(bus, devfn);
