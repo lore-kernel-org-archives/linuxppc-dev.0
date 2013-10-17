@@ -1,37 +1,27 @@
-Return-Path: <R65777@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+Return-Path: <B45475@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 166D72C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 17:45:56 +1100 (EST)
-Received: from mail48-co9 (localhost [127.0.0.1])	by mail48-co9-R.bigfish.com
- (Postfix) with ESMTP id DF95D4C01E5	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,
- 17 Oct 2013 06:45:52 +0000 (UTC)
-Received: from CO9EHSMHS010.bigfish.com (unknown [10.236.132.251])	by
- mail48-co9.bigfish.com (Postfix) with ESMTP id 992404008F	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 06:45:50 +0000 (UTC)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
-Date: Thu, 17 Oct 2013 06:45:48 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D071C362B@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1381828871-17110-1-git-send-email-dongsheng.wang@freescale.com>
- <1381828871-17110-4-git-send-email-dongsheng.wang@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C08E4@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B1799@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C3279@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B189E@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C34C1@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B195F@039-SN2MPN1-021.039d.mgd.msft.net>
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259010B195F@039-SN2MPN1-021.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 763D22C00CC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 18:07:51 +1100 (EST)
+Received: from mail170-ch1 (localhost [127.0.0.1])	by
+ mail170-ch1-R.bigfish.com (Postfix) with ESMTP id C23131C00A5	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 07:07:46 +0000 (UTC)
+Received: from CH1EHSMHS037.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.240])	by mail170-ch1.bigfish.com (Postfix) with ESMTP id
+ B6AA7420227	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2013 07:07:44
+ +0000 (UTC)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/p1010rdb:update mtd of nand to adapt to both old and
+ new p1010rdb
+Date: Thu, 17 Oct 2013 14:59:37 +0800
+Message-ID: <1381993177-19281-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,259 +31,264 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+P1010rdb-pa and p1010rdb-pb have different mtd of nand.
+So update dts to adapt to both p1010rdb-pa and p1010rdb-pb.
 
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+ arch/powerpc/boot/dts/p1010rdb-pa.dts     | 40 +++++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p1010rdb-pa_36b.dts | 40 +++++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p1010rdb-pb.dts     | 34 ++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p1010rdb-pb_36b.dts | 34 ++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p1010rdb.dtsi       | 40 +------------------------------
+ 5 files changed, 149 insertions(+), 39 deletions(-)
 
-> > > -----Original Message-----
-> > > From: Wang Dongsheng-B40534
-> > > Sent: Thursday, October 17, 2013 11:22 AM
-> > > To: Bhushan Bharat-R65777; Wood Scott-B07421
-> > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state
-> > > and altivec idle
-> > >
-> > >
-> > >
-> > > > -----Original Message-----
-> > > > From: Bhushan Bharat-R65777
-> > > > Sent: Thursday, October 17, 2013 11:20 AM
-> > > > To: Wang Dongsheng-B40534; Wood Scott-B07421
-> > > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state
-> > > > and altivec idle
-> > > >
-> > > >
-> > > >
-> > > > > -----Original Message-----
-> > > > > From: Wang Dongsheng-B40534
-> > > > > Sent: Thursday, October 17, 2013 8:16 AM
-> > > > > To: Bhushan Bharat-R65777; Wood Scott-B07421
-> > > > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20
-> > > > > state and altivec idle
-> > > > >
-> > > > >
-> > > > >
-> > > > > > -----Original Message-----
-> > > > > > From: Bhushan Bharat-R65777
-> > > > > > Sent: Thursday, October 17, 2013 1:01 AM
-> > > > > > To: Wang Dongsheng-B40534; Wood Scott-B07421
-> > > > > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > > > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20
-> > > > > > state and altivec idle
-> > > > > >
-> > > > > >
-> > > > > >
-> > > > > > > -----Original Message-----
-> > > > > > > From: Wang Dongsheng-B40534
-> > > > > > > Sent: Tuesday, October 15, 2013 2:51 PM
-> > > > > > > To: Wood Scott-B07421
-> > > > > > > Cc: Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org;
-> > > > > > > Wang
-> > > > > > Dongsheng-B40534
-> > > > > > > Subject: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20
-> > > > > > > state and
-> > > > > > altivec idle
-> > > > > > >
-> > > > > > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > > > > > >
-> > > > > > > Add a sys interface to enable/diable pw20 state or altivec
-> > > > > > > idle, and
-> > > > > > control the
-> > > > > > > wait entry time.
-> > > > > > >
-> > > > > > > Enable/Disable interface:
-> > > > > > > 0, disable. 1, enable.
-> > > > > > > /sys/devices/system/cpu/cpuX/pw20_state
-> > > > > > > /sys/devices/system/cpu/cpuX/altivec_idle
-> > > > > > >
-> > > > > > > Set wait time interface:(Nanosecond)
-> > > > > > > /sys/devices/system/cpu/cpuX/pw20_wait_time
-> > > > > > > /sys/devices/system/cpu/cpuX/altivec_idle_wait_time
-> > > > > > > Example: Base on TBfreq is 41MHZ.
-> > > > > > > 1~48(ns): TB[63]
-> > > > > > > 49~97(ns): TB[62]
-> > > > > > > 98~195(ns): TB[61]
-> > > > > > > 196~390(ns): TB[60]
-> > > > > > > 391~780(ns): TB[59]
-> > > > > > > 781~1560(ns): TB[58]
-> > > > > > > ...
-> > > > > > >
-> > > > > > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > > > > > > ---
-> > > > > > > *v5:
-> > > > > > > Change get_idle_ticks_bit function implementation.
-> > > > > > >
-> > > > > > > *v4:
-> > > > > > > Move code from 85xx/common.c to kernel/sysfs.c.
-> > > > > > >
-> > > > > > > Remove has_pw20_altivec_idle function.
-> > > > > > >
-> > > > > > > Change wait "entry_bit" to wait time.
-> > > > > > >
-> > > > > > > diff --git a/arch/powerpc/kernel/sysfs.c
-> > > > > > > b/arch/powerpc/kernel/sysfs.c
-> > > > > > index
-> > > > > > > 27a90b9..10d1128 100644
-> > > > > > > --- a/arch/powerpc/kernel/sysfs.c
-> > > > > > > +++ b/arch/powerpc/kernel/sysfs.c
-> > > > > > > @@ -85,6 +85,284 @@ __setup("smt-snooze-delay=3D",
-> > > > > > setup_smt_snooze_delay);
-> > > > > > >
-> > > > > > >  #endif /* CONFIG_PPC64 */
-> > > > > > >
-> > > > > > > +#ifdef CONFIG_FSL_SOC
-> > > > > > > +#define MAX_BIT				63
-> > > > > > > +
-> > > > > > > +static u64 pw20_wt;
-> > > > > > > +static u64 altivec_idle_wt;
-> > > > > > > +
-> > > > > > > +static unsigned int get_idle_ticks_bit(u64 ns) {
-> > > > > > > +	u64 cycle;
-> > > > > > > +
-> > > > > > > +	if (ns >=3D 10000)
-> > > > > > > +		cycle =3D div_u64(ns + 500, 1000) * tb_ticks_per_usec;
-> > > > > > > +	else
-> > > > > > > +		cycle =3D div_u64(ns * tb_ticks_per_usec, 1000);
-> > > > > > > +
-> > > > > > > +	if (!cycle)
-> > > > > > > +		return 0;
-> > > > > > > +
-> > > > > > > +	return ilog2(cycle);
-> > > > > > > +}
-> > > > > > > +
-> > > > > > > +static void do_show_pwrmgtcr0(void *val) {
-> > > > > > > +	u32 *value =3D val;
-> > > > > > > +
-> > > > > > > +	*value =3D mfspr(SPRN_PWRMGTCR0); }
-> > > > > > > +
-> > > > > > > +static ssize_t show_pw20_state(struct device *dev,
-> > > > > > > +				struct device_attribute *attr, char *buf) {
-> > > > > > > +	u32 value;
-> > > > > > > +	unsigned int cpu =3D dev->id;
-> > > > > > > +
-> > > > > > > +	smp_call_function_single(cpu, do_show_pwrmgtcr0, &value,
-> > > > > > > +1);
-> > > > > > > +
-> > > > > > > +	value &=3D PWRMGTCR0_PW20_WAIT;
-> > > > > > > +
-> > > > > > > +	return sprintf(buf, "%u\n", value ? 1 : 0); }
-> > > > > > > +
-> > > > > > > +static void do_store_pw20_state(void *val) {
-> > > > > > > +	u32 *value =3D val;
-> > > > > > > +	u32 pw20_state;
-> > > > > > > +
-> > > > > > > +	pw20_state =3D mfspr(SPRN_PWRMGTCR0);
-> > > > > > > +
-> > > > > > > +	if (*value)
-> > > > > > > +		pw20_state |=3D PWRMGTCR0_PW20_WAIT;
-> > > > > > > +	else
-> > > > > > > +		pw20_state &=3D ~PWRMGTCR0_PW20_WAIT;
-> > > > > > > +
-> > > > > > > +	mtspr(SPRN_PWRMGTCR0, pw20_state); }
-> > > > > > > +
-> > > > > > > +static ssize_t store_pw20_state(struct device *dev,
-> > > > > > > +				struct device_attribute *attr,
-> > > > > > > +				const char *buf, size_t count) {
-> > > > > > > +	u32 value;
-> > > > > > > +	unsigned int cpu =3D dev->id;
-> > > > > > > +
-> > > > > > > +	if (kstrtou32(buf, 0, &value))
-> > > > > > > +		return -EINVAL;
-> > > > > > > +
-> > > > > > > +	if (value > 1)
-> > > > > > > +		return -EINVAL;
-> > > > > > > +
-> > > > > > > +	smp_call_function_single(cpu, do_store_pw20_state, &value,
-> > > > > > > +1);
-> > > > > > > +
-> > > > > > > +	return count;
-> > > > > > > +}
-> > > > > > > +
-> > > > > > > +static ssize_t show_pw20_wait_time(struct device *dev,
-> > > > > > > +				struct device_attribute *attr, char *buf) {
-> > > > > > > +	u32 value;
-> > > > > > > +	u64 tb_cycle;
-> > > > > > > +	s64 time;
-> > > > > > > +
-> > > > > > > +	unsigned int cpu =3D dev->id;
-> > > > > > > +
-> > > > > > > +	if (!pw20_wt) {
-> > > > > > > +		smp_call_function_single(cpu, do_show_pwrmgtcr0, &value,
-> > > > 1);
-> > > > > > > +		value =3D (value & PWRMGTCR0_PW20_ENT) >>
-> > > > > > > +					PWRMGTCR0_PW20_ENT_SHIFT;
-> > > > > > > +
-> > > > > > > +		tb_cycle =3D (1 << (MAX_BIT - value)) * 2;
-> > > > > >
-> > > > > > Is value =3D 0 and value =3D 1 legal? These will make tb_cycle =
-=3D
-> > > > > > 0,
-> > > > > >
-> > > > > > > +		time =3D div_u64(tb_cycle * 1000, tb_ticks_per_usec) - 1;
-> > > > > >
-> > > > > > And time =3D -1;
-> > > > > >
-> > > > > Please look at the end of the function, :)
-> > > > >
-> > > > > "return sprintf(buf, "%llu\n", time > 0 ? time : 0);"
-> > > >
-> > > > I know you return 0 if value =3D 0/1, my question was that, is this
-> > > > correct as per specification?
-> > > >
-> > > > Ahh, also for "value" upto 7 you will return 0, no?
-> > > >
-> > > If value =3D 0, MAX_BIT - value =3D 63
-> > > tb_cycle =3D 0xffffffff_ffffffff, tb_cycle * 1000 will overflow, but
-> > > this situation is not possible.
-> > > Because if the "value =3D 0" means this feature will be "disable".
-> > > Now The default wait bit is 50(MAX_BIT - value, value =3D 13), the
-> > > PW20/Altivec Idle wait entry time is about 1ms, this time is very
-> > > long for wait idle time, and it's cannot be increased(means (MAX_BIT
-> > > - value)
-> > cannot greater than 50).
-> >
-> > What you said is not obvious from code and so at least write a comment
-> > that value will be always >=3D 13 or value will never be less than < 8
-> > and below calculation will not overflow. may be error out if value is
-> > less than 8.
-> >
-> The "value" less than 10, this will overflow.
-> There is not error, The code I knew it could not be less than 10, that's =
-why I
-> use the following code. :)
-
-I am sorry to persist but this is not about what you know, this is about ho=
-w code is read and code does not say what you know, so add a comment at lea=
-st and error out/warn when "value" is less than a certain number.
-
--Bharat
-
->=20
-> tb_cycle =3D (1 << (MAX_BIT - value)) * 2; time =3D div_u64(tb_cycle * 10=
-00,
-> tb_ticks_per_usec) - 1;
->=20
-> -dongsheng
->=20
-> > -Bharat
-> >
-> > >
-> > > If (MAX_BIT-value) =3D 0, tb_cycle =3D 2, div_u64(tb_cycle * 1000,
-> > > tb_ticks_per_usec) - 1 =3D ((2 * 1000) / 41) -
-> > > 1 =3D 48 - 1 =3D 47
-> > >
-> > > the return value is 47
-> > >
-> > > > -Bharat
-> > > >
-> > > > >
-> > > > > -dongsheng
-> > > > >
-> > > > > >
-> > > > > > > +	} else {
-> > > > > > > +		time =3D pw20_wt;
-> > > > > > > +	}
-> > > > > > > +
-> > > > > > > +	return sprintf(buf, "%llu\n", time > 0 ? time : 0);
-> > > > > > > }
-> > > > > > > +
+diff --git a/arch/powerpc/boot/dts/p1010rdb-pa.dts b/arch/powerpc/boot/dts/p1010rdb-pa.dts
+index f210ba5..76f252b 100644
+--- a/arch/powerpc/boot/dts/p1010rdb-pa.dts
++++ b/arch/powerpc/boot/dts/p1010rdb-pa.dts
+@@ -20,6 +20,46 @@
+ 
+ /include/ "p1010rdb.dtsi"
+ 
++&ifc_nand {
++	partition@0 {
++		/* This location must not be altered  */
++		/* 1MB for u-boot Bootloader Image */
++		reg = <0x0 0x00100000>;
++		label = "NAND U-Boot Image";
++		read-only;
++	};
++
++	partition@100000 {
++		/* 1MB for DTB Image */
++		reg = <0x00100000 0x00100000>;
++		label = "NAND DTB Image";
++	};
++
++	partition@200000 {
++		/* 4MB for Linux Kernel Image */
++		reg = <0x00200000 0x00400000>;
++		label = "NAND Linux Kernel Image";
++	};
++
++	partition@600000 {
++		/* 4MB for Compressed Root file System Image */
++		reg = <0x00600000 0x00400000>;
++		label = "NAND Compressed RFS Image";
++	};
++
++	partition@a00000 {
++		/* 15MB for JFFS2 based Root file System */
++		reg = <0x00a00000 0x00f00000>;
++		label = "NAND JFFS2 Root File System";
++	};
++
++	partition@1900000 {
++		/* 7MB for User Area */
++		reg = <0x01900000 0x00700000>;
++		label = "NAND User area";
++	};
++};
++
+ &phy0 {
+ 	interrupts = <3 1 0 0>;
+ };
+diff --git a/arch/powerpc/boot/dts/p1010rdb-pa_36b.dts b/arch/powerpc/boot/dts/p1010rdb-pa_36b.dts
+index 9740b0c..2961766 100644
+--- a/arch/powerpc/boot/dts/p1010rdb-pa_36b.dts
++++ b/arch/powerpc/boot/dts/p1010rdb-pa_36b.dts
+@@ -43,6 +43,46 @@
+ 
+ /include/ "p1010rdb.dtsi"
+ 
++&ifc_nand {
++	partition@0 {
++		/* This location must not be altered  */
++		/* 1MB for u-boot Bootloader Image */
++		reg = <0x0 0x00100000>;
++		label = "NAND U-Boot Image";
++		read-only;
++	};
++
++	partition@100000 {
++		/* 1MB for DTB Image */
++		reg = <0x00100000 0x00100000>;
++		label = "NAND DTB Image";
++	};
++
++	partition@200000 {
++		/* 4MB for Linux Kernel Image */
++		reg = <0x00200000 0x00400000>;
++		label = "NAND Linux Kernel Image";
++	};
++
++	partition@600000 {
++		/* 4MB for Compressed Root file System Image */
++		reg = <0x00600000 0x00400000>;
++		label = "NAND Compressed RFS Image";
++	};
++
++	partition@a00000 {
++		/* 15MB for JFFS2 based Root file System */
++		reg = <0x00a00000 0x00f00000>;
++		label = "NAND JFFS2 Root File System";
++	};
++
++	partition@1900000 {
++		/* 7MB for User Area */
++		reg = <0x01900000 0x00700000>;
++		label = "NAND User area";
++	};
++};
++
+ &phy0 {
+ 	interrupts = <3 1 0 0>;
+ };
+diff --git a/arch/powerpc/boot/dts/p1010rdb-pb.dts b/arch/powerpc/boot/dts/p1010rdb-pb.dts
+index 6eeb7d3..6187e9c 100644
+--- a/arch/powerpc/boot/dts/p1010rdb-pb.dts
++++ b/arch/powerpc/boot/dts/p1010rdb-pb.dts
+@@ -20,6 +20,40 @@
+ 
+ /include/ "p1010rdb.dtsi"
+ 
++&ifc_nand {
++	partition@0 {
++		/* This location must not be altered  */
++		/* 2MB for u-boot Image and environment */
++		reg = <0x0 0x00200000>;
++		label = "NAND U-Boot Image and env";
++		read-only;
++	};
++
++	partition@200000 {
++		/* 1MB for DTB Image */
++		reg = <0x00200000 0x00100000>;
++		label = "NAND DTB Image";
++	};
++
++	partition@300000 {
++		/* 5MB for Linux Kernel Image */
++		reg = <0x00300000 0x00500000>;
++		label = "NAND Linux Kernel Image";
++	};
++
++	partition@800000 {
++		/* 56MB for Compressed Root file System Image */
++		reg = <0x00800000 0x03800000>;
++		label = "NAND  ROOTFS";
++	};
++
++	partition@4000000 {
++		/* 1984MB for User Area */
++		reg = <0x04000000 0x7c000000>;
++		label = "NAND User area";
++	};
++};
++
+ &phy0 {
+ 	interrupts = <0 1 0 0>;
+ };
+diff --git a/arch/powerpc/boot/dts/p1010rdb-pb_36b.dts b/arch/powerpc/boot/dts/p1010rdb-pb_36b.dts
+index 7ab3c90..75d0c20 100644
+--- a/arch/powerpc/boot/dts/p1010rdb-pb_36b.dts
++++ b/arch/powerpc/boot/dts/p1010rdb-pb_36b.dts
+@@ -43,6 +43,40 @@
+ 
+ /include/ "p1010rdb.dtsi"
+ 
++&ifc_nand {
++	partition@0 {
++		/* This location must not be altered  */
++		/* 2MB for u-boot Image and environment */
++		reg = <0x0 0x00200000>;
++		label = "NAND U-Boot Image and env";
++		read-only;
++	};
++
++	partition@200000 {
++		/* 1MB for DTB Image */
++		reg = <0x00200000 0x00100000>;
++		label = "NAND DTB Image";
++	};
++
++	partition@300000 {
++		/* 5MB for Linux Kernel Image */
++		reg = <0x00300000 0x00500000>;
++		label = "NAND Linux Kernel Image";
++	};
++
++	partition@800000 {
++		/* 56MB for Compressed Root file System Image */
++		reg = <0x00800000 0x03800000>;
++		label = "NAND  ROOTFS";
++	};
++
++	partition@4000000 {
++		/* 1984MB for User Area */
++		reg = <0x04000000 0x7c000000>;
++		label = "NAND User area";
++	};
++};
++
+ &phy0 {
+ 	interrupts = <0 1 0 0>;
+ };
+diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi b/arch/powerpc/boot/dts/p1010rdb.dtsi
+index 2433ae4..8b5fa3f 100644
+--- a/arch/powerpc/boot/dts/p1010rdb.dtsi
++++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
+@@ -69,49 +69,11 @@
+ 		};
+ 	};
+ 
+-	nand@1,0 {
++	ifc_nand: nand@1,0 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		compatible = "fsl,ifc-nand";
+ 		reg = <0x1 0x0 0x10000>;
+-
+-		partition@0 {
+-			/* This location must not be altered  */
+-			/* 1MB for u-boot Bootloader Image */
+-			reg = <0x0 0x00100000>;
+-			label = "NAND U-Boot Image";
+-			read-only;
+-		};
+-
+-		partition@100000 {
+-			/* 1MB for DTB Image */
+-			reg = <0x00100000 0x00100000>;
+-			label = "NAND DTB Image";
+-		};
+-
+-		partition@200000 {
+-			/* 4MB for Linux Kernel Image */
+-			reg = <0x00200000 0x00400000>;
+-			label = "NAND Linux Kernel Image";
+-		};
+-
+-		partition@600000 {
+-			/* 4MB for Compressed Root file System Image */
+-			reg = <0x00600000 0x00400000>;
+-			label = "NAND Compressed RFS Image";
+-		};
+-
+-		partition@a00000 {
+-			/* 15MB for JFFS2 based Root file System */
+-			reg = <0x00a00000 0x00f00000>;
+-			label = "NAND JFFS2 Root File System";
+-		};
+-
+-		partition@1900000 {
+-			/* 7MB for User Area */
+-			reg = <0x01900000 0x00700000>;
+-			label = "NAND User area";
+-		};
+ 	};
+ 
+ 	cpld@3,0 {
+-- 
+1.8.0
