@@ -1,40 +1,32 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DF6422C00E0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 15:49:19 +1100 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 18 Oct 2013 14:49:05 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id EDD792CE8059
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 15:49:03 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9I4mF9h64487480
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 15:48:52 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9I4iMe5002427
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 15:44:22 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH -V2 06/14] kvm: powerpc: booke: Convert BOOKE to use
- kvmppc_ops callbacks
-In-Reply-To: <01BC643C-0AA9-47E8-A7E9-7A84AB280298@suse.de>
-References: <1381164482-31001-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1381164482-31001-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <01BC643C-0AA9-47E8-A7E9-7A84AB280298@suse.de>
-Date: Fri, 18 Oct 2013 10:14:17 +0530
-Message-ID: <87eh7jqjby.fsf@linux.vnet.ibm.com>
+Return-Path: <rkrcmar@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id E429C2C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 18:34:24 +1100 (EST)
+Date: Fri, 18 Oct 2013 09:30:56 +0200
+From: Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 5/7] jump_label: relax branch hinting restrictions
+Message-ID: <20131018073050.GA24114@hpx.cz>
+References: <1382004631-25895-1-git-send-email-rkrcmar@redhat.com>
+ <1382004631-25895-6-git-send-email-rkrcmar@redhat.com>
+ <20131017133543.7e4e8d45@gandalf.local.home>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org,
- "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20131017133543.7e4e8d45@gandalf.local.home>
+Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-doc@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, sparclinux@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>,
+ Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Andrew Jones <drjones@redhat.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Richard Henderson <rth@twiddle.net>, Jiri Kosina <jkosina@suse.cz>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Rob Landley <rob@landley.net>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,26 +36,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Graf <agraf@suse.de> writes:
+2013-10-17 13:35-0400, Steven Rostedt:
+> On Thu, 17 Oct 2013 12:10:28 +0200
+> Radim Krčmář <rkrcmar@redhat.com> wrote:
+> 
+> > We implemented the optimized branch selection in higher levels of api.
+> > That made static_keys very unintuitive, so this patch introduces another
+> > element to jump_table, carrying one bit that tells the underlying code
+> > which branch to optimize.
+> > 
+> > It is now possible to select optimized branch for every jump_entry.
+> > 
+> > Current side effect is 1/3 increase increase in space, we could:
+> > * use bitmasks and selectors on 2+ aligned code/struct.
+> >   - aligning jump target is easy, but because it is not done by default
+> >     and few bytes in .text are much worse that few kilos in .data,
+> >     I chose not to
+> >   - data is probably aligned by default on all current architectures,
+> >     but programmer can force misalignment of static_key
+> > * optimize each architecture independently
+> >   - I can't test everything and this patch shouldn't break anything, so
+> >     others can contribute in the future
+> > * choose something worse, like packing or splitting
+> > * ignore
+> > 
+> > proof: example & x86_64 disassembly: (F = ffffffff)
+> > 
+> >   struct static_key flexible_feature;
+> >   noinline void jump_label_experiment(void) {
+> >   	if ( static_key_false(&flexible_feature))
+> >   	     asm ("push 0xa1");
+> >   	else asm ("push 0xa0");
+> >   	if (!static_key_false(&flexible_feature))
+> >   	     asm ("push 0xb0");
+> >   	else asm ("push 0xb1");
+> >   	if ( static_key_true(&flexible_feature))
+> >   	     asm ("push 0xc1");
+> >   	else asm ("push 0xc0");
+> >   	if (!static_key_true(&flexible_feature))
+> >   	     asm ("push 0xd0");
+> >   	else asm ("push 0xd1");
+> >   }
+> > 
+> >   Disassembly of section .text: (push marked by "->")
+> > 
+> >   F81002000 <jump_label_experiment>:
+> >   F81002000:       e8 7b 29 75 00          callq  F81754980 <__fentry__>
+> >   F81002005:       55                      push   %rbp
+> >   F81002006:       48 89 e5                mov    %rsp,%rbp
+> >   F81002009:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+> >   F8100200e: ->    ff 34 25 a0 00 00 00    pushq  0xa0
+> >   F81002015:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+> >   F8100201a: ->    ff 34 25 b0 00 00 00    pushq  0xb0
+> >   F81002021:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+> >   F81002026: ->    ff 34 25 c1 00 00 00    pushq  0xc1
+> >   F8100202d:       0f 1f 00                nopl   (%rax)
+> >   F81002030:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+> >   F81002035: ->    ff 34 25 d1 00 00 00    pushq  0xd1
+> >   F8100203c:       5d                      pop    %rbp
+> >   F8100203d:       0f 1f 00                nopl   (%rax)
+> >   F81002040:       c3                      retq
+> 
+> This looks exactly like what we want. I take it this is with your
+> patch. What was the result before the patch?
 
-> On 07.10.2013, at 18:47, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
->
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> Make required changes to get BOOKE configs to build with
->> the introduction of kvmppc_ops callback
->> 
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->
-> This can not be a separate commit, as you're breaking bisectability for booke this way.
->
+Yes, this is after the patch.
 
-The only reason I split that into two was to make review easy. But yes
-when merging to your tree we should fold.
+The branches would (should) be the same without patch, but
+static_key_true() was defined as !static_key_false(), so this piece of
+code was invalid before, because half of them would be patched to use
+the wrong branch.
 
-> I've squashed this in with the previous commit.
->
-
-Ok. 
-
--aneesh
+> -- Steve
+> 
+> >   F81002041:       0f 1f 80 00 00 00 00    nopl   0x0(%rax)
+> >   F81002048: ->    ff 34 25 d0 00 00 00    pushq  0xd0
+> >   F8100204f:       5d                      pop    %rbp
+> >   F81002050:       c3                      retq
+> >   F81002051:       0f 1f 80 00 00 00 00    nopl   0x0(%rax)
+> >   F81002058: ->    ff 34 25 c0 00 00 00    pushq  0xc0
+> >   F8100205f:       90                      nop
+> >   F81002060:       eb cb                   jmp    F8100202d <[...]+0x2d>
+> >   F81002062:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
+> >   F81002068: ->    ff 34 25 b1 00 00 00    pushq  0xb1
+> >   F8100206f:       90                      nop
+> >   F81002070:       eb af                   jmp    F81002021 <[...]+0x21>
+> >   F81002072:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
+> >   F81002078: ->    ff 34 25 a1 00 00 00    pushq  0xa1
+> >   F8100207f:       90                      nop
+> >   F81002080:       eb 93                   jmp    F81002015 <[...]+0x15>
+> >   F81002082:       66 66 66 66 66 2e 0f    [...]
+> >   F81002089:       1f 84 00 00 00 00 00
+> > 
+> >   Contents of section .data: (relevant part of embedded __jump_table)
