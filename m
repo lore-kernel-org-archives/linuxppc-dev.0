@@ -2,20 +2,20 @@ Return-Path: <broonie@sirena.org.uk>
 Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 909B12C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2013 04:29:24 +1100 (EST)
-Date: Fri, 18 Oct 2013 18:28:14 +0100
+ by ozlabs.org (Postfix) with ESMTPS id D9E1B2C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2013 04:32:19 +1100 (EST)
+Date: Fri, 18 Oct 2013 18:31:26 +0100
 From: Mark Brown <broonie@kernel.org>
 To: Xiubo Li <Li.Xiubo@freescale.com>
-Message-ID: <20131018172814.GT2443@sirena.org.uk>
+Message-ID: <20131018173126.GU2443@sirena.org.uk>
 References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
- <1382000477-17304-6-git-send-email-Li.Xiubo@freescale.com>
+ <1382000477-17304-9-git-send-email-Li.Xiubo@freescale.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="ozmrAWQcVMJcOLTa"
-In-Reply-To: <1382000477-17304-6-git-send-email-Li.Xiubo@freescale.com>
-Subject: Re: [PATCHv1 5/8] ASoC: sgtl5000: Revise the bugs about the sgt15000
- codec.
+ protocol="application/pgp-signature"; boundary="9xrpoCjP1Nd9xumY"
+In-Reply-To: <1382000477-17304-9-git-send-email-Li.Xiubo@freescale.com>
+Subject: Re: [PATCHv1 8/8] Documentation: Add device tree bindings for
+ Freescale VF610 sound.
 Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
  linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
  perex@perex.cz, r65073@freescale.com, LW@KARO-electronics.de,
@@ -36,52 +36,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---ozmrAWQcVMJcOLTa
+--9xrpoCjP1Nd9xumY
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Thu, Oct 17, 2013 at 05:01:14PM +0800, Xiubo Li wrote:
+On Thu, Oct 17, 2013 at 05:01:17PM +0800, Xiubo Li wrote:
 
-> @@ -883,14 +883,19 @@ static int ldo_regulator_register(struct snd_soc_codec *codec,
->  				struct regulator_init_data *init_data,
->  				int voltage)
->  {
-> +#ifdef CONFIG_SND_SOC_FSL_SGTL5000
-> +	return 0;
-> +#else
->  	dev_err(codec->dev, "this setup needs regulator support in the kernel\n");
->  	return -EINVAL;
-> +#endif
->  }
+> +  -- Power supplies:
+> +     * Mic Bias
+> +
+> +  -- SGTL5000 pins:
+> +     * MIC_IN
+> +     * LINE_IN
+> +     * HP_OUT
+> +     * LINE_OUT
 
-If these systems don't actually need the internal regulator then should
-they not be trying to enable it?  Alternatively if it's OK to ignore
-this then why is this conditional in the board?
+Things that are part of the CODEC should be part of the CODEC binding
+and this binding should reference that - this way the information
+doesn't have to be replicated by all boards using the CODEC and if new
+devices are supported by the CODEC driver then only that needs updating
+hopefully.
 
-If this is something that it's safe to ignore then it should either be
-ignored all the time or should be controlled by platform data not by a
-compile time #define.
-
---ozmrAWQcVMJcOLTa
+--9xrpoCjP1Nd9xumY
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSYW+rAAoJELSic+t+oim9e1cP/iq+FRM1OthmKupHcsx75mPo
-/BSHzbRMV3vQg8d5stwzWn2iH0cDe8uu61lc/clarnoWdBdscb3dgvsRMrV4SO1X
-K/VGYDmdC/baGPYNL+Mx6CFEgO5bv0HOzYh0ItCbfht1DJWe7WK8YPW3xidxutsN
-2vc4SiBdYepNKPpeqMP+OLdS1TFxn+nZKKxERsDoMrdAt9XsDW6MSaqXt7/q7cUd
-fUEnXTINIJl+KhNqsrsf+pxhds6ezL0SkyCjuRDdXpUyw1ur0HBndJsTL4XKtClU
-gr022z5LRSwXano+JbtpWoydBJ2t7qhUL956CG29JVjHfzGNJvep2k2vW7bXC4lB
-UWjfy7xBf+NZNlQtTvIGi6tSlMvqEEKF5EKOMZoNMGa1+Pk0vtx3eqdjZk/9GFzJ
-82cW0sRdS1l2fNvF4LYb5jC8rcqV43UKjG0SWOT0vxEKaLdWGFMSXHwgZaepwBx9
-TAIclxB5+F20Yfo6cxUDmaVwywyCf1xJNL3pjqOFDYwEdX82SHqh+xabGp+Bsf9l
-QtLpmAB6o1nvMNj/l45hDPoO7Vz5c1P1WwuDcppVtz72M4HIBlGRVna9Q2DDX60s
-/luBFR/1qhLsDzE5ZGm+rqcb8gftbZqmLDLCZmO4gf9lbkgtwLuIavytfXKZUrAb
-1EzNihFkatoctVTdBBN0
-=tZKV
+iQIcBAEBAgAGBQJSYXBqAAoJELSic+t+oim9bgEP/RmwhwxlWyJMLunN/vXk/RpG
+0R1ttv9mJYHnc6oPFUgtpQIYy1hobgLuHz5XGyHsALBoFr7x6uDQcfo0VOZN+jcD
+WzP4FqmE/B8oWKq4qttFaS9rqN+htmHkXX/sXn4eVdf+TjjewEW6hMXBk7E0brDw
+7Wfj5qaqQdDq7vFM7khvkJFyNK4/oJMugOfVoulaxcDt/amzUbYnqr8+Qr7BMNK9
+58gk1CpFqU23iPdPlvvyjw/YPcO0RnzuHSUKMIop5xLrF1jrtsbr8Ds0dHtRcQvr
+D81QYWT8GJAVosCMVHNAs4Ri4luwNxFzkTTq0dDKmiFrogEoy6YZ798VXGl91hLI
+G6eV07hx2eo5P5F6cJ087kHNBF0EE7XFImeh40E4xbmn3RXBChc4PBqc21gH8uLI
+U6xeFJPT5Fkca6GzAjfP/e9P+40Z6icCyW6oXpzgPQKr49rmCrc/aQ1g068baA1o
+xhLGhg2FMGREj7JiJSgfUJP7doaQjwAEV67Q9JM8X0jtcUsWoo9X5f2asPHSh8Ok
+5Xm4wSc4v0TcCAy2CJKBmS0RUxxJ10xKyqyUo/p1cDcEKGzYH8lcjx0DHGjAD7+I
+DBaitO9mMeUutJaYZikH5cAS7qvri3e8+H4xeE5hyYddys9Kz01IqjvsdkbTwnjb
+bP8WKJg9Q8LQCTw40kSv
+=QO4U
 -----END PGP SIGNATURE-----
 
---ozmrAWQcVMJcOLTa--
+--9xrpoCjP1Nd9xumY--
