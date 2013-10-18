@@ -1,32 +1,15 @@
-Return-Path: <rkrcmar@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id E429C2C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 18:34:24 +1100 (EST)
-Date: Fri, 18 Oct 2013 09:30:56 +0200
-From: Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 5/7] jump_label: relax branch hinting restrictions
-Message-ID: <20131018073050.GA24114@hpx.cz>
-References: <1382004631-25895-1-git-send-email-rkrcmar@redhat.com>
- <1382004631-25895-6-git-send-email-rkrcmar@redhat.com>
- <20131017133543.7e4e8d45@gandalf.local.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20131017133543.7e4e8d45@gandalf.local.home>
-Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-doc@vger.kernel.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>, sparclinux@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>,
- Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Andrew Jones <drjones@redhat.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, Jiri Kosina <jkosina@suse.cz>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Rob Landley <rob@landley.net>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4B95A2C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 18:38:28 +1100 (EST)
+From: Wolfgang Denk <wd@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] [RFC] Emulate "lwsync" to run standard user land on e500 cores
+Date: Fri, 18 Oct 2013 09:38:00 +0200
+Message-Id: <1382081880-6666-1-git-send-email-wd@denx.de>
+Cc: Scott Wood <scottwood@freescale.com>, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,96 +19,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2013-10-17 13:35-0400, Steven Rostedt:
-> On Thu, 17 Oct 2013 12:10:28 +0200
-> Radim Krčmář <rkrcmar@redhat.com> wrote:
-> 
-> > We implemented the optimized branch selection in higher levels of api.
-> > That made static_keys very unintuitive, so this patch introduces another
-> > element to jump_table, carrying one bit that tells the underlying code
-> > which branch to optimize.
-> > 
-> > It is now possible to select optimized branch for every jump_entry.
-> > 
-> > Current side effect is 1/3 increase increase in space, we could:
-> > * use bitmasks and selectors on 2+ aligned code/struct.
-> >   - aligning jump target is easy, but because it is not done by default
-> >     and few bytes in .text are much worse that few kilos in .data,
-> >     I chose not to
-> >   - data is probably aligned by default on all current architectures,
-> >     but programmer can force misalignment of static_key
-> > * optimize each architecture independently
-> >   - I can't test everything and this patch shouldn't break anything, so
-> >     others can contribute in the future
-> > * choose something worse, like packing or splitting
-> > * ignore
-> > 
-> > proof: example & x86_64 disassembly: (F = ffffffff)
-> > 
-> >   struct static_key flexible_feature;
-> >   noinline void jump_label_experiment(void) {
-> >   	if ( static_key_false(&flexible_feature))
-> >   	     asm ("push 0xa1");
-> >   	else asm ("push 0xa0");
-> >   	if (!static_key_false(&flexible_feature))
-> >   	     asm ("push 0xb0");
-> >   	else asm ("push 0xb1");
-> >   	if ( static_key_true(&flexible_feature))
-> >   	     asm ("push 0xc1");
-> >   	else asm ("push 0xc0");
-> >   	if (!static_key_true(&flexible_feature))
-> >   	     asm ("push 0xd0");
-> >   	else asm ("push 0xd1");
-> >   }
-> > 
-> >   Disassembly of section .text: (push marked by "->")
-> > 
-> >   F81002000 <jump_label_experiment>:
-> >   F81002000:       e8 7b 29 75 00          callq  F81754980 <__fentry__>
-> >   F81002005:       55                      push   %rbp
-> >   F81002006:       48 89 e5                mov    %rsp,%rbp
-> >   F81002009:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
-> >   F8100200e: ->    ff 34 25 a0 00 00 00    pushq  0xa0
-> >   F81002015:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
-> >   F8100201a: ->    ff 34 25 b0 00 00 00    pushq  0xb0
-> >   F81002021:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
-> >   F81002026: ->    ff 34 25 c1 00 00 00    pushq  0xc1
-> >   F8100202d:       0f 1f 00                nopl   (%rax)
-> >   F81002030:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
-> >   F81002035: ->    ff 34 25 d1 00 00 00    pushq  0xd1
-> >   F8100203c:       5d                      pop    %rbp
-> >   F8100203d:       0f 1f 00                nopl   (%rax)
-> >   F81002040:       c3                      retq
-> 
-> This looks exactly like what we want. I take it this is with your
-> patch. What was the result before the patch?
+Default Debian PowerPC doesn't work on e500 because the code contains
+"lwsync" instructions, which are unsupported on this core.  As a
+result, applications using this will crash with an "unhandled signal 4"
+"Illegal instruction" error.
 
-Yes, this is after the patch.
+As a work around we add code to emulate this insn.  This is expensive
+performance-wise, but allows to run standard user land code.
 
-The branches would (should) be the same without patch, but
-static_key_true() was defined as !static_key_false(), so this piece of
-code was invalid before, because half of them would be patched to use
-the wrong branch.
+Signed-off-by: Wolfgang Denk <wd@denx.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Scott Wood <scottwood@freescale.com>
+---
+I am aware that the clean solution to the problem is to build user
+space with compiler options that match the target architecture.
+However, sometimes this is just too much effort.
 
-> -- Steve
-> 
-> >   F81002041:       0f 1f 80 00 00 00 00    nopl   0x0(%rax)
-> >   F81002048: ->    ff 34 25 d0 00 00 00    pushq  0xd0
-> >   F8100204f:       5d                      pop    %rbp
-> >   F81002050:       c3                      retq
-> >   F81002051:       0f 1f 80 00 00 00 00    nopl   0x0(%rax)
-> >   F81002058: ->    ff 34 25 c0 00 00 00    pushq  0xc0
-> >   F8100205f:       90                      nop
-> >   F81002060:       eb cb                   jmp    F8100202d <[...]+0x2d>
-> >   F81002062:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
-> >   F81002068: ->    ff 34 25 b1 00 00 00    pushq  0xb1
-> >   F8100206f:       90                      nop
-> >   F81002070:       eb af                   jmp    F81002021 <[...]+0x21>
-> >   F81002072:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
-> >   F81002078: ->    ff 34 25 a1 00 00 00    pushq  0xa1
-> >   F8100207f:       90                      nop
-> >   F81002080:       eb 93                   jmp    F81002015 <[...]+0x15>
-> >   F81002082:       66 66 66 66 66 2e 0f    [...]
-> >   F81002089:       1f 84 00 00 00 00 00
-> > 
-> >   Contents of section .data: (relevant part of embedded __jump_table)
+Also, of course the performance of such an emulation sucks. But the
+the occurrence of such instructions is so rare that no significant
+slowdown can be oserved.
+
+I'm not sure if this should / could go into mainline.  I'm posting it
+primarily so it can be found should anybody else need this.
+- wd
+
+ arch/powerpc/kernel/traps.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index f783c93..f330374 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -986,6 +986,13 @@ static int emulate_instruction(struct pt_regs *regs)
+ 		return 0;
+ 	}
+ 
++	/* Emulating the lwsync insn as a sync insn */
++	if (instword == PPC_INST_LWSYNC) {
++		PPC_WARN_EMULATED(lwsync, regs);
++		asm volatile("sync" : : : "memory");
++		return 0;
++	}
++
+ 	/* Emulate the mcrxr insn.  */
+ 	if ((instword & PPC_INST_MCRXR_MASK) == PPC_INST_MCRXR) {
+ 		int shift = (instword >> 21) & 0x1c;
+-- 
+1.8.3.1
