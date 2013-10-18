@@ -1,28 +1,31 @@
-Return-Path: <tommusta@gmail.com>
-Received: from mail-qa0-x234.google.com (mail-qa0-x234.google.com
- [IPv6:2607:f8b0:400d:c00::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3F1442C011C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2013 04:08:26 +1100 (EST)
-Received: by mail-qa0-f52.google.com with SMTP id w8so870383qac.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 10:08:24 -0700 (PDT)
-Received: from [9.10.80.32] (rchp4.rochester.ibm.com. [129.42.161.36])
- by mx.google.com with ESMTPSA id fx6sm4524890qeb.1.2013.10.18.10.08.22
- for <linuxppc-dev@lists.ozlabs.org>
- (version=SSLv3 cipher=RC4-SHA bits=128/128);
- Fri, 18 Oct 2013 10:08:23 -0700 (PDT)
-Message-ID: <1382116102.2206.16.camel@tmusta-sc.rchland.ibm.com>
-Subject: [PATCH 2/2] powerpc: Enable Little Endian Alignment Handler for
- Float Pair Instructions
-From: Tom Musta <tommusta@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 18 Oct 2013 12:08:22 -0500
-In-Reply-To: <1382115864.2206.12.camel@tmusta-sc.rchland.ibm.com>
-References: <1382115864.2206.12.camel@tmusta-sc.rchland.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 909B12C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2013 04:29:24 +1100 (EST)
+Date: Fri, 18 Oct 2013 18:28:14 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Xiubo Li <Li.Xiubo@freescale.com>
+Message-ID: <20131018172814.GT2443@sirena.org.uk>
+References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
+ <1382000477-17304-6-git-send-email-Li.Xiubo@freescale.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="ozmrAWQcVMJcOLTa"
+In-Reply-To: <1382000477-17304-6-git-send-email-Li.Xiubo@freescale.com>
+Subject: Re: [PATCHv1 5/8] ASoC: sgtl5000: Revise the bugs about the sgt15000
+ codec.
+Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
+ linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
+ perex@perex.cz, r65073@freescale.com, LW@KARO-electronics.de,
+ linux@arm.linux.org.uk, b42378@freescale.com,
+ linux-arm-kernel@lists.infradead.org, grant.likely@linaro.org,
+ devicetree@vger.kernel.org, ian.campbell@citrix.com, pawel.moll@arm.com,
+ swarren@wwwdotorg.org, rob.herring@calxeda.com, oskar@scara.com,
+ fabio.estevam@freescale.com, lgirdwood@gmail.com, linux-kernel@vger.kernel.org,
+ rob@landley.net, r64188@freescale.com, shawn.guo@linaro.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +35,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables alignment handling for the load/store floating point
-pair instructions (lfdp, lfdpx, stfdp, stfdpx).  The handler routine
-is properly coded and only needs to be enabled.
 
-Signed-off-by: Tom Musta <tmusta@gmail.com>
----
- arch/powerpc/kernel/align.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
+--ozmrAWQcVMJcOLTa
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index a3169a9..de91f3a 100644
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -378,7 +378,6 @@ static int emulate_multiple(struct pt_regs *regs, unsigned char __user *addr,
-  * Only POWER6 has these instructions, and it does true little-endian,
-  * so we don't need the address swizzling.
-  */
--#ifdef __BIG_ENDIAN__
- static int emulate_fp_pair(unsigned char __user *addr, unsigned int reg,
- 			   unsigned int flags)
- {
-@@ -406,7 +405,6 @@ static int emulate_fp_pair(unsigned char __user *addr, unsigned int reg,
- 		return -EFAULT;
- 	return 1;	/* exception handled and fixed up */
- }
--#endif
- 
- #ifdef CONFIG_SPE
- 
-@@ -918,12 +916,8 @@ int fix_alignment(struct pt_regs *regs)
- 
- 	/* Special case for 16-byte FP loads and stores */
- 	if (nb == 16) {
--#ifdef __BIG_ENDIAN__
- 		PPC_WARN_ALIGNMENT(fp_pair, regs);
- 		return emulate_fp_pair(addr, reg, flags);
--#else
--		return -EFAULT;
--#endif
- 	}
- 
- 	PPC_WARN_ALIGNMENT(unaligned, regs);
--- 
-1.7.1
+On Thu, Oct 17, 2013 at 05:01:14PM +0800, Xiubo Li wrote:
+
+> @@ -883,14 +883,19 @@ static int ldo_regulator_register(struct snd_soc_codec *codec,
+>  				struct regulator_init_data *init_data,
+>  				int voltage)
+>  {
+> +#ifdef CONFIG_SND_SOC_FSL_SGTL5000
+> +	return 0;
+> +#else
+>  	dev_err(codec->dev, "this setup needs regulator support in the kernel\n");
+>  	return -EINVAL;
+> +#endif
+>  }
+
+If these systems don't actually need the internal regulator then should
+they not be trying to enable it?  Alternatively if it's OK to ignore
+this then why is this conditional in the board?
+
+If this is something that it's safe to ignore then it should either be
+ignored all the time or should be controlled by platform data not by a
+compile time #define.
+
+--ozmrAWQcVMJcOLTa
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSYW+rAAoJELSic+t+oim9e1cP/iq+FRM1OthmKupHcsx75mPo
+/BSHzbRMV3vQg8d5stwzWn2iH0cDe8uu61lc/clarnoWdBdscb3dgvsRMrV4SO1X
+K/VGYDmdC/baGPYNL+Mx6CFEgO5bv0HOzYh0ItCbfht1DJWe7WK8YPW3xidxutsN
+2vc4SiBdYepNKPpeqMP+OLdS1TFxn+nZKKxERsDoMrdAt9XsDW6MSaqXt7/q7cUd
+fUEnXTINIJl+KhNqsrsf+pxhds6ezL0SkyCjuRDdXpUyw1ur0HBndJsTL4XKtClU
+gr022z5LRSwXano+JbtpWoydBJ2t7qhUL956CG29JVjHfzGNJvep2k2vW7bXC4lB
+UWjfy7xBf+NZNlQtTvIGi6tSlMvqEEKF5EKOMZoNMGa1+Pk0vtx3eqdjZk/9GFzJ
+82cW0sRdS1l2fNvF4LYb5jC8rcqV43UKjG0SWOT0vxEKaLdWGFMSXHwgZaepwBx9
+TAIclxB5+F20Yfo6cxUDmaVwywyCf1xJNL3pjqOFDYwEdX82SHqh+xabGp+Bsf9l
+QtLpmAB6o1nvMNj/l45hDPoO7Vz5c1P1WwuDcppVtz72M4HIBlGRVna9Q2DDX60s
+/luBFR/1qhLsDzE5ZGm+rqcb8gftbZqmLDLCZmO4gf9lbkgtwLuIavytfXKZUrAb
+1EzNihFkatoctVTdBBN0
+=tZKV
+-----END PGP SIGNATURE-----
+
+--ozmrAWQcVMJcOLTa--
