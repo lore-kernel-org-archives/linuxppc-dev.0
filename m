@@ -1,18 +1,18 @@
 Return-Path: <tommusta@gmail.com>
-Received: from mail-ob0-x22d.google.com (mail-ob0-x22d.google.com
- [IPv6:2607:f8b0:4003:c01::22d])
+Received: from mail-ob0-x22c.google.com (mail-ob0-x22c.google.com
+ [IPv6:2607:f8b0:4003:c01::22c])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E30862C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2013 06:42:13 +1100 (EST)
-Received: by mail-ob0-f173.google.com with SMTP id gq1so62398obb.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 12:42:10 -0700 (PDT)
-Message-ID: <1382125328.2206.26.camel@tmusta-sc.rchland.ibm.com>
-Subject: [PATCH 2/3] powerpc: Fix Unaligned Loads and Stores
+ by ozlabs.org (Postfix) with ESMTPS id C83952C00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2013 06:44:22 +1100 (EST)
+Received: by mail-ob0-f172.google.com with SMTP id gq1so65761obb.17
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 12:44:19 -0700 (PDT)
+Message-ID: <1382125457.2206.28.camel@tmusta-sc.rchland.ibm.com>
+Subject: [PATCH 3/3] powerpc: Fix Unaligned LE Floating Point Loads and Stores
 From: Tom Musta <tommusta@gmail.com>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 18 Oct 2013 14:42:08 -0500
+Date: Fri, 18 Oct 2013 14:44:17 -0500
 In-Reply-To: <1382125125.2206.22.camel@tmusta-sc.rchland.ibm.com>
 References: <1382125125.2206.22.camel@tmusta-sc.rchland.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -27,95 +27,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch modifies the unaligned access routines of the sstep.c
-module so that it properly reverses the bytes of storage operands
-in the little endian kernel kernel.   This is implemented by
-breaking an unaligned little endian access into a combination of
-single byte accesses plus an overal byte reversal operation.
+This patch addresses unaligned single precision floating point loads
+and stores in the single-step code.  The old implementation
+improperly treated an 8 byte structure as an array of two 4 byte
+words, which is a classic little endian bug.
 
 Signed-off-by: Tom Musta <tmusta@gmail.com>
 ---
- arch/powerpc/lib/sstep.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 45 insertions(+), 0 deletions(-)
+ arch/powerpc/lib/sstep.c |   52 +++++++++++++++++++++++++++++++++++----------
+ 1 files changed, 40 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 5e0d0e9..570f2af 100644
+index 570f2af..f6f17aa 100644
 --- a/arch/powerpc/lib/sstep.c
 +++ b/arch/powerpc/lib/sstep.c
-@@ -212,11 +212,19 @@ static int __kprobes read_mem_unaligned(unsigned long *dest, unsigned long ea,
+@@ -355,22 +355,36 @@ static int __kprobes do_fp_load(int rn, int (*func)(int, unsigned long),
+ 				struct pt_regs *regs)
  {
  	int err;
- 	unsigned long x, b, c;
-+#ifdef __LITTLE_ENDIAN__
-+	int len = nb; /* save a copy of the length for byte reversal */
-+#endif
- 
- 	/* unaligned, do this in pieces */
- 	x = 0;
- 	for (; nb > 0; nb -= c) {
-+#ifdef __LITTLE_ENDIAN__
-+		c = 1;
-+#endif
+-	unsigned long val[sizeof(double) / sizeof(long)];
++	union {
++		double dbl;
++		unsigned long ul[2];
++		struct {
 +#ifdef __BIG_ENDIAN__
- 		c = max_align(ea);
++			unsigned _pad_;
++			unsigned word;
 +#endif
- 		if (c > nb)
- 			c = max_align(nb);
- 		err = read_mem_aligned(&b, ea, c);
-@@ -225,7 +233,24 @@ static int __kprobes read_mem_unaligned(unsigned long *dest, unsigned long ea,
- 		x = (x << (8 * c)) + b;
- 		ea += c;
++#ifdef __LITTLE_ENDIAN__
++			unsigned word;
++			unsigned _pad_;
++#endif
++		} single;
++	} data;
+ 	unsigned long ptr;
+ 
+ 	if (!address_ok(regs, ea, nb))
+ 		return -EFAULT;
+ 	if ((ea & 3) == 0)
+ 		return (*func)(rn, ea);
+-	ptr = (unsigned long) &val[0];
++	ptr = (unsigned long) &data.ul;
+ 	if (sizeof(unsigned long) == 8 || nb == 4) {
+-		err = read_mem_unaligned(&val[0], ea, nb, regs);
+-		ptr += sizeof(unsigned long) - nb;
++		err = read_mem_unaligned(&data.ul[0], ea, nb, regs);
++		if (nb == 4)
++			ptr = (unsigned long)&(data.single.word);
+ 	} else {
+ 		/* reading a double on 32-bit */
+-		err = read_mem_unaligned(&val[0], ea, 4, regs);
++		err = read_mem_unaligned(&data.ul[0], ea, 4, regs);
+ 		if (!err)
+-			err = read_mem_unaligned(&val[1], ea + 4, 4, regs);
++			err = read_mem_unaligned(&data.ul[1], ea + 4, 4, regs);
  	}
-+#ifdef __LITTLE_ENDIAN__
-+	switch (len) {
-+	case 2:
-+		*dest = byterev_2(x);
-+		break;
-+	case 4:
-+		*dest = byterev_4(x);
-+		break;
-+#ifdef __powerpc64__
-+	case 8:
-+		*dest = byterev_8(x);
-+		break;
-+#endif
-+	}
-+#endif
-+#ifdef __BIG_ENDIAN__
- 	*dest = x;
-+#endif
- 	return 0;
- }
- 
-@@ -273,9 +298,29 @@ static int __kprobes write_mem_unaligned(unsigned long val, unsigned long ea,
+ 	if (err)
+ 		return err;
+@@ -382,28 +396,42 @@ static int __kprobes do_fp_store(int rn, int (*func)(int, unsigned long),
+ 				 struct pt_regs *regs)
+ {
  	int err;
- 	unsigned long c;
- 
-+#ifdef __LITTLE_ENDIAN__
-+	switch (nb) {
-+	case 2:
-+		val = byterev_2(val);
-+		break;
-+	case 4:
-+		val = byterev_4(val);
-+		break;
-+#ifdef __powerpc64__
-+	case 8:
-+		val = byterev_8(val);
-+		break;
-+#endif
-+	}
-+#endif
- 	/* unaligned or little-endian, do this in pieces */
- 	for (; nb > 0; nb -= c) {
-+#ifdef __LITTLE_ENDIAN__
-+		c = 1;
-+#endif
+-	unsigned long val[sizeof(double) / sizeof(long)];
++	union {
++		double dbl;
++		unsigned long ul[2];
++		struct {
 +#ifdef __BIG_ENDIAN__
- 		c = max_align(ea);
++			unsigned _pad_;
++			unsigned word;
 +#endif
- 		if (c > nb)
- 			c = max_align(nb);
- 		err = write_mem_aligned(val >> (nb - c) * 8, ea, c);
++#ifdef __LITTLE_ENDIAN__
++			unsigned word;
++			unsigned _pad_;
++#endif
++		} single;
++	} data;
+ 	unsigned long ptr;
+ 
+ 	if (!address_ok(regs, ea, nb))
+ 		return -EFAULT;
+ 	if ((ea & 3) == 0)
+ 		return (*func)(rn, ea);
+-	ptr = (unsigned long) &val[0];
++	ptr = (unsigned long) &data.ul[0];
+ 	if (sizeof(unsigned long) == 8 || nb == 4) {
+-		ptr += sizeof(unsigned long) - nb;
++		if (nb == 4)
++			ptr = (unsigned long)&(data.single.word);
+ 		err = (*func)(rn, ptr);
+ 		if (err)
+ 			return err;
+-		err = write_mem_unaligned(val[0], ea, nb, regs);
++		err = write_mem_unaligned(data.ul[0], ea, nb, regs);
+ 	} else {
+ 		/* writing a double on 32-bit */
+ 		err = (*func)(rn, ptr);
+ 		if (err)
+ 			return err;
+-		err = write_mem_unaligned(val[0], ea, 4, regs);
++		err = write_mem_unaligned(data.ul[0], ea, 4, regs);
+ 		if (!err)
+-			err = write_mem_unaligned(val[1], ea + 4, 4, regs);
++			err = write_mem_unaligned(data.ul[1], ea + 4, 4, regs);
+ 	}
+ 	return err;
+ }
 -- 
 1.7.1
