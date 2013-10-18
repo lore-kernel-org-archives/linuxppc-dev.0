@@ -1,30 +1,36 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 371DA2C0082
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2013 04:34:07 +1100 (EST)
-Date: Fri, 18 Oct 2013 18:33:31 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Xiubo Li <Li.Xiubo@freescale.com>
-Message-ID: <20131018173331.GV2443@sirena.org.uk>
-References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
- <1382000477-17304-7-git-send-email-Li.Xiubo@freescale.com>
+Return-Path: <R65777@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0186.outbound.messaging.microsoft.com [213.199.154.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3BBE52C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2013 04:50:10 +1100 (EST)
+Received: from mail6-db8 (localhost [127.0.0.1])	by mail6-db8-R.bigfish.com
+ (Postfix) with ESMTP id 874C0D800D0	for <linuxppc-dev@lists.ozlabs.org>; Fri,
+ 18 Oct 2013 17:50:04 +0000 (UTC)
+Received: from DB8EHSMHS025.bigfish.com (unknown [10.174.8.240])	by
+ mail6-db8.bigfish.com (Postfix) with ESMTP id EA82480004C	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 17:50:02 +0000 (UTC)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
+ altivec idle
+Date: Fri, 18 Oct 2013 17:49:46 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D071C6F64@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1381828871-17110-1-git-send-email-dongsheng.wang@freescale.com>
+ <1381828871-17110-4-git-send-email-dongsheng.wang@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C08E4@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B1799@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C3279@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B189E@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1382028703.7979.782.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B3391@039-SN2MPN1-021.039d.mgd.msft.net>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259010B3391@039-SN2MPN1-021.039d.mgd.msft.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="9ss1VCek+7fjM2m0"
-In-Reply-To: <1382000477-17304-7-git-send-email-Li.Xiubo@freescale.com>
-Subject: Re: [PATCHv1 6/8] ASoC: fsl: add SGT15000 based audio machine driver.
-Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
- linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
- perex@perex.cz, r65073@freescale.com, LW@KARO-electronics.de,
- linux@arm.linux.org.uk, b42378@freescale.com,
- linux-arm-kernel@lists.infradead.org, grant.likely@linaro.org,
- devicetree@vger.kernel.org, ian.campbell@citrix.com, pawel.moll@arm.com,
- swarren@wwwdotorg.org, rob.herring@calxeda.com, oskar@scara.com,
- fabio.estevam@freescale.com, lgirdwood@gmail.com, linux-kernel@vger.kernel.org,
- rob@landley.net, r64188@freescale.com, shawn.guo@linaro.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,42 +40,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---9ss1VCek+7fjM2m0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Thu, Oct 17, 2013 at 05:01:15PM +0800, Xiubo Li wrote:
-
-> +	ret = snd_soc_register_card(&fsl_sgt1500_card);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "register soc sound card failed :%d\n",
-> +				ret);
-> +		return ret;
-> +	}
-
-Use the newly added devm_snd_soc_register_card() (in -next).
-
---9ss1VCek+7fjM2m0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSYXDnAAoJELSic+t+oim9seMP/iiRnKDJNKcdrKFo60VsGo6M
-qYoKvXuXS66QMJudg2iouuG9XhS3AklWnXhubsPCuUVddbmtGTUsliubs30YvXdo
-0R6AAG3svmUvWfS776GCFpW8runhD4nmJNrPslOQ2TNRjdYNmI8PDyyykeeoD2SX
-RfN2ZTWqrYgipBg/FXHgGNomYpCjnwmPh0onpXIi2A1LKEy1D65Np3aLgCBkXmqb
-CXfoIUGc2t4FIHDXfwQ3PRCVmJ4mVsPb9ggylHPeZiHmIKUfSNVPAJn1pUA2SNKc
-ZbdbsfxOVavbvYI3XYAVKyW3adjqNiOrYy/XhKcJvfEqD+Vgsv9JQyVM1YOenk/H
-PaKBeoe9cmGJzU6lvmRLoXynZ82PrtGCuSM5mwZaM06rSgTkuRteJU6tctIugOdK
-B2PtkCV14bpodixBuidOuSDyAewE2q+yLCDZIDSNju9n4M2tXacpnfSwMbRm/Cnv
-9Np2xWsNXro1IwuYY4MzZwU+DAx4cF0nfzHfwmuRZUvvS14ujkcaRWrsoOCisDch
-612ktvxCKAmzmNdkgaUi038QMqczxkfClpnHn3IDI0nxvdn4k1btF0WlVBbyo9zl
-cuWEpjMpY/fPV94tXyj2m4LDz7bZf/tyZY8W/rD9hoeEXDJL83wNVpQPM72OcX6g
-lSxz5AGiHxYtQqJS+PEJ
-=+/EO
------END PGP SIGNATURE-----
-
---9ss1VCek+7fjM2m0--
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV2FuZyBEb25nc2hlbmct
+QjQwNTM0DQo+IFNlbnQ6IEZyaWRheSwgT2N0b2JlciAxOCwgMjAxMyA4OjA3IEFNDQo+IFRvOiBX
+b29kIFNjb3R0LUIwNzQyMQ0KPiBDYzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3OyBsaW51eHBwYy1k
+ZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSRTogW1BBVENIIHY1IDQvNF0gcG93ZXJw
+Yy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjAgc3RhdGUgYW5kIGFsdGl2ZWMNCj4gaWRsZQ0KPiAN
+Cj4gDQo+IA0KPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gRnJvbTogV29vZCBT
+Y290dC1CMDc0MjENCj4gPiBTZW50OiBGcmlkYXksIE9jdG9iZXIgMTgsIDIwMTMgMTI6NTIgQU0N
+Cj4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gQ2M6IEJodXNoYW4gQmhhcmF0LVI2
+NTc3NzsgV29vZCBTY290dC1CMDc0MjE7IGxpbnV4cHBjLQ0KPiA+IGRldkBsaXN0cy5vemxhYnMu
+b3JnDQo+ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5
+c2ZzIGZvciBwdzIwIHN0YXRlIGFuZA0KPiA+IGFsdGl2ZWMgaWRsZQ0KPiA+DQo+ID4gT24gVGh1
+LCAyMDEzLTEwLTE3IGF0IDAwOjUxIC0wNTAwLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6
+DQo+ID4gPg0KPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiBGcm9t
+OiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gPiA+ID4gU2VudDogVGh1cnNkYXksIE9jdG9iZXIg
+MTcsIDIwMTMgMTE6MjAgQU0NCj4gPiA+ID4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNDsgV29v
+ZCBTY290dC1CMDc0MjENCj4gPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
+DQo+ID4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjUgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBz
+eXNmcyBmb3IgcHcyMCBzdGF0ZQ0KPiA+ID4gPiBhbmQgYWx0aXZlYyBpZGxlDQo+ID4gPiA+DQo+
+ID4gPiA+DQo+ID4gPiA+DQo+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4g
+PiA+ID4gPiBGcm9tOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+ID4gPiBTZW50OiBUaHVy
+c2RheSwgT2N0b2JlciAxNywgMjAxMyA4OjE2IEFNDQo+ID4gPiA+ID4gVG86IEJodXNoYW4gQmhh
+cmF0LVI2NTc3NzsgV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiBDYzogbGludXhwcGMtZGV2
+QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+ID4gPiBTdWJqZWN0OiBSRTogW1BBVENIIHY1IDQvNF0g
+cG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjANCj4gPiA+ID4gPiBzdGF0ZSBhbmQgYWx0
+aXZlYyBpZGxlDQo+ID4gPiA+ID4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiAt
+LS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gRnJvbTogQmh1c2hhbiBCaGFy
+YXQtUjY1Nzc3DQo+ID4gPiA+ID4gPiBTZW50OiBUaHVyc2RheSwgT2N0b2JlciAxNywgMjAxMyAx
+OjAxIEFNDQo+ID4gPiA+ID4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0OyBXb29kIFNjb3R0
+LUIwNzQyMQ0KPiA+ID4gPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+
+ID4gPiA+ID4gPiBTdWJqZWN0OiBSRTogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQg
+c3lzZnMgZm9yIHB3MjANCj4gPiA+ID4gPiA+IHN0YXRlIGFuZCBhbHRpdmVjIGlkbGUNCj4gPiA+
+ID4gPiA+DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gLS0tLS1Pcmln
+aW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmctQjQw
+NTM0DQo+ID4gPiA+ID4gPiA+IFNlbnQ6IFR1ZXNkYXksIE9jdG9iZXIgMTUsIDIwMTMgMjo1MSBQ
+TQ0KPiA+ID4gPiA+ID4gPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiA+ID4gQ2M6
+IEJodXNoYW4gQmhhcmF0LVI2NTc3NzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+
+ID4gPiA+ID4gPiA+IFdhbmcNCj4gPiA+ID4gPiA+IERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+ID4g
+PiA+ID4gU3ViamVjdDogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9y
+IHB3MjANCj4gPiA+ID4gPiA+ID4gc3RhdGUgYW5kDQo+ID4gPiA+ID4gPiBhbHRpdmVjIGlkbGUN
+Cj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gK3N0YXRpYyBzc2l6ZV90IHNob3dfcHcyMF93
+YWl0X3RpbWUoc3RydWN0IGRldmljZSAqZGV2LA0KPiA+ID4gPiA+ID4gPiArCQkJCXN0cnVjdCBk
+ZXZpY2VfYXR0cmlidXRlICphdHRyLCBjaGFyICpidWYpIHsNCj4gPiA+ID4gPiA+ID4gKwl1MzIg
+dmFsdWU7DQo+ID4gPiA+ID4gPiA+ICsJdTY0IHRiX2N5Y2xlOw0KPiA+ID4gPiA+ID4gPiArCXM2
+NCB0aW1lOw0KPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ICsJdW5zaWduZWQgaW50IGNw
+dSA9IGRldi0+aWQ7DQo+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gKwlpZiAoIXB3MjBf
+d3QpIHsNCj4gPiA+ID4gPiA+ID4gKwkJc21wX2NhbGxfZnVuY3Rpb25fc2luZ2xlKGNwdSwgZG9f
+c2hvd19wd3JtZ3RjcjAsICZ2YWx1ZSwNCj4gPiA+ID4gMSk7DQo+ID4gPiA+ID4gPiA+ICsJCXZh
+bHVlID0gKHZhbHVlICYgUFdSTUdUQ1IwX1BXMjBfRU5UKSA+Pg0KPiA+ID4gPiA+ID4gPiArCQkJ
+CQlQV1JNR1RDUjBfUFcyMF9FTlRfU0hJRlQ7DQo+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+
+ID4gKwkJdGJfY3ljbGUgPSAoMSA8PCAoTUFYX0JJVCAtIHZhbHVlKSkgKiAyOw0KPiA+ID4gPiA+
+ID4NCj4gPiA+ID4gPiA+IElzIHZhbHVlID0gMCBhbmQgdmFsdWUgPSAxIGxlZ2FsPyBUaGVzZSB3
+aWxsIG1ha2UgdGJfY3ljbGUgPQ0KPiA+ID4gPiA+ID4gMCwNCj4gPiA+ID4gPiA+DQo+ID4gPiA+
+ID4gPiA+ICsJCXRpbWUgPSBkaXZfdTY0KHRiX2N5Y2xlICogMTAwMCwgdGJfdGlja3NfcGVyX3Vz
+ZWMpIC0gMTsNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBBbmQgdGltZSA9IC0xOw0KPiA+ID4g
+PiA+ID4NCj4gPiA+ID4gPiBQbGVhc2UgbG9vayBhdCB0aGUgZW5kIG9mIHRoZSBmdW5jdGlvbiwg
+OikNCj4gPiA+ID4gPg0KPiA+ID4gPiA+ICJyZXR1cm4gc3ByaW50ZihidWYsICIlbGx1XG4iLCB0
+aW1lID4gMCA/IHRpbWUgOiAwKTsiDQo+ID4gPiA+DQo+ID4gPiA+IEkga25vdyB5b3UgcmV0dXJu
+IDAgaWYgdmFsdWUgPSAwLzEsIG15IHF1ZXN0aW9uIHdhcyB0aGF0LCBpcyB0aGlzDQo+ID4gPiA+
+IGNvcnJlY3QgYXMgcGVyIHNwZWNpZmljYXRpb24/DQo+ID4gPiA+DQo+ID4gPiA+IEFoaCwgYWxz
+byBmb3IgInZhbHVlIiB1cHRvIDcgeW91IHdpbGwgcmV0dXJuIDAsIG5vPw0KPiA+ID4gPg0KPiA+
+ID4gSWYgdmFsdWUgPSAwLCBNQVhfQklUIC0gdmFsdWUgPSA2Mw0KPiA+ID4gdGJfY3ljbGUgPSAw
+eGZmZmZmZmZmX2ZmZmZmZmZmLA0KPiA+DQo+ID4gQWN0dWFsbHksIHRiX2N5Y2xlIHdpbGwgYmUg
+dW5kZWZpbmVkIGJlY2F1c2UgeW91IHNoaWZ0ZWQgYSAzMi1iaXQNCj4gPiB2YWx1ZQ0KPiA+ICgx
+KSBieSBtb3JlIHRoYW4gMzEgYml0cy4gIHMvMS8xVUxMLw0KPiA+DQoNCldoYXQgU2NvdHQgaXMg
+c2F5aW5nIGlzIHRoZSBsZWZ0IHNoaWZ0IG9mICIxIiBmb3IgbW9yZSB0aGFuIDMxIHdpbGwgYmUg
+dW5kZWZpbmVkLg0KU2NvdHQgdGhpcyB3aWxsIGJlIHNpZ24tZXh0ZW5kZWQsIHJpZ2h0Pw0KDQot
+QmhhcmF0DQoNCj4gQWN0dWFsbHksIHdlIGhhdmUgYmVlbiBkaXNjdXNzaW5nIHRoaXMgc2l0dWF0
+aW9uIHRoYXQgY291bGQgbm90IGhhdmUgaGFwcGVuZWQuDQo+IFNlZSAhcHcyMF93dCBicmFuY2gs
+IHRoaXMgYnJhbmNoIGlzIHJlYWQgZGVmYXVsdCB3YWl0IGJpdC4NCj4gVGhlIGRlZmF1bHQgd2Fp
+dCBiaXQgaXMgNTAsIHRoZSB0aW1lIGlzIGFib3V0IDFtcy4NCj4gVGhlIGRlZmF1bHQgd2FpdCBi
+aXQgY2Fubm90IGxlc3MgdGhhbiA1MCwgbWVhbnMgdGhlIHdhaXQgZW50cnkgdGltZSBjYW5ub3QN
+Cj4gZ3JlYXRlciB0aGFuIDFtcy4NCj4gV2UgaGF2ZSBhbHJlYWR5IGJlZ3VuIGJlbmNobWFyayB0
+ZXN0LCBhbmQgd2UgZ290IGEgcHJlbGltaW5hcnkgcmVzdWx0cy4NCj4gNTUsIDU2LCA1N2JpdCBs
+b29rcyBnb29kLCBidXQgd2UgbmVlZCBtb3JlIGJlbmNobWFyayB0byBnZXQgdGhlIGRlZmF1bHQg
+Yml0Lg0KPiANCj4gCWlmICghcHcyMF93dCkgew0KPiAJCXNtcF9jYWxsX2Z1bmN0aW9uX3Npbmds
+ZShjcHUsIGRvX3Nob3dfcHdybWd0Y3IwLCAmdmFsdWUsIDEpOw0KPiAJCXZhbHVlID0gKHZhbHVl
+ICYgUFdSTUdUQ1IwX1BXMjBfRU5UKSA+Pg0KPiAJCQkJCVBXUk1HVENSMF9QVzIwX0VOVF9TSElG
+VDsNCj4gDQo+IAkJdGJfY3ljbGUgPSAoMSA8PCAoTUFYX0JJVCAtIHZhbHVlKSkgKiAyOw0KPiAJ
+CXRpbWUgPSBkaXZfdTY0KHRiX2N5Y2xlICogMTAwMCwgdGJfdGlja3NfcGVyX3VzZWMpIC0gMTsN
+Cj4gCX0gZWxzZSB7DQo+IAkJdGltZSA9IHB3MjBfd3Q7DQo+IAl9DQo+IA0KPiBJZiBpdCBjYXVz
+ZWQgY29uZnVzaW9uLCB3ZSBjYW4gYWRkIGEgY29tbWVudC4gQXMgSSBkaXNjdXNzIHdpdGggQmhh
+cmF0Lg0KPiANCj4gPiA+IHRiX2N5Y2xlICogMTAwMCB3aWxsIG92ZXJmbG93LCBidXQgdGhpcyBz
+aXR1YXRpb24gaXMgbm90IHBvc3NpYmxlLg0KPiA+ID4gQmVjYXVzZSBpZiB0aGUgInZhbHVlID0g
+MCIgbWVhbnMgdGhpcyBmZWF0dXJlIHdpbGwgYmUgImRpc2FibGUiLg0KPiA+ID4gTm93IFRoZSBk
+ZWZhdWx0IHdhaXQgYml0IGlzIDUwKE1BWF9CSVQgLSB2YWx1ZSwgdmFsdWUgPSAxMyksIHRoZQ0K
+PiA+ID4gUFcyMC9BbHRpdmVjIElkbGUgd2FpdCBlbnRyeSB0aW1lIGlzIGFib3V0IDFtcywgdGhp
+cyB0aW1lIGlzIHZlcnkNCj4gPiA+IGxvbmcgZm9yIHdhaXQgaWRsZSB0aW1lLCBhbmQgaXQncyBj
+YW5ub3QgYmUgaW5jcmVhc2VkKG1lYW5zIChNQVhfQklUDQo+ID4gPiAtDQo+ID4gPiB2YWx1ZSkg
+Y2Fubm90IGdyZWF0ZXIgdGhhbiA1MCkuDQo+ID4NCj4gPiBXaHkgY2FuIGl0IG5vdCBiZSBpbmNy
+ZWFzZWQ/DQo+ID4NCj4gc2VlIGFib3ZlLCA6KQ0KDQoNCj4gDQo+IC1kb25nc2hlbmcNCj4gPiAt
+U2NvdHQNCj4gPg0KDQo=
