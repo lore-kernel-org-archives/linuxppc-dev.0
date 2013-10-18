@@ -1,35 +1,37 @@
 Return-Path: <B40534@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D1A922C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 13:36:47 +1100 (EST)
-Received: from mail2-am1 (localhost [127.0.0.1])	by mail2-am1-R.bigfish.com
- (Postfix) with ESMTP id 2431826043C	for <linuxppc-dev@lists.ozlabs.org>; Fri,
- 18 Oct 2013 02:36:41 +0000 (UTC)
-Received: from AM1EHSMHS014.bigfish.com (unknown [10.3.201.247])	by
- mail2-am1.bigfish.com (Postfix) with ESMTP id B99C83A0083	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 02:36:39 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 3BC2D2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 14:03:47 +1100 (EST)
+Received: from mail149-va3 (localhost [127.0.0.1])	by
+ mail149-va3-R.bigfish.com (Postfix) with ESMTP id 09C1C60178	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 03:03:41 +0000 (UTC)
+Received: from VA3EHSMHS007.bigfish.com (unknown [10.7.14.241])	by
+ mail149-va3.bigfish.com (Postfix) with ESMTP id 825CF34004F	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 03:02:27 +0000 (UTC)
 From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>, Wood Scott-B07421
+ <B07421@freescale.com>
 Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
  altivec idle
-Date: Fri, 18 Oct 2013 02:36:37 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010B3391@039-SN2MPN1-021.039d.mgd.msft.net>
+Date: Fri, 18 Oct 2013 03:02:19 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010B33C3@039-SN2MPN1-021.039d.mgd.msft.net>
 References: <1381828871-17110-1-git-send-email-dongsheng.wang@freescale.com>
  <1381828871-17110-4-git-send-email-dongsheng.wang@freescale.com>
  <6A3DF150A5B70D4F9B66A25E3F7C888D071C08E4@039-SN2MPN1-013.039d.mgd.msft.net>
  <ABB05CD9C9F68C46A5CEDC7F15439259010B1799@039-SN2MPN1-021.039d.mgd.msft.net>
  <6A3DF150A5B70D4F9B66A25E3F7C888D071C3279@039-SN2MPN1-013.039d.mgd.msft.net>
  <ABB05CD9C9F68C46A5CEDC7F15439259010B189E@039-SN2MPN1-021.039d.mgd.msft.net>
- <1382028703.7979.782.camel@snotra.buserror.net>
-In-Reply-To: <1382028703.7979.782.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C34C1@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B195F@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C362B@039-SN2MPN1-013.039d.mgd.msft.net>
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D071C362B@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Bhushan Bharat-R65777 <R65777@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,81 +41,262 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogRnJpZGF5LCBPY3RvYmVyIDE4LCAyMDEzIDEyOjUyIEFNDQo+IFRvOiBXYW5n
-IERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IEJodXNoYW4gQmhhcmF0LVI2NTc3NzsgV29vZCBTY290
-dC1CMDc0MjE7IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBS
-ZTogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjAgc3RhdGUg
-YW5kDQo+IGFsdGl2ZWMgaWRsZQ0KPiANCj4gT24gVGh1LCAyMDEzLTEwLTE3IGF0IDAwOjUxIC0w
-NTAwLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2lu
-YWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gPiA+
-IFNlbnQ6IFRodXJzZGF5LCBPY3RvYmVyIDE3LCAyMDEzIDExOjIwIEFNDQo+ID4gPiBUbzogV2Fu
-ZyBEb25nc2hlbmctQjQwNTM0OyBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gQ2M6IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnDQo+ID4gPiBTdWJqZWN0OiBSRTogW1BBVENIIHY1IDQvNF0g
-cG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjAgc3RhdGUNCj4gPiA+IGFuZCBhbHRpdmVj
-IGlkbGUNCj4gPiA+DQo+ID4gPg0KPiA+ID4NCj4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
-LS0tLS0NCj4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+IFNlbnQ6
-IFRodXJzZGF5LCBPY3RvYmVyIDE3LCAyMDEzIDg6MTYgQU0NCj4gPiA+ID4gVG86IEJodXNoYW4g
-QmhhcmF0LVI2NTc3NzsgV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gQ2M6IGxpbnV4cHBjLWRl
-dkBsaXN0cy5vemxhYnMub3JnDQo+ID4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjUgNC80XSBw
-b3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMCBzdGF0ZQ0KPiA+ID4gPiBhbmQgYWx0aXZl
-YyBpZGxlDQo+ID4gPiA+DQo+ID4gPiA+DQo+ID4gPiA+DQo+ID4gPiA+ID4gLS0tLS1PcmlnaW5h
-bCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiBGcm9tOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4g
-PiA+ID4gPiBTZW50OiBUaHVyc2RheSwgT2N0b2JlciAxNywgMjAxMyAxOjAxIEFNDQo+ID4gPiA+
-ID4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNDsgV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4g
-PiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+ID4gPiBTdWJqZWN0OiBS
-RTogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjANCj4gPiA+
-ID4gPiBzdGF0ZSBhbmQgYWx0aXZlYyBpZGxlDQo+ID4gPiA+ID4NCj4gPiA+ID4gPg0KPiA+ID4g
-PiA+DQo+ID4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4g
-RnJvbTogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+ID4gPiBTZW50OiBUdWVzZGF5LCBP
-Y3RvYmVyIDE1LCAyMDEzIDI6NTEgUE0NCj4gPiA+ID4gPiA+IFRvOiBXb29kIFNjb3R0LUIwNzQy
-MQ0KPiA+ID4gPiA+ID4gQ2M6IEJodXNoYW4gQmhhcmF0LVI2NTc3NzsgbGludXhwcGMtZGV2QGxp
-c3RzLm96bGFicy5vcmc7IFdhbmcNCj4gPiA+ID4gPiBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+
-ID4gPiBTdWJqZWN0OiBbUEFUQ0ggdjUgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3Ig
-cHcyMCBzdGF0ZQ0KPiA+ID4gPiA+ID4gYW5kDQo+ID4gPiA+ID4gYWx0aXZlYyBpZGxlDQo+ID4g
-PiA+ID4gPg0KPiA+ID4gPiA+ID4gK3N0YXRpYyBzc2l6ZV90IHNob3dfcHcyMF93YWl0X3RpbWUo
-c3RydWN0IGRldmljZSAqZGV2LA0KPiA+ID4gPiA+ID4gKwkJCQlzdHJ1Y3QgZGV2aWNlX2F0dHJp
-YnV0ZSAqYXR0ciwgY2hhciAqYnVmKSB7DQo+ID4gPiA+ID4gPiArCXUzMiB2YWx1ZTsNCj4gPiA+
-ID4gPiA+ICsJdTY0IHRiX2N5Y2xlOw0KPiA+ID4gPiA+ID4gKwlzNjQgdGltZTsNCj4gPiA+ID4g
-PiA+ICsNCj4gPiA+ID4gPiA+ICsJdW5zaWduZWQgaW50IGNwdSA9IGRldi0+aWQ7DQo+ID4gPiA+
-ID4gPiArDQo+ID4gPiA+ID4gPiArCWlmICghcHcyMF93dCkgew0KPiA+ID4gPiA+ID4gKwkJc21w
-X2NhbGxfZnVuY3Rpb25fc2luZ2xlKGNwdSwgZG9fc2hvd19wd3JtZ3RjcjAsICZ2YWx1ZSwNCj4g
-PiA+IDEpOw0KPiA+ID4gPiA+ID4gKwkJdmFsdWUgPSAodmFsdWUgJiBQV1JNR1RDUjBfUFcyMF9F
-TlQpID4+DQo+ID4gPiA+ID4gPiArCQkJCQlQV1JNR1RDUjBfUFcyMF9FTlRfU0hJRlQ7DQo+ID4g
-PiA+ID4gPiArDQo+ID4gPiA+ID4gPiArCQl0Yl9jeWNsZSA9ICgxIDw8IChNQVhfQklUIC0gdmFs
-dWUpKSAqIDI7DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBJcyB2YWx1ZSA9IDAgYW5kIHZhbHVlID0g
-MSBsZWdhbD8gVGhlc2Ugd2lsbCBtYWtlIHRiX2N5Y2xlID0gMCwNCj4gPiA+ID4gPg0KPiA+ID4g
-PiA+ID4gKwkJdGltZSA9IGRpdl91NjQodGJfY3ljbGUgKiAxMDAwLCB0Yl90aWNrc19wZXJfdXNl
-YykgLSAxOw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gQW5kIHRpbWUgPSAtMTsNCj4gPiA+ID4gPg0K
-PiA+ID4gPiBQbGVhc2UgbG9vayBhdCB0aGUgZW5kIG9mIHRoZSBmdW5jdGlvbiwgOikNCj4gPiA+
-ID4NCj4gPiA+ID4gInJldHVybiBzcHJpbnRmKGJ1ZiwgIiVsbHVcbiIsIHRpbWUgPiAwID8gdGlt
-ZSA6IDApOyINCj4gPiA+DQo+ID4gPiBJIGtub3cgeW91IHJldHVybiAwIGlmIHZhbHVlID0gMC8x
-LCBteSBxdWVzdGlvbiB3YXMgdGhhdCwgaXMgdGhpcw0KPiA+ID4gY29ycmVjdCBhcyBwZXIgc3Bl
-Y2lmaWNhdGlvbj8NCj4gPiA+DQo+ID4gPiBBaGgsIGFsc28gZm9yICJ2YWx1ZSIgdXB0byA3IHlv
-dSB3aWxsIHJldHVybiAwLCBubz8NCj4gPiA+DQo+ID4gSWYgdmFsdWUgPSAwLCBNQVhfQklUIC0g
-dmFsdWUgPSA2Mw0KPiA+IHRiX2N5Y2xlID0gMHhmZmZmZmZmZl9mZmZmZmZmZiwNCj4gDQo+IEFj
-dHVhbGx5LCB0Yl9jeWNsZSB3aWxsIGJlIHVuZGVmaW5lZCBiZWNhdXNlIHlvdSBzaGlmdGVkIGEg
-MzItYml0IHZhbHVlDQo+ICgxKSBieSBtb3JlIHRoYW4gMzEgYml0cy4gIHMvMS8xVUxMLw0KPiAN
-CkFjdHVhbGx5LCB3ZSBoYXZlIGJlZW4gZGlzY3Vzc2luZyB0aGlzIHNpdHVhdGlvbiB0aGF0IGNv
-dWxkIG5vdCBoYXZlIGhhcHBlbmVkLg0KU2VlICFwdzIwX3d0IGJyYW5jaCwgdGhpcyBicmFuY2gg
-aXMgcmVhZCBkZWZhdWx0IHdhaXQgYml0Lg0KVGhlIGRlZmF1bHQgd2FpdCBiaXQgaXMgNTAsIHRo
-ZSB0aW1lIGlzIGFib3V0IDFtcy4NClRoZSBkZWZhdWx0IHdhaXQgYml0IGNhbm5vdCBsZXNzIHRo
-YW4gNTAsIG1lYW5zIHRoZSB3YWl0IGVudHJ5IHRpbWUgY2Fubm90IGdyZWF0ZXIgdGhhbiAxbXMu
-DQpXZSBoYXZlIGFscmVhZHkgYmVndW4gYmVuY2htYXJrIHRlc3QsIGFuZCB3ZSBnb3QgYSBwcmVs
-aW1pbmFyeSByZXN1bHRzLg0KNTUsIDU2LCA1N2JpdCBsb29rcyBnb29kLCBidXQgd2UgbmVlZCBt
-b3JlIGJlbmNobWFyayB0byBnZXQgdGhlIGRlZmF1bHQgYml0Lg0KDQoJaWYgKCFwdzIwX3d0KSB7
-DQoJCXNtcF9jYWxsX2Z1bmN0aW9uX3NpbmdsZShjcHUsIGRvX3Nob3dfcHdybWd0Y3IwLCAmdmFs
-dWUsIDEpOw0KCQl2YWx1ZSA9ICh2YWx1ZSAmIFBXUk1HVENSMF9QVzIwX0VOVCkgPj4NCgkJCQkJ
-UFdSTUdUQ1IwX1BXMjBfRU5UX1NISUZUOw0KDQoJCXRiX2N5Y2xlID0gKDEgPDwgKE1BWF9CSVQg
-LSB2YWx1ZSkpICogMjsNCgkJdGltZSA9IGRpdl91NjQodGJfY3ljbGUgKiAxMDAwLCB0Yl90aWNr
-c19wZXJfdXNlYykgLSAxOw0KCX0gZWxzZSB7DQoJCXRpbWUgPSBwdzIwX3d0Ow0KCX0NCg0KSWYg
-aXQgY2F1c2VkIGNvbmZ1c2lvbiwgd2UgY2FuIGFkZCBhIGNvbW1lbnQuIEFzIEkgZGlzY3VzcyB3
-aXRoIEJoYXJhdC4NCg0KPiA+IHRiX2N5Y2xlICogMTAwMCB3aWxsIG92ZXJmbG93LCBidXQgdGhp
-cyBzaXR1YXRpb24gaXMgbm90IHBvc3NpYmxlLg0KPiA+IEJlY2F1c2UgaWYgdGhlICJ2YWx1ZSA9
-IDAiIG1lYW5zIHRoaXMgZmVhdHVyZSB3aWxsIGJlICJkaXNhYmxlIi4NCj4gPiBOb3cgVGhlIGRl
-ZmF1bHQgd2FpdCBiaXQgaXMgNTAoTUFYX0JJVCAtIHZhbHVlLCB2YWx1ZSA9IDEzKSwgdGhlDQo+
-ID4gUFcyMC9BbHRpdmVjIElkbGUgd2FpdCBlbnRyeSB0aW1lIGlzIGFib3V0IDFtcywgdGhpcyB0
-aW1lIGlzIHZlcnkgbG9uZw0KPiA+IGZvciB3YWl0IGlkbGUgdGltZSwgYW5kIGl0J3MgY2Fubm90
-IGJlIGluY3JlYXNlZChtZWFucyAoTUFYX0JJVCAtDQo+ID4gdmFsdWUpIGNhbm5vdCBncmVhdGVy
-IHRoYW4gNTApLg0KPiANCj4gV2h5IGNhbiBpdCBub3QgYmUgaW5jcmVhc2VkPw0KPg0Kc2VlIGFi
-b3ZlLCA6KQ0KDQotZG9uZ3NoZW5nDQo+IC1TY290dA0KPiANCg0K
+
+
+> -----Original Message-----
+> From: Bhushan Bharat-R65777
+> Sent: Thursday, October 17, 2013 2:46 PM
+> To: Wang Dongsheng-B40534; Wood Scott-B07421
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
+> altivec idle
+>=20
+>=20
+>=20
+> > > > -----Original Message-----
+> > > > From: Wang Dongsheng-B40534
+> > > > Sent: Thursday, October 17, 2013 11:22 AM
+> > > > To: Bhushan Bharat-R65777; Wood Scott-B07421
+> > > > Cc: linuxppc-dev@lists.ozlabs.org
+> > > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state
+> > > > and altivec idle
+> > > >
+> > > >
+> > > >
+> > > > > -----Original Message-----
+> > > > > From: Bhushan Bharat-R65777
+> > > > > Sent: Thursday, October 17, 2013 11:20 AM
+> > > > > To: Wang Dongsheng-B40534; Wood Scott-B07421
+> > > > > Cc: linuxppc-dev@lists.ozlabs.org
+> > > > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20
+> > > > > state and altivec idle
+> > > > >
+> > > > >
+> > > > >
+> > > > > > -----Original Message-----
+> > > > > > From: Wang Dongsheng-B40534
+> > > > > > Sent: Thursday, October 17, 2013 8:16 AM
+> > > > > > To: Bhushan Bharat-R65777; Wood Scott-B07421
+> > > > > > Cc: linuxppc-dev@lists.ozlabs.org
+> > > > > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20
+> > > > > > state and altivec idle
+> > > > > >
+> > > > > >
+> > > > > >
+> > > > > > > -----Original Message-----
+> > > > > > > From: Bhushan Bharat-R65777
+> > > > > > > Sent: Thursday, October 17, 2013 1:01 AM
+> > > > > > > To: Wang Dongsheng-B40534; Wood Scott-B07421
+> > > > > > > Cc: linuxppc-dev@lists.ozlabs.org
+> > > > > > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20
+> > > > > > > state and altivec idle
+> > > > > > >
+> > > > > > >
+> > > > > > >
+> > > > > > > > -----Original Message-----
+> > > > > > > > From: Wang Dongsheng-B40534
+> > > > > > > > Sent: Tuesday, October 15, 2013 2:51 PM
+> > > > > > > > To: Wood Scott-B07421
+> > > > > > > > Cc: Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org;
+> > > > > > > > Wang
+> > > > > > > Dongsheng-B40534
+> > > > > > > > Subject: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20
+> > > > > > > > state and
+> > > > > > > altivec idle
+> > > > > > > >
+> > > > > > > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > > > > > >
+> > > > > > > > Add a sys interface to enable/diable pw20 state or altivec
+> > > > > > > > idle, and
+> > > > > > > control the
+> > > > > > > > wait entry time.
+> > > > > > > >
+> > > > > > > > Enable/Disable interface:
+> > > > > > > > 0, disable. 1, enable.
+> > > > > > > > /sys/devices/system/cpu/cpuX/pw20_state
+> > > > > > > > /sys/devices/system/cpu/cpuX/altivec_idle
+> > > > > > > >
+> > > > > > > > Set wait time interface:(Nanosecond)
+> > > > > > > > /sys/devices/system/cpu/cpuX/pw20_wait_time
+> > > > > > > > /sys/devices/system/cpu/cpuX/altivec_idle_wait_time
+> > > > > > > > Example: Base on TBfreq is 41MHZ.
+> > > > > > > > 1~48(ns): TB[63]
+> > > > > > > > 49~97(ns): TB[62]
+> > > > > > > > 98~195(ns): TB[61]
+> > > > > > > > 196~390(ns): TB[60]
+> > > > > > > > 391~780(ns): TB[59]
+> > > > > > > > 781~1560(ns): TB[58]
+> > > > > > > > ...
+> > > > > > > >
+> > > > > > > > Signed-off-by: Wang Dongsheng
+> > > > > > > > <dongsheng.wang@freescale.com>
+> > > > > > > > ---
+> > > > > > > > *v5:
+> > > > > > > > Change get_idle_ticks_bit function implementation.
+> > > > > > > >
+> > > > > > > > *v4:
+> > > > > > > > Move code from 85xx/common.c to kernel/sysfs.c.
+> > > > > > > >
+> > > > > > > > Remove has_pw20_altivec_idle function.
+> > > > > > > >
+> > > > > > > > Change wait "entry_bit" to wait time.
+> > > > > > > >
+> > > > > > > > diff --git a/arch/powerpc/kernel/sysfs.c
+> > > > > > > > b/arch/powerpc/kernel/sysfs.c
+> > > > > > > index
+> > > > > > > > 27a90b9..10d1128 100644
+> > > > > > > > --- a/arch/powerpc/kernel/sysfs.c
+> > > > > > > > +++ b/arch/powerpc/kernel/sysfs.c
+> > > > > > > > @@ -85,6 +85,284 @@ __setup("smt-snooze-delay=3D",
+> > > > > > > setup_smt_snooze_delay);
+> > > > > > > >
+> > > > > > > >  #endif /* CONFIG_PPC64 */
+> > > > > > > >
+> > > > > > > > +#ifdef CONFIG_FSL_SOC
+> > > > > > > > +#define MAX_BIT				63
+> > > > > > > > +
+> > > > > > > > +static u64 pw20_wt;
+> > > > > > > > +static u64 altivec_idle_wt;
+> > > > > > > > +
+> > > > > > > > +static unsigned int get_idle_ticks_bit(u64 ns) {
+> > > > > > > > +	u64 cycle;
+> > > > > > > > +
+> > > > > > > > +	if (ns >=3D 10000)
+> > > > > > > > +		cycle =3D div_u64(ns + 500, 1000) *
+> tb_ticks_per_usec;
+> > > > > > > > +	else
+> > > > > > > > +		cycle =3D div_u64(ns * tb_ticks_per_usec, 1000);
+> > > > > > > > +
+> > > > > > > > +	if (!cycle)
+> > > > > > > > +		return 0;
+> > > > > > > > +
+> > > > > > > > +	return ilog2(cycle);
+> > > > > > > > +}
+> > > > > > > > +
+> > > > > > > > +static void do_show_pwrmgtcr0(void *val) {
+> > > > > > > > +	u32 *value =3D val;
+> > > > > > > > +
+> > > > > > > > +	*value =3D mfspr(SPRN_PWRMGTCR0); }
+> > > > > > > > +
+> > > > > > > > +static ssize_t show_pw20_state(struct device *dev,
+> > > > > > > > +				struct device_attribute *attr, char
+> *buf) {
+> > > > > > > > +	u32 value;
+> > > > > > > > +	unsigned int cpu =3D dev->id;
+> > > > > > > > +
+> > > > > > > > +	smp_call_function_single(cpu, do_show_pwrmgtcr0, &value,
+> > > > > > > > +1);
+> > > > > > > > +
+> > > > > > > > +	value &=3D PWRMGTCR0_PW20_WAIT;
+> > > > > > > > +
+> > > > > > > > +	return sprintf(buf, "%u\n", value ? 1 : 0); }
+> > > > > > > > +
+> > > > > > > > +static void do_store_pw20_state(void *val) {
+> > > > > > > > +	u32 *value =3D val;
+> > > > > > > > +	u32 pw20_state;
+> > > > > > > > +
+> > > > > > > > +	pw20_state =3D mfspr(SPRN_PWRMGTCR0);
+> > > > > > > > +
+> > > > > > > > +	if (*value)
+> > > > > > > > +		pw20_state |=3D PWRMGTCR0_PW20_WAIT;
+> > > > > > > > +	else
+> > > > > > > > +		pw20_state &=3D ~PWRMGTCR0_PW20_WAIT;
+> > > > > > > > +
+> > > > > > > > +	mtspr(SPRN_PWRMGTCR0, pw20_state); }
+> > > > > > > > +
+> > > > > > > > +static ssize_t store_pw20_state(struct device *dev,
+> > > > > > > > +				struct device_attribute *attr,
+> > > > > > > > +				const char *buf, size_t count) {
+> > > > > > > > +	u32 value;
+> > > > > > > > +	unsigned int cpu =3D dev->id;
+> > > > > > > > +
+> > > > > > > > +	if (kstrtou32(buf, 0, &value))
+> > > > > > > > +		return -EINVAL;
+> > > > > > > > +
+> > > > > > > > +	if (value > 1)
+> > > > > > > > +		return -EINVAL;
+> > > > > > > > +
+> > > > > > > > +	smp_call_function_single(cpu, do_store_pw20_state,
+> > > > > > > > +&value, 1);
+> > > > > > > > +
+> > > > > > > > +	return count;
+> > > > > > > > +}
+> > > > > > > > +
+> > > > > > > > +static ssize_t show_pw20_wait_time(struct device *dev,
+> > > > > > > > +				struct device_attribute *attr, char
+> *buf) {
+> > > > > > > > +	u32 value;
+> > > > > > > > +	u64 tb_cycle;
+> > > > > > > > +	s64 time;
+> > > > > > > > +
+> > > > > > > > +	unsigned int cpu =3D dev->id;
+> > > > > > > > +
+> > > > > > > > +	if (!pw20_wt) {
+> > > > > > > > +		smp_call_function_single(cpu, do_show_pwrmgtcr0,
+> > > > > > > > +&value,
+> > > > > 1);
+> > > > > > > > +		value =3D (value & PWRMGTCR0_PW20_ENT) >>
+> > > > > > > > +					PWRMGTCR0_PW20_ENT_SHIFT;
+> > > > > > > > +
+> > > > > > > > +		tb_cycle =3D (1 << (MAX_BIT - value)) * 2;
+> > > > > > >
+> > > > > > > Is value =3D 0 and value =3D 1 legal? These will make tb_cycl=
+e =3D
+> > > > > > > 0,
+> > > > > > >
+> > > > > > > > +		time =3D div_u64(tb_cycle * 1000, tb_ticks_per_usec)
+> - 1;
+> > > > > > >
+> > > > > > > And time =3D -1;
+> > > > > > >
+> > > > > > Please look at the end of the function, :)
+> > > > > >
+> > > > > > "return sprintf(buf, "%llu\n", time > 0 ? time : 0);"
+> > > > >
+> > > > > I know you return 0 if value =3D 0/1, my question was that, is
+> > > > > this correct as per specification?
+> > > > >
+> > > > > Ahh, also for "value" upto 7 you will return 0, no?
+> > > > >
+> > > > If value =3D 0, MAX_BIT - value =3D 63 tb_cycle =3D 0xffffffff_ffff=
+ffff,
+> > > > tb_cycle * 1000 will overflow, but this situation is not possible.
+> > > > Because if the "value =3D 0" means this feature will be "disable".
+> > > > Now The default wait bit is 50(MAX_BIT - value, value =3D 13), the
+> > > > PW20/Altivec Idle wait entry time is about 1ms, this time is very
+> > > > long for wait idle time, and it's cannot be increased(means
+> > > > (MAX_BIT
+> > > > - value)
+> > > cannot greater than 50).
+> > >
+> > > What you said is not obvious from code and so at least write a
+> > > comment that value will be always >=3D 13 or value will never be less
+> > > than < 8 and below calculation will not overflow. may be error out
+> > > if value is less than 8.
+> > >
+> > The "value" less than 10, this will overflow.
+> > There is not error, The code I knew it could not be less than 10,
+> > that's why I use the following code. :)
+>=20
+> I am sorry to persist but this is not about what you know, this is about
+> how code is read and code does not say what you know, so add a comment at
+> least and error out/warn when "value" is less than a certain number.
+>=20
+Sorry for the late to response the mail. If it caused confusion, we can add=
+ a comment.
+
+How about the following comment?
+/*
+ * If the "value" less than 10, this will overflow.
+ * From benchmark test, the default wait bit will not be set less than 10bi=
+t.
+ * Because 10 bit corresponds to the wait entry time is 439375573401999609(=
+ns),
+ * for wait-entry-idle time this value looks too long, and we cannot use th=
+ose
+ * "long" time as a default wait-entry time. So overflow could not have hap=
+pened
+ * and we use this calculation method to get wait-entry-idle time.
+ */
+
+> -Bharat
