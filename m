@@ -1,32 +1,36 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from cdptpa-oedge-vip.email.rr.com
- (cdptpa-outbound-snat.email.rr.com [107.14.166.226])
- by ozlabs.org (Postfix) with ESMTP id 32EEB2C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 04:42:53 +1100 (EST)
-Date: Thu, 17 Oct 2013 13:35:43 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: rkrcmar@redhat.com
-Subject: Re: [PATCH 5/7] jump_label: relax branch hinting restrictions
-Message-ID: <20131017133543.7e4e8d45@gandalf.local.home>
-In-Reply-To: <1382004631-25895-6-git-send-email-rkrcmar@redhat.com>
-References: <1382004631-25895-1-git-send-email-rkrcmar@redhat.com>
- <1382004631-25895-6-git-send-email-rkrcmar@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-doc@vger.kernel.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>, sparclinux@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>,
- Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Andrew Jones <drjones@redhat.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, Jiri Kosina <jkosina@suse.cz>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Rob Landley <rob@landley.net>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>
+Return-Path: <B29983@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 336A52C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 13:06:23 +1100 (EST)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in device tree
+Date: Fri, 18 Oct 2013 02:06:09 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B150C5CAB@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1381300704-4238-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20131010100331.GE26954@e106331-lin.cambridge.arm.com>
+ <D07C73A334FF604B95B3CBD2A545D07B150BD137@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20131011092526.GE3910@e106331-lin.cambridge.arm.com>
+ <1381518433.7979.536.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C24BD@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381788786.7979.643.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C2B08@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381858855.7979.693.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C312F@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381942009.7979.727.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C4600@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1382027085.7979.774.camel@snotra.buserror.net>
+In-Reply-To: <1382027085.7979.774.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-Leo-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,88 +40,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 17 Oct 2013 12:10:28 +0200
-Radim Kr=C4=8Dm=C3=A1=C5=99 <rkrcmar@redhat.com> wrote:
-
-> We implemented the optimized branch selection in higher levels of api.
-> That made static_keys very unintuitive, so this patch introduces another
-> element to jump_table, carrying one bit that tells the underlying code
-> which branch to optimize.
->=20
-> It is now possible to select optimized branch for every jump_entry.
->=20
-> Current side effect is 1/3 increase increase in space, we could:
-> * use bitmasks and selectors on 2+ aligned code/struct.
->   - aligning jump target is easy, but because it is not done by default
->     and few bytes in .text are much worse that few kilos in .data,
->     I chose not to
->   - data is probably aligned by default on all current architectures,
->     but programmer can force misalignment of static_key
-> * optimize each architecture independently
->   - I can't test everything and this patch shouldn't break anything, so
->     others can contribute in the future
-> * choose something worse, like packing or splitting
-> * ignore
->=20
-> proof: example & x86_64 disassembly: (F =3D ffffffff)
->=20
->   struct static_key flexible_feature;
->   noinline void jump_label_experiment(void) {
->   	if ( static_key_false(&flexible_feature))
->   	     asm ("push 0xa1");
->   	else asm ("push 0xa0");
->   	if (!static_key_false(&flexible_feature))
->   	     asm ("push 0xb0");
->   	else asm ("push 0xb1");
->   	if ( static_key_true(&flexible_feature))
->   	     asm ("push 0xc1");
->   	else asm ("push 0xc0");
->   	if (!static_key_true(&flexible_feature))
->   	     asm ("push 0xd0");
->   	else asm ("push 0xd1");
->   }
->=20
->   Disassembly of section .text: (push marked by "->")
->=20
->   F81002000 <jump_label_experiment>:
->   F81002000:       e8 7b 29 75 00          callq  F81754980 <__fentry__>
->   F81002005:       55                      push   %rbp
->   F81002006:       48 89 e5                mov    %rsp,%rbp
->   F81002009:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
->   F8100200e: ->    ff 34 25 a0 00 00 00    pushq  0xa0
->   F81002015:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
->   F8100201a: ->    ff 34 25 b0 00 00 00    pushq  0xb0
->   F81002021:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
->   F81002026: ->    ff 34 25 c1 00 00 00    pushq  0xc1
->   F8100202d:       0f 1f 00                nopl   (%rax)
->   F81002030:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
->   F81002035: ->    ff 34 25 d1 00 00 00    pushq  0xd1
->   F8100203c:       5d                      pop    %rbp
->   F8100203d:       0f 1f 00                nopl   (%rax)
->   F81002040:       c3                      retq
-
-This looks exactly like what we want. I take it this is with your
-patch. What was the result before the patch?
-
--- Steve
-
->   F81002041:       0f 1f 80 00 00 00 00    nopl   0x0(%rax)
->   F81002048: ->    ff 34 25 d0 00 00 00    pushq  0xd0
->   F8100204f:       5d                      pop    %rbp
->   F81002050:       c3                      retq
->   F81002051:       0f 1f 80 00 00 00 00    nopl   0x0(%rax)
->   F81002058: ->    ff 34 25 c0 00 00 00    pushq  0xc0
->   F8100205f:       90                      nop
->   F81002060:       eb cb                   jmp    F8100202d <[...]+0x2d>
->   F81002062:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
->   F81002068: ->    ff 34 25 b1 00 00 00    pushq  0xb1
->   F8100206f:       90                      nop
->   F81002070:       eb af                   jmp    F81002021 <[...]+0x21>
->   F81002072:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
->   F81002078: ->    ff 34 25 a1 00 00 00    pushq  0xa1
->   F8100207f:       90                      nop
->   F81002080:       eb 93                   jmp    F81002015 <[...]+0x15>
->   F81002082:       66 66 66 66 66 2e 0f    [...]
->   F81002089:       1f 84 00 00 00 00 00
->=20
->   Contents of section .data: (relevant part of embedded __jump_table)
+PiBPbiBXZWQsIDIwMTMtMTAtMTYgYXQgMjE6MDggLTA1MDAsIFRhbmcgWXVhbnRpYW4tQjI5OTgz
+IHdyb3RlOg0KPiA+ID4gPiA+IFRoYXQgc2hvd3MgdGhlIGRpdmlkZXJzIGFzIGJlaW5nIHNvbWV3
+aGVyZSBpbiBiZXR3ZWVuIHRoZSBQTEwNCj4gPiA+ID4gPiBhbmQgdGhlDQo+ID4gPiBNVVguDQo+
+ID4gPiA+ID4gVGhlIE1VWCBpcyB3aGVyZSB0aGUgZGl2aWRlciBpcyBzZWxlY3RlZC4gIFRoZXJl
+J3Mgbm90aGluZyBpbg0KPiA+ID4gPiA+IHRoZSBQTEwncyBwcm9ncmFtbWluZyBpbnRlcmZhY2Ug
+dGhhdCByZWxhdGVzIHRvIHRoZSBkaXZpZGVycy4NCj4gPiA+ID4gPiBBcyBzdWNoIGl0J3Mgc2lt
+cGxlciB0byBtb2RlbCBpdCBhcyBiZWluZyBwYXJ0IG9mIHRoZSBNVVguDQo+ID4gPiA+ID4NCj4g
+PiA+ID4gPiAtU2NvdHQNCj4gPiA+ID4gPg0KPiA+ID4gPiBJIGRvbid0IGtub3cgd2hldGhlciBp
+dCBpcyBzaW1wbGVyLCBidXQgIm1vZGVsaW5nIGRpdmlkZXIgYXMgYmVpbmcNCj4gPiA+ID4gcGFy
+dA0KPiA+ID4gb2YgdGhlIE1VWCINCj4gPiA+ID4gaXMgeW91ciBndWVzcywgcmlnaHQ/DQo+ID4g
+PiA+IElmIHRoZSAiZGl2aWRlciIgaXMgaW5jbHVkZWQgaW4gTVVYLCB0aGUgTVVYIHdvdWxkIG5v
+dCBiZSBjYWxsZWQNCj4gIk1VWCIuDQo+ID4gPg0KPiA+ID4gSXQncyBzdGlsbCBzZWxlY3Rpbmcg
+ZnJvbSBtdWx0aXBsZSBQTExzLg0KPiA+ID4NCj4gPiA+ID4gSSBkb24ndCBrbm93IHdoZXRoZXIg
+ImRpdmlkZXIiIG1vZHVsZSBleGlzdHMgb3Igbm90LiBJZiBpdCBleGlzdHMsDQo+ID4gPiA+IGl0
+IHNob3VsZCBiZSBwYXJ0IG9mIFBMTCBvciBiZXR3ZWVuIFBMTCBhbmQgTVVYLiB3aGVyZXZlciBp
+dCB3YXMsDQo+ID4gPiA+IHRoZQ0KPiA+ID4gZGV2aWNlIHRyZWUgYmluZGluZyBpcyBhcHByb3By
+aWF0ZS4NCj4gPiA+DQo+ID4gPiBUaGUgZGV2aWNlIHRyZWUgYmluZGluZyBpcyB1bm5lY2Vzc2Fy
+aWx5IGNvbXBsaWNhdGVkLg0KPiA+ID4NCj4gPiA+ID4gVGhlIFAzMDQxUk0gc2hvd3MgZXhhY3Rs
+eSBlYWNoIFBMTCBoYXMgMiBvdXRwdXRzIHdoaWNoIGRlZmluaXRlbHkNCj4gPiA+ID4gaGF2ZQ0K
+PiA+ID4gbm8gImRpdmlkZXIiIGF0IGFsbC4NCj4gPiA+DQo+ID4gPiBUaGF0IGRpYWdyYW0gaXMg
+YSBiaXQgd2VpcmQgLS0gb25lIG9mIHRoZSBvdXRwdXRzIGlzIHVzZWQgYXMgaXMsIGFuZA0KPiA+
+ID4gdGhlIG90aGVyIGlzIHNwbGl0IGludG8gMS8yIGFuZCAxLzQuICBJdCBkb2Vzbid0IHJlYWxs
+eSBtYXR0ZXINCj4gPiA+IHRob3VnaDsgdGhlIGVuZCByZXN1bHQgaXMgdGhlIHNhbWUuICBXZSdy
+ZSBkZXNjcmliaW5nIHRoZQ0KPiA+ID4gcHJvZ3JhbW1pbmcgaW50ZXJmYWNlLCBub3QgYXJ0d29y
+ayBjaG9pY2VzIGluIHRoZSBtYW51YWwuDQo+ID4gPg0KPiA+ID4gLVNjb3R0DQo+ID4gPg0KPiA+
+IElmIHRoZSBkZXZpY2UgdHJlZSBuZWVkcyB0byBiZSBtb2RpZmllZCwgY291bGQgeW91IGdpdmUg
+bWUgeW91cg0KPiBzdWdnZXN0aW9ucz8NCj4gDQo+IE15IHN1Z2dlc3Rpb24gaXMgdG8gaGF2ZSBv
+bmx5IG9uZSBvdXRwdXQgcGVyIFBMTCBub2RlLiAgVGhlIE1VWCBub2RlDQo+IHdvdWxkIGhhdmUg
+b25lIGlucHV0IHBlciBQTEwuICBEaXZpZGVycyB3b3VsZCBiZSBoYW5kbGVkIGludGVybmFsbHkg
+dG8NCj4gdGhlIE1VWCBkcml2ZXIuDQo+IA0KPiAtU2NvdHQNCj4gDQpJIGRvbid0IHRoaW5rIHlv
+dXIgc3VnZ2VzdGlvbiBpcyBjb25zdHJ1Y3RpdmUuDQpZb3VyIHN1Z2dlc3Rpb24gaXMgb24gdGhl
+IHByZW1pc2Ugb2YgdGhhdCB0aGUgImRpdmlkZXIiIGlzIHBhcnQgb2YgTVVYLA0KQW5kIEkgdGhp
+bmsgaXQgc2hvdWxkIGJlIHBhcnQgb2YgUExMLg0KTVVYIGNhbid0IENSRUFURSBjbG9jayB3aGlj
+aCBQTEwgY2FuLiBTbyBteSB0aG91Z2h0IGlzIG1vcmUgcmVhc29uYWJsZS4NCklmIHRoZSBkZXZp
+Y2UgdHJlZSBkb2N1bWVudHMgbGlrZSB3aGF0IHlvdSBzYWlkLCBpdCB3b3VsZCBoYXZlIGZldyBo
+ZWxwIGZvciBkcml2ZXIuDQpUaGUgcmVhc29uIGlzIG9idmlvdXMgdGhhdCB0aGUgZHJpdmVyIGlz
+IHN0aWxsIGdvaW5nIHRvIGRlYWwgd2l0aCB0aGUgImRpdmlkZXIiIA0KZGV0YWlsIHdoaWNoIHZh
+cmllcyBmcm9tIHBsYXRmb3JtIHRvIHBsYXRmb3JtLg0KSSB3aWxsIGRvY3VtZW50IGFzIGl0IHdh
+cyB1bmxlc3MgeW91IHByb3ZlIHlvdXIgc3VnZ2VzdGlvbi4NCg0KVGhhbmtzLA0KWXVhbnRpYW4N
+Cg==
