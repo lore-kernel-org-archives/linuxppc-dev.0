@@ -1,37 +1,40 @@
-Return-Path: <B40534@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3BC2D2C0090
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 14:03:47 +1100 (EST)
-Received: from mail149-va3 (localhost [127.0.0.1])	by
- mail149-va3-R.bigfish.com (Postfix) with ESMTP id 09C1C60178	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 03:03:41 +0000 (UTC)
-Received: from VA3EHSMHS007.bigfish.com (unknown [10.7.14.241])	by
- mail149-va3.bigfish.com (Postfix) with ESMTP id 825CF34004F	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 03:02:27 +0000 (UTC)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Bhushan Bharat-R65777 <R65777@freescale.com>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
-Date: Fri, 18 Oct 2013 03:02:19 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010B33C3@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1381828871-17110-1-git-send-email-dongsheng.wang@freescale.com>
- <1381828871-17110-4-git-send-email-dongsheng.wang@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C08E4@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B1799@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C3279@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B189E@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C34C1@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B195F@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C362B@039-SN2MPN1-013.039d.mgd.msft.net>
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D071C362B@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DF6422C00E0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 15:49:19 +1100 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 18 Oct 2013 14:49:05 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id EDD792CE8059
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 15:49:03 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9I4mF9h64487480
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 15:48:52 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9I4iMe5002427
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 15:44:22 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH -V2 06/14] kvm: powerpc: booke: Convert BOOKE to use
+ kvmppc_ops callbacks
+In-Reply-To: <01BC643C-0AA9-47E8-A7E9-7A84AB280298@suse.de>
+References: <1381164482-31001-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1381164482-31001-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <01BC643C-0AA9-47E8-A7E9-7A84AB280298@suse.de>
+Date: Fri, 18 Oct 2013 10:14:17 +0530
+Message-ID: <87eh7jqjby.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org,
+ "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,262 +44,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Alexander Graf <agraf@suse.de> writes:
 
+> On 07.10.2013, at 18:47, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> Make required changes to get BOOKE configs to build with
+>> the introduction of kvmppc_ops callback
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>
+> This can not be a separate commit, as you're breaking bisectability for booke this way.
+>
 
-> -----Original Message-----
-> From: Bhushan Bharat-R65777
-> Sent: Thursday, October 17, 2013 2:46 PM
-> To: Wang Dongsheng-B40534; Wood Scott-B07421
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
-> altivec idle
->=20
->=20
->=20
-> > > > -----Original Message-----
-> > > > From: Wang Dongsheng-B40534
-> > > > Sent: Thursday, October 17, 2013 11:22 AM
-> > > > To: Bhushan Bharat-R65777; Wood Scott-B07421
-> > > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state
-> > > > and altivec idle
-> > > >
-> > > >
-> > > >
-> > > > > -----Original Message-----
-> > > > > From: Bhushan Bharat-R65777
-> > > > > Sent: Thursday, October 17, 2013 11:20 AM
-> > > > > To: Wang Dongsheng-B40534; Wood Scott-B07421
-> > > > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20
-> > > > > state and altivec idle
-> > > > >
-> > > > >
-> > > > >
-> > > > > > -----Original Message-----
-> > > > > > From: Wang Dongsheng-B40534
-> > > > > > Sent: Thursday, October 17, 2013 8:16 AM
-> > > > > > To: Bhushan Bharat-R65777; Wood Scott-B07421
-> > > > > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > > > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20
-> > > > > > state and altivec idle
-> > > > > >
-> > > > > >
-> > > > > >
-> > > > > > > -----Original Message-----
-> > > > > > > From: Bhushan Bharat-R65777
-> > > > > > > Sent: Thursday, October 17, 2013 1:01 AM
-> > > > > > > To: Wang Dongsheng-B40534; Wood Scott-B07421
-> > > > > > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > > > > > Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20
-> > > > > > > state and altivec idle
-> > > > > > >
-> > > > > > >
-> > > > > > >
-> > > > > > > > -----Original Message-----
-> > > > > > > > From: Wang Dongsheng-B40534
-> > > > > > > > Sent: Tuesday, October 15, 2013 2:51 PM
-> > > > > > > > To: Wood Scott-B07421
-> > > > > > > > Cc: Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org;
-> > > > > > > > Wang
-> > > > > > > Dongsheng-B40534
-> > > > > > > > Subject: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20
-> > > > > > > > state and
-> > > > > > > altivec idle
-> > > > > > > >
-> > > > > > > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > > > > > > >
-> > > > > > > > Add a sys interface to enable/diable pw20 state or altivec
-> > > > > > > > idle, and
-> > > > > > > control the
-> > > > > > > > wait entry time.
-> > > > > > > >
-> > > > > > > > Enable/Disable interface:
-> > > > > > > > 0, disable. 1, enable.
-> > > > > > > > /sys/devices/system/cpu/cpuX/pw20_state
-> > > > > > > > /sys/devices/system/cpu/cpuX/altivec_idle
-> > > > > > > >
-> > > > > > > > Set wait time interface:(Nanosecond)
-> > > > > > > > /sys/devices/system/cpu/cpuX/pw20_wait_time
-> > > > > > > > /sys/devices/system/cpu/cpuX/altivec_idle_wait_time
-> > > > > > > > Example: Base on TBfreq is 41MHZ.
-> > > > > > > > 1~48(ns): TB[63]
-> > > > > > > > 49~97(ns): TB[62]
-> > > > > > > > 98~195(ns): TB[61]
-> > > > > > > > 196~390(ns): TB[60]
-> > > > > > > > 391~780(ns): TB[59]
-> > > > > > > > 781~1560(ns): TB[58]
-> > > > > > > > ...
-> > > > > > > >
-> > > > > > > > Signed-off-by: Wang Dongsheng
-> > > > > > > > <dongsheng.wang@freescale.com>
-> > > > > > > > ---
-> > > > > > > > *v5:
-> > > > > > > > Change get_idle_ticks_bit function implementation.
-> > > > > > > >
-> > > > > > > > *v4:
-> > > > > > > > Move code from 85xx/common.c to kernel/sysfs.c.
-> > > > > > > >
-> > > > > > > > Remove has_pw20_altivec_idle function.
-> > > > > > > >
-> > > > > > > > Change wait "entry_bit" to wait time.
-> > > > > > > >
-> > > > > > > > diff --git a/arch/powerpc/kernel/sysfs.c
-> > > > > > > > b/arch/powerpc/kernel/sysfs.c
-> > > > > > > index
-> > > > > > > > 27a90b9..10d1128 100644
-> > > > > > > > --- a/arch/powerpc/kernel/sysfs.c
-> > > > > > > > +++ b/arch/powerpc/kernel/sysfs.c
-> > > > > > > > @@ -85,6 +85,284 @@ __setup("smt-snooze-delay=3D",
-> > > > > > > setup_smt_snooze_delay);
-> > > > > > > >
-> > > > > > > >  #endif /* CONFIG_PPC64 */
-> > > > > > > >
-> > > > > > > > +#ifdef CONFIG_FSL_SOC
-> > > > > > > > +#define MAX_BIT				63
-> > > > > > > > +
-> > > > > > > > +static u64 pw20_wt;
-> > > > > > > > +static u64 altivec_idle_wt;
-> > > > > > > > +
-> > > > > > > > +static unsigned int get_idle_ticks_bit(u64 ns) {
-> > > > > > > > +	u64 cycle;
-> > > > > > > > +
-> > > > > > > > +	if (ns >=3D 10000)
-> > > > > > > > +		cycle =3D div_u64(ns + 500, 1000) *
-> tb_ticks_per_usec;
-> > > > > > > > +	else
-> > > > > > > > +		cycle =3D div_u64(ns * tb_ticks_per_usec, 1000);
-> > > > > > > > +
-> > > > > > > > +	if (!cycle)
-> > > > > > > > +		return 0;
-> > > > > > > > +
-> > > > > > > > +	return ilog2(cycle);
-> > > > > > > > +}
-> > > > > > > > +
-> > > > > > > > +static void do_show_pwrmgtcr0(void *val) {
-> > > > > > > > +	u32 *value =3D val;
-> > > > > > > > +
-> > > > > > > > +	*value =3D mfspr(SPRN_PWRMGTCR0); }
-> > > > > > > > +
-> > > > > > > > +static ssize_t show_pw20_state(struct device *dev,
-> > > > > > > > +				struct device_attribute *attr, char
-> *buf) {
-> > > > > > > > +	u32 value;
-> > > > > > > > +	unsigned int cpu =3D dev->id;
-> > > > > > > > +
-> > > > > > > > +	smp_call_function_single(cpu, do_show_pwrmgtcr0, &value,
-> > > > > > > > +1);
-> > > > > > > > +
-> > > > > > > > +	value &=3D PWRMGTCR0_PW20_WAIT;
-> > > > > > > > +
-> > > > > > > > +	return sprintf(buf, "%u\n", value ? 1 : 0); }
-> > > > > > > > +
-> > > > > > > > +static void do_store_pw20_state(void *val) {
-> > > > > > > > +	u32 *value =3D val;
-> > > > > > > > +	u32 pw20_state;
-> > > > > > > > +
-> > > > > > > > +	pw20_state =3D mfspr(SPRN_PWRMGTCR0);
-> > > > > > > > +
-> > > > > > > > +	if (*value)
-> > > > > > > > +		pw20_state |=3D PWRMGTCR0_PW20_WAIT;
-> > > > > > > > +	else
-> > > > > > > > +		pw20_state &=3D ~PWRMGTCR0_PW20_WAIT;
-> > > > > > > > +
-> > > > > > > > +	mtspr(SPRN_PWRMGTCR0, pw20_state); }
-> > > > > > > > +
-> > > > > > > > +static ssize_t store_pw20_state(struct device *dev,
-> > > > > > > > +				struct device_attribute *attr,
-> > > > > > > > +				const char *buf, size_t count) {
-> > > > > > > > +	u32 value;
-> > > > > > > > +	unsigned int cpu =3D dev->id;
-> > > > > > > > +
-> > > > > > > > +	if (kstrtou32(buf, 0, &value))
-> > > > > > > > +		return -EINVAL;
-> > > > > > > > +
-> > > > > > > > +	if (value > 1)
-> > > > > > > > +		return -EINVAL;
-> > > > > > > > +
-> > > > > > > > +	smp_call_function_single(cpu, do_store_pw20_state,
-> > > > > > > > +&value, 1);
-> > > > > > > > +
-> > > > > > > > +	return count;
-> > > > > > > > +}
-> > > > > > > > +
-> > > > > > > > +static ssize_t show_pw20_wait_time(struct device *dev,
-> > > > > > > > +				struct device_attribute *attr, char
-> *buf) {
-> > > > > > > > +	u32 value;
-> > > > > > > > +	u64 tb_cycle;
-> > > > > > > > +	s64 time;
-> > > > > > > > +
-> > > > > > > > +	unsigned int cpu =3D dev->id;
-> > > > > > > > +
-> > > > > > > > +	if (!pw20_wt) {
-> > > > > > > > +		smp_call_function_single(cpu, do_show_pwrmgtcr0,
-> > > > > > > > +&value,
-> > > > > 1);
-> > > > > > > > +		value =3D (value & PWRMGTCR0_PW20_ENT) >>
-> > > > > > > > +					PWRMGTCR0_PW20_ENT_SHIFT;
-> > > > > > > > +
-> > > > > > > > +		tb_cycle =3D (1 << (MAX_BIT - value)) * 2;
-> > > > > > >
-> > > > > > > Is value =3D 0 and value =3D 1 legal? These will make tb_cycl=
-e =3D
-> > > > > > > 0,
-> > > > > > >
-> > > > > > > > +		time =3D div_u64(tb_cycle * 1000, tb_ticks_per_usec)
-> - 1;
-> > > > > > >
-> > > > > > > And time =3D -1;
-> > > > > > >
-> > > > > > Please look at the end of the function, :)
-> > > > > >
-> > > > > > "return sprintf(buf, "%llu\n", time > 0 ? time : 0);"
-> > > > >
-> > > > > I know you return 0 if value =3D 0/1, my question was that, is
-> > > > > this correct as per specification?
-> > > > >
-> > > > > Ahh, also for "value" upto 7 you will return 0, no?
-> > > > >
-> > > > If value =3D 0, MAX_BIT - value =3D 63 tb_cycle =3D 0xffffffff_ffff=
-ffff,
-> > > > tb_cycle * 1000 will overflow, but this situation is not possible.
-> > > > Because if the "value =3D 0" means this feature will be "disable".
-> > > > Now The default wait bit is 50(MAX_BIT - value, value =3D 13), the
-> > > > PW20/Altivec Idle wait entry time is about 1ms, this time is very
-> > > > long for wait idle time, and it's cannot be increased(means
-> > > > (MAX_BIT
-> > > > - value)
-> > > cannot greater than 50).
-> > >
-> > > What you said is not obvious from code and so at least write a
-> > > comment that value will be always >=3D 13 or value will never be less
-> > > than < 8 and below calculation will not overflow. may be error out
-> > > if value is less than 8.
-> > >
-> > The "value" less than 10, this will overflow.
-> > There is not error, The code I knew it could not be less than 10,
-> > that's why I use the following code. :)
->=20
-> I am sorry to persist but this is not about what you know, this is about
-> how code is read and code does not say what you know, so add a comment at
-> least and error out/warn when "value" is less than a certain number.
->=20
-Sorry for the late to response the mail. If it caused confusion, we can add=
- a comment.
+The only reason I split that into two was to make review easy. But yes
+when merging to your tree we should fold.
 
-How about the following comment?
-/*
- * If the "value" less than 10, this will overflow.
- * From benchmark test, the default wait bit will not be set less than 10bi=
-t.
- * Because 10 bit corresponds to the wait entry time is 439375573401999609(=
-ns),
- * for wait-entry-idle time this value looks too long, and we cannot use th=
-ose
- * "long" time as a default wait-entry time. So overflow could not have hap=
-pened
- * and we use this calculation method to get wait-entry-idle time.
- */
+> I've squashed this in with the previous commit.
+>
 
-> -Bharat
+Ok. 
+
+-aneesh
