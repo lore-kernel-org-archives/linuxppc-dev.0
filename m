@@ -1,20 +1,21 @@
 Return-Path: <B47053@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6CEAD2C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 14:19:54 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C885E2C00CE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2013 14:27:15 +1100 (EST)
 From: Xiubo Li-B47053 <B47053@freescale.com>
-To: =?utf-8?B?TG90aGFyIFdhw59tYW5u?= <LW@KARO-electronics.de>
-Subject: RE: [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
-Date: Fri, 18 Oct 2013 03:19:42 +0000
-Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F82865423@039-SN2MPN1-013.039d.mgd.msft.net>
+To: Lucas Stach <l.stach@pengutronix.de>
+Subject: RE: [PATCHv1 8/8] Documentation: Add device tree bindings for
+ Freescale VF610 sound.
+Date: Fri, 18 Oct 2013 03:27:03 +0000
+Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F82865447@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
- <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
- <20131017114208.595a4224@ipc1.ka-ro>
-In-Reply-To: <20131017114208.595a4224@ipc1.ka-ro>
+ <1382000477-17304-9-git-send-email-Li.Xiubo@freescale.com>
+ <1382003190.4093.38.camel@weser.hi.pengutronix.de>
+In-Reply-To: <1382003190.4093.38.camel@weser.hi.pengutronix.de>
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
@@ -23,16 +24,18 @@ Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
  "tiwai@suse.de" <tiwai@suse.de>, Wang Huan-B18965 <B18965@freescale.com>,
  "timur@tabi.org" <timur@tabi.org>, "perex@perex.cz" <perex@perex.cz>,
  Guo Shawn-R65073 <r65073@freescale.com>,
+ "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
  "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
  Chen Guangyu-B42378 <B42378@freescale.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "oskar@scara.com" <oskar@scara.com>,
  "grant.likely@linaro.org" <grant.likely@linaro.org>,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
  "pawel.moll@arm.com" <pawel.moll@arm.com>,
  "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
  "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "broonie@kernel.org" <broonie@kernel.org>, "oskar@scara.com" <oskar@scara.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
  Estevam Fabio-R49496 <r49496@freescale.com>,
  "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -49,15 +52,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGksDQoNCj4gPiArCXJlcyA9IHBsYXRmb3JtX2dldF9yZXNvdXJjZShwZGV2LCBJT1JFU09VUkNF
-X01FTSwgMCk7DQo+ID4gKwlzYWktPmJhc2UgPSBkZXZtX2lvcmVtYXBfcmVzb3VyY2UoJnBkZXYt
-PmRldiwgcmVzKTsNCj4gPiArCWlmIChJU19FUlIoc2FpLT5iYXNlKSkgew0KPiA+ICsJCXJldCA9
-IFBUUl9FUlIoc2FpLT5iYXNlKTsNCj4gPiArCQlyZXR1cm4gcmV0Ow0KPiA+DQo+IGNvdWxkIGJl
-Og0KPiAJCXJldHVybiBQVFJfRVJSKHNhaS0+YmFzZSk7DQo+DQoNClllc++8jFRoaXMgbG9va3Mg
-YmV0dGVyLg0KDQogDQo+ID4gKyNkZWZpbmUgRlNMX1NBSV9ETUFCVUZfU0laRQkoMzIgKiAxMDI0
-KQ0KPiA+ICsjZGVmaW5lIFRDRF9OVU1CRVIJCTQNCj4gPiArI2RlZmluZSBFRE1BX1BSSU9fSElH
-SCAgICAgICAgICA2DQo+ID4gKw0KPiBzdHJhbmdlIGluZGVudGF0aW9uIHdpdGggbWl4ZWQgc3Bh
-Y2VzIGFuZCB0YWJzLg0KPiANCg0KVGhpcyB3aWxsIGJlIHJldmlzZWQgaW4gdGhlIG5leHQgdmVy
-c2lvbi4NCg0KDQoNCj4gPiArI2RlZmluZSBTQUlfQ1IyX01TRUxfTUNMSzMJKEJJVCgyNil8QklU
-KDI3KSkNCj4gPg0KPiBzcGFjZXMgYXJvdW5kICd8Jz8NCj4gDQoNCkFuZCB0aGlzIHRvby4NCg0K
-DQoNCg0KLS0NCkJSUywNClhpdWJvDQo=
+SGksDQoNCg0KDQo+ID4gRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvdW5kL2Zz
+bC1zZ3RsNTAwMC50eHQNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2Rldmlj
+ZXRyZWUvYmluZGluZ3Mvc291bmQvZnNsLXNndGw1MDAwLnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlv
+bi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvdW5kL2ZzbC1zZ3RsNTAwMC50eHQNCj4gPiBuZXcgZmls
+ZSBtb2RlIDEwMDY0NA0KPiA+IGluZGV4IDAwMDAwMDAuLjQzZTM1MGYNCj4gPiAtLS0gL2Rldi9u
+dWxsDQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvdW5kL2Zz
+bC1zZ3RsNTAwMC50eHQNCj4gDQo+IFRoaXMgZG9jdW1lbnQgbmFtZSBpcyBvdmVybHkgZ2VuZXJp
+YywgdGhlcmUgYXJlIG1vcmUgdGhhbiBvbmUgRlNMDQo+IHBsYXRmb3JtcyB3aXRoIFNHVEw1MDAw
+IGNvZGVjcy4gUGxlYXNlIGluY2x1ZGUgdGhlIHZmNjEwIGhlcmUuDQo+IA0KDQpZZXMsIGl0IGlz
+Lg0KDQpUaGlzIHdpbGwgYmUgcmVuYW1lZCB0byAiZnNsX3ZmNjEwX2F1ZGlvX3NndDE1MDAwLnR4
+dCIgb3Igb3RoZXJzLg0KDQoNClRoYW5rcywNCi0tDQpCUlMsDQpYaXVibw0K
