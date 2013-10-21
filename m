@@ -1,12 +1,38 @@
-Return-Path: <anton@samba.org>
-Date: Sun, 20 Oct 2013 10:26:20 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc/pseries: Fix dedicated processor partition detection
-Message-ID: <20131020102620.700282d5@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B29983@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E95272C012B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2013 13:55:30 +1100 (EST)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in device tree
+Date: Mon, 21 Oct 2013 02:55:21 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B150C62BA@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1381300704-4238-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20131010100331.GE26954@e106331-lin.cambridge.arm.com>
+ <D07C73A334FF604B95B3CBD2A545D07B150BD137@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20131011092526.GE3910@e106331-lin.cambridge.arm.com>
+ <1381518433.7979.536.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C24BD@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381788786.7979.643.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C2B08@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381858855.7979.693.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C312F@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381942009.7979.727.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C4600@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1382027085.7979.774.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C5CAB@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1382113880.7979.836.camel@snotra.buserror.net>
+In-Reply-To: <1382113880.7979.836.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-Leo-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,55 +42,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-commit f13c13a00512 (powerpc: Stop using non-architected shared_proc
-field in lppaca) fixed a potential issue with shared/dedicated
-partition detection. The old method of detection relied on an
-unarchitected field (shared_proc), and this patch switched
-to using something architected (a non zero yield_count).
-
-Unfortunately the assertion in the Linux header that yield_count
-is only non zero on shared processor partitions is not true. It
-turns out dedicated processor partitions can increment yield_count
-and as such we falsely detect dedicated partitions as shared.
-
-Fix the comment, and switch back to using the old method.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: b/arch/powerpc/include/asm/lppaca.h
-===================================================================
---- a/arch/powerpc/include/asm/lppaca.h
-+++ b/arch/powerpc/include/asm/lppaca.h
-@@ -84,8 +84,8 @@ struct lppaca {
- 	 * the processor is yielded (either because of an OS yield or a
- 	 * hypervisor preempt).  An even value implies that the processor is
- 	 * currently executing.
--	 * NOTE: This value will ALWAYS be zero for dedicated processors and
--	 * will NEVER be zero for shared processors (ie, initialized to a 1).
-+	 * NOTE: Even dedicated processor partitions can yield so this
-+	 * field cannot be used to determine if we are shared or dedicated.
- 	 */
- 	volatile __be32 yield_count;
- 	volatile __be32 dispersion_count; /* dispatch changed physical cpu */
-@@ -106,15 +106,15 @@ extern struct lppaca lppaca[];
- #define lppaca_of(cpu)	(*paca[cpu].lppaca_ptr)
- 
- /*
-- * Old kernels used a reserved bit in the VPA to determine if it was running
-- * in shared processor mode. New kernels look for a non zero yield count
-- * but KVM still needs to set the bit to keep the old stuff happy.
-+ * We are using a non architected field to determine if a partition is
-+ * shared or dedicated. This currently works on both KVM and PHYP, but
-+ * we will have to transition to something better.
-  */
- #define LPPACA_OLD_SHARED_PROC		2
- 
- static inline bool lppaca_shared_proc(struct lppaca *l)
- {
--	return l->yield_count != 0;
-+	return !!(l->__old_status & LPPACA_OLD_SHARED_PROC);
- }
- 
- /*
+PiA+ID4gPiA+DQo+ID4gPiA+ID4gSXQncyBzdGlsbCBzZWxlY3RpbmcgZnJvbSBtdWx0aXBsZSBQ
+TExzLg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBJIGRvbid0IGtub3cgd2hldGhlciAiZGl2aWRl
+ciIgbW9kdWxlIGV4aXN0cyBvciBub3QuIElmIGl0DQo+ID4gPiA+ID4gPiBleGlzdHMsIGl0IHNo
+b3VsZCBiZSBwYXJ0IG9mIFBMTCBvciBiZXR3ZWVuIFBMTCBhbmQgTVVYLg0KPiA+ID4gPiA+ID4g
+d2hlcmV2ZXIgaXQgd2FzLCB0aGUNCj4gPiA+ID4gPiBkZXZpY2UgdHJlZSBiaW5kaW5nIGlzIGFw
+cHJvcHJpYXRlLg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gVGhlIGRldmljZSB0cmVlIGJpbmRpbmcg
+aXMgdW5uZWNlc3NhcmlseSBjb21wbGljYXRlZC4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gVGhl
+IFAzMDQxUk0gc2hvd3MgZXhhY3RseSBlYWNoIFBMTCBoYXMgMiBvdXRwdXRzIHdoaWNoDQo+ID4g
+PiA+ID4gPiBkZWZpbml0ZWx5IGhhdmUNCj4gPiA+ID4gPiBubyAiZGl2aWRlciIgYXQgYWxsLg0K
+PiA+ID4gPiA+DQo+ID4gPiA+ID4gVGhhdCBkaWFncmFtIGlzIGEgYml0IHdlaXJkIC0tIG9uZSBv
+ZiB0aGUgb3V0cHV0cyBpcyB1c2VkIGFzIGlzLA0KPiA+ID4gPiA+IGFuZCB0aGUgb3RoZXIgaXMg
+c3BsaXQgaW50byAxLzIgYW5kIDEvNC4gIEl0IGRvZXNuJ3QgcmVhbGx5DQo+ID4gPiA+ID4gbWF0
+dGVyIHRob3VnaDsgdGhlIGVuZCByZXN1bHQgaXMgdGhlIHNhbWUuICBXZSdyZSBkZXNjcmliaW5n
+IHRoZQ0KPiA+ID4gPiA+IHByb2dyYW1taW5nIGludGVyZmFjZSwgbm90IGFydHdvcmsgY2hvaWNl
+cyBpbiB0aGUgbWFudWFsLg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gLVNjb3R0DQo+ID4gPiA+ID4N
+Cj4gPiA+ID4gSWYgdGhlIGRldmljZSB0cmVlIG5lZWRzIHRvIGJlIG1vZGlmaWVkLCBjb3VsZCB5
+b3UgZ2l2ZSBtZSB5b3VyDQo+ID4gPiBzdWdnZXN0aW9ucz8NCj4gPiA+DQo+ID4gPiBNeSBzdWdn
+ZXN0aW9uIGlzIHRvIGhhdmUgb25seSBvbmUgb3V0cHV0IHBlciBQTEwgbm9kZS4gIFRoZSBNVVgg
+bm9kZQ0KPiA+ID4gd291bGQgaGF2ZSBvbmUgaW5wdXQgcGVyIFBMTC4gIERpdmlkZXJzIHdvdWxk
+IGJlIGhhbmRsZWQgaW50ZXJuYWxseQ0KPiA+ID4gdG8gdGhlIE1VWCBkcml2ZXIuDQo+ID4gPg0K
+PiA+ID4gLVNjb3R0DQo+ID4gPg0KPiA+IEkgZG9uJ3QgdGhpbmsgeW91ciBzdWdnZXN0aW9uIGlz
+IGNvbnN0cnVjdGl2ZS4NCj4gDQo+IEhtbT8NCj4gDQo+ID4gWW91ciBzdWdnZXN0aW9uIGlzIG9u
+IHRoZSBwcmVtaXNlIG9mIHRoYXQgdGhlICJkaXZpZGVyIiBpcyBwYXJ0IG9mDQo+ID4gTVVYLCBB
+bmQgSSB0aGluayBpdCBzaG91bGQgYmUgcGFydCBvZiBQTEwuDQo+ID4gTVVYIGNhbid0IENSRUFU
+RSBjbG9jayB3aGljaCBQTEwgY2FuLiBTbyBteSB0aG91Z2h0IGlzIG1vcmUgcmVhc29uYWJsZS4N
+Cj4gPiBJZiB0aGUgZGV2aWNlIHRyZWUgZG9jdW1lbnRzIGxpa2Ugd2hhdCB5b3Ugc2FpZCwgaXQg
+d291bGQgaGF2ZSBmZXcgaGVscA0KPiBmb3IgZHJpdmVyLg0KPiA+IFRoZSByZWFzb24gaXMgb2J2
+aW91cyB0aGF0IHRoZSBkcml2ZXIgaXMgc3RpbGwgZ29pbmcgdG8gZGVhbCB3aXRoIHRoZQ0KPiAi
+ZGl2aWRlciINCj4gPiBkZXRhaWwgd2hpY2ggdmFyaWVzIGZyb20gcGxhdGZvcm0gdG8gcGxhdGZv
+cm0uDQo+ID4gSSB3aWxsIGRvY3VtZW50IGFzIGl0IHdhcyB1bmxlc3MgeW91IHByb3ZlIHlvdXIg
+c3VnZ2VzdGlvbi4NCj4gDQo+IEkgY2FuJ3QgZm9sbG93IHRoaXMuICBNeSBwb2ludCBpcyB0aGF0
+IG15IHN1Z2dlc3Rpb24gYmV0dGVyIG1hdGNoZXMgdGhlDQo+IHByb2dyYW1taW5nIG1vZGVsLCBh
+bmQgaXMgc2ltcGxlci4NCj4gDQo+IC1TY290dA0KPiANCkkgZGlkbid0IHNlZSBob3cgeW91ciBz
+dWdnZXN0aW9uIGlzIGEgYmV0dGVyIG1hdGNoaW5nLg0KDQogT1NDIC0tLS0+IFBMTDEgLS0tLT4g
+bXV4IC0tLS0+IENQVQ0KICAgICAgfCAgICAgICAgICAgfA0KICAgICAgfC0tPiBQTEwyIC0tfCAN
+CiAgICAgICAgLi4uLi4uLi4NCkFzIHlvdXIgc3VnZ2VzdGlvbiwgdGhlIGNsb2NrIHRyZWUgbG9v
+a3MgbGlrZSB0aGUgYWJvdmUuDQpJbiB0aGlzIGNhc2UsIHRoZSBNVVggZHJpdmVyIHdpbGwgbm90
+IGtub3cgdGhlIGRpdmlkZXINCmRldGFpbHMoLzIsIC80LCBvciAvMykuDQpJIHRoaW5rIHRoZSBN
+VVggc2hvdWxkIGFjdCBsaWtlICJzd2l0Y2giIHdoaWNoIGNob29zZSBvbmUNCm9mIHRoZSBpbnB1
+dCBjbG9jayBhcyBhIG91dHB1dCBjbG9jay4gSXQgc2hvdWxkIG5vdCBDUkVBVEUNCmNsb2NrKGxp
+a2UgUExMMS8yLCBQTEwxLzQpLg0KVGhlIHB1cnBvc2Ugb2YgY2xvY2sgZHJpdmVyIGlzIHRvIGVz
+dGFibGlzaCB0aGUgY2xvY2sgdHJlZS4NClRoZSBjbG9jayB0cmVlIHdpbGwgbm90IGJlIGVzdGFi
+bGlzaGVkIGluIHlvdXIgc3VnZ2VzdGlvbg0KYmVjYXVzZSB0aGUgZGl2aWRlciBpcyBtaXNzaW5n
+LCB3ZSBkb24ndCBrbm93IHdoZXJlIFBMTC8yIGNvbWVzIGZyb20uDQoNCklmIHlvdSByZWFsbHkg
+bGlrZSB5b3VyIHByb3Bvc2FsLCBpdCBzaG91bGQgYmUgY2hhbmdlZCB0byB0aGlzOg0KDQpPU0Mg
+LS0tLS0tPiBQTEwxIC0tLS0tPiBQTEwxIC8xIC0tLS0tLS0tLT4gTVVYIC0tLS0tLS0+Q1BVDQog
+ICAgIHwgICAgICAgICAgICB8X19fPiBQTEwxIC8yIF9fX19fX198DQogICAgIHwgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICB8DQogICAgIHxfX19fPiBQTEwyIC0tLS0tPiBQTEwyIC8y
+IC0tLS0tLS18DQogICAgICAgICAgICAgICAgICB8X19fPiBQTEwyLyA0IF9fX19fX198DQoNCihp
+dCBpcyBwb3NzaWJsZSB0aGF0IFBMTHMgaGF2ZSBkaWZmZXJlbnQgZGl2aWRlcikuDQoNClJlZ2Fy
+ZHMsDQpZdWFudGlhbg0KDQo=
