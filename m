@@ -1,30 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6F0132C03BE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 22:41:18 +1100 (EST)
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 501C42C0382
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 22:41:32 +1100 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 22 Oct 2013 17:11:16 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5F68D9584CC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 17:00:06 +0530 (IST)
+ Tue, 22 Oct 2013 17:11:27 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id A27148E925C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 17:00:07 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9MBVPJY20381756
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 17:01:25 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9MBSVA027787342
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:58:33 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9MBSXIl023012
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:58:33 +0530
+ r9MBSXCw023071
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:58:34 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, linux-mm@kvack.org
-Subject: [RFC PATCH 1/9] powerpc: Use HPTE constants when updating hpte bits
-Date: Tue, 22 Oct 2013 16:58:12 +0530
-Message-Id: <1382441300-1513-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 3/9] mm: Move change_prot_numa outside
+ CONFIG_ARCH_USES_NUMA_PROT_NONE
+Date: Tue, 22 Oct 2013 16:58:14 +0530
+Message-Id: <1382441300-1513-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1382441300-1513-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1382441300-1513-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -40,50 +41,68 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Even though we have same value for linux PTE bits and hash PTE pits
-use the hash pte bits wen updating hash pte
+change_prot_numa should work even if _PAGE_NUMA != _PAGE_PROTNONE.
+On archs like ppc64 that don't use _PAGE_PROTNONE and also have
+a separate page table outside linux pagetable, we just need to
+make sure that when calling change_prot_numa we flush the
+hardware page table entry so that next page access  result in a numa
+fault.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/cell/beat_htab.c | 4 ++--
- arch/powerpc/platforms/pseries/lpar.c   | 3 ++-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ include/linux/mm.h | 3 ---
+ mm/mempolicy.c     | 9 ---------
+ 2 files changed, 12 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
-index c34ee4e..d4d245c 100644
---- a/arch/powerpc/platforms/cell/beat_htab.c
-+++ b/arch/powerpc/platforms/cell/beat_htab.c
-@@ -111,7 +111,7 @@ static long beat_lpar_hpte_insert(unsigned long hpte_group,
- 		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 8b6e55e..5ab0e22 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1668,11 +1668,8 @@ static inline pgprot_t vm_get_page_prot(unsigned long vm_flags)
+ }
+ #endif
  
- 	if (rflags & _PAGE_NO_CACHE)
--		hpte_r &= ~_PAGE_COHERENT;
-+		hpte_r &= ~HPTE_R_M;
+-#ifdef CONFIG_ARCH_USES_NUMA_PROT_NONE
+ unsigned long change_prot_numa(struct vm_area_struct *vma,
+ 			unsigned long start, unsigned long end);
+-#endif
+-
+ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
+ int remap_pfn_range(struct vm_area_struct *, unsigned long addr,
+ 			unsigned long pfn, unsigned long size, pgprot_t);
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 0472964..efb4300 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -612,7 +612,6 @@ static inline int queue_pages_pgd_range(struct vm_area_struct *vma,
+ 	return 0;
+ }
  
- 	raw_spin_lock(&beat_htab_lock);
- 	lpar_rc = beat_read_mask(hpte_group);
-@@ -337,7 +337,7 @@ static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
- 		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
+-#ifdef CONFIG_ARCH_USES_NUMA_PROT_NONE
+ /*
+  * This is used to mark a range of virtual addresses to be inaccessible.
+  * These are later cleared by a NUMA hinting fault. Depending on these
+@@ -626,7 +625,6 @@ unsigned long change_prot_numa(struct vm_area_struct *vma,
+ 			unsigned long addr, unsigned long end)
+ {
+ 	int nr_updated;
+-	BUILD_BUG_ON(_PAGE_NUMA != _PAGE_PROTNONE);
  
- 	if (rflags & _PAGE_NO_CACHE)
--		hpte_r &= ~_PAGE_COHERENT;
-+		hpte_r &= ~HPTE_R_M;
+ 	nr_updated = change_protection(vma, addr, end, vma->vm_page_prot, 0, 1);
+ 	if (nr_updated)
+@@ -634,13 +632,6 @@ unsigned long change_prot_numa(struct vm_area_struct *vma,
  
- 	/* insert into not-volted entry */
- 	lpar_rc = beat_insert_htab_entry3(0, hpte_group, hpte_v, hpte_r,
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 356bc75..c8fbef23 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -153,7 +153,8 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
+ 	return nr_updated;
+ }
+-#else
+-static unsigned long change_prot_numa(struct vm_area_struct *vma,
+-			unsigned long addr, unsigned long end)
+-{
+-	return 0;
+-}
+-#endif /* CONFIG_ARCH_USES_NUMA_PROT_NONE */
  
- 	/* Make pHyp happy */
- 	if ((rflags & _PAGE_NO_CACHE) && !(rflags & _PAGE_WRITETHRU))
--		hpte_r &= ~_PAGE_COHERENT;
-+		hpte_r &= ~HPTE_R_M;
-+
- 	if (firmware_has_feature(FW_FEATURE_XCMO) && !(hpte_r & HPTE_R_N))
- 		flags |= H_COALESCE_CAND;
- 
+ /*
+  * Walk through page tables and collect pages to be migrated.
 -- 
 1.8.3.2
