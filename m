@@ -1,31 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9ECC42C042B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 22:41:34 +1100 (EST)
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4A16E2C0420
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 22:41:37 +1100 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 22 Oct 2013 17:11:30 +0530
+ Tue, 22 Oct 2013 17:11:32 +0530
 Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id B619A8E925E
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B93348E925F
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 17:00:07 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
  by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9MBSW6g12124360
+ r9MBSXO327852886
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:58:33 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9MBSZDp023254
+ r9MBSZGp023269
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:58:35 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, linux-mm@kvack.org
-Subject: [RFC PATCH 8/9] powerpc: mm: Support setting _PAGE_NUMA bit on pmd
- entry which are pointer to PTE page
-Date: Tue, 22 Oct 2013 16:58:19 +0530
-Message-Id: <1382441300-1513-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH 9/9] powerpc: mm: Enable numa faulting for hugepages
+Date: Tue, 22 Oct 2013 16:58:20 +0530
+Message-Id: <1382441300-1513-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1382441300-1513-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1382441300-1513-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -41,39 +40,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
+Provide numa related functions for updating pmd entries.
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgtable-ppc64.h | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/pgtable.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 46db094..f828944 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -150,8 +150,22 @@
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index 67ea8fb..aa3add7 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -95,19 +95,19 @@ static inline void change_pmd_protnuma(struct mm_struct *mm, unsigned long addr,
+ #define pmd_numa pmd_numa
+ static inline int pmd_numa(pmd_t pmd)
+ {
+-	return 0;
++	return pte_numa(pmd_pte(pmd));
+ }
  
- #define pmd_set(pmdp, pmdval) 	(pmd_val(*(pmdp)) = (pmdval))
- #define pmd_none(pmd)		(!pmd_val(pmd))
--#define	pmd_bad(pmd)		(!is_kernel_addr(pmd_val(pmd)) \
--				 || (pmd_val(pmd) & PMD_BAD_BITS))
-+
-+static inline int pmd_bad(pmd_t pmd)
-+{
-+#ifdef CONFIG_NUMA_BALANCING
-+	/*
-+	 * For numa balancing we can have this set
-+	 */
-+	if (pmd_val(pmd) & _PAGE_NUMA)
-+		return 0;
-+#endif
-+	if (!is_kernel_addr(pmd_val(pmd)) ||
-+	    (pmd_val(pmd) & PMD_BAD_BITS))
-+		return 1;
-+	return 0;
-+}
-+
- #define	pmd_present(pmd)	(pmd_val(pmd) != 0)
- #define	pmd_clear(pmdp)		(pmd_val(*(pmdp)) = 0)
- #define pmd_page_vaddr(pmd)	(pmd_val(pmd) & ~PMD_MASKED_BITS)
+ #define pmd_mknonnuma pmd_mknonnuma
+ static inline pmd_t pmd_mknonnuma(pmd_t pmd)
+ {
+-	return pmd;
++	return pte_pmd(pte_mknonnuma(pmd_pte(pmd)));
+ }
+ 
+ #define pmd_mknuma pmd_mknuma
+ static inline pmd_t pmd_mknuma(pmd_t pmd)
+ {
+-	return pmd;
++	return pte_pmd(pte_mknuma(pmd_pte(pmd)));
+ }
+ 
+ # else
 -- 
 1.8.3.2
