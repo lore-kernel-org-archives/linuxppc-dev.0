@@ -1,34 +1,43 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F38962C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 00:47:56 +1100 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5A18D2C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 01:36:32 +1100 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 22 Oct 2013 19:17:46 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 4E283DA8064
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:59:08 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9MBSXpe49086646
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:58:33 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9MBSYfR023167
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:58:35 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, linux-mm@kvack.org
-Subject: [RFC PATCH 5/9] powerpc: mm: book3s: Enable _PAGE_NUMA for book3s
-Date: Tue, 22 Oct 2013 16:58:16 +0530
-Message-Id: <1382441300-1513-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1382441300-1513-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1382441300-1513-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
+ Wed, 23 Oct 2013 00:36:24 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 241433578055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 01:36:23 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9MEIwnc50856102
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 01:18:58 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9MEa86b022001
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 01:36:10 +1100
+Date: Tue, 22 Oct 2013 20:05:59 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] sched: Fix nohz_kick_needed to consider the nr_busy
+ of the parent domain's group
+Message-ID: <20131022143559.GA3197@linux.vnet.ibm.com>
+References: <20131021114002.13291.31478.stgit@drishya>
+ <20131021114442.13291.99344.stgit@drishya>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20131021114442.13291.99344.stgit@drishya>
+Cc: Michael Neuling <mikey@neuling.org>, vincent.guittot@linaro.org,
+ suresh.b.siddha@intel.com, Peter Zijlstra <peterz@infradead.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Mike Galbraith <bitbucket@online.de>, Anton Blanchard <anton@samba.org>,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Turner <pjt@google.com>,
+ Ingo Molnar <mingo@kernel.org>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,135 +47,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2013-10-21 17:14:42]:
 
-We steal the _PAGE_COHERENCE bit and use that for indicating NUMA ptes.
-This patch still disables the numa hinting using pmd entries. That
-require further changes to pmd entry format which is done in later
-patches.
+>  	for_each_domain(cpu, sd) {
+> -		struct sched_group *sg = sd->groups;
+> -		struct sched_group_power *sgp = sg->sgp;
+> -		int nr_busy = atomic_read(&sgp->nr_busy_cpus);
+> -
+> -		if (sd->flags & SD_SHARE_PKG_RESOURCES && nr_busy > 1)
+> -			goto need_kick_unlock;
+> +		struct sched_domain *sd_parent = sd->parent;
+> +		struct sched_group *sg;
+> +		struct sched_group_power *sgp;
+> +		int nr_busy;
+> +
+> +		if (sd_parent) {
+> +			sg = sd_parent->groups;
+> +			sgp = sg->sgp;
+> +			nr_busy = atomic_read(&sgp->nr_busy_cpus);
+> +
+> +			if (sd->flags & SD_SHARE_PKG_RESOURCES && nr_busy > 1)
+> +				goto need_kick_unlock;
+> +		}
+> 
+>  		if (sd->flags & SD_ASYM_PACKING && nr_busy != sg->group_weight
+>  		    && (cpumask_first_and(nohz.idle_cpus_mask,
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pgtable.h     | 66 +++++++++++++++++++++++++++++++++-
- arch/powerpc/include/asm/pte-hash64.h  |  6 ++++
- arch/powerpc/platforms/Kconfig.cputype |  1 +
- 3 files changed, 72 insertions(+), 1 deletion(-)
+CC'ing Suresh Siddha and Vincent Guittot
 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index 7d6eacf..9d87125 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -3,6 +3,7 @@
- #ifdef __KERNEL__
- 
- #ifndef __ASSEMBLY__
-+#include <linux/mmdebug.h>
- #include <asm/processor.h>		/* For TASK_SIZE */
- #include <asm/mmu.h>
- #include <asm/page.h>
-@@ -33,10 +34,73 @@ static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
- static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
- static inline int pte_file(pte_t pte)		{ return pte_val(pte) & _PAGE_FILE; }
- static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
--static inline int pte_present(pte_t pte)	{ return pte_val(pte) & _PAGE_PRESENT; }
- static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
- static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
- 
-+#ifdef CONFIG_NUMA_BALANCING
-+
-+static inline int pte_present(pte_t pte)
-+{
-+	return pte_val(pte) & (_PAGE_PRESENT | _PAGE_NUMA);
-+}
-+
-+#define pte_numa pte_numa
-+static inline int pte_numa(pte_t pte)
-+{
-+	return (pte_val(pte) &
-+		(_PAGE_NUMA|_PAGE_PRESENT)) == _PAGE_NUMA;
-+}
-+
-+#define pte_mknonnuma pte_mknonnuma
-+static inline pte_t pte_mknonnuma(pte_t pte)
-+{
-+	pte_val(pte) &= ~_PAGE_NUMA;
-+	pte_val(pte) |=  _PAGE_PRESENT | _PAGE_ACCESSED;
-+	return pte;
-+}
-+
-+#define pte_mknuma pte_mknuma
-+static inline pte_t pte_mknuma(pte_t pte)
-+{
-+	/*
-+	 * We should not set _PAGE_NUMA on non present ptes. Also clear the
-+	 * present bit so that hash_page will return 1 and we collect this
-+	 * as numa fault.
-+	 */
-+	if (pte_present(pte)) {
-+		pte_val(pte) |= _PAGE_NUMA;
-+		pte_val(pte) &= ~_PAGE_PRESENT;
-+	} else
-+		VM_BUG_ON(1);
-+	return pte;
-+}
-+
-+#define pmd_numa pmd_numa
-+static inline int pmd_numa(pmd_t pmd)
-+{
-+	return 0;
-+}
-+
-+#define pmd_mknonnuma pmd_mknonnuma
-+static inline pmd_t pmd_mknonnuma(pmd_t pmd)
-+{
-+	return pmd;
-+}
-+
-+#define pmd_mknuma pmd_mknuma
-+static inline pmd_t pmd_mknuma(pmd_t pmd)
-+{
-+	return pmd;
-+}
-+
-+# else
-+
-+static inline int pte_present(pte_t pte)
-+{
-+	return pte_val(pte) & _PAGE_PRESENT;
-+}
-+#endif /* CONFIG_NUMA_BALANCING */
-+
- /* Conversion functions: convert a page and protection to a page entry,
-  * and a page entry and page directory to the page they refer to.
-  *
-diff --git a/arch/powerpc/include/asm/pte-hash64.h b/arch/powerpc/include/asm/pte-hash64.h
-index 55aea0c..2505d8e 100644
---- a/arch/powerpc/include/asm/pte-hash64.h
-+++ b/arch/powerpc/include/asm/pte-hash64.h
-@@ -27,6 +27,12 @@
- #define _PAGE_RW		0x0200 /* software: user write access allowed */
- #define _PAGE_BUSY		0x0800 /* software: PTE & hash are busy */
- 
-+/*
-+ * Used for tracking numa faults
-+ */
-+#define _PAGE_NUMA	0x00000010 /* Gather numa placement stats */
-+
-+
- /* No separate kernel read-only */
- #define _PAGE_KERNEL_RW		(_PAGE_RW | _PAGE_DIRTY) /* user access blocked by key */
- #define _PAGE_KERNEL_RO		 _PAGE_KERNEL_RW
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 6704e2e..c9d6223 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -72,6 +72,7 @@ config PPC_BOOK3S_64
- 	select PPC_HAVE_PMU_SUPPORT
- 	select SYS_SUPPORTS_HUGETLBFS
- 	select HAVE_ARCH_TRANSPARENT_HUGEPAGE if PPC_64K_PAGES
-+	select ARCH_SUPPORTS_NUMA_BALANCING
- 
- config PPC_BOOK3E_64
- 	bool "Embedded processors"
--- 
-1.8.3.2
+Please correct me, If my understanding of idle balancing is wrong.
+With proposed approach will not idle load balancer kick in, even if
+there are busy cpus across groups or if there are 2 busy cpus which
+are spread across sockets.
+
+Consider 2 socket machine with 4 processors each (MC and NUMA domains).
+If the machine is partial loaded such that cpus 0,4,5,6,7 are busy, then too
+nohz balancing is triggered because with this approach
+(NUMA)->groups->sgp->nr_busy_cpus is taken in account for nohz kick, while
+iterating over MC domain.
+
+Isn't idle load balancer not suppose kick in, even in the case of two busy
+cpu's in a dual-core single socket system.
+
+Thanks,
+Kamalesh.
