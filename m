@@ -1,14 +1,48 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 22 Oct 2013 11:46:15 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 3/3] powerpc: Enable virtio on ppc64 and pseries configs
-Message-ID: <20131022114615.5371528c@kryten>
-In-Reply-To: <20131022114450.296ae01d@kryten>
-References: <20131022114450.296ae01d@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B47053@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EB4DC2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 13:20:39 +1100 (EST)
+From: Xiubo Li-B47053 <B47053@freescale.com>
+To: Lars-Peter Clausen <lars@metafoo.de>
+Subject: RE: [alsa-devel] [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio
+ Interface driver.
+Date: Tue, 22 Oct 2013 02:20:29 +0000
+Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F82866F8C@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
+ <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
+ <526021B0.6050206@metafoo.de>
+In-Reply-To: <526021B0.6050206@metafoo.de>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "tiwai@suse.de" <tiwai@suse.de>, Wang Huan-B18965 <B18965@freescale.com>,
+ "timur@tabi.org" <timur@tabi.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Guo Shawn-R65073 <r65073@freescale.com>,
+ "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ Chen Guangyu-B42378 <B42378@freescale.com>,
+ "oskar@scara.com" <oskar@scara.com>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Estevam Fabio-R49496 <r49496@freescale.com>,
+ "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+ "rob@landley.net" <rob@landley.net>,
+ Jin Zhengxiong-R64188 <R64188@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,96 +53,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+> > +static int fsl_sai_probe(struct platform_device *pdev) {
+> [...]
+> > +
+> > +	sai->dma_params_rx.addr =3D res->start + SAI_RDR;
+> > +	sai->dma_params_rx.maxburst =3D 6;
+> > +	index =3D of_property_match_string(np, "dma-names", "rx");
+> > +	ret =3D of_parse_phandle_with_args(np, "dmas", "#dma-cells", index,
+> > +				&dma_args);
+> > +	if (ret)
+> > +		return ret;
+> > +	sai->dma_params_rx.slave_id =3D dma_args.args[1];
+> > +
+> > +	sai->dma_params_tx.addr =3D res->start + SAI_TDR;
+> > +	sai->dma_params_tx.maxburst =3D 6;
+> > +	index =3D of_property_match_string(np, "dma-names", "tx");
+> > +	ret =3D of_parse_phandle_with_args(np, "dmas", "#dma-cells", index,
+> > +				&dma_args);
+> > +	if (ret)
+> > +		return ret;
+> > +	sai->dma_params_tx.slave_id =3D dma_args.args[1];
+>=20
+> The driver should not have to manually parse the dma devicetree
+> properties, this is something that should be handled by the dma engine
+> driver.
+>=20
 
-Index: b/arch/powerpc/configs/pseries_defconfig
-===================================================================
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -127,6 +127,7 @@ CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_NBD=m
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=65536
-+CONFIG_VIRTIO_BLK=m
- CONFIG_IDE=y
- CONFIG_BLK_DEV_IDECD=y
- CONFIG_BLK_DEV_GENERIC=y
-@@ -152,6 +153,7 @@ CONFIG_SCSI_IPR=y
- CONFIG_SCSI_QLA_FC=m
- CONFIG_SCSI_QLA_ISCSI=m
- CONFIG_SCSI_LPFC=m
-+CONFIG_SCSI_VIRTIO=m
- CONFIG_SCSI_DH=m
- CONFIG_SCSI_DH_RDAC=m
- CONFIG_SCSI_DH_ALUA=m
-@@ -180,6 +182,7 @@ CONFIG_DUMMY=m
- CONFIG_NETCONSOLE=y
- CONFIG_NETPOLL_TRAP=y
- CONFIG_TUN=m
-+CONFIG_VIRTIO_NET=m
- CONFIG_VHOST_NET=m
- CONFIG_VORTEX=y
- CONFIG_ACENIC=m
-@@ -218,6 +221,7 @@ CONFIG_SERIAL_JSM=m
- CONFIG_HVC_CONSOLE=y
- CONFIG_HVC_RTAS=y
- CONFIG_HVCS=m
-+CONFIG_VIRTIO_CONSOLE=m
- CONFIG_IBM_BSR=m
- CONFIG_GEN_RTC=y
- CONFIG_RAW_DRIVER=y
-@@ -259,6 +263,8 @@ CONFIG_INFINIBAND_IPOIB=m
- CONFIG_INFINIBAND_IPOIB_CM=y
- CONFIG_INFINIBAND_SRP=m
- CONFIG_INFINIBAND_ISER=m
-+CONFIG_VIRTIO_PCI=m
-+CONFIG_VIRTIO_BALLOON=m
- CONFIG_EXT2_FS=y
- CONFIG_EXT2_FS_XATTR=y
- CONFIG_EXT2_FS_POSIX_ACL=y
-Index: b/arch/powerpc/configs/ppc64_defconfig
-===================================================================
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -151,6 +151,7 @@ CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_NBD=m
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=65536
-+CONFIG_VIRTIO_BLK=m
- CONFIG_IDE=y
- CONFIG_BLK_DEV_IDECD=y
- CONFIG_BLK_DEV_GENERIC=y
-@@ -179,6 +180,7 @@ CONFIG_SCSI_IPR=y
- CONFIG_SCSI_QLA_FC=m
- CONFIG_SCSI_QLA_ISCSI=m
- CONFIG_SCSI_LPFC=m
-+CONFIG_SCSI_VIRTIO=m
- CONFIG_SCSI_DH=m
- CONFIG_SCSI_DH_RDAC=m
- CONFIG_SCSI_DH_ALUA=m
-@@ -216,6 +218,7 @@ CONFIG_DUMMY=m
- CONFIG_NETCONSOLE=y
- CONFIG_NETPOLL_TRAP=y
- CONFIG_TUN=m
-+CONFIG_VIRTIO_NET=m
- CONFIG_VHOST_NET=m
- CONFIG_VORTEX=y
- CONFIG_ACENIC=m
-@@ -263,6 +266,7 @@ CONFIG_HVC_CONSOLE=y
- CONFIG_HVC_RTAS=y
- CONFIG_HVC_BEAT=y
- CONFIG_HVCS=m
-+CONFIG_VIRTIO_CONSOLE=m
- CONFIG_IBM_BSR=m
- CONFIG_RAW_DRIVER=y
- CONFIG_I2C_CHARDEV=y
-@@ -328,6 +332,8 @@ CONFIG_EDAC_MM_EDAC=y
- CONFIG_EDAC_PASEMI=y
- CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_DS1307=y
-+CONFIG_VIRTIO_PCI=m
-+CONFIG_VIRTIO_BALLOON=m
- CONFIG_EXT2_FS=y
- CONFIG_EXT2_FS_XATTR=y
- CONFIG_EXT2_FS_POSIX_ACL=y
+Yes, the dma engine interface has already parsed the slave_id while
+the dma customer requesting one dma channel.
+
+Though this also could be a way to pass the slave_id to dma driver, but the=
+=20
+dma driver uses the way while requesting dma channels.
+
+So I'll drop this code later.
