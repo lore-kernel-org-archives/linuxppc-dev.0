@@ -1,43 +1,36 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5A18D2C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 01:36:32 +1100 (EST)
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A3B9D2C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 03:18:03 +1100 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Wed, 23 Oct 2013 00:36:24 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 241433578055
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 01:36:23 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9MEIwnc50856102
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 01:18:58 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9MEa86b022001
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 01:36:10 +1100
-Date: Tue, 22 Oct 2013 20:05:59 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] sched: Fix nohz_kick_needed to consider the nr_busy
- of the parent domain's group
-Message-ID: <20131022143559.GA3197@linux.vnet.ibm.com>
-References: <20131021114002.13291.31478.stgit@drishya>
- <20131021114442.13291.99344.stgit@drishya>
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 22 Oct 2013 21:47:57 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id D585D2C833CB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 21:04:01 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9MFbChk12714236
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 21:07:12 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9MFYLLt029294
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 21:04:21 +0530
+Message-ID: <52669AFA.8070908@linux.vnet.ibm.com>
+Date: Tue, 22 Oct 2013 10:34:18 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20131021114442.13291.99344.stgit@drishya>
-Cc: Michael Neuling <mikey@neuling.org>, vincent.guittot@linaro.org,
- suresh.b.siddha@intel.com, Peter Zijlstra <peterz@infradead.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Mike Galbraith <bitbucket@online.de>, Anton Blanchard <anton@samba.org>,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Turner <pjt@google.com>,
- Ingo Molnar <mingo@kernel.org>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>, benh@kernel.crashing.org,
+ paulus@samba.org
+Subject: Re: [PATCH 1/3] powerpc: sync ppc64, ppc64e and pseries configs
+References: <20131022114450.296ae01d@kryten>
+In-Reply-To: <20131022114450.296ae01d@kryten>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,47 +40,276 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2013-10-21 17:14:42]:
-
->  	for_each_domain(cpu, sd) {
-> -		struct sched_group *sg = sd->groups;
-> -		struct sched_group_power *sgp = sg->sgp;
-> -		int nr_busy = atomic_read(&sgp->nr_busy_cpus);
-> -
-> -		if (sd->flags & SD_SHARE_PKG_RESOURCES && nr_busy > 1)
-> -			goto need_kick_unlock;
-> +		struct sched_domain *sd_parent = sd->parent;
-> +		struct sched_group *sg;
-> +		struct sched_group_power *sgp;
-> +		int nr_busy;
-> +
-> +		if (sd_parent) {
-> +			sg = sd_parent->groups;
-> +			sgp = sg->sgp;
-> +			nr_busy = atomic_read(&sgp->nr_busy_cpus);
-> +
-> +			if (sd->flags & SD_SHARE_PKG_RESOURCES && nr_busy > 1)
-> +				goto need_kick_unlock;
-> +		}
+On 10/21/2013 07:44 PM, Anton Blanchard wrote:
 > 
->  		if (sd->flags & SD_ASYM_PACKING && nr_busy != sg->group_weight
->  		    && (cpumask_first_and(nohz.idle_cpus_mask,
+> Run savedefconfig over the ppc64, ppc64e and pseries config
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Index: b/arch/powerpc/configs/ppc64_defconfig
+> ===================================================================
+> --- a/arch/powerpc/configs/ppc64_defconfig
+> +++ b/arch/powerpc/configs/ppc64_defconfig
+> @@ -2,7 +2,6 @@ CONFIG_PPC64=y
+>  CONFIG_ALTIVEC=y
+>  CONFIG_VSX=y
+>  CONFIG_SMP=y
+> -CONFIG_EXPERIMENTAL=y
+>  CONFIG_SYSVIPC=y
+>  CONFIG_POSIX_MQUEUE=y
+>  CONFIG_IRQ_DOMAIN_DEBUG=y
+> @@ -25,7 +24,6 @@ CONFIG_MODULE_UNLOAD=y
+>  CONFIG_MODVERSIONS=y
+>  CONFIG_MODULE_SRCVERSION_ALL=y
+>  CONFIG_PARTITION_ADVANCED=y
+> -CONFIG_EFI_PARTITION=y
+>  CONFIG_PPC_SPLPAR=y
+>  CONFIG_SCANLOG=m
+>  CONFIG_PPC_SMLPAR=y
+> @@ -50,12 +48,10 @@ CONFIG_CPU_FREQ_PMAC64=y
+>  CONFIG_HZ_100=y
+>  CONFIG_BINFMT_MISC=m
+>  CONFIG_PPC_TRANSACTIONAL_MEM=y
+> -CONFIG_HOTPLUG_CPU=y
 
-CC'ing Suresh Siddha and Vincent Guittot
+It looks like your disabling hotplug cpu, is that correct?
 
-Please correct me, If my understanding of idle balancing is wrong.
-With proposed approach will not idle load balancer kick in, even if
-there are busy cpus across groups or if there are 2 busy cpus which
-are spread across sockets.
+You did this for all three config files.
 
-Consider 2 socket machine with 4 processors each (MC and NUMA domains).
-If the machine is partial loaded such that cpus 0,4,5,6,7 are busy, then too
-nohz balancing is triggered because with this approach
-(NUMA)->groups->sgp->nr_busy_cpus is taken in account for nohz kick, while
-iterating over MC domain.
+-Nathan
 
-Isn't idle load balancer not suppose kick in, even in the case of two busy
-cpu's in a dual-core single socket system.
-
-Thanks,
-Kamalesh.
+>  CONFIG_KEXEC=y
+>  CONFIG_IRQ_ALL_CPUS=y
+>  CONFIG_MEMORY_HOTREMOVE=y
+>  CONFIG_SCHED_SMT=y
+> -CONFIG_PPC_DENORMALISATION=y
+>  CONFIG_PCCARD=y
+>  CONFIG_ELECTRA_CF=y
+>  CONFIG_HOTPLUG_PCI=y
+> @@ -89,7 +85,6 @@ CONFIG_NF_CONNTRACK_PPTP=m
+>  CONFIG_NF_CONNTRACK_SIP=m
+>  CONFIG_NF_CONNTRACK_TFTP=m
+>  CONFIG_NF_CT_NETLINK=m
+> -CONFIG_NETFILTER_TPROXY=m
+>  CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
+>  CONFIG_NETFILTER_XT_TARGET_CONNMARK=m
+>  CONFIG_NETFILTER_XT_TARGET_DSCP=m
+> @@ -131,7 +126,6 @@ CONFIG_NETFILTER_XT_MATCH_STRING=m
+>  CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
+>  CONFIG_NETFILTER_XT_MATCH_U32=m
+>  CONFIG_NF_CONNTRACK_IPV4=m
+> -CONFIG_IP_NF_QUEUE=m
+>  CONFIG_IP_NF_IPTABLES=m
+>  CONFIG_IP_NF_MATCH_AH=m
+>  CONFIG_IP_NF_MATCH_ECN=m
+> @@ -216,6 +210,7 @@ CONFIG_DUMMY=m
+>  CONFIG_NETCONSOLE=y
+>  CONFIG_NETPOLL_TRAP=y
+>  CONFIG_TUN=m
+> +CONFIG_VHOST_NET=m
+>  CONFIG_VORTEX=y
+>  CONFIG_ACENIC=m
+>  CONFIG_ACENIC_OMIT_TIGON_I=y
+> @@ -301,7 +296,6 @@ CONFIG_HID_GYRATION=y
+>  CONFIG_HID_PANTHERLORD=y
+>  CONFIG_HID_PETALYNX=y
+>  CONFIG_HID_SAMSUNG=y
+> -CONFIG_HID_SONY=y
+>  CONFIG_HID_SUNPLUS=y
+>  CONFIG_USB_HIDDEV=y
+>  CONFIG_USB=y
+> @@ -386,21 +380,19 @@ CONFIG_NLS_UTF8=y
+>  CONFIG_CRC_T10DIF=y
+>  CONFIG_MAGIC_SYSRQ=y
+>  CONFIG_DEBUG_KERNEL=y
+> +CONFIG_DEBUG_STACK_USAGE=y
+> +CONFIG_DEBUG_STACKOVERFLOW=y
+>  CONFIG_LOCKUP_DETECTOR=y
+>  CONFIG_DEBUG_MUTEXES=y
+> -CONFIG_DEBUG_STACK_USAGE=y
+>  CONFIG_LATENCYTOP=y
+>  CONFIG_SCHED_TRACER=y
+>  CONFIG_BLK_DEV_IO_TRACE=y
+> -CONFIG_DEBUG_STACKOVERFLOW=y
+>  CONFIG_CODE_PATCHING_SELFTEST=y
+>  CONFIG_FTR_FIXUP_SELFTEST=y
+>  CONFIG_MSI_BITMAP_SELFTEST=y
+>  CONFIG_XMON=y
+>  CONFIG_BOOTX_TEXT=y
+>  CONFIG_PPC_EARLY_DEBUG=y
+> -CONFIG_PPC_EARLY_DEBUG_BOOTX=y
+> -CONFIG_CRYPTO_NULL=m
+>  CONFIG_CRYPTO_TEST=m
+>  CONFIG_CRYPTO_PCBC=m
+>  CONFIG_CRYPTO_HMAC=y
+> @@ -422,4 +414,3 @@ CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
+>  CONFIG_VIRTUALIZATION=y
+>  CONFIG_KVM_BOOK3S_64=m
+>  CONFIG_KVM_BOOK3S_64_HV=y
+> -CONFIG_VHOST_NET=m
+> Index: b/arch/powerpc/configs/ppc64e_defconfig
+> ===================================================================
+> --- a/arch/powerpc/configs/ppc64e_defconfig
+> +++ b/arch/powerpc/configs/ppc64e_defconfig
+> @@ -1,7 +1,6 @@
+>  CONFIG_PPC64=y
+>  CONFIG_PPC_BOOK3E_64=y
+>  CONFIG_SMP=y
+> -CONFIG_EXPERIMENTAL=y
+>  CONFIG_SYSVIPC=y
+>  CONFIG_POSIX_MQUEUE=y
+>  CONFIG_NO_HZ=y
+> @@ -22,7 +21,6 @@ CONFIG_MODVERSIONS=y
+>  CONFIG_MODULE_SRCVERSION_ALL=y
+>  CONFIG_PARTITION_ADVANCED=y
+>  CONFIG_MAC_PARTITION=y
+> -CONFIG_EFI_PARTITION=y
+>  CONFIG_P5020_DS=y
+>  CONFIG_CPU_FREQ=y
+>  CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+> @@ -61,7 +59,6 @@ CONFIG_NF_CONNTRACK_PPTP=m
+>  CONFIG_NF_CONNTRACK_SIP=m
+>  CONFIG_NF_CONNTRACK_TFTP=m
+>  CONFIG_NF_CT_NETLINK=m
+> -CONFIG_NETFILTER_TPROXY=m
+>  CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
+>  CONFIG_NETFILTER_XT_TARGET_CONNMARK=m
+>  CONFIG_NETFILTER_XT_TARGET_DSCP=m
+> @@ -103,7 +100,6 @@ CONFIG_NETFILTER_XT_MATCH_STRING=m
+>  CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
+>  CONFIG_NETFILTER_XT_MATCH_U32=m
+>  CONFIG_NF_CONNTRACK_IPV4=m
+> -CONFIG_IP_NF_QUEUE=m
+>  CONFIG_IP_NF_IPTABLES=m
+>  CONFIG_IP_NF_MATCH_AH=m
+>  CONFIG_IP_NF_MATCH_ECN=m
+> @@ -193,7 +189,6 @@ CONFIG_PPP_SYNC_TTY=m
+>  CONFIG_INPUT_EVDEV=m
+>  CONFIG_INPUT_MISC=y
+>  # CONFIG_SERIO_SERPORT is not set
+> -CONFIG_VT_HW_CONSOLE_BINDING=y
+>  CONFIG_SERIAL_8250=y
+>  CONFIG_SERIAL_8250_CONSOLE=y
+>  # CONFIG_HW_RANDOM is not set
+> @@ -230,7 +225,6 @@ CONFIG_HID_NTRIG=y
+>  CONFIG_HID_PANTHERLORD=y
+>  CONFIG_HID_PETALYNX=y
+>  CONFIG_HID_SAMSUNG=y
+> -CONFIG_HID_SONY=y
+>  CONFIG_HID_SUNPLUS=y
+>  CONFIG_HID_GREENASIA=y
+>  CONFIG_HID_SMARTJOYPLUS=y
+> @@ -302,19 +296,18 @@ CONFIG_NLS_UTF8=y
+>  CONFIG_CRC_T10DIF=y
+>  CONFIG_MAGIC_SYSRQ=y
+>  CONFIG_DEBUG_KERNEL=y
+> +CONFIG_DEBUG_STACK_USAGE=y
+> +CONFIG_DEBUG_STACKOVERFLOW=y
+>  CONFIG_DETECT_HUNG_TASK=y
+>  CONFIG_DEBUG_MUTEXES=y
+> -CONFIG_DEBUG_STACK_USAGE=y
+>  CONFIG_LATENCYTOP=y
+>  CONFIG_IRQSOFF_TRACER=y
+>  CONFIG_SCHED_TRACER=y
+>  CONFIG_BLK_DEV_IO_TRACE=y
+> -CONFIG_DEBUG_STACKOVERFLOW=y
+>  CONFIG_CODE_PATCHING_SELFTEST=y
+>  CONFIG_FTR_FIXUP_SELFTEST=y
+>  CONFIG_MSI_BITMAP_SELFTEST=y
+>  CONFIG_XMON=y
+> -CONFIG_CRYPTO_NULL=m
+>  CONFIG_CRYPTO_TEST=m
+>  CONFIG_CRYPTO_CCM=m
+>  CONFIG_CRYPTO_GCM=m
+> Index: b/arch/powerpc/configs/pseries_defconfig
+> ===================================================================
+> --- a/arch/powerpc/configs/pseries_defconfig
+> +++ b/arch/powerpc/configs/pseries_defconfig
+> @@ -3,7 +3,6 @@ CONFIG_ALTIVEC=y
+>  CONFIG_VSX=y
+>  CONFIG_SMP=y
+>  CONFIG_NR_CPUS=2048
+> -CONFIG_EXPERIMENTAL=y
+>  CONFIG_SYSVIPC=y
+>  CONFIG_POSIX_MQUEUE=y
+>  CONFIG_AUDIT=y
+> @@ -33,7 +32,6 @@ CONFIG_MODULE_UNLOAD=y
+>  CONFIG_MODVERSIONS=y
+>  CONFIG_MODULE_SRCVERSION_ALL=y
+>  CONFIG_PARTITION_ADVANCED=y
+> -CONFIG_EFI_PARTITION=y
+>  CONFIG_PPC_SPLPAR=y
+>  CONFIG_SCANLOG=m
+>  CONFIG_PPC_SMLPAR=y
+> @@ -44,7 +42,6 @@ CONFIG_IBMEBUS=y
+>  CONFIG_HZ_100=y
+>  CONFIG_BINFMT_MISC=m
+>  CONFIG_PPC_TRANSACTIONAL_MEM=y
+> -CONFIG_HOTPLUG_CPU=y
+>  CONFIG_KEXEC=y
+>  CONFIG_IRQ_ALL_CPUS=y
+>  CONFIG_MEMORY_HOTPLUG=y
+> @@ -52,7 +49,6 @@ CONFIG_MEMORY_HOTREMOVE=y
+>  CONFIG_PPC_64K_PAGES=y
+>  CONFIG_PPC_SUBPAGE_PROT=y
+>  CONFIG_SCHED_SMT=y
+> -CONFIG_PPC_DENORMALISATION=y
+>  CONFIG_HOTPLUG_PCI=y
+>  CONFIG_HOTPLUG_PCI_RPA=m
+>  CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
+> @@ -113,7 +109,6 @@ CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
+>  CONFIG_NETFILTER_XT_MATCH_TIME=m
+>  CONFIG_NETFILTER_XT_MATCH_U32=m
+>  CONFIG_NF_CONNTRACK_IPV4=m
+> -CONFIG_IP_NF_QUEUE=m
+>  CONFIG_IP_NF_IPTABLES=m
+>  CONFIG_IP_NF_MATCH_AH=m
+>  CONFIG_IP_NF_MATCH_ECN=m
+> @@ -179,6 +174,7 @@ CONFIG_DUMMY=m
+>  CONFIG_NETCONSOLE=y
+>  CONFIG_NETPOLL_TRAP=y
+>  CONFIG_TUN=m
+> +CONFIG_VHOST_NET=m
+>  CONFIG_VORTEX=y
+>  CONFIG_ACENIC=m
+>  CONFIG_ACENIC_OMIT_TIGON_I=y
+> @@ -237,7 +233,6 @@ CONFIG_HID_GYRATION=y
+>  CONFIG_HID_PANTHERLORD=y
+>  CONFIG_HID_PETALYNX=y
+>  CONFIG_HID_SAMSUNG=y
+> -CONFIG_HID_SONY=y
+>  CONFIG_HID_SUNPLUS=y
+>  CONFIG_USB_HIDDEV=y
+>  CONFIG_USB=y
+> @@ -314,18 +309,17 @@ CONFIG_NLS_UTF8=y
+>  CONFIG_CRC_T10DIF=y
+>  CONFIG_MAGIC_SYSRQ=y
+>  CONFIG_DEBUG_KERNEL=y
+> -CONFIG_LOCKUP_DETECTOR=y
+>  CONFIG_DEBUG_STACK_USAGE=y
+> +CONFIG_DEBUG_STACKOVERFLOW=y
+> +CONFIG_LOCKUP_DETECTOR=y
+>  CONFIG_LATENCYTOP=y
+>  CONFIG_SCHED_TRACER=y
+>  CONFIG_BLK_DEV_IO_TRACE=y
+> -CONFIG_DEBUG_STACKOVERFLOW=y
+>  CONFIG_CODE_PATCHING_SELFTEST=y
+>  CONFIG_FTR_FIXUP_SELFTEST=y
+>  CONFIG_MSI_BITMAP_SELFTEST=y
+>  CONFIG_XMON=y
+>  CONFIG_XMON_DEFAULT=y
+> -CONFIG_CRYPTO_NULL=m
+>  CONFIG_CRYPTO_TEST=m
+>  CONFIG_CRYPTO_PCBC=m
+>  CONFIG_CRYPTO_HMAC=y
+> @@ -347,4 +341,3 @@ CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
+>  CONFIG_VIRTUALIZATION=y
+>  CONFIG_KVM_BOOK3S_64=m
+>  CONFIG_KVM_BOOK3S_64_HV=y
+> -CONFIG_VHOST_NET=m
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
