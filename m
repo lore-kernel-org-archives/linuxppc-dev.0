@@ -1,42 +1,35 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AAD772C0196
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 03:43:38 +1100 (EST)
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5462F2C016B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 03:57:16 +1100 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 23 Oct 2013 02:43:35 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E4A773578056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 03:43:28 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9MGQ6iJ42795256
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 03:26:07 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9MGhQoJ017936
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 03:43:27 +1100
-Message-ID: <5266AA78.4060607@linux.vnet.ibm.com>
-Date: Tue, 22 Oct 2013 22:10:24 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] sched: Fix nohz_kick_needed to consider the nr_busy
- of the parent domain's group
-References: <20131021114002.13291.31478.stgit@drishya>
- <20131021114442.13291.99344.stgit@drishya>
- <20131022143559.GA3197@linux.vnet.ibm.com>
-In-Reply-To: <20131022143559.GA3197@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michael Neuling <mikey@neuling.org>, vincent.guittot@linaro.org,
- suresh.b.siddha@intel.com, Peter Zijlstra <peterz@infradead.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Mike Galbraith <bitbucket@online.de>, Anton Blanchard <anton@samba.org>,
- Paul Turner <pjt@google.com>, Ingo Molnar <mingo@kernel.org>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 22 Oct 2013 22:27:07 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id E14C93942968
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:58:14 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9MBVPcF11993340
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 17:01:25 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9MBSXDZ023036
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:58:34 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, linux-mm@kvack.org
+Subject: [RFC PATCH 2/9] powerpc: Free up _PAGE_COHERENCE for numa fault use
+ later
+Date: Tue, 22 Oct 2013 16:58:13 +0530
+Message-Id: <1382441300-1513-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1382441300-1513-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1382441300-1513-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,94 +39,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kamalesh,
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-On 10/22/2013 08:05 PM, Kamalesh Babulal wrote:
-> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2013-10-21 17:14:42]:
-> 
->>  	for_each_domain(cpu, sd) {
->> -		struct sched_group *sg = sd->groups;
->> -		struct sched_group_power *sgp = sg->sgp;
->> -		int nr_busy = atomic_read(&sgp->nr_busy_cpus);
->> -
->> -		if (sd->flags & SD_SHARE_PKG_RESOURCES && nr_busy > 1)
->> -			goto need_kick_unlock;
->> +		struct sched_domain *sd_parent = sd->parent;
->> +		struct sched_group *sg;
->> +		struct sched_group_power *sgp;
->> +		int nr_busy;
->> +
->> +		if (sd_parent) {
->> +			sg = sd_parent->groups;
->> +			sgp = sg->sgp;
->> +			nr_busy = atomic_read(&sgp->nr_busy_cpus);
->> +
->> +			if (sd->flags & SD_SHARE_PKG_RESOURCES && nr_busy > 1)
->> +				goto need_kick_unlock;
->> +		}
->>
->>  		if (sd->flags & SD_ASYM_PACKING && nr_busy != sg->group_weight
->>  		    && (cpumask_first_and(nohz.idle_cpus_mask,
-> 
-> CC'ing Suresh Siddha and Vincent Guittot
-> 
-> Please correct me, If my understanding of idle balancing is wrong.
-> With proposed approach will not idle load balancer kick in, even if
-> there are busy cpus across groups or if there are 2 busy cpus which
-> are spread across sockets.
+Set  memory coherence always on hash64 config. If
+a platform cannot have memory coherence always set they
+can infer that from _PAGE_NO_CACHE and _PAGE_WRITETHRU
+like in lpar. So we dont' really need a separate bit
+for tracking _PAGE_COHERENCE.
 
-Yes load balancing will happen on busy cpus periodically.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pte-hash64.h |  2 +-
+ arch/powerpc/mm/hash_low_64.S         | 15 ++++++++++++---
+ arch/powerpc/mm/hash_utils_64.c       |  7 ++++---
+ arch/powerpc/mm/hugepage-hash64.c     |  6 +++++-
+ arch/powerpc/mm/hugetlbpage-hash64.c  |  4 ++++
+ 5 files changed, 26 insertions(+), 8 deletions(-)
 
-Wrt idle balancing there are two points here. One, when a CPU is just
-about to go idle, it will enter idle_balance(), and trigger load
-balancing with itself being the destination CPU to begin with. It will
-load balance at every level of the sched domain that it belongs to. If
-it manages to pull tasks, good, else it will enter an idle state.
-
-nohz_idle_balancing is triggered by a busy cpu at every tick if it has
-more than one task in its runqueue or if it belongs to a group that
-shares the package resources and has more than one cpu busy. By
-"nohz_idle_balance triggered", it means the busy cpu will send an ipi to
-the ilb_cpu to do load balancing on the behalf of the idle cpus in the
-nohz mask.
-
-So to answer your question wrt this patch, if there is one busy cpu with
-say 2 tasks in one socket and another busy cpu with 1 task on another
-socket, the former busy cpu can kick nohz_idle_balance since it has more
-than one task in its runqueue. An idle cpu in either socket could be
-woken up to balance tasks with it.
-
-The usual idle load balancer that runs on a CPU about to become idle
-could pull from either cpu depending on who is more busy as it begins to
-load balance across all levels of sched domain that it belongs to.
-> 
-> Consider 2 socket machine with 4 processors each (MC and NUMA domains).
-> If the machine is partial loaded such that cpus 0,4,5,6,7 are busy, then too
-> nohz balancing is triggered because with this approach
-> (NUMA)->groups->sgp->nr_busy_cpus is taken in account for nohz kick, while
-> iterating over MC domain.
-
-For the example that you mention, you will have a CPU domain and a NUMA
-domain. When the sockets are NUMA nodes, each socket will belong to a
-CPU domain. If the sockets are non-numa nodes, then the domain
-encompassing both the nodes will be a CPU domain, possibly with each
-socket being an MC domain.
-> 
-> Isn't idle load balancer not suppose kick in, even in the case of two busy
-> cpu's in a dual-core single socket system
-
-nohz_idle_balancing is a special case. It is triggered when the
-conditions mentioned in nohz_kick_needed() are true. A CPU just about to
-go idle will trigger load balancing without any pre-conditions.
-
-In a single socket machine, there will be a CPU domain encompassing the
-socket and the MC domain will encompass a core. nohz_idle load balancer
-will kick in if both the threads in the core have tasks running on them.
-This is fair enough because the threads share the resources of the core.
-
-Regards
-Preeti U Murthy
-> 
-> Thanks,
-> Kamalesh.
-> 
+diff --git a/arch/powerpc/include/asm/pte-hash64.h b/arch/powerpc/include/asm/pte-hash64.h
+index 0419eeb..55aea0c 100644
+--- a/arch/powerpc/include/asm/pte-hash64.h
++++ b/arch/powerpc/include/asm/pte-hash64.h
+@@ -19,7 +19,7 @@
+ #define _PAGE_FILE		0x0002 /* (!present only) software: pte holds file offset */
+ #define _PAGE_EXEC		0x0004 /* No execute on POWER4 and newer (we invert) */
+ #define _PAGE_GUARDED		0x0008
+-#define _PAGE_COHERENT		0x0010 /* M: enforce memory coherence (SMP systems) */
++/* We can derive Memory coherence from _PAGE_NO_CACHE */
+ #define _PAGE_NO_CACHE		0x0020 /* I: cache inhibit */
+ #define _PAGE_WRITETHRU		0x0040 /* W: cache write-through */
+ #define _PAGE_DIRTY		0x0080 /* C: page changed */
+diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
+index d3cbda6..1136d26 100644
+--- a/arch/powerpc/mm/hash_low_64.S
++++ b/arch/powerpc/mm/hash_low_64.S
+@@ -148,7 +148,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+ 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
+ 	andc	r0,r30,r0		/* r0 = pte & ~r0 */
+ 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
+-	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
++	/*
++	 * Always add "C" bit for perf. Memory coherence is always enabled
++	 */
++	ori	r3,r3,HPTE_R_C | HPTE_R_M
+ 
+ 	/* We eventually do the icache sync here (maybe inline that
+ 	 * code rather than call a C function...) 
+@@ -457,7 +460,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+ 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
+ 	andc	r0,r3,r0		/* r0 = pte & ~r0 */
+ 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
+-	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
++	/*
++	 * Always add "C" bit for perf. Memory coherence is always enabled
++	 */
++	ori	r3,r3,HPTE_R_C | HPTE_R_M
+ 
+ 	/* We eventually do the icache sync here (maybe inline that
+ 	 * code rather than call a C function...)
+@@ -795,7 +801,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+ 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
+ 	andc	r0,r30,r0		/* r0 = pte & ~r0 */
+ 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
+-	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
++	/*
++	 * Always add "C" bit for perf. Memory coherence is always enabled
++	 */
++	ori	r3,r3,HPTE_R_C | HPTE_R_M
+ 
+ 	/* We eventually do the icache sync here (maybe inline that
+ 	 * code rather than call a C function...)
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index bde8b55..fb176e9 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -169,9 +169,10 @@ static unsigned long htab_convert_pte_flags(unsigned long pteflags)
+ 	if ((pteflags & _PAGE_USER) && !((pteflags & _PAGE_RW) &&
+ 					 (pteflags & _PAGE_DIRTY)))
+ 		rflags |= 1;
+-
+-	/* Always add C */
+-	return rflags | HPTE_R_C;
++	/*
++	 * Always add "C" bit for perf. Memory coherence is always enabled
++	 */
++	return rflags | HPTE_R_C | HPTE_R_M;
+ }
+ 
+ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
+diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
+index 34de9e0..826893f 100644
+--- a/arch/powerpc/mm/hugepage-hash64.c
++++ b/arch/powerpc/mm/hugepage-hash64.c
+@@ -127,7 +127,11 @@ repeat:
+ 
+ 		/* Add in WIMG bits */
+ 		rflags |= (new_pmd & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				      _PAGE_COHERENT | _PAGE_GUARDED));
++				      _PAGE_GUARDED));
++		/*
++		 * enable the memory coherence always
++		 */
++		rflags |= HPTE_R_M;
+ 
+ 		/* Insert into the hash table, primary slot */
+ 		slot = ppc_md.hpte_insert(hpte_group, vpn, pa, rflags, 0,
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index 0b7fb67..a5bcf93 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -99,6 +99,10 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		/* Add in WIMG bits */
+ 		rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+ 				      _PAGE_COHERENT | _PAGE_GUARDED));
++		/*
++		 * enable the memory coherence always
++		 */
++		rflags |= HPTE_R_M;
+ 
+ 		slot = hpte_insert_repeating(hash, vpn, pa, rflags, 0,
+ 					     mmu_psize, ssize);
+-- 
+1.8.3.2
