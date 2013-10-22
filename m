@@ -1,35 +1,24 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5462F2C016B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 03:57:16 +1100 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 22 Oct 2013 22:27:07 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id E14C93942968
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:58:14 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9MBVPcF11993340
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 17:01:25 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9MBSXDZ023036
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2013 16:58:34 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, linux-mm@kvack.org
-Subject: [RFC PATCH 2/9] powerpc: Free up _PAGE_COHERENCE for numa fault use
- later
-Date: Tue, 22 Oct 2013 16:58:13 +0530
-Message-Id: <1382441300-1513-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1382441300-1513-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1382441300-1513-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 96C322C00F9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 09:12:03 +1100 (EST)
+Date: Wed, 23 Oct 2013 00:11:38 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] sched: Fix nohz_kick_needed to consider the nr_busy
+ of the parent domain's group
+Message-ID: <20131022221138.GJ2490@laptop.programming.kicks-ass.net>
+References: <20131021114002.13291.31478.stgit@drishya>
+ <20131021114442.13291.99344.stgit@drishya>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131021114442.13291.99344.stgit@drishya>
+Cc: Michael Neuling <mikey@neuling.org>, Mike Galbraith <bitbucket@online.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Anton Blanchard <anton@samba.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ Paul Turner <pjt@google.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,125 +28,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On Mon, Oct 21, 2013 at 05:14:42PM +0530, Vaidyanathan Srinivasan wrote:
+>  kernel/sched/fair.c |   19 +++++++++++++------
+>  1 file changed, 13 insertions(+), 6 deletions(-)
+> 
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 7c70201..12f0eab 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -5807,12 +5807,19 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
+>  
+>  	rcu_read_lock();
+>  	for_each_domain(cpu, sd) {
+> +		struct sched_domain *sd_parent = sd->parent;
+> +		struct sched_group *sg;
+> +		struct sched_group_power *sgp;
+> +		int nr_busy;
+> +
+> +		if (sd_parent) {
+> +			sg = sd_parent->groups;
+> +			sgp = sg->sgp;
+> +			nr_busy = atomic_read(&sgp->nr_busy_cpus);
+> +
+> +			if (sd->flags & SD_SHARE_PKG_RESOURCES && nr_busy > 1)
+> +				goto need_kick_unlock;
+> +		}
+>  
+>  		if (sd->flags & SD_ASYM_PACKING && nr_busy != sg->group_weight
+>  		    && (cpumask_first_and(nohz.idle_cpus_mask,
+> 
 
-Set  memory coherence always on hash64 config. If
-a platform cannot have memory coherence always set they
-can infer that from _PAGE_NO_CACHE and _PAGE_WRITETHRU
-like in lpar. So we dont' really need a separate bit
-for tracking _PAGE_COHERENCE.
+Almost I'd say; what happens on !sd_parent && SD_ASYM_PACKING ?
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pte-hash64.h |  2 +-
- arch/powerpc/mm/hash_low_64.S         | 15 ++++++++++++---
- arch/powerpc/mm/hash_utils_64.c       |  7 ++++---
- arch/powerpc/mm/hugepage-hash64.c     |  6 +++++-
- arch/powerpc/mm/hugetlbpage-hash64.c  |  4 ++++
- 5 files changed, 26 insertions(+), 8 deletions(-)
+Also, this made me look at the nr_busy stuff again, and somehow that
+entire thing makes me a little sad.
 
-diff --git a/arch/powerpc/include/asm/pte-hash64.h b/arch/powerpc/include/asm/pte-hash64.h
-index 0419eeb..55aea0c 100644
---- a/arch/powerpc/include/asm/pte-hash64.h
-+++ b/arch/powerpc/include/asm/pte-hash64.h
-@@ -19,7 +19,7 @@
- #define _PAGE_FILE		0x0002 /* (!present only) software: pte holds file offset */
- #define _PAGE_EXEC		0x0004 /* No execute on POWER4 and newer (we invert) */
- #define _PAGE_GUARDED		0x0008
--#define _PAGE_COHERENT		0x0010 /* M: enforce memory coherence (SMP systems) */
-+/* We can derive Memory coherence from _PAGE_NO_CACHE */
- #define _PAGE_NO_CACHE		0x0020 /* I: cache inhibit */
- #define _PAGE_WRITETHRU		0x0040 /* W: cache write-through */
- #define _PAGE_DIRTY		0x0080 /* C: page changed */
-diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
-index d3cbda6..1136d26 100644
---- a/arch/powerpc/mm/hash_low_64.S
-+++ b/arch/powerpc/mm/hash_low_64.S
-@@ -148,7 +148,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
- 	andc	r0,r30,r0		/* r0 = pte & ~r0 */
- 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
--	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
-+	/*
-+	 * Always add "C" bit for perf. Memory coherence is always enabled
-+	 */
-+	ori	r3,r3,HPTE_R_C | HPTE_R_M
+Can't we do something like the below and cut that nr_busy sd iteration
+short?
+
+This nohz stuff really needs to be re-thought and made more scalable --
+its a royal pain :/
+
+
+ kernel/sched/core.c  |  4 ++++
+ kernel/sched/fair.c  | 21 +++++++++++++++------
+ kernel/sched/sched.h |  5 ++---
+ 3 files changed, 21 insertions(+), 9 deletions(-)
+
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index c06b8d3..89db8dc 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -5271,6 +5271,7 @@ DEFINE_PER_CPU(struct sched_domain *, sd_llc);
+ DEFINE_PER_CPU(int, sd_llc_size);
+ DEFINE_PER_CPU(int, sd_llc_id);
+ DEFINE_PER_CPU(struct sched_domain *, sd_numa);
++DEFINE_PER_CPU(struct sched_domain *, sd_busy);
  
- 	/* We eventually do the icache sync here (maybe inline that
- 	 * code rather than call a C function...) 
-@@ -457,7 +460,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
- 	andc	r0,r3,r0		/* r0 = pte & ~r0 */
- 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
--	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
-+	/*
-+	 * Always add "C" bit for perf. Memory coherence is always enabled
-+	 */
-+	ori	r3,r3,HPTE_R_C | HPTE_R_M
+ static void update_top_cache_domain(int cpu)
+ {
+@@ -5290,6 +5291,9 @@ static void update_top_cache_domain(int cpu)
  
- 	/* We eventually do the icache sync here (maybe inline that
- 	 * code rather than call a C function...)
-@@ -795,7 +801,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
- 	andc	r0,r30,r0		/* r0 = pte & ~r0 */
- 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
--	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
-+	/*
-+	 * Always add "C" bit for perf. Memory coherence is always enabled
-+	 */
-+	ori	r3,r3,HPTE_R_C | HPTE_R_M
- 
- 	/* We eventually do the icache sync here (maybe inline that
- 	 * code rather than call a C function...)
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index bde8b55..fb176e9 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -169,9 +169,10 @@ static unsigned long htab_convert_pte_flags(unsigned long pteflags)
- 	if ((pteflags & _PAGE_USER) && !((pteflags & _PAGE_RW) &&
- 					 (pteflags & _PAGE_DIRTY)))
- 		rflags |= 1;
--
--	/* Always add C */
--	return rflags | HPTE_R_C;
-+	/*
-+	 * Always add "C" bit for perf. Memory coherence is always enabled
-+	 */
-+	return rflags | HPTE_R_C | HPTE_R_M;
+ 	sd = lowest_flag_domain(cpu, SD_NUMA);
+ 	rcu_assign_pointer(per_cpu(sd_numa, cpu), sd);
++
++	sd = highest_flag_domain(cpu, SD_SHARE_PKG_RESOURCES | SD_ASYM_PACKING);
++	rcu_assign_pointer(per_cpu(sd_busy, cpu), sd);
  }
  
- int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
-diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
-index 34de9e0..826893f 100644
---- a/arch/powerpc/mm/hugepage-hash64.c
-+++ b/arch/powerpc/mm/hugepage-hash64.c
-@@ -127,7 +127,11 @@ repeat:
+ /*
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 813dd61..3d5141e 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -6512,19 +6512,23 @@ static inline void nohz_balance_exit_idle(int cpu)
+ 	}
+ }
  
- 		/* Add in WIMG bits */
- 		rflags |= (new_pmd & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
--				      _PAGE_COHERENT | _PAGE_GUARDED));
-+				      _PAGE_GUARDED));
-+		/*
-+		 * enable the memory coherence always
-+		 */
-+		rflags |= HPTE_R_M;
+-static inline void set_cpu_sd_state_busy(void)
++static inline void set_cpu_sd_state_busy(int cpu)
+ {
+ 	struct sched_domain *sd;
++	struct rq *rq = cpu_rq(cpu);
  
- 		/* Insert into the hash table, primary slot */
- 		slot = ppc_md.hpte_insert(hpte_group, vpn, pa, rflags, 0,
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 0b7fb67..a5bcf93 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -99,6 +99,10 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 		/* Add in WIMG bits */
- 		rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
- 				      _PAGE_COHERENT | _PAGE_GUARDED));
-+		/*
-+		 * enable the memory coherence always
-+		 */
-+		rflags |= HPTE_R_M;
+ 	rcu_read_lock();
+-	sd = rcu_dereference_check_sched_domain(this_rq()->sd);
++	sd = rcu_dereference_check_sched_domain(rq->sd);
  
- 		slot = hpte_insert_repeating(hash, vpn, pa, rflags, 0,
- 					     mmu_psize, ssize);
--- 
-1.8.3.2
+ 	if (!sd || !sd->nohz_idle)
+ 		goto unlock;
+ 	sd->nohz_idle = 0;
+ 
+-	for (; sd; sd = sd->parent)
++	for (; sd; sd = sd->parent) {
+ 		atomic_inc(&sd->groups->sgp->nr_busy_cpus);
++		if (sd == per_cpu(sd_busy, cpu))
++			break;
++	}
+ unlock:
+ 	rcu_read_unlock();
+ }
+@@ -6532,16 +6536,21 @@ static inline void set_cpu_sd_state_busy(void)
+ void set_cpu_sd_state_idle(void)
+ {
+ 	struct sched_domain *sd;
++	int cpu = smp_processor_id();
++	struct rq *rq = cpu_rq(cpu);
+ 
+ 	rcu_read_lock();
+-	sd = rcu_dereference_check_sched_domain(this_rq()->sd);
++	sd = rcu_dereference_check_sched_domain(rq->sd);
+ 
+ 	if (!sd || sd->nohz_idle)
+ 		goto unlock;
+ 	sd->nohz_idle = 1;
+ 
+-	for (; sd; sd = sd->parent)
++	for (; sd; sd = sd->parent) {
+ 		atomic_dec(&sd->groups->sgp->nr_busy_cpus);
++		if (sd == per_cpu(sd_busy, cpu))
++			break;
++	}
+ unlock:
+ 	rcu_read_unlock();
+ }
+@@ -6756,7 +6765,7 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
+ 	* We may be recently in ticked or tickless idle mode. At the first
+ 	* busy tick after returning from idle, we will update the busy stats.
+ 	*/
+-	set_cpu_sd_state_busy();
++	set_cpu_sd_state_busy(cpu);
+ 	nohz_balance_exit_idle(cpu);
+ 
+ 	/*
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index ffc7087..80c5fd2 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -599,9 +599,8 @@ static inline struct sched_domain *highest_flag_domain(int cpu, int flag)
+ 	struct sched_domain *sd, *hsd = NULL;
+ 
+ 	for_each_domain(cpu, sd) {
+-		if (!(sd->flags & flag))
+-			break;
+-		hsd = sd;
++		if (sd->flags & flag)
++			hsd = sd;
+ 	}
+ 
+ 	return hsd;
