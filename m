@@ -3,14 +3,14 @@ Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 775342C03A9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 20:31:42 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D67012C0441
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 20:31:44 +1100 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <scottwood@freescale.com>
-Subject: [v6][PATCH 4/5] powerpc/kgdb: use DEFINE_PER_CPU to allocate kgdb's
- thread_info
-Date: Wed, 23 Oct 2013 17:31:24 +0800
-Message-ID: <1382520685-11609-5-git-send-email-tiejun.chen@windriver.com>
+Subject: [v6][PATCH 5/5] powerpc/book3e/kgdb: Fix a single stgep case of lazy
+ IRQ
+Date: Wed, 23 Oct 2013 17:31:25 +0800
+Message-ID: <1382520685-11609-6-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1382520685-11609-1-git-send-email-tiejun.chen@windriver.com>
 References: <1382520685-11609-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -25,41 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use DEFINE_PER_CPU to allocate thread_info statically instead of kmalloc().
-This can avoid introducing more memory check codes.
+In lazy EE magic, we may have a lazy interrupt occured while
+entering kgdb, but we really don't want to replay that interrupt
+for kgdb, so we have to clear the PACA_IRQ_HARD_DIS force to
+make sure we can exit directly from this debug exception.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/kernel/kgdb.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/kgdb.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index c1eef24..447c14b 100644
+index 447c14b..9872f58 100644
 --- a/arch/powerpc/kernel/kgdb.c
 +++ b/arch/powerpc/kernel/kgdb.c
-@@ -151,15 +151,15 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
- 	return 1;
- }
- 
-+static DEFINE_PER_CPU(struct thread_info, kgdb_thread_info);
- static int kgdb_singlestep(struct pt_regs *regs)
- {
- 	struct thread_info *thread_info, *exception_thread_info;
--	struct thread_info *backup_current_thread_info;
-+	struct thread_info *backup_current_thread_info = &__get_cpu_var(kgdb_thread_info);
- 
- 	if (user_mode(regs))
- 		return 0;
- 
--	backup_current_thread_info = kmalloc(sizeof(struct thread_info), GFP_KERNEL);
- 	/*
- 	 * On Book E and perhaps other processors, singlestep is handled on
- 	 * the critical exception stack.  This causes current_thread_info()
-@@ -185,7 +185,6 @@ static int kgdb_singlestep(struct pt_regs *regs)
+@@ -185,6 +185,14 @@ static int kgdb_singlestep(struct pt_regs *regs)
  		/* Restore current_thread_info lastly. */
  		memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
  
--	kfree(backup_current_thread_info);
++#ifdef CONFIG_PPC64
++	/*
++	 * Clear the PACA_IRQ_HARD_DIS from the pending mask
++	 * since we are about to exit this directly from debug
++	 * exception without any replay interrupt in lazy EE case.
++	 */
++	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
++#endif
  	return 1;
  }
  
