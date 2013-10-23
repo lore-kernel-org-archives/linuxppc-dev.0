@@ -1,21 +1,39 @@
-Return-Path: <B07421@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 282312C009E
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Oct 2013 21:20:59 +1100 (EST)
-Date: Wed, 23 Oct 2013 11:20:45 +0100
-From: Scott Wood <scottwood@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: powerpc: Don't corrupt user registers on 32-bit
-Message-ID: <20131023102045.GA23685@SnaresPenguin>
-References: <20131023084002.GA8325@iris.ozlabs.ibm.com>
+Return-Path: <victork@il.ibm.com>
+Received: from e06smtp18.uk.ibm.com (e06smtp18.uk.ibm.com [195.75.94.114])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp18.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 622FC2C0196
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Oct 2013 18:40:05 +1100 (EST)
+Received: from /spool/local
+ by e06smtp18.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <victork@il.ibm.com>;
+ Wed, 23 Oct 2013 08:40:01 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id CB3022190063
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Oct 2013 08:39:58 +0100 (BST)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9N7dkeG55836800
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Oct 2013 07:39:46 GMT
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9N7dvFc013784
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Oct 2013 01:39:58 -0600
+In-Reply-To: <12083.1382486094@ale.ozlabs.ibm.com>
+References: <12083.1382486094@ale.ozlabs.ibm.com>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+To: Michael Neuling <mikey@neuling.org>
+Message-ID: <OFD776C320.26C485FF-ON43257C0D.00264F32-43257C0D.002A1BA7@il.ibm.com>
+From: Victor Kaplansky <VICTORK@il.ibm.com>
+Date: Wed, 23 Oct 2013 10:39:55 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20131023084002.GA8325@iris.ozlabs.ibm.com>
-Cc: Alexander Graf <agraf@suse.de>, linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ linux-kernel@vger.kernel.org, Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ anton@samba.org, Frederic Weisbecker <fweisbec@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +43,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 23, 2013 at 09:40:02AM +0100, Paul Mackerras wrote:
-> Commit de79f7b9f6 ("powerpc: Put FP/VSX and VR state into structures")
-> modified load_up_fpu() and load_up_altivec() in such a way that they
-> now use r7 and r8.  Unfortunately, the callers of these functions on
-> 32-bit machines then return to userspace via fast_exception_return,
-> which doesn't restore all of the volatile GPRs, but only r1, r3 -- r6
-> and r9 -- r12.  This was causing userspace segfaults and other
-> userspace misbehaviour on 32-bit machines.
-> 
-> This fixes the problem by changing the register usage of load_up_fpu()
-> and load_up_altivec() to avoid using r7 and r8 and instead use r6 and
-> r10.  This also adds comments to those functions saying which registers
-> may be used.
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> 
-> ---
-> arch/powerpc/kernel/fpu.S    | 14 ++++++++------
->  arch/powerpc/kernel/vector.S | 15 +++++++++------
->  2 files changed, 17 insertions(+), 12 deletions(-)
+See below.
 
-Tested-by: Scott Wood <scottwood@freescale.com> (on e500mc, so no altivec)
+Michael Neuling <mikey@neuling.org> wrote on 10/23/2013 02:54:54 AM:
 
--Scott
+>
+> diff --git a/kernel/events/ring_buffer.c b/kernel/events/ring_buffer.c
+> index cd55144..95768c6 100644
+> --- a/kernel/events/ring_buffer.c
+> +++ b/kernel/events/ring_buffer.c
+> @@ -87,10 +87,10 @@ again:
+>        goto out;
+>
+>     /*
+> -    * Publish the known good head. Rely on the full barrier implied
+> -    * by atomic_dec_and_test() order the rb->head read and this
+> -    * write.
+> +    * Publish the known good head. We need a memory barrier to order the
+> +    * order the rb->head read and this write.
+>      */
+> +   smp_mb ();
+>     rb->user_page->data_head = head;
+>
+>     /*
+
+1. As far as I understand, smp_mb() is superfluous in this case, smp_wmb()
+should be enough.
+   (same for the space between the name of function and open
+parenthesis :-) )
+
+2. Again, as far as I understand from ./Documentation/atomic_ops.txt, it is
+mistake in architecture independent
+   code to rely on memory barriers in atomic operations, all the more so in
+"local" operations.
+
+3. The solution above is sub-optimal on architectures where memory barrier
+is part of "local", since we are going to execute
+   two consecutive barriers. So, maybe, it would be better to use
+smp_mb__after_atomic_dec().
+
+4. I'm not sure, but I think there is another, unrelated potential problem
+in function perf_output_put_handle()
+   - the write to "data_head" -
+
+kernel/events/ring_buffer.c:
+
+ 77         /*
+ 78          * Publish the known good head. Rely on the full barrier
+implied
+ 79          * by atomic_dec_and_test() order the rb->head read and this
+ 80          * write.
+ 81          */
+ 82         rb->user_page->data_head = head;
+
+As data_head is 64-bit wide, the update should be done by an atomic64_set
+().
+
+Regards,
+-- Victor
