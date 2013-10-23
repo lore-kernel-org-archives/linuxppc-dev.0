@@ -1,13 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 23 Oct 2013 09:40:02 +0100
-From: Paul Mackerras <paulus@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Don't corrupt user registers on 32-bit
-Message-ID: <20131023084002.GA8325@iris.ozlabs.ibm.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AB2FB2C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 20:26:30 +1100 (EST)
+Message-ID: <5267963A.7010406@windriver.com>
+Date: Wed, 23 Oct 2013 17:26:18 +0800
+From: =?UTF-8?B?IuKAnHRpZWp1bi5jaGVu4oCdIg==?= <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
- Alexander Graf <agraf@suse.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [v5][PATCH 1/6] powerpc/book3e: load critical/machine/debug
+ exception stack
+References: <1371724110-8250-1-git-send-email-tiejun.chen@windriver.com>	
+ <1371724110-8250-2-git-send-email-tiejun.chen@windriver.com>
+ <1382135824.7979.906.camel@snotra.buserror.net>
+In-Reply-To: <1382135824.7979.906.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,111 +27,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit de79f7b9f6 ("powerpc: Put FP/VSX and VR state into structures")
-modified load_up_fpu() and load_up_altivec() in such a way that they
-now use r7 and r8.  Unfortunately, the callers of these functions on
-32-bit machines then return to userspace via fast_exception_return,
-which doesn't restore all of the volatile GPRs, but only r1, r3 -- r6
-and r9 -- r12.  This was causing userspace segfaults and other
-userspace misbehaviour on 32-bit machines.
+On 10/19/2013 06:37 AM, Scott Wood wrote:
+> On Thu, 2013-06-20 at 18:28 +0800, Tiejun Chen wrote:
+>> We always alloc critical/machine/debug check exceptions. This is
+>> different from the normal exception. So we should load these exception
+>> stack properly like we did for booke.
+>
+> This is "booke".  Do you mean like "like we did for 32-bit"?
 
-This fixes the problem by changing the register usage of load_up_fpu()
-and load_up_altivec() to avoid using r7 and r8 and instead use r6 and
-r10.  This also adds comments to those functions saying which registers
-may be used.
+Yes.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/kernel/fpu.S    | 14 ++++++++------
- arch/powerpc/kernel/vector.S | 15 +++++++++------
- 2 files changed, 17 insertions(+), 12 deletions(-)
+>
+> And the code is already trying to load the special stack; it just
+> happens that it's loading from a different location than the C code
+> placed the stack addresses.  The changelog should point out the specific
+> thing that is being fixed.
 
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index 4dca05e..f7f5b8b 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -106,6 +106,8 @@ _GLOBAL(store_fp_state)
-  * and save its floating-point registers in its thread_struct.
-  * Load up this task's FP registers from its thread_struct,
-  * enable the FPU for the current task and return to the task.
-+ * Note that on 32-bit this can only use registers that will be
-+ * restored by fast_exception_return, i.e. r3 - r6, r10 and r11.
-  */
- _GLOBAL(load_up_fpu)
- 	mfmsr	r5
-@@ -131,10 +133,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	beq	1f
- 	toreal(r4)
- 	addi	r4,r4,THREAD		/* want last_task_used_math->thread */
--	addi	r8,r4,THREAD_FPSTATE
--	SAVE_32FPVSRS(0, R5, R8)
-+	addi	r10,r4,THREAD_FPSTATE
-+	SAVE_32FPVSRS(0, R5, R10)
- 	mffs	fr0
--	stfd	fr0,FPSTATE_FPSCR(r8)
-+	stfd	fr0,FPSTATE_FPSCR(r10)
- 	PPC_LL	r5,PT_REGS(r4)
- 	toreal(r5)
- 	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
-@@ -157,10 +159,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	or	r12,r12,r4
- 	std	r12,_MSR(r1)
- #endif
--	addi	r7,r5,THREAD_FPSTATE
--	lfd	fr0,FPSTATE_FPSCR(r7)
-+	addi	r10,r5,THREAD_FPSTATE
-+	lfd	fr0,FPSTATE_FPSCR(r10)
- 	MTFSF_L(fr0)
--	REST_32FPVSRS(0, R4, R7)
-+	REST_32FPVSRS(0, R4, R10)
- #ifndef CONFIG_SMP
- 	subi	r4,r5,THREAD
- 	fromreal(r4)
-diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index eacda4e..0458a9a 100644
---- a/arch/powerpc/kernel/vector.S
-+++ b/arch/powerpc/kernel/vector.S
-@@ -64,6 +64,9 @@ _GLOBAL(store_vr_state)
-  * Enables the VMX for use in the kernel on return.
-  * On SMP we know the VMX is free, since we give it up every
-  * switch (ie, no lazy save of the vector registers).
-+ *
-+ * Note that on 32-bit this can only use registers that will be
-+ * restored by fast_exception_return, i.e. r3 - r6, r10 and r11.
-  */
- _GLOBAL(load_up_altivec)
- 	mfmsr	r5			/* grab the current MSR */
-@@ -89,11 +92,11 @@ _GLOBAL(load_up_altivec)
- 	/* Save VMX state to last_task_used_altivec's THREAD struct */
- 	toreal(r4)
- 	addi	r4,r4,THREAD
--	addi	r7,r4,THREAD_VRSTATE
--	SAVE_32VRS(0,r5,r7)
-+	addi	r6,r4,THREAD_VRSTATE
-+	SAVE_32VRS(0,r5,r6)
- 	mfvscr	vr0
- 	li	r10,VRSTATE_VSCR
--	stvx	vr0,r10,r7
-+	stvx	vr0,r10,r6
- 	/* Disable VMX for last_task_used_altivec */
- 	PPC_LL	r5,PT_REGS(r4)
- 	toreal(r5)
-@@ -125,13 +128,13 @@ _GLOBAL(load_up_altivec)
- 	oris	r12,r12,MSR_VEC@h
- 	std	r12,_MSR(r1)
- #endif
--	addi	r7,r5,THREAD_VRSTATE
-+	addi	r6,r5,THREAD_VRSTATE
- 	li	r4,1
- 	li	r10,VRSTATE_VSCR
- 	stw	r4,THREAD_USED_VR(r5)
--	lvx	vr0,r10,r7
-+	lvx	vr0,r10,r6
- 	mtvscr	vr0
--	REST_32VRS(0,r4,r7)
-+	REST_32VRS(0,r4,r6)
- #ifndef CONFIG_SMP
- 	/* Update last_task_used_altivec to 'current' */
- 	subi	r4,r5,THREAD		/* Back to 'current' */
--- 
-1.8.4.rc3
+Here I don't fix anything, and I just want to do the same thing as 32-bit.
+
+>
+>> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+>> ---
+>>   arch/powerpc/kernel/exceptions-64e.S |   49 +++++++++++++++++++++++++++++++---
+>>   1 file changed, 46 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+>> index 4b23119..4d8e57f 100644
+>> --- a/arch/powerpc/kernel/exceptions-64e.S
+>> +++ b/arch/powerpc/kernel/exceptions-64e.S
+>> @@ -36,6 +36,37 @@
+>>    */
+>>   #define	SPECIAL_EXC_FRAME_SIZE	INT_FRAME_SIZE
+>>
+>> +/* only on book3e */
+>> +#define DBG_STACK_BASE		dbgirq_ctx
+>> +#define MC_STACK_BASE		mcheckirq_ctx
+>> +#define CRIT_STACK_BASE		critirq_ctx
+>> +
+>> +#ifdef CONFIG_RELOCATABLE
+>> +#define LOAD_STACK_BASE(reg, level)			\
+>> +	tovirt(r2,r2);					\
+>> +	LOAD_REG_ADDR(reg, level##_STACK_BASE);
+>> +#else
+>> +#define LOAD_STACK_BASE(reg, level)			\
+>> +	LOAD_REG_IMMEDIATE(reg, level##_STACK_BASE);
+>> +#endif
+>> +
+>> +#ifdef CONFIG_SMP
+>> +#define BOOK3E_LOAD_EXC_LEVEL_STACK(level)		\
+>> +	mfspr	r14,SPRN_PIR;				\
+>> +	slwi	r14,r14,3;				\
+>> +	LOAD_STACK_BASE(r10, level);			\
+>> +	add	r10,r10,r14;				\
+>> +	ld	r10,0(r10);				\
+>> +	addi	r10,r10,THREAD_SIZE;			\
+>> +	std	r10,PACA_##level##_STACK(r13);
+>> +#else
+>> +#define BOOK3E_LOAD_EXC_LEVEL_STACK(level)		\
+>> +	LOAD_STACK_BASE(r10, level);			\
+>> +	ld	r10,0(r10);				\
+>> +	addi	r10,r10,THREAD_SIZE;			\
+>> +	std	r10,PACA_##level##_STACK(r13);
+>> +#endif
+>
+> It looks like you're loading the stack from *irq_ctx, storing it in
+> PACA_*_stack, and then (immediately after this in the caller) loading it
+> back from PACA_*_STACK.  Why not just load it from *irq_ctx and get rid
+> of PACA_*_STACK altogether -- or change the C code to initialize the
+> addresses in the PACA instead, and get ird of *irq_ctx on 64-bit?
+
+Okay, I'd like to move forward the c code, please see next version.
+
+>
+>>   /* Exception prolog code for all exceptions */
+>>   #define EXCEPTION_PROLOG(n, intnum, type, addition)	    		    \
+>>   	mtspr	SPRN_SPRG_##type##_SCRATCH,r13;	/* get spare registers */   \
+>> @@ -68,20 +99,32 @@
+>>   #define SPRN_GDBELL_SRR1	SPRN_GSRR1
+>>
+>>   #define CRIT_SET_KSTACK						            \
+>> +	andi.	r10,r11,MSR_PR;							\
+>> +	bne	1f;								\
+>> +	BOOK3E_LOAD_EXC_LEVEL_STACK(CRIT);					\
+>>   	ld	r1,PACA_CRIT_STACK(r13);				    \
+>> -	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
+>> +	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
+>
+> The caller will already check MSR_PR and override this if coming from
+> userspace; why do you need to check again here?
+
+Looks this is redundant so this will be left out.
+
+Thanks,
+
+Tiejun
