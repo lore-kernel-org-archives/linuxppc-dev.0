@@ -1,30 +1,16 @@
-Return-Path: <vincent.guittot@linaro.org>
-Received: from mail-ob0-f177.google.com (mail-ob0-f177.google.com
- [209.85.214.177])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D7882C0334
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2013 02:28:29 +1100 (EST)
-Received: by mail-ob0-f177.google.com with SMTP id vb8so932702obc.36
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 08:28:26 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <52679BD6.6090507@linux.vnet.ibm.com>
-References: <20131021114002.13291.31478.stgit@drishya>
- <20131021114442.13291.99344.stgit@drishya>
- <20131022221138.GJ2490@laptop.programming.kicks-ass.net>
- <52679BD6.6090507@linux.vnet.ibm.com>
-Date: Wed, 23 Oct 2013 17:28:26 +0200
-Message-ID: <CAKfTPtAUFdmc7PasebNksYztMwRrWsGWPgN6JJJurddu+UP-hQ@mail.gmail.com>
-Subject: Re: [PATCH 1/3] sched: Fix nohz_kick_needed to consider the nr_busy
- of the parent domain's group
-From: Vincent Guittot <vincent.guittot@linaro.org>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michael Neuling <mikey@neuling.org>, Peter Zijlstra <peterz@infradead.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
- Mike Galbraith <bitbucket@online.de>, Anton Blanchard <anton@samba.org>,
- Paul Turner <pjt@google.com>, Ingo Molnar <mingo@kernel.org>
+Return-Path: <joe@perches.com>
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8] treewide: Remove OOM message after input_alloc_device
+Date: Wed, 23 Oct 2013 12:14:46 -0700
+Message-Id: <cover.1382555436.git.joe@perches.com>
+Cc: cbe-oss-dev@lists.ozlabs.org, devel@driverdev.osuosl.org,
+ alsa-devel@alsa-project.org, linux-samsung-soc@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-iio@vger.kernel.org,
+ acpi4asus-user@lists.sourceforge.net, platform-driver-x86@vger.kernel.org,
+ ibm-acpi-devel@lists.sourceforge.net, linux-input@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-media@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,185 +20,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Preeti
+Joe Perches (8):
+  Documentation: Remove OOM message after input_allocate_device
+  cell: Remove OOM message after input_allocate_device
+  hid: Remove OOM message after input_allocate_device
+  input: Remove OOM message after input_allocate_device
+  media: Remove OOM message after input_allocate_device
+  platform:x86: Remove OOM message after input_allocate_device
+  staging: Remove OOM message after input_allocate_device
+  sound: Remove OOM message after input_allocate_device
 
-On 23 October 2013 11:50, Preeti U Murthy <preeti@linux.vnet.ibm.com> wrote:
-> Hi Peter
->
-> On 10/23/2013 03:41 AM, Peter Zijlstra wrote:
->> This nohz stuff really needs to be re-thought and made more scalable --
->> its a royal pain :/
->
-> Why  not do something like the below instead? It does the following.
->
-> This patch introduces sd_busy just like your suggested patch, except that
-> it points to the parent of the highest level sched domain which has the
-> SD_SHARE_PKG_RESOURCES set and initializes it in update_top_cache_domain().
-> This is the sched domain that is relevant in nohz_kick_needed().
->
-> sd_set_sd_state_busy(), sd_set_sd_state_idle() and nohz_kick_needed() query
-> and update *only* this sched domain(sd_busy) for nr_busy_cpus. They are the
-> only users of this parameter. While we are at it, we might as well change
-> the nohz_idle parameter to be updated at the sd_busy domain level alone and
-> not the base domain level of a CPU. This will unify the concept of busy cpus
-> at just one level of sched domain.
->
-> There is no need to iterate through all levels of sched domains of a cpu to
-> update nr_busy_cpus since it is irrelevant at all other sched domains except
-> at sd_busy level.
->
-> De-couple asymmetric load balancing from the nr_busy parameter which the
-> PATCH 2/3 anyway does. sd_busy therefore is irrelevant for asymmetric load
-> balancing.
->
-> Regards
-> Preeti U Murthy
-> --------------------START_PATCH-------------------------------
->
-> sched: Fix nohz_kick_needed()
->
-> ---
->  kernel/sched/core.c  |    4 ++++
->  kernel/sched/fair.c  |   40 ++++++++++++++++++++++------------------
->  kernel/sched/sched.h |    1 +
->  3 files changed, 27 insertions(+), 18 deletions(-)
->
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index c06b8d3..c1dd11c 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -5271,6 +5271,7 @@ DEFINE_PER_CPU(struct sched_domain *, sd_llc);
->  DEFINE_PER_CPU(int, sd_llc_size);
->  DEFINE_PER_CPU(int, sd_llc_id);
->  DEFINE_PER_CPU(struct sched_domain *, sd_numa);
-> +DEFINE_PER_CPU(struct sched_domain *, sd_busy);
->
->  static void update_top_cache_domain(int cpu)
->  {
-> @@ -5290,6 +5291,9 @@ static void update_top_cache_domain(int cpu)
->
->         sd = lowest_flag_domain(cpu, SD_NUMA);
->         rcu_assign_pointer(per_cpu(sd_numa, cpu), sd);
-> +
-> +       sd = highest_flag_domain(cpu, SD_SHARE_PKG_RESOURCES)->parent;
+ Documentation/input/input-programming.txt     | 1 -
+ arch/powerpc/platforms/cell/cbe_powerbutton.c | 1 -
+ drivers/hid/hid-input.c                       | 1 -
+ drivers/hid/hid-picolcd_core.c                | 5 ++---
+ drivers/input/joystick/as5011.c               | 2 --
+ drivers/input/joystick/db9.c                  | 1 -
+ drivers/input/joystick/gamecon.c              | 4 +---
+ drivers/input/joystick/turbografx.c           | 1 -
+ drivers/input/joystick/walkera0701.c          | 1 -
+ drivers/input/keyboard/amikbd.c               | 4 +---
+ drivers/input/keyboard/davinci_keyscan.c      | 1 -
+ drivers/input/keyboard/gpio_keys.c            | 1 -
+ drivers/input/keyboard/lpc32xx-keys.c         | 1 -
+ drivers/input/keyboard/max7359_keypad.c       | 1 -
+ drivers/input/keyboard/mcs_touchkey.c         | 1 -
+ drivers/input/keyboard/mpr121_touchkey.c      | 1 -
+ drivers/input/keyboard/nomadik-ske-keypad.c   | 1 -
+ drivers/input/keyboard/opencores-kbd.c        | 1 -
+ drivers/input/keyboard/pmic8xxx-keypad.c      | 1 -
+ drivers/input/keyboard/pxa27x_keypad.c        | 1 -
+ drivers/input/keyboard/pxa930_rotary.c        | 1 -
+ drivers/input/keyboard/qt1070.c               | 1 -
+ drivers/input/keyboard/qt2160.c               | 1 -
+ drivers/input/keyboard/sh_keysc.c             | 1 -
+ drivers/input/keyboard/tc3589x-keypad.c       | 1 -
+ drivers/input/keyboard/tnetv107x-keypad.c     | 1 -
+ drivers/input/keyboard/w90p910_keypad.c       | 1 -
+ drivers/input/misc/88pm80x_onkey.c            | 1 -
+ drivers/input/misc/88pm860x_onkey.c           | 1 -
+ drivers/input/misc/arizona-haptics.c          | 4 +---
+ drivers/input/misc/atlas_btns.c               | 4 +---
+ drivers/input/misc/da9052_onkey.c             | 1 -
+ drivers/input/misc/da9055_onkey.c             | 4 +---
+ drivers/input/misc/ideapad_slidebar.c         | 1 -
+ drivers/input/misc/ims-pcu.c                  | 7 +------
+ drivers/input/misc/kxtj9.c                    | 4 +---
+ drivers/input/misc/max8997_haptic.c           | 1 -
+ drivers/input/misc/mc13783-pwrbutton.c        | 4 +---
+ drivers/input/misc/mpu3050.c                  | 1 -
+ drivers/input/misc/pcf8574_keypad.c           | 1 -
+ drivers/input/misc/pm8xxx-vibrator.c          | 1 -
+ drivers/input/misc/pmic8xxx-pwrkey.c          | 1 -
+ drivers/input/misc/pwm-beeper.c               | 1 -
+ drivers/input/misc/twl4030-pwrbutton.c        | 4 +---
+ drivers/input/misc/twl6040-vibra.c            | 1 -
+ drivers/input/mouse/appletouch.c              | 4 +---
+ drivers/input/mouse/bcm5974.c                 | 4 +---
+ drivers/input/mouse/cyapa.c                   | 4 +---
+ drivers/input/mouse/inport.c                  | 1 -
+ drivers/input/mouse/logibm.c                  | 1 -
+ drivers/input/mouse/pc110pad.c                | 1 -
+ drivers/input/mouse/pxa930_trkball.c          | 1 -
+ drivers/input/tablet/aiptek.c                 | 5 +----
+ drivers/input/tablet/gtco.c                   | 1 -
+ drivers/input/touchscreen/88pm860x-ts.c       | 1 -
+ drivers/input/touchscreen/atmel_mxt_ts.c      | 1 -
+ drivers/input/touchscreen/atmel_tsadcc.c      | 1 -
+ drivers/input/touchscreen/bu21013_ts.c        | 1 -
+ drivers/input/touchscreen/cyttsp4_core.c      | 2 --
+ drivers/input/touchscreen/da9034-ts.c         | 1 -
+ drivers/input/touchscreen/edt-ft5x06.c        | 1 -
+ drivers/input/touchscreen/eeti_ts.c           | 5 +----
+ drivers/input/touchscreen/htcpen.c            | 1 -
+ drivers/input/touchscreen/intel-mid-touch.c   | 1 -
+ drivers/input/touchscreen/lpc32xx_ts.c        | 1 -
+ drivers/input/touchscreen/mcs5000_ts.c        | 1 -
+ drivers/input/touchscreen/migor_ts.c          | 1 -
+ drivers/input/touchscreen/mk712.c             | 1 -
+ drivers/input/touchscreen/pixcir_i2c_ts.c     | 1 -
+ drivers/input/touchscreen/s3c2410_ts.c        | 1 -
+ drivers/input/touchscreen/ti_am335x_tsc.c     | 1 -
+ drivers/input/touchscreen/tnetv107x-ts.c      | 1 -
+ drivers/media/rc/imon.c                       | 8 ++------
+ drivers/media/usb/em28xx/em28xx-input.c       | 4 +---
+ drivers/media/usb/pwc/pwc-if.c                | 1 -
+ drivers/platform/x86/asus-laptop.c            | 5 ++---
+ drivers/platform/x86/eeepc-laptop.c           | 4 +---
+ drivers/platform/x86/ideapad-laptop.c         | 4 +---
+ drivers/platform/x86/intel_mid_powerbtn.c     | 4 +---
+ drivers/platform/x86/panasonic-laptop.c       | 5 +----
+ drivers/platform/x86/thinkpad_acpi.c          | 1 -
+ drivers/platform/x86/topstar-laptop.c         | 4 +---
+ drivers/platform/x86/toshiba_acpi.c           | 4 +---
+ drivers/staging/cptm1217/clearpad_tm1217.c    | 2 --
+ drivers/staging/iio/adc/mxs-lradc.c           | 4 +---
+ drivers/staging/ste_rmi4/synaptics_i2c_rmi4.c | 2 --
+ sound/pci/hda/hda_beep.c                      | 4 +---
+ 87 files changed, 29 insertions(+), 152 deletions(-)
 
-highest_flag_domain can return null pointer
-
-> +       rcu_assign_pointer(per_cpu(sd_busy, cpu), sd);
->  }
->
->  /*
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 813dd61..71e6f14 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -6515,16 +6515,16 @@ static inline void nohz_balance_exit_idle(int cpu)
->  static inline void set_cpu_sd_state_busy(void)
->  {
->         struct sched_domain *sd;
-> +       int cpu = smp_processor_id();
->
->         rcu_read_lock();
-> -       sd = rcu_dereference_check_sched_domain(this_rq()->sd);
-> +       sd = per_cpu(sd_busy, cpu);
-
-Don't you need to use rcu_dereference when using sd_busy ?
-
->
->         if (!sd || !sd->nohz_idle)
->                 goto unlock;
->         sd->nohz_idle = 0;
->
-> -       for (; sd; sd = sd->parent)
-> -               atomic_inc(&sd->groups->sgp->nr_busy_cpus);
-> +       atomic_inc(&sd->groups->sgp->nr_busy_cpus);
->  unlock:
->         rcu_read_unlock();
->  }
-> @@ -6532,16 +6532,16 @@ unlock:
->  void set_cpu_sd_state_idle(void)
->  {
->         struct sched_domain *sd;
-> +       int cpu = smp_processor_id();
->
->         rcu_read_lock();
-> -       sd = rcu_dereference_check_sched_domain(this_rq()->sd);
-> +       sd = per_cpu(sd_busy, cpu);
->
->         if (!sd || sd->nohz_idle)
->                 goto unlock;
->         sd->nohz_idle = 1;
->
-> -       for (; sd; sd = sd->parent)
-> -               atomic_dec(&sd->groups->sgp->nr_busy_cpus);
-> +       atomic_dec(&sd->groups->sgp->nr_busy_cpus);
->  unlock:
->         rcu_read_unlock();
->  }
-> @@ -6748,6 +6748,9 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
->  {
->         unsigned long now = jiffies;
->         struct sched_domain *sd;
-> +       struct sched_group *sg;
-> +       struct sched_group_power *sgp;
-> +       int nr_busy;
->
->         if (unlikely(idle_cpu(cpu)))
->                 return 0;
-> @@ -6773,22 +6776,23 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
->                 goto need_kick;
->
->         rcu_read_lock();
-> -       for_each_domain(cpu, sd) {
-> -               struct sched_group *sg = sd->groups;
-> -               struct sched_group_power *sgp = sg->sgp;
-> -               int nr_busy = atomic_read(&sgp->nr_busy_cpus);
-> +       sd = per_cpu(sd_busy, cpu);
->
-> -               if (sd->flags & SD_SHARE_PKG_RESOURCES && nr_busy > 1)
-> -                       goto need_kick_unlock;
-> +       if (sd) {
-> +               sg = sd->groups;
-
-sg is not needed anymore
-
-> +               sgp = sg->sgp;
-> +               nr_busy = atomic_read(&sgp->nr_busy_cpus);
->
-> -               if (sd->flags & SD_ASYM_PACKING && nr_busy != sg->group_weight
-> -                   && (cpumask_first_and(nohz.idle_cpus_mask,
-> -                                         sched_domain_span(sd)) < cpu))
-> +               if (nr_busy > 1)
->                         goto need_kick_unlock;
-> -
-> -               if (!(sd->flags & (SD_SHARE_PKG_RESOURCES | SD_ASYM_PACKING)))
-> -                       break;
->         }
-> +
-> +       sd = highest_flag_domain(cpu, SD_ASYM_PACKING);
-> +
-> +       if (sd && (cpumask_first_and(nohz.idle_cpus_mask,
-> +                                 sched_domain_span(sd)) < cpu))
-> +               goto need_kick_unlock;
-> +
->         rcu_read_unlock();
->         return 0;
->
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index ffc7087..0f1253f 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -623,6 +623,7 @@ DECLARE_PER_CPU(struct sched_domain *, sd_llc);
->  DECLARE_PER_CPU(int, sd_llc_size);
->  DECLARE_PER_CPU(int, sd_llc_id);
->  DECLARE_PER_CPU(struct sched_domain *, sd_numa);
-> +DECLARE_PER_CPU(struct sched_domain *, sd_busy);
->
->  struct sched_group_power {
->         atomic_t ref;
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+1.8.1.2.459.gbcd45b4.dirty
