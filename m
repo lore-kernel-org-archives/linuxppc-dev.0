@@ -2,19 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BE9EE2C00E9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 16:08:04 +1100 (EST)
-Subject: Re: [PATCH] [RFC] Emulate "lwsync" to run standard user land on e500
- cores
+ by ozlabs.org (Postfix) with ESMTPS id 303C42C012E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 16:29:39 +1100 (EST)
+Subject: Re: Missing _restvr_20 and _savevr_20 subroutines for
+ lib/raid6/altivec8.o
 Mime-Version: 1.0 (Apple Message framework v1283)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1382081880-6666-1-git-send-email-wd@denx.de>
-Date: Wed, 23 Oct 2013 00:07:48 -0500
-Message-Id: <39CCEB38-1D9B-4918-B8F4-148D4E90FE21@kernel.crashing.org>
-References: <1382081880-6666-1-git-send-email-wd@denx.de>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1382221463.2794.87.camel@deadeye.wl.decadent.org.uk>
+Date: Wed, 23 Oct 2013 00:28:32 -0500
+Message-Id: <9A520C29-492E-4FFF-9A0C-190182428FBE@kernel.crashing.org>
+References: <1382221463.2794.87.camel@deadeye.wl.decadent.org.uk>
+To: Ben Hutchings <ben@decadent.org.uk>
+Cc: debian-powerpc@lists.debian.org,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>,
+ Debian kernel maintainers <debian-kernel@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +28,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 18, 2013, at 2:38 AM, Wolfgang Denk wrote:
+On Oct 19, 2013, at 5:24 PM, Ben Hutchings wrote:
 
-> Default Debian PowerPC doesn't work on e500 because the code contains
-> "lwsync" instructions, which are unsupported on this core.  As a
-> result, applications using this will crash with an "unhandled signal =
-4"
-> "Illegal instruction" error.
+> When building lib/raid6/altivec8.o with gcc 4.8 on Debian, the =
+compiler
+> is generating references to two new runtime subroutines which are
+> apparently not included in the kernel:
 >=20
-> As a work around we add code to emulate this insn.  This is expensive
-> performance-wise, but allows to run standard user land code.
+> ERROR: "_restvr_20" [lib/raid6/raid6_pq.ko] undefined!
+> ERROR: "_savevr_20" [lib/raid6/raid6_pq.ko] undefined!
 >=20
-> Signed-off-by: Wolfgang Denk <wd@denx.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Scott Wood <scottwood@freescale.com>
-> ---
-> I am aware that the clean solution to the problem is to build user
-> space with compiler options that match the target architecture.
-> However, sometimes this is just too much effort.
+> The save/restore subroutines are specified in
+> =
+http://refspecs.linuxfoundation.org/ELF/ppc64/PPC-elf64abi-1.7.1.html#SAVE=
+-RESTORE
+> and we do have the _restgpr_* and _savegpr_* subroutines in
+> arch/powerpc/boot/crtsavres.S.  I'm not sure whether these subroutines
+> should be added or whether this indicates the compiler is doing
+> something wrong.
 >=20
-> Also, of course the performance of such an emulation sucks. But the
-> the occurrence of such instructions is so rare that no significant
-> slowdown can be oserved.
+> A configuration that triggers this is included below.
 >=20
-> I'm not sure if this should / could go into mainline.  I'm posting it
-> primarily so it can be found should anybody else need this.
-> - wd
->=20
-> arch/powerpc/kernel/traps.c | 7 +++++++
-> 1 file changed, 7 insertions(+)
->=20
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index f783c93..f330374 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -986,6 +986,13 @@ static int emulate_instruction(struct pt_regs =
-*regs)
-> 		return 0;
-> 	}
->=20
-> +	/* Emulating the lwsync insn as a sync insn */
-> +	if (instword =3D=3D PPC_INST_LWSYNC) {
-> +		PPC_WARN_EMULATED(lwsync, regs);
-> +		asm volatile("sync" : : : "memory");
+> Ben.
 
-Do we really need the inline asm?  Doesn't the fact of just taking an =
-exception and returning from it equate to a sync.
+Try with CONFIG_CC_OPTIMIZE_FOR_SIZE=3Dn.  A feature was added to gcc =
+for -Os to "outline" the save/restore routines.  I'm surprised this =
+hasn't shown up sooner.
 
-> +		return 0;
-> +	}
-> +
-> 	/* Emulate the mcrxr insn.  */
-> 	if ((instword & PPC_INST_MCRXR_MASK) =3D=3D PPC_INST_MCRXR) {
-> 		int shift =3D (instword >> 21) & 0x1c;
-> --=20
-> 1.8.3.1
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Well need to add _restvr_* / _savevr_* to the version in =
+lib/crtsaveres.S.
+
+=
+http://gcc.gnu.org/git/?p=3Dgcc.git;a=3Dblob_plain;f=3Dlibgcc/config/rs600=
+0/crtrestvr.S;hb=3DHEAD
+=
+http://gcc.gnu.org/git/?p=3Dgcc.git;a=3Dblob_plain;f=3Dlibgcc/config/rs600=
+0/crtsavevr.S;hb=3DHEAD
+
+- k=
