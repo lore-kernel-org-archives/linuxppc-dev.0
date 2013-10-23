@@ -1,23 +1,26 @@
-Return-Path: <B31939@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1FC9F2C04FB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 21:42:21 +1100 (EST)
-From: Minghuan Lian <Minghuan.Lian@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 12/12][v3] pci: fsl: fix function check_pci_ctl_endpt_part
-Date: Wed, 23 Oct 2013 18:41:34 +0800
-Message-ID: <1382524894-15164-12-git-send-email-Minghuan.Lian@freescale.com>
-In-Reply-To: <1382524894-15164-1-git-send-email-Minghuan.Lian@freescale.com>
-References: <1382524894-15164-1-git-send-email-Minghuan.Lian@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linux-pci@vger.kernel.org,
- Zang Roy-R61911 <r61911@freescale.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Scott Wood <scottwood@freescale.com>
+Return-Path: <ben@decadent.org.uk>
+Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
+ [88.96.1.126])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 779BE2C016A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 21:55:04 +1100 (EST)
+Message-ID: <1382525674.6315.9.camel@deadeye.wl.decadent.org.uk>
+Subject: Re: Missing _restvr_20 and _savevr_20 subroutines for
+ lib/raid6/altivec8.o
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Kumar Gala <galak@kernel.crashing.org>
+Date: Wed, 23 Oct 2013 11:54:34 +0100
+In-Reply-To: <9A520C29-492E-4FFF-9A0C-190182428FBE@kernel.crashing.org>
+References: <1382221463.2794.87.camel@deadeye.wl.decadent.org.uk>
+ <9A520C29-492E-4FFF-9A0C-190182428FBE@kernel.crashing.org>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-znsxcqGFYzcF7m20KbIr"
+Mime-Version: 1.0
+Cc: debian-powerpc@lists.debian.org,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>,
+ Debian kernel maintainers <debian-kernel@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,77 +30,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The new FSL PCI driver does not use cfg_addr of pci_controller,
-we may directly access PCI CCSR using fsl_pci->regs.
 
-Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
----
-change log:
-v1-v3:
-The new patch to fix function check_pci_ctl_endpt_part
+--=-znsxcqGFYzcF7m20KbIr
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Based on upstream master.
-Based on the discussion of RFC version here
-http://patchwork.ozlabs.org/patch/274487/
+On Wed, 2013-10-23 at 00:28 -0500, Kumar Gala wrote:
+> On Oct 19, 2013, at 5:24 PM, Ben Hutchings wrote:
+>=20
+> > When building lib/raid6/altivec8.o with gcc 4.8 on Debian, the compiler
+> > is generating references to two new runtime subroutines which are
+> > apparently not included in the kernel:
+> >=20
+> > ERROR: "_restvr_20" [lib/raid6/raid6_pq.ko] undefined!
+> > ERROR: "_savevr_20" [lib/raid6/raid6_pq.ko] undefined!
+> >=20
+> > The save/restore subroutines are specified in
+> > http://refspecs.linuxfoundation.org/ELF/ppc64/PPC-elf64abi-1.7.1.html#S=
+AVE-RESTORE
+> > and we do have the _restgpr_* and _savegpr_* subroutines in
+> > arch/powerpc/boot/crtsavres.S.  I'm not sure whether these subroutines
+> > should be added or whether this indicates the compiler is doing
+> > something wrong.
+> >=20
+> > A configuration that triggers this is included below.
+> >=20
+> > Ben.
+>=20
+> Try with CONFIG_CC_OPTIMIZE_FOR_SIZE=3Dn.  A feature was added to gcc
+> for -Os to "outline" the save/restore routines.  I'm surprised this
+> hasn't shown up sooner.
 
- arch/powerpc/sysdev/fsl_pci.h   | 5 -----
- drivers/iommu/fsl_pamu_domain.c | 6 ++++--
- include/linux/fsl/pci-common.h  | 1 +
- 3 files changed, 5 insertions(+), 7 deletions(-)
+That does avoid the problem, thanks.
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index ae4dbe2..3176eb2 100644
---- a/arch/powerpc/sysdev/fsl_pci.h
-+++ b/arch/powerpc/sysdev/fsl_pci.h
-@@ -16,11 +16,6 @@
- 
- struct platform_device;
- 
--
--/* FSL PCI controller BRR1 register */
--#define PCI_FSL_BRR1      0xbf8
--#define PCI_FSL_BRR1_VER 0xffff
--
- extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
- extern int mpc83xx_add_bridge(struct device_node *dev);
- u64 fsl_pci_immrbar_base(struct pci_controller *hose);
-diff --git a/drivers/iommu/fsl_pamu_domain.c b/drivers/iommu/fsl_pamu_domain.c
-index c857c30..dd7bc25 100644
---- a/drivers/iommu/fsl_pamu_domain.c
-+++ b/drivers/iommu/fsl_pamu_domain.c
-@@ -36,6 +36,7 @@
- 
- #include <asm/pci-bridge.h>
- #include <sysdev/fsl_pci.h>
-+#include <linux/fsl/pci-common.h>
- 
- #include "fsl_pamu_domain.h"
- #include "pci.h"
-@@ -908,10 +909,11 @@ static struct iommu_group *get_device_iommu_group(struct device *dev)
- static  bool check_pci_ctl_endpt_part(struct pci_controller *pci_ctl)
- {
- 	u32 version;
-+	struct fsl_pci *pci = fsl_arch_sys_to_pci(pci_ctl);
- 
- 	/* Check the PCI controller version number by readding BRR1 register */
--	version = in_be32(pci_ctl->cfg_addr + (PCI_FSL_BRR1 >> 2));
--	version &= PCI_FSL_BRR1_VER;
-+	version = in_be32(&pci->regs->block_rev1);
-+	version &= PCIE_IP_REV_MASK;
- 	/* If PCI controller version is >= 0x204 we can partition endpoints*/
- 	if (version >= 0x204)
- 		return 1;
-diff --git a/include/linux/fsl/pci-common.h b/include/linux/fsl/pci-common.h
-index 84b0801..6112adf 100644
---- a/include/linux/fsl/pci-common.h
-+++ b/include/linux/fsl/pci-common.h
-@@ -18,6 +18,7 @@
- #define PCIE_LTSSM_L0	0x16		/* L0 state */
- #define PCIE_IP_REV_2_2		0x02080202 /* PCIE IP block version Rev2.2 */
- #define PCIE_IP_REV_3_0		0x02080300 /* PCIE IP block version Rev3.0 */
-+#define PCIE_IP_REV_MASK	0xffff
- #define PIWAR_EN		0x80000000	/* Enable */
- #define PIWAR_PF		0x20000000	/* prefetch */
- #define PIWAR_TGI_LOCAL		0x00f00000	/* target - local memory */
--- 
-1.8.1.2
+Ben.
+
+> Well need to add _restvr_* / _savevr_* to the version in lib/crtsaveres.S=
+.
+>=20
+> http://gcc.gnu.org/git/?p=3Dgcc.git;a=3Dblob_plain;f=3Dlibgcc/config/rs60=
+00/crtrestvr.S;hb=3DHEAD
+> http://gcc.gnu.org/git/?p=3Dgcc.git;a=3Dblob_plain;f=3Dlibgcc/config/rs60=
+00/crtsavevr.S;hb=3DHEAD
+>=20
+> - k
+
+--=20
+Ben Hutchings
+friends: People who know you well, but like you anyway.
+
+--=-znsxcqGFYzcF7m20KbIr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+
+iQIVAwUAUmeq6ue/yOyVhhEJAQrI4xAArNS6hShPyYFVZTqxEWkZo+s7Fxn89Kmu
+hwaSB0rrN5j4y+5l/uUV6YLn7a/Ex/wVhJXcCyDqFPonogI6GTDCad0kYLdMPEJJ
+xSA6vHV9xtMwp1bj+RELokbUdXko05jcI2g2YLNK90Kr0lUAHAqkkoJLJLw8DGu1
+t5S6xeWO2uGTikut20qePQrA74gOnK0AEVI4Os1cJH7CvKb+2+lK0FcgzOrzzPum
+1QbPGBhVV/y98IfWaIJHmkdL18uWAj0yV9W2E5X5fUaf26uQKjygQt26TSKEj1zl
+L3Il8s7BUHPV0ubkeu19V7ZAoL6+bqXqtENN4MABu9Zpa0WG4UTkRgF95zT/G6cZ
+uVNcnx/UZeb+LSKzu//fFtDwgBwWWcoaNar/vA5i09kpJay8SWo0PwsuOkrVgroN
+rbN759v4/T19zVcODfm4gOmwtZrMUrQosI/pc4mp7QZyAB7ddq7bpUOvZe5hf9F7
+ApJ6Be3M9Y/KJlPH3xvfLmLvU6E1luU5JT/agNHhIj2qbhzZqb5R4OzsDHbk19up
+276QOOt3PD1NsZdJXxq+z7PUJcv1o0tpwucj7AAB4JLhOWwVUv6aMZinZgXO0kuD
+QLgMQCsV2iy95RzaGlR1R0tUx4WDnEEB7hGNAzW93ZZC4onUcWO89J3ztwqEVQju
+enixvE6oALk=
+=EwJF
+-----END PGP SIGNATURE-----
+
+--=-znsxcqGFYzcF7m20KbIr--
