@@ -1,20 +1,30 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 0E2472C0331
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Oct 2013 02:07:46 +1100 (EST)
-References: <20131023084002.GA8325@iris.ozlabs.ibm.com>
- <20131023102045.GA23685@SnaresPenguin>
-In-Reply-To: <20131023102045.GA23685@SnaresPenguin>
-Mime-Version: 1.0 (1.0)
-Content-Type: text/plain;
-	charset=us-ascii
-Message-Id: <0309F92A-B914-47E4-B467-41F9188700D9@suse.de>
-From: Alexander Graf <agraf@suse.de>
-Subject: Re: powerpc: Don't corrupt user registers on 32-bit
-Date: Wed, 23 Oct 2013 16:07:38 +0100
-To: Scott Wood <scottwood@freescale.com>
-Cc: Paul Mackerras <paulus@samba.org>,
- "<linuxppc-dev@ozlabs.org>" <linuxppc-dev@ozlabs.org>
+Return-Path: <vincent.guittot@linaro.org>
+Received: from mail-ob0-f177.google.com (mail-ob0-f177.google.com
+ [209.85.214.177])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0D7882C0334
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2013 02:28:29 +1100 (EST)
+Received: by mail-ob0-f177.google.com with SMTP id vb8so932702obc.36
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 08:28:26 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <52679BD6.6090507@linux.vnet.ibm.com>
+References: <20131021114002.13291.31478.stgit@drishya>
+ <20131021114442.13291.99344.stgit@drishya>
+ <20131022221138.GJ2490@laptop.programming.kicks-ass.net>
+ <52679BD6.6090507@linux.vnet.ibm.com>
+Date: Wed, 23 Oct 2013 17:28:26 +0200
+Message-ID: <CAKfTPtAUFdmc7PasebNksYztMwRrWsGWPgN6JJJurddu+UP-hQ@mail.gmail.com>
+Subject: Re: [PATCH 1/3] sched: Fix nohz_kick_needed to consider the nr_busy
+ of the parent domain's group
+From: Vincent Guittot <vincent.guittot@linaro.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Michael Neuling <mikey@neuling.org>, Peter Zijlstra <peterz@infradead.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
+ Mike Galbraith <bitbucket@online.de>, Anton Blanchard <anton@samba.org>,
+ Paul Turner <pjt@google.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +34,185 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Preeti
 
+On 23 October 2013 11:50, Preeti U Murthy <preeti@linux.vnet.ibm.com> wrote:
+> Hi Peter
+>
+> On 10/23/2013 03:41 AM, Peter Zijlstra wrote:
+>> This nohz stuff really needs to be re-thought and made more scalable --
+>> its a royal pain :/
+>
+> Why  not do something like the below instead? It does the following.
+>
+> This patch introduces sd_busy just like your suggested patch, except that
+> it points to the parent of the highest level sched domain which has the
+> SD_SHARE_PKG_RESOURCES set and initializes it in update_top_cache_domain().
+> This is the sched domain that is relevant in nohz_kick_needed().
+>
+> sd_set_sd_state_busy(), sd_set_sd_state_idle() and nohz_kick_needed() query
+> and update *only* this sched domain(sd_busy) for nr_busy_cpus. They are the
+> only users of this parameter. While we are at it, we might as well change
+> the nohz_idle parameter to be updated at the sd_busy domain level alone and
+> not the base domain level of a CPU. This will unify the concept of busy cpus
+> at just one level of sched domain.
+>
+> There is no need to iterate through all levels of sched domains of a cpu to
+> update nr_busy_cpus since it is irrelevant at all other sched domains except
+> at sd_busy level.
+>
+> De-couple asymmetric load balancing from the nr_busy parameter which the
+> PATCH 2/3 anyway does. sd_busy therefore is irrelevant for asymmetric load
+> balancing.
+>
+> Regards
+> Preeti U Murthy
+> --------------------START_PATCH-------------------------------
+>
+> sched: Fix nohz_kick_needed()
+>
+> ---
+>  kernel/sched/core.c  |    4 ++++
+>  kernel/sched/fair.c  |   40 ++++++++++++++++++++++------------------
+>  kernel/sched/sched.h |    1 +
+>  3 files changed, 27 insertions(+), 18 deletions(-)
+>
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index c06b8d3..c1dd11c 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -5271,6 +5271,7 @@ DEFINE_PER_CPU(struct sched_domain *, sd_llc);
+>  DEFINE_PER_CPU(int, sd_llc_size);
+>  DEFINE_PER_CPU(int, sd_llc_id);
+>  DEFINE_PER_CPU(struct sched_domain *, sd_numa);
+> +DEFINE_PER_CPU(struct sched_domain *, sd_busy);
+>
+>  static void update_top_cache_domain(int cpu)
+>  {
+> @@ -5290,6 +5291,9 @@ static void update_top_cache_domain(int cpu)
+>
+>         sd = lowest_flag_domain(cpu, SD_NUMA);
+>         rcu_assign_pointer(per_cpu(sd_numa, cpu), sd);
+> +
+> +       sd = highest_flag_domain(cpu, SD_SHARE_PKG_RESOURCES)->parent;
 
-Am 23.10.2013 um 11:20 schrieb Scott Wood <scottwood@freescale.com>:
+highest_flag_domain can return null pointer
 
-> On Wed, Oct 23, 2013 at 09:40:02AM +0100, Paul Mackerras wrote:
->> Commit de79f7b9f6 ("powerpc: Put FP/VSX and VR state into structures")
->> modified load_up_fpu() and load_up_altivec() in such a way that they
->> now use r7 and r8.  Unfortunately, the callers of these functions on
->> 32-bit machines then return to userspace via fast_exception_return,
->> which doesn't restore all of the volatile GPRs, but only r1, r3 -- r6
->> and r9 -- r12.  This was causing userspace segfaults and other
->> userspace misbehaviour on 32-bit machines.
->> 
->> This fixes the problem by changing the register usage of load_up_fpu()
->> and load_up_altivec() to avoid using r7 and r8 and instead use r6 and
->> r10.  This also adds comments to those functions saying which registers
->> may be used.
->> 
->> Signed-off-by: Paul Mackerras <paulus@samba.org>
->> 
->> ---
->> arch/powerpc/kernel/fpu.S    | 14 ++++++++------
->> arch/powerpc/kernel/vector.S | 15 +++++++++------
->> 2 files changed, 17 insertions(+), 12 deletions(-)
-> 
-> Tested-by: Scott Wood <scottwood@freescale.com> (on e500mc, so no altivec)
+> +       rcu_assign_pointer(per_cpu(sd_busy, cpu), sd);
+>  }
+>
+>  /*
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 813dd61..71e6f14 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -6515,16 +6515,16 @@ static inline void nohz_balance_exit_idle(int cpu)
+>  static inline void set_cpu_sd_state_busy(void)
+>  {
+>         struct sched_domain *sd;
+> +       int cpu = smp_processor_id();
+>
+>         rcu_read_lock();
+> -       sd = rcu_dereference_check_sched_domain(this_rq()->sd);
+> +       sd = per_cpu(sd_busy, cpu);
 
-Tested-by: Alexander Graf <agraf@suse.de> (on a G4 iBook and 970)
+Don't you need to use rcu_dereference when using sd_busy ?
 
-> 
-> -Scott
-> 
+>
+>         if (!sd || !sd->nohz_idle)
+>                 goto unlock;
+>         sd->nohz_idle = 0;
+>
+> -       for (; sd; sd = sd->parent)
+> -               atomic_inc(&sd->groups->sgp->nr_busy_cpus);
+> +       atomic_inc(&sd->groups->sgp->nr_busy_cpus);
+>  unlock:
+>         rcu_read_unlock();
+>  }
+> @@ -6532,16 +6532,16 @@ unlock:
+>  void set_cpu_sd_state_idle(void)
+>  {
+>         struct sched_domain *sd;
+> +       int cpu = smp_processor_id();
+>
+>         rcu_read_lock();
+> -       sd = rcu_dereference_check_sched_domain(this_rq()->sd);
+> +       sd = per_cpu(sd_busy, cpu);
+>
+>         if (!sd || sd->nohz_idle)
+>                 goto unlock;
+>         sd->nohz_idle = 1;
+>
+> -       for (; sd; sd = sd->parent)
+> -               atomic_dec(&sd->groups->sgp->nr_busy_cpus);
+> +       atomic_dec(&sd->groups->sgp->nr_busy_cpus);
+>  unlock:
+>         rcu_read_unlock();
+>  }
+> @@ -6748,6 +6748,9 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
+>  {
+>         unsigned long now = jiffies;
+>         struct sched_domain *sd;
+> +       struct sched_group *sg;
+> +       struct sched_group_power *sgp;
+> +       int nr_busy;
+>
+>         if (unlikely(idle_cpu(cpu)))
+>                 return 0;
+> @@ -6773,22 +6776,23 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
+>                 goto need_kick;
+>
+>         rcu_read_lock();
+> -       for_each_domain(cpu, sd) {
+> -               struct sched_group *sg = sd->groups;
+> -               struct sched_group_power *sgp = sg->sgp;
+> -               int nr_busy = atomic_read(&sgp->nr_busy_cpus);
+> +       sd = per_cpu(sd_busy, cpu);
+>
+> -               if (sd->flags & SD_SHARE_PKG_RESOURCES && nr_busy > 1)
+> -                       goto need_kick_unlock;
+> +       if (sd) {
+> +               sg = sd->groups;
+
+sg is not needed anymore
+
+> +               sgp = sg->sgp;
+> +               nr_busy = atomic_read(&sgp->nr_busy_cpus);
+>
+> -               if (sd->flags & SD_ASYM_PACKING && nr_busy != sg->group_weight
+> -                   && (cpumask_first_and(nohz.idle_cpus_mask,
+> -                                         sched_domain_span(sd)) < cpu))
+> +               if (nr_busy > 1)
+>                         goto need_kick_unlock;
+> -
+> -               if (!(sd->flags & (SD_SHARE_PKG_RESOURCES | SD_ASYM_PACKING)))
+> -                       break;
+>         }
+> +
+> +       sd = highest_flag_domain(cpu, SD_ASYM_PACKING);
+> +
+> +       if (sd && (cpumask_first_and(nohz.idle_cpus_mask,
+> +                                 sched_domain_span(sd)) < cpu))
+> +               goto need_kick_unlock;
+> +
+>         rcu_read_unlock();
+>         return 0;
+>
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index ffc7087..0f1253f 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -623,6 +623,7 @@ DECLARE_PER_CPU(struct sched_domain *, sd_llc);
+>  DECLARE_PER_CPU(int, sd_llc_size);
+>  DECLARE_PER_CPU(int, sd_llc_id);
+>  DECLARE_PER_CPU(struct sched_domain *, sd_numa);
+> +DECLARE_PER_CPU(struct sched_domain *, sd_busy);
+>
+>  struct sched_group_power {
+>         atomic_t ref;
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
