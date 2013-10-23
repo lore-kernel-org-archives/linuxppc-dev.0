@@ -1,26 +1,25 @@
-Return-Path: <ben@decadent.org.uk>
-Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
- [88.96.1.126])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 779BE2C016A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 21:55:04 +1100 (EST)
-Message-ID: <1382525674.6315.9.camel@deadeye.wl.decadent.org.uk>
-Subject: Re: Missing _restvr_20 and _savevr_20 subroutines for
- lib/raid6/altivec8.o
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed, 23 Oct 2013 11:54:34 +0100
-In-Reply-To: <9A520C29-492E-4FFF-9A0C-190182428FBE@kernel.crashing.org>
-References: <1382221463.2794.87.camel@deadeye.wl.decadent.org.uk>
- <9A520C29-492E-4FFF-9A0C-190182428FBE@kernel.crashing.org>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-znsxcqGFYzcF7m20KbIr"
-Mime-Version: 1.0
-Cc: debian-powerpc@lists.debian.org,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>,
- Debian kernel maintainers <debian-kernel@lists.debian.org>
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-wg0-x231.google.com (mail-wg0-x231.google.com
+ [IPv6:2a00:1450:400c:c00::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6F3452C0335
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Oct 2013 01:19:58 +1100 (EST)
+Received: by mail-wg0-f49.google.com with SMTP id x12so871424wgg.28
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Oct 2013 07:19:52 -0700 (PDT)
+Date: Wed, 23 Oct 2013 15:19:51 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Michael Neuling <mikey@neuling.org>, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+Message-ID: <20131023141948.GB3566@localhost.localdomain>
+References: <12083.1382486094@ale.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <12083.1382486094@ale.ozlabs.ibm.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ linux-kernel@vger.kernel.org, Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ anton@samba.org, Victor Kaplansky <VICTORK@il.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,75 +29,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Oct 23, 2013 at 10:54:54AM +1100, Michael Neuling wrote:
+> Frederic,
+> 
+> In the perf ring buffer code we have this in perf_output_get_handle():
+> 
+> 	if (!local_dec_and_test(&rb->nest))
+> 		goto out;
+> 
+> 	/*
+> 	 * Publish the known good head. Rely on the full barrier implied
+> 	 * by atomic_dec_and_test() order the rb->head read and this
+> 	 * write.
+> 	 */
+> 	rb->user_page->data_head = head;
+> 
+> The comment says atomic_dec_and_test() but the code is
+> local_dec_and_test().
+> 
+> On powerpc, local_dec_and_test() doesn't have a memory barrier but
+> atomic_dec_and_test() does.  Is the comment wrong, or is
+> local_dec_and_test() suppose to imply a memory barrier too and we have
+> it wrongly implemented in powerpc?
+> 
+> My guess is that local_dec_and_test() is correct but we to add an
+> explicit memory barrier like below:
+> 
+> (Kudos to Victor Kaplansky for finding this)
+> 
+> Mikey
+> 
+> diff --git a/kernel/events/ring_buffer.c b/kernel/events/ring_buffer.c
+> index cd55144..95768c6 100644
+> --- a/kernel/events/ring_buffer.c
+> +++ b/kernel/events/ring_buffer.c
+> @@ -87,10 +87,10 @@ again:
+>  		goto out;
+>  
+>  	/*
+> -	 * Publish the known good head. Rely on the full barrier implied
+> -	 * by atomic_dec_and_test() order the rb->head read and this
+> -	 * write.
+> +	 * Publish the known good head. We need a memory barrier to order the
+> +	 * order the rb->head read and this write.
+>  	 */
+> +	smp_mb ();
+>  	rb->user_page->data_head = head;
+>  
+>  	/*
 
---=-znsxcqGFYzcF7m20KbIr
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2013-10-23 at 00:28 -0500, Kumar Gala wrote:
-> On Oct 19, 2013, at 5:24 PM, Ben Hutchings wrote:
->=20
-> > When building lib/raid6/altivec8.o with gcc 4.8 on Debian, the compiler
-> > is generating references to two new runtime subroutines which are
-> > apparently not included in the kernel:
-> >=20
-> > ERROR: "_restvr_20" [lib/raid6/raid6_pq.ko] undefined!
-> > ERROR: "_savevr_20" [lib/raid6/raid6_pq.ko] undefined!
-> >=20
-> > The save/restore subroutines are specified in
-> > http://refspecs.linuxfoundation.org/ELF/ppc64/PPC-elf64abi-1.7.1.html#S=
-AVE-RESTORE
-> > and we do have the _restgpr_* and _savegpr_* subroutines in
-> > arch/powerpc/boot/crtsavres.S.  I'm not sure whether these subroutines
-> > should be added or whether this indicates the compiler is doing
-> > something wrong.
-> >=20
-> > A configuration that triggers this is included below.
-> >=20
-> > Ben.
->=20
-> Try with CONFIG_CC_OPTIMIZE_FOR_SIZE=3Dn.  A feature was added to gcc
-> for -Os to "outline" the save/restore routines.  I'm surprised this
-> hasn't shown up sooner.
+I'm adding Peter in Cc since he wrote that code.
+I agree that local_dec_and_test() doesn't need to imply an smp barrier.
+All it has to provide as a guarantee is the atomicity against local concurrent
+operations (interrupts, preemption, ...).
 
-That does avoid the problem, thanks.
+Now I'm a bit confused about this barrier.
 
-Ben.
+I think we want this ordering:
 
-> Well need to add _restvr_* / _savevr_* to the version in lib/crtsaveres.S=
-.
->=20
-> http://gcc.gnu.org/git/?p=3Dgcc.git;a=3Dblob_plain;f=3Dlibgcc/config/rs60=
-00/crtrestvr.S;hb=3DHEAD
-> http://gcc.gnu.org/git/?p=3Dgcc.git;a=3Dblob_plain;f=3Dlibgcc/config/rs60=
-00/crtsavevr.S;hb=3DHEAD
->=20
-> - k
+    Kernel                             User
 
---=20
-Ben Hutchings
-friends: People who know you well, but like you anyway.
+   READ rb->user_page->data_tail       READ rb->user_page->data_head
+   smp_mb()                            smp_mb()
+   WRITE rb data                       READ rb  data
+   smp_mb()                            smp_mb()
+   rb->user_page->data_head            WRITE rb->user_page->data_tail
 
---=-znsxcqGFYzcF7m20KbIr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+So yeah we want a berrier between the data published and the user data_head.
+But this ordering concerns wider layout than just rb->head and rb->user_page->data_head
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-
-iQIVAwUAUmeq6ue/yOyVhhEJAQrI4xAArNS6hShPyYFVZTqxEWkZo+s7Fxn89Kmu
-hwaSB0rrN5j4y+5l/uUV6YLn7a/Ex/wVhJXcCyDqFPonogI6GTDCad0kYLdMPEJJ
-xSA6vHV9xtMwp1bj+RELokbUdXko05jcI2g2YLNK90Kr0lUAHAqkkoJLJLw8DGu1
-t5S6xeWO2uGTikut20qePQrA74gOnK0AEVI4Os1cJH7CvKb+2+lK0FcgzOrzzPum
-1QbPGBhVV/y98IfWaIJHmkdL18uWAj0yV9W2E5X5fUaf26uQKjygQt26TSKEj1zl
-L3Il8s7BUHPV0ubkeu19V7ZAoL6+bqXqtENN4MABu9Zpa0WG4UTkRgF95zT/G6cZ
-uVNcnx/UZeb+LSKzu//fFtDwgBwWWcoaNar/vA5i09kpJay8SWo0PwsuOkrVgroN
-rbN759v4/T19zVcODfm4gOmwtZrMUrQosI/pc4mp7QZyAB7ddq7bpUOvZe5hf9F7
-ApJ6Be3M9Y/KJlPH3xvfLmLvU6E1luU5JT/agNHhIj2qbhzZqb5R4OzsDHbk19up
-276QOOt3PD1NsZdJXxq+z7PUJcv1o0tpwucj7AAB4JLhOWwVUv6aMZinZgXO0kuD
-QLgMQCsV2iy95RzaGlR1R0tUx4WDnEEB7hGNAzW93ZZC4onUcWO89J3ztwqEVQju
-enixvE6oALk=
-=EwJF
------END PGP SIGNATURE-----
-
---=-znsxcqGFYzcF7m20KbIr--
+And BTW I can see an smp_rmb() after we read rb->user_page->data_tail. This is probably the
+first kernel barrier in my above example. (not sure if rmb() alone is enough though).
