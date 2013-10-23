@@ -1,16 +1,16 @@
 Return-Path: <B31939@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D161E2C04DD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 21:42:14 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 5E6912C037C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 21:42:19 +1100 (EST)
 From: Minghuan Lian <Minghuan.Lian@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 06/12][v3] pci: fsl: port PCI controller setup code
-Date: Wed, 23 Oct 2013 18:41:28 +0800
-Message-ID: <1382524894-15164-6-git-send-email-Minghuan.Lian@freescale.com>
+Subject: [PATCH 11/12][v3] pci: fsl: update PCI EDAC driver
+Date: Wed, 23 Oct 2013 18:41:33 +0800
+Message-ID: <1382524894-15164-11-git-send-email-Minghuan.Lian@freescale.com>
 In-Reply-To: <1382524894-15164-1-git-send-email-Minghuan.Lian@freescale.com>
 References: <1382524894-15164-1-git-send-email-Minghuan.Lian@freescale.com>
 MIME-Version: 1.0
@@ -27,264 +27,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PCI controller setup code will initialize structure fsl_pci
-according to PCI dts node and initialize PCI command register
-and ATMU. The patch uses general API of_pci_parse_bus_range
-to parse PCI bus range, uses general of_address's API to parse
-PCI IO/MEM ranges.
+1. The pci-fsl-common driver has set fsl_pci to device as drvdata,
+so EDAC driver can not call dev_set_drvdata() again. fsl_pci
+contains regs field to point PCI CCSR, so EDAC may directly use
+the pointer and not need to call devm_ioremap().
+2. Add mpc85xx_pci_err_remove() to disable PCI error interrupt
+and delete PCI EDAC from EDAC subsystem.
 
 Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
 ---
 change log:
 v1-v3:
 Derived from http://patchwork.ozlabs.org/patch/278965/
+Added mpc85xx_pci_err_remove()
 
 Based on upstream master.
 Based on the discussion of RFC version here
 http://patchwork.ozlabs.org/patch/274487/
 
- drivers/pci/host/pci-fsl-common.c | 179 +++++++++++++++++++++-----------------
- 1 file changed, 97 insertions(+), 82 deletions(-)
+ arch/powerpc/sysdev/fsl_pci.c |  1 +
+ arch/powerpc/sysdev/fsl_pci.h |  6 ++++++
+ drivers/edac/mpc85xx_edac.c   | 46 +++++++++++++++----------------------------
+ drivers/edac/mpc85xx_edac.h   |  1 +
+ 4 files changed, 24 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/pci/host/pci-fsl-common.c b/drivers/pci/host/pci-fsl-common.c
-index f15b605..e09a0ec 100644
---- a/drivers/pci/host/pci-fsl-common.c
-+++ b/drivers/pci/host/pci-fsl-common.c
-@@ -24,6 +24,8 @@
- #include <linux/log2.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
-+#include <linux/of_address.h>
-+#include <linux/of_pci.h>
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 40d2e1d..4a03e1a 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -236,6 +236,7 @@ void fsl_arch_pci_sys_remove(struct fsl_pci *pci)
+ 	if (!hose)
+ 		return;
  
- #include <asm/io.h>
- #include <asm/prom.h>
-@@ -505,131 +507,144 @@ static void setup_pci_atmu(struct fsl_pci *pci)
- 	}
++	mpc85xx_pci_err_remove(to_platform_device(pci->dev));
+ 	pcibios_free_controller(hose);
  }
  
--static void __init setup_pci_cmd(struct pci_controller *hose)
-+static void __init setup_pci_cmd(struct fsl_pci *pci)
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index ce77aad..ae4dbe2 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -35,11 +35,17 @@ static inline void fsl_pci_assign_primary(void) {}
+ 
+ #ifdef CONFIG_EDAC_MPC85XX
+ int mpc85xx_pci_err_probe(struct platform_device *op);
++int mpc85xx_pci_err_remove(struct platform_device *op);
+ #else
+ static inline int mpc85xx_pci_err_probe(struct platform_device *op)
  {
- 	u16 cmd;
- 	int cap_x;
- 
--	early_read_config_word(hose, 0, 0, PCI_COMMAND, &cmd);
-+	early_fsl_read_config_word(pci, 0, 0, PCI_COMMAND, &cmd);
- 	cmd |= PCI_COMMAND_SERR | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY
- 		| PCI_COMMAND_IO;
--	early_write_config_word(hose, 0, 0, PCI_COMMAND, cmd);
-+	early_fsl_write_config_word(pci, 0, 0, PCI_COMMAND, cmd);
- 
--	cap_x = early_find_capability(hose, 0, 0, PCI_CAP_ID_PCIX);
-+	cap_x = early_fsl_find_capability(pci, 0, 0, PCI_CAP_ID_PCIX);
- 	if (cap_x) {
- 		int pci_x_cmd = cap_x + PCI_X_CMD;
- 		cmd = PCI_X_CMD_MAX_SPLIT | PCI_X_CMD_MAX_READ
- 			| PCI_X_CMD_ERO | PCI_X_CMD_DPERR_E;
--		early_write_config_word(hose, 0, 0, pci_x_cmd, cmd);
--	} else {
--		early_write_config_byte(hose, 0, 0, PCI_LATENCY_TIMER, 0x80);
--	}
-+		early_fsl_write_config_word(pci, 0, 0, pci_x_cmd, cmd);
-+	} else
-+		early_fsl_write_config_byte(pci, 0, 0, PCI_LATENCY_TIMER,
-+					    0x80);
+ 	return -ENOTSUPP;
  }
- 
--int __init fsl_add_bridge(struct platform_device *pdev, int is_primary)
-+static int __init
-+fsl_pci_setup(struct platform_device *pdev, struct fsl_pci *pci)
- {
--	int len;
--	struct pci_controller *hose;
--	struct resource rsrc;
--	const int *bus_range;
-+	struct resource *rsrc;
- 	u8 hdr_type, progif;
--	struct device_node *dev;
--	struct ccsr_pci __iomem *pci;
--
--	dev = pdev->dev.of_node;
-+	struct device_node *dn;
-+	struct of_pci_range range;
-+	struct of_pci_range_parser parser;
-+	int mem = 0;
- 
--	if (!of_device_is_available(dev)) {
--		pr_warning("%s: disabled\n", dev->full_name);
--		return -ENODEV;
--	}
-+	dn = pdev->dev.of_node;
-+	pci->dn = dn;
-+	pci->dev = &pdev->dev;
- 
--	pr_debug("Adding PCI host bridge %s\n", dev->full_name);
-+	dev_info(&pdev->dev, "Find controller %s\n", dn->full_name);
- 
- 	/* Fetch host bridge registers address */
--	if (of_address_to_resource(dev, 0, &rsrc)) {
--		printk(KERN_WARNING "Can't get pci register base!");
--		return -ENOMEM;
-+	rsrc = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!rsrc) {
-+		dev_err(&pdev->dev, "Can't get pci register base!");
-+		return -EINVAL;
- 	}
-+	dev_info(&pdev->dev, "REG 0x%016llx..0x%016llx\n",
-+		 (u64)rsrc->start, (u64)rsrc->end);
- 
--	/* Get bus range if any */
--	bus_range = of_get_property(dev, "bus-range", &len);
--	if (bus_range == NULL || len < 2 * sizeof(int))
--		printk(KERN_WARNING "Can't get bus-range for %s, assume"
--			" bus 0\n", dev->full_name);
--
--	pci_add_flags(PCI_REASSIGN_ALL_BUS);
--	hose = pcibios_alloc_controller(dev);
--	if (!hose)
--		return -ENOMEM;
-+	/* Parse pci range resources from device tree */
-+	if (of_pci_range_parser_init(&parser, dn)) {
-+		dev_err(&pdev->dev, "missing ranges property\n");
-+		return -EINVAL;
-+	}
- 
--	/* set platform device as the parent */
--	hose->parent = &pdev->dev;
--	hose->first_busno = bus_range ? bus_range[0] : 0x0;
--	hose->last_busno = bus_range ? bus_range[1] : 0xff;
-+	/* Get the I/O and memory ranges from device tree */
-+	for_each_of_pci_range(&parser, &range) {
-+		unsigned long restype = range.flags & IORESOURCE_TYPE_BITS;
-+		if (restype == IORESOURCE_IO) {
-+			of_pci_range_to_resource(&range, dn,
-+						 &pci->io_resource);
-+			pci->io_resource.name = "I/O";
-+			pci->io_resource.start = range.pci_addr;
-+			pci->io_resource.end = range.pci_addr + range.size - 1;
-+			pci->pci_io_size = range.size;
-+			pci->io_base_phys = range.cpu_addr - range.pci_addr;
-+			dev_info(&pdev->dev,
-+				 " IO 0x%016llx..0x%016llx -> 0x%016llx\n",
-+				 range.cpu_addr,
-+				 range.cpu_addr + range.size - 1,
-+				 range.pci_addr);
-+		}
-+		if (restype == IORESOURCE_MEM) {
-+			if (mem >= 3)
-+				continue;
-+			of_pci_range_to_resource(&range, dn,
-+						 &pci->mem_resources[mem]);
-+			pci->mem_resources[mem].name = "MEM";
-+			pci->mem_offset[mem] = range.cpu_addr - range.pci_addr;
-+			dev_info(&pdev->dev,
-+				 "MEM 0x%016llx..0x%016llx -> 0x%016llx\n",
-+				 (u64)pci->mem_resources[mem].start,
-+				 (u64)pci->mem_resources[mem].end,
-+				 range.pci_addr);
-+		}
-+	}
- 
--	pr_debug("PCI memory map start 0x%016llx, size 0x%016llx\n",
--		 (u64)rsrc.start, (u64)resource_size(&rsrc));
-+	/* Get bus range */
-+	if (of_pci_parse_bus_range(dn, &pci->busn)) {
-+		dev_err(&pdev->dev, "failed to parse bus-range property\n");
-+		pci->first_busno = 0x0;
-+		pci->last_busno = 0xff;
-+	} else {
-+		pci->first_busno = pci->busn.start;
-+		pci->last_busno = pci->busn.end;
-+	}
-+	dev_info(&pdev->dev, "Firmware bus number %d->%d\n",
-+		 pci->first_busno, pci->last_busno);
- 
--	pci = hose->private_data = ioremap(rsrc.start, resource_size(&rsrc));
--	if (!hose->private_data)
--		goto no_bridge;
-+	pci->regs = devm_ioremap_resource(&pdev->dev, rsrc);
-+	if (IS_ERR(pci->regs))
-+		return PTR_ERR(pci->regs);
- 
--	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
--			   PPC_INDIRECT_TYPE_BIG_ENDIAN);
-+	pci->ops = &fsl_indirect_pci_ops;
-+	pci->indirect_type = INDIRECT_TYPE_BIG_ENDIAN;
- 
--	if (in_be32(&pci->block_rev1) < PCIE_IP_REV_3_0)
--		hose->indirect_type |= PPC_INDIRECT_TYPE_FSL_CFG_REG_LINK;
-+	if (in_be32(&pci->regs->block_rev1) < PCIE_IP_REV_3_0)
-+		pci->indirect_type |= INDIRECT_TYPE_FSL_CFG_REG_LINK;
- 
--	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
--		/* use fsl_indirect_read_config for PCIe */
--		hose->ops = &fsl_indirect_pcie_ops;
--		/* For PCIE read HEADER_TYPE to identify controler mode */
--		early_read_config_byte(hose, 0, 0, PCI_HEADER_TYPE, &hdr_type);
--		if ((hdr_type & 0x7f) != PCI_HEADER_TYPE_BRIDGE)
-+	pci->is_pcie = !!early_fsl_find_capability(pci, 0, 0, PCI_CAP_ID_EXP);
-+	if (pci->is_pcie) {
-+		/* For PCIE read HEADER_TYPE to identify controller mode */
-+		early_fsl_read_config_byte(pci, 0, 0, PCI_HEADER_TYPE,
-+					   &hdr_type);
-+		if ((hdr_type & 0x7f) == PCI_HEADER_TYPE_NORMAL)
- 			goto no_bridge;
--
- 	} else {
- 		/* For PCI read PROG to identify controller mode */
--		early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
-+		early_fsl_read_config_byte(pci, 0, 0, PCI_CLASS_PROG, &progif);
- 		if ((progif & 1) == 1)
- 			goto no_bridge;
- 	}
- 
--	setup_pci_cmd(hose);
-+	setup_pci_cmd(pci);
- 
- 	/* check PCI express link status */
--	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
--		hose->indirect_type |= PPC_INDIRECT_TYPE_EXT_REG |
--			PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS;
--		if (fsl_pcie_check_link(hose))
--			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-+	if (pci->is_pcie) {
-+		pci->indirect_type |= INDIRECT_TYPE_EXT_REG |
-+				       INDIRECT_TYPE_SURPRESS_PRIMARY_BUS;
-+		if (!fsl_pci_check_link(pci))
-+			pci->indirect_type |= INDIRECT_TYPE_NO_PCIE_LINK;
- 	}
- 
--	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
--		"Firmware bus number: %d->%d\n",
--		(unsigned long long)rsrc.start, hose->first_busno,
--		hose->last_busno);
--
--	pr_debug(" ->Hose at 0x%p, cfg_addr=0x%p,cfg_data=0x%p\n",
--		hose, hose->cfg_addr, hose->cfg_data);
--
--	/* Interpret the "ranges" property */
--	/* This also maps the I/O region and sets isa_io/mem_base */
--	pci_process_bridge_OF_ranges(hose, dev, is_primary);
--
- 	/* Setup PEX window registers */
--	setup_pci_atmu(hose);
-+	setup_pci_atmu(pci);
++static inline int mpc85xx_pci_err_remove(struct platform_device *op)
++{
++	return -ENOTSUPP;
++}
 +
-+	platform_set_drvdata(pdev, pci);
+ #endif
+ 
+ #ifdef CONFIG_FSL_PCI
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index 3eb32f6..14a4116 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -21,6 +21,7 @@
+ 
+ #include <linux/of_platform.h>
+ #include <linux/of_device.h>
++#include <linux/fsl/pci-common.h>
+ #include "edac_module.h"
+ #include "edac_core.h"
+ #include "mpc85xx_edac.h"
+@@ -214,11 +215,13 @@ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
+ 
+ int mpc85xx_pci_err_probe(struct platform_device *op)
+ {
++	struct fsl_pci *fslpci;
+ 	struct edac_pci_ctl_info *pci;
+ 	struct mpc85xx_pci_pdata *pdata;
+-	struct resource r;
+ 	int res = 0;
+ 
++	fslpci = platform_get_drvdata(op);
++
+ 	if (!devres_open_group(&op->dev, mpc85xx_pci_err_probe, GFP_KERNEL))
+ 		return -ENOMEM;
+ 
+@@ -239,7 +242,6 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+ 	pdata = pci->pvt_info;
+ 	pdata->name = "mpc85xx_pci_err";
+ 	pdata->irq = NO_IRQ;
+-	dev_set_drvdata(&op->dev, pci);
+ 	pci->dev = &op->dev;
+ 	pci->mod_name = EDAC_MOD_STR;
+ 	pci->ctl_name = pdata->name;
+@@ -250,30 +252,8 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+ 
+ 	pdata->edac_idx = edac_pci_idx++;
+ 
+-	res = of_address_to_resource(op->dev.of_node, 0, &r);
+-	if (res) {
+-		printk(KERN_ERR "%s: Unable to get resource for "
+-		       "PCI err regs\n", __func__);
+-		goto err;
+-	}
+-
+ 	/* we only need the error registers */
+-	r.start += 0xe00;
+-
+-	if (!devm_request_mem_region(&op->dev, r.start, resource_size(&r),
+-					pdata->name)) {
+-		printk(KERN_ERR "%s: Error while requesting mem region\n",
+-		       __func__);
+-		res = -EBUSY;
+-		goto err;
+-	}
+-
+-	pdata->pci_vbase = devm_ioremap(&op->dev, r.start, resource_size(&r));
+-	if (!pdata->pci_vbase) {
+-		printk(KERN_ERR "%s: Unable to setup PCI err regs\n", __func__);
+-		res = -ENOMEM;
+-		goto err;
+-	}
++	pdata->pci_vbase = (void *)fslpci->regs + MPC85XX_PCI_ERR_OFFSET;
+ 
+ 	orig_pci_err_cap_dr =
+ 	    in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_CAP_DR);
+@@ -327,20 +307,25 @@ err:
+ }
+ EXPORT_SYMBOL(mpc85xx_pci_err_probe);
+ 
+-static int mpc85xx_pci_err_remove(struct platform_device *op)
++int mpc85xx_pci_err_remove(struct platform_device *op)
+ {
+-	struct edac_pci_ctl_info *pci = dev_get_drvdata(&op->dev);
+-	struct mpc85xx_pci_pdata *pdata = pci->pvt_info;
++	struct edac_pci_ctl_info *pci;
++	struct mpc85xx_pci_pdata *pdata;
+ 
+ 	edac_dbg(0, "\n");
+ 
++	pci = edac_pci_del_device(&op->dev);
++
++	if (!pci)
++		return -EINVAL;
++
++	pdata = pci->pvt_info;
++
+ 	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_CAP_DR,
+ 		 orig_pci_err_cap_dr);
+ 
+ 	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EN, orig_pci_err_en);
+ 
+-	edac_pci_del_device(pci->dev);
+-
+ 	if (edac_op_state == EDAC_OPSTATE_INT)
+ 		irq_dispose_mapping(pdata->irq);
+ 
+@@ -348,6 +333,7 @@ static int mpc85xx_pci_err_remove(struct platform_device *op)
  
  	return 0;
- 
- no_bridge:
--	iounmap(hose->private_data);
--	/* unmap cfg_data & cfg_addr separately if not on same page */
--	if (((unsigned long)hose->cfg_data & PAGE_MASK) !=
--	    ((unsigned long)hose->cfg_addr & PAGE_MASK))
--		iounmap(hose->cfg_data);
--	iounmap(hose->cfg_addr);
--	pcibios_free_controller(hose);
- 	return -ENODEV;
  }
++EXPORT_SYMBOL(mpc85xx_pci_err_remove);
  
+ #endif				/* CONFIG_PCI */
+ 
+diff --git a/drivers/edac/mpc85xx_edac.h b/drivers/edac/mpc85xx_edac.h
+index 932016f..3ba235a 100644
+--- a/drivers/edac/mpc85xx_edac.h
++++ b/drivers/edac/mpc85xx_edac.h
+@@ -131,6 +131,7 @@
+ #define PCI_EDE_PERR_MASK	(PCI_EDE_TGT_PERR | PCI_EDE_MST_PERR | \
+ 				PCI_EDE_ADDR_PERR)
+ 
++#define MPC85XX_PCI_ERR_OFFSET		0x0e00
+ #define MPC85XX_PCI_ERR_DR		0x0000
+ #define MPC85XX_PCI_ERR_CAP_DR		0x0004
+ #define MPC85XX_PCI_ERR_EN		0x0008
 -- 
 1.8.1.2
