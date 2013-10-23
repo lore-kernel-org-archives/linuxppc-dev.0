@@ -1,16 +1,16 @@
 Return-Path: <B31939@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E6B752C0419
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 21:42:00 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 2B09E2C03F2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2013 21:42:07 +1100 (EST)
 From: Minghuan Lian <Minghuan.Lian@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 05/12][v3] pci: fsl: port PCI ATMU related code
-Date: Wed, 23 Oct 2013 18:41:27 +0800
-Message-ID: <1382524894-15164-5-git-send-email-Minghuan.Lian@freescale.com>
+Subject: [PATCH 07/12][v3] pci: fsl: port PCI platform driver
+Date: Wed, 23 Oct 2013 18:41:29 +0800
+Message-ID: <1382524894-15164-7-git-send-email-Minghuan.Lian@freescale.com>
 In-Reply-To: <1382524894-15164-1-git-send-email-Minghuan.Lian@freescale.com>
 References: <1382524894-15164-1-git-send-email-Minghuan.Lian@freescale.com>
 MIME-Version: 1.0
@@ -27,13 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch ports PCI ATMU related code, just uses general IO API
-iowrite32be/ioread32be instead of out_be32/in_be32, uses structure
-fsl_pci instead of PowerPC's pci_controller and uses dev_*()
-instead of pr_*() to output the information.
-The patch also provides the weak function
-fsl_arch_pci64_dma_offset(), the architecture-specific driver may
-return different offset.
+1. The patch ports FSL PCI platform driver. probe function
+initialize fsl_pci and register it to architecture PCI system,
+remove function removes fsl_pci from architecture PCI system.
+fsl_arch_pci_sys_register() and fsl_arch_pci_sys_remove() should
+be implemented in architecture-specific driver to provide
+register/remove functionality.
+2. Remove architecture-specific header and unnecessary header.
+3. Change Kconfig and Makefile to support FSL PCI common driver
 
 Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
 ---
@@ -45,362 +46,151 @@ Based on upstream master.
 Based on the discussion of RFC version here
 http://patchwork.ozlabs.org/patch/274487/
 
- drivers/pci/host/pci-fsl-common.c | 191 ++++++++++++++++++++------------------
- include/linux/fsl/pci-common.h    |   3 +
- 2 files changed, 104 insertions(+), 90 deletions(-)
+ arch/powerpc/Kconfig              |  1 +
+ drivers/pci/host/Kconfig          | 10 ++++++++
+ drivers/pci/host/Makefile         |  1 +
+ drivers/pci/host/pci-fsl-common.c | 53 +++++++++++++++++++++++++--------------
+ include/linux/fsl/pci-common.h    |  6 +++++
+ 5 files changed, 52 insertions(+), 19 deletions(-)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 38f3b7e..7447d97d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -690,6 +690,7 @@ config FSL_SOC
+ 
+ config FSL_PCI
+  	bool
++	select PCI_FSL_COMMON if FSL_SOC_BOOKE || PPC_86xx
+ 	select PPC_INDIRECT_PCI
+ 	select PCI_QUIRKS
+ 
+diff --git a/drivers/pci/host/Kconfig b/drivers/pci/host/Kconfig
+index 3d95048..48242b33 100644
+--- a/drivers/pci/host/Kconfig
++++ b/drivers/pci/host/Kconfig
+@@ -19,4 +19,14 @@ config PCI_TEGRA
+ 	bool "NVIDIA Tegra PCIe controller"
+ 	depends on ARCH_TEGRA
+ 
++config PCI_FSL_COMMON
++	bool "Common driver for Freescale PCI/PCIe controller"
++	depends on FSL_SOC_BOOKE || PPC_86xx
++	help
++	  This driver provides common support for PCI/PCIE controller
++	  on Freescale embedded processors 85xx/86xx/QorIQ/Layerscape.
++	  Additional drivers must be enabled in order to provide some
++	  architecture-dependent functions and register the controller
++	  to PCI subsystem.
++
+ endmenu
+diff --git a/drivers/pci/host/Makefile b/drivers/pci/host/Makefile
+index c9a997b..7c338a7 100644
+--- a/drivers/pci/host/Makefile
++++ b/drivers/pci/host/Makefile
+@@ -2,3 +2,4 @@ obj-$(CONFIG_PCIE_DW) += pcie-designware.o
+ obj-$(CONFIG_PCI_EXYNOS) += pci-exynos.o
+ obj-$(CONFIG_PCI_MVEBU) += pci-mvebu.o
+ obj-$(CONFIG_PCI_TEGRA) += pci-tegra.o
++obj-$(CONFIG_PCI_FSL_COMMON) += pci-fsl-common.o
 diff --git a/drivers/pci/host/pci-fsl-common.c b/drivers/pci/host/pci-fsl-common.c
-index 505a6a1..f15b605 100644
+index e09a0ec..c7bc472 100644
 --- a/drivers/pci/host/pci-fsl-common.c
 +++ b/drivers/pci/host/pci-fsl-common.c
-@@ -42,6 +42,11 @@
- #define INDIRECT_TYPE_BIG_ENDIAN		0x00000010
- #define INDIRECT_TYPE_FSL_CFG_REG_LINK		0x00000040
+@@ -16,26 +16,12 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+-#include <linux/delay.h>
+-#include <linux/string.h>
+ #include <linux/init.h>
+-#include <linux/bootmem.h>
+ #include <linux/memblock.h>
+ #include <linux/log2.h>
+-#include <linux/slab.h>
+-#include <linux/uaccess.h>
+ #include <linux/of_address.h>
+ #include <linux/of_pci.h>
+-
+-#include <asm/io.h>
+-#include <asm/prom.h>
+-#include <asm/pci-bridge.h>
+-#include <asm/ppc-pci.h>
+-#include <asm/machdep.h>
+-#include <asm/disassemble.h>
+-#include <asm/ppc-opcode.h>
+-#include <sysdev/fsl_soc.h>
+-#include <sysdev/fsl_pci.h>
++#include <linux/fsl/pci-common.h>
  
-+u64 __weak fsl_arch_pci64_dma_offset(void)
-+{
+ /* Indirect type */
+ #define INDIRECT_TYPE_EXT_REG			0x00000002
+@@ -672,12 +658,40 @@ static const struct of_device_id pci_ids[] = {
+ static int fsl_pci_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+-	struct device_node *node;
++	struct fsl_pci *pci;
++
++	if (!of_device_is_available(pdev->dev.of_node)) {
++		dev_dbg(&pdev->dev, "disabled\n");
++		return -ENODEV;
++	}
++
++	pci = devm_kzalloc(&pdev->dev, sizeof(*pci), GFP_KERNEL);
++	if (!pci) {
++		dev_err(&pdev->dev, "no memory for fsl_pci\n");
++		return -ENOMEM;
++	}
++
++	ret = fsl_pci_setup(pdev, pci);
++	if (ret)
++		return ret;
++
++	ret = fsl_arch_pci_sys_register(pci);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to register pcie to Arch\n");
++		return ret;
++	}
++
 +	return 0;
 +}
+ 
+-	node = pdev->dev.of_node;
+-	ret = fsl_add_bridge(pdev, fsl_pci_primary == node);
++static int fsl_pci_remove(struct platform_device *pdev)
++{
++	struct fsl_pci *pci = platform_get_drvdata(pdev);
 +
- int __weak fsl_arch_pci_exclude_device(struct fsl_pci *pci, u8 bus, u8 devfn)
- {
- 	return PCIBIOS_SUCCESSFUL;
-@@ -231,8 +236,8 @@ static int early_fsl_find_capability(struct fsl_pci *pci,
++	if (!pci)
++		return -ENODEV;
+ 
+-	mpc85xx_pci_err_probe(pdev);
++	fsl_arch_pci_sys_remove(pci);
+ 
+ 	return 0;
  }
+@@ -721,6 +735,7 @@ static struct platform_driver fsl_pci_driver = {
+ 		.of_match_table = pci_ids,
+ 	},
+ 	.probe = fsl_pci_probe,
++	.remove = fsl_pci_remove,
+ };
  
- static int setup_one_atmu(struct ccsr_pci __iomem *pci,
--	unsigned int index, const struct resource *res,
--	resource_size_t offset)
-+			  unsigned int index, const struct resource *res,
-+			  resource_size_t offset)
- {
- 	resource_size_t pci_addr = res->start - offset;
- 	resource_size_t phys_addr = res->start;
-@@ -253,10 +258,10 @@ static int setup_one_atmu(struct ccsr_pci __iomem *pci,
- 		if (index + i >= 5)
- 			return -1;
- 
--		out_be32(&pci->pow[index + i].potar, pci_addr >> 12);
--		out_be32(&pci->pow[index + i].potear, (u64)pci_addr >> 44);
--		out_be32(&pci->pow[index + i].powbar, phys_addr >> 12);
--		out_be32(&pci->pow[index + i].powar, flags | (bits - 1));
-+		iowrite32be(pci_addr >> 12, &pci->pow[index + i].potar);
-+		iowrite32be((u64)pci_addr >> 44, &pci->pow[index + i].potear);
-+		iowrite32be(phys_addr >> 12, &pci->pow[index + i].powbar);
-+		iowrite32be(flags | (bits - 1), &pci->pow[index + i].powar);
- 
- 		pci_addr += (resource_size_t)1U << bits;
- 		phys_addr += (resource_size_t)1U << bits;
-@@ -267,21 +272,19 @@ static int setup_one_atmu(struct ccsr_pci __iomem *pci,
- }
- 
- /* atmu setup for fsl pci/pcie controller */
--static void setup_pci_atmu(struct pci_controller *hose)
-+static void setup_pci_atmu(struct fsl_pci *pci)
- {
--	struct ccsr_pci __iomem *pci = hose->private_data;
- 	int i, j, n, mem_log, win_idx = 3, start_idx = 1, end_idx = 4;
- 	u64 mem, sz, paddr_hi = 0;
- 	u64 offset = 0, paddr_lo = ULLONG_MAX;
- 	u32 pcicsrbar = 0, pcicsrbar_sz;
- 	u32 piwar = PIWAR_EN | PIWAR_PF | PIWAR_TGI_LOCAL |
- 			PIWAR_READ_SNOOP | PIWAR_WRITE_SNOOP;
--	const char *name = hose->dn->full_name;
- 	const u64 *reg;
- 	int len;
- 
--	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
--		if (in_be32(&pci->block_rev1) >= PCIE_IP_REV_2_2) {
-+	if (pci->is_pcie) {
-+		if (in_be32(&pci->regs->block_rev1) >= PCIE_IP_REV_2_2) {
- 			win_idx = 2;
- 			start_idx = 0;
- 			end_idx = 3;
-@@ -289,47 +292,54 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 	}
- 
- 	/* Disable all windows (except powar0 since it's ignored) */
--	for(i = 1; i < 5; i++)
--		out_be32(&pci->pow[i].powar, 0);
-+	for (i = 1; i < 5; i++)
-+		iowrite32be(0, &pci->regs->pow[i].powar);
- 	for (i = start_idx; i < end_idx; i++)
--		out_be32(&pci->piw[i].piwar, 0);
-+		iowrite32be(0, &pci->regs->piw[i].piwar);
- 
- 	/* Setup outbound MEM window */
--	for(i = 0, j = 1; i < 3; i++) {
--		if (!(hose->mem_resources[i].flags & IORESOURCE_MEM))
-+	for (i = 0, j = 1; i < 3; i++) {
-+		if (!(pci->mem_resources[i].flags & IORESOURCE_MEM))
- 			continue;
- 
--		paddr_lo = min(paddr_lo, (u64)hose->mem_resources[i].start);
--		paddr_hi = max(paddr_hi, (u64)hose->mem_resources[i].end);
-+		paddr_lo = min_t(u64, paddr_lo, pci->mem_resources[i].start);
-+		paddr_hi = max_t(u64, paddr_hi, pci->mem_resources[i].end);
- 
- 		/* We assume all memory resources have the same offset */
--		offset = hose->mem_offset[i];
--		n = setup_one_atmu(pci, j, &hose->mem_resources[i], offset);
-+		offset = pci->mem_offset[i];
-+		n = setup_one_atmu(pci->regs, j, &pci->mem_resources[i],
-+				   offset);
- 
- 		if (n < 0 || j >= 5) {
--			pr_err("Ran out of outbound PCI ATMUs for resource %d!\n", i);
--			hose->mem_resources[i].flags |= IORESOURCE_DISABLED;
-+			dev_err(pci->dev,
-+				"Ran out of outbound PCI ATMUs for resource %d!\n",
-+				i);
-+			pci->mem_resources[i].flags |= IORESOURCE_DISABLED;
- 		} else
- 			j += n;
- 	}
- 
- 	/* Setup outbound IO window */
--	if (hose->io_resource.flags & IORESOURCE_IO) {
--		if (j >= 5) {
--			pr_err("Ran out of outbound PCI ATMUs for IO resource\n");
--		} else {
--			pr_debug("PCI IO resource start 0x%016llx, size 0x%016llx, "
--				 "phy base 0x%016llx.\n",
--				 (u64)hose->io_resource.start,
--				 (u64)resource_size(&hose->io_resource),
--				 (u64)hose->io_base_phys);
--			out_be32(&pci->pow[j].potar, (hose->io_resource.start >> 12));
--			out_be32(&pci->pow[j].potear, 0);
--			out_be32(&pci->pow[j].powbar, (hose->io_base_phys >> 12));
-+	if (pci->io_resource.flags & IORESOURCE_IO) {
-+		if (j >= 5)
-+			dev_err(pci->dev,
-+				"Ran out of outbound PCI ATMUs for IO resource\n");
-+		else {
-+			dev_dbg(pci->dev,
-+				 "PCI IO resource start 0x%016llx,"
-+				 "size 0x%016llx, phy base 0x%016llx.\n",
-+				 (u64)pci->io_resource.start,
-+				 (u64)resource_size(&pci->io_resource),
-+				 (u64)pci->io_base_phys);
-+			iowrite32be(pci->io_resource.start >> 12,
-+				    &pci->regs->pow[j].potar);
-+			iowrite32be(0, &pci->regs->pow[j].potear);
-+			iowrite32be(pci->io_base_phys >> 12,
-+				    &pci->regs->pow[j].powbar);
- 			/* Enable, IO R/W */
--			out_be32(&pci->pow[j].powar, 0x80088000
--				| (ilog2(hose->io_resource.end
--				- hose->io_resource.start + 1) - 1));
-+			iowrite32be(0x80088000 |
-+				  (ilog2(resource_size(&pci->io_resource)) - 1),
-+				  &pci->regs->pow[j].powar);
- 		}
- 	}
- 
-@@ -338,18 +348,20 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 	paddr_lo -= offset;
- 
- 	if (paddr_hi == paddr_lo) {
--		pr_err("%s: No outbound window space\n", name);
-+		dev_err(pci->dev, "No outbound window space\n");
- 		return;
- 	}
- 
- 	if (paddr_lo == 0) {
--		pr_err("%s: No space for inbound window\n", name);
-+		dev_err(pci->dev, "No space for inbound window\n");
- 		return;
- 	}
- 
- 	/* setup PCSRBAR/PEXCSRBAR */
--	early_write_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, 0xffffffff);
--	early_read_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, &pcicsrbar_sz);
-+	early_fsl_write_config_dword(pci, 0, 0, PCI_BASE_ADDRESS_0,
-+				     0xffffffff);
-+	early_fsl_read_config_dword(pci, 0, 0, PCI_BASE_ADDRESS_0,
-+				    &pcicsrbar_sz);
- 	pcicsrbar_sz = ~pcicsrbar_sz + 1;
- 
- 	if (paddr_hi < (0x100000000ull - pcicsrbar_sz) ||
-@@ -357,11 +369,12 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 		pcicsrbar = 0x100000000ull - pcicsrbar_sz;
- 	else
- 		pcicsrbar = (paddr_lo - pcicsrbar_sz) & -pcicsrbar_sz;
--	early_write_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, pcicsrbar);
-+	early_fsl_write_config_dword(pci, 0, 0, PCI_BASE_ADDRESS_0,
-+				     pcicsrbar);
- 
--	paddr_lo = min(paddr_lo, (u64)pcicsrbar);
-+	paddr_lo = min_t(u64, paddr_lo, pcicsrbar);
- 
--	pr_info("%s: PCICSRBAR @ 0x%x\n", name, pcicsrbar);
-+	dev_info(pci->dev, "PCICSRBAR @ 0x%x\n", pcicsrbar);
- 
- 	/* Setup inbound mem window */
- 	mem = memblock_end_of_DRAM();
-@@ -378,17 +391,19 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 	 * can avoid allocating a new ATMU by extending the DDR ATMU by one
- 	 * page.
- 	 */
--	reg = of_get_property(hose->dn, "msi-address-64", &len);
-+	reg = of_get_property(pci->dn, "msi-address-64", &len);
- 	if (reg && (len == sizeof(u64))) {
- 		u64 address = be64_to_cpup(reg);
- 
- 		if ((address >= mem) && (address < (mem + PAGE_SIZE))) {
--			pr_info("%s: extending DDR ATMU to cover MSIIR", name);
-+			dev_info(pci->dev,
-+				 "extending DDR ATMU to cover MSIIR\n");
- 			mem += PAGE_SIZE;
- 		} else {
- 			/* TODO: Create a new ATMU for MSIIR */
--			pr_warn("%s: msi-address-64 address of %llx is "
--				"unsupported\n", name, address);
-+			dev_warn(pci->dev,
-+				 "msi-address-64 address of %llx is "
-+				 "unsupported\n", address);
- 		}
- 	}
- 
-@@ -396,25 +411,26 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 	mem_log = ilog2(sz);
- 
- 	/* PCIe can overmap inbound & outbound since RX & TX are separated */
--	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
-+	if (pci->is_pcie) {
- 		/* Size window to exact size if power-of-two or one size up */
- 		if ((1ull << mem_log) != mem) {
- 			mem_log++;
- 			if ((1ull << mem_log) > mem)
--				pr_info("%s: Setting PCI inbound window "
--					"greater than memory size\n", name);
-+				dev_info(pci->dev,
-+					 "Setting PCI inbound window "
-+					 "greater than memory size\n");
- 		}
- 
- 		piwar |= ((mem_log - 1) & PIWAR_SZ_MASK);
- 
- 		/* Setup inbound memory window */
--		out_be32(&pci->piw[win_idx].pitar,  0x00000000);
--		out_be32(&pci->piw[win_idx].piwbar, 0x00000000);
--		out_be32(&pci->piw[win_idx].piwar,  piwar);
-+		iowrite32be(0, &pci->regs->piw[win_idx].pitar);
-+		iowrite32be(0, &pci->regs->piw[win_idx].piwbar);
-+		iowrite32be(piwar, &pci->regs->piw[win_idx].piwar);
- 		win_idx--;
- 
--		hose->dma_window_base_cur = 0x00000000;
--		hose->dma_window_size = (resource_size_t)sz;
-+		pci->dma_window_base_cur = 0x00000000;
-+		pci->dma_window_size = (resource_size_t)sz;
- 
- 		/*
- 		 * if we have >4G of memory setup second PCI inbound window to
-@@ -431,28 +447,22 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 			piwar = (piwar & ~PIWAR_SZ_MASK) | (mem_log - 1);
- 
- 			/* Setup inbound memory window */
--			out_be32(&pci->piw[win_idx].pitar,  0x00000000);
--			out_be32(&pci->piw[win_idx].piwbear,
--					pci64_dma_offset >> 44);
--			out_be32(&pci->piw[win_idx].piwbar,
--					pci64_dma_offset >> 12);
--			out_be32(&pci->piw[win_idx].piwar,  piwar);
--
--			/*
--			 * install our own dma_set_mask handler to fixup dma_ops
--			 * and dma_offset
--			 */
--			ppc_md.dma_set_mask = fsl_pci_dma_set_mask;
--
--			pr_info("%s: Setup 64-bit PCI DMA window\n", name);
-+			iowrite32be(0, &pci->regs->piw[win_idx].pitar);
-+			iowrite32be(fsl_arch_pci64_dma_offset() >> 44,
-+				    &pci->regs->piw[win_idx].piwbear);
-+			iowrite32be(fsl_arch_pci64_dma_offset() >> 12,
-+				    &pci->regs->piw[win_idx].piwbar);
-+			iowrite32be(piwar,
-+				    &pci->regs->piw[win_idx].piwar);
- 		}
- 	} else {
- 		u64 paddr = 0;
- 
- 		/* Setup inbound memory window */
--		out_be32(&pci->piw[win_idx].pitar,  paddr >> 12);
--		out_be32(&pci->piw[win_idx].piwbar, paddr >> 12);
--		out_be32(&pci->piw[win_idx].piwar,  (piwar | (mem_log - 1)));
-+		iowrite32be(paddr >> 12, &pci->regs->piw[win_idx].pitar);
-+		iowrite32be(paddr >> 12, &pci->regs->piw[win_idx].piwbar);
-+		iowrite32be((piwar | (mem_log - 1)),
-+			    &pci->regs->piw[win_idx].piwar);
- 		win_idx--;
- 
- 		paddr += 1ull << mem_log;
-@@ -462,35 +472,36 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 			mem_log = ilog2(sz);
- 			piwar |= (mem_log - 1);
- 
--			out_be32(&pci->piw[win_idx].pitar,  paddr >> 12);
--			out_be32(&pci->piw[win_idx].piwbar, paddr >> 12);
--			out_be32(&pci->piw[win_idx].piwar,  piwar);
-+			iowrite32be(paddr >> 12,
-+				    &pci->regs->piw[win_idx].pitar);
-+			iowrite32be(paddr >> 12,
-+				    &pci->regs->piw[win_idx].piwbar);
-+			iowrite32be(piwar,
-+				    &pci->regs->piw[win_idx].piwar);
- 			win_idx--;
- 
- 			paddr += 1ull << mem_log;
- 		}
- 
--		hose->dma_window_base_cur = 0x00000000;
--		hose->dma_window_size = (resource_size_t)paddr;
-+		pci->dma_window_base_cur = 0x00000000;
-+		pci->dma_window_size = (resource_size_t)paddr;
- 	}
- 
--	if (hose->dma_window_size < mem) {
--#ifdef CONFIG_SWIOTLB
--		ppc_swiotlb_enable = 1;
--#else
--		pr_err("%s: ERROR: Memory size exceeds PCI ATMU ability to "
--			"map - enable CONFIG_SWIOTLB to avoid dma errors.\n",
--			 name);
-+	if (pci->dma_window_size < mem) {
-+#ifndef CONFIG_SWIOTLB
-+		dev_err(pci->dev,
-+			"Memory size exceeds PCI ATMU ability to "
-+			"map - enable CONFIG_SWIOTLB to avoid dma errors.\n");
- #endif
- 		/* adjusting outbound windows could reclaim space in mem map */
- 		if (paddr_hi < 0xffffffffull)
--			pr_warning("%s: WARNING: Outbound window cfg leaves "
-+			dev_warn(pci->dev,
-+				 "Outbound window cfg leaves "
- 				"gaps in memory map. Adjusting the memory map "
--				"could reduce unnecessary bounce buffering.\n",
--				name);
-+				"could reduce unnecessary bounce buffering.\n");
- 
--		pr_info("%s: DMA window size is 0x%llx\n", name,
--			(u64)hose->dma_window_size);
-+		dev_info(pci->dev, "DMA window size is 0x%llx\n",
-+			 (u64)pci->dma_window_size);
- 	}
- }
- 
+ static int __init fsl_pci_init(void)
 diff --git a/include/linux/fsl/pci-common.h b/include/linux/fsl/pci-common.h
-index a3aca29..490ee53 100644
+index 490ee53..bfb1f03 100644
 --- a/include/linux/fsl/pci-common.h
 +++ b/include/linux/fsl/pci-common.h
-@@ -156,5 +156,8 @@ int fsl_arch_pci_exclude_device(struct fsl_pci *pci, u8 bus, u8 devfn);
-  */
- extern struct pci_bus *fsl_arch_fake_pci_bus(struct fsl_pci *pci, int busnr);
+@@ -159,5 +159,11 @@ extern struct pci_bus *fsl_arch_fake_pci_bus(struct fsl_pci *pci, int busnr);
+ /* Return PCI64 DMA offset */
+ u64 fsl_arch_pci64_dma_offset(void);
  
-+/* Return PCI64 DMA offset */
-+u64 fsl_arch_pci64_dma_offset(void);
++/* Register PCI/PCIe controller to architecture system */
++extern int fsl_arch_pci_sys_register(struct fsl_pci *pci);
++
++/* Remove PCI/PCIe controller from architecture system */
++extern void fsl_arch_pci_sys_remove(struct fsl_pci *pci);
 +
  #endif /* __PCI_COMMON_H */
  #endif /* __KERNEL__ */
