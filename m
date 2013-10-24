@@ -1,30 +1,30 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B7ADE2C00C6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2013 22:06:52 +1100 (EST)
-Date: Thu, 24 Oct 2013 12:05:43 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Xiubo Li <Li.Xiubo@freescale.com>
-Message-ID: <20131024110543.GA18506@sirena.org.uk>
-References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
- <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
-In-Reply-To: <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
-Subject: Re: [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
-Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
- linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
- perex@perex.cz, r65073@freescale.com, LW@KARO-electronics.de,
- linux@arm.linux.org.uk, b42378@freescale.com,
- linux-arm-kernel@lists.infradead.org, grant.likely@linaro.org,
- devicetree@vger.kernel.org, ian.campbell@citrix.com, pawel.moll@arm.com,
- swarren@wwwdotorg.org, rob.herring@calxeda.com, oskar@scara.com,
- fabio.estevam@freescale.com, lgirdwood@gmail.com, linux-kernel@vger.kernel.org,
- rob@landley.net, r64188@freescale.com, shawn.guo@linaro.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-wg0-f45.google.com (mail-wg0-f45.google.com [74.125.82.45])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1C8312C011C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2013 03:37:58 +1100 (EST)
+Received: by mail-wg0-f45.google.com with SMTP id z12so2655776wgg.24
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2013 09:37:54 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH v2 08/10] of/platform: Resolve interrupt references at
+ probe time
+To: Thierry Reding <thierry.reding@gmail.com>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20131015232436.19F61C40099@trevor.secretlab.ca>
+References: <1379510692-32435-1-git-send-email-treding@nvidia.com>
+ <1379510692-32435-9-git-send-email-treding@nvidia.com>
+ <20131015232436.19F61C40099@trevor.secretlab.ca>
+Date: Thu, 24 Oct 2013 17:37:49 +0100
+Message-Id: <20131024163749.68D01C403B6@trevor.secretlab.ca>
+Cc: linux-mips@linux-mips.org, Russell King <linux@arm.linux.org.uk>,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,125 +34,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 16 Oct 2013 00:24:36 +0100, Grant Likely <grant.likely@linaro.org> wrote:
+> On Wed, 18 Sep 2013 15:24:50 +0200, Thierry Reding <thierry.reding@gmail.com> wrote:
+> > Interrupt references are currently resolved very early (when a device is
+> > created). This has the disadvantage that it will fail in cases where the
+> > interrupt parent hasn't been probed and no IRQ domain for it has been
+> > registered yet. To work around that various drivers use explicit
+> > initcall ordering to force interrupt parents to be probed before devices
+> > that need them are created. That's error prone and doesn't always work.
+> > If a platform device uses an interrupt line connected to a different
+> > platform device (such as a GPIO controller), both will be created in the
+> > same batch, and the GPIO controller won't have been probed by its driver
+> > when the depending platform device is created. Interrupt resolution will
+> > fail in that case.
+> 
+> What is the reason for all the rework on the irq parsing return values?
+> A return value of '0' is always an error on irq parsing, regardless of
+> architecture even if NO_IRQ is defined as -1. I may have missed it, but
+> I don't see any checking for specific error values in the return paths
+> of the functions.
+> 
+> If the specific return value isn't required (and I don't think it is),
+> then you can simplify the whole series by getting rid of the rework
+> patches.
 
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I've not heard back about the above, but I've just had a conversation
+with Rob about what to do here. The problem that I have is that it makes
+a specific return code need to traverse several levels of function calls
+and have a meaning come out the other end. It becomes difficult to
+figure out where that code actually comes from when reading the code.
+That's more of a gut-feel reaction rather than pointing out specifics
+though.
 
-On Thu, Oct 17, 2013 at 05:01:10PM +0800, Xiubo Li wrote:
+The other thing that makes me nervous how invasive the series is.
 
-> +static struct snd_pcm_hardware snd_fsl_hardware = {
-> +	.info = SNDRV_PCM_INFO_INTERLEAVED |
-> +		SNDRV_PCM_INFO_BLOCK_TRANSFER |
-> +		SNDRV_PCM_INFO_MMAP |
-> +		SNDRV_PCM_INFO_MMAP_VALID |
-> +		SNDRV_PCM_INFO_PAUSE |
-> +		SNDRV_PCM_INFO_RESUME,
-> +	.formats = SNDRV_PCM_FMTBIT_S16_LE,
-> +	.rate_min = 8000,
-> +	.channels_min = 2,
-> +	.channels_max = 2,
-> +	.buffer_bytes_max = FSL_SAI_DMABUF_SIZE,
-> +	.period_bytes_min = 4096,
-> +	.period_bytes_max = FSL_SAI_DMABUF_SIZE / TCD_NUMBER,
-> +	.periods_min = TCD_NUMBER,
-> +	.periods_max = TCD_NUMBER,
-> +	.fifo_size = 0,
-> +};
+However, even with saying all of the above, I'm not saying outright no.
+I want to get this feature in. It is obviously needed and I'll even
+merge the patches piecemeal as the look ready (I've already merged 2).
+Regardless, the current series needs to be reworked. It conflicts with
+the other IRQ rework that I've already put into my tree. The best thing
+to do would probably be respin it against my current tree and repost.
+I'll take a fresh look then.... In the mean time, anything you can do to
+/sanely/ reduce the impact will probably help.  :-)
 
-There's a patch in -next that lets the generic dmaengine code figure out
-some settings from the dmacontroller rather than requiring the driver to
-explicitly provide configuration - it's "ASoC: dmaengine-pcm: Provide
-default config".  Please update your driver to use this, or let's work
-out what it doesn't do any try to fix it.
-
-> +	ret = fsl_sai_set_dai_sysclk_tr(cpu_dai, clk_id, freq,
-> +					FSL_FMT_TRANSMITTER);
-> +	if (ret) {
-> +		dev_err(cpu_dai->dev,
-> +				"Cannot set sai's transmitter sysclk: %d\n",
-> +				ret);
-> +		return ret;
-> +	}
-> +
-> +	ret = fsl_sai_set_dai_sysclk_tr(cpu_dai, clk_id, freq,
-> +					FSL_FMT_RECEIVER);
-
-As other people have commented these should be exposed as separate
-clocks rather than set in sync, unless there's some hardware reason they
-need to be identical.  If that is the case then a comment explaining the
-limitation would be good.
-
-Similarly with several of the other functions.
-
-> +int fsl_sai_dai_remove(struct snd_soc_dai *dai)
-> +{
-> +	struct fsl_sai *sai = dev_get_drvdata(dai->dev);
-> +
-> +	clk_disable_unprepare(sai->clk);
-
-It'd be a bit nicer to only enable the clock while the driver is
-actively being used rather than all the time the system is powered up
-but it's not a blocker for merge.
-
-> +	ret = snd_soc_register_component(&pdev->dev, &fsl_component,
-> +			&fsl_sai_dai, 1);
-> +	if (ret)
-> +		return ret;
-
-There's a devm_snd_soc_register_component() in -next, please use that.
-
-> +
-> +	ret = fsl_pcm_dma_init(pdev);
-> +	if (ret)
-> +		goto out;
-> +
-> +	platform_set_drvdata(pdev, sai);
-
-These should go before the driver is registered with the subsystem
-otherwise you've got a race where something might try to use the driver
-before init is finished.
-
-> +static int fsl_sai_remove(struct platform_device *pdev)
-> +{
-> +	struct fsl_sai *sai = platform_get_drvdata(pdev);
-> +
-> +	fsl_pcm_dma_exit(pdev);
-> +
-> +	snd_soc_unregister_component(&pdev->dev);
-
-Similarly here, unregister from the subsystem then clean up after.
-
-> +#define SAI_CR5_FBT(x)		((x) << 8)
-> +#define SAI_CR5_FBT_MASK	(0x1f << 8)
-> +
-> +/* SAI audio dividers */
-> +#define FSL_SAI_TX_DIV		0
-> +#define FSL_SAI_RX_DIV		1
-
-Make the namespacing consistent please - for preference use FSL_SAI
-always.
-
---rwEMma7ioTxnRzrJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSaP8EAAoJELSic+t+oim98ckP/0NBo4AKqrOWlBbpLWtZaoKt
-idtXIrSBEyB1yvlJJCBguE2djGe0fgOzbMIfChRSno3AkFvD7cTjz6lKrzVo0nmC
-/RDXX7EZzwuyuog/4fuTIySMZf9MTlwgjRv1YYqS5iXQ+2HlHVIi0R9V0+7A8xrl
-wPXjBwpfJmlUjbUHJtGfGHy729tPrdDyqhcV2x5YKN5LftsbP+SjHzJAq4ZEaexk
-S6RQReBmwabmpESCzj9SUZNhjuZCvA+jN8xTcyNKmVEZoIzgMXKrncmeAzuAtRik
-FYp5h1svJQCvV4s1v2nyAN9Cd2FM59AUtHO/582dSJNzfoShHQh9jAHDJDfPlW7Q
-+PnuKu8d7H+vf6Bnp35y49LOMgYIYRuE8gx6ZQn+ybqErMrE+NuLQLfWIb0ONYRV
-6wpnl2czcI20YEuWLskPq8tA97alaFeiVrJOwGk/2UgdfuC4smDTZ+0GHSbdwroz
-rHaZh3gRDE3dGOhOyWLYO6XvAqv+vfvg+ZWhkSFCvsBa0SPCsFWY4tqkRRGeKgrN
-kfruj1UBt6V4evRhI1X8uoDyj+Hf4YImf6REEXmKSDPLpeai/DI+Rx7BicPJHFoo
-ah5wj8Hbg4fB6A2fhQWm/mb4wVxeK+f44fbeIGUJpHtV4cekSIyYWv8YLZZl75zk
-nt4qmQMv3lWrZk879i0f
-=3gvt
------END PGP SIGNATURE-----
-
---rwEMma7ioTxnRzrJ--
+g.
