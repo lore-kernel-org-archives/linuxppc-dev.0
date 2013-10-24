@@ -1,41 +1,24 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7A6E92C00F9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2013 15:07:13 +1100 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Thu, 24 Oct 2013 14:07:12 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 154F63578050
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2013 15:07:05 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9O3neuT64749818
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2013 14:49:41 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9O4737F013094
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2013 15:07:03 +1100
-Message-ID: <52689C38.5010108@linux.vnet.ibm.com>
-Date: Thu, 24 Oct 2013 09:34:08 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 3/3] sched: Aggressive balance in domains whose groups
- share package resources
-References: <20131021114002.13291.31478.stgit@drishya>
- <20131021114502.13291.60794.stgit@drishya>
- <20131022222326.GL2490@laptop.programming.kicks-ass.net>
-In-Reply-To: <20131022222326.GL2490@laptop.programming.kicks-ass.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michael Neuling <mikey@neuling.org>, Mike Galbraith <bitbucket@online.de>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Anton Blanchard <anton@samba.org>, Paul Turner <pjt@google.com>,
- Ingo Molnar <mingo@kernel.org>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 10FFC2C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2013 15:11:57 +1100 (EST)
+Subject: Re: [PATCH 02/12][v3] pci: fsl: add structure fsl_pci
+Mime-Version: 1.0 (Apple Message framework v1283)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1382524894-15164-2-git-send-email-Minghuan.Lian@freescale.com>
+Date: Wed, 23 Oct 2013 23:11:07 -0500
+Message-Id: <2B28E421-9B64-4CEC-9E00-8893502CE12F@kernel.crashing.org>
+References: <1382524894-15164-1-git-send-email-Minghuan.Lian@freescale.com>
+ <1382524894-15164-2-git-send-email-Minghuan.Lian@freescale.com>
+To: Minghuan Lian <Minghuan.Lian@freescale.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org,
+ Zang Roy-R61911 <r61911@freescale.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,81 +28,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Peter,
 
-On 10/23/2013 03:53 AM, Peter Zijlstra wrote:
-> On Mon, Oct 21, 2013 at 05:15:02PM +0530, Vaidyanathan Srinivasan wrote:
->>  kernel/sched/fair.c |   18 ++++++++++++++++++
->>  1 file changed, 18 insertions(+)
->>
->> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
->> index 828ed97..bbcd96b 100644
->> --- a/kernel/sched/fair.c
->> +++ b/kernel/sched/fair.c
->> @@ -5165,6 +5165,8 @@ static int load_balance(int this_cpu, struct rq *this_rq,
->>  {
->>  	int ld_moved, cur_ld_moved, active_balance = 0;
->>  	struct sched_group *group;
->> +	struct sched_domain *child;
->> +	int share_pkg_res = 0;
->>  	struct rq *busiest;
->>  	unsigned long flags;
->>  	struct cpumask *cpus = __get_cpu_var(load_balance_mask);
->> @@ -5190,6 +5192,10 @@ static int load_balance(int this_cpu, struct rq *this_rq,
->>  
->>  	schedstat_inc(sd, lb_count[idle]);
->>  
->> +	child = sd->child;
->> +	if (child && child->flags & SD_SHARE_PKG_RESOURCES)
->> +		share_pkg_res = 1;
->> +
->>  redo:
->>  	if (!should_we_balance(&env)) {
->>  		*continue_balancing = 0;
->> @@ -5202,6 +5208,7 @@ redo:
->>  		goto out_balanced;
->>  	}
->>  
->> +redo_grp:
->>  	busiest = find_busiest_queue(&env, group);
->>  	if (!busiest) {
->>  		schedstat_inc(sd, lb_nobusyq[idle]);
->> @@ -5292,6 +5299,11 @@ more_balance:
->>  			if (!cpumask_empty(cpus)) {
->>  				env.loop = 0;
->>  				env.loop_break = sched_nr_migrate_break;
->> +				if (share_pkg_res &&
->> +					cpumask_intersects(cpus,
->> +						to_cpumask(group->cpumask)))
-> 
-> sched_group_cpus()
-> 
->> +					goto redo_grp;
->> +
->>  				goto redo;
->>  			}
->>  			goto out_balanced;
->> @@ -5318,9 +5330,15 @@ more_balance:
->>  			 */
->>  			if (!cpumask_test_cpu(this_cpu,
->>  					tsk_cpus_allowed(busiest->curr))) {
->> +				cpumask_clear_cpu(cpu_of(busiest), cpus);
->>  				raw_spin_unlock_irqrestore(&busiest->lock,
->>  							    flags);
->>  				env.flags |= LBF_ALL_PINNED;
->> +				if (share_pkg_res &&
->> +					cpumask_intersects(cpus,
->> +						to_cpumask(group->cpumask)))
->> +					goto redo_grp;
->> +
->>  				goto out_one_pinned;
->>  			}
-> 
-> Man this retry logic is getting annoying.. isn't there anything saner we
-> can do?
+On Oct 23, 2013, at 5:41 AM, Minghuan Lian wrote:
 
-Let me give this a thought and get back.
+> PowerPC uses structure pci_controller to describe PCI controller,
+> but ARM uses structure pci_sys_data. In order to support PowerPC
+> and ARM simultaneously, the patch adds a structure fsl_pci that
+> contains most of the members of the pci_controller and pci_sys_data.
+> Meanwhile, it defines a interface fsl_arch_sys_to_pci() which should
+> be implemented in architecture-specific PCI controller driver to
+> convert pci_controller or pci_sys_data to fsl_pci.
+>=20
+> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+> ---
+> change log:
+> v1-v3:
+> Derived from http://patchwork.ozlabs.org/patch/278965/
+>=20
+> Based on upstream master.
+> Based on the discussion of RFC version here
+> http://patchwork.ozlabs.org/patch/274487/
+>=20
+> include/linux/fsl/pci-common.h | 41 =
++++++++++++++++++++++++++++++++++++++++++
+> 1 file changed, 41 insertions(+)
 
-Regards
-Preeti U Murthy
-> 
+NAK.
+
+We discussed this some at the ARM Summit this week and the feeling is we =
+need to move to a common interface between the various ARCHs.
+
+- k
+
+>=20
+> diff --git a/include/linux/fsl/pci-common.h =
+b/include/linux/fsl/pci-common.h
+> index 5e4f683..e56a040 100644
+> --- a/include/linux/fsl/pci-common.h
+> +++ b/include/linux/fsl/pci-common.h
+> @@ -102,5 +102,46 @@ struct ccsr_pci {
+>=20
+> };
+>=20
+> +/*
+> + * Structure of a PCI controller (host bridge)
+> + */
+> +struct fsl_pci {
+> +	struct list_head node;
+> +	bool is_pcie;
+> +	struct device_node *dn;
+> +	struct device *dev;
+> +
+> +	int first_busno;
+> +	int last_busno;
+> +	int self_busno;
+> +	struct resource busn;
+> +
+> +	struct pci_ops *ops;
+> +	struct ccsr_pci __iomem *regs;
+> +
+> +	u32 indirect_type;
+> +
+> +	struct resource io_resource;
+> +	resource_size_t io_base_phys;
+> +	resource_size_t pci_io_size;
+> +
+> +	struct resource mem_resources[3];
+> +	resource_size_t mem_offset[3];
+> +
+> +	int global_number;	/* PCI domain number */
+> +
+> +	resource_size_t dma_window_base_cur;
+> +	resource_size_t dma_window_size;
+> +
+> +	void *sys;
+> +};
+> +
+> +/*
+> + * Convert architecture specific pci controller structure to fsl_pci
+> + * PowerPC uses structure pci_controller and ARM uses structure =
+pci_sys_data
+> + * to describe pci controller.
+> + */
+> +extern struct fsl_pci *fsl_arch_sys_to_pci(void *sys);
+> +
+> #endif /* __PCI_COMMON_H */
+> #endif /* __KERNEL__ */
+> --=20
+> 1.8.1.2
+>=20
