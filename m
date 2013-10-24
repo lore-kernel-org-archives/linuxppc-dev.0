@@ -1,17 +1,22 @@
-Return-Path: <geoff@infradead.org>
-Message-ID: <1382561354.5204.51.camel@smoke>
-Subject: Re: [Cbe-oss-dev] [PATCH 2/8] cell: Remove OOM message after
- input_allocate_device
-From: Geoff Levand <geoff@infradead.org>
-To: Joe Perches <joe@perches.com>, Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 23 Oct 2013 13:49:14 -0700
-In-Reply-To: <d4dc0be1a19693fca1d8d6bbd3a7ee75163cc269.1382555436.git.joe@perches.com>
-References: <cover.1382555436.git.joe@perches.com>
- <d4dc0be1a19693fca1d8d6bbd3a7ee75163cc269.1382555436.git.joe@perches.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 10CF02C00F9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2013 15:06:30 +1100 (EST)
+Subject: Re: [PATCH] [RFC] Emulate "lwsync" to run standard user land on e500
+ cores
+Mime-Version: 1.0 (Apple Message framework v1283)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1382523314.3926.21.camel@aoeu.buserror.net>
+Date: Wed, 23 Oct 2013 23:06:20 -0500
+Message-Id: <BE5B0245-4ED1-4E3F-ADB1-F6A70C8FE3E1@kernel.crashing.org>
+References: <1382081880-6666-1-git-send-email-wd@denx.de>
+ <39CCEB38-1D9B-4918-B8F4-148D4E90FE21@kernel.crashing.org>
+ <1382523314.3926.21.camel@aoeu.buserror.net>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joe,
 
-On Wed, 2013-10-23 at 12:14 -0700, Joe Perches wrote:
-> Emitting an OOM message isn't necessary after input_allocate_device
-> as there's a generic OOM and a dump_stack already done.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/powerpc/platforms/cell/cbe_powerbutton.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/cell/cbe_powerbutton.c b/arch/powerpc/platforms/cell/cbe_powerbutton.c
-> index 2bb8031..8804dbd 100644
-> --- a/arch/powerpc/platforms/cell/cbe_powerbutton.c
-> +++ b/arch/powerpc/platforms/cell/cbe_powerbutton.c
-> @@ -58,7 +58,6 @@ static int __init cbe_powerbutton_init(void)
->  	dev = input_allocate_device();
->  	if (!dev) {
->  		ret = -ENOMEM;
-> -		printk(KERN_ERR "%s: Not enough memory.\n", __func__);
->  		goto out;
->  	}
+On Oct 23, 2013, at 5:15 AM, Scott Wood wrote:
 
-Arnd is out on leave, so I'll say that this looks OK.
+> On Wed, 2013-10-23 at 00:07 -0500, Kumar Gala wrote:
+>> On Oct 18, 2013, at 2:38 AM, Wolfgang Denk wrote:
+>>> diff --git a/arch/powerpc/kernel/traps.c =
+b/arch/powerpc/kernel/traps.c
+>>> index f783c93..f330374 100644
+>>> --- a/arch/powerpc/kernel/traps.c
+>>> +++ b/arch/powerpc/kernel/traps.c
+>>> @@ -986,6 +986,13 @@ static int emulate_instruction(struct pt_regs =
+*regs)
+>>> 		return 0;
+>>> 	}
+>>>=20
+>>> +	/* Emulating the lwsync insn as a sync insn */
+>>> +	if (instword =3D=3D PPC_INST_LWSYNC) {
+>>> +		PPC_WARN_EMULATED(lwsync, regs);
+>>> +		asm volatile("sync" : : : "memory");
+>>=20
+>> Do we really need the inline asm?  Doesn't the fact of just taking an =
+exception and returning from it equate to a sync.
+>=20
+> No, it doesn't equate to a sync.  See the discussion here:
+> http://patchwork.ozlabs.org/patch/256747/
+>=20
 
-Acked-by: Geoff Levand <geoff@infradead.org>
+Thanks.=20
+
+I'm not sure I'm a fan of doing this as it silently hides a significant =
+performance impact.
+
+Could we possible re-write the userspace instruction to be a 'sync' when =
+we hit this?
+
+- k
