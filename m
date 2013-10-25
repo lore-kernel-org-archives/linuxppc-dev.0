@@ -1,26 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 890CA2C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2013 15:12:25 +1100 (EST)
-Subject: Re: [PATCH] [RFC] Emulate "lwsync" to run standard user land on e500
- cores
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <alpine.LRH.2.00.1310241556390.31001@ra8135-ec1.am.freescale.net>
-Date: Thu, 24 Oct 2013 23:12:30 -0500
-Message-Id: <26976A96-8DF8-44EB-8B9B-E23200738F4E@kernel.crashing.org>
-References: <1382081880-6666-1-git-send-email-wd@denx.de>
- <39CCEB38-1D9B-4918-B8F4-148D4E90FE21@kernel.crashing.org>
- <1382523314.3926.21.camel@aoeu.buserror.net>
- <BE5B0245-4ED1-4E3F-ADB1-F6A70C8FE3E1@kernel.crashing.org>
- <1382607919.9395.56.camel@pasglop>
- <6BFC8EB0-1A75-41C3-985A-E3ED14846710@kernel.crashing.org>
- <alpine.LRH.2.00.1310241556390.31001@ra8135-ec1.am.freescale.net>
-To: James Yang <James.Yang@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B31939@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A388D2C00E3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2013 16:58:26 +1100 (EST)
+Message-ID: <526A086E.305@freescale.com>
+Date: Fri, 25 Oct 2013 13:58:06 +0800
+From: Lian Minghuan-b31939 <B31939@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>, Minghuan Lian
+ <Minghuan.Lian@freescale.com>
+Subject: Re: [PATCH 02/12][v3] pci: fsl: add structure fsl_pci
+References: <1382524894-15164-1-git-send-email-Minghuan.Lian@freescale.com>
+ <1382524894-15164-2-git-send-email-Minghuan.Lian@freescale.com>
+ <2B28E421-9B64-4CEC-9E00-8893502CE12F@kernel.crashing.org>
+In-Reply-To: <2B28E421-9B64-4CEC-9E00-8893502CE12F@kernel.crashing.org>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org,
+ Zang Roy-R61911 <r61911@freescale.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,72 +32,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Kumar,
 
-On Oct 24, 2013, at 4:05 PM, James Yang wrote:
+please see my comment inline.
 
-> On Thu, 24 Oct 2013, Kumar Gala wrote:
->=20
->> On Oct 24, 2013, at 4:45 AM, Benjamin Herrenschmidt wrote:
->>=20
->>> On Wed, 2013-10-23 at 23:06 -0500, Kumar Gala wrote:
->>>> On Oct 23, 2013, at 5:15 AM, Scott Wood wrote:
->>>>=20
->>>>> On Wed, 2013-10-23 at 00:07 -0500, Kumar Gala wrote:
->>>>>> On Oct 18, 2013, at 2:38 AM, Wolfgang Denk wrote:
->>>>>>> diff --git a/arch/powerpc/kernel/traps.c =
-b/arch/powerpc/kernel/traps.c
->>>>>>> index f783c93..f330374 100644
->>>>>>> --- a/arch/powerpc/kernel/traps.c
->>>>>>> +++ b/arch/powerpc/kernel/traps.c
->>>>>>> @@ -986,6 +986,13 @@ static int emulate_instruction(struct =
-pt_regs *regs)
->>>>>>> 		return 0;
->>>>>>> 	}
->>>>>>>=20
->>>>>>> +	/* Emulating the lwsync insn as a sync insn */
->>>>>>> +	if (instword =3D=3D PPC_INST_LWSYNC) {
->>>>>>> +		PPC_WARN_EMULATED(lwsync, regs);
->>>>>>> +		asm volatile("sync" : : : "memory");
->>>>>>=20
->>>>>> Do we really need the inline asm?  Doesn't the fact of just =
-taking an exception and returning from it equate to a sync.
->>>>>=20
->>>>> No, it doesn't equate to a sync.  See the discussion here:
->>>>> http://patchwork.ozlabs.org/patch/256747/
->>>>>=20
->>>>=20
->>>> Thanks.=20
->>>>=20
->>>> I'm not sure I'm a fan of doing this as it silently hides a=20
->>>> significant performance impact.
->>>>=20
->>>> Could we possible re-write the userspace instruction to be a=20
->>>> 'sync' when we hit this?
->>>=20
->>> Rewriting user space is a can of worms I wouldn't get into ... is=20
->>> any other arch doing it ?
->>=20
->> Fair enough
->>>=20
->>> I'm not too worried as long as we warn and account them.
->>=20
->> Than, I'd ask this be under a Kconfig option that is disabled by=20
->> default.  Users should have to explicitly enable this so they know=20
->> what they are doing.
->=20
->=20
-> I think it should be enabled by default, rather than disabled, so that=20=
+On 10/24/2013 12:11 PM, Kumar Gala wrote:
+> On Oct 23, 2013, at 5:41 AM, Minghuan Lian wrote:
+>
+>> PowerPC uses structure pci_controller to describe PCI controller,
+>> but ARM uses structure pci_sys_data. In order to support PowerPC
+>> and ARM simultaneously, the patch adds a structure fsl_pci that
+>> contains most of the members of the pci_controller and pci_sys_data.
+>> Meanwhile, it defines a interface fsl_arch_sys_to_pci() which should
+>> be implemented in architecture-specific PCI controller driver to
+>> convert pci_controller or pci_sys_data to fsl_pci.
+>>
+>> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+>> ---
+>> change log:
+>> v1-v3:
+>> Derived from http://patchwork.ozlabs.org/patch/278965/
+>>
+>> Based on upstream master.
+>> Based on the discussion of RFC version here
+>> http://patchwork.ozlabs.org/patch/274487/
+>>
+>> include/linux/fsl/pci-common.h | 41 +++++++++++++++++++++++++++++++++++++++++
+>> 1 file changed, 41 insertions(+)
+> NAK.
+>
+> We discussed this some at the ARM Summit this week and the feeling is we need to move to a common interface between the various ARCHs.
+[Minghuan] Do you mean we will use the common interface instead of 
+arch/powerpc/kernel/pci-common.c...
+and arch/arm/kernel/bios32.c?  Who will do the code movement and when 
+will the work be completed? The patches just move the common functions 
+of FSL PCI controller operation which can be re-used by PowerPC and ARM. 
+LS1 is coming, I worry about not having enough time to wait for the move 
+is completed.
 
-> users would actually see a warning rather than get a sig 4.  Or, let=20=
-
-> it not be Kconfig-able so that this doesn't become a problem any more.=20=
-
-> (It's been 4 years since I sent to you an earlier version of this=20
-> patch.)
-
-And clearly most users don't seem terrible annoyed enough about this =
-issue to have concerns.  I don't see why making it a Kconfig option =
-impacts the small handful of people that happen to try and run a more =
-generic distro on e500 cores.
-
-- k=
+> - k
+>
+>> diff --git a/include/linux/fsl/pci-common.h b/include/linux/fsl/pci-common.h
+>> index 5e4f683..e56a040 100644
+>> --- a/include/linux/fsl/pci-common.h
+>> +++ b/include/linux/fsl/pci-common.h
+>> @@ -102,5 +102,46 @@ struct ccsr_pci {
+>>
+>> };
+>>
+>> +/*
+>> + * Structure of a PCI controller (host bridge)
+>> + */
+>> +struct fsl_pci {
+>> +	struct list_head node;
+>> +	bool is_pcie;
+>> +	struct device_node *dn;
+>> +	struct device *dev;
+>> +
+>> +	int first_busno;
+>> +	int last_busno;
+>> +	int self_busno;
+>> +	struct resource busn;
+>> +
+>> +	struct pci_ops *ops;
+>> +	struct ccsr_pci __iomem *regs;
+>> +
+>> +	u32 indirect_type;
+>> +
+>> +	struct resource io_resource;
+>> +	resource_size_t io_base_phys;
+>> +	resource_size_t pci_io_size;
+>> +
+>> +	struct resource mem_resources[3];
+>> +	resource_size_t mem_offset[3];
+>> +
+>> +	int global_number;	/* PCI domain number */
+>> +
+>> +	resource_size_t dma_window_base_cur;
+>> +	resource_size_t dma_window_size;
+>> +
+>> +	void *sys;
+>> +};
+>> +
+>> +/*
+>> + * Convert architecture specific pci controller structure to fsl_pci
+>> + * PowerPC uses structure pci_controller and ARM uses structure pci_sys_data
+>> + * to describe pci controller.
+>> + */
+>> +extern struct fsl_pci *fsl_arch_sys_to_pci(void *sys);
+>> +
+>> #endif /* __PCI_COMMON_H */
+>> #endif /* __KERNEL__ */
+>> -- 
+>> 1.8.1.2
+>>
+>
