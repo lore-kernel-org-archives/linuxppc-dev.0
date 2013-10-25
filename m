@@ -1,30 +1,30 @@
 Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1642F2C014B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 06:25:23 +1100 (EST)
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 80F582C013B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 06:25:22 +1100 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rcjenn@linux.vnet.ibm.com>;
- Sat, 26 Oct 2013 05:25:20 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id DBD6C2BB0044
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 06:25:12 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9PJ7u2a61341796
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 06:07:56 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9PJPCDK009409
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 06:25:12 +1100
+ Sat, 26 Oct 2013 00:55:16 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4013CE0018
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 00:56:47 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9PJP4Mj38142120
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 00:55:05 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9PJPCov010634
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 00:55:12 +0530
 From: Robert C Jennings <rcj@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc: Move local setup.h declarations to arch includes
-Date: Fri, 25 Oct 2013 14:25:07 -0500
-Message-Id: <1382729107-13560-3-git-send-email-rcj@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] powerpc: Fix warnings for arch/powerpc/mm/numa.c
+Date: Fri, 25 Oct 2013 14:25:06 -0500
+Message-Id: <1382729107-13560-2-git-send-email-rcj@linux.vnet.ibm.com>
 In-Reply-To: <1382729107-13560-1-git-send-email-rcj@linux.vnet.ibm.com>
 References: <1382729107-13560-1-git-send-email-rcj@linux.vnet.ibm.com>
 Cc: Robert C Jennings <rcj@linux.vnet.ibm.com>
@@ -37,156 +37,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the few declarations from arch/powerpc/kernel/setup.h
-into arch/powerpc/include/asm/setup.h.  This resolves a
-sparse warning for arch/powerpc/mm/numa.c which defines
-do_init_bootmem() but can't include the setup.h header
-in the prior path.
+Simple fixes for sparse warnings in this file.
 
 Resolves:
-arch/powerpc/mm/numa.c:998:13:
-        warning: symbol 'do_init_bootmem' was not declared.
-                 Should it be static?
+arch/powerpc/mm/numa.c:198:24:
+        warning: Using plain integer as NULL pointer
+
+arch/powerpc/mm/numa.c:1157:5: 
+       warning: symbol 'hot_add_node_scn_to_nid' was not declared.
+                Should it be static?
+
+arch/powerpc/mm/numa.c:1238:28: 
+       warning: Using plain integer as NULL pointer
+
+arch/powerpc/mm/numa.c:1538:6: 
+       warning: symbol 'topology_schedule_update' was not declared.
+                Should it be static?
 
 Signed-off-by: Robert C Jennings <rcj@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/setup.h   | 5 +++++
- arch/powerpc/kernel/module.c       | 3 +--
- arch/powerpc/kernel/module_32.c    | 3 +--
- arch/powerpc/kernel/module_64.c    | 3 +--
- arch/powerpc/kernel/setup-common.c | 2 --
- arch/powerpc/kernel/setup.h        | 9 ---------
- arch/powerpc/kernel/setup_32.c     | 2 --
- arch/powerpc/kernel/setup_64.c     | 2 --
- arch/powerpc/kernel/vdso.c         | 3 +--
- 9 files changed, 9 insertions(+), 23 deletions(-)
- delete mode 100644 arch/powerpc/kernel/setup.h
+ arch/powerpc/mm/numa.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index d3ca855..5e24df0 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -23,6 +23,11 @@ extern void reloc_got2(unsigned long);
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index c916127..33d6784 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -195,7 +195,7 @@ static const __be32 *of_get_usable_memory(struct device_node *memory)
+ 	u32 len;
+ 	prop = of_get_property(memory, "linux,drconf-usable-memory", &len);
+ 	if (!prop || len < sizeof(unsigned int))
+-		return 0;
++		return NULL;
+ 	return prop;
+ }
  
- #define PTRRELOC(x)	((typeof(x)) add_reloc_offset((unsigned long)(x)))
+@@ -1154,7 +1154,7 @@ static int hot_add_drconf_scn_to_nid(struct device_node *memory,
+  * represented in the device tree as a node (i.e. memory@XXXX) for
+  * each memblock.
+  */
+-int hot_add_node_scn_to_nid(unsigned long scn_addr)
++static int hot_add_node_scn_to_nid(unsigned long scn_addr)
+ {
+ 	struct device_node *memory;
+ 	int nid = -1;
+@@ -1235,7 +1235,7 @@ static u64 hot_add_drconf_memory_max(void)
+         struct device_node *memory = NULL;
+         unsigned int drconf_cell_cnt = 0;
+         u64 lmb_size = 0;
+-	const __be32 *dm = 0;
++	const __be32 *dm = NULL;
  
-+extern void check_for_initrd(void);
-+extern void do_init_bootmem(void);
-+extern void setup_panic(void);
-+extern int do_early_xmon;
-+
- #endif /* !__ASSEMBLY__ */
+         memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+         if (memory) {
+@@ -1535,7 +1535,7 @@ static void topology_work_fn(struct work_struct *work)
+ }
+ static DECLARE_WORK(topology_work, topology_work_fn);
  
- #endif	/* _ASM_POWERPC_SETUP_H */
-diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
-index 2d27570..9547381 100644
---- a/arch/powerpc/kernel/module.c
-+++ b/arch/powerpc/kernel/module.c
-@@ -25,8 +25,7 @@
- #include <asm/uaccess.h>
- #include <asm/firmware.h>
- #include <linux/sort.h>
--
--#include "setup.h"
-+#include <asm/setup.h>
- 
- LIST_HEAD(module_bug_list);
- 
-diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
-index 2e3200c..6cff040 100644
---- a/arch/powerpc/kernel/module_32.c
-+++ b/arch/powerpc/kernel/module_32.c
-@@ -26,8 +26,7 @@
- #include <linux/cache.h>
- #include <linux/bug.h>
- #include <linux/sort.h>
--
--#include "setup.h"
-+#include <asm/setup.h>
- 
- #if 0
- #define DEBUGP printk
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 6ee59a0..da082e8 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -26,8 +26,7 @@
- #include <asm/firmware.h>
- #include <asm/code-patching.h>
- #include <linux/sort.h>
--
--#include "setup.h"
-+#include <asm/setup.h>
- 
- /* FIXME: We don't do .init separately.  To do this, we'd need to have
-    a separate r2 value in the init and core section, and stub between
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 3d261c0..febc804 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -62,8 +62,6 @@
- #include <mm/mmu_decl.h>
- #include <asm/fadump.h>
- 
--#include "setup.h"
--
- #ifdef DEBUG
- #include <asm/udbg.h>
- #define DBG(fmt...) udbg_printf(fmt)
-diff --git a/arch/powerpc/kernel/setup.h b/arch/powerpc/kernel/setup.h
-deleted file mode 100644
-index 4c67ad7..0000000
---- a/arch/powerpc/kernel/setup.h
-+++ /dev/null
-@@ -1,9 +0,0 @@
--#ifndef _POWERPC_KERNEL_SETUP_H
--#define _POWERPC_KERNEL_SETUP_H
--
--void check_for_initrd(void);
--void do_init_bootmem(void);
--void setup_panic(void);
--extern int do_early_xmon;
--
--#endif /* _POWERPC_KERNEL_SETUP_H */
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index a4bbcae..b903dc5 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -40,8 +40,6 @@
- #include <asm/mmu_context.h>
- #include <asm/epapr_hcalls.h>
- 
--#include "setup.h"
--
- #define DBG(fmt...)
- 
- extern void bootx_init(unsigned long r4, unsigned long phys);
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 278ca93..4085aaa 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -68,8 +68,6 @@
- #include <asm/hugetlb.h>
- #include <asm/epapr_hcalls.h>
- 
--#include "setup.h"
--
- #ifdef DEBUG
- #define DBG(fmt...) udbg_printf(fmt)
- #else
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index 1d9c926..094e45c 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -34,8 +34,7 @@
- #include <asm/firmware.h>
- #include <asm/vdso.h>
- #include <asm/vdso_datapage.h>
--
--#include "setup.h"
-+#include <asm/setup.h>
- 
- #undef DEBUG
- 
+-void topology_schedule_update(void)
++static void topology_schedule_update(void)
+ {
+ 	schedule_work(&topology_work);
+ }
 -- 
 1.8.1.2
