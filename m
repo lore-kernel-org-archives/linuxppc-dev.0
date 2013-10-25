@@ -1,33 +1,17 @@
-Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 80F582C013B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 06:25:22 +1100 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rcjenn@linux.vnet.ibm.com>;
- Sat, 26 Oct 2013 00:55:16 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4013CE0018
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 00:56:47 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9PJP4Mj38142120
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 00:55:05 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9PJPCov010634
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 00:55:12 +0530
-From: Robert C Jennings <rcj@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc: Fix warnings for arch/powerpc/mm/numa.c
-Date: Fri, 25 Oct 2013 14:25:06 -0500
-Message-Id: <1382729107-13560-2-git-send-email-rcj@linux.vnet.ibm.com>
-In-Reply-To: <1382729107-13560-1-git-send-email-rcj@linux.vnet.ibm.com>
-References: <1382729107-13560-1-git-send-email-rcj@linux.vnet.ibm.com>
-Cc: Robert C Jennings <rcj@linux.vnet.ibm.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+In-reply-to: <20131025173749.GG19466@laptop.lan>
+References: <12083.1382486094@ale.ozlabs.ibm.com>
+ <20131023141948.GB3566@localhost.localdomain>
+ <20131025173749.GG19466@laptop.lan>
+Date: Sat, 26 Oct 2013 07:31:59 +1100
+Message-ID: <24406.1382733119@ale.ozlabs.ibm.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, anton@samba.org,
+ Victor Kaplansky <VICTORK@il.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,67 +21,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Simple fixes for sparse warnings in this file.
+> I would argue for:
+> 
+>   READ ->data_tail			READ ->data_head
+>   smp_rmb()	(A)			smp_rmb()	(C)
+>   WRITE $data				READ $data
+>   smp_wmb()	(B)			smp_mb()	(D)
+>   STORE ->data_head			WRITE ->data_tail
+> 
+> Where A pairs with D, and B pairs with C.
+> 
+> I don't think A needs to be a full barrier because we won't in fact
+> write data until we see the store from userspace. So we simply don't
+> issue the data WRITE until we observe it.
+> 
+> OTOH, D needs to be a full barrier since it separates the data READ from
+> the tail WRITE.
+> 
+> For B a WMB is sufficient since it separates two WRITEs, and for C an
+> RMB is sufficient since it separates two READs.
 
-Resolves:
-arch/powerpc/mm/numa.c:198:24:
-        warning: Using plain integer as NULL pointer
+FWIW the testing Victor did confirms WMB is good enough on powerpc.
 
-arch/powerpc/mm/numa.c:1157:5: 
-       warning: symbol 'hot_add_node_scn_to_nid' was not declared.
-                Should it be static?
+Thanks,
+Mikey
 
-arch/powerpc/mm/numa.c:1238:28: 
-       warning: Using plain integer as NULL pointer
-
-arch/powerpc/mm/numa.c:1538:6: 
-       warning: symbol 'topology_schedule_update' was not declared.
-                Should it be static?
-
-Signed-off-by: Robert C Jennings <rcj@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index c916127..33d6784 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -195,7 +195,7 @@ static const __be32 *of_get_usable_memory(struct device_node *memory)
- 	u32 len;
- 	prop = of_get_property(memory, "linux,drconf-usable-memory", &len);
- 	if (!prop || len < sizeof(unsigned int))
--		return 0;
-+		return NULL;
- 	return prop;
- }
- 
-@@ -1154,7 +1154,7 @@ static int hot_add_drconf_scn_to_nid(struct device_node *memory,
-  * represented in the device tree as a node (i.e. memory@XXXX) for
-  * each memblock.
-  */
--int hot_add_node_scn_to_nid(unsigned long scn_addr)
-+static int hot_add_node_scn_to_nid(unsigned long scn_addr)
- {
- 	struct device_node *memory;
- 	int nid = -1;
-@@ -1235,7 +1235,7 @@ static u64 hot_add_drconf_memory_max(void)
-         struct device_node *memory = NULL;
-         unsigned int drconf_cell_cnt = 0;
-         u64 lmb_size = 0;
--	const __be32 *dm = 0;
-+	const __be32 *dm = NULL;
- 
-         memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-         if (memory) {
-@@ -1535,7 +1535,7 @@ static void topology_work_fn(struct work_struct *work)
- }
- static DECLARE_WORK(topology_work, topology_work_fn);
- 
--void topology_schedule_update(void)
-+static void topology_schedule_update(void)
- {
- 	schedule_work(&topology_work);
- }
--- 
-1.8.1.2
+> 
+> ---
+>  kernel/events/ring_buffer.c | 29 ++++++++++++++++++++++++++---
+>  1 file changed, 26 insertions(+), 3 deletions(-)
+> 
+> diff --git a/kernel/events/ring_buffer.c b/kernel/events/ring_buffer.c
+> index cd55144270b5..c91274ef4e23 100644
+> --- a/kernel/events/ring_buffer.c
+> +++ b/kernel/events/ring_buffer.c
+> @@ -87,10 +87,31 @@ static void perf_output_put_handle(struct perf_output_handle *handle)
+>  		goto out;
+>  
+>  	/*
+> -	 * Publish the known good head. Rely on the full barrier implied
+> -	 * by atomic_dec_and_test() order the rb->head read and this
+> -	 * write.
+> +	 * Since the mmap() consumer (userspace) can run on a different CPU:
+> +	 *
+> +	 *   kernel				user
+> +	 *
+> +	 *   READ ->data_tail			READ ->data_head
+> +	 *   smp_rmb()	(A)			smp_rmb()	(C)
+> +	 *   WRITE $data			READ $data
+> +	 *   smp_wmb()	(B)			smp_mb()	(D)
+> +	 *   STORE ->data_head			WRITE ->data_tail
+> +	 * 
+> +	 * Where A pairs with D, and B pairs with C.
+> +	 * 
+> +	 * I don't think A needs to be a full barrier because we won't in fact
+> +	 * write data until we see the store from userspace. So we simply don't
+> +	 * issue the data WRITE until we observe it.
+> +	 * 
+> +	 * OTOH, D needs to be a full barrier since it separates the data READ
+> +	 * from the tail WRITE.
+> +	 * 
+> +	 * For B a WMB is sufficient since it separates two WRITEs, and for C
+> +	 * an RMB is sufficient since it separates two READs.
+> +	 *
+> +	 * See perf_output_begin().
+>  	 */
+> +	smp_wmb();
+>  	rb->user_page->data_head = head;
+>  
+>  	/*
+> @@ -154,6 +175,8 @@ int perf_output_begin(struct perf_output_handle *handle,
+>  		 * Userspace could choose to issue a mb() before updating the
+>  		 * tail pointer. So that all reads will be completed before the
+>  		 * write is issued.
+> +		 *
+> +		 * See perf_output_put_handle().
+>  		 */
+>  		tail = ACCESS_ONCE(rb->user_page->data_tail);
+>  		smp_rmb();
+> 
