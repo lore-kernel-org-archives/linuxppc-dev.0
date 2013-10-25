@@ -1,28 +1,23 @@
-Return-Path: <RA8135@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D27BA2C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 02:42:52 +1100 (EST)
-Date: Fri, 25 Oct 2013 10:25:26 -0500
-From: James Yang <James.Yang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] [RFC] Emulate "lwsync" to run standard user land on e500
- cores
-In-Reply-To: <1382697373.3926.36.camel@aoeu.buserror.net>
-Message-ID: <alpine.LRH.2.00.1310251020590.31001@ra8135-ec1.am.freescale.net>
-References: <1382081880-6666-1-git-send-email-wd@denx.de>
- <39CCEB38-1D9B-4918-B8F4-148D4E90FE21@kernel.crashing.org>
- <1382523314.3926.21.camel@aoeu.buserror.net>
- <BE5B0245-4ED1-4E3F-ADB1-F6A70C8FE3E1@kernel.crashing.org>
- <1382607919.9395.56.camel@pasglop>
- <6BFC8EB0-1A75-41C3-985A-E3ED14846710@kernel.crashing.org>
- <1382697373.3926.36.camel@aoeu.buserror.net>
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 31F402C00BB
+ for <linuxppc-dev@ozlabs.org>; Sat, 26 Oct 2013 04:38:08 +1100 (EST)
+Date: Fri, 25 Oct 2013 19:37:49 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+Message-ID: <20131025173749.GG19466@laptop.lan>
+References: <12083.1382486094@ale.ozlabs.ibm.com>
+ <20131023141948.GB3566@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org, Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131023141948.GB3566@localhost.localdomain>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linux-kernel@vger.kernel.org,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, anton@samba.org,
+ Victor Kaplansky <VICTORK@il.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,42 +27,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 25 Oct 2013, Scott Wood wrote:
+On Wed, Oct 23, 2013 at 03:19:51PM +0100, Frederic Weisbecker wrote:
+> On Wed, Oct 23, 2013 at 10:54:54AM +1100, Michael Neuling wrote:
+> > Frederic,
+> > 
+> > The comment says atomic_dec_and_test() but the code is
+> > local_dec_and_test().
+> > 
+> > On powerpc, local_dec_and_test() doesn't have a memory barrier but
+> > atomic_dec_and_test() does.  Is the comment wrong, or is
+> > local_dec_and_test() suppose to imply a memory barrier too and we have
+> > it wrongly implemented in powerpc?
 
-> Has anyone measured how much this slows things down with a typical
-> userspace?
+My bad; I converted from atomic to local without actually thinking it
+seems. Your implementation of the local primitives is fine.
 
-Not a measurement of the patch in question but an older similar patch 
-on 3.0.51 (8572 running Debian 5.0.3):
+> > diff --git a/kernel/events/ring_buffer.c b/kernel/events/ring_buffer.c
+> > index cd55144..95768c6 100644
+> > --- a/kernel/events/ring_buffer.c
+> > +++ b/kernel/events/ring_buffer.c
+> > @@ -87,10 +87,10 @@ again:
+> >  		goto out;
+> >  
+> >  	/*
+> > -	 * Publish the known good head. Rely on the full barrier implied
+> > -	 * by atomic_dec_and_test() order the rb->head read and this
+> > -	 * write.
+> > +	 * Publish the known good head. We need a memory barrier to order the
+> > +	 * order the rb->head read and this write.
+> >  	 */
+> > +	smp_mb ();
+> >  	rb->user_page->data_head = head;
+> >  
+> >  	/*
 
-$ ./test-lwsync 
-cycles per emulated lwsync = 371
-cycles per sync = 36
+Right; so that would indeed be what the comment suggests it should be.
+However I think the comment is now actively wrong too :-)
 
-----------------------------------------------------------
-#include <stdio.h>
+Since on the kernel side the buffer is strictly per-cpu, we don't need
+memory barriers there.
 
-int main (void) {
-        unsigned long atb_start, atb_stop;
-        unsigned long i;
+> I think we want this ordering:
+> 
+>     Kernel                             User
+> 
+>    READ rb->user_page->data_tail       READ rb->user_page->data_head
+>    smp_mb()                            smp_mb()
+>    WRITE rb data                       READ rb  data
+>    smp_mb()                            smp_mb()
+>    rb->user_page->data_head            WRITE rb->user_page->data_tail
+> 
 
-        asm volatile ("mfspr %0,526" : "=r" (atb_start));
-        for (i = 0; i < 100; i++) {
-                asm volatile ("lwsync");
-        }
-        asm volatile ("mfspr %0,526" : "=r" (atb_stop));
-        printf("cycles per emulated lwsync = %lu\n", (atb_stop - 
-atb_start) / 100);
+I would argue for:
 
-        asm volatile ("mfspr %0,526" : "=r" (atb_start));
-        for (i = 0; i < 100; i++) {
-                asm volatile ("sync");
-        }
-        asm volatile ("mfspr %0,526" : "=r" (atb_stop));
+  READ ->data_tail			READ ->data_head
+  smp_rmb()	(A)			smp_rmb()	(C)
+  WRITE $data				READ $data
+  smp_wmb()	(B)			smp_mb()	(D)
+  STORE ->data_head			WRITE ->data_tail
 
-        printf("cycles per sync = %lu\n", (atb_stop - atb_start) / 
-100);
+Where A pairs with D, and B pairs with C.
 
-        return 0;
-}
-----------------------------------------------------------
+I don't think A needs to be a full barrier because we won't in fact
+write data until we see the store from userspace. So we simply don't
+issue the data WRITE until we observe it.
+
+OTOH, D needs to be a full barrier since it separates the data READ from
+the tail WRITE.
+
+For B a WMB is sufficient since it separates two WRITEs, and for C an
+RMB is sufficient since it separates two READs.
+
+---
+ kernel/events/ring_buffer.c | 29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/events/ring_buffer.c b/kernel/events/ring_buffer.c
+index cd55144270b5..c91274ef4e23 100644
+--- a/kernel/events/ring_buffer.c
++++ b/kernel/events/ring_buffer.c
+@@ -87,10 +87,31 @@ static void perf_output_put_handle(struct perf_output_handle *handle)
+ 		goto out;
+ 
+ 	/*
+-	 * Publish the known good head. Rely on the full barrier implied
+-	 * by atomic_dec_and_test() order the rb->head read and this
+-	 * write.
++	 * Since the mmap() consumer (userspace) can run on a different CPU:
++	 *
++	 *   kernel				user
++	 *
++	 *   READ ->data_tail			READ ->data_head
++	 *   smp_rmb()	(A)			smp_rmb()	(C)
++	 *   WRITE $data			READ $data
++	 *   smp_wmb()	(B)			smp_mb()	(D)
++	 *   STORE ->data_head			WRITE ->data_tail
++	 * 
++	 * Where A pairs with D, and B pairs with C.
++	 * 
++	 * I don't think A needs to be a full barrier because we won't in fact
++	 * write data until we see the store from userspace. So we simply don't
++	 * issue the data WRITE until we observe it.
++	 * 
++	 * OTOH, D needs to be a full barrier since it separates the data READ
++	 * from the tail WRITE.
++	 * 
++	 * For B a WMB is sufficient since it separates two WRITEs, and for C
++	 * an RMB is sufficient since it separates two READs.
++	 *
++	 * See perf_output_begin().
+ 	 */
++	smp_wmb();
+ 	rb->user_page->data_head = head;
+ 
+ 	/*
+@@ -154,6 +175,8 @@ int perf_output_begin(struct perf_output_handle *handle,
+ 		 * Userspace could choose to issue a mb() before updating the
+ 		 * tail pointer. So that all reads will be completed before the
+ 		 * write is issued.
++		 *
++		 * See perf_output_put_handle().
+ 		 */
+ 		tail = ACCESS_ONCE(rb->user_page->data_tail);
+ 		smp_rmb();
