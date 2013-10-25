@@ -1,27 +1,32 @@
-Return-Path: <B31939@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A388D2C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2013 16:58:26 +1100 (EST)
-Message-ID: <526A086E.305@freescale.com>
-Date: Fri, 25 Oct 2013 13:58:06 +0800
-From: Lian Minghuan-b31939 <B31939@freescale.com>
+Return-Path: <thierry.reding@gmail.com>
+Received: from mail-ee0-x232.google.com (mail-ee0-x232.google.com
+ [IPv6:2a00:1450:4013:c00::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0F87E2C016B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2013 18:35:43 +1100 (EST)
+Received: by mail-ee0-f50.google.com with SMTP id l10so1695891eei.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2013 00:35:37 -0700 (PDT)
+Date: Fri, 25 Oct 2013 09:35:35 +0200
+From: Thierry Reding <thierry.reding@gmail.com>
+To: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH v2 08/10] of/platform: Resolve interrupt references at
+ probe time
+Message-ID: <20131025073534.GA19622@ulmo.nvidia.com>
+References: <1379510692-32435-1-git-send-email-treding@nvidia.com>
+ <1379510692-32435-9-git-send-email-treding@nvidia.com>
+ <20131015232436.19F61C40099@trevor.secretlab.ca>
+ <20131024163749.68D01C403B6@trevor.secretlab.ca>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>, Minghuan Lian
- <Minghuan.Lian@freescale.com>
-Subject: Re: [PATCH 02/12][v3] pci: fsl: add structure fsl_pci
-References: <1382524894-15164-1-git-send-email-Minghuan.Lian@freescale.com>
- <1382524894-15164-2-git-send-email-Minghuan.Lian@freescale.com>
- <2B28E421-9B64-4CEC-9E00-8893502CE12F@kernel.crashing.org>
-In-Reply-To: <2B28E421-9B64-4CEC-9E00-8893502CE12F@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org,
- Zang Roy-R61911 <r61911@freescale.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="fUYQa+Pmc3FrFX/N"
+In-Reply-To: <20131024163749.68D01C403B6@trevor.secretlab.ca>
+Cc: devicetree@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ linux-mips@linux-mips.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Rob Herring <rob.herring@calxeda.com>, sparclinux@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,98 +37,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kumar,
 
-please see my comment inline.
+--fUYQa+Pmc3FrFX/N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 10/24/2013 12:11 PM, Kumar Gala wrote:
-> On Oct 23, 2013, at 5:41 AM, Minghuan Lian wrote:
->
->> PowerPC uses structure pci_controller to describe PCI controller,
->> but ARM uses structure pci_sys_data. In order to support PowerPC
->> and ARM simultaneously, the patch adds a structure fsl_pci that
->> contains most of the members of the pci_controller and pci_sys_data.
->> Meanwhile, it defines a interface fsl_arch_sys_to_pci() which should
->> be implemented in architecture-specific PCI controller driver to
->> convert pci_controller or pci_sys_data to fsl_pci.
->>
->> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
->> ---
->> change log:
->> v1-v3:
->> Derived from http://patchwork.ozlabs.org/patch/278965/
->>
->> Based on upstream master.
->> Based on the discussion of RFC version here
->> http://patchwork.ozlabs.org/patch/274487/
->>
->> include/linux/fsl/pci-common.h | 41 +++++++++++++++++++++++++++++++++++++++++
->> 1 file changed, 41 insertions(+)
-> NAK.
->
-> We discussed this some at the ARM Summit this week and the feeling is we need to move to a common interface between the various ARCHs.
-[Minghuan] Do you mean we will use the common interface instead of 
-arch/powerpc/kernel/pci-common.c...
-and arch/arm/kernel/bios32.c?  Who will do the code movement and when 
-will the work be completed? The patches just move the common functions 
-of FSL PCI controller operation which can be re-used by PowerPC and ARM. 
-LS1 is coming, I worry about not having enough time to wait for the move 
-is completed.
+On Thu, Oct 24, 2013 at 05:37:49PM +0100, Grant Likely wrote:
+> On Wed, 16 Oct 2013 00:24:36 +0100, Grant Likely <grant.likely@linaro.org=
+> wrote:
+> > On Wed, 18 Sep 2013 15:24:50 +0200, Thierry Reding <thierry.reding@gmai=
+l.com> wrote:
+> > > Interrupt references are currently resolved very early (when a device=
+ is
+> > > created). This has the disadvantage that it will fail in cases where =
+the
+> > > interrupt parent hasn't been probed and no IRQ domain for it has been
+> > > registered yet. To work around that various drivers use explicit
+> > > initcall ordering to force interrupt parents to be probed before devi=
+ces
+> > > that need them are created. That's error prone and doesn't always wor=
+k.
+> > > If a platform device uses an interrupt line connected to a different
+> > > platform device (such as a GPIO controller), both will be created in =
+the
+> > > same batch, and the GPIO controller won't have been probed by its dri=
+ver
+> > > when the depending platform device is created. Interrupt resolution w=
+ill
+> > > fail in that case.
+> >=20
+> > What is the reason for all the rework on the irq parsing return values?
+> > A return value of '0' is always an error on irq parsing, regardless of
+> > architecture even if NO_IRQ is defined as -1. I may have missed it, but
+> > I don't see any checking for specific error values in the return paths
+> > of the functions.
+> >=20
+> > If the specific return value isn't required (and I don't think it is),
+> > then you can simplify the whole series by getting rid of the rework
+> > patches.
+>=20
+> I've not heard back about the above, but I've just had a conversation
+> with Rob about what to do here.
 
-> - k
->
->> diff --git a/include/linux/fsl/pci-common.h b/include/linux/fsl/pci-common.h
->> index 5e4f683..e56a040 100644
->> --- a/include/linux/fsl/pci-common.h
->> +++ b/include/linux/fsl/pci-common.h
->> @@ -102,5 +102,46 @@ struct ccsr_pci {
->>
->> };
->>
->> +/*
->> + * Structure of a PCI controller (host bridge)
->> + */
->> +struct fsl_pci {
->> +	struct list_head node;
->> +	bool is_pcie;
->> +	struct device_node *dn;
->> +	struct device *dev;
->> +
->> +	int first_busno;
->> +	int last_busno;
->> +	int self_busno;
->> +	struct resource busn;
->> +
->> +	struct pci_ops *ops;
->> +	struct ccsr_pci __iomem *regs;
->> +
->> +	u32 indirect_type;
->> +
->> +	struct resource io_resource;
->> +	resource_size_t io_base_phys;
->> +	resource_size_t pci_io_size;
->> +
->> +	struct resource mem_resources[3];
->> +	resource_size_t mem_offset[3];
->> +
->> +	int global_number;	/* PCI domain number */
->> +
->> +	resource_size_t dma_window_base_cur;
->> +	resource_size_t dma_window_size;
->> +
->> +	void *sys;
->> +};
->> +
->> +/*
->> + * Convert architecture specific pci controller structure to fsl_pci
->> + * PowerPC uses structure pci_controller and ARM uses structure pci_sys_data
->> + * to describe pci controller.
->> + */
->> +extern struct fsl_pci *fsl_arch_sys_to_pci(void *sys);
->> +
->> #endif /* __PCI_COMMON_H */
->> #endif /* __KERNEL__ */
->> -- 
->> 1.8.1.2
->>
->
+I thought I had sent a reply regarding this about a week ago. Perhaps it
+got lost. I'll resend.
+
+> The problem that I have is that it makes a specific return code need
+> to traverse several levels of function calls and have a meaning come
+> out the other end. It becomes difficult to figure out where that code
+> actually comes from when reading the code. That's more of a gut-feel
+> reaction rather than pointing out specifics though.
+
+To be honest, I'm not all that happy with that aspect myself, but at the
+same time I didn't feel like duplicating a lot of code to get this done
+more easily. I imagine that would've caused significant pushback as
+well. It's somewhat unfortunate that we have to propagate back through
+several level, but that's just the way the code is currently written and
+I don't think we can really get the information (EPROBE_DEFER) from any
+other place but from the lowest level.
+
+> The other thing that makes me nervous how invasive the series is.
+
+Well, I guess that comes with the territory, doesn't it? Interrupts are
+used in a large number of places and they have been used in a very
+static manner so far. The end result of this patch series is that for
+most devices instantiated from the device tree interrupts end up in the
+same category as any other resources such as GPIOs, regulators or
+clocks. They become mostly dynamic.
+
+That in itself is a big change, so I don't think it's all that
+surprising that the required changes are invasive.
+
+And I think if we really want to solve it properly we need to make even
+more invasive changes. For example, Grygorii pointed out that we could
+have a setup in the future where the following happens:
+
+	1) driver providing interrupts is probed
+	2) driver using interrupts is probed, interrupt references are
+	   resolved at probe time
+	3) both drivers are unloaded
+	4) both drivers are reloaded
+
+In that case with the current set of patches the added core code assumes
+that the interrupts have already been resolved and are still valid.
+
+Possibly the easiest way to fix that would be to just zero out the
+interrupt resources on remove so that they can be re-resolved on next
+probe.
+
+But that's somewhat cumbersome and it seems to me like a better fix
+might be to go and change struct platform_device to not use a single
+array of resources, but rather a list, or perhaps an array per type of
+resource. The current platform_device structure is simple and easy, but
+it doesn't work well with all the new dynamicity that we want/need/have
+today.
+
+Obviously modifying the innards of struct platform_device will likely
+turn out to be a mammoth task of its own, but if that's what it takes
+I'm prepared to do that as well. Or at least even try.
+
+> However, even with saying all of the above, I'm not saying outright no.
+> I want to get this feature in.
+
+That's good to hear. Last time we talked about it we seemed to have an
+agreement that this needs to be done, but you not replying had me
+worried that perhaps you had changed your mind. It seems you've been
+busy trying to address other issues that maybe are even more pressing so
+I can hardly complain. =3D)
+
+I'm good as long as we can keep moving in the right direction.
+
+> It is obviously needed and I'll even merge the patches piecemeal as the
+> look ready (I've already merged 2). Regardless, the current series needs
+> to be reworked. It conflicts with the other IRQ rework that I've already
+> put into my tree. The best thing to do would probably be respin it
+> against my current tree and repost.
+
+Sure, that won't be a problem. I might not get to it immediately, but
+I'll get back to it.
+
+> I'll take a fresh look then.... In the mean time, anything you can do to
+> /sanely/ reduce the impact will probably help.  :-)
+
+I might be able to do that. But I'll mention that in another thread in
+the right context.
+
+Thierry
+
+--fUYQa+Pmc3FrFX/N
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSah9GAAoJEN0jrNd/PrOhglEQALEA8kYxwwnW0OoScRWWD2Fw
+conQGp/mjJecS8927ypLouy7SX2DNAX/234wnaTPGVrnJ9xwXS1Y4Xd+uEd2DWQO
+9NfWP+9bdWhIbVO7oVpX6uQtUT4OXcelmMOVmvotDIAnBFHA5jLE6RwWpW8Pn3yU
+YSGaDkiOGHU0o2K5kk3+ZxqtZaDpm32MgtzB/ZcJWgJkUmebZ1gof01ARsev3+Vb
+5IC3tuhzT6uNR3fxEhoyPUN71f2+1tUNzzjVhn5A9nuAYnU4pYLkLwN3KXf7q1V2
+FfX6UhHC5mqHXkmdPqiT5Cg8rtS9nulq3zDwDd65HYq/g2Xlp/Qo5798h6xdoqeF
+EjCAOvucO333e7Ce9AiiDZsU6njVriNZU3UemPc2oW6BV1aOsUFaw/htbu1f7jze
+XmOtwGrY7fcQCVwNc7ff8aHsQ2equ6lPieN+HYI9hYQdysOpH8XBVlTP3OfJrhro
+hk2Zhhj4tJxBY80Wtd4g8TNtXa0n7HCzaTXdi7Ia7xpIlZ93XPENznOOTcXlYhhj
+dilfWfJX6ZpaPFd5bNcQr+iKNmIOM4x8DZYG8Ds+olEEgDm1uM4FsfqFZYaDJnPU
+93FDVkj/k7SLWzyk2FUnWMydi2P1A+Qr7il89cVMbazzMxRilwvpRXPGigVN69dV
+4+nSk5B422FhPGAEUZl9
+=WlHh
+-----END PGP SIGNATURE-----
+
+--fUYQa+Pmc3FrFX/N--
