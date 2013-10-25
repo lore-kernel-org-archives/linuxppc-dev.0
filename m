@@ -1,23 +1,31 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 31F402C00BB
- for <linuxppc-dev@ozlabs.org>; Sat, 26 Oct 2013 04:38:08 +1100 (EST)
-Date: Fri, 25 Oct 2013 19:37:49 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131025173749.GG19466@laptop.lan>
-References: <12083.1382486094@ale.ozlabs.ibm.com>
- <20131023141948.GB3566@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131023141948.GB3566@localhost.localdomain>
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linux-kernel@vger.kernel.org,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, anton@samba.org,
- Victor Kaplansky <VICTORK@il.ibm.com>
+Return-Path: <rcjenn@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8105C2C0141
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 06:25:22 +1100 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rcjenn@linux.vnet.ibm.com>;
+ Sat, 26 Oct 2013 00:55:17 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id CE4021258051
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 00:55:49 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9PJP9k636307158
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 00:55:10 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9PJPCX2003720
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 00:55:12 +0530
+From: Robert C Jennings <rcj@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/2] powerpc: Sparse fixes for numa.c
+Date: Fri, 25 Oct 2013 14:25:05 -0500
+Message-Id: <1382729107-13560-1-git-send-email-rcj@linux.vnet.ibm.com>
+Cc: Robert C Jennings <rcj@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,126 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 23, 2013 at 03:19:51PM +0100, Frederic Weisbecker wrote:
-> On Wed, Oct 23, 2013 at 10:54:54AM +1100, Michael Neuling wrote:
-> > Frederic,
-> > 
-> > The comment says atomic_dec_and_test() but the code is
-> > local_dec_and_test().
-> > 
-> > On powerpc, local_dec_and_test() doesn't have a memory barrier but
-> > atomic_dec_and_test() does.  Is the comment wrong, or is
-> > local_dec_and_test() suppose to imply a memory barrier too and we have
-> > it wrongly implemented in powerpc?
+Cleaning out some stashed fixes for sparse warnings found while
+working on 3be7db6: (powerpc: VPHN topology change updates all siblings)
 
-My bad; I converted from atomic to local without actually thinking it
-seems. Your implementation of the local primitives is fine.
+I don't see a reason why the declarations in arch/powerpc/kernel/setup.h
+can't live in arch/powerpc/include/asm/setup.h and .../mm/numa.c
+should include these definitions.
 
-> > diff --git a/kernel/events/ring_buffer.c b/kernel/events/ring_buffer.c
-> > index cd55144..95768c6 100644
-> > --- a/kernel/events/ring_buffer.c
-> > +++ b/kernel/events/ring_buffer.c
-> > @@ -87,10 +87,10 @@ again:
-> >  		goto out;
-> >  
-> >  	/*
-> > -	 * Publish the known good head. Rely on the full barrier implied
-> > -	 * by atomic_dec_and_test() order the rb->head read and this
-> > -	 * write.
-> > +	 * Publish the known good head. We need a memory barrier to order the
-> > +	 * order the rb->head read and this write.
-> >  	 */
-> > +	smp_mb ();
-> >  	rb->user_page->data_head = head;
-> >  
-> >  	/*
+Robert C Jennings (2):
+  powerpc: Fix warnings for arch/powerpc/mm/numa.c
+  powerpc: Move local setup.h declarations to arch includes
 
-Right; so that would indeed be what the comment suggests it should be.
-However I think the comment is now actively wrong too :-)
+ arch/powerpc/include/asm/setup.h   | 5 +++++
+ arch/powerpc/kernel/module.c       | 3 +--
+ arch/powerpc/kernel/module_32.c    | 3 +--
+ arch/powerpc/kernel/module_64.c    | 3 +--
+ arch/powerpc/kernel/setup-common.c | 2 --
+ arch/powerpc/kernel/setup.h        | 9 ---------
+ arch/powerpc/kernel/setup_32.c     | 2 --
+ arch/powerpc/kernel/setup_64.c     | 2 --
+ arch/powerpc/kernel/vdso.c         | 3 +--
+ arch/powerpc/mm/numa.c             | 8 ++++----
+ 10 files changed, 13 insertions(+), 27 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/setup.h
 
-Since on the kernel side the buffer is strictly per-cpu, we don't need
-memory barriers there.
-
-> I think we want this ordering:
-> 
->     Kernel                             User
-> 
->    READ rb->user_page->data_tail       READ rb->user_page->data_head
->    smp_mb()                            smp_mb()
->    WRITE rb data                       READ rb  data
->    smp_mb()                            smp_mb()
->    rb->user_page->data_head            WRITE rb->user_page->data_tail
-> 
-
-I would argue for:
-
-  READ ->data_tail			READ ->data_head
-  smp_rmb()	(A)			smp_rmb()	(C)
-  WRITE $data				READ $data
-  smp_wmb()	(B)			smp_mb()	(D)
-  STORE ->data_head			WRITE ->data_tail
-
-Where A pairs with D, and B pairs with C.
-
-I don't think A needs to be a full barrier because we won't in fact
-write data until we see the store from userspace. So we simply don't
-issue the data WRITE until we observe it.
-
-OTOH, D needs to be a full barrier since it separates the data READ from
-the tail WRITE.
-
-For B a WMB is sufficient since it separates two WRITEs, and for C an
-RMB is sufficient since it separates two READs.
-
----
- kernel/events/ring_buffer.c | 29 ++++++++++++++++++++++++++---
- 1 file changed, 26 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/events/ring_buffer.c b/kernel/events/ring_buffer.c
-index cd55144270b5..c91274ef4e23 100644
---- a/kernel/events/ring_buffer.c
-+++ b/kernel/events/ring_buffer.c
-@@ -87,10 +87,31 @@ static void perf_output_put_handle(struct perf_output_handle *handle)
- 		goto out;
- 
- 	/*
--	 * Publish the known good head. Rely on the full barrier implied
--	 * by atomic_dec_and_test() order the rb->head read and this
--	 * write.
-+	 * Since the mmap() consumer (userspace) can run on a different CPU:
-+	 *
-+	 *   kernel				user
-+	 *
-+	 *   READ ->data_tail			READ ->data_head
-+	 *   smp_rmb()	(A)			smp_rmb()	(C)
-+	 *   WRITE $data			READ $data
-+	 *   smp_wmb()	(B)			smp_mb()	(D)
-+	 *   STORE ->data_head			WRITE ->data_tail
-+	 * 
-+	 * Where A pairs with D, and B pairs with C.
-+	 * 
-+	 * I don't think A needs to be a full barrier because we won't in fact
-+	 * write data until we see the store from userspace. So we simply don't
-+	 * issue the data WRITE until we observe it.
-+	 * 
-+	 * OTOH, D needs to be a full barrier since it separates the data READ
-+	 * from the tail WRITE.
-+	 * 
-+	 * For B a WMB is sufficient since it separates two WRITEs, and for C
-+	 * an RMB is sufficient since it separates two READs.
-+	 *
-+	 * See perf_output_begin().
- 	 */
-+	smp_wmb();
- 	rb->user_page->data_head = head;
- 
- 	/*
-@@ -154,6 +175,8 @@ int perf_output_begin(struct perf_output_handle *handle,
- 		 * Userspace could choose to issue a mb() before updating the
- 		 * tail pointer. So that all reads will be completed before the
- 		 * write is issued.
-+		 *
-+		 * See perf_output_put_handle().
- 		 */
- 		tail = ACCESS_ONCE(rb->user_page->data_tail);
- 		smp_rmb();
+-- 
+1.8.1.2
