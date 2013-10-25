@@ -1,33 +1,32 @@
-Return-Path: <r63061@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 943D92C012D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2013 20:50:07 +1100 (EST)
-Received: from mail84-am1 (localhost [127.0.0.1])	by mail84-am1-R.bigfish.com
- (Postfix) with ESMTP id 1435E480232	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,
- 25 Oct 2013 09:50:00 +0000 (UTC)
-Received: from AM1EHSMHS017.bigfish.com (unknown [10.3.201.248])	by
- mail84-am1.bigfish.com (Postfix) with ESMTP id 69BE43A0067	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2013 09:49:57 +0000 (UTC)
-From: Xie Xiaobo-R63061 <r63061@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH V4 3/3] powerpc/85xx: Add TWR-P1025 board support
-Date: Fri, 25 Oct 2013 09:49:51 +0000
-Message-ID: <69EC9ED88E3CC04094A78F8074A7986D6264C9@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <1380019739-8196-1-git-send-email-X.Xie@freescale.com>
- <1380019739-8196-3-git-send-email-X.Xie@freescale.com>
- <1380064944.24959.143.camel@snotra.buserror.net>
- <69EC9ED88E3CC04094A78F8074A7986D5FF91C@039-SN1MPN1-003.039d.mgd.msft.net>
- <1380301430.24959.399.camel@snotra.buserror.net>
-In-Reply-To: <1380301430.24959.399.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 071922C00E3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2013 21:00:54 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 00863-02 for <linuxppc-dev@lists.ozlabs.org>;
+ Fri, 25 Oct 2013 11:00:44 +0100 (BST)
 MIME-Version: 1.0
-Cc: Johnston Michael-R49610 <r49610@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH] [RFC] Emulate "lwsync" to run standard user land on e500
+ cores
+Date: Fri, 25 Oct 2013 10:58:16 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B73B1@saturn3.aculab.com>
+In-Reply-To: <CE506A05CAAF2A42B6F5840E6093C92D08895AC8@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1382081880-6666-1-git-send-email-wd@denx.de>
+ <39CCEB38-1D9B-4918-B8F4-148D4E90FE21@kernel.crashing.org>
+ <1382523314.3926.21.camel@aoeu.buserror.net>
+ <BE5B0245-4ED1-4E3F-ADB1-F6A70C8FE3E1@kernel.crashing.org>
+ <1382607919.9395.56.camel@pasglop>
+ <6BFC8EB0-1A75-41C3-985A-E3ED14846710@kernel.crashing.org>
+ <alpine.LRH.2.00.1310241556390.31001@ra8135-ec1.am.freescale.net>,
+ <26976A96-8DF8-44EB-8B9B-E23200738F4E@kernel.crashing.org>
+ <CE506A05CAAF2A42B6F5840E6093C92D08895AC8@039-SN1MPN1-005.039d.mgd.msft.net>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Yang James-RA8135" <RA8135@freescale.com>,
+ "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,27 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgU2NvdHQsDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBT
-Y290dC1CMDc0MjENCj4gU2VudDogU2F0dXJkYXksIFNlcHRlbWJlciAyOCwgMjAxMyAxOjA0IEFN
-DQo+IFRvOiBYaWUgWGlhb2JvLVI2MzA2MQ0KPiBDYzogV29vZCBTY290dC1CMDc0MjE7IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBKb2huc3RvbiBNaWNoYWVsLQ0KPiBSNDk2MTANCj4g
-U3ViamVjdDogUmU6IFtQQVRDSCBWNCAzLzNdIHBvd2VycGMvODV4eDogQWRkIFRXUi1QMTAyNSBi
-b2FyZCBzdXBwb3J0DQo+IA0KPiBPbiBXZWQsIDIwMTMtMDktMjUgYXQgMDQ6NTAgLTA1MDAsIFhp
-ZSBYaWFvYm8tUjYzMDYxIHdyb3RlOg0KPiA+ID4gPiArI2lmIGRlZmluZWQoQ09ORklHX1NFUklB
-TF9RRSkNCj4gPiA+ID4gKwkJCS8qIE9uIFAxMDI1VFdSIGJvYXJkLCB0aGUgVUNDNyBhY3RlZCBh
-cyBVQVJUIHBvcnQuDQo+ID4gPiA+ICsJCQkgKiBIb3dldmVyLCBUaGUgVUNDNydzIENUUyBwaW4g
-aXMgbG93IGxldmVsIGluDQo+IGRlZmF1bHQsDQo+ID4gPiA+ICsJCQkgKiBpdCB3aWxsIGltcGFj
-dCB0aGUgdHJhbnNtaXNzaW9uIGluIGZ1bGwgZHVwbGV4DQo+ID4gPiA+ICsJCQkgKiBjb21tdW5p
-Y2F0aW9uLiBTbyBkaXNhYmxlIHRoZSBGbG93IGNvbnRyb2wgcGluDQo+IFBBMTguDQo+ID4gPiA+
-ICsJCQkgKiBUaGUgVUNDNyBVQVJUIGp1c3QgY2FuIHVzZSBSWEQgYW5kIFRYRCBwaW5zLg0KPiA+
-ID4gPiArCQkJICovDQo+ID4gPiA+ICsJCQlwYXJfaW9fY29uZmlnX3BpbigwLCAxOCwgMCwgMCwg
-MCwgMCk7ICNlbmRpZg0KPiA+ID4NCj4gPiA+IEFueSByZWFzb24gbm90IHRvIGRvIHRoaXMgdW5j
-b25kaXRpb25hbGx5Pw0KPiA+DQo+ID4gVGhpcyBpcyBhIGJvYXJkIGlzc3VlLCB0aGUgY29kZSBh
-bHJlYWR5IGhhdmUgYSBjb25kaXRpb24gLSBkZWZpbmVkDQo+ID4gU0VSSUFMX1FFLCBhbmQgSSB3
-aWxsIGFkZCBhIGNvbmRpdGlvbiAiaWYgKG1hY2hpbmVfaXModHdyX3AxMDI1KSkiLg0KPiANCj4g
-TXkgcG9pbnQgd2FzLCBpcyB0aGVyZSBhbnkgaGFybSBpbiBkb2luZyB0aGlzIHdpdGhvdXQgcmVn
-YXJkIHRvDQo+IENPTkZJR19TRVJJQUxfUUU/DQoNClRoZSBDVFMgcGluIHdpbGwgYmUgdGhlIHBp
-biBvZiBwcm9maWJ1cyBpZiBhZGQgYSBwcm9maWJ1cyBleHBhbnNpb24gYm9hcmQgaW4gVFdSIHN5
-c3RlbS4gSWYgZGlzYWJsZSB0aGUgcGluIHVuY29uZGl0aW9uYWxseSwgaXQgd2lsbCBhZmZlY3Qg
-dGhlIGZ1bmN0aW9uIG9mIHByb2ZpYnVzLiAgDQoNCi1YaWUgWGlhb2JvDQo+IA0KPiAtU2NvdHQN
-Cj4gDQoNCg==
+> This is not a distro issue. It's a libstdc++ portability issue. =
+libstdc++
+> hardcodes lwsync unless __NO_LWSYNC__ is explicitly defined,
+> which you only get with -mcpu=3D8540/-mcpu=3D8548.  When compiled
+> for any powerpc target other than -mcpu=3D8540/-mcpu=3D8548, including
+> the default -mcpu=3Dcommon,  libstdc++ will end up containing lwsync.
+> There is no way to explicitly request libstdc++ to be built without =
+lwsync
+> with an -mcpu target other than 8540/8548.
+>=20
+> The issue is easily demonstrated by running a program that throws a
+> C++ exception: __cxa_throw() is called, which has an lwsync.  This
+> results in an illegal instruction exception when run on an =
+e500v1/e500v2.
+
+Perhaps libstc++ should be working out at run time whether lwsync is =
+valid?
+
+	David
