@@ -1,31 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E64BF2C0199
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2013 18:26:51 +1100 (EST)
-Subject: Re: [PATCH] [RFC] Emulate "lwsync" to run standard user land on e500
- cores
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1382706165.9395.63.camel@pasglop>
-Date: Sat, 26 Oct 2013 02:26:34 -0500
-Message-Id: <E3FB9026-E817-48B7-81B7-5C465A2048DF@kernel.crashing.org>
-References: <1382081880-6666-1-git-send-email-wd@denx.de>
- <39CCEB38-1D9B-4918-B8F4-148D4E90FE21@kernel.crashing.org>
- <1382523314.3926.21.camel@aoeu.buserror.net>
- <BE5B0245-4ED1-4E3F-ADB1-F6A70C8FE3E1@kernel.crashing.org>
- <1382607919.9395.56.camel@pasglop>
- <6BFC8EB0-1A75-41C3-985A-E3ED14846710@kernel.crashing.org>
- <alpine.LRH.2.00.1310241556390.31001@ra8135-ec1.am.freescale.net> ,
- <26976A96-8DF8-44EB-8B9B-E23200738F4E@kernel.crashing.org>
- <CE506A05CAAF2A42B6F5840E6093C92D08895AC8@039-SN1MPN1-005.039d.mgd.msft.net>
- <AE90C24D6B3A694183C094C60CF0A2F6026B73B1@saturn3.aculab.com>
- <1382706165.9395.63.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Yang James-RA8135 <RA8135@freescale.com>,
- David Laight <David.Laight@ACULAB.COM>, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 0F9A22C013B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2013 07:34:30 +1100 (EST)
+Date: Sat, 26 Oct 2013 21:34:12 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Wei Yongjun <weiyj.lk@gmail.com>
+Message-ID: <20131026203412.GC6362@sirena.org.uk>
+References: <CAPgLHd-2d+RLDq1U=wXR72nAEH1Hr6FDcWp0eAyEkrNmfjrEaA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="iFRdW5/EC4oqxDHL"
+In-Reply-To: <CAPgLHd-2d+RLDq1U=wXR72nAEH1Hr6FDcWp0eAyEkrNmfjrEaA@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_spdif: fix return value check in
+ fsl_spdif_probe()
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ timur@tabi.org, rob.herring@calxeda.com, perex@perex.cz,
+ yongjun_wei@trendmicro.com.cn, grant.likely@linaro.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,40 +29,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 25, 2013, at 8:02 AM, Benjamin Herrenschmidt wrote:
+--iFRdW5/EC4oqxDHL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Fri, 2013-10-25 at 10:58 +0100, David Laight wrote:
->>> This is not a distro issue. It's a libstdc++ portability issue. =
-libstdc++
->>> hardcodes lwsync unless __NO_LWSYNC__ is explicitly defined,
->>> which you only get with -mcpu=3D8540/-mcpu=3D8548.  When compiled
->>> for any powerpc target other than -mcpu=3D8540/-mcpu=3D8548, =
-including
->>> the default -mcpu=3Dcommon,  libstdc++ will end up containing =
-lwsync.
->>> There is no way to explicitly request libstdc++ to be built without =
-lwsync
->>> with an -mcpu target other than 8540/8548.
->>>=20
->>> The issue is easily demonstrated by running a program that throws a
->>> C++ exception: __cxa_throw() is called, which has an lwsync.  This
->>> results in an illegal instruction exception when run on an =
-e500v1/e500v2.
->>=20
->> Perhaps libstc++ should be working out at run time whether lwsync is =
-valid?
+On Fri, Oct 25, 2013 at 05:29:25PM +0800, Wei Yongjun wrote:
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 >=20
-> Do we have enough coats of paint on this bike shed yet ? :-)
->=20
-> I'm personally tempted to take Scott's approach since that's what we =
-do
-> for other things as well, it just works and is simple.
->=20
-> Cheers,
-> Ben.
->=20
+> In case of error, the function platform_get_resource() returns NULL
+> pointer not ERR_PTR(). The IS_ERR() test in the return value check
+> should be replaced with NULL test.
 
-I give in, however some should test with CONFIG_PPC_EMULATED_STATS and =
-fix what I'm guessing is a build breakage with either patch.
+Applied, thanks.
 
-- k
+--iFRdW5/EC4oqxDHL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSbCdBAAoJELSic+t+oim9tXoP/R8vKktz5XS1Z9dhDYcNtlAw
+fgsVHr0oSIqCXIO7vtLQH+HkFJoP80gWfP0DWAAmE24ho7AccKfohsTHSkYecuxd
+rhnDRfQa22p8WTTGEcn6A01bm3dtOpGs3xw/claxRaGZEafaCXRFJaAwcdEWd/6N
+gbhx2/v7vdNVxRWbL5BUFcVvNRo+DNN2rA5KugeK3e68KriCl6eg5iUrGhZKH0PB
+tF3zr4bRslzVVEuUNic9VPjaiE9VzNmCTab0pHR8c3Na4NcoBANHnCBN/dGLkGwW
+zF0kzAY6SLvgSCNSIqZIyvFXqMfsjEbiC4aikMtMw5ONdCqvBYb6ob5RP2r6GrD0
+EzBaAnsLKgr2Nf5xNO40VAy8qYcnYPS4ATIzUYvO1WhOEkEINjjNBwBMNyBGi08M
+rdhv8hiafQOKJsp3zibHCq0SbNbe3J0RPwF9cAz0qOErIWUT8JaFcGgeHaaVJ5f8
+COsD1N805PCxT+tdGUNBo99x0cogG5vutUVB+hU9pX2GUDtjPudLP56PlUG7+K1J
+fxCPVGk63iFhA7QcW5tYYR0671WjDgxMKNXEgtLve5ccoOJXgkrgYNYDt5vPMm8v
+LBOL91XXIGW/7IGKddRniybriv7+/2hBdWbhPvWFMV5iC39X/z/C0eESdW/+k39E
+fpEU/rQOWEhnq0AqTjvK
+=UNV2
+-----END PGP SIGNATURE-----
+
+--iFRdW5/EC4oqxDHL--
