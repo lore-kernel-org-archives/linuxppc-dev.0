@@ -1,42 +1,25 @@
-Return-Path: <victork@il.ibm.com>
-Received: from e06smtp18.uk.ibm.com (e06smtp18.uk.ibm.com [195.75.94.114])
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp18.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A3FB2C011F
- for <linuxppc-dev@ozlabs.org>; Sun, 27 Oct 2013 20:00:46 +1100 (EST)
-Received: from /spool/local
- by e06smtp18.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <victork@il.ibm.com>;
- Sun, 27 Oct 2013 09:00:41 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 7D0A117D8057
- for <linuxppc-dev@ozlabs.org>; Sun, 27 Oct 2013 09:00:10 +0000 (GMT)
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
- [9.149.37.247])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9R90PL362783526
- for <linuxppc-dev@ozlabs.org>; Sun, 27 Oct 2013 09:00:25 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9R90akT006067
- for <linuxppc-dev@ozlabs.org>; Sun, 27 Oct 2013 03:00:37 -0600
-In-Reply-To: <20131025173749.GG19466@laptop.lan>
-References: <12083.1382486094@ale.ozlabs.ibm.com>
- <20131023141948.GB3566@localhost.localdomain>
- <20131025173749.GG19466@laptop.lan>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-To: Peter Zijlstra <peterz@infradead.org>
-Message-ID: <OF1519E98D.692AF083-ON42257C11.002E693E-42257C11.00317D48@il.ibm.com>
-From: Victor Kaplansky <VICTORK@il.ibm.com>
-Date: Sun, 27 Oct 2013 11:00:33 +0200
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 341842C00F8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2013 21:26:22 +1100 (EST)
+To: Kumar Gala <galak@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH] [RFC] Emulate "lwsync" to run standard user land on e500
+ cores
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linux-kernel@vger.kernel.org,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, anton@samba.org,
- Frederic Weisbecker <fweisbec@gmail.com>
+Content-type: text/plain; charset=UTF-8
+In-reply-to: <6BFC8EB0-1A75-41C3-985A-E3ED14846710@kernel.crashing.org>
+References: <1382081880-6666-1-git-send-email-wd@denx.de>
+ <39CCEB38-1D9B-4918-B8F4-148D4E90FE21@kernel.crashing.org>
+ <1382523314.3926.21.camel@aoeu.buserror.net>
+ <BE5B0245-4ED1-4E3F-ADB1-F6A70C8FE3E1@kernel.crashing.org>
+ <1382607919.9395.56.camel@pasglop>
+ <6BFC8EB0-1A75-41C3-985A-E3ED14846710@kernel.crashing.org>
+Date: Sun, 27 Oct 2013 11:25:53 +0100
+Message-Id: <20131027102554.06B313811DD@gemini.denx.de>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,42 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Zijlstra <peterz@infradead.org> wrote on 10/25/2013 07:37:49 PM:
+Dear Kumar,
 
-> I would argue for:
+In message <6BFC8EB0-1A75-41C3-985A-E3ED14846710@kernel.crashing.org> you wrote:
+> 
+> Fair enough
+> > 
+> > I'm not too worried as long as we warn and account them.
 >
->   READ ->data_tail         READ ->data_head
->     smp_rmb()   (A)          smp_rmb()   (C)
->   WRITE $data              READ $data
->     smp_wmb()   (B)          smp_mb()   (D)
->   STORE ->data_head        WRITE ->data_tail
->
-> Where A pairs with D, and B pairs with C.
+> Than, I'd ask this be under a Kconfig option that is disabled by
+> default.  Users should have to explicitly enable this so they know what
+> they are doing.
 
-1. I agree. My only concern is that architectures which do use atomic
-operations
-with memory barriers, will issue two consecutive barriers now, which is
-sub-optimal.
+Is this really worth the effort?  Under normal situations (users are
+using a user space environment that has been properly buiult for the
+processor variant they are using) nobody should ever run into this
+situation.  It happens only if you are already doing something wrong -
+like using user space that has not been built for an E500 core on such
+a machine.
 
-2. I think the comment in "include/linux/perf_event.h" describing
-"data_head" and
-"data_tail" for user space need an update as well. Current version -
+In this situation, it seems more useful to me if a "standard" kernel
+just works with a "standard" user space environment, even if this
+includes some performance penalty - which actually should be
+neglibale.  In my tests (when running standard Debian for PPC on a
+E500 only very few programs actually triggered this situation, and
+none of them in a time-critical way.  I doubt I would even be able to
+measure the performance impact.
 
-        /*
-         * Control data for the mmap() data buffer.
-         *
-         * User-space reading the @data_head value should issue an rmb(),
-on
-         * SMP capable platforms, after reading this value -- see
-         * perf_event_wakeup().
-         *
-         * When the mapping is PROT_WRITE the @data_tail value should be
-         * written by userspace to reflect the last read data. In this case
-         * the kernel will not over-write unread data.
-         */
-        __u64   data_head;              /* head in the data section */
-        __u64   data_tail;              /* user-space written tail */
+Best regards,
 
-- say nothing about the need of memory barrier before "data_tail" write.
+Wolfgang Denk
 
--- Victor
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"...all the  good  computer  designs  are  bootlegged;  the  formally
+planned  products,  if  they  are built at all, are dogs!" - David E.
+Lundstrom, "A Few Good Men From Univac", MIT Press, 1987
