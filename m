@@ -1,46 +1,18 @@
-Return-Path: <B47053@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AB8762C0084
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 18:15:27 +1100 (EST)
-From: Xiubo Li-B47053 <B47053@freescale.com>
-To: Mark Brown <broonie@kernel.org>
-Subject: RE: [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
-Date: Mon, 28 Oct 2013 07:15:14 +0000
-Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F8286A4FA@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
- <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
- <20131024110543.GA18506@sirena.org.uk>
-In-Reply-To: <20131024110543.GA18506@sirena.org.uk>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "tiwai@suse.de" <tiwai@suse.de>, Wang Huan-B18965 <B18965@freescale.com>,
- "timur@tabi.org" <timur@tabi.org>, "perex@perex.cz" <perex@perex.cz>,
- Guo Shawn-R65073 <r65073@freescale.com>,
- "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- Chen Guangyu-B42378 <B42378@freescale.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- "pawel.moll@arm.com" <pawel.moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "oskar@scara.com" <oskar@scara.com>,
- Estevam Fabio-R49496 <r49496@freescale.com>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob@landley.net" <rob@landley.net>,
- Jin Zhengxiong-R64188 <R64188@freescale.com>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
+ by ozlabs.org (Postfix) with ESMTP id AD7DF2C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 19:38:22 +1100 (EST)
+Date: Mon, 28 Oct 2013 19:38:14 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rob Herring <robherring2@gmail.com>
+Subject: linux-next: build failure after merge of the dt-rh tree
+Message-Id: <20131028193814.6d9416904eb8fac2f441c8af@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__28_Oct_2013_19_38_14_+1100_75ecpV9NO7gk+cMv"
+Cc: linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,124 +22,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Signature=_Mon__28_Oct_2013_19_38_14_+1100_75ecpV9NO7gk+cMv
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > +static struct snd_pcm_hardware snd_fsl_hardware =3D {
-> > +	.info =3D SNDRV_PCM_INFO_INTERLEAVED |
-> > +		SNDRV_PCM_INFO_BLOCK_TRANSFER |
-> > +		SNDRV_PCM_INFO_MMAP |
-> > +		SNDRV_PCM_INFO_MMAP_VALID |
-> > +		SNDRV_PCM_INFO_PAUSE |
-> > +		SNDRV_PCM_INFO_RESUME,
-> > +	.formats =3D SNDRV_PCM_FMTBIT_S16_LE,
-> > +	.rate_min =3D 8000,
-> > +	.channels_min =3D 2,
-> > +	.channels_max =3D 2,
-> > +	.buffer_bytes_max =3D FSL_SAI_DMABUF_SIZE,
-> > +	.period_bytes_min =3D 4096,
-> > +	.period_bytes_max =3D FSL_SAI_DMABUF_SIZE / TCD_NUMBER,
-> > +	.periods_min =3D TCD_NUMBER,
-> > +	.periods_max =3D TCD_NUMBER,
-> > +	.fifo_size =3D 0,
-> > +};
->=20
-> There's a patch in -next that lets the generic dmaengine code figure out
-> some settings from the dmacontroller rather than requiring the driver to
-> explicitly provide configuration - it's "ASoC: dmaengine-pcm: Provide
-> default config".  Please update your driver to use this, or let's work
-> out what it doesn't do any try to fix it.
->
+Hi Rob,
 
-I will do a research.
+After merging the dt-rh tree, today's linux-next build (powerpc
+ppc64_defconfig) failed like this:
+
+arch/powerpc/platforms/powernv/rng.c: In function 'rng_init_per_cpu':
+arch/powerpc/platforms/powernv/rng.c:64:2: error: implicit declaration of f=
+unction 'of_get_ibm_chip_id' [-Werror=3Dimplicit-function-declaration]
+  chip_id =3D of_get_ibm_chip_id(dn);
+  ^
+arch/powerpc/platforms/powernv/rng.c: In function 'rng_create':
+arch/powerpc/platforms/powernv/rng.c:85:2: error: implicit declaration of f=
+unction 'of_iomap' [-Werror=3Dimplicit-function-declaration]
+  rng->regs =3D of_iomap(dn, 0);
+  ^
+arch/powerpc/platforms/powernv/rng.c:85:12: error: assignment makes pointer=
+ from integer without a cast [-Werror]
+  rng->regs =3D of_iomap(dn, 0);
+            ^
+
+Caused by commit a4da0d50b2a0 ("powerpc: Implement
+arch_get_random_long/int() for powernv") from the powerpc tree
+interacting with commit b5b4bb3f6a11 ("of: only include prom.h on sparc")
+from the dt-rh tree.
+
+I added this merge fix patch (which will need to be sent to Linus when
+these two trees get merged, or could be applied now to the powerpc tree):
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 28 Oct 2013 19:34:41 +1100
+Subject: [PATCH] powerpc: add include of prom.h to fix powernv/rng.c build
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/powernv/rng.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/=
+powernv/rng.c
+index 02db7d73cf8b..483b06640efb 100644
+--- a/arch/powerpc/platforms/powernv/rng.c
++++ b/arch/powerpc/platforms/powernv/rng.c
+@@ -11,10 +11,12 @@
 =20
-> > +	ret =3D fsl_sai_set_dai_sysclk_tr(cpu_dai, clk_id, freq,
-> > +					FSL_FMT_TRANSMITTER);
-> > +	if (ret) {
-> > +		dev_err(cpu_dai->dev,
-> > +				"Cannot set sai's transmitter sysclk: %d\n",
-> > +				ret);
-> > +		return ret;
-> > +	}
-> > +
-> > +	ret =3D fsl_sai_set_dai_sysclk_tr(cpu_dai, clk_id, freq,
-> > +					FSL_FMT_RECEIVER);
->=20
-> As other people have commented these should be exposed as separate clocks
-> rather than set in sync, unless there's some hardware reason they need to
-> be identical.  If that is the case then a comment explaining the
-> limitation would be good.
->=20
-> Similarly with several of the other functions.
->=20
+ #include <linux/kernel.h>
+ #include <linux/of.h>
++#include <linux/of_address.h>
+ #include <linux/of_platform.h>
+ #include <linux/slab.h>
+ #include <asm/archrandom.h>
+ #include <asm/io.h>
++#include <asm/prom.h>
+ #include <asm/machdep.h>
+=20
+=20
+--=20
+1.8.4.rc3
 
-As I have replied before, there is one function couldn't be separated for t=
-he hardware limitation.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-> > +int fsl_sai_dai_remove(struct snd_soc_dai *dai) {
-> > +	struct fsl_sai *sai =3D dev_get_drvdata(dai->dev);
-> > +
-> > +	clk_disable_unprepare(sai->clk);
->=20
-> It'd be a bit nicer to only enable the clock while the driver is actively
-> being used rather than all the time the system is powered up but it's not
-> a blocker for merge.
->=20
-Actully there are to "XXX_probe" functions and two "XXX_remove" functions:
+--Signature=_Mon__28_Oct_2013_19_38_14_+1100_75ecpV9NO7gk+cMv
+Content-Type: application/pgp-signature
 
-fsl_sai_dai_probe() and fsl_sai_dai_remove() are callbacks of the ASoC subs=
-ystem.
-And in fsl_sai_dai_probe() needs to read/write the SAI controller's registe=
-rs, so
-the clk_enable_prepare() must be here and clk_disable_unprepare() in fsl_sa=
-i_dai_remove().
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.21 (GNU/Linux)
 
-fsl_sai_probe() and fsl_sai_remove() are the driver's probe and remove inte=
-rfaces.
+iQIcBAEBCAAGBQJSbiJ6AAoJEMDTa8Ir7ZwVpUsP/Ruhp0QFi0oNsc3o2OcrKrYb
+GN/xWgAnaoyh4CChDMF2EEOcJ1ijsyVZfB2jVHJOfd/SxMEPbaQY1eE7vbNnlc8n
+iTfaqUQ6kLqz6fgsg3vHQI3sDDte1IkCIcI03wjVnaJKUv8CP+f1v/KDpyAxstFy
+vGYXuoEnnSUL8E8vSQuxIsAQ64YsW4gYo9t/N3SOeNS+PTiQzP0Y6GFddVMVWFJR
+X7fi/0WLKNL5FoJIzhzmV9sme7MLMrp70qmFYpZS1Yyu2XQuXelj/q1DbsJm7WD4
+vfPtS8ma37gWGODL0Czpy969V//1IYC5Hm6z1H5ubuLTk8p4QoOXxHgJmEFvbHhN
+9EfbNZva7kn6AwiXKGf8vggTZhOoqD78vJIHGyw4bbB656RkR4I5m1KztTc08pRs
+s+TpPAxObxvmvNwbcKDtCr+M2mPImtpUbmi9ROnds+/t1UTVtJ6D0jM/Xt8L2Yjr
+cW93YyrCXzgsoJIK894aXcaMLoIPNKRbZn5o9ZqjnSkOHDBuH10DhhTiCDbTgL8f
+SQqkQVKoqrtHRdP13iUwojwiYiF/uFvEzVphagOxEPHsoAk9kAAcTJK7mbwopKGN
+1wV8E0bE1c95pxB/LeoISvGqF0/oAwcdFclN8vCyk5DOYnSg8bJRJHa9eoAUTIhj
+Yd964SCk/aff2jMavBhU
+=WFLG
+-----END PGP SIGNATURE-----
 
-So the "+	clk_disable_unprepare(sai->clk);" sentence in fsl_sai_remove() wi=
-ll be removed later.
-
-
-> > +	ret =3D snd_soc_register_component(&pdev->dev, &fsl_component,
-> > +			&fsl_sai_dai, 1);
-> > +	if (ret)
-> > +		return ret;
->=20
-> There's a devm_snd_soc_register_component() in -next, please use that.
->=20
-See the next version.
-
-> > +
-> > +	ret =3D fsl_pcm_dma_init(pdev);
-> > +	if (ret)
-> > +		goto out;
-> > +
-> > +	platform_set_drvdata(pdev, sai);
->=20
-> These should go before the driver is registered with the subsystem
-> otherwise you've got a race where something might try to use the driver
-> before init is finished.
->=20
-> > +static int fsl_sai_remove(struct platform_device *pdev) {
-> > +	struct fsl_sai *sai =3D platform_get_drvdata(pdev);
-> > +
-> > +	fsl_pcm_dma_exit(pdev);
-> > +
-> > +	snd_soc_unregister_component(&pdev->dev);
->=20
-> Similarly here, unregister from the subsystem then clean up after.
->=20
-
-See the next version.
-
-> > +#define SAI_CR5_FBT(x)		((x) << 8)
-> > +#define SAI_CR5_FBT_MASK	(0x1f << 8)
-> > +
-> > +/* SAI audio dividers */
-> > +#define FSL_SAI_TX_DIV		0
-> > +#define FSL_SAI_RX_DIV		1
->=20
-> Make the namespacing consistent please - for preference use FSL_SAI
-> always.
->
-
-See the next version.
+--Signature=_Mon__28_Oct_2013_19_38_14_+1100_75ecpV9NO7gk+cMv--
