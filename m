@@ -1,18 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.pcug.org.au [203.10.76.10])
- by ozlabs.org (Postfix) with ESMTP id AD7DF2C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 19:38:22 +1100 (EST)
-Date: Mon, 28 Oct 2013 19:38:14 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rob Herring <robherring2@gmail.com>
-Subject: linux-next: build failure after merge of the dt-rh tree
-Message-Id: <20131028193814.6d9416904eb8fac2f441c8af@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__28_Oct_2013_19_38_14_+1100_75ecpV9NO7gk+cMv"
-Cc: linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E0D412C00BA
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Oct 2013 20:23:16 +1100 (EST)
+Date: Mon, 28 Oct 2013 10:22:59 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Victor Kaplansky <VICTORK@il.ibm.com>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+Message-ID: <20131028092259.GJ19466@laptop.lan>
+References: <12083.1382486094@ale.ozlabs.ibm.com>
+ <20131023141948.GB3566@localhost.localdomain>
+ <20131025173749.GG19466@laptop.lan>
+ <OF1519E98D.692AF083-ON42257C11.002E693E-42257C11.00317D48@il.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF1519E98D.692AF083-ON42257C11.002E693E-42257C11.00317D48@il.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linux-kernel@vger.kernel.org,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, anton@samba.org,
+ Frederic Weisbecker <fweisbec@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,92 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__28_Oct_2013_19_38_14_+1100_75ecpV9NO7gk+cMv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Oct 27, 2013 at 11:00:33AM +0200, Victor Kaplansky wrote:
+> Peter Zijlstra <peterz@infradead.org> wrote on 10/25/2013 07:37:49 PM:
+> 
+> > I would argue for:
+> >
+> >   READ ->data_tail         READ ->data_head
+> >     smp_rmb()   (A)          smp_rmb()   (C)
+> >   WRITE $data              READ $data
+> >     smp_wmb()   (B)          smp_mb()   (D)
+> >   STORE ->data_head        WRITE ->data_tail
+> >
+> > Where A pairs with D, and B pairs with C.
+> 
+> 1. I agree. My only concern is that architectures which do use atomic
+> operations
+> with memory barriers, will issue two consecutive barriers now, which is
+> sub-optimal.
 
-Hi Rob,
+Yeah, although that would be fairly easy to optimize by the CPUs itself;
+not sure they actually do this though.
 
-After merging the dt-rh tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
+But we don't really have much choice aside of introducing things like:
 
-arch/powerpc/platforms/powernv/rng.c: In function 'rng_init_per_cpu':
-arch/powerpc/platforms/powernv/rng.c:64:2: error: implicit declaration of f=
-unction 'of_get_ibm_chip_id' [-Werror=3Dimplicit-function-declaration]
-  chip_id =3D of_get_ibm_chip_id(dn);
-  ^
-arch/powerpc/platforms/powernv/rng.c: In function 'rng_create':
-arch/powerpc/platforms/powernv/rng.c:85:2: error: implicit declaration of f=
-unction 'of_iomap' [-Werror=3Dimplicit-function-declaration]
-  rng->regs =3D of_iomap(dn, 0);
-  ^
-arch/powerpc/platforms/powernv/rng.c:85:12: error: assignment makes pointer=
- from integer without a cast [-Werror]
-  rng->regs =3D of_iomap(dn, 0);
-            ^
+smp_wmb__after_local_$op; and I'm fairly sure people won't like adding a
+ton of conditional barriers like that either.
 
-Caused by commit a4da0d50b2a0 ("powerpc: Implement
-arch_get_random_long/int() for powernv") from the powerpc tree
-interacting with commit b5b4bb3f6a11 ("of: only include prom.h on sparc")
-from the dt-rh tree.
 
-I added this merge fix patch (which will need to be sent to Linus when
-these two trees get merged, or could be applied now to the powerpc tree):
+> 2. I think the comment in "include/linux/perf_event.h" describing
+> "data_head" and
+> "data_tail" for user space need an update as well. Current version -
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 28 Oct 2013 19:34:41 +1100
-Subject: [PATCH] powerpc: add include of prom.h to fix powernv/rng.c build
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/powernv/rng.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/=
-powernv/rng.c
-index 02db7d73cf8b..483b06640efb 100644
---- a/arch/powerpc/platforms/powernv/rng.c
-+++ b/arch/powerpc/platforms/powernv/rng.c
-@@ -11,10 +11,12 @@
-=20
- #include <linux/kernel.h>
- #include <linux/of.h>
-+#include <linux/of_address.h>
- #include <linux/of_platform.h>
- #include <linux/slab.h>
- #include <asm/archrandom.h>
- #include <asm/io.h>
-+#include <asm/prom.h>
- #include <asm/machdep.h>
-=20
-=20
---=20
-1.8.4.rc3
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Mon__28_Oct_2013_19_38_14_+1100_75ecpV9NO7gk+cMv
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.21 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSbiJ6AAoJEMDTa8Ir7ZwVpUsP/Ruhp0QFi0oNsc3o2OcrKrYb
-GN/xWgAnaoyh4CChDMF2EEOcJ1ijsyVZfB2jVHJOfd/SxMEPbaQY1eE7vbNnlc8n
-iTfaqUQ6kLqz6fgsg3vHQI3sDDte1IkCIcI03wjVnaJKUv8CP+f1v/KDpyAxstFy
-vGYXuoEnnSUL8E8vSQuxIsAQ64YsW4gYo9t/N3SOeNS+PTiQzP0Y6GFddVMVWFJR
-X7fi/0WLKNL5FoJIzhzmV9sme7MLMrp70qmFYpZS1Yyu2XQuXelj/q1DbsJm7WD4
-vfPtS8ma37gWGODL0Czpy969V//1IYC5Hm6z1H5ubuLTk8p4QoOXxHgJmEFvbHhN
-9EfbNZva7kn6AwiXKGf8vggTZhOoqD78vJIHGyw4bbB656RkR4I5m1KztTc08pRs
-s+TpPAxObxvmvNwbcKDtCr+M2mPImtpUbmi9ROnds+/t1UTVtJ6D0jM/Xt8L2Yjr
-cW93YyrCXzgsoJIK894aXcaMLoIPNKRbZn5o9ZqjnSkOHDBuH10DhhTiCDbTgL8f
-SQqkQVKoqrtHRdP13iUwojwiYiF/uFvEzVphagOxEPHsoAk9kAAcTJK7mbwopKGN
-1wV8E0bE1c95pxB/LeoISvGqF0/oAwcdFclN8vCyk5DOYnSg8bJRJHa9eoAUTIhj
-Yd964SCk/aff2jMavBhU
-=WFLG
------END PGP SIGNATURE-----
-
---Signature=_Mon__28_Oct_2013_19_38_14_+1100_75ecpV9NO7gk+cMv--
+Oh, indeed. Thanks; I'll update that too!
