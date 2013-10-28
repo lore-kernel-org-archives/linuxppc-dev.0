@@ -1,27 +1,28 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 137A62C00A7
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Oct 2013 05:17:00 +1100 (EST)
-Date: Mon, 28 Oct 2013 20:09:28 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131028190928.GA11449@redhat.com>
-References: <12083.1382486094@ale.ozlabs.ibm.com>
- <20131023141948.GB3566@localhost.localdomain>
- <20131025173749.GG19466@laptop.lan>
- <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
- <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
- <20131028132634.GO19466@laptop.lan>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D67012C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 05:22:17 +1100 (EST)
+Message-ID: <1382984523.3410.23.camel@snotra.buserror.net>
+Subject: Re: [PATCH 02/12][v3] pci: fsl: add structure fsl_pci
+From: Scott Wood <scottwood@freescale.com>
+To: Lian Minghuan-b31939 <B31939@freescale.com>
+Date: Mon, 28 Oct 2013 13:22:03 -0500
+In-Reply-To: <526A086E.305@freescale.com>
+References: <1382524894-15164-1-git-send-email-Minghuan.Lian@freescale.com>
+ <1382524894-15164-2-git-send-email-Minghuan.Lian@freescale.com>
+ <2B28E421-9B64-4CEC-9E00-8893502CE12F@kernel.crashing.org>
+ <526A086E.305@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131028132634.GO19466@laptop.lan>
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Frederic Weisbecker <fweisbec@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Victor Kaplansky <VICTORK@il.ibm.com>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org,
+ Minghuan Lian <Minghuan.Lian@freescale.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,170 +32,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/28, Peter Zijlstra wrote:
->
-> Lets add Paul and Oleg to the thread; this is getting far more 'fun'
-> that it should be ;-)
+On Fri, 2013-10-25 at 13:58 +0800, Lian Minghuan-b31939 wrote:
+> Hi Kumar,
+> 
+> please see my comment inline.
+> 
+> On 10/24/2013 12:11 PM, Kumar Gala wrote:
+> > On Oct 23, 2013, at 5:41 AM, Minghuan Lian wrote:
+> >
+> >> PowerPC uses structure pci_controller to describe PCI controller,
+> >> but ARM uses structure pci_sys_data. In order to support PowerPC
+> >> and ARM simultaneously, the patch adds a structure fsl_pci that
+> >> contains most of the members of the pci_controller and pci_sys_data.
+> >> Meanwhile, it defines a interface fsl_arch_sys_to_pci() which should
+> >> be implemented in architecture-specific PCI controller driver to
+> >> convert pci_controller or pci_sys_data to fsl_pci.
+> >>
+> >> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+> >> ---
+> >> change log:
+> >> v1-v3:
+> >> Derived from http://patchwork.ozlabs.org/patch/278965/
+> >>
+> >> Based on upstream master.
+> >> Based on the discussion of RFC version here
+> >> http://patchwork.ozlabs.org/patch/274487/
+> >>
+> >> include/linux/fsl/pci-common.h | 41 +++++++++++++++++++++++++++++++++++++++++
+> >> 1 file changed, 41 insertions(+)
+> > NAK.
+> >
+> > We discussed this some at the ARM Summit this week and the feeling is we need to move to a common interface between the various ARCHs.
+> [Minghuan] Do you mean we will use the common interface instead of 
+> arch/powerpc/kernel/pci-common.c...
+> and arch/arm/kernel/bios32.c?  Who will do the code movement and when 
+> will the work be completed? The patches just move the common functions 
+> of FSL PCI controller operation which can be re-used by PowerPC and ARM. 
+> LS1 is coming, I worry about not having enough time to wait for the move 
+> is completed.
 
-Heh. All I can say is that I would like to see the authoritative answer,
-you know who can shed a light ;)
+I agree -- it can take quite a while to get from "the feeling is we need
+to move to a common interface" to actually having something we can use.
+If and when this unification is achieved, we can drop this extra layer.
+It's a better interim solution than just duplicating the entire driver
+and letting them drift apart.
 
-But to avoid the confusion, wmb() added by this patch looks "obviously
-correct" to me.
-
-> +	 * Since the mmap() consumer (userspace) can run on a different CPU:
-> +	 *
-> +	 *   kernel				user
-> +	 *
-> +	 *   READ ->data_tail			READ ->data_head
-> +	 *   smp_rmb()	(A)			smp_rmb()	(C)
-> +	 *   WRITE $data			READ $data
-> +	 *   smp_wmb()	(B)			smp_mb()	(D)
-> +	 *   STORE ->data_head			WRITE ->data_tail
-> +	 *
-> +	 * Where A pairs with D, and B pairs with C.
-> +	 *
-> +	 * I don't think A needs to be a full barrier because we won't in fact
-> +	 * write data until we see the store from userspace.
-
-this matches the intuition, but ...
-
-> So we simply don't
-> +	 * issue the data WRITE until we observe it.
-
-why do we need any barrier (rmb) then? how it can help to serialize with
-"WRITE $data" ?
-
-(of course there could be other reasons for this rmb(), just I can't
- really understand "A pairs with D").
-
-And this reminds me about the memory barrier in kfifo.c which I was not
-able to understand. Hmm, it has already gone away, and now I do not
-understand kfifo.c at all ;) But I have found the commit, attached below.
-
-Note that that commit added the full barrier into __kfifo_put(). And to
-me it looks the same as "A" above. Following the logic above we could say
-that we do not need a barrier (at least the full one), we won't in fact
-write into the "unread" area until we see the store to ->out from
-__kfifo_get() ?
-
-
-In short. I am confused, I _feel_ that "A" has to be a full barrier, but
-I can't prove this. And let me suggest the artificial/simplified example,
-
-	bool	BUSY;
-	data_t 	DATA;
-
-	bool try_to_get(data_t *data)
-	{
-		if (!BUSY)
-			return false;
-
-		rmb();
-
-		*data = DATA;
-		mb();
-		BUSY = false;
-
-		return true;
-	}
-
-	bool try_to_put(data_t *data)
-	{
-		if (BUSY)
-			return false;
-
-		mb();	// XXXXXXXX: do we really need it? I think yes.
-
-		DATA = *data;
-		wmb();
-		BUSY = true;
-
-		return true;
-	}
-
-Again, following the description above we could turn the mb() in _put()
-into barrier(), but I do not think we can rely on the contorl dependency.
-
-Oleg.
----
-
-commit a45bce49545739a940f8bd4ca85c3b7435564893
-Author: Paul E. McKenney <paulmck@us.ibm.com>
-Date:   Fri Sep 29 02:00:11 2006 -0700
-
-    [PATCH] memory ordering in __kfifo primitives
-
-    Both __kfifo_put() and __kfifo_get() have header comments stating that if
-    there is but one concurrent reader and one concurrent writer, locking is not
-    necessary.  This is almost the case, but a couple of memory barriers are
-    needed.  Another option would be to change the header comments to remove the
-    bit about locking not being needed, and to change the those callers who
-    currently don't use locking to add the required locking.  The attachment
-    analyzes this approach, but the patch below seems simpler.
-
-    Signed-off-by: Paul E. McKenney <paulmck@us.ibm.com>
-    Cc: Stelian Pop <stelian@popies.net>
-    Signed-off-by: Andrew Morton <akpm@osdl.org>
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-
-diff --git a/kernel/kfifo.c b/kernel/kfifo.c
-index 64ab045..5d1d907 100644
---- a/kernel/kfifo.c
-+++ b/kernel/kfifo.c
-@@ -122,6 +122,13 @@ unsigned int __kfifo_put(struct kfifo *fifo,
- 
- 	len = min(len, fifo->size - fifo->in + fifo->out);
- 
-+	/*
-+	 * Ensure that we sample the fifo->out index -before- we
-+	 * start putting bytes into the kfifo.
-+	 */
-+
-+	smp_mb();
-+
- 	/* first put the data starting from fifo->in to buffer end */
- 	l = min(len, fifo->size - (fifo->in & (fifo->size - 1)));
- 	memcpy(fifo->buffer + (fifo->in & (fifo->size - 1)), buffer, l);
-@@ -129,6 +136,13 @@ unsigned int __kfifo_put(struct kfifo *fifo,
- 	/* then put the rest (if any) at the beginning of the buffer */
- 	memcpy(fifo->buffer, buffer + l, len - l);
- 
-+	/*
-+	 * Ensure that we add the bytes to the kfifo -before-
-+	 * we update the fifo->in index.
-+	 */
-+
-+	smp_wmb();
-+
- 	fifo->in += len;
- 
- 	return len;
-@@ -154,6 +168,13 @@ unsigned int __kfifo_get(struct kfifo *fifo,
- 
- 	len = min(len, fifo->in - fifo->out);
- 
-+	/*
-+	 * Ensure that we sample the fifo->in index -before- we
-+	 * start removing bytes from the kfifo.
-+	 */
-+
-+	smp_rmb();
-+
- 	/* first get the data from fifo->out until the end of the buffer */
- 	l = min(len, fifo->size - (fifo->out & (fifo->size - 1)));
- 	memcpy(buffer, fifo->buffer + (fifo->out & (fifo->size - 1)), l);
-@@ -161,6 +182,13 @@ unsigned int __kfifo_get(struct kfifo *fifo,
- 	/* then get the rest (if any) from the beginning of the buffer */
- 	memcpy(buffer + l, fifo->buffer, len - l);
- 
-+	/*
-+	 * Ensure that we remove the bytes from the kfifo -before-
-+	 * we update the fifo->out index.
-+	 */
-+
-+	smp_mb();
-+
- 	fifo->out += len;
- 
- 	return len;
+-Scott
