@@ -2,26 +2,28 @@ Return-Path: <peterz@infradead.org>
 Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 366992C0087
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Oct 2013 00:26:54 +1100 (EST)
-Date: Mon, 28 Oct 2013 14:26:34 +0100
+ by ozlabs.org (Postfix) with ESMTPS id C95262C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 00:50:56 +1100 (EST)
+Date: Mon, 28 Oct 2013 14:50:43 +0100
 From: Peter Zijlstra <peterz@infradead.org>
-To: Victor Kaplansky <VICTORK@il.ibm.com>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131028132634.GO19466@laptop.lan>
-References: <12083.1382486094@ale.ozlabs.ibm.com>
- <20131023141948.GB3566@localhost.localdomain>
- <20131025173749.GG19466@laptop.lan>
- <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
- <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] sched: Fix nohz_kick_needed to consider the nr_busy
+ of the parent domain's group
+Message-ID: <20131028135043.GP19466@laptop.lan>
+References: <20131021114002.13291.31478.stgit@drishya>
+ <20131021114442.13291.99344.stgit@drishya>
+ <20131022221138.GJ2490@laptop.programming.kicks-ass.net>
+ <52679BD6.6090507@linux.vnet.ibm.com>
+ <CAKfTPtAUFdmc7PasebNksYztMwRrWsGWPgN6JJJurddu+UP-hQ@mail.gmail.com>
+ <5268D54A.9060604@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
+In-Reply-To: <5268D54A.9060604@linux.vnet.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Frederic Weisbecker <fweisbec@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Mike Galbraith <bitbucket@online.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>, Anton Blanchard <anton@samba.org>,
+ Paul Turner <pjt@google.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,166 +33,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 28, 2013 at 02:38:29PM +0200, Victor Kaplansky wrote:
-> > 2013/10/25 Peter Zijlstra <peterz@infradead.org>:
-> > > On Wed, Oct 23, 2013 at 03:19:51PM +0100, Frederic Weisbecker wrote:
-> > > I would argue for
-> > >
-> > >   READ ->data_tail                      READ ->data_head
-> > >   smp_rmb()     (A)                     smp_rmb()       (C)
-> > >   WRITE $data                           READ $data
-> > >   smp_wmb()     (B)                     smp_mb()        (D)
-> > >   STORE ->data_head                     WRITE ->data_tail
-> > >
-> > > Where A pairs with D, and B pairs with C.
-> > >
-> > > I don't think A needs to be a full barrier because we won't in fact
-> > > write data until we see the store from userspace. So we simply don't
-> > > issue the data WRITE until we observe it.
-> > >
-> > > OTOH, D needs to be a full barrier since it separates the data READ from
-> > > the tail WRITE.
-> > >
-> > > For B a WMB is sufficient since it separates two WRITEs, and for C an
-> > > RMB is sufficient since it separates two READs.
-
-<snip>
-
-> I think you have a point :) IMO, memory barrier (A) is superfluous.
-> At producer side we need to ensure that "WRITE $data" is not committed
-> to memory before "READ ->data_tail" had seen a new value and if the
-> old one indicated that there is no enough space for a new entry. All
-> this is already guaranteed by control flow dependancy on single CPU -
-> writes will not be committed to the memory if read value of
-> "data_tail" doesn't specify enough free space in the ring buffer.
+On Thu, Oct 24, 2013 at 01:37:38PM +0530, Preeti U Murthy wrote:
+>  kernel/sched/core.c  |    5 +++++
+>  kernel/sched/fair.c  |   38 ++++++++++++++++++++------------------
+>  kernel/sched/sched.h |    1 +
+>  3 files changed, 26 insertions(+), 18 deletions(-)
 > 
-> Likewise, on consumer side, we can make use of natural data dependency and
-> memory ordering guarantee for single CPU and try to replace "smp_mb" by
-> a more light-weight "smp_rmb":
-> 
-> READ ->data_tail                      READ ->data_head
-> // ...                                smp_rmb()       (C)
-> WRITE $data                           READ $data
-> smp_wmb()     (B)                     smp_rmb()       (D)
-> 						  READ $header_size
-> STORE ->data_head                     WRITE ->data_tail = $old_data_tail +
-> $header_size
-> 
-> We ensure that all $data is read before "data_tail" is written by
-> doing "READ $header_size" after all other data is read and we rely on
-> natural data dependancy between "data_tail" write and "header_size"
-> read.
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index c06b8d3..c540392 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -5271,6 +5271,7 @@ DEFINE_PER_CPU(struct sched_domain *, sd_llc);
+>  DEFINE_PER_CPU(int, sd_llc_size);
+>  DEFINE_PER_CPU(int, sd_llc_id);
+>  DEFINE_PER_CPU(struct sched_domain *, sd_numa);
+> +DEFINE_PER_CPU(struct sched_domain *, sd_busy);
+>  
+>  static void update_top_cache_domain(int cpu)
+>  {
+> @@ -5290,6 +5291,10 @@ static void update_top_cache_domain(int cpu)
+>  
+>  	sd = lowest_flag_domain(cpu, SD_NUMA);
+>  	rcu_assign_pointer(per_cpu(sd_numa, cpu), sd);
+> +
+> +	sd = highest_flag_domain(cpu, SD_SHARE_PKG_RESOURCES);
+> +	if (sd)
+> +		rcu_assign_pointer(per_cpu(sd_busy, cpu), sd->parent);
+>  }
+>  
+>  /*
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index e9c9549..f66cfd9 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -6515,16 +6515,16 @@ static inline void nohz_balance_exit_idle(int cpu)
+>  static inline void set_cpu_sd_state_busy(void)
+>  {
+>  	struct sched_domain *sd;
+> +	int cpu = smp_processor_id();
+>  
+>  	rcu_read_lock();
+> +	sd = rcu_dereference(per_cpu(sd_busy, cpu));
+>  
+>  	if (!sd || !sd->nohz_idle)
+>  		goto unlock;
+>  	sd->nohz_idle = 0;
+>  
+> +	atomic_inc(&sd->groups->sgp->nr_busy_cpus);
+>  unlock:
+>  	rcu_read_unlock();
+>  }
+> @@ -6532,16 +6532,16 @@ unlock:
+>  void set_cpu_sd_state_idle(void)
+>  {
+>  	struct sched_domain *sd;
+> +	int cpu = smp_processor_id();
+>  
+>  	rcu_read_lock();
+> +	sd = rcu_dereference(per_cpu(sd_busy, cpu));
+>  
+>  	if (!sd || sd->nohz_idle)
+>  		goto unlock;
+>  	sd->nohz_idle = 1;
+>  
+> +	atomic_dec(&sd->groups->sgp->nr_busy_cpus);
+>  unlock:
+>  	rcu_read_unlock();
+>  }
 
-I'm not entirely sure I get the $header_size trickery; need to think
-more on that. But yes, I did consider the other one. However, I had
-trouble having no pairing barrier for (D).
+Oh nice, that gets rid of the multiple atomics, and it nicely splits
+this nohz logic into per topology groups -- now if only we could split
+the rest too :-)
 
-ISTR something like Alpha being able to miss the update (for a long
-while) if you don't issue the RMB.
+> @@ -6748,6 +6748,8 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
+>  {
+>  	unsigned long now = jiffies;
+>  	struct sched_domain *sd;
+> +	struct sched_group_power *sgp;
+> +	int nr_busy;
+>  
+>  	if (unlikely(idle_cpu(cpu)))
+>  		return 0;
+> @@ -6773,22 +6775,22 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
+>  		goto need_kick;
+>  
+>  	rcu_read_lock();
+> +	sd = rcu_dereference(per_cpu(sd_busy, cpu));
+>  
+> +	if (sd) {
+> +		sgp = sd->groups->sgp;
+> +		nr_busy = atomic_read(&sgp->nr_busy_cpus);
+>  
+> +		if (nr_busy > 1)
+>  			goto need_kick_unlock;
+>  	}
 
-Lets add Paul and Oleg to the thread; this is getting far more 'fun'
-that it should be ;-)
+OK, so far so good.
 
-For completeness; below the patch as I had queued it.
----
-Subject: perf: Fix perf ring buffer memory ordering
-From: Peter Zijlstra <peterz@infradead.org>
-Date: Mon Oct 28 13:55:29 CET 2013
+> +
+> +	sd = highest_flag_domain(cpu, SD_ASYM_PACKING);
+> +
+> +	if (sd && (cpumask_first_and(nohz.idle_cpus_mask,
+> +				  sched_domain_span(sd)) < cpu))
+> +		goto need_kick_unlock;
+> +
+>  	rcu_read_unlock();
+>  	return 0;
 
-The PPC64 people noticed a missing memory barrier and crufty old
-comments in the perf ring buffer code. So update all the comments and
-add the missing barrier.
+This again is a bit sad; most archs will not have SD_ASYM_PACKING set at
+all; this means that they all will do a complete (and pointless) sched
+domain tree walk here.
 
-When the architecture implements local_t using atomic_long_t there
-will be double barriers issued; but short of introducing more
-conditional barrier primitives this is the best we can do.
-
-Cc: anton@samba.org
-Cc: benh@kernel.crashing.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: michael@ellerman.id.au
-Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Reported-by: Victor Kaplansky <victork@il.ibm.com>
-Tested-by: Victor Kaplansky <victork@il.ibm.com>
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-Link: http://lkml.kernel.org/r/20131025173749.GG19466@laptop.lan
----
- include/uapi/linux/perf_event.h |   12 +++++++-----
- kernel/events/ring_buffer.c     |   29 ++++++++++++++++++++++++++---
- 2 files changed, 33 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/include/uapi/linux/perf_event.h
-===================================================================
---- linux-2.6.orig/include/uapi/linux/perf_event.h
-+++ linux-2.6/include/uapi/linux/perf_event.h
-@@ -479,13 +479,15 @@ struct perf_event_mmap_page {
- 	/*
- 	 * Control data for the mmap() data buffer.
- 	 *
--	 * User-space reading the @data_head value should issue an rmb(), on
--	 * SMP capable platforms, after reading this value -- see
--	 * perf_event_wakeup().
-+	 * User-space reading the @data_head value should issue an smp_rmb(),
-+	 * after reading this value.
- 	 *
- 	 * When the mapping is PROT_WRITE the @data_tail value should be
--	 * written by userspace to reflect the last read data. In this case
--	 * the kernel will not over-write unread data.
-+	 * written by userspace to reflect the last read data, after issueing
-+	 * an smp_mb() to separate the data read from the ->data_tail store.
-+	 * In this case the kernel will not over-write unread data.
-+	 *
-+	 * See perf_output_put_handle() for the data ordering.
- 	 */
- 	__u64   data_head;		/* head in the data section */
- 	__u64	data_tail;		/* user-space written tail */
-Index: linux-2.6/kernel/events/ring_buffer.c
-===================================================================
---- linux-2.6.orig/kernel/events/ring_buffer.c
-+++ linux-2.6/kernel/events/ring_buffer.c
-@@ -87,10 +87,31 @@ static void perf_output_put_handle(struc
- 		goto out;
- 
- 	/*
--	 * Publish the known good head. Rely on the full barrier implied
--	 * by atomic_dec_and_test() order the rb->head read and this
--	 * write.
-+	 * Since the mmap() consumer (userspace) can run on a different CPU:
-+	 *
-+	 *   kernel				user
-+	 *
-+	 *   READ ->data_tail			READ ->data_head
-+	 *   smp_rmb()	(A)			smp_rmb()	(C)
-+	 *   WRITE $data			READ $data
-+	 *   smp_wmb()	(B)			smp_mb()	(D)
-+	 *   STORE ->data_head			WRITE ->data_tail
-+	 *
-+	 * Where A pairs with D, and B pairs with C.
-+	 *
-+	 * I don't think A needs to be a full barrier because we won't in fact
-+	 * write data until we see the store from userspace. So we simply don't
-+	 * issue the data WRITE until we observe it.
-+	 *
-+	 * OTOH, D needs to be a full barrier since it separates the data READ
-+	 * from the tail WRITE.
-+	 *
-+	 * For B a WMB is sufficient since it separates two WRITEs, and for C
-+	 * an RMB is sufficient since it separates two READs.
-+	 *
-+	 * See perf_output_begin().
- 	 */
-+	smp_wmb();
- 	rb->user_page->data_head = head;
- 
- 	/*
-@@ -154,6 +175,8 @@ int perf_output_begin(struct perf_output
- 		 * Userspace could choose to issue a mb() before updating the
- 		 * tail pointer. So that all reads will be completed before the
- 		 * write is issued.
-+		 *
-+		 * See perf_output_put_handle().
- 		 */
- 		tail = ACCESS_ONCE(rb->user_page->data_tail);
- 		smp_rmb();
+It would be much better to also introduce sd_asym and do the analogous
+thing to the new sd_busy.
