@@ -1,9 +1,49 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: FA_DUMP depends on KEXEC
-Date: Mon, 28 Oct 2013 15:00:35 +1100
-Message-Id: <1382932835-23830-1-git-send-email-michael@ellerman.id.au>
+Return-Path: <B47053@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 109FC2C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 16:58:52 +1100 (EST)
+From: Xiubo Li-B47053 <B47053@freescale.com>
+To: "djbw@fb.com" <djbw@fb.com>, "vinod.koul@intel.com" <vinod.koul@intel.com>
+Subject: RE: [alsa-devel] [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio
+ Interface driver.
+Date: Mon, 28 Oct 2013 05:58:42 +0000
+Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F8286A385@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
+ <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
+ <526021B0.6050206@metafoo.de>
+In-Reply-To: <526021B0.6050206@metafoo.de>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "tiwai@suse.de" <tiwai@suse.de>, Wang Huan-B18965 <B18965@freescale.com>,
+ "timur@tabi.org" <timur@tabi.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Guo Shawn-R65073 <r65073@freescale.com>,
+ "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ Chen Guangyu-B42378 <B42378@freescale.com>,
+ "oskar@scara.com" <oskar@scara.com>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Estevam Fabio-R49496 <r49496@freescale.com>,
+ "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+ "rob@landley.net" <rob@landley.net>,
+ Jin Zhengxiong-R64188 <R64188@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,40 +53,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If you try and build the FA_DUMP code with CONFIG_KEXEC=n, you see
-errors such as the following:
+Hi Dan, Vinod,
 
-arch/powerpc/kernel/fadump.c
-  408:2: error: 'crashing_cpu' undeclared (first use in this function)
-  410:2: error: implicit declaration of function 'crash_save_vmcoreinfo'
-  513:22: error: storage size of 'prstatus' isn't known
-  520:2: error: implicit declaration of function 'elf_core_copy_kernel_regs'
-  521:36: error: 'KEXEC_CORE_NOTE_NAME' undeclared (first use in this function)
-  624:49: error: 'note_buf_t' undeclared (first use in this function)
-  872:2: error: implicit declaration of function 'paddr_vmcoreinfo_note'
-  874:18: error: 'vmcoreinfo_max_size' undeclared (first use in this function)
 
-This is because although FA_DUMP doesn't use kexec as the actual reboot
-mechanism, it does use parts of the kexec code to assemble/disassemble
-the crash image.
+> > +static int fsl_sai_probe(struct platform_device *pdev) {
+> [...]
+> > +
+> > +	sai->dma_params_rx.addr =3D res->start + SAI_RDR;
+> > +	sai->dma_params_rx.maxburst =3D 6;
+> > +	index =3D of_property_match_string(np, "dma-names", "rx");
+> > +	ret =3D of_parse_phandle_with_args(np, "dmas", "#dma-cells", index,
+> > +				&dma_args);
+> > +	if (ret)
+> > +		return ret;
+> > +	sai->dma_params_rx.slave_id =3D dma_args.args[1];
+> > +
+> > +	sai->dma_params_tx.addr =3D res->start + SAI_TDR;
+> > +	sai->dma_params_tx.maxburst =3D 6;
+> > +	index =3D of_property_match_string(np, "dma-names", "tx");
+> > +	ret =3D of_parse_phandle_with_args(np, "dmas", "#dma-cells", index,
+> > +				&dma_args);
+> > +	if (ret)
+> > +		return ret;
+> > +	sai->dma_params_tx.slave_id =3D dma_args.args[1];
+>=20
+> The driver should not have to manually parse the dma devicetree
+> properties, this is something that should be handled by the dma engine
+> driver.
+>=20
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+What do you think about the DMA slave_id ?
+I have been noticed by one colleague that this should be parsed here, which
+is from your opinions ?
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 38f3b7e..9d4e80e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -404,7 +404,7 @@ config CRASH_DUMP
- 
- config FA_DUMP
- 	bool "Firmware-assisted dump"
--	depends on PPC64 && PPC_RTAS && CRASH_DUMP
-+	depends on PPC64 && PPC_RTAS && CRASH_DUMP && KEXEC
- 	help
- 	  A robust mechanism to get reliable kernel crash dump with
- 	  assistance from firmware. This approach does not use kexec,
--- 
-1.8.3.2
+
+> > +
+> > +	ret =3D snd_soc_register_component(&pdev->dev, &fsl_component,
+> > +			&fsl_sai_dai, 1);
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	ret =3D fsl_pcm_dma_init(pdev);
+> > +	if (ret)
+> > +		goto out;
