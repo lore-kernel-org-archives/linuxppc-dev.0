@@ -1,49 +1,37 @@
-Return-Path: <victork@il.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+Return-Path: <jschopp@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp12.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E56032C00DE
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Oct 2013 07:59:11 +1100 (EST)
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E74AD2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 05:03:54 +1100 (EST)
 Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <victork@il.ibm.com>;
- Mon, 28 Oct 2013 20:59:08 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id D5BD6219005A
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Oct 2013 20:59:05 +0000 (GMT)
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
- [9.149.37.247])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9SKwriv65470718
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Oct 2013 20:58:53 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9SKx4Be023602
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Oct 2013 14:59:05 -0600
-In-Reply-To: <20131028201735.GA15629@redhat.com>
-References: <12083.1382486094@ale.ozlabs.ibm.com>
- <20131023141948.GB3566@localhost.localdomain>
- <20131025173749.GG19466@laptop.lan>
- <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
- <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
- <20131028132634.GO19466@laptop.lan>
- <20131028163418.GD4126@linux.vnet.ibm.com>
- <20131028201735.GA15629@redhat.com>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-To: Oleg Nesterov <oleg@redhat.com>
-Message-ID: <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
-From: Victor Kaplansky <VICTORK@il.ibm.com>
-Date: Mon, 28 Oct 2013 22:58:58 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <jschopp@linux.vnet.ibm.com>;
+ Mon, 28 Oct 2013 14:03:52 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id AA5D3C90026
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 14:03:48 -0400 (EDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9SI3nYL61800524
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 18:03:49 GMT
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9SI3mTm002940
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 12:03:48 -0600
+Message-ID: <526EA6FF.2080401@linux.vnet.ibm.com>
+Date: Mon, 28 Oct 2013 13:03:43 -0500
+From: Joel Schopp <jschopp@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: =?ISO-8859-1?Q?Peter_H=FCwe?= <PeterHuewe@gmx.de>,
+ linuxppc-dev@lists.ozlabs.org, tpmdd-devel@lists.sourceforge.net
+Subject: Re: [tpmdd-devel] Has anyone a ATMEL TPM Chip on PPC64
+ (CONFIG_TCG_ATMEL)?
+References: <201310272306.09310.PeterHuewe@gmx.de>
+In-Reply-To: <201310272306.09310.PeterHuewe@gmx.de>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,12 +41,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oleg Nesterov <oleg@redhat.com> wrote on 10/28/2013 10:17:35 PM:
+On 10/27/2013 05:06 PM, Peter Hüwe wrote:
+> Hi,
+> 
+> I was wondering if anyone here on this list still has a machine with an old 
+> ATMEL TPM (trusted platform module) lying around?
+> 
+>>From the kconfig entry it becomes evident that it was only supported on ppc64 
+> machines.
+> 
+> config TCG_ATMEL
+> 	tristate "Atmel TPM Interface"
+> 	depends on PPC64 || HAS_IOPORT
+> 	---help---
+> 	  If you have a TPM security chip from Atmel say Yes and it 
+> 	  will be accessible from within Linux.  To compile this driver 
+> 	  as a module, choose M here; the module will be called tpm_atmel.
+> 
+> The hardware/driver is pretty old and the driver might have contained a bug 
+> that made it unusable for the last 6 years ;)
+> 
+> So if anyone still has this kind of hardware around, please reply.
+> 
 
->       mb();   // XXXXXXXX: do we really need it? I think yes.
+As near as I can tell this was on a single machine type (the js21 circa
+2006).  The firmware on the machine didn't support establishing a root
+of trust, so use of the TPM was as a practical matter effective only for
+the other functions like random number generation and key management.
+The number of users who used the TPM for this on this machine was likely
+very small 7 years ago.  The number of those machines still in service
+today is likely smaller still.  The cross section of those two small
+numbers combined with those who want to run on a shiny new kernel has to
+be quickly approaching zero.
 
-Oh, it is hard to argue with feelings. Also, it is easy to be on
-conservative side and put the barrier here just in case.
-But I still insist that the barrier is redundant in your example.
+I reccomend removing the driver.  If the stars align and a user actually
+appears who wants to use one I'll clean up the driver and resubmit it
+for inclusion.  I just don't think that will happen.
 
--- Victor
+-Joel
