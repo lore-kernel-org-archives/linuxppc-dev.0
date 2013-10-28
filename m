@@ -1,21 +1,14 @@
-Return-Path: <PeterHuewe@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
- (Client CN "mout.gmx.net", Issuer "TeleSec ServerPass DE-1" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 612C62C008F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 09:07:59 +1100 (EST)
-Received: from lamerx.localnet ([84.56.48.17]) by mail.gmx.com (mrgmx001)
- with ESMTPSA (Nemesis) id 0MLvGW-1Vbet00O7A-007oJr for
- <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2013 23:02:46 +0100
-From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
-To: linuxppc-dev@lists.ozlabs.org,
- tpmdd-devel@lists.sourceforge.net
-Subject: Has anyone a ATMEL TPM Chip on PPC64 (CONFIG_TCG_ATMEL)?
-Date: Sun, 27 Oct 2013 23:06:09 +0100
+Return-Path: <michael@ellerman.id.au>
+Date: Mon, 28 Oct 2013 12:09:58 +1100
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 1/3] powerpc: sync ppc64, ppc64e and pseries configs
+Message-ID: <20131028010957.GA8331@concordia>
+References: <20131022114450.296ae01d@kryten>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201310272306.09310.PeterHuewe@gmx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131022114450.296ae01d@kryten>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, Oct 22, 2013 at 11:44:50AM +1100, Anton Blanchard wrote:
+> 
+> Run savedefconfig over the ppc64, ppc64e and pseries config
 
-I was wondering if anyone here on this list still has a machine with an old=
-=20
-ATMEL TPM (trusted platform module) lying around?
+> -CONFIG_EXPERIMENTAL=y
 
-=46rom the kconfig entry it becomes evident that it was only supported on p=
-pc64=20
-machines.
+This went way.
 
-config TCG_ATMEL
-	tristate "Atmel TPM Interface"
-	depends on PPC64 || HAS_IOPORT
-	---help---
-	  If you have a TPM security chip from Atmel say Yes and it=20
-	  will be accessible from within Linux.  To compile this driver=20
-	  as a module, choose M here; the module will be called tpm_atmel.
+> -CONFIG_EFI_PARTITION=y
 
-The hardware/driver is pretty old and the driver might have contained a bug=
-=20
-that made it unusable for the last 6 years ;)
+This became default y.
 
-So if anyone still has this kind of hardware around, please reply.
+> -CONFIG_HOTPLUG_CPU=y
 
-Thanks,
-Peter
+This isn't going away, it's selected by pseries, so doesn't need to be
+in the defconfig.
+
+> -CONFIG_PPC_DENORMALISATION=y
+
+This is default y if POWERNV, so I guess that's why it isn't needed.
+
+cheers
