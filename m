@@ -1,23 +1,28 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
- by ozlabs.org (Postfix) with ESMTP id 8EE5F2C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 06:43:48 +1100 (EST)
-Received: from juliette.telenet-ops.be (juliette.telenet-ops.be
- [195.130.137.74])
- by winston.telenet-ops.be (Postfix) with ESMTP id 812331BC05A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 20:31:46 +0100 (CET)
-Date: Mon, 28 Oct 2013 20:31:45 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: Build regressions/improvements in v3.12-rc7
-In-Reply-To: <alpine.DEB.2.02.1310282028510.14364@ayla.of.borg>
-Message-ID: <alpine.DEB.2.02.1310282029140.14406@ayla.of.borg>
-References: <alpine.DEB.2.02.1310282028510.14364@ayla.of.borg>
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 8ECD62C00CC
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Oct 2013 07:17:02 +1100 (EST)
+Date: Mon, 28 Oct 2013 21:17:35 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+Message-ID: <20131028201735.GA15629@redhat.com>
+References: <12083.1382486094@ale.ozlabs.ibm.com>
+ <20131023141948.GB3566@localhost.localdomain>
+ <20131025173749.GG19466@laptop.lan>
+ <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
+ <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
+ <20131028132634.GO19466@laptop.lan>
+ <20131028163418.GD4126@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
- linux-sh@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131028163418.GD4126@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Victor Kaplansky <VICTORK@il.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +32,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 28 Oct 2013, Geert Uytterhoeven wrote:
-> JFYI, when comparing v3.12-rc7 to v3.12-rc6[3], the summaries are:
->   - build errors: +9/-10
+On 10/28, Paul E. McKenney wrote:
+>
+> On Mon, Oct 28, 2013 at 02:26:34PM +0100, Peter Zijlstra wrote:
+> > --- linux-2.6.orig/kernel/events/ring_buffer.c
+> > +++ linux-2.6/kernel/events/ring_buffer.c
+> > @@ -87,10 +87,31 @@ static void perf_output_put_handle(struc
+> >  		goto out;
+> >
+> >  	/*
+> > -	 * Publish the known good head. Rely on the full barrier implied
+> > -	 * by atomic_dec_and_test() order the rb->head read and this
+> > -	 * write.
+> > +	 * Since the mmap() consumer (userspace) can run on a different CPU:
+> > +	 *
+> > +	 *   kernel				user
+> > +	 *
+> > +	 *   READ ->data_tail			READ ->data_head
+> > +	 *   smp_rmb()	(A)			smp_rmb()	(C)
+>
+> Given that both of the kernel's subsequent operations are stores/writes,
+> doesn't (A) need to be smp_mb()?
 
-  + /scratch/kisskb/src/arch/powerpc/kernel/cacheinfo.c: error: 'associativity' may be used uninitialized in this function [-Werror=uninitialized]:  => 575:2
-  + /scratch/kisskb/src/arch/powerpc/kernel/cacheinfo.c: error: 'size_kb' may be used uninitialized in this function [-Werror=uninitialized]:  => 526:2
-  + /scratch/kisskb/src/drivers/tty/serial/nwpserial.c: error: implicit declaration of function 'udelay' [-Werror=implicit-function-declaration]:  => 53:3
+Yes, this is my understanding^Wfeeling too, but I have to admit that
+I can't really explain to myself why _exactly_ we need mb() here.
 
-powerpc-randconfig
+And let me copy-and-paste the artificial example from my previous
+email,
 
-  + /scratch/kisskb/src/drivers/gpu/drm/drm_gem_cma_helper.c: error: implicit declaration of function 'dma_alloc_writecombine' [-Werror=implicit-function-declaration]:  => 91:2
-  + /scratch/kisskb/src/drivers/gpu/drm/drm_gem_cma_helper.c: error: implicit declaration of function 'dma_free_writecombine' [-Werror=implicit-function-declaration]:  => 176:3
+	bool	BUSY;
+	data_t 	DATA;
 
-sh-randconfig
+	bool try_to_get(data_t *data)
+	{
+		if (!BUSY)
+			return false;
 
-> [1] http://kisskb.ellerman.id.au/kisskb/head/6819/ (119 out of 120 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/6796/ (all 120 configs)
+		rmb();
 
-Gr{oetje,eeting}s,
+		*data = DATA;
+		mb();
+		BUSY = false;
 
-						Geert
+		return true;
+	}
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+	bool try_to_put(data_t *data)
+	{
+		if (BUSY)
+			return false;
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+		mb();	// XXXXXXXX: do we really need it? I think yes.
+
+		DATA = *data;
+		wmb();
+		BUSY = true;
+
+		return true;
+	}
+
+(just in case, the code above obviously assumes that _get or _put
+ can't race with itself, but they can race with each other).
+
+Could you confirm that try_to_put() actually needs mb() between
+LOAD(BUSY) and STORE(DATA) ?
+
+I am sure it actually needs, but I will appreciate it if you can
+explain why. IOW, how it is possible that without mb() try_to_put()
+can overwrite DATA before try_to_get() completes its "*data = DATA"
+in this particular case.
+
+Perhaps this can happen if, say, reader and writer share a level of
+cache or something like this...
+
+Oleg.
