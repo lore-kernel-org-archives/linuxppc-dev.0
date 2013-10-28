@@ -1,12 +1,28 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 8ECD62C00CC
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Oct 2013 07:17:02 +1100 (EST)
-Date: Mon, 28 Oct 2013 21:17:35 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131028201735.GA15629@redhat.com>
+Return-Path: <victork@il.ibm.com>
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp12.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E56032C00DE
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Oct 2013 07:59:11 +1100 (EST)
+Received: from /spool/local
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <victork@il.ibm.com>;
+ Mon, 28 Oct 2013 20:59:08 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id D5BD6219005A
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Oct 2013 20:59:05 +0000 (GMT)
+Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
+ [9.149.37.247])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9SKwriv65470718
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Oct 2013 20:58:53 GMT
+Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9SKx4Be023602
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Oct 2013 14:59:05 -0600
+In-Reply-To: <20131028201735.GA15629@redhat.com>
 References: <12083.1382486094@ale.ozlabs.ibm.com>
  <20131023141948.GB3566@localhost.localdomain>
  <20131025173749.GG19466@laptop.lan>
@@ -14,15 +30,20 @@ References: <12083.1382486094@ale.ozlabs.ibm.com>
  <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
  <20131028132634.GO19466@laptop.lan>
  <20131028163418.GD4126@linux.vnet.ibm.com>
+ <20131028201735.GA15629@redhat.com>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+To: Oleg Nesterov <oleg@redhat.com>
+Message-ID: <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
+From: Victor Kaplansky <VICTORK@il.ibm.com>
+Date: Mon, 28 Oct 2013 22:58:58 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131028163418.GD4126@linux.vnet.ibm.com>
+Content-type: text/plain; charset=US-ASCII
 Cc: Michael Neuling <mikey@neuling.org>,
  Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
  Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
  Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
  Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,77 +53,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/28, Paul E. McKenney wrote:
->
-> On Mon, Oct 28, 2013 at 02:26:34PM +0100, Peter Zijlstra wrote:
-> > --- linux-2.6.orig/kernel/events/ring_buffer.c
-> > +++ linux-2.6/kernel/events/ring_buffer.c
-> > @@ -87,10 +87,31 @@ static void perf_output_put_handle(struc
-> >  		goto out;
-> >
-> >  	/*
-> > -	 * Publish the known good head. Rely on the full barrier implied
-> > -	 * by atomic_dec_and_test() order the rb->head read and this
-> > -	 * write.
-> > +	 * Since the mmap() consumer (userspace) can run on a different CPU:
-> > +	 *
-> > +	 *   kernel				user
-> > +	 *
-> > +	 *   READ ->data_tail			READ ->data_head
-> > +	 *   smp_rmb()	(A)			smp_rmb()	(C)
->
-> Given that both of the kernel's subsequent operations are stores/writes,
-> doesn't (A) need to be smp_mb()?
+Oleg Nesterov <oleg@redhat.com> wrote on 10/28/2013 10:17:35 PM:
 
-Yes, this is my understanding^Wfeeling too, but I have to admit that
-I can't really explain to myself why _exactly_ we need mb() here.
+>       mb();   // XXXXXXXX: do we really need it? I think yes.
 
-And let me copy-and-paste the artificial example from my previous
-email,
+Oh, it is hard to argue with feelings. Also, it is easy to be on
+conservative side and put the barrier here just in case.
+But I still insist that the barrier is redundant in your example.
 
-	bool	BUSY;
-	data_t 	DATA;
-
-	bool try_to_get(data_t *data)
-	{
-		if (!BUSY)
-			return false;
-
-		rmb();
-
-		*data = DATA;
-		mb();
-		BUSY = false;
-
-		return true;
-	}
-
-	bool try_to_put(data_t *data)
-	{
-		if (BUSY)
-			return false;
-
-		mb();	// XXXXXXXX: do we really need it? I think yes.
-
-		DATA = *data;
-		wmb();
-		BUSY = true;
-
-		return true;
-	}
-
-(just in case, the code above obviously assumes that _get or _put
- can't race with itself, but they can race with each other).
-
-Could you confirm that try_to_put() actually needs mb() between
-LOAD(BUSY) and STORE(DATA) ?
-
-I am sure it actually needs, but I will appreciate it if you can
-explain why. IOW, how it is possible that without mb() try_to_put()
-can overwrite DATA before try_to_get() completes its "*data = DATA"
-in this particular case.
-
-Perhaps this can happen if, say, reader and writer share a level of
-cache or something like this...
-
-Oleg.
+-- Victor
