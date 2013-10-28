@@ -1,37 +1,24 @@
-Return-Path: <jschopp@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E74AD2C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 05:03:54 +1100 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jschopp@linux.vnet.ibm.com>;
- Mon, 28 Oct 2013 14:03:52 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id AA5D3C90026
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 14:03:48 -0400 (EDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9SI3nYL61800524
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 18:03:49 GMT
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9SI3mTm002940
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 12:03:48 -0600
-Message-ID: <526EA6FF.2080401@linux.vnet.ibm.com>
-Date: Mon, 28 Oct 2013 13:03:43 -0500
-From: Joel Schopp <jschopp@linux.vnet.ibm.com>
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oa0-x236.google.com (mail-oa0-x236.google.com
+ [IPv6:2607:f8b0:4003:c02::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 452FA2C00E4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 10:30:37 +1100 (EST)
+Received: by mail-oa0-f54.google.com with SMTP id o20so4442019oag.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 16:30:34 -0700 (PDT)
+Message-ID: <526EF397.4080802@gmail.com>
+Date: Mon, 28 Oct 2013 18:30:31 -0500
+From: Rob Herring <robherring2@gmail.com>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Peter_H=FCwe?= <PeterHuewe@gmx.de>,
- linuxppc-dev@lists.ozlabs.org, tpmdd-devel@lists.sourceforge.net
-Subject: Re: [tpmdd-devel] Has anyone a ATMEL TPM Chip on PPC64
- (CONFIG_TCG_ATMEL)?
-References: <201310272306.09310.PeterHuewe@gmx.de>
-In-Reply-To: <201310272306.09310.PeterHuewe@gmx.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: build failure after merge of the dt-rh tree
+References: <20131028193814.6d9416904eb8fac2f441c8af@canb.auug.org.au>
+In-Reply-To: <20131028193814.6d9416904eb8fac2f441c8af@canb.auug.org.au>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,41 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/27/2013 05:06 PM, Peter Hüwe wrote:
-> Hi,
+On 10/28/2013 03:38 AM, Stephen Rothwell wrote:
+> Hi Rob,
 > 
-> I was wondering if anyone here on this list still has a machine with an old 
-> ATMEL TPM (trusted platform module) lying around?
+> After merging the dt-rh tree, today's linux-next build (powerpc 
+> ppc64_defconfig) failed like this:
 > 
->>From the kconfig entry it becomes evident that it was only supported on ppc64 
-> machines.
+> arch/powerpc/platforms/powernv/rng.c: In function
+> 'rng_init_per_cpu': arch/powerpc/platforms/powernv/rng.c:64:2:
+> error: implicit declaration of function 'of_get_ibm_chip_id'
+> [-Werror=implicit-function-declaration] chip_id =
+> of_get_ibm_chip_id(dn); ^ arch/powerpc/platforms/powernv/rng.c: In
+> function 'rng_create': arch/powerpc/platforms/powernv/rng.c:85:2:
+> error: implicit declaration of function 'of_iomap'
+> [-Werror=implicit-function-declaration] rng->regs= of_iomap(dn, 0);
+>   ^
+> arch/powerpc/platforms/powernv/rng.c:85:12: error: assignment makes pointer from integer without a cast [-Werror]
+>   rng->regs = of_iomap(dn, 0);
+>             ^
 > 
-> config TCG_ATMEL
-> 	tristate "Atmel TPM Interface"
-> 	depends on PPC64 || HAS_IOPORT
-> 	---help---
-> 	  If you have a TPM security chip from Atmel say Yes and it 
-> 	  will be accessible from within Linux.  To compile this driver 
-> 	  as a module, choose M here; the module will be called tpm_atmel.
+> Caused by commit a4da0d50b2a0 ("powerpc: Implement
+> arch_get_random_long/int() for powernv") from the powerpc tree
+> interacting with commit b5b4bb3f6a11 ("of: only include prom.h on sparc")
+> from the dt-rh tree.
 > 
-> The hardware/driver is pretty old and the driver might have contained a bug 
-> that made it unusable for the last 6 years ;)
-> 
-> So if anyone still has this kind of hardware around, please reply.
-> 
+> I added this merge fix patch (which will need to be sent to Linus when
+> these two trees get merged, or could be applied now to the powerpc tree):
 
-As near as I can tell this was on a single machine type (the js21 circa
-2006).  The firmware on the machine didn't support establishing a root
-of trust, so use of the TPM was as a practical matter effective only for
-the other functions like random number generation and key management.
-The number of users who used the TPM for this on this machine was likely
-very small 7 years ago.  The number of those machines still in service
-today is likely smaller still.  The cross section of those two small
-numbers combined with those who want to run on a shiny new kernel has to
-be quickly approaching zero.
+Applying to the powerpc tree now seems like the better path.
 
-I reccomend removing the driver.  If the stars align and a user actually
-appears who wants to use one I'll clean up the driver and resubmit it
-for inclusion.  I just don't think that will happen.
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Mon, 28 Oct 2013 19:34:41 +1100
+> Subject: [PATCH] powerpc: add include of prom.h to fix powernv/rng.c build
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
--Joel
+Acked-by: Rob Herring <rob.herring@calxeda.com>
+
+Rob
