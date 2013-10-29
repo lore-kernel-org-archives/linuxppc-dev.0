@@ -1,19 +1,24 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by ozlabs.org (Postfix) with ESMTP id 329712C04BB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 00:00:47 +1100 (EST)
-Message-ID: <526FB17C.3090009@tabi.org>
-Date: Tue, 29 Oct 2013 08:00:44 -0500
-From: Timur Tabi <timur@tabi.org>
-MIME-Version: 1.0
-To: Chen Guangyu-B42378 <B42378@freescale.com>
+Return-Path: <B42378@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 591572C0356
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 00:03:38 +1100 (EST)
+From: Chen Guangyu-B42378 <B42378@freescale.com>
+To: Timur Tabi <timur@tabi.org>
 Subject: Re: [PATCH 2/3] ASoC: fsl_ssi: Add dual fifo mode support
+Date: Tue, 29 Oct 2013 13:03:26 +0000
+Message-ID: <uq0wlfsid450p3ufwptuuscw.1383051812670@email.android.com>
 References: <cover.1383047327.git.b42378@freescale.com>
  <02f8867363ed3038a0a70703856e4b642fef4339.1383047327.git.b42378@freescale.com>,
  <526FAD41.2000805@tabi.org>
- <flq2m8se8fxm4icha4yrpcbn.1383051217235@email.android.com>
-In-Reply-To: <flq2m8se8fxm4icha4yrpcbn.1383051217235@email.android.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+ <flq2m8se8fxm4icha4yrpcbn.1383051217235@email.android.com>,
+ <526FB17C.3090009@tabi.org>
+In-Reply-To: <526FB17C.3090009@tabi.org>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
 Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
@@ -38,6 +43,13 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+Thank you, sir. And sorry for taking your time.
+
+Sent by Android device.
+
+Timur Tabi <timur@tabi.org> wrote:
+
 
 Chen Guangyu-B42378 wrote:
 > Without dual fifo support,  handware underrun would occasionally
