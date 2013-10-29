@@ -1,39 +1,20 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A80D22C038C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 22:02:27 +1100 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Tue, 29 Oct 2013 21:02:25 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id C57F42BB0044
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 22:02:22 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9TAj2Ic1507640
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 21:45:02 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9TB2L9I014371
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 22:02:22 +1100
-Subject: [PATCH V7 7/7] powernv/cpuidle: Enable idle powernv cpu to call
- into the cpuidle framework.
-To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Tue, 29 Oct 2013 16:32:02 +0530
-Message-ID: <20131029110201.31547.55088.stgit@deepthi.in.ibm.com>
-In-Reply-To: <20131029110052.31547.82682.stgit@deepthi.in.ibm.com>
-References: <20131029110052.31547.82682.stgit@deepthi.in.ibm.com>
+Return-Path: <B42378@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CA4482C04DD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 22:04:51 +1100 (EST)
+From: Nicolin Chen <b42378@freescale.com>
+To: <broonie@kernel.org>, <timur@tabi.org>
+Subject: [PATCH] ASoC: fsl_ssi: separately enable and disable TIE/RIE in
+ trigger()
+Date: Tue, 29 Oct 2013 19:04:48 +0800
+Message-ID: <1383044688-28596-1-git-send-email-b42378@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com,
- srivatsa.bhat@linux.vnet.ibm.com, scottwood@freescale.com,
- linux-pm@lists.linux-foundation.org
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,50 +24,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables idle cpu on the powernv platform  to hook on to the cpuidle
-framework, if available, else call on to default idle platform
-code.
+This patch enables Tx-related SIER_FLAGS only when direction is PLAYBACK
+and does same thing for CAPTURE. Also, after TRIGGER_STOP/PAUSE, it will
+disable SIER_xFLAGS for symmetric.
 
-Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+[ Passed compile-test with mpc85xx_defconfig ]
+
+Signed-off-by: Nicolin Chen <b42378@freescale.com>
 ---
- arch/powerpc/platforms/powernv/setup.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ sound/soc/fsl/fsl_ssi.c | 21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index e239dcf..42a6ba0 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -25,6 +25,7 @@
- #include <linux/of.h>
- #include <linux/interrupt.h>
- #include <linux/bug.h>
-+#include <linux/cpuidle.h>
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 35e2773..3797bf0 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -107,11 +107,14 @@ static inline void write_ssi_mask(u32 __iomem *addr, u32 clear, u32 set)
+ #endif
  
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-@@ -192,6 +193,16 @@ static void __init pnv_setup_machdep_rtas(void)
- }
- #endif /* CONFIG_PPC_POWERNV_RTAS */
- 
-+void powernv_idle(void)
-+{
-+	/* Hook to cpuidle framework if available, else
-+	 * call on default platform idle code
-+	 */
-+	if (cpuidle_idle_call()) {
-+		power7_idle();
-+	}
-+}
+ /* SIER bitflag of interrupts to enable */
+-#define SIER_FLAGS (CCSR_SSI_SIER_TFRC_EN | CCSR_SSI_SIER_TDMAE | \
++#define SIER_TFLAGS (CCSR_SSI_SIER_TFRC_EN | CCSR_SSI_SIER_TDMAE | \
+ 		    CCSR_SSI_SIER_TIE | CCSR_SSI_SIER_TUE0_EN | \
+-		    CCSR_SSI_SIER_TUE1_EN | CCSR_SSI_SIER_RFRC_EN | \
+-		    CCSR_SSI_SIER_RDMAE | CCSR_SSI_SIER_RIE | \
+-		    CCSR_SSI_SIER_ROE0_EN | CCSR_SSI_SIER_ROE1_EN)
++		    CCSR_SSI_SIER_TUE1_EN)
++#define SIER_RFLAGS (CCSR_SSI_SIER_RFRC_EN | CCSR_SSI_SIER_RDMAE | \
++		    CCSR_SSI_SIER_RIE | CCSR_SSI_SIER_ROE0_EN | \
++		    CCSR_SSI_SIER_ROE1_EN)
 +
- static int __init pnv_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
-@@ -222,7 +233,7 @@ define_machine(powernv) {
- 	.show_cpuinfo		= pnv_show_cpuinfo,
- 	.progress		= pnv_progress,
- 	.machine_shutdown	= pnv_shutdown,
--	.power_save             = power7_idle,
-+	.power_save             = powernv_idle,
- 	.calibrate_decr		= generic_calibrate_decr,
- #ifdef CONFIG_KEXEC
- 	.kexec_cpu_down		= pnv_kexec_cpu_down,
++#define SIER_FLAGS (SIER_TFLAGS | SIER_RFLAGS)
+ 
+ /**
+  * fsl_ssi_private: per-SSI private data
+@@ -560,12 +563,12 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
+ 
+ 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
+ 		if (ssi_private->use_dma)
+-			sier_bits = SIER_FLAGS;
++			sier_bits = SIER_TFLAGS;
+ 		else
+ 			sier_bits = CCSR_SSI_SIER_TIE | CCSR_SSI_SIER_TFE0_EN;
+ 	} else {
+ 		if (ssi_private->use_dma)
+-			sier_bits = SIER_FLAGS;
++			sier_bits = SIER_RFLAGS;
+ 		else
+ 			sier_bits = CCSR_SSI_SIER_RIE | CCSR_SSI_SIER_RFF0_EN;
+ 	}
+@@ -579,6 +582,8 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
+ 		else
+ 			write_ssi_mask(&ssi->scr, 0,
+ 				CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_RE);
++
++		write_ssi_mask(&ssi->sier, 0, sier_bits);
+ 		break;
+ 
+ 	case SNDRV_PCM_TRIGGER_STOP:
+@@ -591,14 +596,14 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
+ 		if (!ssi_private->imx_ac97 && (read_ssi(&ssi->scr) &
+ 					(CCSR_SSI_SCR_TE | CCSR_SSI_SCR_RE)) == 0)
+ 			write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_SSIEN, 0);
++
++		write_ssi_mask(&ssi->sier, sier_bits, 0);
+ 		break;
+ 
+ 	default:
+ 		return -EINVAL;
+ 	}
+ 
+-	write_ssi(sier_bits, &ssi->sier);
+-
+ 	return 0;
+ }
+ 
+-- 
+1.8.4
