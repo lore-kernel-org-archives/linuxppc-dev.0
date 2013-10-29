@@ -1,25 +1,19 @@
 Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DF30B2C012E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 12:11:33 +1100 (EST)
-Message-ID: <1383009085.3410.46.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/2][v8] powerpc/mpc85xx:Add initial device tree support
- of T104x
+ by ozlabs.org (Postfix) with ESMTPS id 022872C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 13:44:23 +1100 (EST)
+Date: Mon, 28 Oct 2013 21:44:12 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Date: Mon, 28 Oct 2013 20:11:25 -0500
-In-Reply-To: <5264A161.6030803@freescale.com>
-References: <1380771865-2534-1-git-send-email-prabhakar@freescale.com>
- <5264A161.6030803@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+To: <benh@kernel.crashing.org>
+Subject: Pull request: scottwood/linux.git next
+Message-ID: <20131029024412.GA25844@home.buserror.net>
 MIME-Version: 1.0
-Cc: Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Priyanka Jain <Priyanka.Jain@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,97 +23,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-10-21 at 09:07 +0530, Prabhakar Kushwaha wrote:
-> Hi Ben,
-> 
-> This patch is present in upstream review list from a long time.
-> There are no review comments.
-> 
-> So, I request you to pick this patch-set for powerpc.git repository.
-> http://patchwork.ozlabs.org/patch/280207/
-> http://patchwork.ozlabs.org/patch/280208/
+Sorry again for the lateness.  I tried to get this done before the
+conferences last week, but it just didn't happen.
 
-This revision has only been posted for about 2.5 weeks.  
+Highlights include corenet board file consolidation, the ability to run
+userspaces with lwsync on e500v1/v2, some cleanup patches that other KVM
+patches will build on, support for stripped-down e6500 emulation targets,
+and some fixes of minor longstanding issues.
 
-> > +		#address-cells = <1>;
-> > +		#size-cells = <1>;
-> > +		pll0: pll0@800 {
-> > +			#clock-cells = <1>;
-> > +			reg = <0x800 4>;
-> > +			compatible = "fsl,qoriq-core-pll-2.0";
-> > +			clocks = <&clockgen>;
-> > +			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
-> > +		};
-> > +		pll1: pll1@820 {
-> > +			#clock-cells = <1>;
-> > +			reg = <0x820 4>;
-> > +			compatible = "fsl,qoriq-core-pll-2.0";
-> > +			clocks = <&clockgen>;
-> > +			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
-> > +		};
-> > +		mux0: mux0@0 {
-> > +			#clock-cells = <0>;
-> > +			reg = <0x0 4>;
-> > +			compatible = "fsl,core-mux-clock";
-> > +			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-> > +				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-> > +			clock-names = "pll0_0", "pll0_1", "pll0_2",
-> > +				"pll1_0", "pll1_1", "pll1_2";
-> > +			clock-output-names = "cmux0";
-> > +		};
+Some of the more complicated and/or more recently posted patches didn't
+make it this time around; this doesn't mean I've forgotten them (as long
+as they're in patchwork in an action required state), just that I've run
+out of time for 3.13.
 
-The clock bindings are still under discussion.
+The following changes since commit 3ad26e5c4459d3793ad65bc8929037c70515df83:
 
-> > +++ b/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
-> > @@ -0,0 +1,106 @@
-> > +/*
-> > + * T1040/T1042 Silicon/SoC Device Tree Source (pre include)
-> > + *
-> > + * Copyright 2013 Freescale Semiconductor Inc.
-> > + *
-> > + * Redistribution and use in source and binary forms, with or without
-> > + * modification, are permitted provided that the following conditions are met:
-> > + *     * Redistributions of source code must retain the above copyright
-> > + *	 notice, this list of conditions and the following disclaimer.
-> > + *     * Redistributions in binary form must reproduce the above copyright
-> > + *	 notice, this list of conditions and the following disclaimer in the
-> > + *	 documentation and/or other materials provided with the distribution.
-> > + *     * Neither the name of Freescale Semiconductor nor the
-> > + *	 names of its contributors may be used to endorse or promote products
-> > + *	 derived from this software without specific prior written permission.
-> > + *
-> > + *
-> > + * ALTERNATIVELY, this software may be distributed under the terms of the
-> > + * GNU General Public License ("GPL") as published by the Free Software
-> > + * Foundation, either version 2 of that License or (at your option) any
-> > + * later version.
-> > + *
-> > + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-> > + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-> > + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> > + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> > + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-> > + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-> > + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-> > + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-> > + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-> > + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> > + */
-> > +
-> > +/dts-v1/;
-> > +
-> > +/include/ "e5500_power_isa.dtsi"
-> > +
-> > +/ {
-> > +	compatible = "fsl,T104x";
+  Merge branch 'for-kvm' into next (2013-10-11 18:23:53 +1100)
 
-No wildcards in compatibles.  If your response is that this will get
-overwritten anyway, then why have compatible here at all?
+are available in the git repository at:
 
-> > +		crypto = &crypto;
-> > +
-> > +	};
 
-No blank lines before a closing brace.
+  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
 
--Scott
+for you to fetch changes up to b60c5a7a82cdfec2221263ce259faa4a36696163:
+
+  powerpc/6xx: CONFIG_MCU_MPC8349EMITX cannot be a module (2013-10-28 21:11:24 -0500)
+
+----------------------------------------------------------------
+Bharat Bhushan (3):
+      powerpc: remove unnecessary line continuations
+      powerpc: move debug registers in a structure
+      powerpc: export debug registers save function for KVM
+
+Christian Kujau (1):
+      powerpc/6xx: CONFIG_MCU_MPC8349EMITX cannot be a module
+
+Chunhe Lan (1):
+      powerpc/pci: Change the DECLARE_PCI_FIXUP_{HEADER => EARLY} macro of pci quirk
+
+Haijun.Zhang (2):
+      powerpc/eSDCH: Specify voltage for T4240QDS
+      powerpc/dts: Correct sdhci quirk for bsc9131
+
+Hongtao Jia (1):
+      powerpc: Add I2C bus multiplexer node for B4 and T4240QDS
+
+James Yang (2):
+      powerpc: Emulate sync instruction variants
+      powerpc/booke: clear DBCR0_BT in user_disable_single_step()
+
+Kevin Hao (3):
+      powerpc/85xx: introduce corenet_generic machine
+      powerpc/85xx: rename the corenet_ds.c to corenet_generic.c
+      powerpc/85xx: use one kernel option for all the CoreNet_Generic boards
+
+LEROY Christophe (4):
+      powerpc/mpc8xx: Clearer Oops message for Software Emulation Exception
+      powerpc/8xx: Revert commit e0908085fc2391c85b85fb814ae1df377c8e0dcb
+      powerpc/8xx: Fixing issue with CONFIG_PIN_TLB
+      powerpc/8xx: Fixing memory init issue with CONFIG_PIN_TLB
+
+Lijun Pan (2):
+      powerpc/e6500: Include Power ISA properties
+      powerpc/e500v2: Include Power ISA properties
+
+Mihai Caraman (2):
+      powerpc/booke64: Use common defines for AltiVec interrupts numbers
+      powerpc/fsl-booke: Use common defines for SPE/FP interrupts numbers
+
+Minghuan Lian (1):
+      powerpc/dts: fix sRIO error interrupt for b4860
+
+Paul Bolle (1):
+      powerpc: remove dependency on MV64360
+
+Prabhakar Kushwaha (1):
+      powerpc/dts/c293pcie: Add range field for IFC NAND
+
+Scott Wood (1):
+      powerpc/b4qds: enable coreint
+
+Shengzhou Liu (1):
+      powerpc/fsl/defconfig: enable CONFIG_AT803X_PHY
+
+Suzuki Poulose (1):
+      powerpc: Set the NOTE type for SPE regset
+
+Tiejun Chen (1):
+      powerpc/kgdb: use DEFINE_PER_CPU to allocate kgdb's thread_info
+
+Wei Yongjun (2):
+      powerpc/6xx: add missing iounmap() on error in hlwd_pic_init()
+      powerpc/mv643xx_eth: fix return check in mv64x60_eth_register_shared_pdev()
+
+Wolfram Sang (1):
+      arch/powerpc/platforms/83xx: Remove obsolete cleanup for clientdata
+
+York Sun (2):
+      powerpc/t4240emu: Add device tree file for t4240emu
+      powerpc/b4860emu: Add device tree file for b4860emu
+
+Zhao Qiang (1):
+      powerpc/p1010rdb: add P1010RDB-PB platform support
+
+ arch/powerpc/Kconfig                           |   2 +-
+ arch/powerpc/boot/dts/b4860emu.dts             | 218 ++++++++++++++++++++
+ arch/powerpc/boot/dts/b4qds.dtsi               |  51 +++--
+ arch/powerpc/boot/dts/c293pcie.dts             |   1 +
+ arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi     |   2 +
+ arch/powerpc/boot/dts/fsl/b4860si-post.dtsi    |   2 +-
+ arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi     |   2 +
+ arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi  |   2 +-
+ arch/powerpc/boot/dts/fsl/bsc9131si-pre.dtsi   |   3 +
+ arch/powerpc/boot/dts/t4240emu.dts             | 268 +++++++++++++++++++++++++
+ arch/powerpc/boot/dts/t4240qds.dts             |  73 ++++---
+ arch/powerpc/configs/corenet32_smp_defconfig   |   7 +-
+ arch/powerpc/configs/corenet64_smp_defconfig   |   5 +-
+ arch/powerpc/configs/mpc85xx_defconfig         |   1 +
+ arch/powerpc/configs/mpc85xx_smp_defconfig     |   1 +
+ arch/powerpc/configs/ppc64e_defconfig          |   2 +-
+ arch/powerpc/configs/ppc6xx_defconfig          |   2 +-
+ arch/powerpc/include/asm/ppc-opcode.h          |   2 +
+ arch/powerpc/include/asm/processor.h           |  34 ++--
+ arch/powerpc/include/asm/reg_booke.h           |   8 +-
+ arch/powerpc/include/asm/switch_to.h           |   1 +
+ arch/powerpc/kernel/asm-offsets.c              |   2 +-
+ arch/powerpc/kernel/exceptions-64e.S           |   5 +-
+ arch/powerpc/kernel/head_8xx.S                 |   3 +
+ arch/powerpc/kernel/head_fsl_booke.S           |  10 +-
+ arch/powerpc/kernel/kgdb.c                     |   6 +-
+ arch/powerpc/kernel/process.c                  |  45 +++--
+ arch/powerpc/kernel/ptrace.c                   | 156 +++++++-------
+ arch/powerpc/kernel/ptrace32.c                 |   2 +-
+ arch/powerpc/kernel/signal_32.c                |   6 +-
+ arch/powerpc/kernel/traps.c                    |  45 +++--
+ arch/powerpc/mm/init_32.c                      |   5 +
+ arch/powerpc/mm/pgtable.c                      |  19 +-
+ arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |   1 -
+ arch/powerpc/platforms/85xx/Kconfig            | 101 +---------
+ arch/powerpc/platforms/85xx/Makefile           |   8 +-
+ arch/powerpc/platforms/85xx/b4_qds.c           | 102 ----------
+ arch/powerpc/platforms/85xx/corenet_ds.c       |  96 ---------
+ arch/powerpc/platforms/85xx/corenet_ds.h       |  19 --
+ arch/powerpc/platforms/85xx/corenet_generic.c  | 182 +++++++++++++++++
+ arch/powerpc/platforms/85xx/p1010rdb.c         |   2 +
+ arch/powerpc/platforms/85xx/p2041_rdb.c        |  87 --------
+ arch/powerpc/platforms/85xx/p3041_ds.c         |  89 --------
+ arch/powerpc/platforms/85xx/p4080_ds.c         |  87 --------
+ arch/powerpc/platforms/85xx/p5020_ds.c         |  93 ---------
+ arch/powerpc/platforms/85xx/p5040_ds.c         |  84 --------
+ arch/powerpc/platforms/85xx/t4240_qds.c        |  93 ---------
+ arch/powerpc/platforms/embedded6xx/hlwd-pic.c  |   1 +
+ arch/powerpc/sysdev/fsl_pci.c                  |   5 +-
+ arch/powerpc/sysdev/mv64x60_dev.c              |   2 +-
+ 50 files changed, 962 insertions(+), 1081 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/b4860emu.dts
+ create mode 100644 arch/powerpc/boot/dts/t4240emu.dts
+ delete mode 100644 arch/powerpc/platforms/85xx/b4_qds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/corenet_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/corenet_ds.h
+ create mode 100644 arch/powerpc/platforms/85xx/corenet_generic.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p2041_rdb.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p3041_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p4080_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p5020_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/p5040_ds.c
+ delete mode 100644 arch/powerpc/platforms/85xx/t4240_qds.c
