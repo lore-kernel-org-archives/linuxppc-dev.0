@@ -1,24 +1,38 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by ozlabs.org (Postfix) with ESMTP id 0DD902C0351
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 23:42:44 +1100 (EST)
-Message-ID: <526FAD41.2000805@tabi.org>
-Date: Tue, 29 Oct 2013 07:42:41 -0500
-From: Timur Tabi <timur@tabi.org>
-MIME-Version: 1.0
-To: Nicolin Chen <b42378@freescale.com>, shawn.guo@linaro.org,
- broonie@kernel.org
+Return-Path: <B42378@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C8F0E2C0354
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 23:53:46 +1100 (EST)
+From: Chen Guangyu-B42378 <B42378@freescale.com>
+To: Timur Tabi <timur@tabi.org>
 Subject: Re: [PATCH 2/3] ASoC: fsl_ssi: Add dual fifo mode support
+Date: Tue, 29 Oct 2013 12:53:35 +0000
+Message-ID: <flq2m8se8fxm4icha4yrpcbn.1383051217235@email.android.com>
 References: <cover.1383047327.git.b42378@freescale.com>
- <02f8867363ed3038a0a70703856e4b642fef4339.1383047327.git.b42378@freescale.com>
-In-Reply-To: <02f8867363ed3038a0a70703856e4b642fef4339.1383047327.git.b42378@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- s.hauer@pengutronix.de, swarren@wwwdotorg.org, linux-kernel@vger.kernel.org,
- rob.herring@calxeda.com, b32955@freescale.com, dmaengine@vger.kernel.org,
- ijc+devicetree@hellion.org.uk, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ <02f8867363ed3038a0a70703856e4b642fef4339.1383047327.git.b42378@freescale.com>,
+ <526FAD41.2000805@tabi.org>
+In-Reply-To: <526FAD41.2000805@tabi.org>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ Huang Shijie-B32955 <B32955@freescale.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,14 +42,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Without dual fifo support,  handware underrun would occasionally occur and =
+then two audio channels would physically swap. This could be easily reprodu=
+ced in low bus frequency situation, while it would be better if we enable d=
+ual fifo.
+
+Sent by Android device.
+
+Timur Tabi <timur@tabi.org> wrote:
+
+
 Nicolin Chen wrote:
 > By enabling dual fifo mode, it would allow SSI enter a better performance
 > to transimit/receive data without occasional hardware underrun/overrun.
 
-Have you measured any real performance gain with this patch?  I 
-considered adding dual-FIFO support when I originally wrote this driver, 
-but it didn't appear to have any real benefit, but it used twice as many 
+Have you measured any real performance gain with this patch?  I
+considered adding dual-FIFO support when I originally wrote this driver,
+but it didn't appear to have any real benefit, but it used twice as many
 DMA channels.
 
-I'm concerned that this is another patch that just enables a useless 
+I'm concerned that this is another patch that just enables a useless
 feature.
