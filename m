@@ -1,25 +1,24 @@
 Return-Path: <B42378@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9CAB92C034F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 23:29:10 +1100 (EST)
-Date: Tue, 29 Oct 2013 20:13:31 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 30E8D2C00E4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 23:33:28 +1100 (EST)
 From: Nicolin Chen <b42378@freescale.com>
-To: Timur Tabi <timur@tabi.org>
-Subject: Re: [PATCH] ASoC: fsl_ssi: separately enable and disable TIE/RIE in
- trigger()
-Message-ID: <20131029121330.GB9605@MrMyself>
-References: <1383044688-28596-1-git-send-email-b42378@freescale.com>
- <526FA330.3080209@tabi.org> <20131029115711.GA9605@MrMyself>
- <526FA78D.2090601@tabi.org>
+To: <timur@tabi.org>, <shawn.guo@linaro.org>, <broonie@kernel.org>
+Subject: [PATCH 0/3] Add dual-fifo mode support of i.MX ssi
+Date: Tue, 29 Oct 2013 20:33:14 +0800
+Message-ID: <cover.1383047327.git.b42378@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <526FA78D.2090601@tabi.org>
-Cc: alsa-devel@alsa-project.org, broonie@kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
+ s.hauer@pengutronix.de, swarren@wwwdotorg.org, linux-kernel@vger.kernel.org,
+ rob.herring@calxeda.com, b32955@freescale.com, dmaengine@vger.kernel.org,
+ ijc+devicetree@hellion.org.uk, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 29, 2013 at 07:18:21AM -0500, Timur Tabi wrote:
-> Nicolin Chen wrote:
-> >Well, actually I just wanted to clear T/RDMAE to disable DMA request,
-> >but it seems to be much easier to do it like this based on current
-> >code and disabling unused interrupts should be better right?:)
-> 
-> It's not better if it complicates the code and has no real impact.
-> The code has been running fine for years the way it is.  Unless you
-> can show me that it actually makes a difference, I will have to NACK
-> this patch.
->
+Changelog
+v1:
+ * SSI can reduce hardware overrun/underrun possibility when using dual
+ * fifo mode. To support this mode, we need to first update sdma sciprt
+ * list, and then enable dual fifo BIT in SSI driver, and last update DT
+ * bindings of i.MX series.
+ *
+ * ! This series of patches has a direct dependency between them. When
+ * ! applying them, we need to apply in one single branch. Otherwise,
+ * ! it would break currect branches.
 
-The DMA request might be remaining high if not disabling it. This would
-cause SDMA re-check this request, while it has no BD existing. For the
-other interrupts, if you don't like it, I can drop it. Just modification
-to the driver might not be less complicated.
+Nicolin Chen (3):
+  dma: imx-sdma: Add ssi dual fifo script support
+  ASoC: fsl_ssi: Add dual fifo mode support
+  ARM: dts: imx: use dual-fifo sdma script for ssi
 
-Thank you,
-Nicolin Chen
+ .../devicetree/bindings/dma/fsl-imx-sdma.txt       |  1 +
+ arch/arm/boot/dts/imx51.dtsi                       |  4 ++--
+ arch/arm/boot/dts/imx53.dtsi                       |  4 ++--
+ arch/arm/boot/dts/imx6qdl.dtsi                     | 12 +++++------
+ arch/arm/boot/dts/imx6sl.dtsi                      | 12 +++++------
+ drivers/dma/imx-sdma.c                             |  6 +++++-
+ include/linux/platform_data/dma-imx-sdma.h         |  2 ++
+ include/linux/platform_data/dma-imx.h              |  1 +
+ sound/soc/fsl/fsl_ssi.c                            | 24 +++++++++++++++++++++-
+ 9 files changed, 48 insertions(+), 18 deletions(-)
+
+-- 
+1.8.4
