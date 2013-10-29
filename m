@@ -1,26 +1,21 @@
-Return-Path: <B42378@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EA2682C03C0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 23:33:40 +1100 (EST)
-From: Nicolin Chen <b42378@freescale.com>
-To: <timur@tabi.org>, <shawn.guo@linaro.org>, <broonie@kernel.org>
-Subject: [PATCH 3/3] ARM: dts: imx: use dual-fifo sdma script for ssi
-Date: Tue, 29 Oct 2013 20:33:17 +0800
-Message-ID: <730199f43b43b1ea5b4c2de88a67f659f7b4384b.1383047327.git.b42378@freescale.com>
-In-Reply-To: <cover.1383047327.git.b42378@freescale.com>
-References: <cover.1383047327.git.b42378@freescale.com>
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id A87152C0361
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 23:40:35 +1100 (EST)
+Message-ID: <526FACC1.7010909@tabi.org>
+Date: Tue, 29 Oct 2013 07:40:33 -0500
+From: Timur Tabi <timur@tabi.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- s.hauer@pengutronix.de, swarren@wwwdotorg.org, linux-kernel@vger.kernel.org,
- rob.herring@calxeda.com, b32955@freescale.com, dmaengine@vger.kernel.org,
- ijc+devicetree@hellion.org.uk, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [PATCH] ASoC: fsl_ssi: separately enable and disable TIE/RIE
+ in trigger()
+References: <1383044688-28596-1-git-send-email-b42378@freescale.com>
+ <526FA330.3080209@tabi.org> <20131029115711.GA9605@MrMyself>
+ <526FA78D.2090601@tabi.org> <20131029121330.GB9605@MrMyself>
+In-Reply-To: <20131029121330.GB9605@MrMyself>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: alsa-devel@alsa-project.org, broonie@kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,119 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use dual-fifo sdma scripts instead of shared scripts for ssi on i.MX series.
+Nicolin Chen wrote:
+> The DMA request might be remaining high if not disabling it.
 
-Signed-off-by: Nicolin Chen <b42378@freescale.com>
----
- arch/arm/boot/dts/imx51.dtsi   |  4 ++--
- arch/arm/boot/dts/imx53.dtsi   |  4 ++--
- arch/arm/boot/dts/imx6qdl.dtsi | 12 ++++++------
- arch/arm/boot/dts/imx6sl.dtsi  | 12 ++++++------
- 4 files changed, 16 insertions(+), 16 deletions(-)
+Might?  Are you just guessing?
 
-diff --git a/arch/arm/boot/dts/imx51.dtsi b/arch/arm/boot/dts/imx51.dtsi
-index 54cee65..1a71eac 100644
---- a/arch/arm/boot/dts/imx51.dtsi
-+++ b/arch/arm/boot/dts/imx51.dtsi
-@@ -154,8 +154,8 @@
- 					reg = <0x70014000 0x4000>;
- 					interrupts = <30>;
- 					clocks = <&clks 49>;
--					dmas = <&sdma 24 1 0>,
--					       <&sdma 25 1 0>;
-+					dmas = <&sdma 24 22 0>,
-+					       <&sdma 25 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <25 24 23 22>; /* TX0 RX0 TX1 RX1 */
-diff --git a/arch/arm/boot/dts/imx53.dtsi b/arch/arm/boot/dts/imx53.dtsi
-index 4307e80..7208fde 100644
---- a/arch/arm/boot/dts/imx53.dtsi
-+++ b/arch/arm/boot/dts/imx53.dtsi
-@@ -153,8 +153,8 @@
- 					reg = <0x50014000 0x4000>;
- 					interrupts = <30>;
- 					clocks = <&clks 49>;
--					dmas = <&sdma 24 1 0>,
--					       <&sdma 25 1 0>;
-+					dmas = <&sdma 24 22 0>,
-+					       <&sdma 25 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <25 24 23 22>; /* TX0 RX0 TX1 RX1 */
-diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-index 57e9c38..6e096ca 100644
---- a/arch/arm/boot/dts/imx6qdl.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl.dtsi
-@@ -223,8 +223,8 @@
- 					reg = <0x02028000 0x4000>;
- 					interrupts = <0 46 0x04>;
- 					clocks = <&clks 178>;
--					dmas = <&sdma 37 1 0>,
--					       <&sdma 38 1 0>;
-+					dmas = <&sdma 37 22 0>,
-+					       <&sdma 38 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <38 37>;
-@@ -236,8 +236,8 @@
- 					reg = <0x0202c000 0x4000>;
- 					interrupts = <0 47 0x04>;
- 					clocks = <&clks 179>;
--					dmas = <&sdma 41 1 0>,
--					       <&sdma 42 1 0>;
-+					dmas = <&sdma 41 22 0>,
-+					       <&sdma 42 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <42 41>;
-@@ -249,8 +249,8 @@
- 					reg = <0x02030000 0x4000>;
- 					interrupts = <0 48 0x04>;
- 					clocks = <&clks 180>;
--					dmas = <&sdma 45 1 0>,
--					       <&sdma 46 1 0>;
-+					dmas = <&sdma 45 22 0>,
-+					       <&sdma 46 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <46 45>;
-diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
-index c46651e..b32ba99 100644
---- a/arch/arm/boot/dts/imx6sl.dtsi
-+++ b/arch/arm/boot/dts/imx6sl.dtsi
-@@ -195,8 +195,8 @@
- 					reg = <0x02028000 0x4000>;
- 					interrupts = <0 46 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI1>;
--					dmas = <&sdma 37 1 0>,
--					       <&sdma 38 1 0>;
-+					dmas = <&sdma 37 22 0>,
-+					       <&sdma 38 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
-@@ -207,8 +207,8 @@
- 					reg = <0x0202c000 0x4000>;
- 					interrupts = <0 47 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI2>;
--					dmas = <&sdma 41 1 0>,
--					       <&sdma 42 1 0>;
-+					dmas = <&sdma 41 22 0>,
-+					       <&sdma 42 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
-@@ -219,8 +219,8 @@
- 					reg = <0x02030000 0x4000>;
- 					interrupts = <0 48 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI3>;
--					dmas = <&sdma 45 1 0>,
--					       <&sdma 46 1 0>;
-+					dmas = <&sdma 45 22 0>,
-+					       <&sdma 46 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
--- 
-1.8.4
+> This would
+> cause SDMA re-check this request, while it has no BD existing. For the
+> other interrupts, if you don't like it, I can drop it. Just modification
+> to the driver might not be less complicated.
+
+I'm only talking about this particular patch.
