@@ -1,47 +1,32 @@
-Return-Path: <B47053@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D1CE32C033F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 20:31:20 +1100 (EST)
-From: Xiubo Li-B47053 <B47053@freescale.com>
-To: Chen Guangyu-B42378 <B42378@freescale.com>
-Subject: RE: [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
-Date: Tue, 29 Oct 2013 09:31:11 +0000
-Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F8286D2E8@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
- <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
- <20131024110543.GA18506@sirena.org.uk>
- <1DD289F6464F0949A2FCA5AA6DC23F8286BDB5@039-SN2MPN1-013.039d.mgd.msft.net>
- <20131029040209.GC8812@MrMyself>
-In-Reply-To: <20131029040209.GC8812@MrMyself>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A2D4B2C0340
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Oct 2013 21:21:50 +1100 (EST)
+Date: Tue, 29 Oct 2013 11:21:31 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Victor Kaplansky <VICTORK@il.ibm.com>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+Message-ID: <20131029102131.GA16117@laptop.programming.kicks-ass.net>
+References: <12083.1382486094@ale.ozlabs.ibm.com>
+ <20131023141948.GB3566@localhost.localdomain>
+ <20131025173749.GG19466@laptop.lan>
+ <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
+ <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
+ <20131028132634.GO19466@laptop.lan>
+ <20131028163418.GD4126@linux.vnet.ibm.com>
+ <20131028201735.GA15629@redhat.com>
+ <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
 MIME-Version: 1.0
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "tiwai@suse.de" <tiwai@suse.de>, Wang Huan-B18965 <B18965@freescale.com>,
- "timur@tabi.org" <timur@tabi.org>, "perex@perex.cz" <perex@perex.cz>,
- Guo Shawn-R65073 <r65073@freescale.com>,
- "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- "pawel.moll@arm.com" <pawel.moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- Mark Brown <broonie@kernel.org>, "oskar@scara.com" <oskar@scara.com>,
- Estevam Fabio-R49496 <r49496@freescale.com>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob@landley.net" <rob@landley.net>,
- Jin Zhengxiong-R64188 <R64188@freescale.com>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,49 +36,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Oct 28, 2013 at 10:58:58PM +0200, Victor Kaplansky wrote:
+> Oleg Nesterov <oleg@redhat.com> wrote on 10/28/2013 10:17:35 PM:
+> 
+> >       mb();   // XXXXXXXX: do we really need it? I think yes.
+> 
+> Oh, it is hard to argue with feelings. Also, it is easy to be on
+> conservative side and put the barrier here just in case.
 
-
-
-
-> -----Original Message-----
-> From: Chen Guangyu-B42378
-> Sent: Tuesday, October 29, 2013 12:02 PM
-> To: Xiubo Li-B47053
-> Cc: Mark Brown; Guo Shawn-R65073; timur@tabi.org; lgirdwood@gmail.com;
-> Jin Zhengxiong-R64188; rob.herring@calxeda.com; pawel.moll@arm.com;
-> mark.rutland@arm.com; swarren@wwwdotorg.org; ian.campbell@citrix.com;
-> rob@landley.net; linux@arm.linux.org.uk; perex@perex.cz; tiwai@suse.de;
-> grant.likely@linaro.org; Estevam Fabio-R49496; LW@KARO-electronics.de;
-> oskar@scara.com; shawn.guo@linaro.org; Wang Huan-B18965;
-> devicetree@vger.kernel.org; linux-doc@vger.kernel.org; linux-
-> kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org; alsa-
-> devel@alsa-project.org; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio Interface
-> driver.
->=20
-> On Tue, Oct 29, 2013 at 12:00:57PM +0800, Xiubo Li-B47053 wrote:
-> > > There's a patch in -next that lets the generic dmaengine code figure
-> > > out some settings from the dmacontroller rather than requiring the
-> > > driver to explicitly provide configuration - it's "ASoC:
-> > > dmaengine-pcm: Provide default config".  Please update your driver
-> > > to use this, or let's work out what it doesn't do any try to fix it.
-> > >
-> >
-> > I couldn't find the patch in the next and other trees.
-> > Does this patch has been submitted to the -next tree ?
-> > Or could you tell me how to find the patch please?
-> >
->=20
-> Are you using broonie's repository?
-
-NO.
-
-> git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git
->=20
-> If you searched the title in for-next branch, you should have found it.
->=20
-Yes, find it.
-Thanks very much.
-
---
-Xiubo
+I'll make it a full mb for now and too am curious to see the end of this
+discussion explaining things ;-)
