@@ -1,20 +1,23 @@
-Return-Path: <B42378@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Return-Path: <R65777@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CA4482C04DD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 22:04:51 +1100 (EST)
-From: Nicolin Chen <b42378@freescale.com>
-To: <broonie@kernel.org>, <timur@tabi.org>
-Subject: [PATCH] ASoC: fsl_ssi: separately enable and disable TIE/RIE in
- trigger()
-Date: Tue, 29 Oct 2013 19:04:48 +0800
-Message-ID: <1383044688-28596-1-git-send-email-b42378@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0DB9E2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 22:34:23 +1100 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <alex.williamson@redhat.com>, <joro@8bytes.org>,
+ <galak@kernel.crashing.org>, <scottwood@freescale.com>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-pci@vger.kernel.org>, <agraf@suse.de>, <stuart.yoder@freescale.com>
+Subject: [PATCH 1/5 RFC] pci:msi: add weak function for returning msi region
+ info
+Date: Tue, 29 Oct 2013 16:57:37 +0530
+Message-ID: <1383046062-16520-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,80 +27,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables Tx-related SIER_FLAGS only when direction is PLAYBACK
-and does same thing for CAPTURE. Also, after TRIGGER_STOP/PAUSE, it will
-disable SIER_xFLAGS for symmetric.
+In Aperture type of IOMMU (like FSL PAMU), VFIO-iommu system need to know
+the MSI region to map its window in h/w. This patch just defines the
+required weak functions only and will be used by followup patches.
 
-[ Passed compile-test with mpc85xx_defconfig ]
-
-Signed-off-by: Nicolin Chen <b42378@freescale.com>
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
- sound/soc/fsl/fsl_ssi.c | 21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
+ drivers/pci/msi.c   |   22 ++++++++++++++++++++++
+ include/linux/msi.h |   14 ++++++++++++++
+ 2 files changed, 36 insertions(+), 0 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 35e2773..3797bf0 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -107,11 +107,14 @@ static inline void write_ssi_mask(u32 __iomem *addr, u32 clear, u32 set)
- #endif
- 
- /* SIER bitflag of interrupts to enable */
--#define SIER_FLAGS (CCSR_SSI_SIER_TFRC_EN | CCSR_SSI_SIER_TDMAE | \
-+#define SIER_TFLAGS (CCSR_SSI_SIER_TFRC_EN | CCSR_SSI_SIER_TDMAE | \
- 		    CCSR_SSI_SIER_TIE | CCSR_SSI_SIER_TUE0_EN | \
--		    CCSR_SSI_SIER_TUE1_EN | CCSR_SSI_SIER_RFRC_EN | \
--		    CCSR_SSI_SIER_RDMAE | CCSR_SSI_SIER_RIE | \
--		    CCSR_SSI_SIER_ROE0_EN | CCSR_SSI_SIER_ROE1_EN)
-+		    CCSR_SSI_SIER_TUE1_EN)
-+#define SIER_RFLAGS (CCSR_SSI_SIER_RFRC_EN | CCSR_SSI_SIER_RDMAE | \
-+		    CCSR_SSI_SIER_RIE | CCSR_SSI_SIER_ROE0_EN | \
-+		    CCSR_SSI_SIER_ROE1_EN)
-+
-+#define SIER_FLAGS (SIER_TFLAGS | SIER_RFLAGS)
- 
- /**
-  * fsl_ssi_private: per-SSI private data
-@@ -560,12 +563,12 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
- 
- 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
- 		if (ssi_private->use_dma)
--			sier_bits = SIER_FLAGS;
-+			sier_bits = SIER_TFLAGS;
- 		else
- 			sier_bits = CCSR_SSI_SIER_TIE | CCSR_SSI_SIER_TFE0_EN;
- 	} else {
- 		if (ssi_private->use_dma)
--			sier_bits = SIER_FLAGS;
-+			sier_bits = SIER_RFLAGS;
- 		else
- 			sier_bits = CCSR_SSI_SIER_RIE | CCSR_SSI_SIER_RFF0_EN;
- 	}
-@@ -579,6 +582,8 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
- 		else
- 			write_ssi_mask(&ssi->scr, 0,
- 				CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_RE);
-+
-+		write_ssi_mask(&ssi->sier, 0, sier_bits);
- 		break;
- 
- 	case SNDRV_PCM_TRIGGER_STOP:
-@@ -591,14 +596,14 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
- 		if (!ssi_private->imx_ac97 && (read_ssi(&ssi->scr) &
- 					(CCSR_SSI_SCR_TE | CCSR_SSI_SCR_RE)) == 0)
- 			write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_SSIEN, 0);
-+
-+		write_ssi_mask(&ssi->sier, sier_bits, 0);
- 		break;
- 
- 	default:
- 		return -EINVAL;
- 	}
- 
--	write_ssi(sier_bits, &ssi->sier);
--
- 	return 0;
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index d5f90d6..2643a29 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -67,6 +67,28 @@ int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
+ 	return chip->check_device(chip, dev, nvec, type);
  }
  
++int __weak arch_msi_get_region_count(void)
++{
++	return 0;
++}
++
++int __weak arch_msi_get_region(int region_num, struct msi_region *region)
++{
++	return 0;
++}
++
++int msi_get_region_count(void)
++{
++	return arch_msi_get_region_count();
++}
++EXPORT_SYMBOL(msi_get_region_count);
++
++int msi_get_region(int region_num, struct msi_region *region)
++{
++	return arch_msi_get_region(region_num, region);
++}
++EXPORT_SYMBOL(msi_get_region);
++
+ int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ {
+ 	struct msi_desc *entry;
+diff --git a/include/linux/msi.h b/include/linux/msi.h
+index b17ead8..0deedb4 100644
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -51,6 +51,18 @@ struct msi_desc {
+ };
+ 
+ /*
++ * This structure is used to get
++ * 	- physical address
++ * 	- size
++ * of a msi region
++ */
++struct msi_region {
++	int region_num; /* MSI region number */
++	dma_addr_t addr; /* Address of MSI region */
++	size_t size; /* Size of MSI region */
++};
++
++/*
+  * The arch hooks to setup up msi irqs. Those functions are
+  * implemented as weak symbols so that they /can/ be overriden by
+  * architecture specific code if needed.
+@@ -64,6 +76,8 @@ void arch_restore_msi_irqs(struct pci_dev *dev, int irq);
+ 
+ void default_teardown_msi_irqs(struct pci_dev *dev);
+ void default_restore_msi_irqs(struct pci_dev *dev, int irq);
++int arch_msi_get_region_count(void);
++int arch_msi_get_region(int region_num, struct msi_region *region);
+ 
+ struct msi_chip {
+ 	struct module *owner;
 -- 
-1.8.4
+1.7.0.4
