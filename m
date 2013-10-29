@@ -1,41 +1,40 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3F5052C0330
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 16:38:34 +1100 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 29 Oct 2013 11:08:30 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 181301258017
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 11:09:05 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9T5cODf26476788
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 11:08:24 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9T5cQ1a026135
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 11:08:27 +0530
-Message-ID: <526F4923.8020400@linux.vnet.ibm.com>
-Date: Tue, 29 Oct 2013 11:05:31 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Return-Path: <B29983@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 37F6A2C033E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 17:51:06 +1100 (EST)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in device tree
+Date: Tue, 29 Oct 2013 06:50:56 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B150C7CFD@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1381300704-4238-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20131010100331.GE26954@e106331-lin.cambridge.arm.com>
+ <D07C73A334FF604B95B3CBD2A545D07B150BD137@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20131011092526.GE3910@e106331-lin.cambridge.arm.com>
+ <1381518433.7979.536.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C24BD@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381788786.7979.643.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C2B08@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381858855.7979.693.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C312F@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1381942009.7979.727.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C4600@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1382027085.7979.774.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C5CAB@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1382113880.7979.836.camel@snotra.buserror.net>
+ <D07C73A334FF604B95B3CBD2A545D07B150C62BA@039-SN2MPN1-013.039d.mgd.msft.net>
+ <1383017163.3410.61.camel@snotra.buserror.net>
+In-Reply-To: <1383017163.3410.61.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 3/3] sched: Aggressive balance in domains whose groups
- share package resources
-References: <20131021114002.13291.31478.stgit@drishya>
- <20131021114502.13291.60794.stgit@drishya>
- <20131028155316.GQ19466@laptop.lan>
-In-Reply-To: <20131028155316.GQ19466@laptop.lan>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michael Neuling <mikey@neuling.org>, Mike Galbraith <bitbucket@online.de>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Anton Blanchard <anton@samba.org>, Paul Turner <pjt@google.com>,
- Ingo Molnar <mingo@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-Leo-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,79 +44,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Peter,
-
-On 10/28/2013 09:23 PM, Peter Zijlstra wrote:
-> On Mon, Oct 21, 2013 at 05:15:02PM +0530, Vaidyanathan Srinivasan wrote:
->> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->>
->> The current logic in load balance is such that after picking the
->> busiest group, the load is attempted to be moved from the busiest cpu
->> in that group to the dst_cpu. If the load cannot be moved from the
->> busiest cpu to dst_cpu due to either tsk_cpus_allowed mask or cache
->> hot tasks, then the dst_cpu is changed to be another idle cpu within
->> the dst->grpmask. If even then, the load cannot be moved from the
->> busiest cpu, then the source group is changed. The next busiest group
->> is found and the above steps are repeated.
->>
->> However if the cpus in the group share package resources, then when
->> a load movement from the busiest cpu in this group fails as above,
->> instead of finding the next busiest group to move load from, find the
->> next busiest cpu *within the same group* from which to move load away.
->> By doing so, a conscious effort is made during load balancing to keep
->> just one cpu busy as much as possible within domains that have
->> SHARED_PKG_RESOURCES flag set unless under scenarios of high load.
->> Having multiple cpus busy within a domain which share package resource
->> could lead to a performance hit.
->>
->> A similar scenario arises in active load balancing as well. When the
->> current task on the busiest cpu cannot be moved away due to task
->> pinning, currently no more attempts at load balancing is made.
-> 
->> This
->> patch checks if the balancing is being done on a group whose cpus
->> share package resources. If so, then check if the load balancing can
->> be done for other cpus in the same group.
-> 
-> So I absolutely hate this patch... Also I'm not convinced I actually
-> understand the explanation above.
-> 
-> Furthermore; there is nothing special about spreading tasks for
-> SHARED_PKG_RESOURCES and special casing that one case is just wrong.
-> 
-> If anything it should be keyed off of SD_PREFER_SIBLING and or
-> cpu_power.
-
-At a SIBLING level, which has SHARED_PKG_RESOURCES set, cpu_power in
-fact takes care of ensuring that the scheduler mostly spreads the load
-when there is more than one running task by nominating the group as
-busy. But the issue that this patch is bringing to the front is a bit
-different; its not during the time of this nomination, its at the time
-of load balancing. It is explained below.
-
-So metrics like cpu_power and flags like SD_PREFER_SIBLING ensure that
-we spread the load by nominating such groups as busiest in
-update_sg_lb_stats() and update_sd_lb_stats(). So "nominating a group"
-as busiest by virtue of cpu_power or flags is taken care of.
-
-However, in load_balance(), if the imbalance cannot be offset by moving
-load from the busiest_cpu in the busiest_group, then today we do not try
-the *next busiest cpu in the group*; instead we try the next busiest_group.
-
-So whatever effort we put in by nominating this group as busiest, if the
-grp_power and flags do not favour tasks on it, seems relevant only if
-the busiest cpu in that group co-operates in offloading tasks. Should we
-not be trying our best to move load from any other cpu in this group ?
-
-This patch identifies one such situation, which led to too many tasks on
-a core and got me to ponder over this question. I agree that the fix in
-this patch is not right. But I thought this would open up discussion
-around the above question. Its true that iterating over all the cpus in
-a group during the actual load balance is too much of an overhead, but
-isn't there a balance we can strike during load balance iterations for
-such groups which have limited cpu power?
-> 
-Thanks
-
-Regards
-Preeti U Murthy
+VGhhbmtzIGZvciB5b3VyIHJldmlldy4NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
+PiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiAyMDEz5bm0MTDmnIgyOeaXpSDmmJ/m
+nJ/kuowgMTE6MjYNCj4gVG86IFRhbmcgWXVhbnRpYW4tQjI5OTgzDQo+IENjOiBXb29kIFNjb3R0
+LUIwNzQyMTsgTWFyayBSdXRsYW5kOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gbGlu
+dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IExpIFlhbmctTGVvLVI1ODQ3Mg0KPiBTdWJqZWN0
+OiBSZTogW1BBVENIIHY1XSBwb3dlcnBjL21wYzg1eHg6IFVwZGF0ZSB0aGUgY2xvY2sgbm9kZXMg
+aW4gZGV2aWNlDQo+IHRyZWUNCj4gDQo+IE9uIFN1biwgMjAxMy0xMC0yMCBhdCAyMTo1NSAtMDUw
+MCwgVGFuZyBZdWFudGlhbi1CMjk5ODMgd3JvdGU6DQo+ID4gSSBkaWRuJ3Qgc2VlIGhvdyB5b3Vy
+IHN1Z2dlc3Rpb24gaXMgYSBiZXR0ZXIgbWF0Y2hpbmcuDQo+ID4NCj4gPiAgT1NDIC0tLS0+IFBM
+TDEgLS0tLT4gbXV4IC0tLS0+IENQVQ0KPiA+ICAgICAgIHwgICAgICAgICAgIHwNCj4gPiAgICAg
+ICB8LS0+IFBMTDIgLS18DQo+ID4gICAgICAgICAuLi4uLi4uLg0KPiA+IEFzIHlvdXIgc3VnZ2Vz
+dGlvbiwgdGhlIGNsb2NrIHRyZWUgbG9va3MgbGlrZSB0aGUgYWJvdmUuDQo+ID4gSW4gdGhpcyBj
+YXNlLCB0aGUgTVVYIGRyaXZlciB3aWxsIG5vdCBrbm93IHRoZSBkaXZpZGVyIGRldGFpbHMoLzIs
+IC80LA0KPiA+IG9yIC8zKS4NCj4gDQo+IFdoZW4gaXMgdGhlcmUgZXZlciBhIC8zPw0KPiANCkZv
+ciBUNCwgdGhlcmUgaXMgYSAvMywgYnV0IGl0IGlzIHVzZWQgYnkgUE1FIG5vdCBDUFUuDQoNCg0K
+PiA+IEkgdGhpbmsgdGhlIE1VWCBzaG91bGQgYWN0IGxpa2UgInN3aXRjaCIgd2hpY2ggY2hvb3Nl
+IG9uZSBvZiB0aGUgaW5wdXQNCj4gPiBjbG9jayBhcyBhIG91dHB1dCBjbG9jay4gSXQgc2hvdWxk
+IG5vdCBDUkVBVEUgY2xvY2sobGlrZSBQTEwxLzIsDQo+ID4gUExMMS80KS4NCj4gPiBUaGUgcHVy
+cG9zZSBvZiBjbG9jayBkcml2ZXIgaXMgdG8gZXN0YWJsaXNoIHRoZSBjbG9jayB0cmVlLg0KPiA+
+IFRoZSBjbG9jayB0cmVlIHdpbGwgbm90IGJlIGVzdGFibGlzaGVkIGluIHlvdXIgc3VnZ2VzdGlv
+biBiZWNhdXNlIHRoZQ0KPiA+IGRpdmlkZXIgaXMgbWlzc2luZywgd2UgZG9uJ3Qga25vdyB3aGVy
+ZSBQTEwvMiBjb21lcyBmcm9tLg0KPiA+DQo+ID4gSWYgeW91IHJlYWxseSBsaWtlIHlvdXIgcHJv
+cG9zYWwsIGl0IHNob3VsZCBiZSBjaGFuZ2VkIHRvIHRoaXM6DQo+ID4NCj4gPiBPU0MgLS0tLS0t
+PiBQTEwxIC0tLS0tPiBQTEwxIC8xIC0tLS0tLS0tLT4gTVVYIC0tLS0tLS0+Q1BVDQo+ID4gICAg
+ICB8ICAgICAgICAgICAgfF9fXz4gUExMMSAvMiBfX19fX19ffA0KPiA+ICAgICAgfCAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIHwNCj4gPiAgICAgIHxfX19fPiBQTEwyIC0tLS0tPiBQ
+TEwyIC8yIC0tLS0tLS18DQo+ID4gICAgICAgICAgICAgICAgICAgfF9fXz4gUExMMi8gNCBfX19f
+X19ffA0KPiA+DQo+ID4gKGl0IGlzIHBvc3NpYmxlIHRoYXQgUExMcyBoYXZlIGRpZmZlcmVudCBk
+aXZpZGVyKS4NCj4gDQo+IERvIHdlIGFjdHVhbGx5IGhhdmUgKG9yIGV4cGVjdCkgYSBzaXR1YXRp
+b24gd2hlcmUgdGhlIFBMTHMgaGF2ZSBkaWZmZXJlbnQNCj4gZGl2aWRlcnMsIG9yIGV2ZW4gd2hl
+cmUgdGhlIHNhbWUgYml0IHNldHRpbmcgaW4gdGhlIE1VWCByZWdpc3RlciBtZWFucyBhDQo+IGRp
+ZmZlcmVudCBkaXZpZGVyIGZyb20gb25lIGNoaXAgdG8gYW5vdGhlciAod2l0aGluIHRoZSBzYW1l
+IE1VWA0KPiBjb21wYXRpYmxlIHN0cmluZyk/ICBJZiBzbywgdGhlbiBJIGFncmVlIHRoYXQgd2Ug
+c2hvdWxkIGdvIHdpdGggeW91cg0KPiBhcHByb2FjaC4NCj4gDQpGb3IgYSBzcGVjaWZpYyBjaGlw
+LCB0aGUgZGl2aWRlcnMgYXJlIHNhbWUgZm9yIGVhY2ggUExMLg0KQnV0IENQVSBtYXkgdXNlIE9O
+TFkgb25lIG9mIHRoZSBkaXZpZGVycyBvZiBhIFBMTC4NCkZvciBleGFtcGxlLCBvbiBwNDA4MCwg
+Y29yZTAtMyBtYXkgdXNlIFBMTDMvMSwgYnV0IGRvIG5vdCB1c2UgUExMMy8yLg0KKEkgZGlkbid0
+IGRlYWwgd2l0aCB0aGlzIHNpdHVhdGlvbiBpbiBkcml2ZXIgZWl0aGVyIGJlY2F1c2UgdGhlcmUg
+YXJlIGxpbWl0YXRpb25zIHRvIHVzZSBpdCkuDQoNCj4gVGhlIHdheSBGcmVlc2NhbGUgZG9jdW1l
+bnRzIHRoaW5ncyBpbiBjaGlwIG1hbnVhbHMgcmF0aGVyIHRoYW4gaW4gYmxvY2sNCj4gbWFudWFs
+cywgd2l0aCBsaXR0bGUgYml0cyBvZiBpbmZvcm1hdGlvbiBkaWZmZXJlbnQgaW4gZWFjaCBjaGlw
+IG1hbnVhbCwNCj4gbWFrZXMgaXQgaGFyZCB0byBmaWd1cmUgb3V0IHRoaXMgc29ydCBvZiB0aGlu
+Zy4gIEZyb20gdGhlIGV4YW1wbGVzIEkNCj4gbG9va2VkIGF0LCBpdCBzZWVtZWQgcHJldHR5IGNv
+bnNpc3RlbnQgdGhhdCB0aGUgbG93IDIgYml0cyBvZiBDTEtTRUwgaW4NCj4gdGhlIE1VWCB3ZXJl
+IHRoZSBsb2cyIG9mIHRoZSBkaXZpZGVyLiAgQXJlIHRoZXJlIGFueSBjaGlwcyB0aGF0IGRvbid0
+DQo+IGFkaGVyZSB0byB0aGlzPw0KPiANCllvdXIgb2JzZXJ2YXRpb24gaXMgY29ycmVjdCB1bnRp
+bCB0aGVuLiBCdXQgdGhlcmUgaXMgbm8gcnVsZSBvbiB0aGlzIG9mZmljaWFsbHkuDQoNCk5vdyBJ
+IHdhbnQgdG8gc3VtbWFyeSB0aGUgcHJvcyBhbmQgY29ucyBvZiB5b3VyIHN1Z2dlc3Rpb246DQpU
+aGUgcHJvczoNCjEuIHRoZSBkZXZpY2UgdHJlZSB3b3VsZCBiZSBzaW1wbGVyLg0KDQpUaGUgY29u
+czoNCjEuIGNhbm5vdCBnZXQgdGhlIHdob2xlIGNsb2NrIHRyZWUgcGljdHVyZSBiZWNhdXNlIGRp
+dmlkZXJzIGFyZSBoaWRkZW4gaW4gZHJpdmVyLg0KMi4gbm8gd2F5IHRvIGRlYWwgd2l0aCB0aGUg
+dXNlIGNhc2Ugb24gcDQwODANCjMuIG5lZWQgdG8gZGVhbCB3aXRoIGVhY2ggPGNoaXA+LWNsb2Nr
+Z2VuIGNvbXBhdGlibGUgc3RyaW5nIGFuZCBwYXNzIGEgcGFyYW1ldGVyDQogICB0byB0ZWxsIGl0
+IHdoYXQgdGhlIGRpdmlkZXIgaXMuIA0KNC4gdGhlICJsb2cyIHJ1bGUiIGNvdWxkIGJlIGluY29y
+cmVjdCBpbiBmdXR1cmUsIHNheSwgd2UgaGF2ZSBhIGRpdmlkZXIgb2YgLzUuDQoNCkFueSB0aG91
+Z2h0cyBvbiB0aGlzPw0KDQpSZWdhcmRzLA0KWXVhbnRpYW4NCg==
