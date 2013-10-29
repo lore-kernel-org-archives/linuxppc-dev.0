@@ -1,40 +1,47 @@
-Return-Path: <B29983@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
+Return-Path: <B47053@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 37F6A2C033E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 17:51:06 +1100 (EST)
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v5] powerpc/mpc85xx: Update the clock nodes in device tree
-Date: Tue, 29 Oct 2013 06:50:56 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B150C7CFD@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1381300704-4238-1-git-send-email-Yuantian.Tang@freescale.com>
- <20131010100331.GE26954@e106331-lin.cambridge.arm.com>
- <D07C73A334FF604B95B3CBD2A545D07B150BD137@039-SN2MPN1-013.039d.mgd.msft.net>
- <20131011092526.GE3910@e106331-lin.cambridge.arm.com>
- <1381518433.7979.536.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C24BD@039-SN2MPN1-013.039d.mgd.msft.net>
- <1381788786.7979.643.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C2B08@039-SN2MPN1-013.039d.mgd.msft.net>
- <1381858855.7979.693.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C312F@039-SN2MPN1-013.039d.mgd.msft.net>
- <1381942009.7979.727.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C4600@039-SN2MPN1-013.039d.mgd.msft.net>
- <1382027085.7979.774.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C5CAB@039-SN2MPN1-013.039d.mgd.msft.net>
- <1382113880.7979.836.camel@snotra.buserror.net>
- <D07C73A334FF604B95B3CBD2A545D07B150C62BA@039-SN2MPN1-013.039d.mgd.msft.net>
- <1383017163.3410.61.camel@snotra.buserror.net>
-In-Reply-To: <1383017163.3410.61.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id D1CE32C033F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 20:31:20 +1100 (EST)
+From: Xiubo Li-B47053 <B47053@freescale.com>
+To: Chen Guangyu-B42378 <B42378@freescale.com>
+Subject: RE: [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
+Date: Tue, 29 Oct 2013 09:31:11 +0000
+Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F8286D2E8@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
+ <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
+ <20131024110543.GA18506@sirena.org.uk>
+ <1DD289F6464F0949A2FCA5AA6DC23F8286BDB5@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20131029040209.GC8812@MrMyself>
+In-Reply-To: <20131029040209.GC8812@MrMyself>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Mark Rutland <mark.rutland@arm.com>,
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "tiwai@suse.de" <tiwai@suse.de>, Wang Huan-B18965 <B18965@freescale.com>,
+ "timur@tabi.org" <timur@tabi.org>, "perex@perex.cz" <perex@perex.cz>,
+ Guo Shawn-R65073 <r65073@freescale.com>,
+ "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-Leo-R58472 <r58472@freescale.com>
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ Mark Brown <broonie@kernel.org>, "oskar@scara.com" <oskar@scara.com>,
+ Estevam Fabio-R49496 <r49496@freescale.com>,
+ "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob@landley.net" <rob@landley.net>,
+ Jin Zhengxiong-R64188 <R64188@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,59 +51,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VGhhbmtzIGZvciB5b3VyIHJldmlldy4NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
-PiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiAyMDEz5bm0MTDmnIgyOeaXpSDmmJ/m
-nJ/kuowgMTE6MjYNCj4gVG86IFRhbmcgWXVhbnRpYW4tQjI5OTgzDQo+IENjOiBXb29kIFNjb3R0
-LUIwNzQyMTsgTWFyayBSdXRsYW5kOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gbGlu
-dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IExpIFlhbmctTGVvLVI1ODQ3Mg0KPiBTdWJqZWN0
-OiBSZTogW1BBVENIIHY1XSBwb3dlcnBjL21wYzg1eHg6IFVwZGF0ZSB0aGUgY2xvY2sgbm9kZXMg
-aW4gZGV2aWNlDQo+IHRyZWUNCj4gDQo+IE9uIFN1biwgMjAxMy0xMC0yMCBhdCAyMTo1NSAtMDUw
-MCwgVGFuZyBZdWFudGlhbi1CMjk5ODMgd3JvdGU6DQo+ID4gSSBkaWRuJ3Qgc2VlIGhvdyB5b3Vy
-IHN1Z2dlc3Rpb24gaXMgYSBiZXR0ZXIgbWF0Y2hpbmcuDQo+ID4NCj4gPiAgT1NDIC0tLS0+IFBM
-TDEgLS0tLT4gbXV4IC0tLS0+IENQVQ0KPiA+ICAgICAgIHwgICAgICAgICAgIHwNCj4gPiAgICAg
-ICB8LS0+IFBMTDIgLS18DQo+ID4gICAgICAgICAuLi4uLi4uLg0KPiA+IEFzIHlvdXIgc3VnZ2Vz
-dGlvbiwgdGhlIGNsb2NrIHRyZWUgbG9va3MgbGlrZSB0aGUgYWJvdmUuDQo+ID4gSW4gdGhpcyBj
-YXNlLCB0aGUgTVVYIGRyaXZlciB3aWxsIG5vdCBrbm93IHRoZSBkaXZpZGVyIGRldGFpbHMoLzIs
-IC80LA0KPiA+IG9yIC8zKS4NCj4gDQo+IFdoZW4gaXMgdGhlcmUgZXZlciBhIC8zPw0KPiANCkZv
-ciBUNCwgdGhlcmUgaXMgYSAvMywgYnV0IGl0IGlzIHVzZWQgYnkgUE1FIG5vdCBDUFUuDQoNCg0K
-PiA+IEkgdGhpbmsgdGhlIE1VWCBzaG91bGQgYWN0IGxpa2UgInN3aXRjaCIgd2hpY2ggY2hvb3Nl
-IG9uZSBvZiB0aGUgaW5wdXQNCj4gPiBjbG9jayBhcyBhIG91dHB1dCBjbG9jay4gSXQgc2hvdWxk
-IG5vdCBDUkVBVEUgY2xvY2sobGlrZSBQTEwxLzIsDQo+ID4gUExMMS80KS4NCj4gPiBUaGUgcHVy
-cG9zZSBvZiBjbG9jayBkcml2ZXIgaXMgdG8gZXN0YWJsaXNoIHRoZSBjbG9jayB0cmVlLg0KPiA+
-IFRoZSBjbG9jayB0cmVlIHdpbGwgbm90IGJlIGVzdGFibGlzaGVkIGluIHlvdXIgc3VnZ2VzdGlv
-biBiZWNhdXNlIHRoZQ0KPiA+IGRpdmlkZXIgaXMgbWlzc2luZywgd2UgZG9uJ3Qga25vdyB3aGVy
-ZSBQTEwvMiBjb21lcyBmcm9tLg0KPiA+DQo+ID4gSWYgeW91IHJlYWxseSBsaWtlIHlvdXIgcHJv
-cG9zYWwsIGl0IHNob3VsZCBiZSBjaGFuZ2VkIHRvIHRoaXM6DQo+ID4NCj4gPiBPU0MgLS0tLS0t
-PiBQTEwxIC0tLS0tPiBQTEwxIC8xIC0tLS0tLS0tLT4gTVVYIC0tLS0tLS0+Q1BVDQo+ID4gICAg
-ICB8ICAgICAgICAgICAgfF9fXz4gUExMMSAvMiBfX19fX19ffA0KPiA+ICAgICAgfCAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIHwNCj4gPiAgICAgIHxfX19fPiBQTEwyIC0tLS0tPiBQ
-TEwyIC8yIC0tLS0tLS18DQo+ID4gICAgICAgICAgICAgICAgICAgfF9fXz4gUExMMi8gNCBfX19f
-X19ffA0KPiA+DQo+ID4gKGl0IGlzIHBvc3NpYmxlIHRoYXQgUExMcyBoYXZlIGRpZmZlcmVudCBk
-aXZpZGVyKS4NCj4gDQo+IERvIHdlIGFjdHVhbGx5IGhhdmUgKG9yIGV4cGVjdCkgYSBzaXR1YXRp
-b24gd2hlcmUgdGhlIFBMTHMgaGF2ZSBkaWZmZXJlbnQNCj4gZGl2aWRlcnMsIG9yIGV2ZW4gd2hl
-cmUgdGhlIHNhbWUgYml0IHNldHRpbmcgaW4gdGhlIE1VWCByZWdpc3RlciBtZWFucyBhDQo+IGRp
-ZmZlcmVudCBkaXZpZGVyIGZyb20gb25lIGNoaXAgdG8gYW5vdGhlciAod2l0aGluIHRoZSBzYW1l
-IE1VWA0KPiBjb21wYXRpYmxlIHN0cmluZyk/ICBJZiBzbywgdGhlbiBJIGFncmVlIHRoYXQgd2Ug
-c2hvdWxkIGdvIHdpdGggeW91cg0KPiBhcHByb2FjaC4NCj4gDQpGb3IgYSBzcGVjaWZpYyBjaGlw
-LCB0aGUgZGl2aWRlcnMgYXJlIHNhbWUgZm9yIGVhY2ggUExMLg0KQnV0IENQVSBtYXkgdXNlIE9O
-TFkgb25lIG9mIHRoZSBkaXZpZGVycyBvZiBhIFBMTC4NCkZvciBleGFtcGxlLCBvbiBwNDA4MCwg
-Y29yZTAtMyBtYXkgdXNlIFBMTDMvMSwgYnV0IGRvIG5vdCB1c2UgUExMMy8yLg0KKEkgZGlkbid0
-IGRlYWwgd2l0aCB0aGlzIHNpdHVhdGlvbiBpbiBkcml2ZXIgZWl0aGVyIGJlY2F1c2UgdGhlcmUg
-YXJlIGxpbWl0YXRpb25zIHRvIHVzZSBpdCkuDQoNCj4gVGhlIHdheSBGcmVlc2NhbGUgZG9jdW1l
-bnRzIHRoaW5ncyBpbiBjaGlwIG1hbnVhbHMgcmF0aGVyIHRoYW4gaW4gYmxvY2sNCj4gbWFudWFs
-cywgd2l0aCBsaXR0bGUgYml0cyBvZiBpbmZvcm1hdGlvbiBkaWZmZXJlbnQgaW4gZWFjaCBjaGlw
-IG1hbnVhbCwNCj4gbWFrZXMgaXQgaGFyZCB0byBmaWd1cmUgb3V0IHRoaXMgc29ydCBvZiB0aGlu
-Zy4gIEZyb20gdGhlIGV4YW1wbGVzIEkNCj4gbG9va2VkIGF0LCBpdCBzZWVtZWQgcHJldHR5IGNv
-bnNpc3RlbnQgdGhhdCB0aGUgbG93IDIgYml0cyBvZiBDTEtTRUwgaW4NCj4gdGhlIE1VWCB3ZXJl
-IHRoZSBsb2cyIG9mIHRoZSBkaXZpZGVyLiAgQXJlIHRoZXJlIGFueSBjaGlwcyB0aGF0IGRvbid0
-DQo+IGFkaGVyZSB0byB0aGlzPw0KPiANCllvdXIgb2JzZXJ2YXRpb24gaXMgY29ycmVjdCB1bnRp
-bCB0aGVuLiBCdXQgdGhlcmUgaXMgbm8gcnVsZSBvbiB0aGlzIG9mZmljaWFsbHkuDQoNCk5vdyBJ
-IHdhbnQgdG8gc3VtbWFyeSB0aGUgcHJvcyBhbmQgY29ucyBvZiB5b3VyIHN1Z2dlc3Rpb246DQpU
-aGUgcHJvczoNCjEuIHRoZSBkZXZpY2UgdHJlZSB3b3VsZCBiZSBzaW1wbGVyLg0KDQpUaGUgY29u
-czoNCjEuIGNhbm5vdCBnZXQgdGhlIHdob2xlIGNsb2NrIHRyZWUgcGljdHVyZSBiZWNhdXNlIGRp
-dmlkZXJzIGFyZSBoaWRkZW4gaW4gZHJpdmVyLg0KMi4gbm8gd2F5IHRvIGRlYWwgd2l0aCB0aGUg
-dXNlIGNhc2Ugb24gcDQwODANCjMuIG5lZWQgdG8gZGVhbCB3aXRoIGVhY2ggPGNoaXA+LWNsb2Nr
-Z2VuIGNvbXBhdGlibGUgc3RyaW5nIGFuZCBwYXNzIGEgcGFyYW1ldGVyDQogICB0byB0ZWxsIGl0
-IHdoYXQgdGhlIGRpdmlkZXIgaXMuIA0KNC4gdGhlICJsb2cyIHJ1bGUiIGNvdWxkIGJlIGluY29y
-cmVjdCBpbiBmdXR1cmUsIHNheSwgd2UgaGF2ZSBhIGRpdmlkZXIgb2YgLzUuDQoNCkFueSB0aG91
-Z2h0cyBvbiB0aGlzPw0KDQpSZWdhcmRzLA0KWXVhbnRpYW4NCg==
+
+
+
+
+> -----Original Message-----
+> From: Chen Guangyu-B42378
+> Sent: Tuesday, October 29, 2013 12:02 PM
+> To: Xiubo Li-B47053
+> Cc: Mark Brown; Guo Shawn-R65073; timur@tabi.org; lgirdwood@gmail.com;
+> Jin Zhengxiong-R64188; rob.herring@calxeda.com; pawel.moll@arm.com;
+> mark.rutland@arm.com; swarren@wwwdotorg.org; ian.campbell@citrix.com;
+> rob@landley.net; linux@arm.linux.org.uk; perex@perex.cz; tiwai@suse.de;
+> grant.likely@linaro.org; Estevam Fabio-R49496; LW@KARO-electronics.de;
+> oskar@scara.com; shawn.guo@linaro.org; Wang Huan-B18965;
+> devicetree@vger.kernel.org; linux-doc@vger.kernel.org; linux-
+> kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org; alsa-
+> devel@alsa-project.org; linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio Interface
+> driver.
+>=20
+> On Tue, Oct 29, 2013 at 12:00:57PM +0800, Xiubo Li-B47053 wrote:
+> > > There's a patch in -next that lets the generic dmaengine code figure
+> > > out some settings from the dmacontroller rather than requiring the
+> > > driver to explicitly provide configuration - it's "ASoC:
+> > > dmaengine-pcm: Provide default config".  Please update your driver
+> > > to use this, or let's work out what it doesn't do any try to fix it.
+> > >
+> >
+> > I couldn't find the patch in the next and other trees.
+> > Does this patch has been submitted to the -next tree ?
+> > Or could you tell me how to find the patch please?
+> >
+>=20
+> Are you using broonie's repository?
+
+NO.
+
+> git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git
+>=20
+> If you searched the title in for-next branch, you should have found it.
+>=20
+Yes, find it.
+Thanks very much.
+
+--
+Xiubo
