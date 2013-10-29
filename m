@@ -1,29 +1,31 @@
-Return-Path: <B42378@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E3CA22C0357
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 00:17:56 +1100 (EST)
-From: Chen Guangyu-B42378 <B42378@freescale.com>
-To: Timur Tabi <timur@tabi.org>
-Subject: Re: [PATCH] ASoC: fsl_ssi: separately enable and disable TIE/RIE in
- trigger()
-Date: Tue, 29 Oct 2013 13:16:52 +0000
-Message-ID: <df3ajlgpavhroiiray67at4q.1383052621653@email.android.com>
-References: <1383044688-28596-1-git-send-email-b42378@freescale.com>
- <526FA330.3080209@tabi.org> <20131029115711.GA9605@MrMyself>
- <526FA78D.2090601@tabi.org>
- <20131029121330.GB9605@MrMyself>,<526FACC1.7010909@tabi.org>
- <50y5h8hi19x5t2r9jhjrk097.1383051600782@email.android.com>,
- <526FB499.5090506@tabi.org>
-In-Reply-To: <526FB499.5090506@tabi.org>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 561542C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 00:26:50 +1100 (EST)
+Date: Tue, 29 Oct 2013 14:26:29 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] sched: Fix nohz_kick_needed to consider the nr_busy
+ of the parent domain's group
+Message-ID: <20131029132629.GC16117@laptop.programming.kicks-ass.net>
+References: <20131021114002.13291.31478.stgit@drishya>
+ <20131021114442.13291.99344.stgit@drishya>
+ <20131022221138.GJ2490@laptop.programming.kicks-ass.net>
+ <52679BD6.6090507@linux.vnet.ibm.com>
+ <CAKfTPtAUFdmc7PasebNksYztMwRrWsGWPgN6JJJurddu+UP-hQ@mail.gmail.com>
+ <5268D54A.9060604@linux.vnet.ibm.com>
+ <20131028135043.GP19466@laptop.lan>
+ <526F2BEC.3040207@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <526F2BEC.3040207@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Mike Galbraith <bitbucket@online.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>, Anton Blanchard <anton@samba.org>,
+ Paul Turner <pjt@google.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +35,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As you wish, sir.
+On Tue, Oct 29, 2013 at 09:00:52AM +0530, Preeti U Murthy wrote:
+> > Oh nice, that gets rid of the multiple atomics, and it nicely splits
+> > this nohz logic into per topology groups -- now if only we could split
+> > the rest too :-)
+> 
+> I am sorry, I don't get you here. By the 'rest', do you refer to
+> nohz_kick_needed() as below? Or am I missing something?
 
-Sent by Android device.
+Nah, the rest of the NOHZ infrastructure. Currently its global state;
+there were some patches a few years ago that attempted to make that
+per-node state, but that work stalled due to people switching jobs.
 
-Timur Tabi <timur@tabi.org> wrote:
 
+> >> +	sd = highest_flag_domain(cpu, SD_ASYM_PACKING);
+> >> +
+> >> +	if (sd && (cpumask_first_and(nohz.idle_cpus_mask,
+> >> +				  sched_domain_span(sd)) < cpu))
+> >> +		goto need_kick_unlock;
+> >> +
+> >>  	rcu_read_unlock();
+> >>  	return 0;
+> > 
+> > This again is a bit sad; most archs will not have SD_ASYM_PACKING set at
+> > all; this means that they all will do a complete (and pointless) sched
+> > domain tree walk here.
+> 
+> There will not be a 'complete' sched domain tree walk right? The
+> iteration will break at the first level of the sched domain for those
+> archs which do not have SD_ASYM_PACKING set at all.
 
-Chen Guangyu-B42378 wrote:
-> I mean there is a possibility.
->
->   I'm sorry if my patch is kinda annoying and it really bother you, sir. =
-I also want to make things better.
+Ah indeed; I think I got confused due to me modifying
+highest_flag_domain() earlier to assume a flag is carried from the
+lowest domain upwards.
 
-It does not bother me.  I'm glad people are working on my driver.  I
-just want to make sure that my driver does not get bloated.
+> But it is true that doing a sched domain tree walk regularly is a bad
+> idea, might as well update the domain with SD_ASYM_PACKING flag set once
+> and query this domain when required.
+> 
+> I will send out the patch with sd_asym domain introduced rather than the
+> above.
 
->
-> If you really don't like it, we can drop it. It's all your call.
-
-I think this patch should be dropped, because I don't see any real
-reason for it.
+Thanks
