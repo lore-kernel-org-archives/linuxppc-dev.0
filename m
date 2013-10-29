@@ -1,22 +1,25 @@
-Return-Path: <R58495@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 509142C011F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 11:39:32 +1100 (EST)
-Message-ID: <526F03BB.7010506@freescale.com>
-Date: Mon, 28 Oct 2013 17:39:23 -0700
-From: York Sun <yorksun@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id DF30B2C012E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 12:11:33 +1100 (EST)
+Message-ID: <1383009085.3410.46.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/2][v8] powerpc/mpc85xx:Add initial device tree support
+ of T104x
+From: Scott Wood <scottwood@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Date: Mon, 28 Oct 2013 20:11:25 -0500
+In-Reply-To: <5264A161.6030803@freescale.com>
+References: <1380771865-2534-1-git-send-email-prabhakar@freescale.com>
+ <5264A161.6030803@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [5/7] powerpc/corenet64_smp_defconfig: Enable most SPI splash
-References: <1378482199-10581-5-git-send-email-yorksun@freescale.com>
- <20131029002834.GA8680@home.buserror.net>
-In-Reply-To: <20131029002834.GA8680@home.buserror.net>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +29,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/28/2013 05:28 PM, Scott Wood wrote:
-> On Fri, Sep 06, 2013 at 08:43:17AM -0700, York Sun wrote:
->> Enable CONFIG_MTD_M25P80 for corenet64_smp_defconfig. Verified on
->> P5040DS.
->>
->> Signed-off-by: York Sun <yorksun@freescale.com>
->> Reviewed-by: Wood Scott-B07421 <scottwood@freescale.com>
->> Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
->> Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
->>
->> ---
->> arch/powerpc/configs/corenet64_smp_defconfig |    1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
->> index 6c8b020..1ec6f0c 100644
->> --- a/arch/powerpc/configs/corenet64_smp_defconfig
->> +++ b/arch/powerpc/configs/corenet64_smp_defconfig
->> @@ -66,6 +66,7 @@ CONFIG_MTD_CMDLINE_PARTS=y
->>  CONFIG_MTD_CHAR=y
->>  CONFIG_MTD_BLKDEVS=y
->>  CONFIG_MTD_BLOCK=y
->> +CONFIG_MTD_M25P80=y
->>  CONFIG_FTL=y
->>  CONFIG_MTD_CFI=y
->>  CONFIG_MTD_GEN_PROBE=y
+On Mon, 2013-10-21 at 09:07 +0530, Prabhakar Kushwaha wrote:
+> Hi Ben,
 > 
-> This has already been enabled in corenet64_smp_config since
-> commit 478a4829d815865b919c1fa20f0f33543a2291fb, over a year ago.
+> This patch is present in upstream review list from a long time.
+> There are no review comments.
 > 
+> So, I request you to pick this patch-set for powerpc.git repository.
+> http://patchwork.ozlabs.org/patch/280207/
+> http://patchwork.ozlabs.org/patch/280208/
 
-Oh. Thanks. Please drop it then.
+This revision has only been posted for about 2.5 weeks.  
 
-York
+> > +		#address-cells = <1>;
+> > +		#size-cells = <1>;
+> > +		pll0: pll0@800 {
+> > +			#clock-cells = <1>;
+> > +			reg = <0x800 4>;
+> > +			compatible = "fsl,qoriq-core-pll-2.0";
+> > +			clocks = <&clockgen>;
+> > +			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
+> > +		};
+> > +		pll1: pll1@820 {
+> > +			#clock-cells = <1>;
+> > +			reg = <0x820 4>;
+> > +			compatible = "fsl,qoriq-core-pll-2.0";
+> > +			clocks = <&clockgen>;
+> > +			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
+> > +		};
+> > +		mux0: mux0@0 {
+> > +			#clock-cells = <0>;
+> > +			reg = <0x0 4>;
+> > +			compatible = "fsl,core-mux-clock";
+> > +			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+> > +				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
+> > +			clock-names = "pll0_0", "pll0_1", "pll0_2",
+> > +				"pll1_0", "pll1_1", "pll1_2";
+> > +			clock-output-names = "cmux0";
+> > +		};
+
+The clock bindings are still under discussion.
+
+> > +++ b/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
+> > @@ -0,0 +1,106 @@
+> > +/*
+> > + * T1040/T1042 Silicon/SoC Device Tree Source (pre include)
+> > + *
+> > + * Copyright 2013 Freescale Semiconductor Inc.
+> > + *
+> > + * Redistribution and use in source and binary forms, with or without
+> > + * modification, are permitted provided that the following conditions are met:
+> > + *     * Redistributions of source code must retain the above copyright
+> > + *	 notice, this list of conditions and the following disclaimer.
+> > + *     * Redistributions in binary form must reproduce the above copyright
+> > + *	 notice, this list of conditions and the following disclaimer in the
+> > + *	 documentation and/or other materials provided with the distribution.
+> > + *     * Neither the name of Freescale Semiconductor nor the
+> > + *	 names of its contributors may be used to endorse or promote products
+> > + *	 derived from this software without specific prior written permission.
+> > + *
+> > + *
+> > + * ALTERNATIVELY, this software may be distributed under the terms of the
+> > + * GNU General Public License ("GPL") as published by the Free Software
+> > + * Foundation, either version 2 of that License or (at your option) any
+> > + * later version.
+> > + *
+> > + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
+> > + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+> > + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+> > + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
+> > + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+> > + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+> > + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+> > + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+> > + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+> > + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+> > + */
+> > +
+> > +/dts-v1/;
+> > +
+> > +/include/ "e5500_power_isa.dtsi"
+> > +
+> > +/ {
+> > +	compatible = "fsl,T104x";
+
+No wildcards in compatibles.  If your response is that this will get
+overwritten anyway, then why have compatible here at all?
+
+> > +		crypto = &crypto;
+> > +
+> > +	};
+
+No blank lines before a closing brace.
+
+-Scott
