@@ -1,45 +1,26 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AF4A42C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 14:34:11 +1100 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 29 Oct 2013 13:34:09 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 065502CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 14:34:01 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9T3GV7m7471502
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 14:16:31 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9T3XxhB031581
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 14:34:00 +1100
-Message-ID: <526F2BEC.3040207@linux.vnet.ibm.com>
-Date: Tue, 29 Oct 2013 09:00:52 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Return-Path: <B32579@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 20C042C0199
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 14:40:43 +1100 (EST)
+Message-ID: <526F2E18.20501@freescale.com>
+Date: Tue, 29 Oct 2013 09:10:08 +0530
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/3] sched: Fix nohz_kick_needed to consider the nr_busy
- of the parent domain's group
-References: <20131021114002.13291.31478.stgit@drishya>
- <20131021114442.13291.99344.stgit@drishya>
- <20131022221138.GJ2490@laptop.programming.kicks-ass.net>
- <52679BD6.6090507@linux.vnet.ibm.com>
- <CAKfTPtAUFdmc7PasebNksYztMwRrWsGWPgN6JJJurddu+UP-hQ@mail.gmail.com>
- <5268D54A.9060604@linux.vnet.ibm.com> <20131028135043.GP19466@laptop.lan>
-In-Reply-To: <20131028135043.GP19466@laptop.lan>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michael Neuling <mikey@neuling.org>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Mike Galbraith <bitbucket@online.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel <linux-kernel@vger.kernel.org>, Anton Blanchard <anton@samba.org>,
- Paul Turner <pjt@google.com>, Ingo Molnar <mingo@kernel.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/2][v8] powerpc/mpc85xx:Add initial device tree support
+ of T104x
+References: <1380771865-2534-1-git-send-email-prabhakar@freescale.com>	
+ <5264A161.6030803@freescale.com>
+ <1383009085.3410.46.camel@snotra.buserror.net>
+In-Reply-To: <1383009085.3410.46.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,141 +30,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Peter,
 
-On 10/28/2013 07:20 PM, Peter Zijlstra wrote:
-> On Thu, Oct 24, 2013 at 01:37:38PM +0530, Preeti U Murthy wrote:
->>  kernel/sched/core.c  |    5 +++++
->>  kernel/sched/fair.c  |   38 ++++++++++++++++++++------------------
->>  kernel/sched/sched.h |    1 +
->>  3 files changed, 26 insertions(+), 18 deletions(-)
+On 10/29/2013 6:41 AM, Scott Wood wrote:
+> On Mon, 2013-10-21 at 09:07 +0530, Prabhakar Kushwaha wrote:
+>> Hi Ben,
 >>
->> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
->> index c06b8d3..c540392 100644
->> --- a/kernel/sched/core.c
->> +++ b/kernel/sched/core.c
->> @@ -5271,6 +5271,7 @@ DEFINE_PER_CPU(struct sched_domain *, sd_llc);
->>  DEFINE_PER_CPU(int, sd_llc_size);
->>  DEFINE_PER_CPU(int, sd_llc_id);
->>  DEFINE_PER_CPU(struct sched_domain *, sd_numa);
->> +DEFINE_PER_CPU(struct sched_domain *, sd_busy);
->>  
->>  static void update_top_cache_domain(int cpu)
->>  {
->> @@ -5290,6 +5291,10 @@ static void update_top_cache_domain(int cpu)
->>  
->>  	sd = lowest_flag_domain(cpu, SD_NUMA);
->>  	rcu_assign_pointer(per_cpu(sd_numa, cpu), sd);
->> +
->> +	sd = highest_flag_domain(cpu, SD_SHARE_PKG_RESOURCES);
->> +	if (sd)
->> +		rcu_assign_pointer(per_cpu(sd_busy, cpu), sd->parent);
->>  }
->>  
->>  /*
->> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
->> index e9c9549..f66cfd9 100644
->> --- a/kernel/sched/fair.c
->> +++ b/kernel/sched/fair.c
->> @@ -6515,16 +6515,16 @@ static inline void nohz_balance_exit_idle(int cpu)
->>  static inline void set_cpu_sd_state_busy(void)
->>  {
->>  	struct sched_domain *sd;
->> +	int cpu = smp_processor_id();
->>  
->>  	rcu_read_lock();
->> +	sd = rcu_dereference(per_cpu(sd_busy, cpu));
->>  
->>  	if (!sd || !sd->nohz_idle)
->>  		goto unlock;
->>  	sd->nohz_idle = 0;
->>  
->> +	atomic_inc(&sd->groups->sgp->nr_busy_cpus);
->>  unlock:
->>  	rcu_read_unlock();
->>  }
->> @@ -6532,16 +6532,16 @@ unlock:
->>  void set_cpu_sd_state_idle(void)
->>  {
->>  	struct sched_domain *sd;
->> +	int cpu = smp_processor_id();
->>  
->>  	rcu_read_lock();
->> +	sd = rcu_dereference(per_cpu(sd_busy, cpu));
->>  
->>  	if (!sd || sd->nohz_idle)
->>  		goto unlock;
->>  	sd->nohz_idle = 1;
->>  
->> +	atomic_dec(&sd->groups->sgp->nr_busy_cpus);
->>  unlock:
->>  	rcu_read_unlock();
->>  }
-> 
-> Oh nice, that gets rid of the multiple atomics, and it nicely splits
-> this nohz logic into per topology groups -- now if only we could split
-> the rest too :-)
+>> This patch is present in upstream review list from a long time.
+>> There are no review comments.
+>>
+>> So, I request you to pick this patch-set for powerpc.git repository.
+>> http://patchwork.ozlabs.org/patch/280207/
+>> http://patchwork.ozlabs.org/patch/280208/
+> This revision has only been posted for about 2.5 weeks.
+>
+>>> +		#address-cells = <1>;
+>>> +		#size-cells = <1>;
+>>> +		pll0: pll0@800 {
+>>> +			#clock-cells = <1>;
+>>> +			reg = <0x800 4>;
+>>> +			compatible = "fsl,qoriq-core-pll-2.0";
+>>> +			clocks = <&clockgen>;
+>>> +			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
+>>> +		};
+>>> +		pll1: pll1@820 {
+>>> +			#clock-cells = <1>;
+>>> +			reg = <0x820 4>;
+>>> +			compatible = "fsl,qoriq-core-pll-2.0";
+>>> +			clocks = <&clockgen>;
+>>> +			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
+>>> +		};
+>>> +		mux0: mux0@0 {
+>>> +			#clock-cells = <0>;
+>>> +			reg = <0x0 4>;
+>>> +			compatible = "fsl,core-mux-clock";
+>>> +			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+>>> +				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
+>>> +			clock-names = "pll0_0", "pll0_1", "pll0_2",
+>>> +				"pll1_0", "pll1_1", "pll1_2";
+>>> +			clock-output-names = "cmux0";
+>>> +		};
+> The clock bindings are still under discussion.
 
-I am sorry, I don't get you here. By the 'rest', do you refer to
-nohz_kick_needed() as below? Or am I missing something?
+I think, I should wait for clock bindings discussion :(
 
-> 
->> @@ -6748,6 +6748,8 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
->>  {
->>  	unsigned long now = jiffies;
->>  	struct sched_domain *sd;
->> +	struct sched_group_power *sgp;
->> +	int nr_busy;
->>  
->>  	if (unlikely(idle_cpu(cpu)))
->>  		return 0;
->> @@ -6773,22 +6775,22 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
->>  		goto need_kick;
->>  
->>  	rcu_read_lock();
->> +	sd = rcu_dereference(per_cpu(sd_busy, cpu));
->>  
->> +	if (sd) {
->> +		sgp = sd->groups->sgp;
->> +		nr_busy = atomic_read(&sgp->nr_busy_cpus);
->>  
->> +		if (nr_busy > 1)
->>  			goto need_kick_unlock;
->>  	}
-> 
-> OK, so far so good.
-> 
->> +
->> +	sd = highest_flag_domain(cpu, SD_ASYM_PACKING);
->> +
->> +	if (sd && (cpumask_first_and(nohz.idle_cpus_mask,
->> +				  sched_domain_span(sd)) < cpu))
->> +		goto need_kick_unlock;
->> +
->>  	rcu_read_unlock();
->>  	return 0;
-> 
-> This again is a bit sad; most archs will not have SD_ASYM_PACKING set at
-> all; this means that they all will do a complete (and pointless) sched
-> domain tree walk here.
+>>> +++ b/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
+>>> @@ -0,0 +1,106 @@
+>>> +/*
+>>> + * T1040/T1042 Silicon/SoC Device Tree Source (pre include)
+>>> + *
+>>> + * Copyright 2013 Freescale Semiconductor Inc.
+>>> + *
+>>> + * Redistribution and use in source and binary forms, with or without
+>>> + * modification, are permitted provided that the following conditions are met:
+>>> + *     * Redistributions of source code must retain the above copyright
+>>> + *	 notice, this list of conditions and the following disclaimer.
+>>> + *     * Redistributions in binary form must reproduce the above copyright
+>>> + *	 notice, this list of conditions and the following disclaimer in the
+>>> + *	 documentation and/or other materials provided with the distribution.
+>>> + *     * Neither the name of Freescale Semiconductor nor the
+>>> + *	 names of its contributors may be used to endorse or promote products
+>>> + *	 derived from this software without specific prior written permission.
+>>> + *
+>>> + *
+>>> + * ALTERNATIVELY, this software may be distributed under the terms of the
+>>> + * GNU General Public License ("GPL") as published by the Free Software
+>>> + * Foundation, either version 2 of that License or (at your option) any
+>>> + * later version.
+>>> + *
+>>> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
+>>> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+>>> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+>>> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
+>>> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+>>> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+>>> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+>>> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+>>> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+>>> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+>>> + */
+>>> +
+>>> +/dts-v1/;
+>>> +
+>>> +/include/ "e5500_power_isa.dtsi"
+>>> +
+>>> +/ {
+>>> +	compatible = "fsl,T104x";
+> No wildcards in compatibles.  If your response is that this will get
+> overwritten anyway, then why have compatible here at all?
 
-There will not be a 'complete' sched domain tree walk right? The
-iteration will break at the first level of the sched domain for those
-archs which do not have SD_ASYM_PACKING set at all.
+I will take care of this
 
-But it is true that doing a sched domain tree walk regularly is a bad
-idea, might as well update the domain with SD_ASYM_PACKING flag set once
-and query this domain when required.
+>>> +		crypto = &crypto;
+>>> +
+>>> +	};
+> No blank lines before a closing brace.
+>
+>
 
-I will send out the patch with sd_asym domain introduced rather than the
-above.
+I will take care of this.
 
-Thanks
-
-Regards
-Preeti U Murthy
-
-> 
-> It would be much better to also introduce sd_asym and do the analogous
-> thing to the new sd_busy.
-> 
+Thanks,
+Prabhakar
