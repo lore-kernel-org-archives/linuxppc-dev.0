@@ -1,26 +1,35 @@
-Return-Path: <galak@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.11.231])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 198D92C00E7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 04:21:55 +1100 (EST)
-Subject: Re: [PATCH 1/3] dma: imx-sdma: Add ssi dual fifo script support
-Mime-Version: 1.0 (Apple Message framework v1283)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@codeaurora.org>
-In-Reply-To: <9ed025d4e98f716ba80b27acaaa98f43ad3bd75a.1383047327.git.b42378@freescale.com>
-Date: Tue, 29 Oct 2013 12:21:52 -0500
-Message-Id: <4648FA57-F1B4-4341-A536-BAA43364165D@codeaurora.org>
-References: <cover.1383047327.git.b42378@freescale.com>
- <9ed025d4e98f716ba80b27acaaa98f43ad3bd75a.1383047327.git.b42378@freescale.com>
-To: Nicolin Chen <b42378@freescale.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- s.hauer@pengutronix.de, swarren@wwwdotorg.org, timur@tabi.org,
- rob.herring@calxeda.com, linux-kernel@vger.kernel.org, b32955@freescale.com,
- broonie@kernel.org, ijc+devicetree@hellion.org.uk, dmaengine@vger.kernel.org,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <vince@deater.net>
+Received: from fbr03.mfg.siteprotect.com (fbr03.mfg.siteprotect.com
+ [64.26.60.138]) by ozlabs.org (Postfix) with ESMTP id 7DC2E2C034E
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Oct 2013 06:35:17 +1100 (EST)
+Received: from smtpauth05.mfg.siteprotect.com (unknown [192.168.33.144])
+ by fbr03.mfg.siteprotect.com (Postfix) with ESMTP id 8B697880A53
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Oct 2013 14:25:14 -0500 (CDT)
+Date: Tue, 29 Oct 2013 15:27:05 -0400 (EDT)
+From: Vince Weaver <vince@deater.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+In-Reply-To: <20131029103057.GN2490@laptop.programming.kicks-ass.net>
+Message-ID: <alpine.DEB.2.02.1310291524240.6608@pianoman.cluster.toy>
+References: <12083.1382486094@ale.ozlabs.ibm.com>
+ <20131023141948.GB3566@localhost.localdomain>
+ <20131025173749.GG19466@laptop.lan>
+ <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
+ <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
+ <20131028132634.GO19466@laptop.lan> <20131028163418.GD4126@linux.vnet.ibm.com>
+ <20131028201735.GA15629@redhat.com>
+ <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
+ <20131029102131.GA16117@laptop.programming.kicks-ass.net>
+ <20131029103057.GN2490@laptop.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Victor Kaplansky <VICTORK@il.ibm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +39,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 29 Oct 2013, Peter Zijlstra wrote:
 
-On Oct 29, 2013, at 7:33 AM, Nicolin Chen wrote:
+> On Tue, Oct 29, 2013 at 11:21:31AM +0100, Peter Zijlstra wrote:
+> --- linux-2.6.orig/include/uapi/linux/perf_event.h
+> +++ linux-2.6/include/uapi/linux/perf_event.h
+> @@ -479,13 +479,15 @@ struct perf_event_mmap_page {
+>  	/*
+>  	 * Control data for the mmap() data buffer.
+>  	 *
+> -	 * User-space reading the @data_head value should issue an rmb(), on
+> -	 * SMP capable platforms, after reading this value -- see
+> -	 * perf_event_wakeup().
+> +	 * User-space reading the @data_head value should issue an smp_rmb(),
+> +	 * after reading this value.
 
-> There's a script for SSI missing in current sdma script list. Thus add =
-it.
-> This script would allow SSI use its dual fifo mode to =
-transimit/receive
-> data without occasional hardware underrun/overrun.
->=20
-> This patch also fixed a counting error for total number of scripts.
->=20
-> Signed-off-by: Nicolin Chen <b42378@freescale.com>
-> ---
-> Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt | 1 +
-> drivers/dma/imx-sdma.c                                 | 6 +++++-
-> include/linux/platform_data/dma-imx-sdma.h             | 2 ++
-> include/linux/platform_data/dma-imx.h                  | 1 +
-> 4 files changed, 9 insertions(+), 1 deletion(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt =
-b/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt
-> index 4fa814d..3b933c5 100644
-> --- a/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt
-> +++ b/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt
-> @@ -42,6 +42,7 @@ The full ID of peripheral types can be found below.
-> 	19	IPU Memory
-> 	20	ASRC
-> 	21	ESAI
-> +	22	SSI Dual FIFO
->=20
-> The third cell specifies the transfer priority as below.
+so where's the patch fixing perf to use the new recommendations?
 
-For the DT-Binding portion:
+Is this purely a performance thing or a correctness change?
 
-Acked-by: Kumar Gala <galak@codeaurora.org>
+A change like this a bit of a pain, especially as userspace doesn't really 
+have nice access to smb_mb() defines so a lot of cut-and-pasting will 
+ensue for everyone who's trying to parse the mmap buffer.
 
-- k
-
---=20
-Employee of Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, =
-hosted by The Linux Foundation
+Vince
