@@ -1,31 +1,26 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sha@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 561542C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 00:26:50 +1100 (EST)
-Date: Tue, 29 Oct 2013 14:26:29 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] sched: Fix nohz_kick_needed to consider the nr_busy
- of the parent domain's group
-Message-ID: <20131029132629.GC16117@laptop.programming.kicks-ass.net>
-References: <20131021114002.13291.31478.stgit@drishya>
- <20131021114442.13291.99344.stgit@drishya>
- <20131022221138.GJ2490@laptop.programming.kicks-ass.net>
- <52679BD6.6090507@linux.vnet.ibm.com>
- <CAKfTPtAUFdmc7PasebNksYztMwRrWsGWPgN6JJJurddu+UP-hQ@mail.gmail.com>
- <5268D54A.9060604@linux.vnet.ibm.com>
- <20131028135043.GP19466@laptop.lan>
- <526F2BEC.3040207@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 757C62C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 01:08:10 +1100 (EST)
+Date: Tue, 29 Oct 2013 14:51:43 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [PATCH 1/3] dma: imx-sdma: Add ssi dual fifo script support
+Message-ID: <20131029135142.GT30088@pengutronix.de>
+References: <cover.1383047327.git.b42378@freescale.com>
+ <9ed025d4e98f716ba80b27acaaa98f43ad3bd75a.1383047327.git.b42378@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <526F2BEC.3040207@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Mike Galbraith <bitbucket@online.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel <linux-kernel@vger.kernel.org>, Anton Blanchard <anton@samba.org>,
- Paul Turner <pjt@google.com>, Ingo Molnar <mingo@kernel.org>
+In-Reply-To: <9ed025d4e98f716ba80b27acaaa98f43ad3bd75a.1383047327.git.b42378@freescale.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
+ swarren@wwwdotorg.org, timur@tabi.org, rob.herring@calxeda.com,
+ linux-kernel@vger.kernel.org, b32955@freescale.com, broonie@kernel.org,
+ ijc+devicetree@hellion.org.uk, dmaengine@vger.kernel.org, shawn.guo@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,45 +30,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 29, 2013 at 09:00:52AM +0530, Preeti U Murthy wrote:
-> > Oh nice, that gets rid of the multiple atomics, and it nicely splits
-> > this nohz logic into per topology groups -- now if only we could split
-> > the rest too :-)
+On Tue, Oct 29, 2013 at 08:33:15PM +0800, Nicolin Chen wrote:
+> There's a script for SSI missing in current sdma script list. Thus add it.
+> This script would allow SSI use its dual fifo mode to transimit/receive
+> data without occasional hardware underrun/overrun.
 > 
-> I am sorry, I don't get you here. By the 'rest', do you refer to
-> nohz_kick_needed() as below? Or am I missing something?
+> This patch also fixed a counting error for total number of scripts.
 
-Nah, the rest of the NOHZ infrastructure. Currently its global state;
-there were some patches a few years ago that attempted to make that
-per-node state, but that work stalled due to people switching jobs.
+Look at drivers/dma/imx-sdma.c:
+
+> /**
+>  * struct sdma_firmware_header - Layout of the firmware image
+>  *
+>  * @magic		"SDMA"
+>  * @version_major	increased whenever layout of struct
+>  * sdma_script_start_addrs
+>  *			changes.
+
+Can you image why this firmware has a version field? Right, it's because
+it encodes the layout of struct sdma_script_start_addrs.
+
+As the comment clearly states you have to *increase this field* when you
+add scripts.
+
+Obviously you missed that, as the firmware on lkml posted recently
+shows:
+
+> 00000000: 414d4453 00000001 00000001 0000001c SDMA............
+                     ^^^^^^^^
+                     Still '1'
+
+> 00000010: 00000026 000000b4 0000067a 00000282 &.......z.......
+> 00000020: ffffffff 00000000 ffffffff ffffffff ................
+> 00000030: ffffffff ffffffff ffffffff ffffffff ................
+> 00000040: ffffffff ffffffff 00001a6a ffffffff ........j.......
+> 00000050: 000002eb 000018bb ffffffff 00000408 ................
+> 00000060: ffffffff 000003c0 ffffffff ffffffff ................
+> 00000070: ffffffff 000002ab ffffffff 0000037b ............{...
+> 00000080: ffffffff ffffffff 0000044c 0000046e ........L...n...
+> 00000090: ffffffff 00001800 ffffffff ffffffff ................
+> 000000a0: 00000000 00001800 00001862 00001a16 ........b.......
+                              ^^^^^^^^^^^^^^^^^
+                              new script addresses introduced
 
 
-> >> +	sd = highest_flag_domain(cpu, SD_ASYM_PACKING);
-> >> +
-> >> +	if (sd && (cpumask_first_and(nohz.idle_cpus_mask,
-> >> +				  sched_domain_span(sd)) < cpu))
-> >> +		goto need_kick_unlock;
-> >> +
-> >>  	rcu_read_unlock();
-> >>  	return 0;
-> > 
-> > This again is a bit sad; most archs will not have SD_ASYM_PACKING set at
-> > all; this means that they all will do a complete (and pointless) sched
-> > domain tree walk here.
-> 
-> There will not be a 'complete' sched domain tree walk right? The
-> iteration will break at the first level of the sched domain for those
-> archs which do not have SD_ASYM_PACKING set at all.
+> -#define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1	34
+> +#define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1	37
 
-Ah indeed; I think I got confused due to me modifying
-highest_flag_domain() earlier to assume a flag is carried from the
-lowest domain upwards.
+And no, this is not a bug. It's your firmware header that is buggy.
 
-> But it is true that doing a sched domain tree walk regularly is a bad
-> idea, might as well update the domain with SD_ASYM_PACKING flag set once
-> and query this domain when required.
-> 
-> I will send out the patch with sd_asym domain introduced rather than the
-> above.
+What you need is:
 
-Thanks
+#define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V2      37
+
+You (you as a company, not you as a person) knew that it was me who
+created this firmware format. So it was absolutely unnecessary to create
+an incompatible firmware instead of dropping me a short note.
+
+Please add a version check to the driver as necessary and provide a proper
+firmware.
+
+Sascha
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
