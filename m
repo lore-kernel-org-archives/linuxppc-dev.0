@@ -1,22 +1,21 @@
-Return-Path: <jgunthorpe@obsidianresearch.com>
-Received: from quartz.orcorp.ca (quartz.orcorp.ca [184.70.90.242])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D099C2C00E3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 11:11:43 +1100 (EST)
-Date: Mon, 28 Oct 2013 17:47:45 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Joel Schopp <jschopp@linux.vnet.ibm.com>
-Subject: Re: [tpmdd-devel] Has anyone a ATMEL TPM Chip on PPC64
- (CONFIG_TCG_ATMEL)?
-Message-ID: <20131028234745.GB26666@obsidianresearch.com>
-References: <201310272306.09310.PeterHuewe@gmx.de>
- <526EA6FF.2080401@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D4F8F2C00E4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 11:28:51 +1100 (EST)
+Date: Mon, 28 Oct 2013 19:28:34 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: York Sun <yorksun@freescale.com>
+Subject: Re: [5/7] powerpc/corenet64_smp_defconfig: Enable most SPI splash
+Message-ID: <20131029002834.GA8680@home.buserror.net>
+References: <1378482199-10581-5-git-send-email-yorksun@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <526EA6FF.2080401@linux.vnet.ibm.com>
-Cc: Peter H?we <PeterHuewe@gmx.de>, tpmdd-devel@lists.sourceforge.net,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1378482199-10581-5-git-send-email-yorksun@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,87 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 28, 2013 at 01:03:43PM -0500, Joel Schopp wrote:
-> On 10/27/2013 05:06 PM, Peter H?we wrote:
-> > Hi,
-> > 
-> > I was wondering if anyone here on this list still has a machine with an old 
-> > ATMEL TPM (trusted platform module) lying around?
-> > 
-> >>From the kconfig entry it becomes evident that it was only supported on ppc64 
-> > machines.
-> > 
-> > config TCG_ATMEL
-> > 	tristate "Atmel TPM Interface"
-> > 	depends on PPC64 || HAS_IOPORT
+On Fri, Sep 06, 2013 at 08:43:17AM -0700, York Sun wrote:
+> Enable CONFIG_MTD_M25P80 for corenet64_smp_defconfig. Verified on
+> P5040DS.
+> 
+> Signed-off-by: York Sun <yorksun@freescale.com>
+> Reviewed-by: Wood Scott-B07421 <scottwood@freescale.com>
+> Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
+> Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
+> 
+> ---
+> arch/powerpc/configs/corenet64_smp_defconfig |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+> index 6c8b020..1ec6f0c 100644
+> --- a/arch/powerpc/configs/corenet64_smp_defconfig
+> +++ b/arch/powerpc/configs/corenet64_smp_defconfig
+> @@ -66,6 +66,7 @@ CONFIG_MTD_CMDLINE_PARTS=y
+>  CONFIG_MTD_CHAR=y
+>  CONFIG_MTD_BLKDEVS=y
+>  CONFIG_MTD_BLOCK=y
+> +CONFIG_MTD_M25P80=y
+>  CONFIG_FTL=y
+>  CONFIG_MTD_CFI=y
+>  CONFIG_MTD_GEN_PROBE=y
 
-Hurm, that is crazy, because tpm_atmel.h contains an #else block for
-!CONFIG_PPC64. The single major source of complexity in this driver is
-that else block.
+This has already been enabled in corenet64_smp_config since
+commit 478a4829d815865b919c1fa20f0f33543a2291fb, over a year ago.
 
-The driver would be fine, and straightforward if it was a standard,
-modern DT enabled driver, which is very easy if PPC64 is the only
-supported implementation.
-
-> I reccomend removing the driver.  If the stars align and a user actually
-> appears who wants to use one I'll clean up the driver and resubmit it
-> for inclusion.  I just don't think that will happen.
-
-The needed clean up is really easy actually, replace everything below
-'tpm_vendor_specific tpm_atmel' with approximately this:
-
-static int atml_probe(struct platform_device *pdev)
-{
-	struct tpm_chip *chip;
-	struct resrouce *res;
-
-        res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-        if (!r)
-                return -EIO;
-
-	if (!(chip = tpm_register_hardware(dev, &tpm_atmel)))
-               return -ENODEV;
-
-	chip->iobase = devm_request_and_ioremap(&pdev->dev, res);
-	if (!chip->iobase)
-	       	return -ENOMEM;
-
-	return 0;
-}
-
-static void atml_plat_remove(struct platform_device *pdev)
-{
-        struct tpm_chip *chip = dev_get_drvdata(&pdev->dev);
-	tpm_remove_hardware(chip->dev);		
-};
-
-static const struct of_device_id platform_match[] = {
-        {.compatible = "AT97SC3201"},
-        {},
-};
-MODULE_DEVICE_TABLE(of, platform_match);
-
-static SIMPLE_DEV_PM_OPS(tpm_atml_pm, tpm_pm_suspend, tpm_pm_resume);
-
-static struct platform_driver atml_drv = {
-        .probe = atml_probe,
-        .remove = atml_plat_remove,
-        .driver = {
-                .name = "tpm_atmel",
-                .owner          = THIS_MODULE,
-                .pm             = &tpm_atml_pm,
-		.of_match_table = of_match_ptr(platform_match),
-        },
-};
-
-module_platform_driver(atml_drv);
-
-MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
-MODULE_DESCRIPTION("TPM Driver");
-MODULE_VERSION("2.0");
-MODULE_LICENSE("GPL");
-
-If you guys can convice yourselves that doesn't obviously break anything I can
-probably send a proper patch.
-
-Jason
+-Scott
