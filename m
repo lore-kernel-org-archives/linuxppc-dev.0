@@ -1,24 +1,27 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-oa0-x236.google.com (mail-oa0-x236.google.com
- [IPv6:2607:f8b0:4003:c02::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 452FA2C00E4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 10:30:37 +1100 (EST)
-Received: by mail-oa0-f54.google.com with SMTP id o20so4442019oag.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2013 16:30:34 -0700 (PDT)
-Message-ID: <526EF397.4080802@gmail.com>
-Date: Mon, 28 Oct 2013 18:30:31 -0500
-From: Rob Herring <robherring2@gmail.com>
+Return-Path: <PeterHuewe@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
+ (Client CN "mout.gmx.net", Issuer "TeleSec ServerPass DE-1" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 442CE2C00E4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 11:00:05 +1100 (EST)
+Received: from lamerx.localnet ([84.56.16.139]) by mail.gmx.com (mrgmx003)
+ with ESMTPSA (Nemesis) id 0MAQ0o-1VPLsw1Zdq-00BYBw for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 01:00:00 +0100
+From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: [tpmdd-devel] Has anyone a ATMEL TPM Chip on PPC64
+ (CONFIG_TCG_ATMEL)?
+Date: Tue, 29 Oct 2013 01:03:26 +0100
+References: <201310272306.09310.PeterHuewe@gmx.de>
+ <526EA6FF.2080401@linux.vnet.ibm.com>
+ <20131028234745.GB26666@obsidianresearch.com>
+In-Reply-To: <20131028234745.GB26666@obsidianresearch.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: build failure after merge of the dt-rh tree
-References: <20131028193814.6d9416904eb8fac2f441c8af@canb.auug.org.au>
-In-Reply-To: <20131028193814.6d9416904eb8fac2f441c8af@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201310290103.26678.PeterHuewe@gmx.de>
+Cc: Joel Schopp <jschopp@linux.vnet.ibm.com>, tpmdd-devel@lists.sourceforge.net,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,41 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/28/2013 03:38 AM, Stephen Rothwell wrote:
-> Hi Rob,
+Am Dienstag, 29. Oktober 2013, 00:47:45 schrieb Jason Gunthorpe:
+> On Mon, Oct 28, 2013 at 01:03:43PM -0500, Joel Schopp wrote:
+> > On 10/27/2013 05:06 PM, Peter H?we wrote:
+> > > Hi,
+> > > 
+> > > I was wondering if anyone here on this list still has a machine with an
+> > > old ATMEL TPM (trusted platform module) lying around?
+> > > 
+> > >>From the kconfig entry it becomes evident that it was only supported on
+> > >>ppc64
+> > >>
+> > > machines.
+> > > 
+> > > config TCG_ATMEL
+> > > 
+> > > 	tristate "Atmel TPM Interface"
+> > > 	depends on PPC64 || HAS_IOPORT
 > 
-> After merging the dt-rh tree, today's linux-next build (powerpc 
-> ppc64_defconfig) failed like this:
+> Hurm, that is crazy, because tpm_atmel.h contains an #else block for
+> !CONFIG_PPC64. The single major source of complexity in this driver is
+> that else block.
 > 
-> arch/powerpc/platforms/powernv/rng.c: In function
-> 'rng_init_per_cpu': arch/powerpc/platforms/powernv/rng.c:64:2:
-> error: implicit declaration of function 'of_get_ibm_chip_id'
-> [-Werror=implicit-function-declaration] chip_id =
-> of_get_ibm_chip_id(dn); ^ arch/powerpc/platforms/powernv/rng.c: In
-> function 'rng_create': arch/powerpc/platforms/powernv/rng.c:85:2:
-> error: implicit declaration of function 'of_iomap'
-> [-Werror=implicit-function-declaration] rng->regs= of_iomap(dn, 0);
->   ^
-> arch/powerpc/platforms/powernv/rng.c:85:12: error: assignment makes pointer from integer without a cast [-Werror]
->   rng->regs = of_iomap(dn, 0);
->             ^
-> 
-> Caused by commit a4da0d50b2a0 ("powerpc: Implement
-> arch_get_random_long/int() for powernv") from the powerpc tree
-> interacting with commit b5b4bb3f6a11 ("of: only include prom.h on sparc")
-> from the dt-rh tree.
-> 
-> I added this merge fix patch (which will need to be sent to Linus when
-> these two trees get merged, or could be applied now to the powerpc tree):
+Argh, sorry my bad.
+Of course it's available on other archs as well, since it's
+PPC64 _||_ HAS_IOPORT
 
-Applying to the powerpc tree now seems like the better path.
+d'oh - sorry.
 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Mon, 28 Oct 2013 19:34:41 +1100
-> Subject: [PATCH] powerpc: add include of prom.h to fix powernv/rng.c build
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Acked-by: Rob Herring <rob.herring@calxeda.com>
-
-Rob
+Peter
