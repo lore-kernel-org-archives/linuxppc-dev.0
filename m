@@ -1,32 +1,24 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 97A3C2C038A
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 06:11:55 +1100 (EST)
-Date: Wed, 30 Oct 2013 20:11:41 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Victor Kaplansky <VICTORK@il.ibm.com>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131030191141.GR2490@laptop.programming.kicks-ass.net>
-References: <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
- <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
- <20131028132634.GO19466@laptop.lan>
- <20131028163418.GD4126@linux.vnet.ibm.com>
- <20131028201735.GA15629@redhat.com>
- <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
- <20131030092725.GL4126@linux.vnet.ibm.com>
- <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
- <20131030155116.GO16117@laptop.programming.kicks-ass.net>
- <20131030182930.GP2490@laptop.programming.kicks-ass.net>
+Return-Path: <tommusta@gmail.com>
+Received: from mail-yh0-x235.google.com (mail-yh0-x235.google.com
+ [IPv6:2607:f8b0:4002:c01::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9BE272C03A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 06:35:37 +1100 (EST)
+Received: by mail-yh0-f53.google.com with SMTP id z20so789264yhz.40
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 12:35:33 -0700 (PDT)
+Message-ID: <52715F7F.8020206@gmail.com>
+Date: Wed, 30 Oct 2013 14:35:27 -0500
+From: Tom Musta <tommusta@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131030182930.GP2490@laptop.programming.kicks-ass.net>
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Frederic Weisbecker <fweisbec@gmail.com>, paulmck@linux.vnet.ibm.com
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH 1/3] powerpc: Enable emulate_step In Little Endian Mode
+References: <1382125125.2206.22.camel@tmusta-sc.rchland.ibm.com>	<1382125235.2206.24.camel@tmusta-sc.rchland.ibm.com>
+ <878uxairi8.fsf@igel.home>
+In-Reply-To: <878uxairi8.fsf@igel.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: tmusta@gmail.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,18 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 30, 2013 at 07:29:30PM +0100, Peter Zijlstra wrote:
-> +	page_shift = PAGE_SHIFT + page_order(rb);
-> +
-> +	handle->page = (offset >> page_shift) & (rb->nr_pages - 1);
-> +
-> +	offset &= page_shift - 1;
+On 10/30/2013 12:43 PM, Andreas Schwab wrote:
+> Tom Musta <tommusta@gmail.com> writes:
+>
+>> +#ifdef __LITTLE_ENDIAN__
+>> +	if (!regs->msr & MSR_LE)
+>
+> That won't work.
+>
+> Andreas.
+>
 
-offset &= (1UL << page_shift) - 1;
-
-Weird that it even appeared to work.. /me wonders if he even booted the
-right kernel.
-
-> +
-> +	handle->addr = rb->data_pages[handle->page] + offset;
-> +	handle->size = (1 << page_shift) - offset;
+Please elaborate.
