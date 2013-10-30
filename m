@@ -1,25 +1,20 @@
-Return-Path: <tommusta@gmail.com>
-Received: from mail-yh0-x236.google.com (mail-yh0-x236.google.com
- [IPv6:2607:f8b0:4002:c01::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7C7AF2C03AB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 08:46:08 +1100 (EST)
-Received: by mail-yh0-f54.google.com with SMTP id b20so873158yha.41
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 14:46:03 -0700 (PDT)
-Message-ID: <52717E16.3030706@gmail.com>
-Date: Wed, 30 Oct 2013 16:45:58 -0500
-From: Tom Musta <tommusta@gmail.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 1/3] powerpc: Enable emulate_step In Little Endian Mode
-References: <1382125125.2206.22.camel@tmusta-sc.rchland.ibm.com>	<1382125235.2206.24.camel@tmusta-sc.rchland.ibm.com>	<878uxairi8.fsf@igel.home>	<52715F7F.8020206@gmail.com>
- <CAMuHMdWMZNF_KOMyVES2UbvCyGEH1N=CFp-TTWuLMzm89SLs3A@mail.gmail.com>
-In-Reply-To: <CAMuHMdWMZNF_KOMyVES2UbvCyGEH1N=CFp-TTWuLMzm89SLs3A@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, tmusta@gmail.com,
- Andreas Schwab <schwab@linux-m68k.org>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6A5F92C03B1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 09:12:15 +1100 (EST)
+Date: Wed, 30 Oct 2013 23:12:10 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Brian Norris <computersforpeace@gmail.com>
+Subject: Re: [PATCH v2] powerpc/mpc512x: remove unnecessary #if
+Message-ID: <20131030231210.32778fbe@crub>
+In-Reply-To: <1381513058-14164-1-git-send-email-computersforpeace@gmail.com>
+References: <1381512777-13966-1-git-send-email-computersforpeace@gmail.com>
+ <1381513058-14164-1-git-send-email-computersforpeace@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,35 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/30/2013 2:43 PM, Geert Uytterhoeven wrote:
-> On Wed, Oct 30, 2013 at 8:35 PM, Tom Musta <tommusta@gmail.com> wrote:
->> On 10/30/2013 12:43 PM, Andreas Schwab wrote:
->>>
->>> Tom Musta <tommusta@gmail.com> writes:
->>>
->>>> +#ifdef __LITTLE_ENDIAN__
->>>> +       if (!regs->msr & MSR_LE)
->>>
->>>
->>> That won't work.
->>>
->>> Andreas.
->>>
->>
->> Please elaborate.
->
-> You want to test for "!(regs & MSR_LE)".
->
-> Gr{oetje,eeting}s,
->
->                          Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                  -- Linus Torvalds
->
+On Fri, 11 Oct 2013 10:37:38 -0700
+Brian Norris <computersforpeace@gmail.com> wrote:
 
-Thanks Adnreas and Geert.  I will fix and resubmit.
+> Several functions are only ever referenced locally, so make them static.
+> Of those functions, many of them are protected by an #if. However, the
+> code which can compile fine in either case.
+> 
+> Now that (1) the unneeded code is marked 'static' and (2) the code is
+> only used under a C 'if (IS_ENABLED(CONFIG_FB_FSL_DIU))', the compiler
+> can automatically remove the unneeded code, and we don't need the #if or
+> the empty stub functions.
+> 
+> Signed-off-by: Brian Norris <computersforpeace@gmail.com>
+> ---
+> v2: left out a diff I was holding locally (to remove an #if/#endif
+>     completely). Sorry for the noise.
+> 
+> Based off of Gerhard Sittig's patch:
+>   powerpc/mpc512x: silence build warning upon disabled DIU
+> 
+> Compile-tested with CONFIG_FB_FSL_DIU=n
+> 
+>  arch/powerpc/platforms/512x/mpc512x_shared.c | 21 +++++++--------------
+>  arch/powerpc/sysdev/fsl_soc.h                |  3 ---
+>  2 files changed, 7 insertions(+), 17 deletions(-)
+
+Applied, thanks!
+
+Anatolij
