@@ -1,21 +1,33 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7D0532C03A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 04:43:34 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Tom Musta <tommusta@gmail.com>
-Subject: Re: [PATCH 1/3] powerpc: Enable emulate_step In Little Endian Mode
-References: <1382125125.2206.22.camel@tmusta-sc.rchland.ibm.com>
- <1382125235.2206.24.camel@tmusta-sc.rchland.ibm.com>
-Date: Wed, 30 Oct 2013 18:43:27 +0100
-In-Reply-To: <1382125235.2206.24.camel@tmusta-sc.rchland.ibm.com> (Tom Musta's
- message of "Fri, 18 Oct 2013 14:40:35 -0500")
-Message-ID: <878uxairi8.fsf@igel.home>
+ by ozlabs.org (Postfix) with ESMTPS id 940972C03F1
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 04:44:16 +1100 (EST)
+Date: Wed, 30 Oct 2013 18:44:02 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Victor Kaplansky <VICTORK@il.ibm.com>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+Message-ID: <20131030174402.GP16117@laptop.programming.kicks-ass.net>
+References: <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
+ <20131028132634.GO19466@laptop.lan>
+ <20131028163418.GD4126@linux.vnet.ibm.com>
+ <20131028201735.GA15629@redhat.com>
+ <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
+ <20131030092725.GL4126@linux.vnet.ibm.com>
+ <20131030112526.GI16117@laptop.programming.kicks-ass.net>
+ <OFF6C78E48.E477DB1E-ON42257C14.0050F9B3-42257C14.0051AC6D@il.ibm.com>
+ <20131030153931.GM16117@laptop.programming.kicks-ass.net>
+ <OFCA1DB4AC.7D4F6EEE-ON42257C14.0056F77D-42257C14.005EB5EA@il.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: tmusta@gmail.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OFCA1DB4AC.7D4F6EEE-ON42257C14.0056F77D-42257C14.005EB5EA@il.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +37,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Tom Musta <tommusta@gmail.com> writes:
+On Wed, Oct 30, 2013 at 07:14:29PM +0200, Victor Kaplansky wrote:
+> We need a complete rmb() here IMO. I think there is a fundamental
+> difference between load and stores in this aspect. Load are allowed to
+> be hoisted by compiler or executed speculatively by HW. To prevent
+> load "*(ubuf->data + tail)" to be hoisted beyond "ubuf->head" load you
+> would need something like this:
 
-> +#ifdef __LITTLE_ENDIAN__
-> +	if (!regs->msr & MSR_LE)
+Indeed, we could compute and load ->data + tail the moment we've
+completed the tail load but before we've completed the head load and
+done the comparison.
 
-That won't work.
+So yes, full rmb() it is.
 
-Andreas.
+> void
+> ubuf_read(void)
+> {
+>         u64 head, tail;
+> 
+>         tail = ubuf->tail;
+>         head = ACCESS_ONCE(ubuf->head);
+> 
+>         /*
+>          * Ensure we read the buffer boundaries before the actual buffer
+>          * data...
+>          */
+> 
+>         while (tail != head) {
+> 		    smp_read_barrier_depends();         /* for Alpha */
+>                 obj = *(ubuf->data + head - 128);
+>                 /* process obj */
+>                 tail += obj->size;
+>                 tail %= ubuf->size;
+>         }
+> 
+>         /*
+>          * Ensure all data reads are complete before we issue the
+>          * ubuf->tail update; once that update hits, kbuf_write() can
+>          * observe and overwrite data.
+>          */
+>         smp_mb();               /* D, matches with A */
+> 
+>         ubuf->tail = tail;
+> }
+> 
+> (note that "head" is part of address calculation of obj load now).
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Right, explicit dependent loads; I was hoping the conditional in between
+might be enough, but as argued above it is not. The above cannot work in
+our case though, we must use tail to find the obj since we have variable
+size objects.
+
+> But, even in this demo example some "smp_read_barrier_depends()" before
+> "obj = *(ubuf->data + head - 100);" is required for architectures
+> like Alpha. Though, on more sane architectures "smp_read_barrier_depends()"
+> will be translated to nothing.
+
+Sure.. I know all about that.
