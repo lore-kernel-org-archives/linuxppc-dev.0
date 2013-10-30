@@ -1,40 +1,19 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 209E62C0379
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 14:23:35 +1100 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 30 Oct 2013 08:53:32 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id B004BE0057
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 08:55:09 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9U3NRnI37683254
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 08:53:27 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9U3NTrX032743
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 08:53:30 +0530
-Message-ID: <52707B02.7030100@linux.vnet.ibm.com>
-Date: Wed, 30 Oct 2013 08:50:34 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id B04C92C0365
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 15:25:47 +1100 (EST)
+Date: Tue, 29 Oct 2013 21:25:43 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] ADB_PMU_LED_IDE selects LEDS_TRIGGER_IDE_DISK which has
+ unmet direct dependencies
+In-Reply-To: <1383088392.5117.38.camel@pasglop>
+Message-ID: <alpine.DEB.2.11.1310292123190.31521@trent.utfs.org>
+References: <alpine.DEB.2.11.1310280031020.31521@trent.utfs.org>
+ <1383088392.5117.38.camel@pasglop>
 MIME-Version: 1.0
-To: peterz@infradead.org, mikey@neuling.org, svaidy@linux.vnet.ibm.com,
- mingo@kernel.org
-Subject: Re: [PATCH V2 2/2] sched: Remove un-necessary iteration over sched
- domains to update nr_busy_cpus
-References: <20131030031145.23426.22930.stgit@preeti.in.ibm.com>
- <20131030031252.23426.4417.stgit@preeti.in.ibm.com>
-In-Reply-To: <20131030031252.23426.4417.stgit@preeti.in.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: vincent.guittot@linaro.org, bitbucket@online.de,
- linux-kernel@vger.kernel.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org,
- Morten.Rasmussen@arm.com, pjt@google.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,179 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The changelog has missed mentioning the introduction of sd_asym per_cpu sched domain.
-Apologies for this. The patch with the changelog including mention of sd_asym is
-pasted below.
+On Wed, 30 Oct 2013 at 10:13, Benjamin Herrenschmidt wrote:
+> You probably want to do that to the ADB_PMU_LED_IDE entry not the
+> ADB_PMU_LED one which doesn't have a dependency and isn't the one
+> selecting LEDS_TRIGGER_IDE_DISK :-)
 
-Regards
-Preeti U Murthy
+Right you are, sorry for the mixup. Let me try again:
 
----------------
 
-sched: Remove un-necessary iteration over sched domains to update nr_busy_cpus
+  Signed-off-by: Christian Kujau <lists@nerdbynature.de>
 
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+index 696238b..d26a312 100644
+--- a/drivers/macintosh/Kconfig
++++ b/drivers/macintosh/Kconfig
+@@ -103,6 +103,7 @@ config ADB_PMU_LED_IDE
+ 	bool "Use front LED as IDE LED by default"
+ 	depends on ADB_PMU_LED
+ 	depends on LEDS_CLASS
++	depends on IDE_GD_ATA
+ 	select LEDS_TRIGGERS
+ 	select LEDS_TRIGGER_IDE_DISK
+ 	help
 
-nr_busy_cpus parameter is used by nohz_kick_needed() to find out the number
-of busy cpus in a sched domain which has SD_SHARE_PKG_RESOURCES flag set.
-Therefore instead of updating nr_busy_cpus at every level of sched domain,
-since it is irrelevant, we can update this parameter only at the parent
-domain of the sd which has this flag set. Introduce a per-cpu parameter
-sd_busy which represents this parent domain.
+C.
+-- 
+BOFH excuse #378:
 
-In nohz_kick_needed() we directly query the nr_busy_cpus parameter
-associated with the groups of sd_busy.
-
-By associating sd_busy with the highest domain which has
-SD_SHARE_PKG_RESOURCES flag set, we cover all lower level domains which could
-have this flag set and trigger nohz_idle_balancing if any of the levels have
-more than one busy cpu.
-
-sd_busy is irrelevant for asymmetric load balancing. However sd_asym has been
-introduced to represent the highest sched domain which has SD_ASYM_PACKING flag set
-so that it can be queried directly when required.
-
-While we are at it, we might as well change the nohz_idle parameter to be
-updated at the sd_busy domain level alone and not the base domain level of a CPU.
-This will unify the concept of busy cpus at just one level of sched domain
-where it is currently used.
-
-Signed-off-by: Preeti U Murthy<preeti@linux.vnet.ibm.com>
----
- kernel/sched/core.c  |    6 ++++++
- kernel/sched/fair.c  |   38 ++++++++++++++++++++------------------
- kernel/sched/sched.h |    2 ++
- 3 files changed, 28 insertions(+), 18 deletions(-)
-
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index c06b8d3..e6a6244 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -5271,6 +5271,8 @@ DEFINE_PER_CPU(struct sched_domain *, sd_llc);
- DEFINE_PER_CPU(int, sd_llc_size);
- DEFINE_PER_CPU(int, sd_llc_id);
- DEFINE_PER_CPU(struct sched_domain *, sd_numa);
-+DEFINE_PER_CPU(struct sched_domain *, sd_busy);
-+DEFINE_PER_CPU(struct sched_domain *, sd_asym);
- 
- static void update_top_cache_domain(int cpu)
- {
-@@ -5282,6 +5284,7 @@ static void update_top_cache_domain(int cpu)
- 	if (sd) {
- 		id = cpumask_first(sched_domain_span(sd));
- 		size = cpumask_weight(sched_domain_span(sd));
-+		rcu_assign_pointer(per_cpu(sd_busy, cpu), sd->parent);
- 	}
- 
- 	rcu_assign_pointer(per_cpu(sd_llc, cpu), sd);
-@@ -5290,6 +5293,9 @@ static void update_top_cache_domain(int cpu)
- 
- 	sd = lowest_flag_domain(cpu, SD_NUMA);
- 	rcu_assign_pointer(per_cpu(sd_numa, cpu), sd);
-+
-+	sd = highest_flag_domain(cpu, SD_ASYM_PACKING);
-+	rcu_assign_pointer(per_cpu(sd_asym, cpu), sd);
- }
- 
- /*
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index e9c9549..8602b2c 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -6515,16 +6515,16 @@ static inline void nohz_balance_exit_idle(int cpu)
- static inline void set_cpu_sd_state_busy(void)
- {
- 	struct sched_domain *sd;
-+	int cpu = smp_processor_id();
- 
- 	rcu_read_lock();
--	sd = rcu_dereference_check_sched_domain(this_rq()->sd);
-+	sd = rcu_dereference(per_cpu(sd_busy, cpu));
- 
- 	if (!sd || !sd->nohz_idle)
- 		goto unlock;
- 	sd->nohz_idle = 0;
- 
--	for (; sd; sd = sd->parent)
--		atomic_inc(&sd->groups->sgp->nr_busy_cpus);
-+	atomic_inc(&sd->groups->sgp->nr_busy_cpus);
- unlock:
- 	rcu_read_unlock();
- }
-@@ -6532,16 +6532,16 @@ unlock:
- void set_cpu_sd_state_idle(void)
- {
- 	struct sched_domain *sd;
-+	int cpu = smp_processor_id();
- 
- 	rcu_read_lock();
--	sd = rcu_dereference_check_sched_domain(this_rq()->sd);
-+	sd = rcu_dereference(per_cpu(sd_busy, cpu));
- 
- 	if (!sd || sd->nohz_idle)
- 		goto unlock;
- 	sd->nohz_idle = 1;
- 
--	for (; sd; sd = sd->parent)
--		atomic_dec(&sd->groups->sgp->nr_busy_cpus);
-+	atomic_dec(&sd->groups->sgp->nr_busy_cpus);
- unlock:
- 	rcu_read_unlock();
- }
-@@ -6748,6 +6748,8 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
- {
- 	unsigned long now = jiffies;
- 	struct sched_domain *sd;
-+	struct sched_group_power *sgp;
-+	int nr_busy;
- 
- 	if (unlikely(idle_cpu(cpu)))
- 		return 0;
-@@ -6773,22 +6775,22 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
- 		goto need_kick;
- 
- 	rcu_read_lock();
--	for_each_domain(cpu, sd) {
--		struct sched_group *sg = sd->groups;
--		struct sched_group_power *sgp = sg->sgp;
--		int nr_busy = atomic_read(&sgp->nr_busy_cpus);
-+	sd = rcu_dereference(per_cpu(sd_busy, cpu));
- 
--		if (sd->flags & SD_SHARE_PKG_RESOURCES && nr_busy > 1)
--			goto need_kick_unlock;
-+	if (sd) {
-+		sgp = sd->groups->sgp;
-+		nr_busy = atomic_read(&sgp->nr_busy_cpus);
- 
--		if (sd->flags & SD_ASYM_PACKING
--		    && (cpumask_first_and(nohz.idle_cpus_mask,
--					  sched_domain_span(sd)) < cpu))
-+		if (nr_busy > 1)
- 			goto need_kick_unlock;
--
--		if (!(sd->flags & (SD_SHARE_PKG_RESOURCES | SD_ASYM_PACKING)))
--			break;
- 	}
-+
-+	sd = rcu_dereference(per_cpu(sd_asym, cpu));
-+
-+	if (sd && (cpumask_first_and(nohz.idle_cpus_mask,
-+				  sched_domain_span(sd)) < cpu))
-+		goto need_kick_unlock;
-+
- 	rcu_read_unlock();
- 	return 0;
- 
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index ffc7087..c8cb145 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -623,6 +623,8 @@ DECLARE_PER_CPU(struct sched_domain *, sd_llc);
- DECLARE_PER_CPU(int, sd_llc_size);
- DECLARE_PER_CPU(int, sd_llc_id);
- DECLARE_PER_CPU(struct sched_domain *, sd_numa);
-+DECLARE_PER_CPU(struct sched_domain *, sd_busy);
-+DECLARE_PER_CPU(struct sched_domain *, sd_asym);
- 
- struct sched_group_power {
- 	atomic_t ref;
+Operators killed by year 2000 bug bite.
