@@ -1,37 +1,37 @@
 Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CB1E72C0400
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 14:15:58 +1100 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 209E62C0379
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 14:23:35 +1100 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 29 Oct 2013 23:15:56 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 2228F6E803F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 23:15:52 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9U3FrNU1835282
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 03:15:53 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9U3Fqjv003634
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2013 23:15:53 -0400
-Subject: [PATCH V2 2/2] sched: Remove un-necessary iteration over sched
- domains to update nr_busy_cpus
+ Wed, 30 Oct 2013 08:53:32 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B004BE0057
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 08:55:09 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9U3NRnI37683254
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 08:53:27 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9U3NTrX032743
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2013 08:53:30 +0530
+Message-ID: <52707B02.7030100@linux.vnet.ibm.com>
+Date: Wed, 30 Oct 2013 08:50:34 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+MIME-Version: 1.0
 To: peterz@infradead.org, mikey@neuling.org, svaidy@linux.vnet.ibm.com,
  mingo@kernel.org
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Wed, 30 Oct 2013 08:42:52 +0530
-Message-ID: <20131030031252.23426.4417.stgit@preeti.in.ibm.com>
-In-Reply-To: <20131030031145.23426.22930.stgit@preeti.in.ibm.com>
+Subject: Re: [PATCH V2 2/2] sched: Remove un-necessary iteration over sched
+ domains to update nr_busy_cpus
 References: <20131030031145.23426.22930.stgit@preeti.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ <20131030031252.23426.4417.stgit@preeti.in.ibm.com>
+In-Reply-To: <20131030031252.23426.4417.stgit@preeti.in.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: vincent.guittot@linaro.org, bitbucket@online.de,
  linux-kernel@vger.kernel.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org,
  Morten.Rasmussen@arm.com, pjt@google.com
@@ -43,6 +43,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+The changelog has missed mentioning the introduction of sd_asym per_cpu sched domain.
+Apologies for this. The patch with the changelog including mention of sd_asym is
+pasted below.
+
+Regards
+Preeti U Murthy
+
+---------------
+
+sched: Remove un-necessary iteration over sched domains to update nr_busy_cpus
+
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
 nr_busy_cpus parameter is used by nohz_kick_needed() to find out the number
 of busy cpus in a sched domain which has SD_SHARE_PKG_RESOURCES flag set.
@@ -59,7 +72,9 @@ SD_SHARE_PKG_RESOURCES flag set, we cover all lower level domains which could
 have this flag set and trigger nohz_idle_balancing if any of the levels have
 more than one busy cpu.
 
-sd_busy is irrelevant for asymmetric load balancing.
+sd_busy is irrelevant for asymmetric load balancing. However sd_asym has been
+introduced to represent the highest sched domain which has SD_ASYM_PACKING flag set
+so that it can be queried directly when required.
 
 While we are at it, we might as well change the nohz_idle parameter to be
 updated at the sd_busy domain level alone and not the base domain level of a CPU.
@@ -68,7 +83,6 @@ where it is currently used.
 
 Signed-off-by: Preeti U Murthy<preeti@linux.vnet.ibm.com>
 ---
-
  kernel/sched/core.c  |    6 ++++++
  kernel/sched/fair.c  |   38 ++++++++++++++++++++------------------
  kernel/sched/sched.h |    2 ++
