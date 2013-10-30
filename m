@@ -1,32 +1,32 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D03812C0904
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:36:11 +1100 (EST)
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 761FE2C07F1
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:36:19 +1100 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 31 Oct 2013 00:36:11 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 72F132CE8052
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:36:08 +1100 (EST)
+ Thu, 31 Oct 2013 00:36:18 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D09712BB0044
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:36:16 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9UEIbtV3735580
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:18:37 +1100
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9UEIsKa1376734
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:18:54 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9UEa7UD012835
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:36:08 +1100
-Subject: [RFC PATCH v5 11/12] powerpc/powernv: Remove machine check handling
- in OPAL.
+ r9UEaGKv013016
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:36:16 +1100
+Subject: [RFC PATCH v5 12/12] powerpc/powernv: Machine check exception
+ handling.
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Wed, 30 Oct 2013 20:05:58 +0530
-Message-ID: <20131030143558.26643.12721.stgit@mars>
+Date: Wed, 30 Oct 2013 20:06:13 +0530
+Message-ID: <20131030143613.26643.18570.stgit@mars>
 In-Reply-To: <20131030143219.26643.24782.stgit@mars>
 References: <20131030143219.26643.24782.stgit@mars>
 MIME-Version: 1.0
@@ -43,32 +43,133 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Now that we are ready to handle machine check directly in linux, do not
-register with firmware to handle machine check exception.
+Add basic error handling in machine check exception handler.
+
+- If MSR_RI isn't set, we can not recover.
+- Check if disposition set to OpalMCE_DISPOSITION_RECOVERED.
+- Check if address at fault is inside kernel address space, if not then send
+  SIGBUS to process if we hit exception when in userspace.
+- If address at fault is not provided then and if we get a synchronous machine
+  check while in userspace then kill the task.
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/opal.c |    8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/mce.h        |    1 +
+ arch/powerpc/kernel/mce.c             |   27 +++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal.c |   43 ++++++++++++++++++++++++++++++++-
+ 3 files changed, 70 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index 3276b40..a2b8c7b 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -193,5 +193,6 @@ extern void release_mce_event(void);
+ extern void machine_check_queue_event(void);
+ extern void machine_check_process_queued_event(void);
+ extern void machine_check_print_event_info(struct machine_check_event *evt);
++extern uint64_t get_mce_fault_addr(struct machine_check_event *evt);
+ 
+ #endif /* __ASM_PPC64_MCE_H__ */
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index 1c6d157..c0c52ec 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -316,3 +316,30 @@ void machine_check_print_event_info(struct machine_check_event *evt)
+ 		break;
+ 	}
+ }
++
++uint64_t get_mce_fault_addr(struct machine_check_event *evt)
++{
++	switch (evt->error_type) {
++	case MCE_ERROR_TYPE_UE:
++		if (evt->u.ue_error.effective_address_provided)
++			return evt->u.ue_error.effective_address;
++		break;
++	case MCE_ERROR_TYPE_SLB:
++		if (evt->u.slb_error.effective_address_provided)
++			return evt->u.slb_error.effective_address;
++		break;
++	case MCE_ERROR_TYPE_ERAT:
++		if (evt->u.erat_error.effective_address_provided)
++			return evt->u.erat_error.effective_address;
++		break;
++	case MCE_ERROR_TYPE_TLB:
++		if (evt->u.tlb_error.effective_address_provided)
++			return evt->u.tlb_error.effective_address;
++		break;
++	default:
++	case MCE_ERROR_TYPE_UNKNOWN:
++		break;
++	}
++	return 0;
++}
++EXPORT_SYMBOL(get_mce_fault_addr);
 diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 219ce65..d17e1e3 100644
+index d17e1e3..4a727d3 100644
 --- a/arch/powerpc/platforms/powernv/opal.c
 +++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -83,14 +83,10 @@ static int __init opal_register_exception_handlers(void)
- 	if (!(powerpc_firmware_features & FW_FEATURE_OPAL))
- 		return -ENODEV;
+@@ -17,6 +17,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/notifier.h>
+ #include <linux/slab.h>
++#include <linux/sched.h>
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
+ #include <asm/mce.h>
+@@ -240,6 +241,44 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
+ 	return written;
+ }
  
--	/* Hookup some exception handlers. We use the fwnmi area at 0x7000
--	 * to provide the glue space to OPAL
-+	/* Hookup some exception handlers except machine check. We use the
-+	 * fwnmi area at 0x7000 to provide the glue space to OPAL
- 	 */
- 	glue = 0x7000;
--	opal_register_exception_handler(OPAL_MACHINE_CHECK_HANDLER,
--					__pa(opal_mc_secondary_handler[0]),
--					glue);
--	glue += 128;
- 	opal_register_exception_handler(OPAL_HYPERVISOR_MAINTENANCE_HANDLER,
- 					0, glue);
- 	glue += 128;
++static int opal_recover_mce(struct pt_regs *regs,
++					struct machine_check_event *evt)
++{
++	int recovered = 0;
++	uint64_t ea = get_mce_fault_addr(evt);
++
++	if (!(regs->msr & MSR_RI)) {
++		/* If MSR_RI isn't set, we cannot recover */
++		recovered = 0;
++	} else if (evt->disposition == MCE_DISPOSITION_RECOVERED) {
++		/* Platform corrected itself */
++		recovered = 1;
++	} else if (ea && !is_kernel_addr(ea)) {
++		/*
++		 * Faulting address is not in kernel text. We should be fine.
++		 * We need to find which process uses this address.
++		 * For now, kill the task if we have received exception when
++		 * in userspace.
++		 *
++		 * TODO: Queue up this address for hwpoisioning later.
++		 */
++		if (user_mode(regs) && !is_global_init(current)) {
++			_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
++			recovered = 1;
++		} else
++			recovered = 0;
++	} else if (user_mode(regs) && !is_global_init(current) &&
++		evt->severity == MCE_SEV_ERROR_SYNC) {
++		/*
++		 * If we have received a synchronous error when in userspace
++		 * kill the task.
++		 */
++		_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
++		recovered = 1;
++	}
++	return recovered;
++}
++
+ int opal_machine_check(struct pt_regs *regs)
+ {
+ 	struct machine_check_event evt;
+@@ -255,7 +294,9 @@ int opal_machine_check(struct pt_regs *regs)
+ 	}
+ 	machine_check_print_event_info(&evt);
+ 
+-	return evt.severity == MCE_SEV_FATAL ? 0 : 1;
++	if (opal_recover_mce(regs, &evt))
++		return 1;
++	return 0;
+ }
+ 
+ static irqreturn_t opal_interrupt(int irq, void *data)
