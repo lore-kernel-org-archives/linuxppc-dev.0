@@ -1,37 +1,52 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <victork@il.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 761FE2C07F1
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:36:19 +1100 (EST)
+ (Client CN "e06smtp13.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F03F12C0385
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 02:16:13 +1100 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 31 Oct 2013 00:36:18 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D09712BB0044
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:36:16 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9UEIsKa1376734
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:18:54 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- r9UEaGKv013016
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 01:36:16 +1100
-Subject: [RFC PATCH v5 12/12] powerpc/powernv: Machine check exception
- handling.
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Wed, 30 Oct 2013 20:06:13 +0530
-Message-ID: <20131030143613.26643.18570.stgit@mars>
-In-Reply-To: <20131030143219.26643.24782.stgit@mars>
-References: <20131030143219.26643.24782.stgit@mars>
+ for <linuxppc-dev@ozlabs.org> from <victork@il.ibm.com>;
+ Wed, 30 Oct 2013 15:16:09 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id F267717D8F4D
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Oct 2013 15:07:10 +0000 (GMT)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9UF69S956623236
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Oct 2013 15:06:09 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9UF6KPL027989
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Oct 2013 11:06:21 -0400
+In-Reply-To: <20131030112526.GI16117@laptop.programming.kicks-ass.net>
+References: <12083.1382486094@ale.ozlabs.ibm.com>
+ <20131023141948.GB3566@localhost.localdomain>
+ <20131025173749.GG19466@laptop.lan>
+ <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
+ <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
+ <20131028132634.GO19466@laptop.lan>
+ <20131028163418.GD4126@linux.vnet.ibm.com>
+ <20131028201735.GA15629@redhat.com>
+ <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
+ <20131030092725.GL4126@linux.vnet.ibm.com>
+ <20131030112526.GI16117@laptop.programming.kicks-ass.net>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+To: Peter Zijlstra <peterz@infradead.org>
+Message-ID: <OFF6C78E48.E477DB1E-ON42257C14.0050F9B3-42257C14.0051AC6D@il.ibm.com>
+From: Victor Kaplansky <VICTORK@il.ibm.com>
+Date: Wed, 30 Oct 2013 16:52:05 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Jeremy Kerr <jeremy.kerr@au1.ibm.com>, Anton Blanchard <anton@samba.org>
+Content-type: text/plain; charset=US-ASCII
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,135 +56,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Peter Zijlstra <peterz@infradead.org> wrote on 10/30/2013 01:25:26 PM:
 
-Add basic error handling in machine check exception handler.
+> Also, I'm not entirely sure on C, that too seems like a dependency, we
+> simply cannot read the buffer @tail before we've read the tail itself,
+> now can we? Similarly we cannot compare tail to head without having the
+> head read completed.
 
-- If MSR_RI isn't set, we can not recover.
-- Check if disposition set to OpalMCE_DISPOSITION_RECOVERED.
-- Check if address at fault is inside kernel address space, if not then send
-  SIGBUS to process if we hit exception when in userspace.
-- If address at fault is not provided then and if we get a synchronous machine
-  check while in userspace then kill the task.
+No, this one we cannot omit, because our problem on consumer side is not
+with @tail, which is written exclusively by consumer, but with @head.
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/mce.h        |    1 +
- arch/powerpc/kernel/mce.c             |   27 +++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal.c |   43 ++++++++++++++++++++++++++++++++-
- 3 files changed, 70 insertions(+), 1 deletion(-)
+BTW, it is why you also don't need ACCESS_ONCE() around @tail, but only
+around
+@head read.
 
-diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-index 3276b40..a2b8c7b 100644
---- a/arch/powerpc/include/asm/mce.h
-+++ b/arch/powerpc/include/asm/mce.h
-@@ -193,5 +193,6 @@ extern void release_mce_event(void);
- extern void machine_check_queue_event(void);
- extern void machine_check_process_queued_event(void);
- extern void machine_check_print_event_info(struct machine_check_event *evt);
-+extern uint64_t get_mce_fault_addr(struct machine_check_event *evt);
- 
- #endif /* __ASM_PPC64_MCE_H__ */
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index 1c6d157..c0c52ec 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -316,3 +316,30 @@ void machine_check_print_event_info(struct machine_check_event *evt)
- 		break;
- 	}
- }
-+
-+uint64_t get_mce_fault_addr(struct machine_check_event *evt)
-+{
-+	switch (evt->error_type) {
-+	case MCE_ERROR_TYPE_UE:
-+		if (evt->u.ue_error.effective_address_provided)
-+			return evt->u.ue_error.effective_address;
-+		break;
-+	case MCE_ERROR_TYPE_SLB:
-+		if (evt->u.slb_error.effective_address_provided)
-+			return evt->u.slb_error.effective_address;
-+		break;
-+	case MCE_ERROR_TYPE_ERAT:
-+		if (evt->u.erat_error.effective_address_provided)
-+			return evt->u.erat_error.effective_address;
-+		break;
-+	case MCE_ERROR_TYPE_TLB:
-+		if (evt->u.tlb_error.effective_address_provided)
-+			return evt->u.tlb_error.effective_address;
-+		break;
-+	default:
-+	case MCE_ERROR_TYPE_UNKNOWN:
-+		break;
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL(get_mce_fault_addr);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index d17e1e3..4a727d3 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -17,6 +17,7 @@
- #include <linux/interrupt.h>
- #include <linux/notifier.h>
- #include <linux/slab.h>
-+#include <linux/sched.h>
- #include <asm/opal.h>
- #include <asm/firmware.h>
- #include <asm/mce.h>
-@@ -240,6 +241,44 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
- 	return written;
- }
- 
-+static int opal_recover_mce(struct pt_regs *regs,
-+					struct machine_check_event *evt)
-+{
-+	int recovered = 0;
-+	uint64_t ea = get_mce_fault_addr(evt);
-+
-+	if (!(regs->msr & MSR_RI)) {
-+		/* If MSR_RI isn't set, we cannot recover */
-+		recovered = 0;
-+	} else if (evt->disposition == MCE_DISPOSITION_RECOVERED) {
-+		/* Platform corrected itself */
-+		recovered = 1;
-+	} else if (ea && !is_kernel_addr(ea)) {
-+		/*
-+		 * Faulting address is not in kernel text. We should be fine.
-+		 * We need to find which process uses this address.
-+		 * For now, kill the task if we have received exception when
-+		 * in userspace.
-+		 *
-+		 * TODO: Queue up this address for hwpoisioning later.
-+		 */
-+		if (user_mode(regs) && !is_global_init(current)) {
-+			_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
-+			recovered = 1;
-+		} else
-+			recovered = 0;
-+	} else if (user_mode(regs) && !is_global_init(current) &&
-+		evt->severity == MCE_SEV_ERROR_SYNC) {
-+		/*
-+		 * If we have received a synchronous error when in userspace
-+		 * kill the task.
-+		 */
-+		_exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
-+		recovered = 1;
-+	}
-+	return recovered;
-+}
-+
- int opal_machine_check(struct pt_regs *regs)
- {
- 	struct machine_check_event evt;
-@@ -255,7 +294,9 @@ int opal_machine_check(struct pt_regs *regs)
- 	}
- 	machine_check_print_event_info(&evt);
- 
--	return evt.severity == MCE_SEV_FATAL ? 0 : 1;
-+	if (opal_recover_mce(regs, &evt))
-+		return 1;
-+	return 0;
- }
- 
- static irqreturn_t opal_interrupt(int irq, void *data)
+-- Victor
