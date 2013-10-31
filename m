@@ -1,18 +1,28 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id EC7112C0361
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 23:31:45 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 29520-03 for <linuxppc-dev@ozlabs.org>;
- Thu, 31 Oct 2013 12:31:40 +0000 (GMT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: perf events ring buffer memory barrier on powerpc
-Date: Thu, 31 Oct 2013 12:28:56 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B73CC@saturn3.aculab.com>
-In-Reply-To: <OFDF23985D.1D949148-ON42257C15.002DEB25-42257C15.0036DF93@il.ibm.com>
+Return-Path: <victork@il.ibm.com>
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp11.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CFB242C03BD
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 23:55:39 +1100 (EST)
+Received: from /spool/local
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <victork@il.ibm.com>;
+ Thu, 31 Oct 2013 12:55:35 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 42A71219005F
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 12:55:32 +0000 (GMT)
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9VCtJPL34144506
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 12:55:19 GMT
+Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9VCtVnw005233
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 06:55:31 -0600
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B73CC@saturn3.aculab.com>
 References: <20131023141948.GB3566@localhost.localdomain>
  <20131025173749.GG19466@laptop.lan>
  <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
@@ -25,15 +35,20 @@ References: <20131023141948.GB3566@localhost.localdomain>
  <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
  <20131031043258.GQ4126@linux.vnet.ibm.com>
  <OFDF23985D.1D949148-ON42257C15.002DEB25-42257C15.0036DF93@il.ibm.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Victor Kaplansky" <VICTORK@il.ibm.com>,
-	<paulmck@linux.vnet.ibm.com>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B73CC@saturn3.aculab.com>
+Subject: RE: perf events ring buffer memory barrier on powerpc
+To: "David Laight" <David.Laight@aculab.com>
+Message-ID: <OFF094B66E.899BE5FF-ON42257C15.0045F3A1-42257C15.0046FE15@il.ibm.com>
+From: Victor Kaplansky <VICTORK@il.ibm.com>
+Date: Thu, 31 Oct 2013 14:55:25 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Cc: Michael Neuling <mikey@neuling.org>,
  Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
  Peter Zijlstra <peterz@infradead.org>,
  Frederic Weisbecker <fweisbec@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
  Oleg Nesterov <oleg@redhat.com>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>
+ Anton Blanchard <anton@samba.org>, paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,31 +58,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> "For instance, your producer must issue a "memory barrier" instruction
->   after writing the data to shared memory and before inserting it on
->   the queue; likewise, your consumer must issue a memory barrier
->   instruction after removing an item from the queue and before reading
->   from its memory.  Otherwise, you risk seeing stale data, since, =
-while
->   the Alpha processor does provide coherent memory, it does not =
-provide
->   implicit ordering of reads and writes.  (That is, the write of the
->   producer's data might reach memory after the write of the queue, =
-such
->   that the consumer might read the new item from the queue but get the
->   previous values from the item's memory."
->=20
-> If yes, I don't think it explains the need of memory barrier on Alpha
-> in our case (we all agree about the need of smp_wmb() right before =
-@head
-> update by producer). If not, could you please point to specific =
-paragraph?
+"David Laight" <David.Laight@aculab.com> wrote on 10/31/2013 02:28:56 PM:
 
-My understanding is that the extra read barrier the alpha needs isn't to
-control the order the cpu performs the memory cycles in, but rather to
-wait while the cache system performs all outstanding operations.
-So even though the wmb() in the writer ensures the writes are correctly
-ordered, the reader can read the old value from the second location from
-its local cache.
+> So even though the wmb() in the writer ensures the writes are correctly
+> ordered, the reader can read the old value from the second location from
+> its local cache.
 
-	David
+In case of circular buffer, the only thing that producer reads is @tail,
+and nothing wrong will happen if producer reads old value of @tail.
+Moreover,
+adherents of smp_mb() insert it *after* the read of @tail, so it cannot
+prevent reading of old value anyway.
+-- Victor
