@@ -1,33 +1,38 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id ACC2D2C03CB
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 20:05:17 +1100 (EST)
-Date: Thu, 31 Oct 2013 10:04:57 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131031090457.GU19466@laptop.lan>
-References: <20131025173749.GG19466@laptop.lan>
- <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
- <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
- <20131028132634.GO19466@laptop.lan>
- <20131028163418.GD4126@linux.vnet.ibm.com>
- <20131028201735.GA15629@redhat.com>
- <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
- <20131030092725.GL4126@linux.vnet.ibm.com>
- <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
- <20131031043258.GQ4126@linux.vnet.ibm.com>
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp11.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4E67C2C03BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 20:36:53 +1100 (EST)
+Received: from /spool/local
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Thu, 31 Oct 2013 09:36:48 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2DE09219006E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 09:36:44 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r9V9aVY842467570
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 09:36:31 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ r9V9ahmq031265
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 03:36:43 -0600
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH v2] offb: make the screen properties endian safe
+Date: Thu, 31 Oct 2013 10:36:32 +0100
+Message-Id: <1383212192-3622-1-git-send-email-clg@fr.ibm.com>
+In-Reply-To: <1383185307.5117.74.camel@pasglop>
+References: <1383185307.5117.74.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131031043258.GQ4126@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,33 +42,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 30, 2013 at 09:32:58PM -0700, Paul E. McKenney wrote:
-> Before C/C++11, the closest thing to such a prohibition is use of
-> volatile, for example, ACCESS_ONCE().  Even in C/C++11, you have to
-> use atomics to get anything resembing this prohibition.
-> 
-> If you just use normal variables, the compiler is within its rights
-> to transform something like the following:
-> 
-> 	if (a)
-> 		b = 1;
-> 	else
-> 		b = 42;
-> 
-> Into:
-> 
-> 	b = 42;
-> 	if (a)
-> 		b = 1;
-> 
-> Many other similar transformations are permitted.  Some are used to all
-> vector instructions to be used -- the compiler can do a write with an
-> overly wide vector instruction, then clean up the clobbered variables
-> later, if it wishes.  Again, if the variables are not marked volatile,
-> or, in C/C++11, atomic.
+The "screen" properties : depth, width, height, linebytes need
+to be converted to the host endian order when read from the device
+tree.
 
-While I've heard you tell this story before, my mind keeps boggling how
-we've been able to use shared memory at all, all these years.
+Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+---
 
-It seems to me stuff should have broken left, right and center if
-compilers were really aggressive about this.
+Changes in v2:
+
+ - replaced be32_to_cpu() by be32_to_cpup() 
+ - fixed setcolreg ops 
+
+ drivers/video/offb.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/offb.c b/drivers/video/offb.c
+index 0c4f343..68e8415 100644
+--- a/drivers/video/offb.c
++++ b/drivers/video/offb.c
+@@ -120,7 +120,7 @@ static int offb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 			mask <<= info->var.transp.offset;
+ 			value |= mask;
+ 		}
+-		pal[regno] = value;
++		pal[regno] = cpu_to_be32(value);
+ 		return 0;
+ 	}
+ 
+@@ -536,7 +536,7 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
+ 	unsigned int flags, rsize, addr_prop = 0;
+ 	unsigned long max_size = 0;
+ 	u64 rstart, address = OF_BAD_ADDR;
+-	const u32 *pp, *addrp, *up;
++	const __be32 *pp, *addrp, *up;
+ 	u64 asize;
+ 	int foreign_endian = 0;
+ 
+@@ -552,25 +552,25 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
+ 	if (pp == NULL)
+ 		pp = of_get_property(dp, "depth", &len);
+ 	if (pp && len == sizeof(u32))
+-		depth = *pp;
++		depth = be32_to_cpup(pp);
+ 
+ 	pp = of_get_property(dp, "linux,bootx-width", &len);
+ 	if (pp == NULL)
+ 		pp = of_get_property(dp, "width", &len);
+ 	if (pp && len == sizeof(u32))
+-		width = *pp;
++		width = be32_to_cpup(pp);
+ 
+ 	pp = of_get_property(dp, "linux,bootx-height", &len);
+ 	if (pp == NULL)
+ 		pp = of_get_property(dp, "height", &len);
+ 	if (pp && len == sizeof(u32))
+-		height = *pp;
++		height = be32_to_cpup(pp);
+ 
+ 	pp = of_get_property(dp, "linux,bootx-linebytes", &len);
+ 	if (pp == NULL)
+ 		pp = of_get_property(dp, "linebytes", &len);
+ 	if (pp && len == sizeof(u32) && (*pp != 0xffffffffu))
+-		pitch = *pp;
++		pitch = be32_to_cpup(pp);
+ 	else
+ 		pitch = width * ((depth + 7) / 8);
+ 
+-- 
+1.7.10.4
