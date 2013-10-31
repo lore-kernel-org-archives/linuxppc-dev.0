@@ -1,30 +1,33 @@
-Return-Path: <philippe.retornaz@gmail.com>
-Received: from mail-ea0-x22f.google.com (mail-ea0-x22f.google.com
- [IPv6:2a00:1450:4013:c01::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 460402C0185
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 18:54:19 +1100 (EST)
-Received: by mail-ea0-f175.google.com with SMTP id l15so974439eak.34
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 00:54:14 -0700 (PDT)
-Message-ID: <52720CA4.3090003@gmail.com>
-Date: Thu, 31 Oct 2013 08:54:12 +0100
-From: =?ISO-8859-1?Q?Philippe_R=E9tornaz?= <philippe.retornaz@gmail.com>
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id ACC2D2C03CB
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 20:05:17 +1100 (EST)
+Date: Thu, 31 Oct 2013 10:04:57 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+Message-ID: <20131031090457.GU19466@laptop.lan>
+References: <20131025173749.GG19466@laptop.lan>
+ <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
+ <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
+ <20131028132634.GO19466@laptop.lan>
+ <20131028163418.GD4126@linux.vnet.ibm.com>
+ <20131028201735.GA15629@redhat.com>
+ <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
+ <20131030092725.GL4126@linux.vnet.ibm.com>
+ <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
+ <20131031043258.GQ4126@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Nicolin Chen <b42378@freescale.com>
-Subject: Re: [PATCH v2 3/4] ASoC: fsl_ssi: Add dual fifo mode support
-References: <cover.1383197521.git.b42378@freescale.com>
- <0e947536358af7bd6e179559006a3526801a1abe.1383197521.git.b42378@freescale.com>
-In-Reply-To: <0e947536358af7bd6e179559006a3526801a1abe.1383197521.git.b42378@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- s.hauer@pengutronix.de, swarren@wwwdotorg.org, timur@tabi.org,
- rob.herring@calxeda.com, linux-kernel@vger.kernel.org, broonie@kernel.org,
- galak@codeaurora.org, dmaengine@vger.kernel.org, ijc+devicetree@hellion.org.uk,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131031043258.GQ4126@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Victor Kaplansky <VICTORK@il.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,22 +37,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi
+On Wed, Oct 30, 2013 at 09:32:58PM -0700, Paul E. McKenney wrote:
+> Before C/C++11, the closest thing to such a prohibition is use of
+> volatile, for example, ACCESS_ONCE().  Even in C/C++11, you have to
+> use atomics to get anything resembing this prohibition.
+> 
+> If you just use normal variables, the compiler is within its rights
+> to transform something like the following:
+> 
+> 	if (a)
+> 		b = 1;
+> 	else
+> 		b = 42;
+> 
+> Into:
+> 
+> 	b = 42;
+> 	if (a)
+> 		b = 1;
+> 
+> Many other similar transformations are permitted.  Some are used to all
+> vector instructions to be used -- the compiler can do a write with an
+> overly wide vector instruction, then clean up the clobbered variables
+> later, if it wishes.  Again, if the variables are not marked volatile,
+> or, in C/C++11, atomic.
 
->
-> +			/* When using dual fifo mode, we need to keep watermark
-> +			 * as even numbers due to dma script limitation.
-> +			 */
-> +			ssi_private->dma_params_tx.maxburst /= 2;
-> +			ssi_private->dma_params_tx.maxburst *= 2;
-> +			ssi_private->dma_params_rx.maxburst /= 2;
-> +			ssi_private->dma_params_rx.maxburst *= 2;
->
+While I've heard you tell this story before, my mind keeps boggling how
+we've been able to use shared memory at all, all these years.
 
-Why not using a mask here ?
-ssi_private->dma_params_tx.maxburst &= ~0x1;
-ssi_private->dma_params_rx.maxburst &= ~0x1;
-
-Regards,
-
-Philippe
+It seems to me stuff should have broken left, right and center if
+compilers were really aggressive about this.
