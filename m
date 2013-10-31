@@ -1,26 +1,29 @@
-Return-Path: <B42378@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A5F402C041D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 19:23:05 +1100 (EST)
-From: Nicolin Chen <b42378@freescale.com>
-To: <s.hauer@pengutronix.de>, <timur@tabi.org>, <shawn.guo@linaro.org>,
- <broonie@kernel.org>
-Subject: [PATCH v3 4/4] ARM: dts: imx: use dual-fifo sdma script for ssi
-Date: Thu, 31 Oct 2013 16:22:41 +0800
-Message-ID: <93934f2c730c2e35d77549a471a48c82c75eed93.1383207153.git.b42378@freescale.com>
-In-Reply-To: <cover.1383207153.git.b42378@freescale.com>
-References: <cover.1383207153.git.b42378@freescale.com>
+Return-Path: <philippe.retornaz@gmail.com>
+Received: from mail-ea0-x22f.google.com (mail-ea0-x22f.google.com
+ [IPv6:2a00:1450:4013:c01::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 460402C0185
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 18:54:19 +1100 (EST)
+Received: by mail-ea0-f175.google.com with SMTP id l15so974439eak.34
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 00:54:14 -0700 (PDT)
+Message-ID: <52720CA4.3090003@gmail.com>
+Date: Thu, 31 Oct 2013 08:54:12 +0100
+From: =?ISO-8859-1?Q?Philippe_R=E9tornaz?= <philippe.retornaz@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [PATCH v2 3/4] ASoC: fsl_ssi: Add dual fifo mode support
+References: <cover.1383197521.git.b42378@freescale.com>
+ <0e947536358af7bd6e179559006a3526801a1abe.1383197521.git.b42378@freescale.com>
+In-Reply-To: <0e947536358af7bd6e179559006a3526801a1abe.1383197521.git.b42378@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
  alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- swarren@wwwdotorg.org, linux-kernel@vger.kernel.org, rob.herring@calxeda.com,
- philippe.retornaz@gmail.com, galak@codeaurora.org, dmaengine@vger.kernel.org,
- ijc+devicetree@hellion.org.uk, linuxppc-dev@lists.ozlabs.org,
+ s.hauer@pengutronix.de, swarren@wwwdotorg.org, timur@tabi.org,
+ rob.herring@calxeda.com, linux-kernel@vger.kernel.org, broonie@kernel.org,
+ galak@codeaurora.org, dmaengine@vger.kernel.org, ijc+devicetree@hellion.org.uk,
+ shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,119 +34,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use dual-fifo sdma scripts instead of shared scripts for ssi on i.MX series.
+Hi
 
-Signed-off-by: Nicolin Chen <b42378@freescale.com>
----
- arch/arm/boot/dts/imx51.dtsi   |  4 ++--
- arch/arm/boot/dts/imx53.dtsi   |  4 ++--
- arch/arm/boot/dts/imx6qdl.dtsi | 12 ++++++------
- arch/arm/boot/dts/imx6sl.dtsi  | 12 ++++++------
- 4 files changed, 16 insertions(+), 16 deletions(-)
+>
+> +			/* When using dual fifo mode, we need to keep watermark
+> +			 * as even numbers due to dma script limitation.
+> +			 */
+> +			ssi_private->dma_params_tx.maxburst /= 2;
+> +			ssi_private->dma_params_tx.maxburst *= 2;
+> +			ssi_private->dma_params_rx.maxburst /= 2;
+> +			ssi_private->dma_params_rx.maxburst *= 2;
+>
 
-diff --git a/arch/arm/boot/dts/imx51.dtsi b/arch/arm/boot/dts/imx51.dtsi
-index 54cee65..1a71eac 100644
---- a/arch/arm/boot/dts/imx51.dtsi
-+++ b/arch/arm/boot/dts/imx51.dtsi
-@@ -154,8 +154,8 @@
- 					reg = <0x70014000 0x4000>;
- 					interrupts = <30>;
- 					clocks = <&clks 49>;
--					dmas = <&sdma 24 1 0>,
--					       <&sdma 25 1 0>;
-+					dmas = <&sdma 24 22 0>,
-+					       <&sdma 25 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <25 24 23 22>; /* TX0 RX0 TX1 RX1 */
-diff --git a/arch/arm/boot/dts/imx53.dtsi b/arch/arm/boot/dts/imx53.dtsi
-index 4307e80..7208fde 100644
---- a/arch/arm/boot/dts/imx53.dtsi
-+++ b/arch/arm/boot/dts/imx53.dtsi
-@@ -153,8 +153,8 @@
- 					reg = <0x50014000 0x4000>;
- 					interrupts = <30>;
- 					clocks = <&clks 49>;
--					dmas = <&sdma 24 1 0>,
--					       <&sdma 25 1 0>;
-+					dmas = <&sdma 24 22 0>,
-+					       <&sdma 25 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <25 24 23 22>; /* TX0 RX0 TX1 RX1 */
-diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-index 57e9c38..6e096ca 100644
---- a/arch/arm/boot/dts/imx6qdl.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl.dtsi
-@@ -223,8 +223,8 @@
- 					reg = <0x02028000 0x4000>;
- 					interrupts = <0 46 0x04>;
- 					clocks = <&clks 178>;
--					dmas = <&sdma 37 1 0>,
--					       <&sdma 38 1 0>;
-+					dmas = <&sdma 37 22 0>,
-+					       <&sdma 38 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <38 37>;
-@@ -236,8 +236,8 @@
- 					reg = <0x0202c000 0x4000>;
- 					interrupts = <0 47 0x04>;
- 					clocks = <&clks 179>;
--					dmas = <&sdma 41 1 0>,
--					       <&sdma 42 1 0>;
-+					dmas = <&sdma 41 22 0>,
-+					       <&sdma 42 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <42 41>;
-@@ -249,8 +249,8 @@
- 					reg = <0x02030000 0x4000>;
- 					interrupts = <0 48 0x04>;
- 					clocks = <&clks 180>;
--					dmas = <&sdma 45 1 0>,
--					       <&sdma 46 1 0>;
-+					dmas = <&sdma 45 22 0>,
-+					       <&sdma 46 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <46 45>;
-diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
-index c46651e..b32ba99 100644
---- a/arch/arm/boot/dts/imx6sl.dtsi
-+++ b/arch/arm/boot/dts/imx6sl.dtsi
-@@ -195,8 +195,8 @@
- 					reg = <0x02028000 0x4000>;
- 					interrupts = <0 46 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI1>;
--					dmas = <&sdma 37 1 0>,
--					       <&sdma 38 1 0>;
-+					dmas = <&sdma 37 22 0>,
-+					       <&sdma 38 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
-@@ -207,8 +207,8 @@
- 					reg = <0x0202c000 0x4000>;
- 					interrupts = <0 47 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI2>;
--					dmas = <&sdma 41 1 0>,
--					       <&sdma 42 1 0>;
-+					dmas = <&sdma 41 22 0>,
-+					       <&sdma 42 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
-@@ -219,8 +219,8 @@
- 					reg = <0x02030000 0x4000>;
- 					interrupts = <0 48 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI3>;
--					dmas = <&sdma 45 1 0>,
--					       <&sdma 46 1 0>;
-+					dmas = <&sdma 45 22 0>,
-+					       <&sdma 46 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
--- 
-1.8.4
+Why not using a mask here ?
+ssi_private->dma_params_tx.maxburst &= ~0x1;
+ssi_private->dma_params_rx.maxburst &= ~0x1;
+
+Regards,
+
+Philippe
