@@ -1,50 +1,22 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B8C902C03CC
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 15:35:58 +1100 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Thu, 31 Oct 2013 00:35:54 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 3F54F6E803F
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 00:35:50 -0400 (EDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r9V4ZpL97471510
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2013 04:35:51 GMT
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r9V4ce0F012129
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Oct 2013 22:38:41 -0600
-Date: Wed, 30 Oct 2013 21:32:58 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Victor Kaplansky <VICTORK@il.ibm.com>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131031043258.GQ4126@linux.vnet.ibm.com>
-References: <20131023141948.GB3566@localhost.localdomain>
- <20131025173749.GG19466@laptop.lan>
- <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
- <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
- <20131028132634.GO19466@laptop.lan>
- <20131028163418.GD4126@linux.vnet.ibm.com>
- <20131028201735.GA15629@redhat.com>
- <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
- <20131030092725.GL4126@linux.vnet.ibm.com>
- <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Frederic Weisbecker <fweisbec@gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D3D4D2C03C3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 16:20:59 +1100 (EST)
+Message-ID: <1383196834.28909.7.camel@pasglop>
+Subject: Re: [PATCH 2/2] of: move definition of of_find_next_cache_node into
+ common code.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Date: Thu, 31 Oct 2013 16:20:34 +1100
+In-Reply-To: <1379501585-12532-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+References: <1379501585-12532-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1379501585-12532-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,130 +26,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 30, 2013 at 03:28:54PM +0200, Victor Kaplansky wrote:
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote on 10/30/2013
-> 11:27:25 AM:
+On Wed, 2013-09-18 at 11:53 +0100, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> > If you were to back up that insistence with a description of the
-> orderings
-> > you are relying on, why other orderings are not important, and how the
-> > important orderings are enforced, I might be tempted to pay attention
-> > to your opinion.
-> >
-> >                      Thanx, Paul
+> Since the definition of_find_next_cache_node is architecture independent,
+> the existing definition in powerpc can be moved to driver/of/base.c
 > 
-> NP, though, I feel too embarrassed to explain things about memory barriers
-> when
-> one of the authors of Documentation/memory-barriers.txt is on cc: list ;-)
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Grant Likely <grant.likely@linaro.org>
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+
+I've seen no follow up on that, I'm happy to stick it in powerpc-next
+with some other late stuff.
+
+Cheers,
+Ben.
+
+> ---
+>  arch/powerpc/include/asm/prom.h |  3 ---
+>  arch/powerpc/kernel/prom.c      | 31 -------------------------------
+>  drivers/of/base.c               | 31 +++++++++++++++++++++++++++++++
+>  include/linux/of.h              |  2 ++
+>  4 files changed, 33 insertions(+), 34 deletions(-)
 > 
-> Disclaimer: it is anyway impossible to prove lack of *any* problem.
-
-If you want to play the "omit memory barriers" game, then proving a
-negative is in fact the task before you.
-
-> Having said that, lets look into an example in
-> Documentation/circular-buffers.txt:
-
-And the correctness of this code has been called into question.  :-(
-An embarrassingly long time ago -- I need to get this either proven
-or fixed.
-
-> > THE PRODUCER
-> > ------------
-> >
-> > The producer will look something like this:
-> >
-> >       spin_lock(&producer_lock);
-> >
-> >       unsigned long head = buffer->head;
-> >       unsigned long tail = ACCESS_ONCE(buffer->tail);
-> >
-> >       if (CIRC_SPACE(head, tail, buffer->size) >= 1) {
-> >               /* insert one item into the buffer */
-> >               struct item *item = buffer[head];
-> >
-> >               produce_item(item);
-> >
-> >               smp_wmb(); /* commit the item before incrementing the head
-> */
-> >
-> >               buffer->head = (head + 1) & (buffer->size - 1);
-> >
-> >               /* wake_up() will make sure that the head is committed
-> before
-> >                * waking anyone up */
-> >               wake_up(consumer);
-> >       }
-> >
-> >       spin_unlock(&producer_lock);
-> 
-> We can see that authors of the document didn't put any memory barrier
-> after "buffer->tail" read and before "produce_item(item)" and I think they
-> have
-> a good reason.
-> 
-> Lets consider an imaginary smp_mb() right before "produce_item(item);".
-> Such a barrier will ensure that -
-> 
->     - the memory read on "buffer->tail" is completed
-> 	before store to memory pointed by "item" is committed.
-> 
-> However, the store to "buffer->tail" anyway cannot be completed before
-> conditional
-> branch implied by "if ()" is proven to execute body statement of the if().
-> And the
-> latter cannot be proven before read of "buffer->tail" is completed.
-> 
-> Lets see this other way. Lets imagine that somehow a store to the data
-> pointed by "item"
-> is completed before we read "buffer->tail". That would mean, that the store
-> was completed
-> speculatively. But speculative execution of conditional stores is
-> prohibited by C/C++ standard,
-> otherwise any conditional store at any random place of code could pollute
-> shared memory.
-
-Before C/C++11, the closest thing to such a prohibition is use of
-volatile, for example, ACCESS_ONCE().  Even in C/C++11, you have to
-use atomics to get anything resembing this prohibition.
-
-If you just use normal variables, the compiler is within its rights
-to transform something like the following:
-
-	if (a)
-		b = 1;
-	else
-		b = 42;
-
-Into:
-
-	b = 42;
-	if (a)
-		b = 1;
-
-Many other similar transformations are permitted.  Some are used to all
-vector instructions to be used -- the compiler can do a write with an
-overly wide vector instruction, then clean up the clobbered variables
-later, if it wishes.  Again, if the variables are not marked volatile,
-or, in C/C++11, atomic.
-
-> On the other hand, if compiler or processor can prove that condition in
-> above if() is going
-> to be true (or if speculative store writes the same value as it was before
-> write), the
-> speculative store *is* allowed. In this case we should not be bothered by
-> the fact that
-> memory pointed by "item" is written before a read from "buffer->tail" is
-> completed.
-
-The compilers don't always know as much as they might about the underlying
-hardware's memory model.  Of course, if this code is architecture specific,
-it can avoid DEC Alpha's fun and games, which could also violate your
-assumptions in the above paragraph:
-
-	http://www.openvms.compaq.com/wizard/wiz_2637.html
-
-Anyway, proving or fixing the code in Documentation/circular-buffers.txt
-has been on my list for too long, so I will take a closer look at it.
-
-							Thanx, Paul
+> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+> index 7d0c7f3..bf09e5a 100644
+> --- a/arch/powerpc/include/asm/prom.h
+> +++ b/arch/powerpc/include/asm/prom.h
+> @@ -44,9 +44,6 @@ void of_parse_dma_window(struct device_node *dn, const __be32 *dma_window,
+>  
+>  extern void kdump_move_device_tree(void);
+>  
+> -/* cache lookup */
+> -struct device_node *of_find_next_cache_node(struct device_node *np);
+> -
+>  #ifdef CONFIG_NUMA
+>  extern int of_node_to_nid(struct device_node *device);
+>  #else
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 09be275..4432fd8 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -761,37 +761,6 @@ void __init early_init_devtree(void *params)
+>   *******/
+>  
+>  /**
+> - *	of_find_next_cache_node - Find a node's subsidiary cache
+> - *	@np:	node of type "cpu" or "cache"
+> - *
+> - *	Returns a node pointer with refcount incremented, use
+> - *	of_node_put() on it when done.  Caller should hold a reference
+> - *	to np.
+> - */
+> -struct device_node *of_find_next_cache_node(struct device_node *np)
+> -{
+> -	struct device_node *child;
+> -	const phandle *handle;
+> -
+> -	handle = of_get_property(np, "l2-cache", NULL);
+> -	if (!handle)
+> -		handle = of_get_property(np, "next-level-cache", NULL);
+> -
+> -	if (handle)
+> -		return of_find_node_by_phandle(be32_to_cpup(handle));
+> -
+> -	/* OF on pmac has nodes instead of properties named "l2-cache"
+> -	 * beneath CPU nodes.
+> -	 */
+> -	if (!strcmp(np->type, "cpu"))
+> -		for_each_child_of_node(np, child)
+> -			if (!strcmp(child->type, "cache"))
+> -				return child;
+> -
+> -	return NULL;
+> -}
+> -
+> -/**
+>   * of_get_ibm_chip_id - Returns the IBM "chip-id" of a device
+>   * @np: device node of the device
+>   *
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index 865d3f6..b2cee3d 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -1884,3 +1884,34 @@ int of_device_is_stdout_path(struct device_node *dn)
+>  	return of_stdout == dn;
+>  }
+>  EXPORT_SYMBOL_GPL(of_device_is_stdout_path);
+> +
+> +/**
+> + *	of_find_next_cache_node - Find a node's subsidiary cache
+> + *	@np:	node of type "cpu" or "cache"
+> + *
+> + *	Returns a node pointer with refcount incremented, use
+> + *	of_node_put() on it when done.  Caller should hold a reference
+> + *	to np.
+> + */
+> +struct device_node *of_find_next_cache_node(const struct device_node *np)
+> +{
+> +	struct device_node *child;
+> +	const phandle *handle;
+> +
+> +	handle = of_get_property(np, "l2-cache", NULL);
+> +	if (!handle)
+> +		handle = of_get_property(np, "next-level-cache", NULL);
+> +
+> +	if (handle)
+> +		return of_find_node_by_phandle(be32_to_cpup(handle));
+> +
+> +	/* OF on pmac has nodes instead of properties named "l2-cache"
+> +	 * beneath CPU nodes.
+> +	 */
+> +	if (!strcmp(np->type, "cpu"))
+> +		for_each_child_of_node(np, child)
+> +			if (!strcmp(child->type, "cache"))
+> +				return child;
+> +
+> +	return NULL;
+> +}
+> diff --git a/include/linux/of.h b/include/linux/of.h
+> index f95aee3..c08c07e 100644
+> --- a/include/linux/of.h
+> +++ b/include/linux/of.h
+> @@ -226,6 +226,8 @@ static inline int of_get_child_count(const struct device_node *np)
+>  	return num;
+>  }
+>  
+> +/* cache lookup */
+> +extern struct device_node *of_find_next_cache_node(const struct device_node *);
+>  extern struct device_node *of_find_node_with_property(
+>  	struct device_node *from, const char *prop_name);
+>  #define for_each_node_with_property(dn, prop_name) \
