@@ -1,17 +1,19 @@
 Return-Path: <B42378@freescale.com>
 Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ABA4A2C0385
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 17:32:50 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B7A522C044E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 17:33:10 +1100 (EST)
 From: Nicolin Chen <b42378@freescale.com>
 To: <s.hauer@pengutronix.de>, <timur@tabi.org>, <shawn.guo@linaro.org>,
  <broonie@kernel.org>
-Subject: [PATCH v2 0/4] Add dual-fifo mode support of i.MX ssi
-Date: Thu, 31 Oct 2013 14:32:02 +0800
-Message-ID: <cover.1383197521.git.b42378@freescale.com>
+Subject: [PATCH v2 1/4] dma: imx-sdma: Add sdma firmware version 2 support
+Date: Thu, 31 Oct 2013 14:32:03 +0800
+Message-ID: <cfe6edbff010aefc8a35df8a719b26bd238cb3cc.1383197521.git.b42378@freescale.com>
+In-Reply-To: <cover.1383197521.git.b42378@freescale.com>
+References: <cover.1383197521.git.b42378@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
@@ -28,40 +30,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changelog
-v2:
- * Instead of adding rogue scripts to current SDMA driver based on firmware
- * V1, we define the new SDMA firmware as version 2 and bisect the PATCH-1
- * to two patches: The first is to add version check code to the SDMA driver;
- * And the second is to add SSI dual FIFO DMATYPE.
- *
- * Nothing changes for the last two patches.
-v1:
- * SSI can reduce hardware overrun/underrun possibility when using dual
- * fifo mode. To support this mode, we need to first update sdma sciprt
- * list, and then enable dual fifo BIT in SSI driver, and last update DT
- * bindings of i.MX series.
- *
- * ! This series of patches has a direct dependency between them. When
- * ! applying them, we need to apply in one single branch. Otherwise,
- * ! it would break currect branches.
+On i.MX5/6 series, SDMA is using new version firmware to support SSI
+dual FIFO feature and HDMI Audio (i.MX6Q/DL only). Thus add it.
 
-Nicolin Chen (4):
-  dma: imx-sdma: Add sdma firmware version 2 support
-  dma: imx-sdma: Add new dma type for ssi dual fifo script
-  ASoC: fsl_ssi: Add dual fifo mode support
-  ARM: dts: imx: use dual-fifo sdma script for ssi
+Signed-off-by: Nicolin Chen <b42378@freescale.com>
+---
+ drivers/dma/imx-sdma.c                     | 15 ++++++++++++++-
+ include/linux/platform_data/dma-imx-sdma.h |  3 +++
+ 2 files changed, 17 insertions(+), 1 deletion(-)
 
- .../devicetree/bindings/dma/fsl-imx-sdma.txt       |  1 +
- arch/arm/boot/dts/imx51.dtsi                       |  4 ++--
- arch/arm/boot/dts/imx53.dtsi                       |  4 ++--
- arch/arm/boot/dts/imx6qdl.dtsi                     | 12 +++++------
- arch/arm/boot/dts/imx6sl.dtsi                      | 12 +++++------
- drivers/dma/imx-sdma.c                             | 19 ++++++++++++++++-
- include/linux/platform_data/dma-imx-sdma.h         |  3 +++
- include/linux/platform_data/dma-imx.h              |  1 +
- sound/soc/fsl/fsl_ssi.c                            | 24 +++++++++++++++++++++-
- 9 files changed, 62 insertions(+), 18 deletions(-)
-
+diff --git a/drivers/dma/imx-sdma.c b/drivers/dma/imx-sdma.c
+index fc43603..c7ece8d 100644
+--- a/drivers/dma/imx-sdma.c
++++ b/drivers/dma/imx-sdma.c
+@@ -323,6 +323,7 @@ struct sdma_engine {
+ 	struct clk			*clk_ipg;
+ 	struct clk			*clk_ahb;
+ 	spinlock_t			channel_0_lock;
++	u32				script_number;
+ 	struct sdma_script_start_addrs	*script_addrs;
+ 	const struct sdma_driver_data	*drvdata;
+ };
+@@ -1238,6 +1239,7 @@ static void sdma_issue_pending(struct dma_chan *chan)
+ }
+ 
+ #define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1	34
++#define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V2	38
+ 
+ static void sdma_add_scripts(struct sdma_engine *sdma,
+ 		const struct sdma_script_start_addrs *addr)
+@@ -1246,7 +1248,7 @@ static void sdma_add_scripts(struct sdma_engine *sdma,
+ 	s32 *saddr_arr = (u32 *)sdma->script_addrs;
+ 	int i;
+ 
+-	for (i = 0; i < SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1; i++)
++	for (i = 0; i < sdma->script_number; i++)
+ 		if (addr_arr[i] > 0)
+ 			saddr_arr[i] = addr_arr[i];
+ }
+@@ -1272,6 +1274,17 @@ static void sdma_load_firmware(const struct firmware *fw, void *context)
+ 		goto err_firmware;
+ 	if (header->ram_code_start + header->ram_code_size > fw->size)
+ 		goto err_firmware;
++	switch (header->version_major) {
++		case 1:
++			sdma->script_number = SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1;
++			break;
++		case 2:
++			sdma->script_number = SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V2;
++			break;
++		default:
++			dev_err(sdma->dev, "unknown firmware version\n");
++			return;
++	}
+ 
+ 	addr = (void *)header + header->script_addrs_start;
+ 	ram_code = (void *)header + header->ram_code_start;
+diff --git a/include/linux/platform_data/dma-imx-sdma.h b/include/linux/platform_data/dma-imx-sdma.h
+index 3a39428..14ca582 100644
+--- a/include/linux/platform_data/dma-imx-sdma.h
++++ b/include/linux/platform_data/dma-imx-sdma.h
+@@ -43,6 +43,9 @@ struct sdma_script_start_addrs {
+ 	s32 dptc_dvfs_addr;
+ 	s32 utra_addr;
+ 	s32 ram_code_start_addr;
++	s32 mcu_2_ssish_addr;
++	s32 ssish_2_mcu_addr;
++	s32 hdmi_dma_addr;
+ };
+ 
+ /**
 -- 
 1.8.4
