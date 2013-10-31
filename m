@@ -1,23 +1,37 @@
-Return-Path: <sudeep.karkadanagesha@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 762102C03BD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 21:32:39 +1100 (EST)
-Message-ID: <527231DA.9060002@arm.com>
-Date: Thu, 31 Oct 2013 10:32:58 +0000
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] of: move definition of of_find_next_cache_node into
- common code.
-References: <1379501585-12532-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>	
- <1379501585-12532-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1383196834.28909.7.camel@pasglop>
-In-Reply-To: <1383196834.28909.7.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>
+Return-Path: <m.chehab@samsung.com>
+Received: from usmailout4.samsung.com (mailout4.w2.samsung.com
+ [211.189.100.14]) by ozlabs.org (Postfix) with ESMTP id E84A32C0376
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 22:56:57 +1100 (EST)
+Received: from uscpsbgm2.samsung.com
+ (u115.gpu85.samsung.co.kr [203.254.195.115]) by usmailout4.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0MVJ00I647DQ7C10@usmailout4.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 31 Oct 2013 07:46:52 -0400 (EDT)
+Date: Thu, 31 Oct 2013 09:46:40 -0200
+From: Mauro Carvalho Chehab <m.chehab@samsung.com>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Subject: Re: [PATCH 19/51] DMA-API: media: dt3155v4l: replace
+ dma_set_mask()+dma_set_coherent_mask() with new helper
+Message-id: <20131031094640.205840a2@samsung.com>
+In-reply-to: <5249673B.5020705@xs4all.nl>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+ <E1VMm13-0007hO-9l@rmk-PC.arm.linux.org.uk> <5249673B.5020705@xs4all.nl>
+MIME-version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
+ devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org,
+ linux-scsi@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+ b43-dev@lists.infradead.org, Russell King <rmk+kernel@arm.linux.org.uk>,
+ linux-media@vger.kernel.org, devicetree@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-tegra@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-crypto@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +41,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+Hi Russell,
 
-On 31/10/13 05:20, Benjamin Herrenschmidt wrote:
-> On Wed, 2013-09-18 at 11:53 +0100, Sudeep KarkadaNagesha wrote:
->> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>
->> Since the definition of_find_next_cache_node is architecture independent=
-,
->> the existing definition in powerpc can be moved to driver/of/base.c
->>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Grant Likely <grant.likely@linaro.org>
->> Cc: Rob Herring <rob.herring@calxeda.com>
->> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->=20
-> I've seen no follow up on that, I'm happy to stick it in powerpc-next
-> with some other late stuff.
->=20
+Em Mon, 30 Sep 2013 13:57:47 +0200
+Hans Verkuil <hverkuil@xs4all.nl> escreveu:
 
-Thanks for the follow up. Grant wanted to see usage of this outside PPC and=
- I
-pointed him[0] to the RFC[1] I had posted to support cacheinfo on ARM.
+> On 09/19/2013 11:44 PM, Russell King wrote:
+> > Replace the following sequence:
+> > 
+> > 	dma_set_mask(dev, mask);
+> > 	dma_set_coherent_mask(dev, mask);
+> > 
+> > with a call to the new helper dma_set_mask_and_coherent().
+> > 
+> > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> 
+> Acked-by: Hans Verkuil <hans.verkuil@cisco.com>
 
-These patches are based on v3.12-rc1, let me know if you want me to
-rebase/repost on any particular version.
+Somehow, I lost your original post (I got unsubscribed on a few days 
+from all vger mailing lists at the end of september).
 
-Regards,
-Sudeep
+I suspect that you want to sent this via your tree, right?
+If so:
 
-[0] http://www.spinics.net/lists/devicetree/msg05174.html
-[1] https://lkml.org/lkml/2013/9/18/340
+Acked-by: Mauro Carvalho Chehab <m.chehab@samsung.com>
+
+> 
+> Regards,
+> 
+> 	Hans
+> 
+> > ---
+> >  drivers/staging/media/dt3155v4l/dt3155v4l.c |    5 +----
+> >  1 files changed, 1 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/drivers/staging/media/dt3155v4l/dt3155v4l.c b/drivers/staging/media/dt3155v4l/dt3155v4l.c
+> > index 90d6ac4..081407b 100644
+> > --- a/drivers/staging/media/dt3155v4l/dt3155v4l.c
+> > +++ b/drivers/staging/media/dt3155v4l/dt3155v4l.c
+> > @@ -901,10 +901,7 @@ dt3155_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+> >  	int err;
+> >  	struct dt3155_priv *pd;
+> >  
+> > -	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
+> > -	if (err)
+> > -		return -ENODEV;
+> > -	err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
+> > +	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+> >  	if (err)
+> >  		return -ENODEV;
+> >  	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
+> > 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+-- 
+
+Cheers,
+Mauro
