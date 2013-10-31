@@ -1,26 +1,19 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2CD912C0370
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 05:37:32 +1100 (EST)
-Date: Thu, 31 Oct 2013 11:36:44 -0700
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <b42378@freescale.com>
-Message-ID: <20131031183644.GJ2493@sirena.org.uk>
-References: <cover.1383226444.git.b42378@freescale.com>
- <dda0bc1221f053405da616192577228c51821040.1383226444.git.b42378@freescale.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="3qYtBtpdm1/OJWPn"
-In-Reply-To: <dda0bc1221f053405da616192577228c51821040.1383226444.git.b42378@freescale.com>
-Subject: Re: [PATCH v4 3/4] ASoC: fsl_ssi: Add dual fifo mode support
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- s.hauer@pengutronix.de, swarren@wwwdotorg.org, timur@tabi.org,
- rob.herring@calxeda.com, linux-kernel@vger.kernel.org,
- ijc+devicetree@hellion.org.uk, dmaengine@vger.kernel.org, shawn.guo@linaro.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <tommusta@gmail.com>
+Received: from mail-ob0-x22e.google.com (mail-ob0-x22e.google.com
+ [IPv6:2607:f8b0:4003:c01::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6222B2C0185
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 05:39:35 +1100 (EST)
+Received: by mail-ob0-f174.google.com with SMTP id vb8so3449693obc.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 11:39:30 -0700 (PDT)
+From: Tom <tommusta@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [V2 PATCH 0/3] powerpc: Fix Little Endian Bugs in Single Step Code
+Date: Thu, 31 Oct 2013 13:38:55 -0500
+Message-Id: <1383244738-5986-1-git-send-email-tommusta@gmail.com>
+Cc: Tom Musta <tommusta@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Tom Musta <tommusta@gmail.com>
 
---3qYtBtpdm1/OJWPn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch series addresses bugs in the PowerPC single-step emulation
+code (arch/powerpc/lib/sstep.c) pertaining to Little Endian.
 
-On Thu, Oct 31, 2013 at 09:44:15PM +0800, Nicolin Chen wrote:
-> By enabling dual fifo mode, it would allow SSI enter a better performance
-> to transimit/receive data without occasional hardware underrun/overrun.
->=20
-> [ Passed compile-test with mpc85xx_defconfig ]
+The existing code has a chicken switch for little endian.  The first
+patch softens the restriction so that only cross-endian modes are not
+supported.
 
-Acked-by: Mark Brown <broonie@linaro.org>
+There is a general problem with unaligned little endian loads and stores.
+This is addressed by the second patch.
 
---3qYtBtpdm1/OJWPn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Finally, there is a problem with unaligned single precision floating point
+loads and stores which is addressed by the third patch.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+V2: fixed bug in MSR[LE] check identified by Andreas Schwab and
+Geert Uytterhoeven.
 
-iQIcBAEBAgAGBQJScqM0AAoJELSic+t+oim979EP/ieHTZ0VT5K4I6Ckrka4bOI6
-aBBG8IVjrZVySOgn2G46HDEo9xG9Qr2X1+BDS79mlEG1oFliMgRgLdPsSENSiWUx
-qg6goC+kS6pqTR+kHykwS9JRRiwpIK23gsXDsQOx0OVk5vdeqYVlgD9fTAgt/Dd7
-3dmKpzpuQzxLDrNPiU2VYBZd7rcRwU1uJXfUZ6TqE+4YKWyW0faEaQ/BNzgOS0BC
-pqeirRELxXT6ek5G3I5Xms1iVLneJqKh11leOkfCQvu3+M8TNLt1d10GWE9zbcx9
-A1kDmOkDVFPNW+igunUhEuBgBBZbdSQzTV2ObiaNvd23zs0HN/tyBAD6gGgYi4yj
-3f9ZOSvAc6kzW/by1Ey6L1BHbgTAYMNwB5G6s/JJPMF3qhnL92ntschYtWMAIJvZ
-Xgn3OxXCRVm7LbAWEmh6VomqYTdQGEdWkZAESAoyqh0sZsM5Sg00fStbKS6kmItr
-1W1SsaBPr8G/s/qV4MAGTrJzIU9hQcMLpfLBg8YkB1AZNn3dqKfOWfms+EFOwH95
-3NDjKl8FqBVFUy18RFLmdM2wr2LxdrGTPfvZRK7j+nKjne4e/sa3KwUDce68+Ocj
-AVgJgc5L03hIuWVlB2Brrax7IRV0G1xh/iGwTTJg/dv+On40ASAZCgeq5t7LJ5sp
-UC3BOQJUTqs38rWNSZKO
-=76y0
------END PGP SIGNATURE-----
+Tom Musta (3):
+  powerpc: Enable emulate_step In Little Endian Mode
+  powerpc: Fix Unaligned Fixed Point Loads and Stores
+  powerpc: Fix Unaligned LE Floating Point Loads and Stores
 
---3qYtBtpdm1/OJWPn--
+ arch/powerpc/lib/sstep.c |  109 +++++++++++++++++++++++++++++++++++++++------
+ 1 files changed, 94 insertions(+), 15 deletions(-)
