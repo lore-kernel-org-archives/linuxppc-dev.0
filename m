@@ -1,28 +1,24 @@
 Return-Path: <B42378@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D1CA32C039B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 19:06:43 +1100 (EST)
-Date: Thu, 31 Oct 2013 15:44:37 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 6552A2C03C0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 19:22:45 +1100 (EST)
 From: Nicolin Chen <b42378@freescale.com>
-To: Philippe =?iso-8859-1?Q?R=E9tornaz?= <philippe.retornaz@gmail.com>
-Subject: Re: [PATCH v2 3/4] ASoC: fsl_ssi: Add dual fifo mode support
-Message-ID: <20131031074436.GG9605@MrMyself>
-References: <cover.1383197521.git.b42378@freescale.com>
- <0e947536358af7bd6e179559006a3526801a1abe.1383197521.git.b42378@freescale.com>
- <52720CA4.3090003@gmail.com>
+To: <s.hauer@pengutronix.de>, <timur@tabi.org>, <shawn.guo@linaro.org>,
+ <broonie@kernel.org>
+Subject: [PATCH v3 0/4] Add dual-fifo mode support of i.MX ssi
+Date: Thu, 31 Oct 2013 16:22:37 +0800
+Message-ID: <cover.1383207153.git.b42378@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-In-Reply-To: <52720CA4.3090003@gmail.com>
+Content-Type: text/plain
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
  alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- s.hauer@pengutronix.de, swarren@wwwdotorg.org, timur@tabi.org,
- rob.herring@calxeda.com, linux-kernel@vger.kernel.org, broonie@kernel.org,
- galak@codeaurora.org, dmaengine@vger.kernel.org, ijc+devicetree@hellion.org.uk,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
+ swarren@wwwdotorg.org, linux-kernel@vger.kernel.org, rob.herring@calxeda.com,
+ philippe.retornaz@gmail.com, galak@codeaurora.org, dmaengine@vger.kernel.org,
+ ijc+devicetree@hellion.org.uk, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,32 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, Philippe
+Changelog
+v3:
+ * PATCH-1: Add comments to indicate the end of v1 and v2 array.
+ * PATCH-3: Use better way to keep watermark as even number.
+ *
+ * Nothing changes for PATCH-2 and PATCH-4
+v2:
+ * Instead of adding rogue scripts to current SDMA driver based on firmware
+ * V1, we define the new SDMA firmware as version 2 and bisect the PATCH-1
+ * to two patches: The first is to add version check code to the SDMA driver;
+ * And the second is to add SSI dual FIFO DMATYPE.
+ *
+ * Nothing changes for the last two patches.
+v1:
+ * SSI can reduce hardware overrun/underrun possibility when using dual
+ * fifo mode. To support this mode, we need to first update sdma sciprt
+ * list, and then enable dual fifo BIT in SSI driver, and last update DT
+ * bindings of i.MX series.
+ *
+ * ! This series of patches has a direct dependency between them. When
+ * ! applying them, we need to apply to one single branch. Otherwise,
+ * ! it would break currect branches.
+Nicolin Chen (4):
+  dma: imx-sdma: Add sdma firmware version 2 support
+  dma: imx-sdma: Add new dma type for ssi dual fifo script
+  ASoC: fsl_ssi: Add dual fifo mode support
+  ARM: dts: imx: use dual-fifo sdma script for ssi
 
-On Thu, Oct 31, 2013 at 08:54:12AM +0100, Philippe R=E9tornaz wrote:
-> Hi
->=20
-> >
-> >+			/* When using dual fifo mode, we need to keep watermark
-> >+			 * as even numbers due to dma script limitation.
-> >+			 */
-> >+			ssi_private->dma_params_tx.maxburst /=3D 2;
-> >+			ssi_private->dma_params_tx.maxburst *=3D 2;
-> >+			ssi_private->dma_params_rx.maxburst /=3D 2;
-> >+			ssi_private->dma_params_rx.maxburst *=3D 2;
-> >
->=20
-> Why not using a mask here ?
-> ssi_private->dma_params_tx.maxburst &=3D ~0x1;
-> ssi_private->dma_params_rx.maxburst &=3D ~0x1;
+ .../devicetree/bindings/dma/fsl-imx-sdma.txt       |  1 +
+ arch/arm/boot/dts/imx51.dtsi                       |  4 ++--
+ arch/arm/boot/dts/imx53.dtsi                       |  4 ++--
+ arch/arm/boot/dts/imx6qdl.dtsi                     | 12 ++++++------
+ arch/arm/boot/dts/imx6sl.dtsi                      | 12 ++++++------
+ drivers/dma/imx-sdma.c                             | 19 ++++++++++++++++++-
+ include/linux/platform_data/dma-imx-sdma.h         |  5 +++++
+ include/linux/platform_data/dma-imx.h              |  1 +
+ sound/soc/fsl/fsl_ssi.c                            | 22 +++++++++++++++++++++-
+ 9 files changed, 62 insertions(+), 18 deletions(-)
 
-I'll use this in v3. Thank you!
-
-Nicolin Chen
-
->=20
-> Regards,
->=20
-> Philippe
->=20
->=20
+-- 
+1.8.4
