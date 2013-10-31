@@ -1,33 +1,26 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6433B2C03BF
- for <linuxppc-dev@ozlabs.org>; Fri,  1 Nov 2013 02:20:08 +1100 (EST)
-Date: Thu, 31 Oct 2013 16:19:55 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131031151955.GY19466@laptop.lan>
-References: <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
- <20131028132634.GO19466@laptop.lan>
- <20131028163418.GD4126@linux.vnet.ibm.com>
- <20131028201735.GA15629@redhat.com>
- <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
- <20131030092725.GL4126@linux.vnet.ibm.com>
- <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
- <20131031043258.GQ4126@linux.vnet.ibm.com>
- <20131031090457.GU19466@laptop.lan>
- <20131031150756.GB4067@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 2CD912C0370
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 05:37:32 +1100 (EST)
+Date: Thu, 31 Oct 2013 11:36:44 -0700
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <b42378@freescale.com>
+Message-ID: <20131031183644.GJ2493@sirena.org.uk>
+References: <cover.1383226444.git.b42378@freescale.com>
+ <dda0bc1221f053405da616192577228c51821040.1383226444.git.b42378@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131031150756.GB4067@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="3qYtBtpdm1/OJWPn"
+In-Reply-To: <dda0bc1221f053405da616192577228c51821040.1383226444.git.b42378@freescale.com>
+Subject: Re: [PATCH v4 3/4] ASoC: fsl_ssi: Add dual fifo mode support
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
+ s.hauer@pengutronix.de, swarren@wwwdotorg.org, timur@tabi.org,
+ rob.herring@calxeda.com, linux-kernel@vger.kernel.org,
+ ijc+devicetree@hellion.org.uk, dmaengine@vger.kernel.org, shawn.guo@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,58 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 31, 2013 at 08:07:56AM -0700, Paul E. McKenney wrote:
-> On Thu, Oct 31, 2013 at 10:04:57AM +0100, Peter Zijlstra wrote:
-> > On Wed, Oct 30, 2013 at 09:32:58PM -0700, Paul E. McKenney wrote:
-> > > Before C/C++11, the closest thing to such a prohibition is use of
-> > > volatile, for example, ACCESS_ONCE().  Even in C/C++11, you have to
-> > > use atomics to get anything resembing this prohibition.
-> > > 
-> > > If you just use normal variables, the compiler is within its rights
-> > > to transform something like the following:
-> > > 
-> > > 	if (a)
-> > > 		b = 1;
-> > > 	else
-> > > 		b = 42;
-> > > 
-> > > Into:
-> > > 
-> > > 	b = 42;
-> > > 	if (a)
-> > > 		b = 1;
-> > > 
-> > > Many other similar transformations are permitted.  Some are used to all
-> > > vector instructions to be used -- the compiler can do a write with an
-> > > overly wide vector instruction, then clean up the clobbered variables
-> > > later, if it wishes.  Again, if the variables are not marked volatile,
-> > > or, in C/C++11, atomic.
-> > 
-> > While I've heard you tell this story before, my mind keeps boggling how
-> > we've been able to use shared memory at all, all these years.
-> > 
-> > It seems to me stuff should have broken left, right and center if
-> > compilers were really aggressive about this.
-> 
-> Sometimes having stupid compilers is a good thing.  But they really are
-> getting more aggressive.
 
-But surely we cannot go mark all data structures lodged in shared memory
-as volatile, that's insane.
+--3qYtBtpdm1/OJWPn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm sure you're quite worried about this as well. Suppose we have:
+On Thu, Oct 31, 2013 at 09:44:15PM +0800, Nicolin Chen wrote:
+> By enabling dual fifo mode, it would allow SSI enter a better performance
+> to transimit/receive data without occasional hardware underrun/overrun.
+>=20
+> [ Passed compile-test with mpc85xx_defconfig ]
 
-struct foo {
-	unsigned long value;
-	void *ptr;
-	unsigned long value1;
-};
+Acked-by: Mark Brown <broonie@linaro.org>
 
-And our ptr member is RCU managed. Then while the assignment using:
-rcu_assign_ptr() will use the volatile cast, what stops the compiler
-from wrecking ptr while writing either of the value* members and
-'fixing' her up after?
+--3qYtBtpdm1/OJWPn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-This is a completely untenable position.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-How do the C/C++ people propose to deal with this?
+iQIcBAEBAgAGBQJScqM0AAoJELSic+t+oim979EP/ieHTZ0VT5K4I6Ckrka4bOI6
+aBBG8IVjrZVySOgn2G46HDEo9xG9Qr2X1+BDS79mlEG1oFliMgRgLdPsSENSiWUx
+qg6goC+kS6pqTR+kHykwS9JRRiwpIK23gsXDsQOx0OVk5vdeqYVlgD9fTAgt/Dd7
+3dmKpzpuQzxLDrNPiU2VYBZd7rcRwU1uJXfUZ6TqE+4YKWyW0faEaQ/BNzgOS0BC
+pqeirRELxXT6ek5G3I5Xms1iVLneJqKh11leOkfCQvu3+M8TNLt1d10GWE9zbcx9
+A1kDmOkDVFPNW+igunUhEuBgBBZbdSQzTV2ObiaNvd23zs0HN/tyBAD6gGgYi4yj
+3f9ZOSvAc6kzW/by1Ey6L1BHbgTAYMNwB5G6s/JJPMF3qhnL92ntschYtWMAIJvZ
+Xgn3OxXCRVm7LbAWEmh6VomqYTdQGEdWkZAESAoyqh0sZsM5Sg00fStbKS6kmItr
+1W1SsaBPr8G/s/qV4MAGTrJzIU9hQcMLpfLBg8YkB1AZNn3dqKfOWfms+EFOwH95
+3NDjKl8FqBVFUy18RFLmdM2wr2LxdrGTPfvZRK7j+nKjne4e/sa3KwUDce68+Ocj
+AVgJgc5L03hIuWVlB2Brrax7IRV0G1xh/iGwTTJg/dv+On40ASAZCgeq5t7LJ5sp
+UC3BOQJUTqs38rWNSZKO
+=76y0
+-----END PGP SIGNATURE-----
+
+--3qYtBtpdm1/OJWPn--
