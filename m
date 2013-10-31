@@ -1,20 +1,22 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6A5F92C03B1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 09:12:15 +1100 (EST)
-Date: Wed, 30 Oct 2013 23:12:10 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Brian Norris <computersforpeace@gmail.com>
-Subject: Re: [PATCH v2] powerpc/mpc512x: remove unnecessary #if
-Message-ID: <20131030231210.32778fbe@crub>
-In-Reply-To: <1381513058-14164-1-git-send-email-computersforpeace@gmail.com>
-References: <1381512777-13966-1-git-send-email-computersforpeace@gmail.com>
- <1381513058-14164-1-git-send-email-computersforpeace@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 8C1902C03BD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 12:37:25 +1100 (EST)
+Message-ID: <1383183427.5117.73.camel@pasglop>
+Subject: Re: [PATCH] ADB_PMU_LED_IDE selects LEDS_TRIGGER_IDE_DISK which has
+ unmet direct dependencies
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christian Kujau <lists@nerdbynature.de>
+Date: Thu, 31 Oct 2013 12:37:07 +1100
+In-Reply-To: <alpine.DEB.2.11.1310292123190.31521@trent.utfs.org>
+References: <alpine.DEB.2.11.1310280031020.31521@trent.utfs.org>
+ <1383088392.5117.38.camel@pasglop>
+ <alpine.DEB.2.11.1310292123190.31521@trent.utfs.org>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 11 Oct 2013 10:37:38 -0700
-Brian Norris <computersforpeace@gmail.com> wrote:
+On Tue, 2013-10-29 at 21:25 -0700, Christian Kujau wrote:
+> On Wed, 30 Oct 2013 at 10:13, Benjamin Herrenschmidt wrote:
+> > You probably want to do that to the ADB_PMU_LED_IDE entry not the
+> > ADB_PMU_LED one which doesn't have a dependency and isn't the one
+> > selecting LEDS_TRIGGER_IDE_DISK :-)
+> 
+> Right you are, sorry for the mixup. Let me try again:
 
-> Several functions are only ever referenced locally, so make them static.
-> Of those functions, many of them are protected by an #if. However, the
-> code which can compile fine in either case.
-> 
-> Now that (1) the unneeded code is marked 'static' and (2) the code is
-> only used under a C 'if (IS_ENABLED(CONFIG_FB_FSL_DIU))', the compiler
-> can automatically remove the unneeded code, and we don't need the #if or
-> the empty stub functions.
-> 
-> Signed-off-by: Brian Norris <computersforpeace@gmail.com>
-> ---
-> v2: left out a diff I was holding locally (to remove an #if/#endif
->     completely). Sorry for the noise.
-> 
-> Based off of Gerhard Sittig's patch:
->   powerpc/mpc512x: silence build warning upon disabled DIU
-> 
-> Compile-tested with CONFIG_FB_FSL_DIU=n
-> 
->  arch/powerpc/platforms/512x/mpc512x_shared.c | 21 +++++++--------------
->  arch/powerpc/sysdev/fsl_soc.h                |  3 ---
->  2 files changed, 7 insertions(+), 17 deletions(-)
+And this time without a changeset comment ? :-)
 
-Applied, thanks!
+I've copied it from the previous version but next time, re-send the
+complete commit.
 
-Anatolij
+Cheers,
+Ben.
+
+> 
+>   Signed-off-by: Christian Kujau <lists@nerdbynature.de>
+> 
+> diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+> index 696238b..d26a312 100644
+> --- a/drivers/macintosh/Kconfig
+> +++ b/drivers/macintosh/Kconfig
+> @@ -103,6 +103,7 @@ config ADB_PMU_LED_IDE
+>         bool "Use front LED as IDE LED by default"
+>         depends on ADB_PMU_LED
+>         depends on LEDS_CLASS
+> +       depends on IDE_GD_ATA
+>         select LEDS_TRIGGERS
+>         select LEDS_TRIGGER_IDE_DISK
+>         help
+> 
+> C.
+> -- 
+> BOFH excuse #378:
+> 
+> Operators killed by year 2000 bug bite.
