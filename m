@@ -1,21 +1,39 @@
-Return-Path: <thomas@net.t-labs.tu-berlin.de>
-Received: from mail.net.t-labs.tu-berlin.de (mail.net.t-labs.tu-berlin.de
- [IPv6:2001:470:96b9:4:130:149:220:252])
- by ozlabs.org (Postfix) with ESMTP id 209C32C0376
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 22:51:11 +1100 (EST)
-Content-Type: multipart/alternative;
- boundary="Apple-Mail=_F17B7A92-4BE5-428B-A876-03148DDAC996"
-Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1816\))
-Subject: Re: Gianfar driver crashes in Kernel v3.10
-From: =?iso-8859-1?Q?Thomas_H=FChn?= <thomas@net.t-labs.tu-berlin.de>
-In-Reply-To: <525E3BD7.1020208@freescale.com>
-Date: Thu, 31 Oct 2013 12:51:03 +0100
-Message-Id: <05E1EDFE-EDFB-4E6F-AA83-D353B4032CA5@net.t-labs.tu-berlin.de>
-References: <90BE8C5D-E23B-41B5-BB52-8A0C0758931D@net.t-labs.tu-berlin.de>
- <760FFC38-597B-46CB-BA4C-620A1D663C8A@net.t-labs.tu-berlin.de>
- <525E3BD7.1020208@freescale.com>
-To: "claudiu.manoil@freescale.com" <claudiu.manoil@freescale.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B42378@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5E33A2C035A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2013 23:29:01 +1100 (EST)
+From: Chen Guangyu-B42378 <B42378@freescale.com>
+To: Timur Tabi <timur@tabi.org>
+Subject: Re: [PATCH v3 3/4] ASoC: fsl_ssi: Add dual fifo mode support
+Date: Thu, 31 Oct 2013 12:28:49 +0000
+Message-ID: <oxq6yw1a1g6ccnd85o4ral9y.1383222536476@email.android.com>
+References: <cover.1383207153.git.b42378@freescale.com>
+ <da997ce67d9817364248ca1eba716bb6c7814a24.1383207153.git.b42378@freescale.com>,
+ <5272474D.5000207@tabi.org>
+In-Reply-To: <5272474D.5000207@tabi.org>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "philippe.retornaz@gmail.com" <philippe.retornaz@gmail.com>,
+ "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ "galak@codeaurora.org" <galak@codeaurora.org>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +43,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Thank you for the comments.
+I'll refine this part.
 
---Apple-Mail=_F17B7A92-4BE5-428B-A876-03148DDAC996
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=iso-8859-1
+Sent by Android device.
 
-Hi Claudiu,
-
-
-> Please try the following patch:
-> http://patchwork.ozlabs.org/patch/283235/
->=20
-> It should help with your issue.
->=20
-
-Several OpenWrt users including myself have tested your patch on =
-TPLink-4900 routers.
-We do have positive feedback, as no crash nor system freeze was reported =
-for different=20
-network loads and router setups.=20
-All different scenarios / details and two digit uptimes are in this =
-forum thread:
-https://forum.openwrt.org/viewtopic.php?id=3D42062&p=3D13
-
-Thanks again for your work and  I hope to see this patch merged =
-upstream.
-
-Greetings Thomas
+Timur Tabi <timur@tabi.org> wrote:
 
 
---Apple-Mail=_F17B7A92-4BE5-428B-A876-03148DDAC996
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=iso-8859-1
+Nicolin Chen wrote:
+> +     if (ssi_private->use_dual_fifo) {
+> +             write_ssi_mask(&ssi->srcr, 0, CCSR_SSI_SRCR_RFEN1);
+> +             write_ssi_mask(&ssi->stcr, 0, CCSR_SSI_STCR_TFEN1);
+> +             write_ssi_mask(&ssi->scr, 0, CCSR_SSI_SCR_TCH_EN);
+> +     } else {
+> +             write_ssi_mask(&ssi->srcr, CCSR_SSI_SRCR_RFEN1, 0);
+> +             write_ssi_mask(&ssi->stcr, CCSR_SSI_STCR_TFEN1, 0);
+> +             write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_TCH_EN, 0);
+> +     }
 
-<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html =
-charset=3Diso-8859-1"></head><body style=3D"word-wrap: break-word; =
--webkit-nbsp-mode: space; -webkit-line-break: =
-after-white-space;"><div><div style=3D"font-size: 14px; font-style: =
-normal; font-variant: normal; font-weight: normal; letter-spacing: =
-normal; line-height: normal; orphans: auto; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; widows: =
-auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;"><font =
-color=3D"#000000">Hi =
-Claudiu,</font><br></div><div><br></div><br><blockquote type=3D"cite"><div=
- style=3D"font-size: 14px; font-style: normal; font-variant: normal; =
-font-weight: normal; letter-spacing: normal; line-height: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-stroke-width: 0px;">Please try the following patch:<br><a =
-href=3D"http://patchwork.ozlabs.org/patch/283235/">http://patchwork.ozlabs=
-.org/patch/283235/</a><br><br>It should help with your =
-issue.<br><br></div></blockquote><div><br></div><div>Several OpenWrt =
-users including myself have tested your patch on TPLink-4900 =
-routers.</div><div>We do have positive feedback, as no crash nor system =
-freeze was reported for different&nbsp;</div><div>network loads and =
-router setups.&nbsp;</div><div>All different scenarios / details and two =
-digit uptimes are in this forum thread:</div><div><a =
-href=3D"https://forum.openwrt.org/viewtopic.php?id=3D42062&amp;p=3D13">htt=
-ps://forum.openwrt.org/viewtopic.php?id=3D42062&amp;p=3D13</a></div><div><=
-br></div><div>Thanks again for your work and &nbsp;I hope to see this =
-patch merged upstream.</div><div><br></div><div>Greetings =
-Thomas</div><div><br></div></div></body></html>=
+Why do you need the "else" part?  Why can't you just do this:
 
---Apple-Mail=_F17B7A92-4BE5-428B-A876-03148DDAC996--
+if (ssi_private->use_dual_fifo) {
+        write_ssi_mask(&ssi->srcr, 0, CCSR_SSI_SRCR_RFEN1);
+        write_ssi_mask(&ssi->stcr, 0, CCSR_SSI_STCR_TFEN1);
+        write_ssi_mask(&ssi->scr, 0, CCSR_SSI_SCR_TCH_EN);
+}
