@@ -1,17 +1,20 @@
 Return-Path: <B42378@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 039852C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 00:44:36 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 2C9CA2C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 00:44:39 +1100 (EST)
 From: Nicolin Chen <b42378@freescale.com>
 To: <timur@tabi.org>, <shawn.guo@linaro.org>, <broonie@kernel.org>,
  <s.hauer@pengutronix.de>
-Subject: [PATCH v4 0/4] Add dual-fifo mode support of i.MX ssi
-Date: Thu, 31 Oct 2013 21:44:12 +0800
-Message-ID: <cover.1383226444.git.b42378@freescale.com>
+Subject: [PATCH v4 2/4] dma: imx-sdma: Add new dma type for ssi dual fifo
+ script
+Date: Thu, 31 Oct 2013 21:44:14 +0800
+Message-ID: <cc3826390838f98455647eb47338e0fbf4be57b2.1383226444.git.b42378@freescale.com>
+In-Reply-To: <cover.1383226444.git.b42378@freescale.com>
+References: <cover.1383226444.git.b42378@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
@@ -28,49 +31,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changelog
-v4:
- * PATCH-3: Drop useless register configuration.
- *
- * Nothing changes for the other three patches
-v3:
- * PATCH-1: Add comments to indicate the end of v1 and v2 array.
- * PATCH-3: Use better way to keep watermark as even number.
- *
- * Nothing changes for PATCH-2 and PATCH-4
-v2:
- * Instead of adding rogue scripts to current SDMA driver based on firmware
- * V1, we define the new SDMA firmware as version 2 and bisect the PATCH-1
- * to two patches: The first is to add version check code to the SDMA driver;
- * And the second is to add SSI dual FIFO DMATYPE.
- *
- * Nothing changes for the last two patches.
-v1:
- * SSI can reduce hardware overrun/underrun possibility when using dual
- * fifo mode. To support this mode, we need to first update sdma sciprt
- * list, and then enable dual fifo BIT in SSI driver, and last update DT
- * bindings of i.MX series.
- *
- * ! This series of patches has a direct dependency between them. When
- * ! applying them, we need to apply to one single branch. Otherwise,
- * ! it would break currect branches.
+This patch adds a new DMA_TYPE for SSI dual FIFO script, included
+in SDMA firmware version 2. This script would allow SSI use dual
+fifo mode to transimit/receive data without occasional hardware
+underrun/overrun.
 
-Nicolin Chen (4):
-  dma: imx-sdma: Add sdma firmware version 2 support
-  dma: imx-sdma: Add new dma type for ssi dual fifo script
-  ASoC: fsl_ssi: Add dual fifo mode support
-  ARM: dts: imx: use dual-fifo sdma script for ssi
+Signed-off-by: Nicolin Chen <b42378@freescale.com>
+---
+ Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt | 1 +
+ drivers/dma/imx-sdma.c                                 | 4 ++++
+ include/linux/platform_data/dma-imx.h                  | 1 +
+ 3 files changed, 6 insertions(+)
 
- .../devicetree/bindings/dma/fsl-imx-sdma.txt          |  1 +
- arch/arm/boot/dts/imx51.dtsi                          |  4 ++--
- arch/arm/boot/dts/imx53.dtsi                          |  4 ++--
- arch/arm/boot/dts/imx6qdl.dtsi                        | 12 ++++++------
- arch/arm/boot/dts/imx6sl.dtsi                         | 12 ++++++------
- drivers/dma/imx-sdma.c                                | 19 ++++++++++++++++++-
- include/linux/platform_data/dma-imx-sdma.h            |  5 +++++
- include/linux/platform_data/dma-imx.h                 |  1 +
- sound/soc/fsl/fsl_ssi.c                               | 18 +++++++++++++++++-
- 9 files changed, 58 insertions(+), 18 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt b/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt
+index 4fa814d..68b83ec 100644
+--- a/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt
++++ b/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt
+@@ -42,6 +42,7 @@ The full ID of peripheral types can be found below.
+ 	19	IPU Memory
+ 	20	ASRC
+ 	21	ESAI
++	22	SSI Dual FIFO	(needs firmware ver >= 2)
+ 
+ The third cell specifies the transfer priority as below.
+ 
+diff --git a/drivers/dma/imx-sdma.c b/drivers/dma/imx-sdma.c
+index c7ece8d..efaa9a9 100644
+--- a/drivers/dma/imx-sdma.c
++++ b/drivers/dma/imx-sdma.c
+@@ -725,6 +725,10 @@ static void sdma_get_pc(struct sdma_channel *sdmac,
+ 		per_2_emi = sdma->script_addrs->app_2_mcu_addr;
+ 		emi_2_per = sdma->script_addrs->mcu_2_app_addr;
+ 		break;
++	case IMX_DMATYPE_SSI_DUAL:
++		per_2_emi = sdma->script_addrs->ssish_2_mcu_addr;
++		emi_2_per = sdma->script_addrs->mcu_2_ssish_addr;
++		break;
+ 	case IMX_DMATYPE_SSI_SP:
+ 	case IMX_DMATYPE_MMC:
+ 	case IMX_DMATYPE_SDHC:
+diff --git a/include/linux/platform_data/dma-imx.h b/include/linux/platform_data/dma-imx.h
+index beac6b8..bcbc6c3 100644
+--- a/include/linux/platform_data/dma-imx.h
++++ b/include/linux/platform_data/dma-imx.h
+@@ -39,6 +39,7 @@ enum sdma_peripheral_type {
+ 	IMX_DMATYPE_IPU_MEMORY,	/* IPU Memory */
+ 	IMX_DMATYPE_ASRC,	/* ASRC */
+ 	IMX_DMATYPE_ESAI,	/* ESAI */
++	IMX_DMATYPE_SSI_DUAL,	/* SSI Dual FIFO */
+ };
+ 
+ enum imx_dma_prio {
 -- 
 1.8.4
