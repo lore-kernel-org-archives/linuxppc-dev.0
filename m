@@ -1,33 +1,39 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D750A2C0090
- for <linuxppc-dev@ozlabs.org>; Sat,  2 Nov 2013 03:18:30 +1100 (EST)
-Date: Fri, 1 Nov 2013 17:18:19 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131101161819.GV16117@laptop.programming.kicks-ass.net>
-References: <20131025173749.GG19466@laptop.lan>
- <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 699002C00BC
+ for <linuxppc-dev@ozlabs.org>; Sat,  2 Nov 2013 03:27:30 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 22066-01 for <linuxppc-dev@ozlabs.org>;
+ Fri,  1 Nov 2013 16:27:28 +0000 (GMT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: perf events ring buffer memory barrier on powerpc
+Date: Fri, 1 Nov 2013 16:25:29 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B73D4@saturn3.aculab.com>
+In-Reply-To: <OF3CB471BA.BACC7843-ON42257C16.0055EF23-42257C16.0058875B@il.ibm.com>
+References: <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
  <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
  <20131028132634.GO19466@laptop.lan>
  <20131028163418.GD4126@linux.vnet.ibm.com>
  <20131028201735.GA15629@redhat.com>
  <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
  <20131030092725.GL4126@linux.vnet.ibm.com>
- <20131030112526.GI16117@laptop.programming.kicks-ass.net>
- <20131031064015.GV4126@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131031064015.GV4126@linux.vnet.ibm.com>
+ <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
+ <20131031043258.GQ4126@linux.vnet.ibm.com>
+ <OFDF23985D.1D949148-ON42257C15.002DEB25-42257C15.0036DF93@il.ibm.com>
+ <20131031152543.GC4067@linux.vnet.ibm.com>
+ <OF3CB471BA.BACC7843-ON42257C16.0055EF23-42257C16.0058875B@il.ibm.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Victor Kaplansky" <VICTORK@il.ibm.com>,
+	<paulmck@linux.vnet.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
  Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>
+ Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,21 +43,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 30, 2013 at 11:40:15PM -0700, Paul E. McKenney wrote:
-> The dependency you are talking about is via the "if" statement?
-> Even C/C++11 is not required to respect control dependencies.
-> 
-> This one is a bit annoying.  The x86 TSO means that you really only
-> need barrier(), ARM (recent ARM, anyway) and Power could use a weaker
-> barrier, and so on -- but smp_mb() emits a full barrier.
-> 
-> Perhaps a new smp_tmb() for TSO semantics, where reads are ordered
-> before reads, writes before writes, and reads before writes, but not
-> writes before reads?  Another approach would be to define a per-arch
-> barrier for this particular case.
+> But "broken" compiler is much wider issue to be deeply discussed in =
+this
+> thread. I'm pretty sure that kernel have tons of very subtle
+> code that actually creates locks and memory ordering. Such code
+> usually just use the "barrier()"  approach to tell gcc not to combine
+> or move memory accesses around it.
 
-Supposing a sane language where we can rely on control flow; would that
-change the story?
+gcc will do unexpected memory accesses for bit fields that are
+adjacent to volatile data.
+In particular it may generate 64bit sized (and aligned) RMW cycles
+when accessing bit fields.
+And yes, this has caused real problems.
 
-I'm afraid I'm now terminally confused between actual proper memory
-model issues and fucked compilers.
+	David
