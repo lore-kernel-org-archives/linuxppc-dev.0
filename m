@@ -1,20 +1,22 @@
-Return-Path: <rafael.j.wysocki@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by ozlabs.org (Postfix) with ESMTP id C89D32C03DB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 03:25:11 +1100 (EST)
-Message-ID: <52728461.2080901@intel.com>
-Date: Thu, 31 Oct 2013 17:25:05 +0100
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Return-Path: <gang.chen@asianux.com>
+Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1C9B42C03EF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 12:29:36 +1100 (EST)
+Message-ID: <527303B4.2030301@asianux.com>
+Date: Fri, 01 Nov 2013 09:28:20 +0800
+From: Chen Gang <gang.chen@asianux.com>
 MIME-Version: 1.0
-To: Chen Gang <gang.chen@asianux.com>,
- srinivas.pandruvada@linux.intel.com, jacob.jun.pan@linux.intel.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 Subject: Re: [Suggestion] drivers: powercap: 'dev_attrs' has already removed
  from 'struct class'
-References: <5271BDFD.2050205@asianux.com>
-In-Reply-To: <5271BDFD.2050205@asianux.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: Greg KH <gregkh@linuxfoundation.org>
+References: <5271BDFD.2050205@asianux.com> <52728461.2080901@intel.com>
+In-Reply-To: <52728461.2080901@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Greg KH <gregkh@linuxfoundation.org>, jacob.jun.pan@linux.intel.com,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ srinivas.pandruvada@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/31/2013 3:18 AM, Chen Gang wrote:
-> Hello Maintainers
->
-> It is removed by "bcc8edb driver core: remove dev_attrs from struct
-> class" in Oct 5 2013. But "75d2364 PowerCap: Add class driver" still
-> use it in Oct 11 2013.
->
-> The related error (for powerpc with allmodconfig):
->
->    CC      drivers/powercap/powercap_sys.o
-> drivers/powercap/powercap_sys.c:484:2: error: unknown field ‘dev_attrs’ specified in initializer
-> drivers/powercap/powercap_sys.c:484:2: warning: initialization from incompatible pointer type [enabled by default]
-> drivers/powercap/powercap_sys.c:484:2: warning: (near initialization for ‘powercap_class.suspend’) [enabled by default]
->
->
-> Please give a check thanks.
+On 11/01/2013 12:25 AM, Rafael J. Wysocki wrote:
+> On 10/31/2013 3:18 AM, Chen Gang wrote:
+>> Hello Maintainers
+>>
+>> It is removed by "bcc8edb driver core: remove dev_attrs from struct
+>> class" in Oct 5 2013. But "75d2364 PowerCap: Add class driver" still
+>> use it in Oct 11 2013.
+>>
+>> The related error (for powerpc with allmodconfig):
+>>
+>>    CC      drivers/powercap/powercap_sys.o
+>> drivers/powercap/powercap_sys.c:484:2: error: unknown field
+>> ï¿½dev_attrsï¿½ specified in initializer
+>> drivers/powercap/powercap_sys.c:484:2: warning: initialization from
+>> incompatible pointer type [enabled by default]
+>> drivers/powercap/powercap_sys.c:484:2: warning: (near initialization
+>> for ï¿½powercap_class.suspendï¿½) [enabled by default]
+>>
+>>
+>> Please give a check thanks.
+> 
+> That should have been fixed in the current linux-next already.
+> 
 
-That should have been fixed in the current linux-next already.
+OK, thanks.
 
-Thanks,
-Rafael
+> Thanks,
+> Rafael
+> 
+> 
+> 
+
+
+-- 
+Chen Gang
