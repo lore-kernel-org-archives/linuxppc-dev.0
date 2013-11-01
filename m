@@ -1,18 +1,18 @@
 Return-Path: <B47053@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A92302C045C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 18:49:13 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B28082C0536
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 18:49:22 +1100 (EST)
 From: Xiubo Li <Li.Xiubo@freescale.com>
 To: <r65073@freescale.com>, <timur@tabi.org>, <lgirdwood@gmail.com>,
  <broonie@kernel.org>
-Subject: [PATCHv2 2/8] ARM: dts: Add Freescale SAI ALSA SoC Digital Audio
- Interface node for VF610.
-Date: Fri, 1 Nov 2013 15:04:49 +0800
-Message-ID: <1383289495-24523-3-git-send-email-Li.Xiubo@freescale.com>
+Subject: [PATCHv2 3/8] ARM: dts: Enables SAI ALSA SoC DAI device for Vybrid
+ VF610 TOWER board.
+Date: Fri, 1 Nov 2013 15:04:50 +0800
+Message-ID: <1383289495-24523-4-git-send-email-Li.Xiubo@freescale.com>
 In-Reply-To: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
 References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
 MIME-Version: 1.0
@@ -22,10 +22,9 @@ Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
  LW@KARO-electronics.de, linux@arm.linux.org.uk, b42378@freescale.com,
  oskar@scara.com, grant.likely@linaro.org, devicetree@vger.kernel.org,
  ian.campbell@citrix.com, pawel.moll@arm.com, swarren@wwwdotorg.org,
- rob.herring@calxeda.com, Jingchang Lu <b35083@freescale.com>,
- linux-arm-kernel@lists.infradead.org, fabio.estevam@freescale.com,
- linux-kernel@vger.kernel.org, rob@landley.net, r64188@freescale.com,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+ rob.herring@calxeda.com, linux-arm-kernel@lists.infradead.org,
+ fabio.estevam@freescale.com, linux-kernel@vger.kernel.org, rob@landley.net,
+ r64188@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,30 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch add the SAI's edma mux Tx and Rx support.
+This patch add and enable SAI device.
 
-Signed-off-by: Jingchang Lu <b35083@freescale.com>
 Signed-off-by: Xiubo Li <Li.Xiubo@freescale.com>
 ---
- arch/arm/boot/dts/vf610.dtsi | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/vf610-twr.dts | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm/boot/dts/vf610.dtsi b/arch/arm/boot/dts/vf610.dtsi
-index 18e3a4c..391f180 100644
---- a/arch/arm/boot/dts/vf610.dtsi
-+++ b/arch/arm/boot/dts/vf610.dtsi
-@@ -151,9 +151,11 @@
- 			sai2: sai@40031000 {
- 				compatible = "fsl,vf610-sai";
- 				reg = <0x40031000 0x1000>;
--				interrupts = <0 86 0x04>;
- 				clocks = <&clks VF610_CLK_SAI2>;
- 				clock-names = "sai";
-+				dma-names = "tx", "rx";
-+				dmas = <&edma0 0 VF610_EDMA_MUXID0_SAI2_TX>,
-+					<&edma0 0 VF610_EDMA_MUXID0_SAI2_RX>;
- 				status = "disabled";
- 			};
+diff --git a/arch/arm/boot/dts/vf610-twr.dts b/arch/arm/boot/dts/vf610-twr.dts
+index 1a58678..e4106dd 100644
+--- a/arch/arm/boot/dts/vf610-twr.dts
++++ b/arch/arm/boot/dts/vf610-twr.dts
+@@ -57,6 +57,12 @@
+ 	status = "okay";
+ };
  
++&sai2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_sai2_1>;
++	status = "okay";
++};
++
+ &uart1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_uart1_1>;
 -- 
 1.8.4
