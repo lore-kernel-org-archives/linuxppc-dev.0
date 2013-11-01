@@ -1,23 +1,23 @@
 Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-lb0-x22f.google.com (mail-lb0-x22f.google.com
- [IPv6:2a00:1450:4010:c04::22f])
+Received: from mail-la0-x233.google.com (mail-la0-x233.google.com
+ [IPv6:2a00:1450:4010:c03::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 83ECA2C041E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 18:16:26 +1100 (EST)
-Received: by mail-lb0-f175.google.com with SMTP id z5so3138330lbh.20
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Nov 2013 00:16:22 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 147ED2C0452
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 18:16:27 +1100 (EST)
+Received: by mail-la0-f51.google.com with SMTP id ea20so3077766lab.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Nov 2013 00:16:24 -0700 (PDT)
 From: Alexander Popov <a13xp0p0v88@gmail.com>
 To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
  Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
  Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
  Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
  devicetree@vger.kernel.org
-Subject: [PATCH RFC v5 3/5] dma: of: Add common xlate function for matching by
- channel id
-Date: Fri,  1 Nov 2013 11:19:32 +0400
-Message-Id: <1383290374-17484-4-git-send-email-a13xp0p0v88@gmail.com>
+Subject: [PATCH RFC v5 4/5] dma: mpc512x: register for device tree channel
+ lookup
+Date: Fri,  1 Nov 2013 11:19:33 +0400
+Message-Id: <1383290374-17484-5-git-send-email-a13xp0p0v88@gmail.com>
 In-Reply-To: <1383290374-17484-1-git-send-email-a13xp0p0v88@gmail.com>
 References: <1383290374-17484-1-git-send-email-a13xp0p0v88@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,102 +29,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Lars-Peter Clausen <lars@metafoo.de>
+From: Gerhard Sittig <gsi@denx.de>
 
-This patch adds a new common OF dma xlate callback function which will match a
-channel by it's id. The binding expects one integer argument which it will use to
-lookup the channel by the id.
+register the controller for device tree based lookup of DMA channels
+(non-fatal for backwards compatibility with older device trees), provide
+the '#dma-cells' property in the shared mpc5121.dtsi file, and introduce
+a bindings document for the MPC512x DMA controller
 
-Unlike of_dma_simple_xlate this function is able to handle a system with
-multiple DMA controllers. When registering the of dma provider with
-of_dma_controller_register a pointer to the dma_device struct which is
-associated with the dt node needs to passed as the data parameter. The filter
-function will use this pointer to match only channels which belong to the
-specified DMA controller.
-
-Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/dma/of-dma.c   | 47 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/of_dma.h |  4 ++++
- 2 files changed, 51 insertions(+)
+ .../devicetree/bindings/dma/mpc512x-dma.txt        | 55 ++++++++++++++++++++++
+ arch/powerpc/boot/dts/mpc5121.dtsi                 |  1 +
+ drivers/dma/mpc512x_dma.c                          | 21 +++++++--
+ 3 files changed, 74 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
 
-diff --git a/drivers/dma/of-dma.c b/drivers/dma/of-dma.c
-index 0b88dd3..aa9c425 100644
---- a/drivers/dma/of-dma.c
-+++ b/drivers/dma/of-dma.c
-@@ -215,3 +215,50 @@ struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_spec,
- 			&dma_spec->args[0]);
- }
- EXPORT_SYMBOL_GPL(of_dma_simple_xlate);
+diff --git a/Documentation/devicetree/bindings/dma/mpc512x-dma.txt b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+new file mode 100644
+index 0000000..a4867d5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+@@ -0,0 +1,55 @@
++* Freescale MPC512x DMA Controller
 +
-+struct of_dma_filter_by_chan_id_args {
-+	struct dma_device *dev;
-+	unsigned int chan_id;
-+};
++The DMA controller in the Freescale MPC512x SoC can move blocks of
++memory contents between memory and peripherals or memory to memory.
 +
-+static bool of_dma_filter_by_chan_id(struct dma_chan *chan, void *params)
-+{
-+	struct of_dma_filter_by_chan_id_args *args = params;
++Refer to the "Generic DMA Controller and DMA request bindings" description
++in the dma.txt file for a more detailled discussion of the binding.  The
++MPC512x DMA engine binding follows the common scheme, but doesn't provide
++support for the optional channels and requests counters (those values are
++derived from the detected hardware features) and has a fixed client
++specifier length of 1 integer cell (the value is the DMA channel, since
++the DMA controller uses a fixed assignment of request lines per channel).
 +
-+	return chan->device == args->dev && chan->chan_id == args->chan_id;
-+}
 +
-+/**
-+ * of_dma_xlate_by_chan_id - Translate dt property to DMA channel by channel id
-+ * @dma_spec:	pointer to DMA specifier as found in the device tree
-+ * @of_dma:	pointer to DMA controller data
-+ *
-+ * This function can be used as the of xlate callback for DMA driver which wants
-+ * to match the channel based on the channel id. When using this xlate function
-+ * the #dma-cells propety of the DMA controller dt node needs to be set to 1.
-+ * The data parameter of of_dma_controller_register must be a pointer to the
-+ * dma_device struct the function should match upon.
-+ *
-+ * Returns pointer to appropriate dma channel on success or NULL on error.
-+ */
-+struct dma_chan *of_dma_xlate_by_chan_id(struct of_phandle_args *dma_spec,
-+					 struct of_dma *ofdma)
-+{
-+	struct of_dma_filter_by_chan_id_args args;
-+	dma_cap_mask_t cap;
++DMA controller node properties:
 +
-+	args.dev = ofdma->of_dma_data;
-+	if (!args.dev)
-+		return NULL;
++Required properties:
++- compatible:		should be "fsl,mpc5121-dma"
++- reg:			address and size of the DMA controller's register set
++- interrupts:		interrupt spec for the DMA controller
 +
-+	if (dma_spec->args_count != 1)
-+		return NULL;
++Optional properties:
++- #dma-cells:		must be <1>, describes the number of integer cells
++			needed to specify the 'dmas' property in client nodes,
++			strongly recommended since common client helper code
++			uses this property
 +
-+	dma_cap_zero(cap);
-+	dma_cap_set(DMA_SLAVE, cap);
++Example:
 +
-+	args.chan_id = dma_spec->args[0];
++	dma0: dma@14000 {
++		compatible = "fsl,mpc5121-dma";
++		reg = <0x14000 0x1800>;
++		interrupts = <65 0x8>;
++		#dma-cells = <1>;
++	};
 +
-+	return dma_request_channel(cap, of_dma_filter_by_chan_id, &args);
-+}
-+EXPORT_SYMBOL_GPL(of_dma_xlate_by_chan_id);
-diff --git a/include/linux/of_dma.h b/include/linux/of_dma.h
-index ae36298..56bc026 100644
---- a/include/linux/of_dma.h
-+++ b/include/linux/of_dma.h
-@@ -41,6 +41,8 @@ extern struct dma_chan *of_dma_request_slave_channel(struct device_node *np,
- 						     const char *name);
- extern struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_spec,
- 		struct of_dma *ofdma);
-+extern struct dma_chan *of_dma_xlate_by_chan_id(struct of_phandle_args *dma_spec,
-+		struct of_dma *ofdma);
- #else
- static inline int of_dma_controller_register(struct device_node *np,
- 		struct dma_chan *(*of_dma_xlate)
-@@ -66,6 +68,8 @@ static inline struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_s
- 	return NULL;
++
++Client node properties:
++
++Required properties:
++- dmas:			list of DMA specifiers, consisting each of a handle
++			for the DMA controller and integer cells to specify
++			the channel used within the DMA controller
++- dma-names:		list of identifier strings for the DMA specifiers,
++			client device driver code uses these strings to
++			have DMA channels looked up at the controller
++
++Example:
++
++	sdhc@1500 {
++		compatible = "fsl,mpc5121-sdhc";
++		/* ... */
++		dmas = <&dma0 30>;
++		dma-names = "rx-tx";
++	};
+diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
+index bd14c00..eb0058f 100644
+--- a/arch/powerpc/boot/dts/mpc5121.dtsi
++++ b/arch/powerpc/boot/dts/mpc5121.dtsi
+@@ -390,6 +390,7 @@
+ 			compatible = "fsl,mpc5121-dma";
+ 			reg = <0x14000 0x1800>;
+ 			interrupts = <65 0x8>;
++			#dma-cells = <1>;
+ 		};
+ 	};
+ 
+diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
+index d2ec42d..9929cdc 100644
+--- a/drivers/dma/mpc512x_dma.c
++++ b/drivers/dma/mpc512x_dma.c
+@@ -48,6 +48,7 @@
+ #include <linux/io.h>
+ #include <linux/slab.h>
+ #include <linux/of_device.h>
++#include <linux/of_dma.h>
+ #include <linux/of_platform.h>
+ 
+ #include <linux/random.h>
+@@ -1013,11 +1014,23 @@ static int mpc_dma_probe(struct platform_device *op)
+ 	/* Register DMA engine */
+ 	dev_set_drvdata(dev, mdma);
+ 	retval = dma_async_device_register(dma);
+-	if (retval) {
+-		devm_free_irq(dev, mdma->irq, mdma);
+-		irq_dispose_mapping(mdma->irq);
++	if (retval)
++		goto out_irq;
++
++	/* register with OF helpers for DMA lookups (nonfatal) */
++	if (dev->of_node) {
++		retval = of_dma_controller_register(dev->of_node,
++						    of_dma_xlate_by_chan_id,
++						    mdma);
++		if (retval)
++			dev_warn(dev, "could not register for OF lookup\n");
+ 	}
+ 
++	return 0;
++
++out_irq:
++	devm_free_irq(dev, mdma->irq, mdma);
++	irq_dispose_mapping(mdma->irq);
+ 	return retval;
  }
  
-+#define of_dma_xlate_by_chan_id NULL
-+
- #endif
+@@ -1026,6 +1039,8 @@ static int mpc_dma_remove(struct platform_device *op)
+ 	struct device *dev = &op->dev;
+ 	struct mpc_dma *mdma = dev_get_drvdata(dev);
  
- #endif /* __LINUX_OF_DMA_H */
++	if (dev->of_node)
++		of_dma_controller_free(dev->of_node);
+ 	dma_async_device_unregister(&mdma->dma);
+ 	devm_free_irq(dev, mdma->irq, mdma);
+ 	irq_dispose_mapping(mdma->irq);
 -- 
 1.7.11.3
