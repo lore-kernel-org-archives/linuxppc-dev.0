@@ -1,50 +1,33 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 88E452C00E9
- for <linuxppc-dev@ozlabs.org>; Fri,  1 Nov 2013 22:15:45 +1100 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Fri, 1 Nov 2013 07:15:41 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 004F338C803B
- for <linuxppc-dev@ozlabs.org>; Fri,  1 Nov 2013 07:15:38 -0400 (EDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rA1BFcAv8520094
- for <linuxppc-dev@ozlabs.org>; Fri, 1 Nov 2013 11:15:38 GMT
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- rA1BISV9009061
- for <linuxppc-dev@ozlabs.org>; Fri, 1 Nov 2013 05:18:29 -0600
-Date: Wed, 30 Oct 2013 23:16:02 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Victor Kaplansky <VICTORK@il.ibm.com>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131031061602.GU4126@linux.vnet.ibm.com>
-References: <20131025173749.GG19466@laptop.lan>
- <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
- <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
- <20131028132634.GO19466@laptop.lan>
- <20131028163418.GD4126@linux.vnet.ibm.com>
- <20131028201735.GA15629@redhat.com>
- <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
- <20131030092725.GL4126@linux.vnet.ibm.com>
- <20131030112526.GI16117@laptop.programming.kicks-ass.net>
- <OFF6C78E48.E477DB1E-ON42257C14.0050F9B3-42257C14.0051AC6D@il.ibm.com>
-MIME-Version: 1.0
+Return-Path: <oskar@scara.com>
+Received: from skyrme.org (skyrme.org [193.175.80.135])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 05EA92C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 21:47:48 +1100 (EST)
+Received: from p5b306e20.dip0.t-ipconnect.de ([91.48.110.32]
+ helo=curry.scara.com)
+ by skyrme.org with esmtpsa (TLS-1.0:DHE_RSA_AES_256_CBC_SHA1:32)
+ (Exim 4.63) (envelope-from <oskar@scara.com>) id 1VcBnk-00058N-60
+ for linuxppc-dev@lists.ozlabs.org; Fri, 01 Nov 2013 10:18:00 +0000
+Date: 1 Nov 2013 10:17:50 +0000
+Message-ID: <20131101101750.GB16492@curry>
+From: "Oskar Schirmer" <oskar@scara.com>
+To: "Xiubo Li" <Li.Xiubo@freescale.com>
+Subject: Re: [PATCHv2 6/8] ASoC: fsl: add SGTL5000 based audio machine driver.
+References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
+ <1383289495-24523-7-git-send-email-Li.Xiubo@freescale.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OFF6C78E48.E477DB1E-ON42257C14.0050F9B3-42257C14.0051AC6D@il.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Frederic Weisbecker <fweisbec@gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+In-Reply-To: <1383289495-24523-7-git-send-email-Li.Xiubo@freescale.com>
+Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
+ linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
+ perex@perex.cz, r65073@freescale.com, LW@KARO-electronics.de,
+ linux@arm.linux.org.uk, b42378@freescale.com, grant.likely@linaro.org,
+ devicetree@vger.kernel.org, ian.campbell@citrix.com, pawel.moll@arm.com,
+ swarren@wwwdotorg.org, rob.herring@calxeda.com, broonie@kernel.org,
+ linux-arm-kernel@lists.infradead.org, fabio.estevam@freescale.com,
+ lgirdwood@gmail.com, linux-kernel@vger.kernel.org, rob@landley.net,
+ r64188@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,30 +37,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 30, 2013 at 04:52:05PM +0200, Victor Kaplansky wrote:
-> Peter Zijlstra <peterz@infradead.org> wrote on 10/30/2013 01:25:26 PM:
-> 
-> > Also, I'm not entirely sure on C, that too seems like a dependency, we
-> > simply cannot read the buffer @tail before we've read the tail itself,
-> > now can we? Similarly we cannot compare tail to head without having the
-> > head read completed.
-> 
-> No, this one we cannot omit, because our problem on consumer side is not
-> with @tail, which is written exclusively by consumer, but with @head.
-> 
-> BTW, it is why you also don't need ACCESS_ONCE() around @tail, but only
-> around
-> @head read.
+Not that it would improve functionality, but:
 
-If you omit the ACCESS_ONCE() calls around @tail, the compiler is within
-its rights to combine adjacent operations and also to invent loads and
-stores, for example, in cases of register pressure.  It is also within
-its rights to do piece-at-a-time loads and stores, which might sound
-unlikely, but which can actually has happened when the compiler figures
-out exactly what is to be stored at compile time, especially on hardware
-that only allows small immediate values.
+On Fri, Nov 01, 2013 at 15:04:53 +0800, Xiubo Li wrote:
+[...]
+> diff --git a/sound/soc/fsl/fsl-sgtl5000-vf610.c b/sound/soc/fsl/fsl-sgtl5000-vf610.c
+> new file mode 100644
+> index 0000000..f535b42
+> --- /dev/null
+> +++ b/sound/soc/fsl/fsl-sgtl5000-vf610.c
+> @@ -0,0 +1,208 @@
+> +/*
+> + * Freeacale ALSA SoC Audio using SGT1500 as codec.
+          ^                             ^   ^
+     "Freescale"                    "SGTL5000"
 
-So the ACCESS_ONCE() calls are not optional, the current contents of
-Documentation/circular-buffers.txt notwithstanding.
-
-							Thanx, Paul
+regards,
+  Oskar
