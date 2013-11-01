@@ -1,20 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 3D6312C0331
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 17:30:23 +1100 (EST)
-Date: Fri, 1 Nov 2013 17:30:03 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Bryan Wu <cooloney@gmail.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: manual merge of the leds tree with the powerpc tree
-Message-Id: <20131101173003.e0c6ce3749c3b6b1dd0c109e@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__1_Nov_2013_17_30_03_+1100_lV_Mhy=AcuA8NU51"
-Cc: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>,
- linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-la0-x233.google.com (mail-la0-x233.google.com
+ [IPv6:2a00:1450:4010:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 094592C03F9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 18:16:23 +1100 (EST)
+Received: by mail-la0-f51.google.com with SMTP id ea20so3077711lab.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Nov 2013 00:16:17 -0700 (PDT)
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
+ Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
+ Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
+ Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ devicetree@vger.kernel.org
+Subject: [PATCH RFC v5 0/5] MPC512x DMA slave s/g support, OF DMA lookup
+Date: Fri,  1 Nov 2013 11:19:29 +0400
+Message-Id: <1383290374-17484-1-git-send-email-a13xp0p0v88@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,72 +26,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__1_Nov_2013_17_30_03_+1100_lV_Mhy=AcuA8NU51
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+03.10.2013 18:00, Alexander Popov <a13xp0p0v88@gmail.com>:
+> v2013/7/14 Gerhard Sittig <gsi@denx.de>:
+>> this series
+>> - introduces slave s/g support (that's support for DMA transfers which
+>>    involve peripherals in contrast to mem-to-mem transfers)
+>> - adds device tree based lookup support for DMA channels
+>> - combines floating patches and related feedback which already covered
+>>    several aspects of what the suggested LPB driver needs, to demonstrate
+>>    how integration might be done
+>> - carries Q&D SD card support to enable another DMA client during test,
+>>    while this patch needs to get dropped upon pickup
+>>
 
-Hi Bryan,
+Changes in v2:
+>> - re-order mpc8308 related code paths for improved readability, no
+>>    change in behaviour, introduction of symbolic channel names here
+>>    already
+>> - squash 'execute() start condition' and 'terminate all' into the
+>>    introduction of 'slave s/g prep' and 'device control' support; refuse
+>>    s/g lists with more than one item since slave support is operational
+>>    yet proper s/g support is missing (can get addressed later)
+>> - always start transfers from software on MPC8308 as there are no
+>>    external request lines for peripheral flow control
+>> - drop dt-bindings header file and symbolic channel names in OF nodes
 
-Today's linux-next merge of the leds tree got a conflict in
-include/linux/of.h between commit a3e31b458844 ("of: Move definition of
-of_find_next_cache_node into common code") from the powerpc tree and
-commit 954e04b9491a ("of: introduce of_get_available_child_count") from
-the leds tree.
+Changes in v3 and v4:
+> Part 1/5:
+> - use #define instead of enum since individual channels don't require
+>    special handling.
+> Part 2/5:
+> - add a flag "will_access_peripheral" to DMA transfer descriptor
+>    according recommendations of Gerhard Sittig.
+>    This flag is set in mpc_dma_prep_memcpy() and mpc_dma_prep_slave_sg()
+>    and is evaluated in mpc_dma_execute() to choose a type of start for
+>    the transfer.
+> - prevent descriptors of transfers which involve peripherals from
+>    being chained together;
+>    each of such transfers needs hardware initiated start.
+> - add locking while working with struct mpc_dma_chan
+>    according recommendations of Lars-Peter Clausen.
+> - remove default nbytes value. Client kernel modules must set
+>    src_maxburst and dst_maxburst fields of struct dma_slave_config (dmaengine.h).
 
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
+Changes in v5:
+ Part 2/5::
+ - add and improve comments;
+ - improve the code moving transfer descriptors from 'queued' to 'active' list
+    in mpc_dma_execute();
+ - allow mpc_dma_prep_slave_sg() to run with non-empty 'active' list;
+ - take 'mdesc' back to 'free' list in case of error in mpc_dma_prep_slave_sg();
+ - improve checks of the transfer parameters;
+ - provide the default value for 'maxburst' in mpc_dma_device_control().
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Last changes are tested on MPC5125
+ - with SCLPC driver (transfers between dev and mem work fine);
+ - with dmatest module (all 64 DMA channels can perform mem-to-mem transfers
+    which are chained correctly now).
 
-diff --cc include/linux/of.h
-index 2567ccd32482,54c25606a997..000000000000
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@@ -228,8 -226,17 +228,19 @@@ static inline int of_get_child_count(co
-  	return num;
-  }
- =20
-+ static inline int of_get_available_child_count(const struct device_node *=
-np)
-+ {
-+ 	struct device_node *child;
-+ 	int num =3D 0;
-+=20
-+ 	for_each_available_child_of_node(np, child)
-+ 		num++;
-+=20
-+ 	return num;
-+ }
-+=20
- +/* cache lookup */
- +extern struct device_node *of_find_next_cache_node(const struct device_no=
-de *);
-  extern struct device_node *of_find_node_with_property(
-  	struct device_node *from, const char *prop_name);
-  #define for_each_node_with_property(dn, prop_name) \
+>> known issues:
+>> - it's yet to get confirmed whether MPC8308 can use slave support or
+>>    whether the DMA controller's driver shall actively reject it, the
+>>    information that's available so far suggests that peripheral transfers
+>>    to IP bus attached I/O is useful and shall not get blocked right away
+ - adding support for transfers which don't increment the RAM address or
+    do increment the peripheral "port's" address is easy with
+    this implementation; but which options of the common API
+    should be used for specifying such transfers?
 
---Signature=_Fri__1_Nov_2013_17_30_03_+1100_lV_Mhy=AcuA8NU51
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Alexander Popov (2):
+  dma: mpc512x: reorder mpc8308 specific instructions
+  dma: mpc512x: add support for peripheral transfers
 
-iQIcBAEBCAAGBQJSc0p7AAoJEMDTa8Ir7ZwVl/8QAJWtuhVg8uOAN7G7iF1eGduD
-ozXSY7MvHBARyJStAQXxh78MdtBFBO+Di1sCz3Jkw/qxQByMv9mMCzk4yt0X18nh
-HI+NGztvW1rIhv/GyWyi2KyWzBzn7ohnD5TNLHUPeyn9DU380uaN9jbRD84OBPdq
-F253svnKv2ct6O9336uFUN3H1Q53HJQoDOv2aSc/g3WXzSydBqm21g+zIV87QbyG
-fNKObJw56yBsluUk5nYo1P5cUGLAkkklafy5PVIKxyulOgro/lIC9ckrNNd8BuD0
-0Ir2PSwdCUOxHLDZgide+70LM0uF39DOCFAWBtDp0XY2bBGhkiRLOgHk7wlFC3SG
-Iy/7J/6bvrGVNu/QdNsmZi9MK7nslxYCOU14iRYEWRAoNLe9ctATz0hrOj4l037g
-Nl/IbzeBvbdb6wuE7uxLUfpbMY+7KxP9vDxDL/2OTiROz/wthHlo4KYi7ga6guen
-JoWHKBegPyBzGPclLWEpmfHfmgZ7quZHOtN5Nv8IPbbz4/N9Ci7MsipROyyIoO0m
-E7RNmuEr8b9Q7F7hYYoxLlmI3q5lHtdS7sgOkYBZ9KSsXHCCyeW5B4oQ9epeMPO9
-c+RQBPAX2vpTWrZa7Sjxr2JOKfVaG4EYyPbjyesysqcYWFCmZc3+yDQap3YuOKTn
-u+L9kywvQX7yXyfvDJ33
-=0lYh
------END PGP SIGNATURE-----
+Gerhard Sittig (2):
+  dma: mpc512x: register for device tree channel lookup
+  HACK mmc: mxcmmc: enable clocks for the MPC512x
 
---Signature=_Fri__1_Nov_2013_17_30_03_+1100_lV_Mhy=AcuA8NU51--
+Lars-Peter Clausen (1):
+  dma: of: Add common xlate function for matching by channel id
+
+ .../devicetree/bindings/dma/mpc512x-dma.txt        |  55 ++++
+ arch/powerpc/boot/dts/mpc5121.dtsi                 |   1 +
+ drivers/dma/mpc512x_dma.c                          | 295 +++++++++++++++++++--
+ drivers/dma/of-dma.c                               |  47 ++++
+ drivers/mmc/host/mxcmmc.c                          |  41 ++-
+ include/linux/of_dma.h                             |   4 +
+ 6 files changed, 404 insertions(+), 39 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+
+-- 
+1.7.11.3
