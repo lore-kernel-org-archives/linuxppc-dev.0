@@ -1,33 +1,24 @@
-Return-Path: <oskar@scara.com>
-Received: from skyrme.org (skyrme.org [193.175.80.135])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 05EA92C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 21:47:48 +1100 (EST)
-Received: from p5b306e20.dip0.t-ipconnect.de ([91.48.110.32]
- helo=curry.scara.com)
- by skyrme.org with esmtpsa (TLS-1.0:DHE_RSA_AES_256_CBC_SHA1:32)
- (Exim 4.63) (envelope-from <oskar@scara.com>) id 1VcBnk-00058N-60
- for linuxppc-dev@lists.ozlabs.org; Fri, 01 Nov 2013 10:18:00 +0000
-Date: 1 Nov 2013 10:17:50 +0000
-Message-ID: <20131101101750.GB16492@curry>
-From: "Oskar Schirmer" <oskar@scara.com>
-To: "Xiubo Li" <Li.Xiubo@freescale.com>
-Subject: Re: [PATCHv2 6/8] ASoC: fsl: add SGTL5000 based audio machine driver.
-References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
- <1383289495-24523-7-git-send-email-Li.Xiubo@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1383289495-24523-7-git-send-email-Li.Xiubo@freescale.com>
-Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
- linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
- perex@perex.cz, r65073@freescale.com, LW@KARO-electronics.de,
- linux@arm.linux.org.uk, b42378@freescale.com, grant.likely@linaro.org,
- devicetree@vger.kernel.org, ian.campbell@citrix.com, pawel.moll@arm.com,
- swarren@wwwdotorg.org, rob.herring@calxeda.com, broonie@kernel.org,
- linux-arm-kernel@lists.infradead.org, fabio.estevam@freescale.com,
- lgirdwood@gmail.com, linux-kernel@vger.kernel.org, rob@landley.net,
- r64188@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B08782@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 28DDC2C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 22:52:10 +1100 (EST)
+Message-ID: <527395DF.50104@freescale.com>
+Date: Fri, 1 Nov 2013 13:51:59 +0200
+From: Claudiu Manoil <claudiu.manoil@freescale.com>
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Thomas_H=FChn?= <thomas@net.t-labs.tu-berlin.de>
+Subject: Re: Gianfar driver crashes in Kernel v3.10
+References: <90BE8C5D-E23B-41B5-BB52-8A0C0758931D@net.t-labs.tu-berlin.de>
+ <760FFC38-597B-46CB-BA4C-620A1D663C8A@net.t-labs.tu-berlin.de>
+ <525E3BD7.1020208@freescale.com>
+ <05E1EDFE-EDFB-4E6F-AA83-D353B4032CA5@net.t-labs.tu-berlin.de>
+In-Reply-To: <05E1EDFE-EDFB-4E6F-AA83-D353B4032CA5@net.t-labs.tu-berlin.de>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,20 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Not that it would improve functionality, but:
+Hi Thomas,
 
-On Fri, Nov 01, 2013 at 15:04:53 +0800, Xiubo Li wrote:
-[...]
-> diff --git a/sound/soc/fsl/fsl-sgtl5000-vf610.c b/sound/soc/fsl/fsl-sgtl5000-vf610.c
-> new file mode 100644
-> index 0000000..f535b42
-> --- /dev/null
-> +++ b/sound/soc/fsl/fsl-sgtl5000-vf610.c
-> @@ -0,0 +1,208 @@
-> +/*
-> + * Freeacale ALSA SoC Audio using SGT1500 as codec.
-          ^                             ^   ^
-     "Freescale"                    "SGTL5000"
+On 10/31/2013 1:51 PM, Thomas H=FChn wrote:
+> Hi Claudiu,
+>
+>
+>> Please try the following patch:
+>> http://patchwork.ozlabs.org/patch/283235/
+>>
+>> It should help with your issue.
+>>
+>
+> Several OpenWrt users including myself have tested your patch on
+> TPLink-4900 routers.
+> We do have positive feedback, as no crash nor system freeze was reporte=
+d
+> for different
+> network loads and router setups.
+> All different scenarios / details and two digit uptimes are in this
+> forum thread:
+> https://forum.openwrt.org/viewtopic.php?id=3D42062&p=3D13
+>
+> Thanks again for your work and  I hope to see this patch merged upstrea=
+m.
+>
+> Greetings Thomas
+>
 
-regards,
-  Oskar
+Thanks for the testing and feedback.
+
+The patch has been merged into davem/net-next.git:
+
+http://git.kernel.org/cgit/linux/kernel/git/davem/net-next.git/commit/?id=
+=3D3ba405db1c1b05d157474c71e559393f7ea436ad
+
+And I think it will be merged from there into the next
+kernel release. I think that in time it will be back-ported
+to stable kernel versions too. In some cases, requests are made
+to the netdev mailing list to speedup inclusion of fixes (such
+as this one) to certain stable kernel versions.
+
+Thanks,
+Claudiu
