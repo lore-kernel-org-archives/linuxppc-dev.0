@@ -1,18 +1,18 @@
 Return-Path: <B47053@freescale.com>
 Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
+ (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2E14B2C0447
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 18:49:29 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 7F7CB2C044C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 18:49:37 +1100 (EST)
 From: Xiubo Li <Li.Xiubo@freescale.com>
 To: <r65073@freescale.com>, <timur@tabi.org>, <lgirdwood@gmail.com>,
  <broonie@kernel.org>
-Subject: [PATCHv2 4/8] Documentation: Add device tree bindings for Freescale
- SAI.
-Date: Fri, 1 Nov 2013 15:04:51 +0800
-Message-ID: <1383289495-24523-5-git-send-email-Li.Xiubo@freescale.com>
+Subject: [PATCHv2 5/8] ASoC: SGTL5000: Enhance the SGTL5000 codec driver about
+ regulator.
+Date: Fri, 1 Nov 2013 15:04:52 +0800
+Message-ID: <1383289495-24523-6-git-send-email-Li.Xiubo@freescale.com>
 In-Reply-To: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
 References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
 MIME-Version: 1.0
@@ -34,52 +34,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds the Document for Freescale SAI driver under
-Documentation/devicetree/bindings/sound/.
+On VF610 series there are no regulators used, and now whether the
+CONFIG_REGULATOR mirco is enabled or not, for the VF610 audio
+patch series, the board cannot be probe successfully.
+And this patch will solve this issue.
 
 Signed-off-by: Xiubo Li <Li.Xiubo@freescale.com>
 ---
- .../devicetree/bindings/sound/fsl-sai.txt          | 32 ++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/sound/fsl-sai.txt
+ sound/soc/codecs/sgtl5000.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/sound/fsl-sai.txt b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-new file mode 100644
-index 0000000..267afbd
---- /dev/null
-+++ b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-@@ -0,0 +1,32 @@
-+Freescale Synchronous Audio Interface (SAI).
-+
-+The SAI is based on I2S module that used communicating with audio codecs,
-+which provides a synchronous audio interface that supports fullduplex
-+serial interfaces with frame synchronization such as I2S, AC97, TDM, and
-+codec/DSP interfaces.
-+
-+
-+Required properties:
-+- compatible: Compatible list, contains "fsl,vf610-sai".
-+- reg: Offset and length of the register set for the device.
-+- clocks: Must contain an entry for each entry in clock-names.
-+- clock-names : Must include the "sai" entry.
-+- dmas : Generic dma devicetree binding as described in
-+  Documentation/devicetree/bindings/dma/dma.txt.
-+- dma-names : Two dmas have to be defined, "tx" and "rx".
-+- pinctrl-names: Must contain a "default" entry.
-+- pinctrl-NNN: One property must exist for each entry in pinctrl-names.
-+  See ../pinctrl/pinctrl-bindings.txt for details of the property values.
-+
-+Example:
-+sai2: sai@40031000 {
-+	      compatible = "fsl,vf610-sai";
-+	      reg = <0x40031000 0x1000>;
-+	      pinctrl-names = "default";
-+	      pinctrl-0 = <&pinctrl_sai2_1>;
-+	      clocks = <&clks VF610_CLK_SAI2>;
-+	      clock-names = "sai";
-+	      dma-names = "tx", "rx";
-+	      dmas = <&edma0 0 VF610_EDMA_MUXID0_SAI2_TX>,
-+		   <&edma0 0 VF610_EDMA_MUXID0_SAI2_RX>;
-+};
+diff --git a/sound/soc/codecs/sgtl5000.c b/sound/soc/codecs/sgtl5000.c
+index 1f4093f..c2f6d86 100644
+--- a/sound/soc/codecs/sgtl5000.c
++++ b/sound/soc/codecs/sgtl5000.c
+@@ -61,6 +61,7 @@ static const struct reg_default sgtl5000_reg_defaults[] = {
+ 	{ SGTL5000_DAP_AVC_DECAY,		0x0050 },
+ };
+ 
++#ifdef CONFIG_REGULATOR
+ /* regulator supplies for sgtl5000, VDDD is an optional external supply */
+ enum sgtl5000_regulator_supplies {
+ 	VDDA,
+@@ -93,6 +94,9 @@ static struct regulator_init_data ldo_init_data = {
+ 	.num_consumer_supplies = 1,
+ 	.consumer_supplies = &ldo_consumer[0],
+ };
++#else
++#define SGTL5000_SUPPLY_NUM 0
++#endif
+ 
+ /*
+  * sgtl5000 internal ldo regulator,
+@@ -112,7 +116,9 @@ struct sgtl5000_priv {
+ 	int master;	/* i2s master or not */
+ 	int fmt;	/* i2s data format */
+ 	struct regulator_bulk_data supplies[SGTL5000_SUPPLY_NUM];
++#ifdef CONFIG_REGULATOR
+ 	struct ldo_regulator *ldo;
++#endif
+ 	struct regmap *regmap;
+ 	struct clk *mclk;
+ };
+@@ -879,6 +885,7 @@ static int ldo_regulator_remove(struct snd_soc_codec *codec)
+ 	return 0;
+ }
+ #else
++#ifndef CONFIG_SND_SOC_FSL_SGTL5000_VF610
+ static int ldo_regulator_register(struct snd_soc_codec *codec,
+ 				struct regulator_init_data *init_data,
+ 				int voltage)
+@@ -886,6 +893,7 @@ static int ldo_regulator_register(struct snd_soc_codec *codec,
+ 	dev_err(codec->dev, "this setup needs regulator support in the kernel\n");
+ 	return -EINVAL;
+ }
++#endif
+ 
+ static int ldo_regulator_remove(struct snd_soc_codec *codec)
+ {
+@@ -1137,6 +1145,7 @@ static int sgtl5000_resume(struct snd_soc_codec *codec)
+ #define sgtl5000_resume  NULL
+ #endif	/* CONFIG_SUSPEND */
+ 
++#ifdef CONFIG_REGULATOR
+ /*
+  * sgtl5000 has 3 internal power supplies:
+  * 1. VAG, normally set to vdda/2
+@@ -1373,6 +1382,7 @@ err_regulator_free:
+ 	return ret;
+ 
+ }
++#endif
+ 
+ static int sgtl5000_probe(struct snd_soc_codec *codec)
+ {
+@@ -1387,6 +1397,7 @@ static int sgtl5000_probe(struct snd_soc_codec *codec)
+ 		return ret;
+ 	}
+ 
++#ifdef CONFIG_REGULATOR
+ 	ret = sgtl5000_enable_regulators(codec);
+ 	if (ret)
+ 		return ret;
+@@ -1395,6 +1406,7 @@ static int sgtl5000_probe(struct snd_soc_codec *codec)
+ 	ret = sgtl5000_set_power_regs(codec);
+ 	if (ret)
+ 		goto err;
++#endif
+ 
+ 	/* enable small pop, introduce 400ms delay in turning off */
+ 	snd_soc_update_bits(codec, SGTL5000_CHIP_REF_CTRL,
 -- 
 1.8.4
