@@ -1,24 +1,27 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-la0-x22c.google.com (mail-la0-x22c.google.com
- [IPv6:2a00:1450:4010:c03::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0B7F42C03FE
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 18:16:29 +1100 (EST)
-Received: by mail-la0-f44.google.com with SMTP id ep20so3098702lab.17
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Nov 2013 00:16:25 -0700 (PDT)
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
- Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
- Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
- Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org
-Subject: [PATCH RFC v5 5/5] HACK mmc: mxcmmc: enable clocks for the MPC512x
-Date: Fri,  1 Nov 2013 11:19:34 +0400
-Message-Id: <1383290374-17484-6-git-send-email-a13xp0p0v88@gmail.com>
-In-Reply-To: <1383290374-17484-1-git-send-email-a13xp0p0v88@gmail.com>
-References: <1383290374-17484-1-git-send-email-a13xp0p0v88@gmail.com>
+Return-Path: <B47053@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8CE9E2C03FE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 18:48:57 +1100 (EST)
+From: Xiubo Li <Li.Xiubo@freescale.com>
+To: <r65073@freescale.com>, <timur@tabi.org>, <lgirdwood@gmail.com>,
+ <broonie@kernel.org>
+Subject: 
+Date: Fri, 1 Nov 2013 15:04:47 +0800
+Message-ID: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
+ linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, perex@perex.cz,
+ LW@KARO-electronics.de, linux@arm.linux.org.uk, b42378@freescale.com,
+ oskar@scara.com, grant.likely@linaro.org, devicetree@vger.kernel.org,
+ ian.campbell@citrix.com, pawel.moll@arm.com, swarren@wwwdotorg.org,
+ rob.herring@calxeda.com, linux-arm-kernel@lists.infradead.org,
+ fabio.estevam@freescale.com, linux-kernel@vger.kernel.org, rob@landley.net,
+ r64188@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,99 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Gerhard Sittig <gsi@denx.de>
 
-Q&D HACK to enable SD card support without correct COMMON_CLK support,
-best viewed with 'git diff -w -b', NOT acceptable for mainline (NAKed)
+Hello,
 
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
----
- drivers/mmc/host/mxcmmc.c | 41 +++++++++++++++++++++++++++--------------
- 1 file changed, 27 insertions(+), 14 deletions(-)
+This patch series is mostly Freescale's SAI SoC Digital Audio Interface driver implementation. And the implementation is only compatible with device tree definition.
 
-diff --git a/drivers/mmc/host/mxcmmc.c b/drivers/mmc/host/mxcmmc.c
-index c174c6a..ae13bc9 100644
---- a/drivers/mmc/host/mxcmmc.c
-+++ b/drivers/mmc/host/mxcmmc.c
-@@ -1123,20 +1123,29 @@ static int mxcmci_probe(struct platform_device *pdev)
- 	host->res = r;
- 	host->irq = irq;
- 
--	host->clk_ipg = devm_clk_get(&pdev->dev, "ipg");
--	if (IS_ERR(host->clk_ipg)) {
--		ret = PTR_ERR(host->clk_ipg);
--		goto out_iounmap;
--	}
-+	if (!is_mpc512x_mmc(host)) {
-+		host->clk_ipg = devm_clk_get(&pdev->dev, "ipg");
-+		if (IS_ERR(host->clk_ipg)) {
-+			ret = PTR_ERR(host->clk_ipg);
-+			goto out_iounmap;
-+		}
- 
--	host->clk_per = devm_clk_get(&pdev->dev, "per");
--	if (IS_ERR(host->clk_per)) {
--		ret = PTR_ERR(host->clk_per);
--		goto out_iounmap;
-+		host->clk_per = devm_clk_get(&pdev->dev, "per");
-+		if (IS_ERR(host->clk_per)) {
-+			ret = PTR_ERR(host->clk_per);
-+			goto out_iounmap;
-+		}
-+	} else {
-+		host->clk_per = devm_clk_get(&pdev->dev, "sdhc_clk");
-+		if (IS_ERR(host->clk_per)) {
-+			ret = PTR_ERR(host->clk_per);
-+			goto out_iounmap;
-+		}
- 	}
- 
- 	clk_prepare_enable(host->clk_per);
--	clk_prepare_enable(host->clk_ipg);
-+	if (host->clk_ipg)
-+		clk_prepare_enable(host->clk_ipg);
- 
- 	mxcmci_softreset(host);
- 
-@@ -1206,7 +1215,8 @@ out_free_dma:
- 		dma_release_channel(host->dma);
- out_clk_put:
- 	clk_disable_unprepare(host->clk_per);
--	clk_disable_unprepare(host->clk_ipg);
-+	if (host->clk_ipg)
-+		clk_disable_unprepare(host->clk_ipg);
- out_iounmap:
- 	iounmap(host->base);
- out_free:
-@@ -1236,7 +1246,8 @@ static int mxcmci_remove(struct platform_device *pdev)
- 		dma_release_channel(host->dma);
- 
- 	clk_disable_unprepare(host->clk_per);
--	clk_disable_unprepare(host->clk_ipg);
-+	if (host->clk_ipg)
-+		clk_disable_unprepare(host->clk_ipg);
- 
- 	release_mem_region(host->res->start, resource_size(host->res));
- 
-@@ -1255,7 +1266,8 @@ static int mxcmci_suspend(struct device *dev)
- 	if (mmc)
- 		ret = mmc_suspend_host(mmc);
- 	clk_disable_unprepare(host->clk_per);
--	clk_disable_unprepare(host->clk_ipg);
-+	if (host->clk_ipg)
-+		clk_disable_unprepare(host->clk_ipg);
- 
- 	return ret;
- }
-@@ -1267,7 +1279,8 @@ static int mxcmci_resume(struct device *dev)
- 	int ret = 0;
- 
- 	clk_prepare_enable(host->clk_per);
--	clk_prepare_enable(host->clk_ipg);
-+	if (host->clk_ipg)
-+		clk_prepare_enable(host->clk_ipg);
- 	if (mmc)
- 		ret = mmc_resume_host(mmc);
- 
--- 
-1.7.11.3
+This patch series is based on linux-next and has been tested on Vybrid VF610 Tower board using device tree.
+
+Changed in v2:
+- Use default settings for the generic dmaengine PCM driver.
+- Separate receive and transmit setting in most functions, but some couldn't for the HW limitation.
+- Drop some not reduntant code.
+- Use devm_snd_soc_register_component() instead of snd_soc_register_component().
+- Use devm_snd_soc_register_card() instead of devm_snd_soc_register_card().
+- Adjust the code sentences sequence.
+- Make the namespacing consistent.
+- Rename CONFIG_SND_SOC_FSL_SGTL5000 to CONFIG_SND_SOC_FSL_SGTL5000_VF610.
+- Drop some meaningless lines.
+- Rename the binding document file.
+
+Added in v1:
+- Add SAI SoC Digital Audio Interface driver.
+- Add Freescale SAI ALSA SoC Digital Audio Interface node for VF610.
+- Enables SAI ALSA SoC DAI device for Vybrid VF610 TOWER board.
+- Add device tree bindings for Freescale SAI.
+- Revise the bugs about the sgt15000 codec.
+- Add SGT15000 based audio machine driver.
+- Enable SGT15000 codec based audio driver node for VF610.
+- Add device tree bindings for Freescale VF610 sound.
