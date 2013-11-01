@@ -1,31 +1,33 @@
-Return-Path: <B42378@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5521A2C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 21:17:03 +1100 (EST)
-Date: Fri, 1 Nov 2013 18:02:03 +0800
-From: Nicolin Chen <b42378@freescale.com>
-To: Xiubo Li <Li.Xiubo@freescale.com>
-Subject: Re: [PATCHv2 5/8] ASoC: SGTL5000: Enhance the SGTL5000 codec driver
- about regulator.
-Message-ID: <20131101100201.GF28401@MrMyself>
-References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
- <1383289495-24523-6-git-send-email-Li.Xiubo@freescale.com>
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E59012C00BD
+ for <linuxppc-dev@ozlabs.org>; Fri,  1 Nov 2013 21:30:32 +1100 (EST)
+Date: Fri, 1 Nov 2013 11:30:17 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+Message-ID: <20131101103017.GF19466@laptop.lan>
+References: <20131028163418.GD4126@linux.vnet.ibm.com>
+ <20131028201735.GA15629@redhat.com>
+ <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
+ <20131030092725.GL4126@linux.vnet.ibm.com>
+ <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
+ <20131031043258.GQ4126@linux.vnet.ibm.com>
+ <20131031090457.GU19466@laptop.lan>
+ <20131031150756.GB4067@linux.vnet.ibm.com>
+ <20131031151955.GY19466@laptop.lan>
+ <20131101092814.GG4067@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1383289495-24523-6-git-send-email-Li.Xiubo@freescale.com>
-Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
- linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
- perex@perex.cz, r65073@freescale.com, LW@KARO-electronics.de,
- linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org,
- grant.likely@linaro.org, devicetree@vger.kernel.org, ian.campbell@citrix.com,
- pawel.moll@arm.com, swarren@wwwdotorg.org, rob.herring@calxeda.com,
- broonie@kernel.org, oskar@scara.com, fabio.estevam@freescale.com,
- lgirdwood@gmail.com, linux-kernel@vger.kernel.org, rob@landley.net,
- r64188@freescale.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131101092814.GG4067@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Victor Kaplansky <VICTORK@il.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,118 +37,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 01, 2013 at 03:04:52PM +0800, Xiubo Li wrote:
-> On VF610 series there are no regulators used, and now whether the
-> CONFIG_REGULATOR mirco is enabled or not, for the VF610 audio
-
-micro? or macro?
-
-> patch series, the board cannot be probe successfully.
-> And this patch will solve this issue.
+On Fri, Nov 01, 2013 at 02:28:14AM -0700, Paul E. McKenney wrote:
+> > This is a completely untenable position.
 > 
-
-I finally got your idea about what this patch does. But it seems to
-be more likely a work around. Maybe I here can't think it through
-comprehensively, but I think you can try to add a fixed regulator to
-sgtl5000 in the devicetree, rather than disabling common functions
-even if not breaking others.
-
-> Signed-off-by: Xiubo Li <Li.Xiubo@freescale.com>
-> ---
->  sound/soc/codecs/sgtl5000.c | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
+> Indeed it is!
 > 
-> diff --git a/sound/soc/codecs/sgtl5000.c b/sound/soc/codecs/sgtl5000.c
-> index 1f4093f..c2f6d86 100644
-> --- a/sound/soc/codecs/sgtl5000.c
-> +++ b/sound/soc/codecs/sgtl5000.c
-> @@ -61,6 +61,7 @@ static const struct reg_default sgtl5000_reg_defaults[] = {
->  	{ SGTL5000_DAP_AVC_DECAY,		0x0050 },
->  };
->  
-> +#ifdef CONFIG_REGULATOR
->  /* regulator supplies for sgtl5000, VDDD is an optional external supply */
->  enum sgtl5000_regulator_supplies {
->  	VDDA,
-> @@ -93,6 +94,9 @@ static struct regulator_init_data ldo_init_data = {
->  	.num_consumer_supplies = 1,
->  	.consumer_supplies = &ldo_consumer[0],
->  };
-> +#else
-> +#define SGTL5000_SUPPLY_NUM 0
-> +#endif
->  
->  /*
->   * sgtl5000 internal ldo regulator,
-> @@ -112,7 +116,9 @@ struct sgtl5000_priv {
->  	int master;	/* i2s master or not */
->  	int fmt;	/* i2s data format */
->  	struct regulator_bulk_data supplies[SGTL5000_SUPPLY_NUM];
-> +#ifdef CONFIG_REGULATOR
->  	struct ldo_regulator *ldo;
-> +#endif
->  	struct regmap *regmap;
->  	struct clk *mclk;
->  };
-> @@ -879,6 +885,7 @@ static int ldo_regulator_remove(struct snd_soc_codec *codec)
->  	return 0;
->  }
->  #else
-> +#ifndef CONFIG_SND_SOC_FSL_SGTL5000_VF610
+> C/C++ never was intended to be used for parallel programming, 
 
-Checking a platform or SoC specific define here is just a bit....
+And yet pretty much all kernels ever written for SMP systems are written
+in it; what drugs are those people smoking?
 
-Could you pls find a better solution? Like I said at first, use fixed regulator
-or figure out why your System would hang with current sgtl5000 driver. If it
-really has a critical bug in its regulator-related code, I think you can then
-make a greater contribution by fixing the bug rather than bypassing it.
+Furthermore there's a gazillion parallel userspace programs.
 
-Best regards,
-Nicolin Chen
-
->  static int ldo_regulator_register(struct snd_soc_codec *codec,
->  				struct regulator_init_data *init_data,
->  				int voltage)
-> @@ -886,6 +893,7 @@ static int ldo_regulator_register(struct snd_soc_codec *codec,
->  	dev_err(codec->dev, "this setup needs regulator support in the kernel\n");
->  	return -EINVAL;
->  }
-> +#endif
->  
->  static int ldo_regulator_remove(struct snd_soc_codec *codec)
->  {
-> @@ -1137,6 +1145,7 @@ static int sgtl5000_resume(struct snd_soc_codec *codec)
->  #define sgtl5000_resume  NULL
->  #endif	/* CONFIG_SUSPEND */
->  
-> +#ifdef CONFIG_REGULATOR
->  /*
->   * sgtl5000 has 3 internal power supplies:
->   * 1. VAG, normally set to vdda/2
-> @@ -1373,6 +1382,7 @@ err_regulator_free:
->  	return ret;
->  
->  }
-> +#endif
->  
->  static int sgtl5000_probe(struct snd_soc_codec *codec)
->  {
-> @@ -1387,6 +1397,7 @@ static int sgtl5000_probe(struct snd_soc_codec *codec)
->  		return ret;
->  	}
->  
-> +#ifdef CONFIG_REGULATOR
->  	ret = sgtl5000_enable_regulators(codec);
->  	if (ret)
->  		return ret;
-> @@ -1395,6 +1406,7 @@ static int sgtl5000_probe(struct snd_soc_codec *codec)
->  	ret = sgtl5000_set_power_regs(codec);
->  	if (ret)
->  		goto err;
-> +#endif
->  
->  	/* enable small pop, introduce 400ms delay in turning off */
->  	snd_soc_update_bits(codec, SGTL5000_CHIP_REF_CTRL,
-> -- 
-> 1.8.4
+> and this is
+> but one of the problems that can arise when we nevertheless use it for
+> parallel programming.  As compilers get smarter (for some definition of
+> "smarter") and as more systems have special-purpose hardware (such as
+> vector units) that are visible to the compiler, we can expect more of
+> this kind of trouble.
 > 
+> This was one of many reasons that I decided to help with the C/C++11
+> effort, whatever anyone might think about the results.
+
+Well, I applaud your efforts, but given the results I think the C/C++
+people are all completely insane.
+
+> > How do the C/C++ people propose to deal with this?
+> 
+> By marking "ptr" as atomic, thus telling the compiler not to mess with it.
+> And thus requiring that all accesses to it be decorated, which in the
+> case of RCU could be buried in the RCU accessors.
+
+This seems contradictory; marking it atomic would look like:
+
+struct foo {
+	unsigned long value;
+	__atomic void *ptr;
+	unsigned long value1;
+};
+
+Clearly we cannot hide this definition in accessors, because then
+accesses to value* won't see the annotation.
+
+That said; mandating we mark all 'shared' data with __atomic is
+completely untenable and is not backwards compatible.
+
+To be safe we must assume all data shared unless indicated otherwise.
