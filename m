@@ -1,24 +1,32 @@
-Return-Path: <B08782@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+Return-Path: <shawn.guo@linaro.org>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 28DDC2C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 22:52:10 +1100 (EST)
-Message-ID: <527395DF.50104@freescale.com>
-Date: Fri, 1 Nov 2013 13:51:59 +0200
-From: Claudiu Manoil <claudiu.manoil@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id ACD3B2C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2013 23:07:06 +1100 (EST)
+Date: Fri, 1 Nov 2013 20:07:03 +0800
+From: Shawn Guo <shawn.guo@linaro.org>
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [PATCHv2 6/8] ASoC: fsl: add SGTL5000 based audio machine driver.
+Message-ID: <20131101120700.GE10324@S2101-09.ap.freescale.net>
+References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
+ <1383289495-24523-7-git-send-email-Li.Xiubo@freescale.com>
+ <20131101102805.GG28401@MrMyself>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Thomas_H=FChn?= <thomas@net.t-labs.tu-berlin.de>
-Subject: Re: Gianfar driver crashes in Kernel v3.10
-References: <90BE8C5D-E23B-41B5-BB52-8A0C0758931D@net.t-labs.tu-berlin.de>
- <760FFC38-597B-46CB-BA4C-620A1D663C8A@net.t-labs.tu-berlin.de>
- <525E3BD7.1020208@freescale.com>
- <05E1EDFE-EDFB-4E6F-AA83-D353B4032CA5@net.t-labs.tu-berlin.de>
-In-Reply-To: <05E1EDFE-EDFB-4E6F-AA83-D353B4032CA5@net.t-labs.tu-berlin.de>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20131101102805.GG28401@MrMyself>
+Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
+ linux-doc@vger.kernel.org, tiwai@suse.de, b18965@freescale.com, timur@tabi.org,
+ perex@perex.cz, r65073@freescale.com, LW@KARO-electronics.de,
+ linux@arm.linux.org.uk, Xiubo Li <Li.Xiubo@freescale.com>,
+ linux-arm-kernel@lists.infradead.org, grant.likely@linaro.org,
+ devicetree@vger.kernel.org, ian.campbell@citrix.com, pawel.moll@arm.com,
+ swarren@wwwdotorg.org, rob.herring@calxeda.com, broonie@kernel.org,
+ oskar@scara.com, fabio.estevam@freescale.com, lgirdwood@gmail.com,
+ linux-kernel@vger.kernel.org, rob@landley.net, r64188@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Thomas,
+On Fri, Nov 01, 2013 at 06:28:05PM +0800, Nicolin Chen wrote:
+> >  sound/soc/fsl/fsl-sgtl5000-vf610.c | 208 +++++++++++++++++++++++++++++++++++++
+> 
+> I just doubt if this file naming is appropriate. Even if we might not have
+> rigor rule for the file names, according to existing ones, they are all in
+> a same pattern: [SoC name]-[codec name].c
+> 
+> "imx-sgtl5000.c" for example
+> 
+> I think it would make user less confused about what this file exactly is if
+> this machine driver also follow the pattern: vf610-sgtl5000.c
+> 
+> 
+> @Shawn
+> 
+> What do you think about the file name?
 
-On 10/31/2013 1:51 PM, Thomas H=FChn wrote:
-> Hi Claudiu,
->
->
->> Please try the following patch:
->> http://patchwork.ozlabs.org/patch/283235/
->>
->> It should help with your issue.
->>
->
-> Several OpenWrt users including myself have tested your patch on
-> TPLink-4900 routers.
-> We do have positive feedback, as no crash nor system freeze was reporte=
-d
-> for different
-> network loads and router setups.
-> All different scenarios / details and two digit uptimes are in this
-> forum thread:
-> https://forum.openwrt.org/viewtopic.php?id=3D42062&p=3D13
->
-> Thanks again for your work and  I hope to see this patch merged upstrea=
-m.
->
-> Greetings Thomas
->
+Yeah, it would be better to name the file following the existing the
+pattern.
 
-Thanks for the testing and feedback.
-
-The patch has been merged into davem/net-next.git:
-
-http://git.kernel.org/cgit/linux/kernel/git/davem/net-next.git/commit/?id=
-=3D3ba405db1c1b05d157474c71e559393f7ea436ad
-
-And I think it will be merged from there into the next
-kernel release. I think that in time it will be back-ported
-to stable kernel versions too. In some cases, requests are made
-to the netdev mailing list to speedup inclusion of fixes (such
-as this one) to certain stable kernel versions.
-
-Thanks,
-Claudiu
+Shawn
