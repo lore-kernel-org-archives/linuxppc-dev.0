@@ -1,50 +1,49 @@
 Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CCCCE2C0141
+ (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C215E2C0127
  for <linuxppc-dev@ozlabs.org>; Sun,  3 Nov 2013 15:04:40 +1100 (EST)
 Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
  Sat, 2 Nov 2013 22:04:37 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 03FD919D8045
- for <linuxppc-dev@ozlabs.org>; Sat,  2 Nov 2013 22:04:31 -0600 (MDT)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id B0B0E3E4005B
+ for <linuxppc-dev@ozlabs.org>; Sat,  2 Nov 2013 22:04:34 -0600 (MDT)
 Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rA344YjG238618
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rA344YwI211262
  for <linuxppc-dev@ozlabs.org>; Sat, 2 Nov 2013 22:04:34 -0600
 Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
  by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- rA347PYN002010
+ rA347PBI002015
  for <linuxppc-dev@ozlabs.org>; Sat, 2 Nov 2013 22:07:26 -0600
-Date: Sat, 2 Nov 2013 08:20:48 -0700
+Date: Sat, 2 Nov 2013 08:46:48 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
+To: Victor Kaplansky <VICTORK@il.ibm.com>
 Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131102152048.GI4067@linux.vnet.ibm.com>
-References: <20131028201735.GA15629@redhat.com>
+Message-ID: <20131102154647.GJ4067@linux.vnet.ibm.com>
+References: <20131028132634.GO19466@laptop.lan>
+ <20131028163418.GD4126@linux.vnet.ibm.com>
+ <20131028201735.GA15629@redhat.com>
  <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
  <20131030092725.GL4126@linux.vnet.ibm.com>
  <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
  <20131031043258.GQ4126@linux.vnet.ibm.com>
- <20131031090457.GU19466@laptop.lan>
- <20131031150756.GB4067@linux.vnet.ibm.com>
- <20131031151955.GY19466@laptop.lan>
- <20131101092814.GG4067@linux.vnet.ibm.com>
- <20131101103017.GF19466@laptop.lan>
+ <OFDF23985D.1D949148-ON42257C15.002DEB25-42257C15.0036DF93@il.ibm.com>
+ <20131031152543.GC4067@linux.vnet.ibm.com>
+ <OF3CB471BA.BACC7843-ON42257C16.0055EF23-42257C16.0058875B@il.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131101103017.GF19466@laptop.lan>
+In-Reply-To: <OF3CB471BA.BACC7843-ON42257C16.0055EF23-42257C16.0058875B@il.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
  Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Anton Blanchard <anton@samba.org>, Frederic Weisbecker <fweisbec@gmail.com>
 Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -55,71 +54,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 01, 2013 at 11:30:17AM +0100, Peter Zijlstra wrote:
-> On Fri, Nov 01, 2013 at 02:28:14AM -0700, Paul E. McKenney wrote:
-> > > This is a completely untenable position.
-> > 
-> > Indeed it is!
-> > 
-> > C/C++ never was intended to be used for parallel programming, 
+On Fri, Nov 01, 2013 at 06:06:58PM +0200, Victor Kaplansky wrote:
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote on 10/31/2013
+> 05:25:43 PM:
 > 
-> And yet pretty much all kernels ever written for SMP systems are written
-> in it; what drugs are those people smoking?
-
-There was a time when I wished that the C/C++ standards people had added
-concurrency to the language 30 years ago, but I eventually realized that
-any attempt at that time would have been totally broken.
-
-> Furthermore there's a gazillion parallel userspace programs.
-
-Most of which have very unaggressive concurrency designs.
-
-> > and this is
-> > but one of the problems that can arise when we nevertheless use it for
-> > parallel programming.  As compilers get smarter (for some definition of
-> > "smarter") and as more systems have special-purpose hardware (such as
-> > vector units) that are visible to the compiler, we can expect more of
-> > this kind of trouble.
-> > 
-> > This was one of many reasons that I decided to help with the C/C++11
-> > effort, whatever anyone might think about the results.
+> > I really don't care about "fair" -- I care instead about the kernel
+> > working reliably.
 > 
-> Well, I applaud your efforts, but given the results I think the C/C++
-> people are all completely insane.
+> Though I don't see how putting a memory barrier without deep understanding
+> why it is needed helps kernel reliability, I do agree that reliability
+> is more important than performance.
 
-If it makes you feel any better, they have the same opinion of all of
-us who use C/C++ for concurrency given that the standard provides no
-guarantee.
+True enough.  Of course, the same applies to removing memory barriers.
 
-> > > How do the C/C++ people propose to deal with this?
-> > 
-> > By marking "ptr" as atomic, thus telling the compiler not to mess with it.
-> > And thus requiring that all accesses to it be decorated, which in the
-> > case of RCU could be buried in the RCU accessors.
+> > And it should also be easy for proponents of removing memory barriers to
+> > clearly articulate what orderings their code does and does not need.
 > 
-> This seems contradictory; marking it atomic would look like:
+> I intentionally took a simplified example of circle buffer from
+> Documentation/circular-buffers.txt. I think both sides agree about
+> memory ordering requirements in the example. At least I didn't see anyone
+> argued about them.
+
+Hard to say.  No one has actually stated them clearly, so how could we
+know whether or not we agree.
+
+> > You are assuming control dependencies that the C language does not
+> > provide.  Now, for all I know right now, there might well be some other
+> > reason why a full barrier is not required, but the "if" statement cannot
+> > be that reason.
+> >
+> > Please review section 1.10 of the C++11 standard (or the corresponding
+> > section of the C11 standard, if you prefer).  The point is that the
+> > C/C++11 covers only data dependencies, not control dependencies.
 > 
-> struct foo {
-> 	unsigned long value;
-> 	__atomic void *ptr;
-> 	unsigned long value1;
-> };
+> I feel you made a wrong assumption about my expertise in compilers. I don't
+> need to reread section 1.10 of the C++11 standard, because I do agree that
+> potentially compiler can break the code in our case. And I do agree that
+> a compiler barrier() or some other means (including a change of the
+> standard)
+> can be required in future to prevent a compiler from moving memory accesses
+> around.
+
+I was simply reacting to what seemed to me to be your statement that
+control dependencies affect ordering.  They don't.  The C/C++ standard
+does not in any way respect control dependencies.  In fact, there are
+implementations that do not respect control dependencies.  But don't
+take my word for it, actually try it out on a weakly ordered system.
+Or try out either ppcmem or armmem, which does a full state-space search.
+
+Here is the paper:
+
+	http://www.cl.cam.ac.uk/~pes20/ppc-supplemental/pldi105-sarkar.pdf
+
+And here is the web-based tool:
+
+	http://www.cl.cam.ac.uk/~pes20/ppcmem/
+
+And here is a much faster version that you can run locally:
+
+	http://www.cl.cam.ac.uk/~pes20/weakmemory/index.html
+
+> But "broken" compiler is much wider issue to be deeply discussed in this
+> thread. I'm pretty sure that kernel have tons of very subtle
+> code that actually creates locks and memory ordering. Such code
+> usually just use the "barrier()"  approach to tell gcc not to combine
+> or move memory accesses around it.
 > 
-> Clearly we cannot hide this definition in accessors, because then
-> accesses to value* won't see the annotation.
+> Let's just agree for the sake of this memory barrier discussion that we
+> *do* need compiler barrier to tell gcc not to combine or move memory
+> accesses around it.
 
-#define __rcu __atomic
+Sometimes barrier() is indeed all you need, other times more is needed.
 
-Though there are probably placement restrictions for __atomic that
-current use of __rcu doesn't pay attention to.
-
-> That said; mandating we mark all 'shared' data with __atomic is
-> completely untenable and is not backwards compatible.
+> > Glad we agree on something!
 > 
-> To be safe we must assume all data shared unless indicated otherwise.
+> I'm glad too!
+> 
+> > Did you miss the following passage in the paragraph you quoted?
+> >
+> >    "... likewise, your consumer must issue a memory barrier
+> >    instruction after removing an item from the queue and before
+> >    reading from its memory."
+> >
+> > That is why DEC Alpha readers need a read-side memory barrier -- it says
+> > so right there.  And as either you or Peter noted earlier in this thread,
+> > this barrier can be supplied by smp_read_barrier_depends().
+> 
+> I did not miss that passage. That passage explains why consumer on Alpha
+> processor after reading @head is required to execute an additional
+> smp_read_barrier_depends() before it can *read* from memory pointed by
+> @tail. And I think that I understand why - because the reader have to wait
+> till local caches are fully updated and only then it can read data from
+> the data buffer.
+> 
+> But on the producer side, after we read @tail, we don't need to wait for
+> update of local caches before we start *write* data to the buffer, since
+> the
+> producer is the only one who write data there!
 
-Something similar to the compiler directives forcing twos-complement
-interpretation of signed overflow could be attractive.  Not sure what
-it would do to code generation, though.
+Well, we cannot allow the producer to clobber data while the consumer
+is reading it out.  That said, I do agree that we should get some help
+from the fact that one element of the array is left empty, so that the
+producer goes through a full write before clobbering the cell that the
+consumer just vacated.
+
+> > I can sympathize if you are having trouble believing this.  After all,
+> > it took the DEC Alpha architects a full hour to convince me, and that was
+> > in a face-to-face meeting instead of over email.  (Just for the record,
+> > it took me even longer to convince them that their earlier documentation
+> > did not clearly indicate the need for these read-side barriers.)  But
+> > regardless of whether or not I sympathize, DEC Alpha is what it is.
+> 
+> Again, I do understand quirkiness of the DEC Alpha, and I still think that
+> there is no need in *full* memory barrier on producer side - the one
+> before writing data to the buffer and which you've put in kfifo
+> implementation.
+
+There really does need to be some sort of memory barrier there to
+order the read of the index before the write into the array element.
+Now, it might well be that this barrier is supplied by the unlock-lock
+pair guarding the producer, but either way, there does need to be some
+ordering.
 
 							Thanx, Paul
