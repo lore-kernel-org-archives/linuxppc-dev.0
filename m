@@ -1,49 +1,50 @@
 Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C215E2C0127
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BD1BF2C0119
  for <linuxppc-dev@ozlabs.org>; Sun,  3 Nov 2013 15:04:40 +1100 (EST)
 Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Sat, 2 Nov 2013 22:04:37 -0600
+ Sat, 2 Nov 2013 22:04:38 -0600
 Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
  [9.17.195.106])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id B0B0E3E4005B
- for <linuxppc-dev@ozlabs.org>; Sat,  2 Nov 2013 22:04:34 -0600 (MDT)
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2AB3C1FF002C
+ for <linuxppc-dev@ozlabs.org>; Sat,  2 Nov 2013 22:04:22 -0600 (MDT)
 Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
  by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rA344YwI211262
- for <linuxppc-dev@ozlabs.org>; Sat, 2 Nov 2013 22:04:34 -0600
+ rA344ab2284520
+ for <linuxppc-dev@ozlabs.org>; Sat, 2 Nov 2013 22:04:36 -0600
 Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
  by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- rA347PBI002015
- for <linuxppc-dev@ozlabs.org>; Sat, 2 Nov 2013 22:07:26 -0600
-Date: Sat, 2 Nov 2013 08:46:48 -0700
+ rA347QbD002158
+ for <linuxppc-dev@ozlabs.org>; Sat, 2 Nov 2013 22:07:27 -0600
+Date: Sat, 2 Nov 2013 10:26:24 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Victor Kaplansky <VICTORK@il.ibm.com>
 Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131102154647.GJ4067@linux.vnet.ibm.com>
+Message-ID: <20131102172624.GA4009@linux.vnet.ibm.com>
 References: <20131028132634.GO19466@laptop.lan>
  <20131028163418.GD4126@linux.vnet.ibm.com>
  <20131028201735.GA15629@redhat.com>
  <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
  <20131030092725.GL4126@linux.vnet.ibm.com>
- <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
- <20131031043258.GQ4126@linux.vnet.ibm.com>
- <OFDF23985D.1D949148-ON42257C15.002DEB25-42257C15.0036DF93@il.ibm.com>
- <20131031152543.GC4067@linux.vnet.ibm.com>
- <OF3CB471BA.BACC7843-ON42257C16.0055EF23-42257C16.0058875B@il.ibm.com>
+ <20131030112526.GI16117@laptop.programming.kicks-ass.net>
+ <OFF6C78E48.E477DB1E-ON42257C14.0050F9B3-42257C14.0051AC6D@il.ibm.com>
+ <20131031061602.GU4126@linux.vnet.ibm.com>
+ <OF6655E55D.554B7448-ON42257C16.00442B8B-42257C16.0048995E@il.ibm.com>
+ <20131102163618.GK4067@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF3CB471BA.BACC7843-ON42257C16.0055EF23-42257C16.0058875B@il.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
+In-Reply-To: <20131102163618.GK4067@linux.vnet.ibm.com>
+Cc: mbatty@cantab.net, dhowells@redhat.com, Michael Neuling <mikey@neuling.org>,
  Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
  Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
  Oleg Nesterov <oleg@redhat.com>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Frederic Weisbecker <fweisbec@gmail.com>
+ Anton Blanchard <anton@samba.org>, Frederic Weisbecker <fweisbec@gmail.com>,
+ lfomicki@poczta.fm
 Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -54,126 +55,271 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 01, 2013 at 06:06:58PM +0200, Victor Kaplansky wrote:
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote on 10/31/2013
-> 05:25:43 PM:
+[ Adding David Howells, Lech Fomicki, and Mark Batty on CC for their
+  thoughts given previous discussions. ]
+
+On Sat, Nov 02, 2013 at 09:36:18AM -0700, Paul E. McKenney wrote:
+> On Fri, Nov 01, 2013 at 03:12:58PM +0200, Victor Kaplansky wrote:
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote on 10/31/2013
+> > 08:16:02 AM:
+> > 
+> > > > BTW, it is why you also don't need ACCESS_ONCE() around @tail, but only
+> > > > around
+> > > > @head read.
+> > 
+> > Just to be sure, that we are talking about the same code - I was
+> > considering
+> > ACCESS_ONCE() around @tail in point AAA in the following example from
+> > Documentation/circular-buffers.txt for CONSUMER:
+> > 
+> >         unsigned long head = ACCESS_ONCE(buffer->head);
+> >         unsigned long tail = buffer->tail;      /* AAA */
+> > 
+> >         if (CIRC_CNT(head, tail, buffer->size) >= 1) {
+> >                 /* read index before reading contents at that index */
+> >                 smp_read_barrier_depends();
+> > 
+> >                 /* extract one item from the buffer */
+> >                 struct item *item = buffer[tail];
+> > 
+> >                 consume_item(item);
+> > 
+> >                 smp_mb(); /* finish reading descriptor before incrementing
+> > tail */
+> > 
+> >                 buffer->tail = (tail + 1) & (buffer->size - 1); /* BBB */
+> >         }
 > 
-> > I really don't care about "fair" -- I care instead about the kernel
-> > working reliably.
+> Hmmm...  I believe that we need to go back to the original code in
+> Documentation/circular-buffers.txt.  I do so at the bottom of this email.
 > 
-> Though I don't see how putting a memory barrier without deep understanding
-> why it is needed helps kernel reliability, I do agree that reliability
-> is more important than performance.
-
-True enough.  Of course, the same applies to removing memory barriers.
-
-> > And it should also be easy for proponents of removing memory barriers to
-> > clearly articulate what orderings their code does and does not need.
+> > > If you omit the ACCESS_ONCE() calls around @tail, the compiler is within
+> > > its rights to combine adjacent operations and also to invent loads and
+> > > stores, for example, in cases of register pressure.
+> > 
+> > Right. And I was completely aware about these possible transformations when
+> > said that ACCESS_ONCE() around @tail in point AAA is redundant. Moved, or
+> > even
+> > completely dismissed reads of @tail in consumer code, are not a problem at
+> > all,
+> > since @tail is written exclusively by CONSUMER side.
 > 
-> I intentionally took a simplified example of circle buffer from
-> Documentation/circular-buffers.txt. I think both sides agree about
-> memory ordering requirements in the example. At least I didn't see anyone
-> argued about them.
-
-Hard to say.  No one has actually stated them clearly, so how could we
-know whether or not we agree.
-
-> > You are assuming control dependencies that the C language does not
-> > provide.  Now, for all I know right now, there might well be some other
-> > reason why a full barrier is not required, but the "if" statement cannot
-> > be that reason.
-> >
-> > Please review section 1.10 of the C++11 standard (or the corresponding
-> > section of the C11 standard, if you prefer).  The point is that the
-> > C/C++11 covers only data dependencies, not control dependencies.
+> I believe that the lack of ACCESS_ONCE() around the consumer's store
+> to buffer->tail is at least a documentation problem.  In the original
+> consumer code, it is trapped between an smp_mb() and a spin_unlock(),
+> but it is updating something that is read without synchronization by
+> some other thread.
 > 
-> I feel you made a wrong assumption about my expertise in compilers. I don't
-> need to reread section 1.10 of the C++11 standard, because I do agree that
-> potentially compiler can break the code in our case. And I do agree that
-> a compiler barrier() or some other means (including a change of the
-> standard)
-> can be required in future to prevent a compiler from moving memory accesses
-> around.
-
-I was simply reacting to what seemed to me to be your statement that
-control dependencies affect ordering.  They don't.  The C/C++ standard
-does not in any way respect control dependencies.  In fact, there are
-implementations that do not respect control dependencies.  But don't
-take my word for it, actually try it out on a weakly ordered system.
-Or try out either ppcmem or armmem, which does a full state-space search.
-
-Here is the paper:
-
-	http://www.cl.cam.ac.uk/~pes20/ppc-supplemental/pldi105-sarkar.pdf
-
-And here is the web-based tool:
-
-	http://www.cl.cam.ac.uk/~pes20/ppcmem/
-
-And here is a much faster version that you can run locally:
-
-	http://www.cl.cam.ac.uk/~pes20/weakmemory/index.html
-
-> But "broken" compiler is much wider issue to be deeply discussed in this
-> thread. I'm pretty sure that kernel have tons of very subtle
-> code that actually creates locks and memory ordering. Such code
-> usually just use the "barrier()"  approach to tell gcc not to combine
-> or move memory accesses around it.
+> > > It is also within
+> > > its rights to do piece-at-a-time loads and stores, which might sound
+> > > unlikely, but which can actually has happened when the compiler figures
+> > > out exactly what is to be stored at compile time, especially on hardware
+> > > that only allows small immediate values.
+> > 
+> > As for writes to @tail, the ACCESS_ONCE around @tail at point AAA,
+> > doesn't prevent in any way an imaginary super-optimizing compiler
+> > from moving around the store to @tail (which appears in the code at point
+> > BBB).
+> > 
+> > It is why ACCESS_ONCE at point AAA is completely redundant.
 > 
-> Let's just agree for the sake of this memory barrier discussion that we
-> *do* need compiler barrier to tell gcc not to combine or move memory
-> accesses around it.
-
-Sometimes barrier() is indeed all you need, other times more is needed.
-
-> > Glad we agree on something!
+> Agreed, it is under the lock that guards modifications, so AAA does not
+> need ACCESS_ONCE().
 > 
-> I'm glad too!
+> OK, here is the producer from Documentation/circular-buffers.txt, with
+> some comments added:
 > 
-> > Did you miss the following passage in the paragraph you quoted?
-> >
-> >    "... likewise, your consumer must issue a memory barrier
-> >    instruction after removing an item from the queue and before
-> >    reading from its memory."
-> >
-> > That is why DEC Alpha readers need a read-side memory barrier -- it says
-> > so right there.  And as either you or Peter noted earlier in this thread,
-> > this barrier can be supplied by smp_read_barrier_depends().
+> 	spin_lock(&producer_lock);
 > 
-> I did not miss that passage. That passage explains why consumer on Alpha
-> processor after reading @head is required to execute an additional
-> smp_read_barrier_depends() before it can *read* from memory pointed by
-> @tail. And I think that I understand why - because the reader have to wait
-> till local caches are fully updated and only then it can read data from
-> the data buffer.
-> 
-> But on the producer side, after we read @tail, we don't need to wait for
-> update of local caches before we start *write* data to the buffer, since
-> the
-> producer is the only one who write data there!
+> 	unsigned long head = buffer->head;
 
-Well, we cannot allow the producer to clobber data while the consumer
-is reading it out.  That said, I do agree that we should get some help
-from the fact that one element of the array is left empty, so that the
-producer goes through a full write before clobbering the cell that the
-consumer just vacated.
+The above is updated only under producer_lock, which we hold, so no
+ACCESS_ONCE() is needed for buffer->head.
 
-> > I can sympathize if you are having trouble believing this.  After all,
-> > it took the DEC Alpha architects a full hour to convince me, and that was
-> > in a face-to-face meeting instead of over email.  (Just for the record,
-> > it took me even longer to convince them that their earlier documentation
-> > did not clearly indicate the need for these read-side barriers.)  But
-> > regardless of whether or not I sympathize, DEC Alpha is what it is.
+> 	unsigned long tail = ACCESS_ONCE(buffer->tail); /* PT */
 > 
-> Again, I do understand quirkiness of the DEC Alpha, and I still think that
-> there is no need in *full* memory barrier on producer side - the one
-> before writing data to the buffer and which you've put in kfifo
-> implementation.
+> 	if (CIRC_SPACE(head, tail, buffer->size) >= 1) {
+> 		/* insert one item into the buffer */
+> 		struct item *item = buffer[head];
+> 
+> 		produce_item(item); /* PD */
+> 
+> 		smp_wmb(); /* commit the item before incrementing the head */
+> 
+> 		buffer->head = (head + 1) & (buffer->size - 1);  /* PH */
 
-There really does need to be some sort of memory barrier there to
-order the read of the index before the write into the array element.
-Now, it might well be that this barrier is supplied by the unlock-lock
-pair guarding the producer, but either way, there does need to be some
-ordering.
+The above needs to be something like:
+
+		ACCESS_ONCE(buffer->head) = (head + 1) & (buffer->size - 1);
+
+This is because we are writing to a shared variable that might be being
+read concurrently.
+
+> 		/* wake_up() will make sure that the head is committed before
+> 		 * waking anyone up */
+> 		wake_up(consumer);
+> 	}
+> 
+> 	spin_unlock(&producer_lock);
+> 
+> And here is the consumer, also from Documentation/circular-buffers.txt:
+> 
+> 	spin_lock(&consumer_lock);
+> 
+> 	unsigned long head = ACCESS_ONCE(buffer->head); /* CH */
+> 	unsigned long tail = buffer->tail;
+
+The above is updated only under consumer_lock, which we hold, so no
+ACCESS_ONCE() is needed for buffer->tail.
+
+> 
+> 	if (CIRC_CNT(head, tail, buffer->size) >= 1) {
+> 		/* read index before reading contents at that index */
+> 		smp_read_barrier_depends();
+> 
+> 		/* extract one item from the buffer */
+> 		struct item *item = buffer[tail]; /* CD */
+> 
+> 		consume_item(item);
+> 
+> 		smp_mb(); /* finish reading descriptor before incrementing tail */
+> 
+> 		buffer->tail = (tail + 1) & (buffer->size - 1); /* CT */
+
+And here, for no-execution-cost documentation, if nothing else:
+
+		ACCESS_ONCE(buffer->tail) = (tail + 1) & (buffer->size - 1);
+
+> 	}
+> 
+> 	spin_unlock(&consumer_lock);
+> 
+> Here are the ordering requirements as I see them:
+> 
+> 1.	The producer is not allowed to clobber a location that the
+> 	consumer is in the process of reading from.
+> 
+> 2.	The consumer is not allowed to read from a location that the
+> 	producer has not yet completed writing to.
+> 
+> #1 is helped out by the fact that there is always an empty element in
+> the array, so that the producer will need to produce twice in a row
+> to catch up to where the consumer is currently consuming.  #2 has no
+> such benefit: The consumer can consume an item that has just now been
+> produced.
+> 
+> #1 requires that CD is ordered before CT in a way that pairs with the
+> ordering of PT and PD.  There is of course no effective ordering between
+> PT and PD within a given call to the producer, but we only need the
+> ordering between the read from PT for one call to the producer and the
+> PD of the -next- call to the producer, courtesy of the fact that there
+> is always one empty cell in the array.  Therefore, the required ordering
+> between PT of one call and PD of the next is provided by the unlock-lock
+> pair.  The ordering of CD and CT is of course provided by the smp_mb().
+> (And yes, I was missing the unlock-lock pair earlier.  In my defense,
+> you did leave this unlock-lock pair out of your example.)
+> 
+> So ordering requirement #1 is handled by the original, but only if you
+> leave the locking in place.  The producer's smp_wmb() does not necessarily
+> order prior loads against subsequent stores, and the wake_up() only
+> guarantees ordering if something was actually awakened.  As noted earlier,
+> the "if" does not necessarily provide ordering.
+> 
+> On to ordering requirement #2.
+> 
+> This requires that CH and CD is ordered in a way that pairs with ordering
+> between PD and PH.  PD and PH are both writes, so the smp_wmb() does
+> the trick there.  The consumer side is a bit strange.  On DEC Alpha,
+> smp_read_barrier_dependes() turns into smp_mb(), so that case is covered
+> (though by accident).  On other architectures, smp_read_barrier_depends()
+> generates no code, and there is no data dependency between the CH and CD.
+> The dependency is instead between the read from ->tail and the write,
+
+Sigh.  Make that "The dependency is instead between the read from ->tail
+and the read from the array."
+
+> and as you noted, ->tail is written by the consumer, not the producer.
+
+And non-dependent reads -can- be speculated, so the
+smp_read_barrier_depends() needs to be at least an smp_rmb().
+
+Again, don't take my word for it, try it with either ppcmem or real
+weakly ordered hardware.
+
+I am not 100% confident of the patch below, but am getting there.
+If a change is really needed, it must of course be propagated to the
+uses within the Linux kernel.
 
 							Thanx, Paul
+
+> But my battery is dying, so more later, including ACCESS_ONCE().
+
+documentation: Fix circular-buffer example.
+
+The code sample in Documentation/circular-buffers.txt appears to have a
+few ordering bugs.  This patch therefore applies the needed fixes.
+
+Reported-by: Lech Fomicki <lfomicki@poczta.fm>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+diff --git a/Documentation/circular-buffers.txt b/Documentation/circular-buffers.txt
+index 8117e5bf6065..a36bed3db4ee 100644
+--- a/Documentation/circular-buffers.txt
++++ b/Documentation/circular-buffers.txt
+@@ -170,7 +170,7 @@ The producer will look something like this:
+ 
+ 		smp_wmb(); /* commit the item before incrementing the head */
+ 
+-		buffer->head = (head + 1) & (buffer->size - 1);
++		ACCESS_ONCE(buffer->head) = (head + 1) & (buffer->size - 1);
+ 
+ 		/* wake_up() will make sure that the head is committed before
+ 		 * waking anyone up */
+@@ -183,9 +183,14 @@ This will instruct the CPU that the contents of the new item must be written
+ before the head index makes it available to the consumer and then instructs the
+ CPU that the revised head index must be written before the consumer is woken.
+ 
+-Note that wake_up() doesn't have to be the exact mechanism used, but whatever
+-is used must guarantee a (write) memory barrier between the update of the head
+-index and the change of state of the consumer, if a change of state occurs.
++Note that wake_up() does not guarantee any sort of barrier unless something
++is actually awakened.  We therefore cannot rely on it for ordering.  However,
++there is always one element of the array left empty.  Therefore, the
++producer must produce two elements before it could possibly corrupt the
++element currently being read by the consumer.  Therefore, the unlock-lock
++pair between consecutive invocations of the consumer provides the necessary
++ordering between the read of the index indicating that the consumer has
++vacated a given element and the write by the producer to that same element.
+ 
+ 
+ THE CONSUMER
+@@ -200,7 +205,7 @@ The consumer will look something like this:
+ 
+ 	if (CIRC_CNT(head, tail, buffer->size) >= 1) {
+ 		/* read index before reading contents at that index */
+-		smp_read_barrier_depends();
++		smp_rmb();
+ 
+ 		/* extract one item from the buffer */
+ 		struct item *item = buffer[tail];
+@@ -209,7 +214,7 @@ The consumer will look something like this:
+ 
+ 		smp_mb(); /* finish reading descriptor before incrementing tail */
+ 
+-		buffer->tail = (tail + 1) & (buffer->size - 1);
++		ACCESS_ONCE(buffer->tail) = (tail + 1) & (buffer->size - 1);
+ 	}
+ 
+ 	spin_unlock(&consumer_lock);
+@@ -223,7 +228,10 @@ Note the use of ACCESS_ONCE() in both algorithms to read the opposition index.
+ This prevents the compiler from discarding and reloading its cached value -
+ which some compilers will do across smp_read_barrier_depends().  This isn't
+ strictly needed if you can be sure that the opposition index will _only_ be
+-used the once.
++used the once.  Similarly, ACCESS_ONCE() is used in both algorithms to
++write the thread's index.  This documents the fact that we are writing
++to something that can be read concurrently and also prevents the compiler
++from tearing the store.
+ 
+ 
+ ===============
