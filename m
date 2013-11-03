@@ -1,34 +1,38 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 424F42C00A0
- for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 07:01:47 +1100 (EST)
-Date: Sun, 3 Nov 2013 21:01:24 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
-Message-ID: <20131103200124.GK19466@laptop.lan>
-References: <20131028201735.GA15629@redhat.com>
+ by ozlabs.org (Postfix) with ESMTPS id 977322C00AD
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 07:58:54 +1100 (EST)
+Message-ID: <1383512261.4776.21.camel@pasglop>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Victor Kaplansky <VICTORK@il.ibm.com>
+Date: Mon, 04 Nov 2013 07:57:41 +1100
+In-Reply-To: <OF57D6EF77.CD2E45CE-ON42257C16.005AA6D8-42257C16.005AB961@il.ibm.com>
+References: <CAFTL4hxn47KFKZPLgKeBxxdaAbA4vg9QVzctuW4ZrSgmfX5bAQ@mail.gmail.com>
+ <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
+ <20131028132634.GO19466@laptop.lan>
+ <20131028163418.GD4126@linux.vnet.ibm.com>
+ <20131028201735.GA15629@redhat.com>
  <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
  <20131030092725.GL4126@linux.vnet.ibm.com>
- <20131030112526.GI16117@laptop.programming.kicks-ass.net>
- <20131031064015.GV4126@linux.vnet.ibm.com>
- <20131101145634.GH19466@laptop.lan>
- <20131102173239.GB3947@linux.vnet.ibm.com>
- <20131103144017.GA25118@linux.vnet.ibm.com>
- <20131103151704.GJ19466@laptop.lan>
- <CA+55aFx_kuvR-0dwJtjvnhtha5QBc5XcLZPRH=WKT+hYVAKOrw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+55aFx_kuvR-0dwJtjvnhtha5QBc5XcLZPRH=WKT+hYVAKOrw@mail.gmail.com>
+ <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
+ <20131031043258.GQ4126@linux.vnet.ibm.com>
+ <OFDF23985D.1D949148-ON42257C15.002DEB25-42257C15.0036DF93@il.ibm.com>
+ <20131031152543.GC4067@linux.vnet.ibm.com>
+ <OF3CB471BA.BACC7843-ON42257C16.0055EF23-42257C16.0058875B@il.ibm.com>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B73D4@saturn3.aculab.com>
+ <OF57D6EF77.CD2E45CE-ON42257C16.005AA6D8-42257C16.005AB961@il.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: Michael Neuling <mikey@neuling.org>,
  Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+ Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ David Laight <David.Laight@aculab.com>, Anton Blanchard <anton@samba.org>,
+ paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,51 +42,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Nov 03, 2013 at 10:08:14AM -0800, Linus Torvalds wrote:
-> On Sun, Nov 3, 2013 at 7:17 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Sun, Nov 03, 2013 at 06:40:17AM -0800, Paul E. McKenney wrote:
-> >> If there was an smp_tmb(), I would likely use it in rcu_assign_pointer().
-> >
-> > Well, I'm obviously all for introducing this new barrier, for it will
-> > reduce a full mfence on x86 to a compiler barrier. And ppc can use
-> > lwsync as opposed to sync afaict. Not sure ARM can do better.
-> >
-> > ---
-> > Subject: arch: Introduce new TSO memory barrier smp_tmb()
+On Fri, 2013-11-01 at 18:30 +0200, Victor Kaplansky wrote:
+> "David Laight" <David.Laight@aculab.com> wrote on 11/01/2013 06:25:29 PM:
+> > gcc will do unexpected memory accesses for bit fields that are
+> > adjacent to volatile data.
+> > In particular it may generate 64bit sized (and aligned) RMW cycles
+> > when accessing bit fields.
+> > And yes, this has caused real problems.
 > 
-> This is specialized enough that I would *really* like the name to be
-> more descriptive. Compare to the special "smp_read_barrier_depends()"
-> maco: it's unusual, and it has very specific semantics, so it gets a
-> long and descriptive name.
-> 
-> Memory ordering is subtle enough without then using names that are
-> subtle in themselves. mb/rmb/wmb are conceptually pretty simple
-> operations, and very basic when talking about memory ordering.
-> "acquire" and "release" are less simple, but have descriptive names
-> and have very specific uses in locking.
-> 
-> In contrast "smp_tmb()" is a *horrible* name, because TSO is a
-> description of the memory ordering, not of a particular barrier. It's
-> also not even clear that you can have a "tso barrier", since the
-> ordering (like acquire/release) presumably is really about one
-> particular *store*, not about some kind of barrier between different
-> operations.
-> 
-> So please describe exactly what the semantics that barrier has, and
-> then name the barrier that way.
-> 
-> I assume that in this particular case, the semantics RCU wants is
-> "write barrier, and no preceding reads can move past this point".
-> 
-> Calling that "smp_tmb()" is f*cking insane, imnsho.
+> Thanks, I am aware about this bug/feature in gcc.
 
-Fair enough; from what I could gather the proposed semantics are
-RELEASE+WMB, such that neither reads not writes can cross over, writes
-can't cross back, but reads could.
+AFAIK, this has been fixed in 4.8 and 4.7.3 ... 
 
-Since both RELEASE and WMB are trivial under TSO the entire thing
-collapses.
+Cheers,
+Ben.
 
-Now I'm currently completely confused as to what C/C++ wrecks vs actual
-proper memory order issues; let alone fully comprehend the case that
-started all this.
+> -- Victor
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
