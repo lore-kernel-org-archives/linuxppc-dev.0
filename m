@@ -1,33 +1,15 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 094252C00DC
- for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 01:40:25 +1100 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Sun, 3 Nov 2013 07:40:24 -0700
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id AD9C238C8042
- for <linuxppc-dev@ozlabs.org>; Sun,  3 Nov 2013 09:40:19 -0500 (EST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rA3EeKtG4456840
- for <linuxppc-dev@ozlabs.org>; Sun, 3 Nov 2013 14:40:20 GMT
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- rA3EhB9V019558
- for <linuxppc-dev@ozlabs.org>; Sun, 3 Nov 2013 07:43:11 -0700
-Date: Sun, 3 Nov 2013 06:40:17 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: perf events ring buffer memory barrier on powerpc
-Message-ID: <20131103144017.GA25118@linux.vnet.ibm.com>
-References: <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.com>
- <20131028132634.GO19466@laptop.lan>
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DF0802C007B
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 02:17:24 +1100 (EST)
+Date: Sun, 3 Nov 2013 16:17:04 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
+Message-ID: <20131103151704.GJ19466@laptop.lan>
+References: <20131028132634.GO19466@laptop.lan>
  <20131028163418.GD4126@linux.vnet.ibm.com>
  <20131028201735.GA15629@redhat.com>
  <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
@@ -36,16 +18,17 @@ References: <OFB9096CCA.68AAFFFB-ON42257C12.0044F107-42257C12.00457129@il.ibm.co
  <20131031064015.GV4126@linux.vnet.ibm.com>
  <20131101145634.GH19466@laptop.lan>
  <20131102173239.GB3947@linux.vnet.ibm.com>
+ <20131103144017.GA25118@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131102173239.GB3947@linux.vnet.ibm.com>
+In-Reply-To: <20131103144017.GA25118@linux.vnet.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
  Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
  Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
  Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
  Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+ Victor Kaplansky <VICTORK@il.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,94 +38,514 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Nov 02, 2013 at 10:32:39AM -0700, Paul E. McKenney wrote:
-> On Fri, Nov 01, 2013 at 03:56:34PM +0100, Peter Zijlstra wrote:
-> > On Wed, Oct 30, 2013 at 11:40:15PM -0700, Paul E. McKenney wrote:
-> > > > Now the whole crux of the question is if we need barrier A at all, since
-> > > > the STORES issued by the @buf writes are dependent on the ubuf->tail
-> > > > read.
-> > > 
-> > > The dependency you are talking about is via the "if" statement?
-> > > Even C/C++11 is not required to respect control dependencies.
-> > > 
-> > > This one is a bit annoying.  The x86 TSO means that you really only
-> > > need barrier(), ARM (recent ARM, anyway) and Power could use a weaker
-> > > barrier, and so on -- but smp_mb() emits a full barrier.
-> > > 
-> > > Perhaps a new smp_tmb() for TSO semantics, where reads are ordered
-> > > before reads, writes before writes, and reads before writes, but not
-> > > writes before reads?  Another approach would be to define a per-arch
-> > > barrier for this particular case.
-> > 
-> > I suppose we can only introduce new barrier primitives if there's more
-> > than 1 use-case.
-> 
-> There probably are others.
+On Sun, Nov 03, 2013 at 06:40:17AM -0800, Paul E. McKenney wrote:
+> If there was an smp_tmb(), I would likely use it in rcu_assign_pointer().
 
-If there was an smp_tmb(), I would likely use it in rcu_assign_pointer().
-There are some corner cases that can happen with the current smp_wmb()
-that would be prevented by smp_tmb().  These corner cases are a bit
-strange, as follows:
+Well, I'm obviously all for introducing this new barrier, for it will
+reduce a full mfence on x86 to a compiler barrier. And ppc can use
+lwsync as opposed to sync afaict. Not sure ARM can do better.
 
-	struct foo gp;
+---
+Subject: arch: Introduce new TSO memory barrier smp_tmb()
 
-	void P0(void)
-	{
-		struct foo *p = kmalloc(sizeof(*p);
+A few sites could be downgraded from smp_mb() to smp_tmb() and a few
+site should be upgraded to smp_tmb() that are now using smp_wmb().
 
-		if (!p)
-			return;
-		ACCESS_ONCE(p->a) = 0;
-		BUG_ON(ACCESS_ONCE(p->a));
-		rcu_assign_pointer(gp, p);
-	}
+XXX hope PaulMck explains things better..
 
-	void P1(void)
-	{
-		struct foo *p = rcu_dereference(gp);
+X86 (!OOSTORE), SPARC have native TSO memory models and smp_tmb()
+reduces to barrier().
 
-		if (!p)
-			return;
-		ACCESS_ONCE(p->a) = 1;
-	}
+PPC can use lwsync instead of sync
 
-With smp_wmb(), the BUG_ON() can occur because smp_wmb() does
-not prevent CPU from reordering the read in the BUG_ON() with the
-rcu_assign_pointer().  With smp_tmb(), it could not.
+For the other archs, have smp_tmb map to smp_mb, as the stronger barrier
+is always correct but possibly suboptimal.
 
-Now, I am not too worried about this because I cannot think of any use
-for code like that in P0() and P1().  But if there was an smp_tmb(),
-it would be cleaner to make the BUG_ON() impossible.
+Suggested-by: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Not-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+---
+ arch/alpha/include/asm/barrier.h      | 2 ++
+ arch/arc/include/asm/barrier.h        | 2 ++
+ arch/arm/include/asm/barrier.h        | 2 ++
+ arch/arm64/include/asm/barrier.h      | 2 ++
+ arch/avr32/include/asm/barrier.h      | 1 +
+ arch/blackfin/include/asm/barrier.h   | 1 +
+ arch/cris/include/asm/barrier.h       | 2 ++
+ arch/frv/include/asm/barrier.h        | 1 +
+ arch/h8300/include/asm/barrier.h      | 2 ++
+ arch/hexagon/include/asm/barrier.h    | 1 +
+ arch/ia64/include/asm/barrier.h       | 2 ++
+ arch/m32r/include/asm/barrier.h       | 2 ++
+ arch/m68k/include/asm/barrier.h       | 1 +
+ arch/metag/include/asm/barrier.h      | 3 +++
+ arch/microblaze/include/asm/barrier.h | 1 +
+ arch/mips/include/asm/barrier.h       | 3 +++
+ arch/mn10300/include/asm/barrier.h    | 2 ++
+ arch/parisc/include/asm/barrier.h     | 1 +
+ arch/powerpc/include/asm/barrier.h    | 2 ++
+ arch/s390/include/asm/barrier.h       | 1 +
+ arch/score/include/asm/barrier.h      | 1 +
+ arch/sh/include/asm/barrier.h         | 2 ++
+ arch/sparc/include/asm/barrier_32.h   | 1 +
+ arch/sparc/include/asm/barrier_64.h   | 3 +++
+ arch/tile/include/asm/barrier.h       | 2 ++
+ arch/unicore32/include/asm/barrier.h  | 1 +
+ arch/x86/include/asm/barrier.h        | 3 +++
+ arch/xtensa/include/asm/barrier.h     | 1 +
+ 28 files changed, 48 insertions(+)
 
-							Thanx, Paul
-
-> > > > If the read shows no available space, we simply will not issue those
-> > > > writes -- therefore we could argue we can avoid the memory barrier.
-> > > 
-> > > Proving that means iterating through the permitted combinations of
-> > > compilers and architectures...  There is always hand-coded assembly
-> > > language, I suppose.
-> > 
-> > I'm starting to think that while the C/C++ language spec says they can
-> > wreck the world by doing these silly optimization, real world users will
-> > push back for breaking their existing code.
-> > 
-> > I'm fairly sure the GCC people _will_ get shouted at _loudly_ when they
-> > break the kernel by doing crazy shit like that.
-> > 
-> > Given its near impossible to write a correct program in C/C++ and
-> > tagging the entire kernel with __atomic is equally not going to happen,
-> > I think we must find a practical solution.
-> > 
-> > Either that, or we really need to consider forking the language and
-> > compiler :-(
-> 
-> Depends on how much benefit the optimizations provide.  If they provide
-> little or no benefit, I am with you, otherwise we will need to bit some
-> bullet or another.  Keep in mind that there is a lot of code in the
-> kernel that runs sequentially (e.g., due to being fully protected by
-> locks), and aggressive optimizations for that sort of code are harmless.
-> 
-> Can't say I know the answer at the moment, though.
-> 
-> 							Thanx, Paul
+diff --git a/arch/alpha/include/asm/barrier.h b/arch/alpha/include/asm/barrier.h
+index ce8860a0b32d..02ea63897038 100644
+--- a/arch/alpha/include/asm/barrier.h
++++ b/arch/alpha/include/asm/barrier.h
+@@ -18,12 +18,14 @@ __asm__ __volatile__("mb": : :"memory")
+ #ifdef CONFIG_SMP
+ #define __ASM_SMP_MB	"\tmb\n"
+ #define smp_mb()	mb()
++#define smp_tmb()	mb()
+ #define smp_rmb()	rmb()
+ #define smp_wmb()	wmb()
+ #define smp_read_barrier_depends()	read_barrier_depends()
+ #else
+ #define __ASM_SMP_MB
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #define smp_read_barrier_depends()	do { } while (0)
+diff --git a/arch/arc/include/asm/barrier.h b/arch/arc/include/asm/barrier.h
+index f6cb7c4ffb35..456c790fa1ad 100644
+--- a/arch/arc/include/asm/barrier.h
++++ b/arch/arc/include/asm/barrier.h
+@@ -22,10 +22,12 @@
+ /* TODO-vineetg verify the correctness of macros here */
+ #ifdef CONFIG_SMP
+ #define smp_mb()        mb()
++#define smp_tmb()	mb()
+ #define smp_rmb()       rmb()
+ #define smp_wmb()       wmb()
+ #else
+ #define smp_mb()        barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()       barrier()
+ #define smp_wmb()       barrier()
+ #endif
+diff --git a/arch/arm/include/asm/barrier.h b/arch/arm/include/asm/barrier.h
+index 60f15e274e6d..bc88a8505673 100644
+--- a/arch/arm/include/asm/barrier.h
++++ b/arch/arm/include/asm/barrier.h
+@@ -51,10 +51,12 @@
+ 
+ #ifndef CONFIG_SMP
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #else
+ #define smp_mb()	dmb(ish)
++#define smp_tmb()	smp_mb()
+ #define smp_rmb()	smp_mb()
+ #define smp_wmb()	dmb(ishst)
+ #endif
+diff --git a/arch/arm64/include/asm/barrier.h b/arch/arm64/include/asm/barrier.h
+index d4a63338a53c..ec0531f4892f 100644
+--- a/arch/arm64/include/asm/barrier.h
++++ b/arch/arm64/include/asm/barrier.h
+@@ -33,10 +33,12 @@
+ 
+ #ifndef CONFIG_SMP
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #else
+ #define smp_mb()	asm volatile("dmb ish" : : : "memory")
++#define smp_tmb()	asm volatile("dmb ish" : : : "memory")
+ #define smp_rmb()	asm volatile("dmb ishld" : : : "memory")
+ #define smp_wmb()	asm volatile("dmb ishst" : : : "memory")
+ #endif
+diff --git a/arch/avr32/include/asm/barrier.h b/arch/avr32/include/asm/barrier.h
+index 0961275373db..6c6ccb9cf290 100644
+--- a/arch/avr32/include/asm/barrier.h
++++ b/arch/avr32/include/asm/barrier.h
+@@ -20,6 +20,7 @@
+ # error "The AVR32 port does not support SMP"
+ #else
+ # define smp_mb()		barrier()
++# define smp_tmb()		barrier()
+ # define smp_rmb()		barrier()
+ # define smp_wmb()		barrier()
+ # define smp_read_barrier_depends() do { } while(0)
+diff --git a/arch/blackfin/include/asm/barrier.h b/arch/blackfin/include/asm/barrier.h
+index ebb189507dd7..100f49121a18 100644
+--- a/arch/blackfin/include/asm/barrier.h
++++ b/arch/blackfin/include/asm/barrier.h
+@@ -40,6 +40,7 @@
+ #endif /* !CONFIG_SMP */
+ 
+ #define smp_mb()  mb()
++#define smp_tmb() mb()
+ #define smp_rmb() rmb()
+ #define smp_wmb() wmb()
+ #define set_mb(var, value) do { var = value; mb(); } while (0)
+diff --git a/arch/cris/include/asm/barrier.h b/arch/cris/include/asm/barrier.h
+index 198ad7fa6b25..679c33738b4c 100644
+--- a/arch/cris/include/asm/barrier.h
++++ b/arch/cris/include/asm/barrier.h
+@@ -12,11 +12,13 @@
+ 
+ #ifdef CONFIG_SMP
+ #define smp_mb()        mb()
++#define smp_tmb()       mb()
+ #define smp_rmb()       rmb()
+ #define smp_wmb()       wmb()
+ #define smp_read_barrier_depends()     read_barrier_depends()
+ #else
+ #define smp_mb()        barrier()
++#define smp_tmb()       barrier()
+ #define smp_rmb()       barrier()
+ #define smp_wmb()       barrier()
+ #define smp_read_barrier_depends()     do { } while(0)
+diff --git a/arch/frv/include/asm/barrier.h b/arch/frv/include/asm/barrier.h
+index 06776ad9f5e9..60354ce13ba0 100644
+--- a/arch/frv/include/asm/barrier.h
++++ b/arch/frv/include/asm/barrier.h
+@@ -20,6 +20,7 @@
+ #define read_barrier_depends()	do { } while (0)
+ 
+ #define smp_mb()			barrier()
++#define smp_tmb()			barrier()
+ #define smp_rmb()			barrier()
+ #define smp_wmb()			barrier()
+ #define smp_read_barrier_depends()	do {} while(0)
+diff --git a/arch/h8300/include/asm/barrier.h b/arch/h8300/include/asm/barrier.h
+index 9e0aa9fc195d..e8e297fa4e9a 100644
+--- a/arch/h8300/include/asm/barrier.h
++++ b/arch/h8300/include/asm/barrier.h
+@@ -16,11 +16,13 @@
+ 
+ #ifdef CONFIG_SMP
+ #define smp_mb()	mb()
++#define smp_tmb()	mb()
+ #define smp_rmb()	rmb()
+ #define smp_wmb()	wmb()
+ #define smp_read_barrier_depends()	read_barrier_depends()
+ #else
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #define smp_read_barrier_depends()	do { } while(0)
+diff --git a/arch/hexagon/include/asm/barrier.h b/arch/hexagon/include/asm/barrier.h
+index 1041a8e70ce8..2dd5b2ad4d21 100644
+--- a/arch/hexagon/include/asm/barrier.h
++++ b/arch/hexagon/include/asm/barrier.h
+@@ -28,6 +28,7 @@
+ #define smp_rmb()			barrier()
+ #define smp_read_barrier_depends()	barrier()
+ #define smp_wmb()			barrier()
++#define smp_tmb()			barrier()
+ #define smp_mb()			barrier()
+ #define smp_mb__before_atomic_dec()	barrier()
+ #define smp_mb__after_atomic_dec()	barrier()
+diff --git a/arch/ia64/include/asm/barrier.h b/arch/ia64/include/asm/barrier.h
+index 60576e06b6fb..a5f92146b091 100644
+--- a/arch/ia64/include/asm/barrier.h
++++ b/arch/ia64/include/asm/barrier.h
+@@ -42,11 +42,13 @@
+ 
+ #ifdef CONFIG_SMP
+ # define smp_mb()	mb()
++# define smp_tmb()	mb()
+ # define smp_rmb()	rmb()
+ # define smp_wmb()	wmb()
+ # define smp_read_barrier_depends()	read_barrier_depends()
+ #else
+ # define smp_mb()	barrier()
++# define smp_tmb()	barrier()
+ # define smp_rmb()	barrier()
+ # define smp_wmb()	barrier()
+ # define smp_read_barrier_depends()	do { } while(0)
+diff --git a/arch/m32r/include/asm/barrier.h b/arch/m32r/include/asm/barrier.h
+index 6976621efd3f..a6fa29facd7a 100644
+--- a/arch/m32r/include/asm/barrier.h
++++ b/arch/m32r/include/asm/barrier.h
+@@ -79,12 +79,14 @@
+ 
+ #ifdef CONFIG_SMP
+ #define smp_mb()	mb()
++#define smp_tmb()	mb()
+ #define smp_rmb()	rmb()
+ #define smp_wmb()	wmb()
+ #define smp_read_barrier_depends()	read_barrier_depends()
+ #define set_mb(var, value) do { (void) xchg(&var, value); } while (0)
+ #else
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #define smp_read_barrier_depends()	do { } while (0)
+diff --git a/arch/m68k/include/asm/barrier.h b/arch/m68k/include/asm/barrier.h
+index 445ce22c23cb..8ecf52c87847 100644
+--- a/arch/m68k/include/asm/barrier.h
++++ b/arch/m68k/include/asm/barrier.h
+@@ -13,6 +13,7 @@
+ #define set_mb(var, value)	({ (var) = (value); wmb(); })
+ 
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #define smp_read_barrier_depends()	((void)0)
+diff --git a/arch/metag/include/asm/barrier.h b/arch/metag/include/asm/barrier.h
+index c90bfc6bf648..eb179fbce580 100644
+--- a/arch/metag/include/asm/barrier.h
++++ b/arch/metag/include/asm/barrier.h
+@@ -50,6 +50,7 @@ static inline void wmb(void)
+ #ifndef CONFIG_SMP
+ #define fence()		do { } while (0)
+ #define smp_mb()        barrier()
++#define smp_tmb()       barrier()
+ #define smp_rmb()       barrier()
+ #define smp_wmb()       barrier()
+ #else
+@@ -70,11 +71,13 @@ static inline void fence(void)
+ 	*flushptr = 0;
+ }
+ #define smp_mb()        fence()
++#define smp_tmb()       fence()
+ #define smp_rmb()       fence()
+ #define smp_wmb()       barrier()
+ #else
+ #define fence()		do { } while (0)
+ #define smp_mb()        barrier()
++#define smp_tmb()       barrier()
+ #define smp_rmb()       barrier()
+ #define smp_wmb()       barrier()
+ #endif
+diff --git a/arch/microblaze/include/asm/barrier.h b/arch/microblaze/include/asm/barrier.h
+index df5be3e87044..d573c170a717 100644
+--- a/arch/microblaze/include/asm/barrier.h
++++ b/arch/microblaze/include/asm/barrier.h
+@@ -21,6 +21,7 @@
+ #define set_wmb(var, value)	do { var = value; wmb(); } while (0)
+ 
+ #define smp_mb()		mb()
++#define smp_tmb()		mb()
+ #define smp_rmb()		rmb()
+ #define smp_wmb()		wmb()
+ 
+diff --git a/arch/mips/include/asm/barrier.h b/arch/mips/include/asm/barrier.h
+index 314ab5532019..535e699eec3b 100644
+--- a/arch/mips/include/asm/barrier.h
++++ b/arch/mips/include/asm/barrier.h
+@@ -144,15 +144,18 @@
+ #if defined(CONFIG_WEAK_ORDERING) && defined(CONFIG_SMP)
+ # ifdef CONFIG_CPU_CAVIUM_OCTEON
+ #  define smp_mb()	__sync()
++#  define smp_tmb()	__sync()
+ #  define smp_rmb()	barrier()
+ #  define smp_wmb()	__syncw()
+ # else
+ #  define smp_mb()	__asm__ __volatile__("sync" : : :"memory")
++#  define smp_tmb()	__asm__ __volatile__("sync" : : :"memory")
+ #  define smp_rmb()	__asm__ __volatile__("sync" : : :"memory")
+ #  define smp_wmb()	__asm__ __volatile__("sync" : : :"memory")
+ # endif
+ #else
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #endif
+diff --git a/arch/mn10300/include/asm/barrier.h b/arch/mn10300/include/asm/barrier.h
+index 2bd97a5c8af7..a345b0776e5f 100644
+--- a/arch/mn10300/include/asm/barrier.h
++++ b/arch/mn10300/include/asm/barrier.h
+@@ -19,11 +19,13 @@
+ 
+ #ifdef CONFIG_SMP
+ #define smp_mb()	mb()
++#define smp_tmb()	mb()
+ #define smp_rmb()	rmb()
+ #define smp_wmb()	wmb()
+ #define set_mb(var, value)  do { xchg(&var, value); } while (0)
+ #else  /* CONFIG_SMP */
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #define set_mb(var, value)  do { var = value;  mb(); } while (0)
+diff --git a/arch/parisc/include/asm/barrier.h b/arch/parisc/include/asm/barrier.h
+index e77d834aa803..f53196b589ec 100644
+--- a/arch/parisc/include/asm/barrier.h
++++ b/arch/parisc/include/asm/barrier.h
+@@ -25,6 +25,7 @@
+ #define rmb()		mb()
+ #define wmb()		mb()
+ #define smp_mb()	mb()
++#define smp_tmb()	mb()
+ #define smp_rmb()	mb()
+ #define smp_wmb()	mb()
+ #define smp_read_barrier_depends()	do { } while(0)
+diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+index ae782254e731..d7e8a560f1fe 100644
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -46,11 +46,13 @@
+ #endif
+ 
+ #define smp_mb()	mb()
++#define smp_tmb()	__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory")
+ #define smp_rmb()	__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory")
+ #define smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
+ #define smp_read_barrier_depends()	read_barrier_depends()
+ #else
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #define smp_read_barrier_depends()	do { } while(0)
+diff --git a/arch/s390/include/asm/barrier.h b/arch/s390/include/asm/barrier.h
+index 16760eeb79b0..f0409a874243 100644
+--- a/arch/s390/include/asm/barrier.h
++++ b/arch/s390/include/asm/barrier.h
+@@ -24,6 +24,7 @@
+ #define wmb()				mb()
+ #define read_barrier_depends()		do { } while(0)
+ #define smp_mb()			mb()
++#define smp_tmb()			mb()
+ #define smp_rmb()			rmb()
+ #define smp_wmb()			wmb()
+ #define smp_read_barrier_depends()	read_barrier_depends()
+diff --git a/arch/score/include/asm/barrier.h b/arch/score/include/asm/barrier.h
+index 0eacb6471e6d..865652083dde 100644
+--- a/arch/score/include/asm/barrier.h
++++ b/arch/score/include/asm/barrier.h
+@@ -5,6 +5,7 @@
+ #define rmb()		barrier()
+ #define wmb()		barrier()
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ 
+diff --git a/arch/sh/include/asm/barrier.h b/arch/sh/include/asm/barrier.h
+index 72c103dae300..f8dce7926432 100644
+--- a/arch/sh/include/asm/barrier.h
++++ b/arch/sh/include/asm/barrier.h
+@@ -39,11 +39,13 @@
+ 
+ #ifdef CONFIG_SMP
+ #define smp_mb()	mb()
++#define smp_tmb()	mb()
+ #define smp_rmb()	rmb()
+ #define smp_wmb()	wmb()
+ #define smp_read_barrier_depends()	read_barrier_depends()
+ #else
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #define smp_read_barrier_depends()	do { } while(0)
+diff --git a/arch/sparc/include/asm/barrier_32.h b/arch/sparc/include/asm/barrier_32.h
+index c1b76654ee76..1037ce189cee 100644
+--- a/arch/sparc/include/asm/barrier_32.h
++++ b/arch/sparc/include/asm/barrier_32.h
+@@ -8,6 +8,7 @@
+ #define read_barrier_depends()	do { } while(0)
+ #define set_mb(__var, __value)  do { __var = __value; mb(); } while(0)
+ #define smp_mb()	__asm__ __volatile__("":::"memory")
++#define smp_tmb()	__asm__ __volatile__("":::"memory")
+ #define smp_rmb()	__asm__ __volatile__("":::"memory")
+ #define smp_wmb()	__asm__ __volatile__("":::"memory")
+ #define smp_read_barrier_depends()	do { } while(0)
+diff --git a/arch/sparc/include/asm/barrier_64.h b/arch/sparc/include/asm/barrier_64.h
+index 95d45986f908..0f3c2fdb86b8 100644
+--- a/arch/sparc/include/asm/barrier_64.h
++++ b/arch/sparc/include/asm/barrier_64.h
+@@ -34,6 +34,7 @@ do {	__asm__ __volatile__("ba,pt	%%xcc, 1f\n\t" \
+  * memory ordering than required by the specifications.
+  */
+ #define mb()	membar_safe("#StoreLoad")
++#define tmb()	__asm__ __volatile__("":::"memory")
+ #define rmb()	__asm__ __volatile__("":::"memory")
+ #define wmb()	__asm__ __volatile__("":::"memory")
+ 
+@@ -43,10 +44,12 @@ do {	__asm__ __volatile__("ba,pt	%%xcc, 1f\n\t" \
+ 
+ #ifdef CONFIG_SMP
+ #define smp_mb()	mb()
++#define smp_tmb()	tmb()
+ #define smp_rmb()	rmb()
+ #define smp_wmb()	wmb()
+ #else
+ #define smp_mb()	__asm__ __volatile__("":::"memory")
++#define smp_tmb()	__asm__ __volatile__("":::"memory")
+ #define smp_rmb()	__asm__ __volatile__("":::"memory")
+ #define smp_wmb()	__asm__ __volatile__("":::"memory")
+ #endif
+diff --git a/arch/tile/include/asm/barrier.h b/arch/tile/include/asm/barrier.h
+index a9a73da5865d..cad3c6ae28bf 100644
+--- a/arch/tile/include/asm/barrier.h
++++ b/arch/tile/include/asm/barrier.h
+@@ -127,11 +127,13 @@ mb_incoherent(void)
+ 
+ #ifdef CONFIG_SMP
+ #define smp_mb()	mb()
++#define smp_tmb()	mb()
+ #define smp_rmb()	rmb()
+ #define smp_wmb()	wmb()
+ #define smp_read_barrier_depends()	read_barrier_depends()
+ #else
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #define smp_read_barrier_depends()	do { } while (0)
+diff --git a/arch/unicore32/include/asm/barrier.h b/arch/unicore32/include/asm/barrier.h
+index a6620e5336b6..8b341fffbda6 100644
+--- a/arch/unicore32/include/asm/barrier.h
++++ b/arch/unicore32/include/asm/barrier.h
+@@ -18,6 +18,7 @@
+ #define rmb()				barrier()
+ #define wmb()				barrier()
+ #define smp_mb()			barrier()
++#define smp_tmb()			barrier()
+ #define smp_rmb()			barrier()
+ #define smp_wmb()			barrier()
+ #define read_barrier_depends()		do { } while (0)
+diff --git a/arch/x86/include/asm/barrier.h b/arch/x86/include/asm/barrier.h
+index c6cd358a1eec..480201d83af1 100644
+--- a/arch/x86/include/asm/barrier.h
++++ b/arch/x86/include/asm/barrier.h
+@@ -86,14 +86,17 @@
+ # define smp_rmb()	barrier()
+ #endif
+ #ifdef CONFIG_X86_OOSTORE
++# define smp_tmb()	mb()
+ # define smp_wmb() 	wmb()
+ #else
++# define smp_tmb()	barrier()
+ # define smp_wmb()	barrier()
+ #endif
+ #define smp_read_barrier_depends()	read_barrier_depends()
+ #define set_mb(var, value) do { (void)xchg(&var, value); } while (0)
+ #else
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #define smp_read_barrier_depends()	do { } while (0)
+diff --git a/arch/xtensa/include/asm/barrier.h b/arch/xtensa/include/asm/barrier.h
+index ef021677d536..7839db843ea5 100644
+--- a/arch/xtensa/include/asm/barrier.h
++++ b/arch/xtensa/include/asm/barrier.h
+@@ -20,6 +20,7 @@
+ #error smp_* not defined
+ #else
+ #define smp_mb()	barrier()
++#define smp_tmb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
+ #endif
