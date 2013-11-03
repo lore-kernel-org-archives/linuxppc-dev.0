@@ -1,30 +1,26 @@
-Return-Path: <benh@ozlabs.org>
-Message-ID: <1383512363.4776.22.camel@pasglop>
-Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
-From: Benjamin Herrenschmidt <benh@ozlabs.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Date: Mon, 04 Nov 2013 07:59:23 +1100
-In-Reply-To: <20131103151704.GJ19466@laptop.lan>
-References: <20131028132634.GO19466@laptop.lan>
- <20131028163418.GD4126@linux.vnet.ibm.com>
- <20131028201735.GA15629@redhat.com>
- <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
- <20131030092725.GL4126@linux.vnet.ibm.com>
- <20131030112526.GI16117@laptop.programming.kicks-ass.net>
- <20131031064015.GV4126@linux.vnet.ibm.com>
- <20131101145634.GH19466@laptop.lan>
- <20131102173239.GB3947@linux.vnet.ibm.com>
- <20131103144017.GA25118@linux.vnet.ibm.com>
- <20131103151704.GJ19466@laptop.lan>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Frederic Weisbecker <fweisbec@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
- LKML <linux-kernel@vger.kernel.org>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Victor Kaplansky <VICTORK@il.ibm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <schivers@csc.com>
+Received: from mail170.messagelabs.com (mail170.messagelabs.com
+ [216.82.253.227])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail170.messagelabs.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E65EF2C010C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2013 08:07:25 +1100 (EST)
+Received: from mandarin.aust.csc.com (manadrin.aust.csc.com [20.10.126.22])
+ by amer-mta111.csc.com (Sentrion-MTA-4.3.1/Sentrion-MTA-4.3.1) with ESMTP id
+ rA3L7Ir4013652
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Nov 2013 16:07:19 -0500
+Received: from canberra.localdomain (canberra [20.10.126.227])
+ by mandarin.aust.csc.com (8.11.7p3+Sun/8.11.7) with ESMTP id rA3L3PP28776
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Nov 2013 08:03:25 +1100 (EST)
+Date: Mon, 04 Nov 2013 08:07:48 +1100
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 1/1] powerpc/embedded6xx: Add support for
+ Motorola/Emerson MVME5100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20131103210748.E74FAE06C0@canberra.localdomain>
+From: schivers@csc.com (Stephen Chivers)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,527 +30,727 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-11-03 at 16:17 +0100, Peter Zijlstra wrote:
-> On Sun, Nov 03, 2013 at 06:40:17AM -0800, Paul E. McKenney wrote:
-> > If there was an smp_tmb(), I would likely use it in rcu_assign_pointer().
-> 
-> Well, I'm obviously all for introducing this new barrier, for it will
-> reduce a full mfence on x86 to a compiler barrier. And ppc can use
-> lwsync as opposed to sync afaict. Not sure ARM can do better.
+Add support for the Motorola/Emerson MVME5100 Single Board Computer.
 
-The patch at the *very least* needs a good description of the semantics
-of the barrier, what does it order vs. what etc...
+The MVME5100 is a 6U form factor VME64 computer with:
 
-Cheers,
-Ben.
+	- A single MPC7410 or MPC750 CPU
+	- A HAWK Processor Host Bridge (CPU to PCI) and
+	  MultiProcessor Interrupt Controller (MPIC)
+	- Up to 500Mb of onboard memory
+	- A M48T37 Real Time Clock (RTC) and Non-Volatile Memory chip
+	- Two 16550 compatible UARTS
+	- Two Intel E100 Fast Ethernets
+	- Two PCI Mezzanine Card (PMC) Slots
+	- PPCBug Firmware
 
-> ---
-> Subject: arch: Introduce new TSO memory barrier smp_tmb()
-> 
-> A few sites could be downgraded from smp_mb() to smp_tmb() and a few
-> site should be upgraded to smp_tmb() that are now using smp_wmb().
-> 
-> XXX hope PaulMck explains things better..
-> 
-> X86 (!OOSTORE), SPARC have native TSO memory models and smp_tmb()
-> reduces to barrier().
-> 
-> PPC can use lwsync instead of sync
-> 
-> For the other archs, have smp_tmb map to smp_mb, as the stronger barrier
-> is always correct but possibly suboptimal.
-> 
-> Suggested-by: Paul McKenney <paulmck@linux.vnet.ibm.com>
-> Not-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-> ---
->  arch/alpha/include/asm/barrier.h      | 2 ++
->  arch/arc/include/asm/barrier.h        | 2 ++
->  arch/arm/include/asm/barrier.h        | 2 ++
->  arch/arm64/include/asm/barrier.h      | 2 ++
->  arch/avr32/include/asm/barrier.h      | 1 +
->  arch/blackfin/include/asm/barrier.h   | 1 +
->  arch/cris/include/asm/barrier.h       | 2 ++
->  arch/frv/include/asm/barrier.h        | 1 +
->  arch/h8300/include/asm/barrier.h      | 2 ++
->  arch/hexagon/include/asm/barrier.h    | 1 +
->  arch/ia64/include/asm/barrier.h       | 2 ++
->  arch/m32r/include/asm/barrier.h       | 2 ++
->  arch/m68k/include/asm/barrier.h       | 1 +
->  arch/metag/include/asm/barrier.h      | 3 +++
->  arch/microblaze/include/asm/barrier.h | 1 +
->  arch/mips/include/asm/barrier.h       | 3 +++
->  arch/mn10300/include/asm/barrier.h    | 2 ++
->  arch/parisc/include/asm/barrier.h     | 1 +
->  arch/powerpc/include/asm/barrier.h    | 2 ++
->  arch/s390/include/asm/barrier.h       | 1 +
->  arch/score/include/asm/barrier.h      | 1 +
->  arch/sh/include/asm/barrier.h         | 2 ++
->  arch/sparc/include/asm/barrier_32.h   | 1 +
->  arch/sparc/include/asm/barrier_64.h   | 3 +++
->  arch/tile/include/asm/barrier.h       | 2 ++
->  arch/unicore32/include/asm/barrier.h  | 1 +
->  arch/x86/include/asm/barrier.h        | 3 +++
->  arch/xtensa/include/asm/barrier.h     | 1 +
->  28 files changed, 48 insertions(+)
-> 
-> diff --git a/arch/alpha/include/asm/barrier.h b/arch/alpha/include/asm/barrier.h
-> index ce8860a0b32d..02ea63897038 100644
-> --- a/arch/alpha/include/asm/barrier.h
-> +++ b/arch/alpha/include/asm/barrier.h
-> @@ -18,12 +18,14 @@ __asm__ __volatile__("mb": : :"memory")
->  #ifdef CONFIG_SMP
->  #define __ASM_SMP_MB	"\tmb\n"
->  #define smp_mb()	mb()
-> +#define smp_tmb()	mb()
->  #define smp_rmb()	rmb()
->  #define smp_wmb()	wmb()
->  #define smp_read_barrier_depends()	read_barrier_depends()
->  #else
->  #define __ASM_SMP_MB
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #define smp_read_barrier_depends()	do { } while (0)
-> diff --git a/arch/arc/include/asm/barrier.h b/arch/arc/include/asm/barrier.h
-> index f6cb7c4ffb35..456c790fa1ad 100644
-> --- a/arch/arc/include/asm/barrier.h
-> +++ b/arch/arc/include/asm/barrier.h
-> @@ -22,10 +22,12 @@
->  /* TODO-vineetg verify the correctness of macros here */
->  #ifdef CONFIG_SMP
->  #define smp_mb()        mb()
-> +#define smp_tmb()	mb()
->  #define smp_rmb()       rmb()
->  #define smp_wmb()       wmb()
->  #else
->  #define smp_mb()        barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()       barrier()
->  #define smp_wmb()       barrier()
->  #endif
-> diff --git a/arch/arm/include/asm/barrier.h b/arch/arm/include/asm/barrier.h
-> index 60f15e274e6d..bc88a8505673 100644
-> --- a/arch/arm/include/asm/barrier.h
-> +++ b/arch/arm/include/asm/barrier.h
-> @@ -51,10 +51,12 @@
->  
->  #ifndef CONFIG_SMP
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #else
->  #define smp_mb()	dmb(ish)
-> +#define smp_tmb()	smp_mb()
->  #define smp_rmb()	smp_mb()
->  #define smp_wmb()	dmb(ishst)
->  #endif
-> diff --git a/arch/arm64/include/asm/barrier.h b/arch/arm64/include/asm/barrier.h
-> index d4a63338a53c..ec0531f4892f 100644
-> --- a/arch/arm64/include/asm/barrier.h
-> +++ b/arch/arm64/include/asm/barrier.h
-> @@ -33,10 +33,12 @@
->  
->  #ifndef CONFIG_SMP
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #else
->  #define smp_mb()	asm volatile("dmb ish" : : : "memory")
-> +#define smp_tmb()	asm volatile("dmb ish" : : : "memory")
->  #define smp_rmb()	asm volatile("dmb ishld" : : : "memory")
->  #define smp_wmb()	asm volatile("dmb ishst" : : : "memory")
->  #endif
-> diff --git a/arch/avr32/include/asm/barrier.h b/arch/avr32/include/asm/barrier.h
-> index 0961275373db..6c6ccb9cf290 100644
-> --- a/arch/avr32/include/asm/barrier.h
-> +++ b/arch/avr32/include/asm/barrier.h
-> @@ -20,6 +20,7 @@
->  # error "The AVR32 port does not support SMP"
->  #else
->  # define smp_mb()		barrier()
-> +# define smp_tmb()		barrier()
->  # define smp_rmb()		barrier()
->  # define smp_wmb()		barrier()
->  # define smp_read_barrier_depends() do { } while(0)
-> diff --git a/arch/blackfin/include/asm/barrier.h b/arch/blackfin/include/asm/barrier.h
-> index ebb189507dd7..100f49121a18 100644
-> --- a/arch/blackfin/include/asm/barrier.h
-> +++ b/arch/blackfin/include/asm/barrier.h
-> @@ -40,6 +40,7 @@
->  #endif /* !CONFIG_SMP */
->  
->  #define smp_mb()  mb()
-> +#define smp_tmb() mb()
->  #define smp_rmb() rmb()
->  #define smp_wmb() wmb()
->  #define set_mb(var, value) do { var = value; mb(); } while (0)
-> diff --git a/arch/cris/include/asm/barrier.h b/arch/cris/include/asm/barrier.h
-> index 198ad7fa6b25..679c33738b4c 100644
-> --- a/arch/cris/include/asm/barrier.h
-> +++ b/arch/cris/include/asm/barrier.h
-> @@ -12,11 +12,13 @@
->  
->  #ifdef CONFIG_SMP
->  #define smp_mb()        mb()
-> +#define smp_tmb()       mb()
->  #define smp_rmb()       rmb()
->  #define smp_wmb()       wmb()
->  #define smp_read_barrier_depends()     read_barrier_depends()
->  #else
->  #define smp_mb()        barrier()
-> +#define smp_tmb()       barrier()
->  #define smp_rmb()       barrier()
->  #define smp_wmb()       barrier()
->  #define smp_read_barrier_depends()     do { } while(0)
-> diff --git a/arch/frv/include/asm/barrier.h b/arch/frv/include/asm/barrier.h
-> index 06776ad9f5e9..60354ce13ba0 100644
-> --- a/arch/frv/include/asm/barrier.h
-> +++ b/arch/frv/include/asm/barrier.h
-> @@ -20,6 +20,7 @@
->  #define read_barrier_depends()	do { } while (0)
->  
->  #define smp_mb()			barrier()
-> +#define smp_tmb()			barrier()
->  #define smp_rmb()			barrier()
->  #define smp_wmb()			barrier()
->  #define smp_read_barrier_depends()	do {} while(0)
-> diff --git a/arch/h8300/include/asm/barrier.h b/arch/h8300/include/asm/barrier.h
-> index 9e0aa9fc195d..e8e297fa4e9a 100644
-> --- a/arch/h8300/include/asm/barrier.h
-> +++ b/arch/h8300/include/asm/barrier.h
-> @@ -16,11 +16,13 @@
->  
->  #ifdef CONFIG_SMP
->  #define smp_mb()	mb()
-> +#define smp_tmb()	mb()
->  #define smp_rmb()	rmb()
->  #define smp_wmb()	wmb()
->  #define smp_read_barrier_depends()	read_barrier_depends()
->  #else
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #define smp_read_barrier_depends()	do { } while(0)
-> diff --git a/arch/hexagon/include/asm/barrier.h b/arch/hexagon/include/asm/barrier.h
-> index 1041a8e70ce8..2dd5b2ad4d21 100644
-> --- a/arch/hexagon/include/asm/barrier.h
-> +++ b/arch/hexagon/include/asm/barrier.h
-> @@ -28,6 +28,7 @@
->  #define smp_rmb()			barrier()
->  #define smp_read_barrier_depends()	barrier()
->  #define smp_wmb()			barrier()
-> +#define smp_tmb()			barrier()
->  #define smp_mb()			barrier()
->  #define smp_mb__before_atomic_dec()	barrier()
->  #define smp_mb__after_atomic_dec()	barrier()
-> diff --git a/arch/ia64/include/asm/barrier.h b/arch/ia64/include/asm/barrier.h
-> index 60576e06b6fb..a5f92146b091 100644
-> --- a/arch/ia64/include/asm/barrier.h
-> +++ b/arch/ia64/include/asm/barrier.h
-> @@ -42,11 +42,13 @@
->  
->  #ifdef CONFIG_SMP
->  # define smp_mb()	mb()
-> +# define smp_tmb()	mb()
->  # define smp_rmb()	rmb()
->  # define smp_wmb()	wmb()
->  # define smp_read_barrier_depends()	read_barrier_depends()
->  #else
->  # define smp_mb()	barrier()
-> +# define smp_tmb()	barrier()
->  # define smp_rmb()	barrier()
->  # define smp_wmb()	barrier()
->  # define smp_read_barrier_depends()	do { } while(0)
-> diff --git a/arch/m32r/include/asm/barrier.h b/arch/m32r/include/asm/barrier.h
-> index 6976621efd3f..a6fa29facd7a 100644
-> --- a/arch/m32r/include/asm/barrier.h
-> +++ b/arch/m32r/include/asm/barrier.h
-> @@ -79,12 +79,14 @@
->  
->  #ifdef CONFIG_SMP
->  #define smp_mb()	mb()
-> +#define smp_tmb()	mb()
->  #define smp_rmb()	rmb()
->  #define smp_wmb()	wmb()
->  #define smp_read_barrier_depends()	read_barrier_depends()
->  #define set_mb(var, value) do { (void) xchg(&var, value); } while (0)
->  #else
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #define smp_read_barrier_depends()	do { } while (0)
-> diff --git a/arch/m68k/include/asm/barrier.h b/arch/m68k/include/asm/barrier.h
-> index 445ce22c23cb..8ecf52c87847 100644
-> --- a/arch/m68k/include/asm/barrier.h
-> +++ b/arch/m68k/include/asm/barrier.h
-> @@ -13,6 +13,7 @@
->  #define set_mb(var, value)	({ (var) = (value); wmb(); })
->  
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #define smp_read_barrier_depends()	((void)0)
-> diff --git a/arch/metag/include/asm/barrier.h b/arch/metag/include/asm/barrier.h
-> index c90bfc6bf648..eb179fbce580 100644
-> --- a/arch/metag/include/asm/barrier.h
-> +++ b/arch/metag/include/asm/barrier.h
-> @@ -50,6 +50,7 @@ static inline void wmb(void)
->  #ifndef CONFIG_SMP
->  #define fence()		do { } while (0)
->  #define smp_mb()        barrier()
-> +#define smp_tmb()       barrier()
->  #define smp_rmb()       barrier()
->  #define smp_wmb()       barrier()
->  #else
-> @@ -70,11 +71,13 @@ static inline void fence(void)
->  	*flushptr = 0;
->  }
->  #define smp_mb()        fence()
-> +#define smp_tmb()       fence()
->  #define smp_rmb()       fence()
->  #define smp_wmb()       barrier()
->  #else
->  #define fence()		do { } while (0)
->  #define smp_mb()        barrier()
-> +#define smp_tmb()       barrier()
->  #define smp_rmb()       barrier()
->  #define smp_wmb()       barrier()
->  #endif
-> diff --git a/arch/microblaze/include/asm/barrier.h b/arch/microblaze/include/asm/barrier.h
-> index df5be3e87044..d573c170a717 100644
-> --- a/arch/microblaze/include/asm/barrier.h
-> +++ b/arch/microblaze/include/asm/barrier.h
-> @@ -21,6 +21,7 @@
->  #define set_wmb(var, value)	do { var = value; wmb(); } while (0)
->  
->  #define smp_mb()		mb()
-> +#define smp_tmb()		mb()
->  #define smp_rmb()		rmb()
->  #define smp_wmb()		wmb()
->  
-> diff --git a/arch/mips/include/asm/barrier.h b/arch/mips/include/asm/barrier.h
-> index 314ab5532019..535e699eec3b 100644
-> --- a/arch/mips/include/asm/barrier.h
-> +++ b/arch/mips/include/asm/barrier.h
-> @@ -144,15 +144,18 @@
->  #if defined(CONFIG_WEAK_ORDERING) && defined(CONFIG_SMP)
->  # ifdef CONFIG_CPU_CAVIUM_OCTEON
->  #  define smp_mb()	__sync()
-> +#  define smp_tmb()	__sync()
->  #  define smp_rmb()	barrier()
->  #  define smp_wmb()	__syncw()
->  # else
->  #  define smp_mb()	__asm__ __volatile__("sync" : : :"memory")
-> +#  define smp_tmb()	__asm__ __volatile__("sync" : : :"memory")
->  #  define smp_rmb()	__asm__ __volatile__("sync" : : :"memory")
->  #  define smp_wmb()	__asm__ __volatile__("sync" : : :"memory")
->  # endif
->  #else
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #endif
-> diff --git a/arch/mn10300/include/asm/barrier.h b/arch/mn10300/include/asm/barrier.h
-> index 2bd97a5c8af7..a345b0776e5f 100644
-> --- a/arch/mn10300/include/asm/barrier.h
-> +++ b/arch/mn10300/include/asm/barrier.h
-> @@ -19,11 +19,13 @@
->  
->  #ifdef CONFIG_SMP
->  #define smp_mb()	mb()
-> +#define smp_tmb()	mb()
->  #define smp_rmb()	rmb()
->  #define smp_wmb()	wmb()
->  #define set_mb(var, value)  do { xchg(&var, value); } while (0)
->  #else  /* CONFIG_SMP */
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #define set_mb(var, value)  do { var = value;  mb(); } while (0)
-> diff --git a/arch/parisc/include/asm/barrier.h b/arch/parisc/include/asm/barrier.h
-> index e77d834aa803..f53196b589ec 100644
-> --- a/arch/parisc/include/asm/barrier.h
-> +++ b/arch/parisc/include/asm/barrier.h
-> @@ -25,6 +25,7 @@
->  #define rmb()		mb()
->  #define wmb()		mb()
->  #define smp_mb()	mb()
-> +#define smp_tmb()	mb()
->  #define smp_rmb()	mb()
->  #define smp_wmb()	mb()
->  #define smp_read_barrier_depends()	do { } while(0)
-> diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-> index ae782254e731..d7e8a560f1fe 100644
-> --- a/arch/powerpc/include/asm/barrier.h
-> +++ b/arch/powerpc/include/asm/barrier.h
-> @@ -46,11 +46,13 @@
->  #endif
->  
->  #define smp_mb()	mb()
-> +#define smp_tmb()	__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory")
->  #define smp_rmb()	__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory")
->  #define smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
->  #define smp_read_barrier_depends()	read_barrier_depends()
->  #else
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #define smp_read_barrier_depends()	do { } while(0)
-> diff --git a/arch/s390/include/asm/barrier.h b/arch/s390/include/asm/barrier.h
-> index 16760eeb79b0..f0409a874243 100644
-> --- a/arch/s390/include/asm/barrier.h
-> +++ b/arch/s390/include/asm/barrier.h
-> @@ -24,6 +24,7 @@
->  #define wmb()				mb()
->  #define read_barrier_depends()		do { } while(0)
->  #define smp_mb()			mb()
-> +#define smp_tmb()			mb()
->  #define smp_rmb()			rmb()
->  #define smp_wmb()			wmb()
->  #define smp_read_barrier_depends()	read_barrier_depends()
-> diff --git a/arch/score/include/asm/barrier.h b/arch/score/include/asm/barrier.h
-> index 0eacb6471e6d..865652083dde 100644
-> --- a/arch/score/include/asm/barrier.h
-> +++ b/arch/score/include/asm/barrier.h
-> @@ -5,6 +5,7 @@
->  #define rmb()		barrier()
->  #define wmb()		barrier()
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  
-> diff --git a/arch/sh/include/asm/barrier.h b/arch/sh/include/asm/barrier.h
-> index 72c103dae300..f8dce7926432 100644
-> --- a/arch/sh/include/asm/barrier.h
-> +++ b/arch/sh/include/asm/barrier.h
-> @@ -39,11 +39,13 @@
->  
->  #ifdef CONFIG_SMP
->  #define smp_mb()	mb()
-> +#define smp_tmb()	mb()
->  #define smp_rmb()	rmb()
->  #define smp_wmb()	wmb()
->  #define smp_read_barrier_depends()	read_barrier_depends()
->  #else
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #define smp_read_barrier_depends()	do { } while(0)
-> diff --git a/arch/sparc/include/asm/barrier_32.h b/arch/sparc/include/asm/barrier_32.h
-> index c1b76654ee76..1037ce189cee 100644
-> --- a/arch/sparc/include/asm/barrier_32.h
-> +++ b/arch/sparc/include/asm/barrier_32.h
-> @@ -8,6 +8,7 @@
->  #define read_barrier_depends()	do { } while(0)
->  #define set_mb(__var, __value)  do { __var = __value; mb(); } while(0)
->  #define smp_mb()	__asm__ __volatile__("":::"memory")
-> +#define smp_tmb()	__asm__ __volatile__("":::"memory")
->  #define smp_rmb()	__asm__ __volatile__("":::"memory")
->  #define smp_wmb()	__asm__ __volatile__("":::"memory")
->  #define smp_read_barrier_depends()	do { } while(0)
-> diff --git a/arch/sparc/include/asm/barrier_64.h b/arch/sparc/include/asm/barrier_64.h
-> index 95d45986f908..0f3c2fdb86b8 100644
-> --- a/arch/sparc/include/asm/barrier_64.h
-> +++ b/arch/sparc/include/asm/barrier_64.h
-> @@ -34,6 +34,7 @@ do {	__asm__ __volatile__("ba,pt	%%xcc, 1f\n\t" \
->   * memory ordering than required by the specifications.
->   */
->  #define mb()	membar_safe("#StoreLoad")
-> +#define tmb()	__asm__ __volatile__("":::"memory")
->  #define rmb()	__asm__ __volatile__("":::"memory")
->  #define wmb()	__asm__ __volatile__("":::"memory")
->  
-> @@ -43,10 +44,12 @@ do {	__asm__ __volatile__("ba,pt	%%xcc, 1f\n\t" \
->  
->  #ifdef CONFIG_SMP
->  #define smp_mb()	mb()
-> +#define smp_tmb()	tmb()
->  #define smp_rmb()	rmb()
->  #define smp_wmb()	wmb()
->  #else
->  #define smp_mb()	__asm__ __volatile__("":::"memory")
-> +#define smp_tmb()	__asm__ __volatile__("":::"memory")
->  #define smp_rmb()	__asm__ __volatile__("":::"memory")
->  #define smp_wmb()	__asm__ __volatile__("":::"memory")
->  #endif
-> diff --git a/arch/tile/include/asm/barrier.h b/arch/tile/include/asm/barrier.h
-> index a9a73da5865d..cad3c6ae28bf 100644
-> --- a/arch/tile/include/asm/barrier.h
-> +++ b/arch/tile/include/asm/barrier.h
-> @@ -127,11 +127,13 @@ mb_incoherent(void)
->  
->  #ifdef CONFIG_SMP
->  #define smp_mb()	mb()
-> +#define smp_tmb()	mb()
->  #define smp_rmb()	rmb()
->  #define smp_wmb()	wmb()
->  #define smp_read_barrier_depends()	read_barrier_depends()
->  #else
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #define smp_read_barrier_depends()	do { } while (0)
-> diff --git a/arch/unicore32/include/asm/barrier.h b/arch/unicore32/include/asm/barrier.h
-> index a6620e5336b6..8b341fffbda6 100644
-> --- a/arch/unicore32/include/asm/barrier.h
-> +++ b/arch/unicore32/include/asm/barrier.h
-> @@ -18,6 +18,7 @@
->  #define rmb()				barrier()
->  #define wmb()				barrier()
->  #define smp_mb()			barrier()
-> +#define smp_tmb()			barrier()
->  #define smp_rmb()			barrier()
->  #define smp_wmb()			barrier()
->  #define read_barrier_depends()		do { } while (0)
-> diff --git a/arch/x86/include/asm/barrier.h b/arch/x86/include/asm/barrier.h
-> index c6cd358a1eec..480201d83af1 100644
-> --- a/arch/x86/include/asm/barrier.h
-> +++ b/arch/x86/include/asm/barrier.h
-> @@ -86,14 +86,17 @@
->  # define smp_rmb()	barrier()
->  #endif
->  #ifdef CONFIG_X86_OOSTORE
-> +# define smp_tmb()	mb()
->  # define smp_wmb() 	wmb()
->  #else
-> +# define smp_tmb()	barrier()
->  # define smp_wmb()	barrier()
->  #endif
->  #define smp_read_barrier_depends()	read_barrier_depends()
->  #define set_mb(var, value) do { (void)xchg(&var, value); } while (0)
->  #else
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #define smp_read_barrier_depends()	do { } while (0)
-> diff --git a/arch/xtensa/include/asm/barrier.h b/arch/xtensa/include/asm/barrier.h
-> index ef021677d536..7839db843ea5 100644
-> --- a/arch/xtensa/include/asm/barrier.h
-> +++ b/arch/xtensa/include/asm/barrier.h
-> @@ -20,6 +20,7 @@
->  #error smp_* not defined
->  #else
->  #define smp_mb()	barrier()
-> +#define smp_tmb()	barrier()
->  #define smp_rmb()	barrier()
->  #define smp_wmb()	barrier()
->  #endif
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+The HAWK PHB/MPIC is compatible with the MPC10x devices.
+
+There is no onboard disk support. This is usually provided by
+installing a PMC in the first PMC slot.
+
+This patch revives the board support, it was present in early 2.6
+series kernels. The board support in those days was by Matt Porter of
+MontaVista Software.
+
+CSC Australia has around 31 of these boards in service. The kernel in use
+for the boards is based on 2.6.31. The boards are operated without disks
+from a file server. 
+
+This patch is based on linux-3.12-rc7 and has been boot tested.
+
+V1->V2:
+	Address comments by Kular Gama and Scott Wood.
+	Minor adjustment to platforms/embedded6xx/Kconfig to ensure
+		correct indentation where possible.
+
+V2->V3:
+	Address comments by Scott Wood and Ben Herrenschmidt.
+	Address errors reported by checkpatch.
+
+Signed-off-by: Stephen Chivers <schivers@csc.com>
+---
+ arch/powerpc/boot/Makefile                    |    3 +-
+ arch/powerpc/boot/dts/mvme5100.dts            |  185 +++++++++++++++++++++
+ arch/powerpc/boot/mvme5100.c                  |   27 +++
+ arch/powerpc/boot/wrapper                     |    4 +
+ arch/powerpc/configs/mvme5100_defconfig       |  144 ++++++++++++++++
+ arch/powerpc/platforms/embedded6xx/Kconfig    |   13 ++-
+ arch/powerpc/platforms/embedded6xx/Makefile   |    1 +
+ arch/powerpc/platforms/embedded6xx/mvme5100.c |  221 +++++++++++++++++++++++++
+ 8 files changed, 596 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 15ca225..a1c9c86 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -94,7 +94,7 @@ src-plat-$(CONFIG_FSL_SOC_BOOKE) += cuboot-85xx.c cuboot-85xx-cpm2.c
+ src-plat-$(CONFIG_EMBEDDED6xx) += cuboot-pq2.c cuboot-mpc7448hpc2.c \
+ 					cuboot-c2k.c gamecube-head.S \
+ 					gamecube.c wii-head.S wii.c holly.c \
+-					prpmc2800.c
++					prpmc2800.c fixed-head.S mvme5100.c
+ src-plat-$(CONFIG_AMIGAONE) += cuboot-amigaone.c
+ src-plat-$(CONFIG_PPC_PS3) += ps3-head.S ps3-hvcall.S ps3.c
+ src-plat-$(CONFIG_EPAPR_BOOT) += epapr.c epapr-wrapper.c
+@@ -285,6 +285,7 @@ image-$(CONFIG_MPC7448HPC2)		+= cuImage.mpc7448hpc2
+ image-$(CONFIG_PPC_C2K)			+= cuImage.c2k
+ image-$(CONFIG_GAMECUBE)		+= dtbImage.gamecube
+ image-$(CONFIG_WII)			+= dtbImage.wii
++image-$(CONFIG_MVME5100)		+= dtbImage.mvme5100
+ 
+ # Board port in arch/powerpc/platform/amigaone/Kconfig
+ image-$(CONFIG_AMIGAONE)		+= cuImage.amigaone
+diff --git a/arch/powerpc/boot/dts/mvme5100.dts b/arch/powerpc/boot/dts/mvme5100.dts
+new file mode 100644
+index 0000000..4cb2f05
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mvme5100.dts
+@@ -0,0 +1,185 @@
++/*
++ * Device Tree Souce for Motorola/Emerson MVME5100.
++ *
++ * Copyright 2013 CSC Australia Pty. Ltd.
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ */
++
++/dts-v1/;
++
++/ {
++	model = "MVME5100";
++	compatible = "MVME5100";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	aliases {
++		serial0 = &serial0;
++		pci0 = &pci0;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,7410 {
++			device_type = "cpu";
++			reg = <0x0>;
++			/* Following required by dtc but not used */
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			i-cache-size = <32768>;
++			d-cache-size = <32768>;
++			timebase-frequency = <25000000>;
++			clock-frequency = <500000000>;
++			bus-frequency = <100000000>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x0 0x20000000>;
++	};
++
++	hawk@fef80000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "hawk-bridge", "simple-bus";
++		ranges = <0x0 0xfef80000 0x10000>;
++		reg = <0xfef80000 0x10000>;
++
++		serial0: serial@8000 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x8000 0x80>;
++			reg-shift = <4>;
++			clock-frequency = <1843200>;
++			current-speed = <9600>;
++			interrupts = <1 1>; // IRQ1 Level Active Low.
++			interrupt-parent = <&mpic>;
++		};
++
++		serial1: serial@8200 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x8200 0x80>;
++			reg-shift = <4>;
++			clock-frequency = <1843200>;
++			current-speed = <9600>;
++			interrupts = <1 1>; // IRQ1 Level Active Low.
++			interrupt-parent = <&mpic>;
++		};
++
++		mpic: interrupt-controller@f3f80000 {
++			#interrupt-cells = <2>;
++			#address-cells = <0>;
++			device_type = "open-pic";
++			compatible = "chrp,open-pic";
++			interrupt-controller;
++			reg = <0xf3f80000 0x40000>;
++		};
++	};
++
++	pci0: pci@feff0000 {
++		#address-cells = <3>;
++		#size-cells = <2>;
++		#interrupt-cells = <1>;
++		device_type = "pci";
++		compatible = "hawk-pci";
++		reg = <0xfec00000 0x400000>;
++		8259-interrupt-acknowledge = <0xfeff0030>;
++		ranges = <0x1000000 0x0        0x0 0xfe000000 0x0 0x800000
++			  0x2000000 0x0 0x80000000 0x80000000 0x0 0x74000000>;
++		bus-range = <0 255>;
++		clock-frequency = <33333333>;
++		interrupt-parent = <&mpic>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++
++			/*
++			 * This definition (IDSEL 11) duplicates the
++			 * interrupts definition in the i8259
++			 * interrupt controller below.
++			 *
++			 * Do not change the interrupt sense/polarity from
++			 * 0x2 to anything else, doing so will cause endless
++			 * "spurious" i8259 interrupts to be fielded.
++			 */
++			// IDSEL 11 - iPMC712 PCI/ISA Bridge
++			0x5800 0x0 0x0 0x1 &mpic 0x0 0x2
++			0x5800 0x0 0x0 0x2 &mpic 0x0 0x2
++			0x5800 0x0 0x0 0x3 &mpic 0x0 0x2
++			0x5800 0x0 0x0 0x4 &mpic 0x0 0x2
++
++			/* IDSEL 12 - Not Used */
++
++			/* IDSEL 13 - Universe VME Bridge */
++			0x6800 0x0 0x0 0x1 &mpic 0x5 0x1
++			0x6800 0x0 0x0 0x2 &mpic 0x6 0x1
++			0x6800 0x0 0x0 0x3 &mpic 0x7 0x1
++			0x6800 0x0 0x0 0x4 &mpic 0x8 0x1
++
++			/* IDSEL 14 - ENET 1 */
++			0x7000 0x0 0x0 0x1 &mpic 0x2 0x1
++
++			/* IDSEL 15 - Not Used */
++
++			/* IDSEL 16 - PMC Slot 1 */
++			0x8000 0x0 0x0 0x1 &mpic 0x9 0x1
++			0x8000 0x0 0x0 0x2 &mpic 0xa 0x1
++			0x8000 0x0 0x0 0x3 &mpic 0xb 0x1
++			0x8000 0x0 0x0 0x4 &mpic 0xc 0x1
++
++			/* IDSEL 17 - PMC Slot 2 */
++			0x8800 0x0 0x0 0x1 &mpic 0xc 0x1
++			0x8800 0x0 0x0 0x2 &mpic 0x9 0x1
++			0x8800 0x0 0x0 0x3 &mpic 0xa 0x1
++			0x8800 0x0 0x0 0x4 &mpic 0xb 0x1
++
++			/* IDSEL 18 - Not Used */
++
++			/* IDSEL 19 - ENET 2 */
++			0x9800 0x0 0x0 0x1 &mpic 0xd 0x1
++
++			/* IDSEL 20 - PMCSPAN (PCI-X) */
++			0xa000 0x0 0x0 0x1 &mpic 0x9 0x1
++			0xa000 0x0 0x0 0x2 &mpic 0xa 0x1
++			0xa000 0x0 0x0 0x3 &mpic 0xb 0x1
++			0xa000 0x0 0x0 0x4 &mpic 0xc 0x1
++
++		>;
++
++		isa {
++			#address-cells = <2>;
++			#size-cells = <1>;
++			#interrupt-cells = <2>;
++			device_type = "isa";
++			compatible = "isa";
++			ranges = <0x00000001 0 0x01000000 0 0x00000000 0x00001000>;
++			interrupt-parent = <&i8259>;
++
++			i8259: interrupt-controller@20 {
++				#interrupt-cells = <2>;
++				#address-cells = <0>;
++				interrupts = <0 2>;
++				device_type = "interrupt-controller";
++				compatible = "chrp,iic";
++				interrupt-controller;
++				reg = <1 0x00000020 0x00000002
++                                       1 0x000000a0 0x00000002
++                                       1 0x000004d0 0x00000002>;
++				interrupt-parent = <&mpic>;
++			};
++
++		};
++
++	};
++
++	chosen {
++		linux,stdout-path = &serial0;
++        };
++
++};
+diff --git a/arch/powerpc/boot/mvme5100.c b/arch/powerpc/boot/mvme5100.c
+new file mode 100644
+index 0000000..cb865f8
+--- /dev/null
++++ b/arch/powerpc/boot/mvme5100.c
+@@ -0,0 +1,27 @@
++/*
++ * Motorola/Emerson MVME5100 with PPCBug firmware.
++ *
++ * Author: Stephen Chivers <schivers@csc.com>
++ *
++ * Copyright 2013 CSC Australia Pty. Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ */
++#include "types.h"
++#include "ops.h"
++#include "io.h"
++
++BSS_STACK(4096);
++
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
++{
++	u32			heapsize;
++
++	heapsize = 0x8000000 - (u32)_end; /* 128M */
++	simple_alloc_init(_end, heapsize, 32, 64);
++	fdt_init(_dtb_start);
++	serial_console_init();
++}
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index cd7af84..401c6a1 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -257,6 +257,10 @@ epapr)
+     link_address='0x20000000'
+     pie=-pie
+     ;;
++mvme5100)
++    platformo="$object/fixed-head.o $object/mvme5100.o"
++    binary=y
++    ;;
+ esac
+ 
+ vmz="$tmpdir/`basename \"$kernel\"`.$ext"
+diff --git a/arch/powerpc/configs/mvme5100_defconfig b/arch/powerpc/configs/mvme5100_defconfig
+new file mode 100644
+index 0000000..93c7752
+--- /dev/null
++++ b/arch/powerpc/configs/mvme5100_defconfig
+@@ -0,0 +1,144 @@
++CONFIG_SYSVIPC=y
++CONFIG_POSIX_MQUEUE=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_LOG_BUF_SHIFT=14
++# CONFIG_UTS_NS is not set
++# CONFIG_IPC_NS is not set
++# CONFIG_PID_NS is not set
++# CONFIG_NET_NS is not set
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
++# CONFIG_COMPAT_BRK is not set
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++# CONFIG_BLK_DEV_BSG is not set
++# CONFIG_PPC_CHRP is not set
++# CONFIG_PPC_PMAC is not set
++CONFIG_EMBEDDED6xx=y
++CONFIG_MVME5100=y
++CONFIG_KVM_GUEST=y
++CONFIG_HZ_100=y
++# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
++# CONFIG_COMPACTION is not set
++CONFIG_CMDLINE_BOOL=y
++CONFIG_CMDLINE="console=ttyS0,9600 ip=dhcp root=/dev/nfs"
++CONFIG_NET=y
++CONFIG_PACKET=y
++CONFIG_UNIX=y
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_PNP_BOOTP=y
++# CONFIG_INET_LRO is not set
++# CONFIG_IPV6 is not set
++CONFIG_NETFILTER=y
++CONFIG_NF_CONNTRACK=m
++CONFIG_NF_CT_PROTO_SCTP=m
++CONFIG_NF_CONNTRACK_AMANDA=m
++CONFIG_NF_CONNTRACK_FTP=m
++CONFIG_NF_CONNTRACK_H323=m
++CONFIG_NF_CONNTRACK_IRC=m
++CONFIG_NF_CONNTRACK_NETBIOS_NS=m
++CONFIG_NF_CONNTRACK_PPTP=m
++CONFIG_NF_CONNTRACK_SIP=m
++CONFIG_NF_CONNTRACK_TFTP=m
++CONFIG_NETFILTER_XT_MATCH_MAC=m
++CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
++CONFIG_NETFILTER_XT_MATCH_STATE=m
++CONFIG_NF_CONNTRACK_IPV4=m
++CONFIG_IP_NF_IPTABLES=m
++CONFIG_IP_NF_FILTER=m
++CONFIG_IP_NF_TARGET_REJECT=m
++CONFIG_IP_NF_MANGLE=m
++CONFIG_IP_NF_TARGET_ECN=m
++CONFIG_IP_NF_TARGET_TTL=m
++CONFIG_IP_NF_RAW=m
++CONFIG_IP_NF_ARPTABLES=m
++CONFIG_IP_NF_ARPFILTER=m
++CONFIG_IP_NF_ARP_MANGLE=m
++CONFIG_LAPB=m
++CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_PROC_DEVICETREE=y
++CONFIG_BLK_DEV_LOOP=y
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=2
++CONFIG_BLK_DEV_RAM_SIZE=8192
++CONFIG_EEPROM_LEGACY=m
++CONFIG_NETDEVICES=y
++CONFIG_TUN=m
++# CONFIG_NET_VENDOR_3COM is not set
++CONFIG_E100=y
++# CONFIG_WLAN is not set
++# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_SERIO is not set
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_8250_NR_UARTS=10
++CONFIG_SERIAL_8250_EXTENDED=y
++CONFIG_SERIAL_8250_MANY_PORTS=y
++CONFIG_SERIAL_8250_SHARE_IRQ=y
++CONFIG_SERIAL_OF_PLATFORM=y
++CONFIG_HW_RANDOM=y
++CONFIG_I2C=y
++CONFIG_I2C_CHARDEV=y
++CONFIG_I2C_MPC=y
++# CONFIG_HWMON is not set
++CONFIG_VIDEO_OUTPUT_CONTROL=m
++# CONFIG_VGA_CONSOLE is not set
++# CONFIG_HID is not set
++# CONFIG_USB_SUPPORT is not set
++# CONFIG_IOMMU_SUPPORT is not set
++CONFIG_VME_BUS=m
++CONFIG_VME_CA91CX42=m
++CONFIG_EXT2_FS=m
++CONFIG_EXT3_FS=m
++# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
++CONFIG_XFS_FS=m
++CONFIG_ISO9660_FS=m
++CONFIG_JOLIET=y
++CONFIG_ZISOFS=y
++CONFIG_UDF_FS=m
++CONFIG_MSDOS_FS=m
++CONFIG_VFAT_FS=m
++CONFIG_PROC_KCORE=y
++CONFIG_TMPFS=y
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3_ACL=y
++CONFIG_NFS_V4=y
++CONFIG_ROOT_NFS=y
++CONFIG_NFSD=m
++CONFIG_NFSD_V3=y
++CONFIG_CIFS=m
++CONFIG_NLS=y
++CONFIG_NLS_CODEPAGE_437=m
++CONFIG_NLS_CODEPAGE_932=m
++CONFIG_NLS_ISO8859_1=m
++CONFIG_NLS_UTF8=m
++CONFIG_CRC_CCITT=m
++CONFIG_CRC_T10DIF=y
++CONFIG_XZ_DEC=y
++CONFIG_XZ_DEC_X86=y
++CONFIG_XZ_DEC_IA64=y
++CONFIG_XZ_DEC_ARM=y
++CONFIG_XZ_DEC_ARMTHUMB=y
++CONFIG_XZ_DEC_SPARC=y
++CONFIG_MAGIC_SYSRQ=y
++CONFIG_DEBUG_KERNEL=y
++CONFIG_DETECT_HUNG_TASK=y
++CONFIG_DEFAULT_HUNG_TASK_TIMEOUT=20
++CONFIG_CRYPTO_CBC=y
++CONFIG_CRYPTO_PCBC=m
++CONFIG_CRYPTO_MD5=y
++CONFIG_CRYPTO_MICHAEL_MIC=m
++CONFIG_CRYPTO_SHA1=m
++CONFIG_CRYPTO_BLOWFISH=m
++CONFIG_CRYPTO_DES=y
++CONFIG_CRYPTO_SERPENT=m
++CONFIG_CRYPTO_TWOFISH=m
++CONFIG_CRYPTO_DEFLATE=m
++# CONFIG_CRYPTO_ANSI_CPRNG is not set
+diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
+index 302ba43..6d3c7a9 100644
+--- a/arch/powerpc/platforms/embedded6xx/Kconfig
++++ b/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -67,6 +67,18 @@ config PPC_C2K
+ 	  This option enables support for the GE Fanuc C2K board (formerly
+ 	  an SBS board).
+ 
++config MVME5100
++	bool "Motorola/Emerson MVME5100"
++	depends on EMBEDDED6xx
++	select MPIC
++	select PCI
++	select PPC_INDIRECT_PCI
++	select PPC_I8259
++	select PPC_NATIVE
++	help
++	  This option enables support for the Motorola (now Emerson) MVME5100
++	  board.
++
+ config TSI108_BRIDGE
+ 	bool
+ 	select PCI
+@@ -113,4 +125,3 @@ config WII
+ 	help
+ 	  Select WII if configuring for the Nintendo Wii.
+ 	  More information at: <http://gc-linux.sourceforge.net/>
+-
+diff --git a/arch/powerpc/platforms/embedded6xx/Makefile b/arch/powerpc/platforms/embedded6xx/Makefile
+index 66c23e4..cdd48d4 100644
+--- a/arch/powerpc/platforms/embedded6xx/Makefile
++++ b/arch/powerpc/platforms/embedded6xx/Makefile
+@@ -11,3 +11,4 @@ obj-$(CONFIG_USBGECKO_UDBG)	+= usbgecko_udbg.o
+ obj-$(CONFIG_GAMECUBE_COMMON)	+= flipper-pic.o
+ obj-$(CONFIG_GAMECUBE)		+= gamecube.o
+ obj-$(CONFIG_WII)		+= wii.o hlwd-pic.o
++obj-$(CONFIG_MVME5100)		+= mvme5100.o
+diff --git a/arch/powerpc/platforms/embedded6xx/mvme5100.c b/arch/powerpc/platforms/embedded6xx/mvme5100.c
+new file mode 100644
+index 0000000..25e3bfb
+--- /dev/null
++++ b/arch/powerpc/platforms/embedded6xx/mvme5100.c
+@@ -0,0 +1,221 @@
++/*
++ * Board setup routines for the Motorola/Emerson MVME5100.
++ *
++ * Copyright 2013 CSC Australia Pty. Ltd.
++ *
++ * Based on earlier code by:
++ *
++ *    Matt Porter, MontaVista Software Inc.
++ *    Copyright 2001 MontaVista Software Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ *
++ * Author: Stephen Chivers <schivers@csc.com>
++ *
++ */
++
++#include <linux/of_platform.h>
++
++#include <asm/i8259.h>
++#include <asm/pci-bridge.h>
++#include <asm/mpic.h>
++#include <asm/prom.h>
++#include <mm/mmu_decl.h>
++#include <asm/udbg.h>
++
++#define HAWK_MPIC_SIZE		0x00040000U
++#define MVME5100_PCI_MEM_OFFSET 0x00000000
++
++/* Board register addresses. */
++#define BOARD_STATUS_REG	0xfef88080
++#define BOARD_MODFAIL_REG	0xfef88090
++#define BOARD_MODRST_REG	0xfef880a0
++#define BOARD_TBEN_REG		0xfef880c0
++#define BOARD_SW_READ_REG	0xfef880e0
++#define BOARD_GEO_ADDR_REG	0xfef880e8
++#define BOARD_EXT_FEATURE1_REG	0xfef880f0
++#define BOARD_EXT_FEATURE2_REG	0xfef88100
++
++static phys_addr_t pci_membase;
++static u_char *restart;
++
++static void mvme5100_8259_cascade(unsigned int irq, struct irq_desc *desc)
++{
++	struct irq_chip *chip = irq_desc_get_chip(desc);
++	unsigned int cascade_irq = i8259_irq();
++
++	if (cascade_irq != NO_IRQ)
++		generic_handle_irq(cascade_irq);
++
++	chip->irq_eoi(&desc->irq_data);
++}
++
++static void __init mvme5100_pic_init(void)
++{
++	struct mpic *mpic;
++	struct device_node *np;
++	struct device_node *cp = NULL;
++	unsigned int cirq;
++	unsigned long intack = 0;
++	const u32 *prop = NULL;
++
++	np = of_find_node_by_type(NULL, "open-pic");
++	if (!np) {
++		pr_err("Could not find open-pic node\n");
++		return;
++	}
++
++	mpic = mpic_alloc(np, pci_membase, 0, 16, 256, " OpenPIC  ");
++
++	BUG_ON(mpic == NULL);
++	of_node_put(np);
++
++	mpic_assign_isu(mpic, 0, pci_membase + 0x10000);
++
++	mpic_init(mpic);
++
++	cp = of_find_compatible_node(NULL, NULL, "chrp,iic");
++	if (cp == NULL) {
++		pr_warn("mvme5100_pic_init: couldn't find i8259\n");
++		return;
++	}
++
++	cirq = irq_of_parse_and_map(cp, 0);
++	if (cirq == NO_IRQ) {
++		pr_warn("mvme5100_pic_init: no cascade interrupt?\n");
++		return;
++	}
++
++	np = of_find_compatible_node(NULL, "pci", "mpc10x-pci");
++	if (np) {
++		prop = of_get_property(np, "8259-interrupt-acknowledge", NULL);
++
++		if (prop)
++			intack = prop[0];
++
++		of_node_put(np);
++	}
++
++	if (intack)
++		pr_debug("mvme5100_pic_init: PCI 8259 intack at 0x%016lx\n",
++		   intack);
++
++	i8259_init(cp, intack);
++	of_node_put(cp);
++	irq_set_chained_handler(cirq, mvme5100_8259_cascade);
++}
++
++static int __init mvme5100_add_bridge(struct device_node *dev)
++{
++	const int		*bus_range;
++	int			len;
++	struct pci_controller	*hose;
++	unsigned short		devid;
++
++	pr_info("Adding PCI host bridge %s\n", dev->full_name);
++
++	bus_range = of_get_property(dev, "bus-range", &len);
++
++	hose = pcibios_alloc_controller(dev);
++	if (hose == NULL)
++		return -ENOMEM;
++
++	hose->first_busno = bus_range ? bus_range[0] : 0;
++	hose->last_busno = bus_range ? bus_range[1] : 0xff;
++
++	setup_indirect_pci(hose, 0xfe000cf8, 0xfe000cfc, 0);
++
++	pci_process_bridge_OF_ranges(hose, dev, 1);
++
++	early_read_config_word(hose, 0, 0, PCI_DEVICE_ID, &devid);
++
++	if (devid != PCI_DEVICE_ID_MOTOROLA_HAWK) {
++		pr_err("HAWK PHB not present?\n");
++		return 0;
++	}
++
++	early_read_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_1, &pci_membase);
++
++	if (pci_membase == 0) {
++		pr_err("HAWK PHB mibar not correctly set?\n");
++		return 0;
++	}
++
++	pr_info("mvme5100_pic_init: pci_membase: %x\n", pci_membase);
++
++	return 0;
++}
++
++static struct of_device_id mvme5100_of_bus_ids[] __initdata = {
++	{ .compatible = "hawk-bridge", },
++	{},
++};
++
++/*
++ * Setup the architecture
++ */
++static void __init mvme5100_setup_arch(void)
++{
++	struct device_node *np;
++
++	if (ppc_md.progress)
++		ppc_md.progress("mvme5100_setup_arch()", 0);
++
++	for_each_compatible_node(np, "pci", "hawk-pci")
++		mvme5100_add_bridge(np);
++
++	restart = ioremap(BOARD_MODRST_REG, 4);
++}
++
++
++static void mvme5100_show_cpuinfo(struct seq_file *m)
++{
++	seq_puts(m, "Vendor\t\t: Motorola/Emerson\n");
++	seq_puts(m, "Machine\t\t: MVME5100\n");
++}
++
++static void mvme5100_restart(char *cmd)
++{
++
++	local_irq_disable();
++	mtmsr(mfmsr() | MSR_IP);
++
++	out_8((u_char *) restart, 0x01);
++
++	while (1)
++		;
++}
++
++/*
++ * Called very early, device-tree isn't unflattened
++ */
++static int __init mvme5100_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	return of_flat_dt_is_compatible(root, "MVME5100");
++}
++
++static int __init probe_of_platform_devices(void)
++{
++
++	of_platform_bus_probe(NULL, mvme5100_of_bus_ids, NULL);
++	return 0;
++}
++
++machine_device_initcall(mvme5100, probe_of_platform_devices);
++
++define_machine(mvme5100) {
++	.name			= "MVME5100",
++	.probe			= mvme5100_probe,
++	.setup_arch		= mvme5100_setup_arch,
++	.init_IRQ		= mvme5100_pic_init,
++	.show_cpuinfo		= mvme5100_show_cpuinfo,
++	.get_irq		= mpic_get_irq,
++	.restart		= mvme5100_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= udbg_progress,
++};
