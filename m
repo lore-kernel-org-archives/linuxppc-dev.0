@@ -1,38 +1,46 @@
-Return-Path: <B40534@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
+Return-Path: <B42378@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 31BAC2C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2013 15:04:43 +1100 (EST)
-Received: from mail5-db9 (localhost [127.0.0.1])	by mail5-db9-R.bigfish.com
- (Postfix) with ESMTP id D3074BC0111	for <linuxppc-dev@lists.ozlabs.org>; Mon,
- 4 Nov 2013 04:04:37 +0000 (UTC)
-Received: from DB9EHSMHS025.bigfish.com (unknown [10.174.16.249])	by
- mail5-db9.bigfish.com (Postfix) with ESMTP id B6CA3B8004E	for
- <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2013 04:04:35 +0000 (UTC)
-From: Dongsheng Wang <B40534@freescale.com>
-To: Scott Wood <B07421@freescale.com>
-Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
-Date: Mon, 4 Nov 2013 04:04:33 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010BBC86@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1381828871-17110-1-git-send-email-dongsheng.wang@freescale.com>
- <1381828871-17110-4-git-send-email-dongsheng.wang@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C08E4@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B1799@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C3279@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B189E@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C34C1@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B195F@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C362B@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B33C3@039-SN2MPN1-021.039d.mgd.msft.net>
- <1382124094.7979.885.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 6A1392C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2013 15:40:31 +1100 (EST)
+Date: Mon, 4 Nov 2013 12:33:39 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Xiubo Li-B47053 <B47053@freescale.com>
+Subject: Re: [PATCHv2 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
+Message-ID: <20131104043338.GA2345@MrMyself>
+References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
+ <1383289495-24523-2-git-send-email-Li.Xiubo@freescale.com>
+ <20131101085904.GC28401@MrMyself>
+ <1DD289F6464F0949A2FCA5AA6DC23F82874201@039-SN2MPN1-013.039d.mgd.msft.net>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Bharat Bhushan <R65777@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1DD289F6464F0949A2FCA5AA6DC23F82874201@039-SN2MPN1-013.039d.mgd.msft.net>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "tiwai@suse.de" <tiwai@suse.de>, Wang Huan-B18965 <B18965@freescale.com>,
+ "timur@tabi.org" <timur@tabi.org>, "perex@perex.cz" <perex@perex.cz>,
+ Guo Shawn-R65073 <r65073@freescale.com>,
+ "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "broonie@kernel.org" <broonie@kernel.org>, "oskar@scara.com" <oskar@scara.com>,
+ Estevam Fabio-R49496 <r49496@freescale.com>,
+ "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob@landley.net" <rob@landley.net>,
+ Jin Zhengxiong-R64188 <R64188@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,222 +50,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdhbmcgRG9uZ3NoZW5nLUI0
-MDUzNA0KPiBTZW50OiBNb25kYXksIE9jdG9iZXIgMjEsIDIwMTMgMTE6MTEgQU0NCj4gVG86IFdv
-b2QgU2NvdHQtQjA3NDIxDQo+IENjOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7IGxpbnV4cHBjLWRl
-dkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjUgNC80XSBwb3dlcnBj
-Lzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMCBzdGF0ZSBhbmQNCj4gYWx0aXZlYyBpZGxlDQo+IA0K
-PiANCj4gDQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBXb29kIFNj
-b3R0LUIwNzQyMQ0KPiA+IFNlbnQ6IFNhdHVyZGF5LCBPY3RvYmVyIDE5LCAyMDEzIDM6MjIgQU0N
-Cj4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gQ2M6IEJodXNoYW4gQmhhcmF0LVI2
-NTc3NzsgV29vZCBTY290dC1CMDc0MjE7IGxpbnV4cHBjLQ0KPiA+IGRldkBsaXN0cy5vemxhYnMu
-b3JnDQo+ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5
-c2ZzIGZvciBwdzIwIHN0YXRlIGFuZA0KPiA+IGFsdGl2ZWMgaWRsZQ0KPiA+DQo+ID4gT24gVGh1
-LCAyMDEzLTEwLTE3IGF0IDIyOjAyIC0wNTAwLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6
-DQo+ID4gPg0KPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiBGcm9t
-OiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gPiA+ID4gU2VudDogVGh1cnNkYXksIE9jdG9iZXIg
-MTcsIDIwMTMgMjo0NiBQTQ0KPiA+ID4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0OyBXb29k
-IFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcN
-Cj4gPiA+ID4gU3ViamVjdDogUkU6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5
-c2ZzIGZvciBwdzIwIHN0YXRlDQo+ID4gPiA+IGFuZCBhbHRpdmVjIGlkbGUNCj4gPiA+ID4NCj4g
-PiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
-Cj4gPiA+ID4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+ID4gPiA+
-IFNlbnQ6IFRodXJzZGF5LCBPY3RvYmVyIDE3LCAyMDEzIDExOjIyIEFNDQo+ID4gPiA+ID4gPiA+
-IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4g
-PiA+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gPiA+ID4gPiBTdWJq
-ZWN0OiBSRTogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjAN
-Cj4gPiA+ID4gPiA+ID4gc3RhdGUgYW5kIGFsdGl2ZWMgaWRsZQ0KPiA+ID4gPiA+ID4gPg0KPiA+
-ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwg
-TWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+ID4gRnJvbTogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3
-DQo+ID4gPiA+ID4gPiA+ID4gU2VudDogVGh1cnNkYXksIE9jdG9iZXIgMTcsIDIwMTMgMTE6MjAg
-QU0NCj4gPiA+ID4gPiA+ID4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0OyBXb29kIFNjb3R0
-LUIwNzQyMQ0KPiA+ID4gPiA+ID4gPiA+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9y
-Zw0KPiA+ID4gPiA+ID4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjUgNC80XSBwb3dlcnBjLzg1
-eHg6IGFkZCBzeXNmcyBmb3INCj4gPiA+ID4gPiA+ID4gPiBwdzIwIHN0YXRlIGFuZCBhbHRpdmVj
-IGlkbGUNCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4N
-Cj4gPiA+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4g
-PiA+ID4gPiBGcm9tOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+ID4gPiA+ID4gPiA+IFNl
-bnQ6IFRodXJzZGF5LCBPY3RvYmVyIDE3LCAyMDEzIDg6MTYgQU0NCj4gPiA+ID4gPiA+ID4gPiA+
-IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4g
-PiA+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+ID4gPiA+ID4g
-PiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjUgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBm
-b3INCj4gPiA+ID4gPiA+ID4gPiA+IHB3MjAgc3RhdGUgYW5kIGFsdGl2ZWMgaWRsZQ0KPiA+ID4g
-PiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4g
-PiA+ID4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+
-ID4gPiBGcm9tOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gPiA+ID4gPiA+ID4gPiA+ID4gU2Vu
-dDogVGh1cnNkYXksIE9jdG9iZXIgMTcsIDIwMTMgMTowMSBBTQ0KPiA+ID4gPiA+ID4gPiA+ID4g
-PiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0OyBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+
-ID4gPiA+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+ID4gPiA+
-ID4gPiA+ID4gU3ViamVjdDogUkU6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5
-c2ZzDQo+ID4gPiA+ID4gPiA+ID4gPiA+IGZvcg0KPiA+ID4gPiA+ID4gPiA+ID4gPiBwdzIwIHN0
-YXRlIGFuZCBhbHRpdmVjIGlkbGUNCj4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4g
-PiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IEZyb206IFdhbmcgRG9u
-Z3NoZW5nLUI0MDUzNA0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IFNlbnQ6IFR1ZXNkYXksIE9jdG9i
-ZXIgMTUsIDIwMTMgMjo1MSBQTQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IFRvOiBXb29kIFNjb3R0
-LUIwNzQyMQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IENjOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7
-DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdh
-bmcNCj4gPiA+ID4gPiA+ID4gPiA+ID4gRG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4gPiA+ID4gPiA+
-ID4gPiA+IFN1YmplY3Q6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZv
-cg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IHB3MjAgc3RhdGUgYW5kDQo+ID4gPiA+ID4gPiA+ID4g
-PiA+IGFsdGl2ZWMgaWRsZQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4g
-PiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+
-DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBBZGQgYSBzeXMg
-aW50ZXJmYWNlIHRvIGVuYWJsZS9kaWFibGUgcHcyMCBzdGF0ZSBvcg0KPiA+ID4gPiA+ID4gPiA+
-ID4gPiA+IGFsdGl2ZWMgaWRsZSwgYW5kDQo+ID4gPiA+ID4gPiA+ID4gPiA+IGNvbnRyb2wgdGhl
-DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gd2FpdCBlbnRyeSB0aW1lLg0KPiA+ID4gPiA+ID4gPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gRW5hYmxlL0Rpc2FibGUgaW50ZXJmYWNlOg0K
-PiA+ID4gPiA+ID4gPiA+ID4gPiA+IDAsIGRpc2FibGUuIDEsIGVuYWJsZS4NCj4gPiA+ID4gPiA+
-ID4gPiA+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL3B3MjBfc3RhdGUNCj4gPiA+
-ID4gPiA+ID4gPiA+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL2FsdGl2ZWNfaWRs
-ZQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gU2V0IHdhaXQg
-dGltZSBpbnRlcmZhY2U6KE5hbm9zZWNvbmQpDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gL3N5cy9k
-ZXZpY2VzL3N5c3RlbS9jcHUvY3B1WC9wdzIwX3dhaXRfdGltZQ0KPiA+ID4gPiA+ID4gPiA+ID4g
-PiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdVgvYWx0aXZlY19pZGxlX3dhaXRfdGltZQ0K
-PiA+ID4gPiA+ID4gPiA+ID4gPiA+IEV4YW1wbGU6IEJhc2Ugb24gVEJmcmVxIGlzIDQxTUhaLg0K
-PiA+ID4gPiA+ID4gPiA+ID4gPiA+IDF+NDgobnMpOiBUQls2M10NCj4gPiA+ID4gPiA+ID4gPiA+
-ID4gPiA0OX45Nyhucyk6IFRCWzYyXQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IDk4fjE5NShucyk6
-IFRCWzYxXQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IDE5Nn4zOTAobnMpOiBUQls2MF0NCj4gPiA+
-ID4gPiA+ID4gPiA+ID4gPiAzOTF+NzgwKG5zKTogVEJbNTldDQo+ID4gPiA+ID4gPiA+ID4gPiA+
-ID4gNzgxfjE1NjAobnMpOiBUQls1OF0gLi4uDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+
-ID4gPiA+ID4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBXYW5nIERvbmdzaGVuZw0KPiA+ID4gPiA+
-ID4gPiA+ID4gPiA+IDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+ID4g
-PiA+ID4gPiA+IC0tLQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICp2NToNCj4gPiA+ID4gPiA+ID4g
-PiA+ID4gPiBDaGFuZ2UgZ2V0X2lkbGVfdGlja3NfYml0IGZ1bmN0aW9uIGltcGxlbWVudGF0aW9u
-Lg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKnY0Og0KPiA+
-ID4gPiA+ID4gPiA+ID4gPiA+IE1vdmUgY29kZSBmcm9tIDg1eHgvY29tbW9uLmMgdG8ga2VybmVs
-L3N5c2ZzLmMuDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBS
-ZW1vdmUgaGFzX3B3MjBfYWx0aXZlY19pZGxlIGZ1bmN0aW9uLg0KPiA+ID4gPiA+ID4gPiA+ID4g
-PiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gQ2hhbmdlIHdhaXQgImVudHJ5X2JpdCIgdG8gd2Fp
-dCB0aW1lLg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gZGlm
-ZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9rZXJuZWwvc3lzZnMuYw0KPiA+ID4gPiA+ID4gPiA+ID4g
-PiA+IGIvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jDQo+ID4gPiA+ID4gPiA+ID4gPiA+IGlu
-ZGV4DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gMjdhOTBiOS4uMTBkMTEyOCAxMDA2NDQNCj4gPiA+
-ID4gPiA+ID4gPiA+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVsL3N5c2ZzLmMNCj4gPiA+
-ID4gPiA+ID4gPiA+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMva2VybmVsL3N5c2ZzLmMNCj4gPiA+
-ID4gPiA+ID4gPiA+ID4gPiBAQCAtODUsNiArODUsMjg0IEBAIF9fc2V0dXAoInNtdC1zbm9vemUt
-ZGVsYXk9IiwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gc2V0dXBfc210X3Nub296ZV9kZWxheSk7DQo+
-ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiAgI2VuZGlmIC8qIENP
-TkZJR19QUEM2NCAqLw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+
-ID4gKyNpZmRlZiBDT05GSUdfRlNMX1NPQw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsjZGVmaW5l
-IE1BWF9CSVQJCQkJNjMNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4g
-PiA+ID4gK3N0YXRpYyB1NjQgcHcyMF93dDsgc3RhdGljIHU2NCBhbHRpdmVjX2lkbGVfd3Q7DQo+
-ID4gPiA+ID4gPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICtzdGF0aWMgdW5z
-aWduZWQgaW50IGdldF9pZGxlX3RpY2tzX2JpdCh1NjQgbnMpIHsNCj4gPiA+ID4gPiA+ID4gPiA+
-ID4gPiArCXU2NCBjeWNsZTsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+
-ID4gPiA+ID4gKwlpZiAobnMgPj0gMTAwMDApDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwkJY3lj
-bGUgPSBkaXZfdTY0KG5zICsgNTAwLCAxMDAwKSAqDQo+ID4gPiA+IHRiX3RpY2tzX3Blcl91c2Vj
-Ow0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJZWxzZQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJ
-CWN5Y2xlID0gZGl2X3U2NChucyAqIHRiX3RpY2tzX3Blcl91c2VjLA0KPiA+IDEwMDApOw0KPiA+
-ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCWlmICghY3ljbGUp
-DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwkJcmV0dXJuIDA7DQo+ID4gPiA+ID4gPiA+ID4gPiA+
-ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJcmV0dXJuIGlsb2cyKGN5Y2xlKTsgfQ0KPiA+
-ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArc3RhdGljIHZvaWQg
-ZG9fc2hvd19wd3JtZ3RjcjAodm9pZCAqdmFsKSB7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwl1
-MzIgKnZhbHVlID0gdmFsOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4g
-PiA+ID4gPiArCSp2YWx1ZSA9IG1mc3ByKFNQUk5fUFdSTUdUQ1IwKTsgfQ0KPiA+ID4gPiA+ID4g
-PiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArc3RhdGljIHNzaXplX3Qgc2hvd19w
-dzIwX3N0YXRlKHN0cnVjdCBkZXZpY2UgKmRldiwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCQkJ
-CXN0cnVjdCBkZXZpY2VfYXR0cmlidXRlICphdHRyLA0KPiA+IGNoYXINCj4gPiA+ID4gKmJ1Zikg
-ew0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJdTMyIHZhbHVlOw0KPiA+ID4gPiA+ID4gPiA+ID4g
-PiA+ICsJdW5zaWduZWQgaW50IGNwdSA9IGRldi0+aWQ7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
-Kw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJc21wX2NhbGxfZnVuY3Rpb25fc2luZ2xlKGNwdSwg
-ZG9fc2hvd19wd3JtZ3RjcjAsDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKyZ2YWx1ZSwgMSk7DQo+
-ID4gPiA+ID4gPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJdmFsdWUgJj0g
-UFdSTUdUQ1IwX1BXMjBfV0FJVDsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4g
-PiA+ID4gPiA+ID4gKwlyZXR1cm4gc3ByaW50ZihidWYsICIldVxuIiwgdmFsdWUgPyAxIDogMCk7
-IH0NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gK3N0YXRp
-YyB2b2lkIGRvX3N0b3JlX3B3MjBfc3RhdGUodm9pZCAqdmFsKSB7DQo+ID4gPiA+ID4gPiA+ID4g
-PiA+ID4gKwl1MzIgKnZhbHVlID0gdmFsOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJdTMyIHB3
-MjBfc3RhdGU7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+
-ICsJcHcyMF9zdGF0ZSA9IG1mc3ByKFNQUk5fUFdSTUdUQ1IwKTsNCj4gPiA+ID4gPiA+ID4gPiA+
-ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwlpZiAoKnZhbHVlKQ0KPiA+ID4gPiA+ID4g
-PiA+ID4gPiA+ICsJCXB3MjBfc3RhdGUgfD0gUFdSTUdUQ1IwX1BXMjBfV0FJVDsNCj4gPiA+ID4g
-PiA+ID4gPiA+ID4gPiArCWVsc2UNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCQlwdzIwX3N0YXRl
-ICY9IH5QV1JNR1RDUjBfUFcyMF9XQUlUOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+
-ID4gPiA+ID4gPiA+ID4gPiArCW10c3ByKFNQUk5fUFdSTUdUQ1IwLCBwdzIwX3N0YXRlKTsgfQ0K
-PiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArc3RhdGljIHNz
-aXplX3Qgc3RvcmVfcHcyMF9zdGF0ZShzdHJ1Y3QgZGV2aWNlICpkZXYsDQo+ID4gPiA+ID4gPiA+
-ID4gPiA+ID4gKwkJCQlzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwNCj4gPiA+ID4gPiA+
-ID4gPiA+ID4gPiArCQkJCWNvbnN0IGNoYXIgKmJ1Ziwgc2l6ZV90IGNvdW50KQ0KPiA+IHsNCj4g
-PiA+ID4gPiA+ID4gPiA+ID4gPiArCXUzMiB2YWx1ZTsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiAr
-CXVuc2lnbmVkIGludCBjcHUgPSBkZXYtPmlkOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4g
-PiA+ID4gPiA+ID4gPiA+ID4gPiArCWlmIChrc3RydG91MzIoYnVmLCAwLCAmdmFsdWUpKQ0KPiA+
-ID4gPiA+ID4gPiA+ID4gPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ID4gPiA+ID4gPiA+ID4g
-PiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCWlmICh2YWx1ZSA+IDEpDQo+ID4gPiA+ID4g
-PiA+ID4gPiA+ID4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKw0K
-PiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJc21wX2NhbGxfZnVuY3Rpb25fc2luZ2xlKGNwdSwgZG9f
-c3RvcmVfcHcyMF9zdGF0ZSwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArJnZhbHVlLCAxKTsNCj4g
-PiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwlyZXR1cm4gY291
-bnQ7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gK30NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+
-ID4gPiA+ID4gPiA+ID4gPiA+ID4gK3N0YXRpYyBzc2l6ZV90IHNob3dfcHcyMF93YWl0X3RpbWUo
-c3RydWN0IGRldmljZQ0KPiAqZGV2LA0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJCQkJc3RydWN0
-IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsDQo+ID4gY2hhcg0KPiA+ID4gPiAqYnVmKSB7DQo+ID4g
-PiA+ID4gPiA+ID4gPiA+ID4gKwl1MzIgdmFsdWU7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwl1
-NjQgdGJfY3ljbGU7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwlzNjQgdGltZTsNCj4gPiA+ID4g
-PiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwl1bnNpZ25lZCBpbnQgY3B1
-ID0gZGV2LT5pZDsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+
-ID4gKwlpZiAoIXB3MjBfd3QpIHsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCQlzbXBfY2FsbF9m
-dW5jdGlvbl9zaW5nbGUoY3B1LA0KPiA+IGRvX3Nob3dfcHdybWd0Y3IwLA0KPiA+ID4gPiA+ID4g
-PiA+ID4gPiA+ICsmdmFsdWUsDQo+ID4gPiA+ID4gPiA+ID4gMSk7DQo+ID4gPiA+ID4gPiA+ID4g
-PiA+ID4gKwkJdmFsdWUgPSAodmFsdWUgJiBQV1JNR1RDUjBfUFcyMF9FTlQpID4+DQo+ID4gPiA+
-ID4gPiA+ID4gPiA+ID4gKwkJCQkJUFdSTUdUQ1IwX1BXMjBfRU5UX1NISUZUOw0KPiA+ID4gPiA+
-ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCQl0Yl9jeWNsZSA9ICgxIDw8
-IChNQVhfQklUIC0gdmFsdWUpKSAqIDI7DQo+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
-PiA+ID4gPiA+IElzIHZhbHVlID0gMCBhbmQgdmFsdWUgPSAxIGxlZ2FsPyBUaGVzZSB3aWxsIG1h
-a2UNCj4gPiA+ID4gPiA+ID4gPiA+ID4gdGJfY3ljbGUgPSAwLA0KPiA+ID4gPiA+ID4gPiA+ID4g
-Pg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJCXRpbWUgPSBkaXZfdTY0KHRiX2N5Y2xlICogMTAw
-MCwNCj4gPiB0Yl90aWNrc19wZXJfdXNlYykNCj4gPiA+ID4gLSAxOw0KPiA+ID4gPiA+ID4gPiA+
-ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiBBbmQgdGltZSA9IC0xOw0KPiA+ID4gPiA+ID4gPiA+
-ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gUGxlYXNlIGxvb2sgYXQgdGhlIGVuZCBvZiB0aGUgZnVu
-Y3Rpb24sIDopDQo+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gInJldHVybiBz
-cHJpbnRmKGJ1ZiwgIiVsbHVcbiIsIHRpbWUgPiAwID8gdGltZSA6IDApOyINCj4gPiA+ID4gPiA+
-ID4gPg0KPiA+ID4gPiA+ID4gPiA+IEkga25vdyB5b3UgcmV0dXJuIDAgaWYgdmFsdWUgPSAwLzEs
-IG15IHF1ZXN0aW9uIHdhcyB0aGF0LA0KPiA+ID4gPiA+ID4gPiA+IGlzIHRoaXMgY29ycmVjdCBh
-cyBwZXIgc3BlY2lmaWNhdGlvbj8NCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IEFo
-aCwgYWxzbyBmb3IgInZhbHVlIiB1cHRvIDcgeW91IHdpbGwgcmV0dXJuIDAsIG5vPw0KPiA+ID4g
-PiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IElmIHZhbHVlID0gMCwgTUFYX0JJVCAtIHZhbHVlID0g
-NjMgdGJfY3ljbGUgPQ0KPiA+ID4gPiA+ID4gPiAweGZmZmZmZmZmX2ZmZmZmZmZmLCB0Yl9jeWNs
-ZSAqIDEwMDAgd2lsbCBvdmVyZmxvdywgYnV0IHRoaXMNCj4gPiBzaXR1YXRpb24gaXMgbm90IHBv
-c3NpYmxlLg0KPiA+ID4gPiA+ID4gPiBCZWNhdXNlIGlmIHRoZSAidmFsdWUgPSAwIiBtZWFucyB0
-aGlzIGZlYXR1cmUgd2lsbCBiZQ0KPiAiZGlzYWJsZSIuDQo+ID4gPiA+ID4gPiA+IE5vdyBUaGUg
-ZGVmYXVsdCB3YWl0IGJpdCBpcyA1MChNQVhfQklUIC0gdmFsdWUsIHZhbHVlID0gMTMpLA0KPiA+
-ID4gPiA+ID4gPiB0aGUgUFcyMC9BbHRpdmVjIElkbGUgd2FpdCBlbnRyeSB0aW1lIGlzIGFib3V0
-IDFtcywgdGhpcw0KPiA+ID4gPiA+ID4gPiB0aW1lIGlzIHZlcnkgbG9uZyBmb3Igd2FpdCBpZGxl
-IHRpbWUsIGFuZCBpdCdzIGNhbm5vdCBiZQ0KPiA+ID4gPiA+ID4gPiBpbmNyZWFzZWQobWVhbnMg
-KE1BWF9CSVQNCj4gPiA+ID4gPiA+ID4gLSB2YWx1ZSkNCj4gPiA+ID4gPiA+IGNhbm5vdCBncmVh
-dGVyIHRoYW4gNTApLg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IFdoYXQgeW91IHNhaWQgaXMg
-bm90IG9idmlvdXMgZnJvbSBjb2RlIGFuZCBzbyBhdCBsZWFzdCB3cml0ZSBhDQo+ID4gPiA+ID4g
-PiBjb21tZW50IHRoYXQgdmFsdWUgd2lsbCBiZSBhbHdheXMgPj0gMTMgb3IgdmFsdWUgd2lsbCBu
-ZXZlciBiZQ0KPiA+ID4gPiA+ID4gbGVzcyB0aGFuIDwgOCBhbmQgYmVsb3cgY2FsY3VsYXRpb24g
-d2lsbCBub3Qgb3ZlcmZsb3cuIG1heSBiZQ0KPiA+ID4gPiA+ID4gZXJyb3Igb3V0IGlmIHZhbHVl
-IGlzIGxlc3MgdGhhbiA4Lg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiBUaGUgInZhbHVlIiBsZXNz
-IHRoYW4gMTAsIHRoaXMgd2lsbCBvdmVyZmxvdy4NCj4gPiA+ID4gPiBUaGVyZSBpcyBub3QgZXJy
-b3IsIFRoZSBjb2RlIEkga25ldyBpdCBjb3VsZCBub3QgYmUgbGVzcyB0aGFuDQo+ID4gPiA+ID4g
-MTAsIHRoYXQncyB3aHkgSSB1c2UgdGhlIGZvbGxvd2luZyBjb2RlLiA6KQ0KPiA+ID4gPg0KPiA+
-ID4gPiBJIGFtIHNvcnJ5IHRvIHBlcnNpc3QgYnV0IHRoaXMgaXMgbm90IGFib3V0IHdoYXQgeW91
-IGtub3csIHRoaXMgaXMNCj4gPiA+ID4gYWJvdXQgaG93IGNvZGUgaXMgcmVhZCBhbmQgY29kZSBk
-b2VzIG5vdCBzYXkgd2hhdCB5b3Uga25vdywgc28gYWRkDQo+ID4gPiA+IGEgY29tbWVudCBhdCBs
-ZWFzdCBhbmQgZXJyb3Igb3V0L3dhcm4gd2hlbiAidmFsdWUiIGlzIGxlc3MgdGhhbiBhDQo+ID4g
-Y2VydGFpbiBudW1iZXIuDQo+ID4gPiA+DQo+ID4gPiBTb3JyeSBmb3IgdGhlIGxhdGUgdG8gcmVz
-cG9uc2UgdGhlIG1haWwuIElmIGl0IGNhdXNlZCBjb25mdXNpb24sIHdlDQo+ID4gPiBjYW4NCj4g
-PiBhZGQgYSBjb21tZW50Lg0KPiA+ID4NCj4gPiA+IEhvdyBhYm91dCB0aGUgZm9sbG93aW5nIGNv
-bW1lbnQ/DQo+ID4gPiAvKg0KPiA+ID4gICogSWYgdGhlICJ2YWx1ZSIgbGVzcyB0aGFuIDEwLCB0
-aGlzIHdpbGwgb3ZlcmZsb3cuDQo+ID4gPiAgKiBGcm9tIGJlbmNobWFyayB0ZXN0LCB0aGUgZGVm
-YXVsdCB3YWl0IGJpdCB3aWxsIG5vdCBiZSBzZXQgbGVzcw0KPiA+ID4gdGhhbg0KPiA+IDEwYml0
-Lg0KPiA+ID4gICogQmVjYXVzZSAxMCBiaXQgY29ycmVzcG9uZHMgdG8gdGhlIHdhaXQgZW50cnkg
-dGltZSBpcw0KPiA+ID4gNDM5Mzc1NTczNDAxOTk5NjA5KG5zKSwNCj4gPiA+ICAqIGZvciB3YWl0
-LWVudHJ5LWlkbGUgdGltZSB0aGlzIHZhbHVlIGxvb2tzIHRvbyBsb25nLCBhbmQgd2UgY2Fubm90
-DQo+ID4gPiB1c2UgdGhvc2UNCj4gPiA+ICAqICJsb25nIiB0aW1lIGFzIGEgZGVmYXVsdCB3YWl0
-LWVudHJ5IHRpbWUuIFNvIG92ZXJmbG93IGNvdWxkIG5vdA0KPiA+ID4gaGF2ZSBoYXBwZW5lZA0K
-PiA+ID4gICogYW5kIHdlIHVzZSB0aGlzIGNhbGN1bGF0aW9uIG1ldGhvZCB0byBnZXQgd2FpdC1l
-bnRyeS1pZGxlIHRpbWUuDQo+ID4gPiAgKi8NCj4gPg0KPiA+IElmIHRoZXJlJ3MgdG8gYmUgYSBs
-aW1pdCBvbiB0aGUgdGltZXMgd2UgYWNjZXB0LCBtYWtlIGl0IGV4cGxpY2l0Lg0KPiA+IENoZWNr
-IGZvciBpdCBiZWZvcmUgZG9pbmcgYW55IGNvbnZlcnNpb25zLCBhbmQgcmV0dXJuIGFuIGVycm9y
-IGlmDQo+ID4gdXNlcnNwYWNlIHRyaWVzIHRvIHNldCBpdC4NCj4gPg0KPiBUaGUgYnJhbmNoIG9u
-bHkgdXNlIHRvIHJlYWQgZGVmYXVsdCB3YWl0LWVudHJ5LXRpbWUuDQo+IFdlIGhhdmUgbm8gbGlt
-aXQgdGhlIHVzZXIncyBpbnB1dCwgYW5kIHdlIGNhbid0IHJlc3RyaWN0LiBPbmNlIHRoZSB1c2Vy
-DQo+IHNldCB0aGUgd2FpdC1lbnRyeS10aW1lLCB0aGUgY29kZSB3aWxsIGRvIGFub3RoZXIgYnJh
-bmNoLg0KPiANCg0KSGkgc2NvdHQsDQpEbyB5b3UgaGF2ZSBhbnkgY29tbWVudHMgYWJvdXQgdGhp
-cyBwYXRjaD8NCkkgd2lsbCBhZGQgdGhlIGNvbW1lbnQgYW5kIHNlbmQgdGhpcyBwYXRjaCBhZ2Fp
-bi4NCg0KLWRvbmdzaGVuZw0KDQo+ID4NCj4gPg0KDQo=
+On Mon, Nov 04, 2013 at 11:45:10AM +0800, Xiubo Li-B47053 wrote:
+> > > +snd-soc-fsl-sai-objs := fsl-sai.o
+> > 
+> > And I think it should be better to put it along with fsl-ssi.o and fsl-
+> > spdif.o
+> > 
+> 
+> But fsl-ssi.o and fsl-spdif.o is based PowrePC platform? Which we can see from the comments.
+
+No. fsl-ssi.c is compatible to both ARM and PPC. And fsl-spdif.c is currently
+used on ARM only. So please just put along with them.
+
+> > > +	case SNDRV_PCM_TRIGGER_START:
+> > > +	case SNDRV_PCM_TRIGGER_RESUME:
+> > > +	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
+> > > +		tcsr |= FSL_SAI_CSR_TERE;
+> > > +		rcsr |= FSL_SAI_CSR_TERE;
+> > > +		writel(rcsr, sai->base + FSL_SAI_RCSR);
+> > > +		udelay(10);
+> > 
+> > Does SAI really needs this udelay() here? Required by IP's operation flow?
+> > If so, I think it's better to add comments here to explain it.
+> > 
+> +++++++++++++++++
+> Synchronous mode
+> The SAI transmitter and receiver can be configured to operate with synchronous bit clock
+> and frame sync.
+> 
+> 1,
+> If the transmitter bit clock and frame sync are to be used by both the transmitter and
+> receiver:
+> 	...
+> * It is recommended that the transmitter is the last enabled and the first disabled.
+> 
+> 2,
+> If the receiver bit clock and frame sync are to be used by both the transmitter and
+> receiver:
+> 	...
+> * It is recommended that the receiver is the last enabled and the first disabled.
+> ------------------
+> 
+> So I think the delay is needed, and I still tunning it.
+> 
+
+The udelay just doesn't make sense to what you are talking about.
+
+Does SAI really need 10us delay between two register-updating?
+
+We basically use udelay only if the IP hardware actually needs it: some
+IP needs time to boot itself up after doing software reset for example.
+But it doesn't look reasonable to me by using udelay to make sure "the 
+last enabled".
+
+And from the 'Synchronous mode' you just provided, there're another issue:
+
++	case SNDRV_PCM_TRIGGER_START:
++	case SNDRV_PCM_TRIGGER_RESUME:
++	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
++		tcsr |= FSL_SAI_CSR_TERE;
++		rcsr |= FSL_SAI_CSR_TERE;
++		writel(rcsr, sai->base + FSL_SAI_RCSR);
++		udelay(10);
++		writel(tcsr, sai->base + FSL_SAI_TCSR);
++		break;
++
++	case SNDRV_PCM_TRIGGER_STOP:
++	case SNDRV_PCM_TRIGGER_SUSPEND:
++	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
++		if (!(dai->playback_active || dai->capture_active)) {
++			tcsr &= ~FSL_SAI_CSR_TERE;
++			rcsr &= ~FSL_SAI_CSR_TERE;
++		}
++		writel(rcsr, sai->base + FSL_SAI_RCSR);
++		udelay(10);
++		writel(tcsr, sai->base + FSL_SAI_TCSR);
++		break;
+
+ISSUE 1: You might make sure transmitter is the last enabled.
+	 However, it's not the first disabled. Is this okay?
+
+ISSUE 2: There are two cases listed in 'Synchronous mode'.
+	 However, your driver doesn't take care of them.
+	 The SAI's synchronous mode looks like more flexible
+	 than SSI's. The driver needs to be more sophisticated
+	 so that it can handle multiple cases when TX/RX clocks
+	 are controlled by either TX or RX, and surely, the
+	 asynchronous mode as well.
+
+
+And there's another personal tip: I think you can first try to focus on
+this SAI driver and pend the others. There might be two many things you
+need to refine if you are doing them at the same time.
+
+Best regards,
+Nicolin Chen
