@@ -1,31 +1,12 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C1DCB2C011C
- for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 21:51:09 +1100 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Mon, 4 Nov 2013 03:51:07 -0700
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 76E531FF001B
- for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 03:50:49 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rA4Ap4kr288536
- for <linuxppc-dev@ozlabs.org>; Mon, 4 Nov 2013 03:51:04 -0700
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- rA4ArsuK025696
- for <linuxppc-dev@ozlabs.org>; Mon, 4 Nov 2013 03:53:56 -0700
-Date: Mon, 4 Nov 2013 02:51:00 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Return-Path: <will.deacon@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 5CBD82C00BA
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 22:06:42 +1100 (EST)
+Date: Mon, 4 Nov 2013 11:05:53 +0000
+From: Will Deacon <will.deacon@arm.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
-Message-ID: <20131104105059.GL3947@linux.vnet.ibm.com>
+Message-ID: <20131104110553.GA8595@mudshark.cambridge.arm.com>
 References: <20131030112526.GI16117@laptop.programming.kicks-ass.net>
  <20131031064015.GV4126@linux.vnet.ibm.com>
  <20131101145634.GH19466@laptop.lan>
@@ -44,8 +25,8 @@ Cc: Michael Neuling <mikey@neuling.org>,
  Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@redhat.com>,
  LKML <linux-kernel@vger.kernel.org>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
  Anton Blanchard <anton@samba.org>, Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+ Victor Kaplansky <VICTORK@il.ibm.com>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,264 +36,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Nov 03, 2013 at 03:34:00PM -0800, Linus Torvalds wrote:
-> On Sun, Nov 3, 2013 at 2:42 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> >
-> > smp_storebuffer_mb() -- A barrier that enforces those orderings
-> >         that do not invalidate the hardware store-buffer optimization.
-> 
-> Ugh. Maybe. Can you guarantee that those are the correct semantics?
-> And why talk about the hardware semantics, when you really want
-> specific semantics for the *software*.
-> 
-> > smp_not_w_r_mb() -- A barrier that orders everything except prior
-> >         writes against subsequent reads.
-> 
-> Ok, that sounds more along the lines of "these are the semantics we
-> want", but I have to say, it also doesn't make me go "ahh, ok".
-> 
-> > smp_acqrel_mb() -- A barrier that combines C/C++ acquire and release
-> >         semantics.  (C/C++ "acquire" orders a specific load against
-> >         subsequent loads and stores, while C/C++ "release" orders
-> >         a specific store against prior loads and stores.)
-> 
-> I don't think this is true. acquire+release is much stronger than what
-> you're looking for - it doesn't allow subsequent reads to move past
-> the write (because that would violate the acquire part). On x86, for
-> example, you'd need to have a locked cycle for smp_acqrel_mb().
-> 
-> So again, what are the guarantees you actually want? Describe those.
-> And then make a name.
-
-I was thinking in terms of the guarantee that TSO systems provide
-given a barrier() directive, and that PowerPC provides given the lwsync
-instruction.  This guarantee is that loads preceding the barrier will
-not be reordered with memory referenced following the barrier, and that
-stores preceding the barrier will not be reordered with stores following
-the barrier.  But given how much easier RCU reviews became after burying
-smp_wmb() and smp_read_barrier_depends() into rcu_assign_pointer() and
-rcu_dereference(), respectively, I think I prefer an extension of your
-idea below.
-
-> I _think_ the guarantees you want is:
->  - SMP write barrier
->  - *local* read barrier for reads preceding the write.
-> 
-> but the problem is that the "preceding reads" part is really
-> specifically about the write that you had. The barrier should really
-> be attached to the *particular* write operation, it cannot be a
-> standalone barrier.
-
-Indeed, neither rcu_assign_pointer() nor the circular queue really needs a
-standalone barrier, so that attaching the barrier to a particular memory
-reference would work.  And as you note below, in the case of ARM this
-would turn into one of their new memory-reference instructions.
-
+On Sun, Nov 03, 2013 at 11:34:00PM +0000, Linus Torvalds wrote:
 > So it would *kind* of act like a "smp_wmb() + smp_rmb()", but the
 > problem is that a "smp_rmb()" doesn't really "attach" to the preceding
 > write.
-> 
+
+Agreed.
+
 > This is analogous to a "acquire" operation: you cannot make an
 > "acquire" barrier, because it's not a barrier *between* two ops, it's
 > associated with one particular op.
-
-But you -could- use any barrier that prevented reordering of any preceding
-load with any subsequent memory reference.  Please note that I am -not-
-advocating this anymore, because I like the idea of attaching the barrier
-to a particular memory operation.  However, for completeness, here it is
-in the case of TSO systems and PowerPC, respectively:
-
-#define smp_acquire_mb() barrier();
-
-#define smp_acquire_mb() \
-	__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory");
-
-This functions correctly, but is a pain to review because you have to
-figure out which of many possible preceding loads the smp_acquire_mb()
-is supposed to attach to.  As you say, it is -way- better to attach the
-barrier to a particular memory operation.
-
+> 
 > So what I *think* you actually really really want is a "store with
 > release consistency, followed by a write barrier".
 
-I believe that the combination of "store with release consistency" and
-"load with acquire consistency" should do the trick for the two use cases
-at this point, which again are circular buffers and rcu_assign_pointer().
-At this point, I don't see the need for "followed by a write barrier".
-But I step through the circular buffers below.
+How does that order reads against reads? (Paul mentioned this as a
+requirement). I not clear about the use case for this, so perhaps there is a
+dependency that I'm not aware of.
 
 > In TSO, afaik all stores have release consistency, and all writes are
 > ordered, which is why this is a no-op in TSO. And x86 also has that
 > "all stores have release consistency, and all writes are ordered"
 > model, even if TSO doesn't really describe the x86 model.
-
-Yep, as does the mainframe.  And these architectures also have all reads
-having acquire consistency.
-
+> 
 > But on ARM64, for example, I think you'd really want the store itself
 > to be done with "stlr" (store with release), and then follow up with a
 > "dsb st" after that.
 
-Agree with the "stlr" but don't (yet, anyway) understand the need for
-a subsequent "dsb st".
+So a dsb is pretty heavyweight here (it prevents execution of *any* further
+instructions until all preceeding stores have completed, as well as
+ensuring completion of any ongoing cache flushes). In conjunction with the
+store-release, that's going to hold everything up until the store-release
+(and therefore any preceeding memory accesses) have completed. Granted, I
+think that gives Paul his read/read ordering, but it's a lot heavier than
+what's required.
 
 > And notice how that requires you to mark the store itself. There is no
 > actual barrier *after* the store that does the optimized model.
-
-And marking the store itself is a very good thing from my viewpoint.
-
+> 
 > Of course, it's entirely possible that it's not worth worrying about
 > this on ARM64, and that just doing it as a "normal store followed by a
 > full memory barrier" is good enough. But at least in *theory* a
 > microarchitecture might make it much cheaper to do a "store with
 > release consistency" followed by "write barrier".
-> 
-> Anyway, having talked exhaustively about exactly what semantics you
-> are after, I *think* the best model would be to just have a
-> 
->   #define smp_store_with_release_semantics(x, y) ...
-> 
-> and use that *and* a "smp_wmb()" for this (possibly a special
-> "smp_wmb_after_release()" if that allows people to avoid double
-> barriers). On x86 (and TSO systems), the
-> smp_store_with_release_semantics() would be just a regular store, and
-> the smp_wmb() is obviously a no-op. Other platforms would end up doing
-> other things.
-> 
-> Hmm?
 
-OK, something like this for the definitions (though PowerPC might want
-to locally abstract the lwsync expansion):
+I agree with the sentiment but, given that this stuff is so heavily
+microarchitecture-dependent (and not simple to probe), a simple dmb ish
+might be the best option after all. That's especially true if the
+microarchitecture decided to ignore the barrier options and treat everything
+as `all accesses, full system' in order to keep the hardware design simple.
 
-	#define smp_store_with_release_semantics(p, v) /* x86, s390, etc. */ \
-	do { \
-		barrier(); \
-		ACCESS_ONCE(p) = (v); \
-	} while (0)
-
-	#define smp_store_with_release_semantics(p, v) /* PowerPC. */ \
-	do { \
-		__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory"); \
-		ACCESS_ONCE(p) = (v); \
-	} while (0)
-
-	#define smp_load_with_acquire_semantics(p) /* x86, s390, etc. */ \
-	({ \
-		typeof(*p) *_________p1 = ACCESS_ONCE(p); \
-		barrier(); \
-		_________p1; \
-	})
-
-	#define smp_load_with_acquire_semantics(p) /* PowerPC. */ \
-	({ \
-		typeof(*p) *_________p1 = ACCESS_ONCE(p); \
-		__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory"); \
-		_________p1; \
-	})
-
-For ARM, smp_load_with_acquire_semantics() is a wrapper around the ARM
-"ldar" instruction and smp_store_with_release_semantics() is a wrapper
-around the ARM "stlr" instruction.
-
-Then if I am not too confused (and I would expect Victor to let me know
-in short order if I am), the following patch to the current mainline
-version of Documentation/circular-buffers.txt would suffice.
-
-Thoughts?
-
-							Thanx, Paul
-
-------------------------------------------------------------------------
-
-diff --git a/Documentation/circular-buffers.txt b/Documentation/circular-buffers.txt
-index 8117e5bf6065..1846044bf6cc 100644
---- a/Documentation/circular-buffers.txt
-+++ b/Documentation/circular-buffers.txt
-@@ -160,6 +160,7 @@ The producer will look something like this:
- 	spin_lock(&producer_lock);
- 
- 	unsigned long head = buffer->head;
-+	/* The spin_unlock() and next spin_lock() provide needed ordering. */
- 	unsigned long tail = ACCESS_ONCE(buffer->tail);
- 
- 	if (CIRC_SPACE(head, tail, buffer->size) >= 1) {
-@@ -168,9 +169,8 @@ The producer will look something like this:
- 
- 		produce_item(item);
- 
--		smp_wmb(); /* commit the item before incrementing the head */
--
--		buffer->head = (head + 1) & (buffer->size - 1);
-+		smp_store_with_release_semantics(buffer->head,
-+						 (head + 1) & (buffer->size - 1));
- 
- 		/* wake_up() will make sure that the head is committed before
- 		 * waking anyone up */
-@@ -183,9 +183,14 @@ This will instruct the CPU that the contents of the new item must be written
- before the head index makes it available to the consumer and then instructs the
- CPU that the revised head index must be written before the consumer is woken.
- 
--Note that wake_up() doesn't have to be the exact mechanism used, but whatever
--is used must guarantee a (write) memory barrier between the update of the head
--index and the change of state of the consumer, if a change of state occurs.
-+Note that wake_up() does not guarantee any sort of barrier unless something
-+is actually awakened.  We therefore cannot rely on it for ordering.  However,
-+there is always one element of the array left empty.  Therefore, the
-+producer must produce two elements before it could possibly corrupt the
-+element currently being read by the consumer.  Therefore, the unlock-lock
-+pair between consecutive invocations of the consumer provides the necessary
-+ordering between the read of the index indicating that the consumer has
-+vacated a given element and the write by the producer to that same element.
- 
- 
- THE CONSUMER
-@@ -195,21 +200,18 @@ The consumer will look something like this:
- 
- 	spin_lock(&consumer_lock);
- 
--	unsigned long head = ACCESS_ONCE(buffer->head);
-+	unsigned long head = smp_load_with_acquire_semantics(buffer->head);
- 	unsigned long tail = buffer->tail;
- 
- 	if (CIRC_CNT(head, tail, buffer->size) >= 1) {
--		/* read index before reading contents at that index */
--		smp_read_barrier_depends();
- 
- 		/* extract one item from the buffer */
- 		struct item *item = buffer[tail];
- 
- 		consume_item(item);
- 
--		smp_mb(); /* finish reading descriptor before incrementing tail */
--
--		buffer->tail = (tail + 1) & (buffer->size - 1);
-+		smp_store_with_release_semantics(buffer->tail,
-+						 (tail + 1) & (buffer->size - 1));
- 	}
- 
- 	spin_unlock(&consumer_lock);
-@@ -218,12 +220,17 @@ This will instruct the CPU to make sure the index is up to date before reading
- the new item, and then it shall make sure the CPU has finished reading the item
- before it writes the new tail pointer, which will erase the item.
- 
--
--Note the use of ACCESS_ONCE() in both algorithms to read the opposition index.
--This prevents the compiler from discarding and reloading its cached value -
--which some compilers will do across smp_read_barrier_depends().  This isn't
--strictly needed if you can be sure that the opposition index will _only_ be
--used the once.
-+Note the use of ACCESS_ONCE() and smp_load_with_acquire_semantics()
-+to read the opposition index.  This prevents the compiler from
-+discarding and reloading its cached value - which some compilers will
-+do across smp_read_barrier_depends().  This isn't strictly needed
-+if you can be sure that the opposition index will _only_ be used
-+the once.  The smp_load_with_acquire_semantics() additionally forces
-+the CPU to order against subsequent memory references.  Similarly,
-+smp_store_with_release_semantics() is used in both algorithms to write
-+the thread's index.  This documents the fact that we are writing to
-+something that can be read concurrently, prevents the compiler from
-+tearing the store, and enforces ordering against previous accesses.
- 
- 
- ===============
+Will
