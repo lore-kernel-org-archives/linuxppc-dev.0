@@ -1,32 +1,33 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 78CC82C03FE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2013 19:33:15 +1100 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 4 Nov 2013 03:33:12 -0500
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id C9BD56E803C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2013 03:33:08 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rA48XANX62193682
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Nov 2013 08:33:10 GMT
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- rA48X6JK022438
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Nov 2013 03:33:10 -0500
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc/powernv: Add PE to its own PELTV
-Date: Mon,  4 Nov 2013 16:32:46 +0800
-Message-Id: <1383553967-16644-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, stable@vger.kernel.org
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 767EB2C00A8
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 20:08:12 +1100 (EST)
+Date: Mon, 4 Nov 2013 10:07:44 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: perf events ring buffer memory barrier on powerpc
+Message-ID: <20131104090744.GE10651@twins.programming.kicks-ass.net>
+References: <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
+ <20131030092725.GL4126@linux.vnet.ibm.com>
+ <OFC6B7100E.31C6B190-ON42257C14.004841C6-42257C14.004A0EA6@il.ibm.com>
+ <20131031043258.GQ4126@linux.vnet.ibm.com>
+ <20131031090457.GU19466@laptop.lan>
+ <20131031150756.GB4067@linux.vnet.ibm.com>
+ <20131031151955.GY19466@laptop.lan>
+ <20131101092814.GG4067@linux.vnet.ibm.com>
+ <20131101103017.GF19466@laptop.lan>
+ <20131102152048.GI4067@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131102152048.GI4067@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Victor Kaplansky <VICTORK@il.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,46 +37,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need add PE to its own PELTV. Otherwise, the errors originated
-from the PE might contribute to other PEs. In the result, we can't
-clear up the error successfully even we're checking and clearing
-errors during access to PCI config space.
+On Sat, Nov 02, 2013 at 08:20:48AM -0700, Paul E. McKenney wrote:
+> On Fri, Nov 01, 2013 at 11:30:17AM +0100, Peter Zijlstra wrote:
+> > Furthermore there's a gazillion parallel userspace programs.
+> 
+> Most of which have very unaggressive concurrency designs.
 
-Cc: stable@vger.kernel.org
-Reported-by: kalshett@in.ibm.com
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/pci-ioda.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+pthread_mutex_t A, B;
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index c639af7..198566e 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -163,13 +163,23 @@ static int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
- 		rid_end = pe->rid + 1;
- 	}
- 
--	/* Associate PE in PELT */
-+	/*
-+	 * Associate PE in PELT. We need add the PE into the
-+	 * corresponding PELT-V as well. Otherwise, the error
-+	 * originated from the PE might contribute to other
-+	 * PEs.
-+	 */
- 	rc = opal_pci_set_pe(phb->opal_id, pe->pe_number, pe->rid,
- 			     bcomp, dcomp, fcomp, OPAL_MAP_PE);
- 	if (rc) {
- 		pe_err(pe, "OPAL error %ld trying to setup PELT table\n", rc);
- 		return -ENXIO;
- 	}
-+
-+	rc = opal_pci_set_peltv(phb->opal_id, pe->pe_number,
-+				pe->pe_number, OPAL_ADD_PE_TO_DOMAIN);
-+	if (rc)
-+		pe_warn(pe, "OPAL error %d adding self to PELTV\n", rc);
- 	opal_pci_eeh_freeze_clear(phb->opal_id, pe->pe_number,
- 				  OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
- 
--- 
-1.7.9.5
+char data_A[x];
+int  counter_B = 1;
+
+void funA(void)
+{
+	pthread_mutex_lock(&A);
+	memset(data_A, 0, sizeof(data_A));
+	pthread_mutex_unlock(&A);
+}
+
+void funB(void)
+{
+	pthread_mutex_lock(&B);
+	counter_B++;
+	pthread_mutex_unlock(&B);
+}
+
+void funC(void)
+{
+	pthread_mutex_lock(&B)
+	printf("%d\n", counter_B);
+	pthread_mutex_unlock(&B);
+}
+
+Then run: funA, funB, funC concurrently, and end with a funC.
+
+Then explain to userman than his unaggressive program can return:
+0
+1
+
+Because the memset() thought it might be a cute idea to overwrite
+counter_B and fix it up 'later'. Which if I understood you right is
+valid in C/C++ :-(
+
+Not that any actual memset implementation exhibiting this trait wouldn't
+be shot on the spot.
+
+> > > By marking "ptr" as atomic, thus telling the compiler not to mess with it.
+> > > And thus requiring that all accesses to it be decorated, which in the
+> > > case of RCU could be buried in the RCU accessors.
+> > 
+> > This seems contradictory; marking it atomic would look like:
+> > 
+> > struct foo {
+> > 	unsigned long value;
+> > 	__atomic void *ptr;
+> > 	unsigned long value1;
+> > };
+> > 
+> > Clearly we cannot hide this definition in accessors, because then
+> > accesses to value* won't see the annotation.
+> 
+> #define __rcu __atomic
+
+Yeah, except we don't use __rcu all that consistently; in fact I don't
+know if I ever added it.
