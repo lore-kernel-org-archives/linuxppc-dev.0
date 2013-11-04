@@ -1,39 +1,17 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-vc0-x231.google.com (mail-vc0-x231.google.com
- [IPv6:2607:f8b0:400c:c03::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E8532C00E0
- for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 10:34:04 +1100 (EST)
-Received: by mail-vc0-f177.google.com with SMTP id ib11so4127093vcb.22
- for <linuxppc-dev@ozlabs.org>; Sun, 03 Nov 2013 15:34:01 -0800 (PST)
-MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <20131103224242.GF3947@linux.vnet.ibm.com>
-References: <OF58D85F5A.03E37A80-ON42257C12.0070E552-42257C12.00734308@il.ibm.com>
- <20131030092725.GL4126@linux.vnet.ibm.com>
- <20131030112526.GI16117@laptop.programming.kicks-ass.net>
- <20131031064015.GV4126@linux.vnet.ibm.com>
- <20131101145634.GH19466@laptop.lan>
- <20131102173239.GB3947@linux.vnet.ibm.com>
- <20131103144017.GA25118@linux.vnet.ibm.com>
- <20131103151704.GJ19466@laptop.lan>
- <CA+55aFx_kuvR-0dwJtjvnhtha5QBc5XcLZPRH=WKT+hYVAKOrw@mail.gmail.com>
- <20131103200124.GK19466@laptop.lan>
- <20131103224242.GF3947@linux.vnet.ibm.com>
-Date: Sun, 3 Nov 2013 15:34:00 -0800
-Message-ID: <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
-Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Paul McKenney <paulmck@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@redhat.com>,
- LKML <linux-kernel@vger.kernel.org>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5C41C2C0109
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 11:11:36 +1100 (EST)
+Date: Mon, 4 Nov 2013 01:11:23 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull 'next' branch of 5xxx tree
+Message-ID: <20131104011123.31e8dfb2@crub>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,85 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Nov 3, 2013 at 2:42 PM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
->
-> smp_storebuffer_mb() -- A barrier that enforces those orderings
->         that do not invalidate the hardware store-buffer optimization.
+Hi Ben !
 
-Ugh. Maybe. Can you guarantee that those are the correct semantics?
-And why talk about the hardware semantics, when you really want
-specific semantics for the *software*.
+Please pull mpc5xxx patches for v3.13:
 
-> smp_not_w_r_mb() -- A barrier that orders everything except prior
->         writes against subsequent reads.
+Fixes for build issues when LPB FIFO driver is configured as
+a module, removal of #ifdefs in mpc512x DIU platform code and
+a revert of recent changes to mpc52xx PIC driver. Wolfram
+provided a better fix for PIC driver build issue popping up
+when older gcc-4.3.5 is used.
 
-Ok, that sounds more along the lines of "these are the semantics we
-want", but I have to say, it also doesn't make me go "ahh, ok".
+Thanks,
+Anatolij
+ 
+The following changes since commit 50bd6153d1a68354a0a0c8bca1fe949fa8875875:
 
-> smp_acqrel_mb() -- A barrier that combines C/C++ acquire and release
->         semantics.  (C/C++ "acquire" orders a specific load against
->         subsequent loads and stores, while C/C++ "release" orders
->         a specific store against prior loads and stores.)
+  powerpc/powernv: Code update interface (2013-10-30 16:12:02 +1100)
 
-I don't think this is true. acquire+release is much stronger than what
-you're looking for - it doesn't allow subsequent reads to move past
-the write (because that would violate the acquire part). On x86, for
-example, you'd need to have a locked cycle for smp_acqrel_mb().
+are available in the git repository at:
 
-So again, what are the guarantees you actually want? Describe those.
-And then make a name.
+  git://git.denx.de/linux-2.6-agust.git next
 
-I _think_ the guarantees you want is:
- - SMP write barrier
- - *local* read barrier for reads preceding the write.
+for you to fetch changes up to 7e198197ec878c720af4dc35c49c0c6a99b83f9f:
 
-but the problem is that the "preceding reads" part is really
-specifically about the write that you had. The barrier should really
-be attached to the *particular* write operation, it cannot be a
-standalone barrier.
+  powerpc/mpc512x: remove unnecessary #if (2013-10-30 22:56:10 +0100)
 
-So it would *kind* of act like a "smp_wmb() + smp_rmb()", but the
-problem is that a "smp_rmb()" doesn't really "attach" to the preceding
-write.
+----------------------------------------------------------------
+Anatolij Gustschin (1):
+      powerpc/52xx: fix build breakage for MPC5200 LPBFIFO module
 
-This is analogous to a "acquire" operation: you cannot make an
-"acquire" barrier, because it's not a barrier *between* two ops, it's
-associated with one particular op.
+Brian Norris (1):
+      powerpc/mpc512x: remove unnecessary #if
 
-So what I *think* you actually really really want is a "store with
-release consistency, followed by a write barrier".
+Gerhard Sittig (1):
+      powerpc/mpc512x: silence build warning upon disabled DIU
 
-In TSO, afaik all stores have release consistency, and all writes are
-ordered, which is why this is a no-op in TSO. And x86 also has that
-"all stores have release consistency, and all writes are ordered"
-model, even if TSO doesn't really describe the x86 model.
+Wolfram Sang (1):
+      Kind of revert "powerpc: 52xx: provide a default in mpc52xx_irqhost_map()"
 
-But on ARM64, for example, I think you'd really want the store itself
-to be done with "stlr" (store with release), and then follow up with a
-"dsb st" after that.
-
-And notice how that requires you to mark the store itself. There is no
-actual barrier *after* the store that does the optimized model.
-
-Of course, it's entirely possible that it's not worth worrying about
-this on ARM64, and that just doing it as a "normal store followed by a
-full memory barrier" is good enough. But at least in *theory* a
-microarchitecture might make it much cheaper to do a "store with
-release consistency" followed by "write barrier".
-
-Anyway, having talked exhaustively about exactly what semantics you
-are after, I *think* the best model would be to just have a
-
-  #define smp_store_with_release_semantics(x, y) ...
-
-and use that *and* a "smp_wmb()" for this (possibly a special
-"smp_wmb_after_release()" if that allows people to avoid double
-barriers). On x86 (and TSO systems), the
-smp_store_with_release_semantics() would be just a regular store, and
-the smp_wmb() is obviously a no-op. Other platforms would end up doing
-other things.
-
-Hmm?
-
-         Linus
+ arch/powerpc/platforms/512x/mpc512x_shared.c |   18 +++++++-----------
+ arch/powerpc/platforms/52xx/Kconfig          |    2 +-
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c    |    5 ++---
+ arch/powerpc/sysdev/fsl_soc.h                |    3 ---
+ 4 files changed, 10 insertions(+), 18 deletions(-)
