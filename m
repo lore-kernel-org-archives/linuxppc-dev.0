@@ -1,44 +1,52 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 273142C0097
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2013 03:19:19 +1100 (EST)
-Date: Mon, 4 Nov 2013 08:15:37 -0800
-From: Mark Brown <broonie@kernel.org>
-To: Li Xiubo <B47053@freescale.com>
-Message-ID: <20131104161537.GI2493@sirena.org.uk>
-References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
- <1383289495-24523-2-git-send-email-Li.Xiubo@freescale.com>
- <20131101182514.GE2493@sirena.org.uk>
- <1DD289F6464F0949A2FCA5AA6DC23F8287439D@039-SN2MPN1-013.039d.mgd.msft.net>
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C6E5C2C025E
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Nov 2013 03:27:40 +1100 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Mon, 4 Nov 2013 09:27:39 -0700
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 2E22A38C805C
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 11:27:36 -0500 (EST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rA4GRa2r2359744
+ for <linuxppc-dev@ozlabs.org>; Mon, 4 Nov 2013 16:27:37 GMT
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ rA4GUPgr015342
+ for <linuxppc-dev@ozlabs.org>; Mon, 4 Nov 2013 09:30:27 -0700
+Date: Mon, 4 Nov 2013 08:27:32 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
+Message-ID: <20131104162732.GN3947@linux.vnet.ibm.com>
+References: <20131101145634.GH19466@laptop.lan>
+ <20131102173239.GB3947@linux.vnet.ibm.com>
+ <20131103144017.GA25118@linux.vnet.ibm.com>
+ <20131103151704.GJ19466@laptop.lan>
+ <CA+55aFx_kuvR-0dwJtjvnhtha5QBc5XcLZPRH=WKT+hYVAKOrw@mail.gmail.com>
+ <20131103200124.GK19466@laptop.lan>
+ <20131103224242.GF3947@linux.vnet.ibm.com>
+ <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
+ <20131104105059.GL3947@linux.vnet.ibm.com>
+ <20131104112254.GK28601@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="9jVH9MMcXWLfwoO6"
-In-Reply-To: <1DD289F6464F0949A2FCA5AA6DC23F8287439D@039-SN2MPN1-013.039d.mgd.msft.net>
-Subject: Re: [PATCHv2 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "tiwai@suse.de" <tiwai@suse.de>, Huan Wang <B18965@freescale.com>,
- "timur@tabi.org" <timur@tabi.org>, "perex@perex.cz" <perex@perex.cz>,
- Shawn Guo <r65073@freescale.com>,
- "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- Guangyu Chen <B42378@freescale.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- "pawel.moll@arm.com" <pawel.moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "oskar@scara.com" <oskar@scara.com>, Fabio Estevam <r49496@freescale.com>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob@landley.net" <rob@landley.net>, Zhengxiong Jin <R64188@freescale.com>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131104112254.GK28601@twins.programming.kicks-ass.net>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Victor Kaplansky <VICTORK@il.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,92 +56,232 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Nov 04, 2013 at 12:22:54PM +0100, Peter Zijlstra wrote:
+> On Mon, Nov 04, 2013 at 02:51:00AM -0800, Paul E. McKenney wrote:
+> > OK, something like this for the definitions (though PowerPC might want
+> > to locally abstract the lwsync expansion):
+> > 
+> > 	#define smp_store_with_release_semantics(p, v) /* x86, s390, etc. */ \
+> > 	do { \
+> > 		barrier(); \
+> > 		ACCESS_ONCE(p) = (v); \
+> > 	} while (0)
+> > 
+> > 	#define smp_store_with_release_semantics(p, v) /* PowerPC. */ \
+> > 	do { \
+> > 		__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory"); \
+> > 		ACCESS_ONCE(p) = (v); \
+> > 	} while (0)
+> > 
+> > 	#define smp_load_with_acquire_semantics(p) /* x86, s390, etc. */ \
+> > 	({ \
+> > 		typeof(*p) *_________p1 = ACCESS_ONCE(p); \
+> > 		barrier(); \
+> > 		_________p1; \
+> > 	})
+> > 
+> > 	#define smp_load_with_acquire_semantics(p) /* PowerPC. */ \
+> > 	({ \
+> > 		typeof(*p) *_________p1 = ACCESS_ONCE(p); \
+> > 		__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory"); \
+> > 		_________p1; \
+> > 	})
+> > 
+> > For ARM, smp_load_with_acquire_semantics() is a wrapper around the ARM
+> > "ldar" instruction and smp_store_with_release_semantics() is a wrapper
+> > around the ARM "stlr" instruction.
+> 
+> This still leaves me confused as to what to do with my case :/
+> 
+> Slightly modified since last time -- as the simplified version was maybe
+> simplified too far.
+> 
+> To recap, I'd like to get rid of barrier A where possible, since that's
+> now a full barrier for every event written.
+> 
+> However, there's no immediate store I can attach it to; the obvious one
+> would be the kbuf->head store, but that's complicated by the
+> local_cmpxchg() thing.
+> 
+> And we need that cmpxchg loop because a hardware NMI event can
+> interleave with a software event.
+> 
+> And to be honest, I'm still totally confused about memory barriers vs
+> control flow vs C/C++. The only way we're ever getting to that memcpy is
+> if we've already observed ubuf->tail, so that LOAD has to be fully
+> processes and completed.
+> 
+> I'm really not seeing how a STORE from the memcpy() could possibly go
+> wrong; and if C/C++ can hoist the memcpy() over a compiler barrier()
+> then I suppose we should all just go home.
+> 
+> /me who wants A to be a barrier() but is terminally confused.
 
---9jVH9MMcXWLfwoO6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Well, let's see...
 
-On Mon, Nov 04, 2013 at 07:35:12AM +0000, Li Xiubo wrote:
+> ---
+> 
+> 
+> /*
+>  * One important detail is that the kbuf part and the kbuf_writer() are
+>  * strictly per cpu and we can thus rely on program order for those.
+>  *
+>  * Only the userspace consumer can possibly run on another cpu, and thus we
+>  * need to ensure data consistency for those.
+>  */
+> 
+> struct buffer {
+>         u64 size;
+>         u64 tail;
+>         u64 head;
+>         void *data;
+> };
+> 
+> struct buffer *kbuf, *ubuf;
+> 
+> /*
+>  * If there's space in the buffer; store the data @buf; otherwise
+>  * discard it.
+>  */
+> void kbuf_write(int sz, void *buf)
+> {
+> 	u64 tail, head, offset;
+> 
+> 	do {
+> 		tail = ACCESS_ONCE(ubuf->tail);
 
-> From the ASoC subsystem comments we can see that:
-> ++++++
-> Configures the clock dividers. This is used to derive the best DAI bit and
-> frame clocks from the system or master clock. It's best to set the DAI bit
-> and frame clocks as low as possible to save system power.
-> ------
+So the above load is the key load.  It determines whether or not we
+have space in the buffer.  This of course assumes that only this CPU
+writes to ->head.
 
-You should never use this unless you have to, there is no point in every
-single machine driver using your driver having to duplicate the same
-calculations.
+If so, then:
 
->=20
-> > > +static int fsl_sai_dai_probe(struct snd_soc_dai *dai) {
-> > > +	int ret;
-> > > +	struct fsl_sai *sai =3D dev_get_drvdata(dai->dev);
-> > > +
-> > > +	ret =3D clk_prepare_enable(sai->clk);
-> > > +	if (ret)
-> > > +		return ret;
+		tail = smp_load_with_acquire_semantics(ubuf->tail); /* A -> D */
 
-> > It'd be nicer to only enable the clock while the device is in active us=
-e.
+> 		offset = head = kbuf->head;
+> 		if (CIRC_SPACE(head, tail, kbuf->size) < sz) {
+> 			/* discard @buf */
+> 			return;
+> 		}
+> 		head += sz;
+> 	} while (local_cmpxchg(&kbuf->head, offset, head) != offset)
 
-> While if the module clock is not enabled here, the followed registers can=
-not read/write in the same function.
-> And this _probe function is the _dai_probe not the driver's module _probe.
+If there is an issue with kbuf->head, presumably local_cmpxchg() fails
+and we retry.
 
-So you can enable the clock when you explicitly need to write to the
-registers...
+But sheesh, do you think we could have buried the definitions of
+local_cmpxchg() under a few more layers of macro expansion just to
+keep things more obscure?  Anyway, griping aside...
 
-> If the clk_prepare_enable(sai->clk) is not here, where should it be will =
-be nicer ?
-> One of the following functions ?
->         .set_sysclk     =3D fsl_sai_set_dai_sysclk,
->         .set_clkdiv     =3D fsl_sai_set_dai_clkdiv,
->         .set_fmt        =3D fsl_sai_set_dai_fmt,
->         .set_tdm_slot   =3D fsl_sai_set_dai_tdm_slot,
->         .hw_params      =3D fsl_sai_hw_params,
->         .trigger        =3D fsl_sai_trigger,
+o	__cmpxchg_local_generic() in include/asm-generic/cmpxchg-local.h
+	doesn't seem to exclude NMIs, so is not safe for this usage.
 
-It could be in any or all of them except trigger (where the core should
-hold a runtime PM reference anyway).  You can always take a reference
-for the duration of the function if you're concerned it may be called
-when the referent isn't otherwise held.
+o	__cmpxchg_local() in ARM handles NMI as long as the
+	argument is 32 bits, otherwise, it uses the aforementionted
+	__cmpxchg_local_generic(), which does not handle NMI.  Given your
+	u64, this does not look good...
 
-> > > +	ret =3D snd_dmaengine_pcm_register(&pdev->dev, NULL,
-> > > +			SND_DMAENGINE_PCM_FLAG_NO_RESIDUE);
-> > > +	if (ret)
-> > > +		return ret;
+	And some ARM subarches (e.g., metag) seem to fail to handle NMI
+	even in the 32-bit case.
 
-> > We should have a devm_ version of this.
+o	FRV and M32r seem to act similar to ARM.
 
-> Sorry, is there one patch for adding the devm_ version of snd_dmaengine_p=
-cm_register() already ?
-> In the -next and other topics branches I could not find it.
+Or maybe these architectures don't do NMIs?  If they do, local_cmpxchg()
+does not seem to be safe against NMIs in general.  :-/
 
-No, there isn't one but there should be one.
+That said, powerpc, 64-bit s390, sparc, and x86 seem to handle it.
 
---9jVH9MMcXWLfwoO6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Of course, x86's local_cmpxchg() has full memory barriers implicitly.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+> 
+>         /*
+>          * Ensure that if we see the userspace tail (ubuf->tail) such
+>          * that there is space to write @buf without overwriting data
+>          * userspace hasn't seen yet, we won't in fact store data before
+>          * that read completes.
+>          */
+> 
+>         smp_mb(); /* A, matches with D */
 
-iQIcBAEBAgAGBQJSd8gmAAoJELSic+t+oim9AZMQAIefObmkvnzc13/Qx9sJCNa0
-47Mt+0tfJFdjadPL6ocKpX0tYxvxdeY30L/zOL7mq8Ehdvdp3PXQHWret3dHovwI
-w4CYGja+2GenT711PAFfz9jYqlTEj17NhPMsfDc7gf4TSNSt+MztlejKcIpsXO+3
-Mcbhl9n4j++Tr2p3PcT60KJEArAJSYxdu0JybxEdSv04dQcLCm3atqnMjJx8/C6W
-w3HTaHtggsa6fa/hlgMGH9cGghtSPnISCtr60mc8/Kp9xa6p6RHNJx+DMYsDfgf2
-OFA84thNFynw6hh54NaBhelaAGGydM2BuybD7C+Tik5V0mS2quFgTVS28EU6YlL8
-xzCnt7CgmieVHwsKJ7Aq4tKrAvCf+ojub5mlXJAMnrv3Sp77i9rU94ICu7wGw+UG
-vQ5bcmeYfLgrfxTtGjo/bp/mhvpI9/oNFJn/8NbiZ++XIjEsLp8VpZoPhMp3orI/
-zuK8cfR5oSNVmYvn8xrQCqge1sUziYEJvANqDI3XiqOm5t9LIdrO/1Uc3x2vy7g1
-VCcEk14w8HZWKZqu4zBKkiE9ezXSD5ZI1IEGLAM+1o0V1B1+bUuZv8olcPyS0XSq
-m2j/ch+sbCR6MaHB817WVyICYDS85pOB4VeB1Fk7R5frmiWajqqsyPipZKZT/Kw2
-Z3AO4y0D8GQT16dJL1a0
-=YZgo
------END PGP SIGNATURE-----
+Given a change to smp_load_with_acquire_semantics() above, you should not
+need this smp_mb().
 
---9jVH9MMcXWLfwoO6--
+>         memcpy(kbuf->data + offset, buf, sz);
+> 
+>         /*
+>          * Ensure that we write all the @buf data before we update the
+>          * userspace visible ubuf->head pointer.
+>          */
+>         smp_wmb(); /* B, matches with C */
+> 
+>         ubuf->head = kbuf->head;
+
+Replace the smp_wmb() and the assignment with:
+
+	smp_store_with_release_semantics(ubuf->head, kbuf->head); /* B -> C */
+
+> }
+> 
+> /*
+>  * Consume the buffer data and update the tail pointer to indicate to
+>  * kernel space there's 'free' space.
+>  */
+> void ubuf_read(void)
+> {
+>         u64 head, tail;
+> 
+>         tail = ACCESS_ONCE(ubuf->tail);
+
+Does anyone else write tail?  Or is this defense against NMIs?
+
+If no one else writes to tail and if NMIs cannot muck things up, then
+the above ACCESS_ONCE() is not needed, though I would not object to its
+staying.
+
+>         head = ACCESS_ONCE(ubuf->head);
+
+Make the above be:
+
+	head = smp_load_with_acquire_semantics(ubuf->head);  /* C -> B */
+
+>         /*
+>          * Ensure we read the buffer boundaries before the actual buffer
+>          * data...
+>          */
+>         smp_rmb(); /* C, matches with B */
+
+And drop the above memory barrier.
+
+>         while (tail != head) {
+>                 obj = ubuf->data + tail;
+>                 /* process obj */
+>                 tail += obj->size;
+>                 tail %= ubuf->size;
+>         }
+> 
+>         /*
+>          * Ensure all data reads are complete before we issue the
+>          * ubuf->tail update; once that update hits, kbuf_write() can
+>          * observe and overwrite data.
+>          */
+>         smp_mb(); /* D, matches with A */
+> 
+>         ubuf->tail = tail;
+
+Replace the above barrier and the assignment with:
+
+	smp_store_with_release_semantics(ubuf->tail, tail); /* D -> B. */
+
+> }
+
+All this is leading me to suggest the following shortenings of names:
+
+	smp_load_with_acquire_semantics() -> smp_load_acquire()
+
+	smp_store_with_release_semantics() -> smp_store_release()
+
+But names aside, the above gets rid of explicit barriers on TSO architectures,
+allows ARM to avoid full DMB, and allows PowerPC to use lwsync instead of
+the heavier-weight sync.
+
+								Thanx, Paul
