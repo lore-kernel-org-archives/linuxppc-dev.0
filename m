@@ -1,14 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Mon, 4 Nov 2013 13:28:35 +1100
+Date: Mon, 4 Nov 2013 13:43:29 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Tom <tommusta@gmail.com>
-Subject: Re: [V2 PATCH 1/3] powerpc: Enable emulate_step In Little Endian Mode
-Message-ID: <20131104022835.GA32010@drongo>
+Subject: Re: [V2 PATCH 2/3] powerpc: Fix Unaligned Fixed Point Loads and Stores
+Message-ID: <20131104024329.GB32010@drongo>
 References: <1383244738-5986-1-git-send-email-tommusta@gmail.com>
- <1383244738-5986-2-git-send-email-tommusta@gmail.com>
+ <1383244738-5986-3-git-send-email-tommusta@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1383244738-5986-2-git-send-email-tommusta@gmail.com>
+In-Reply-To: <1383244738-5986-3-git-send-email-tommusta@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,29 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 31, 2013 at 01:38:56PM -0500, Tom wrote:
+On Thu, Oct 31, 2013 at 01:38:57PM -0500, Tom wrote:
 > From: Tom Musta <tommusta@gmail.com>
 > 
-> This patch modifies the endian chicken switch in the single step
+> This patch modifies the unaligned access routines of the sstep.c
+> module so that it properly reverses the bytes of storage operands
+> in the little endian kernel kernel.
 
-"Chicken switch" is IBM jargon, perhaps best avoided where possible in
-commit messages.
+This has rather a lot of #ifdefs inside function definitions, and for
+little-endian it does the unaligned accesses one byte at a time.  You
+could avoid all the #ifdefs if you define the combining function in an
+endian-dependant way and make read_mem_unaligned look something like
+this:
 
-> emulation code (emulate_step()).  The old (big endian) code bailed
-> early if a load or store instruction was to be emulated in little
-> endian mode.
-> 
-> The new code modifies the check and only bails in a cross-endian
-> situation (LE mode in a kernel compiled for BE and vice verse).
+#ifdef __LITTLE_ENDIAN__
+#define combine_pieces(x, b, c, nd)	((x) + ((b) << (8 * (nd))))
+#else
+#define combine_pieces(x, b, c, nd)	(((x) << (8 * (c))) + (b))
+#endif
 
-The patch adds #ifdefs inside code, which is generally frowned upon
-in kernel code as it can make the code flow harder to see.  Perhaps
-you could do something like
+static int __kprobes read_mem_unaligned(unsigned long *dest, unsigned long ea,
+					int nb, struct pt_regs *regs)
+{
+	int err;
+	int nd;
+	unsigned long x, b, c;
 
-	if ((regs->msr & MSR_LE) != (MSR_KERNEL & MSR_LE))
+	/* unaligned, do this in pieces */
+	x = 0;
+	for (nd = 0; nd < nb; nd += c) {
+		c = max_align(ea);
+		if (c > nb - nd)
+			c = max_align(nb - nd);
+		err = read_mem_aligned(&b, ea, c);
+		if (err)
+			return err;
+		x = combine_pieces(x, b, c, nd);
+		ea += c;
+	}
+	*dest = x;
+	return 0;
+}
 
-as an alternative that wouldn't require an #ifdef.  Or, define a
-symbol that is 0 in a BE kernel and MSR_LE in a LE kernel, and compare
-to that.
+and do something analogous for write_mem_unaligned().
 
 Paul.
