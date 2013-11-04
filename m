@@ -1,14 +1,15 @@
-Return-Path: <will.deacon@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 5CBD82C00BA
- for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 22:06:42 +1100 (EST)
-Date: Mon, 4 Nov 2013 11:05:53 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 52D5F2C0087
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 22:23:27 +1100 (EST)
+Date: Mon, 4 Nov 2013 12:22:54 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
-Message-ID: <20131104110553.GA8595@mudshark.cambridge.arm.com>
-References: <20131030112526.GI16117@laptop.programming.kicks-ass.net>
- <20131031064015.GV4126@linux.vnet.ibm.com>
+Message-ID: <20131104112254.GK28601@twins.programming.kicks-ass.net>
+References: <20131031064015.GV4126@linux.vnet.ibm.com>
  <20131101145634.GH19466@laptop.lan>
  <20131102173239.GB3947@linux.vnet.ibm.com>
  <20131103144017.GA25118@linux.vnet.ibm.com>
@@ -17,16 +18,17 @@ References: <20131030112526.GI16117@laptop.programming.kicks-ass.net>
  <20131103200124.GK19466@laptop.lan>
  <20131103224242.GF3947@linux.vnet.ibm.com>
  <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
+ <20131104105059.GL3947@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
+In-Reply-To: <20131104105059.GL3947@linux.vnet.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
  Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@redhat.com>,
- LKML <linux-kernel@vger.kernel.org>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Frederic Weisbecker <fweisbec@gmail.com>,
+ Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
  Victor Kaplansky <VICTORK@il.ibm.com>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>
+ Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,54 +38,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Nov 03, 2013 at 11:34:00PM +0000, Linus Torvalds wrote:
-> So it would *kind* of act like a "smp_wmb() + smp_rmb()", but the
-> problem is that a "smp_rmb()" doesn't really "attach" to the preceding
-> write.
-
-Agreed.
-
-> This is analogous to a "acquire" operation: you cannot make an
-> "acquire" barrier, because it's not a barrier *between* two ops, it's
-> associated with one particular op.
+On Mon, Nov 04, 2013 at 02:51:00AM -0800, Paul E. McKenney wrote:
+> OK, something like this for the definitions (though PowerPC might want
+> to locally abstract the lwsync expansion):
 > 
-> So what I *think* you actually really really want is a "store with
-> release consistency, followed by a write barrier".
-
-How does that order reads against reads? (Paul mentioned this as a
-requirement). I not clear about the use case for this, so perhaps there is a
-dependency that I'm not aware of.
-
-> In TSO, afaik all stores have release consistency, and all writes are
-> ordered, which is why this is a no-op in TSO. And x86 also has that
-> "all stores have release consistency, and all writes are ordered"
-> model, even if TSO doesn't really describe the x86 model.
+> 	#define smp_store_with_release_semantics(p, v) /* x86, s390, etc. */ \
+> 	do { \
+> 		barrier(); \
+> 		ACCESS_ONCE(p) = (v); \
+> 	} while (0)
 > 
-> But on ARM64, for example, I think you'd really want the store itself
-> to be done with "stlr" (store with release), and then follow up with a
-> "dsb st" after that.
-
-So a dsb is pretty heavyweight here (it prevents execution of *any* further
-instructions until all preceeding stores have completed, as well as
-ensuring completion of any ongoing cache flushes). In conjunction with the
-store-release, that's going to hold everything up until the store-release
-(and therefore any preceeding memory accesses) have completed. Granted, I
-think that gives Paul his read/read ordering, but it's a lot heavier than
-what's required.
-
-> And notice how that requires you to mark the store itself. There is no
-> actual barrier *after* the store that does the optimized model.
+> 	#define smp_store_with_release_semantics(p, v) /* PowerPC. */ \
+> 	do { \
+> 		__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory"); \
+> 		ACCESS_ONCE(p) = (v); \
+> 	} while (0)
 > 
-> Of course, it's entirely possible that it's not worth worrying about
-> this on ARM64, and that just doing it as a "normal store followed by a
-> full memory barrier" is good enough. But at least in *theory* a
-> microarchitecture might make it much cheaper to do a "store with
-> release consistency" followed by "write barrier".
+> 	#define smp_load_with_acquire_semantics(p) /* x86, s390, etc. */ \
+> 	({ \
+> 		typeof(*p) *_________p1 = ACCESS_ONCE(p); \
+> 		barrier(); \
+> 		_________p1; \
+> 	})
+> 
+> 	#define smp_load_with_acquire_semantics(p) /* PowerPC. */ \
+> 	({ \
+> 		typeof(*p) *_________p1 = ACCESS_ONCE(p); \
+> 		__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory"); \
+> 		_________p1; \
+> 	})
+> 
+> For ARM, smp_load_with_acquire_semantics() is a wrapper around the ARM
+> "ldar" instruction and smp_store_with_release_semantics() is a wrapper
+> around the ARM "stlr" instruction.
 
-I agree with the sentiment but, given that this stuff is so heavily
-microarchitecture-dependent (and not simple to probe), a simple dmb ish
-might be the best option after all. That's especially true if the
-microarchitecture decided to ignore the barrier options and treat everything
-as `all accesses, full system' in order to keep the hardware design simple.
+This still leaves me confused as to what to do with my case :/
 
-Will
+Slightly modified since last time -- as the simplified version was maybe
+simplified too far.
+
+To recap, I'd like to get rid of barrier A where possible, since that's
+now a full barrier for every event written.
+
+However, there's no immediate store I can attach it to; the obvious one
+would be the kbuf->head store, but that's complicated by the
+local_cmpxchg() thing.
+
+And we need that cmpxchg loop because a hardware NMI event can
+interleave with a software event.
+
+And to be honest, I'm still totally confused about memory barriers vs
+control flow vs C/C++. The only way we're ever getting to that memcpy is
+if we've already observed ubuf->tail, so that LOAD has to be fully
+processes and completed.
+
+I'm really not seeing how a STORE from the memcpy() could possibly go
+wrong; and if C/C++ can hoist the memcpy() over a compiler barrier()
+then I suppose we should all just go home.
+
+/me who wants A to be a barrier() but is terminally confused.
+
+---
+
+
+/*
+ * One important detail is that the kbuf part and the kbuf_writer() are
+ * strictly per cpu and we can thus rely on program order for those.
+ *
+ * Only the userspace consumer can possibly run on another cpu, and thus we
+ * need to ensure data consistency for those.
+ */
+
+struct buffer {
+        u64 size;
+        u64 tail;
+        u64 head;
+        void *data;
+};
+
+struct buffer *kbuf, *ubuf;
+
+/*
+ * If there's space in the buffer; store the data @buf; otherwise
+ * discard it.
+ */
+void kbuf_write(int sz, void *buf)
+{
+	u64 tail, head, offset;
+
+	do {
+		tail = ACCESS_ONCE(ubuf->tail);
+		offset = head = kbuf->head;
+		if (CIRC_SPACE(head, tail, kbuf->size) < sz) {
+			/* discard @buf */
+			return;
+		}
+		head += sz;
+	} while (local_cmpxchg(&kbuf->head, offset, head) != offset)
+
+        /*
+         * Ensure that if we see the userspace tail (ubuf->tail) such
+         * that there is space to write @buf without overwriting data
+         * userspace hasn't seen yet, we won't in fact store data before
+         * that read completes.
+         */
+
+        smp_mb(); /* A, matches with D */
+
+        memcpy(kbuf->data + offset, buf, sz);
+
+        /*
+         * Ensure that we write all the @buf data before we update the
+         * userspace visible ubuf->head pointer.
+         */
+        smp_wmb(); /* B, matches with C */
+
+        ubuf->head = kbuf->head;
+}
+
+/*
+ * Consume the buffer data and update the tail pointer to indicate to
+ * kernel space there's 'free' space.
+ */
+void ubuf_read(void)
+{
+        u64 head, tail;
+
+        tail = ACCESS_ONCE(ubuf->tail);
+        head = ACCESS_ONCE(ubuf->head);
+
+        /*
+         * Ensure we read the buffer boundaries before the actual buffer
+         * data...
+         */
+        smp_rmb(); /* C, matches with B */
+
+        while (tail != head) {
+                obj = ubuf->data + tail;
+                /* process obj */
+                tail += obj->size;
+                tail %= ubuf->size;
+        }
+
+        /*
+         * Ensure all data reads are complete before we issue the
+         * ubuf->tail update; once that update hits, kbuf_write() can
+         * observe and overwrite data.
+         */
+        smp_mb(); /* D, matches with A */
+
+        ubuf->tail = tail;
+}
