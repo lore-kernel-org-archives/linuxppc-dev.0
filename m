@@ -1,44 +1,38 @@
-Return-Path: <B47053@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
+Return-Path: <B40534@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6ABDA2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2013 14:45:22 +1100 (EST)
-From: Li Xiubo <B47053@freescale.com>
-To: Guangyu Chen <B42378@freescale.com>
-Subject: RE: [PATCHv2 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
-Date: Mon, 4 Nov 2013 03:45:10 +0000
-Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F82874201@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
- <1383289495-24523-2-git-send-email-Li.Xiubo@freescale.com>
- <20131101085904.GC28401@MrMyself>
-In-Reply-To: <20131101085904.GC28401@MrMyself>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 31BAC2C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2013 15:04:43 +1100 (EST)
+Received: from mail5-db9 (localhost [127.0.0.1])	by mail5-db9-R.bigfish.com
+ (Postfix) with ESMTP id D3074BC0111	for <linuxppc-dev@lists.ozlabs.org>; Mon,
+ 4 Nov 2013 04:04:37 +0000 (UTC)
+Received: from DB9EHSMHS025.bigfish.com (unknown [10.174.16.249])	by
+ mail5-db9.bigfish.com (Postfix) with ESMTP id B6CA3B8004E	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2013 04:04:35 +0000 (UTC)
+From: Dongsheng Wang <B40534@freescale.com>
+To: Scott Wood <B07421@freescale.com>
+Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
+ altivec idle
+Date: Mon, 4 Nov 2013 04:04:33 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010BBC86@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1381828871-17110-1-git-send-email-dongsheng.wang@freescale.com>
+ <1381828871-17110-4-git-send-email-dongsheng.wang@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C08E4@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B1799@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C3279@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B189E@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C34C1@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B195F@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C362B@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B33C3@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1382124094.7979.885.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "tiwai@suse.de" <tiwai@suse.de>, Huan Wang <B18965@freescale.com>,
- "timur@tabi.org" <timur@tabi.org>, "perex@perex.cz" <perex@perex.cz>,
- Shawn Guo <r65073@freescale.com>,
- "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- "pawel.moll@arm.com" <pawel.moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "broonie@kernel.org" <broonie@kernel.org>, "oskar@scara.com" <oskar@scara.com>,
- Fabio Estevam <r49496@freescale.com>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob@landley.net" <rob@landley.net>, Zhengxiong Jin <R64188@freescale.com>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Bharat Bhushan <R65777@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,658 +42,222 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > This adds Freescale SAI ASoC Audio support.
-> > This implementation is only compatible with device tree definition.
-> > Features:
-> > o Supports playback/capture
-> > o Supports 16/20/24 bit PCM
-> > o Supports 8k - 96k sample rates
-> > o Supports slave mode only.
-> >
->=20
-> Just for curiosity, I found there're quite a bit code actually support
-> I2S master mode such as set_sysclk() and register configuration to FMT
-> SND_SOC_DAIFMT_CBS_CFS.
->=20
-> Is that really "supports slave mode only"? Or just you haven't make it
-> properly work?
->=20
-
-Sorry, this comments is not very consistent with the driver implementation.
-On VF610 there only supports slave mode.
-
-So, I will revise this.
-
-
-> > diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig index
-> > b7ab71f..9a8851e 100644
-> > --- a/sound/soc/fsl/Kconfig
-> > +++ b/sound/soc/fsl/Kconfig
-> > @@ -213,3 +213,19 @@ config SND_SOC_IMX_MC13783
-> >  	select SND_SOC_IMX_PCM_DMA
-> >
-> >  endif # SND_IMX_SOC
-> > +
-> > +menuconfig SND_FSL_SOC
-> > +	tristate "SoC Audio for Freescale FSL CPUs"
-> > +	help
-> > +	  Say Y or M if you want to add support for codecs attached to
-> > +	  the FSL CPUs.
-> > +
-> > +	  This will enable Freeacale SAI, SGT15000 codec.
-> > +
-> > +if SND_FSL_SOC
->=20
-> Why check this here? SAI should be a regular IP module which can be used
-> by other SoC as well. We would never know if next i.MX SoC won't contain
-> SAI.
->=20
-> > +
-> > +config SND_SOC_FSL_SAI
-> > +	tristate
-> > +	select SND_SOC_GENERIC_DMAENGINE_PCM
->=20
-> I think you should keep SAI beside SSI/SPDIF directly.
->=20
-
-That's right.
-
-> > +
-> > +endif # SND_FSL_SOC
-> > diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile index
-> > 8db705b..e5acc03 100644
-> > --- a/sound/soc/fsl/Makefile
-> > +++ b/sound/soc/fsl/Makefile
-> > @@ -56,3 +56,8 @@ obj-$(CONFIG_SND_SOC_IMX_SGTL5000) +=3D
-> > snd-soc-imx-sgtl5000.o
-> >  obj-$(CONFIG_SND_SOC_IMX_WM8962) +=3D snd-soc-imx-wm8962.o
-> >  obj-$(CONFIG_SND_SOC_IMX_SPDIF) +=3D snd-soc-imx-spdif.o
-> >  obj-$(CONFIG_SND_SOC_IMX_MC13783) +=3D snd-soc-imx-mc13783.o
-> > +
-> > +# FSL ARM SAI/SGT15000 Platform Support
->=20
-> Should be SGTL5000, not SGT1. And SAI should not be used with SGTL5000
-> only, it's a bit confusing to mention SGTL5000 here.
->=20
-
-Yes, this will be revised then.
-
-> > +snd-soc-fsl-sai-objs :=3D fsl-sai.o
->=20
-> And I think it should be better to put it along with fsl-ssi.o and fsl-
-> spdif.o
->=20
-
-But fsl-ssi.o and fsl-spdif.o is based PowrePC platform? Which we can see f=
-rom the comments.
-While fsl-sai.o is base ARM platform.
-Despite whether there is any different between ARM and PPC or not, the comm=
-ents won't be correct.
-
-
-> > +
-> > +obj-$(CONFIG_SND_SOC_FSL_SAI) +=3D snd-soc-fsl-sai.o
->=20
-> Ditto
->=20
-> > diff --git a/sound/soc/fsl/fsl-sai.c b/sound/soc/fsl/fsl-sai.c new
-> > file mode 100644 index 0000000..bb57e67
-> > --- /dev/null
-> > +++ b/sound/soc/fsl/fsl-sai.c
-> > @@ -0,0 +1,472 @@
-> > +/*
-> > + * Freescale SAI ALSA SoC Digital Audio Interface driver.
-> > + *
-> > + * Copyright 2012-2013 Freescale Semiconductor, Inc.
-> > + *
-> > + * This program is free software; you can redistribute  it and/or
-> > +modify it
-> > + * under  the terms of  the GNU General  Public License as published
-> > +by the
-> > + * Free Software Foundation;  either version 2 of the  License, or
-> > +(at your
-> > + * option) any later version.
->=20
-> There're too many double space inside. Could you pls revise it?
->=20
-
-Yes, see the next version.
-
-> > + *
-> > + */
-> > +
-> > +#include <linux/clk.h>
-> > +#include <linux/module.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/of_address.h>
-> > +#include <sound/core.h>
-> > +#include <sound/pcm_params.h>
-> > +#include <linux/delay.h>
-> > +#include <linux/dmaengine.h>
-> > +#include <sound/dmaengine_pcm.h>
->=20
-> I think it's better to keep <sound/xxx.h> together. And basically we can
-> keep header files ordered by alphabet.
->=20
-
-Okey.
-
-> > +
-> > +#include "fsl-sai.h"
-> > +
-> > +static int fsl_sai_set_dai_sysclk_tr(struct snd_soc_dai *cpu_dai,
-> > +		int clk_id, unsigned int freq, int fsl_dir) {
-> > +	u32 val_cr2, reg_cr2;
-> > +	struct fsl_sai *sai =3D snd_soc_dai_get_drvdata(cpu_dai);
-> > +
-> > +	if (fsl_dir =3D=3D FSL_FMT_TRANSMITTER)
-> > +		reg_cr2 =3D FSL_SAI_TCR2;
-> > +	else
-> > +		reg_cr2 =3D FSL_SAI_RCR2;
-> > +
-> > +	val_cr2 =3D readl(sai->base + reg_cr2);
-> > +	switch (clk_id) {
-> > +	case FSL_SAI_CLK_BUS:
-> > +		val_cr2 &=3D ~FSL_SAI_CR2_MSEL_MASK;
-> > +		val_cr2 |=3D FSL_SAI_CR2_MSEL_BUS;
-> > +		break;
-> > +	case FSL_SAI_CLK_MAST1:
-> > +		val_cr2 &=3D ~FSL_SAI_CR2_MSEL_MASK;
-> > +		val_cr2 |=3D FSL_SAI_CR2_MSEL_MCLK1;
-> > +		break;
-> > +	case FSL_SAI_CLK_MAST2:
-> > +		val_cr2 &=3D ~FSL_SAI_CR2_MSEL_MASK;
-> > +		val_cr2 |=3D FSL_SAI_CR2_MSEL_MCLK2;
-> > +		break;
-> > +	case FSL_SAI_CLK_MAST3:
-> > +		val_cr2 &=3D ~FSL_SAI_CR2_MSEL_MASK;
-> > +		val_cr2 |=3D FSL_SAI_CR2_MSEL_MCLK3;
-> > +		break;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
-> > +	writel(val_cr2, sai->base + reg_cr2);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int fsl_sai_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
-> > +		int clk_id, unsigned int freq, int dir) {
-> > +	int ret;
-> > +
-> > +	if (dir =3D=3D SND_SOC_CLOCK_IN)
-> > +		return 0;
-> > +
-> > +	ret =3D fsl_sai_set_dai_sysclk_tr(cpu_dai, clk_id, freq,
-> > +					FSL_FMT_TRANSMITTER);
-> > +	if (ret) {
-> > +		dev_err(cpu_dai->dev,
-> > +				"Cannot set sai's transmitter sysclk: %d\n",
-> > +				ret);
-> > +		return ret;
-> > +	}
-> > +
-> > +	ret =3D fsl_sai_set_dai_sysclk_tr(cpu_dai, clk_id, freq,
-> > +					FSL_FMT_RECEIVER);
-> > +	if (ret) {
-> > +		dev_err(cpu_dai->dev,
-> > +				"Cannot set sai's receiver sysclk: %d\n",
-> > +				ret);
-> > +		return ret;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int fsl_sai_set_dai_clkdiv(struct snd_soc_dai *cpu_dai,
-> > +		int div_id, int div)
-> > +{
-> > +	struct fsl_sai *sai =3D snd_soc_dai_get_drvdata(cpu_dai);
-> > +	u32 tcr2, rcr2;
-> > +
-> > +	if (div_id =3D=3D FSL_SAI_TX_DIV) {
-> > +		tcr2 =3D readl(sai->base + FSL_SAI_TCR2);
-> > +		tcr2 &=3D ~FSL_SAI_CR2_DIV_MASK;
-> > +		tcr2 |=3D FSL_SAI_CR2_DIV(div);
-> > +		writel(tcr2, sai->base + FSL_SAI_TCR2);
-> > +
-> > +	} else if (div_id =3D=3D FSL_SAI_RX_DIV) {
-> > +		rcr2 =3D readl(sai->base + FSL_SAI_RCR2);
-> > +		rcr2 &=3D ~FSL_SAI_CR2_DIV_MASK;
-> > +		rcr2 |=3D FSL_SAI_CR2_DIV(div);
-> > +		writel(rcr2, sai->base + FSL_SAI_RCR2);
-> > +
-> > +	} else
-> > +		return -EINVAL;
->=20
-> It would look better if using switch-case. And the last 'else'
-> could be 'default:'.
->=20
-
-I'll think it over.
-
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
-> > +				unsigned int fmt, int fsl_dir)
-> > +{
-> > +	u32 val_cr2, val_cr3, val_cr4, reg_cr2, reg_cr3, reg_cr4;
-> > +	struct fsl_sai *sai =3D snd_soc_dai_get_drvdata(cpu_dai);
-> > +
-> > +	if (fsl_dir =3D=3D FSL_FMT_TRANSMITTER) {
-> > +		reg_cr2 =3D FSL_SAI_TCR2;
-> > +		reg_cr3 =3D FSL_SAI_TCR3;
-> > +		reg_cr4 =3D FSL_SAI_TCR4;
-> > +	} else {
-> > +		reg_cr2 =3D FSL_SAI_RCR2;
-> > +		reg_cr3 =3D FSL_SAI_RCR3;
-> > +		reg_cr4 =3D FSL_SAI_RCR4;
-> > +	}
-> > +
-> > +	val_cr2 =3D readl(sai->base + reg_cr2);
-> > +	val_cr3 =3D readl(sai->base + reg_cr3);
-> > +	val_cr4 =3D readl(sai->base + reg_cr4);
-> > +
-> > +	if (sai->fbt =3D=3D FSL_SAI_FBT_MSB)
-> > +		val_cr4 |=3D FSL_SAI_CR4_MF;
-> > +	else if (sai->fbt =3D=3D FSL_SAI_FBT_LSB)
-> > +		val_cr4 &=3D ~FSL_SAI_CR4_MF;
-> > +
-> > +	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
-> > +	case SND_SOC_DAIFMT_I2S:
-> > +		val_cr4 |=3D FSL_SAI_CR4_FSE;
-> > +		val_cr4 |=3D FSL_SAI_CR4_FSP;
-> > +		break;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
-> > +	case SND_SOC_DAIFMT_IB_IF:
-> > +		val_cr4 |=3D FSL_SAI_CR4_FSP;
-> > +		val_cr2 &=3D ~FSL_SAI_CR2_BCP;
-> > +		break;
-> > +	case SND_SOC_DAIFMT_IB_NF:
-> > +		val_cr4 &=3D ~FSL_SAI_CR4_FSP;
-> > +		val_cr2 &=3D ~FSL_SAI_CR2_BCP;
-> > +		break;
-> > +	case SND_SOC_DAIFMT_NB_IF:
-> > +		val_cr4 |=3D FSL_SAI_CR4_FSP;
-> > +		val_cr2 |=3D FSL_SAI_CR2_BCP;
-> > +		break;
-> > +	case SND_SOC_DAIFMT_NB_NF:
-> > +		val_cr4 &=3D ~FSL_SAI_CR4_FSP;
-> > +		val_cr2 |=3D FSL_SAI_CR2_BCP;
-> > +		break;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-> > +	case SND_SOC_DAIFMT_CBS_CFS:
-> > +		val_cr2 |=3D FSL_SAI_CR2_BCD_MSTR;
-> > +		val_cr4 |=3D FSL_SAI_CR4_FSD_MSTR;
-> > +		break;
-> > +	case SND_SOC_DAIFMT_CBM_CFM:
-> > +		val_cr2 &=3D ~FSL_SAI_CR2_BCD_MSTR;
-> > +		val_cr4 &=3D ~FSL_SAI_CR4_FSD_MSTR;
-> > +		break;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	val_cr3 |=3D FSL_SAI_CR3_TRCE;
-> > +
-> > +	if (fsl_dir =3D=3D FSL_FMT_RECEIVER)
-> > +		val_cr2 |=3D FSL_SAI_CR2_SYNC;
-> > +
-> > +	writel(val_cr2, sai->base + reg_cr2);
-> > +	writel(val_cr3, sai->base + reg_cr3);
-> > +	writel(val_cr4, sai->base + reg_cr4);
-> > +
-> > +	return 0;
->=20
-> > +
->=20
-> Pls drop this extra line.
->
-
-See the next version.
-
->=20
-> > +}
-> > +
-> > +static int fsl_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned
-> > +int fmt) {
-> > +	int ret;
-> > +
-> > +	ret =3D fsl_sai_set_dai_fmt_tr(cpu_dai, fmt, FSL_FMT_TRANSMITTER);
-> > +	if (ret) {
-> > +		dev_err(cpu_dai->dev,
-> > +				"Cannot set sai's transmitter format: %d\n",
-> > +				ret);
-> > +		return ret;
-> > +	}
-> > +
-> > +	ret =3D fsl_sai_set_dai_fmt_tr(cpu_dai, fmt, FSL_FMT_RECEIVER);
-> > +	if (ret) {
-> > +		dev_err(cpu_dai->dev,
-> > +				"Cannot set sai's receiver format: %d\n",
-> > +				ret);
-> > +		return ret;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int fsl_sai_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai,
-> > +		unsigned int tx_mask, unsigned int rx_mask,
-> > +		int slots, int slot_width)
-> > +{
-> > +	struct fsl_sai *sai =3D snd_soc_dai_get_drvdata(cpu_dai);
-> > +	u32 tcr4, rcr4;
-> > +
-> > +	tcr4 =3D readl(sai->base + FSL_SAI_TCR4);
-> > +	tcr4 &=3D ~FSL_SAI_CR4_FRSZ_MASK;
-> > +	tcr4 |=3D FSL_SAI_CR4_FRSZ(2);
-> > +	writel(tcr4, sai->base + FSL_SAI_TCR4);
-> > +	writel(tx_mask, sai->base + FSL_SAI_TMR);
-> > +
-> > +	rcr4 =3D readl(sai->base + FSL_SAI_RCR4);
-> > +	rcr4 &=3D ~FSL_SAI_CR4_FRSZ_MASK;
-> > +	rcr4 |=3D FSL_SAI_CR4_FRSZ(2);
-> > +	writel(rcr4, sai->base + FSL_SAI_RCR4);
-> > +	writel(rx_mask, sai->base + FSL_SAI_RMR);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
-> > +		struct snd_pcm_hw_params *params,
-> > +		struct snd_soc_dai *cpu_dai)
-> > +{
-> > +	u32 val_cr4, val_cr5, reg_cr4, reg_cr5, word_width;
-> > +	struct fsl_sai *sai =3D snd_soc_dai_get_drvdata(cpu_dai);
-> > +
-> > +	if (substream->stream =3D=3D SNDRV_PCM_STREAM_PLAYBACK) {
-> > +		reg_cr4 =3D FSL_SAI_TCR4;
-> > +		reg_cr5 =3D FSL_SAI_TCR5;
-> > +	} else {
-> > +		reg_cr4 =3D FSL_SAI_RCR4;
-> > +		reg_cr5 =3D FSL_SAI_RCR5;
-> > +	}
-> > +
-> > +	val_cr4 =3D readl(sai->base + reg_cr4);
-> > +	val_cr4 &=3D ~FSL_SAI_CR4_SYWD_MASK;
-> > +
-> > +	val_cr5 =3D readl(sai->base + reg_cr5);
-> > +	val_cr5 &=3D ~FSL_SAI_CR5_WNW_MASK;
-> > +	val_cr5 &=3D ~FSL_SAI_CR5_W0W_MASK;
-> > +	val_cr5 &=3D ~FSL_SAI_CR5_FBT_MASK;
-> > +
-> > +	switch (params_format(params)) {
-> > +	case SNDRV_PCM_FORMAT_S16_LE:
-> > +		word_width =3D 16;
-> > +		break;
-> > +	case SNDRV_PCM_FORMAT_S20_3LE:
-> > +		word_width =3D 20;
-> > +		break;
-> > +	case SNDRV_PCM_FORMAT_S24_LE:
-> > +		word_width =3D 24;
-> > +		break;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	val_cr4 |=3D FSL_SAI_CR4_SYWD(word_width);
-> > +	val_cr5 |=3D FSL_SAI_CR5_WNW(word_width);
-> > +	val_cr5 |=3D FSL_SAI_CR5_W0W(word_width);
-> > +
-> > +	if (sai->fbt =3D=3D FSL_SAI_FBT_MSB)
-> > +		val_cr5 |=3D FSL_SAI_CR5_FBT(word_width - 1);
-> > +	else if (sai->fbt =3D=3D FSL_SAI_FBT_LSB)
-> > +		val_cr5 |=3D FSL_SAI_CR5_FBT(0);
-> > +
-> > +	writel(val_cr4, sai->base + reg_cr4);
-> > +	writel(val_cr5, sai->base + reg_cr5);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int fsl_sai_trigger(struct snd_pcm_substream *substream, int
-> cmd,
-> > +		struct snd_soc_dai *dai)
-> > +{
-> > +	struct fsl_sai *sai =3D snd_soc_dai_get_drvdata(dai);
-> > +	unsigned int tcsr, rcsr;
-> > +
-> > +	tcsr =3D readl(sai->base + FSL_SAI_TCSR);
-> > +	rcsr =3D readl(sai->base + FSL_SAI_RCSR);
-> > +
-> > +	if (substream->stream =3D=3D SNDRV_PCM_STREAM_PLAYBACK) {
-> > +		tcsr |=3D FSL_SAI_CSR_FRDE;
-> > +		rcsr &=3D ~FSL_SAI_CSR_FRDE;
-> > +	} else {
-> > +		rcsr |=3D FSL_SAI_CSR_FRDE;
-> > +		tcsr &=3D ~FSL_SAI_CSR_FRDE;
-> > +	}
-> > +
-> > +	switch (cmd) {
-> > +	case SNDRV_PCM_TRIGGER_START:
-> > +	case SNDRV_PCM_TRIGGER_RESUME:
-> > +	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-> > +		tcsr |=3D FSL_SAI_CSR_TERE;
-> > +		rcsr |=3D FSL_SAI_CSR_TERE;
-> > +		writel(rcsr, sai->base + FSL_SAI_RCSR);
-> > +		udelay(10);
->=20
-> Does SAI really needs this udelay() here? Required by IP's operation flow=
-?
-> If so, I think it's better to add comments here to explain it.
->=20
-+++++++++++++++++
-Synchronous mode
-The SAI transmitter and receiver can be configured to operate with synchron=
-ous bit clock
-and frame sync.
-
-1,
-If the transmitter bit clock and frame sync are to be used by both the tran=
-smitter and
-receiver:
-	...
-* It is recommended that the transmitter is the last enabled and the first =
-disabled.
-
-2,
-If the receiver bit clock and frame sync are to be used by both the transmi=
-tter and
-receiver:
-	...
-* It is recommended that the receiver is the last enabled and the first dis=
-abled.
-------------------
-
-So I think the delay is needed, and I still tunning it.
-
-
-
-> > +		writel(tcsr, sai->base + FSL_SAI_TCSR);
-> > +		break;
-> > +
-> > +	case SNDRV_PCM_TRIGGER_STOP:
-> > +	case SNDRV_PCM_TRIGGER_SUSPEND:
-> > +	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-> > +		if (!(dai->playback_active || dai->capture_active)) {
-> > +			tcsr &=3D ~FSL_SAI_CSR_TERE;
-> > +			rcsr &=3D ~FSL_SAI_CSR_TERE;
-> > +		}
-> > +		writel(rcsr, sai->base + FSL_SAI_RCSR);
-> > +		udelay(10);
-> > +		writel(tcsr, sai->base + FSL_SAI_TCSR);
-> > +		break;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops =3D {
-> > +	.set_sysclk	=3D fsl_sai_set_dai_sysclk,
-> > +	.set_clkdiv	=3D fsl_sai_set_dai_clkdiv,
-> > +	.set_fmt	=3D fsl_sai_set_dai_fmt,
-> > +	.set_tdm_slot	=3D fsl_sai_set_dai_tdm_slot,
-> > +	.hw_params	=3D fsl_sai_hw_params,
-> > +	.trigger	=3D fsl_sai_trigger,
-> > +};
-> > +
-> > +static int fsl_sai_dai_probe(struct snd_soc_dai *dai) {
-> > +	int ret;
-> > +	struct fsl_sai *sai =3D dev_get_drvdata(dai->dev);
-> > +
-> > +	ret =3D clk_prepare_enable(sai->clk);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	writel(0x0, sai->base + FSL_SAI_RCSR);
-> > +	writel(0x0, sai->base + FSL_SAI_TCSR);
-> > +	writel(sai->dma_params_tx.maxburst, sai->base + FSL_SAI_TCR1);
-> > +	writel(sai->dma_params_rx.maxburst, sai->base + FSL_SAI_RCR1);
-> > +
-> > +	dai->playback_dma_data =3D &sai->dma_params_tx;
-> > +	dai->capture_dma_data =3D &sai->dma_params_rx;
-> > +
-> > +	snd_soc_dai_set_drvdata(dai, sai);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +int fsl_sai_dai_remove(struct snd_soc_dai *dai)
->=20
-> static
->=20
-
-Yes.
-
-> > +{
-> > +	struct fsl_sai *sai =3D dev_get_drvdata(dai->dev);
-> > +
-> > +	clk_disable_unprepare(sai->clk);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static struct snd_soc_dai_driver fsl_sai_dai =3D {
-> > +	.probe =3D fsl_sai_dai_probe,
-> > +	.remove =3D fsl_sai_dai_remove,
-> > +	.playback =3D {
-> > +		.channels_min =3D 1,
-> > +		.channels_max =3D 2,
-> > +		.rates =3D SNDRV_PCM_RATE_8000_96000,
-> > +		.formats =3D FSL_SAI_FORMATS,
-> > +	},
-> > +	.capture =3D {
-> > +		.channels_min =3D 1,
-> > +		.channels_max =3D 2,
-> > +		.rates =3D SNDRV_PCM_RATE_8000_96000,
-> > +		.formats =3D FSL_SAI_FORMATS,
-> > +	},
-> > +	.ops =3D &fsl_sai_pcm_dai_ops,
-> > +};
-> > +
-> > +static const struct snd_soc_component_driver fsl_component =3D {
-> > +	.name           =3D "fsl-sai",
-> > +};
-> > +
-> > +static int fsl_sai_probe(struct platform_device *pdev) {
-> > +	struct resource *res;
-> > +	struct fsl_sai *sai;
-> > +	int ret =3D 0;
-> > +
-> > +	sai =3D devm_kzalloc(&pdev->dev, sizeof(*sai), GFP_KERNEL);
-> > +	if (!sai)
-> > +		return -ENOMEM;
-> > +
-> > +	sai->fbt =3D FSL_SAI_FBT_MSB;
-> > +
-> > +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> > +	sai->base =3D devm_ioremap_resource(&pdev->dev, res);
-> > +	if (IS_ERR(sai->base))
-> > +		return PTR_ERR(sai->base);
-> > +
-> > +	sai->clk =3D devm_clk_get(&pdev->dev, "sai");
-> > +	if (IS_ERR(sai->clk)) {
-> > +		dev_err(&pdev->dev, "Cannot get sai's clock: %d\n", ret);
-> > +		return PTR_ERR(sai->clk);
-> > +	}
-> > +
-> > +	sai->dma_params_rx.addr =3D res->start + FSL_SAI_RDR;
-> > +	sai->dma_params_rx.maxburst =3D 6;
-> > +
-> > +	sai->dma_params_tx.addr =3D res->start + FSL_SAI_TDR;
-> > +	sai->dma_params_tx.maxburst =3D 6;
-> > +
-> > +	platform_set_drvdata(pdev, sai);
-> > +
-> > +	ret =3D devm_snd_soc_register_component(&pdev->dev, &fsl_component,
-> > +			&fsl_sai_dai, 1);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	ret =3D snd_dmaengine_pcm_register(&pdev->dev, NULL,
-> > +			SND_DMAENGINE_PCM_FLAG_NO_RESIDUE);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int fsl_sai_remove(struct platform_device *pdev) {
-> > +	snd_dmaengine_pcm_unregister(&pdev->dev);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static const struct of_device_id fsl_sai_ids[] =3D {
-> > +	{ .compatible =3D "fsl,vf610-sai", },
->=20
-> > +	{ /*sentinel*/ }
->=20
-> I think this could be left in blank without comments inside.
-> And if you really want to add it, pls add like: /* sentinel */
-> 						  ^        ^
-
-Okey.
-
-> > +};
-> > +
-> > +static struct platform_driver fsl_sai_driver =3D {
-> > +	.probe =3D fsl_sai_probe,
-> > +	.remove =3D fsl_sai_remove,
-> > +
-> > +	.driver =3D {
-> > +		.name =3D "fsl-sai",
-> > +		.owner =3D THIS_MODULE,
-> > +		.of_match_table =3D fsl_sai_ids,
-> > +	},
-> > +};
-> > +module_platform_driver(fsl_sai_driver);
-> > +
-> > +MODULE_AUTHOR("Xiubo Li, <Li.Xiubo@freescale.com>");
-> > +MODULE_AUTHOR("Alison Wang, <b18965@freescale.com>");
-> > +MODULE_DESCRIPTION("Freescale Soc SAI Interface");
-> > +MODULE_LICENSE("GPL");
->=20
-> Should be better if added:
-> MODULE_ALIAS("platform:fsl-sai");
->=20
-> This would support module auto-load feature in some Linux-OS.
->=20
-
-I will think it over.
-
-BRS,
-Xiubo
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdhbmcgRG9uZ3NoZW5nLUI0
+MDUzNA0KPiBTZW50OiBNb25kYXksIE9jdG9iZXIgMjEsIDIwMTMgMTE6MTEgQU0NCj4gVG86IFdv
+b2QgU2NvdHQtQjA3NDIxDQo+IENjOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7IGxpbnV4cHBjLWRl
+dkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjUgNC80XSBwb3dlcnBj
+Lzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMCBzdGF0ZSBhbmQNCj4gYWx0aXZlYyBpZGxlDQo+IA0K
+PiANCj4gDQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBXb29kIFNj
+b3R0LUIwNzQyMQ0KPiA+IFNlbnQ6IFNhdHVyZGF5LCBPY3RvYmVyIDE5LCAyMDEzIDM6MjIgQU0N
+Cj4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gQ2M6IEJodXNoYW4gQmhhcmF0LVI2
+NTc3NzsgV29vZCBTY290dC1CMDc0MjE7IGxpbnV4cHBjLQ0KPiA+IGRldkBsaXN0cy5vemxhYnMu
+b3JnDQo+ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5
+c2ZzIGZvciBwdzIwIHN0YXRlIGFuZA0KPiA+IGFsdGl2ZWMgaWRsZQ0KPiA+DQo+ID4gT24gVGh1
+LCAyMDEzLTEwLTE3IGF0IDIyOjAyIC0wNTAwLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6
+DQo+ID4gPg0KPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiBGcm9t
+OiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gPiA+ID4gU2VudDogVGh1cnNkYXksIE9jdG9iZXIg
+MTcsIDIwMTMgMjo0NiBQTQ0KPiA+ID4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0OyBXb29k
+IFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcN
+Cj4gPiA+ID4gU3ViamVjdDogUkU6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5
+c2ZzIGZvciBwdzIwIHN0YXRlDQo+ID4gPiA+IGFuZCBhbHRpdmVjIGlkbGUNCj4gPiA+ID4NCj4g
+PiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
+Cj4gPiA+ID4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+ID4gPiA+
+IFNlbnQ6IFRodXJzZGF5LCBPY3RvYmVyIDE3LCAyMDEzIDExOjIyIEFNDQo+ID4gPiA+ID4gPiA+
+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4g
+PiA+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gPiA+ID4gPiBTdWJq
+ZWN0OiBSRTogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjAN
+Cj4gPiA+ID4gPiA+ID4gc3RhdGUgYW5kIGFsdGl2ZWMgaWRsZQ0KPiA+ID4gPiA+ID4gPg0KPiA+
+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwg
+TWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+ID4gRnJvbTogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3
+DQo+ID4gPiA+ID4gPiA+ID4gU2VudDogVGh1cnNkYXksIE9jdG9iZXIgMTcsIDIwMTMgMTE6MjAg
+QU0NCj4gPiA+ID4gPiA+ID4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0OyBXb29kIFNjb3R0
+LUIwNzQyMQ0KPiA+ID4gPiA+ID4gPiA+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9y
+Zw0KPiA+ID4gPiA+ID4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjUgNC80XSBwb3dlcnBjLzg1
+eHg6IGFkZCBzeXNmcyBmb3INCj4gPiA+ID4gPiA+ID4gPiBwdzIwIHN0YXRlIGFuZCBhbHRpdmVj
+IGlkbGUNCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4N
+Cj4gPiA+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4g
+PiA+ID4gPiBGcm9tOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+ID4gPiA+ID4gPiA+IFNl
+bnQ6IFRodXJzZGF5LCBPY3RvYmVyIDE3LCAyMDEzIDg6MTYgQU0NCj4gPiA+ID4gPiA+ID4gPiA+
+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4g
+PiA+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+ID4gPiA+ID4g
+PiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjUgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBm
+b3INCj4gPiA+ID4gPiA+ID4gPiA+IHB3MjAgc3RhdGUgYW5kIGFsdGl2ZWMgaWRsZQ0KPiA+ID4g
+PiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4g
+PiA+ID4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+
+ID4gPiBGcm9tOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gPiA+ID4gPiA+ID4gPiA+ID4gU2Vu
+dDogVGh1cnNkYXksIE9jdG9iZXIgMTcsIDIwMTMgMTowMSBBTQ0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0OyBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+
+ID4gPiA+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+ID4gPiA+
+ID4gPiA+ID4gU3ViamVjdDogUkU6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5
+c2ZzDQo+ID4gPiA+ID4gPiA+ID4gPiA+IGZvcg0KPiA+ID4gPiA+ID4gPiA+ID4gPiBwdzIwIHN0
+YXRlIGFuZCBhbHRpdmVjIGlkbGUNCj4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4g
+PiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiAtLS0tLU9y
+aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IEZyb206IFdhbmcgRG9u
+Z3NoZW5nLUI0MDUzNA0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IFNlbnQ6IFR1ZXNkYXksIE9jdG9i
+ZXIgMTUsIDIwMTMgMjo1MSBQTQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IFRvOiBXb29kIFNjb3R0
+LUIwNzQyMQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IENjOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdh
+bmcNCj4gPiA+ID4gPiA+ID4gPiA+ID4gRG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+IFN1YmplY3Q6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZv
+cg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IHB3MjAgc3RhdGUgYW5kDQo+ID4gPiA+ID4gPiA+ID4g
+PiA+IGFsdGl2ZWMgaWRsZQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBBZGQgYSBzeXMg
+aW50ZXJmYWNlIHRvIGVuYWJsZS9kaWFibGUgcHcyMCBzdGF0ZSBvcg0KPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+IGFsdGl2ZWMgaWRsZSwgYW5kDQo+ID4gPiA+ID4gPiA+ID4gPiA+IGNvbnRyb2wgdGhl
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gd2FpdCBlbnRyeSB0aW1lLg0KPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gRW5hYmxlL0Rpc2FibGUgaW50ZXJmYWNlOg0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+IDAsIGRpc2FibGUuIDEsIGVuYWJsZS4NCj4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL3B3MjBfc3RhdGUNCj4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL2FsdGl2ZWNfaWRs
+ZQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gU2V0IHdhaXQg
+dGltZSBpbnRlcmZhY2U6KE5hbm9zZWNvbmQpDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gL3N5cy9k
+ZXZpY2VzL3N5c3RlbS9jcHUvY3B1WC9wdzIwX3dhaXRfdGltZQ0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdVgvYWx0aXZlY19pZGxlX3dhaXRfdGltZQ0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+IEV4YW1wbGU6IEJhc2Ugb24gVEJmcmVxIGlzIDQxTUhaLg0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+IDF+NDgobnMpOiBUQls2M10NCj4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiA0OX45Nyhucyk6IFRCWzYyXQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IDk4fjE5NShucyk6
+IFRCWzYxXQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IDE5Nn4zOTAobnMpOiBUQls2MF0NCj4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiAzOTF+NzgwKG5zKTogVEJbNTldDQo+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gNzgxfjE1NjAobnMpOiBUQls1OF0gLi4uDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBXYW5nIERvbmdzaGVuZw0KPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+IDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+IC0tLQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICp2NToNCj4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiBDaGFuZ2UgZ2V0X2lkbGVfdGlja3NfYml0IGZ1bmN0aW9uIGltcGxlbWVudGF0aW9u
+Lg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKnY0Og0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+IE1vdmUgY29kZSBmcm9tIDg1eHgvY29tbW9uLmMgdG8ga2VybmVs
+L3N5c2ZzLmMuDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBS
+ZW1vdmUgaGFzX3B3MjBfYWx0aXZlY19pZGxlIGZ1bmN0aW9uLg0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gQ2hhbmdlIHdhaXQgImVudHJ5X2JpdCIgdG8gd2Fp
+dCB0aW1lLg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gZGlm
+ZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9rZXJuZWwvc3lzZnMuYw0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+IGIvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jDQo+ID4gPiA+ID4gPiA+ID4gPiA+IGlu
+ZGV4DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gMjdhOTBiOS4uMTBkMTEyOCAxMDA2NDQNCj4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVsL3N5c2ZzLmMNCj4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMva2VybmVsL3N5c2ZzLmMNCj4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiBAQCAtODUsNiArODUsMjg0IEBAIF9fc2V0dXAoInNtdC1zbm9vemUt
+ZGVsYXk9IiwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gc2V0dXBfc210X3Nub296ZV9kZWxheSk7DQo+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiAgI2VuZGlmIC8qIENP
+TkZJR19QUEM2NCAqLw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gKyNpZmRlZiBDT05GSUdfRlNMX1NPQw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsjZGVmaW5l
+IE1BWF9CSVQJCQkJNjMNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gK3N0YXRpYyB1NjQgcHcyMF93dDsgc3RhdGljIHU2NCBhbHRpdmVjX2lkbGVfd3Q7DQo+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICtzdGF0aWMgdW5z
+aWduZWQgaW50IGdldF9pZGxlX3RpY2tzX2JpdCh1NjQgbnMpIHsNCj4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiArCXU2NCBjeWNsZTsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gKwlpZiAobnMgPj0gMTAwMDApDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwkJY3lj
+bGUgPSBkaXZfdTY0KG5zICsgNTAwLCAxMDAwKSAqDQo+ID4gPiA+IHRiX3RpY2tzX3Blcl91c2Vj
+Ow0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJZWxzZQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJ
+CWN5Y2xlID0gZGl2X3U2NChucyAqIHRiX3RpY2tzX3Blcl91c2VjLA0KPiA+IDEwMDApOw0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCWlmICghY3ljbGUp
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwkJcmV0dXJuIDA7DQo+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJcmV0dXJuIGlsb2cyKGN5Y2xlKTsgfQ0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArc3RhdGljIHZvaWQg
+ZG9fc2hvd19wd3JtZ3RjcjAodm9pZCAqdmFsKSB7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwl1
+MzIgKnZhbHVlID0gdmFsOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiArCSp2YWx1ZSA9IG1mc3ByKFNQUk5fUFdSTUdUQ1IwKTsgfQ0KPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArc3RhdGljIHNzaXplX3Qgc2hvd19w
+dzIwX3N0YXRlKHN0cnVjdCBkZXZpY2UgKmRldiwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCQkJ
+CXN0cnVjdCBkZXZpY2VfYXR0cmlidXRlICphdHRyLA0KPiA+IGNoYXINCj4gPiA+ID4gKmJ1Zikg
+ew0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJdTMyIHZhbHVlOw0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ICsJdW5zaWduZWQgaW50IGNwdSA9IGRldi0+aWQ7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+Kw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJc21wX2NhbGxfZnVuY3Rpb25fc2luZ2xlKGNwdSwg
+ZG9fc2hvd19wd3JtZ3RjcjAsDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKyZ2YWx1ZSwgMSk7DQo+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJdmFsdWUgJj0g
+UFdSTUdUQ1IwX1BXMjBfV0FJVDsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gKwlyZXR1cm4gc3ByaW50ZihidWYsICIldVxuIiwgdmFsdWUgPyAxIDogMCk7
+IH0NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gK3N0YXRp
+YyB2b2lkIGRvX3N0b3JlX3B3MjBfc3RhdGUodm9pZCAqdmFsKSB7DQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gKwl1MzIgKnZhbHVlID0gdmFsOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJdTMyIHB3
+MjBfc3RhdGU7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ICsJcHcyMF9zdGF0ZSA9IG1mc3ByKFNQUk5fUFdSTUdUQ1IwKTsNCj4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwlpZiAoKnZhbHVlKQ0KPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ICsJCXB3MjBfc3RhdGUgfD0gUFdSTUdUQ1IwX1BXMjBfV0FJVDsNCj4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiArCWVsc2UNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCQlwdzIwX3N0YXRl
+ICY9IH5QV1JNR1RDUjBfUFcyMF9XQUlUOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiArCW10c3ByKFNQUk5fUFdSTUdUQ1IwLCBwdzIwX3N0YXRlKTsgfQ0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArc3RhdGljIHNz
+aXplX3Qgc3RvcmVfcHcyMF9zdGF0ZShzdHJ1Y3QgZGV2aWNlICpkZXYsDQo+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gKwkJCQlzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwNCj4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiArCQkJCWNvbnN0IGNoYXIgKmJ1Ziwgc2l6ZV90IGNvdW50KQ0KPiA+IHsNCj4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiArCXUzMiB2YWx1ZTsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiAr
+CXVuc2lnbmVkIGludCBjcHUgPSBkZXYtPmlkOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiArCWlmIChrc3RydG91MzIoYnVmLCAwLCAmdmFsdWUpKQ0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCWlmICh2YWx1ZSA+IDEpDQo+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKw0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJc21wX2NhbGxfZnVuY3Rpb25fc2luZ2xlKGNwdSwgZG9f
+c3RvcmVfcHcyMF9zdGF0ZSwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArJnZhbHVlLCAxKTsNCj4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwlyZXR1cm4gY291
+bnQ7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gK30NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gK3N0YXRpYyBzc2l6ZV90IHNob3dfcHcyMF93YWl0X3RpbWUo
+c3RydWN0IGRldmljZQ0KPiAqZGV2LA0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJCQkJc3RydWN0
+IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsDQo+ID4gY2hhcg0KPiA+ID4gPiAqYnVmKSB7DQo+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gKwl1MzIgdmFsdWU7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwl1
+NjQgdGJfY3ljbGU7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwlzNjQgdGltZTsNCj4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwl1bnNpZ25lZCBpbnQgY3B1
+ID0gZGV2LT5pZDsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gKwlpZiAoIXB3MjBfd3QpIHsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCQlzbXBfY2FsbF9m
+dW5jdGlvbl9zaW5nbGUoY3B1LA0KPiA+IGRvX3Nob3dfcHdybWd0Y3IwLA0KPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ICsmdmFsdWUsDQo+ID4gPiA+ID4gPiA+ID4gMSk7DQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gKwkJdmFsdWUgPSAodmFsdWUgJiBQV1JNR1RDUjBfUFcyMF9FTlQpID4+DQo+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gKwkJCQkJUFdSTUdUQ1IwX1BXMjBfRU5UX1NISUZUOw0KPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCQl0Yl9jeWNsZSA9ICgxIDw8
+IChNQVhfQklUIC0gdmFsdWUpKSAqIDI7DQo+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
+PiA+ID4gPiA+IElzIHZhbHVlID0gMCBhbmQgdmFsdWUgPSAxIGxlZ2FsPyBUaGVzZSB3aWxsIG1h
+a2UNCj4gPiA+ID4gPiA+ID4gPiA+ID4gdGJfY3ljbGUgPSAwLA0KPiA+ID4gPiA+ID4gPiA+ID4g
+Pg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJCXRpbWUgPSBkaXZfdTY0KHRiX2N5Y2xlICogMTAw
+MCwNCj4gPiB0Yl90aWNrc19wZXJfdXNlYykNCj4gPiA+ID4gLSAxOw0KPiA+ID4gPiA+ID4gPiA+
+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiBBbmQgdGltZSA9IC0xOw0KPiA+ID4gPiA+ID4gPiA+
+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gUGxlYXNlIGxvb2sgYXQgdGhlIGVuZCBvZiB0aGUgZnVu
+Y3Rpb24sIDopDQo+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gInJldHVybiBz
+cHJpbnRmKGJ1ZiwgIiVsbHVcbiIsIHRpbWUgPiAwID8gdGltZSA6IDApOyINCj4gPiA+ID4gPiA+
+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IEkga25vdyB5b3UgcmV0dXJuIDAgaWYgdmFsdWUgPSAwLzEs
+IG15IHF1ZXN0aW9uIHdhcyB0aGF0LA0KPiA+ID4gPiA+ID4gPiA+IGlzIHRoaXMgY29ycmVjdCBh
+cyBwZXIgc3BlY2lmaWNhdGlvbj8NCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IEFo
+aCwgYWxzbyBmb3IgInZhbHVlIiB1cHRvIDcgeW91IHdpbGwgcmV0dXJuIDAsIG5vPw0KPiA+ID4g
+PiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IElmIHZhbHVlID0gMCwgTUFYX0JJVCAtIHZhbHVlID0g
+NjMgdGJfY3ljbGUgPQ0KPiA+ID4gPiA+ID4gPiAweGZmZmZmZmZmX2ZmZmZmZmZmLCB0Yl9jeWNs
+ZSAqIDEwMDAgd2lsbCBvdmVyZmxvdywgYnV0IHRoaXMNCj4gPiBzaXR1YXRpb24gaXMgbm90IHBv
+c3NpYmxlLg0KPiA+ID4gPiA+ID4gPiBCZWNhdXNlIGlmIHRoZSAidmFsdWUgPSAwIiBtZWFucyB0
+aGlzIGZlYXR1cmUgd2lsbCBiZQ0KPiAiZGlzYWJsZSIuDQo+ID4gPiA+ID4gPiA+IE5vdyBUaGUg
+ZGVmYXVsdCB3YWl0IGJpdCBpcyA1MChNQVhfQklUIC0gdmFsdWUsIHZhbHVlID0gMTMpLA0KPiA+
+ID4gPiA+ID4gPiB0aGUgUFcyMC9BbHRpdmVjIElkbGUgd2FpdCBlbnRyeSB0aW1lIGlzIGFib3V0
+IDFtcywgdGhpcw0KPiA+ID4gPiA+ID4gPiB0aW1lIGlzIHZlcnkgbG9uZyBmb3Igd2FpdCBpZGxl
+IHRpbWUsIGFuZCBpdCdzIGNhbm5vdCBiZQ0KPiA+ID4gPiA+ID4gPiBpbmNyZWFzZWQobWVhbnMg
+KE1BWF9CSVQNCj4gPiA+ID4gPiA+ID4gLSB2YWx1ZSkNCj4gPiA+ID4gPiA+IGNhbm5vdCBncmVh
+dGVyIHRoYW4gNTApLg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IFdoYXQgeW91IHNhaWQgaXMg
+bm90IG9idmlvdXMgZnJvbSBjb2RlIGFuZCBzbyBhdCBsZWFzdCB3cml0ZSBhDQo+ID4gPiA+ID4g
+PiBjb21tZW50IHRoYXQgdmFsdWUgd2lsbCBiZSBhbHdheXMgPj0gMTMgb3IgdmFsdWUgd2lsbCBu
+ZXZlciBiZQ0KPiA+ID4gPiA+ID4gbGVzcyB0aGFuIDwgOCBhbmQgYmVsb3cgY2FsY3VsYXRpb24g
+d2lsbCBub3Qgb3ZlcmZsb3cuIG1heSBiZQ0KPiA+ID4gPiA+ID4gZXJyb3Igb3V0IGlmIHZhbHVl
+IGlzIGxlc3MgdGhhbiA4Lg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiBUaGUgInZhbHVlIiBsZXNz
+IHRoYW4gMTAsIHRoaXMgd2lsbCBvdmVyZmxvdy4NCj4gPiA+ID4gPiBUaGVyZSBpcyBub3QgZXJy
+b3IsIFRoZSBjb2RlIEkga25ldyBpdCBjb3VsZCBub3QgYmUgbGVzcyB0aGFuDQo+ID4gPiA+ID4g
+MTAsIHRoYXQncyB3aHkgSSB1c2UgdGhlIGZvbGxvd2luZyBjb2RlLiA6KQ0KPiA+ID4gPg0KPiA+
+ID4gPiBJIGFtIHNvcnJ5IHRvIHBlcnNpc3QgYnV0IHRoaXMgaXMgbm90IGFib3V0IHdoYXQgeW91
+IGtub3csIHRoaXMgaXMNCj4gPiA+ID4gYWJvdXQgaG93IGNvZGUgaXMgcmVhZCBhbmQgY29kZSBk
+b2VzIG5vdCBzYXkgd2hhdCB5b3Uga25vdywgc28gYWRkDQo+ID4gPiA+IGEgY29tbWVudCBhdCBs
+ZWFzdCBhbmQgZXJyb3Igb3V0L3dhcm4gd2hlbiAidmFsdWUiIGlzIGxlc3MgdGhhbiBhDQo+ID4g
+Y2VydGFpbiBudW1iZXIuDQo+ID4gPiA+DQo+ID4gPiBTb3JyeSBmb3IgdGhlIGxhdGUgdG8gcmVz
+cG9uc2UgdGhlIG1haWwuIElmIGl0IGNhdXNlZCBjb25mdXNpb24sIHdlDQo+ID4gPiBjYW4NCj4g
+PiBhZGQgYSBjb21tZW50Lg0KPiA+ID4NCj4gPiA+IEhvdyBhYm91dCB0aGUgZm9sbG93aW5nIGNv
+bW1lbnQ/DQo+ID4gPiAvKg0KPiA+ID4gICogSWYgdGhlICJ2YWx1ZSIgbGVzcyB0aGFuIDEwLCB0
+aGlzIHdpbGwgb3ZlcmZsb3cuDQo+ID4gPiAgKiBGcm9tIGJlbmNobWFyayB0ZXN0LCB0aGUgZGVm
+YXVsdCB3YWl0IGJpdCB3aWxsIG5vdCBiZSBzZXQgbGVzcw0KPiA+ID4gdGhhbg0KPiA+IDEwYml0
+Lg0KPiA+ID4gICogQmVjYXVzZSAxMCBiaXQgY29ycmVzcG9uZHMgdG8gdGhlIHdhaXQgZW50cnkg
+dGltZSBpcw0KPiA+ID4gNDM5Mzc1NTczNDAxOTk5NjA5KG5zKSwNCj4gPiA+ICAqIGZvciB3YWl0
+LWVudHJ5LWlkbGUgdGltZSB0aGlzIHZhbHVlIGxvb2tzIHRvbyBsb25nLCBhbmQgd2UgY2Fubm90
+DQo+ID4gPiB1c2UgdGhvc2UNCj4gPiA+ICAqICJsb25nIiB0aW1lIGFzIGEgZGVmYXVsdCB3YWl0
+LWVudHJ5IHRpbWUuIFNvIG92ZXJmbG93IGNvdWxkIG5vdA0KPiA+ID4gaGF2ZSBoYXBwZW5lZA0K
+PiA+ID4gICogYW5kIHdlIHVzZSB0aGlzIGNhbGN1bGF0aW9uIG1ldGhvZCB0byBnZXQgd2FpdC1l
+bnRyeS1pZGxlIHRpbWUuDQo+ID4gPiAgKi8NCj4gPg0KPiA+IElmIHRoZXJlJ3MgdG8gYmUgYSBs
+aW1pdCBvbiB0aGUgdGltZXMgd2UgYWNjZXB0LCBtYWtlIGl0IGV4cGxpY2l0Lg0KPiA+IENoZWNr
+IGZvciBpdCBiZWZvcmUgZG9pbmcgYW55IGNvbnZlcnNpb25zLCBhbmQgcmV0dXJuIGFuIGVycm9y
+IGlmDQo+ID4gdXNlcnNwYWNlIHRyaWVzIHRvIHNldCBpdC4NCj4gPg0KPiBUaGUgYnJhbmNoIG9u
+bHkgdXNlIHRvIHJlYWQgZGVmYXVsdCB3YWl0LWVudHJ5LXRpbWUuDQo+IFdlIGhhdmUgbm8gbGlt
+aXQgdGhlIHVzZXIncyBpbnB1dCwgYW5kIHdlIGNhbid0IHJlc3RyaWN0LiBPbmNlIHRoZSB1c2Vy
+DQo+IHNldCB0aGUgd2FpdC1lbnRyeS10aW1lLCB0aGUgY29kZSB3aWxsIGRvIGFub3RoZXIgYnJh
+bmNoLg0KPiANCg0KSGkgc2NvdHQsDQpEbyB5b3UgaGF2ZSBhbnkgY29tbWVudHMgYWJvdXQgdGhp
+cyBwYXRjaD8NCkkgd2lsbCBhZGQgdGhlIGNvbW1lbnQgYW5kIHNlbmQgdGhpcyBwYXRjaCBhZ2Fp
+bi4NCg0KLWRvbmdzaGVuZw0KDQo+ID4NCj4gPg0KDQo=
