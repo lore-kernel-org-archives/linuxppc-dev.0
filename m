@@ -1,52 +1,34 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 743262C00F9
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Nov 2013 04:05:49 +1100 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Mon, 4 Nov 2013 10:05:47 -0700
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 1B0B219D8186
- for <linuxppc-dev@ozlabs.org>; Mon,  4 Nov 2013 10:01:42 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rA4H1jPe268242
- for <linuxppc-dev@ozlabs.org>; Mon, 4 Nov 2013 10:01:45 -0700
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- rA4H4Z6H014796
- for <linuxppc-dev@ozlabs.org>; Mon, 4 Nov 2013 10:04:37 -0700
-Date: Mon, 4 Nov 2013 08:34:21 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Will Deacon <will.deacon@arm.com>
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E211C2C0342
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Nov 2013 06:11:47 +1100 (EST)
+Date: Mon, 4 Nov 2013 20:11:27 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
-Message-ID: <20131104163421.GO3947@linux.vnet.ibm.com>
-References: <20131031064015.GV4126@linux.vnet.ibm.com>
- <20131101145634.GH19466@laptop.lan>
- <20131102173239.GB3947@linux.vnet.ibm.com>
+Message-ID: <20131104191127.GW16117@laptop.programming.kicks-ass.net>
+References: <20131102173239.GB3947@linux.vnet.ibm.com>
  <20131103144017.GA25118@linux.vnet.ibm.com>
  <20131103151704.GJ19466@laptop.lan>
  <CA+55aFx_kuvR-0dwJtjvnhtha5QBc5XcLZPRH=WKT+hYVAKOrw@mail.gmail.com>
  <20131103200124.GK19466@laptop.lan>
  <20131103224242.GF3947@linux.vnet.ibm.com>
  <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
- <20131104110553.GA8595@mudshark.cambridge.arm.com>
+ <20131104105059.GL3947@linux.vnet.ibm.com>
+ <20131104112254.GK28601@twins.programming.kicks-ass.net>
+ <20131104162732.GN3947@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131104110553.GA8595@mudshark.cambridge.arm.com>
+In-Reply-To: <20131104162732.GN3947@linux.vnet.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
  Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@redhat.com>,
- LKML <linux-kernel@vger.kernel.org>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Frederic Weisbecker <fweisbec@gmail.com>,
+ Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
  Victor Kaplansky <VICTORK@il.ibm.com>,
  Linus Torvalds <torvalds@linux-foundation.org>
-Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,65 +38,755 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 04, 2013 at 11:05:53AM +0000, Will Deacon wrote:
-> On Sun, Nov 03, 2013 at 11:34:00PM +0000, Linus Torvalds wrote:
-> > So it would *kind* of act like a "smp_wmb() + smp_rmb()", but the
-> > problem is that a "smp_rmb()" doesn't really "attach" to the preceding
-> > write.
+On Mon, Nov 04, 2013 at 08:27:32AM -0800, Paul E. McKenney wrote:
+> All this is leading me to suggest the following shortenings of names:
 > 
-> Agreed.
+> 	smp_load_with_acquire_semantics() -> smp_load_acquire()
 > 
-> > This is analogous to a "acquire" operation: you cannot make an
-> > "acquire" barrier, because it's not a barrier *between* two ops, it's
-> > associated with one particular op.
-> > 
-> > So what I *think* you actually really really want is a "store with
-> > release consistency, followed by a write barrier".
+> 	smp_store_with_release_semantics() -> smp_store_release()
 > 
-> How does that order reads against reads? (Paul mentioned this as a
-> requirement). I not clear about the use case for this, so perhaps there is a
-> dependency that I'm not aware of.
+> But names aside, the above gets rid of explicit barriers on TSO architectures,
+> allows ARM to avoid full DMB, and allows PowerPC to use lwsync instead of
+> the heavier-weight sync.
 
-An smp_store_with_release_semantics() orders against prior reads -and-
-writes.  It maps to barrier() for x86, stlr for ARM, and lwsync for
-PowerPC, as called out in my prototype definitions.
+A little something like this? Completely guessed at the arm/arm64/ia64
+asm, but at least for those archs I found proper instructions (I hope),
+for x86,sparc,s390 which are TSO we can do with a barrier and PPC like
+said can do with the lwsync, all others fall back to using a smp_mb().
 
-> > In TSO, afaik all stores have release consistency, and all writes are
-> > ordered, which is why this is a no-op in TSO. And x86 also has that
-> > "all stores have release consistency, and all writes are ordered"
-> > model, even if TSO doesn't really describe the x86 model.
-> > 
-> > But on ARM64, for example, I think you'd really want the store itself
-> > to be done with "stlr" (store with release), and then follow up with a
-> > "dsb st" after that.
-> 
-> So a dsb is pretty heavyweight here (it prevents execution of *any* further
-> instructions until all preceeding stores have completed, as well as
-> ensuring completion of any ongoing cache flushes). In conjunction with the
-> store-release, that's going to hold everything up until the store-release
-> (and therefore any preceeding memory accesses) have completed. Granted, I
-> think that gives Paul his read/read ordering, but it's a lot heavier than
-> what's required.
+Should probably come with a proper changelog and an addition to _The_
+document.
 
-I do not believe that we need the trailing "dsb st".
+---
+ arch/alpha/include/asm/barrier.h      | 13 +++++++++++
+ arch/arc/include/asm/barrier.h        | 13 +++++++++++
+ arch/arm/include/asm/barrier.h        | 26 +++++++++++++++++++++
+ arch/arm64/include/asm/barrier.h      | 28 +++++++++++++++++++++++
+ arch/avr32/include/asm/barrier.h      | 12 ++++++++++
+ arch/blackfin/include/asm/barrier.h   | 13 +++++++++++
+ arch/cris/include/asm/barrier.h       | 13 +++++++++++
+ arch/frv/include/asm/barrier.h        | 13 +++++++++++
+ arch/h8300/include/asm/barrier.h      | 13 +++++++++++
+ arch/hexagon/include/asm/barrier.h    | 13 +++++++++++
+ arch/ia64/include/asm/barrier.h       | 43 +++++++++++++++++++++++++++++++++++
+ arch/m32r/include/asm/barrier.h       | 13 +++++++++++
+ arch/m68k/include/asm/barrier.h       | 13 +++++++++++
+ arch/metag/include/asm/barrier.h      | 13 +++++++++++
+ arch/microblaze/include/asm/barrier.h | 13 +++++++++++
+ arch/mips/include/asm/barrier.h       | 13 +++++++++++
+ arch/mn10300/include/asm/barrier.h    | 13 +++++++++++
+ arch/parisc/include/asm/barrier.h     | 13 +++++++++++
+ arch/powerpc/include/asm/barrier.h    | 15 ++++++++++++
+ arch/s390/include/asm/barrier.h       | 13 +++++++++++
+ arch/score/include/asm/barrier.h      | 13 +++++++++++
+ arch/sh/include/asm/barrier.h         | 13 +++++++++++
+ arch/sparc/include/asm/barrier_32.h   | 13 +++++++++++
+ arch/sparc/include/asm/barrier_64.h   | 13 +++++++++++
+ arch/tile/include/asm/barrier.h       | 13 +++++++++++
+ arch/unicore32/include/asm/barrier.h  | 13 +++++++++++
+ arch/x86/include/asm/barrier.h        | 13 +++++++++++
+ arch/xtensa/include/asm/barrier.h     | 13 +++++++++++
+ 28 files changed, 423 insertions(+)
 
-> > And notice how that requires you to mark the store itself. There is no
-> > actual barrier *after* the store that does the optimized model.
-> > 
-> > Of course, it's entirely possible that it's not worth worrying about
-> > this on ARM64, and that just doing it as a "normal store followed by a
-> > full memory barrier" is good enough. But at least in *theory* a
-> > microarchitecture might make it much cheaper to do a "store with
-> > release consistency" followed by "write barrier".
-> 
-> I agree with the sentiment but, given that this stuff is so heavily
-> microarchitecture-dependent (and not simple to probe), a simple dmb ish
-> might be the best option after all. That's especially true if the
-> microarchitecture decided to ignore the barrier options and treat everything
-> as `all accesses, full system' in order to keep the hardware design simple.
-
-I believe that we can do quite a bit better with current hardware
-instructions (in the case of ARM, for a recent definition of "current")
-and also simplify the memory ordering quite a bit.
-
-								Thanx, Paul
+diff --git a/arch/alpha/include/asm/barrier.h b/arch/alpha/include/asm/barrier.h
+index ce8860a0b32d..464139feee97 100644
+--- a/arch/alpha/include/asm/barrier.h
++++ b/arch/alpha/include/asm/barrier.h
+@@ -29,6 +29,19 @@ __asm__ __volatile__("mb": : :"memory")
+ #define smp_read_barrier_depends()	do { } while (0)
+ #endif
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #define set_mb(var, value) \
+ do { var = value; mb(); } while (0)
+ 
+diff --git a/arch/arc/include/asm/barrier.h b/arch/arc/include/asm/barrier.h
+index f6cb7c4ffb35..a779da846fb5 100644
+--- a/arch/arc/include/asm/barrier.h
++++ b/arch/arc/include/asm/barrier.h
+@@ -30,6 +30,19 @@
+ #define smp_wmb()       barrier()
+ #endif
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #define smp_mb__before_atomic_dec()	barrier()
+ #define smp_mb__after_atomic_dec()	barrier()
+ #define smp_mb__before_atomic_inc()	barrier()
+diff --git a/arch/arm/include/asm/barrier.h b/arch/arm/include/asm/barrier.h
+index 60f15e274e6d..a804093d6891 100644
+--- a/arch/arm/include/asm/barrier.h
++++ b/arch/arm/include/asm/barrier.h
+@@ -53,10 +53,36 @@
+ #define smp_mb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
++
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
+ #else
+ #define smp_mb()	dmb(ish)
+ #define smp_rmb()	smp_mb()
+ #define smp_wmb()	dmb(ishst)
++
++#define smp_store_release(p, v)						\
++do {									\
++	asm volatile ("stlr %w0 [%1]" : : "r" (v), "r" (&p) : "memory");\
++} while (0)
++
++#define smp_load_acquire(p)						\
++do {									\
++	typeof(p) ___p1;						\
++	asm volatile ("ldar %w0, [%1]"					\
++			: "=r" (___p1) : "r" (&p) : "memory");		\
++	return ___p1;							\
++} while (0)
+ #endif
+ 
+ #define read_barrier_depends()		do { } while(0)
+diff --git a/arch/arm64/include/asm/barrier.h b/arch/arm64/include/asm/barrier.h
+index d4a63338a53c..0da2d4ebb9a8 100644
+--- a/arch/arm64/include/asm/barrier.h
++++ b/arch/arm64/include/asm/barrier.h
+@@ -35,10 +35,38 @@
+ #define smp_mb()	barrier()
+ #define smp_rmb()	barrier()
+ #define smp_wmb()	barrier()
++
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #else
++
+ #define smp_mb()	asm volatile("dmb ish" : : : "memory")
+ #define smp_rmb()	asm volatile("dmb ishld" : : : "memory")
+ #define smp_wmb()	asm volatile("dmb ishst" : : : "memory")
++
++#define smp_store_release(p, v)						\
++do {									\
++	asm volatile ("stlr %w0 [%1]" : : "r" (v), "r" (&p) : "memory");\
++} while (0)
++
++#define smp_load_acquire(p)						\
++do {									\
++	typeof(p) ___p1;						\
++	asm volatile ("ldar %w0, [%1]"					\
++			: "=r" (___p1) : "r" (&p) : "memory");		\
++	return ___p1;							\
++} while (0)
+ #endif
+ 
+ #define read_barrier_depends()		do { } while(0)
+diff --git a/arch/avr32/include/asm/barrier.h b/arch/avr32/include/asm/barrier.h
+index 0961275373db..a0c48ad684f8 100644
+--- a/arch/avr32/include/asm/barrier.h
++++ b/arch/avr32/include/asm/barrier.h
+@@ -25,5 +25,17 @@
+ # define smp_read_barrier_depends() do { } while(0)
+ #endif
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
+ 
+ #endif /* __ASM_AVR32_BARRIER_H */
+diff --git a/arch/blackfin/include/asm/barrier.h b/arch/blackfin/include/asm/barrier.h
+index ebb189507dd7..67889d9225d9 100644
+--- a/arch/blackfin/include/asm/barrier.h
++++ b/arch/blackfin/include/asm/barrier.h
+@@ -45,4 +45,17 @@
+ #define set_mb(var, value) do { var = value; mb(); } while (0)
+ #define smp_read_barrier_depends()	read_barrier_depends()
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _BLACKFIN_BARRIER_H */
+diff --git a/arch/cris/include/asm/barrier.h b/arch/cris/include/asm/barrier.h
+index 198ad7fa6b25..34243dc44ef1 100644
+--- a/arch/cris/include/asm/barrier.h
++++ b/arch/cris/include/asm/barrier.h
+@@ -22,4 +22,17 @@
+ #define smp_read_barrier_depends()     do { } while(0)
+ #endif
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* __ASM_CRIS_BARRIER_H */
+diff --git a/arch/frv/include/asm/barrier.h b/arch/frv/include/asm/barrier.h
+index 06776ad9f5e9..92f89934d4ed 100644
+--- a/arch/frv/include/asm/barrier.h
++++ b/arch/frv/include/asm/barrier.h
+@@ -26,4 +26,17 @@
+ #define set_mb(var, value) \
+ 	do { var = (value); barrier(); } while (0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _ASM_BARRIER_H */
+diff --git a/arch/h8300/include/asm/barrier.h b/arch/h8300/include/asm/barrier.h
+index 9e0aa9fc195d..516e9d379e25 100644
+--- a/arch/h8300/include/asm/barrier.h
++++ b/arch/h8300/include/asm/barrier.h
+@@ -26,4 +26,17 @@
+ #define smp_read_barrier_depends()	do { } while(0)
+ #endif
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _H8300_BARRIER_H */
+diff --git a/arch/hexagon/include/asm/barrier.h b/arch/hexagon/include/asm/barrier.h
+index 1041a8e70ce8..838a2ebe07a5 100644
+--- a/arch/hexagon/include/asm/barrier.h
++++ b/arch/hexagon/include/asm/barrier.h
+@@ -38,4 +38,17 @@
+ #define set_mb(var, value) \
+ 	do { var = value; mb(); } while (0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _ASM_BARRIER_H */
+diff --git a/arch/ia64/include/asm/barrier.h b/arch/ia64/include/asm/barrier.h
+index 60576e06b6fb..4598d390fabb 100644
+--- a/arch/ia64/include/asm/barrier.h
++++ b/arch/ia64/include/asm/barrier.h
+@@ -45,11 +45,54 @@
+ # define smp_rmb()	rmb()
+ # define smp_wmb()	wmb()
+ # define smp_read_barrier_depends()	read_barrier_depends()
++
++#define smp_store_release(p, v)						\
++do {									\
++	switch (sizeof(p)) {						\
++	case 4:								\
++		asm volatile ("st4.acq [%0]=%1" 			\
++				:: "r" (&p), "r" (v) : "memory");	\
++		break;							\
++	case 8:								\
++		asm volatile ("st8.acq [%0]=%1" 			\
++				:: "r" (&p), "r" (v) : "memory"); 	\
++		break;							\
++	}								\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1;						\
++	switch (sizeof(p)) {						\
++	case 4:								\
++		asm volatile ("ld4.rel %0=[%1]" 			\
++				: "=r"(___p1) : "r" (&p) : "memory"); 	\
++		break;							\
++	case 8:								\
++		asm volatile ("ld8.rel %0=[%1]" 			\
++				: "=r"(___p1) : "r" (&p) : "memory"); 	\
++		break;							\
++	}								\
++	return ___p1;							\
++} while (0)
+ #else
+ # define smp_mb()	barrier()
+ # define smp_rmb()	barrier()
+ # define smp_wmb()	barrier()
+ # define smp_read_barrier_depends()	do { } while(0)
++
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
+ #endif
+ 
+ /*
+diff --git a/arch/m32r/include/asm/barrier.h b/arch/m32r/include/asm/barrier.h
+index 6976621efd3f..e5d42bcf90c5 100644
+--- a/arch/m32r/include/asm/barrier.h
++++ b/arch/m32r/include/asm/barrier.h
+@@ -91,4 +91,17 @@
+ #define set_mb(var, value) do { var = value; barrier(); } while (0)
+ #endif
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _ASM_M32R_BARRIER_H */
+diff --git a/arch/m68k/include/asm/barrier.h b/arch/m68k/include/asm/barrier.h
+index 445ce22c23cb..eeb9ecf713cc 100644
+--- a/arch/m68k/include/asm/barrier.h
++++ b/arch/m68k/include/asm/barrier.h
+@@ -17,4 +17,17 @@
+ #define smp_wmb()	barrier()
+ #define smp_read_barrier_depends()	((void)0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _M68K_BARRIER_H */
+diff --git a/arch/metag/include/asm/barrier.h b/arch/metag/include/asm/barrier.h
+index c90bfc6bf648..d8e6f2e4a27c 100644
+--- a/arch/metag/include/asm/barrier.h
++++ b/arch/metag/include/asm/barrier.h
+@@ -82,4 +82,17 @@ static inline void fence(void)
+ #define smp_read_barrier_depends()     do { } while (0)
+ #define set_mb(var, value) do { var = value; smp_mb(); } while (0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _ASM_METAG_BARRIER_H */
+diff --git a/arch/microblaze/include/asm/barrier.h b/arch/microblaze/include/asm/barrier.h
+index df5be3e87044..a890702061c9 100644
+--- a/arch/microblaze/include/asm/barrier.h
++++ b/arch/microblaze/include/asm/barrier.h
+@@ -24,4 +24,17 @@
+ #define smp_rmb()		rmb()
+ #define smp_wmb()		wmb()
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _ASM_MICROBLAZE_BARRIER_H */
+diff --git a/arch/mips/include/asm/barrier.h b/arch/mips/include/asm/barrier.h
+index 314ab5532019..e59bcd051f36 100644
+--- a/arch/mips/include/asm/barrier.h
++++ b/arch/mips/include/asm/barrier.h
+@@ -180,4 +180,17 @@
+ #define nudge_writes() mb()
+ #endif
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* __ASM_BARRIER_H */
+diff --git a/arch/mn10300/include/asm/barrier.h b/arch/mn10300/include/asm/barrier.h
+index 2bd97a5c8af7..0e6a0608d4a1 100644
+--- a/arch/mn10300/include/asm/barrier.h
++++ b/arch/mn10300/include/asm/barrier.h
+@@ -34,4 +34,17 @@
+ #define read_barrier_depends()		do {} while (0)
+ #define smp_read_barrier_depends()	do {} while (0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _ASM_BARRIER_H */
+diff --git a/arch/parisc/include/asm/barrier.h b/arch/parisc/include/asm/barrier.h
+index e77d834aa803..f1145a8594a0 100644
+--- a/arch/parisc/include/asm/barrier.h
++++ b/arch/parisc/include/asm/barrier.h
+@@ -32,4 +32,17 @@
+ 
+ #define set_mb(var, value)		do { var = value; mb(); } while (0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* __PARISC_BARRIER_H */
+diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+index ae782254e731..b5cc36791f42 100644
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -65,4 +65,19 @@
+ #define data_barrier(x)	\
+ 	asm volatile("twi 0,%0,0; isync" : : "r" (x) : "memory");
+ 
++/* use smp_rmb() as that is either lwsync or a barrier() depending on SMP */
++
++#define smp_store_release(p, v)						\
++do {									\
++	smp_rmb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_rmb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _ASM_POWERPC_BARRIER_H */
+diff --git a/arch/s390/include/asm/barrier.h b/arch/s390/include/asm/barrier.h
+index 16760eeb79b0..e8989c40e11c 100644
+--- a/arch/s390/include/asm/barrier.h
++++ b/arch/s390/include/asm/barrier.h
+@@ -32,4 +32,17 @@
+ 
+ #define set_mb(var, value)		do { var = value; mb(); } while (0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	barrier();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	barrier();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* __ASM_BARRIER_H */
+diff --git a/arch/score/include/asm/barrier.h b/arch/score/include/asm/barrier.h
+index 0eacb6471e6d..5f101ef8ade9 100644
+--- a/arch/score/include/asm/barrier.h
++++ b/arch/score/include/asm/barrier.h
+@@ -13,4 +13,17 @@
+ 
+ #define set_mb(var, value) 		do {var = value; wmb(); } while (0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _ASM_SCORE_BARRIER_H */
+diff --git a/arch/sh/include/asm/barrier.h b/arch/sh/include/asm/barrier.h
+index 72c103dae300..611128c2f636 100644
+--- a/arch/sh/include/asm/barrier.h
++++ b/arch/sh/include/asm/barrier.h
+@@ -51,4 +51,17 @@
+ 
+ #define set_mb(var, value) do { (void)xchg(&var, value); } while (0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* __ASM_SH_BARRIER_H */
+diff --git a/arch/sparc/include/asm/barrier_32.h b/arch/sparc/include/asm/barrier_32.h
+index c1b76654ee76..f47f9d51f326 100644
+--- a/arch/sparc/include/asm/barrier_32.h
++++ b/arch/sparc/include/asm/barrier_32.h
+@@ -12,4 +12,17 @@
+ #define smp_wmb()	__asm__ __volatile__("":::"memory")
+ #define smp_read_barrier_depends()	do { } while(0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* !(__SPARC_BARRIER_H) */
+diff --git a/arch/sparc/include/asm/barrier_64.h b/arch/sparc/include/asm/barrier_64.h
+index 95d45986f908..77cbe6982ca0 100644
+--- a/arch/sparc/include/asm/barrier_64.h
++++ b/arch/sparc/include/asm/barrier_64.h
+@@ -53,4 +53,17 @@ do {	__asm__ __volatile__("ba,pt	%%xcc, 1f\n\t" \
+ 
+ #define smp_read_barrier_depends()	do { } while(0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	barrier();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	barrier();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* !(__SPARC64_BARRIER_H) */
+diff --git a/arch/tile/include/asm/barrier.h b/arch/tile/include/asm/barrier.h
+index a9a73da5865d..4d5330d4fd31 100644
+--- a/arch/tile/include/asm/barrier.h
++++ b/arch/tile/include/asm/barrier.h
+@@ -140,5 +140,18 @@ mb_incoherent(void)
+ #define set_mb(var, value) \
+ 	do { var = value; mb(); } while (0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* !__ASSEMBLY__ */
+ #endif /* _ASM_TILE_BARRIER_H */
+diff --git a/arch/unicore32/include/asm/barrier.h b/arch/unicore32/include/asm/barrier.h
+index a6620e5336b6..5471ff6aae10 100644
+--- a/arch/unicore32/include/asm/barrier.h
++++ b/arch/unicore32/include/asm/barrier.h
+@@ -25,4 +25,17 @@
+ 
+ #define set_mb(var, value)		do { var = value; smp_mb(); } while (0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* __UNICORE_BARRIER_H__ */
+diff --git a/arch/x86/include/asm/barrier.h b/arch/x86/include/asm/barrier.h
+index c6cd358a1eec..a7fd8201ab09 100644
+--- a/arch/x86/include/asm/barrier.h
++++ b/arch/x86/include/asm/barrier.h
+@@ -100,6 +100,19 @@
+ #define set_mb(var, value) do { var = value; barrier(); } while (0)
+ #endif
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	barrier();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	barrier();							\
++	return ___p1;							\
++} while (0)
++
+ /*
+  * Stop RDTSC speculation. This is needed when you need to use RDTSC
+  * (or get_cycles or vread that possibly accesses the TSC) in a defined
+diff --git a/arch/xtensa/include/asm/barrier.h b/arch/xtensa/include/asm/barrier.h
+index ef021677d536..703d511add49 100644
+--- a/arch/xtensa/include/asm/barrier.h
++++ b/arch/xtensa/include/asm/barrier.h
+@@ -26,4 +26,17 @@
+ 
+ #define set_mb(var, value)	do { var = value; mb(); } while (0)
+ 
++#define smp_store_release(p, v)						\
++do {									\
++	smp_mb();							\
++	ACCESS_ONCE(p) = (v);						\
++} while (0)
++
++#define smp_load_acquire(p, v)						\
++do {									\
++	typeof(p) ___p1 = ACCESS_ONCE(p);				\
++	smp_mb();							\
++	return ___p1;							\
++} while (0)
++
+ #endif /* _XTENSA_SYSTEM_H */
