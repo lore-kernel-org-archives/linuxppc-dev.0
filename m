@@ -1,21 +1,23 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 750682C0331
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 08:32:44 +1100 (EST)
-Message-ID: <1383687150.21055.165.camel@ul30vt.home>
-Subject: Re: [RFC PATCH v2] KVM: PPC: vfio kvm device: support spapr tce
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Tue, 05 Nov 2013 14:32:30 -0700
-In-Reply-To: <1383638731-13467-1-git-send-email-aik@ozlabs.ru>
-References: <20131030165234.31949.70266.stgit@bling.home>
- <1383638731-13467-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <arno@natisbad.org>
+Received: from smtp.natisbad.org (unknown
+ [IPv6:2a01:e35:139b:9f90:221:70ff:fe55:8f78])
+ by ozlabs.org (Postfix) with ESMTP id 405402C016B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 09:17:41 +1100 (EST)
+From: arno@natisbad.org (Arnaud Ebalard)
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: [PATCH] net: mv643xx_eth: Add missing phy_addr_set in DT mode
+References: <1383611239-14556-1-git-send-email-jgunthorpe@obsidianresearch.com>
+Date: Tue, 05 Nov 2013 23:12:00 +0100
+In-Reply-To: <1383611239-14556-1-git-send-email-jgunthorpe@obsidianresearch.com>
+ (Jason Gunthorpe's message of "Mon, 4 Nov 2013 17:27:19 -0700")
+Message-ID: <87sivacxcf.fsf@natisbad.org>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Lennert Buytenhek <buytenh@wantstofly.org>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,266 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-11-05 at 19:05 +1100, Alexey Kardashevskiy wrote:
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> 
-> Changes:
-> v2:
-> * it does not try to introduce a realmode search function.
-> Instead, liobn-to-iommu-group lookup is done by VFIO KVM device
-> in virtual mode and the result (iommu_group pointer) is cached
-> in kvm_arch so the realmode handlers do not use VFIO KVM device for that.
-> And the iommu groups get released on KVM termination.
-> 
-> I tried this, seems viable.
-> 
-> Did not I miss anything? Thanks.
+Hi Jason,
 
-A commit message ;)
+Jason Gunthorpe <jgunthorpe@obsidianresearch.com> writes:
 
-> ---
->  arch/powerpc/include/asm/kvm_host.h |  3 ++
->  arch/powerpc/kvm/Kconfig            |  1 +
->  arch/powerpc/kvm/Makefile           |  3 ++
->  include/linux/vfio.h                |  3 ++
->  include/uapi/linux/kvm.h            |  1 +
->  virt/kvm/vfio.c                     | 74 +++++++++++++++++++++++++++++++++++++
->  6 files changed, 85 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-> index 48dbe8b..e1163d7 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -293,6 +293,9 @@ struct kvm_arch {
->  #ifdef CONFIG_KVM_XICS
->  	struct kvmppc_xics *xics;
->  #endif
-> +#ifdef CONFIG_KVM_VFIO
-> +	struct kvm_vfio *vfio;
-> +#endif
->  };
->  
->  /*
-> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-> index 61b3535..d1b7f64 100644
-> --- a/arch/powerpc/kvm/Kconfig
-> +++ b/arch/powerpc/kvm/Kconfig
-> @@ -60,6 +60,7 @@ config KVM_BOOK3S_64
->  	select KVM_BOOK3S_64_HANDLER
->  	select KVM
->  	select SPAPR_TCE_IOMMU
-> +	select KVM_VFIO
->  	---help---
->  	  Support running unmodified book3s_64 and book3s_32 guest kernels
->  	  in virtual machines on book3s_64 host processors.
-> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-> index 6646c95..2438d2e 100644
-> --- a/arch/powerpc/kvm/Makefile
-> +++ b/arch/powerpc/kvm/Makefile
-> @@ -87,6 +87,9 @@ kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
->  kvm-book3s_64-objs-$(CONFIG_KVM_XICS) += \
->  	book3s_xics.o
->  
-> +kvm-book3s_64-objs-$(CONFIG_KVM_VFIO) += \
-> +	$(KVM)/vfio.o \
-> +
->  kvm-book3s_64-module-objs := \
->  	$(KVM)/kvm_main.o \
->  	$(KVM)/eventfd.o \
-> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> index 24579a0..681e19b 100644
-> --- a/include/linux/vfio.h
-> +++ b/include/linux/vfio.h
-> @@ -97,4 +97,7 @@ extern struct vfio_group *vfio_group_get_external_user(struct file *filep);
->  extern void vfio_group_put_external_user(struct vfio_group *group);
->  extern int vfio_external_user_iommu_id(struct vfio_group *group);
->  
-> +extern struct iommu_group *vfio_find_group_by_liobn(struct kvm *kvm,
-> +		unsigned long liobn);
-> +
+> Commit cc9d4598 'net: mv643xx_eth: use of_phy_connect if phy_node
+> present' made the call to phy_scan optional, if the DT has a link to
+> the phy node.
+>
+> However phy_scan has the side effect of calling phy_addr_set, which
+> writes the phy MDIO address to the ethernet controller. If phy_addr_set
+> is not called, and the bootloader has not set the correct address then
+> the driver will fail to function.
 
-Nope, this doesn't go in vfio.h, it's a function provided by kvm.  It
-should be named as such too, kvm_vfio_...  It also depends on both
-CONFIG_KVM_VFIO and CONFIG_SPAPR_TCE_IOMMU and needs stub version
-otherwise.  Is just _liobn specific enough or does it need a spapr_tce
-thrown in to avoid confusion with embedded ppc folks?
+Thanks *a lot* for fixing this one! I had the issue on my ReadyNAS 102
+(Armada 370 based) which I had put on a todo list and temporarily
+workarounded by including a 'ping whatever' call in my u-boot env in
+order to force it to do the init. Without it, I was unable to properly
+use the interface. With your fix, after multiple reboots to test it,
+everything works as expected. So, FWIW: 
 
->  #endif /* VFIO_H */
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 7c1a349..a74ad16 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -847,6 +847,7 @@ struct kvm_device_attr {
->  #define  KVM_DEV_VFIO_GROUP			1
->  #define   KVM_DEV_VFIO_GROUP_ADD			1
->  #define   KVM_DEV_VFIO_GROUP_DEL			2
-> +#define  KVM_DEV_VFIO_SPAPR_TCE_LIOBN		2
+Tested-by: Arnaud Ebalard <arno@natisbad.org>
 
-I wonder if it would be better architecturally if this was an attribute
-rather than a new group, ex:
+Cheers,
 
-#define   KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN   3
-
-It's a mouthful, but we are setting an attribute of a VFIO group, so it
-makes sense.  kvm_device_attr.addr would then need to point to a struct
-containing both the fd and liobn.
-
-Whatever we come up with need a documentation addition in
-Documentation/virtual/kvm/devices/vfio.txt.
-
->  
->  /*
->   * ioctls for VM fds
-> diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
-> index ca4260e..f9271d5 100644
-> --- a/virt/kvm/vfio.c
-> +++ b/virt/kvm/vfio.c
-> @@ -22,6 +22,9 @@
->  struct kvm_vfio_group {
->  	struct list_head node;
->  	struct vfio_group *vfio_group;
-> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> +	uint64_t liobn;
-
-Why is liobn an unsigned long in the exported function but a uint64_t
-here?
-
-> +#endif
->  };
->  
->  struct kvm_vfio {
-> @@ -188,12 +191,76 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
->  	return -ENXIO;
->  }
->  
-> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> +static int kvm_vfio_set_spapr_tce_liobn(struct kvm_device *dev,
-> +		long attr, u64 arg)
-> +{
-> +	struct kvm_vfio *kv = dev->private;
-> +	struct vfio_group *vfio_group;
-> +	struct kvm_vfio_group *kvg;
-> +	void __user *argp = (void __user *)arg;
-> +	struct fd f;
-> +	int32_t fd;
-> +	uint64_t liobn = attr;
-> +
-> +	if (get_user(fd, (int32_t __user *)argp))
-> +		return -EFAULT;
-> +
-> +	f = fdget(fd);
-> +	if (!f.file)
-> +		return -EBADF;
-> +
-> +	vfio_group = kvm_vfio_group_get_external_user(f.file);
-> +	fdput(f);
-
-
-Not sure why you dropped this from the example of kvm_vfio_set_group:
-
-        if (IS_ERR(vfio_group))
-                return PTR_ERR(vfio_group);
-
-You're also ignoring kv->lock.
-
-> +
-> +	list_for_each_entry(kvg, &kv->group_list, node) {
-> +		if (kvg->vfio_group == vfio_group) {
-> +			WARN_ON(kvg->liobn);
-
-Userspace should not be able to trigger a WARN this easily.  Return
-EBUSY if it's an error, otherwise let it go.
-
-> +			kvg->liobn = liobn;
-> +			kvm_vfio_group_put_external_user(vfio_group);
-> +			return 0;
-> +		}
-> +	}
-> +
-> +	kvm_vfio_group_put_external_user(vfio_group);
-> +
-> +	return -ENXIO;
-> +}
-> +
-> +struct iommu_group *vfio_find_group_by_liobn(struct kvm *kvm,
-> +		unsigned long liobn)
-
-As mentioned, kvm_vfio_...
-
-> +{
-> +	struct kvm_vfio_group *kvg;
-> +
-> +	if (!kvm->arch.vfio)
-> +		return NULL;
-
-If this is already a slow path you can avoid stashing this pointer and
-search kvm->devices for the matching ops struct.
-
-
-kv->lock...
-
-> +
-> +	list_for_each_entry(kvg, &kvm->arch.vfio->group_list, node) {
-> +		if (kvg->liobn == liobn) {
-> +			int group_id = vfio_external_user_iommu_id(
-> +					kvg->vfio_group);
-> +			struct iommu_group *grp =
-> +					iommu_group_get_by_id(group_id);
-
-nit, ugly line wrapping.  Where's the iommu_group_put() done?
-
-> +			return grp;
-
-So you've now got an liobn to iommu_group mapping cached away somewhere,
-what happens when a group is removed?  Would it be invalid for userspace
-to re-use the liobn?  Do we need a way to invalidate your cached entry
-and perhaps do an iommu_group_put()?
-
-This version is actually plausible, so big improvement from v1!  Thanks,
-
-Alex
-
-> +		}
-> +	}
-> +
-> +	return NULL;
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_find_group_by_liobn);
-> +#endif
-> +
->  static int kvm_vfio_set_attr(struct kvm_device *dev,
->  			     struct kvm_device_attr *attr)
->  {
->  	switch (attr->group) {
->  	case KVM_DEV_VFIO_GROUP:
->  		return kvm_vfio_set_group(dev, attr->attr, attr->addr);
-> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> +	case KVM_DEV_VFIO_SPAPR_TCE_LIOBN:
-> +		return kvm_vfio_set_spapr_tce_liobn(dev, attr->attr,
-> +				attr->addr);
-> +#endif
->  	}
->  
->  	return -ENXIO;
-> @@ -211,6 +278,10 @@ static int kvm_vfio_has_attr(struct kvm_device *dev,
->  		}
->  
->  		break;
-> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> +	case KVM_DEV_VFIO_SPAPR_TCE_LIOBN:
-> +		return 0;
-> +#endif
->  	}
->  
->  	return -ENXIO;
-> @@ -251,6 +322,9 @@ static int kvm_vfio_create(struct kvm_device *dev, u32 type)
->  	mutex_init(&kv->lock);
->  
->  	dev->private = kv;
-> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> +	dev->kvm->arch.vfio = kv;
-> +#endif
->  
->  	return 0;
->  }
+a+
