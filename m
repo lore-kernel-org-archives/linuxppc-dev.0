@@ -1,23 +1,39 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from mho-01-ewr.mailhop.org (mho-03-ewr.mailhop.org [204.13.248.66])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5948A2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2013 12:13:19 +1100 (EST)
-Date: Mon, 4 Nov 2013 19:36:35 -0500
-From: Jason Cooper <jason@lakedaemon.net>
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Subject: Re: [PATCH] net: mv643xx_eth: Add missing phy_addr_set in DT mode
-Message-ID: <20131105003635.GG3060@titan.lakedaemon.net>
-References: <1383611239-14556-1-git-send-email-jgunthorpe@obsidianresearch.com>
+Return-Path: <B40534@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9194E2C0126
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2013 13:11:29 +1100 (EST)
+Received: from mail80-db9 (localhost [127.0.0.1])	by mail80-db9-R.bigfish.com
+ (Postfix) with ESMTP id 367A73001FD	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Nov 2013 02:11:24 +0000 (UTC)
+Received: from DB9EHSMHS018.bigfish.com (unknown [10.174.16.252])	by
+ mail80-db9.bigfish.com (Postfix) with ESMTP id 5C489160067	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2013 02:11:22 +0000 (UTC)
+From: Dongsheng Wang <B40534@freescale.com>
+To: Scott Wood <B07421@freescale.com>
+Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
+ altivec idle
+Date: Tue, 5 Nov 2013 02:11:20 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010BC7D2@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1381828871-17110-1-git-send-email-dongsheng.wang@freescale.com>
+ <1381828871-17110-4-git-send-email-dongsheng.wang@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C08E4@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B1799@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C3279@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B189E@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1382028703.7979.782.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B3391@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1382124202.7979.886.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B3EA6@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1383608853.25829.38.camel@snotra.buserror.net>
+In-Reply-To: <1383608853.25829.38.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1383611239-14556-1-git-send-email-jgunthorpe@obsidianresearch.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- Lennert Buytenhek <buytenh@wantstofly.org>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Bharat Bhushan <R65777@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +43,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jason,
-
-On Mon, Nov 04, 2013 at 05:27:19PM -0700, Jason Gunthorpe wrote:
-> Commit cc9d4598 'net: mv643xx_eth: use of_phy_connect if phy_node
-
-fyi: set core.abbrev = 12 in your git config, according to Linus, 7/8
-was a bad decision...
-
-> present' made the call to phy_scan optional, if the DT has a link to
-> the phy node.
-> 
-> However phy_scan has the side effect of calling phy_addr_set, which
-> writes the phy MDIO address to the ethernet controller. If phy_addr_set
-> is not called, and the bootloader has not set the correct address then
-> the driver will fail to function.
-> 
-> Tested on Kirkwood.
-> 
-> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-
-Fixes: cc9d459894b0 "net: mv643xx_eth: use of_phy_connect if phy_node present"
-Acked-by: Jason Cooper <jason@lakedaemon.net>
-
-And it should be suitable for v3.11+
-
-thx,
-
-Jason.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgTm92ZW1iZXIgMDUsIDIwMTMgNzo0OCBBTQ0KPiBUbzogV2Fu
+ZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgQmh1c2hhbiBCaGFy
+YXQtUjY1Nzc3OyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDog
+UmU6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBwdzIwIHN0YXRl
+IGFuZA0KPiBhbHRpdmVjIGlkbGUNCj4gDQo+IE9uIFN1biwgMjAxMy0xMC0yMCBhdCAyMjoyNyAt
+MDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdp
+bmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNl
+bnQ6IFNhdHVyZGF5LCBPY3RvYmVyIDE5LCAyMDEzIDM6MjMgQU0NCj4gPiA+IFRvOiBXYW5nIERv
+bmdzaGVuZy1CNDA1MzQNCj4gPiA+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgQmh1c2hhbiBCaGFy
+YXQtUjY1Nzc3OyBsaW51eHBwYy0NCj4gPiA+IGRldkBsaXN0cy5vemxhYnMub3JnDQo+ID4gPiBT
+dWJqZWN0OiBSZTogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3
+MjAgc3RhdGUNCj4gPiA+IGFuZCBhbHRpdmVjIGlkbGUNCj4gPiA+DQo+ID4gPiBPbiBUaHUsIDIw
+MTMtMTAtMTcgYXQgMjE6MzYgLTA1MDAsIFdhbmcgRG9uZ3NoZW5nLUI0MDUzNCB3cm90ZToNCj4g
+PiA+ID4NCj4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+IEZy
+b206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4gU2VudDogRnJpZGF5LCBPY3RvYmVyIDE4
+LCAyMDEzIDEyOjUyIEFNDQo+ID4gPiA+ID4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+
+ID4gPiA+IENjOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51
+eHBwYy0NCj4gPiA+ID4gPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gPiA+IFN1YmplY3Q6
+IFJlOiBbUEFUQ0ggdjUgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMA0KPiA+
+ID4gPiA+IHN0YXRlIGFuZCBhbHRpdmVjIGlkbGUNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IE9uIFRo
+dSwgMjAxMy0xMC0xNyBhdCAwMDo1MSAtMDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3Rl
+Og0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
+Cj4gPiA+ID4gPiA+ID4gRnJvbTogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiA+ID4gPiA+
+IFNlbnQ6IFRodXJzZGF5LCBPY3RvYmVyIDE3LCAyMDEzIDExOjIwIEFNDQo+ID4gPiA+ID4gPiA+
+IFRvOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQ7IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4g
+PiA+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gPiA+ID4gPiBTdWJq
+ZWN0OiBSRTogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjAN
+Cj4gPiA+ID4gPiA+ID4gc3RhdGUgYW5kIGFsdGl2ZWMgaWRsZQ0KPiA+ID4gPiA+ID4gPg0KPiA+
+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwg
+TWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmctQjQwNTM0
+DQo+ID4gPiA+ID4gPiA+ID4gU2VudDogVGh1cnNkYXksIE9jdG9iZXIgMTcsIDIwMTMgODoxNiBB
+TQ0KPiA+ID4gPiA+ID4gPiA+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7IFdvb2QgU2NvdHQt
+QjA3NDIxDQo+ID4gPiA+ID4gPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
+DQo+ID4gPiA+ID4gPiA+ID4gU3ViamVjdDogUkU6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4
+eDogYWRkIHN5c2ZzIGZvcg0KPiA+ID4gPiA+ID4gPiA+IHB3MjAgc3RhdGUgYW5kIGFsdGl2ZWMg
+aWRsZQ0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPg0K
+PiA+ID4gPiA+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiA+
+ID4gPiA+IEZyb206IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+ID4gPiA+ID4gPiA+ID4gU2Vu
+dDogVGh1cnNkYXksIE9jdG9iZXIgMTcsIDIwMTMgMTowMSBBTQ0KPiA+ID4gPiA+ID4gPiA+ID4g
+VG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNDsgV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiA+
+ID4gPiA+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gPiA+ID4gPiA+
+ID4gU3ViamVjdDogUkU6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5c2ZzIGZv
+cg0KPiA+ID4gPiA+ID4gPiA+ID4gcHcyMCBzdGF0ZSBhbmQgYWx0aXZlYyBpZGxlDQo+ID4gPiA+
+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+
+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+ID4g
+PiA+IEZyb206IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4gPiA+ID4gPiA+ID4gPiBTZW50
+OiBUdWVzZGF5LCBPY3RvYmVyIDE1LCAyMDEzIDI6NTEgUE0NCj4gPiA+ID4gPiA+ID4gPiA+ID4g
+VG86IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4gPiA+ID4gPiA+IENjOiBCaHVzaGFuIEJo
+YXJhdC1SNjU3Nzc7DQo+ID4gPiA+ID4gPiA+ID4gPiA+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
+YnMub3JnOyBXYW5nDQo+ID4gPiA+ID4gPiA+ID4gPiBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+
+ID4gPiA+ID4gPiA+IFN1YmplY3Q6IFtQQVRDSCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkIHN5
+c2ZzIGZvcg0KPiA+ID4gPiA+ID4gPiA+ID4gPiBwdzIwIHN0YXRlIGFuZA0KPiA+ID4gPiA+ID4g
+PiA+ID4gYWx0aXZlYyBpZGxlDQo+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ICtzdGF0aWMgc3NpemVfdCBzaG93X3B3MjBfd2FpdF90aW1lKHN0cnVjdCBkZXZpY2UgKmRl
+diwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gKwkJCQlzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0
+ciwNCj4gY2hhcg0KPiA+ID4gKmJ1Zikgew0KPiA+ID4gPiA+ID4gPiA+ID4gPiArCXUzMiB2YWx1
+ZTsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gKwl1NjQgdGJfY3ljbGU7DQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ICsJczY0IHRpbWU7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+
+ID4gKwl1bnNpZ25lZCBpbnQgY3B1ID0gZGV2LT5pZDsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gKw0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiArCWlmICghcHcyMF93dCkgew0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiArCQlzbXBfY2FsbF9mdW5jdGlvbl9zaW5nbGUoY3B1LA0KPiBkb19zaG93X3B3cm1ndGNyMCwN
+Cj4gPiA+ID4gPiA+ID4gPiA+ID4gKyZ2YWx1ZSwNCj4gPiA+ID4gPiA+ID4gMSk7DQo+ID4gPiA+
+ID4gPiA+ID4gPiA+ICsJCXZhbHVlID0gKHZhbHVlICYgUFdSTUdUQ1IwX1BXMjBfRU5UKSA+Pg0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiArCQkJCQlQV1JNR1RDUjBfUFcyMF9FTlRfU0hJRlQ7DQo+ID4g
+PiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gKwkJdGJfY3ljbGUgPSAoMSA8
+PCAoTUFYX0JJVCAtIHZhbHVlKSkgKiAyOw0KPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+
+ID4gPiA+IElzIHZhbHVlID0gMCBhbmQgdmFsdWUgPSAxIGxlZ2FsPyBUaGVzZSB3aWxsIG1ha2UN
+Cj4gPiA+ID4gPiA+ID4gPiA+IHRiX2N5Y2xlID0gMCwNCj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4g
+PiA+ID4gPiA+ID4gPiA+ICsJCXRpbWUgPSBkaXZfdTY0KHRiX2N5Y2xlICogMTAwMCwNCj4gdGJf
+dGlja3NfcGVyX3VzZWMpDQo+ID4gPiAtIDE7DQo+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+
+ID4gPiA+ID4gQW5kIHRpbWUgPSAtMTsNCj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+
+ID4gUGxlYXNlIGxvb2sgYXQgdGhlIGVuZCBvZiB0aGUgZnVuY3Rpb24sIDopDQo+ID4gPiA+ID4g
+PiA+ID4NCj4gPiA+ID4gPiA+ID4gPiAicmV0dXJuIHNwcmludGYoYnVmLCAiJWxsdVxuIiwgdGlt
+ZSA+IDAgPyB0aW1lIDogMCk7Ig0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiBJIGtub3cg
+eW91IHJldHVybiAwIGlmIHZhbHVlID0gMC8xLCBteSBxdWVzdGlvbiB3YXMgdGhhdCwgaXMNCj4g
+PiA+ID4gPiA+ID4gdGhpcyBjb3JyZWN0IGFzIHBlciBzcGVjaWZpY2F0aW9uPw0KPiA+ID4gPiA+
+ID4gPg0KPiA+ID4gPiA+ID4gPiBBaGgsIGFsc28gZm9yICJ2YWx1ZSIgdXB0byA3IHlvdSB3aWxs
+IHJldHVybiAwLCBubz8NCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IElmIHZhbHVlID0gMCwg
+TUFYX0JJVCAtIHZhbHVlID0gNjMgdGJfY3ljbGUgPQ0KPiA+ID4gPiA+ID4gMHhmZmZmZmZmZl9m
+ZmZmZmZmZiwNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEFjdHVhbGx5LCB0Yl9jeWNsZSB3aWxsIGJl
+IHVuZGVmaW5lZCBiZWNhdXNlIHlvdSBzaGlmdGVkIGENCj4gPiA+ID4gPiAzMi1iaXQgdmFsdWUN
+Cj4gPiA+ID4gPiAoMSkgYnkgbW9yZSB0aGFuIDMxIGJpdHMuICBzLzEvMVVMTC8NCj4gPiA+ID4g
+Pg0KPiA+ID4gPiBBY3R1YWxseSwgd2UgaGF2ZSBiZWVuIGRpc2N1c3NpbmcgdGhpcyBzaXR1YXRp
+b24gdGhhdCBjb3VsZCBub3QNCj4gPiA+ID4gaGF2ZQ0KPiA+ID4gaGFwcGVuZWQuDQo+ID4gPiA+
+IFNlZSAhcHcyMF93dCBicmFuY2gsIHRoaXMgYnJhbmNoIGlzIHJlYWQgZGVmYXVsdCB3YWl0IGJp
+dC4NCj4gPiA+ID4gVGhlIGRlZmF1bHQgd2FpdCBiaXQgaXMgNTAsIHRoZSB0aW1lIGlzIGFib3V0
+IDFtcy4NCj4gPiA+ID4gVGhlIGRlZmF1bHQgd2FpdCBiaXQgY2Fubm90IGxlc3MgdGhhbiA1MCwg
+bWVhbnMgdGhlIHdhaXQgZW50cnkNCj4gPiA+ID4gdGltZQ0KPiA+ID4gY2Fubm90IGdyZWF0ZXIg
+dGhhbiAxbXMuDQo+ID4gPiA+IFdlIGhhdmUgYWxyZWFkeSBiZWd1biBiZW5jaG1hcmsgdGVzdCwg
+YW5kIHdlIGdvdCBhIHByZWxpbWluYXJ5DQo+IHJlc3VsdHMuDQo+ID4gPiA+IDU1LCA1NiwgNTdi
+aXQgbG9va3MgZ29vZCwgYnV0IHdlIG5lZWQgbW9yZSBiZW5jaG1hcmsgdG8gZ2V0IHRoZQ0KPiA+
+ID4gPiBkZWZhdWx0DQo+ID4gPiBiaXQuDQo+ID4gPg0KPiA+ID4gV2hhdCBkb2VzIHRoZSBkZWZh
+dWx0IGhhdmUgdG8gZG8gd2l0aCBpdD8gIFRoZSB1c2VyIGNvdWxkIGhhdmUgc2V0IGENCj4gPiA+
+IGRpZmZlcmVudCB2YWx1ZSwgYW5kIHRoZW4gcmVhZCBpdCBiYWNrLg0KPiA+ID4NCj4gPiA+IFBs
+dXMsIGhvdyBtdWNoIHRpbWUgY29ycmVzcG9uZHMgdG8gYml0IDUwIGRlcGVuZHMgb24gdGhlIGFj
+dHVhbA0KPiA+ID4gdGltZWJhc2UgZnJlcXVlbmN5IHdoaWNoIGNvdWxkIHZhcnkuDQo+ID4gPg0K
+PiA+IAlpZiAoIXB3MjBfd3QpIHsNCj4gPiAJCXNtcF9jYWxsX2Z1bmN0aW9uX3NpbmdsZShjcHUs
+IGRvX3Nob3dfcHdybWd0Y3IwLCAmdmFsdWUsIDEpOw0KPiA+IAkJdmFsdWUgPSAodmFsdWUgJiBQ
+V1JNR1RDUjBfUFcyMF9FTlQpID4+DQo+ID4gCQkJCQlQV1JNR1RDUjBfUFcyMF9FTlRfU0hJRlQ7
+DQo+ID4NCj4gPiAJCXRiX2N5Y2xlID0gKDEgPDwgKE1BWF9CSVQgLSB2YWx1ZSkpICogMjsNCj4g
+PiAJCXRpbWUgPSB0Yl9jeWNsZSAqICgxMDAwIC8gdGJfdGlja3NfcGVyX3VzZWMpIC0gMTsNCj4g
+PiAJfSBlbHNlIHsNCj4gPiAJCXRpbWUgPSBwdzIwX3d0Ow0KPiA+IAl9DQo+ID4NCj4gPiBBcyB3
+ZSBoYXZlIGRpc2N1c3NlZCBiZWZvcmUgd2UgbmVlZCBhIHZhcmlhYmxlIHRvIHNhdmUgVG8gc2F2
+ZSB0aGUNCj4gdXNlcnMgdG8gc2V0IHdhaXQtZW50cnktdGltZSB2YWx1ZS4NCj4gPg0KPiA+IFNl
+ZSB0aGUgY29kZSwgaWYgdXNlciBoYXZlIHNldCBhIHZhbHVlLCBhbmQgdGhlIHZhbHVlIHdpbGwg
+YmUgc2V0IGluDQo+IHB3MjBfd3QuDQo+ID4gV2hlbiB0aGUgdXNlciByZWFkIGl0IGJhY2ssIHRo
+ZSBjb2RlIHdpbGwgZG8gInRpbWUgPSBwdzIwX3d0IiBicmFuY2guDQo+ID4NCj4gPiBXaGVuIHRo
+ZSB1c2VyIG5vdCBzZXQgdGhlIHdhaXQtZW50cnktdGltZSB2YWx1ZSBhbmQgcmVhZCB0aGlzIHN5
+cw0KPiBpbnRlcmZhY2UsIHRoZSBjb2RlIHdpbGwgZG8gdGhlIGZvbGxvd2luZyBicmFuY2guDQo+
+IA0KPiBPaCwgc28gaXQncyBub3QgdGhhdCB5b3UgIm5lZWQiIHRoaXMsIHlvdSBhbHJlYWR5IGhh
+dmUgaXQuDQo+IA0KWWVzLCB3ZSBhbHJlYWR5IGhhdmUgYSB2YXJpYWJsZS4gOikNCg0K
