@@ -1,27 +1,26 @@
-Return-Path: <sebastian.hesselbarth@gmail.com>
-Received: from mail-ee0-x22a.google.com (mail-ee0-x22a.google.com
- [IPv6:2a00:1450:4013:c00::22a])
+Return-Path: <f.fainelli@gmail.com>
+Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c03::22e])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BB39B2C0399
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 09:17:47 +1100 (EST)
-Received: by mail-ee0-f42.google.com with SMTP id c1so1732243eek.15
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Nov 2013 14:17:41 -0800 (PST)
-Message-ID: <52796E82.5010800@gmail.com>
-Date: Tue, 05 Nov 2013 23:17:38 +0100
-From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-To: Arnaud Ebalard <arno@natisbad.org>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Subject: Re: [PATCH] net: mv643xx_eth: Add missing phy_addr_set in DT mode
-References: <1383611239-14556-1-git-send-email-jgunthorpe@obsidianresearch.com>
- <87sivacxcf.fsf@natisbad.org>
-In-Reply-To: <87sivacxcf.fsf@natisbad.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
- linux-kernel@vger.kernel.org, Lennert Buytenhek <buytenh@wantstofly.org>,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
+ by ozlabs.org (Postfix) with ESMTPS id 742CB2C0196
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 05:48:11 +1100 (EST)
+Received: by mail-pa0-f46.google.com with SMTP id rd3so9341252pab.19
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Nov 2013 10:48:03 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1383629471-16979-3-git-send-email-alistair@popple.id.au>
+References: <1383629471-16979-1-git-send-email-alistair@popple.id.au>
+ <1383629471-16979-3-git-send-email-alistair@popple.id.au>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Tue, 5 Nov 2013 10:47:22 -0800
+Message-ID: <CAGVrzcZQ26kbim2piOwrvpyOcSaTET5da7Yh4GWv+erfuOBDhQ@mail.gmail.com>
+Subject: Re: [PATCH 3/7] IBM Akebono: Add support for a new PHY to the IBM
+ emac driver
+To: Alistair Popple <alistair@popple.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: netdev <netdev@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,31 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/05/2013 11:12 PM, Arnaud Ebalard wrote:
-> Hi Jason,
->
-> Jason Gunthorpe <jgunthorpe@obsidianresearch.com> writes:
->
->> Commit cc9d4598 'net: mv643xx_eth: use of_phy_connect if phy_node
->> present' made the call to phy_scan optional, if the DT has a link to
->> the phy node.
->>
->> However phy_scan has the side effect of calling phy_addr_set, which
->> writes the phy MDIO address to the ethernet controller. If phy_addr_set
->> is not called, and the bootloader has not set the correct address then
->> the driver will fail to function.
->
-> Thanks *a lot* for fixing this one! I had the issue on my ReadyNAS 102
-> (Armada 370 based) which I had put on a todo list and temporarily
+[snip]
 
-Erm, just to make sure: Armada 370 isn't using mv643xx_eth but mvneta,
-are you sure it is (was) related to Jason's fix?
+> +/* RGMII bridge supports only GMII/TBI and RGMII/RTBI PHYs */
+> +static inline int rgmii_valid_mode(int phy_mode)
+> +{
+> +       return  phy_mode == PHY_MODE_GMII ||
+> +               phy_mode == PHY_MODE_MII ||
+> +               phy_mode == PHY_MODE_RGMII ||
+> +               phy_mode == PHY_MODE_TBI ||
+> +               phy_mode == PHY_MODE_RTBI;
+> +}
+> +
+> +static inline const char *rgmii_mode_name(int mode)
+> +{
+> +       switch (mode) {
+> +       case PHY_MODE_RGMII:
+> +               return "RGMII";
+> +       case PHY_MODE_TBI:
+> +               return "TBI";
+> +       case PHY_MODE_GMII:
+> +               return "GMII";
+> +       case PHY_MODE_MII:
+> +               return "MII";
+> +       case PHY_MODE_RTBI:
+> +               return "RTBI";
+> +       default:
+> +               BUG();
+> +       }
 
-Sebastian
-
-> workarounded by including a 'ping whatever' call in my u-boot env in
-> order to force it to do the init. Without it, I was unable to properly
-> use the interface. With your fix, after multiple reboots to test it,
-> everything works as expected. So, FWIW:
->
-> Tested-by: Arnaud Ebalard <arno@natisbad.org>
+Any reasons why you are duplicating what is available in
+drivers/of/of_net.c ::of_get_phy_mode()?
+-- 
+Florian
