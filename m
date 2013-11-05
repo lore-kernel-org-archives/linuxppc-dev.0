@@ -1,25 +1,40 @@
-Return-Path: <sebastian.hesselbarth@gmail.com>
-Received: from mail-ee0-x22d.google.com (mail-ee0-x22d.google.com
- [IPv6:2a00:1450:4013:c00::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A7FDB2C020A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2013 20:04:58 +1100 (EST)
-Received: by mail-ee0-f45.google.com with SMTP id e50so1637928eek.18
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Nov 2013 01:04:52 -0800 (PST)
-Message-ID: <5278B4AE.3050100@gmail.com>
-Date: Tue, 05 Nov 2013 10:04:46 +0100
-From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Subject: Re: [PATCH] net: mv643xx_eth: Add missing phy_addr_set in DT mode
-References: <1383611239-14556-1-git-send-email-jgunthorpe@obsidianresearch.com>
-In-Reply-To: <1383611239-14556-1-git-send-email-jgunthorpe@obsidianresearch.com>
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id 992D72C020A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 00:26:28 +1100 (EST)
+Message-ID: <5278F1FA.1060706@tabi.org>
+Date: Tue, 05 Nov 2013 07:26:18 -0600
+From: Timur Tabi <timur@tabi.org>
+MIME-Version: 1.0
+To: Li Xiubo <B47053@freescale.com>, Guangyu Chen <B42378@freescale.com>
+Subject: Re: [PATCHv2 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
+References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
+ <1383289495-24523-2-git-send-email-Li.Xiubo@freescale.com>
+ <20131101085904.GC28401@MrMyself>
+ <1DD289F6464F0949A2FCA5AA6DC23F82874201@039-SN2MPN1-013.039d.mgd.msft.net>
+In-Reply-To: <1DD289F6464F0949A2FCA5AA6DC23F82874201@039-SN2MPN1-013.039d.mgd.msft.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>, Lennert Buytenhek <buytenh@wantstofly.org>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "tiwai@suse.de" <tiwai@suse.de>, Huan Wang <B18965@freescale.com>,
+ "perex@perex.cz" <perex@perex.cz>, Shawn Guo <r65073@freescale.com>,
+ "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "broonie@kernel.org" <broonie@kernel.org>, "oskar@scara.com" <oskar@scara.com>,
+ Fabio Estevam <r49496@freescale.com>,
+ "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob@landley.net" <rob@landley.net>, Zhengxiong Jin <R64188@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +44,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/05/2013 01:27 AM, Jason Gunthorpe wrote:
-> Commit cc9d4598 'net: mv643xx_eth: use of_phy_connect if phy_node
-> present' made the call to phy_scan optional, if the DT has a link to
-> the phy node.
->
-> However phy_scan has the side effect of calling phy_addr_set, which
-> writes the phy MDIO address to the ethernet controller. If phy_addr_set
-> is not called, and the bootloader has not set the correct address then
-> the driver will fail to function.
->
-> Tested on Kirkwood.
->
-> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-> ---
+Li Xiubo wrote:
+> But fsl-ssi.o and fsl-spdif.o is based PowrePC platform? Which we can see from the comments.
 
-Jason,
+fsl_ssi was originally PPC-only, but it now supports PPC and ARM.  You 
+can see that from the git history.
 
-thanks for catching this! I do my kirkwood testing on Dockstar,
-which has PHY addr 0x0 - also the reset default, which may be
-why it slipped through.
-
-Acked-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-
-> ---
->   drivers/net/ethernet/marvell/mv643xx_eth.c | 1 +
->   1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
-> index 2c210ec..00e43b5 100644
-> --- a/drivers/net/ethernet/marvell/mv643xx_eth.c
-> +++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
-> @@ -2890,6 +2890,7 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
->   					 PHY_INTERFACE_MODE_GMII);
->   		if (!mp->phy)
->   			err = -ENODEV;
-> +		phy_addr_set(mp, mp->phy->addr);
->   	} else if (pd->phy_addr != MV643XX_ETH_PHY_NONE) {
->   		mp->phy = phy_scan(mp, pd->phy_addr);
->
->
+If there are any comments that say PPC but are not PPC-specific, that 
+should be fixed.
