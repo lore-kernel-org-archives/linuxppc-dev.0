@@ -1,23 +1,38 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from webmail.solarflare.com (webmail.solarflare.com [12.187.104.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "WEBMAIL.SOLARFLARE.COM",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 757552C0246
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 05:16:52 +1100 (EST)
-Message-ID: <1383675404.2868.8.camel@bwh-desktop.uk.level5networks.com>
-Subject: Re: [PATCH 3/7] IBM Akebono: Add support for a new PHY to the IBM
- emac driver
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Alistair Popple <alistair@popple.id.au>
-Date: Tue, 5 Nov 2013 18:16:44 +0000
-In-Reply-To: <1383629471-16979-3-git-send-email-alistair@popple.id.au>
-References: <1383629471-16979-1-git-send-email-alistair@popple.id.au>
- <1383629471-16979-3-git-send-email-alistair@popple.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CAC452C009C
+ for <linuxppc-dev@ozlabs.org>; Wed,  6 Nov 2013 05:52:20 +1100 (EST)
+Date: Tue, 5 Nov 2013 19:49:43 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Will Deacon <will.deacon@arm.com>
+Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
+Message-ID: <20131105184943.GY16117@laptop.programming.kicks-ass.net>
+References: <CA+55aFx_kuvR-0dwJtjvnhtha5QBc5XcLZPRH=WKT+hYVAKOrw@mail.gmail.com>
+ <20131103200124.GK19466@laptop.lan>
+ <20131103224242.GF3947@linux.vnet.ibm.com>
+ <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
+ <20131104105059.GL3947@linux.vnet.ibm.com>
+ <20131104112254.GK28601@twins.programming.kicks-ass.net>
+ <20131104162732.GN3947@linux.vnet.ibm.com>
+ <20131104191127.GW16117@laptop.programming.kicks-ass.net>
+ <20131104205344.GW3947@linux.vnet.ibm.com>
+ <20131105140548.GD26895@mudshark.cambridge.arm.com>
 MIME-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131105140548.GD26895@mudshark.cambridge.arm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
+ Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Victor Kaplansky <VICTORK@il.ibm.com>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +42,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-11-05 at 16:31 +1100, Alistair Popple wrote:
-[...]
-> --- a/drivers/net/ethernet/ibm/emac/Kconfig
-> +++ b/drivers/net/ethernet/ibm/emac/Kconfig
-> @@ -55,6 +55,10 @@ config IBM_EMAC_RGMII
->  	bool
->  	default n
->  
-> +config IBM_EMAC_RGMII_WOL
-> +	bool
-> +	default n
-> +
-[...]
+On Tue, Nov 05, 2013 at 02:05:48PM +0000, Will Deacon wrote:
+> > > +
+> > > +#define smp_store_release(p, v)                                              \
+> > > +do {                                                                 \
+> > > +     smp_mb();                                                       \
+> > > +     ACCESS_ONCE(p) = (v);                                           \
+> > > +} while (0)
+> > > +
+> > > +#define smp_load_acquire(p, v)                                               \
+> > > +do {                                                                 \
+> > > +     typeof(p) ___p1 = ACCESS_ONCE(p);                               \
+> > > +     smp_mb();                                                       \
+> > > +     return ___p1;                                                   \
+> > > +} while (0)
+> 
+> What data sizes do these accessors operate on? Assuming that we want
+> single-copy atomicity (with respect to interrupts in the UP case), we
+> probably want a check to stop people passing in things like structs.
 
-So no-one can even build-test this at present!
+Fair enough; I think we should restrict to native word sizes same as we
+do for atomics.
 
-Ben.
+Something like so perhaps:
 
--- 
-Ben Hutchings, Staff Engineer, Solarflare
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+#ifdef CONFIG_64BIT
+#define __check_native_word(t)	(sizeof(t) == 4 || sizeof(t) == 8)
+#else
+#define __check_native_word(t)	(sizeof(t) == 4)
+#endif
+
+#define smp_store_release(p, v) 		\
+do {						\
+	BUILD_BUG_ON(!__check_native_word(p));	\
+	smp_mb();				\
+	ACCESS_ONCE(p) = (v);			\
+} while (0)
+
+> > > +#define smp_store_release(p, v)                                              \
+> > > +do {                                                                 \
+> > > +     asm volatile ("stlr %w0 [%1]" : : "r" (v), "r" (&p) : "memory");\
+> 
+> Missing comma between the operands. Also, that 'w' output modifier enforces
+> a 32-bit store (same early question about sizes). Finally, it might be more
+> efficient to use "=Q" for the addressing mode, rather than take the address
+> of p manually.
+
+so something like:
+
+	asm volatile ("stlr %0, [%1]" : : "r" (v), "=Q" (p) : "memory");
+
+?
+
+My inline asm foo is horrid and I mostly get by with copy paste from a
+semi similar existing form :/
+
+> Random other question: have you considered how these accessors should behave
+> when presented with __iomem pointers?
+
+A what? ;-)
