@@ -1,56 +1,17 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D5B852C020A
- for <linuxppc-dev@ozlabs.org>; Wed,  6 Nov 2013 01:49:41 +1100 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Tue, 5 Nov 2013 07:49:36 -0700
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 126D119D8036
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Nov 2013 07:49:29 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rA5EnQ14064550
- for <linuxppc-dev@ozlabs.org>; Tue, 5 Nov 2013 07:49:28 -0700
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- rA5EppYB029243
- for <linuxppc-dev@ozlabs.org>; Tue, 5 Nov 2013 07:51:53 -0700
-Date: Tue, 5 Nov 2013 06:49:00 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Will Deacon <will.deacon@arm.com>
-Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
-Message-ID: <20131105144900.GD3947@linux.vnet.ibm.com>
-References: <CA+55aFx_kuvR-0dwJtjvnhtha5QBc5XcLZPRH=WKT+hYVAKOrw@mail.gmail.com>
- <20131103200124.GK19466@laptop.lan>
- <20131103224242.GF3947@linux.vnet.ibm.com>
- <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
- <20131104105059.GL3947@linux.vnet.ibm.com>
- <20131104112254.GK28601@twins.programming.kicks-ass.net>
- <20131104162732.GN3947@linux.vnet.ibm.com>
- <20131104191127.GW16117@laptop.programming.kicks-ass.net>
- <20131104205344.GW3947@linux.vnet.ibm.com>
- <20131105140548.GD26895@mudshark.cambridge.arm.com>
+Return-Path: <stern+5260885c@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+ by ozlabs.org (Postfix) with SMTP id 169CA2C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 02:10:45 +1100 (EST)
+Date: Tue, 5 Nov 2013 10:04:02 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Alistair Popple <alistair@popple.id.au>
+Subject: Re: [PATCH 4/7] IBM Akebono: Add support to the OHCI platform driver
+ for Akebono
+In-Reply-To: <1383629471-16979-4-git-send-email-alistair@popple.id.au>
+Message-ID: <Pine.LNX.4.44L0.1311051002131.1360-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131105140548.GD26895@mudshark.cambridge.arm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Peter Zijlstra <peterz@infradead.org>,
- "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
- Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,29 +21,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 05, 2013 at 02:05:48PM +0000, Will Deacon wrote:
-> On Mon, Nov 04, 2013 at 08:53:44PM +0000, Paul E. McKenney wrote:
-> > On Mon, Nov 04, 2013 at 08:11:27PM +0100, Peter Zijlstra wrote:
-> > Some comments below.  I believe that opcodes need to be fixed for IA64.
-> > I am unsure of the ifdefs and opcodes for arm64, but the ARM folks should
-> > be able to tell us.
+On Tue, 5 Nov 2013, Alistair Popple wrote:
 
-[ . . . ]
-
-> > > +} while (0)
-> > > +
-> > > +#define smp_load_acquire(p)                                          \
-> > > +do {                                                                 \
-> > > +     typeof(p) ___p1;                                                \
-> > > +     asm volatile ("ldar %w0, [%1]"                                  \
-> > > +                     : "=r" (___p1) : "r" (&p) : "memory");          \
-> > > +     return ___p1;                                                   \
+> The IBM Akebono board has a OHCI compliant USB host interface. This
+> patch adds support for it to the OHCI platform driver.
 > 
-> Similar comments here wrt Q constraint.
+> As we use device tree to pass platform specific data instead of
+> platform data we remove the check for platform data and instead
+> provide reasonable defaults if no platform data is present. This is
+> similar to what is currently done in ehci-platform.c.
 > 
-> Random other question: have you considered how these accessors should behave
-> when presented with __iomem pointers?
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: linux-usb@vger.kernel.org
+> ---
+>  drivers/usb/host/ohci-platform.c |   20 +++++++++++++++-----
+>  1 file changed, 15 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/usb/host/ohci-platform.c b/drivers/usb/host/ohci-platform.c
+> index a4c6410..4331454 100644
+> --- a/drivers/usb/host/ohci-platform.c
+> +++ b/drivers/usb/host/ohci-platform.c
+> @@ -23,6 +23,8 @@
+>  #include <linux/usb/ohci_pdriver.h>
+>  #include <linux/usb.h>
+>  #include <linux/usb/hcd.h>
+> +#include <linux/slab.h>
+> +#include <linux/of.h>
+>  
+>  #include "ohci.h"
+>  
+> @@ -55,6 +57,8 @@ static const struct ohci_driver_overrides platform_overrides __initconst = {
+>  	.reset =	ohci_platform_reset,
+>  };
+>  
+> +static struct usb_ohci_pdata ohci_platform_defaults;
+> +
+>  static int ohci_platform_probe(struct platform_device *dev)
+>  {
+>  	struct usb_hcd *hcd;
+> @@ -63,14 +67,14 @@ static int ohci_platform_probe(struct platform_device *dev)
+>  	int irq;
+>  	int err = -ENOMEM;
+>  
+> -	if (!pdata) {
+> -		WARN_ON(1);
+> -		return -ENODEV;
+> -	}
+> -
+>  	if (usb_disabled())
+>  		return -ENODEV;
+>  
+> +	/* Platforms using DT don't always provide platform data.
+> +	 * This should provide reasonable defaults. */
 
-Should we have something to make sparse yell if not __kernel or some such?
+	/*
+	 * The accepted format for multi-line
+	 * comments is like this.
+	 */
 
-								Thanx, Paul
+> +	if (!pdata)
+> +		dev->dev.platform_data = pdata = &ohci_platform_defaults;
+> +
+>  	irq = platform_get_irq(dev, 0);
+>  	if (irq < 0) {
+>  		dev_err(&dev->dev, "no irq provided");
+> @@ -171,6 +175,11 @@ static int ohci_platform_resume(struct device *dev)
+>  #define ohci_platform_resume	NULL
+>  #endif /* CONFIG_PM */
+>  
+> +static const struct of_device_id ohci_of_match[] = {
+> +	{ .compatible = "ibm,akebono-ohci", },
+> +	{},
+> +};
+> +
+>  static const struct platform_device_id ohci_platform_table[] = {
+>  	{ "ohci-platform", 0 },
+>  	{ }
+> @@ -191,6 +200,7 @@ static struct platform_driver ohci_platform_driver = {
+>  		.owner	= THIS_MODULE,
+>  		.name	= "ohci-platform",
+>  		.pm	= &ohci_platform_pm_ops,
+> +		.of_match_table = ohci_of_match,
+>  	}
+>  };
+
+Update the comment formatting, and then you can resubmit with
+
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
