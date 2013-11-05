@@ -1,19 +1,44 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 365592C05D3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2013 16:33:27 +1100 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id rA55XMYQ008317
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Nov 2013 23:33:23 -0600
-Message-ID: <1383629602.4776.87.camel@pasglop>
-Subject: [PATCH] powerpc: Fix fatal SLB miss when restoring PPR
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 05 Nov 2013 16:33:22 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <B47053@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 13F032C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2013 17:17:43 +1100 (EST)
+From: Li Xiubo <B47053@freescale.com>
+To: Shawn Guo <shawn.guo@linaro.org>, Guangyu Chen <B42378@freescale.com>
+Subject: RE: [PATCHv2 6/8] ASoC: fsl: add SGTL5000 based audio machine driver.
+Date: Tue, 5 Nov 2013 06:17:32 +0000
+Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F8287564A@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
+ <1383289495-24523-7-git-send-email-Li.Xiubo@freescale.com>
+ <20131101102805.GG28401@MrMyself>
+ <20131101120700.GE10324@S2101-09.ap.freescale.net>
+In-Reply-To: <20131101120700.GE10324@S2101-09.ap.freescale.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "tiwai@suse.de" <tiwai@suse.de>, Huan Wang <B18965@freescale.com>,
+ "timur@tabi.org" <timur@tabi.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Shawn Guo <r65073@freescale.com>,
+ "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "broonie@kernel.org" <broonie@kernel.org>, "perex@perex.cz" <perex@perex.cz>,
+ "oskar@scara.com" <oskar@scara.com>, Fabio Estevam <r49496@freescale.com>,
+ "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+ "rob@landley.net" <rob@landley.net>, Zhengxiong Jin <R64188@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,61 +48,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When restoring the PPR value, we incorrectly access the thread structure
-at a time where MSR:RI is clear, which means we cannot recover from nested
-faults. However the thread structure isn't covered by the "bolted" SLB
-entries and thus accessing can fault.
 
-This fixes it by splitting the code so that the PPR value is loaded into
-a GPR before MSR:RI is cleared.
+> > >  sound/soc/fsl/fsl-sgtl5000-vf610.c | 208
+> > > +++++++++++++++++++++++++++++++++++++
+> >
+> > I just doubt if this file naming is appropriate. Even if we might not
+> > have rigor rule for the file names, according to existing ones, they
+> > are all in a same pattern: [SoC name]-[codec name].c
+> >
+> > "imx-sgtl5000.c" for example
+> >
+> > I think it would make user less confused about what this file exactly
+> > is if this machine driver also follow the pattern: vf610-sgtl5000.c
+> >
+> >
+> > @Shawn
+> >
+> > What do you think about the file name?
+>=20
+> Yeah, it would be better to name the file following the existing the
+> pattern.
+>=20
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
---- 
+Please see the next version.
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 8deaaad..3c1acc3 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -406,13 +406,6 @@ BEGIN_FTR_SECTION_NESTED(945)						\
- 	std	ra,TASKTHREADPPR(rb);					\
- END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,945)
- 
--#define RESTORE_PPR(ra, rb)						\
--BEGIN_FTR_SECTION_NESTED(946)						\
--	ld	ra,PACACURRENT(r13);					\
--	ld	rb,TASKTHREADPPR(ra);					\
--	mtspr	SPRN_PPR,rb;	/* Restore PPR */			\
--END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,946)
--
- #endif
- 
- /*
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 12679cd..bbfb029 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -818,6 +818,12 @@ fast_exception_return:
- 	andi.	r0,r3,MSR_RI
- 	beq-	unrecov_restore
- 
-+	/* Load PPR from thread struct before we clear MSR:RI */
-+BEGIN_FTR_SECTION
-+	ld	r2,PACACURRENT(r13)
-+	ld	r2,TASKTHREADPPR(r2)
-+END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
-+
- 	/*
- 	 * Clear RI before restoring r13.  If we are returning to
- 	 * userspace and we take an exception after restoring r13,
-@@ -838,8 +844,10 @@ fast_exception_return:
- 	 */
- 	andi.	r0,r3,MSR_PR
- 	beq	1f
-+BEGIN_FTR_SECTION
-+	mtspr	SPRN_PPR,r2	/* Restore PPR */
-+END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	ACCOUNT_CPU_USER_EXIT(r2, r4)
--	RESTORE_PPR(r2, r4)
- 	REST_GPR(13, r1)
- 1:
- 	mtspr	SPRN_SRR1,r3
+Best Regards,
+Xiubo
