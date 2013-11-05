@@ -1,25 +1,24 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from webmail.solarflare.com (webmail.solarflare.com [12.187.104.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "WEBMAIL.SOLARFLARE.COM",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 084922C0331
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 10:11:58 +1100 (EST)
-Message-ID: <1383693110.2868.17.camel@bwh-desktop.uk.level5networks.com>
-Subject: Re: [PATCH 3/7] IBM Akebono: Add support for a new PHY to the IBM
- emac driver
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 5 Nov 2013 23:11:50 +0000
-In-Reply-To: <1383681240.4776.97.camel@pasglop>
-References: <1383629471-16979-1-git-send-email-alistair@popple.id.au>
- <1383629471-16979-3-git-send-email-alistair@popple.id.au>
- <1383675404.2868.8.camel@bwh-desktop.uk.level5networks.com>
- <1383681240.4776.97.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <arno@natisbad.org>
+Received: from smtp.natisbad.org (mic92-1-81-57-185-249.fbx.proxad.net
+ [81.57.185.249]) by ozlabs.org (Postfix) with ESMTP id 30ED52C032E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 10:14:53 +1100 (EST)
+From: arno@natisbad.org (Arnaud Ebalard)
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: Re: [PATCH] net: mv643xx_eth: Add missing phy_addr_set in DT mode
+References: <1383611239-14556-1-git-send-email-jgunthorpe@obsidianresearch.com>
+ <87sivacxcf.fsf@natisbad.org> <52796E82.5010800@gmail.com>
+Date: Wed, 06 Nov 2013 00:14:34 +0100
+In-Reply-To: <52796E82.5010800@gmail.com> (Sebastian Hesselbarth's message of
+ "Tue, 05 Nov 2013 23:17:38 +0100")
+Message-ID: <87iow6cug5.fsf@natisbad.org>
 MIME-Version: 1.0
-Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Content-Type: text/plain
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Lennert Buytenhek <buytenh@wantstofly.org>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-11-06 at 06:54 +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-11-05 at 18:16 +0000, Ben Hutchings wrote:
-> > On Tue, 2013-11-05 at 16:31 +1100, Alistair Popple wrote:
-> > [...]
-> > > --- a/drivers/net/ethernet/ibm/emac/Kconfig
-> > > +++ b/drivers/net/ethernet/ibm/emac/Kconfig
-> > > @@ -55,6 +55,10 @@ config IBM_EMAC_RGMII
-> > >  	bool
-> > >  	default n
-> > >  
-> > > +config IBM_EMAC_RGMII_WOL
-> > > +	bool
-> > > +	default n
-> > > +
-> > [...]
-> > 
-> > So no-one can even build-test this at present!
-> 
-> Patch 7/7 adds the select to the platform, isn't that sufficient ?
+Hi,
 
-I suppose so, but I don't think that went to netdev.
+Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com> writes:
 
-> It's an SoC bit so there's little point making it generally
-> selectable by the user.
+> On 11/05/2013 11:12 PM, Arnaud Ebalard wrote:
+>> Hi Jason,
+>>
+>> Jason Gunthorpe <jgunthorpe@obsidianresearch.com> writes:
+>>
+>>> Commit cc9d4598 'net: mv643xx_eth: use of_phy_connect if phy_node
+>>> present' made the call to phy_scan optional, if the DT has a link to
+>>> the phy node.
+>>>
+>>> However phy_scan has the side effect of calling phy_addr_set, which
+>>> writes the phy MDIO address to the ethernet controller. If phy_addr_set
+>>> is not called, and the bootloader has not set the correct address then
+>>> the driver will fail to function.
+>>
+>> Thanks *a lot* for fixing this one! I had the issue on my ReadyNAS 102
+>> (Armada 370 based) which I had put on a todo list and temporarily
+>
+> Erm, just to make sure: Armada 370 isn't using mv643xx_eth but mvneta,
+> are you sure it is (was) related to Jason's fix?
 
-I think a better way to do this is:
+Thanks for pointing this, Sebastian and my apologies for the noise.
+Jason's fix is indeed for a file which is not compiled for my RN102.
 
-config IBM_EMAC_RGMII_WOL
-	bool "IBM EMAC RGMII wake-on-LAN support"
-	depends on MY_WONDERFUL_NEW_SOC || COMPILE_TEST
-	default y if MY_WONDERFUL_NEW_SOC
+As the problem perfectly matched the issue I had and current kernel w/
+the patch applied does indeed fix it, I did not try and do the test w/o
+the patch applied. It would have showed the problem was fixed by
+something else in 3.12. Well, I spent some time digging the changes on
+mvneta.c and: 
 
-Then anyone making an API change that affects this driver can check that
-it still complies.
+commit 714086029116b6b0a34e67ba1dd2f0d1cf26770c
+Author: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Date:   Wed Sep 4 16:21:18 2013 +0200
 
-Ben.
+    net: mvneta: properly disable HW PHY polling and ensure adjust_link() works
+    
+    This commit fixes a long-standing bug that has been reported by many
+    users: on some Armada 370 platforms, only the network interface that
+    has been used in U-Boot to tftp the kernel works properly in
+    Linux. The other network interfaces can see a 'link up', but are
+    unable to transmit data. The reports were generally made on the Armada
+    370-based Mirabox, but have also been given on the Armada 370-RD
+    board.
 
-> Alistair: The commit name should be different, it's not a PHY you are
-> adding, it's a PHY interface (the PHY itself is off chip).
+    [SNIP]
 
+$ git tag --contains 714086029116
+v3.12
+v3.12-rc1
+v3.12-rc2
+v3.12-rc3
+v3.12-rc4
+v3.12-rc5
+v3.12-rc6
+v3.12-rc7
 
--- 
-Ben Hutchings, Staff Engineer, Solarflare
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+So the problem was indeed fixed at the beginning of 3.12 series by Thomas.
+
+Anyway, my bad and thanks again for pointing it out.
+
+Cheers,
+
+a+
