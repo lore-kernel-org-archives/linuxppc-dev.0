@@ -1,38 +1,21 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CAC452C009C
- for <linuxppc-dev@ozlabs.org>; Wed,  6 Nov 2013 05:52:20 +1100 (EST)
-Date: Tue, 5 Nov 2013 19:49:43 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Will Deacon <will.deacon@arm.com>
-Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
-Message-ID: <20131105184943.GY16117@laptop.programming.kicks-ass.net>
-References: <CA+55aFx_kuvR-0dwJtjvnhtha5QBc5XcLZPRH=WKT+hYVAKOrw@mail.gmail.com>
- <20131103200124.GK19466@laptop.lan>
- <20131103224242.GF3947@linux.vnet.ibm.com>
- <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
- <20131104105059.GL3947@linux.vnet.ibm.com>
- <20131104112254.GK28601@twins.programming.kicks-ass.net>
- <20131104162732.GN3947@linux.vnet.ibm.com>
- <20131104191127.GW16117@laptop.programming.kicks-ass.net>
- <20131104205344.GW3947@linux.vnet.ibm.com>
- <20131105140548.GD26895@mudshark.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131105140548.GD26895@mudshark.cambridge.arm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
- Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 8A90B2C0246
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 06:52:29 +1100 (EST)
+Message-ID: <1383681133.4776.95.camel@pasglop>
+Subject: Re: [PATCH 5/7] IBM Akebono: Add support to the EHCI platform
+ driver for Akebono
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Date: Wed, 06 Nov 2013 06:52:13 +1100
+In-Reply-To: <Pine.LNX.4.44L0.1311051004080.1360-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.1311051004080.1360-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Alistair Popple <alistair@popple.id.au>, linux-usb@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,62 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 05, 2013 at 02:05:48PM +0000, Will Deacon wrote:
-> > > +
-> > > +#define smp_store_release(p, v)                                              \
-> > > +do {                                                                 \
-> > > +     smp_mb();                                                       \
-> > > +     ACCESS_ONCE(p) = (v);                                           \
-> > > +} while (0)
-> > > +
-> > > +#define smp_load_acquire(p, v)                                               \
-> > > +do {                                                                 \
-> > > +     typeof(p) ___p1 = ACCESS_ONCE(p);                               \
-> > > +     smp_mb();                                                       \
-> > > +     return ___p1;                                                   \
-> > > +} while (0)
+On Tue, 2013-11-05 at 10:04 -0500, Alan Stern wrote:
+> On Tue, 5 Nov 2013, Alistair Popple wrote:
 > 
-> What data sizes do these accessors operate on? Assuming that we want
-> single-copy atomicity (with respect to interrupts in the UP case), we
-> probably want a check to stop people passing in things like structs.
+> > The IBM Akebono board has an EHCI compliant USB host interface. This
+> > patch adds support for it to the EHCI platform driver.
+> > 
+> > Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> > Cc: Alan Stern <stern@rowland.harvard.edu>
+> > Cc: linux-usb@vger.kernel.org
+> > ---
+> >  drivers/usb/host/ehci-platform.c |    5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-platform.c
+> > index f6b790c..0a67616 100644
+> > --- a/drivers/usb/host/ehci-platform.c
+> > +++ b/drivers/usb/host/ehci-platform.c
+> > @@ -203,9 +203,10 @@ static int ehci_platform_resume(struct device *dev)
+> >  #define ehci_platform_resume	NULL
+> >  #endif /* CONFIG_PM */
+> >  
+> > -static const struct of_device_id vt8500_ehci_ids[] = {
+> > +static const struct of_device_id ehci_platform_ids[] = {
+> >  	{ .compatible = "via,vt8500-ehci", },
+> >  	{ .compatible = "wm,prizm-ehci", },
+> > +	{ .compatible = "ibm,akebono-ehci", },
+> >  	{}
+> >  };
 
-Fair enough; I think we should restrict to native word sizes same as we
-do for atomics.
+Why ? Do we need to add an entry for every platform in there ? Besides,
+it probably should be the SoC name not the platform here....
 
-Something like so perhaps:
+Why not simply a generic compatible "usb-ehci" ? It's a standard
+programming interface, there are no specific quirks, we shouldn't
+need to have to add new entries to the driver like that for every
+new SoC/platform.
 
-#ifdef CONFIG_64BIT
-#define __check_native_word(t)	(sizeof(t) == 4 || sizeof(t) == 8)
-#else
-#define __check_native_word(t)	(sizeof(t) == 4)
-#endif
-
-#define smp_store_release(p, v) 		\
-do {						\
-	BUILD_BUG_ON(!__check_native_word(p));	\
-	smp_mb();				\
-	ACCESS_ONCE(p) = (v);			\
-} while (0)
-
-> > > +#define smp_store_release(p, v)                                              \
-> > > +do {                                                                 \
-> > > +     asm volatile ("stlr %w0 [%1]" : : "r" (v), "r" (&p) : "memory");\
+> > @@ -229,7 +230,7 @@ static struct platform_driver ehci_platform_driver = {
+> >  		.owner	= THIS_MODULE,
+> >  		.name	= "ehci-platform",
+> >  		.pm	= &ehci_platform_pm_ops,
+> > -		.of_match_table = vt8500_ehci_ids,
+> > +		.of_match_table = ehci_platform_ids,
+> >  	}
+> >  };
 > 
-> Missing comma between the operands. Also, that 'w' output modifier enforces
-> a 32-bit store (same early question about sizes). Finally, it might be more
-> efficient to use "=Q" for the addressing mode, rather than take the address
-> of p manually.
-
-so something like:
-
-	asm volatile ("stlr %0, [%1]" : : "r" (v), "=Q" (p) : "memory");
-
-?
-
-My inline asm foo is horrid and I mostly get by with copy paste from a
-semi similar existing form :/
-
-> Random other question: have you considered how these accessors should behave
-> when presented with __iomem pointers?
-
-A what? ;-)
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
