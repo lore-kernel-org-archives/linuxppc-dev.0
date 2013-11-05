@@ -1,17 +1,23 @@
-Return-Path: <stern+5260885c@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
- by ozlabs.org (Postfix) with SMTP id D8ECF2C0439
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 02:11:01 +1100 (EST)
-Date: Tue, 5 Nov 2013 10:04:19 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
+Return-Path: <bhutchings@solarflare.com>
+Received: from webmail.solarflare.com (webmail.solarflare.com [12.187.104.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "WEBMAIL.SOLARFLARE.COM",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 757552C0246
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 05:16:52 +1100 (EST)
+Message-ID: <1383675404.2868.8.camel@bwh-desktop.uk.level5networks.com>
+Subject: Re: [PATCH 3/7] IBM Akebono: Add support for a new PHY to the IBM
+ emac driver
+From: Ben Hutchings <bhutchings@solarflare.com>
 To: Alistair Popple <alistair@popple.id.au>
-Subject: Re: [PATCH 5/7] IBM Akebono: Add support to the EHCI platform driver
- for Akebono
-In-Reply-To: <1383629471-16979-5-git-send-email-alistair@popple.id.au>
-Message-ID: <Pine.LNX.4.44L0.1311051004080.1360-100000@iolanthe.rowland.org>
+Date: Tue, 5 Nov 2013 18:16:44 +0000
+In-Reply-To: <1383629471-16979-3-git-send-email-alistair@popple.id.au>
+References: <1383629471-16979-1-git-send-email-alistair@popple.id.au>
+ <1383629471-16979-3-git-send-email-alistair@popple.id.au>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,41 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 5 Nov 2013, Alistair Popple wrote:
-
-> The IBM Akebono board has an EHCI compliant USB host interface. This
-> patch adds support for it to the EHCI platform driver.
-> 
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: linux-usb@vger.kernel.org
-> ---
->  drivers/usb/host/ehci-platform.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-platform.c
-> index f6b790c..0a67616 100644
-> --- a/drivers/usb/host/ehci-platform.c
-> +++ b/drivers/usb/host/ehci-platform.c
-> @@ -203,9 +203,10 @@ static int ehci_platform_resume(struct device *dev)
->  #define ehci_platform_resume	NULL
->  #endif /* CONFIG_PM */
+On Tue, 2013-11-05 at 16:31 +1100, Alistair Popple wrote:
+[...]
+> --- a/drivers/net/ethernet/ibm/emac/Kconfig
+> +++ b/drivers/net/ethernet/ibm/emac/Kconfig
+> @@ -55,6 +55,10 @@ config IBM_EMAC_RGMII
+>  	bool
+>  	default n
 >  
-> -static const struct of_device_id vt8500_ehci_ids[] = {
-> +static const struct of_device_id ehci_platform_ids[] = {
->  	{ .compatible = "via,vt8500-ehci", },
->  	{ .compatible = "wm,prizm-ehci", },
-> +	{ .compatible = "ibm,akebono-ehci", },
->  	{}
->  };
->  
-> @@ -229,7 +230,7 @@ static struct platform_driver ehci_platform_driver = {
->  		.owner	= THIS_MODULE,
->  		.name	= "ehci-platform",
->  		.pm	= &ehci_platform_pm_ops,
-> -		.of_match_table = vt8500_ehci_ids,
-> +		.of_match_table = ehci_platform_ids,
->  	}
->  };
+> +config IBM_EMAC_RGMII_WOL
+> +	bool
+> +	default n
+> +
+[...]
 
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+So no-one can even build-test this at present!
+
+Ben.
+
+-- 
+Ben Hutchings, Staff Engineer, Solarflare
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
