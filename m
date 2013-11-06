@@ -1,29 +1,29 @@
-Return-Path: <f.fainelli@gmail.com>
-Received: from mail-pb0-x22e.google.com (mail-pb0-x22e.google.com
- [IPv6:2607:f8b0:400e:c01::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8AA4C2C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 13:24:36 +1100 (EST)
-Received: by mail-pb0-f46.google.com with SMTP id un15so3359170pbc.33
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Nov 2013 18:24:32 -0800 (PST)
+Return-Path: <r63061@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CA3842C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 13:28:02 +1100 (EST)
+Received: from mail81-ch1 (localhost [127.0.0.1])	by mail81-ch1-R.bigfish.com
+ (Postfix) with ESMTP id AF5E83A0071	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Nov 2013 02:27:57 +0000 (UTC)
+Received: from CH1EHSMHS041.bigfish.com (snatpool3.int.messaging.microsoft.com
+ [10.43.68.226])	by mail81-ch1.bigfish.com (Postfix) with ESMTP id
+ 464E04C01F9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 02:27:56 +0000 (UTC)
+From: Xiaobo Xie <r63061@freescale.com>
+To: Scott Wood <B07421@freescale.com>
+Subject: RE: [PATCH V5 1/2] powerpc/85xx: Add QE common init function
+Date: Wed, 6 Nov 2013 02:27:55 +0000
+Message-ID: <69EC9ED88E3CC04094A78F8074A7986D62F872@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1380188253-4710-1-git-send-email-X.Xie@freescale.com>
+ <1380301237.24959.397.camel@snotra.buserror.net>
+In-Reply-To: <1380301237.24959.397.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <1383704240.4776.115.camel@pasglop>
-References: <1383629471-16979-1-git-send-email-alistair@popple.id.au>
- <81419762.0SyAdYsUqu@mexican>
- <CAGVrzcYzBtDcxYXDopOJn_=vW_58SFs9y0uKeGNB9TDPh6J4wg@mail.gmail.com>
- <9250529.5UedqhaNce@mexican> <1383704240.4776.115.camel@pasglop>
-From: Florian Fainelli <f.fainelli@gmail.com>
-Date: Tue, 5 Nov 2013 18:23:52 -0800
-Message-ID: <CAGVrzcZ+Qdjp4hdLREgvgLgNgQxPObJ8u_wD8-3MGy9rGxfHow@mail.gmail.com>
-Subject: Re: [PATCH 3/7] IBM Akebono: Add support for a new PHY to the IBM
- emac driver
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Alistair Popple <alistair@popple.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>, netdev <netdev@vger.kernel.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,27 +33,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2013/11/5 Benjamin Herrenschmidt <benh@kernel.crashing.org>:
-> On Wed, 2013-11-06 at 12:38 +1100, Alistair Popple wrote:
->> > Right, rgmii_mode_name() just has informative purposes and should be
->> > removed, I would suggest using standard device tree bindings
->> property
->> > (phy-mode) anyway such that you could use of_get_phy_mode() and use
->> > phy_interface_t types.
->>
->> Ok, that's what is currently done in the core IBM EMAC driver. As this
->> is used
->> just for informative purposes I will remove it. Thanks.
->
-> Why ? Information is useful...
-
-Not the way they are currently handled:
-
-+       /* Check if we need to attach to a RGMII */
-+       if (!rgmii_valid_mode(mode)) {
-+               dev_err(&ofdev->dev, "unsupported settings !\n");
-
-Considering that nothing useful is being printed, that or nothing at
-all really looks identical to me.
---
-Florian
+SGkgU2NvdHQsDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBT
+Y290dC1CMDc0MjENCj4gU2VudDogU2F0dXJkYXksIFNlcHRlbWJlciAyOCwgMjAxMyAxOjAxIEFN
+DQo+IFRvOiBYaWUgWGlhb2JvLVI2MzA2MQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
+cy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCBWNSAxLzJdIHBvd2VycGMvODV4eDogQWRkIFFF
+IGNvbW1vbiBpbml0IGZ1bmN0aW9uDQo+IA0KPiBPbiBUaHUsIDIwMTMtMDktMjYgYXQgMTc6Mzcg
+KzA4MDAsIFhpZSBYaWFvYm8gd3JvdGU6DQo+ID4gKyNpZmRlZiBDT05GSUdfUVVJQ0NfRU5HSU5F
+DQo+ID4gK3ZvaWQgX19pbml0IG1wYzg1eHhfcWVfaW5pdCh2b2lkKQ0KPiA+ICt7DQo+ID4gKwlz
+dHJ1Y3QgZGV2aWNlX25vZGUgKm5wOw0KPiA+ICsNCj4gPiArCW5wID0gb2ZfZmluZF9jb21wYXRp
+YmxlX25vZGUoTlVMTCwgTlVMTCwgImZzbCxxZSIpOw0KPiA+ICsJaWYgKCFucCkgew0KPiA+ICsJ
+CW5wID0gb2ZfZmluZF9ub2RlX2J5X25hbWUoTlVMTCwgInFlIik7DQo+ID4gKwkJaWYgKCFucCkg
+ew0KPiA+ICsJCQlwcl9lcnIoIiVzOiBDb3VsZCBub3QgZmluZCBRdWljYyBFbmdpbmUgbm9kZVxu
+IiwNCj4gPiArCQkJCQlfX2Z1bmNfXyk7DQo+ID4gKwkJCXJldHVybjsNCj4gPiArCQl9DQo+ID4g
+Kwl9DQo+ID4gKw0KPiA+ICsJcWVfcmVzZXQoKTsNCj4gPiArCW9mX25vZGVfcHV0KG5wKTsNCj4g
+DQo+IFlvdSdyZSBtaXNzaW5nIHRoZSBvZl9kZXZpY2VfaXNfYXZhaWxhYmxlKCkgY2hlY2s6DQoN
+Ckkgd2lsbCBhZGQgdGhpcyBjaGVjaywgdGhhbmtzLg0KDQo+IA0KPiA+IC0JbnAgPSBvZl9maW5k
+X2NvbXBhdGlibGVfbm9kZShOVUxMLCBOVUxMLCAiZnNsLHFlIik7DQo+ID4gLQlpZiAoIW5wKSB7
+DQo+ID4gLQkJbnAgPSBvZl9maW5kX25vZGVfYnlfbmFtZShOVUxMLCAicWUiKTsNCj4gDQo+IC1T
+Y290dA0KPiANCg0K
