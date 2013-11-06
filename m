@@ -1,32 +1,28 @@
-Return-Path: <shawn.guo@linaro.org>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
+Return-Path: <B47053@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 971D92C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 19:12:48 +1100 (EST)
-Date: Wed, 6 Nov 2013 16:12:59 +0800
-From: Shawn Guo <shawn.guo@linaro.org>
-To: Li Xiubo <B47053@freescale.com>
-Subject: Re: [PATCHv2 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
-Message-ID: <20131106081257.GR19770@S2101-09.ap.freescale.net>
+ by ozlabs.org (Postfix) with ESMTPS id 4A78B2C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 20:00:03 +1100 (EST)
+From: Li Xiubo <B47053@freescale.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: RE: [PATCHv2 5/8] ASoC: SGTL5000: Enhance the SGTL5000 codec driver
+ about regulator.
+Date: Wed, 6 Nov 2013 08:59:53 +0000
+Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F82876EFF@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
- <1383289495-24523-2-git-send-email-Li.Xiubo@freescale.com>
- <20131101085904.GC28401@MrMyself>
- <1DD289F6464F0949A2FCA5AA6DC23F82874201@039-SN2MPN1-013.039d.mgd.msft.net>
- <5278F1FA.1060706@tabi.org>
- <1DD289F6464F0949A2FCA5AA6DC23F82876A53@039-SN2MPN1-013.039d.mgd.msft.net>
- <5279B822.9010401@tabi.org>
- <1DD289F6464F0949A2FCA5AA6DC23F82876B08@039-SN2MPN1-013.039d.mgd.msft.net>
-MIME-Version: 1.0
+ <1383289495-24523-6-git-send-email-Li.Xiubo@freescale.com>
+ <20131101185045.GG2493@sirena.org.uk>
+In-Reply-To: <20131101185045.GG2493@sirena.org.uk>
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1DD289F6464F0949A2FCA5AA6DC23F82876B08@039-SN2MPN1-013.039d.mgd.msft.net>
+MIME-Version: 1.0
 Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
  "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
  "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
  "tiwai@suse.de" <tiwai@suse.de>, Huan Wang <B18965@freescale.com>,
- Timur Tabi <timur@tabi.org>, "perex@perex.cz" <perex@perex.cz>,
+ "timur@tabi.org" <timur@tabi.org>, "perex@perex.cz" <perex@perex.cz>,
  Shawn Guo <r65073@freescale.com>,
  "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
  "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
@@ -38,11 +34,11 @@ Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
  "pawel.moll@arm.com" <pawel.moll@arm.com>,
  "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
  "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "broonie@kernel.org" <broonie@kernel.org>, "oskar@scara.com" <oskar@scara.com>,
- Fabio Estevam <r49496@freescale.com>,
+ "oskar@scara.com" <oskar@scara.com>, Fabio Estevam <r49496@freescale.com>,
  "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "rob@landley.net" <rob@landley.net>, Zhengxiong Jin <R64188@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -53,32 +49,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 06, 2013 at 03:53:24AM +0000, Li Xiubo wrote:
-> > >> If there are any comments that say PPC but are not PPC-specific, that
-> > >> >should be fixed.
-> > > Yes, find it.
-> > >
-> > > The comments is in "sound/soc/fsl/Makefile" :
-> > > +++++++++++
-> > > "# Freescale PowerPC SSI/DMA Platform Support"
-> > > -----------
-> > >
-> > > But fsl-spdif.o is also under it.
-> > > And this is also support ARM and PowerPC platforms at the same time ?
-> > > If so, the comments should be modified to :
-> > > +++++++++++
-> > > "# Freescale PowerPC and ARM SSI/DMA Platform Support"
-> > > -----------
-> > 
-> > Yes, this should be changed.
-> > 
-> 
-> How about :
-> +++++++++
-> "# Freescale PowerPC and ARM SSI/DMA/SAI/SPDIF Platform Support"	
-> ---------
->  ?
+> > On VF610 series there are no regulators used, and now whether the
+> > CONFIG_REGULATOR mirco is enabled or not, for the VF610 audio patch
+> > series, the board cannot be probe successfully.
+> > And this patch will solve this issue.
+>=20
+> I don't understand what this is for at all, you're just saying there is a
+> problem you're trying to solve but you don't explain anything about what
+> the problem is or how your changes address it.
+>=20
 
-Or we can just drop 'PowerPC and ARM'?
+Sorry for confusing.
 
-Shawn
+The SGTL5000 is based on regulators and when it is disabled, there will be =
+an error returns directly while the SGTL5000 codec is probing.
+But on VF610 boards there has no regulators or needn't configure them, so t=
+he CONFIG_REGULATOR is disabled, and then the error is returned causing
+to the SGTL5000 probe broken.=20
+
+Has I make it clear?
+
+> > +#ifndef CONFIG_SND_SOC_FSL_SGTL5000_VF610
+> >  static int ldo_regulator_register(struct snd_soc_codec *codec,
+>=20
+> This is definitely broken, it won't work with multi-platform kernels, and
+> I don't understand what this is supposed to do - what is the reason for
+> making this change?
+>
+
+Yes, it is.
+
+How about adding one node properties like : "regulator-exist", which will b=
+e controlled by platform data ?
