@@ -1,21 +1,23 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
- [IPv6:2001:44b8:8060:ff02:300:1:2:6])
- by ozlabs.org (Postfix) with ESMTP id 534ED2C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 12:38:04 +1100 (EST)
-From: Alistair Popple <alistair@popple.id.au>
-To: Florian Fainelli <f.fainelli@gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 79F4D2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 13:17:39 +1100 (EST)
+Message-ID: <1383704240.4776.115.camel@pasglop>
 Subject: Re: [PATCH 3/7] IBM Akebono: Add support for a new PHY to the IBM
  emac driver
-Date: Wed, 06 Nov 2013 12:38:37 +1100
-Message-ID: <9250529.5UedqhaNce@mexican>
-In-Reply-To: <CAGVrzcYzBtDcxYXDopOJn_=vW_58SFs9y0uKeGNB9TDPh6J4wg@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alistair Popple <alistair@popple.id.au>
+Date: Wed, 06 Nov 2013 13:17:20 +1100
+In-Reply-To: <9250529.5UedqhaNce@mexican>
 References: <1383629471-16979-1-git-send-email-alistair@popple.id.au>
  <81419762.0SyAdYsUqu@mexican>
  <CAGVrzcYzBtDcxYXDopOJn_=vW_58SFs9y0uKeGNB9TDPh6J4wg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: netdev <netdev@vger.kernel.org>,
+ <9250529.5UedqhaNce@mexican>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: netdev <netdev@vger.kernel.org>, Florian Fainelli <f.fainelli@gmail.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,26 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 5 Nov 2013 16:16:08 Florian Fainelli wrote:
-
-[snip]
-
-> 2013/11/5 Alistair Popple <alistair@popple.id.au>:
-> >> Any reasons why you are duplicating what is available in
-> >> drivers/of/of_net.c ::of_get_phy_mode()?
-> > 
-> > Unless I'm missing something of_get_phy_mode() is going the other way.
-> > rgmii_mode_name() is converting PHY_MODE_* into a human-readable string. I
-> > couldn't find any obvious kernel method to do this but maybe I missed it?
+On Wed, 2013-11-06 at 12:38 +1100, Alistair Popple wrote:
+> > Right, rgmii_mode_name() just has informative purposes and should be
+> > removed, I would suggest using standard device tree bindings
+> property
+> > (phy-mode) anyway such that you could use of_get_phy_mode() and use
+> > phy_interface_t types.
 > 
-> Right, rgmii_mode_name() just has informative purposes and should be
-> removed, I would suggest using standard device tree bindings property
-> (phy-mode) anyway such that you could use of_get_phy_mode() and use
-> phy_interface_t types.
+> Ok, that's what is currently done in the core IBM EMAC driver. As this
+> is used 
+> just for informative purposes I will remove it. Thanks.
 
-Ok, that's what is currently done in the core IBM EMAC driver. As this is used 
-just for informative purposes I will remove it. Thanks.
+Why ? Information is useful...
 
-Regards,
-
-Alistair
+Ben.
