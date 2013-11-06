@@ -1,21 +1,42 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
- [IPv6:2001:44b8:8060:ff02:300:1:6:4])
- by ozlabs.org (Postfix) with ESMTP id B61DE2C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 18:38:52 +1100 (EST)
-From: Alistair Popple <alistair@popple.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [RFC PATCH] ehci-platform: Merge ppc-of EHCI driver into the
- ehci-platform driver
-Date: Wed, 06 Nov 2013 18:39:19 +1100
-Message-ID: <1690980.YlPWToa1rW@mexican>
-In-Reply-To: <1383710296.4776.119.camel@pasglop>
-References: <Pine.LNX.4.44L0.1311051004080.1360-100000@iolanthe.rowland.org>
- <2440701.siW6M1PPWz@mexican> <1383710296.4776.119.camel@pasglop>
+Return-Path: <B40534@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B37402C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 18:50:29 +1100 (EST)
+Received: from mail148-co9 (localhost [127.0.0.1])	by
+ mail148-co9-R.bigfish.com (Postfix) with ESMTP id 3CB9A7001D1	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 07:50:24 +0000 (UTC)
+Received: from CO9EHSMHS017.bigfish.com (unknown [10.236.132.242])	by
+ mail148-co9.bigfish.com (Postfix) with ESMTP id 95CEE200077	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 07:50:21 +0000 (UTC)
+From: Dongsheng Wang <B40534@freescale.com>
+To: Bharat Bhushan <R65777@freescale.com>, Scott Wood <B07421@freescale.com>
+Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
+ altivec idle
+Date: Wed, 6 Nov 2013 07:50:19 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259010BD119@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1381828871-17110-1-git-send-email-dongsheng.wang@freescale.com>
+ <1381828871-17110-4-git-send-email-dongsheng.wang@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C08E4@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B1799@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C3279@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B189E@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C34C1@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B195F@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071C362B@039-SN2MPN1-013.039d.mgd.msft.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010B33C3@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1382124094.7979.885.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010BBC86@039-SN2MPN1-021.039d.mgd.msft.net>
+ <1383601901.25829.33.camel@snotra.buserror.net>
+ <ABB05CD9C9F68C46A5CEDC7F15439259010BC83B@039-SN2MPN1-021.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D071E442A@039-SN2MPN1-013.039d.mgd.msft.net>
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D071E442A@039-SN2MPN1-013.039d.mgd.msft.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
- Alan Stern <stern@rowland.harvard.edu>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,652 +46,347 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the ppc-of driver uses the compatibility string
-"usb-ehci". This means platforms that use device-tree and implement an
-EHCI compatible interface have to either use the ppc-of driver or add
-a compatible line to the ehci-platform driver. It would be more
-appropriate for the platform driver to be compatible with "usb-ehci"
-as non-powerpc platforms are also beginning to utilise device-tree.
-
-This patch merges the device tree property parsing from ehci-ppc-of
-into the platform driver and adds a "usb-ehci" compatibility
-string. The existing ehci-ppc-of driver is renamed to ehci-440epx as
-it contains platform specific work arounds for the 440EPX SoC.
-
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
----
-
-So I could submit something like this that essentially merges the ppc-of 
-driver into the platform driver instead of adding the "ibm,akebono-ehci" 
-compatible line to the platform driver.
-
-However I'm still fairly new to device-tree so I'm not sure what (if any) the 
-broader impact would be. A quick grep for "usb-ehci" turned up a couple of ARM 
-device tree's using it however they all provided their own drivers and don't 
-select CONFIG_USB_EHCI_HCD_PLATFORM so I'm guess they shouldn't be impacted.
-
-I have attempted to fix up any PowerPC device trees/configs, although I wasn't 
-sure if "usb-ehci" should remain in sequoia.dts or not given that it needs to 
-use the 440EPX specific driver.
-
-Also this hasn't been tested (beyond compilation) yet.
-
- arch/powerpc/boot/dts/sequoia.dts              |    2 +-
- arch/powerpc/configs/44x/canyonlands_defconfig |    1 +
- drivers/usb/host/Kconfig                       |    8 +-
- drivers/usb/host/ehci-440epx.c                 |  236 
-++++++++++++++++++++++++
- drivers/usb/host/ehci-hcd.c                    |    6 +-
- drivers/usb/host/ehci-platform.c               |   18 +-
- drivers/usb/host/ehci-ppc-of.c                 |  236 
-------------------------
- 7 files changed, 261 insertions(+), 246 deletions(-)
- create mode 100644 drivers/usb/host/ehci-440epx.c
- delete mode 100644 drivers/usb/host/ehci-ppc-of.c
-
-diff --git a/arch/powerpc/boot/dts/sequoia.dts 
-b/arch/powerpc/boot/dts/sequoia.dts
-index b1d3292..e28371e 100644
---- a/arch/powerpc/boot/dts/sequoia.dts
-+++ b/arch/powerpc/boot/dts/sequoia.dts
-@@ -153,7 +153,7 @@
- 		};
- 
- 		USB0: ehci@e0000300 {
--			compatible = "ibm,usb-ehci-440epx", "usb-ehci";
-+			compatible = "ibm,usb-ehci-440epx";
- 			interrupt-parent = <&UIC0>;
- 			interrupts = <0x1a 0x4>;
- 			reg = <0x00000000 0xe0000300 0x00000090 0x00000000 
-0xe0000390 0x00000070>;
-diff --git a/arch/powerpc/configs/44x/canyonlands_defconfig 
-b/arch/powerpc/configs/44x/canyonlands_defconfig
-index d5be93e..16dc37f 100644
---- a/arch/powerpc/configs/44x/canyonlands_defconfig
-+++ b/arch/powerpc/configs/44x/canyonlands_defconfig
-@@ -75,6 +75,7 @@ CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
- CONFIG_USB_DEVICEFS=y
- CONFIG_USB_MON=y
- CONFIG_USB_EHCI_HCD=m
-+CONFIG_USB_EHCI_HCD_PLATFORM=m
- CONFIG_USB_OHCI_HCD=y
- CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
- CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
-diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-index b3f20d7..b8d7c24 100644
---- a/drivers/usb/host/Kconfig
-+++ b/drivers/usb/host/Kconfig
-@@ -188,13 +188,13 @@ config USB_EHCI_TEGRA
-          This driver enables support for the internal USB Host Controllers
-          found in NVIDIA Tegra SoCs. The controllers are EHCI compliant.
- 
--config USB_EHCI_HCD_PPC_OF
--	bool "EHCI support for PPC USB controller on OF platform bus"
--	depends on PPC_OF
-+config USB_EHCI_HCD_440EPX
-+	bool "EHCI support for PPC USB controller on 440EPX"
-+	depends on PPC_OF && 440EPX
- 	default y
- 	---help---
- 	  Enables support for the USB controller present on the PowerPC
--	  OpenFirmware platform bus.
-+	  440EPX SoC.
- 
- config USB_EHCI_SH
- 	bool "EHCI support for SuperH USB controller"
-diff --git a/drivers/usb/host/ehci-440epx.c b/drivers/usb/host/ehci-440epx.c
-new file mode 100644
-index 0000000..4223700
---- /dev/null
-+++ b/drivers/usb/host/ehci-440epx.c
-@@ -0,0 +1,236 @@
-+/*
-+ * EHCI HCD (Host Controller Driver) for USB.
-+ *
-+ * Bus Glue for PPC On-Chip EHCI driver on the of_platform bus
-+ * Tested on AMCC PPC 440EPx
-+ *
-+ * Valentine Barshak <vbarshak@ru.mvista.com>
-+ *
-+ * Based on "ehci-ppc-soc.c" by Stefan Roese <sr@denx.de>
-+ * and "ohci-ppc-of.c" by Sylvain Munaut <tnt@246tNt.com>
-+ *
-+ * This file is licenced under the GPL.
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/signal.h>
-+
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+
-+
-+static const struct hc_driver ehci_440epx_hc_driver = {
-+	.description		= hcd_name,
-+	.product_desc		= "OF EHCI",
-+	.hcd_priv_size		= sizeof(struct ehci_hcd),
-+
-+	/*
-+	 * generic hardware linkage
-+	 */
-+	.irq			= ehci_irq,
-+	.flags			= HCD_MEMORY | HCD_USB2,
-+
-+	/*
-+	 * basic lifecycle operations
-+	 */
-+	.reset			= ehci_setup,
-+	.start			= ehci_run,
-+	.stop			= ehci_stop,
-+	.shutdown		= ehci_shutdown,
-+
-+	/*
-+	 * managing i/o requests and associated device resources
-+	 */
-+	.urb_enqueue		= ehci_urb_enqueue,
-+	.urb_dequeue		= ehci_urb_dequeue,
-+	.endpoint_disable	= ehci_endpoint_disable,
-+	.endpoint_reset		= ehci_endpoint_reset,
-+
-+	/*
-+	 * scheduling support
-+	 */
-+	.get_frame_number	= ehci_get_frame,
-+
-+	/*
-+	 * root hub support
-+	 */
-+	.hub_status_data	= ehci_hub_status_data,
-+	.hub_control		= ehci_hub_control,
-+#ifdef	CONFIG_PM
-+	.bus_suspend		= ehci_bus_suspend,
-+	.bus_resume		= ehci_bus_resume,
-+#endif
-+	.relinquish_port	= ehci_relinquish_port,
-+	.port_handed_over	= ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
-+};
-+
-+
-+/*
-+ * 440EPx Errata USBH_3
-+ * Fix: Enable Break Memory Transfer (BMT) in INSNREG3
-+ */
-+#define PPC440EPX_EHCI0_INSREG_BMT	(0x1 << 0)
-+static int
-+ppc44x_enable_bmt(struct device_node *dn)
-+{
-+	__iomem u32 *insreg_virt;
-+
-+	insreg_virt = of_iomap(dn, 1);
-+	if (!insreg_virt)
-+		return  -EINVAL;
-+
-+	out_be32(insreg_virt + 3, PPC440EPX_EHCI0_INSREG_BMT);
-+
-+	iounmap(insreg_virt);
-+	return 0;
-+}
-+
-+
-+static int ehci_hcd_440epx_probe(struct platform_device *op)
-+{
-+	struct device_node *dn = op->dev.of_node;
-+	struct usb_hcd *hcd;
-+	struct ehci_hcd	*ehci = NULL;
-+	struct resource res;
-+	int irq;
-+	int rv;
-+
-+	struct device_node *np;
-+
-+	if (usb_disabled())
-+		return -ENODEV;
-+
-+	dev_dbg(&op->dev, "initializing PPC-OF USB Controller\n");
-+
-+	rv = of_address_to_resource(dn, 0, &res);
-+	if (rv)
-+		return rv;
-+
-+	hcd = usb_create_hcd(&ehci_440epx_hc_driver, &op->dev, "PPC-OF USB");
-+	if (!hcd)
-+		return -ENOMEM;
-+
-+	hcd->rsrc_start = res.start;
-+	hcd->rsrc_len = resource_size(&res);
-+
-+	irq = irq_of_parse_and_map(dn, 0);
-+	if (irq == NO_IRQ) {
-+		printk(KERN_ERR "%s: irq_of_parse_and_map failed\n", __FILE__);
-+		rv = -EBUSY;
-+		goto err_irq;
-+	}
-+
-+	hcd->regs = devm_ioremap_resource(&op->dev, &res);
-+	if (IS_ERR(hcd->regs)) {
-+		rv = PTR_ERR(hcd->regs);
-+		goto err_ioremap;
-+	}
-+
-+	ehci = hcd_to_ehci(hcd);
-+	np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
-+	if (np != NULL) {
-+		/* claim we really affected by usb23 erratum */
-+		if (!of_address_to_resource(np, 0, &res))
-+			ehci->ohci_hcctrl_reg =
-+				devm_ioremap(&op->dev,
-+					     res.start + OHCI_HCCTRL_OFFSET,
-+					     OHCI_HCCTRL_LEN);
-+		else
-+			pr_debug("%s: no ohci offset in fdt\n", __FILE__);
-+		if (!ehci->ohci_hcctrl_reg) {
-+			pr_debug("%s: ioremap for ohci hcctrl failed\n", __FILE__);
-+		} else {
-+			ehci->has_amcc_usb23 = 1;
-+		}
-+	}
-+
-+	if (of_get_property(dn, "big-endian", NULL)) {
-+		ehci->big_endian_mmio = 1;
-+		ehci->big_endian_desc = 1;
-+	}
-+	if (of_get_property(dn, "big-endian-regs", NULL))
-+		ehci->big_endian_mmio = 1;
-+	if (of_get_property(dn, "big-endian-desc", NULL))
-+		ehci->big_endian_desc = 1;
-+
-+	ehci->caps = hcd->regs;
-+
-+	if (of_device_is_compatible(dn, "ibm,usb-ehci-440epx")) {
-+		rv = ppc44x_enable_bmt(dn);
-+		ehci_dbg(ehci, "Break Memory Transfer (BMT) is %senabled!\n",
-+				rv ? "NOT ": "");
-+	}
-+
-+	rv = usb_add_hcd(hcd, irq, 0);
-+	if (rv)
-+		goto err_ioremap;
-+
-+	return 0;
-+
-+err_ioremap:
-+	irq_dispose_mapping(irq);
-+err_irq:
-+	usb_put_hcd(hcd);
-+
-+	return rv;
-+}
-+
-+
-+static int ehci_hcd_440epx_remove(struct platform_device *op)
-+{
-+	struct usb_hcd *hcd = platform_get_drvdata(op);
-+	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
-+
-+	struct device_node *np;
-+	struct resource res;
-+
-+	dev_dbg(&op->dev, "stopping PPC-OF USB Controller\n");
-+
-+	usb_remove_hcd(hcd);
-+
-+	irq_dispose_mapping(hcd->irq);
-+
-+	/* use request_mem_region to test if the ohci driver is loaded.  if so
-+	 * ensure the ohci core is operational.
-+	 */
-+	if (ehci->has_amcc_usb23) {
-+		np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
-+		if (np != NULL) {
-+			if (!of_address_to_resource(np, 0, &res))
-+				if (!request_mem_region(res.start,
-+							    0x4, hcd_name))
-+					set_ohci_hcfs(ehci, 1);
-+				else
-+					release_mem_region(res.start, 0x4);
-+			else
-+				pr_debug("%s: no ohci offset in fdt\n", __FILE__);
-+			of_node_put(np);
-+		}
-+	}
-+	usb_put_hcd(hcd);
-+
-+	return 0;
-+}
-+
-+
-+static const struct of_device_id ehci_hcd_440epx_match[] = {
-+	{
-+		.compatible = "ibm,usb-ehci-440epx",
-+	},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, ehci_hcd_440epx_match);
-+
-+
-+static struct platform_driver ehci_hcd_440epx_driver = {
-+	.probe		= ehci_hcd_440epx_probe,
-+	.remove		= ehci_hcd_440epx_remove,
-+	.shutdown	= usb_hcd_platform_shutdown,
-+	.driver = {
-+		.name = "ppc-of-ehci",
-+		.owner = THIS_MODULE,
-+		.of_match_table = ehci_hcd_440epx_match,
-+	},
-+};
-diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
-index 86ab9fd..3b04f25 100644
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -1228,9 +1228,9 @@ MODULE_LICENSE ("GPL");
- #define	PS3_SYSTEM_BUS_DRIVER	ps3_ehci_driver
- #endif
- 
--#ifdef CONFIG_USB_EHCI_HCD_PPC_OF
--#include "ehci-ppc-of.c"
--#define OF_PLATFORM_DRIVER	ehci_hcd_ppc_of_driver
-+#ifdef CONFIG_USB_EHCI_HCD_440EPX
-+#include "ehci-440epx.c"
-+#define OF_PLATFORM_DRIVER	ehci_hcd_440epx_driver
- #endif
- 
- #ifdef CONFIG_XPS_USB_HCD_XILINX
-diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-
-platform.c
-index f6b790c..027f368 100644
---- a/drivers/usb/host/ehci-platform.c
-+++ b/drivers/usb/host/ehci-platform.c
-@@ -77,6 +77,7 @@ static int ehci_platform_probe(struct platform_device *dev)
- 	struct usb_hcd *hcd;
- 	struct resource *res_mem;
- 	struct usb_ehci_pdata *pdata;
-+	struct device_node *dn = dev->dev.of_node;
- 	int irq;
- 	int err = -ENOMEM;
- 
-@@ -96,6 +97,18 @@ static int ehci_platform_probe(struct platform_device *dev)
- 
- 	pdata = dev_get_platdata(&dev->dev);
- 
-+	/* Initialise platform data from device tree if available. */
-+	if (!dn) {
-+		if (of_get_property(dn, "big-endian", NULL)) {
-+			pdata->big_endian_mmio = 1;
-+			pdata->big_endian_desc = 1;
-+		}
-+		if (of_get_property(dn, "big-endian-regs", NULL))
-+			pdata->big_endian_mmio = 1;
-+		if (of_get_property(dn, "big-endian-desc", NULL))
-+			pdata->big_endian_desc = 1;
-+	}
-+
- 	irq = platform_get_irq(dev, 0);
- 	if (irq < 0) {
- 		dev_err(&dev->dev, "no irq provided");
-@@ -203,9 +216,10 @@ static int ehci_platform_resume(struct device *dev)
- #define ehci_platform_resume	NULL
- #endif /* CONFIG_PM */
- 
--static const struct of_device_id vt8500_ehci_ids[] = {
-+static const struct of_device_id ehci_platform_ids[] = {
- 	{ .compatible = "via,vt8500-ehci", },
- 	{ .compatible = "wm,prizm-ehci", },
-+	{ .compatible = "usb-ehci", },
- 	{}
- };
- 
-@@ -229,7 +243,7 @@ static struct platform_driver ehci_platform_driver = {
- 		.owner	= THIS_MODULE,
- 		.name	= "ehci-platform",
- 		.pm	= &ehci_platform_pm_ops,
--		.of_match_table = vt8500_ehci_ids,
-+		.of_match_table = ehci_platform_ids,
- 	}
- };
- 
-diff --git a/drivers/usb/host/ehci-ppc-of.c b/drivers/usb/host/ehci-ppc-of.c
-deleted file mode 100644
-index 932293f..0000000
---- a/drivers/usb/host/ehci-ppc-of.c
-+++ /dev/null
-@@ -1,236 +0,0 @@
--/*
-- * EHCI HCD (Host Controller Driver) for USB.
-- *
-- * Bus Glue for PPC On-Chip EHCI driver on the of_platform bus
-- * Tested on AMCC PPC 440EPx
-- *
-- * Valentine Barshak <vbarshak@ru.mvista.com>
-- *
-- * Based on "ehci-ppc-soc.c" by Stefan Roese <sr@denx.de>
-- * and "ohci-ppc-of.c" by Sylvain Munaut <tnt@246tNt.com>
-- *
-- * This file is licenced under the GPL.
-- */
--
--#include <linux/err.h>
--#include <linux/signal.h>
--
--#include <linux/of.h>
--#include <linux/of_platform.h>
--
--
--static const struct hc_driver ehci_ppc_of_hc_driver = {
--	.description		= hcd_name,
--	.product_desc		= "OF EHCI",
--	.hcd_priv_size		= sizeof(struct ehci_hcd),
--
--	/*
--	 * generic hardware linkage
--	 */
--	.irq			= ehci_irq,
--	.flags			= HCD_MEMORY | HCD_USB2,
--
--	/*
--	 * basic lifecycle operations
--	 */
--	.reset			= ehci_setup,
--	.start			= ehci_run,
--	.stop			= ehci_stop,
--	.shutdown		= ehci_shutdown,
--
--	/*
--	 * managing i/o requests and associated device resources
--	 */
--	.urb_enqueue		= ehci_urb_enqueue,
--	.urb_dequeue		= ehci_urb_dequeue,
--	.endpoint_disable	= ehci_endpoint_disable,
--	.endpoint_reset		= ehci_endpoint_reset,
--
--	/*
--	 * scheduling support
--	 */
--	.get_frame_number	= ehci_get_frame,
--
--	/*
--	 * root hub support
--	 */
--	.hub_status_data	= ehci_hub_status_data,
--	.hub_control		= ehci_hub_control,
--#ifdef	CONFIG_PM
--	.bus_suspend		= ehci_bus_suspend,
--	.bus_resume		= ehci_bus_resume,
--#endif
--	.relinquish_port	= ehci_relinquish_port,
--	.port_handed_over	= ehci_port_handed_over,
--
--	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
--};
--
--
--/*
-- * 440EPx Errata USBH_3
-- * Fix: Enable Break Memory Transfer (BMT) in INSNREG3
-- */
--#define PPC440EPX_EHCI0_INSREG_BMT	(0x1 << 0)
--static int
--ppc44x_enable_bmt(struct device_node *dn)
--{
--	__iomem u32 *insreg_virt;
--
--	insreg_virt = of_iomap(dn, 1);
--	if (!insreg_virt)
--		return  -EINVAL;
--
--	out_be32(insreg_virt + 3, PPC440EPX_EHCI0_INSREG_BMT);
--
--	iounmap(insreg_virt);
--	return 0;
--}
--
--
--static int ehci_hcd_ppc_of_probe(struct platform_device *op)
--{
--	struct device_node *dn = op->dev.of_node;
--	struct usb_hcd *hcd;
--	struct ehci_hcd	*ehci = NULL;
--	struct resource res;
--	int irq;
--	int rv;
--
--	struct device_node *np;
--
--	if (usb_disabled())
--		return -ENODEV;
--
--	dev_dbg(&op->dev, "initializing PPC-OF USB Controller\n");
--
--	rv = of_address_to_resource(dn, 0, &res);
--	if (rv)
--		return rv;
--
--	hcd = usb_create_hcd(&ehci_ppc_of_hc_driver, &op->dev, "PPC-OF USB");
--	if (!hcd)
--		return -ENOMEM;
--
--	hcd->rsrc_start = res.start;
--	hcd->rsrc_len = resource_size(&res);
--
--	irq = irq_of_parse_and_map(dn, 0);
--	if (irq == NO_IRQ) {
--		printk(KERN_ERR "%s: irq_of_parse_and_map failed\n", __FILE__);
--		rv = -EBUSY;
--		goto err_irq;
--	}
--
--	hcd->regs = devm_ioremap_resource(&op->dev, &res);
--	if (IS_ERR(hcd->regs)) {
--		rv = PTR_ERR(hcd->regs);
--		goto err_ioremap;
--	}
--
--	ehci = hcd_to_ehci(hcd);
--	np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
--	if (np != NULL) {
--		/* claim we really affected by usb23 erratum */
--		if (!of_address_to_resource(np, 0, &res))
--			ehci->ohci_hcctrl_reg =
--				devm_ioremap(&op->dev,
--					     res.start + OHCI_HCCTRL_OFFSET,
--					     OHCI_HCCTRL_LEN);
--		else
--			pr_debug("%s: no ohci offset in fdt\n", __FILE__);
--		if (!ehci->ohci_hcctrl_reg) {
--			pr_debug("%s: ioremap for ohci hcctrl failed\n", __FILE__);
--		} else {
--			ehci->has_amcc_usb23 = 1;
--		}
--	}
--
--	if (of_get_property(dn, "big-endian", NULL)) {
--		ehci->big_endian_mmio = 1;
--		ehci->big_endian_desc = 1;
--	}
--	if (of_get_property(dn, "big-endian-regs", NULL))
--		ehci->big_endian_mmio = 1;
--	if (of_get_property(dn, "big-endian-desc", NULL))
--		ehci->big_endian_desc = 1;
--
--	ehci->caps = hcd->regs;
--
--	if (of_device_is_compatible(dn, "ibm,usb-ehci-440epx")) {
--		rv = ppc44x_enable_bmt(dn);
--		ehci_dbg(ehci, "Break Memory Transfer (BMT) is %senabled!\n",
--				rv ? "NOT ": "");
--	}
--
--	rv = usb_add_hcd(hcd, irq, 0);
--	if (rv)
--		goto err_ioremap;
--
--	return 0;
--
--err_ioremap:
--	irq_dispose_mapping(irq);
--err_irq:
--	usb_put_hcd(hcd);
--
--	return rv;
--}
--
--
--static int ehci_hcd_ppc_of_remove(struct platform_device *op)
--{
--	struct usb_hcd *hcd = platform_get_drvdata(op);
--	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
--
--	struct device_node *np;
--	struct resource res;
--
--	dev_dbg(&op->dev, "stopping PPC-OF USB Controller\n");
--
--	usb_remove_hcd(hcd);
--
--	irq_dispose_mapping(hcd->irq);
--
--	/* use request_mem_region to test if the ohci driver is loaded.  if so
--	 * ensure the ohci core is operational.
--	 */
--	if (ehci->has_amcc_usb23) {
--		np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
--		if (np != NULL) {
--			if (!of_address_to_resource(np, 0, &res))
--				if (!request_mem_region(res.start,
--							    0x4, hcd_name))
--					set_ohci_hcfs(ehci, 1);
--				else
--					release_mem_region(res.start, 0x4);
--			else
--				pr_debug("%s: no ohci offset in fdt\n", __FILE__);
--			of_node_put(np);
--		}
--	}
--	usb_put_hcd(hcd);
--
--	return 0;
--}
--
--
--static const struct of_device_id ehci_hcd_ppc_of_match[] = {
--	{
--		.compatible = "usb-ehci",
--	},
--	{},
--};
--MODULE_DEVICE_TABLE(of, ehci_hcd_ppc_of_match);
--
--
--static struct platform_driver ehci_hcd_ppc_of_driver = {
--	.probe		= ehci_hcd_ppc_of_probe,
--	.remove		= ehci_hcd_ppc_of_remove,
--	.shutdown	= usb_hcd_platform_shutdown,
--	.driver = {
--		.name = "ppc-of-ehci",
--		.owner = THIS_MODULE,
--		.of_match_table = ehci_hcd_ppc_of_match,
--	},
--};
--- 
-1.7.10.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmh1c2hhbiBCaGFyYXQt
+UjY1Nzc3DQo+IFNlbnQ6IFdlZG5lc2RheSwgTm92ZW1iZXIgMDYsIDIwMTMgMToyNSBQTQ0KPiBU
+bzogV2FuZyBEb25nc2hlbmctQjQwNTM0OyBXb29kIFNjb3R0LUIwNzQyMQ0KPiBDYzogbGludXhw
+cGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUkU6IFtQQVRDSCB2NSA0LzRdIHBv
+d2VycGMvODV4eDogYWRkIHN5c2ZzIGZvciBwdzIwIHN0YXRlIGFuZA0KPiBhbHRpdmVjIGlkbGUN
+Cj4gDQo+IA0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206IFdh
+bmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+IFNlbnQ6IFR1ZXNkYXksIE5vdmVtYmVyIDA1LCAyMDEz
+IDg6NDAgQU0NCj4gPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gPiBDYzogQmh1c2hhbiBCaGFy
+YXQtUjY1Nzc3OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+IFN1YmplY3Q6IFJF
+OiBbUEFUQ0ggdjUgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMCBzdGF0ZSBh
+bmQNCj4gPiBhbHRpdmVjIGlkbGUNCj4gPg0KPiA+DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwg
+TWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDog
+VHVlc2RheSwgTm92ZW1iZXIgMDUsIDIwMTMgNTo1MiBBTQ0KPiA+ID4gVG86IFdhbmcgRG9uZ3No
+ZW5nLUI0MDUzNA0KPiA+ID4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBCaHVzaGFuIEJoYXJhdC1S
+NjU3Nzc7IGxpbnV4cHBjLQ0KPiA+ID4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+IFN1Ympl
+Y3Q6IFJlOiBbUEFUQ0ggdjUgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMCBz
+dGF0ZQ0KPiA+ID4gYW5kIGFsdGl2ZWMgaWRsZQ0KPiA+ID4NCj4gPiA+IE9uIFN1biwgMjAxMy0x
+MS0wMyBhdCAyMjowNCAtMDYwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0KPiA+ID4g
+PiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTogV2FuZyBEb25n
+c2hlbmctQjQwNTM0DQo+ID4gPiA+ID4gU2VudDogTW9uZGF5LCBPY3RvYmVyIDIxLCAyMDEzIDEx
+OjExIEFNDQo+ID4gPiA+ID4gVG86IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4gQ2M6IEJo
+dXNoYW4gQmhhcmF0LVI2NTc3NzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+
+ID4gPiBTdWJqZWN0OiBSRTogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMg
+Zm9yIHB3MjANCj4gPiA+ID4gPiBzdGF0ZSBhbmQgYWx0aXZlYyBpZGxlDQo+ID4gPiA+ID4NCj4g
+PiA+ID4gPg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
+LQ0KPiA+ID4gPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiA+IFNlbnQ6
+IFNhdHVyZGF5LCBPY3RvYmVyIDE5LCAyMDEzIDM6MjIgQU0NCj4gPiA+ID4gPiA+IFRvOiBXYW5n
+IERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+ID4gPiA+IENjOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7
+IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51eHBwYy0NCj4gPiA+ID4gPiA+IGRldkBsaXN0cy5vemxh
+YnMub3JnDQo+ID4gPiA+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84
+NXh4OiBhZGQgc3lzZnMgZm9yIHB3MjANCj4gPiA+ID4gPiA+IHN0YXRlIGFuZCBhbHRpdmVjIGlk
+bGUNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBPbiBUaHUsIDIwMTMtMTAtMTcgYXQgMjI6MDIg
+LTA1MDAsIFdhbmcgRG9uZ3NoZW5nLUI0MDUzNCB3cm90ZToNCj4gPiA+ID4gPiA+ID4NCj4gPiA+
+ID4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+IEZy
+b206IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+ID4gPiA+ID4gPiA+IFNlbnQ6IFRodXJzZGF5
+LCBPY3RvYmVyIDE3LCAyMDEzIDI6NDYgUE0NCj4gPiA+ID4gPiA+ID4gPiBUbzogV2FuZyBEb25n
+c2hlbmctQjQwNTM0OyBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+ID4gPiA+IENjOiBsaW51
+eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gPiA+ID4gPiA+IFN1YmplY3Q6IFJFOiBb
+UEFUQ0ggdjUgNC80XSBwb3dlcnBjLzg1eHg6IGFkZCBzeXNmcyBmb3INCj4gPiA+ID4gPiA+ID4g
+PiBwdzIwIHN0YXRlIGFuZCBhbHRpdmVjIGlkbGUNCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+
+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiAtLS0tLU9yaWdp
+bmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IEZyb206IFdhbmcgRG9uZ3No
+ZW5nLUI0MDUzNA0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+IFNlbnQ6IFRodXJzZGF5LCBPY3RvYmVy
+IDE3LCAyMDEzIDExOjIyIEFNDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gVG86IEJodXNoYW4gQmhh
+cmF0LVI2NTc3NzsgV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBDYzog
+bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBTdWJq
+ZWN0OiBSRTogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQgc3lzZnMNCj4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiBmb3INCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBwdzIwIHN0YXRlIGFuZCBh
+bHRpdmVjIGlkbGUNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IC0tLS0tT3Jp
+Z2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBGcm9tOiBCaHVzaGFu
+IEJoYXJhdC1SNjU3NzcNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IFNlbnQ6IFRodXJzZGF5LCBP
+Y3RvYmVyIDE3LCAyMDEzIDExOjIwIEFNDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBUbzogV2Fu
+ZyBEb25nc2hlbmctQjQwNTM0OyBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiBTdWJqZWN0OiBSRTogW1BBVENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQNCj4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+IHN5c2ZzIGZvcg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+cHcyMCBzdGF0ZSBhbmQgYWx0aXZlYyBpZGxlDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+IEZyb206IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiBTZW50OiBUaHVyc2RheSwgT2N0b2JlciAxNywgMjAxMyA4OjE2IEFNDQo+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7IFdvb2QgU2Nv
+dHQtQjA3NDIxDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IENjOiBsaW51eHBwYy1kZXZAbGlz
+dHMub3psYWJzLm9yZw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBTdWJqZWN0OiBSRTogW1BB
+VENIIHY1IDQvNF0gcG93ZXJwYy84NXh4OiBhZGQNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+c3lzZnMgZm9yDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IHB3MjAgc3RhdGUgYW5kIGFsdGl2
+ZWMgaWRsZQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gRnJvbTogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gU2VudDogVGh1cnNkYXksIE9jdG9iZXIgMTcsIDIwMTMgMTowMSBBTQ0KPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+IFRvOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQ7IFdvb2QgU2NvdHQtQjA3
+NDIxDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5v
+emxhYnMub3JnDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gU3ViamVjdDogUkU6IFtQQVRD
+SCB2NSA0LzRdIHBvd2VycGMvODV4eDogYWRkDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+c3lzZnMgZm9yDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gcHcyMCBzdGF0ZSBhbmQgYWx0
+aXZlYyBpZGxlDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiBTZW50OiBUdWVzZGF5LCBPY3RvYmVyIDE1LCAyMDEzIDI6NTEgUE0N
+Cj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IFRvOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gQ2M6IEJodXNoYW4gQmhhcmF0LVI2NTc3NzsNCj4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
+OyBXYW5nDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gRG9uZ3NoZW5nLUI0MDUzNA0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gU3ViamVjdDogW1BBVENIIHY1IDQvNF0gcG93ZXJw
+Yy84NXh4OiBhZGQNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IHN5c2ZzIGZvcg0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gcHcyMCBzdGF0ZSBhbmQNCj4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiBhbHRpdmVjIGlkbGUNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBGcm9tOiBXYW5nIERvbmdzaGVuZw0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gQWRkIGEgc3lzIGludGVyZmFjZSB0byBlbmFibGUvZGlhYmxlIHB3MjANCj4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+IHN0YXRlIG9yIGFsdGl2ZWMgaWRsZSwgYW5kDQo+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gY29udHJvbCB0aGUNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+IHdhaXQgZW50cnkgdGltZS4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBFbmFibGUvRGlzYWJsZSBpbnRlcmZhY2U6DQo+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiAwLCBkaXNhYmxlLiAxLCBlbmFibGUuDQo+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL3B3
+MjBfc3RhdGUNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IC9zeXMvZGV2aWNlcy9zeXN0
+ZW0vY3B1L2NwdVgvYWx0aXZlY19pZGxlDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPg0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gU2V0IHdhaXQgdGltZSBpbnRlcmZhY2U6KE5h
+bm9zZWNvbmQpDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiAvc3lzL2RldmljZXMvc3lz
+dGVtL2NwdS9jcHVYL3B3MjBfd2FpdF90aW1lDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHVYL2FsdGl2ZWNfaWRsZV93YQ0KPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gaXQNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IF90
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBpbWUNCj4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+IEV4YW1wbGU6IEJhc2Ugb24gVEJmcmVxIGlzIDQxTUhaLg0KPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gMX40OChucyk6IFRCWzYzXQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gNDl+OTcobnMpOiBUQls2Ml0NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+IDk4fjE5NShucyk6IFRCWzYxXQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gMTk2fjM5
+MChucyk6IFRCWzYwXQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gMzkxfjc4MChucyk6
+IFRCWzU5XQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gNzgxfjE1NjAobnMpOiBUQls1
+OF0gLi4uDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gU2lnbmVkLW9mZi1ieTogV2FuZyBEb25nc2hlbmcNCj4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+IDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gLS0tDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiAq
+djU6DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBDaGFuZ2UgZ2V0X2lkbGVfdGlja3Nf
+Yml0IGZ1bmN0aW9uDQo+IGltcGxlbWVudGF0aW9uLg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICp2NDoNCj4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+IE1vdmUgY29kZSBmcm9tIDg1eHgvY29tbW9uLmMgdG8NCj4ga2VybmVs
+L3N5c2ZzLmMuDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gUmVtb3ZlIGhhc19wdzIwX2FsdGl2ZWNfaWRsZSBmdW5jdGlvbi4NCj4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiBDaGFuZ2Ugd2FpdCAiZW50cnlfYml0IiB0byB3YWl0IHRpbWUuDQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gZGlmZiAtLWdpdCBh
+L2FyY2gvcG93ZXJwYy9rZXJuZWwvc3lzZnMuYw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gYi9hcmNoL3Bvd2VycGMva2VybmVsL3N5c2ZzLmMNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiBpbmRleA0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gMjdhOTBiOS4uMTBkMTEy
+OCAxMDA2NDQNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+IC0tLSBhL2FyY2gvcG93ZXJw
+Yy9rZXJuZWwvc3lzZnMuYw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKysrIGIvYXJj
+aC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBA
+QCAtODUsNiArODUsMjg0IEBADQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBfX3NldHVw
+KCJzbXQtc25vb3plLWRlbGF5PSIsDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gc2V0dXBf
+c210X3Nub296ZV9kZWxheSk7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gICNlbmRpZiAvKiBDT05GSUdfUFBDNjQgKi8NCj4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiAr
+I2lmZGVmIENPTkZJR19GU0xfU09DDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArI2Rl
+ZmluZSBNQVhfQklUCQkJCTYzDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArc3RhdGljIHU2NCBwdzIwX3d0OyBzdGF0aWMgdTY0
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArYWx0aXZlY19pZGxlX3d0Ow0KPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+K3N0YXRpYyB1bnNpZ25lZCBpbnQgZ2V0X2lkbGVfdGlja3NfYml0KHU2NA0KPiBucykgew0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwl1NjQgY3ljbGU7DQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCWlmIChucyA+
+PSAxMDAwMCkNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJCWN5Y2xlID0gZGl2X3U2
+NChucyArIDUwMCwgMTAwMCkgKg0KPiA+ID4gPiA+ID4gPiA+IHRiX3RpY2tzX3Blcl91c2VjOw0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwllbHNlDQo+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiArCQljeWNsZSA9IGRpdl91NjQobnMgKg0KPiA+ID4gdGJfdGlja3NfcGVyX3Vz
+ZWMsDQo+ID4gPiA+ID4gPiAxMDAwKTsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsN
+Cj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJaWYgKCFjeWNsZSkNCj4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ICsJCXJldHVybiAwOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwlyZXR1cm4gaWxvZzIoY3lj
+bGUpOyB9DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiArc3RhdGljIHZvaWQgZG9fc2hvd19wd3JtZ3RjcjAodm9pZCAqdmFsKSB7
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCXUzMiAqdmFsdWUgPSB2YWw7DQo+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiArCSp2YWx1ZSA9IG1mc3ByKFNQUk5fUFdSTUdUQ1IwKTsgfQ0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gK3N0YXRpYyBzc2l6
+ZV90IHNob3dfcHcyMF9zdGF0ZShzdHJ1Y3QNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ICtkZXZpY2UNCj4gPiA+ICpkZXYsDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCQkJ
+CXN0cnVjdCBkZXZpY2VfYXR0cmlidXRlDQo+ID4gPiAqYXR0ciwNCj4gPiA+ID4gPiA+IGNoYXIN
+Cj4gPiA+ID4gPiA+ID4gPiAqYnVmKSB7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiAr
+CXUzMiB2YWx1ZTsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJdW5zaWduZWQgaW50
+IGNwdSA9IGRldi0+aWQ7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCXNtcF9jYWxsX2Z1bmN0aW9uX3NpbmdsZShjcHUsDQo+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArZG9fc2hvd19wd3JtZ3RjcjAsICZ2YWx1ZSwg
+MSk7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiArCXZhbHVlICY9IFBXUk1HVENSMF9QVzIwX1dBSVQ7DQo+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCXJldHVy
+biBzcHJpbnRmKGJ1ZiwgIiV1XG4iLCB2YWx1ZSA/IDEgOg0KPiA+ID4gMCk7IH0NCj4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICtz
+dGF0aWMgdm9pZCBkb19zdG9yZV9wdzIwX3N0YXRlKHZvaWQgKnZhbCkgew0KPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gKwl1MzIgKnZhbHVlID0gdmFsOw0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gKwl1MzIgcHcyMF9zdGF0ZTsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJcHcyMF9zdGF0ZSA9IG1mc3By
+KFNQUk5fUFdSTUdUQ1IwKTsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJaWYgKCp2YWx1ZSkNCj4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ICsJCXB3MjBfc3RhdGUgfD0gUFdSTUdUQ1IwX1BXMjBfV0FJVDsNCj4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJZWxzZQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gKwkJcHcyMF9zdGF0ZSAmPSB+UFdSTUdUQ1IwX1BXMjBfV0FJVDsNCj4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJbXRz
+cHIoU1BSTl9QV1JNR1RDUjAsIHB3MjBfc3RhdGUpOyB9DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArc3RhdGljIHNzaXplX3Qg
+c3RvcmVfcHcyMF9zdGF0ZShzdHJ1Y3QNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICtk
+ZXZpY2UNCj4gPiA+ICpkZXYsDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCQkJCXN0
+cnVjdCBkZXZpY2VfYXR0cmlidXRlDQo+ID4gPiAqYXR0ciwNCj4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ICsJCQkJY29uc3QgY2hhciAqYnVmLCBzaXplX3QNCj4gPiA+IGNvdW50KQ0KPiA+
+ID4gPiA+ID4gew0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwl1MzIgdmFsdWU7DQo+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCXVuc2lnbmVkIGludCBjcHUgPSBkZXYtPmlk
+Ow0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gKwlpZiAoa3N0cnRvdTMyKGJ1ZiwgMCwgJnZhbHVlKSkNCj4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwlpZiAodmFsdWUgPiAx
+KQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiArCXNtcF9jYWxsX2Z1bmN0aW9uX3NpbmdsZShjcHUsDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiArZG9fc3RvcmVfcHcyMF9zdGF0ZSwgJnZhbHVlLCAxKTsNCj4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJcmV0dXJu
+IGNvdW50OyB9DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiArc3RhdGljIHNzaXplX3Qgc2hvd19wdzIwX3dhaXRfdGltZShzdHJ1
+Y3QNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICtkZXZpY2UNCj4gPiA+ID4gPiAqZGV2
+LA0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwkJCQlzdHJ1Y3QgZGV2aWNlX2F0dHJp
+YnV0ZQ0KPiA+ID4gKmF0dHIsDQo+ID4gPiA+ID4gPiBjaGFyDQo+ID4gPiA+ID4gPiA+ID4gKmJ1
+Zikgew0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwl1MzIgdmFsdWU7DQo+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCXU2NCB0Yl9jeWNsZTsNCj4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ICsJczY0IHRpbWU7DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiAr
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArCXVuc2lnbmVkIGludCBjcHUgPSBkZXYt
+PmlkOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gKwlpZiAoIXB3MjBfd3QpIHsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ICsJCXNtcF9jYWxsX2Z1bmN0aW9uX3NpbmdsZShjcHUsDQo+ID4gPiA+ID4gPiBkb19zaG93
+X3B3cm1ndGNyMCwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsmdmFsdWUsDQo+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiAxKTsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsJ
+CXZhbHVlID0gKHZhbHVlICYNCj4gPiA+IFBXUk1HVENSMF9QVzIwX0VOVCkgPj4NCj4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ICsNCj4gPiA+IAlQV1JNR1RDUjBfUFcyMF9FTlRfU0hJRlQ7
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiArCQl0Yl9jeWNsZSA9ICgxIDw8IChNQVhfQklUIC0gdmFsdWUpKSAqDQo+ID4gPiAy
+Ow0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gSXMgdmFsdWUgPSAwIGFuZCB2YWx1ZSA9IDEgbGVnYWw/IFRoZXNlIHdpbGwNCj4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gPiBtYWtlIHRiX2N5Y2xlID0gMCwNCj4gPiA+ID4gPiA+ID4gPiA+
+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gKwkJdGltZSA9IGRpdl91
+NjQodGJfY3ljbGUgKiAxMDAwLA0KPiA+ID4gPiA+ID4gdGJfdGlja3NfcGVyX3VzZWMpDQo+ID4g
+PiA+ID4gPiA+ID4gLSAxOw0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
+PiA+ID4gPiA+ID4gPiA+ID4gQW5kIHRpbWUgPSAtMTsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+
+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gPiBQbGVhc2UgbG9vayBhdCB0aGUgZW5kIG9m
+IHRoZSBmdW5jdGlvbiwgOikNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+
+ID4gPiA+ID4gPiA+ID4gInJldHVybiBzcHJpbnRmKGJ1ZiwgIiVsbHVcbiIsIHRpbWUgPiAwID8g
+dGltZSA6DQo+IDApOyINCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiBJIGtub3cgeW91IHJldHVybiAwIGlmIHZhbHVlID0gMC8xLCBteSBxdWVzdGlvbg0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiA+ID4gd2FzIHRoYXQsIGlzIHRoaXMgY29ycmVjdCBhcyBwZXIg
+c3BlY2lmaWNhdGlvbj8NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gPiBBaGgsIGFsc28gZm9yICJ2YWx1ZSIgdXB0byA3IHlvdSB3aWxsIHJldHVybiAwLCBu
+bz8NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gSWYgdmFs
+dWUgPSAwLCBNQVhfQklUIC0gdmFsdWUgPSA2MyB0Yl9jeWNsZSA9DQo+ID4gPiA+ID4gPiA+ID4g
+PiA+ID4gMHhmZmZmZmZmZl9mZmZmZmZmZiwgdGJfY3ljbGUgKiAxMDAwIHdpbGwgb3ZlcmZsb3cs
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gYnV0IHRoaXMNCj4gPiA+ID4gPiA+IHNpdHVhdGlvbiBp
+cyBub3QgcG9zc2libGUuDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gQmVjYXVzZSBpZiB0aGUgInZh
+bHVlID0gMCIgbWVhbnMgdGhpcyBmZWF0dXJlIHdpbGwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBi
+ZQ0KPiA+ID4gPiA+ICJkaXNhYmxlIi4NCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiBOb3cgVGhlIGRl
+ZmF1bHQgd2FpdCBiaXQgaXMgNTAoTUFYX0JJVCAtIHZhbHVlLA0KPiA+ID4gPiA+ID4gPiA+ID4g
+PiA+IHZhbHVlID0gMTMpLCB0aGUgUFcyMC9BbHRpdmVjIElkbGUgd2FpdCBlbnRyeSB0aW1lDQo+
+ID4gPiA+ID4gPiA+ID4gPiA+ID4gaXMgYWJvdXQgMW1zLCB0aGlzIHRpbWUgaXMgdmVyeSBsb25n
+IGZvciB3YWl0IGlkbGUNCj4gPiA+ID4gPiA+ID4gPiA+ID4gPiB0aW1lLCBhbmQgaXQncyBjYW5u
+b3QgYmUgaW5jcmVhc2VkKG1lYW5zIChNQVhfQklUDQo+ID4gPiA+ID4gPiA+ID4gPiA+ID4gLSB2
+YWx1ZSkNCj4gPiA+ID4gPiA+ID4gPiA+ID4gY2Fubm90IGdyZWF0ZXIgdGhhbiA1MCkuDQo+ID4g
+PiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+IFdoYXQgeW91IHNhaWQgaXMgbm90
+IG9idmlvdXMgZnJvbSBjb2RlIGFuZCBzbyBhdCBsZWFzdA0KPiA+ID4gPiA+ID4gPiA+ID4gPiB3
+cml0ZSBhIGNvbW1lbnQgdGhhdCB2YWx1ZSB3aWxsIGJlIGFsd2F5cyA+PSAxMyBvcg0KPiA+ID4g
+PiA+ID4gPiA+ID4gPiB2YWx1ZSB3aWxsIG5ldmVyIGJlIGxlc3MgdGhhbiA8IDggYW5kIGJlbG93
+DQo+ID4gPiA+ID4gPiA+ID4gPiA+IGNhbGN1bGF0aW9uIHdpbGwgbm90IG92ZXJmbG93LiBtYXkg
+YmUgZXJyb3Igb3V0IGlmDQo+IHZhbHVlIGlzIGxlc3MgdGhhbiA4Lg0KPiA+ID4gPiA+ID4gPiA+
+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gVGhlICJ2YWx1ZSIgbGVzcyB0aGFuIDEwLCB0aGlzIHdp
+bGwgb3ZlcmZsb3cuDQo+ID4gPiA+ID4gPiA+ID4gPiBUaGVyZSBpcyBub3QgZXJyb3IsIFRoZSBj
+b2RlIEkga25ldyBpdCBjb3VsZCBub3QgYmUgbGVzcw0KPiA+ID4gPiA+ID4gPiA+ID4gdGhhbiAx
+MCwgdGhhdCdzIHdoeSBJIHVzZSB0aGUgZm9sbG93aW5nIGNvZGUuIDopDQo+ID4gPiA+ID4gPiA+
+ID4NCj4gPiA+ID4gPiA+ID4gPiBJIGFtIHNvcnJ5IHRvIHBlcnNpc3QgYnV0IHRoaXMgaXMgbm90
+IGFib3V0IHdoYXQgeW91IGtub3csDQo+ID4gPiA+ID4gPiA+ID4gdGhpcyBpcyBhYm91dCBob3cg
+Y29kZSBpcyByZWFkIGFuZCBjb2RlIGRvZXMgbm90IHNheSB3aGF0DQo+ID4gPiA+ID4gPiA+ID4g
+eW91IGtub3csIHNvIGFkZCBhIGNvbW1lbnQgYXQgbGVhc3QgYW5kIGVycm9yIG91dC93YXJuDQo+
+ID4gPiA+ID4gPiA+ID4gd2hlbiAidmFsdWUiIGlzIGxlc3MgdGhhbiBhDQo+ID4gPiA+ID4gPiBj
+ZXJ0YWluIG51bWJlci4NCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiBTb3JyeSBmb3Ig
+dGhlIGxhdGUgdG8gcmVzcG9uc2UgdGhlIG1haWwuIElmIGl0IGNhdXNlZA0KPiA+ID4gPiA+ID4g
+PiBjb25mdXNpb24sIHdlIGNhbg0KPiA+ID4gPiA+ID4gYWRkIGEgY29tbWVudC4NCj4gPiA+ID4g
+PiA+ID4NCj4gPiA+ID4gPiA+ID4gSG93IGFib3V0IHRoZSBmb2xsb3dpbmcgY29tbWVudD8NCj4g
+PiA+ID4gPiA+ID4gLyoNCj4gPiA+ID4gPiA+ID4gICogSWYgdGhlICJ2YWx1ZSIgbGVzcyB0aGFu
+IDEwLCB0aGlzIHdpbGwgb3ZlcmZsb3cuDQo+ID4gPiA+ID4gPiA+ICAqIEZyb20gYmVuY2htYXJr
+IHRlc3QsIHRoZSBkZWZhdWx0IHdhaXQgYml0IHdpbGwgbm90IGJlIHNldA0KPiA+ID4gPiA+ID4g
+PiBsZXNzIHRoYW4NCj4gPiA+ID4gPiA+IDEwYml0Lg0KPiA+ID4gPiA+ID4gPiAgKiBCZWNhdXNl
+IDEwIGJpdCBjb3JyZXNwb25kcyB0byB0aGUgd2FpdCBlbnRyeSB0aW1lIGlzDQo+ID4gPiA+ID4g
+PiA+IDQzOTM3NTU3MzQwMTk5OTYwOShucyksDQo+ID4gPiA+ID4gPiA+ICAqIGZvciB3YWl0LWVu
+dHJ5LWlkbGUgdGltZSB0aGlzIHZhbHVlIGxvb2tzIHRvbyBsb25nLCBhbmQNCj4gPiA+ID4gPiA+
+ID4gd2UgY2Fubm90IHVzZSB0aG9zZQ0KPiA+ID4gPiA+ID4gPiAgKiAibG9uZyIgdGltZSBhcyBh
+IGRlZmF1bHQgd2FpdC1lbnRyeSB0aW1lLiBTbyBvdmVyZmxvdw0KPiA+ID4gPiA+ID4gPiBjb3Vs
+ZCBub3QgaGF2ZSBoYXBwZW5lZA0KPiA+ID4gPiA+ID4gPiAgKiBhbmQgd2UgdXNlIHRoaXMgY2Fs
+Y3VsYXRpb24gbWV0aG9kIHRvIGdldCB3YWl0LWVudHJ5LWlkbGUNCj4gdGltZS4NCj4gPiA+ID4g
+PiA+ID4gICovDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gSWYgdGhlcmUncyB0byBiZSBhIGxp
+bWl0IG9uIHRoZSB0aW1lcyB3ZSBhY2NlcHQsIG1ha2UgaXQNCj4gZXhwbGljaXQuDQo+ID4gPiA+
+ID4gPiBDaGVjayBmb3IgaXQgYmVmb3JlIGRvaW5nIGFueSBjb252ZXJzaW9ucywgYW5kIHJldHVy
+biBhbiBlcnJvcg0KPiA+ID4gPiA+ID4gaWYgdXNlcnNwYWNlIHRyaWVzIHRvIHNldCBpdC4NCj4g
+PiA+ID4gPiA+DQo+ID4gPiA+ID4gVGhlIGJyYW5jaCBvbmx5IHVzZSB0byByZWFkIGRlZmF1bHQg
+d2FpdC1lbnRyeS10aW1lLg0KPiA+ID4gPiA+IFdlIGhhdmUgbm8gbGltaXQgdGhlIHVzZXIncyBp
+bnB1dCwgYW5kIHdlIGNhbid0IHJlc3RyaWN0LiBPbmNlDQo+ID4gPiA+ID4gdGhlIHVzZXIgc2V0
+IHRoZSB3YWl0LWVudHJ5LXRpbWUsIHRoZSBjb2RlIHdpbGwgZG8gYW5vdGhlciBicmFuY2guDQo+
+ID4gPiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4gSGkgc2NvdHQsDQo+ID4gPiA+IERvIHlvdSBoYXZl
+IGFueSBjb21tZW50cyBhYm91dCB0aGlzIHBhdGNoPw0KPiA+ID4gPiBJIHdpbGwgYWRkIHRoZSBj
+b21tZW50IGFuZCBzZW5kIHRoaXMgcGF0Y2ggYWdhaW4uDQo+ID4gPg0KPiA+ID4gV2hhdCBkbyB5
+b3UgbWVhbiBieSAiYW5kIHdlIGNhbid0IHJlc3RyaWN0Ij8gIFdoeSBub3Q/DQo+ID4gPg0KPiA+
+ID4gV2h5IGlzIGl0IG9ubHkgdXNlZCB0byByZWFkIHRoZSBkZWZhdWx0LCBhbmQgbm90IHRoZSBj
+dXJyZW50IHZhbHVlPw0KPiA+ID4NCj4gPiBXZSBhbHJlYWR5IGhhdmUgYSB2YXJpYWJsZSB3aGlj
+aCB2YWx1ZSBpcyBzZXQgYnkgdGhlIHVzZXIsIGFzIHdlIGhhdmUNCj4gPiBkaXNjdXNzZWQgYmVm
+b3JlLg0KPiA+DQo+ID4gV2hlbiB0aGUgc3lzdGVtIGJvb3QtdXAuIEJlZm9yZSB1c2VyIHNldCB0
+aGUgd2FpdC1lbnRyeS10aW1lLCB3ZSBuZWVkDQo+ID4gdG8gcmV0dXJuIGEgZGVmYXVsdCB3YWl0
+LWVudHJ5LXRpbWUsIGlmIHRoZSB1c2VyIHJlYWQgdGhpcw0KPiA+IHN5cy1pbnRlcmZhY2UuIFRo
+ZSBkZWZhdWx0IHdhaXQtZW50cnktdGltZSBpcyBjb252ZXJ0ZWQgYnkgd2FpdC1iaXQuDQo+ID4N
+Cj4gPiBPbmNlIHRoZSB1c2VyIHNldCB0aGUgc3lzLWludGVyZmFjZSwgYSB2YXJpYWJsZSB3aWxs
+IGJlIHVzZWQgdG8gc2F2ZQ0KPiA+IGl0LiBBbmQgd2hlbiB0aGUgdXNlciByZWFkIHN5cy1pbnRl
+cmZhY2Ugd2Ugd2lsbCByZXR1cm4gYmFjayB0aGUNCj4gdmFyaWFibGUuDQo+IA0KPiBXaGlsZSB3
+ZSBhcmUgbm90ICJyZXN0cmljdGluZyB1c2VyIGRlZmluZWQgdmFsdWUiIG9yICJkZWZpbmUgc2Ft
+ZQ0KPiByZXN0cmljdGlvbiBmb3IgdXNlciBkZWZpbmVkIGFuZCBkZWZhdWx0IiwgY2FuIHdlIGhh
+dmUgb25seSBvbmUgZmxvdyBvZg0KPiBjYWxjdWxhdGlvbiBhbmQgc2V0dGluZyByYXRoZXIgdGhh
+biBjb25kaXRpb25hbCBiYXNlZCBvbiB1c2VyIGhhdmUgc2V0IG9yDQo+IG5vdCBzZXQ/DQo+IA0K
+WWVzLCB3ZSBjYW4gZG8gdGhhdC4NCklmIHdlIHdhbnQgdG8gdXNlIG9uZSBmbG93IHRvIGhhbmRs
+ZSBpdC4gV2Ugc2hvdWxkIGRvIHRoZSBmb2xsb3dpbmcgY2hhbmdlczoNCg0KI2lmZGVmIENPTkZJ
+R19GU0xfU09DDQojaW5jbHVkZSA8bGludXgvc2xhYi5oPg0KI2VuZGlmDQoNCnN0YXRpYyB1NjQg
+KnB3MjBfd3Q7DQpzdGF0aWMgdTY0ICphbHRpdmVjX2lkbGVfd3Q7DQoNCnN0YXRpYyBzc2l6ZV90
+IHNob3dfcHcyMF93YWl0X3RpbWUoc3RydWN0IGRldmljZSAqZGV2LA0KICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVm
+KQ0Kew0KCXJldHVybiBzcHJpbnRmKGJ1ZiwgIiVsbHVcbiIsIHB3MjBfd3RbZGV2LT5pZF0pOw0K
+fQ0KDQpzdGF0aWMgc3NpemVfdCBzdG9yZV9wdzIwX3dhaXRfdGltZShzdHJ1Y3QgZGV2aWNlICpk
+ZXYsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0cnVjdCBkZXZpY2VfYXR0cmli
+dXRlICphdHRyLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb25zdCBjaGFyICpi
+dWYsIHNpemVfdCBjb3VudCkNCnsNCi4uLg0KcHcyMF93dFtjcHVdID0gdmFsdWU7DQouLi4NCn0N
+Cg0Kc3RhdGljIHNzaXplX3Qgc2hvd19hbHRpdmVjX2lkbGVfd2FpdF90aW1lKHN0cnVjdCBkZXZp
+Y2UgKmRldiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RydWN0IGRldmljZV9h
+dHRyaWJ1dGUgKmF0dHIsIGNoYXIgKmJ1ZikNCnsNCglyZXR1cm4gc3ByaW50ZihidWYsICIlbGx1
+XG4iLCBhbHRpdmVjX2lkbGVfd3RbZGV2LT5pZF0pOw0KfQ0KDQpzdGF0aWMgc3NpemVfdCBzdG9y
+ZV9hbHRpdmVjX2lkbGVfd2FpdF90aW1lKHN0cnVjdCBkZXZpY2UgKmRldiwNCiAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgc3RydWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsDQogICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvbnN0IGNoYXIgKmJ1Ziwgc2l6ZV90IGNvdW50
+KQ0Kew0KLi4uDQphbHRpdmVjX2lkbGVfd3RbY3B1XSA9IHZhbHVlOw0KLi4uDQp9DQoNCnN0YXRp
+YyB2b2lkIHJlZ2lzdGVyX2NwdV9vbmxpbmUodW5zaWduZWQgaW50IGNwdSkNCnsNCi4uLg0KI2lm
+ZGVmIENPTkZJR19GU0xfU09DDQogICAgICAgIHUzMiB2YWx1ZSwgcHcyMF92YWx1ZSwgYWx0aXZl
+Y192YWx1ZTsNCiAgICAgICAgdTY0IHRiX2N5Y2xlOw0KI2VuZGlmDQouLi4NCiNpZmRlZiBDT05G
+SUdfRlNMX1NPQw0KICAgICAgICBpZiAoUFZSX1ZFUihjdXJfY3B1X3NwZWMtPnB2cl92YWx1ZSkg
+PT0gUFZSX1ZFUl9FNjUwMCkgew0KICAgICAgICAgICAgICAgIGRldmljZV9jcmVhdGVfZmlsZShz
+LCAmZGV2X2F0dHJfcHcyMF9zdGF0ZSk7DQogICAgICAgICAgICAgICAgZGV2aWNlX2NyZWF0ZV9m
+aWxlKHMsICZkZXZfYXR0cl9wdzIwX3dhaXRfdGltZSk7DQoNCiAgICAgICAgICAgICAgICBkZXZp
+Y2VfY3JlYXRlX2ZpbGUocywgJmRldl9hdHRyX2FsdGl2ZWNfaWRsZSk7DQogICAgICAgICAgICAg
+ICAgZGV2aWNlX2NyZWF0ZV9maWxlKHMsICZkZXZfYXR0cl9hbHRpdmVjX2lkbGVfd2FpdF90aW1l
+KTsNCiAgICAgICAgfQ0KDQogICAgICAgIGlmICghcHcyMF93dCkNCiAgICAgICAgICAgICAgICBw
+dzIwX3d0ID0ga3phbGxvYyhucl9jcHVfaWRzICogc2l6ZW9mKCpwdzIwX3d0KSwgR0ZQX0tFUk5F
+TCk7DQoNCgkgIGlmICghYWx0aXZlY19pZGxlX3d0KQ0KCQkgICAgYWx0aXZlY19pZGxlX3d0ID0g
+a3phbGxvYyhucl9jcHVfaWRzICogc2l6ZW9mKCphbHRpdmVjX2lkbGVfd3QpLCBHRlBfS0VSTkVM
+KTsNCg0KICAgICAgICBzbXBfY2FsbF9mdW5jdGlvbl9zaW5nbGUoY3B1LCBkb19zaG93X3B3cm1n
+dGNyMCwgJnZhbHVlLCAxKTsNCg0KICAgICAgICBwdzIwX3ZhbHVlID0gKHZhbHVlICYgUFdSTUdU
+Q1IwX1BXMjBfRU5UKSA+PiBQV1JNR1RDUjBfUFcyMF9FTlRfU0hJRlQ7DQogICAgICAgIHRiX2N5
+Y2xlID0gKDEgPDwgKE1BWF9CSVQgLSBwdzIwX3ZhbHVlKSkgKiAyOw0KICAgICAgICBwdzIwX3d0
+W2NwdV0gPSBkaXZfdTY0KHRiX2N5Y2xlICogMTAwMCwgdGJfdGlja3NfcGVyX3VzZWMpIC0gMTsN
+Cg0KICAgICAgICBhbHRpdmVjX3ZhbHVlID0gKHZhbHVlICYgUFdSTUdUQ1IwX0FWX0lETEVfQ05U
+KSA+PiBQV1JNR1RDUjBfQVZfSURMRV9DTlRfU0hJRlQ7DQogICAgICAgIHRiX2N5Y2xlID0gKDEg
+PDwgKE1BWF9CSVQgLSBhbHRpdmVjX3ZhbHVlKSkgKiAyOw0KICAgICAgICBhbHRpdmVjX2lkbGVf
+d3RbY3B1XSA9IGRpdl91NjQodGJfY3ljbGUgKiAxMDAwLCB0Yl90aWNrc19wZXJfdXNlYykgLSAx
+Ow0KI2VuZGlmDQouLi4NCn0NCg0K
