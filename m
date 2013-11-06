@@ -1,18 +1,54 @@
-Return-Path: <alessio.bogani@elettra.eu>
-Received: from elettra.eu (m2.elettra.trieste.it [140.105.206.202])
- by ozlabs.org (Postfix) with ESMTP id 6AB0A2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 03:50:06 +1100 (EST)
-Message-ID: <1383752997.6930.13.camel@critter.elettra.trieste.it>
-Subject: Re: [PATCH v3 1/1] powerpc/embedded6xx: Add support for
- Motorola/Emerson MVME5100
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: Stephen Chivers <schivers@csc.com>
-Date: Wed, 06 Nov 2013 16:49:57 +0100
-In-Reply-To: <20131103210748.E74FAE06C0@canberra.localdomain>
-References: <20131103210748.E74FAE06C0@canberra.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B02DD2C007A
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 Nov 2013 05:48:56 +1100 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Wed, 6 Nov 2013 11:48:54 -0700
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E8F2319D804C
+ for <linuxppc-dev@ozlabs.org>; Wed,  6 Nov 2013 11:48:47 -0700 (MST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rA6Imp84331352
+ for <linuxppc-dev@ozlabs.org>; Wed, 6 Nov 2013 11:48:51 -0700
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ rA6Ipdwk024824
+ for <linuxppc-dev@ozlabs.org>; Wed, 6 Nov 2013 11:51:40 -0700
+Date: Wed, 6 Nov 2013 10:48:48 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
+Message-ID: <20131106184848.GM18245@linux.vnet.ibm.com>
+References: <20131103224242.GF3947@linux.vnet.ibm.com>
+ <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
+ <20131104105059.GL3947@linux.vnet.ibm.com>
+ <20131104112254.GK28601@twins.programming.kicks-ass.net>
+ <20131104162732.GN3947@linux.vnet.ibm.com>
+ <20131104191127.GW16117@laptop.programming.kicks-ass.net>
+ <20131104205344.GW3947@linux.vnet.ibm.com>
+ <20131106123946.GJ10651@twins.programming.kicks-ass.net>
+ <CAMuHMdXZjQJvT7R4ODbDNBgAVwPUBPjB6UoR66_sNuFx7opUDw@mail.gmail.com>
+ <20131106135736.GK10651@twins.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131106135736.GK10651@twins.programming.kicks-ass.net>
+Cc: Michael Neuling <mikey@neuling.org>, Tony Luck <tony.luck@intel.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Oleg Nesterov <oleg@redhat.com>,
+ LKML <linux-kernel@vger.kernel.org>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Victor Kaplansky <VICTORK@il.ibm.com>, Russell King <linux@arm.linux.org.uk>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,735 +58,1594 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On lun, 2013-11-04 at 08:07 +1100, Stephen Chivers wrote: 
-> Add support for the Motorola/Emerson MVME5100 Single Board Computer.
+On Wed, Nov 06, 2013 at 02:57:36PM +0100, Peter Zijlstra wrote:
+> On Wed, Nov 06, 2013 at 01:51:10PM +0100, Geert Uytterhoeven wrote:
+> > This is screaming for a default implementation in asm-generic.
 > 
-> The MVME5100 is a 6U form factor VME64 computer with:
+> Right you are... how about a little something like this?
 > 
-> 	- A single MPC7410 or MPC750 CPU
-> 	- A HAWK Processor Host Bridge (CPU to PCI) and
-> 	  MultiProcessor Interrupt Controller (MPIC)
-> 	- Up to 500Mb of onboard memory
-> 	- A M48T37 Real Time Clock (RTC) and Non-Volatile Memory chip
-> 	- Two 16550 compatible UARTS
-> 	- Two Intel E100 Fast Ethernets
-> 	- Two PCI Mezzanine Card (PMC) Slots
-> 	- PPCBug Firmware
+> There's a few archs I didn't fully merge with the generic one because of
+> weird nop implementations.
 > 
-> The HAWK PHB/MPIC is compatible with the MPC10x devices.
+> asm volatile ("nop" :: ) vs asm volatile ("nop" ::: "memory") and the
+> like. They probably can (and should) use the regular asm volatile
+> ("nop") but I misplaced the toolchains for many of the weird archs so I
+> didn't attempt.
 > 
-> There is no onboard disk support. This is usually provided by
-> installing a PMC in the first PMC slot.
+> Also fixed a silly mistake in the return type definition for most
+> smp_load_acquire() implementions: typeof(p) vs typeof(*p).
 > 
-> This patch revives the board support, it was present in early 2.6
-> series kernels. The board support in those days was by Matt Porter of
-> MontaVista Software.
+> ---
+> Subject: arch: Introduce smp_load_acquire(), smp_store_release()
+> From: Peter Zijlstra <peterz@infradead.org>
+> Date: Mon, 4 Nov 2013 20:18:11 +0100
 > 
-> CSC Australia has around 31 of these boards in service. The kernel in use
-> for the boards is based on 2.6.31. The boards are operated without disks
-> from a file server. 
+> A number of situations currently require the heavyweight smp_mb(),
+> even though there is no need to order prior stores against later
+> loads.  Many architectures have much cheaper ways to handle these
+> situations, but the Linux kernel currently has no portable way
+> to make use of them.
 > 
-> This patch is based on linux-3.12-rc7 and has been boot tested.
+> This commit therefore supplies smp_load_acquire() and
+> smp_store_release() to remedy this situation.  The new
+> smp_load_acquire() primitive orders the specified load against
+> any subsequent reads or writes, while the new smp_store_release()
+> primitive orders the specifed store against any prior reads or
+> writes.  These primitives allow array-based circular FIFOs to be
+> implemented without an smp_mb(), and also allow a theoretical
+> hole in rcu_assign_pointer() to be closed at no additional
+> expense on most architectures.
 > 
-> V1->V2:
-> 	Address comments by Kular Gama and Scott Wood.
-> 	Minor adjustment to platforms/embedded6xx/Kconfig to ensure
-> 		correct indentation where possible.
+> In addition, the RCU experience transitioning from explicit
+> smp_read_barrier_depends() and smp_wmb() to rcu_dereference()
+> and rcu_assign_pointer(), respectively resulted in substantial
+> improvements in readability.  It therefore seems likely that
+> replacing other explicit barriers with smp_load_acquire() and
+> smp_store_release() will provide similar benefits.  It appears
+> that roughly half of the explicit barriers in core kernel code
+> might be so replaced.
 > 
-> V2->V3:
-> 	Address comments by Scott Wood and Ben Herrenschmidt.
-> 	Address errors reported by checkpatch.
 > 
-> Signed-off-by: Stephen Chivers <schivers@csc.com>A
+> Cc: Michael Ellerman <michael@ellerman.id.au>
+> Cc: Michael Neuling <mikey@neuling.org>
+> Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Victor Kaplansky <VICTORK@il.ibm.com>
+> Cc: Oleg Nesterov <oleg@redhat.com>
+> Cc: Anton Blanchard <anton@samba.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Signed-off-by: Peter Zijlstra <peterz@infradead.org>
 
-Tested-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+A few nits on Documentation/memory-barriers.txt and some pointless
+comments elsewhere.  With the suggested Documentation/memory-barriers.txt
+fixes:
+
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
 > ---
->  arch/powerpc/boot/Makefile                    |    3 +-
->  arch/powerpc/boot/dts/mvme5100.dts            |  185 +++++++++++++++++++++
->  arch/powerpc/boot/mvme5100.c                  |   27 +++
->  arch/powerpc/boot/wrapper                     |    4 +
->  arch/powerpc/configs/mvme5100_defconfig       |  144 ++++++++++++++++
->  arch/powerpc/platforms/embedded6xx/Kconfig    |   13 ++-
->  arch/powerpc/platforms/embedded6xx/Makefile   |    1 +
->  arch/powerpc/platforms/embedded6xx/mvme5100.c |  221 +++++++++++++++++++++++++
->  8 files changed, 596 insertions(+), 2 deletions(-)
+>  Documentation/memory-barriers.txt     |  157 +++++++++++++++++-----------------
+>  arch/alpha/include/asm/barrier.h      |   25 +----
+>  arch/arc/include/asm/Kbuild           |    1 
+>  arch/arc/include/asm/atomic.h         |    5 +
+>  arch/arc/include/asm/barrier.h        |   42 ---------
+>  arch/arm/include/asm/barrier.h        |   15 +++
+>  arch/arm64/include/asm/barrier.h      |   50 ++++++++++
+>  arch/avr32/include/asm/barrier.h      |   17 +--
+>  arch/blackfin/include/asm/barrier.h   |   18 ---
+>  arch/cris/include/asm/Kbuild          |    1 
+>  arch/cris/include/asm/barrier.h       |   25 -----
+>  arch/frv/include/asm/barrier.h        |    8 -
+>  arch/h8300/include/asm/barrier.h      |   21 ----
+>  arch/hexagon/include/asm/Kbuild       |    1 
+>  arch/hexagon/include/asm/barrier.h    |   41 --------
+>  arch/ia64/include/asm/barrier.h       |   49 ++++++++++
+>  arch/m32r/include/asm/barrier.h       |   80 -----------------
+>  arch/m68k/include/asm/barrier.h       |   14 ---
+>  arch/metag/include/asm/barrier.h      |   15 +++
+>  arch/microblaze/include/asm/Kbuild    |    1 
+>  arch/microblaze/include/asm/barrier.h |   27 -----
+>  arch/mips/include/asm/barrier.h       |   15 +++
+>  arch/mn10300/include/asm/Kbuild       |    1 
+>  arch/mn10300/include/asm/barrier.h    |   37 --------
+>  arch/parisc/include/asm/Kbuild        |    1 
+>  arch/parisc/include/asm/barrier.h     |   35 -------
+>  arch/powerpc/include/asm/barrier.h    |   21 ++++
+>  arch/s390/include/asm/barrier.h       |   15 +++
+>  arch/score/include/asm/Kbuild         |    1 
+>  arch/score/include/asm/barrier.h      |   16 ---
+>  arch/sh/include/asm/barrier.h         |   21 ----
+>  arch/sparc/include/asm/barrier_32.h   |   11 --
+>  arch/sparc/include/asm/barrier_64.h   |   15 +++
+>  arch/tile/include/asm/barrier.h       |   68 --------------
+>  arch/unicore32/include/asm/barrier.h  |   11 --
+>  arch/x86/include/asm/barrier.h        |   15 +++
+>  arch/xtensa/include/asm/barrier.h     |    9 -
+>  include/asm-generic/barrier.h         |   55 +++++++++--
+>  include/linux/compiler.h              |    9 +
+>  39 files changed, 375 insertions(+), 594 deletions(-)
 > 
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 15ca225..a1c9c86 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -94,7 +94,7 @@ src-plat-$(CONFIG_FSL_SOC_BOOKE) += cuboot-85xx.c cuboot-85xx-cpm2.c
->  src-plat-$(CONFIG_EMBEDDED6xx) += cuboot-pq2.c cuboot-mpc7448hpc2.c \
->  					cuboot-c2k.c gamecube-head.S \
->  					gamecube.c wii-head.S wii.c holly.c \
-> -					prpmc2800.c
-> +					prpmc2800.c fixed-head.S mvme5100.c
->  src-plat-$(CONFIG_AMIGAONE) += cuboot-amigaone.c
->  src-plat-$(CONFIG_PPC_PS3) += ps3-head.S ps3-hvcall.S ps3.c
->  src-plat-$(CONFIG_EPAPR_BOOT) += epapr.c epapr-wrapper.c
-> @@ -285,6 +285,7 @@ image-$(CONFIG_MPC7448HPC2)		+= cuImage.mpc7448hpc2
->  image-$(CONFIG_PPC_C2K)			+= cuImage.c2k
->  image-$(CONFIG_GAMECUBE)		+= dtbImage.gamecube
->  image-$(CONFIG_WII)			+= dtbImage.wii
-> +image-$(CONFIG_MVME5100)		+= dtbImage.mvme5100
->  
->  # Board port in arch/powerpc/platform/amigaone/Kconfig
->  image-$(CONFIG_AMIGAONE)		+= cuImage.amigaone
-> diff --git a/arch/powerpc/boot/dts/mvme5100.dts b/arch/powerpc/boot/dts/mvme5100.dts
-> new file mode 100644
-> index 0000000..4cb2f05
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/mvme5100.dts
-> @@ -0,0 +1,185 @@
-> +/*
-> + * Device Tree Souce for Motorola/Emerson MVME5100.
-> + *
-> + * Copyright 2013 CSC Australia Pty. Ltd.
-> + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2.  This program is licensed "as is" without
-> + * any warranty of any kind, whether express or implied.
-> + */
-> +
-> +/dts-v1/;
-> +
-> +/ {
-> +	model = "MVME5100";
-> +	compatible = "MVME5100";
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +
-> +	aliases {
-> +		serial0 = &serial0;
-> +		pci0 = &pci0;
-> +	};
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		PowerPC,7410 {
-> +			device_type = "cpu";
-> +			reg = <0x0>;
-> +			/* Following required by dtc but not used */
-> +			d-cache-line-size = <32>;
-> +			i-cache-line-size = <32>;
-> +			i-cache-size = <32768>;
-> +			d-cache-size = <32768>;
-> +			timebase-frequency = <25000000>;
-> +			clock-frequency = <500000000>;
-> +			bus-frequency = <100000000>;
-> +		};
-> +	};
-> +
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <0x0 0x20000000>;
-> +	};
-> +
-> +	hawk@fef80000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		compatible = "hawk-bridge", "simple-bus";
-> +		ranges = <0x0 0xfef80000 0x10000>;
-> +		reg = <0xfef80000 0x10000>;
-> +
-> +		serial0: serial@8000 {
-> +			device_type = "serial";
-> +			compatible = "ns16550";
-> +			reg = <0x8000 0x80>;
-> +			reg-shift = <4>;
-> +			clock-frequency = <1843200>;
-> +			current-speed = <9600>;
-> +			interrupts = <1 1>; // IRQ1 Level Active Low.
-> +			interrupt-parent = <&mpic>;
-> +		};
-> +
-> +		serial1: serial@8200 {
-> +			device_type = "serial";
-> +			compatible = "ns16550";
-> +			reg = <0x8200 0x80>;
-> +			reg-shift = <4>;
-> +			clock-frequency = <1843200>;
-> +			current-speed = <9600>;
-> +			interrupts = <1 1>; // IRQ1 Level Active Low.
-> +			interrupt-parent = <&mpic>;
-> +		};
-> +
-> +		mpic: interrupt-controller@f3f80000 {
-> +			#interrupt-cells = <2>;
-> +			#address-cells = <0>;
-> +			device_type = "open-pic";
-> +			compatible = "chrp,open-pic";
-> +			interrupt-controller;
-> +			reg = <0xf3f80000 0x40000>;
-> +		};
-> +	};
-> +
-> +	pci0: pci@feff0000 {
-> +		#address-cells = <3>;
-> +		#size-cells = <2>;
-> +		#interrupt-cells = <1>;
-> +		device_type = "pci";
-> +		compatible = "hawk-pci";
-> +		reg = <0xfec00000 0x400000>;
-> +		8259-interrupt-acknowledge = <0xfeff0030>;
-> +		ranges = <0x1000000 0x0        0x0 0xfe000000 0x0 0x800000
-> +			  0x2000000 0x0 0x80000000 0x80000000 0x0 0x74000000>;
-> +		bus-range = <0 255>;
-> +		clock-frequency = <33333333>;
-> +		interrupt-parent = <&mpic>;
-> +		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-> +		interrupt-map = <
-> +
-> +			/*
-> +			 * This definition (IDSEL 11) duplicates the
-> +			 * interrupts definition in the i8259
-> +			 * interrupt controller below.
-> +			 *
-> +			 * Do not change the interrupt sense/polarity from
-> +			 * 0x2 to anything else, doing so will cause endless
-> +			 * "spurious" i8259 interrupts to be fielded.
-> +			 */
-> +			// IDSEL 11 - iPMC712 PCI/ISA Bridge
-> +			0x5800 0x0 0x0 0x1 &mpic 0x0 0x2
-> +			0x5800 0x0 0x0 0x2 &mpic 0x0 0x2
-> +			0x5800 0x0 0x0 0x3 &mpic 0x0 0x2
-> +			0x5800 0x0 0x0 0x4 &mpic 0x0 0x2
-> +
-> +			/* IDSEL 12 - Not Used */
-> +
-> +			/* IDSEL 13 - Universe VME Bridge */
-> +			0x6800 0x0 0x0 0x1 &mpic 0x5 0x1
-> +			0x6800 0x0 0x0 0x2 &mpic 0x6 0x1
-> +			0x6800 0x0 0x0 0x3 &mpic 0x7 0x1
-> +			0x6800 0x0 0x0 0x4 &mpic 0x8 0x1
-> +
-> +			/* IDSEL 14 - ENET 1 */
-> +			0x7000 0x0 0x0 0x1 &mpic 0x2 0x1
-> +
-> +			/* IDSEL 15 - Not Used */
-> +
-> +			/* IDSEL 16 - PMC Slot 1 */
-> +			0x8000 0x0 0x0 0x1 &mpic 0x9 0x1
-> +			0x8000 0x0 0x0 0x2 &mpic 0xa 0x1
-> +			0x8000 0x0 0x0 0x3 &mpic 0xb 0x1
-> +			0x8000 0x0 0x0 0x4 &mpic 0xc 0x1
-> +
-> +			/* IDSEL 17 - PMC Slot 2 */
-> +			0x8800 0x0 0x0 0x1 &mpic 0xc 0x1
-> +			0x8800 0x0 0x0 0x2 &mpic 0x9 0x1
-> +			0x8800 0x0 0x0 0x3 &mpic 0xa 0x1
-> +			0x8800 0x0 0x0 0x4 &mpic 0xb 0x1
-> +
-> +			/* IDSEL 18 - Not Used */
-> +
-> +			/* IDSEL 19 - ENET 2 */
-> +			0x9800 0x0 0x0 0x1 &mpic 0xd 0x1
-> +
-> +			/* IDSEL 20 - PMCSPAN (PCI-X) */
-> +			0xa000 0x0 0x0 0x1 &mpic 0x9 0x1
-> +			0xa000 0x0 0x0 0x2 &mpic 0xa 0x1
-> +			0xa000 0x0 0x0 0x3 &mpic 0xb 0x1
-> +			0xa000 0x0 0x0 0x4 &mpic 0xc 0x1
-> +
-> +		>;
-> +
-> +		isa {
-> +			#address-cells = <2>;
-> +			#size-cells = <1>;
-> +			#interrupt-cells = <2>;
-> +			device_type = "isa";
-> +			compatible = "isa";
-> +			ranges = <0x00000001 0 0x01000000 0 0x00000000 0x00001000>;
-> +			interrupt-parent = <&i8259>;
-> +
-> +			i8259: interrupt-controller@20 {
-> +				#interrupt-cells = <2>;
-> +				#address-cells = <0>;
-> +				interrupts = <0 2>;
-> +				device_type = "interrupt-controller";
-> +				compatible = "chrp,iic";
-> +				interrupt-controller;
-> +				reg = <1 0x00000020 0x00000002
-> +                                       1 0x000000a0 0x00000002
-> +                                       1 0x000004d0 0x00000002>;
-> +				interrupt-parent = <&mpic>;
-> +			};
-> +
-> +		};
-> +
-> +	};
-> +
-> +	chosen {
-> +		linux,stdout-path = &serial0;
-> +        };
-> +
-> +};
-> diff --git a/arch/powerpc/boot/mvme5100.c b/arch/powerpc/boot/mvme5100.c
-> new file mode 100644
-> index 0000000..cb865f8
-> --- /dev/null
-> +++ b/arch/powerpc/boot/mvme5100.c
-> @@ -0,0 +1,27 @@
-> +/*
-> + * Motorola/Emerson MVME5100 with PPCBug firmware.
-> + *
-> + * Author: Stephen Chivers <schivers@csc.com>
-> + *
-> + * Copyright 2013 CSC Australia Pty. Ltd.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * version 2 as published by the Free Software Foundation.
-> + *
-> + */
-> +#include "types.h"
-> +#include "ops.h"
-> +#include "io.h"
-> +
-> +BSS_STACK(4096);
-> +
-> +void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
-> +{
-> +	u32			heapsize;
-> +
-> +	heapsize = 0x8000000 - (u32)_end; /* 128M */
-> +	simple_alloc_init(_end, heapsize, 32, 64);
-> +	fdt_init(_dtb_start);
-> +	serial_console_init();
-> +}
-> diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-> index cd7af84..401c6a1 100755
-> --- a/arch/powerpc/boot/wrapper
-> +++ b/arch/powerpc/boot/wrapper
-> @@ -257,6 +257,10 @@ epapr)
->      link_address='0x20000000'
->      pie=-pie
->      ;;
-> +mvme5100)
-> +    platformo="$object/fixed-head.o $object/mvme5100.o"
-> +    binary=y
-> +    ;;
->  esac
->  
->  vmz="$tmpdir/`basename \"$kernel\"`.$ext"
-> diff --git a/arch/powerpc/configs/mvme5100_defconfig b/arch/powerpc/configs/mvme5100_defconfig
-> new file mode 100644
-> index 0000000..93c7752
-> --- /dev/null
-> +++ b/arch/powerpc/configs/mvme5100_defconfig
-> @@ -0,0 +1,144 @@
-> +CONFIG_SYSVIPC=y
-> +CONFIG_POSIX_MQUEUE=y
-> +CONFIG_NO_HZ=y
-> +CONFIG_HIGH_RES_TIMERS=y
-> +CONFIG_IKCONFIG=y
-> +CONFIG_IKCONFIG_PROC=y
-> +CONFIG_LOG_BUF_SHIFT=14
-> +# CONFIG_UTS_NS is not set
-> +# CONFIG_IPC_NS is not set
-> +# CONFIG_PID_NS is not set
-> +# CONFIG_NET_NS is not set
-> +CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-> +# CONFIG_COMPAT_BRK is not set
-> +CONFIG_MODULES=y
-> +CONFIG_MODULE_UNLOAD=y
-> +# CONFIG_BLK_DEV_BSG is not set
-> +# CONFIG_PPC_CHRP is not set
-> +# CONFIG_PPC_PMAC is not set
-> +CONFIG_EMBEDDED6xx=y
-> +CONFIG_MVME5100=y
-> +CONFIG_KVM_GUEST=y
-> +CONFIG_HZ_100=y
-> +# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
-> +# CONFIG_COMPACTION is not set
-> +CONFIG_CMDLINE_BOOL=y
-> +CONFIG_CMDLINE="console=ttyS0,9600 ip=dhcp root=/dev/nfs"
-> +CONFIG_NET=y
-> +CONFIG_PACKET=y
-> +CONFIG_UNIX=y
-> +CONFIG_INET=y
-> +CONFIG_IP_MULTICAST=y
-> +CONFIG_IP_PNP=y
-> +CONFIG_IP_PNP_DHCP=y
-> +CONFIG_IP_PNP_BOOTP=y
-> +# CONFIG_INET_LRO is not set
-> +# CONFIG_IPV6 is not set
-> +CONFIG_NETFILTER=y
-> +CONFIG_NF_CONNTRACK=m
-> +CONFIG_NF_CT_PROTO_SCTP=m
-> +CONFIG_NF_CONNTRACK_AMANDA=m
-> +CONFIG_NF_CONNTRACK_FTP=m
-> +CONFIG_NF_CONNTRACK_H323=m
-> +CONFIG_NF_CONNTRACK_IRC=m
-> +CONFIG_NF_CONNTRACK_NETBIOS_NS=m
-> +CONFIG_NF_CONNTRACK_PPTP=m
-> +CONFIG_NF_CONNTRACK_SIP=m
-> +CONFIG_NF_CONNTRACK_TFTP=m
-> +CONFIG_NETFILTER_XT_MATCH_MAC=m
-> +CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
-> +CONFIG_NETFILTER_XT_MATCH_STATE=m
-> +CONFIG_NF_CONNTRACK_IPV4=m
-> +CONFIG_IP_NF_IPTABLES=m
-> +CONFIG_IP_NF_FILTER=m
-> +CONFIG_IP_NF_TARGET_REJECT=m
-> +CONFIG_IP_NF_MANGLE=m
-> +CONFIG_IP_NF_TARGET_ECN=m
-> +CONFIG_IP_NF_TARGET_TTL=m
-> +CONFIG_IP_NF_RAW=m
-> +CONFIG_IP_NF_ARPTABLES=m
-> +CONFIG_IP_NF_ARPFILTER=m
-> +CONFIG_IP_NF_ARP_MANGLE=m
-> +CONFIG_LAPB=m
-> +CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-> +CONFIG_PROC_DEVICETREE=y
-> +CONFIG_BLK_DEV_LOOP=y
-> +CONFIG_BLK_DEV_RAM=y
-> +CONFIG_BLK_DEV_RAM_COUNT=2
-> +CONFIG_BLK_DEV_RAM_SIZE=8192
-> +CONFIG_EEPROM_LEGACY=m
-> +CONFIG_NETDEVICES=y
-> +CONFIG_TUN=m
-> +# CONFIG_NET_VENDOR_3COM is not set
-> +CONFIG_E100=y
-> +# CONFIG_WLAN is not set
-> +# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
-> +# CONFIG_INPUT_KEYBOARD is not set
-> +# CONFIG_INPUT_MOUSE is not set
-> +# CONFIG_SERIO is not set
-> +CONFIG_SERIAL_8250=y
-> +CONFIG_SERIAL_8250_CONSOLE=y
-> +CONFIG_SERIAL_8250_NR_UARTS=10
-> +CONFIG_SERIAL_8250_EXTENDED=y
-> +CONFIG_SERIAL_8250_MANY_PORTS=y
-> +CONFIG_SERIAL_8250_SHARE_IRQ=y
-> +CONFIG_SERIAL_OF_PLATFORM=y
-> +CONFIG_HW_RANDOM=y
-> +CONFIG_I2C=y
-> +CONFIG_I2C_CHARDEV=y
-> +CONFIG_I2C_MPC=y
-> +# CONFIG_HWMON is not set
-> +CONFIG_VIDEO_OUTPUT_CONTROL=m
-> +# CONFIG_VGA_CONSOLE is not set
-> +# CONFIG_HID is not set
-> +# CONFIG_USB_SUPPORT is not set
-> +# CONFIG_IOMMU_SUPPORT is not set
-> +CONFIG_VME_BUS=m
-> +CONFIG_VME_CA91CX42=m
-> +CONFIG_EXT2_FS=m
-> +CONFIG_EXT3_FS=m
-> +# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
-> +CONFIG_XFS_FS=m
-> +CONFIG_ISO9660_FS=m
-> +CONFIG_JOLIET=y
-> +CONFIG_ZISOFS=y
-> +CONFIG_UDF_FS=m
-> +CONFIG_MSDOS_FS=m
-> +CONFIG_VFAT_FS=m
-> +CONFIG_PROC_KCORE=y
-> +CONFIG_TMPFS=y
-> +CONFIG_NFS_FS=y
-> +CONFIG_NFS_V3_ACL=y
-> +CONFIG_NFS_V4=y
-> +CONFIG_ROOT_NFS=y
-> +CONFIG_NFSD=m
-> +CONFIG_NFSD_V3=y
-> +CONFIG_CIFS=m
-> +CONFIG_NLS=y
-> +CONFIG_NLS_CODEPAGE_437=m
-> +CONFIG_NLS_CODEPAGE_932=m
-> +CONFIG_NLS_ISO8859_1=m
-> +CONFIG_NLS_UTF8=m
-> +CONFIG_CRC_CCITT=m
-> +CONFIG_CRC_T10DIF=y
-> +CONFIG_XZ_DEC=y
-> +CONFIG_XZ_DEC_X86=y
-> +CONFIG_XZ_DEC_IA64=y
-> +CONFIG_XZ_DEC_ARM=y
-> +CONFIG_XZ_DEC_ARMTHUMB=y
-> +CONFIG_XZ_DEC_SPARC=y
-> +CONFIG_MAGIC_SYSRQ=y
-> +CONFIG_DEBUG_KERNEL=y
-> +CONFIG_DETECT_HUNG_TASK=y
-> +CONFIG_DEFAULT_HUNG_TASK_TIMEOUT=20
-> +CONFIG_CRYPTO_CBC=y
-> +CONFIG_CRYPTO_PCBC=m
-> +CONFIG_CRYPTO_MD5=y
-> +CONFIG_CRYPTO_MICHAEL_MIC=m
-> +CONFIG_CRYPTO_SHA1=m
-> +CONFIG_CRYPTO_BLOWFISH=m
-> +CONFIG_CRYPTO_DES=y
-> +CONFIG_CRYPTO_SERPENT=m
-> +CONFIG_CRYPTO_TWOFISH=m
-> +CONFIG_CRYPTO_DEFLATE=m
-> +# CONFIG_CRYPTO_ANSI_CPRNG is not set
-> diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
-> index 302ba43..6d3c7a9 100644
-> --- a/arch/powerpc/platforms/embedded6xx/Kconfig
-> +++ b/arch/powerpc/platforms/embedded6xx/Kconfig
-> @@ -67,6 +67,18 @@ config PPC_C2K
->  	  This option enables support for the GE Fanuc C2K board (formerly
->  	  an SBS board).
->  
-> +config MVME5100
-> +	bool "Motorola/Emerson MVME5100"
-> +	depends on EMBEDDED6xx
-> +	select MPIC
-> +	select PCI
-> +	select PPC_INDIRECT_PCI
-> +	select PPC_I8259
-> +	select PPC_NATIVE
-> +	help
-> +	  This option enables support for the Motorola (now Emerson) MVME5100
-> +	  board.
-> +
->  config TSI108_BRIDGE
->  	bool
->  	select PCI
-> @@ -113,4 +125,3 @@ config WII
->  	help
->  	  Select WII if configuring for the Nintendo Wii.
->  	  More information at: <http://gc-linux.sourceforge.net/>
+> --- a/Documentation/memory-barriers.txt
+> +++ b/Documentation/memory-barriers.txt
+> @@ -371,33 +371,35 @@ VARIETIES OF MEMORY BARRIER
+> 
+>  And a couple of implicit varieties:
+> 
+> - (5) LOCK operations.
+> + (5) ACQUIRE operations.
+> 
+>       This acts as a one-way permeable barrier.  It guarantees that all memory
+> -     operations after the LOCK operation will appear to happen after the LOCK
+> -     operation with respect to the other components of the system.
+> +     operations after the ACQUIRE operation will appear to happen after the
+> +     ACQUIRE operation with respect to the other components of the system.
+	ACQUIRE operations include LOCK operations and smp_load_acquire()
+	operations.
+
+> 
+> -     Memory operations that occur before a LOCK operation may appear to happen
+> -     after it completes.
+> +     Memory operations that occur before a ACQUIRE operation may appear to
+> +     happen after it completes.
+> 
+> -     A LOCK operation should almost always be paired with an UNLOCK operation.
+> +     A ACQUIRE operation should almost always be paired with an RELEASE
+> +     operation.
+> 
+> 
+> - (6) UNLOCK operations.
+> + (6) RELEASE operations.
+> 
+>       This also acts as a one-way permeable barrier.  It guarantees that all
+> -     memory operations before the UNLOCK operation will appear to happen before
+> -     the UNLOCK operation with respect to the other components of the system.
+> +     memory operations before the RELEASE operation will appear to happen
+> +     before the RELEASE operation with respect to the other components of the
+> +     system.  Release operations include UNLOCK operations and
+	smp_store_release() operations.
+
+> -     Memory operations that occur after an UNLOCK operation may appear to
+> +     Memory operations that occur after an RELEASE operation may appear to
+>       happen before it completes.
+> 
+> -     LOCK and UNLOCK operations are guaranteed to appear with respect to each
+> -     other strictly in the order specified.
+> +     ACQUIRE and RELEASE operations are guaranteed to appear with respect to
+> +     each other strictly in the order specified.
+> 
+> -     The use of LOCK and UNLOCK operations generally precludes the need for
+> -     other sorts of memory barrier (but note the exceptions mentioned in the
+> -     subsection "MMIO write barrier").
+> +     The use of ACQUIRE and RELEASE operations generally precludes the need
+> +     for other sorts of memory barrier (but note the exceptions mentioned in
+> +     the subsection "MMIO write barrier").
+> 
+> 
+>  Memory barriers are only required where there's a possibility of interaction
+> @@ -1135,7 +1137,7 @@ CPU from reordering them.
+>  	clear_bit( ... );
+> 
+>       This prevents memory operations before the clear leaking to after it.  See
+> -     the subsection on "Locking Functions" with reference to UNLOCK operation
+> +     the subsection on "Locking Functions" with reference to RELEASE operation
+>       implications.
+> 
+>       See Documentation/atomic_ops.txt for more information.  See the "Atomic
+> @@ -1181,65 +1183,66 @@ LOCKING FUNCTIONS
+>   (*) R/W semaphores
+>   (*) RCU
+> 
+> -In all cases there are variants on "LOCK" operations and "UNLOCK" operations
+> +In all cases there are variants on "ACQUIRE" operations and "RELEASE" operations
+>  for each construct.  These operations all imply certain barriers:
+> 
+> - (1) LOCK operation implication:
+> + (1) ACQUIRE operation implication:
+> 
+> -     Memory operations issued after the LOCK will be completed after the LOCK
+> -     operation has completed.
+> +     Memory operations issued after the ACQUIRE will be completed after the
+> +     ACQUIRE operation has completed.
+> 
+> -     Memory operations issued before the LOCK may be completed after the LOCK
+> -     operation has completed.
+> +     Memory operations issued before the ACQUIRE may be completed after the
+> +     ACQUIRE operation has completed.
+> 
+> - (2) UNLOCK operation implication:
+> + (2) RELEASE operation implication:
+> 
+> -     Memory operations issued before the UNLOCK will be completed before the
+> -     UNLOCK operation has completed.
+> +     Memory operations issued before the RELEASE will be completed before the
+> +     RELEASE operation has completed.
+> 
+> -     Memory operations issued after the UNLOCK may be completed before the
+> -     UNLOCK operation has completed.
+> +     Memory operations issued after the RELEASE may be completed before the
+> +     RELEASE operation has completed.
+> 
+> - (3) LOCK vs LOCK implication:
+> + (3) ACQUIRE vs ACQUIRE implication:
+> 
+> -     All LOCK operations issued before another LOCK operation will be completed
+> -     before that LOCK operation.
+> +     All ACQUIRE operations issued before another ACQUIRE operation will be
+> +     completed before that ACQUIRE operation.
+> 
+> - (4) LOCK vs UNLOCK implication:
+> + (4) ACQUIRE vs RELEASE implication:
+> 
+> -     All LOCK operations issued before an UNLOCK operation will be completed
+> -     before the UNLOCK operation.
+> +     All ACQUIRE operations issued before an RELEASE operation will be
+> +     completed before the RELEASE operation.
+> 
+> -     All UNLOCK operations issued before a LOCK operation will be completed
+> -     before the LOCK operation.
+> +     All RELEASE operations issued before a ACQUIRE operation will be
+> +     completed before the ACQUIRE operation.
+> 
+> - (5) Failed conditional LOCK implication:
+> + (5) Failed conditional ACQUIRE implication:
+> 
+> -     Certain variants of the LOCK operation may fail, either due to being
+> +     Certain variants of the ACQUIRE operation may fail, either due to being
+>       unable to get the lock immediately, or due to receiving an unblocked
+>       signal whilst asleep waiting for the lock to become available.  Failed
+>       locks do not imply any sort of barrier.
+
+I suggest adding "For example" to the beginning of the last sentence:
+
+	For example, failed lock acquisitions do not imply any sort of
+	barrier.
+
+Otherwise, the transition from ACQUIRE to lock is strange.
+
+> -Therefore, from (1), (2) and (4) an UNLOCK followed by an unconditional LOCK is
+> -equivalent to a full barrier, but a LOCK followed by an UNLOCK is not.
+> +Therefore, from (1), (2) and (4) an RELEASE followed by an unconditional
+> +ACQUIRE is equivalent to a full barrier, but a ACQUIRE followed by an RELEASE
+> +is not.
+> 
+>  [!] Note: one of the consequences of LOCKs and UNLOCKs being only one-way
+>      barriers is that the effects of instructions outside of a critical section
+>      may seep into the inside of the critical section.
+> 
+> -A LOCK followed by an UNLOCK may not be assumed to be full memory barrier
+> -because it is possible for an access preceding the LOCK to happen after the
+> -LOCK, and an access following the UNLOCK to happen before the UNLOCK, and the
+> -two accesses can themselves then cross:
+> +A ACQUIRE followed by an RELEASE may not be assumed to be full memory barrier
+> +because it is possible for an access preceding the ACQUIRE to happen after the
+> +ACQUIRE, and an access following the RELEASE to happen before the RELEASE, and
+> +the two accesses can themselves then cross:
+> 
+>  	*A = a;
+> -	LOCK
+> -	UNLOCK
+> +	ACQUIRE
+> +	RELEASE
+>  	*B = b;
+> 
+>  may occur as:
+> 
+> -	LOCK, STORE *B, STORE *A, UNLOCK
+> +	ACQUIRE, STORE *B, STORE *A, RELEASE
+> 
+>  Locks and semaphores may not provide any guarantee of ordering on UP compiled
+>  systems, and so cannot be counted on in such a situation to actually achieve
+> @@ -1253,33 +1256,33 @@ See also the section on "Inter-CPU locki
+> 
+>  	*A = a;
+>  	*B = b;
+> -	LOCK
+> +	ACQUIRE
+>  	*C = c;
+>  	*D = d;
+> -	UNLOCK
+> +	RELEASE
+>  	*E = e;
+>  	*F = f;
+> 
+>  The following sequence of events is acceptable:
+> 
+> -	LOCK, {*F,*A}, *E, {*C,*D}, *B, UNLOCK
+> +	ACQUIRE, {*F,*A}, *E, {*C,*D}, *B, RELEASE
+> 
+>  	[+] Note that {*F,*A} indicates a combined access.
+> 
+>  But none of the following are:
+> 
+> -	{*F,*A}, *B,	LOCK, *C, *D,	UNLOCK, *E
+> -	*A, *B, *C,	LOCK, *D,	UNLOCK, *E, *F
+> -	*A, *B,		LOCK, *C,	UNLOCK, *D, *E, *F
+> -	*B,		LOCK, *C, *D,	UNLOCK, {*F,*A}, *E
+> +	{*F,*A}, *B,	ACQUIRE, *C, *D,	RELEASE, *E
+> +	*A, *B, *C,	ACQUIRE, *D,		RELEASE, *E, *F
+> +	*A, *B,		ACQUIRE, *C,		RELEASE, *D, *E, *F
+> +	*B,		ACQUIRE, *C, *D,	RELEASE, {*F,*A}, *E
+> 
+> 
+> 
+>  INTERRUPT DISABLING FUNCTIONS
+>  -----------------------------
+> 
+> -Functions that disable interrupts (LOCK equivalent) and enable interrupts
+> -(UNLOCK equivalent) will act as compiler barriers only.  So if memory or I/O
+> +Functions that disable interrupts (ACQUIRE equivalent) and enable interrupts
+> +(RELEASE equivalent) will act as compiler barriers only.  So if memory or I/O
+>  barriers are required in such a situation, they must be provided from some
+>  other means.
+> 
+> @@ -1436,24 +1439,24 @@ Consider the following: the system has a
+>  	CPU 1				CPU 2
+>  	===============================	===============================
+>  	*A = a;				*E = e;
+> -	LOCK M				LOCK Q
+> +	ACQUIRE M			ACQUIRE Q
+>  	*B = b;				*F = f;
+>  	*C = c;				*G = g;
+> -	UNLOCK M			UNLOCK Q
+> +	RELEASE M			RELEASE Q
+>  	*D = d;				*H = h;
+> 
+>  Then there is no guarantee as to what order CPU 3 will see the accesses to *A
+>  through *H occur in, other than the constraints imposed by the separate locks
+>  on the separate CPUs. It might, for example, see:
+> 
+> -	*E, LOCK M, LOCK Q, *G, *C, *F, *A, *B, UNLOCK Q, *D, *H, UNLOCK M
+> +	*E, ACQUIRE M, ACQUIRE Q, *G, *C, *F, *A, *B, RELEASE Q, *D, *H, RELEASE M
+> 
+>  But it won't see any of:
+> 
+> -	*B, *C or *D preceding LOCK M
+> -	*A, *B or *C following UNLOCK M
+> -	*F, *G or *H preceding LOCK Q
+> -	*E, *F or *G following UNLOCK Q
+> +	*B, *C or *D preceding ACQUIRE M
+> +	*A, *B or *C following RELEASE M
+> +	*F, *G or *H preceding ACQUIRE Q
+> +	*E, *F or *G following RELEASE Q
+> 
+> 
+>  However, if the following occurs:
+> @@ -1461,28 +1464,28 @@ through *H occur in, other than the cons
+>  	CPU 1				CPU 2
+>  	===============================	===============================
+>  	*A = a;
+> -	LOCK M		[1]
+> +	ACQUIRE M	[1]
+>  	*B = b;
+>  	*C = c;
+> -	UNLOCK M	[1]
+> +	RELEASE M	[1]
+>  	*D = d;				*E = e;
+> -					LOCK M		[2]
+> +					ACQUIRE M	[2]
+>  					*F = f;
+>  					*G = g;
+> -					UNLOCK M	[2]
+> +					RELEASE M	[2]
+>  					*H = h;
+> 
+>  CPU 3 might see:
+> 
+> -	*E, LOCK M [1], *C, *B, *A, UNLOCK M [1],
+> -		LOCK M [2], *H, *F, *G, UNLOCK M [2], *D
+> +	*E, ACQUIRE M [1], *C, *B, *A, RELEASE M [1],
+> +	    ACQUIRE M [2], *H, *F, *G, RELEASE M [2], *D
+> 
+>  But assuming CPU 1 gets the lock first, CPU 3 won't see any of:
+> 
+> -	*B, *C, *D, *F, *G or *H preceding LOCK M [1]
+> -	*A, *B or *C following UNLOCK M [1]
+> -	*F, *G or *H preceding LOCK M [2]
+> -	*A, *B, *C, *E, *F or *G following UNLOCK M [2]
+> +	*B, *C, *D, *F, *G or *H preceding ACQUIRE M [1]
+> +	*A, *B or *C following RELEASE M [1]
+> +	*F, *G or *H preceding ACQUIRE M [2]
+> +	*A, *B, *C, *E, *F or *G following RELEASE M [2]
+> 
+> 
+>  LOCKS VS I/O ACCESSES
+> @@ -1702,13 +1705,13 @@ about the state (old or new) implies an
+>  	test_and_clear_bit();
+>  	test_and_change_bit();
+> 
+> -These are used for such things as implementing LOCK-class and UNLOCK-class
+> +These are used for such things as implementing ACQUIRE-class and RELEASE-class
+>  operations and adjusting reference counters towards object destruction, and as
+>  such the implicit memory barrier effects are necessary.
+> 
+> 
+>  The following operations are potential problems as they do _not_ imply memory
+> -barriers, but might be used for implementing such things as UNLOCK-class
+> +barriers, but might be used for implementing such things as RELEASE-class
+>  operations:
+> 
+>  	atomic_set();
+> @@ -1750,9 +1753,9 @@ barriers are needed or not.
+>  	clear_bit_unlock();
+>  	__clear_bit_unlock();
+> 
+> -These implement LOCK-class and UNLOCK-class operations. These should be used in
+> -preference to other operations when implementing locking primitives, because
+> -their implementations can be optimised on many architectures.
+> +These implement ACQUIRE-class and RELEASE-class operations. These should be
+> +used in preference to other operations when implementing locking primitives,
+> +because their implementations can be optimised on many architectures.
+> 
+>  [!] Note that special memory barrier primitives are available for these
+>  situations because on some CPUs the atomic instructions used imply full memory
+> --- a/arch/alpha/include/asm/barrier.h
+> +++ b/arch/alpha/include/asm/barrier.h
+> @@ -3,33 +3,18 @@
+> 
+>  #include <asm/compiler.h>
+> 
+> -#define mb() \
+> -__asm__ __volatile__("mb": : :"memory")
+> +#define mb()	__asm__ __volatile__("mb": : :"memory")
+> +#define rmb()	__asm__ __volatile__("mb": : :"memory")
+> +#define wmb()	__asm__ __volatile__("wmb": : :"memory")
+> 
+> -#define rmb() \
+> -__asm__ __volatile__("mb": : :"memory")
 > -
-> diff --git a/arch/powerpc/platforms/embedded6xx/Makefile b/arch/powerpc/platforms/embedded6xx/Makefile
-> index 66c23e4..cdd48d4 100644
-> --- a/arch/powerpc/platforms/embedded6xx/Makefile
-> +++ b/arch/powerpc/platforms/embedded6xx/Makefile
-> @@ -11,3 +11,4 @@ obj-$(CONFIG_USBGECKO_UDBG)	+= usbgecko_udbg.o
->  obj-$(CONFIG_GAMECUBE_COMMON)	+= flipper-pic.o
->  obj-$(CONFIG_GAMECUBE)		+= gamecube.o
->  obj-$(CONFIG_WII)		+= wii.o hlwd-pic.o
-> +obj-$(CONFIG_MVME5100)		+= mvme5100.o
-> diff --git a/arch/powerpc/platforms/embedded6xx/mvme5100.c b/arch/powerpc/platforms/embedded6xx/mvme5100.c
-> new file mode 100644
-> index 0000000..25e3bfb
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/embedded6xx/mvme5100.c
-> @@ -0,0 +1,221 @@
+> -#define wmb() \
+> -__asm__ __volatile__("wmb": : :"memory")
+> -
+> -#define read_barrier_depends() \
+> -__asm__ __volatile__("mb": : :"memory")
+> +#define read_barrier_depends() __asm__ __volatile__("mb": : :"memory")
+> 
+>  #ifdef CONFIG_SMP
+>  #define __ASM_SMP_MB	"\tmb\n"
+> -#define smp_mb()	mb()
+> -#define smp_rmb()	rmb()
+> -#define smp_wmb()	wmb()
+> -#define smp_read_barrier_depends()	read_barrier_depends()
+>  #else
+>  #define __ASM_SMP_MB
+> -#define smp_mb()	barrier()
+> -#define smp_rmb()	barrier()
+> -#define smp_wmb()	barrier()
+> -#define smp_read_barrier_depends()	do { } while (0)
+>  #endif
+> 
+> -#define set_mb(var, value) \
+> -do { var = value; mb(); } while (0)
+> +#include <asm-generic/barrier.h>
+> 
+>  #endif		/* __BARRIER_H */
+> --- a/arch/arc/include/asm/Kbuild
+> +++ b/arch/arc/include/asm/Kbuild
+> @@ -47,3 +47,4 @@ generic-y += user.h
+>  generic-y += vga.h
+>  generic-y += xor.h
+>  generic-y += preempt.h
+> +generic-y += barrier.h
+> --- a/arch/arc/include/asm/atomic.h
+> +++ b/arch/arc/include/asm/atomic.h
+> @@ -190,6 +190,11 @@ static inline void atomic_clear_mask(uns
+> 
+>  #endif /* !CONFIG_ARC_HAS_LLSC */
+> 
+> +#define smp_mb__before_atomic_dec()	barrier()
+> +#define smp_mb__after_atomic_dec()	barrier()
+> +#define smp_mb__before_atomic_inc()	barrier()
+> +#define smp_mb__after_atomic_inc()	barrier()
+> +
+>  /**
+>   * __atomic_add_unless - add unless the number is a given value
+>   * @v: pointer of type atomic_t
+> --- a/arch/arc/include/asm/barrier.h
+> +++ /dev/null
+> @@ -1,42 +0,0 @@
+> -/*
+> - * Copyright (C) 2004, 2007-2010, 2011-2012 Synopsys, Inc. (www.synopsys.com)
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License version 2 as
+> - * published by the Free Software Foundation.
+> - */
+> -
+> -#ifndef __ASM_BARRIER_H
+> -#define __ASM_BARRIER_H
+> -
+> -#ifndef __ASSEMBLY__
+> -
+> -/* TODO-vineetg: Need to see what this does, don't we need sync anywhere */
+> -#define mb() __asm__ __volatile__ ("" : : : "memory")
+> -#define rmb() mb()
+> -#define wmb() mb()
+> -#define set_mb(var, value)  do { var = value; mb(); } while (0)
+> -#define set_wmb(var, value) do { var = value; wmb(); } while (0)
+> -#define read_barrier_depends()  mb()
+> -
+> -/* TODO-vineetg verify the correctness of macros here */
+> -#ifdef CONFIG_SMP
+> -#define smp_mb()        mb()
+> -#define smp_rmb()       rmb()
+> -#define smp_wmb()       wmb()
+> -#else
+> -#define smp_mb()        barrier()
+> -#define smp_rmb()       barrier()
+> -#define smp_wmb()       barrier()
+> -#endif
+> -
+> -#define smp_mb__before_atomic_dec()	barrier()
+> -#define smp_mb__after_atomic_dec()	barrier()
+> -#define smp_mb__before_atomic_inc()	barrier()
+> -#define smp_mb__after_atomic_inc()	barrier()
+> -
+> -#define smp_read_barrier_depends()      do { } while (0)
+> -
+> -#endif
+> -
+> -#endif
+
+I do like this take-no-prisoners approach!  ;-)
+
+> --- a/arch/arm/include/asm/barrier.h
+> +++ b/arch/arm/include/asm/barrier.h
+> @@ -59,6 +59,21 @@
+>  #define smp_wmb()	dmb(ishst)
+>  #endif
+> 
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	ACCESS_ONCE(*p) = (v);						\
+> +} while (0)
+> +
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	___p1;								\
+> +})
+> +
+>  #define read_barrier_depends()		do { } while(0)
+>  #define smp_read_barrier_depends()	do { } while(0)
+> 
+> --- a/arch/arm64/include/asm/barrier.h
+> +++ b/arch/arm64/include/asm/barrier.h
+> @@ -35,11 +35,59 @@
+>  #define smp_mb()	barrier()
+>  #define smp_rmb()	barrier()
+>  #define smp_wmb()	barrier()
+> +
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	ACCESS_ONCE(*p) = (v);						\
+> +} while (0)
+> +
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	___p1;								\
+> +})
+> +
+>  #else
+> +
+>  #define smp_mb()	asm volatile("dmb ish" : : : "memory")
+>  #define smp_rmb()	asm volatile("dmb ishld" : : : "memory")
+>  #define smp_wmb()	asm volatile("dmb ishst" : : : "memory")
+> -#endif
+> +
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	switch (sizeof(*p)) {						\
+> +	case 4:								\
+> +		asm volatile ("stlr %w1, [%0]"				\
+> +				: "=Q" (*p) : "r" (v) : "memory");	\
+> +		break;							\
+> +	case 8:								\
+> +		asm volatile ("stlr %1, [%0]"				\
+> +				: "=Q" (*p) : "r" (v) : "memory");	\
+> +		break;							\
+> +	}								\
+> +} while (0)
+> +
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1;						\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	switch (sizeof(*p)) {						\
+> +	case 4:								\
+> +		asm volatile ("ldar %w0, [%1]"				\
+> +			: "=r" (___p1) : "Q" (*p) : "memory");		\
+> +		break;							\
+> +	case 8:								\
+> +		asm volatile ("ldar %0, [%1]"				\
+> +			: "=r" (___p1) : "Q" (*p) : "memory");		\
+> +		break;							\
+> +	}								\
+> +	___p1;								\
+> +})
+> 
+>  #define read_barrier_depends()		do { } while(0)
+>  #define smp_read_barrier_depends()	do { } while(0)
+> --- a/arch/avr32/include/asm/barrier.h
+> +++ b/arch/avr32/include/asm/barrier.h
+> @@ -8,22 +8,15 @@
+>  #ifndef __ASM_AVR32_BARRIER_H
+>  #define __ASM_AVR32_BARRIER_H
+> 
+> -#define nop()			asm volatile("nop")
+> -
+> -#define mb()			asm volatile("" : : : "memory")
+> -#define rmb()			mb()
+> -#define wmb()			asm volatile("sync 0" : : : "memory")
+> -#define read_barrier_depends()  do { } while(0)
+> -#define set_mb(var, value)      do { var = value; mb(); } while(0)
 > +/*
-> + * Board setup routines for the Motorola/Emerson MVME5100.
-> + *
-> + * Copyright 2013 CSC Australia Pty. Ltd.
-> + *
-> + * Based on earlier code by:
-> + *
-> + *    Matt Porter, MontaVista Software Inc.
-> + *    Copyright 2001 MontaVista Software Inc.
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + *
-> + * Author: Stephen Chivers <schivers@csc.com>
-> + *
+> + * Weirdest thing ever.. no full barrier, but it has a write barrier!
 > + */
+> +#define wmb()	asm volatile("sync 0" : : : "memory")
+
+Doesn't this mean that asm-generic/barrier.h needs to check for
+definitions?  Ah, I see below that you added these checks.
+
+>  #ifdef CONFIG_SMP
+>  # error "The AVR32 port does not support SMP"
+> -#else
+> -# define smp_mb()		barrier()
+> -# define smp_rmb()		barrier()
+> -# define smp_wmb()		barrier()
+> -# define smp_read_barrier_depends() do { } while(0)
+>  #endif
+> 
+> +#include <asm-generic/barrier.h>
+> 
+>  #endif /* __ASM_AVR32_BARRIER_H */
+> --- a/arch/blackfin/include/asm/barrier.h
+> +++ b/arch/blackfin/include/asm/barrier.h
+> @@ -23,26 +23,10 @@
+>  # define rmb()	do { barrier(); smp_check_barrier(); } while (0)
+>  # define wmb()	do { barrier(); smp_mark_barrier(); } while (0)
+>  # define read_barrier_depends()	do { barrier(); smp_check_barrier(); } while (0)
+> -#else
+> -# define mb()	barrier()
+> -# define rmb()	barrier()
+> -# define wmb()	barrier()
+> -# define read_barrier_depends()	do { } while (0)
+>  #endif
+> 
+> -#else /* !CONFIG_SMP */
+> -
+> -#define mb()	barrier()
+> -#define rmb()	barrier()
+> -#define wmb()	barrier()
+> -#define read_barrier_depends()	do { } while (0)
+> -
+>  #endif /* !CONFIG_SMP */
+> 
+> -#define smp_mb()  mb()
+> -#define smp_rmb() rmb()
+> -#define smp_wmb() wmb()
+> -#define set_mb(var, value) do { var = value; mb(); } while (0)
+> -#define smp_read_barrier_depends()	read_barrier_depends()
+> +#include <asm-generic/barrier.h>
+> 
+>  #endif /* _BLACKFIN_BARRIER_H */
+> --- a/arch/cris/include/asm/Kbuild
+> +++ b/arch/cris/include/asm/Kbuild
+> @@ -12,3 +12,4 @@ generic-y += trace_clock.h
+>  generic-y += vga.h
+>  generic-y += xor.h
+>  generic-y += preempt.h
+> +generic-y += barrier.h
+> --- a/arch/cris/include/asm/barrier.h
+> +++ /dev/null
+> @@ -1,25 +0,0 @@
+> -#ifndef __ASM_CRIS_BARRIER_H
+> -#define __ASM_CRIS_BARRIER_H
+> -
+> -#define nop() __asm__ __volatile__ ("nop");
+> -
+> -#define barrier() __asm__ __volatile__("": : :"memory")
+> -#define mb() barrier()
+> -#define rmb() mb()
+> -#define wmb() mb()
+> -#define read_barrier_depends() do { } while(0)
+> -#define set_mb(var, value)  do { var = value; mb(); } while (0)
+> -
+> -#ifdef CONFIG_SMP
+> -#define smp_mb()        mb()
+> -#define smp_rmb()       rmb()
+> -#define smp_wmb()       wmb()
+> -#define smp_read_barrier_depends()     read_barrier_depends()
+> -#else
+> -#define smp_mb()        barrier()
+> -#define smp_rmb()       barrier()
+> -#define smp_wmb()       barrier()
+> -#define smp_read_barrier_depends()     do { } while(0)
+> -#endif
+> -
+> -#endif /* __ASM_CRIS_BARRIER_H */
+> --- a/arch/frv/include/asm/barrier.h
+> +++ b/arch/frv/include/asm/barrier.h
+> @@ -17,13 +17,7 @@
+>  #define mb()			asm volatile ("membar" : : :"memory")
+>  #define rmb()			asm volatile ("membar" : : :"memory")
+>  #define wmb()			asm volatile ("membar" : : :"memory")
+> -#define read_barrier_depends()	do { } while (0)
+> 
+> -#define smp_mb()			barrier()
+> -#define smp_rmb()			barrier()
+> -#define smp_wmb()			barrier()
+> -#define smp_read_barrier_depends()	do {} while(0)
+> -#define set_mb(var, value) \
+> -	do { var = (value); barrier(); } while (0)
+> +#include <asm-generic/barrier.h>
+> 
+>  #endif /* _ASM_BARRIER_H */
+> --- a/arch/h8300/include/asm/barrier.h
+> +++ b/arch/h8300/include/asm/barrier.h
+> @@ -3,27 +3,8 @@
+> 
+>  #define nop()  asm volatile ("nop"::)
+> 
+> -/*
+> - * Force strict CPU ordering.
+> - * Not really required on H8...
+> - */
+> -#define mb()   asm volatile (""   : : :"memory")
+> -#define rmb()  asm volatile (""   : : :"memory")
+> -#define wmb()  asm volatile (""   : : :"memory")
+>  #define set_mb(var, value) do { xchg(&var, value); } while (0)
+> 
+> -#define read_barrier_depends()	do { } while (0)
+> -
+> -#ifdef CONFIG_SMP
+> -#define smp_mb()	mb()
+> -#define smp_rmb()	rmb()
+> -#define smp_wmb()	wmb()
+> -#define smp_read_barrier_depends()	read_barrier_depends()
+> -#else
+> -#define smp_mb()	barrier()
+> -#define smp_rmb()	barrier()
+> -#define smp_wmb()	barrier()
+> -#define smp_read_barrier_depends()	do { } while(0)
+> -#endif
+> +#include <asm-generic/barrier.h>
+> 
+>  #endif /* _H8300_BARRIER_H */
+> --- a/arch/hexagon/include/asm/Kbuild
+> +++ b/arch/hexagon/include/asm/Kbuild
+> @@ -54,3 +54,4 @@ generic-y += ucontext.h
+>  generic-y += unaligned.h
+>  generic-y += xor.h
+>  generic-y += preempt.h
+> +generic-y += barrier.h
+> --- a/arch/hexagon/include/asm/barrier.h
+> +++ /dev/null
+> @@ -1,41 +0,0 @@
+> -/*
+> - * Memory barrier definitions for the Hexagon architecture
+> - *
+> - * Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License version 2 and
+> - * only version 2 as published by the Free Software Foundation.
+> - *
+> - * This program is distributed in the hope that it will be useful,
+> - * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> - * GNU General Public License for more details.
+> - *
+> - * You should have received a copy of the GNU General Public License
+> - * along with this program; if not, write to the Free Software
+> - * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+> - * 02110-1301, USA.
+> - */
+> -
+> -#ifndef _ASM_BARRIER_H
+> -#define _ASM_BARRIER_H
+> -
+> -#define rmb()				barrier()
+> -#define read_barrier_depends()		barrier()
+> -#define wmb()				barrier()
+> -#define mb()				barrier()
+> -#define smp_rmb()			barrier()
+> -#define smp_read_barrier_depends()	barrier()
+> -#define smp_wmb()			barrier()
+> -#define smp_mb()			barrier()
+> -#define smp_mb__before_atomic_dec()	barrier()
+> -#define smp_mb__after_atomic_dec()	barrier()
+> -#define smp_mb__before_atomic_inc()	barrier()
+> -#define smp_mb__after_atomic_inc()	barrier()
+> -
+> -/*  Set a value and use a memory barrier.  Used by the scheduler somewhere.  */
+> -#define set_mb(var, value) \
+> -	do { var = value; mb(); } while (0)
+> -
+> -#endif /* _ASM_BARRIER_H */
+> --- a/arch/ia64/include/asm/barrier.h
+> +++ b/arch/ia64/include/asm/barrier.h
+> @@ -45,11 +45,60 @@
+>  # define smp_rmb()	rmb()
+>  # define smp_wmb()	wmb()
+>  # define smp_read_barrier_depends()	read_barrier_depends()
 > +
-> +#include <linux/of_platform.h>
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	switch (sizeof(*p)) {						\
+> +	case 4:								\
+> +		asm volatile ("st4.rel [%0]=%1"				\
+> +				: "=r" (p) : "r" (v) : "memory");	\
+> +		break;							\
+> +	case 8:								\
+> +		asm volatile ("st8.rel [%0]=%1"				\
+> +				: "=r" (p) : "r" (v) : "memory");	\
+> +		break;							\
+> +	}								\
+> +} while (0)
 > +
-> +#include <asm/i8259.h>
-> +#include <asm/pci-bridge.h>
-> +#include <asm/mpic.h>
-> +#include <asm/prom.h>
-> +#include <mm/mmu_decl.h>
-> +#include <asm/udbg.h>
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1;						\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	switch (sizeof(*p)) {						\
+> +	case 4:								\
+> +		asm volatile ("ld4.acq %0=[%1]"				\
+> +				: "=r" (___p1) : "r" (p) : "memory");	\
+> +		break;							\
+> +	case 8:								\
+> +		asm volatile ("ld8.acq %0=[%1]"				\
+> +				: "=r" (___p1) : "r" (p) : "memory");	\
+> +		break;							\
+> +	}								\
+> +	___p1;								\
+> +})
 > +
-> +#define HAWK_MPIC_SIZE		0x00040000U
-> +#define MVME5100_PCI_MEM_OFFSET 0x00000000
+>  #else
 > +
-> +/* Board register addresses. */
-> +#define BOARD_STATUS_REG	0xfef88080
-> +#define BOARD_MODFAIL_REG	0xfef88090
-> +#define BOARD_MODRST_REG	0xfef880a0
-> +#define BOARD_TBEN_REG		0xfef880c0
-> +#define BOARD_SW_READ_REG	0xfef880e0
-> +#define BOARD_GEO_ADDR_REG	0xfef880e8
-> +#define BOARD_EXT_FEATURE1_REG	0xfef880f0
-> +#define BOARD_EXT_FEATURE2_REG	0xfef88100
+>  # define smp_mb()	barrier()
+>  # define smp_rmb()	barrier()
+>  # define smp_wmb()	barrier()
+>  # define smp_read_barrier_depends()	do { } while(0)
 > +
-> +static phys_addr_t pci_membase;
-> +static u_char *restart;
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	ACCESS_ONCE(*p) = (v);						\
+> +} while (0)
 > +
-> +static void mvme5100_8259_cascade(unsigned int irq, struct irq_desc *desc)
-> +{
-> +	struct irq_chip *chip = irq_desc_get_chip(desc);
-> +	unsigned int cascade_irq = i8259_irq();
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	___p1;								\
+> +})
+>  #endif
+> 
+>  /*
+> --- a/arch/m32r/include/asm/barrier.h
+> +++ b/arch/m32r/include/asm/barrier.h
+> @@ -11,84 +11,6 @@
+> 
+>  #define nop()  __asm__ __volatile__ ("nop" : : )
+> 
+> -/*
+> - * Memory barrier.
+> - *
+> - * mb() prevents loads and stores being reordered across this point.
+> - * rmb() prevents loads being reordered across this point.
+> - * wmb() prevents stores being reordered across this point.
+> - */
+> -#define mb()   barrier()
+> -#define rmb()  mb()
+> -#define wmb()  mb()
+> -
+> -/**
+> - * read_barrier_depends - Flush all pending reads that subsequents reads
+> - * depend on.
+> - *
+> - * No data-dependent reads from memory-like regions are ever reordered
+> - * over this barrier.  All reads preceding this primitive are guaranteed
+> - * to access memory (but not necessarily other CPUs' caches) before any
+> - * reads following this primitive that depend on the data return by
+> - * any of the preceding reads.  This primitive is much lighter weight than
+> - * rmb() on most CPUs, and is never heavier weight than is
+> - * rmb().
+> - *
+> - * These ordering constraints are respected by both the local CPU
+> - * and the compiler.
+> - *
+> - * Ordering is not guaranteed by anything other than these primitives,
+> - * not even by data dependencies.  See the documentation for
+> - * memory_barrier() for examples and URLs to more information.
+> - *
+> - * For example, the following code would force ordering (the initial
+> - * value of "a" is zero, "b" is one, and "p" is "&a"):
+> - *
+> - * <programlisting>
+> - *      CPU 0                           CPU 1
+> - *
+> - *      b = 2;
+> - *      memory_barrier();
+> - *      p = &b;                         q = p;
+> - *                                      read_barrier_depends();
+> - *                                      d = *q;
+> - * </programlisting>
+> - *
+> - *
+> - * because the read of "*q" depends on the read of "p" and these
+> - * two reads are separated by a read_barrier_depends().  However,
+> - * the following code, with the same initial values for "a" and "b":
+> - *
+> - * <programlisting>
+> - *      CPU 0                           CPU 1
+> - *
+> - *      a = 2;
+> - *      memory_barrier();
+> - *      b = 3;                          y = b;
+> - *                                      read_barrier_depends();
+> - *                                      x = a;
+> - * </programlisting>
+> - *
+> - * does not enforce ordering, since there is no data dependency between
+> - * the read of "a" and the read of "b".  Therefore, on some CPUs, such
+> - * as Alpha, "y" could be set to 3 and "x" to 0.  Use rmb()
+> - * in cases like this where there are no data dependencies.
+> - **/
+> -
+> -#define read_barrier_depends()	do { } while (0)
+> -
+> -#ifdef CONFIG_SMP
+> -#define smp_mb()	mb()
+> -#define smp_rmb()	rmb()
+> -#define smp_wmb()	wmb()
+> -#define smp_read_barrier_depends()	read_barrier_depends()
+> -#define set_mb(var, value) do { (void) xchg(&var, value); } while (0)
+> -#else
+> -#define smp_mb()	barrier()
+> -#define smp_rmb()	barrier()
+> -#define smp_wmb()	barrier()
+> -#define smp_read_barrier_depends()	do { } while (0)
+> -#define set_mb(var, value) do { var = value; barrier(); } while (0)
+> -#endif
+> +#include <asm-generic/barrier.h>
+> 
+>  #endif /* _ASM_M32R_BARRIER_H */
+> --- a/arch/m68k/include/asm/barrier.h
+> +++ b/arch/m68k/include/asm/barrier.h
+> @@ -1,20 +1,8 @@
+>  #ifndef _M68K_BARRIER_H
+>  #define _M68K_BARRIER_H
+> 
+> -/*
+> - * Force strict CPU ordering.
+> - * Not really required on m68k...
+> - */
+>  #define nop()		do { asm volatile ("nop"); barrier(); } while (0)
+> -#define mb()		barrier()
+> -#define rmb()		barrier()
+> -#define wmb()		barrier()
+> -#define read_barrier_depends()	((void)0)
+> -#define set_mb(var, value)	({ (var) = (value); wmb(); })
+> 
+> -#define smp_mb()	barrier()
+> -#define smp_rmb()	barrier()
+> -#define smp_wmb()	barrier()
+> -#define smp_read_barrier_depends()	((void)0)
+> +#include <asm-generic/barrier.h>
+> 
+>  #endif /* _M68K_BARRIER_H */
+> --- a/arch/metag/include/asm/barrier.h
+> +++ b/arch/metag/include/asm/barrier.h
+> @@ -82,4 +82,19 @@ static inline void fence(void)
+>  #define smp_read_barrier_depends()     do { } while (0)
+>  #define set_mb(var, value) do { var = value; smp_mb(); } while (0)
+> 
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	ACCESS_ONCE(*p) = (v);						\
+> +} while (0)
 > +
-> +	if (cascade_irq != NO_IRQ)
-> +		generic_handle_irq(cascade_irq);
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	___p1;								\
+> +})
 > +
-> +	chip->irq_eoi(&desc->irq_data);
-> +}
+>  #endif /* _ASM_METAG_BARRIER_H */
+> --- a/arch/microblaze/include/asm/Kbuild
+> +++ b/arch/microblaze/include/asm/Kbuild
+> @@ -4,3 +4,4 @@ generic-y += exec.h
+>  generic-y += trace_clock.h
+>  generic-y += syscalls.h
+>  generic-y += preempt.h
+> +generic-y += barrier.h
+> --- a/arch/microblaze/include/asm/barrier.h
+> +++ /dev/null
+> @@ -1,27 +0,0 @@
+> -/*
+> - * Copyright (C) 2006 Atmark Techno, Inc.
+> - *
+> - * This file is subject to the terms and conditions of the GNU General Public
+> - * License. See the file "COPYING" in the main directory of this archive
+> - * for more details.
+> - */
+> -
+> -#ifndef _ASM_MICROBLAZE_BARRIER_H
+> -#define _ASM_MICROBLAZE_BARRIER_H
+> -
+> -#define nop()                  asm volatile ("nop")
+> -
+> -#define smp_read_barrier_depends()	do {} while (0)
+> -#define read_barrier_depends()		do {} while (0)
+> -
+> -#define mb()			barrier()
+> -#define rmb()			mb()
+> -#define wmb()			mb()
+> -#define set_mb(var, value)	do { var = value; mb(); } while (0)
+> -#define set_wmb(var, value)	do { var = value; wmb(); } while (0)
+> -
+> -#define smp_mb()		mb()
+> -#define smp_rmb()		rmb()
+> -#define smp_wmb()		wmb()
+> -
+> -#endif /* _ASM_MICROBLAZE_BARRIER_H */
+> --- a/arch/mips/include/asm/barrier.h
+> +++ b/arch/mips/include/asm/barrier.h
+> @@ -180,4 +180,19 @@
+>  #define nudge_writes() mb()
+>  #endif
+> 
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	ACCESS_ONCE(*p) = (v);						\
+> +} while (0)
 > +
-> +static void __init mvme5100_pic_init(void)
-> +{
-> +	struct mpic *mpic;
-> +	struct device_node *np;
-> +	struct device_node *cp = NULL;
-> +	unsigned int cirq;
-> +	unsigned long intack = 0;
-> +	const u32 *prop = NULL;
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	___p1;								\
+> +})
 > +
-> +	np = of_find_node_by_type(NULL, "open-pic");
-> +	if (!np) {
-> +		pr_err("Could not find open-pic node\n");
-> +		return;
-> +	}
+>  #endif /* __ASM_BARRIER_H */
+> --- a/arch/mn10300/include/asm/Kbuild
+> +++ b/arch/mn10300/include/asm/Kbuild
+> @@ -3,3 +3,4 @@ generic-y += clkdev.h
+>  generic-y += exec.h
+>  generic-y += trace_clock.h
+>  generic-y += preempt.h
+> +generic-y += barrier.h
+> --- a/arch/mn10300/include/asm/barrier.h
+> +++ /dev/null
+> @@ -1,37 +0,0 @@
+> -/* MN10300 memory barrier definitions
+> - *
+> - * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
+> - * Written by David Howells (dhowells@redhat.com)
+> - *
+> - * This program is free software; you can redistribute it and/or
+> - * modify it under the terms of the GNU General Public Licence
+> - * as published by the Free Software Foundation; either version
+> - * 2 of the Licence, or (at your option) any later version.
+> - */
+> -#ifndef _ASM_BARRIER_H
+> -#define _ASM_BARRIER_H
+> -
+> -#define nop()	asm volatile ("nop")
+> -
+> -#define mb()	asm volatile ("": : :"memory")
+> -#define rmb()	mb()
+> -#define wmb()	asm volatile ("": : :"memory")
+> -
+> -#ifdef CONFIG_SMP
+> -#define smp_mb()	mb()
+> -#define smp_rmb()	rmb()
+> -#define smp_wmb()	wmb()
+> -#define set_mb(var, value)  do { xchg(&var, value); } while (0)
+> -#else  /* CONFIG_SMP */
+> -#define smp_mb()	barrier()
+> -#define smp_rmb()	barrier()
+> -#define smp_wmb()	barrier()
+> -#define set_mb(var, value)  do { var = value;  mb(); } while (0)
+> -#endif /* CONFIG_SMP */
+> -
+> -#define set_wmb(var, value) do { var = value; wmb(); } while (0)
+> -
+> -#define read_barrier_depends()		do {} while (0)
+> -#define smp_read_barrier_depends()	do {} while (0)
+> -
+> -#endif /* _ASM_BARRIER_H */
+> --- a/arch/parisc/include/asm/Kbuild
+> +++ b/arch/parisc/include/asm/Kbuild
+> @@ -5,3 +5,4 @@ generic-y += word-at-a-time.h auxvec.h u
+>  	  poll.h xor.h clkdev.h exec.h
+>  generic-y += trace_clock.h
+>  generic-y += preempt.h
+> +generic-y += barrier.h
+> --- a/arch/parisc/include/asm/barrier.h
+> +++ /dev/null
+> @@ -1,35 +0,0 @@
+> -#ifndef __PARISC_BARRIER_H
+> -#define __PARISC_BARRIER_H
+> -
+> -/*
+> -** This is simply the barrier() macro from linux/kernel.h but when serial.c
+> -** uses tqueue.h uses smp_mb() defined using barrier(), linux/kernel.h
+> -** hasn't yet been included yet so it fails, thus repeating the macro here.
+> -**
+> -** PA-RISC architecture allows for weakly ordered memory accesses although
+> -** none of the processors use it. There is a strong ordered bit that is
+> -** set in the O-bit of the page directory entry. Operating systems that
+> -** can not tolerate out of order accesses should set this bit when mapping
+> -** pages. The O-bit of the PSW should also be set to 1 (I don't believe any
+> -** of the processor implemented the PSW O-bit). The PCX-W ERS states that
+> -** the TLB O-bit is not implemented so the page directory does not need to
+> -** have the O-bit set when mapping pages (section 3.1). This section also
+> -** states that the PSW Y, Z, G, and O bits are not implemented.
+> -** So it looks like nothing needs to be done for parisc-linux (yet).
+> -** (thanks to chada for the above comment -ggg)
+> -**
+> -** The __asm__ op below simple prevents gcc/ld from reordering
+> -** instructions across the mb() "call".
+> -*/
+> -#define mb()		__asm__ __volatile__("":::"memory")	/* barrier() */
+> -#define rmb()		mb()
+> -#define wmb()		mb()
+> -#define smp_mb()	mb()
+> -#define smp_rmb()	mb()
+> -#define smp_wmb()	mb()
+> -#define smp_read_barrier_depends()	do { } while(0)
+> -#define read_barrier_depends()		do { } while(0)
+> -
+> -#define set_mb(var, value)		do { var = value; mb(); } while (0)
+> -
+> -#endif /* __PARISC_BARRIER_H */
+> --- a/arch/powerpc/include/asm/barrier.h
+> +++ b/arch/powerpc/include/asm/barrier.h
+> @@ -45,11 +45,15 @@
+>  #    define SMPWMB      eieio
+>  #endif
+> 
+> +#define __lwsync()	__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory")
 > +
-> +	mpic = mpic_alloc(np, pci_membase, 0, 16, 256, " OpenPIC  ");
+>  #define smp_mb()	mb()
+> -#define smp_rmb()	__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory")
+> +#define smp_rmb()	__lwsync()
+>  #define smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
+>  #define smp_read_barrier_depends()	read_barrier_depends()
+>  #else
+> +#define __lwsync()	barrier()
 > +
-> +	BUG_ON(mpic == NULL);
-> +	of_node_put(np);
+>  #define smp_mb()	barrier()
+>  #define smp_rmb()	barrier()
+>  #define smp_wmb()	barrier()
+> @@ -65,4 +69,19 @@
+>  #define data_barrier(x)	\
+>  	asm volatile("twi 0,%0,0; isync" : : "r" (x) : "memory");
+> 
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	__lwsync();							\
+> +	ACCESS_ONCE(*p) = (v);						\
+> +} while (0)
 > +
-> +	mpic_assign_isu(mpic, 0, pci_membase + 0x10000);
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	__lwsync();							\
+> +	___p1;								\
+> +})
 > +
-> +	mpic_init(mpic);
+>  #endif /* _ASM_POWERPC_BARRIER_H */
+> --- a/arch/s390/include/asm/barrier.h
+> +++ b/arch/s390/include/asm/barrier.h
+> @@ -32,4 +32,19 @@
+> 
+>  #define set_mb(var, value)		do { var = value; mb(); } while (0)
+> 
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	barrier();							\
+> +	ACCESS_ONCE(*p) = (v);						\
+> +} while (0)
 > +
-> +	cp = of_find_compatible_node(NULL, NULL, "chrp,iic");
-> +	if (cp == NULL) {
-> +		pr_warn("mvme5100_pic_init: couldn't find i8259\n");
-> +		return;
-> +	}
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	barrier();							\
+> +	___p1;								\
+> +})
 > +
-> +	cirq = irq_of_parse_and_map(cp, 0);
-> +	if (cirq == NO_IRQ) {
-> +		pr_warn("mvme5100_pic_init: no cascade interrupt?\n");
-> +		return;
-> +	}
+>  #endif /* __ASM_BARRIER_H */
+> --- a/arch/score/include/asm/Kbuild
+> +++ b/arch/score/include/asm/Kbuild
+> @@ -5,3 +5,4 @@ generic-y += clkdev.h
+>  generic-y += trace_clock.h
+>  generic-y += xor.h
+>  generic-y += preempt.h
+> +generic-y += barrier.h
+> --- a/arch/score/include/asm/barrier.h
+> +++ /dev/null
+> @@ -1,16 +0,0 @@
+> -#ifndef _ASM_SCORE_BARRIER_H
+> -#define _ASM_SCORE_BARRIER_H
+> -
+> -#define mb()		barrier()
+> -#define rmb()		barrier()
+> -#define wmb()		barrier()
+> -#define smp_mb()	barrier()
+> -#define smp_rmb()	barrier()
+> -#define smp_wmb()	barrier()
+> -
+> -#define read_barrier_depends()		do {} while (0)
+> -#define smp_read_barrier_depends()	do {} while (0)
+> -
+> -#define set_mb(var, value) 		do {var = value; wmb(); } while (0)
+> -
+> -#endif /* _ASM_SCORE_BARRIER_H */
+> --- a/arch/sh/include/asm/barrier.h
+> +++ b/arch/sh/include/asm/barrier.h
+> @@ -26,29 +26,14 @@
+>  #if defined(CONFIG_CPU_SH4A) || defined(CONFIG_CPU_SH5)
+>  #define mb()		__asm__ __volatile__ ("synco": : :"memory")
+>  #define rmb()		mb()
+> -#define wmb()		__asm__ __volatile__ ("synco": : :"memory")
+> +#define wmb()		mb()
+>  #define ctrl_barrier()	__icbi(PAGE_OFFSET)
+> -#define read_barrier_depends()	do { } while(0)
+>  #else
+> -#define mb()		__asm__ __volatile__ ("": : :"memory")
+> -#define rmb()		mb()
+> -#define wmb()		__asm__ __volatile__ ("": : :"memory")
+>  #define ctrl_barrier()	__asm__ __volatile__ ("nop;nop;nop;nop;nop;nop;nop;nop")
+> -#define read_barrier_depends()	do { } while(0)
+> -#endif
+> -
+> -#ifdef CONFIG_SMP
+> -#define smp_mb()	mb()
+> -#define smp_rmb()	rmb()
+> -#define smp_wmb()	wmb()
+> -#define smp_read_barrier_depends()	read_barrier_depends()
+> -#else
+> -#define smp_mb()	barrier()
+> -#define smp_rmb()	barrier()
+> -#define smp_wmb()	barrier()
+> -#define smp_read_barrier_depends()	do { } while(0)
+>  #endif
+> 
+>  #define set_mb(var, value) do { (void)xchg(&var, value); } while (0)
+> 
+> +#include <asm-generic/barrier.h>
 > +
-> +	np = of_find_compatible_node(NULL, "pci", "mpc10x-pci");
-> +	if (np) {
-> +		prop = of_get_property(np, "8259-interrupt-acknowledge", NULL);
+>  #endif /* __ASM_SH_BARRIER_H */
+> --- a/arch/sparc/include/asm/barrier_32.h
+> +++ b/arch/sparc/include/asm/barrier_32.h
+> @@ -1,15 +1,6 @@
+>  #ifndef __SPARC_BARRIER_H
+>  #define __SPARC_BARRIER_H
+> 
+> -/* XXX Change this if we ever use a PSO mode kernel. */
+> -#define mb()	__asm__ __volatile__ ("" : : : "memory")
+> -#define rmb()	mb()
+> -#define wmb()	mb()
+> -#define read_barrier_depends()	do { } while(0)
+> -#define set_mb(__var, __value)  do { __var = __value; mb(); } while(0)
+> -#define smp_mb()	__asm__ __volatile__("":::"memory")
+> -#define smp_rmb()	__asm__ __volatile__("":::"memory")
+> -#define smp_wmb()	__asm__ __volatile__("":::"memory")
+> -#define smp_read_barrier_depends()	do { } while(0)
+> +#include <asm-generic/barrier.h>
+> 
+>  #endif /* !(__SPARC_BARRIER_H) */
+> --- a/arch/sparc/include/asm/barrier_64.h
+> +++ b/arch/sparc/include/asm/barrier_64.h
+> @@ -53,4 +53,19 @@ do {	__asm__ __volatile__("ba,pt	%%xcc,
+> 
+>  #define smp_read_barrier_depends()	do { } while(0)
+> 
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	barrier();							\
+> +	ACCESS_ONCE(*p) = (v);						\
+> +} while (0)
 > +
-> +		if (prop)
-> +			intack = prop[0];
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	barrier();							\
+> +	___p1;								\
+> +})
 > +
-> +		of_node_put(np);
-> +	}
+>  #endif /* !(__SPARC64_BARRIER_H) */
+> --- a/arch/tile/include/asm/barrier.h
+> +++ b/arch/tile/include/asm/barrier.h
+> @@ -22,59 +22,6 @@
+>  #include <arch/spr_def.h>
+>  #include <asm/timex.h>
+> 
+> -/*
+> - * read_barrier_depends - Flush all pending reads that subsequents reads
+> - * depend on.
+> - *
+> - * No data-dependent reads from memory-like regions are ever reordered
+> - * over this barrier.  All reads preceding this primitive are guaranteed
+> - * to access memory (but not necessarily other CPUs' caches) before any
+> - * reads following this primitive that depend on the data return by
+> - * any of the preceding reads.  This primitive is much lighter weight than
+> - * rmb() on most CPUs, and is never heavier weight than is
+> - * rmb().
+> - *
+> - * These ordering constraints are respected by both the local CPU
+> - * and the compiler.
+> - *
+> - * Ordering is not guaranteed by anything other than these primitives,
+> - * not even by data dependencies.  See the documentation for
+> - * memory_barrier() for examples and URLs to more information.
+> - *
+> - * For example, the following code would force ordering (the initial
+> - * value of "a" is zero, "b" is one, and "p" is "&a"):
+> - *
+> - * <programlisting>
+> - *	CPU 0				CPU 1
+> - *
+> - *	b = 2;
+> - *	memory_barrier();
+> - *	p = &b;				q = p;
+> - *					read_barrier_depends();
+> - *					d = *q;
+> - * </programlisting>
+> - *
+> - * because the read of "*q" depends on the read of "p" and these
+> - * two reads are separated by a read_barrier_depends().  However,
+> - * the following code, with the same initial values for "a" and "b":
+> - *
+> - * <programlisting>
+> - *	CPU 0				CPU 1
+> - *
+> - *	a = 2;
+> - *	memory_barrier();
+> - *	b = 3;				y = b;
+> - *					read_barrier_depends();
+> - *					x = a;
+> - * </programlisting>
+> - *
+> - * does not enforce ordering, since there is no data dependency between
+> - * the read of "a" and the read of "b".  Therefore, on some CPUs, such
+> - * as Alpha, "y" could be set to 3 and "x" to 0.  Use rmb()
+> - * in cases like this where there are no data dependencies.
+> - */
+> -#define read_barrier_depends()	do { } while (0)
+> -
+>  #define __sync()	__insn_mf()
+> 
+>  #include <hv/syscall_public.h>
+> @@ -125,20 +72,7 @@ mb_incoherent(void)
+>  #define mb()		fast_mb()
+>  #define iob()		fast_iob()
+> 
+> -#ifdef CONFIG_SMP
+> -#define smp_mb()	mb()
+> -#define smp_rmb()	rmb()
+> -#define smp_wmb()	wmb()
+> -#define smp_read_barrier_depends()	read_barrier_depends()
+> -#else
+> -#define smp_mb()	barrier()
+> -#define smp_rmb()	barrier()
+> -#define smp_wmb()	barrier()
+> -#define smp_read_barrier_depends()	do { } while (0)
+> -#endif
+> -
+> -#define set_mb(var, value) \
+> -	do { var = value; mb(); } while (0)
+> +#include <asm-generic/barrier.h>
+> 
+>  #endif /* !__ASSEMBLY__ */
+>  #endif /* _ASM_TILE_BARRIER_H */
+> --- a/arch/unicore32/include/asm/barrier.h
+> +++ b/arch/unicore32/include/asm/barrier.h
+> @@ -14,15 +14,6 @@
+>  #define dsb() __asm__ __volatile__ ("" : : : "memory")
+>  #define dmb() __asm__ __volatile__ ("" : : : "memory")
+> 
+> -#define mb()				barrier()
+> -#define rmb()				barrier()
+> -#define wmb()				barrier()
+> -#define smp_mb()			barrier()
+> -#define smp_rmb()			barrier()
+> -#define smp_wmb()			barrier()
+> -#define read_barrier_depends()		do { } while (0)
+> -#define smp_read_barrier_depends()	do { } while (0)
+> -
+> -#define set_mb(var, value)		do { var = value; smp_mb(); } while (0)
+> +#include <asm-generic/barrier.h>
+> 
+>  #endif /* __UNICORE_BARRIER_H__ */
+> --- a/arch/x86/include/asm/barrier.h
+> +++ b/arch/x86/include/asm/barrier.h
+> @@ -100,6 +100,21 @@
+>  #define set_mb(var, value) do { var = value; barrier(); } while (0)
+>  #endif
+> 
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	barrier();							\
+> +	ACCESS_ONCE(*p) = (v);						\
+> +} while (0)
 > +
-> +	if (intack)
-> +		pr_debug("mvme5100_pic_init: PCI 8259 intack at 0x%016lx\n",
-> +		   intack);
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	barrier();							\
+> +	___p1;								\
+> +})
 > +
-> +	i8259_init(cp, intack);
-> +	of_node_put(cp);
-> +	irq_set_chained_handler(cirq, mvme5100_8259_cascade);
-> +}
-> +
-> +static int __init mvme5100_add_bridge(struct device_node *dev)
-> +{
-> +	const int		*bus_range;
-> +	int			len;
-> +	struct pci_controller	*hose;
-> +	unsigned short		devid;
-> +
-> +	pr_info("Adding PCI host bridge %s\n", dev->full_name);
-> +
-> +	bus_range = of_get_property(dev, "bus-range", &len);
-> +
-> +	hose = pcibios_alloc_controller(dev);
-> +	if (hose == NULL)
-> +		return -ENOMEM;
-> +
-> +	hose->first_busno = bus_range ? bus_range[0] : 0;
-> +	hose->last_busno = bus_range ? bus_range[1] : 0xff;
-> +
-> +	setup_indirect_pci(hose, 0xfe000cf8, 0xfe000cfc, 0);
-> +
-> +	pci_process_bridge_OF_ranges(hose, dev, 1);
-> +
-> +	early_read_config_word(hose, 0, 0, PCI_DEVICE_ID, &devid);
-> +
-> +	if (devid != PCI_DEVICE_ID_MOTOROLA_HAWK) {
-> +		pr_err("HAWK PHB not present?\n");
-> +		return 0;
-> +	}
-> +
-> +	early_read_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_1, &pci_membase);
-> +
-> +	if (pci_membase == 0) {
-> +		pr_err("HAWK PHB mibar not correctly set?\n");
-> +		return 0;
-> +	}
-> +
-> +	pr_info("mvme5100_pic_init: pci_membase: %x\n", pci_membase);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct of_device_id mvme5100_of_bus_ids[] __initdata = {
-> +	{ .compatible = "hawk-bridge", },
-> +	{},
-> +};
-> +
+>  /*
+>   * Stop RDTSC speculation. This is needed when you need to use RDTSC
+>   * (or get_cycles or vread that possibly accesses the TSC) in a defined
+> --- a/arch/xtensa/include/asm/barrier.h
+> +++ b/arch/xtensa/include/asm/barrier.h
+> @@ -9,21 +9,14 @@
+>  #ifndef _XTENSA_SYSTEM_H
+>  #define _XTENSA_SYSTEM_H
+> 
+> -#define smp_read_barrier_depends() do { } while(0)
+> -#define read_barrier_depends() do { } while(0)
+> -
+>  #define mb()  ({ __asm__ __volatile__("memw" : : : "memory"); })
+>  #define rmb() barrier()
+>  #define wmb() mb()
+> 
+>  #ifdef CONFIG_SMP
+>  #error smp_* not defined
+> -#else
+> -#define smp_mb()	barrier()
+> -#define smp_rmb()	barrier()
+> -#define smp_wmb()	barrier()
+>  #endif
+> 
+> -#define set_mb(var, value)	do { var = value; mb(); } while (0)
+> +#include <asm-generic/barrier.h>
+> 
+>  #endif /* _XTENSA_SYSTEM_H */
+> --- a/include/asm-generic/barrier.h
+> +++ b/include/asm-generic/barrier.h
+> @@ -1,4 +1,5 @@
+> -/* Generic barrier definitions, based on MN10300 definitions.
 > +/*
-> + * Setup the architecture
-> + */
-> +static void __init mvme5100_setup_arch(void)
-> +{
-> +	struct device_node *np;
+> + * Generic barrier definitions, based on MN10300 definitions.
+>   *
+>   * It should be possible to use these on really simple architectures,
+>   * but it serves more as a starting point for new ports.
+> @@ -16,35 +17,67 @@
+> 
+>  #ifndef __ASSEMBLY__
+> 
+> -#define nop() asm volatile ("nop")
+> +#include <asm/compiler.h>
 > +
-> +	if (ppc_md.progress)
-> +		ppc_md.progress("mvme5100_setup_arch()", 0);
+> +#ifndef nop
+> +#define nop()	asm volatile ("nop")
+> +#endif
+> 
+>  /*
+> - * Force strict CPU ordering.
+> - * And yes, this is required on UP too when we're talking
+> - * to devices.
+> + * Force strict CPU ordering. And yes, this is required on UP too when we're
+> + * talking to devices.
+>   *
+> - * This implementation only contains a compiler barrier.
+> + * Fall back to compiler barriers if nothing better is provided.
+>   */
+> 
+> -#define mb()	asm volatile ("": : :"memory")
+> -#define rmb()	mb()
+> -#define wmb()	asm volatile ("": : :"memory")
+> +#ifndef mb
+> +#define mb()	barrier()
+> +#endif
 > +
-> +	for_each_compatible_node(np, "pci", "hawk-pci")
-> +		mvme5100_add_bridge(np);
+> +#ifndef rmb
+> +#define rmb()	barrier()
+> +#endif
 > +
-> +	restart = ioremap(BOARD_MODRST_REG, 4);
-> +}
+> +#ifndef wmb
+> +#define wmb()	barrier()
+> +#endif
 > +
+> +#ifndef read_barrier_depends
+> +#define read_barrier_depends()		do {} while (0)
+> +#endif
+> 
+>  #ifdef CONFIG_SMP
+>  #define smp_mb()	mb()
+>  #define smp_rmb()	rmb()
+>  #define smp_wmb()	wmb()
+> +#define smp_read_barrier_depends()	read_barrier_depends()
+>  #else
+>  #define smp_mb()	barrier()
+>  #define smp_rmb()	barrier()
+>  #define smp_wmb()	barrier()
+> +#define smp_read_barrier_depends()	do {} while (0)
+>  #endif
+> 
+> +#ifndef set_mb
+>  #define set_mb(var, value)  do { var = value;  mb(); } while (0)
+> +#endif
 > +
-> +static void mvme5100_show_cpuinfo(struct seq_file *m)
-> +{
-> +	seq_puts(m, "Vendor\t\t: Motorola/Emerson\n");
-> +	seq_puts(m, "Machine\t\t: MVME5100\n");
-> +}
+>  #define set_wmb(var, value) do { var = value; wmb(); } while (0)
+> 
+> -#define read_barrier_depends()		do {} while (0)
+> -#define smp_read_barrier_depends()	do {} while (0)
+> +#define smp_store_release(p, v)						\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	ACCESS_ONCE(*p) = (v);						\
+> +} while (0)
 > +
-> +static void mvme5100_restart(char *cmd)
-> +{
+> +#define smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	smp_mb();							\
+> +	___p1;								\
+> +})
+> 
+>  #endif /* !__ASSEMBLY__ */
+>  #endif /* __ASM_GENERIC_BARRIER_H */
+> --- a/include/linux/compiler.h
+> +++ b/include/linux/compiler.h
+> @@ -298,6 +298,11 @@ void ftrace_likely_update(struct ftrace_
+>  # define __same_type(a, b) __builtin_types_compatible_p(typeof(a), typeof(b))
+>  #endif
+> 
+> +/* Is this type a native word size -- useful for atomic operations */
+> +#ifndef __native_word
+> +# define __native_word(t) (sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long))
+> +#endif
 > +
-> +	local_irq_disable();
-> +	mtmsr(mfmsr() | MSR_IP);
+>  /* Compile time object size, -1 for unknown */
+>  #ifndef __compiletime_object_size
+>  # define __compiletime_object_size(obj) -1
+> @@ -337,6 +342,10 @@ void ftrace_likely_update(struct ftrace_
+>  #define compiletime_assert(condition, msg) \
+>  	_compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
+> 
+> +#define compiletime_assert_atomic_type(t)				\
+> +	compiletime_assert(__native_word(t),				\
+> +		"Need native word sized stores/loads for atomicity.")
 > +
-> +	out_8((u_char *) restart, 0x01);
-> +
-> +	while (1)
-> +		;
-> +}
-> +
-> +/*
-> + * Called very early, device-tree isn't unflattened
-> + */
-> +static int __init mvme5100_probe(void)
-> +{
-> +	unsigned long root = of_get_flat_dt_root();
-> +
-> +	return of_flat_dt_is_compatible(root, "MVME5100");
-> +}
-> +
-> +static int __init probe_of_platform_devices(void)
-> +{
-> +
-> +	of_platform_bus_probe(NULL, mvme5100_of_bus_ids, NULL);
-> +	return 0;
-> +}
-> +
-> +machine_device_initcall(mvme5100, probe_of_platform_devices);
-> +
-> +define_machine(mvme5100) {
-> +	.name			= "MVME5100",
-> +	.probe			= mvme5100_probe,
-> +	.setup_arch		= mvme5100_setup_arch,
-> +	.init_IRQ		= mvme5100_pic_init,
-> +	.show_cpuinfo		= mvme5100_show_cpuinfo,
-> +	.get_irq		= mpic_get_irq,
-> +	.restart		= mvme5100_restart,
-> +	.calibrate_decr		= generic_calibrate_decr,
-> +	.progress		= udbg_progress,
-> +};
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>  /*
+>   * Prevent the compiler from merging or refetching accesses.  The compiler
+>   * is also forbidden from reordering successive instances of ACCESS_ONCE(),
+> 
