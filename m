@@ -1,42 +1,21 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by ozlabs.org (Postfix) with ESMTP id EA31E2C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 14:31:53 +1100 (EST)
-Message-ID: <5279B822.9010401@tabi.org>
-Date: Tue, 05 Nov 2013 21:31:46 -0600
-From: Timur Tabi <timur@tabi.org>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:2:6])
+ by ozlabs.org (Postfix) with ESMTP id C79192C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 14:49:57 +1100 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 5/7] IBM Akebono: Add support to the EHCI platform driver
+ for Akebono
+Date: Wed, 06 Nov 2013 14:50:28 +1100
+Message-ID: <2440701.siW6M1PPWz@mexican>
+In-Reply-To: <1383681133.4776.95.camel@pasglop>
+References: <Pine.LNX.4.44L0.1311051004080.1360-100000@iolanthe.rowland.org>
+ <1383681133.4776.95.camel@pasglop>
 MIME-Version: 1.0
-To: Li Xiubo <B47053@freescale.com>, Guangyu Chen <B42378@freescale.com>
-Subject: Re: [PATCHv2 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
-References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
- <1383289495-24523-2-git-send-email-Li.Xiubo@freescale.com>
- <20131101085904.GC28401@MrMyself>
- <1DD289F6464F0949A2FCA5AA6DC23F82874201@039-SN2MPN1-013.039d.mgd.msft.net>
- <5278F1FA.1060706@tabi.org>
- <1DD289F6464F0949A2FCA5AA6DC23F82876A53@039-SN2MPN1-013.039d.mgd.msft.net>
-In-Reply-To: <1DD289F6464F0949A2FCA5AA6DC23F82876A53@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "tiwai@suse.de" <tiwai@suse.de>, Huan Wang <B18965@freescale.com>,
- "perex@perex.cz" <perex@perex.cz>, Shawn Guo <r65073@freescale.com>,
- "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- "pawel.moll@arm.com" <pawel.moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "broonie@kernel.org" <broonie@kernel.org>, "oskar@scara.com" <oskar@scara.com>,
- Fabio Estevam <r49496@freescale.com>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob@landley.net" <rob@landley.net>, Zhengxiong Jin <R64188@freescale.com>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
+ Alan Stern <stern@rowland.harvard.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,21 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Li Xiubo wrote:
->> If there are any comments that say PPC but are not PPC-specific, that
->> >should be fixed.
-> Yes, find it.
->
-> The comments is in "sound/soc/fsl/Makefile" :
-> +++++++++++
-> "# Freescale PowerPC SSI/DMA Platform Support"
-> -----------
->
-> But fsl-spdif.o is also under it.
-> And this is also support ARM and PowerPC platforms at the same time ?
-> If so, the comments should be modified to :
-> +++++++++++
-> "# Freescale PowerPC and ARM SSI/DMA Platform Support"
-> -----------
+On Wed, 6 Nov 2013 06:52:13 Benjamin Herrenschmidt wrote:
 
-Yes, this should be changed.
+[snip]
+
+> 
+> Why ? Do we need to add an entry for every platform in there ? Besides,
+> it probably should be the SoC name not the platform here....
+> 
+> Why not simply a generic compatible "usb-ehci" ? It's a standard
+> programming interface, there are no specific quirks, we shouldn't
+> need to have to add new entries to the driver like that for every
+> new SoC/platform.
+> 
+
+Actually a grep of "usb-ehci" turns up the ehci-ppc-of driver which I somehow 
+missed. This driver works and uses .compatible = "usb-ehci" so I can use that 
+instead if that is preferable?
+
+However it is basically the same as the ehci-platform driver so I guess at 
+some point the two should be merged...
+
+> > > @@ -229,7 +230,7 @@ static struct platform_driver ehci_platform_driver =
+> > > {
+> > > 
+> > >  		.owner	= THIS_MODULE,
+> > >  		.name	= "ehci-platform",
+> > >  		.pm	= &ehci_platform_pm_ops,
+> > > 
+> > > -		.of_match_table = vt8500_ehci_ids,
+> > > +		.of_match_table = ehci_platform_ids,
+> > > 
+> > >  	}
+> > >  
+> > >  };
+> > 
+> > Acked-by: Alan Stern <stern@rowland.harvard.edu>
+> > 
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
