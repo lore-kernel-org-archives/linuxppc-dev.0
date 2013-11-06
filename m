@@ -1,17 +1,25 @@
-Return-Path: <stern+5260885c@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
- by ozlabs.org (Postfix) with SMTP id 9386E2C00CC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 03:14:48 +1100 (EST)
-Date: Wed, 6 Nov 2013 11:14:44 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
+Return-Path: <bhutchings@solarflare.com>
+Received: from webmail.solarflare.com (webmail.solarflare.com [12.187.104.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "WEBMAIL.SOLARFLARE.COM",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6B0062C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 03:40:21 +1100 (EST)
+Message-ID: <1383756010.1520.5.camel@bwh-desktop.uk.level5networks.com>
+Subject: Re: [PATCH 3/7] IBM Akebono: Add support for a new PHY to the IBM
+ emac driver
+From: Ben Hutchings <bhutchings@solarflare.com>
 To: Alistair Popple <alistair@popple.id.au>
-Subject: Re: [RFC PATCH] ehci-platform: Merge ppc-of EHCI driver into the
- ehci-platform driver
-In-Reply-To: <1690980.YlPWToa1rW@mexican>
-Message-ID: <Pine.LNX.4.44L0.1311061110310.1220-100000@iolanthe.rowland.org>
+Date: Wed, 6 Nov 2013 16:40:10 +0000
+In-Reply-To: <3555701.fBbreSn0Lp@mexican>
+References: <1383629471-16979-1-git-send-email-alistair@popple.id.au>
+ <1383681240.4776.97.camel@pasglop>
+ <1383693110.2868.17.camel@bwh-desktop.uk.level5networks.com>
+ <3555701.fBbreSn0Lp@mexican>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,73 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 6 Nov 2013, Alistair Popple wrote:
-
-> Currently the ppc-of driver uses the compatibility string
-> "usb-ehci". This means platforms that use device-tree and implement an
-> EHCI compatible interface have to either use the ppc-of driver or add
-> a compatible line to the ehci-platform driver. It would be more
-> appropriate for the platform driver to be compatible with "usb-ehci"
-> as non-powerpc platforms are also beginning to utilise device-tree.
+On Wed, 2013-11-06 at 12:34 +1100, Alistair Popple wrote:
+> On Tue, 5 Nov 2013 23:11:50 Ben Hutchings wrote:
+> > On Wed, 2013-11-06 at 06:54 +1100, Benjamin Herrenschmidt wrote:
 > 
-> This patch merges the device tree property parsing from ehci-ppc-of
-> into the platform driver and adds a "usb-ehci" compatibility
-> string. The existing ehci-ppc-of driver is renamed to ehci-440epx as
-> it contains platform specific work arounds for the 440EPX SoC.
+> [snip]
 > 
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
-> ---
+> > > It's an SoC bit so there's little point making it generally
+> > > selectable by the user.
+> > 
+> > I think a better way to do this is:
+> > 
+> > config IBM_EMAC_RGMII_WOL
+> > 	bool "IBM EMAC RGMII wake-on-LAN support"
+> > 	depends on MY_WONDERFUL_NEW_SOC || COMPILE_TEST
+> > 	default y if MY_WONDERFUL_NEW_SOC
+> > 
+> > Then anyone making an API change that affects this driver can check that
+> > it still complies.
 > 
-> So I could submit something like this that essentially merges the ppc-of 
-> driver into the platform driver instead of adding the "ibm,akebono-ehci" 
-> compatible line to the platform driver.
+> The method used in this patch is the same as what is currently used by the 
+> other IBM EMAC PHY interfaces (eg. config IBM_EMAC_ZMII etc). I'm happy to 
+> send a patch to update all of those as well for consistency but that would 
+> mean adding what each platform requires into EMACS Kconfig as well.
 > 
-> However I'm still fairly new to device-tree so I'm not sure what (if any) the 
-> broader impact would be. A quick grep for "usb-ehci" turned up a couple of ARM 
-> device tree's using it however they all provided their own drivers and don't 
-> select CONFIG_USB_EHCI_HCD_PLATFORM so I'm guess they shouldn't be impacted.
+> Personally I think it is nicer to keep the definitions of what each platform 
+> requires in one place (ie. arch/powerpc/platforms/44x/Kconfig) as it is 
+> consistent with what we do for other 44x drivers, however I am happy to use 
+> the above method if people think it's better.
+
+Yes, I see your point.
+
+> Alternatively we could do something like this:
 > 
-> I have attempted to fix up any PowerPC device trees/configs, although I wasn't 
-> sure if "usb-ehci" should remain in sequoia.dts or not given that it needs to 
-> use the 440EPX specific driver.
+> config IBM_EMAC_RGMII_WOL
+>         bool
+>         default y if COMPILE_TEST
+>         default n
 > 
-> Also this hasn't been tested (beyond compilation) yet.
+> This would leave the platform dependencies as they are currently but still 
+> allow compile testing.
 
-> diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-
-> platform.c
-> index f6b790c..027f368 100644
-> --- a/drivers/usb/host/ehci-platform.c
-> +++ b/drivers/usb/host/ehci-platform.c
-> @@ -77,6 +77,7 @@ static int ehci_platform_probe(struct platform_device *dev)
->  	struct usb_hcd *hcd;
->  	struct resource *res_mem;
->  	struct usb_ehci_pdata *pdata;
-> +	struct device_node *dn = dev->dev.of_node;
->  	int irq;
->  	int err = -ENOMEM;
->  
-> @@ -96,6 +97,18 @@ static int ehci_platform_probe(struct platform_device *dev)
->  
->  	pdata = dev_get_platdata(&dev->dev);
->  
-> +	/* Initialise platform data from device tree if available. */
-> +	if (!dn) {
+It still shouldn't default to y in that case.  Instead you can make the
+symbol conditionally configurable:
 
-Shouldn't this be "if (dn)"?
+config IBM_EMAC_RGMII_WOL
+	bool "IBM EMAC RGMII wake-on-LAN support" if COMPILE_TEST
 
-> +		if (of_get_property(dn, "big-endian", NULL)) {
-> +			pdata->big_endian_mmio = 1;
-> +			pdata->big_endian_desc = 1;
-> +		}
-> +		if (of_get_property(dn, "big-endian-regs", NULL))
-> +			pdata->big_endian_mmio = 1;
-> +		if (of_get_property(dn, "big-endian-desc", NULL))
-> +			pdata->big_endian_desc = 1;
-> +	}
-> +
+and then select this from your platform Kconfig as you intended.
 
-This isn't good if there is more than one EHCI controller using 
-ehci-platform.  To accomodate such cases, it would be necessary to 
-allocate a separate copy of ehci_platform_defaults for each controller.
+(There is no need to put 'default n' as that's implicit for a
+configurable symbol.  But it doesn't hurt either.)
 
-Alan Stern
+Ben.
+
+-- 
+Ben Hutchings, Staff Engineer, Solarflare
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
