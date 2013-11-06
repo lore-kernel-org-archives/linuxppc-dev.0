@@ -1,50 +1,25 @@
-Return-Path: <B47053@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
+Return-Path: <r63061@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CAE242C00B7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 20:38:37 +1100 (EST)
-From: Li Xiubo <B47053@freescale.com>
-To: Shawn Guo <shawn.guo@linaro.org>
-Subject: RE: [PATCHv2 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
-Date: Wed, 6 Nov 2013 09:38:26 +0000
-Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F82876FAE@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
- <1383289495-24523-2-git-send-email-Li.Xiubo@freescale.com>
- <20131101085904.GC28401@MrMyself>
- <1DD289F6464F0949A2FCA5AA6DC23F82874201@039-SN2MPN1-013.039d.mgd.msft.net>
- <5278F1FA.1060706@tabi.org>
- <1DD289F6464F0949A2FCA5AA6DC23F82876A53@039-SN2MPN1-013.039d.mgd.msft.net>
- <5279B822.9010401@tabi.org>
- <1DD289F6464F0949A2FCA5AA6DC23F82876B08@039-SN2MPN1-013.039d.mgd.msft.net>
- <20131106081257.GR19770@S2101-09.ap.freescale.net>
-In-Reply-To: <20131106081257.GR19770@S2101-09.ap.freescale.net>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 478C42C0040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 20:52:08 +1100 (EST)
+Received: from mail182-tx2 (localhost [127.0.0.1])	by
+ mail182-tx2-R.bigfish.com (Postfix) with ESMTP id C17D72E0285	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 09:52:03 +0000 (UTC)
+Received: from TX2EHSMHS034.bigfish.com (unknown [10.9.14.244])	by
+ mail182-tx2.bigfish.com (Postfix) with ESMTP id A9D28E0060	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 09:52:02 +0000 (UTC)
+From: Xie Xiaobo <X.Xie@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: [PATCH V6 1/2] powerpc/85xx: Add QE common init function
+Date: Wed, 6 Nov 2013 17:08:02 +0800
+Message-ID: <1383728883-25561-1-git-send-email-X.Xie@freescale.com>
 MIME-Version: 1.0
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "tiwai@suse.de" <tiwai@suse.de>, Huan Wang <B18965@freescale.com>,
- Timur Tabi <timur@tabi.org>, "perex@perex.cz" <perex@perex.cz>,
- Shawn Guo <r65073@freescale.com>,
- "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- Guangyu Chen <B42378@freescale.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- "pawel.moll@arm.com" <pawel.moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "broonie@kernel.org" <broonie@kernel.org>, "oskar@scara.com" <oskar@scara.com>,
- Fabio Estevam <r49496@freescale.com>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob@landley.net" <rob@landley.net>, Zhengxiong Jin <R64188@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Xie Xiaobo <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,38 +29,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > > >> If there are any comments that say PPC but are not PPC-specific,
-> that
-> > > >> >should be fixed.
-> > > > Yes, find it.
-> > > >
-> > > > The comments is in "sound/soc/fsl/Makefile" :
-> > > > +++++++++++
-> > > > "# Freescale PowerPC SSI/DMA Platform Support"
-> > > > -----------
-> > > >
-> > > > But fsl-spdif.o is also under it.
-> > > > And this is also support ARM and PowerPC platforms at the same
-> time ?
-> > > > If so, the comments should be modified to :
-> > > > +++++++++++
-> > > > "# Freescale PowerPC and ARM SSI/DMA Platform Support"
-> > > > -----------
-> > >
-> > > Yes, this should be changed.
-> > >
-> >
-> > How about :
-> > +++++++++
-> > "# Freescale PowerPC and ARM SSI/DMA/SAI/SPDIF Platform Support"
-> > ---------
-> >  ?
->=20
-> Or we can just drop 'PowerPC and ARM'?
->=20
+Define a QE init function in common file, and avoid
+the same codes being duplicated in board files.
 
-Yes, this will be better.
+Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
+---
+V6 -> V5: add of_device_is_available check.
+V5 -> V4: add the board files modification, remove the qe_pic_init.
+V4 -> V3: Nochange
 
+ arch/powerpc/platforms/85xx/common.c      | 38 +++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/mpc85xx.h     |  6 +++++
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c | 29 ++---------------------
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c | 25 ++------------------
+ 4 files changed, 48 insertions(+), 50 deletions(-)
 
-Best Regards,
-Xiubo
+diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
+index d0861a0..970576b 100644
+--- a/arch/powerpc/platforms/85xx/common.c
++++ b/arch/powerpc/platforms/85xx/common.c
+@@ -7,6 +7,7 @@
+  */
+ #include <linux/of_platform.h>
+ 
++#include <asm/qe.h>
+ #include <sysdev/cpm2_pic.h>
+ 
+ #include "mpc85xx.h"
+@@ -80,3 +81,40 @@ void __init mpc85xx_cpm2_pic_init(void)
+ 	irq_set_chained_handler(irq, cpm2_cascade);
+ }
+ #endif
++
++#ifdef CONFIG_QUICC_ENGINE
++void __init mpc85xx_qe_init(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
++	if (!np) {
++		np = of_find_node_by_name(NULL, "qe");
++		if (!np) {
++			pr_err("%s: Could not find Quicc Engine node\n",
++					__func__);
++			return;
++		}
++	}
++
++	if (!of_device_is_available(np)) {
++		of_node_put(np);
++		return;
++	}
++
++	qe_reset();
++	of_node_put(np);
++
++	np = of_find_node_by_name(NULL, "par_io");
++	if (np) {
++		struct device_node *ucc;
++
++		par_io_init(np);
++		of_node_put(np);
++
++		for_each_node_by_name(ucc, "ucc")
++			par_io_of_config(ucc);
++
++	}
++}
++#endif
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx.h b/arch/powerpc/platforms/85xx/mpc85xx.h
+index 2aa7c5d..fc51dd4 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx.h
++++ b/arch/powerpc/platforms/85xx/mpc85xx.h
+@@ -8,4 +8,10 @@ extern void mpc85xx_cpm2_pic_init(void);
+ static inline void __init mpc85xx_cpm2_pic_init(void) {}
+ #endif /* CONFIG_CPM2 */
+ 
++#ifdef CONFIG_QUICC_ENGINE
++extern void mpc85xx_qe_init(void);
++#else
++static inline void __init mpc85xx_qe_init(void) {}
++#endif
++
+ #endif
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index a7b3621..34f3c5e 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2006-2010, 2012 Freescale Semiconductor, Inc.
++ * Copyright (C) 2006-2010, 2012-2013 Freescale Semiconductor, Inc.
+  * All rights reserved.
+  *
+  * Author: Andy Fleming <afleming@freescale.com>
+@@ -238,32 +238,7 @@ static void __init mpc85xx_mds_qe_init(void)
+ {
+ 	struct device_node *np;
+ 
+-	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
+-	if (!np) {
+-		np = of_find_node_by_name(NULL, "qe");
+-		if (!np)
+-			return;
+-	}
+-
+-	if (!of_device_is_available(np)) {
+-		of_node_put(np);
+-		return;
+-	}
+-
+-	qe_reset();
+-	of_node_put(np);
+-
+-	np = of_find_node_by_name(NULL, "par_io");
+-	if (np) {
+-		struct device_node *ucc;
+-
+-		par_io_init(np);
+-		of_node_put(np);
+-
+-		for_each_node_by_name(ucc, "ucc")
+-			par_io_of_config(ucc);
+-	}
+-
++	mpc85xx_qe_init();
+ 	mpc85xx_mds_reset_ucc_phys();
+ 
+ 	if (machine_is(p1021_mds)) {
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index 53b6fb0..e15bdd1 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -1,7 +1,7 @@
+ /*
+  * MPC85xx RDB Board Setup
+  *
+- * Copyright 2009,2012 Freescale Semiconductor Inc.
++ * Copyright 2009,2012-2013 Freescale Semiconductor Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -98,26 +98,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ 	fsl_pci_assign_primary();
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+-	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
+-	if (!np) {
+-		pr_err("%s: Could not find Quicc Engine node\n", __func__);
+-		goto qe_fail;
+-	}
+-
+-	qe_reset();
+-	of_node_put(np);
+-
+-	np = of_find_node_by_name(NULL, "par_io");
+-	if (np) {
+-		struct device_node *ucc;
+-
+-		par_io_init(np);
+-		of_node_put(np);
+-
+-		for_each_node_by_name(ucc, "ucc")
+-			par_io_of_config(ucc);
+-
+-	}
++	mpc85xx_qe_init();
+ #if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
+ 	if (machine_is(p1025_rdb)) {
+ 
+@@ -148,8 +129,6 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ 
+ 	}
+ #endif
+-
+-qe_fail:
+ #endif	/* CONFIG_QUICC_ENGINE */
+ 
+ 	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
+-- 
+1.8.4
