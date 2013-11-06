@@ -1,17 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 6 Nov 2013 22:18:41 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Liu ping fan <kernelfans@gmail.com>
-Subject: Re: [PATCH 2/3] powerpc/kvm: fix rare but potential deadlock scene
-Message-ID: <20131106111841.GA22605@iris.ozlabs.ibm.com>
-References: <1383637364-14691-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <1383637364-14691-2-git-send-email-pingfank@linux.vnet.ibm.com>
- <20131106050418.GD14842@drongo>
- <CAFgQCTsxEAqMDt=zfFMhEG2CZ6G=QpH+OsPvJkvjFU7GkDOcXQ@mail.gmail.com>
-MIME-Version: 1.0
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id E12802C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2013 22:24:56 +1100 (EST)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAFgQCTsxEAqMDt=zfFMhEG2CZ6G=QpH+OsPvJkvjFU7GkDOcXQ@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
+Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1812\))
+Subject: Re: [PATCH 3/3] powerpc/kvm: remove redundant assignment
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1383637364-14691-3-git-send-email-pingfank@linux.vnet.ibm.com>
+Date: Wed, 6 Nov 2013 12:24:49 +0100
+Message-Id: <740542A8-47BC-4015-8675-D36C72F5837D@suse.de>
+References: <1383637364-14691-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <1383637364-14691-3-git-send-email-pingfank@linux.vnet.ibm.com>
+To: Liu Ping Fan <kernelfans@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,43 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 06, 2013 at 02:02:07PM +0800, Liu ping fan wrote:
-> On Wed, Nov 6, 2013 at 1:04 PM, Paul Mackerras <paulus@samba.org> wrote:
-> > On Tue, Nov 05, 2013 at 03:42:43PM +0800, Liu Ping Fan wrote:
-> >> Since kvmppc_hv_find_lock_hpte() is called from both virtmode and
-> >> realmode, so it can trigger the deadlock.
-> >
-> > Good catch, we should have preemption disabled while ever we have a
-> > HPTE locked.
-> >
-> >> @@ -474,8 +474,10 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
-> >>       }
-> >>
-> >>       /* Find the HPTE in the hash table */
-> >> +     preempt_disable();
-> >>       index = kvmppc_hv_find_lock_hpte(kvm, eaddr, slb_v,
-> >>                                        HPTE_V_VALID | HPTE_V_ABSENT);
-> >> +     preempt_enable();
-> >
-> > Which means we need to add the preempt_enable after unlocking the
-> > HPTE, not here.
-> >
-> Yes. Sorry, but I am not sure about whether we can call
-> preempt_disable/enable() in realmode. I think since thread_info is
-> allocated with linear address, so we can use preempt_disable/enable()
-> inside kvmppc_hv_find_lock_hpte(), right?
 
-Your analysis correctly pointed out that we can get a deadlock if we
-can be preempted while holding a lock on a HPTE.  That means that we
-have to disable preemption before taking an HPTE lock and keep it
-disabled until after we unlock the HPTE.  Since the point of
-kvmppc_hv_find_lock_hpte() is to lock the HPTE and return with it
-locked, we can't have the preempt_enable() inside it.  The
-preempt_enable() has to come after we have unlocked the HPTE.  That is
-also why we can't have the preempt_enable() where your patch put it;
-it needs to be about 9 lines further down, after the statement
-hptep[0] = v.  (We also need to make sure to re-enable preemption in
-the index < 0 case.)
+On 05.11.2013, at 08:42, Liu Ping Fan <kernelfans@gmail.com> wrote:
 
-Regards,
-Paul.
+> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+
+Patch description missing.
+
+Please add Paul's ack in the next revision of this patch :).
+
+
+Alex
+
+> ---
+> arch/powerpc/kvm/book3s_64_mmu_hv.c | 1 -
+> 1 file changed, 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c =
+b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> index 28160ac..7682837 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> @@ -731,7 +731,6 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run =
+*run, struct kvm_vcpu *vcpu,
+> 	lock_rmap(rmap);
+>=20
+> 	/* Check if we might have been invalidated; let the guest retry =
+if so */
+> -	ret =3D RESUME_GUEST;
+> 	if (mmu_notifier_retry(vcpu->kvm, mmu_seq)) {
+> 		unlock_rmap(rmap);
+> 		goto out_unlock;
+> --=20
+> 1.8.1.4
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
