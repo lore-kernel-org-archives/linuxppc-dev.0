@@ -1,19 +1,35 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 042B52C008E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 21:06:08 +1100 (EST)
+Return-Path: <will.deacon@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id A36612C008E
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 Nov 2013 22:18:09 +1100 (EST)
+Date: Thu, 7 Nov 2013 11:17:41 +0000
+From: Will Deacon <will.deacon@arm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
+Message-ID: <20131107111741.GD13139@mudshark.cambridge.arm.com>
+References: <20131103224242.GF3947@linux.vnet.ibm.com>
+ <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
+ <20131104105059.GL3947@linux.vnet.ibm.com>
+ <20131104112254.GK28601@twins.programming.kicks-ass.net>
+ <20131104162732.GN3947@linux.vnet.ibm.com>
+ <20131104191127.GW16117@laptop.programming.kicks-ass.net>
+ <20131104205344.GW3947@linux.vnet.ibm.com>
+ <20131106123946.GJ10651@twins.programming.kicks-ass.net>
+ <CAMuHMdXZjQJvT7R4ODbDNBgAVwPUBPjB6UoR66_sNuFx7opUDw@mail.gmail.com>
+ <20131106135736.GK10651@twins.programming.kicks-ass.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1812\))
-Subject: Re: [PATCH v2 2/2] powerpc/kvm: remove redundant assignment
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1383805375-14766-2-git-send-email-pingfank@linux.vnet.ibm.com>
-Date: Thu, 7 Nov 2013 11:06:01 +0100
-Message-Id: <CF6D863C-3E0A-4BEF-B985-77B336BA92F1@suse.de>
-References: <1383805375-14766-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <1383805375-14766-2-git-send-email-pingfank@linux.vnet.ibm.com>
-To: Liu Ping Fan <kernelfans@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org
+In-Reply-To: <20131106135736.GK10651@twins.programming.kicks-ass.net>
+Cc: Michael Neuling <mikey@neuling.org>, Tony Luck <tony.luck@intel.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Oleg Nesterov <oleg@redhat.com>,
+ LKML <linux-kernel@vger.kernel.org>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Anton Blanchard <anton@samba.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Victor Kaplansky <VICTORK@il.ibm.com>, Russell King <linux@arm.linux.org.uk>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,111 +39,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Peter,
 
-On 07.11.2013, at 07:22, Liu Ping Fan <kernelfans@gmail.com> wrote:
+Couple of minor fixes on the arm64 side...
 
-> ret is assigned twice with the same value, so remove the later one.
->=20
-> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-> Acked-by: Paul Mackerras <paulus@samba.org>
+On Wed, Nov 06, 2013 at 01:57:36PM +0000, Peter Zijlstra wrote:
+> --- a/arch/arm64/include/asm/barrier.h
+> +++ b/arch/arm64/include/asm/barrier.h
+> @@ -35,11 +35,59 @@
+>  #define smp_mb()       barrier()
+>  #define smp_rmb()      barrier()
+>  #define smp_wmb()      barrier()
+> +
+> +#define smp_store_release(p, v)                                                \
+> +do {                                                                   \
+> +       compiletime_assert_atomic_type(*p);                             \
+> +       smp_mb();                                                       \
+> +       ACCESS_ONCE(*p) = (v);                                          \
+> +} while (0)
+> +
+> +#define smp_load_acquire(p)                                            \
+> +({                                                                     \
+> +       typeof(*p) ___p1 = ACCESS_ONCE(*p);                             \
+> +       compiletime_assert_atomic_type(*p);                             \
+> +       smp_mb();                                                       \
+> +       ___p1;                                                          \
+> +})
+> +
+>  #else
+> +
+>  #define smp_mb()       asm volatile("dmb ish" : : : "memory")
+>  #define smp_rmb()      asm volatile("dmb ishld" : : : "memory")
+>  #define smp_wmb()      asm volatile("dmb ishst" : : : "memory")
+> -#endif
 
-I suppose my last request for a patch description was slightly too =
-abbreviated :). Sorry about that.
+Why are you getting rid of this #endif?
 
-Imagine you are a Linux-stable maintainer. You have about 5000 patches =
-in front of you and you want to figure out whether a patch should get =
-backported into a stable tree or not.
+> +#define smp_store_release(p, v)                                                \
+> +do {                                                                   \
+> +       compiletime_assert_atomic_type(*p);                             \
+> +       switch (sizeof(*p)) {                                           \
+> +       case 4:                                                         \
+> +               asm volatile ("stlr %w1, [%0]"                          \
+> +                               : "=Q" (*p) : "r" (v) : "memory");      \
+> +               break;                                                  \
+> +       case 8:                                                         \
+> +               asm volatile ("stlr %1, [%0]"                           \
+> +                               : "=Q" (*p) : "r" (v) : "memory");      \
+> +               break;                                                  \
+> +       }                                                               \
+> +} while (0)
+> +
+> +#define smp_load_acquire(p)                                            \
+> +({                                                                     \
+> +       typeof(*p) ___p1;                                               \
+> +       compiletime_assert_atomic_type(*p);                             \
+> +       switch (sizeof(*p)) {                                           \
+> +       case 4:                                                         \
+> +               asm volatile ("ldar %w0, [%1]"                          \
+> +                       : "=r" (___p1) : "Q" (*p) : "memory");          \
+> +               break;                                                  \
+> +       case 8:                                                         \
+> +               asm volatile ("ldar %0, [%1]"                           \
+> +                       : "=r" (___p1) : "Q" (*p) : "memory");          \
+> +               break;                                                  \
+> +       }                                                               \
+> +       ___p1;                                                          \
+> +})
 
-It's very easy to read through the patch description.
-It's reasonably easy to do a git show on the patch.
-It's very hard to look at the actual surrounding code that was changed.
+You don't need the square brackets when using the "Q" constraint (otherwise
+it will expand to something like [[x0]], which gas won't accept).
 
-If I open a text editor on the file, I immediately see what you're =
-saying:
+With those changes, for the general idea and arm/arm64 parts:
 
->         ret =3D RESUME_GUEST;
->         preempt_disable();
->         while (!try_lock_hpte(hptep, HPTE_V_HVLOCK))
->                 cpu_relax();
->         if ((hptep[0] & ~HPTE_V_HVLOCK) !=3D hpte[0] || hptep[1] !=3D =
-hpte[1] ||
->             rev->guest_rpte !=3D hpte[2])
->                 /* HPTE has been changed under us; let the guest retry =
-*/
->                 goto out_unlock;
->         hpte[0] =3D (hpte[0] & ~HPTE_V_ABSENT) | HPTE_V_VALID;
->=20
->         rmap =3D &memslot->arch.rmap[gfn - memslot->base_gfn];
->         lock_rmap(rmap);
->=20
->         /* Check if we might have been invalidated; let the guest =
-retry if so */
->         ret =3D RESUME_GUEST;
+  Acked-by: Will Deacon <will.deacon@arm.com>
 
-However, that scope is not given in the actual patch itself. If you look =
-at the diff below, you have no idea whether the patch is fixing a bug or =
-just removes duplication and doesn't actually have any effect. In fact, =
-the compiled assembly should be the same with this patch and without. =
-But you can't tell from the diff below.
-
-So what I would like to see in the patch description is something that =
-makes it easy to understand what's going on without the need to check =
-out the source file. Something like
-
-> We redundantly set ret to RESUME_GUEST twice without changing it in =
-between. Only do it once:
->=20
->         ret =3D RESUME_GUEST;
->         preempt_disable();
->         while (!try_lock_hpte(hptep, HPTE_V_HVLOCK))
->                 cpu_relax();
->         if ((hptep[0] & ~HPTE_V_HVLOCK) !=3D hpte[0] || hptep[1] !=3D =
-hpte[1] ||
->             rev->guest_rpte !=3D hpte[2])
->                 /* HPTE has been changed under us; let the guest retry =
-*/
->                 goto out_unlock;
->         hpte[0] =3D (hpte[0] & ~HPTE_V_ABSENT) | HPTE_V_VALID;
->=20
->         rmap =3D &memslot->arch.rmap[gfn - memslot->base_gfn];
->         lock_rmap(rmap);
->=20
->         /* Check if we might have been invalidated; let the guest =
-retry if so */
->         ret =3D RESUME_GUEST;
-
-
-If I look at that patch description it immediately tells me "Ah, no need =
-to worry, it's not a critical bug I need to backport". If you have a =
-better idea how to express that I'm more than happy to take that too. =
-Otherwise just let me know whether you like the description above and =
-I'll modify it to the one that includes the code snippet when applying =
-the patch.
-
-
-Thanks a lot,
-
-Alex
-
-> ---
-> arch/powerpc/kvm/book3s_64_mmu_hv.c | 1 -
-> 1 file changed, 1 deletion(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c =
-b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> index dbc1478..9b97b42 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> @@ -733,7 +733,6 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run =
-*run, struct kvm_vcpu *vcpu,
-> 	lock_rmap(rmap);
->=20
-> 	/* Check if we might have been invalidated; let the guest retry =
-if so */
-> -	ret =3D RESUME_GUEST;
-> 	if (mmu_notifier_retry(vcpu->kvm, mmu_seq)) {
-> 		unlock_rmap(rmap);
-> 		goto out_unlock;
-> --=20
-> 1.8.1.4
->=20
+Will
