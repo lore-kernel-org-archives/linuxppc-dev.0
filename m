@@ -1,22 +1,20 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-qa0-x22c.google.com (mail-qa0-x22c.google.com
- [IPv6:2607:f8b0:400d:c00::22c])
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-x234.google.com (mail-pd0-x234.google.com
+ [IPv6:2607:f8b0:400e:c02::234])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 836052C03BB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 17:22:35 +1100 (EST)
-Received: by mail-qa0-f44.google.com with SMTP id f11so118814qae.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Nov 2013 22:22:32 -0800 (PST)
-From: Liu Ping Fan <kernelfans@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	kvm-ppc@vger.kernel.org
-Subject: [PATCH v2 2/2] powerpc/kvm: remove redundant assignment
-Date: Thu,  7 Nov 2013 14:22:55 +0800
-Message-Id: <1383805375-14766-2-git-send-email-pingfank@linux.vnet.ibm.com>
-In-Reply-To: <1383805375-14766-1-git-send-email-pingfank@linux.vnet.ibm.com>
-References: <1383805375-14766-1-git-send-email-pingfank@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>
+ by ozlabs.org (Postfix) with ESMTPS id 7E0902C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 18:18:13 +1100 (EST)
+Received: by mail-pd0-f180.google.com with SMTP id p10so191388pdj.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Nov 2013 23:18:09 -0800 (PST)
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: [PATCH] powerpc/85xx: don't init the mpic ipi for the SoC which has
+ doorbell support
+Date: Thu,  7 Nov 2013 15:17:17 +0800
+Message-Id: <1383808637-26769-1-git-send-email-haokexin@gmail.com>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ret is assigned twice with the same value, so remove the later one.
+It makes no sense to initialize the mpic ipi for the SoC which has
+doorbell support. So set the smp_85xx_ops.probe to NULL for this
+case. Since the smp_85xx_ops.probe is also used in function
+smp_85xx_setup_cpu() to check if we need to invoke
+mpic_setup_this_cpu(), we introduce a new setup_cpu function
+smp_85xx_basic_setup() to remove this dependency.
 
-Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-Acked-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 1 -
- 1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index dbc1478..9b97b42 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -733,7 +733,6 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	lock_rmap(rmap);
+Boot test on p2020rdb and p5020ds.
+
+ arch/powerpc/platforms/85xx/smp.c | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 281b7f01df63..d3b310f87ce9 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -388,15 +388,18 @@ static void mpc85xx_smp_machine_kexec(struct kimage *image)
+ }
+ #endif /* CONFIG_KEXEC */
  
- 	/* Check if we might have been invalidated; let the guest retry if so */
--	ret = RESUME_GUEST;
- 	if (mmu_notifier_retry(vcpu->kvm, mmu_seq)) {
- 		unlock_rmap(rmap);
- 		goto out_unlock;
+-static void smp_85xx_setup_cpu(int cpu_nr)
++static void smp_85xx_basic_setup(int cpu_nr)
+ {
+-	if (smp_85xx_ops.probe == smp_mpic_probe)
+-		mpic_setup_this_cpu();
+-
+ 	if (cpu_has_feature(CPU_FTR_DBELL))
+ 		doorbell_setup_this_cpu();
+ }
+ 
++static void smp_85xx_setup_cpu(int cpu_nr)
++{
++	mpic_setup_this_cpu();
++	smp_85xx_basic_setup(cpu_nr);
++}
++
+ static const struct of_device_id mpc85xx_smp_guts_ids[] = {
+ 	{ .compatible = "fsl,mpc8572-guts", },
+ 	{ .compatible = "fsl,p1020-guts", },
+@@ -411,13 +414,14 @@ void __init mpc85xx_smp_init(void)
+ {
+ 	struct device_node *np;
+ 
+-	smp_85xx_ops.setup_cpu = smp_85xx_setup_cpu;
+ 
+ 	np = of_find_node_by_type(NULL, "open-pic");
+ 	if (np) {
+ 		smp_85xx_ops.probe = smp_mpic_probe;
++		smp_85xx_ops.setup_cpu = smp_85xx_setup_cpu;
+ 		smp_85xx_ops.message_pass = smp_mpic_message_pass;
+-	}
++	} else
++		smp_85xx_ops.setup_cpu = smp_85xx_basic_setup;
+ 
+ 	if (cpu_has_feature(CPU_FTR_DBELL)) {
+ 		/*
+@@ -426,6 +430,7 @@ void __init mpc85xx_smp_init(void)
+ 		 */
+ 		smp_85xx_ops.message_pass = NULL;
+ 		smp_85xx_ops.cause_ipi = doorbell_cause_ipi;
++		smp_85xx_ops.probe = NULL;
+ 	}
+ 
+ 	np = of_find_matching_node(NULL, mpc85xx_smp_guts_ids);
 -- 
-1.8.1.4
+1.8.3.1
