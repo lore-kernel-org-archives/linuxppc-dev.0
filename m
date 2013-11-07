@@ -1,28 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 924DD2C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 19:36:42 +1100 (EST)
-Message-ID: <1383813364.4776.172.camel@pasglop>
-Subject: Re: [PATCH 3/3] powerpc/kvm: remove redundant assignment
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-Date: Thu, 07 Nov 2013 19:36:04 +1100
-In-Reply-To: <D41E9B02-613E-498D-B68B-18FCAC21637F@suse.de>
-References: <1383637364-14691-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <1383637364-14691-3-git-send-email-pingfank@linux.vnet.ibm.com>
- <740542A8-47BC-4015-8675-D36C72F5837D@suse.de>
- <1383767930.4776.125.camel@pasglop>
- <92DFDE0F-0E72-41F9-9562-3EC0CA5BD2B1@suse.de>
- <1383810909.4776.171.camel@pasglop>
- <D41E9B02-613E-498D-B68B-18FCAC21637F@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Liu Ping Fan <kernelfans@gmail.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 1C7B82C00CE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 20:54:30 +1100 (EST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1812\))
+Subject: Re: [PATCH v2 1/2] powerpc/kvm: fix rare but potential deadlock scene
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1383805375-14766-1-git-send-email-pingfank@linux.vnet.ibm.com>
+Date: Thu, 7 Nov 2013 10:54:23 +0100
+Message-Id: <7536FFB1-D186-42AC-9DF5-A46A72CB8F1D@suse.de>
+References: <1383805375-14766-1-git-send-email-pingfank@linux.vnet.ibm.com>
+To: Liu Ping Fan <kernelfans@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,18 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-11-07 at 09:14 +0100, Alexander Graf wrote:
-> > And ? An explanation isn't going to be clearer than the code in that
-> > case ...
-> 
-> It's pretty non-obvious when you do a git show on that patch in 1 year
-> from now, as the redundancy is out of scope of what the diff shows.
 
-And ? How would an explanation help ?
+On 07.11.2013, at 07:22, Liu Ping Fan <kernelfans@gmail.com> wrote:
 
-Either it's redundant or it's not ... but only look at the code can
-prove it. An explanation won't because if the patch is wrong, so will be
-the explanation.
+> Since kvmppc_hv_find_lock_hpte() is called from both virtmode and
+> realmode, so it can trigger the deadlock.
+>=20
+> Suppose the following scene:
+>=20
+> Two physical cpuM, cpuN, two VM instances A, B, each VM has a group of =
+vcpus.
+>=20
+> If on cpuM, vcpu_A_1 holds bitlock X (HPTE_V_HVLOCK), then is switched =
+out,
+> and on cpuN, vcpu_A_2 try to lock X in realmode, then cpuN will be =
+caught in
+> realmode for a long time.
+>=20
+> What makes things even worse if the following happens,
+>  On cpuM, bitlockX is hold, on cpuN, Y is hold.
+>  vcpu_B_2 try to lock Y on cpuM in realmode
+>  vcpu_A_2 try to lock X on cpuN in realmode
+>=20
+> Oops! deadlock happens
+>=20
+> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
 
-Cheers,
-Ben.
+Very nice catch :).
+
+I think it makes a lot of sense to document the fact that =
+kvmppc_hv_find_lock_hpte() should be called with preemption disabled in =
+a comment above the function, so that next time when someone potentially =
+calls it, he knows that he needs to put preempt_disable() around it.
+
+Thanks a lot for finding this pretty subtle issue. May I ask how you got =
+there? Did you actually see systems deadlock because of this?
+
+
+Alex
+
+> ---
+> arch/powerpc/kvm/book3s_64_mmu_hv.c | 6 +++++-
+> 1 file changed, 5 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c =
+b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> index 043eec8..dbc1478 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> @@ -474,10 +474,13 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct =
+kvm_vcpu *vcpu, gva_t eaddr,
+> 	}
+>=20
+> 	/* Find the HPTE in the hash table */
+> +	preempt_disable();
+> 	index =3D kvmppc_hv_find_lock_hpte(kvm, eaddr, slb_v,
+> 					 HPTE_V_VALID | HPTE_V_ABSENT);
+> -	if (index < 0)
+> +	if (index < 0) {
+> +		preempt_enable();
+> 		return -ENOENT;
+> +	}
+> 	hptep =3D (unsigned long *)(kvm->arch.hpt_virt + (index << 4));
+> 	v =3D hptep[0] & ~HPTE_V_HVLOCK;
+> 	gr =3D kvm->arch.revmap[index].guest_rpte;
+> @@ -485,6 +488,7 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct =
+kvm_vcpu *vcpu, gva_t eaddr,
+> 	/* Unlock the HPTE */
+> 	asm volatile("lwsync" : : : "memory");
+> 	hptep[0] =3D v;
+> +	preempt_enable();
+>=20
+> 	gpte->eaddr =3D eaddr;
+> 	gpte->vpage =3D ((v & HPTE_V_AVPN) << 4) | ((eaddr >> 12) & =
+0xfff);
+> --=20
+> 1.8.1.4
+>=20
