@@ -1,32 +1,30 @@
 Return-Path: <rusty@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0146C2C014B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 12:21:32 +1100 (EST)
+ (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 70D1C2C0185
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 12:21:35 +1100 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rusty@au1.ibm.com>;
- Thu, 7 Nov 2013 11:21:30 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9B28C3578055
+ Thu, 7 Nov 2013 11:21:29 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 48AF53578052
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 12:21:27 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rA713lxc59441300
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 12:03:47 +1100
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rA713uOW5177606
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 12:03:56 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rA71LQB0025241
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 12:21:27 +1100
+ rA71LQB6025229
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 12:21:26 +1100
 From: Rusty Russell <rusty@au1.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/4] powerpc: ELF2 binaries signal handling
-Date: Thu,  7 Nov 2013 11:46:52 +1030
-Message-Id: <1383787012-16455-4-git-send-email-rusty@au1.ibm.com>
-In-Reply-To: <1383787012-16455-1-git-send-email-rusty@au1.ibm.com>
-References: <1383787012-16455-1-git-send-email-rusty@au1.ibm.com>
+Subject: [PATCH 1/4] powerpc: Add TIF_ELF2ABI flag.
+Date: Thu,  7 Nov 2013 11:46:49 +1030
+Message-Id: <1383787012-16455-1-git-send-email-rusty@au1.ibm.com>
 Cc: Rusty Russell <rusty@au1.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,67 +35,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For the ELFv2 ABI, the hander is the entry point, not a function descriptor.
-We also need to set up r12, and fortunately the fast_exception_return
-exit path restores r12 for us so nothing else is required.
+Little endian ppc64 is getting an exciting new ABI.  This is reflected
+by the bottom two bits of e_flags in the ELF header:
+
+	0 == legacy binaries (v1 ABI)
+	1 == binaries using the old ABI (compiled with a new toolchain)
+	2 == binaries using the new ABI.
+
+We store this in a thread flag, because we need to set it in core
+dumps and for signal delivery.  Our chief concern is that it doesn't
+use function descriptors.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/powerpc/kernel/signal_64.c | 25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/elf.h         | 4 ++++
+ arch/powerpc/include/asm/thread_info.h | 9 +++++++++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index f7e61e0..af1f7ad 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -694,12 +694,6 @@ badframe:
- int handle_rt_signal64(int signr, struct k_sigaction *ka, siginfo_t *info,
- 		sigset_t *set, struct pt_regs *regs)
- {
--	/* Handler is *really* a pointer to the function descriptor for
--	 * the signal routine.  The first entry in the function
--	 * descriptor is the entry address of signal and the second
--	 * entry is the TOC value we need to use.
--	 */
--	func_descr_t __user *funct_desc_ptr;
- 	struct rt_sigframe __user *frame;
- 	unsigned long newsp = 0;
- 	long err = 0;
-@@ -759,19 +753,32 @@ int handle_rt_signal64(int signr, struct k_sigaction *ka, siginfo_t *info,
- 			goto badframe;
- 		regs->link = (unsigned long) &frame->tramp[0];
- 	}
--	funct_desc_ptr = (func_descr_t __user *) ka->sa.sa_handler;
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index ac6ec6e..54c7445 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -85,6 +85,8 @@ typedef elf_vrregset_t elf_fpxregset_t;
+ # ifdef CONFIG_COMPAT
+ #  define SET_PERSONALITY(ex)					\
+ do {								\
++	if (((ex).e_flags & 0x3) == 2)				\
++		set_thread_flag(TIF_ELF2ABI);			\
+ 	if ((ex).e_ident[EI_CLASS] == ELFCLASS32)		\
+ 		set_thread_flag(TIF_32BIT);			\
+ 	else							\
+@@ -96,6 +98,8 @@ do {								\
+ # else /* !COMPAT: */
+ #  define SET_PERSONALITY(ex)					\
+ do {								\
++	if (((ex).e_flags & 0x3) == 2)				\
++		set_thread_flag(TIF_ELF2ABI);			\
+ 	if (personality(current->personality) != PER_LINUX32)	\
+ 		set_personality(PER_LINUX |			\
+ 			(current->personality & (~PER_MASK)));	\
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index f66c2c1..460326f 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -109,6 +109,9 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_EMULATE_STACK_STORE	16	/* Is an instruction emulation
+ 						for stack store? */
+ #define TIF_MEMDIE		17	/* is terminating due to OOM killer */
++#if defined(CONFIG_PPC64)
++#define TIF_ELF2ABI		18	/* function descriptors must die! */
++#endif
  
- 	/* Allocate a dummy caller frame for the signal handler. */
- 	newsp = ((unsigned long)frame) - __SIGNAL_FRAMESIZE;
- 	err |= put_user(regs->gpr[1], (unsigned long __user *)newsp);
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -193,6 +196,12 @@ static inline bool test_thread_local_flags(unsigned int flags)
+ #define is_32bit_task()	(1)
+ #endif
  
- 	/* Set up "regs" so we "return" to the signal handler. */
--	err |= get_user(regs->nip, &funct_desc_ptr->entry);
-+	if (is_elf2_task()) {
-+		regs->nip = (unsigned long) ka->sa.sa_handler;
-+		regs->gpr[12] = regs->nip;
-+	} else {
-+		/* Handler is *really* a pointer to the function descriptor for
-+		 * the signal routine.  The first entry in the function
-+		 * descriptor is the entry address of signal and the second
-+		 * entry is the TOC value we need to use.
-+		 */
-+		func_descr_t __user *funct_desc_ptr =
-+			(func_descr_t __user *) ka->sa.sa_handler;
++#if defined(CONFIG_PPC64)
++#define is_elf2_task() (test_thread_flag(TIF_ELF2ABI))
++#else
++#define is_elf2_task() (0)
++#endif
 +
-+		err |= get_user(regs->nip, &funct_desc_ptr->entry);
-+		err |= get_user(regs->gpr[2], &funct_desc_ptr->toc);
-+	}
-+
- 	/* enter the signal handler in native-endian mode */
- 	regs->msr &= ~MSR_LE;
- 	regs->msr |= (MSR_KERNEL & MSR_LE);
- 	regs->gpr[1] = newsp;
--	err |= get_user(regs->gpr[2], &funct_desc_ptr->toc);
- 	regs->gpr[3] = signr;
- 	regs->result = 0;
- 	if (ka->sa.sa_flags & SA_SIGINFO) {
+ #endif	/* !__ASSEMBLY__ */
+ 
+ #endif /* __KERNEL__ */
 -- 
 1.8.3.2
