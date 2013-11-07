@@ -1,22 +1,47 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
- [IPv6:2001:44b8:8060:ff02:300:1:6:4])
- by ozlabs.org (Postfix) with ESMTP id EB8892C0335
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 13:38:36 +1100 (EST)
-From: Alistair Popple <alistair@popple.id.au>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Subject: Re: [PATCH 3/7] IBM Akebono: Add support for a new PHY to the IBM
- emac driver
-Date: Thu, 07 Nov 2013 13:39:10 +1100
-Message-ID: <9251129.ZkATbJnO5N@mexican>
-In-Reply-To: <1383756010.1520.5.camel@bwh-desktop.uk.level5networks.com>
-References: <1383629471-16979-1-git-send-email-alistair@popple.id.au>
- <3555701.fBbreSn0Lp@mexican>
- <1383756010.1520.5.camel@bwh-desktop.uk.level5networks.com>
-MIME-Version: 1.0
+Return-Path: <Li.Xiubo@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 341DB2C0199
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 14:01:14 +1100 (EST)
+From: Li Xiubo <Li.Xiubo@freescale.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: RE: [PATCHv2 5/8] ASoC: SGTL5000: Enhance the SGTL5000 codec driver
+ about regulator.
+Date: Thu, 7 Nov 2013 03:01:02 +0000
+Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F828783E6@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
+ <1383289495-24523-6-git-send-email-Li.Xiubo@freescale.com>
+ <20131101185045.GG2493@sirena.org.uk>
+ <1DD289F6464F0949A2FCA5AA6DC23F82876EFF@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20131106100305.GI11602@sirena.org.uk>
+In-Reply-To: <20131106100305.GI11602@sirena.org.uk>
 Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- netdev@vger.kernel.org
+MIME-Version: 1.0
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "tiwai@suse.de" <tiwai@suse.de>, "timur@tabi.org" <timur@tabi.org>,
+ "perex@perex.cz" <perex@perex.cz>, Huan Wang <Huan.Wang@freescale.com>,
+ "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ Shawn Guo <Shawn.Guo@freescale.com>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ Zhengxiong Jin <Jason.Jin@freescale.com>, "oskar@scara.com" <oskar@scara.com>,
+ Fabio Estevam <Fabio.Estevam@freescale.com>,
+ "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob@landley.net" <rob@landley.net>, Guangyu Chen <guangyu.chen@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,63 +51,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 6 Nov 2013 16:40:10 Ben Hutchings wrote:
-> On Wed, 2013-11-06 at 12:34 +1100, Alistair Popple wrote:
-> > On Tue, 5 Nov 2013 23:11:50 Ben Hutchings wrote:
-> > > On Wed, 2013-11-06 at 06:54 +1100, Benjamin Herrenschmidt wrote:
-> > [snip]
-> > 
-> > > > It's an SoC bit so there's little point making it generally
-> > > > selectable by the user.
-> > > 
-> > > I think a better way to do this is:
-> > > 
-> > > config IBM_EMAC_RGMII_WOL
-> > > 
-> > > 	bool "IBM EMAC RGMII wake-on-LAN support"
-> > > 	depends on MY_WONDERFUL_NEW_SOC || COMPILE_TEST
-> > > 	default y if MY_WONDERFUL_NEW_SOC
-> > > 
-> > > Then anyone making an API change that affects this driver can check that
-> > > it still complies.
-> > 
-> > The method used in this patch is the same as what is currently used by the
-> > other IBM EMAC PHY interfaces (eg. config IBM_EMAC_ZMII etc). I'm happy to
-> > send a patch to update all of those as well for consistency but that would
-> > mean adding what each platform requires into EMACS Kconfig as well.
-> > 
-> > Personally I think it is nicer to keep the definitions of what each
-> > platform requires in one place (ie. arch/powerpc/platforms/44x/Kconfig)
-> > as it is consistent with what we do for other 44x drivers, however I am
-> > happy to use the above method if people think it's better.
-> 
-> Yes, I see your point.
-> 
-> > Alternatively we could do something like this:
-> > 
-> > config IBM_EMAC_RGMII_WOL
-> > 
-> >         bool
-> >         default y if COMPILE_TEST
-> >         default n
-> > 
-> > This would leave the platform dependencies as they are currently but still
-> > allow compile testing.
-> 
-> It still shouldn't default to y in that case.  Instead you can make the
-> symbol conditionally configurable:
-> 
-> config IBM_EMAC_RGMII_WOL
-> 	bool "IBM EMAC RGMII wake-on-LAN support" if COMPILE_TEST
-> 
-> and then select this from your platform Kconfig as you intended.
+> > The SGTL5000 is based on regulators and when it is disabled, there
+> > will be an error returns directly while the SGTL5000 codec is probing.
+>=20
+> What makes you say this? =20
+>
 
-That looks reasonable - I will include it in the next version of the patch 
-series. Thanks.
+>From the code:
+File path: "sound/soc/codecs/sgtl5000.c"
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+#ifdef CONFIG_REGULATOR
+.....
+#else
+static int ldo_regulator_register(struct snd_soc_codec *codec,
+                                struct regulator_init_data *init_data,
+                                int voltage)
+{
+        dev_err(codec->dev, "this setup needs regulator support in the kern=
+el\n");
+        return -EINVAL;
+}
 
-> (There is no need to put 'default n' as that's implicit for a
-> configurable symbol.  But it doesn't hurt either.)
-> 
-> Ben.
+static int ldo_regulator_remove(struct snd_soc_codec *codec)
+{
+        return 0;
+}
+#endif
+-------------------
 
-Alistair
+sgtl5000_probe() -->
+sgtl5000_enable_regulators() -->
+sgtl5000_replace_vddd_with_ldo() -->
+ldo_regulator_register().
+
+
+> That's not how the regulator API works.  Have
+> you actually seen any problems?
+
+There are some regulator APIs implemented by SGTL5000 driver, not the regul=
+ator subsystem APIs.
