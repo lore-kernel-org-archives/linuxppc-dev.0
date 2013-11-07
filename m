@@ -1,30 +1,30 @@
 Return-Path: <rusty@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A15B2C014B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 12:21:29 +1100 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0146C2C014B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 12:21:32 +1100 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rusty@au1.ibm.com>;
- Thu, 7 Nov 2013 11:21:29 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1C3FB3578050
+ Thu, 7 Nov 2013 11:21:30 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9B28C3578055
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 12:21:27 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rA713uKC066006
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 12:03:56 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rA71LQwx021352
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 12:21:26 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rA713lxc59441300
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 12:03:47 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rA71LQB0025241
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 12:21:27 +1100
 From: Rusty Russell <rusty@au1.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/4] powerpc: ELF2 binaries launched directly.
-Date: Thu,  7 Nov 2013 11:46:51 +1030
-Message-Id: <1383787012-16455-3-git-send-email-rusty@au1.ibm.com>
+Subject: [PATCH 4/4] powerpc: ELF2 binaries signal handling
+Date: Thu,  7 Nov 2013 11:46:52 +1030
+Message-Id: <1383787012-16455-4-git-send-email-rusty@au1.ibm.com>
 In-Reply-To: <1383787012-16455-1-git-send-email-rusty@au1.ibm.com>
 References: <1383787012-16455-1-git-send-email-rusty@au1.ibm.com>
 Cc: Rusty Russell <rusty@au1.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>
@@ -37,78 +37,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-No function descriptor, but we set r12 up and set TIF_RESTOREALL as it
-normally isn't restored on return from syscall.
+For the ELFv2 ABI, the hander is the entry point, not a function descriptor.
+We also need to set up r12, and fortunately the fast_exception_return
+exit path restores r12 for us so nothing else is required.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/powerpc/kernel/process.c | 50 ++++++++++++++++++++++++++++++-------------
- 1 file changed, 35 insertions(+), 15 deletions(-)
+ arch/powerpc/kernel/signal_64.c | 25 ++++++++++++++++---------
+ 1 file changed, 16 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 59967ea..6fa271a 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1078,25 +1078,45 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- 	regs->msr = MSR_USER;
- #else
- 	if (!is_32bit_task()) {
--		unsigned long entry, toc;
-+		unsigned long entry;
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index f7e61e0..af1f7ad 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -694,12 +694,6 @@ badframe:
+ int handle_rt_signal64(int signr, struct k_sigaction *ka, siginfo_t *info,
+ 		sigset_t *set, struct pt_regs *regs)
+ {
+-	/* Handler is *really* a pointer to the function descriptor for
+-	 * the signal routine.  The first entry in the function
+-	 * descriptor is the entry address of signal and the second
+-	 * entry is the TOC value we need to use.
+-	 */
+-	func_descr_t __user *funct_desc_ptr;
+ 	struct rt_sigframe __user *frame;
+ 	unsigned long newsp = 0;
+ 	long err = 0;
+@@ -759,19 +753,32 @@ int handle_rt_signal64(int signr, struct k_sigaction *ka, siginfo_t *info,
+ 			goto badframe;
+ 		regs->link = (unsigned long) &frame->tramp[0];
+ 	}
+-	funct_desc_ptr = (func_descr_t __user *) ka->sa.sa_handler;
  
--		/* start is a relocated pointer to the function descriptor for
--		 * the elf _start routine.  The first entry in the function
--		 * descriptor is the entry address of _start and the second
--		 * entry is the TOC value we need to use.
--		 */
--		__get_user(entry, (unsigned long __user *)start);
--		__get_user(toc, (unsigned long __user *)start+1);
-+		if (is_elf2_task()) {
-+			/* Look ma, no function descriptors! */
-+			entry = start;
+ 	/* Allocate a dummy caller frame for the signal handler. */
+ 	newsp = ((unsigned long)frame) - __SIGNAL_FRAMESIZE;
+ 	err |= put_user(regs->gpr[1], (unsigned long __user *)newsp);
  
--		/* Check whether the e_entry function descriptor entries
--		 * need to be relocated before we can use them.
--		 */
--		if (load_addr != 0) {
--			entry += load_addr;
--			toc   += load_addr;
-+			/*
-+			 * Ulrich says:
-+			 *   The latest iteration of the ABI requires that when
-+			 *   calling a function (at its global entry point),
-+			 *   the caller must ensure r12 holds the entry point
-+			 *   address (so that the function can quickly
-+			 *   establish addressability).
-+			 */
-+			regs->gpr[12] = start;
-+			/* Make sure that's restored on entry to userspace. */
-+			set_thread_flag(TIF_RESTOREALL);
-+		} else {
-+			unsigned long toc;
+ 	/* Set up "regs" so we "return" to the signal handler. */
+-	err |= get_user(regs->nip, &funct_desc_ptr->entry);
++	if (is_elf2_task()) {
++		regs->nip = (unsigned long) ka->sa.sa_handler;
++		regs->gpr[12] = regs->nip;
++	} else {
++		/* Handler is *really* a pointer to the function descriptor for
++		 * the signal routine.  The first entry in the function
++		 * descriptor is the entry address of signal and the second
++		 * entry is the TOC value we need to use.
++		 */
++		func_descr_t __user *funct_desc_ptr =
++			(func_descr_t __user *) ka->sa.sa_handler;
 +
-+			/* start is a relocated pointer to the function
-+			 * descriptor for the elf _start routine.  The first
-+			 * entry in the function descriptor is the entry
-+			 * address of _start and the second entry is the TOC
-+			 * value we need to use.
-+			 */
-+			__get_user(entry, (unsigned long __user *)start);
-+			__get_user(toc, (unsigned long __user *)start+1);
++		err |= get_user(regs->nip, &funct_desc_ptr->entry);
++		err |= get_user(regs->gpr[2], &funct_desc_ptr->toc);
++	}
 +
-+			/* Check whether the e_entry function descriptor entries
-+			 * need to be relocated before we can use them.
-+			 */
-+			if (load_addr != 0) {
-+				entry += load_addr;
-+				toc   += load_addr;
-+			}
-+			regs->gpr[2] = toc;
- 		}
- 		regs->nip = entry;
--		regs->gpr[2] = toc;
- 		regs->msr = MSR_USER64;
- 	} else {
- 		regs->nip = start;
+ 	/* enter the signal handler in native-endian mode */
+ 	regs->msr &= ~MSR_LE;
+ 	regs->msr |= (MSR_KERNEL & MSR_LE);
+ 	regs->gpr[1] = newsp;
+-	err |= get_user(regs->gpr[2], &funct_desc_ptr->toc);
+ 	regs->gpr[3] = signr;
+ 	regs->result = 0;
+ 	if (ka->sa.sa_flags & SA_SIGINFO) {
 -- 
 1.8.3.2
