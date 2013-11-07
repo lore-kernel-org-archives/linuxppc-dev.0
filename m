@@ -1,37 +1,23 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 25F062C00D1
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Nov 2013 00:37:03 +1100 (EST)
-Date: Thu, 7 Nov 2013 14:36:25 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Will Deacon <will.deacon@arm.com>
-Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
-Message-ID: <20131107133625.GU10651@twins.programming.kicks-ass.net>
-References: <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
- <20131104105059.GL3947@linux.vnet.ibm.com>
- <20131104112254.GK28601@twins.programming.kicks-ass.net>
- <20131104162732.GN3947@linux.vnet.ibm.com>
- <20131104191127.GW16117@laptop.programming.kicks-ass.net>
- <20131104205344.GW3947@linux.vnet.ibm.com>
- <20131106123946.GJ10651@twins.programming.kicks-ass.net>
- <CAMuHMdXZjQJvT7R4ODbDNBgAVwPUBPjB6UoR66_sNuFx7opUDw@mail.gmail.com>
- <20131106135736.GK10651@twins.programming.kicks-ass.net>
- <20131107111741.GD13139@mudshark.cambridge.arm.com>
+Return-Path: <dan.carpenter@oracle.com>
+Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "aserp1050.oracle.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C00C62C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 01:32:18 +1100 (EST)
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ by aserp1050.oracle.com (Sentrion-MTA-4.3.1/Sentrion-MTA-4.3.1) with ESMTP id
+ rA7Dh1WE011508
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 13:43:01 GMT
 MIME-Version: 1.0
+Message-ID: <20131107131247.GA13911@elgon.mountain>
+Date: Thu, 7 Nov 2013 05:12:47 -0800 (PST)
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: beckyb@kernel.crashing.org
+Subject: re: powerpc: Hugetlb for BookE
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131107111741.GD13139@mudshark.cambridge.arm.com>
-Cc: Michael Neuling <mikey@neuling.org>, Tony Luck <tony.luck@intel.com>,
- Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Oleg Nesterov <oleg@redhat.com>,
- LKML <linux-kernel@vger.kernel.org>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Anton Blanchard <anton@samba.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>, Russell King <linux@arm.linux.org.uk>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,125 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 07, 2013 at 11:17:41AM +0000, Will Deacon wrote:
-> Hi Peter,
-> 
-> Couple of minor fixes on the arm64 side...
-> 
-> On Wed, Nov 06, 2013 at 01:57:36PM +0000, Peter Zijlstra wrote:
-> > --- a/arch/arm64/include/asm/barrier.h
-> > +++ b/arch/arm64/include/asm/barrier.h
-> > @@ -35,11 +35,59 @@
-> >  #define smp_mb()       barrier()
-> >  #define smp_rmb()      barrier()
-> >  #define smp_wmb()      barrier()
-> > +
-> > +#define smp_store_release(p, v)                                                \
-> > +do {                                                                   \
-> > +       compiletime_assert_atomic_type(*p);                             \
-> > +       smp_mb();                                                       \
-> > +       ACCESS_ONCE(*p) = (v);                                          \
-> > +} while (0)
-> > +
-> > +#define smp_load_acquire(p)                                            \
-> > +({                                                                     \
-> > +       typeof(*p) ___p1 = ACCESS_ONCE(*p);                             \
-> > +       compiletime_assert_atomic_type(*p);                             \
-> > +       smp_mb();                                                       \
-> > +       ___p1;                                                          \
-> > +})
-> > +
-> >  #else
-> > +
-> >  #define smp_mb()       asm volatile("dmb ish" : : : "memory")
-> >  #define smp_rmb()      asm volatile("dmb ishld" : : : "memory")
-> >  #define smp_wmb()      asm volatile("dmb ishst" : : : "memory")
-> > -#endif
-> 
-> Why are you getting rid of this #endif?
+Hello Becky Bruce,
 
-oops..
+This is a semi-automatic email about new static checker warnings.
 
-> > +#define smp_store_release(p, v)                                                \
-> > +do {                                                                   \
-> > +       compiletime_assert_atomic_type(*p);                             \
-> > +       switch (sizeof(*p)) {                                           \
-> > +       case 4:                                                         \
-> > +               asm volatile ("stlr %w1, [%0]"                          \
-> > +                               : "=Q" (*p) : "r" (v) : "memory");      \
-> > +               break;                                                  \
-> > +       case 8:                                                         \
-> > +               asm volatile ("stlr %1, [%0]"                           \
-> > +                               : "=Q" (*p) : "r" (v) : "memory");      \
-> > +               break;                                                  \
-> > +       }                                                               \
-> > +} while (0)
-> > +
-> > +#define smp_load_acquire(p)                                            \
-> > +({                                                                     \
-> > +       typeof(*p) ___p1;                                               \
-> > +       compiletime_assert_atomic_type(*p);                             \
-> > +       switch (sizeof(*p)) {                                           \
-> > +       case 4:                                                         \
-> > +               asm volatile ("ldar %w0, [%1]"                          \
-> > +                       : "=r" (___p1) : "Q" (*p) : "memory");          \
-> > +               break;                                                  \
-> > +       case 8:                                                         \
-> > +               asm volatile ("ldar %0, [%1]"                           \
-> > +                       : "=r" (___p1) : "Q" (*p) : "memory");          \
-> > +               break;                                                  \
-> > +       }                                                               \
-> > +       ___p1;                                                          \
-> > +})
-> 
-> You don't need the square brackets when using the "Q" constraint (otherwise
-> it will expand to something like [[x0]], which gas won't accept).
-> 
-> With those changes, for the general idea and arm/arm64 parts:
-> 
->   Acked-by: Will Deacon <will.deacon@arm.com>
+The patch 41151e77a4d9: "powerpc: Hugetlb for BookE" from Jun 28, 
+2011, leads to the following Smatch complaint:
 
-Thanks, I did that split-up I talked about yesterday, I was going to
-compile them for all archs I have a compiler for before posting again.
+arch/powerpc/mm/hugetlbpage-book3e.c:120 flush_hugetlb_page()
+	 warn: variable dereferenced before check 'vma' (see line 117)
 
+arch/powerpc/mm/hugetlbpage-book3e.c
+   116	{
+   117		struct hstate *hstate = hstate_file(vma->vm_file);
+                                                    ^^^^^^^^^^^^
+Dereference.
 
+   118		unsigned long tsize = huge_page_shift(hstate) - 10;
+   119	
+   120		__flush_tlb_page(vma ? vma->vm_mm : NULL, vmaddr, tsize, 0);
+                                 ^^^
+Check is too late.
 
----
---- a/arch/arm64/include/asm/barrier.h
-+++ b/arch/arm64/include/asm/barrier.h
-@@ -62,11 +62,11 @@ do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	switch (sizeof(*p)) {						\
- 	case 4:								\
--		asm volatile ("stlr %w1, [%0]"				\
-+		asm volatile ("stlr %w1, %0"				\
- 				: "=Q" (*p) : "r" (v) : "memory");	\
- 		break;							\
- 	case 8:								\
--		asm volatile ("stlr %1, [%0]"				\
-+		asm volatile ("stlr %1, %0"				\
- 				: "=Q" (*p) : "r" (v) : "memory");	\
- 		break;							\
- 	}								\
-@@ -78,17 +78,19 @@ do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	switch (sizeof(*p)) {						\
- 	case 4:								\
--		asm volatile ("ldar %w0, [%1]"				\
-+		asm volatile ("ldar %w0, %1"				\
- 			: "=r" (___p1) : "Q" (*p) : "memory");		\
- 		break;							\
- 	case 8:								\
--		asm volatile ("ldar %0, [%1]"				\
-+		asm volatile ("ldar %0, %1"				\
- 			: "=r" (___p1) : "Q" (*p) : "memory");		\
- 		break;							\
- 	}								\
- 	___p1;								\
- })
- 
-+#endif
-+
- #define read_barrier_depends()		do { } while(0)
- #define smp_read_barrier_depends()	do { } while(0)
- 
+   121	
+   122	}
+
+Also in the caller:
+
+arch/powerpc/mm/tlb_nohash.c
+   305  void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
+   306  {
+   307  #ifdef CONFIG_HUGETLB_PAGE
+   308          if (is_vm_hugetlb_page(vma))
+                    ^^^^^^^^^^^^^^^^^^^^^^
+Dereferenced inside is_vm_hugetlb_page().
+
+   309                  flush_hugetlb_page(vma, vmaddr);
+   310  #endif
+   311  
+   312          __flush_tlb_page(vma ? vma->vm_mm : NULL, vmaddr,
+   313                           mmu_get_tsize(mmu_virtual_psize), 0);
+   314  }
+
+regards,
+dan carpenter
