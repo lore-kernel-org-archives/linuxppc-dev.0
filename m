@@ -1,42 +1,20 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E75A62C0087
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 16:28:10 +1100 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Thu, 7 Nov 2013 10:58:05 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 6B0F9394005A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 10:57:38 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rA75Rw4O46923996
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 10:57:59 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rA75S0G7024034
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 10:58:01 +0530
-Message-ID: <527B24D4.30009@linux.vnet.ibm.com>
-Date: Thu, 07 Nov 2013 10:57:48 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH V7 5/7] POWER/cpuidle: Generic POWER CPUIDLE driver
- supporting PSERIES.
-References: <20131029110052.31547.82682.stgit@deepthi.in.ibm.com>
- <20131029110148.31547.8944.stgit@deepthi.in.ibm.com>
- <527AAF1D.5080605@linaro.org> <527B13C8.9030602@linux.vnet.ibm.com>
- <1383800462.4776.165.camel@pasglop>
-In-Reply-To: <1383800462.4776.165.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org,
- preeti@linux.vnet.ibm.com, srivatsa.bhat@linux.vnet.ibm.com,
- scottwood@freescale.com, linux-pm@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-qa0-x22a.google.com (mail-qa0-x22a.google.com
+ [IPv6:2607:f8b0:400d:c00::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DC7D52C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 17:22:25 +1100 (EST)
+Received: by mail-qa0-f42.google.com with SMTP id ii20so117900qab.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Nov 2013 22:22:21 -0800 (PST)
+From: Liu Ping Fan <kernelfans@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	kvm-ppc@vger.kernel.org
+Subject: [PATCH v2 1/2] powerpc/kvm: fix rare but potential deadlock scene
+Date: Thu,  7 Nov 2013 14:22:54 +0800
+Message-Id: <1383805375-14766-1-git-send-email-pingfank@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,30 +24,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/07/2013 10:31 AM, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-11-07 at 09:45 +0530, Deepthi Dharwar wrote:
->> 'powerpc' would be very generic arch and would comprise of all platforms
->> including embedded 32/64 bit to server 64 bit (similar to that of ARM).
->> This driver does not intend to support complete powerpc arch, but just
->> PSERIES and POWERNV platforms termed as 'POWER' processors. So to avoid
->> confusion btw 'power mgmt' and 'POWER' archs, I have prefixed both the
->> driver and file names with 'IBM'namely ibm-power-driver, cpuidle-ibm-power.
-> 
+Since kvmppc_hv_find_lock_hpte() is called from both virtmode and
+realmode, so it can trigger the deadlock.
 
-Hi Ben,
+Suppose the following scene:
 
-> Why not book3s ? powerpc-book3s ?
+Two physical cpuM, cpuN, two VM instances A, B, each VM has a group of vcpus.
 
-I went with 'ibm-power' thinking it would resolve the confusion,
-but if ppl feel that is is good to get away from 'POWER' and have
-powerpc-book3s instead to make things clearer, I am open for it.
+If on cpuM, vcpu_A_1 holds bitlock X (HPTE_V_HVLOCK), then is switched out,
+and on cpuN, vcpu_A_2 try to lock X in realmode, then cpuN will be caught in
+realmode for a long time.
 
+What makes things even worse if the following happens,
+  On cpuM, bitlockX is hold, on cpuN, Y is hold.
+  vcpu_B_2 try to lock Y on cpuM in realmode
+  vcpu_A_2 try to lock X on cpuN in realmode
 
-Regards,
-Deepthi
+Oops! deadlock happens
 
-> That's what we use in other places to differenciate between the families
-> 
-> Ben.
-> 
-> 
+Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+---
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 043eec8..dbc1478 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -474,10 +474,13 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+ 	}
+ 
+ 	/* Find the HPTE in the hash table */
++	preempt_disable();
+ 	index = kvmppc_hv_find_lock_hpte(kvm, eaddr, slb_v,
+ 					 HPTE_V_VALID | HPTE_V_ABSENT);
+-	if (index < 0)
++	if (index < 0) {
++		preempt_enable();
+ 		return -ENOENT;
++	}
+ 	hptep = (unsigned long *)(kvm->arch.hpt_virt + (index << 4));
+ 	v = hptep[0] & ~HPTE_V_HVLOCK;
+ 	gr = kvm->arch.revmap[index].guest_rpte;
+@@ -485,6 +488,7 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+ 	/* Unlock the HPTE */
+ 	asm volatile("lwsync" : : : "memory");
+ 	hptep[0] = v;
++	preempt_enable();
+ 
+ 	gpte->eaddr = eaddr;
+ 	gpte->vpage = ((v & HPTE_V_AVPN) << 4) | ((eaddr >> 12) & 0xfff);
+-- 
+1.8.1.4
