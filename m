@@ -1,27 +1,22 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-qc0-x22f.google.com (mail-qc0-x22f.google.com
- [IPv6:2607:f8b0:400d:c01::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7BB672C0335
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 13:36:09 +1100 (EST)
-Received: by mail-qc0-f175.google.com with SMTP id e16so373150qcx.20
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Nov 2013 18:36:05 -0800 (PST)
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:6:4])
+ by ozlabs.org (Postfix) with ESMTP id EB8892C0335
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2013 13:38:36 +1100 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Subject: Re: [PATCH 3/7] IBM Akebono: Add support for a new PHY to the IBM
+ emac driver
+Date: Thu, 07 Nov 2013 13:39:10 +1100
+Message-ID: <9251129.ZkATbJnO5N@mexican>
+In-Reply-To: <1383756010.1520.5.camel@bwh-desktop.uk.level5networks.com>
+References: <1383629471-16979-1-git-send-email-alistair@popple.id.au>
+ <3555701.fBbreSn0Lp@mexican>
+ <1383756010.1520.5.camel@bwh-desktop.uk.level5networks.com>
 MIME-Version: 1.0
-In-Reply-To: <20131106111841.GA22605@iris.ozlabs.ibm.com>
-References: <1383637364-14691-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <1383637364-14691-2-git-send-email-pingfank@linux.vnet.ibm.com>
- <20131106050418.GD14842@drongo>
- <CAFgQCTsxEAqMDt=zfFMhEG2CZ6G=QpH+OsPvJkvjFU7GkDOcXQ@mail.gmail.com>
- <20131106111841.GA22605@iris.ozlabs.ibm.com>
-Date: Thu, 7 Nov 2013 10:36:05 +0800
-Message-ID: <CAFgQCTvpLR8nZFeJkeMiAeAz3FX-VMikJpo9YF3Vq=MMDkyUHQ@mail.gmail.com>
-Subject: Re: [PATCH 2/3] powerpc/kvm: fix rare but potential deadlock scene
-From: Liu ping fan <kernelfans@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,48 +26,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 6, 2013 at 7:18 PM, Paul Mackerras <paulus@samba.org> wrote:
-> On Wed, Nov 06, 2013 at 02:02:07PM +0800, Liu ping fan wrote:
->> On Wed, Nov 6, 2013 at 1:04 PM, Paul Mackerras <paulus@samba.org> wrote:
->> > On Tue, Nov 05, 2013 at 03:42:43PM +0800, Liu Ping Fan wrote:
->> >> Since kvmppc_hv_find_lock_hpte() is called from both virtmode and
->> >> realmode, so it can trigger the deadlock.
->> >
->> > Good catch, we should have preemption disabled while ever we have a
->> > HPTE locked.
->> >
->> >> @@ -474,8 +474,10 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
->> >>       }
->> >>
->> >>       /* Find the HPTE in the hash table */
->> >> +     preempt_disable();
->> >>       index = kvmppc_hv_find_lock_hpte(kvm, eaddr, slb_v,
->> >>                                        HPTE_V_VALID | HPTE_V_ABSENT);
->> >> +     preempt_enable();
->> >
->> > Which means we need to add the preempt_enable after unlocking the
->> > HPTE, not here.
->> >
->> Yes. Sorry, but I am not sure about whether we can call
->> preempt_disable/enable() in realmode. I think since thread_info is
->> allocated with linear address, so we can use preempt_disable/enable()
->> inside kvmppc_hv_find_lock_hpte(), right?
->
-> Your analysis correctly pointed out that we can get a deadlock if we
-> can be preempted while holding a lock on a HPTE.  That means that we
-> have to disable preemption before taking an HPTE lock and keep it
-> disabled until after we unlock the HPTE.  Since the point of
-> kvmppc_hv_find_lock_hpte() is to lock the HPTE and return with it
-> locked, we can't have the preempt_enable() inside it.  The
-> preempt_enable() has to come after we have unlocked the HPTE.  That is
-> also why we can't have the preempt_enable() where your patch put it;
-> it needs to be about 9 lines further down, after the statement
-> hptep[0] = v.  (We also need to make sure to re-enable preemption in
-> the index < 0 case.)
->
-Oh, yes, will fix like what you said. My attention is attracted by the
-trick of calling kernel func in realmode, and miss the exact point
-where the lock is released.
+On Wed, 6 Nov 2013 16:40:10 Ben Hutchings wrote:
+> On Wed, 2013-11-06 at 12:34 +1100, Alistair Popple wrote:
+> > On Tue, 5 Nov 2013 23:11:50 Ben Hutchings wrote:
+> > > On Wed, 2013-11-06 at 06:54 +1100, Benjamin Herrenschmidt wrote:
+> > [snip]
+> > 
+> > > > It's an SoC bit so there's little point making it generally
+> > > > selectable by the user.
+> > > 
+> > > I think a better way to do this is:
+> > > 
+> > > config IBM_EMAC_RGMII_WOL
+> > > 
+> > > 	bool "IBM EMAC RGMII wake-on-LAN support"
+> > > 	depends on MY_WONDERFUL_NEW_SOC || COMPILE_TEST
+> > > 	default y if MY_WONDERFUL_NEW_SOC
+> > > 
+> > > Then anyone making an API change that affects this driver can check that
+> > > it still complies.
+> > 
+> > The method used in this patch is the same as what is currently used by the
+> > other IBM EMAC PHY interfaces (eg. config IBM_EMAC_ZMII etc). I'm happy to
+> > send a patch to update all of those as well for consistency but that would
+> > mean adding what each platform requires into EMACS Kconfig as well.
+> > 
+> > Personally I think it is nicer to keep the definitions of what each
+> > platform requires in one place (ie. arch/powerpc/platforms/44x/Kconfig)
+> > as it is consistent with what we do for other 44x drivers, however I am
+> > happy to use the above method if people think it's better.
+> 
+> Yes, I see your point.
+> 
+> > Alternatively we could do something like this:
+> > 
+> > config IBM_EMAC_RGMII_WOL
+> > 
+> >         bool
+> >         default y if COMPILE_TEST
+> >         default n
+> > 
+> > This would leave the platform dependencies as they are currently but still
+> > allow compile testing.
+> 
+> It still shouldn't default to y in that case.  Instead you can make the
+> symbol conditionally configurable:
+> 
+> config IBM_EMAC_RGMII_WOL
+> 	bool "IBM EMAC RGMII wake-on-LAN support" if COMPILE_TEST
+> 
+> and then select this from your platform Kconfig as you intended.
 
-Thanks and regards,
-Pingfan
+That looks reasonable - I will include it in the next version of the patch 
+series. Thanks.
+
+> (There is no need to put 'default n' as that's implicit for a
+> configurable symbol.  But it doesn't hurt either.)
+> 
+> Ben.
+
+Alistair
