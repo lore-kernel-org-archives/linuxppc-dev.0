@@ -1,23 +1,17 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "aserp1050.oracle.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C00C62C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 01:32:18 +1100 (EST)
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- by aserp1050.oracle.com (Sentrion-MTA-4.3.1/Sentrion-MTA-4.3.1) with ESMTP id
- rA7Dh1WE011508
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2013 13:43:01 GMT
+Return-Path: <stern+5260885c@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+ by ozlabs.org (Postfix) with SMTP id C757E2C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 02:04:33 +1100 (EST)
+Date: Thu, 7 Nov 2013 10:04:31 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Alistair Popple <alistair@popple.id.au>
+Subject: Re: [PATCH 4/7] IBM Akebono: Add support to the OHCI platform driver
+ for Akebono
+In-Reply-To: <1462812.9fJW2bi87G@mexican>
+Message-ID: <Pine.LNX.4.44L0.1311071003350.1401-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Message-ID: <20131107131247.GA13911@elgon.mountain>
-Date: Thu, 7 Nov 2013 05:12:47 -0800 (PST)
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: beckyb@kernel.crashing.org
-Subject: re: powerpc: Hugetlb for BookE
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Becky Bruce,
+On Thu, 7 Nov 2013, Alistair Popple wrote:
 
-This is a semi-automatic email about new static checker warnings.
+> Thanks. Based on the discussion for the EHCI driver I would like to change the 
+> compatibility string to "usb-ochi" (instead of "ibm,akebono-ohci"). Are you 
+> still happy for me to add the Acked-by with the alternate compatibility (and 
+> of course the formatting fix)? No other drivers currently use "usb-ochi" so it 
+> shouldn't require any merging of drivers.
 
-The patch 41151e77a4d9: "powerpc: Hugetlb for BookE" from Jun 28, 
-2011, leads to the following Smatch complaint:
+Yes, go ahead (as long as you use the right spelling, as Ben pointed 
+out).
 
-arch/powerpc/mm/hugetlbpage-book3e.c:120 flush_hugetlb_page()
-	 warn: variable dereferenced before check 'vma' (see line 117)
-
-arch/powerpc/mm/hugetlbpage-book3e.c
-   116	{
-   117		struct hstate *hstate = hstate_file(vma->vm_file);
-                                                    ^^^^^^^^^^^^
-Dereference.
-
-   118		unsigned long tsize = huge_page_shift(hstate) - 10;
-   119	
-   120		__flush_tlb_page(vma ? vma->vm_mm : NULL, vmaddr, tsize, 0);
-                                 ^^^
-Check is too late.
-
-   121	
-   122	}
-
-Also in the caller:
-
-arch/powerpc/mm/tlb_nohash.c
-   305  void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
-   306  {
-   307  #ifdef CONFIG_HUGETLB_PAGE
-   308          if (is_vm_hugetlb_page(vma))
-                    ^^^^^^^^^^^^^^^^^^^^^^
-Dereferenced inside is_vm_hugetlb_page().
-
-   309                  flush_hugetlb_page(vma, vmaddr);
-   310  #endif
-   311  
-   312          __flush_tlb_page(vma ? vma->vm_mm : NULL, vmaddr,
-   313                           mmu_get_tsize(mmu_virtual_psize), 0);
-   314  }
-
-regards,
-dan carpenter
+Alan Stern
