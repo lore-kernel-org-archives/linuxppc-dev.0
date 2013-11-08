@@ -1,26 +1,20 @@
 Return-Path: <kernelfans@gmail.com>
-Received: from mail-qe0-x235.google.com (mail-qe0-x235.google.com
- [IPv6:2607:f8b0:400d:c02::235])
+Received: from mail-oa0-x233.google.com (mail-oa0-x233.google.com
+ [IPv6:2607:f8b0:4003:c02::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3468A2C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 13:12:04 +1100 (EST)
-Received: by mail-qe0-f53.google.com with SMTP id cy11so1347532qeb.40
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Nov 2013 18:11:59 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <CF6D863C-3E0A-4BEF-B985-77B336BA92F1@suse.de>
-References: <1383805375-14766-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <1383805375-14766-2-git-send-email-pingfank@linux.vnet.ibm.com>
- <CF6D863C-3E0A-4BEF-B985-77B336BA92F1@suse.de>
-Date: Fri, 8 Nov 2013 10:11:59 +0800
-Message-ID: <CAFgQCTvsj6Ziif2YWOktC17oLWZkzoZaeDU70yg4vUAcRG58Tw@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] powerpc/kvm: remove redundant assignment
-From: Liu ping fan <kernelfans@gmail.com>
-To: Alexander Graf <agraf@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 37AF22C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 13:43:50 +1100 (EST)
+Received: by mail-oa0-f51.google.com with SMTP id o6so1984671oag.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Nov 2013 18:43:43 -0800 (PST)
+From: Liu Ping Fan <kernelfans@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	kvm-ppc@vger.kernel.org
+Subject: [PATCH] powerpc: kvm: optimize "sc 0" as fast return
+Date: Fri,  8 Nov 2013 10:44:16 +0800
+Message-Id: <1383878656-4196-1-git-send-email-pingfank@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,90 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 7, 2013 at 6:06 PM, Alexander Graf <agraf@suse.de> wrote:
->
-> On 07.11.2013, at 07:22, Liu Ping Fan <kernelfans@gmail.com> wrote:
->
->> ret is assigned twice with the same value, so remove the later one.
->>
->> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
->> Acked-by: Paul Mackerras <paulus@samba.org>
->
-> I suppose my last request for a patch description was slightly too abbrev=
-iated :). Sorry about that.
->
-> Imagine you are a Linux-stable maintainer. You have about 5000 patches in=
- front of you and you want to figure out whether a patch should get backpor=
-ted into a stable tree or not.
->
-> It's very easy to read through the patch description.
-> It's reasonably easy to do a git show on the patch.
-> It's very hard to look at the actual surrounding code that was changed.
->
-> If I open a text editor on the file, I immediately see what you're saying=
-:
->
->>         ret =3D RESUME_GUEST;
->>         preempt_disable();
->>         while (!try_lock_hpte(hptep, HPTE_V_HVLOCK))
->>                 cpu_relax();
->>         if ((hptep[0] & ~HPTE_V_HVLOCK) !=3D hpte[0] || hptep[1] !=3D hp=
-te[1] ||
->>             rev->guest_rpte !=3D hpte[2])
->>                 /* HPTE has been changed under us; let the guest retry *=
-/
->>                 goto out_unlock;
->>         hpte[0] =3D (hpte[0] & ~HPTE_V_ABSENT) | HPTE_V_VALID;
->>
->>         rmap =3D &memslot->arch.rmap[gfn - memslot->base_gfn];
->>         lock_rmap(rmap);
->>
->>         /* Check if we might have been invalidated; let the guest retry =
-if so */
->>         ret =3D RESUME_GUEST;
->
-> However, that scope is not given in the actual patch itself. If you look =
-at the diff below, you have no idea whether the patch is fixing a bug or ju=
-st removes duplication and doesn't actually have any effect. In fact, the c=
-ompiled assembly should be the same with this patch and without. But you ca=
-n't tell from the diff below.
->
-> So what I would like to see in the patch description is something that ma=
-kes it easy to understand what's going on without the need to check out the=
- source file. Something like
->
->> We redundantly set ret to RESUME_GUEST twice without changing it in betw=
-een. Only do it once:
->>
->>         ret =3D RESUME_GUEST;
->>         preempt_disable();
->>         while (!try_lock_hpte(hptep, HPTE_V_HVLOCK))
->>                 cpu_relax();
->>         if ((hptep[0] & ~HPTE_V_HVLOCK) !=3D hpte[0] || hptep[1] !=3D hp=
-te[1] ||
->>             rev->guest_rpte !=3D hpte[2])
->>                 /* HPTE has been changed under us; let the guest retry *=
-/
->>                 goto out_unlock;
->>         hpte[0] =3D (hpte[0] & ~HPTE_V_ABSENT) | HPTE_V_VALID;
->>
->>         rmap =3D &memslot->arch.rmap[gfn - memslot->base_gfn];
->>         lock_rmap(rmap);
->>
->>         /* Check if we might have been invalidated; let the guest retry =
-if so */
->>         ret =3D RESUME_GUEST;
->
->
-> If I look at that patch description it immediately tells me "Ah, no need =
-to worry, it's not a critical bug I need to backport". If you have a better=
- idea how to express that I'm more than happy to take that too. Otherwise j=
-ust let me know whether you like the description above and I'll modify it t=
-o the one that includes the code snippet when applying the patch.
->
-Oh, yes. Thank you very much..
-And I had a better understanding of the heavy work of maintainers :)
-Will keep this in mind.
+syscall is a very common behavior inside guest, and this patch
+optimizes the path for the emulation of BOOK3S_INTERRUPT_SYSCALL,
+so hypervisor can return to guest without heavy exit, i.e, no need
+to swap TLB, HTAB,.. etc
 
-Best regards,
-Pingfan
+Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+---
+Compiled, but lack of bare metal, I have not tested it yet.
+---
+ arch/powerpc/kvm/book3s_hv.c            |  6 ------
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 13 ++++++++++++-
+ 2 files changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 62a2b5a..73dc852 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -628,12 +628,6 @@ static int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		/* hcall - punt to userspace */
+ 		int i;
+ 
+-		if (vcpu->arch.shregs.msr & MSR_PR) {
+-			/* sc 1 from userspace - reflect to guest syscall */
+-			kvmppc_book3s_queue_irqprio(vcpu, BOOK3S_INTERRUPT_SYSCALL);
+-			r = RESUME_GUEST;
+-			break;
+-		}
+ 		run->papr_hcall.nr = kvmppc_get_gpr(vcpu, 3);
+ 		for (i = 0; i < 9; ++i)
+ 			run->papr_hcall.args[i] = kvmppc_get_gpr(vcpu, 4 + i);
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index c71103b..9f626c3 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1388,7 +1388,8 @@ kvmppc_hisi:
+ hcall_try_real_mode:
+ 	ld	r3,VCPU_GPR(R3)(r9)
+ 	andi.	r0,r11,MSR_PR
+-	bne	guest_exit_cont
++	/* sc 1 from userspace - reflect to guest syscall */
++	bne	sc_0_fast_return
+ 	clrrdi	r3,r3,2
+ 	cmpldi	r3,hcall_real_table_end - hcall_real_table
+ 	bge	guest_exit_cont
+@@ -1409,6 +1410,16 @@ hcall_try_real_mode:
+ 	ld	r11,VCPU_MSR(r4)
+ 	b	fast_guest_return
+ 
++sc_0_fast_return:
++	ld	r10,VCPU_PC(r9)
++	ld	r11,VCPU_MSR(r9)
++	mtspr	SPRN_SRR0,r10
++	mtspr	SPRN_SRR1,r11
++	li	r10, BOOK3S_INTERRUPT_SYSCALL
++	LOAD_REG_IMMEDIATE(r3,0xffffffff87a0ffff)	/* zero 33:36,42:47 */
++	and	r11,r11,r3
++	b	fast_guest_return
++
+ 	/* We've attempted a real mode hcall, but it's punted it back
+ 	 * to userspace.  We need to restore some clobbered volatiles
+ 	 * before resuming the pass-it-to-qemu path */
+-- 
+1.8.1.4
