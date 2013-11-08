@@ -2,19 +2,19 @@ Return-Path: <broonie@sirena.org.uk>
 Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D52E32C0085
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 22:45:18 +1100 (EST)
-Date: Fri, 8 Nov 2013 11:44:41 +0000
+ by ozlabs.org (Postfix) with ESMTPS id 5F5342C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2013 02:46:21 +1100 (EST)
+Date: Fri, 8 Nov 2013 15:45:32 +0000
 From: Mark Brown <broonie@kernel.org>
 To: Nicolin Chen <b42378@freescale.com>
-Message-ID: <20131108114441.GM2493@sirena.org.uk>
-References: <cover.1383907685.git.b42378@freescale.com>
- <20131108112919.GA5159@MrMyself>
+Message-ID: <20131108154532.GO2493@sirena.org.uk>
+References: <cover.1383910029.git.b42378@freescale.com>
+ <1045921af1119333da2d14628473a20ed7a202bd.1383910029.git.b42378@freescale.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="vYlOGI1a8wP+YbIl"
-In-Reply-To: <20131108112919.GA5159@MrMyself>
-Subject: Re: [PATCH v4 0/4] Add dual-fifo mode support of i.MX ssi
+ protocol="application/pgp-signature"; boundary="JIgDBBEDRU2Tt5Ar"
+In-Reply-To: <1045921af1119333da2d14628473a20ed7a202bd.1383910029.git.b42378@freescale.com>
+Subject: Re: [PATCH v5 3/4] ASoC: fsl_ssi: Add dual fifo mode support
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
  alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
  vinod.koul@intel.com, s.hauer@pengutronix.de, swarren@wwwdotorg.org,
@@ -32,40 +32,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---vYlOGI1a8wP+YbIl
+--JIgDBBEDRU2Tt5Ar
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Fri, Nov 08, 2013 at 07:29:20PM +0800, Nicolin Chen wrote:
+On Fri, Nov 08, 2013 at 07:32:53PM +0800, Nicolin Chen wrote:
+> By enabling dual fifo mode, it would allow SSI enter a better performance
+> to transimit/receive data without occasional hardware underrun/overrun.
 
-> Sorry all, I mistook the version number. It should be version 5.
+Acked-by: Mark Brown <broonie@linaro.org>
 
-> Please ignore this series version.
-
-There is no need to resend for things like getting the version number
-wrong in the subject line, that's just noise.  Please only resend things
-if there's a change in the actual patches.
-
---vYlOGI1a8wP+YbIl
+--JIgDBBEDRU2Tt5Ar
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSfM6mAAoJELSic+t+oim9awQP/0qHWvJ9Nnz/8tr9RuT9ALD3
-hZqkVqGUMpmCsRuCgpGWMqw+BfTa181ivuRaIhgB7sJaFp+F7Herz0cdUfft+5dr
-1OiI/HRAgJPorCRRLpJV8tGHClN2PFTW6eAs33esQuMye/LDgezrpCoz7fWRhr0V
-ocKnVJdzLL1nc1nA8HpB2MibaStHHv3yB6OQHVDzzxiaH6/An0cqPGF6RUYYsiC1
-MyudSXDkUCXvZkDgX3b48VV9jc6qERMbnobUuaEJ12B18aUtnHAEtjHzpJeHz3qt
-ZbYPRyskYtCwxPFxg3+hEERrGJYOm9r0qQatdvLCVSYe360VBOHkVdZrhKZEmXA8
-zji2NpmpkCwMqnarnQwPTjxiA6Ct4hvr9pw7PdzRBfz5mhQxJHV/nszqbraGOBvz
-aMBgTzrZQeT4IqMhtU+L5/GFKvCZliQA7F+WrR07N36O2tvBSS+VYF/PrDZ/2Yiv
-H+VpZCeSfwpA/EWDYHcgNBu/Q9xLvlfKYuTJOkHYHrzrgXsP0qLBhuHi14wNn+4e
-LcfHLfbXE3L6pP4y54nTaUgd+bmX1cN3IJQCW4NwqSsml08CWnZgwQZPeKznoprk
-4q9EOrDGuKQ0ttgAEDQWN5kJ4iUak8gD3bnEzPkYev6NORBaHaoZinI5AkrQj2B4
-uVoK66I3Hyinf006EdWh
-=27sP
+iQIcBAEBAgAGBQJSfQcYAAoJELSic+t+oim9B5MQAI2hUJqc2K2G9SSoRLNfYlqF
+s1znFLKOQ1cTecd5jwJj/Akt19icp1fcEwwQi/mOGZxhAoKUic6tMuzDDfRKbxZB
+eccwytknKUWQncezIZz6u384W49bBABPTKCmAkKSJHstzXiVVxSWeRgMTvRVkGEC
+kjKLQQDON30zmLcT/8mEtEt6nT0vT3dimRXIHEiBi31SK1kBynYqDDd67SuICKPB
+YLsRY6f7cpw5+Bs3Pk+HHIdnMtMMl3gj51Hr0xO9THGJu3PoLIqW24mCvV2qXK4U
+zALThl+fgQRJ+PN9Oz/lXUE4gDgLNLKMDVXKe//8upl52Q7B27APZcSZG22IlYDb
+Qvg+JgMunRpZaHQGd1/cA/lgFSF8dBYcbysWao9xqf+IPzrW6o8HELrwIWFO+og/
+a20Jekpn6WFpsVJSLxOrUORDN/IfmlyCu18YQHAC7uYKDGNgLjVa7wGVVXk6XyF1
+BCw+EBPF7+t2H3oobFwcR5gaD1+omJ7A2FB9gdK1I+zSDeaz7edSqbWFnEMzvdTx
+Ynlpf6PR04g+UvHQr+Kn5RxofSKLJPdD1sumQPvArfw+fdKeKUUCSMAtH72BupvV
+g/HqT99wyMcQiPyWPToDe3M1iNABmi7jHWyUEv8C/AcoZn4IdLJQ4Hnfh3EKXK/8
+NRwu3wOKk0FhDaJwhzG0
+=eddQ
 -----END PGP SIGNATURE-----
 
---vYlOGI1a8wP+YbIl--
+--JIgDBBEDRU2Tt5Ar--
