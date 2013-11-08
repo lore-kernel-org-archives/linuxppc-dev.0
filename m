@@ -1,15 +1,28 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Fri, 8 Nov 2013 22:12:17 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Liu Ping Fan <kernelfans@gmail.com>
-Subject: Re: [PATCH] powerpc: kvm: optimize "sc 0" as fast return
-Message-ID: <20131108111217.GD16470@iris.ozlabs.ibm.com>
-References: <1383878656-4196-1-git-send-email-pingfank@linux.vnet.ibm.com>
+Return-Path: <guangyu.chen@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DC9F42C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 22:31:34 +1100 (EST)
+Date: Fri, 8 Nov 2013 19:29:20 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
+ <s.hauer@pengutronix.de>, <timur@tabi.org>, <shawn.guo@linaro.org>,
+ <broonie@kernel.org>
+Subject: Re: [PATCH v4 0/4] Add dual-fifo mode support of i.MX ssi
+Message-ID: <20131108112919.GA5159@MrMyself>
+References: <cover.1383907685.git.b42378@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1383878656-4196-1-git-send-email-pingfank@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <cover.1383907685.git.b42378@freescale.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, swarren@wwwdotorg.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ rob.herring@calxeda.com, dmaengine@vger.kernel.org,
+ ijc+devicetree@hellion.org.uk, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,58 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 08, 2013 at 10:44:16AM +0800, Liu Ping Fan wrote:
-> syscall is a very common behavior inside guest, and this patch
-> optimizes the path for the emulation of BOOK3S_INTERRUPT_SYSCALL,
-> so hypervisor can return to guest without heavy exit, i.e, no need
-> to swap TLB, HTAB,.. etc
+On Fri, Nov 08, 2013 at 06:49:32PM +0800, Nicolin Chen wrote:
+>  * ! This series of patches has a direct dependency between them. When
+>  * ! applying them, we need to apply to one single branch. Otherwise,
+>  * ! it would break currect branches.
+> 
+> Changelog
+> v4:
+>  * PATCH-3: Add period size constraint when using dual fifo mode
+>  *
+>  * Nothing changes for PATCH-1, PATCH-2 and PATCH-4
 
-Many interrupts that are caused by guest code go directly to the guest
-and don't come to the hypervisor at all.  That includes system call
-(sc 0), alignment interrupts, program interrupts, SLB miss interrupts,
-etc.  See section 6.5 of Book 3S of the Power ISA specification; all
-the interrupts with '-' in the 'HV' column of the table there get
-delivered directly to the guest when they occur inside a guest.
 
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -1388,7 +1388,8 @@ kvmppc_hisi:
->  hcall_try_real_mode:
->  	ld	r3,VCPU_GPR(R3)(r9)
->  	andi.	r0,r11,MSR_PR
-> -	bne	guest_exit_cont
-> +	/* sc 1 from userspace - reflect to guest syscall */
-> +	bne	sc_0_fast_return
+Sorry all, I mistook the version number. It should be version 5.
 
-Discrepancy between comment and code here.  In fact we would only take
-the branch for a sc 1 instruction in userspace, which occurs when a PR
-KVM guest nested inside a HV KVM guest does a hypercall (i.e., not for
-normal system calls).  It is probably worthwhile to speed those up.
+Please ignore this series version.
 
-> +sc_0_fast_return:
-> +	ld	r10,VCPU_PC(r9)
-> +	ld	r11,VCPU_MSR(r9)
+I'll resend v5 soon.
 
-r11 must already contain this since you just did andi. r0,r11,MSR_PR.
-In fact r10 already contains VCPU_PC(r9) at this point also, though
-that is not so obvious.
-
-> +	mtspr	SPRN_SRR0,r10
-> +	mtspr	SPRN_SRR1,r11
-> +	li	r10, BOOK3S_INTERRUPT_SYSCALL
-> +	LOAD_REG_IMMEDIATE(r3,0xffffffff87a0ffff)	/* zero 33:36,42:47 */
-> +	and	r11,r11,r3
-
-This is not correct, since you don't even clear PR.  In fact what you
-need is to load up MSR_SF | MSR_ME, though that value changes with
-little-endian support and changes again with transactional memory
-support for POWER8.  There is an idiom for loading that MSR value,
-which is:
-
-	li	r11, (MSR_ME << 1) | 1	/* synthesize MSR_SF | MSR_ME */
-	rotldi	r11, r11, 63
-
-which you could use for now, but it will need to be changed when
-Anton's LE patch gets accepted.
-
-Paul.
+Nicolin Chen
