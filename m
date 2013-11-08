@@ -1,27 +1,24 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5F5342C009A
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2013 02:46:21 +1100 (EST)
-Date: Fri, 8 Nov 2013 15:45:32 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <b42378@freescale.com>
-Message-ID: <20131108154532.GO2493@sirena.org.uk>
-References: <cover.1383910029.git.b42378@freescale.com>
- <1045921af1119333da2d14628473a20ed7a202bd.1383910029.git.b42378@freescale.com>
+Return-Path: <scottwood@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 161BB2C0077
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2013 08:16:24 +1100 (EST)
+Message-ID: <1383945372.23598.211.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/85xx: don't init the mpic ipi for the SoC which
+ has doorbell support
+From: Scott Wood <scottwood@freescale.com>
+To: Kevin Hao <haokexin@gmail.com>
+Date: Fri, 8 Nov 2013 15:16:12 -0600
+In-Reply-To: <20131108015446.GA31761@pek-khao-d1.corp.ad.wrs.com>
+References: <1383808637-26769-1-git-send-email-haokexin@gmail.com>
+ <1383845691.23598.125.camel@snotra.buserror.net>
+ <20131108015446.GA31761@pek-khao-d1.corp.ad.wrs.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="JIgDBBEDRU2Tt5Ar"
-In-Reply-To: <1045921af1119333da2d14628473a20ed7a202bd.1383910029.git.b42378@freescale.com>
-Subject: Re: [PATCH v5 3/4] ASoC: fsl_ssi: Add dual fifo mode support
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- vinod.koul@intel.com, s.hauer@pengutronix.de, swarren@wwwdotorg.org,
- timur@tabi.org, rob.herring@calxeda.com, linux-kernel@vger.kernel.org,
- ijc+devicetree@hellion.org.uk, dmaengine@vger.kernel.org,
- dan.j.williams@intel.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2013-11-08 at 09:54 +0800, Kevin Hao wrote:
+> On Thu, Nov 07, 2013 at 11:34:51AM -0600, Scott Wood wrote:
+> > On Thu, 2013-11-07 at 15:17 +0800, Kevin Hao wrote:
+> > > It makes no sense to initialize the mpic ipi for the SoC which has
+> > > doorbell support. So set the smp_85xx_ops.probe to NULL for this
+> > > case. Since the smp_85xx_ops.probe is also used in function
+> > > smp_85xx_setup_cpu() to check if we need to invoke
+> > > mpic_setup_this_cpu(), we introduce a new setup_cpu function
+> > > smp_85xx_basic_setup() to remove this dependency.
+> > 
+> > Is there any harm caused by setting up the IPIs?
+> 
+> No real harm. Just make no sense to do so and it does cause confusion
+> when you cat /proc/interrupts and get something like this:
+>   507:          0          0   OpenPIC   2043 Edge      ipi call function
+>   508:          0          0   OpenPIC   2044 Edge      ipi reschedule
+>   509:          0          0   OpenPIC   2045 Edge      ipi call function single
+>   DBL:       7053      10137   Doorbell interrupts
+> 
+> > 
+> > What about other MPIC setup, such as setting the current task priority
+> > register?
+> 
+> This is done by the invoking of function mpic_setup_this_cpu() in
+> smp_85xx_setup_cpu().
 
---JIgDBBEDRU2Tt5Ar
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+OK...  Why are you splitting out smp_85xx_basic_setup()?  Where do you
+call it other than from smp_85xx_setup_cpu()?  Couldn't you have just
+removed the conditional without splitting up the function?  The change
+log says it's "to check if we need to invoke mpic_setup_this_cpu()"
+which doesn't make sense since we always want to call
+mpic_setup_this_cpu() if we have an MPIC.
 
-On Fri, Nov 08, 2013 at 07:32:53PM +0800, Nicolin Chen wrote:
-> By enabling dual fifo mode, it would allow SSI enter a better performance
-> to transimit/receive data without occasional hardware underrun/overrun.
-
-Acked-by: Mark Brown <broonie@linaro.org>
-
---JIgDBBEDRU2Tt5Ar
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSfQcYAAoJELSic+t+oim9B5MQAI2hUJqc2K2G9SSoRLNfYlqF
-s1znFLKOQ1cTecd5jwJj/Akt19icp1fcEwwQi/mOGZxhAoKUic6tMuzDDfRKbxZB
-eccwytknKUWQncezIZz6u384W49bBABPTKCmAkKSJHstzXiVVxSWeRgMTvRVkGEC
-kjKLQQDON30zmLcT/8mEtEt6nT0vT3dimRXIHEiBi31SK1kBynYqDDd67SuICKPB
-YLsRY6f7cpw5+Bs3Pk+HHIdnMtMMl3gj51Hr0xO9THGJu3PoLIqW24mCvV2qXK4U
-zALThl+fgQRJ+PN9Oz/lXUE4gDgLNLKMDVXKe//8upl52Q7B27APZcSZG22IlYDb
-Qvg+JgMunRpZaHQGd1/cA/lgFSF8dBYcbysWao9xqf+IPzrW6o8HELrwIWFO+og/
-a20Jekpn6WFpsVJSLxOrUORDN/IfmlyCu18YQHAC7uYKDGNgLjVa7wGVVXk6XyF1
-BCw+EBPF7+t2H3oobFwcR5gaD1+omJ7A2FB9gdK1I+zSDeaz7edSqbWFnEMzvdTx
-Ynlpf6PR04g+UvHQr+Kn5RxofSKLJPdD1sumQPvArfw+fdKeKUUCSMAtH72BupvV
-g/HqT99wyMcQiPyWPToDe3M1iNABmi7jHWyUEv8C/AcoZn4IdLJQ4Hnfh3EKXK/8
-NRwu3wOKk0FhDaJwhzG0
-=eddQ
------END PGP SIGNATURE-----
-
---JIgDBBEDRU2Tt5Ar--
+-Scott
