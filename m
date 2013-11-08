@@ -1,27 +1,27 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4377D2C0477
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 22:33:32 +1100 (EST)
-From: Nicolin Chen <b42378@freescale.com>
-To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
- <s.hauer@pengutronix.de>, <timur@tabi.org>, <shawn.guo@linaro.org>,
- <broonie@kernel.org>
-Subject: [PATCH v5 4/4] ARM: dts: imx: use dual-fifo sdma script for ssi
-Date: Fri, 8 Nov 2013 19:32:54 +0800
-Message-ID: <086ab5d4ad12e1bf8b4a8a2e1fb38108b5728919.1383910029.git.b42378@freescale.com>
-In-Reply-To: <cover.1383910029.git.b42378@freescale.com>
-References: <cover.1383910029.git.b42378@freescale.com>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D52E32C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 22:45:18 +1100 (EST)
+Date: Fri, 8 Nov 2013 11:44:41 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <b42378@freescale.com>
+Message-ID: <20131108114441.GM2493@sirena.org.uk>
+References: <cover.1383907685.git.b42378@freescale.com>
+ <20131108112919.GA5159@MrMyself>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="vYlOGI1a8wP+YbIl"
+In-Reply-To: <20131108112919.GA5159@MrMyself>
+Subject: Re: [PATCH v4 0/4] Add dual-fifo mode support of i.MX ssi
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
  alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- swarren@wwwdotorg.org, linux-kernel@vger.kernel.org, rob.herring@calxeda.com,
- dmaengine@vger.kernel.org, ijc+devicetree@hellion.org.uk,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ vinod.koul@intel.com, s.hauer@pengutronix.de, swarren@wwwdotorg.org,
+ timur@tabi.org, rob.herring@calxeda.com, linux-kernel@vger.kernel.org,
+ ijc+devicetree@hellion.org.uk, dmaengine@vger.kernel.org,
+ dan.j.williams@intel.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,119 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use dual-fifo sdma scripts instead of shared scripts for ssi on i.MX series.
 
-Signed-off-by: Nicolin Chen <b42378@freescale.com>
----
- arch/arm/boot/dts/imx51.dtsi   |  4 ++--
- arch/arm/boot/dts/imx53.dtsi   |  4 ++--
- arch/arm/boot/dts/imx6qdl.dtsi | 12 ++++++------
- arch/arm/boot/dts/imx6sl.dtsi  | 12 ++++++------
- 4 files changed, 16 insertions(+), 16 deletions(-)
+--vYlOGI1a8wP+YbIl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/arm/boot/dts/imx51.dtsi b/arch/arm/boot/dts/imx51.dtsi
-index 54cee65..1a71eac 100644
---- a/arch/arm/boot/dts/imx51.dtsi
-+++ b/arch/arm/boot/dts/imx51.dtsi
-@@ -154,8 +154,8 @@
- 					reg = <0x70014000 0x4000>;
- 					interrupts = <30>;
- 					clocks = <&clks 49>;
--					dmas = <&sdma 24 1 0>,
--					       <&sdma 25 1 0>;
-+					dmas = <&sdma 24 22 0>,
-+					       <&sdma 25 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <25 24 23 22>; /* TX0 RX0 TX1 RX1 */
-diff --git a/arch/arm/boot/dts/imx53.dtsi b/arch/arm/boot/dts/imx53.dtsi
-index 4307e80..7208fde 100644
---- a/arch/arm/boot/dts/imx53.dtsi
-+++ b/arch/arm/boot/dts/imx53.dtsi
-@@ -153,8 +153,8 @@
- 					reg = <0x50014000 0x4000>;
- 					interrupts = <30>;
- 					clocks = <&clks 49>;
--					dmas = <&sdma 24 1 0>,
--					       <&sdma 25 1 0>;
-+					dmas = <&sdma 24 22 0>,
-+					       <&sdma 25 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <25 24 23 22>; /* TX0 RX0 TX1 RX1 */
-diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-index 57e9c38..6e096ca 100644
---- a/arch/arm/boot/dts/imx6qdl.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl.dtsi
-@@ -223,8 +223,8 @@
- 					reg = <0x02028000 0x4000>;
- 					interrupts = <0 46 0x04>;
- 					clocks = <&clks 178>;
--					dmas = <&sdma 37 1 0>,
--					       <&sdma 38 1 0>;
-+					dmas = <&sdma 37 22 0>,
-+					       <&sdma 38 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <38 37>;
-@@ -236,8 +236,8 @@
- 					reg = <0x0202c000 0x4000>;
- 					interrupts = <0 47 0x04>;
- 					clocks = <&clks 179>;
--					dmas = <&sdma 41 1 0>,
--					       <&sdma 42 1 0>;
-+					dmas = <&sdma 41 22 0>,
-+					       <&sdma 42 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <42 41>;
-@@ -249,8 +249,8 @@
- 					reg = <0x02030000 0x4000>;
- 					interrupts = <0 48 0x04>;
- 					clocks = <&clks 180>;
--					dmas = <&sdma 45 1 0>,
--					       <&sdma 46 1 0>;
-+					dmas = <&sdma 45 22 0>,
-+					       <&sdma 46 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <46 45>;
-diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
-index c46651e..b32ba99 100644
---- a/arch/arm/boot/dts/imx6sl.dtsi
-+++ b/arch/arm/boot/dts/imx6sl.dtsi
-@@ -195,8 +195,8 @@
- 					reg = <0x02028000 0x4000>;
- 					interrupts = <0 46 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI1>;
--					dmas = <&sdma 37 1 0>,
--					       <&sdma 38 1 0>;
-+					dmas = <&sdma 37 22 0>,
-+					       <&sdma 38 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
-@@ -207,8 +207,8 @@
- 					reg = <0x0202c000 0x4000>;
- 					interrupts = <0 47 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI2>;
--					dmas = <&sdma 41 1 0>,
--					       <&sdma 42 1 0>;
-+					dmas = <&sdma 41 22 0>,
-+					       <&sdma 42 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
-@@ -219,8 +219,8 @@
- 					reg = <0x02030000 0x4000>;
- 					interrupts = <0 48 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI3>;
--					dmas = <&sdma 45 1 0>,
--					       <&sdma 46 1 0>;
-+					dmas = <&sdma 45 22 0>,
-+					       <&sdma 46 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
--- 
-1.8.4
+On Fri, Nov 08, 2013 at 07:29:20PM +0800, Nicolin Chen wrote:
+
+> Sorry all, I mistook the version number. It should be version 5.
+
+> Please ignore this series version.
+
+There is no need to resend for things like getting the version number
+wrong in the subject line, that's just noise.  Please only resend things
+if there's a change in the actual patches.
+
+--vYlOGI1a8wP+YbIl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSfM6mAAoJELSic+t+oim9awQP/0qHWvJ9Nnz/8tr9RuT9ALD3
+hZqkVqGUMpmCsRuCgpGWMqw+BfTa181ivuRaIhgB7sJaFp+F7Herz0cdUfft+5dr
+1OiI/HRAgJPorCRRLpJV8tGHClN2PFTW6eAs33esQuMye/LDgezrpCoz7fWRhr0V
+ocKnVJdzLL1nc1nA8HpB2MibaStHHv3yB6OQHVDzzxiaH6/An0cqPGF6RUYYsiC1
+MyudSXDkUCXvZkDgX3b48VV9jc6qERMbnobUuaEJ12B18aUtnHAEtjHzpJeHz3qt
+ZbYPRyskYtCwxPFxg3+hEERrGJYOm9r0qQatdvLCVSYe360VBOHkVdZrhKZEmXA8
+zji2NpmpkCwMqnarnQwPTjxiA6Ct4hvr9pw7PdzRBfz5mhQxJHV/nszqbraGOBvz
+aMBgTzrZQeT4IqMhtU+L5/GFKvCZliQA7F+WrR07N36O2tvBSS+VYF/PrDZ/2Yiv
+H+VpZCeSfwpA/EWDYHcgNBu/Q9xLvlfKYuTJOkHYHrzrgXsP0qLBhuHi14wNn+4e
+LcfHLfbXE3L6pP4y54nTaUgd+bmX1cN3IJQCW4NwqSsml08CWnZgwQZPeKznoprk
+4q9EOrDGuKQ0ttgAEDQWN5kJ4iUak8gD3bnEzPkYev6NORBaHaoZinI5AkrQj2B4
+uVoK66I3Hyinf006EdWh
+=27sP
+-----END PGP SIGNATURE-----
+
+--vYlOGI1a8wP+YbIl--
