@@ -1,26 +1,20 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-qe0-x232.google.com (mail-qe0-x232.google.com
- [IPv6:2607:f8b0:400d:c02::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E4482C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 19:38:26 +1100 (EST)
-Received: by mail-qe0-f50.google.com with SMTP id 1so1621221qee.37
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2013 00:38:19 -0800 (PST)
+Return-Path: <aijazbaig1.new@gmail.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0DC922C00E3
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Nov 2013 21:46:27 +1100 (EST)
+Received: from tom.nabble.com ([192.168.236.105])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <aijazbaig1.new@gmail.com>) id 1Veja4-00078b-8m
+ for linuxppc-dev@ozlabs.org; Fri, 08 Nov 2013 02:46:24 -0800
+Date: Fri, 8 Nov 2013 02:46:24 -0800 (PST)
+From: pegasus <aijazbaig1.new@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1383907583944-77960.post@n7.nabble.com>
+Subject: BookE "branch taken" behavior vis-a-vis updating the NIP register
 MIME-Version: 1.0
-In-Reply-To: <CAFgQCTvWAAr83nq9MmZm44Om36kYC3tOnkUPumfRAVCeYXjLAg@mail.gmail.com>
-References: <1383878656-4196-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <470E7CC0-6397-4343-89DA-6818531E6775@suse.de>
- <CAFgQCTvWAAr83nq9MmZm44Om36kYC3tOnkUPumfRAVCeYXjLAg@mail.gmail.com>
-Date: Fri, 8 Nov 2013 16:38:19 +0800
-Message-ID: <CAFgQCTv98HzhHZKX+QCc0hebdHQweNzaJhpxZJzvpp1eQgKcmw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: kvm: optimize "sc 0" as fast return
-From: Liu ping fan <kernelfans@gmail.com>
-To: Alexander Graf <agraf@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,38 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 8, 2013 at 12:19 PM, Liu ping fan <kernelfans@gmail.com> wrote:
-> On Fri, Nov 8, 2013 at 11:10 AM, Alexander Graf <agraf@suse.de> wrote:
->>
->> On 08.11.2013, at 03:44, Liu Ping Fan <kernelfans@gmail.com> wrote:
->>
->>> syscall is a very common behavior inside guest, and this patch
->>> optimizes the path for the emulation of BOOK3S_INTERRUPT_SYSCALL,
->>> so hypervisor can return to guest without heavy exit, i.e, no need
->>> to swap TLB, HTAB,.. etc
->>
->> The syscall exit you touch here only happens when you do an sc > 0 with MSR_PR set inside the guest. The only case you realistically see this is when you run PR KVM inside of an HV KVM guest.
->>
-> Maybe I misunderstood the ISA spec, but refer for "6.5.14 System Call
-> Interrupt", no description about the MSR_PR when sc trigger a syscall
-> interrupt. So I think, guest application "sc 0" will also fall to the
-> kernel who owns hypervisor mode.  Am I right?
->
-Some further comment: I think the essential of the problem is whether
-we switch RMA from guest to HV when interrupts raise.
-DSI/ISI will be redirected to HDSI and RMA switch.  But what about
-SYSCALL, and DEC, external interrupt, ...etc?
+Hello.
 
->> I don't think we should optimize for that case. Instead, we should rather try to not bounce to the 1st hypervisor in the first place in that scenario :).
->>
-> Sorry, but just want to make clear about the idiom:  0 -> kernel run
-> with NV, and 1st -> kernel run on HV-KVM and provide PR-KVM to up
-> layer? Right?
->
-> When you say "try to not bounce to the 1st hypervisor ", what is the
-> exact meaning and how can we achieve this?  I am a quite newer on
-> powerpc, and hope that I can get more clear figure about it  :)
->
+I was reading the source code for the debug exception under powerpc. I saw
+that BookE processors stop before (actually) taking a branch. Hence in order
+to force it to take that branch and then stop, the source code for it had to
+be "hacked'  to (temporarily) enable single step until the branch
+instruction has been taken, thereby mimicing the BookS behavior. 
 
-Thanks
-Pingfan
+By doing this, I believe we would want the exception to be triggered after
+the branch has been successfully taken. Hence I put a printk to print the
+value of the instruction that actually caused the exception. I was assuming
+that initially a debug breakpoint would be hit on the branch instruction
+(assuming the branch is supposed to be taken). Now since at this point in
+time, the branch instruction has NOT finished, the kernel, after merely
+disabling the BT bit in DBCR0 and enabling IC bit in DBCR0, returns. At this
+point I was assuming we will see another exception at the very same
+instruction in userspace. However, when printing the NIP it becomes clear
+that when it gets to the debug exception handler after being (temporarily)
+set to single step, NIP points to the instruction after the branch
+instruction. To me, it appears that, after disabling BT (branch taken) debug
+event monitoring (and enabling single stepping), it does not catch an
+exception at that very same branch instruction, instead it catches an
+exception for the subsequent instruction. Sorry for the repetition but I
+wanted to clarify what I am seeing here.
+
+May be this IS the way it is supposed to behave (which means my thinking
+about it is flawed). I am a bit confused here. 
+
+Please let me know more..Im keen to hear from you folks.
+
+
+
+--
+View this message in context: http://linuxppc.10917.n7.nabble.com/BookE-branch-taken-behavior-vis-a-vis-updating-the-NIP-register-tp77960.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
