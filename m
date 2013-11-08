@@ -1,24 +1,39 @@
-Return-Path: <scottwood@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+Return-Path: <guangyu.chen@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 161BB2C0077
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2013 08:16:24 +1100 (EST)
-Message-ID: <1383945372.23598.211.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc/85xx: don't init the mpic ipi for the SoC which
- has doorbell support
-From: Scott Wood <scottwood@freescale.com>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Fri, 8 Nov 2013 15:16:12 -0600
-In-Reply-To: <20131108015446.GA31761@pek-khao-d1.corp.ad.wrs.com>
-References: <1383808637-26769-1-git-send-email-haokexin@gmail.com>
- <1383845691.23598.125.camel@snotra.buserror.net>
- <20131108015446.GA31761@pek-khao-d1.corp.ad.wrs.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 518AC2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 22:53:03 +1100 (EST)
+From: Guangyu Chen <guangyu.chen@freescale.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v4 0/4] Add dual-fifo mode support of i.MX ssi
+Date: Fri, 8 Nov 2013 11:52:48 +0000
+Message-ID: <qhujk71bqaj71qtkkasql3ga.1383911576584@email.android.com>
+References: <cover.1383907685.git.b42378@freescale.com>
+ <20131108112919.GA5159@MrMyself>,<20131108114441.GM2493@sirena.org.uk>
+In-Reply-To: <20131108114441.GM2493@sirena.org.uk>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "vinod.koul@intel.com" <vinod.koul@intel.com>,
+ "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "timur@tabi.org" <timur@tabi.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
+ Guangyu Chen <guangyu.chen@freescale.com>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +43,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-11-08 at 09:54 +0800, Kevin Hao wrote:
-> On Thu, Nov 07, 2013 at 11:34:51AM -0600, Scott Wood wrote:
-> > On Thu, 2013-11-07 at 15:17 +0800, Kevin Hao wrote:
-> > > It makes no sense to initialize the mpic ipi for the SoC which has
-> > > doorbell support. So set the smp_85xx_ops.probe to NULL for this
-> > > case. Since the smp_85xx_ops.probe is also used in function
-> > > smp_85xx_setup_cpu() to check if we need to invoke
-> > > mpic_setup_this_cpu(), we introduce a new setup_cpu function
-> > > smp_85xx_basic_setup() to remove this dependency.
-> > 
-> > Is there any harm caused by setting up the IPIs?
-> 
-> No real harm. Just make no sense to do so and it does cause confusion
-> when you cat /proc/interrupts and get something like this:
->   507:          0          0   OpenPIC   2043 Edge      ipi call function
->   508:          0          0   OpenPIC   2044 Edge      ipi reschedule
->   509:          0          0   OpenPIC   2045 Edge      ipi call function single
->   DBL:       7053      10137   Doorbell interrupts
-> 
-> > 
-> > What about other MPIC setup, such as setting the current task priority
-> > register?
-> 
-> This is done by the invoking of function mpic_setup_this_cpu() in
-> smp_85xx_setup_cpu().
+Oh,  I am sorry about that.
 
-OK...  Why are you splitting out smp_85xx_basic_setup()?  Where do you
-call it other than from smp_85xx_setup_cpu()?  Couldn't you have just
-removed the conditional without splitting up the function?  The change
-log says it's "to check if we need to invoke mpic_setup_this_cpu()"
-which doesn't make sense since we always want to call
-mpic_setup_this_cpu() if we have an MPIC.
+I will follow the rule next time.
 
--Scott
+Thank you.
+
+Sent by Android device.
+
+Mark Brown <broonie@kernel.org> wrote:
+
+
+On Fri, Nov 08, 2013 at 07:29:20PM +0800, Nicolin Chen wrote:
+
+> Sorry all, I mistook the version number. It should be version 5.
+
+> Please ignore this series version.
+
+There is no need to resend for things like getting the version number
+wrong in the subject line, that's just noise.  Please only resend things
+if there's a change in the actual patches.
