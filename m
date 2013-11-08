@@ -1,31 +1,25 @@
-Return-Path: <compudj@krystal.dyndns.org>
-Received: from ironport2-out.teksavvy.com (ironport2-out.teksavvy.com
- [206.248.154.182]) by ozlabs.org (Postfix) with ESMTP id 0EDE02C0091
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Nov 2013 15:00:53 +1100 (EST)
-Date: Thu, 7 Nov 2013 18:50:01 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC] arch: Introduce new TSO memory barrier smp_tmb()
-Message-ID: <20131107235001.GA30034@Krystal>
-References: <20131101145634.GH19466@laptop.lan>
- <20131102173239.GB3947@linux.vnet.ibm.com>
- <20131103144017.GA25118@linux.vnet.ibm.com>
- <20131103151704.GJ19466@laptop.lan>
- <CA+55aFx_kuvR-0dwJtjvnhtha5QBc5XcLZPRH=WKT+hYVAKOrw@mail.gmail.com>
- <20131103200124.GK19466@laptop.lan>
- <20131103224242.GF3947@linux.vnet.ibm.com>
- <CA+55aFyD_kCkAHQwHCUBrumO-pH6LaZikTNvyWDW_tWsHdqk6Q@mail.gmail.com>
- <20131104105059.GL3947@linux.vnet.ibm.com>
- <20131104112254.GK28601@twins.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131104112254.GK28601@twins.programming.kicks-ass.net>
-Cc: Michael Neuling <mikey@neuling.org>, Oleg Nesterov <oleg@redhat.com>,
- LKML <linux-kernel@vger.kernel.org>, Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Frederic Weisbecker <fweisbec@gmail.com>,
- Victor Kaplansky <VICTORK@il.ibm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-qa0-x233.google.com (mail-qa0-x233.google.com
+ [IPv6:2607:f8b0:400d:c00::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B92552C00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2013 15:19:44 +1100 (EST)
+Received: by mail-qa0-f51.google.com with SMTP id hu16so1285777qab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Nov 2013 20:19:36 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <470E7CC0-6397-4343-89DA-6818531E6775@suse.de>
+References: <1383878656-4196-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <470E7CC0-6397-4343-89DA-6818531E6775@suse.de>
+Date: Fri, 8 Nov 2013 12:19:36 +0800
+Message-ID: <CAFgQCTvWAAr83nq9MmZm44Om36kYC3tOnkUPumfRAVCeYXjLAg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: kvm: optimize "sc 0" as fast return
+From: Liu ping fan <kernelfans@gmail.com>
+To: Alexander Graf <agraf@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,125 +29,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
+On Fri, Nov 8, 2013 at 11:10 AM, Alexander Graf <agraf@suse.de> wrote:
+>
+> On 08.11.2013, at 03:44, Liu Ping Fan <kernelfans@gmail.com> wrote:
+>
+>> syscall is a very common behavior inside guest, and this patch
+>> optimizes the path for the emulation of BOOK3S_INTERRUPT_SYSCALL,
+>> so hypervisor can return to guest without heavy exit, i.e, no need
+>> to swap TLB, HTAB,.. etc
+>
+> The syscall exit you touch here only happens when you do an sc > 0 with MSR_PR set inside the guest. The only case you realistically see this is when you run PR KVM inside of an HV KVM guest.
+>
+Maybe I misunderstood the ISA spec, but refer for "6.5.14 System Call
+Interrupt", no description about the MSR_PR when sc trigger a syscall
+interrupt. So I think, guest application "sc 0" will also fall to the
+kernel who owns hypervisor mode.  Am I right?
 
-[...]
+> I don't think we should optimize for that case. Instead, we should rather try to not bounce to the 1st hypervisor in the first place in that scenario :).
+>
+Sorry, but just want to make clear about the idiom:  0 -> kernel run
+with NV, and 1st -> kernel run on HV-KVM and provide PR-KVM to up
+layer? Right?
 
-Hi Peter,
+When you say "try to not bounce to the 1st hypervisor ", what is the
+exact meaning and how can we achieve this?  I am a quite newer on
+powerpc, and hope that I can get more clear figure about it  :)
 
-Looking at this simplified version of perf's ring buffer
-synchronization, I get concerned about the following issue:
+Thanks
 
-> /*
->  * One important detail is that the kbuf part and the kbuf_writer() are
->  * strictly per cpu and we can thus rely on program order for those.
->  *
->  * Only the userspace consumer can possibly run on another cpu, and thus we
->  * need to ensure data consistency for those.
->  */
-> 
-> struct buffer {
->         u64 size;
->         u64 tail;
->         u64 head;
->         void *data;
-> };
-> 
-> struct buffer *kbuf, *ubuf;
-> 
-> /*
->  * If there's space in the buffer; store the data @buf; otherwise
->  * discard it.
->  */
-> void kbuf_write(int sz, void *buf)
-> {
-> 	u64 tail, head, offset;
-> 
-> 	do {
-> 		tail = ACCESS_ONCE(ubuf->tail);
-> 		offset = head = kbuf->head;
-> 		if (CIRC_SPACE(head, tail, kbuf->size) < sz) {
-> 			/* discard @buf */
-> 			return;
-> 		}
-> 		head += sz;
-> 	} while (local_cmpxchg(&kbuf->head, offset, head) != offset)
-> 
-
-Let's suppose we have a thread executing kbuf_write(), interrupted by an
-IRQ or NMI right after a successful local_cmpxchg() (space reservation
-in the buffer). If the nested execution context also calls kbuf_write(),
-it will therefore update ubuf->head (below) with the second reserved
-space, and only after that will it return to the original thread context
-and continue executing kbuf_write(), thus overwriting ubuf->head with
-the prior-to-last reserved offset.
-
-All this probably works OK most of the times, when we have an event flow
-guaranteeing that a following event will fix things up, but there
-appears to be a risk of losing events near the end of the trace when
-those are in nested execution contexts.
-
-Thoughts ?
-
-Thanks,
-
-Mathieu
-
->         /*
->          * Ensure that if we see the userspace tail (ubuf->tail) such
->          * that there is space to write @buf without overwriting data
->          * userspace hasn't seen yet, we won't in fact store data before
->          * that read completes.
->          */
-> 
->         smp_mb(); /* A, matches with D */
-> 
->         memcpy(kbuf->data + offset, buf, sz);
-> 
->         /*
->          * Ensure that we write all the @buf data before we update the
->          * userspace visible ubuf->head pointer.
->          */
->         smp_wmb(); /* B, matches with C */
-> 
->         ubuf->head = kbuf->head;
-> }
-> 
-> /*
->  * Consume the buffer data and update the tail pointer to indicate to
->  * kernel space there's 'free' space.
->  */
-> void ubuf_read(void)
-> {
->         u64 head, tail;
-> 
->         tail = ACCESS_ONCE(ubuf->tail);
->         head = ACCESS_ONCE(ubuf->head);
-> 
->         /*
->          * Ensure we read the buffer boundaries before the actual buffer
->          * data...
->          */
->         smp_rmb(); /* C, matches with B */
-> 
->         while (tail != head) {
->                 obj = ubuf->data + tail;
->                 /* process obj */
->                 tail += obj->size;
->                 tail %= ubuf->size;
->         }
-> 
->         /*
->          * Ensure all data reads are complete before we issue the
->          * ubuf->tail update; once that update hits, kbuf_write() can
->          * observe and overwrite data.
->          */
->         smp_mb(); /* D, matches with A */
-> 
->         ubuf->tail = tail;
-> }
-
--- 
-Mathieu Desnoyers
-EfficiOS Inc.
-http://www.efficios.com
+Pingfan
+>
+> Alex
+>
+>>
+>> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+>> ---
+>> Compiled, but lack of bare metal, I have not tested it yet.
+>> ---
+>> arch/powerpc/kvm/book3s_hv.c            |  6 ------
+>> arch/powerpc/kvm/book3s_hv_rmhandlers.S | 13 ++++++++++++-
+>> 2 files changed, 12 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+>> index 62a2b5a..73dc852 100644
+>> --- a/arch/powerpc/kvm/book3s_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_hv.c
+>> @@ -628,12 +628,6 @@ static int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>>               /* hcall - punt to userspace */
+>>               int i;
+>>
+>> -             if (vcpu->arch.shregs.msr & MSR_PR) {
+>> -                     /* sc 1 from userspace - reflect to guest syscall */
+>> -                     kvmppc_book3s_queue_irqprio(vcpu, BOOK3S_INTERRUPT_SYSCALL);
+>> -                     r = RESUME_GUEST;
+>> -                     break;
+>> -             }
+>>               run->papr_hcall.nr = kvmppc_get_gpr(vcpu, 3);
+>>               for (i = 0; i < 9; ++i)
+>>                       run->papr_hcall.args[i] = kvmppc_get_gpr(vcpu, 4 + i);
+>> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>> index c71103b..9f626c3 100644
+>> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>> @@ -1388,7 +1388,8 @@ kvmppc_hisi:
+>> hcall_try_real_mode:
+>>       ld      r3,VCPU_GPR(R3)(r9)
+>>       andi.   r0,r11,MSR_PR
+>> -     bne     guest_exit_cont
+>> +     /* sc 1 from userspace - reflect to guest syscall */
+>> +     bne     sc_0_fast_return
+>>       clrrdi  r3,r3,2
+>>       cmpldi  r3,hcall_real_table_end - hcall_real_table
+>>       bge     guest_exit_cont
+>> @@ -1409,6 +1410,16 @@ hcall_try_real_mode:
+>>       ld      r11,VCPU_MSR(r4)
+>>       b       fast_guest_return
+>>
+>> +sc_0_fast_return:
+>> +     ld      r10,VCPU_PC(r9)
+>> +     ld      r11,VCPU_MSR(r9)
+>> +     mtspr   SPRN_SRR0,r10
+>> +     mtspr   SPRN_SRR1,r11
+>> +     li      r10, BOOK3S_INTERRUPT_SYSCALL
+>> +     LOAD_REG_IMMEDIATE(r3,0xffffffff87a0ffff)       /* zero 33:36,42:47 */
+>> +     and     r11,r11,r3
+>> +     b       fast_guest_return
+>> +
+>>       /* We've attempted a real mode hcall, but it's punted it back
+>>        * to userspace.  We need to restore some clobbered volatiles
+>>        * before resuming the pass-it-to-qemu path */
+>> --
+>> 1.8.1.4
+>>
+>
