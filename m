@@ -1,26 +1,28 @@
-Return-Path: <Lijun.Pan@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 172C82C009C
- for <linuxppc-dev@ozlabs.org>; Sat,  9 Nov 2013 10:18:12 +1100 (EST)
-Received: from mail108-co1 (localhost [127.0.0.1])	by
- mail108-co1-R.bigfish.com (Postfix) with ESMTP id 51EEB20500	for
- <linuxppc-dev@ozlabs.org>; Fri,  8 Nov 2013 23:18:09 +0000 (UTC)
-Received: from CO1EHSMHS004.bigfish.com (unknown [10.243.78.227])	by
- mail108-co1.bigfish.com (Postfix) with ESMTP id 6D72228004C	for
- <linuxppc-dev@ozlabs.org>; Fri,  8 Nov 2013 23:17:19 +0000 (UTC)
-From: Lijun Pan <Lijun.Pan@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/85xx: Merge 85xx/p1023_defconfig into
- mpc85xx_smp_defconfig and mpc85xx_defconfig
-Date: Fri, 8 Nov 2013 17:17:12 -0600
-Message-ID: <1383952632-5770-1-git-send-email-Lijun.Pan@freescale.com>
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-x22d.google.com (mail-pd0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c02::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0D0DE2C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2013 17:44:00 +1100 (EST)
+Received: by mail-pd0-f173.google.com with SMTP id r10so3061051pdi.32
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2013 22:43:57 -0800 (PST)
+Date: Sat, 9 Nov 2013 14:43:36 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc/85xx: don't init the mpic ipi for the SoC which
+ has doorbell support
+Message-ID: <20131109064336.GB27936@pek-khao-d1.corp.ad.wrs.com>
+References: <1383808637-26769-1-git-send-email-haokexin@gmail.com>
+ <1383845691.23598.125.camel@snotra.buserror.net>
+ <20131108015446.GA31761@pek-khao-d1.corp.ad.wrs.com>
+ <1383945372.23598.211.camel@snotra.buserror.net>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Lijun Pan <Lijun.Pan@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="QKdGvSO+nmPlgiQ/"
+In-Reply-To: <1383945372.23598.211.camel@snotra.buserror.net>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,485 +32,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mpc85xx_smp_defconfig and mpc85xx_defconfig already have CONFIG_P1023RDS=y.
-Merge CONFIG_P1023RDB=y and other relevant configurations into mpc85xx_smp_defconfig and mpc85_defconfig.
 
-Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
----
- arch/powerpc/configs/85xx/p1023_defconfig  |  188 ----------------------------
- arch/powerpc/configs/mpc85xx_defconfig     |   23 ++++
- arch/powerpc/configs/mpc85xx_smp_defconfig |   20 +++
- 3 files changed, 43 insertions(+), 188 deletions(-)
- delete mode 100644 arch/powerpc/configs/85xx/p1023_defconfig
+--QKdGvSO+nmPlgiQ/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/configs/85xx/p1023_defconfig b/arch/powerpc/configs/85xx/p1023_defconfig
-deleted file mode 100644
-index b06d37d..0000000
---- a/arch/powerpc/configs/85xx/p1023_defconfig
-+++ /dev/null
-@@ -1,188 +0,0 @@
--CONFIG_PPC_85xx=y
--CONFIG_SMP=y
--CONFIG_NR_CPUS=2
--CONFIG_SYSVIPC=y
--CONFIG_POSIX_MQUEUE=y
--CONFIG_BSD_PROCESS_ACCT=y
--CONFIG_AUDIT=y
--CONFIG_NO_HZ=y
--CONFIG_HIGH_RES_TIMERS=y
--CONFIG_RCU_FANOUT=32
--CONFIG_IKCONFIG=y
--CONFIG_IKCONFIG_PROC=y
--CONFIG_LOG_BUF_SHIFT=14
--CONFIG_BLK_DEV_INITRD=y
--CONFIG_KALLSYMS_ALL=y
--CONFIG_EMBEDDED=y
--CONFIG_MODULES=y
--CONFIG_MODULE_UNLOAD=y
--CONFIG_MODULE_FORCE_UNLOAD=y
--CONFIG_MODVERSIONS=y
--# CONFIG_BLK_DEV_BSG is not set
--CONFIG_PARTITION_ADVANCED=y
--CONFIG_MAC_PARTITION=y
--CONFIG_PHYSICAL_START=0x00000000
--CONFIG_P1023_RDB=y
--CONFIG_P1023_RDS=y
--CONFIG_QUICC_ENGINE=y
--CONFIG_QE_GPIO=y
--CONFIG_CPM2=y
--CONFIG_HIGHMEM=y
--# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
--CONFIG_BINFMT_MISC=m
--CONFIG_MATH_EMULATION=y
--CONFIG_SWIOTLB=y
--CONFIG_PCI=y
--CONFIG_PCIEPORTBUS=y
--# CONFIG_PCIEAER is not set
--# CONFIG_PCIEASPM is not set
--CONFIG_PCI_MSI=y
--CONFIG_NET=y
--CONFIG_PACKET=y
--CONFIG_UNIX=y
--CONFIG_XFRM_USER=y
--CONFIG_NET_KEY=y
--CONFIG_INET=y
--CONFIG_IP_MULTICAST=y
--CONFIG_IP_ADVANCED_ROUTER=y
--CONFIG_IP_MULTIPLE_TABLES=y
--CONFIG_IP_ROUTE_MULTIPATH=y
--CONFIG_IP_ROUTE_VERBOSE=y
--CONFIG_IP_PNP=y
--CONFIG_IP_PNP_DHCP=y
--CONFIG_IP_PNP_BOOTP=y
--CONFIG_IP_PNP_RARP=y
--CONFIG_NET_IPIP=y
--CONFIG_IP_MROUTE=y
--CONFIG_IP_PIMSM_V1=y
--CONFIG_IP_PIMSM_V2=y
--CONFIG_ARPD=y
--CONFIG_INET_ESP=y
--# CONFIG_INET_XFRM_MODE_BEET is not set
--# CONFIG_INET_LRO is not set
--CONFIG_IPV6=y
--CONFIG_IP_SCTP=m
--CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
--CONFIG_DEVTMPFS=y
--CONFIG_DEVTMPFS_MOUNT=y
--CONFIG_MTD=y
--CONFIG_MTD_CMDLINE_PARTS=y
--CONFIG_MTD_CHAR=y
--CONFIG_MTD_BLOCK=y
--CONFIG_MTD_CFI=y
--CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_PHYSMAP_OF=y
--CONFIG_MTD_NAND=y
--CONFIG_MTD_NAND_FSL_ELBC=y
--CONFIG_PROC_DEVICETREE=y
--CONFIG_BLK_DEV_LOOP=y
--CONFIG_BLK_DEV_RAM=y
--CONFIG_BLK_DEV_RAM_SIZE=131072
--CONFIG_EEPROM_AT24=y
--CONFIG_EEPROM_LEGACY=y
--CONFIG_BLK_DEV_SD=y
--CONFIG_CHR_DEV_ST=y
--CONFIG_BLK_DEV_SR=y
--CONFIG_CHR_DEV_SG=y
--CONFIG_SCSI_MULTI_LUN=y
--CONFIG_SCSI_LOGGING=y
--CONFIG_ATA=y
--CONFIG_SATA_FSL=y
--CONFIG_SATA_SIL24=y
--CONFIG_NETDEVICES=y
--CONFIG_DUMMY=y
--CONFIG_FS_ENET=y
--CONFIG_FSL_PQ_MDIO=y
--CONFIG_E1000E=y
--CONFIG_PHYLIB=y
--CONFIG_AT803X_PHY=y
--CONFIG_MARVELL_PHY=y
--CONFIG_DAVICOM_PHY=y
--CONFIG_CICADA_PHY=y
--CONFIG_VITESSE_PHY=y
--CONFIG_FIXED_PHY=y
--CONFIG_INPUT_FF_MEMLESS=m
--# CONFIG_INPUT_MOUSEDEV is not set
--# CONFIG_INPUT_KEYBOARD is not set
--# CONFIG_INPUT_MOUSE is not set
--CONFIG_SERIO_LIBPS2=y
--CONFIG_SERIAL_8250=y
--CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_8250_NR_UARTS=2
--CONFIG_SERIAL_8250_RUNTIME_UARTS=2
--CONFIG_SERIAL_8250_EXTENDED=y
--CONFIG_SERIAL_8250_MANY_PORTS=y
--CONFIG_SERIAL_8250_SHARE_IRQ=y
--CONFIG_SERIAL_8250_DETECT_IRQ=y
--CONFIG_SERIAL_8250_RSA=y
--CONFIG_HW_RANDOM=y
--CONFIG_NVRAM=y
--CONFIG_I2C=y
--CONFIG_I2C_CHARDEV=y
--CONFIG_I2C_CPM=m
--CONFIG_I2C_MPC=y
--CONFIG_GPIO_MPC8XXX=y
--# CONFIG_HWMON is not set
--CONFIG_VIDEO_OUTPUT_CONTROL=y
--CONFIG_SOUND=y
--CONFIG_SND=y
--CONFIG_SND_MIXER_OSS=y
--CONFIG_SND_PCM_OSS=y
--# CONFIG_SND_SUPPORT_OLD_API is not set
--CONFIG_USB=y
--CONFIG_USB_DEVICEFS=y
--CONFIG_USB_MON=y
--CONFIG_USB_EHCI_HCD=y
--CONFIG_USB_EHCI_FSL=y
--CONFIG_USB_STORAGE=y
--CONFIG_EDAC=y
--CONFIG_EDAC_MM_EDAC=y
--CONFIG_RTC_CLASS=y
--CONFIG_RTC_DRV_DS1307=y
--CONFIG_RTC_DRV_CMOS=y
--CONFIG_DMADEVICES=y
--CONFIG_FSL_DMA=y
--# CONFIG_NET_DMA is not set
--CONFIG_STAGING=y
--CONFIG_EXT2_FS=y
--CONFIG_EXT3_FS=y
--# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
--CONFIG_ISO9660_FS=m
--CONFIG_JOLIET=y
--CONFIG_ZISOFS=y
--CONFIG_UDF_FS=m
--CONFIG_MSDOS_FS=m
--CONFIG_VFAT_FS=y
--CONFIG_NTFS_FS=y
--CONFIG_PROC_KCORE=y
--CONFIG_TMPFS=y
--CONFIG_ADFS_FS=m
--CONFIG_AFFS_FS=m
--CONFIG_HFS_FS=m
--CONFIG_HFSPLUS_FS=m
--CONFIG_BEFS_FS=m
--CONFIG_BFS_FS=m
--CONFIG_EFS_FS=m
--CONFIG_CRAMFS=y
--CONFIG_VXFS_FS=m
--CONFIG_HPFS_FS=m
--CONFIG_QNX4FS_FS=m
--CONFIG_SYSV_FS=m
--CONFIG_UFS_FS=m
--CONFIG_NFS_FS=y
--CONFIG_NFS_V4=y
--CONFIG_ROOT_NFS=y
--CONFIG_NFSD=y
--CONFIG_CRC_T10DIF=y
--CONFIG_FRAME_WARN=8092
--CONFIG_DEBUG_FS=y
--CONFIG_DETECT_HUNG_TASK=y
--# CONFIG_DEBUG_BUGVERBOSE is not set
--CONFIG_DEBUG_INFO=y
--CONFIG_STRICT_DEVMEM=y
--CONFIG_CRYPTO_PCBC=m
--CONFIG_CRYPTO_SHA256=y
--CONFIG_CRYPTO_SHA512=y
--CONFIG_CRYPTO_AES=y
--# CONFIG_CRYPTO_ANSI_CPRNG is not set
--CONFIG_CRYPTO_DEV_FSL_CAAM=y
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index d2e0fab..72fff6e 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -1,4 +1,5 @@
- CONFIG_PPC_85xx=y
-+CONFIG_SMP=y
- CONFIG_PHYS_64BIT=y
- CONFIG_SYSVIPC=y
- CONFIG_POSIX_MQUEUE=y
-@@ -6,6 +7,7 @@ CONFIG_AUDIT=y
- CONFIG_IRQ_DOMAIN_DEBUG=y
- CONFIG_NO_HZ=y
- CONFIG_HIGH_RES_TIMERS=y
-+CONFIG_RCU_FANOUT=32
- CONFIG_BSD_PROCESS_ACCT=y
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
-@@ -13,6 +15,7 @@ CONFIG_LOG_BUF_SHIFT=14
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_EXPERT=y
- CONFIG_KALLSYMS_ALL=y
-+CONFIG_EMBEDDED=y
- CONFIG_MODULES=y
- CONFIG_MODULE_UNLOAD=y
- CONFIG_MODULE_FORCE_UNLOAD=y
-@@ -20,6 +23,7 @@ CONFIG_MODVERSIONS=y
- # CONFIG_BLK_DEV_BSG is not set
- CONFIG_PARTITION_ADVANCED=y
- CONFIG_MAC_PARTITION=y
-+CONFIG_PHYSICAL_START=0x00000000
- CONFIG_MPC8540_ADS=y
- CONFIG_MPC8560_ADS=y
- CONFIG_MPC85xx_CDS=y
-@@ -31,6 +35,7 @@ CONFIG_C293_PCIE=y
- CONFIG_P1010_RDB=y
- CONFIG_P1022_DS=y
- CONFIG_P1022_RDK=y
-+CONFIG_P1023_RDB=y
- CONFIG_P1023_RDS=y
- CONFIG_SOCRATES=y
- CONFIG_KSI8560=y
-@@ -44,12 +49,15 @@ CONFIG_TQM8560=y
- CONFIG_SBC8548=y
- CONFIG_QUICC_ENGINE=y
- CONFIG_QE_GPIO=y
-+CONFIG_CPM2=y
- CONFIG_HIGHMEM=y
- CONFIG_BINFMT_MISC=m
- CONFIG_MATH_EMULATION=y
-+CONFIG_SWIOTLB=y
- CONFIG_FORCE_MAX_ZONEORDER=12
- CONFIG_FSL_IFC=y
- CONFIG_PCI=y
-+CONFIG_PCIEPORTBUS=y
- CONFIG_PCI_MSI=y
- CONFIG_RAPIDIO=y
- CONFIG_NET=y
-@@ -113,6 +121,7 @@ CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_NBD=y
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=131072
-+CONFIG_EEPROM_AT24=y
- CONFIG_EEPROM_LEGACY=y
- CONFIG_BLK_DEV_SD=y
- CONFIG_CHR_DEV_ST=y
-@@ -129,10 +138,12 @@ CONFIG_PATA_VIA=y
- CONFIG_NETDEVICES=y
- CONFIG_DUMMY=y
- CONFIG_FS_ENET=y
-+CONFIG_FSL_PQ_MDIO=y
- CONFIG_UCC_GETH=y
- CONFIG_GIANFAR=y
- CONFIG_E1000=y
- CONFIG_E1000E=y
-+CONFIG_PHYLIB=y
- CONFIG_IGB=y
- CONFIG_MARVELL_PHY=y
- CONFIG_DAVICOM_PHY=y
-@@ -149,11 +160,15 @@ CONFIG_SERIAL_8250=y
- CONFIG_SERIAL_8250_CONSOLE=y
- CONFIG_SERIAL_8250_NR_UARTS=2
- CONFIG_SERIAL_8250_RUNTIME_UARTS=2
-+CONFIG_SERIAL_8250_EXTENDED=y
- CONFIG_SERIAL_8250_MANY_PORTS=y
-+CONFIG_SERIAL_8250_SHARE_IRQ=y
- CONFIG_SERIAL_8250_DETECT_IRQ=y
- CONFIG_SERIAL_8250_RSA=y
-+CONFIG_HW_RANDOM=y
- CONFIG_SERIAL_QE=m
- CONFIG_NVRAM=y
-+CONFIG_I2C=y
- CONFIG_I2C_CHARDEV=y
- CONFIG_I2C_CPM=m
- CONFIG_I2C_MPC=y
-@@ -172,6 +187,8 @@ CONFIG_FONT_8x8=y
- CONFIG_FONT_8x16=y
- CONFIG_SOUND=y
- CONFIG_SND=y
-+CONFIG_SND_MIXER_OSS=y
-+CONFIG_SND_PCM_OSS=y
- # CONFIG_SND_SUPPORT_OLD_API is not set
- # CONFIG_SND_DRIVERS is not set
- CONFIG_SND_INTEL8X0=y
-@@ -196,6 +213,7 @@ CONFIG_HID_SAMSUNG=y
- CONFIG_HID_SONY=y
- CONFIG_HID_SUNPLUS=y
- CONFIG_USB=y
-+CONFIG_USB_DEVICEFS=y
- CONFIG_USB_MON=y
- CONFIG_USB_EHCI_HCD=y
- CONFIG_USB_EHCI_FSL=y
-@@ -210,10 +228,12 @@ CONFIG_MMC_SDHCI_OF_ESDHC=y
- CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_DS1307=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
- # CONFIG_NET_DMA is not set
-+CONFIG_STAGING=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
- # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
-@@ -254,6 +274,7 @@ CONFIG_NFS_V4=y
- CONFIG_ROOT_NFS=y
- CONFIG_NFSD=y
- CONFIG_CRC_T10DIF=y
-+CONFIG_FRAME_WARN=8092
- CONFIG_CRC16=y
- CONFIG_ZLIB_DEFLATE=y
- CONFIG_LZO_COMPRESS=y
-@@ -263,9 +284,11 @@ CONFIG_CRYPTO_LZO=y
- CONFIG_DEBUG_FS=y
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_DEBUG_INFO=y
-+CONFIG_STRICT_DEVMEM=y
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_SHA512=y
-+CONFIG_CRYPTO_AES=y
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
- CONFIG_CRYPTO_DEV_FSL_CAAM=y
- CONFIG_CRYPTO_DEV_TALITOS=y
-diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-index 4cb7b59..eb26962 100644
---- a/arch/powerpc/configs/mpc85xx_smp_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
-@@ -10,12 +10,14 @@ CONFIG_AUDIT=y
- CONFIG_IRQ_DOMAIN_DEBUG=y
- CONFIG_NO_HZ=y
- CONFIG_HIGH_RES_TIMERS=y
-+CONFIG_RCU_FANOUT=32
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
- CONFIG_LOG_BUF_SHIFT=14
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_EXPERT=y
- CONFIG_KALLSYMS_ALL=y
-+CONFIG_EMBEDDED=y
- CONFIG_MODULES=y
- CONFIG_MODULE_UNLOAD=y
- CONFIG_MODULE_FORCE_UNLOAD=y
-@@ -23,6 +25,7 @@ CONFIG_MODVERSIONS=y
- # CONFIG_BLK_DEV_BSG is not set
- CONFIG_PARTITION_ADVANCED=y
- CONFIG_MAC_PARTITION=y
-+CONFIG_PHYSICAL_START=0x00000000
- CONFIG_MPC8540_ADS=y
- CONFIG_MPC8560_ADS=y
- CONFIG_MPC85xx_CDS=y
-@@ -34,6 +37,7 @@ CONFIG_C293_PCIE=y
- CONFIG_P1010_RDB=y
- CONFIG_P1022_DS=y
- CONFIG_P1022_RDK=y
-+CONFIG_P1023_RDB=y
- CONFIG_P1023_RDS=y
- CONFIG_SOCRATES=y
- CONFIG_KSI8560=y
-@@ -47,12 +51,15 @@ CONFIG_TQM8560=y
- CONFIG_SBC8548=y
- CONFIG_QUICC_ENGINE=y
- CONFIG_QE_GPIO=y
-+CONFIG_CPM2=y
- CONFIG_HIGHMEM=y
- CONFIG_BINFMT_MISC=m
- CONFIG_MATH_EMULATION=y
-+CONFIG_SWIOTLB=y
- CONFIG_FORCE_MAX_ZONEORDER=12
- CONFIG_FSL_IFC=y
- CONFIG_PCI=y
-+CONFIG_PCIEPORTBUS=y
- CONFIG_PCI_MSI=y
- CONFIG_RAPIDIO=y
- CONFIG_NET=y
-@@ -116,6 +123,7 @@ CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_NBD=y
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=131072
-+CONFIG_EEPROM_AT24=y
- CONFIG_EEPROM_LEGACY=y
- CONFIG_BLK_DEV_SD=y
- CONFIG_CHR_DEV_ST=y
-@@ -131,9 +139,11 @@ CONFIG_PATA_ALI=y
- CONFIG_NETDEVICES=y
- CONFIG_DUMMY=y
- CONFIG_FS_ENET=y
-+CONFIG_FSL_PQ_MDIO=y
- CONFIG_UCC_GETH=y
- CONFIG_GIANFAR=y
- CONFIG_E1000E=y
-+CONFIG_PHYLIB=y
- CONFIG_MARVELL_PHY=y
- CONFIG_DAVICOM_PHY=y
- CONFIG_CICADA_PHY=y
-@@ -149,9 +159,12 @@ CONFIG_SERIAL_8250=y
- CONFIG_SERIAL_8250_CONSOLE=y
- CONFIG_SERIAL_8250_NR_UARTS=2
- CONFIG_SERIAL_8250_RUNTIME_UARTS=2
-+CONFIG_SERIAL_8250_EXTENDED=y
- CONFIG_SERIAL_8250_MANY_PORTS=y
-+CONFIG_SERIAL_8250_SHARE_IRQ=y
- CONFIG_SERIAL_8250_DETECT_IRQ=y
- CONFIG_SERIAL_8250_RSA=y
-+CONFIG_HW_RANDOM=y
- CONFIG_SERIAL_QE=m
- CONFIG_NVRAM=y
- CONFIG_I2C=y
-@@ -173,6 +186,8 @@ CONFIG_FONT_8x8=y
- CONFIG_FONT_8x16=y
- CONFIG_SOUND=y
- CONFIG_SND=y
-+CONFIG_SND_MIXER_OSS=y
-+CONFIG_SND_PCM_OSS=y
- # CONFIG_SND_SUPPORT_OLD_API is not set
- # CONFIG_SND_DRIVERS is not set
- CONFIG_SND_INTEL8X0=y
-@@ -197,6 +212,7 @@ CONFIG_HID_SAMSUNG=y
- CONFIG_HID_SONY=y
- CONFIG_HID_SUNPLUS=y
- CONFIG_USB=y
-+CONFIG_USB_DEVICEFS=y
- CONFIG_USB_MON=y
- CONFIG_USB_EHCI_HCD=y
- CONFIG_USB_EHCI_FSL=y
-@@ -211,10 +227,12 @@ CONFIG_MMC_SDHCI_OF_ESDHC=y
- CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_DS1307=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
- # CONFIG_NET_DMA is not set
-+CONFIG_STAGING=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
- # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
-@@ -256,6 +274,7 @@ CONFIG_ROOT_NFS=y
- CONFIG_NFSD=y
- CONFIG_CRC_T10DIF=y
- CONFIG_CRC16=y
-+CNOFIG_FRAME_WARN=8092
- CONFIG_ZLIB_DEFLATE=y
- CONFIG_LZO_COMPRESS=y
- CONFIG_LZO_DECOMPRESS=y
-@@ -264,6 +283,7 @@ CONFIG_CRYPTO_LZO=y
- CONFIG_DEBUG_FS=y
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_DEBUG_INFO=y
-+CONFIG_STRICT_DEVMEM=y
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_SHA512=y
--- 
-1.7.9.7
+On Fri, Nov 08, 2013 at 03:16:12PM -0600, Scott Wood wrote:
+> OK...  Why are you splitting out smp_85xx_basic_setup()?
+
+In the current implementation of smp_85xx_setup_cpu(), we only invoke
+the function mpic_setup_this_cpu() when the smp_85xx_ops.probe is set=20
+to smp_mpic_probe(). So if we set smp_85xx_ops.probe to NULL when doorbell
+is available, we must make sure that the mpic_setup_this_cpu() is also invo=
+ked
+when there does have a mpic. The smp_85xx_basic_setup() is for the board wh=
+ich
+has no mpic.
+
+  static void smp_85xx_setup_cpu(int cpu_nr)
+  {
+  	if (smp_85xx_ops.probe =3D=3D smp_mpic_probe)
+  		mpic_setup_this_cpu();
+ =20
+  	if (cpu_has_feature(CPU_FTR_DBELL))
+  		doorbell_setup_this_cpu();
+  }
+
+>  Where do you
+> call it other than from smp_85xx_setup_cpu()?
+
+We would set the .setup_cpu() to smp_85xx_basic_setup() if it is a
+non-mpic board. The following is quoted form the patch:
+   	np =3D of_find_node_by_type(NULL, "open-pic");
+   	if (np) {
+   		smp_85xx_ops.probe =3D smp_mpic_probe;
+  +		smp_85xx_ops.setup_cpu =3D smp_85xx_setup_cpu;
+   		smp_85xx_ops.message_pass =3D smp_mpic_message_pass;
+  -	}
+  +	} else
+  +		smp_85xx_ops.setup_cpu =3D smp_85xx_basic_setup;
+
+>  Couldn't you have just
+> removed the conditional without splitting up the function?
+
+This will break the non-mpic board.
+
+>  The change
+> log says it's "to check if we need to invoke mpic_setup_this_cpu()"
+> which doesn't make sense since we always want to call
+> mpic_setup_this_cpu() if we have an MPIC.
+
+If we have a mpic, we will call mpic_setup_this_cpu(). But if not,
+we would set the .setup_cpu to smp_85xx_basic_setup() to avoid
+the invoking of mpic_setup_this_cpu().
+
+Thanks,
+Kevin
+>=20
+> -Scott
+>=20
+>=20
+>=20
+
+--QKdGvSO+nmPlgiQ/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAEBAgAGBQJSfdmYAAoJEJNY7TDerrFx1yAIAKcDrUeATZOnEwLoI5e3dEo8
+GZqxHsbjaAcLvcu3Ip+Ixphusin5JMrLpFzjTlMloHDnejaj3xQnCBhCQoQpHA++
+D28LZUe5eSWiOWaYqT4iSxdoXpLrrVp4a9Nl/TrFNXWp+gFRK5va+8lrsP4zWxai
+bcamNrnK1IBIiH9clw+jDb7nMUJJ6Q9GlzZiqCv6Lp1V5SsCu+qtqYMs0txihcH4
+M684w1oLeZpiuTREwtBvcxWO799CoZ73X/1wG/zu8Z+8GEtTVNQgoR5W0bvbNIx2
+5h6iDQkiJyFMn1HFm94dILSDdk8bRimwGgpHg457m708bALp7oBZHmXZGCK/CTE=
+=Hlaj
+-----END PGP SIGNATURE-----
+
+--QKdGvSO+nmPlgiQ/--
