@@ -1,38 +1,21 @@
-Return-Path: <Bharat.Bhushan@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+Return-Path: <James.Yang@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C10CF2C009C
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Nov 2013 17:57:18 +1100 (EST)
-From: Bharat Bhushan <Bharat.Bhushan@freescale.com>
-To: Guangyu Chen <guangyu.chen@freescale.com>, "vinod.koul@intel.com"
- <vinod.koul@intel.com>, "dan.j.williams@intel.com"
- <dan.j.williams@intel.com>, "s.hauer@pengutronix.de"
- <s.hauer@pengutronix.de>, "timur@tabi.org" <timur@tabi.org>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "broonie@kernel.org"
- <broonie@kernel.org>
-Subject: RE: [PATCH v4 1/4] dma: imx-sdma: Add sdma firmware version 2 support
-Date: Sun, 10 Nov 2013 06:57:08 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D071EDFC5@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <cover.1383907685.git.b42378@freescale.com>
- <1524b725cecd208ad63741f0b7214d0039608ac0.1383907685.git.b42378@freescale.com>
-In-Reply-To: <1524b725cecd208ad63741f0b7214d0039608ac0.1383907685.git.b42378@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 9120D2C00C6
+ for <linuxppc-dev@ozlabs.org>; Mon, 11 Nov 2013 09:22:46 +1100 (EST)
+Date: Sun, 10 Nov 2013 16:22:37 -0600
+From: James Yang <James.Yang@freescale.com>
+To: pegasus <aijazbaig1.new@gmail.com>
+Subject: Re: BookE "branch taken" behavior vis-a-vis updating the NIP register
+In-Reply-To: <1383907583944-77960.post@n7.nabble.com>
+Message-ID: <alpine.LRH.2.00.1311101509570.9815@ra8135-ec1.am.freescale.net>
+References: <1383907583944-77960.post@n7.nabble.com>
 MIME-Version: 1.0
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "pawel.moll@arm.com" <pawel.moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
- "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,112 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 8 Nov 2013, pegasus wrote:
+
+> Hello.
+> 
+> I was reading the source code for the debug exception under powerpc. I saw
+> that BookE processors stop before (actually) taking a branch. Hence in order
+> to force it to take that branch and then stop, the source code for it had to
+> be "hacked'  to (temporarily) enable single step until the branch
+> instruction has been taken, thereby mimicing the BookS behavior. 
+
+Have a look at this thread:
+
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-July/108618.html
 
 
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-
-> bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Nic=
-olin Chen
-> Sent: Friday, November 08, 2013 4:20 PM
-> To: vinod.koul@intel.com; dan.j.williams@intel.com; s.hauer@pengutronix.d=
-e;
-> timur@tabi.org; shawn.guo@linaro.org; broonie@kernel.org
-> Cc: mark.rutland@arm.com; devicetree@vger.kernel.org; alsa-devel@alsa-
-> project.org; pawel.moll@arm.com; linux-doc@vger.kernel.org;
-> swarren@wwwdotorg.org; linux-kernel@vger.kernel.org; rob.herring@calxeda.=
-com;
-> dmaengine@vger.kernel.org; ijc+devicetree@hellion.org.uk; linuxppc-
-> dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org
-> Subject: [PATCH v4 1/4] dma: imx-sdma: Add sdma firmware version 2 suppor=
-t
->=20
-> On i.MX5/6 series, SDMA is using new version firmware to support SSI dual=
- FIFO
-> feature and HDMI Audio (i.MX6Q/DL only). Thus add it.
->=20
-> Signed-off-by: Nicolin Chen <b42378@freescale.com>
-> ---
->  drivers/dma/imx-sdma.c                     | 15 ++++++++++++++-
->  include/linux/platform_data/dma-imx-sdma.h |  5 +++++
->  2 files changed, 19 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/dma/imx-sdma.c b/drivers/dma/imx-sdma.c index
-> fc43603..c7ece8d 100644
-> --- a/drivers/dma/imx-sdma.c
-> +++ b/drivers/dma/imx-sdma.c
-> @@ -323,6 +323,7 @@ struct sdma_engine {
->  	struct clk			*clk_ipg;
->  	struct clk			*clk_ahb;
->  	spinlock_t			channel_0_lock;
-> +	u32				script_number;
->  	struct sdma_script_start_addrs	*script_addrs;
->  	const struct sdma_driver_data	*drvdata;
->  };
-> @@ -1238,6 +1239,7 @@ static void sdma_issue_pending(struct dma_chan *cha=
-n)  }
->=20
->  #define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1	34
-> +#define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V2	38
->=20
->  static void sdma_add_scripts(struct sdma_engine *sdma,
->  		const struct sdma_script_start_addrs *addr) @@ -1246,7 +1248,7 @@
-> static void sdma_add_scripts(struct sdma_engine *sdma,
->  	s32 *saddr_arr =3D (u32 *)sdma->script_addrs;
->  	int i;
->=20
-> -	for (i =3D 0; i < SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1; i++)
-> +	for (i =3D 0; i < sdma->script_number; i++)
->  		if (addr_arr[i] > 0)
->  			saddr_arr[i] =3D addr_arr[i];
->  }
-> @@ -1272,6 +1274,17 @@ static void sdma_load_firmware(const struct firmwa=
-re *fw,
-> void *context)
->  		goto err_firmware;
->  	if (header->ram_code_start + header->ram_code_size > fw->size)
->  		goto err_firmware;
-> +	switch (header->version_major) {
-> +		case 1:
-> +			sdma->script_number =3D SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1;
-> +			break;
-> +		case 2:
-> +			sdma->script_number =3D SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V2;
-> +			break;
-> +		default:
-> +			dev_err(sdma->dev, "unknown firmware version\n");
-> +			return;
+> By doing this, I believe we would want the exception to be triggered after
+> the branch has been successfully taken. Hence I put a printk to print the
+> value of the instruction that actually caused the exception. I was assuming
+> that initially a debug breakpoint would be hit on the branch instruction
+> (assuming the branch is supposed to be taken). Now since at this point in
+> time, the branch instruction has NOT finished, the kernel, after merely
+> disabling the BT bit in DBCR0 and enabling IC bit in DBCR0, returns. At this
+> point I was assuming we will see another exception at the very same
+> instruction in userspace. However, when printing the NIP it becomes clear
+> that when it gets to the debug exception handler after being (temporarily)
+> set to single step, NIP points to the instruction after the branch
+> instruction. To me, it appears that, after disabling BT (branch taken) debug
+> event monitoring (and enabling single stepping), it does not catch an
+> exception at that very same branch instruction, instead it catches an
+> exception for the subsequent instruction. Sorry for the repetition but I
+> wanted to clarify what I am seeing here.
+>
+> May be this IS the way it is supposed to behave (which means my thinking
+> about it is flawed). I am a bit confused here. 
 
-Why return and not "goto err_firmware" ?
+You have it correct, that is the behavior of what is there.  The 
+Server branch execute debug exception occurs after the branch 
+completes, and the SRR0 (the value in PT_NIP) points to the address of 
+the instruction that is to be executed after the branch.  BookE branch 
+exception occurs before the branch is executed, but only if the branch 
+will be taken.  The hack tries to make BookE return an exception to 
+the process with the same timing as Server: exception signal sent to 
+process after the branch completes.
 
--Bharat
+I think some of the confusion is due to the existence of the hack.  
+Its existence implies that BookE can perfectly emulate Server, but 
+this is not possible because BookE would only take the exception if 
+the branch's condition would cause the branch to be actually taken 
+(that the branch condition, if present, is true). Therefore, even with 
+this hack, untaken branches are not signaled at all on BookE while 
+they would on Server.
 
-> +	}
->=20
->  	addr =3D (void *)header + header->script_addrs_start;
->  	ram_code =3D (void *)header + header->ram_code_start; diff --git
-> a/include/linux/platform_data/dma-imx-sdma.h b/include/linux/platform_dat=
-a/dma-
-> imx-sdma.h
-> index 3a39428..eabac4e 100644
-> --- a/include/linux/platform_data/dma-imx-sdma.h
-> +++ b/include/linux/platform_data/dma-imx-sdma.h
-> @@ -43,6 +43,11 @@ struct sdma_script_start_addrs {
->  	s32 dptc_dvfs_addr;
->  	s32 utra_addr;
->  	s32 ram_code_start_addr;
-> +	/* End of v1 array */
-> +	s32 mcu_2_ssish_addr;
-> +	s32 ssish_2_mcu_addr;
-> +	s32 hdmi_dma_addr;
-> +	/* End of v2 array */
->  };
->=20
->  /**
-> --
-> 1.8.4
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Note that PTRACE_SINGLESTEP works the same on both Server and BookE. 
+The exception occurs after an instruction completes, and the SRR0 / 
+NIP points to the instruction that will be executed next.
