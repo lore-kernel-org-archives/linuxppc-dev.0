@@ -1,28 +1,38 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x22d.google.com (mail-pd0-x22d.google.com
- [IPv6:2607:f8b0:400e:c02::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D0DE2C009C
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2013 17:44:00 +1100 (EST)
-Received: by mail-pd0-f173.google.com with SMTP id r10so3061051pdi.32
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2013 22:43:57 -0800 (PST)
-Date: Sat, 9 Nov 2013 14:43:36 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: don't init the mpic ipi for the SoC which
- has doorbell support
-Message-ID: <20131109064336.GB27936@pek-khao-d1.corp.ad.wrs.com>
-References: <1383808637-26769-1-git-send-email-haokexin@gmail.com>
- <1383845691.23598.125.camel@snotra.buserror.net>
- <20131108015446.GA31761@pek-khao-d1.corp.ad.wrs.com>
- <1383945372.23598.211.camel@snotra.buserror.net>
+Return-Path: <Bharat.Bhushan@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C10CF2C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Nov 2013 17:57:18 +1100 (EST)
+From: Bharat Bhushan <Bharat.Bhushan@freescale.com>
+To: Guangyu Chen <guangyu.chen@freescale.com>, "vinod.koul@intel.com"
+ <vinod.koul@intel.com>, "dan.j.williams@intel.com"
+ <dan.j.williams@intel.com>, "s.hauer@pengutronix.de"
+ <s.hauer@pengutronix.de>, "timur@tabi.org" <timur@tabi.org>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "broonie@kernel.org"
+ <broonie@kernel.org>
+Subject: RE: [PATCH v4 1/4] dma: imx-sdma: Add sdma firmware version 2 support
+Date: Sun, 10 Nov 2013 06:57:08 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D071EDFC5@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <cover.1383907685.git.b42378@freescale.com>
+ <1524b725cecd208ad63741f0b7214d0039608ac0.1383907685.git.b42378@freescale.com>
+In-Reply-To: <1524b725cecd208ad63741f0b7214d0039608ac0.1383907685.git.b42378@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="QKdGvSO+nmPlgiQ/"
-In-Reply-To: <1383945372.23598.211.camel@snotra.buserror.net>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,81 +43,111 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---QKdGvSO+nmPlgiQ/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 08, 2013 at 03:16:12PM -0600, Scott Wood wrote:
-> OK...  Why are you splitting out smp_85xx_basic_setup()?
-
-In the current implementation of smp_85xx_setup_cpu(), we only invoke
-the function mpic_setup_this_cpu() when the smp_85xx_ops.probe is set=20
-to smp_mpic_probe(). So if we set smp_85xx_ops.probe to NULL when doorbell
-is available, we must make sure that the mpic_setup_this_cpu() is also invo=
-ked
-when there does have a mpic. The smp_85xx_basic_setup() is for the board wh=
-ich
-has no mpic.
-
-  static void smp_85xx_setup_cpu(int cpu_nr)
-  {
-  	if (smp_85xx_ops.probe =3D=3D smp_mpic_probe)
-  		mpic_setup_this_cpu();
- =20
-  	if (cpu_has_feature(CPU_FTR_DBELL))
-  		doorbell_setup_this_cpu();
-  }
-
->  Where do you
-> call it other than from smp_85xx_setup_cpu()?
-
-We would set the .setup_cpu() to smp_85xx_basic_setup() if it is a
-non-mpic board. The following is quoted form the patch:
-   	np =3D of_find_node_by_type(NULL, "open-pic");
-   	if (np) {
-   		smp_85xx_ops.probe =3D smp_mpic_probe;
-  +		smp_85xx_ops.setup_cpu =3D smp_85xx_setup_cpu;
-   		smp_85xx_ops.message_pass =3D smp_mpic_message_pass;
-  -	}
-  +	} else
-  +		smp_85xx_ops.setup_cpu =3D smp_85xx_basic_setup;
-
->  Couldn't you have just
-> removed the conditional without splitting up the function?
-
-This will break the non-mpic board.
-
->  The change
-> log says it's "to check if we need to invoke mpic_setup_this_cpu()"
-> which doesn't make sense since we always want to call
-> mpic_setup_this_cpu() if we have an MPIC.
-
-If we have a mpic, we will call mpic_setup_this_cpu(). But if not,
-we would set the .setup_cpu to smp_85xx_basic_setup() to avoid
-the invoking of mpic_setup_this_cpu().
-
-Thanks,
-Kevin
+> -----Original Message-----
+> From: Linuxppc-dev [mailto:linuxppc-dev-
+> bounces+bharat.bhushan=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Nic=
+olin Chen
+> Sent: Friday, November 08, 2013 4:20 PM
+> To: vinod.koul@intel.com; dan.j.williams@intel.com; s.hauer@pengutronix.d=
+e;
+> timur@tabi.org; shawn.guo@linaro.org; broonie@kernel.org
+> Cc: mark.rutland@arm.com; devicetree@vger.kernel.org; alsa-devel@alsa-
+> project.org; pawel.moll@arm.com; linux-doc@vger.kernel.org;
+> swarren@wwwdotorg.org; linux-kernel@vger.kernel.org; rob.herring@calxeda.=
+com;
+> dmaengine@vger.kernel.org; ijc+devicetree@hellion.org.uk; linuxppc-
+> dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org
+> Subject: [PATCH v4 1/4] dma: imx-sdma: Add sdma firmware version 2 suppor=
+t
 >=20
-> -Scott
+> On i.MX5/6 series, SDMA is using new version firmware to support SSI dual=
+ FIFO
+> feature and HDMI Audio (i.MX6Q/DL only). Thus add it.
+>=20
+> Signed-off-by: Nicolin Chen <b42378@freescale.com>
+> ---
+>  drivers/dma/imx-sdma.c                     | 15 ++++++++++++++-
+>  include/linux/platform_data/dma-imx-sdma.h |  5 +++++
+>  2 files changed, 19 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/dma/imx-sdma.c b/drivers/dma/imx-sdma.c index
+> fc43603..c7ece8d 100644
+> --- a/drivers/dma/imx-sdma.c
+> +++ b/drivers/dma/imx-sdma.c
+> @@ -323,6 +323,7 @@ struct sdma_engine {
+>  	struct clk			*clk_ipg;
+>  	struct clk			*clk_ahb;
+>  	spinlock_t			channel_0_lock;
+> +	u32				script_number;
+>  	struct sdma_script_start_addrs	*script_addrs;
+>  	const struct sdma_driver_data	*drvdata;
+>  };
+> @@ -1238,6 +1239,7 @@ static void sdma_issue_pending(struct dma_chan *cha=
+n)  }
+>=20
+>  #define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1	34
+> +#define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V2	38
+>=20
+>  static void sdma_add_scripts(struct sdma_engine *sdma,
+>  		const struct sdma_script_start_addrs *addr) @@ -1246,7 +1248,7 @@
+> static void sdma_add_scripts(struct sdma_engine *sdma,
+>  	s32 *saddr_arr =3D (u32 *)sdma->script_addrs;
+>  	int i;
+>=20
+> -	for (i =3D 0; i < SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1; i++)
+> +	for (i =3D 0; i < sdma->script_number; i++)
+>  		if (addr_arr[i] > 0)
+>  			saddr_arr[i] =3D addr_arr[i];
+>  }
+> @@ -1272,6 +1274,17 @@ static void sdma_load_firmware(const struct firmwa=
+re *fw,
+> void *context)
+>  		goto err_firmware;
+>  	if (header->ram_code_start + header->ram_code_size > fw->size)
+>  		goto err_firmware;
+> +	switch (header->version_major) {
+> +		case 1:
+> +			sdma->script_number =3D SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1;
+> +			break;
+> +		case 2:
+> +			sdma->script_number =3D SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V2;
+> +			break;
+> +		default:
+> +			dev_err(sdma->dev, "unknown firmware version\n");
+> +			return;
+
+Why return and not "goto err_firmware" ?
+
+-Bharat
+
+> +	}
+>=20
+>  	addr =3D (void *)header + header->script_addrs_start;
+>  	ram_code =3D (void *)header + header->ram_code_start; diff --git
+> a/include/linux/platform_data/dma-imx-sdma.h b/include/linux/platform_dat=
+a/dma-
+> imx-sdma.h
+> index 3a39428..eabac4e 100644
+> --- a/include/linux/platform_data/dma-imx-sdma.h
+> +++ b/include/linux/platform_data/dma-imx-sdma.h
+> @@ -43,6 +43,11 @@ struct sdma_script_start_addrs {
+>  	s32 dptc_dvfs_addr;
+>  	s32 utra_addr;
+>  	s32 ram_code_start_addr;
+> +	/* End of v1 array */
+> +	s32 mcu_2_ssish_addr;
+> +	s32 ssish_2_mcu_addr;
+> +	s32 hdmi_dma_addr;
+> +	/* End of v2 array */
+>  };
+>=20
+>  /**
+> --
+> 1.8.4
 >=20
 >=20
->=20
-
---QKdGvSO+nmPlgiQ/
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAEBAgAGBQJSfdmYAAoJEJNY7TDerrFx1yAIAKcDrUeATZOnEwLoI5e3dEo8
-GZqxHsbjaAcLvcu3Ip+Ixphusin5JMrLpFzjTlMloHDnejaj3xQnCBhCQoQpHA++
-D28LZUe5eSWiOWaYqT4iSxdoXpLrrVp4a9Nl/TrFNXWp+gFRK5va+8lrsP4zWxai
-bcamNrnK1IBIiH9clw+jDb7nMUJJ6Q9GlzZiqCv6Lp1V5SsCu+qtqYMs0txihcH4
-M684w1oLeZpiuTREwtBvcxWO799CoZ73X/1wG/zu8Z+8GEtTVNQgoR5W0bvbNIx2
-5h6iDQkiJyFMn1HFm94dILSDdk8bRimwGgpHg457m708bALp7oBZHmXZGCK/CTE=
-=Hlaj
------END PGP SIGNATURE-----
-
---QKdGvSO+nmPlgiQ/--
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
