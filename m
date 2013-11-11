@@ -1,39 +1,23 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 982DC2C011C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 16:36:31 +1100 (EST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Mon, 11 Nov 2013 11:06:28 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 41AFA1258054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 11:07:12 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAB5aLip40894486
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 11:06:21 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAB5aNGf028987
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 11:06:24 +0530
-Subject: [PATCH v8 7/7] powernv/cpuidle: Enable idle powernv cpu to call
- into the cpuidle framework.
-To: benh@kernel.crashing.org, linux-pm@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Mon, 11 Nov 2013 11:06:10 +0530
-Message-ID: <20131111053608.14797.41270.stgit@deepthi.in.ibm.com>
-In-Reply-To: <20131111053450.14797.75544.stgit@deepthi.in.ibm.com>
-References: <20131111053450.14797.75544.stgit@deepthi.in.ibm.com>
+Return-Path: <aijazbaig1.new@gmail.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C028D2C00A6
+ for <linuxppc-dev@ozlabs.org>; Mon, 11 Nov 2013 18:51:35 +1100 (EST)
+Received: from tom.nabble.com ([192.168.236.105])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <aijazbaig1.new@gmail.com>) id 1VfmHV-0004D5-2o
+ for linuxppc-dev@ozlabs.org; Sun, 10 Nov 2013 23:51:33 -0800
+Date: Sun, 10 Nov 2013 23:51:33 -0800 (PST)
+From: pegasus <aijazbaig1.new@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1384156293077-78004.post@n7.nabble.com>
+In-Reply-To: <alpine.LRH.2.00.1311101509570.9815@ra8135-ec1.am.freescale.net>
+References: <1383907583944-77960.post@n7.nabble.com>
+ <alpine.LRH.2.00.1311101509570.9815@ra8135-ec1.am.freescale.net>
+Subject: Re: BookE "branch taken" behavior vis-a-vis updating the NIP register
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: b.zolnierkie@samsung.com, daniel.lezcano@linaro.org,
- dongsheng.wang@freescale.com, preeti@linux.vnet.ibm.com,
- srivatsa.bhat@linux.vnet.ibm.com, scottwood@freescale.com
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,51 +27,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables idle cpu on the powernv platform  to hook on to the cpuidle
-framework, if available, else call on to default idle platform
-code.
+Thanks James.
 
-Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/powerpc/platforms/powernv/setup.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+So it means that, the NIP that I am seeing in the printks is indeed correct.
+Right? And this is due to the pipelining feature that is inherent in all
+processors. So it basically means that after having executed the branch, the
+NIP has already progressed to the next instruction it is about to execute
+(just after the branch or rather the branch target). The NIP hence basically
+contains the address of the branch target. And this is how it is (and
+perhaps I have been thinking about this in the wrong way).
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index e239dcf..42a6ba0 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -25,6 +25,7 @@
- #include <linux/of.h>
- #include <linux/interrupt.h>
- #include <linux/bug.h>
-+#include <linux/cpuidle.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-@@ -192,6 +193,16 @@ static void __init pnv_setup_machdep_rtas(void)
- }
- #endif /* CONFIG_PPC_POWERNV_RTAS */
- 
-+void powernv_idle(void)
-+{
-+	/* Hook to cpuidle framework if available, else
-+	 * call on default platform idle code
-+	 */
-+	if (cpuidle_idle_call()) {
-+		power7_idle();
-+	}
-+}
-+
- static int __init pnv_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
-@@ -222,7 +233,7 @@ define_machine(powernv) {
- 	.show_cpuinfo		= pnv_show_cpuinfo,
- 	.progress		= pnv_progress,
- 	.machine_shutdown	= pnv_shutdown,
--	.power_save             = power7_idle,
-+	.power_save             = powernv_idle,
- 	.calibrate_decr		= generic_calibrate_decr,
- #ifdef CONFIG_KEXEC
- 	.kexec_cpu_down		= pnv_kexec_cpu_down,
+But I still have a question about how one would then be able to signal to
+the userspace who might be interpreting this information differently? I mean
+if SRR0 contains, not the branch instruction address but the address of the
+branch target, how would any debugger be able to catch function calls? May
+be there is a trick involved here and hence gdb or for that matter the other
+debuggers are still in the market. But then I would be immensely obliged if
+you could shed some light on how is this accomplished. Lets say I am waiting
+at the userspace in my own sigtrap, to watch out for branch instructions.
+Lets say I want to profile my code to get to know how many branch
+instructions it has generated. How could I ever do that using my own custom
+SIGTRAP handler?
+
+Coming on to PTRACE_SINGLESTEP, the sysroot that has been provided to us by
+our vendor does not include a PTRACE_SINGLEBLOCK in sys/ptrace.h:
+
+/* Type of the REQUEST argument to `ptrace.'  */
+enum __ptrace_request
+{
+  /* Indicate that the process making this request should be traced.
+     All signals received by this process can be intercepted by its
+     parent, and its parent can use the other `ptrace' requests.  */
+  PTRACE_TRACEME = 0,
+#define PT_TRACE_ME PTRACE_TRACEME
+
+  /* Return the word in the process's text space at address ADDR.  */
+  PTRACE_PEEKTEXT = 1,
+#define PT_READ_I PTRACE_PEEKTEXT
+
+  /* Return the word in the process's data space at address ADDR.  */
+  PTRACE_PEEKDATA = 2,
+#define PT_READ_D PTRACE_PEEKDATA
+
+  /* Return the word in the process's user area at offset ADDR.  */
+  PTRACE_PEEKUSER = 3,
+#define PT_READ_U PTRACE_PEEKUSER
+
+  /* Write the word DATA into the process's text space at address ADDR.  */
+  PTRACE_POKETEXT = 4,
+#define PT_WRITE_I PTRACE_POKETEXT
+
+  /* Write the word DATA into the process's data space at address ADDR.  */
+  PTRACE_POKEDATA = 5,
+#define PT_WRITE_D PTRACE_POKEDATA
+
+  /* Write the word DATA into the process's user area at offset ADDR.  */
+  PTRACE_POKEUSER = 6,
+#define PT_WRITE_U PTRACE_POKEUSER
+
+  /* Continue the process.  */
+  PTRACE_CONT = 7,
+#define PT_CONTINUE PTRACE_CONT
+
+  /* Kill the process.  */
+  PTRACE_KILL = 8,
+#define PT_KILL PTRACE_KILL
+
+  /* Single step the process.
+     This is not supported on all machines.  */
+  PTRACE_SINGLESTEP = 9,
+#define PT_STEP PTRACE_SINGLESTEP
+
+  /* Attach to a process that is already running. */
+  PTRACE_ATTACH = 16,
+#define PT_ATTACH PTRACE_ATTACH
+
+  /* Detach from a process attached to with PTRACE_ATTACH.  */
+  PTRACE_DETACH = 17,
+#define PT_DETACH PTRACE_DETACH
+
+  /* Continue and stop at the next (return from) syscall.  */
+  PTRACE_SYSCALL = 24,
+#define PT_SYSCALL PTRACE_SYSCALL
+
+  /* Set ptrace filter options.  */
+  PTRACE_SETOPTIONS = 0x4200,
+#define PT_SETOPTIONS PTRACE_SETOPTIONS
+
+  /* Get last ptrace message.  */
+  PTRACE_GETEVENTMSG = 0x4201,
+#define PT_GETEVENTMSG PTRACE_GETEVENTMSG
+
+  /* Get siginfo for process.  */
+  PTRACE_GETSIGINFO = 0x4202,
+#define PT_GETSIGINFO PTRACE_GETSIGINFO
+
+  /* Set new siginfo for process.  */
+  PTRACE_SETSIGINFO = 0x4203
+#define PT_SETSIGINFO PTRACE_SETSIGINFO
+};
+
+Although I can clearly see that PTRACE_SINGLEBLOCK is supported in the
+kernel. 
+
+Hence I am not able to compile this simple program in userspace:
+
+#include <stdio.h>
+#include <sys/ptrace.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+int main() {   
+	pid_t childpid;
+
+    childpid = fork();
+
+	if(childpid < 0) {
+		perror("error forking:");
+		return -1;
+	}
+
+    if(childpid == 0) {
+		char cwd[512];
+		char path[1024];
+		int val;
+		
+        ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+
+		if (getcwd(cwd, sizeof(cwd)) != NULL)
+			snprintf(path, sizeof(path), "%s/test", cwd);
+		else {
+			perror("getcwd() error. Exiting the program");
+			exit(1);
+		}
+
+		puts("now execle'ing");
+		val = execl(path, NULL); //this will not return
+		if (val < 0) { //something went wrong
+			perror("something went wrong");
+			exit(1);
+		}		
+    }
+    else {
+		int status,rc;
+
+		ptrace(PTRACE_SINGLEBLOCK, childpid, NULL, NULL);
+		rc = waitpid(childpid, &status, 0);
+		if (rc == -1) {
+			perror("unable to waitpid:");
+			exit(1);
+		}
+		
+		if(WIFEXITED(status)) {
+			printf("Child exited with status %d.\n", WEXITSTATUS(status));
+		}
+    }
+    return 0;
+}
+
+Heres the error I get:
+testptrace.c: In function 'int main()':
+testptrace.c:47: error: invalid conversion from 'int' to '__ptrace_request'
+testptrace.c:47: error:   initializing argument 1 of 'long int
+ptrace(__ptrace_request, ...)'
+make: *** [testptrace] Error 1
+
+How should I go about using ptrace to test this? 
+
+Keen to hear from you for the above two clarifications.
+
+
+
+--
+View this message in context: http://linuxppc.10917.n7.nabble.com/BookE-branch-taken-behavior-vis-a-vis-updating-the-NIP-register-tp77960p78004.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
