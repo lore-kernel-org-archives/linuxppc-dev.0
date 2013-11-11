@@ -1,21 +1,25 @@
-Return-Path: <James.Yang@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9120D2C00C6
- for <linuxppc-dev@ozlabs.org>; Mon, 11 Nov 2013 09:22:46 +1100 (EST)
-Date: Sun, 10 Nov 2013 16:22:37 -0600
-From: James Yang <James.Yang@freescale.com>
-To: pegasus <aijazbaig1.new@gmail.com>
-Subject: Re: BookE "branch taken" behavior vis-a-vis updating the NIP register
-In-Reply-To: <1383907583944-77960.post@n7.nabble.com>
-Message-ID: <alpine.LRH.2.00.1311101509570.9815@ra8135-ec1.am.freescale.net>
-References: <1383907583944-77960.post@n7.nabble.com>
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-qc0-x235.google.com (mail-qc0-x235.google.com
+ [IPv6:2607:f8b0:400d:c01::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 16D3A2C00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 12:02:11 +1100 (EST)
+Received: by mail-qc0-f181.google.com with SMTP id w4so3664023qcr.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Nov 2013 17:02:08 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20131108105837.GC16470@iris.ozlabs.ibm.com>
+References: <1383895794-16164-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <20131108105837.GC16470@iris.ozlabs.ibm.com>
+Date: Mon, 11 Nov 2013 09:02:07 +0800
+Message-ID: <CAFgQCTvsf45r74vZmhX5v2XQ0c3UwnQ6hwDvzN6H1tSETOOugQ@mail.gmail.com>
+Subject: Re: [PATCH v3 0/2] powerpc kvm: fix deadlock scene
+From: Liu ping fan <kernelfans@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,58 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 8 Nov 2013, pegasus wrote:
-
-> Hello.
-> 
-> I was reading the source code for the debug exception under powerpc. I saw
-> that BookE processors stop before (actually) taking a branch. Hence in order
-> to force it to take that branch and then stop, the source code for it had to
-> be "hacked'  to (temporarily) enable single step until the branch
-> instruction has been taken, thereby mimicing the BookS behavior. 
-
-Have a look at this thread:
-
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-July/108618.html
-
-
-> By doing this, I believe we would want the exception to be triggered after
-> the branch has been successfully taken. Hence I put a printk to print the
-> value of the instruction that actually caused the exception. I was assuming
-> that initially a debug breakpoint would be hit on the branch instruction
-> (assuming the branch is supposed to be taken). Now since at this point in
-> time, the branch instruction has NOT finished, the kernel, after merely
-> disabling the BT bit in DBCR0 and enabling IC bit in DBCR0, returns. At this
-> point I was assuming we will see another exception at the very same
-> instruction in userspace. However, when printing the NIP it becomes clear
-> that when it gets to the debug exception handler after being (temporarily)
-> set to single step, NIP points to the instruction after the branch
-> instruction. To me, it appears that, after disabling BT (branch taken) debug
-> event monitoring (and enabling single stepping), it does not catch an
-> exception at that very same branch instruction, instead it catches an
-> exception for the subsequent instruction. Sorry for the repetition but I
-> wanted to clarify what I am seeing here.
+On Fri, Nov 8, 2013 at 6:58 PM, Paul Mackerras <paulus@samba.org> wrote:
+> On Fri, Nov 08, 2013 at 03:29:52PM +0800, Liu Ping Fan wrote:
+>> v2->v3:
+>>   introduce kvmppc_hv_unlock_hpte() to pair with kvmppc_hv_find_lock_hpte()
+>>   and hide the preemption detail inside this pair from the callers
 >
-> May be this IS the way it is supposed to behave (which means my thinking
-> about it is flawed). I am a bit confused here. 
+> Actually, I preferred v2.  This version seems a bit over-engineered.
+>
+> Making a kvmppc_hv_unlock_hpte() is not such a bad idea, though I
+> would make it identical to the existing unlock_hpte() from
 
-You have it correct, that is the behavior of what is there.  The 
-Server branch execute debug exception occurs after the branch 
-completes, and the SRR0 (the value in PT_NIP) points to the address of 
-the instruction that is to be executed after the branch.  BookE branch 
-exception occurs before the branch is executed, but only if the branch 
-will be taken.  The hack tries to make BookE return an exception to 
-the process with the same timing as Server: exception signal sent to 
-process after the branch completes.
+Do you think it is helpful to distingusish HPTE_V_LOCK from
+HPTE_V_HVLOCK at an API level?
+If it is, I will keep patch 1/2 and just fix patch 2/2 .
 
-I think some of the confusion is due to the existence of the hack.  
-Its existence implies that BookE can perfectly emulate Server, but 
-this is not possible because BookE would only take the exception if 
-the branch's condition would cause the branch to be actually taken 
-(that the branch condition, if present, is true). Therefore, even with 
-this hack, untaken branches are not signaled at all on BookE while 
-they would on Server.
+> book3s_hv_rm_mmu.c, just in a header.  I'm really not convinced about
+> putting the preempt_disable/enable inside the lock/unlock functions,
+> with the consequent need to pass in a 'vmode' parameter, given that
+> there is just one caller that needs to do the preempt_disable/enable.
+>
+Ok, will fix patch 2/2
 
-Note that PTRACE_SINGLESTEP works the same on both Server and BookE. 
-The exception occurs after an instruction completes, and the SRR0 / 
-NIP points to the instruction that will be executed next.
+Thanks and regards,
+Pingfan
