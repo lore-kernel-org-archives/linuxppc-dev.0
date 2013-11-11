@@ -1,31 +1,32 @@
 Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AAEF12C03AE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 16:36:02 +1100 (EST)
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D50112C039E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 16:36:09 +1100 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Mon, 11 Nov 2013 11:05:57 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 9DDA7394003F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 11:05:55 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAB5ZrpU24051948
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 11:05:53 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAB5Zrqw006867
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 11:05:54 +0530
-Subject: [PATCH v8 4/7] pseries/cpuidle: Remove MAX_IDLE_STATE macro.
+ Mon, 11 Nov 2013 15:36:08 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 32E932BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 16:36:05 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAB5IJpi4719036
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 16:18:20 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rAB5a3Nt021596
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 16:36:04 +1100
+Subject: [PATCH v8 5/7] POWER/cpuidle: Generic POWERPC-BOOK3S CPUIDLE driver
+ supporting PSERIES.
 To: benh@kernel.crashing.org, linux-pm@lists.linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Mon, 11 Nov 2013 11:05:40 +0530
-Message-ID: <20131111053538.14797.36422.stgit@deepthi.in.ibm.com>
+Date: Mon, 11 Nov 2013 11:05:47 +0530
+Message-ID: <20131111053546.14797.61973.stgit@deepthi.in.ibm.com>
 In-Reply-To: <20131111053450.14797.75544.stgit@deepthi.in.ibm.com>
 References: <20131111053450.14797.75544.stgit@deepthi.in.ibm.com>
 MIME-Version: 1.0
@@ -42,82 +43,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch removes the usage of MAX_IDLE_STATE macro
-and dead code around it. The number of states
-are determined at run time based on the cpuidle
-state table selected on a given platform
+This patch includes cleanup and refactoring of the
+existing code to make the driver POWERPC-BOOK3S generic.
+* Re-naming the functions from pseries to generic powerpc-book3s.
+* Re-naming the backend driver from pseries_idle to
+  powerpc_book3s_idle.
 
 Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/cpuidle/cpuidle-powerpc-book3s.c |   26 +++++++++-----------------
- 1 file changed, 9 insertions(+), 17 deletions(-)
+ drivers/cpuidle/cpuidle-powerpc-book3s.c |   32 +++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/cpuidle/cpuidle-powerpc-book3s.c b/drivers/cpuidle/cpuidle-powerpc-book3s.c
-index 82c9e15..fe8ea0c 100644
+index fe8ea0c..7b785ff 100644
 --- a/drivers/cpuidle/cpuidle-powerpc-book3s.c
 +++ b/drivers/cpuidle/cpuidle-powerpc-book3s.c
-@@ -25,9 +25,7 @@ struct cpuidle_driver pseries_idle_driver = {
+@@ -20,8 +20,8 @@
+ #include <asm/runlatch.h>
+ #include <asm/plpar_wrappers.h>
+ 
+-struct cpuidle_driver pseries_idle_driver = {
+-	.name             = "pseries_idle",
++struct cpuidle_driver powerpc_book3s_idle_driver = {
++	.name             = "powerpc_book3s_idle",
  	.owner            = THIS_MODULE,
  };
  
--#define MAX_IDLE_STATE_COUNT	2
--
--static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
-+static int max_idle_state;
- static struct cpuidle_state *cpuidle_state_table;
+@@ -182,7 +182,7 @@ void update_smt_snooze_delay(int cpu, int residency)
+ 			drv->states[1].target_residency = residency;
+ }
  
- static inline void idle_loop_prolog(unsigned long *in_purr)
-@@ -137,7 +135,7 @@ static int shared_cede_loop(struct cpuidle_device *dev,
+-static int pseries_cpuidle_add_cpu_notifier(struct notifier_block *n,
++static int powerpc_book3s_cpuidle_add_cpu_notifier(struct notifier_block *n,
+ 			unsigned long action, void *hcpu)
+ {
+ 	int hotcpu = (unsigned long)hcpu;
+@@ -213,16 +213,16 @@ static int pseries_cpuidle_add_cpu_notifier(struct notifier_block *n,
+ }
+ 
+ static struct notifier_block setup_hotplug_notifier = {
+-	.notifier_call = pseries_cpuidle_add_cpu_notifier,
++	.notifier_call = powerpc_book3s_cpuidle_add_cpu_notifier,
+ };
+ 
  /*
-  * States for dedicated partition case.
+- * pseries_cpuidle_driver_init()
++ * powerpc_book3s_cpuidle_driver_init()
   */
--static struct cpuidle_state dedicated_states[MAX_IDLE_STATE_COUNT] = {
-+static struct cpuidle_state dedicated_states[] = {
- 	{ /* Snooze */
- 		.name = "snooze",
- 		.desc = "snooze",
-@@ -157,7 +155,7 @@ static struct cpuidle_state dedicated_states[MAX_IDLE_STATE_COUNT] = {
- /*
-  * States for shared partition case.
-  */
--static struct cpuidle_state shared_states[MAX_IDLE_STATE_COUNT] = {
-+static struct cpuidle_state shared_states[] = {
- 	{ /* Shared Cede */
- 		.name = "Shared Cede",
- 		.desc = "Shared Cede",
-@@ -227,11 +225,7 @@ static int pseries_cpuidle_driver_init(void)
- 	struct cpuidle_driver *drv = &pseries_idle_driver;
+-static int pseries_cpuidle_driver_init(void)
++static int powerpc_book3s_cpuidle_driver_init(void)
+ {
+ 	int idle_state;
+-	struct cpuidle_driver *drv = &pseries_idle_driver;
++	struct cpuidle_driver *drv = &powerpc_book3s_idle_driver;
  
  	drv->state_count = 0;
--
--	for (idle_state = 0; idle_state < MAX_IDLE_STATE_COUNT; ++idle_state) {
--
--		if (idle_state > max_idle_state)
--			break;
-+	for (idle_state = 0; idle_state < max_idle_state; ++idle_state) {
+ 	for (idle_state = 0; idle_state < max_idle_state; ++idle_state) {
+@@ -241,10 +241,10 @@ static int pseries_cpuidle_driver_init(void)
+ }
  
- 		/* is the state not enabled? */
- 		if (cpuidle_state_table[idle_state].enter == NULL)
-@@ -256,16 +250,14 @@ static int pseries_idle_probe(void)
+ /*
+- * pseries_idle_probe()
++ * powerpc_book3s_idle_probe()
+  * Choose state table for shared versus dedicated partition
+  */
+-static int pseries_idle_probe(void)
++static int powerpc_book3s_idle_probe(void)
+ {
+ 
  	if (cpuidle_disable != IDLE_NO_OVERRIDE)
- 		return -ENODEV;
+@@ -264,24 +264,24 @@ static int pseries_idle_probe(void)
+ 	return 0;
+ }
  
--	if (max_idle_state == 0) {
--		printk(KERN_DEBUG "pseries processor idle disabled.\n");
--		return -EPERM;
--	}
--
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
--		if (lppaca_shared_proc(get_lppaca()))
-+		if (lppaca_shared_proc(get_lppaca())) {
- 			cpuidle_state_table = shared_states;
--		else
-+			max_idle_state = ARRAY_SIZE(shared_states);
-+		} else {
- 			cpuidle_state_table = dedicated_states;
-+			max_idle_state = ARRAY_SIZE(dedicated_states);
-+		}
- 	} else
- 		return -ENODEV;
+-static int __init pseries_processor_idle_init(void)
++static int __init powerpc_book3s_processor_idle_init(void)
+ {
+ 	int retval;
  
+-	retval = pseries_idle_probe();
++	retval = powerpc_book3s_idle_probe();
+ 	if (retval)
+ 		return retval;
+ 
+-	pseries_cpuidle_driver_init();
+-	retval = cpuidle_register(&pseries_idle_driver, NULL);
++	powerpc_book3s_cpuidle_driver_init();
++	retval = cpuidle_register(&powerpc_book3s_idle_driver, NULL);
+ 	if (retval) {
+-		printk(KERN_DEBUG "Registration of pseries driver failed.\n");
++		printk(KERN_DEBUG "Registration of powerpc_book3s_idle driver failed.\n");
+ 		return retval;
+ 	}
+ 
+ 	register_cpu_notifier(&setup_hotplug_notifier);
+-	printk(KERN_DEBUG "pseries_idle_driver registered\n");
++	printk(KERN_DEBUG "powerpc_book3s_idle registered\n");
+ 	return 0;
+ }
+ 
+-device_initcall(pseries_processor_idle_init);
++device_initcall(powerpc_book3s_processor_idle_init);
