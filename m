@@ -1,20 +1,20 @@
 Return-Path: <kernelfans@gmail.com>
-Received: from mail-qc0-x235.google.com (mail-qc0-x235.google.com
- [IPv6:2607:f8b0:400d:c01::235])
+Received: from mail-qc0-x22a.google.com (mail-qc0-x22a.google.com
+ [IPv6:2607:f8b0:400d:c01::22a])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 16D3A2C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 12:02:11 +1100 (EST)
-Received: by mail-qc0-f181.google.com with SMTP id w4so3664023qcr.12
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Nov 2013 17:02:08 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 71A362C0330
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 12:02:21 +1100 (EST)
+Received: by mail-qc0-f170.google.com with SMTP id n9so3661969qcw.29
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Nov 2013 17:02:17 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20131108105837.GC16470@iris.ozlabs.ibm.com>
-References: <1383895794-16164-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <20131108105837.GC16470@iris.ozlabs.ibm.com>
-Date: Mon, 11 Nov 2013 09:02:07 +0800
-Message-ID: <CAFgQCTvsf45r74vZmhX5v2XQ0c3UwnQ6hwDvzN6H1tSETOOugQ@mail.gmail.com>
-Subject: Re: [PATCH v3 0/2] powerpc kvm: fix deadlock scene
+In-Reply-To: <20131108111217.GD16470@iris.ozlabs.ibm.com>
+References: <1383878656-4196-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <20131108111217.GD16470@iris.ozlabs.ibm.com>
+Date: Mon, 11 Nov 2013 09:02:17 +0800
+Message-ID: <CAFgQCTu8y51JV0kR-XsdzAP_B+cNqeS+R35C5P7CU5vqjK1S8g@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: kvm: optimize "sc 0" as fast return
 From: Liu ping fan <kernelfans@gmail.com>
 To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain; charset=UTF-8
@@ -29,27 +29,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 8, 2013 at 6:58 PM, Paul Mackerras <paulus@samba.org> wrote:
-> On Fri, Nov 08, 2013 at 03:29:52PM +0800, Liu Ping Fan wrote:
->> v2->v3:
->>   introduce kvmppc_hv_unlock_hpte() to pair with kvmppc_hv_find_lock_hpte()
->>   and hide the preemption detail inside this pair from the callers
+On Fri, Nov 8, 2013 at 7:12 PM, Paul Mackerras <paulus@samba.org> wrote:
+> On Fri, Nov 08, 2013 at 10:44:16AM +0800, Liu Ping Fan wrote:
+>> syscall is a very common behavior inside guest, and this patch
+>> optimizes the path for the emulation of BOOK3S_INTERRUPT_SYSCALL,
+>> so hypervisor can return to guest without heavy exit, i.e, no need
+>> to swap TLB, HTAB,.. etc
 >
-> Actually, I preferred v2.  This version seems a bit over-engineered.
+> Many interrupts that are caused by guest code go directly to the guest
+> and don't come to the hypervisor at all.  That includes system call
+> (sc 0), alignment interrupts, program interrupts, SLB miss interrupts,
+> etc.  See section 6.5 of Book 3S of the Power ISA specification; all
+> the interrupts with '-' in the 'HV' column of the table there get
+> delivered directly to the guest when they occur inside a guest.
 >
-> Making a kvmppc_hv_unlock_hpte() is not such a bad idea, though I
-> would make it identical to the existing unlock_hpte() from
+Oh,got it, thanks! That is an important thing I tried to find out but
+missed all these days.
 
-Do you think it is helpful to distingusish HPTE_V_LOCK from
-HPTE_V_HVLOCK at an API level?
-If it is, I will keep patch 1/2 and just fix patch 2/2 .
-
-> book3s_hv_rm_mmu.c, just in a header.  I'm really not convinced about
-> putting the preempt_disable/enable inside the lock/unlock functions,
-> with the consequent need to pass in a 'vmode' parameter, given that
-> there is just one caller that needs to do the preempt_disable/enable.
+>> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>> @@ -1388,7 +1388,8 @@ kvmppc_hisi:
+>>  hcall_try_real_mode:
+>>       ld      r3,VCPU_GPR(R3)(r9)
+>>       andi.   r0,r11,MSR_PR
+>> -     bne     guest_exit_cont
+>> +     /* sc 1 from userspace - reflect to guest syscall */
+>> +     bne     sc_0_fast_return
 >
-Ok, will fix patch 2/2
+> Discrepancy between comment and code here.  In fact we would only take
+> the branch for a sc 1 instruction in userspace, which occurs when a PR
+> KVM guest nested inside a HV KVM guest does a hypercall (i.e., not for
 
-Thanks and regards,
+I made a big mistake from the beginning, and now get a more clear
+understand of the scene. Thanks!
+
+> normal system calls).  It is probably worthwhile to speed those up.
+>
+>> +sc_0_fast_return:
+>> +     ld      r10,VCPU_PC(r9)
+>> +     ld      r11,VCPU_MSR(r9)
+>
+> r11 must already contain this since you just did andi. r0,r11,MSR_PR.
+> In fact r10 already contains VCPU_PC(r9) at this point also, though
+> that is not so obvious.
+>
+>> +     mtspr   SPRN_SRR0,r10
+>> +     mtspr   SPRN_SRR1,r11
+>> +     li      r10, BOOK3S_INTERRUPT_SYSCALL
+>> +     LOAD_REG_IMMEDIATE(r3,0xffffffff87a0ffff)       /* zero 33:36,42:47 */
+>> +     and     r11,r11,r3
+>
+> This is not correct, since you don't even clear PR.  In fact what you
+
+Yes.
+> need is to load up MSR_SF | MSR_ME, though that value changes with
+
+Is it enough to only set "MSR_SF | MSR_ME"? Sould the HV guest(PR KVM)
+need to fake msr,  so that PR guest feels that "sc 1" is trapped by PR
+KVM directly? I.e, according to ISA "Figure 51. MSR setting due to
+interrupt", about "System Call", we need to keep MSR_IR/_DR unchanged.
+If it is true, then HV need to help HV guest to make this fake. Right?
+
+> little-endian support and changes again with transactional memory
+> support for POWER8.  There is an idiom for loading that MSR value,
+> which is:
+>
+>         li      r11, (MSR_ME << 1) | 1  /* synthesize MSR_SF | MSR_ME */
+>         rotldi  r11, r11, 63
+>
+Why do we define MSR_SF_LG as bit 63, not like the ISA says bit 0 is SF?
+And could you enlighten me briefly that what is the effect on the
+value, when LE and  transactional memory are introduced?
+
+Thanks and best regards,
 Pingfan
+
+> which you could use for now, but it will need to be changed when
+> Anton's LE patch gets accepted.
+>
+> Paul.
