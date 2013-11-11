@@ -1,23 +1,30 @@
-Return-Path: <aijazbaig1.new@gmail.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C028D2C00A6
- for <linuxppc-dev@ozlabs.org>; Mon, 11 Nov 2013 18:51:35 +1100 (EST)
-Received: from tom.nabble.com ([192.168.236.105])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <aijazbaig1.new@gmail.com>) id 1VfmHV-0004D5-2o
- for linuxppc-dev@ozlabs.org; Sun, 10 Nov 2013 23:51:33 -0800
-Date: Sun, 10 Nov 2013 23:51:33 -0800 (PST)
-From: pegasus <aijazbaig1.new@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1384156293077-78004.post@n7.nabble.com>
-In-Reply-To: <alpine.LRH.2.00.1311101509570.9815@ra8135-ec1.am.freescale.net>
-References: <1383907583944-77960.post@n7.nabble.com>
- <alpine.LRH.2.00.1311101509570.9815@ra8135-ec1.am.freescale.net>
-Subject: Re: BookE "branch taken" behavior vis-a-vis updating the NIP register
+Return-Path: <hongbo.zhang@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 96B2A2C00B1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 20:12:30 +1100 (EST)
+Message-ID: <52809F67.20901@freescale.com>
+Date: Mon, 11 Nov 2013 17:12:07 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH v11 3/3] DMA: Freescale: update driver to support 8-channel
+ DMA engine
+References: <1380188023-3936-1-git-send-email-hongbo.zhang@freescale.com>
+ <1380188023-3936-4-git-send-email-hongbo.zhang@freescale.com>
+ <525F7C18.3010409@freescale.com> <5278587F.7090500@freescale.com>
+ <CAA9_cme3c7SjH3iio0oR3FHpfoMzgrBDO-2k_Yf68G-AgFNqfA@mail.gmail.com>
+In-Reply-To: <CAA9_cme3c7SjH3iio0oR3FHpfoMzgrBDO-2k_Yf68G-AgFNqfA@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, ian.campbell@citrix.com,
+ pawel.moll@arm.com, Stephen Warren <swarren@wwwdotorg.org>, "Koul,
+ Vinod" <vinod.koul@intel.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ rob.herring@calxeda.com, dmaengine@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,182 +34,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks James.
+On 11/08/2013 10:45 AM, Dan Williams wrote:
+> On Mon, Nov 4, 2013 at 6:31 PM, Hongbo Zhang <hongbo.zhang@freescale.com> wrote:
+>> Hi Vinod Koul and Dan Williams,
+>> Ping?
+>>
+> Not much to review from the dmaengine side, just one question below.
+> It would be helpful if you can send these to the new dmaengine
+> patchwork at dmaengine@vger.kernel.org with the Acks you have already
+> collected.
+>
 
-So it means that, the NIP that I am seeing in the printks is indeed correct.
-Right? And this is due to the pipelining feature that is inherent in all
-processors. So it basically means that after having executed the branch, the
-NIP has already progressed to the next instruction it is about to execute
-(just after the branch or rather the branch target). The NIP hence basically
-contains the address of the branch target. And this is how it is (and
-perhaps I have been thinking about this in the wrong way).
+Sorry didn't notice this new mailing list.
+I will resend these patches to it again.
 
-But I still have a question about how one would then be able to signal to
-the userspace who might be interpreting this information differently? I mean
-if SRR0 contains, not the branch instruction address but the address of the
-branch target, how would any debugger be able to catch function calls? May
-be there is a trick involved here and hence gdb or for that matter the other
-debuggers are still in the market. But then I would be immensely obliged if
-you could shed some light on how is this accomplished. Lets say I am waiting
-at the userspace in my own sigtrap, to watch out for branch instructions.
-Lets say I want to profile my code to get to know how many branch
-instructions it has generated. How could I ever do that using my own custom
-SIGTRAP handler?
+>>
+>> On 10/17/2013 01:56 PM, Hongbo Zhang wrote:
+>>> Hi Vinod,
+>>> I have gotten ACK from Mark for both the 1/3 and 2/3 patches.
+>>> Thanks.
+>>>
+>>>
+>>> On 09/26/2013 05:33 PM, hongbo.zhang@freescale.com wrote:
+>>>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+>>>>
+>>>> This patch adds support to 8-channel DMA engine, thus the driver works
+>>>> for both
+>>>> the new 8-channel and the legacy 4-channel DMA engines.
+>>>>
+>>>> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+>>>> ---
+>>>>    drivers/dma/Kconfig  |    9 +++++----
+>>>>    drivers/dma/fsldma.c |    9 ++++++---
+>>>>    drivers/dma/fsldma.h |    2 +-
+>>>>    3 files changed, 12 insertions(+), 8 deletions(-)
+>>>>
+>>>> diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+>>>> index 6825957..3979c65 100644
+>>>> --- a/drivers/dma/Kconfig
+>>>> +++ b/drivers/dma/Kconfig
+>>>> @@ -89,14 +89,15 @@ config AT_HDMAC
+>>>>          Support the Atmel AHB DMA controller.
+>>>>      config FSL_DMA
+>>>> -    tristate "Freescale Elo and Elo Plus DMA support"
+>>>> +    tristate "Freescale Elo series DMA support"
+>>>>        depends on FSL_SOC
+>>>>        select DMA_ENGINE
+>>>>        select ASYNC_TX_ENABLE_CHANNEL_SWITCH
+>>>>        ---help---
+>>>> -      Enable support for the Freescale Elo and Elo Plus DMA controllers.
+>>>> -      The Elo is the DMA controller on some 82xx and 83xx parts, and the
+>>>> -      Elo Plus is the DMA controller on 85xx and 86xx parts.
+>>>> +      Enable support for the Freescale Elo series DMA controllers.
+>>>> +      The Elo is the DMA controller on some mpc82xx and mpc83xx parts,
+>>>> the
+>>>> +      EloPlus is on mpc85xx and mpc86xx and Pxxx parts, and the Elo3 is
+>>>> on
+>>>> +      some Txxx and Bxxx parts.
+>>>>      config MPC512X_DMA
+>>>>        tristate "Freescale MPC512x built-in DMA engine support"
+>>>> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+>>>> index 49e8fbd..16a9a48 100644
+>>>> --- a/drivers/dma/fsldma.c
+>>>> +++ b/drivers/dma/fsldma.c
+>>>> @@ -1261,7 +1261,9 @@ static int fsl_dma_chan_probe(struct fsldma_device
+>>>> *fdev,
+>>>>        WARN_ON(fdev->feature != chan->feature);
+>>>>          chan->dev = fdev->dev;
+>>>> -    chan->id = ((res.start - 0x100) & 0xfff) >> 7;
+>>>> +    chan->id = (res.start & 0xfff) < 0x300 ?
+>>>> +           ((res.start - 0x100) & 0xfff) >> 7 :
+>>>> +           ((res.start - 0x200) & 0xfff) >> 7;
+>>>>        if (chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
+> Isn't it a bit fragile to have this based on the resource address?
+> Can't device tree tell you the channel id directly by an index into
+> the "dma0: dma@100300" node?
 
-Coming on to PTRACE_SINGLESTEP, the sysroot that has been provided to us by
-our vendor does not include a PTRACE_SINGLEBLOCK in sys/ptrace.h:
+Yes, both this way and putting a "cell-index" into device tree work.
+This won't be fragile, because the resource address should always be 
+defined correctly, otherwise even if we can tell a channel id by 
+"cell-index" but with wrong resource address, nothing will work.
+This piece of code only doesn't seem as neat as using "cell-index", but 
+we prefer the style that let the device tree describes as true as what 
+hardware really has. This doesn't mean "cell-index" isn't acceptable, if 
+it is necessary and unavoidable, we can send another patch to add it, 
+but currently there is no need and we don't have to do this.
 
-/* Type of the REQUEST argument to `ptrace.'  */
-enum __ptrace_request
-{
-  /* Indicate that the process making this request should be traced.
-     All signals received by this process can be intercepted by its
-     parent, and its parent can use the other `ptrace' requests.  */
-  PTRACE_TRACEME = 0,
-#define PT_TRACE_ME PTRACE_TRACEME
-
-  /* Return the word in the process's text space at address ADDR.  */
-  PTRACE_PEEKTEXT = 1,
-#define PT_READ_I PTRACE_PEEKTEXT
-
-  /* Return the word in the process's data space at address ADDR.  */
-  PTRACE_PEEKDATA = 2,
-#define PT_READ_D PTRACE_PEEKDATA
-
-  /* Return the word in the process's user area at offset ADDR.  */
-  PTRACE_PEEKUSER = 3,
-#define PT_READ_U PTRACE_PEEKUSER
-
-  /* Write the word DATA into the process's text space at address ADDR.  */
-  PTRACE_POKETEXT = 4,
-#define PT_WRITE_I PTRACE_POKETEXT
-
-  /* Write the word DATA into the process's data space at address ADDR.  */
-  PTRACE_POKEDATA = 5,
-#define PT_WRITE_D PTRACE_POKEDATA
-
-  /* Write the word DATA into the process's user area at offset ADDR.  */
-  PTRACE_POKEUSER = 6,
-#define PT_WRITE_U PTRACE_POKEUSER
-
-  /* Continue the process.  */
-  PTRACE_CONT = 7,
-#define PT_CONTINUE PTRACE_CONT
-
-  /* Kill the process.  */
-  PTRACE_KILL = 8,
-#define PT_KILL PTRACE_KILL
-
-  /* Single step the process.
-     This is not supported on all machines.  */
-  PTRACE_SINGLESTEP = 9,
-#define PT_STEP PTRACE_SINGLESTEP
-
-  /* Attach to a process that is already running. */
-  PTRACE_ATTACH = 16,
-#define PT_ATTACH PTRACE_ATTACH
-
-  /* Detach from a process attached to with PTRACE_ATTACH.  */
-  PTRACE_DETACH = 17,
-#define PT_DETACH PTRACE_DETACH
-
-  /* Continue and stop at the next (return from) syscall.  */
-  PTRACE_SYSCALL = 24,
-#define PT_SYSCALL PTRACE_SYSCALL
-
-  /* Set ptrace filter options.  */
-  PTRACE_SETOPTIONS = 0x4200,
-#define PT_SETOPTIONS PTRACE_SETOPTIONS
-
-  /* Get last ptrace message.  */
-  PTRACE_GETEVENTMSG = 0x4201,
-#define PT_GETEVENTMSG PTRACE_GETEVENTMSG
-
-  /* Get siginfo for process.  */
-  PTRACE_GETSIGINFO = 0x4202,
-#define PT_GETSIGINFO PTRACE_GETSIGINFO
-
-  /* Set new siginfo for process.  */
-  PTRACE_SETSIGINFO = 0x4203
-#define PT_SETSIGINFO PTRACE_SETSIGINFO
-};
-
-Although I can clearly see that PTRACE_SINGLEBLOCK is supported in the
-kernel. 
-
-Hence I am not able to compile this simple program in userspace:
-
-#include <stdio.h>
-#include <sys/ptrace.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-
-
-int main() {   
-	pid_t childpid;
-
-    childpid = fork();
-
-	if(childpid < 0) {
-		perror("error forking:");
-		return -1;
-	}
-
-    if(childpid == 0) {
-		char cwd[512];
-		char path[1024];
-		int val;
-		
-        ptrace(PTRACE_TRACEME, 0, NULL, NULL);
-
-		if (getcwd(cwd, sizeof(cwd)) != NULL)
-			snprintf(path, sizeof(path), "%s/test", cwd);
-		else {
-			perror("getcwd() error. Exiting the program");
-			exit(1);
-		}
-
-		puts("now execle'ing");
-		val = execl(path, NULL); //this will not return
-		if (val < 0) { //something went wrong
-			perror("something went wrong");
-			exit(1);
-		}		
-    }
-    else {
-		int status,rc;
-
-		ptrace(PTRACE_SINGLEBLOCK, childpid, NULL, NULL);
-		rc = waitpid(childpid, &status, 0);
-		if (rc == -1) {
-			perror("unable to waitpid:");
-			exit(1);
-		}
-		
-		if(WIFEXITED(status)) {
-			printf("Child exited with status %d.\n", WEXITSTATUS(status));
-		}
-    }
-    return 0;
-}
-
-Heres the error I get:
-testptrace.c: In function 'int main()':
-testptrace.c:47: error: invalid conversion from 'int' to '__ptrace_request'
-testptrace.c:47: error:   initializing argument 1 of 'long int
-ptrace(__ptrace_request, ...)'
-make: *** [testptrace] Error 1
-
-How should I go about using ptrace to test this? 
-
-Keen to hear from you for the above two clarifications.
-
-
-
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/BookE-branch-taken-behavior-vis-a-vis-updating-the-NIP-register-tp77960p78004.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+> --
+> Dan
+>
