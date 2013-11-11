@@ -1,24 +1,27 @@
-Return-Path: <hongbo.zhang@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+Return-Path: <claudiu.manoil@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E9CB92C035C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 21:26:41 +1100 (EST)
-From: <hongbo.zhang@freescale.com>
-To: <dan.j.williams@intel.com>, <vinod.koul@intel.com>,
- <dmaengine@vger.kernel.org>
-Subject: [PATCH resend 3/3] DMA: Freescale: update driver to support 8-channel
- DMA engine
-Date: Mon, 11 Nov 2013 18:26:07 +0800
-Message-ID: <1384165567-4883-4-git-send-email-hongbo.zhang@freescale.com>
-In-Reply-To: <1384165567-4883-1-git-send-email-hongbo.zhang@freescale.com>
-References: <1384165567-4883-1-git-send-email-hongbo.zhang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 56BB42C00B1
+ for <linuxppc-dev@ozlabs.org>; Mon, 11 Nov 2013 21:41:32 +1100 (EST)
+Received: from mail224-tx2 (localhost [127.0.0.1])	by
+ mail224-tx2-R.bigfish.com (Postfix) with ESMTP id 256CAB80478	for
+ <linuxppc-dev@ozlabs.org>; Mon, 11 Nov 2013 10:41:29 +0000 (UTC)
+Received: from TX2EHSMHS008.bigfish.com (unknown [10.9.14.236])	by
+ mail224-tx2.bigfish.com (Postfix) with ESMTP id 09D62540040	for
+ <linuxppc-dev@ozlabs.org>; Mon, 11 Nov 2013 10:41:27 +0000 (UTC)
+Message-ID: <5280B44E.50205@freescale.com>
+Date: Mon, 11 Nov 2013 12:41:18 +0200
+From: Claudiu Manoil <claudiu.manoil@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Hongbo Zhang <hongbo.zhang@freescale.com>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+To: Lijun Pan <Lijun.Pan@freescale.com>, <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc/85xx: Merge 85xx/p1023_defconfig into
+ mpc85xx_smp_defconfig and mpc85xx_defconfig
+References: <1383952632-5770-1-git-send-email-Lijun.Pan@freescale.com>
+In-Reply-To: <1383952632-5770-1-git-send-email-Lijun.Pan@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,93 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+On 11/9/2013 1:17 AM, Lijun Pan wrote:
+> diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
+> index d2e0fab..72fff6e 100644
+> --- a/arch/powerpc/configs/mpc85xx_defconfig
+> +++ b/arch/powerpc/configs/mpc85xx_defconfig
+> @@ -1,4 +1,5 @@
+>   CONFIG_PPC_85xx=y
+> +CONFIG_SMP=y
 
-This patch adds support to 8-channel DMA engine, thus the driver works for both
-the new 8-channel and the legacy 4-channel DMA engines.
+mpc85xx_defconfig is targeting single CPU systems, like P1010,
+so why enable SMP here since there is a separate mpc85xx_smp_defconfig?
 
-Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
----
- drivers/dma/Kconfig  |    9 +++++----
- drivers/dma/fsldma.c |    9 ++++++---
- drivers/dma/fsldma.h |    2 +-
- 3 files changed, 12 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index f238cfd..cd32586 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -89,14 +89,15 @@ config AT_HDMAC
- 	  Support the Atmel AHB DMA controller.
- 
- config FSL_DMA
--	tristate "Freescale Elo and Elo Plus DMA support"
-+	tristate "Freescale Elo series DMA support"
- 	depends on FSL_SOC
- 	select DMA_ENGINE
- 	select ASYNC_TX_ENABLE_CHANNEL_SWITCH
- 	---help---
--	  Enable support for the Freescale Elo and Elo Plus DMA controllers.
--	  The Elo is the DMA controller on some 82xx and 83xx parts, and the
--	  Elo Plus is the DMA controller on 85xx and 86xx parts.
-+	  Enable support for the Freescale Elo series DMA controllers.
-+	  The Elo is the DMA controller on some mpc82xx and mpc83xx parts, the
-+	  EloPlus is on mpc85xx and mpc86xx and Pxxx parts, and the Elo3 is on
-+	  some Txxx and Bxxx parts.
- 
- config MPC512X_DMA
- 	tristate "Freescale MPC512x built-in DMA engine support"
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index b3f3e90..4e89812 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -1253,7 +1253,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
- 	WARN_ON(fdev->feature != chan->feature);
- 
- 	chan->dev = fdev->dev;
--	chan->id = ((res.start - 0x100) & 0xfff) >> 7;
-+	chan->id = (res.start & 0xfff) < 0x300 ?
-+		   ((res.start - 0x100) & 0xfff) >> 7 :
-+		   ((res.start - 0x200) & 0xfff) >> 7;
- 	if (chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
- 		dev_err(fdev->dev, "too many channels for device\n");
- 		err = -EINVAL;
-@@ -1426,6 +1428,7 @@ static int fsldma_of_remove(struct platform_device *op)
- }
- 
- static const struct of_device_id fsldma_of_ids[] = {
-+	{ .compatible = "fsl,elo3-dma", },
- 	{ .compatible = "fsl,eloplus-dma", },
- 	{ .compatible = "fsl,elo-dma", },
- 	{}
-@@ -1447,7 +1450,7 @@ static struct platform_driver fsldma_of_driver = {
- 
- static __init int fsldma_init(void)
- {
--	pr_info("Freescale Elo / Elo Plus DMA driver\n");
-+	pr_info("Freescale Elo series DMA driver\n");
- 	return platform_driver_register(&fsldma_of_driver);
- }
- 
-@@ -1459,5 +1462,5 @@ static void __exit fsldma_exit(void)
- subsys_initcall(fsldma_init);
- module_exit(fsldma_exit);
- 
--MODULE_DESCRIPTION("Freescale Elo / Elo Plus DMA driver");
-+MODULE_DESCRIPTION("Freescale Elo series DMA driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-index f5c3879..1ffc244 100644
---- a/drivers/dma/fsldma.h
-+++ b/drivers/dma/fsldma.h
-@@ -112,7 +112,7 @@ struct fsldma_chan_regs {
- };
- 
- struct fsldma_chan;
--#define FSL_DMA_MAX_CHANS_PER_DEVICE 4
-+#define FSL_DMA_MAX_CHANS_PER_DEVICE 8
- 
- struct fsldma_device {
- 	void __iomem *regs;	/* DGSR register base */
--- 
-1.7.9.5
+regards,
+Claudiu
