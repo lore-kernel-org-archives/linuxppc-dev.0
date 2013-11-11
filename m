@@ -1,19 +1,26 @@
-Return-Path: <kilobyte@angband.pl>
-Received: from tartarus.angband.pl (tartarus.angband.pl [IPv6:2a03:9300:10::8])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4159B2C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 09:28:51 +1100 (EST)
-From: Adam Borowski <kilobyte@angband.pl>
-To: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>,
- Mark Rutland <mark.rutland@arm.com>,
- Stephen Warren <swarren@wwwdotorg.org>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Mon, 11 Nov 2013 22:52:07 +0100
-Message-Id: <1384206727-11880-1-git-send-email-kilobyte@angband.pl>
-Subject: [PATCH] powerpc/85xx: typo in dts: "interupt" (four devices)
-Cc: Adam Borowski <kilobyte@angband.pl>
+Return-Path: <scottwood@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9D0742C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 10:48:47 +1100 (EST)
+Message-ID: <1384213672.1403.17.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/85xx: don't init the mpic ipi for the SoC which
+ has doorbell support
+From: Scott Wood <scottwood@freescale.com>
+To: Kevin Hao <haokexin@gmail.com>
+Date: Mon, 11 Nov 2013 17:47:52 -0600
+In-Reply-To: <20131109064336.GB27936@pek-khao-d1.corp.ad.wrs.com>
+References: <1383808637-26769-1-git-send-email-haokexin@gmail.com>
+ <1383845691.23598.125.camel@snotra.buserror.net>
+ <20131108015446.GA31761@pek-khao-d1.corp.ad.wrs.com>
+ <1383945372.23598.211.camel@snotra.buserror.net>
+ <20131109064336.GB27936@pek-khao-d1.corp.ad.wrs.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,101 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These lines were inoperative for four years, which puts some doubt into
-their importance, and it's possible the fixed version will regress, but
-at the very least they should be removed instead.
+On Sat, 2013-11-09 at 14:43 +0800, Kevin Hao wrote:
+> On Fri, Nov 08, 2013 at 03:16:12PM -0600, Scott Wood wrote:
+> > OK...  Why are you splitting out smp_85xx_basic_setup()?
+> 
+> In the current implementation of smp_85xx_setup_cpu(), we only invoke
+> the function mpic_setup_this_cpu() when the smp_85xx_ops.probe is set 
+> to smp_mpic_probe(). So if we set smp_85xx_ops.probe to NULL when doorbell
+> is available, we must make sure that the mpic_setup_this_cpu() is also invoked
+> when there does have a mpic. The smp_85xx_basic_setup() is for the board which
+> has no mpic.
+> 
+>   static void smp_85xx_setup_cpu(int cpu_nr)
+>   {
+>   	if (smp_85xx_ops.probe == smp_mpic_probe)
+>   		mpic_setup_this_cpu();
+>   
+>   	if (cpu_has_feature(CPU_FTR_DBELL))
+>   		doorbell_setup_this_cpu();
+>   }
+> 
+> >  Where do you
+> > call it other than from smp_85xx_setup_cpu()?
+> 
+> We would set the .setup_cpu() to smp_85xx_basic_setup() if it is a
+> non-mpic board. The following is quoted form the patch:
+>    	np = of_find_node_by_type(NULL, "open-pic");
+>    	if (np) {
+>    		smp_85xx_ops.probe = smp_mpic_probe;
+>   +		smp_85xx_ops.setup_cpu = smp_85xx_setup_cpu;
+>    		smp_85xx_ops.message_pass = smp_mpic_message_pass;
+>   -	}
+>   +	} else
+>   +		smp_85xx_ops.setup_cpu = smp_85xx_basic_setup;
 
-Signed-off-by: Adam Borowski <kilobyte@angband.pl>
----
- arch/powerpc/boot/dts/xcalibur1501.dts | 4 ++--
- arch/powerpc/boot/dts/xpedite5301.dts  | 4 ++--
- arch/powerpc/boot/dts/xpedite5330.dts  | 4 ++--
- arch/powerpc/boot/dts/xpedite5370.dts  | 4 ++--
- 4 files changed, 8 insertions(+), 8 deletions(-)
+OK, somehow I missed the change to .setup_cpu before. :-P
 
-diff --git a/arch/powerpc/boot/dts/xcalibur1501.dts b/arch/powerpc/boot/dts/xcalibur1501.dts
-index cc00f4d..f151426 100644
---- a/arch/powerpc/boot/dts/xcalibur1501.dts
-+++ b/arch/powerpc/boot/dts/xcalibur1501.dts
-@@ -637,14 +637,14 @@
- 		tlu@2f000 {
- 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
- 			reg = <0x2f000 0x1000>;
--			interupts = <61 2 >;
-+			interrupts = <61 2 >;
- 			interrupt-parent = <&mpic>;
- 		};
- 
- 		tlu@15000 {
- 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
- 			reg = <0x15000 0x1000>;
--			interupts = <75 2>;
-+			interrupts = <75 2>;
- 			interrupt-parent = <&mpic>;
- 		};
- 	};
-diff --git a/arch/powerpc/boot/dts/xpedite5301.dts b/arch/powerpc/boot/dts/xpedite5301.dts
-index 53c1c6a..d00fe16 100644
---- a/arch/powerpc/boot/dts/xpedite5301.dts
-+++ b/arch/powerpc/boot/dts/xpedite5301.dts
-@@ -547,14 +547,14 @@
- 		tlu@2f000 {
- 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
- 			reg = <0x2f000 0x1000>;
--			interupts = <61 2 >;
-+			interrupts = <61 2 >;
- 			interrupt-parent = <&mpic>;
- 		};
- 
- 		tlu@15000 {
- 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
- 			reg = <0x15000 0x1000>;
--			interupts = <75 2>;
-+			interrupts = <75 2>;
- 			interrupt-parent = <&mpic>;
- 		};
- 	};
-diff --git a/arch/powerpc/boot/dts/xpedite5330.dts b/arch/powerpc/boot/dts/xpedite5330.dts
-index 2152259..e506554 100644
---- a/arch/powerpc/boot/dts/xpedite5330.dts
-+++ b/arch/powerpc/boot/dts/xpedite5330.dts
-@@ -583,14 +583,14 @@
- 		tlu@2f000 {
- 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
- 			reg = <0x2f000 0x1000>;
--			interupts = <61 2 >;
-+			interrupts = <61 2 >;
- 			interrupt-parent = <&mpic>;
- 		};
- 
- 		tlu@15000 {
- 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
- 			reg = <0x15000 0x1000>;
--			interupts = <75 2>;
-+			interrupts = <75 2>;
- 			interrupt-parent = <&mpic>;
- 		};
- 	};
-diff --git a/arch/powerpc/boot/dts/xpedite5370.dts b/arch/powerpc/boot/dts/xpedite5370.dts
-index 11dbda1..9f1c608 100644
---- a/arch/powerpc/boot/dts/xpedite5370.dts
-+++ b/arch/powerpc/boot/dts/xpedite5370.dts
-@@ -545,14 +545,14 @@
- 		tlu@2f000 {
- 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
- 			reg = <0x2f000 0x1000>;
--			interupts = <61 2 >;
-+			interrupts = <61 2 >;
- 			interrupt-parent = <&mpic>;
- 		};
- 
- 		tlu@15000 {
- 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
- 			reg = <0x15000 0x1000>;
--			interupts = <75 2>;
-+			interrupts = <75 2>;
- 			interrupt-parent = <&mpic>;
- 		};
- 	};
--- 
-1.8.5.rc0
+-Scott
