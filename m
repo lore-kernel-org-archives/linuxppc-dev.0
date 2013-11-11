@@ -1,20 +1,32 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 1E3202C00D1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 22:52:14 +1100 (EST)
-Date: Mon, 11 Nov 2013 11:52:02 +0000
-From: Mark Rutland <mark.rutland@arm.com>
-To: "Yuantian.Tang@freescale.com" <Yuantian.Tang@freescale.com>,
- mike.turquette@linaro.org
-Subject: Re: [PATCH v6] clk: corenet: Adds the clock binding
-Message-ID: <20131111115202.GD21201@e106331-lin.cambridge.arm.com>
-References: <1384162906-30730-1-git-send-email-Yuantian.Tang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1384162906-30730-1-git-send-email-Yuantian.Tang@freescale.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "scottwood@freescale.com" <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1BCA52C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 01:00:07 +1100 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 12 Nov 2013 00:00:04 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 366BC3578054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 00:59:55 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rABDgISG63111368
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 00:42:18 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rABDxsaT022231
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 00:59:54 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: book3s: kvm: Don't abuse host r2 in exit path
+Date: Mon, 11 Nov 2013 19:29:47 +0530
+Message-Id: <1384178387-22993-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,237 +36,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 11, 2013 at 09:41:46AM +0000, Yuantian.Tang@freescale.com wrote:
-> From: Tang Yuantian <yuantian.tang@freescale.com>
-> 
-> Adds the clock bindings for Freescale PowerPC CoreNet platforms
-> 
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> v6:
-> 	- splited the previous patch into 2 parts, one is for binding(this one),
-> 	  the other is for DTS modification(will submit once this gets accepted)
-> 	- fixed typo
-> 	- refined #clock-cells and clock-output-names properties
-> 	- removed fixed-clock compatible string
-> v5:
-> 	- refine the binding document
-> 	- update the compatible string
-> v4:
-> 	- add binding document
-> 	- update compatible string
-> 	- update the reg property
-> v3:
-> 	- fix typo
-> v2:
-> 	- add t4240, b4420, b4860 support
-> 	- remove pll/4 clock from p2041, p3041 and p5020 board
-> 
->  .../devicetree/bindings/clock/corenet-clock.txt    | 123 +++++++++++++++++++++
->  1 file changed, 123 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/clock/corenet-clock.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/clock/corenet-clock.txt b/Documentation/devicetree/bindings/clock/corenet-clock.txt
-> new file mode 100644
-> index 0000000..6a4e15d
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/clock/corenet-clock.txt
-> @@ -0,0 +1,123 @@
-> +* Clock Block on Freescale CoreNet Platforms
-> +
-> +Freescale CoreNet chips take primary clocking input from the external
-> +SYSCLK signal. The SYSCLK input (frequency) is multiplied using
-> +multiple phase locked loops (PLL) to create a variety of frequencies
-> +which can then be passed to a variety of internal logic, including
-> +cores and peripheral IP blocks.
-> +Please refer to the Reference Manual for details.
-> +
-> +1. Clock Block Binding
-> +
-> +Required properties:
-> +- compatible: Should include one or more of the following:
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-When you say "one or more", I assume you mean of the specific clock
-block strings, and then a chassis string?
+We don't use PACATOC for PR. Avoid updating HOST_R2 with PR
+KVM mode when both HV and PR are enabled in the kernel. Without this we
+get the below crash
 
-If so, it might be better to say smoething like:
+(qemu)
+Unable to handle kernel paging request for data at address 0xffffffffffff8310
+Faulting instruction address: 0xc00000000001d5a4
+cpu 0x2: Vector: 300 (Data Access) at [c0000001dc53aef0]
+    pc: c00000000001d5a4: .vtime_delta.isra.1+0x34/0x1d0
+    lr: c00000000001d760: .vtime_account_system+0x20/0x60
+    sp: c0000001dc53b170
+   msr: 8000000000009032
+   dar: ffffffffffff8310
+ dsisr: 40000000
+  current = 0xc0000001d76c62d0
+  paca    = 0xc00000000fef1100   softe: 0        irq_happened: 0x01
+    pid   = 4472, comm = qemu-system-ppc
+enter ? for help
+[c0000001dc53b200] c00000000001d760 .vtime_account_system+0x20/0x60
+[c0000001dc53b290] c00000000008d050 .kvmppc_handle_exit_pr+0x60/0xa50
+[c0000001dc53b340] c00000000008f51c kvm_start_lightweight+0xb4/0xc4
+[c0000001dc53b510] c00000000008cdf0 .kvmppc_vcpu_run_pr+0x150/0x2e0
+[c0000001dc53b9e0] c00000000008341c .kvmppc_vcpu_run+0x2c/0x40
+[c0000001dc53ba50] c000000000080af4 .kvm_arch_vcpu_ioctl_run+0x54/0x1b0
+[c0000001dc53bae0] c00000000007b4c8 .kvm_vcpu_ioctl+0x478/0x730
+[c0000001dc53bca0] c0000000002140cc .do_vfs_ioctl+0x4ac/0x770
+[c0000001dc53bd80] c0000000002143e8 .SyS_ioctl+0x58/0xb0
+[c0000001dc53be30] c000000000009e58 syscall_exit+0x0/0x98
+--- Exception: c00 (System Call) at 00001fffff960160
+SP (1ffffecbe3c0) is in userspace
 
-- compatible: Should contain a specific clock block compatible string
-  and a single chassis clock compatible string.
+These changes were originally part of
+http://mid.gmane.org/20130806042205.GR19254@iris.ozlabs.ibm.com
 
-  Clock block strings include:
-  * "fsl,p2041-clockgen"
-  * "fsl,p3041-clockgen"
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/kvm_book3s_asm.h | 1 +
+ arch/powerpc/kernel/asm-offsets.c         | 1 +
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 7 +++----
+ 3 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
+index 0bd9348..69fe837 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_asm.h
++++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
+@@ -79,6 +79,7 @@ struct kvmppc_host_state {
+ 	ulong vmhandler;
+ 	ulong scratch0;
+ 	ulong scratch1;
++	ulong scratch2;
+ 	u8 in_guest;
+ 	u8 restore_hid5;
+ 	u8 napping;
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 8e6ede6..841a4c8 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -583,6 +583,7 @@ int main(void)
+ 	HSTATE_FIELD(HSTATE_VMHANDLER, vmhandler);
+ 	HSTATE_FIELD(HSTATE_SCRATCH0, scratch0);
+ 	HSTATE_FIELD(HSTATE_SCRATCH1, scratch1);
++	HSTATE_FIELD(HSTATE_SCRATCH2, scratch2);
+ 	HSTATE_FIELD(HSTATE_IN_GUEST, in_guest);
+ 	HSTATE_FIELD(HSTATE_RESTORE_HID5, restore_hid5);
+ 	HSTATE_FIELD(HSTATE_NAPPING, napping);
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 339aa5e..16f7654 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -750,15 +750,14 @@ kvmppc_interrupt_hv:
+ 	 * guest CR, R12 saved in shadow VCPU SCRATCH1/0
+ 	 * guest R13 saved in SPRN_SCRATCH0
+ 	 */
+-	/* abuse host_r2 as third scratch area; we get r2 from PACATOC(r13) */
+-	std	r9, HSTATE_HOST_R2(r13)
++	std	r9, HSTATE_SCRATCH2(r13)
  
-  Chassis clock strings include:
-  * "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
-  * "fsl,qoriq-clockgen-2.0": for chassis 2.0 clock
-
-> +	* "fsl,<chip>-clockgen": for chip specific clock block, here chip
-> +		could be but not limited to one of the: p2041, p3041, p4080,
-> +		p5020, p5040, t4240, b4420, b4860
-> +	* "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
-> +	* "fsl,qoriq-clockgen-2.0": for chassis 2.0 clocks
-> +	Notes that "fsl,qoriq-clockgen-1.0" and "fsl,qoriq-clockgen-2.0"
-> +	cannot be included simultaneously.
-> +- reg: Offset and length of the clock register set
-> +
-> +Recommended properties:
-> +- ranges: Allows valid translation between child's address space and
-> +	parent's. Must be present if the device has sub-nodes.
-> +- #address-cells: Specifies the number of cells used to represent
-> +	physical base addresses.  Must be present if the device has
-> +	sub-nodes and set to 1 if present
-> +- #size-cells: Specifies the number of cells used to represent
-> +	the size of an address. Must be present if the device has
-> +	sub-nodes and set to 1 if present
-
-Is there any particular reason these _must_ be 1?
-
-> +
-> +2. Clock Provider/Consumer Binding
-> +
-> +Most of the bindings are from the common clock binding[1].
-> + [1] Documentation/devicetree/bindings/clock/clock-bindings.txt
-> +
-> +Required properties:
-> +- compatible : Should include one of the following:
-> +	* "fsl,qoriq-core-pll-1.0" for core PLL clocks (v1.0)
-> +    * "fsl,qoriq-core-pll-2.0" for core PLL clocks (v2.0)
-> +    * "fsl,qoriq-core-mux-1.0" for core mux clocks (v1.0)
-> +    * "fsl,qoriq-core-mux-2.0" for core mux clocks (v2.0)
-> +	* "fsl,qoriq-sysclk-1.0": for input system clock (v1.0)
-> +	* "fsl,qoriq-sysclk-2.0": for input system clock (v2.0)
-> +- #clock-cells: From common clock binding; indicates the number of
-> +	output clock. 0 is for "fsl,qoriq-sysclk-[1,2].0" and
-> +	"fsl,qoriq-core-mux-[1,2].0"; 1 for "fsl,qoriq-core-pll-[1,2].0".
-
-Nit: #clock-cells defines the number of cells in a clock-specifier, not
-the number of output clocks. How about:
-
-- #clock-cells: The number of cells in a clock-specifier. Should be <0>
-  for "fsl,qoriq-sysclk-[1,2].0" clocks, or <1> for
-  "fsl,qoriq-core-pll-[1,2].0" clocks.
-
-> +	If #clock-cells has a value of 1, its clock consumer should specify
-> +	the desired clock by having the clock ID in its "clocks" phandle
-> +	cell. The following is a full list IDs:
-
-The ID is in the clock-specifier, not the phandle. How about the
-following instead:
-
-For "fsl,qoriq-core-pll-[1,2].0" clocks, the single clock-specifier cell
-may take the following values:
-
-> +	* 0 - equal to the PLL frequency
-> +	* 1 - equal to the PLL frequency divided by 2
-> +	* 2 - equal to the PLL frequency divided by 4
-> +
-> +Recommended properties:
-> +- clocks: Should be the phandle of input parent clock
-> +- clock-names: From common clock binding, indicates the clock name
-
-Is this not well defined and common across all of the clocks? The set of
-inputs they have must be well known, and if it isn't then this property
-isn't all that useful.
-
-> +- clock-output-names: From common clock binding, indicates the names of
-> +	output clocks
-
-Similarly, I'd expect that there might be well defined output names. 
-
-> +- reg: Should be the offset and length of clock block base address.
-> +	The length should be 4.
-> +
-> +Example for clock block and clock provider:
-> +/ {
-> +	clockgen: global-utilities@e1000 {
-> +		compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
-> +		ranges = <0x0 0xe1000 0x1000>;
-> +		reg = <0xe1000 0x1000>;
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +
-> +		sysclk: sysclk {
-> +			#clock-cells = <0>;
-> +			compatible = "fsl,qoriq-sysclk-1.0";
-> +			clock-output-names = "sysclk";
-> +		}
-> +
-> +		pll0: pll0@800 {
-> +			#clock-cells = <1>;
-> +			reg = <0x800 0x4>;
-> +			compatible = "fsl,qoriq-core-pll-1.0";
-> +			clocks = <&sysclk>;
-> +			clock-output-names = "pll0", "pll0-div2";
-> +		};
-> +
-> +		pll1: pll1@820 {
-> +			#clock-cells = <1>;
-> +			reg = <0x820 0x4>;
-> +			compatible = "fsl,qoriq-core-pll-1.0";
-> +			clocks = <&sysclk>;
-> +			clock-output-names = "pll1", "pll1-div2";
-> +		};
-
-The binding documentation for clock-output-names describes
-clock-output-names as the name of the clock output signals. I understand
-this as meaning name of the output with respect to the clock, rather
-than a global namespace, but I may be mistaken there. Mike?
-
-Given that I'd expect pll0 and pll1 to have the same set of
-clock-output-names, (perhaps "pll", "pll-div2") as they seem to be
-instances of the same HW block. As far as I am aware the precise
-instance shouldn't affect the name (unless the documentation for the HW
-have these logical output names?).
-
-> +
-> +		mux0: mux0@0 {
-> +			#clock-cells = <0>;
-> +			reg = <0x0 0x4>;
-> +			compatible = "fsl,qoriq-core-mux-1.0";
-> +			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-> +			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
-> +			clock-output-names = "cmux0";
-> +		};
-
-I have a similar worry here with regards to the clock-names, but I guess
-it doesn't really matter here if the documentation doesn't provide any
-better names for the inputs to the mux.
-
-However for the output name I'd expect just "cmux".
-
-Thanks,
-Mark,
-
-> +
-> +		mux1: mux1@20 {
-> +			#clock-cells = <0>;
-> +			reg = <0x20 0x4>;
-> +			compatible = "fsl,qoriq-core-mux-1.0";
-> +			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-> +			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
-> +			clock-output-names = "cmux1";
-> +		};
-> +	};
-> +  }
-> +
-> +Example for clock consumer:
-> +
-> +/ {
-> +	cpu0: PowerPC,e5500@0 {
-> +		...
-> +		clocks = <&mux0>;
-> +		...
-> +	};
-> +  }
-> -- 
-> 1.8.0
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+ 	lbz	r9, HSTATE_IN_GUEST(r13)
+ 	cmpwi	r9, KVM_GUEST_MODE_HOST_HV
+ 	beq	kvmppc_bad_host_intr
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+ 	cmpwi	r9, KVM_GUEST_MODE_GUEST
+-	ld	r9, HSTATE_HOST_R2(r13)
++	ld	r9, HSTATE_SCRATCH2(r13)
+ 	beq	kvmppc_interrupt_pr
+ #endif
+ 	/* We're now back in the host but in guest MMU context */
+@@ -778,7 +777,7 @@ kvmppc_interrupt_hv:
+ 	std	r6, VCPU_GPR(R6)(r9)
+ 	std	r7, VCPU_GPR(R7)(r9)
+ 	std	r8, VCPU_GPR(R8)(r9)
+-	ld	r0, HSTATE_HOST_R2(r13)
++	ld	r0, HSTATE_SCRATCH2(r13)
+ 	std	r0, VCPU_GPR(R9)(r9)
+ 	std	r10, VCPU_GPR(R10)(r9)
+ 	std	r11, VCPU_GPR(R11)(r9)
+-- 
+1.8.3.2
