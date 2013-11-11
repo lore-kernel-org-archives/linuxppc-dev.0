@@ -1,20 +1,19 @@
-Return-Path: <shh.xie@gmail.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 92B102C007E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 23:25:23 +1100 (EST)
-From: <shh.xie@gmail.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/4] phylib: Add of_phy_attach
-Date: Mon, 11 Nov 2013 19:08:16 +0800
-Message-ID: <1384168100-3046-1-git-send-email-shh.xie@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shruti@freescale.com, Shaohui Xie <Shaohui.Xie@freescale.com>,
- madalin.bucur@freescale.com
+Return-Path: <kilobyte@angband.pl>
+Received: from tartarus.angband.pl (tartarus.angband.pl [IPv6:2a03:9300:10::8])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4159B2C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 09:28:51 +1100 (EST)
+From: Adam Borowski <kilobyte@angband.pl>
+To: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Date: Mon, 11 Nov 2013 22:52:07 +0100
+Message-Id: <1384206727-11880-1-git-send-email-kilobyte@angband.pl>
+Subject: [PATCH] powerpc/85xx: typo in dts: "interupt" (four devices)
+Cc: Adam Borowski <kilobyte@angband.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,82 +23,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andy Fleming
+These lines were inoperative for four years, which puts some doubt into
+their importance, and it's possible the fixed version will regress, but
+at the very least they should be removed instead.
 
-10G PHYs don't currently support running the state machine, which
-is implicitly setup via of_phy_connect(). Therefore, it is necessary
-to implement an OF version of phy_attach(), which does everything
-except start the state machine.
-
-Signed-off-by: Andy Fleming
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+Signed-off-by: Adam Borowski <kilobyte@angband.pl>
 ---
- drivers/of/of_mdio.c    | 22 ++++++++++++++++++++--
- include/linux/of_mdio.h |  8 ++++++++
- 2 files changed, 28 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/xcalibur1501.dts | 4 ++--
+ arch/powerpc/boot/dts/xpedite5301.dts  | 4 ++--
+ arch/powerpc/boot/dts/xpedite5330.dts  | 4 ++--
+ arch/powerpc/boot/dts/xpedite5370.dts  | 4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
-index d5a57a9..a748274 100644
---- a/drivers/of/of_mdio.c
-+++ b/drivers/of/of_mdio.c
-@@ -221,8 +221,7 @@ EXPORT_SYMBOL(of_phy_connect);
-  * not call this function from new drivers.
-  */
- struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
--					     void (*hndlr)(struct net_device *),
--					     phy_interface_t iface)
-+		void (*hndlr)(struct net_device *), phy_interface_t iface)
- {
- 	struct device_node *net_np;
- 	char bus_id[MII_BUS_ID_SIZE + 3];
-@@ -247,3 +246,22 @@ struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
- 	return IS_ERR(phy) ? NULL : phy;
- }
- EXPORT_SYMBOL(of_phy_connect_fixed_link);
-+
-+/**
-+ * of_phy_attach - Attach to a PHY without starting the state machine
-+ * @dev: pointer to net_device claiming the phy
-+ * @phy_np: Node pointer for the PHY
-+ * @flags: flags to pass to the PHY
-+ * @iface: PHY data interface type
-+ */
-+struct phy_device *of_phy_attach(struct net_device *dev,
-+		struct device_node *phy_np, u32 flags, phy_interface_t iface)
-+{
-+	struct phy_device *phy = of_phy_find_device(phy_np);
-+
-+	if (!phy)
-+		return NULL;
-+
-+	return phy_attach_direct(dev, phy, flags, iface) ? NULL : phy;
-+}
-+EXPORT_SYMBOL(of_phy_attach);
-diff --git a/include/linux/of_mdio.h b/include/linux/of_mdio.h
-index 8163107..dcda44d 100644
---- a/include/linux/of_mdio.h
-+++ b/include/linux/of_mdio.h
-@@ -19,6 +19,8 @@ extern struct phy_device *of_phy_connect(struct net_device *dev,
- 					 struct device_node *phy_np,
- 					 void (*hndlr)(struct net_device *),
- 					 u32 flags, phy_interface_t iface);
-+extern struct phy_device *of_phy_attach(struct net_device *dev,
-+		struct device_node *phy_np, u32 flags, phy_interface_t iface);
- extern struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
- 					 void (*hndlr)(struct net_device *),
- 					 phy_interface_t iface);
-@@ -44,6 +46,12 @@ static inline struct phy_device *of_phy_connect(struct net_device *dev,
- 	return NULL;
- }
+diff --git a/arch/powerpc/boot/dts/xcalibur1501.dts b/arch/powerpc/boot/dts/xcalibur1501.dts
+index cc00f4d..f151426 100644
+--- a/arch/powerpc/boot/dts/xcalibur1501.dts
++++ b/arch/powerpc/boot/dts/xcalibur1501.dts
+@@ -637,14 +637,14 @@
+ 		tlu@2f000 {
+ 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
+ 			reg = <0x2f000 0x1000>;
+-			interupts = <61 2 >;
++			interrupts = <61 2 >;
+ 			interrupt-parent = <&mpic>;
+ 		};
  
-+static inline struct phy_device *of_phy_attach(struct net_device *dev,
-+		struct device_node *phy_np, u32 flags, phy_interface_t iface)
-+{
-+	return NULL;
-+}
-+
- static inline struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
- 							   void (*hndlr)(struct net_device *),
- 							   phy_interface_t iface)
+ 		tlu@15000 {
+ 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
+ 			reg = <0x15000 0x1000>;
+-			interupts = <75 2>;
++			interrupts = <75 2>;
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/xpedite5301.dts b/arch/powerpc/boot/dts/xpedite5301.dts
+index 53c1c6a..d00fe16 100644
+--- a/arch/powerpc/boot/dts/xpedite5301.dts
++++ b/arch/powerpc/boot/dts/xpedite5301.dts
+@@ -547,14 +547,14 @@
+ 		tlu@2f000 {
+ 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
+ 			reg = <0x2f000 0x1000>;
+-			interupts = <61 2 >;
++			interrupts = <61 2 >;
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 
+ 		tlu@15000 {
+ 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
+ 			reg = <0x15000 0x1000>;
+-			interupts = <75 2>;
++			interrupts = <75 2>;
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/xpedite5330.dts b/arch/powerpc/boot/dts/xpedite5330.dts
+index 2152259..e506554 100644
+--- a/arch/powerpc/boot/dts/xpedite5330.dts
++++ b/arch/powerpc/boot/dts/xpedite5330.dts
+@@ -583,14 +583,14 @@
+ 		tlu@2f000 {
+ 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
+ 			reg = <0x2f000 0x1000>;
+-			interupts = <61 2 >;
++			interrupts = <61 2 >;
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 
+ 		tlu@15000 {
+ 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
+ 			reg = <0x15000 0x1000>;
+-			interupts = <75 2>;
++			interrupts = <75 2>;
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/xpedite5370.dts b/arch/powerpc/boot/dts/xpedite5370.dts
+index 11dbda1..9f1c608 100644
+--- a/arch/powerpc/boot/dts/xpedite5370.dts
++++ b/arch/powerpc/boot/dts/xpedite5370.dts
+@@ -545,14 +545,14 @@
+ 		tlu@2f000 {
+ 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
+ 			reg = <0x2f000 0x1000>;
+-			interupts = <61 2 >;
++			interrupts = <61 2 >;
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 
+ 		tlu@15000 {
+ 			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
+ 			reg = <0x15000 0x1000>;
+-			interupts = <75 2>;
++			interrupts = <75 2>;
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 	};
 -- 
-1.8.4.1
+1.8.5.rc0
