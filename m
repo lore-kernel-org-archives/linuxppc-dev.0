@@ -1,17 +1,37 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
- [IPv6:2001:44b8:8060:ff02:300:1:2:7])
- by ozlabs.org (Postfix) with ESMTP id CACC32C0340
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 15:22:13 +1100 (EST)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] powerpc iommu: Update the generic code to use dynamic
- iommu page sizes
-Date: Mon, 11 Nov 2013 15:22:09 +1100
-Message-Id: <1384143729-14491-4-git-send-email-alistair@popple.id.au>
-In-Reply-To: <1384143729-14491-1-git-send-email-alistair@popple.id.au>
-References: <1384143729-14491-1-git-send-email-alistair@popple.id.au>
-Cc: Alistair Popple <alistair@popple.id.au>
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E45972C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 16:35:28 +1100 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Mon, 11 Nov 2013 11:05:21 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B3185E0057
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 11:07:07 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAB5ZEZl42074144
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 11:05:14 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rAB5ZGDM009432
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 11:05:17 +0530
+Subject: [PATCH v8 0/7] POWER/cpuidle: Generic POWERPC-BOOK3S cpuidle driver
+ enabled for PSERIES and POWERNV platforms
+To: benh@kernel.crashing.org, linux-pm@lists.linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Date: Mon, 11 Nov 2013 11:05:03 +0530
+Message-ID: <20131111053450.14797.75544.stgit@deepthi.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: b.zolnierkie@samsung.com, daniel.lezcano@linaro.org,
+ dongsheng.wang@freescale.com, preeti@linux.vnet.ibm.com,
+ srivatsa.bhat@linux.vnet.ibm.com, scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,501 +41,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch updates the generic iommu backend code to use the
-it_page_shift field to determine the iommu page size instead of
-using hardcoded values.
+This patch series consolidates the backend cpuidle driver for pSeries
+and powernv platforms with minimal code duplication.
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
----
- arch/powerpc/include/asm/iommu.h   |   19 +++++---
- arch/powerpc/kernel/dma-iommu.c    |    4 +-
- arch/powerpc/kernel/iommu.c        |   90 +++++++++++++++++++-----------------
- arch/powerpc/kernel/vio.c          |   25 +++++++---
- drivers/net/ethernet/ibm/ibmveth.c |   15 +++---
- 5 files changed, 88 insertions(+), 65 deletions(-)
+Current existing backend driver for pseries has been moved to drivers/cpuidle 
+and has been extended to accommodate powernv idle power mgmt states. 
+As seen in V1 of this patch series, having a separate powernv backend driver 
+results in too much code duplication, which is less elegant and can pose 
+maintenance problems going further.
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 706073a..8032c71 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -35,17 +35,14 @@
- #define IOMMU_PAGE_MASK_4K       (~((1 << IOMMU_PAGE_SHIFT_4K) - 1))
- #define IOMMU_PAGE_ALIGN_4K(addr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE_4K)
- 
-+#define IOMMU_PAGE_SIZE(tblptr) (ASM_CONST(1) << (tblptr)->it_page_shift)
-+#define IOMMU_PAGE_MASK(tblptr) (~((1 << (tblptr)->it_page_shift) - 1))
-+#define IOMMU_PAGE_ALIGN(addr, tblptr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE(tblptr))
-+
- /* Boot time flags */
- extern int iommu_is_off;
- extern int iommu_force_on;
- 
--/* Pure 2^n version of get_order */
--static __inline__ __attribute_const__ int get_iommu_order(unsigned long size)
--{
--	return __ilog2((size - 1) >> IOMMU_PAGE_SHIFT_4K) + 1;
--}
--
--
- /*
-  * IOMAP_MAX_ORDER defines the largest contiguous block
-  * of dma space we can get.  IOMAP_MAX_ORDER = 13
-@@ -82,6 +79,14 @@ struct iommu_table {
- #endif
- };
- 
-+/* Pure 2^n version of get_order */
-+static inline __attribute_const__
-+int get_iommu_order(unsigned long size, struct iommu_table *tbl)
-+{
-+	return __ilog2((size - 1) >> tbl->it_page_shift) + 1;
-+}
-+
-+
- struct scatterlist;
- 
- static inline void set_iommu_table_base(struct device *dev, void *base)
-diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
-index 5cfe3db..54d0116 100644
---- a/arch/powerpc/kernel/dma-iommu.c
-+++ b/arch/powerpc/kernel/dma-iommu.c
-@@ -83,10 +83,10 @@ static int dma_iommu_dma_supported(struct device *dev, u64 mask)
- 		return 0;
- 	}
- 
--	if (tbl->it_offset > (mask >> IOMMU_PAGE_SHIFT_4K)) {
-+	if (tbl->it_offset > (mask >> tbl->it_page_shift)) {
- 		dev_info(dev, "Warning: IOMMU offset too big for device mask\n");
- 		dev_info(dev, "mask: 0x%08llx, table offset: 0x%08lx\n",
--				mask, tbl->it_offset << IOMMU_PAGE_SHIFT_4K);
-+				mask, tbl->it_offset << tbl->it_page_shift);
- 		return 0;
- 	} else
- 		return 1;
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 6bc5d14..10dc7c5 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -251,14 +251,13 @@ again:
- 
- 	if (dev)
- 		boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
--				      1 << IOMMU_PAGE_SHIFT_4K);
-+				      1 << tbl->it_page_shift);
- 	else
--		boundary_size = ALIGN(1UL << 32, 1 << IOMMU_PAGE_SHIFT_4K);
-+		boundary_size = ALIGN(1UL << 32, 1 << tbl->it_page_shift);
- 	/* 4GB boundary for iseries_hv_alloc and iseries_hv_map */
- 
--	n = iommu_area_alloc(tbl->it_map, limit, start, npages,
--			tbl->it_offset, boundary_size >> IOMMU_PAGE_SHIFT_4K,
--			align_mask);
-+	n = iommu_area_alloc(tbl->it_map, limit, start, npages, tbl->it_offset,
-+			     boundary_size >> tbl->it_page_shift, align_mask);
- 	if (n == -1) {
- 		if (likely(pass == 0)) {
- 			/* First try the pool from the start */
-@@ -320,12 +319,12 @@ static dma_addr_t iommu_alloc(struct device *dev, struct iommu_table *tbl,
- 		return DMA_ERROR_CODE;
- 
- 	entry += tbl->it_offset;	/* Offset into real TCE table */
--	ret = entry << IOMMU_PAGE_SHIFT_4K;	/* Set the return dma address */
-+	ret = entry << tbl->it_page_shift;	/* Set the return dma address */
- 
- 	/* Put the TCEs in the HW table */
- 	build_fail = ppc_md.tce_build(tbl, entry, npages,
--				(unsigned long)page & IOMMU_PAGE_MASK_4K,
--				direction, attrs);
-+				      (unsigned long)page &
-+				      IOMMU_PAGE_MASK(tbl), direction, attrs);
- 
- 	/* ppc_md.tce_build() only returns non-zero for transient errors.
- 	 * Clean up the table bitmap in this case and return
-@@ -352,7 +351,7 @@ static bool iommu_free_check(struct iommu_table *tbl, dma_addr_t dma_addr,
- {
- 	unsigned long entry, free_entry;
- 
--	entry = dma_addr >> IOMMU_PAGE_SHIFT_4K;
-+	entry = dma_addr >> tbl->it_page_shift;
- 	free_entry = entry - tbl->it_offset;
- 
- 	if (((free_entry + npages) > tbl->it_size) ||
-@@ -401,7 +400,7 @@ static void __iommu_free(struct iommu_table *tbl, dma_addr_t dma_addr,
- 	unsigned long flags;
- 	struct iommu_pool *pool;
- 
--	entry = dma_addr >> IOMMU_PAGE_SHIFT_4K;
-+	entry = dma_addr >> tbl->it_page_shift;
- 	free_entry = entry - tbl->it_offset;
- 
- 	pool = get_pool(tbl, free_entry);
-@@ -468,13 +467,13 @@ int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
- 		}
- 		/* Allocate iommu entries for that segment */
- 		vaddr = (unsigned long) sg_virt(s);
--		npages = iommu_num_pages(vaddr, slen, IOMMU_PAGE_SIZE_4K);
-+		npages = iommu_num_pages(vaddr, slen, IOMMU_PAGE_SIZE(tbl));
- 		align = 0;
--		if (IOMMU_PAGE_SHIFT_4K < PAGE_SHIFT && slen >= PAGE_SIZE &&
-+		if (tbl->it_page_shift < PAGE_SHIFT && slen >= PAGE_SIZE &&
- 		    (vaddr & ~PAGE_MASK) == 0)
--			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT_4K;
-+			align = PAGE_SHIFT - tbl->it_page_shift;
- 		entry = iommu_range_alloc(dev, tbl, npages, &handle,
--					  mask >> IOMMU_PAGE_SHIFT_4K, align);
-+					  mask >> tbl->it_page_shift, align);
- 
- 		DBG("  - vaddr: %lx, size: %lx\n", vaddr, slen);
- 
-@@ -489,16 +488,16 @@ int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
- 
- 		/* Convert entry to a dma_addr_t */
- 		entry += tbl->it_offset;
--		dma_addr = entry << IOMMU_PAGE_SHIFT_4K;
--		dma_addr |= (s->offset & ~IOMMU_PAGE_MASK_4K);
-+		dma_addr = entry << tbl->it_page_shift;
-+		dma_addr |= (s->offset & ~IOMMU_PAGE_MASK(tbl));
- 
- 		DBG("  - %lu pages, entry: %lx, dma_addr: %lx\n",
- 			    npages, entry, dma_addr);
- 
- 		/* Insert into HW table */
- 		build_fail = ppc_md.tce_build(tbl, entry, npages,
--					vaddr & IOMMU_PAGE_MASK_4K,
--					direction, attrs);
-+					      vaddr & IOMMU_PAGE_MASK(tbl),
-+					      direction, attrs);
- 		if(unlikely(build_fail))
- 			goto failure;
- 
-@@ -559,9 +558,9 @@ int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
- 		if (s->dma_length != 0) {
- 			unsigned long vaddr, npages;
- 
--			vaddr = s->dma_address & IOMMU_PAGE_MASK_4K;
-+			vaddr = s->dma_address & IOMMU_PAGE_MASK(tbl);
- 			npages = iommu_num_pages(s->dma_address, s->dma_length,
--						 IOMMU_PAGE_SIZE_4K);
-+						 IOMMU_PAGE_SIZE(tbl));
- 			__iommu_free(tbl, vaddr, npages);
- 			s->dma_address = DMA_ERROR_CODE;
- 			s->dma_length = 0;
-@@ -592,7 +591,7 @@ void iommu_unmap_sg(struct iommu_table *tbl, struct scatterlist *sglist,
- 		if (sg->dma_length == 0)
- 			break;
- 		npages = iommu_num_pages(dma_handle, sg->dma_length,
--					 IOMMU_PAGE_SIZE_4K);
-+					 IOMMU_PAGE_SIZE(tbl));
- 		__iommu_free(tbl, dma_handle, npages);
- 		sg = sg_next(sg);
- 	}
-@@ -676,7 +675,7 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
- 		set_bit(0, tbl->it_map);
- 
- 	/* We only split the IOMMU table if we have 1GB or more of space */
--	if ((tbl->it_size << IOMMU_PAGE_SHIFT_4K) >= (1UL * 1024 * 1024 * 1024))
-+	if ((tbl->it_size << tbl->it_page_shift) >= (1UL * 1024 * 1024 * 1024))
- 		tbl->nr_pools = IOMMU_NR_POOLS;
- 	else
- 		tbl->nr_pools = 1;
-@@ -768,16 +767,16 @@ dma_addr_t iommu_map_page(struct device *dev, struct iommu_table *tbl,
- 
- 	vaddr = page_address(page) + offset;
- 	uaddr = (unsigned long)vaddr;
--	npages = iommu_num_pages(uaddr, size, IOMMU_PAGE_SIZE_4K);
-+	npages = iommu_num_pages(uaddr, size, IOMMU_PAGE_SIZE(tbl));
- 
- 	if (tbl) {
- 		align = 0;
--		if (IOMMU_PAGE_SHIFT_4K < PAGE_SHIFT && size >= PAGE_SIZE &&
-+		if (tbl->it_page_shift < PAGE_SHIFT && size >= PAGE_SIZE &&
- 		    ((unsigned long)vaddr & ~PAGE_MASK) == 0)
--			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT_4K;
-+			align = PAGE_SHIFT - tbl->it_page_shift;
- 
- 		dma_handle = iommu_alloc(dev, tbl, vaddr, npages, direction,
--					 mask >> IOMMU_PAGE_SHIFT_4K, align,
-+					 mask >> tbl->it_page_shift, align,
- 					 attrs);
- 		if (dma_handle == DMA_ERROR_CODE) {
- 			if (printk_ratelimit())  {
-@@ -786,7 +785,7 @@ dma_addr_t iommu_map_page(struct device *dev, struct iommu_table *tbl,
- 					 npages);
- 			}
- 		} else
--			dma_handle |= (uaddr & ~IOMMU_PAGE_MASK_4K);
-+			dma_handle |= (uaddr & ~IOMMU_PAGE_MASK(tbl));
- 	}
- 
- 	return dma_handle;
-@@ -801,7 +800,8 @@ void iommu_unmap_page(struct iommu_table *tbl, dma_addr_t dma_handle,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	if (tbl) {
--		npages = iommu_num_pages(dma_handle, size, IOMMU_PAGE_SIZE_4K);
-+		npages = iommu_num_pages(dma_handle, size,
-+					 IOMMU_PAGE_SIZE(tbl));
- 		iommu_free(tbl, dma_handle, npages);
- 	}
- }
-@@ -845,10 +845,10 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
- 	memset(ret, 0, size);
- 
- 	/* Set up tces to cover the allocated range */
--	nio_pages = size >> IOMMU_PAGE_SHIFT_4K;
--	io_order = get_iommu_order(size);
-+	nio_pages = size >> tbl->it_page_shift;
-+	io_order = get_iommu_order(size, tbl);
- 	mapping = iommu_alloc(dev, tbl, ret, nio_pages, DMA_BIDIRECTIONAL,
--			      mask >> IOMMU_PAGE_SHIFT_4K, io_order, NULL);
-+			      mask >> tbl->it_page_shift, io_order, NULL);
- 	if (mapping == DMA_ERROR_CODE) {
- 		free_pages((unsigned long)ret, order);
- 		return NULL;
-@@ -864,7 +864,7 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
- 		unsigned int nio_pages;
- 
- 		size = PAGE_ALIGN(size);
--		nio_pages = size >> IOMMU_PAGE_SHIFT_4K;
-+		nio_pages = size >> tbl->it_page_shift;
- 		iommu_free(tbl, dma_handle, nio_pages);
- 		size = PAGE_ALIGN(size);
- 		free_pages((unsigned long)vaddr, get_order(size));
-@@ -935,10 +935,10 @@ int iommu_tce_clear_param_check(struct iommu_table *tbl,
- 	if (tce_value)
- 		return -EINVAL;
- 
--	if (ioba & ~IOMMU_PAGE_MASK_4K)
-+	if (ioba & ~IOMMU_PAGE_MASK(tbl))
- 		return -EINVAL;
- 
--	ioba >>= IOMMU_PAGE_SHIFT_4K;
-+	ioba >>= tbl->it_page_shift;
- 	if (ioba < tbl->it_offset)
- 		return -EINVAL;
- 
-@@ -955,13 +955,13 @@ int iommu_tce_put_param_check(struct iommu_table *tbl,
- 	if (!(tce & (TCE_PCI_WRITE | TCE_PCI_READ)))
- 		return -EINVAL;
- 
--	if (tce & ~(IOMMU_PAGE_MASK_4K | TCE_PCI_WRITE | TCE_PCI_READ))
-+	if (tce & ~(IOMMU_PAGE_MASK(tbl) | TCE_PCI_WRITE | TCE_PCI_READ))
- 		return -EINVAL;
- 
--	if (ioba & ~IOMMU_PAGE_MASK_4K)
-+	if (ioba & ~IOMMU_PAGE_MASK(tbl))
- 		return -EINVAL;
- 
--	ioba >>= IOMMU_PAGE_SHIFT_4K;
-+	ioba >>= tbl->it_page_shift;
- 	if (ioba < tbl->it_offset)
- 		return -EINVAL;
- 
-@@ -1037,7 +1037,7 @@ int iommu_tce_build(struct iommu_table *tbl, unsigned long entry,
- 
- 	/* if (unlikely(ret))
- 		pr_err("iommu_tce: %s failed on hwaddr=%lx ioba=%lx kva=%lx ret=%d\n",
--				__func__, hwaddr, entry << IOMMU_PAGE_SHIFT_4K,
-+			__func__, hwaddr, entry << IOMMU_PAGE_SHIFT(tbl),
- 				hwaddr, ret); */
- 
- 	return ret;
-@@ -1049,14 +1049,14 @@ int iommu_put_tce_user_mode(struct iommu_table *tbl, unsigned long entry,
- {
- 	int ret;
- 	struct page *page = NULL;
--	unsigned long hwaddr, offset = tce & IOMMU_PAGE_MASK_4K & ~PAGE_MASK;
-+	unsigned long hwaddr, offset = tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK;
- 	enum dma_data_direction direction = iommu_tce_direction(tce);
- 
- 	ret = get_user_pages_fast(tce & PAGE_MASK, 1,
- 			direction != DMA_TO_DEVICE, &page);
- 	if (unlikely(ret != 1)) {
- 		/* pr_err("iommu_tce: get_user_pages_fast failed tce=%lx ioba=%lx ret=%d\n",
--				tce, entry << IOMMU_PAGE_SHIFT_4K, ret); */
-+				tce, entry << IOMMU_PAGE_SHIFT(tbl), ret); */
- 		return -EFAULT;
- 	}
- 	hwaddr = (unsigned long) page_address(page) + offset;
-@@ -1067,7 +1067,7 @@ int iommu_put_tce_user_mode(struct iommu_table *tbl, unsigned long entry,
- 
- 	if (ret < 0)
- 		pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%d\n",
--			__func__, entry << IOMMU_PAGE_SHIFT_4K, tce, ret);
-+			__func__, entry << tbl->it_page_shift, tce, ret);
- 
- 	return ret;
- }
-@@ -1127,6 +1127,12 @@ static int iommu_add_device(struct device *dev)
- 	pr_debug("iommu_tce: adding %s to iommu group %d\n",
- 			dev_name(dev), iommu_group_id(tbl->it_group));
- 
-+	if (PAGE_SIZE < IOMMU_PAGE_SIZE(tbl)) {
-+		pr_err("iommu_tce: unsupported iommu page size.");
-+		pr_err("%s has not been added\n", dev_name(dev));
-+		return -EINVAL;
-+	}
-+
- 	ret = iommu_group_add_device(tbl->it_group, dev);
- 	if (ret < 0)
- 		pr_err("iommu_tce: %s has not been added, ret=%d\n",
-@@ -1164,8 +1170,6 @@ static int __init tce_iommu_init(void)
- {
- 	struct pci_dev *pdev = NULL;
- 
--	BUILD_BUG_ON(PAGE_SIZE < IOMMU_PAGE_SIZE_4K);
--
- 	for_each_pci_dev(pdev)
- 		iommu_add_device(&pdev->dev);
- 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index 30c1cf5..9d70402 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -518,16 +518,18 @@ static dma_addr_t vio_dma_iommu_map_page(struct device *dev, struct page *page,
-                                          struct dma_attrs *attrs)
- {
- 	struct vio_dev *viodev = to_vio_dev(dev);
-+	struct iommu_table *tbl;
- 	dma_addr_t ret = DMA_ERROR_CODE;
- 
--	if (vio_cmo_alloc(viodev, roundup(size, IOMMU_PAGE_SIZE_4K))) {
-+	tbl = get_iommu_table_base(dev);
-+	if (vio_cmo_alloc(viodev, roundup(size, IOMMU_PAGE_SIZE(tbl)))) {
- 		atomic_inc(&viodev->cmo.allocs_failed);
- 		return ret;
- 	}
- 
- 	ret = dma_iommu_ops.map_page(dev, page, offset, size, direction, attrs);
- 	if (unlikely(dma_mapping_error(dev, ret))) {
--		vio_cmo_dealloc(viodev, roundup(size, IOMMU_PAGE_SIZE_4K));
-+		vio_cmo_dealloc(viodev, roundup(size, IOMMU_PAGE_SIZE(tbl)));
- 		atomic_inc(&viodev->cmo.allocs_failed);
- 	}
- 
-@@ -540,10 +542,12 @@ static void vio_dma_iommu_unmap_page(struct device *dev, dma_addr_t dma_handle,
- 				     struct dma_attrs *attrs)
- {
- 	struct vio_dev *viodev = to_vio_dev(dev);
-+	struct iommu_table *tbl;
- 
-+	tbl = get_iommu_table_base(dev);
- 	dma_iommu_ops.unmap_page(dev, dma_handle, size, direction, attrs);
- 
--	vio_cmo_dealloc(viodev, roundup(size, IOMMU_PAGE_SIZE_4K));
-+	vio_cmo_dealloc(viodev, roundup(size, IOMMU_PAGE_SIZE(tbl)));
- }
- 
- static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
-@@ -551,12 +555,14 @@ static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
-                                 struct dma_attrs *attrs)
- {
- 	struct vio_dev *viodev = to_vio_dev(dev);
-+	struct iommu_table *tbl;
- 	struct scatterlist *sgl;
- 	int ret, count = 0;
- 	size_t alloc_size = 0;
- 
-+	tbl = get_iommu_table_base(dev);
- 	for (sgl = sglist; count < nelems; count++, sgl++)
--		alloc_size += roundup(sgl->length, IOMMU_PAGE_SIZE_4K);
-+		alloc_size += roundup(sgl->length, IOMMU_PAGE_SIZE(tbl));
- 
- 	if (vio_cmo_alloc(viodev, alloc_size)) {
- 		atomic_inc(&viodev->cmo.allocs_failed);
-@@ -572,7 +578,7 @@ static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
- 	}
- 
- 	for (sgl = sglist, count = 0; count < ret; count++, sgl++)
--		alloc_size -= roundup(sgl->dma_length, IOMMU_PAGE_SIZE_4K);
-+		alloc_size -= roundup(sgl->dma_length, IOMMU_PAGE_SIZE(tbl));
- 	if (alloc_size)
- 		vio_cmo_dealloc(viodev, alloc_size);
- 
-@@ -585,12 +591,14 @@ static void vio_dma_iommu_unmap_sg(struct device *dev,
- 		struct dma_attrs *attrs)
- {
- 	struct vio_dev *viodev = to_vio_dev(dev);
-+	struct iommu_table *tbl;
- 	struct scatterlist *sgl;
- 	size_t alloc_size = 0;
- 	int count = 0;
- 
-+	tbl = get_iommu_table_base(dev);
- 	for (sgl = sglist; count < nelems; count++, sgl++)
--		alloc_size += roundup(sgl->dma_length, IOMMU_PAGE_SIZE_4K);
-+		alloc_size += roundup(sgl->dma_length, IOMMU_PAGE_SIZE(tbl));
- 
- 	dma_iommu_ops.unmap_sg(dev, sglist, nelems, direction, attrs);
- 
-@@ -706,11 +714,14 @@ static int vio_cmo_bus_probe(struct vio_dev *viodev)
- {
- 	struct vio_cmo_dev_entry *dev_ent;
- 	struct device *dev = &viodev->dev;
-+	struct iommu_table *tbl;
- 	struct vio_driver *viodrv = to_vio_driver(dev->driver);
- 	unsigned long flags;
- 	size_t size;
- 	bool dma_capable = false;
- 
-+	tbl = get_iommu_table_base(dev);
-+
- 	/* A device requires entitlement if it has a DMA window property */
- 	switch (viodev->family) {
- 	case VDEVICE:
-@@ -737,7 +748,7 @@ static int vio_cmo_bus_probe(struct vio_dev *viodev)
- 		}
- 
- 		viodev->cmo.desired =
--			IOMMU_PAGE_ALIGN_4K(viodrv->get_desired_dma(viodev));
-+			IOMMU_PAGE_ALIGN(viodrv->get_desired_dma(viodev), tbl);
- 		if (viodev->cmo.desired < VIO_CMO_MIN_ENT)
- 			viodev->cmo.desired = VIO_CMO_MIN_ENT;
- 		size = VIO_CMO_MIN_ENT;
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index eef362d..e7dfb81 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1276,31 +1276,34 @@ static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev)
- {
- 	struct net_device *netdev = dev_get_drvdata(&vdev->dev);
- 	struct ibmveth_adapter *adapter;
-+	struct iommu_table *tbl;
- 	unsigned long ret;
- 	int i;
- 	int rxqentries = 1;
- 
-+	tbl = get_iommu_table_base(&vdev->dev);
-+
- 	/* netdev inits at probe time along with the structures we need below*/
- 	if (netdev == NULL)
--		return IOMMU_PAGE_ALIGN_4K(IBMVETH_IO_ENTITLEMENT_DEFAULT);
-+		return IOMMU_PAGE_ALIGN(IBMVETH_IO_ENTITLEMENT_DEFAULT, tbl);
- 
- 	adapter = netdev_priv(netdev);
- 
- 	ret = IBMVETH_BUFF_LIST_SIZE + IBMVETH_FILT_LIST_SIZE;
--	ret += IOMMU_PAGE_ALIGN_4K(netdev->mtu);
-+	ret += IOMMU_PAGE_ALIGN(netdev->mtu, tbl);
- 
- 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
- 		/* add the size of the active receive buffers */
- 		if (adapter->rx_buff_pool[i].active)
- 			ret +=
- 			    adapter->rx_buff_pool[i].size *
--			    IOMMU_PAGE_ALIGN_4K(adapter->rx_buff_pool[i].
--			            buff_size);
-+			    IOMMU_PAGE_ALIGN(adapter->rx_buff_pool[i].
-+					     buff_size, tbl);
- 		rxqentries += adapter->rx_buff_pool[i].size;
- 	}
- 	/* add the size of the receive queue entries */
--	ret += IOMMU_PAGE_ALIGN_4K(
--		rxqentries * sizeof(struct ibmveth_rx_q_entry));
-+	ret += IOMMU_PAGE_ALIGN(
-+		rxqentries * sizeof(struct ibmveth_rx_q_entry), tbl);
- 
- 	return ret;
- }
--- 
-1.7.10.4
+Using the cpuidle framework to exploit platform low power idle states
+management can take advantage of advanced heuristics, tunables and features 
+provided by framework. The statistics and tracing infrastructure provided 
+by the cpuidle framework also helps in enabling power management 
+related tools and help tune the system and applications.
+
+Earlier in 3.3 kernel, pSeries idle state management was modified to 
+exploit the cpuidle framework and the end goal of this patch is to have powernv
+platform also to hook its idle states into cpuidle framework with minimal 
+code duplication between both platforms.  
+
+This series aims to maintain compatibility and functionality to existing pseries 
+and powernv idle cpu management code. There are no new functions or idle 
+states added as part of this series. This can be extended by adding more 
+states to this existing framework.
+
+With this patch series, the powernv cpuidle functionalities are on-par with 
+pSeries idle management.  
+
+V1 -> http://lkml.org/lkml/2013/7/23/143
+V2 -> https://lkml.org/lkml/2013/7/30/872
+V3 -> http://comments.gmane.org/gmane.linux.ports.ppc.embedded/63093 
+V4 -> https://lkml.org/lkml/2013/8/22/25
+V5 -> http://lkml.org/lkml/2013/8/22/184
+V6 -> https://lkml.org/lkml/2013/8/27/432 
+v7 -> https://lkml.org/lkml/2013/10/29/216
+
+Changes in V8:
+============
+* Renaming driver and related files from
+  ibm-power-idle to powerpc-book3s-idle
+  for clarity and to avoid confusing between ibm-power
+  systems and power mgmt.
+
+Changes in V7:
+============
+* Rebased to the latest kernel 3.12-rc7
+
+* Default idle routine to be called on POWERNV
+  is power7_idle() instead of HMT_low() routines.
+
+Changes in V6:
+=============
+* Made changes in Patch3: Generic POWER cpuidle driver in V5 by
+  breaking down to multiple patches, as there were multiple changes
+  including moving the file location.
+
+* Remove MAX_IDLE_STATE macro and kernel command line for
+  IBM-POWER systems.
+
+* Make backend driver a built-in, instead of a module.
+  As building this as a module is currently not possible. 
+
+* Generic backend driver minor cleanups.
+
+* First two patches in V5 are not a part of the series, as
+  they are generic cleanups, already pushed into the tree.
+
+Changes in V5:
+=============
+
+* As per the discussions in the community, this patch series
+  enables cpuidle backend driver only for IBM-POWER 
+  platforms. File is re-named from drivers/cpuidle/cpuidle-powerpc.c
+  to drivers/cpuidle/cpuildle-ibm-power.c
+  New back-end cpuidle driver is called IBM-POWER-Idle.
+
+* General cleanups on the accessors front that was introduced in 
+  previous version.
+
+Changes in V4:
+=============
+
+* This patch series includes generic backend driver cpuidle cleanups 
+  including, replacing the driver and device initialisation
+  routines with cpuidle_register function.
+
+* Enable CPUIDLE framework only for POWER and POWERNV platforms.
+
+Changes in V3:
+=============
+
+* This patch series does not include smt-snooze-delay fixes. 
+  This will be taken up later on.
+
+* Integrated POWERPC driver in drivers/cpuidle.  Enabled for all of 
+  POWERPC platform.  Currently has PSERIES and POWERNV support.
+  No compile time flags in .c file. This  will be one consolidated 
+  binary that does a run time detection based on platform and take 
+  decisions accordingly.
+
+* Enabled CPUIDLE framwork for all of PPC64.
+
+Changes in V2:
+=============
+
+* Merged the backend driver posted out for powernv in V1 with
+  pSeries to create a single powerpc driver but this had compile
+  time flags.
+
+ Deepthi Dharwar (7):
+      pseries/cpuidle: Move processor_idle.c to drivers/cpuidle.
+      pseries/cpuidle: Use cpuidle_register() for initialisation.
+      pseries/cpuidle: Make pseries_idle backend driver a  non-module.
+      pseries/cpuidle: Remove MAX_IDLE_STATE macro.
+      POWER/cpuidle: Generic POWERPC-BOOK3S CPUIDLE driver supporting PSERIES.
+      POWER/cpuidle: Enable powernv cpuidle support.
+      powernv/cpuidle: Enable idle powernv cpu to call into the cpuidle framework.
+
+
+ arch/powerpc/include/asm/processor.h            |    2 
+ arch/powerpc/platforms/powernv/setup.c          |   13 +
+ arch/powerpc/platforms/pseries/Kconfig          |    9 -
+ arch/powerpc/platforms/pseries/Makefile         |    1 
+ arch/powerpc/platforms/pseries/processor_idle.c |  364 -----------------------
+ drivers/cpuidle/Kconfig                         |    5 
+ drivers/cpuidle/Kconfig.powerpc                 |   10 +
+ drivers/cpuidle/Makefile                        |    4 
+ drivers/cpuidle/cpuidle-powerpc-book3s.c        |  320 ++++++++++++++++++++
+ 9 files changed, 352 insertions(+), 376 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/pseries/processor_idle.c
+ create mode 100644 drivers/cpuidle/Kconfig.powerpc
+ create mode 100644 drivers/cpuidle/cpuidle-powerpc-book3s.c
+
+
+-- Deepthi
