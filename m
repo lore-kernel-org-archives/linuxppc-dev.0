@@ -1,18 +1,19 @@
 Return-Path: <guangyu.chen@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 452E02C03A4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 15:00:48 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 796662C037D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2013 15:00:53 +1100 (EST)
 From: Nicolin Chen <b42378@freescale.com>
 To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
  <s.hauer@pengutronix.de>, <timur@tabi.org>, <shawn.guo@linaro.org>,
  <broonie@kernel.org>
-Subject: [PATCH v6 1/4] dma: imx-sdma: Add sdma firmware version 2 support
-Date: Mon, 11 Nov 2013 12:00:23 +0800
-Message-ID: <b54cdc20764d6626b061fc376e4b0a6dcd15c2dd.1384136268.git.b42378@freescale.com>
+Subject: [PATCH v6 2/4] dma: imx-sdma: Add new dma type for ssi dual fifo
+ script
+Date: Mon, 11 Nov 2013 12:00:24 +0800
+Message-ID: <9876297f9cdc00b2969115980cd253ffd71cc08a.1384136268.git.b42378@freescale.com>
 In-Reply-To: <cover.1384136268.git.b42378@freescale.com>
 References: <cover.1384136268.git.b42378@freescale.com>
 MIME-Version: 1.0
@@ -31,77 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On i.MX5/6 series, SDMA is using new version firmware to support SSI
-dual FIFO feature and HDMI Audio (i.MX6Q/DL only). Thus add it.
+This patch adds a new DMA_TYPE for SSI dual FIFO script, included
+in SDMA firmware version 2. This script would allow SSI use dual
+fifo mode to transimit/receive data without occasional hardware
+underrun/overrun.
 
 Signed-off-by: Nicolin Chen <b42378@freescale.com>
 ---
- drivers/dma/imx-sdma.c                     | 15 ++++++++++++++-
- include/linux/platform_data/dma-imx-sdma.h |  5 +++++
- 2 files changed, 19 insertions(+), 1 deletion(-)
+ Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt | 1 +
+ drivers/dma/imx-sdma.c                                 | 4 ++++
+ include/linux/platform_data/dma-imx.h                  | 1 +
+ 3 files changed, 6 insertions(+)
 
+diff --git a/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt b/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt
+index 4fa814d..68b83ec 100644
+--- a/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt
++++ b/Documentation/devicetree/bindings/dma/fsl-imx-sdma.txt
+@@ -42,6 +42,7 @@ The full ID of peripheral types can be found below.
+ 	19	IPU Memory
+ 	20	ASRC
+ 	21	ESAI
++	22	SSI Dual FIFO	(needs firmware ver >= 2)
+ 
+ The third cell specifies the transfer priority as below.
+ 
 diff --git a/drivers/dma/imx-sdma.c b/drivers/dma/imx-sdma.c
-index fc43603..43a8441 100644
+index 43a8441..efe9d6a 100644
 --- a/drivers/dma/imx-sdma.c
 +++ b/drivers/dma/imx-sdma.c
-@@ -323,6 +323,7 @@ struct sdma_engine {
- 	struct clk			*clk_ipg;
- 	struct clk			*clk_ahb;
- 	spinlock_t			channel_0_lock;
-+	u32				script_number;
- 	struct sdma_script_start_addrs	*script_addrs;
- 	const struct sdma_driver_data	*drvdata;
- };
-@@ -1238,6 +1239,7 @@ static void sdma_issue_pending(struct dma_chan *chan)
- }
- 
- #define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1	34
-+#define SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V2	38
- 
- static void sdma_add_scripts(struct sdma_engine *sdma,
- 		const struct sdma_script_start_addrs *addr)
-@@ -1246,7 +1248,7 @@ static void sdma_add_scripts(struct sdma_engine *sdma,
- 	s32 *saddr_arr = (u32 *)sdma->script_addrs;
- 	int i;
- 
--	for (i = 0; i < SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1; i++)
-+	for (i = 0; i < sdma->script_number; i++)
- 		if (addr_arr[i] > 0)
- 			saddr_arr[i] = addr_arr[i];
- }
-@@ -1272,6 +1274,17 @@ static void sdma_load_firmware(const struct firmware *fw, void *context)
- 		goto err_firmware;
- 	if (header->ram_code_start + header->ram_code_size > fw->size)
- 		goto err_firmware;
-+	switch (header->version_major) {
-+		case 1:
-+			sdma->script_number = SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V1;
-+			break;
-+		case 2:
-+			sdma->script_number = SDMA_SCRIPT_ADDRS_ARRAY_SIZE_V2;
-+			break;
-+		default:
-+			dev_err(sdma->dev, "unknown firmware version\n");
-+			goto err_firmware;
-+	}
- 
- 	addr = (void *)header + header->script_addrs_start;
- 	ram_code = (void *)header + header->ram_code_start;
-diff --git a/include/linux/platform_data/dma-imx-sdma.h b/include/linux/platform_data/dma-imx-sdma.h
-index 3a39428..eabac4e 100644
---- a/include/linux/platform_data/dma-imx-sdma.h
-+++ b/include/linux/platform_data/dma-imx-sdma.h
-@@ -43,6 +43,11 @@ struct sdma_script_start_addrs {
- 	s32 dptc_dvfs_addr;
- 	s32 utra_addr;
- 	s32 ram_code_start_addr;
-+	/* End of v1 array */
-+	s32 mcu_2_ssish_addr;
-+	s32 ssish_2_mcu_addr;
-+	s32 hdmi_dma_addr;
-+	/* End of v2 array */
+@@ -725,6 +725,10 @@ static void sdma_get_pc(struct sdma_channel *sdmac,
+ 		per_2_emi = sdma->script_addrs->app_2_mcu_addr;
+ 		emi_2_per = sdma->script_addrs->mcu_2_app_addr;
+ 		break;
++	case IMX_DMATYPE_SSI_DUAL:
++		per_2_emi = sdma->script_addrs->ssish_2_mcu_addr;
++		emi_2_per = sdma->script_addrs->mcu_2_ssish_addr;
++		break;
+ 	case IMX_DMATYPE_SSI_SP:
+ 	case IMX_DMATYPE_MMC:
+ 	case IMX_DMATYPE_SDHC:
+diff --git a/include/linux/platform_data/dma-imx.h b/include/linux/platform_data/dma-imx.h
+index beac6b8..bcbc6c3 100644
+--- a/include/linux/platform_data/dma-imx.h
++++ b/include/linux/platform_data/dma-imx.h
+@@ -39,6 +39,7 @@ enum sdma_peripheral_type {
+ 	IMX_DMATYPE_IPU_MEMORY,	/* IPU Memory */
+ 	IMX_DMATYPE_ASRC,	/* ASRC */
+ 	IMX_DMATYPE_ESAI,	/* ESAI */
++	IMX_DMATYPE_SSI_DUAL,	/* SSI Dual FIFO */
  };
  
- /**
+ enum imx_dma_prio {
 -- 
 1.8.4
