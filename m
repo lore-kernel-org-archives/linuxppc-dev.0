@@ -1,49 +1,20 @@
-Return-Path: <lars@metafoo.de>
-Received: from mailhost.informatik.uni-hamburg.de
- (mailhost.informatik.uni-hamburg.de [134.100.9.70])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailhost.informatik.uni-hamburg.de",
- Issuer "UHH CA - G02" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AB8682C009D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 19:04:35 +1100 (EST)
-Message-ID: <5281DFE1.3040904@metafoo.de>
-Date: Tue, 12 Nov 2013 08:59:29 +0100
-From: Lars-Peter Clausen <lars@metafoo.de>
+Return-Path: <mark.rutland@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id E6B2F2C00B1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 20:11:52 +1100 (EST)
+Date: Tue, 12 Nov 2013 09:11:29 +0000
+From: Mark Rutland <mark.rutland@arm.com>
+To: Adam Borowski <kilobyte@angband.pl>
+Subject: Re: [PATCH] powerpc/85xx: typo in dts: "interupt" (four devices)
+Message-ID: <20131112091128.GA2976@e106331-lin.cambridge.arm.com>
+References: <1384206727-11880-1-git-send-email-kilobyte@angband.pl>
 MIME-Version: 1.0
-To: Li Xiubo <Li.Xiubo@freescale.com>
-Subject: Re: [alsa-devel] [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio
- Interface driver.
-References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
- <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
- <526021B0.6050206@metafoo.de>
- <1DD289F6464F0949A2FCA5AA6DC23F8286A385@039-SN2MPN1-013.039d.mgd.msft.net>
- <20131112050226.GK8834@intel.com>
- <1DD289F6464F0949A2FCA5AA6DC23F8287E87B@039-SN2MPN1-013.039d.mgd.msft.net>
-In-Reply-To: <1DD289F6464F0949A2FCA5AA6DC23F8287E87B@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "tiwai@suse.de" <tiwai@suse.de>, "timur@tabi.org" <timur@tabi.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Huan Wang <Huan.Wang@freescale.com>,
- "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- Vinod Koul <vinod.koul@intel.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- "pawel.moll@arm.com" <pawel.moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- Shawn Guo <Shawn.Guo@freescale.com>, "djbw@fb.com" <djbw@fb.com>,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1384206727-11880-1-git-send-email-kilobyte@angband.pl>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Stephen Warren <swarren@wwwdotorg.org>,
  "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "broonie@kernel.org" <broonie@kernel.org>,
- Zhengxiong Jin <Jason.Jin@freescale.com>, "oskar@scara.com" <oskar@scara.com>,
- Fabio Estevam <Fabio.Estevam@freescale.com>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
- "rob@landley.net" <rob@landley.net>, Guangyu Chen <guangyu.chen@freescale.com>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -54,49 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/12/2013 08:35 AM, Li Xiubo wrote:
->>>>> +static int fsl_sai_probe(struct platform_device *pdev) {
->>>> [...]
->>>>> +
->>>>> +	sai->dma_params_rx.addr = res->start + SAI_RDR;
->>>>> +	sai->dma_params_rx.maxburst = 6;
->>>>> +	index = of_property_match_string(np, "dma-names", "rx");
->>>>> +	ret = of_parse_phandle_with_args(np, "dmas", "#dma-cells",
->> index,
->>>>> +				&dma_args);
->>>>> +	if (ret)
->>>>> +		return ret;
->>>>> +	sai->dma_params_rx.slave_id = dma_args.args[1];
->>>>> +
->>>>> +	sai->dma_params_tx.addr = res->start + SAI_TDR;
->>>>> +	sai->dma_params_tx.maxburst = 6;
->>>>> +	index = of_property_match_string(np, "dma-names", "tx");
->>>>> +	ret = of_parse_phandle_with_args(np, "dmas", "#dma-cells",
->> index,
->>>>> +				&dma_args);
->>>>> +	if (ret)
->>>>> +		return ret;
->>>>> +	sai->dma_params_tx.slave_id = dma_args.args[1];
->>>>
->>>> The driver should not have to manually parse the dma devicetree
->>>> properties, this is something that should be handled by the dma
->>>> engine driver.
->>>>
->>>
->>> What do you think about the DMA slave_id ?
->>> I have been noticed by one colleague that this should be parsed here,
->>> which is from your opinions ?
->> Sure slave_id can be parsed here, but IMO it should be programmed via the
->> dma_slave_confog into the respective channel
->>
->
-> Actually, these are parsed for cpu_dai->playback_dma_data and cpu_dai->capture_dma_data dynamically, whose type is struct dma_slave_config.
->
-> And now I must parse them here, because the platform eDMA driver's newest version will check and use the slave_ids to select and configure the eDMA channels via dma_device->device_control().
+On Mon, Nov 11, 2013 at 09:52:07PM +0000, Adam Borowski wrote:
+> These lines were inoperative for four years, which puts some doubt into
+> their importance, and it's possible the fixed version will regress, but
+> at the very least they should be removed instead.
+> 
+> Signed-off-by: Adam Borowski <kilobyte@angband.pl>
+> ---
+>  arch/powerpc/boot/dts/xcalibur1501.dts | 4 ++--
+>  arch/powerpc/boot/dts/xpedite5301.dts  | 4 ++--
+>  arch/powerpc/boot/dts/xpedite5330.dts  | 4 ++--
+>  arch/powerpc/boot/dts/xpedite5370.dts  | 4 ++--
+>  4 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/xcalibur1501.dts b/arch/powerpc/boot/dts/xcalibur1501.dts
+> index cc00f4d..f151426 100644
+> --- a/arch/powerpc/boot/dts/xcalibur1501.dts
+> +++ b/arch/powerpc/boot/dts/xcalibur1501.dts
+> @@ -637,14 +637,14 @@
+>  		tlu@2f000 {
+>  			compatible = "fsl,mpc8572-tlu", "fsl_tlu";
+>  			reg = <0x2f000 0x1000>;
+> -			interupts = <61 2 >;
+> +			interrupts = <61 2 >;
 
-Parsing them here is a layering violation. The format of the DMA specifier 
-depends on the DMA controller. A DMA slave should not make any assumptions 
-about how the specifier looks like, it should not even look at them. You should 
-fix the DMA controller driver to work without slave_id in the devicetree case.
+While you're fixing the typo, could you get rid of the extraneous space
+before the closing bracket? It seems to be duplicated across the other 3
+dts fragments you fix up also.
 
-- Lars
+Cheers,
+Mark.
