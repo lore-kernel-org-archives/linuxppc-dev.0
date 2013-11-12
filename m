@@ -1,32 +1,49 @@
-Return-Path: <hongbo.zhang@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Return-Path: <Li.Xiubo@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EEEBA2C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 18:06:02 +1100 (EST)
-Message-ID: <5281D347.3020903@freescale.com>
-Date: Tue, 12 Nov 2013 15:05:43 +0800
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 2DB9B2C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 18:36:05 +1100 (EST)
+From: Li Xiubo <Li.Xiubo@freescale.com>
+To: Vinod Koul <vinod.koul@intel.com>, "lars@metafoo.de" <lars@metafoo.de>
+Subject: RE: [alsa-devel] [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio
+ Interface driver.
+Date: Tue, 12 Nov 2013 07:35:55 +0000
+Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F8287E87B@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
+ <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
+ <526021B0.6050206@metafoo.de>
+ <1DD289F6464F0949A2FCA5AA6DC23F8286A385@039-SN2MPN1-013.039d.mgd.msft.net>
+ <20131112050226.GK8834@intel.com>
+In-Reply-To: <20131112050226.GK8834@intel.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH v11 3/3] DMA: Freescale: update driver to support 8-channel
- DMA engine
-References: <1380188023-3936-1-git-send-email-hongbo.zhang@freescale.com>
- <1380188023-3936-4-git-send-email-hongbo.zhang@freescale.com>
- <525F7C18.3010409@freescale.com> <5278587F.7090500@freescale.com>
- <CAA9_cme3c7SjH3iio0oR3FHpfoMzgrBDO-2k_Yf68G-AgFNqfA@mail.gmail.com>
- <52809F67.20901@freescale.com>
- <CAPcyv4h00zGc2=ZLwnCpP3WTQ8JbFteV-torU+qCo98YXrfq5A@mail.gmail.com>
-In-Reply-To: <CAPcyv4h00zGc2=ZLwnCpP3WTQ8JbFteV-torU+qCo98YXrfq5A@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, ian.campbell@citrix.com,
- pawel.moll@arm.com, Stephen Warren <swarren@wwwdotorg.org>, "Koul,
- Vinod" <vinod.koul@intel.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- rob.herring@calxeda.com, dmaengine@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "tiwai@suse.de" <tiwai@suse.de>, "timur@tabi.org" <timur@tabi.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Huan Wang <Huan.Wang@freescale.com>,
+ "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ Shawn Guo <Shawn.Guo@freescale.com>, "djbw@fb.com" <djbw@fb.com>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ Zhengxiong Jin <Jason.Jin@freescale.com>, "oskar@scara.com" <oskar@scara.com>,
+ Fabio Estevam <Fabio.Estevam@freescale.com>,
+ "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+ "rob@landley.net" <rob@landley.net>, Guangyu Chen <guangyu.chen@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,43 +53,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/12/2013 08:09 AM, Dan Williams wrote:
-> On Mon, Nov 11, 2013 at 1:12 AM, Hongbo Zhang
-> <hongbo.zhang@freescale.com> wrote:
->>>>>> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
->>>>>> index 49e8fbd..16a9a48 100644
->>>>>> --- a/drivers/dma/fsldma.c
->>>>>> +++ b/drivers/dma/fsldma.c
->>>>>> @@ -1261,7 +1261,9 @@ static int fsl_dma_chan_probe(struct
->>>>>> fsldma_device
->>>>>> *fdev,
->>>>>>         WARN_ON(fdev->feature != chan->feature);
->>>>>>           chan->dev = fdev->dev;
->>>>>> -    chan->id = ((res.start - 0x100) & 0xfff) >> 7;
->>>>>> +    chan->id = (res.start & 0xfff) < 0x300 ?
->>>>>> +           ((res.start - 0x100) & 0xfff) >> 7 :
->>>>>> +           ((res.start - 0x200) & 0xfff) >> 7;
->>>>>>         if (chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
->>> Isn't it a bit fragile to have this based on the resource address?
->>> Can't device tree tell you the channel id directly by an index into
->>> the "dma0: dma@100300" node?
->>
->> Yes, both this way and putting a "cell-index" into device tree work.
->> This won't be fragile, because the resource address should always be defined
->> correctly, otherwise even if we can tell a channel id by "cell-index" but
->> with wrong resource address, nothing will work.
->> This piece of code only doesn't seem as neat as using "cell-index", but we
->> prefer the style that let the device tree describes as true as what hardware
->> really has. This doesn't mean "cell-index" isn't acceptable, if it is
->> necessary and unavoidable, we can send another patch to add it, but
->> currently there is no need and we don't have to do this.
->>
-> I'm pointing it out because we just had a bug fix to another driver
-> motivated by the fact that resource addresses may move from one
-> implementation to another, whereas the cell index provided by device
-> tree is static.  Just a note, no need to fix it now.
+> > > > +static int fsl_sai_probe(struct platform_device *pdev) {
+> > > [...]
+> > > > +
+> > > > +	sai->dma_params_rx.addr =3D res->start + SAI_RDR;
+> > > > +	sai->dma_params_rx.maxburst =3D 6;
+> > > > +	index =3D of_property_match_string(np, "dma-names", "rx");
+> > > > +	ret =3D of_parse_phandle_with_args(np, "dmas", "#dma-cells",
+> index,
+> > > > +				&dma_args);
+> > > > +	if (ret)
+> > > > +		return ret;
+> > > > +	sai->dma_params_rx.slave_id =3D dma_args.args[1];
+> > > > +
+> > > > +	sai->dma_params_tx.addr =3D res->start + SAI_TDR;
+> > > > +	sai->dma_params_tx.maxburst =3D 6;
+> > > > +	index =3D of_property_match_string(np, "dma-names", "tx");
+> > > > +	ret =3D of_parse_phandle_with_args(np, "dmas", "#dma-cells",
+> index,
+> > > > +				&dma_args);
+> > > > +	if (ret)
+> > > > +		return ret;
+> > > > +	sai->dma_params_tx.slave_id =3D dma_args.args[1];
+> > >
+> > > The driver should not have to manually parse the dma devicetree
+> > > properties, this is something that should be handled by the dma
+> > > engine driver.
+> > >
+> >
+> > What do you think about the DMA slave_id ?
+> > I have been noticed by one colleague that this should be parsed here,
+> > which is from your opinions ?
+> Sure slave_id can be parsed here, but IMO it should be programmed via the
+> dma_slave_confog into the respective channel
+>=20
 
-Get it, and will remember it, thank you Dan.
-> --
-> Dan
->
+Actually, these are parsed for cpu_dai->playback_dma_data and cpu_dai->capt=
+ure_dma_data dynamically, whose type is struct dma_slave_config.
+
+And now I must parse them here, because the platform eDMA driver's newest v=
+ersion will check and use the slave_ids to select and configure the eDMA ch=
+annels via dma_device->device_control().=20
+
+--
+Xiubo
