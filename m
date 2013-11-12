@@ -1,30 +1,31 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D9A322C0084
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 23:32:17 +1100 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: "shh.xie@gmail.com" <shh.xie@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 4/4] phylib: Add of_phy_attach
-Date: Tue, 12 Nov 2013 12:32:09 +0000
-Message-ID: <ED492CCEAF882048BC2237DE806547C9151173AB@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1384168100-3046-1-git-send-email-shh.xie@gmail.com>
-In-Reply-To: <1384168100-3046-1-git-send-email-shh.xie@gmail.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <monstr@monstr.eu>
+Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3B7562C00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 02:39:47 +1100 (EST)
+Received: by mail-ee0-f51.google.com with SMTP id t10so3196538eei.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 07:39:43 -0800 (PST)
+Message-ID: <52824BBC.9020401@monstr.eu>
+Date: Tue, 12 Nov 2013 16:39:40 +0100
+From: Michal Simek <monstr@monstr.eu>
 MIME-Version: 1.0
-Cc: "f.fainelli@gmail.com" <f.fainelli@gmail.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Shruti Kanetkar <Shruti@freescale.com>,
- "jg1.han@samsung.com" <jg1.han@samsung.com>,
- "michal.simek@xilinx.com" <michal.simek@xilinx.com>,
- "peppe.cavallaro@st.com" <peppe.cavallaro@st.com>,
- "davem@davemloft.net" <davem@davemloft.net>,
- Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+To: Mark Salter <msalter@redhat.com>
+Subject: Re: [PATCH 00/11] Consolidate asm/fixmap.h files
+References: <1384262545-20875-1-git-send-email-msalter@redhat.com>
+In-Reply-To: <1384262545-20875-1-git-send-email-msalter@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="wakS2gO08XuamRTkaApEoSt4HdIMUTtMO"
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ James Hogan <james.hogan@imgtec.com>, Russell King <linux@arm.linux.org.uk>,
+ Arnd Bergmann <arnd@arndb.de>, linux-hexagon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Richard Kuo <rkuo@codeaurora.org>, microblaze-uclinux@itee.uq.edu.au,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Reply-To: monstr@monstr.eu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,103 +35,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Added more people and list.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--wakS2gO08XuamRTkaApEoSt4HdIMUTtMO
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Best Regards,=20
-Shaohui Xie
+On 11/12/2013 02:22 PM, Mark Salter wrote:
+> Many architectures provide an asm/fixmap.h which defines support for
+> compile-time 'special' virtual mappings which need to be made before
+> paging_init() has run. This suport is also used for early ioremap
+> on x86. Much of this support is identical across the architectures.
+> This patch consolidates all of the common bits into asm-generic/fixmap.=
+h
+> which is intended to be included from arch/*/include/asm/fixmap.h.
+>=20
+> This has been compiled on x86, arm, powerpc, and sh, but tested
+> on x86 only.
+>=20
+> Mark Salter (11):
+>   Add generic fixmap.h
+>   x86: use generic fixmap.h
+>   arm: use generic fixmap.h
+>   hexagon: use generic fixmap.h
+>   metag: use generic fixmap.h
+>   microblaze: use generic fixmap.h
+>   mips: use generic fixmap.h
+>   powerpc: use generic fixmap.h
+>   sh: use generic fixmap.h
+>   tile: use generic fixmap.h
+>   um: use generic fixmap.h
+>=20
+>  arch/arm/include/asm/fixmap.h        |  25 ++------
+>  arch/hexagon/include/asm/fixmap.h    |  40 +------------
+>  arch/metag/include/asm/fixmap.h      |  32 +----------
+>  arch/microblaze/include/asm/fixmap.h |  44 +-------------
+>  arch/mips/include/asm/fixmap.h       |  33 +----------
+>  arch/powerpc/include/asm/fixmap.h    |  44 +-------------
+>  arch/sh/include/asm/fixmap.h         |  39 +------------
+>  arch/tile/include/asm/fixmap.h       |  33 +----------
+>  arch/um/include/asm/fixmap.h         |  40 +------------
+>  arch/x86/include/asm/fixmap.h        |  59 +------------------
+>  include/asm-generic/fixmap.h         | 107 +++++++++++++++++++++++++++=
+++++++++
+>  11 files changed, 125 insertions(+), 371 deletions(-)
+>  create mode 100644 include/asm-generic/fixmap.h
+
+Any repo/branch with all these patches will be helpful.
+
+Thanks,
+Michal
 
 
-> -----Original Message-----
-> From: shh.xie@gmail.com [mailto:shh.xie@gmail.com]
-> Sent: Monday, November 11, 2013 7:08 PM
-> To: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> Cc: Bucur Madalin-Cristian-B32716; Kanetkar Shruti-B44454; Xie Shaohui-B2=
-1989
-> Subject: [PATCH 4/4] phylib: Add of_phy_attach
->=20
-> From: Andy Fleming
->=20
-> 10G PHYs don't currently support running the state machine, which is impl=
-icitly
-> setup via of_phy_connect(). Therefore, it is necessary to implement an OF
-> version of phy_attach(), which does everything except start the state mac=
-hine.
->=20
-> Signed-off-by: Andy Fleming
-> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> ---
->  drivers/of/of_mdio.c    | 22 ++++++++++++++++++++--
->  include/linux/of_mdio.h |  8 ++++++++
->  2 files changed, 28 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c index d5a57a9..a=
-748274
-> 100644
-> --- a/drivers/of/of_mdio.c
-> +++ b/drivers/of/of_mdio.c
-> @@ -221,8 +221,7 @@ EXPORT_SYMBOL(of_phy_connect);
->   * not call this function from new drivers.
->   */
->  struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
-> -					     void (*hndlr)(struct net_device *),
-> -					     phy_interface_t iface)
-> +		void (*hndlr)(struct net_device *), phy_interface_t iface)
->  {
->  	struct device_node *net_np;
->  	char bus_id[MII_BUS_ID_SIZE + 3];
-> @@ -247,3 +246,22 @@ struct phy_device *of_phy_connect_fixed_link(struct
-> net_device *dev,
->  	return IS_ERR(phy) ? NULL : phy;
->  }
->  EXPORT_SYMBOL(of_phy_connect_fixed_link);
-> +
-> +/**
-> + * of_phy_attach - Attach to a PHY without starting the state machine
-> + * @dev: pointer to net_device claiming the phy
-> + * @phy_np: Node pointer for the PHY
-> + * @flags: flags to pass to the PHY
-> + * @iface: PHY data interface type
-> + */
-> +struct phy_device *of_phy_attach(struct net_device *dev,
-> +		struct device_node *phy_np, u32 flags, phy_interface_t iface) {
-> +	struct phy_device *phy =3D of_phy_find_device(phy_np);
-> +
-> +	if (!phy)
-> +		return NULL;
-> +
-> +	return phy_attach_direct(dev, phy, flags, iface) ? NULL : phy; }
-> +EXPORT_SYMBOL(of_phy_attach);
-> diff --git a/include/linux/of_mdio.h b/include/linux/of_mdio.h index
-> 8163107..dcda44d 100644
-> --- a/include/linux/of_mdio.h
-> +++ b/include/linux/of_mdio.h
-> @@ -19,6 +19,8 @@ extern struct phy_device *of_phy_connect(struct net_dev=
-ice
-> *dev,
->  					 struct device_node *phy_np,
->  					 void (*hndlr)(struct net_device *),
->  					 u32 flags, phy_interface_t iface);
-> +extern struct phy_device *of_phy_attach(struct net_device *dev,
-> +		struct device_node *phy_np, u32 flags, phy_interface_t iface);
->  extern struct phy_device *of_phy_connect_fixed_link(struct net_device *d=
-ev,
->  					 void (*hndlr)(struct net_device *),
->  					 phy_interface_t iface);
-> @@ -44,6 +46,12 @@ static inline struct phy_device *of_phy_connect(struct
-> net_device *dev,
->  	return NULL;
->  }
->=20
-> +static inline struct phy_device *of_phy_attach(struct net_device *dev,
-> +		struct device_node *phy_np, u32 flags, phy_interface_t iface) {
-> +	return NULL;
-> +}
-> +
->  static inline struct phy_device *of_phy_connect_fixed_link(struct net_de=
-vice
-> *dev,
->  							   void (*hndlr)(struct net_device
-> *),
->  							   phy_interface_t iface)
-> --
-> 1.8.4.1
+
+--=20
+Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
+Maintainer of Linux kernel - Xilinx Zynq ARM architecture
+Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
+
+
+
+--wakS2gO08XuamRTkaApEoSt4HdIMUTtMO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iEYEARECAAYFAlKCS7wACgkQykllyylKDCEq9QCffe3d/+9UQGGG/rdCAxD81tq3
+sRQAmwaBtQ/8lmwDm9Eo3vmovL9WeRiE
+=R0bw
+-----END PGP SIGNATURE-----
+
+--wakS2gO08XuamRTkaApEoSt4HdIMUTtMO--
