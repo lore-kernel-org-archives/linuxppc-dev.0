@@ -1,25 +1,23 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by ozlabs.org (Postfix) with ESMTP id 36D722C0091
- for <linuxppc-dev@ozlabs.org>; Wed, 13 Nov 2013 07:20:47 +1100 (EST)
-Received: from mail-ve0-f174.google.com (mail-ve0-f174.google.com
- [209.85.128.174])
- by muin.pair.com (Postfix) with ESMTPSA id 58E6C8FC31
- for <linuxppc-dev@ozlabs.org>; Tue, 12 Nov 2013 15:13:20 -0500 (EST)
-Received: by mail-ve0-f174.google.com with SMTP id cz12so2590540veb.5
- for <linuxppc-dev@ozlabs.org>; Tue, 12 Nov 2013 12:13:19 -0800 (PST)
+Return-Path: <scottwood@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0248.outbound.messaging.microsoft.com [213.199.154.248])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4C2A02C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 08:58:20 +1100 (EST)
+Message-ID: <1384293487.1403.67.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/4] phylib: Add Clause 45 read/write functions
+From: Scott Wood <scottwood@freescale.com>
+To: <shh.xie@gmail.com>
+Date: Tue, 12 Nov 2013 15:58:07 -0600
+In-Reply-To: <1384167864-2457-1-git-send-email-shh.xie@gmail.com>
+References: <1384167864-2457-1-git-send-email-shh.xie@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <1384197913-24610-1-git-send-email-Lijun.Pan@freescale.com>
-References: <1383952632-5770-1-git-send-email-Lijun.Pan@freescale.com>
- <1384197913-24610-1-git-send-email-Lijun.Pan@freescale.com>
-Date: Tue, 12 Nov 2013 14:13:19 -0600
-Message-ID: <CAOZdJXWse3EbWVzu_1fLq5+B5Zd9n1_UVF11Zj2MBcsH0Dm0Dw@mail.gmail.com>
-Subject: Re: [PATCH V2] powerpc/85xx: Merge 85xx/p1023_defconfig into
- mpc85xx_smp_defconfig and mpc85xx_defconfig
-From: Timur Tabi <timur@tabi.org>
-To: Lijun Pan <Lijun.Pan@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Cc: Shruti@freescale.com, madalin.bucur@freescale.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,8 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 11, 2013 at 1:25 PM, Lijun Pan <Lijun.Pan@freescale.com> wrote:
-> +CONFIG_P1023_RDB=y
+On Mon, 2013-11-11 at 19:04 +0800, shh.xie@gmail.com wrote:
+> From: Andy Fleming
+> 
+> You need an extra parameter to read or write Clause 45 PHYs, so
+> we need a different API with the extra parameter.
+> 
+> Signed-off-by: Andy Fleming
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 
-I think this is the only line you should be adding to the defconfigs.
-None of the others should be necessary.
+Why did you remove Andy's e-mail address?  Even though it's no longer
+valid, it helps identify which specific person you're talking about.
+
+-Scott
