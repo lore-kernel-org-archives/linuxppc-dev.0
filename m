@@ -1,18 +1,33 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 13 Nov 2013 08:03:29 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH] powerpc: book3s: PR: Enable Little Endian PR guest
-Message-ID: <20131112210329.GA4319@iris.ozlabs.ibm.com>
-References: <1384178898-24673-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <059527B7-DB8B-4A91-AE3B-3ACA834EEFA4@suse.de>
+Return-Path: <scottwood@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B585A2C00AD
+ for <linuxppc-dev@ozlabs.org>; Wed, 13 Nov 2013 09:52:23 +1100 (EST)
+Received: from mail83-ch1 (localhost [127.0.0.1])	by mail83-ch1-R.bigfish.com
+ (Postfix) with ESMTP id 96C93160076	for <linuxppc-dev@ozlabs.org>;
+ Tue, 12 Nov 2013 22:52:20 +0000 (UTC)
+Received: from CH1EHSMHS029.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.253])	by mail83-ch1.bigfish.com (Postfix) with ESMTP id
+ 55AF1480097
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Nov 2013 22:52:18 +0000 (UTC)
+Message-ID: <1384296734.1403.72.camel@snotra.buserror.net>
+Subject: Re: [PATCH V2] powerpc/85xx: Merge 85xx/p1023_defconfig into
+ mpc85xx_smp_defconfig and mpc85xx_defconfig
+From: Scott Wood <scottwood@freescale.com>
+To: Zang Roy-R61911 <roy.zang@freescale.com>
+Date: Tue, 12 Nov 2013 16:52:14 -0600
+In-Reply-To: <3E027F8168735B46AC006B1D0C7BB0020B37812C@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1383952632-5770-1-git-send-email-Lijun.Pan@freescale.com>
+ <1384197913-24610-1-git-send-email-Lijun.Pan@freescale.com>
+ <1384293891.1403.70.camel@snotra.buserror.net>
+ <3E027F8168735B46AC006B1D0C7BB0020B37812C@039-SN2MPN1-011.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <059527B7-DB8B-4A91-AE3B-3ACA834EEFA4@suse.de>
-Cc: "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Cc: Pan Lijun-B44306 <Lijun.Pan@freescale.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,26 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 12, 2013 at 07:37:24AM -0500, Alexander Graf wrote:
+On Tue, 2013-11-12 at 16:49 -0600, Zang Roy-R61911 wrote:
 > 
-> 
-> Am 11.11.2013 um 09:08 schrieb "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>:
-> 
-> > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> > -----Original Message-----
+> > From: Linuxppc-dev [mailto:linuxppc-dev-bounces+tie-
+> > fei.zang=freescale.com@lists.ozlabs.org] On Behalf Of Scott Wood
+> > Sent: Tuesday, November 12, 2013 4:05 PM
+> > To: Pan Lijun-B44306
+> > Cc: linuxppc-dev@ozlabs.org
+> > Subject: Re: [PATCH V2] powerpc/85xx: Merge 85xx/p1023_defconfig into
+> > mpc85xx_smp_defconfig and mpc85xx_defconfig
 > > 
-> > This patch make sure we inherit the LE bit correctly in different case
-> > so that we can run Little Endian distro in PR mode
+> > On Mon, 2013-11-11 at 13:25 -0600, Lijun Pan wrote:
+> > > mpc85xx_smp_defconfig and mpc85xx_defconfig already have
+> > CONFIG_P1023RDS=y.
+> > > Merge CONFIG_P1023RDB=y and other relevant configurations into
+> > mpc85xx_smp_defconfig and mpc85_defconfig.
+> > >
+> > > Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
+> > > ---
+> > >  arch/powerpc/configs/85xx/p1023_defconfig  |  188 --------------------
+> > --------
+> > >  arch/powerpc/configs/mpc85xx_defconfig     |   18 +++
+> > >  arch/powerpc/configs/mpc85xx_smp_defconfig |   17 +++
+> > >  3 files changed, 35 insertions(+), 188 deletions(-)  delete mode
+> > > 100644 arch/powerpc/configs/85xx/p1023_defconfig
 > > 
-> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> This is not how real hardware works, is it? Could you please point me to the bits in the ISA that indicate that we should preserve the LE bit anywhere? :)
+> > Are we still going to want to have one defconfig if and when we finally
+> > get datapath support upstream?  That's a lot of code to add to the 85xx
+> > config just for this one chip.
+> P1023 has dpaa.
+> Will mpc85xx_defconfig or mpc85xx_smp_defconfig support dpaa?
 
-No, it isn't.  What we should really be doing depends a bit on what
-CPU we're emulating.  Older CPUs had an ILE bit in the MSR that got
-copied to LE on interrupt.  Recent POWER CPUs moved the ILE bit to the
-LPCR, so for them we should have an emulated LPCR (and implement
-H_SET_MODE for pseries guests so they can control LPCR[ILE]).
-Embedded CPUs of course don't have an LE bit, or an ILE bit, since
-they control endianness on a per-page basis.
+That's the question I'm asking.  Though I suppose we could take a patch
+like this one for now, and then introduce mpc85xx_dpaa_defconfig when it
+becomes relevant (which would make clear why the defconfig is separate).
+p1023 would still work with the non-dpaa defconfigs, but without dpaa
+support.
 
-Paul.
+-Scott
