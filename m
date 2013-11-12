@@ -1,29 +1,22 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wi0-x229.google.com (mail-wi0-x229.google.com
- [IPv6:2a00:1450:400c:c05::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3BC9F2C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 23:23:24 +1100 (EST)
-Received: by mail-wi0-f169.google.com with SMTP id cb5so3652692wib.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 04:23:20 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20131111201024.GR17929@book.gsilab.sittig.org>
-References: <1383290374-17484-1-git-send-email-a13xp0p0v88@gmail.com>
- <1383290374-17484-3-git-send-email-a13xp0p0v88@gmail.com>
- <20131111201024.GR17929@book.gsilab.sittig.org>
-Date: Tue, 12 Nov 2013 16:23:20 +0400
-Message-ID: <CAF0T0X5mCEiS88YGGjSS6oGU5RaQ=2PEQFL533OjpQzmc398rA@mail.gmail.com>
-Subject: Re: [PATCH RFC v5 2/5] dma: mpc512x: add support for peripheral
- transfers
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
- Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
- Arnd Bergmann <arnd@arndb.de>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, Alexander Popov <a13xp0p0v88@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 9AF382C00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 23:37:37 +1100 (EST)
+References: <1384178898-24673-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Mime-Version: 1.0 (1.0)
+In-Reply-To: <1384178898-24673-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain;
+	charset=us-ascii
+Message-Id: <059527B7-DB8B-4A91-AE3B-3ACA834EEFA4@suse.de>
+From: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] powerpc: book3s: PR: Enable Little Endian PR guest
+Date: Tue, 12 Nov 2013 07:37:24 -0500
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,35 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Gerhard!
 
-2013/11/12 Gerhard Sittig <gsi@denx.de>:
-> Alexander, there is outstanding review feedback for a previous
-> version of the series that you haven't addressed yet.  Can you
-> please either look into those issues, or state that it's OK to
-> leave them and why this is so?
-Excuse me for misunderstanding, Gerhard.
-I have thoroughly worked on your feedback to RFCv4
-and agreed to your points. So I've just wrote RFCv5.
-And all the improvements and known issues based on your feedback
-are listed in the cover letter [PATCH RFC v5 0/5].
 
-> It would be nice to get a
-> response to the feedback that you are given.  It may be
-> appropriate not to obey to the feedback, but at least it should
-> get considered.
-Yes, I see. My implicit response by RFCv5 was not efficient, sorry.
-Now should I write a detailed answer in the thread with your feedback
-for improving readability of the discussion?
+Am 11.11.2013 um 09:08 schrieb "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.i=
+bm.com>:
 
-> Have you noticed the recent introduction of the dmaengine@vger
-> ML?
-No, I didn't.
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>=20
+> This patch make sure we inherit the LE bit correctly in different case
+> so that we can run Little Endian distro in PR mode
+>=20
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
->Make sure to include it upon the next submission.
-Ok, I will.
+This is not how real hardware works, is it? Could you please point me to the=
+ bits in the ISA that indicate that we should preserve the LE bit anywhere? :=
+)
 
-Thanks.
+Alex
 
-Best regards,
-Alexander.
+> ---
+>=20
+> This patch depends on the below two changes
+> 1)  [PATCH v5 0/6] KVM: PPC: Book3S: MMIO support for Little Endian guests=
+ (kvm-ppc)
+>        http://mid.gmane.org/1383672128-26795-1-git-send-email-clg@fr.ibm.c=
+om
+> 2) [PATCH] powerpc: book3s: kvm: Use the saved dsisr and dar values
+>       http://mid.gmane.org/1384178577-23721-1-git-send-email-aneesh.kumar@=
+linux.vnet.ibm.com
+>=20
+> arch/powerpc/kvm/book3s_64_mmu.c | 2 +-
+> arch/powerpc/kvm/book3s_pr.c     | 2 +-
+> 2 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64=
+_mmu.c
+> index 83da1f8..d339096 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu.c
+> @@ -38,7 +38,7 @@
+>=20
+> static void kvmppc_mmu_book3s_64_reset_msr(struct kvm_vcpu *vcpu)
+> {
+> -    kvmppc_set_msr(vcpu, MSR_SF);
+> +    kvmppc_set_msr(vcpu, MSR_SF | (vcpu->arch.shared->msr & MSR_LE));
+> }
+>=20
+> static struct kvmppc_slb *kvmppc_mmu_book3s_64_find_slbe(
+> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+> index a7fe87a..cf9362c 100644
+> --- a/arch/powerpc/kvm/book3s_pr.c
+> +++ b/arch/powerpc/kvm/book3s_pr.c
+> @@ -226,7 +226,7 @@ static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *=
+vcpu)
+>    ulong smsr =3D vcpu->arch.shared->msr;
+>=20
+>    /* Guest MSR values */
+> -    smsr &=3D MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE;
+> +    smsr &=3D MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE | MSR_LE;
+>    /* Process MSR values */
+>    smsr |=3D MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_PR | MSR_EE;
+>    /* External providers the guest reserved */
+> --=20
+> 1.8.3.2
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
