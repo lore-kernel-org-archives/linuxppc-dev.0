@@ -1,26 +1,19 @@
-Return-Path: <neorf3k@gmail.com>
-Received: from mail-ee0-x233.google.com (mail-ee0-x233.google.com
- [IPv6:2a00:1450:4013:c00::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 82BBC2C009A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 06:23:29 +1100 (EST)
-Received: by mail-ee0-f51.google.com with SMTP id t10so3395868eei.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 11:23:24 -0800 (PST)
-Received: from [192.168.0.100] (adsl-ull-89-173.40-151.net24.it.
- [151.40.173.89])
- by mx.google.com with ESMTPSA id k7sm71073731eeg.13.2013.11.12.11.23.21
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
- Tue, 12 Nov 2013 11:23:22 -0800 (PST)
-From: neorf3k <neorf3k@gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Subject: Problem reading and programming memory location...
-Message-Id: <985685C7-0122-4D45-96D1-4412E9774A5D@gmail.com>
-Date: Tue, 12 Nov 2013 20:23:20 +0100
-To: Linux Ppc Dev List Dev List <linuxppc-dev@lists.ozlabs.org>
-Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1822\))
+Return-Path: <geert@linux-m68k.org>
+Received: from wilson.telenet-ops.be (wilson.telenet-ops.be [195.130.132.42])
+ by ozlabs.org (Postfix) with ESMTP id E22922C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 07:12:45 +1100 (EST)
+Received: from georges.telenet-ops.be (georges.telenet-ops.be [195.130.137.68])
+ by wilson.telenet-ops.be (Postfix) with ESMTP id 12F7934063
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 21:12:43 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 01/12] powerpc/windfarm: Remove superfluous name casts
+Date: Tue, 12 Nov 2013 20:07:14 +0100
+Message-Id: <1384283245-9419-2-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1384283245-9419-1-git-send-email-geert@linux-m68k.org>
+References: <1384283245-9419-1-git-send-email-geert@linux-m68k.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,13 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-we have tried to read and program an 8bit register with 32bit address. =
-we have mapped it with: ioremap, kmalloc etc=85 and then using: outb, =
-iowrite8 etc.. but when we write to it, the value doesn=92t change=85 =
-with other memory location is ok.
-That is an 8 bit register, located at 0x10020000 in a mpc5200b =
-architecture. we are using kernel 2.6.33.=20
-what could be?
-Thank you
+wf_sensor.name is "const char *"
 
-Lorenzo=
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ drivers/macintosh/windfarm_lm75_sensor.c    |    2 +-
+ drivers/macintosh/windfarm_max6690_sensor.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/macintosh/windfarm_lm75_sensor.c b/drivers/macintosh/windfarm_lm75_sensor.c
+index 9ef32b3df91f..590214ba736c 100644
+--- a/drivers/macintosh/windfarm_lm75_sensor.c
++++ b/drivers/macintosh/windfarm_lm75_sensor.c
+@@ -133,7 +133,7 @@ static int wf_lm75_probe(struct i2c_client *client,
+ 	lm->inited = 0;
+ 	lm->ds1775 = ds1775;
+ 	lm->i2c = client;
+-	lm->sens.name = (char *)name; /* XXX fix constness in structure */
++	lm->sens.name = name;
+ 	lm->sens.ops = &wf_lm75_ops;
+ 	i2c_set_clientdata(client, lm);
+ 
+diff --git a/drivers/macintosh/windfarm_max6690_sensor.c b/drivers/macintosh/windfarm_max6690_sensor.c
+index 945a25b2f31e..87e439b10318 100644
+--- a/drivers/macintosh/windfarm_max6690_sensor.c
++++ b/drivers/macintosh/windfarm_max6690_sensor.c
+@@ -95,7 +95,7 @@ static int wf_max6690_probe(struct i2c_client *client,
+ 	}
+ 
+ 	max->i2c = client;
+-	max->sens.name = (char *)name; /* XXX fix constness in structure */
++	max->sens.name = name;
+ 	max->sens.ops = &wf_max6690_ops;
+ 	i2c_set_clientdata(client, max);
+ 
+-- 
+1.7.9.5
