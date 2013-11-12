@@ -1,25 +1,22 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B06212C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 13:01:03 +1100 (EST)
-From: Yuantian Tang <Yuantian.Tang@freescale.com>
-To: Mark Rutland <mark.rutland@arm.com>, "mike.turquette@linaro.org"
- <mike.turquette@linaro.org>
-Subject: RE: [PATCH v6] clk: corenet: Adds the clock binding
-Date: Tue, 12 Nov 2013 02:00:54 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B150CB933@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1384162906-30730-1-git-send-email-Yuantian.Tang@freescale.com>
- <20131111115202.GD21201@e106331-lin.cambridge.arm.com>
-In-Reply-To: <20131111115202.GD21201@e106331-lin.cambridge.arm.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <vinod.koul@intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by ozlabs.org (Postfix) with ESMTP id 8C80D2C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 16:48:27 +1100 (EST)
+Date: Tue, 12 Nov 2013 10:22:33 +0530
+From: Vinod Koul <vinod.koul@intel.com>
+To: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH] powerpc: add explicit OF includes for ppc4xx
+Message-ID: <20131112045233.GH8834@intel.com>
+References: <1384148143-14335-1-git-send-email-robherring2@gmail.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1384148143-14335-1-git-send-email-robherring2@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>,
+ Herbert Xu <herbert@gondor.hengli.com.au>, Paul Mackerras <paulus@samba.org>,
+ linux-crypto@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+ Tejun Heo <tj@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,224 +26,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > +++ b/Documentation/devicetree/bindings/clock/corenet-clock.txt
-> > @@ -0,0 +1,123 @@
-> > +* Clock Block on Freescale CoreNet Platforms
-> > +
-> > +Freescale CoreNet chips take primary clocking input from the external
-> > +SYSCLK signal. The SYSCLK input (frequency) is multiplied using
-> > +multiple phase locked loops (PLL) to create a variety of frequencies
-> > +which can then be passed to a variety of internal logic, including
-> > +cores and peripheral IP blocks.
-> > +Please refer to the Reference Manual for details.
-> > +
-> > +1. Clock Block Binding
-> > +
-> > +Required properties:
-> > +- compatible: Should include one or more of the following:
->=20
-> When you say "one or more", I assume you mean of the specific clock block
-> strings, and then a chassis string?
->=20
-> If so, it might be better to say smoething like:
->=20
-> - compatible: Should contain a specific clock block compatible string
->   and a single chassis clock compatible string.
->=20
->   Clock block strings include:
->   * "fsl,p2041-clockgen"
->   * "fsl,p3041-clockgen"
->=20
->   Chassis clock strings include:
->   * "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
->   * "fsl,qoriq-clockgen-2.0": for chassis 2.0 clock
->=20
-Sounds better.
+On Sun, Nov 10, 2013 at 11:35:43PM -0600, Rob Herring wrote:
+> From: Rob Herring <rob.herring@calxeda.com>
+> 
+> Commit b5b4bb3f6a11f9 (of: only include prom.h on sparc) removed implicit
+> includes of of_*.h headers by powerpc's prom.h. Some PPC4xx components
+> were missed in initial clean-up patch, so add the necessary includes
+> to fix ppc4xx builds.
+> 
+> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Tejun Heo <tj@kernel.org>
+> Cc: Matt Mackall <mpm@selenic.com>
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Vinod Koul <vinod.koul@intel.com>
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-ide@vger.kernel.org
+> Cc: linux-crypto@vger.kernel.org
+> ---
+> I intend to send this patch to Linus with the rest of the DT clean-up
+> series.
+> 
+> Rob
+> 
+>  arch/powerpc/sysdev/ppc4xx_ocm.c     | 1 +
+>  arch/powerpc/sysdev/xilinx_intc.c    | 1 +
+>  drivers/ata/sata_dwc_460ex.c         | 2 ++
+>  drivers/char/hw_random/ppc4xx-rng.c  | 1 +
+>  drivers/crypto/amcc/crypto4xx_core.c | 3 +++
+>  drivers/dma/ppc4xx/adma.c            | 2 ++
+For this:
 
-> > +	* "fsl,<chip>-clockgen": for chip specific clock block, here chip
-> > +		could be but not limited to one of the: p2041, p3041, p4080,
-> > +		p5020, p5040, t4240, b4420, b4860
-> > +	* "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
-> > +	* "fsl,qoriq-clockgen-2.0": for chassis 2.0 clocks
-> > +	Notes that "fsl,qoriq-clockgen-1.0" and "fsl,qoriq-clockgen-2.0"
-> > +	cannot be included simultaneously.
-> > +- reg: Offset and length of the clock register set
-> > +
-> > +Recommended properties:
-> > +- ranges: Allows valid translation between child's address space and
-> > +	parent's. Must be present if the device has sub-nodes.
-> > +- #address-cells: Specifies the number of cells used to represent
-> > +	physical base addresses.  Must be present if the device has
-> > +	sub-nodes and set to 1 if present
-> > +- #size-cells: Specifies the number of cells used to represent
-> > +	the size of an address. Must be present if the device has
-> > +	sub-nodes and set to 1 if present
->=20
-> Is there any particular reason these _must_ be 1?
->=20
-They are one u32 variable long and no other options, so, they should be set=
- to 1.
+Acked-by Vinod Koul <vinod.koul@intel.com>
 
-> > +
-> > +2. Clock Provider/Consumer Binding
-> > +
-> > +Most of the bindings are from the common clock binding[1].
-> > + [1] Documentation/devicetree/bindings/clock/clock-bindings.txt
-> > +
-> > +Required properties:
-> > +- compatible : Should include one of the following:
-> > +	* "fsl,qoriq-core-pll-1.0" for core PLL clocks (v1.0)
-> > +    * "fsl,qoriq-core-pll-2.0" for core PLL clocks (v2.0)
-> > +    * "fsl,qoriq-core-mux-1.0" for core mux clocks (v1.0)
-> > +    * "fsl,qoriq-core-mux-2.0" for core mux clocks (v2.0)
-> > +	* "fsl,qoriq-sysclk-1.0": for input system clock (v1.0)
-> > +	* "fsl,qoriq-sysclk-2.0": for input system clock (v2.0)
-> > +- #clock-cells: From common clock binding; indicates the number of
-> > +	output clock. 0 is for "fsl,qoriq-sysclk-[1,2].0" and
-> > +	"fsl,qoriq-core-mux-[1,2].0"; 1 for "fsl,qoriq-core-pll-[1,2].0".
->=20
-> Nit: #clock-cells defines the number of cells in a clock-specifier, not
-> the number of output clocks. How about:
->=20
-> - #clock-cells: The number of cells in a clock-specifier. Should be <0>
->   for "fsl,qoriq-sysclk-[1,2].0" clocks, or <1> for
->   "fsl,qoriq-core-pll-[1,2].0" clocks.
->=20
-> > +	If #clock-cells has a value of 1, its clock consumer should specify
-> > +	the desired clock by having the clock ID in its "clocks" phandle
-> > +	cell. The following is a full list IDs:
->=20
-> The ID is in the clock-specifier, not the phandle. How about the
-> following instead:
->=20
-> For "fsl,qoriq-core-pll-[1,2].0" clocks, the single clock-specifier cell
-> may take the following values:
->=20
-OK, thanks.
+--
+~Vinod
+>  6 files changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/sysdev/ppc4xx_ocm.c b/arch/powerpc/sysdev/ppc4xx_ocm.c
+> index 1b15f93..b7c4345 100644
+> --- a/arch/powerpc/sysdev/ppc4xx_ocm.c
+> +++ b/arch/powerpc/sysdev/ppc4xx_ocm.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/kernel.h>
+>  #include <linux/dma-mapping.h>
+>  #include <linux/of.h>
+> +#include <linux/of_address.h>
+>  #include <asm/rheap.h>
+>  #include <asm/ppc4xx_ocm.h>
+>  #include <linux/slab.h>
+> diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
+> index f4fdc94..83f943a 100644
+> --- a/arch/powerpc/sysdev/xilinx_intc.c
+> +++ b/arch/powerpc/sysdev/xilinx_intc.c
+> @@ -24,6 +24,7 @@
+>  #include <linux/irq.h>
+>  #include <linux/of.h>
+>  #include <linux/of_address.h>
+> +#include <linux/of_irq.h>
+>  #include <asm/io.h>
+>  #include <asm/processor.h>
+>  #include <asm/i8259.h>
+> diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
+> index 2e39173..523524b 100644
+> --- a/drivers/ata/sata_dwc_460ex.c
+> +++ b/drivers/ata/sata_dwc_460ex.c
+> @@ -31,6 +31,8 @@
+>  #include <linux/module.h>
+>  #include <linux/init.h>
+>  #include <linux/device.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_irq.h>
+>  #include <linux/of_platform.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/libata.h>
+> diff --git a/drivers/char/hw_random/ppc4xx-rng.c b/drivers/char/hw_random/ppc4xx-rng.c
+> index 732c330..521f76b 100644
+> --- a/drivers/char/hw_random/ppc4xx-rng.c
+> +++ b/drivers/char/hw_random/ppc4xx-rng.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/hw_random.h>
+>  #include <linux/delay.h>
+> +#include <linux/of_address.h>
+>  #include <linux/of_platform.h>
+>  #include <asm/io.h>
+>  
+> diff --git a/drivers/crypto/amcc/crypto4xx_core.c b/drivers/crypto/amcc/crypto4xx_core.c
+> index f88e3d8..efaf630 100644
+> --- a/drivers/crypto/amcc/crypto4xx_core.c
+> +++ b/drivers/crypto/amcc/crypto4xx_core.c
+> @@ -27,6 +27,9 @@
+>  #include <linux/dma-mapping.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/init.h>
+> +#include <linux/module.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_irq.h>
+>  #include <linux/of_platform.h>
+>  #include <linux/slab.h>
+>  #include <asm/dcr.h>
+> diff --git a/drivers/dma/ppc4xx/adma.c b/drivers/dma/ppc4xx/adma.c
+> index 370ff82..e24b5ef 100644
+> --- a/drivers/dma/ppc4xx/adma.c
+> +++ b/drivers/dma/ppc4xx/adma.c
+> @@ -42,6 +42,8 @@
+>  #include <linux/uaccess.h>
+>  #include <linux/proc_fs.h>
+>  #include <linux/of.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_irq.h>
+>  #include <linux/of_platform.h>
+>  #include <asm/dcr.h>
+>  #include <asm/dcr-regs.h>
+> -- 
+> 1.8.1.2
+> 
 
-> > +	* 0 - equal to the PLL frequency
-> > +	* 1 - equal to the PLL frequency divided by 2
-> > +	* 2 - equal to the PLL frequency divided by 4
-> > +
-> > +Recommended properties:
-> > +- clocks: Should be the phandle of input parent clock
-> > +- clock-names: From common clock binding, indicates the clock name
->=20
-> Is this not well defined and common across all of the clocks? The set of
-> inputs they have must be well known, and if it isn't then this property
-> isn't all that useful.
->=20
-> > +- clock-output-names: From common clock binding, indicates the names
-> of
-> > +	output clocks
->=20
-> Similarly, I'd expect that there might be well defined output names.
->=20
-The clock-output-names and clock-names vary both from nodes to nodes and
-from platforms to platforms. There is no general rules to define it.
-I think the *-names properties should be added easily by following the exam=
-ple below.
-
-> > +- reg: Should be the offset and length of clock block base address.
-> > +	The length should be 4.
-> > +
-> > +Example for clock block and clock provider:
-> > +/ {
-> > +	clockgen: global-utilities@e1000 {
-> > +		compatible =3D "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
-> > +		ranges =3D <0x0 0xe1000 0x1000>;
-> > +		reg =3D <0xe1000 0x1000>;
-> > +		#address-cells =3D <1>;
-> > +		#size-cells =3D <1>;
-> > +
-> > +		sysclk: sysclk {
-> > +			#clock-cells =3D <0>;
-> > +			compatible =3D "fsl,qoriq-sysclk-1.0";
-> > +			clock-output-names =3D "sysclk";
-> > +		}
-> > +
-> > +		pll0: pll0@800 {
-> > +			#clock-cells =3D <1>;
-> > +			reg =3D <0x800 0x4>;
-> > +			compatible =3D "fsl,qoriq-core-pll-1.0";
-> > +			clocks =3D <&sysclk>;
-> > +			clock-output-names =3D "pll0", "pll0-div2";
-> > +		};
-> > +
-> > +		pll1: pll1@820 {
-> > +			#clock-cells =3D <1>;
-> > +			reg =3D <0x820 0x4>;
-> > +			compatible =3D "fsl,qoriq-core-pll-1.0";
-> > +			clocks =3D <&sysclk>;
-> > +			clock-output-names =3D "pll1", "pll1-div2";
-> > +		};
->=20
-> The binding documentation for clock-output-names describes clock-output-
-> names as the name of the clock output signals. I understand this as
-> meaning name of the output with respect to the clock, rather than a
-> global namespace, but I may be mistaken there. Mike?
->=20
-> Given that I'd expect pll0 and pll1 to have the same set of clock-output-
-> names, (perhaps "pll", "pll-div2") as they seem to be instances of the
-> same HW block. As far as I am aware the precise instance shouldn't affect
-> the name (unless the documentation for the HW have these logical output
-> names?).
->=20
-These names will be used to register clock in driver, so it should be uniqu=
-e globally.
-So...
-
-> > +
-> > +		mux0: mux0@0 {
-> > +			#clock-cells =3D <0>;
-> > +			reg =3D <0x0 0x4>;
-> > +			compatible =3D "fsl,qoriq-core-mux-1.0";
-> > +			clocks =3D <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-> > +			clock-names =3D "pll0", "pll0-div2", "pll1", "pll1-div2";
-> > +			clock-output-names =3D "cmux0";
-> > +		};
->=20
-> I have a similar worry here with regards to the clock-names, but I guess
-> it doesn't really matter here if the documentation doesn't provide any
-> better names for the inputs to the mux.
->=20
-> However for the output name I'd expect just "cmux".
->=20
-Same as above, cmux is not unique if we have multiple MUXes.
-
-Thanks,
-Yuantian
-
-> Thanks,
-> Mark,
->=20
-> > +
-> > +		mux1: mux1@20 {
-> > +			#clock-cells =3D <0>;
-> > +			reg =3D <0x20 0x4>;
-> > +			compatible =3D "fsl,qoriq-core-mux-1.0";
-> > +			clocks =3D <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-> > +			clock-names =3D "pll0", "pll0-div2", "pll1", "pll1-div2";
-> > +			clock-output-names =3D "cmux1";
-> > +		};
-> > +	};
-> > +  }
-> > +
-> > +Example for clock consumer:
-> > +
-> > +/ {
-> > +	cpu0: PowerPC,e5500@0 {
-> > +		...
-> > +		clocks =3D <&mux0>;
-> > +		...
-> > +	};
-> > +  }
-> > --
-> > 1.8.0
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe devicetree"
-> > in the body of a message to majordomo@vger.kernel.org More majordomo
-> > info at  http://vger.kernel.org/majordomo-info.html
-> >
+-- 
