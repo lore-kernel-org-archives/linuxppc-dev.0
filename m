@@ -1,22 +1,46 @@
 Return-Path: <vinod.koul@intel.com>
 Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id 8C80D2C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 16:48:27 +1100 (EST)
-Date: Tue, 12 Nov 2013 10:22:33 +0530
+ by ozlabs.org (Postfix) with ESMTP id 04AE22C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2013 16:58:19 +1100 (EST)
+Date: Tue, 12 Nov 2013 10:32:26 +0530
 From: Vinod Koul <vinod.koul@intel.com>
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH] powerpc: add explicit OF includes for ppc4xx
-Message-ID: <20131112045233.GH8834@intel.com>
-References: <1384148143-14335-1-git-send-email-robherring2@gmail.com>
+To: Xiubo Li-B47053 <B47053@freescale.com>
+Subject: Re: [alsa-devel] [PATCHv1 1/8] ALSA: Add SAI SoC Digital Audio
+ Interface driver.
+Message-ID: <20131112050226.GK8834@intel.com>
+References: <1382000477-17304-1-git-send-email-Li.Xiubo@freescale.com>
+ <1382000477-17304-2-git-send-email-Li.Xiubo@freescale.com>
+ <526021B0.6050206@metafoo.de>
+ <1DD289F6464F0949A2FCA5AA6DC23F8286A385@039-SN2MPN1-013.039d.mgd.msft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1384148143-14335-1-git-send-email-robherring2@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>,
- Herbert Xu <herbert@gondor.hengli.com.au>, Paul Mackerras <paulus@samba.org>,
- linux-crypto@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
- Tejun Heo <tj@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <1DD289F6464F0949A2FCA5AA6DC23F8286A385@039-SN2MPN1-013.039d.mgd.msft.net>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "tiwai@suse.de" <tiwai@suse.de>, Wang Huan-B18965 <B18965@freescale.com>,
+ "timur@tabi.org" <timur@tabi.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Guo Shawn-R65073 <r65073@freescale.com>,
+ "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ Chen Guangyu-B42378 <B42378@freescale.com>,
+ "oskar@scara.com" <oskar@scara.com>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Estevam Fabio-R49496 <r49496@freescale.com>,
+ "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+ "rob@landley.net" <rob@landley.net>, "djbw@fb.com" <djbw@fb.com>,
+ Jin Zhengxiong-R64188 <R64188@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,124 +50,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Nov 10, 2013 at 11:35:43PM -0600, Rob Herring wrote:
-> From: Rob Herring <rob.herring@calxeda.com>
+On Mon, Oct 28, 2013 at 05:58:42AM +0000, Xiubo Li-B47053 wrote:
+> Hi Dan, Vinod,
 > 
-> Commit b5b4bb3f6a11f9 (of: only include prom.h on sparc) removed implicit
-> includes of of_*.h headers by powerpc's prom.h. Some PPC4xx components
-> were missed in initial clean-up patch, so add the necessary includes
-> to fix ppc4xx builds.
 > 
-> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: Matt Mackall <mpm@selenic.com>
-> Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Vinod Koul <vinod.koul@intel.com>
-> Cc: Dan Williams <dan.j.williams@intel.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-ide@vger.kernel.org
-> Cc: linux-crypto@vger.kernel.org
-> ---
-> I intend to send this patch to Linus with the rest of the DT clean-up
-> series.
+> > > +static int fsl_sai_probe(struct platform_device *pdev) {
+> > [...]
+> > > +
+> > > +	sai->dma_params_rx.addr = res->start + SAI_RDR;
+> > > +	sai->dma_params_rx.maxburst = 6;
+> > > +	index = of_property_match_string(np, "dma-names", "rx");
+> > > +	ret = of_parse_phandle_with_args(np, "dmas", "#dma-cells", index,
+> > > +				&dma_args);
+> > > +	if (ret)
+> > > +		return ret;
+> > > +	sai->dma_params_rx.slave_id = dma_args.args[1];
+> > > +
+> > > +	sai->dma_params_tx.addr = res->start + SAI_TDR;
+> > > +	sai->dma_params_tx.maxburst = 6;
+> > > +	index = of_property_match_string(np, "dma-names", "tx");
+> > > +	ret = of_parse_phandle_with_args(np, "dmas", "#dma-cells", index,
+> > > +				&dma_args);
+> > > +	if (ret)
+> > > +		return ret;
+> > > +	sai->dma_params_tx.slave_id = dma_args.args[1];
+> > 
+> > The driver should not have to manually parse the dma devicetree
+> > properties, this is something that should be handled by the dma engine
+> > driver.
+> > 
 > 
-> Rob
-> 
->  arch/powerpc/sysdev/ppc4xx_ocm.c     | 1 +
->  arch/powerpc/sysdev/xilinx_intc.c    | 1 +
->  drivers/ata/sata_dwc_460ex.c         | 2 ++
->  drivers/char/hw_random/ppc4xx-rng.c  | 1 +
->  drivers/crypto/amcc/crypto4xx_core.c | 3 +++
->  drivers/dma/ppc4xx/adma.c            | 2 ++
-For this:
-
-Acked-by Vinod Koul <vinod.koul@intel.com>
+> What do you think about the DMA slave_id ?
+> I have been noticed by one colleague that this should be parsed here, which
+> is from your opinions ?
+Sure slave_id can be parsed here, but IMO it should be programmed via the
+dma_slave_confog into the respective channel
 
 --
 ~Vinod
->  6 files changed, 10 insertions(+)
 > 
-> diff --git a/arch/powerpc/sysdev/ppc4xx_ocm.c b/arch/powerpc/sysdev/ppc4xx_ocm.c
-> index 1b15f93..b7c4345 100644
-> --- a/arch/powerpc/sysdev/ppc4xx_ocm.c
-> +++ b/arch/powerpc/sysdev/ppc4xx_ocm.c
-> @@ -26,6 +26,7 @@
->  #include <linux/kernel.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/of.h>
-> +#include <linux/of_address.h>
->  #include <asm/rheap.h>
->  #include <asm/ppc4xx_ocm.h>
->  #include <linux/slab.h>
-> diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
-> index f4fdc94..83f943a 100644
-> --- a/arch/powerpc/sysdev/xilinx_intc.c
-> +++ b/arch/powerpc/sysdev/xilinx_intc.c
-> @@ -24,6 +24,7 @@
->  #include <linux/irq.h>
->  #include <linux/of.h>
->  #include <linux/of_address.h>
-> +#include <linux/of_irq.h>
->  #include <asm/io.h>
->  #include <asm/processor.h>
->  #include <asm/i8259.h>
-> diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-> index 2e39173..523524b 100644
-> --- a/drivers/ata/sata_dwc_460ex.c
-> +++ b/drivers/ata/sata_dwc_460ex.c
-> @@ -31,6 +31,8 @@
->  #include <linux/module.h>
->  #include <linux/init.h>
->  #include <linux/device.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_irq.h>
->  #include <linux/of_platform.h>
->  #include <linux/platform_device.h>
->  #include <linux/libata.h>
-> diff --git a/drivers/char/hw_random/ppc4xx-rng.c b/drivers/char/hw_random/ppc4xx-rng.c
-> index 732c330..521f76b 100644
-> --- a/drivers/char/hw_random/ppc4xx-rng.c
-> +++ b/drivers/char/hw_random/ppc4xx-rng.c
-> @@ -13,6 +13,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/hw_random.h>
->  #include <linux/delay.h>
-> +#include <linux/of_address.h>
->  #include <linux/of_platform.h>
->  #include <asm/io.h>
->  
-> diff --git a/drivers/crypto/amcc/crypto4xx_core.c b/drivers/crypto/amcc/crypto4xx_core.c
-> index f88e3d8..efaf630 100644
-> --- a/drivers/crypto/amcc/crypto4xx_core.c
-> +++ b/drivers/crypto/amcc/crypto4xx_core.c
-> @@ -27,6 +27,9 @@
->  #include <linux/dma-mapping.h>
->  #include <linux/platform_device.h>
->  #include <linux/init.h>
-> +#include <linux/module.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_irq.h>
->  #include <linux/of_platform.h>
->  #include <linux/slab.h>
->  #include <asm/dcr.h>
-> diff --git a/drivers/dma/ppc4xx/adma.c b/drivers/dma/ppc4xx/adma.c
-> index 370ff82..e24b5ef 100644
-> --- a/drivers/dma/ppc4xx/adma.c
-> +++ b/drivers/dma/ppc4xx/adma.c
-> @@ -42,6 +42,8 @@
->  #include <linux/uaccess.h>
->  #include <linux/proc_fs.h>
->  #include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_irq.h>
->  #include <linux/of_platform.h>
->  #include <asm/dcr.h>
->  #include <asm/dcr-regs.h>
-> -- 
-> 1.8.1.2
+> 
+> > > +
+> > > +	ret = snd_soc_register_component(&pdev->dev, &fsl_component,
+> > > +			&fsl_sai_dai, 1);
+> > > +	if (ret)
+> > > +		return ret;
+> > > +
+> > > +	ret = fsl_pcm_dma_init(pdev);
+> > > +	if (ret)
+> > > +		goto out;
+> 
 > 
 
 -- 
