@@ -1,24 +1,21 @@
-Return-Path: <msalter@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 0AE992C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 02:56:05 +1100 (EST)
-Message-ID: <1384271711.24631.5.camel@deneb.redhat.com>
-Subject: Re: [PATCH 00/11] Consolidate asm/fixmap.h files
-From: Mark Salter <msalter@redhat.com>
-To: monstr@monstr.eu
-Date: Tue, 12 Nov 2013 10:55:11 -0500
-In-Reply-To: <52824BBC.9020401@monstr.eu>
-References: <1384262545-20875-1-git-send-email-msalter@redhat.com>
- <52824BBC.9020401@monstr.eu>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- James Hogan <james.hogan@imgtec.com>, Russell King <linux@arm.linux.org.uk>,
- Arnd Bergmann <arnd@arndb.de>, linux-hexagon@vger.kernel.org,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Richard Kuo <rkuo@codeaurora.org>, microblaze-uclinux@itee.uq.edu.au,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E917F2C00BC
+ for <linuxppc-dev@ozlabs.org>; Wed, 13 Nov 2013 03:28:02 +1100 (EST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1822\))
+Subject: Re: [PATCH V2] powerpc/85xx: Merge 85xx/p1023_defconfig into
+ mpc85xx_smp_defconfig and mpc85xx_defconfig
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1384197913-24610-1-git-send-email-Lijun.Pan@freescale.com>
+Date: Tue, 12 Nov 2013 10:27:56 -0600
+Message-Id: <B1190D51-6D79-43C6-8021-2E2F1ED59722@kernel.crashing.org>
+References: <1383952632-5770-1-git-send-email-Lijun.Pan@freescale.com>
+ <1384197913-24610-1-git-send-email-Lijun.Pan@freescale.com>
+To: Lijun Pan <Lijun.Pan@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-11-12 at 16:39 +0100, Michal Simek wrote:
-> On 11/12/2013 02:22 PM, Mark Salter wrote:
-> > 
-> >  arch/arm/include/asm/fixmap.h        |  25 ++------
-> >  arch/hexagon/include/asm/fixmap.h    |  40 +------------
-> >  arch/metag/include/asm/fixmap.h      |  32 +----------
-> >  arch/microblaze/include/asm/fixmap.h |  44 +-------------
-> >  arch/mips/include/asm/fixmap.h       |  33 +----------
-> >  arch/powerpc/include/asm/fixmap.h    |  44 +-------------
-> >  arch/sh/include/asm/fixmap.h         |  39 +------------
-> >  arch/tile/include/asm/fixmap.h       |  33 +----------
-> >  arch/um/include/asm/fixmap.h         |  40 +------------
-> >  arch/x86/include/asm/fixmap.h        |  59 +------------------
-> >  include/asm-generic/fixmap.h         | 107 +++++++++++++++++++++++++++++++++++
-> >  11 files changed, 125 insertions(+), 371 deletions(-)
-> >  create mode 100644 include/asm-generic/fixmap.h
-> 
-> Any repo/branch with all these patches will be helpful.
 
-https://github.com/mosalter/linux (fixmap branch)
+On Nov 11, 2013, at 1:25 PM, Lijun Pan <Lijun.Pan@freescale.com> wrote:
+
+> mpc85xx_smp_defconfig and mpc85xx_defconfig already have =
+CONFIG_P1023RDS=3Dy.
+> Merge CONFIG_P1023RDB=3Dy and other relevant configurations into =
+mpc85xx_smp_defconfig and mpc85_defconfig.
+>=20
+> Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
+> ---
+> arch/powerpc/configs/85xx/p1023_defconfig  |  188 =
+----------------------------
+> arch/powerpc/configs/mpc85xx_defconfig     |   18 +++
+> arch/powerpc/configs/mpc85xx_smp_defconfig |   17 +++
+> 3 files changed, 35 insertions(+), 188 deletions(-)
+> delete mode 100644 arch/powerpc/configs/85xx/p1023_defconfig
+
+How much of the changes to mpc85xx_defconfig & mpc85xx_smp_defconfig are =
+based on just updating them vs changes for p1023?
+
+Can we do this as two patches.  One that updates mpc85xx_defconfig & =
+mpc85xx_smp_defconfig and one that makes the p1023 changes.  That is =
+much easier to review as well.
+
+- k=
