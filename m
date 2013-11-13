@@ -1,27 +1,25 @@
-Return-Path: <guangyu.chen@freescale.com>
+Return-Path: <James.Yang@freescale.com>
 Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EC7A72C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2013 01:55:49 +1100 (EST)
-From: Nicolin Chen <b42378@freescale.com>
-To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
- <s.hauer@pengutronix.de>, <timur@tabi.org>, <shawn.guo@linaro.org>,
- <broonie@kernel.org>
-Subject: [PATCH v7 4/4] ARM: dts: imx: use dual-fifo sdma script for ssi
-Date: Wed, 13 Nov 2013 22:55:27 +0800
-Message-ID: <5bfdcb2bc7f0cd6064a3c05e592fa361bf1fe444.1384352281.git.b42378@freescale.com>
-In-Reply-To: <cover.1384352281.git.b42378@freescale.com>
-References: <cover.1384352281.git.b42378@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id EC85B2C0096
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Nov 2013 04:20:30 +1100 (EST)
+Date: Wed, 13 Nov 2013 11:20:19 -0600
+From: James Yang <James.Yang@freescale.com>
+To: pegasus <aijazbaig1.new@gmail.com>
+Subject: Re: BookE "branch taken" behavior vis-a-vis updating the NIP register
+In-Reply-To: <1384241835150-78036.post@n7.nabble.com>
+Message-ID: <alpine.LRH.2.00.1311131100260.25664@ra8135-ec1.am.freescale.net>
+References: <1383907583944-77960.post@n7.nabble.com>
+ <alpine.LRH.2.00.1311101509570.9815@ra8135-ec1.am.freescale.net>
+ <1384156293077-78004.post@n7.nabble.com>
+ <alpine.LRH.2.00.1311111312390.25474@ra8135-ec1.am.freescale.net>
+ <1384241835150-78036.post@n7.nabble.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- swarren@wwwdotorg.org, linux-kernel@vger.kernel.org, rob.herring@calxeda.com,
- dmaengine@vger.kernel.org, ijc+devicetree@hellion.org.uk,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,120 +29,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use dual-fifo sdma scripts instead of shared scripts for ssi on i.MX series.
+On Tue, 12 Nov 2013, pegasus wrote:
 
-Signed-off-by: Nicolin Chen <b42378@freescale.com>
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
----
- arch/arm/boot/dts/imx51.dtsi   |  4 ++--
- arch/arm/boot/dts/imx53.dtsi   |  4 ++--
- arch/arm/boot/dts/imx6qdl.dtsi | 12 ++++++------
- arch/arm/boot/dts/imx6sl.dtsi  | 12 ++++++------
- 4 files changed, 16 insertions(+), 16 deletions(-)
+> So, off I went and downloaded the latest version of 
+> arch/powerpc/kernel/traps.c hoping to see those very changes in 
+> them. However it didn't match one on one with what was written in 
+> that thread. Ditto for the other files in your patch. Looks like 
+> your patch didn't make it to upstream but it looks exactly like what 
+> I need here. 
 
-diff --git a/arch/arm/boot/dts/imx51.dtsi b/arch/arm/boot/dts/imx51.dtsi
-index 54cee65..1a71eac 100644
---- a/arch/arm/boot/dts/imx51.dtsi
-+++ b/arch/arm/boot/dts/imx51.dtsi
-@@ -154,8 +154,8 @@
- 					reg = <0x70014000 0x4000>;
- 					interrupts = <30>;
- 					clocks = <&clks 49>;
--					dmas = <&sdma 24 1 0>,
--					       <&sdma 25 1 0>;
-+					dmas = <&sdma 24 22 0>,
-+					       <&sdma 25 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <25 24 23 22>; /* TX0 RX0 TX1 RX1 */
-diff --git a/arch/arm/boot/dts/imx53.dtsi b/arch/arm/boot/dts/imx53.dtsi
-index 4307e80..7208fde 100644
---- a/arch/arm/boot/dts/imx53.dtsi
-+++ b/arch/arm/boot/dts/imx53.dtsi
-@@ -153,8 +153,8 @@
- 					reg = <0x50014000 0x4000>;
- 					interrupts = <30>;
- 					clocks = <&clks 49>;
--					dmas = <&sdma 24 1 0>,
--					       <&sdma 25 1 0>;
-+					dmas = <&sdma 24 22 0>,
-+					       <&sdma 25 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <25 24 23 22>; /* TX0 RX0 TX1 RX1 */
-diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-index 57e9c38..6e096ca 100644
---- a/arch/arm/boot/dts/imx6qdl.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl.dtsi
-@@ -223,8 +223,8 @@
- 					reg = <0x02028000 0x4000>;
- 					interrupts = <0 46 0x04>;
- 					clocks = <&clks 178>;
--					dmas = <&sdma 37 1 0>,
--					       <&sdma 38 1 0>;
-+					dmas = <&sdma 37 22 0>,
-+					       <&sdma 38 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <38 37>;
-@@ -236,8 +236,8 @@
- 					reg = <0x0202c000 0x4000>;
- 					interrupts = <0 47 0x04>;
- 					clocks = <&clks 179>;
--					dmas = <&sdma 41 1 0>,
--					       <&sdma 42 1 0>;
-+					dmas = <&sdma 41 22 0>,
-+					       <&sdma 42 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <42 41>;
-@@ -249,8 +249,8 @@
- 					reg = <0x02030000 0x4000>;
- 					interrupts = <0 48 0x04>;
- 					clocks = <&clks 180>;
--					dmas = <&sdma 45 1 0>,
--					       <&sdma 46 1 0>;
-+					dmas = <&sdma 45 22 0>,
-+					       <&sdma 46 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					fsl,ssi-dma-events = <46 45>;
-diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
-index c46651e..b32ba99 100644
---- a/arch/arm/boot/dts/imx6sl.dtsi
-+++ b/arch/arm/boot/dts/imx6sl.dtsi
-@@ -195,8 +195,8 @@
- 					reg = <0x02028000 0x4000>;
- 					interrupts = <0 46 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI1>;
--					dmas = <&sdma 37 1 0>,
--					       <&sdma 38 1 0>;
-+					dmas = <&sdma 37 22 0>,
-+					       <&sdma 38 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
-@@ -207,8 +207,8 @@
- 					reg = <0x0202c000 0x4000>;
- 					interrupts = <0 47 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI2>;
--					dmas = <&sdma 41 1 0>,
--					       <&sdma 42 1 0>;
-+					dmas = <&sdma 41 22 0>,
-+					       <&sdma 42 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
-@@ -219,8 +219,8 @@
- 					reg = <0x02030000 0x4000>;
- 					interrupts = <0 48 0x04>;
- 					clocks = <&clks IMX6SL_CLK_SSI3>;
--					dmas = <&sdma 45 1 0>,
--					       <&sdma 46 1 0>;
-+					dmas = <&sdma 45 22 0>,
-+					       <&sdma 46 22 0>;
- 					dma-names = "rx", "tx";
- 					fsl,fifo-depth = <15>;
- 					status = "disabled";
--- 
-1.8.4
+The patches were posted RFC -- request for comment.  Thank you for 
+posting your comments.
+
+
+>  So requesting PTRACE_CONT has to happen inside the SIGTRAP signal 
+> handler right? 
+
+After you get the SIGTRAP from the branch, yeah.
+
+
+> Now as for the second patch, as far as I can see, implements the 
+> same functionality. However it makes the change permanent and any 
+> tool which is used to the NIP pointing to the branch target will be 
+> broken.
+
+The second patch places the burden of determining if you are BookE or 
+server on the tool.  I feel this is important because the Server and 
+Book-E branch exceptions are fundamentally incompatible, and the 
+behavior of PTRACE_SINGLEBLOCK can not be made to be identical by the 
+kernel for both subarch, so a tool will have to adjust accordingly.
+
+
+> Anyways, for me either of them will work. But I think the first patch makes
+> everyone happy by using the 'addr' field of ptrace. This also means I will
+> have to make my (broken) ptrace working which, it seems is not as easy
+> adding an enum field as you suggested. May be theres a check somewhere in
+> the actual ptrace code which checks for illegal values and hence even after
+> adding an enum, it is being reported as illegal in my case. However getting
+> that to work is another story.
+
+Actually, I provided the first patch to show why it probably should 
+not be done even though technically possible, since it requires ptrace 
+API to be extended to now recognize addr field, needs a TIF flag, etc.  
+The second patch seems to me more reasonable to support, since nobody 
+has come forth to say that there are actually any tools that rely upon 
+the existing hack for BookE or even PTRACE_SINGLEBLOCK.  And the 
+existing hack's behavior makes things somewhat useless on BookE, as 
+you and I have confirmed.
+
+ 
+> Please confirm my understanding of your patches and since these 
+> patches have not made their way to the upstream kernel, will have to 
+> use them myself directly. By the way, I'm using 2.6.32.10 (you 
+> know..the long-term kernel) and I couldn't find any of your changes 
+> in them but then again I couldn't find it in the latest 3.12 version 
+> either.
+
+
+You will have to backport the patches to your kernel if you want to 
+use them.  Both patches change the behavior of existing API, and I 
+guess we are still waiting to hear if anyone cares which way it should 
+be fixed.
