@@ -4,15 +4,15 @@ Received: from co1outboundpool.messaging.microsoft.com
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 994432C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2013 01:55:46 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id EC7A72C00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2013 01:55:49 +1100 (EST)
 From: Nicolin Chen <b42378@freescale.com>
 To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
  <s.hauer@pengutronix.de>, <timur@tabi.org>, <shawn.guo@linaro.org>,
  <broonie@kernel.org>
-Subject: [PATCH v7 3/4] ASoC: fsl_ssi: Add dual fifo mode support
-Date: Wed, 13 Nov 2013 22:55:26 +0800
-Message-ID: <6ee839eec507d6b928beb7c04765acfa9cca8d7a.1384352281.git.b42378@freescale.com>
+Subject: [PATCH v7 4/4] ARM: dts: imx: use dual-fifo sdma script for ssi
+Date: Wed, 13 Nov 2013 22:55:27 +0800
+Message-ID: <5bfdcb2bc7f0cd6064a3c05e592fa361bf1fe444.1384352281.git.b42378@freescale.com>
 In-Reply-To: <cover.1384352281.git.b42378@freescale.com>
 References: <cover.1384352281.git.b42378@freescale.com>
 MIME-Version: 1.0
@@ -31,81 +31,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By enabling dual fifo mode, it would allow SSI enter a better performance
-to transimit/receive data without occasional hardware underrun/overrun.
+Use dual-fifo sdma scripts instead of shared scripts for ssi on i.MX series.
 
 Signed-off-by: Nicolin Chen <b42378@freescale.com>
-Acked-by: Timur Tabi <timur@tabi.org>
-Acked-by: Mark Brown <broonie@linaro.org>
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 ---
- sound/soc/fsl/fsl_ssi.c | 27 ++++++++++++++++++++++++++-
- 1 file changed, 26 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/imx51.dtsi   |  4 ++--
+ arch/arm/boot/dts/imx53.dtsi   |  4 ++--
+ arch/arm/boot/dts/imx6qdl.dtsi | 12 ++++++------
+ arch/arm/boot/dts/imx6sl.dtsi  | 12 ++++++------
+ 4 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 35e2773..f43be6d 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -143,6 +143,7 @@ struct fsl_ssi_private {
- 	bool ssi_on_imx;
- 	bool imx_ac97;
- 	bool use_dma;
-+	bool use_dual_fifo;
- 	struct clk *clk;
- 	struct snd_dmaengine_dai_dma_data dma_params_tx;
- 	struct snd_dmaengine_dai_dma_data dma_params_rx;
-@@ -413,6 +414,12 @@ static int fsl_ssi_setup(struct fsl_ssi_private *ssi_private)
- 		write_ssi(CCSR_SSI_SOR_WAIT(3), &ssi->sor);
- 	}
- 
-+	if (ssi_private->use_dual_fifo) {
-+		write_ssi_mask(&ssi->srcr, 0, CCSR_SSI_SRCR_RFEN1);
-+		write_ssi_mask(&ssi->stcr, 0, CCSR_SSI_STCR_TFEN1);
-+		write_ssi_mask(&ssi->scr, 0, CCSR_SSI_SCR_TCH_EN);
-+	}
-+
- 	return 0;
- }
- 
-@@ -480,6 +487,15 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
- 		ssi_private->second_stream = substream;
- 	}
- 
-+	/* When using dual fifo mode, it is safer to ensure an even period
-+	 * size. If appearing to an odd number while DMA always starts its
-+	 * task from fifo0, fifo1 would be neglected at the end of each
-+	 * period. But SSI would still access fifo1 with an invalid data.
-+	 */
-+	if (ssi_private->use_dual_fifo)
-+		snd_pcm_hw_constraint_step(substream->runtime, 0,
-+				SNDRV_PCM_HW_PARAM_PERIOD_SIZE, 2);
-+
- 	return 0;
- }
- 
-@@ -947,7 +963,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 		ssi_private->fifo_depth = 8;
- 
- 	if (of_device_is_compatible(pdev->dev.of_node, "fsl,imx21-ssi")) {
--		u32 dma_events[2];
-+		u32 dma_events[2], dmas[4];
- 		ssi_private->ssi_on_imx = true;
- 
- 		ssi_private->clk = devm_clk_get(&pdev->dev, NULL);
-@@ -1001,6 +1017,15 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 			dma_events[0], shared ? IMX_DMATYPE_SSI_SP : IMX_DMATYPE_SSI);
- 		imx_pcm_dma_params_init_data(&ssi_private->filter_data_rx,
- 			dma_events[1], shared ? IMX_DMATYPE_SSI_SP : IMX_DMATYPE_SSI);
-+		if (!of_property_read_u32_array(pdev->dev.of_node, "dmas", dmas, 4)
-+				&& dmas[2] == IMX_DMATYPE_SSI_DUAL) {
-+			ssi_private->use_dual_fifo = true;
-+			/* When using dual fifo mode, we need to keep watermark
-+			 * as even numbers due to dma script limitation.
-+			 */
-+			ssi_private->dma_params_tx.maxburst &= ~0x1;
-+			ssi_private->dma_params_rx.maxburst &= ~0x1;
-+		}
- 	} else if (ssi_private->use_dma) {
- 		/* The 'name' should not have any slashes in it. */
- 		ret = devm_request_irq(&pdev->dev, ssi_private->irq,
+diff --git a/arch/arm/boot/dts/imx51.dtsi b/arch/arm/boot/dts/imx51.dtsi
+index 54cee65..1a71eac 100644
+--- a/arch/arm/boot/dts/imx51.dtsi
++++ b/arch/arm/boot/dts/imx51.dtsi
+@@ -154,8 +154,8 @@
+ 					reg = <0x70014000 0x4000>;
+ 					interrupts = <30>;
+ 					clocks = <&clks 49>;
+-					dmas = <&sdma 24 1 0>,
+-					       <&sdma 25 1 0>;
++					dmas = <&sdma 24 22 0>,
++					       <&sdma 25 22 0>;
+ 					dma-names = "rx", "tx";
+ 					fsl,fifo-depth = <15>;
+ 					fsl,ssi-dma-events = <25 24 23 22>; /* TX0 RX0 TX1 RX1 */
+diff --git a/arch/arm/boot/dts/imx53.dtsi b/arch/arm/boot/dts/imx53.dtsi
+index 4307e80..7208fde 100644
+--- a/arch/arm/boot/dts/imx53.dtsi
++++ b/arch/arm/boot/dts/imx53.dtsi
+@@ -153,8 +153,8 @@
+ 					reg = <0x50014000 0x4000>;
+ 					interrupts = <30>;
+ 					clocks = <&clks 49>;
+-					dmas = <&sdma 24 1 0>,
+-					       <&sdma 25 1 0>;
++					dmas = <&sdma 24 22 0>,
++					       <&sdma 25 22 0>;
+ 					dma-names = "rx", "tx";
+ 					fsl,fifo-depth = <15>;
+ 					fsl,ssi-dma-events = <25 24 23 22>; /* TX0 RX0 TX1 RX1 */
+diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
+index 57e9c38..6e096ca 100644
+--- a/arch/arm/boot/dts/imx6qdl.dtsi
++++ b/arch/arm/boot/dts/imx6qdl.dtsi
+@@ -223,8 +223,8 @@
+ 					reg = <0x02028000 0x4000>;
+ 					interrupts = <0 46 0x04>;
+ 					clocks = <&clks 178>;
+-					dmas = <&sdma 37 1 0>,
+-					       <&sdma 38 1 0>;
++					dmas = <&sdma 37 22 0>,
++					       <&sdma 38 22 0>;
+ 					dma-names = "rx", "tx";
+ 					fsl,fifo-depth = <15>;
+ 					fsl,ssi-dma-events = <38 37>;
+@@ -236,8 +236,8 @@
+ 					reg = <0x0202c000 0x4000>;
+ 					interrupts = <0 47 0x04>;
+ 					clocks = <&clks 179>;
+-					dmas = <&sdma 41 1 0>,
+-					       <&sdma 42 1 0>;
++					dmas = <&sdma 41 22 0>,
++					       <&sdma 42 22 0>;
+ 					dma-names = "rx", "tx";
+ 					fsl,fifo-depth = <15>;
+ 					fsl,ssi-dma-events = <42 41>;
+@@ -249,8 +249,8 @@
+ 					reg = <0x02030000 0x4000>;
+ 					interrupts = <0 48 0x04>;
+ 					clocks = <&clks 180>;
+-					dmas = <&sdma 45 1 0>,
+-					       <&sdma 46 1 0>;
++					dmas = <&sdma 45 22 0>,
++					       <&sdma 46 22 0>;
+ 					dma-names = "rx", "tx";
+ 					fsl,fifo-depth = <15>;
+ 					fsl,ssi-dma-events = <46 45>;
+diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
+index c46651e..b32ba99 100644
+--- a/arch/arm/boot/dts/imx6sl.dtsi
++++ b/arch/arm/boot/dts/imx6sl.dtsi
+@@ -195,8 +195,8 @@
+ 					reg = <0x02028000 0x4000>;
+ 					interrupts = <0 46 0x04>;
+ 					clocks = <&clks IMX6SL_CLK_SSI1>;
+-					dmas = <&sdma 37 1 0>,
+-					       <&sdma 38 1 0>;
++					dmas = <&sdma 37 22 0>,
++					       <&sdma 38 22 0>;
+ 					dma-names = "rx", "tx";
+ 					fsl,fifo-depth = <15>;
+ 					status = "disabled";
+@@ -207,8 +207,8 @@
+ 					reg = <0x0202c000 0x4000>;
+ 					interrupts = <0 47 0x04>;
+ 					clocks = <&clks IMX6SL_CLK_SSI2>;
+-					dmas = <&sdma 41 1 0>,
+-					       <&sdma 42 1 0>;
++					dmas = <&sdma 41 22 0>,
++					       <&sdma 42 22 0>;
+ 					dma-names = "rx", "tx";
+ 					fsl,fifo-depth = <15>;
+ 					status = "disabled";
+@@ -219,8 +219,8 @@
+ 					reg = <0x02030000 0x4000>;
+ 					interrupts = <0 48 0x04>;
+ 					clocks = <&clks IMX6SL_CLK_SSI3>;
+-					dmas = <&sdma 45 1 0>,
+-					       <&sdma 46 1 0>;
++					dmas = <&sdma 45 22 0>,
++					       <&sdma 46 22 0>;
+ 					dma-names = "rx", "tx";
+ 					fsl,fifo-depth = <15>;
+ 					status = "disabled";
 -- 
 1.8.4
