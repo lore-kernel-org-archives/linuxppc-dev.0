@@ -1,24 +1,25 @@
-Return-Path: <neorf3k@gmail.com>
-Received: from mail-ee0-x235.google.com (mail-ee0-x235.google.com
- [IPv6:2a00:1450:4013:c00::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 697202C00B7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2013 00:48:36 +1100 (EST)
-Received: by mail-ee0-f53.google.com with SMTP id b57so190837eek.40
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 05:48:31 -0800 (PST)
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1822\))
-Subject: Re: Problem reading and programming memory location...
-From: neorf3k <neorf3k@gmail.com>
-In-Reply-To: <20131113083259.1b69ed18@crub>
-Date: Wed, 13 Nov 2013 14:48:24 +0100
-Message-Id: <50EBA514-5BB1-40B3-B27B-309A829D2E05@gmail.com>
-References: <985685C7-0122-4D45-96D1-4412E9774A5D@gmail.com>
- <20131113083259.1b69ed18@crub>
-To: Anatolij Gustschin <agust@denx.de>
-Cc: Linux Ppc Dev List Dev List <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <guangyu.chen@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 858A92C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2013 01:55:32 +1100 (EST)
+From: Nicolin Chen <b42378@freescale.com>
+To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
+ <s.hauer@pengutronix.de>, <timur@tabi.org>, <shawn.guo@linaro.org>,
+ <broonie@kernel.org>
+Subject: [PATCH v7 0/4] Add dual-fifo mode support of i.MX ssi
+Date: Wed, 13 Nov 2013 22:55:23 +0800
+Message-ID: <cover.1384352281.git.b42378@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
+ swarren@wwwdotorg.org, linux-kernel@vger.kernel.org, rob.herring@calxeda.com,
+ dmaengine@vger.kernel.org, ijc+devicetree@hellion.org.uk,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +29,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Yes, that is a device on the lpb via an fpga. We  have tried to =
-configure the chip select 4 configuration register at address MBAR + =
-0x0310, and it seems to be ok. what do you mean with =93chip select =
-parameters=94?
-We have been able to edit it in U-BOOT, and the board (that chip) now =
-works=85
-The strange thing, is that when we read in linux, at that address, we =
-see other content value=85
-Suggestions?
+ * ! This series of patches has a direct dependency between them. When
+ * ! applying them, we need to apply to one single branch. Otherwise,
+ * ! it would break currect branches.
 
-Thanks
+Changelog
+v7:
+ * Appended missing Acked-by to all four patches.
+ * Sorry that I didn't add them at the first place.
+v6:
+ * PATCH-1: Use goto err_firmware instead of return directly.
+ *
+ * Nothing changes for the other three ack-ed patches
+v5:
+ * PATCH-3: Add period size constraint when using dual fifo mode
+ *
+ * Nothing changes for the other three patches
+v4:
+ * PATCH-3: Drop useless register configuration.
+ *
+ * Nothing changes for the other three patches
+v3:
+ * PATCH-1: Add comments to indicate the end of v1 and v2 array.
+ * PATCH-3: Use better way to keep watermark as even number.
+ *
+ * Nothing changes for PATCH-2 and PATCH-4
+v2:
+ * Instead of adding rogue scripts to current SDMA driver based on firmware
+ * V1, we define the new SDMA firmware as version 2 and bisect the PATCH-1
+ * to two patches: The first is to add version check code to the SDMA driver;
+ * And the second is to add SSI dual FIFO DMATYPE.
+ *
+ * Nothing changes for the last two patches.
+v1:
+ * SSI can reduce hardware overrun/underrun possibility when using dual
+ * fifo mode. To support this mode, we need to first update sdma sciprt
+ * list, and then enable dual fifo BIT in SSI driver, and last update DT
+ * bindings of i.MX series.
 
-Lorenzo
+Nicolin Chen (4):
+  dma: imx-sdma: Add sdma firmware version 2 support
+  dma: imx-sdma: Add new dma type for ssi dual fifo script
+  ASoC: fsl_ssi: Add dual fifo mode support
+  ARM: dts: imx: use dual-fifo sdma script for ssi
 
-On 13/nov/2013, at 08:32 AM, Anatolij Gustschin <agust@denx.de> wrote:
+ .../devicetree/bindings/dma/fsl-imx-sdma.txt       |  1 +
+ arch/arm/boot/dts/imx51.dtsi                       |  4 ++--
+ arch/arm/boot/dts/imx53.dtsi                       |  4 ++--
+ arch/arm/boot/dts/imx6qdl.dtsi                     | 12 +++++-----
+ arch/arm/boot/dts/imx6sl.dtsi                      | 12 +++++-----
+ drivers/dma/imx-sdma.c                             | 19 ++++++++++++++-
+ include/linux/platform_data/dma-imx-sdma.h         |  5 ++++
+ include/linux/platform_data/dma-imx.h              |  1 +
+ sound/soc/fsl/fsl_ssi.c                            | 27 +++++++++++++++++++++-
+ 9 files changed, 67 insertions(+), 18 deletions(-)
 
-> On Tue, 12 Nov 2013 20:23:20 +0100
-> neorf3k <neorf3k@gmail.com> wrote:
->=20
->> we have tried to read and program an 8bit register with 32bit =
-address.
->> we have mapped it with: ioremap, kmalloc etc=85 and then using: outb,
->> iowrite8 etc.. but when we write to it, the value doesn=92t change=85
->> with other memory location is ok.
->> That is an 8 bit register, located at 0x10020000 in a mpc5200b
->> architecture. we are using kernel 2.6.33.=20
->> what could be?
->=20
-> 0x10020000 is not in the internal register memory map, so it
-> is probably a device on the LocalPlus bus. Did you configure
-> the chip select parameters for this device and did you enable
-> the associated chip select?
->=20
-> HTH,
->=20
-> Anatolij
->=20
+-- 
+1.8.4
