@@ -1,26 +1,24 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 15D502C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 22:57:04 +1100 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Florian Fainelli <f.fainelli@gmail.com>, "shh.xie@gmail.com"
- <shh.xie@gmail.com>
-Subject: RE: [PATCH 2/4] phylib: Add generic 10G driver
-Date: Wed, 13 Nov 2013 11:56:41 +0000
-Message-ID: <ED492CCEAF882048BC2237DE806547C915128553@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1384168049-2899-1-git-send-email-shh.xie@gmail.com>
- <CAGVrzcZa2-yduRDxwGnYeoLJcRFjDr9OHtkUReAPF0cDseamJg@mail.gmail.com>
-In-Reply-To: <CAGVrzcZa2-yduRDxwGnYeoLJcRFjDr9OHtkUReAPF0cDseamJg@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Shruti Kanetkar <Shruti@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+Return-Path: <neorf3k@gmail.com>
+Received: from mail-ee0-x235.google.com (mail-ee0-x235.google.com
+ [IPv6:2a00:1450:4013:c00::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 697202C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2013 00:48:36 +1100 (EST)
+Received: by mail-ee0-f53.google.com with SMTP id b57so190837eek.40
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 05:48:31 -0800 (PST)
+Content-Type: text/plain; charset=windows-1252
+Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1822\))
+Subject: Re: Problem reading and programming memory location...
+From: neorf3k <neorf3k@gmail.com>
+In-Reply-To: <20131113083259.1b69ed18@crub>
+Date: Wed, 13 Nov 2013 14:48:24 +0100
+Message-Id: <50EBA514-5BB1-40B3-B27B-309A829D2E05@gmail.com>
+References: <985685C7-0122-4D45-96D1-4412E9774A5D@gmail.com>
+ <20131113083259.1b69ed18@crub>
+To: Anatolij Gustschin <agust@denx.de>
+Cc: Linux Ppc Dev List Dev List <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,135 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGVsbG8sIEZsb3JpYW4sDQoNClRoYW5rIHlvdSBmb3IgcmV2aWV3aW5nIHRoZSBwYXRjaGVzIQ0K
-UGxlYXNlIHNlZSBteSBjb21tZW50cyBpbmxpbmUuDQoNCkJlc3QgUmVnYXJkcywgDQpTaGFvaHVp
-IFhpZQ0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRmxvcmlhbiBG
-YWluZWxsaSBbbWFpbHRvOmYuZmFpbmVsbGlAZ21haWwuY29tXQ0KPiBTZW50OiBXZWRuZXNkYXks
-IE5vdmVtYmVyIDEzLCAyMDEzIDE6NTQgQU0NCj4gVG86IHNoaC54aWVAZ21haWwuY29tDQo+IENj
-OiBsaW51eHBwYy1kZXY7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IEJ1Y3VyIE1hZGFs
-aW4tQ3Jpc3RpYW4tDQo+IEIzMjcxNjsgS2FuZXRrYXIgU2hydXRpLUI0NDQ1NDsgWGllIFNoYW9o
-dWktQjIxOTg5DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi80XSBwaHlsaWI6IEFkZCBnZW5lcmlj
-IDEwRyBkcml2ZXINCj4gDQo+IEhlbGxvIFNoYW9odWksDQo+IA0KPiAyMDEzLzExLzExICA8c2ho
-LnhpZUBnbWFpbC5jb20+Og0KPiA+IEZyb206IEFuZHkgRmxlbWluZw0KPiA+DQo+ID4gVmVyeSBp
-bmNvbXBsZXRlLCBidXQgd2lsbCBhbGxvdyBmb3IgYmluZGluZyBhbiBldGhlcm5ldCBjb250cm9s
-bGVyIHRvDQo+ID4gaXQuDQo+ID4NCj4gPiBBbHNvLCBBZGQgWEdNSUkgaW50ZXJmYWNlIHR5cGUN
-Cj4gDQo+IFNvIHRoYXQgc2hvdWxkIGJlIHR3byBzZXBhcmF0ZSBwYXRjaGVzLCBhbmQNCj4gZHJp
-dmVycy9vZi9vZl9uZXQuYzo6b2ZfZ2V0X3BoeV9tb2RlKCkgbXVzdCBiZSB1cGRhdGVkIHRvIGtu
-b3cgYWJvdXQNCj4gWE1HSUkuDQo+IA0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogQW5keSBGbGVt
-aW5nDQo+IA0KPiBNaXNzaW5nIEFuZHkncyBTaWduZWQtb2ZmLWJ5IHRhZy4NCltTLkhdIFdpbGwg
-YWRkIGluIG5leHQgdmVyc2lvbiwgSSByZW1vdmVkIGl0IHRvIG1ha2UgZ2l0IHdvcmsgc2luY2Ug
-QW5keSdzIGUtbWFpbCBhZGRyZXNzIGlzIG5vdCB2YWxpZC4NCg0KPiANCj4gPiBTaWduZWQtb2Zm
-LWJ5OiBTaGFvaHVpIFhpZSA8U2hhb2h1aS5YaWVAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4g
-PiAgZHJpdmVycy9uZXQvcGh5L3BoeV9kZXZpY2UuYyB8IDEwMQ0KPiArKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKystDQo+ID4gIGluY2x1ZGUvbGludXgvcGh5LmggICAg
-ICAgICAgfCAgIDEgKw0KPiA+ICAyIGZpbGVzIGNoYW5nZWQsIDEwMSBpbnNlcnRpb25zKCspLCAx
-IGRlbGV0aW9uKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvcGh5L3BoeV9k
-ZXZpY2UuYw0KPiA+IGIvZHJpdmVycy9uZXQvcGh5L3BoeV9kZXZpY2UuYyBpbmRleCA3NDYzMGU5
-Li4zMGJmMmQ1IDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvbmV0L3BoeS9waHlfZGV2aWNlLmMN
-Cj4gPiArKysgYi9kcml2ZXJzL25ldC9waHkvcGh5X2RldmljZS5jDQo+ID4gQEAgLTMyLDYgKzMy
-LDcgQEANCj4gPiAgI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KPiA+ICAjaW5jbHVkZSA8bGlu
-dXgvbWlpLmg+DQo+ID4gICNpbmNsdWRlIDxsaW51eC9ldGh0b29sLmg+DQo+ID4gKyNpbmNsdWRl
-IDxsaW51eC9tZGlvLmg+DQo+ID4gICNpbmNsdWRlIDxsaW51eC9waHkuaD4NCj4gPg0KPiA+ICAj
-aW5jbHVkZSA8YXNtL2lvLmg+DQo+ID4gQEAgLTY4OSw2ICs2OTAsMTMgQEAgc3RhdGljIGludCBn
-ZW5waHlfY29uZmlnX2FkdmVydChzdHJ1Y3QgcGh5X2RldmljZQ0KPiAqcGh5ZGV2KQ0KPiA+ICAg
-ICAgICAgcmV0dXJuIGNoYW5nZWQ7DQo+ID4gIH0NCj4gPg0KPiA+ICtpbnQgZ2VuMTBnX2NvbmZp
-Z19hZHZlcnQoc3RydWN0IHBoeV9kZXZpY2UgKmRldikgew0KPiA+ICsgICAgICAgcmV0dXJuIDA7
-DQo+ID4gK30NCj4gPiArRVhQT1JUX1NZTUJPTChnZW4xMGdfY29uZmlnX2FkdmVydCk7DQo+ID4g
-Kw0KPiA+ICsNCj4gPiAgLyoqDQo+ID4gICAqIGdlbnBoeV9zZXR1cF9mb3JjZWQgLSBjb25maWd1
-cmVzL2ZvcmNlcyBzcGVlZC9kdXBsZXggZnJvbSBAcGh5ZGV2DQo+ID4gICAqIEBwaHlkZXY6IHRh
-cmdldCBwaHlfZGV2aWNlIHN0cnVjdA0KPiA+IEBAIC03NDIsNiArNzUwLDEyIEBAIGludCBnZW5w
-aHlfcmVzdGFydF9hbmVnKHN0cnVjdCBwaHlfZGV2aWNlDQo+ID4gKnBoeWRldikgIH0gIEVYUE9S
-VF9TWU1CT0woZ2VucGh5X3Jlc3RhcnRfYW5lZyk7DQo+ID4NCj4gPiAraW50IGdlbjEwZ19yZXN0
-YXJ0X2FuZWcoc3RydWN0IHBoeV9kZXZpY2UgKnBoeWRldikgew0KPiA+ICsgICAgICAgcmV0dXJu
-IDA7DQo+ID4gK30NCj4gPiArRVhQT1JUX1NZTUJPTChnZW4xMGdfcmVzdGFydF9hbmVnKTsNCj4g
-PiArDQo+ID4NCj4gPiAgLyoqDQo+ID4gICAqIGdlbnBoeV9jb25maWdfYW5lZyAtIHJlc3RhcnQg
-YXV0by1uZWdvdGlhdGlvbiBvciB3cml0ZSBCTUNSIEBADQo+ID4gLTc4NCw2ICs3OTgsMTMgQEAg
-aW50IGdlbnBoeV9jb25maWdfYW5lZyhzdHJ1Y3QgcGh5X2RldmljZSAqcGh5ZGV2KSAgfQ0KPiA+
-IEVYUE9SVF9TWU1CT0woZ2VucGh5X2NvbmZpZ19hbmVnKTsNCj4gPg0KPiA+ICtpbnQgZ2VuMTBn
-X2NvbmZpZ19hbmVnKHN0cnVjdCBwaHlfZGV2aWNlICpwaHlkZXYpIHsNCj4gPiArICAgICAgIHJl
-dHVybiAwOw0KPiA+ICt9DQo+ID4gK0VYUE9SVF9TWU1CT0woZ2VuMTBnX2NvbmZpZ19hbmVnKTsN
-Cj4gPiArDQo+ID4gKw0KPiA+ICAvKioNCj4gPiAgICogZ2VucGh5X3VwZGF0ZV9saW5rIC0gdXBk
-YXRlIGxpbmsgc3RhdHVzIGluIEBwaHlkZXYNCj4gPiAgICogQHBoeWRldjogdGFyZ2V0IHBoeV9k
-ZXZpY2Ugc3RydWN0DQo+ID4gQEAgLTkxMyw2ICs5MzQsMzUgQEAgaW50IGdlbnBoeV9yZWFkX3N0
-YXR1cyhzdHJ1Y3QgcGh5X2RldmljZSAqcGh5ZGV2KQ0KPiA+IH0gIEVYUE9SVF9TWU1CT0woZ2Vu
-cGh5X3JlYWRfc3RhdHVzKTsNCj4gPg0KPiA+ICtpbnQgZ2VuMTBnX3JlYWRfc3RhdHVzKHN0cnVj
-dCBwaHlfZGV2aWNlICpwaHlkZXYpIHsNCj4gPiArICAgICAgIGludCBkZXZhZCwgcmVnOw0KPiA+
-ICsgICAgICAgdTMyIG1tZF9tYXNrID0gcGh5ZGV2LT5jNDVfaWRzLmRldmljZXNfaW5fcGFja2Fn
-ZTsNCj4gPiArDQo+ID4gKyAgICAgICBwaHlkZXYtPmxpbmsgPSAxOw0KPiA+ICsNCj4gPiArICAg
-ICAgIC8qIEZvciBub3cganVzdCBsaWUgYW5kIHNheSBpdCdzIDEwRyBhbGwgdGhlIHRpbWUgKi8N
-Cj4gPiArICAgICAgIHBoeWRldi0+c3BlZWQgPSAxMDAwMDsNCj4gDQo+IENhbiB5b3UgYXQgbGVh
-c3QgbWFrZSB0aGlzIGEgbGl0dGxlIG1vcmUgcHJvb2Y/IFNvbWV0aGluZyBhbG9uZzoNCj4gDQo+
-IGlmIChwaHlkZXYtPnN1cHBvcnRlZCAmIChTVVBQT1JURURfMTAwMDBiYXNlVF9GdWxsKSkNCj4g
-ICAgICAgICAgICAgcGh5ZGV2LT5zcGVlZCA9IFNQRUVEXzEwMDAwOyBlbHNlIGlmIChwaHlkZXYt
-PnN1cHBvcnRlZCAmDQo+IChTVVBQT1JURURfMTAwMGJhc2VUX0Z1bGwpDQo+ICAgICAgICAgICAg
-IHBoeWRldi0+c3BlZWQgPSBTUEVFRF8xMDAwOw0KW1MuSF0gc29tZSAxMEcgUEhZIG9ubHkgc3Vw
-cG9ydCAxMEcgc3BlZWQuDQoNCj4gDQo+IEFsdGhvdWdoIGlkZWFsbHkgd2Ugc2hvdWxkIGJlIHJl
-YWRpbmcgdGhlIHJlbGV2YW50IHJlZ2lzdGVycyB0byBmaWd1cmUNCj4gb3V0IHdoYXQgdG8gZG8u
-DQpbUy5IXSBZZXMsIGNvZGUgYmVsb3cgd2lsbCB0cnkgdG8gcmVhZCB0aGUgbW1kcyB0byBnZXQg
-c3RhdHVzLg0KDQo+IA0KPiA+ICsgICAgICAgcGh5ZGV2LT5kdXBsZXggPSBEVVBMRVhfRlVMTDsN
-Cj4gPiArDQo+ID4gKyAgICAgICBmb3IgKGRldmFkID0gMDsgbW1kX21hc2s7IGRldmFkKyssIG1t
-ZF9tYXNrID0gbW1kX21hc2sgPj4gMSkgew0KPiA+ICsgICAgICAgICAgICAgICBpZiAoIShtbWRf
-bWFzayAmIDEpKQ0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlOw0KPiA+ICsN
-Cj4gPiArICAgICAgICAgICAgICAgLyogUmVhZCB0d2ljZSBiZWNhdXNlIGxpbmsgc3RhdGUgaXMg
-bGF0Y2hlZCBhbmQgYQ0KPiA+ICsgICAgICAgICAgICAgICAgKiByZWFkIG1vdmVzIHRoZSBjdXJy
-ZW50IHN0YXRlIGludG8gdGhlIHJlZ2lzdGVyDQo+ID4gKyAgICAgICAgICAgICAgICAqLw0KPiA+
-ICsgICAgICAgICAgICAgICBwaHlfcmVhZF9tbWQocGh5ZGV2LCBkZXZhZCwgTURJT19TVEFUMSk7
-DQo+ID4gKyAgICAgICAgICAgICAgIHJlZyA9IHBoeV9yZWFkX21tZChwaHlkZXYsIGRldmFkLCBN
-RElPX1NUQVQxKTsNCj4gPiArICAgICAgICAgICAgICAgaWYgKHJlZyA8IDAgfHwgIShyZWcgJiBN
-RElPX1NUQVQxX0xTVEFUVVMpKQ0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIHBoeWRldi0+
-bGluayA9IDA7DQo+ID4gKyAgICAgICB9DQo+ID4gKw0KPiA+ICsgICAgICAgcmV0dXJuIDA7DQo+
-ID4gK30NCj4gPiArRVhQT1JUX1NZTUJPTChnZW4xMGdfcmVhZF9zdGF0dXMpOw0KPiA+ICsNCj4g
-PiArDQo+ID4gIHN0YXRpYyBpbnQgZ2VucGh5X2NvbmZpZ19pbml0KHN0cnVjdCBwaHlfZGV2aWNl
-ICpwaHlkZXYpICB7DQo+ID4gICAgICAgICBpbnQgdmFsOw0KPiA+IEBAIC05NTksNiArMTAwOSwx
-NSBAQCBzdGF0aWMgaW50IGdlbnBoeV9jb25maWdfaW5pdChzdHJ1Y3QgcGh5X2RldmljZQ0KPiA+
-ICpwaHlkZXYpDQo+ID4NCj4gPiAgICAgICAgIHJldHVybiAwOw0KPiA+ICB9DQo+ID4gKw0KPiA+
-ICtzdGF0aWMgaW50IGdlbjEwZ19jb25maWdfaW5pdChzdHJ1Y3QgcGh5X2RldmljZSAqcGh5ZGV2
-KSB7DQo+ID4gKyAgICAgICAvKiBUZW1wb3JhcmlseSBqdXN0IHNheSB3ZSBzdXBwb3J0IGV2ZXJ5
-dGhpbmcgKi8NCj4gPiArICAgICAgIHBoeWRldi0+c3VwcG9ydGVkID0gcGh5ZGV2LT5hZHZlcnRp
-c2luZyA9DQo+ID4gK1NVUFBPUlRFRF8xMDAwMGJhc2VUX0Z1bGw7DQo+IA0KPiBGb3IgY29uc2lz
-dGVuY3kgeW91IHNob3VsZCBzZXQgU1VQUE9SVEVEX1RQLCAxMDAwYmFzZVRfRnVsbCBkb2VzIG5v
-dCBtYWtlDQo+IHNlbnNlIGZvciBhbnl0aGluZyBidXQgdHdpc3RlZCBwYWlycyBBRkFJUi4NCltT
-LkhdIE9LLg0KDQo+IA0KPiA+ICsNCj4gPiArICAgICAgIHJldHVybiAwOw0KPiA+ICt9DQo+ID4g
-Kw0KPiA+ICBpbnQgZ2VucGh5X3N1c3BlbmQoc3RydWN0IHBoeV9kZXZpY2UgKnBoeWRldikgIHsN
-Cj4gPiAgICAgICAgIGludCB2YWx1ZTsNCj4gPiBAQCAtOTc0LDYgKzEwMzMsMTMgQEAgaW50IGdl
-bnBoeV9zdXNwZW5kKHN0cnVjdCBwaHlfZGV2aWNlICpwaHlkZXYpICB9DQo+ID4gRVhQT1JUX1NZ
-TUJPTChnZW5waHlfc3VzcGVuZCk7DQo+ID4NCj4gPiAraW50IGdlbjEwZ19zdXNwZW5kKHN0cnVj
-dCBwaHlfZGV2aWNlICpwaHlkZXYpIHsNCj4gPiArICAgICAgIHJldHVybiAwOw0KPiA+ICt9DQo+
-ID4gK0VYUE9SVF9TWU1CT0woZ2VuMTBnX3N1c3BlbmQpOw0KPiA+ICsNCj4gPiArDQo+ID4gIGlu
-dCBnZW5waHlfcmVzdW1lKHN0cnVjdCBwaHlfZGV2aWNlICpwaHlkZXYpICB7DQo+ID4gICAgICAg
-ICBpbnQgdmFsdWU7DQo+ID4gQEAgLTk4OSw2ICsxMDU1LDEzIEBAIGludCBnZW5waHlfcmVzdW1l
-KHN0cnVjdCBwaHlfZGV2aWNlICpwaHlkZXYpICB9DQo+ID4gRVhQT1JUX1NZTUJPTChnZW5waHlf
-cmVzdW1lKTsNCj4gPg0KPiA+ICtpbnQgZ2VuMTBnX3Jlc3VtZShzdHJ1Y3QgcGh5X2RldmljZSAq
-cGh5ZGV2KSB7DQo+ID4gKyAgICAgICByZXR1cm4gMDsNCj4gPiArfQ0KPiA+ICtFWFBPUlRfU1lN
-Qk9MKGdlbjEwZ19yZXN1bWUpOw0KPiA+ICsNCj4gPiArDQo+ID4gIC8qKg0KPiA+ICAgKiBwaHlf
-cHJvYmUgLSBwcm9iZSBhbmQgaW5pdCBhIFBIWSBkZXZpY2UNCj4gPiAgICogQGRldjogZGV2aWNl
-IHRvIHByb2JlIGFuZCBpbml0DQo+ID4gQEAgLTExMjksNiArMTIwMiwyMCBAQCBzdGF0aWMgc3Ry
-dWN0IHBoeV9kcml2ZXIgZ2VucGh5X2RyaXZlciA9IHsNCj4gPiAgICAgICAgIC5kcml2ZXIgICAg
-ICAgICA9IHsub3duZXI9IFRISVNfTU9EVUxFLCB9LA0KPiA+ICB9Ow0KPiA+DQo+ID4gK3N0YXRp
-YyBzdHJ1Y3QgcGh5X2RyaXZlciBnZW4xMGdfZHJpdmVyID0gew0KPiA+ICsgICAgICAgLnBoeV9p
-ZCAgICAgICAgID0gMHhmZmZmZmZmZiwNCj4gPiArICAgICAgIC5waHlfaWRfbWFzayAgICA9IDB4
-ZmZmZmZmZmYsDQo+ID4gKyAgICAgICAubmFtZSAgICAgICAgICAgPSAiR2VuZXJpYyAxMEcgUEhZ
-IiwNCj4gPiArICAgICAgIC5jb25maWdfaW5pdCAgICA9IGdlbjEwZ19jb25maWdfaW5pdCwNCj4g
-PiArICAgICAgIC5mZWF0dXJlcyAgICAgICA9IDAsDQo+IA0KPiBUaGlzIHNob3VsZCBiZSB1cGRh
-dGVkIHRvIGJlIFBIWV8xMEdCSVRfRkVBVFVSRVMgd2hlcmUNCj4gUEhZXzEwR0JJVF9GRUFUVVJF
-UyBpcyBkZWZpbmVkIHRvIGNvbnRhaW4gYXQgbGVhc3QgUEhZX0dCSVRfRkVBVFVSRVMuDQpbUy5I
-XSBmb3IgYSBnZW5lcmljIDEwRyBQSFksIHdoYXQgaXMgdGhlIGZlYXR1cmUgc2hvdWxkIGJlIHN1
-cHBvcnRlZD8NCg0KPiANCj4gPiArICAgICAgIC5jb25maWdfYW5lZyAgICA9IGdlbjEwZ19jb25m
-aWdfYW5lZywNCj4gPiArICAgICAgIC5yZWFkX3N0YXR1cyAgICA9IGdlbjEwZ19yZWFkX3N0YXR1
-cywNCj4gPiArICAgICAgIC5zdXNwZW5kICAgICAgICA9IGdlbjEwZ19zdXNwZW5kLA0KPiA+ICsg
-ICAgICAgLnJlc3VtZSAgICAgICAgID0gZ2VuMTBnX3Jlc3VtZSwNCj4gPiArICAgICAgIC5kcml2
-ZXIgICAgICAgICA9IHsub3duZXIgPSBUSElTX01PRFVMRSwgfSwNCj4gPiArfTsNCj4gPiArDQo+
-ID4gKw0KPiA+ICBzdGF0aWMgaW50IF9faW5pdCBwaHlfaW5pdCh2b2lkKQ0KPiA+ICB7DQo+ID4g
-ICAgICAgICBpbnQgcmM7DQo+ID4gQEAgLTExMzksMTMgKzEyMjYsMjUgQEAgc3RhdGljIGludCBf
-X2luaXQgcGh5X2luaXQodm9pZCkNCj4gPg0KPiA+ICAgICAgICAgcmMgPSBwaHlfZHJpdmVyX3Jl
-Z2lzdGVyKCZnZW5waHlfZHJpdmVyKTsNCj4gPiAgICAgICAgIGlmIChyYykNCj4gPiAtICAgICAg
-ICAgICAgICAgbWRpb19idXNfZXhpdCgpOw0KPiA+ICsgICAgICAgICAgICAgICBnb3RvIGdlbnBo
-eV9yZWdpc3Rlcl9mYWlsZWQ7DQo+ID4gKw0KPiA+ICsgICAgICAgcmMgPSBwaHlfZHJpdmVyX3Jl
-Z2lzdGVyKCZnZW4xMGdfZHJpdmVyKTsNCj4gPiArICAgICAgIGlmIChyYykNCj4gPiArICAgICAg
-ICAgICAgICAgZ290byBnZW4xMGdfcmVnaXN0ZXJfZmFpbGVkOw0KPiA+ICsNCj4gPiArICAgICAg
-IHJldHVybiByYzsNCj4gPiArDQo+ID4gK2dlbjEwZ19yZWdpc3Rlcl9mYWlsZWQ6DQo+ID4gKyAg
-ICAgICBwaHlfZHJpdmVyX3VucmVnaXN0ZXIoJmdlbnBoeV9kcml2ZXIpOw0KPiA+ICtnZW5waHlf
-cmVnaXN0ZXJfZmFpbGVkOg0KPiA+ICsgICAgICAgbWRpb19idXNfZXhpdCgpOw0KPiANCj4gQXMg
-YSBzdWJzZXF1ZW50IHBhdGNoIHlvdSBjb3VsZCB1c2UgcGh5X2RyaXZlcnNfcmVnaXN0ZXIoKQ0K
-W1MuSF0geW91IG1lYW4gbGlrZSBwaHlfZHJpdmVyc19yZWdpc3RlcihnZW4xMGdfZHJpdmVyLCBB
-UlJBWV9TSVpFKGdlbjEwZ19kcml2ZXIpKT8NCg==
+Yes, that is a device on the lpb via an fpga. We  have tried to =
+configure the chip select 4 configuration register at address MBAR + =
+0x0310, and it seems to be ok. what do you mean with =93chip select =
+parameters=94?
+We have been able to edit it in U-BOOT, and the board (that chip) now =
+works=85
+The strange thing, is that when we read in linux, at that address, we =
+see other content value=85
+Suggestions?
+
+Thanks
+
+Lorenzo
+
+On 13/nov/2013, at 08:32 AM, Anatolij Gustschin <agust@denx.de> wrote:
+
+> On Tue, 12 Nov 2013 20:23:20 +0100
+> neorf3k <neorf3k@gmail.com> wrote:
+>=20
+>> we have tried to read and program an 8bit register with 32bit =
+address.
+>> we have mapped it with: ioremap, kmalloc etc=85 and then using: outb,
+>> iowrite8 etc.. but when we write to it, the value doesn=92t change=85
+>> with other memory location is ok.
+>> That is an 8 bit register, located at 0x10020000 in a mpc5200b
+>> architecture. we are using kernel 2.6.33.=20
+>> what could be?
+>=20
+> 0x10020000 is not in the internal register memory map, so it
+> is probably a device on the LocalPlus bus. Did you configure
+> the chip select parameters for this device and did you enable
+> the associated chip select?
+>=20
+> HTH,
+>=20
+> Anatolij
+>=20
