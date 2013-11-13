@@ -1,28 +1,34 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0249.outbound.messaging.microsoft.com [213.199.154.249])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5A4CC2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 13:02:05 +1100 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH 1/4] phylib: Add Clause 45 read/write functions
-Date: Wed, 13 Nov 2013 02:01:55 +0000
-Message-ID: <ED492CCEAF882048BC2237DE806547C9151248F9@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1384167864-2457-1-git-send-email-shh.xie@gmail.com>
- <1384293487.1403.67.camel@snotra.buserror.net>
- <ED492CCEAF882048BC2237DE806547C91512489F@039-SN2MPN1-013.039d.mgd.msft.net>
- <1384307679.1403.122.camel@snotra.buserror.net>
-In-Reply-To: <1384307679.1403.122.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 9029A2C00BD
+ for <linuxppc-dev@ozlabs.org>; Wed, 13 Nov 2013 13:37:43 +1100 (EST)
+Received: from mail122-db9 (localhost [127.0.0.1])	by
+ mail122-db9-R.bigfish.com (Postfix) with ESMTP id 7318D30093E	for
+ <linuxppc-dev@ozlabs.org>; Wed, 13 Nov 2013 02:37:39 +0000 (UTC)
+Received: from DB9EHSMHS019.bigfish.com (unknown [10.174.16.236])	by
+ mail122-db9.bigfish.com (Postfix) with ESMTP id DDF78420067	for
+ <linuxppc-dev@ozlabs.org>; Wed, 13 Nov 2013 02:37:36 +0000 (UTC)
+Received: from [10.214.83.60] ([10.214.83.60])	by az84smr01.freescale.net
+ (8.14.3/8.14.0) with ESMTP id rAD2bY6v007602	for <linuxppc-dev@ozlabs.org>;
+ Tue, 12 Nov 2013 19:37:34 -0700
+Message-ID: <5282E52B.2040306@Freescale.com>
+Date: Tue, 12 Nov 2013 20:34:19 -0600
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Cc: "shh.xie@gmail.com" <shh.xie@gmail.com>,
- Shruti Kanetkar <Shruti@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+Subject: Re: [PATCH V2] powerpc/85xx: Merge 85xx/p1023_defconfig into
+ mpc85xx_smp_defconfig and mpc85xx_defconfig
+References: <1383952632-5770-1-git-send-email-Lijun.Pan@freescale.com>
+ <1384197913-24610-1-git-send-email-Lijun.Pan@freescale.com>
+ <1384293891.1403.70.camel__45039.5534084693$1384293935$gmane$org@snotra.buserror.net>
+ <5282B277.4090300@Freescale.com>
+ <1384307175.1403.118.camel__32063.4016803981$1384307228$gmane$org@snotra.buserror.net>
+In-Reply-To: <1384307175.1403.118.camel__32063.4016803981$1384307228$gmane$org@snotra.buserror.net>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +38,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiBPbiBUdWUsIDIwMTMtMTEtMTIgYXQgMTk6NTEgLTA2MDAsIFhpZSBTaGFvaHVpLUIyMTk4OSB3
-cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29k
-IFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogV2VkbmVzZGF5LCBOb3ZlbWJlciAxMywgMjAxMyA1
-OjU4IEFNDQo+ID4gPiBUbzogc2hoLnhpZUBnbWFpbC5jb20NCj4gPiA+IENjOiBsaW51eHBwYy1k
-ZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gPiA+
-IEthbmV0a2FyIFNocnV0aS1CNDQ0NTQ7IFhpZSBTaGFvaHVpLUIyMTk4OTsgQnVjdXINCj4gPiA+
-IE1hZGFsaW4tQ3Jpc3RpYW4tQjMyNzE2DQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDEvNF0g
-cGh5bGliOiBBZGQgQ2xhdXNlIDQ1IHJlYWQvd3JpdGUgZnVuY3Rpb25zDQo+ID4gPg0KPiA+ID4g
-T24gTW9uLCAyMDEzLTExLTExIGF0IDE5OjA0ICswODAwLCBzaGgueGllQGdtYWlsLmNvbSB3cm90
-ZToNCj4gPiA+ID4gRnJvbTogQW5keSBGbGVtaW5nDQo+ID4gPiA+DQo+ID4gPiA+IFlvdSBuZWVk
-IGFuIGV4dHJhIHBhcmFtZXRlciB0byByZWFkIG9yIHdyaXRlIENsYXVzZSA0NSBQSFlzLCBzbyB3
-ZQ0KPiA+ID4gPiBuZWVkIGEgZGlmZmVyZW50IEFQSSB3aXRoIHRoZSBleHRyYSBwYXJhbWV0ZXIu
-DQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IEFuZHkgRmxlbWluZw0KPiA+ID4gPiBT
-aWduZWQtb2ZmLWJ5OiBTaGFvaHVpIFhpZSA8U2hhb2h1aS5YaWVAZnJlZXNjYWxlLmNvbT4NCj4g
-PiA+DQo+ID4gPiBXaHkgZGlkIHlvdSByZW1vdmUgQW5keSdzIGUtbWFpbCBhZGRyZXNzPyAgRXZl
-biB0aG91Z2ggaXQncyBubw0KPiA+ID4gbG9uZ2VyIHZhbGlkLCBpdCBoZWxwcyBpZGVudGlmeSB3
-aGljaCBzcGVjaWZpYyBwZXJzb24geW91J3JlIHRhbGtpbmcgYWJvdXQuDQo+ID4gPg0KPiA+IFtT
-LkhdIEFuZHkncyBlLW1haWwgYWRkcmVzcyBpcyBub3QgdmFsaWQgYW5kIGdpdC1zZW5kLW1haWwg
-d2lsbCBmYWlsLCBJIGhhdmUNCj4gdG8gcmVtb3ZlIGl0IHRvIG1ha2UgZ2l0IHdvcmsuDQo+IA0K
-PiBUZWxsIGdpdCBzZW5kLWVtYWlsIHRvIG5vdCBpbmNsdWRlIHRoYXQgYWRkcmVzcywgZS5nLiB1
-c2luZyAtLXN1cHByZXNzLWNjLCAtLW5vLQ0KPiBzaWduZWQtb2ZmLWJ5LWNjLCAtLXN1cHByZXNz
-LWZyb20sIGV0Yy4NCj4gDQpbUy5IXSBPSy4gVGhhbmsgeW91IQ0KDQoNCkJlc3QgUmVnYXJkcywg
-DQpTaGFvaHVpIFhpZQ0K
+Hello Scott,
+
+
+On 11/12/2013 07:46 PM, Scott Wood wrote:
+> On Tue, 2013-11-12 at 16:57 -0600, Emil Medve wrote:
+>> Hello Scott,
+>>
+>>
+>> On 11/12/2013 04:04 PM, Scott Wood wrote:
+>>> On Mon, 2013-11-11 at 13:25 -0600, Lijun Pan wrote:
+>>>> mpc85xx_smp_defconfig and mpc85xx_defconfig already have CONFIG_P1023RDS=y.
+>>>> Merge CONFIG_P1023RDB=y and other relevant configurations into mpc85xx_smp_defconfig and mpc85_defconfig.
+>>>>
+>>>> Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
+>>>> ---
+>>>>  arch/powerpc/configs/85xx/p1023_defconfig  |  188 ----------------------------
+>>>>  arch/powerpc/configs/mpc85xx_defconfig     |   18 +++
+>>>>  arch/powerpc/configs/mpc85xx_smp_defconfig |   17 +++
+>>>>  3 files changed, 35 insertions(+), 188 deletions(-)
+>>>>  delete mode 100644 arch/powerpc/configs/85xx/p1023_defconfig
+>>>
+>>> Are we still going to want to have one defconfig if and when we finally
+>>> get datapath support upstream?  That's a lot of code to add to the 85xx
+>>> config just for this one chip.
+>>
+>> Yes. But for mpc85xx_/smp_defconfig the datapath support shouldn't be
+>> enabled by default given that just one SoC in that family has the
+>> datapath (and we don't plan to put it in another e500v2 based SoC). For
+>> regression/automation purposes config fragments should be used
+> 
+> Is there any way to specify a meta-config for p1023 (or e500v2-dpaa or
+> whatever) that says to combine mpc85xx_smp_defconfig with a dpaa
+> fragment?
+
+Not aware of it
+
+> Do we have any config fragments in the tree so far?
+
+Nope. However, just to make sure, the fragment was my secondary point
+and not necessarily as a candidate for upstreaming. My main point was
+that the datapath support should simply not be enabled by default in the
+mpc85xx_[smp_]defconfig
+
+
+Cheers,
