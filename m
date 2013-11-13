@@ -1,31 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B9C862C00C1
- for <linuxppc-dev@ozlabs.org>; Wed, 13 Nov 2013 12:46:29 +1100 (EST)
-Received: from mail122-db8 (localhost [127.0.0.1])	by
- mail122-db8-R.bigfish.com (Postfix) with ESMTP id 62F27220500	for
- <linuxppc-dev@ozlabs.org>; Wed, 13 Nov 2013 01:46:25 +0000 (UTC)
-Received: from DB8EHSMHS017.bigfish.com (unknown [10.174.8.234])	by
- mail122-db8.bigfish.com (Postfix) with ESMTP id 4DF244801D7	for
- <linuxppc-dev@ozlabs.org>; Wed, 13 Nov 2013 01:46:23 +0000 (UTC)
-Message-ID: <1384307175.1403.118.camel@snotra.buserror.net>
-Subject: Re: [PATCH V2] powerpc/85xx: Merge 85xx/p1023_defconfig into
- mpc85xx_smp_defconfig and mpc85xx_defconfig
+ by ozlabs.org (Postfix) with ESMTPS id 7A4342C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 12:51:09 +1100 (EST)
+Message-ID: <1384307459.1403.120.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/3] powerpc/p1010rdb:add P1010RDB-PB platform support
 From: Scott Wood <scottwood@freescale.com>
-To: Emil Medve <Emilian.Medve@freescale.com>
-Date: Tue, 12 Nov 2013 19:46:15 -0600
-In-Reply-To: <5282B277.4090300@Freescale.com>
-References: <1383952632-5770-1-git-send-email-Lijun.Pan@freescale.com>
- <1384197913-24610-1-git-send-email-Lijun.Pan@freescale.com>
- <1384293891.1403.70.camel__45039.5534084693$1384293935$gmane$org@snotra.buserror.net>
- <5282B277.4090300@Freescale.com>
+To: Zhao Qiang <B45475@freescale.com>
+Date: Tue, 12 Nov 2013 19:50:59 -0600
+In-Reply-To: <1383791369-29324-1-git-send-email-B45475@freescale.com>
+References: <1383791369-29324-1-git-send-email-B45475@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: tony@atomide.com, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bcousson@baylibre.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,34 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-11-12 at 16:57 -0600, Emil Medve wrote:
-> Hello Scott,
+On Thu, 2013-11-07 at 10:29 +0800, Zhao Qiang wrote:
+> The P1010RDB-PB is similar to P1010RDB(P1010RDB-PA).
+> So, P1010RDB-PB use the same platform file as P1010RDB.
+> Then Add support for P1010RDB-PB platform.
 > 
+> Signed-off-by: Zhao Qiang <B45475@freescale.com>
+> ---
+>  arch/powerpc/platforms/85xx/p1010rdb.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> On 11/12/2013 04:04 PM, Scott Wood wrote:
-> > On Mon, 2013-11-11 at 13:25 -0600, Lijun Pan wrote:
-> >> mpc85xx_smp_defconfig and mpc85xx_defconfig already have CONFIG_P1023RDS=y.
-> >> Merge CONFIG_P1023RDB=y and other relevant configurations into mpc85xx_smp_defconfig and mpc85_defconfig.
-> >>
-> >> Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
-> >> ---
-> >>  arch/powerpc/configs/85xx/p1023_defconfig  |  188 ----------------------------
-> >>  arch/powerpc/configs/mpc85xx_defconfig     |   18 +++
-> >>  arch/powerpc/configs/mpc85xx_smp_defconfig |   17 +++
-> >>  3 files changed, 35 insertions(+), 188 deletions(-)
-> >>  delete mode 100644 arch/powerpc/configs/85xx/p1023_defconfig
-> > 
-> > Are we still going to want to have one defconfig if and when we finally
-> > get datapath support upstream?  That's a lot of code to add to the 85xx
-> > config just for this one chip.
-> 
-> Yes. But for mpc85xx_/smp_defconfig the datapath support shouldn't be
-> enabled by default given that just one SoC in that family has the
-> datapath (and we don't plan to put it in another e500v2 based SoC). For
-> regression/automation purposes config fragments should be used
+> diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c b/arch/powerpc/platforms/85xx/p1010rdb.c
+> index 0252961..d6a3dd3 100644
+> --- a/arch/powerpc/platforms/85xx/p1010rdb.c
+> +++ b/arch/powerpc/platforms/85xx/p1010rdb.c
+> @@ -66,6 +66,8 @@ static int __init p1010_rdb_probe(void)
+>  
+>  	if (of_flat_dt_is_compatible(root, "fsl,P1010RDB"))
+>  		return 1;
+> +	if (of_flat_dt_is_compatible(root, "fsl,P1010RDB-PB"))
+> +		return 1;
+>  	return 0;
+>  }
+>  
 
-Is there any way to specify a meta-config for p1023 (or e500v2-dpaa or
-whatever) that says to combine mpc85xx_smp_defconfig with a dpaa
-fragment?  Do we have any config fragments in the tree so far?
+This had already been merged into Ben's tree when you reposted it
+(without any indication that it was a repost/respin), and is now in
+Linus's tree.
 
 -Scott
