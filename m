@@ -1,19 +1,25 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Return-Path: <dan.carpenter@oracle.com>
+Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C79B92C007A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 18:33:14 +1100 (EST)
-Date: Wed, 13 Nov 2013 08:32:59 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: neorf3k <neorf3k@gmail.com>
-Subject: Re: Problem reading and programming memory location...
-Message-ID: <20131113083259.1b69ed18@crub>
-In-Reply-To: <985685C7-0122-4D45-96D1-4412E9774A5D@gmail.com>
-References: <985685C7-0122-4D45-96D1-4412E9774A5D@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux Ppc Dev List Dev List <linuxppc-dev@lists.ozlabs.org>
+ (Client CN "userp1050.oracle.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B700E2C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 19:19:15 +1100 (EST)
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ by userp1050.oracle.com (Sentrion-MTA-4.3.1/Sentrion-MTA-4.3.1) with ESMTP id
+ rAD7jw8Q008050
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2013 07:45:59 GMT
+Date: Wed, 13 Nov 2013 10:45:20 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: [patch] ALSA: snd-aoa: two copy and paste bugs
+Message-ID: <20131113074520.GD25541@elgon.mountain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
+ kernel-janitors@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 12 Nov 2013 20:23:20 +0100
-neorf3k <neorf3k@gmail.com> wrote:
+These functions were cut and paste and the tests for NULL weren't
+updated properly.
 
-> we have tried to read and program an 8bit register with 32bit address.
-> we have mapped it with: ioremap, kmalloc etc=E2=80=A6 and then using: out=
-b,
-> iowrite8 etc.. but when we write to it, the value doesn=E2=80=99t change=
-=E2=80=A6
-> with other memory location is ok.
-> That is an 8 bit register, located at 0x10020000 in a mpc5200b
-> architecture. we are using kernel 2.6.33.=20
-> what could be?
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-0x10020000 is not in the internal register memory map, so it
-is probably a device on the LocalPlus bus. Did you configure
-the chip select parameters for this device and did you enable
-the associated chip select?
- =20
-HTH,
-
-Anatolij
+diff --git a/sound/aoa/fabrics/layout.c b/sound/aoa/fabrics/layout.c
+index 61ab640..9dc5806 100644
+--- a/sound/aoa/fabrics/layout.c
++++ b/sound/aoa/fabrics/layout.c
+@@ -644,7 +644,7 @@ static int n##_control_put(struct snd_kcontrol *kcontrol,		\
+ 			   struct snd_ctl_elem_value *ucontrol)		\
+ {									\
+ 	struct gpio_runtime *gpio = snd_kcontrol_chip(kcontrol);	\
+-	if (gpio->methods && gpio->methods->get_##n)			\
++	if (gpio->methods && gpio->methods->set_##n)			\
+ 		gpio->methods->set_##n(gpio,				\
+ 			!!ucontrol->value.integer.value[0]);		\
+ 	return 1;							\
+@@ -1135,7 +1135,7 @@ static int aoa_fabric_layout_resume(struct soundbus_dev *sdev)
+ {
+ 	struct layout_dev *ldev = dev_get_drvdata(&sdev->ofdev.dev);
+ 
+-	if (ldev->gpio.methods && ldev->gpio.methods->all_amps_off)
++	if (ldev->gpio.methods && ldev->gpio.methods->all_amps_restore)
+ 		ldev->gpio.methods->all_amps_restore(&ldev->gpio);
+ 
+ 	return 0;
