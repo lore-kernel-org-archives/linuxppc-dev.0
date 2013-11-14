@@ -1,17 +1,17 @@
 Return-Path: <guangyu.chen@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D61EE2C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2013 22:07:26 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 812D42C019B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2013 22:07:30 +1100 (EST)
 From: Nicolin Chen <b42378@freescale.com>
 To: <timur@tabi.org>, <shawn.guo@linaro.org>, <broonie@kernel.org>
-Subject: [PATCH 1/2] ARM: dts: imx: specify the value of audmux pinctrl
- instead of 0x80000000
-Date: Thu, 14 Nov 2013 19:07:09 +0800
-Message-ID: <1384427230-979-2-git-send-email-b42378@freescale.com>
+Subject: [PATCH 2/2] ASoC: fsl_ssi: Add monaural audio support for non-ac97
+ interface
+Date: Thu, 14 Nov 2013 19:07:10 +0800
+Message-ID: <1384427230-979-3-git-send-email-b42378@freescale.com>
 In-Reply-To: <1384427230-979-1-git-send-email-b42378@freescale.com>
 References: <1384427230-979-1-git-send-email-b42378@freescale.com>
 MIME-Version: 1.0
@@ -30,64 +30,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We must specify the value of audmux pinctrl if we want to use pinctrl_pm().
-Thus change bypass value 0x80000000 to what we exactly need.
-
-This patch also seperately unset PUE bit for TXD so that IOMUX won't pull
-up/down the pin after turning into tristate. When we use SSI normal mode to
-playback monaural audio via I2S signal, there'd be a pulled curve occur to
-its signal at the second slot if setting PUE bit for TXD. And it will make
-the second channel to play a constant noise. So by keeping the signal level
-in the second slot, we can get a constant high level signal (-1) or a low
-level one (0).
+The normal mode of SSI allows it to send/receive data to/from the first
+slot of each period. So we can use this normal mode to trick I2S signal
+by puting/getting data to/from the first slot only (the left channel)
+so as to support monaural audio playback and recording.
 
 Signed-off-by: Nicolin Chen <b42378@freescale.com>
 ---
- arch/arm/boot/dts/imx6qdl.dtsi | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 22 +++++++++++++++++++---
+ 1 file changed, 19 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-index 6e096ca..6b76e55 100644
---- a/arch/arm/boot/dts/imx6qdl.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl.dtsi
-@@ -601,27 +601,27 @@
- 				audmux {
- 					pinctrl_audmux_1: audmux-1 {
- 						fsl,pins = <
--							MX6QDL_PAD_SD2_DAT0__AUD4_RXD  0x80000000
--							MX6QDL_PAD_SD2_DAT3__AUD4_TXC  0x80000000
--							MX6QDL_PAD_SD2_DAT2__AUD4_TXD  0x80000000
--							MX6QDL_PAD_SD2_DAT1__AUD4_TXFS 0x80000000
-+							MX6QDL_PAD_SD2_DAT0__AUD4_RXD  0x130b0
-+							MX6QDL_PAD_SD2_DAT3__AUD4_TXC  0x130b0
-+							MX6QDL_PAD_SD2_DAT2__AUD4_TXD  0x110b0
-+							MX6QDL_PAD_SD2_DAT1__AUD4_TXFS 0x130b0
- 						>;
- 					};
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index f43be6d..ccf1d38 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -517,10 +517,12 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ {
+ 	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
+ 	struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
++	unsigned int channels = params_channels(hw_params);
+ 	unsigned int sample_size =
+ 		snd_pcm_format_width(params_format(hw_params));
+ 	u32 wl = CCSR_SSI_SxCCR_WL(sample_size);
+ 	int enabled = read_ssi(&ssi->scr) & CCSR_SSI_SCR_SSIEN;
++	static u8 i2s_mode;
  
- 					pinctrl_audmux_2: audmux-2 {
- 						fsl,pins = <
--							MX6QDL_PAD_CSI0_DAT7__AUD3_RXD  0x80000000
--							MX6QDL_PAD_CSI0_DAT4__AUD3_TXC  0x80000000
--							MX6QDL_PAD_CSI0_DAT5__AUD3_TXD  0x80000000
--							MX6QDL_PAD_CSI0_DAT6__AUD3_TXFS 0x80000000
-+							MX6QDL_PAD_CSI0_DAT7__AUD3_RXD  0x130b0
-+							MX6QDL_PAD_CSI0_DAT4__AUD3_TXC  0x130b0
-+							MX6QDL_PAD_CSI0_DAT5__AUD3_TXD  0x110b0
-+							MX6QDL_PAD_CSI0_DAT6__AUD3_TXFS 0x130b0
- 						>;
- 					};
+ 	/*
+ 	 * If we're in synchronous mode, and the SSI is already enabled,
+@@ -546,6 +548,21 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ 	else
+ 		write_ssi_mask(&ssi->srccr, CCSR_SSI_SxCCR_WL_MASK, wl);
  
- 					pinctrl_audmux_3: audmux-3 {
- 						fsl,pins = <
--							MX6QDL_PAD_DISP0_DAT16__AUD5_TXC  0x80000000
--							MX6QDL_PAD_DISP0_DAT18__AUD5_TXFS 0x80000000
--							MX6QDL_PAD_DISP0_DAT19__AUD5_RXD  0x80000000
-+							MX6QDL_PAD_DISP0_DAT16__AUD5_TXC  0x130b0
-+							MX6QDL_PAD_DISP0_DAT18__AUD5_TXFS 0x130b0
-+							MX6QDL_PAD_DISP0_DAT19__AUD5_RXD  0x130b0
- 						>;
- 					};
- 				};
++	if (ssi_private->imx_ac97)
++		return 0;
++
++	/* Save i2s mode configuration so that we can restore it later */
++	switch (read_ssi(&ssi->scr) & CCSR_SSI_SCR_I2S_MODE_MASK) {
++	case CCSR_SSI_SCR_I2S_MODE_SLAVE:
++	case CCSR_SSI_SCR_I2S_MODE_MASTER:
++		i2s_mode = read_ssi(&ssi->scr) & CCSR_SSI_SCR_I2S_MODE_MASK;
++	default:
++		break;
++	}
++
++	write_ssi_mask(&ssi->scr, CCSR_SSI_SCR_NET | CCSR_SSI_SCR_I2S_MODE_MASK,
++			channels == 1 ? 0 : CCSR_SSI_SCR_NET | i2s_mode);
++
+ 	return 0;
+ }
+ 
+@@ -658,14 +675,13 @@ static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
+ static struct snd_soc_dai_driver fsl_ssi_dai_template = {
+ 	.probe = fsl_ssi_dai_probe,
+ 	.playback = {
+-		/* The SSI does not support monaural audio. */
+-		.channels_min = 2,
++		.channels_min = 1,
+ 		.channels_max = 2,
+ 		.rates = FSLSSI_I2S_RATES,
+ 		.formats = FSLSSI_I2S_FORMATS,
+ 	},
+ 	.capture = {
+-		.channels_min = 2,
++		.channels_min = 1,
+ 		.channels_max = 2,
+ 		.rates = FSLSSI_I2S_RATES,
+ 		.formats = FSLSSI_I2S_FORMATS,
 -- 
 1.8.4
