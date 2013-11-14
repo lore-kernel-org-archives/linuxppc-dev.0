@@ -1,21 +1,26 @@
-Return-Path: <Haiying.Wang@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 54E122C00B7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 06:30:54 +1100 (EST)
-Subject: [PATCH] iommu/fsl_pamu: use physical cpu index to find the matched
- cpu nodes
-From: Haiying Wang <Haiying.Wang@freescale.com>
-To: <joro@8bytes.org>, <iommu@lists.linux-foundation.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Nov 2013 14:30:40 -0500
-Message-ID: <1384457440.2144.15.camel@haiying-laptop>
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C08402C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 07:58:27 +1100 (EST)
+Date: Thu, 14 Nov 2013 21:58:10 +0100
+From: Gerhard Sittig <gsi@denx.de>
+To: Alexander Popov <a13xp0p0v88@gmail.com>
+Subject: Re: [PATCH RFC v5 2/5] dma: mpc512x: add support for peripheral
+ transfers
+Message-ID: <20131114205810.GH17929@book.gsilab.sittig.org>
+References: <1383290374-17484-1-git-send-email-a13xp0p0v88@gmail.com>
+ <1383290374-17484-3-git-send-email-a13xp0p0v88@gmail.com>
+ <20131111201024.GR17929@book.gsilab.sittig.org>
+ <CAF0T0X5mCEiS88YGGjSS6oGU5RaQ=2PEQFL533OjpQzmc398rA@mail.gmail.com>
 MIME-Version: 1.0
-Cc: Varun Sethi <Varun.Sethi@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAF0T0X5mCEiS88YGGjSS6oGU5RaQ=2PEQFL533OjpQzmc398rA@mail.gmail.com>
+Cc: devicetree@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>,
+ Arnd Bergmann <arnd@arndb.de>, Vinod Koul <vinod.koul@intel.com>,
+ Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the case we miss to bring up some cpus, we need to make sure we can
-find the correct cpu nodes in the device tree based on the given logical
-cpu index from the caller.
+On Tue, Nov 12, 2013 at 16:23 +0400, Alexander Popov wrote:
+> 
+> 2013/11/12 Gerhard Sittig <gsi@denx.de>:
+> > 
+> > It would be nice to get a response to the feedback that you
+> > are given.  It may be appropriate not to obey to the
+> > feedback, but at least it should get considered.
+> 
+> Yes, I see. My implicit response by RFCv5 was not efficient,
+> sorry.  Now should I write a detailed answer in the thread with
+> your feedback for improving readability of the discussion?
 
-Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
----
- drivers/iommu/fsl_pamu.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Don't you have a checklist of which feedback you got and which of
+it you did address and which you didn't?  Reviewers don't usually
+do the tracking for those who do the submissions.
 
-diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c
-index cba0498..a9ab57b 100644
---- a/drivers/iommu/fsl_pamu.c
-+++ b/drivers/iommu/fsl_pamu.c
-@@ -539,6 +539,7 @@ u32 get_stash_id(u32 stash_dest_hint, u32 vcpu)
- 	u32 cache_level;
- 	int len, found = 0;
- 	int i;
-+	u32 cpuid = get_hard_smp_processor_id(vcpu);
- 
- 	/* Fastpath, exit early if L3/CPC cache is target for stashing */
- 	if (stash_dest_hint == PAMU_ATTR_CACHE_L3) {
-@@ -559,7 +560,7 @@ u32 get_stash_id(u32 stash_dest_hint, u32 vcpu)
- 	for_each_node_by_type(node, "cpu") {
- 		prop = of_get_property(node, "reg", &len);
- 		for (i = 0; i < len / sizeof(u32); i++) {
--			if (be32_to_cpup(&prop[i]) == vcpu) {
-+			if (be32_to_cpup(&prop[i]) == cpuid) {
- 				found = 1;
- 				goto found_cpu_node;
- 			}
+I think that you may list "pending issues" or "non-issues" either
+with new submissions or at the previous version's feedback,
+whatever is more appropriate.  Maybe "pending" is useful with the
+new announcement, while "won't, need not" is better kept with the
+reviews.
+
+As for the not yet addressed feedback:  From the top of my head I
+can think of the execute comment which contradicts the code
+(which suggests that at least one of them is wrong), and the data
+type mismatch in the config routine (where code just happens to
+work by coincidence).  And in bypassing I noticed that your
+recent submission has coding style issues (braces, indentation),
+which should no longer happen after several iterations as you
+should know how to prepare and check the next version.
+
+Again:  It may be OK to not follow the advice (especially if you
+get multiple responses of differrent direction, or when you are
+more familiar with the subject than an observer).  But you should
+state when you don't agree and why.  Without feedback, reviewers
+may see several submissions which suffer from the same issues,
+and expect more to show up and thus feel that their feedback is
+getting ignored.  Which quickly becomes tiring.
+
+
+virtually yours
+Gerhard Sittig
 -- 
-1.7.3.1.50.g1e633
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
