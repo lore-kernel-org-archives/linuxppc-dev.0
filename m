@@ -1,32 +1,23 @@
-Return-Path: <monstr@monstr.eu>
-Received: from mail-wg0-f50.google.com (mail-wg0-f50.google.com [74.125.82.50])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5DF6B2C0094
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2013 20:40:15 +1100 (EST)
-Received: by mail-wg0-f50.google.com with SMTP id k14so1630846wgh.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2013 01:40:10 -0800 (PST)
-Message-ID: <52849A65.9030500@monstr.eu>
-Date: Thu, 14 Nov 2013 10:39:49 +0100
-From: Michal Simek <monstr@monstr.eu>
+Return-Path: <guangyu.chen@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C4C052C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2013 22:07:25 +1100 (EST)
+From: Nicolin Chen <b42378@freescale.com>
+To: <timur@tabi.org>, <shawn.guo@linaro.org>, <broonie@kernel.org>
+Subject: [PATCH 0/2] Add monaural audio support for fsl_ssi.c
+Date: Thu, 14 Nov 2013 19:07:08 +0800
+Message-ID: <1384427230-979-1-git-send-email-b42378@freescale.com>
 MIME-Version: 1.0
-To: Mark Salter <msalter@redhat.com>
-Subject: Re: [PATCH 00/11] Consolidate asm/fixmap.h files
-References: <1384262545-20875-1-git-send-email-msalter@redhat.com>
- <52824BBC.9020401@monstr.eu> <1384271711.24631.5.camel@deneb.redhat.com>
-In-Reply-To: <1384271711.24631.5.camel@deneb.redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="iQtiGn9GE0PIJmOHe35N72OtEjLmxDLif"
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- James Hogan <james.hogan@imgtec.com>, Russell King <linux@arm.linux.org.uk>,
- Arnd Bergmann <arnd@arndb.de>, linux-hexagon@vger.kernel.org,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Richard Kuo <rkuo@codeaurora.org>, microblaze-uclinux@itee.uq.edu.au,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Reply-To: monstr@monstr.eu
+Content-Type: text/plain
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, linux@arm.linux.org.uk, pawel.moll@arm.com,
+ ijc+devicetree@hellion.org.uk, swarren@wwwdotorg.org,
+ linux-kernel@vger.kernel.org, rob.herring@calxeda.com, lgirdwood@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,63 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---iQtiGn9GE0PIJmOHe35N72OtEjLmxDLif
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+This series of patches need to be applied into one single tree because
+the second patch depends on the first one. Without it, SSI would playback
+constant noise to the right channel when playback monaural audio files on
+i.MX6 Series board.
 
-On 11/12/2013 04:55 PM, Mark Salter wrote:
-> On Tue, 2013-11-12 at 16:39 +0100, Michal Simek wrote:
->> On 11/12/2013 02:22 PM, Mark Salter wrote:
->>>
->>>  arch/arm/include/asm/fixmap.h        |  25 ++------
->>>  arch/hexagon/include/asm/fixmap.h    |  40 +------------
->>>  arch/metag/include/asm/fixmap.h      |  32 +----------
->>>  arch/microblaze/include/asm/fixmap.h |  44 +-------------
->>>  arch/mips/include/asm/fixmap.h       |  33 +----------
->>>  arch/powerpc/include/asm/fixmap.h    |  44 +-------------
->>>  arch/sh/include/asm/fixmap.h         |  39 +------------
->>>  arch/tile/include/asm/fixmap.h       |  33 +----------
->>>  arch/um/include/asm/fixmap.h         |  40 +------------
->>>  arch/x86/include/asm/fixmap.h        |  59 +------------------
->>>  include/asm-generic/fixmap.h         | 107 +++++++++++++++++++++++++=
-++++++++++
->>>  11 files changed, 125 insertions(+), 371 deletions(-)
->>>  create mode 100644 include/asm-generic/fixmap.h
->>
->> Any repo/branch with all these patches will be helpful.
->=20
-> https://github.com/mosalter/linux (fixmap branch)
+We might also need to apply the iomux change to the other i.MX platforms,
+just currently I don't have those boards so I drop their changes for now.
 
-Thanks,
+Nicolin Chen (2):
+  ARM: dts: imx: specify the value of audmux pinctrl instead of
+    0x80000000
+  ASoC: fsl_ssi: Add monaural audio support for non-ac97 interface
 
-For Microblaze
-Tested-by: Michal Simek <monstr@monstr.eu>
+ arch/arm/boot/dts/imx6qdl.dtsi | 22 +++++++++++-----------
+ sound/soc/fsl/fsl_ssi.c        | 22 +++++++++++++++++++---
+ 2 files changed, 30 insertions(+), 14 deletions(-)
 
-Thanks,
-Michal
-
---=20
-Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
-Maintainer of Linux kernel - Xilinx Zynq ARM architecture
-Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
-
-
-
---iQtiGn9GE0PIJmOHe35N72OtEjLmxDLif
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iEYEARECAAYFAlKEmmUACgkQykllyylKDCF4AQCgjhFOcr0jquPeAeSfJ6XEBDsZ
-dTIAn2jGHts/85REgK0/IHvrLywyWO8a
-=ZN3C
------END PGP SIGNATURE-----
-
---iQtiGn9GE0PIJmOHe35N72OtEjLmxDLif--
+-- 
+1.8.4
