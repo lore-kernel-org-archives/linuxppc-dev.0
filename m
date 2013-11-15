@@ -1,23 +1,26 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <shawn.guo@linaro.org>
 Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 16A552C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 09:10:38 +1100 (EST)
-Message-ID: <1384467025.1403.210.camel@snotra.buserror.net>
-Subject: Re: [PATCH] iommu/fsl_pamu: use physical cpu index to find the
- matched cpu nodes
-From: Scott Wood <scottwood@freescale.com>
-To: Haiying Wang <Haiying.Wang@freescale.com>
-Date: Thu, 14 Nov 2013 16:10:25 -0600
-In-Reply-To: <1384457440.2144.15.camel@haiying-laptop>
-References: <1384457440.2144.15.camel@haiying-laptop>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 1FBC12C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 14:01:38 +1100 (EST)
+Date: Fri, 15 Nov 2013 11:02:49 +0800
+From: Shawn Guo <shawn.guo@linaro.org>
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [PATCH 0/2] Add monaural audio support for fsl_ssi.c
+Message-ID: <20131115030247.GC11014@S2101-09.ap.freescale.net>
+References: <1384427230-979-1-git-send-email-b42378@freescale.com>
 MIME-Version: 1.0
-Cc: Varun Sethi <Varun.Sethi@freescale.com>, joro@8bytes.org,
- linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1384427230-979-1-git-send-email-b42378@freescale.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, linux@arm.linux.org.uk, pawel.moll@arm.com,
+ ijc+devicetree@hellion.org.uk, lgirdwood@gmail.com, swarren@wwwdotorg.org,
+ timur@tabi.org, rob.herring@calxeda.com, linux-kernel@vger.kernel.org,
+ broonie@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-11-14 at 14:30 -0500, Haiying Wang wrote:
-> In the case we miss to bring up some cpus, we need to make sure we can
-> find the correct cpu nodes in the device tree based on the given logical
-> cpu index from the caller.
+On Thu, Nov 14, 2013 at 07:07:08PM +0800, Nicolin Chen wrote:
+> This series of patches need to be applied into one single tree because
+> the second patch depends on the first one. Without it, SSI would playback
+> constant noise to the right channel when playback monaural audio files on
+> i.MX6 Series board.
+
+Let me try to understand if the dependency is true.
+
+Saying I apply the DTS patch on IMX tree while Mark apply the fsl_ssi
+patch on his tree, will there be any regression on either IMX tree or
+Mark's tree?  The monaural playback on imx6qdl never worked, so it's not
+a regression.  If there is no regression on either tree, there is no
+dependency to maintain.
+
+Shawn
+
 > 
-> Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
-> ---
->  drivers/iommu/fsl_pamu.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+> We might also need to apply the iomux change to the other i.MX platforms,
+> just currently I don't have those boards so I drop their changes for now.
 > 
-> diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c
-> index cba0498..a9ab57b 100644
-> --- a/drivers/iommu/fsl_pamu.c
-> +++ b/drivers/iommu/fsl_pamu.c
-> @@ -539,6 +539,7 @@ u32 get_stash_id(u32 stash_dest_hint, u32 vcpu)
-
-Should probably also s/vcpu/cpu/g as vcpu makes no sense outside of
-virtualization code.
-
->  	u32 cache_level;
->  	int len, found = 0;
->  	int i;
-> +	u32 cpuid = get_hard_smp_processor_id(vcpu);
-
-s/cpuid/phys_cpu/ or similar
-
--Scott
+> Nicolin Chen (2):
+>   ARM: dts: imx: specify the value of audmux pinctrl instead of
+>     0x80000000
+>   ASoC: fsl_ssi: Add monaural audio support for non-ac97 interface
+> 
+>  arch/arm/boot/dts/imx6qdl.dtsi | 22 +++++++++++-----------
+>  sound/soc/fsl/fsl_ssi.c        | 22 +++++++++++++++++++---
+>  2 files changed, 30 insertions(+), 14 deletions(-)
+> 
+> -- 
+> 1.8.4
+> 
+> 
