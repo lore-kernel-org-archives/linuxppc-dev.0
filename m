@@ -1,27 +1,26 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+Return-Path: <Varun.Sethi@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33C762C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 14:07:18 +1100 (EST)
-Date: Fri, 15 Nov 2013 10:59:57 +0800
-From: Nicolin Chen <b42378@freescale.com>
-To: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 0/2] Add monaural audio support for fsl_ssi.c
-Message-ID: <20131115025956.GA745@MrMyself>
-References: <1384427230-979-1-git-send-email-b42378@freescale.com>
- <20131115030247.GC11014@S2101-09.ap.freescale.net>
+ by ozlabs.org (Postfix) with ESMTPS id EB7E22C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 14:17:09 +1100 (EST)
+From: Varun Sethi <Varun.Sethi@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, Haiying Wang
+ <Haiying.Wang@freescale.com>
+Subject: RE: [PATCH] iommu/fsl_pamu: use physical cpu index to find the
+ matched cpu nodes
+Date: Fri, 15 Nov 2013 03:16:53 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D0A5B0AE8@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1384457440.2144.15.camel@haiying-laptop>
+ <1384467025.1403.210.camel@snotra.buserror.net>
+In-Reply-To: <1384467025.1403.210.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20131115030247.GC11014@S2101-09.ap.freescale.net>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, linux@arm.linux.org.uk, pawel.moll@arm.com,
- ijc+devicetree@hellion.org.uk, lgirdwood@gmail.com, swarren@wwwdotorg.org,
- timur@tabi.org, rob.herring@calxeda.com, linux-kernel@vger.kernel.org,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: "joro@8bytes.org" <joro@8bytes.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Shawn,
-   
-On Fri, Nov 15, 2013 at 11:02:49AM +0800, Shawn Guo wrote:
-> On Thu, Nov 14, 2013 at 07:07:08PM +0800, Nicolin Chen wrote:
-> > This series of patches need to be applied into one single tree because
-> > the second patch depends on the first one. Without it, SSI would playback
-> > constant noise to the right channel when playback monaural audio files on
-> > i.MX6 Series board.
-> 
-> Let me try to understand if the dependency is true.
-> 
-> Saying I apply the DTS patch on IMX tree while Mark apply the fsl_ssi
-> patch on his tree, will there be any regression on either IMX tree or
-> Mark's tree?  The monaural playback on imx6qdl never worked, so it's not
-> a regression.  If there is no regression on either tree, there is no
-> dependency to maintain.
-
-It's fair enough to understand in this way. It looks like I misunderstood
-the dependency here.
-
-Do I need to resend them separately?
-
-Thank you.
-
-> 
-> Shawn
-> 
-> > 
-> > We might also need to apply the iomux change to the other i.MX platforms,
-> > just currently I don't have those boards so I drop their changes for now.
-> > 
-> > Nicolin Chen (2):
-> >   ARM: dts: imx: specify the value of audmux pinctrl instead of
-> >     0x80000000
-> >   ASoC: fsl_ssi: Add monaural audio support for non-ac97 interface
-> > 
-> >  arch/arm/boot/dts/imx6qdl.dtsi | 22 +++++++++++-----------
-> >  sound/soc/fsl/fsl_ssi.c        | 22 +++++++++++++++++++---
-> >  2 files changed, 30 insertions(+), 14 deletions(-)
-> > 
-> > -- 
-> > 1.8.4
-> > 
-> > 
+SGFpeWluZy9TY290dCwNCkZvcmdvdCB0byBtZW50aW9uIHRoaXMsIHRoZSBQQU1VIGRyaXZlciBo
+YXMgdG8gaGFuZGxlIHN0YXNoIGRlc3RpbmF0aW9uIHNldHRpbmdzIGJvdGggZm9yIHBvd2VyIGFu
+ZCBkc3AgY29yZXMgKG9uIEI0IHBsYXRmb3JtKS4gRm9yIHRoZSBkc3AgY29yZXMgd2Ugd291bGQg
+ZXhwZWN0IHRoZSBwaHlzaWNhbCBjb3JlIGlkIChub3QgY29udHJvbGxlZCBieSBMaW51eCkuIFRv
+IG1ha2UgdGhlIGludGVyZmFjZSBjb25zaXN0ZW50LCBJIHdvdWxkIGV4cGVjdCB0aGUgY2FsbGVy
+IChmb3IgaW9tbXVfc2V0X2F0dHIpIHRvIHBhc3MgdGhlIHBoeXNpY2FsIGNvcmUgaWQuDQoNClJl
+Z2FyZHMNClZhcnVuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29v
+ZCBTY290dC1CMDc0MjENCj4gU2VudDogRnJpZGF5LCBOb3ZlbWJlciAxNSwgMjAxMyAzOjQwIEFN
+DQo+IFRvOiBXYW5nIEhhaXlpbmctUjU0OTY0DQo+IENjOiBqb3JvQDhieXRlcy5vcmc7IGlvbW11
+QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnOyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFi
+cy5vcmc7IFNldGhpIFZhcnVuLUIxNjM5NQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBpb21tdS9m
+c2xfcGFtdTogdXNlIHBoeXNpY2FsIGNwdSBpbmRleCB0byBmaW5kIHRoZQ0KPiBtYXRjaGVkIGNw
+dSBub2Rlcw0KPiANCj4gT24gVGh1LCAyMDEzLTExLTE0IGF0IDE0OjMwIC0wNTAwLCBIYWl5aW5n
+IFdhbmcgd3JvdGU6DQo+ID4gSW4gdGhlIGNhc2Ugd2UgbWlzcyB0byBicmluZyB1cCBzb21lIGNw
+dXMsIHdlIG5lZWQgdG8gbWFrZSBzdXJlIHdlIGNhbg0KPiA+IGZpbmQgdGhlIGNvcnJlY3QgY3B1
+IG5vZGVzIGluIHRoZSBkZXZpY2UgdHJlZSBiYXNlZCBvbiB0aGUgZ2l2ZW4NCj4gPiBsb2dpY2Fs
+IGNwdSBpbmRleCBmcm9tIHRoZSBjYWxsZXIuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBIYWl5
+aW5nIFdhbmcgPEhhaXlpbmcuV2FuZ0BmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2
+ZXJzL2lvbW11L2ZzbF9wYW11LmMgfCAgICAzICsrLQ0KPiA+ICAxIGZpbGVzIGNoYW5nZWQsIDIg
+aW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2
+ZXJzL2lvbW11L2ZzbF9wYW11LmMgYi9kcml2ZXJzL2lvbW11L2ZzbF9wYW11LmMgaW5kZXgNCj4g
+PiBjYmEwNDk4Li5hOWFiNTdiIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvaW9tbXUvZnNsX3Bh
+bXUuYw0KPiA+ICsrKyBiL2RyaXZlcnMvaW9tbXUvZnNsX3BhbXUuYw0KPiA+IEBAIC01MzksNiAr
+NTM5LDcgQEAgdTMyIGdldF9zdGFzaF9pZCh1MzIgc3Rhc2hfZGVzdF9oaW50LCB1MzIgdmNwdSkN
+Cj4gDQo+IFNob3VsZCBwcm9iYWJseSBhbHNvIHMvdmNwdS9jcHUvZyBhcyB2Y3B1IG1ha2VzIG5v
+IHNlbnNlIG91dHNpZGUgb2YNCj4gdmlydHVhbGl6YXRpb24gY29kZS4NCj4gDQo+ID4gIAl1MzIg
+Y2FjaGVfbGV2ZWw7DQo+ID4gIAlpbnQgbGVuLCBmb3VuZCA9IDA7DQo+ID4gIAlpbnQgaTsNCj4g
+PiArCXUzMiBjcHVpZCA9IGdldF9oYXJkX3NtcF9wcm9jZXNzb3JfaWQodmNwdSk7DQo+IA0KPiBz
+L2NwdWlkL3BoeXNfY3B1LyBvciBzaW1pbGFyDQo+IA0KPiAtU2NvdHQNCj4gDQoNCg==
