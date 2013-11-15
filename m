@@ -1,33 +1,21 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A8D502C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 18:36:18 +1100 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Fri, 15 Nov 2013 17:36:12 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 98EE32BB0056
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 18:36:08 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAF7IRIC7799212
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 18:18:27 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAF7a79E002648
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 18:36:07 +1100
-Message-ID: <1384500964.2491.11.camel@ThinkPad-T5421>
-Subject: [RFC PATCH powerpc] Fix compiling error in powernv/rng.c
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 15 Nov 2013 15:36:04 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <Gang.Liu@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 600D32C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 19:34:20 +1100 (EST)
+From: Liu Gang <Gang.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-gpio@vger.kernel.org>,
+ <linus.walleij@linaro.org>
+Subject: [PATCH] powerpc/gpio: Fix the wrong GPIO input data on MPC8572/MPC8536
+Date: Fri, 15 Nov 2013 15:16:29 +0800
+Message-ID: <1384499789-3631-1-git-send-email-Gang.Liu@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: b07421@freescale.com, Liu Gang <Gang.Liu@freescale.com>,
+ r61911@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,39 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is seen when CONFIG_SMP is not enabled:
+For MPC8572/MPC8536, the status of GPIOs defined as output
+cannot be determined by reading GPDAT register, so the code
+use shadow data register instead. But if the input pins are
+asserted high, they will always read high due to the shadow
+data, even if the pins are set to low.
 
-arch/powerpc/platforms/powernv/rng.c: In function 'rng_init_per_cpu':
-arch/powerpc/platforms/powernv/rng.c:74: error: implicit declaration of function 'cpu_to_chip_id'
+So the input pins should be read directly from GPDAT, not
+the shadow data.
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
 ---
- arch/powerpc/platforms/powernv/rng.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ drivers/gpio/gpio-mpc8xxx.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
-index 8844628..04430a7 100644
---- a/arch/powerpc/platforms/powernv/rng.c
-+++ b/arch/powerpc/platforms/powernv/rng.c
-@@ -59,6 +59,7 @@ int powernv_get_random_long(unsigned long *v)
- }
- EXPORT_SYMBOL_GPL(powernv_get_random_long);
+diff --git a/drivers/gpio/gpio-mpc8xxx.c b/drivers/gpio/gpio-mpc8xxx.c
+index 9ae29cc..1d4ac75 100644
+--- a/drivers/gpio/gpio-mpc8xxx.c
++++ b/drivers/gpio/gpio-mpc8xxx.c
+@@ -71,6 +71,7 @@ static int mpc8572_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+ 	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
  
-+#ifdef CONFIG_SMP
- static __init void rng_init_per_cpu(struct powernv_rng *rng,
- 				    struct device_node *dn)
- {
-@@ -75,6 +76,13 @@ static __init void rng_init_per_cpu(struct powernv_rng *rng,
- 		}
- 	}
- }
-+#else
-+static __init void rng_init_per_cpu(struct powernv_rng *rng,
-+				    struct device_node *dn)
-+{
-+	per_cpu(powernv_rng, 0) = rng;
-+}
-+#endif
+ 	val = in_be32(mm->regs + GPIO_DAT) & ~in_be32(mm->regs + GPIO_DIR);
++	mpc8xxx_gc->data &= in_be32(mm->regs + GPIO_DIR);
  
- static __init int rng_create(struct device_node *dn)
- {
+ 	return (val | mpc8xxx_gc->data) & mpc8xxx_gpio2mask(gpio);
+ }
+-- 
+1.8.4.1
