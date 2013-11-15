@@ -1,51 +1,21 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp13.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2807F2C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2013 03:17:09 +1100 (EST)
-Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Fri, 15 Nov 2013 16:17:04 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 73BC4219005C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 16:17:02 +0000 (GMT)
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAFGGnj565994794
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 16:16:49 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAFGH0AO011300
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 09:17:02 -0700
-Message-ID: <528648F7.20900@fr.ibm.com>
-Date: Fri, 15 Nov 2013 17:16:55 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
+Return-Path: <guangyu.chen@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B6BC22C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2013 03:25:33 +1100 (EST)
+From: Nicolin Chen <b42378@freescale.com>
+To: <timur@tabi.org>, <broonie@kernel.org>, <linux@arm.linux.org.uk>
+Subject: [PATCH v2] ASoC: fsl_ssi: Add monaural audio support for non-ac97
+ interface
+Date: Sat, 16 Nov 2013 00:25:29 +0800
+Message-ID: <1384532729-6588-1-git-send-email-b42378@freescale.com>
 MIME-Version: 1.0
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH 16/51] DMA-API: ppc: vio.c: replace
- dma_set_mask()+dma_set_coherent_mask() with new helper
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMly8-0007gy-Ru@rmk-PC.arm.linux.org.uk>
-In-Reply-To: <E1VMly8-0007gy-Ru@rmk-PC.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
- linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, devel@driverdev.osuosl.org,
- linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org,
- e1000-devel@lists.sourceforge.net, b43-dev@lists.infradead.org,
- linux-media@vger.kernel.org, devicetree@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-tegra@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
- netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, linux-crypto@vger.kernel.org,
- uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, lgirdwood@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,59 +25,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, 
+The normal mode of SSI allows it to send/receive data to/from the first
+slot of each period. So we can use this normal mode to trick I2S signal
+by puting/getting data to/from the first slot only (the left channel)
+so as to support monaural audio playback and recording.
 
-On 09/19/2013 11:41 PM, Russell King wrote:
-> Replace the following sequence:
-> 
-> 	dma_set_mask(dev, mask);
-> 	dma_set_coherent_mask(dev, mask);
-> 
-> with a call to the new helper dma_set_mask_and_coherent().
-> 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->  arch/powerpc/kernel/vio.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-> index 78a3506..96b6c97 100644
-> --- a/arch/powerpc/kernel/vio.c
-> +++ b/arch/powerpc/kernel/vio.c
-> @@ -1413,8 +1413,7 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
-> 
->  		/* needed to ensure proper operation of coherent allocations
->  		 * later, in case driver doesn't set it explicitly */
-> -		dma_set_mask(&viodev->dev, DMA_BIT_MASK(64));
-> -		dma_set_coherent_mask(&viodev->dev, DMA_BIT_MASK(64));
-> +		dma_set_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
->  	}
-> 
->  	/* register with generic device framework */
-> 
-
-The new helper routine dma_set_mask_and_coherent() breaks the 
-initialization of the pseries vio devices which do not have an 
-initial dev->dma_mask. I think we need to use dma_coerce_mask_and_coherent()
-instead.
-
-Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+Signed-off-by: Nicolin Chen <b42378@freescale.com>
 ---
- arch/powerpc/kernel/vio.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changelog
+v2:
+ * Moved i2s_mode to ssi_private so that we can save and retore it as needed
+ * And dropped the horrible static thing.
 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index e7d0c88f..76a6482 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -1419,7 +1419,7 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
+ sound/soc/fsl/fsl_ssi.c | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index f43be6d..cba5c4d 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -144,6 +144,7 @@ struct fsl_ssi_private {
+ 	bool imx_ac97;
+ 	bool use_dma;
+ 	bool use_dual_fifo;
++	u8 i2s_mode;
+ 	struct clk *clk;
+ 	struct snd_dmaengine_dai_dma_data dma_params_tx;
+ 	struct snd_dmaengine_dai_dma_data dma_params_rx;
+@@ -325,14 +326,13 @@ static irqreturn_t fsl_ssi_isr(int irq, void *dev_id)
+ static int fsl_ssi_setup(struct fsl_ssi_private *ssi_private)
+ {
+ 	struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
+-	u8 i2s_mode;
+ 	u8 wm;
+ 	int synchronous = ssi_private->cpu_dai_drv.symmetric_rates;
  
- 		/* needed to ensure proper operation of coherent allocations
- 		 * later, in case driver doesn't set it explicitly */
--		dma_set_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
-+		dma_coerce_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
- 	}
+ 	if (ssi_private->imx_ac97)
+-		i2s_mode = CCSR_SSI_SCR_I2S_MODE_NORMAL | CCSR_SSI_SCR_NET;
++		ssi_private->i2s_mode = CCSR_SSI_SCR_I2S_MODE_NORMAL | CCSR_SSI_SCR_NET;
+ 	else
+-		i2s_mode = CCSR_SSI_SCR_I2S_MODE_SLAVE;
++		ssi_private->i2s_mode = CCSR_SSI_SCR_I2S_MODE_SLAVE;
  
- 	/* register with generic device framework */
+ 	/*
+ 	 * Section 16.5 of the MPC8610 reference manual says that the SSI needs
+@@ -349,7 +349,7 @@ static int fsl_ssi_setup(struct fsl_ssi_private *ssi_private)
+ 	write_ssi_mask(&ssi->scr,
+ 		CCSR_SSI_SCR_I2S_MODE_MASK | CCSR_SSI_SCR_SYN,
+ 		CCSR_SSI_SCR_TFR_CLK_DIS |
+-		i2s_mode |
++		ssi_private->i2s_mode |
+ 		(synchronous ? CCSR_SSI_SCR_SYN : 0));
+ 
+ 	write_ssi(CCSR_SSI_STCR_TXBIT0 | CCSR_SSI_STCR_TFEN0 |
+@@ -517,6 +517,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ {
+ 	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
+ 	struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
++	unsigned int channels = params_channels(hw_params);
+ 	unsigned int sample_size =
+ 		snd_pcm_format_width(params_format(hw_params));
+ 	u32 wl = CCSR_SSI_SxCCR_WL(sample_size);
+@@ -546,6 +547,11 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ 	else
+ 		write_ssi_mask(&ssi->srccr, CCSR_SSI_SxCCR_WL_MASK, wl);
+ 
++	if (!ssi_private->imx_ac97)
++		write_ssi_mask(&ssi->scr,
++				CCSR_SSI_SCR_NET | CCSR_SSI_SCR_I2S_MODE_MASK,
++				channels == 1 ? 0 : ssi_private->i2s_mode);
++
+ 	return 0;
+ }
+ 
+@@ -658,14 +664,13 @@ static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
+ static struct snd_soc_dai_driver fsl_ssi_dai_template = {
+ 	.probe = fsl_ssi_dai_probe,
+ 	.playback = {
+-		/* The SSI does not support monaural audio. */
+-		.channels_min = 2,
++		.channels_min = 1,
+ 		.channels_max = 2,
+ 		.rates = FSLSSI_I2S_RATES,
+ 		.formats = FSLSSI_I2S_FORMATS,
+ 	},
+ 	.capture = {
+-		.channels_min = 2,
++		.channels_min = 1,
+ 		.channels_max = 2,
+ 		.rates = FSLSSI_I2S_RATES,
+ 		.formats = FSLSSI_I2S_FORMATS,
 -- 
-1.7.10.4
+1.8.4
