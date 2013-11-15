@@ -1,19 +1,33 @@
-Return-Path: <Jason.Jin@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 716282C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 17:52:26 +1100 (EST)
-From: Jason Jin <Jason.Jin@freescale.com>
-To: <scottwood@freescale.com>
-Subject: [PATCH] powerpc: Add a vga alias node for P1022
-Date: Fri, 15 Nov 2013 14:06:56 +0800
-Message-ID: <1384495616-6684-1-git-send-email-Jason.Jin@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A8D502C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 18:36:18 +1100 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Fri, 15 Nov 2013 17:36:12 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 98EE32BB0056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 18:36:08 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAF7IRIC7799212
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 18:18:27 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rAF7a79E002648
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 18:36:07 +1100
+Message-ID: <1384500964.2491.11.camel@ThinkPad-T5421>
+Subject: [RFC PATCH powerpc] Fix compiling error in powernv/rng.c
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Date: Fri, 15 Nov 2013 15:36:04 +0800
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,47 +37,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In u-boot, when set the video as console, the name 'vga' is used
-as a general name for the video device, during the fdt_fixup_stdout
-process, the 'vga' name is used to search in the dtb to setup the
-'linux,stdout-path' node. Though the P1022 DIU is not VGA-compatible device,
-to meet the 'vga' name used in u-boot, the vga alias node is added for
-P1022 in this patch. At the same time, a display alias is also added
-so that no other components grow dependencies on the vga alias node.
+This is seen when CONFIG_SMP is not enabled:
 
-Signed-off-by: Jason Jin <Jason.Jin@freescale.com>
+arch/powerpc/platforms/powernv/rng.c: In function 'rng_init_per_cpu':
+arch/powerpc/platforms/powernv/rng.c:74: error: implicit declaration of function 'cpu_to_chip_id'
+
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
 ---
-V2: Update the description and also add a display alias.
+ arch/powerpc/platforms/powernv/rng.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
- arch/powerpc/boot/dts/fsl/p1022si-post.dtsi | 2 +-
- arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi  | 2 ++
- 2 files changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-index e179803..be49300 100644
---- a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-@@ -174,7 +174,7 @@
+diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
+index 8844628..04430a7 100644
+--- a/arch/powerpc/platforms/powernv/rng.c
++++ b/arch/powerpc/platforms/powernv/rng.c
+@@ -59,6 +59,7 @@ int powernv_get_random_long(unsigned long *v)
+ }
+ EXPORT_SYMBOL_GPL(powernv_get_random_long);
  
- /include/ "pq3-gpio-0.dtsi"
++#ifdef CONFIG_SMP
+ static __init void rng_init_per_cpu(struct powernv_rng *rng,
+ 				    struct device_node *dn)
+ {
+@@ -75,6 +76,13 @@ static __init void rng_init_per_cpu(struct powernv_rng *rng,
+ 		}
+ 	}
+ }
++#else
++static __init void rng_init_per_cpu(struct powernv_rng *rng,
++				    struct device_node *dn)
++{
++	per_cpu(powernv_rng, 0) = rng;
++}
++#endif
  
--	display@10000 {
-+	display: display@10000 {
- 		compatible = "fsl,diu", "fsl,p1022-diu";
- 		reg = <0x10000 1000>;
- 		interrupts = <64 2 0 0>;
-diff --git a/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
-index 1956dea..de76ae8 100644
---- a/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
-@@ -50,6 +50,8 @@
- 		pci0 = &pci0;
- 		pci1 = &pci1;
- 		pci2 = &pci2;
-+		vga = &display;
-+		display = &display;
- 	};
- 
- 	cpus {
--- 
-1.8.0
+ static __init int rng_create(struct device_node *dn)
+ {
