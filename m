@@ -1,29 +1,51 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 179742C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2013 02:27:00 +1100 (EST)
-Date: Fri, 15 Nov 2013 23:17:40 +0800
-From: Nicolin Chen <b42378@freescale.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 2/2] ASoC: fsl_ssi: Add monaural audio support for
- non-ac97 interface
-Message-ID: <20131115151739.GA2226@MrMyself>
-References: <1384427230-979-1-git-send-email-b42378@freescale.com>
- <1384427230-979-3-git-send-email-b42378@freescale.com>
- <20131115122107.GK16735@n2100.arm.linux.org.uk>
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp13.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2807F2C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2013 03:17:09 +1100 (EST)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Fri, 15 Nov 2013 16:17:04 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 73BC4219005C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 16:17:02 +0000 (GMT)
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAFGGnj565994794
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 16:16:49 GMT
+Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rAFGH0AO011300
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 09:17:02 -0700
+Message-ID: <528648F7.20900@fr.ibm.com>
+Date: Fri, 15 Nov 2013 17:16:55 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20131115122107.GK16735@n2100.arm.linux.org.uk>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk,
- lgirdwood@gmail.com, swarren@wwwdotorg.org, timur@tabi.org,
- rob.herring@calxeda.com, linux-kernel@vger.kernel.org, broonie@kernel.org,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [PATCH 16/51] DMA-API: ppc: vio.c: replace
+ dma_set_mask()+dma_set_coherent_mask() with new helper
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+ <E1VMly8-0007gy-Ru@rmk-PC.arm.linux.org.uk>
+In-Reply-To: <E1VMly8-0007gy-Ru@rmk-PC.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: alsa-devel@alsa-project.org, linux-doc@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-nvme@lists.infradead.org, linux-ide@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, devel@driverdev.osuosl.org,
+ linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org,
+ e1000-devel@lists.sourceforge.net, b43-dev@lists.infradead.org,
+ linux-media@vger.kernel.org, devicetree@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-tegra@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-crypto@vger.kernel.org,
+ uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,57 +55,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 15, 2013 at 12:21:08PM +0000, Russell King - ARM Linux wrote:
-> > @@ -517,10 +517,12 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
-> >  {
-> >  	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
-> >  	struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
-> > +	unsigned int channels = params_channels(hw_params);
-> >  	unsigned int sample_size =
-> >  		snd_pcm_format_width(params_format(hw_params));
-> >  	u32 wl = CCSR_SSI_SxCCR_WL(sample_size);
-> >  	int enabled = read_ssi(&ssi->scr) & CCSR_SSI_SCR_SSIEN;
-> > +	static u8 i2s_mode;
-> 
-> Throwing a static variable into the middle of a driver with none is a
-> really horrid thing to do and is very bad programming practice.  What
-> if some freescale device decides to have to of these interfaces?  Both
-> will try to use this same static variable.
-> 
-> This is extremely bad programming practice.
+Hi, 
 
-Sir, I'm glad you're teaching me this lesson. I did hesitate before I
-sent this patch, just couldn't tell the reason. And swear to god, I
-hadn't used and will never use this practice again.
+On 09/19/2013 11:41 PM, Russell King wrote:
+> Replace the following sequence:
+> 
+> 	dma_set_mask(dev, mask);
+> 	dma_set_coherent_mask(dev, mask);
+> 
+> with a call to the new helper dma_set_mask_and_coherent().
+> 
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> ---
+>  arch/powerpc/kernel/vio.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+> index 78a3506..96b6c97 100644
+> --- a/arch/powerpc/kernel/vio.c
+> +++ b/arch/powerpc/kernel/vio.c
+> @@ -1413,8 +1413,7 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
+> 
+>  		/* needed to ensure proper operation of coherent allocations
+>  		 * later, in case driver doesn't set it explicitly */
+> -		dma_set_mask(&viodev->dev, DMA_BIT_MASK(64));
+> -		dma_set_coherent_mask(&viodev->dev, DMA_BIT_MASK(64));
+> +		dma_set_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
+>  	}
+> 
+>  	/* register with generic device framework */
+> 
+
+The new helper routine dma_set_mask_and_coherent() breaks the 
+initialization of the pseries vio devices which do not have an 
+initial dev->dma_mask. I think we need to use dma_coerce_mask_and_coherent()
+instead.
+
+Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+---
+ arch/powerpc/kernel/vio.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index e7d0c88f..76a6482 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -1419,7 +1419,7 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
  
-
-> > +	/* Save i2s mode configuration so that we can restore it later */
-> > +	switch (read_ssi(&ssi->scr) & CCSR_SSI_SCR_I2S_MODE_MASK) {
-> > +	case CCSR_SSI_SCR_I2S_MODE_SLAVE:
-> > +	case CCSR_SSI_SCR_I2S_MODE_MASTER:
-> > +		i2s_mode = read_ssi(&ssi->scr) & CCSR_SSI_SCR_I2S_MODE_MASK;
-> > +	default:
-> > +		break;
-> > +	}
-> 
-> So all you're doing is saving the mode only if it specifies master or
-> slave mode, but not if it's normal mode (== 0).  This just looks like
-> it's complicated just for the sake of being complicated.
-> 
-> Since we know what mode this is in when we run fsl_ssi_setup(), can we
-> not save that value into the fsl_ssi_private structure and re-use it
-> here?
-
-Currently we only have fsl_ssi_setup() to set I2S mode. It's definitely
-a good idea to save it into private structure at that point. But there
-will be new ASoC function -- set_dai_fmt() appending to this driver.
-It will provide ASoC machine driver an interface to set I2S mode again,
-and we must put a saving code as well at that time. So I think put the
-saving code here would keep the modification within a small range. But
-I here might be so obsessed with trying to make the patch as neat as
-possible that I picked a demon sword.
-
-But I'm still willing to learn the lesson. And I'll refine this patch.
-
-Much obliged,
-Nicolin Chen
+ 		/* needed to ensure proper operation of coherent allocations
+ 		 * later, in case driver doesn't set it explicitly */
+-		dma_set_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
++		dma_coerce_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
+ 	}
+ 
+ 	/* register with generic device framework */
+-- 
+1.7.10.4
