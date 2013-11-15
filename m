@@ -1,20 +1,21 @@
 Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A9B1B2C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 23:08:23 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B5BD02C0146
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 23:08:35 +1100 (EST)
 From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/3] powerpc/85xx/dts: add third elo3 dma component
-Date: Fri, 15 Nov 2013 19:22:40 +0800
-Message-ID: <1384514562-21137-1-git-send-email-Shengzhou.Liu@freescale.com>
+Subject: [PATCH 3/3] powerpc/fsl-booke: Enable T2080QDS board
+Date: Fri, 15 Nov 2013 19:22:42 +0800
+Message-ID: <1384514562-21137-3-git-send-email-Shengzhou.Liu@freescale.com>
+In-Reply-To: <1384514562-21137-1-git-send-email-Shengzhou.Liu@freescale.com>
+References: <1384514562-21137-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: scottwood@freescale.com, Liu Gang <Gang.Liu@freescale.com>,
- Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Cc: scottwood@freescale.com, Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,103 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add elo3-dma-2.dtsi to support the third DMA controller.
-This is used on T2080, T4240, etc.
-
 Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
 ---
- arch/powerpc/boot/dts/fsl/elo3-dma-2.dtsi | 82 +++++++++++++++++++++++++++++++
- 1 file changed, 82 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-2.dtsi
+ arch/powerpc/include/asm/mpc85xx.h            | 2 ++
+ arch/powerpc/platforms/85xx/Kconfig           | 2 +-
+ arch/powerpc/platforms/85xx/corenet_generic.c | 2 ++
+ 3 files changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/boot/dts/fsl/elo3-dma-2.dtsi b/arch/powerpc/boot/dts/fsl/elo3-dma-2.dtsi
-new file mode 100644
-index 0000000..b89d816
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/elo3-dma-2.dtsi
-@@ -0,0 +1,82 @@
-+/*
-+ * QorIQ Elo3 DMA device tree stub [ controller @ offset 0x102300 ]
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+dma2: dma@102300 {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	compatible = "fsl,elo3-dma";
-+	reg = <0x102300 0x4>,
-+	      <0x102600 0x4>;
-+	ranges = <0x0 0x102100 0x500>;
-+	dma-channel@0 {
-+		compatible = "fsl,eloplus-dma-channel";
-+		reg = <0x0 0x80>;
-+		interrupts = <256 2 0 0>;
-+	};
-+	dma-channel@80 {
-+		compatible = "fsl,eloplus-dma-channel";
-+		reg = <0x80 0x80>;
-+		interrupts = <257 2 0 0>;
-+	};
-+	dma-channel@100 {
-+		compatible = "fsl,eloplus-dma-channel";
-+		reg = <0x100 0x80>;
-+		interrupts = <258 2 0 0>;
-+	};
-+	dma-channel@180 {
-+		compatible = "fsl,eloplus-dma-channel";
-+		reg = <0x180 0x80>;
-+		interrupts = <259 2 0 0>;
-+	};
-+	dma-channel@300 {
-+		compatible = "fsl,eloplus-dma-channel";
-+		reg = <0x300 0x80>;
-+		interrupts = <260 2 0 0>;
-+	};
-+	dma-channel@380 {
-+		compatible = "fsl,eloplus-dma-channel";
-+		reg = <0x380 0x80>;
-+		interrupts = <261 2 0 0>;
-+	};
-+	dma-channel@400 {
-+		compatible = "fsl,eloplus-dma-channel";
-+		reg = <0x400 0x80>;
-+		interrupts = <262 2 0 0>;
-+	};
-+	dma-channel@480 {
-+		compatible = "fsl,eloplus-dma-channel";
-+		reg = <0x480 0x80>;
-+		interrupts = <263 2 0 0>;
-+	};
-+};
+diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
+index 736d4ac..3bef74a 100644
+--- a/arch/powerpc/include/asm/mpc85xx.h
++++ b/arch/powerpc/include/asm/mpc85xx.h
+@@ -77,6 +77,8 @@
+ #define SVR_T1020	0x852100
+ #define SVR_T1021	0x852101
+ #define SVR_T1022	0x852102
++#define SVR_T2080	0x853000
++#define SVR_T2081	0x853100
+ 
+ #define SVR_8610	0x80A000
+ #define SVR_8641	0x809000
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 4d46349..b3436f8 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -259,7 +259,7 @@ config CORENET_GENERIC
+ 	  For 32bit kernel, the following boards are supported:
+ 	    P2041 RDB, P3041 DS and P4080 DS
+ 	  For 64bit kernel, the following boards are supported:
+-	    T4240 QDS and B4 QDS
++	    T2080 QDS, T4240 QDS and B4 QDS
+ 	  The following boards are supported for both 32bit and 64bit kernel:
+ 	    P5020 DS and P5040 DS
+ 
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index fbd871e..5b8b10e 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -102,6 +102,7 @@ static const char * const boards[] __initconst = {
+ 	"fsl,P4080DS",
+ 	"fsl,P5020DS",
+ 	"fsl,P5040DS",
++	"fsl,T2080QDS",
+ 	"fsl,T4240QDS",
+ 	"fsl,B4860QDS",
+ 	"fsl,B4420QDS",
+@@ -115,6 +116,7 @@ static const char * const hv_boards[] __initconst = {
+ 	"fsl,P4080DS-hv",
+ 	"fsl,P5020DS-hv",
+ 	"fsl,P5040DS-hv",
++	"fsl,T2080QDS-hv",
+ 	"fsl,T4240QDS-hv",
+ 	"fsl,B4860QDS-hv",
+ 	"fsl,B4420QDS-hv",
 -- 
 1.8.0
