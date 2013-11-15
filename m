@@ -1,21 +1,35 @@
-Return-Path: <scottwood@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9DD0B2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2013 06:08:34 +1100 (EST)
-Message-ID: <1384542498.1403.238.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc: Add a vga alias node for P1022
-From: Scott Wood <scottwood@freescale.com>
-To: Jason Jin <Jason.Jin@freescale.com>
-Date: Fri, 15 Nov 2013 13:08:18 -0600
-In-Reply-To: <1384495616-6684-1-git-send-email-Jason.Jin@freescale.com>
-References: <1384495616-6684-1-git-send-email-Jason.Jin@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B9FFB2C0097
+ for <linuxppc-dev@ozlabs.org>; Sat, 16 Nov 2013 04:31:49 +1100 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Sat, 16 Nov 2013 03:31:44 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D96D63578050
+ for <linuxppc-dev@ozlabs.org>; Sat, 16 Nov 2013 04:31:37 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAFHDsrC19791950
+ for <linuxppc-dev@ozlabs.org>; Sat, 16 Nov 2013 04:13:56 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rAFHVYWg029001
+ for <linuxppc-dev@ozlabs.org>; Sat, 16 Nov 2013 04:31:35 +1100
+Subject: [PATCH] PPC64: Adding symbols in vmcoreinfo to facilitate dump
+ filtering
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Date: Fri, 15 Nov 2013 23:01:32 +0530
+Message-ID: <20131115173132.1121.61175.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +39,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-11-15 at 14:06 +0800, Jason Jin wrote:
-> In u-boot, when set the video as console, the name 'vga' is used
-> as a general name for the video device, during the fdt_fixup_stdout
-> process, the 'vga' name is used to search in the dtb to setup the
-> 'linux,stdout-path' node. Though the P1022 DIU is not VGA-compatible device,
-> to meet the 'vga' name used in u-boot, the vga alias node is added for
-> P1022 in this patch. At the same time, a display alias is also added
-> so that no other components grow dependencies on the vga alias node.
+When CONFIG_SPARSEMEM_VMEMMAP option is used in kernel, makedumpfile fails
+to filter vmcore dump as it fails to do vmemmap translations. So far
+dump filtering on ppc64 never had to deal with vmemmap addresses seperately
+as vmemmap regions where mapped in zone normal. But with the inclusion of
+CONFIG_SPARSEMEM_VMEMMAP config option in kernel, this vmemmap address
+translation support becomes necessary for dump filtering. For vmemmap adress
+translation, few kernel symbols are needed by dump filtering tool. This patch
+adds those symbols to vmcoreinfo, which a dump filtering tool can use for
+filtering the kernel dump. Tested this changes successfully with makedumpfile
+tool that supports vmemmap to physical address translation outside zone normal.
 
-Please explain this in a brief code comment (e.g. /* inaccurate vga name
-for U-Boot compatibility */), not just the commit message.
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pgalloc-64.h |    4 ++++
+ arch/powerpc/kernel/machine_kexec.c   |   12 ++++++++++++
+ 2 files changed, 16 insertions(+)
 
--Scott
+diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
+index f65e27b..33e507a 100644
+--- a/arch/powerpc/include/asm/pgalloc-64.h
++++ b/arch/powerpc/include/asm/pgalloc-64.h
+@@ -17,6 +17,10 @@ struct vmemmap_backing {
+ 	unsigned long virt_addr;
+ };
+ 
++#ifdef CONFIG_SPARSEMEM_VMEMMAP
++extern struct vmemmap_backing *vmemmap_list;
++#endif /* CONFIG_SPARSEMEM_VMEMMAP */
++
+ /*
+  * Functions that deal with pagetables that could be at any level of
+  * the table need to be passed an "index_size" so they know how to
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index e1ec57e..88a7fb4 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -18,6 +18,7 @@
+ #include <linux/ftrace.h>
+ 
+ #include <asm/machdep.h>
++#include <asm/pgalloc.h>
+ #include <asm/prom.h>
+ #include <asm/sections.h>
+ 
+@@ -75,6 +76,17 @@ void arch_crash_save_vmcoreinfo(void)
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+ 	VMCOREINFO_SYMBOL(contig_page_data);
+ #endif
++#if defined(CONFIG_PPC64) && defined(CONFIG_SPARSEMEM_VMEMMAP)
++	VMCOREINFO_SYMBOL(vmemmap_list);
++	VMCOREINFO_SYMBOL(mmu_vmemmap_psize);
++	VMCOREINFO_SYMBOL(mmu_psize_defs);
++	VMCOREINFO_STRUCT_SIZE(vmemmap_backing);
++	VMCOREINFO_OFFSET(vmemmap_backing, list);
++	VMCOREINFO_OFFSET(vmemmap_backing, phys);
++	VMCOREINFO_OFFSET(vmemmap_backing, virt_addr);
++	VMCOREINFO_STRUCT_SIZE(mmu_psize_def);
++	VMCOREINFO_OFFSET(mmu_psize_def, shift);
++#endif
+ }
+ 
+ /*
