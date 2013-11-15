@@ -1,19 +1,21 @@
 Return-Path: <qemulist@gmail.com>
-Received: from mail-ob0-x233.google.com (mail-ob0-x233.google.com
- [IPv6:2607:f8b0:4003:c01::233])
+Received: from mail-oa0-x236.google.com (mail-oa0-x236.google.com
+ [IPv6:2607:f8b0:4003:c02::236])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8421A2C0335
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 19:34:24 +1100 (EST)
-Received: by mail-ob0-f179.google.com with SMTP id wn1so3437818obc.24
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 00:34:20 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 0A7C92C016A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 19:34:28 +1100 (EST)
+Received: by mail-oa0-f54.google.com with SMTP id o6so3618519oag.13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2013 00:34:25 -0800 (PST)
 From: Liu Ping Fan <qemulist@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v4] powerpc: kvm: fix rare but potential deadlock scene
-Date: Fri, 15 Nov 2013 16:35:00 +0800
-Message-Id: <1384504501-19348-1-git-send-email-pingfank@linux.vnet.ibm.com>
+Subject: [PATCH v2] powerpc: kvm: optimize "sc 1" as fast return
+Date: Fri, 15 Nov 2013 16:35:01 +0800
+Message-Id: <1384504501-19348-2-git-send-email-pingfank@linux.vnet.ibm.com>
+In-Reply-To: <1384504501-19348-1-git-send-email-pingfank@linux.vnet.ibm.com>
+References: <1384504501-19348-1-git-send-email-pingfank@linux.vnet.ibm.com>
 Cc: Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,76 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since kvmppc_hv_find_lock_hpte() is called from both virtmode and
-realmode, so it can trigger the deadlock.
-
-Suppose the following scene:
-
-Two physical cpuM, cpuN, two VM instances A, B, each VM has a group of
-vcpus.
-
-If on cpuM, vcpu_A_1 holds bitlock X (HPTE_V_HVLOCK), then is switched
-out, and on cpuN, vcpu_A_2 try to lock X in realmode, then cpuN will be
-caught in realmode for a long time.
-
-What makes things even worse if the following happens,
-  On cpuM, bitlockX is hold, on cpuN, Y is hold.
-  vcpu_B_2 try to lock Y on cpuM in realmode
-  vcpu_A_2 try to lock X on cpuN in realmode
-
-Oops! deadlock happens
+In some scene, e.g openstack CI, PR guest can trigger "sc 1" frequently,
+this patch optimizes the path by directly delivering BOOK3S_INTERRUPT_SYSCALL
+to HV guest, so powernv can return to HV guest without heavy exit, i.e,
+no need to swap TLB, HTAB,.. etc
 
 Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
 ---
-v4: remove the over-engineered part and keep it simple, also add some notes.
-  
----
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 6 +++++-
- arch/powerpc/kvm/book3s_hv_rm_mmu.c | 4 ++++
- 2 files changed, 9 insertions(+), 1 deletion(-)
+ arch/powerpc/kvm/book3s_hv.c            |  6 ------
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 11 ++++++++++-
+ 2 files changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 842f081..abf81fe 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -473,11 +473,14 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
- 		slb_v = vcpu->kvm->arch.vrma_slb_v;
- 	}
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 62a2b5a..73dc852 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -628,12 +628,6 @@ static int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		/* hcall - punt to userspace */
+ 		int i;
  
-+	preempt_disable();
- 	/* Find the HPTE in the hash table */
- 	index = kvmppc_hv_find_lock_hpte(kvm, eaddr, slb_v,
- 					 HPTE_V_VALID | HPTE_V_ABSENT);
--	if (index < 0)
-+	if (index < 0) {
-+		preempt_enable();
- 		return -ENOENT;
-+	}
- 	hptep = (unsigned long *)(kvm->arch.hpt_virt + (index << 4));
- 	v = hptep[0] & ~HPTE_V_HVLOCK;
- 	gr = kvm->arch.revmap[index].guest_rpte;
-@@ -485,6 +488,7 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
- 	/* Unlock the HPTE */
- 	asm volatile("lwsync" : : : "memory");
- 	hptep[0] = v;
-+	preempt_enable();
+-		if (vcpu->arch.shregs.msr & MSR_PR) {
+-			/* sc 1 from userspace - reflect to guest syscall */
+-			kvmppc_book3s_queue_irqprio(vcpu, BOOK3S_INTERRUPT_SYSCALL);
+-			r = RESUME_GUEST;
+-			break;
+-		}
+ 		run->papr_hcall.nr = kvmppc_get_gpr(vcpu, 3);
+ 		for (i = 0; i < 9; ++i)
+ 			run->papr_hcall.args[i] = kvmppc_get_gpr(vcpu, 4 + i);
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index c71103b..a463f08 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1388,7 +1388,8 @@ kvmppc_hisi:
+ hcall_try_real_mode:
+ 	ld	r3,VCPU_GPR(R3)(r9)
+ 	andi.	r0,r11,MSR_PR
+-	bne	guest_exit_cont
++	/* sc 1 from userspace - reflect to guest syscall */
++	bne	sc_1_fast_return
+ 	clrrdi	r3,r3,2
+ 	cmpldi	r3,hcall_real_table_end - hcall_real_table
+ 	bge	guest_exit_cont
+@@ -1409,6 +1410,14 @@ hcall_try_real_mode:
+ 	ld	r11,VCPU_MSR(r4)
+ 	b	fast_guest_return
  
- 	gpte->eaddr = eaddr;
- 	gpte->vpage = ((v & HPTE_V_AVPN) << 4) | ((eaddr >> 12) & 0xfff);
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 9c51544..ea17b30 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -749,6 +749,10 @@ static int slb_base_page_shift[4] = {
- 	20,	/* 1M, unsupported */
- };
- 
-+/* When called from virtmode, this func should be protected by
-+ * preempt_disable(), otherwise, the holding of HPTE_V_HVLOCK
-+ * can trigger deadlock issue.
-+ */
- long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
- 			      unsigned long valid)
- {
++sc_1_fast_return:
++	mtspr	SPRN_SRR0,r10
++	mtspr	SPRN_SRR1,r11
++	li	r10, BOOK3S_INTERRUPT_SYSCALL
++	li      r11, (MSR_ME << 1) | 1  /* synthesize MSR_SF | MSR_ME */
++	rotldi  r11, r11, 63
++	b	fast_guest_return
++
+ 	/* We've attempted a real mode hcall, but it's punted it back
+ 	 * to userspace.  We need to restore some clobbered volatiles
+ 	 * before resuming the pass-it-to-qemu path */
 -- 
 1.8.1.4
