@@ -1,14 +1,13 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Sat, 16 Nov 2013 18:00:56 +1100
+Date: Sat, 16 Nov 2013 17:55:17 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Liu Ping Fan <qemulist@gmail.com>
-Subject: Re: [PATCH v2] powerpc: kvm: optimize "sc 1" as fast return
-Message-ID: <20131116070056.GB18339@iris.ozlabs.ibm.com>
+Subject: Re: [PATCH v4] powerpc: kvm: fix rare but potential deadlock scene
+Message-ID: <20131116065517.GA18339@iris.ozlabs.ibm.com>
 References: <1384504501-19348-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <1384504501-19348-2-git-send-email-pingfank@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1384504501-19348-2-git-send-email-pingfank@linux.vnet.ibm.com>
+In-Reply-To: <1384504501-19348-1-git-send-email-pingfank@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
  kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,18 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 15, 2013 at 04:35:01PM +0800, Liu Ping Fan wrote:
->  
-> +sc_1_fast_return:
-> +	mtspr	SPRN_SRR0,r10
-> +	mtspr	SPRN_SRR1,r11
-> +	li	r10, BOOK3S_INTERRUPT_SYSCALL
-> +	li      r11, (MSR_ME << 1) | 1  /* synthesize MSR_SF | MSR_ME */
-> +	rotldi  r11, r11, 63
+On Fri, Nov 15, 2013 at 04:35:00PM +0800, Liu Ping Fan wrote:
+> Since kvmppc_hv_find_lock_hpte() is called from both virtmode and
+> realmode, so it can trigger the deadlock.
+> 
+> Suppose the following scene:
+> 
+> Two physical cpuM, cpuN, two VM instances A, B, each VM has a group of
+> vcpus.
+> 
+> If on cpuM, vcpu_A_1 holds bitlock X (HPTE_V_HVLOCK), then is switched
+> out, and on cpuN, vcpu_A_2 try to lock X in realmode, then cpuN will be
+> caught in realmode for a long time.
+> 
+> What makes things even worse if the following happens,
+>   On cpuM, bitlockX is hold, on cpuN, Y is hold.
+>   vcpu_B_2 try to lock Y on cpuM in realmode
+>   vcpu_A_2 try to lock X on cpuN in realmode
+> 
+> Oops! deadlock happens
+> 
+> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
 
-You need a "mr r4, r9" instruction here, because fast_guest_return
-needs the vcpu pointer in r4.  Apart from that this looks fine.
-
-> +	b	fast_guest_return
-
-Paul.
+Reviewed-by: Paul Mackerras <paulus@samba.org>
