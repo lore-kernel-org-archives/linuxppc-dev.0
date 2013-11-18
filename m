@@ -1,32 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A546E2C00CE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:20:40 +1100 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A10A42C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:28:31 +1100 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 18 Nov 2013 19:20:33 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E21083578053
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:20:31 +1100 (EST)
+ Mon, 18 Nov 2013 19:28:30 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8E9D03578054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:28:24 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAI9KJoh6160754
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:20:19 +1100
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAI9AeQw36569250
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:10:40 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAI9KUfW006679
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:20:31 +1100
+ rAI9SNWA019661
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:28:24 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc: booke: Fix build failures
-Date: Mon, 18 Nov 2013 14:50:18 +0530
-Message-Id: <1384766418-9019-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: benh@kernel.crashing.org, paulus@samba.org, linux-mm@kvack.org
+Subject: [PATCH -V2 1/5] powerpc: Use HPTE constants when updating hpte bits
+Date: Mon, 18 Nov 2013 14:58:09 +0530
+Message-Id: <1384766893-10189-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1384766893-10189-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1384766893-10189-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,105 +40,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-arch/powerpc/platforms/wsp/wsp.c: In function ‘wsp_probe_devices’:
-arch/powerpc/platforms/wsp/wsp.c:76:3: error: implicit declaration of function ‘of_address_to_resource’ [-Werror=implicit-function-declaration]
+Even though we have same value for linux PTE bits and hash PTE pits
+use the hash pte bits wen updating hash pte
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/wsp/chroma.c   | 1 +
- arch/powerpc/platforms/wsp/h8.c       | 1 +
- arch/powerpc/platforms/wsp/ics.c      | 2 ++
- arch/powerpc/platforms/wsp/opb_pic.c  | 2 ++
- arch/powerpc/platforms/wsp/psr2.c     | 1 +
- arch/powerpc/platforms/wsp/scom_wsp.c | 1 +
- arch/powerpc/platforms/wsp/wsp.c      | 1 +
- 7 files changed, 9 insertions(+)
+ arch/powerpc/platforms/cell/beat_htab.c | 4 ++--
+ arch/powerpc/platforms/pseries/lpar.c   | 3 ++-
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/wsp/chroma.c b/arch/powerpc/platforms/wsp/chroma.c
-index 8ef53bc2e70e..aaa46b353715 100644
---- a/arch/powerpc/platforms/wsp/chroma.c
-+++ b/arch/powerpc/platforms/wsp/chroma.c
-@@ -15,6 +15,7 @@
- #include <linux/of.h>
- #include <linux/smp.h>
- #include <linux/time.h>
-+#include <linux/of_fdt.h>
+diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
+index c34ee4e60873..d4d245c0d787 100644
+--- a/arch/powerpc/platforms/cell/beat_htab.c
++++ b/arch/powerpc/platforms/cell/beat_htab.c
+@@ -111,7 +111,7 @@ static long beat_lpar_hpte_insert(unsigned long hpte_group,
+ 		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
  
- #include <asm/machdep.h>
- #include <asm/udbg.h>
-diff --git a/arch/powerpc/platforms/wsp/h8.c b/arch/powerpc/platforms/wsp/h8.c
-index d18e6cc19df3..a3c87f395750 100644
---- a/arch/powerpc/platforms/wsp/h8.c
-+++ b/arch/powerpc/platforms/wsp/h8.c
-@@ -10,6 +10,7 @@
- #include <linux/kernel.h>
- #include <linux/of.h>
- #include <linux/io.h>
-+#include <linux/of_address.h>
+ 	if (rflags & _PAGE_NO_CACHE)
+-		hpte_r &= ~_PAGE_COHERENT;
++		hpte_r &= ~HPTE_R_M;
  
- #include "wsp.h"
+ 	raw_spin_lock(&beat_htab_lock);
+ 	lpar_rc = beat_read_mask(hpte_group);
+@@ -337,7 +337,7 @@ static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
+ 		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
  
-diff --git a/arch/powerpc/platforms/wsp/ics.c b/arch/powerpc/platforms/wsp/ics.c
-index 2d3b1dd9571d..9cd92e645028 100644
---- a/arch/powerpc/platforms/wsp/ics.c
-+++ b/arch/powerpc/platforms/wsp/ics.c
-@@ -18,6 +18,8 @@
- #include <linux/smp.h>
- #include <linux/spinlock.h>
- #include <linux/types.h>
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
+ 	if (rflags & _PAGE_NO_CACHE)
+-		hpte_r &= ~_PAGE_COHERENT;
++		hpte_r &= ~HPTE_R_M;
  
- #include <asm/io.h>
- #include <asm/irq.h>
-diff --git a/arch/powerpc/platforms/wsp/opb_pic.c b/arch/powerpc/platforms/wsp/opb_pic.c
-index cb565bf93650..3f6729807938 100644
---- a/arch/powerpc/platforms/wsp/opb_pic.c
-+++ b/arch/powerpc/platforms/wsp/opb_pic.c
-@@ -15,6 +15,8 @@
- #include <linux/of.h>
- #include <linux/slab.h>
- #include <linux/time.h>
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
+ 	/* insert into not-volted entry */
+ 	lpar_rc = beat_insert_htab_entry3(0, hpte_group, hpte_v, hpte_r,
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 356bc75ca74f..c8fbef238d4b 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -153,7 +153,8 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
  
- #include <asm/reg_a2.h>
- #include <asm/irq.h>
-diff --git a/arch/powerpc/platforms/wsp/psr2.c b/arch/powerpc/platforms/wsp/psr2.c
-index 508ec8282b96..a87b414c766a 100644
---- a/arch/powerpc/platforms/wsp/psr2.c
-+++ b/arch/powerpc/platforms/wsp/psr2.c
-@@ -15,6 +15,7 @@
- #include <linux/of.h>
- #include <linux/smp.h>
- #include <linux/time.h>
-+#include <linux/of_fdt.h>
- 
- #include <asm/machdep.h>
- #include <asm/udbg.h>
-diff --git a/arch/powerpc/platforms/wsp/scom_wsp.c b/arch/powerpc/platforms/wsp/scom_wsp.c
-index 8928507affea..6538b4de34fc 100644
---- a/arch/powerpc/platforms/wsp/scom_wsp.c
-+++ b/arch/powerpc/platforms/wsp/scom_wsp.c
-@@ -14,6 +14,7 @@
- #include <linux/of.h>
- #include <linux/spinlock.h>
- #include <linux/types.h>
-+#include <linux/of_address.h>
- 
- #include <asm/cputhreads.h>
- #include <asm/reg_a2.h>
-diff --git a/arch/powerpc/platforms/wsp/wsp.c b/arch/powerpc/platforms/wsp/wsp.c
-index ddb6efe88914..58cd1f00e1ef 100644
---- a/arch/powerpc/platforms/wsp/wsp.c
-+++ b/arch/powerpc/platforms/wsp/wsp.c
-@@ -13,6 +13,7 @@
- #include <linux/smp.h>
- #include <linux/delay.h>
- #include <linux/time.h>
-+#include <linux/of_address.h>
- 
- #include <asm/scom.h>
+ 	/* Make pHyp happy */
+ 	if ((rflags & _PAGE_NO_CACHE) && !(rflags & _PAGE_WRITETHRU))
+-		hpte_r &= ~_PAGE_COHERENT;
++		hpte_r &= ~HPTE_R_M;
++
+ 	if (firmware_has_feature(FW_FEATURE_XCMO) && !(hpte_r & HPTE_R_N))
+ 		flags |= H_COALESCE_CAND;
  
 -- 
 1.8.3.2
