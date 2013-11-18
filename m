@@ -1,13 +1,14 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc: Only print PACATMSCRATCH in oops when TM is
- active
-In-reply-to: <20131118131917.6718ff5b@kryten>
-References: <20131118131917.6718ff5b@kryten>
-Date: Mon, 18 Nov 2013 13:38:22 +1100
-Message-ID: <3997.1384742302@ale.ozlabs.ibm.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Mon, 18 Nov 2013 14:55:28 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, walken@google.com,
+ aneesh.kumar@linux.vnet.ibm.com
+Subject: [PATCH] powerpc: ppc64 address space capped at 32TB, mmap
+ randomisation disabled
+Message-ID: <20131118145528.2329a1ab@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,30 +18,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard <anton@samba.org> wrote:
 
-> 
-> If TM is not active there is no need to print PACATMSCRATCH
-> so we can save ourselves a line.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+Commit fba2369e6ceb (mm: use vm_unmapped_area() on powerpc architecture)
+has a bug in slice_scan_available() where we compare an unsigned long
+(high_slices) against a shifted int. As a result, comparisons against
+the top 32 bits of high_slices (representing the top 32TB) always
+returns 0 and the top of our mmap region is clamped at 32TB
 
-Acked-by: Michael Neuling <mikey@neuling.org>
+This also breaks mmap randomisation since the randomised address is
+always up near the top of the address space and it gets clamped down
+to 32TB.
 
-> ---
-> 
-> Index: b/arch/powerpc/kernel/process.c
-> ===================================================================
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -871,7 +871,8 @@ void show_regs(struct pt_regs * regs)
->  	printk("SOFTE: %ld ", regs->softe);
->  #endif
->  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> -	printk("\nPACATMSCRATCH: %016llx ", get_paca()->tm_scratch);
-> +	if (MSR_TM_ACTIVE(regs->msr))
-> +		printk("\nPACATMSCRATCH: %016llx ", get_paca()->tm_scratch);
->  #endif
->  
->  	for (i = 0;  i < 32;  i++) {
-> 
+Cc: stable@vger.kernel.org # v3.10+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 3e99c14..7ce9cf3 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -258,7 +258,7 @@ static bool slice_scan_available(unsigned long addr,
+ 		slice = GET_HIGH_SLICE_INDEX(addr);
+ 		*boundary_addr = (slice + end) ?
+ 			((slice + end) << SLICE_HIGH_SHIFT) : SLICE_LOW_TOP;
+-		return !!(available.high_slices & (1u << slice));
++		return !!(available.high_slices & (1ul << slice));
+ 	}
+ }
+ 
