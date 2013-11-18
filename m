@@ -1,34 +1,40 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 097B72C00B9
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Nov 2013 21:06:05 +1100 (EST)
+ (Client CN "e06smtp10.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 115C72C00C7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 21:54:13 +1100 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 18 Nov 2013 20:06:04 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A7A233578054
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Nov 2013 21:06:01 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAI9mGxW8847790
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Nov 2013 20:48:16 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAIA60fC014808
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Nov 2013 21:06:00 +1100
-Subject: [PATCH v3] powerpc/powernv: infrastructure to read opal messages in
- generic format.
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 18 Nov 2013 15:35:58 +0530
-Message-ID: <20131118100558.7183.79200.stgit@mars.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Mon, 18 Nov 2013 10:54:07 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 463E32190059
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 10:54:05 +0000 (GMT)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAIArqWQ44564502
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 10:53:52 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rAIAs4KX012112
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 05:54:04 -0500
+Message-ID: <5289F1CA.4090809@fr.ibm.com>
+Date: Mon, 18 Nov 2013 11:54:02 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 16/51] DMA-API: ppc: vio.c: replace
+ dma_set_mask()+dma_set_coherent_mask() with new helper
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+ <E1VMly8-0007gy-Ru@rmk-PC.arm.linux.org.uk> <528648F7.20900@fr.ibm.com>
+ <20131116153244.GD25039@n2100.arm.linux.org.uk>
+In-Reply-To: <20131116153244.GD25039@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,228 +44,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On 11/16/2013 04:32 PM, Russell King - ARM Linux wrote:
+> On Fri, Nov 15, 2013 at 05:16:55PM +0100, Cedric Le Goater wrote:
+>> The new helper routine dma_set_mask_and_coherent() breaks the 
+>> initialization of the pseries vio devices which do not have an 
+>> initial dev->dma_mask. I think we need to use dma_coerce_mask_and_coherent()
+>> instead.
+> 
+> Who wants to handle this patch?
+>
+> Also, is it possible to fix it so that dev->dma_mask is correctly setup
+> by the code which creates the device, as it should be in the first place?
 
-Opal now has a new messaging infrastructure to push the messages to
-linux in a generic format for different type of messages using only one
-event bit. The format of the opal message is as below:
+The vio_dev should probably be improved to setup devices as the other 
+drivers do but we might be short on time to do that for 3.13 and pseries 
+is really broken ... For now, I will just resend the patch with some 
+context in the changelog. 
 
-struct opal_msg {
-        uint32_t msg_type;
-	uint32_t reserved;
-	uint64_t params[8];
-};
+Thanks,
 
-This patch allows clients to subscribe for notification for specific
-message type. It is upto the subscriber to decipher the messages who showed
-interested in receiving specific message type.
-
-The interface to subscribe for notification is:
-
-	int opal_message_notifier_register(enum OpalMessageType msg_type,
-                                        struct notifier_block *nb)
-
-
-The notifier will fetch the opal message when available and notify the
-subscriber with message type and the opal message. It is subscribers
-responsibility to copy the message data before returning from notifier
-callback.
-
-I will post a seperate patch series for fsp memory handling which uses
-this new messaging channel to pull fsp memory errors.
-
-Changes in v3:
-- Fixed event numbering and naming issue.
-- Per Ben's comment, renamed opal_message_handle_event() to
-  opal_handle_message()
-
-Changes in v2:
-- Fixed opal token numbers to match with latest changes in opal.
-
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal.h                |   23 ++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |    2 +
- arch/powerpc/platforms/powernv/opal.c          |   90 ++++++++++++++++++++++++
- 3 files changed, 114 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index c5cd728..eb0dfd4 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -129,6 +129,8 @@ extern int opal_enter_rtas(struct rtas_args *args,
- #define OPAL_LPC_READ				67
- #define OPAL_LPC_WRITE				68
- #define OPAL_RETURN_CPU				69
-+#define OPAL_GET_MSG				85
-+#define OPAL_CHECK_ASYNC_COMPLETION		86
- 
- #ifndef __ASSEMBLY__
- 
-@@ -208,7 +210,16 @@ enum OpalPendingState {
- 	OPAL_EVENT_ERROR_LOG		= 0x40,
- 	OPAL_EVENT_EPOW			= 0x80,
- 	OPAL_EVENT_LED_STATUS		= 0x100,
--	OPAL_EVENT_PCI_ERROR		= 0x200
-+	OPAL_EVENT_PCI_ERROR		= 0x200,
-+	OPAL_EVENT_MSG_PENDING		= 0x800,
-+};
-+
-+enum OpalMessageType {
-+	OPAL_MSG_ASYNC_COMP		= 0,
-+	OPAL_MSG_MEM_ERR,
-+	OPAL_MSG_EPOW,
-+	OPAL_MSG_SHUTDOWN,
-+	OPAL_MSG_TYPE_MAX,
- };
- 
- /* Machine check related definitions */
-@@ -353,6 +364,12 @@ enum OpalLPCAddressType {
- 	OPAL_LPC_FW	= 2,
- };
- 
-+struct opal_msg {
-+	uint32_t msg_type;
-+	uint32_t reserved;
-+	uint64_t params[8];
-+};
-+
- struct opal_machine_check_event {
- 	enum OpalMCE_Version	version:8;	/* 0x00 */
- 	uint8_t			in_use;		/* 0x01 */
-@@ -656,6 +673,8 @@ int64_t opal_lpc_write(uint32_t chip_id, enum OpalLPCAddressType addr_type,
- 		       uint32_t addr, uint32_t data, uint32_t sz);
- int64_t opal_lpc_read(uint32_t chip_id, enum OpalLPCAddressType addr_type,
- 		      uint32_t addr, uint32_t *data, uint32_t sz);
-+int64_t opal_get_msg(uint64_t buffer, size_t size);
-+int64_t opal_check_completion(uint64_t buffer, size_t size, uint64_t token);
- 
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname, int depth, void *data);
-@@ -670,6 +689,8 @@ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
- 				   int depth, void *data);
- 
- extern int opal_notifier_register(struct notifier_block *nb);
-+extern int opal_message_notifier_register(enum OpalMessageType msg_type,
-+						struct notifier_block *nb);
- extern void opal_notifier_enable(void);
- extern void opal_notifier_disable(void);
- extern void opal_notifier_update_evt(uint64_t evt_mask, uint64_t evt_val);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 8f38445..4c2e19a 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -116,3 +116,5 @@ OPAL_CALL(opal_xscom_write,			OPAL_XSCOM_WRITE);
- OPAL_CALL(opal_lpc_read,			OPAL_LPC_READ);
- OPAL_CALL(opal_lpc_write,			OPAL_LPC_WRITE);
- OPAL_CALL(opal_return_cpu,			OPAL_RETURN_CPU);
-+OPAL_CALL(opal_get_msg,				OPAL_GET_MSG);
-+OPAL_CALL(opal_check_completion,		OPAL_CHECK_ASYNC_COMPLETION);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 2911abe..dd5a8b3 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -33,6 +33,7 @@ extern u64 opal_mc_secondary_handler[];
- static unsigned int *opal_irqs;
- static unsigned int opal_irq_count;
- static ATOMIC_NOTIFIER_HEAD(opal_notifier_head);
-+static struct atomic_notifier_head opal_msg_notifier_head[OPAL_MSG_TYPE_MAX];
- static DEFINE_SPINLOCK(opal_notifier_lock);
- static uint64_t last_notified_mask = 0x0ul;
- static atomic_t opal_notifier_hold = ATOMIC_INIT(0);
-@@ -162,6 +163,95 @@ void opal_notifier_disable(void)
- 	atomic_set(&opal_notifier_hold, 1);
- }
- 
-+/*
-+ * Opal message notifier based on message type. Allow subscribers to get
-+ * notified for specific messgae type.
-+ */
-+int opal_message_notifier_register(enum OpalMessageType msg_type,
-+					struct notifier_block *nb)
-+{
-+	if (!nb) {
-+		pr_warning("%s: Invalid argument (%p)\n",
-+			   __func__, nb);
-+		return -EINVAL;
-+	}
-+	if (msg_type > OPAL_MSG_TYPE_MAX) {
-+		pr_warning("%s: Invalid message type argument (%d)\n",
-+			   __func__, msg_type);
-+		return -EINVAL;
-+	}
-+	return atomic_notifier_chain_register(
-+				&opal_msg_notifier_head[msg_type], nb);
-+}
-+
-+static void opal_message_do_notify(uint32_t msg_type, void *msg)
-+{
-+	/* notify subscribers */
-+	atomic_notifier_call_chain(&opal_msg_notifier_head[msg_type],
-+					msg_type, msg);
-+}
-+
-+static void opal_handle_message(void)
-+{
-+	s64 ret;
-+	/*
-+	 * TODO: pre-allocate a message buffer depending on opal-msg-size
-+	 * value in /proc/device-tree.
-+	 */
-+	static struct opal_msg msg;
-+
-+	ret = opal_get_msg(__pa(&msg), sizeof(msg));
-+	/* No opal message pending. */
-+	if (ret == OPAL_RESOURCE)
-+		return;
-+
-+	/* check for errors. */
-+	if (ret) {
-+		pr_warning("%s: Failed to retrive opal message, err=%lld\n",
-+				__func__, ret);
-+		return;
-+	}
-+
-+	/* Sanity check */
-+	if (msg.msg_type > OPAL_MSG_TYPE_MAX) {
-+		pr_warning("%s: Unknown message type: %u\n",
-+				__func__, msg.msg_type);
-+		return;
-+	}
-+	opal_message_do_notify(msg.msg_type, (void *)&msg);
-+}
-+
-+static int opal_message_notify(struct notifier_block *nb,
-+			  unsigned long events, void *change)
-+{
-+	if (events & OPAL_EVENT_MSG_PENDING)
-+		opal_handle_message();
-+	return 0;
-+}
-+
-+static struct notifier_block opal_message_nb = {
-+	.notifier_call	= opal_message_notify,
-+	.next		= NULL,
-+	.priority	= 0,
-+};
-+
-+static int __init opal_message_init(void)
-+{
-+	int ret, i;
-+
-+	for (i = 0; i < OPAL_MSG_TYPE_MAX; i++)
-+		ATOMIC_INIT_NOTIFIER_HEAD(&opal_msg_notifier_head[i]);
-+
-+	ret = opal_notifier_register(&opal_message_nb);
-+	if (ret) {
-+		pr_err("%s: Can't register OPAL event notifier (%d)\n",
-+		       __func__, ret);
-+		return ret;
-+	}
-+	return 0;
-+}
-+early_initcall(opal_message_init);
-+
- int opal_get_chars(uint32_t vtermno, char *buf, int count)
- {
- 	s64 len, rc;
+C.
