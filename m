@@ -1,31 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 935EA2C033B
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 959CA2C033C
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:28:35 +1100 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 18 Nov 2013 19:28:31 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5D5CE3578050
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:28:23 +1100 (EST)
+ Mon, 18 Nov 2013 19:28:32 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 170FF3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:28:30 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAI9AclP7799090
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:10:38 +1100
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAI9AaqV2163054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:10:36 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAI9SM6Q019627
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:28:22 +1100
+ rAI9STiF019803
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 20:28:29 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, linux-mm@kvack.org
-Subject: [PATCH -V2 0/5] powerpc: mm: Numa faults support for ppc64
-Date: Mon, 18 Nov 2013 14:58:08 +0530
-Message-Id: <1384766893-10189-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH -V2 5/5] powerpc: mm: book3s: Enable _PAGE_NUMA for book3s
+Date: Mon, 18 Nov 2013 14:58:13 +0530
+Message-Id: <1384766893-10189-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1384766893-10189-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1384766893-10189-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,17 +38,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This patch series add support for numa faults on ppc64 architecture. We steal the
-_PAGE_COHERENCE bit and use that for indicating _PAGE_NUMA. We clear the _PAGE_PRESENT bit
-and also invalidate the hpte entry on setting _PAGE_NUMA. The next fault on that
-page will be considered a numa fault.
+We steal the _PAGE_COHERENCE bit and use that for indicating NUMA ptes.
 
-Changes from V1:
-* Dropped few patches related pmd update because batch handling of pmd pages got dropped from core code
-   0f19c17929c952c6f0966d93ab05558e7bf814cc "mm: numa: Do not batch handle PMD pages"
-   This also avoided the large lock contention on page_table_lock that we observed with the previous series.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pgtable.h     | 66 +++++++++++++++++++++++++++++++++-
+ arch/powerpc/include/asm/pte-hash64.h  |  6 ++++
+ arch/powerpc/platforms/Kconfig.cputype |  1 +
+ 3 files changed, 72 insertions(+), 1 deletion(-)
 
- -aneesh
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index 7d6eacf249cf..b999ca318985 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -3,6 +3,7 @@
+ #ifdef __KERNEL__
  
+ #ifndef __ASSEMBLY__
++#include <linux/mmdebug.h>
+ #include <asm/processor.h>		/* For TASK_SIZE */
+ #include <asm/mmu.h>
+ #include <asm/page.h>
+@@ -33,10 +34,73 @@ static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+ static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
+ static inline int pte_file(pte_t pte)		{ return pte_val(pte) & _PAGE_FILE; }
+ static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
+-static inline int pte_present(pte_t pte)	{ return pte_val(pte) & _PAGE_PRESENT; }
+ static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
+ static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
+ 
++#ifdef CONFIG_NUMA_BALANCING
++
++static inline int pte_present(pte_t pte)
++{
++	return pte_val(pte) & (_PAGE_PRESENT | _PAGE_NUMA);
++}
++
++#define pte_numa pte_numa
++static inline int pte_numa(pte_t pte)
++{
++	return (pte_val(pte) &
++		(_PAGE_NUMA|_PAGE_PRESENT)) == _PAGE_NUMA;
++}
++
++#define pte_mknonnuma pte_mknonnuma
++static inline pte_t pte_mknonnuma(pte_t pte)
++{
++	pte_val(pte) &= ~_PAGE_NUMA;
++	pte_val(pte) |=  _PAGE_PRESENT | _PAGE_ACCESSED;
++	return pte;
++}
++
++#define pte_mknuma pte_mknuma
++static inline pte_t pte_mknuma(pte_t pte)
++{
++	/*
++	 * We should not set _PAGE_NUMA on non present ptes. Also clear the
++	 * present bit so that hash_page will return 1 and we collect this
++	 * as numa fault.
++	 */
++	if (pte_present(pte)) {
++		pte_val(pte) |= _PAGE_NUMA;
++		pte_val(pte) &= ~_PAGE_PRESENT;
++	} else
++		VM_BUG_ON(1);
++	return pte;
++}
++
++#define pmd_numa pmd_numa
++static inline int pmd_numa(pmd_t pmd)
++{
++	return pte_numa(pmd_pte(pmd));
++}
++
++#define pmd_mknonnuma pmd_mknonnuma
++static inline pmd_t pmd_mknonnuma(pmd_t pmd)
++{
++	return pte_pmd(pte_mknonnuma(pmd_pte(pmd)));
++}
++
++#define pmd_mknuma pmd_mknuma
++static inline pmd_t pmd_mknuma(pmd_t pmd)
++{
++	return pte_pmd(pte_mknuma(pmd_pte(pmd)));
++}
++
++# else
++
++static inline int pte_present(pte_t pte)
++{
++	return pte_val(pte) & _PAGE_PRESENT;
++}
++#endif /* CONFIG_NUMA_BALANCING */
++
+ /* Conversion functions: convert a page and protection to a page entry,
+  * and a page entry and page directory to the page they refer to.
+  *
+diff --git a/arch/powerpc/include/asm/pte-hash64.h b/arch/powerpc/include/asm/pte-hash64.h
+index 55aea0caf95e..2505d8eab15c 100644
+--- a/arch/powerpc/include/asm/pte-hash64.h
++++ b/arch/powerpc/include/asm/pte-hash64.h
+@@ -27,6 +27,12 @@
+ #define _PAGE_RW		0x0200 /* software: user write access allowed */
+ #define _PAGE_BUSY		0x0800 /* software: PTE & hash are busy */
+ 
++/*
++ * Used for tracking numa faults
++ */
++#define _PAGE_NUMA	0x00000010 /* Gather numa placement stats */
++
++
+ /* No separate kernel read-only */
+ #define _PAGE_KERNEL_RW		(_PAGE_RW | _PAGE_DIRTY) /* user access blocked by key */
+ #define _PAGE_KERNEL_RO		 _PAGE_KERNEL_RW
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index c2a566fb8bb8..2048655d8ec4 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -72,6 +72,7 @@ config PPC_BOOK3S_64
+ 	select PPC_HAVE_PMU_SUPPORT
+ 	select SYS_SUPPORTS_HUGETLBFS
+ 	select HAVE_ARCH_TRANSPARENT_HUGEPAGE if PPC_64K_PAGES
++	select ARCH_SUPPORTS_NUMA_BALANCING
+ 
+ config PPC_BOOK3E_64
+ 	bool "Embedded processors"
+-- 
+1.8.3.2
