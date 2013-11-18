@@ -1,14 +1,19 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
- [IPv6:2001:44b8:8060:ff02:300:1:6:4])
- by ozlabs.org (Postfix) with ESMTP id 0F8292C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 17:20:58 +1100 (EST)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Don't use ELFv2 ABI to build the kernel
-Date: Mon, 18 Nov 2013 17:21:34 +1100
-Message-Id: <1384755694-30293-1-git-send-email-alistair@popple.id.au>
-Cc: Alistair Popple <alistair@popple.id.au>
+Return-Path: <Jason.Jin@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B8C152C00CE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 18:34:05 +1100 (EST)
+From: Jason Jin <Jason.Jin@freescale.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH V3] powerpc: Add a vga alias node for P1022
+Date: Mon, 18 Nov 2013 14:48:03 +0800
+Message-ID: <1384757283-18113-1-git-send-email-Jason.Jin@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,26 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The kernel doesn't build correctly using the ELFv2 ABI.  This patch
-ensures that the ELFv1 ABI is used when building a kernel with an
-ELFv2 enabled compiler.
+In u-boot, when set the video as console, the name 'vga' is used
+as a general name for the video device, during the fdt_fixup_stdout
+process, the 'vga' name is used to search in the dtb to setup the
+'linux,stdout-path' node. Though the P1022 DIU is not VGA-compatible
+device,
+to meet the 'vga' name used in u-boot, the vga alias node is added for
+P1022 in this patch. At the same time, a display alias is also added
+so that no other components grow dependencies on the vga alias node.
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Signed-off-by: Jason Jin <Jason.Jin@freescale.com>
 ---
- arch/powerpc/Makefile | 1 +
- 1 file changed, 1 insertion(+)
+V2: Update the description and also add a display alias.
+V3: Add code comment for the inaccurate vag name. Thanks for Scott's input.
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 607acf5..8a24636 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -111,6 +111,7 @@ endif
- endif
+ arch/powerpc/boot/dts/fsl/p1022si-post.dtsi | 2 +-
+ arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi  | 3 +++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+index e179803..be49300 100644
+--- a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+@@ -174,7 +174,7 @@
  
- CFLAGS-$(CONFIG_PPC64)	:= -mtraceback=no -mcall-aixdesc
-+CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcmodel=medium,-mminimal-toc)
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mno-pointers-to-nested-functions)
- CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 $(MULTIPLEWORD)
+ /include/ "pq3-gpio-0.dtsi"
+ 
+-	display@10000 {
++	display: display@10000 {
+ 		compatible = "fsl,diu", "fsl,p1022-diu";
+ 		reg = <0x10000 1000>;
+ 		interrupts = <64 2 0 0>;
+diff --git a/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
+index 1956dea..362ac51 100644
+--- a/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
+@@ -50,6 +50,9 @@
+ 		pci0 = &pci0;
+ 		pci1 = &pci1;
+ 		pci2 = &pci2;
++		/*inaccurate vga name for U-Boot compatibility*/
++		vga = &display;
++		display = &display;
+ 	};
+ 
+ 	cpus {
 -- 
-1.8.2.1
+1.8.0
