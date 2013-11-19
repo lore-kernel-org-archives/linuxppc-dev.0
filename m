@@ -1,17 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id ABB402C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 23:05:42 +1100 (EST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Vitaly Bordug <vitb@kernel.crashing.org>,
- Marcelo Tosatti <marcelo@kvack.org>,
- Joakim Tjernlund <joakim.tjernlund@transmode.se>,
- Bob Pearson <rpearson@systemfabricworks.com>
-Subject: [PATCH] lib/crc32: slice by 4 is more efficient than the default
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E88042C011C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 01:11:53 +1100 (EST)
+In-Reply-To: <20131118070423.E47181A4D3D@localhost.localdomain>
+References: <20131118070423.E47181A4D3D@localhost.localdomain>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+MIME-Version: 1.0
+Subject: Re: [PATCH] lib/crc32: slice by 4 is more efficient than the default
  slice by 8 on Powerpc 8xx.
-Message-Id: <20131118070423.E47181A4D3D@localhost.localdomain>
-Date: Mon, 18 Nov 2013 08:04:23 +0100 (CET)
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Message-ID: <OF5004EA63.AA9B7989-ONC1257C28.004D6C13-C1257C28.004DF922@transmode.se>
+Date: Tue, 19 Nov 2013 15:11:40 +0100
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Marcelo Tosatti <marcelo@kvack.org>,
+ Bob Pearson <rpearson@systemfabricworks.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,32 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PPC_8xx, CRC32_SLICEBY4 is more efficient (almost twice) than CRC32_SLICEBY8,
-as shown below:
+I found the same on MPC8321 long time ago(when 64 bits change went in),=20
+the 32 bits were much faster. I guess the "smaller"
+CPUs cannot handle the cache trashing these big tables impose, I didn't=20
+look into the details though.
+So I think this is a good change for 8xx.
 
-With CRC32_SLICEBY8:
-[    1.109204] crc32: CRC_LE_BITS = 64, CRC_BE BITS = 64
-[    1.114401] crc32: self tests passed, processed 225944 bytes in 15118910 nsec
-[    1.130655] crc32c: CRC_LE_BITS = 64
-[    1.134235] crc32c: self tests passed, processed 225944 bytes in 4479879 nsec
+Acked-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
 
-With CRC32_SLICEBY4:
-[    1.097129] crc32: CRC_LE_BITS = 32, CRC_BE BITS = 32
-[    1.101878] crc32: self tests passed, processed 225944 bytes in 8616242 nsec
-[    1.116298] crc32c: CRC_LE_BITS = 32
-[    1.119607] crc32c: self tests passed, processed 225944 bytes in 3289576 nsec
+Christophe Leroy <christophe.leroy@c-s.fr> wrote on 2013/11/18 08:04:23:
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> From: Christophe Leroy <christophe.leroy@c-s.fr>
+> To: Vitaly Bordug <vitb@kernel.crashing.org>, Marcelo Tosatti=20
+<marcelo@kvack.org>, Joakim Tjernlund <joakim.tjernlund@transmode.se>, Bob =
 
-Index: a/lib/Kconfig
-===================================================================
---- a/lib/Kconfig	(révision 5325)
-+++ b/lib/Kconfig	(copie de travail)
-@@ -102,6 +102,7 @@
- choice
- 	prompt "CRC32 implementation"
- 	depends on CRC32
-+	default CRC32_SLICEBY4 if PPC_8xx
- 	default CRC32_SLICEBY8
- 	help
- 	  This option allows a kernel builder to override the default choice
+Pearson <rpearson@systemfabricworks.com>,=20
+> Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+> Date: 2013/11/19 13:05
+> Subject: [PATCH] lib/crc32: slice by 4 is more efficient than the=20
+default slice by 8 on Powerpc 8xx.
+>=20
+> On PPC=5F8xx, CRC32=5FSLICEBY4 is more efficient (almost twice) than=20
+CRC32=5FSLICEBY8,
+> as shown below:
+>=20
+> With CRC32=5FSLICEBY8:
+> [    1.109204] crc32: CRC=5FLE=5FBITS =3D 64, CRC=5FBE BITS =3D 64
+> [    1.114401] crc32: self tests passed, processed 225944 bytes in=20
+15118910 nsec
+> [    1.130655] crc32c: CRC=5FLE=5FBITS =3D 64
+> [    1.134235] crc32c: self tests passed, processed 225944 bytes in=20
+4479879 nsec
+>=20
+> With CRC32=5FSLICEBY4:
+> [    1.097129] crc32: CRC=5FLE=5FBITS =3D 32, CRC=5FBE BITS =3D 32
+> [    1.101878] crc32: self tests passed, processed 225944 bytes in=20
+8616242 nsec
+> [    1.116298] crc32c: CRC=5FLE=5FBITS =3D 32
+> [    1.119607] crc32c: self tests passed, processed 225944 bytes in=20
+3289576 nsec
+>=20
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>=20
+> Index: a/lib/Kconfig
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- a/lib/Kconfig   (r=C3=A9vision 5325)
+> +++ b/lib/Kconfig   (copie de travail)
+> @@ -102,6 +102,7 @@
+>  choice
+>     prompt "CRC32 implementation"
+>     depends on CRC32
+> +   default CRC32=5FSLICEBY4 if PPC=5F8xx
+>     default CRC32=5FSLICEBY8
+>     help
+>       This option allows a kernel builder to override the default choice
