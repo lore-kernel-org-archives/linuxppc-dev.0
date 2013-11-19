@@ -1,20 +1,19 @@
 Return-Path: <Bharat.Bhushan@freescale.com>
 Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0125B2C038C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 16:23:49 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6BAE92C0493
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 16:23:55 +1100 (EST)
 From: Bharat Bhushan <r65777@freescale.com>
 To: <alex.williamson@redhat.com>, <joro@8bytes.org>, <bhelgaas@google.com>,
  <agraf@suse.de>, <scottwood@freescale.com>, <stuart.yoder@freescale.com>,
  <iommu@lists.linux-foundation.org>, <linux-pci@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/9 v2] powerpc: msi: Extend the msi region interface to get
- info from fsl_msi
-Date: Tue, 19 Nov 2013 10:47:08 +0530
-Message-ID: <1384838233-24847-5-git-send-email-Bharat.Bhushan@freescale.com>
+Subject: [PATCH 5/9 v2] pci/msi: interface to set an iova for a msi region
+Date: Tue, 19 Nov 2013 10:47:09 +0530
+Message-ID: <1384838233-24847-6-git-send-email-Bharat.Bhushan@freescale.com>
 In-Reply-To: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
 References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
@@ -29,146 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The FSL MSI will provide the interface to get:
-  - Number of MSI regions (which is number of MSI banks for powerpc)
-  - Get the region address range: Physical page which have the
-    address/addresses used for generating MSI interrupt
-    and size of the page.
+This patch defines an interface by which a msi page
+can be mapped to a specific iova page.
 
-These are required to create IOMMU (Freescale PAMU) mapping for
-devices which are directly assigned using VFIO.
+This is a requirement in aperture type of IOMMUs (like Freescale PAMU),
+where we map msi iova page just after guest memory iova address.
 
 Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
-v1->v2
- - Atomic increment of bank index for parallel probe of msi node 
+v2
+ - new patch
 
- arch/powerpc/sysdev/fsl_msi.c |   42 +++++++++++++++++++++++++++++++++++-----
- arch/powerpc/sysdev/fsl_msi.h |   11 ++++++++-
- 2 files changed, 45 insertions(+), 8 deletions(-)
+ drivers/pci/msi.c   |   13 +++++++++++++
+ include/linux/pci.h |    8 ++++++++
+ 2 files changed, 21 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 77efbae..eeebbf0 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -109,6 +109,34 @@ static int fsl_msi_init_allocator(struct fsl_msi *msi_data)
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 2643a29..040609f 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -77,6 +77,19 @@ int __weak arch_msi_get_region(int region_num, struct msi_region *region)
  	return 0;
  }
  
-+static int fsl_msi_get_region_count(void)
++int __weak arch_msi_set_iova(struct pci_dev *pdev, int region_num,
++			     dma_addr_t iova, bool set)
 +{
-+	int count = 0;
-+	struct fsl_msi *msi_data;
-+
-+	list_for_each_entry(msi_data, &msi_head, list)
-+		count++;
-+
-+	return count;
++	return 0;
 +}
 +
-+static int fsl_msi_get_region(int region_num, struct msi_region *region)
++int msi_set_iova(struct pci_dev *pdev, int region_num,
++		 dma_addr_t iova, bool set)
 +{
-+	struct fsl_msi *msi_data;
-+
-+	list_for_each_entry(msi_data, &msi_head, list) {
-+		if (msi_data->bank_index == region_num) {
-+			region->region_num = msi_data->bank_index;
-+			/* Setting PAGE_SIZE as MSIIR is a 4 byte register */
-+			region->size = PAGE_SIZE;
-+			region->addr = msi_data->msiir & ~(region->size - 1);
-+			return 0;
-+		}
-+	}
-+
-+	return -ENODEV;
++	return arch_msi_set_iova(pdev, region_num, iova, set);
 +}
++EXPORT_SYMBOL(msi_set_iova);
 +
- static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int type)
+ int msi_get_region_count(void)
  {
- 	if (type == PCI_CAP_ID_MSIX)
-@@ -150,7 +178,8 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
- 	if (reg && (len == sizeof(u64)))
- 		address = be64_to_cpup(reg);
- 	else
--		address = fsl_pci_immrbar_base(hose) + msi_data->msiir_offset;
-+		address = fsl_pci_immrbar_base(hose) +
-+			   (msi_data->msiir & 0xfffff);
- 
- 	msg->address_lo = lower_32_bits(address);
- 	msg->address_hi = upper_32_bits(address);
-@@ -393,6 +422,7 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 	const struct fsl_msi_feature *features;
- 	int len;
- 	u32 offset;
-+	static atomic_t bank_index = ATOMIC_INIT(-1);
- 
- 	match = of_match_device(fsl_of_msi_ids, &dev->dev);
- 	if (!match)
-@@ -436,18 +466,15 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 				dev->dev.of_node->full_name);
- 			goto error_out;
- 		}
--		msi->msiir_offset =
--			features->msiir_offset + (res.start & 0xfffff);
- 
- 		/*
- 		 * First read the MSIIR/MSIIR1 offset from dts
- 		 * On failure use the hardcode MSIIR offset
- 		 */
- 		if (of_address_to_resource(dev->dev.of_node, 1, &msiir))
--			msi->msiir_offset = features->msiir_offset +
--					    (res.start & MSIIR_OFFSET_MASK);
-+			msi->msiir = res.start + features->msiir_offset;
- 		else
--			msi->msiir_offset = msiir.start & MSIIR_OFFSET_MASK;
-+			msi->msiir = msiir.start;
- 	}
- 
- 	msi->feature = features->fsl_pic_ip;
-@@ -521,6 +548,7 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 		}
- 	}
- 
-+	msi->bank_index = atomic_inc_return(&bank_index);
- 	list_add_tail(&msi->list, &msi_head);
- 
- 	/* The multiple setting ppc_md.setup_msi_irqs will not harm things */
-@@ -528,6 +556,8 @@ static int fsl_of_msi_probe(struct platform_device *dev)
- 		ppc_md.setup_msi_irqs = fsl_setup_msi_irqs;
- 		ppc_md.teardown_msi_irqs = fsl_teardown_msi_irqs;
- 		ppc_md.msi_check_device = fsl_msi_check_device;
-+		ppc_md.msi_get_region_count = fsl_msi_get_region_count;
-+		ppc_md.msi_get_region = fsl_msi_get_region;
- 	} else if (ppc_md.setup_msi_irqs != fsl_setup_msi_irqs) {
- 		dev_err(&dev->dev, "Different MSI driver already installed!\n");
- 		err = -ENODEV;
-diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-index df9aa9f..a2cc5a2 100644
---- a/arch/powerpc/sysdev/fsl_msi.h
-+++ b/arch/powerpc/sysdev/fsl_msi.h
-@@ -31,14 +31,21 @@ struct fsl_msi {
- 	struct irq_domain *irqhost;
- 
- 	unsigned long cascade_irq;
--
--	u32 msiir_offset; /* Offset of MSIIR, relative to start of CCSR */
-+	phys_addr_t msiir; /* MSIIR Address in CCSR */
- 	u32 ibs_shift; /* Shift of interrupt bit select */
- 	u32 srs_shift; /* Shift of the shared interrupt register select */
- 	void __iomem *msi_regs;
- 	u32 feature;
- 	int msi_virqs[NR_MSI_REG_MAX];
- 
-+	/*
-+	 * During probe each bank is assigned a index number.
-+	 * index number start from 0.
-+	 * Example  MSI bank 1 = 0
-+	 * MSI bank 2 = 1, and so on.
-+	 */
-+	int bank_index;
+ 	return arch_msi_get_region_count();
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index c587034..c6d3e58 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1195,6 +1195,12 @@ static inline int msi_get_region(int region_num, struct msi_region *region)
+ {
+ 	return 0;
+ }
 +
- 	struct msi_bitmap bitmap;
++static inline int msi_set_iova(struct pci_dev *pdev, int region_num,
++			       dma_addr_t iova, bool set)
++{
++	return 0;
++}
+ #else
+ int pci_enable_msi_block(struct pci_dev *dev, unsigned int nvec);
+ int pci_enable_msi_block_auto(struct pci_dev *dev, unsigned int *maxvec);
+@@ -1209,6 +1215,8 @@ void pci_restore_msi_state(struct pci_dev *dev);
+ int pci_msi_enabled(void);
+ int msi_get_region_count(void);
+ int msi_get_region(int region_num, struct msi_region *region);
++int msi_set_iova(struct pci_dev *pdev, int region_num,
++		 dma_addr_t iova, bool set);
+ #endif
  
- 	struct list_head list;          /* support multiple MSI banks */
+ #ifdef CONFIG_PCIEPORTBUS
 -- 
 1.7.0.4
