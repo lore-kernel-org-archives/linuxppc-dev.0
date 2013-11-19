@@ -1,22 +1,21 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E88042C011C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 01:11:53 +1100 (EST)
-In-Reply-To: <20131118070423.E47181A4D3D@localhost.localdomain>
-References: <20131118070423.E47181A4D3D@localhost.localdomain>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-MIME-Version: 1.0
-Subject: Re: [PATCH] lib/crc32: slice by 4 is more efficient than the default
- slice by 8 on Powerpc 8xx.
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Message-ID: <OF5004EA63.AA9B7989-ONC1257C28.004D6C13-C1257C28.004DF922@transmode.se>
-Date: Tue, 19 Nov 2013 15:11:40 +0100
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Marcelo Tosatti <marcelo@kvack.org>,
- Bob Pearson <rpearson@systemfabricworks.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 9DDB42C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 02:32:47 +1100 (EST)
+Date: Tue, 19 Nov 2013 16:32:30 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Liu Gang <Gang.Liu@freescale.com>
+Subject: Re: [PATCH] powerpc/gpio: Fix the wrong GPIO input data on
+ MPC8572/MPC8536
+Message-ID: <20131119163230.70964d1f@crub>
+In-Reply-To: <1384499789-3631-1-git-send-email-Gang.Liu@freescale.com>
+References: <1384499789-3631-1-git-send-email-Gang.Liu@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-gpio@vger.kernel.org, linus.walleij@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, r61911@freescale.com, b07421@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,59 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I found the same on MPC8321 long time ago(when 64 bits change went in),=20
-the 32 bits were much faster. I guess the "smaller"
-CPUs cannot handle the cache trashing these big tables impose, I didn't=20
-look into the details though.
-So I think this is a good change for 8xx.
+On Fri, 15 Nov 2013 15:16:29 +0800
+Liu Gang <Gang.Liu@freescale.com> wrote:
 
-Acked-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+> For MPC8572/MPC8536, the status of GPIOs defined as output
+> cannot be determined by reading GPDAT register, so the code
+> use shadow data register instead. But if the input pins are
+> asserted high, they will always read high due to the shadow
+> data, even if the pins are set to low.
 
-Christophe Leroy <christophe.leroy@c-s.fr> wrote on 2013/11/18 08:04:23:
+Could you please add a better description of the problem?
+I'm having some difficulties to understand the last sentence
+above. Does the issue appear if some pins were configured as
+inputs and were asserted high before booting the kernel, and
+therefore the shadow data has been initialized with these pin
+values?
 
-> From: Christophe Leroy <christophe.leroy@c-s.fr>
-> To: Vitaly Bordug <vitb@kernel.crashing.org>, Marcelo Tosatti=20
-<marcelo@kvack.org>, Joakim Tjernlund <joakim.tjernlund@transmode.se>, Bob =
+Or does the issue appear if some pin has been configured as output
+first and has been set to the high value, then reconfigured as
+input? Now reading the pin state will always return high even
+if the actual pin state is low?
 
-Pearson <rpearson@systemfabricworks.com>,=20
-> Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-> Date: 2013/11/19 13:05
-> Subject: [PATCH] lib/crc32: slice by 4 is more efficient than the=20
-default slice by 8 on Powerpc 8xx.
->=20
-> On PPC=5F8xx, CRC32=5FSLICEBY4 is more efficient (almost twice) than=20
-CRC32=5FSLICEBY8,
-> as shown below:
->=20
-> With CRC32=5FSLICEBY8:
-> [    1.109204] crc32: CRC=5FLE=5FBITS =3D 64, CRC=5FBE BITS =3D 64
-> [    1.114401] crc32: self tests passed, processed 225944 bytes in=20
-15118910 nsec
-> [    1.130655] crc32c: CRC=5FLE=5FBITS =3D 64
-> [    1.134235] crc32c: self tests passed, processed 225944 bytes in=20
-4479879 nsec
->=20
-> With CRC32=5FSLICEBY4:
-> [    1.097129] crc32: CRC=5FLE=5FBITS =3D 32, CRC=5FBE BITS =3D 32
-> [    1.101878] crc32: self tests passed, processed 225944 bytes in=20
-8616242 nsec
-> [    1.116298] crc32c: CRC=5FLE=5FBITS =3D 32
-> [    1.119607] crc32c: self tests passed, processed 225944 bytes in=20
-3289576 nsec
->=20
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->=20
-> Index: a/lib/Kconfig
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- a/lib/Kconfig   (r=C3=A9vision 5325)
-> +++ b/lib/Kconfig   (copie de travail)
-> @@ -102,6 +102,7 @@
->  choice
->     prompt "CRC32 implementation"
->     depends on CRC32
-> +   default CRC32=5FSLICEBY4 if PPC=5F8xx
->     default CRC32=5FSLICEBY8
->     help
->       This option allows a kernel builder to override the default choice
+It seems the issue will appear in both cases. If so, please add
+this information to the commit message.
+
+> So the input pins should be read directly from GPDAT, not
+> the shadow data.
+> 
+> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+> ---
+>  drivers/gpio/gpio-mpc8xxx.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/gpio/gpio-mpc8xxx.c b/drivers/gpio/gpio-mpc8xxx.c
+> index 9ae29cc..1d4ac75 100644
+> --- a/drivers/gpio/gpio-mpc8xxx.c
+> +++ b/drivers/gpio/gpio-mpc8xxx.c
+> @@ -71,6 +71,7 @@ static int mpc8572_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+>  	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
+>  
+>  	val = in_be32(mm->regs + GPIO_DAT) & ~in_be32(mm->regs + GPIO_DIR);
+> +	mpc8xxx_gc->data &= in_be32(mm->regs + GPIO_DIR);
+
+we can reduce one in_be32() call here, i.e.
+
+	u32 out_mask;
+	...
+	out_mask = in_be32(mm->regs + GPIO_DIR);
+	val = in_be32(mm->regs + GPIO_DAT) & ~out_mask;
+	mpc8xxx_gc->data &= out_mask;
+
+>  	return (val | mpc8xxx_gc->data) & mpc8xxx_gpio2mask(gpio);
+>  }
+
+Thanks,
+
+Anatolij
+
+--
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0  Fax: +49-8142-66989-80 Email: office@denx.de
