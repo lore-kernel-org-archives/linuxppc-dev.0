@@ -1,27 +1,21 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-oa0-f46.google.com (mail-oa0-f46.google.com
- [209.85.219.46])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D09A22C00E2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 20:49:56 +1100 (EST)
-Received: by mail-oa0-f46.google.com with SMTP id o6so2076886oag.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 01:49:52 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1384499789-3631-1-git-send-email-Gang.Liu@freescale.com>
-References: <1384499789-3631-1-git-send-email-Gang.Liu@freescale.com>
-Date: Tue, 19 Nov 2013 10:49:52 +0100
-Message-ID: <CACRpkdaZnVn0N64XwxmjDPz0zTXSJvBLU76GBY3onGqKDHmrgw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/gpio: Fix the wrong GPIO input data on
- MPC8572/MPC8536
-From: Linus Walleij <linus.walleij@linaro.org>
-To: Liu Gang <Gang.Liu@freescale.com>, Anatolij Gustschin <agust@denx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- r61911@freescale.com, b07421@freescale.com
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id D47352C010A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 21:39:37 +1100 (EST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1812\))
+Subject: Re: [PATCH RESEND v4] powerpc: kvm: fix rare but potential deadlock
+ scene
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1384841568-20986-1-git-send-email-pingfank@linux.vnet.ibm.com>
+Date: Tue, 19 Nov 2013 11:39:27 +0100
+Message-Id: <C03A0DFC-4883-43CA-8EBB-0F80821C31BE@suse.de>
+References: <1384841568-20986-1-git-send-email-pingfank@linux.vnet.ibm.com>
+To: Liu Ping Fan <kernelfans@gmail.com>
+Cc: Gleb Natapov <gleb@redhat.com>,
+ "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 15, 2013 at 8:16 AM, Liu Gang <Gang.Liu@freescale.com> wrote:
 
-> For MPC8572/MPC8536, the status of GPIOs defined as output
-> cannot be determined by reading GPDAT register, so the code
-> use shadow data register instead. But if the input pins are
-> asserted high, they will always read high due to the shadow
-> data, even if the pins are set to low.
->
-> So the input pins should be read directly from GPDAT, not
-> the shadow data.
->
-> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
-> ---
->  drivers/gpio/gpio-mpc8xxx.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/gpio/gpio-mpc8xxx.c b/drivers/gpio/gpio-mpc8xxx.c
-> index 9ae29cc..1d4ac75 100644
-> --- a/drivers/gpio/gpio-mpc8xxx.c
-> +++ b/drivers/gpio/gpio-mpc8xxx.c
-> @@ -71,6 +71,7 @@ static int mpc8572_gpio_get(struct gpio_chip *gc, unsigned int gpio)
->         struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
->
->         val = in_be32(mm->regs + GPIO_DAT) & ~in_be32(mm->regs + GPIO_DIR);
-> +       mpc8xxx_gc->data &= in_be32(mm->regs + GPIO_DIR);
->
->         return (val | mpc8xxx_gc->data) & mpc8xxx_gpio2mask(gpio);
->  }
+On 19.11.2013, at 07:12, Liu Ping Fan <kernelfans@gmail.com> wrote:
 
-Anatolij, Ben: can either of you take a look at this patch and ACK it
-if OK?
+> Since kvmppc_hv_find_lock_hpte() is called from both virtmode and
+> realmode, so it can trigger the deadlock.
+> 
+> Suppose the following scene:
+> 
+> Two physical cpuM, cpuN, two VM instances A, B, each VM has a group of
+> vcpus.
+> 
+> If on cpuM, vcpu_A_1 holds bitlock X (HPTE_V_HVLOCK), then is switched
+> out, and on cpuN, vcpu_A_2 try to lock X in realmode, then cpuN will be
+> caught in realmode for a long time.
+> 
+> What makes things even worse if the following happens,
+>  On cpuM, bitlockX is hold, on cpuN, Y is hold.
+>  vcpu_B_2 try to lock Y on cpuM in realmode
+>  vcpu_A_2 try to lock X on cpuN in realmode
+> 
+> Oops! deadlock happens
+> 
+> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
 
-Yours,
-Linus Walleij
+Any particular reason for the resend? The patch is already applied, no?
+
+
+Alex
