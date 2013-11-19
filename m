@@ -1,19 +1,27 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
- [IPv6:2001:44b8:8060:ff02:300:1:6:6])
- by ozlabs.org (Postfix) with ESMTP id D94B02C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 11:45:37 +1100 (EST)
-From: Alistair Popple <alistair@popple.id.au>
+Return-Path: <Varun.Sethi@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2185F2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 13:42:19 +1100 (EST)
+From: Varun Sethi <Varun.Sethi@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc: Don't use ELFv2 ABI to build the kernel
-Date: Tue, 19 Nov 2013 11:46:16 +1100
-Message-ID: <3369315.f3RWp1lUUO@mexican>
-In-Reply-To: <1384802965.1403.304.camel@snotra.buserror.net>
-References: <1384755694-30293-1-git-send-email-alistair@popple.id.au>
- <1384802965.1403.304.camel@snotra.buserror.net>
+Subject: RE: [PATCH] iommu/fsl_pamu: use physical cpu index to find the
+ matched cpu nodes
+Date: Tue, 19 Nov 2013 02:42:09 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D0A5B966D@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1384457440.2144.15.camel@haiying-laptop>
+ <1384467025.1403.210.camel@snotra.buserror.net>
+ <C5ECD7A89D1DC44195F34B25E172658D0A5B0AE8@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1384803449.1403.313.camel@snotra.buserror.net>
+In-Reply-To: <1384803449.1403.313.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="nextPart36450780.OTHEg8cMQN"
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "joro@8bytes.org" <joro@8bytes.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,67 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
---nextPart36450780.OTHEg8cMQN
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Mon, 18 Nov 2013 13:29:25 Scott Wood wrote:
-> On Mon, 2013-11-18 at 17:21 +1100, Alistair Popple wrote:
-
-[snip]
-
-> 
-> How hard would it be to get the kernel to work with the new ABI?
-
-We are preparing patches at the moment to allow the kernel to support a 
-userspace compiled with the new ABI, however the kernel itself still needs to 
-be built using the old ABI.
-
-I'm not sure how hard it would be to compile a kernel with the new ABI. It 
-mostly compiles now however I'm guessing there's probably some code that would 
-need porting to make it functional.
-
-> Do you know where I can find a document for it?
-
-The ABI is still under development so there isn't any documentation available 
-for it yet.
-
-> -Scott
-
-Regards,
-
-Alistair
-
---nextPart36450780.OTHEg8cMQN
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/html; charset="us-ascii"
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
-<html><head><meta name="qrichtext" content="1" /><style type="text/css">
-p, li { white-space: pre-wrap; }
-</style></head><body style=" font-family:'Monospace'; font-size:9pt; font-weight:400; font-style:normal;">
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">On Mon, 18 Nov 2013 13:29:25 Scott Wood wrote:</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; On Mon, 2013-11-18 at 17:21 +1100, Alistair Popple wrote:</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">[snip]</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; How hard would it be to get the kernel to work with the new ABI?</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">We are preparing patches at the moment to allow the kernel to support a userspace compiled with the new ABI, however the kernel itself still needs to be built using the old ABI.</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">I'm not sure how hard it would be to compile a kernel with the new ABI. It mostly compiles now however I'm guessing there's probably some code that would need porting to make it functional.</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Do you know where I can find a document for it?</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">The ABI is still under development so there isn't any documentation available for it yet.</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; -Scott</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Regards,</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Alistair</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p></body></html>
---nextPart36450780.OTHEg8cMQN--
+Rm9yIHRoZSBEU1AgY2FzZSBhZ2FpbiB3ZSBoYXZlIHRvIHNldCB1cCB0aGUgc3Rhc2ggYXR0cmli
+dXRlLiBBcmUgeW91IHNheWluZyB0aGF0IHRoaXMgc2hvdWxkIGJlIGEgc2VwYXJhdGUgYXR0cmli
+dXRlPyANCg0KLVZhcnVuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTog
+V29vZCBTY290dC1CMDc0MjENCj4gU2VudDogVHVlc2RheSwgTm92ZW1iZXIgMTksIDIwMTMgMTow
+NyBBTQ0KPiBUbzogU2V0aGkgVmFydW4tQjE2Mzk1DQo+IENjOiBXYW5nIEhhaXlpbmctUjU0OTY0
+OyBqb3JvQDhieXRlcy5vcmc7IGlvbW11QGxpc3RzLmxpbnV4LQ0KPiBmb3VuZGF0aW9uLm9yZzsg
+bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gaW9t
+bXUvZnNsX3BhbXU6IHVzZSBwaHlzaWNhbCBjcHUgaW5kZXggdG8gZmluZCB0aGUNCj4gbWF0Y2hl
+ZCBjcHUgbm9kZXMNCj4gDQo+IE9uIFRodSwgMjAxMy0xMS0xNCBhdCAyMToxNiAtMDYwMCwgU2V0
+aGkgVmFydW4tQjE2Mzk1IHdyb3RlOg0KPiA+IEhhaXlpbmcvU2NvdHQsDQo+ID4gRm9yZ290IHRv
+IG1lbnRpb24gdGhpcywgdGhlIFBBTVUgZHJpdmVyIGhhcyB0byBoYW5kbGUgc3Rhc2gNCj4gPiBk
+ZXN0aW5hdGlvbiBzZXR0aW5ncyBib3RoIGZvciBwb3dlciBhbmQgZHNwIGNvcmVzIChvbiBCNCBw
+bGF0Zm9ybSkuDQo+ID4gRm9yIHRoZSBkc3AgY29yZXMgd2Ugd291bGQgZXhwZWN0IHRoZSBwaHlz
+aWNhbCBjb3JlIGlkIChub3QgY29udHJvbGxlZA0KPiBieSBMaW51eCkuDQo+ID4gVG8gbWFrZSB0
+aGUgaW50ZXJmYWNlIGNvbnNpc3RlbnQsIEkgd291bGQgZXhwZWN0IHRoZSBjYWxsZXIgKGZvcg0K
+PiA+IGlvbW11X3NldF9hdHRyKSB0byBwYXNzIHRoZSBwaHlzaWNhbCBjb3JlIGlkLg0KPiANCj4g
+VGhhdCBzb3VuZHMgbGlrZSB5b3UgbmVlZCB0d28gZGlmZmVyZW50IGludGVyZmFjZXMuDQo+IA0K
+PiAtU2NvdHQNCj4gDQoNCg==
