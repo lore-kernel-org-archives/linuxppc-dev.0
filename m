@@ -1,21 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- by ozlabs.org (Postfix) with ESMTP id 4F8132C0086
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 08:43:42 +1100 (EST)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1812\))
-Subject: Re: [PATCH v4] powerpc: kvm: fix rare but potential deadlock scene
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <6E84B29F-6921-4309-9A73-3AD8D8C6872A@suse.de>
-Date: Mon, 18 Nov 2013 16:43:39 -0500
-Message-Id: <CEDEE62C-5419-4B3A-AD3B-A88EBB35C465@suse.de>
-References: <1384504501-19348-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <20131116065517.GA18339@iris.ozlabs.ibm.com>
- <6E84B29F-6921-4309-9A73-3AD8D8C6872A@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Liu Ping Fan <qemulist@gmail.com>,
- kvm-ppc@vger.kernel.org,
- "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:6:6])
+ by ozlabs.org (Postfix) with ESMTP id D94B02C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 11:45:37 +1100 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: Don't use ELFv2 ABI to build the kernel
+Date: Tue, 19 Nov 2013 11:46:16 +1100
+Message-ID: <3369315.f3RWp1lUUO@mexican>
+In-Reply-To: <1384802965.1403.304.camel@snotra.buserror.net>
+References: <1384755694-30293-1-git-send-email-alistair@popple.id.au>
+ <1384802965.1403.304.camel@snotra.buserror.net>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="nextPart36450780.OTHEg8cMQN"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-On 18.11.2013, at 16:32, Alexander Graf <agraf@suse.de> wrote:
+--nextPart36450780.OTHEg8cMQN
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
->=20
-> On 16.11.2013, at 01:55, Paul Mackerras <paulus@samba.org> wrote:
->=20
->> On Fri, Nov 15, 2013 at 04:35:00PM +0800, Liu Ping Fan wrote:
->>> Since kvmppc_hv_find_lock_hpte() is called from both virtmode and
->>> realmode, so it can trigger the deadlock.
->>>=20
->>> Suppose the following scene:
->>>=20
->>> Two physical cpuM, cpuN, two VM instances A, B, each VM has a group =
-of
->>> vcpus.
->>>=20
->>> If on cpuM, vcpu_A_1 holds bitlock X (HPTE_V_HVLOCK), then is =
-switched
->>> out, and on cpuN, vcpu_A_2 try to lock X in realmode, then cpuN will =
-be
->>> caught in realmode for a long time.
->>>=20
->>> What makes things even worse if the following happens,
->>> On cpuM, bitlockX is hold, on cpuN, Y is hold.
->>> vcpu_B_2 try to lock Y on cpuM in realmode
->>> vcpu_A_2 try to lock X on cpuN in realmode
->>>=20
->>> Oops! deadlock happens
->>>=20
->>> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
->>=20
->> Reviewed-by: Paul Mackerras <paulus@samba.org>
->=20
-> Thanks, applied to kvm-ppc-queue.
+On Mon, 18 Nov 2013 13:29:25 Scott Wood wrote:
+> On Mon, 2013-11-18 at 17:21 +1100, Alistair Popple wrote:
 
-Actually, I've changed my mind and moved the patch to the for-3.13 =
-branch instead. Please make sure to CC kvm@vger on all patches you =
-submit though.
+[snip]
 
+> 
+> How hard would it be to get the kernel to work with the new ABI?
 
-Alex
+We are preparing patches at the moment to allow the kernel to support a 
+userspace compiled with the new ABI, however the kernel itself still needs to 
+be built using the old ABI.
+
+I'm not sure how hard it would be to compile a kernel with the new ABI. It 
+mostly compiles now however I'm guessing there's probably some code that would 
+need porting to make it functional.
+
+> Do you know where I can find a document for it?
+
+The ABI is still under development so there isn't any documentation available 
+for it yet.
+
+> -Scott
+
+Regards,
+
+Alistair
+
+--nextPart36450780.OTHEg8cMQN
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/html; charset="us-ascii"
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+<html><head><meta name="qrichtext" content="1" /><style type="text/css">
+p, li { white-space: pre-wrap; }
+</style></head><body style=" font-family:'Monospace'; font-size:9pt; font-weight:400; font-style:normal;">
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">On Mon, 18 Nov 2013 13:29:25 Scott Wood wrote:</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; On Mon, 2013-11-18 at 17:21 +1100, Alistair Popple wrote:</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">[snip]</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; How hard would it be to get the kernel to work with the new ABI?</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">We are preparing patches at the moment to allow the kernel to support a userspace compiled with the new ABI, however the kernel itself still needs to be built using the old ABI.</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">I'm not sure how hard it would be to compile a kernel with the new ABI. It mostly compiles now however I'm guessing there's probably some code that would need porting to make it functional.</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Do you know where I can find a document for it?</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">The ABI is still under development so there isn't any documentation available for it yet.</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; -Scott</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Regards,</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Alistair</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p></body></html>
+--nextPart36450780.OTHEg8cMQN--
