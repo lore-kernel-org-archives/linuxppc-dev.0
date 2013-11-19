@@ -1,19 +1,19 @@
 Return-Path: <Bharat.Bhushan@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EED1C2C03DB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 16:23:34 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 1D6352C042D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 16:23:48 +1100 (EST)
 From: Bharat Bhushan <r65777@freescale.com>
 To: <alex.williamson@redhat.com>, <joro@8bytes.org>, <bhelgaas@google.com>,
  <agraf@suse.de>, <scottwood@freescale.com>, <stuart.yoder@freescale.com>,
  <iommu@lists.linux-foundation.org>, <linux-pci@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/9 v2] pci: msi: expose msi region information functions
-Date: Tue, 19 Nov 2013 10:47:06 +0530
-Message-ID: <1384838233-24847-3-git-send-email-Bharat.Bhushan@freescale.com>
+Subject: [PATCH 3/9 v2] powerpc: pci: Add arch specific msi region interface
+Date: Tue, 19 Nov 2013 10:47:07 +0530
+Message-ID: <1384838233-24847-4-git-send-email-Bharat.Bhushan@freescale.com>
 In-Reply-To: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
 References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
@@ -28,56 +28,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-So by now we have defined all the interfaces for getting the msi region,
-this patch expose the interface to linux subsystem. These will be used by
-vfio subsystem for setting up iommu for MSI interrupt of direct assignment
-devices.
+This patch adds the interface to get the msi region information from arch
+specific code. The machine spicific code is not yet defined.
 
 Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
 ---
 v1->v2
  - None
 
- include/linux/pci.h |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/machdep.h |    8 ++++++++
+ arch/powerpc/kernel/msi.c          |   18 ++++++++++++++++++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index da172f9..c587034 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1142,6 +1142,7 @@ struct msix_entry {
- 	u16	entry;	/* driver uses to specify entry, OS writes */
- };
- 
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 8b48090..8d1b787 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -30,6 +30,7 @@ struct file;
+ struct pci_controller;
+ struct kimage;
+ struct pci_host_bridge;
 +struct msi_region;
  
- #ifndef CONFIG_PCI_MSI
- static inline int pci_enable_msi_block(struct pci_dev *dev, unsigned int nvec)
-@@ -1184,6 +1185,16 @@ static inline int pci_msi_enabled(void)
- {
- 	return 0;
- }
+ struct machdep_calls {
+ 	char		*name;
+@@ -124,6 +125,13 @@ struct machdep_calls {
+ 	int		(*setup_msi_irqs)(struct pci_dev *dev,
+ 					  int nvec, int type);
+ 	void		(*teardown_msi_irqs)(struct pci_dev *dev);
 +
-+static inline int msi_get_region_count(void)
-+{
-+	return 0;
-+}
++	/* Returns the number of MSI regions (banks) */
++	int		(*msi_get_region_count)(void);
 +
-+static inline int msi_get_region(int region_num, struct msi_region *region)
-+{
-+	return 0;
-+}
- #else
- int pci_enable_msi_block(struct pci_dev *dev, unsigned int nvec);
- int pci_enable_msi_block_auto(struct pci_dev *dev, unsigned int *maxvec);
-@@ -1196,6 +1207,8 @@ void pci_disable_msix(struct pci_dev *dev);
- void msi_remove_pci_irq_vectors(struct pci_dev *dev);
- void pci_restore_msi_state(struct pci_dev *dev);
- int pci_msi_enabled(void);
-+int msi_get_region_count(void);
-+int msi_get_region(int region_num, struct msi_region *region);
++	/* Returns the requested region's address and size */
++	int		(*msi_get_region)(int region_num,
++					  struct msi_region *region);
  #endif
  
- #ifdef CONFIG_PCIEPORTBUS
+ 	void		(*restart)(char *cmd);
+diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
+index 8bbc12d..1a67787 100644
+--- a/arch/powerpc/kernel/msi.c
++++ b/arch/powerpc/kernel/msi.c
+@@ -13,6 +13,24 @@
+ 
+ #include <asm/machdep.h>
+ 
++int arch_msi_get_region_count(void)
++{
++	if (ppc_md.msi_get_region_count) {
++		pr_debug("msi: Using platform get_region_count routine.\n");
++		return ppc_md.msi_get_region_count();
++	}
++	return 0;
++}
++
++int arch_msi_get_region(int region_num, struct msi_region *region)
++{
++	if (ppc_md.msi_get_region) {
++		pr_debug("msi: Using platform get_region routine.\n");
++		return ppc_md.msi_get_region(region_num, region);
++	}
++	return 0;
++}
++
+ int arch_msi_check_device(struct pci_dev* dev, int nvec, int type)
+ {
+ 	if (!ppc_md.setup_msi_irqs || !ppc_md.teardown_msi_irqs) {
 -- 
 1.7.0.4
