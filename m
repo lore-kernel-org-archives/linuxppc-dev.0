@@ -1,24 +1,33 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-oa0-x22a.google.com (mail-oa0-x22a.google.com
- [IPv6:2607:f8b0:4003:c02::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 959402C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 17:12:10 +1100 (EST)
-Received: by mail-oa0-f42.google.com with SMTP id i4so2733806oah.29
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2013 22:12:07 -0800 (PST)
-From: Liu Ping Fan <kernelfans@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	kvm-ppc@vger.kernel.org
-Subject: [PATCH v3] powerpc: kvm: optimize "sc 1" as fast return
-Date: Tue, 19 Nov 2013 14:12:48 +0800
-Message-Id: <1384841568-20986-2-git-send-email-pingfank@linux.vnet.ibm.com>
-In-Reply-To: <1384841568-20986-1-git-send-email-pingfank@linux.vnet.ibm.com>
-References: <1384841568-20986-1-git-send-email-pingfank@linux.vnet.ibm.com>
-Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@redhat.com>,
- Alexander Graf <agraf@suse.de>, Paul Mackerras <paulus@samba.org>,
- Paolo Bonzini <pbonzini@redhat.com>
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1C9302C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 19:11:55 +1100 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Tue, 19 Nov 2013 18:11:53 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1CAF52BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 19:11:42 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAJ8BUOE2818494
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 19:11:30 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rAJ8Bfin003315
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 19:11:41 +1100
+Message-ID: <1384848697.2511.17.camel@ThinkPad-T5421>
+Subject: [RFC PATCH powerpc] Fix a dma_mask issue of vio
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 19 Nov 2013 16:11:37 +0800
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, rmk+kernel@arm.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,83 +37,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In some scene, e.g openstack CI, PR guest can trigger "sc 1" frequently,
-this patch optimizes the path by directly delivering BOOK3S_INTERRUPT_SYSCALL
-to HV guest, so powernv can return to HV guest without heavy exit, i.e,
-no need to swap TLB, HTAB,.. etc
+I encountered following issue:
+[    0.283035] ibmvscsi 30000015: couldn't initialize event pool
+[    5.688822] ibmvscsi: probe of 30000015 failed with error -1
 
-Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
----
-v3: add some document
----
- arch/powerpc/kvm/book3s_hv.c            | 10 ++++------
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 19 ++++++++++++++++++-
- 2 files changed, 22 insertions(+), 7 deletions(-)
+which prevents the storage from being recognized, and the machine from
+booting.
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 62a2b5a..1addb1a 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -628,12 +628,10 @@ static int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		/* hcall - punt to userspace */
- 		int i;
+After some digging, it seems that it is caused by commit 4886c399da
+
+as dma_mask pointer in viodev->dev is not set, so in
+dma_set_mask_and_coherent(), dma_set_coherent_mask() is not called
+because dma_set_mask(), which is dma_set_mask_pSeriesLP() returned EIO.
+While before the commit, dma_set_coherent_mask() is always called. 
+
+I tried to replace dma_set_mask_and_coherent() with
+dma_coerce_mask_and_coherent(), and the machine could boot again. 
+
+But I'm not sure whether this is the correct fix...
+
+---
+ arch/powerpc/kernel/vio.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index e7d0c88..76a6482 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -1419,7 +1419,7 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
  
--		if (vcpu->arch.shregs.msr & MSR_PR) {
--			/* sc 1 from userspace - reflect to guest syscall */
--			kvmppc_book3s_queue_irqprio(vcpu, BOOK3S_INTERRUPT_SYSCALL);
--			r = RESUME_GUEST;
--			break;
--		}
-+		/* hypercall with MSR_PR has already been handled in rmode,
-+		 * and never reaches here.
-+		 */
-+
- 		run->papr_hcall.nr = kvmppc_get_gpr(vcpu, 3);
- 		for (i = 0; i < 9; ++i)
- 			run->papr_hcall.args[i] = kvmppc_get_gpr(vcpu, 4 + i);
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index c71103b..eea7ca7 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -534,6 +534,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
- 5:	mtspr	SPRN_SRR0, r6
- 	mtspr	SPRN_SRR1, r7
+ 		/* needed to ensure proper operation of coherent allocations
+ 		 * later, in case driver doesn't set it explicitly */
+-		dma_set_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
++		dma_coerce_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
+ 	}
  
-+/*
-+ * Required state:
-+ * R4 = vcpu
-+ * R10: value for HSRR0
-+ * R11: value for HSRR1
-+ * R13 = PACA
-+ */
- fast_guest_return:
- 	li	r0,0
- 	stb	r0,VCPU_CEDED(r4)	/* cancel cede */
-@@ -1388,7 +1395,8 @@ kvmppc_hisi:
- hcall_try_real_mode:
- 	ld	r3,VCPU_GPR(R3)(r9)
- 	andi.	r0,r11,MSR_PR
--	bne	guest_exit_cont
-+	/* sc 1 from userspace - reflect to guest syscall */
-+	bne	sc_1_fast_return
- 	clrrdi	r3,r3,2
- 	cmpldi	r3,hcall_real_table_end - hcall_real_table
- 	bge	guest_exit_cont
-@@ -1409,6 +1417,15 @@ hcall_try_real_mode:
- 	ld	r11,VCPU_MSR(r4)
- 	b	fast_guest_return
- 
-+sc_1_fast_return:
-+	mtspr	SPRN_SRR0,r10
-+	mtspr	SPRN_SRR1,r11
-+	li	r10, BOOK3S_INTERRUPT_SYSCALL
-+	li	r11, (MSR_ME << 1) | 1  /* synthesize MSR_SF | MSR_ME */
-+	rotldi	r11, r11, 63
-+	mr	r4,r9
-+	b	fast_guest_return
-+
- 	/* We've attempted a real mode hcall, but it's punted it back
- 	 * to userspace.  We need to restore some clobbered volatiles
- 	 * before resuming the pass-it-to-qemu path */
--- 
-1.8.1.4
+ 	/* register with generic device framework */
