@@ -1,50 +1,31 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+Return-Path: <r65037@shlinux1.ap.freescale.net>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0189.outbound.messaging.microsoft.com [213.199.154.189])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7BB422C0089
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 14:46:49 +1100 (EST)
-Date: Wed, 20 Nov 2013 11:37:46 +0800
-From: Nicolin Chen <b42378@freescale.com>
-To: Xiubo Li-B47053 <Li.Xiubo@freescale.com>
-Subject: Re: [PATCHv2 1/8] ALSA: Add SAI SoC Digital Audio Interface driver.
-Message-ID: <20131120033745.GD11009@MrMyself>
-References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
- <1383289495-24523-2-git-send-email-Li.Xiubo@freescale.com>
- <20131101085904.GC28401@MrMyself>
- <1DD289F6464F0949A2FCA5AA6DC23F82874201@039-SN2MPN1-013.039d.mgd.msft.net>
- <20131104043338.GA2345@MrMyself>
- <1DD289F6464F0949A2FCA5AA6DC23F828AE980@039-SN2MPN1-012.039d.mgd.msft.net>
+ by ozlabs.org (Postfix) with ESMTPS id B01F62C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 14:16:24 +1100 (EST)
+From: Richard Zhu <r65037@freescale.com>
+To: <r65037@freescale.com>
+Subject: [PATCH 24/34] PCI: use weak functions for MSI arch-specific functions
+Date: Wed, 20 Nov 2013 10:50:43 +0800
+Message-ID: <1384915853-31006-24-git-send-email-r65037@freescale.com>
+In-Reply-To: <1384915853-31006-1-git-send-email-r65037@freescale.com>
+References: <1384915853-31006-1-git-send-email-r65037@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1DD289F6464F0949A2FCA5AA6DC23F828AE980@039-SN2MPN1-012.039d.mgd.msft.net>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "tiwai@suse.de" <tiwai@suse.de>, "timur@tabi.org" <timur@tabi.org>,
- "perex@perex.cz" <perex@perex.cz>, Wang Huan-B18965 <Huan.Wang@freescale.com>,
- "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- Guo Shawn-R65073 <Shawn.Guo@freescale.com>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- "pawel.moll@arm.com" <pawel.moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- "broonie@kernel.org" <broonie@kernel.org>,
- Jin Zhengxiong-R64188 <Jason.Jin@freescale.com>,
- "oskar@scara.com" <oskar@scara.com>,
- Estevam Fabio-R49496 <Fabio.Estevam@freescale.com>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob@landley.net" <rob@landley.net>,
- Chen Guangyu-B42378 <guangyu.chen@freescale.com>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Jason Cooper <jason@lakedaemon.net>,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,85 +35,307 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 20, 2013 at 11:37:45AM +0800, Xiubo Li-B47053 wrote:
->  
-> > The udelay just doesn't make sense to what you are talking about.
-> > 
-> > Does SAI really need 10us delay between two register-updating?
-> > 
-> 
-> No, this is not must be.
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-Then you should explain in your comments why you really put it here or just
-drop it if it's just a mistake.
+Until now, the MSI architecture-specific functions could be overloaded
+using a fairly complex set of #define and compile-time
+conditionals. In order to prepare for the introduction of the msi_chip
+infrastructure, it is desirable to switch all those functions to use
+the 'weak' mechanism. This commit converts all the architectures that
+were overidding those MSI functions to use the new strategy.
 
-> > We basically use udelay only if the IP hardware actually needs it: some
-> > IP needs time to boot itself up after doing software reset for example.
-> > But it doesn't look reasonable to me by using udelay to make sure "the
-> > last enabled".
-> > 
-> > And from the 'Synchronous mode' you just provided, there're another issue:
-> > 
-> > +	case SNDRV_PCM_TRIGGER_START:
-> > +	case SNDRV_PCM_TRIGGER_RESUME:
-> > +	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-> > +		tcsr |= FSL_SAI_CSR_TERE;
-> > +		rcsr |= FSL_SAI_CSR_TERE;
-> > +		writel(rcsr, sai->base + FSL_SAI_RCSR);
-> > +		udelay(10);
-> > +		writel(tcsr, sai->base + FSL_SAI_TCSR);
-> > +		break;
-> > +
-> > +	case SNDRV_PCM_TRIGGER_STOP:
-> > +	case SNDRV_PCM_TRIGGER_SUSPEND:
-> > +	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-> > +		if (!(dai->playback_active || dai->capture_active)) {
-> > +			tcsr &= ~FSL_SAI_CSR_TERE;
-> > +			rcsr &= ~FSL_SAI_CSR_TERE;
-> > +		}
-> > +		writel(rcsr, sai->base + FSL_SAI_RCSR);
-> > +		udelay(10);
-> > +		writel(tcsr, sai->base + FSL_SAI_TCSR);
-> > +		break;
-> > 
-> > ISSUE 1: You might make sure transmitter is the last enabled.
-> > 	 However, it's not the first disabled. Is this okay?
-> > 
-> 
-> Yes, this is just programming mistake. I'll revise it.
-> 
-> In this case the transmitter should be the last enabled and the first disabled.
-> 
-> 
-> > ISSUE 2: There are two cases listed in 'Synchronous mode'.
-> > 	 However, your driver doesn't take care of them.
-> > 	 The SAI's synchronous mode looks like more flexible
-> > 	 than SSI's. The driver needs to be more sophisticated
-> > 	 so that it can handle multiple cases when TX/RX clocks
-> > 	 are controlled by either TX or RX, and surely, the
-> > 	 asynchronous mode as well.
-> > 
-> 
-> Because in Vybrid the transmitter bit clock and frame sync are to be used by
-> both the transmitter and receiver, and only this case can be used here, so
-> now I only handle this case.
+Note that we keep two separate, non-weak, functions
+default_teardown_msi_irqs() and default_restore_msi_irqs() for the
+default behavior of the arch_teardown_msi_irqs() and
+arch_restore_msi_irqs(), as the default behavior is needed by x86 PCI
+code.
 
-It's fairly okay if adding explicit comments to indicate that currently the
-driver only supports its Synchronous mode with clocks controlled by TX only.
+Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Tested-by: Daniel Price <daniel.price@gmail.com>
+Tested-by: Thierry Reding <thierry.reding@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux390@de.ibm.com
+Cc: linux-s390@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org
+Cc: David S. Miller <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+Signed-off-by: Jason Cooper <jason@lakedaemon.net>
+---
+ arch/mips/include/asm/pci.h    |    5 ----
+ arch/powerpc/include/asm/pci.h |    5 ----
+ arch/s390/include/asm/pci.h    |    4 ---
+ arch/x86/include/asm/pci.h     |   30 -------------------------
+ arch/x86/kernel/x86_init.c     |   24 ++++++++++++++++++++
+ drivers/pci/msi.c              |   48 ++++++++++++++++++++--------------------
+ include/linux/msi.h            |    8 +++++-
+ 7 files changed, 55 insertions(+), 69 deletions(-)
 
-Best,
-Nicolin Chen
-
-> > 
-> > And there's another personal tip: I think you can first try to focus on
-> > this SAI driver and pend the others. There might be two many things you
-> > need to refine if you are doing them at the same time.
-> > 
-> 
-> I'll implement them later if needed.
-> 
-> 
-> --
-> Best Regards,
-> Xiubo
-> 
+diff --git a/arch/mips/include/asm/pci.h b/arch/mips/include/asm/pci.h
+index b8e24fd..031f4c1 100644
+--- a/arch/mips/include/asm/pci.h
++++ b/arch/mips/include/asm/pci.h
+@@ -137,11 +137,6 @@ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+ 	return channel ? 15 : 14;
+ }
+ 
+-#ifdef CONFIG_CPU_CAVIUM_OCTEON
+-/* MSI arch hook for OCTEON */
+-#define arch_setup_msi_irqs arch_setup_msi_irqs
+-#endif
+-
+ extern char * (*pcibios_plat_setup)(char *str);
+ 
+ #ifdef CONFIG_OF
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index 6653f27..95145a1 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -113,11 +113,6 @@ extern int pci_domain_nr(struct pci_bus *bus);
+ /* Decide whether to display the domain number in /proc */
+ extern int pci_proc_domain(struct pci_bus *bus);
+ 
+-/* MSI arch hooks */
+-#define arch_setup_msi_irqs arch_setup_msi_irqs
+-#define arch_teardown_msi_irqs arch_teardown_msi_irqs
+-#define arch_msi_check_device arch_msi_check_device
+-
+ struct vm_area_struct;
+ /* Map a range of PCI memory or I/O space for a device into user space */
+ int pci_mmap_page_range(struct pci_dev *pdev, struct vm_area_struct *vma,
+diff --git a/arch/s390/include/asm/pci.h b/arch/s390/include/asm/pci.h
+index 6c18012..8641e8d 100644
+--- a/arch/s390/include/asm/pci.h
++++ b/arch/s390/include/asm/pci.h
+@@ -21,10 +21,6 @@ void pci_iounmap(struct pci_dev *, void __iomem *);
+ int pci_domain_nr(struct pci_bus *);
+ int pci_proc_domain(struct pci_bus *);
+ 
+-/* MSI arch hooks */
+-#define arch_setup_msi_irqs	arch_setup_msi_irqs
+-#define arch_teardown_msi_irqs	arch_teardown_msi_irqs
+-
+ #define ZPCI_BUS_NR			0	/* default bus number */
+ #define ZPCI_DEVFN			0	/* default device number */
+ 
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index d9e9e6c..7d74432 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -100,29 +100,6 @@ static inline void early_quirks(void) { }
+ extern void pci_iommu_alloc(void);
+ 
+ #ifdef CONFIG_PCI_MSI
+-/* MSI arch specific hooks */
+-static inline int x86_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+-{
+-	return x86_msi.setup_msi_irqs(dev, nvec, type);
+-}
+-
+-static inline void x86_teardown_msi_irqs(struct pci_dev *dev)
+-{
+-	x86_msi.teardown_msi_irqs(dev);
+-}
+-
+-static inline void x86_teardown_msi_irq(unsigned int irq)
+-{
+-	x86_msi.teardown_msi_irq(irq);
+-}
+-static inline void x86_restore_msi_irqs(struct pci_dev *dev, int irq)
+-{
+-	x86_msi.restore_msi_irqs(dev, irq);
+-}
+-#define arch_setup_msi_irqs x86_setup_msi_irqs
+-#define arch_teardown_msi_irqs x86_teardown_msi_irqs
+-#define arch_teardown_msi_irq x86_teardown_msi_irq
+-#define arch_restore_msi_irqs x86_restore_msi_irqs
+ /* implemented in arch/x86/kernel/apic/io_apic. */
+ struct msi_desc;
+ int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+@@ -130,16 +107,9 @@ void native_teardown_msi_irq(unsigned int irq);
+ void native_restore_msi_irqs(struct pci_dev *dev, int irq);
+ int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc,
+ 		  unsigned int irq_base, unsigned int irq_offset);
+-/* default to the implementation in drivers/lib/msi.c */
+-#define HAVE_DEFAULT_MSI_TEARDOWN_IRQS
+-#define HAVE_DEFAULT_MSI_RESTORE_IRQS
+-void default_teardown_msi_irqs(struct pci_dev *dev);
+-void default_restore_msi_irqs(struct pci_dev *dev, int irq);
+ #else
+ #define native_setup_msi_irqs		NULL
+ #define native_teardown_msi_irq		NULL
+-#define default_teardown_msi_irqs	NULL
+-#define default_restore_msi_irqs	NULL
+ #endif
+ 
+ #define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
+diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
+index 45a14db..5587f99 100644
+--- a/arch/x86/kernel/x86_init.c
++++ b/arch/x86/kernel/x86_init.c
+@@ -107,6 +107,8 @@ struct x86_platform_ops x86_platform = {
+ };
+ 
+ EXPORT_SYMBOL_GPL(x86_platform);
++
++#if defined(CONFIG_PCI_MSI)
+ struct x86_msi_ops x86_msi = {
+ 	.setup_msi_irqs		= native_setup_msi_irqs,
+ 	.compose_msi_msg	= native_compose_msi_msg,
+@@ -116,6 +118,28 @@ struct x86_msi_ops x86_msi = {
+ 	.setup_hpet_msi		= default_setup_hpet_msi,
+ };
+ 
++/* MSI arch specific hooks */
++int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++{
++	return x86_msi.setup_msi_irqs(dev, nvec, type);
++}
++
++void arch_teardown_msi_irqs(struct pci_dev *dev)
++{
++	x86_msi.teardown_msi_irqs(dev);
++}
++
++void arch_teardown_msi_irq(unsigned int irq)
++{
++	x86_msi.teardown_msi_irq(irq);
++}
++
++void arch_restore_msi_irqs(struct pci_dev *dev, int irq)
++{
++	x86_msi.restore_msi_irqs(dev, irq);
++}
++#endif
++
+ struct x86_io_apic_ops x86_io_apic_ops = {
+ 	.init			= native_io_apic_init_mappings,
+ 	.read			= native_io_apic_read,
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index aca7578..823c386 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -30,20 +30,21 @@ static int pci_msi_enable = 1;
+ 
+ /* Arch hooks */
+ 
+-#ifndef arch_msi_check_device
+-int arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
++int __weak arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc)
+ {
+-	return 0;
++	return -EINVAL;
+ }
+-#endif
+ 
+-#ifndef arch_setup_msi_irqs
+-# define arch_setup_msi_irqs default_setup_msi_irqs
+-# define HAVE_DEFAULT_MSI_SETUP_IRQS
+-#endif
++void __weak arch_teardown_msi_irq(unsigned int irq)
++{
++}
+ 
+-#ifdef HAVE_DEFAULT_MSI_SETUP_IRQS
+-int default_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
++{
++	return 0;
++}
++
++int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ {
+ 	struct msi_desc *entry;
+ 	int ret;
+@@ -65,14 +66,11 @@ int default_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 
+ 	return 0;
+ }
+-#endif
+-
+-#ifndef arch_teardown_msi_irqs
+-# define arch_teardown_msi_irqs default_teardown_msi_irqs
+-# define HAVE_DEFAULT_MSI_TEARDOWN_IRQS
+-#endif
+ 
+-#ifdef HAVE_DEFAULT_MSI_TEARDOWN_IRQS
++/*
++ * We have a default implementation available as a separate non-weak
++ * function, as it is used by the Xen x86 PCI code
++ */
+ void default_teardown_msi_irqs(struct pci_dev *dev)
+ {
+ 	struct msi_desc *entry;
+@@ -89,14 +87,12 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
+ 			arch_teardown_msi_irq(entry->irq + i);
+ 	}
+ }
+-#endif
+ 
+-#ifndef arch_restore_msi_irqs
+-# define arch_restore_msi_irqs default_restore_msi_irqs
+-# define HAVE_DEFAULT_MSI_RESTORE_IRQS
+-#endif
++void __weak arch_teardown_msi_irqs(struct pci_dev *dev)
++{
++	return default_teardown_msi_irqs(dev);
++}
+ 
+-#ifdef HAVE_DEFAULT_MSI_RESTORE_IRQS
+ void default_restore_msi_irqs(struct pci_dev *dev, int irq)
+ {
+ 	struct msi_desc *entry;
+@@ -114,7 +110,11 @@ void default_restore_msi_irqs(struct pci_dev *dev, int irq)
+ 	if (entry)
+ 		write_msi_msg(irq, &entry->msg);
+ }
+-#endif
++
++void __weak arch_restore_msi_irqs(struct pci_dev *dev, int irq)
++{
++	return default_restore_msi_irqs(dev, irq);
++}
+ 
+ static void msi_set_enable(struct pci_dev *dev, int enable)
+ {
+diff --git a/include/linux/msi.h b/include/linux/msi.h
+index ee66f3a..271dfd1 100644
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -51,12 +51,18 @@ struct msi_desc {
+ };
+ 
+ /*
+- * The arch hook for setup up msi irqs
++ * The arch hooks to setup up msi irqs. Those functions are
++ * implemented as weak symbols so that they /can/ be overriden by
++ * architecture specific code if needed.
+  */
+ int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
+ void arch_teardown_msi_irq(unsigned int irq);
+ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+ void arch_teardown_msi_irqs(struct pci_dev *dev);
+ int arch_msi_check_device(struct pci_dev* dev, int nvec, int type);
++void arch_restore_msi_irqs(struct pci_dev *dev, int irq);
++
++void default_teardown_msi_irqs(struct pci_dev *dev);
++void default_restore_msi_irqs(struct pci_dev *dev, int irq);
+ 
+ #endif /* LINUX_MSI_H */
+-- 
+1.7.8
