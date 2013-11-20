@@ -1,21 +1,38 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1DBEF2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 20:51:24 +1100 (EST)
-From: <Yuantian.Tang@freescale.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH v7] clk: corenet: Adds the clock binding
-Date: Wed, 20 Nov 2013 17:04:49 +0800
-Message-ID: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6387E2C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 21:09:40 +1100 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 20 Nov 2013 03:09:37 -0700
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id F214D6E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 05:09:31 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAKA9Ybo3473764
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 10:09:34 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rAKA9Xjl032307
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 05:09:34 -0500
+Date: Wed, 20 Nov 2013 18:09:27 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/eeh: Dump PHB3 diag-data on frozen PE
+Message-ID: <20131120100927.GA2546@shangw.(null)>
+References: <1384940196-32514-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1384940328.26969.88.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- Tang Yuantian <Yuantian.Tang@freescale.com>, scottwood@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1384940328.26969.88.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,170 +42,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <yuantian.tang@freescale.com>
+On Wed, Nov 20, 2013 at 08:38:48PM +1100, Benjamin Herrenschmidt wrote:
+>On Wed, 2013-11-20 at 17:36 +0800, Gavin Shan wrote:
+>> While we detect frozen PE on PHB3, it's always meaningful to have
+>> the dumped diag-data for further diagnosis and analysis.
+>
+>Don't we trip that during PCI probing ? For example if we probe behind
+>a PCI-X bridge (which can exist on an adapter) we'll trip EEH on every
+>non-existing device won't we ?
+>
 
-Adds the clock bindings for Freescale PowerPC CoreNet platforms
+Yes, we already had the dumped PHB diag-data when detecting frozen PE
+during PCI probing. After PCI probing is completed, the EEH takes over
+and we won't dump PHB diag-data during PCI config cycles.
 
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
----
-v7:
-	- refined some properties' definitions
-v6:
-	- splited the previous patch into 2 parts, one is for binding(this one),
-	  the other is for DTS modification(will submit once this gets accepted)
-	- fixed typo
-	- refined #clock-cells and clock-output-names properties
-	- removed fixed-clock compatible string
-v5:
-	- refine the binding document
-	- update the compatible string
-v4:
-	- add binding document
-	- update compatible string
-	- update the reg property
-v3:
-	- fix typo
-v2:
-	- add t4240, b4420, b4860 support
-	- remove pll/4 clock from p2041, p3041 and p5020 board
- .../devicetree/bindings/clock/corenet-clock.txt    | 128 +++++++++++++++++++++
- 1 file changed, 128 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/clock/corenet-clock.txt
+Took a close look on what we have in the code. Those functions to dump
+PHB (P7IOC & PHB3) needs a bit rework or refactoring since we're dumping
+same PHB diag-data in pci.c and eeh-ioda.c at the same time.
 
-diff --git a/Documentation/devicetree/bindings/clock/corenet-clock.txt b/Documentation/devicetree/bindings/clock/corenet-clock.txt
-new file mode 100644
-index 0000000..609ba2b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/clock/corenet-clock.txt
-@@ -0,0 +1,128 @@
-+* Clock Block on Freescale CoreNet Platforms
-+
-+Freescale CoreNet chips take primary clocking input from the external
-+SYSCLK signal. The SYSCLK input (frequency) is multiplied using
-+multiple phase locked loops (PLL) to create a variety of frequencies
-+which can then be passed to a variety of internal logic, including
-+cores and peripheral IP blocks.
-+Please refer to the Reference Manual for details.
-+
-+1. Clock Block Binding
-+
-+Required properties:
-+- compatible: Should contain a specific clock block compatible string
-+	and a single chassis clock compatible string.
-+	Clock block strings include, but not limited to, one of the:
-+	* "fsl,p2041-clockgen"
-+	* "fsl,p3041-clockgen"
-+	* "fsl,p4080-clockgen"
-+	* "fsl,p5020-clockgen"
-+	* "fsl,p5040-clockgen"
-+	* "fsl,t4240-clockgen"
-+	* "fsl,b4420-clockgen"
-+	* "fsl,b4860-clockgen"
-+	Chassis clock strings include:
-+	* "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
-+	* "fsl,qoriq-clockgen-2.0": for chassis 2.0 clocks
-+- reg: Offset and length of the clock register set
-+
-+Recommended properties:
-+- ranges: Allows valid translation between child's address space and
-+	parent's. Must be present if the device has sub-nodes.
-+- #address-cells: Specifies the number of cells used to represent
-+	physical base addresses.  Must be present if the device has
-+	sub-nodes and set to 1 if present
-+- #size-cells: Specifies the number of cells used to represent
-+	the size of an address. Must be present if the device has
-+	sub-nodes and set to 1 if present
-+
-+2. Clock Provider/Consumer Binding
-+
-+Most of the bindings are from the common clock binding[1].
-+ [1] Documentation/devicetree/bindings/clock/clock-bindings.txt
-+
-+Required properties:
-+- compatible : Should include one of the following:
-+	* "fsl,qoriq-core-pll-1.0" for core PLL clocks (v1.0)
-+    * "fsl,qoriq-core-pll-2.0" for core PLL clocks (v2.0)
-+    * "fsl,qoriq-core-mux-1.0" for core mux clocks (v1.0)
-+    * "fsl,qoriq-core-mux-2.0" for core mux clocks (v2.0)
-+	* "fsl,qoriq-sysclk-1.0": for input system clock (v1.0)
-+	* "fsl,qoriq-sysclk-2.0": for input system clock (v2.0)
-+- #clock-cells: From common clock binding. The number of cells in a
-+	clock-specifier. Should be <0> for "fsl,qoriq-sysclk-[1,2].0"
-+	clocks, or <1> for "fsl,qoriq-core-pll-[1,2].0" clocks.
-+	For "fsl,qoriq-core-pll-[1,2].0" clocks, the single
-+	clock-specifier cell may take the following values:
-+	* 0 - equal to the PLL frequency
-+	* 1 - equal to the PLL frequency divided by 2
-+	* 2 - equal to the PLL frequency divided by 4
-+
-+Recommended properties:
-+- clocks: Should be the phandle of input parent clock
-+- clock-names: From common clock binding, indicates the clock name
-+- clock-output-names: From common clock binding, indicates the names of
-+	output clocks
-+- reg: Should be the offset and length of clock block base address.
-+	The length should be 4.
-+
-+Example for clock block and clock provider:
-+/ {
-+	clockgen: global-utilities@e1000 {
-+		compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
-+		ranges = <0x0 0xe1000 0x1000>;
-+		reg = <0xe1000 0x1000>;
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+
-+		sysclk: sysclk {
-+			#clock-cells = <0>;
-+			compatible = "fsl,qoriq-sysclk-1.0";
-+			clock-output-names = "sysclk";
-+		}
-+
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800 0x4>;
-+			compatible = "fsl,qoriq-core-pll-1.0";
-+			clocks = <&sysclk>;
-+			clock-output-names = "pll0", "pll0-div2";
-+		};
-+
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820 0x4>;
-+			compatible = "fsl,qoriq-core-pll-1.0";
-+			clocks = <&sysclk>;
-+			clock-output-names = "pll1", "pll1-div2";
-+		};
-+
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0 0x4>;
-+			compatible = "fsl,qoriq-core-mux-1.0";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
-+			clock-output-names = "cmux0";
-+		};
-+
-+		mux1: mux1@20 {
-+			#clock-cells = <0>;
-+			reg = <0x20 0x4>;
-+			compatible = "fsl,qoriq-core-mux-1.0";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
-+			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
-+			clock-output-names = "cmux1";
-+		};
-+	};
-+  }
-+
-+Example for clock consumer:
-+
-+/ {
-+	cpu0: PowerPC,e5500@0 {
-+		...
-+		clocks = <&mux0>;
-+		...
-+	};
-+  }
--- 
-1.8.0
+Besides, I think the appropriate place to dump PHB diag-data (for EEH
+core itself) would be ioda_eeh_get_log(), which is the indirect backend
+of eeh_ops::get_log, instead of the function ioda_eeh_next_error().
+
+Ben, please drop this one for now and I'll send the revised one :-)
+
+Thanks,
+Gavin
+
+>> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/powernv/eeh-ioda.c |    3 +++
+>>  1 file changed, 3 insertions(+)
+>> 
+>> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+>> index 02245ce..481528d 100644
+>> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+>> @@ -994,8 +994,11 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+>>  			if (ioda_eeh_get_pe(hose, frozen_pe_no, pe))
+>>  				break;
+>>  
+>> +			/* It would be always indicative to have PHB diag-data */
+>>  			pr_err("EEH: Frozen PE#%x on PHB#%x detected\n",
+>>  				(*pe)->addr, (*pe)->phb->global_number);
+>> +			ioda_eeh_phb_diag(hose);
+>> +
+>>  			ret = 1;
+>>  			goto out;
+>>  		}
+>
+>
