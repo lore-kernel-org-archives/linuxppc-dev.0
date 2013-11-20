@@ -2,9 +2,9 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
  Ulrich.Weigand@de.ibm.com, alistair@popple.id.au
-Subject: [PATCH 1/9] powerpc/pseries: Fix endian issues in pseries EEH code
-Date: Wed, 20 Nov 2013 22:14:58 +1100
-Message-Id: <1384946106-18200-2-git-send-email-anton@samba.org>
+Subject: [PATCH 2/9] pseries: Add H_SET_MODE to change exception endianness
+Date: Wed, 20 Nov 2013 22:14:59 +1100
+Message-Id: <1384946106-18200-3-git-send-email-anton@samba.org>
 In-Reply-To: <1384946106-18200-1-git-send-email-anton@samba.org>
 References: <1384946106-18200-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,71 +17,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On little endian builds call H_SET_MODE so exceptions have the
+correct endianness. We need to reset the endian during kexec
+so do that in the MMU hashtable clear callback.
+
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/platforms/pseries/eeh_pseries.c | 21 ++++++++++++---------
- 1 file changed, 12 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/hvcall.h         |  2 ++
+ arch/powerpc/include/asm/plpar_wrappers.h | 26 +++++++++++++++++++
+ arch/powerpc/platforms/pseries/lpar.c     | 17 +++++++++++++
+ arch/powerpc/platforms/pseries/setup.c    | 42 +++++++++++++++++++++++++++++++
+ 4 files changed, 87 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 7fbc25b..ccb633e 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -189,8 +189,9 @@ static void *pseries_eeh_of_probe(struct device_node *dn, void *flag)
- 	struct eeh_dev *edev;
- 	struct eeh_pe pe;
- 	struct pci_dn *pdn = PCI_DN(dn);
--	const u32 *class_code, *vendor_id, *device_id;
--	const u32 *regs;
-+	const __be32 *classp, *vendorp, *devicep;
-+	u32 class_code;
-+	const __be32 *regs;
- 	u32 pcie_flags;
- 	int enable = 0;
- 	int ret;
-@@ -201,22 +202,24 @@ static void *pseries_eeh_of_probe(struct device_node *dn, void *flag)
- 		return NULL;
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 0c7f2bf..d8b600b 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -403,6 +403,8 @@ static inline unsigned long cmo_get_page_size(void)
+ extern long pSeries_enable_reloc_on_exc(void);
+ extern long pSeries_disable_reloc_on_exc(void);
  
- 	/* Retrieve class/vendor/device IDs */
--	class_code = of_get_property(dn, "class-code", NULL);
--	vendor_id  = of_get_property(dn, "vendor-id", NULL);
--	device_id  = of_get_property(dn, "device-id", NULL);
-+	classp = of_get_property(dn, "class-code", NULL);
-+	vendorp = of_get_property(dn, "vendor-id", NULL);
-+	devicep = of_get_property(dn, "device-id", NULL);
- 
- 	/* Skip for bad OF node or PCI-ISA bridge */
--	if (!class_code || !vendor_id || !device_id)
-+	if (!classp || !vendorp || !devicep)
- 		return NULL;
- 	if (dn->type && !strcmp(dn->type, "isa"))
- 		return NULL;
- 
-+	class_code = of_read_number(classp, 1);
++extern long pseries_big_endian_exceptions(void);
 +
- 	/*
- 	 * Update class code and mode of eeh device. We need
- 	 * correctly reflects that current device is root port
- 	 * or PCIe switch downstream port.
- 	 */
--	edev->class_code = *class_code;
-+	edev->class_code = class_code;
- 	edev->pcie_cap = pseries_eeh_find_cap(dn, PCI_CAP_ID_EXP);
- 	edev->mode &= 0xFFFFFF00;
- 	if ((edev->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
-@@ -243,12 +246,12 @@ static void *pseries_eeh_of_probe(struct device_node *dn, void *flag)
- 	/* Initialize the fake PE */
- 	memset(&pe, 0, sizeof(struct eeh_pe));
- 	pe.phb = edev->phb;
--	pe.config_addr = regs[0];
-+	pe.config_addr = of_read_number(regs, 1);
+ #else
  
- 	/* Enable EEH on the device */
- 	ret = eeh_ops->set_option(&pe, EEH_OPT_ENABLE);
- 	if (!ret) {
--		edev->config_addr = regs[0];
-+		edev->config_addr = of_read_number(regs, 1);
- 		/* Retrieve PE address */
- 		edev->pe_config_addr = eeh_ops->get_pe_addr(&pe);
- 		pe.addr = edev->pe_config_addr;
+ #define pSeries_enable_reloc_on_exc()  do {} while (0)
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index a63b045..12c32c5 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -287,6 +287,32 @@ static inline long disable_reloc_on_exceptions(void) {
+ 	return plpar_set_mode(0, 3, 0, 0);
+ }
+ 
++/*
++ * Take exceptions in big endian mode on this partition
++ *
++ * Note: this call has a partition wide scope and can take a while to complete.
++ * If it returns H_LONG_BUSY_* it should be retried periodically until it
++ * returns H_SUCCESS.
++ */
++static inline long enable_big_endian_exceptions(void)
++{
++	/* mflags = 0: big endian exceptions */
++	return plpar_set_mode(0, 4, 0, 0);
++}
++
++/*
++ * Take exceptions in little endian mode on this partition
++ *
++ * Note: this call has a partition wide scope and can take a while to complete.
++ * If it returns H_LONG_BUSY_* it should be retried periodically until it
++ * returns H_SUCCESS.
++ */
++static inline long enable_little_endian_exceptions(void)
++{
++	/* mflags = 1: little endian exceptions */
++	return plpar_set_mode(1, 4, 0, 0);
++}
++
+ static inline long plapr_set_ciabr(unsigned long ciabr)
+ {
+ 	return plpar_set_mode(0, 1, ciabr, 0);
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 356bc75..4fca3de 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -245,6 +245,23 @@ static void pSeries_lpar_hptab_clear(void)
+ 					&(ptes[j].pteh), &(ptes[j].ptel));
+ 		}
+ 	}
++
++#ifdef __LITTLE_ENDIAN__
++	/* Reset exceptions to big endian */
++	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
++		long rc;
++
++		rc = pseries_big_endian_exceptions();
++		/*
++		 * At this point it is unlikely panic() will get anything
++		 * out to the user, but at least this will stop us from
++		 * continuing on further and creating an even more
++		 * difficult to debug situation.
++		 */
++		if (rc)
++			panic("Could not enable big endian exceptions");
++	}
++#endif
+ }
+ 
+ /*
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 1f97e2b..c1f1908 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -442,6 +442,32 @@ static void pSeries_machine_kexec(struct kimage *image)
+ }
+ #endif
+ 
++#ifdef __LITTLE_ENDIAN__
++long pseries_big_endian_exceptions(void)
++{
++	long rc;
++
++	while (1) {
++		rc = enable_big_endian_exceptions();
++		if (!H_IS_LONG_BUSY(rc))
++			return rc;
++		mdelay(get_longbusy_msecs(rc));
++	}
++}
++
++static long pseries_little_endian_exceptions(void)
++{
++	long rc;
++
++	while (1) {
++		rc = enable_little_endian_exceptions();
++		if (!H_IS_LONG_BUSY(rc))
++			return rc;
++		mdelay(get_longbusy_msecs(rc));
++	}
++}
++#endif
++
+ static void __init pSeries_setup_arch(void)
+ {
+ 	panic_timeout = 10;
+@@ -698,6 +724,22 @@ static int __init pSeries_probe(void)
+ 	/* Now try to figure out if we are running on LPAR */
+ 	of_scan_flat_dt(pseries_probe_fw_features, NULL);
+ 
++#ifdef __LITTLE_ENDIAN__
++	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
++		long rc;
++		/*
++		 * Tell the hypervisor that we want our exceptions to
++		 * be taken in little endian mode. If this fails we don't
++		 * want to use BUG() because it will trigger an exception.
++		 */
++		rc = pseries_little_endian_exceptions();
++		if (rc) {
++			ppc_md.progress("H_SET_MODE LE exception fail", 0);
++			panic("Could not enable little endian exceptions");
++		}
++	}
++#endif
++
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		hpte_init_lpar();
+ 	else
 -- 
 1.8.3.2
