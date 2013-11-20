@@ -1,31 +1,44 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wi0-x22a.google.com (mail-wi0-x22a.google.com
- [IPv6:2a00:1450:400c:c05::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 478C92C009A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 17:49:13 +1100 (EST)
-Received: by mail-wi0-f170.google.com with SMTP id f4so7642182wiw.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2013 22:49:08 -0800 (PST)
+Return-Path: <Li.Xiubo@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 678CB2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 18:49:22 +1100 (EST)
+From: Li Xiubo <Li.Xiubo@freescale.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: RE: [PATCHv2 6/8] ASoC: fsl: add SGTL5000 based audio machine driver.
+Date: Wed, 20 Nov 2013 07:49:06 +0000
+Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F828B38EC@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
+ <1383289495-24523-7-git-send-email-Li.Xiubo@freescale.com>
+ <20131101184008.GF2493@sirena.org.uk>
+In-Reply-To: <20131101184008.GF2493@sirena.org.uk>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <20131114205810.GH17929@book.gsilab.sittig.org>
-References: <1383290374-17484-1-git-send-email-a13xp0p0v88@gmail.com>
- <1383290374-17484-3-git-send-email-a13xp0p0v88@gmail.com>
- <20131111201024.GR17929@book.gsilab.sittig.org>
- <CAF0T0X5mCEiS88YGGjSS6oGU5RaQ=2PEQFL533OjpQzmc398rA@mail.gmail.com>
- <20131114205810.GH17929@book.gsilab.sittig.org>
-Date: Wed, 20 Nov 2013 10:49:08 +0400
-Message-ID: <CAF0T0X6c9101zbp3kofjLOQDpFdutDJQ+ciHiCcRnCV_sxn4uQ@mail.gmail.com>
-Subject: Re: [PATCH RFC v5 2/5] dma: mpc512x: add support for peripheral
- transfers
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
- Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
- Arnd Bergmann <arnd@arndb.de>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, Alexander Popov <a13xp0p0v88@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "tiwai@suse.de" <tiwai@suse.de>, "timur@tabi.org" <timur@tabi.org>,
+ "perex@perex.cz" <perex@perex.cz>, Huan Wang <Huan.Wang@freescale.com>,
+ "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
+ "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
+ Shawn Guo <Shawn.Guo@freescale.com>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ Zhengxiong Jin <Jason.Jin@freescale.com>, "oskar@scara.com" <oskar@scara.com>,
+ Fabio Estevam <Fabio.Estevam@freescale.com>,
+ "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rob@landley.net" <rob@landley.net>, Guangyu Chen <guangyu.chen@freescale.com>,
+ "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,22 +48,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2013/11/15 Gerhard Sittig <gsi@denx.de>:
-> As for the not yet addressed feedback:  From the top of my head I
-> can think of the execute comment which contradicts the code
-> (which suggests that at least one of them is wrong), and the data
-> type mismatch in the config routine (where code just happens to
-> work by coincidence).  And in bypassing I noticed that your
-> recent submission has coding style issues (braces, indentation),
-> which should no longer happen after several iterations as you
-> should know how to prepare and check the next version.
-I'll doublecheck this and return with improved code.
 
-> Without feedback, reviewers
-> may see several submissions which suffer from the same issues,
-> and expect more to show up and thus feel that their feedback is
-> getting ignored.  Which quickly becomes tiring.
-Thanks for your patience and comprehensive replies.
+> > +	/* TODO: The SAI driver should figure this out for us */
+> > +	switch (channels) {
+> > +	case 2:
+> > +		snd_soc_dai_set_tdm_slot(cpu_dai, 0xfffffffc, 0xfffffffc, 2,
+> 0);
+> > +		break;
+> > +	case 1:
+> > +		snd_soc_dai_set_tdm_slot(cpu_dai, 0xfffffffe, 0xfffffffe, 1,
+> 0);
+> > +		break;
+> > +	default:
+> > +		return -EINVAL;
+> > +	}
+>=20
+> Yes, it should - this code should probably just be copied straight into
+> the SAI driver.  If we need to support other configurations we can do
+> that later.
+>=20
 
-Best regards,
-Alexander.
+Well, yes.
+I have considered carefully about this, It maybe nicer to move this to SAI =
+driver's .hw_params.
+
+
+
+--
+Best Regards,
+Xiubo
