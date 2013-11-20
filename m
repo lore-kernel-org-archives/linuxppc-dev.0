@@ -2,9 +2,9 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
  Ulrich.Weigand@de.ibm.com, alistair@popple.id.au
-Subject: [PATCH 4/9] powerpc: Set eflags correctly for ELF ABIv2 core dumps.
-Date: Wed, 20 Nov 2013 22:15:01 +1100
-Message-Id: <1384946106-18200-5-git-send-email-anton@samba.org>
+Subject: [PATCH 5/9] powerpc: ELF2 binaries launched directly.
+Date: Wed, 20 Nov 2013 22:15:02 +1100
+Message-Id: <1384946106-18200-6-git-send-email-anton@samba.org>
 In-Reply-To: <1384946106-18200-1-git-send-email-anton@samba.org>
 References: <1384946106-18200-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -19,26 +19,79 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 
-We leave it at zero (though it could be 1) for old tasks.
+No function descriptor, but we set r12 up and set TIF_RESTOREALL as it
+normally isn't restored on return from syscall.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/elf.h | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/kernel/process.c | 50 ++++++++++++++++++++++++++++++-------------
+ 1 file changed, 35 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
-index 6d0e236..935b5e7 100644
---- a/arch/powerpc/include/asm/elf.h
-+++ b/arch/powerpc/include/asm/elf.h
-@@ -31,6 +31,8 @@
- extern unsigned long randomize_et_dyn(unsigned long base);
- #define ELF_ET_DYN_BASE		(randomize_et_dyn(0x20000000))
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 75c2d10..0650e18 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1086,25 +1086,45 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
+ 	regs->msr = MSR_USER;
+ #else
+ 	if (!is_32bit_task()) {
+-		unsigned long entry, toc;
++		unsigned long entry;
  
-+#define ELF_CORE_EFLAGS (is_elf2_task() ? 2 : 0)
+-		/* start is a relocated pointer to the function descriptor for
+-		 * the elf _start routine.  The first entry in the function
+-		 * descriptor is the entry address of _start and the second
+-		 * entry is the TOC value we need to use.
+-		 */
+-		__get_user(entry, (unsigned long __user *)start);
+-		__get_user(toc, (unsigned long __user *)start+1);
++		if (is_elf2_task()) {
++			/* Look ma, no function descriptors! */
++			entry = start;
+ 
+-		/* Check whether the e_entry function descriptor entries
+-		 * need to be relocated before we can use them.
+-		 */
+-		if (load_addr != 0) {
+-			entry += load_addr;
+-			toc   += load_addr;
++			/*
++			 * Ulrich says:
++			 *   The latest iteration of the ABI requires that when
++			 *   calling a function (at its global entry point),
++			 *   the caller must ensure r12 holds the entry point
++			 *   address (so that the function can quickly
++			 *   establish addressability).
++			 */
++			regs->gpr[12] = start;
++			/* Make sure that's restored on entry to userspace. */
++			set_thread_flag(TIF_RESTOREALL);
++		} else {
++			unsigned long toc;
 +
- /*
-  * Our registers are always unsigned longs, whether we're a 32 bit
-  * process or 64 bit, on either a 64 bit or 32 bit kernel.
++			/* start is a relocated pointer to the function
++			 * descriptor for the elf _start routine.  The first
++			 * entry in the function descriptor is the entry
++			 * address of _start and the second entry is the TOC
++			 * value we need to use.
++			 */
++			__get_user(entry, (unsigned long __user *)start);
++			__get_user(toc, (unsigned long __user *)start+1);
++
++			/* Check whether the e_entry function descriptor entries
++			 * need to be relocated before we can use them.
++			 */
++			if (load_addr != 0) {
++				entry += load_addr;
++				toc   += load_addr;
++			}
++			regs->gpr[2] = toc;
+ 		}
+ 		regs->nip = entry;
+-		regs->gpr[2] = toc;
+ 		regs->msr = MSR_USER64;
+ 	} else {
+ 		regs->nip = start;
 -- 
 1.8.3.2
