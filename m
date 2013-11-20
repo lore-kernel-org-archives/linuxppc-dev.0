@@ -1,20 +1,21 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 133C32C00E7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 05:47:36 +1100 (EST)
-Message-ID: <1384973243.2879.361.camel@ul30vt.home>
-Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Bharat Bhushan <r65777@freescale.com>
-Date: Wed, 20 Nov 2013 11:47:23 -0700
-In-Reply-To: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
-References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org, joro@8bytes.org, agraf@suse.de,
- stuart.yoder@freescale.com, Bharat Bhushan <bharat.bhushan@freescale.com>,
- scottwood@freescale.com, iommu@lists.linux-foundation.org, bhelgaas@google.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 88F4C2C03A6
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 05:47:43 +1100 (EST)
+Content-Type: text/plain; charset=windows-1252
+Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1822\))
+Subject: Re: [RFC][PATCH] powerpc/CoreNet64: compile with CONFIG_E{5,
+ 6}500_CPU well
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1384965671.1403.414.camel@snotra.buserror.net>
+Date: Wed, 20 Nov 2013 12:47:33 -0600
+Message-Id: <CC3170D1-8CF3-4A84-B585-BC753023DE6E@kernel.crashing.org>
+References: <1384936551-8494-1-git-send-email-tiejun.chen@windriver.com>
+ <1384965671.1403.414.camel@snotra.buserror.net>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Tiejun Chen <tiejun.chen@windriver.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,103 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-11-19 at 10:47 +0530, Bharat Bhushan wrote:
-> From: Bharat Bhushan <bharat.bhushan@freescale.com>
-> 
-> PAMU (FSL IOMMU) has a concept of primary window and subwindows.
-> Primary window corresponds to the complete guest iova address space
-> (including MSI space), with respect to IOMMU_API this is termed as
-> geometry. IOVA Base of subwindow is determined from the number of
-> subwindows (configurable using iommu API).
-> MSI I/O page must be within the geometry and maximum supported
-> subwindows, so MSI IO-page is setup just after guest memory iova space.
-> 
-> So patch 1/9-4/9(inclusive) are for defining the interface to get:
->   - Number of MSI regions (which is number of MSI banks for powerpc)
->   - MSI-region address range: Physical page which have the
->     address/addresses used for generating MSI interrupt
->     and size of the page.
-> 
-> Patch 5/9-7/9(inclusive) is defining the interface of setting up
-> MSI iova-base for a msi region(bank) for a device. so that when
-> msi-message will be composed then this configured iova will be used.
-> Earlier we were using iommu interface for getting the configured iova
-> which was not currect and Alex Williamson suggeested this type of interface.
-> 
-> patch 8/9 moves some common functions in a separate file so that these
-> can be used by FSL_PAMU implementation (next patch uses this).
-> These will be used later for iommu-none implementation. I believe we
-> can do more of this but will take step by step.
-> 
-> Finally last patch actually adds the support for FSL-PAMU :)
 
-Patches 1-3: msi_get_region needs to return an error an error (probably
--EINVAL) if called on a path where there's no backend implementation.
-Otherwise the caller doesn't know that the data in the region pointer
-isn't valid.
+On Nov 20, 2013, at 10:41 AM, Scott Wood <scottwood@freescale.com> =
+wrote:
 
-Patches 5&6: same as above for msi_set_iova, return an error if no
-backend implementation.
+> On Wed, 2013-11-20 at 16:35 +0800, Tiejun Chen wrote:
+>> CONFIG_ALTIVEC is always enabled for CoreNet64.
+>=20
+> In the defconfig perhaps, but this isn't a generally true statement.
+>=20
+>> And if we select CONFIG_E{5,6}500_CPU this may introduce =
+-mcpu=3De500mc64
+>> into $CFLAGS. But Altivec and Spe options not allowed with
+>> e500mc64, so :
+>=20
+> Sigh.
+>=20
+>>  CC      arch/powerpc/lib/xor_vmx.o
+>> arch/powerpc/lib/xor_vmx.c:1:0: error: AltiVec not supported in this =
+target
+>> make[1]: *** [arch/powerpc/lib/xor_vmx.o] Error 1
+>> make: *** [arch/powerpc/lib] Error 2
+>>=20
+>> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+>> ---
+>> arch/powerpc/lib/Makefile |    3 +++
+>> 1 file changed, 3 insertions(+)
+>>=20
+>> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+>> index 95a20e1..641a77d 100644
+>> --- a/arch/powerpc/lib/Makefile
+>> +++ b/arch/powerpc/lib/Makefile
+>> @@ -40,5 +40,8 @@ obj-y			+=3D code-patching.o
+>> obj-y			+=3D feature-fixups.o
+>> obj-$(CONFIG_FTR_FIXUP_SELFTEST) +=3D feature-fixups-test.o
+>>=20
+>> +# Altivec and Spe options not allowed with e500mc64 in GCC.
+>> +ifeq ($(call cc-option-yn,-mcpu=3De500mc64),n)
+>> obj-$(CONFIG_ALTIVEC)	+=3D xor_vmx.o
+>> CFLAGS_xor_vmx.o +=3D -maltivec -mabi=3Daltivec
+>> +endif
+>=20
+> This does not seem like the right fix.  What if GCC supports both
+> -mcpu=3De500mc64 and -mcpu=3De6500, and we're using the latter?  Or =
+for that
+> matter, if we're using -mcpu=3Dwhatever-ibm-chip-has-this?
+>=20
+> Plus, wouldn't you need to do something to prevent code in that file
+> from being called?
+>=20
+> -Scott
 
-Patch 7: Why does fsl_msi_del_iova_device bother to return anything if
-it's always zero?  Return -ENODEV when not found?
+Why does -mcpu=3De500mc64 get you spe enabled?  It shouldn=92t as no =
+e500mc or greater part has spe.  Can you try using -mno-spe -maltivec?
 
-Patch 9:
-
-vfio_handle_get_attr() passes random kernel data back to userspace in
-the event of iommu_domain_get_attr() error.
-
-vfio_handle_set_attr(): I don't see any data validation happening, is
-iommu_domain_set_attr() really that safe?
-
-For both of those, drop the pr_err on unknown attribute, it's sufficient
-to return error.
-
-Is VFIO_IOMMU_PAMU_GET_MSI_BANK_COUNT per aperture (ie. each vfio user
-has $COUNT regions at their disposal exclusively)?  Thanks,
-
-Alex
-
-> v1->v2
->  - Added interface for setting msi iova for a msi region for a device.
->    Earlier I added iommu interface for same but as per comment that is
->    removed and now created a direct interface between vfio and msi.
->  - Incorporated review comments (details is in individual patch)
-> 
-> Bharat Bhushan (9):
->   pci:msi: add weak function for returning msi region info
->   pci: msi: expose msi region information functions
->   powerpc: pci: Add arch specific msi region interface
->   powerpc: msi: Extend the msi region interface to get info from
->     fsl_msi
->   pci/msi: interface to set an iova for a msi region
->   powerpc: pci: Extend msi iova page setup to arch specific
->   pci: msi: Extend msi iova setting interface to powerpc arch
->   vfio: moving some functions in common file
->   vfio pci: Add vfio iommu implementation for FSL_PAMU
-> 
->  arch/powerpc/include/asm/machdep.h |   10 +
->  arch/powerpc/kernel/msi.c          |   28 +
->  arch/powerpc/sysdev/fsl_msi.c      |  132 +++++-
->  arch/powerpc/sysdev/fsl_msi.h      |   25 +-
->  drivers/pci/msi.c                  |   35 ++
->  drivers/vfio/Kconfig               |    6 +
->  drivers/vfio/Makefile              |    5 +-
->  drivers/vfio/vfio_iommu_common.c   |  227 ++++++++
->  drivers/vfio/vfio_iommu_common.h   |   27 +
->  drivers/vfio/vfio_iommu_fsl_pamu.c | 1003 ++++++++++++++++++++++++++++++++++++
->  drivers/vfio/vfio_iommu_type1.c    |  206 +--------
->  include/linux/msi.h                |   14 +
->  include/linux/pci.h                |   21 +
->  include/uapi/linux/vfio.h          |  100 ++++
->  14 files changed, 1623 insertions(+), 216 deletions(-)
->  create mode 100644 drivers/vfio/vfio_iommu_common.c
->  create mode 100644 drivers/vfio/vfio_iommu_common.h
->  create mode 100644 drivers/vfio/vfio_iommu_fsl_pamu.c
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+- k=
