@@ -1,16 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id 4609D2C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 20:37:23 +1100 (EST)
-Message-ID: <528C82D1.4090803@c-s.fr>
-Date: Wed, 20 Nov 2013 10:37:21 +0100
-From: leroy christophe <christophe.leroy@c-s.fr>
+Return-Path: <scottwood@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CAF792C010A
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 03:41:34 +1100 (EST)
+Message-ID: <1384965671.1403.414.camel@snotra.buserror.net>
+Subject: Re: [RFC][PATCH] powerpc/CoreNet64: compile with
+ CONFIG_E{5,6}500_CPU well
+From: Scott Wood <scottwood@freescale.com>
+To: Tiejun Chen <tiejun.chen@windriver.com>
+Date: Wed, 20 Nov 2013 10:41:11 -0600
+In-Reply-To: <1384936551-8494-1-git-send-email-tiejun.chen@windriver.com>
+References: <1384936551-8494-1-git-send-email-tiejun.chen@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: BUG: Patch "Convert some mftb/mftbu into mfspr" breaks MPC885
-Content-Type: multipart/alternative;
- boundary="------------040601090207020000060607"
-Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,59 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------040601090207020000060607
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, 2013-11-20 at 16:35 +0800, Tiejun Chen wrote:
+> CONFIG_ALTIVEC is always enabled for CoreNet64.
 
-Scott,
+In the defconfig perhaps, but this isn't a generally true statement.
 
-The patch "Convert some mftb/mftbu into mfspr" 
-(beb2dc0a7a84be003ce54e98b95d65cc66e6e536 
-<https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/arch/powerpc/include/asm/reg.h?id=beb2dc0a7a84be003ce54e98b95d65cc66e6e536>) 
-breaks startup on MPC885.
+> And if we select CONFIG_E{5,6}500_CPU this may introduce -mcpu=e500mc64
+> into $CFLAGS. But Altivec and Spe options not allowed with
+> e500mc64, so :
 
-The CPU traps (SoftwareEmulation trap) at sched_clock() when trying to 
-read TBU with mfspr.
+Sigh.
 
-Reverting the patch solves the issue.
+>   CC      arch/powerpc/lib/xor_vmx.o
+> arch/powerpc/lib/xor_vmx.c:1:0: error: AltiVec not supported in this target
+> make[1]: *** [arch/powerpc/lib/xor_vmx.o] Error 1
+> make: *** [arch/powerpc/lib] Error 2
+> 
+> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+> ---
+>  arch/powerpc/lib/Makefile |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+> index 95a20e1..641a77d 100644
+> --- a/arch/powerpc/lib/Makefile
+> +++ b/arch/powerpc/lib/Makefile
+> @@ -40,5 +40,8 @@ obj-y			+= code-patching.o
+>  obj-y			+= feature-fixups.o
+>  obj-$(CONFIG_FTR_FIXUP_SELFTEST) += feature-fixups-test.o
+>  
+> +# Altivec and Spe options not allowed with e500mc64 in GCC.
+> +ifeq ($(call cc-option-yn,-mcpu=e500mc64),n)
+>  obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o
+>  CFLAGS_xor_vmx.o += -maltivec -mabi=altivec
+> +endif
 
-What's the prefered way to fix this ?
+This does not seem like the right fix.  What if GCC supports both
+-mcpu=e500mc64 and -mcpu=e6500, and we're using the latter?  Or for that
+matter, if we're using -mcpu=whatever-ibm-chip-has-this?
 
-Christophe
+Plus, wouldn't you need to do something to prevent code in that file
+from being called?
 
---------------040601090207020000060607
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-
-    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
-  </head>
-  <body text="#000000" bgcolor="#FFFFFF">
-    Scott,<br>
-    <br>
-    The patch "Convert some mftb/mftbu into mfspr" (<a
-href="https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/arch/powerpc/include/asm/reg.h?id=beb2dc0a7a84be003ce54e98b95d65cc66e6e536"
-      style="color: blue; text-decoration: none; font-family: monospace;
-      font-size: 12px; font-style: normal; font-variant: normal;
-      font-weight: normal; letter-spacing: normal; line-height: normal;
-      orphans: auto; text-align: start; text-indent: 0px;
-      text-transform: none; white-space: normal; widows: auto;
-      word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      background-color: rgb(255, 255, 255);">beb2dc0a7a84be003ce54e98b95d65cc66e6e536</a>)
-    breaks startup on MPC885.<br>
-    <br>
-    The CPU traps (SoftwareEmulation trap) at sched_clock() when trying
-    to read TBU with mfspr.<br>
-    <br>
-    Reverting the patch solves the issue.<br>
-    <br>
-    What's the prefered way to fix this ?<br>
-    <br>
-    Christophe<br>
-  </body>
-</html>
-
---------------040601090207020000060607--
+-Scott
