@@ -1,24 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4DAF92C0091
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 09:03:29 +1100 (EST)
-Message-ID: <1384984996.1403.430.camel@snotra.buserror.net>
-Subject: Re: [RFC][PATCH] powerpc/CoreNet64: compile with
- CONFIG_E{5,6}500_CPU well
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed, 20 Nov 2013 16:03:16 -0600
-In-Reply-To: <CC3170D1-8CF3-4A84-B585-BC753023DE6E@kernel.crashing.org>
-References: <1384936551-8494-1-git-send-email-tiejun.chen@windriver.com>
- <1384965671.1403.414.camel@snotra.buserror.net>
- <CC3170D1-8CF3-4A84-B585-BC753023DE6E@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 98D5F2C011C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 09:50:15 +1100 (EST)
+Message-ID: <1384987801.26969.114.camel@pasglop>
+Subject: Re: [PATCH v2] offb: make the screen properties endian safe
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>
+Date: Thu, 21 Nov 2013 09:50:01 +1100
+In-Reply-To: <1383212192-3622-1-git-send-email-clg@fr.ibm.com>
+References: <1383185307.5117.74.camel@pasglop>
+ <1383212192-3622-1-git-send-email-clg@fr.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Tiejun Chen <tiejun.chen@windriver.com>, linuxppc-dev@ozlabs.org
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,63 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-11-20 at 12:47 -0600, Kumar Gala wrote:
-> On Nov 20, 2013, at 10:41 AM, Scott Wood <scottwood@freescale.com> wrot=
-e:
->=20
-> > On Wed, 2013-11-20 at 16:35 +0800, Tiejun Chen wrote:
-> >> CONFIG_ALTIVEC is always enabled for CoreNet64.
-> >=20
-> > In the defconfig perhaps, but this isn't a generally true statement.
-> >=20
-> >> And if we select CONFIG_E{5,6}500_CPU this may introduce -mcpu=3De50=
-0mc64
-> >> into $CFLAGS. But Altivec and Spe options not allowed with
-> >> e500mc64, so :
-> >=20
-> > Sigh.
-> >=20
-> >>  CC      arch/powerpc/lib/xor_vmx.o
-> >> arch/powerpc/lib/xor_vmx.c:1:0: error: AltiVec not supported in this=
- target
-> >> make[1]: *** [arch/powerpc/lib/xor_vmx.o] Error 1
-> >> make: *** [arch/powerpc/lib] Error 2
-> >>=20
-> >> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> >> ---
-> >> arch/powerpc/lib/Makefile |    3 +++
-> >> 1 file changed, 3 insertions(+)
-> >>=20
-> >> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-> >> index 95a20e1..641a77d 100644
-> >> --- a/arch/powerpc/lib/Makefile
-> >> +++ b/arch/powerpc/lib/Makefile
-> >> @@ -40,5 +40,8 @@ obj-y			+=3D code-patching.o
-> >> obj-y			+=3D feature-fixups.o
-> >> obj-$(CONFIG_FTR_FIXUP_SELFTEST) +=3D feature-fixups-test.o
-> >>=20
-> >> +# Altivec and Spe options not allowed with e500mc64 in GCC.
-> >> +ifeq ($(call cc-option-yn,-mcpu=3De500mc64),n)
-> >> obj-$(CONFIG_ALTIVEC)	+=3D xor_vmx.o
-> >> CFLAGS_xor_vmx.o +=3D -maltivec -mabi=3Daltivec
-> >> +endif
-> >=20
-> > This does not seem like the right fix.  What if GCC supports both
-> > -mcpu=3De500mc64 and -mcpu=3De6500, and we're using the latter?  Or f=
-or that
-> > matter, if we're using -mcpu=3Dwhatever-ibm-chip-has-this?
-> >=20
-> > Plus, wouldn't you need to do something to prevent code in that file
-> > from being called?
-> >=20
-> > -Scott
->=20
-> Why does -mcpu=3De500mc64 get you spe enabled?  It shouldn=E2=80=99t as=
- no e500mc or greater part has spe.  Can you try using -mno-spe -maltivec=
-?
+On Thu, 2013-10-31 at 10:36 +0100, Cédric Le Goater wrote:
+> The "screen" properties : depth, width, height, linebytes need
+> to be converted to the host endian order when read from the device
+> tree.
+> 
+> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+> ---
 
-I don't think SPE is relevant.  The problem is that GCC refuses to allow
--maltivec to be combined with -mcpu=3De500mc64.  -mno-spe doesn't make a
-difference.
+Did you actually test that ? IE, using emulated VGA in qemu for
+example ?
 
--Scott
+I'm asking because there are a few interesting nits here...
+
+ - fbdev *generally* assume native endian framebuffer, but of course
+under qemu today, the adapter will use a big endian frame buffer
+aperture. You can compile in support for foreign endian but I don't know
+how that actually works.
+
+ - The setcolreg fix ... the "value" is used 2 lines above your endian
+swap, is that correct ?
+
+Cheers
+Ben.
+
+
+> Changes in v2:
+> 
+>  - replaced be32_to_cpu() by be32_to_cpup() 
+>  - fixed setcolreg ops 
+> 
+>  drivers/video/offb.c |   12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/video/offb.c b/drivers/video/offb.c
+> index 0c4f343..68e8415 100644
+> --- a/drivers/video/offb.c
+> +++ b/drivers/video/offb.c
+> @@ -120,7 +120,7 @@ static int offb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+>  			mask <<= info->var.transp.offset;
+>  			value |= mask;
+>  		}
+> -		pal[regno] = value;
+> +		pal[regno] = cpu_to_be32(value);
+>  		return 0;
+>  	}
+>  
+> @@ -536,7 +536,7 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
+>  	unsigned int flags, rsize, addr_prop = 0;
+>  	unsigned long max_size = 0;
+>  	u64 rstart, address = OF_BAD_ADDR;
+> -	const u32 *pp, *addrp, *up;
+> +	const __be32 *pp, *addrp, *up;
+>  	u64 asize;
+>  	int foreign_endian = 0;
+>  
+> @@ -552,25 +552,25 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
+>  	if (pp == NULL)
+>  		pp = of_get_property(dp, "depth", &len);
+>  	if (pp && len == sizeof(u32))
+> -		depth = *pp;
+> +		depth = be32_to_cpup(pp);
+>  
+>  	pp = of_get_property(dp, "linux,bootx-width", &len);
+>  	if (pp == NULL)
+>  		pp = of_get_property(dp, "width", &len);
+>  	if (pp && len == sizeof(u32))
+> -		width = *pp;
+> +		width = be32_to_cpup(pp);
+>  
+>  	pp = of_get_property(dp, "linux,bootx-height", &len);
+>  	if (pp == NULL)
+>  		pp = of_get_property(dp, "height", &len);
+>  	if (pp && len == sizeof(u32))
+> -		height = *pp;
+> +		height = be32_to_cpup(pp);
+>  
+>  	pp = of_get_property(dp, "linux,bootx-linebytes", &len);
+>  	if (pp == NULL)
+>  		pp = of_get_property(dp, "linebytes", &len);
+>  	if (pp && len == sizeof(u32) && (*pp != 0xffffffffu))
+> -		pitch = *pp;
+> +		pitch = be32_to_cpup(pp);
+>  	else
+>  		pitch = width * ((depth + 7) / 8);
+>  
