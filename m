@@ -1,21 +1,12 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 88F4C2C03A6
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 05:47:43 +1100 (EST)
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1822\))
-Subject: Re: [RFC][PATCH] powerpc/CoreNet64: compile with CONFIG_E{5,
- 6}500_CPU well
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1384965671.1403.414.camel@snotra.buserror.net>
-Date: Wed, 20 Nov 2013 12:47:33 -0600
-Message-Id: <CC3170D1-8CF3-4A84-B585-BC753023DE6E@kernel.crashing.org>
-References: <1384936551-8494-1-git-send-email-tiejun.chen@windriver.com>
- <1384965671.1403.414.camel@snotra.buserror.net>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Tiejun Chen <tiejun.chen@windriver.com>, linuxppc-dev@ozlabs.org
+Return-Path: <anton@ozlabs.org>
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
+ Ulrich.Weigand@de.ibm.com, alistair@popple.id.au
+Subject: [PATCH] powerpc: Wrong DWARF CFI in the kernel vdso for little-endian
+ / ELFv2
+Date: Thu, 21 Nov 2013 07:38:05 +1100
+Message-Id: <1384979885-22869-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,58 +16,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
 
-On Nov 20, 2013, at 10:41 AM, Scott Wood <scottwood@freescale.com> =
-wrote:
+I've finally tracked down why my CR signal-unwind test case still
+fails on little-endian.  The problem turned to be that the kernel
+installs a signal trampoline in the vDSO, and provides a DWARF CFI
+record for that trampoline.  This CFI describes the save location
+for CR:
 
-> On Wed, 2013-11-20 at 16:35 +0800, Tiejun Chen wrote:
->> CONFIG_ALTIVEC is always enabled for CoreNet64.
->=20
-> In the defconfig perhaps, but this isn't a generally true statement.
->=20
->> And if we select CONFIG_E{5,6}500_CPU this may introduce =
--mcpu=3De500mc64
->> into $CFLAGS. But Altivec and Spe options not allowed with
->> e500mc64, so :
->=20
-> Sigh.
->=20
->>  CC      arch/powerpc/lib/xor_vmx.o
->> arch/powerpc/lib/xor_vmx.c:1:0: error: AltiVec not supported in this =
-target
->> make[1]: *** [arch/powerpc/lib/xor_vmx.o] Error 1
->> make: *** [arch/powerpc/lib] Error 2
->>=20
->> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
->> ---
->> arch/powerpc/lib/Makefile |    3 +++
->> 1 file changed, 3 insertions(+)
->>=20
->> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
->> index 95a20e1..641a77d 100644
->> --- a/arch/powerpc/lib/Makefile
->> +++ b/arch/powerpc/lib/Makefile
->> @@ -40,5 +40,8 @@ obj-y			+=3D code-patching.o
->> obj-y			+=3D feature-fixups.o
->> obj-$(CONFIG_FTR_FIXUP_SELFTEST) +=3D feature-fixups-test.o
->>=20
->> +# Altivec and Spe options not allowed with e500mc64 in GCC.
->> +ifeq ($(call cc-option-yn,-mcpu=3De500mc64),n)
->> obj-$(CONFIG_ALTIVEC)	+=3D xor_vmx.o
->> CFLAGS_xor_vmx.o +=3D -maltivec -mabi=3Daltivec
->> +endif
->=20
-> This does not seem like the right fix.  What if GCC supports both
-> -mcpu=3De500mc64 and -mcpu=3De6500, and we're using the latter?  Or =
-for that
-> matter, if we're using -mcpu=3Dwhatever-ibm-chip-has-this?
->=20
-> Plus, wouldn't you need to do something to prevent code in that file
-> from being called?
->=20
-> -Scott
+  rsave (70, 38*RSIZE + (RSIZE - CRSIZE))
 
-Why does -mcpu=3De500mc64 get you spe enabled?  It shouldn=92t as no =
-e500mc or greater part has spe.  Can you try using -mno-spe -maltivec?
+which is correct for big-endian, but points to the wrong word on
+little-endian.   This is wrong no matter which ABI.
 
-- k=
+In addition, for the ELFv2 ABI, we should not only provide a CFI
+record for register 70 (cr2), but for all CR fields separately.
+Strictly speaking, I guess this would mean providing two separate
+vDSO images, one for ELFv1 processes and one for ELFv2 processes (or
+maybe playing some tricks with conditional DWARF expressions).
+However, having CFI records for the other CR fields in ELFv1 is not
+actually wrong, they just will be ignored.   So it seems the simplest
+fix would be just to always provide CFI for all the fields.
+
+Signed-off-by: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/kernel/vdso64/sigtramp.S | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/vdso64/sigtramp.S b/arch/powerpc/kernel/vdso64/sigtramp.S
+index 45ea281..542c6f42 100644
+--- a/arch/powerpc/kernel/vdso64/sigtramp.S
++++ b/arch/powerpc/kernel/vdso64/sigtramp.S
+@@ -142,6 +142,13 @@ V_FUNCTION_END(__kernel_sigtramp_rt64)
+ /* Size of CR reg in DWARF unwind info. */
+ #define CRSIZE	4
+ 
++/* Offset of CR reg within a full word. */
++#ifdef __LITTLE_ENDIAN__
++#define CROFF 0
++#else
++#define CROFF (RSIZE - CRSIZE)
++#endif
++
+ /* This is the offset of the VMX reg pointer.  */
+ #define VREGS	48*RSIZE+33*8
+ 
+@@ -181,7 +188,14 @@ V_FUNCTION_END(__kernel_sigtramp_rt64)
+   rsave (31, 31*RSIZE);							\
+   rsave (67, 32*RSIZE);		/* ap, used as temp for nip */		\
+   rsave (65, 36*RSIZE);		/* lr */				\
+-  rsave (70, 38*RSIZE + (RSIZE - CRSIZE)) /* cr */
++  rsave (68, 38*RSIZE + CROFF);	/* cr fields */				\
++  rsave (69, 38*RSIZE + CROFF);						\
++  rsave (70, 38*RSIZE + CROFF);						\
++  rsave (71, 38*RSIZE + CROFF);						\
++  rsave (72, 38*RSIZE + CROFF);						\
++  rsave (73, 38*RSIZE + CROFF);						\
++  rsave (74, 38*RSIZE + CROFF);						\
++  rsave (75, 38*RSIZE + CROFF)
+ 
+ /* Describe where the FP regs are saved.  */
+ #define EH_FRAME_FP \
+-- 
+1.8.3.2
