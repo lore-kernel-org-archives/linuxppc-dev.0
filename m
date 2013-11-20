@@ -1,22 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CAF792C010A
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 03:41:34 +1100 (EST)
-Message-ID: <1384965671.1403.414.camel@snotra.buserror.net>
-Subject: Re: [RFC][PATCH] powerpc/CoreNet64: compile with
- CONFIG_E{5,6}500_CPU well
+ by ozlabs.org (Postfix) with ESMTPS id 46A602C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 03:57:30 +1100 (EST)
+Message-ID: <1384966640.1403.421.camel@snotra.buserror.net>
+Subject: Re: BUG: Patch "Convert some mftb/mftbu into mfspr" breaks MPC885
 From: Scott Wood <scottwood@freescale.com>
-To: Tiejun Chen <tiejun.chen@windriver.com>
-Date: Wed, 20 Nov 2013 10:41:11 -0600
-In-Reply-To: <1384936551-8494-1-git-send-email-tiejun.chen@windriver.com>
-References: <1384936551-8494-1-git-send-email-tiejun.chen@windriver.com>
+To: leroy christophe <christophe.leroy@c-s.fr>
+Date: Wed, 20 Nov 2013 10:57:20 -0600
+In-Reply-To: <528C82D1.4090803@c-s.fr>
+References: <528C82D1.4090803@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-11-20 at 16:35 +0800, Tiejun Chen wrote:
-> CONFIG_ALTIVEC is always enabled for CoreNet64.
-
-In the defconfig perhaps, but this isn't a generally true statement.
-
-> And if we select CONFIG_E{5,6}500_CPU this may introduce -mcpu=e500mc64
-> into $CFLAGS. But Altivec and Spe options not allowed with
-> e500mc64, so :
-
-Sigh.
-
->   CC      arch/powerpc/lib/xor_vmx.o
-> arch/powerpc/lib/xor_vmx.c:1:0: error: AltiVec not supported in this target
-> make[1]: *** [arch/powerpc/lib/xor_vmx.o] Error 1
-> make: *** [arch/powerpc/lib] Error 2
+On Wed, 2013-11-20 at 10:37 +0100, leroy christophe wrote:
+> Scott,
 > 
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> ---
->  arch/powerpc/lib/Makefile |    3 +++
->  1 file changed, 3 insertions(+)
+> The patch "Convert some mftb/mftbu into
+> mfspr" (beb2dc0a7a84be003ce54e98b95d65cc66e6e536) breaks startup on
+> MPC885.
 > 
-> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-> index 95a20e1..641a77d 100644
-> --- a/arch/powerpc/lib/Makefile
-> +++ b/arch/powerpc/lib/Makefile
-> @@ -40,5 +40,8 @@ obj-y			+= code-patching.o
->  obj-y			+= feature-fixups.o
->  obj-$(CONFIG_FTR_FIXUP_SELFTEST) += feature-fixups-test.o
->  
-> +# Altivec and Spe options not allowed with e500mc64 in GCC.
-> +ifeq ($(call cc-option-yn,-mcpu=e500mc64),n)
->  obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o
->  CFLAGS_xor_vmx.o += -maltivec -mabi=altivec
-> +endif
+> The CPU traps (SoftwareEmulation trap) at sched_clock() when trying to
+> read TBU with mfspr.
+> 
+> Reverting the patch solves the issue.
+> 
+> What's the prefered way to fix this ?
 
-This does not seem like the right fix.  What if GCC supports both
--mcpu=e500mc64 and -mcpu=e6500, and we're using the latter?  Or for that
-matter, if we're using -mcpu=whatever-ibm-chip-has-this?
-
-Plus, wouldn't you need to do something to prevent code in that file
-from being called?
+I guess we need to add an ifdef.
 
 -Scott
