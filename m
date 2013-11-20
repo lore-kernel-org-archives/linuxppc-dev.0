@@ -1,44 +1,26 @@
-Return-Path: <Li.Xiubo@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0188.outbound.messaging.microsoft.com [213.199.154.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 678CB2C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 18:49:22 +1100 (EST)
-From: Li Xiubo <Li.Xiubo@freescale.com>
-To: Mark Brown <broonie@kernel.org>
-Subject: RE: [PATCHv2 6/8] ASoC: fsl: add SGTL5000 based audio machine driver.
-Date: Wed, 20 Nov 2013 07:49:06 +0000
-Message-ID: <1DD289F6464F0949A2FCA5AA6DC23F828B38EC@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1383289495-24523-1-git-send-email-Li.Xiubo@freescale.com>
- <1383289495-24523-7-git-send-email-Li.Xiubo@freescale.com>
- <20131101184008.GF2493@sirena.org.uk>
-In-Reply-To: <20131101184008.GF2493@sirena.org.uk>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <lravich@gmail.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5FDD42C00A4
+ for <linuxppc-dev@ozlabs.org>; Wed, 20 Nov 2013 18:53:06 +1100 (EST)
+Received: from tom.nabble.com ([192.168.236.105])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <lravich@gmail.com>) id 1Vj2at-0004zV-Sh
+ for linuxppc-dev@ozlabs.org; Tue, 19 Nov 2013 23:53:03 -0800
+Date: Tue, 19 Nov 2013 23:53:03 -0800 (PST)
+From: ravich <lravich@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1384933983858-78251.post@n7.nabble.com>
+In-Reply-To: <CAErSpo49ZLfxkEanmrrwwiqHR8koiCakqe9h8My2Mu1yA4R1Ww@mail.gmail.com>
+References: <CAErSpo5ZZgdpkK+QdQUEnNCEXcG_T+QBWTVoQnMTghxkX7n2HA@mail.gmail.com>
+ <CAPWoNkJtnE3ASH0AdgfAD-3soa13DyH-zZAyzWMg9K2=nCX87Q@mail.gmail.com>
+ <CAPWoNkLTC+1ba3vwY0xiJVmmebvuXZBTwiyH5HAFfE8mRReaRQ@mail.gmail.com>
+ <CAErSpo6zGZkL7hWmBOVzd2=MWvY18v5xLO1qg7jVfSgqa8wHzw@mail.gmail.com>
+ <CAErSpo49ZLfxkEanmrrwwiqHR8koiCakqe9h8My2Mu1yA4R1Ww@mail.gmail.com>
+Subject: Re: PCIE device errors after linux kernel upgrade
 MIME-Version: 1.0
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "tiwai@suse.de" <tiwai@suse.de>, "timur@tabi.org" <timur@tabi.org>,
- "perex@perex.cz" <perex@perex.cz>, Huan Wang <Huan.Wang@freescale.com>,
- "LW@KARO-electronics.de" <LW@KARO-electronics.de>,
- "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>,
- Shawn Guo <Shawn.Guo@freescale.com>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "ian.campbell@citrix.com" <ian.campbell@citrix.com>,
- "pawel.moll@arm.com" <pawel.moll@arm.com>,
- "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- Zhengxiong Jin <Jason.Jin@freescale.com>, "oskar@scara.com" <oskar@scara.com>,
- Fabio Estevam <Fabio.Estevam@freescale.com>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rob@landley.net" <rob@landley.net>, Guangyu Chen <guangyu.chen@freescale.com>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,32 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+I compared the configuration hexdump of my pci controller and pci device
+(FPGA) on old kernel(working 2.6.32) and new (3.8.13) and the only
+difference was on the controller configuration on the memory base at Type 1
+configuration header registers
+.
 
-> > +	/* TODO: The SAI driver should figure this out for us */
-> > +	switch (channels) {
-> > +	case 2:
-> > +		snd_soc_dai_set_tdm_slot(cpu_dai, 0xfffffffc, 0xfffffffc, 2,
-> 0);
-> > +		break;
-> > +	case 1:
-> > +		snd_soc_dai_set_tdm_slot(cpu_dai, 0xfffffffe, 0xfffffffe, 1,
-> 0);
-> > +		break;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
->=20
-> Yes, it should - this code should probably just be copied straight into
-> the SAI driver.  If we need to support other configurations we can do
-> that later.
->=20
+what does it mean and could it be the trigger for my problem ?
 
-Well, yes.
-I have considered carefully about this, It maybe nicer to move this to SAI =
-driver's .hw_params.
+Thanks a lot.
+
+Leonid
+
 
 
 
 --
-Best Regards,
-Xiubo
+View this message in context: http://linuxppc.10917.n7.nabble.com/Re-PCIE-device-errors-after-linux-kernel-upgrade-tp74563p78251.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
