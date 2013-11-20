@@ -1,21 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 46A602C0099
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 03:57:30 +1100 (EST)
-Message-ID: <1384966640.1403.421.camel@snotra.buserror.net>
-Subject: Re: BUG: Patch "Convert some mftb/mftbu into mfspr" breaks MPC885
-From: Scott Wood <scottwood@freescale.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Date: Wed, 20 Nov 2013 10:57:20 -0600
-In-Reply-To: <528C82D1.4090803@c-s.fr>
-References: <528C82D1.4090803@c-s.fr>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 133C32C00E7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 05:47:36 +1100 (EST)
+Message-ID: <1384973243.2879.361.camel@ul30vt.home>
+Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Bharat Bhushan <r65777@freescale.com>
+Date: Wed, 20 Nov 2013 11:47:23 -0700
+In-Reply-To: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
+References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Cc: linux-pci@vger.kernel.org, joro@8bytes.org, agraf@suse.de,
+ stuart.yoder@freescale.com, Bharat Bhushan <bharat.bhushan@freescale.com>,
+ scottwood@freescale.com, iommu@lists.linux-foundation.org, bhelgaas@google.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +24,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-11-20 at 10:37 +0100, leroy christophe wrote:
-> Scott,
+On Tue, 2013-11-19 at 10:47 +0530, Bharat Bhushan wrote:
+> From: Bharat Bhushan <bharat.bhushan@freescale.com>
 > 
-> The patch "Convert some mftb/mftbu into
-> mfspr" (beb2dc0a7a84be003ce54e98b95d65cc66e6e536) breaks startup on
-> MPC885.
+> PAMU (FSL IOMMU) has a concept of primary window and subwindows.
+> Primary window corresponds to the complete guest iova address space
+> (including MSI space), with respect to IOMMU_API this is termed as
+> geometry. IOVA Base of subwindow is determined from the number of
+> subwindows (configurable using iommu API).
+> MSI I/O page must be within the geometry and maximum supported
+> subwindows, so MSI IO-page is setup just after guest memory iova space.
 > 
-> The CPU traps (SoftwareEmulation trap) at sched_clock() when trying to
-> read TBU with mfspr.
+> So patch 1/9-4/9(inclusive) are for defining the interface to get:
+>   - Number of MSI regions (which is number of MSI banks for powerpc)
+>   - MSI-region address range: Physical page which have the
+>     address/addresses used for generating MSI interrupt
+>     and size of the page.
 > 
-> Reverting the patch solves the issue.
+> Patch 5/9-7/9(inclusive) is defining the interface of setting up
+> MSI iova-base for a msi region(bank) for a device. so that when
+> msi-message will be composed then this configured iova will be used.
+> Earlier we were using iommu interface for getting the configured iova
+> which was not currect and Alex Williamson suggeested this type of interface.
 > 
-> What's the prefered way to fix this ?
+> patch 8/9 moves some common functions in a separate file so that these
+> can be used by FSL_PAMU implementation (next patch uses this).
+> These will be used later for iommu-none implementation. I believe we
+> can do more of this but will take step by step.
+> 
+> Finally last patch actually adds the support for FSL-PAMU :)
 
-I guess we need to add an ifdef.
+Patches 1-3: msi_get_region needs to return an error an error (probably
+-EINVAL) if called on a path where there's no backend implementation.
+Otherwise the caller doesn't know that the data in the region pointer
+isn't valid.
 
--Scott
+Patches 5&6: same as above for msi_set_iova, return an error if no
+backend implementation.
+
+Patch 7: Why does fsl_msi_del_iova_device bother to return anything if
+it's always zero?  Return -ENODEV when not found?
+
+Patch 9:
+
+vfio_handle_get_attr() passes random kernel data back to userspace in
+the event of iommu_domain_get_attr() error.
+
+vfio_handle_set_attr(): I don't see any data validation happening, is
+iommu_domain_set_attr() really that safe?
+
+For both of those, drop the pr_err on unknown attribute, it's sufficient
+to return error.
+
+Is VFIO_IOMMU_PAMU_GET_MSI_BANK_COUNT per aperture (ie. each vfio user
+has $COUNT regions at their disposal exclusively)?  Thanks,
+
+Alex
+
+> v1->v2
+>  - Added interface for setting msi iova for a msi region for a device.
+>    Earlier I added iommu interface for same but as per comment that is
+>    removed and now created a direct interface between vfio and msi.
+>  - Incorporated review comments (details is in individual patch)
+> 
+> Bharat Bhushan (9):
+>   pci:msi: add weak function for returning msi region info
+>   pci: msi: expose msi region information functions
+>   powerpc: pci: Add arch specific msi region interface
+>   powerpc: msi: Extend the msi region interface to get info from
+>     fsl_msi
+>   pci/msi: interface to set an iova for a msi region
+>   powerpc: pci: Extend msi iova page setup to arch specific
+>   pci: msi: Extend msi iova setting interface to powerpc arch
+>   vfio: moving some functions in common file
+>   vfio pci: Add vfio iommu implementation for FSL_PAMU
+> 
+>  arch/powerpc/include/asm/machdep.h |   10 +
+>  arch/powerpc/kernel/msi.c          |   28 +
+>  arch/powerpc/sysdev/fsl_msi.c      |  132 +++++-
+>  arch/powerpc/sysdev/fsl_msi.h      |   25 +-
+>  drivers/pci/msi.c                  |   35 ++
+>  drivers/vfio/Kconfig               |    6 +
+>  drivers/vfio/Makefile              |    5 +-
+>  drivers/vfio/vfio_iommu_common.c   |  227 ++++++++
+>  drivers/vfio/vfio_iommu_common.h   |   27 +
+>  drivers/vfio/vfio_iommu_fsl_pamu.c | 1003 ++++++++++++++++++++++++++++++++++++
+>  drivers/vfio/vfio_iommu_type1.c    |  206 +--------
+>  include/linux/msi.h                |   14 +
+>  include/linux/pci.h                |   21 +
+>  include/uapi/linux/vfio.h          |  100 ++++
+>  14 files changed, 1623 insertions(+), 216 deletions(-)
+>  create mode 100644 drivers/vfio/vfio_iommu_common.c
+>  create mode 100644 drivers/vfio/vfio_iommu_common.h
+>  create mode 100644 drivers/vfio/vfio_iommu_fsl_pamu.c
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
