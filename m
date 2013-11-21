@@ -1,21 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 73ACE2C0094
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 13:46:33 +1100 (EST)
-Date: Thu, 21 Nov 2013 13:46:22 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build failure after merge of the final tree (Linus'
+Return-Path: <anton@samba.org>
+Date: Thu, 21 Nov 2013 14:33:34 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: build failure after merge of the final tree (Linus'
  tree related - powerpc)
-Message-Id: <20131121134622.a853064a1b5a8355e5077737@canb.auug.org.au>
+Message-ID: <20131121143334.44be4231@kryten>
+In-Reply-To: <20131121134622.a853064a1b5a8355e5077737@canb.auug.org.au>
+References: <20131121134622.a853064a1b5a8355e5077737@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__21_Nov_2013_13_46_22_+1100_vfGZ4JQYADJS.m_v"
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
- Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,69 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__21_Nov_2013_13_46_22_+1100_vfGZ4JQYADJS.m_v
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Hi,
 
-After merging the final tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
+> After merging the final tree, today's linux-next build (powerpc
+> allyesconfig) failed like this:
+> 
+> <stdin>:1:0: error: -mcall-aixdesc must be big endian
 
-<stdin>:1:0: error: -mcall-aixdesc must be big endian
-<stdin>:1:0: error: -mcall-aixdesc must be big endian
-scripts/gcc-version.sh: line 31: printf: #: invalid number
-scripts/gcc-version.sh: line 31: printf: #: invalid number
-<stdin>:1:0: error: -mcall-aixdesc must be big endian
-<stdin>:1:0: error: -mcall-aixdesc must be big endian
-scripts/gcc-version.sh: line 31: printf: #: invalid number
-scripts/gcc-version.sh: line 31: printf: #: invalid number
-<stdin>:1:0: error: -mcall-aixdesc must be big endian
-<stdin>:1:0: error: -mcall-aixdesc must be big endian
-<stdin>:1:0: error: -mcall-aixdesc must be big endian
-scripts/gcc-version.sh: line 29: printf: #: invalid number
-scripts/gcc-version.sh: line 29: printf: #: invalid number
-scripts/gcc-version.sh: line 29: printf: #: invalid number
-/bin/sh: line 0: test: 0001 6000 0160: integer expression expected
-scripts/mod/empty.c:1:0: error: -mcall-aixdesc must be big endian
- /* empty file to figure out endianness / word size */
- ^
-scripts/mod/devicetable-offsets.c:1:0: error: -mcall-aixdesc must be big en=
-dian
- #include <linux/kbuild.h>
- ^
-kernel/bounds.c:1:0: error: -mcall-aixdesc must be big endian
- /*
- ^
+Urgh, allyesconfig is building an LE kernel. Ian: do we need to reverse
+the polarity of the option, and call it CONFIG_CPU_BIG_ENDIAN?
 
-Caused by commit 7c105b63bd98 ("powerpc: Add CONFIG_CPU_LITTLE_ENDIAN
-kernel config option").
-
-I have reverted that commit for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Thu__21_Nov_2013_13_46_22_+1100_vfGZ4JQYADJS.m_v
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSjXQDAAoJEMDTa8Ir7ZwV9ckQAIHy/rvp/8a5qLLvKtDsBLXt
-a9PPF3A6+6XtYN70jFOYZV1P5uRvmJEXrNywBCKPj2pcBvlLl7iorZOsYt4It1K3
-Gzd7TBvGtknwKqA4DtBojqijf1Zr1NTPItxEKv4Aen+1WXPyJBvPCqsr8ioH0tz8
-1SG548BD4QHdrig/KXElrHAjKjNPi6N4MwAN3x0aBPIQc6fjty4PJlFJRADfAOwE
-3x4LvgRzVY/j1CpUUIkBlCDf74FORNbhmoGjlOZ3TmirM/u8WED7ErJmZEvDui8c
-D2/DnTwjb7dEuDUye3e54o427VPWBUcGzCXBZL4lRzKAi2lBynmZNpzq8/atETAc
-X+A181wBGbKdpXWqFf8ESAHHejbJvBOkSYiWody64cuxyiitAS664YC/ujCct7xU
-Zc6ioGsFpMbnNOhG765+qyzmkpTUQH0GDj5ReF93JGb9i9ZG6mAP7fpOeKT7iHc+
-NHKSYHa3FrwRMNDtCyxgT3I7Z4zbvgYIG/n+xXbtyaD2tx94KrTaM0Wd7w7VW4BB
-tmVOwCrOJGONUSKkt91yeyGCl9O0ZJfHDn6zcNDid1m6gW50+vnYOUE+976dJaAB
-s+pxWz/5Kq3pYGkd0oBlVTTzNbID99gn7Edq8TuVk6//CsrRfElSuMwYXozCZX7i
-BtU5MnFMYzzBQjvKyjcG
-=WRj1
------END PGP SIGNATURE-----
-
---Signature=_Thu__21_Nov_2013_13_46_22_+1100_vfGZ4JQYADJS.m_v--
+Anton
