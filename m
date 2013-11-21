@@ -1,15 +1,15 @@
 Return-Path: <mpe@ellerman.id.au>
-Date: Thu, 21 Nov 2013 22:58:10 +1100
+Date: Thu, 21 Nov 2013 23:05:49 +1100
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 4/9] powerpc: Set eflags correctly for ELF ABIv2 core
- dumps.
-Message-ID: <20131121115809.GE15913@concordia>
+Subject: Re: [PATCH 8/9] powerpc: Add CONFIG_CPU_LITTLE_ENDIAN kernel config
+ option.
+Message-ID: <20131121120548.GF15913@concordia>
 References: <1384946106-18200-1-git-send-email-anton@samba.org>
- <1384946106-18200-5-git-send-email-anton@samba.org>
+ <1384946106-18200-9-git-send-email-anton@samba.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1384946106-18200-5-git-send-email-anton@samba.org>
+In-Reply-To: <1384946106-18200-9-git-send-email-anton@samba.org>
 Cc: rusty@rustcorp.com.au, Ulrich.Weigand@de.ibm.com, paulus@samba.org,
  alistair@popple.id.au, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,13 +21,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 20, 2013 at 10:15:01PM +1100, Anton Blanchard wrote:
-> From: Rusty Russell <rusty@rustcorp.com.au>
-> 
-> We leave it at zero (though it could be 1) for old tasks.
+On Wed, Nov 20, 2013 at 10:15:05PM +1100, Anton Blanchard wrote:
+> With the little endian support merged, we can add the
+> CONFIG_CPU_LITTLE_ENDIAN kernel config option.
 
-There's no issue with a v1 binary producing a v0 core dump?
-
-I can't think of why there would be, if they are equivalent.
+This appears to do nothing, but the Makefile bits were already added in
+commit d72b080 "powerpc: Add ability to build little endian kernels".
 
 cheers
