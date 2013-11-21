@@ -1,22 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Date: Thu, 21 Nov 2013 22:16:39 +1100
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jason Baron <jbaron@akamai.com>
-Subject: Re: [PATCH v2] panic: Make panic_timeout configurable
-Message-ID: <20131121111638.GA15913@concordia>
-References: <20131118210436.233B5202A@prod-mail-relay06.akamai.com>
- <20131118143059.afe17d2faced16171a05eb10@linux-foundation.org>
- <528A9F24.1000206@akamai.com> <20131119070905.GF32367@gmail.com>
- <528BE05E.8090501@akamai.com>
+Return-Path: <Varun.Sethi@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 514512C00E4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 22:20:16 +1100 (EST)
+From: Varun Sethi <Varun.Sethi@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>, Bharat Bhushan
+ <Bharat.Bhushan@freescale.com>
+Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+Date: Thu, 21 Nov 2013 11:20:01 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D0A5C38AC@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1384973243.2879.361.camel@ul30vt.home>
+In-Reply-To: <1384973243.2879.361.camel@ul30vt.home>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <528BE05E.8090501@akamai.com>
-Cc: Felipe Contreras <felipe.contreras@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "ralf@linux-mips.org" <ralf@linux-mips.org>,
- "paulus@samba.org" <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "agraf@suse.de" <agraf@suse.de>, Stuart Yoder <stuart.yoder@freescale.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,48 +33,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 19, 2013 at 05:04:14PM -0500, Jason Baron wrote:
-> On 11/19/2013 02:09 AM, Ingo Molnar wrote:
-> > 
-> > * Jason Baron <jbaron@akamai.com> wrote:
-> > 
-> >> On 11/18/2013 05:30 PM, Andrew Morton wrote:
-> >>> On Mon, 18 Nov 2013 21:04:36 +0000 (GMT) Jason Baron <jbaron@akamai.com> wrote:
-> >>>
-> >>>> The panic_timeout value can be set via the command line option 'panic=x', or via
-> >>>> /proc/sys/kernel/panic, however that is not sufficient when the panic occurs
-> >>>> before we are able to set up these values. Thus, add a CONFIG_PANIC_TIMEOUT
-> >>>> so that we can set the desired value from the .config.
-> >>>>
-> >>>> The default panic_timeout value continues to be 0 - wait forever, 
-> >>>> except for powerpc and mips, which have been defaulted to 180 and 
-> >>>> 5 respectively. This is in keeping with the fact that these 
-> >>>> arches already set panic_timeout in their arch init code. 
-> >>>> However, I found three exceptions- two in mips and one in powerpc 
-> >>>> where the settings didn't match these default values. In those 
-> >>>> cases, I left the arch code so it continues to override, in case 
-> >>>> the user has not changed from the default. It would nice if these 
-> >>>> arches had one default value, or if we could determine the 
-> >>>> correct setting at compile-time.
-...
-> 
-> Sure, I can round up all the related patches in this area that make
-> sense and re-submit as a series.
-> 
-> Felipe, would the CONFIG_PANIC_TIMEOUT=xx .config parameter work for your
-> needs, or would you still like to see the command-line processing moved
-> up?
-> 
-> I'd also like to hear from the PowerPC folks about the arch defaults
-> there. Now, that mips is ok with CONFIG_PANIC_TIMEOUT, PowerPC is the
-> only arch doing specific initialization of 'panic_timeout'.
 
-Hi Jason,
 
-I think we'd like to choose the value at runtime, as we do now. The
-powerpc arch supports a wide spread of different hardware, so it's nice
-to be able to customise the value based on the platform. Also we build a
-single kernel that boots on many platforms, and so we can't pick the
-value at compile time.
+> -----Original Message-----
+> From: iommu-bounces@lists.linux-foundation.org [mailto:iommu-
+> bounces@lists.linux-foundation.org] On Behalf Of Alex Williamson
+> Sent: Thursday, November 21, 2013 12:17 AM
+> To: Bhushan Bharat-R65777
+> Cc: linux-pci@vger.kernel.org; agraf@suse.de; Yoder Stuart-B08248; Wood
+> Scott-B07421; iommu@lists.linux-foundation.org; bhelgaas@google.com;
+> linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU
+> (PAMU)
+>=20
+> On Tue, 2013-11-19 at 10:47 +0530, Bharat Bhushan wrote:
+> > From: Bharat Bhushan <bharat.bhushan@freescale.com>
+> >
+> > PAMU (FSL IOMMU) has a concept of primary window and subwindows.
+> > Primary window corresponds to the complete guest iova address space
+> > (including MSI space), with respect to IOMMU_API this is termed as
+> > geometry. IOVA Base of subwindow is determined from the number of
+> > subwindows (configurable using iommu API).
+> > MSI I/O page must be within the geometry and maximum supported
+> > subwindows, so MSI IO-page is setup just after guest memory iova space.
+> >
+> > So patch 1/9-4/9(inclusive) are for defining the interface to get:
+> >   - Number of MSI regions (which is number of MSI banks for powerpc)
+> >   - MSI-region address range: Physical page which have the
+> >     address/addresses used for generating MSI interrupt
+> >     and size of the page.
+> >
+> > Patch 5/9-7/9(inclusive) is defining the interface of setting up MSI
+> > iova-base for a msi region(bank) for a device. so that when
+> > msi-message will be composed then this configured iova will be used.
+> > Earlier we were using iommu interface for getting the configured iova
+> > which was not currect and Alex Williamson suggeested this type of
+> interface.
+> >
+> > patch 8/9 moves some common functions in a separate file so that these
+> > can be used by FSL_PAMU implementation (next patch uses this).
+> > These will be used later for iommu-none implementation. I believe we
+> > can do more of this but will take step by step.
+> >
+> > Finally last patch actually adds the support for FSL-PAMU :)
+>=20
+> Patches 1-3: msi_get_region needs to return an error an error (probably
+> -EINVAL) if called on a path where there's no backend implementation.
+> Otherwise the caller doesn't know that the data in the region pointer
+> isn't valid.
+>=20
+> Patches 5&6: same as above for msi_set_iova, return an error if no
+> backend implementation.
+>=20
+> Patch 7: Why does fsl_msi_del_iova_device bother to return anything if
+> it's always zero?  Return -ENODEV when not found?
+>=20
+> Patch 9:
+>=20
+> vfio_handle_get_attr() passes random kernel data back to userspace in the
+> event of iommu_domain_get_attr() error.
+>=20
+> vfio_handle_set_attr(): I don't see any data validation happening, is
+> iommu_domain_set_attr() really that safe?
+[Sethi Varun-B16395] The parameter validation can be left to the lower leve=
+l iommu driver. The attribute could be specific to a given hardware.
 
-cheers
+-Varun
