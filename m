@@ -1,25 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8B10C2C00F9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 11:33:16 +1100 (EST)
-Message-ID: <1384993966.1403.466.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc/gpio: Fix the wrong GPIO input data on
- MPC8572/MPC8536
-From: Scott Wood <scottwood@freescale.com>
-To: Liu Gang <Gang.Liu@freescale.com>
-Date: Wed, 20 Nov 2013 18:32:46 -0600
-In-Reply-To: <1384916079.16677.26.camel@linux>
-References: <1384499789-3631-1-git-send-email-Gang.Liu@freescale.com>
- <1384901494.1403.383.camel@snotra.buserror.net>
- <1384916079.16677.26.camel@linux>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9BCB62C016E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 11:35:02 +1100 (EST)
+Message-ID: <1384994090.26969.130.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 21 Nov 2013 11:34:50 +1100
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linux-gpio@vger.kernel.org, linus.walleij@linaro.org,
- linuxppc-dev@lists.ozlabs.org, r61911@freescale.com, b07421@freescale.com
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-11-20 at 10:54 +0800, Liu Gang wrote:
-> On Tue, 2013-11-19 at 16:51 -0600, Scott Wood wrote:
-> > > @@ -71,6 +71,7 @@ static int mpc8572_gpio_get(struct gpio_chip *gc, unsigned int gpio)
-> > >  	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
-> > >  
-> > >  	val = in_be32(mm->regs + GPIO_DAT) & ~in_be32(mm->regs + GPIO_DIR);
-> > > +	mpc8xxx_gc->data &= in_be32(mm->regs + GPIO_DIR);
-> > >  
-> > >  	return (val | mpc8xxx_gc->data) & mpc8xxx_gpio2mask(gpio);
-> > >  }
-> > 
-> > It seems odd to update ->data in a function that's supposed to be
-> > reading things...  Perhaps it would be better to keep ->data in a good
-> > state from the beginning.
-> > 
-> > -Scott
-> 
-> Yes, keeping the ->data in a good state from the beginning will be
-> better. But this will need more code in different functions to cover
-> all the scenarios.
-> First, we should check the direct of the pin in the function
-> "mpc8xxx_gpio_set", and clean the input bit in ->data after setting
-> operation.
+Hi Linus !
 
-For userspace value setting, it looks like gpiolib blocks the write if
-the pin if FLAG_IS_OUT is set.  This suggests that this is an error
-condition for other uses as well.  Though, I notice that
-mpc8xxx_gpio_dir_out() calls gpio_set() before actually changing the
-direction.  So it may be useful to avoid races where the wrong value is
-output briefly after the direction is changed (especially in open drain
-situations, where the signal could have a meaningful default even before
-we begin outputting).  But that raises the question of how you'd do that
-from userspace, and it also renders the to-be-output value as write-only
-data (until the direction is actually changed), since a readback would
-get the input value instead.
+Since you pulled my previous one in less than 20mn (the LE stuff),
+there's no point waiting for tomorrow for these fixes I mentioned
+earlier so here they are.
 
-> So maybe it's better to eliminate the effects of the ->data to the
-> input pins when reading the status, regardless of the possible changes
-> of the pins and the data.
-> Do you think so?
+This is a small collection of random bug fixes and a few improvements
+of Oops output which I deemed valuable enough to include as well.
 
-Perhaps, but that doesn't require you to modify ->data in the get()
-function.
+The fixes are essentially recent build breakage and regressions,
+and a couple of older bugs such as the DTL log duplication, the
+EEH issue with PCI_COMMAND_MASTER and the problem with small
+contexts passed to get/set_context with VSX enabled.
 
--Scott
+Cheers,
+Ben.
+The following changes since commit b4789b8e6be3151a955ade74872822f30e8cd914:
+
+  aacraid: prevent invalid pointer dereference (2013-11-19 16:27:39 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to c13f20ac48328b05cd3b8c19e31ed6c132b44b42:
+
+  powerpc/signals: Mark VSX not saved with small contexts (2013-11-21 10:33:45 +1100)
+
+----------------------------------------------------------------
+Aneesh Kumar K.V (1):
+      powerpc: booke: Fix build failures
+
+Anton Blanchard (5):
+      powerpc: Print DAR and DSISR on machine check oopses
+      powerpc: Remove a few lines of oops output
+      powerpc/pseries: Duplicate dtl entries sometimes sent to userspace
+      powerpc: Only print PACATMSCRATCH in oops when TM is active
+      powerpc: ppc64 address space capped at 32TB, mmap randomisation disabled
+
+Gavin Shan (2):
+      powerpc/eeh: Enable PCI_COMMAND_MASTER for PCI bridges
+      powerpc/eeh: More accurate log
+
+Heiko Carstens (1):
+      powerpc: Fix __get_user_pages_fast() irq handling
+
+Li Zhong (1):
+      powerpc/vio: Fix a dma_mask issue of vio
+
+Michael Ellerman (2):
+      powerpc: Make cpu_to_chip_id() available when SMP=n
+      powerpc/pseries: Fix SMP=n build of rng.c
+
+Michael Neuling (1):
+      powerpc/signals: Mark VSX not saved with small contexts
+
+ arch/powerpc/include/asm/smp.h        |  2 +-
+ arch/powerpc/kernel/eeh.c             |  9 +++++++++
+ arch/powerpc/kernel/eeh_event.c       |  9 +++++++--
+ arch/powerpc/kernel/process.c         | 21 +++++++++++----------
+ arch/powerpc/kernel/prom.c            | 20 ++++++++++++++++++++
+ arch/powerpc/kernel/signal_32.c       | 10 +++++++++-
+ arch/powerpc/kernel/smp.c             | 16 ----------------
+ arch/powerpc/kernel/time.c            |  4 ++--
+ arch/powerpc/kernel/vio.c             |  2 +-
+ arch/powerpc/mm/gup.c                 |  5 +++--
+ arch/powerpc/mm/slice.c               |  2 +-
+ arch/powerpc/platforms/powernv/rng.c  |  1 +
+ arch/powerpc/platforms/pseries/rng.c  |  1 +
+ arch/powerpc/platforms/wsp/chroma.c   |  1 +
+ arch/powerpc/platforms/wsp/h8.c       |  1 +
+ arch/powerpc/platforms/wsp/ics.c      |  2 ++
+ arch/powerpc/platforms/wsp/opb_pic.c  |  2 ++
+ arch/powerpc/platforms/wsp/psr2.c     |  1 +
+ arch/powerpc/platforms/wsp/scom_wsp.c |  1 +
+ arch/powerpc/platforms/wsp/wsp.c      |  1 +
+ 20 files changed, 75 insertions(+), 36 deletions(-)
