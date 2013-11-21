@@ -1,21 +1,21 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-ob0-x22c.google.com (mail-ob0-x22c.google.com
- [IPv6:2607:f8b0:4003:c01::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 46B262C0399
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 13:17:22 +1100 (EST)
-Received: by mail-ob0-f172.google.com with SMTP id gq1so6133547obb.31
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2013 18:17:18 -0800 (PST)
-From: Liu Ping Fan <kernelfans@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc: mm: change pgtable index size for 64K page
-Date: Thu, 21 Nov 2013 10:17:55 +0800
-Message-Id: <1385000275-5988-2-git-send-email-pingfank@linux.vnet.ibm.com>
-In-Reply-To: <1385000275-5988-1-git-send-email-pingfank@linux.vnet.ibm.com>
-References: <1385000275-5988-1-git-send-email-pingfank@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 73ACE2C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 13:46:33 +1100 (EST)
+Date: Thu, 21 Nov 2013 13:46:22 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the final tree (Linus'
+ tree related - powerpc)
+Message-Id: <20131121134622.a853064a1b5a8355e5077737@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__21_Nov_2013_13_46_22_+1100_vfGZ4JQYADJS.m_v"
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +25,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For 64K page, we waste half of the pte_t page. With this patch, after
-changing PGD_INDEX_SIZE from 12 to 11, PTE_INDEX_SIZE from 8 to 9,
-we can improve the usage of pte_t page and shrink the continuous phys
-size for pgd_t.
+--Signature=_Thu__21_Nov_2013_13_46_22_+1100_vfGZ4JQYADJS.m_v
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pgtable-ppc64-64k.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Hi all,
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64-64k.h b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-index a56b82f..f6955ff 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-@@ -4,10 +4,10 @@
- #include <asm-generic/pgtable-nopud.h>
- 
- 
--#define PTE_INDEX_SIZE  8
-+#define PTE_INDEX_SIZE  9
- #define PMD_INDEX_SIZE  10
- #define PUD_INDEX_SIZE	0
--#define PGD_INDEX_SIZE  12
-+#define PGD_INDEX_SIZE  11
- 
- #ifndef __ASSEMBLY__
- #define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
--- 
-1.8.1.4
+After merging the final tree, today's linux-next build (powerpc
+allyesconfig) failed like this:
+
+<stdin>:1:0: error: -mcall-aixdesc must be big endian
+<stdin>:1:0: error: -mcall-aixdesc must be big endian
+scripts/gcc-version.sh: line 31: printf: #: invalid number
+scripts/gcc-version.sh: line 31: printf: #: invalid number
+<stdin>:1:0: error: -mcall-aixdesc must be big endian
+<stdin>:1:0: error: -mcall-aixdesc must be big endian
+scripts/gcc-version.sh: line 31: printf: #: invalid number
+scripts/gcc-version.sh: line 31: printf: #: invalid number
+<stdin>:1:0: error: -mcall-aixdesc must be big endian
+<stdin>:1:0: error: -mcall-aixdesc must be big endian
+<stdin>:1:0: error: -mcall-aixdesc must be big endian
+scripts/gcc-version.sh: line 29: printf: #: invalid number
+scripts/gcc-version.sh: line 29: printf: #: invalid number
+scripts/gcc-version.sh: line 29: printf: #: invalid number
+/bin/sh: line 0: test: 0001 6000 0160: integer expression expected
+scripts/mod/empty.c:1:0: error: -mcall-aixdesc must be big endian
+ /* empty file to figure out endianness / word size */
+ ^
+scripts/mod/devicetable-offsets.c:1:0: error: -mcall-aixdesc must be big en=
+dian
+ #include <linux/kbuild.h>
+ ^
+kernel/bounds.c:1:0: error: -mcall-aixdesc must be big endian
+ /*
+ ^
+
+Caused by commit 7c105b63bd98 ("powerpc: Add CONFIG_CPU_LITTLE_ENDIAN
+kernel config option").
+
+I have reverted that commit for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Thu__21_Nov_2013_13_46_22_+1100_vfGZ4JQYADJS.m_v
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSjXQDAAoJEMDTa8Ir7ZwV9ckQAIHy/rvp/8a5qLLvKtDsBLXt
+a9PPF3A6+6XtYN70jFOYZV1P5uRvmJEXrNywBCKPj2pcBvlLl7iorZOsYt4It1K3
+Gzd7TBvGtknwKqA4DtBojqijf1Zr1NTPItxEKv4Aen+1WXPyJBvPCqsr8ioH0tz8
+1SG548BD4QHdrig/KXElrHAjKjNPi6N4MwAN3x0aBPIQc6fjty4PJlFJRADfAOwE
+3x4LvgRzVY/j1CpUUIkBlCDf74FORNbhmoGjlOZ3TmirM/u8WED7ErJmZEvDui8c
+D2/DnTwjb7dEuDUye3e54o427VPWBUcGzCXBZL4lRzKAi2lBynmZNpzq8/atETAc
+X+A181wBGbKdpXWqFf8ESAHHejbJvBOkSYiWody64cuxyiitAS664YC/ujCct7xU
+Zc6ioGsFpMbnNOhG765+qyzmkpTUQH0GDj5ReF93JGb9i9ZG6mAP7fpOeKT7iHc+
+NHKSYHa3FrwRMNDtCyxgT3I7Z4zbvgYIG/n+xXbtyaD2tx94KrTaM0Wd7w7VW4BB
+tmVOwCrOJGONUSKkt91yeyGCl9O0ZJfHDn6zcNDid1m6gW50+vnYOUE+976dJaAB
+s+pxWz/5Kq3pYGkd0oBlVTTzNbID99gn7Edq8TuVk6//CsrRfElSuMwYXozCZX7i
+BtU5MnFMYzzBQjvKyjcG
+=WRj1
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__21_Nov_2013_13_46_22_+1100_vfGZ4JQYADJS.m_v--
