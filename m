@@ -1,27 +1,27 @@
-Return-Path: <Varun.Sethi@freescale.com>
+Return-Path: <Bharat.Bhushan@freescale.com>
 Received: from co9outboundpool.messaging.microsoft.com
  (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 514512C00E4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 22:20:16 +1100 (EST)
-From: Varun Sethi <Varun.Sethi@freescale.com>
-To: Alex Williamson <alex.williamson@redhat.com>, Bharat Bhushan
- <Bharat.Bhushan@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 64C492C0126
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 22:21:00 +1100 (EST)
+From: Bharat Bhushan <Bharat.Bhushan@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>
 Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
-Date: Thu, 21 Nov 2013 11:20:01 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D0A5C38AC@039-SN2MPN1-012.039d.mgd.msft.net>
+Date: Thu, 21 Nov 2013 11:20:49 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
 References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
  <1384973243.2879.361.camel@ul30vt.home>
 In-Reply-To: <1384973243.2879.361.camel@ul30vt.home>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "agraf@suse.de" <agraf@suse.de>, Stuart Yoder <stuart.yoder@freescale.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "joro@8bytes.org" <joro@8bytes.org>, "agraf@suse.de" <agraf@suse.de>,
+ Stuart Yoder <stuart.yoder@freescale.com>,
  Scott Wood <scottwood@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,69 +33,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-> -----Original Message-----
-> From: iommu-bounces@lists.linux-foundation.org [mailto:iommu-
-> bounces@lists.linux-foundation.org] On Behalf Of Alex Williamson
-> Sent: Thursday, November 21, 2013 12:17 AM
-> To: Bhushan Bharat-R65777
-> Cc: linux-pci@vger.kernel.org; agraf@suse.de; Yoder Stuart-B08248; Wood
-> Scott-B07421; iommu@lists.linux-foundation.org; bhelgaas@google.com;
-> linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU
-> (PAMU)
->=20
-> On Tue, 2013-11-19 at 10:47 +0530, Bharat Bhushan wrote:
-> > From: Bharat Bhushan <bharat.bhushan@freescale.com>
-> >
-> > PAMU (FSL IOMMU) has a concept of primary window and subwindows.
-> > Primary window corresponds to the complete guest iova address space
-> > (including MSI space), with respect to IOMMU_API this is termed as
-> > geometry. IOVA Base of subwindow is determined from the number of
-> > subwindows (configurable using iommu API).
-> > MSI I/O page must be within the geometry and maximum supported
-> > subwindows, so MSI IO-page is setup just after guest memory iova space.
-> >
-> > So patch 1/9-4/9(inclusive) are for defining the interface to get:
-> >   - Number of MSI regions (which is number of MSI banks for powerpc)
-> >   - MSI-region address range: Physical page which have the
-> >     address/addresses used for generating MSI interrupt
-> >     and size of the page.
-> >
-> > Patch 5/9-7/9(inclusive) is defining the interface of setting up MSI
-> > iova-base for a msi region(bank) for a device. so that when
-> > msi-message will be composed then this configured iova will be used.
-> > Earlier we were using iommu interface for getting the configured iova
-> > which was not currect and Alex Williamson suggeested this type of
-> interface.
-> >
-> > patch 8/9 moves some common functions in a separate file so that these
-> > can be used by FSL_PAMU implementation (next patch uses this).
-> > These will be used later for iommu-none implementation. I believe we
-> > can do more of this but will take step by step.
-> >
-> > Finally last patch actually adds the support for FSL-PAMU :)
->=20
-> Patches 1-3: msi_get_region needs to return an error an error (probably
-> -EINVAL) if called on a path where there's no backend implementation.
-> Otherwise the caller doesn't know that the data in the region pointer
-> isn't valid.
->=20
-> Patches 5&6: same as above for msi_set_iova, return an error if no
-> backend implementation.
->=20
-> Patch 7: Why does fsl_msi_del_iova_device bother to return anything if
-> it's always zero?  Return -ENODEV when not found?
->=20
-> Patch 9:
->=20
-> vfio_handle_get_attr() passes random kernel data back to userspace in the
-> event of iommu_domain_get_attr() error.
->=20
-> vfio_handle_set_attr(): I don't see any data validation happening, is
-> iommu_domain_set_attr() really that safe?
-[Sethi Varun-B16395] The parameter validation can be left to the lower leve=
-l iommu driver. The attribute could be specific to a given hardware.
-
--Varun
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
+IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IFRodXJzZGF5LCBO
+b3ZlbWJlciAyMSwgMjAxMyAxMjoxNyBBTQ0KPiBUbzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+
+IENjOiBqb3JvQDhieXRlcy5vcmc7IGJoZWxnYWFzQGdvb2dsZS5jb207IGFncmFmQHN1c2UuZGU7
+IFdvb2QgU2NvdHQtQjA3NDIxOw0KPiBZb2RlciBTdHVhcnQtQjA4MjQ4OyBpb21tdUBsaXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZzsgbGludXgtDQo+IHBjaUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
+cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9y
+ZzsgQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMC85IHYyXSB2
+ZmlvLXBjaTogYWRkIHN1cHBvcnQgZm9yIEZyZWVzY2FsZSBJT01NVSAoUEFNVSkNCj4gDQo+IE9u
+IFR1ZSwgMjAxMy0xMS0xOSBhdCAxMDo0NyArMDUzMCwgQmhhcmF0IEJodXNoYW4gd3JvdGU6DQo+
+ID4gRnJvbTogQmhhcmF0IEJodXNoYW4gPGJoYXJhdC5iaHVzaGFuQGZyZWVzY2FsZS5jb20+DQo+
+ID4NCj4gPiBQQU1VIChGU0wgSU9NTVUpIGhhcyBhIGNvbmNlcHQgb2YgcHJpbWFyeSB3aW5kb3cg
+YW5kIHN1YndpbmRvd3MuDQo+ID4gUHJpbWFyeSB3aW5kb3cgY29ycmVzcG9uZHMgdG8gdGhlIGNv
+bXBsZXRlIGd1ZXN0IGlvdmEgYWRkcmVzcyBzcGFjZQ0KPiA+IChpbmNsdWRpbmcgTVNJIHNwYWNl
+KSwgd2l0aCByZXNwZWN0IHRvIElPTU1VX0FQSSB0aGlzIGlzIHRlcm1lZCBhcw0KPiA+IGdlb21l
+dHJ5LiBJT1ZBIEJhc2Ugb2Ygc3Vid2luZG93IGlzIGRldGVybWluZWQgZnJvbSB0aGUgbnVtYmVy
+IG9mDQo+ID4gc3Vid2luZG93cyAoY29uZmlndXJhYmxlIHVzaW5nIGlvbW11IEFQSSkuDQo+ID4g
+TVNJIEkvTyBwYWdlIG11c3QgYmUgd2l0aGluIHRoZSBnZW9tZXRyeSBhbmQgbWF4aW11bSBzdXBw
+b3J0ZWQNCj4gPiBzdWJ3aW5kb3dzLCBzbyBNU0kgSU8tcGFnZSBpcyBzZXR1cCBqdXN0IGFmdGVy
+IGd1ZXN0IG1lbW9yeSBpb3ZhIHNwYWNlLg0KPiA+DQo+ID4gU28gcGF0Y2ggMS85LTQvOShpbmNs
+dXNpdmUpIGFyZSBmb3IgZGVmaW5pbmcgdGhlIGludGVyZmFjZSB0byBnZXQ6DQo+ID4gICAtIE51
+bWJlciBvZiBNU0kgcmVnaW9ucyAod2hpY2ggaXMgbnVtYmVyIG9mIE1TSSBiYW5rcyBmb3IgcG93
+ZXJwYykNCj4gPiAgIC0gTVNJLXJlZ2lvbiBhZGRyZXNzIHJhbmdlOiBQaHlzaWNhbCBwYWdlIHdo
+aWNoIGhhdmUgdGhlDQo+ID4gICAgIGFkZHJlc3MvYWRkcmVzc2VzIHVzZWQgZm9yIGdlbmVyYXRp
+bmcgTVNJIGludGVycnVwdA0KPiA+ICAgICBhbmQgc2l6ZSBvZiB0aGUgcGFnZS4NCj4gPg0KPiA+
+IFBhdGNoIDUvOS03LzkoaW5jbHVzaXZlKSBpcyBkZWZpbmluZyB0aGUgaW50ZXJmYWNlIG9mIHNl
+dHRpbmcgdXAgTVNJDQo+ID4gaW92YS1iYXNlIGZvciBhIG1zaSByZWdpb24oYmFuaykgZm9yIGEg
+ZGV2aWNlLiBzbyB0aGF0IHdoZW4NCj4gPiBtc2ktbWVzc2FnZSB3aWxsIGJlIGNvbXBvc2VkIHRo
+ZW4gdGhpcyBjb25maWd1cmVkIGlvdmEgd2lsbCBiZSB1c2VkLg0KPiA+IEVhcmxpZXIgd2Ugd2Vy
+ZSB1c2luZyBpb21tdSBpbnRlcmZhY2UgZm9yIGdldHRpbmcgdGhlIGNvbmZpZ3VyZWQgaW92YQ0K
+PiA+IHdoaWNoIHdhcyBub3QgY3VycmVjdCBhbmQgQWxleCBXaWxsaWFtc29uIHN1Z2dlZXN0ZWQg
+dGhpcyB0eXBlIG9mIGludGVyZmFjZS4NCj4gPg0KPiA+IHBhdGNoIDgvOSBtb3ZlcyBzb21lIGNv
+bW1vbiBmdW5jdGlvbnMgaW4gYSBzZXBhcmF0ZSBmaWxlIHNvIHRoYXQgdGhlc2UNCj4gPiBjYW4g
+YmUgdXNlZCBieSBGU0xfUEFNVSBpbXBsZW1lbnRhdGlvbiAobmV4dCBwYXRjaCB1c2VzIHRoaXMp
+Lg0KPiA+IFRoZXNlIHdpbGwgYmUgdXNlZCBsYXRlciBmb3IgaW9tbXUtbm9uZSBpbXBsZW1lbnRh
+dGlvbi4gSSBiZWxpZXZlIHdlDQo+ID4gY2FuIGRvIG1vcmUgb2YgdGhpcyBidXQgd2lsbCB0YWtl
+IHN0ZXAgYnkgc3RlcC4NCj4gPg0KPiA+IEZpbmFsbHkgbGFzdCBwYXRjaCBhY3R1YWxseSBhZGRz
+IHRoZSBzdXBwb3J0IGZvciBGU0wtUEFNVSA6KQ0KPiANCj4gUGF0Y2hlcyAxLTM6IG1zaV9nZXRf
+cmVnaW9uIG5lZWRzIHRvIHJldHVybiBhbiBlcnJvciBhbiBlcnJvciAocHJvYmFibHkNCj4gLUVJ
+TlZBTCkgaWYgY2FsbGVkIG9uIGEgcGF0aCB3aGVyZSB0aGVyZSdzIG5vIGJhY2tlbmQgaW1wbGVt
+ZW50YXRpb24uDQo+IE90aGVyd2lzZSB0aGUgY2FsbGVyIGRvZXNuJ3Qga25vdyB0aGF0IHRoZSBk
+YXRhIGluIHRoZSByZWdpb24gcG9pbnRlciBpc24ndA0KPiB2YWxpZC4NCg0Kd2lsbCBjb3JyZWN0
+Lg0KDQo+IA0KPiBQYXRjaGVzIDUmNjogc2FtZSBhcyBhYm92ZSBmb3IgbXNpX3NldF9pb3ZhLCBy
+ZXR1cm4gYW4gZXJyb3IgaWYgbm8gYmFja2VuZA0KPiBpbXBsZW1lbnRhdGlvbi4NCg0KT2sNCg0K
+PiANCj4gUGF0Y2ggNzogV2h5IGRvZXMgZnNsX21zaV9kZWxfaW92YV9kZXZpY2UgYm90aGVyIHRv
+IHJldHVybiBhbnl0aGluZyBpZiBpdCdzDQo+IGFsd2F5cyB6ZXJvPyAgUmV0dXJuIC1FTk9ERVYg
+d2hlbiBub3QgZm91bmQ/DQoNCldpbGwgbWFrZSAtRU5PREVWLg0KDQo+IA0KPiBQYXRjaCA5Og0K
+PiANCj4gdmZpb19oYW5kbGVfZ2V0X2F0dHIoKSBwYXNzZXMgcmFuZG9tIGtlcm5lbCBkYXRhIGJh
+Y2sgdG8gdXNlcnNwYWNlIGluIHRoZSBldmVudA0KPiBvZiBpb21tdV9kb21haW5fZ2V0X2F0dHIo
+KSBlcnJvci4NCg0KV2lsbCBjb3JyZWN0Lg0KDQo+IA0KPiB2ZmlvX2hhbmRsZV9zZXRfYXR0cigp
+OiBJIGRvbid0IHNlZSBhbnkgZGF0YSB2YWxpZGF0aW9uIGhhcHBlbmluZywgaXMNCj4gaW9tbXVf
+ZG9tYWluX3NldF9hdHRyKCkgcmVhbGx5IHRoYXQgc2FmZT8NCg0KV2UgZG8gbm90IG5lZWQgYW55
+IGRhdGEgdmFsaWRhdGlvbiBoZXJlIGFuZCBpb21tdSBkcml2ZXIgZG9lcyB3aGF0ZXZlciBuZWVk
+ZWQuDQpTbyB5ZXMsICBpb21tdV9kb21haW5fc2V0X2F0dHIoKSBpcyBzYWZlLg0KDQo+IA0KPiBG
+b3IgYm90aCBvZiB0aG9zZSwgZHJvcCB0aGUgcHJfZXJyIG9uIHVua25vd24gYXR0cmlidXRlLCBp
+dCdzIHN1ZmZpY2llbnQgdG8NCj4gcmV0dXJuIGVycm9yLg0KDQpvaw0KDQo+IA0KPiBJcyBWRklP
+X0lPTU1VX1BBTVVfR0VUX01TSV9CQU5LX0NPVU5UIHBlciBhcGVydHVyZSAoaWUuIGVhY2ggdmZp
+byB1c2VyIGhhcw0KPiAkQ09VTlQgcmVnaW9ucyBhdCB0aGVpciBkaXNwb3NhbCBleGNsdXNpdmVs
+eSk/DQoNCk51bWJlciBvZiBtc2ktYmFuayBjb3VudCBpcyBzeXN0ZW0gd2lkZSBhbmQgbm90IHBl
+ciBhcGVydHVyZSwgQnV0IHdpbGwgYmUgc2V0dGluZyB3aW5kb3dzIGZvciBiYW5rcyBpbiB0aGUg
+ZGV2aWNlIGFwZXJ0dXJlLg0KU28gc2F5IGlmIHdlIGFyZSBkaXJlY3QgYXNzaWduaW5nIDIgcGNp
+IGRldmljZSAoYm90aCBoYXZlIGRpZmZlcmVudCBpb21tdSBncm91cCwgc28gMiBhcGVydHVyZSBp
+biBpb21tdSkgdG8gVk0uDQpOb3cgcWVtdSBjYW4gbWFrZSBvbmx5IG9uZSBjYWxsIHRvIGtub3cg
+aG93IG1hbnkgbXNpLWJhbmtzIGFyZSB0aGVyZSBidXQgaXQgbXVzdCBzZXQgc3ViLXdpbmRvd3Mg
+Zm9yIGFsbCBiYW5rcyBmb3IgYm90aCBwY2kgZGV2aWNlIGluIGl0cyByZXNwZWN0aXZlIGFwZXJ0
+dXJlLg0KDQpUaGFua3MNCi1CaGFyYXQNCg0KPiAgVGhhbmtzLA0KPiANCj4gQWxleA0KPiANCj4g
+PiB2MS0+djINCj4gPiAgLSBBZGRlZCBpbnRlcmZhY2UgZm9yIHNldHRpbmcgbXNpIGlvdmEgZm9y
+IGEgbXNpIHJlZ2lvbiBmb3IgYSBkZXZpY2UuDQo+ID4gICAgRWFybGllciBJIGFkZGVkIGlvbW11
+IGludGVyZmFjZSBmb3Igc2FtZSBidXQgYXMgcGVyIGNvbW1lbnQgdGhhdCBpcw0KPiA+ICAgIHJl
+bW92ZWQgYW5kIG5vdyBjcmVhdGVkIGEgZGlyZWN0IGludGVyZmFjZSBiZXR3ZWVuIHZmaW8gYW5k
+IG1zaS4NCj4gPiAgLSBJbmNvcnBvcmF0ZWQgcmV2aWV3IGNvbW1lbnRzIChkZXRhaWxzIGlzIGlu
+IGluZGl2aWR1YWwgcGF0Y2gpDQo+ID4NCj4gPiBCaGFyYXQgQmh1c2hhbiAoOSk6DQo+ID4gICBw
+Y2k6bXNpOiBhZGQgd2VhayBmdW5jdGlvbiBmb3IgcmV0dXJuaW5nIG1zaSByZWdpb24gaW5mbw0K
+PiA+ICAgcGNpOiBtc2k6IGV4cG9zZSBtc2kgcmVnaW9uIGluZm9ybWF0aW9uIGZ1bmN0aW9ucw0K
+PiA+ICAgcG93ZXJwYzogcGNpOiBBZGQgYXJjaCBzcGVjaWZpYyBtc2kgcmVnaW9uIGludGVyZmFj
+ZQ0KPiA+ICAgcG93ZXJwYzogbXNpOiBFeHRlbmQgdGhlIG1zaSByZWdpb24gaW50ZXJmYWNlIHRv
+IGdldCBpbmZvIGZyb20NCj4gPiAgICAgZnNsX21zaQ0KPiA+ICAgcGNpL21zaTogaW50ZXJmYWNl
+IHRvIHNldCBhbiBpb3ZhIGZvciBhIG1zaSByZWdpb24NCj4gPiAgIHBvd2VycGM6IHBjaTogRXh0
+ZW5kIG1zaSBpb3ZhIHBhZ2Ugc2V0dXAgdG8gYXJjaCBzcGVjaWZpYw0KPiA+ICAgcGNpOiBtc2k6
+IEV4dGVuZCBtc2kgaW92YSBzZXR0aW5nIGludGVyZmFjZSB0byBwb3dlcnBjIGFyY2gNCj4gPiAg
+IHZmaW86IG1vdmluZyBzb21lIGZ1bmN0aW9ucyBpbiBjb21tb24gZmlsZQ0KPiA+ICAgdmZpbyBw
+Y2k6IEFkZCB2ZmlvIGlvbW11IGltcGxlbWVudGF0aW9uIGZvciBGU0xfUEFNVQ0KPiA+DQo+ID4g
+IGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9tYWNoZGVwLmggfCAgIDEwICsNCj4gPiAgYXJjaC9w
+b3dlcnBjL2tlcm5lbC9tc2kuYyAgICAgICAgICB8ICAgMjggKw0KPiA+ICBhcmNoL3Bvd2VycGMv
+c3lzZGV2L2ZzbF9tc2kuYyAgICAgIHwgIDEzMiArKysrKy0NCj4gPiAgYXJjaC9wb3dlcnBjL3N5
+c2Rldi9mc2xfbXNpLmggICAgICB8ICAgMjUgKy0NCj4gPiAgZHJpdmVycy9wY2kvbXNpLmMgICAg
+ICAgICAgICAgICAgICB8ICAgMzUgKysNCj4gPiAgZHJpdmVycy92ZmlvL0tjb25maWcgICAgICAg
+ICAgICAgICB8ICAgIDYgKw0KPiA+ICBkcml2ZXJzL3ZmaW8vTWFrZWZpbGUgICAgICAgICAgICAg
+IHwgICAgNSArLQ0KPiA+ICBkcml2ZXJzL3ZmaW8vdmZpb19pb21tdV9jb21tb24uYyAgIHwgIDIy
+NyArKysrKysrKw0KPiA+ICBkcml2ZXJzL3ZmaW8vdmZpb19pb21tdV9jb21tb24uaCAgIHwgICAy
+NyArDQo+ID4gIGRyaXZlcnMvdmZpby92ZmlvX2lvbW11X2ZzbF9wYW11LmMgfCAxMDAzDQo+ICsr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiA+ICBkcml2ZXJzL3ZmaW8vdmZp
+b19pb21tdV90eXBlMS5jICAgIHwgIDIwNiArLS0tLS0tLS0NCj4gPiAgaW5jbHVkZS9saW51eC9t
+c2kuaCAgICAgICAgICAgICAgICB8ICAgMTQgKw0KPiA+ICBpbmNsdWRlL2xpbnV4L3BjaS5oICAg
+ICAgICAgICAgICAgIHwgICAyMSArDQo+ID4gIGluY2x1ZGUvdWFwaS9saW51eC92ZmlvLmggICAg
+ICAgICAgfCAgMTAwICsrKysNCj4gPiAgMTQgZmlsZXMgY2hhbmdlZCwgMTYyMyBpbnNlcnRpb25z
+KCspLCAyMTYgZGVsZXRpb25zKC0pICBjcmVhdGUgbW9kZQ0KPiA+IDEwMDY0NCBkcml2ZXJzL3Zm
+aW8vdmZpb19pb21tdV9jb21tb24uYyAgY3JlYXRlIG1vZGUgMTAwNjQ0DQo+ID4gZHJpdmVycy92
+ZmlvL3ZmaW9faW9tbXVfY29tbW9uLmggIGNyZWF0ZSBtb2RlIDEwMDY0NA0KPiA+IGRyaXZlcnMv
+dmZpby92ZmlvX2lvbW11X2ZzbF9wYW11LmMNCj4gPg0KPiA+DQo+ID4gLS0NCj4gPiBUbyB1bnN1
+YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUNCj4gPiBs
+aW51eC1rZXJuZWwiIGluIHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5r
+ZXJuZWwub3JnDQo+ID4gTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVs
+Lm9yZy9tYWpvcmRvbW8taW5mby5odG1sDQo+ID4gUGxlYXNlIHJlYWQgdGhlIEZBUSBhdCAgaHR0
+cDovL3d3dy50dXgub3JnL2xrbWwvDQo+IA0KPiANCj4gDQoNCg==
