@@ -1,32 +1,24 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AFF212C00D1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 17:43:21 +1100 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Thu, 21 Nov 2013 16:43:19 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8432D2CE8051
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 17:43:17 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAL6PSHN7995684
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 17:25:29 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAL6hGpb032506
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 17:43:16 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v10] PPC: POWERNV: move iommu_add_device earlier
-Date: Thu, 21 Nov 2013 17:43:14 +1100
-Message-Id: <1385016194-17092-1-git-send-email-aik@ozlabs.ru>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Alex Graf <agraf@suse.de>,
- Bharat Bhushan <bharat.bhushan@freescale.com>, linux-kernel@vger.kernel.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 375302C00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 20:22:08 +1100 (EST)
+Date: Thu, 21 Nov 2013 10:21:58 +0100
+From: Gerhard Sittig <gsi@denx.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v5 01/17] powerpc/fsl-pci: improve clock API use
+Message-ID: <20131121092158.GV17929@book.gsilab.sittig.org>
+References: <1384729577-7336-1-git-send-email-gsi@denx.de>
+ <1384729577-7336-2-git-send-email-gsi@denx.de>
+ <1384900872.1403.381.camel@snotra.buserror.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1384900872.1403.381.camel@snotra.buserror.net>
+Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Minghuan Lian <Minghuan.Lian@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,294 +28,273 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current implementation of IOMMU on sPAPR does not use iommu_ops
-and therefore does not call IOMMU API's bus_set_iommu() which
-1) sets iommu_ops for a bus
-2) registers a bus notifier
-Instead, PCI devices are added to IOMMU groups from
-subsys_initcall_sync(tce_iommu_init) which does basically the same
-thing without using iommu_ops callbacks.
+[ summary:  the PCI driver change of mine looks innocent yet
+  raises questions (not for the current situation, but in the
+  face of potential future changes); these concerns were not
+  introduced by me but were "inherited" from the former
+  implementation, as I understand it
 
-However Freescale PAMU driver (https://lkml.org/lkml/2013/7/1/158)
-implements iommu_ops and when tce_iommu_init is called, every PCI device
-is already added to some group so there is a conflict.
+  let's drop my patch now, have the Layerscape series show up,
+  and add proper clock handling to the PCI peripheral driver
+  later, while in the meantime either nothing needs to be done
+  (83xx, 85xx, 86xx) or workarounds do their job (512x)
 
-This patch does 2 things:
-1. removes the loop in which PCI devices were added to groups and
-adds explicit iommu_add_device() calls to add devices as soon as they get
-the iommu_table pointer assigned to them.
-2. moves a bus notifier to powernv code in order to avoid conflict with
-the notifier from Freescale driver.
+  should 8xxx platforms want to introduce CCF support, they can
+  and may apply the same workaround as 512x ]
 
-iommu_add_device() and iommu_del_device() are public now.
+On Tue, Nov 19, 2013 at 16:41 -0600, Scott Wood wrote:
+> 
+> On Mon, 2013-11-18 at 00:06 +0100, Gerhard Sittig wrote:
+> > make the Freescale PCI driver get, prepare and enable the PCI clock
+> > during probe(); the clock gets put upon device shutdown by the devm
+> > approach
+> > 
+> > clock lookup is non-fatal as not all platforms may provide clock specs
+> > in their device tree or implement a device tree based clock provider,
+> > but failure to enable clocks after successful lookup is fatal
+> > 
+> > the driver appears to not have a remove() routine, so no reference to
+> > the clock is kept during use, and the clock isn't released (the devm
+> > approach will put the clock, but it won't get disabled or unprepared)
+> > 
+> > the 85xx/86xx platforms go through the probe() routine, where clock
+> > lookup occurs and the clock gets acquired if one was specified; the
+> > 512x/83xx platforms don't pass through probe() but instead directly call
+> > the add_bridge() routine at a point in time where the clock provider has
+> > not been setup yet even if the platform implements one -- add comments
+> > to the code paths as a reminder for the potential need of a workaround
+> > in the platform's clock driver, and to keep awareness if code should get
+> > re-arranged or moved
+> > 
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Cc: Kumar Gala <galak@kernel.crashing.org>
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Signed-off-by: Gerhard Sittig <gsi@denx.de>
+> > ---
+> >  arch/powerpc/sysdev/fsl_pci.c |   52 +++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 52 insertions(+)
+> 
+> Please coordinate this change with Minghuan Lian's patchset (posted Oct
+> 23) to move the bulk of this driver outside of arch/powerpc.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v10:
-* fixed linker error when IOMMU_API is not enabled (thanks to Jeremy Kerr)
+Ah, you Cc'ed him, good.  I spotted an earlier RFC submission,
+but somehow missed more recent updates.  With the move of the
+fsl_pci driver into pcie my comments partially turn into lies as
+the driver will grow .remove() support.
 
-v9:
-* removed "KVM" from the subject as it is not really a KVM patch so
-PPC mainainter (hi Ben!) can review/include it into his tree
+What's necessary upon remove is along the lines of b3bfce2b "i2c:
+mpc: cleanup clock API use" or 2771399a "fs_enet: cleanup clock
+API use" (when clocks were not acquired at all) or something like
+180890c7 "mtd: mpc5121_nfc: cleanup clock API use" or 7282bdb2
+"USB: fsl-mph-dr-of: cleanup clock API use" (when clocks were
+acquired but not fully prepared).  With the introduction of
+remove support this is just about keeping a reference to the
+acquired clock to disable and unprepare it, putting the clock is
+done by the devm mechanism.
 
-v8:
-* added the check for iommu_group!=NULL before removing device from a group
-as suggested by Wei Yang <weiyang@linux.vnet.ibm.com>
+For the time being I'd suggest to skip this PCI driver clock API
+use cleanup patch of mine if the Layerscape PCI patch is more
+probable to make it into mainline, and I shall re-submit after
+the Layerscape patch was applied.
 
-v2:
-* added a helper - set_iommu_table_base_and_group - which does
-set_iommu_table_base() and iommu_add_device()
----
- arch/powerpc/include/asm/iommu.h            | 26 ++++++++++++++++
- arch/powerpc/kernel/iommu.c                 | 48 +++--------------------------
- arch/powerpc/platforms/powernv/pci-ioda.c   |  8 ++---
- arch/powerpc/platforms/powernv/pci-p5ioc2.c |  2 +-
- arch/powerpc/platforms/powernv/pci.c        | 33 +++++++++++++++++++-
- arch/powerpc/platforms/pseries/iommu.c      |  8 +++--
- 6 files changed, 72 insertions(+), 53 deletions(-)
+If my patch is taken before the Layerscape change, then the
+latter would have to "postprocess" and update mine.  Which would
+be straight forward but might be out of the scope of a "move
+code" commit.
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index c34656a..774fa27 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -101,8 +101,34 @@ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
-  */
- extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
- 					    int nid);
-+#ifdef CONFIG_IOMMU_API
- extern void iommu_register_group(struct iommu_table *tbl,
- 				 int pci_domain_number, unsigned long pe_num);
-+extern int iommu_add_device(struct device *dev);
-+extern void iommu_del_device(struct device *dev);
-+#else
-+static inline void iommu_register_group(struct iommu_table *tbl,
-+					int pci_domain_number,
-+					unsigned long pe_num)
-+{
-+}
-+
-+static inline int iommu_add_device(struct device *dev)
-+{
-+	return 0;
-+}
-+
-+static inline void iommu_del_device(struct device *dev)
-+{
-+}
-+#endif /* !CONFIG_IOMMU_API */
-+
-+static inline void set_iommu_table_base_and_group(struct device *dev,
-+						  void *base)
-+{
-+	set_iommu_table_base(dev, base);
-+	iommu_add_device(dev);
-+}
- 
- extern int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
- 			struct scatterlist *sglist, int nelems,
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 572bb5b..d22abe0 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -1105,7 +1105,7 @@ void iommu_release_ownership(struct iommu_table *tbl)
- }
- EXPORT_SYMBOL_GPL(iommu_release_ownership);
- 
--static int iommu_add_device(struct device *dev)
-+int iommu_add_device(struct device *dev)
- {
- 	struct iommu_table *tbl;
- 	int ret = 0;
-@@ -1134,52 +1134,12 @@ static int iommu_add_device(struct device *dev)
- 
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(iommu_add_device);
- 
--static void iommu_del_device(struct device *dev)
-+void iommu_del_device(struct device *dev)
- {
- 	iommu_group_remove_device(dev);
- }
--
--static int iommu_bus_notifier(struct notifier_block *nb,
--			      unsigned long action, void *data)
--{
--	struct device *dev = data;
--
--	switch (action) {
--	case BUS_NOTIFY_ADD_DEVICE:
--		return iommu_add_device(dev);
--	case BUS_NOTIFY_DEL_DEVICE:
--		iommu_del_device(dev);
--		return 0;
--	default:
--		return 0;
--	}
--}
--
--static struct notifier_block tce_iommu_bus_nb = {
--	.notifier_call = iommu_bus_notifier,
--};
--
--static int __init tce_iommu_init(void)
--{
--	struct pci_dev *pdev = NULL;
--
--	BUILD_BUG_ON(PAGE_SIZE < IOMMU_PAGE_SIZE);
--
--	for_each_pci_dev(pdev)
--		iommu_add_device(&pdev->dev);
--
--	bus_register_notifier(&pci_bus_type, &tce_iommu_bus_nb);
--	return 0;
--}
--
--subsys_initcall_sync(tce_iommu_init);
--
--#else
--
--void iommu_register_group(struct iommu_table *tbl,
--		int pci_domain_number, unsigned long pe_num)
--{
--}
-+EXPORT_SYMBOL_GPL(iommu_del_device);
- 
- #endif /* CONFIG_IOMMU_API */
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 74a5a57..4daa288 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -440,7 +440,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
- 		return;
- 
- 	pe = &phb->ioda.pe_array[pdn->pe_number];
--	set_iommu_table_base(&pdev->dev, &pe->tce32_table);
-+	set_iommu_table_base_and_group(&pdev->dev, &pe->tce32_table);
- }
- 
- static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe, struct pci_bus *bus)
-@@ -448,7 +448,7 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe, struct pci_bus *bus)
- 	struct pci_dev *dev;
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
--		set_iommu_table_base(&dev->dev, &pe->tce32_table);
-+		set_iommu_table_base_and_group(&dev->dev, &pe->tce32_table);
- 		if (dev->subordinate)
- 			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
- 	}
-@@ -611,7 +611,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	iommu_register_group(tbl, pci_domain_nr(pe->pbus), pe->pe_number);
- 
- 	if (pe->pdev)
--		set_iommu_table_base(&pe->pdev->dev, tbl);
-+		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
- 	else
- 		pnv_ioda_setup_bus_dma(pe, pe->pbus);
- 
-@@ -687,7 +687,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	iommu_init_table(tbl, phb->hose->node);
- 
- 	if (pe->pdev)
--		set_iommu_table_base(&pe->pdev->dev, tbl);
-+		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
- 	else
- 		pnv_ioda_setup_bus_dma(pe, pe->pbus);
- 
-diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-index b68db63..ede341b 100644
---- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-+++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-@@ -92,7 +92,7 @@ static void pnv_pci_p5ioc2_dma_dev_setup(struct pnv_phb *phb,
- 				pci_domain_nr(phb->hose->bus), phb->opal_id);
- 	}
- 
--	set_iommu_table_base(&pdev->dev, &phb->p5ioc2.iommu_table);
-+	set_iommu_table_base_and_group(&pdev->dev, &phb->p5ioc2.iommu_table);
- }
- 
- static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np, u64 hub_id,
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index a28d3b5..c005011 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -504,7 +504,7 @@ static void pnv_pci_dma_fallback_setup(struct pci_controller *hose,
- 		pdn->iommu_table = pnv_pci_setup_bml_iommu(hose);
- 	if (!pdn->iommu_table)
- 		return;
--	set_iommu_table_base(&pdev->dev, pdn->iommu_table);
-+	set_iommu_table_base_and_group(&pdev->dev, pdn->iommu_table);
- }
- 
- static void pnv_pci_dma_dev_setup(struct pci_dev *pdev)
-@@ -623,3 +623,34 @@ void __init pnv_pci_init(void)
- 	ppc_md.teardown_msi_irqs = pnv_teardown_msi_irqs;
- #endif
- }
-+
-+static int tce_iommu_bus_notifier(struct notifier_block *nb,
-+		unsigned long action, void *data)
-+{
-+	struct device *dev = data;
-+
-+	switch (action) {
-+	case BUS_NOTIFY_ADD_DEVICE:
-+		return iommu_add_device(dev);
-+	case BUS_NOTIFY_DEL_DEVICE:
-+		if (dev->iommu_group)
-+			iommu_del_device(dev);
-+		return 0;
-+	default:
-+		return 0;
-+	}
-+}
-+
-+static struct notifier_block tce_iommu_bus_nb = {
-+	.notifier_call = tce_iommu_bus_notifier,
-+};
-+
-+static int __init tce_iommu_bus_notifier_init(void)
-+{
-+	BUILD_BUG_ON(PAGE_SIZE < IOMMU_PAGE_SIZE);
-+
-+	bus_register_notifier(&pci_bus_type, &tce_iommu_bus_nb);
-+	return 0;
-+}
-+
-+subsys_initcall_sync(tce_iommu_bus_notifier_init);
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 0307901..d9d0d7a 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -686,7 +686,8 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 		iommu_table_setparms(phb, dn, tbl);
- 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
- 		iommu_register_group(tbl, pci_domain_nr(phb->bus), 0);
--		set_iommu_table_base(&dev->dev, PCI_DN(dn)->iommu_table);
-+		set_iommu_table_base_and_group(&dev->dev,
-+					       PCI_DN(dn)->iommu_table);
- 		return;
- 	}
- 
-@@ -698,7 +699,8 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 		dn = dn->parent;
- 
- 	if (dn && PCI_DN(dn))
--		set_iommu_table_base(&dev->dev, PCI_DN(dn)->iommu_table);
-+		set_iommu_table_base_and_group(&dev->dev,
-+					       PCI_DN(dn)->iommu_table);
- 	else
- 		printk(KERN_WARNING "iommu: Device %s has no iommu table\n",
- 		       pci_name(dev));
-@@ -1192,7 +1194,7 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
- 		pr_debug("  found DMA window, table: %p\n", pci->iommu_table);
- 	}
- 
--	set_iommu_table_base(&dev->dev, pci->iommu_table);
-+	set_iommu_table_base_and_group(&dev->dev, pci->iommu_table);
- }
- 
- static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
+I'm fine with either approach, dropping my PCI patch now, or
+applying it and adding PCI clock release to .remove within the
+Layerscape series.
+
+
+> > diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+> > index ccfb50ddfe38..efa0916f61b6 100644
+> > --- a/arch/powerpc/sysdev/fsl_pci.c
+> > +++ b/arch/powerpc/sysdev/fsl_pci.c
+> > @@ -17,6 +17,8 @@
+> >   * Free Software Foundation;  either version 2 of the  License, or (at your
+> >   * option) any later version.
+> >   */
+> > +
+> > +#include <linux/clk.h>
+> >  #include <linux/kernel.h>
+> >  #include <linux/pci.h>
+> >  #include <linux/delay.h>
+> > @@ -755,6 +757,32 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+> >  	const int *bus_range;
+> >  	int primary;
+> >  
+> > +	/*
+> > +	 * 85xx/86xx platforms take the path through the probe() routine
+> > +	 * as one would expect, PCI related clocks get acquired there if
+> > +	 * specified
+> > +	 *
+> > +	 * 83xx/512x _don't_ pass through probe(), this add_bridge()
+> > +	 * routine instead is called from within .setup_arch() at a
+> > +	 * point in time where clock providers haven't been setup yet;
+> > +	 * so clocks cannot get acquired here -- lookup would always
+> > +	 * fail even on those platforms which implement the provider
+> > +	 *
+> > +	 * there is no counterpart for add_bridge() just like there is
+> > +	 * no remove() counterpart for probe(), so in either case the
+> > +	 * PCI related clock won't get released, and all of the
+> > +	 * 512x/83xx/85xx/86xx platforms behave in identical ways
+> 
+> How is it identical if 85xx/86xx will acquire a clock in probe(), but
+> 83xx/512x can't acquire it in add_bridge()?
+> 
+> Could you explain the relevance of releasing clocks here?
+
+The situation I found was that none of the platforms which use
+this fsl_pci driver did acquire any PCI related clock, all of
+them "just used the hardware" and assumed that "someone" will
+have setup and enabled the clock (some boot loader maybe).
+
+The structure of the fsl_pci driver with its attaching but not
+detaching from the hardware made things easy.  I assumed that
+this is because there may be boot media or mass storage connected
+to PCI which you don't want to lose and which you don't want to
+disconnect from upon shutdown.
+
+So the previous situation for all platforms is
+- 512x, 83xx, 85xx, 86xx:  don't setup the clock, just use the
+  hardware, just works
+
+
+What my PCI driver clock API use cleanup patch does is to add a
+clock lookup to the .probe() routine, fail silently if there is
+no clock spec or no clock provider, do setup the clock when a
+spec was found.
+
+So the intermediate situation for all platforms is
+- 512x, 83xx:  initialization in .setup_arch(), call to
+  add_bridge(), don't setup the clock, just use the hardware,
+  still works
+- 85xx, 86xx:  initialization in .probe(), clock lookup, silent
+  failure, don't setup the clock, just use the hardware, still
+  works
+
+
+Then CCF support gets added to 512x, including migration support.
+The situation then is
+- 512x:  .setup_arch calls add_bridge, nothing is done to the
+  clock; CCF provider registers the PCI clock item, pre-enables
+  the clock item;  late init finds the PCI clock "in use"
+  (pre-enabled) and leaves it enabled; things keep working
+- 83xx:  .setup_arch and add_bridge, no clock handling, no CCF
+  provider either, so no "disable unused" step, all the same
+- 85xx, 86xx:  .probe, no clock handling, no CCF "disable
+  unused", all the same
+
+Then peripheral drivers get adjusted after CCF has become
+available, nothing changes for PCI here.
+
+Then CCF migration support gets removed for 512x.  The situation
+is then:
+- 512x:  .setup_arch and add_bridge, no clock related setup; CCF
+  provider registers PCI clock item, leaves it alone in the
+  absence of PCI related OF nodes, pre-enables it in the presence
+  of PCI related OF nodes; CCF "disable unuses" leaves PCI clock
+  active, PCI still operational
+- 83xx, 85xx, 86xx: no change
+
+
+So before my series, "someone" (a bootloader) sets up the PCI
+clock, the driver does nothing with it.
+
+With my series, the CCF provider introduces a PCI clock item, it
+gets enabled and remains active, the driver still does nothing to
+the clock item.  Those platforms without a CCF provider won't
+disable the clock item.
+
+Other series may introduce CCF providers for 83xx/85xx/86xx,
+these might apply the same workarounds for migration as the 512x
+code does.
+
+Yes, I am aware of CCF code for "corenet".  But my understanding
+is that this only manages a few PLLs and only applies to CPU
+cores, not to peripherals and the complete clock tree.
+
+
+> > +	 *
+> > +	 * this comment is here to "keep the balance" against the
+> > +	 * probe() routine, and as a reminder to acquire clocks if the
+> > +	 * add_bridge() call should move to some later point in time
+> > +	 *
+> > +	 * until then clock providers are expected to work around the
+> > +	 * peripheral driver's not acquiring the PCI clock on those
+> > +	 * platforms where clock providers exist, while nothing needs to
+> > +	 * be done for those platforms without a clock provider
+> > +	 */
+> 
+> What would be involved in moving 83xx/512x to use .probe() as well?
+
+Oh, that's a completely different can of worms.  I dare to judge
+what my approach does, as it is minimal and keeps the order of
+steps in place.
+
+Rearranging the PCI initialization order is way beyond my
+capabilities (both in coding as well as testing).  Considering
+that I only noticed rather late that 512x won't pass through
+probe() and that I might even have broken compilation with an
+early submission, I'd rather not start fiddling with this stuff.
+My contribution would just not be helpful.
+
+
+> >  	is_mpc83xx_pci = 1;
+> >  
+> >  	if (!of_device_is_available(dev)) {
+> > @@ -1086,9 +1114,33 @@ void fsl_pci_assign_primary(void)
+> >  
+> >  static int fsl_pci_probe(struct platform_device *pdev)
+> >  {
+> > +	struct clk *clk;
+> >  	int ret;
+> >  	struct device_node *node;
+> >  
+> > +	/*
+> > +	 * clock lookup is non-fatal since the driver is shared among
+> > +	 * platforms and not all of them provide clocks specs in their
+> > +	 * device tree, but failure to enable a specified clock is
+> > +	 * considered fatal
+> > +	 *
+> > +	 * note that only the 85xx and 86xx platforms pass through this
+> > +	 * probe() routine, while 83xx and 512x directly invoke the
+> > +	 * mpc83xx_add_bridge() routine from within .setup_arch() code
+> > +	 */
+> > +	clk = devm_clk_get(&pdev->dev, "ipg");
+> > +	if (!IS_ERR(clk)) {
+> > +		ret = clk_prepare_enable(clk);
+> > +		if (ret) {
+> > +			dev_err(&pdev->dev, "Could not enable PCI clock\n");
+> > +			return ret;
+> > +		}
+> > +		/*
+> > +		 * TODO where to store the 'clk' reference?  there appears
+> > +		 * to be no remove() routine which undoes what probe() does
+> > +		 */
+> > +	}
+> 
+> There is a .remove(); this driver just doesn't support it.
+> 
+> As for where to store things, you could turn private_data into a struct
+> rather than a direct iomem pointer.  Or just replace the comment with a
+> non-TODO statement that says we'll never release the clock because the
+> PCI controller driver is non-removable.
+
+Re-considering the above, the most appropriate thing to do may be
+to drop my patch now, and see how the Layerscape series evolves.
+
+Once there is a PCI driver which works on all the platforms and
+has the probe and remove counterparts, adding proper clock
+handling to the peripheral driver is straight forward (along the
+lines of the above mentioned i2c and fs_enet changes).
+
+
+virtually yours
+Gerhard Sittig
 -- 
-1.8.4.rc4
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
