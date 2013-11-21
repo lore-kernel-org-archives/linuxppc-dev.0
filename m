@@ -1,15 +1,14 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Fri, 22 Nov 2013 09:11:50 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Liu Ping Fan <kernelfans@gmail.com>
-Subject: Re: [PATCH 2/2] powerpc: mm: change pgtable index size for 64K page
-Message-ID: <20131121221150.GB26359@iris.ozlabs.ibm.com>
-References: <1385000275-5988-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <1385000275-5988-2-git-send-email-pingfank@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1385000275-5988-2-git-send-email-pingfank@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: "Carlos O'Donell" <carlos@redhat.com>
+Subject: Re: [PATCH] powerpc/signals: Mark VSX not saved with small contexts
+In-reply-to: <528E2EB6.2010003@redhat.com>
+References: <1384924734-16722-1-git-send-email-mikey@neuling.org>
+ <20131121113333.GB15913@concordia> <528E2EB6.2010003@redhat.com>
+Date: Fri, 22 Nov 2013 09:21:23 +1100
+Message-ID: <8900.1385072483@ale.ozlabs.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Steve Best <sbest@us.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Haren Myneni <haren@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,34 +18,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 21, 2013 at 10:17:55AM +0800, Liu Ping Fan wrote:
-> For 64K page, we waste half of the pte_t page. With this patch, after
-> changing PGD_INDEX_SIZE from 12 to 11, PTE_INDEX_SIZE from 8 to 9,
-> we can improve the usage of pte_t page and shrink the continuous phys
-> size for pgd_t.
-> 
-> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/pgtable-ppc64-64k.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc64-64k.h b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-> index a56b82f..f6955ff 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-> @@ -4,10 +4,10 @@
->  #include <asm-generic/pgtable-nopud.h>
->  
->  
-> -#define PTE_INDEX_SIZE  8
-> +#define PTE_INDEX_SIZE  9
->  #define PMD_INDEX_SIZE  10
->  #define PUD_INDEX_SIZE	0
-> -#define PGD_INDEX_SIZE  12
-> +#define PGD_INDEX_SIZE  11
+Carlos O'Donell <carlos@redhat.com> wrote:
 
-Nack.  Those definitions are the way they are in order to have the PMD
-map 16MB, which is our large page size, so that transparent huge pages
-work.
+> On 11/21/2013 06:33 AM, Michael Ellerman wrote:
+> > On Wed, Nov 20, 2013 at 04:18:54PM +1100, Michael Neuling wrote:
+> >> The VSX MSR bit in the user context indicates if the context contains VSX
+> >> state.  Currently we set this when the process has touched VSX at any stage.
+> >>
+> >> Unfortunately, if the user has not provided enough space to save the VSX state,
+> >> we can't save it but we currently still set the MSR VSX bit.
+> >>
+> >> This patch changes this to clear the MSR VSX bit when the user doesn't provide
+> >> enough space.  This indicates that there is no valid VSX state in the user
+> >> context.
+> >>
+> >> This is needed to support get/set/make/swapcontext for applications that use
+> >> VSX but only provide a small context.  For example, getcontext in glibc
+> >> provides a smaller context since the VSX registers don't need to be saved over
+> >> the glibc function call.  But since the program calling getcontext may have
+> >> used VSX, the kernel currently says the VSX state is valid when it's not.  If
+> >> the returned context is then used in setcontext (ie. a small context without
+> >> VSX but with MSR VSX set), the kernel will refuse the context.  This situation
+> >> has been reported by the glibc community.
+> > 
+> > Broken since forever?
+> 
+> Yes, broken since forever. At least it was known in glibc 2.18 that this was
+> broken, but without an active distribution using it the defect wasn't analyzed.
+> 
+> >> Tested-by: Haren Myneni <haren@linux.vnet.ibm.com>
+> >> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> >> Cc: stable@vger.kernel.org
+> >> ---
+> >>  arch/powerpc/kernel/signal_32.c | 10 +++++++++-
+> > 
+> > What about the 64-bit code? I don't know the code but it appears at a glance to
+> > have the same bug.
+>  
+> It doesn't happen with 64-bit code because there the context contains
+> a sigcontext which on ppc64 has vmx_reserve to store the entire VMX
+> state. Therefore 64-bit ppc always has space to store the VMX registers
+> in a userspace context switch. It is only the 32-bit ppc ABI that lacks
+> the space.
 
-Paul.
+VMX?  I don't understand this at all.  We extended the ucontext to
+handle the extra VSX state, so older code may still be using the small
+ucontext and we already have a bunch of checks in the 64bit case for
+this.
+
+I agree with Michael, we should add this to the 64 bit case.  If we
+can't put VSX state in, then clear MSR VSX.
+
+>  
+> >> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+> >> index 749778e..1844298 100644
+> >> --- a/arch/powerpc/kernel/signal_32.c
+> >> +++ b/arch/powerpc/kernel/signal_32.c
+> >> @@ -457,7 +457,15 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+> >>  		if (copy_vsx_to_user(&frame->mc_vsregs, current))
+> >>  			return 1;
+> >>  		msr |= MSR_VSX;
+> >> -	}
+> >> +	} else if (!ctx_has_vsx_region)
+> >> +		/*
+> >> +		 * With a small context structure we can't hold the VSX
+> >> +		 * registers, hence clear the MSR value to indicate the state
+> >> +		 * was not saved.
+> >> +		 */
+> >> +		msr &= ~MSR_VSX;
+> > 
+> > I think it'd be clearer if this was just the else case. The full context is:
+> > 
+> >     if (current->thread.used_vsr && ctx_has_vsx_region) {
+> >             __giveup_vsx(current);
+> >             if (copy_vsx_to_user(&frame->mc_vsregs, current))
+> >                     return 1;
+> >             msr |= MSR_VSX;
+> > +   } else if (!ctx_has_vsx_region)
+> > +           /*
+> > +            * With a small context structure we can't hold the VSX
+> > +            * registers, hence clear the MSR value to indicate the state
+> > +            * was not saved.
+> > +            */
+> > +           msr &= ~MSR_VSX;
+> > 
+> > Which means if current->thread.user_vsr and ctx_has_vsx_region are both false
+> > we potentially leave MSR_VSX set in msr. I think it should be the case that
+> > MSR_VSX is only ever set if current->thread.used_vsr is true, so it should be
+> > OK in pratice, but it seems unnecessarily fragile.
+> 
+> If current->thread.user_vsr and ctx_has_vsx_region are both false then
+> !ctx_has_vsx_region is true and we clear MSR_VSX.
+> 
+> Perhaps you mean if current->thread.user_vsr is false, but ctx_has_vsx_region
+> is true? 
+> 
+> Previously the else clause reset MSR_VSX if:
+> 1. current->thread.used_vsr == 0 && ctx_has_vsx_region == 0
+> 2. current->thread.used_vsr == 1 && ctx_has_vsx_region == 0,
+> 
+> Now it resets MSR_VSX additionally for:
+> 3. current->thread.used_vsr == 0 && ctx_has_vsx_region == 1,
+> 
+> 3. is a valid state. The task has not touched the VSX state and the context
+> is large enough to be saved into. This may be a future state for ppc32 if 
+> we adjust the ABI to have a large enough context buffer. However at present 
+> it's not a plausible state. It's also a "don't care" state since there is 
+> nothing saved in the context, and if nothing was saved in the context then
+> MSR_VSX is not set.
+
+This makes my head hurt.
+
+MSR VSX needs to be cleared always if there is no VSX region.  It's
+independant of used_vsr, so let's make that clear in the code.
+
+>  
+> > The logic should be "if we write VSX we set MSR_VSX, else we clear MSR_VSX", ie:
+> > 
+> >     if (current->thread.used_vsr && ctx_has_vsx_region) {
+> >             __giveup_vsx(current);
+> >             if (copy_vsx_to_user(&frame->mc_vsregs, current))
+> >                     return 1;
+> >             msr |= MSR_VSX;
+> >     } else
+> >             msr &= ~MSR_VSX;
+> 
+> If anything I dislike this because it might mask a bug in earlier code that
+> might erroneously set MSR_VSX even though current->thread.user_vsr is not
+> true. If anything the extra state 3. covered here is a buggy state.
+> 
+> I agree that your suggestion is more robust though since the definition of
+> robustness is to operate despite failures.
+
+The basic idea of the patch is that if the user hasn't passed a VSX
+region, then we clear MSR VSX to indicate there is no VSX data.
+It's independant of used_vsr.
+
+So how about we make it that simple and put it independent of the other
+if statement?
+
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 749778e..f4a7fd4 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -458,6 +458,14 @@ static int save_user_regs(struct pt_regs *regs, struct mcon
+                        return 1;
+                msr |= MSR_VSX;
+        }
++       /*
++        * With a small context structure we can't hold the VSX registers,
++        * hence clear the MSR value to indicate the state was not saved.
++        */
++       if (!ctx_has_vsx_region)
++               msr &= ~MSR_VSX;
++
++
+ #endif /* CONFIG_VSX */
+ #ifdef CONFIG_SPE
+        /* save spe registers */
