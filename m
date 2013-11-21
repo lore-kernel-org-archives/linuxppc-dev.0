@@ -1,19 +1,26 @@
 Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id CFCC62C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2013 07:30:25 +1100 (EST)
-Message-ID: <1385065816.2879.411.camel@ul30vt.home>
-Subject: Re: [PATCH v3] KVM: PPC: vfio kvm device: support spapr tce
+ by ozlabs.org (Postfix) with ESMTP id 57CA92C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2013 07:43:33 +1100 (EST)
+Message-ID: <1385066603.2879.414.camel@ul30vt.home>
+Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
 From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Thu, 21 Nov 2013 13:30:16 -0700
-In-Reply-To: <528D6065.3030400@ozlabs.ru>
-References: <1384924730-22762-1-git-send-email-aik@ozlabs.ru>
- <1384981031.2879.389.camel@ul30vt.home> <528D6065.3030400@ozlabs.ru>
+To: Bharat Bhushan <Bharat.Bhushan@freescale.com>
+Date: Thu, 21 Nov 2013 13:43:23 -0700
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1384973243.2879.361.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "joro@8bytes.org" <joro@8bytes.org>, "agraf@suse.de" <agraf@suse.de>,
+ Stuart Yoder <stuart.yoder@freescale.com>,
+ Scott Wood <scottwood@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,372 +30,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-11-21 at 12:22 +1100, Alexey Kardashevskiy wrote:
-> On 11/21/2013 07:57 AM, Alex Williamson wrote:
-> > On Wed, 2013-11-20 at 16:18 +1100, Alexey Kardashevskiy wrote:
-> >> In addition to the external VFIO user API, a VFIO KVM device
-> >> has been introduced recently.
-> >>
-> >> sPAPR TCE IOMMU is para-virtualized and the guest does map/unmap
-> >> via hypercalls which take a logical bus id (LIOBN) as a target IOMMU
-> >> identifier. LIOBNs are made up and linked to IOMMU groups by the user
-> >> space. In order to accelerate IOMMU operations in the KVM, we need
-> >> to tell KVM the information about LIOBN-to-group mapping.
-> >>
-> >> For that, a new KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN parameter
-> >> is added. It accepts a pair of a VFIO group fd and LIOBN.
-> >>
-> >> This also adds a new kvm_vfio_find_group_by_liobn() function which
-> >> receives kvm struct, LIOBN and a callback. As it increases the IOMMU
-> >> group use counter, the KVMr is required to pass a callback which
-> >> called when the VFIO group is about to be removed VFIO-KVM tracking so
-> >> the KVM is able to call iommu_group_put() to release the IOMMU group.
-> >>
-> >> The KVM uses kvm_vfio_find_group_by_liobn() once per KVM run and caches
-> >> the result in kvm_arch. iommu_group_put() for all groups will be called
-> >> when KVM finishes (in the SPAPR TCE in KVM enablement patch).
-> >>
-> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >> ---
-> >> Changes:
-> >> v3:
-> >> * total rework
-> >> * added a release callback into kvm_vfio_find_group_by_liobn so now
-> >> the user of the API can get a notification if the group is about to
-> >> disappear
-> >> ---
-> >>  Documentation/virtual/kvm/devices/vfio.txt |  19 ++++-
-> >>  arch/powerpc/kvm/Kconfig                   |   1 +
-> >>  arch/powerpc/kvm/Makefile                  |   3 +
-> >>  include/linux/kvm_host.h                   |  18 +++++
-> >>  include/uapi/linux/kvm.h                   |   7 ++
-> >>  virt/kvm/vfio.c                            | 116 ++++++++++++++++++++++++++++-
-> >>  6 files changed, 161 insertions(+), 3 deletions(-)
-> >>
-> >> diff --git a/Documentation/virtual/kvm/devices/vfio.txt b/Documentation/virtual/kvm/devices/vfio.txt
-> >> index ef51740..7ecb3b2 100644
-> >> --- a/Documentation/virtual/kvm/devices/vfio.txt
-> >> +++ b/Documentation/virtual/kvm/devices/vfio.txt
-> >> @@ -16,7 +16,22 @@ Groups:
-> >>  
-> >>  KVM_DEV_VFIO_GROUP attributes:
-> >>    KVM_DEV_VFIO_GROUP_ADD: Add a VFIO group to VFIO-KVM device tracking
-> >> +	kvm_device_attr.addr points to an int32_t file descriptor
-> >> +	for the VFIO group.
-> >> +
-> >>    KVM_DEV_VFIO_GROUP_DEL: Remove a VFIO group from VFIO-KVM device tracking
-> >> +	kvm_device_attr.addr points to an int32_t file descriptor
-> >> +	for the VFIO group.
-> >> +
-> >> +  KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN: sets a liobn for a VFIO group
-> >> +	kvm_device_attr.addr points to a struct:
-> >> +		struct kvm_vfio_spapr_tce_liobn {
-> >> +			__u32	argsz;
-> >> +			__u32	fd;
+On Thu, 2013-11-21 at 11:20 +0000, Bharat Bhushan wrote:
+> 
+> > -----Original Message-----
+> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > Sent: Thursday, November 21, 2013 12:17 AM
+> > To: Bhushan Bharat-R65777
+> > Cc: joro@8bytes.org; bhelgaas@google.com; agraf@suse.de; Wood Scott-B07421;
+> > Yoder Stuart-B08248; iommu@lists.linux-foundation.org; linux-
+> > pci@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> > kernel@vger.kernel.org; Bhushan Bharat-R65777
+> > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
 > > 
-> > fds are signed, __s32
+> > On Tue, 2013-11-19 at 10:47 +0530, Bharat Bhushan wrote:
+> > > From: Bharat Bhushan <bharat.bhushan@freescale.com>
+> > >
+> > > PAMU (FSL IOMMU) has a concept of primary window and subwindows.
+> > > Primary window corresponds to the complete guest iova address space
+> > > (including MSI space), with respect to IOMMU_API this is termed as
+> > > geometry. IOVA Base of subwindow is determined from the number of
+> > > subwindows (configurable using iommu API).
+> > > MSI I/O page must be within the geometry and maximum supported
+> > > subwindows, so MSI IO-page is setup just after guest memory iova space.
+> > >
+> > > So patch 1/9-4/9(inclusive) are for defining the interface to get:
+> > >   - Number of MSI regions (which is number of MSI banks for powerpc)
+> > >   - MSI-region address range: Physical page which have the
+> > >     address/addresses used for generating MSI interrupt
+> > >     and size of the page.
+> > >
+> > > Patch 5/9-7/9(inclusive) is defining the interface of setting up MSI
+> > > iova-base for a msi region(bank) for a device. so that when
+> > > msi-message will be composed then this configured iova will be used.
+> > > Earlier we were using iommu interface for getting the configured iova
+> > > which was not currect and Alex Williamson suggeested this type of interface.
+> > >
+> > > patch 8/9 moves some common functions in a separate file so that these
+> > > can be used by FSL_PAMU implementation (next patch uses this).
+> > > These will be used later for iommu-none implementation. I believe we
+> > > can do more of this but will take step by step.
+> > >
+> > > Finally last patch actually adds the support for FSL-PAMU :)
 > > 
-> >> +			__u32	liobn;
-> >> +		};
-> >> +		where
-> >> +		@argsz is a struct size;
-> >> +		@fd is a file descriptor for a VFIO group;
-> >> +		@liobn is a logical bus id to be associated with the group.
-> >>  
-> >> -For each, kvm_device_attr.addr points to an int32_t file descriptor
-> >> -for the VFIO group.
-> >> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-> >> index 61b3535..d1b7f64 100644
-> >> --- a/arch/powerpc/kvm/Kconfig
-> >> +++ b/arch/powerpc/kvm/Kconfig
-> >> @@ -60,6 +60,7 @@ config KVM_BOOK3S_64
-> >>  	select KVM_BOOK3S_64_HANDLER
-> >>  	select KVM
-> >>  	select SPAPR_TCE_IOMMU
-> >> +	select KVM_VFIO
-> >>  	---help---
-> >>  	  Support running unmodified book3s_64 and book3s_32 guest kernels
-> >>  	  in virtual machines on book3s_64 host processors.
-> >> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-> >> index 6646c95..2438d2e 100644
-> >> --- a/arch/powerpc/kvm/Makefile
-> >> +++ b/arch/powerpc/kvm/Makefile
-> >> @@ -87,6 +87,9 @@ kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
-> >>  kvm-book3s_64-objs-$(CONFIG_KVM_XICS) += \
-> >>  	book3s_xics.o
-> >>  
-> >> +kvm-book3s_64-objs-$(CONFIG_KVM_VFIO) += \
-> >> +	$(KVM)/vfio.o \
-> >> +
-> >>  kvm-book3s_64-module-objs := \
-> >>  	$(KVM)/kvm_main.o \
-> >>  	$(KVM)/eventfd.o \
-> >> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> >> index 88ff96a..1d2ad5e 100644
-> >> --- a/include/linux/kvm_host.h
-> >> +++ b/include/linux/kvm_host.h
-> >> @@ -1112,5 +1112,23 @@ static inline bool kvm_vcpu_eligible_for_directed_yield(struct kvm_vcpu *vcpu)
-> >>  }
-> >>  
-> >>  #endif /* CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT */
-> >> +
-> >> +typedef void (*kvm_vfio_release_group_callback)(struct kvm *kvm,
-> >> +		unsigned long liobn);
+> > Patches 1-3: msi_get_region needs to return an error an error (probably
+> > -EINVAL) if called on a path where there's no backend implementation.
+> > Otherwise the caller doesn't know that the data in the region pointer isn't
+> > valid.
+> 
+> will correct.
+> 
 > > 
-> > liobn was said to be __u32 in kvm_vfio_spapr_tce_liobn above, here it's
-> > unsigned long?
+> > Patches 5&6: same as above for msi_set_iova, return an error if no backend
+> > implementation.
 > 
+> Ok
 > 
-> PAPR spec says it is 32 bit and kvm_vfio_spapr_tce_liobn is a binary
-> interface (ABI?) so I want it to be precise.
+> > 
+> > Patch 7: Why does fsl_msi_del_iova_device bother to return anything if it's
+> > always zero?  Return -ENODEV when not found?
 > 
-> However kvmppc_get_gpr() (used to parse hypercall parameters such as liobn)
-> return unsigned long. So inside the kernel I use unsigned long.
+> Will make -ENODEV.
 > 
-> So what does make sense to change here?
+> > 
+> > Patch 9:
+> > 
+> > vfio_handle_get_attr() passes random kernel data back to userspace in the event
+> > of iommu_domain_get_attr() error.
+> 
+> Will correct.
+> 
+> > 
+> > vfio_handle_set_attr(): I don't see any data validation happening, is
+> > iommu_domain_set_attr() really that safe?
+> 
+> We do not need any data validation here and iommu driver does whatever needed.
+> So yes,  iommu_domain_set_attr() is safe.
+> 
+> > 
+> > For both of those, drop the pr_err on unknown attribute, it's sufficient to
+> > return error.
+> 
+> ok
+> 
+> > 
+> > Is VFIO_IOMMU_PAMU_GET_MSI_BANK_COUNT per aperture (ie. each vfio user has
+> > $COUNT regions at their disposal exclusively)?
+> 
+> Number of msi-bank count is system wide and not per aperture, But will be setting windows for banks in the device aperture.
+> So say if we are direct assigning 2 pci device (both have different iommu group, so 2 aperture in iommu) to VM.
+> Now qemu can make only one call to know how many msi-banks are there but it must set sub-windows for all banks for both pci device in its respective aperture.
 
-Perhaps nothing if that's clear to those familiar with PAPR.  Thanks,
+I'm still confused.  What I want to make sure of is that the banks are
+independent per aperture.  For instance, if we have two separate
+userspace processes operating independently and they both chose to use
+msi bank zero for their device, that's bank zero within each aperture
+and doesn't interfere.  Or another way to ask is can a malicious user
+interfere with other users by using the wrong bank.  Thanks,
 
 Alex
-
-
-> > 
-> >> +
-> >> +#if defined(CONFIG_KVM_VFIO) && defined(CONFIG_SPAPR_TCE_IOMMU)
-> >> +
-> >> +extern struct iommu_group *kvm_vfio_find_group_by_liobn(struct kvm *kvm,
-> >> +		unsigned long liobn, kvm_vfio_release_group_callback cb);
-> >> +
-> >> +#else
-> >> +
-> >> +static inline struct iommu_group *kvm_vfio_find_group_by_liobn(struct kvm *kvm,
-> >> +		unsigned long liobn, ikvm_vfio_release_group_callback cb)
-> >> +{
-> >> +	return NULL;
-> >> +}
-> >> +#endif /* CONFIG_KVM_VFIO && CONFIG_SPAPR_TCE_IOMMU */
-> >> +
-> >>  #endif
-> >>  
-> >> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> >> index 7c1a349..3d77dde 100644
-> >> --- a/include/uapi/linux/kvm.h
-> >> +++ b/include/uapi/linux/kvm.h
-> >> @@ -847,6 +847,13 @@ struct kvm_device_attr {
-> >>  #define  KVM_DEV_VFIO_GROUP			1
-> >>  #define   KVM_DEV_VFIO_GROUP_ADD			1
-> >>  #define   KVM_DEV_VFIO_GROUP_DEL			2
-> >> +#define   KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN	3
-> >> +
-> >> +struct kvm_vfio_spapr_tce_liobn {
-> >> +	__u32	argsz;
-> >> +	__u32	fd;
-> >> +	__u32	liobn;
-> >> +};
-> >>  
-> >>  /*
-> >>   * ioctls for VM fds
-> >> diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
-> >> index ca4260e..448910d 100644
-> >> --- a/virt/kvm/vfio.c
-> >> +++ b/virt/kvm/vfio.c
-> >> @@ -22,6 +22,12 @@
-> >>  struct kvm_vfio_group {
-> >>  	struct list_head node;
-> >>  	struct vfio_group *vfio_group;
-> >> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> >> +	struct {
-> >> +		unsigned long liobn;
-> >> +		kvm_vfio_release_group_callback cb;
-> >> +	} spapr_tce;
-> >> +#endif
-> >>  };
-> >>  
-> >>  struct kvm_vfio {
-> >> @@ -59,6 +65,51 @@ static void kvm_vfio_group_put_external_user(struct vfio_group *vfio_group)
-> >>  	symbol_put(vfio_group_put_external_user);
-> >>  }
-> >>  
-> >> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> >> +struct iommu_group *kvm_vfio_find_group_by_liobn(struct kvm *kvm,
-> >> +		unsigned long liobn, kvm_vfio_release_group_callback cb)
-> >> +{
-> >> +	struct kvm_vfio_group *kvg;
-> >> +	int group_id;
-> >> +	struct iommu_group *grp;
-> >> +	struct kvm_vfio *kv = NULL;
-> >> +	struct kvm_device *tmp;
-> >> +
-> >> +	if (!cb)
-> >> +		return NULL;
-> > 
-> > Is it worthwhile to use ERR_PTR(-EINVAL) here and the caller can use
-> > IS_ERR()?
-> > 
-> >> +
-> >> +	/* Find a VFIO KVM device */
-> >> +	list_for_each_entry(tmp, &kvm->devices, vm_node) {
-> >> +		if (tmp->ops != &kvm_vfio_ops)
-> >> +			continue;
-> >> +
-> >> +		kv = tmp->private;
-> >> +		break;
-> >> +	}
-> >> +
-> >> +	if (!kv)
-> >> +		return NULL;
-> > 
-> > ERR_PTR(-EFAULT)?  EIO?
-> > 
-> >> +
-> >> +	/* Find a group */
-> > 
-> > Still ignoring kv->lock
-> > 
-> >> +	list_for_each_entry(kvg, &kv->group_list, node) {
-> >> +		if (kvg->spapr_tce.liobn != liobn)
-> >> +			continue;
-> >> +
-> >> +		if (kvg->spapr_tce.cb)
-> >> +			return NULL;
-> > 
-> > ERR_PTR(-EBUSY)?
-> > 
-> >> +
-> >> +		kvg->spapr_tce.cb = cb;
-> >> +		group_id = vfio_external_user_iommu_id(kvg->vfio_group);
-> >> +		grp = iommu_group_get_by_id(group_id);
-> >> +
-> >> +		return grp;
-> >> +	}
-> >> +
-> >> +	return NULL;
-> > 
-> > ERR_PTR(-ENODEV)?
-> > 
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(kvm_vfio_find_group_by_liobn);
-> >> +#endif
-> >> +
-> >>  /*
-> >>   * Groups can use the same or different IOMMU domains.  If the same then
-> >>   * adding a new group may change the coherency of groups we've previously
-> >> @@ -170,6 +221,11 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
-> >>  				continue;
-> >>  
-> >>  			list_del(&kvg->node);
-> >> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> >> +			if (kvg->spapr_tce.cb)
-> >> +				kvg->spapr_tce.cb(dev->kvm,
-> >> +						kvg->spapr_tce.liobn);
-> >> +#endif
-> >>  			kvm_vfio_group_put_external_user(kvg->vfio_group);
-> >>  			kfree(kvg);
-> >>  			ret = 0;
-> >> @@ -183,6 +239,62 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
-> >>  		kvm_vfio_update_coherency(dev);
-> >>  
-> >>  		return ret;
-> >> +
-> >> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> >> +	case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN: {
-> >> +		struct kvm_vfio_spapr_tce_liobn param;
-> >> +		unsigned long minsz;
-> >> +		struct kvm_vfio *kv = dev->private;
-> >> +		struct vfio_group *vfio_group;
-> >> +		struct kvm_vfio_group *kvg;
-> >> +		struct fd f;
-> >> +
-> >> +		minsz = offsetofend(struct kvm_vfio_spapr_tce_liobn, liobn);
-> >> +
-> >> +		if (copy_from_user(&param, (void __user *)arg, minsz))
-> >> +			return -EFAULT;
-> >> +
-> >> +		if (param.argsz < minsz)
-> >> +			return -EINVAL;
-> >> +
-> >> +		if (copy_from_user(&param, (void __user *)arg, minsz))
-> >> +			return -EFAULT;
-> > 
-> > copy_from_user twice?  Extra copy here?
-> 
-> 
-> Oh. All I wanted was to read minsz first but I cut-n-pasted too blindely :)
-> 
-> > 
-> >> +
-> >> +		f = fdget(param.fd);
-> >> +		if (!f.file)
-> >> +			return -EBADF;
-> >> +
-> >> +		vfio_group = kvm_vfio_group_get_external_user(f.file);
-> >> +		fdput(f);
-> >> +
-> >> +		if (IS_ERR(vfio_group))
-> >> +			return PTR_ERR(vfio_group);
-> >> +
-> >> +		ret = -ENOENT;
-> >> +
-> >> +		mutex_lock(&kv->lock);
-> >> +
-> >> +		list_for_each_entry(kvg, &kv->group_list, node) {
-> >> +			if (kvg->vfio_group != vfio_group)
-> >> +				continue;
-> >> +
-> >> +			if (kvg->spapr_tce.liobn) {
-> >> +				ret = -EBUSY;
-> >> +				break;
-> >> +			}
-> > 
-> > Is zero not an liobn that can be used by userspace?
-> 
-> Good point, thanks. I thought zero cannot be used but by spec -1 is reserved
-> 
-> 
-> >  Is it intentional
-> > that there's no way to unset or change the group/liobn mapping?  Thanks,
-> 
-> 
-> I do not see why we would want to disable once enabled acceleration. Group
-> removal should clear it though so we are good.
-> 
-> Thanks for the review and patience :)
-> 
-> 
-> > 
-> > Alex
-> > 
-> >> +
-> >> +			kvg->spapr_tce.liobn = param.liobn;
-> >> +			ret = 0;
-> >> +			break;
-> >> +		}
-> >> +
-> >> +		mutex_unlock(&kv->lock);
-> >> +
-> >> +		kvm_vfio_group_put_external_user(vfio_group);
-> >> +
-> >> +		return ret;
-> >> +	}
-> >> +#endif /* CONFIG_SPAPR_TCE_IOMMU */
-> >>  	}
-> >>  
-> >>  	return -ENXIO;
-> >> @@ -207,9 +319,11 @@ static int kvm_vfio_has_attr(struct kvm_device *dev,
-> >>  		switch (attr->attr) {
-> >>  		case KVM_DEV_VFIO_GROUP_ADD:
-> >>  		case KVM_DEV_VFIO_GROUP_DEL:
-> >> +#ifdef CONFIG_SPAPR_TCE_IOMMU
-> >> +		case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN:
-> >> +#endif
-> >>  			return 0;
-> >>  		}
-> >> -
-> >>  		break;
-> >>  	}
-> >>  
-> > 
-> > 
-> > 
-> 
-> 
