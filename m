@@ -1,25 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 54A022C016B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 11:22:43 +1100 (EST)
-Message-ID: <1384993347.26969.124.camel@pasglop>
-Subject: Re: [RFC PATCH powerpc] Fix a dma_mask issue of vio
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Thu, 21 Nov 2013 11:22:27 +1100
-In-Reply-To: <20131121000819.GU16735@n2100.arm.linux.org.uk>
-References: <1384848697.2511.17.camel@ThinkPad-T5421>
- <1384910882.26969.57.camel@pasglop>
- <20131120232337.GT16735@n2100.arm.linux.org.uk>
- <1384992102.26969.120.camel@pasglop>
- <20131121000819.GU16735@n2100.arm.linux.org.uk>
+Return-Path: <scottwood@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8B10C2C00F9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 11:33:16 +1100 (EST)
+Message-ID: <1384993966.1403.466.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/gpio: Fix the wrong GPIO input data on
+ MPC8572/MPC8536
+From: Scott Wood <scottwood@freescale.com>
+To: Liu Gang <Gang.Liu@freescale.com>
+Date: Wed, 20 Nov 2013 18:32:46 -0600
+In-Reply-To: <1384916079.16677.26.camel@linux>
+References: <1384499789-3631-1-git-send-email-Gang.Liu@freescale.com>
+ <1384901494.1403.383.camel@snotra.buserror.net>
+ <1384916079.16677.26.camel@linux>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Li Zhong <zhong@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Cc: linux-gpio@vger.kernel.org, linus.walleij@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, r61911@freescale.com, b07421@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,59 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-11-21 at 00:08 +0000, Russell King - ARM Linux wrote:
-> On Thu, Nov 21, 2013 at 11:01:42AM +1100, Benjamin Herrenschmidt wrote:
-> > On Wed, 2013-11-20 at 23:23 +0000, Russell King - ARM Linux wrote:
-> > > Li Zong's patch works around the issue of a failing dma_set_mask(),
-> > > but as I've already said elsewhere, the real fix is to get whatever
-> > > created the struct device to initialise the dev->dma_mask with a
-> > > bus default.
-> > > 
-> > > Using dma_coerce_xxx() merely makes the problem "go away" papering
-> > > over the issue - it's fine to do it this way, but someone should still
-> > > fix the broken code creating these devices...
+On Wed, 2013-11-20 at 10:54 +0800, Liu Gang wrote:
+> On Tue, 2013-11-19 at 16:51 -0600, Scott Wood wrote:
+> > > @@ -71,6 +71,7 @@ static int mpc8572_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+> > >  	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
+> > >  
+> > >  	val = in_be32(mm->regs + GPIO_DAT) & ~in_be32(mm->regs + GPIO_DIR);
+> > > +	mpc8xxx_gc->data &= in_be32(mm->regs + GPIO_DIR);
+> > >  
+> > >  	return (val | mpc8xxx_gc->data) & mpc8xxx_gpio2mask(gpio);
+> > >  }
 > > 
-> > Ok, they are created by the vio bus core, so it should be doing the
-> > job here of setting the dma_mask pointer to a proper value.
+> > It seems odd to update ->data in a function that's supposed to be
+> > reading things...  Perhaps it would be better to keep ->data in a good
+> > state from the beginning.
 > > 
-> > Li, can you take care of that ? Look at other bus types we have in
-> > there such as the macio bus etc...
+> > -Scott
 > 
-> Oh, hang on a moment, this is the "bus" code.
-> 
-> In which case, the question becomes: do vio devices ever need to have
-> a separate streaming DMA mask from a coherent DMA mask?  If not, then
-> something like the following is what's needed here, and I should've
-> never have used dma_set_mask_and_coherent().
+> Yes, keeping the ->data in a good state from the beginning will be
+> better. But this will need more code in different functions to cover
+> all the scenarios.
+> First, we should check the direct of the pin in the function
+> "mpc8xxx_gpio_set", and clean the input bit in ->data after setting
+> operation.
 
-No, a single mask.
+For userspace value setting, it looks like gpiolib blocks the write if
+the pin if FLAG_IS_OUT is set.  This suggests that this is an error
+condition for other uses as well.  Though, I notice that
+mpc8xxx_gpio_dir_out() calls gpio_set() before actually changing the
+direction.  So it may be useful to avoid races where the wrong value is
+output briefly after the direction is changed (especially in open drain
+situations, where the signal could have a meaningful default even before
+we begin outputting).  But that raises the question of how you'd do that
+from userspace, and it also renders the to-be-output value as write-only
+data (until the direction is actually changed), since a readback would
+get the input value instead.
 
-> dma_set_mask_and_coherent() (and the other dma_set_mask() functions)
-> are really supposed to be used by drivers only.
-> 
->  arch/powerpc/kernel/vio.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-> index e7d0c88f621a..d771778f398e 100644
-> --- a/arch/powerpc/kernel/vio.c
-> +++ b/arch/powerpc/kernel/vio.c
-> @@ -1419,7 +1419,8 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
->  
->  		/* needed to ensure proper operation of coherent allocations
->  		 * later, in case driver doesn't set it explicitly */
-> -		dma_set_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
-> +		viodev->dev.coherent_dma_mask = DMA_BIT_MASK(64);
-> +		viodev->dev.dma_mask = &viodev->dev.coherent_dma_mask;
->  	}
->  
->  	/* register with generic device framework */
+> So maybe it's better to eliminate the effects of the ->data to the
+> input pins when reading the status, regardless of the possible changes
+> of the pins and the data.
+> Do you think so?
 
-Right that's exactly what I had in mind. Li, can you test this please ?
+Perhaps, but that doesn't require you to modify ->data in the get()
+function.
 
-The previous "fix" using dma_coerce_mask_and_coherent() is already on
-its way to Linus, so we'll rework the above patch to undo it but for
-now please test.
-
-Cheers,
-Ben.
+-Scott
