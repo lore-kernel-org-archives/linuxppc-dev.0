@@ -1,14 +1,31 @@
-Return-Path: <jk@ozlabs.org>
-Message-ID: <528D9D1C.5060407@ozlabs.org>
-Date: Thu, 21 Nov 2013 13:41:48 +0800
-From: Jeremy Kerr <jk@ozlabs.org>
-MIME-Version: 1.0
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v9] PPC: POWERNV: move iommu_add_device earlier
-References: <1384324220-30109-1-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1384324220-30109-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>, Alex Graf <agraf@suse.de>,
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C961E2C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 17:41:27 +1100 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Thu, 21 Nov 2013 16:41:26 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D80012BB0053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 17:41:16 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAL6NSM47471490
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 17:23:28 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rAL6fG2C009252
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2013 17:41:16 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] iommu: Add empty stub for iommu_group_get_by_id()
+Date: Thu, 21 Nov 2013 17:41:14 +1100
+Message-Id: <1385016074-17026-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Joerg Roedel <joro@8bytes.org>,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,70 +36,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Alexey,
+Almost every function in include/linux/iommu.h has an empty stub
+but the iommu_group_get_by_id() did not get one by mistake.
 
-> This patch does 2 things:
-> 1. removes the loop in which PCI devices were added to groups and
-> adds explicit iommu_add_device() calls to add devices as soon as they get
-> the iommu_table pointer assigned to them.
-> 2. moves a bus notifier to powernv code in order to avoid conflict with
-> the notifier from Freescale driver.
+This adds an empty stub for iommu_group_get_by_id() for IOMMU_API
+disabled config.
 
-This breaks when building with !IOMMU_API for me, as the
-iommu_add_device function is declared but not defined. We'd need
-something like the following (on top of your change) to work:
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ include/linux/iommu.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 426d0ec0..04d2abbe 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -102,10 +102,27 @@ extern void iommu_free_table(struct iommu_table *tbl, cons
-  */
- extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
-                                            int nid);
-+
-+#ifdef CONFIG_IOMMU_API
- extern void iommu_register_group(struct iommu_table *tbl,
-                                 int pci_domain_number, unsigned long pe_num);
- extern int iommu_add_device(struct device *dev);
- extern void iommu_del_device(struct device *dev);
-+#else
-+static inline void iommu_register_group(struct iommu_table *tbl,
-+                                int pci_domain_number, unsigned long pe_num)
-+{
-+}
-+
-+static inline int iommu_add_device(struct device *dev)
-+{
-+       return 0;
-+}
-+
-+static inline void iommu_del_device(struct device *dev)
-+{
-+}
-+#endif
- 
- static inline void set_iommu_table_base_and_group(struct device *dev,
-                                                  void *base)
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 170b2182..5a02a50f 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -1212,11 +1212,4 @@ void iommu_del_device(struct device *dev)
+diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+index 7ea319e..3c7903d 100644
+--- a/include/linux/iommu.h
++++ b/include/linux/iommu.h
+@@ -245,6 +245,11 @@ static inline struct iommu_domain *iommu_domain_alloc(struct bus_type *bus)
+ 	return NULL;
  }
- EXPORT_SYMBOL_GPL(iommu_del_device);
  
--#else
--
--void iommu_register_group(struct iommu_table *tbl,
--               int pci_domain_number, unsigned long pe_num)
--{
--}
--
- #endif /* CONFIG_IOMMU_API */
-
-
-Cheers,
-
-
-Jeremy
++static inline struct iommu_group *iommu_group_get_by_id(int id)
++{
++	return NULL;
++}
++
+ static inline void iommu_domain_free(struct iommu_domain *domain)
+ {
+ }
+-- 
+1.8.4.rc4
