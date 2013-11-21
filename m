@@ -1,28 +1,27 @@
-Return-Path: <jimix@pobox.com>
-Received: from smtp.pobox.com (b-pb-sasl-quonix.pobox.com [208.72.237.35])
- by ozlabs.org (Postfix) with ESMTP id 986A52C00E7
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Nov 2013 04:57:10 +1100 (EST)
-Received: from smtp.pobox.com (unknown [127.0.0.1])
- by b-sasl-quonix.pobox.com (Postfix) with ESMTP id EA83752CAA
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 12:50:08 -0500 (EST)
-Received: from b-pb-sasl-quonix.pobox.com (unknown [127.0.0.1])
- by b-sasl-quonix.pobox.com (Postfix) with ESMTP id DA4BD52CA9
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 12:50:08 -0500 (EST)
-Received: from mail-ie0-f180.google.com (unknown [209.85.223.180])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (No client certificate requested)
- by b-sasl-quonix.pobox.com (Postfix) with ESMTPSA id 9F84752C92
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 12:50:04 -0500 (EST)
-Received: by mail-ie0-f180.google.com with SMTP id tp5so129497ieb.39
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 09:50:03 -0800 (PST)
-MIME-Version: 1.0
-From: Jimi Xenidis <jimix@pobox.com>
-Date: Thu, 21 Nov 2013 09:49:43 -0800
-Message-ID: <CAAen6A0vqbNKajZQrz4g=7wvPE9vO6r_CeaVo=_O8e0D3JpfQA@mail.gmail.com>
-Subject: Re: powerpc: Fix missing includes needed for chroma
-To: Michael Neuling <mikey@neuling.org>
-Content-Type: multipart/alternative; boundary=bcaec517cb72fa6da704ebb38606
-Cc: Yoonho Park <yoonho@us.ibm.com>, Linux PPC dev <linuxppc-dev@ozlabs.org>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 42E652C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2013 08:00:56 +1100 (EST)
+Message-ID: <1385067648.2879.421.camel@ul30vt.home>
+Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Scott Wood <scottwood@freescale.com>
+Date: Thu, 21 Nov 2013 14:00:48 -0700
+In-Reply-To: <1385066835.1403.489.camel@snotra.buserror.net>
+References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1384973243.2879.361.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1385066603.2879.414.camel@ul30vt.home>
+ <1385066835.1403.489.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "agraf@suse.de" <agraf@suse.de>, Stuart Yoder <stuart.yoder@freescale.com>,
+ Bharat Bhushan <Bharat.Bhushan@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,232 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---bcaec517cb72fa6da704ebb38606
-Content-Type: text/plain; charset=ISO-8859-1
+On Thu, 2013-11-21 at 14:47 -0600, Scott Wood wrote:
+> On Thu, 2013-11-21 at 13:43 -0700, Alex Williamson wrote:
+> > On Thu, 2013-11-21 at 11:20 +0000, Bharat Bhushan wrote:
+> > > 
+> > > > -----Original Message-----
+> > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > > > Sent: Thursday, November 21, 2013 12:17 AM
+> > > > To: Bhushan Bharat-R65777
+> > > > Cc: joro@8bytes.org; bhelgaas@google.com; agraf@suse.de; Wood Scott-B07421;
+> > > > Yoder Stuart-B08248; iommu@lists.linux-foundation.org; linux-
+> > > > pci@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> > > > kernel@vger.kernel.org; Bhushan Bharat-R65777
+> > > > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+> > > > 
+> > > > Is VFIO_IOMMU_PAMU_GET_MSI_BANK_COUNT per aperture (ie. each vfio user has
+> > > > $COUNT regions at their disposal exclusively)?
+> > > 
+> > > Number of msi-bank count is system wide and not per aperture, But will be setting windows for banks in the device aperture.
+> > > So say if we are direct assigning 2 pci device (both have different iommu group, so 2 aperture in iommu) to VM.
+> > > Now qemu can make only one call to know how many msi-banks are there but it must set sub-windows for all banks for both pci device in its respective aperture.
+> > 
+> > I'm still confused.  What I want to make sure of is that the banks are
+> > independent per aperture.  For instance, if we have two separate
+> > userspace processes operating independently and they both chose to use
+> > msi bank zero for their device, that's bank zero within each aperture
+> > and doesn't interfere.  Or another way to ask is can a malicious user
+> > interfere with other users by using the wrong bank.  Thanks,
+> 
+> They can interfere.  With this hardware, the only way to prevent that is
+> to make sure that a bank is not shared by multiple protection contexts.
+> For some of our users, though, I believe preventing this is less
+> important than the performance benefit.
 
-Drop it now :)
-However, it may be nice to keep the A2 stuff until BGQ EOLs
--jx
+I think we need some sort of ownership model around the msi banks then.
+Otherwise there's nothing preventing another userspace from attempting
+an MSI based attack on other users, or perhaps even on the host.  VFIO
+can't allow that.  Thanks,
 
-
-
-On Wed, Nov 20, 2013 at 8:40 PM, Michael Neuling <mikey@neuling.org> wrote:
-
-> chroma_defconfig is horribly broken currently, so add a bunch of
-> #includes to fix it.
->
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
-> So when are we dropping arch/powerpc/platforms/wsp?
->
-> diff --git a/arch/powerpc/platforms/wsp/chroma.c
-> b/arch/powerpc/platforms/wsp/chroma.c
-> index 8ef53bc..aaa46b3 100644
-> --- a/arch/powerpc/platforms/wsp/chroma.c
-> +++ b/arch/powerpc/platforms/wsp/chroma.c
-> @@ -15,6 +15,7 @@
->  #include <linux/of.h>
->  #include <linux/smp.h>
->  #include <linux/time.h>
-> +#include <linux/of_fdt.h>
->
->  #include <asm/machdep.h>
->  #include <asm/udbg.h>
-> diff --git a/arch/powerpc/platforms/wsp/h8.c
-> b/arch/powerpc/platforms/wsp/h8.c
-> index d18e6cc..a3c87f3 100644
-> --- a/arch/powerpc/platforms/wsp/h8.c
-> +++ b/arch/powerpc/platforms/wsp/h8.c
-> @@ -10,6 +10,7 @@
->  #include <linux/kernel.h>
->  #include <linux/of.h>
->  #include <linux/io.h>
-> +#include <linux/of_address.h>
->
->  #include "wsp.h"
->
-> diff --git a/arch/powerpc/platforms/wsp/ics.c
-> b/arch/powerpc/platforms/wsp/ics.c
-> index 2d3b1dd..3b782ce 100644
-> --- a/arch/powerpc/platforms/wsp/ics.c
-> +++ b/arch/powerpc/platforms/wsp/ics.c
-> @@ -18,6 +18,8 @@
->  #include <linux/smp.h>
->  #include <linux/spinlock.h>
->  #include <linux/types.h>
-> +#include <linux/of_irq.h>
-> +#include <linux/of_address.h>
->
->  #include <asm/io.h>
->  #include <asm/irq.h>
-> diff --git a/arch/powerpc/platforms/wsp/opb_pic.c
-> b/arch/powerpc/platforms/wsp/opb_pic.c
-> index cb565bf..3f67298 100644
-> --- a/arch/powerpc/platforms/wsp/opb_pic.c
-> +++ b/arch/powerpc/platforms/wsp/opb_pic.c
-> @@ -15,6 +15,8 @@
->  #include <linux/of.h>
->  #include <linux/slab.h>
->  #include <linux/time.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_irq.h>
->
->  #include <asm/reg_a2.h>
->  #include <asm/irq.h>
-> diff --git a/arch/powerpc/platforms/wsp/psr2.c
-> b/arch/powerpc/platforms/wsp/psr2.c
-> index 508ec82..a87b414 100644
-> --- a/arch/powerpc/platforms/wsp/psr2.c
-> +++ b/arch/powerpc/platforms/wsp/psr2.c
-> @@ -15,6 +15,7 @@
->  #include <linux/of.h>
->  #include <linux/smp.h>
->  #include <linux/time.h>
-> +#include <linux/of_fdt.h>
->
->  #include <asm/machdep.h>
->  #include <asm/udbg.h>
-> diff --git a/arch/powerpc/platforms/wsp/scom_wsp.c
-> b/arch/powerpc/platforms/wsp/scom_wsp.c
-> index 8928507..6538b4d 100644
-> --- a/arch/powerpc/platforms/wsp/scom_wsp.c
-> +++ b/arch/powerpc/platforms/wsp/scom_wsp.c
-> @@ -14,6 +14,7 @@
->  #include <linux/of.h>
->  #include <linux/spinlock.h>
->  #include <linux/types.h>
-> +#include <linux/of_address.h>
->
->  #include <asm/cputhreads.h>
->  #include <asm/reg_a2.h>
-> diff --git a/arch/powerpc/platforms/wsp/wsp.c
-> b/arch/powerpc/platforms/wsp/wsp.c
-> index ddb6efe..58cd1f0 100644
-> --- a/arch/powerpc/platforms/wsp/wsp.c
-> +++ b/arch/powerpc/platforms/wsp/wsp.c
-> @@ -13,6 +13,7 @@
->  #include <linux/smp.h>
->  #include <linux/delay.h>
->  #include <linux/time.h>
-> +#include <linux/of_address.h>
->
->  #include <asm/scom.h>
->
->
-
---bcaec517cb72fa6da704ebb38606
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">Drop it now :)<div>However, it may be nice to keep the A2 =
-stuff until BGQ EOLs</div><div>-jx</div><div><br></div><div class=3D"gmail_=
-extra"><br><br><div class=3D"gmail_quote">On Wed, Nov 20, 2013 at 8:40 PM, =
-Michael Neuling <span dir=3D"ltr">&lt;<a href=3D"mailto:mikey@neuling.org" =
-target=3D"_blank">mikey@neuling.org</a>&gt;</span> wrote:<br>
-
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">chroma_defconfig is horribly broken currentl=
-y, so add a bunch of<br>
-#includes to fix it.<br>
-<br>
-Signed-off-by: Michael Neuling &lt;<a href=3D"mailto:mikey@neuling.org">mik=
-ey@neuling.org</a>&gt;<br>
----<br>
-So when are we dropping arch/powerpc/platforms/wsp?<br>
-<br>
-diff --git a/arch/powerpc/platforms/wsp/chroma.c b/arch/powerpc/platforms/w=
-sp/chroma.c<br>
-index 8ef53bc..aaa46b3 100644<br>
---- a/arch/powerpc/platforms/wsp/chroma.c<br>
-+++ b/arch/powerpc/platforms/wsp/chroma.c<br>
-@@ -15,6 +15,7 @@<br>
-=A0#include &lt;linux/of.h&gt;<br>
-=A0#include &lt;linux/smp.h&gt;<br>
-=A0#include &lt;linux/time.h&gt;<br>
-+#include &lt;linux/of_fdt.h&gt;<br>
-<br>
-=A0#include &lt;asm/machdep.h&gt;<br>
-=A0#include &lt;asm/udbg.h&gt;<br>
-diff --git a/arch/powerpc/platforms/wsp/h8.c b/arch/powerpc/platforms/wsp/h=
-8.c<br>
-index d18e6cc..a3c87f3 100644<br>
---- a/arch/powerpc/platforms/wsp/h8.c<br>
-+++ b/arch/powerpc/platforms/wsp/h8.c<br>
-@@ -10,6 +10,7 @@<br>
-=A0#include &lt;linux/kernel.h&gt;<br>
-=A0#include &lt;linux/of.h&gt;<br>
-=A0#include &lt;linux/io.h&gt;<br>
-+#include &lt;linux/of_address.h&gt;<br>
-<br>
-=A0#include &quot;wsp.h&quot;<br>
-<br>
-diff --git a/arch/powerpc/platforms/wsp/ics.c b/arch/powerpc/platforms/wsp/=
-ics.c<br>
-index 2d3b1dd..3b782ce 100644<br>
---- a/arch/powerpc/platforms/wsp/ics.c<br>
-+++ b/arch/powerpc/platforms/wsp/ics.c<br>
-@@ -18,6 +18,8 @@<br>
-=A0#include &lt;linux/smp.h&gt;<br>
-=A0#include &lt;linux/spinlock.h&gt;<br>
-=A0#include &lt;linux/types.h&gt;<br>
-+#include &lt;linux/of_irq.h&gt;<br>
-+#include &lt;linux/of_address.h&gt;<br>
-<br>
-=A0#include &lt;asm/io.h&gt;<br>
-=A0#include &lt;asm/irq.h&gt;<br>
-diff --git a/arch/powerpc/platforms/wsp/opb_pic.c b/arch/powerpc/platforms/=
-wsp/opb_pic.c<br>
-index cb565bf..3f67298 100644<br>
---- a/arch/powerpc/platforms/wsp/opb_pic.c<br>
-+++ b/arch/powerpc/platforms/wsp/opb_pic.c<br>
-@@ -15,6 +15,8 @@<br>
-=A0#include &lt;linux/of.h&gt;<br>
-=A0#include &lt;linux/slab.h&gt;<br>
-=A0#include &lt;linux/time.h&gt;<br>
-+#include &lt;linux/of_address.h&gt;<br>
-+#include &lt;linux/of_irq.h&gt;<br>
-<br>
-=A0#include &lt;asm/reg_a2.h&gt;<br>
-=A0#include &lt;asm/irq.h&gt;<br>
-diff --git a/arch/powerpc/platforms/wsp/psr2.c b/arch/powerpc/platforms/wsp=
-/psr2.c<br>
-index 508ec82..a87b414 100644<br>
---- a/arch/powerpc/platforms/wsp/psr2.c<br>
-+++ b/arch/powerpc/platforms/wsp/psr2.c<br>
-@@ -15,6 +15,7 @@<br>
-=A0#include &lt;linux/of.h&gt;<br>
-=A0#include &lt;linux/smp.h&gt;<br>
-=A0#include &lt;linux/time.h&gt;<br>
-+#include &lt;linux/of_fdt.h&gt;<br>
-<br>
-=A0#include &lt;asm/machdep.h&gt;<br>
-=A0#include &lt;asm/udbg.h&gt;<br>
-diff --git a/arch/powerpc/platforms/wsp/scom_wsp.c b/arch/powerpc/platforms=
-/wsp/scom_wsp.c<br>
-index 8928507..6538b4d 100644<br>
---- a/arch/powerpc/platforms/wsp/scom_wsp.c<br>
-+++ b/arch/powerpc/platforms/wsp/scom_wsp.c<br>
-@@ -14,6 +14,7 @@<br>
-=A0#include &lt;linux/of.h&gt;<br>
-=A0#include &lt;linux/spinlock.h&gt;<br>
-=A0#include &lt;linux/types.h&gt;<br>
-+#include &lt;linux/of_address.h&gt;<br>
-<br>
-=A0#include &lt;asm/cputhreads.h&gt;<br>
-=A0#include &lt;asm/reg_a2.h&gt;<br>
-diff --git a/arch/powerpc/platforms/wsp/wsp.c b/arch/powerpc/platforms/wsp/=
-wsp.c<br>
-index ddb6efe..58cd1f0 100644<br>
---- a/arch/powerpc/platforms/wsp/wsp.c<br>
-+++ b/arch/powerpc/platforms/wsp/wsp.c<br>
-@@ -13,6 +13,7 @@<br>
-=A0#include &lt;linux/smp.h&gt;<br>
-=A0#include &lt;linux/delay.h&gt;<br>
-=A0#include &lt;linux/time.h&gt;<br>
-+#include &lt;linux/of_address.h&gt;<br>
-<br>
-=A0#include &lt;asm/scom.h&gt;<br>
-<br>
-</blockquote></div><br></div></div>
-
---bcaec517cb72fa6da704ebb38606--
+Alex
