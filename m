@@ -1,19 +1,28 @@
-Return-Path: <carlos@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id DA0A12C0094
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2013 03:03:18 +1100 (EST)
-Message-ID: <528E2EB6.2010003@redhat.com>
-Date: Thu, 21 Nov 2013 11:03:02 -0500
-From: "Carlos O'Donell" <carlos@redhat.com>
+Return-Path: <jimix@pobox.com>
+Received: from smtp.pobox.com (b-pb-sasl-quonix.pobox.com [208.72.237.35])
+ by ozlabs.org (Postfix) with ESMTP id 986A52C00E7
+ for <linuxppc-dev@ozlabs.org>; Fri, 22 Nov 2013 04:57:10 +1100 (EST)
+Received: from smtp.pobox.com (unknown [127.0.0.1])
+ by b-sasl-quonix.pobox.com (Postfix) with ESMTP id EA83752CAA
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 12:50:08 -0500 (EST)
+Received: from b-pb-sasl-quonix.pobox.com (unknown [127.0.0.1])
+ by b-sasl-quonix.pobox.com (Postfix) with ESMTP id DA4BD52CA9
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 12:50:08 -0500 (EST)
+Received: from mail-ie0-f180.google.com (unknown [209.85.223.180])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by b-sasl-quonix.pobox.com (Postfix) with ESMTPSA id 9F84752C92
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 12:50:04 -0500 (EST)
+Received: by mail-ie0-f180.google.com with SMTP id tp5so129497ieb.39
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Nov 2013 09:50:03 -0800 (PST)
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] powerpc/signals: Mark VSX not saved with small contexts
-References: <1384924734-16722-1-git-send-email-mikey@neuling.org>
- <20131121113333.GB15913@concordia>
-In-Reply-To: <20131121113333.GB15913@concordia>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Steve Best <sbest@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Haren Myneni <haren@linux.vnet.ibm.com>
+From: Jimi Xenidis <jimix@pobox.com>
+Date: Thu, 21 Nov 2013 09:49:43 -0800
+Message-ID: <CAAen6A0vqbNKajZQrz4g=7wvPE9vO6r_CeaVo=_O8e0D3JpfQA@mail.gmail.com>
+Subject: Re: powerpc: Fix missing includes needed for chroma
+To: Michael Neuling <mikey@neuling.org>
+Content-Type: multipart/alternative; boundary=bcaec517cb72fa6da704ebb38606
+Cc: Yoonho Park <yoonho@us.ibm.com>, Linux PPC dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,120 +32,232 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/21/2013 06:33 AM, Michael Ellerman wrote:
-> On Wed, Nov 20, 2013 at 04:18:54PM +1100, Michael Neuling wrote:
->> The VSX MSR bit in the user context indicates if the context contains VSX
->> state.  Currently we set this when the process has touched VSX at any stage.
->>
->> Unfortunately, if the user has not provided enough space to save the VSX state,
->> we can't save it but we currently still set the MSR VSX bit.
->>
->> This patch changes this to clear the MSR VSX bit when the user doesn't provide
->> enough space.  This indicates that there is no valid VSX state in the user
->> context.
->>
->> This is needed to support get/set/make/swapcontext for applications that use
->> VSX but only provide a small context.  For example, getcontext in glibc
->> provides a smaller context since the VSX registers don't need to be saved over
->> the glibc function call.  But since the program calling getcontext may have
->> used VSX, the kernel currently says the VSX state is valid when it's not.  If
->> the returned context is then used in setcontext (ie. a small context without
->> VSX but with MSR VSX set), the kernel will refuse the context.  This situation
->> has been reported by the glibc community.
-> 
-> Broken since forever?
+--bcaec517cb72fa6da704ebb38606
+Content-Type: text/plain; charset=ISO-8859-1
 
-Yes, broken since forever. At least it was known in glibc 2.18 that this was
-broken, but without an active distribution using it the defect wasn't analyzed.
+Drop it now :)
+However, it may be nice to keep the A2 stuff until BGQ EOLs
+-jx
 
->> Tested-by: Haren Myneni <haren@linux.vnet.ibm.com>
->> Signed-off-by: Michael Neuling <mikey@neuling.org>
->> Cc: stable@vger.kernel.org
->> ---
->>  arch/powerpc/kernel/signal_32.c | 10 +++++++++-
-> 
-> What about the 64-bit code? I don't know the code but it appears at a glance to
-> have the same bug.
- 
-It doesn't happen with 64-bit code because there the context contains
-a sigcontext which on ppc64 has vmx_reserve to store the entire VMX
-state. Therefore 64-bit ppc always has space to store the VMX registers
-in a userspace context switch. It is only the 32-bit ppc ABI that lacks
-the space.
- 
->> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
->> index 749778e..1844298 100644
->> --- a/arch/powerpc/kernel/signal_32.c
->> +++ b/arch/powerpc/kernel/signal_32.c
->> @@ -457,7 +457,15 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
->>  		if (copy_vsx_to_user(&frame->mc_vsregs, current))
->>  			return 1;
->>  		msr |= MSR_VSX;
->> -	}
->> +	} else if (!ctx_has_vsx_region)
->> +		/*
->> +		 * With a small context structure we can't hold the VSX
->> +		 * registers, hence clear the MSR value to indicate the state
->> +		 * was not saved.
->> +		 */
->> +		msr &= ~MSR_VSX;
-> 
-> I think it'd be clearer if this was just the else case. The full context is:
-> 
->     if (current->thread.used_vsr && ctx_has_vsx_region) {
->             __giveup_vsx(current);
->             if (copy_vsx_to_user(&frame->mc_vsregs, current))
->                     return 1;
->             msr |= MSR_VSX;
-> +   } else if (!ctx_has_vsx_region)
-> +           /*
-> +            * With a small context structure we can't hold the VSX
-> +            * registers, hence clear the MSR value to indicate the state
-> +            * was not saved.
-> +            */
-> +           msr &= ~MSR_VSX;
-> 
-> Which means if current->thread.user_vsr and ctx_has_vsx_region are both false
-> we potentially leave MSR_VSX set in msr. I think it should be the case that
-> MSR_VSX is only ever set if current->thread.used_vsr is true, so it should be
-> OK in pratice, but it seems unnecessarily fragile.
 
-If current->thread.user_vsr and ctx_has_vsx_region are both false then
-!ctx_has_vsx_region is true and we clear MSR_VSX.
 
-Perhaps you mean if current->thread.user_vsr is false, but ctx_has_vsx_region
-is true? 
+On Wed, Nov 20, 2013 at 8:40 PM, Michael Neuling <mikey@neuling.org> wrote:
 
-Previously the else clause reset MSR_VSX if:
-1. current->thread.used_vsr == 0 && ctx_has_vsx_region == 0
-2. current->thread.used_vsr == 1 && ctx_has_vsx_region == 0,
+> chroma_defconfig is horribly broken currently, so add a bunch of
+> #includes to fix it.
+>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+> So when are we dropping arch/powerpc/platforms/wsp?
+>
+> diff --git a/arch/powerpc/platforms/wsp/chroma.c
+> b/arch/powerpc/platforms/wsp/chroma.c
+> index 8ef53bc..aaa46b3 100644
+> --- a/arch/powerpc/platforms/wsp/chroma.c
+> +++ b/arch/powerpc/platforms/wsp/chroma.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/of.h>
+>  #include <linux/smp.h>
+>  #include <linux/time.h>
+> +#include <linux/of_fdt.h>
+>
+>  #include <asm/machdep.h>
+>  #include <asm/udbg.h>
+> diff --git a/arch/powerpc/platforms/wsp/h8.c
+> b/arch/powerpc/platforms/wsp/h8.c
+> index d18e6cc..a3c87f3 100644
+> --- a/arch/powerpc/platforms/wsp/h8.c
+> +++ b/arch/powerpc/platforms/wsp/h8.c
+> @@ -10,6 +10,7 @@
+>  #include <linux/kernel.h>
+>  #include <linux/of.h>
+>  #include <linux/io.h>
+> +#include <linux/of_address.h>
+>
+>  #include "wsp.h"
+>
+> diff --git a/arch/powerpc/platforms/wsp/ics.c
+> b/arch/powerpc/platforms/wsp/ics.c
+> index 2d3b1dd..3b782ce 100644
+> --- a/arch/powerpc/platforms/wsp/ics.c
+> +++ b/arch/powerpc/platforms/wsp/ics.c
+> @@ -18,6 +18,8 @@
+>  #include <linux/smp.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/types.h>
+> +#include <linux/of_irq.h>
+> +#include <linux/of_address.h>
+>
+>  #include <asm/io.h>
+>  #include <asm/irq.h>
+> diff --git a/arch/powerpc/platforms/wsp/opb_pic.c
+> b/arch/powerpc/platforms/wsp/opb_pic.c
+> index cb565bf..3f67298 100644
+> --- a/arch/powerpc/platforms/wsp/opb_pic.c
+> +++ b/arch/powerpc/platforms/wsp/opb_pic.c
+> @@ -15,6 +15,8 @@
+>  #include <linux/of.h>
+>  #include <linux/slab.h>
+>  #include <linux/time.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_irq.h>
+>
+>  #include <asm/reg_a2.h>
+>  #include <asm/irq.h>
+> diff --git a/arch/powerpc/platforms/wsp/psr2.c
+> b/arch/powerpc/platforms/wsp/psr2.c
+> index 508ec82..a87b414 100644
+> --- a/arch/powerpc/platforms/wsp/psr2.c
+> +++ b/arch/powerpc/platforms/wsp/psr2.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/of.h>
+>  #include <linux/smp.h>
+>  #include <linux/time.h>
+> +#include <linux/of_fdt.h>
+>
+>  #include <asm/machdep.h>
+>  #include <asm/udbg.h>
+> diff --git a/arch/powerpc/platforms/wsp/scom_wsp.c
+> b/arch/powerpc/platforms/wsp/scom_wsp.c
+> index 8928507..6538b4d 100644
+> --- a/arch/powerpc/platforms/wsp/scom_wsp.c
+> +++ b/arch/powerpc/platforms/wsp/scom_wsp.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/of.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/types.h>
+> +#include <linux/of_address.h>
+>
+>  #include <asm/cputhreads.h>
+>  #include <asm/reg_a2.h>
+> diff --git a/arch/powerpc/platforms/wsp/wsp.c
+> b/arch/powerpc/platforms/wsp/wsp.c
+> index ddb6efe..58cd1f0 100644
+> --- a/arch/powerpc/platforms/wsp/wsp.c
+> +++ b/arch/powerpc/platforms/wsp/wsp.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/smp.h>
+>  #include <linux/delay.h>
+>  #include <linux/time.h>
+> +#include <linux/of_address.h>
+>
+>  #include <asm/scom.h>
+>
+>
 
-Now it resets MSR_VSX additionally for:
-3. current->thread.used_vsr == 0 && ctx_has_vsx_region == 1,
+--bcaec517cb72fa6da704ebb38606
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-3. is a valid state. The task has not touched the VSX state and the context
-is large enough to be saved into. This may be a future state for ppc32 if 
-we adjust the ABI to have a large enough context buffer. However at present 
-it's not a plausible state. It's also a "don't care" state since there is 
-nothing saved in the context, and if nothing was saved in the context then
-MSR_VSX is not set.
- 
-> The logic should be "if we write VSX we set MSR_VSX, else we clear MSR_VSX", ie:
-> 
->     if (current->thread.used_vsr && ctx_has_vsx_region) {
->             __giveup_vsx(current);
->             if (copy_vsx_to_user(&frame->mc_vsregs, current))
->                     return 1;
->             msr |= MSR_VSX;
->     } else
->             msr &= ~MSR_VSX;
+<div dir=3D"ltr">Drop it now :)<div>However, it may be nice to keep the A2 =
+stuff until BGQ EOLs</div><div>-jx</div><div><br></div><div class=3D"gmail_=
+extra"><br><br><div class=3D"gmail_quote">On Wed, Nov 20, 2013 at 8:40 PM, =
+Michael Neuling <span dir=3D"ltr">&lt;<a href=3D"mailto:mikey@neuling.org" =
+target=3D"_blank">mikey@neuling.org</a>&gt;</span> wrote:<br>
 
-If anything I dislike this because it might mask a bug in earlier code that
-might erroneously set MSR_VSX even though current->thread.user_vsr is not
-true. If anything the extra state 3. covered here is a buggy state.
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">chroma_defconfig is horribly broken currentl=
+y, so add a bunch of<br>
+#includes to fix it.<br>
+<br>
+Signed-off-by: Michael Neuling &lt;<a href=3D"mailto:mikey@neuling.org">mik=
+ey@neuling.org</a>&gt;<br>
+---<br>
+So when are we dropping arch/powerpc/platforms/wsp?<br>
+<br>
+diff --git a/arch/powerpc/platforms/wsp/chroma.c b/arch/powerpc/platforms/w=
+sp/chroma.c<br>
+index 8ef53bc..aaa46b3 100644<br>
+--- a/arch/powerpc/platforms/wsp/chroma.c<br>
++++ b/arch/powerpc/platforms/wsp/chroma.c<br>
+@@ -15,6 +15,7 @@<br>
+=A0#include &lt;linux/of.h&gt;<br>
+=A0#include &lt;linux/smp.h&gt;<br>
+=A0#include &lt;linux/time.h&gt;<br>
++#include &lt;linux/of_fdt.h&gt;<br>
+<br>
+=A0#include &lt;asm/machdep.h&gt;<br>
+=A0#include &lt;asm/udbg.h&gt;<br>
+diff --git a/arch/powerpc/platforms/wsp/h8.c b/arch/powerpc/platforms/wsp/h=
+8.c<br>
+index d18e6cc..a3c87f3 100644<br>
+--- a/arch/powerpc/platforms/wsp/h8.c<br>
++++ b/arch/powerpc/platforms/wsp/h8.c<br>
+@@ -10,6 +10,7 @@<br>
+=A0#include &lt;linux/kernel.h&gt;<br>
+=A0#include &lt;linux/of.h&gt;<br>
+=A0#include &lt;linux/io.h&gt;<br>
++#include &lt;linux/of_address.h&gt;<br>
+<br>
+=A0#include &quot;wsp.h&quot;<br>
+<br>
+diff --git a/arch/powerpc/platforms/wsp/ics.c b/arch/powerpc/platforms/wsp/=
+ics.c<br>
+index 2d3b1dd..3b782ce 100644<br>
+--- a/arch/powerpc/platforms/wsp/ics.c<br>
++++ b/arch/powerpc/platforms/wsp/ics.c<br>
+@@ -18,6 +18,8 @@<br>
+=A0#include &lt;linux/smp.h&gt;<br>
+=A0#include &lt;linux/spinlock.h&gt;<br>
+=A0#include &lt;linux/types.h&gt;<br>
++#include &lt;linux/of_irq.h&gt;<br>
++#include &lt;linux/of_address.h&gt;<br>
+<br>
+=A0#include &lt;asm/io.h&gt;<br>
+=A0#include &lt;asm/irq.h&gt;<br>
+diff --git a/arch/powerpc/platforms/wsp/opb_pic.c b/arch/powerpc/platforms/=
+wsp/opb_pic.c<br>
+index cb565bf..3f67298 100644<br>
+--- a/arch/powerpc/platforms/wsp/opb_pic.c<br>
++++ b/arch/powerpc/platforms/wsp/opb_pic.c<br>
+@@ -15,6 +15,8 @@<br>
+=A0#include &lt;linux/of.h&gt;<br>
+=A0#include &lt;linux/slab.h&gt;<br>
+=A0#include &lt;linux/time.h&gt;<br>
++#include &lt;linux/of_address.h&gt;<br>
++#include &lt;linux/of_irq.h&gt;<br>
+<br>
+=A0#include &lt;asm/reg_a2.h&gt;<br>
+=A0#include &lt;asm/irq.h&gt;<br>
+diff --git a/arch/powerpc/platforms/wsp/psr2.c b/arch/powerpc/platforms/wsp=
+/psr2.c<br>
+index 508ec82..a87b414 100644<br>
+--- a/arch/powerpc/platforms/wsp/psr2.c<br>
++++ b/arch/powerpc/platforms/wsp/psr2.c<br>
+@@ -15,6 +15,7 @@<br>
+=A0#include &lt;linux/of.h&gt;<br>
+=A0#include &lt;linux/smp.h&gt;<br>
+=A0#include &lt;linux/time.h&gt;<br>
++#include &lt;linux/of_fdt.h&gt;<br>
+<br>
+=A0#include &lt;asm/machdep.h&gt;<br>
+=A0#include &lt;asm/udbg.h&gt;<br>
+diff --git a/arch/powerpc/platforms/wsp/scom_wsp.c b/arch/powerpc/platforms=
+/wsp/scom_wsp.c<br>
+index 8928507..6538b4d 100644<br>
+--- a/arch/powerpc/platforms/wsp/scom_wsp.c<br>
++++ b/arch/powerpc/platforms/wsp/scom_wsp.c<br>
+@@ -14,6 +14,7 @@<br>
+=A0#include &lt;linux/of.h&gt;<br>
+=A0#include &lt;linux/spinlock.h&gt;<br>
+=A0#include &lt;linux/types.h&gt;<br>
++#include &lt;linux/of_address.h&gt;<br>
+<br>
+=A0#include &lt;asm/cputhreads.h&gt;<br>
+=A0#include &lt;asm/reg_a2.h&gt;<br>
+diff --git a/arch/powerpc/platforms/wsp/wsp.c b/arch/powerpc/platforms/wsp/=
+wsp.c<br>
+index ddb6efe..58cd1f0 100644<br>
+--- a/arch/powerpc/platforms/wsp/wsp.c<br>
++++ b/arch/powerpc/platforms/wsp/wsp.c<br>
+@@ -13,6 +13,7 @@<br>
+=A0#include &lt;linux/smp.h&gt;<br>
+=A0#include &lt;linux/delay.h&gt;<br>
+=A0#include &lt;linux/time.h&gt;<br>
++#include &lt;linux/of_address.h&gt;<br>
+<br>
+=A0#include &lt;asm/scom.h&gt;<br>
+<br>
+</blockquote></div><br></div></div>
 
-I agree that your suggestion is more robust though since the definition of
-robustness is to operate despite failures.
-
-Cheers,
-Carlos.
+--bcaec517cb72fa6da704ebb38606--
