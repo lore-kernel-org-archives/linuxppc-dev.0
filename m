@@ -1,25 +1,34 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 06FEF2C00D0
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Nov 2013 04:43:08 +1100 (EST)
-Message-ID: <1385055779.1403.476.camel@snotra.buserror.net>
-Subject: Re: [RFC][PATCH] powerpc/CoreNet64: compile with
- CONFIG_E{5,6}500_CPU well
-From: Scott Wood <scottwood@freescale.com>
-To: =?UTF-8?Q?=22=E2=80=9Ctiejun=2Echen=E2=80=9D=22?=
- <tiejun.chen@windriver.com>
-Date: Thu, 21 Nov 2013 11:42:59 -0600
-In-Reply-To: <528DCB61.8040807@windriver.com>
-References: <1384936551-8494-1-git-send-email-tiejun.chen@windriver.com>
- <1384965671.1403.414.camel@snotra.buserror.net>
- <528DCB61.8040807@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <ralf@linux-mips.org>
+Received: from git.linux-mips.org (marvin.linux-mips.org [78.24.191.183])
+ by ozlabs.org (Postfix) with ESMTP id 5723F2C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2013 04:55:57 +1100 (EST)
+Received: from localhost.localdomain ([127.0.0.1]:33627 "EHLO linux-mips.org"
+ rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
+ id S6867243Ab3KURkBobykT (ORCPT
+ <rfc822;linuxppc-dev@lists.ozlabs.org>);
+ Thu, 21 Nov 2013 18:40:01 +0100
+Date: Thu, 21 Nov 2013 18:39:33 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Richard Zhu <r65037@freescale.com>
+Subject: Re: [PATCH 24/34] PCI: use weak functions for MSI arch-specific
+ functions
+Message-ID: <20131121173933.GT10382@linux-mips.org>
+References: <1384915853-31006-1-git-send-email-r65037@freescale.com>
+ <1384915853-31006-24-git-send-email-r65037@freescale.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1384915853-31006-24-git-send-email-r65037@freescale.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Tony Luck <tony.luck@intel.com>, Russell King <linux@arm.linux.org.uk>,
+ Jason Cooper <jason@lakedaemon.net>, Fenghua Yu <fenghua.yu@intel.com>,
+ linux-mips@linux-mips.org, x86@kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, sparclinux@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux390@de.ibm.com, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,70 +38,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-11-21 at 16:59 +0800, "=E2=80=9Ctiejun.chen=E2=80=9D" wrote:
-> On 11/21/2013 12:41 AM, Scott Wood wrote:
-> > On Wed, 2013-11-20 at 16:35 +0800, Tiejun Chen wrote:
-> >> +# Altivec and Spe options not allowed with e500mc64 in GCC.
-> >> +ifeq ($(call cc-option-yn,-mcpu=3De500mc64),n)
-> >>   obj-$(CONFIG_ALTIVEC)	+=3D xor_vmx.o
-> >>   CFLAGS_xor_vmx.o +=3D -maltivec -mabi=3Daltivec
-> >> +endif
-> >
-> > This does not seem like the right fix.  What if GCC supports both
-> > -mcpu=3De500mc64 and -mcpu=3De6500, and we're using the latter?  Or f=
-or that
->=20
-> I can understand what you mean, but in current kernel, -mcpu=3De500mc64=
- should be=20
-> excluded from -mcpu=3De6500,
->=20
-> arch/powerpc/Makefile:
->=20
-> E5500_CPU :=3D $(call cc-option,-mcpu=3De500mc64,-mcpu=3Dpowerpc64)
-> CFLAGS-$(CONFIG_E5500_CPU) +=3D $(E5500_CPU)
-> CFLAGS-$(CONFIG_E6500_CPU) +=3D $(call cc-option,-mcpu=3De6500,$(E5500_=
-CPU))
+On Wed, Nov 20, 2013 at 10:50:43AM +0800, Richard Zhu wrote:
 
-But your patch doesn't test what options we're actually using.  You
-tested what options the compiler supports.
+Looking good,
 
-> But unfortunately, another place also use the same option,
->=20
-> lib/raid6/Makefile:
->=20
-> raid6_pq-$(CONFIG_ALTIVEC) +=3D altivec1.o altivec2.o altivec4.o altive=
-c8.o
-> ...
-> ifeq ($(CONFIG_ALTIVEC),y)
-> altivec_flags :=3D -maltivec -mabi=3Daltivec
-> endif
->=20
-> Looks we have to do something in this common Makefile file as well, but=
- it may=20
-> be a bit ugly if still judge some cpu-specific flags...
->=20
-> So what about this version?
->=20
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 607acf5..872a85c 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -127,7 +127,12 @@ CFLAGS-$(CONFIG_POWER5_CPU) +=3D $(call cc-option,=
--mcpu=3Dpower5)
->   CFLAGS-$(CONFIG_POWER6_CPU) +=3D $(call cc-option,-mcpu=3Dpower6)
->   CFLAGS-$(CONFIG_POWER7_CPU) +=3D $(call cc-option,-mcpu=3Dpower7)
->=20
-> +# Altivec and Spe options not allowed with e500mc64 in GCC.
-> +ifeq ($(CONFIG_ALTIVEC),)
->   E5500_CPU :=3D $(call cc-option,-mcpu=3De500mc64,-mcpu=3Dpowerpc64)
-> +else
-> +E5500_CPU :=3D -mcpu=3Dpowerpc64
-> +endif
->   CFLAGS-$(CONFIG_E5500_CPU) +=3D $(E5500_CPU)
->   CFLAGS-$(CONFIG_E6500_CPU) +=3D $(call cc-option,-mcpu=3De6500,$(E550=
-0_CPU))
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
 
-Reverse the if/else so it uses positive logic, and remove the irrelevant
-SPE from the comment, but otherwise I guess it's OK.
+Nevertheless I'd again like to express that I'm not that fond of of the
+increasing number of weak functions in the kernel.  In the old days
+things were such that when an a platform didn't provice a platform hook
+or enable a default hook function, one would get a build error - an
+unmistakable sign to the maintainer that something needs attention.
+Weak functions mean default functions may result in subtly incorrect
+operation.  Been there, got bitten.
 
--Scott
+  Ralf
