@@ -1,15 +1,16 @@
 Return-Path: <mpe@ellerman.id.au>
-Date: Thu, 21 Nov 2013 22:33:34 +1100
+Date: Thu, 21 Nov 2013 22:51:04 +1100
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] powerpc/signals: Mark VSX not saved with small contexts
-Message-ID: <20131121113333.GB15913@concordia>
-References: <1384924734-16722-1-git-send-email-mikey@neuling.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 2/9] pseries: Add H_SET_MODE to change exception endianness
+Message-ID: <20131121115104.GC15913@concordia>
+References: <1384946106-18200-1-git-send-email-anton@samba.org>
+ <1384946106-18200-3-git-send-email-anton@samba.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1384924734-16722-1-git-send-email-mikey@neuling.org>
-Cc: Carlos O'Donell <carlos@redhat.com>, Steve Best <sbest@us.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Haren Myneni <haren@linux.vnet.ibm.com>
+In-Reply-To: <1384946106-18200-3-git-send-email-anton@samba.org>
+Cc: rusty@rustcorp.com.au, Ulrich.Weigand@de.ibm.com, paulus@samba.org,
+ alistair@popple.id.au, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,83 +20,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 20, 2013 at 04:18:54PM +1100, Michael Neuling wrote:
-> The VSX MSR bit in the user context indicates if the context contains VSX
-> state.  Currently we set this when the process has touched VSX at any stage.
+On Wed, Nov 20, 2013 at 10:14:59PM +1100, Anton Blanchard wrote:
+> On little endian builds call H_SET_MODE so exceptions have the
+> correct endianness. We need to reset the endian during kexec
+> so do that in the MMU hashtable clear callback.
 > 
-> Unfortunately, if the user has not provided enough space to save the VSX state,
-> we can't save it but we currently still set the MSR VSX bit.
-> 
-> This patch changes this to clear the MSR VSX bit when the user doesn't provide
-> enough space.  This indicates that there is no valid VSX state in the user
-> context.
-> 
-> This is needed to support get/set/make/swapcontext for applications that use
-> VSX but only provide a small context.  For example, getcontext in glibc
-> provides a smaller context since the VSX registers don't need to be saved over
-> the glibc function call.  But since the program calling getcontext may have
-> used VSX, the kernel currently says the VSX state is valid when it's not.  If
-> the returned context is then used in setcontext (ie. a small context without
-> VSX but with MSR VSX set), the kernel will refuse the context.  This situation
-> has been reported by the glibc community.
-
-Broken since forever?
-
-> Tested-by: Haren Myneni <haren@linux.vnet.ibm.com>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Cc: stable@vger.kernel.org
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 > ---
->  arch/powerpc/kernel/signal_32.c | 10 +++++++++-
+>  arch/powerpc/include/asm/hvcall.h         |  2 ++
+>  arch/powerpc/include/asm/plpar_wrappers.h | 26 +++++++++++++++++++
+>  arch/powerpc/platforms/pseries/lpar.c     | 17 +++++++++++++
+>  arch/powerpc/platforms/pseries/setup.c    | 42 +++++++++++++++++++++++++++++++
+>  4 files changed, 87 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+> index 0c7f2bf..d8b600b 100644
+> --- a/arch/powerpc/include/asm/hvcall.h
+> +++ b/arch/powerpc/include/asm/hvcall.h
+> @@ -403,6 +403,8 @@ static inline unsigned long cmo_get_page_size(void)
+>  extern long pSeries_enable_reloc_on_exc(void);
+>  extern long pSeries_disable_reloc_on_exc(void);
+>  
+> +extern long pseries_big_endian_exceptions(void);
+> +
+>  #else
+>  
+>  #define pSeries_enable_reloc_on_exc()  do {} while (0)
+> diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+> index a63b045..12c32c5 100644
+> --- a/arch/powerpc/include/asm/plpar_wrappers.h
+> +++ b/arch/powerpc/include/asm/plpar_wrappers.h
+> @@ -287,6 +287,32 @@ static inline long disable_reloc_on_exceptions(void) {
+>  	return plpar_set_mode(0, 3, 0, 0);
+>  }
+>  
+> +/*
+> + * Take exceptions in big endian mode on this partition
+> + *
+> + * Note: this call has a partition wide scope and can take a while to complete.
+> + * If it returns H_LONG_BUSY_* it should be retried periodically until it
+> + * returns H_SUCCESS.
+> + */
+> +static inline long enable_big_endian_exceptions(void)
+> +{
+> +	/* mflags = 0: big endian exceptions */
+> +	return plpar_set_mode(0, 4, 0, 0);
+> +}
+> +
+> +/*
+> + * Take exceptions in little endian mode on this partition
+> + *
+> + * Note: this call has a partition wide scope and can take a while to complete.
+> + * If it returns H_LONG_BUSY_* it should be retried periodically until it
+> + * returns H_SUCCESS.
+> + */
+> +static inline long enable_little_endian_exceptions(void)
+> +{
+> +	/* mflags = 1: little endian exceptions */
+> +	return plpar_set_mode(1, 4, 0, 0);
+> +}
+> +
 
-What about the 64-bit code? I don't know the code but it appears at a glance to
-have the same bug.
+...
 
+> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+> index 1f97e2b..c1f1908 100644
+> --- a/arch/powerpc/platforms/pseries/setup.c
+> +++ b/arch/powerpc/platforms/pseries/setup.c
+> @@ -442,6 +442,32 @@ static void pSeries_machine_kexec(struct kimage *image)
+>  }
+>  #endif
 
-> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-> index 749778e..1844298 100644
-> --- a/arch/powerpc/kernel/signal_32.c
-> +++ b/arch/powerpc/kernel/signal_32.c
-> @@ -457,7 +457,15 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
->  		if (copy_vsx_to_user(&frame->mc_vsregs, current))
->  			return 1;
->  		msr |= MSR_VSX;
-> -	}
-> +	} else if (!ctx_has_vsx_region)
-> +		/*
-> +		 * With a small context structure we can't hold the VSX
-> +		 * registers, hence clear the MSR value to indicate the state
-> +		 * was not saved.
-> +		 */
-> +		msr &= ~MSR_VSX;
+Nit picking, but I'm not sure the enable_big/little_endian_exceptions()
+wrappers buy us much. And they mean you end up with essentially the same
+routine twice below:
+  
+> +#ifdef __LITTLE_ENDIAN__
+> +long pseries_big_endian_exceptions(void)
+> +{
+> +	long rc;
+> +
+> +	while (1) {
+> +		rc = enable_big_endian_exceptions();
+> +		if (!H_IS_LONG_BUSY(rc))
+> +			return rc;
+> +		mdelay(get_longbusy_msecs(rc));
+> +	}
+> +}
+> +
+> +static long pseries_little_endian_exceptions(void)
+> +{
+> +	long rc;
+> +
+> +	while (1) {
+> +		rc = enable_little_endian_exceptions();
+> +		if (!H_IS_LONG_BUSY(rc))
+> +			return rc;
+> +		mdelay(get_longbusy_msecs(rc));
+> +	}
+> +}
+> +#endif
 
-I think it'd be clearer if this was just the else case. The full context is:
+Whereas you could do:
 
-    if (current->thread.used_vsr && ctx_has_vsx_region) {
-            __giveup_vsx(current);
-            if (copy_vsx_to_user(&frame->mc_vsregs, current))
-                    return 1;
-            msr |= MSR_VSX;
-+   } else if (!ctx_has_vsx_region)
-+           /*
-+            * With a small context structure we can't hold the VSX
-+            * registers, hence clear the MSR value to indicate the state
-+            * was not saved.
-+            */
-+           msr &= ~MSR_VSX;
+static long pseries_big_endian_exceptions(bool big_endian)
+{
+	int mflags;
+	long rc;
 
-Which means if current->thread.user_vsr and ctx_has_vsx_region are both false
-we potentially leave MSR_VSX set in msr. I think it should be the case that
-MSR_VSX is only ever set if current->thread.used_vsr is true, so it should be
-OK in pratice, but it seems unnecessarily fragile.
+	mflags = big_endian ? 0 : 1;
 
-The logic should be "if we write VSX we set MSR_VSX, else we clear MSR_VSX", ie:
+	while (1) {
+		rc = plpar_set_mode(mflags, 4, 0, 0);
 
-    if (current->thread.used_vsr && ctx_has_vsx_region) {
-            __giveup_vsx(current);
-            if (copy_vsx_to_user(&frame->mc_vsregs, current))
-                    return 1;
-            msr |= MSR_VSX;
-    } else
-            msr &= ~MSR_VSX;
+		if (!H_IS_LONG_BUSY(rc))
+			return rc;
+		mdelay(get_longbusy_msecs(rc));
+	}
+}
+
+Perhaps pseries_big_endian_exceptions(false) looks a bit odd though ..
 
 cheers
