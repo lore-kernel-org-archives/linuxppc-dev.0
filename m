@@ -1,20 +1,21 @@
 Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E7C412C00E2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2013 22:59:47 +1100 (EST)
-Received: from mail68-co1 (localhost [127.0.0.1])	by mail68-co1-R.bigfish.com
- (Postfix) with ESMTP id 65D1B3E02AA	for
+ by ozlabs.org (Postfix) with ESMTPS id A04932C00EF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2013 22:59:48 +1100 (EST)
+Received: from mail88-am1 (localhost [127.0.0.1])	by mail88-am1-R.bigfish.com
+ (Postfix) with ESMTP id 500E11E0252	for
  <linuxppc-dev@lists.ozlabs.org>; Fri,
- 22 Nov 2013 11:59:43 +0000 (UTC)
+ 22 Nov 2013 11:59:42 +0000 (UTC)
 From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 3/4 v2] powerpc/fsl-booke: Add initial T208x QDS board support
-Date: Fri, 22 Nov 2013 19:12:51 +0800
-Message-ID: <1385118772-15126-3-git-send-email-Shengzhou.Liu@freescale.com>
+Subject: [PATCH 2/4 v2] powerpc/fsl-booke: Add initial device tree support for
+ T2080/T2081
+Date: Fri, 22 Nov 2013 19:12:50 +0800
+Message-ID: <1385118772-15126-2-git-send-email-Shengzhou.Liu@freescale.com>
 In-Reply-To: <1385118772-15126-1-git-send-email-Shengzhou.Liu@freescale.com>
 References: <1385118772-15126-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
@@ -29,83 +30,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for Freescale T2080/T2081 QDS Development System Board.
-T2081QDS board shares the same PCB with T1040QDS with some differences.
+Add initial device tree for T2080/T2081 without DPAA components.
 
-The T2080QDS Development System is a high-performance computing,
-evaluation, and development platform that supports T2080 QorIQ
-Power Architecture processor, with following major features:
+The T2080 SoC includes the following function and features:
+- Four dual-threaded 64-bit Power architecture e6500 cores, up to 1.8GHz
+- 2MB L2 cache and 512KB CoreNet platform cache (CPC)
+- Hierarchical interconnect fabric
+- One 32-/64-bit DDR3/3L SDRAM memory controllers with ECC and interleaving
+- Data Path Acceleration Architecture (DPAA) incorporating acceleration
+- 16 SerDes lanes up to 10.3125 GHz
+- 8 Ethernet interfaces (multiple 1G/2.5G/10G MACs)
+- High-speed peripheral interfaces
+  - Four PCI Express controllers (two PCIe 2.0 and two PCIe 3.0)
+  - Two Serial RapidIO 2.0 controllers/ports running at up to 5 GHz
+- Additional peripheral interfaces
+  - Two serial ATA (SATA 2.0) controllers
+  - Two high-speed USB 2.0 controllers with integrated PHY
+  - Enhanced secure digital host controller (SD/SDXC/eMMC)
+  - Enhanced serial peripheral interface (eSPI)
+  - Four I2C controllers
+  - Four 2-pin UARTs or two 4-pin UARTs
+  - Integrated Flash Controller supporting NAND and NOR flash
+- Three eight-channel DMA engines
+- Support for hardware virtualization and partitioning enforcement
+- QorIQ Platform's Trust Architecture 2.0
 
-T2080QDS feature overview:
-Processor:
- - T2080 SoC integrating four 64-bit dual-threads e6500 cores up to 1.8GHz
-Memory:
- - Single memory controller capable of supporting DDR3 and DDR3-LV devices
- - Two DDR3 memory, 4GB, Dual rank @ 1866 Mbps data rate, and ECC support
-Ethernet interfaces:
- - Two 1Gbps RGMII on-board ports
- - Four 10Gbps XFI on-board cages
- - 1Gbps/2.5Gbps SGMII Riser card
- - 10Gbps XAUI Riser card
-Accelerator:
- - DPAA components consist of FMan, BMan, QMan, PME, DCE and SEC
-SerDes:
- - 16 lanes up to 10.3125GHz
- - Supports Aurora debug, PEX, SATA, SGMII, sRIO, HiGig, XFI and XAUI
-IFC:
- - 128MB NOR Flash, 512MB NAND Flash, PromJet debug port and FPGA
-eSPI:
- - Three SPI flash (16MB N25Q128A + 16MB EN25S64 + 512KB SST25WF040)
-USB:
- - Two USB2.0 ports with internal PHY (one Type-A + one micro Type-AB)
-PCIE:
- - Four PCI Express controllers (two PCIe 2.0 and two PCIe 3.0)
-SATA:
- - Two SATA 2.0 ports on-board
-SRIO:
- - Two Serial RapidIO 2.0 ports up to 5 GHz
-eSDHC:
- - Supports SD/MMC/eMMC Card
-DMA:
- - Three 8-channels DMA controllers
-I2C:
- - Four I2C controllers.
-UART:
- - Dual 4-pins UART serial ports
-System Logic:
- - QIXIS-II FPGA system controll
-
-Differences between T2080 and T2081:
-  Feature               T2080 T2081
-  1G Ethernet numbers:  8     6
-  10G Ethernet numbers: 4     2
-  SerDes lanes:         16    8
-  Serial RapidIO,RMan:  2     no
-  SATA Controller:      2     no
-  Aurora:               yes   no
-  SoC Package:          896-pins 780-pins
+T2081 personality is a reduced personality of T2080 without SATA, sRIO, RMan,
+Aurora, and with less SerDes lanes and ethernet interfaces.
 
 Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 ---
-v2: separate patches per board-related.
+v2: separate patches per silicon-related.
 
- arch/powerpc/boot/dts/t2080qds.dts  |  57 ++++++++
- arch/powerpc/boot/dts/t2081qds.dts  |  46 +++++++
- arch/powerpc/boot/dts/t208xqds.dtsi | 259 ++++++++++++++++++++++++++++++++++++
- arch/powerpc/include/asm/mpc85xx.h  |   2 +
- 4 files changed, 364 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/t2080qds.dts
- create mode 100644 arch/powerpc/boot/dts/t2081qds.dts
- create mode 100644 arch/powerpc/boot/dts/t208xqds.dtsi
+ arch/powerpc/boot/dts/fsl/t2080si-post.dtsi | 406 ++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/t2081si-post.dtsi | 384 ++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi  | 100 +++++++
+ 3 files changed, 890 insertions(+)
+ create mode 100644 arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
 
-diff --git a/arch/powerpc/boot/dts/t2080qds.dts b/arch/powerpc/boot/dts/t2080qds.dts
+diff --git a/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
 new file mode 100644
-index 0000000..aa1d6d8
+index 0000000..be3d8de
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/t2080qds.dts
-@@ -0,0 +1,57 @@
++++ b/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
+@@ -0,0 +1,406 @@
 +/*
-+ * T2080QDS Device Tree Source
++ * T2080 Silicon/SoC Device Tree Source (post include)
 + *
 + * Copyright 2013 Freescale Semiconductor Inc.
 + *
@@ -138,37 +110,386 @@ index 0000000..aa1d6d8
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+/include/ "fsl/t208xsi-pre.dtsi"
-+/include/ "t208xqds.dtsi"
-+
-+/ {
-+	model = "fsl,T2080QDS";
-+	compatible = "fsl,T2080QDS";
++&ifc {
 +	#address-cells = <2>;
++	#size-cells = <1>;
++	compatible = "fsl,ifc", "simple-bus";
++	interrupts = <25 2 0 0>;
++};
++
++/* controller at 0x240000 */
++&pci0 {
++	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
++	device_type = "pci";
 +	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	rio: rapidio@ffe0c0000 {
-+		reg = <0xf 0xfe0c0000 0 0x11000>;
-+
-+		port1 {
-+			ranges = <0 0 0xc 0x20000000 0 0x10000000>;
-+		};
-+		port2 {
-+			ranges = <0 0 0xc 0x30000000 0 0x10000000>;
-+		};
++	#address-cells = <3>;
++	bus-range = <0x0 0xff>;
++	interrupts = <20 2 0 0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <20 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 40 1 0 0
++			0000 0 0 2 &mpic 1 1 0 0
++			0000 0 0 3 &mpic 2 1 0 0
++			0000 0 0 4 &mpic 3 1 0 0
++			>;
 +	};
 +};
 +
-+/include/ "fsl/t2080si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/t2081qds.dts b/arch/powerpc/boot/dts/t2081qds.dts
++/* controller at 0x250000 */
++&pci1 {
++	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0 0xff>;
++	interrupts = <21 2 0 0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <21 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 41 1 0 0
++			0000 0 0 2 &mpic 5 1 0 0
++			0000 0 0 3 &mpic 6 1 0 0
++			0000 0 0 4 &mpic 7 1 0 0
++			>;
++	};
++};
++
++/* controller at 0x260000 */
++&pci2 {
++	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0x0 0xff>;
++	interrupts = <22 2 0 0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <22 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 42 1 0 0
++			0000 0 0 2 &mpic 9 1 0 0
++			0000 0 0 3 &mpic 10 1 0 0
++			0000 0 0 4 &mpic 11 1 0 0
++			>;
++	};
++};
++
++/* controller at 0x270000 */
++&pci3 {
++	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0x0 0xff>;
++	interrupts = <23 2 0 0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <23 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 43 1 0 0
++			0000 0 0 2 &mpic 0 1 0 0
++			0000 0 0 3 &mpic 4 1 0 0
++			0000 0 0 4 &mpic 8 1 0 0
++			>;
++	};
++};
++
++&rio {
++	compatible = "fsl,srio";
++	interrupts = <16 2 1 11>;
++	#address-cells = <2>;
++	#size-cells = <2>;
++	ranges;
++
++	port1 {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		cell-index = <1>;
++	};
++
++	port2 {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		cell-index = <2>;
++	};
++};
++
++&dcsr {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	compatible = "fsl,dcsr", "simple-bus";
++
++	dcsr-epu@0 {
++		compatible = "fsl,t2080-dcsr-epu", "fsl,dcsr-epu";
++		interrupts = <52 2 0 0
++			      84 2 0 0
++			      85 2 0 0
++			      94 2 0 0
++			      95 2 0 0>;
++		reg = <0x0 0x1000>;
++	};
++	dcsr-npc {
++		compatible = "fsl,t2080-dcsr-cnpc", "fsl,dcsr-cnpc";
++		reg = <0x1000 0x1000 0x1002000 0x10000>;
++	};
++	dcsr-nxc@2000 {
++		compatible = "fsl,dcsr-nxc";
++		reg = <0x2000 0x1000>;
++	};
++	dcsr-corenet {
++		compatible = "fsl,dcsr-corenet";
++		reg = <0x8000 0x1000 0x1A000 0x1000>;
++	};
++	dcsr-ocn@11000 {
++		compatible = "fsl,t2080-dcsr-ocn", "fsl,dcsr-ocn";
++		reg = <0x11000 0x1000>;
++	};
++	dcsr-ddr@12000 {
++		compatible = "fsl,dcsr-ddr";
++		dev-handle = <&ddr1>;
++		reg = <0x12000 0x1000>;
++	};
++	dcsr-nal@18000 {
++		compatible = "fsl,t2080-dcsr-nal", "fsl,dcsr-nal";
++		reg = <0x18000 0x1000>;
++	};
++	dcsr-rcpm@22000 {
++		compatible = "fsl,t2080-dcsr-rcpm", "fsl,dcsr-rcpm";
++		reg = <0x22000 0x1000>;
++	};
++	dcsr-snpc@30000 {
++		compatible = "fsl,t2080-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x30000 0x1000 0x1022000 0x10000>;
++	};
++	dcsr-snpc@31000 {
++		compatible = "fsl,t2080-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x31000 0x1000 0x1042000 0x10000>;
++	};
++	dcsr-snpc@32000 {
++		compatible = "fsl,t2080-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x32000 0x1000 0x1062000 0x10000>;
++	};
++	dcsr-cpu-sb-proxy@100000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu0>;
++		reg = <0x100000 0x1000 0x101000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@108000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu1>;
++		reg = <0x108000 0x1000 0x109000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@110000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu2>;
++		reg = <0x110000 0x1000 0x111000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@118000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu3>;
++		reg = <0x118000 0x1000 0x119000 0x1000>;
++	};
++};
++
++&soc {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	device_type = "soc";
++	compatible = "simple-bus";
++
++	soc-sram-error {
++		compatible = "fsl,soc-sram-error";
++		interrupts = <16 2 1 29>;
++	};
++
++	corenet-law@0 {
++		compatible = "fsl,corenet-law";
++		reg = <0x0 0x1000>;
++		fsl,num-laws = <32>;
++	};
++
++	ddr1: memory-controller@8000 {
++		compatible = "fsl,qoriq-memory-controller-v4.7",
++				"fsl,qoriq-memory-controller";
++		reg = <0x8000 0x1000>;
++		interrupts = <16 2 1 23>;
++	};
++
++	cpc: l3-cache-controller@10000 {
++		compatible = "fsl,t2080-l3-cache-controller", "cache";
++		reg = <0x10000 0x1000
++		       0x11000 0x1000
++		       0x12000 0x1000>;
++		interrupts = <16 2 1 27
++			      16 2 1 26
++			      16 2 1 25>;
++	};
++
++	corenet-cf@18000 {
++		compatible = "fsl,corenet2-cf";
++		reg = <0x18000 0x1000>;
++		interrupts = <16 2 1 31>;
++		fsl,ccf-num-csdids = <32>;
++		fsl,ccf-num-snoopids = <32>;
++	};
++
++	iommu@20000 {
++		compatible = "fsl,pamu-v1.0", "fsl,pamu";
++		reg = <0x20000 0x6000>;
++		interrupts = <
++			24 2 0 0
++			16 2 1 30>;
++	};
++
++/include/ "qoriq-mpic.dtsi"
++
++	guts: global-utilities@e0000 {
++		compatible = "fsl,t2080-device-config", "fsl,qoriq-device-config-2.0";
++		reg = <0xe0000 0xe00>;
++		fsl,has-rstcr;
++		fsl,liodn-bits = <12>;
++	};
++
++	clockgen: global-utilities@e1000 {
++		compatible = "fsl,t2080-clockgen", "fsl,qoriq-clockgen-2.0",
++				   "fixed-clock";
++		reg = <0xe1000 0x1000>;
++		clock-output-names = "sysclk";
++		#clock-cells = <0>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		pll0: pll0@800 {
++			#clock-cells = <1>;
++			reg = <0x800>;
++			compatible = "fsl,core-pll-clock";
++			clocks = <&clockgen>;
++			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
++		};
++		pll1: pll1@820 {
++			#clock-cells = <1>;
++			reg = <0x820>;
++			compatible = "fsl,core-pll-clock";
++			clocks = <&clockgen>;
++			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
++		};
++		mux0: mux0@0 {
++			#clock-cells = <0>;
++			reg = <0x0>;
++			compatible = "fsl,core-mux-clock";
++			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
++				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
++			clock-names = "pll0_0", "pll0_1", "pll0_2",
++				      "pll1_0", "pll1_1", "pll1_2";
++			clock-output-names = "cmux0";
++		};
++		mux1: mux1@20 {
++			#clock-cells = <0>;
++			reg = <0x20>;
++			compatible = "fsl,core-mux-clock";
++			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
++				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
++			clock-names = "pll0_0", "pll0_1", "pll0_2",
++				      "pll1_0", "pll1_1", "pll1_2";
++			clock-output-names = "cmux1";
++		};
++	};
++
++	rcpm: global-utilities@e2000 {
++		compatible = "fsl,t2080-rcpm", "fsl,qoriq-rcpm-2.0";
++		reg = <0xe2000 0x1000>;
++	};
++
++	sfp: sfp@e8000 {
++		compatible = "fsl,t2080-sfp";
++		reg = <0xe8000 0x1000>;
++	};
++
++	serdes: serdes@ea000 {
++		compatible = "fsl,t2080-serdes";
++		reg = <0xea000 0x4000>;
++	};
++
++/include/ "elo3-dma-0.dtsi"
++/include/ "elo3-dma-1.dtsi"
++/include/ "elo3-dma-2.dtsi"
++
++/include/ "qoriq-espi-0.dtsi"
++	spi@110000 {
++		fsl,espi-num-chipselects = <4>;
++	};
++
++/include/ "qoriq-esdhc-0.dtsi"
++	sdhc@114000 {
++		compatible = "fsl,t2080-esdhc", "fsl,esdhc";
++		sdhci,auto-cmd12;
++	};
++/include/ "qoriq-i2c-0.dtsi"
++/include/ "qoriq-i2c-1.dtsi"
++/include/ "qoriq-duart-0.dtsi"
++/include/ "qoriq-duart-1.dtsi"
++/include/ "qoriq-gpio-0.dtsi"
++/include/ "qoriq-gpio-1.dtsi"
++/include/ "qoriq-gpio-2.dtsi"
++/include/ "qoriq-gpio-3.dtsi"
++/include/ "qoriq-usb2-mph-0.dtsi"
++	usb0: usb@210000 {
++		compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
++		phy_type = "utmi";
++		port0;
++	};
++/include/ "qoriq-usb2-dr-0.dtsi"
++	usb1: usb@211000 {
++		compatible = "fsl-usb2-dr-v2.4", "fsl-usb2-dr";
++		dr_mode = "host";
++		phy_type = "utmi";
++	};
++/include/ "qoriq-sata2-0.dtsi"
++/include/ "qoriq-sata2-1.dtsi"
++/include/ "qoriq-sec5.2-0.dtsi"
++
++	L2_1: l2-cache-controller@c20000 {
++		/* Cluster 0 L2 cache */
++		compatible = "fsl,t2080-l2-cache-controller";
++		reg = <0xc20000 0x40000>;
++		next-level-cache = <&cpc>;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
 new file mode 100644
-index 0000000..8ec80a7
+index 0000000..1bd1bb7
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/t2081qds.dts
-@@ -0,0 +1,46 @@
++++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+@@ -0,0 +1,384 @@
 +/*
-+ * T2081QDS Device Tree Source
++ * T2081 Silicon/SoC Device Tree Source (post include)
 + *
 + * Copyright 2013 Freescale Semiconductor Inc.
 + *
@@ -201,26 +522,364 @@ index 0000000..8ec80a7
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+/include/ "fsl/t208xsi-pre.dtsi"
-+/include/ "t208xqds.dtsi"
-+
-+/ {
-+	model = "fsl,T2081QDS";
-+	compatible = "fsl,T2081QDS";
++&ifc {
 +	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
++	#size-cells = <1>;
++	compatible = "fsl,ifc", "simple-bus";
++	interrupts = <25 2 0 0>;
 +};
 +
-+/include/ "fsl/t2081si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/t208xqds.dtsi b/arch/powerpc/boot/dts/t208xqds.dtsi
++/* controller at 0x240000 */
++&pci0 {
++	compatible = "fsl,t2081-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0x0 0xff>;
++	interrupts = <20 2 0 0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <20 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 40 1 0 0
++			0000 0 0 2 &mpic 1 1 0 0
++			0000 0 0 3 &mpic 2 1 0 0
++			0000 0 0 4 &mpic 3 1 0 0
++			>;
++	};
++};
++
++/* controller at 0x250000 */
++&pci1 {
++	compatible = "fsl,t2081-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0 0xff>;
++	interrupts = <21 2 0 0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <21 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 41 1 0 0
++			0000 0 0 2 &mpic 5 1 0 0
++			0000 0 0 3 &mpic 6 1 0 0
++			0000 0 0 4 &mpic 7 1 0 0
++			>;
++	};
++};
++
++/* controller at 0x260000 */
++&pci2 {
++	compatible = "fsl,t2081-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0x0 0xff>;
++	interrupts = <22 2 0 0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <22 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 42 1 0 0
++			0000 0 0 2 &mpic 9 1 0 0
++			0000 0 0 3 &mpic 10 1 0 0
++			0000 0 0 4 &mpic 11 1 0 0
++			>;
++	};
++};
++
++/* controller at 0x270000 */
++&pci3 {
++	compatible = "fsl,t2081-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0x0 0xff>;
++	interrupts = <23 2 0 0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <23 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 43 1 0 0
++			0000 0 0 2 &mpic 0 1 0 0
++			0000 0 0 3 &mpic 4 1 0 0
++			0000 0 0 4 &mpic 8 1 0 0
++			>;
++	};
++};
++
++&dcsr {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	compatible = "fsl,dcsr", "simple-bus";
++
++	dcsr-epu@0 {
++		compatible = "fsl,t2081-dcsr-epu", "fsl,dcsr-epu";
++		interrupts = <52 2 0 0
++			      84 2 0 0
++			      85 2 0 0
++			      94 2 0 0
++			      95 2 0 0>;
++		reg = <0x0 0x1000>;
++	};
++	dcsr-npc {
++		compatible = "fsl,t2081-dcsr-cnpc", "fsl,dcsr-cnpc";
++		reg = <0x1000 0x1000 0x1002000 0x10000>;
++	};
++	dcsr-nxc@2000 {
++		compatible = "fsl,dcsr-nxc";
++		reg = <0x2000 0x1000>;
++	};
++	dcsr-corenet {
++		compatible = "fsl,dcsr-corenet";
++		reg = <0x8000 0x1000 0x1A000 0x1000>;
++	};
++	dcsr-ocn@11000 {
++		compatible = "fsl,t2081-dcsr-ocn", "fsl,dcsr-ocn";
++		reg = <0x11000 0x1000>;
++	};
++	dcsr-ddr@12000 {
++		compatible = "fsl,dcsr-ddr";
++		dev-handle = <&ddr1>;
++		reg = <0x12000 0x1000>;
++	};
++	dcsr-nal@18000 {
++		compatible = "fsl,t2081-dcsr-nal", "fsl,dcsr-nal";
++		reg = <0x18000 0x1000>;
++	};
++	dcsr-rcpm@22000 {
++		compatible = "fsl,t2081-dcsr-rcpm", "fsl,dcsr-rcpm";
++		reg = <0x22000 0x1000>;
++	};
++	dcsr-snpc@30000 {
++		compatible = "fsl,t2081-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x30000 0x1000 0x1022000 0x10000>;
++	};
++	dcsr-snpc@31000 {
++		compatible = "fsl,t2081-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x31000 0x1000 0x1042000 0x10000>;
++	};
++	dcsr-snpc@32000 {
++		compatible = "fsl,t2081-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x32000 0x1000 0x1062000 0x10000>;
++	};
++	dcsr-cpu-sb-proxy@100000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu0>;
++		reg = <0x100000 0x1000 0x101000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@108000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu1>;
++		reg = <0x108000 0x1000 0x109000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@110000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu2>;
++		reg = <0x110000 0x1000 0x111000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@118000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu3>;
++		reg = <0x118000 0x1000 0x119000 0x1000>;
++	};
++};
++
++&soc {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	device_type = "soc";
++	compatible = "simple-bus";
++
++	soc-sram-error {
++		compatible = "fsl,soc-sram-error";
++		interrupts = <16 2 1 29>;
++	};
++
++	corenet-law@0 {
++		compatible = "fsl,corenet-law";
++		reg = <0x0 0x1000>;
++		fsl,num-laws = <32>;
++	};
++
++	ddr1: memory-controller@8000 {
++		compatible = "fsl,qoriq-memory-controller-v4.7",
++				"fsl,qoriq-memory-controller";
++		reg = <0x8000 0x1000>;
++		interrupts = <16 2 1 23>;
++	};
++
++	cpc: l3-cache-controller@10000 {
++		compatible = "fsl,t2081-l3-cache-controller", "cache";
++		reg = <0x10000 0x1000
++		       0x11000 0x1000
++		       0x12000 0x1000>;
++		interrupts = <16 2 1 27
++			      16 2 1 26
++			      16 2 1 25>;
++	};
++
++	corenet-cf@18000 {
++		compatible = "fsl,corenet2-cf";
++		reg = <0x18000 0x1000>;
++		interrupts = <16 2 1 31>;
++		fsl,ccf-num-csdids = <32>;
++		fsl,ccf-num-snoopids = <32>;
++	};
++
++	iommu@20000 {
++		compatible = "fsl,pamu-v1.0", "fsl,pamu";
++		reg = <0x20000 0x6000>;
++		interrupts = <
++			24 2 0 0
++			16 2 1 30>;
++	};
++
++/include/ "qoriq-mpic.dtsi"
++
++	guts: global-utilities@e0000 {
++		compatible = "fsl,t2081-device-config", "fsl,qoriq-device-config-2.0";
++		reg = <0xe0000 0xe00>;
++		fsl,has-rstcr;
++		fsl,liodn-bits = <12>;
++	};
++
++	clockgen: global-utilities@e1000 {
++		compatible = "fsl,t2081-clockgen", "fsl,qoriq-clockgen-2.0",
++				   "fixed-clock";
++		reg = <0xe1000 0x1000>;
++		clock-output-names = "sysclk";
++		#clock-cells = <0>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		pll0: pll0@800 {
++			#clock-cells = <1>;
++			reg = <0x800>;
++			compatible = "fsl,core-pll-clock";
++			clocks = <&clockgen>;
++			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
++		};
++		pll1: pll1@820 {
++			#clock-cells = <1>;
++			reg = <0x820>;
++			compatible = "fsl,core-pll-clock";
++			clocks = <&clockgen>;
++			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
++		};
++		mux0: mux0@0 {
++			#clock-cells = <0>;
++			reg = <0x0>;
++			compatible = "fsl,core-mux-clock";
++			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
++				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
++			clock-names = "pll0_0", "pll0_1", "pll0_2",
++				      "pll1_0", "pll1_1", "pll1_2";
++			clock-output-names = "cmux0";
++		};
++		mux1: mux1@20 {
++			#clock-cells = <0>;
++			reg = <0x20>;
++			compatible = "fsl,core-mux-clock";
++			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
++				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
++			clock-names = "pll0_0", "pll0_1", "pll0_2",
++				      "pll1_0", "pll1_1", "pll1_2";
++			clock-output-names = "cmux1";
++		};
++	};
++
++	rcpm: global-utilities@e2000 {
++		compatible = "fsl,t2081-rcpm", "fsl,qoriq-rcpm-2.0";
++		reg = <0xe2000 0x1000>;
++	};
++
++	sfp: sfp@e8000 {
++		compatible = "fsl,t2081-sfp";
++		reg = <0xe8000 0x1000>;
++	};
++
++	serdes: serdes@ea000 {
++		compatible = "fsl,t2081-serdes";
++		reg = <0xea000 0x4000>;
++	};
++
++/include/ "elo3-dma-0.dtsi"
++/include/ "elo3-dma-1.dtsi"
++/include/ "elo3-dma-2.dtsi"
++
++/include/ "qoriq-espi-0.dtsi"
++	spi@110000 {
++		fsl,espi-num-chipselects = <4>;
++	};
++
++/include/ "qoriq-esdhc-0.dtsi"
++	sdhc@114000 {
++		compatible = "fsl,t2081-esdhc", "fsl,esdhc";
++		sdhci,auto-cmd12;
++	};
++/include/ "qoriq-i2c-0.dtsi"
++/include/ "qoriq-i2c-1.dtsi"
++/include/ "qoriq-duart-0.dtsi"
++/include/ "qoriq-duart-1.dtsi"
++/include/ "qoriq-gpio-0.dtsi"
++/include/ "qoriq-gpio-1.dtsi"
++/include/ "qoriq-gpio-2.dtsi"
++/include/ "qoriq-gpio-3.dtsi"
++/include/ "qoriq-usb2-mph-0.dtsi"
++	usb0: usb@210000 {
++		compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
++		phy_type = "utmi";
++		port0;
++	};
++/include/ "qoriq-usb2-dr-0.dtsi"
++	usb1: usb@211000 {
++		compatible = "fsl-usb2-dr-v2.4", "fsl-usb2-dr";
++		dr_mode = "host";
++		phy_type = "utmi";
++	};
++/include/ "qoriq-sec5.2-0.dtsi"
++
++	L2_1: l2-cache-controller@c20000 {
++		/* Cluster 0 L2 cache */
++		compatible = "fsl,t2081-l2-cache-controller";
++		reg = <0xc20000 0x40000>;
++		next-level-cache = <&cpc>;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
 new file mode 100644
-index 0000000..e5d5930
+index 0000000..1e5d1a4
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/t208xqds.dtsi
-@@ -0,0 +1,259 @@
++++ b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
+@@ -0,0 +1,100 @@
 +/*
-+ * T2080/T2081 QDS Device Tree Source
++ * T2080/T2081 Silicon/SoC Device Tree Source (pre include)
 + *
 + * Copyright 2013 Freescale Semiconductor Inc.
 + *
@@ -253,243 +912,71 @@ index 0000000..e5d5930
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
++/dts-v1/;
++
++/include/ "e6500_power_isa.dtsi"
++
 +/ {
-+	model = "fsl,T2080QDS";
-+	compatible = "fsl,T2080QDS";
 +	#address-cells = <2>;
 +	#size-cells = <2>;
 +	interrupt-parent = <&mpic>;
 +
-+	ifc: localbus@ffe124000 {
-+		reg = <0xf 0xfe124000 0 0x2000>;
-+		ranges = <0 0 0xf 0xe8000000 0x08000000
-+			  2 0 0xf 0xff800000 0x00010000
-+			  3 0 0xf 0xffdf0000 0x00008000>;
++	aliases {
++		ccsr = &soc;
++		dcsr = &dcsr;
 +
-+		nor@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <0x0 0x0 0x8000000>;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		serial2 = &serial2;
++		serial3 = &serial3;
 +
-+			bank-width = <2>;
-+			device-width = <1>;
-+		};
-+
-+		nand@2,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,ifc-nand";
-+			reg = <0x2 0x0 0x10000>;
-+
-+			partition@0 {
-+				/* This location must not be altered  */
-+				/* 1MB for u-boot Bootloader Image */
-+				reg = <0x0 0x00100000>;
-+				label = "NAND U-Boot Image";
-+				read-only;
-+			};
-+
-+			partition@100000 {
-+				/* 1MB for DTB Image */
-+				reg = <0x00100000 0x00100000>;
-+				label = "NAND DTB Image";
-+			};
-+
-+			partition@200000 {
-+				/* 10MB for Linux Kernel Image */
-+				reg = <0x00200000 0x00A00000>;
-+				label = "NAND Linux Kernel Image";
-+			};
-+
-+			partition@C00000 {
-+				/* 500MB for Root file System Image */
-+				reg = <0x00c00000 0x1F400000>;
-+				label = "NAND RFS Image";
-+			};
-+		};
-+
-+		boardctrl: board-control@3,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,paragon-fpga", "fsl,fpga-qixis";
-+			reg = <3 0 0x300>;
-+			ranges = <0 3 0 0x300>;
-+		};
++		crypto = &crypto;
++		pci0 = &pci0;
++		pci1 = &pci1;
++		pci2 = &pci2;
++		pci3 = &pci3;
++		usb0 = &usb0;
++		usb1 = &usb1;
++		dma0 = &dma0;
++		dma1 = &dma1;
++		dma2 = &dma2;
++		sdhc = &sdhc;
 +	};
 +
-+	memory {
-+		device_type = "memory";
-+	};
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+	dcsr: dcsr@f00000000 {
-+		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
-+	};
-+
-+	soc: soc@ffe000000 {
-+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-+		reg = <0xf 0xfe000000 0 0x00001000>;
-+		spi@110000 {
-+			flash@0 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				compatible = "spansion,s25sl12801";
-+				reg = <0>;
-+				spi-max-frequency = <40000000>; /* input clock */
-+				partition@u-boot {
-+					label = "SPI U-Boot";
-+					reg = <0x00000000 0x00100000>;
-+					read-only;
-+				};
-+				partition@kernel {
-+					label = "SPI Kernel";
-+					reg = <0x00100000 0x00500000>;
-+					read-only;
-+				};
-+				partition@dtb {
-+					label = "SPI DTB";
-+					reg = <0x00600000 0x00100000>;
-+					read-only;
-+				};
-+				partition@fs {
-+					label = "SPI File System";
-+					reg = <0x00700000 0x00900000>;
-+				};
-+			};
-+
-+			flash@1 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				compatible = "sst,sst25wf040";
-+				reg = <1>;
-+				spi-max-frequency = <40000000>; /* input clock */
-+			};
++		/*
++		 * Temporarily add next-level-cache info in each cpu node so
++		 * that uboot can do L2 cache fixup. This can be removed once
++		 * u-boot can create cpu node with cache info.
++		 */
++		cpu0: PowerPC,e6500@0 {
++			device_type = "cpu";
++			reg = <0 1>;
++			clocks = <&mux0>;
++			next-level-cache = <&L2_1>;
 +		};
-+
-+		i2c@118000 {
-+			pca9547@77 {
-+				compatible = "nxp,pca9547";
-+				reg = <0x77>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+
-+				i2c@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0x0>;
-+
-+					eeprom@50 {
-+						compatible = "at24,24c256";
-+						reg = <0x50>;
-+					};
-+
-+					eeprom@51 {
-+						compatible = "at24,24c02";
-+						reg = <0x51>;
-+					};
-+
-+					eeprom@57 {
-+						compatible = "at24,24c02";
-+						reg = <0x57>;
-+					};
-+
-+					rtc@68 {
-+						compatible = "dallas,ds3232";
-+						reg = <0x68>;
-+						interrupts = <0x1 0x1 0 0>;
-+					};
-+				};
-+
-+				i2c@1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0x1>;
-+
-+					eeprom@55 {
-+						compatible = "at24,24c02";
-+						reg = <0x55>;
-+					};
-+				};
-+			};
++		cpu1: PowerPC,e6500@2 {
++			device_type = "cpu";
++			reg = <2 3>;
++			clocks = <&mux0>;
++			next-level-cache = <&L2_1>;
 +		};
-+
-+		sdhc@114000 {
-+			voltage-ranges = <1800 1800 3300 3300>;
++		cpu2: PowerPC,e6500@4 {
++			device_type = "cpu";
++			reg = <4 5>;
++			clocks = <&mux0>;
++			next-level-cache = <&L2_1>;
 +		};
-+	};
-+
-+	pci0: pcie@ffe240000 {
-+		reg = <0xf 0xfe240000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x20000000
-+			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe250000 {
-+		reg = <0xf 0xfe250000 0 0x10000>;
-+		ranges = <0x02000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x10000000
-+			  0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci2: pcie@ffe260000 {
-+		reg = <0xf 0xfe260000 0 0x1000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x30000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci3: pcie@ffe270000 {
-+		reg = <0xf 0xfe270000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x40000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8030000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
++		cpu3: PowerPC,e6500@6 {
++			device_type = "cpu";
++			reg = <6 7>;
++			clocks = <&mux0>;
++			next-level-cache = <&L2_1>;
 +		};
 +	};
 +};
-diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
-index 736d4ac..3bef74a 100644
---- a/arch/powerpc/include/asm/mpc85xx.h
-+++ b/arch/powerpc/include/asm/mpc85xx.h
-@@ -77,6 +77,8 @@
- #define SVR_T1020	0x852100
- #define SVR_T1021	0x852101
- #define SVR_T1022	0x852102
-+#define SVR_T2080	0x853000
-+#define SVR_T2081	0x853100
- 
- #define SVR_8610	0x80A000
- #define SVR_8641	0x809000
 -- 
 1.8.0
