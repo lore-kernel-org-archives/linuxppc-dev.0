@@ -1,16 +1,17 @@
 Return-Path: <alistair@popple.id.au>
 Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
  [IPv6:2001:44b8:8060:ff02:300:1:6:4])
- by ozlabs.org (Postfix) with ESMTP id C328D2C049A
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Nov 2013 13:08:49 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id A1CD02C0354
+ for <linuxppc-dev@ozlabs.org>; Fri, 22 Nov 2013 13:08:51 +1100 (EST)
 From: Alistair Popple <alistair@popple.id.au>
 To: benh@kernel.crashing.org
-Subject: [PATCH 5/8] ECHI Platform: Merge ppc-of EHCI driver into the
- ehci-platform driver
-Date: Fri, 22 Nov 2013 13:08:33 +1100
-Message-Id: <1385086116-10972-5-git-send-email-alistair@popple.id.au>
+Subject: =?UTF-8?q?=5BPATCH=206/8=5D=20IBM=20Currituck=3A=20Clean=20up=20board=20specific=20code=20before=20adding=20Akebono=20code?=
+Date: Fri, 22 Nov 2013 13:08:34 +1100
+Message-Id: <1385086116-10972-6-git-send-email-alistair@popple.id.au>
 In-Reply-To: <1385086057-10884-1-git-send-email-alistair@popple.id.au>
 References: <1385086057-10884-1-git-send-email-alistair@popple.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org, Alistair Popple <alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,444 +22,613 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the ppc-of driver uses the compatibility string
-"usb-ehci". This means platforms that use device-tree and implement an
-EHCI compatible interface have to either use the ppc-of driver or add
-a compatible line to the ehci-platform driver. It would be more
-appropriate for the platform driver to be compatible with "usb-ehci"
-as non-powerpc platforms are also beginning to utilise device-tree.
+The IBM Akebono code uses the same initialisation functions as the
+earlier Currituck board. Rather than create a copy of this code for
+Akebono we will instead integrate support for it into the same file as
+the Currituck code.
 
-This patch merges the device tree property parsing from ehci-ppc-of
-into the platform driver and adds a "usb-ehci" compatibility
-string. The existing ehci-ppc-of driver is removed and the 440EPX
-specific quirks are added to the ehci-platform driver.
+This patch renames the board support file and updates the 476FPE PCI
+code to use a more generic name.
 
 Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- drivers/usb/host/Kconfig         |    7 +-
- drivers/usb/host/ehci-hcd.c      |    5 -
- drivers/usb/host/ehci-platform.c |   86 +++++++++++++-
- drivers/usb/host/ehci-ppc-of.c   |  236 --------------------------------------
- 4 files changed, 88 insertions(+), 246 deletions(-)
- delete mode 100644 drivers/usb/host/ehci-ppc-of.c
+ arch/powerpc/platforms/44x/Kconfig     |    4 +-
+ arch/powerpc/platforms/44x/Makefile    |    2 +-
+ arch/powerpc/platforms/44x/currituck.c |  233 --------------------------------
+ arch/powerpc/platforms/44x/ppc476.c    |  233 ++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/ppc4xx_pci.c       |   20 +--
+ arch/powerpc/sysdev/ppc4xx_pci.h       |    4 +-
+ 6 files changed, 248 insertions(+), 248 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/44x/currituck.c
+ create mode 100644 arch/powerpc/platforms/44x/ppc476.c
 
-diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-index b3f20d7..288fec1 100644
---- a/drivers/usb/host/Kconfig
-+++ b/drivers/usb/host/Kconfig
-@@ -189,12 +189,13 @@ config USB_EHCI_TEGRA
-          found in NVIDIA Tegra SoCs. The controllers are EHCI compliant.
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index d6c7506..156d474 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -194,7 +194,7 @@ config CURRITUCK
+ 	depends on PPC_47x
+ 	default n
+ 	select SWIOTLB
+-	select 476FPE
++	select 476
+ 	select PPC4xx_PCI_EXPRESS
+ 	help
+ 	  This option enables support for the IBM Currituck (476fpe) evaluation board
+@@ -314,7 +314,7 @@ config 460SX
+ 	select IBM_EMAC_ZMII
+ 	select IBM_EMAC_TAH
  
- config USB_EHCI_HCD_PPC_OF
--	bool "EHCI support for PPC USB controller on OF platform bus"
-+	bool "EHCI support for PPC USB controller on OF platform bus (DEPRECATED)"
- 	depends on PPC_OF
- 	default y
-+	select USB_EHCI_HCD_PLATFORM
- 	---help---
--	  Enables support for the USB controller present on the PowerPC
--	  OpenFirmware platform bus.
-+	  This option is deprecated now and the driver was removed, use
-+	  USB_EHCI_HCD_PLATFORM instead.
+-config 476FPE
++config 476
+ 	bool
+ 	select PPC_FPU
  
- config USB_EHCI_SH
- 	bool "EHCI support for SuperH USB controller"
-diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
-index 86ab9fd..d0f384a 100644
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -1228,11 +1228,6 @@ MODULE_LICENSE ("GPL");
- #define	PS3_SYSTEM_BUS_DRIVER	ps3_ehci_driver
- #endif
- 
--#ifdef CONFIG_USB_EHCI_HCD_PPC_OF
--#include "ehci-ppc-of.c"
--#define OF_PLATFORM_DRIVER	ehci_hcd_ppc_of_driver
--#endif
+diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
+index d03833a..f896b89 100644
+--- a/arch/powerpc/platforms/44x/Makefile
++++ b/arch/powerpc/platforms/44x/Makefile
+@@ -10,4 +10,4 @@ obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
+ obj-$(CONFIG_XILINX_ML510) += virtex_ml510.o
+ obj-$(CONFIG_ISS4xx)	+= iss4xx.o
+ obj-$(CONFIG_CANYONLANDS)+= canyonlands.o
+-obj-$(CONFIG_CURRITUCK)	+= currituck.o
++obj-$(CONFIG_CURRITUCK)	+= ppc476.o
+diff --git a/arch/powerpc/platforms/44x/currituck.c b/arch/powerpc/platforms/44x/currituck.c
+deleted file mode 100644
+index 7f1b71a..0000000
+--- a/arch/powerpc/platforms/44x/currituck.c
++++ /dev/null
+@@ -1,233 +0,0 @@
+-/*
+- * Currituck board specific routines
+- *
+- * Copyright © 2011 Tony Breeds IBM Corporation
+- *
+- * Based on earlier code:
+- *    Matt Porter <mporter@kernel.crashing.org>
+- *    Copyright 2002-2005 MontaVista Software Inc.
+- *
+- *    Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+- *    Copyright (c) 2003-2005 Zultys Technologies
+- *
+- *    Rewritten and ported to the merged powerpc tree:
+- *    Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
+- *    Copyright © 2011 David Kliekamp IBM Corporation
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
 -
- #ifdef CONFIG_XPS_USB_HCD_XILINX
- #include "ehci-xilinx-of.c"
- #define XILINX_OF_PLATFORM_DRIVER	ehci_hcd_xilinx_of_driver
-diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-platform.c
-index f6b790c..d9747fb 100644
---- a/drivers/usb/host/ehci-platform.c
-+++ b/drivers/usb/host/ehci-platform.c
-@@ -36,11 +36,33 @@
- 
- static const char hcd_name[] = "ehci-platform";
- 
+-#include <linux/init.h>
+-#include <linux/of.h>
+-#include <linux/of_platform.h>
+-#include <linux/rtc.h>
+-
+-#include <asm/machdep.h>
+-#include <asm/prom.h>
+-#include <asm/udbg.h>
+-#include <asm/time.h>
+-#include <asm/uic.h>
+-#include <asm/ppc4xx.h>
+-#include <asm/mpic.h>
+-#include <asm/mmu.h>
+-
+-#include <linux/pci.h>
+-
+-static __initdata struct of_device_id ppc47x_of_bus[] = {
+-	{ .compatible = "ibm,plb4", },
+-	{ .compatible = "ibm,plb6", },
+-	{ .compatible = "ibm,opb", },
+-	{ .compatible = "ibm,ebc", },
+-	{},
+-};
+-
+-/* The EEPROM is missing and the default values are bogus.  This forces USB in
+- * to EHCI mode */
+-static void quirk_ppc_currituck_usb_fixup(struct pci_dev *dev)
+-{
+-	if (of_machine_is_compatible("ibm,currituck")) {
+-		pci_write_config_dword(dev, 0xe0, 0x0114231f);
+-		pci_write_config_dword(dev, 0xe4, 0x00006c40);
+-	}
+-}
+-DECLARE_PCI_FIXUP_HEADER(0x1033, 0x0035, quirk_ppc_currituck_usb_fixup);
+-
+-static int __init ppc47x_device_probe(void)
+-{
+-	of_platform_bus_probe(NULL, ppc47x_of_bus, NULL);
+-
+-	return 0;
+-}
+-machine_device_initcall(ppc47x, ppc47x_device_probe);
+-
+-/* We can have either UICs or MPICs */
+-static void __init ppc47x_init_irq(void)
+-{
+-	struct device_node *np;
+-
+-	/* Find top level interrupt controller */
+-	for_each_node_with_property(np, "interrupt-controller") {
+-		if (of_get_property(np, "interrupts", NULL) == NULL)
+-			break;
+-	}
+-	if (np == NULL)
+-		panic("Can't find top level interrupt controller");
+-
+-	/* Check type and do appropriate initialization */
+-	if (of_device_is_compatible(np, "chrp,open-pic")) {
+-		/* The MPIC driver will get everything it needs from the
+-		 * device-tree, just pass 0 to all arguments
+-		 */
+-		struct mpic *mpic =
+-			mpic_alloc(np, 0, MPIC_NO_RESET, 0, 0, " MPIC     ");
+-		BUG_ON(mpic == NULL);
+-		mpic_init(mpic);
+-		ppc_md.get_irq = mpic_get_irq;
+-	} else
+-		panic("Unrecognized top level interrupt controller");
+-}
+-
+-#ifdef CONFIG_SMP
+-static void smp_ppc47x_setup_cpu(int cpu)
+-{
+-	mpic_setup_this_cpu();
+-}
+-
+-static int smp_ppc47x_kick_cpu(int cpu)
+-{
+-	struct device_node *cpunode = of_get_cpu_node(cpu, NULL);
+-	const u64 *spin_table_addr_prop;
+-	u32 *spin_table;
+-	extern void start_secondary_47x(void);
+-
+-	BUG_ON(cpunode == NULL);
+-
+-	/* Assume spin table. We could test for the enable-method in
+-	 * the device-tree but currently there's little point as it's
+-	 * our only supported method
+-	 */
+-	spin_table_addr_prop =
+-		of_get_property(cpunode, "cpu-release-addr", NULL);
+-
+-	if (spin_table_addr_prop == NULL) {
+-		pr_err("CPU%d: Can't start, missing cpu-release-addr !\n",
+-		       cpu);
+-		return 1;
+-	}
+-
+-	/* Assume it's mapped as part of the linear mapping. This is a bit
+-	 * fishy but will work fine for now
+-	 *
+-	 * XXX: Is there any reason to assume differently?
+-	 */
+-	spin_table = (u32 *)__va(*spin_table_addr_prop);
+-	pr_debug("CPU%d: Spin table mapped at %p\n", cpu, spin_table);
+-
+-	spin_table[3] = cpu;
+-	smp_wmb();
+-	spin_table[1] = __pa(start_secondary_47x);
+-	mb();
+-
+-	return 0;
+-}
+-
+-static struct smp_ops_t ppc47x_smp_ops = {
+-	.probe		= smp_mpic_probe,
+-	.message_pass	= smp_mpic_message_pass,
+-	.setup_cpu	= smp_ppc47x_setup_cpu,
+-	.kick_cpu	= smp_ppc47x_kick_cpu,
+-	.give_timebase	= smp_generic_give_timebase,
+-	.take_timebase	= smp_generic_take_timebase,
+-};
+-
+-static void __init ppc47x_smp_init(void)
+-{
+-	if (mmu_has_feature(MMU_FTR_TYPE_47x))
+-		smp_ops = &ppc47x_smp_ops;
+-}
+-
+-#else /* CONFIG_SMP */
+-static void __init ppc47x_smp_init(void) { }
+-#endif /* CONFIG_SMP */
+-
+-static void __init ppc47x_setup_arch(void)
+-{
+-
+-	/* No need to check the DMA config as we /know/ our windows are all of
+- 	 * RAM.  Lets hope that doesn't change */
+-	swiotlb_detect_4g();
+-
+-	ppc47x_smp_init();
+-}
+-
+-/*
+- * Called very early, MMU is off, device-tree isn't unflattened
+- */
+-static int __init ppc47x_probe(void)
+-{
+-	unsigned long root = of_get_flat_dt_root();
+-
+-	if (!of_flat_dt_is_compatible(root, "ibm,currituck"))
+-		return 0;
+-
+-	return 1;
+-}
+-
+-static int board_rev = -1;
+-static int __init ppc47x_get_board_rev(void)
+-{
+-	u8 fpga_reg0;
+-	void *fpga;
+-	struct device_node *np;
+-
+-	np = of_find_compatible_node(NULL, NULL, "ibm,currituck-fpga");
+-	if (!np)
+-		goto fail;
+-
+-	fpga = of_iomap(np, 0);
+-	of_node_put(np);
+-	if (!fpga)
+-		goto fail;
+-
+-	fpga_reg0 = ioread8(fpga);
+-	board_rev = fpga_reg0 & 0x03;
+-	pr_info("%s: Found board revision %d\n", __func__, board_rev);
+-	iounmap(fpga);
+-	return 0;
+-
+-fail:
+-	pr_info("%s: Unable to find board revision\n", __func__);
+-	return 0;
+-}
+-machine_arch_initcall(ppc47x, ppc47x_get_board_rev);
+-
+-/* Use USB controller should have been hardware swizzled but it wasn't :( */
+-static void ppc47x_pci_irq_fixup(struct pci_dev *dev)
+-{
+-	if (dev->vendor == 0x1033 && (dev->device == 0x0035 ||
+-	                              dev->device == 0x00e0)) {
+-		if (board_rev == 0) {
+-			dev->irq = irq_create_mapping(NULL, 47);
+-			pr_info("%s: Mapping irq %d\n", __func__, dev->irq);
+-		} else if (board_rev == 2) {
+-			dev->irq = irq_create_mapping(NULL, 49);
+-			pr_info("%s: Mapping irq %d\n", __func__, dev->irq);
+-		} else {
+-			pr_alert("%s: Unknown board revision\n", __func__);
+-		}
+-	}
+-}
+-
+-define_machine(ppc47x) {
+-	.name			= "PowerPC 47x",
+-	.probe			= ppc47x_probe,
+-	.progress		= udbg_progress,
+-	.init_IRQ		= ppc47x_init_irq,
+-	.setup_arch		= ppc47x_setup_arch,
+-	.pci_irq_fixup		= ppc47x_pci_irq_fixup,
+-	.restart		= ppc4xx_reset_system,
+-	.calibrate_decr		= generic_calibrate_decr,
+-};
+diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
+new file mode 100644
+index 0000000..c6c5a6f
+--- /dev/null
++++ b/arch/powerpc/platforms/44x/ppc476.c
+@@ -0,0 +1,233 @@
 +/*
-+ * 440EPx Errata USBH_3
-+ * Fix: Enable Break Memory Transfer (BMT) in INSNREG3
++ * PowerPC 476FPE board specific routines
++ *
++ * Copyright © 2011 Tony Breeds IBM Corporation
++ *
++ * Based on earlier code:
++ *    Matt Porter <mporter@kernel.crashing.org>
++ *    Copyright 2002-2005 MontaVista Software Inc.
++ *
++ *    Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
++ *    Copyright (c) 2003-2005 Zultys Technologies
++ *
++ *    Rewritten and ported to the merged powerpc tree:
++ *    Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
++ *    Copyright © 2011 David Kliekamp IBM Corporation
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
-+#define PPC440EPX_EHCI0_INSREG_BMT	(0x1 << 0)
-+static int
-+ppc44x_enable_bmt(struct device_node *dn)
++
++#include <linux/init.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <linux/rtc.h>
++
++#include <asm/machdep.h>
++#include <asm/prom.h>
++#include <asm/udbg.h>
++#include <asm/time.h>
++#include <asm/uic.h>
++#include <asm/ppc4xx.h>
++#include <asm/mpic.h>
++#include <asm/mmu.h>
++
++#include <linux/pci.h>
++
++static struct of_device_id ppc47x_of_bus[] __initdata = {
++	{ .compatible = "ibm,plb4", },
++	{ .compatible = "ibm,plb6", },
++	{ .compatible = "ibm,opb", },
++	{ .compatible = "ibm,ebc", },
++	{},
++};
++
++/* The EEPROM is missing and the default values are bogus.  This forces USB in
++ * to EHCI mode */
++static void quirk_ppc_currituck_usb_fixup(struct pci_dev *dev)
 +{
-+	__iomem u32 *insreg_virt;
++	if (of_machine_is_compatible("ibm,currituck")) {
++		pci_write_config_dword(dev, 0xe0, 0x0114231f);
++		pci_write_config_dword(dev, 0xe4, 0x00006c40);
++	}
++}
++DECLARE_PCI_FIXUP_HEADER(0x1033, 0x0035, quirk_ppc_currituck_usb_fixup);
 +
-+	insreg_virt = of_iomap(dn, 1);
-+	if (!insreg_virt)
-+		return  -EINVAL;
++static int __init ppc47x_device_probe(void)
++{
++	of_platform_bus_probe(NULL, ppc47x_of_bus, NULL);
 +
-+	out_be32(insreg_virt + 3, PPC440EPX_EHCI0_INSREG_BMT);
++	return 0;
++}
++machine_device_initcall(ppc47x, ppc47x_device_probe);
 +
-+	iounmap(insreg_virt);
++/* We can have either UICs or MPICs */
++static void __init ppc47x_init_irq(void)
++{
++	struct device_node *np;
++
++	/* Find top level interrupt controller */
++	for_each_node_with_property(np, "interrupt-controller") {
++		if (of_get_property(np, "interrupts", NULL) == NULL)
++			break;
++	}
++	if (np == NULL)
++		panic("Can't find top level interrupt controller");
++
++	/* Check type and do appropriate initialization */
++	if (of_device_is_compatible(np, "chrp,open-pic")) {
++		/* The MPIC driver will get everything it needs from the
++		 * device-tree, just pass 0 to all arguments
++		 */
++		struct mpic *mpic =
++			mpic_alloc(np, 0, MPIC_NO_RESET, 0, 0, " MPIC     ");
++		BUG_ON(mpic == NULL);
++		mpic_init(mpic);
++		ppc_md.get_irq = mpic_get_irq;
++	} else
++		panic("Unrecognized top level interrupt controller");
++}
++
++#ifdef CONFIG_SMP
++static void smp_ppc47x_setup_cpu(int cpu)
++{
++	mpic_setup_this_cpu();
++}
++
++static int smp_ppc47x_kick_cpu(int cpu)
++{
++	struct device_node *cpunode = of_get_cpu_node(cpu, NULL);
++	const u64 *spin_table_addr_prop;
++	u32 *spin_table;
++	extern void start_secondary_47x(void);
++
++	BUG_ON(cpunode == NULL);
++
++	/* Assume spin table. We could test for the enable-method in
++	 * the device-tree but currently there's little point as it's
++	 * our only supported method
++	 */
++	spin_table_addr_prop =
++		of_get_property(cpunode, "cpu-release-addr", NULL);
++
++	if (spin_table_addr_prop == NULL) {
++		pr_err("CPU%d: Can't start, missing cpu-release-addr !\n",
++		       cpu);
++		return 1;
++	}
++
++	/* Assume it's mapped as part of the linear mapping. This is a bit
++	 * fishy but will work fine for now
++	 *
++	 * XXX: Is there any reason to assume differently?
++	 */
++	spin_table = (u32 *)__va(*spin_table_addr_prop);
++	pr_debug("CPU%d: Spin table mapped at %p\n", cpu, spin_table);
++
++	spin_table[3] = cpu;
++	smp_wmb();
++	spin_table[1] = __pa(start_secondary_47x);
++	mb();
++
 +	return 0;
 +}
 +
- static int ehci_platform_reset(struct usb_hcd *hcd)
- {
- 	struct platform_device *pdev = to_platform_device(hcd->self.controller);
- 	struct usb_ehci_pdata *pdata = dev_get_platdata(&pdev->dev);
- 	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
-+	struct device_node *dn, *np;
-+	struct resource res;
- 	int retval;
- 
- 	hcd->has_tt = pdata->has_tt;
-@@ -48,6 +70,43 @@ static int ehci_platform_reset(struct usb_hcd *hcd)
- 	ehci->big_endian_desc = pdata->big_endian_desc;
- 	ehci->big_endian_mmio = pdata->big_endian_mmio;
- 
-+	/* Device tree properties if available will override platform data. */
-+	dn = hcd_to_bus(hcd)->controller->of_node;
-+	if (dn) {
-+		if (of_get_property(dn, "big-endian", NULL)) {
-+			ehci->big_endian_mmio = 1;
-+			ehci->big_endian_desc = 1;
-+		}
-+		if (of_get_property(dn, "big-endian-regs", NULL))
-+			ehci->big_endian_mmio = 1;
-+		if (of_get_property(dn, "big-endian-desc", NULL))
-+			ehci->big_endian_desc = 1;
-+	}
++static struct smp_ops_t ppc47x_smp_ops = {
++	.probe		= smp_mpic_probe,
++	.message_pass	= smp_mpic_message_pass,
++	.setup_cpu	= smp_ppc47x_setup_cpu,
++	.kick_cpu	= smp_ppc47x_kick_cpu,
++	.give_timebase	= smp_generic_give_timebase,
++	.take_timebase	= smp_generic_take_timebase,
++};
 +
-+	np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
-+	if (np != NULL) {
-+		/* claim we really affected by usb23 erratum */
-+		if (!of_address_to_resource(np, 0, &res))
-+			ehci->ohci_hcctrl_reg =
-+				devm_ioremap(&pdev->dev,
-+					     res.start + OHCI_HCCTRL_OFFSET,
-+					     OHCI_HCCTRL_LEN);
-+		else
-+			ehci_dbg(ehci, "%s: no ohci offset in fdt\n", __FILE__);
-+		if (!ehci->ohci_hcctrl_reg) {
-+			ehci_dbg(ehci, "%s: ioremap for ohci hcctrl failed\n",
-+				__FILE__);
-+		} else {
-+			ehci->has_amcc_usb23 = 1;
-+		}
-+	}
++static void __init ppc47x_smp_init(void)
++{
++	if (mmu_has_feature(MMU_FTR_TYPE_47x))
++		smp_ops = &ppc47x_smp_ops;
++}
 +
-+	if (of_device_is_compatible(dn, "ibm,usb-ehci-440epx")) {
-+		retval = ppc44x_enable_bmt(dn);
-+		ehci_dbg(ehci, "Break Memory Transfer (BMT) is %senabled!\n",
-+			retval ? "NOT " : "");
-+	}
++#else /* CONFIG_SMP */
++static void __init ppc47x_smp_init(void) { }
++#endif /* CONFIG_SMP */
 +
- 	if (pdata->pre_setup) {
- 		retval = pdata->pre_setup(hcd);
- 		if (retval < 0)
-@@ -149,6 +208,9 @@ static int ehci_platform_remove(struct platform_device *dev)
- {
- 	struct usb_hcd *hcd = platform_get_drvdata(dev);
- 	struct usb_ehci_pdata *pdata = dev_get_platdata(&dev->dev);
-+	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
++static void __init ppc47x_setup_arch(void)
++{
++
++	/* No need to check the DMA config as we /know/ our windows are all of
++	 * RAM.  Lets hope that doesn't change */
++	swiotlb_detect_4g();
++
++	ppc47x_smp_init();
++}
++
++/*
++ * Called very early, MMU is off, device-tree isn't unflattened
++ */
++static int __init ppc47x_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	if (!of_flat_dt_is_compatible(root, "ibm,currituck"))
++		return 0;
++
++	return 1;
++}
++
++static int board_rev = -1;
++static int __init ppc47x_get_board_rev(void)
++{
++	u8 fpga_reg0;
++	void *fpga;
 +	struct device_node *np;
-+	struct resource res;
- 
- 	usb_remove_hcd(hcd);
- 	usb_put_hcd(hcd);
-@@ -159,6 +221,25 @@ static int ehci_platform_remove(struct platform_device *dev)
- 	if (pdata == &ehci_platform_defaults)
- 		dev->dev.platform_data = NULL;
- 
-+	/* use request_mem_region to test if the ohci driver is loaded.  if so
-+	 * ensure the ohci core is operational.
-+	 */
-+	if (ehci->has_amcc_usb23) {
-+		np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
-+		if (np != NULL) {
-+			if (!of_address_to_resource(np, 0, &res))
-+				if (!request_mem_region(res.start,
-+							    0x4, hcd_name))
-+					set_ohci_hcfs(ehci, 1);
-+				else
-+					release_mem_region(res.start, 0x4);
-+			else
-+				ehci_dbg(ehci, "%s: no ohci offset in fdt\n",
-+					__FILE__);
-+			of_node_put(np);
++
++	np = of_find_compatible_node(NULL, NULL, "ibm,currituck-fpga");
++	if (!np)
++		goto fail;
++
++	fpga = of_iomap(np, 0);
++	of_node_put(np);
++	if (!fpga)
++		goto fail;
++
++	fpga_reg0 = ioread8(fpga);
++	board_rev = fpga_reg0 & 0x03;
++	pr_info("%s: Found board revision %d\n", __func__, board_rev);
++	iounmap(fpga);
++	return 0;
++
++fail:
++	pr_info("%s: Unable to find board revision\n", __func__);
++	return 0;
++}
++machine_arch_initcall(ppc47x, ppc47x_get_board_rev);
++
++/* Use USB controller should have been hardware swizzled but it wasn't :( */
++static void ppc47x_pci_irq_fixup(struct pci_dev *dev)
++{
++	if (dev->vendor == 0x1033 && (dev->device == 0x0035 ||
++				      dev->device == 0x00e0)) {
++		if (board_rev == 0) {
++			dev->irq = irq_create_mapping(NULL, 47);
++			pr_info("%s: Mapping irq %d\n", __func__, dev->irq);
++		} else if (board_rev == 2) {
++			dev->irq = irq_create_mapping(NULL, 49);
++			pr_info("%s: Mapping irq %d\n", __func__, dev->irq);
++		} else {
++			pr_alert("%s: Unknown board revision\n", __func__);
 +		}
 +	}
++}
 +
- 	return 0;
++define_machine(ppc47x) {
++	.name			= "PowerPC 47x",
++	.probe			= ppc47x_probe,
++	.progress		= udbg_progress,
++	.init_IRQ		= ppc47x_init_irq,
++	.setup_arch		= ppc47x_setup_arch,
++	.pci_irq_fixup		= ppc47x_pci_irq_fixup,
++	.restart		= ppc4xx_reset_system,
++	.calibrate_decr		= generic_calibrate_decr,
++};
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+index 64603a1..dba5e4d 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.c
++++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@ -1366,13 +1366,13 @@ static struct ppc4xx_pciex_hwops ppc405ex_pcie_hwops __initdata =
+ 
+ #endif /* CONFIG_40x */
+ 
+-#ifdef CONFIG_476FPE
+-static int __init ppc_476fpe_pciex_core_init(struct device_node *np)
++#ifdef CONFIG_476
++static int __init ppc476_pciex_core_init(struct device_node *np)
+ {
+ 	return 4;
  }
  
-@@ -203,9 +284,10 @@ static int ehci_platform_resume(struct device *dev)
- #define ehci_platform_resume	NULL
- #endif /* CONFIG_PM */
+-static void __init ppc_476fpe_pciex_check_link(struct ppc4xx_pciex_port *port)
++static void __init ppc476_pciex_check_link(struct ppc4xx_pciex_port *port)
+ {
+ 	u32 timeout_ms = 20;
+ 	u32 val = 0, mask = (PECFG_TLDLP_LNKUP|PECFG_TLDLP_PRESENT);
+@@ -1405,12 +1405,12 @@ static void __init ppc_476fpe_pciex_check_link(struct ppc4xx_pciex_port *port)
+ 	return;
+ }
  
--static const struct of_device_id vt8500_ehci_ids[] = {
-+static const struct of_device_id ehci_platform_ids[] = {
- 	{ .compatible = "via,vt8500-ehci", },
- 	{ .compatible = "wm,prizm-ehci", },
-+	{ .compatible = "usb-ehci", },
- 	{}
+-static struct ppc4xx_pciex_hwops ppc_476fpe_pcie_hwops __initdata =
++static struct ppc4xx_pciex_hwops ppc476_pcie_hwops __initdata =
+ {
+-	.core_init	= ppc_476fpe_pciex_core_init,
+-	.check_link	= ppc_476fpe_pciex_check_link,
++	.core_init	= ppc476_pciex_core_init,
++	.check_link	= ppc476_pciex_check_link,
  };
+-#endif /* CONFIG_476FPE */
++#endif /* CONFIG_476 */
  
-@@ -229,7 +311,7 @@ static struct platform_driver ehci_platform_driver = {
- 		.owner	= THIS_MODULE,
- 		.name	= "ehci-platform",
- 		.pm	= &ehci_platform_pm_ops,
--		.of_match_table = vt8500_ehci_ids,
-+		.of_match_table = ehci_platform_ids,
- 	}
- };
+ /* Check that the core has been initied and if not, do it */
+ static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
+@@ -1439,9 +1439,9 @@ static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
+ 	if (of_device_is_compatible(np, "ibm,plb-pciex-405ex"))
+ 		ppc4xx_pciex_hwops = &ppc405ex_pcie_hwops;
+ #endif
+-#ifdef CONFIG_476FPE
++#ifdef CONFIG_476
+ 	if (of_device_is_compatible(np, "ibm,plb-pciex-476fpe"))
+-		ppc4xx_pciex_hwops = &ppc_476fpe_pcie_hwops;
++		ppc4xx_pciex_hwops = &ppc476_pcie_hwops;
+ #endif
+ 	if (ppc4xx_pciex_hwops == NULL) {
+ 		printk(KERN_WARNING "PCIE: unknown host type %s\n",
+@@ -1753,7 +1753,7 @@ static int __init ppc4xx_setup_one_pciex_POM(struct ppc4xx_pciex_port	*port,
+ 					| DCRO_PEGPL_OMRxMSKL_VAL);
+ 		else if (of_device_is_compatible(port->node, "ibm,plb-pciex-476fpe"))
+ 			dcr_write(port->dcrs, DCRO_PEGPL_OMR1MSKL,
+-				sa | DCRO_PEGPL_476FPE_OMR1MSKL_UOT
++				sa | DCRO_PEGPL_476_OMR1MSKL_UOT
+ 					| DCRO_PEGPL_OMRxMSKL_VAL);
+ 		else
+ 			dcr_write(port->dcrs, DCRO_PEGPL_OMR1MSKL,
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.h b/arch/powerpc/sysdev/ppc4xx_pci.h
+index bb48219..6412011 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.h
++++ b/arch/powerpc/sysdev/ppc4xx_pci.h
+@@ -476,12 +476,12 @@
+ #define DCRO_PEGPL_OMR1MSKL_UOT	 0x00000002
+ #define DCRO_PEGPL_OMR3MSKL_IO	 0x00000002
  
-diff --git a/drivers/usb/host/ehci-ppc-of.c b/drivers/usb/host/ehci-ppc-of.c
-deleted file mode 100644
-index 932293f..0000000
---- a/drivers/usb/host/ehci-ppc-of.c
-+++ /dev/null
-@@ -1,236 +0,0 @@
--/*
-- * EHCI HCD (Host Controller Driver) for USB.
-- *
-- * Bus Glue for PPC On-Chip EHCI driver on the of_platform bus
-- * Tested on AMCC PPC 440EPx
-- *
-- * Valentine Barshak <vbarshak@ru.mvista.com>
-- *
-- * Based on "ehci-ppc-soc.c" by Stefan Roese <sr@denx.de>
-- * and "ohci-ppc-of.c" by Sylvain Munaut <tnt@246tNt.com>
-- *
-- * This file is licenced under the GPL.
-- */
--
--#include <linux/err.h>
--#include <linux/signal.h>
--
--#include <linux/of.h>
--#include <linux/of_platform.h>
--
--
--static const struct hc_driver ehci_ppc_of_hc_driver = {
--	.description		= hcd_name,
--	.product_desc		= "OF EHCI",
--	.hcd_priv_size		= sizeof(struct ehci_hcd),
--
--	/*
--	 * generic hardware linkage
--	 */
--	.irq			= ehci_irq,
--	.flags			= HCD_MEMORY | HCD_USB2,
--
--	/*
--	 * basic lifecycle operations
--	 */
--	.reset			= ehci_setup,
--	.start			= ehci_run,
--	.stop			= ehci_stop,
--	.shutdown		= ehci_shutdown,
--
--	/*
--	 * managing i/o requests and associated device resources
--	 */
--	.urb_enqueue		= ehci_urb_enqueue,
--	.urb_dequeue		= ehci_urb_dequeue,
--	.endpoint_disable	= ehci_endpoint_disable,
--	.endpoint_reset		= ehci_endpoint_reset,
--
--	/*
--	 * scheduling support
--	 */
--	.get_frame_number	= ehci_get_frame,
--
--	/*
--	 * root hub support
--	 */
--	.hub_status_data	= ehci_hub_status_data,
--	.hub_control		= ehci_hub_control,
--#ifdef	CONFIG_PM
--	.bus_suspend		= ehci_bus_suspend,
--	.bus_resume		= ehci_bus_resume,
--#endif
--	.relinquish_port	= ehci_relinquish_port,
--	.port_handed_over	= ehci_port_handed_over,
--
--	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
--};
--
--
--/*
-- * 440EPx Errata USBH_3
-- * Fix: Enable Break Memory Transfer (BMT) in INSNREG3
-- */
--#define PPC440EPX_EHCI0_INSREG_BMT	(0x1 << 0)
--static int
--ppc44x_enable_bmt(struct device_node *dn)
--{
--	__iomem u32 *insreg_virt;
--
--	insreg_virt = of_iomap(dn, 1);
--	if (!insreg_virt)
--		return  -EINVAL;
--
--	out_be32(insreg_virt + 3, PPC440EPX_EHCI0_INSREG_BMT);
--
--	iounmap(insreg_virt);
--	return 0;
--}
--
--
--static int ehci_hcd_ppc_of_probe(struct platform_device *op)
--{
--	struct device_node *dn = op->dev.of_node;
--	struct usb_hcd *hcd;
--	struct ehci_hcd	*ehci = NULL;
--	struct resource res;
--	int irq;
--	int rv;
--
--	struct device_node *np;
--
--	if (usb_disabled())
--		return -ENODEV;
--
--	dev_dbg(&op->dev, "initializing PPC-OF USB Controller\n");
--
--	rv = of_address_to_resource(dn, 0, &res);
--	if (rv)
--		return rv;
--
--	hcd = usb_create_hcd(&ehci_ppc_of_hc_driver, &op->dev, "PPC-OF USB");
--	if (!hcd)
--		return -ENOMEM;
--
--	hcd->rsrc_start = res.start;
--	hcd->rsrc_len = resource_size(&res);
--
--	irq = irq_of_parse_and_map(dn, 0);
--	if (irq == NO_IRQ) {
--		printk(KERN_ERR "%s: irq_of_parse_and_map failed\n", __FILE__);
--		rv = -EBUSY;
--		goto err_irq;
--	}
--
--	hcd->regs = devm_ioremap_resource(&op->dev, &res);
--	if (IS_ERR(hcd->regs)) {
--		rv = PTR_ERR(hcd->regs);
--		goto err_ioremap;
--	}
--
--	ehci = hcd_to_ehci(hcd);
--	np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
--	if (np != NULL) {
--		/* claim we really affected by usb23 erratum */
--		if (!of_address_to_resource(np, 0, &res))
--			ehci->ohci_hcctrl_reg =
--				devm_ioremap(&op->dev,
--					     res.start + OHCI_HCCTRL_OFFSET,
--					     OHCI_HCCTRL_LEN);
--		else
--			pr_debug("%s: no ohci offset in fdt\n", __FILE__);
--		if (!ehci->ohci_hcctrl_reg) {
--			pr_debug("%s: ioremap for ohci hcctrl failed\n", __FILE__);
--		} else {
--			ehci->has_amcc_usb23 = 1;
--		}
--	}
--
--	if (of_get_property(dn, "big-endian", NULL)) {
--		ehci->big_endian_mmio = 1;
--		ehci->big_endian_desc = 1;
--	}
--	if (of_get_property(dn, "big-endian-regs", NULL))
--		ehci->big_endian_mmio = 1;
--	if (of_get_property(dn, "big-endian-desc", NULL))
--		ehci->big_endian_desc = 1;
--
--	ehci->caps = hcd->regs;
--
--	if (of_device_is_compatible(dn, "ibm,usb-ehci-440epx")) {
--		rv = ppc44x_enable_bmt(dn);
--		ehci_dbg(ehci, "Break Memory Transfer (BMT) is %senabled!\n",
--				rv ? "NOT ": "");
--	}
--
--	rv = usb_add_hcd(hcd, irq, 0);
--	if (rv)
--		goto err_ioremap;
--
--	return 0;
--
--err_ioremap:
--	irq_dispose_mapping(irq);
--err_irq:
--	usb_put_hcd(hcd);
--
--	return rv;
--}
--
--
--static int ehci_hcd_ppc_of_remove(struct platform_device *op)
--{
--	struct usb_hcd *hcd = platform_get_drvdata(op);
--	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
--
--	struct device_node *np;
--	struct resource res;
--
--	dev_dbg(&op->dev, "stopping PPC-OF USB Controller\n");
--
--	usb_remove_hcd(hcd);
--
--	irq_dispose_mapping(hcd->irq);
--
--	/* use request_mem_region to test if the ohci driver is loaded.  if so
--	 * ensure the ohci core is operational.
--	 */
--	if (ehci->has_amcc_usb23) {
--		np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
--		if (np != NULL) {
--			if (!of_address_to_resource(np, 0, &res))
--				if (!request_mem_region(res.start,
--							    0x4, hcd_name))
--					set_ohci_hcfs(ehci, 1);
--				else
--					release_mem_region(res.start, 0x4);
--			else
--				pr_debug("%s: no ohci offset in fdt\n", __FILE__);
--			of_node_put(np);
--		}
--	}
--	usb_put_hcd(hcd);
--
--	return 0;
--}
--
--
--static const struct of_device_id ehci_hcd_ppc_of_match[] = {
--	{
--		.compatible = "usb-ehci",
--	},
--	{},
--};
--MODULE_DEVICE_TABLE(of, ehci_hcd_ppc_of_match);
--
--
--static struct platform_driver ehci_hcd_ppc_of_driver = {
--	.probe		= ehci_hcd_ppc_of_probe,
--	.remove		= ehci_hcd_ppc_of_remove,
--	.shutdown	= usb_hcd_platform_shutdown,
--	.driver = {
--		.name = "ppc-of-ehci",
--		.owner = THIS_MODULE,
--		.of_match_table = ehci_hcd_ppc_of_match,
--	},
--};
+-/* 476FPE */
++/* PPC476 */
+ #define PCCFG_LCPA			0x270
+ #define PECFG_TLDLP			0x3F8
+ #define PECFG_TLDLP_LNKUP		0x00000008
+ #define PECFG_TLDLP_PRESENT		0x00000010
+-#define DCRO_PEGPL_476FPE_OMR1MSKL_UOT	 0x00000004
++#define DCRO_PEGPL_476_OMR1MSKL_UOT	 0x00000004
+ 
+ /* SDR Bit Mappings */
+ #define PESDRx_RCSSET_HLDPLB	0x10000000
 -- 
 1.7.10.4
