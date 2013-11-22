@@ -1,14 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id 08AC62C012E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Nov 2013 03:57:48 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id D1CAE2C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Nov 2013 04:28:40 +1100 (EST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc 8xx: mfspr SPRN_TBRx in lieu of mftb/mftbu is not
- supported
-Message-Id: <20131122165731.B06B91A4DE7@localhost.localdomain>
-Date: Fri, 22 Nov 2013 17:57:31 +0100 (CET)
+Subject: [PATCH v2] powerpc 8xx: defconfig: slice by 4 is more efficient than
+ the default slice by 8 on Powerpc 8xx.
+Message-Id: <20131122172829.CC8EE1A4DE7@localhost.localdomain>
+Date: Fri, 22 Nov 2013 18:28:29 +0100 (CET)
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,127 +20,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit beb2dc0a7a84be003ce54e98b95d65cc66e6e536 breaks the MPC8xx which seems
-to not support using mfspr SPRN_TBRx instead of mftb/mftbu despite
-what is written in the reference manual
-This patchs revert to the use of mftb/mftbu when CONFIG_8xx is selected
+On PPC_8xx, CRC32_SLICEBY4 is more efficient (almost twice) than CRC32_SLICEBY8,
+as shown below:
+
+With CRC32_SLICEBY8:
+[    1.109204] crc32: CRC_LE_BITS = 64, CRC_BE BITS = 64
+[    1.114401] crc32: self tests passed, processed 225944 bytes in 15118910 nsec
+[    1.130655] crc32c: CRC_LE_BITS = 64
+[    1.134235] crc32c: self tests passed, processed 225944 bytes in 4479879 nsec
+
+With CRC32_SLICEBY4:
+[    1.097129] crc32: CRC_LE_BITS = 32, CRC_BE BITS = 32
+[    1.101878] crc32: self tests passed, processed 225944 bytes in 8616242 nsec
+[    1.116298] crc32c: CRC_LE_BITS = 32
+[    1.119607] crc32c: self tests passed, processed 225944 bytes in 3289576 nsec
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-diff -ur a/arch/powerpc/boot/util.S b/arch/powerpc/boot/util.S
---- a/arch/powerpc/boot/util.S	2013-11-20 21:54:45.000000000 +0100
-+++ b/arch/powerpc/boot/util.S	2013-11-22 17:19:51.880386544 +0100
-@@ -71,18 +71,32 @@
- 	add	r4,r4,r5
- 	addi	r4,r4,-1
- 	divw	r4,r4,r5	/* BUS ticks */
-+#ifdef CONFIG_8xx
-+1:	mftbu	r5
-+	mftb	r6
-+	mftbu	r7
-+#else
- 1:	mfspr	r5, SPRN_TBRU
- 	mfspr	r6, SPRN_TBRL
- 	mfspr	r7, SPRN_TBRU
-+#endif
- 	cmpw	0,r5,r7
- 	bne	1b		/* Get [synced] base time */
- 	addc	r9,r6,r4	/* Compute end time */
- 	addze	r8,r5
-+#ifdef CONFIG_8xx
-+2:	mftbu	r5
-+#else
- 2:	mfspr	r5, SPRN_TBRU
-+#endif
- 	cmpw	0,r5,r8
- 	blt	2b
- 	bgt	3f
-+#ifdef CONFIG_8xx
-+	mftb	r6
-+#else
- 	mfspr	r6, SPRN_TBRL
-+#endif
- 	cmpw	0,r6,r9
- 	blt	2b
- 3:	blr
-diff -ur a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
---- a/arch/powerpc/include/asm/ppc_asm.h	2013-11-20 21:54:45.000000000 +0100
-+++ b/arch/powerpc/include/asm/ppc_asm.h	2013-11-22 17:24:57.839272480 +0100
-@@ -438,6 +438,8 @@
- 	cmpwi dest,0;			\
- 	beq-  90b;			\
- END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
-+#elif defined(CONFIG_8xx)
-+#define MFTB(dest)			mftb dest
- #else
- #define MFTB(dest)			mfspr dest, SPRN_TBRL
- #endif
-diff -ur a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
---- a/arch/powerpc/include/asm/reg.h	2013-11-20 21:54:45.000000000 +0100
-+++ b/arch/powerpc/include/asm/reg.h	2013-11-22 17:27:44.009391916 +0100
-@@ -1154,12 +1154,19 @@
- 
- #else /* __powerpc64__ */
- 
-+#if defined(CONFIG_8xx)
-+#define mftbl()		({unsigned long rval;	\
-+			asm volatile("mftbl %0" : "=r" (rval)); rval;})
-+#define mftbu()		({unsigned long rval;	\
-+			asm volatile("mftbu %0" : "=r" (rval)); rval;})
-+#else
- #define mftbl()		({unsigned long rval;	\
- 			asm volatile("mfspr %0, %1" : "=r" (rval) : \
- 				"i" (SPRN_TBRL)); rval;})
- #define mftbu()		({unsigned long rval;	\
- 			asm volatile("mfspr %0, %1" : "=r" (rval) : \
- 				"i" (SPRN_TBRU)); rval;})
-+#endif
- #endif /* !__powerpc64__ */
- 
- #define mttbl(v)	asm volatile("mttbl %0":: "r"(v))
-diff -ur a/arch/powerpc/include/asm/timex.h b/arch/powerpc/include/asm/timex.h
---- a/arch/powerpc/include/asm/timex.h	2013-11-20 21:54:45.000000000 +0100
-+++ b/arch/powerpc/include/asm/timex.h	2013-11-22 17:29:31.207016228 +0100
-@@ -29,7 +29,11 @@
- 	ret = 0;
- 
- 	__asm__ __volatile__(
-+#ifdef CONFIG_8xx
-+		"97:	mftb %0\n"
-+#else
- 		"97:	mfspr %0, %2\n"
-+#endif
- 		"99:\n"
- 		".section __ftr_fixup,\"a\"\n"
- 		".align 2\n"
-@@ -41,7 +45,11 @@
- 		"	.long 0\n"
- 		"	.long 0\n"
- 		".previous"
-+#ifdef CONFIG_8xx
-+		: "=r" (ret) : "i" (CPU_FTR_601));
-+#else
- 		: "=r" (ret) : "i" (CPU_FTR_601), "i" (SPRN_TBRL));
-+#endif
- 	return ret;
- #endif
- }
-diff -ur a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
---- a/arch/powerpc/kernel/vdso32/gettimeofday.S	2013-11-20 21:54:46.000000000 +0100
-+++ b/arch/powerpc/kernel/vdso32/gettimeofday.S	2013-11-22 17:30:53.646493897 +0100
-@@ -232,9 +232,15 @@
- 	lwz	r6,(CFG_TB_ORIG_STAMP+4)(r9)
- 
- 	/* Get a stable TB value */
-+#ifdef CONFIG_8xx
-+2:	mftbu	r3
-+	mftbl	r4
-+	mftbu	r0
-+#else
- 2:	mfspr	r3, SPRN_TBRU
- 	mfspr	r4, SPRN_TBRL
- 	mfspr	r0, SPRN_TBRU
-+#endif
- 	cmplw	cr0,r3,r0
- 	bne-	2b
- 
+diff -ur a/arch/powerpc/configs/adder875_defconfig b/arch/powerpc/configs.new/adder875_defconfig
+--- a/arch/powerpc/configs/adder875_defconfig	2013-11-22 18:20:10.342968268 +0100
++++ b/arch/powerpc/configs.new/adder875_defconfig	2013-11-22 18:17:46.499686457 +0100
+@@ -70,3 +70,4 @@
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_DEBUG_INFO=y
+ # CONFIG_RCU_CPU_STALL_DETECTOR is not set
++CONFIG_CRC32_SLICEBY4=y
+diff -ur a/arch/powerpc/configs/ep88xc_defconfig b/arch/powerpc/configs.new/ep88xc_defconfig
+--- a/arch/powerpc/configs/ep88xc_defconfig	2013-11-22 18:20:10.286961148 +0100
++++ b/arch/powerpc/configs.new/ep88xc_defconfig	2013-11-22 18:17:41.992113565 +0100
+@@ -72,3 +72,4 @@
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_DEBUG_INFO=y
+ # CONFIG_RCU_CPU_STALL_DETECTOR is not set
++CONFIG_CRC32_SLICEBY4=y
+diff -ur a/arch/powerpc/configs/mpc866_ads_defconfig b/arch/powerpc/configs.new/mpc866_ads_defconfig
+--- a/arch/powerpc/configs/mpc866_ads_defconfig	2013-11-22 18:20:10.323965853 +0100
++++ b/arch/powerpc/configs.new/mpc866_ads_defconfig	2013-11-22 18:17:32.480904735 +0100
+@@ -55,3 +55,4 @@
+ CONFIG_CRC_CCITT=y
+ # CONFIG_RCU_CPU_STALL_DETECTOR is not set
+ # CONFIG_CRYPTO_ANSI_CPRNG is not set
++CONFIG_CRC32_SLICEBY4=y
+diff -ur a/arch/powerpc/configs/mpc885_ads_defconfig b/arch/powerpc/configs.new/mpc885_ads_defconfig
+--- a/arch/powerpc/configs/mpc885_ads_defconfig	2013-11-22 18:20:10.326966235 +0100
++++ b/arch/powerpc/configs.new/mpc885_ads_defconfig	2013-11-22 18:17:25.760050546 +0100
+@@ -78,3 +78,4 @@
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_DEBUG_INFO=y
+ # CONFIG_RCU_CPU_STALL_DETECTOR is not set
++CONFIG_CRC32_SLICEBY4=y
+diff -ur a/arch/powerpc/configs/tqm8xx_defconfig b/arch/powerpc/configs.new/tqm8xx_defconfig
+--- a/arch/powerpc/configs/tqm8xx_defconfig	2013-11-22 18:20:10.317965090 +0100
++++ b/arch/powerpc/configs.new/tqm8xx_defconfig	2013-11-22 18:17:14.926673681 +0100
+@@ -84,3 +84,4 @@
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_DEBUG_INFO=y
+ # CONFIG_RCU_CPU_STALL_DETECTOR is not set
++CONFIG_CRC32_SLICEBY4=y
