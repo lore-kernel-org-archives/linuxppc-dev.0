@@ -1,16 +1,17 @@
 Return-Path: <alistair@popple.id.au>
 Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
  [IPv6:2001:44b8:8060:ff02:300:1:6:4])
- by ozlabs.org (Postfix) with ESMTP id 180DE2C011C
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Nov 2013 13:08:08 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 365E52C032F
+ for <linuxppc-dev@ozlabs.org>; Fri, 22 Nov 2013 13:08:45 +1100 (EST)
 From: Alistair Popple <alistair@popple.id.au>
 To: benh@kernel.crashing.org
-Subject: [PATCH 0/8] IBM Akebono/PPC476GTR Support
-Date: Fri, 22 Nov 2013 13:07:37 +1100
-Message-Id: <1385086057-10884-1-git-send-email-alistair@popple.id.au>
-Cc: netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-mmc@vger.kernel.org, linuxppc-dev@ozlabs.org, stern@rowland.harvard.edu,
- Alistair Popple <alistair@popple.id.au>, cjb@laptop.org, davem@davemloft.net
+Subject: [PATCH 1/8] IBM Akebono: Add support to AHCI platform driver
+Date: Fri, 22 Nov 2013 13:08:29 +1100
+Message-Id: <1385086116-10972-1-git-send-email-alistair@popple.id.au>
+In-Reply-To: <1385086057-10884-1-git-send-email-alistair@popple.id.au>
+References: <1385086057-10884-1-git-send-email-alistair@popple.id.au>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Alistair Popple <alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,76 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The IBM Akebono board is a development board for the new PPC476GTR
-system on chip (SoC).
+The new IBM Akebono board has a PPC476GTR SoC with an AHCI compliant
+SATA controller. This patch adds a compatible property for the new SoC
+to the AHCI platform driver.
 
-Changes from V1:
- * Update device-tree compatible strings to reflect the name of the
-   SoC rather than the board when those components are integrated into
-   the SoC.
- * Updates to allow the new EMAC PHY interface to be compile tested.
- * Rather than adding a new compatible string for EHCI support
-   usb-ehci is used and the corresponding driver (ehci-ppc-of)
-   is merged into the generic EHCI platform driver.
- * A generic (usb-ohci) compatible string is used for OHCI.
- * PCI MSI support has been added via the HSTA module.
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Cc: linux-ide@vger.kernel.org
+---
+ drivers/ata/ahci_platform.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Alistair Popple (8):
-  IBM Akebono: Add support to AHCI platform driver
-  IBM Akebono: Add a SDHCI platform driver
-  IBM Akebono: Add support for a new PHY interface to the IBM emac
-    driver
-  IBM Akebono: Add support to the OHCI platform driver for PPC476GTR
-  ECHI Platform: Merge ppc-of EHCI driver into the ehci-platform driver
-  IBM Currituck: Clean up board specific code before adding Akebono
-    code
-  IBM Akebono: Add the Akebono platform
-  powerpc: Added PCI MSI support using the HSTA module
-
- .../devicetree/bindings/powerpc/4xx/akebono.txt    |   54 +++
- .../devicetree/bindings/powerpc/4xx/emac.txt       |    9 +
- arch/powerpc/boot/Makefile                         |    3 +
- arch/powerpc/boot/dcr.h                            |    4 +
- arch/powerpc/boot/dts/akebono.dts                  |  415 ++++++++++++++++++++
- arch/powerpc/boot/treeboot-akebono.c               |  179 +++++++++
- arch/powerpc/boot/wrapper                          |    3 +
- arch/powerpc/configs/44x/akebono_defconfig         |  148 +++++++
- arch/powerpc/platforms/44x/Kconfig                 |   32 +-
- arch/powerpc/platforms/44x/Makefile                |    3 +-
- arch/powerpc/platforms/44x/currituck.c             |  233 -----------
- arch/powerpc/platforms/44x/ppc476.c                |  299 ++++++++++++++
- arch/powerpc/sysdev/Kconfig                        |    6 +
- arch/powerpc/sysdev/Makefile                       |    1 +
- arch/powerpc/sysdev/ppc4xx_hsta_msi.c              |  266 +++++++++++++
- arch/powerpc/sysdev/ppc4xx_pci.c                   |   41 +-
- arch/powerpc/sysdev/ppc4xx_pci.h                   |    4 +-
- drivers/ata/ahci_platform.c                        |    1 +
- drivers/mmc/host/Kconfig                           |   12 +
- drivers/mmc/host/Makefile                          |    1 +
- drivers/mmc/host/sdhci-of-476gtr.c                 |   60 +++
- drivers/net/ethernet/ibm/emac/Kconfig              |    4 +
- drivers/net/ethernet/ibm/emac/Makefile             |    1 +
- drivers/net/ethernet/ibm/emac/core.c               |   50 ++-
- drivers/net/ethernet/ibm/emac/core.h               |   12 +
- drivers/net/ethernet/ibm/emac/rgmii_wol.c          |  243 ++++++++++++
- drivers/net/ethernet/ibm/emac/rgmii_wol.h          |   62 +++
- drivers/usb/host/Kconfig                           |    7 +-
- drivers/usb/host/ehci-hcd.c                        |    5 -
- drivers/usb/host/ehci-platform.c                   |   86 +++-
- drivers/usb/host/ehci-ppc-of.c                     |  236 -----------
- drivers/usb/host/ohci-platform.c                   |   22 +-
- 32 files changed, 1992 insertions(+), 510 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/4xx/akebono.txt
- create mode 100644 arch/powerpc/boot/dts/akebono.dts
- create mode 100644 arch/powerpc/boot/treeboot-akebono.c
- create mode 100644 arch/powerpc/configs/44x/akebono_defconfig
- delete mode 100644 arch/powerpc/platforms/44x/currituck.c
- create mode 100644 arch/powerpc/platforms/44x/ppc476.c
- create mode 100644 arch/powerpc/sysdev/ppc4xx_hsta_msi.c
- create mode 100644 drivers/mmc/host/sdhci-of-476gtr.c
- create mode 100644 drivers/net/ethernet/ibm/emac/rgmii_wol.c
- create mode 100644 drivers/net/ethernet/ibm/emac/rgmii_wol.h
- delete mode 100644 drivers/usb/host/ehci-ppc-of.c
-
+diff --git a/drivers/ata/ahci_platform.c b/drivers/ata/ahci_platform.c
+index 7d3b853..e247594 100644
+--- a/drivers/ata/ahci_platform.c
++++ b/drivers/ata/ahci_platform.c
+@@ -328,6 +328,7 @@ static SIMPLE_DEV_PM_OPS(ahci_pm_ops, ahci_suspend, ahci_resume);
+ static const struct of_device_id ahci_of_match[] = {
+ 	{ .compatible = "snps,spear-ahci", },
+ 	{ .compatible = "snps,exynos5440-ahci", },
++	{ .compatible = "ibm,476gtr-ahci", },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, ahci_of_match);
 -- 
 1.7.10.4
