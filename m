@@ -1,23 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DC8F52C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2013 11:26:55 +1100 (EST)
-Received: from mail98-am1 (localhost [127.0.0.1])	by mail98-am1-R.bigfish.com
- (Postfix) with ESMTP id AAD45260150	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,
- 22 Nov 2013 00:26:48 +0000 (UTC)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/booke: Only check for hugetlb in flush if vma != NULL
-Date: Thu, 21 Nov 2013 18:26:42 -0600
-Message-ID: <1385080002-16462-1-git-send-email-scottwood@freescale.com>
+Return-Path: <carlos@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 41CEA2C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2013 11:53:14 +1100 (EST)
+Message-ID: <528EAAEE.8070300@redhat.com>
+Date: Thu, 21 Nov 2013 19:53:02 -0500
+From: "Carlos O'Donell" <carlos@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] powerpc/signals: Mark VSX not saved with small contexts
+References: <1384924734-16722-1-git-send-email-mikey@neuling.org>
+ <20131121113333.GB15913@concordia> <528E2EB6.2010003@redhat.com>
+ <8900.1385072483@ale.ozlabs.ibm.com>
+In-Reply-To: <8900.1385072483@ale.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Steve Best <sbest@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Haren Myneni <haren@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-And in flush_hugetlb_page(), don't check whether vma is NULL after
-we've already dereferenced it.
+On 11/21/2013 05:21 PM, Michael Neuling wrote:
+>>> What about the 64-bit code? I don't know the code but it appears at a glance to
+>>> have the same bug.
+>>  
+>> It doesn't happen with 64-bit code because there the context contains
+>> a sigcontext which on ppc64 has vmx_reserve to store the entire VMX
+>> state. Therefore 64-bit ppc always has space to store the VMX registers
+>> in a userspace context switch. It is only the 32-bit ppc ABI that lacks
+>> the space.
+> 
+> VMX?  I don't understand this at all.  We extended the ucontext to
+> handle the extra VSX state, so older code may still be using the small
+> ucontext and we already have a bunch of checks in the 64bit case for
+> this.
+> 
+> I agree with Michael, we should add this to the 64 bit case.  If we
+> can't put VSX state in, then clear MSR VSX.
 
-This was found by Dan using static analysis as described here:
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-November/113161.html
+Sorry, typo, VSX not VMX.
 
-We currently get away with this because the callers that currently pass
-NULL for vma seem to be 32-bit-only (e.g. highmem, and
-CONFIG_DEBUG_PGALLOC in pgtable_32.c)  Hugetlb is currently 64-bit only,
-so we never saw a NULL vma here.
+I had not gone through the historical implementation of the 64-bit
+code, I assumed it started with a sufficiently sized context structure,
+but on closer review it didn't.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- arch/powerpc/mm/hugetlbpage-book3e.c | 3 +--
- arch/powerpc/mm/tlb_nohash.c         | 2 +-
- 2 files changed, 2 insertions(+), 3 deletions(-)
+The addition of the *context functions in glibc for 64-bit power
+happened in 2003 by glibc commit 609b4783, with the mcontext_t
+being expanded to include 
 
-diff --git a/arch/powerpc/mm/hugetlbpage-book3e.c b/arch/powerpc/mm/hugetlbpage-book3e.c
-index 3bc7006..74551b5 100644
---- a/arch/powerpc/mm/hugetlbpage-book3e.c
-+++ b/arch/powerpc/mm/hugetlbpage-book3e.c
-@@ -117,6 +117,5 @@ void flush_hugetlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
- 	struct hstate *hstate = hstate_file(vma->vm_file);
- 	unsigned long tsize = huge_page_shift(hstate) - 10;
+I see that the 64-bit userspace context was extended in 2008 by your 
+kernel commit ce48b210.
+
+Thus you're right the check is needed in the 64-bit case.
+
+However, at present the issue doesn't seem to trigger in the
+64-bit userspace. Which is odd now that I review the code and 
+see that the 64-bit userspace context is smaller than the kernel
+context (lacks the `+32' to the vmx_reserve space). It could just
+be that the compiler finds no chance to use VSX and therefore
+the existing test cases don't trigger the bug. I don't plan to
+investigate this further given that we're going to fix the 64-bit case
+also.
  
--	__flush_tlb_page(vma ? vma->vm_mm : NULL, vmaddr, tsize, 0);
--
-+	__flush_tlb_page(vma->vm_mm, vmaddr, tsize, 0);
- }
-diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-index 41cd68d..358d743 100644
---- a/arch/powerpc/mm/tlb_nohash.c
-+++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -305,7 +305,7 @@ void __flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
- void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
- {
- #ifdef CONFIG_HUGETLB_PAGE
--	if (is_vm_hugetlb_page(vma))
-+	if (vma && is_vm_hugetlb_page(vma))
- 		flush_hugetlb_page(vma, vmaddr);
- #endif
- 
--- 
-1.8.1.2
+> So how about we make it that simple and put it independent of the other
+> if statement?
+> 
+> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+> index 749778e..f4a7fd4 100644
+> --- a/arch/powerpc/kernel/signal_32.c
+> +++ b/arch/powerpc/kernel/signal_32.c
+> @@ -458,6 +458,14 @@ static int save_user_regs(struct pt_regs *regs, struct mcon
+>                         return 1;
+>                 msr |= MSR_VSX;
+>         }
+> +       /*
+> +        * With a small context structure we can't hold the VSX registers,
+> +        * hence clear the MSR value to indicate the state was not saved.
+> +        */
+> +       if (!ctx_has_vsx_region)
+> +               msr &= ~MSR_VSX;
+> +
+> +
+>  #endif /* CONFIG_VSX */
+>  #ifdef CONFIG_SPE
+>         /* save spe registers */
+> 
+
+Looks good to me, along with a similar fix for signal_64.c.
+
+Cheers,
+Carlos.
