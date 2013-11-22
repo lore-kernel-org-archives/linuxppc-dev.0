@@ -1,14 +1,17 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2] powerpc/signals: Mark VSX not saved with small contexts
-In-reply-to: <20131121113333.GB15913@concordia>
-References: <1384924734-16722-1-git-send-email-mikey@neuling.org>
- <20131121113333.GB15913@concordia>
-Date: Fri, 22 Nov 2013 13:22:59 +1100
-Message-ID: <14147.1385086979@ale.ozlabs.ibm.com>
-Cc: Carlos O'Donell <carlos@redhat.com>, Steve Best <sbest@us.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Haren Myneni <haren@linux.vnet.ibm.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com", Issuer "Thawte SGC CA - G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2D9052C00B9
+ for <linuxppc-dev@ozlabs.org>; Fri, 22 Nov 2013 13:49:07 +1100 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH] powerpc/CoreNet64: compile with CONFIG_E{5,6}500_CPU well
+Date: Fri, 22 Nov 2013 10:49:00 +0800
+Message-ID: <1385088540-9675-1-git-send-email-tiejun.chen@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,68 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The VSX MSR bit in the user context indicates if the context contains
-VSX state.  Unfortunately, if the user has not provided enough space to
-save the VSX state, we can't save it but we currently still set the MSR
-VSX bit.
+If CONFIG_ALTIVEC is enabled for CoreNet64, and if we also
+select CONFIG_E{5,6}500_CPU this may introduce -mcpu=e500mc64
+into $CFLAGS. But Altivec option not allowed with e500mc64,
+then some compiling errors occur like this:
 
-This patch changes this to clear the MSR VSX bit when the user doesn't
-provide enough space.  This indicates that there is no valid VSX state
-in the user context.  We now clear MSR VSX always and only set it in the
-specific case when we can (ie. when VSX used and space is provided).
+      CC      arch/powerpc/lib/xor_vmx.o
+    arch/powerpc/lib/xor_vmx.c:1:0: error: AltiVec not supported in this target
+    make[1]: *** [arch/powerpc/lib/xor_vmx.o] Error 1
+    make: *** [arch/powerpc/lib] Error 2
 
-This is needed to support get/set/make/swapcontext for applications that
-use VSX but only provide a small context.  For example, getcontext in
-glibc provides a smaller context since the VSX registers don't need to
-be saved over the glibc function call.  But since the program calling
-getcontext may have used VSX, the kernel currently says the VSX state is
-valid when it's not.  If the returned context is then used in setcontext
-(ie. a small context without VSX but with MSR VSX set), the kernel will
-refuse the context.  This situation has been reported by the glibc
-community.
+So we should restrict e500mc64 in altivec scenario.
 
-Based on patch from Carlos O'Donell.
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/Makefile |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Tested-by: Haren Myneni <haren@linux.vnet.ibm.com>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Cc: stable@vger.kernel.org
---
-v2:
-  - moved the code around a bit to make clearer what's happening
-  - added 64bit version as noticed by mpe
-  - updates to comments and commit messages
-
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 749778e..68027bf 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -445,6 +445,12 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
- #endif /* CONFIG_ALTIVEC */
- 	if (copy_fpr_to_user(&frame->mc_fregs, current))
- 		return 1;
-+
-+	/*
-+	 * Clear the MSR VSX bit to indicate there is no valid state attached
-+	 * to this context, except in the specific case below where we set it.
-+	 */
-+	msr &= ~MSR_VSX;
- #ifdef CONFIG_VSX
- 	/*
- 	 * Copy VSR 0-31 upper half from thread_struct to local
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index b3c6157..26789ed 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -122,6 +122,12 @@ static long setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
- 	flush_fp_to_thread(current);
- 	/* copy fpr regs and fpscr */
- 	err |= copy_fpr_to_user(&sc->fp_regs, current);
-+
-+	/*
-+	 * Clear the MSR VSX bit to indicate there is no valid state attached
-+	 * to this context, except in the specific case below where we set it.
-+	 */
-+	msr &= ~MSR_VSX;
- #ifdef CONFIG_VSX
- 	/*
- 	 * Copy VSX low doubleword to local buffer for formatting,
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 607acf5..fd5f6b5 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -127,7 +127,12 @@ CFLAGS-$(CONFIG_POWER5_CPU) += $(call cc-option,-mcpu=power5)
+ CFLAGS-$(CONFIG_POWER6_CPU) += $(call cc-option,-mcpu=power6)
+ CFLAGS-$(CONFIG_POWER7_CPU) += $(call cc-option,-mcpu=power7)
+ 
++# Altivec option not allowed with e500mc64 in GCC.
++ifeq ($(CONFIG_ALTIVEC),y)
++E5500_CPU := -mcpu=powerpc64
++else
+ E5500_CPU := $(call cc-option,-mcpu=e500mc64,-mcpu=powerpc64)
++endif
+ CFLAGS-$(CONFIG_E5500_CPU) += $(E5500_CPU)
+ CFLAGS-$(CONFIG_E6500_CPU) += $(call cc-option,-mcpu=e6500,$(E5500_CPU))
+ 
+-- 
+1.7.9.5
