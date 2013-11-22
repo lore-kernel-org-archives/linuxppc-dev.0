@@ -1,25 +1,20 @@
-Return-Path: <joseph_myers@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "relay1.mentorg.com",
- Issuer "Entrust Certification Authority - L1C" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C358C2C012E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Nov 2013 12:22:42 +1100 (EST)
-Date: Sat, 23 Nov 2013 01:22:31 +0000
-From: "Joseph S. Myers" <joseph@codesourcery.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/6] powerpc: fix exception clearing in e500 SPE float
- emulation
-In-Reply-To: <1385159644.1403.532.camel@snotra.buserror.net>
-Message-ID: <Pine.LNX.4.64.1311230053360.12354@digraph.polyomino.org.uk>
-References: <Pine.LNX.4.64.1311041649250.4290@digraph.polyomino.org.uk>
- <Pine.LNX.4.64.1311041651390.4290@digraph.polyomino.org.uk>
- <1385159644.1403.532.camel@snotra.buserror.net>
+Return-Path: <devhexorg@gmail.com>
+Received: from mail-qc0-x244.google.com (mail-qc0-x244.google.com
+ [IPv6:2607:f8b0:400d:c01::244])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 783A92C012D
+ for <linuxppc-dev@ozlabs.org>; Sat, 23 Nov 2013 08:09:33 +1100 (EST)
+Received: by mail-qc0-f196.google.com with SMTP id r5so202463qcx.3
+ for <linuxppc-dev@ozlabs.org>; Fri, 22 Nov 2013 13:09:30 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Sender: Joseph Myers <joseph@codesourcery.com>
-Cc: Liu Yu <yu.liu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Shan Hai <shan.hai@windriver.com>
+Date: Fri, 22 Nov 2013 15:09:29 -0600
+Message-ID: <CA+2fWjZRw7zdCACXXSTPN4QVeuXN5CLOZSOJJiGuP4UBcS2aMA@mail.gmail.com>
+Subject: Windfarm's max6690 sensor driver was not included in makefile
+From: Stanislav Ponomarev <devhexorg@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/mixed; boundary=047d7b6dcd0416c89904ebca6eb6
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,59 +24,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 22 Nov 2013, Scott Wood wrote:
+--047d7b6dcd0416c89904ebca6eb6
+Content-Type: multipart/alternative; boundary=047d7b6dcd0416c89004ebca6eb4
 
-> This sounds like an incompatible change to userspace API.  What about
-> older glibc?  What about user code that directly manipulates these bits
-> rather than going through libc, or uses a libc other than glibc?  Where
-> is this API requirement documented?
+--047d7b6dcd0416c89004ebca6eb4
+Content-Type: text/plain; charset=ISO-8859-1
 
-The previous EGLIBC port, and the uClibc code copied from it, is 
-fundamentally broken as regards any use of prctl for floating-point 
-exceptions because it didn't use the PR_FP_EXC_SW_ENABLE bit in its prctl 
-calls (and did various worse things, such as passing a pointer when prctl 
-expected an integer).  If you avoid anything where prctl is used, the 
-clearing of sticky bits still means it will never give anything 
-approximating correct exception semantics with existing kernels.  I don't 
-believe the patch makes things any worse for existing code that doesn't 
-try to inform the kernel of changes to sticky bits - such code may get 
-incorrect exceptions in some cases, but it would have done so anyway in 
-other cases.
+Hello, I had problems with fan speed in my XServe G5. It turned out
+drivers/macintosh/Makefile has a max6690 module missing from compilation
+list. I was advised to mail the patch to you guys.
 
-This is the best API I could come up with to fix the fundamentally broken 
-nature of what came before, taking into account that in many cases a prctl 
-call is already needed along with userspace manipulation of exception 
-bits.  I'm not aware of any kernel documentation where this sort of 
-subarchitecture-specific API detail is documented.  (The API also includes 
-such things as needing to leave the spefscr trap-enable bits set and use 
-prctl to control whether SIGFPE results from exceptions.)
+I'm not sure what's the proper format of the patch to be submitten (this is
+my first time). So I'm including it into the message body, and as an
+attached file.
 
-> I think the impact of this could be reduced by using this mechanism only
-> to clear bits, rather than set them.  That is, if the exception bit is
-> unset, don't set it just because it's set in spefscr_last -- but if it's
-> not set in spefscr_last, and the emulation code doesn't want to set it,
-> then clear it.
+diff --git a/drivers/macintosh/Makefile b/drivers/macintosh/Makefile
+index 6753b65..d2f0120 100644
+--- a/drivers/macintosh/Makefile
++++ b/drivers/macintosh/Makefile
+@@ -40,6 +40,7 @@ obj-$(CONFIG_WINDFARM_RM31)     +=
+windfarm_fcu_controls.o \
+                                   windfarm_ad7417_sensor.o \
+                                   windfarm_lm75_sensor.o \
+                                   windfarm_lm87_sensor.o \
++                                  windfarm_max6690_sensor.o \
+                                   windfarm_pid.o \
+                                   windfarm_cpufreq_clamp.o \
+                                   windfarm_rm31.o
 
-It should already be the case in this patch that if a bit is clear in 
-spefscr, and set in spefscr_last (i.e. userspace did not inform the kernel 
-of clearing the bit, and no traps since then have resulted in the kernel 
-noticing it was cleared), it won't get set unless the emulation code wants 
-to set it.  The sole place spefscr_last is read is in the statement 
-"__FPU_FPSCR &= ~(FP_EX_INVALID | FP_EX_UNDERFLOW) | 
-current->thread.spefscr_last;" - if the bit is already clear in spefscr, 
-this statement has no effect on it.
 
-> Are there any cases where the exception bit can be set without the
-> kernel taking a trap, or is userspace manipulation limited to clearing
-> the bits?
+Thank you.
+Stanislav Ponomarev.
 
-Userspace can both set and clear the bits without a trap.  For example, 
-fesetenv restores a saved value of spefscr which may both set and clear 
-bits (and then it calls prctl because it needs to do so anyway to restore 
-the saved state for which exceptions were enabled).  fesetexceptflag 
-restores saved state of particular exceptions without a trap (so needs to 
-call prctl specially to inform the kernel of a change).
+--047d7b6dcd0416c89004ebca6eb4
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: base64
 
--- 
-Joseph S. Myers
-joseph@codesourcery.com
+PGRpdiBkaXI9Imx0ciI+PGRpdj5IZWxsbywgSSBoYWQgcHJvYmxlbXMgd2l0aCBmYW4gc3BlZWQg
+aW4gbXkgWFNlcnZlIEc1LiBJdCB0dXJuZWQgb3V0IGRyaXZlcnMvbWFjaW50b3NoL01ha2VmaWxl
+IGhhcyBhIG1heDY2OTAgbW9kdWxlIG1pc3NpbmcgZnJvbSBjb21waWxhdGlvbiBsaXN0LiBJIHdh
+cyBhZHZpc2VkIHRvIG1haWwgdGhlIHBhdGNoIHRvIHlvdSBndXlzLjxicj48YnI+PC9kaXY+DQpJ
+JiMzOTttIG5vdCBzdXJlIHdoYXQmIzM5O3MgdGhlIHByb3BlciBmb3JtYXQgb2YgdGhlIHBhdGNo
+IHRvIGJlIHN1Ym1pdHRlbiAodGhpcyBpcyBteSBmaXJzdCB0aW1lKS4gU28gSSYjMzk7bSBpbmNs
+dWRpbmcgaXQgaW50byB0aGUgbWVzc2FnZSBib2R5LCBhbmQgYXMgYW4gYXR0YWNoZWQgZmlsZS48
+YnI+PGRpdj48YnI+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWFjaW50b3NoL01ha2VmaWxlIGIvZHJp
+dmVycy9tYWNpbnRvc2gvTWFrZWZpbGU8YnI+DQppbmRleCA2NzUzYjY1Li5kMmYwMTIwIDEwMDY0
+NDxicj4tLS0gYS9kcml2ZXJzL21hY2ludG9zaC9NYWtlZmlsZTxicj4rKysgYi9kcml2ZXJzL21h
+Y2ludG9zaC9NYWtlZmlsZTxicj5AQCAtNDAsNiArNDAsNyBAQCBvYmotJChDT05GSUdfV0lOREZB
+Uk1fUk0zMSmgoKCgICs9IHdpbmRmYXJtX2ZjdV9jb250cm9scy5vIFw8YnI+oKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoCB3aW5kZmFybV9hZDc0MTdfc2Vuc29yLm8gXDxicj4NCqCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgd2luZGZhcm1fbG03NV9zZW5zb3IubyBc
+PGJyPqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgd2luZGZhcm1fbG04N19zZW5z
+b3IubyBcPGJyPiugoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgd2luZGZhcm1fbWF4
+NjY5MF9zZW5zb3IubyBcPGJyPqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgd2lu
+ZGZhcm1fcGlkLm8gXDxicj4NCqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgd2lu
+ZGZhcm1fY3B1ZnJlcV9jbGFtcC5vIFw8YnI+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoCB3aW5kZmFybV9ybTMxLm88YnI+PGJyPjxicj48L2Rpdj48ZGl2PlRoYW5rIHlvdS48YnI+
+PC9kaXY+PGRpdj5TdGFuaXNsYXYgUG9ub21hcmV2Ljxicj48L2Rpdj48L2Rpdj4NCg==
+--047d7b6dcd0416c89004ebca6eb4--
+
+--047d7b6dcd0416c89904ebca6eb6
+Content-Type: text/x-patch; charset=US-ASCII; name="Makefile.patch"
+Content-Disposition: attachment; filename="Makefile.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hobx996u0
+
+aW5kZXggNjc1M2I2NS4uZDJmMDEyMCAxMDA2NDQKLS0tIGEvZHJpdmVycy9tYWNpbnRvc2gvTWFr
+ZWZpbGUKKysrIGIvZHJpdmVycy9tYWNpbnRvc2gvTWFrZWZpbGUKQEAgLTQwLDYgKzQwLDcgQEAg
+b2JqLSQoQ09ORklHX1dJTkRGQVJNX1JNMzEpICAgICArPSB3aW5kZmFybV9mY3VfY29udHJvbHMu
+byBcCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgd2luZGZhcm1fYWQ3NDE3X3Nl
+bnNvci5vIFwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB3aW5kZmFybV9sbTc1
+X3NlbnNvci5vIFwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB3aW5kZmFybV9s
+bTg3X3NlbnNvci5vIFwKKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB3aW5kZmFy
+bV9tYXg2NjkwX3NlbnNvci5vIFwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB3
+aW5kZmFybV9waWQubyBcCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgd2luZGZh
+cm1fY3B1ZnJlcV9jbGFtcC5vIFwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB3
+aW5kZmFybV9ybTMxLm8K
+--047d7b6dcd0416c89904ebca6eb6--
