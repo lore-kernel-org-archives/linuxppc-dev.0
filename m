@@ -1,28 +1,16 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9FC932C0126
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Nov 2013 03:38:45 +1100 (EST)
-Date: Sat, 23 Nov 2013 00:31:32 +0800
-From: Nicolin Chen <b42378@freescale.com>
-To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
- <s.hauer@pengutronix.de>, <timur@tabi.org>, <shawn.guo@linaro.org>,
- <broonie@kernel.org>
-Subject: Re: [PATCH v7 0/4] Add dual-fifo mode support of i.MX ssi
-Message-ID: <20131122163132.GB17344@MrMyself>
-References: <cover.1384352281.git.b42378@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <cover.1384352281.git.b42378@freescale.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, swarren@wwwdotorg.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- rob.herring@calxeda.com, dmaengine@vger.kernel.org,
- ijc+devicetree@hellion.org.uk, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id 08AC62C012E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Nov 2013 03:57:48 +1100 (EST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc 8xx: mfspr SPRN_TBRx in lieu of mftb/mftbu is not
+ supported
+Message-Id: <20131122165731.B06B91A4DE7@localhost.localdomain>
+Date: Fri, 22 Nov 2013 17:57:31 +0100 (CET)
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,77 +20,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+Commit beb2dc0a7a84be003ce54e98b95d65cc66e6e536 breaks the MPC8xx which seems
+to not support using mfspr SPRN_TBRx instead of mftb/mftbu despite
+what is written in the reference manual
+This patchs revert to the use of mftb/mftbu when CONFIG_8xx is selected
 
-   I'm sorry to push this. But this series has been an orphan for a while.
-   Could any one please receive and foster it?
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Thank you.
-Nicolin Chen
-
-On Wed, Nov 13, 2013 at 10:55:23PM +0800, Nicolin Chen wrote:
->  * ! This series of patches has a direct dependency between them. When
->  * ! applying them, we need to apply to one single branch. Otherwise,
->  * ! it would break currect branches.
-> 
-> Changelog
-> v7:
->  * Appended missing Acked-by to all four patches.
->  * Sorry that I didn't add them at the first place.
-> v6:
->  * PATCH-1: Use goto err_firmware instead of return directly.
->  *
->  * Nothing changes for the other three ack-ed patches
-> v5:
->  * PATCH-3: Add period size constraint when using dual fifo mode
->  *
->  * Nothing changes for the other three patches
-> v4:
->  * PATCH-3: Drop useless register configuration.
->  *
->  * Nothing changes for the other three patches
-> v3:
->  * PATCH-1: Add comments to indicate the end of v1 and v2 array.
->  * PATCH-3: Use better way to keep watermark as even number.
->  *
->  * Nothing changes for PATCH-2 and PATCH-4
-> v2:
->  * Instead of adding rogue scripts to current SDMA driver based on firmware
->  * V1, we define the new SDMA firmware as version 2 and bisect the PATCH-1
->  * to two patches: The first is to add version check code to the SDMA driver;
->  * And the second is to add SSI dual FIFO DMATYPE.
->  *
->  * Nothing changes for the last two patches.
-> v1:
->  * SSI can reduce hardware overrun/underrun possibility when using dual
->  * fifo mode. To support this mode, we need to first update sdma sciprt
->  * list, and then enable dual fifo BIT in SSI driver, and last update DT
->  * bindings of i.MX series.
-> 
-> Nicolin Chen (4):
->   dma: imx-sdma: Add sdma firmware version 2 support
->   dma: imx-sdma: Add new dma type for ssi dual fifo script
->   ASoC: fsl_ssi: Add dual fifo mode support
->   ARM: dts: imx: use dual-fifo sdma script for ssi
-> 
->  .../devicetree/bindings/dma/fsl-imx-sdma.txt       |  1 +
->  arch/arm/boot/dts/imx51.dtsi                       |  4 ++--
->  arch/arm/boot/dts/imx53.dtsi                       |  4 ++--
->  arch/arm/boot/dts/imx6qdl.dtsi                     | 12 +++++-----
->  arch/arm/boot/dts/imx6sl.dtsi                      | 12 +++++-----
->  drivers/dma/imx-sdma.c                             | 19 ++++++++++++++-
->  include/linux/platform_data/dma-imx-sdma.h         |  5 ++++
->  include/linux/platform_data/dma-imx.h              |  1 +
->  sound/soc/fsl/fsl_ssi.c                            | 27 +++++++++++++++++++++-
->  9 files changed, 67 insertions(+), 18 deletions(-)
-> 
-> -- 
-> 1.8.4
-> 
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
+diff -ur a/arch/powerpc/boot/util.S b/arch/powerpc/boot/util.S
+--- a/arch/powerpc/boot/util.S	2013-11-20 21:54:45.000000000 +0100
++++ b/arch/powerpc/boot/util.S	2013-11-22 17:19:51.880386544 +0100
+@@ -71,18 +71,32 @@
+ 	add	r4,r4,r5
+ 	addi	r4,r4,-1
+ 	divw	r4,r4,r5	/* BUS ticks */
++#ifdef CONFIG_8xx
++1:	mftbu	r5
++	mftb	r6
++	mftbu	r7
++#else
+ 1:	mfspr	r5, SPRN_TBRU
+ 	mfspr	r6, SPRN_TBRL
+ 	mfspr	r7, SPRN_TBRU
++#endif
+ 	cmpw	0,r5,r7
+ 	bne	1b		/* Get [synced] base time */
+ 	addc	r9,r6,r4	/* Compute end time */
+ 	addze	r8,r5
++#ifdef CONFIG_8xx
++2:	mftbu	r5
++#else
+ 2:	mfspr	r5, SPRN_TBRU
++#endif
+ 	cmpw	0,r5,r8
+ 	blt	2b
+ 	bgt	3f
++#ifdef CONFIG_8xx
++	mftb	r6
++#else
+ 	mfspr	r6, SPRN_TBRL
++#endif
+ 	cmpw	0,r6,r9
+ 	blt	2b
+ 3:	blr
+diff -ur a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+--- a/arch/powerpc/include/asm/ppc_asm.h	2013-11-20 21:54:45.000000000 +0100
++++ b/arch/powerpc/include/asm/ppc_asm.h	2013-11-22 17:24:57.839272480 +0100
+@@ -438,6 +438,8 @@
+ 	cmpwi dest,0;			\
+ 	beq-  90b;			\
+ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
++#elif defined(CONFIG_8xx)
++#define MFTB(dest)			mftb dest
+ #else
+ #define MFTB(dest)			mfspr dest, SPRN_TBRL
+ #endif
+diff -ur a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+--- a/arch/powerpc/include/asm/reg.h	2013-11-20 21:54:45.000000000 +0100
++++ b/arch/powerpc/include/asm/reg.h	2013-11-22 17:27:44.009391916 +0100
+@@ -1154,12 +1154,19 @@
+ 
+ #else /* __powerpc64__ */
+ 
++#if defined(CONFIG_8xx)
++#define mftbl()		({unsigned long rval;	\
++			asm volatile("mftbl %0" : "=r" (rval)); rval;})
++#define mftbu()		({unsigned long rval;	\
++			asm volatile("mftbu %0" : "=r" (rval)); rval;})
++#else
+ #define mftbl()		({unsigned long rval;	\
+ 			asm volatile("mfspr %0, %1" : "=r" (rval) : \
+ 				"i" (SPRN_TBRL)); rval;})
+ #define mftbu()		({unsigned long rval;	\
+ 			asm volatile("mfspr %0, %1" : "=r" (rval) : \
+ 				"i" (SPRN_TBRU)); rval;})
++#endif
+ #endif /* !__powerpc64__ */
+ 
+ #define mttbl(v)	asm volatile("mttbl %0":: "r"(v))
+diff -ur a/arch/powerpc/include/asm/timex.h b/arch/powerpc/include/asm/timex.h
+--- a/arch/powerpc/include/asm/timex.h	2013-11-20 21:54:45.000000000 +0100
++++ b/arch/powerpc/include/asm/timex.h	2013-11-22 17:29:31.207016228 +0100
+@@ -29,7 +29,11 @@
+ 	ret = 0;
+ 
+ 	__asm__ __volatile__(
++#ifdef CONFIG_8xx
++		"97:	mftb %0\n"
++#else
+ 		"97:	mfspr %0, %2\n"
++#endif
+ 		"99:\n"
+ 		".section __ftr_fixup,\"a\"\n"
+ 		".align 2\n"
+@@ -41,7 +45,11 @@
+ 		"	.long 0\n"
+ 		"	.long 0\n"
+ 		".previous"
++#ifdef CONFIG_8xx
++		: "=r" (ret) : "i" (CPU_FTR_601));
++#else
+ 		: "=r" (ret) : "i" (CPU_FTR_601), "i" (SPRN_TBRL));
++#endif
+ 	return ret;
+ #endif
+ }
+diff -ur a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
+--- a/arch/powerpc/kernel/vdso32/gettimeofday.S	2013-11-20 21:54:46.000000000 +0100
++++ b/arch/powerpc/kernel/vdso32/gettimeofday.S	2013-11-22 17:30:53.646493897 +0100
+@@ -232,9 +232,15 @@
+ 	lwz	r6,(CFG_TB_ORIG_STAMP+4)(r9)
+ 
+ 	/* Get a stable TB value */
++#ifdef CONFIG_8xx
++2:	mftbu	r3
++	mftbl	r4
++	mftbu	r0
++#else
+ 2:	mfspr	r3, SPRN_TBRU
+ 	mfspr	r4, SPRN_TBRL
+ 	mfspr	r0, SPRN_TBRU
++#endif
+ 	cmplw	cr0,r3,r0
+ 	bne-	2b
+ 
