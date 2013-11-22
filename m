@@ -1,16 +1,23 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id D1CAE2C0079
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Nov 2013 04:28:40 +1100 (EST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v2] powerpc 8xx: defconfig: slice by 4 is more efficient than
- the default slice by 8 on Powerpc 8xx.
-Message-Id: <20131122172829.CC8EE1A4DE7@localhost.localdomain>
-Date: Fri, 22 Nov 2013 18:28:29 +0100 (CET)
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <scottwood@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6C0922C014B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Nov 2013 05:39:25 +1100 (EST)
+Message-ID: <1385145548.1403.524.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2] powerpc/gpio: Fix the wrong GPIO input data on
+ MPC8572/MPC8536
+From: Scott Wood <scottwood@freescale.com>
+To: Liu Gang <Gang.Liu@freescale.com>
+Date: Fri, 22 Nov 2013 12:39:08 -0600
+In-Reply-To: <1385107960-373-1-git-send-email-Gang.Liu@freescale.com>
+References: <1385107960-373-1-git-send-email-Gang.Liu@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: b07421@freescale.com, linus.walleij@linaro.org, r61911@freescale.com,
+ linux-gpio@vger.kernel.org, agust@denx.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,60 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PPC_8xx, CRC32_SLICEBY4 is more efficient (almost twice) than CRC32_SLICEBY8,
-as shown below:
+On Fri, 2013-11-22 at 16:12 +0800, Liu Gang wrote:
+> For MPC8572/MPC8536, the status of GPIOs defined as output
+> cannot be determined by reading GPDAT register, so the code
+> use shadow data register instead. But the code may give the
+> wrong status of GPIOs defined as input under some scenarios:
+> 
+> 1. If some pins were configured as inputs and were asserted
+> high before booting the kernel, the shadow data has been
+> initialized with those pin values.
+> 2. Some pins have been configured as output first and have
+> been set to the high value, then reconfigured as input.
+> 
+> The above cases will make the shadow data for those input
+> pins to be set to high. Then reading the pin status will
+> always return high even if the actual pin status is low.
+> 
+> The code should eliminate the effects of the shadow data to
+> the input pins, and the status of those pins should be
+> read directly from GPDAT.
+> 
+> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+> ---
+> changes in v2:
+>  - Added more description of the problem.
+>  - Reduced one in_be32() call.
+>  - Do not modify the shadow data.
+> 
+>  drivers/gpio/gpio-mpc8xxx.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/gpio/gpio-mpc8xxx.c b/drivers/gpio/gpio-mpc8xxx.c
+> index 914e859..d7d6d72 100644
+> --- a/drivers/gpio/gpio-mpc8xxx.c
+> +++ b/drivers/gpio/gpio-mpc8xxx.c
+> @@ -70,10 +70,14 @@ static int mpc8572_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+>  	u32 val;
+>  	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
+>  	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
+> +	u32 out_mask, out_shadow;
+>  
+> -	val = in_be32(mm->regs + GPIO_DAT) & ~in_be32(mm->regs + GPIO_DIR);
+> +	out_mask = in_be32(mm->regs + GPIO_DIR);
+>  
+> -	return (val | mpc8xxx_gc->data) & mpc8xxx_gpio2mask(gpio);
+> +	val = in_be32(mm->regs + GPIO_DAT) & ~out_mask;
+> +	out_shadow = mpc8xxx_gc->data & out_mask;
+> +
+> +	return (val | out_shadow) & mpc8xxx_gpio2mask(gpio);
+>  }
+>  
+>  static int mpc8xxx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
 
-With CRC32_SLICEBY8:
-[    1.109204] crc32: CRC_LE_BITS = 64, CRC_BE BITS = 64
-[    1.114401] crc32: self tests passed, processed 225944 bytes in 15118910 nsec
-[    1.130655] crc32c: CRC_LE_BITS = 64
-[    1.134235] crc32c: self tests passed, processed 225944 bytes in 4479879 nsec
+Acked-by: Scott Wood <scottwood@freescale.com>
 
-With CRC32_SLICEBY4:
-[    1.097129] crc32: CRC_LE_BITS = 32, CRC_BE BITS = 32
-[    1.101878] crc32: self tests passed, processed 225944 bytes in 8616242 nsec
-[    1.116298] crc32c: CRC_LE_BITS = 32
-[    1.119607] crc32c: self tests passed, processed 225944 bytes in 3289576 nsec
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
-diff -ur a/arch/powerpc/configs/adder875_defconfig b/arch/powerpc/configs.new/adder875_defconfig
---- a/arch/powerpc/configs/adder875_defconfig	2013-11-22 18:20:10.342968268 +0100
-+++ b/arch/powerpc/configs.new/adder875_defconfig	2013-11-22 18:17:46.499686457 +0100
-@@ -70,3 +70,4 @@
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_DEBUG_INFO=y
- # CONFIG_RCU_CPU_STALL_DETECTOR is not set
-+CONFIG_CRC32_SLICEBY4=y
-diff -ur a/arch/powerpc/configs/ep88xc_defconfig b/arch/powerpc/configs.new/ep88xc_defconfig
---- a/arch/powerpc/configs/ep88xc_defconfig	2013-11-22 18:20:10.286961148 +0100
-+++ b/arch/powerpc/configs.new/ep88xc_defconfig	2013-11-22 18:17:41.992113565 +0100
-@@ -72,3 +72,4 @@
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_DEBUG_INFO=y
- # CONFIG_RCU_CPU_STALL_DETECTOR is not set
-+CONFIG_CRC32_SLICEBY4=y
-diff -ur a/arch/powerpc/configs/mpc866_ads_defconfig b/arch/powerpc/configs.new/mpc866_ads_defconfig
---- a/arch/powerpc/configs/mpc866_ads_defconfig	2013-11-22 18:20:10.323965853 +0100
-+++ b/arch/powerpc/configs.new/mpc866_ads_defconfig	2013-11-22 18:17:32.480904735 +0100
-@@ -55,3 +55,4 @@
- CONFIG_CRC_CCITT=y
- # CONFIG_RCU_CPU_STALL_DETECTOR is not set
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
-+CONFIG_CRC32_SLICEBY4=y
-diff -ur a/arch/powerpc/configs/mpc885_ads_defconfig b/arch/powerpc/configs.new/mpc885_ads_defconfig
---- a/arch/powerpc/configs/mpc885_ads_defconfig	2013-11-22 18:20:10.326966235 +0100
-+++ b/arch/powerpc/configs.new/mpc885_ads_defconfig	2013-11-22 18:17:25.760050546 +0100
-@@ -78,3 +78,4 @@
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_DEBUG_INFO=y
- # CONFIG_RCU_CPU_STALL_DETECTOR is not set
-+CONFIG_CRC32_SLICEBY4=y
-diff -ur a/arch/powerpc/configs/tqm8xx_defconfig b/arch/powerpc/configs.new/tqm8xx_defconfig
---- a/arch/powerpc/configs/tqm8xx_defconfig	2013-11-22 18:20:10.317965090 +0100
-+++ b/arch/powerpc/configs.new/tqm8xx_defconfig	2013-11-22 18:17:14.926673681 +0100
-@@ -84,3 +84,4 @@
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_DEBUG_INFO=y
- # CONFIG_RCU_CPU_STALL_DETECTOR is not set
-+CONFIG_CRC32_SLICEBY4=y
+-Scott
