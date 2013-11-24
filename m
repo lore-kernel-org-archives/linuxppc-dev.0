@@ -1,26 +1,32 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
- [IPv6:2607:f8b0:400e:c02::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C1FFF2C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Nov 2013 20:17:21 +1100 (EST)
-Received: by mail-pd0-f176.google.com with SMTP id w10so3578878pde.21
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Nov 2013 01:17:18 -0800 (PST)
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 15D702C00CE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 05:39:19 +1100 (EST)
+Date: Sun, 24 Nov 2013 19:39:08 +0100
+From: Gerhard Sittig <gsi@denx.de>
+To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Anatolij Gustschin <agust@denx.de>, Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH v5 00/17] add COMMON_CLK support for PowerPC MPC512x
+Message-ID: <20131124183908.GG2760@book.gsilab.sittig.org>
+References: <1384729577-7336-1-git-send-email-gsi@denx.de>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1385233105-20026-1-git-send-email-geert@linux-m68k.org>
-References: <1385233105-20026-1-git-send-email-geert@linux-m68k.org>
-Date: Sun, 24 Nov 2013 10:17:18 +0100
-Message-ID: <CAMuHMdVLg9uMh3FCHnE-=Dvd8XN283hvyybVid7ffmJpFNEYow@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.13-rc1
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: sparclinux <sparclinux@vger.kernel.org>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1384729577-7336-1-git-send-email-gsi@denx.de>
+Cc: Mark Rutland <mark.rutland@arm.com>, Detlev Zundel <dzu@denx.de>,
+ Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+ linux-mtd@lists.infradead.org, Jiri Slaby <jslaby@suse.cz>,
+ linux-serial@vger.kernel.org, Wolfgang Grandegger <wg@grandegger.com>,
+ linux-media@vger.kernel.org, devicetree@vger.kernel.org,
+ Ian Campbell <ian.campbell@citrix.com>, Pawel Moll <pawel.moll@arm.com>,
+ Stephen Warren <swarren@wwwdotorg.org>, Rob Herring <rob.herring@calxeda.com>,
+ linux-can@vger.kernel.org, Mark Brown <broonie@kernel.org>,
+ Marc Kleine-Budde <mkl@pengutronix.de>, Scott Wood <scottwood@freescale.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ linux-spi@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Mauro Carvalho Chehab <m.chehab@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +36,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Nov 23, 2013 at 7:58 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> 8 regressions:
->   + /scratch/kisskb/src/arch/sparc/kernel/kgdb_64.c: error: implicit declaration of function 'exception_enter' [-Werror=implicit-function-declaration]:  => 162:7
->   + /scratch/kisskb/src/arch/sparc/kernel/kgdb_64.c: error: implicit declaration of function 'exception_exit' [-Werror=implicit-function-declaration]:  => 176:2
+On Mon, Nov 18, 2013 at 00:06 +0100, Gerhard Sittig wrote:
+> 
+> the series is based on v3.12, but I'll rebase against v3.13-rc1
+> (when available) or any other subtree upon request
 
-sparc64-allmodconfig
+Now that v3.13-rc1 is out, I noticed that the series no longer
+applies cleanly (minor context changes and conflicts) and needs
+minor adjustment.
 
->   + /scratch/kisskb/src/kernel/bounds.c: error: -mcall-aixdesc must be big endian:  => 1:0
->   + /scratch/kisskb/src/scripts/mod/devicetable-offsets.c: error: -mcall-aixdesc must be big endian:  => 1:0
->   + /scratch/kisskb/src/scripts/mod/empty.c: error: -mcall-aixdesc must be big endian:  => 1:0
->   + <stdin>: error: -mcall-aixdesc must be big endian:  => 1:0
+Compilation of 4/17 requires <linux/of_address.h> which no longer
+is included implicitly.
 
-powerpc-allmodconfig
-powerpc-allyesconfig
+PPC_CLOCK removal in 7/17 should remove <asm/clk_interface.h> as
+well after all references to this header file have gone.  (And
+the context of the patch has changed.)
 
->   + error: drivers/built-in.o: undefined reference to `i2c_register_driver':  => .init.literal+0xd88)
->   + error: sram.c: undefined reference to `devm_regmap_init_i2c':  => .text+0x58ef8)
+The context of 16/17 for DIU initialization has changed.
 
-xtensa-allmodconfig
-sparc-allmodconfig
+I'll wait for a few more days whether there is more feedback for
+v5 (especially on the device tree backwards compat approach),
+then will rebase and send out v6 of the series.
 
-Gr{oetje,eeting}s,
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+virtually yours
+Gerhard Sittig
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
