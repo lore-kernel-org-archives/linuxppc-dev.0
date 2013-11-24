@@ -1,19 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3BD5E2C0141
- for <linuxppc-dev@ozlabs.org>; Sun, 24 Nov 2013 08:19:00 +1100 (EST)
-Message-ID: <1385241533.4882.137.camel@pasglop>
-Subject: Re: Windfarm's max6690 sensor driver was not included in makefile
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stanislav Ponomarev <devhexorg@gmail.com>
-Date: Sun, 24 Nov 2013 08:18:53 +1100
-In-Reply-To: <CA+2fWjZRw7zdCACXXSTPN4QVeuXN5CLOZSOJJiGuP4UBcS2aMA@mail.gmail.com>
-References: <CA+2fWjZRw7zdCACXXSTPN4QVeuXN5CLOZSOJJiGuP4UBcS2aMA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
+ [IPv6:2607:f8b0:400e:c02::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C1FFF2C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Nov 2013 20:17:21 +1100 (EST)
+Received: by mail-pd0-f176.google.com with SMTP id w10so3578878pde.21
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Nov 2013 01:17:18 -0800 (PST)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1385233105-20026-1-git-send-email-geert@linux-m68k.org>
+References: <1385233105-20026-1-git-send-email-geert@linux-m68k.org>
+Date: Sun, 24 Nov 2013 10:17:18 +0100
+Message-ID: <CAMuHMdVLg9uMh3FCHnE-=Dvd8XN283hvyybVid7ffmJpFNEYow@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.13-rc1
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: sparclinux <sparclinux@vger.kernel.org>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,44 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-11-22 at 15:09 -0600, Stanislav Ponomarev wrote:
-> Hello, I had problems with fan speed in my XServe G5. It turned out
-> drivers/macintosh/Makefile has a max6690 module missing from
-> compilation list. I was advised to mail the patch to you guys.
-> 
-> 
-> I'm not sure what's the proper format of the patch to be submitten
-> (this is my first time). So I'm including it into the message body,
-> and as an attached file.
+On Sat, Nov 23, 2013 at 7:58 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> 8 regressions:
+>   + /scratch/kisskb/src/arch/sparc/kernel/kgdb_64.c: error: implicit declaration of function 'exception_enter' [-Werror=implicit-function-declaration]:  => 162:7
+>   + /scratch/kisskb/src/arch/sparc/kernel/kgdb_64.c: error: implicit declaration of function 'exception_exit' [-Werror=implicit-function-declaration]:  => 176:2
 
-So make sure you send it as plain text in a form that preserves tabs and
-space (I don't now if gmail allows that). Also please include a
-"Signed-off-by:" line.
+sparc64-allmodconfig
 
-Cheers,
-Ben.
+>   + /scratch/kisskb/src/kernel/bounds.c: error: -mcall-aixdesc must be big endian:  => 1:0
+>   + /scratch/kisskb/src/scripts/mod/devicetable-offsets.c: error: -mcall-aixdesc must be big endian:  => 1:0
+>   + /scratch/kisskb/src/scripts/mod/empty.c: error: -mcall-aixdesc must be big endian:  => 1:0
+>   + <stdin>: error: -mcall-aixdesc must be big endian:  => 1:0
 
-> diff --git a/drivers/macintosh/Makefile b/drivers/macintosh/Makefile
-> index 6753b65..d2f0120 100644
-> --- a/drivers/macintosh/Makefile
-> +++ b/drivers/macintosh/Makefile
-> @@ -40,6 +40,7 @@ obj-$(CONFIG_WINDFARM_RM31)     +=
-> windfarm_fcu_controls.o \
->                                    windfarm_ad7417_sensor.o \
->                                    windfarm_lm75_sensor.o \
->                                    windfarm_lm87_sensor.o \
-> +                                  windfarm_max6690_sensor.o \
->                                    windfarm_pid.o \
->                                    windfarm_cpufreq_clamp.o \
->                                    windfarm_rm31.o
-> 
-> 
-> 
-> Thank you.
-> 
-> Stanislav Ponomarev.
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+powerpc-allmodconfig
+powerpc-allyesconfig
+
+>   + error: drivers/built-in.o: undefined reference to `i2c_register_driver':  => .init.literal+0xd88)
+>   + error: sram.c: undefined reference to `devm_regmap_init_i2c':  => .text+0x58ef8)
+
+xtensa-allmodconfig
+sparc-allmodconfig
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
