@@ -1,21 +1,29 @@
-Return-Path: <msalter@redhat.com>
+Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 54AC12C016A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 03:14:53 +1100 (EST)
-From: Mark Salter <msalter@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 01/11] Add generic fixmap.h
-Date: Mon, 25 Nov 2013 11:13:55 -0500
-Message-Id: <1385396045-15852-2-git-send-email-msalter@redhat.com>
-In-Reply-To: <1385396045-15852-1-git-send-email-msalter@redhat.com>
-References: <1385396045-15852-1-git-send-email-msalter@redhat.com>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- Michal Simek <monstr@monstr.eu>, James Hogan <james.hogan@imgtec.com>,
- Russell King <linux@arm.linux.org.uk>, linux-hexagon@vger.kernel.org,
- microblaze-uclinux@itee.uq.edu.au, Richard Kuo <rkuo@codeaurora.org>,
- Mark Salter <msalter@redhat.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
+ by ozlabs.org (Postfix) with ESMTP id BFDE62C00E3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 03:38:20 +1100 (EST)
+Message-ID: <1385397493.2879.557.camel@ul30vt.home>
+Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Bharat Bhushan <Bharat.Bhushan@freescale.com>
+Date: Mon, 25 Nov 2013 09:38:13 -0700
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1384973243.2879.361.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1385066603.2879.414.camel@ul30vt.home>
+ <1385066835.1403.489.camel@snotra.buserror.net>
+ <1385067648.2879.421.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "agraf@suse.de" <agraf@suse.de>, Stuart Yoder <stuart.yoder@freescale.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,136 +33,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Many architectures provide an asm/fixmap.h which defines support for
-compile-time 'special' virtual mappings which need to be made before
-paging_init() has run. This support is also used for early ioremap
-on x86. Much of this support is identical across the architectures.
-This patch consolidates all of the common bits into asm-generic/fixmap.h
-which is intended to be included from arch/*/include/asm/fixmap.h.
+On Mon, 2013-11-25 at 05:33 +0000, Bharat Bhushan wrote:
+> 
+> > -----Original Message-----
+> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > Sent: Friday, November 22, 2013 2:31 AM
+> > To: Wood Scott-B07421
+> > Cc: Bhushan Bharat-R65777; linux-pci@vger.kernel.org; agraf@suse.de; Yoder
+> > Stuart-B08248; iommu@lists.linux-foundation.org; bhelgaas@google.com; linuxppc-
+> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+> > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+> > 
+> > On Thu, 2013-11-21 at 14:47 -0600, Scott Wood wrote:
+> > > On Thu, 2013-11-21 at 13:43 -0700, Alex Williamson wrote:
+> > > > On Thu, 2013-11-21 at 11:20 +0000, Bharat Bhushan wrote:
+> > > > >
+> > > > > > -----Original Message-----
+> > > > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > > > > > Sent: Thursday, November 21, 2013 12:17 AM
+> > > > > > To: Bhushan Bharat-R65777
+> > > > > > Cc: joro@8bytes.org; bhelgaas@google.com; agraf@suse.de; Wood
+> > > > > > Scott-B07421; Yoder Stuart-B08248;
+> > > > > > iommu@lists.linux-foundation.org; linux- pci@vger.kernel.org;
+> > > > > > linuxppc-dev@lists.ozlabs.org; linux- kernel@vger.kernel.org;
+> > > > > > Bhushan Bharat-R65777
+> > > > > > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale
+> > > > > > IOMMU (PAMU)
+> > > > > >
+> > > > > > Is VFIO_IOMMU_PAMU_GET_MSI_BANK_COUNT per aperture (ie. each
+> > > > > > vfio user has $COUNT regions at their disposal exclusively)?
+> > > > >
+> > > > > Number of msi-bank count is system wide and not per aperture, But will be
+> > setting windows for banks in the device aperture.
+> > > > > So say if we are direct assigning 2 pci device (both have different iommu
+> > group, so 2 aperture in iommu) to VM.
+> > > > > Now qemu can make only one call to know how many msi-banks are there but
+> > it must set sub-windows for all banks for both pci device in its respective
+> > aperture.
+> > > >
+> > > > I'm still confused.  What I want to make sure of is that the banks
+> > > > are independent per aperture.  For instance, if we have two separate
+> > > > userspace processes operating independently and they both chose to
+> > > > use msi bank zero for their device, that's bank zero within each
+> > > > aperture and doesn't interfere.  Or another way to ask is can a
+> > > > malicious user interfere with other users by using the wrong bank.
+> > > > Thanks,
+> > >
+> > > They can interfere.
+> 
+> Want to be sure of how they can interfere?
 
-Signed-off-by: Mark Salter <msalter@redhat.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
-CC: linux-arch@vger.kernel.org
-CC: Russell King <linux@arm.linux.org.uk>
-CC: linux-arm-kernel@lists.infradead.org
-CC: Richard Kuo <rkuo@codeaurora.org>
-CC: linux-hexagon@vger.kernel.org
-CC: James Hogan <james.hogan@imgtec.com>
-CC: linux-metag@vger.kernel.org
-CC: Michal Simek <monstr@monstr.eu>
-CC: microblaze-uclinux@itee.uq.edu.au
-CC: linux-mips@linux-mips.org
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: linuxppc-dev@lists.ozlabs.org
----
- include/asm-generic/fixmap.h | 97 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 97 insertions(+)
- create mode 100644 include/asm-generic/fixmap.h
+What happens if more than one user selects the same MSI bank?
+Minimally, wouldn't that result in the IOMMU blocking transactions from
+the previous user once the new user activates their mapping?
 
-diff --git a/include/asm-generic/fixmap.h b/include/asm-generic/fixmap.h
-new file mode 100644
-index 0000000..5a64ca4
---- /dev/null
-+++ b/include/asm-generic/fixmap.h
-@@ -0,0 +1,97 @@
-+/*
-+ * fixmap.h: compile-time virtual memory allocation
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 1998 Ingo Molnar
-+ *
-+ * Support of BIGMEM added by Gerhard Wichert, Siemens AG, July 1999
-+ * x86_32 and x86_64 integration by Gustavo F. Padovan, February 2009
-+ * Break out common bits to asm-generic by Mark Salter, November 2013
-+ */
-+
-+#ifndef __ASM_GENERIC_FIXMAP_H
-+#define __ASM_GENERIC_FIXMAP_H
-+
-+#include <linux/bug.h>
-+
-+#define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
-+#define __virt_to_fix(x)	((FIXADDR_TOP - ((x)&PAGE_MASK)) >> PAGE_SHIFT)
-+
-+#ifndef __ASSEMBLY__
-+/*
-+ * 'index to address' translation. If anyone tries to use the idx
-+ * directly without translation, we catch the bug with a NULL-deference
-+ * kernel oops. Illegal ranges of incoming indices are caught too.
-+ */
-+static __always_inline unsigned long fix_to_virt(const unsigned int idx)
-+{
-+	BUILD_BUG_ON(idx >= __end_of_fixed_addresses);
-+	return __fix_to_virt(idx);
-+}
-+
-+static inline unsigned long virt_to_fix(const unsigned long vaddr)
-+{
-+	BUG_ON(vaddr >= FIXADDR_TOP || vaddr < FIXADDR_START);
-+	return __virt_to_fix(vaddr);
-+}
-+
-+/*
-+ * Provide some reasonable defaults for page flags.
-+ * Not all architectures use all of these different types and some
-+ * architectures use different names.
-+ */
-+#ifndef FIXMAP_PAGE_NORMAL
-+#define FIXMAP_PAGE_NORMAL PAGE_KERNEL
-+#endif
-+#ifndef FIXMAP_PAGE_NOCACHE
-+#define FIXMAP_PAGE_NOCACHE PAGE_KERNEL_NOCACHE
-+#endif
-+#ifndef FIXMAP_PAGE_IO
-+#define FIXMAP_PAGE_IO PAGE_KERNEL_IO
-+#endif
-+#ifndef FIXMAP_PAGE_CLEAR
-+#define FIXMAP_PAGE_CLEAR __pgprot(0)
-+#endif
-+
-+#ifndef set_fixmap
-+#define set_fixmap(idx, phys)				\
-+	__set_fixmap(idx, phys, FIXMAP_PAGE_NORMAL)
-+#endif
-+
-+#ifndef clear_fixmap
-+#define clear_fixmap(idx)			\
-+	__set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR)
-+#endif
-+
-+/* Return a pointer with offset calculated */
-+#define __set_fixmap_offset(idx, phys, flags)		      \
-+({							      \
-+	unsigned long addr;				      \
-+	__set_fixmap(idx, phys, flags);			      \
-+	addr = fix_to_virt(idx) + ((phys) & (PAGE_SIZE - 1)); \
-+	addr;						      \
-+})
-+
-+#define set_fixmap_offset(idx, phys) \
-+	__set_fixmap_offset(idx, phys, FIXMAP_PAGE_NORMAL)
-+
-+/*
-+ * Some hardware wants to get fixmapped without caching.
-+ */
-+#define set_fixmap_nocache(idx, phys) \
-+	__set_fixmap(idx, phys, FIXMAP_PAGE_NOCACHE)
-+
-+#define set_fixmap_offset_nocache(idx, phys) \
-+	__set_fixmap_offset(idx, phys, FIXMAP_PAGE_NOCACHE)
-+
-+/*
-+ * Some fixmaps are for IO
-+ */
-+#define set_fixmap_io(idx, phys) \
-+	__set_fixmap(idx, phys, FIXMAP_PAGE_IO)
-+
-+#endif /* __ASSEMBLY__ */
-+#endif /* __ASM_GENERIC_FIXMAP_H */
--- 
-1.8.3.1
+> >>  With this hardware, the only way to prevent that
+> > > is to make sure that a bank is not shared by multiple protection contexts.
+> > > For some of our users, though, I believe preventing this is less
+> > > important than the performance benefit.
+> 
+> So should we let this patch series in without protection?
+
+No.
+
+> > 
+> > I think we need some sort of ownership model around the msi banks then.
+> > Otherwise there's nothing preventing another userspace from attempting an MSI
+> > based attack on other users, or perhaps even on the host.  VFIO can't allow
+> > that.  Thanks,
+> 
+> We have very few (3 MSI bank on most of chips), so we can not assign
+> one to each userspace. What we can do is host and userspace does not
+> share a MSI bank while userspace will share a MSI bank.
+
+Then you probably need VFIO to "own" the MSI bank and program devices
+into it rather than exposing the MSI banks to userspace to let them have
+direct access.  Thanks,
+
+Alex
