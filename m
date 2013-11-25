@@ -1,35 +1,33 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5EBDD2C0098
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Nov 2013 17:56:34 +1100 (EST)
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E34092C00B6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 19:49:09 +1100 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Mon, 25 Nov 2013 16:56:33 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 4D7E32CE8053
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Nov 2013 17:56:26 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAP6cNmO23461944
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Nov 2013 17:38:24 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAP6uOat012940
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Nov 2013 17:56:24 +1100
-Subject: [PATCH v2] PPC64: Adding symbols in vmcoreinfo to facilitate dump
- filtering
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Date: Mon, 25 Nov 2013 12:26:20 +0530
-Message-ID: <20131125065620.22242.54478.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Mon, 25 Nov 2013 18:49:08 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id F00462BB0053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 19:49:04 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAP8mpwX2425116
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 19:48:52 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rAP8n3ew028008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 19:49:03 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4] KVM: PPC: vfio kvm device: support spapr tce
+Date: Mon, 25 Nov 2013 19:49:02 +1100
+Message-Id: <1385369342-24423-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,65 +37,311 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_SPARSEMEM_VMEMMAP option is set in kernel, makedumpfile
-tool fails to filter vmcore dump as it fails to do translations for
-vmemmap addresses that are mapped outside zone normal. For vmemmap
-adress translation support in this scenario, few kernel symbols are
-needed by dump filtering tool. This patch adds those symbols to
-vmcoreinfo, which a dump filtering tool can use for filtering the
-kernel dump. This changes are tested successfully with makedumpfile
-tool that supports vmemmap to physical address translation outside
-zone normal.
+In addition to the external VFIO user API, a VFIO KVM device
+has been introduced recently.
 
-Changes from v1:
-Updated patch decription and removed #ifdef around extern.
+sPAPR TCE IOMMU is para-virtualized and the guest does map/unmap
+via hypercalls which take a logical bus id (LIOBN) as a target IOMMU
+identifier. LIOBNs are made up and linked to IOMMU groups by the user
+space. In order to accelerate IOMMU operations in the KVM, we need
+to tell KVM the information about LIOBN-to-group mapping.
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+For that, a new KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN parameter
+is added. It accepts a pair of a VFIO group fd and LIOBN.
+
+This also adds a new kvm_vfio_find_group_by_liobn() function which
+receives kvm struct, LIOBN and a callback. As it increases the IOMMU
+group use counter, the KVMr is required to pass a callback which
+called when the VFIO group is about to be removed VFIO-KVM tracking so
+the KVM is able to call iommu_group_put() to release the IOMMU group.
+
+The KVM uses kvm_vfio_find_group_by_liobn() once per KVM run and caches
+the result in kvm_arch. iommu_group_put() for all groups will be called
+when KVM finishes (in the SPAPR TCE in KVM enablement patch).
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/include/asm/pgalloc-64.h |    2 ++
- arch/powerpc/kernel/machine_kexec.c   |   12 ++++++++++++
- 2 files changed, 14 insertions(+)
+Changes:
+v4:
+* fixed few bugs
+* changed kvm_vfio_find_group_by_liobn() to return informative errors
 
-diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
-index f65e27b..3973e62 100644
---- a/arch/powerpc/include/asm/pgalloc-64.h
-+++ b/arch/powerpc/include/asm/pgalloc-64.h
-@@ -17,6 +17,8 @@ struct vmemmap_backing {
- 	unsigned long virt_addr;
- };
+v3:
+* total rework
+* added a release callback into kvm_vfio_find_group_by_liobn so now
+the user of the API can get a notification if the group is about to
+disappear
+---
+ Documentation/virtual/kvm/devices/vfio.txt |  19 ++++-
+ arch/powerpc/kvm/Kconfig                   |   1 +
+ arch/powerpc/kvm/Makefile                  |   3 +
+ include/linux/kvm_host.h                   |  18 +++++
+ include/uapi/linux/kvm.h                   |   7 ++
+ virt/kvm/vfio.c                            | 116 ++++++++++++++++++++++++++++-
+ 6 files changed, 161 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/virtual/kvm/devices/vfio.txt b/Documentation/virtual/kvm/devices/vfio.txt
+index ef51740..7ecb3b2 100644
+--- a/Documentation/virtual/kvm/devices/vfio.txt
++++ b/Documentation/virtual/kvm/devices/vfio.txt
+@@ -16,7 +16,22 @@ Groups:
  
-+extern struct vmemmap_backing *vmemmap_list;
+ KVM_DEV_VFIO_GROUP attributes:
+   KVM_DEV_VFIO_GROUP_ADD: Add a VFIO group to VFIO-KVM device tracking
++	kvm_device_attr.addr points to an int32_t file descriptor
++	for the VFIO group.
 +
- /*
-  * Functions that deal with pagetables that could be at any level of
-  * the table need to be passed an "index_size" so they know how to
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index e1ec57e..88a7fb4 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -18,6 +18,7 @@
- #include <linux/ftrace.h>
+   KVM_DEV_VFIO_GROUP_DEL: Remove a VFIO group from VFIO-KVM device tracking
++	kvm_device_attr.addr points to an int32_t file descriptor
++	for the VFIO group.
++
++  KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN: sets a liobn for a VFIO group
++	kvm_device_attr.addr points to a struct:
++		struct kvm_vfio_spapr_tce_liobn {
++			__u32	argsz;
++			__u32	fd;
++			__u32	liobn;
++		};
++		where
++		@argsz is a struct size;
++		@fd is a file descriptor for a VFIO group;
++		@liobn is a logical bus id to be associated with the group.
  
- #include <asm/machdep.h>
-+#include <asm/pgalloc.h>
- #include <asm/prom.h>
- #include <asm/sections.h>
+-For each, kvm_device_attr.addr points to an int32_t file descriptor
+-for the VFIO group.
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index 9a50d82..f463958 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -60,6 +60,7 @@ config KVM_BOOK3S_64
+ 	select KVM_BOOK3S_64_HANDLER
+ 	select KVM
+ 	select SPAPR_TCE_IOMMU if IOMMU_SUPPORT
++	select KVM_VFIO
+ 	---help---
+ 	  Support running unmodified book3s_64 and book3s_32 guest kernels
+ 	  in virtual machines on book3s_64 host processors.
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index 6646c95..2438d2e 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -87,6 +87,9 @@ kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
+ kvm-book3s_64-objs-$(CONFIG_KVM_XICS) += \
+ 	book3s_xics.o
  
-@@ -75,6 +76,17 @@ void arch_crash_save_vmcoreinfo(void)
- #ifndef CONFIG_NEED_MULTIPLE_NODES
- 	VMCOREINFO_SYMBOL(contig_page_data);
- #endif
-+#if defined(CONFIG_PPC64) && defined(CONFIG_SPARSEMEM_VMEMMAP)
-+	VMCOREINFO_SYMBOL(vmemmap_list);
-+	VMCOREINFO_SYMBOL(mmu_vmemmap_psize);
-+	VMCOREINFO_SYMBOL(mmu_psize_defs);
-+	VMCOREINFO_STRUCT_SIZE(vmemmap_backing);
-+	VMCOREINFO_OFFSET(vmemmap_backing, list);
-+	VMCOREINFO_OFFSET(vmemmap_backing, phys);
-+	VMCOREINFO_OFFSET(vmemmap_backing, virt_addr);
-+	VMCOREINFO_STRUCT_SIZE(mmu_psize_def);
-+	VMCOREINFO_OFFSET(mmu_psize_def, shift);
-+#endif
++kvm-book3s_64-objs-$(CONFIG_KVM_VFIO) += \
++	$(KVM)/vfio.o \
++
+ kvm-book3s_64-module-objs := \
+ 	$(KVM)/kvm_main.o \
+ 	$(KVM)/eventfd.o \
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 88ff96a..1d2ad5e 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1112,5 +1112,23 @@ static inline bool kvm_vcpu_eligible_for_directed_yield(struct kvm_vcpu *vcpu)
  }
  
+ #endif /* CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT */
++
++typedef void (*kvm_vfio_release_group_callback)(struct kvm *kvm,
++		unsigned long liobn);
++
++#if defined(CONFIG_KVM_VFIO) && defined(CONFIG_SPAPR_TCE_IOMMU)
++
++extern struct iommu_group *kvm_vfio_find_group_by_liobn(struct kvm *kvm,
++		unsigned long liobn, kvm_vfio_release_group_callback cb);
++
++#else
++
++static inline struct iommu_group *kvm_vfio_find_group_by_liobn(struct kvm *kvm,
++		unsigned long liobn, ikvm_vfio_release_group_callback cb)
++{
++	return NULL;
++}
++#endif /* CONFIG_KVM_VFIO && CONFIG_SPAPR_TCE_IOMMU */
++
+ #endif
+ 
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 7c1a349..51d5464 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -847,6 +847,13 @@ struct kvm_device_attr {
+ #define  KVM_DEV_VFIO_GROUP			1
+ #define   KVM_DEV_VFIO_GROUP_ADD			1
+ #define   KVM_DEV_VFIO_GROUP_DEL			2
++#define   KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN	3
++
++struct kvm_vfio_spapr_tce_liobn {
++	__u32	argsz;
++	__s32	fd;
++	__u32	liobn;
++};
+ 
  /*
+  * ioctls for VM fds
+diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
+index ca4260e..ddc945d 100644
+--- a/virt/kvm/vfio.c
++++ b/virt/kvm/vfio.c
+@@ -22,6 +22,12 @@
+ struct kvm_vfio_group {
+ 	struct list_head node;
+ 	struct vfio_group *vfio_group;
++#ifdef CONFIG_SPAPR_TCE_IOMMU
++	struct {
++		unsigned long liobn;
++		kvm_vfio_release_group_callback cb;
++	} spapr_tce;
++#endif
+ };
+ 
+ struct kvm_vfio {
+@@ -59,6 +65,51 @@ static void kvm_vfio_group_put_external_user(struct vfio_group *vfio_group)
+ 	symbol_put(vfio_group_put_external_user);
+ }
+ 
++#ifdef CONFIG_SPAPR_TCE_IOMMU
++struct iommu_group *kvm_vfio_find_group_by_liobn(struct kvm *kvm,
++		unsigned long liobn, kvm_vfio_release_group_callback cb)
++{
++	struct kvm_vfio_group *kvg;
++	int group_id;
++	struct iommu_group *grp;
++	struct kvm_vfio *kv = NULL;
++	struct kvm_device *tmp;
++
++	if (!cb)
++		return ERR_PTR(-EINVAL);
++
++	/* Find a VFIO KVM device */
++	list_for_each_entry(tmp, &kvm->devices, vm_node) {
++		if (tmp->ops != &kvm_vfio_ops)
++			continue;
++
++		kv = tmp->private;
++		break;
++	}
++
++	if (!kv)
++		return ERR_PTR(-EIO);
++
++	/* Find a group */
++	list_for_each_entry(kvg, &kv->group_list, node) {
++		if (kvg->spapr_tce.liobn != liobn)
++			continue;
++
++		if (kvg->spapr_tce.cb)
++			return ERR_PTR(-EBUSY);
++
++		kvg->spapr_tce.cb = cb;
++		group_id = vfio_external_user_iommu_id(kvg->vfio_group);
++		grp = iommu_group_get_by_id(group_id);
++
++		return grp;
++	}
++
++	return ERR_PTR(-ENODEV);
++}
++EXPORT_SYMBOL_GPL(kvm_vfio_find_group_by_liobn);
++#endif
++
+ /*
+  * Groups can use the same or different IOMMU domains.  If the same then
+  * adding a new group may change the coherency of groups we've previously
+@@ -140,7 +191,9 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
+ 
+ 		list_add_tail(&kvg->node, &kv->group_list);
+ 		kvg->vfio_group = vfio_group;
+-
++#ifdef CONFIG_SPAPR_TCE_IOMMU
++		kvg->spapr_tce.liobn = -1;
++#endif
+ 		mutex_unlock(&kv->lock);
+ 
+ 		kvm_vfio_update_coherency(dev);
+@@ -170,6 +223,11 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
+ 				continue;
+ 
+ 			list_del(&kvg->node);
++#ifdef CONFIG_SPAPR_TCE_IOMMU
++			if (kvg->spapr_tce.cb)
++				kvg->spapr_tce.cb(dev->kvm,
++						kvg->spapr_tce.liobn);
++#endif
+ 			kvm_vfio_group_put_external_user(kvg->vfio_group);
+ 			kfree(kvg);
+ 			ret = 0;
+@@ -183,6 +241,59 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
+ 		kvm_vfio_update_coherency(dev);
+ 
+ 		return ret;
++
++#ifdef CONFIG_SPAPR_TCE_IOMMU
++	case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN: {
++		struct kvm_vfio_spapr_tce_liobn param;
++		unsigned long minsz;
++		struct kvm_vfio *kv = dev->private;
++		struct vfio_group *vfio_group;
++		struct kvm_vfio_group *kvg;
++		struct fd f;
++
++		minsz = offsetofend(struct kvm_vfio_spapr_tce_liobn, liobn);
++
++		if (copy_from_user(&param, (void __user *)arg, minsz))
++			return -EFAULT;
++
++		if (param.argsz < minsz)
++			return -EINVAL;
++
++		f = fdget(param.fd);
++		if (!f.file)
++			return -EBADF;
++
++		vfio_group = kvm_vfio_group_get_external_user(f.file);
++		fdput(f);
++
++		if (IS_ERR(vfio_group))
++			return PTR_ERR(vfio_group);
++
++		ret = -ENOENT;
++
++		mutex_lock(&kv->lock);
++
++		list_for_each_entry(kvg, &kv->group_list, node) {
++			if (kvg->vfio_group != vfio_group)
++				continue;
++
++			if (kvg->spapr_tce.liobn != -1) {
++				ret = -EBUSY;
++				break;
++			}
++
++			kvg->spapr_tce.liobn = param.liobn;
++			ret = 0;
++			break;
++		}
++
++		mutex_unlock(&kv->lock);
++
++		kvm_vfio_group_put_external_user(vfio_group);
++
++		return ret;
++	}
++#endif /* CONFIG_SPAPR_TCE_IOMMU */
+ 	}
+ 
+ 	return -ENXIO;
+@@ -207,6 +318,9 @@ static int kvm_vfio_has_attr(struct kvm_device *dev,
+ 		switch (attr->attr) {
+ 		case KVM_DEV_VFIO_GROUP_ADD:
+ 		case KVM_DEV_VFIO_GROUP_DEL:
++#ifdef CONFIG_SPAPR_TCE_IOMMU
++		case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN:
++#endif
+ 			return 0;
+ 		}
+ 
+-- 
+1.8.4.rc4
