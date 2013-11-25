@@ -3,19 +3,19 @@ Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (Client CN "mail.citrix.com",
  Issuer "Cybertrust Public SureServer SV CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ED11E2C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 20:45:59 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 23B342C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 20:51:46 +1100 (EST)
 From: Ian Campbell <ian.campbell@citrix.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/dts/virtex440: declare address/size-cells for phy
- device
-Date: Mon, 25 Nov 2013 09:42:26 +0000
-Message-ID: <1385372547-21324-1-git-send-email-ian.campbell@citrix.com>
+Subject: [PATCH] powerpc/4xx: Fix warning in kilauea.dtb
+Date: Mon, 25 Nov 2013 09:40:37 +0000
+Message-ID: <1385372437-20958-1-git-send-email-ian.campbell@citrix.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: devicetree@vger.kernel.org, Ian Campbell <ian.campbell@citrix.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Gernot Vormayr <gvormayr@gmail.com>
+Cc: "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>,
+ Ian Campbell <ian.campbell@citrix.com>, Tirumala R Marri <tmarri@apm.com>,
+ Rupjyoti Sarmah <rsarmah@apm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes a warning:
+Currently I see:
+  DTC     arch/powerpc/boot/kilauea.dtb
+Warning (reg_format): "reg" property in /plb/ppc4xx-msi@C10000000 has invalid length (12 bytes) (#address-cells == 1, #size-cells == 1)
 
-  DTC     arch/powerpc/boot/virtex440-ml507.dtb
-Warning (reg_format): "reg" property in /plb@0/xps-ll-temac@81c00000/ethernet@81c00000/phy@7 has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
-Warning (avoid_default_addr_size): Relying on default #address-cells value for /plb@0/xps-ll-temac@81c00000/ethernet@81c00000/phy@7
-Warning (avoid_default_addr_size): Relying on default #size-cells value for /plb@0/xps-ll-temac@81c00000/ethernet@81c00000/phy@7
+It appears that unlike the other platforms handled by 3fb7933850fa
+"powerpc/4xx: Adding PCIe MSI support" this platform does not use address-cells=2.
 
 Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Acked-by: Josh Boyer <jwboyer@gmail.com>
+Cc: Rupjyoti Sarmah <rsarmah@apm.com>
+Cc: Tirumala R Marri <tmarri@apm.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
-Cc: Gernot Vormayr <gvormayr@gmail.com>
-Cc: devicetree@vger.kernel.org
+Cc: devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND...)
 Cc: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org
 ---
-No reply since June. http://patchwork.ozlabs.org/patch/248235/
+Resending, this hasn't been picked up since June
+http://patchwork.ozlabs.org/patch/248234/
 ---
- arch/powerpc/boot/dts/virtex440-ml507.dts |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/boot/dts/kilauea.dts |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/boot/dts/virtex440-ml507.dts b/arch/powerpc/boot/dts/virtex440-ml507.dts
-index fc7073b..391a4e2 100644
---- a/arch/powerpc/boot/dts/virtex440-ml507.dts
-+++ b/arch/powerpc/boot/dts/virtex440-ml507.dts
-@@ -257,6 +257,8 @@
- 			#size-cells = <1>;
- 			compatible = "xlnx,compound";
- 			ethernet@81c00000 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
- 				compatible = "xlnx,xps-ll-temac-1.01.b";
- 				device_type = "network";
- 				interrupt-parent = <&xps_intc_0>;
+diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
+index 1613d6e..5ba7f01 100644
+--- a/arch/powerpc/boot/dts/kilauea.dts
++++ b/arch/powerpc/boot/dts/kilauea.dts
+@@ -406,7 +406,7 @@
+ 
+ 		MSI: ppc4xx-msi@C10000000 {
+ 			compatible = "amcc,ppc4xx-msi", "ppc4xx-msi";
+-			reg = < 0x0 0xEF620000 0x100>;
++			reg = <0xEF620000 0x100>;
+ 			sdr-base = <0x4B0>;
+ 			msi-data = <0x00000000>;
+ 			msi-mask = <0x44440000>;
 -- 
 1.7.10.4
