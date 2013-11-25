@@ -1,32 +1,13 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 15D702C00CE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 05:39:19 +1100 (EST)
-Date: Sun, 24 Nov 2013 19:39:08 +0100
-From: Gerhard Sittig <gsi@denx.de>
-To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Anatolij Gustschin <agust@denx.de>, Mike Turquette <mturquette@linaro.org>
-Subject: Re: [PATCH v5 00/17] add COMMON_CLK support for PowerPC MPC512x
-Message-ID: <20131124183908.GG2760@book.gsilab.sittig.org>
-References: <1384729577-7336-1-git-send-email-gsi@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1384729577-7336-1-git-send-email-gsi@denx.de>
-Cc: Mark Rutland <mark.rutland@arm.com>, Detlev Zundel <dzu@denx.de>,
- Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
- linux-mtd@lists.infradead.org, Jiri Slaby <jslaby@suse.cz>,
- linux-serial@vger.kernel.org, Wolfgang Grandegger <wg@grandegger.com>,
- linux-media@vger.kernel.org, devicetree@vger.kernel.org,
- Ian Campbell <ian.campbell@citrix.com>, Pawel Moll <pawel.moll@arm.com>,
- Stephen Warren <swarren@wwwdotorg.org>, Rob Herring <rob.herring@calxeda.com>,
- linux-can@vger.kernel.org, Mark Brown <broonie@kernel.org>,
- Marc Kleine-Budde <mkl@pengutronix.de>, Scott Wood <scottwood@freescale.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linux-spi@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- David Woodhouse <dwmw2@infradead.org>,
- Mauro Carvalho Chehab <m.chehab@samsung.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/signals: Improved mark VSX not saved with small
+ contexts fix
+Date: Mon, 25 Nov 2013 11:12:20 +1100
+Message-Id: <1385338340-6044-1-git-send-email-mikey@neuling.org>
+Cc: Carlos O'Donell <carlos@redhat.com>, Steve Best <sbest@us.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>,
+ Haren Myneni <haren@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,32 +17,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 18, 2013 at 00:06 +0100, Gerhard Sittig wrote:
-> 
-> the series is based on v3.12, but I'll rebase against v3.13-rc1
-> (when available) or any other subtree upon request
+In a recent patch:
+  commit c13f20ac48328b05cd3b8c19e31ed6c132b44b42
+  Author: Michael Neuling <mikey@neuling.org>
+  powerpc/signals: Mark VSX not saved with small contexts
 
-Now that v3.13-rc1 is out, I noticed that the series no longer
-applies cleanly (minor context changes and conflicts) and needs
-minor adjustment.
+We fixed an issue but an improved solution was later discussed after the patch
+was merged.
 
-Compilation of 4/17 requires <linux/of_address.h> which no longer
-is included implicitly.
+Firstly, this patch doesn't handle the 64bit signals case, which could also hit
+this issue (but has never been reported).
 
-PPC_CLOCK removal in 7/17 should remove <asm/clk_interface.h> as
-well after all references to this header file have gone.  (And
-the context of the patch has changed.)
+Secondly, the original patch isn't clear what MSR VSX should be set to.  The
+new approach below always clears the MSR VSX bit (to indicate no VSX is in the
+context) and sets it only in the specific case where VSX is available (ie. when
+VSX has been used and the signal context passed has space to provide the
+state).
 
-The context of 16/17 for DIU initialization has changed.
+This reverts the original patch and replaces it with the improved solution.  It
+also adds a 64 bit version.
 
-I'll wait for a few more days whether there is more feedback for
-v5 (especially on the device tree backwards compat approach),
-then will rebase and send out v6 of the series.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: stable@vger.kernel.org
+---
+ arch/powerpc/kernel/signal_32.c | 16 +++++++---------
+ arch/powerpc/kernel/signal_64.c |  6 ++++++
+ 2 files changed, 13 insertions(+), 9 deletions(-)
 
-
-virtually yours
-Gerhard Sittig
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 1844298..68027bf 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -445,6 +445,12 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+ #endif /* CONFIG_ALTIVEC */
+ 	if (copy_fpr_to_user(&frame->mc_fregs, current))
+ 		return 1;
++
++	/*
++	 * Clear the MSR VSX bit to indicate there is no valid state attached
++	 * to this context, except in the specific case below where we set it.
++	 */
++	msr &= ~MSR_VSX;
+ #ifdef CONFIG_VSX
+ 	/*
+ 	 * Copy VSR 0-31 upper half from thread_struct to local
+@@ -457,15 +463,7 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+ 		if (copy_vsx_to_user(&frame->mc_vsregs, current))
+ 			return 1;
+ 		msr |= MSR_VSX;
+-	} else if (!ctx_has_vsx_region)
+-		/*
+-		 * With a small context structure we can't hold the VSX
+-		 * registers, hence clear the MSR value to indicate the state
+-		 * was not saved.
+-		 */
+-		msr &= ~MSR_VSX;
+-
+-
++	}
+ #endif /* CONFIG_VSX */
+ #ifdef CONFIG_SPE
+ 	/* save spe registers */
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index e66f67b..4299104 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -122,6 +122,12 @@ static long setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
+ 	flush_fp_to_thread(current);
+ 	/* copy fpr regs and fpscr */
+ 	err |= copy_fpr_to_user(&sc->fp_regs, current);
++
++	/*
++	 * Clear the MSR VSX bit to indicate there is no valid state attached
++	 * to this context, except in the specific case below where we set it.
++	 */
++	msr &= ~MSR_VSX;
+ #ifdef CONFIG_VSX
+ 	/*
+ 	 * Copy VSX low doubleword to local buffer for formatting,
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+1.8.3.2
