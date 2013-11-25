@@ -1,24 +1,33 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A34D02C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 06:06:51 +1100 (EST)
-Date: Mon, 25 Nov 2013 20:06:41 +0100
-From: Gerhard Sittig <gsi@denx.de>
-To: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v5 08/17] spi: mpc512x: adjust to OF based clock lookup
-Message-ID: <20131125190641.GL2760@book.gsilab.sittig.org>
-References: <1384729577-7336-1-git-send-email-gsi@denx.de>
- <1384729577-7336-9-git-send-email-gsi@denx.de>
- <20131125173008.GQ14725@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131125173008.GQ14725@sirena.org.uk>
-Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
- linux-spi@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5A9E02C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 09:28:02 +1100 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Mon, 25 Nov 2013 15:27:59 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 837F73E40026
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 15:27:56 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+ ESMTP id rAPKQ7me37355670
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 21:26:07 +0100
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rAPMRtWe018834
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 15:27:56 -0700
+Message-Id: <201311252227.rAPMRtC2018812@d03av05.boulder.ibm.com>
+Subject: [PATCH 1/1] powerpc: Increase EEH recovery timeout for SR-IOV
+To: benh@kernel.crashing.org
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Mon, 25 Nov 2013 16:27:54 -0600
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ shangw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 25, 2013 at 17:30 +0000, Mark Brown wrote:
-> 
-> On Mon, Nov 18, 2013 at 12:06:08AM +0100, Gerhard Sittig wrote:
-> > after device tree based clock lookup became available, the peripheral
-> > driver need no longer construct clock names which include the PSC index,
-> > remove the "psc%d_mclk" template and unconditionally use 'mclk'
-> 
-> Have there been other changes which make this happen?
 
-Not yet in mainline.  The patch you respond to is 08/17 within
-the series, and depends on earlier patches in the series (namely
-the introduction of CCF support for the MPC512x platform, making
-the 'mclk' lookup against the PSC's OF node work while keeping
-the global 'pscN_mclk' in place during migration).
+In order to support concurrent adapter firmware download
+to SR-IOV adapters on pSeries, each VF will see an EEH event
+where the slot will remain in the unavailable state for
+the duration of the adapter firmware update, which can take
+as long as 5 minutes. Extend the EEH recovery timeout to
+account for this.
 
-This information was listed in the cover letter, but was not
-duplicated within the individual patches.  Patches were sent to
-individual Cc: lists to not spam too many people, but the cover
-letter was CC'ed to every recipient of any part of the series.
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
-Please note that I will have to re-submit the series, since it no
-longer cleanly applies against v3.13-rc1 (which was not available
-when I sent v5).  This patch won't change in its content, but may
-experience changes in its context (catchup with changes between
-v3.12 and v3.13-rc1).
+ arch/powerpc/kernel/eeh.c        |    2 +-
+ arch/powerpc/kernel/eeh_driver.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Thank you for considering the patch, and for your feedback on
-past versions!
-
-
-virtually yours
-Gerhard Sittig
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+diff -puN arch/powerpc/kernel/eeh.c~eeh_sriov_vf_delay arch/powerpc/kernel/eeh.c
+--- linux/arch/powerpc/kernel/eeh.c~eeh_sriov_vf_delay	2013-11-25 16:12:26.000000000 -0600
++++ linux-bjking1/arch/powerpc/kernel/eeh.c	2013-11-25 16:12:26.000000000 -0600
+@@ -84,7 +84,7 @@
+ #define EEH_MAX_FAILS	2100000
+ 
+ /* Time to wait for a PCI slot to report status, in milliseconds */
+-#define PCI_BUS_RESET_WAIT_MSEC (60*1000)
++#define PCI_BUS_RESET_WAIT_MSEC (5*60*1000)
+ 
+ /* Platform dependent EEH operations */
+ struct eeh_ops *eeh_ops = NULL;
+diff -puN arch/powerpc/kernel/eeh_driver.c~eeh_sriov_vf_delay arch/powerpc/kernel/eeh_driver.c
+--- linux/arch/powerpc/kernel/eeh_driver.c~eeh_sriov_vf_delay	2013-11-25 16:12:26.000000000 -0600
++++ linux-bjking1/arch/powerpc/kernel/eeh_driver.c	2013-11-25 16:12:26.000000000 -0600
+@@ -468,7 +468,7 @@ static int eeh_reset_device(struct eeh_p
+ /* The longest amount of time to wait for a pci device
+  * to come back on line, in seconds.
+  */
+-#define MAX_WAIT_FOR_RECOVERY 150
++#define MAX_WAIT_FOR_RECOVERY 300
+ 
+ static void eeh_handle_normal_event(struct eeh_pe *pe)
+ {
+_
