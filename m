@@ -1,28 +1,32 @@
-Return-Path: <shawn.guo@linaro.org>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+Return-Path: <Bharat.Bhushan@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ACE822C010A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 13:09:02 +1100 (EST)
-Date: Mon, 25 Nov 2013 10:11:03 +0800
-From: Shawn Guo <shawn.guo@linaro.org>
-To: Nicolin Chen <b42378@freescale.com>
-Subject: Re: [PATCH v7 0/4] Add dual-fifo mode support of i.MX ssi
-Message-ID: <20131125021101.GA11613@S2101-09.ap.freescale.net>
-References: <cover.1384352281.git.b42378@freescale.com>
- <20131122163132.GB17344@MrMyself>
+ by ozlabs.org (Postfix) with ESMTPS id 4DE5A2C012E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2013 16:33:28 +1100 (EST)
+From: Bharat Bhushan <Bharat.Bhushan@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>, Scott Wood
+ <scottwood@freescale.com>
+Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+Date: Mon, 25 Nov 2013 05:33:16 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1384973243.2879.361.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1385066603.2879.414.camel@ul30vt.home>
+ <1385066835.1403.489.camel@snotra.buserror.net>
+ <1385067648.2879.421.camel@ul30vt.home>
+In-Reply-To: <1385067648.2879.421.camel@ul30vt.home>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20131122163132.GB17344@MrMyself>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- vinod.koul@intel.com, s.hauer@pengutronix.de, swarren@wwwdotorg.org,
- timur@tabi.org, rob.herring@calxeda.com, linux-kernel@vger.kernel.org,
- broonie@kernel.org, dmaengine@vger.kernel.org, dan.j.williams@intel.com,
- ijc+devicetree@hellion.org.uk, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "agraf@suse.de" <agraf@suse.de>, Stuart Yoder <stuart.yoder@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,15 +36,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Nov 23, 2013 at 12:31:32AM +0800, Nicolin Chen wrote:
-> Hi all,
-> 
->    I'm sorry to push this. But this series has been an orphan for a while.
->    Could any one please receive and foster it?
-
-Vinod,
-
-I expect you will pick up the series.  But otherwise, I can apply it via
-IMX tree with your ACKs on the first two patches.
-
-Shawn
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
+IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IEZyaWRheSwgTm92
+ZW1iZXIgMjIsIDIwMTMgMjozMSBBTQ0KPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gQ2M6IEJo
+dXNoYW4gQmhhcmF0LVI2NTc3NzsgbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsgYWdyYWZAc3Vz
+ZS5kZTsgWW9kZXINCj4gU3R1YXJ0LUIwODI0ODsgaW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlv
+bi5vcmc7IGJoZWxnYWFzQGdvb2dsZS5jb207IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJz
+Lm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENI
+IDAvOSB2Ml0gdmZpby1wY2k6IGFkZCBzdXBwb3J0IGZvciBGcmVlc2NhbGUgSU9NTVUgKFBBTVUp
+DQo+IA0KPiBPbiBUaHUsIDIwMTMtMTEtMjEgYXQgMTQ6NDcgLTA2MDAsIFNjb3R0IFdvb2Qgd3Jv
+dGU6DQo+ID4gT24gVGh1LCAyMDEzLTExLTIxIGF0IDEzOjQzIC0wNzAwLCBBbGV4IFdpbGxpYW1z
+b24gd3JvdGU6DQo+ID4gPiBPbiBUaHUsIDIwMTMtMTEtMjEgYXQgMTE6MjAgKzAwMDAsIEJoYXJh
+dCBCaHVzaGFuIHdyb3RlOg0KPiA+ID4gPg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTogQWxleCBXaWxsaWFtc29uIFttYWlsdG86YWxleC53aWxs
+aWFtc29uQHJlZGhhdC5jb21dDQo+ID4gPiA+ID4gU2VudDogVGh1cnNkYXksIE5vdmVtYmVyIDIx
+LCAyMDEzIDEyOjE3IEFNDQo+ID4gPiA+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+
+ID4gPiA+IENjOiBqb3JvQDhieXRlcy5vcmc7IGJoZWxnYWFzQGdvb2dsZS5jb207IGFncmFmQHN1
+c2UuZGU7IFdvb2QNCj4gPiA+ID4gPiBTY290dC1CMDc0MjE7IFlvZGVyIFN0dWFydC1CMDgyNDg7
+DQo+ID4gPiA+ID4gaW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmc7IGxpbnV4LSBwY2lA
+dmdlci5rZXJuZWwub3JnOw0KPiA+ID4gPiA+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
+OyBsaW51eC0ga2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gPiA+ID4gPiBCaHVzaGFuIEJoYXJh
+dC1SNjU3NzcNCj4gPiA+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDAvOSB2Ml0gdmZpby1wY2k6
+IGFkZCBzdXBwb3J0IGZvciBGcmVlc2NhbGUNCj4gPiA+ID4gPiBJT01NVSAoUEFNVSkNCj4gPiA+
+ID4gPg0KPiA+ID4gPiA+IElzIFZGSU9fSU9NTVVfUEFNVV9HRVRfTVNJX0JBTktfQ09VTlQgcGVy
+IGFwZXJ0dXJlIChpZS4gZWFjaA0KPiA+ID4gPiA+IHZmaW8gdXNlciBoYXMgJENPVU5UIHJlZ2lv
+bnMgYXQgdGhlaXIgZGlzcG9zYWwgZXhjbHVzaXZlbHkpPw0KPiA+ID4gPg0KPiA+ID4gPiBOdW1i
+ZXIgb2YgbXNpLWJhbmsgY291bnQgaXMgc3lzdGVtIHdpZGUgYW5kIG5vdCBwZXIgYXBlcnR1cmUs
+IEJ1dCB3aWxsIGJlDQo+IHNldHRpbmcgd2luZG93cyBmb3IgYmFua3MgaW4gdGhlIGRldmljZSBh
+cGVydHVyZS4NCj4gPiA+ID4gU28gc2F5IGlmIHdlIGFyZSBkaXJlY3QgYXNzaWduaW5nIDIgcGNp
+IGRldmljZSAoYm90aCBoYXZlIGRpZmZlcmVudCBpb21tdQ0KPiBncm91cCwgc28gMiBhcGVydHVy
+ZSBpbiBpb21tdSkgdG8gVk0uDQo+ID4gPiA+IE5vdyBxZW11IGNhbiBtYWtlIG9ubHkgb25lIGNh
+bGwgdG8ga25vdyBob3cgbWFueSBtc2ktYmFua3MgYXJlIHRoZXJlIGJ1dA0KPiBpdCBtdXN0IHNl
+dCBzdWItd2luZG93cyBmb3IgYWxsIGJhbmtzIGZvciBib3RoIHBjaSBkZXZpY2UgaW4gaXRzIHJl
+c3BlY3RpdmUNCj4gYXBlcnR1cmUuDQo+ID4gPg0KPiA+ID4gSSdtIHN0aWxsIGNvbmZ1c2VkLiAg
+V2hhdCBJIHdhbnQgdG8gbWFrZSBzdXJlIG9mIGlzIHRoYXQgdGhlIGJhbmtzDQo+ID4gPiBhcmUg
+aW5kZXBlbmRlbnQgcGVyIGFwZXJ0dXJlLiAgRm9yIGluc3RhbmNlLCBpZiB3ZSBoYXZlIHR3byBz
+ZXBhcmF0ZQ0KPiA+ID4gdXNlcnNwYWNlIHByb2Nlc3NlcyBvcGVyYXRpbmcgaW5kZXBlbmRlbnRs
+eSBhbmQgdGhleSBib3RoIGNob3NlIHRvDQo+ID4gPiB1c2UgbXNpIGJhbmsgemVybyBmb3IgdGhl
+aXIgZGV2aWNlLCB0aGF0J3MgYmFuayB6ZXJvIHdpdGhpbiBlYWNoDQo+ID4gPiBhcGVydHVyZSBh
+bmQgZG9lc24ndCBpbnRlcmZlcmUuICBPciBhbm90aGVyIHdheSB0byBhc2sgaXMgY2FuIGENCj4g
+PiA+IG1hbGljaW91cyB1c2VyIGludGVyZmVyZSB3aXRoIG90aGVyIHVzZXJzIGJ5IHVzaW5nIHRo
+ZSB3cm9uZyBiYW5rLg0KPiA+ID4gVGhhbmtzLA0KPiA+DQo+ID4gVGhleSBjYW4gaW50ZXJmZXJl
+Lg0KDQpXYW50IHRvIGJlIHN1cmUgb2YgaG93IHRoZXkgY2FuIGludGVyZmVyZT8NCg0KPj4gIFdp
+dGggdGhpcyBoYXJkd2FyZSwgdGhlIG9ubHkgd2F5IHRvIHByZXZlbnQgdGhhdA0KPiA+IGlzIHRv
+IG1ha2Ugc3VyZSB0aGF0IGEgYmFuayBpcyBub3Qgc2hhcmVkIGJ5IG11bHRpcGxlIHByb3RlY3Rp
+b24gY29udGV4dHMuDQo+ID4gRm9yIHNvbWUgb2Ygb3VyIHVzZXJzLCB0aG91Z2gsIEkgYmVsaWV2
+ZSBwcmV2ZW50aW5nIHRoaXMgaXMgbGVzcw0KPiA+IGltcG9ydGFudCB0aGFuIHRoZSBwZXJmb3Jt
+YW5jZSBiZW5lZml0Lg0KDQpTbyBzaG91bGQgd2UgbGV0IHRoaXMgcGF0Y2ggc2VyaWVzIGluIHdp
+dGhvdXQgcHJvdGVjdGlvbj8NCg0KPiANCj4gSSB0aGluayB3ZSBuZWVkIHNvbWUgc29ydCBvZiBv
+d25lcnNoaXAgbW9kZWwgYXJvdW5kIHRoZSBtc2kgYmFua3MgdGhlbi4NCj4gT3RoZXJ3aXNlIHRo
+ZXJlJ3Mgbm90aGluZyBwcmV2ZW50aW5nIGFub3RoZXIgdXNlcnNwYWNlIGZyb20gYXR0ZW1wdGlu
+ZyBhbiBNU0kNCj4gYmFzZWQgYXR0YWNrIG9uIG90aGVyIHVzZXJzLCBvciBwZXJoYXBzIGV2ZW4g
+b24gdGhlIGhvc3QuICBWRklPIGNhbid0IGFsbG93DQo+IHRoYXQuICBUaGFua3MsDQoNCldlIGhh
+dmUgdmVyeSBmZXcgKDMgTVNJIGJhbmsgb24gbW9zdCBvZiBjaGlwcyksIHNvIHdlIGNhbiBub3Qg
+YXNzaWduIG9uZSB0byBlYWNoIHVzZXJzcGFjZS4gV2hhdCB3ZSBjYW4gZG8gaXMgaG9zdCBhbmQg
+dXNlcnNwYWNlIGRvZXMgbm90IHNoYXJlIGEgTVNJIGJhbmsgd2hpbGUgdXNlcnNwYWNlIHdpbGwg
+c2hhcmUgYSBNU0kgYmFuay4NCg0KDQpUaGFua3MNCi1CaGFyYXQNCg0KPiANCj4gQWxleA0KPiAN
+Cg0K
