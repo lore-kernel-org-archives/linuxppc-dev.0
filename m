@@ -1,13 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-In-Reply-To: <1381906617-11392-3-git-send-email-khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: RE: [V3 02/10] powerpc,
- perf: Enable conditional branch filter for POWER8
-Message-Id: <20131126060619.48B5D2C00BC@ozlabs.org>
-Date: Tue, 26 Nov 2013 17:06:19 +1100 (EST)
-From: michael@ozlabs.org (mpe@ellerman.id.au)
-Cc: mikey@neuling.org, sukadev@linux.vnet.ibm.com, eranian@google.com,
- michaele@au1.ibm.com
+Return-Path: <Gang.Liu@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 427FB2C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 20:20:52 +1100 (EST)
+Message-ID: <1385457644.10928.7.camel@linux>
+Subject: Re: [PATCH v2] powerpc/gpio: Fix the wrong GPIO input data on
+ MPC8572/MPC8536
+From: Liu Gang <Gang.Liu@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Date: Tue, 26 Nov 2013 17:20:44 +0800
+In-Reply-To: <D582D1B3-B20B-4860-B1DE-DDCD04B5D0BA@kernel.crashing.org>
+References: <1385107960-373-1-git-send-email-Gang.Liu@freescale.com>
+ <D582D1B3-B20B-4860-B1DE-DDCD04B5D0BA@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: b07421@freescale.com, linus.walleij@linaro.org, r61911@freescale.com,
+ linux-gpio@vger.kernel.org, agust@denx.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,64 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-16-10 at 06:56:49 UTC, Anshuman Khandual wrote:
-> Enables conditional branch filter support for POWER8
-> utilizing MMCRA register based filter and also invalidates
-> a BHRB branch filter combination involving conditional
-> branches.
+On Fri, 2013-11-22 at 14:51 -0600, Kumar Gala wrote:
+> > drivers/gpio/gpio-mpc8xxx.c | 8 ++++++--
+> > 1 file changed, 6 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/gpio/gpio-mpc8xxx.c b/drivers/gpio/gpio-mpc8xxx.c
+> > index 914e859..d7d6d72 100644
+> > --- a/drivers/gpio/gpio-mpc8xxx.c
+> > +++ b/drivers/gpio/gpio-mpc8xxx.c
+> > @@ -70,10 +70,14 @@ static int mpc8572_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+> > 	u32 val;
+> > 	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
+> > 	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
+> > +	u32 out_mask, out_shadow;
+> > 
+> > -	val = in_be32(mm->regs + GPIO_DAT) & ~in_be32(mm->regs + GPIO_DIR);
+> > +	out_mask = in_be32(mm->regs + GPIO_DIR);
+> > 
+> > -	return (val | mpc8xxx_gc->data) & mpc8xxx_gpio2mask(gpio);
+> > +	val = in_be32(mm->regs + GPIO_DAT) & ~out_mask;
+> > +	out_shadow = mpc8xxx_gc->data & out_mask;
+> > +
+> > +	return (val | out_shadow) & mpc8xxx_gpio2mask(gpio);
+> > }
 > 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/perf/power8-pmu.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+> I really think a comment is worth adding here about why we do this.
 > 
-> diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-> index 2ee4a70..6e28587 100644
-> --- a/arch/powerpc/perf/power8-pmu.c
-> +++ b/arch/powerpc/perf/power8-pmu.c
-> @@ -580,11 +580,21 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
->  	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
->  		return -1;
->  
-> +	/* Invalid branch filter combination - HW does not support */
-> +	if ((branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) &&
-> +			(branch_sample_type & PERF_SAMPLE_BRANCH_COND))
-> +		return -1;
+> - k
 
-What this doesn't make obvious is that the hardware doesn't support any
-combinations. It just happens that these are the only two possibilities we
-allow, and so this is the only combination we have to disallow.
+Hi, Kumar,
+Thanks for your comment. In fact, there already had some comments above
+the function:
 
->
->  	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
->  		pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
->  		return pmu_bhrb_filter;
->  	}
->  
-> +	if (branch_sample_type & PERF_SAMPLE_BRANCH_COND) {
-> +		pmu_bhrb_filter |= POWER8_MMCRA_IFM3;
-> +		return pmu_bhrb_filter;
-> +	}
-> +
->  	/* Every thing else is unsupported */
->  	return -1;
->  }
+/* Workaround GPIO 1 errata on MPC8572/MPC8536. The status of GPIOs
+ * defined as output cannot be determined by reading GPDAT register,
+ * so we use shadow data register instead. The status of input pins
+ * is determined by reading GPDAT register.
+ */
 
-I think it would be clearer if we actually checked for the possibilities we
-allow and let everything else fall through, eg:
-
-	/* Ignore user/kernel/hv bits */
-	branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
-
-	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY)
-		return 0;
-
-	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY_CALL)
-		return POWER8_MMCRA_IFM1;
- 
-	if (branch_sample_type == PERF_SAMPLE_BRANCH_COND)
-		return POWER8_MMCRA_IFM3;
-	
-	return -1;
-
-cheers
+Best Regards,
+Liu Gang
