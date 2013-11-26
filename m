@@ -1,26 +1,32 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BFAEC2C00B6
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Nov 2013 21:41:41 +1100 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 26 Nov 2013 20:41:36 +1000
-Message-ID: <52947A8E.1040200@linux.vnet.ibm.com>
-Date: Tue, 26 Nov 2013 16:10:14 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: "mpe@ellerman.id.au" <michael@ozlabs.org>
-Subject: Re: [V3 02/10] powerpc, perf: Enable conditional branch filter for
- POWER8
-References: <20131126060619.48B5D2C00BC@ozlabs.org>
-In-Reply-To: <20131126060619.48B5D2C00BC@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mikey@neuling.org, michaele@au1.ibm.com, linux-kernel@vger.kernel.org,
- eranian@google.com, linuxppc-dev@ozlabs.org, sukadev@linux.vnet.ibm.com
+Return-Path: <neorf3k@gmail.com>
+Received: from mail-ea0-x229.google.com (mail-ea0-x229.google.com
+ [IPv6:2a00:1450:4013:c01::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8A0B62C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2013 05:29:56 +1100 (EST)
+Received: by mail-ea0-f169.google.com with SMTP id l9so3988157eaj.28
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 10:29:50 -0800 (PST)
+Content-Type: text/plain; charset=windows-1252
+Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1822\))
+Subject: Re: Problem reading and programming memory location...
+From: neorf3k <neorf3k@gmail.com>
+In-Reply-To: <20131119224505.7a31b69c@crub>
+Date: Tue, 26 Nov 2013 19:29:46 +0100
+Message-Id: <4123A441-F04D-4F4B-9DA7-B73C808D9B79@gmail.com>
+References: <985685C7-0122-4D45-96D1-4412E9774A5D@gmail.com>
+ <20131113083259.1b69ed18@crub>
+ <50EBA514-5BB1-40B3-B27B-309A829D2E05@gmail.com>
+ <20131113190606.2a5d08fb@crub>
+ <5DC55309-D920-44CE-8F89-AB7FA6BD383A@gmail.com>
+ <20131114100917.31f674d7@crub>
+ <51E043E6-19FB-4655-9B3C-3B81F868DC47@gmail.com>
+ <20131116152933.276f9939@crub>
+ <F24AEED4-A8F7-4DE8-A1BB-D0BED489A223@gmail.com>
+ <20131119224505.7a31b69c@crub>
+To: Anatolij Gustschin <agust@denx.de>
+Cc: Linux Ppc Dev List Dev List <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,69 +36,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/26/2013 11:36 AM, mpe@ellerman.id.au wrote:
-> On Wed, 2013-16-10 at 06:56:49 UTC, Anshuman Khandual wrote:
->> Enables conditional branch filter support for POWER8
->> utilizing MMCRA register based filter and also invalidates
->> a BHRB branch filter combination involving conditional
->> branches.
->>
->> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/perf/power8-pmu.c | 10 ++++++++++
->>  1 file changed, 10 insertions(+)
->>
->> diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
->> index 2ee4a70..6e28587 100644
->> --- a/arch/powerpc/perf/power8-pmu.c
->> +++ b/arch/powerpc/perf/power8-pmu.c
->> @@ -580,11 +580,21 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
->>  	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
->>  		return -1;
->>  
->> +	/* Invalid branch filter combination - HW does not support */
->> +	if ((branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) &&
->> +			(branch_sample_type & PERF_SAMPLE_BRANCH_COND))
->> +		return -1;
-> 
-> What this doesn't make obvious is that the hardware doesn't support any
-> combinations. It just happens that these are the only two possibilities we
-> allow, and so this is the only combination we have to disallow.
-> 
->>
->>  	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
->>  		pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
->>  		return pmu_bhrb_filter;
->>  	}
->>  
->> +	if (branch_sample_type & PERF_SAMPLE_BRANCH_COND) {
->> +		pmu_bhrb_filter |= POWER8_MMCRA_IFM3;
->> +		return pmu_bhrb_filter;
->> +	}
->> +
->>  	/* Every thing else is unsupported */
->>  	return -1;
->>  }
-> 
-> I think it would be clearer if we actually checked for the possibilities we
-> allow and let everything else fall through, eg:
-> 
-> 	/* Ignore user/kernel/hv bits */
-> 	branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
-> 
-> 	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY)
-> 		return 0;
-> 
-> 	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY_CALL)
-> 		return POWER8_MMCRA_IFM1;
-> 
-> 	if (branch_sample_type == PERF_SAMPLE_BRANCH_COND)
-> 		return POWER8_MMCRA_IFM3;
-> 	
-> 	return -1;
-> 
+Hi Anatolij,
+we have tried again=85 but the problem is still there=85 we are not able =
+to read/write, not only CS4, but also CS1, CS2, CS3, etc=85
 
-Please look at the 9th patch (power8, perf: Change BHRB branch filter configuration).
-All these issues are taken care of in this patch. It clearly indicates that any combination
-of HW BHRB filters will not be supported in the PMU and hence zero out the HW filter component
-and processes all of those filters in the SW.
+According to you, could we fix the problem if we include our Virtex FPGA =
+in Device Tree?
+
+U-Boot has been patched (not by us), for CS4, with:
+
++#define CONFIG_SYS_CS0_START		CONFIG_SYS_FLASH_BASE
++#define CONFIG_SYS_CS0_SIZE		CONFIG_SYS_FLASH_SIZE
++#define CONFIG_SYS_CS0_CFG       0x000ADD00
+
+
++#define CONFIG_SYS_CS3_START     0x10000000    //
++#define CONFIG_SYS_CS3_SIZE      0x00020000    //
++#define CONFIG_SYS_CS3_CFG       0x0002DF00    //=20
++
++#define CONFIG_SYS_CS4_START     0x10020000    //
++#define CONFIG_SYS_CS4_SIZE      0x00020000    //
++#define CONFIG_SYS_CS4_CFG       0x0002DC00    //=20
++
++#define CONFIG_SYS_CS5_START     0x11000000    //
++#define CONFIG_SYS_CS5_SIZE      0x01000000    //
++#define CONFIG_SYS_CS5_CFG       0x0002DD00    //=20
++
++#define CONFIG_SYS_CS_BURST		0x00000000
++#define CONFIG_SYS_CS_DEADCYCLE	0x33333333
++
++#define CONFIG_SYS_RESET_ADDRESS	0xff000000
+
+but CONFIG_SYS_CS4_SIZE should be: 0x00010000 ...
+
+Thank you
+
+Lorenzo
+
+On 19/nov/2013, at 10:45 PM, Anatolij Gustschin <agust@denx.de> wrote:
+
+> Hi Lorenzo,
+>=20
+> On Tue, 19 Nov 2013 11:20:24 +0100
+> neorf3k <neorf3k@gmail.com> wrote:
+>=20
+>> Hello Anatolij, this is our code, used at University, but again it =
+doesn=92t work=85
+>>=20
+>> How i told, the only information we have about that reg are:
+>>=20
+>> Chip select 4 specification:
+>> Lp_cs4
+>> bus size: 8 bit
+>> bus control: 2 wait state R/W ACK disabled
+>> size allocated: 4 KByte
+>>=20
+>> Our Register 8 bit LP_cs4 (we want to write)
+>>=20
+>> cs4 offset: 0x001
+>=20
+> is the byte in FPGA at offset 0x0 writable? In your code you
+> currently test read/write access to the byte at offset 0x0.
+>=20
+> If the read/write access works under U-Boot, then maybe the
+> chip select parameters for CS4 are configured differently
+> in U-Boot. You can dump the Chip Select 4 configuration
+> registers under U-Boot and compare. Is address- and data-bus
+> to the FPGA multipexed? Another possible reason for non-working
+> access could be that the configured CS4 range 0x10020000 - 0x10030000
+> overlaps with configured range for CS0, CS1, CS2 or CS3. Can you
+> verify that no such overlapping exists.
+>=20
+> Thanks,
+>=20
+> Anatolij
