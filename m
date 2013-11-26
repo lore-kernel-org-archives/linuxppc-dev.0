@@ -1,34 +1,13 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AE1872C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 15:07:55 +1100 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Tue, 26 Nov 2013 14:07:26 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 89F242BB005E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 15:07:23 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAQ47BBU62586890
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 15:07:11 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAQ47KV5017828
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 15:07:21 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] boot: enable support for bootindex
-Date: Tue, 26 Nov 2013 15:07:16 +1100
-Message-Id: <1385438836-30561-1-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1385364460-24332-1-git-send-email-aik@ozlabs.ru>
-References: <1385364460-24332-1-git-send-email-aik@ozlabs.ru>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
- Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
+In-Reply-To: <1381906617-11392-2-git-send-email-khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: RE: [V3 01/10] perf: New conditional branch filter criteria in branch
+ stack sampling
+Message-Id: <20131126060618.917ED2C00A9@ozlabs.org>
+Date: Tue, 26 Nov 2013 17:06:18 +1100 (EST)
+From: michael@ozlabs.org (mpe@ellerman.id.au)
+Cc: mikey@neuling.org, sukadev@linux.vnet.ibm.com, eranian@google.com,
+ michaele@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,35 +17,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-QEMU supports a bootindex property for every device in the command line.
-With the respective support from the QEMU side, this change is enough
-to make SLOF go through the list and try to boot.
+Ideally your commit subject would contain a verb, preferably in the present
+tense.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
+I think simply "perf: Add PERF_SAMPLE_BRANCH_COND" would be clearer.
 
-That seems to work but it also seems too easy. What do I miss here?
+On Wed, 2013-16-10 at 06:56:48 UTC, Anshuman Khandual wrote:
+> POWER8 PMU based BHRB supports filtering for conditional branches.
+> This patch introduces new branch filter PERF_SAMPLE_BRANCH_COND which
+> will extend the existing perf ABI. Other architectures can provide
+> this functionality with either HW filtering support (if present) or
+> with SW filtering of instructions.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Reviewed-by: Stephane Eranian <eranian@google.com>
+> ---
+>  include/uapi/linux/perf_event.h | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+> index 0b1df41..5da52b6 100644
+> --- a/include/uapi/linux/perf_event.h
+> +++ b/include/uapi/linux/perf_event.h
+> @@ -160,8 +160,9 @@ enum perf_branch_sample_type {
+>  	PERF_SAMPLE_BRANCH_ABORT_TX	= 1U << 7, /* transaction aborts */
+>  	PERF_SAMPLE_BRANCH_IN_TX	= 1U << 8, /* in transaction */
+>  	PERF_SAMPLE_BRANCH_NO_TX	= 1U << 9, /* not in transaction */
+> +	PERF_SAMPLE_BRANCH_COND		= 1U << 10, /* conditional branches */
+>  
+> -	PERF_SAMPLE_BRANCH_MAX		= 1U << 10, /* non-ABI */
+> +	PERF_SAMPLE_BRANCH_MAX		= 1U << 11, /* non-ABI */
+>  };
 
----
- board-qemu/slof/qemu-bootlist.fs | 6 ++++++
- 1 file changed, 6 insertions(+)
+This no longer applies against Linus' tree, you'll need to rebase it.
 
-diff --git a/board-qemu/slof/qemu-bootlist.fs b/board-qemu/slof/qemu-bootlist.fs
-index 7e9482d..4778e16 100644
---- a/board-qemu/slof/qemu-bootlist.fs
-+++ b/board-qemu/slof/qemu-bootlist.fs
-@@ -26,6 +26,12 @@ defer add-boot-device
- ;
- 
- : qemu-read-bootlist ( -- )
-+   \ See if QEMU has set exact boot device list
-+   " qemu,boot-list" get-chosen IF
-+        s" boot-device" $setenv
-+        EXIT
-+   THEN
-+
-    0 0 set-boot-device
- 
-    " qemu,boot-device" get-chosen not IF
--- 
-1.8.4.rc4
+cheers
