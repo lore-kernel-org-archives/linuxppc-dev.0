@@ -1,43 +1,15 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 810B72C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2013 20:22:41 +1100 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Wed, 27 Nov 2013 14:52:37 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 592F2E005B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2013 14:54:40 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAR9MT3d65863820
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2013 14:52:29 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAR9MX0E031320
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2013 14:52:34 +0530
-Message-ID: <1385630545.2439.11.camel@ThinkPad-T5421>
-Subject: [PATCH powerpc] Revert c6102609 and replace it with the correct fix
- for vio dma mask setting
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 28 Nov 2013 17:22:25 +0800
-In-Reply-To: <1384993347.26969.124.camel@pasglop>
-References: <1384848697.2511.17.camel@ThinkPad-T5421>
- <1384910882.26969.57.camel@pasglop>
- <20131120232337.GT16735@n2100.arm.linux.org.uk>
- <1384992102.26969.120.camel@pasglop>
- <20131121000819.GU16735@n2100.arm.linux.org.uk>
- <1384993347.26969.124.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- Paul Mackerras <paulus@samba.org>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id 4CA932C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2013 22:04:18 +1100 (EST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, scottwood@freescale.com
+Subject: [PATCH] powerpc 8xx: Loading kernels over 8Mbytes without
+ CONFIG_PIN_TLB
+Message-Id: <20131127110406.6DC8E1A504F@localhost.localdomain>
+Date: Wed, 27 Nov 2013 12:04:06 +0100 (CET)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,29 +19,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch reverts my previous "fix", and replace it with the correct
-fix from Russell. 
+Today, the only way to load kernels whose size is greater than 8Mbytes is to
+activate CONFIG_PIN_TLB. Otherwise, the physical memory initially mapped is
+limited to 8Mbytes. This patch sets up 24 Mbytes of initial memory regardless
+of whether CONFIG_PIN_TLB is active or not. It allows to load "big" kernels
+(for instance when activating CONFIG_LOCKDEP_SUPPORT) without having
+to activate CONFIG_PIN_TLB.
 
-And as Russell pointed out -- dma_set_mask_and_coherent() (and the other
-dma_set_mask() functions) are really supposed to be used by drivers
-only.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/vio.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index 76a6482..d771778 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -1419,7 +1419,8 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
+diff -ur a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -841,11 +841,12 @@
+ 	ori	r8, r8, MI_BOOTINIT|0x2 /* Inhibit cache -- Cort */
+ 	mtspr	SPRN_MD_RPN, r8
  
- 		/* needed to ensure proper operation of coherent allocations
- 		 * later, in case driver doesn't set it explicitly */
--		dma_coerce_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
-+		viodev->dev.coherent_dma_mask = DMA_BIT_MASK(64);
-+		viodev->dev.dma_mask = &viodev->dev.coherent_dma_mask;
- 	}
+-#ifdef CONFIG_PIN_TLB
+ 	/* Map two more 8M kernel data pages.
+ 	*/
++#ifdef CONFIG_PIN_TLB
+ 	addi	r10, r10, 0x0100
+ 	mtspr	SPRN_MD_CTR, r10
++#endif
  
- 	/* register with generic device framework */
+ 	lis	r8, KERNELBASE@h	/* Create vaddr for TLB */
+ 	addis	r8, r8, 0x0080		/* Add 8M */
+@@ -858,15 +859,16 @@
+ 	addis	r11, r11, 0x0080	/* Add 8M */
+ 	mtspr	SPRN_MD_RPN, r11
+ 
++#ifdef CONFIG_PIN_TLB
+ 	addi	r10, r10, 0x0100
+ 	mtspr	SPRN_MD_CTR, r10
++#endif
+ 
+ 	addis	r8, r8, 0x0080		/* Add 8M */
+ 	mtspr	SPRN_MD_EPN, r8
+ 	mtspr	SPRN_MD_TWC, r9
+ 	addis	r11, r11, 0x0080	/* Add 8M */
+ 	mtspr	SPRN_MD_RPN, r11
+-#endif
+ 
+ 	/* Since the cache is enabled according to the information we
+ 	 * just loaded into the TLB, invalidate and enable the caches here.
+diff -ur a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -213,12 +213,7 @@
+ 	 */
+ 	BUG_ON(first_memblock_base != 0);
+ 
+-#ifdef CONFIG_PIN_TLB
+ 	/* 8xx can only access 24MB at the moment */
+ 	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
+-#else
+-	/* 8xx can only access 8MB at the moment */
+-	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
+-#endif
+ }
+ #endif /* CONFIG_8xx */
