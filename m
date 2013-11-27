@@ -1,34 +1,18 @@
-Return-Path: <Bharat.Bhushan@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 36CD92C007B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2013 03:08:57 +1100 (EST)
-From: Bharat Bhushan <Bharat.Bhushan@freescale.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
-Date: Wed, 27 Nov 2013 16:08:44 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D07233D0E@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1384973243.2879.361.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
- <1385066603.2879.414.camel@ul30vt.home>
- <1385066835.1403.489.camel@snotra.buserror.net>
- <1385067648.2879.421.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
- <1385397493.2879.557.camel@ul30vt.home>
-In-Reply-To: <1385397493.2879.557.camel@ul30vt.home>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "agraf@suse.de" <agraf@suse.de>, Stuart Yoder <stuart.yoder@freescale.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 9E38B2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2013 07:43:32 +1100 (EST)
+Message-ID: <1385585007.25738.138.camel@ul30vt.home>
+Subject: Re: [PATCH v4] KVM: PPC: vfio kvm device: support spapr tce
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Wed, 27 Nov 2013 13:43:27 -0700
+In-Reply-To: <1385369342-24423-1-git-send-email-aik@ozlabs.ru>
+References: <1385369342-24423-1-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,93 +22,336 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
-IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IE1vbmRheSwgTm92
-ZW1iZXIgMjUsIDIwMTMgMTA6MDggUE0NCj4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiBD
-YzogV29vZCBTY290dC1CMDc0MjE7IGxpbnV4LXBjaUB2Z2VyLmtlcm5lbC5vcmc7IGFncmFmQHN1
-c2UuZGU7IFlvZGVyIFN0dWFydC0NCj4gQjA4MjQ4OyBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0
-aW9uLm9yZzsgYmhlbGdhYXNAZ29vZ2xlLmNvbTsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxh
-YnMub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0ggMC85IHYyXSB2ZmlvLXBjaTogYWRkIHN1cHBvcnQgZm9yIEZyZWVzY2FsZSBJT01NVSAoUEFN
-VSkNCj4gDQo+IE9uIE1vbiwgMjAxMy0xMS0yNSBhdCAwNTozMyArMDAwMCwgQmhhcmF0IEJodXNo
-YW4gd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBG
-cm9tOiBBbGV4IFdpbGxpYW1zb24gW21haWx0bzphbGV4LndpbGxpYW1zb25AcmVkaGF0LmNvbV0N
-Cj4gPiA+IFNlbnQ6IEZyaWRheSwgTm92ZW1iZXIgMjIsIDIwMTMgMjozMSBBTQ0KPiA+ID4gVG86
-IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiBDYzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3OyBsaW51
-eC1wY2lAdmdlci5rZXJuZWwub3JnOyBhZ3JhZkBzdXNlLmRlOw0KPiA+ID4gWW9kZXIgU3R1YXJ0
-LUIwODI0ODsgaW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmc7DQo+ID4gPiBiaGVsZ2Fh
-c0Bnb29nbGUuY29tOyBsaW51eHBwYy0gZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiBsaW51
-eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDAvOSB2
-Ml0gdmZpby1wY2k6IGFkZCBzdXBwb3J0IGZvciBGcmVlc2NhbGUNCj4gPiA+IElPTU1VIChQQU1V
-KQ0KPiA+ID4NCj4gPiA+IE9uIFRodSwgMjAxMy0xMS0yMSBhdCAxNDo0NyAtMDYwMCwgU2NvdHQg
-V29vZCB3cm90ZToNCj4gPiA+ID4gT24gVGh1LCAyMDEzLTExLTIxIGF0IDEzOjQzIC0wNzAwLCBB
-bGV4IFdpbGxpYW1zb24gd3JvdGU6DQo+ID4gPiA+ID4gT24gVGh1LCAyMDEzLTExLTIxIGF0IDEx
-OjIwICswMDAwLCBCaGFyYXQgQmh1c2hhbiB3cm90ZToNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
-PiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+IEZyb206IEFsZXgg
-V2lsbGlhbXNvbiBbbWFpbHRvOmFsZXgud2lsbGlhbXNvbkByZWRoYXQuY29tXQ0KPiA+ID4gPiA+
-ID4gPiBTZW50OiBUaHVyc2RheSwgTm92ZW1iZXIgMjEsIDIwMTMgMTI6MTcgQU0NCj4gPiA+ID4g
-PiA+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+ID4gPiA+ID4gPiBDYzogam9yb0A4
-Ynl0ZXMub3JnOyBiaGVsZ2Fhc0Bnb29nbGUuY29tOyBhZ3JhZkBzdXNlLmRlOw0KPiA+ID4gPiA+
-ID4gPiBXb29kIFNjb3R0LUIwNzQyMTsgWW9kZXIgU3R1YXJ0LUIwODI0ODsNCj4gPiA+ID4gPiA+
-ID4gaW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmc7IGxpbnV4LQ0KPiA+ID4gPiA+ID4g
-PiBwY2lAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGlu
-dXgtDQo+ID4gPiA+ID4gPiA+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IEJodXNoYW4gQmhhcmF0
-LVI2NTc3Nw0KPiA+ID4gPiA+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDAvOSB2Ml0gdmZpby1w
-Y2k6IGFkZCBzdXBwb3J0IGZvcg0KPiA+ID4gPiA+ID4gPiBGcmVlc2NhbGUgSU9NTVUgKFBBTVUp
-DQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IElzIFZGSU9fSU9NTVVfUEFNVV9HRVRfTVNJ
-X0JBTktfQ09VTlQgcGVyIGFwZXJ0dXJlIChpZS4gZWFjaA0KPiA+ID4gPiA+ID4gPiB2ZmlvIHVz
-ZXIgaGFzICRDT1VOVCByZWdpb25zIGF0IHRoZWlyIGRpc3Bvc2FsIGV4Y2x1c2l2ZWx5KT8NCj4g
-PiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBOdW1iZXIgb2YgbXNpLWJhbmsgY291bnQgaXMgc3lzdGVt
-IHdpZGUgYW5kIG5vdCBwZXIgYXBlcnR1cmUsDQo+ID4gPiA+ID4gPiBCdXQgd2lsbCBiZQ0KPiA+
-ID4gc2V0dGluZyB3aW5kb3dzIGZvciBiYW5rcyBpbiB0aGUgZGV2aWNlIGFwZXJ0dXJlLg0KPiA+
-ID4gPiA+ID4gU28gc2F5IGlmIHdlIGFyZSBkaXJlY3QgYXNzaWduaW5nIDIgcGNpIGRldmljZSAo
-Ym90aCBoYXZlDQo+ID4gPiA+ID4gPiBkaWZmZXJlbnQgaW9tbXUNCj4gPiA+IGdyb3VwLCBzbyAy
-IGFwZXJ0dXJlIGluIGlvbW11KSB0byBWTS4NCj4gPiA+ID4gPiA+IE5vdyBxZW11IGNhbiBtYWtl
-IG9ubHkgb25lIGNhbGwgdG8ga25vdyBob3cgbWFueSBtc2ktYmFua3MgYXJlDQo+ID4gPiA+ID4g
-PiB0aGVyZSBidXQNCj4gPiA+IGl0IG11c3Qgc2V0IHN1Yi13aW5kb3dzIGZvciBhbGwgYmFua3Mg
-Zm9yIGJvdGggcGNpIGRldmljZSBpbiBpdHMNCj4gPiA+IHJlc3BlY3RpdmUgYXBlcnR1cmUuDQo+
-ID4gPiA+ID4NCj4gPiA+ID4gPiBJJ20gc3RpbGwgY29uZnVzZWQuICBXaGF0IEkgd2FudCB0byBt
-YWtlIHN1cmUgb2YgaXMgdGhhdCB0aGUNCj4gPiA+ID4gPiBiYW5rcyBhcmUgaW5kZXBlbmRlbnQg
-cGVyIGFwZXJ0dXJlLiAgRm9yIGluc3RhbmNlLCBpZiB3ZSBoYXZlDQo+ID4gPiA+ID4gdHdvIHNl
-cGFyYXRlIHVzZXJzcGFjZSBwcm9jZXNzZXMgb3BlcmF0aW5nIGluZGVwZW5kZW50bHkgYW5kDQo+
-ID4gPiA+ID4gdGhleSBib3RoIGNob3NlIHRvIHVzZSBtc2kgYmFuayB6ZXJvIGZvciB0aGVpciBk
-ZXZpY2UsIHRoYXQncw0KPiA+ID4gPiA+IGJhbmsgemVybyB3aXRoaW4gZWFjaCBhcGVydHVyZSBh
-bmQgZG9lc24ndCBpbnRlcmZlcmUuICBPcg0KPiA+ID4gPiA+IGFub3RoZXIgd2F5IHRvIGFzayBp
-cyBjYW4gYSBtYWxpY2lvdXMgdXNlciBpbnRlcmZlcmUgd2l0aCBvdGhlciB1c2VycyBieQ0KPiB1
-c2luZyB0aGUgd3JvbmcgYmFuay4NCj4gPiA+ID4gPiBUaGFua3MsDQo+ID4gPiA+DQo+ID4gPiA+
-IFRoZXkgY2FuIGludGVyZmVyZS4NCj4gPg0KPiA+IFdhbnQgdG8gYmUgc3VyZSBvZiBob3cgdGhl
-eSBjYW4gaW50ZXJmZXJlPw0KPiANCj4gV2hhdCBoYXBwZW5zIGlmIG1vcmUgdGhhbiBvbmUgdXNl
-ciBzZWxlY3RzIHRoZSBzYW1lIE1TSSBiYW5rPw0KPiBNaW5pbWFsbHksIHdvdWxkbid0IHRoYXQg
-cmVzdWx0IGluIHRoZSBJT01NVSBibG9ja2luZyB0cmFuc2FjdGlvbnMgZnJvbSB0aGUNCj4gcHJl
-dmlvdXMgdXNlciBvbmNlIHRoZSBuZXcgdXNlciBhY3RpdmF0ZXMgdGhlaXIgbWFwcGluZz8NCg0K
-WWVzIGFuZCBubzsgV2l0aCBjdXJyZW50IGltcGxlbWVudGF0aW9uIHllcyBidXQgd2l0aCBhIG1p
-bm9yIGNoYW5nZSBuby4gTGF0ZXIgaW4gdGhpcyByZXNwb25zZSBJIHdpbGwgZXhwbGFpbiBob3cu
-DQoNCj4gDQo+ID4gPj4gIFdpdGggdGhpcyBoYXJkd2FyZSwgdGhlIG9ubHkgd2F5IHRvIHByZXZl
-bnQgdGhhdA0KPiA+ID4gPiBpcyB0byBtYWtlIHN1cmUgdGhhdCBhIGJhbmsgaXMgbm90IHNoYXJl
-ZCBieSBtdWx0aXBsZSBwcm90ZWN0aW9uIGNvbnRleHRzLg0KPiA+ID4gPiBGb3Igc29tZSBvZiBv
-dXIgdXNlcnMsIHRob3VnaCwgSSBiZWxpZXZlIHByZXZlbnRpbmcgdGhpcyBpcyBsZXNzDQo+ID4g
-PiA+IGltcG9ydGFudCB0aGFuIHRoZSBwZXJmb3JtYW5jZSBiZW5lZml0Lg0KPiA+DQo+ID4gU28g
-c2hvdWxkIHdlIGxldCB0aGlzIHBhdGNoIHNlcmllcyBpbiB3aXRob3V0IHByb3RlY3Rpb24/DQo+
-IA0KPiBOby4NCj4gDQo+ID4gPg0KPiA+ID4gSSB0aGluayB3ZSBuZWVkIHNvbWUgc29ydCBvZiBv
-d25lcnNoaXAgbW9kZWwgYXJvdW5kIHRoZSBtc2kgYmFua3MgdGhlbi4NCj4gPiA+IE90aGVyd2lz
-ZSB0aGVyZSdzIG5vdGhpbmcgcHJldmVudGluZyBhbm90aGVyIHVzZXJzcGFjZSBmcm9tDQo+ID4g
-PiBhdHRlbXB0aW5nIGFuIE1TSSBiYXNlZCBhdHRhY2sgb24gb3RoZXIgdXNlcnMsIG9yIHBlcmhh
-cHMgZXZlbiBvbg0KPiA+ID4gdGhlIGhvc3QuICBWRklPIGNhbid0IGFsbG93IHRoYXQuICBUaGFu
-a3MsDQo+ID4NCj4gPiBXZSBoYXZlIHZlcnkgZmV3ICgzIE1TSSBiYW5rIG9uIG1vc3Qgb2YgY2hp
-cHMpLCBzbyB3ZSBjYW4gbm90IGFzc2lnbg0KPiA+IG9uZSB0byBlYWNoIHVzZXJzcGFjZS4gV2hh
-dCB3ZSBjYW4gZG8gaXMgaG9zdCBhbmQgdXNlcnNwYWNlIGRvZXMgbm90DQo+ID4gc2hhcmUgYSBN
-U0kgYmFuayB3aGlsZSB1c2Vyc3BhY2Ugd2lsbCBzaGFyZSBhIE1TSSBiYW5rLg0KPiANCj4gVGhl
-biB5b3UgcHJvYmFibHkgbmVlZCBWRklPIHRvICJvd24iIHRoZSBNU0kgYmFuayBhbmQgcHJvZ3Jh
-bSBkZXZpY2VzIGludG8gaXQNCj4gcmF0aGVyIHRoYW4gZXhwb3NpbmcgdGhlIE1TSSBiYW5rcyB0
-byB1c2Vyc3BhY2UgdG8gbGV0IHRoZW0gaGF2ZSBkaXJlY3QgYWNjZXNzLg0KDQpPdmVyYWxsIGlk
-ZWEgb2YgZXhwb3NpbmcgdGhlIGRldGFpbHMgb2YgbXNpIHJlZ2lvbnMgdG8gdXNlcnNwYWNlIGFy
-ZQ0KIDEpIFVzZXIgc3BhY2UgY2FuIGRlZmluZSB0aGUgYXBlcnR1cmUgc2l6ZSB0byBmaXQgTVNJ
-IG1hcHBpbmcgaW4gSU9NTVUuDQogMikgc2V0dXAgaW92YSBmb3IgYSBNU0kgYmFua3M7IHdoaWNo
-IGlzIGp1c3QgYWZ0ZXIgZ3Vlc3QgbWVtb3J5LiANCg0KQnV0IGN1cnJlbnRseSB3ZSBleHBvc2Ug
-dGhlICJzaXplIiBhbmQgImFkZHJlc3MiIG9mIE1TSSBiYW5rcywgcGFzc2luZyBhZGRyZXNzIGlz
-IG9mIG5vIHVzZSBhbmQgY2FuIGJlIHByb2JsZW1hdGljLg0KSWYgd2UganVzdCBwcm92aWRlIHRo
-ZSBzaXplIG9mIE1TSSBiYW5rIHRvIHVzZXJzcGFjZSB0aGVuIHVzZXJzcGFjZSBjYW5ub3QgZG8g
-YW55dGhpbmcgd3JvbmcuDQoNCldoaWxlIGl0IGlzIHN0aWxsIHRoZSByZXNwb25zaWJpbGl0eSBv
-ZiBob3N0IChNU0krVkZJTykgdG8gY29tcG9zZSBNU0ktYWRkcmVzcyBhbmQgTVNJLWRhdGE7IHNv
-IEkgdGhpbmsgdGhpcyBzaG91bGQgbG9vayBmaW5lLg0KDQo+IFRoYW5rcywNCj4gDQo+IEFsZXgN
-Cj4gDQoNCg==
+On Mon, 2013-11-25 at 19:49 +1100, Alexey Kardashevskiy wrote:
+> In addition to the external VFIO user API, a VFIO KVM device
+> has been introduced recently.
+> 
+> sPAPR TCE IOMMU is para-virtualized and the guest does map/unmap
+> via hypercalls which take a logical bus id (LIOBN) as a target IOMMU
+> identifier. LIOBNs are made up and linked to IOMMU groups by the user
+> space. In order to accelerate IOMMU operations in the KVM, we need
+> to tell KVM the information about LIOBN-to-group mapping.
+> 
+> For that, a new KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN parameter
+> is added. It accepts a pair of a VFIO group fd and LIOBN.
+> 
+> This also adds a new kvm_vfio_find_group_by_liobn() function which
+> receives kvm struct, LIOBN and a callback. As it increases the IOMMU
+> group use counter, the KVMr is required to pass a callback which
+> called when the VFIO group is about to be removed VFIO-KVM tracking so
+> the KVM is able to call iommu_group_put() to release the IOMMU group.
+> 
+> The KVM uses kvm_vfio_find_group_by_liobn() once per KVM run and caches
+> the result in kvm_arch. iommu_group_put() for all groups will be called
+> when KVM finishes (in the SPAPR TCE in KVM enablement patch).
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> Changes:
+> v4:
+> * fixed few bugs
+> * changed kvm_vfio_find_group_by_liobn() to return informative errors
+> 
+> v3:
+> * total rework
+> * added a release callback into kvm_vfio_find_group_by_liobn so now
+> the user of the API can get a notification if the group is about to
+> disappear
+> ---
+>  Documentation/virtual/kvm/devices/vfio.txt |  19 ++++-
+>  arch/powerpc/kvm/Kconfig                   |   1 +
+>  arch/powerpc/kvm/Makefile                  |   3 +
+>  include/linux/kvm_host.h                   |  18 +++++
+>  include/uapi/linux/kvm.h                   |   7 ++
+>  virt/kvm/vfio.c                            | 116 ++++++++++++++++++++++++++++-
+>  6 files changed, 161 insertions(+), 3 deletions(-)
+> 
+> diff --git a/Documentation/virtual/kvm/devices/vfio.txt b/Documentation/virtual/kvm/devices/vfio.txt
+> index ef51740..7ecb3b2 100644
+> --- a/Documentation/virtual/kvm/devices/vfio.txt
+> +++ b/Documentation/virtual/kvm/devices/vfio.txt
+> @@ -16,7 +16,22 @@ Groups:
+>  
+>  KVM_DEV_VFIO_GROUP attributes:
+>    KVM_DEV_VFIO_GROUP_ADD: Add a VFIO group to VFIO-KVM device tracking
+> +	kvm_device_attr.addr points to an int32_t file descriptor
+> +	for the VFIO group.
+> +
+>    KVM_DEV_VFIO_GROUP_DEL: Remove a VFIO group from VFIO-KVM device tracking
+> +	kvm_device_attr.addr points to an int32_t file descriptor
+> +	for the VFIO group.
+> +
+> +  KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN: sets a liobn for a VFIO group
+> +	kvm_device_attr.addr points to a struct:
+> +		struct kvm_vfio_spapr_tce_liobn {
+> +			__u32	argsz;
+> +			__u32	fd;
+
+__s32 per the definition below
+
+> +			__u32	liobn;
+> +		};
+> +		where
+> +		@argsz is a struct size;
+> +		@fd is a file descriptor for a VFIO group;
+> +		@liobn is a logical bus id to be associated with the group.
+>  
+> -For each, kvm_device_attr.addr points to an int32_t file descriptor
+> -for the VFIO group.
+> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+> index 9a50d82..f463958 100644
+> --- a/arch/powerpc/kvm/Kconfig
+> +++ b/arch/powerpc/kvm/Kconfig
+> @@ -60,6 +60,7 @@ config KVM_BOOK3S_64
+>  	select KVM_BOOK3S_64_HANDLER
+>  	select KVM
+>  	select SPAPR_TCE_IOMMU if IOMMU_SUPPORT
+> +	select KVM_VFIO
+>  	---help---
+>  	  Support running unmodified book3s_64 and book3s_32 guest kernels
+>  	  in virtual machines on book3s_64 host processors.
+> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+> index 6646c95..2438d2e 100644
+> --- a/arch/powerpc/kvm/Makefile
+> +++ b/arch/powerpc/kvm/Makefile
+> @@ -87,6 +87,9 @@ kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HV) := \
+>  kvm-book3s_64-objs-$(CONFIG_KVM_XICS) += \
+>  	book3s_xics.o
+>  
+> +kvm-book3s_64-objs-$(CONFIG_KVM_VFIO) += \
+> +	$(KVM)/vfio.o \
+> +
+>  kvm-book3s_64-module-objs := \
+>  	$(KVM)/kvm_main.o \
+>  	$(KVM)/eventfd.o \
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index 88ff96a..1d2ad5e 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -1112,5 +1112,23 @@ static inline bool kvm_vcpu_eligible_for_directed_yield(struct kvm_vcpu *vcpu)
+>  }
+>  
+>  #endif /* CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT */
+> +
+> +typedef void (*kvm_vfio_release_group_callback)(struct kvm *kvm,
+> +		unsigned long liobn);
+
+Seems like a bit of namespace pollution that this is named generically
+but is specific to spapr/liobn.  Is this ever needed w/o
+CONFIG_SPAPR_TCE_IOMMU?
+
+> +#if defined(CONFIG_KVM_VFIO) && defined(CONFIG_SPAPR_TCE_IOMMU)
+> +
+> +extern struct iommu_group *kvm_vfio_find_group_by_liobn(struct kvm *kvm,
+> +		unsigned long liobn, kvm_vfio_release_group_callback cb);
+> +
+> +#else
+> +
+> +static inline struct iommu_group *kvm_vfio_find_group_by_liobn(struct kvm *kvm,
+> +		unsigned long liobn, ikvm_vfio_release_group_callback cb)
+> +{
+> +	return NULL;
+
+The real function returns ERR_PTR(-errno) now, this should too.
+
+> +}
+> +#endif /* CONFIG_KVM_VFIO && CONFIG_SPAPR_TCE_IOMMU */
+
+Why isn't this
+
+#ifdef CONFIG_SPAPR_TCE_IOMMU
+#ifdef CONFIG_KVM_VFIO
+extern...
+#else
+static inline...
+#endif
+#endif
+
+?
+
+> +
+>  #endif
+>  
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index 7c1a349..51d5464 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -847,6 +847,13 @@ struct kvm_device_attr {
+>  #define  KVM_DEV_VFIO_GROUP			1
+>  #define   KVM_DEV_VFIO_GROUP_ADD			1
+>  #define   KVM_DEV_VFIO_GROUP_DEL			2
+> +#define   KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN	3
+> +
+> +struct kvm_vfio_spapr_tce_liobn {
+> +	__u32	argsz;
+> +	__s32	fd;
+> +	__u32	liobn;
+> +};
+>  
+>  /*
+>   * ioctls for VM fds
+> diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
+> index ca4260e..ddc945d 100644
+> --- a/virt/kvm/vfio.c
+> +++ b/virt/kvm/vfio.c
+> @@ -22,6 +22,12 @@
+>  struct kvm_vfio_group {
+>  	struct list_head node;
+>  	struct vfio_group *vfio_group;
+> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> +	struct {
+> +		unsigned long liobn;
+> +		kvm_vfio_release_group_callback cb;
+> +	} spapr_tce;
+> +#endif
+>  };
+>  
+>  struct kvm_vfio {
+> @@ -59,6 +65,51 @@ static void kvm_vfio_group_put_external_user(struct vfio_group *vfio_group)
+>  	symbol_put(vfio_group_put_external_user);
+>  }
+>  
+> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> +struct iommu_group *kvm_vfio_find_group_by_liobn(struct kvm *kvm,
+> +		unsigned long liobn, kvm_vfio_release_group_callback cb)
+> +{
+> +	struct kvm_vfio_group *kvg;
+> +	int group_id;
+> +	struct iommu_group *grp;
+> +	struct kvm_vfio *kv = NULL;
+> +	struct kvm_device *tmp;
+> +
+> +	if (!cb)
+> +		return ERR_PTR(-EINVAL);
+> +
+> +	/* Find a VFIO KVM device */
+> +	list_for_each_entry(tmp, &kvm->devices, vm_node) {
+> +		if (tmp->ops != &kvm_vfio_ops)
+> +			continue;
+> +
+> +		kv = tmp->private;
+> +		break;
+> +	}
+> +
+> +	if (!kv)
+> +		return ERR_PTR(-EIO);
+> +
+
+I'm getting tired of noting that this ignores kv->lock...
+
+> +	/* Find a group */
+> +	list_for_each_entry(kvg, &kv->group_list, node) {
+> +		if (kvg->spapr_tce.liobn != liobn)
+> +			continue;
+> +
+> +		if (kvg->spapr_tce.cb)
+> +			return ERR_PTR(-EBUSY);
+> +
+> +		kvg->spapr_tce.cb = cb;
+> +		group_id = vfio_external_user_iommu_id(kvg->vfio_group);
+> +		grp = iommu_group_get_by_id(group_id);
+> +
+> +		return grp;
+> +	}
+> +
+> +	return ERR_PTR(-ENODEV);
+> +}
+> +EXPORT_SYMBOL_GPL(kvm_vfio_find_group_by_liobn);
+> +#endif
+> +
+>  /*
+>   * Groups can use the same or different IOMMU domains.  If the same then
+>   * adding a new group may change the coherency of groups we've previously
+> @@ -140,7 +191,9 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
+>  
+>  		list_add_tail(&kvg->node, &kv->group_list);
+>  		kvg->vfio_group = vfio_group;
+> -
+> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> +		kvg->spapr_tce.liobn = -1;
+> +#endif
+>  		mutex_unlock(&kv->lock);
+>  
+>  		kvm_vfio_update_coherency(dev);
+> @@ -170,6 +223,11 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
+>  				continue;
+>  
+>  			list_del(&kvg->node);
+> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> +			if (kvg->spapr_tce.cb)
+> +				kvg->spapr_tce.cb(dev->kvm,
+> +						kvg->spapr_tce.liobn);
+> +#endif
+>  			kvm_vfio_group_put_external_user(kvg->vfio_group);
+>  			kfree(kvg);
+>  			ret = 0;
+> @@ -183,6 +241,59 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
+>  		kvm_vfio_update_coherency(dev);
+>  
+>  		return ret;
+> +
+> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> +	case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN: {
+> +		struct kvm_vfio_spapr_tce_liobn param;
+> +		unsigned long minsz;
+> +		struct kvm_vfio *kv = dev->private;
+> +		struct vfio_group *vfio_group;
+> +		struct kvm_vfio_group *kvg;
+> +		struct fd f;
+> +
+> +		minsz = offsetofend(struct kvm_vfio_spapr_tce_liobn, liobn);
+> +
+> +		if (copy_from_user(&param, (void __user *)arg, minsz))
+> +			return -EFAULT;
+> +
+> +		if (param.argsz < minsz)
+> +			return -EINVAL;
+> +
+> +		f = fdget(param.fd);
+> +		if (!f.file)
+> +			return -EBADF;
+> +
+> +		vfio_group = kvm_vfio_group_get_external_user(f.file);
+> +		fdput(f);
+> +
+> +		if (IS_ERR(vfio_group))
+> +			return PTR_ERR(vfio_group);
+> +
+> +		ret = -ENOENT;
+> +
+> +		mutex_lock(&kv->lock);
+> +
+> +		list_for_each_entry(kvg, &kv->group_list, node) {
+> +			if (kvg->vfio_group != vfio_group)
+> +				continue;
+> +
+> +			if (kvg->spapr_tce.liobn != -1) {
+> +				ret = -EBUSY;
+> +				break;
+> +			}
+> +
+> +			kvg->spapr_tce.liobn = param.liobn;
+> +			ret = 0;
+> +			break;
+> +		}
+> +
+> +		mutex_unlock(&kv->lock);
+> +
+> +		kvm_vfio_group_put_external_user(vfio_group);
+> +
+> +		return ret;
+> +	}
+> +#endif /* CONFIG_SPAPR_TCE_IOMMU */
+>  	}
+>  
+>  	return -ENXIO;
+> @@ -207,6 +318,9 @@ static int kvm_vfio_has_attr(struct kvm_device *dev,
+>  		switch (attr->attr) {
+>  		case KVM_DEV_VFIO_GROUP_ADD:
+>  		case KVM_DEV_VFIO_GROUP_DEL:
+> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> +		case KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE_LIOBN:
+> +#endif
+>  			return 0;
+>  		}
+>  
