@@ -1,62 +1,27 @@
-Return-Path: <kmo@daterainc.com>
-Received: from mail-pb0-f41.google.com (mail-pb0-f41.google.com
- [209.85.160.41])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C78512C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2013 11:45:57 +1100 (EST)
-Received: by mail-pb0-f41.google.com with SMTP id jt11so9228205pbb.14
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 16:45:55 -0800 (PST)
-From: Kent Overstreet <kmo@daterainc.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- hch@infradead.org
-Subject: [PATCH 07/25] block: Convert bio_for_each_segment() to bvec_iter
-Date: Tue, 26 Nov 2013 16:45:10 -0800
-Message-Id: <1385513128-5035-7-git-send-email-kmo@daterainc.com>
-In-Reply-To: <1385513128-5035-1-git-send-email-kmo@daterainc.com>
-References: <20131127004422.GB21305@kmo>
- <1385513128-5035-1-git-send-email-kmo@daterainc.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>,
- Jan Kara <jack@suse.cz>, "Ed L. Cashin" <ecashin@coraid.com>,
- Neil Brown <neilb@suse.de>, support@lsi.com,
- Paul Clements <Paul.Clements@steeleye.com>,
- virtualization@lists.linux-foundation.org, Keith Busch <keith.busch@intel.com>,
- linux-mm@kvack.org, Quoc-Son Anh <quoc-sonx.anh@intel.com>,
- Paul Mackerras <paulus@samba.org>,
- "James E.J. Bottomley" <JBottomley@parallels.com>,
- Stephen Hemminger <shemminger@vyatta.com>,
- Joshua Morris <josh.h.morris@us.ibm.com>, Nick Piggin <npiggin@kernel.dk>,
- devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
- xen-devel@lists.xensource.com, Jerome Marchand <jmarchan@redhat.com>,
- Mike Snitzer <snitzer@redhat.com>, linux-scsi@vger.kernel.org,
- Minchan Kim <minchan@kernel.org>, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- Philip Kelleher <pjk1939@linux.vnet.ibm.com>,
- Steven Whitehouse <swhiteho@redhat.com>, cluster-devel@redhat.com,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Asai Thambi S P <asamymuthupa@micron.com>,
- Lars Ellenberg <drbd-dev@lists.linbit.com>,
- Sam Bradshaw <sbradshaw@micron.com>, Nitin Gupta <ngupta@vflare.org>,
- cbe-oss-dev@lists.ozlabs.org, Alex Elder <elder@inktank.com>,
- Sage Weil <sage@inktank.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, DL-MPTFusionLinux@lsi.com,
- Chris Metcalf <cmetcalf@tilera.com>, linux-raid@vger.kernel.org,
- Tejun Heo <tj@kernel.org>, Kent Overstreet <kmo@daterainc.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>, Selvan Mani <smani@micron.com>,
- ceph-devel@vger.kernel.org, drbd-user@lists.linbit.com,
- Nagalakshmi Nandigama <Nagalakshmi.Nandigama@lsi.com>,
- Yehuda Sadeh <yehuda@inktank.com>, Jens Axboe <axboe@kernel.dk>,
- Seth Jennings <sjenning@linux.vnet.ibm.com>, nbd-general@lists.sourceforge.net,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Geoff Levand <geoff@infradead.org>, Jiri Kosina <jkosina@suse.cz>,
- "Darrick J. Wong" <darrick.wong@oracle.com>, linux-m68k@lists.linux-m68k.org,
- Jim Paris <jim@jtan.com>, Sreekanth Reddy <Sreekanth.Reddy@lsi.com>,
- Vivek Goyal <vgoyal@redhat.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Guo Chao <yan@linux.vnet.ibm.com>, Matthew Wilcox <matthew.r.wilcox@intel.com>
+Return-Path: <eunb.song@samsung.com>
+Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
+ (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "mailout1.samsung.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4AC752C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2013 11:52:57 +1100 (EST)
+Received: from epcpsbgr5.samsung.com
+ (u145.gpu120.samsung.co.kr [203.254.230.145])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0MWW002CKCN5Q0C0@mailout1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 27 Nov 2013 09:42:41 +0900 (KST)
+Date: Wed, 27 Nov 2013 00:42:41 +0000 (GMT)
+From: Eunbong Song <eunb.song@samsung.com>
+Subject: [PATCH] powerpc: : Kill CONFIG_MTD_PARTITIONS
+To: benh@kernel.crashing.org, paulus@samba.org
+MIME-version: 1.0
+Content-type: text/plain; charset=euc-kr
+MIME-version: 1.0
+Message-id: <10105084.78451385512960055.JavaMail.weblogic@epml11>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Reply-To: eunb.song@samsung.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -66,2163 +31,477 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-More prep work for immutable biovecs - with immutable bvecs drivers
-won't be able to use the biovec directly, they'll need to use helpers
-that take into account bio->bi_iter.bi_bvec_done.
-
-This updates callers for the new usage without changing the
-implementation yet.
-
-Signed-off-by: Kent Overstreet <kmo@daterainc.com>
-Cc: Jens Axboe <axboe@kernel.dk>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: "Ed L. Cashin" <ecashin@coraid.com>
-Cc: Nick Piggin <npiggin@kernel.dk>
-Cc: Lars Ellenberg <drbd-dev@lists.linbit.com>
-Cc: Jiri Kosina <jkosina@suse.cz>
-Cc: Paul Clements <Paul.Clements@steeleye.com>
-Cc: Jim Paris <jim@jtan.com>
-Cc: Geoff Levand <geoff@infradead.org>
-Cc: Yehuda Sadeh <yehuda@inktank.com>
-Cc: Sage Weil <sage@inktank.com>
-Cc: Alex Elder <elder@inktank.com>
-Cc: ceph-devel@vger.kernel.org
-Cc: Joshua Morris <josh.h.morris@us.ibm.com>
-Cc: Philip Kelleher <pjk1939@linux.vnet.ibm.com>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Neil Brown <neilb@suse.de>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux390@de.ibm.com
-Cc: Nagalakshmi Nandigama <Nagalakshmi.Nandigama@lsi.com>
-Cc: Sreekanth Reddy <Sreekanth.Reddy@lsi.com>
-Cc: support@lsi.com
-Cc: "James E.J. Bottomley" <JBottomley@parallels.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Guo Chao <yan@linux.vnet.ibm.com>
-Cc: Asai Thambi S P <asamymuthupa@micron.com>
-Cc: Selvan Mani <smani@micron.com>
-Cc: Sam Bradshaw <sbradshaw@micron.com>
-Cc: Matthew Wilcox <matthew.r.wilcox@intel.com>
-Cc: Keith Busch <keith.busch@intel.com>
-Cc: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Quoc-Son Anh <quoc-sonx.anh@intel.com>
-Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Cc: Nitin Gupta <ngupta@vflare.org>
-Cc: Minchan Kim <minchan@kernel.org>
-Cc: Jerome Marchand <jmarchan@redhat.com>
-Cc: Seth Jennings <sjenning@linux.vnet.ibm.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Mike Snitzer <snitzer@redhat.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Darrick J. Wong" <darrick.wong@oracle.com>
-Cc: Chris Metcalf <cmetcalf@tilera.com>
-Cc: Jan Kara <jack@suse.cz>
-Cc: linux-m68k@lists.linux-m68k.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: drbd-user@lists.linbit.com
-Cc: nbd-general@lists.sourceforge.net
-Cc: cbe-oss-dev@lists.ozlabs.org
-Cc: xen-devel@lists.xensource.com
-Cc: virtualization@lists.linux-foundation.org
-Cc: linux-raid@vger.kernel.org
-Cc: linux-s390@vger.kernel.org
-Cc: DL-MPTFusionLinux@lsi.com
-Cc: linux-scsi@vger.kernel.org
-Cc: devel@driverdev.osuosl.org
-Cc: linux-fsdevel@vger.kernel.org
-Cc: cluster-devel@redhat.com
-Cc: linux-mm@kvack.org
-Acked-by: Geoff Levand <geoff@infradead.org>
----
- arch/m68k/emu/nfblock.c                     | 11 ++---
- arch/powerpc/sysdev/axonram.c               | 18 ++++----
- block/blk-core.c                            |  4 +-
- block/blk-merge.c                           | 49 ++++++++++----------
- drivers/block/aoe/aoecmd.c                  | 16 +++----
- drivers/block/brd.c                         | 12 ++---
- drivers/block/drbd/drbd_main.c              | 27 ++++++-----
- drivers/block/drbd/drbd_receiver.c          | 13 +++---
- drivers/block/drbd/drbd_worker.c            |  8 ++--
- drivers/block/floppy.c                      | 12 ++---
- drivers/block/loop.c                        | 23 +++++-----
- drivers/block/mtip32xx/mtip32xx.c           | 13 +++---
- drivers/block/nbd.c                         | 12 ++---
- drivers/block/nvme-core.c                   | 33 ++++++++------
- drivers/block/ps3disk.c                     | 10 ++---
- drivers/block/ps3vram.c                     | 10 ++---
- drivers/block/rbd.c                         | 38 ++++++++--------
- drivers/block/rsxx/dma.c                    | 11 ++---
- drivers/md/bcache/btree.c                   |  4 +-
- drivers/md/bcache/debug.c                   | 19 ++++----
- drivers/md/bcache/io.c                      | 69 ++++++++++++-----------------
- drivers/md/bcache/request.c                 | 26 +++++------
- drivers/md/raid5.c                          | 12 ++---
- drivers/s390/block/dasd_diag.c              | 10 ++---
- drivers/s390/block/dasd_eckd.c              | 48 ++++++++++----------
- drivers/s390/block/dasd_fba.c               | 26 +++++------
- drivers/s390/block/dcssblk.c                | 16 +++----
- drivers/s390/block/scm_blk.c                |  8 ++--
- drivers/s390/block/scm_blk_cluster.c        |  4 +-
- drivers/s390/block/xpram.c                  | 10 ++---
- drivers/scsi/mpt2sas/mpt2sas_transport.c    | 31 ++++++-------
- drivers/scsi/mpt3sas/mpt3sas_transport.c    | 31 ++++++-------
- drivers/staging/lustre/lustre/llite/lloop.c | 14 +++---
- drivers/staging/zram/zram_drv.c             | 19 ++++----
- fs/bio-integrity.c                          | 30 +++++++------
- fs/bio.c                                    | 22 ++++-----
- include/linux/bio.h                         | 28 ++++++------
- include/linux/blkdev.h                      |  7 +--
- mm/bounce.c                                 | 44 +++++++++---------
- 39 files changed, 401 insertions(+), 397 deletions(-)
-
-diff --git a/arch/m68k/emu/nfblock.c b/arch/m68k/emu/nfblock.c
-index 0a9d0b3..2d75ae2 100644
---- a/arch/m68k/emu/nfblock.c
-+++ b/arch/m68k/emu/nfblock.c
-@@ -62,17 +62,18 @@ struct nfhd_device {
- static void nfhd_make_request(struct request_queue *queue, struct bio *bio)
- {
- 	struct nfhd_device *dev = queue->queuedata;
--	struct bio_vec *bvec;
--	int i, dir, len, shift;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
-+	int dir, len, shift;
- 	sector_t sec = bio->bi_iter.bi_sector;
- 
- 	dir = bio_data_dir(bio);
- 	shift = dev->bshift;
--	bio_for_each_segment(bvec, bio, i) {
--		len = bvec->bv_len;
-+	bio_for_each_segment(bvec, bio, iter) {
-+		len = bvec.bv_len;
- 		len >>= 9;
- 		nfhd_read_write(dev->id, 0, dir, sec >> shift, len >> shift,
--				bvec_to_phys(bvec));
-+				bvec_to_phys(&bvec));
- 		sec += len;
- 	}
- 	bio_endio(bio, 0);
-diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
-index f33bcba..47b6b9f 100644
---- a/arch/powerpc/sysdev/axonram.c
-+++ b/arch/powerpc/sysdev/axonram.c
-@@ -109,28 +109,28 @@ axon_ram_make_request(struct request_queue *queue, struct bio *bio)
- 	struct axon_ram_bank *bank = bio->bi_bdev->bd_disk->private_data;
- 	unsigned long phys_mem, phys_end;
- 	void *user_mem;
--	struct bio_vec *vec;
-+	struct bio_vec vec;
- 	unsigned int transfered;
--	unsigned short idx;
-+	struct bvec_iter iter;
- 
- 	phys_mem = bank->io_addr + (bio->bi_iter.bi_sector <<
- 				    AXON_RAM_SECTOR_SHIFT);
- 	phys_end = bank->io_addr + bank->size;
- 	transfered = 0;
--	bio_for_each_segment(vec, bio, idx) {
--		if (unlikely(phys_mem + vec->bv_len > phys_end)) {
-+	bio_for_each_segment(vec, bio, iter) {
-+		if (unlikely(phys_mem + vec.bv_len > phys_end)) {
- 			bio_io_error(bio);
- 			return;
- 		}
- 
--		user_mem = page_address(vec->bv_page) + vec->bv_offset;
-+		user_mem = page_address(vec.bv_page) + vec.bv_offset;
- 		if (bio_data_dir(bio) == READ)
--			memcpy(user_mem, (void *) phys_mem, vec->bv_len);
-+			memcpy(user_mem, (void *) phys_mem, vec.bv_len);
- 		else
--			memcpy((void *) phys_mem, user_mem, vec->bv_len);
-+			memcpy((void *) phys_mem, user_mem, vec.bv_len);
- 
--		phys_mem += vec->bv_len;
--		transfered += vec->bv_len;
-+		phys_mem += vec.bv_len;
-+		transfered += vec.bv_len;
- 	}
- 	bio_endio(bio, 0);
- }
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 5c2ab2c..5da8e90 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -2746,10 +2746,10 @@ void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
- void rq_flush_dcache_pages(struct request *rq)
- {
- 	struct req_iterator iter;
--	struct bio_vec *bvec;
-+	struct bio_vec bvec;
- 
- 	rq_for_each_segment(bvec, rq, iter)
--		flush_dcache_page(bvec->bv_page);
-+		flush_dcache_page(bvec.bv_page);
- }
- EXPORT_SYMBOL_GPL(rq_flush_dcache_pages);
- #endif
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index 03bc083..a1ead90 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -12,10 +12,11 @@
- static unsigned int __blk_recalc_rq_segments(struct request_queue *q,
- 					     struct bio *bio)
- {
--	struct bio_vec *bv, *bvprv = NULL;
--	int cluster, i, high, highprv = 1;
-+	struct bio_vec bv, bvprv = { NULL };
-+	int cluster, high, highprv = 1;
- 	unsigned int seg_size, nr_phys_segs;
- 	struct bio *fbio, *bbio;
-+	struct bvec_iter iter;
- 
- 	if (!bio)
- 		return 0;
-@@ -25,25 +26,23 @@ static unsigned int __blk_recalc_rq_segments(struct request_queue *q,
- 	seg_size = 0;
- 	nr_phys_segs = 0;
- 	for_each_bio(bio) {
--		bio_for_each_segment(bv, bio, i) {
-+		bio_for_each_segment(bv, bio, iter) {
- 			/*
- 			 * the trick here is making sure that a high page is
- 			 * never considered part of another segment, since that
- 			 * might change with the bounce page.
- 			 */
--			high = page_to_pfn(bv->bv_page) > queue_bounce_pfn(q);
--			if (high || highprv)
--				goto new_segment;
--			if (cluster) {
--				if (seg_size + bv->bv_len
-+			high = page_to_pfn(bv.bv_page) > queue_bounce_pfn(q);
-+			if (!high && !highprv && cluster) {
-+				if (seg_size + bv.bv_len
- 				    > queue_max_segment_size(q))
- 					goto new_segment;
--				if (!BIOVEC_PHYS_MERGEABLE(bvprv, bv))
-+				if (!BIOVEC_PHYS_MERGEABLE(&bvprv, &bv))
- 					goto new_segment;
--				if (!BIOVEC_SEG_BOUNDARY(q, bvprv, bv))
-+				if (!BIOVEC_SEG_BOUNDARY(q, &bvprv, &bv))
- 					goto new_segment;
- 
--				seg_size += bv->bv_len;
-+				seg_size += bv.bv_len;
- 				bvprv = bv;
- 				continue;
- 			}
-@@ -54,7 +53,7 @@ new_segment:
- 
- 			nr_phys_segs++;
- 			bvprv = bv;
--			seg_size = bv->bv_len;
-+			seg_size = bv.bv_len;
- 			highprv = high;
- 		}
- 		bbio = bio;
-@@ -110,21 +109,21 @@ static int blk_phys_contig_segment(struct request_queue *q, struct bio *bio,
- 	return 0;
- }
- 
--static void
-+static inline void
- __blk_segment_map_sg(struct request_queue *q, struct bio_vec *bvec,
--		     struct scatterlist *sglist, struct bio_vec **bvprv,
-+		     struct scatterlist *sglist, struct bio_vec *bvprv,
- 		     struct scatterlist **sg, int *nsegs, int *cluster)
- {
- 
- 	int nbytes = bvec->bv_len;
- 
--	if (*bvprv && *cluster) {
-+	if (*sg && *cluster) {
- 		if ((*sg)->length + nbytes > queue_max_segment_size(q))
- 			goto new_segment;
- 
--		if (!BIOVEC_PHYS_MERGEABLE(*bvprv, bvec))
-+		if (!BIOVEC_PHYS_MERGEABLE(bvprv, bvec))
- 			goto new_segment;
--		if (!BIOVEC_SEG_BOUNDARY(q, *bvprv, bvec))
-+		if (!BIOVEC_SEG_BOUNDARY(q, bvprv, bvec))
- 			goto new_segment;
- 
- 		(*sg)->length += nbytes;
-@@ -150,7 +149,7 @@ new_segment:
- 		sg_set_page(*sg, bvec->bv_page, nbytes, bvec->bv_offset);
- 		(*nsegs)++;
- 	}
--	*bvprv = bvec;
-+	*bvprv = *bvec;
- }
- 
- /*
-@@ -160,7 +159,7 @@ new_segment:
- int blk_rq_map_sg(struct request_queue *q, struct request *rq,
- 		  struct scatterlist *sglist)
- {
--	struct bio_vec *bvec, *bvprv;
-+	struct bio_vec bvec, bvprv;
- 	struct req_iterator iter;
- 	struct scatterlist *sg;
- 	int nsegs, cluster;
-@@ -171,10 +170,9 @@ int blk_rq_map_sg(struct request_queue *q, struct request *rq,
- 	/*
- 	 * for each bio in rq
- 	 */
--	bvprv = NULL;
- 	sg = NULL;
- 	rq_for_each_segment(bvec, rq, iter) {
--		__blk_segment_map_sg(q, bvec, sglist, &bvprv, &sg,
-+		__blk_segment_map_sg(q, &bvec, sglist, &bvprv, &sg,
- 				     &nsegs, &cluster);
- 	} /* segments in rq */
- 
-@@ -223,18 +221,17 @@ EXPORT_SYMBOL(blk_rq_map_sg);
- int blk_bio_map_sg(struct request_queue *q, struct bio *bio,
- 		   struct scatterlist *sglist)
- {
--	struct bio_vec *bvec, *bvprv;
-+	struct bio_vec bvec, bvprv;
- 	struct scatterlist *sg;
- 	int nsegs, cluster;
--	unsigned long i;
-+	struct bvec_iter iter;
- 
- 	nsegs = 0;
- 	cluster = blk_queue_cluster(q);
- 
--	bvprv = NULL;
- 	sg = NULL;
--	bio_for_each_segment(bvec, bio, i) {
--		__blk_segment_map_sg(q, bvec, sglist, &bvprv, &sg,
-+	bio_for_each_segment(bvec, bio, iter) {
-+		__blk_segment_map_sg(q, &bvec, sglist, &bvprv, &sg,
- 				     &nsegs, &cluster);
- 	} /* segments in bio */
- 
-diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
-index 77c24ab..7a06aec 100644
---- a/drivers/block/aoe/aoecmd.c
-+++ b/drivers/block/aoe/aoecmd.c
-@@ -897,15 +897,15 @@ rqbiocnt(struct request *r)
- static void
- bio_pageinc(struct bio *bio)
- {
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	struct page *page;
--	int i;
-+	struct bvec_iter iter;
- 
--	bio_for_each_segment(bv, bio, i) {
-+	bio_for_each_segment(bv, bio, iter) {
- 		/* Non-zero page count for non-head members of
- 		 * compound pages is no longer allowed by the kernel.
- 		 */
--		page = compound_trans_head(bv->bv_page);
-+		page = compound_trans_head(bv.bv_page);
- 		atomic_inc(&page->_count);
- 	}
- }
-@@ -913,12 +913,12 @@ bio_pageinc(struct bio *bio)
- static void
- bio_pagedec(struct bio *bio)
- {
--	struct bio_vec *bv;
- 	struct page *page;
--	int i;
-+	struct bio_vec bv;
-+	struct bvec_iter iter;
- 
--	bio_for_each_segment(bv, bio, i) {
--		page = compound_trans_head(bv->bv_page);
-+	bio_for_each_segment(bv, bio, iter) {
-+		page = compound_trans_head(bv.bv_page);
- 		atomic_dec(&page->_count);
- 	}
- }
-diff --git a/drivers/block/brd.c b/drivers/block/brd.c
-index 66f5aaa..e73b85c 100644
---- a/drivers/block/brd.c
-+++ b/drivers/block/brd.c
-@@ -328,9 +328,9 @@ static void brd_make_request(struct request_queue *q, struct bio *bio)
- 	struct block_device *bdev = bio->bi_bdev;
- 	struct brd_device *brd = bdev->bd_disk->private_data;
- 	int rw;
--	struct bio_vec *bvec;
-+	struct bio_vec bvec;
- 	sector_t sector;
--	int i;
-+	struct bvec_iter iter;
- 	int err = -EIO;
- 
- 	sector = bio->bi_iter.bi_sector;
-@@ -347,10 +347,10 @@ static void brd_make_request(struct request_queue *q, struct bio *bio)
- 	if (rw == READA)
- 		rw = READ;
- 
--	bio_for_each_segment(bvec, bio, i) {
--		unsigned int len = bvec->bv_len;
--		err = brd_do_bvec(brd, bvec->bv_page, len,
--					bvec->bv_offset, rw, sector);
-+	bio_for_each_segment(bvec, bio, iter) {
-+		unsigned int len = bvec.bv_len;
-+		err = brd_do_bvec(brd, bvec.bv_page, len,
-+					bvec.bv_offset, rw, sector);
- 		if (err)
- 			break;
- 		sector += len >> SECTOR_SHIFT;
-diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
-index 9e3818b..f4e5440 100644
---- a/drivers/block/drbd/drbd_main.c
-+++ b/drivers/block/drbd/drbd_main.c
-@@ -1537,15 +1537,17 @@ static int _drbd_send_page(struct drbd_conf *mdev, struct page *page,
- 
- static int _drbd_send_bio(struct drbd_conf *mdev, struct bio *bio)
- {
--	struct bio_vec *bvec;
--	int i;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
-+
- 	/* hint all but last page with MSG_MORE */
--	bio_for_each_segment(bvec, bio, i) {
-+	bio_for_each_segment(bvec, bio, iter) {
- 		int err;
- 
--		err = _drbd_no_send_page(mdev, bvec->bv_page,
--					 bvec->bv_offset, bvec->bv_len,
--					 i == bio->bi_vcnt - 1 ? 0 : MSG_MORE);
-+		err = _drbd_no_send_page(mdev, bvec.bv_page,
-+					 bvec.bv_offset, bvec.bv_len,
-+					 bio_iter_last(bio, iter)
-+					 ? 0 : MSG_MORE);
- 		if (err)
- 			return err;
- 	}
-@@ -1554,15 +1556,16 @@ static int _drbd_send_bio(struct drbd_conf *mdev, struct bio *bio)
- 
- static int _drbd_send_zc_bio(struct drbd_conf *mdev, struct bio *bio)
- {
--	struct bio_vec *bvec;
--	int i;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
-+
- 	/* hint all but last page with MSG_MORE */
--	bio_for_each_segment(bvec, bio, i) {
-+	bio_for_each_segment(bvec, bio, iter) {
- 		int err;
- 
--		err = _drbd_send_page(mdev, bvec->bv_page,
--				      bvec->bv_offset, bvec->bv_len,
--				      i == bio->bi_vcnt - 1 ? 0 : MSG_MORE);
-+		err = _drbd_send_page(mdev, bvec.bv_page,
-+				      bvec.bv_offset, bvec.bv_len,
-+				      bio_iter_last(bio, iter) ? 0 : MSG_MORE);
- 		if (err)
- 			return err;
- 	}
-diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index 5326c22..d073305 100644
---- a/drivers/block/drbd/drbd_receiver.c
-+++ b/drivers/block/drbd/drbd_receiver.c
-@@ -1595,9 +1595,10 @@ static int drbd_drain_block(struct drbd_conf *mdev, int data_size)
- static int recv_dless_read(struct drbd_conf *mdev, struct drbd_request *req,
- 			   sector_t sector, int data_size)
- {
--	struct bio_vec *bvec;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 	struct bio *bio;
--	int dgs, err, i, expect;
-+	int dgs, err, expect;
- 	void *dig_in = mdev->tconn->int_dig_in;
- 	void *dig_vv = mdev->tconn->int_dig_vv;
- 
-@@ -1617,11 +1618,11 @@ static int recv_dless_read(struct drbd_conf *mdev, struct drbd_request *req,
- 	bio = req->master_bio;
- 	D_ASSERT(sector == bio->bi_iter.bi_sector);
- 
--	bio_for_each_segment(bvec, bio, i) {
--		void *mapped = kmap(bvec->bv_page) + bvec->bv_offset;
--		expect = min_t(int, data_size, bvec->bv_len);
-+	bio_for_each_segment(bvec, bio, iter) {
-+		void *mapped = kmap(bvec.bv_page) + bvec.bv_offset;
-+		expect = min_t(int, data_size, bvec.bv_len);
- 		err = drbd_recv_all_warn(mdev->tconn, mapped, expect);
--		kunmap(bvec->bv_page);
-+		kunmap(bvec.bv_page);
- 		if (err)
- 			return err;
- 		data_size -= expect;
-diff --git a/drivers/block/drbd/drbd_worker.c b/drivers/block/drbd/drbd_worker.c
-index 891c0ec..84d3175 100644
---- a/drivers/block/drbd/drbd_worker.c
-+++ b/drivers/block/drbd/drbd_worker.c
-@@ -313,8 +313,8 @@ void drbd_csum_bio(struct drbd_conf *mdev, struct crypto_hash *tfm, struct bio *
- {
- 	struct hash_desc desc;
- 	struct scatterlist sg;
--	struct bio_vec *bvec;
--	int i;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 
- 	desc.tfm = tfm;
- 	desc.flags = 0;
-@@ -322,8 +322,8 @@ void drbd_csum_bio(struct drbd_conf *mdev, struct crypto_hash *tfm, struct bio *
- 	sg_init_table(&sg, 1);
- 	crypto_hash_init(&desc);
- 
--	bio_for_each_segment(bvec, bio, i) {
--		sg_set_page(&sg, bvec->bv_page, bvec->bv_len, bvec->bv_offset);
-+	bio_for_each_segment(bvec, bio, iter) {
-+		sg_set_page(&sg, bvec.bv_page, bvec.bv_len, bvec.bv_offset);
- 		crypto_hash_update(&desc, &sg, sg.length);
- 	}
- 	crypto_hash_final(&desc, digest);
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index 6a86fe7..6b29c44 100644
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -2351,7 +2351,7 @@ static void rw_interrupt(void)
- /* Compute maximal contiguous buffer size. */
- static int buffer_chain_size(void)
- {
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	int size;
- 	struct req_iterator iter;
- 	char *base;
-@@ -2360,10 +2360,10 @@ static int buffer_chain_size(void)
- 	size = 0;
- 
- 	rq_for_each_segment(bv, current_req, iter) {
--		if (page_address(bv->bv_page) + bv->bv_offset != base + size)
-+		if (page_address(bv.bv_page) + bv.bv_offset != base + size)
- 			break;
- 
--		size += bv->bv_len;
-+		size += bv.bv_len;
- 	}
- 
- 	return size >> 9;
-@@ -2389,7 +2389,7 @@ static int transfer_size(int ssize, int max_sector, int max_size)
- static void copy_buffer(int ssize, int max_sector, int max_sector_2)
- {
- 	int remaining;		/* number of transferred 512-byte sectors */
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	char *buffer;
- 	char *dma_buffer;
- 	int size;
-@@ -2427,10 +2427,10 @@ static void copy_buffer(int ssize, int max_sector, int max_sector_2)
- 		if (!remaining)
- 			break;
- 
--		size = bv->bv_len;
-+		size = bv.bv_len;
- 		SUPBOUND(size, remaining);
- 
--		buffer = page_address(bv->bv_page) + bv->bv_offset;
-+		buffer = page_address(bv.bv_page) + bv.bv_offset;
- 		if (dma_buffer + size >
- 		    floppy_track_buffer + (max_buffer_sectors << 10) ||
- 		    dma_buffer < floppy_track_buffer) {
-diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-index f5e3998..33fde3a 100644
---- a/drivers/block/loop.c
-+++ b/drivers/block/loop.c
-@@ -288,9 +288,10 @@ static int lo_send(struct loop_device *lo, struct bio *bio, loff_t pos)
- {
- 	int (*do_lo_send)(struct loop_device *, struct bio_vec *, loff_t,
- 			struct page *page);
--	struct bio_vec *bvec;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 	struct page *page = NULL;
--	int i, ret = 0;
-+	int ret = 0;
- 
- 	if (lo->transfer != transfer_none) {
- 		page = alloc_page(GFP_NOIO | __GFP_HIGHMEM);
-@@ -302,11 +303,11 @@ static int lo_send(struct loop_device *lo, struct bio *bio, loff_t pos)
- 		do_lo_send = do_lo_send_direct_write;
- 	}
- 
--	bio_for_each_segment(bvec, bio, i) {
--		ret = do_lo_send(lo, bvec, pos, page);
-+	bio_for_each_segment(bvec, bio, iter) {
-+		ret = do_lo_send(lo, &bvec, pos, page);
- 		if (ret < 0)
- 			break;
--		pos += bvec->bv_len;
-+		pos += bvec.bv_len;
- 	}
- 	if (page) {
- 		kunmap(page);
-@@ -392,20 +393,20 @@ do_lo_receive(struct loop_device *lo,
- static int
- lo_receive(struct loop_device *lo, struct bio *bio, int bsize, loff_t pos)
- {
--	struct bio_vec *bvec;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 	ssize_t s;
--	int i;
- 
--	bio_for_each_segment(bvec, bio, i) {
--		s = do_lo_receive(lo, bvec, bsize, pos);
-+	bio_for_each_segment(bvec, bio, iter) {
-+		s = do_lo_receive(lo, &bvec, bsize, pos);
- 		if (s < 0)
- 			return s;
- 
--		if (s != bvec->bv_len) {
-+		if (s != bvec.bv_len) {
- 			zero_fill_bio(bio);
- 			break;
- 		}
--		pos += bvec->bv_len;
-+		pos += bvec.bv_len;
- 	}
- 	return 0;
- }
-diff --git a/drivers/block/mtip32xx/mtip32xx.c b/drivers/block/mtip32xx/mtip32xx.c
-index 69e9eb5..52b2f2a 100644
---- a/drivers/block/mtip32xx/mtip32xx.c
-+++ b/drivers/block/mtip32xx/mtip32xx.c
-@@ -3962,8 +3962,9 @@ static void mtip_make_request(struct request_queue *queue, struct bio *bio)
- {
- 	struct driver_data *dd = queue->queuedata;
- 	struct scatterlist *sg;
--	struct bio_vec *bvec;
--	int i, nents = 0;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
-+	int nents = 0;
- 	int tag = 0, unaligned = 0;
- 
- 	if (unlikely(dd->dd_flag & MTIP_DDF_STOP_IO)) {
-@@ -4026,11 +4027,11 @@ static void mtip_make_request(struct request_queue *queue, struct bio *bio)
- 		}
- 
- 		/* Create the scatter list for this bio. */
--		bio_for_each_segment(bvec, bio, i) {
-+		bio_for_each_segment(bvec, bio, iter) {
- 			sg_set_page(&sg[nents],
--					bvec->bv_page,
--					bvec->bv_len,
--					bvec->bv_offset);
-+					bvec.bv_page,
-+					bvec.bv_len,
-+					bvec.bv_offset);
- 			nents++;
- 		}
- 
-diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index 2dc3b51..aa362f4 100644
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -271,7 +271,7 @@ static int nbd_send_req(struct nbd_device *nbd, struct request *req)
- 
- 	if (nbd_cmd(req) == NBD_CMD_WRITE) {
- 		struct req_iterator iter;
--		struct bio_vec *bvec;
-+		struct bio_vec bvec;
- 		/*
- 		 * we are really probing at internals to determine
- 		 * whether to set MSG_MORE or not...
-@@ -281,8 +281,8 @@ static int nbd_send_req(struct nbd_device *nbd, struct request *req)
- 			if (!rq_iter_last(req, iter))
- 				flags = MSG_MORE;
- 			dprintk(DBG_TX, "%s: request %p: sending %d bytes data\n",
--					nbd->disk->disk_name, req, bvec->bv_len);
--			result = sock_send_bvec(nbd, bvec, flags);
-+					nbd->disk->disk_name, req, bvec.bv_len);
-+			result = sock_send_bvec(nbd, &bvec, flags);
- 			if (result <= 0) {
- 				dev_err(disk_to_dev(nbd->disk),
- 					"Send data failed (result %d)\n",
-@@ -378,10 +378,10 @@ static struct request *nbd_read_stat(struct nbd_device *nbd)
- 			nbd->disk->disk_name, req);
- 	if (nbd_cmd(req) == NBD_CMD_READ) {
- 		struct req_iterator iter;
--		struct bio_vec *bvec;
-+		struct bio_vec bvec;
- 
- 		rq_for_each_segment(bvec, req, iter) {
--			result = sock_recv_bvec(nbd, bvec);
-+			result = sock_recv_bvec(nbd, &bvec);
- 			if (result <= 0) {
- 				dev_err(disk_to_dev(nbd->disk), "Receive data failed (result %d)\n",
- 					result);
-@@ -389,7 +389,7 @@ static struct request *nbd_read_stat(struct nbd_device *nbd)
- 				return req;
- 			}
- 			dprintk(DBG_RX, "%s: request %p: got %d bytes data\n",
--				nbd->disk->disk_name, req, bvec->bv_len);
-+				nbd->disk->disk_name, req, bvec.bv_len);
- 		}
- 	}
- 	return req;
-diff --git a/drivers/block/nvme-core.c b/drivers/block/nvme-core.c
-index 53d2173..5539d29 100644
---- a/drivers/block/nvme-core.c
-+++ b/drivers/block/nvme-core.c
-@@ -550,9 +550,11 @@ static int nvme_split_and_submit(struct bio *bio, struct nvme_queue *nvmeq,
- static int nvme_map_bio(struct nvme_queue *nvmeq, struct nvme_iod *iod,
- 		struct bio *bio, enum dma_data_direction dma_dir, int psegs)
- {
--	struct bio_vec *bvec, *bvprv = NULL;
-+	struct bio_vec bvec, bvprv;
-+	struct bvec_iter iter;
- 	struct scatterlist *sg = NULL;
--	int i, length = 0, nsegs = 0, split_len = bio->bi_iter.bi_size;
-+	int length = 0, nsegs = 0, split_len = bio->bi_iter.bi_size;
-+	int first = 1;
- 
- 	if (nvmeq->dev->stripe_size)
- 		split_len = nvmeq->dev->stripe_size -
-@@ -560,25 +562,28 @@ static int nvme_map_bio(struct nvme_queue *nvmeq, struct nvme_iod *iod,
- 			 (nvmeq->dev->stripe_size - 1));
- 
- 	sg_init_table(iod->sg, psegs);
--	bio_for_each_segment(bvec, bio, i) {
--		if (bvprv && BIOVEC_PHYS_MERGEABLE(bvprv, bvec)) {
--			sg->length += bvec->bv_len;
-+	bio_for_each_segment(bvec, bio, iter) {
-+		if (!first && BIOVEC_PHYS_MERGEABLE(&bvprv, &bvec)) {
-+			sg->length += bvec.bv_len;
- 		} else {
--			if (bvprv && BIOVEC_NOT_VIRT_MERGEABLE(bvprv, bvec))
--				return nvme_split_and_submit(bio, nvmeq, i,
--								length, 0);
-+			if (!first && BIOVEC_NOT_VIRT_MERGEABLE(&bvprv, &bvec))
-+				return nvme_split_and_submit(bio, nvmeq,
-+							     iter.bi_idx,
-+							     length, 0);
- 
- 			sg = sg ? sg + 1 : iod->sg;
--			sg_set_page(sg, bvec->bv_page, bvec->bv_len,
--							bvec->bv_offset);
-+			sg_set_page(sg, bvec.bv_page,
-+				    bvec.bv_len, bvec.bv_offset);
- 			nsegs++;
- 		}
- 
--		if (split_len - length < bvec->bv_len)
--			return nvme_split_and_submit(bio, nvmeq, i, split_len,
--							split_len - length);
--		length += bvec->bv_len;
-+		if (split_len - length < bvec.bv_len)
-+			return nvme_split_and_submit(bio, nvmeq, iter.bi_idx,
-+						     split_len,
-+						     split_len - length);
-+		length += bvec.bv_len;
- 		bvprv = bvec;
-+		first = 0;
- 	}
- 	iod->nents = nsegs;
- 	sg_mark_end(sg);
-diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
-index 464be78..1c6edb9 100644
---- a/drivers/block/ps3disk.c
-+++ b/drivers/block/ps3disk.c
-@@ -94,7 +94,7 @@ static void ps3disk_scatter_gather(struct ps3_storage_device *dev,
- {
- 	unsigned int offset = 0;
- 	struct req_iterator iter;
--	struct bio_vec *bvec;
-+	struct bio_vec bvec;
- 	unsigned int i = 0;
- 	size_t size;
- 	void *buf;
-@@ -106,14 +106,14 @@ static void ps3disk_scatter_gather(struct ps3_storage_device *dev,
- 			__func__, __LINE__, i, bio_segments(iter.bio),
- 			bio_sectors(iter.bio), iter.bio->bi_iter.bi_sector);
- 
--		size = bvec->bv_len;
--		buf = bvec_kmap_irq(bvec, &flags);
-+		size = bvec.bv_len;
-+		buf = bvec_kmap_irq(&bvec, &flags);
- 		if (gather)
- 			memcpy(dev->bounce_buf+offset, buf, size);
- 		else
- 			memcpy(buf, dev->bounce_buf+offset, size);
- 		offset += size;
--		flush_kernel_dcache_page(bvec->bv_page);
-+		flush_kernel_dcache_page(bvec.bv_page);
- 		bvec_kunmap_irq(buf, &flags);
- 		i++;
- 	}
-@@ -130,7 +130,7 @@ static int ps3disk_submit_request_sg(struct ps3_storage_device *dev,
- 
- #ifdef DEBUG
- 	unsigned int n = 0;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	struct req_iterator iter;
- 
- 	rq_for_each_segment(bv, req, iter)
-diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index 320bbfc..ef45cfb 100644
---- a/drivers/block/ps3vram.c
-+++ b/drivers/block/ps3vram.c
-@@ -555,14 +555,14 @@ static struct bio *ps3vram_do_bio(struct ps3_system_bus_device *dev,
- 	const char *op = write ? "write" : "read";
- 	loff_t offset = bio->bi_iter.bi_sector << 9;
- 	int error = 0;
--	struct bio_vec *bvec;
--	unsigned int i;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 	struct bio *next;
- 
--	bio_for_each_segment(bvec, bio, i) {
-+	bio_for_each_segment(bvec, bio, iter) {
- 		/* PS3 is ppc64, so we don't handle highmem */
--		char *ptr = page_address(bvec->bv_page) + bvec->bv_offset;
--		size_t len = bvec->bv_len, retlen;
-+		char *ptr = page_address(bvec.bv_page) + bvec.bv_offset;
-+		size_t len = bvec.bv_len, retlen;
- 
- 		dev_dbg(&dev->core, "    %s %zu bytes at offset %llu\n", op,
- 			len, offset);
-diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
-index a8f4fe2..20e8ab3 100644
---- a/drivers/block/rbd.c
-+++ b/drivers/block/rbd.c
-@@ -1109,23 +1109,23 @@ static void bio_chain_put(struct bio *chain)
-  */
- static void zero_bio_chain(struct bio *chain, int start_ofs)
- {
--	struct bio_vec *bv;
-+	struct bio_vec bv;
-+	struct bvec_iter iter;
- 	unsigned long flags;
- 	void *buf;
--	int i;
- 	int pos = 0;
- 
- 	while (chain) {
--		bio_for_each_segment(bv, chain, i) {
--			if (pos + bv->bv_len > start_ofs) {
-+		bio_for_each_segment(bv, chain, iter) {
-+			if (pos + bv.bv_len > start_ofs) {
- 				int remainder = max(start_ofs - pos, 0);
--				buf = bvec_kmap_irq(bv, &flags);
-+				buf = bvec_kmap_irq(&bv, &flags);
- 				memset(buf + remainder, 0,
--				       bv->bv_len - remainder);
--				flush_dcache_page(bv->bv_page);
-+				       bv.bv_len - remainder);
-+				flush_dcache_page(bv.bv_page);
- 				bvec_kunmap_irq(buf, &flags);
- 			}
--			pos += bv->bv_len;
-+			pos += bv.bv_len;
- 		}
- 
- 		chain = chain->bi_next;
-@@ -1173,11 +1173,11 @@ static struct bio *bio_clone_range(struct bio *bio_src,
- 					unsigned int len,
- 					gfp_t gfpmask)
- {
--	struct bio_vec *bv;
-+	struct bio_vec bv;
-+	struct bvec_iter iter;
-+	struct bvec_iter end_iter;
- 	unsigned int resid;
--	unsigned short idx;
- 	unsigned int voff;
--	unsigned short end_idx;
- 	unsigned short vcnt;
- 	struct bio *bio;
- 
-@@ -1196,22 +1196,22 @@ static struct bio *bio_clone_range(struct bio *bio_src,
- 	/* Find first affected segment... */
- 
- 	resid = offset;
--	bio_for_each_segment(bv, bio_src, idx) {
--		if (resid < bv->bv_len)
-+	bio_for_each_segment(bv, bio_src, iter) {
-+		if (resid < bv.bv_len)
- 			break;
--		resid -= bv->bv_len;
-+		resid -= bv.bv_len;
- 	}
- 	voff = resid;
- 
- 	/* ...and the last affected segment */
- 
- 	resid += len;
--	__bio_for_each_segment(bv, bio_src, end_idx, idx) {
--		if (resid <= bv->bv_len)
-+	__bio_for_each_segment(bv, bio_src, end_iter, iter) {
-+		if (resid <= bv.bv_len)
- 			break;
--		resid -= bv->bv_len;
-+		resid -= bv.bv_len;
- 	}
--	vcnt = end_idx - idx + 1;
-+	vcnt = end_iter.bi_idx = iter.bi_idx + 1;
- 
- 	/* Build the clone */
- 
-@@ -1229,7 +1229,7 @@ static struct bio *bio_clone_range(struct bio *bio_src,
- 	 * Copy over our part of the bio_vec, then update the first
- 	 * and last (or only) entries.
- 	 */
--	memcpy(&bio->bi_io_vec[0], &bio_src->bi_io_vec[idx],
-+	memcpy(&bio->bi_io_vec[0], &bio_src->bi_io_vec[iter.bi_idx],
- 			vcnt * sizeof (struct bio_vec));
- 	bio->bi_io_vec[0].bv_offset += voff;
- 	if (vcnt > 1) {
-diff --git a/drivers/block/rsxx/dma.c b/drivers/block/rsxx/dma.c
-index 3716633..cf8cd29 100644
---- a/drivers/block/rsxx/dma.c
-+++ b/drivers/block/rsxx/dma.c
-@@ -684,7 +684,8 @@ int rsxx_dma_queue_bio(struct rsxx_cardinfo *card,
- 			   void *cb_data)
- {
- 	struct list_head dma_list[RSXX_MAX_TARGETS];
--	struct bio_vec *bvec;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 	unsigned long long addr8;
- 	unsigned int laddr;
- 	unsigned int bv_len;
-@@ -722,9 +723,9 @@ int rsxx_dma_queue_bio(struct rsxx_cardinfo *card,
- 			bv_len -= RSXX_HW_BLK_SIZE;
- 		}
- 	} else {
--		bio_for_each_segment(bvec, bio, i) {
--			bv_len = bvec->bv_len;
--			bv_off = bvec->bv_offset;
-+		bio_for_each_segment(bvec, bio, iter) {
-+			bv_len = bvec.bv_len;
-+			bv_off = bvec.bv_offset;
- 
- 			while (bv_len > 0) {
- 				tgt   = rsxx_get_dma_tgt(card, addr8);
-@@ -736,7 +737,7 @@ int rsxx_dma_queue_bio(struct rsxx_cardinfo *card,
- 				st = rsxx_queue_dma(card, &dma_list[tgt],
- 							bio_data_dir(bio),
- 							dma_off, dma_len,
--							laddr, bvec->bv_page,
-+							laddr, bvec.bv_page,
- 							bv_off, cb, cb_data);
- 				if (st)
- 					goto bvec_err;
-diff --git a/drivers/md/bcache/btree.c b/drivers/md/bcache/btree.c
-index 038a6d2..b62f379 100644
---- a/drivers/md/bcache/btree.c
-+++ b/drivers/md/bcache/btree.c
-@@ -362,7 +362,7 @@ static void btree_node_write_done(struct closure *cl)
- 	struct bio_vec *bv;
- 	int n;
- 
--	__bio_for_each_segment(bv, b->bio, n, 0)
-+	bio_for_each_segment_all(bv, b->bio, n)
- 		__free_page(bv->bv_page);
- 
- 	__btree_node_write_done(cl);
-@@ -421,7 +421,7 @@ static void do_btree_node_write(struct btree *b)
- 		struct bio_vec *bv;
- 		void *base = (void *) ((unsigned long) i & ~(PAGE_SIZE - 1));
- 
--		bio_for_each_segment(bv, b->bio, j)
-+		bio_for_each_segment_all(bv, b->bio, j)
- 			memcpy(page_address(bv->bv_page),
- 			       base + j * PAGE_SIZE, PAGE_SIZE);
- 
-diff --git a/drivers/md/bcache/debug.c b/drivers/md/bcache/debug.c
-index 92b3fd4..03cb4d1 100644
---- a/drivers/md/bcache/debug.c
-+++ b/drivers/md/bcache/debug.c
-@@ -173,7 +173,8 @@ void bch_data_verify(struct cached_dev *dc, struct bio *bio)
- {
- 	char name[BDEVNAME_SIZE];
- 	struct bio *check;
--	struct bio_vec *bv;
-+	struct bio_vec bv, *bv2;
-+	struct bvec_iter iter;
- 	int i;
- 
- 	check = bio_clone(bio, GFP_NOIO);
-@@ -185,13 +186,13 @@ void bch_data_verify(struct cached_dev *dc, struct bio *bio)
- 
- 	submit_bio_wait(READ_SYNC, check);
- 
--	bio_for_each_segment(bv, bio, i) {
--		void *p1 = kmap_atomic(bv->bv_page);
--		void *p2 = page_address(check->bi_io_vec[i].bv_page);
-+	bio_for_each_segment(bv, bio, iter) {
-+		void *p1 = kmap_atomic(bv.bv_page);
-+		void *p2 = page_address(check->bi_io_vec[iter.bi_idx].bv_page);
- 
--		cache_set_err_on(memcmp(p1 + bv->bv_offset,
--					p2 + bv->bv_offset,
--					bv->bv_len),
-+		cache_set_err_on(memcmp(p1 + bv.bv_offset,
-+					p2 + bv.bv_offset,
-+					bv.bv_len),
- 				 dc->disk.c,
- 				 "verify failed at dev %s sector %llu",
- 				 bdevname(dc->bdev, name),
-@@ -200,8 +201,8 @@ void bch_data_verify(struct cached_dev *dc, struct bio *bio)
- 		kunmap_atomic(p1);
- 	}
- 
--	bio_for_each_segment_all(bv, check, i)
--		__free_page(bv->bv_page);
-+	bio_for_each_segment_all(bv2, check, i)
-+		__free_page(bv2->bv_page);
- out_put:
- 	bio_put(check);
- }
-diff --git a/drivers/md/bcache/io.c b/drivers/md/bcache/io.c
-index dc44f06..9b5b6a4 100644
---- a/drivers/md/bcache/io.c
-+++ b/drivers/md/bcache/io.c
-@@ -22,12 +22,12 @@ static void bch_bi_idx_hack_endio(struct bio *bio, int error)
- static void bch_generic_make_request_hack(struct bio *bio)
- {
- 	if (bio->bi_iter.bi_idx) {
--		int i;
--		struct bio_vec *bv;
-+		struct bio_vec bv;
-+		struct bvec_iter iter;
- 		struct bio *clone = bio_alloc(GFP_NOIO, bio_segments(bio));
- 
--		bio_for_each_segment(bv, bio, i)
--			clone->bi_io_vec[clone->bi_vcnt++] = *bv;
-+		bio_for_each_segment(bv, bio, iter)
-+			clone->bi_io_vec[clone->bi_vcnt++] = bv;
- 
- 		clone->bi_iter.bi_sector = bio->bi_iter.bi_sector;
- 		clone->bi_bdev		= bio->bi_bdev;
-@@ -73,8 +73,9 @@ static void bch_generic_make_request_hack(struct bio *bio)
- struct bio *bch_bio_split(struct bio *bio, int sectors,
- 			  gfp_t gfp, struct bio_set *bs)
- {
--	unsigned idx = bio->bi_iter.bi_idx, vcnt = 0, nbytes = sectors << 9;
--	struct bio_vec *bv;
-+	unsigned vcnt = 0, nbytes = sectors << 9;
-+	struct bio_vec bv;
-+	struct bvec_iter iter;
- 	struct bio *ret = NULL;
- 
- 	BUG_ON(sectors <= 0);
-@@ -86,49 +87,35 @@ struct bio *bch_bio_split(struct bio *bio, int sectors,
- 		ret = bio_alloc_bioset(gfp, 1, bs);
- 		if (!ret)
- 			return NULL;
--		idx = 0;
- 		goto out;
- 	}
- 
--	bio_for_each_segment(bv, bio, idx) {
--		vcnt = idx - bio->bi_iter.bi_idx;
-+	bio_for_each_segment(bv, bio, iter) {
-+		vcnt++;
- 
--		if (!nbytes) {
--			ret = bio_alloc_bioset(gfp, vcnt, bs);
--			if (!ret)
--				return NULL;
-+		if (nbytes <= bv.bv_len)
-+			break;
- 
--			memcpy(ret->bi_io_vec, __bio_iovec(bio),
--			       sizeof(struct bio_vec) * vcnt);
-+		nbytes -= bv.bv_len;
-+	}
- 
--			break;
--		} else if (nbytes < bv->bv_len) {
--			ret = bio_alloc_bioset(gfp, ++vcnt, bs);
--			if (!ret)
--				return NULL;
-+	ret = bio_alloc_bioset(gfp, vcnt, bs);
-+	if (!ret)
-+		return NULL;
- 
--			memcpy(ret->bi_io_vec, __bio_iovec(bio),
--			       sizeof(struct bio_vec) * vcnt);
-+	bio_for_each_segment(bv, bio, iter) {
-+		ret->bi_io_vec[ret->bi_vcnt++] = bv;
- 
--			ret->bi_io_vec[vcnt - 1].bv_len = nbytes;
--			bv->bv_offset	+= nbytes;
--			bv->bv_len	-= nbytes;
-+		if (ret->bi_vcnt == vcnt)
- 			break;
--		}
--
--		nbytes -= bv->bv_len;
- 	}
-+
-+	ret->bi_io_vec[ret->bi_vcnt - 1].bv_len = nbytes;
- out:
- 	ret->bi_bdev	= bio->bi_bdev;
- 	ret->bi_iter.bi_sector	= bio->bi_iter.bi_sector;
- 	ret->bi_iter.bi_size	= sectors << 9;
- 	ret->bi_rw	= bio->bi_rw;
--	ret->bi_vcnt	= vcnt;
--	ret->bi_max_vecs = vcnt;
--
--	bio->bi_iter.bi_sector	+= sectors;
--	bio->bi_iter.bi_size	-= sectors << 9;
--	bio->bi_iter.bi_idx	 = idx;
- 
- 	if (bio_integrity(bio)) {
- 		if (bio_integrity_clone(ret, bio, gfp)) {
-@@ -137,9 +124,10 @@ out:
- 		}
- 
- 		bio_integrity_trim(ret, 0, bio_sectors(ret));
--		bio_integrity_trim(bio, bio_sectors(ret), bio_sectors(bio));
- 	}
- 
-+	bio_advance(bio, ret->bi_iter.bi_size);
-+
- 	return ret;
- }
- 
-@@ -155,12 +143,13 @@ static unsigned bch_bio_max_sectors(struct bio *bio)
- 
- 	if (bio_segments(bio) > max_segments ||
- 	    q->merge_bvec_fn) {
--		struct bio_vec *bv;
--		int i, seg = 0;
-+		struct bio_vec bv;
-+		struct bvec_iter iter;
-+		unsigned seg = 0;
- 
- 		ret = 0;
- 
--		bio_for_each_segment(bv, bio, i) {
-+		bio_for_each_segment(bv, bio, iter) {
- 			struct bvec_merge_data bvm = {
- 				.bi_bdev	= bio->bi_bdev,
- 				.bi_sector	= bio->bi_iter.bi_sector,
-@@ -172,11 +161,11 @@ static unsigned bch_bio_max_sectors(struct bio *bio)
- 				break;
- 
- 			if (q->merge_bvec_fn &&
--			    q->merge_bvec_fn(q, &bvm, bv) < (int) bv->bv_len)
-+			    q->merge_bvec_fn(q, &bvm, &bv) < (int) bv.bv_len)
- 				break;
- 
- 			seg++;
--			ret += bv->bv_len >> 9;
-+			ret += bv.bv_len >> 9;
- 		}
- 	}
- 
-diff --git a/drivers/md/bcache/request.c b/drivers/md/bcache/request.c
-index 47a9bbc..4c0a422 100644
---- a/drivers/md/bcache/request.c
-+++ b/drivers/md/bcache/request.c
-@@ -198,14 +198,14 @@ static bool verify(struct cached_dev *dc, struct bio *bio)
- 
- static void bio_csum(struct bio *bio, struct bkey *k)
- {
--	struct bio_vec *bv;
-+	struct bio_vec bv;
-+	struct bvec_iter iter;
- 	uint64_t csum = 0;
--	int i;
- 
--	bio_for_each_segment(bv, bio, i) {
--		void *d = kmap(bv->bv_page) + bv->bv_offset;
--		csum = bch_crc64_update(csum, d, bv->bv_len);
--		kunmap(bv->bv_page);
-+	bio_for_each_segment(bv, bio, iter) {
-+		void *d = kmap(bv.bv_page) + bv.bv_offset;
-+		csum = bch_crc64_update(csum, d, bv.bv_len);
-+		kunmap(bv.bv_page);
- 	}
- 
- 	k->ptr[KEY_PTRS(k)] = csum & (~0ULL >> 1);
-@@ -1182,17 +1182,17 @@ void bch_cached_dev_request_init(struct cached_dev *dc)
- static int flash_dev_cache_miss(struct btree *b, struct search *s,
- 				struct bio *bio, unsigned sectors)
- {
--	struct bio_vec *bv;
--	int i;
-+	struct bio_vec bv;
-+	struct bvec_iter iter;
- 
- 	/* Zero fill bio */
- 
--	bio_for_each_segment(bv, bio, i) {
--		unsigned j = min(bv->bv_len >> 9, sectors);
-+	bio_for_each_segment(bv, bio, iter) {
-+		unsigned j = min(bv.bv_len >> 9, sectors);
- 
--		void *p = kmap(bv->bv_page);
--		memset(p + bv->bv_offset, 0, j << 9);
--		kunmap(bv->bv_page);
-+		void *p = kmap(bv.bv_page);
-+		memset(p + bv.bv_offset, 0, j << 9);
-+		kunmap(bv.bv_page);
- 
- 		sectors	-= j;
- 	}
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index a5d9c0e..bef353c 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -937,9 +937,9 @@ static struct dma_async_tx_descriptor *
- async_copy_data(int frombio, struct bio *bio, struct page *page,
- 	sector_t sector, struct dma_async_tx_descriptor *tx)
- {
--	struct bio_vec *bvl;
-+	struct bio_vec bvl;
-+	struct bvec_iter iter;
- 	struct page *bio_page;
--	int i;
- 	int page_offset;
- 	struct async_submit_ctl submit;
- 	enum async_tx_flags flags = 0;
-@@ -953,8 +953,8 @@ async_copy_data(int frombio, struct bio *bio, struct page *page,
- 		flags |= ASYNC_TX_FENCE;
- 	init_async_submit(&submit, flags, tx, NULL, NULL, NULL);
- 
--	bio_for_each_segment(bvl, bio, i) {
--		int len = bvl->bv_len;
-+	bio_for_each_segment(bvl, bio, iter) {
-+		int len = bvl.bv_len;
- 		int clen;
- 		int b_offset = 0;
- 
-@@ -970,8 +970,8 @@ async_copy_data(int frombio, struct bio *bio, struct page *page,
- 			clen = len;
- 
- 		if (clen > 0) {
--			b_offset += bvl->bv_offset;
--			bio_page = bvl->bv_page;
-+			b_offset += bvl.bv_offset;
-+			bio_page = bvl.bv_page;
- 			if (frombio)
- 				tx = async_memcpy(page, bio_page, page_offset,
- 						  b_offset, clen, &submit);
-diff --git a/drivers/s390/block/dasd_diag.c b/drivers/s390/block/dasd_diag.c
-index 92bd22c..9cbc567 100644
---- a/drivers/s390/block/dasd_diag.c
-+++ b/drivers/s390/block/dasd_diag.c
-@@ -504,7 +504,7 @@ static struct dasd_ccw_req *dasd_diag_build_cp(struct dasd_device *memdev,
- 	struct dasd_diag_req *dreq;
- 	struct dasd_diag_bio *dbio;
- 	struct req_iterator iter;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	char *dst;
- 	unsigned int count, datasize;
- 	sector_t recid, first_rec, last_rec;
-@@ -525,10 +525,10 @@ static struct dasd_ccw_req *dasd_diag_build_cp(struct dasd_device *memdev,
- 	/* Check struct bio and count the number of blocks for the request. */
- 	count = 0;
- 	rq_for_each_segment(bv, req, iter) {
--		if (bv->bv_len & (blksize - 1))
-+		if (bv.bv_len & (blksize - 1))
- 			/* Fba can only do full blocks. */
- 			return ERR_PTR(-EINVAL);
--		count += bv->bv_len >> (block->s2b_shift + 9);
-+		count += bv.bv_len >> (block->s2b_shift + 9);
- 	}
- 	/* Paranoia. */
- 	if (count != last_rec - first_rec + 1)
-@@ -545,8 +545,8 @@ static struct dasd_ccw_req *dasd_diag_build_cp(struct dasd_device *memdev,
- 	dbio = dreq->bio;
- 	recid = first_rec;
- 	rq_for_each_segment(bv, req, iter) {
--		dst = page_address(bv->bv_page) + bv->bv_offset;
--		for (off = 0; off < bv->bv_len; off += blksize) {
-+		dst = page_address(bv.bv_page) + bv.bv_offset;
-+		for (off = 0; off < bv.bv_len; off += blksize) {
- 			memset(dbio, 0, sizeof (struct dasd_diag_bio));
- 			dbio->type = rw_cmd;
- 			dbio->block_number = recid + 1;
-diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c
-index cee7e27..70d1770 100644
---- a/drivers/s390/block/dasd_eckd.c
-+++ b/drivers/s390/block/dasd_eckd.c
-@@ -2551,7 +2551,7 @@ static struct dasd_ccw_req *dasd_eckd_build_cp_cmd_single(
- 	struct dasd_ccw_req *cqr;
- 	struct ccw1 *ccw;
- 	struct req_iterator iter;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	char *dst;
- 	unsigned int off;
- 	int count, cidaw, cplength, datasize;
-@@ -2573,13 +2573,13 @@ static struct dasd_ccw_req *dasd_eckd_build_cp_cmd_single(
- 	count = 0;
- 	cidaw = 0;
- 	rq_for_each_segment(bv, req, iter) {
--		if (bv->bv_len & (blksize - 1))
-+		if (bv.bv_len & (blksize - 1))
- 			/* Eckd can only do full blocks. */
- 			return ERR_PTR(-EINVAL);
--		count += bv->bv_len >> (block->s2b_shift + 9);
-+		count += bv.bv_len >> (block->s2b_shift + 9);
- #if defined(CONFIG_64BIT)
--		if (idal_is_needed (page_address(bv->bv_page), bv->bv_len))
--			cidaw += bv->bv_len >> (block->s2b_shift + 9);
-+		if (idal_is_needed (page_address(bv.bv_page), bv.bv_len))
-+			cidaw += bv.bv_len >> (block->s2b_shift + 9);
- #endif
- 	}
- 	/* Paranoia. */
-@@ -2650,16 +2650,16 @@ static struct dasd_ccw_req *dasd_eckd_build_cp_cmd_single(
- 			      last_rec - recid + 1, cmd, basedev, blksize);
- 	}
- 	rq_for_each_segment(bv, req, iter) {
--		dst = page_address(bv->bv_page) + bv->bv_offset;
-+		dst = page_address(bv.bv_page) + bv.bv_offset;
- 		if (dasd_page_cache) {
- 			char *copy = kmem_cache_alloc(dasd_page_cache,
- 						      GFP_DMA | __GFP_NOWARN);
- 			if (copy && rq_data_dir(req) == WRITE)
--				memcpy(copy + bv->bv_offset, dst, bv->bv_len);
-+				memcpy(copy + bv.bv_offset, dst, bv.bv_len);
- 			if (copy)
--				dst = copy + bv->bv_offset;
-+				dst = copy + bv.bv_offset;
- 		}
--		for (off = 0; off < bv->bv_len; off += blksize) {
-+		for (off = 0; off < bv.bv_len; off += blksize) {
- 			sector_t trkid = recid;
- 			unsigned int recoffs = sector_div(trkid, blk_per_trk);
- 			rcmd = cmd;
-@@ -2735,7 +2735,7 @@ static struct dasd_ccw_req *dasd_eckd_build_cp_cmd_track(
- 	struct dasd_ccw_req *cqr;
- 	struct ccw1 *ccw;
- 	struct req_iterator iter;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	char *dst, *idaw_dst;
- 	unsigned int cidaw, cplength, datasize;
- 	unsigned int tlf;
-@@ -2813,8 +2813,8 @@ static struct dasd_ccw_req *dasd_eckd_build_cp_cmd_track(
- 	idaw_dst = NULL;
- 	idaw_len = 0;
- 	rq_for_each_segment(bv, req, iter) {
--		dst = page_address(bv->bv_page) + bv->bv_offset;
--		seg_len = bv->bv_len;
-+		dst = page_address(bv.bv_page) + bv.bv_offset;
-+		seg_len = bv.bv_len;
- 		while (seg_len) {
- 			if (new_track) {
- 				trkid = recid;
-@@ -3039,7 +3039,7 @@ static struct dasd_ccw_req *dasd_eckd_build_cp_tpm_track(
- {
- 	struct dasd_ccw_req *cqr;
- 	struct req_iterator iter;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	char *dst;
- 	unsigned int trkcount, ctidaw;
- 	unsigned char cmd;
-@@ -3125,8 +3125,8 @@ static struct dasd_ccw_req *dasd_eckd_build_cp_tpm_track(
- 		new_track = 1;
- 		recid = first_rec;
- 		rq_for_each_segment(bv, req, iter) {
--			dst = page_address(bv->bv_page) + bv->bv_offset;
--			seg_len = bv->bv_len;
-+			dst = page_address(bv.bv_page) + bv.bv_offset;
-+			seg_len = bv.bv_len;
- 			while (seg_len) {
- 				if (new_track) {
- 					trkid = recid;
-@@ -3158,9 +3158,9 @@ static struct dasd_ccw_req *dasd_eckd_build_cp_tpm_track(
- 		}
- 	} else {
- 		rq_for_each_segment(bv, req, iter) {
--			dst = page_address(bv->bv_page) + bv->bv_offset;
-+			dst = page_address(bv.bv_page) + bv.bv_offset;
- 			last_tidaw = itcw_add_tidaw(itcw, 0x00,
--						    dst, bv->bv_len);
-+						    dst, bv.bv_len);
- 			if (IS_ERR(last_tidaw)) {
- 				ret = -EINVAL;
- 				goto out_error;
-@@ -3276,7 +3276,7 @@ static struct dasd_ccw_req *dasd_raw_build_cp(struct dasd_device *startdev,
- 	struct dasd_ccw_req *cqr;
- 	struct ccw1 *ccw;
- 	struct req_iterator iter;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	char *dst;
- 	unsigned char cmd;
- 	unsigned int trkcount;
-@@ -3376,8 +3376,8 @@ static struct dasd_ccw_req *dasd_raw_build_cp(struct dasd_device *startdev,
- 			idaws = idal_create_words(idaws, rawpadpage, PAGE_SIZE);
- 	}
- 	rq_for_each_segment(bv, req, iter) {
--		dst = page_address(bv->bv_page) + bv->bv_offset;
--		seg_len = bv->bv_len;
-+		dst = page_address(bv.bv_page) + bv.bv_offset;
-+		seg_len = bv.bv_len;
- 		if (cmd == DASD_ECKD_CCW_READ_TRACK)
- 			memset(dst, 0, seg_len);
- 		if (!len_to_track_end) {
-@@ -3422,7 +3422,7 @@ dasd_eckd_free_cp(struct dasd_ccw_req *cqr, struct request *req)
- 	struct dasd_eckd_private *private;
- 	struct ccw1 *ccw;
- 	struct req_iterator iter;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	char *dst, *cda;
- 	unsigned int blksize, blk_per_trk, off;
- 	sector_t recid;
-@@ -3440,8 +3440,8 @@ dasd_eckd_free_cp(struct dasd_ccw_req *cqr, struct request *req)
- 	if (private->uses_cdl == 0 || recid > 2*blk_per_trk)
- 		ccw++;
- 	rq_for_each_segment(bv, req, iter) {
--		dst = page_address(bv->bv_page) + bv->bv_offset;
--		for (off = 0; off < bv->bv_len; off += blksize) {
-+		dst = page_address(bv.bv_page) + bv.bv_offset;
-+		for (off = 0; off < bv.bv_len; off += blksize) {
- 			/* Skip locate record. */
- 			if (private->uses_cdl && recid <= 2*blk_per_trk)
- 				ccw++;
-@@ -3452,7 +3452,7 @@ dasd_eckd_free_cp(struct dasd_ccw_req *cqr, struct request *req)
- 					cda = (char *)((addr_t) ccw->cda);
- 				if (dst != cda) {
- 					if (rq_data_dir(req) == READ)
--						memcpy(dst, cda, bv->bv_len);
-+						memcpy(dst, cda, bv.bv_len);
- 					kmem_cache_free(dasd_page_cache,
- 					    (void *)((addr_t)cda & PAGE_MASK));
- 				}
-diff --git a/drivers/s390/block/dasd_fba.c b/drivers/s390/block/dasd_fba.c
-index 9cbc8c3..2c8e68b 100644
---- a/drivers/s390/block/dasd_fba.c
-+++ b/drivers/s390/block/dasd_fba.c
-@@ -260,7 +260,7 @@ static struct dasd_ccw_req *dasd_fba_build_cp(struct dasd_device * memdev,
- 	struct dasd_ccw_req *cqr;
- 	struct ccw1 *ccw;
- 	struct req_iterator iter;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	char *dst;
- 	int count, cidaw, cplength, datasize;
- 	sector_t recid, first_rec, last_rec;
-@@ -283,13 +283,13 @@ static struct dasd_ccw_req *dasd_fba_build_cp(struct dasd_device * memdev,
- 	count = 0;
- 	cidaw = 0;
- 	rq_for_each_segment(bv, req, iter) {
--		if (bv->bv_len & (blksize - 1))
-+		if (bv.bv_len & (blksize - 1))
- 			/* Fba can only do full blocks. */
- 			return ERR_PTR(-EINVAL);
--		count += bv->bv_len >> (block->s2b_shift + 9);
-+		count += bv.bv_len >> (block->s2b_shift + 9);
- #if defined(CONFIG_64BIT)
--		if (idal_is_needed (page_address(bv->bv_page), bv->bv_len))
--			cidaw += bv->bv_len / blksize;
-+		if (idal_is_needed (page_address(bv.bv_page), bv.bv_len))
-+			cidaw += bv.bv_len / blksize;
- #endif
- 	}
- 	/* Paranoia. */
-@@ -326,16 +326,16 @@ static struct dasd_ccw_req *dasd_fba_build_cp(struct dasd_device * memdev,
- 	}
- 	recid = first_rec;
- 	rq_for_each_segment(bv, req, iter) {
--		dst = page_address(bv->bv_page) + bv->bv_offset;
-+		dst = page_address(bv.bv_page) + bv.bv_offset;
- 		if (dasd_page_cache) {
- 			char *copy = kmem_cache_alloc(dasd_page_cache,
- 						      GFP_DMA | __GFP_NOWARN);
- 			if (copy && rq_data_dir(req) == WRITE)
--				memcpy(copy + bv->bv_offset, dst, bv->bv_len);
-+				memcpy(copy + bv.bv_offset, dst, bv.bv_len);
- 			if (copy)
--				dst = copy + bv->bv_offset;
-+				dst = copy + bv.bv_offset;
- 		}
--		for (off = 0; off < bv->bv_len; off += blksize) {
-+		for (off = 0; off < bv.bv_len; off += blksize) {
- 			/* Locate record for stupid devices. */
- 			if (private->rdc_data.mode.bits.data_chain == 0) {
- 				ccw[-1].flags |= CCW_FLAG_CC;
-@@ -384,7 +384,7 @@ dasd_fba_free_cp(struct dasd_ccw_req *cqr, struct request *req)
- 	struct dasd_fba_private *private;
- 	struct ccw1 *ccw;
- 	struct req_iterator iter;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	char *dst, *cda;
- 	unsigned int blksize, off;
- 	int status;
-@@ -399,8 +399,8 @@ dasd_fba_free_cp(struct dasd_ccw_req *cqr, struct request *req)
- 	if (private->rdc_data.mode.bits.data_chain != 0)
- 		ccw++;
- 	rq_for_each_segment(bv, req, iter) {
--		dst = page_address(bv->bv_page) + bv->bv_offset;
--		for (off = 0; off < bv->bv_len; off += blksize) {
-+		dst = page_address(bv.bv_page) + bv.bv_offset;
-+		for (off = 0; off < bv.bv_len; off += blksize) {
- 			/* Skip locate record. */
- 			if (private->rdc_data.mode.bits.data_chain == 0)
- 				ccw++;
-@@ -411,7 +411,7 @@ dasd_fba_free_cp(struct dasd_ccw_req *cqr, struct request *req)
- 					cda = (char *)((addr_t) ccw->cda);
- 				if (dst != cda) {
- 					if (rq_data_dir(req) == READ)
--						memcpy(dst, cda, bv->bv_len);
-+						memcpy(dst, cda, bv.bv_len);
- 					kmem_cache_free(dasd_page_cache,
- 					    (void *)((addr_t)cda & PAGE_MASK));
- 				}
-diff --git a/drivers/s390/block/dcssblk.c b/drivers/s390/block/dcssblk.c
-index 16814a8..ebf41e2 100644
---- a/drivers/s390/block/dcssblk.c
-+++ b/drivers/s390/block/dcssblk.c
-@@ -808,12 +808,12 @@ static void
- dcssblk_make_request(struct request_queue *q, struct bio *bio)
- {
- 	struct dcssblk_dev_info *dev_info;
--	struct bio_vec *bvec;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 	unsigned long index;
- 	unsigned long page_addr;
- 	unsigned long source_addr;
- 	unsigned long bytes_done;
--	int i;
- 
- 	bytes_done = 0;
- 	dev_info = bio->bi_bdev->bd_disk->private_data;
-@@ -844,21 +844,21 @@ dcssblk_make_request(struct request_queue *q, struct bio *bio)
- 	}
- 
- 	index = (bio->bi_iter.bi_sector >> 3);
--	bio_for_each_segment(bvec, bio, i) {
-+	bio_for_each_segment(bvec, bio, iter) {
- 		page_addr = (unsigned long)
--			page_address(bvec->bv_page) + bvec->bv_offset;
-+			page_address(bvec.bv_page) + bvec.bv_offset;
- 		source_addr = dev_info->start + (index<<12) + bytes_done;
--		if (unlikely((page_addr & 4095) != 0) || (bvec->bv_len & 4095) != 0)
-+		if (unlikely((page_addr & 4095) != 0) || (bvec.bv_len & 4095) != 0)
- 			// More paranoia.
- 			goto fail;
- 		if (bio_data_dir(bio) == READ) {
- 			memcpy((void*)page_addr, (void*)source_addr,
--				bvec->bv_len);
-+				bvec.bv_len);
- 		} else {
- 			memcpy((void*)source_addr, (void*)page_addr,
--				bvec->bv_len);
-+				bvec.bv_len);
- 		}
--		bytes_done += bvec->bv_len;
-+		bytes_done += bvec.bv_len;
- 	}
- 	bio_endio(bio, 0);
- 	return;
-diff --git a/drivers/s390/block/scm_blk.c b/drivers/s390/block/scm_blk.c
-index d0ab501..76bed17 100644
---- a/drivers/s390/block/scm_blk.c
-+++ b/drivers/s390/block/scm_blk.c
-@@ -130,7 +130,7 @@ static void scm_request_prepare(struct scm_request *scmrq)
- 	struct aidaw *aidaw = scmrq->aidaw;
- 	struct msb *msb = &scmrq->aob->msb[0];
- 	struct req_iterator iter;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 
- 	msb->bs = MSB_BS_4K;
- 	scmrq->aob->request.msb_count = 1;
-@@ -142,9 +142,9 @@ static void scm_request_prepare(struct scm_request *scmrq)
- 	msb->data_addr = (u64) aidaw;
- 
- 	rq_for_each_segment(bv, scmrq->request, iter) {
--		WARN_ON(bv->bv_offset);
--		msb->blk_count += bv->bv_len >> 12;
--		aidaw->data_addr = (u64) page_address(bv->bv_page);
-+		WARN_ON(bv.bv_offset);
-+		msb->blk_count += bv.bv_len >> 12;
-+		aidaw->data_addr = (u64) page_address(bv.bv_page);
- 		aidaw++;
- 	}
- }
-diff --git a/drivers/s390/block/scm_blk_cluster.c b/drivers/s390/block/scm_blk_cluster.c
-index 27f930c..9aae909 100644
---- a/drivers/s390/block/scm_blk_cluster.c
-+++ b/drivers/s390/block/scm_blk_cluster.c
-@@ -122,7 +122,7 @@ static void scm_prepare_cluster_request(struct scm_request *scmrq)
- 	struct aidaw *aidaw = scmrq->aidaw;
- 	struct msb *msb = &scmrq->aob->msb[0];
- 	struct req_iterator iter;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
- 	int i = 0;
- 	u64 addr;
- 
-@@ -163,7 +163,7 @@ static void scm_prepare_cluster_request(struct scm_request *scmrq)
- 			i++;
- 		}
- 		rq_for_each_segment(bv, req, iter) {
--			aidaw->data_addr = (u64) page_address(bv->bv_page);
-+			aidaw->data_addr = (u64) page_address(bv.bv_page);
- 			aidaw++;
- 			i++;
- 		}
-diff --git a/drivers/s390/block/xpram.c b/drivers/s390/block/xpram.c
-index dd4e73f..3e530f9 100644
---- a/drivers/s390/block/xpram.c
-+++ b/drivers/s390/block/xpram.c
-@@ -184,11 +184,11 @@ static unsigned long xpram_highest_page_index(void)
- static void xpram_make_request(struct request_queue *q, struct bio *bio)
- {
- 	xpram_device_t *xdev = bio->bi_bdev->bd_disk->private_data;
--	struct bio_vec *bvec;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 	unsigned int index;
- 	unsigned long page_addr;
- 	unsigned long bytes;
--	int i;
- 
- 	if ((bio->bi_iter.bi_sector & 7) != 0 ||
- 	    (bio->bi_iter.bi_size & 4095) != 0)
-@@ -200,10 +200,10 @@ static void xpram_make_request(struct request_queue *q, struct bio *bio)
- 	if ((bio->bi_iter.bi_sector >> 3) > 0xffffffffU - xdev->offset)
- 		goto fail;
- 	index = (bio->bi_iter.bi_sector >> 3) + xdev->offset;
--	bio_for_each_segment(bvec, bio, i) {
-+	bio_for_each_segment(bvec, bio, iter) {
- 		page_addr = (unsigned long)
--			kmap(bvec->bv_page) + bvec->bv_offset;
--		bytes = bvec->bv_len;
-+			kmap(bvec.bv_page) + bvec.bv_offset;
-+		bytes = bvec.bv_len;
- 		if ((page_addr & 4095) != 0 || (bytes & 4095) != 0)
- 			/* More paranoia. */
- 			goto fail;
-diff --git a/drivers/scsi/mpt2sas/mpt2sas_transport.c b/drivers/scsi/mpt2sas/mpt2sas_transport.c
-index 9d26637..7143e86 100644
---- a/drivers/scsi/mpt2sas/mpt2sas_transport.c
-+++ b/drivers/scsi/mpt2sas/mpt2sas_transport.c
-@@ -1901,7 +1901,7 @@ _transport_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 	struct MPT2SAS_ADAPTER *ioc = shost_priv(shost);
- 	Mpi2SmpPassthroughRequest_t *mpi_request;
- 	Mpi2SmpPassthroughReply_t *mpi_reply;
--	int rc, i;
-+	int rc;
- 	u16 smid;
- 	u32 ioc_state;
- 	unsigned long timeleft;
-@@ -1916,7 +1916,8 @@ _transport_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 	void *pci_addr_out = NULL;
- 	u16 wait_state_count;
- 	struct request *rsp = req->next_rq;
--	struct bio_vec *bvec = NULL;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 
- 	if (!rsp) {
- 		printk(MPT2SAS_ERR_FMT "%s: the smp response space is "
-@@ -1955,11 +1956,11 @@ _transport_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 			goto out;
- 		}
- 
--		bio_for_each_segment(bvec, req->bio, i) {
-+		bio_for_each_segment(bvec, req->bio, iter) {
- 			memcpy(pci_addr_out + offset,
--			    page_address(bvec->bv_page) + bvec->bv_offset,
--			    bvec->bv_len);
--			offset += bvec->bv_len;
-+			    page_address(bvec.bv_page) + bvec.bv_offset,
-+			    bvec.bv_len);
-+			offset += bvec.bv_len;
- 		}
- 	} else {
- 		dma_addr_out = pci_map_single(ioc->pdev, bio_data(req->bio),
-@@ -2106,19 +2107,19 @@ _transport_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 			u32 offset = 0;
- 			u32 bytes_to_copy =
- 			    le16_to_cpu(mpi_reply->ResponseDataLength);
--			bio_for_each_segment(bvec, rsp->bio, i) {
--				if (bytes_to_copy <= bvec->bv_len) {
--					memcpy(page_address(bvec->bv_page) +
--					    bvec->bv_offset, pci_addr_in +
-+			bio_for_each_segment(bvec, rsp->bio, iter) {
-+				if (bytes_to_copy <= bvec.bv_len) {
-+					memcpy(page_address(bvec.bv_page) +
-+					    bvec.bv_offset, pci_addr_in +
- 					    offset, bytes_to_copy);
- 					break;
- 				} else {
--					memcpy(page_address(bvec->bv_page) +
--					    bvec->bv_offset, pci_addr_in +
--					    offset, bvec->bv_len);
--					bytes_to_copy -= bvec->bv_len;
-+					memcpy(page_address(bvec.bv_page) +
-+					    bvec.bv_offset, pci_addr_in +
-+					    offset, bvec.bv_len);
-+					bytes_to_copy -= bvec.bv_len;
- 				}
--				offset += bvec->bv_len;
-+				offset += bvec.bv_len;
- 			}
- 		}
- 	} else {
-diff --git a/drivers/scsi/mpt3sas/mpt3sas_transport.c b/drivers/scsi/mpt3sas/mpt3sas_transport.c
-index e771a88..196a67f 100644
---- a/drivers/scsi/mpt3sas/mpt3sas_transport.c
-+++ b/drivers/scsi/mpt3sas/mpt3sas_transport.c
-@@ -1884,7 +1884,7 @@ _transport_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 	struct MPT3SAS_ADAPTER *ioc = shost_priv(shost);
- 	Mpi2SmpPassthroughRequest_t *mpi_request;
- 	Mpi2SmpPassthroughReply_t *mpi_reply;
--	int rc, i;
-+	int rc;
- 	u16 smid;
- 	u32 ioc_state;
- 	unsigned long timeleft;
-@@ -1898,7 +1898,8 @@ _transport_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 	void *pci_addr_out = NULL;
- 	u16 wait_state_count;
- 	struct request *rsp = req->next_rq;
--	struct bio_vec *bvec = NULL;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 
- 	if (!rsp) {
- 		pr_err(MPT3SAS_FMT "%s: the smp response space is missing\n",
-@@ -1938,11 +1939,11 @@ _transport_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 			goto out;
- 		}
- 
--		bio_for_each_segment(bvec, req->bio, i) {
-+		bio_for_each_segment(bvec, req->bio, iter) {
- 			memcpy(pci_addr_out + offset,
--			    page_address(bvec->bv_page) + bvec->bv_offset,
--			    bvec->bv_len);
--			offset += bvec->bv_len;
-+			    page_address(bvec.bv_page) + bvec.bv_offset,
-+			    bvec.bv_len);
-+			offset += bvec.bv_len;
- 		}
- 	} else {
- 		dma_addr_out = pci_map_single(ioc->pdev, bio_data(req->bio),
-@@ -2067,19 +2068,19 @@ _transport_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 			u32 offset = 0;
- 			u32 bytes_to_copy =
- 			    le16_to_cpu(mpi_reply->ResponseDataLength);
--			bio_for_each_segment(bvec, rsp->bio, i) {
--				if (bytes_to_copy <= bvec->bv_len) {
--					memcpy(page_address(bvec->bv_page) +
--					    bvec->bv_offset, pci_addr_in +
-+			bio_for_each_segment(bvec, rsp->bio, iter) {
-+				if (bytes_to_copy <= bvec.bv_len) {
-+					memcpy(page_address(bvec.bv_page) +
-+					    bvec.bv_offset, pci_addr_in +
- 					    offset, bytes_to_copy);
- 					break;
- 				} else {
--					memcpy(page_address(bvec->bv_page) +
--					    bvec->bv_offset, pci_addr_in +
--					    offset, bvec->bv_len);
--					bytes_to_copy -= bvec->bv_len;
-+					memcpy(page_address(bvec.bv_page) +
-+					    bvec.bv_offset, pci_addr_in +
-+					    offset, bvec.bv_len);
-+					bytes_to_copy -= bvec.bv_len;
- 				}
--				offset += bvec->bv_len;
-+				offset += bvec.bv_len;
- 			}
- 		}
- 	} else {
-diff --git a/drivers/staging/lustre/lustre/llite/lloop.c b/drivers/staging/lustre/lustre/llite/lloop.c
-index 53741be..581ff78 100644
---- a/drivers/staging/lustre/lustre/llite/lloop.c
-+++ b/drivers/staging/lustre/lustre/llite/lloop.c
-@@ -194,10 +194,10 @@ static int do_bio_lustrebacked(struct lloop_device *lo, struct bio *head)
- 	struct cl_object     *obj = ll_i2info(inode)->lli_clob;
- 	pgoff_t	       offset;
- 	int		   ret;
--	int		   i;
- 	int		   rw;
- 	obd_count	     page_count = 0;
--	struct bio_vec       *bvec;
-+	struct bio_vec       bvec;
-+	struct bvec_iter   iter;
- 	struct bio	   *bio;
- 	ssize_t	       bytes;
- 
-@@ -221,14 +221,14 @@ static int do_bio_lustrebacked(struct lloop_device *lo, struct bio *head)
- 		LASSERT(rw == bio->bi_rw);
- 
- 		offset = (pgoff_t)(bio->bi_iter.bi_sector << 9) + lo->lo_offset;
--		bio_for_each_segment(bvec, bio, i) {
--			BUG_ON(bvec->bv_offset != 0);
--			BUG_ON(bvec->bv_len != PAGE_CACHE_SIZE);
-+		bio_for_each_segment(bvec, bio, iter) {
-+			BUG_ON(bvec.bv_offset != 0);
-+			BUG_ON(bvec.bv_len != PAGE_CACHE_SIZE);
- 
--			pages[page_count] = bvec->bv_page;
-+			pages[page_count] = bvec.bv_page;
- 			offsets[page_count] = offset;
- 			page_count++;
--			offset += bvec->bv_len;
-+			offset += bvec.bv_len;
- 		}
- 		LASSERT(page_count <= LLOOP_MAX_SEGMENTS);
- 	}
-diff --git a/drivers/staging/zram/zram_drv.c b/drivers/staging/zram/zram_drv.c
-index e9e6f98..6f98838 100644
---- a/drivers/staging/zram/zram_drv.c
-+++ b/drivers/staging/zram/zram_drv.c
-@@ -672,9 +672,10 @@ static ssize_t reset_store(struct device *dev,
- 
- static void __zram_make_request(struct zram *zram, struct bio *bio, int rw)
- {
--	int i, offset;
-+	int offset;
- 	u32 index;
--	struct bio_vec *bvec;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 
- 	switch (rw) {
- 	case READ:
-@@ -689,33 +690,33 @@ static void __zram_make_request(struct zram *zram, struct bio *bio, int rw)
- 	offset = (bio->bi_iter.bi_sector &
- 		  (SECTORS_PER_PAGE - 1)) << SECTOR_SHIFT;
- 
--	bio_for_each_segment(bvec, bio, i) {
-+	bio_for_each_segment(bvec, bio, iter) {
- 		int max_transfer_size = PAGE_SIZE - offset;
- 
--		if (bvec->bv_len > max_transfer_size) {
-+		if (bvec.bv_len > max_transfer_size) {
- 			/*
- 			 * zram_bvec_rw() can only make operation on a single
- 			 * zram page. Split the bio vector.
- 			 */
- 			struct bio_vec bv;
- 
--			bv.bv_page = bvec->bv_page;
-+			bv.bv_page = bvec.bv_page;
- 			bv.bv_len = max_transfer_size;
--			bv.bv_offset = bvec->bv_offset;
-+			bv.bv_offset = bvec.bv_offset;
- 
- 			if (zram_bvec_rw(zram, &bv, index, offset, bio, rw) < 0)
- 				goto out;
- 
--			bv.bv_len = bvec->bv_len - max_transfer_size;
-+			bv.bv_len = bvec.bv_len - max_transfer_size;
- 			bv.bv_offset += max_transfer_size;
- 			if (zram_bvec_rw(zram, &bv, index+1, 0, bio, rw) < 0)
- 				goto out;
- 		} else
--			if (zram_bvec_rw(zram, bvec, index, offset, bio, rw)
-+			if (zram_bvec_rw(zram, &bvec, index, offset, bio, rw)
- 			    < 0)
- 				goto out;
- 
--		update_position(&index, &offset, bvec);
-+		update_position(&index, &offset, &bvec);
- 	}
- 
- 	set_bit(BIO_UPTODATE, &bio->bi_flags);
-diff --git a/fs/bio-integrity.c b/fs/bio-integrity.c
-index 08e3d13..9127db8 100644
---- a/fs/bio-integrity.c
-+++ b/fs/bio-integrity.c
-@@ -299,25 +299,26 @@ static void bio_integrity_generate(struct bio *bio)
- {
- 	struct blk_integrity *bi = bdev_get_integrity(bio->bi_bdev);
- 	struct blk_integrity_exchg bix;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
-+	struct bvec_iter iter;
- 	sector_t sector = bio->bi_iter.bi_sector;
--	unsigned int i, sectors, total;
-+	unsigned int sectors, total;
- 	void *prot_buf = bio->bi_integrity->bip_buf;
- 
- 	total = 0;
- 	bix.disk_name = bio->bi_bdev->bd_disk->disk_name;
- 	bix.sector_size = bi->sector_size;
- 
--	bio_for_each_segment(bv, bio, i) {
--		void *kaddr = kmap_atomic(bv->bv_page);
--		bix.data_buf = kaddr + bv->bv_offset;
--		bix.data_size = bv->bv_len;
-+	bio_for_each_segment(bv, bio, iter) {
-+		void *kaddr = kmap_atomic(bv.bv_page);
-+		bix.data_buf = kaddr + bv.bv_offset;
-+		bix.data_size = bv.bv_len;
- 		bix.prot_buf = prot_buf;
- 		bix.sector = sector;
- 
- 		bi->generate_fn(&bix);
- 
--		sectors = bv->bv_len / bi->sector_size;
-+		sectors = bv.bv_len / bi->sector_size;
- 		sector += sectors;
- 		prot_buf += sectors * bi->tuple_size;
- 		total += sectors * bi->tuple_size;
-@@ -441,19 +442,20 @@ static int bio_integrity_verify(struct bio *bio)
- {
- 	struct blk_integrity *bi = bdev_get_integrity(bio->bi_bdev);
- 	struct blk_integrity_exchg bix;
--	struct bio_vec *bv;
-+	struct bio_vec bv;
-+	struct bvec_iter iter;
- 	sector_t sector = bio->bi_integrity->bip_sector;
--	unsigned int i, sectors, total, ret;
-+	unsigned int sectors, total, ret;
- 	void *prot_buf = bio->bi_integrity->bip_buf;
- 
- 	ret = total = 0;
- 	bix.disk_name = bio->bi_bdev->bd_disk->disk_name;
- 	bix.sector_size = bi->sector_size;
- 
--	bio_for_each_segment(bv, bio, i) {
--		void *kaddr = kmap_atomic(bv->bv_page);
--		bix.data_buf = kaddr + bv->bv_offset;
--		bix.data_size = bv->bv_len;
-+	bio_for_each_segment(bv, bio, iter) {
-+		void *kaddr = kmap_atomic(bv.bv_page);
-+		bix.data_buf = kaddr + bv.bv_offset;
-+		bix.data_size = bv.bv_len;
- 		bix.prot_buf = prot_buf;
- 		bix.sector = sector;
- 
-@@ -464,7 +466,7 @@ static int bio_integrity_verify(struct bio *bio)
- 			return ret;
- 		}
- 
--		sectors = bv->bv_len / bi->sector_size;
-+		sectors = bv.bv_len / bi->sector_size;
- 		sector += sectors;
- 		prot_buf += sectors * bi->tuple_size;
- 		total += sectors * bi->tuple_size;
-diff --git a/fs/bio.c b/fs/bio.c
-index 7bb281f..8b7f14a 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -473,13 +473,13 @@ EXPORT_SYMBOL(bio_alloc_bioset);
- void zero_fill_bio(struct bio *bio)
- {
- 	unsigned long flags;
--	struct bio_vec *bv;
--	int i;
-+	struct bio_vec bv;
-+	struct bvec_iter iter;
- 
--	bio_for_each_segment(bv, bio, i) {
--		char *data = bvec_kmap_irq(bv, &flags);
--		memset(data, 0, bv->bv_len);
--		flush_dcache_page(bv->bv_page);
-+	bio_for_each_segment(bv, bio, iter) {
-+		char *data = bvec_kmap_irq(&bv, &flags);
-+		memset(data, 0, bv.bv_len);
-+		flush_dcache_page(bv.bv_page);
- 		bvec_kunmap_irq(data, &flags);
- 	}
- }
-@@ -1687,11 +1687,11 @@ void bio_check_pages_dirty(struct bio *bio)
- #if ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE
- void bio_flush_dcache_pages(struct bio *bi)
- {
--	int i;
--	struct bio_vec *bvec;
-+	struct bio_vec bvec;
-+	struct bvec_iter iter;
- 
--	bio_for_each_segment(bvec, bi, i)
--		flush_dcache_page(bvec->bv_page);
-+	bio_for_each_segment(bvec, bi, iter)
-+		flush_dcache_page(bvec.bv_page);
- }
- EXPORT_SYMBOL(bio_flush_dcache_pages);
- #endif
-@@ -1840,7 +1840,7 @@ void bio_trim(struct bio *bio, int offset, int size)
- 		bio->bi_iter.bi_idx = 0;
- 	}
- 	/* Make sure vcnt and last bv are not too big */
--	bio_for_each_segment(bvec, bio, i) {
-+	bio_for_each_segment_all(bvec, bio, i) {
- 		if (sofar + bvec->bv_len > size)
- 			bvec->bv_len = size - sofar;
- 		if (bvec->bv_len == 0) {
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 9f182fc..c16adb5 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -63,10 +63,13 @@
-  */
- #define bio_iovec_idx(bio, idx)	(&((bio)->bi_io_vec[(idx)]))
- #define __bio_iovec(bio)	bio_iovec_idx((bio), (bio)->bi_iter.bi_idx)
--#define bio_iovec(bio)		(*__bio_iovec(bio))
-+
-+#define bio_iter_iovec(bio, iter) ((bio)->bi_io_vec[(iter).bi_idx])
- 
- #define bio_page(bio)		(bio_iovec((bio)).bv_page)
- #define bio_offset(bio)		(bio_iovec((bio)).bv_offset)
-+#define bio_iovec(bio)		(*__bio_iovec(bio))
-+
- #define bio_segments(bio)	((bio)->bi_vcnt - (bio)->bi_iter.bi_idx)
- #define bio_sectors(bio)	((bio)->bi_iter.bi_size >> 9)
- #define bio_end_sector(bio)	((bio)->bi_iter.bi_sector + bio_sectors((bio)))
-@@ -134,15 +137,6 @@ static inline void *bio_data(struct bio *bio)
- #define bio_io_error(bio) bio_endio((bio), -EIO)
- 
- /*
-- * drivers should not use the __ version unless they _really_ know what
-- * they're doing
-- */
--#define __bio_for_each_segment(bvl, bio, i, start_idx)			\
--	for (bvl = bio_iovec_idx((bio), (start_idx)), i = (start_idx);	\
--	     i < (bio)->bi_vcnt;					\
--	     bvl++, i++)
--
--/*
-  * drivers should _never_ use the all version - the bio may have been split
-  * before it got to the driver and the driver won't own all of it
-  */
-@@ -151,10 +145,16 @@ static inline void *bio_data(struct bio *bio)
- 	     bvl = bio_iovec_idx((bio), (i)), i < (bio)->bi_vcnt;	\
- 	     i++)
- 
--#define bio_for_each_segment(bvl, bio, i)				\
--	for (i = (bio)->bi_iter.bi_idx;					\
--	     bvl = bio_iovec_idx((bio), (i)), i < (bio)->bi_vcnt;	\
--	     i++)
-+#define __bio_for_each_segment(bvl, bio, iter, start)			\
-+	for (iter = (start);						\
-+	     bvl = bio_iter_iovec((bio), (iter)),			\
-+	     (iter).bi_idx < (bio)->bi_vcnt;				\
-+	     (iter).bi_idx++)
-+
-+#define bio_for_each_segment(bvl, bio, iter)				\
-+	__bio_for_each_segment(bvl, bio, iter, (bio)->bi_iter)
-+
-+#define bio_iter_last(bio, iter) ((iter).bi_idx == (bio)->bi_vcnt - 1)
- 
- /*
-  * get a reference to a bio, so it won't disappear. the intended use is
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 1b135d4..337b92a 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -735,7 +735,7 @@ struct rq_map_data {
- };
- 
- struct req_iterator {
--	int i;
-+	struct bvec_iter iter;
- 	struct bio *bio;
- };
- 
-@@ -748,10 +748,11 @@ struct req_iterator {
- 
- #define rq_for_each_segment(bvl, _rq, _iter)			\
- 	__rq_for_each_bio(_iter.bio, _rq)			\
--		bio_for_each_segment(bvl, _iter.bio, _iter.i)
-+		bio_for_each_segment(bvl, _iter.bio, _iter.iter)
- 
- #define rq_iter_last(rq, _iter)					\
--		(_iter.bio->bi_next == NULL && _iter.i == _iter.bio->bi_vcnt-1)
-+		(_iter.bio->bi_next == NULL &&			\
-+		 bio_iter_last(_iter.bio, _iter.iter))
- 
- #ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE
- # error	"You should define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE for your platform"
-diff --git a/mm/bounce.c b/mm/bounce.c
-index 5a7d58f..523918b 100644
---- a/mm/bounce.c
-+++ b/mm/bounce.c
-@@ -98,27 +98,24 @@ int init_emergency_isa_pool(void)
- static void copy_to_high_bio_irq(struct bio *to, struct bio *from)
- {
- 	unsigned char *vfrom;
--	struct bio_vec *tovec, *fromvec;
--	int i;
--
--	bio_for_each_segment(tovec, to, i) {
--		fromvec = from->bi_io_vec + i;
--
--		/*
--		 * not bounced
--		 */
--		if (tovec->bv_page == fromvec->bv_page)
--			continue;
--
--		/*
--		 * fromvec->bv_offset and fromvec->bv_len might have been
--		 * modified by the block layer, so use the original copy,
--		 * bounce_copy_vec already uses tovec->bv_len
--		 */
--		vfrom = page_address(fromvec->bv_page) + tovec->bv_offset;
-+	struct bio_vec tovec, *fromvec = from->bi_io_vec;
-+	struct bvec_iter iter;
-+
-+	bio_for_each_segment(tovec, to, iter) {
-+		if (tovec.bv_page != fromvec->bv_page) {
-+			/*
-+			 * fromvec->bv_offset and fromvec->bv_len might have
-+			 * been modified by the block layer, so use the original
-+			 * copy, bounce_copy_vec already uses tovec->bv_len
-+			 */
-+			vfrom = page_address(fromvec->bv_page) +
-+				tovec.bv_offset;
-+
-+			bounce_copy_vec(&tovec, vfrom);
-+			flush_dcache_page(tovec.bv_page);
-+		}
- 
--		bounce_copy_vec(tovec, vfrom);
--		flush_dcache_page(tovec->bv_page);
-+		fromvec++;
- 	}
- }
- 
-@@ -201,13 +198,14 @@ static void __blk_queue_bounce(struct request_queue *q, struct bio **bio_orig,
- {
- 	struct bio *bio;
- 	int rw = bio_data_dir(*bio_orig);
--	struct bio_vec *to, *from;
-+	struct bio_vec *to, from;
-+	struct bvec_iter iter;
- 	unsigned i;
- 
- 	if (force)
- 		goto bounce;
--	bio_for_each_segment(from, *bio_orig, i)
--		if (page_to_pfn(from->bv_page) > queue_bounce_pfn(q))
-+	bio_for_each_segment(from, *bio_orig, iter)
-+		if (page_to_pfn(from.bv_page) > queue_bounce_pfn(q))
- 			goto bounce;
- 
- 	return;
--- 
-1.8.4.4
+DQpUaGlzIHBhdGNoIHJlbW92ZXMgQ09ORklHX01URF9QQVJUSVRJT05TIGluIGNvbmZpZyBmaWxl
+cyBmb3IgcG93ZXJwYy4NCiBCZWNhdXNlIENPTkZJR19NVERfUEFSVElUSU9OUyB3YXMgcmVtb3Zl
+ZCBieSBjb21taXQgNmE4YTk4YjIyYjEwZjE1NjBkNWY5MGFkZWQ0YTU0MjM0YjliMjcyNC4NCg0K
+DQpTaWduZWQtb2ZmLWJ5OiBFdW5ib25nIFNvbmcgPGV1bmIuc29uZ0BzYW1zdW5nLmNvbT4NCi0t
+LQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzQweC9hY2FkaWFfZGVmY29uZmlnICAgICAgICB8ICAg
+IDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzQweC9lcDQwNV9kZWZjb25maWcgICAgICAgICB8
+ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzQweC9raWxhdWVhX2RlZmNvbmZpZyAgICAg
+ICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzQweC9tYWthbHVfZGVmY29uZmlnICAg
+ICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzQweC93YWxudXRfZGVmY29uZmln
+ICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9hcmNoZXNfZGVmY29u
+ZmlnICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9ibHVlc3RvbmVf
+ZGVmY29uZmlnICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9jYW55b25s
+YW5kc19kZWZjb25maWcgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9lYm9u
+eV9kZWZjb25maWcgICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9l
+aWdlcl9kZWZjb25maWcgICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzQ0
+eC9pY29uX2RlZmNvbmZpZyAgICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdz
+LzQ0eC9pc3M0NzYtc21wX2RlZmNvbmZpZyAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25m
+aWdzLzQ0eC9rYXRtYWlfZGVmY29uZmlnICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9j
+b25maWdzLzQ0eC9yYWluaWVyX2RlZmNvbmZpZyAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJw
+Yy9jb25maWdzLzQ0eC9yZWR3b29kX2RlZmNvbmZpZyAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93
+ZXJwYy9jb25maWdzLzQ0eC9zZXF1b2lhX2RlZmNvbmZpZyAgICAgICB8ICAgIDEgLQ0KIGFyY2gv
+cG93ZXJwYy9jb25maWdzLzQ0eC90YWlzaGFuX2RlZmNvbmZpZyAgICAgICB8ICAgIDEgLQ0KIGFy
+Y2gvcG93ZXJwYy9jb25maWdzLzQ0eC93YXJwX2RlZmNvbmZpZyAgICAgICAgICB8ICAgIDEgLQ0K
+IGFyY2gvcG93ZXJwYy9jb25maWdzLzUyeHgvY201MjAwX2RlZmNvbmZpZyAgICAgICB8ICAgIDEg
+LQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzUyeHgvbW90aW9ucHJvX2RlZmNvbmZpZyAgICB8ICAg
+IDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzUyeHgvcGNtMDMwX2RlZmNvbmZpZyAgICAgICB8
+ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzUyeHgvdHFtNTIwMF9kZWZjb25maWcgICAg
+ICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvYXNwODM0N19kZWZjb25maWcg
+ICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvbXBjODMxM19yZGJfZGVm
+Y29uZmlnICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvbXBjODMxNV9yZGJf
+ZGVmY29uZmlnICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvbXBjODM2eF9t
+ZHNfZGVmY29uZmlnICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvbXBjODM2
+eF9yZGtfZGVmY29uZmlnICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvc2Jj
+ODM0eF9kZWZjb25maWcgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzg1eHgv
+a3NpODU2MF9kZWZjb25maWcgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzg1
+eHgvcHBhODU0OF9kZWZjb25maWcgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdz
+Lzg1eHgvc29jcmF0ZXNfZGVmY29uZmlnICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25m
+aWdzLzg1eHgvdHFtODU0MF9kZWZjb25maWcgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9j
+b25maWdzLzg1eHgvdHFtODU0MV9kZWZjb25maWcgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJw
+Yy9jb25maWdzLzg1eHgvdHFtODU0OF9kZWZjb25maWcgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93
+ZXJwYy9jb25maWdzLzg1eHgvdHFtODU1NV9kZWZjb25maWcgICAgICB8ICAgIDEgLQ0KIGFyY2gv
+cG93ZXJwYy9jb25maWdzLzg1eHgvdHFtODU2MF9kZWZjb25maWcgICAgICB8ICAgIDEgLQ0KIGFy
+Y2gvcG93ZXJwYy9jb25maWdzLzg1eHgveGVzX21wYzg1eHhfZGVmY29uZmlnICB8ICAgIDEgLQ0K
+IGFyY2gvcG93ZXJwYy9jb25maWdzLzg2eHgvZ2VmX3BwYzlhX2RlZmNvbmZpZyAgICB8ICAgIDEg
+LQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzg2eHgvZ2VmX3NiYzMxMF9kZWZjb25maWcgICB8ICAg
+IDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzg2eHgvZ2VmX3NiYzYxMF9kZWZjb25maWcgICB8
+ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzg2eHgvbXBjODYxMF9ocGNkX2RlZmNvbmZp
+ZyB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzLzg2eHgvc2JjODY0MWRfZGVmY29uZmln
+ICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzL2Mya19kZWZjb25maWcgICAgICAg
+ICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzL2NvcmVuZXQ2NF9zbXBfZGVm
+Y29uZmlnICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzL2xpbmtzdGF0aW9uX2Rl
+ZmNvbmZpZyAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzL21wYzg1eHhfZGVm
+Y29uZmlnICAgICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzL21wYzg1eHhf
+c21wX2RlZmNvbmZpZyAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzL3BwYzQw
+eF9kZWZjb25maWcgICAgICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdzL3Bw
+YzQ0eF9kZWZjb25maWcgICAgICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25maWdz
+L3BycG1jMjgwMF9kZWZjb25maWcgICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9jb25m
+aWdzL3N0b3JjZW50ZXJfZGVmY29uZmlnICAgICAgICB8ICAgIDEgLQ0KIGFyY2gvcG93ZXJwYy9j
+b25maWdzL3RxbTh4eF9kZWZjb25maWcgICAgICAgICAgICB8ICAgIDEgLQ0KIDUyIGZpbGVzIGNo
+YW5nZWQsIDAgaW5zZXJ0aW9ucygrKSwgNTIgZGVsZXRpb25zKC0pDQoNCmRpZmYgLS1naXQgYS9h
+cmNoL3Bvd2VycGMvY29uZmlncy80MHgvYWNhZGlhX2RlZmNvbmZpZyBiL2FyY2gvcG93ZXJwYy9j
+b25maWdzLzQweC9hY2FkaWFfZGVmY29uZmlnDQppbmRleCBlZDNiYWI3Li42OWUwNmVlIDEwMDY0
+NA0KLS0tIGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDB4L2FjYWRpYV9kZWZjb25maWcNCisrKyBi
+L2FyY2gvcG93ZXJwYy9jb25maWdzLzQweC9hY2FkaWFfZGVmY29uZmlnDQpAQCAtMzAsNyArMzAs
+NiBAQCBDT05GSUdfSVBfUE5QX0JPT1RQPXkNCiBDT05GSUdfVUVWRU5UX0hFTFBFUl9QQVRIPSIv
+c2Jpbi9ob3RwbHVnIg0KIENPTkZJR19DT05ORUNUT1I9eQ0KIENPTkZJR19NVEQ9eQ0KLUNPTkZJ
+R19NVERfUEFSVElUSU9OUz15DQogQ09ORklHX01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdf
+TVREX09GX1BBUlRTPXkNCiBDT05GSUdfTVREX0NIQVI9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93
+ZXJwYy9jb25maWdzLzQweC9lcDQwNV9kZWZjb25maWcgYi9hcmNoL3Bvd2VycGMvY29uZmlncy80
+MHgvZXA0MDVfZGVmY29uZmlnDQppbmRleCAxNzU4MmEzLi5jZjA2ZDQyIDEwMDY0NA0KLS0tIGEv
+YXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDB4L2VwNDA1X2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dl
+cnBjL2NvbmZpZ3MvNDB4L2VwNDA1X2RlZmNvbmZpZw0KQEAgLTI5LDcgKzI5LDYgQEAgQ09ORklH
+X0lQX1BOUF9CT09UUD15DQogQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1
+ZyINCiBDT05GSUdfQ09OTkVDVE9SPXkNCiBDT05GSUdfTVREPXkNCi1DT05GSUdfTVREX1BBUlRJ
+VElPTlM9eQ0KIENPTkZJR19NVERfQ01ETElORV9QQVJUUz15DQogQ09ORklHX01URF9PRl9QQVJU
+Uz15DQogQ09ORklHX01URF9DSEFSPXkNCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvY29uZmln
+cy80MHgva2lsYXVlYV9kZWZjb25maWcgYi9hcmNoL3Bvd2VycGMvY29uZmlncy80MHgva2lsYXVl
+YV9kZWZjb25maWcNCmluZGV4IGYyZDRiZTkuLjVmZjMzOGYgMTAwNjQ0DQotLS0gYS9hcmNoL3Bv
+d2VycGMvY29uZmlncy80MHgva2lsYXVlYV9kZWZjb25maWcNCisrKyBiL2FyY2gvcG93ZXJwYy9j
+b25maWdzLzQweC9raWxhdWVhX2RlZmNvbmZpZw0KQEAgLTMyLDcgKzMyLDYgQEAgQ09ORklHX0lQ
+X1BOUF9CT09UUD15DQogQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyIN
+CiBDT05GSUdfQ09OTkVDVE9SPXkNCiBDT05GSUdfTVREPXkNCi1DT05GSUdfTVREX1BBUlRJVElP
+TlM9eQ0KIENPTkZJR19NVERfQ01ETElORV9QQVJUUz15DQogQ09ORklHX01URF9PRl9QQVJUUz15
+DQogQ09ORklHX01URF9DSEFSPXkNCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvY29uZmlncy80
+MHgvbWFrYWx1X2RlZmNvbmZpZyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzQweC9tYWthbHVfZGVm
+Y29uZmlnDQppbmRleCA0MmI5NzkzLi44NDUwNWUzIDEwMDY0NA0KLS0tIGEvYXJjaC9wb3dlcnBj
+L2NvbmZpZ3MvNDB4L21ha2FsdV9kZWZjb25maWcNCisrKyBiL2FyY2gvcG93ZXJwYy9jb25maWdz
+LzQweC9tYWthbHVfZGVmY29uZmlnDQpAQCAtMjksNyArMjksNiBAQCBDT05GSUdfSVBfUE5QX0JP
+T1RQPXkNCiBDT05GSUdfVUVWRU5UX0hFTFBFUl9QQVRIPSIvc2Jpbi9ob3RwbHVnIg0KIENPTkZJ
+R19DT05ORUNUT1I9eQ0KIENPTkZJR19NVEQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQog
+Q09ORklHX01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCiBDT05G
+SUdfTVREX0NIQVI9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzQweC93YWxu
+dXRfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDB4L3dhbG51dF9kZWZjb25maWcN
+CmluZGV4IGFhMWE0Y2EuLjBhMTlmNDMgMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvY29uZmln
+cy80MHgvd2FsbnV0X2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDB4L3dh
+bG51dF9kZWZjb25maWcNCkBAIC0yNyw3ICsyNyw2IEBAIENPTkZJR19JUF9QTlBfQk9PVFA9eQ0K
+IENPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBsdWciDQogQ09ORklHX0NPTk5F
+Q1RPUj15DQogQ09ORklHX01URD15DQotQ09ORklHX01URF9QQVJUSVRJT05TPXkNCiBDT05GSUdf
+TVREX0NNRExJTkVfUEFSVFM9eQ0KIENPTkZJR19NVERfT0ZfUEFSVFM9eQ0KIENPTkZJR19NVERf
+Q0hBUj15DQpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L2FyY2hlc19kZWZj
+b25maWcgYi9hcmNoL3Bvd2VycGMvY29uZmlncy80NHgvYXJjaGVzX2RlZmNvbmZpZw0KaW5kZXgg
+MzI5ZjlhMy4uNDQzNTVjNSAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9h
+cmNoZXNfZGVmY29uZmlnDQorKysgYi9hcmNoL3Bvd2VycGMvY29uZmlncy80NHgvYXJjaGVzX2Rl
+ZmNvbmZpZw0KQEAgLTMxLDcgKzMxLDYgQEAgQ09ORklHX0lQX1BOUF9CT09UUD15DQogQ09ORklH
+X1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiBDT05GSUdfQ09OTkVDVE9SPXkN
+CiBDT05GSUdfTVREPXkNCi1DT05GSUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJR19NVERfQ01E
+TElORV9QQVJUUz15DQogQ09ORklHX01URF9PRl9QQVJUUz15DQogQ09ORklHX01URF9DSEFSPXkN
+CmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvY29uZmlncy80NHgvYmx1ZXN0b25lX2RlZmNvbmZp
+ZyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9ibHVlc3RvbmVfZGVmY29uZmlnDQppbmRleCAy
+MGM4ZDI2Li5jYTdmMWYzIDEwMDY0NA0KLS0tIGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L2Js
+dWVzdG9uZV9kZWZjb25maWcNCisrKyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9ibHVlc3Rv
+bmVfZGVmY29uZmlnDQpAQCAtMjYsNyArMjYsNiBAQCBDT05GSUdfSVBfUE5QX0JPT1RQPXkNCiBD
+T05GSUdfVUVWRU5UX0hFTFBFUl9QQVRIPSIvc2Jpbi9ob3RwbHVnIg0KIENPTkZJR19DT05ORUNU
+T1I9eQ0KIENPTkZJR19NVEQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQogQ09ORklHX01U
+RF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCiBDT05GSUdfTVREX0NI
+QVI9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9jYW55b25sYW5kc19k
+ZWZjb25maWcgYi9hcmNoL3Bvd2VycGMvY29uZmlncy80NHgvY2FueW9ubGFuZHNfZGVmY29uZmln
+DQppbmRleCBkNWJlOTNlLi43YjhhYmQxIDEwMDY0NA0KLS0tIGEvYXJjaC9wb3dlcnBjL2NvbmZp
+Z3MvNDR4L2NhbnlvbmxhbmRzX2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3Mv
+NDR4L2NhbnlvbmxhbmRzX2RlZmNvbmZpZw0KQEAgLTMxLDcgKzMxLDYgQEAgQ09ORklHX0lQX1BO
+UF9CT09UUD15DQogQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiBD
+T05GSUdfQ09OTkVDVE9SPXkNCiBDT05GSUdfTVREPXkNCi1DT05GSUdfTVREX1BBUlRJVElPTlM9
+eQ0KIENPTkZJR19NVERfQ01ETElORV9QQVJUUz15DQogQ09ORklHX01URF9PRl9QQVJUUz15DQog
+Q09ORklHX01URF9DSEFSPXkNCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvY29uZmlncy80NHgv
+ZWJvbnlfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L2Vib255X2RlZmNvbmZp
+Zw0KaW5kZXggZjkyNjlmYy4uMzFiNThiMCAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9jb25m
+aWdzLzQ0eC9lYm9ueV9kZWZjb25maWcNCisrKyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9l
+Ym9ueV9kZWZjb25maWcNCkBAIC0yOCw3ICsyOCw2IEBAIENPTkZJR19JUF9QTlBfQk9PVFA9eQ0K
+IENPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBsdWciDQogQ09ORklHX0NPTk5F
+Q1RPUj15DQogQ09ORklHX01URD15DQotQ09ORklHX01URF9QQVJUSVRJT05TPXkNCiBDT05GSUdf
+TVREX09GX1BBUlRTPXkNCiBDT05GSUdfTVREX0NIQVI9eQ0KIENPTkZJR19NVERfQkxPQ0s9eQ0K
+ZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9laWdlcl9kZWZjb25maWcgYi9h
+cmNoL3Bvd2VycGMvY29uZmlncy80NHgvZWlnZXJfZGVmY29uZmlnDQppbmRleCA5YmUwODkwLi5m
+YWNjYWY2IDEwMDY0NA0KLS0tIGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L2VpZ2VyX2RlZmNv
+bmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L2VpZ2VyX2RlZmNvbmZpZw0KQEAg
+LTM0LDcgKzM0LDYgQEAgQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyIN
+CiBDT05GSUdfQ09OTkVDVE9SPXkNCiBDT05GSUdfTVREPXkNCiBDT05GSUdfTVREX0NPTkNBVD15
+DQotQ09ORklHX01URF9QQVJUSVRJT05TPXkNCiBDT05GSUdfTVREX0NNRExJTkVfUEFSVFM9eQ0K
+IENPTkZJR19NVERfT0ZfUEFSVFM9eQ0KIENPTkZJR19NVERfQ0hBUj15DQpkaWZmIC0tZ2l0IGEv
+YXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L2ljb25fZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2Nv
+bmZpZ3MvNDR4L2ljb25fZGVmY29uZmlnDQppbmRleCA4MmY3MzAzLi4wNTc4MmMxIDEwMDY0NA0K
+LS0tIGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L2ljb25fZGVmY29uZmlnDQorKysgYi9hcmNo
+L3Bvd2VycGMvY29uZmlncy80NHgvaWNvbl9kZWZjb25maWcNCkBAIC0zMyw3ICszMyw2IEBAIENP
+TkZJR19JUF9QTlBfQk9PVFA9eQ0KIENPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hv
+dHBsdWciDQogQ09ORklHX0NPTk5FQ1RPUj15DQogQ09ORklHX01URD15DQotQ09ORklHX01URF9Q
+QVJUSVRJT05TPXkNCiBDT05GSUdfTVREX0NNRExJTkVfUEFSVFM9eQ0KIENPTkZJR19NVERfT0Zf
+UEFSVFM9eQ0KIENPTkZJR19NVERfQ0hBUj15DQpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2Nv
+bmZpZ3MvNDR4L2lzczQ3Ni1zbXBfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4
+L2lzczQ3Ni1zbXBfZGVmY29uZmlnDQppbmRleCBjYTAwY2Y3Li40OWExNTE4IDEwMDY0NA0KLS0t
+IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L2lzczQ3Ni1zbXBfZGVmY29uZmlnDQorKysgYi9h
+cmNoL3Bvd2VycGMvY29uZmlncy80NHgvaXNzNDc2LXNtcF9kZWZjb25maWcNCkBAIC00Miw3ICs0
+Miw2IEBAIENPTkZJR19JUF9QTlBfQk9PVFA9eQ0KIENPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9
+Ii9zYmluL2hvdHBsdWciDQogQ09ORklHX0NPTk5FQ1RPUj15DQogQ09ORklHX01URD15DQotQ09O
+RklHX01URF9QQVJUSVRJT05TPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCiBDT05GSUdfTVRE
+X0NIQVI9eQ0KIENPTkZJR19NVERfQkxPQ0s9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9j
+b25maWdzLzQ0eC9rYXRtYWlfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L2th
+dG1haV9kZWZjb25maWcNCmluZGV4IDEwOTU2MmMuLmYxMTM3OTcgMTAwNjQ0DQotLS0gYS9hcmNo
+L3Bvd2VycGMvY29uZmlncy80NHgva2F0bWFpX2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBj
+L2NvbmZpZ3MvNDR4L2thdG1haV9kZWZjb25maWcNCkBAIC0yOSw3ICsyOSw2IEBAIENPTkZJR19J
+UF9QTlBfQk9PVFA9eQ0KIENPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBsdWci
+DQogQ09ORklHX0NPTk5FQ1RPUj15DQogQ09ORklHX01URD15DQotQ09ORklHX01URF9QQVJUSVRJ
+T05TPXkNCiBDT05GSUdfTVREX0NNRExJTkVfUEFSVFM9eQ0KIENPTkZJR19NVERfT0ZfUEFSVFM9
+eQ0KIENPTkZJR19NVERfQ0hBUj15DQpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3Mv
+NDR4L3JhaW5pZXJfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L3JhaW5pZXJf
+ZGVmY29uZmlnDQppbmRleCAyMWMzM2ZhLi40YjkxYTQ0IDEwMDY0NA0KLS0tIGEvYXJjaC9wb3dl
+cnBjL2NvbmZpZ3MvNDR4L3JhaW5pZXJfZGVmY29uZmlnDQorKysgYi9hcmNoL3Bvd2VycGMvY29u
+Zmlncy80NHgvcmFpbmllcl9kZWZjb25maWcNCkBAIC0zMCw3ICszMCw2IEBAIENPTkZJR19JUF9Q
+TlBfQk9PVFA9eQ0KIENPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBsdWciDQog
+Q09ORklHX0NPTk5FQ1RPUj15DQogQ09ORklHX01URD15DQotQ09ORklHX01URF9QQVJUSVRJT05T
+PXkNCiBDT05GSUdfTVREX0NNRExJTkVfUEFSVFM9eQ0KIENPTkZJR19NVERfT0ZfUEFSVFM9eQ0K
+IENPTkZJR19NVERfQ0hBUj15DQpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4
+L3JlZHdvb2RfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L3JlZHdvb2RfZGVm
+Y29uZmlnDQppbmRleCA0ODgwMjgxLi5iNzExM2UxIDEwMDY0NA0KLS0tIGEvYXJjaC9wb3dlcnBj
+L2NvbmZpZ3MvNDR4L3JlZHdvb2RfZGVmY29uZmlnDQorKysgYi9hcmNoL3Bvd2VycGMvY29uZmln
+cy80NHgvcmVkd29vZF9kZWZjb25maWcNCkBAIC0zNCw3ICszNCw2IEBAIENPTkZJR19VRVZFTlRf
+SEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBsdWciDQogQ09ORklHX0NPTk5FQ1RPUj15DQogQ09ORklH
+X01URD15DQogQ09ORklHX01URF9DT05DQVQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQog
+Q09ORklHX01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCiBDT05G
+SUdfTVREX0NIQVI9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9zZXF1
+b2lhX2RlZmNvbmZpZyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC9zZXF1b2lhX2RlZmNvbmZp
+Zw0KaW5kZXggYjdhNjUzYi4uOTY0MmQ5OSAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9jb25m
+aWdzLzQ0eC9zZXF1b2lhX2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4
+L3NlcXVvaWFfZGVmY29uZmlnDQpAQCAtMzEsNyArMzEsNiBAQCBDT05GSUdfSVBfUE5QX0JPT1RQ
+PXkNCiBDT05GSUdfVUVWRU5UX0hFTFBFUl9QQVRIPSIvc2Jpbi9ob3RwbHVnIg0KIENPTkZJR19D
+T05ORUNUT1I9eQ0KIENPTkZJR19NVEQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQogQ09O
+RklHX01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCiBDT05GSUdf
+TVREX0NIQVI9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC90YWlzaGFu
+X2RlZmNvbmZpZyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC90YWlzaGFuX2RlZmNvbmZpZw0K
+aW5kZXggMzBkZTk3Zi4uMDllMzA3NSAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9jb25maWdz
+LzQ0eC90YWlzaGFuX2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNDR4L3Rh
+aXNoYW5fZGVmY29uZmlnDQpAQCAtMjksNyArMjksNiBAQCBDT05GSUdfSVBfUE5QX0JPT1RQPXkN
+CiBDT05GSUdfVUVWRU5UX0hFTFBFUl9QQVRIPSIvc2Jpbi9ob3RwbHVnIg0KIENPTkZJR19DT05O
+RUNUT1I9eQ0KIENPTkZJR19NVEQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQogQ09ORklH
+X01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX0NIQVI9eQ0KIENPTkZJR19NVERfQ0ZJ
+PXkNCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvY29uZmlncy80NHgvd2FycF9kZWZjb25maWcg
+Yi9hcmNoL3Bvd2VycGMvY29uZmlncy80NHgvd2FycF9kZWZjb25maWcNCmluZGV4IDEwNWJjNTYu
+LjU1MWU1MGEgMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy80NHgvd2FycF9kZWZj
+b25maWcNCisrKyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzQ0eC93YXJwX2RlZmNvbmZpZw0KQEAg
+LTM0LDcgKzM0LDYgQEAgQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyIN
+CiAjIENPTkZJR19TVEFOREFMT05FIGlzIG5vdCBzZXQNCiAjIENPTkZJR19GSVJNV0FSRV9JTl9L
+RVJORUwgaXMgbm90IHNldA0KIENPTkZJR19NVEQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15
+DQogQ09ORklHX01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCiBD
+T05GSUdfTVREX0NIQVI9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzUyeHgv
+Y201MjAwX2RlZmNvbmZpZyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzUyeHgvY201MjAwX2RlZmNv
+bmZpZw0KaW5kZXggNjliNTdkYS4uNDU1Yzg1NSAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9j
+b25maWdzLzUyeHgvY201MjAwX2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3Mv
+NTJ4eC9jbTUyMDBfZGVmY29uZmlnDQpAQCAtMzEsNyArMzEsNiBAQCBDT05GSUdfU1lOX0NPT0tJ
+RVM9eQ0KIENPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBsdWciDQogIyBDT05G
+SUdfRldfTE9BREVSIGlzIG5vdCBzZXQNCiBDT05GSUdfTVREPXkNCi1DT05GSUdfTVREX1BBUlRJ
+VElPTlM9eQ0KIENPTkZJR19NVERfQ01ETElORV9QQVJUUz15DQogQ09ORklHX01URF9DSEFSPXkN
+CiBDT05GSUdfTVREX0JMT0NLPXkNCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvY29uZmlncy81
+Mnh4L21vdGlvbnByb19kZWZjb25maWcgYi9hcmNoL3Bvd2VycGMvY29uZmlncy81Mnh4L21vdGlv
+bnByb19kZWZjb25maWcNCmluZGV4IDBjN2RlOTYuLmIwMDZmMWIgMTAwNjQ0DQotLS0gYS9hcmNo
+L3Bvd2VycGMvY29uZmlncy81Mnh4L21vdGlvbnByb19kZWZjb25maWcNCisrKyBiL2FyY2gvcG93
+ZXJwYy9jb25maWdzLzUyeHgvbW90aW9ucHJvX2RlZmNvbmZpZw0KQEAgLTMyLDcgKzMyLDYgQEAg
+Q09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiAjIENPTkZJR19GV19M
+T0FERVIgaXMgbm90IHNldA0KIENPTkZJR19NVEQ9eQ0KIENPTkZJR19NVERfQ09OQ0FUPXkNCi1D
+T05GSUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJR19NVERfQ01ETElORV9QQVJUUz15DQogQ09O
+RklHX01URF9DSEFSPXkNCiBDT05GSUdfTVREX0JMT0NLPXkNCmRpZmYgLS1naXQgYS9hcmNoL3Bv
+d2VycGMvY29uZmlncy81Mnh4L3BjbTAzMF9kZWZjb25maWcgYi9hcmNoL3Bvd2VycGMvY29uZmln
+cy81Mnh4L3BjbTAzMF9kZWZjb25maWcNCmluZGV4IDIyZTcxOTUuLmRlZGU5YzggMTAwNjQ0DQot
+LS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy81Mnh4L3BjbTAzMF9kZWZjb25maWcNCisrKyBiL2Fy
+Y2gvcG93ZXJwYy9jb25maWdzLzUyeHgvcGNtMDMwX2RlZmNvbmZpZw0KQEAgLTQ1LDcgKzQ1LDYg
+QEAgQ09ORklHX0lQX1BOUF9CT09UUD15DQogQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3Ni
+aW4vaG90cGx1ZyINCiAjIENPTkZJR19GV19MT0FERVIgaXMgbm90IHNldA0KIENPTkZJR19NVEQ9
+eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQogQ09ORklHX01URF9DTURMSU5FX1BBUlRTPXkN
+CiBDT05GSUdfTVREX0NIQVI9eQ0KIENPTkZJR19NVERfQkxPQ0s9eQ0KZGlmZiAtLWdpdCBhL2Fy
+Y2gvcG93ZXJwYy9jb25maWdzLzUyeHgvdHFtNTIwMF9kZWZjb25maWcgYi9hcmNoL3Bvd2VycGMv
+Y29uZmlncy81Mnh4L3RxbTUyMDBfZGVmY29uZmlnDQppbmRleCA3MTZhMzdiLi40N2U1YjI1IDEw
+MDY0NA0KLS0tIGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNTJ4eC90cW01MjAwX2RlZmNvbmZpZw0K
+KysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvNTJ4eC90cW01MjAwX2RlZmNvbmZpZw0KQEAgLTM2
+LDcgKzM2LDYgQEAgQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiAj
+IENPTkZJR19GV19MT0FERVIgaXMgbm90IHNldA0KIENPTkZJR19NVEQ9eQ0KIENPTkZJR19NVERf
+Q09OQ0FUPXkNCi1DT05GSUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJR19NVERfQ01ETElORV9Q
+QVJUUz15DQogQ09ORklHX01URF9PRl9QQVJUUz15DQogQ09ORklHX01URF9DSEFSPXkNCmRpZmYg
+LS1naXQgYS9hcmNoL3Bvd2VycGMvY29uZmlncy84M3h4L2FzcDgzNDdfZGVmY29uZmlnIGIvYXJj
+aC9wb3dlcnBjL2NvbmZpZ3MvODN4eC9hc3A4MzQ3X2RlZmNvbmZpZw0KaW5kZXggZDI3NjJkOS4u
+OTg1Zjk1YyAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvYXNwODM0N19k
+ZWZjb25maWcNCisrKyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvYXNwODM0N19kZWZjb25m
+aWcNCkBAIC0zMiw3ICszMiw2IEBAIENPTkZJR19TWU5fQ09PS0lFUz15DQogQ09ORklHX1VFVkVO
+VF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiAjIENPTkZJR19GV19MT0FERVIgaXMgbm90
+IHNldA0KIENPTkZJR19NVEQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQogQ09ORklHX01U
+RF9SRURCT09UX1BBUlRTPXkNCiBDT05GSUdfTVREX1JFREJPT1RfUEFSVFNfVU5BTExPQ0FURUQ9
+eQ0KIENPTkZJR19NVERfT0ZfUEFSVFM9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25m
+aWdzLzgzeHgvbXBjODMxM19yZGJfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODN4
+eC9tcGM4MzEzX3JkYl9kZWZjb25maWcNCmluZGV4IGU0YWQyZTIuLjBiNzNiN2YgMTAwNjQ0DQot
+LS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy84M3h4L21wYzgzMTNfcmRiX2RlZmNvbmZpZw0KKysr
+IGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODN4eC9tcGM4MzEzX3JkYl9kZWZjb25maWcNCkBAIC0z
+MCw3ICszMCw2IEBAIENPTkZJR19TWU5fQ09PS0lFUz15DQogQ09ORklHX1VFVkVOVF9IRUxQRVJf
+UEFUSD0iL3NiaW4vaG90cGx1ZyINCiAjIENPTkZJR19GV19MT0FERVIgaXMgbm90IHNldA0KIENP
+TkZJR19NVEQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQogQ09ORklHX01URF9PRl9QQVJU
+Uz15DQogQ09ORklHX01URF9DSEFSPXkNCiBDT05GSUdfTVREX0JMT0NLPXkNCmRpZmYgLS1naXQg
+YS9hcmNoL3Bvd2VycGMvY29uZmlncy84M3h4L21wYzgzMTVfcmRiX2RlZmNvbmZpZyBiL2FyY2gv
+cG93ZXJwYy9jb25maWdzLzgzeHgvbXBjODMxNV9yZGJfZGVmY29uZmlnDQppbmRleCAzNGZmNTY4
+Li45N2FjM2I5IDEwMDY0NA0KLS0tIGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODN4eC9tcGM4MzE1
+X3JkYl9kZWZjb25maWcNCisrKyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvbXBjODMxNV9y
+ZGJfZGVmY29uZmlnDQpAQCAtMzAsNyArMzAsNiBAQCBDT05GSUdfU1lOX0NPT0tJRVM9eQ0KIENP
+TkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBsdWciDQogIyBDT05GSUdfRldfTE9B
+REVSIGlzIG5vdCBzZXQNCiBDT05GSUdfTVREPXkNCi1DT05GSUdfTVREX1BBUlRJVElPTlM9eQ0K
+IENPTkZJR19NVERfQ0hBUj15DQogQ09ORklHX01URF9CTE9DSz15DQogQ09ORklHX01URF9DRkk9
+eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvbXBjODM2eF9tZHNfZGVm
+Y29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODN4eC9tcGM4MzZ4X21kc19kZWZjb25maWcN
+CmluZGV4IDEwYjVjNGMuLjA1NzEwYmIgMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvY29uZmln
+cy84M3h4L21wYzgzNnhfbWRzX2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3Mv
+ODN4eC9tcGM4MzZ4X21kc19kZWZjb25maWcNCkBAIC0zMSw3ICszMSw2IEBAIENPTkZJR19TWU5f
+Q09PS0lFUz15DQogQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiAj
+IENPTkZJR19GV19MT0FERVIgaXMgbm90IHNldA0KIENPTkZJR19NVEQ9eQ0KLUNPTkZJR19NVERf
+UEFSVElUSU9OUz15DQogQ09ORklHX01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX0NI
+QVI9eQ0KIENPTkZJR19NVERfQkxPQ0s9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25m
+aWdzLzgzeHgvbXBjODM2eF9yZGtfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODN4
+eC9tcGM4MzZ4X3Jka19kZWZjb25maWcNCmluZGV4IDQ1OTI1ZDcuLjA1NDBkNjcgMTAwNjQ0DQot
+LS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy84M3h4L21wYzgzNnhfcmRrX2RlZmNvbmZpZw0KKysr
+IGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODN4eC9tcGM4MzZ4X3Jka19kZWZjb25maWcNCkBAIC0y
+OSw3ICsyOSw2IEBAIENPTkZJR19TWU5fQ09PS0lFUz15DQogIyBDT05GSUdfSVBWNiBpcyBub3Qg
+c2V0DQogQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiBDT05GSUdf
+TVREPXkNCi1DT05GSUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJR19NVERfQ01ETElORV9QQVJU
+Uz15DQogQ09ORklHX01URF9DSEFSPXkNCiBDT05GSUdfTVREX0JMT0NLPXkNCmRpZmYgLS1naXQg
+YS9hcmNoL3Bvd2VycGMvY29uZmlncy84M3h4L3NiYzgzNHhfZGVmY29uZmlnIGIvYXJjaC9wb3dl
+cnBjL2NvbmZpZ3MvODN4eC9zYmM4MzR4X2RlZmNvbmZpZw0KaW5kZXggNmQ2NDYzZi4uYTNiY2Rh
+NiAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvc2JjODM0eF9kZWZjb25m
+aWcNCisrKyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzgzeHgvc2JjODM0eF9kZWZjb25maWcNCkBA
+IC0zMSw3ICszMSw2IEBAIENPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBsdWci
+DQogIyBDT05GSUdfRldfTE9BREVSIGlzIG5vdCBzZXQNCiBDT05GSUdfTVREPXkNCiBDT05GSUdf
+TVREX0NPTkNBVD15DQotQ09ORklHX01URF9QQVJUSVRJT05TPXkNCiBDT05GSUdfTVREX0NNRExJ
+TkVfUEFSVFM9eQ0KIENPTkZJR19NVERfT0ZfUEFSVFM9eQ0KIENPTkZJR19NVERfQ0hBUj15DQpk
+aWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODV4eC9rc2k4NTYwX2RlZmNvbmZpZyBi
+L2FyY2gvcG93ZXJwYy9jb25maWdzLzg1eHgva3NpODU2MF9kZWZjb25maWcNCmluZGV4IDhmN2Mx
+MDYuLmFlZTBkMTcgMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy84NXh4L2tzaTg1
+NjBfZGVmY29uZmlnDQorKysgYi9hcmNoL3Bvd2VycGMvY29uZmlncy84NXh4L2tzaTg1NjBfZGVm
+Y29uZmlnDQpAQCAtMjgsNyArMjgsNiBAQCBDT05GSUdfVUVWRU5UX0hFTFBFUl9QQVRIPSIvc2Jp
+bi9ob3RwbHVnIg0KICMgQ09ORklHX0ZXX0xPQURFUiBpcyBub3Qgc2V0DQogQ09ORklHX01URD15
+DQogQ09ORklHX01URF9DT05DQVQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQogQ09ORklH
+X01URF9DSEFSPXkNCiBDT05GSUdfTVREX0JMT0NLPXkNCiBDT05GSUdfTVREX0NGST15DQpkaWZm
+IC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODV4eC9wcGE4NTQ4X2RlZmNvbmZpZyBiL2Fy
+Y2gvcG93ZXJwYy9jb25maWdzLzg1eHgvcHBhODU0OF9kZWZjb25maWcNCmluZGV4IGExMTMzN2Qu
+LmU4MGJiOWIgMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy84NXh4L3BwYTg1NDhf
+ZGVmY29uZmlnDQorKysgYi9hcmNoL3Bvd2VycGMvY29uZmlncy84NXh4L3BwYTg1NDhfZGVmY29u
+ZmlnDQpAQCAtNDQsNyArNDQsNiBAQCBDT05GSUdfTVREX0NGSV9JTlRFTEVYVD15DQogQ09ORklH
+X01URF9DSEFSPXkNCiBDT05GSUdfTVREX0NNRExJTkVfUEFSVFM9eQ0KIENPTkZJR19NVERfQ09O
+Q0FUPXkNCi1DT05GSUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJR19NVERfUEhZU01BUF9PRj15
+DQogDQogQ09ORklHX0kyQz15DQpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODV4
+eC9zb2NyYXRlc19kZWZjb25maWcgYi9hcmNoL3Bvd2VycGMvY29uZmlncy84NXh4L3NvY3JhdGVz
+X2RlZmNvbmZpZw0KaW5kZXggNzc1MDZiNS4uZTUxNDc0OCAxMDA2NDQNCi0tLSBhL2FyY2gvcG93
+ZXJwYy9jb25maWdzLzg1eHgvc29jcmF0ZXNfZGVmY29uZmlnDQorKysgYi9hcmNoL3Bvd2VycGMv
+Y29uZmlncy84NXh4L3NvY3JhdGVzX2RlZmNvbmZpZw0KQEAgLTMyLDcgKzMyLDYgQEAgQ09ORklH
+X0NBTl9SQVc9eQ0KIENPTkZJR19DQU5fQkNNPXkNCiBDT05GSUdfTVREPXkNCiBDT05GSUdfTVRE
+X0NPTkNBVD15DQotQ09ORklHX01URF9QQVJUSVRJT05TPXkNCiBDT05GSUdfTVREX0NNRExJTkVf
+UEFSVFM9eQ0KIENPTkZJR19NVERfT0ZfUEFSVFM9eQ0KIENPTkZJR19NVERfQ0hBUj15DQpkaWZm
+IC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODV4eC90cW04NTQwX2RlZmNvbmZpZyBiL2Fy
+Y2gvcG93ZXJwYy9jb25maWdzLzg1eHgvdHFtODU0MF9kZWZjb25maWcNCmluZGV4IGRkY2I5ZjMu
+LjVhODAwZTYgMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy84NXh4L3RxbTg1NDBf
+ZGVmY29uZmlnDQorKysgYi9hcmNoL3Bvd2VycGMvY29uZmlncy84NXh4L3RxbTg1NDBfZGVmY29u
+ZmlnDQpAQCAtMjYsNyArMjYsNiBAQCBDT05GSUdfU1lOX0NPT0tJRVM9eQ0KICMgQ09ORklHX0lQ
+VjYgaXMgbm90IHNldA0KIENPTkZJR19NVEQ9eQ0KIENPTkZJR19NVERfQ09OQ0FUPXkNCi1DT05G
+SUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJR19NVERfQ01ETElORV9QQVJUUz15DQogQ09ORklH
+X01URF9DSEFSPXkNCiBDT05GSUdfTVREX0JMT0NLPXkNCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2Vy
+cGMvY29uZmlncy84NXh4L3RxbTg1NDFfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3Mv
+ODV4eC90cW04NTQxX2RlZmNvbmZpZw0KaW5kZXggOTgxYWJkNi4uMmQ5MzY2OSAxMDA2NDQNCi0t
+LSBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzg1eHgvdHFtODU0MV9kZWZjb25maWcNCisrKyBiL2Fy
+Y2gvcG93ZXJwYy9jb25maWdzLzg1eHgvdHFtODU0MV9kZWZjb25maWcNCkBAIC0yNiw3ICsyNiw2
+IEBAIENPTkZJR19TWU5fQ09PS0lFUz15DQogIyBDT05GSUdfSVBWNiBpcyBub3Qgc2V0DQogQ09O
+RklHX01URD15DQogQ09ORklHX01URF9DT05DQVQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15
+DQogQ09ORklHX01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX0NIQVI9eQ0KIENPTkZJ
+R19NVERfQkxPQ0s9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzg1eHgvdHFt
+ODU0OF9kZWZjb25maWcgYi9hcmNoL3Bvd2VycGMvY29uZmlncy84NXh4L3RxbTg1NDhfZGVmY29u
+ZmlnDQppbmRleCAzN2IzZDcyLi5jZThhNjdlIDEwMDY0NA0KLS0tIGEvYXJjaC9wb3dlcnBjL2Nv
+bmZpZ3MvODV4eC90cW04NTQ4X2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3Mv
+ODV4eC90cW04NTQ4X2RlZmNvbmZpZw0KQEAgLTM0LDcgKzM0LDYgQEAgQ09ORklHX1NZTl9DT09L
+SUVTPXkNCiBDT05GSUdfVUVWRU5UX0hFTFBFUl9QQVRIPSIvc2Jpbi9ob3RwbHVnIg0KICMgQ09O
+RklHX0ZXX0xPQURFUiBpcyBub3Qgc2V0DQogQ09ORklHX01URD15DQotQ09ORklHX01URF9QQVJU
+SVRJT05TPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCiBDT05GSUdfTVREX0NIQVI9eQ0KIENP
+TkZJR19NVERfQkxLREVWUz15DQpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODV4
+eC90cW04NTU1X2RlZmNvbmZpZyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzg1eHgvdHFtODU1NV9k
+ZWZjb25maWcNCmluZGV4IDM1OTNiMzIuLmE0ZTEyOTcgMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2Vy
+cGMvY29uZmlncy84NXh4L3RxbTg1NTVfZGVmY29uZmlnDQorKysgYi9hcmNoL3Bvd2VycGMvY29u
+Zmlncy84NXh4L3RxbTg1NTVfZGVmY29uZmlnDQpAQCAtMjYsNyArMjYsNiBAQCBDT05GSUdfU1lO
+X0NPT0tJRVM9eQ0KICMgQ09ORklHX0lQVjYgaXMgbm90IHNldA0KIENPTkZJR19NVEQ9eQ0KIENP
+TkZJR19NVERfQ09OQ0FUPXkNCi1DT05GSUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJR19NVERf
+Q01ETElORV9QQVJUUz15DQogQ09ORklHX01URF9DSEFSPXkNCiBDT05GSUdfTVREX0JMT0NLPXkN
+CmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvY29uZmlncy84NXh4L3RxbTg1NjBfZGVmY29uZmln
+IGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODV4eC90cW04NTYwX2RlZmNvbmZpZw0KaW5kZXggZGU0
+MTNhYy4uMzQxYWJlMSAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzg1eHgvdHFt
+ODU2MF9kZWZjb25maWcNCisrKyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzg1eHgvdHFtODU2MF9k
+ZWZjb25maWcNCkBAIC0yNiw3ICsyNiw2IEBAIENPTkZJR19TWU5fQ09PS0lFUz15DQogIyBDT05G
+SUdfSVBWNiBpcyBub3Qgc2V0DQogQ09ORklHX01URD15DQogQ09ORklHX01URF9DT05DQVQ9eQ0K
+LUNPTkZJR19NVERfUEFSVElUSU9OUz15DQogQ09ORklHX01URF9DTURMSU5FX1BBUlRTPXkNCiBD
+T05GSUdfTVREX0NIQVI9eQ0KIENPTkZJR19NVERfQkxPQ0s9eQ0KZGlmZiAtLWdpdCBhL2FyY2gv
+cG93ZXJwYy9jb25maWdzLzg1eHgveGVzX21wYzg1eHhfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBj
+L2NvbmZpZ3MvODV4eC94ZXNfbXBjODV4eF9kZWZjb25maWcNCmluZGV4IDFjZDZmY2IuLjA3YmI4
+MWQgMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy84NXh4L3hlc19tcGM4NXh4X2Rl
+ZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODV4eC94ZXNfbXBjODV4eF9kZWZj
+b25maWcNCkBAIC02NSw3ICs2NSw2IEBAIENPTkZJR19BUlBEPXkNCiBDT05GSUdfSVBWNj15DQog
+Q09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiBDT05GSUdfTVREPXkN
+Ci1DT05GSUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJR19NVERfUkVEQk9PVF9QQVJUUz15DQog
+Q09ORklHX01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCmRpZmYg
+LS1naXQgYS9hcmNoL3Bvd2VycGMvY29uZmlncy84Nnh4L2dlZl9wcGM5YV9kZWZjb25maWcgYi9h
+cmNoL3Bvd2VycGMvY29uZmlncy84Nnh4L2dlZl9wcGM5YV9kZWZjb25maWcNCmluZGV4IGYyZjY3
+MzQuLmU1YTY0ODEgMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy84Nnh4L2dlZl9w
+cGM5YV9kZWZjb25maWcNCisrKyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzg2eHgvZ2VmX3BwYzlh
+X2RlZmNvbmZpZw0KQEAgLTcwLDcgKzcwLDYgQEAgQ09ORklHX05FVF9QS1RHRU49bQ0KIENPTkZJ
+R19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBsdWciDQogQ09ORklHX01URD15DQogQ09O
+RklHX01URF9DT05DQVQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQogQ09ORklHX01URF9P
+Rl9QQVJUUz15DQogQ09ORklHX01URF9DSEFSPXkNCiBDT05GSUdfTVREX0JMT0NLPXkNCmRpZmYg
+LS1naXQgYS9hcmNoL3Bvd2VycGMvY29uZmlncy84Nnh4L2dlZl9zYmMzMTBfZGVmY29uZmlnIGIv
+YXJjaC9wb3dlcnBjL2NvbmZpZ3MvODZ4eC9nZWZfc2JjMzEwX2RlZmNvbmZpZw0KaW5kZXggYmU3
+MzIxOS4uODMxN2I2MCAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzg2eHgvZ2Vm
+X3NiYzMxMF9kZWZjb25maWcNCisrKyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzg2eHgvZ2VmX3Ni
+YzMxMF9kZWZjb25maWcNCkBAIC03MCw3ICs3MCw2IEBAIENPTkZJR19ORVRfUEtUR0VOPW0NCiBD
+T05GSUdfVUVWRU5UX0hFTFBFUl9QQVRIPSIvc2Jpbi9ob3RwbHVnIg0KIENPTkZJR19NVEQ9eQ0K
+IENPTkZJR19NVERfQ09OQ0FUPXkNCi1DT05GSUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJR19N
+VERfT0ZfUEFSVFM9eQ0KIENPTkZJR19NVERfQ0hBUj15DQogQ09ORklHX01URF9CTE9DSz15DQpk
+aWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODZ4eC9nZWZfc2JjNjEwX2RlZmNvbmZp
+ZyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzg2eHgvZ2VmX3NiYzYxMF9kZWZjb25maWcNCmluZGV4
+IGIzZTJiMTAuLjEyNGQ2NmYgMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy84Nnh4
+L2dlZl9zYmM2MTBfZGVmY29uZmlnDQorKysgYi9hcmNoL3Bvd2VycGMvY29uZmlncy84Nnh4L2dl
+Zl9zYmM2MTBfZGVmY29uZmlnDQpAQCAtMTIzLDcgKzEyMyw2IEBAIENPTkZJR19VRVZFTlRfSEVM
+UEVSX1BBVEg9Ii9zYmluL2hvdHBsdWciDQogIyBDT05GSUdfRldfTE9BREVSIGlzIG5vdCBzZXQN
+CiBDT05GSUdfTVREPXkNCiBDT05GSUdfTVREX0NPTkNBVD15DQotQ09ORklHX01URF9QQVJUSVRJ
+T05TPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCiBDT05GSUdfTVREX0NIQVI9eQ0KIENPTkZJ
+R19NVERfQkxPQ0s9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzLzg2eHgvbXBj
+ODYxMF9ocGNkX2RlZmNvbmZpZyBiL2FyY2gvcG93ZXJwYy9jb25maWdzLzg2eHgvbXBjODYxMF9o
+cGNkX2RlZmNvbmZpZw0KaW5kZXggYzA5NTk4Yi4uYmNiZTc0NyAxMDA2NDQNCi0tLSBhL2FyY2gv
+cG93ZXJwYy9jb25maWdzLzg2eHgvbXBjODYxMF9ocGNkX2RlZmNvbmZpZw0KKysrIGIvYXJjaC9w
+b3dlcnBjL2NvbmZpZ3MvODZ4eC9tcGM4NjEwX2hwY2RfZGVmY29uZmlnDQpAQCAtNDEsNyArNDEs
+NiBAQCBDT05GSUdfSVBfUE5QX1JBUlA9eQ0KIENPTkZJR19JUFY2PXkNCiBDT05GSUdfVUVWRU5U
+X0hFTFBFUl9QQVRIPSIvc2Jpbi9ob3RwbHVnIg0KIENPTkZJR19NVEQ9eQ0KLUNPTkZJR19NVERf
+UEFSVElUSU9OUz15DQogQ09ORklHX01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX0NI
+QVI9eQ0KIENPTkZJR19NVERfQkxPQ0s9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25m
+aWdzLzg2eHgvc2JjODY0MWRfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODZ4eC9z
+YmM4NjQxZF9kZWZjb25maWcNCmluZGV4IDFhNjJiYWYuLjFlMTUxNTkgMTAwNjQ0DQotLS0gYS9h
+cmNoL3Bvd2VycGMvY29uZmlncy84Nnh4L3NiYzg2NDFkX2RlZmNvbmZpZw0KKysrIGIvYXJjaC9w
+b3dlcnBjL2NvbmZpZ3MvODZ4eC9zYmM4NjQxZF9kZWZjb25maWcNCkBAIC0xMjAsNyArMTIwLDYg
+QEAgQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiAjIENPTkZJR19G
+V19MT0FERVIgaXMgbm90IHNldA0KIENPTkZJR19NVEQ9eQ0KIENPTkZJR19NVERfQ09OQ0FUPXkN
+Ci1DT05GSUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJR19NVERfQ0hBUj15DQogQ09ORklHX01U
+RF9CTE9DSz15DQogQ09ORklHX01URF9DRkk9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9j
+b25maWdzL2Mya19kZWZjb25maWcgYi9hcmNoL3Bvd2VycGMvY29uZmlncy9jMmtfZGVmY29uZmln
+DQppbmRleCA2NzFhOGY5Li5jNjlmNjE2IDEwMDY0NA0KLS0tIGEvYXJjaC9wb3dlcnBjL2NvbmZp
+Z3MvYzJrX2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvYzJrX2RlZmNvbmZp
+Zw0KQEAgLTE0OSw3ICsxNDksNiBAQCBDT05GSUdfQlRfSENJVkhDST1tDQogQ09ORklHX1VFVkVO
+VF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiBDT05GSUdfTVREPXkNCiBDT05GSUdfTVRE
+X0NPTkNBVD1tDQotQ09ORklHX01URF9QQVJUSVRJT05TPXkNCiBDT05GSUdfTVREX09GX1BBUlRT
+PXkNCiBDT05GSUdfTVREX0NIQVI9bQ0KIENPTkZJR19NVERfQkxPQ0s9eQ0KZGlmZiAtLWdpdCBh
+L2FyY2gvcG93ZXJwYy9jb25maWdzL2NvcmVuZXQ2NF9zbXBfZGVmY29uZmlnIGIvYXJjaC9wb3dl
+cnBjL2NvbmZpZ3MvY29yZW5ldDY0X3NtcF9kZWZjb25maWcNCmluZGV4IDYzNTA4ZGQuLmU2Yzhk
+MjAgMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy9jb3JlbmV0NjRfc21wX2RlZmNv
+bmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvY29yZW5ldDY0X3NtcF9kZWZjb25maWcN
+CkBAIC02MCw3ICs2MCw2IEBAIENPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBs
+dWciDQogQ09ORklHX0RFVlRNUEZTPXkNCiBDT05GSUdfREVWVE1QRlNfTU9VTlQ9eQ0KIENPTkZJ
+R19NVEQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQogQ09ORklHX01URF9PRl9QQVJUUz15
+DQogQ09ORklHX01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX0NIQVI9eQ0KZGlmZiAt
+LWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzL2xpbmtzdGF0aW9uX2RlZmNvbmZpZyBiL2FyY2gv
+cG93ZXJwYy9jb25maWdzL2xpbmtzdGF0aW9uX2RlZmNvbmZpZw0KaW5kZXggOGE4NzRiOS4uMzUz
+NDM1MiAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9jb25maWdzL2xpbmtzdGF0aW9uX2RlZmNv
+bmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvbGlua3N0YXRpb25fZGVmY29uZmlnDQpA
+QCAtNTksNyArNTksNiBAQCBDT05GSUdfSVBfTkZfQVJQX01BTkdMRT1tDQogQ09ORklHX1VFVkVO
+VF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiBDT05GSUdfTVREPXkNCiBDT05GSUdfTVRE
+X0NPTkNBVD15DQotQ09ORklHX01URF9QQVJUSVRJT05TPXkNCiBDT05GSUdfTVREX0NNRExJTkVf
+UEFSVFM9eQ0KIENPTkZJR19NVERfT0ZfUEFSVFM9eQ0KIENPTkZJR19NVERfQ0hBUj15DQpkaWZm
+IC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvbXBjODV4eF9kZWZjb25maWcgYi9hcmNoL3Bv
+d2VycGMvY29uZmlncy9tcGM4NXh4X2RlZmNvbmZpZw0KaW5kZXggZDJlMGZhYi4uNmMxM2E4NSAx
+MDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9jb25maWdzL21wYzg1eHhfZGVmY29uZmlnDQorKysg
+Yi9hcmNoL3Bvd2VycGMvY29uZmlncy9tcGM4NXh4X2RlZmNvbmZpZw0KQEAgLTgxLDcgKzgxLDYg
+QEAgQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiBDT05GSUdfREVW
+VE1QRlM9eQ0KIENPTkZJR19ERVZUTVBGU19NT1VOVD15DQogQ09ORklHX01URD15DQotQ09ORklH
+X01URF9QQVJUSVRJT05TPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCiBDT05GSUdfTVREX0NN
+RExJTkVfUEFSVFM9eQ0KIENPTkZJR19NVERfQ0hBUj15DQpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dl
+cnBjL2NvbmZpZ3MvbXBjODV4eF9zbXBfZGVmY29uZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3Mv
+bXBjODV4eF9zbXBfZGVmY29uZmlnDQppbmRleCA0Y2I3YjU5Li4wODU1OGZmIDEwMDY0NA0KLS0t
+IGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvbXBjODV4eF9zbXBfZGVmY29uZmlnDQorKysgYi9hcmNo
+L3Bvd2VycGMvY29uZmlncy9tcGM4NXh4X3NtcF9kZWZjb25maWcNCkBAIC04NCw3ICs4NCw2IEBA
+IENPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9zYmluL2hvdHBsdWciDQogQ09ORklHX0RFVlRN
+UEZTPXkNCiBDT05GSUdfREVWVE1QRlNfTU9VTlQ9eQ0KIENPTkZJR19NVEQ9eQ0KLUNPTkZJR19N
+VERfUEFSVElUSU9OUz15DQogQ09ORklHX01URF9PRl9QQVJUUz15DQogQ09ORklHX01URF9DTURM
+SU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX0NIQVI9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJw
+Yy9jb25maWdzL3BwYzQweF9kZWZjb25maWcgYi9hcmNoL3Bvd2VycGMvY29uZmlncy9wcGM0MHhf
+ZGVmY29uZmlnDQppbmRleCAxZWIxOWFjLi41MjkwOGM3IDEwMDY0NA0KLS0tIGEvYXJjaC9wb3dl
+cnBjL2NvbmZpZ3MvcHBjNDB4X2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3Mv
+cHBjNDB4X2RlZmNvbmZpZw0KQEAgLTMzLDcgKzMzLDYgQEAgQ09ORklHX0lQX1BOUF9CT09UUD15
+DQogQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiBDT05GSUdfQ09O
+TkVDVE9SPXkNCiBDT05GSUdfTVREPXkNCi1DT05GSUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJ
+R19NVERfQ01ETElORV9QQVJUUz15DQogQ09ORklHX01URF9PRl9QQVJUUz15DQogQ09ORklHX01U
+RF9DSEFSPXkNCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvY29uZmlncy9wcGM0NHhfZGVmY29u
+ZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvcHBjNDR4X2RlZmNvbmZpZw0KaW5kZXggM2I5OGQ3
+My4uY2NmNjZiOSAxMDA2NDQNCi0tLSBhL2FyY2gvcG93ZXJwYy9jb25maWdzL3BwYzQ0eF9kZWZj
+b25maWcNCisrKyBiL2FyY2gvcG93ZXJwYy9jb25maWdzL3BwYzQ0eF9kZWZjb25maWcNCkBAIC00
+NCw3ICs0NCw2IEBAIENPTkZJR19CUklER0U9bQ0KIENPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9
+Ii9zYmluL2hvdHBsdWciDQogQ09ORklHX0NPTk5FQ1RPUj15DQogQ09ORklHX01URD15DQotQ09O
+RklHX01URF9QQVJUSVRJT05TPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCiBDT05GSUdfTVRE
+X0NIQVI9eQ0KIENPTkZJR19NVERfQkxPQ0s9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9j
+b25maWdzL3BycG1jMjgwMF9kZWZjb25maWcgYi9hcmNoL3Bvd2VycGMvY29uZmlncy9wcnBtYzI4
+MDBfZGVmY29uZmlnDQppbmRleCBjZDgwZmI2Li5mODRlYTIxIDEwMDY0NA0KLS0tIGEvYXJjaC9w
+b3dlcnBjL2NvbmZpZ3MvcHJwbWMyODAwX2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2Nv
+bmZpZ3MvcHJwbWMyODAwX2RlZmNvbmZpZw0KQEAgLTMyLDcgKzMyLDYgQEAgQ09ORklHX1NZTl9D
+T09LSUVTPXkNCiBDT05GSUdfVUVWRU5UX0hFTFBFUl9QQVRIPSIvc2Jpbi9ob3RwbHVnIg0KIENP
+TkZJR19NVEQ9eQ0KIENPTkZJR19NVERfQ09OQ0FUPXkNCi1DT05GSUdfTVREX1BBUlRJVElPTlM9
+eQ0KIENPTkZJR19NVERfQ0hBUj15DQogQ09ORklHX01URF9CTE9DSz15DQogQ09ORklHX01URF9D
+Rkk9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzL3N0b3JjZW50ZXJfZGVmY29u
+ZmlnIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3Mvc3RvcmNlbnRlcl9kZWZjb25maWcNCmluZGV4IGVi
+YjJhNjYuLmJhMzljNzggMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvY29uZmlncy9zdG9yY2Vu
+dGVyX2RlZmNvbmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3Mvc3RvcmNlbnRlcl9kZWZj
+b25maWcNCkBAIC0zMSw3ICszMSw2IEBAIENPTkZJR19JUF9QTlBfREhDUD15DQogQ09ORklHX1VF
+VkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiAjIENPTkZJR19GV19MT0FERVIgaXMg
+bm90IHNldA0KIENPTkZJR19NVEQ9eQ0KLUNPTkZJR19NVERfUEFSVElUSU9OUz15DQogQ09ORklH
+X01URF9DTURMSU5FX1BBUlRTPXkNCiBDT05GSUdfTVREX09GX1BBUlRTPXkNCiBDT05GSUdfTVRE
+X0NIQVI9eQ0KZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdzL3RxbTh4eF9kZWZjb25m
+aWcgYi9hcmNoL3Bvd2VycGMvY29uZmlncy90cW04eHhfZGVmY29uZmlnDQppbmRleCA4NjE2ZmRl
+Li42MmMzZTczIDEwMDY0NA0KLS0tIGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvdHFtOHh4X2RlZmNv
+bmZpZw0KKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvdHFtOHh4X2RlZmNvbmZpZw0KQEAgLTQx
+LDcgKzQxLDYgQEAgQ09ORklHX1VFVkVOVF9IRUxQRVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCiAj
+IENPTkZJR19GV19MT0FERVIgaXMgbm90IHNldA0KIENPTkZJR19NVEQ9eQ0KIENPTkZJR19NVERf
+Q09OQ0FUPXkNCi1DT05GSUdfTVREX1BBUlRJVElPTlM9eQ0KIENPTkZJR19NVERfQ01ETElORV9Q
+QVJUUz15DQogQ09ORklHX01URF9PRl9QQVJUUz15DQogQ09ORklHX01URF9DSEFSPXkNCi0tIA0K
+MS43LjAuNA0K
