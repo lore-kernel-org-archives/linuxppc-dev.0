@@ -1,37 +1,18 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 552E32C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2013 12:54:05 +1100 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 26 Nov 2013 18:54:01 -0700
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 10A85C90042
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 20:53:57 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAR1rwWD8716786
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2013 01:53:58 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rAR1rwuf012045
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2013 20:53:58 -0500
-Date: Wed, 27 Nov 2013 09:53:55 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Brian King <brking@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1] powerpc: Increase EEH recovery timeout for SR-IOV
-Message-ID: <20131127015355.GA12086@shangw.(null)>
-References: <201311252227.rAPMRtC2018812@d03av05.boulder.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201311252227.rAPMRtC2018812@d03av05.boulder.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, shangw@linux.vnet.ibm.com
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9EA302C00A1
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Nov 2013 13:30:19 +1100 (EST)
+Message-ID: <1385519408.9218.88.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 27 Nov 2013 13:30:08 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,49 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 25, 2013 at 04:27:54PM -0600, Brian King wrote:
->
->In order to support concurrent adapter firmware download
->to SR-IOV adapters on pSeries, each VF will see an EEH event
->where the slot will remain in the unavailable state for
->the duration of the adapter firmware update, which can take
->as long as 5 minutes. Extend the EEH recovery timeout to
->account for this.
->
->Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+Hi Linus !
 
-Acked-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Here are a few powerpc bug fixes post -rc1. The main thing that caused
+problem was that CONFIG_CPU_LITTLE_ENDIAN got turned on with allyesconfig
+and such, which is not a very good idea especially since it requires a
+newer toolchain than what most people have. So we turned it into a
+choice instead that defaults to big endian.
 
->---
->
-> arch/powerpc/kernel/eeh.c        |    2 +-
-> arch/powerpc/kernel/eeh_driver.c |    2 +-
-> 2 files changed, 2 insertions(+), 2 deletions(-)
->
->diff -puN arch/powerpc/kernel/eeh.c~eeh_sriov_vf_delay arch/powerpc/kernel/eeh.c
->--- linux/arch/powerpc/kernel/eeh.c~eeh_sriov_vf_delay	2013-11-25 16:12:26.000000000 -0600
->+++ linux-bjking1/arch/powerpc/kernel/eeh.c	2013-11-25 16:12:26.000000000 -0600
->@@ -84,7 +84,7 @@
-> #define EEH_MAX_FAILS	2100000
->
-> /* Time to wait for a PCI slot to report status, in milliseconds */
->-#define PCI_BUS_RESET_WAIT_MSEC (60*1000)
->+#define PCI_BUS_RESET_WAIT_MSEC (5*60*1000)
->
-> /* Platform dependent EEH operations */
-> struct eeh_ops *eeh_ops = NULL;
->diff -puN arch/powerpc/kernel/eeh_driver.c~eeh_sriov_vf_delay arch/powerpc/kernel/eeh_driver.c
->--- linux/arch/powerpc/kernel/eeh_driver.c~eeh_sriov_vf_delay	2013-11-25 16:12:26.000000000 -0600
->+++ linux-bjking1/arch/powerpc/kernel/eeh_driver.c	2013-11-25 16:12:26.000000000 -0600
->@@ -468,7 +468,7 @@ static int eeh_reset_device(struct eeh_p
-> /* The longest amount of time to wait for a pci device
->  * to come back on line, in seconds.
->  */
->-#define MAX_WAIT_FOR_RECOVERY 150
->+#define MAX_WAIT_FOR_RECOVERY 300
->
-> static void eeh_handle_normal_event(struct eeh_pe *pe)
-> {
+Cheers,
+Ben.
 
-Thanks,
-Gavin
+The following changes since commit 6ce4eac1f600b34f2f7f58f9cd8f0503d79e42ae:
+
+  Linux 3.13-rc1 (2013-11-22 11:30:55 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 721cb59e9d95eb7f47ec73711ed35ef85e1ea1ca:
+
+  powerpc/windfarm: Fix XServe G5 fan control Makefile issue (2013-11-27 11:35:47 +1100)
+
+----------------------------------------------------------------
+Adam Borowski (1):
+      powerpc/85xx: typo in dts: "interupt" (four devices)
+
+Anton Blanchard (1):
+      powerpc: allyesconfig should not select CONFIG_CPU_LITTLE_ENDIAN
+
+Benjamin Herrenschmidt (2):
+      Merge remote-tracking branch 'scott/master' into merge
+      powerpc/windfarm: Fix XServe G5 fan control Makefile issue
+
+Chen Gang (1):
+      arch/powerpc/kernel: Use %12.12s instead of %12s to avoid memory overflow
+
+Hari Bathini (1):
+      powerpc/kdump: Adding symbols in vmcoreinfo to facilitate dump filtering
+
+LEROY Christophe (1):
+      powerpc/8xx: mfspr SPRN_TBRx in lieu of mftb/mftbu is not supported
+
+Michael Neuling (2):
+      powerpc: Fix error when cross building TAGS & cscope
+      powerpc/signals: Improved mark VSX not saved with small contexts fix
+
+Scott Wood (1):
+      powerpc/booke: Only check for hugetlb in flush if vma != NULL
+
+Tiejun Chen (1):
+      powerpc/corenet64: compile with CONFIG_E{5,6}500_CPU well
+
+ arch/powerpc/Makefile                     |  7 +++++++
+ arch/powerpc/boot/dts/xcalibur1501.dts    |  4 ++--
+ arch/powerpc/boot/dts/xpedite5301.dts     |  4 ++--
+ arch/powerpc/boot/dts/xpedite5330.dts     |  4 ++--
+ arch/powerpc/boot/dts/xpedite5370.dts     |  4 ++--
+ arch/powerpc/boot/util.S                  | 14 ++++++++++++++
+ arch/powerpc/include/asm/pgalloc-64.h     |  1 +
+ arch/powerpc/include/asm/ppc_asm.h        |  2 ++
+ arch/powerpc/include/asm/reg.h            |  7 +++++++
+ arch/powerpc/include/asm/timex.h          |  8 ++++++++
+ arch/powerpc/kernel/machine_kexec.c       | 12 ++++++++++++
+ arch/powerpc/kernel/nvram_64.c            |  2 +-
+ arch/powerpc/kernel/signal_32.c           | 16 +++++++---------
+ arch/powerpc/kernel/signal_64.c           |  6 ++++++
+ arch/powerpc/kernel/vdso32/gettimeofday.S |  6 ++++++
+ arch/powerpc/mm/hugetlbpage-book3e.c      |  3 +--
+ arch/powerpc/mm/tlb_nohash.c              |  2 +-
+ arch/powerpc/platforms/Kconfig.cputype    | 20 +++++++++++++++++---
+ drivers/macintosh/Makefile                |  1 +
+ 19 files changed, 99 insertions(+), 24 deletions(-)
