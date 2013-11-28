@@ -1,34 +1,23 @@
-Return-Path: <Bharat.Bhushan@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B193E2C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2013 20:19:21 +1100 (EST)
-From: Bharat Bhushan <Bharat.Bhushan@freescale.com>
-To: Bharat Bhushan <Bharat.Bhushan@freescale.com>, Alex Williamson
- <alex.williamson@redhat.com>
-Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
-Date: Thu, 28 Nov 2013 09:19:10 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0723624C@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1384973243.2879.361.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
- <1385066603.2879.414.camel@ul30vt.home>
- <1385066835.1403.489.camel@snotra.buserror.net>
- <1385067648.2879.421.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
- <1385397493.2879.557.camel@ul30vt.home>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <vinod.koul@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by ozlabs.org (Postfix) with ESMTP id 0D8AE2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2013 20:38:35 +1100 (EST)
+Date: Thu, 28 Nov 2013 14:11:09 +0530
+From: Vinod Koul <vinod.koul@intel.com>
+To: Nicolin Chen <b42378@freescale.com>
+Subject: Re: [PATCH v7 0/4] Add dual-fifo mode support of i.MX ssi
+Message-ID: <20131128084108.GZ8834@intel.com>
+References: <cover.1384352281.git.b42378@freescale.com>
 MIME-Version: 1.0
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "agraf@suse.de" <agraf@suse.de>, Stuart Yoder <stuart.yoder@freescale.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <cover.1384352281.git.b42378@freescale.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
+ s.hauer@pengutronix.de, swarren@wwwdotorg.org, timur@tabi.org,
+ rob.herring@calxeda.com, linux-kernel@vger.kernel.org, broonie@kernel.org,
+ ijc+devicetree@hellion.org.uk, dmaengine@vger.kernel.org,
+ dan.j.williams@intel.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,114 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmh1c2hhbiBCaGFyYXQt
-UjY1Nzc3DQo+IFNlbnQ6IFdlZG5lc2RheSwgTm92ZW1iZXIgMjcsIDIwMTMgOTozOSBQTQ0KPiBU
-bzogJ0FsZXggV2lsbGlhbXNvbicNCj4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51eC1wY2lA
-dmdlci5rZXJuZWwub3JnOyBhZ3JhZkBzdXNlLmRlOyBZb2RlciBTdHVhcnQtDQo+IEIwODI0ODsg
-aW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmc7IGJoZWxnYWFzQGdvb2dsZS5jb207IGxp
-bnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVs
-Lm9yZw0KPiBTdWJqZWN0OiBSRTogW1BBVENIIDAvOSB2Ml0gdmZpby1wY2k6IGFkZCBzdXBwb3J0
-IGZvciBGcmVlc2NhbGUgSU9NTVUgKFBBTVUpDQo+IA0KPiANCj4gDQo+ID4gLS0tLS1PcmlnaW5h
-bCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBBbGV4IFdpbGxpYW1zb24gW21haWx0bzphbGV4Lndp
-bGxpYW1zb25AcmVkaGF0LmNvbV0NCj4gPiBTZW50OiBNb25kYXksIE5vdmVtYmVyIDI1LCAyMDEz
-IDEwOjA4IFBNDQo+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+IENjOiBXb29kIFNj
-b3R0LUIwNzQyMTsgbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsgYWdyYWZAc3VzZS5kZTsgWW9k
-ZXINCj4gPiBTdHVhcnQtIEIwODI0ODsgaW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmc7
-IGJoZWxnYWFzQGdvb2dsZS5jb207DQo+ID4gbGludXhwcGMtIGRldkBsaXN0cy5vemxhYnMub3Jn
-OyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAw
-LzkgdjJdIHZmaW8tcGNpOiBhZGQgc3VwcG9ydCBmb3IgRnJlZXNjYWxlIElPTU1VDQo+ID4gKFBB
-TVUpDQo+ID4NCj4gPiBPbiBNb24sIDIwMTMtMTEtMjUgYXQgMDU6MzMgKzAwMDAsIEJoYXJhdCBC
-aHVzaGFuIHdyb3RlOg0KPiA+ID4NCj4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
-Cj4gPiA+ID4gRnJvbTogQWxleCBXaWxsaWFtc29uIFttYWlsdG86YWxleC53aWxsaWFtc29uQHJl
-ZGhhdC5jb21dDQo+ID4gPiA+IFNlbnQ6IEZyaWRheSwgTm92ZW1iZXIgMjIsIDIwMTMgMjozMSBB
-TQ0KPiA+ID4gPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gQ2M6IEJodXNoYW4gQmhh
-cmF0LVI2NTc3NzsgbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsNCj4gPiA+ID4gYWdyYWZAc3Vz
-ZS5kZTsgWW9kZXIgU3R1YXJ0LUIwODI0ODsNCj4gPiA+ID4gaW9tbXVAbGlzdHMubGludXgtZm91
-bmRhdGlvbi5vcmc7IGJoZWxnYWFzQGdvb2dsZS5jb207IGxpbnV4cHBjLQ0KPiA+ID4gPiBkZXZA
-bGlzdHMub3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiA+ID4gPiBT
-dWJqZWN0OiBSZTogW1BBVENIIDAvOSB2Ml0gdmZpby1wY2k6IGFkZCBzdXBwb3J0IGZvciBGcmVl
-c2NhbGUNCj4gPiA+ID4gSU9NTVUgKFBBTVUpDQo+ID4gPiA+DQo+ID4gPiA+IE9uIFRodSwgMjAx
-My0xMS0yMSBhdCAxNDo0NyAtMDYwMCwgU2NvdHQgV29vZCB3cm90ZToNCj4gPiA+ID4gPiBPbiBU
-aHUsIDIwMTMtMTEtMjEgYXQgMTM6NDMgLTA3MDAsIEFsZXggV2lsbGlhbXNvbiB3cm90ZToNCj4g
-PiA+ID4gPiA+IE9uIFRodSwgMjAxMy0xMS0yMSBhdCAxMToyMCArMDAwMCwgQmhhcmF0IEJodXNo
-YW4gd3JvdGU6DQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBN
-ZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiA+ID4gPiBGcm9tOiBBbGV4IFdpbGxpYW1zb24gW21haWx0
-bzphbGV4LndpbGxpYW1zb25AcmVkaGF0LmNvbV0NCj4gPiA+ID4gPiA+ID4gPiBTZW50OiBUaHVy
-c2RheSwgTm92ZW1iZXIgMjEsIDIwMTMgMTI6MTcgQU0NCj4gPiA+ID4gPiA+ID4gPiBUbzogQmh1
-c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiA+ID4gPiA+ID4gQ2M6IGpvcm9AOGJ5dGVzLm9yZzsg
-YmhlbGdhYXNAZ29vZ2xlLmNvbTsgYWdyYWZAc3VzZS5kZTsNCj4gPiA+ID4gPiA+ID4gPiBXb29k
-IFNjb3R0LUIwNzQyMTsgWW9kZXIgU3R1YXJ0LUIwODI0ODsNCj4gPiA+ID4gPiA+ID4gPiBpb21t
-dUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZzsgbGludXgtDQo+ID4gPiA+ID4gPiA+ID4gcGNp
-QHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0K
-PiA+ID4gPiA+ID4gPiA+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IEJodXNoYW4gQmhhcmF0LVI2
-NTc3Nw0KPiA+ID4gPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMC85IHYyXSB2ZmlvLXBj
-aTogYWRkIHN1cHBvcnQgZm9yDQo+ID4gPiA+ID4gPiA+ID4gRnJlZXNjYWxlIElPTU1VIChQQU1V
-KQ0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gSXMgVkZJT19JT01NVV9QQU1VX0dF
-VF9NU0lfQkFOS19DT1VOVCBwZXIgYXBlcnR1cmUgKGllLg0KPiA+ID4gPiA+ID4gPiA+IGVhY2gg
-dmZpbyB1c2VyIGhhcyAkQ09VTlQgcmVnaW9ucyBhdCB0aGVpciBkaXNwb3NhbCBleGNsdXNpdmVs
-eSk/DQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IE51bWJlciBvZiBtc2ktYmFuayBjb3Vu
-dCBpcyBzeXN0ZW0gd2lkZSBhbmQgbm90IHBlcg0KPiA+ID4gPiA+ID4gPiBhcGVydHVyZSwgQnV0
-IHdpbGwgYmUNCj4gPiA+ID4gc2V0dGluZyB3aW5kb3dzIGZvciBiYW5rcyBpbiB0aGUgZGV2aWNl
-IGFwZXJ0dXJlLg0KPiA+ID4gPiA+ID4gPiBTbyBzYXkgaWYgd2UgYXJlIGRpcmVjdCBhc3NpZ25p
-bmcgMiBwY2kgZGV2aWNlIChib3RoIGhhdmUNCj4gPiA+ID4gPiA+ID4gZGlmZmVyZW50IGlvbW11
-DQo+ID4gPiA+IGdyb3VwLCBzbyAyIGFwZXJ0dXJlIGluIGlvbW11KSB0byBWTS4NCj4gPiA+ID4g
-PiA+ID4gTm93IHFlbXUgY2FuIG1ha2Ugb25seSBvbmUgY2FsbCB0byBrbm93IGhvdyBtYW55IG1z
-aS1iYW5rcw0KPiA+ID4gPiA+ID4gPiBhcmUgdGhlcmUgYnV0DQo+ID4gPiA+IGl0IG11c3Qgc2V0
-IHN1Yi13aW5kb3dzIGZvciBhbGwgYmFua3MgZm9yIGJvdGggcGNpIGRldmljZSBpbiBpdHMNCj4g
-PiA+ID4gcmVzcGVjdGl2ZSBhcGVydHVyZS4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBJJ20g
-c3RpbGwgY29uZnVzZWQuICBXaGF0IEkgd2FudCB0byBtYWtlIHN1cmUgb2YgaXMgdGhhdCB0aGUN
-Cj4gPiA+ID4gPiA+IGJhbmtzIGFyZSBpbmRlcGVuZGVudCBwZXIgYXBlcnR1cmUuICBGb3IgaW5z
-dGFuY2UsIGlmIHdlIGhhdmUNCj4gPiA+ID4gPiA+IHR3byBzZXBhcmF0ZSB1c2Vyc3BhY2UgcHJv
-Y2Vzc2VzIG9wZXJhdGluZyBpbmRlcGVuZGVudGx5IGFuZA0KPiA+ID4gPiA+ID4gdGhleSBib3Ro
-IGNob3NlIHRvIHVzZSBtc2kgYmFuayB6ZXJvIGZvciB0aGVpciBkZXZpY2UsIHRoYXQncw0KPiA+
-ID4gPiA+ID4gYmFuayB6ZXJvIHdpdGhpbiBlYWNoIGFwZXJ0dXJlIGFuZCBkb2Vzbid0IGludGVy
-ZmVyZS4gIE9yDQo+ID4gPiA+ID4gPiBhbm90aGVyIHdheSB0byBhc2sgaXMgY2FuIGEgbWFsaWNp
-b3VzIHVzZXIgaW50ZXJmZXJlIHdpdGgNCj4gPiA+ID4gPiA+IG90aGVyIHVzZXJzIGJ5DQo+ID4g
-dXNpbmcgdGhlIHdyb25nIGJhbmsuDQo+ID4gPiA+ID4gPiBUaGFua3MsDQo+ID4gPiA+ID4NCj4g
-PiA+ID4gPiBUaGV5IGNhbiBpbnRlcmZlcmUuDQo+ID4gPg0KPiA+ID4gV2FudCB0byBiZSBzdXJl
-IG9mIGhvdyB0aGV5IGNhbiBpbnRlcmZlcmU/DQo+ID4NCj4gPiBXaGF0IGhhcHBlbnMgaWYgbW9y
-ZSB0aGFuIG9uZSB1c2VyIHNlbGVjdHMgdGhlIHNhbWUgTVNJIGJhbms/DQo+ID4gTWluaW1hbGx5
-LCB3b3VsZG4ndCB0aGF0IHJlc3VsdCBpbiB0aGUgSU9NTVUgYmxvY2tpbmcgdHJhbnNhY3Rpb25z
-DQo+ID4gZnJvbSB0aGUgcHJldmlvdXMgdXNlciBvbmNlIHRoZSBuZXcgdXNlciBhY3RpdmF0ZXMg
-dGhlaXIgbWFwcGluZz8NCj4gDQo+IFllcyBhbmQgbm87IFdpdGggY3VycmVudCBpbXBsZW1lbnRh
-dGlvbiB5ZXMgYnV0IHdpdGggYSBtaW5vciBjaGFuZ2Ugbm8uIExhdGVyIGluDQo+IHRoaXMgcmVz
-cG9uc2UgSSB3aWxsIGV4cGxhaW4gaG93Lg0KPiANCj4gPg0KPiA+ID4gPj4gIFdpdGggdGhpcyBo
-YXJkd2FyZSwgdGhlIG9ubHkgd2F5IHRvIHByZXZlbnQgdGhhdA0KPiA+ID4gPiA+IGlzIHRvIG1h
-a2Ugc3VyZSB0aGF0IGEgYmFuayBpcyBub3Qgc2hhcmVkIGJ5IG11bHRpcGxlIHByb3RlY3Rpb24N
-Cj4gY29udGV4dHMuDQo+ID4gPiA+ID4gRm9yIHNvbWUgb2Ygb3VyIHVzZXJzLCB0aG91Z2gsIEkg
-YmVsaWV2ZSBwcmV2ZW50aW5nIHRoaXMgaXMgbGVzcw0KPiA+ID4gPiA+IGltcG9ydGFudCB0aGFu
-IHRoZSBwZXJmb3JtYW5jZSBiZW5lZml0Lg0KPiA+ID4NCj4gPiA+IFNvIHNob3VsZCB3ZSBsZXQg
-dGhpcyBwYXRjaCBzZXJpZXMgaW4gd2l0aG91dCBwcm90ZWN0aW9uPw0KPiA+DQo+ID4gTm8uDQo+
-ID4NCj4gPiA+ID4NCj4gPiA+ID4gSSB0aGluayB3ZSBuZWVkIHNvbWUgc29ydCBvZiBvd25lcnNo
-aXAgbW9kZWwgYXJvdW5kIHRoZSBtc2kgYmFua3MgdGhlbi4NCj4gPiA+ID4gT3RoZXJ3aXNlIHRo
-ZXJlJ3Mgbm90aGluZyBwcmV2ZW50aW5nIGFub3RoZXIgdXNlcnNwYWNlIGZyb20NCj4gPiA+ID4g
-YXR0ZW1wdGluZyBhbiBNU0kgYmFzZWQgYXR0YWNrIG9uIG90aGVyIHVzZXJzLCBvciBwZXJoYXBz
-IGV2ZW4gb24NCj4gPiA+ID4gdGhlIGhvc3QuICBWRklPIGNhbid0IGFsbG93IHRoYXQuICBUaGFu
-a3MsDQo+ID4gPg0KPiA+ID4gV2UgaGF2ZSB2ZXJ5IGZldyAoMyBNU0kgYmFuayBvbiBtb3N0IG9m
-IGNoaXBzKSwgc28gd2UgY2FuIG5vdCBhc3NpZ24NCj4gPiA+IG9uZSB0byBlYWNoIHVzZXJzcGFj
-ZS4gV2hhdCB3ZSBjYW4gZG8gaXMgaG9zdCBhbmQgdXNlcnNwYWNlIGRvZXMgbm90DQo+ID4gPiBz
-aGFyZSBhIE1TSSBiYW5rIHdoaWxlIHVzZXJzcGFjZSB3aWxsIHNoYXJlIGEgTVNJIGJhbmsuDQo+
-ID4NCj4gPiBUaGVuIHlvdSBwcm9iYWJseSBuZWVkIFZGSU8gdG8gIm93biIgdGhlIE1TSSBiYW5r
-IGFuZCBwcm9ncmFtIGRldmljZXMNCj4gPiBpbnRvIGl0IHJhdGhlciB0aGFuIGV4cG9zaW5nIHRo
-ZSBNU0kgYmFua3MgdG8gdXNlcnNwYWNlIHRvIGxldCB0aGVtIGhhdmUNCj4gZGlyZWN0IGFjY2Vz
-cy4NCj4gDQo+IE92ZXJhbGwgaWRlYSBvZiBleHBvc2luZyB0aGUgZGV0YWlscyBvZiBtc2kgcmVn
-aW9ucyB0byB1c2Vyc3BhY2UgYXJlDQo+ICAxKSBVc2VyIHNwYWNlIGNhbiBkZWZpbmUgdGhlIGFw
-ZXJ0dXJlIHNpemUgdG8gZml0IE1TSSBtYXBwaW5nIGluIElPTU1VLg0KPiAgMikgc2V0dXAgaW92
-YSBmb3IgYSBNU0kgYmFua3M7IHdoaWNoIGlzIGp1c3QgYWZ0ZXIgZ3Vlc3QgbWVtb3J5Lg0KPiAN
-Cj4gQnV0IGN1cnJlbnRseSB3ZSBleHBvc2UgdGhlICJzaXplIiBhbmQgImFkZHJlc3MiIG9mIE1T
-SSBiYW5rcywgcGFzc2luZyBhZGRyZXNzDQo+IGlzIG9mIG5vIHVzZSBhbmQgY2FuIGJlIHByb2Js
-ZW1hdGljLg0KDQpJIGFtIHNvcnJ5LCBhYm92ZSBpbmZvcm1hdGlvbiBpcyBub3QgY29ycmVjdC4g
-Q3VycmVudGx5IG5laXRoZXIgd2UgZXhwb3NlICJhZGRyZXNzIiBub3IgInNpemUiIHRvIHVzZXIg
-c3BhY2UuIFdlIG9ubHkgZXhwb3NlIG51bWJlciBvZiBNU0kgQkFOSyBjb3VudCBhbmQgdXNlcnNw
-YWNlIGFkZHMgb25lIHN1Yi13aW5kb3cgZm9yIGVhY2ggYmFuay4NCg0KPiBJZiB3ZSBqdXN0IHBy
-b3ZpZGUgdGhlIHNpemUgb2YgTVNJIGJhbmsgdG8gdXNlcnNwYWNlIHRoZW4gdXNlcnNwYWNlIGNh
-bm5vdCBkbw0KPiBhbnl0aGluZyB3cm9uZy4NCg0KU28gdXNlcnNwYWNlIGRvZXMgbm90IGtub3cg
-YWRkcmVzcywgc28gaXQgY2Fubm90IG1tYXAgYW5kIGNhdXNlIGFueSBpbnRlcmZlcmVuY2UgYnkg
-ZGlyZWN0bHkgcmVhZGluZy93cml0aW5nLg0KV2hlbiB1c2VyIHNwYWNlIG1ha2VzIFZGSU9fREVW
-SUNFX1NFVF9JUlFTIGlvY3RsIGZvciBNU0kgdHlwZSB0aGVuIFZGSU8gd2l0aCBNU0kgbGF5ZXIg
-Y29tcG9zZSBhbmQgd3JpdGUgTVNJIGFkZHJlc3MgYW5kIERhdGEgaW4gYWN0dWFsIGRldmljZS4g
-VGhpcyBpcyBhbGwgYWJzdHJhY3RlZCB3aXRoaW4gaG9zdCBrZXJuZWwuDQoNCkRvIHdlIHNlZSBh
-bnkgaXNzdWUgd2l0aCB0aGlzIGFwcHJvYWNoPw0KDQpUaGFua3MNCi1CaGFyYXQNCg0KPiANCj4g
-V2hpbGUgaXQgaXMgc3RpbGwgdGhlIHJlc3BvbnNpYmlsaXR5IG9mIGhvc3QgKE1TSStWRklPKSB0
-byBjb21wb3NlIE1TSS1hZGRyZXNzDQo+IGFuZCBNU0ktZGF0YTsgc28gSSB0aGluayB0aGlzIHNo
-b3VsZCBsb29rIGZpbmUuDQo+IA0KPiA+IFRoYW5rcywNCj4gPg0KPiA+IEFsZXgNCj4gPg0KDQo=
+On Wed, Nov 13, 2013 at 10:55:23PM +0800, Nicolin Chen wrote:
+>  * ! This series of patches has a direct dependency between them. When
+>  * ! applying them, we need to apply to one single branch. Otherwise,
+>  * ! it would break currect branches.
+Applied, thanks
+
+--
+~Vinod
+> 
+> Changelog
+> v7:
+>  * Appended missing Acked-by to all four patches.
+>  * Sorry that I didn't add them at the first place.
+> v6:
+>  * PATCH-1: Use goto err_firmware instead of return directly.
+>  *
+>  * Nothing changes for the other three ack-ed patches
+> v5:
+>  * PATCH-3: Add period size constraint when using dual fifo mode
+>  *
+>  * Nothing changes for the other three patches
+> v4:
+>  * PATCH-3: Drop useless register configuration.
+>  *
+>  * Nothing changes for the other three patches
+> v3:
+>  * PATCH-1: Add comments to indicate the end of v1 and v2 array.
+>  * PATCH-3: Use better way to keep watermark as even number.
+>  *
+>  * Nothing changes for PATCH-2 and PATCH-4
+> v2:
+>  * Instead of adding rogue scripts to current SDMA driver based on firmware
+>  * V1, we define the new SDMA firmware as version 2 and bisect the PATCH-1
+>  * to two patches: The first is to add version check code to the SDMA driver;
+>  * And the second is to add SSI dual FIFO DMATYPE.
+>  *
+>  * Nothing changes for the last two patches.
+> v1:
+>  * SSI can reduce hardware overrun/underrun possibility when using dual
+>  * fifo mode. To support this mode, we need to first update sdma sciprt
+>  * list, and then enable dual fifo BIT in SSI driver, and last update DT
+>  * bindings of i.MX series.
+> 
+> Nicolin Chen (4):
+>   dma: imx-sdma: Add sdma firmware version 2 support
+>   dma: imx-sdma: Add new dma type for ssi dual fifo script
+>   ASoC: fsl_ssi: Add dual fifo mode support
+>   ARM: dts: imx: use dual-fifo sdma script for ssi
+> 
+>  .../devicetree/bindings/dma/fsl-imx-sdma.txt       |  1 +
+>  arch/arm/boot/dts/imx51.dtsi                       |  4 ++--
+>  arch/arm/boot/dts/imx53.dtsi                       |  4 ++--
+>  arch/arm/boot/dts/imx6qdl.dtsi                     | 12 +++++-----
+>  arch/arm/boot/dts/imx6sl.dtsi                      | 12 +++++-----
+>  drivers/dma/imx-sdma.c                             | 19 ++++++++++++++-
+>  include/linux/platform_data/dma-imx-sdma.h         |  5 ++++
+>  include/linux/platform_data/dma-imx.h              |  1 +
+>  sound/soc/fsl/fsl_ssi.c                            | 27 +++++++++++++++++++++-
+>  9 files changed, 67 insertions(+), 18 deletions(-)
+> 
+> -- 
+> 1.8.4
+> 
+> 
+
+-- 
