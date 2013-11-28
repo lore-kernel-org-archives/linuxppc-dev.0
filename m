@@ -1,23 +1,31 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by ozlabs.org (Postfix) with ESMTP id 0D8AE2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2013 20:38:35 +1100 (EST)
-Date: Thu, 28 Nov 2013 14:11:09 +0530
-From: Vinod Koul <vinod.koul@intel.com>
-To: Nicolin Chen <b42378@freescale.com>
-Subject: Re: [PATCH v7 0/4] Add dual-fifo mode support of i.MX ssi
-Message-ID: <20131128084108.GZ8834@intel.com>
-References: <cover.1384352281.git.b42378@freescale.com>
+Return-Path: <Bharat.Bhushan@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BCE0A2C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2013 21:08:25 +1100 (EST)
+From: Bharat Bhushan <Bharat.Bhushan@freescale.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: RE: [PATCH 1/9 v2] pci:msi: add weak function for returning msi
+ region info
+Date: Thu, 28 Nov 2013 10:08:16 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D072363E5@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1384838233-24847-2-git-send-email-Bharat.Bhushan@freescale.com>
+ <20131125233602.GA4066@google.com>
+In-Reply-To: <20131125233602.GA4066@google.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1384352281.git.b42378@freescale.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- s.hauer@pengutronix.de, swarren@wwwdotorg.org, timur@tabi.org,
- rob.herring@calxeda.com, linux-kernel@vger.kernel.org, broonie@kernel.org,
- ijc+devicetree@hellion.org.uk, dmaengine@vger.kernel.org,
- dan.j.williams@intel.com, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "joro@8bytes.org" <joro@8bytes.org>, Stuart Yoder <stuart.yoder@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
+ Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +35,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 13, 2013 at 10:55:23PM +0800, Nicolin Chen wrote:
->  * ! This series of patches has a direct dependency between them. When
->  * ! applying them, we need to apply to one single branch. Otherwise,
->  * ! it would break currect branches.
-Applied, thanks
 
---
-~Vinod
-> 
-> Changelog
-> v7:
->  * Appended missing Acked-by to all four patches.
->  * Sorry that I didn't add them at the first place.
-> v6:
->  * PATCH-1: Use goto err_firmware instead of return directly.
->  *
->  * Nothing changes for the other three ack-ed patches
-> v5:
->  * PATCH-3: Add period size constraint when using dual fifo mode
->  *
->  * Nothing changes for the other three patches
-> v4:
->  * PATCH-3: Drop useless register configuration.
->  *
->  * Nothing changes for the other three patches
-> v3:
->  * PATCH-1: Add comments to indicate the end of v1 and v2 array.
->  * PATCH-3: Use better way to keep watermark as even number.
->  *
->  * Nothing changes for PATCH-2 and PATCH-4
-> v2:
->  * Instead of adding rogue scripts to current SDMA driver based on firmware
->  * V1, we define the new SDMA firmware as version 2 and bisect the PATCH-1
->  * to two patches: The first is to add version check code to the SDMA driver;
->  * And the second is to add SSI dual FIFO DMATYPE.
->  *
->  * Nothing changes for the last two patches.
-> v1:
->  * SSI can reduce hardware overrun/underrun possibility when using dual
->  * fifo mode. To support this mode, we need to first update sdma sciprt
->  * list, and then enable dual fifo BIT in SSI driver, and last update DT
->  * bindings of i.MX series.
-> 
-> Nicolin Chen (4):
->   dma: imx-sdma: Add sdma firmware version 2 support
->   dma: imx-sdma: Add new dma type for ssi dual fifo script
->   ASoC: fsl_ssi: Add dual fifo mode support
->   ARM: dts: imx: use dual-fifo sdma script for ssi
-> 
->  .../devicetree/bindings/dma/fsl-imx-sdma.txt       |  1 +
->  arch/arm/boot/dts/imx51.dtsi                       |  4 ++--
->  arch/arm/boot/dts/imx53.dtsi                       |  4 ++--
->  arch/arm/boot/dts/imx6qdl.dtsi                     | 12 +++++-----
->  arch/arm/boot/dts/imx6sl.dtsi                      | 12 +++++-----
->  drivers/dma/imx-sdma.c                             | 19 ++++++++++++++-
->  include/linux/platform_data/dma-imx-sdma.h         |  5 ++++
->  include/linux/platform_data/dma-imx.h              |  1 +
->  sound/soc/fsl/fsl_ssi.c                            | 27 +++++++++++++++++++++-
->  9 files changed, 67 insertions(+), 18 deletions(-)
-> 
-> -- 
-> 1.8.4
-> 
-> 
 
--- 
+> -----Original Message-----
+> From: linux-pci-owner@vger.kernel.org [mailto:linux-pci-owner@vger.kernel=
+.org]
+> On Behalf Of Bjorn Helgaas
+> Sent: Tuesday, November 26, 2013 5:06 AM
+> To: Bhushan Bharat-R65777
+> Cc: alex.williamson@redhat.com; joro@8bytes.org; agraf@suse.de; Wood Scot=
+t-
+> B07421; Yoder Stuart-B08248; iommu@lists.linux-foundation.org; linux-
+> pci@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> kernel@vger.kernel.org; Bhushan Bharat-R65777
+> Subject: Re: [PATCH 1/9 v2] pci:msi: add weak function for returning msi =
+region
+> info
+>=20
+> On Tue, Nov 19, 2013 at 10:47:05AM +0530, Bharat Bhushan wrote:
+> > In Aperture type of IOMMU (like FSL PAMU), VFIO-iommu system need to
+> > know the MSI region to map its window in h/w. This patch just defines
+> > the required weak functions only and will be used by followup patches.
+> >
+> > Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+> > ---
+> > v1->v2
+> >  - Added description on "struct msi_region"
+> >
+> >  drivers/pci/msi.c   |   22 ++++++++++++++++++++++
+> >  include/linux/msi.h |   14 ++++++++++++++
+> >  2 files changed, 36 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c index
+> > d5f90d6..2643a29 100644
+> > --- a/drivers/pci/msi.c
+> > +++ b/drivers/pci/msi.c
+> > @@ -67,6 +67,28 @@ int __weak arch_msi_check_device(struct pci_dev *dev=
+, int
+> nvec, int type)
+> >  	return chip->check_device(chip, dev, nvec, type);  }
+> >
+> > +int __weak arch_msi_get_region_count(void) {
+> > +	return 0;
+> > +}
+> > +
+> > +int __weak arch_msi_get_region(int region_num, struct msi_region
+> > +*region) {
+> > +	return 0;
+> > +}
+> > +
+> > +int msi_get_region_count(void)
+> > +{
+> > +	return arch_msi_get_region_count();
+> > +}
+> > +EXPORT_SYMBOL(msi_get_region_count);
+> > +
+> > +int msi_get_region(int region_num, struct msi_region *region) {
+> > +	return arch_msi_get_region(region_num, region); }
+> > +EXPORT_SYMBOL(msi_get_region);
+> > +
+> >  int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int
+> > type)  {
+> >  	struct msi_desc *entry;
+> > diff --git a/include/linux/msi.h b/include/linux/msi.h index
+> > b17ead8..ade1480 100644
+> > --- a/include/linux/msi.h
+> > +++ b/include/linux/msi.h
+> > @@ -51,6 +51,18 @@ struct msi_desc {
+> >  };
+> >
+> >  /*
+> > + * This structure is used to get
+> > + * - physical address
+> > + * - size
+> > + * of a msi region
+> > + */
+> > +struct msi_region {
+> > +	int region_num; /* MSI region number */
+> > +	dma_addr_t addr; /* Address of MSI region */
+> > +	size_t size; /* Size of MSI region */ };
+> > +
+> > +/*
+> >   * The arch hooks to setup up msi irqs. Those functions are
+> >   * implemented as weak symbols so that they /can/ be overriden by
+> >   * architecture specific code if needed.
+> > @@ -64,6 +76,8 @@ void arch_restore_msi_irqs(struct pci_dev *dev, int
+> > irq);
+> >
+> >  void default_teardown_msi_irqs(struct pci_dev *dev);  void
+> > default_restore_msi_irqs(struct pci_dev *dev, int irq);
+> > +int arch_msi_get_region_count(void);
+> > +int arch_msi_get_region(int region_num, struct msi_region *region);
+>=20
+> It doesn't look like any of this (struct msi_region, msi_get_region(),
+> msi_get_region_count()) is actually used by drivers/pci/msi.c, so I don't=
+ think
+> it needs to be declared in generic code.  It looks like it's only used in
+> drivers/vfio/vfio_iommu_fsl_pamu.c, where you already know you have an FS=
+L
+> IOMMU, and you can just call FSL-specific interfaces directly.
+
+Thanks Bjorn,
+
+Want to be sure of what you are suggesting.
+
+What I understood is that we define these (struct msi_region, msi_get_regio=
+n(), msi_get_region_count()) in arch/powerpc/include/fsl_msi.h (a new file)=
+. Include this header file directly in driver/vfio/vfio_iommu_fsl_pamu.c
+
+Same also applies for msi_set_iova() in patch-5 ?
+
+-Bharat
+
+>=20
+> Bjorn
+>=20
+> >
+> >  struct msi_chip {
+> >  	struct module *owner;
+> > --
+> > 1.7.0.4
+> >
+> >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in t=
+he body
+> of a message to majordomo@vger.kernel.org More majordomo info at
+> http://vger.kernel.org/majordomo-info.html
