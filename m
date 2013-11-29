@@ -1,28 +1,27 @@
 Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B2D4B2C06DD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 21:47:00 +1100 (EST)
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1C6202C07EC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 21:47:20 +1100 (EST)
 Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 29 Nov 2013 03:46:57 -0700
-Received: from b03cxnp07027.gho.boulder.ibm.com
- (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id BE12A19D8045
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 03:46:48 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp07027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAT8ipUR4784580
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 09:44:51 +0100
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rATAkqpg016443
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 03:46:54 -0700
-Subject: [PATCH V4 8/9] cpuidle/ppc: Nominate new broadcast cpu on hotplug
- of the old
+ Fri, 29 Nov 2013 03:47:18 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9BC3F19D803E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 03:47:09 -0700 (MST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rAT8jPCZ29163560
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 09:45:25 +0100
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ rATAoBTa022884
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 03:50:12 -0700
+Subject: [PATCH V4 9/9] cpuidle/powernv: Parse device tree to setup idle states
 To: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org,
  shangw@linux.vnet.ibm.com, rjw@sisk.pl, galak@kernel.crashing.org,
  benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
@@ -33,8 +32,8 @@ To: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org,
  schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Fri, 29 Nov 2013 16:13:35 +0530
-Message-ID: <20131129104335.651.56689.stgit@preeti.in.ibm.com>
+Date: Fri, 29 Nov 2013 16:13:51 +0530
+Message-ID: <20131129104351.651.84944.stgit@preeti.in.ibm.com>
 In-Reply-To: <20131129104010.651.23117.stgit@preeti.in.ibm.com>
 References: <20131129104010.651.23117.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
@@ -48,95 +47,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On hotplug of the broadcast cpu, cancel the hrtimer queued to do
-broadcast and nominate a new broadcast cpu.
+Add deep idle states such as nap and fast sleep to the cpuidle state table
+only if they are discovered from the device tree during cpuidle initialization.
 
-We choose the new broadcast cpu as one of the cpus in deep idle and thus
-send an ipi to wake it up to continue the duty of broadcast. The new
-broadcast cpu needs to find out if it woke up to resume broadcast.
-If so it needs to restart the broadcast hrtimer on itself.
-
-Its possible that the old broadcast cpu was hotplugged out when the broadcast
-hrtimer was about to fire on it. Therefore the newly nominated broadcast cpu
-should set the broadcast hrtimer on itself to expire immediately so as to not
-miss wakeups under such scenarios.
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/include/asm/time.h          |    1 +
- arch/powerpc/kernel/time.c               |    1 +
- drivers/cpuidle/cpuidle-powerpc-book3s.c |   22 ++++++++++++++++++++++
- 3 files changed, 24 insertions(+)
+ drivers/cpuidle/cpuidle-powerpc-book3s.c |   81 ++++++++++++++++++++++++------
+ 1 file changed, 64 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index a6604b7..e24ebb4 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -31,6 +31,7 @@ struct rtc_time;
- extern void to_tm(int tim, struct rtc_time * tm);
- extern void GregorianDay(struct rtc_time *tm);
- extern void tick_broadcast_ipi_handler(void);
-+extern void broadcast_irq_entry(void);
- 
- extern void generic_calibrate_decr(void);
- 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index f0603a0..021a5c5 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -852,6 +852,7 @@ void tick_broadcast_ipi_handler(void)
- {
- 	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
- 
-+	broadcast_irq_entry();
- 	*next_tb = get_tb_or_rtc();
- 	__timer_interrupt();
- }
 diff --git a/drivers/cpuidle/cpuidle-powerpc-book3s.c b/drivers/cpuidle/cpuidle-powerpc-book3s.c
-index 649c330..59cd529 100644
+index 59cd529..b80ee9b 100644
 --- a/drivers/cpuidle/cpuidle-powerpc-book3s.c
 +++ b/drivers/cpuidle/cpuidle-powerpc-book3s.c
-@@ -288,6 +288,12 @@ static int fastsleep_loop(struct cpuidle_device *dev,
- 	return index;
- }
+@@ -18,6 +18,7 @@
+ #include <linux/ktime.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
++#include <linux/of.h>
  
-+void broadcast_irq_entry(void)
+ #include <asm/paca.h>
+ #include <asm/reg.h>
+@@ -27,6 +28,12 @@
+ #include <asm/time.h>
+ #include <asm/plpar_wrappers.h>
+ 
++/* Flags and constants used in PowerNV platform */
++
++#define MAX_POWERNV_IDLE_STATES	8
++#define IDLE_USE_INST_NAP	0x00010000 /* Use nap instruction */
++#define IDLE_USE_INST_SLEEP	0x00020000 /* Use sleep instruction */
++
+ struct cpuidle_driver powerpc_book3s_idle_driver = {
+ 	.name             = "powerpc_book3s_idle",
+ 	.owner            = THIS_MODULE,
+@@ -327,7 +334,7 @@ static struct cpuidle_state shared_states[] = {
+ 		.enter = &shared_cede_loop },
+ };
+ 
+-static struct cpuidle_state powernv_states[] = {
++static struct cpuidle_state powernv_states[MAX_POWERNV_IDLE_STATES] = {
+ 	{ /* Snooze */
+ 		.name = "snooze",
+ 		.desc = "snooze",
+@@ -335,20 +342,6 @@ static struct cpuidle_state powernv_states[] = {
+ 		.exit_latency = 0,
+ 		.target_residency = 0,
+ 		.enter = &snooze_loop },
+-	{ /* NAP */
+-		.name = "NAP",
+-		.desc = "NAP",
+-		.flags = CPUIDLE_FLAG_TIME_VALID,
+-		.exit_latency = 10,
+-		.target_residency = 100,
+-		.enter = &nap_loop },
+-	 { /* Fastsleep */
+-		.name = "fastsleep",
+-		.desc = "fastsleep",
+-		.flags = CPUIDLE_FLAG_TIME_VALID,
+-		.exit_latency = 10,
+-		.target_residency = 100,
+-		.enter = &fastsleep_loop },
+ };
+ 
+ void update_smt_snooze_delay(int cpu, int residency)
+@@ -418,6 +411,60 @@ static struct notifier_block setup_hotplug_notifier = {
+ 	.notifier_call = powerpc_book3s_cpuidle_add_cpu_notifier,
+ };
+ 
++static int powernv_add_idle_states(void)
 +{
-+	if (smp_processor_id() == bc_cpu)
-+		hrtimer_start(bc_hrtimer, ns_to_ktime(0), HRTIMER_MODE_REL_PINNED);
++	struct device_node *power_mgt;
++	struct property *prop;
++	int nr_idle_states = 1; /* Snooze */
++	int dt_idle_states;
++	u32 *flags;
++	int i;
++
++	/* Currently we have snooze statically defined */
++
++	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
++	if (!power_mgt) {
++		pr_warn("opal: PowerMgmt Node not found\n");
++		return nr_idle_states;
++	}
++
++	prop = of_find_property(power_mgt, "ibm,cpu-idle-state-flags", NULL);
++	if (!prop) {
++		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
++		return nr_idle_states;
++	}
++
++	dt_idle_states = prop->length / sizeof(u32);
++	flags = (u32 *) prop->value;
++
++	for (i = 0; i < dt_idle_states; i++) {
++
++		if (flags[i] & IDLE_USE_INST_NAP) {
++			/* Add NAP state */
++			strcpy(powernv_states[nr_idle_states].name, "Nap");
++			strcpy(powernv_states[nr_idle_states].desc, "Nap");
++			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
++			powernv_states[nr_idle_states].exit_latency = 10;
++			powernv_states[nr_idle_states].target_residency = 100;
++			powernv_states[nr_idle_states].enter = &nap_loop;
++			nr_idle_states++;
++		}
++
++		if (flags[i] & IDLE_USE_INST_SLEEP) {
++			/* Add FASTSLEEP state */
++			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
++			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
++			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
++			powernv_states[nr_idle_states].exit_latency = 300;
++			powernv_states[nr_idle_states].target_residency = 1000000;
++			powernv_states[nr_idle_states].enter = &fastsleep_loop;
++			nr_idle_states++;
++		}
++	}
++
++	return nr_idle_states;
 +}
 +
  /*
-  * States for dedicated partition case.
+  * powerpc_book3s_cpuidle_driver_init()
   */
-@@ -366,6 +372,7 @@ static int powerpc_book3s_cpuidle_add_cpu_notifier(struct notifier_block *n,
- 			unsigned long action, void *hcpu)
+@@ -448,7 +495,6 @@ static int powerpc_book3s_cpuidle_driver_init(void)
+  */
+ static int powerpc_book3s_idle_probe(void)
  {
- 	int hotcpu = (unsigned long)hcpu;
-+	unsigned long flags;
- 	struct cpuidle_device *dev =
- 			per_cpu(cpuidle_devices, hotcpu);
+-
+ 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
+ 		return -ENODEV;
  
-@@ -378,6 +385,21 @@ static int powerpc_book3s_cpuidle_add_cpu_notifier(struct notifier_block *n,
- 			cpuidle_resume_and_unlock();
- 			break;
+@@ -463,7 +509,8 @@ static int powerpc_book3s_idle_probe(void)
  
-+		case CPU_DYING:
-+		case CPU_DYING_FROZEN:
-+			spin_lock_irqsave(&fastsleep_idle_lock, flags);
-+			if (hotcpu == bc_cpu) {
-+				bc_cpu = -1;
-+				hrtimer_cancel(bc_hrtimer);
-+				if (!cpumask_empty(tick_get_broadcast_oneshot_mask())) {
-+					bc_cpu = cpumask_first(
-+							tick_get_broadcast_oneshot_mask());
-+					tick_broadcast(cpumask_of(bc_cpu));
-+				}
-+			}
-+			spin_unlock_irqrestore(&fastsleep_idle_lock, flags);
-+			break;
-+
- 		case CPU_DEAD:
- 		case CPU_DEAD_FROZEN:
- 			cpuidle_pause_and_lock();
+ 	} else if (firmware_has_feature(FW_FEATURE_OPALv3)) {
+ 		cpuidle_state_table = powernv_states;
+-		max_idle_state = ARRAY_SIZE(powernv_states);
++		/* Device tree can indicate more idle states */
++		max_idle_state = powernv_add_idle_states();
+ 
+ 	} else
+ 		return -ENODEV;
