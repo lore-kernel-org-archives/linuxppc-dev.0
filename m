@@ -1,9 +1,11 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Add real mode cache inhibited IO accessors
-Date: Fri, 29 Nov 2013 13:27:18 +1100
-Message-Id: <1385692038-1342-1-git-send-email-mpe@ellerman.id.au>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: benh@kernel.crashing.org
+MIME-Version: 1.0
+Subject: [PATCH] powernv: Remove get/set_rtc_time when they are not present
+Date: Fri, 29 Nov 2013 14:22:48 +1100
+Message-ID: <16539.1385695368@ale.ozlabs.ibm.com>
+Cc: michael@ellerman.id.au, Linux PPC dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,44 +15,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Ellerman <michael@ellerman.id.au>
+Currently we continue to poll get/set_rtc_time even when we know they
+are not working.
 
-These accessors allow us to do cache inhibited accesses when in real
-mode. They should only be used in real mode.
+This changes it so that if it fails at boot time we remove the ppc_md
+get/set_rtc_time hooks so that we don't end up polling known broken
+calls.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/include/asm/io.h | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index 575fbf8..97d3869 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -191,8 +191,24 @@ DEF_MMIO_OUT_D(out_le32, 32, stw);
+diff --git a/arch/powerpc/platforms/powernv/opal-rtc.c b/arch/powerpc/platforms/powernv/opal-rtc.c
+index 7d07c7e..b1885db 100644
+--- a/arch/powerpc/platforms/powernv/opal-rtc.c
++++ b/arch/powerpc/platforms/powernv/opal-rtc.c
+@@ -18,6 +18,7 @@
  
- #endif /* __BIG_ENDIAN */
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
++#include <asm/machdep.h>
  
-+/*
-+ * Cache inhibitied accessors for use in real mode, you don't want to use these
-+ * unless you know what you're doing.
-+ *
-+ * NB. These use the cpu byte ordering.
-+ */
-+DEF_MMIO_OUT_X(out_rm8,   8, stbcix);
-+DEF_MMIO_OUT_X(out_rm16, 16, sthcix);
-+DEF_MMIO_OUT_X(out_rm32, 32, stwcix);
-+DEF_MMIO_IN_X(in_rm8,   8, lbzcix);
-+DEF_MMIO_IN_X(in_rm16, 16, lhzcix);
-+DEF_MMIO_IN_X(in_rm32, 32, lwzcix);
-+
- #ifdef __powerpc64__
- 
-+DEF_MMIO_OUT_X(out_rm64, 64, stdcix);
-+DEF_MMIO_IN_X(in_rm64, 64, ldcix);
-+
- #ifdef __BIG_ENDIAN__
- DEF_MMIO_OUT_D(out_be64, 64, std);
- DEF_MMIO_IN_D(in_be64, 64, ld);
--- 
-1.8.3.2
+ static void opal_to_tm(u32 y_m_d, u64 h_m_s_ms, struct rtc_time *tm)
+ {
+@@ -48,8 +49,11 @@ unsigned long __init opal_get_boot_time(void)
+ 		else
+ 			mdelay(10);
+ 	}
+-	if (rc != OPAL_SUCCESS)
++	if (rc != OPAL_SUCCESS) {
++		ppc_md.get_rtc_time = NULL;
++		ppc_md.set_rtc_time = NULL;
+ 		return 0;
++	}
+ 	y_m_d = be32_to_cpu(__y_m_d);
+ 	h_m_s_ms = be64_to_cpu(__h_m_s_ms);
+ 	opal_to_tm(y_m_d, h_m_s_ms, &tm);
