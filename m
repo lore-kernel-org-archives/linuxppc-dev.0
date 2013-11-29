@@ -1,43 +1,21 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1C6202C07EC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 21:47:20 +1100 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 29 Nov 2013 03:47:18 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9BC3F19D803E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 03:47:09 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rAT8jPCZ29163560
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 09:45:25 +0100
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- rATAoBTa022884
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 03:50:12 -0700
-Subject: [PATCH V4 9/9] cpuidle/powernv: Parse device tree to setup idle states
-To: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org,
- shangw@linux.vnet.ibm.com, rjw@sisk.pl, galak@kernel.crashing.org,
- benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
- linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au,
- john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com,
- deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Fri, 29 Nov 2013 16:13:51 +0530
-Message-ID: <20131129104351.651.84944.stgit@preeti.in.ibm.com>
-In-Reply-To: <20131129104010.651.23117.stgit@preeti.in.ibm.com>
-References: <20131129104010.651.23117.stgit@preeti.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AD9912C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2013 21:54:50 +1100 (EST)
+Date: Fri, 29 Nov 2013 11:54:43 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Liu Gang <Gang.Liu@freescale.com>, <linus.walleij@linaro.org>
+Subject: Re: [PATCH v2] powerpc/gpio: Fix the wrong GPIO input data on
+ MPC8572/MPC8536
+Message-ID: <20131129115443.2fb15bf8@crub>
+In-Reply-To: <1385107960-373-1-git-send-email-Gang.Liu@freescale.com>
+References: <1385107960-373-1-git-send-email-Gang.Liu@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ r61911@freescale.com, b07421@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,146 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add deep idle states such as nap and fast sleep to the cpuidle state table
-only if they are discovered from the device tree during cpuidle initialization.
+On Fri, 22 Nov 2013 16:12:40 +0800
+Liu Gang <Gang.Liu@freescale.com> wrote:
 
-Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
----
+> For MPC8572/MPC8536, the status of GPIOs defined as output
+> cannot be determined by reading GPDAT register, so the code
+> use shadow data register instead. But the code may give the
+> wrong status of GPIOs defined as input under some scenarios:
+> 
+> 1. If some pins were configured as inputs and were asserted
+> high before booting the kernel, the shadow data has been
+> initialized with those pin values.
+> 2. Some pins have been configured as output first and have
+> been set to the high value, then reconfigured as input.
+> 
+> The above cases will make the shadow data for those input
+> pins to be set to high. Then reading the pin status will
+> always return high even if the actual pin status is low.
+> 
+> The code should eliminate the effects of the shadow data to
+> the input pins, and the status of those pins should be
+> read directly from GPDAT.
+> 
+> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
+> ---
+> changes in v2:
+>  - Added more description of the problem.
+>  - Reduced one in_be32() call.
+>  - Do not modify the shadow data.
+> 
+>  drivers/gpio/gpio-mpc8xxx.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/gpio/gpio-mpc8xxx.c b/drivers/gpio/gpio-mpc8xxx.c
+> index 914e859..d7d6d72 100644
+> --- a/drivers/gpio/gpio-mpc8xxx.c
+> +++ b/drivers/gpio/gpio-mpc8xxx.c
+> @@ -70,10 +70,14 @@ static int mpc8572_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+>  	u32 val;
+>  	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
+>  	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
+> +	u32 out_mask, out_shadow;
+>  
+> -	val = in_be32(mm->regs + GPIO_DAT) & ~in_be32(mm->regs + GPIO_DIR);
+> +	out_mask = in_be32(mm->regs + GPIO_DIR);
+>  
+> -	return (val | mpc8xxx_gc->data) & mpc8xxx_gpio2mask(gpio);
+> +	val = in_be32(mm->regs + GPIO_DAT) & ~out_mask;
+> +	out_shadow = mpc8xxx_gc->data & out_mask;
+> +
+> +	return (val | out_shadow) & mpc8xxx_gpio2mask(gpio);
+>  }
+>  
+>  static int mpc8xxx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
 
- drivers/cpuidle/cpuidle-powerpc-book3s.c |   81 ++++++++++++++++++++++++------
- 1 file changed, 64 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-powerpc-book3s.c b/drivers/cpuidle/cpuidle-powerpc-book3s.c
-index 59cd529..b80ee9b 100644
---- a/drivers/cpuidle/cpuidle-powerpc-book3s.c
-+++ b/drivers/cpuidle/cpuidle-powerpc-book3s.c
-@@ -18,6 +18,7 @@
- #include <linux/ktime.h>
- #include <linux/spinlock.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
- 
- #include <asm/paca.h>
- #include <asm/reg.h>
-@@ -27,6 +28,12 @@
- #include <asm/time.h>
- #include <asm/plpar_wrappers.h>
- 
-+/* Flags and constants used in PowerNV platform */
-+
-+#define MAX_POWERNV_IDLE_STATES	8
-+#define IDLE_USE_INST_NAP	0x00010000 /* Use nap instruction */
-+#define IDLE_USE_INST_SLEEP	0x00020000 /* Use sleep instruction */
-+
- struct cpuidle_driver powerpc_book3s_idle_driver = {
- 	.name             = "powerpc_book3s_idle",
- 	.owner            = THIS_MODULE,
-@@ -327,7 +334,7 @@ static struct cpuidle_state shared_states[] = {
- 		.enter = &shared_cede_loop },
- };
- 
--static struct cpuidle_state powernv_states[] = {
-+static struct cpuidle_state powernv_states[MAX_POWERNV_IDLE_STATES] = {
- 	{ /* Snooze */
- 		.name = "snooze",
- 		.desc = "snooze",
-@@ -335,20 +342,6 @@ static struct cpuidle_state powernv_states[] = {
- 		.exit_latency = 0,
- 		.target_residency = 0,
- 		.enter = &snooze_loop },
--	{ /* NAP */
--		.name = "NAP",
--		.desc = "NAP",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
--		.exit_latency = 10,
--		.target_residency = 100,
--		.enter = &nap_loop },
--	 { /* Fastsleep */
--		.name = "fastsleep",
--		.desc = "fastsleep",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
--		.exit_latency = 10,
--		.target_residency = 100,
--		.enter = &fastsleep_loop },
- };
- 
- void update_smt_snooze_delay(int cpu, int residency)
-@@ -418,6 +411,60 @@ static struct notifier_block setup_hotplug_notifier = {
- 	.notifier_call = powerpc_book3s_cpuidle_add_cpu_notifier,
- };
- 
-+static int powernv_add_idle_states(void)
-+{
-+	struct device_node *power_mgt;
-+	struct property *prop;
-+	int nr_idle_states = 1; /* Snooze */
-+	int dt_idle_states;
-+	u32 *flags;
-+	int i;
-+
-+	/* Currently we have snooze statically defined */
-+
-+	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
-+	if (!power_mgt) {
-+		pr_warn("opal: PowerMgmt Node not found\n");
-+		return nr_idle_states;
-+	}
-+
-+	prop = of_find_property(power_mgt, "ibm,cpu-idle-state-flags", NULL);
-+	if (!prop) {
-+		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
-+		return nr_idle_states;
-+	}
-+
-+	dt_idle_states = prop->length / sizeof(u32);
-+	flags = (u32 *) prop->value;
-+
-+	for (i = 0; i < dt_idle_states; i++) {
-+
-+		if (flags[i] & IDLE_USE_INST_NAP) {
-+			/* Add NAP state */
-+			strcpy(powernv_states[nr_idle_states].name, "Nap");
-+			strcpy(powernv_states[nr_idle_states].desc, "Nap");
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
-+			powernv_states[nr_idle_states].exit_latency = 10;
-+			powernv_states[nr_idle_states].target_residency = 100;
-+			powernv_states[nr_idle_states].enter = &nap_loop;
-+			nr_idle_states++;
-+		}
-+
-+		if (flags[i] & IDLE_USE_INST_SLEEP) {
-+			/* Add FASTSLEEP state */
-+			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
-+			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
-+			powernv_states[nr_idle_states].exit_latency = 300;
-+			powernv_states[nr_idle_states].target_residency = 1000000;
-+			powernv_states[nr_idle_states].enter = &fastsleep_loop;
-+			nr_idle_states++;
-+		}
-+	}
-+
-+	return nr_idle_states;
-+}
-+
- /*
-  * powerpc_book3s_cpuidle_driver_init()
-  */
-@@ -448,7 +495,6 @@ static int powerpc_book3s_cpuidle_driver_init(void)
-  */
- static int powerpc_book3s_idle_probe(void)
- {
--
- 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
- 		return -ENODEV;
- 
-@@ -463,7 +509,8 @@ static int powerpc_book3s_idle_probe(void)
- 
- 	} else if (firmware_has_feature(FW_FEATURE_OPALv3)) {
- 		cpuidle_state_table = powernv_states;
--		max_idle_state = ARRAY_SIZE(powernv_states);
-+		/* Device tree can indicate more idle states */
-+		max_idle_state = powernv_add_idle_states();
- 
- 	} else
- 		return -ENODEV;
+Acked-by: Anatolij Gustschin <agust@denx.de>
