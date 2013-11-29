@@ -1,11 +1,9 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-MIME-Version: 1.0
-Subject: [PATCH] powernv: Remove get/set_rtc_time when they are not present
-Date: Fri, 29 Nov 2013 14:22:48 +1100
-Message-ID: <16539.1385695368@ale.ozlabs.ibm.com>
-Cc: michael@ellerman.id.au, Linux PPC dev <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Fix build break with PPC_EARLY_DEBUG_BOOTX=y
+Date: Fri, 29 Nov 2013 14:55:22 +1100
+Message-Id: <1385697322-14672-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,37 +13,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we continue to poll get/set_rtc_time even when we know they
-are not working.
+A kernel configured with PPC_EARLY_DEBUG_BOOTX=y but PPC_PMAC=n and
+PPC_MAPLE=n will fail to link:
 
-This changes it so that if it fails at boot time we remove the ppc_md
-get/set_rtc_time hooks so that we don't end up polling known broken
-calls.
+  btext.c:(.text+0x2d0fc): undefined reference to `.rmci_off'
+  btext.c:(.text+0x2d214): undefined reference to `.rmci_on'
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Fix it by making the build of rmci_on/off() depend on
+PPC_EARLY_DEBUG_BOOTX, which also enable the only code that uses them.
 
-diff --git a/arch/powerpc/platforms/powernv/opal-rtc.c b/arch/powerpc/platforms/powernv/opal-rtc.c
-index 7d07c7e..b1885db 100644
---- a/arch/powerpc/platforms/powernv/opal-rtc.c
-+++ b/arch/powerpc/platforms/powernv/opal-rtc.c
-@@ -18,6 +18,7 @@
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/misc_64.S | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index e59caf8..64bf8db 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -246,8 +246,8 @@ _GLOBAL(__bswapdi2)
+ 	or	r3,r7,r9
+ 	blr
  
- #include <asm/opal.h>
- #include <asm/firmware.h>
-+#include <asm/machdep.h>
+-#if defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_MAPLE)
  
- static void opal_to_tm(u32 y_m_d, u64 h_m_s_ms, struct rtc_time *tm)
- {
-@@ -48,8 +49,11 @@ unsigned long __init opal_get_boot_time(void)
- 		else
- 			mdelay(10);
- 	}
--	if (rc != OPAL_SUCCESS)
-+	if (rc != OPAL_SUCCESS) {
-+		ppc_md.get_rtc_time = NULL;
-+		ppc_md.set_rtc_time = NULL;
- 		return 0;
-+	}
- 	y_m_d = be32_to_cpu(__y_m_d);
- 	h_m_s_ms = be64_to_cpu(__h_m_s_ms);
- 	opal_to_tm(y_m_d, h_m_s_ms, &tm);
++#ifdef CONFIG_PPC_EARLY_DEBUG_BOOTX
+ _GLOBAL(rmci_on)
+ 	sync
+ 	isync
+@@ -277,6 +277,9 @@ _GLOBAL(rmci_off)
+ 	isync
+ 	sync
+ 	blr
++#endif /* CONFIG_PPC_EARLY_DEBUG_BOOTX */
++
++#if defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_MAPLE)
+ 
+ /*
+  * Do an IO access in real mode
+-- 
+1.8.3.2
