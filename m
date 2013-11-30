@@ -1,21 +1,20 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4BDC02C034F
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Dec 2013 09:52:13 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 7A12B2C0370
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Dec 2013 09:52:14 +1100 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  Anatolij Gustschin <agust@denx.de>, Mike Turquette <mturquette@linaro.org>
-Subject: [PATCH v6 10/17] serial: mpc512x: setup the PSC FIFO clock as well
-Date: Sat, 30 Nov 2013 23:51:30 +0100
-Message-Id: <1385851897-23475-11-git-send-email-gsi@denx.de>
+Subject: [PATCH v6 08/17] spi: mpc512x: adjust to OF based clock lookup
+Date: Sat, 30 Nov 2013 23:51:28 +0100
+Message-Id: <1385851897-23475-9-git-send-email-gsi@denx.de>
 In-Reply-To: <1385851897-23475-1-git-send-email-gsi@denx.de>
 References: <1385851897-23475-1-git-send-email-gsi@denx.de>
-Cc: Detlev Zundel <dzu@denx.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Gerhard Sittig <gsi@denx.de>,
- linux-serial@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
- Jiri Slaby <jslaby@suse.cz>
+Cc: Scott Wood <scottwood@freescale.com>, Gerhard Sittig <gsi@denx.de>,
+ Mark Brown <broonie@kernel.org>, Detlev Zundel <dzu@denx.de>,
+ linux-spi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,122 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-prepare and enable the FIFO clock upon PSC FIFO initialization,
-check for and propagage errors when enabling the PSC FIFO clock,
-disable and unprepare the FIFO clock upon PSC FIFO uninitialization
+after device tree based clock lookup became available, the peripheral
+driver need no longer construct clock names which include the PSC index,
+remove the "psc%d_mclk" template and unconditionally use 'mclk'
 
-devm_{get,put}_clk() doesn't apply here, as the SoC provides a
-single FIFO component which is shared among several PSC components,
-thus the FIFO isn't associated with a device (while the PSCs are)
+acquire and release the 'ipg' clock item for register access as well
 
-provide a fallback clock lookup approach in case the OF based clock
-lookup for the PSC FIFO fails, this allows for successful operation in
-the presence of an outdated device tree which lacks clock specs
-
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.cz>
-Cc: linux-serial@vger.kernel.org
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org> # for v4
+Cc: Mark Brown <broonie@kernel.org>
+Cc: linux-spi@vger.kernel.org
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
-Greg, the addition since v4 is the clk_get_sys() call for the 'ipg'
-clock item (backwards compat for device trees w/o clock specs)
+ drivers/spi/spi-mpc512x-psc.c |   26 ++++++++++++++++++--------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
 
----
- drivers/tty/serial/mpc52xx_uart.c |   50 ++++++++++++++++++++++++++++++++-----
- 1 file changed, 44 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/tty/serial/mpc52xx_uart.c b/drivers/tty/serial/mpc52xx_uart.c
-index 6345f377a246..97888f4900ec 100644
---- a/drivers/tty/serial/mpc52xx_uart.c
-+++ b/drivers/tty/serial/mpc52xx_uart.c
-@@ -421,6 +421,7 @@ struct psc_fifoc {
+diff --git a/drivers/spi/spi-mpc512x-psc.c b/drivers/spi/spi-mpc512x-psc.c
+index 9602bbd8d7ea..de66c676c248 100644
+--- a/drivers/spi/spi-mpc512x-psc.c
++++ b/drivers/spi/spi-mpc512x-psc.c
+@@ -40,6 +40,7 @@ struct mpc512x_psc_spi {
+ 	unsigned int irq;
+ 	u8 bits_per_word;
+ 	struct clk *clk_mclk;
++	struct clk *clk_ipg;
+ 	u32 mclk_rate;
  
- static struct psc_fifoc __iomem *psc_fifoc;
- static unsigned int psc_fifoc_irq;
-+static struct clk *psc_fifoc_clk;
+ 	struct completion txisrdone;
+@@ -475,8 +476,6 @@ static int mpc512x_psc_spi_do_probe(struct device *dev, u32 regaddr,
+ 	struct spi_master *master;
+ 	int ret;
+ 	void *tempp;
+-	int psc_num;
+-	char clk_name[16];
+ 	struct clk *clk;
  
- static void mpc512x_psc_fifo_init(struct uart_port *port)
- {
-@@ -568,36 +569,73 @@ static unsigned int mpc512x_psc_set_baudrate(struct uart_port *port,
- /* Init PSC FIFO Controller */
- static int __init mpc512x_psc_fifoc_init(void)
- {
-+	int err;
- 	struct device_node *np;
-+	struct clk *clk;
-+
-+	/* default error code, potentially overwritten by clock calls */
-+	err = -ENODEV;
+ 	master = spi_alloc_master(dev, sizeof *mps);
+@@ -520,9 +519,7 @@ static int mpc512x_psc_spi_do_probe(struct device *dev, u32 regaddr,
+ 		goto free_master;
+ 	init_completion(&mps->txisrdone);
  
- 	np = of_find_compatible_node(NULL, NULL,
- 				     "fsl,mpc5121-psc-fifo");
- 	if (!np) {
- 		pr_err("%s: Can't find FIFOC node\n", __func__);
--		return -ENODEV;
-+		goto out_err;
-+	}
-+
-+	clk = of_clk_get(np, 0);
+-	psc_num = master->bus_num;
+-	snprintf(clk_name, sizeof(clk_name), "psc%d_mclk", psc_num);
+-	clk = devm_clk_get(dev, clk_name);
++	clk = devm_clk_get(dev, "mclk");
+ 	if (IS_ERR(clk)) {
+ 		ret = PTR_ERR(clk);
+ 		goto free_irq;
+@@ -533,17 +530,29 @@ static int mpc512x_psc_spi_do_probe(struct device *dev, u32 regaddr,
+ 	mps->clk_mclk = clk;
+ 	mps->mclk_rate = clk_get_rate(clk);
+ 
++	clk = devm_clk_get(dev, "ipg");
 +	if (IS_ERR(clk)) {
-+		/* backwards compat with device trees that lack clock specs */
-+		clk = clk_get_sys(np->name, "ipg");
++		ret = PTR_ERR(clk);
++		goto free_mclk_clock;
 +	}
-+	if (IS_ERR(clk)) {
-+		pr_err("%s: Can't lookup FIFO clock\n", __func__);
-+		err = PTR_ERR(clk);
-+		goto out_ofnode_put;
-+	}
-+	if (clk_prepare_enable(clk)) {
-+		pr_err("%s: Can't enable FIFO clock\n", __func__);
-+		clk_put(clk);
-+		goto out_ofnode_put;
- 	}
-+	psc_fifoc_clk = clk;
- 
- 	psc_fifoc = of_iomap(np, 0);
- 	if (!psc_fifoc) {
- 		pr_err("%s: Can't map FIFOC\n", __func__);
--		of_node_put(np);
--		return -ENODEV;
-+		goto out_clk_disable;
- 	}
- 
- 	psc_fifoc_irq = irq_of_parse_and_map(np, 0);
--	of_node_put(np);
- 	if (psc_fifoc_irq == 0) {
- 		pr_err("%s: Can't get FIFOC irq\n", __func__);
--		iounmap(psc_fifoc);
--		return -ENODEV;
-+		goto out_unmap;
- 	}
- 
-+	of_node_put(np);
- 	return 0;
++	ret = clk_prepare_enable(clk);
++	if (ret)
++		goto free_mclk_clock;
++	mps->clk_ipg = clk;
 +
-+out_unmap:
-+	iounmap(psc_fifoc);
-+out_clk_disable:
-+	clk_disable_unprepare(psc_fifoc_clk);
-+	clk_put(psc_fifoc_clk);
-+out_ofnode_put:
-+	of_node_put(np);
-+out_err:
-+	return err;
- }
+ 	ret = mpc512x_psc_spi_port_config(master, mps);
+ 	if (ret < 0)
+-		goto free_clock;
++		goto free_ipg_clock;
  
- static void __exit mpc512x_psc_fifoc_uninit(void)
- {
- 	iounmap(psc_fifoc);
-+
-+	/* disable the clock, errors are not fatal */
-+	if (psc_fifoc_clk) {
-+		clk_disable_unprepare(psc_fifoc_clk);
-+		clk_put(psc_fifoc_clk);
-+		psc_fifoc_clk = NULL;
-+	}
- }
+ 	ret = devm_spi_register_master(dev, master);
+ 	if (ret < 0)
+-		goto free_clock;
++		goto free_ipg_clock;
  
- /* 512x specific interrupt handler. The caller holds the port lock */
+ 	return ret;
+ 
+-free_clock:
++free_ipg_clock:
++	clk_disable_unprepare(mps->clk_ipg);
++free_mclk_clock:
+ 	clk_disable_unprepare(mps->clk_mclk);
+ free_irq:
+ 	free_irq(mps->irq, mps);
+@@ -561,6 +570,7 @@ static int mpc512x_psc_spi_do_remove(struct device *dev)
+ 	struct mpc512x_psc_spi *mps = spi_master_get_devdata(master);
+ 
+ 	clk_disable_unprepare(mps->clk_mclk);
++	clk_disable_unprepare(mps->clk_ipg);
+ 	free_irq(mps->irq, mps);
+ 	if (mps->psc)
+ 		iounmap(mps->psc);
 -- 
 1.7.10.4
