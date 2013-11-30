@@ -2,19 +2,18 @@ Return-Path: <gsi@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 604022C038F
+ by ozlabs.org (Postfix) with ESMTPS id 68ABE2C0338
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Dec 2013 09:52:23 +1100 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  Anatolij Gustschin <agust@denx.de>, Mike Turquette <mturquette@linaro.org>
-Subject: [PATCH v6 15/17] net: can: mscan: remove non-CCF code for MPC512x
-Date: Sat, 30 Nov 2013 23:51:35 +0100
-Message-Id: <1385851897-23475-16-git-send-email-gsi@denx.de>
+Subject: [PATCH v6 16/17] powerpc/mpc512x: improve DIU related clock setup
+Date: Sat, 30 Nov 2013 23:51:36 +0100
+Message-Id: <1385851897-23475-17-git-send-email-gsi@denx.de>
 In-Reply-To: <1385851897-23475-1-git-send-email-gsi@denx.de>
 References: <1385851897-23475-1-git-send-email-gsi@denx.de>
-Cc: Detlev Zundel <dzu@denx.de>, Gerhard Sittig <gsi@denx.de>,
- linux-can@vger.kernel.org, Marc Kleine-Budde <mkl@pengutronix.de>,
- Scott Wood <scottwood@freescale.com>, Wolfgang Grandegger <wg@grandegger.com>
+Cc: Scott Wood <scottwood@freescale.com>, Gerhard Sittig <gsi@denx.de>,
+ Detlev Zundel <dzu@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,177 +23,233 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-transition to the common clock framework has completed and the PPC_CLOCK
-is no longer available for the MPC512x platform, remove the now obsolete
-code path of the mpc5xxx mscan driver which accessed clock control module
-registers directly
+adapt the DIU clock initialization to the COMMON_CLK approach:
+device tree based clock lookup, prepare and unprepare for clocks,
+work with frequencies not dividers, call the appropriate clk_*()
+routines and don't access CCM registers
 
-Cc: Wolfgang Grandegger <wg@grandegger.com>
-Cc: Marc Kleine-Budde <mkl@pengutronix.de>
-Cc: linux-can@vger.kernel.org
+the "best clock" determination now completely relies on the
+platform's clock driver to pick a frequency close to what the
+caller requests, and merely checks whether the desired frequency
+was met (fits the tolerance of the monitor)
+
+this approach shall succeed upon first try in the usual case,
+will test a few less desirable yet acceptable frequencies in
+edge cases, and will fallback to "best effort" if none of the
+previously tried frequencies pass the test
+
+provide a fallback clock lookup approach in case the OF based clock
+lookup for the DIU fails, this allows for successful operation in
+the presence of an outdated device tree which lacks clock specs
+
+Cc: Anatolij Gustschin <agust@denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/net/can/mscan/mpc5xxx_can.c |  141 -----------------------------------
- 1 file changed, 141 deletions(-)
+ arch/powerpc/platforms/512x/mpc512x_shared.c |  169 ++++++++++++++------------
+ 1 file changed, 92 insertions(+), 77 deletions(-)
 
-diff --git a/drivers/net/can/mscan/mpc5xxx_can.c b/drivers/net/can/mscan/mpc5xxx_can.c
-index f48f1297ff30..6b0c9958d824 100644
---- a/drivers/net/can/mscan/mpc5xxx_can.c
-+++ b/drivers/net/can/mscan/mpc5xxx_can.c
-@@ -109,9 +109,6 @@ static u32 mpc52xx_can_get_clock(struct platform_device *ofdev,
- #endif /* CONFIG_PPC_MPC52xx */
+diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+index 36b5652aada2..adb95f03d4d4 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_shared.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -12,6 +12,7 @@
+  * (at your option) any later version.
+  */
  
- #ifdef CONFIG_PPC_MPC512x
--
--#if IS_ENABLED(CONFIG_COMMON_CLK)
--
- static u32 mpc512x_can_get_clock(struct platform_device *ofdev,
- 				 const char *clock_source, int *mscan_clksrc)
++#include <linux/clk.h>
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+ #include <linux/irq.h>
+@@ -68,98 +69,112 @@ struct fsl_diu_shared_fb {
+ 	bool		in_use;
+ };
+ 
+-#define DIU_DIV_MASK	0x000000ff
++/* receives a pixel clock spec in pico seconds, adjusts the DIU clock rate */
+ static void mpc512x_set_pixel_clock(unsigned int pixclock)
  {
-@@ -277,144 +274,6 @@ static void mpc512x_can_put_clock(struct platform_device *ofdev)
- 	if (priv->clk_ipg)
- 		clk_disable_unprepare(priv->clk_ipg);
- }
+-	unsigned long bestval, bestfreq, speed, busfreq;
+-	unsigned long minpixclock, maxpixclock, pixval;
+-	struct mpc512x_ccm __iomem *ccm;
+ 	struct device_node *np;
+-	u32 temp;
+-	long err;
+-	int i;
++	struct clk *clk_diu;
++	unsigned long epsilon, minpixclock, maxpixclock;
++	unsigned long offset, want, got, delta;
+ 
+-	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-clock");
++	/* lookup and enable the DIU clock */
++	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-diu");
+ 	if (!np) {
+-		pr_err("Can't find clock control module.\n");
++		pr_err("Could not find DIU device tree node.\n");
+ 		return;
+ 	}
 -
--#else	/* COMMON_CLK */
+-	ccm = of_iomap(np, 0);
++	clk_diu = of_clk_get(np, 0);
++	if (IS_ERR(clk_diu)) {
++		/* backwards compat with device trees that lack clock specs */
++		clk_diu = clk_get_sys(np->name, "ipg");
++	}
+ 	of_node_put(np);
+-	if (!ccm) {
+-		pr_err("Can't map clock control module reg.\n");
++	if (IS_ERR(clk_diu)) {
++		pr_err("Could not lookup DIU clock.\n");
+ 		return;
+ 	}
 -
--struct mpc512x_clockctl {
--	u32 spmr;		/* System PLL Mode Reg */
--	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
--	u32 scfr1;		/* System Clk Freq Reg 1 */
--	u32 scfr2;		/* System Clk Freq Reg 2 */
--	u32 reserved;
--	u32 bcr;		/* Bread Crumb Reg */
--	u32 pccr[12];		/* PSC Clk Ctrl Reg 0-11 */
--	u32 spccr;		/* SPDIF Clk Ctrl Reg */
--	u32 cccr;		/* CFM Clk Ctrl Reg */
--	u32 dccr;		/* DIU Clk Cnfg Reg */
--	u32 mccr[4];		/* MSCAN Clk Ctrl Reg 1-3 */
--};
+-	np = of_find_node_by_type(NULL, "cpu");
+-	if (np) {
+-		const unsigned int *prop =
+-			of_get_property(np, "bus-frequency", NULL);
 -
--static struct of_device_id mpc512x_clock_ids[] = {
--	{ .compatible = "fsl,mpc5121-clock", },
--	{}
--};
--
--static u32 mpc512x_can_get_clock(struct platform_device *ofdev,
--				 const char *clock_name, int *mscan_clksrc)
--{
--	struct mpc512x_clockctl __iomem *clockctl;
--	struct device_node *np_clock;
--	struct clk *sys_clk, *ref_clk;
--	int plen, clockidx, clocksrc = -1;
--	u32 sys_freq, val, clockdiv = 1, freq = 0;
--	const u32 *pval;
--
--	np_clock = of_find_matching_node(NULL, mpc512x_clock_ids);
--	if (!np_clock) {
--		dev_err(&ofdev->dev, "couldn't find clock node\n");
--		return 0;
--	}
--	clockctl = of_iomap(np_clock, 0);
--	if (!clockctl) {
--		dev_err(&ofdev->dev, "couldn't map clock registers\n");
--		goto exit_put;
--	}
--
--	/* Determine the MSCAN device index from the peripheral's
--	 * physical address. Register address offsets against the
--	 * IMMR base are:  0x1300, 0x1380, 0x2300, 0x2380
--	 */
--	pval = of_get_property(ofdev->dev.of_node, "reg", &plen);
--	BUG_ON(!pval || plen < sizeof(*pval));
--	clockidx = (*pval & 0x80) ? 1 : 0;
--	if (*pval & 0x2000)
--		clockidx += 2;
--
--	/*
--	 * Clock source and divider selection: 3 different clock sources
--	 * can be selected: "ip", "ref" or "sys". For the latter two, a
--	 * clock divider can be defined as well. If the clock source is
--	 * not specified by the device tree, we first try to find an
--	 * optimal CAN source clock based on the system clock. If that
--	 * is not posslible, the reference clock will be used.
--	 */
--	if (clock_name && !strcmp(clock_name, "ip")) {
--		*mscan_clksrc = MSCAN_CLKSRC_IPS;
--		freq = mpc5xxx_get_bus_frequency(ofdev->dev.of_node);
+-		of_node_put(np);
+-		if (prop) {
+-			busfreq = *prop;
+-		} else {
+-			pr_err("Can't get bus-frequency property\n");
+-			return;
+-		}
 -	} else {
--		*mscan_clksrc = MSCAN_CLKSRC_BUS;
+-		pr_err("Can't find 'cpu' node.\n");
++	if (clk_prepare_enable(clk_diu)) {
++		pr_err("Could not enable DIU clock.\n");
+ 		return;
+ 	}
+ 
+-	/* Pixel Clock configuration */
+-	pr_debug("DIU: Bus Frequency = %lu\n", busfreq);
+-	speed = busfreq * 4; /* DIU_DIV ratio is 4 * CSB_CLK / DIU_CLK */
 -
--		pval = of_get_property(ofdev->dev.of_node,
--				       "fsl,mscan-clock-divider", &plen);
--		if (pval && plen == sizeof(*pval))
--			clockdiv = *pval;
--		if (!clockdiv)
--			clockdiv = 1;
+-	/* Calculate the pixel clock with the smallest error */
+-	/* calculate the following in steps to avoid overflow */
+-	pr_debug("DIU pixclock in ps - %d\n", pixclock);
+-	temp = (1000000000 / pixclock) * 1000;
+-	pixclock = temp;
+-	pr_debug("DIU pixclock freq - %u\n", pixclock);
 -
--		if (!clock_name || !strcmp(clock_name, "sys")) {
--			sys_clk = devm_clk_get(&ofdev->dev, "sys_clk");
--			if (IS_ERR(sys_clk)) {
--				dev_err(&ofdev->dev, "couldn't get sys_clk\n");
--				goto exit_unmap;
--			}
--			/* Get and round up/down sys clock rate */
--			sys_freq = 1000000 *
--				((clk_get_rate(sys_clk) + 499999) / 1000000);
+-	temp = temp / 20; /* pixclock * 0.05 */
+-	pr_debug("deviation = %d\n", temp);
+-	minpixclock = pixclock - temp;
+-	maxpixclock = pixclock + temp;
+-	pr_debug("DIU minpixclock - %lu\n", minpixclock);
+-	pr_debug("DIU maxpixclock - %lu\n", maxpixclock);
+-	pixval = speed/pixclock;
+-	pr_debug("DIU pixval = %lu\n", pixval);
 -
--			if (!clock_name) {
--				/* A multiple of 16 MHz would be optimal */
--				if ((sys_freq % 16000000) == 0) {
--					clocksrc = 0;
--					clockdiv = sys_freq / 16000000;
--					freq = sys_freq / clockdiv;
--				}
--			} else {
--				clocksrc = 0;
--				freq = sys_freq / clockdiv;
--			}
+-	err = LONG_MAX;
+-	bestval = pixval;
+-	pr_debug("DIU bestval = %lu\n", bestval);
+-
+-	bestfreq = 0;
+-	for (i = -1; i <= 1; i++) {
+-		temp = speed / (pixval+i);
+-		pr_debug("DIU test pixval i=%d, pixval=%lu, temp freq. = %u\n",
+-			i, pixval, temp);
+-		if ((temp < minpixclock) || (temp > maxpixclock))
+-			pr_debug("DIU exceeds monitor range (%lu to %lu)\n",
+-				minpixclock, maxpixclock);
+-		else if (abs(temp - pixclock) < err) {
+-			pr_debug("Entered the else if block %d\n", i);
+-			err = abs(temp - pixclock);
+-			bestval = pixval + i;
+-			bestfreq = temp;
 -		}
--
--		if (clocksrc < 0) {
--			ref_clk = devm_clk_get(&ofdev->dev, "ref_clk");
--			if (IS_ERR(ref_clk)) {
--				dev_err(&ofdev->dev, "couldn't get ref_clk\n");
--				goto exit_unmap;
--			}
--			clocksrc = 1;
--			freq = clk_get_rate(ref_clk) / clockdiv;
--		}
--	}
--
--	/* Disable clock */
--	out_be32(&clockctl->mccr[clockidx], 0x0);
--	if (clocksrc >= 0) {
--		/* Set source and divider */
--		val = (clocksrc << 14) | ((clockdiv - 1) << 17);
--		out_be32(&clockctl->mccr[clockidx], val);
--		/* Enable clock */
--		out_be32(&clockctl->mccr[clockidx], val | 0x10000);
--	}
--
--	/* Enable MSCAN clock domain */
--	val = in_be32(&clockctl->sccr[1]);
--	if (!(val & (1 << 25)))
--		out_be32(&clockctl->sccr[1], val | (1 << 25));
--
--	dev_dbg(&ofdev->dev, "using '%s' with frequency divider %d\n",
--		*mscan_clksrc == MSCAN_CLKSRC_IPS ? "ips_clk" :
--		clocksrc == 1 ? "ref_clk" : "sys_clk", clockdiv);
--
--exit_unmap:
--	iounmap(clockctl);
--exit_put:
--	of_node_put(np_clock);
--	return freq;
--}
--
--#define mpc512x_can_put_clock NULL
--
--#endif	/* COMMON_CLK */
--
- #else /* !CONFIG_PPC_MPC512x */
- static u32 mpc512x_can_get_clock(struct platform_device *ofdev,
- 				 const char *clock_name, int *mscan_clksrc)
++	/*
++	 * convert the picoseconds spec into the desired clock rate,
++	 * determine the acceptable clock range for the monitor (+/- 5%),
++	 * do the calculation in steps to avoid integer overflow
++	 */
++	pr_debug("DIU pixclock in ps - %u\n", pixclock);
++	pixclock = (1000000000 / pixclock) * 1000;
++	pr_debug("DIU pixclock freq  - %u\n", pixclock);
++	epsilon = pixclock / 20; /* pixclock * 0.05 */
++	pr_debug("DIU deviation      - %lu\n", epsilon);
++	minpixclock = pixclock - epsilon;
++	maxpixclock = pixclock + epsilon;
++	pr_debug("DIU minpixclock    - %lu\n", minpixclock);
++	pr_debug("DIU maxpixclock    - %lu\n", maxpixclock);
++
++	/*
++	 * check whether the DIU supports the desired pixel clock
++	 *
++	 * - simply request the desired clock and see what the
++	 *   platform's clock driver will make of it, assuming that it
++	 *   will setup the best approximation of the requested value
++	 * - try other candidate frequencies in the order of decreasing
++	 *   preference (i.e. with increasing distance from the desired
++	 *   pixel clock, and checking the lower frequency before the
++	 *   higher frequency to not overload the hardware) until the
++	 *   first match is found -- any potential subsequent match
++	 *   would only be as good as the former match or typically
++	 *   would be less preferrable
++	 *
++	 * the offset increment of pixelclock divided by 64 is an
++	 * arbitrary choice -- it's simple to calculate, in the typical
++	 * case we expect the first check to succeed already, in the
++	 * worst case seven frequencies get tested (the exact center and
++	 * three more values each to the left and to the right) before
++	 * the 5% tolerance window is exceeded, resulting in fast enough
++	 * execution yet high enough probability of finding a suitable
++	 * value, while the error rate will be in the order of single
++	 * percents
++	 */
++	for (offset = 0; offset <= epsilon; offset += pixclock / 64) {
++		want = pixclock - offset;
++		pr_debug("DIU checking clock - %lu\n", want);
++		clk_set_rate(clk_diu, want);
++		got = clk_get_rate(clk_diu);
++		delta = abs(pixclock - got);
++		if (delta < epsilon)
++			break;
++		if (!offset)
++			continue;
++		want = pixclock + offset;
++		pr_debug("DIU checking clock - %lu\n", want);
++		clk_set_rate(clk_diu, want);
++		got = clk_get_rate(clk_diu);
++		delta = abs(pixclock - got);
++		if (delta < epsilon)
++			break;
+ 	}
++	if (offset <= epsilon) {
++		pr_debug("DIU clock accepted - %lu\n", want);
++		pr_debug("DIU pixclock want %u, got %lu, delta %lu, eps %lu\n",
++			 pixclock, got, delta, epsilon);
++		return;
++	}
++	pr_warn("DIU pixclock auto search unsuccessful\n");
+ 
+-	pr_debug("DIU chose = %lx\n", bestval);
+-	pr_debug("DIU error = %ld\n NomPixClk ", err);
+-	pr_debug("DIU: Best Freq = %lx\n", bestfreq);
+-	/* Modify DIU_DIV in CCM SCFR1 */
+-	temp = in_be32(&ccm->scfr1);
+-	pr_debug("DIU: Current value of SCFR1: 0x%08x\n", temp);
+-	temp &= ~DIU_DIV_MASK;
+-	temp |= (bestval & DIU_DIV_MASK);
+-	out_be32(&ccm->scfr1, temp);
+-	pr_debug("DIU: Modified value of SCFR1: 0x%08x\n", temp);
+-	iounmap(ccm);
++	/*
++	 * what is the most appropriate action to take when the search
++	 * for an available pixel clock which is acceptable to the
++	 * monitor has failed?  disable the DIU (clock) or just provide
++	 * a "best effort"?  we go with the latter
++	 */
++	pr_warn("DIU pixclock best effort fallback (backend's choice)\n");
++	clk_set_rate(clk_diu, pixclock);
++	got = clk_get_rate(clk_diu);
++	delta = abs(pixclock - got);
++	pr_debug("DIU pixclock want %u, got %lu, delta %lu, eps %lu\n",
++		 pixclock, got, delta, epsilon);
+ }
+ 
+ static enum fsl_diu_monitor_port
 -- 
 1.7.10.4
