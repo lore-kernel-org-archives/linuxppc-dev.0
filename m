@@ -1,28 +1,15 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2AA062C00DE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Nov 2013 01:40:11 +1100 (EST)
-Date: Fri, 29 Nov 2013 15:39:37 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4 7/9] cpuidle/powernv: Add "Fast-Sleep" CPU idle
- state
-In-Reply-To: <20131129104319.651.29563.stgit@preeti.in.ibm.com>
-Message-ID: <alpine.DEB.2.02.1311291301300.30673@ionos.tec.linutronix.de>
-References: <20131129104010.651.23117.stgit@preeti.in.ibm.com>
- <20131129104319.651.29563.stgit@preeti.in.ibm.com>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id A91A62C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Nov 2013 21:07:11 +1100 (EST)
+Date: Sat, 30 Nov 2013 02:07:04 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 3.13-rc1: eth0 hw csum failure on powerpc
+Message-ID: <alpine.DEB.2.11.1311300156380.31521@trent.utfs.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org,
- shangw@linux.vnet.ibm.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
- arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org,
- michael@ellerman.id.au, john.stultz@linaro.org, chenhui.zhao@freescale.com,
- deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,50 +19,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 29 Nov 2013, Preeti U Murthy wrote:
-> +static enum hrtimer_restart handle_broadcast(struct hrtimer *hrtimer)
-> +{
-> +	struct clock_event_device *bc_evt = &bc_timer;
-> +	ktime_t interval, next_bc_tick, now;
-> +
-> +	now = ktime_get();
-> +
-> +	if (!restart_broadcast(bc_evt))
-> +		return HRTIMER_NORESTART;
-> +
-> +	interval = ktime_sub(bc_evt->next_event, now);
-> +	next_bc_tick = get_next_bc_tick();
+Hi,
 
-So you're seriously using a hrtimer to poll in HZ frequency for
-updates of bc->next_event?
+while trying to upgrade from 3.12.0 to 3.13-rc1 or -rc2, the following 
+happens early during bootup:
 
-To be honest, this design sucks.
+[...]
+ Freeing unused kernel memory: 204K (c06ea000 - c071d000)
+ eth0: hw csum failure
+ CPU: 0 PID: 0 Comm: swapper Not tainted 3.13.0-rc2 #1
+ Call Trace:
+ [effefd00] [c0008b3c] show_stack+0x48/0x150 (unreliable)
+ [effefd40] [c045c6ac] __skb_checksum_complete_head+0x7c/0x80
+ [effefd50] [c04fefd8] icmpv6_rcv+0x1cc/0x62c
+ [effefdf0] [c04e3dd4] ip6_input+0x140/0x4b4
+ [effefe30] [c04e422c] ip6_mc_input+0xe4/0x19c
+ [effefe40] [c046254c] __netif_receive_skb_core+0x5c4/0x760
+ [effefea0] [c04654a0] napi_gro_receive+0xac/0xd8
+ [effefeb0] [c03da7e8] gem_poll+0x5bc/0x119c
+ [effeff50] [c0465140] net_rx_action+0x150/0x24c
+ [effeff90] [c003533c] __do_softirq+0xe8/0x1e8
+ [effeffe0] [c003586c] irq_exit+0xa4/0xc8
+ [effefff0] [c000e678] call_do_irq+0x24/0x3c
+ [c0753e90] [c0006448] do_IRQ+0x64/0xb4
+ [c0753eb0] [c0010fac] ret_from_except+0x0/0x14
+ --- Exception: 501 at arch_cpu_idle+0x24/0x94
+     LR = arch_cpu_idle+0x24/0x94
+ [c0753f70] [c0073440] rcu_idle_enter+0x90/0xdc (unreliable)
+ [c0753f80] [c006d05c] cpu_startup_entry+0xa8/0x178
+ [c0753fb0] [c06ece70] start_kernel+0x2f0/0x304
+ [c0753ff0] [00003444] 0x3444
 
-First of all, why is this a PPC specific feature? There are probably
-other architectures which could make use of this. So this should be
-implemented in the core code to begin with.
 
-And a lot of the things you need for this are already available in the
-core in one form or the other.
+This happens only first right after "Freeing unused kernel...", then 
+bootup continues....until a certain point, where these messages are 
+repated really often, like 10 times at once, every 5 seconds.
 
-For a start you can stick the broadcast hrtimer to the cpu which does
-the timekeeping. The handover in the hotplug case is handled there as
-well as is the handover for the NOHZ case.
+Bootup continues though and I'm even able to login remotely via SSH,
+but the messages are really annoying. In 3.13-rc1, the system
+rebooted itself shortly after bootup was complete, probably due to
+these "eth0: hw csum failure" messages, I assume.
 
-This needs to be extended for this hrtimer broadcast thingy to work,
-but it shouldn't be that hard to do so.
-
-Now for the polling. That's a complete trainwreck.
-
-This can be solved via the broadcast IPI as well. When a CPU which
-goes down into deep idle sets the broadcast to expire earlier than the
-active value it can denote that and send the timer broadcast IPI over
-to the CPU which has the honour of dealing with this.
-
-This supports HIGHRES and NO_HZ if done right, without polling at
-all. So you can even let the last CPU which handles the broadcast
-hrtimer go for a long sleep, just not in the deepest idle state.
+Any ideas on that?
 
 Thanks,
+Christian.
+-- 
+BOFH excuse #16:
 
-	tglx
+somebody was calculating pi on the server
