@@ -1,19 +1,27 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 77CAC2C013B
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Dec 2013 09:52:25 +1100 (EST)
-From: Gerhard Sittig <gsi@denx.de>
-To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Anatolij Gustschin <agust@denx.de>, Mike Turquette <mturquette@linaro.org>
-Subject: [PATCH v6 17/17] clk: mpc512x: remove migration support workarounds
-Date: Sat, 30 Nov 2013 23:51:37 +0100
-Message-Id: <1385851897-23475-18-git-send-email-gsi@denx.de>
-In-Reply-To: <1385851897-23475-1-git-send-email-gsi@denx.de>
-References: <1385851897-23475-1-git-send-email-gsi@denx.de>
-Cc: Scott Wood <scottwood@freescale.com>, Gerhard Sittig <gsi@denx.de>,
- Detlev Zundel <dzu@denx.de>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
+ [IPv6:2607:f8b0:400e:c02::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9C71A2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Dec 2013 20:50:21 +1100 (EST)
+Received: by mail-pd0-f176.google.com with SMTP id w10so15976798pde.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Dec 2013 01:50:16 -0800 (PST)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1385891092-13266-1-git-send-email-geert@linux-m68k.org>
+References: <1385891092-13266-1-git-send-email-geert@linux-m68k.org>
+Date: Sun, 1 Dec 2013 10:50:16 +0100
+Message-ID: <CAMuHMdV1hoUnYixPghCAy-LuTaB9JU-BFfBPH06gxhLRAqfp8Q@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.13-rc2
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: sparclinux <sparclinux@vger.kernel.org>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,104 +31,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-this change removes workarounds which have become obsolete after
-migration to common clock support has completed
-- remove clkdev registration calls (compatibility clock item aliases)
-  after all peripheral drivers were adjusted for device tree based
-  clock lookup
-- remove pre-enable workarounds after all peripheral drivers were
-  adjusted to acquire their respective clock items
+On Sun, Dec 1, 2013 at 10:44 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.13-rc2[1] to v3.13-rc1[3], the summaries are:
+>   - build errors: +8/-8
+>   - build warnings: +147/-97
 
-workarounds for these clock items get removed:  FEC (ethernet), I2C,
-PSC (UART, SPI), PSC FIFO, USB, NFC (NAND flash), VIU (video capture),
-BDLC (CAN), CAN MCLK, DIU (video output)
+  + /scratch/kisskb/src/drivers/crypto/caam/jr.c: error: implicit
+declaration of function 'of_iomap'
+[-Werror=implicit-function-declaration]:  => 468:2
 
-these clkdev registered names won't be provided any longer by the
-MPC512x platform's clock driver:  "psc%d_mclk", "mscan%d_mclk",
-"usb%d_clk", "nfc_clk", "viu_clk", "sys_clk", "ref_clk"
+powerpc/mpc85xx_defconfig
 
-the pre-enable workaround for PCI remains, but depends on the presence
-of PCI related device tree nodes (disables the PCI clock in the absence
-of PCI nodes, keeps the PCI clock enabled in the presence of nodes) --
-moving clock acquisition into the peripheral driver isn't possible for
-PCI because its initialization takes place before the platform clock
-driver gets initialized, thus the clock provider isn't available then
+  + /scratch/kisskb/src/arch/powerpc/kernel/swsusp_booke.S: Error:
+invalid sprg number:  => 161, 85, 165, 91, 167, 163, 87, 89
 
-Cc: Mike Turquette <mturquette@linaro.org>
-Cc: Anatolij Gustschin <agust@denx.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
----
- arch/powerpc/platforms/512x/clock-commonclk.c |   50 ++++++++-----------------
- 1 file changed, 16 insertions(+), 34 deletions(-)
+powerpc-randconfig
 
-diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
-index 945e4609e773..189be4a4cb42 100644
---- a/arch/powerpc/platforms/512x/clock-commonclk.c
-+++ b/arch/powerpc/platforms/512x/clock-commonclk.c
-@@ -696,46 +696,28 @@ static void mpc5121_clk_register_of_provider(struct device_node *np)
-  */
- static void mpc5121_clk_provide_migration_support(void)
- {
--	int idx;
--	char name[32];
--
--	/*
--	 * provide "pre-CCF" alias clock names for peripheral drivers
--	 * which have not yet been adjusted to do OF based clock lookups
--	 */
--	clk_register_clkdev(clks[MPC512x_CLK_REF], "ref_clk", NULL);
--	clk_register_clkdev(clks[MPC512x_CLK_SYS], "sys_clk", NULL);
--	clk_register_clkdev(clks[MPC512x_CLK_VIU], "viu_clk", NULL);
--	clk_register_clkdev(clks[MPC512x_CLK_NFC], "nfc_clk", NULL);
--	clk_register_clkdev(clks[MPC512x_CLK_USB1], "usb1_clk", NULL);
--	clk_register_clkdev(clks[MPC512x_CLK_USB2], "usb2_clk", NULL);
--	for (idx = 0; idx < NR_PSCS; idx++) {
--		snprintf(name, sizeof(name), "psc%d_mclk", idx);
--		clk_register_clkdev(clks[MPC512x_CLK_PSC0_MCLK + idx],
--				    name, NULL);
--	}
--	for (idx = 0; idx < NR_MSCANS; idx++) {
--		snprintf(name, sizeof(name), "mscan%d_mclk", idx);
--		clk_register_clkdev(clks[MPC512x_CLK_MSCAN0_MCLK + idx],
--				    name, NULL);
--	}
--	clk_register_clkdev(clks[MPC512x_CLK_SPDIF_MCLK], "spdif_mclk", NULL);
- 
- 	/*
- 	 * pre-enable those clock items which are not yet appropriately
- 	 * acquired by their peripheral driver
-+	 *
-+	 * the PCI clock cannot get acquired by its peripheral driver,
-+	 * because for this platform the driver won't probe(), instead
-+	 * initialization is done from within the .setup_arch() routine
-+	 * at a point in time where the clock provider has not been
-+	 * setup yet and thus isn't available yet
-+	 *
-+	 * so we "pre-enable" the clock here, to not have the clock
-+	 * subsystem automatically disable this item in a late init call
-+	 *
-+	 * this PCI clock pre-enable workaround only applies when there
-+	 * are device tree nodes for PCI and thus the peripheral driver
-+	 * has attached to bridges, otherwise the PCI clock remains
-+	 * unused and so it gets disabled
- 	 */
--	clk_prepare_enable(clks[MPC512x_CLK_PSC_FIFO]);
- 	clk_prepare_enable(clks[MPC512x_CLK_PSC3_MCLK]);/* serial console */
--	clk_prepare_enable(clks[MPC512x_CLK_FEC]);	/* network, NFS */
--	clk_prepare_enable(clks[MPC512x_CLK_DIU]);	/* display */
--	clk_prepare_enable(clks[MPC512x_CLK_I2C]);	/* I2C */
--	for (idx = 0; idx < NR_PSCS; idx++)		/* PSC ipg */
--		clk_prepare_enable(clks[MPC512x_CLK_PSC0 + idx]);
--	clk_prepare_enable(clks[MPC512x_CLK_BDLC]);	/* MSCAN ipg */
--	for (idx = 0; idx < NR_MSCANS; idx++)		/* MSCAN mclk */
--		clk_prepare_enable(clks[MPC512x_CLK_MSCAN0_MCLK + idx]);
--	clk_prepare_enable(clks[MPC512x_CLK_PCI]);	/* PCI */
-+	if (of_find_compatible_node(NULL, "pci", "fsl,mpc5121-pci"))
-+		clk_prepare_enable(clks[MPC512x_CLK_PCI]);
- }
- 
- /*
--- 
-1.7.10.4
+  + /scratch/kisskb/src/drivers/tty/ehv_bytechan.c: error: type
+defaults to 'int' in declaration of 'console_initcall'
+[-Werror=implicit-int]:  => 363:1
+
+powerpc-allmodconfig
+
+  + /scratch/kisskb/src/arch/sparc/kernel/kgdb_64.c: error: implicit
+declaration of function 'exception_enter'
+[-Werror=implicit-function-declaration]:  => 162:7
+  + /scratch/kisskb/src/arch/sparc/kernel/kgdb_64.c: error: implicit
+declaration of function 'exception_exit'
+[-Werror=implicit-function-declaration]:  => 176:2
+
+sparc64-allmodconfig
+
+  + error: drivers/built-in.o: undefined reference to
+`i2c_register_driver':  => .init.literal+0xd88)
+  + error: sram.c: undefined reference to `devm_regmap_init_i2c':  =>
+.text+0x590dc)
+
+sparc-allmodconfig
+xtensa-allmodconfig
+
+  + /scratch/kisskb/src/drivers/gpu/drm/drm_gem_cma_helper.c: error:
+implicit declaration of function 'dma_alloc_writecombine'
+[-Werror=implicit-function-declaration]:  => 91:2
+  + /scratch/kisskb/src/drivers/gpu/drm/drm_gem_cma_helper.c: error:
+implicit declaration of function 'dma_free_writecombine'
+[-Werror=implicit-function-declaration]:  => 176:3
+
+sh-randconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/6939/ (119 out of 120 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/6919/ (119 out of 120 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
