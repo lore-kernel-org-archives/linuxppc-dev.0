@@ -1,27 +1,17 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
- [IPv6:2607:f8b0:400e:c02::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9C71A2C008E
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Dec 2013 20:50:21 +1100 (EST)
-Received: by mail-pd0-f176.google.com with SMTP id w10so15976798pde.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Dec 2013 01:50:16 -0800 (PST)
+Return-Path: <rusty@ozlabs.org>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 3/9] powerpc: Add TIF_ELF2ABI flag.
+In-Reply-To: <20131121115503.GD15913@concordia>
+References: <1384946106-18200-1-git-send-email-anton@samba.org>
+ <1384946106-18200-4-git-send-email-anton@samba.org>
+ <20131121115503.GD15913@concordia>
+Date: Sun, 01 Dec 2013 21:00:50 +1030
+Message-ID: <874n6s3lt1.fsf@rustcorp.com.au>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1385891092-13266-1-git-send-email-geert@linux-m68k.org>
-References: <1385891092-13266-1-git-send-email-geert@linux-m68k.org>
-Date: Sun, 1 Dec 2013 10:50:16 +0100
-Message-ID: <CAMuHMdV1hoUnYixPghCAy-LuTaB9JU-BFfBPH06gxhLRAqfp8Q@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.13-rc2
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: sparclinux <sparclinux@vger.kernel.org>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux-sh list <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: alistair@popple.id.au, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ Ulrich.Weigand@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,65 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Dec 1, 2013 at 10:44 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.13-rc2[1] to v3.13-rc1[3], the summaries are:
->   - build errors: +8/-8
->   - build warnings: +147/-97
+Michael Ellerman <mpe@ellerman.id.au> writes:
+> On Wed, Nov 20, 2013 at 10:15:00PM +1100, Anton Blanchard wrote:
+>> From: Rusty Russell <rusty@rustcorp.com.au>
+>> 
+>> Little endian ppc64 is getting an exciting new ABI.  This is reflected
+>> by the bottom two bits of e_flags in the ELF header:
+>> 
+>> 	0 == legacy binaries (v1 ABI)
+>> 	1 == binaries using the old ABI (compiled with a new toolchain)
+>> 	2 == binaries using the new ABI.
+>
+> Just to be ridiculously clear for stupid people like me, you refer here
+> to the "v1 ABI" and "the old ABI" - they are the same thing - right?
 
-  + /scratch/kisskb/src/drivers/crypto/caam/jr.c: error: implicit
-declaration of function 'of_iomap'
-[-Werror=implicit-function-declaration]:  => 468:2
+Sorry for delay, was off for a week.
 
-powerpc/mpc85xx_defconfig
+Yes, same thing.
 
-  + /scratch/kisskb/src/arch/powerpc/kernel/swsusp_booke.S: Error:
-invalid sprg number:  => 161, 85, 165, 91, 167, 163, 87, 89
+>> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+>> index ba7b197..05a3030 100644
+>> --- a/arch/powerpc/include/asm/thread_info.h
+>> +++ b/arch/powerpc/include/asm/thread_info.h
+>> @@ -107,6 +107,9 @@ static inline struct thread_info *current_thread_info(void)
+>>  #define TIF_EMULATE_STACK_STORE	16	/* Is an instruction emulation
+>>  						for stack store? */
+>>  #define TIF_MEMDIE		17	/* is terminating due to OOM killer */
+>> +#if defined(CONFIG_PPC64)
+>> +#define TIF_ELF2ABI		18	/* function descriptors must die! */
+>> +#endif
+>
+> This is the first TIF flag we #ifdef for 32 vs 64, is that just because
+> we don't want to waste a flag on 32 bit?
 
-powerpc-randconfig
+No, it's because I wanted to make damn sure that there wasn't anyone
+testing this in 32-bit code, since ELF2 is currently a 64-bit only
+option.
 
-  + /scratch/kisskb/src/drivers/tty/ehv_bytechan.c: error: type
-defaults to 'int' in declaration of 'console_initcall'
-[-Werror=implicit-int]:  => 363:1
-
-powerpc-allmodconfig
-
-  + /scratch/kisskb/src/arch/sparc/kernel/kgdb_64.c: error: implicit
-declaration of function 'exception_enter'
-[-Werror=implicit-function-declaration]:  => 162:7
-  + /scratch/kisskb/src/arch/sparc/kernel/kgdb_64.c: error: implicit
-declaration of function 'exception_exit'
-[-Werror=implicit-function-declaration]:  => 176:2
-
-sparc64-allmodconfig
-
-  + error: drivers/built-in.o: undefined reference to
-`i2c_register_driver':  => .init.literal+0xd88)
-  + error: sram.c: undefined reference to `devm_regmap_init_i2c':  =>
-.text+0x590dc)
-
-sparc-allmodconfig
-xtensa-allmodconfig
-
-  + /scratch/kisskb/src/drivers/gpu/drm/drm_gem_cma_helper.c: error:
-implicit declaration of function 'dma_alloc_writecombine'
-[-Werror=implicit-function-declaration]:  => 91:2
-  + /scratch/kisskb/src/drivers/gpu/drm/drm_gem_cma_helper.c: error:
-implicit declaration of function 'dma_free_writecombine'
-[-Werror=implicit-function-declaration]:  => 176:3
-
-sh-randconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/6939/ (119 out of 120 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/6919/ (119 out of 120 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Cheers,
+Rusty.
