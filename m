@@ -1,17 +1,19 @@
-Return-Path: <rusty@ozlabs.org>
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 3/9] powerpc: Add TIF_ELF2ABI flag.
-In-Reply-To: <20131121115503.GD15913@concordia>
-References: <1384946106-18200-1-git-send-email-anton@samba.org>
- <1384946106-18200-4-git-send-email-anton@samba.org>
- <20131121115503.GD15913@concordia>
-Date: Sun, 01 Dec 2013 21:00:50 +1030
-Message-ID: <874n6s3lt1.fsf@rustcorp.com.au>
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 886CD2C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 06:43:16 +1100 (EST)
+Message-ID: <529B9152.9090106@roeck-us.net>
+Date: Sun, 01 Dec 2013 11:43:14 -0800
+From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: alistair@popple.id.au, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Ulrich.Weigand@de.ibm.com
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Wim Van Sebroeck <wim@iguana.be>, scottwood@freescale.com
+Subject: Re: [PATCH] watchdog: mpc8xxx_wdt: MPC8xx is HW enabled
+References: <20131130154540.E83D743E15@localhost.localdomain>
+In-Reply-To: <20131130154540.E83D743E15@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,42 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-> On Wed, Nov 20, 2013 at 10:15:00PM +1100, Anton Blanchard wrote:
->> From: Rusty Russell <rusty@rustcorp.com.au>
->> 
->> Little endian ppc64 is getting an exciting new ABI.  This is reflected
->> by the bottom two bits of e_flags in the ELF header:
->> 
->> 	0 == legacy binaries (v1 ABI)
->> 	1 == binaries using the old ABI (compiled with a new toolchain)
->> 	2 == binaries using the new ABI.
+On 11/30/2013 07:45 AM, Christophe Leroy wrote:
+> MPC8xx watchdog is enabled at startup by HW.
+> If the bootloader disables it, it cannot be reenabled.
 >
-> Just to be ridiculously clear for stupid people like me, you refer here
-> to the "v1 ABI" and "the old ABI" - they are the same thing - right?
 
-Sorry for delay, was off for a week.
+Is that true for all variants of 8xx, especially for 823 ? I am a bit concerned
+about breaking compatibility with some chips ... assuming there was a reason
+for not setting this flag originally.
 
-Yes, same thing.
+Thanks,
+Guenter
 
->> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
->> index ba7b197..05a3030 100644
->> --- a/arch/powerpc/include/asm/thread_info.h
->> +++ b/arch/powerpc/include/asm/thread_info.h
->> @@ -107,6 +107,9 @@ static inline struct thread_info *current_thread_info(void)
->>  #define TIF_EMULATE_STACK_STORE	16	/* Is an instruction emulation
->>  						for stack store? */
->>  #define TIF_MEMDIE		17	/* is terminating due to OOM killer */
->> +#if defined(CONFIG_PPC64)
->> +#define TIF_ELF2ABI		18	/* function descriptors must die! */
->> +#endif
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 >
-> This is the first TIF flag we #ifdef for 32 vs 64, is that just because
-> we don't want to waste a flag on 32 bit?
-
-No, it's because I wanted to make damn sure that there wasn't anyone
-testing this in 32-bit code, since ELF2 is currently a 64-bit only
-option.
-
-Cheers,
-Rusty.
+> diff -ur a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+> --- a/drivers/watchdog/mpc8xxx_wdt.c	2013-05-11 22:57:46.000000000 +0200
+> +++ b/drivers/watchdog/mpc8xxx_wdt.c	2013-08-08 02:12:15.000000000 +0200
+> @@ -273,6 +310,7 @@
+>   		.compatible = "fsl,mpc823-wdt",
+>   		.data = &(struct mpc8xxx_wdt_type) {
+>   			.prescaler = 0x800,
+> +			.hw_enabled = true,
+>   		},
+>   	},
+>   	{},
+>
+> ---
+> Ce courrier électronique ne contient aucun virus ou logiciel malveillant parce que la protection avast! Antivirus est active.
+> http://www.avast.com
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
