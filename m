@@ -1,22 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 70DEC2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 17:22:11 +1100 (EST)
-To: Guenter Roeck <linux@roeck-us.net>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH] watchdog: mpc8xxx_wdt: MPC8xx is HW enabled
-MIME-Version: 1.0
-Content-type: text/plain; charset=UTF-8
-In-reply-to: <529B9152.9090106@roeck-us.net>
-References: <20131130154540.E83D743E15@localhost.localdomain>
- <529B9152.9090106@roeck-us.net>
-Date: Mon, 02 Dec 2013 07:14:17 +0100
-Message-Id: <20131202061418.05A11380BFE@gemini.denx.de>
-Cc: linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
- Wim Van Sebroeck <wim@iguana.be>, scottwood@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <zhouzhouyi@gmail.com>
+Received: from mail-pb0-x232.google.com (mail-pb0-x232.google.com
+ [IPv6:2607:f8b0:400e:c01::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D75F62C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 18:20:04 +1100 (EST)
+Received: by mail-pb0-f50.google.com with SMTP id rr13so18338294pbb.37
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Dec 2013 23:20:00 -0800 (PST)
+From: zhouzhouyi@gmail.com
+To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>, <dwmw2@infradead.org>,
+ <joro@8bytes.org>, <benh@kernel.crashing.org>
+Subject: re: ping: re:[PATCH 1/1] kernel code that do not handle NULL return
+ of kmem_cache_zalloc
+Date: Mon,  2 Dec 2013 15:19:44 +0800
+Message-Id: <1385968784-25901-1-git-send-email-zhouzhouyi@gmail.com>
+Cc: Zhouyi Zhou <zhouzhouyi@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +26,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Guenter,
+From: Zhouyi Zhou <zhouzhouyi@gmail.com>
 
-In message <529B9152.9090106@roeck-us.net> you wrote:
-> On 11/30/2013 07:45 AM, Christophe Leroy wrote:
-> > MPC8xx watchdog is enabled at startup by HW.
-> > If the bootloader disables it, it cannot be reenabled.
-> 
-> Is that true for all variants of 8xx, especially for 823 ? I am a bit concerned
-> about breaking compatibility with some chips ... assuming there was a reason
-> for not setting this flag originally.
+the text of previous ping message maybe garbled sorry for the trouble
 
-This is correct, and applies for all variants of the MPC8xx, including
-the MPC823 / MPC823E.  From the UM:
+> I do a grep for kmem_cache_zalloc and kmem_cache_alloc
+> in kernel tree, and find some code do not handle NULL
+> return of kmem_cache_zalloc correctly
 
-	"The software watchdog timer can be disabled or its timeout
-	period can be changed in the SYPCR. Once the SYPCR is written,
-	it cannot be written again until a system reset."
 
-Actually this is the only correct behaviour.  Any watchdog that can be
-disabled by software is not worth it's name, and unsuitable for any
-kind of aplications where security / reliability are required.
+> Signed-off-by: Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+---
+ arch/powerpc/kvm/book3s_32_mmu_host.c |    5 +++++
+ drivers/iommu/omap-iommu.c            |    3 ++-
+ fs/jffs2/malloc.c                     |    4 ++++
+ 3 files changed, 11 insertions(+), 1 deletion(-)
 
-Best regards,
-
-Wolfgang Denk
-
+diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
+index 3a0abd2..5fac89d 100644
+--- a/arch/powerpc/kvm/book3s_32_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
+@@ -243,6 +243,11 @@ next_pteg:
+ 	/* Now tell our Shadow PTE code about the new page */
+ 
+ 	pte = kvmppc_mmu_hpte_cache_next(vcpu);
++	if (!pte) {
++		kvm_release_pfn_clean(hpaddr >> PAGE_SHIFT);
++		r = -EAGAIN;
++		goto out;
++	}
+ 
+ 	dprintk_mmu("KVM: %c%c Map 0x%llx: [%lx] 0x%llx (0x%llx) -> %lx\n",
+ 		    orig_pte->may_write ? 'w' : '-',
+diff --git a/drivers/iommu/omap-iommu.c b/drivers/iommu/omap-iommu.c
+index bcd78a7..5155714 100644
+--- a/drivers/iommu/omap-iommu.c
++++ b/drivers/iommu/omap-iommu.c
+@@ -551,7 +551,8 @@ static u32 *iopte_alloc(struct omap_iommu *obj, u32 *iopgd, u32 da)
+ 		dev_vdbg(obj->dev, "%s: a new pte:%p\n", __func__, iopte);
+ 	} else {
+ 		/* We raced, free the reduniovant table */
+-		iopte_free(iopte);
++		if (iopte)
++			iopte_free(iopte);
+ 	}
+ 
+ pte_ready:
+diff --git a/fs/jffs2/malloc.c b/fs/jffs2/malloc.c
+index 4f47aa2..58e2336 100644
+--- a/fs/jffs2/malloc.c
++++ b/fs/jffs2/malloc.c
+@@ -287,6 +287,8 @@ struct jffs2_xattr_datum *jffs2_alloc_xattr_datum(void)
+ {
+ 	struct jffs2_xattr_datum *xd;
+ 	xd = kmem_cache_zalloc(xattr_datum_cache, GFP_KERNEL);
++	if (!xd)
++		return NULL;
+ 	dbg_memalloc("%p\n", xd);
+ 
+ 	xd->class = RAWNODE_CLASS_XATTR_DATUM;
+@@ -305,6 +307,8 @@ struct jffs2_xattr_ref *jffs2_alloc_xattr_ref(void)
+ {
+ 	struct jffs2_xattr_ref *ref;
+ 	ref = kmem_cache_zalloc(xattr_ref_cache, GFP_KERNEL);
++	if (!ref)
++		return NULL;
+ 	dbg_memalloc("%p\n", ref);
+ 
+ 	ref->class = RAWNODE_CLASS_XATTR_REF;
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Ninety-Ninety Rule of Project Schedules:
-        The first ninety percent of the task takes ninety percent of
-the time, and the last ten percent takes the other ninety percent.
+1.7.10.4
