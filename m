@@ -1,26 +1,25 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F40F02C0408
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 02:10:57 +1100 (EST)
-Date: Mon, 2 Dec 2013 16:10:50 +0100
-From: Gerhard Sittig <gsi@denx.de>
-To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v6 08/17] spi: mpc512x: adjust to OF based clock lookup
-Message-ID: <20131202151050.GU2982@book.gsilab.sittig.org>
-References: <1385851897-23475-1-git-send-email-gsi@denx.de>
- <1385851897-23475-9-git-send-email-gsi@denx.de>
- <20131202095034.GB12952@e106331-lin.cambridge.arm.com>
+Return-Path: <guangyu.chen@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0248.outbound.messaging.microsoft.com [213.199.154.248])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 646BE2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 02:24:26 +1100 (EST)
+Date: Mon, 2 Dec 2013 23:21:31 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2] ASoC: fsl_ssi: Add monaural audio support for
+ non-ac97 interface
+Message-ID: <20131202152130.GB8609@MrMyself>
+References: <1384532729-6588-1-git-send-email-b42378@freescale.com>
+ <20131202115617.GV27568@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131202095034.GB12952@e106331-lin.cambridge.arm.com>
-Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
- "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>,
- Mark Brown <broonie@kernel.org>, Scott Wood <scottwood@freescale.com>,
- Anatolij Gustschin <agust@denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20131202115617.GV27568@sirena.org.uk>
+Cc: alsa-devel@alsa-project.org, linux@arm.linux.org.uk,
+ linux-kernel@vger.kernel.org, lgirdwood@gmail.com, timur@tabi.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 02, 2013 at 09:50 +0000, Mark Rutland wrote:
+On Mon, Dec 02, 2013 at 11:56:17AM +0000, Mark Brown wrote:
+> On Sat, Nov 16, 2013 at 12:25:29AM +0800, Nicolin Chen wrote:
+> > The normal mode of SSI allows it to send/receive data to/from the first
+> > slot of each period. So we can use this normal mode to trick I2S signal
+> > by puting/getting data to/from the first slot only (the left channel)
+> > so as to support monaural audio playback and recording.
 > 
-> On Sat, Nov 30, 2013 at 10:51:28PM +0000, Gerhard Sittig wrote:
-> > after device tree based clock lookup became available, the peripheral
-> > driver need no longer construct clock names which include the PSC index,
-> > remove the "psc%d_mclk" template and unconditionally use 'mclk'
-> > 
-> > acquire and release the 'ipg' clock item for register access as well
-> 
-> For this and the other peripheral updates, it would be nice to have the
-> expected clock-names entries added to the respective binding documents.
-> Otherwise this looks fine to me.
+> This looks OK but doesn't apply against current code, can you please
+> check and resend?
 
-I will look into adding these 'clock-names' to binding documents
-for the peripherals, too (not just SPI but the others as well).
-Thank you for the feedback!
-
-It appears that not all of those peripherals have existing
-binding docs, so introducing these docs in the first place may
-exceed the scope of the CCF support introduction series, and I
-may have to create another series for the doc updates.  I assume
-that it's OK to address the issue of missing documentation in a
-separate action.
-
-
-virtually yours
-Gerhard Sittig
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+Ah, I rebased it on the dual-fifo set. Sorry I didn't make it clean.
+I will resend it. Thank you.
