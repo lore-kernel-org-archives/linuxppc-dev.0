@@ -1,23 +1,23 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 7201C2C009E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 20:51:07 +1100 (EST)
-Date: Mon, 2 Dec 2013 09:50:34 +0000
-From: Mark Rutland <mark.rutland@arm.com>
-To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: [PATCH v6 08/17] spi: mpc512x: adjust to OF based clock lookup
-Message-ID: <20131202095034.GB12952@e106331-lin.cambridge.arm.com>
-References: <1385851897-23475-1-git-send-email-gsi@denx.de>
- <1385851897-23475-9-git-send-email-gsi@denx.de>
-MIME-Version: 1.0
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ by ozlabs.org (Postfix) with ESMTP id 153212C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 20:53:45 +1100 (EST)
+Subject: Re: ping: re: [PATCH 1/1] kernel code that do not handle NULL return
+ of kmem_cache_zalloc
+Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1812\))
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1385851897-23475-9-git-send-email-gsi@denx.de>
-Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
- "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>,
- Mark Brown <broonie@kernel.org>, Scott Wood <scottwood@freescale.com>,
- Anatolij Gustschin <agust@denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <e9c283.a967.142b14600da.Coremail.yizhouzhou@ict.ac.cn>
+Date: Mon, 2 Dec 2013 10:54:51 +0100
+Message-Id: <65B0AD57-F44C-4360-916C-16D26884B09C@suse.de>
+References: <1385549465-15945-1-git-send-email-yizhouzhou@ict.ac.cn>
+ <e9c283.a967.142b14600da.Coremail.yizhouzhou@ict.ac.cn>
+To: Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ Zhouyi Zhou <zhouzhouyi@gmail.com>, Joerg Roedel <joro@8bytes.org>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ "linux-kernel@vger.kernel.org list" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,107 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Nov 30, 2013 at 10:51:28PM +0000, Gerhard Sittig wrote:
-> after device tree based clock lookup became available, the peripheral
-> driver need no longer construct clock names which include the PSC index,
-> remove the "psc%d_mclk" template and unconditionally use 'mclk'
-> 
-> acquire and release the 'ipg' clock item for register access as well
 
-For this and the other peripheral updates, it would be nice to have the
-expected clock-names entries added to the respective binding documents.
-Otherwise this looks fine to me.
+On 02.12.2013, at 04:07, Zhouyi Zhou <yizhouzhou@ict.ac.cn> wrote:
 
-Thanks,
-Mark.
+> ping
+>>  I do a grep for kmem_cache_zalloc and kmem_cache_alloc
+>>  in kernel tree, and find some code do not handle NULL
+>>  return of kmem_cache_zalloc correctly
+>> =20
+>> =20
+>>  Signed-off-by: Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 
-> 
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: linux-spi@vger.kernel.org
-> Signed-off-by: Gerhard Sittig <gsi@denx.de>
-> ---
->  drivers/spi/spi-mpc512x-psc.c |   26 ++++++++++++++++++--------
->  1 file changed, 18 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/spi/spi-mpc512x-psc.c b/drivers/spi/spi-mpc512x-psc.c
-> index 9602bbd8d7ea..de66c676c248 100644
-> --- a/drivers/spi/spi-mpc512x-psc.c
-> +++ b/drivers/spi/spi-mpc512x-psc.c
-> @@ -40,6 +40,7 @@ struct mpc512x_psc_spi {
->  	unsigned int irq;
->  	u8 bits_per_word;
->  	struct clk *clk_mclk;
-> +	struct clk *clk_ipg;
->  	u32 mclk_rate;
->  
->  	struct completion txisrdone;
-> @@ -475,8 +476,6 @@ static int mpc512x_psc_spi_do_probe(struct device *dev, u32 regaddr,
->  	struct spi_master *master;
->  	int ret;
->  	void *tempp;
-> -	int psc_num;
-> -	char clk_name[16];
->  	struct clk *clk;
->  
->  	master = spi_alloc_master(dev, sizeof *mps);
-> @@ -520,9 +519,7 @@ static int mpc512x_psc_spi_do_probe(struct device *dev, u32 regaddr,
->  		goto free_master;
->  	init_completion(&mps->txisrdone);
->  
-> -	psc_num = master->bus_num;
-> -	snprintf(clk_name, sizeof(clk_name), "psc%d_mclk", psc_num);
-> -	clk = devm_clk_get(dev, clk_name);
-> +	clk = devm_clk_get(dev, "mclk");
->  	if (IS_ERR(clk)) {
->  		ret = PTR_ERR(clk);
->  		goto free_irq;
-> @@ -533,17 +530,29 @@ static int mpc512x_psc_spi_do_probe(struct device *dev, u32 regaddr,
->  	mps->clk_mclk = clk;
->  	mps->mclk_rate = clk_get_rate(clk);
->  
-> +	clk = devm_clk_get(dev, "ipg");
-> +	if (IS_ERR(clk)) {
-> +		ret = PTR_ERR(clk);
-> +		goto free_mclk_clock;
-> +	}
-> +	ret = clk_prepare_enable(clk);
-> +	if (ret)
-> +		goto free_mclk_clock;
-> +	mps->clk_ipg = clk;
-> +
->  	ret = mpc512x_psc_spi_port_config(master, mps);
->  	if (ret < 0)
-> -		goto free_clock;
-> +		goto free_ipg_clock;
->  
->  	ret = devm_spi_register_master(dev, master);
->  	if (ret < 0)
-> -		goto free_clock;
-> +		goto free_ipg_clock;
->  
->  	return ret;
->  
-> -free_clock:
-> +free_ipg_clock:
-> +	clk_disable_unprepare(mps->clk_ipg);
-> +free_mclk_clock:
->  	clk_disable_unprepare(mps->clk_mclk);
->  free_irq:
->  	free_irq(mps->irq, mps);
-> @@ -561,6 +570,7 @@ static int mpc512x_psc_spi_do_remove(struct device *dev)
->  	struct mpc512x_psc_spi *mps = spi_master_get_devdata(master);
->  
->  	clk_disable_unprepare(mps->clk_mclk);
-> +	clk_disable_unprepare(mps->clk_ipg);
->  	free_irq(mps->irq, mps);
->  	if (mps->psc)
->  		iounmap(mps->psc);
-> -- 
-> 1.7.10.4
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
+Thanks a lot for the patch. I'd assume we want something slightly more =
+clever even, similar to Paul's d78bca729.
+
+Please beware that it's usually not a good idea to post patches that =
+span multiple subtrees. I don't want to apply a patch to my kvm tree =
+that touches jffs2 for example, as that's out of my scope. It usually =
+makes a maintainer's life easier if you split up a patch like this =
+according to tree responsibilities.
+
+
+Alex
