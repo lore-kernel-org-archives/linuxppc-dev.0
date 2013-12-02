@@ -1,19 +1,20 @@
-Return-Path: <linux@roeck-us.net>
-Received: from mail.active-venture.com (mail.active-venture.com
- [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 34EDD2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 06:44:44 +1100 (EST)
-Message-ID: <529B9019.9090404@roeck-us.net>
-Date: Sun, 01 Dec 2013 11:38:01 -0800
-From: Guenter Roeck <linux@roeck-us.net>
+Return-Path: <yizhouzhou@ict.ac.cn>
+Received: from cstnet.cn (smtp25.cstnet.cn [IPv6:2001:cc0:2fff:7::25])
+ by ozlabs.org (Postfix) with ESMTP id 1C2492C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 14:15:33 +1100 (EST)
+Date: Mon, 2 Dec 2013 11:07:04 +0800 (GMT+08:00)
+From: "Zhouyi Zhou" <yizhouzhou@ict.ac.cn>
+To: "Zhouyi Zhou" <zhouzhouyi@gmail.com>
+Message-ID: <e9c283.a967.142b14600da.Coremail.yizhouzhou@ict.ac.cn>
+In-Reply-To: <1385549465-15945-1-git-send-email-yizhouzhou@ict.ac.cn>
+References: <1385549465-15945-1-git-send-email-yizhouzhou@ict.ac.cn>
+Subject: ping: re: [PATCH 1/1] kernel code that do not handle NULL return of
+ kmem_cache_zalloc
 MIME-Version: 1.0
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Wim Van Sebroeck <wim@iguana.be>, scottwood@freescale.com
-Subject: Re: [PATCH] watchdog: mpc8xxx_wdt convert to watchdog core
-References: <20131130153345.3070443E15@localhost.localdomain>
-In-Reply-To: <20131130153345.3070443E15@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-watchdog@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Cc: kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Joerg Roedel <joro@8bytes.org>, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,235 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/30/2013 07:33 AM, Christophe Leroy wrote:
-> Convert mpc8xxx_wdt.c to the new watchdog API.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->
-> diff -ur a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
-> --- a/drivers/watchdog/mpc8xxx_wdt.c	2013-05-11 22:57:46.000000000 +0200
-> +++ b/drivers/watchdog/mpc8xxx_wdt.c	2013-11-30 16:14:53.803495472 +0100
-> @@ -72,28 +72,31 @@
->    * to 0
->    */
->   static int prescale = 1;
-> -static unsigned int timeout_sec;
->
-> -static unsigned long wdt_is_open;
->   static DEFINE_SPINLOCK(wdt_spinlock);
->
-> -static void mpc8xxx_wdt_keepalive(void)
-> +static int mpc8xxx_wdt_ping(struct watchdog_device *w)
->   {
->   	/* Ping the WDT */
->   	spin_lock(&wdt_spinlock);
->   	out_be16(&wd_base->swsrr, 0x556c);
->   	out_be16(&wd_base->swsrr, 0xaa39);
->   	spin_unlock(&wdt_spinlock);
-> +	return 0;
-
-The return code is never checked, so you can make this function void.
-
->   }
->
-> +static struct watchdog_device mpc8xxx_wdt_dev;
->   static void mpc8xxx_wdt_timer_ping(unsigned long arg);
-> -static DEFINE_TIMER(wdt_timer, mpc8xxx_wdt_timer_ping, 0, 0);
-> +static DEFINE_TIMER(wdt_timer, mpc8xxx_wdt_timer_ping, 0,
-> +		(unsigned long)&mpc8xxx_wdt_dev);
->
->   static void mpc8xxx_wdt_timer_ping(unsigned long arg)
->   {
-> -	mpc8xxx_wdt_keepalive();
-> +	struct watchdog_device *w = (struct watchdog_device *)arg;
-> +
-> +	mpc8xxx_wdt_ping(w);
->   	/* We're pinging it twice faster than needed, just to be sure. */
-> -	mod_timer(&wdt_timer, jiffies + HZ * timeout_sec / 2);
-> +	mod_timer(&wdt_timer, jiffies + HZ * w->timeout / 2);
->   }
->
->   static void mpc8xxx_wdt_pr_warn(const char *msg)
-> @@ -102,19 +105,9 @@
->   		reset ? "reset" : "machine check exception");
->   }
->
-> -static ssize_t mpc8xxx_wdt_write(struct file *file, const char __user *buf,
-> -				 size_t count, loff_t *ppos)
-> -{
-> -	if (count)
-> -		mpc8xxx_wdt_keepalive();
-> -	return count;
-> -}
-> -
-> -static int mpc8xxx_wdt_open(struct inode *inode, struct file *file)
-> +static int mpc8xxx_wdt_start(struct watchdog_device *w)
->   {
->   	u32 tmp = SWCRR_SWEN;
-> -	if (test_and_set_bit(0, &wdt_is_open))
-> -		return -EBUSY;
->
->   	/* Once we start the watchdog we can't stop it */
->   	if (nowayout)
-
-This code and the subsequent module_get can be removed; it is handled by the infrastructure.
-
-
-> @@ -132,59 +125,30 @@
->
->   	del_timer_sync(&wdt_timer);
->
-> -	return nonseekable_open(inode, file);
-> +	return 0;
->   }
->
-> -static int mpc8xxx_wdt_release(struct inode *inode, struct file *file)
-> +static int mpc8xxx_wdt_stop(struct watchdog_device *w)
->   {
-> -	if (!nowayout)
-> -		mpc8xxx_wdt_timer_ping(0);
-> -	else
-> -		mpc8xxx_wdt_pr_warn("watchdog closed");
-> -	clear_bit(0, &wdt_is_open);
-> +	mpc8xxx_wdt_timer_ping((unsigned long)w);
-
-I really dislike this typecasting back and forth.
-
-I think it would be better to move the mod_timer() call from mpc8xxx_wdt_timer_ping
-into mpc8xxx_wdt_ping and call mpc8xxx_wdt_ping directly whenever possible.
- From mpc8xxx_wdt_timer_ping you can then just call mpc8xxx_wdt_ping with the
-typecasted parameter.
-
->   	return 0;
->   }
->
-> -static long mpc8xxx_wdt_ioctl(struct file *file, unsigned int cmd,
-> -							unsigned long arg)
-> -{
-> -	void __user *argp = (void __user *)arg;
-> -	int __user *p = argp;
-> -	static const struct watchdog_info ident = {
-> -		.options = WDIOF_KEEPALIVEPING,
-> -		.firmware_version = 1,
-> -		.identity = "MPC8xxx",
-> -	};
-> -
-> -	switch (cmd) {
-> -	case WDIOC_GETSUPPORT:
-> -		return copy_to_user(argp, &ident, sizeof(ident)) ? -EFAULT : 0;
-> -	case WDIOC_GETSTATUS:
-> -	case WDIOC_GETBOOTSTATUS:
-> -		return put_user(0, p);
-> -	case WDIOC_KEEPALIVE:
-> -		mpc8xxx_wdt_keepalive();
-> -		return 0;
-> -	case WDIOC_GETTIMEOUT:
-> -		return put_user(timeout_sec, p);
-> -	default:
-> -		return -ENOTTY;
-> -	}
-> -}
-> +static struct watchdog_info mpc8xxx_wdt_info = {
-> +	.options = WDIOF_KEEPALIVEPING,
-> +	.firmware_version = 1,
-> +	.identity = "MPC8xxx",
-> +};
->
-> -static const struct file_operations mpc8xxx_wdt_fops = {
-> -	.owner		= THIS_MODULE,
-> -	.llseek		= no_llseek,
-> -	.write		= mpc8xxx_wdt_write,
-> -	.unlocked_ioctl	= mpc8xxx_wdt_ioctl,
-> -	.open		= mpc8xxx_wdt_open,
-> -	.release	= mpc8xxx_wdt_release,
-> +static struct watchdog_ops mpc8xxx_wdt_ops = {
-> +	.owner = THIS_MODULE,
-> +	.start = mpc8xxx_wdt_start,
-> +	.stop = mpc8xxx_wdt_stop,
->   };
->
-> -static struct miscdevice mpc8xxx_wdt_miscdev = {
-> -	.minor	= WATCHDOG_MINOR,
-> -	.name	= "watchdog",
-> -	.fops	= &mpc8xxx_wdt_fops,
-> +static struct watchdog_device mpc8xxx_wdt_dev = {
-> +	.info = &mpc8xxx_wdt_info,
-> +	.ops = &mpc8xxx_wdt_ops,
->   };
->
->   static const struct of_device_id mpc8xxx_wdt_match[];
-> @@ -196,6 +160,7 @@
->   	const struct mpc8xxx_wdt_type *wdt_type;
->   	u32 freq = fsl_get_sys_freq();
->   	bool enabled;
-> +	unsigned int timeout_sec;
->
->   	match = of_match_device(mpc8xxx_wdt_match, &ofdev->dev);
->   	if (!match)
-> @@ -222,6 +187,7 @@
->   	else
->   		timeout_sec = timeout / freq;
->
-> +	mpc8xxx_wdt_dev.timeout = timeout_sec;
->   #ifdef MODULE
->   	ret = mpc8xxx_wdt_init_late();
->   	if (ret)
-> @@ -237,7 +203,7 @@
->   	 * userspace handles it.
->   	 */
->   	if (enabled)
-> -		mpc8xxx_wdt_timer_ping(0);
-> +		mpc8xxx_wdt_timer_ping((unsigned long)&mpc8xxx_wdt_dev);
->   	return 0;
->   err_unmap:
->   	iounmap(wd_base);
-> @@ -249,7 +215,7 @@
->   {
->   	mpc8xxx_wdt_pr_warn("watchdog removed");
-
-The mpc8xxx_wdt_pr_warn function is now rather unnecessary since
-it is called only once. Might as well merge it into this function.
-
->   	del_timer_sync(&wdt_timer);
-> -	misc_deregister(&mpc8xxx_wdt_miscdev);
-> +	watchdog_unregister_device(&mpc8xxx_wdt_dev);
->   	iounmap(wd_base);
->
->   	return 0;
-> @@ -301,10 +267,11 @@
->   	if (!wd_base)
->   		return -ENODEV;
->
-> -	ret = misc_register(&mpc8xxx_wdt_miscdev);
-> +	watchdog_set_nowayout(&mpc8xxx_wdt_dev, nowayout);
-> +
-> +	ret = watchdog_register_device(&mpc8xxx_wdt_dev);
->   	if (ret) {
-> -		pr_err("cannot register miscdev on minor=%d (err=%d)\n",
-> -		       WATCHDOG_MINOR, ret);
-> +		pr_err("cannot register watchdog device (err=%d)\n", ret);
->   		return ret;
->   	}
->   	return 0;
-> diff -ur a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-> --- a/drivers/watchdog/Kconfig
-> +++ b/drivers/watchdog/Kconfig
-> @@ -1146,6 +1146,7 @@
->   config 8xxx_WDT
->   	tristate "MPC8xxx Platform Watchdog Timer"
->   	depends on PPC_8xx || PPC_83xx || PPC_86xx
-> +	select WATCHDOG_CORE
->   	help
->   	  This driver is for a SoC level watchdog that exists on some
->   	  Freescale PowerPC processors. So far this driver supports:
->
-> ---
-> Ce courrier électronique ne contient aucun virus ou logiciel malveillant parce que la protection avast! Antivirus est active.
-> http://www.avast.com
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
+ping
+>=C2=A0I=C2=A0do=C2=A0a=C2=A0grep=C2=A0for=C2=A0kmem_cache_zalloc=C2=A0and=
+=C2=A0kmem_cache_alloc
+>=C2=A0in=C2=A0kernel=C2=A0tree,=C2=A0and=C2=A0find=C2=A0some=C2=A0code=C2=
+=A0do=C2=A0not=C2=A0handle=C2=A0NULL
+>=C2=A0return=C2=A0of=C2=A0kmem_cache_zalloc=C2=A0correctly
+>=C2=A0
+>=C2=A0
+>=C2=A0Signed-off-by:=C2=A0Zhouyi=C2=A0Zhou=C2=A0<yizhouzhou@ict.ac.cn>
+>=C2=A0---
+>=C2=A0=C2=A0arch/powerpc/kvm/book3s_32_mmu_host.c=C2=A0|=C2=A0=C2=A0=C2=A0=
+=C2=A05=C2=A0+++++
+>=C2=A0=C2=A0drivers/iommu/omap-iommu.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A0=C2=A0=C2=A03=C2=A0++-
+>=C2=A0=C2=A0fs/jffs2/malloc.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0|=C2=A0=C2=A0=C2=A0=C2=A04=C2=A0++++
+>=C2=A0=C2=A03=C2=A0files=C2=A0changed,=C2=A011=C2=A0insertions(+),=C2=A01=
+=C2=A0deletion(-)
+>=C2=A0
+>=C2=A0diff=C2=A0--git=C2=A0a/arch/powerpc/kvm/book3s_32_mmu_host.c=C2=A0b/=
+arch/powerpc/kvm/book3s_32_mmu_host.c
+>=C2=A0index=C2=A03a0abd2..5fac89d=C2=A0100644
+>=C2=A0---=C2=A0a/arch/powerpc/kvm/book3s_32_mmu_host.c
+>=C2=A0+++=C2=A0b/arch/powerpc/kvm/book3s_32_mmu_host.c
+>=C2=A0@@=C2=A0-243,6=C2=A0+243,11=C2=A0@@=C2=A0next_pteg:
+>=C2=A0=C2=A0=09/*=C2=A0Now=C2=A0tell=C2=A0our=C2=A0Shadow=C2=A0PTE=C2=A0co=
+de=C2=A0about=C2=A0the=C2=A0new=C2=A0page=C2=A0*/
+>=C2=A0=C2=A0
+>=C2=A0=C2=A0=09pte=C2=A0=3D=C2=A0kvmppc_mmu_hpte_cache_next(vcpu);
+>=C2=A0+=09if=C2=A0(!pte)=C2=A0{
+>=C2=A0+=09=09kvm_release_pfn_clean(hpaddr=C2=A0>>=C2=A0PAGE_SHIFT);
+>=C2=A0+=09=09r=C2=A0=3D=C2=A0-EAGAIN;
+>=C2=A0+=09=09goto=C2=A0out;
+>=C2=A0+=09}
+>=C2=A0=C2=A0
+>=C2=A0=C2=A0=09dprintk_mmu("KVM:=C2=A0%c%c=C2=A0Map=C2=A00x%llx:=C2=A0[%lx=
+]=C2=A00x%llx=C2=A0(0x%llx)=C2=A0->=C2=A0%lx\n",
+>=C2=A0=C2=A0=09=09=C2=A0=C2=A0=C2=A0=C2=A0orig_pte->may_write=C2=A0?=C2=A0=
+'w'=C2=A0:=C2=A0'-',
+>=C2=A0diff=C2=A0--git=C2=A0a/drivers/iommu/omap-iommu.c=C2=A0b/drivers/iom=
+mu/omap-iommu.c
+>=C2=A0index=C2=A0bcd78a7..5155714=C2=A0100644
+>=C2=A0---=C2=A0a/drivers/iommu/omap-iommu.c
+>=C2=A0+++=C2=A0b/drivers/iommu/omap-iommu.c
+>=C2=A0@@=C2=A0-551,7=C2=A0+551,8=C2=A0@@=C2=A0static=C2=A0u32=C2=A0*iopte_=
+alloc(struct=C2=A0omap_iommu=C2=A0*obj,=C2=A0u32=C2=A0*iopgd,=C2=A0u32=C2=
+=A0da)
+>=C2=A0=C2=A0=09=09dev_vdbg(obj->dev,=C2=A0"%s:=C2=A0a=C2=A0new=C2=A0pte:%p=
+\n",=C2=A0__func__,=C2=A0iopte);
+>=C2=A0=C2=A0=09}=C2=A0else=C2=A0{
+>=C2=A0=C2=A0=09=09/*=C2=A0We=C2=A0raced,=C2=A0free=C2=A0the=C2=A0reduniova=
+nt=C2=A0table=C2=A0*/
+>=C2=A0-=09=09iopte_free(iopte);
+>=C2=A0+=09=09if=C2=A0(iopte)
+>=C2=A0+=09=09=09iopte_free(iopte);
+>=C2=A0=C2=A0=09}
+>=C2=A0=C2=A0
+>=C2=A0=C2=A0pte_ready:
+>=C2=A0diff=C2=A0--git=C2=A0a/fs/jffs2/malloc.c=C2=A0b/fs/jffs2/malloc.c
+>=C2=A0index=C2=A04f47aa2..58e2336=C2=A0100644
+>=C2=A0---=C2=A0a/fs/jffs2/malloc.c
+>=C2=A0+++=C2=A0b/fs/jffs2/malloc.c
+>=C2=A0@@=C2=A0-287,6=C2=A0+287,8=C2=A0@@=C2=A0struct=C2=A0jffs2_xattr_datu=
+m=C2=A0*jffs2_alloc_xattr_datum(void)
+>=C2=A0=C2=A0{
+>=C2=A0=C2=A0=09struct=C2=A0jffs2_xattr_datum=C2=A0*xd;
+>=C2=A0=C2=A0=09xd=C2=A0=3D=C2=A0kmem_cache_zalloc(xattr_datum_cache,=C2=A0=
+GFP_KERNEL);
+>=C2=A0+=09if=C2=A0(!xd)
+>=C2=A0+=09=09return=C2=A0NULL;
+>=C2=A0=C2=A0=09dbg_memalloc("%p\n",=C2=A0xd);
+>=C2=A0=C2=A0
+>=C2=A0=C2=A0=09xd->class=C2=A0=3D=C2=A0RAWNODE_CLASS_XATTR_DATUM;
+>=C2=A0@@=C2=A0-305,6=C2=A0+307,8=C2=A0@@=C2=A0struct=C2=A0jffs2_xattr_ref=
+=C2=A0*jffs2_alloc_xattr_ref(void)
+>=C2=A0=C2=A0{
+>=C2=A0=C2=A0=09struct=C2=A0jffs2_xattr_ref=C2=A0*ref;
+>=C2=A0=C2=A0=09ref=C2=A0=3D=C2=A0kmem_cache_zalloc(xattr_ref_cache,=C2=A0G=
+FP_KERNEL);
+>=C2=A0+=09if=C2=A0(!ref)
+>=C2=A0+=09=09return=C2=A0NULL;
+>=C2=A0=C2=A0=09dbg_memalloc("%p\n",=C2=A0ref);
+>=C2=A0=C2=A0
+>=C2=A0=C2=A0=09ref->class=C2=A0=3D=C2=A0RAWNODE_CLASS_XATTR_REF;
+>=C2=A0--=C2=A0
+>=C2=A01.7.10.4
+>=C2=A0
