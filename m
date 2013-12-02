@@ -1,27 +1,21 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
- [IPv6:2607:f8b0:400e:c02::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6EA792C0098
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 03:18:15 +1100 (EST)
-Received: by mail-pd0-f172.google.com with SMTP id g10so18392386pdj.17
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2013 08:18:12 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Mon, 2 Dec 2013 08:18:11 -0800
-From: Guenter Roeck <linux@roeck-us.net>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH] watchdog: mpc8xxx_wdt convert to watchdog core
-Message-ID: <20131202161811.GA31606@roeck-us.net>
-References: <20131130153345.3070443E15@localhost.localdomain>
- <529B9019.9090404@roeck-us.net> <529C6165.3050106@c-s.fr>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 918E42C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 04:37:29 +1100 (EST)
+Date: Mon, 2 Dec 2013 17:37:21 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <b42378@freescale.com>
+Message-ID: <20131202173721.GM27568@sirena.org.uk>
+References: <1385998143-20196-1-git-send-email-b42378@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <529C6165.3050106@c-s.fr>
-Cc: scottwood@freescale.com, Wim Van Sebroeck <wim@iguana.be>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-watchdog@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="elWSKwo949DbmCL3"
+In-Reply-To: <1385998143-20196-1-git-send-email-b42378@freescale.com>
+Subject: Re: [PATCH v3] ASoC: fsl_ssi: Add monaural audio support for
+ non-ac97 interface
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, timur@tabi.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,270 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 02, 2013 at 11:31:01AM +0100, leroy christophe wrote:
-> 
-> Le 01/12/2013 20:38, Guenter Roeck a écrit :
-> >On 11/30/2013 07:33 AM, Christophe Leroy wrote:
-> >>Convert mpc8xxx_wdt.c to the new watchdog API.
-> >>
-> >>Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> >>
-> >>diff -ur a/drivers/watchdog/mpc8xxx_wdt.c
-> >>b/drivers/watchdog/mpc8xxx_wdt.c
-> >>--- a/drivers/watchdog/mpc8xxx_wdt.c    2013-05-11
-> >>22:57:46.000000000 +0200
-> >>+++ b/drivers/watchdog/mpc8xxx_wdt.c    2013-11-30
-> >>16:14:53.803495472 +0100
-> >>@@ -72,28 +72,31 @@
-> >>   * to 0
-> >>   */
-> >>  static int prescale = 1;
-> >>-static unsigned int timeout_sec;
-> >>
-> >>-static unsigned long wdt_is_open;
-> >>  static DEFINE_SPINLOCK(wdt_spinlock);
-> 
-_> >>-static void mpc8xxxwdt_keepalive(void)
-> >>+static int mpc8xxx_wdt_ping(struct watchdog_device *w)
-> >>  {
-> >>      /* Ping the WDT */
-> >>      spin_lock(&wdt_spinlock);
-> >>      out_be16(&wd_base->swsrr, 0x556c);
-> >>      out_be16(&wd_base->swsrr, 0xaa39);
-> >>      spin_unlock(&wdt_spinlock);
-> >>+    return 0;
-> >
-> >The return code is never checked, so you can make this function void.
-> watchdog .h expects an int function.
-> Wouldn't it be an error to make it void, if for instance in the
-> future the return code is checked by the core ?
 
-This would be correct if the watchdog core would ever call this function,
-which it could only do if it was specified in mpc8xxx_wdt_ops, which it isn't.
-As written, mpc8xxx_wdt_ping is only called from mpc8xxx_wdt_timer_ping.
+--elWSKwo949DbmCL3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-If this is not intentional, ie if mpc8xxx_wdt_ping is supposed to be called
-from the infrastructure, something else is wrong.
+On Mon, Dec 02, 2013 at 11:29:03PM +0800, Nicolin Chen wrote:
+> The normal mode of SSI allows it to send/receive data to/from the first
+> slot of each period. So we can use this normal mode to trick I2S signal
+> by puting/getting data to/from the first slot only (the left channel)
+> so as to support monaural audio playback and recording.
 
-Guenter
+Applied, thanks.
 
-> >
-> >>  }
-> >>
-> >>+static struct watchdog_device mpc8xxx_wdt_dev;
-> >>  static void mpc8xxx_wdt_timer_ping(unsigned long arg);
-> >>-static DEFINE_TIMER(wdt_timer, mpc8xxx_wdt_timer_ping, 0, 0);
-> >>+static DEFINE_TIMER(wdt_timer, mpc8xxx_wdt_timer_ping, 0,
-> >>+        (unsigned long)&mpc8xxx_wdt_dev);
-> >>
-> >>  static void mpc8xxx_wdt_timer_ping(unsigned long arg)
-> >>  {
-> >>-    mpc8xxx_wdt_keepalive();
-> >>+    struct watchdog_device *w = (struct watchdog_device *)arg;
-> >>+
-> >>+    mpc8xxx_wdt_ping(w);
-> >>      /* We're pinging it twice faster than needed, just to be sure. */
-> >>-    mod_timer(&wdt_timer, jiffies + HZ * timeout_sec / 2);
-> >>+    mod_timer(&wdt_timer, jiffies + HZ * w->timeout / 2);
-> >>  }
-> >>
-> >>  static void mpc8xxx_wdt_pr_warn(const char *msg)
-> >>@@ -102,19 +105,9 @@
-> >>          reset ? "reset" : "machine check exception");
-> >>  }
-> >>
-> >>-static ssize_t mpc8xxx_wdt_write(struct file *file, const char
-> >>__user *buf,
-> >>-                 size_t count, loff_t *ppos)
-> >>-{
-> >>-    if (count)
-> >>-        mpc8xxx_wdt_keepalive();
-> >>-    return count;
-> >>-}
-> >>-
-> >>-static int mpc8xxx_wdt_open(struct inode *inode, struct file *file)
-> >>+static int mpc8xxx_wdt_start(struct watchdog_device *w)
-> >>  {
-> >>      u32 tmp = SWCRR_SWEN;
-> >>-    if (test_and_set_bit(0, &wdt_is_open))
-> >>-        return -EBUSY;
-> >>
-> >>      /* Once we start the watchdog we can't stop it */
-> >>      if (nowayout)
-> >
-> >This code and the subsequent module_get can be removed; it is
-> >handled by the infrastructure.
-> >
-> >
-> >>@@ -132,59 +125,30 @@
-> >>
-> >>      del_timer_sync(&wdt_timer);
-> >>
-> >>-    return nonseekable_open(inode, file);
-> >>+    return 0;
-> >>  }
-> >>
-> >>-static int mpc8xxx_wdt_release(struct inode *inode, struct file *file)
-> >>+static int mpc8xxx_wdt_stop(struct watchdog_device *w)
-> >>  {
-> >>-    if (!nowayout)
-> >>-        mpc8xxx_wdt_timer_ping(0);
-> >>-    else
-> >>-        mpc8xxx_wdt_pr_warn("watchdog closed");
-> >>-    clear_bit(0, &wdt_is_open);
-> >>+    mpc8xxx_wdt_timer_ping((unsigned long)w);
-> >
-> >I really dislike this typecasting back and forth.
-> >
-> >I think it would be better to move the mod_timer() call from
-> >mpc8xxx_wdt_timer_ping
-> >into mpc8xxx_wdt_ping and call mpc8xxx_wdt_ping directly whenever
-> >possible.
-> >From mpc8xxx_wdt_timer_ping you can then just call
-> >mpc8xxx_wdt_ping with the
-> >typecasted parameter.
-> I'm not sure I understand what you mean.
-> mpc8xxx_wdt_ping() is called by the core when the user app writes
-> into /dev/watchdog.
-> We don't want the set the timer in that case.
-> The timer is only used for when no user app has opened /dev/watchdog yet.
-> 
-> >
-> >>      return 0;
-> >>  }
-> >>
-> >>-static long mpc8xxx_wdt_ioctl(struct file *file, unsigned int cmd,
-> >>-                            unsigned long arg)
-> >>-{
-> >>-    void __user *argp = (void __user *)arg;
-> >>-    int __user *p = argp;
-> >>-    static const struct watchdog_info ident = {
-> >>-        .options = WDIOF_KEEPALIVEPING,
-> >>-        .firmware_version = 1,
-> >>-        .identity = "MPC8xxx",
-> >>-    };
-> >>-
-> >>-    switch (cmd) {
-> >>-    case WDIOC_GETSUPPORT:
-> >>-        return copy_to_user(argp, &ident, sizeof(ident)) ? -EFAULT : 0;
-> >>-    case WDIOC_GETSTATUS:
-> >>-    case WDIOC_GETBOOTSTATUS:
-> >>-        return put_user(0, p);
-> >>-    case WDIOC_KEEPALIVE:
-> >>-        mpc8xxx_wdt_keepalive();
-> >>-        return 0;
-> >>-    case WDIOC_GETTIMEOUT:
-> >>-        return put_user(timeout_sec, p);
-> >>-    default:
-> >>-        return -ENOTTY;
-> >>-    }
-> >>-}
-> >>+static struct watchdog_info mpc8xxx_wdt_info = {
-> >>+    .options = WDIOF_KEEPALIVEPING,
-> >>+    .firmware_version = 1,
-> >>+    .identity = "MPC8xxx",
-> >>+};
-> >>
-> >>-static const struct file_operations mpc8xxx_wdt_fops = {
-> >>-    .owner        = THIS_MODULE,
-> >>-    .llseek        = no_llseek,
-> >>-    .write        = mpc8xxx_wdt_write,
-> >>-    .unlocked_ioctl    = mpc8xxx_wdt_ioctl,
-> >>-    .open        = mpc8xxx_wdt_open,
-> >>-    .release    = mpc8xxx_wdt_release,
-> >>+static struct watchdog_ops mpc8xxx_wdt_ops = {
-> >>+    .owner = THIS_MODULE,
-> >>+    .start = mpc8xxx_wdt_start,
-> >>+    .stop = mpc8xxx_wdt_stop,
-> >>  };
-> >>
-> >>-static struct miscdevice mpc8xxx_wdt_miscdev = {
-> >>-    .minor    = WATCHDOG_MINOR,
-> >>-    .name    = "watchdog",
-> >>-    .fops    = &mpc8xxx_wdt_fops,
-> >>+static struct watchdog_device mpc8xxx_wdt_dev = {
-> >>+    .info = &mpc8xxx_wdt_info,
-> >>+    .ops = &mpc8xxx_wdt_ops,
-> >>  };
-> >>
-> >>  static const struct of_device_id mpc8xxx_wdt_match[];
-> >>@@ -196,6 +160,7 @@
-> >>      const struct mpc8xxx_wdt_type *wdt_type;
-> >>      u32 freq = fsl_get_sys_freq();
-> >>      bool enabled;
-> >>+    unsigned int timeout_sec;
-> >>
-> >>      match = of_match_device(mpc8xxx_wdt_match, &ofdev->dev);
-> >>      if (!match)
-> >>@@ -222,6 +187,7 @@
-> >>      else
-> >>          timeout_sec = timeout / freq;
-> >>
-> >>+    mpc8xxx_wdt_dev.timeout = timeout_sec;
-> >>  #ifdef MODULE
-> >>      ret = mpc8xxx_wdt_init_late();
-> >>      if (ret)
-> >>@@ -237,7 +203,7 @@
-> >>       * userspace handles it.
-> >>       */
-> >>      if (enabled)
-> >>-        mpc8xxx_wdt_timer_ping(0);
-> >>+        mpc8xxx_wdt_timer_ping((unsigned long)&mpc8xxx_wdt_dev);
-> >>      return 0;
-> >>  err_unmap:
-> >>      iounmap(wd_base);
-> >>@@ -249,7 +215,7 @@
-> >>  {
-> >>      mpc8xxx_wdt_pr_warn("watchdog removed");
-> >
-> >The mpc8xxx_wdt_pr_warn function is now rather unnecessary since
-> >it is called only once. Might as well merge it into this function.
-> >
-> >>      del_timer_sync(&wdt_timer);
-> >>-    misc_deregister(&mpc8xxx_wdt_miscdev);
-> >>+    watchdog_unregister_device(&mpc8xxx_wdt_dev);
-> >>      iounmap(wd_base);
-> >>
-> >>      return 0;
-> >>@@ -301,10 +267,11 @@
-> >>      if (!wd_base)
-> >>          return -ENODEV;
-> >>
-> >>-    ret = misc_register(&mpc8xxx_wdt_miscdev);
-> >>+    watchdog_set_nowayout(&mpc8xxx_wdt_dev, nowayout);
-> >>+
-> >>+    ret = watchdog_register_device(&mpc8xxx_wdt_dev);
-> >>      if (ret) {
-> >>-        pr_err("cannot register miscdev on minor=%d (err=%d)\n",
-> >>-               WATCHDOG_MINOR, ret);
-> >>+        pr_err("cannot register watchdog device (err=%d)\n", ret);
-> >>          return ret;
-> >>      }
-> >>      return 0;
-> >>diff -ur a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-> >>--- a/drivers/watchdog/Kconfig
-> >>+++ b/drivers/watchdog/Kconfig
-> >>@@ -1146,6 +1146,7 @@
-> >>  config 8xxx_WDT
-> >>      tristate "MPC8xxx Platform Watchdog Timer"
-> >>      depends on PPC_8xx || PPC_83xx || PPC_86xx
-> >>+    select WATCHDOG_CORE
-> >>      help
-> >>        This driver is for a SoC level watchdog that exists on some
-> >>        Freescale PowerPC processors. So far this driver supports:
-> >>
-> >>---
-> >>Ce courrier électronique ne contient aucun virus ou logiciel
-> >>malveillant parce que la protection avast! Antivirus est active.
-> >>http://www.avast.com
-> >>
-> >>-- 
-> >>To unsubscribe from this list: send the line "unsubscribe
-> >>linux-watchdog" in
-> >>the body of a message to majordomo@vger.kernel.org
-> >>More majordomo info at http://vger.kernel.org/majordomo-info.html
-> >>
-> >>
-> >
-> 
-> 
+--elWSKwo949DbmCL3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSnMVOAAoJELSic+t+oim9cIYP+wcwWzHsCXV+yHVkVWmWN+SU
+eyFiNv5jtKCUl2w6+rOm0hnewTj9L1EA5RkTzjy7zZZMZa5nqXXyvKCKp/ZezMDn
+dIYyL9aRFHd+HDL7NLUnfQZf70nA20/OeNGjd4K9OUgMbrjoI1HVRHWDUn/6wFYx
+oIrYwGfAC2clzs8nonGSrcqfGqvi7dvKwRpuYtL62avroDnt1qcJk5olLauI1esk
+rN/poGG+h5fpoJ8IdUp/kVPUHzPzQiw4YF85ibXB/47NrYHx2MLUfd2yXJ7UBtar
+DauBkrvoLvewUbeli/SHpHuCEp9zz1Q2CFIOm/gj8TZ89YAbWwdhka9danaHFYqh
+VxZhC5AakFlf7EjFnbGz4+0L+P3QKFUUgF5nQE8E2FkrhvghiKJ3rgNZAtZEKMwP
+5te2VTeIQnkdKpzZ5sI3D7xdZv+bRdKu5xVJsHh3KvTaDWstd4aS1Yeb8xMWPc/4
+WxSSwvvH6kmFes1VNQhSdf6YeQsWFkh0n3yNrezh0xqMULJ1HCuI+dsOVBoUZQmj
+9vj3xEdcZp7/NgwL/BQhzFT0RjozjMxB4goTaqWmX1POwswJuoNYz2jmGVS+lFKF
+DFBBtGv318bD/WCbp7UCpSCTMUUjfwGzCAyFO56PCDDOFA181OZhD7WdUW2iCFFn
+IFlNFVZyoZQ0XjSZP1ZQ
+=3yo9
+-----END PGP SIGNATURE-----
+
+--elWSKwo949DbmCL3--
