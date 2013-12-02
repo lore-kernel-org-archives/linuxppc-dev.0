@@ -1,21 +1,30 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 918E42C009C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 04:37:29 +1100 (EST)
-Date: Mon, 2 Dec 2013 17:37:21 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <b42378@freescale.com>
-Message-ID: <20131202173721.GM27568@sirena.org.uk>
-References: <1385998143-20196-1-git-send-email-b42378@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0B5DC2C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 05:00:53 +1100 (EST)
+Date: Mon, 2 Dec 2013 19:00:20 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V4 7/9] cpuidle/powernv: Add "Fast-Sleep" CPU idle
+ state
+In-Reply-To: <529CA219.20109@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.02.1312021859440.30673@ionos.tec.linutronix.de>
+References: <20131129104010.651.23117.stgit@preeti.in.ibm.com>
+ <20131129104319.651.29563.stgit@preeti.in.ibm.com>
+ <alpine.DEB.2.02.1311291301300.30673@ionos.tec.linutronix.de>
+ <529CA219.20109@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="elWSKwo949DbmCL3"
-In-Reply-To: <1385998143-20196-1-git-send-email-b42378@freescale.com>
-Subject: Re: [PATCH v3] ASoC: fsl_ssi: Add monaural audio support for
- non-ac97 interface
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, timur@tabi.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: michael@ellerman.id.au, r58472@freescale.com, shangw@linux.vnet.ibm.com,
+ arnd@arndb.de, linux-pm@vger.kernel.org, geoff@infradead.org,
+ fweisbec@gmail.com, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ deepthi@linux.vnet.ibm.com, rjw@sisk.pl, paul.gortmaker@windriver.com,
+ paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com,
+ john.stultz@linaro.org, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +34,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2 Dec 2013, Preeti U Murthy wrote:
+> On 11/29/2013 08:09 PM, Thomas Gleixner wrote:
+> > This supports HIGHRES and NO_HZ if done right, without polling at
+> > all. So you can even let the last CPU which handles the broadcast
+> > hrtimer go for a long sleep, just not in the deepest idle state.
+> 
+> Thank you for the review. The above points are all valid. I will rework
+> the design to:
+> 
+> 1. Eliminate the concept of a broadcast CPU and integrate its
+> functionality in the timekeeping CPU.
+> 
+> 2. Avoid polling by using IPIs to communicate the next wakeup of the
+> CPUs in deep idle state so as to reprogram the broadcast hrtimer.
+> 
+> 3. Make this feature generic and not arch-specific.
 
---elWSKwo949DbmCL3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Great. If you need help with the generic bits, please let me know.
 
-On Mon, Dec 02, 2013 at 11:29:03PM +0800, Nicolin Chen wrote:
-> The normal mode of SSI allows it to send/receive data to/from the first
-> slot of each period. So we can use this normal mode to trick I2S signal
-> by puting/getting data to/from the first slot only (the left channel)
-> so as to support monaural audio playback and recording.
+Thanks,
 
-Applied, thanks.
-
---elWSKwo949DbmCL3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSnMVOAAoJELSic+t+oim9cIYP+wcwWzHsCXV+yHVkVWmWN+SU
-eyFiNv5jtKCUl2w6+rOm0hnewTj9L1EA5RkTzjy7zZZMZa5nqXXyvKCKp/ZezMDn
-dIYyL9aRFHd+HDL7NLUnfQZf70nA20/OeNGjd4K9OUgMbrjoI1HVRHWDUn/6wFYx
-oIrYwGfAC2clzs8nonGSrcqfGqvi7dvKwRpuYtL62avroDnt1qcJk5olLauI1esk
-rN/poGG+h5fpoJ8IdUp/kVPUHzPzQiw4YF85ibXB/47NrYHx2MLUfd2yXJ7UBtar
-DauBkrvoLvewUbeli/SHpHuCEp9zz1Q2CFIOm/gj8TZ89YAbWwdhka9danaHFYqh
-VxZhC5AakFlf7EjFnbGz4+0L+P3QKFUUgF5nQE8E2FkrhvghiKJ3rgNZAtZEKMwP
-5te2VTeIQnkdKpzZ5sI3D7xdZv+bRdKu5xVJsHh3KvTaDWstd4aS1Yeb8xMWPc/4
-WxSSwvvH6kmFes1VNQhSdf6YeQsWFkh0n3yNrezh0xqMULJ1HCuI+dsOVBoUZQmj
-9vj3xEdcZp7/NgwL/BQhzFT0RjozjMxB4goTaqWmX1POwswJuoNYz2jmGVS+lFKF
-DFBBtGv318bD/WCbp7UCpSCTMUUjfwGzCAyFO56PCDDOFA181OZhD7WdUW2iCFFn
-IFlNFVZyoZQ0XjSZP1ZQ
-=3yo9
------END PGP SIGNATURE-----
-
---elWSKwo949DbmCL3--
+	tglx
