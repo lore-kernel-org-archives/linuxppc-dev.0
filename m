@@ -1,27 +1,29 @@
-Return-Path: <tommusta@gmail.com>
-Received: from mail-yh0-x22a.google.com (mail-yh0-x22a.google.com
- [IPv6:2607:f8b0:4002:c01::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C18862C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 01:05:18 +1100 (EST)
-Received: by mail-yh0-f42.google.com with SMTP id z6so8817100yhz.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2013 06:05:14 -0800 (PST)
-Received: from [9.10.80.74] (rchp4.rochester.ibm.com. [129.42.161.36])
- by mx.google.com with ESMTPSA id h66sm68032078yhb.7.2013.12.02.06.05.12
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
- Mon, 02 Dec 2013 06:05:12 -0800 (PST)
-Message-ID: <529C9397.9050704@gmail.com>
-Date: Mon, 02 Dec 2013 08:05:11 -0600
-From: Tom Musta <tommusta@gmail.com>
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8C24D2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 01:25:53 +1100 (EST)
+Date: Mon, 2 Dec 2013 15:25:37 +0100
+From: Gerhard Sittig <gsi@denx.de>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v6 02/17] dts: mpc512x: introduce dt-bindings/clock/ header
+Message-ID: <20131202142537.GS2982@book.gsilab.sittig.org>
+References: <1385851897-23475-1-git-send-email-gsi@denx.de>
+ <1385851897-23475-3-git-send-email-gsi@denx.de>
+ <20131202094656.GA12952@e106331-lin.cambridge.arm.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: fix xmon disassembler for little-endian
-References: <1385975412-25869-1-git-send-email-felix@linux.vnet.ibm.com>
-In-Reply-To: <1385975412-25869-1-git-send-email-felix@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131202094656.GA12952@e106331-lin.cambridge.arm.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mike Turquette <mturquette@linaro.org>, Pawel Moll <Pawel.Moll@arm.com>,
+ Detlev Zundel <dzu@denx.de>, Stephen Warren <swarren@wwwdotorg.org>,
+ "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
+ Scott Wood <scottwood@freescale.com>, Anatolij Gustschin <agust@denx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Ian Campbell <ian.campbell@citrix.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/2/2013 3:10 AM, Philippe Bergheaud wrote:
-> This patch fixes the disassembler of the powerpc kernel debugger xmon,
-> for little-endian.
+On Mon, Dec 02, 2013 at 09:46 +0000, Mark Rutland wrote:
 > 
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/xmon/xmon.c |    4 ++++
->  1 file changed, 4 insertions(+)
+> On Sat, Nov 30, 2013 at 10:51:22PM +0000, Gerhard Sittig wrote:
+> > introduce a dt-bindings/ header file for MPC512x clocks,
+> > providing symbolic identifiers for those SoC clocks which
+> > clients will reference from their device tree nodes
 > 
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index af9d346..6c27804 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -171,7 +171,11 @@ extern void xmon_leave(void);
->  #define REG		"%.8lx"
->  #endif
->  
-> +#ifdef __LITTLE_ENDIAN__
-> +#define GETWORD(v)	(((v)[3] << 24) + ((v)[2] << 16) + ((v)[1] << 8) + (v)[0])
-> +#else
->  #define GETWORD(v)	(((v)[0] << 24) + ((v)[1] << 16) + ((v)[2] << 8) + (v)[3])
-> +#endif
->  
->  #define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
->  			 || ('a' <= (c) && (c) <= 'f') \
-> 
+> There should be a binding document update to go with this, pointing out
+> that this include file defines the set of clock IDs for the MPC512x
+> clocks.
 
-Philippe:  Wouldn't it be better to just do a 32-bit load and let the endianness be worked out
-by the hardware?  i.e.
+It turns out the Freescale MPC512x did not have a separate clocks
+binding document, but "just did the usual" and followed the
+common bindings.
 
-#define GETWORD(v) (*(u32 *)v)
+I've sent a separate doc update patch which becomes applicable
+after the CCF implementation got accepted.
+
+> Otherwise, this looks fine to me.
+
+So I take this as a "reviewed by" of yours for this dt-bindings
+header file patch, shall I have to re-submit the series.  Thanks!
 
 
-Tom
+virtually yours
+Gerhard Sittig
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
