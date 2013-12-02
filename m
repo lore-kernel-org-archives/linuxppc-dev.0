@@ -1,23 +1,27 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C00AF2C0099
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 22:56:26 +1100 (EST)
-Date: Mon, 2 Dec 2013 11:56:17 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <b42378@freescale.com>
-Message-ID: <20131202115617.GV27568@sirena.org.uk>
-References: <1384532729-6588-1-git-send-email-b42378@freescale.com>
+Return-Path: <tommusta@gmail.com>
+Received: from mail-yh0-x22a.google.com (mail-yh0-x22a.google.com
+ [IPv6:2607:f8b0:4002:c01::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C18862C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 01:05:18 +1100 (EST)
+Received: by mail-yh0-f42.google.com with SMTP id z6so8817100yhz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2013 06:05:14 -0800 (PST)
+Received: from [9.10.80.74] (rchp4.rochester.ibm.com. [129.42.161.36])
+ by mx.google.com with ESMTPSA id h66sm68032078yhb.7.2013.12.02.06.05.12
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
+ Mon, 02 Dec 2013 06:05:12 -0800 (PST)
+Message-ID: <529C9397.9050704@gmail.com>
+Date: Mon, 02 Dec 2013 08:05:11 -0600
+From: Tom Musta <tommusta@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="YDTWxoC2E3hrC6hC"
-In-Reply-To: <1384532729-6588-1-git-send-email-b42378@freescale.com>
-Subject: Re: [PATCH v2] ASoC: fsl_ssi: Add monaural audio support for
- non-ac97 interface
-Cc: alsa-devel@alsa-project.org, linux@arm.linux.org.uk,
- linux-kernel@vger.kernel.org, lgirdwood@gmail.com, timur@tabi.org,
- linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: fix xmon disassembler for little-endian
+References: <1385975412-25869-1-git-send-email-felix@linux.vnet.ibm.com>
+In-Reply-To: <1385975412-25869-1-git-send-email-felix@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 12/2/2013 3:10 AM, Philippe Bergheaud wrote:
+> This patch fixes the disassembler of the powerpc kernel debugger xmon,
+> for little-endian.
+> 
+> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/xmon/xmon.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index af9d346..6c27804 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -171,7 +171,11 @@ extern void xmon_leave(void);
+>  #define REG		"%.8lx"
+>  #endif
+>  
+> +#ifdef __LITTLE_ENDIAN__
+> +#define GETWORD(v)	(((v)[3] << 24) + ((v)[2] << 16) + ((v)[1] << 8) + (v)[0])
+> +#else
+>  #define GETWORD(v)	(((v)[0] << 24) + ((v)[1] << 16) + ((v)[2] << 8) + (v)[3])
+> +#endif
+>  
+>  #define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
+>  			 || ('a' <= (c) && (c) <= 'f') \
+> 
 
---YDTWxoC2E3hrC6hC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Philippe:  Wouldn't it be better to just do a 32-bit load and let the endianness be worked out
+by the hardware?  i.e.
 
-On Sat, Nov 16, 2013 at 12:25:29AM +0800, Nicolin Chen wrote:
-> The normal mode of SSI allows it to send/receive data to/from the first
-> slot of each period. So we can use this normal mode to trick I2S signal
-> by puting/getting data to/from the first slot only (the left channel)
-> so as to support monaural audio playback and recording.
+#define GETWORD(v) (*(u32 *)v)
 
-This looks OK but doesn't apply against current code, can you please
-check and resend?
 
---YDTWxoC2E3hrC6hC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSnHVeAAoJELSic+t+oim9gXYP/iyCgeTlIkEq2tvHUKNxZoCT
-tHOlo3ymeCohXd6nMUQ2bBO0NrpnLphny24jBHuLPFVps1enGqoNRU6TT8d3Pjfm
-VTpi+9eTxgwF0wRsN5Lf0deKo/7iLsTtwffNw8K7ll8QNUl0YRIMwvqXIgpxr93Z
-NqOYieIZsJSII5Aulw8cMu1fXeJVo66H0V6c4YUHrNKRqb+XZbIEZZJuWBzIaLXC
-yqJKIEC7a5fu+hPicxTsf9LdMp/Z3fL6g7rIZq2bmiadcDAAtm97tAR8oYKDb1yt
-dShn0dgTnexuamhCCfVI4iExnY70rBvOiz+Zxk3vM4Ub3YCJ5Pkr+DTQngk2Ynhw
-RYX6jHjLBTDE3gBW/XTnzEQTMS4Q+1hQdy7sEsJFT6tTUOTWSRZc5A2O6WUtKUtz
-j5Rpbc8yb5qCGExqFmTNUL1VlltOXzgPqGNaZljxcWJl5JwJUzxAisNXGT6rc3kM
-xdUM/RtDu1nCNjaYebFBn7bpgvqT6+9BO8cCNoPCdGOIhUJRQURKasMWfyUHiQFQ
-eQNAwZdYqjK1yfOQrYd9aEa8czH7BwgiYPGhsnT/GhMZloNi7ot7uPvf4XIf7a4x
-LdonCKGVjt2yCrbYQ2ceZHyexBLW3R8HwxNWUHcI/hIQuAfaCpFwVQk+ton91Adw
-MiDOSDbYsip7Y/0kQss7
-=+D7z
------END PGP SIGNATURE-----
-
---YDTWxoC2E3hrC6hC--
+Tom
