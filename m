@@ -1,20 +1,36 @@
-Return-Path: <yizhouzhou@ict.ac.cn>
-Received: from cstnet.cn (smtp25.cstnet.cn [IPv6:2001:cc0:2fff:7::25])
- by ozlabs.org (Postfix) with ESMTP id 1C2492C0096
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 14:15:33 +1100 (EST)
-Date: Mon, 2 Dec 2013 11:07:04 +0800 (GMT+08:00)
-From: "Zhouyi Zhou" <yizhouzhou@ict.ac.cn>
-To: "Zhouyi Zhou" <zhouzhouyi@gmail.com>
-Message-ID: <e9c283.a967.142b14600da.Coremail.yizhouzhou@ict.ac.cn>
-In-Reply-To: <1385549465-15945-1-git-send-email-yizhouzhou@ict.ac.cn>
-References: <1385549465-15945-1-git-send-email-yizhouzhou@ict.ac.cn>
-Subject: ping: re: [PATCH 1/1] kernel code that do not handle NULL return of
- kmem_cache_zalloc
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 588962C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 15:04:40 +1100 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Sun, 1 Dec 2013 23:04:36 -0500
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 42E29C90041
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Dec 2013 23:04:32 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rB244XTR66650258
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2013 04:04:33 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rB244XLn019890
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 1 Dec 2013 23:04:33 -0500
+Message-ID: <529C0614.6070708@linux.vnet.ibm.com>
+Date: Mon, 02 Dec 2013 09:31:24 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Joerg Roedel <joro@8bytes.org>, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: 3.13 Oops on ppc64_cpu --smt=off
+References: <9C236EE3-BB04-4BF9-ACE0-870A9E97EA0F@suse.de>
+In-Reply-To: <9C236EE3-BB04-4BF9-ACE0-870A9E97EA0F@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,91 +40,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ping
->=C2=A0I=C2=A0do=C2=A0a=C2=A0grep=C2=A0for=C2=A0kmem_cache_zalloc=C2=A0and=
-=C2=A0kmem_cache_alloc
->=C2=A0in=C2=A0kernel=C2=A0tree,=C2=A0and=C2=A0find=C2=A0some=C2=A0code=C2=
-=A0do=C2=A0not=C2=A0handle=C2=A0NULL
->=C2=A0return=C2=A0of=C2=A0kmem_cache_zalloc=C2=A0correctly
->=C2=A0
->=C2=A0
->=C2=A0Signed-off-by:=C2=A0Zhouyi=C2=A0Zhou=C2=A0<yizhouzhou@ict.ac.cn>
->=C2=A0---
->=C2=A0=C2=A0arch/powerpc/kvm/book3s_32_mmu_host.c=C2=A0|=C2=A0=C2=A0=C2=A0=
-=C2=A05=C2=A0+++++
->=C2=A0=C2=A0drivers/iommu/omap-iommu.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A0=C2=A0=C2=A03=C2=A0++-
->=C2=A0=C2=A0fs/jffs2/malloc.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0|=C2=A0=C2=A0=C2=A0=C2=A04=C2=A0++++
->=C2=A0=C2=A03=C2=A0files=C2=A0changed,=C2=A011=C2=A0insertions(+),=C2=A01=
-=C2=A0deletion(-)
->=C2=A0
->=C2=A0diff=C2=A0--git=C2=A0a/arch/powerpc/kvm/book3s_32_mmu_host.c=C2=A0b/=
-arch/powerpc/kvm/book3s_32_mmu_host.c
->=C2=A0index=C2=A03a0abd2..5fac89d=C2=A0100644
->=C2=A0---=C2=A0a/arch/powerpc/kvm/book3s_32_mmu_host.c
->=C2=A0+++=C2=A0b/arch/powerpc/kvm/book3s_32_mmu_host.c
->=C2=A0@@=C2=A0-243,6=C2=A0+243,11=C2=A0@@=C2=A0next_pteg:
->=C2=A0=C2=A0=09/*=C2=A0Now=C2=A0tell=C2=A0our=C2=A0Shadow=C2=A0PTE=C2=A0co=
-de=C2=A0about=C2=A0the=C2=A0new=C2=A0page=C2=A0*/
->=C2=A0=C2=A0
->=C2=A0=C2=A0=09pte=C2=A0=3D=C2=A0kvmppc_mmu_hpte_cache_next(vcpu);
->=C2=A0+=09if=C2=A0(!pte)=C2=A0{
->=C2=A0+=09=09kvm_release_pfn_clean(hpaddr=C2=A0>>=C2=A0PAGE_SHIFT);
->=C2=A0+=09=09r=C2=A0=3D=C2=A0-EAGAIN;
->=C2=A0+=09=09goto=C2=A0out;
->=C2=A0+=09}
->=C2=A0=C2=A0
->=C2=A0=C2=A0=09dprintk_mmu("KVM:=C2=A0%c%c=C2=A0Map=C2=A00x%llx:=C2=A0[%lx=
-]=C2=A00x%llx=C2=A0(0x%llx)=C2=A0->=C2=A0%lx\n",
->=C2=A0=C2=A0=09=09=C2=A0=C2=A0=C2=A0=C2=A0orig_pte->may_write=C2=A0?=C2=A0=
-'w'=C2=A0:=C2=A0'-',
->=C2=A0diff=C2=A0--git=C2=A0a/drivers/iommu/omap-iommu.c=C2=A0b/drivers/iom=
-mu/omap-iommu.c
->=C2=A0index=C2=A0bcd78a7..5155714=C2=A0100644
->=C2=A0---=C2=A0a/drivers/iommu/omap-iommu.c
->=C2=A0+++=C2=A0b/drivers/iommu/omap-iommu.c
->=C2=A0@@=C2=A0-551,7=C2=A0+551,8=C2=A0@@=C2=A0static=C2=A0u32=C2=A0*iopte_=
-alloc(struct=C2=A0omap_iommu=C2=A0*obj,=C2=A0u32=C2=A0*iopgd,=C2=A0u32=C2=
-=A0da)
->=C2=A0=C2=A0=09=09dev_vdbg(obj->dev,=C2=A0"%s:=C2=A0a=C2=A0new=C2=A0pte:%p=
-\n",=C2=A0__func__,=C2=A0iopte);
->=C2=A0=C2=A0=09}=C2=A0else=C2=A0{
->=C2=A0=C2=A0=09=09/*=C2=A0We=C2=A0raced,=C2=A0free=C2=A0the=C2=A0reduniova=
-nt=C2=A0table=C2=A0*/
->=C2=A0-=09=09iopte_free(iopte);
->=C2=A0+=09=09if=C2=A0(iopte)
->=C2=A0+=09=09=09iopte_free(iopte);
->=C2=A0=C2=A0=09}
->=C2=A0=C2=A0
->=C2=A0=C2=A0pte_ready:
->=C2=A0diff=C2=A0--git=C2=A0a/fs/jffs2/malloc.c=C2=A0b/fs/jffs2/malloc.c
->=C2=A0index=C2=A04f47aa2..58e2336=C2=A0100644
->=C2=A0---=C2=A0a/fs/jffs2/malloc.c
->=C2=A0+++=C2=A0b/fs/jffs2/malloc.c
->=C2=A0@@=C2=A0-287,6=C2=A0+287,8=C2=A0@@=C2=A0struct=C2=A0jffs2_xattr_datu=
-m=C2=A0*jffs2_alloc_xattr_datum(void)
->=C2=A0=C2=A0{
->=C2=A0=C2=A0=09struct=C2=A0jffs2_xattr_datum=C2=A0*xd;
->=C2=A0=C2=A0=09xd=C2=A0=3D=C2=A0kmem_cache_zalloc(xattr_datum_cache,=C2=A0=
-GFP_KERNEL);
->=C2=A0+=09if=C2=A0(!xd)
->=C2=A0+=09=09return=C2=A0NULL;
->=C2=A0=C2=A0=09dbg_memalloc("%p\n",=C2=A0xd);
->=C2=A0=C2=A0
->=C2=A0=C2=A0=09xd->class=C2=A0=3D=C2=A0RAWNODE_CLASS_XATTR_DATUM;
->=C2=A0@@=C2=A0-305,6=C2=A0+307,8=C2=A0@@=C2=A0struct=C2=A0jffs2_xattr_ref=
-=C2=A0*jffs2_alloc_xattr_ref(void)
->=C2=A0=C2=A0{
->=C2=A0=C2=A0=09struct=C2=A0jffs2_xattr_ref=C2=A0*ref;
->=C2=A0=C2=A0=09ref=C2=A0=3D=C2=A0kmem_cache_zalloc(xattr_ref_cache,=C2=A0G=
-FP_KERNEL);
->=C2=A0+=09if=C2=A0(!ref)
->=C2=A0+=09=09return=C2=A0NULL;
->=C2=A0=C2=A0=09dbg_memalloc("%p\n",=C2=A0ref);
->=C2=A0=C2=A0
->=C2=A0=C2=A0=09ref->class=C2=A0=3D=C2=A0RAWNODE_CLASS_XATTR_REF;
->=C2=A0--=C2=A0
->=C2=A01.7.10.4
->=C2=A0
+Hi,
+
+On 11/30/2013 11:15 PM, Alexander Graf wrote:
+> Hi Ben,
+> 
+> With current linus master (3.13-rc2+) I'm facing an interesting issue with
+
+SMT disabling on p7. When I trigger the cpu offlining it works as expected,
+but after a few seconds the machine goes into an oops as you can see below.
+> 
+> It looks like a null pointer dereference.
+
+tip/sched/urgent has the below fix. Can you please apply the following it and
+check if the issue gets resolved?  A similar issue was reported earlier as
+well and it pointed to the commit id 37dc65. I believe the problem that you report
+is also pointing to the regression caused by the same commit id.
+
+Thanks
+
+Regards
+Preeti U Murthy
+
+---
+commit 42eb088ed246a5a817bb45a8b32fe234cf1c0f8b
+Author: Peter Zijlstra <peterz@infradead.org>
+Date:   Tue Nov 19 16:41:49 2013 +0100
+
+    sched: Avoid NULL dereference on sd_busy
+    
+    Commit 37dc6b50cee9 ("sched: Remove unnecessary iteration over sched
+    domains to update nr_busy_cpus") forgot to clear 'sd_busy' under some
+    conditions leading to a possible NULL deref in set_cpu_sd_state_idle().
+    
+    Reported-by: Anton Blanchard <anton@samba.org>
+    Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+    Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+    Link: http://lkml.kernel.org/r/20131118113701.GF3866@twins.programming.kicks-ass.net
+    Signed-off-by: Ingo Molnar <mingo@kernel.org>
+
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index c1808606ee5f..a1591ca7eb5a 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -4910,8 +4910,9 @@ static void update_top_cache_domain(int cpu)
+ 	if (sd) {
+ 		id = cpumask_first(sched_domain_span(sd));
+ 		size = cpumask_weight(sched_domain_span(sd));
+-		rcu_assign_pointer(per_cpu(sd_busy, cpu), sd->parent);
++		sd = sd->parent; /* sd_busy */
+ 	}
++	rcu_assign_pointer(per_cpu(sd_busy, cpu), sd);
+
+ 	rcu_assign_pointer(per_cpu(sd_llc, cpu), sd);
+ 	per_cpu(sd_llc_size, cpu) = size;
+
+
+> 
+> 
+> Alex
+> 
+> ($ ppc64_cpu --smt=off)
+> kvm: disabling virtualization on CPU1
+> kvm: disabling virtualization on CPU2
+> kvm: disabling virtualization on CPU3
+> kvm: disabling virtualization on CPU5
+> kvm: disabling virtualization on CPU6
+> kvm: disabling virtualization on CPU7
+> kvm: disabling virtualization on CPU9
+> kvm: disabling virtualization on CPU10
+> kvm: disabling virtualization on CPU11
+> kvm: disabling virtualization on CPU13
+> kvm: disabling virtualization on CPU14
+> kvm: disabling virtualization on CPU15
+> kvm: disabling virtualization on CPU17
+> kvm: disabling virtualization on CPU18
+> kvm: disabling virtualization on CPU19
+> kvm: disabling virtualization on CPU21
+> kvm: disabling virtualization on CPU22
+> kvm: disabling virtualization on CPU23
+> kvm: disabling virtualization on CPU25
+> kvm: disabling virtualization on CPU26
+> kvm: disabling virtualization on CPU27
+> kvm: disabling virtualization on CPU29
+> kvm: disabling virtualization on CPU30
+> kvm: disabling virtualization on CPU31
+> kvm: disabling virtualization on CPU33
+> kvm: disabling virtualization on CPU34
+> kvm: disabling virtualization on CPU35
+> kvm: disabling virtualization on CPU37
+> kvm: disabling virtualization on CPU38
+> kvm: disabling virtualization on CPU39
+> kvm: disabling virtualization on CPU41
+> kvm: disabling virtualization on CPU42
+> kvm: disabling virtualization on CPU43
+> kvm: disabling virtualization on CPU45
+> kvm: disabling virtualization on CPU46
+> kvm: disabling virtualization on CPU47
+> kvm: disabling virtualization on CPU49
+> kvm: disabling virtualization on CPU50
+> kvm: disabling virtualization on CPU51
+> kvm: disabling virtualization on CPU53
+> kvm: disabling virtualization on CPU54
+> kvm: disabling virtualization on CPU55
+> kvm: disabling virtualization on CPU57
+> kvm: disabling virtualization on CPU58
+> kvm: disabling virtualization on CPU59
+> kvm: disabling virtualization on CPU61
+> kvm: disabling virtualization on CPU62
+> kvm: disabling virtualization on CPU63
+> Unable to handle kernel paging request for data at address 0x00000010
+> Faulting instruction address: 0xc000000000124188
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> SMP NR_CPUS=1024 NUMA PowerNV
+> Modules linked in: iptable_filter ip_tables x_tables nfsv3 nfs_acl nfs fscache lockd sunrpc autofs4 binfmt_misc af_packet fuse loop dm_mod ohci_pci ohci_hcd ehci_pci ehci_hcd e1000e usbcore sr_mod cdrom ses enclosure rtc_generic usb_common ptp sg pps_core sd_mod crc_t10dif crct10dif_common scsi_dh_hp_sw scsi_dh_alua scsi_dh_emc scsi_dh_rdac scsi_dh virtio_pci virtio_console virtio_blk virtio virtio_ring ipr libata scsi_mod
+> CPU: 56 PID: 0 Comm: swapper/56 Not tainted 3.13.0-rc2-0.g01695c8-default+ #1
+> task: c0000007f28b5180 ti: c0000007f28c8000 task.ti: c0000007f28c8000
+> NIP: c000000000124188 LR: c000000000124144 CTR: c00000000011e650
+> REGS: c0000007f28cb1e0 TRAP: 0300   Not tainted  (3.13.0-rc2-0.g01695c8-default+)
+> MSR: 9000000000009032 <SF,HV,EE,ME,IR,DR,RI>  CR: 24000028  XER: 00000000
+> CFAR: c00000000000908c DAR: 0000000000000010 DSISR: 40000000 SOFTE: 0
+> GPR00: 00000000ef4546c9 c0000007f28cb460 c0000000013c7690 0000000000000000
+> GPR04: 0000000000000038 0000000000000010 c000000003314ea0 c000000000c72878
+> GPR08: c000000000c83448 c0000007ef454600 0000000002690000 0000000000000000
+> GPR12: 000000000000c345 c00000000ff0e000 c0000007f28cb8b0 0000000000000001
+> GPR16: 7fffffffffffffff c0000007f28cb8c0 0000000002690000 000000219729878b
+> GPR20: 0000000000000000 c000000000c72698 c0000000033027d0 c00000000142ca58
+> GPR24: c000000000c84e80 c000000003314e80 c00000000142ca58 00000000ffffc32c
+> GPR28: 0000000000000038 c0000007f28b5180 c0000000012f8cd0 c000000001422180
+> NIP [c000000000124188] .trigger_load_balance+0xc8/0x2e0
+> LR [c000000000124144] .trigger_load_balance+0x84/0x2e0
+> Call Trace:
+> [c0000007f28cb460] [c000000000124134] .trigger_load_balance+0x74/0x2e0 (unreliable)
+> [c0000007f28cb510] [c00000000011ca50] .scheduler_tick+0x100/0x160
+> [c0000007f28cb5d0] [c0000000000e9074] .update_process_times+0x64/0x90
+> [c0000007f28cb660] [c0000000001628f4] .tick_sched_handle+0x34/0xc0
+> [c0000007f28cb6f0] [c000000000162c60] .tick_sched_timer+0x70/0xc0
+> [c0000007f28cb790] [c000000000109000] .__run_hrtimer+0x180/0x280
+> [c0000007f28cb840] [c000000000109738] .hrtimer_interrupt+0x158/0x340
+> [c0000007f28cb960] [c00000000001ec74] .timer_interrupt+0x174/0x2d0
+> [c0000007f28cba10] [c000000000002824] decrementer_common+0x124/0x180
+> --- Exception: 901 at .arch_local_irq_restore+0x84/0xa0
+>     LR = .arch_local_irq_restore+0x84/0xa0
+> [c0000007f28cbd00] [c000000000010c34] .arch_local_irq_restore+0x54/0xa0 (unreliable)
+> [c0000007f28cbd70] [c0000000000174f8] .arch_cpu_idle+0xc8/0x170
+> [c0000007f28cbe00] [c00000000014597c] .cpu_idle_loop+0x9c/0x2c0
+> [c0000007f28cbed0] [c00000000003f800] .start_secondary+0x2a0/0x2d0
+> [c0000007f28cbf90] [c0000000000097fc] .start_secondary_prolog+0x10/0x14
+> Instruction dump:
+> 78001f24 e8fe8040 7d7a002a 7ce93b78 7d29582a 2fa90000 419e0030 8009004c
+> 2f800000 419e0024 9069004c e9690010 <e92b0010> 3929001c 7c004828 30000001
+> ---[ end trace 5d5f06c369432fa1 ]---
+> 
+> Kernel panic - not syncing: Fatal exception in interrupt
+> Rebooting in 100 seconds..
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
