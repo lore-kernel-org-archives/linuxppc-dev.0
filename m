@@ -1,29 +1,44 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8C24D2C007C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 01:25:53 +1100 (EST)
-Date: Mon, 2 Dec 2013 15:25:37 +0100
-From: Gerhard Sittig <gsi@denx.de>
-To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v6 02/17] dts: mpc512x: introduce dt-bindings/clock/ header
-Message-ID: <20131202142537.GS2982@book.gsilab.sittig.org>
-References: <1385851897-23475-1-git-send-email-gsi@denx.de>
- <1385851897-23475-3-git-send-email-gsi@denx.de>
- <20131202094656.GA12952@e106331-lin.cambridge.arm.com>
+ (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6FD302C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 02:10:35 +1100 (EST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Mon, 2 Dec 2013 08:10:32 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id AFBB819D803E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 08:10:23 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+ ESMTP id rB2D8PKX3080550
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2013 14:08:25 +0100
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rB2FARoo027114
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2013 08:10:29 -0700
+Message-ID: <529CA219.20109@linux.vnet.ibm.com>
+Date: Mon, 02 Dec 2013 20:37:05 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131202094656.GA12952@e106331-lin.cambridge.arm.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mike Turquette <mturquette@linaro.org>, Pawel Moll <Pawel.Moll@arm.com>,
- Detlev Zundel <dzu@denx.de>, Stephen Warren <swarren@wwwdotorg.org>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- Scott Wood <scottwood@freescale.com>, Anatolij Gustschin <agust@denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Ian Campbell <ian.campbell@citrix.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH V4 7/9] cpuidle/powernv: Add "Fast-Sleep" CPU idle state
+References: <20131129104010.651.23117.stgit@preeti.in.ibm.com>
+ <20131129104319.651.29563.stgit@preeti.in.ibm.com>
+ <alpine.DEB.2.02.1311291301300.30673@ionos.tec.linutronix.de>
+In-Reply-To: <alpine.DEB.2.02.1311291301300.30673@ionos.tec.linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: michael@ellerman.id.au, r58472@freescale.com, shangw@linux.vnet.ibm.com,
+ arnd@arndb.de, linux-pm@vger.kernel.org, geoff@infradead.org,
+ fweisbec@gmail.com, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ deepthi@linux.vnet.ibm.com, rjw@sisk.pl, paul.gortmaker@windriver.com,
+ paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com,
+ john.stultz@linaro.org, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +48,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 02, 2013 at 09:46 +0000, Mark Rutland wrote:
+Hi Thomas,
+
+On 11/29/2013 08:09 PM, Thomas Gleixner wrote:
+> On Fri, 29 Nov 2013, Preeti U Murthy wrote:
+>> +static enum hrtimer_restart handle_broadcast(struct hrtimer *hrtimer)
+>> +{
+>> +	struct clock_event_device *bc_evt = &bc_timer;
+>> +	ktime_t interval, next_bc_tick, now;
+>> +
+>> +	now = ktime_get();
+>> +
+>> +	if (!restart_broadcast(bc_evt))
+>> +		return HRTIMER_NORESTART;
+>> +
+>> +	interval = ktime_sub(bc_evt->next_event, now);
+>> +	next_bc_tick = get_next_bc_tick();
 > 
-> On Sat, Nov 30, 2013 at 10:51:22PM +0000, Gerhard Sittig wrote:
-> > introduce a dt-bindings/ header file for MPC512x clocks,
-> > providing symbolic identifiers for those SoC clocks which
-> > clients will reference from their device tree nodes
+> So you're seriously using a hrtimer to poll in HZ frequency for
+> updates of bc->next_event?
 > 
-> There should be a binding document update to go with this, pointing out
-> that this include file defines the set of clock IDs for the MPC512x
-> clocks.
+> To be honest, this design sucks.
+> 
+> First of all, why is this a PPC specific feature? There are probably
+> other architectures which could make use of this. So this should be
+> implemented in the core code to begin with.
+> 
+> And a lot of the things you need for this are already available in the
+> core in one form or the other.
+> 
+> For a start you can stick the broadcast hrtimer to the cpu which does
+> the timekeeping. The handover in the hotplug case is handled there as
+> well as is the handover for the NOHZ case.
+> 
+> This needs to be extended for this hrtimer broadcast thingy to work,
+> but it shouldn't be that hard to do so.
+> 
+> Now for the polling. That's a complete trainwreck.
+> 
+> This can be solved via the broadcast IPI as well. When a CPU which
+> goes down into deep idle sets the broadcast to expire earlier than the
+> active value it can denote that and send the timer broadcast IPI over
+> to the CPU which has the honour of dealing with this.
+> 
+> This supports HIGHRES and NO_HZ if done right, without polling at
+> all. So you can even let the last CPU which handles the broadcast
+> hrtimer go for a long sleep, just not in the deepest idle state.
 
-It turns out the Freescale MPC512x did not have a separate clocks
-binding document, but "just did the usual" and followed the
-common bindings.
+Thank you for the review. The above points are all valid. I will rework
+the design to:
 
-I've sent a separate doc update patch which becomes applicable
-after the CCF implementation got accepted.
+1. Eliminate the concept of a broadcast CPU and integrate its
+functionality in the timekeeping CPU.
 
-> Otherwise, this looks fine to me.
+2. Avoid polling by using IPIs to communicate the next wakeup of the
+CPUs in deep idle state so as to reprogram the broadcast hrtimer.
 
-So I take this as a "reviewed by" of yours for this dt-bindings
-header file patch, shall I have to re-submit the series.  Thanks!
+3. Make this feature generic and not arch-specific.
 
-
-virtually yours
-Gerhard Sittig
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+Regards
+Preeti U Murthy
+> 
+> Thanks,
+> 
+> 	tglx
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
