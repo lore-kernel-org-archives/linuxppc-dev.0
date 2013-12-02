@@ -1,26 +1,45 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pb0-x233.google.com (mail-pb0-x233.google.com
- [IPv6:2607:f8b0:400e:c01::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6D7C32C0098
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 03:04:59 +1100 (EST)
-Received: by mail-pb0-f51.google.com with SMTP id up15so19382415pbc.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2013 08:04:56 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Mon, 2 Dec 2013 08:04:54 -0800
-From: Guenter Roeck <linux@roeck-us.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH] watchdog: mpc8xxx_wdt: MPC8xx is HW enabled
-Message-ID: <20131202160453.GA32723@roeck-us.net>
-References: <20131130154540.E83D743E15@localhost.localdomain>
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D683D2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 03:11:04 +1100 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Mon, 2 Dec 2013 09:11:00 -0700
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id E907AC9005C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2013 11:10:49 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rB2FVEjR21823612
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2013 15:31:14 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rB2FVBQH025342
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2013 10:31:14 -0500
+Message-ID: <529CA6DD.2050108@linux.vnet.ibm.com>
+Date: Mon, 02 Dec 2013 20:57:25 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20131130154540.E83D743E15@localhost.localdomain>
-Cc: scottwood@freescale.com, Wim Van Sebroeck <wim@iguana.be>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-watchdog@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH V4 6/9] cpuidle/ppc: Add basic infrastructure to enable
+ the broadcast framework on ppc
+References: <20131129104010.651.23117.stgit@preeti.in.ibm.com>
+ <20131129104303.651.40279.stgit@preeti.in.ibm.com>
+ <alpine.DEB.2.02.1311291256180.30673@ionos.tec.linutronix.de>
+In-Reply-To: <alpine.DEB.2.02.1311291256180.30673@ionos.tec.linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org,
+ shangw@linux.vnet.ibm.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
+ arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org,
+ michael@ellerman.id.au, john.stultz@linaro.org, chenhui.zhao@freescale.com,
+ deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
+ linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
+ schwidefsky@de.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +49,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Nov 30, 2013 at 04:45:40PM +0100, Christophe Leroy wrote:
-> MPC8xx watchdog is enabled at startup by HW.
-> If the bootloader disables it, it cannot be reenabled.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Hi Thomas,
 
-> diff -ur a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
-> --- a/drivers/watchdog/mpc8xxx_wdt.c	2013-05-11 22:57:46.000000000 +0200
-> +++ b/drivers/watchdog/mpc8xxx_wdt.c	2013-08-08 02:12:15.000000000 +0200
-> @@ -273,6 +310,7 @@
->  		.compatible = "fsl,mpc823-wdt",
->  		.data = &(struct mpc8xxx_wdt_type) {
->  			.prescaler = 0x800,
-> +			.hw_enabled = true,
->  		},
->  	},
->  	{},
+On 11/29/2013 05:28 PM, Thomas Gleixner wrote:
+> On Fri, 29 Nov 2013, Preeti U Murthy wrote:
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index b44b52c..cafa788 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -129,6 +129,8 @@ config PPC
+>>  	select GENERIC_CMOS_UPDATE
+>>  	select GENERIC_TIME_VSYSCALL_OLD
+>>  	select GENERIC_CLOCKEVENTS
+>> +	select GENERIC_CLOCKEVENTS_BROADCAST
+>> +	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
 > 
-> ---
-> Ce courrier électronique ne contient aucun virus ou logiciel malveillant parce que la protection avast! Antivirus est active.
-> http://www.avast.com
+> What's the point of this config switch? It's nowhere used.
+
+When broadcast IPIs are to be sent, either the "broadcast" method
+associated with the local timers is used or an arch-specific method
+tick_broadcast() is invoked. For the latter be invoked,
+ARCH_HAS_TICK_BROADCAST config needs to be set. On PowerPC, the
+broadcast method is not associated with the local timer. Hence we invoke
+tick_broadcast(). This function has been added in [PATCH 2/9].
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> +static int broadcast_set_next_event(unsigned long evt,
+>> +					struct clock_event_device *dev)
+>> +{
+>> +	return 0;
+>> +}
+>> +
+>> +static void broadcast_set_mode(enum clock_event_mode mode,
+>> +				 struct clock_event_device *dev)
+>> +{
+>> +	if (mode != CLOCK_EVT_MODE_ONESHOT)
+>> +		broadcast_set_next_event(DECREMENTER_MAX, dev);
+> 
+> What's the point of calling an empty function?  
+
+You are right, this should have remained a dummy function like
+broadcast_set_next_event() as per the design of this patchset.
+> 
+>> +}
+>> +
+>>  static void decrementer_set_mode(enum clock_event_mode mode,
+>>  				 struct clock_event_device *dev)
+>>  {
+>> @@ -840,6 +869,19 @@ static void register_decrementer_clockevent(int cpu)
+>>  	clockevents_register_device(dec);
+>>  }
+>>  
+>> +static void register_broadcast_clockevent(int cpu)
+>> +{
+>> +	struct clock_event_device *bc_evt = &bc_timer;
+>> +
+>> +	*bc_evt = broadcast_clockevent;
+>> +	bc_evt->cpumask = cpu_possible_mask;
+>> +
+>> +	printk_once(KERN_DEBUG "clockevent: %s mult[%x] shift[%d] cpu[%d]\n",
+>> +		    bc_evt->name, bc_evt->mult, bc_evt->shift, cpu);
+>> +
+>> +	clockevents_register_device(bc_evt);
+>> +}
+>> +
+>>  static void __init init_decrementer_clockevent(void)
+>>  {
+>>  	int cpu = smp_processor_id();
+>> @@ -854,6 +896,19 @@ static void __init init_decrementer_clockevent(void)
+>>  	register_decrementer_clockevent(cpu);
+>>  }
+>>  
+>> +static void __init init_broadcast_clockevent(void)
+>> +{
+>> +	int cpu = smp_processor_id();
+>> +
+>> +	clockevents_calc_mult_shift(&broadcast_clockevent, ppc_tb_freq, 4);
+>> +
+>> +	broadcast_clockevent.max_delta_ns =
+>> +		clockevent_delta2ns(DECREMENTER_MAX, &broadcast_clockevent);
+>> +	broadcast_clockevent.min_delta_ns =
+>> +		clockevent_delta2ns(2, &broadcast_clockevent);
+> 
+> clockevents_config()
+
+Right, I will change this to call clockevents_config(). I see that this
+needs to be done during the initialization of the decrementer as well.
+Will do the same.
+
+Thank you
+
+Regards
+Preeti U Murthy
+> 
+> Thanks,
+> 
+> 	tglx
 > 
