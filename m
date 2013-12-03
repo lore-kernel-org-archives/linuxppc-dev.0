@@ -1,21 +1,18 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0292A2C007B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 21:37:54 +1100 (EST)
-From: Nicolin Chen <b42378@freescale.com>
-To: <broonie@kernel.org>, <timur@tabi.org>
-Subject: [PATCH] ASoC: fsl_ssi: Implement symmetric_channels and
- symmetric_samplebits
-Date: Tue, 3 Dec 2013 18:38:07 +0800
-Message-ID: <1386067087-12243-1-git-send-email-b42378@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: tiwai@suse.de, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- lgirdwood@gmail.com, perex@perex.cz
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AF6EF2C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 21:57:19 +1100 (EST)
+From: Gerhard Sittig <gsi@denx.de>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: [PATCH v1 1/1] powerpc/512x: dts: remove misplaced IRQ spec from
+ 'soc' node
+Date: Tue,  3 Dec 2013 11:56:52 +0100
+Message-Id: <1386068212-11484-1-git-send-email-gsi@denx.de>
+Cc: devicetree@vger.kernel.org, Gerhard Sittig <gsi@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,149 +22,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since we introduced symmetric_channels and symmetric_samplebits, we implement
-these two features to fsl_ssi so as to drop some no-more-needed code and make
-the driver neat and clean.
+the 'soc' node in the common .dtsi for MPC5121 has an '#interrupt-cells'
+property although this node is not an interrupt controller
 
-Signed-off-by: Nicolin Chen <b42378@freescale.com>
+remove this erroneously placed property because starting with v3.13-rc1
+lookup and resolution of 'interrupts' specs for peripherals gets misled,
+emits 'no irq domain found' WARN() messages and breaks the boot process
+
+  irq: no irq domain found for /soc@80000000 !
+  ------------[ cut here ]------------
+  WARNING: at /home/gsi/SRC/linux-torvalds/drivers/of/platform.c:171
+  Modules linked in:
+  CPU: 0 PID: 1 Comm: swapper Tainted: G        W    3.13.0-rc1-00001-g8a66234 #8
+  task: df823bb0 ti: df834000 task.ti: df834000
+  NIP: c02b5190 LR: c02b5180 CTR: c01cf4e0
+  REGS: df835c50 TRAP: 0700   Tainted: G        W     (3.13.0-rc1-00001-g8a66234)
+  MSR: 00029032 <EE,ME,IR,DR,RI>  CR: 229a9d42  XER: 20000000
+
+  GPR00: c02b5180 df835d00 df823bb0 00000000 00000000 df835b18 ffffffff 00000308
+  GPR08: c0479cc0 c0480000 c0479cc0 00000308 00000308 00000000 c00040fc 00000000
+  GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 df850880
+  GPR24: df84d670 00000000 00000001 df8561a0 dffffccc df85089c 00000020 00000001
+  NIP [c02b5190] of_device_alloc+0xf4/0x1a0
+  LR [c02b5180] of_device_alloc+0xe4/0x1a0
+  Call Trace:
+  [df835d00] [c02b5180] of_device_alloc+0xe4/0x1a0 (unreliable)
+  [df835d50] [c02b5278] of_platform_device_create_pdata+0x3c/0xc8
+  [df835d70] [c02b53fc] of_platform_bus_create+0xf8/0x170
+  [df835dc0] [c02b5448] of_platform_bus_create+0x144/0x170
+  [df835e10] [c02b55a8] of_platform_bus_probe+0x98/0xe8
+  [df835e30] [c0437508] mpc512x_init+0x28/0x1c4
+  [df835e70] [c0435de8] ppc_init+0x4c/0x60
+  [df835e80] [c0003b28] do_one_initcall+0x150/0x1a4
+  [df835ef0] [c0432048] kernel_init_freeable+0x114/0x1c0
+  [df835f30] [c0004114] kernel_init+0x18/0x124
+  [df835f40] [c000e910] ret_from_kernel_thread+0x5c/0x64
+  Instruction dump:
+  409effd4 57c9103a 57de2834 7c89f050 7f83e378 7c972214 7f45d378 48001f55
+  7c63d278 7c630034 5463d97e 687a0001 <0f1a0000> 2f990000 387b0010 939b0098
+  ---[ end trace 2257f10e5a20cbdd ]---
+
+  ...
+  irq: no irq domain found for /soc@80000000 !
+  fsl-diu-fb 80002100.display: could not get DIU IRQ
+  fsl-diu-fb: probe of 80002100.display failed with error -22
+  irq: no irq domain found for /soc@80000000 !
+  mpc512x_dma 80014000.dma: Error mapping IRQ!
+  mpc512x_dma: probe of 80014000.dma failed with error -22
+  ...
+  irq: no irq domain found for /soc@80000000 !
+  fs_enet: probe of 80002800.ethernet failed with error -22
+  ...
+  irq: no irq domain found for /soc@80000000 !
+  mpc5121-rtc 80000a00.rtc: mpc5121_rtc_probe: could not request irq: 0
+  mpc5121-rtc: probe of 80000a00.rtc failed with error -22
+  ...
+
+[ best viewed with 'git diff -U5' to have DT node names in the context ]
+
+Cc: Anatolij Gustschin <agust@denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org
+Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- sound/soc/fsl/fsl_ssi.c | 79 ++++++-------------------------------------------
- 1 file changed, 9 insertions(+), 70 deletions(-)
+ arch/powerpc/boot/dts/mpc5121.dtsi |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 90ff107..f9f4569 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -119,8 +119,6 @@ static inline void write_ssi_mask(u32 __iomem *addr, u32 clear, u32 set)
-  * @ssi: pointer to the SSI's registers
-  * @ssi_phys: physical address of the SSI registers
-  * @irq: IRQ of this SSI
-- * @first_stream: pointer to the stream that was opened first
-- * @second_stream: pointer to second stream
-  * @playback: the number of playback streams opened
-  * @capture: the number of capture streams opened
-  * @cpu_dai: the CPU DAI for this device
-@@ -132,8 +130,6 @@ struct fsl_ssi_private {
- 	struct ccsr_ssi __iomem *ssi;
- 	dma_addr_t ssi_phys;
- 	unsigned int irq;
--	struct snd_pcm_substream *first_stream;
--	struct snd_pcm_substream *second_stream;
- 	unsigned int fifo_depth;
- 	struct snd_soc_dai_driver cpu_dai_drv;
- 	struct device_attribute dev_attr;
-@@ -438,54 +434,13 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
- 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
- 	struct fsl_ssi_private *ssi_private =
- 		snd_soc_dai_get_drvdata(rtd->cpu_dai);
--	int synchronous = ssi_private->cpu_dai_drv.symmetric_rates;
+diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
+index bd14c00e5146..2d7cb04ac962 100644
+--- a/arch/powerpc/boot/dts/mpc5121.dtsi
++++ b/arch/powerpc/boot/dts/mpc5121.dtsi
+@@ -75,11 +75,10 @@
  
--	/*
--	 * If this is the first stream opened, then request the IRQ
--	 * and initialize the SSI registers.
-+	/* First, we only do fsl_ssi_setup() when SSI is going to be active.
-+	 * Second, fsl_ssi_setup was already called by ac97_init earlier if
-+	 * the driver is in ac97 mode.
- 	 */
--	if (!ssi_private->first_stream) {
--		ssi_private->first_stream = substream;
--
--		/*
--		 * fsl_ssi_setup was already called by ac97_init earlier if
--		 * the driver is in ac97 mode.
--		 */
--		if (!ssi_private->imx_ac97)
--			fsl_ssi_setup(ssi_private);
--	} else {
--		if (synchronous) {
--			struct snd_pcm_runtime *first_runtime =
--				ssi_private->first_stream->runtime;
--			/*
--			 * This is the second stream open, and we're in
--			 * synchronous mode, so we need to impose sample
--			 * sample size constraints. This is because STCCR is
--			 * used for playback and capture in synchronous mode,
--			 * so there's no way to specify different word
--			 * lengths.
--			 *
--			 * Note that this can cause a race condition if the
--			 * second stream is opened before the first stream is
--			 * fully initialized.  We provide some protection by
--			 * checking to make sure the first stream is
--			 * initialized, but it's not perfect.  ALSA sometimes
--			 * re-initializes the driver with a different sample
--			 * rate or size.  If the second stream is opened
--			 * before the first stream has received its final
--			 * parameters, then the second stream may be
--			 * constrained to the wrong sample rate or size.
--			 */
--			if (first_runtime->sample_bits) {
--				snd_pcm_hw_constraint_minmax(substream->runtime,
--						SNDRV_PCM_HW_PARAM_SAMPLE_BITS,
--				first_runtime->sample_bits,
--				first_runtime->sample_bits);
--			}
--		}
--
--		ssi_private->second_stream = substream;
--	}
-+	if (!dai->active && !ssi_private->imx_ac97)
-+		fsl_ssi_setup(ssi_private);
+ 	soc@80000000 {
+ 		compatible = "fsl,mpc5121-immr";
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+-		#interrupt-cells = <2>;
+ 		ranges = <0x0 0x80000000 0x400000>;
+ 		reg = <0x80000000 0x400000>;
+ 		bus-frequency = <66000000>;	/* 66 MHz ips bus */
  
- 	return 0;
- }
-@@ -615,23 +570,6 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
- 	return 0;
- }
  
--/**
-- * fsl_ssi_shutdown: shutdown the SSI
-- *
-- * Shutdown the SSI if there are no other substreams open.
-- */
--static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
--			     struct snd_soc_dai *dai)
--{
--	struct snd_soc_pcm_runtime *rtd = substream->private_data;
--	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(rtd->cpu_dai);
--
--	if (ssi_private->first_stream == substream)
--		ssi_private->first_stream = ssi_private->second_stream;
--
--	ssi_private->second_stream = NULL;
--}
--
- static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
- {
- 	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(dai);
-@@ -647,7 +585,6 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
- static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
- 	.startup	= fsl_ssi_startup,
- 	.hw_params	= fsl_ssi_hw_params,
--	.shutdown	= fsl_ssi_shutdown,
- 	.trigger	= fsl_ssi_trigger,
- };
- 
-@@ -722,7 +659,6 @@ static int fsl_ssi_ac97_trigger(struct snd_pcm_substream *substream, int cmd,
- 
- static const struct snd_soc_dai_ops fsl_ssi_ac97_dai_ops = {
- 	.startup	= fsl_ssi_startup,
--	.shutdown	= fsl_ssi_shutdown,
- 	.trigger	= fsl_ssi_ac97_trigger,
- };
- 
-@@ -947,8 +883,11 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 	}
- 
- 	/* Are the RX and the TX clocks locked? */
--	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL))
-+	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL)) {
- 		ssi_private->cpu_dai_drv.symmetric_rates = 1;
-+		ssi_private->cpu_dai_drv.symmetric_channels = 1;
-+		ssi_private->cpu_dai_drv.symmetric_samplebits = 1;
-+	}
- 
- 	/* Determine the FIFO depth. */
- 	iprop = of_get_property(np, "fsl,fifo-depth", NULL);
 -- 
-1.8.4
+1.7.10.4
