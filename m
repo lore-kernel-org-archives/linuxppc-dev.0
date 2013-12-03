@@ -1,23 +1,20 @@
-Return-Path: <Varun.Sethi@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8C6602C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 05:15:34 +1100 (EST)
-From: Varun Sethi <Varun.Sethi@freescale.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: RE: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 634212C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 05:34:58 +1100 (EST)
+Message-ID: <1386095692.25738.279.camel@ul30vt.home>
+Subject: Re: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe
  devices
-Date: Tue, 3 Dec 2013 18:15:22 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D0A606B8F@039-SN2MPN1-011.039d.mgd.msft.net>
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Date: Tue, 03 Dec 2013 11:34:52 -0700
+In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D0A606B8F@039-SN2MPN1-011.039d.mgd.msft.net>
 References: <1381922582-28724-1-git-send-email-Varun.Sethi@freescale.com>
  <1381922582-28724-3-git-send-email-Varun.Sethi@freescale.com>
  <1386020016.25738.240.camel@ul30vt.home>
-In-Reply-To: <1386020016.25738.240.camel@ul30vt.home>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ <C5ECD7A89D1DC44195F34B25E172658D0A606B8F@039-SN2MPN1-011.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: "joro@8bytes.org" <joro@8bytes.org>,
  Stuart Yoder <stuart.yoder@freescale.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -34,110 +31,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
-IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IFR1ZXNkYXksIERl
-Y2VtYmVyIDAzLCAyMDEzIDM6MDQgQU0NCj4gVG86IFNldGhpIFZhcnVuLUIxNjM5NQ0KPiBDYzog
-am9yb0A4Ynl0ZXMub3JnOyBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZzsgbGludXhw
-cGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3Jn
-OyBZb2RlciBTdHVhcnQtQjA4MjQ4Ow0KPiBXb29kIFNjb3R0LUIwNzQyMTsgQmh1c2hhbiBCaGFy
-YXQtUjY1Nzc3DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi8zIHYyXSBpb21tdS9mc2w6IEVuYWJs
-ZSBkZWZhdWx0IERNQSB3aW5kb3cgZm9yIFBDSWUNCj4gZGV2aWNlcw0KPiANCj4gT24gV2VkLCAy
-MDEzLTEwLTE2IGF0IDE2OjUzICswNTMwLCBWYXJ1biBTZXRoaSB3cm90ZToNCj4gPiBPbmNlIHRo
-ZSBQQ0llIGRldmljZSBhc3NpZ25lZCB0byBhIGd1ZXN0IFZNICh2aWEgVkZJTykgZ2V0cyBkZXRh
-Y2hlZA0KPiA+IGZyb20gdGhlIGlvbW11IGRvbWFpbiAod2hlbiBndWVzdCB0ZXJtaW5hdGVzKSwg
-aXRzIFBBTVUgdGFibGUgZW50cnkgaXMNCj4gPiBkaXNhYmxlZC4gU28sIHRoaXMgd291bGQgcHJl
-dmVudCB0aGUgZGV2aWNlIGZyb20gYmVpbmcgdXNlZCBvbmNlIGl0J3MNCj4gYXNzaWduZWQgYmFj
-ayB0byB0aGUgaG9zdC4NCj4gPg0KPiA+IFRoaXMgcGF0Y2ggYWxsb3dzIGZvciBjcmVhdGlvbiBv
-ZiBhIGRlZmF1bHQgRE1BIHdpbmRvdyBjb3JyZXNwb25kaW5nDQo+ID4gdG8gdGhlIGRldmljZSBh
-bmQgc3Vic2VxdWVudGx5IGVuYWJsaW5nIHRoZSBQQU1VIHRhYmxlIGVudHJ5LiBCZWZvcmUNCj4g
-PiB3ZSBlbmFibGUgdGhlIGVudHJ5LCB3ZSBlbnN1cmUgdGhhdCB0aGUgZGV2aWNlJ3MgYnVzIG1h
-c3RlciBjYXBhYmlsaXR5DQo+IGlzIGRpc2FibGVkIChkZXZpY2UgcXVpZXNjZWQpLg0KPiA+DQo+
-ID4gU2lnbmVkLW9mZi1ieTogVmFydW4gU2V0aGkgPFZhcnVuLlNldGhpQGZyZWVzY2FsZS5jb20+
-DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvaW9tbXUvZnNsX3BhbXUuYyAgICAgICAgfCAgIDQzICsr
-KysrKysrKysrKysrKysrKysrKysrKysrKystLS0NCj4gLS0tLS0NCj4gPiAgZHJpdmVycy9pb21t
-dS9mc2xfcGFtdS5oICAgICAgICB8ICAgIDEgKw0KPiA+ICBkcml2ZXJzL2lvbW11L2ZzbF9wYW11
-X2RvbWFpbi5jIHwgICA0Ng0KPiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKyst
-LS0NCj4gPiAgMyBmaWxlcyBjaGFuZ2VkLCA3OCBpbnNlcnRpb25zKCspLCAxMiBkZWxldGlvbnMo
-LSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2ZzbF9wYW11LmMgYi9kcml2
-ZXJzL2lvbW11L2ZzbF9wYW11LmMgaW5kZXgNCj4gPiBjYmEwNDk4Li5mYjRhMDMxIDEwMDY0NA0K
-PiA+IC0tLSBhL2RyaXZlcnMvaW9tbXUvZnNsX3BhbXUuYw0KPiA+ICsrKyBiL2RyaXZlcnMvaW9t
-bXUvZnNsX3BhbXUuYw0KPiA+IEBAIC0yMjUsNiArMjI1LDIxIEBAIHN0YXRpYyBzdHJ1Y3QgcGFh
-Y2UgKnBhbXVfZ2V0X3NwYWFjZShzdHJ1Y3QgcGFhY2UNCj4gKnBhYWNlLCB1MzIgd251bSkNCj4g
-PiAgCXJldHVybiBzcGFhY2U7DQo+ID4gIH0NCj4gPg0KPiA+ICsvKg0KPiA+ICsgKiBEZWZhdWwg
-UFBBQUNFIHNldHRpbmdzIGZvciBhbiBMSU9ETi4NCj4gPiArICovDQo+ID4gK3N0YXRpYyB2b2lk
-IHNldHVwX2RlZmF1bHRfcHBhYWNlKHN0cnVjdCBwYWFjZSAqcHBhYWNlKSB7DQo+ID4gKwlwYW11
-X2luaXRfcHBhYWNlKHBwYWFjZSk7DQo+ID4gKwkvKiB3aW5kb3cgc2l6ZSBpcyAyXihXU0UrMSkg
-Ynl0ZXMgKi8NCj4gPiArCXNldF9iZihwcGFhY2UtPmFkZHJfYml0ZmllbGRzLCBQUEFBQ0VfQUZf
-V1NFLCAzNSk7DQo+ID4gKwlwcGFhY2UtPndiYWggPSAwOw0KPiA+ICsJc2V0X2JmKHBwYWFjZS0+
-YWRkcl9iaXRmaWVsZHMsIFBQQUFDRV9BRl9XQkFMLCAwKTsNCj4gPiArCXNldF9iZihwcGFhY2Ut
-PmltcGxfYXR0ciwgUEFBQ0VfSUFfQVRNLA0KPiA+ICsJCVBBQUNFX0FUTV9OT19YTEFURSk7DQo+
-ID4gKwlzZXRfYmYocHBhYWNlLT5hZGRyX2JpdGZpZWxkcywgUEFBQ0VfQUZfQVAsDQo+ID4gKwkJ
-UEFBQ0VfQVBfUEVSTVNfQUxMKTsNCj4gPiArfQ0KPiA+ICAvKioNCj4gPiAgICogcGFtdV9nZXRf
-ZnNwaV9hbmRfYWxsb2NhdGUoKSAtIEFsbG9jYXRlcyBmc3BpIGluZGV4IGFuZCByZXNlcnZlcw0K
-PiBzdWJ3aW5kb3dzDQo+ID4gICAqICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZXF1
-aXJlZCBmb3IgcHJpbWFyeSBQQUFDRSBpbiB0aGUNCj4gc2Vjb25kYXJ5DQo+ID4gQEAgLTI1Myw2
-ICsyNjgsMjQgQEAgc3RhdGljIHVuc2lnbmVkIGxvbmcNCj4gcGFtdV9nZXRfZnNwaV9hbmRfYWxs
-b2NhdGUodTMyIHN1Yndpbl9jbnQpDQo+ID4gIAlyZXR1cm4gKHNwYWFjZV9hZGRyIC0gKHVuc2ln
-bmVkIGxvbmcpc3BhYWN0KSAvIChzaXplb2Yoc3RydWN0DQo+ID4gcGFhY2UpKTsgIH0NCj4gPg0K
-PiA+ICsvKiBSZXNldCB0aGUgUEFBQ0UgZW50cnkgdG8gdGhlIGRlZmF1bHQgc3RhdGUgKi8gdm9p
-ZA0KPiA+ICtlbmFibGVfZGVmYXVsdF9kbWFfd2luZG93KGludCBsaW9kbikgew0KPiA+ICsJc3Ry
-dWN0IHBhYWNlICpwcGFhY2U7DQo+ID4gKw0KPiA+ICsJcHBhYWNlID0gcGFtdV9nZXRfcHBhYWNl
-KGxpb2RuKTsNCj4gPiArCWlmICghcHBhYWNlKSB7DQo+ID4gKwkJcHJfZGVidWcoIkludmFsaWQg
-bGlvZG4gZW50cnlcbiIpOw0KPiA+ICsJCXJldHVybjsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwlt
-ZW1zZXQocHBhYWNlLCAwLCBzaXplb2Yoc3RydWN0IHBhYWNlKSk7DQo+ID4gKw0KPiA+ICsJc2V0
-dXBfZGVmYXVsdF9wcGFhY2UocHBhYWNlKTsNCj4gPiArCW1iKCk7DQo+ID4gKwlwYW11X2VuYWJs
-ZV9saW9kbihsaW9kbik7DQo+ID4gK30NCj4gPiArDQo+ID4gIC8qIFJlbGVhc2UgdGhlIHN1Yndp
-bmRvd3MgcmVzZXJ2ZWQgZm9yIGEgcGFydGljdWxhciBMSU9ETiAqLyAgdm9pZA0KPiA+IHBhbXVf
-ZnJlZV9zdWJ3aW5zKGludCBsaW9kbikgIHsgQEAgLTc1MiwxNSArNzg1LDcgQEAgc3RhdGljIHZv
-aWQNCj4gPiBfX2luaXQgc2V0dXBfbGlvZG5zKHZvaWQpDQo+ID4gIAkJCQljb250aW51ZTsNCj4g
-PiAgCQkJfQ0KPiA+ICAJCQlwcGFhY2UgPSBwYW11X2dldF9wcGFhY2UobGlvZG4pOw0KPiA+IC0J
-CQlwYW11X2luaXRfcHBhYWNlKHBwYWFjZSk7DQo+ID4gLQkJCS8qIHdpbmRvdyBzaXplIGlzIDJe
-KFdTRSsxKSBieXRlcyAqLw0KPiA+IC0JCQlzZXRfYmYocHBhYWNlLT5hZGRyX2JpdGZpZWxkcywg
-UFBBQUNFX0FGX1dTRSwgMzUpOw0KPiA+IC0JCQlwcGFhY2UtPndiYWggPSAwOw0KPiA+IC0JCQlz
-ZXRfYmYocHBhYWNlLT5hZGRyX2JpdGZpZWxkcywgUFBBQUNFX0FGX1dCQUwsIDApOw0KPiA+IC0J
-CQlzZXRfYmYocHBhYWNlLT5pbXBsX2F0dHIsIFBBQUNFX0lBX0FUTSwNCj4gPiAtCQkJCVBBQUNF
-X0FUTV9OT19YTEFURSk7DQo+ID4gLQkJCXNldF9iZihwcGFhY2UtPmFkZHJfYml0ZmllbGRzLCBQ
-QUFDRV9BRl9BUCwNCj4gPiAtCQkJCVBBQUNFX0FQX1BFUk1TX0FMTCk7DQo+ID4gKwkJCXNldHVw
-X2RlZmF1bHRfcHBhYWNlKHBwYWFjZSk7DQo+ID4gIAkJCWlmIChvZl9kZXZpY2VfaXNfY29tcGF0
-aWJsZShub2RlLCAiZnNsLHFtYW4tcG9ydGFsIikpDQo+ID4gIAkJCQlzZXR1cF9xYm1hbl9wYWFj
-ZShwcGFhY2UsIFFNQU5fUE9SVEFMX1BBQUNFKTsNCj4gPiAgCQkJaWYgKG9mX2RldmljZV9pc19j
-b21wYXRpYmxlKG5vZGUsICJmc2wscW1hbiIpKSBkaWZmIC0tDQo+IGdpdA0KPiA+IGEvZHJpdmVy
-cy9pb21tdS9mc2xfcGFtdS5oIGIvZHJpdmVycy9pb21tdS9mc2xfcGFtdS5oIGluZGV4DQo+ID4g
-OGZjMWExMi4uMGVkY2JiYmIgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9pb21tdS9mc2xfcGFt
-dS5oDQo+ID4gKysrIGIvZHJpdmVycy9pb21tdS9mc2xfcGFtdS5oDQo+ID4gQEAgLTQwNiw1ICs0
-MDYsNiBAQCB2b2lkIGdldF9vbWVfaW5kZXgodTMyICpvbWlfaW5kZXgsIHN0cnVjdCBkZXZpY2UN
-Cj4gPiAqZGV2KTsgIGludCAgcGFtdV91cGRhdGVfcGFhY2Vfc3Rhc2goaW50IGxpb2RuLCB1MzIg
-c3Vid2luLCB1MzINCj4gPiB2YWx1ZSk7ICBpbnQgcGFtdV9kaXNhYmxlX3NwYWFjZShpbnQgbGlv
-ZG4sIHUzMiBzdWJ3aW4pOw0KPiA+ICB1MzIgcGFtdV9nZXRfbWF4X3N1Yndpbl9jbnQodm9pZCk7
-DQo+ID4gK3ZvaWQgZW5hYmxlX2RlZmF1bHRfZG1hX3dpbmRvdyhpbnQgbGlvZG4pOw0KPiA+DQo+
-ID4gICNlbmRpZiAgLyogX19GU0xfUEFNVV9IICovDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-aW9tbXUvZnNsX3BhbXVfZG9tYWluLmMNCj4gPiBiL2RyaXZlcnMvaW9tbXUvZnNsX3BhbXVfZG9t
-YWluLmMgaW5kZXggOTY2YWU3MC4uZGQ2Y2FmYyAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2lv
-bW11L2ZzbF9wYW11X2RvbWFpbi5jDQo+ID4gKysrIGIvZHJpdmVycy9pb21tdS9mc2xfcGFtdV9k
-b21haW4uYw0KPiA+IEBAIC0zNDAsMTcgKzM0MCw1NyBAQCBzdGF0aWMgaW5saW5lIHN0cnVjdCBk
-ZXZpY2VfZG9tYWluX2luZm8NCj4gKmZpbmRfZG9tYWluKHN0cnVjdCBkZXZpY2UgKmRldikNCj4g
-PiAgCXJldHVybiBkZXYtPmFyY2hkYXRhLmlvbW11X2RvbWFpbjsNCj4gPiAgfQ0KPiA+DQo+ID4g
-Ky8qIERpc2FibGUgZGV2aWNlIERNQSBjYXBhYmlsaXR5IGFuZCBlbmFibGUgZGVmYXVsdCBETUEg
-d2luZG93ICovDQo+ID4gK3N0YXRpYyB2b2lkIGRpc2FibGVfZGV2aWNlX2RtYShzdHJ1Y3QgZGV2
-aWNlX2RvbWFpbl9pbmZvICppbmZvLA0KPiA+ICsJCQkJaW50IGVuYWJsZV9kbWFfd2luZG93KQ0K
-PiANCj4gbml0LCBib29sPw0KPiANCj4gPiArew0KPiA+ICsjaWZkZWYgQ09ORklHX1BDSQ0KPiA+
-ICsJaWYgKGluZm8tPmRldi0+YnVzID09ICZwY2lfYnVzX3R5cGUpIHsNCj4gPiArCQlzdHJ1Y3Qg
-cGNpX2RldiAqcGRldiA9IE5VTEw7DQo+IA0KPiBuaXQsIHVubmVjZXNzYXJ5IGluaXRpYWxpemF0
-aW9uDQo+IA0KPiA+ICsJCXBkZXYgPSB0b19wY2lfZGV2KGluZm8tPmRldik7DQo+ID4gKwkJaWYg
-KHBjaV9pc19lbmFibGVkKHBkZXYpKQ0KPiA+ICsJCQlwY2lfZGlzYWJsZV9kZXZpY2UocGRldik7
-DQo+IA0KPiBUaGlzIGxvb2tzIHN1c3BpY2lvdXMuICBXaGF0J3MgdGhlIGNhc2Ugd2hlcmUgeW91
-J3JlIGZpbmRpbmcgZGV2aWNlcw0KPiB3aGVyZSB0aGlzIGlzIG5lZWRlZD8gIExvZ2ljYWxseSB0
-aGUgZHJpdmVyIHRoYXQgY2FsbGVkDQo+IHBjaV9lbmFibGVfZGV2aWNlKCkgc2hvdWxkIGFsc28g
-Y2FsbCBwY2lfZGlzYWJsZWRfZGV2aWNlKCkgd2hlbiBpdCdzDQo+IGRvbmUuICBNYXliZSB0aGVy
-ZSdzIGEgY2FzZSB0byBiZSBtYWRlIHRoYXQgd2UgY2FuJ3QgcmVseSBvbiB0aGUgZHJpdmVyLA0K
-PiBidXQgdGhlbiBtYXliZSB0aGVyZSBzaG91bGQgYmUgYSBwcl9kZWJ1Zy9pbmZvIGhlcmUgdG8g
-bm90aWZ5IHRoYXQNCj4gc29tZWJvZHkgbGVmdCB0aGUgZGV2aWNlIHJ1bm5pbmcuICBUaGVyZSBt
-aWdodCBhbHNvIGJlIHRoZSBxdWVzdGlvbiBvZg0KPiB3aGV0aGVyIHlvdSBzaG91bGQgdGVzdCB0
-aGUgYnVzbWFzdGVyIGJpdCBpbiB0aGUgY29tbWFuZCByZWdpc3RlciByYXRoZXINCj4gdGhhbiB0
-cnVzdGluZyB0aGVzZSBpbmRpcmVjdCBwYXRocyBpZiBpdCdzIHJlYWxseSBmb3IgY2xlYW51cC4g
-IFRoYW5rcywNCj4gDQpPbmNlIHRoZSBkZXZpY2UgaXMgZGV0YWNoZWQgZnJvbSB0aGUgZG9tYWlu
-LCB3ZSBlbmFibGUgYSBkZWZhdWx0IERNQSB3aW5kb3cgZm9yIHRoZSBkZXZpY2UuIEJlZm9yZSBl
-bmFibGluZyB0aGUgZGVmYXVsdCB3aW5kb3csIEkgd2FudCB0byBlbnN1cmUgdGhhdCBkZXZpY2Ug
-RE1BIGlzIGRpc2FibGVkLiBWRklPIHN1YnN5c3RlbSBoYW5kbGVzIHRoaXMgZm9yIHZmaW8tcGNp
-LiBCdXQsIGNhbiB3ZSBhc3N1bWUgdGhhdCB0aGlzIHdvdWxkIGFsd2F5cyBiZSB0aGUgY2FzZT8N
-Cg0KLVZhcnVuDQoNCg0K
+On Tue, 2013-12-03 at 18:15 +0000, Varun Sethi wrote:
+> 
+> > -----Original Message-----
+> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > Sent: Tuesday, December 03, 2013 3:04 AM
+> > To: Sethi Varun-B16395
+> > Cc: joro@8bytes.org; iommu@lists.linux-foundation.org; linuxppc-
+> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Yoder Stuart-B08248;
+> > Wood Scott-B07421; Bhushan Bharat-R65777
+> > Subject: Re: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe
+> > devices
+> > 
+> > On Wed, 2013-10-16 at 16:53 +0530, Varun Sethi wrote:
+> > > Once the PCIe device assigned to a guest VM (via VFIO) gets detached
+> > > from the iommu domain (when guest terminates), its PAMU table entry is
+> > > disabled. So, this would prevent the device from being used once it's
+> > assigned back to the host.
+> > >
+> > > This patch allows for creation of a default DMA window corresponding
+> > > to the device and subsequently enabling the PAMU table entry. Before
+> > > we enable the entry, we ensure that the device's bus master capability
+> > is disabled (device quiesced).
+> > >
+> > > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> > > ---
+> > >  drivers/iommu/fsl_pamu.c        |   43 ++++++++++++++++++++++++++++---
+> > -----
+> > >  drivers/iommu/fsl_pamu.h        |    1 +
+> > >  drivers/iommu/fsl_pamu_domain.c |   46
+> > ++++++++++++++++++++++++++++++++++++---
+> > >  3 files changed, 78 insertions(+), 12 deletions(-)
+> > >
+> > > diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c index
+> > > cba0498..fb4a031 100644
+> > > --- a/drivers/iommu/fsl_pamu.c
+> > > +++ b/drivers/iommu/fsl_pamu.c
+> > > @@ -225,6 +225,21 @@ static struct paace *pamu_get_spaace(struct paace
+> > *paace, u32 wnum)
+> > >  	return spaace;
+> > >  }
+> > >
+> > > +/*
+> > > + * Defaul PPAACE settings for an LIODN.
+> > > + */
+> > > +static void setup_default_ppaace(struct paace *ppaace) {
+> > > +	pamu_init_ppaace(ppaace);
+> > > +	/* window size is 2^(WSE+1) bytes */
+> > > +	set_bf(ppaace->addr_bitfields, PPAACE_AF_WSE, 35);
+> > > +	ppaace->wbah = 0;
+> > > +	set_bf(ppaace->addr_bitfields, PPAACE_AF_WBAL, 0);
+> > > +	set_bf(ppaace->impl_attr, PAACE_IA_ATM,
+> > > +		PAACE_ATM_NO_XLATE);
+> > > +	set_bf(ppaace->addr_bitfields, PAACE_AF_AP,
+> > > +		PAACE_AP_PERMS_ALL);
+> > > +}
+> > >  /**
+> > >   * pamu_get_fspi_and_allocate() - Allocates fspi index and reserves
+> > subwindows
+> > >   *                                required for primary PAACE in the
+> > secondary
+> > > @@ -253,6 +268,24 @@ static unsigned long
+> > pamu_get_fspi_and_allocate(u32 subwin_cnt)
+> > >  	return (spaace_addr - (unsigned long)spaact) / (sizeof(struct
+> > > paace));  }
+> > >
+> > > +/* Reset the PAACE entry to the default state */ void
+> > > +enable_default_dma_window(int liodn) {
+> > > +	struct paace *ppaace;
+> > > +
+> > > +	ppaace = pamu_get_ppaace(liodn);
+> > > +	if (!ppaace) {
+> > > +		pr_debug("Invalid liodn entry\n");
+> > > +		return;
+> > > +	}
+> > > +
+> > > +	memset(ppaace, 0, sizeof(struct paace));
+> > > +
+> > > +	setup_default_ppaace(ppaace);
+> > > +	mb();
+> > > +	pamu_enable_liodn(liodn);
+> > > +}
+> > > +
+> > >  /* Release the subwindows reserved for a particular LIODN */  void
+> > > pamu_free_subwins(int liodn)  { @@ -752,15 +785,7 @@ static void
+> > > __init setup_liodns(void)
+> > >  				continue;
+> > >  			}
+> > >  			ppaace = pamu_get_ppaace(liodn);
+> > > -			pamu_init_ppaace(ppaace);
+> > > -			/* window size is 2^(WSE+1) bytes */
+> > > -			set_bf(ppaace->addr_bitfields, PPAACE_AF_WSE, 35);
+> > > -			ppaace->wbah = 0;
+> > > -			set_bf(ppaace->addr_bitfields, PPAACE_AF_WBAL, 0);
+> > > -			set_bf(ppaace->impl_attr, PAACE_IA_ATM,
+> > > -				PAACE_ATM_NO_XLATE);
+> > > -			set_bf(ppaace->addr_bitfields, PAACE_AF_AP,
+> > > -				PAACE_AP_PERMS_ALL);
+> > > +			setup_default_ppaace(ppaace);
+> > >  			if (of_device_is_compatible(node, "fsl,qman-portal"))
+> > >  				setup_qbman_paace(ppaace, QMAN_PORTAL_PAACE);
+> > >  			if (of_device_is_compatible(node, "fsl,qman")) diff --
+> > git
+> > > a/drivers/iommu/fsl_pamu.h b/drivers/iommu/fsl_pamu.h index
+> > > 8fc1a12..0edcbbbb 100644
+> > > --- a/drivers/iommu/fsl_pamu.h
+> > > +++ b/drivers/iommu/fsl_pamu.h
+> > > @@ -406,5 +406,6 @@ void get_ome_index(u32 *omi_index, struct device
+> > > *dev);  int  pamu_update_paace_stash(int liodn, u32 subwin, u32
+> > > value);  int pamu_disable_spaace(int liodn, u32 subwin);
+> > >  u32 pamu_get_max_subwin_cnt(void);
+> > > +void enable_default_dma_window(int liodn);
+> > >
+> > >  #endif  /* __FSL_PAMU_H */
+> > > diff --git a/drivers/iommu/fsl_pamu_domain.c
+> > > b/drivers/iommu/fsl_pamu_domain.c index 966ae70..dd6cafc 100644
+> > > --- a/drivers/iommu/fsl_pamu_domain.c
+> > > +++ b/drivers/iommu/fsl_pamu_domain.c
+> > > @@ -340,17 +340,57 @@ static inline struct device_domain_info
+> > *find_domain(struct device *dev)
+> > >  	return dev->archdata.iommu_domain;
+> > >  }
+> > >
+> > > +/* Disable device DMA capability and enable default DMA window */
+> > > +static void disable_device_dma(struct device_domain_info *info,
+> > > +				int enable_dma_window)
+> > 
+> > nit, bool?
+> > 
+> > > +{
+> > > +#ifdef CONFIG_PCI
+> > > +	if (info->dev->bus == &pci_bus_type) {
+> > > +		struct pci_dev *pdev = NULL;
+> > 
+> > nit, unnecessary initialization
+> > 
+> > > +		pdev = to_pci_dev(info->dev);
+> > > +		if (pci_is_enabled(pdev))
+> > > +			pci_disable_device(pdev);
+> > 
+> > This looks suspicious.  What's the case where you're finding devices
+> > where this is needed?  Logically the driver that called
+> > pci_enable_device() should also call pci_disabled_device() when it's
+> > done.  Maybe there's a case to be made that we can't rely on the driver,
+> > but then maybe there should be a pr_debug/info here to notify that
+> > somebody left the device running.  There might also be the question of
+> > whether you should test the busmaster bit in the command register rather
+> > than trusting these indirect paths if it's really for cleanup.  Thanks,
+> > 
+> Once the device is detached from the domain, we enable a default DMA
+> window for the device. Before enabling the default window, I want to
+> ensure that device DMA is disabled. VFIO subsystem handles this for
+> vfio-pci. But, can we assume that this would always be the case?
+
+That's what I'm asking.  It seems like pci_enable/disable_device is part
+of the driver API and every enable should have a matching disable.  If
+this is to catch cases where the disable never happened, then there
+should be some indication that the previous driver did something wrong
+and we should have some sort of printed warning.  Then there's also the
+question of whether this fully does what you want it to.  This is an
+indirect way of checking the busmaster bit in the command register.  If
+you really want to make sure it's disabled, is it sufficient or should
+we be reading the actual command register?  Thanks,
+
+Alex
