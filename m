@@ -1,27 +1,29 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 634212C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 05:34:58 +1100 (EST)
-Message-ID: <1386095692.25738.279.camel@ul30vt.home>
-Subject: Re: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe
- devices
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Date: Tue, 03 Dec 2013 11:34:52 -0700
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D0A606B8F@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1381922582-28724-1-git-send-email-Varun.Sethi@freescale.com>
- <1381922582-28724-3-git-send-email-Varun.Sethi@freescale.com>
- <1386020016.25738.240.camel@ul30vt.home>
- <C5ECD7A89D1DC44195F34B25E172658D0A606B8F@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "joro@8bytes.org" <joro@8bytes.org>,
- Stuart Yoder <stuart.yoder@freescale.com>,
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pb0-x22f.google.com (mail-pb0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c01::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EE1062C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 07:45:45 +1100 (EST)
+Received: by mail-pb0-f47.google.com with SMTP id um1so21700072pbc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Dec 2013 12:45:43 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Tue, 3 Dec 2013 12:45:40 -0800
+From: Guenter Roeck <linux@roeck-us.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Build regressions/improvements in v3.13-rc2
+Message-ID: <20131203204540.GA4796@roeck-us.net>
+References: <1385891092-13266-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdV1hoUnYixPghCAy-LuTaB9JU-BFfBPH06gxhLRAqfp8Q@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAMuHMdV1hoUnYixPghCAy-LuTaB9JU-BFfBPH06gxhLRAqfp8Q@mail.gmail.com>
+Cc: sparclinux <sparclinux@vger.kernel.org>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Bharat Bhushan <Bharat.Bhushan@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,167 +33,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-12-03 at 18:15 +0000, Varun Sethi wrote:
+On Sun, Dec 01, 2013 at 10:50:16AM +0100, Geert Uytterhoeven wrote:
+> On Sun, Dec 1, 2013 at 10:44 AM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+> > JFYI, when comparing v3.13-rc2[1] to v3.13-rc1[3], the summaries are:
+> >   - build errors: +8/-8
+> >   - build warnings: +147/-97
 > 
-> > -----Original Message-----
-> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > Sent: Tuesday, December 03, 2013 3:04 AM
-> > To: Sethi Varun-B16395
-> > Cc: joro@8bytes.org; iommu@lists.linux-foundation.org; linuxppc-
-> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Yoder Stuart-B08248;
-> > Wood Scott-B07421; Bhushan Bharat-R65777
-> > Subject: Re: [PATCH 2/3 v2] iommu/fsl: Enable default DMA window for PCIe
-> > devices
-> > 
-> > On Wed, 2013-10-16 at 16:53 +0530, Varun Sethi wrote:
-> > > Once the PCIe device assigned to a guest VM (via VFIO) gets detached
-> > > from the iommu domain (when guest terminates), its PAMU table entry is
-> > > disabled. So, this would prevent the device from being used once it's
-> > assigned back to the host.
-> > >
-> > > This patch allows for creation of a default DMA window corresponding
-> > > to the device and subsequently enabling the PAMU table entry. Before
-> > > we enable the entry, we ensure that the device's bus master capability
-> > is disabled (device quiesced).
-> > >
-> > > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> > > ---
-> > >  drivers/iommu/fsl_pamu.c        |   43 ++++++++++++++++++++++++++++---
-> > -----
-> > >  drivers/iommu/fsl_pamu.h        |    1 +
-> > >  drivers/iommu/fsl_pamu_domain.c |   46
-> > ++++++++++++++++++++++++++++++++++++---
-> > >  3 files changed, 78 insertions(+), 12 deletions(-)
-> > >
-> > > diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c index
-> > > cba0498..fb4a031 100644
-> > > --- a/drivers/iommu/fsl_pamu.c
-> > > +++ b/drivers/iommu/fsl_pamu.c
-> > > @@ -225,6 +225,21 @@ static struct paace *pamu_get_spaace(struct paace
-> > *paace, u32 wnum)
-> > >  	return spaace;
-> > >  }
-> > >
-> > > +/*
-> > > + * Defaul PPAACE settings for an LIODN.
-> > > + */
-> > > +static void setup_default_ppaace(struct paace *ppaace) {
-> > > +	pamu_init_ppaace(ppaace);
-> > > +	/* window size is 2^(WSE+1) bytes */
-> > > +	set_bf(ppaace->addr_bitfields, PPAACE_AF_WSE, 35);
-> > > +	ppaace->wbah = 0;
-> > > +	set_bf(ppaace->addr_bitfields, PPAACE_AF_WBAL, 0);
-> > > +	set_bf(ppaace->impl_attr, PAACE_IA_ATM,
-> > > +		PAACE_ATM_NO_XLATE);
-> > > +	set_bf(ppaace->addr_bitfields, PAACE_AF_AP,
-> > > +		PAACE_AP_PERMS_ALL);
-> > > +}
-> > >  /**
-> > >   * pamu_get_fspi_and_allocate() - Allocates fspi index and reserves
-> > subwindows
-> > >   *                                required for primary PAACE in the
-> > secondary
-> > > @@ -253,6 +268,24 @@ static unsigned long
-> > pamu_get_fspi_and_allocate(u32 subwin_cnt)
-> > >  	return (spaace_addr - (unsigned long)spaact) / (sizeof(struct
-> > > paace));  }
-> > >
-> > > +/* Reset the PAACE entry to the default state */ void
-> > > +enable_default_dma_window(int liodn) {
-> > > +	struct paace *ppaace;
-> > > +
-> > > +	ppaace = pamu_get_ppaace(liodn);
-> > > +	if (!ppaace) {
-> > > +		pr_debug("Invalid liodn entry\n");
-> > > +		return;
-> > > +	}
-> > > +
-> > > +	memset(ppaace, 0, sizeof(struct paace));
-> > > +
-> > > +	setup_default_ppaace(ppaace);
-> > > +	mb();
-> > > +	pamu_enable_liodn(liodn);
-> > > +}
-> > > +
-> > >  /* Release the subwindows reserved for a particular LIODN */  void
-> > > pamu_free_subwins(int liodn)  { @@ -752,15 +785,7 @@ static void
-> > > __init setup_liodns(void)
-> > >  				continue;
-> > >  			}
-> > >  			ppaace = pamu_get_ppaace(liodn);
-> > > -			pamu_init_ppaace(ppaace);
-> > > -			/* window size is 2^(WSE+1) bytes */
-> > > -			set_bf(ppaace->addr_bitfields, PPAACE_AF_WSE, 35);
-> > > -			ppaace->wbah = 0;
-> > > -			set_bf(ppaace->addr_bitfields, PPAACE_AF_WBAL, 0);
-> > > -			set_bf(ppaace->impl_attr, PAACE_IA_ATM,
-> > > -				PAACE_ATM_NO_XLATE);
-> > > -			set_bf(ppaace->addr_bitfields, PAACE_AF_AP,
-> > > -				PAACE_AP_PERMS_ALL);
-> > > +			setup_default_ppaace(ppaace);
-> > >  			if (of_device_is_compatible(node, "fsl,qman-portal"))
-> > >  				setup_qbman_paace(ppaace, QMAN_PORTAL_PAACE);
-> > >  			if (of_device_is_compatible(node, "fsl,qman")) diff --
-> > git
-> > > a/drivers/iommu/fsl_pamu.h b/drivers/iommu/fsl_pamu.h index
-> > > 8fc1a12..0edcbbbb 100644
-> > > --- a/drivers/iommu/fsl_pamu.h
-> > > +++ b/drivers/iommu/fsl_pamu.h
-> > > @@ -406,5 +406,6 @@ void get_ome_index(u32 *omi_index, struct device
-> > > *dev);  int  pamu_update_paace_stash(int liodn, u32 subwin, u32
-> > > value);  int pamu_disable_spaace(int liodn, u32 subwin);
-> > >  u32 pamu_get_max_subwin_cnt(void);
-> > > +void enable_default_dma_window(int liodn);
-> > >
-> > >  #endif  /* __FSL_PAMU_H */
-> > > diff --git a/drivers/iommu/fsl_pamu_domain.c
-> > > b/drivers/iommu/fsl_pamu_domain.c index 966ae70..dd6cafc 100644
-> > > --- a/drivers/iommu/fsl_pamu_domain.c
-> > > +++ b/drivers/iommu/fsl_pamu_domain.c
-> > > @@ -340,17 +340,57 @@ static inline struct device_domain_info
-> > *find_domain(struct device *dev)
-> > >  	return dev->archdata.iommu_domain;
-> > >  }
-> > >
-> > > +/* Disable device DMA capability and enable default DMA window */
-> > > +static void disable_device_dma(struct device_domain_info *info,
-> > > +				int enable_dma_window)
-> > 
-> > nit, bool?
-> > 
-> > > +{
-> > > +#ifdef CONFIG_PCI
-> > > +	if (info->dev->bus == &pci_bus_type) {
-> > > +		struct pci_dev *pdev = NULL;
-> > 
-> > nit, unnecessary initialization
-> > 
-> > > +		pdev = to_pci_dev(info->dev);
-> > > +		if (pci_is_enabled(pdev))
-> > > +			pci_disable_device(pdev);
-> > 
-> > This looks suspicious.  What's the case where you're finding devices
-> > where this is needed?  Logically the driver that called
-> > pci_enable_device() should also call pci_disabled_device() when it's
-> > done.  Maybe there's a case to be made that we can't rely on the driver,
-> > but then maybe there should be a pr_debug/info here to notify that
-> > somebody left the device running.  There might also be the question of
-> > whether you should test the busmaster bit in the command register rather
-> > than trusting these indirect paths if it's really for cleanup.  Thanks,
-> > 
-> Once the device is detached from the domain, we enable a default DMA
-> window for the device. Before enabling the default window, I want to
-> ensure that device DMA is disabled. VFIO subsystem handles this for
-> vfio-pci. But, can we assume that this would always be the case?
+>   + /scratch/kisskb/src/drivers/crypto/caam/jr.c: error: implicit
+> declaration of function 'of_iomap'
+> [-Werror=implicit-function-declaration]:  => 468:2
+> 
+> powerpc/mpc85xx_defconfig
+> 
+>   + /scratch/kisskb/src/arch/powerpc/kernel/swsusp_booke.S: Error:
+> invalid sprg number:  => 161, 85, 165, 91, 167, 163, 87, 89
+> 
+> powerpc-randconfig
+> 
+>   + /scratch/kisskb/src/drivers/tty/ehv_bytechan.c: error: type
+> defaults to 'int' in declaration of 'console_initcall'
+> [-Werror=implicit-int]:  => 363:1
+> 
+> powerpc-allmodconfig
+> 
+>   + /scratch/kisskb/src/arch/sparc/kernel/kgdb_64.c: error: implicit
+> declaration of function 'exception_enter'
+> [-Werror=implicit-function-declaration]:  => 162:7
+>   + /scratch/kisskb/src/arch/sparc/kernel/kgdb_64.c: error: implicit
+> declaration of function 'exception_exit'
+> [-Werror=implicit-function-declaration]:  => 176:2
+> 
+> sparc64-allmodconfig
+> 
+>   + error: drivers/built-in.o: undefined reference to
+> `i2c_register_driver':  => .init.literal+0xd88)
+>   + error: sram.c: undefined reference to `devm_regmap_init_i2c':  =>
+> .text+0x590dc)
+> 
+> sparc-allmodconfig
+> xtensa-allmodconfig
+> 
+>   + /scratch/kisskb/src/drivers/gpu/drm/drm_gem_cma_helper.c: error:
+> implicit declaration of function 'dma_alloc_writecombine'
+> [-Werror=implicit-function-declaration]:  => 91:2
+>   + /scratch/kisskb/src/drivers/gpu/drm/drm_gem_cma_helper.c: error:
+> implicit declaration of function 'dma_free_writecombine'
+> [-Werror=implicit-function-declaration]:  => 176:3
+> 
+> sh-randconfig
+> 
+> > [1] http://kisskb.ellerman.id.au/kisskb/head/6939/ (119 out of 120 configs)
+> > [3] http://kisskb.ellerman.id.au/kisskb/head/6919/ (119 out of 120 configs)
+> 
+Also:
 
-That's what I'm asking.  It seems like pci_enable/disable_device is part
-of the driver API and every enable should have a matching disable.  If
-this is to catch cases where the disable never happened, then there
-should be some indication that the previous driver did something wrong
-and we should have some sort of printed warning.  Then there's also the
-question of whether this fully does what you want it to.  This is an
-indirect way of checking the busmaster bit in the command register.  If
-you really want to make sure it's disabled, is it sufficient or should
-we be reading the actual command register?  Thanks,
+ia64-defconfig:
 
-Alex
+arch/ia64/kernel/built-in.o: In function `skip_rbs_switch':
+(.text+0xef2): undefined reference to `preempt_schedule_irq'
+
+arm-allmodconfig:
+
+drivers/isdn/hisax/telespci.c: In function 'setup_telespci':
+drivers/isdn/hisax/telespci.c:294:2: error: #error "not running on big endian machines now"
+
+mips64 (out of tree 64 bit configuration with MIPS32_O32 not set):
+
+arch/mips/include/asm/syscall.h: In function 'mips_get_syscall_arg':
+arch/mips/include/asm/syscall.h:32:16: error: unused variable 'usp' [-Werror=unused-variable]
+
+Guenter
