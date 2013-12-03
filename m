@@ -1,22 +1,27 @@
-Return-Path: <Chunhe.Lan@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4B87F2C007C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 18:33:26 +1100 (EST)
-Received: from mail164-va3 (localhost [127.0.0.1])	by
- mail164-va3-R.bigfish.com (Postfix) with ESMTP id D78583801E9	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 07:33:20 +0000 (UTC)
-From: Chunhe Lan <Chunhe.Lan@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/defconfig: Enable ath9k wireless card support
-Date: Tue, 3 Dec 2013 15:32:20 +0800
-Message-ID: <1386055940-20629-1-git-send-email-Chunhe.Lan@freescale.com>
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 19C512C009F
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Dec 2013 21:22:25 +1100 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 3 Dec 2013 20:22:22 +1000
+Message-ID: <529DB092.8010307@linux.vnet.ibm.com>
+Date: Tue, 03 Dec 2013 15:51:06 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, Chunhe Lan <Chunhe.Lan@freescale.com>
+To: "mpe@ellerman.id.au" <michael@ozlabs.org>
+Subject: Re: [V3 01/10] perf: New conditional branch filter criteria in branch
+ stack sampling
+References: <20131126060618.917ED2C00A9@ozlabs.org>
+ <529474C7.9050005@linux.vnet.ibm.com>
+In-Reply-To: <529474C7.9050005@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mikey@neuling.org, michaele@au1.ibm.com, linux-kernel@vger.kernel.org,
+ eranian@google.com, linuxppc-dev@ozlabs.org, sukadev@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +31,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On the P1023RDB, when board leaves the factory, it has
-two Atheros wireless cards on the PCIe slot. So enable
-ath9k wireless driver support.
+On 11/26/2013 03:45 PM, Anshuman Khandual wrote:
+> On 11/26/2013 11:36 AM, mpe@ellerman.id.au wrote:
+>> Ideally your commit subject would contain a verb, preferably in the present
+>> tense.
+>>
+>> I think simply "perf: Add PERF_SAMPLE_BRANCH_COND" would be clearer.
+> 
+> 
+> Sure, will change it.
+> 
+>>
+>> On Wed, 2013-16-10 at 06:56:48 UTC, Anshuman Khandual wrote:
+>>> POWER8 PMU based BHRB supports filtering for conditional branches.
+>>> This patch introduces new branch filter PERF_SAMPLE_BRANCH_COND which
+>>> will extend the existing perf ABI. Other architectures can provide
+>>> this functionality with either HW filtering support (if present) or
+>>> with SW filtering of instructions.
+>>>
+>>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>>> Reviewed-by: Stephane Eranian <eranian@google.com>
+>>> ---
+>>>  include/uapi/linux/perf_event.h | 3 ++-
+>>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+>>> index 0b1df41..5da52b6 100644
+>>> --- a/include/uapi/linux/perf_event.h
+>>> +++ b/include/uapi/linux/perf_event.h
+>>> @@ -160,8 +160,9 @@ enum perf_branch_sample_type {
+>>>  	PERF_SAMPLE_BRANCH_ABORT_TX	= 1U << 7, /* transaction aborts */
+>>>  	PERF_SAMPLE_BRANCH_IN_TX	= 1U << 8, /* in transaction */
+>>>  	PERF_SAMPLE_BRANCH_NO_TX	= 1U << 9, /* not in transaction */
+>>> +	PERF_SAMPLE_BRANCH_COND		= 1U << 10, /* conditional branches */
+>>>  
+>>> -	PERF_SAMPLE_BRANCH_MAX		= 1U << 10, /* non-ABI */
+>>> +	PERF_SAMPLE_BRANCH_MAX		= 1U << 11, /* non-ABI */
+>>>  };
+>>
+>> This no longer applies against Linus' tree, you'll need to rebase it.
+> 
+> Okay
 
-Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>
+Hey Michael,
+
+Looks like the patch still applies on top of Linus's tree. The modified patch with
+a new commit subject line can be found here.
+
+----------------------------------------------------------------------
+>From d368096fc51a8da65f2d80ed5090d43cbc269f62 Mon Sep 17 00:00:00 2001
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Mon, 22 Jul 2013 12:22:27 +0530
+Subject: [PATCH] perf: Add PERF_SAMPLE_BRANCH_COND
+
+POWER8 PMU based BHRB supports filtering for conditional branches.
+This patch introduces new branch filter PERF_SAMPLE_BRANCH_COND which
+will extend the existing perf ABI. Other architectures can provide
+this functionality with either HW filtering support (if present) or
+with SW filtering of instructions.
+
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Reviewed-by: Stephane Eranian <eranian@google.com>
 ---
- arch/powerpc/configs/85xx/p1023_defconfig |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ include/uapi/linux/perf_event.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/configs/85xx/p1023_defconfig b/arch/powerpc/configs/85xx/p1023_defconfig
-index b06d37d..a3fe941 100644
---- a/arch/powerpc/configs/85xx/p1023_defconfig
-+++ b/arch/powerpc/configs/85xx/p1023_defconfig
-@@ -62,6 +62,9 @@ CONFIG_INET_ESP=y
- # CONFIG_INET_LRO is not set
- CONFIG_IPV6=y
- CONFIG_IP_SCTP=m
-+CONFIG_CFG80211=y
-+CONFIG_CFG80211_WEXT=y
-+CONFIG_MAC80211=y
- CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
- CONFIG_DEVTMPFS=y
- CONFIG_DEVTMPFS_MOUNT=y
-@@ -101,6 +104,8 @@ CONFIG_DAVICOM_PHY=y
- CONFIG_CICADA_PHY=y
- CONFIG_VITESSE_PHY=y
- CONFIG_FIXED_PHY=y
-+CONFIG_ATH_CARDS=y
-+CONFIG_ATH9K=y
- CONFIG_INPUT_FF_MEMLESS=m
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
+diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+index e1802d6..e2d8b8b 100644
+--- a/include/uapi/linux/perf_event.h
++++ b/include/uapi/linux/perf_event.h
+@@ -163,8 +163,9 @@ enum perf_branch_sample_type {
+ 	PERF_SAMPLE_BRANCH_ABORT_TX	= 1U << 7, /* transaction aborts */
+ 	PERF_SAMPLE_BRANCH_IN_TX	= 1U << 8, /* in transaction */
+ 	PERF_SAMPLE_BRANCH_NO_TX	= 1U << 9, /* not in transaction */
++	PERF_SAMPLE_BRANCH_COND		= 1U << 10, /* conditional branches */
+ 
+-	PERF_SAMPLE_BRANCH_MAX		= 1U << 10, /* non-ABI */
++	PERF_SAMPLE_BRANCH_MAX		= 1U << 11, /* non-ABI */
+ };
+ 
+ #define PERF_SAMPLE_BRANCH_PLM_ALL \
 -- 
-1.7.6.5
+1.7.11.7
