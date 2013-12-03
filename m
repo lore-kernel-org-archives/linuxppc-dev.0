@@ -1,20 +1,22 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id E533B2C039B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 08:33:55 +1100 (EST)
-Message-ID: <1386020030.25738.241.camel@ul30vt.home>
-Subject: Re: [PATCH 1/3 v2] iommu/fsl: Factor out PCI specific code.
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Date: Mon, 02 Dec 2013 14:33:50 -0700
-In-Reply-To: <1381922582-28724-2-git-send-email-Varun.Sethi@freescale.com>
-References: <1381922582-28724-1-git-send-email-Varun.Sethi@freescale.com>
- <1381922582-28724-2-git-send-email-Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: joro@8bytes.org, stuart.yoder@freescale.com, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, r65777@freescale.com,
- scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <Chunhe.Lan@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4B87F2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 18:33:26 +1100 (EST)
+Received: from mail164-va3 (localhost [127.0.0.1])	by
+ mail164-va3-R.bigfish.com (Postfix) with ESMTP id D78583801E9	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 07:33:20 +0000 (UTC)
+From: Chunhe Lan <Chunhe.Lan@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/defconfig: Enable ath9k wireless card support
+Date: Tue, 3 Dec 2013 15:32:20 +0800
+Message-ID: <1386055940-20629-1-git-send-email-Chunhe.Lan@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>, Chunhe Lan <Chunhe.Lan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,201 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-10-16 at 16:53 +0530, Varun Sethi wrote:
-> Factor out PCI specific code in the PAMU driver.
-> 
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
->  drivers/iommu/fsl_pamu_domain.c |   88 +++++++++++++++++++--------------------
->  1 file changed, 43 insertions(+), 45 deletions(-)
-> 
-> diff --git a/drivers/iommu/fsl_pamu_domain.c b/drivers/iommu/fsl_pamu_domain.c
-> index c857c30..966ae70 100644
-> --- a/drivers/iommu/fsl_pamu_domain.c
-> +++ b/drivers/iommu/fsl_pamu_domain.c
-> @@ -677,21 +677,15 @@ static int handle_attach_device(struct fsl_dma_domain *dma_domain,
->  	return ret;
->  }
->  
-> -static int fsl_pamu_attach_device(struct iommu_domain *domain,
-> -				  struct device *dev)
-> +static struct device *get_dma_device(struct device *dev)
->  {
-> -	struct fsl_dma_domain *dma_domain = domain->priv;
-> -	const u32 *liodn;
-> -	u32 liodn_cnt;
-> -	int len, ret = 0;
-> -	struct pci_dev *pdev = NULL;
-> -	struct pci_controller *pci_ctl;
-> +	struct device *dma_dev = dev;
-> +#ifdef CONFIG_PCI
->  
-> -	/*
-> -	 * Use LIODN of the PCI controller while attaching a
-> -	 * PCI device.
-> -	 */
->  	if (dev->bus == &pci_bus_type) {
-> +		struct pci_controller *pci_ctl;
-> +		struct pci_dev *pdev;
-> +
->  		pdev = to_pci_dev(dev);
->  		pci_ctl = pci_bus_to_host(pdev->bus);
->  		/*
-> @@ -699,17 +693,31 @@ static int fsl_pamu_attach_device(struct iommu_domain *domain,
->  		 * so we can get the LIODN programmed by
->  		 * u-boot.
->  		 */
-> -		dev = pci_ctl->parent;
-> +		dma_dev = pci_ctl->parent;
->  	}
-> +#endif
-> +	return dma_dev;
-> +}
-> +
-> +static int fsl_pamu_attach_device(struct iommu_domain *domain,
-> +				  struct device *dev)
-> +{
-> +	struct fsl_dma_domain *dma_domain = domain->priv;
-> +	struct device *dma_dev;
-> +	const u32 *liodn;
-> +	u32 liodn_cnt;
-> +	int len, ret = 0;
-> +
-> +	dma_dev = get_dma_device(dev);
->  
-> -	liodn = of_get_property(dev->of_node, "fsl,liodn", &len);
-> +	liodn = of_get_property(dma_dev->of_node, "fsl,liodn", &len);
->  	if (liodn) {
->  		liodn_cnt = len / sizeof(u32);
->  		ret = handle_attach_device(dma_domain, dev,
->  					 liodn, liodn_cnt);
->  	} else {
->  		pr_debug("missing fsl,liodn property at %s\n",
-> -		          dev->of_node->full_name);
-> +		          dma_dev->of_node->full_name);
->  			ret = -EINVAL;
->  	}
->  
-> @@ -720,32 +728,18 @@ static void fsl_pamu_detach_device(struct iommu_domain *domain,
->  				      struct device *dev)
->  {
->  	struct fsl_dma_domain *dma_domain = domain->priv;
-> +	struct device *dma_dev;
->  	const u32 *prop;
->  	int len;
-> -	struct pci_dev *pdev = NULL;
-> -	struct pci_controller *pci_ctl;
->  
-> -	/*
-> -	 * Use LIODN of the PCI controller while detaching a
-> -	 * PCI device.
-> -	 */
-> -	if (dev->bus == &pci_bus_type) {
-> -		pdev = to_pci_dev(dev);
-> -		pci_ctl = pci_bus_to_host(pdev->bus);
-> -		/*
-> -		 * make dev point to pci controller device
-> -		 * so we can get the LIODN programmed by
-> -		 * u-boot.
-> -		 */
-> -		dev = pci_ctl->parent;
-> -	}
-> +	dma_dev = get_dma_device(dev);
->  
-> -	prop = of_get_property(dev->of_node, "fsl,liodn", &len);
-> +	prop = of_get_property(dma_dev->of_node, "fsl,liodn", &len);
->  	if (prop)
->  		detach_device(dev, dma_domain);
->  	else
->  		pr_debug("missing fsl,liodn property at %s\n",
-> -		          dev->of_node->full_name);
-> +		          dma_dev->of_node->full_name);
->  }
->  
->  static  int configure_domain_geometry(struct iommu_domain *domain, void *data)
-> @@ -905,6 +899,7 @@ static struct iommu_group *get_device_iommu_group(struct device *dev)
->  	return group;
->  }
->  
-> +#ifdef CONFIG_PCI
->  static  bool check_pci_ctl_endpt_part(struct pci_controller *pci_ctl)
->  {
->  	u32 version;
-> @@ -945,13 +940,18 @@ static struct iommu_group *get_shared_pci_device_group(struct pci_dev *pdev)
->  	return NULL;
->  }
->  
-> -static struct iommu_group *get_pci_device_group(struct pci_dev *pdev)
-> +static struct iommu_group *get_pci_device_group(struct device *dev)
->  {
->  	struct pci_controller *pci_ctl;
->  	bool pci_endpt_partioning;
->  	struct iommu_group *group = NULL;
-> -	struct pci_dev *bridge, *dma_pdev = NULL;
-> +	struct pci_dev *bridge, *pdev;
-> +	struct pci_dev *dma_pdev = NULL;
->  
-> +	pdev = to_pci_dev(dev);
-> +	/* Don't create device groups for virtual PCI bridges */
-> +	if (pdev->subordinate)
-> +		return NULL;
->  	pci_ctl = pci_bus_to_host(pdev->bus);
->  	pci_endpt_partioning = check_pci_ctl_endpt_part(pci_ctl);
->  	/* We can partition PCIe devices so assign device group to the device */
-> @@ -1044,11 +1044,11 @@ root_bus:
->  
->  	return group;
->  }
-> +#endif
->  
->  static int fsl_pamu_add_device(struct device *dev)
->  {
->  	struct iommu_group *group = NULL;
-> -	struct pci_dev *pdev;
->  	const u32 *prop;
->  	int ret, len;
->  
-> @@ -1056,19 +1056,15 @@ static int fsl_pamu_add_device(struct device *dev)
->  	 * For platform devices we allocate a separate group for
->  	 * each of the devices.
->  	 */
-> -	if (dev->bus == &pci_bus_type) {
-> -		pdev = to_pci_dev(dev);
-> -		/* Don't create device groups for virtual PCI bridges */
-> -		if (pdev->subordinate)
-> -			return 0;
-> -
-> -		group = get_pci_device_group(pdev);
-> -
-> -	} else {
-> +	if (dev->bus == &platform_bus_type) {
->  		prop = of_get_property(dev->of_node, "fsl,liodn", &len);
->  		if (prop)
->  			group = get_device_iommu_group(dev);
->  	}
-> +#ifdef CONFIG_PCI
-> +	else
-> +		group = get_pci_device_group(dev);
-> +#endif
->  
->  	if (!group || IS_ERR(group))
->  		return PTR_ERR(group);
+On the P1023RDB, when board leaves the factory, it has
+two Atheros wireless cards on the PCIe slot. So enable
+ath9k wireless driver support.
 
-It feels like there's a bug here that group is initialized to NULL and
-there are a few ways for it to remain NULL through the above code, then
-we get here and return PTR_ERR(NULL), which is indistinguishable from a
-successful return below.  Perhaps !group is ok, but if so I'd suggest a
-separate return block for it.  Thanks,
+Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/configs/85xx/p1023_defconfig |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-Alex
-
-> @@ -1166,7 +1162,9 @@ int pamu_domain_init()
->  		return ret;
->  
->  	bus_set_iommu(&platform_bus_type, &fsl_pamu_ops);
-> +#ifdef CONFIG_PCI
->  	bus_set_iommu(&pci_bus_type, &fsl_pamu_ops);
-> +#endif
->  
->  	return ret;
->  }
+diff --git a/arch/powerpc/configs/85xx/p1023_defconfig b/arch/powerpc/configs/85xx/p1023_defconfig
+index b06d37d..a3fe941 100644
+--- a/arch/powerpc/configs/85xx/p1023_defconfig
++++ b/arch/powerpc/configs/85xx/p1023_defconfig
+@@ -62,6 +62,9 @@ CONFIG_INET_ESP=y
+ # CONFIG_INET_LRO is not set
+ CONFIG_IPV6=y
+ CONFIG_IP_SCTP=m
++CONFIG_CFG80211=y
++CONFIG_CFG80211_WEXT=y
++CONFIG_MAC80211=y
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+@@ -101,6 +104,8 @@ CONFIG_DAVICOM_PHY=y
+ CONFIG_CICADA_PHY=y
+ CONFIG_VITESSE_PHY=y
+ CONFIG_FIXED_PHY=y
++CONFIG_ATH_CARDS=y
++CONFIG_ATH9K=y
+ CONFIG_INPUT_FF_MEMLESS=m
+ # CONFIG_INPUT_MOUSEDEV is not set
+ # CONFIG_INPUT_KEYBOARD is not set
+-- 
+1.7.6.5
