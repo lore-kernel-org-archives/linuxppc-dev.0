@@ -1,18 +1,15 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AF6EF2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 21:57:19 +1100 (EST)
-From: Gerhard Sittig <gsi@denx.de>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v1 1/1] powerpc/512x: dts: remove misplaced IRQ spec from
- 'soc' node
-Date: Tue,  3 Dec 2013 11:56:52 +0100
-Message-Id: <1386068212-11484-1-git-send-email-gsi@denx.de>
-Cc: devicetree@vger.kernel.org, Gerhard Sittig <gsi@denx.de>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id 02E8C2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 00:31:46 +1100 (EST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Wim Van Sebroeck <wim@iguana.be>, <scottwood@freescale.com>,
+ Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v2] watchdog: mpc8xxx_wdt convert to watchdog core
+Message-Id: <20131203133140.5E9DF1A2BEA@localhost.localdomain>
+Date: Tue,  3 Dec 2013 14:31:40 +0100 (CET)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,87 +19,214 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-the 'soc' node in the common .dtsi for MPC5121 has an '#interrupt-cells'
-property although this node is not an interrupt controller
+Convert mpc8xxx_wdt.c to the new watchdog API.
 
-remove this erroneously placed property because starting with v3.13-rc1
-lookup and resolution of 'interrupts' specs for peripherals gets misled,
-emits 'no irq domain found' WARN() messages and breaks the boot process
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-  irq: no irq domain found for /soc@80000000 !
-  ------------[ cut here ]------------
-  WARNING: at /home/gsi/SRC/linux-torvalds/drivers/of/platform.c:171
-  Modules linked in:
-  CPU: 0 PID: 1 Comm: swapper Tainted: G        W    3.13.0-rc1-00001-g8a66234 #8
-  task: df823bb0 ti: df834000 task.ti: df834000
-  NIP: c02b5190 LR: c02b5180 CTR: c01cf4e0
-  REGS: df835c50 TRAP: 0700   Tainted: G        W     (3.13.0-rc1-00001-g8a66234)
-  MSR: 00029032 <EE,ME,IR,DR,RI>  CR: 229a9d42  XER: 20000000
-
-  GPR00: c02b5180 df835d00 df823bb0 00000000 00000000 df835b18 ffffffff 00000308
-  GPR08: c0479cc0 c0480000 c0479cc0 00000308 00000308 00000000 c00040fc 00000000
-  GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 df850880
-  GPR24: df84d670 00000000 00000001 df8561a0 dffffccc df85089c 00000020 00000001
-  NIP [c02b5190] of_device_alloc+0xf4/0x1a0
-  LR [c02b5180] of_device_alloc+0xe4/0x1a0
-  Call Trace:
-  [df835d00] [c02b5180] of_device_alloc+0xe4/0x1a0 (unreliable)
-  [df835d50] [c02b5278] of_platform_device_create_pdata+0x3c/0xc8
-  [df835d70] [c02b53fc] of_platform_bus_create+0xf8/0x170
-  [df835dc0] [c02b5448] of_platform_bus_create+0x144/0x170
-  [df835e10] [c02b55a8] of_platform_bus_probe+0x98/0xe8
-  [df835e30] [c0437508] mpc512x_init+0x28/0x1c4
-  [df835e70] [c0435de8] ppc_init+0x4c/0x60
-  [df835e80] [c0003b28] do_one_initcall+0x150/0x1a4
-  [df835ef0] [c0432048] kernel_init_freeable+0x114/0x1c0
-  [df835f30] [c0004114] kernel_init+0x18/0x124
-  [df835f40] [c000e910] ret_from_kernel_thread+0x5c/0x64
-  Instruction dump:
-  409effd4 57c9103a 57de2834 7c89f050 7f83e378 7c972214 7f45d378 48001f55
-  7c63d278 7c630034 5463d97e 687a0001 <0f1a0000> 2f990000 387b0010 939b0098
-  ---[ end trace 2257f10e5a20cbdd ]---
-
-  ...
-  irq: no irq domain found for /soc@80000000 !
-  fsl-diu-fb 80002100.display: could not get DIU IRQ
-  fsl-diu-fb: probe of 80002100.display failed with error -22
-  irq: no irq domain found for /soc@80000000 !
-  mpc512x_dma 80014000.dma: Error mapping IRQ!
-  mpc512x_dma: probe of 80014000.dma failed with error -22
-  ...
-  irq: no irq domain found for /soc@80000000 !
-  fs_enet: probe of 80002800.ethernet failed with error -22
-  ...
-  irq: no irq domain found for /soc@80000000 !
-  mpc5121-rtc 80000a00.rtc: mpc5121_rtc_probe: could not request irq: 0
-  mpc5121-rtc: probe of 80000a00.rtc failed with error -22
-  ...
-
-[ best viewed with 'git diff -U5' to have DT node names in the context ]
-
-Cc: Anatolij Gustschin <agust@denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
----
- arch/powerpc/boot/dts/mpc5121.dtsi |    1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-index bd14c00e5146..2d7cb04ac962 100644
---- a/arch/powerpc/boot/dts/mpc5121.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-@@ -75,11 +75,10 @@
+diff -ur a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+--- a/drivers/watchdog/mpc8xxx_wdt.c	2013-05-11 22:57:46.000000000 +0200
++++ b/drivers/watchdog/mpc8xxx_wdt.c	2013-11-30 16:14:53.803495472 +0100
+@@ -72,53 +72,36 @@
+  * to 0
+  */
+ static int prescale = 1;
+-static unsigned int timeout_sec;
  
- 	soc@80000000 {
- 		compatible = "fsl,mpc5121-immr";
- 		#address-cells = <1>;
- 		#size-cells = <1>;
--		#interrupt-cells = <2>;
- 		ranges = <0x0 0x80000000 0x400000>;
- 		reg = <0x80000000 0x400000>;
- 		bus-frequency = <66000000>;	/* 66 MHz ips bus */
+-static unsigned long wdt_is_open;
+ static DEFINE_SPINLOCK(wdt_spinlock);
  
+-static void mpc8xxx_wdt_keepalive(void)
++static int mpc8xxx_wdt_ping(struct watchdog_device *w)
+ {
+ 	/* Ping the WDT */
+ 	spin_lock(&wdt_spinlock);
+ 	out_be16(&wd_base->swsrr, 0x556c);
+ 	out_be16(&wd_base->swsrr, 0xaa39);
+ 	spin_unlock(&wdt_spinlock);
++	return 0;
+ }
  
--- 
-1.7.10.4
++static struct watchdog_device mpc8xxx_wdt_dev;
+ static void mpc8xxx_wdt_timer_ping(unsigned long arg);
+-static DEFINE_TIMER(wdt_timer, mpc8xxx_wdt_timer_ping, 0, 0);
++static DEFINE_TIMER(wdt_timer, mpc8xxx_wdt_timer_ping, 0,
++		(unsigned long)&mpc8xxx_wdt_dev);
+ 
+ static void mpc8xxx_wdt_timer_ping(unsigned long arg)
+ {
+-	mpc8xxx_wdt_keepalive();
+-	/* We're pinging it twice faster than needed, just to be sure. */
+-	mod_timer(&wdt_timer, jiffies + HZ * timeout_sec / 2);
+-}
++	struct watchdog_device *w = (struct watchdog_device *)arg;
+ 
+-static void mpc8xxx_wdt_pr_warn(const char *msg)
+-{
+-	pr_crit("%s, expect the %s soon!\n", msg,
+-		reset ? "reset" : "machine check exception");
+-}
+-
+-static ssize_t mpc8xxx_wdt_write(struct file *file, const char __user *buf,
+-				 size_t count, loff_t *ppos)
+-{
+-	if (count)
+-		mpc8xxx_wdt_keepalive();
+-	return count;
++	mpc8xxx_wdt_ping(w);
++	/* We're pinging it twice faster than needed, just to be sure. */
++	mod_timer(&wdt_timer, jiffies + HZ * w->timeout / 2);
+ }
+ 
+-static int mpc8xxx_wdt_open(struct inode *inode, struct file *file)
++static int mpc8xxx_wdt_start(struct watchdog_device *w)
+ {
+ 	u32 tmp = SWCRR_SWEN;
+-	if (test_and_set_bit(0, &wdt_is_open))
+-		return -EBUSY;
+-
+-	/* Once we start the watchdog we can't stop it */
+-	if (nowayout)
+-		__module_get(THIS_MODULE);
+ 
+ 	/* Good, fire up the show */
+ 	if (prescale)
+@@ -132,59 +115,31 @@
+ 
+ 	del_timer_sync(&wdt_timer);
+ 
+-	return nonseekable_open(inode, file);
++	return 0;
+ }
+ 
+-static int mpc8xxx_wdt_release(struct inode *inode, struct file *file)
++static int mpc8xxx_wdt_stop(struct watchdog_device *w)
+ {
+-	if (!nowayout)
+-		mpc8xxx_wdt_timer_ping(0);
+-	else
+-		mpc8xxx_wdt_pr_warn("watchdog closed");
+-	clear_bit(0, &wdt_is_open);
++	mod_timer(&wdt_timer, jiffies);
+ 	return 0;
+ }
+ 
+-static long mpc8xxx_wdt_ioctl(struct file *file, unsigned int cmd,
+-							unsigned long arg)
+-{
+-	void __user *argp = (void __user *)arg;
+-	int __user *p = argp;
+-	static const struct watchdog_info ident = {
+-		.options = WDIOF_KEEPALIVEPING,
+-		.firmware_version = 1,
+-		.identity = "MPC8xxx",
+-	};
+-
+-	switch (cmd) {
+-	case WDIOC_GETSUPPORT:
+-		return copy_to_user(argp, &ident, sizeof(ident)) ? -EFAULT : 0;
+-	case WDIOC_GETSTATUS:
+-	case WDIOC_GETBOOTSTATUS:
+-		return put_user(0, p);
+-	case WDIOC_KEEPALIVE:
+-		mpc8xxx_wdt_keepalive();
+-		return 0;
+-	case WDIOC_GETTIMEOUT:
+-		return put_user(timeout_sec, p);
+-	default:
+-		return -ENOTTY;
+-	}
+-}
++static struct watchdog_info mpc8xxx_wdt_info = {
++	.options = WDIOF_KEEPALIVEPING,
++	.firmware_version = 1,
++	.identity = "MPC8xxx",
++};
+ 
+-static const struct file_operations mpc8xxx_wdt_fops = {
+-	.owner		= THIS_MODULE,
+-	.llseek		= no_llseek,
+-	.write		= mpc8xxx_wdt_write,
+-	.unlocked_ioctl	= mpc8xxx_wdt_ioctl,
+-	.open		= mpc8xxx_wdt_open,
+-	.release	= mpc8xxx_wdt_release,
++static struct watchdog_ops mpc8xxx_wdt_ops = {
++	.owner = THIS_MODULE,
++	.start = mpc8xxx_wdt_start,
++	.ping = mpc8xxx_wdt_ping,
++	.stop = mpc8xxx_wdt_stop,
+ };
+ 
+-static struct miscdevice mpc8xxx_wdt_miscdev = {
+-	.minor	= WATCHDOG_MINOR,
+-	.name	= "watchdog",
+-	.fops	= &mpc8xxx_wdt_fops,
++static struct watchdog_device mpc8xxx_wdt_dev = {
++	.info = &mpc8xxx_wdt_info,
++	.ops = &mpc8xxx_wdt_ops,
+ };
+ 
+ static const struct of_device_id mpc8xxx_wdt_match[];
+@@ -196,6 +151,7 @@
+ 	const struct mpc8xxx_wdt_type *wdt_type;
+ 	u32 freq = fsl_get_sys_freq();
+ 	bool enabled;
++	unsigned int timeout_sec;
+ 
+ 	match = of_match_device(mpc8xxx_wdt_match, &ofdev->dev);
+ 	if (!match)
+@@ -222,6 +178,7 @@
+ 	else
+ 		timeout_sec = timeout / freq;
+ 
++	mpc8xxx_wdt_dev.timeout = timeout_sec;
+ #ifdef MODULE
+ 	ret = mpc8xxx_wdt_init_late();
+ 	if (ret)
+@@ -237,7 +194,7 @@
+ 	 * userspace handles it.
+ 	 */
+ 	if (enabled)
+-		mpc8xxx_wdt_timer_ping(0);
++		mod_timer(&wdt_timer, jiffies);
+ 	return 0;
+ err_unmap:
+ 	iounmap(wd_base);
+@@ -247,9 +204,10 @@
+ 
+ static int mpc8xxx_wdt_remove(struct platform_device *ofdev)
+ {
+-	mpc8xxx_wdt_pr_warn("watchdog removed");
++	pr_crit("Watchdog removed, expect the %s soon!\n",
++		reset ? "reset" : "machine check exception");
+ 	del_timer_sync(&wdt_timer);
+-	misc_deregister(&mpc8xxx_wdt_miscdev);
++	watchdog_unregister_device(&mpc8xxx_wdt_dev);
+ 	iounmap(wd_base);
+ 
+ 	return 0;
+@@ -301,10 +259,11 @@
+ 	if (!wd_base)
+ 		return -ENODEV;
+ 
+-	ret = misc_register(&mpc8xxx_wdt_miscdev);
++	watchdog_set_nowayout(&mpc8xxx_wdt_dev, nowayout);
++
++	ret = watchdog_register_device(&mpc8xxx_wdt_dev);
+ 	if (ret) {
+-		pr_err("cannot register miscdev on minor=%d (err=%d)\n",
+-		       WATCHDOG_MINOR, ret);
++		pr_err("cannot register watchdog device (err=%d)\n", ret);
+ 		return ret;
+ 	}
+ 	return 0;
+diff -ur a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -1146,6 +1146,7 @@
+ config 8xxx_WDT
+ 	tristate "MPC8xxx Platform Watchdog Timer"
+ 	depends on PPC_8xx || PPC_83xx || PPC_86xx
++	select WATCHDOG_CORE
+ 	help
+ 	  This driver is for a SoC level watchdog that exists on some
+ 	  Freescale PowerPC processors. So far this driver supports:
