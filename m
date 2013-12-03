@@ -1,27 +1,21 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 19C512C009F
- for <linuxppc-dev@ozlabs.org>; Tue,  3 Dec 2013 21:22:25 +1100 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 3 Dec 2013 20:22:22 +1000
-Message-ID: <529DB092.8010307@linux.vnet.ibm.com>
-Date: Tue, 03 Dec 2013 15:51:06 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <guangyu.chen@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0250.outbound.messaging.microsoft.com [213.199.154.250])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0292A2C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2013 21:37:54 +1100 (EST)
+From: Nicolin Chen <b42378@freescale.com>
+To: <broonie@kernel.org>, <timur@tabi.org>
+Subject: [PATCH] ASoC: fsl_ssi: Implement symmetric_channels and
+ symmetric_samplebits
+Date: Tue, 3 Dec 2013 18:38:07 +0800
+Message-ID: <1386067087-12243-1-git-send-email-b42378@freescale.com>
 MIME-Version: 1.0
-To: "mpe@ellerman.id.au" <michael@ozlabs.org>
-Subject: Re: [V3 01/10] perf: New conditional branch filter criteria in branch
- stack sampling
-References: <20131126060618.917ED2C00A9@ozlabs.org>
- <529474C7.9050005@linux.vnet.ibm.com>
-In-Reply-To: <529474C7.9050005@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mikey@neuling.org, michaele@au1.ibm.com, linux-kernel@vger.kernel.org,
- eranian@google.com, linuxppc-dev@ozlabs.org, sukadev@linux.vnet.ibm.com
+Content-Type: text/plain
+Cc: tiwai@suse.de, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ lgirdwood@gmail.com, perex@perex.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,85 +25,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/26/2013 03:45 PM, Anshuman Khandual wrote:
-> On 11/26/2013 11:36 AM, mpe@ellerman.id.au wrote:
->> Ideally your commit subject would contain a verb, preferably in the present
->> tense.
->>
->> I think simply "perf: Add PERF_SAMPLE_BRANCH_COND" would be clearer.
-> 
-> 
-> Sure, will change it.
-> 
->>
->> On Wed, 2013-16-10 at 06:56:48 UTC, Anshuman Khandual wrote:
->>> POWER8 PMU based BHRB supports filtering for conditional branches.
->>> This patch introduces new branch filter PERF_SAMPLE_BRANCH_COND which
->>> will extend the existing perf ABI. Other architectures can provide
->>> this functionality with either HW filtering support (if present) or
->>> with SW filtering of instructions.
->>>
->>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->>> Reviewed-by: Stephane Eranian <eranian@google.com>
->>> ---
->>>  include/uapi/linux/perf_event.h | 3 ++-
->>>  1 file changed, 2 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
->>> index 0b1df41..5da52b6 100644
->>> --- a/include/uapi/linux/perf_event.h
->>> +++ b/include/uapi/linux/perf_event.h
->>> @@ -160,8 +160,9 @@ enum perf_branch_sample_type {
->>>  	PERF_SAMPLE_BRANCH_ABORT_TX	= 1U << 7, /* transaction aborts */
->>>  	PERF_SAMPLE_BRANCH_IN_TX	= 1U << 8, /* in transaction */
->>>  	PERF_SAMPLE_BRANCH_NO_TX	= 1U << 9, /* not in transaction */
->>> +	PERF_SAMPLE_BRANCH_COND		= 1U << 10, /* conditional branches */
->>>  
->>> -	PERF_SAMPLE_BRANCH_MAX		= 1U << 10, /* non-ABI */
->>> +	PERF_SAMPLE_BRANCH_MAX		= 1U << 11, /* non-ABI */
->>>  };
->>
->> This no longer applies against Linus' tree, you'll need to rebase it.
-> 
-> Okay
+Since we introduced symmetric_channels and symmetric_samplebits, we implement
+these two features to fsl_ssi so as to drop some no-more-needed code and make
+the driver neat and clean.
 
-Hey Michael,
-
-Looks like the patch still applies on top of Linus's tree. The modified patch with
-a new commit subject line can be found here.
-
-----------------------------------------------------------------------
->From d368096fc51a8da65f2d80ed5090d43cbc269f62 Mon Sep 17 00:00:00 2001
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Mon, 22 Jul 2013 12:22:27 +0530
-Subject: [PATCH] perf: Add PERF_SAMPLE_BRANCH_COND
-
-POWER8 PMU based BHRB supports filtering for conditional branches.
-This patch introduces new branch filter PERF_SAMPLE_BRANCH_COND which
-will extend the existing perf ABI. Other architectures can provide
-this functionality with either HW filtering support (if present) or
-with SW filtering of instructions.
-
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Reviewed-by: Stephane Eranian <eranian@google.com>
+Signed-off-by: Nicolin Chen <b42378@freescale.com>
 ---
- include/uapi/linux/perf_event.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ sound/soc/fsl/fsl_ssi.c | 79 ++++++-------------------------------------------
+ 1 file changed, 9 insertions(+), 70 deletions(-)
 
-diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-index e1802d6..e2d8b8b 100644
---- a/include/uapi/linux/perf_event.h
-+++ b/include/uapi/linux/perf_event.h
-@@ -163,8 +163,9 @@ enum perf_branch_sample_type {
- 	PERF_SAMPLE_BRANCH_ABORT_TX	= 1U << 7, /* transaction aborts */
- 	PERF_SAMPLE_BRANCH_IN_TX	= 1U << 8, /* in transaction */
- 	PERF_SAMPLE_BRANCH_NO_TX	= 1U << 9, /* not in transaction */
-+	PERF_SAMPLE_BRANCH_COND		= 1U << 10, /* conditional branches */
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 90ff107..f9f4569 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -119,8 +119,6 @@ static inline void write_ssi_mask(u32 __iomem *addr, u32 clear, u32 set)
+  * @ssi: pointer to the SSI's registers
+  * @ssi_phys: physical address of the SSI registers
+  * @irq: IRQ of this SSI
+- * @first_stream: pointer to the stream that was opened first
+- * @second_stream: pointer to second stream
+  * @playback: the number of playback streams opened
+  * @capture: the number of capture streams opened
+  * @cpu_dai: the CPU DAI for this device
+@@ -132,8 +130,6 @@ struct fsl_ssi_private {
+ 	struct ccsr_ssi __iomem *ssi;
+ 	dma_addr_t ssi_phys;
+ 	unsigned int irq;
+-	struct snd_pcm_substream *first_stream;
+-	struct snd_pcm_substream *second_stream;
+ 	unsigned int fifo_depth;
+ 	struct snd_soc_dai_driver cpu_dai_drv;
+ 	struct device_attribute dev_attr;
+@@ -438,54 +434,13 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct fsl_ssi_private *ssi_private =
+ 		snd_soc_dai_get_drvdata(rtd->cpu_dai);
+-	int synchronous = ssi_private->cpu_dai_drv.symmetric_rates;
  
--	PERF_SAMPLE_BRANCH_MAX		= 1U << 10, /* non-ABI */
-+	PERF_SAMPLE_BRANCH_MAX		= 1U << 11, /* non-ABI */
+-	/*
+-	 * If this is the first stream opened, then request the IRQ
+-	 * and initialize the SSI registers.
++	/* First, we only do fsl_ssi_setup() when SSI is going to be active.
++	 * Second, fsl_ssi_setup was already called by ac97_init earlier if
++	 * the driver is in ac97 mode.
+ 	 */
+-	if (!ssi_private->first_stream) {
+-		ssi_private->first_stream = substream;
+-
+-		/*
+-		 * fsl_ssi_setup was already called by ac97_init earlier if
+-		 * the driver is in ac97 mode.
+-		 */
+-		if (!ssi_private->imx_ac97)
+-			fsl_ssi_setup(ssi_private);
+-	} else {
+-		if (synchronous) {
+-			struct snd_pcm_runtime *first_runtime =
+-				ssi_private->first_stream->runtime;
+-			/*
+-			 * This is the second stream open, and we're in
+-			 * synchronous mode, so we need to impose sample
+-			 * sample size constraints. This is because STCCR is
+-			 * used for playback and capture in synchronous mode,
+-			 * so there's no way to specify different word
+-			 * lengths.
+-			 *
+-			 * Note that this can cause a race condition if the
+-			 * second stream is opened before the first stream is
+-			 * fully initialized.  We provide some protection by
+-			 * checking to make sure the first stream is
+-			 * initialized, but it's not perfect.  ALSA sometimes
+-			 * re-initializes the driver with a different sample
+-			 * rate or size.  If the second stream is opened
+-			 * before the first stream has received its final
+-			 * parameters, then the second stream may be
+-			 * constrained to the wrong sample rate or size.
+-			 */
+-			if (first_runtime->sample_bits) {
+-				snd_pcm_hw_constraint_minmax(substream->runtime,
+-						SNDRV_PCM_HW_PARAM_SAMPLE_BITS,
+-				first_runtime->sample_bits,
+-				first_runtime->sample_bits);
+-			}
+-		}
+-
+-		ssi_private->second_stream = substream;
+-	}
++	if (!dai->active && !ssi_private->imx_ac97)
++		fsl_ssi_setup(ssi_private);
+ 
+ 	return 0;
+ }
+@@ -615,23 +570,6 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	return 0;
+ }
+ 
+-/**
+- * fsl_ssi_shutdown: shutdown the SSI
+- *
+- * Shutdown the SSI if there are no other substreams open.
+- */
+-static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
+-			     struct snd_soc_dai *dai)
+-{
+-	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+-	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(rtd->cpu_dai);
+-
+-	if (ssi_private->first_stream == substream)
+-		ssi_private->first_stream = ssi_private->second_stream;
+-
+-	ssi_private->second_stream = NULL;
+-}
+-
+ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
+ {
+ 	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(dai);
+@@ -647,7 +585,6 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
+ static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
+ 	.startup	= fsl_ssi_startup,
+ 	.hw_params	= fsl_ssi_hw_params,
+-	.shutdown	= fsl_ssi_shutdown,
+ 	.trigger	= fsl_ssi_trigger,
  };
  
- #define PERF_SAMPLE_BRANCH_PLM_ALL \
+@@ -722,7 +659,6 @@ static int fsl_ssi_ac97_trigger(struct snd_pcm_substream *substream, int cmd,
+ 
+ static const struct snd_soc_dai_ops fsl_ssi_ac97_dai_ops = {
+ 	.startup	= fsl_ssi_startup,
+-	.shutdown	= fsl_ssi_shutdown,
+ 	.trigger	= fsl_ssi_ac97_trigger,
+ };
+ 
+@@ -947,8 +883,11 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* Are the RX and the TX clocks locked? */
+-	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL))
++	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL)) {
+ 		ssi_private->cpu_dai_drv.symmetric_rates = 1;
++		ssi_private->cpu_dai_drv.symmetric_channels = 1;
++		ssi_private->cpu_dai_drv.symmetric_samplebits = 1;
++	}
+ 
+ 	/* Determine the FIFO depth. */
+ 	iprop = of_get_property(np, "fsl,fifo-depth", NULL);
 -- 
-1.7.11.7
+1.8.4
