@@ -1,26 +1,36 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pd0-x234.google.com (mail-pd0-x234.google.com
- [IPv6:2607:f8b0:400e:c02::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 602242C0090
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 20:50:27 +1100 (EST)
-Received: by mail-pd0-f180.google.com with SMTP id q10so21991629pdj.39
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Dec 2013 01:50:23 -0800 (PST)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20131203220056.36011E0729@canberra.localdomain>
-References: <20131203220056.36011E0729@canberra.localdomain>
-Date: Wed, 4 Dec 2013 10:50:23 +0100
-Message-ID: <CAMuHMdV0x=rsFjDoqVnhucvToVZeVqQSy7TT7rs3quFKH04e1A@mail.gmail.com>
-Subject: Re: [PATCH v4 1/1] powerpc/embedded6xx: Add support for
- Motorola/Emerson MVME5100
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Stephen Chivers <schivers@csc.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- cproctor@csc.com
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 56AFE2C00B9
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Dec 2013 21:33:55 +1100 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 4 Dec 2013 16:03:53 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1EAFCE006A
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Dec 2013 16:06:02 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rB4AXiFc3998028
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Dec 2013 16:03:44 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rB4AXlel010821
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Dec 2013 16:03:49 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH V4 02/10] powerpc,
+ perf: Enable conditional branch filter for POWER8
+Date: Wed,  4 Dec 2013 16:02:34 +0530
+Message-Id: <1386153162-11225-3-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1386153162-11225-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1386153162-11225-1-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, ak@linux.intel.com, eranian@google.com,
+ michael@ellerman.id.au, acme@ghostprotocols.net, sukadev@linux.vnet.ibm.com,
+ mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,18 +40,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 3, 2013 at 11:00 PM, Stephen Chivers <schivers@csc.com> wrote:
->         Address comments by Kular Gama and Scott Wood.
+Enables conditional branch filter support for POWER8
+utilizing MMCRA register based filter and also invalidates
+any BHRB branch filter combination.
 
-Kumar Gala.
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/power8-pmu.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index a3f7abd..e88b9cb 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -586,6 +586,16 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
+ 		return pmu_bhrb_filter;
+ 	}
+ 
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_COND) {
++		pmu_bhrb_filter |= POWER8_MMCRA_IFM3;
++		return pmu_bhrb_filter;
++	}
++
++	/* PMU does not support ANY combination of HW BHRB filters */
++	if ((branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) &&
++			(branch_sample_type & PERF_SAMPLE_BRANCH_COND))
++		return -1;
++
+ 	/* Every thing else is unsupported */
+ 	return -1;
+ }
+-- 
+1.7.11.7
