@@ -1,37 +1,19 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 551732C007E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 14:13:13 +1100 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 4 Dec 2013 13:13:12 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id F0BBC3578052
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 14:13:03 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rB43Cpcx3604836
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Dec 2013 14:12:51 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rB43D3vv002675
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Dec 2013 14:13:03 +1100
-Message-ID: <1386126782.16703.137.camel@pasglop>
-Subject: Re: [PATCH -V2 3/5] mm: Move change_prot_numa outside
- CONFIG_ARCH_USES_NUMA_PROT_NONE
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 04 Dec 2013 14:13:02 +1100
-In-Reply-To: <1384766893-10189-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1384766893-10189-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1384766893-10189-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-mm@kvack.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 660B12C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 16:10:20 +1100 (EST)
+Message-ID: <529EB936.20605@roeck-us.net>
+Date: Tue, 03 Dec 2013 21:10:14 -0800
+From: Guenter Roeck <linux@roeck-us.net>
+MIME-Version: 1.0
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Wim Van Sebroeck <wim@iguana.be>, scottwood@freescale.com
+Subject: Re: [PATCH v2] watchdog: mpc8xxx_wdt convert to watchdog core
+References: <20131203133140.5E9DF1A2BEA@localhost.localdomain>
+In-Reply-To: <20131203133140.5E9DF1A2BEA@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,100 +23,243 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-11-18 at 14:58 +0530, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> change_prot_numa should work even if _PAGE_NUMA != _PAGE_PROTNONE.
-> On archs like ppc64 that don't use _PAGE_PROTNONE and also have
-> a separate page table outside linux pagetable, we just need to
-> make sure that when calling change_prot_numa we flush the
-> hardware page table entry so that next page access  result in a numa
-> fault.
+On 12/03/2013 05:31 AM, Christophe Leroy wrote:
+> Convert mpc8xxx_wdt.c to the new watchdog API.
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>
+> diff -ur a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+> --- a/drivers/watchdog/mpc8xxx_wdt.c	2013-05-11 22:57:46.000000000 +0200
+> +++ b/drivers/watchdog/mpc8xxx_wdt.c	2013-11-30 16:14:53.803495472 +0100
+> @@ -72,53 +72,36 @@
+>    * to 0
+>    */
+>   static int prescale = 1;
+> -static unsigned int timeout_sec;
+>
+> -static unsigned long wdt_is_open;
+>   static DEFINE_SPINLOCK(wdt_spinlock);
+>
+> -static void mpc8xxx_wdt_keepalive(void)
+> +static int mpc8xxx_wdt_ping(struct watchdog_device *w)
+>   {
+>   	/* Ping the WDT */
+>   	spin_lock(&wdt_spinlock);
+>   	out_be16(&wd_base->swsrr, 0x556c);
+>   	out_be16(&wd_base->swsrr, 0xaa39);
+>   	spin_unlock(&wdt_spinlock);
+> +	return 0;
+>   }
+>
 
-That patch doesn't look right...
+Ok, now I understand a bit better.
 
-You are essentially making change_prot_numa() do whatever it does (which
-I don't completely understand) *for all architectures* now, whether they
-have CONFIG_ARCH_USES_NUMA_PROT_NONE or not ... So because you want that
-behaviour on powerpc book3s64, you change everybody.
+I think it would be better to keep the original mpc8xxx_wdt_keepalive()
+function and add
 
-Is that correct ?
+static int mpc8xxx_wdt_ping(struct watchdog_device *w)
+{
+	mpc8xxx_wdt_keepalive();
+}
 
-Also what exactly is that doing, can you explain ? From what I can see,
-it calls back into the core of mprotect to change the protection to
-vma->vm_page_prot, which I would have expected is already the protection
-there, with the added "prot_numa" flag passed down.
+since the parameter is not used. Then you can call mpc8xxx_wdt_keepalive()
+from mpc8xxx_wdt_timer_ping(), and you don't have to add the dummy argument.
 
-Your changeset comment says "On archs like ppc64 [...] we just need to
-make sure that when calling change_prot_numa we flush the
-hardware page table entry so that next page access  result in a numa
-fault."
+Otherwise looks good.
 
-But change_prot_numa() does a lot more than that ... it does
-pte_mknuma(), do we need it ? I assume we do or we wouldn't have added
-that PTE bit to begin with...
+Note there is a problem in the probe function with
+	u32 freq = fsl_get_sys_freq();
+and
+	if (!freq || freq == -1)
+		     ^^^^^^^^^^^
 
-Now it *might* be allright and it might be that no other architecture
-cares anyway etc... but I need at least some mm folks to ack on that
-patch before I can take it because it *will* change behaviour of other
-architectures.
+but fixing that would be a different patch.	
 
-Cheers,
-Ben.
+Guenter
 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  include/linux/mm.h | 3 ---
->  mm/mempolicy.c     | 9 ---------
->  2 files changed, 12 deletions(-)
-> 
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 0548eb201e05..51794c1a1d7e 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -1851,11 +1851,8 @@ static inline pgprot_t vm_get_page_prot(unsigned long vm_flags)
->  }
->  #endif
->  
-> -#ifdef CONFIG_ARCH_USES_NUMA_PROT_NONE
->  unsigned long change_prot_numa(struct vm_area_struct *vma,
->  			unsigned long start, unsigned long end);
-> -#endif
-> -
->  struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
->  int remap_pfn_range(struct vm_area_struct *, unsigned long addr,
->  			unsigned long pfn, unsigned long size, pgprot_t);
-> diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-> index c4403cdf3433..cae10af4fdc4 100644
-> --- a/mm/mempolicy.c
-> +++ b/mm/mempolicy.c
-> @@ -613,7 +613,6 @@ static inline int queue_pages_pgd_range(struct vm_area_struct *vma,
->  	return 0;
->  }
->  
-> -#ifdef CONFIG_ARCH_USES_NUMA_PROT_NONE
->  /*
->   * This is used to mark a range of virtual addresses to be inaccessible.
->   * These are later cleared by a NUMA hinting fault. Depending on these
-> @@ -627,7 +626,6 @@ unsigned long change_prot_numa(struct vm_area_struct *vma,
->  			unsigned long addr, unsigned long end)
->  {
->  	int nr_updated;
-> -	BUILD_BUG_ON(_PAGE_NUMA != _PAGE_PROTNONE);
->  
->  	nr_updated = change_protection(vma, addr, end, vma->vm_page_prot, 0, 1);
->  	if (nr_updated)
-> @@ -635,13 +633,6 @@ unsigned long change_prot_numa(struct vm_area_struct *vma,
->  
->  	return nr_updated;
->  }
-> -#else
-> -static unsigned long change_prot_numa(struct vm_area_struct *vma,
-> -			unsigned long addr, unsigned long end)
-> -{
-> -	return 0;
+> +static struct watchdog_device mpc8xxx_wdt_dev;
+>   static void mpc8xxx_wdt_timer_ping(unsigned long arg);
+> -static DEFINE_TIMER(wdt_timer, mpc8xxx_wdt_timer_ping, 0, 0);
+> +static DEFINE_TIMER(wdt_timer, mpc8xxx_wdt_timer_ping, 0,
+> +		(unsigned long)&mpc8xxx_wdt_dev);
+>
+>   static void mpc8xxx_wdt_timer_ping(unsigned long arg)
+>   {
+> -	mpc8xxx_wdt_keepalive();
+> -	/* We're pinging it twice faster than needed, just to be sure. */
+> -	mod_timer(&wdt_timer, jiffies + HZ * timeout_sec / 2);
 > -}
-> -#endif /* CONFIG_ARCH_USES_NUMA_PROT_NONE */
->  
->  /*
->   * Walk through page tables and collect pages to be migrated.
+> +	struct watchdog_device *w = (struct watchdog_device *)arg;
+>
+> -static void mpc8xxx_wdt_pr_warn(const char *msg)
+> -{
+> -	pr_crit("%s, expect the %s soon!\n", msg,
+> -		reset ? "reset" : "machine check exception");
+> -}
+> -
+> -static ssize_t mpc8xxx_wdt_write(struct file *file, const char __user *buf,
+> -				 size_t count, loff_t *ppos)
+> -{
+> -	if (count)
+> -		mpc8xxx_wdt_keepalive();
+> -	return count;
+> +	mpc8xxx_wdt_ping(w);
+> +	/* We're pinging it twice faster than needed, just to be sure. */
+> +	mod_timer(&wdt_timer, jiffies + HZ * w->timeout / 2);
+>   }
+>
+> -static int mpc8xxx_wdt_open(struct inode *inode, struct file *file)
+> +static int mpc8xxx_wdt_start(struct watchdog_device *w)
+>   {
+>   	u32 tmp = SWCRR_SWEN;
+> -	if (test_and_set_bit(0, &wdt_is_open))
+> -		return -EBUSY;
+> -
+> -	/* Once we start the watchdog we can't stop it */
+> -	if (nowayout)
+> -		__module_get(THIS_MODULE);
+>
+>   	/* Good, fire up the show */
+>   	if (prescale)
+> @@ -132,59 +115,31 @@
+>
+>   	del_timer_sync(&wdt_timer);
+>
+> -	return nonseekable_open(inode, file);
+> +	return 0;
+>   }
+>
+> -static int mpc8xxx_wdt_release(struct inode *inode, struct file *file)
+> +static int mpc8xxx_wdt_stop(struct watchdog_device *w)
+>   {
+> -	if (!nowayout)
+> -		mpc8xxx_wdt_timer_ping(0);
+> -	else
+> -		mpc8xxx_wdt_pr_warn("watchdog closed");
+> -	clear_bit(0, &wdt_is_open);
+> +	mod_timer(&wdt_timer, jiffies);
+>   	return 0;
+>   }
+>
+> -static long mpc8xxx_wdt_ioctl(struct file *file, unsigned int cmd,
+> -							unsigned long arg)
+> -{
+> -	void __user *argp = (void __user *)arg;
+> -	int __user *p = argp;
+> -	static const struct watchdog_info ident = {
+> -		.options = WDIOF_KEEPALIVEPING,
+> -		.firmware_version = 1,
+> -		.identity = "MPC8xxx",
+> -	};
+> -
+> -	switch (cmd) {
+> -	case WDIOC_GETSUPPORT:
+> -		return copy_to_user(argp, &ident, sizeof(ident)) ? -EFAULT : 0;
+> -	case WDIOC_GETSTATUS:
+> -	case WDIOC_GETBOOTSTATUS:
+> -		return put_user(0, p);
+> -	case WDIOC_KEEPALIVE:
+> -		mpc8xxx_wdt_keepalive();
+> -		return 0;
+> -	case WDIOC_GETTIMEOUT:
+> -		return put_user(timeout_sec, p);
+> -	default:
+> -		return -ENOTTY;
+> -	}
+> -}
+> +static struct watchdog_info mpc8xxx_wdt_info = {
+> +	.options = WDIOF_KEEPALIVEPING,
+> +	.firmware_version = 1,
+> +	.identity = "MPC8xxx",
+> +};
+>
+> -static const struct file_operations mpc8xxx_wdt_fops = {
+> -	.owner		= THIS_MODULE,
+> -	.llseek		= no_llseek,
+> -	.write		= mpc8xxx_wdt_write,
+> -	.unlocked_ioctl	= mpc8xxx_wdt_ioctl,
+> -	.open		= mpc8xxx_wdt_open,
+> -	.release	= mpc8xxx_wdt_release,
+> +static struct watchdog_ops mpc8xxx_wdt_ops = {
+> +	.owner = THIS_MODULE,
+> +	.start = mpc8xxx_wdt_start,
+> +	.ping = mpc8xxx_wdt_ping,
+> +	.stop = mpc8xxx_wdt_stop,
+>   };
+>
+> -static struct miscdevice mpc8xxx_wdt_miscdev = {
+> -	.minor	= WATCHDOG_MINOR,
+> -	.name	= "watchdog",
+> -	.fops	= &mpc8xxx_wdt_fops,
+> +static struct watchdog_device mpc8xxx_wdt_dev = {
+> +	.info = &mpc8xxx_wdt_info,
+> +	.ops = &mpc8xxx_wdt_ops,
+>   };
+>
+>   static const struct of_device_id mpc8xxx_wdt_match[];
+> @@ -196,6 +151,7 @@
+>   	const struct mpc8xxx_wdt_type *wdt_type;
+>   	u32 freq = fsl_get_sys_freq();
+>   	bool enabled;
+> +	unsigned int timeout_sec;
+>
+>   	match = of_match_device(mpc8xxx_wdt_match, &ofdev->dev);
+>   	if (!match)
+> @@ -222,6 +178,7 @@
+>   	else
+>   		timeout_sec = timeout / freq;
+>
+> +	mpc8xxx_wdt_dev.timeout = timeout_sec;
+>   #ifdef MODULE
+>   	ret = mpc8xxx_wdt_init_late();
+>   	if (ret)
+> @@ -237,7 +194,7 @@
+>   	 * userspace handles it.
+>   	 */
+>   	if (enabled)
+> -		mpc8xxx_wdt_timer_ping(0);
+> +		mod_timer(&wdt_timer, jiffies);
+>   	return 0;
+>   err_unmap:
+>   	iounmap(wd_base);
+> @@ -247,9 +204,10 @@
+>
+>   static int mpc8xxx_wdt_remove(struct platform_device *ofdev)
+>   {
+> -	mpc8xxx_wdt_pr_warn("watchdog removed");
+> +	pr_crit("Watchdog removed, expect the %s soon!\n",
+> +		reset ? "reset" : "machine check exception");
+>   	del_timer_sync(&wdt_timer);
+> -	misc_deregister(&mpc8xxx_wdt_miscdev);
+> +	watchdog_unregister_device(&mpc8xxx_wdt_dev);
+>   	iounmap(wd_base);
+>
+>   	return 0;
+> @@ -301,10 +259,11 @@
+>   	if (!wd_base)
+>   		return -ENODEV;
+>
+> -	ret = misc_register(&mpc8xxx_wdt_miscdev);
+> +	watchdog_set_nowayout(&mpc8xxx_wdt_dev, nowayout);
+> +
+> +	ret = watchdog_register_device(&mpc8xxx_wdt_dev);
+>   	if (ret) {
+> -		pr_err("cannot register miscdev on minor=%d (err=%d)\n",
+> -		       WATCHDOG_MINOR, ret);
+> +		pr_err("cannot register watchdog device (err=%d)\n", ret);
+>   		return ret;
+>   	}
+>   	return 0;
+> diff -ur a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+> --- a/drivers/watchdog/Kconfig
+> +++ b/drivers/watchdog/Kconfig
+> @@ -1146,6 +1146,7 @@
+>   config 8xxx_WDT
+>   	tristate "MPC8xxx Platform Watchdog Timer"
+>   	depends on PPC_8xx || PPC_83xx || PPC_86xx
+> +	select WATCHDOG_CORE
+>   	help
+>   	  This driver is for a SoC level watchdog that exists on some
+>   	  Freescale PowerPC processors. So far this driver supports:
+>
+>
