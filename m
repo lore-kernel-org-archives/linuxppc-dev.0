@@ -1,36 +1,24 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1B6092C00F8
- for <linuxppc-dev@ozlabs.org>; Wed,  4 Dec 2013 21:33:57 +1100 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 4 Dec 2013 16:03:54 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 65DC23940068
- for <linuxppc-dev@ozlabs.org>; Wed,  4 Dec 2013 16:03:51 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rB4AXj2c12189930
- for <linuxppc-dev@ozlabs.org>; Wed, 4 Dec 2013 16:03:45 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rB4AXl35010847
- for <linuxppc-dev@ozlabs.org>; Wed, 4 Dec 2013 16:03:49 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V4 06/10] powerpc,
- perf: Change the name of HW PMU branch filter tracking variable
-Date: Wed,  4 Dec 2013 16:02:38 +0530
-Message-Id: <1386153162-11225-7-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1386153162-11225-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1386153162-11225-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org, ak@linux.intel.com, eranian@google.com,
- michael@ellerman.id.au, acme@ghostprotocols.net, sukadev@linux.vnet.ibm.com,
- mingo@kernel.org
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DD8FF2C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 21:42:39 +1100 (EST)
+Date: Wed, 4 Dec 2013 10:42:30 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <b42378@freescale.com>
+Message-ID: <20131204104230.GD29268@sirena.org.uk>
+References: <1386067087-12243-1-git-send-email-b42378@freescale.com>
+ <20131203145833.GV27568@sirena.org.uk>
+ <20131204072702.GE8609@MrMyself>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="wLAMOaPNJ0fu1fTG"
+In-Reply-To: <20131204072702.GE8609@MrMyself>
+Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_ssi: Implement symmetric_channels
+ and symmetric_samplebits
+Cc: tiwai@suse.de, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ lgirdwood@gmail.com, timur@tabi.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,59 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch simply changes the name of the variable from "bhrb_filter" to
-"bhrb_hw_filter" in order to add one more variable which will track SW
-filters in generic powerpc book3s code which will be implemented in the
-subsequent patch.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/perf/core-book3s.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+--wLAMOaPNJ0fu1fTG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 29b89e8..2de7d48 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -47,7 +47,7 @@ struct cpu_hw_events {
- 	int n_txn_start;
- 
- 	/* BHRB bits */
--	u64				bhrb_filter;	/* BHRB HW branch filter */
-+	u64				bhrb_hw_filter;	/* BHRB HW branch filter */
- 	int				bhrb_users;
- 	void				*bhrb_context;
- 	struct	perf_branch_stack	bhrb_stack;
-@@ -1159,7 +1159,7 @@ static void power_pmu_enable(struct pmu *pmu)
- 
-  out:
- 	if (cpuhw->bhrb_users)
--		ppmu->config_bhrb(cpuhw->bhrb_filter);
-+		ppmu->config_bhrb(cpuhw->bhrb_hw_filter);
- 
- 	local_irq_restore(flags);
- }
-@@ -1254,7 +1254,7 @@ nocheck:
-  out:
- 	if (has_branch_stack(event)) {
- 		power_pmu_bhrb_enable(event);
--		cpuhw->bhrb_filter = ppmu->bhrb_filter_map(
-+		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
- 					event->attr.branch_sample_type);
- 	}
- 
-@@ -1637,10 +1637,10 @@ static int power_pmu_event_init(struct perf_event *event)
- 	err = power_check_constraints(cpuhw, events, cflags, n + 1);
- 
- 	if (has_branch_stack(event)) {
--		cpuhw->bhrb_filter = ppmu->bhrb_filter_map(
-+		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
- 					event->attr.branch_sample_type);
- 
--		if(cpuhw->bhrb_filter == -1)
-+		if(cpuhw->bhrb_hw_filter == -1)
- 			return -EOPNOTSUPP;
- 	}
- 
--- 
-1.7.11.7
+On Wed, Dec 04, 2013 at 03:27:03PM +0800, Nicolin Chen wrote:
+
+> Sir, shall we also implement these two to other drivers like codecs?
+> I know this symmetry is a new feature and might be still immature.
+> By implementing it might bring some side effects. But meanwhile, it
+> would also allows us to engage more people to test it, although myself
+> have done a branch of tests with different user cases on my platform.
+
+> Or we just wait for people engaging by themselves?
+
+It makes sense to roll it out, since it's in the core if there is a
+problem we only need to fix it in one place to fix all the users which
+makes life easier.
+
+--wLAMOaPNJ0fu1fTG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSnwcTAAoJELSic+t+oim9Xy4QAIWP6FbvgVh8Utw+PUNowHOp
+NELcvB32ZsJfyos1dDs7IZfrnzvUW9lXcecTcx8PnPn0dryL08SkVV96ezalsPH5
+DbcV8aAPKdRc3vYSKZAXB7W8b6sRgvLkOVJPS8Kqi7B6d0WcvWPfoE0Pn/J1sbxs
+p9sIKE5Q6UwHcmxgKRo/PinZnTxot36bGSVFglxXpEcwIR4EBv/TxURMgDX0FV6P
+kvlZrcOJti29WYsaSw/V9JHvIeRKnmQIKnZY+xN8ucxSpb2dmm3oeHwof/ci8BUi
+iXPmMuhJnwcjH3OdiL19pwr1HHq311SHOFFsmmOTqGYX8BUTdjQSLgHVk/OdvV0w
+QnLDfuK4LXqrA0ki5vqzw0ME4JU7vxRl2y/lG+QpQqSzIOXuuwy65aJ+MfiyD76g
+HEZyvjcvacVhsuKOfnpe9MKU7CxxkkOIcb2IZI+S0K9jfBEjRA0brFX/hqMJLhke
+PRkk6Leee5KfV9PmGIR9k2sQlqfbqxaF42HGwREpha5UOQAg+fm9oWgXt6Brk99X
+LaVBIOX/cTZfhMqlfTWO5qwY58A72QzqNm8dJBqUKx05XtAEZJ2j0y12+N6Lu2vc
+SW3o6ORBCckXGA5A8KywEzoca7eC1rcMxK1j/3VpS0aR+fN336HZyyWWDup3cKqO
+XvZ9aGF4a1xNFpDmcpV0
+=ufv+
+-----END PGP SIGNATURE-----
+
+--wLAMOaPNJ0fu1fTG--
