@@ -1,19 +1,24 @@
-Return-Path: <linux@roeck-us.net>
-Received: from mail.active-venture.com (mail.active-venture.com
- [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id A58282C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 18:15:10 +1100 (EST)
-Message-ID: <529ED678.1080401@roeck-us.net>
-Date: Tue, 03 Dec 2013 23:15:04 -0800
-From: Guenter Roeck <linux@roeck-us.net>
+Return-Path: <guangyu.chen@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9BB812C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2013 18:46:17 +1100 (EST)
+Date: Wed, 4 Dec 2013 15:27:03 +0800
+From: Nicolin Chen <b42378@freescale.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH] ASoC: fsl_ssi: Implement symmetric_channels and
+ symmetric_samplebits
+Message-ID: <20131204072702.GE8609@MrMyself>
+References: <1386067087-12243-1-git-send-email-b42378@freescale.com>
+ <20131203145833.GV27568@sirena.org.uk>
 MIME-Version: 1.0
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Wim Van Sebroeck <wim@iguana.be>, scottwood@freescale.com
-Subject: Re: [PATCH v3] watchdog: mpc8xxx_wdt convert to watchdog core
-References: <20131204063214.D1DB01A2BEA@localhost.localdomain>
-In-Reply-To: <20131204063214.D1DB01A2BEA@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-watchdog@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20131203145833.GV27568@sirena.org.uk>
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ timur@tabi.org, perex@perex.cz, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,10 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/03/2013 10:32 PM, Christophe Leroy wrote:
-> Convert mpc8xxx_wdt.c to the new watchdog API.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->
+On Tue, Dec 03, 2013 at 02:58:33PM +0000, Mark Brown wrote:
+> On Tue, Dec 03, 2013 at 06:38:07PM +0800, Nicolin Chen wrote:
+> > Since we introduced symmetric_channels and symmetric_samplebits, we implement
+> > these two features to fsl_ssi so as to drop some no-more-needed code and make
+> > the driver neat and clean.
+> 
+> Applied, thanks.
 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Sir, shall we also implement these two to other drivers like codecs?
+I know this symmetry is a new feature and might be still immature.
+By implementing it might bring some side effects. But meanwhile, it
+would also allows us to engage more people to test it, although myself
+have done a branch of tests with different user cases on my platform.
+
+Or we just wait for people engaging by themselves?
+
+Thank you,
+Nicolin Chen
