@@ -1,20 +1,39 @@
-Return-Path: <Hong.Pham@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com", Issuer "Thawte SGC CA - G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E5F22C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2013 03:22:29 +1100 (EST)
-From: "Hong H. Pham" <hong.pham@windriver.com>
-To: linux-rt-users <linux-rt-users@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc: Fix PTE page address mismatch in pgtable ctor/dtor
-Date: Thu, 5 Dec 2013 10:54:54 -0500
-Message-ID: <1386258894-21851-1-git-send-email-hong.pham@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Paul Mackerras <paulus@samba.org>, "Hong H. Pham" <hong.pham@windriver.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linux-stable <stable@vger.kernel.org>
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6534F2C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2013 08:00:17 +1100 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Fri, 6 Dec 2013 07:00:17 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7C1C33578052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2013 08:00:09 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rB5Kg3qj6160676
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Dec 2013 07:42:03 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rB5L08Gd002989
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Dec 2013 08:00:08 +1100
+Message-ID: <1386277201.21910.44.camel@pasglop>
+Subject: Re: [PATCH -V2 3/5] mm: Move change_prot_numa outside
+ CONFIG_ARCH_USES_NUMA_PROT_NONE
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Rik van Riel <riel@redhat.com>
+Date: Fri, 06 Dec 2013 08:00:01 +1100
+In-Reply-To: <52A0B786.608@redhat.com>
+References: <1384766893-10189-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1384766893-10189-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1386126782.16703.137.camel@pasglop> <52A0B786.608@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,62 +43,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In pte_alloc_one(), pgtable_page_ctor() is passed an address that has
-not been converted by page_address() to the newly allocated PTE page.
+On Thu, 2013-12-05 at 12:27 -0500, Rik van Riel wrote:
 
-When the PTE is freed, __pte_free_tlb() calls pgtable_page_dtor()
-with an address to the PTE page that has been converted by page_address().
-The mismatch in the PTE's page address causes pgtable_page_dtor() to access
-invalid memory, so resources for that PTE (such as the page lock) is not
-properly cleaned up.
+> However, it appears that since the code was #ifdefed
+> like that, the called code was made generic enough,
+> that change_prot_numa should actually work for
+> everything.
+> 
+> In other words:
+> 
+> Reviewed-by: Rik van Riel <riel@redhat.com>
 
-This bug was introduced by commit d614bb041209fd7cb5e4b35e11a7b2f6ee8f62b8
-"powerpc: Move the pte free routines from common header".
+Ok thanks, that's what I needed. Do you have any objection of me merging
+that change via the powerpc tree along with the corresponding powerpc
+bits from Aneesh ?
 
-On a preempt-rt kernel, a spinlock is dynamically allocated for each
-PTE in pgtable_page_ctor().  When the PTE is freed, calling
-pgtable_page_dtor() with a mismatched page address causes a memory leak,
-as the pointer to the PTE's spinlock is bogus.
+The other option would be to have it in a topic branch that I pull from
+you.
 
-On mainline, there isn't any immediately obvious symptoms, but the
-problem still exists here.
-
-Fixes: d614bb041209fd7c "powerpc: Move the pte free routes from common header"
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-stable <stable@vger.kernel.org> # v3.10+
-Signed-off-by: Hong H. Pham <hong.pham@windriver.com>
----
- arch/powerpc/include/asm/pgalloc-32.h | 2 +-
- arch/powerpc/include/asm/pgalloc-64.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/pgalloc-32.h b/arch/powerpc/include/asm/pgalloc-32.h
-index 27b2386..7ff24f0 100644
---- a/arch/powerpc/include/asm/pgalloc-32.h
-+++ b/arch/powerpc/include/asm/pgalloc-32.h
-@@ -87,7 +87,7 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- 	struct page *page = page_address(table);
- 
- 	tlb_flush_pgtable(tlb, address);
--	pgtable_page_dtor(page);
-+	pgtable_page_dtor(table);
- 	pgtable_free_tlb(tlb, page, 0);
- }
- #endif /* _ASM_POWERPC_PGALLOC_32_H */
-diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
-index f65e27b..b187dc5 100644
---- a/arch/powerpc/include/asm/pgalloc-64.h
-+++ b/arch/powerpc/include/asm/pgalloc-64.h
-@@ -147,7 +147,7 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- 	struct page *page = page_address(table);
- 
- 	tlb_flush_pgtable(tlb, address);
--	pgtable_page_dtor(page);
-+	pgtable_page_dtor(table);
- 	pgtable_free_tlb(tlb, page, 0);
- }
- 
--- 
-1.8.3.2
+Cheers,
+Ben.
