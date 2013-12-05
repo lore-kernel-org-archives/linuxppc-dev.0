@@ -1,39 +1,36 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp13.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2CBBD2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Dec 2013 19:49:45 +1100 (EST)
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 160742C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Dec 2013 21:54:09 +1100 (EST)
 Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Thu, 5 Dec 2013 08:49:41 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0849317D8067
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Dec 2013 08:49:30 +0000 (GMT)
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
- [9.149.37.247])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rB58mAGq46596284
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Dec 2013 08:48:10 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rB58mMag015817
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Dec 2013 01:48:22 -0700
-Message-ID: <52A03E4F.6090304@linux.vnet.ibm.com>
-Date: Thu, 05 Dec 2013 09:50:23 +0100
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 5 Dec 2013 16:24:01 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 51F45394005A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Dec 2013 16:23:58 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rB5ArpEc65142824
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Dec 2013 16:23:52 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rB5ArvDo026883
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Dec 2013 16:23:57 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Liu Ping Fan <kernelfans@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] powerpc: mm: make _PAGE_NUMA take effect
+In-Reply-To: <1386140348-7854-2-git-send-email-pingfank@linux.vnet.ibm.com>
+References: <1386140348-7854-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <1386140348-7854-2-git-send-email-pingfank@linux.vnet.ibm.com>
+Date: Thu, 05 Dec 2013 16:23:56 +0530
+Message-ID: <87a9gfva9n.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix xmon disassembler for little-endian
-References: <1385975412-25869-1-git-send-email-felix@linux.vnet.ibm.com>
- <529C9397.9050704@gmail.com> <529F31F8.6040302@linux.vnet.ibm.com>
- <1386218366.21910.16.camel@pasglop>
-In-Reply-To: <1386218366.21910.16.camel@pasglop>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Tom Musta <tommusta@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,35 +40,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2013-12-04 at 14:45 +0100, Philippe Bergheaud wrote:
-> 
-> 
->>>>+#ifdef __LITTLE_ENDIAN__
->>>>+#define GETWORD(v)	(((v)[3] << 24) + ((v)[2] << 16) + ((v)[1] << 8) + (v)[0])
->>>>+#else
->>>>#define GETWORD(v)	(((v)[0] << 24) + ((v)[1] << 16) + ((v)[2] << 8) + (v)[3])
->>>>+#endif
->>>>
->>>>#define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
->>>>			 || ('a' <= (c) && (c) <= 'f') \
->>>>
->>>
->>>
->>>Philippe:  Wouldn't it be better to just do a 32-bit load and let the endianness be worked out
->>>by the hardware?  i.e.
->>>
->>>#define GETWORD(v) (*(u32 *)v)
->>
->>Yes, your alternative is better.
->>Wouldn't it narrow the scope of the macro to aligned words on POWER7?
->>I think that all references to GETWORD operate on aligned words anyway.
-> 
-> 
-> Well, xmon has to be robust ... as long as you are *certain* that even
-> with crap entry state it won't try to access unaligned boundaries then
-> go for it but we aren't looking at performance here.
-Thank you Tom and Ben.  We are definitely not looking at performance here.
-I prefer to stay on the safe side, and leave the original patch untouched.
+Liu Ping Fan <kernelfans@gmail.com> writes:
 
-Philippe
+> To enable the do_numa_page(), we should not fix _PAGE_NUMA in
+> hash_page(), so bail out for the case of pte_numa().
+>
+> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/hash_utils_64.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index fb176e9..9bf1195 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -1033,7 +1033,7 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+>
+>  	/* Get PTE and page size from page tables */
+>  	ptep = find_linux_pte_or_hugepte(pgdir, ea, &hugeshift);
+> -	if (ptep == NULL || !pte_present(*ptep)) {
+> +	if (ptep == NULL || !pte_present(*ptep) || pte_numa(*ptep)) {
+>  		DBG_LOW(" no PTE !\n");
+>  		rc = 1;
+>  		goto bail;
+
+why ? , All the hash routines do check for _PAGE_PRESENT via access
+variable.
+
+-aneesh
