@@ -1,39 +1,28 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6534F2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2013 08:00:17 +1100 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Fri, 6 Dec 2013 07:00:17 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7C1C33578052
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2013 08:00:09 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rB5Kg3qj6160676
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Dec 2013 07:42:03 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rB5L08Gd002989
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Dec 2013 08:00:08 +1100
-Message-ID: <1386277201.21910.44.camel@pasglop>
-Subject: Re: [PATCH -V2 3/5] mm: Move change_prot_numa outside
- CONFIG_ARCH_USES_NUMA_PROT_NONE
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Rik van Riel <riel@redhat.com>
-Date: Fri, 06 Dec 2013 08:00:01 +1100
-In-Reply-To: <52A0B786.608@redhat.com>
-References: <1384766893-10189-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1384766893-10189-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1386126782.16703.137.camel@pasglop> <52A0B786.608@redhat.com>
+Return-Path: <scottwood@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 58BB02C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2013 10:18:52 +1100 (EST)
+Received: from mail227-ch1 (localhost [127.0.0.1])	by
+ mail227-ch1-R.bigfish.com (Postfix) with ESMTP id E631D5000F2	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Dec 2013 23:18:45 +0000 (UTC)
+Received: from CH1EHSMHS001.bigfish.com (snatpool2.int.messaging.microsoft.com
+ [10.43.68.238])	by mail227-ch1.bigfish.com (Postfix) with ESMTP id
+ C29B61C80047	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Dec 2013 23:18:43
+ +0000 (UTC)
+Message-ID: <1386285513.7375.71.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/defconfig: Enable ath9k wireless card support
+From: Scott Wood <scottwood@freescale.com>
+To: Chunhe Lan <Chunhe.Lan@freescale.com>
+Date: Thu, 5 Dec 2013 17:18:33 -0600
+In-Reply-To: <1386055940-20629-1-git-send-email-Chunhe.Lan@freescale.com>
+References: <1386055940-20629-1-git-send-email-Chunhe.Lan@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,23 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-12-05 at 12:27 -0500, Rik van Riel wrote:
-
-> However, it appears that since the code was #ifdefed
-> like that, the called code was made generic enough,
-> that change_prot_numa should actually work for
-> everything.
+On Tue, 2013-12-03 at 15:32 +0800, Chunhe Lan wrote:
+> On the P1023RDB, when board leaves the factory, it has
+> two Atheros wireless cards on the PCIe slot. So enable
+> ath9k wireless driver support.
 > 
-> In other words:
+> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+> Cc: Scott Wood <scottwood@freescale.com>
+> ---
+>  arch/powerpc/configs/85xx/p1023_defconfig |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
 > 
-> Reviewed-by: Rik van Riel <riel@redhat.com>
+> diff --git a/arch/powerpc/configs/85xx/p1023_defconfig b/arch/powerpc/configs/85xx/p1023_defconfig
+> index b06d37d..a3fe941 100644
+> --- a/arch/powerpc/configs/85xx/p1023_defconfig
+> +++ b/arch/powerpc/configs/85xx/p1023_defconfig
+> @@ -62,6 +62,9 @@ CONFIG_INET_ESP=y
+>  # CONFIG_INET_LRO is not set
+>  CONFIG_IPV6=y
+>  CONFIG_IP_SCTP=m
+> +CONFIG_CFG80211=y
+> +CONFIG_CFG80211_WEXT=y
+> +CONFIG_MAC80211=y
+>  CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+>  CONFIG_DEVTMPFS=y
+>  CONFIG_DEVTMPFS_MOUNT=y
+> @@ -101,6 +104,8 @@ CONFIG_DAVICOM_PHY=y
+>  CONFIG_CICADA_PHY=y
+>  CONFIG_VITESSE_PHY=y
+>  CONFIG_FIXED_PHY=y
+> +CONFIG_ATH_CARDS=y
+> +CONFIG_ATH9K=y
+>  CONFIG_INPUT_FF_MEMLESS=m
+>  # CONFIG_INPUT_MOUSEDEV is not set
+>  # CONFIG_INPUT_KEYBOARD is not set
 
-Ok thanks, that's what I needed. Do you have any objection of me merging
-that change via the powerpc tree along with the corresponding powerpc
-bits from Aneesh ?
+I thought we decided the p1023 defconfig was going away (to possibly
+return if/when datapath is upstreamed and is deemed too large for the
+main config)?
 
-The other option would be to have it in a topic branch that I pull from
-you.
-
-Cheers,
-Ben.
+-Scott
