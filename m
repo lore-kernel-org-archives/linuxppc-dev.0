@@ -1,24 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AA4CD2C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 06:35:27 +1100 (EST)
-Message-ID: <1386358508.7375.133.camel@snotra.buserror.net>
-Subject: Re: [PATCH] watchdog: mpc8xxx_wdt: MPC8xx is HW enabled
-From: Scott Wood <scottwood@freescale.com>
-To: Wolfgang Denk <wd@denx.de>
-Date: Fri, 6 Dec 2013 13:35:08 -0600
-In-Reply-To: <20131202061418.05A11380BFE@gemini.denx.de>
-References: <20131130154540.E83D743E15@localhost.localdomain>
- <529B9152.9090106@roeck-us.net> <20131202061418.05A11380BFE@gemini.denx.de>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-wg0-x230.google.com (mail-wg0-x230.google.com
+ [IPv6:2a00:1450:400c:c00::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0FAB32C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 07:27:43 +1100 (EST)
 MIME-Version: 1.0
-Cc: linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
- Wim Van Sebroeck <wim@iguana.be>, linuxppc-dev@lists.ozlabs.org,
- Guenter Roeck <linux@roeck-us.net>
+In-Reply-To: <20131006111038.GN14747@book.gsilab.sittig.org>
+References: <1380809202-16192-1-git-send-email-a13xp0p0v88@gmail.com>
+ <20131006111038.GN14747@book.gsilab.sittig.org>
+Date: Sat, 7 Dec 2013 00:27:36 +0400
+Message-ID: <CAF0T0X6XhHk5qhwk=Kzu_YvMNduZaMqNxGWRyyeNP8LWzDJziw@mail.gmail.com>
+Subject: Re: [PATCH RFC v4 2/5] dma: mpc512x: add support for peripheral
+ transfers
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
+ Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Anatolij Gustschin <agust@denx.de>, Alexander Popov <a13xp0p0v88@gmail.com>,
+ devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-12-02 at 07:14 +0100, Wolfgang Denk wrote:
-> Dear Guenter,
-> 
-> In message <529B9152.9090106@roeck-us.net> you wrote:
-> > On 11/30/2013 07:45 AM, Christophe Leroy wrote:
-> > > MPC8xx watchdog is enabled at startup by HW.
-> > > If the bootloader disables it, it cannot be reenabled.
-> > 
-> > Is that true for all variants of 8xx, especially for 823 ? I am a bit concerned
-> > about breaking compatibility with some chips ... assuming there was a reason
-> > for not setting this flag originally.
-> 
-> This is correct, and applies for all variants of the MPC8xx, including
-> the MPC823 / MPC823E.  From the UM:
-> 
-> 	"The software watchdog timer can be disabled or its timeout
-> 	period can be changed in the SYPCR. Once the SYPCR is written,
-> 	it cannot be written again until a system reset."
-> 
-> Actually this is the only correct behaviour.  Any watchdog that can be
-> disabled by software is not worth it's name, and unsuitable for any
-> kind of aplications where security / reliability are required.
+2013/10/6 Gerhard Sittig <gsi@denx.de>:
+> On Thu, Oct 03, 2013 at 18:06 +0400, Alexander Popov wrote:
+>> +
+>> +             spin_lock_irqsave(&mchan->lock, flags);
+>> +
+>> +             if (cfg->direction == DMA_DEV_TO_MEM) {
+>
+> Note that cfg->direction is of a different type than
+> DMA_DEV_TO_MEM (of different type than the 'direction' parameter
+> in the preparation routine) -- it's mere coincidence that the
+> numeric values happen to match at the moment.
 
-An optional locked state is a good thing, but making that the only way
-the watchdog can function can render the watchdog unusable in systems
-that need to go into low power states (unless the low power state
-supresses the watchdog).  And then there's broken hybrid things like the
-booke watchdog, where you can't disable the watchdog reset action once
-configured, but you can change the timeout to be effectively infinite
-(which we've used as a workaround when entering low power states).
+Gerhard, it seems to me that this code is correct.
+Cite from dmaengine.h:
 
--Scott
+  * struct dma_slave_config - dma slave channel runtime config
+  * @direction: whether the data shall go in or out on this slave
+  * channel, right now. DMA_TO_DEVICE and DMA_FROM_DEVICE are
+  * legal values, DMA_BIDIRECTIONAL is not acceptable since we
+  * need to differentiate source and target addresses.
+  ...
+  struct dma_slave_config {
+          enum dma_transfer_direction direction;
+          ...
+  };
+
+The comment above the definition is obsolete, isn't it?
+
+Thanks
+Alexander
