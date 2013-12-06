@@ -1,33 +1,27 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3D6D32C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2013 23:21:56 +1100 (EST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
- Fri, 6 Dec 2013 10:21:51 -0200
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 9D1DC3520068
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2013 07:21:46 -0500 (EST)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rB6CLTfc50266122
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Dec 2013 10:21:29 -0200
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rB6CLk33025483
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Dec 2013 10:21:46 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powernv: fix VFIO support with PHB3
-Date: Fri,  6 Dec 2013 10:21:44 -0200
-Message-Id: <1386332504-18339-1-git-send-email-cascardo@linux.vnet.ibm.com>
-Cc: shangw@linux.vnet.ibm.com, aik@ozlabs.ru, linux-kernel@vger.kernel.org,
- paulus@samba.org, Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <arnaldo.melo@gmail.com>
+Received: from mail-qe0-x236.google.com (mail-qe0-x236.google.com
+ [IPv6:2607:f8b0:400d:c02::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 24E8A2C00A7
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Dec 2013 00:18:26 +1100 (EST)
+Received: by mail-qe0-f54.google.com with SMTP id cy11so456901qeb.41
+ for <linuxppc-dev@ozlabs.org>; Fri, 06 Dec 2013 05:18:24 -0800 (PST)
+Sender: Arnaldo Carvalho de Melo <arnaldo.melo@gmail.com>
+Date: Fri, 6 Dec 2013 10:18:17 -0300
+From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH V4 00/10] perf: New conditional branch filter
+Message-ID: <20131206131817.GB2279@ghostprotocols.net>
+References: <1386153162-11225-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1386218874.6009.7.camel@concordia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1386218874.6009.7.camel@concordia>
+Cc: mikey@neuling.org, ak@linux.intel.com, linux-kernel@vger.kernel.org,
+ eranian@google.com, linuxppc-dev@ozlabs.org, sukadev@linux.vnet.ibm.com,
+ mingo@kernel.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,31 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have recently found out that no iommu_groups could be found under
-/sys/ on a P8. That prevents PCI passthrough from working.
+Em Thu, Dec 05, 2013 at 03:47:54PM +1100, Michael Ellerman escreveu:
+> On Wed, 2013-12-04 at 16:02 +0530, Anshuman Khandual wrote:
+> > 		This patchset is the re-spin of the original branch stack sampling
+> > patchset which introduced new PERF_SAMPLE_BRANCH_COND branch filter. This patchset
+> > also enables SW based branch filtering support for book3s powerpc platforms which
+> > have PMU HW backed branch stack sampling support. 
+> > 
+> > Summary of code changes in this patchset:
+> > 
+> > (1) Introduces a new PERF_SAMPLE_BRANCH_COND branch filter
+> > (2) Add the "cond" branch filter options in the "perf record" tool
+> > (3) Enable PERF_SAMPLE_BRANCH_COND in X86 platforms
+> > (4) Enable PERF_SAMPLE_BRANCH_COND in POWER8 platform 
+> > (5) Update the documentation regarding "perf record" tool
+> 
+> 
+> Hi Arnaldo,
+> 
+> Can you please take just patches 1-5 into the perf tree? And do you mind
+> putting them in a topic branch so Benh can merge that.
 
-During my investigation, I found out there seems to be a missing
-iommu_register_group for PHB3. The following patch seems to fix the
-problem. After applying it, I see iommu_groups under
-/sys/kernel/iommu_groups/, and can also bind vfio-pci to an adapter,
-which gives me a device at /dev/vfio/.
+This is mostly kernel code, I process the userspace ones, so I think either
+Ingo or PeterZ should pick these, Ingo, Peter?
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/pci-ioda.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Only:
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 084cdfa..2c6d173 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -720,6 +720,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE;
- 	}
- 	iommu_init_table(tbl, phb->hose->node);
-+	iommu_register_group(tbl, pci_domain_nr(pe->pbus), pe->pe_number);
+Subject: [PATCH V4 03/10] perf, tool: Conditional branch filter 'cond' added to perf record
+
+Which is a one liner, touches tools/perf/, and I'm ok with it.
+
+
+- Arnaldo
  
- 	if (pe->pdev)
- 		set_iommu_table_base(&pe->pdev->dev, tbl);
--- 
-1.7.1
+> The remaining patches are powerpc specific and still need some more review.
+> 
+> cheers
+> 
