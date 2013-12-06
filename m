@@ -1,38 +1,23 @@
 Return-Path: <scottwood@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1598D2C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 06:00:14 +1100 (EST)
-Message-ID: <1386356393.7375.118.camel@snotra.buserror.net>
-Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+ by ozlabs.org (Postfix) with ESMTPS id 303BE2C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 06:10:12 +1100 (EST)
+Message-ID: <1386356996.7375.120.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc 8xx: Loading kernels over 8Mbytes without
+ CONFIG_PIN_TLB
 From: Scott Wood <scottwood@freescale.com>
-To: Bharat Bhushan <Bharat.Bhushan@freescale.com>
-Date: Fri, 6 Dec 2013 12:59:53 -0600
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D07251EE4@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1384973243.2879.361.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
- <1385066603.2879.414.camel@ul30vt.home>
- <1385066835.1403.489.camel@snotra.buserror.net>
- <1385067648.2879.421.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
- <1385397493.2879.557.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0723624C@039-SN2MPN1-012.039d.mgd.msft.net>
- <1386289316.7375.107.camel@snotra.buserror.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D07251EE4@039-SN2MPN1-012.039d.mgd.msft.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Fri, 6 Dec 2013 13:09:56 -0600
+In-Reply-To: <20131127110406.6DC8E1A504F@localhost.localdomain>
+References: <20131127110406.6DC8E1A504F@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "agraf@suse.de" <agraf@suse.de>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Yoder Stuart-B08248 <stuart.yoder@freescale.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,51 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-12-05 at 22:11 -0600, Bharat Bhushan wrote:
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, December 06, 2013 5:52 AM
-> > To: Bhushan Bharat-R65777
-> > Cc: Alex Williamson; linux-pci@vger.kernel.org; agraf@suse.de; Yoder Stuart-
-> > B08248; iommu@lists.linux-foundation.org; bhelgaas@google.com; linuxppc-
-> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
-> >
-> > On Thu, 2013-11-28 at 03:19 -0600, Bharat Bhushan wrote:
-> > >
-> > > > -----Original Message-----
-> > > > From: Bhushan Bharat-R65777
-> > > > Sent: Wednesday, November 27, 2013 9:39 PM
-> > > > To: 'Alex Williamson'
-> > > > Cc: Wood Scott-B07421; linux-pci@vger.kernel.org; agraf@suse.de;
-> > > > Yoder Stuart- B08248; iommu@lists.linux-foundation.org;
-> > > > bhelgaas@google.com; linuxppc- dev@lists.ozlabs.org;
-> > > > linux-kernel@vger.kernel.org
-> > > > Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale
-> > > > IOMMU (PAMU)
-> > > >
-> > > > If we just provide the size of MSI bank to userspace then userspace
-> > > > cannot do anything wrong.
-> > >
-> > > So userspace does not know address, so it cannot mmap and cause any
-> > interference by directly reading/writing.
-> >
-> > That's security through obscurity...  Couldn't the malicious user find out the
-> > address via other means, such as experimentation on another system over which
-> > they have full control?  What would happen if the user reads from their device's
-> > PCI config space?  Or gets the information via some back door in the PCI device
-> > they own?  Or pokes throughout the address space looking for something that
-> > generates an interrupt to its own device?
-> 
-> So how to solve this problem, Any suggestion ?
-> 
-> We have to map one window in PAMU for MSIs and a malicious user can ask
-> its device to do DMA to MSI window region with any pair of address and
-> data, which can lead to unexpected MSIs in system?
+On Wed, 2013-11-27 at 12:04 +0100, Christophe Leroy wrote:
+> Today, the only way to load kernels whose size is greater than 8Mbytes is to
+> activate CONFIG_PIN_TLB. Otherwise, the physical memory initially mapped is
+> limited to 8Mbytes. This patch sets up 24 Mbytes of initial memory regardless
+> of whether CONFIG_PIN_TLB is active or not. It allows to load "big" kernels
+> (for instance when activating CONFIG_LOCKDEP_SUPPORT) without having
+> to activate CONFIG_PIN_TLB.
 
-I don't think there are any solutions other than to limit each bank to
-one user, unless the admin turns some knob that says they're OK with the
-partial loss of isolation.
+So, what happens on boards with less than 24M memory present?  Even if
+you avoid explicitly referencing those addresses, what if there is a
+speculative access -- or does 8xx not do that?
 
 -Scott
