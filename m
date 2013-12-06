@@ -1,17 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+Return-Path: <Bharat.Bhushan@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0253.outbound.messaging.microsoft.com [213.199.154.253])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5C7B32C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2013 11:22:04 +1100 (EST)
-Message-ID: <1386289316.7375.107.camel@snotra.buserror.net>
-Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
-From: Scott Wood <scottwood@freescale.com>
-To: Bharat Bhushan <Bharat.Bhushan@freescale.com>
-Date: Thu, 5 Dec 2013 18:21:56 -0600
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D0723624C@039-SN2MPN1-012.039d.mgd.msft.net>
+ by ozlabs.org (Postfix) with ESMTPS id 35EE42C00A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2013 15:11:44 +1100 (EST)
+From: Bharat Bhushan <Bharat.Bhushan@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+Date: Fri, 6 Dec 2013 04:11:13 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D07251EE4@039-SN2MPN1-012.039d.mgd.msft.net>
 References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
  <1384973243.2879.361.camel@ul30vt.home>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -21,12 +20,14 @@ References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
  <1385397493.2879.557.camel@ul30vt.home>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0723624C@039-SN2MPN1-012.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
+ <1386289316.7375.107.camel@snotra.buserror.net>
+In-Reply-To: <1386289316.7375.107.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
  "agraf@suse.de" <agraf@suse.de>,
  "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Yoder Stuart-B08248 <stuart.yoder@freescale.com>,
+ Stuart Yoder <stuart.yoder@freescale.com>,
  Alex Williamson <alex.williamson@redhat.com>,
  "bhelgaas@google.com" <bhelgaas@google.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -40,138 +41,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-11-28 at 03:19 -0600, Bharat Bhushan wrote:
-> 
-> > -----Original Message-----
-> > From: Bhushan Bharat-R65777
-> > Sent: Wednesday, November 27, 2013 9:39 PM
-> > To: 'Alex Williamson'
-> > Cc: Wood Scott-B07421; linux-pci@vger.kernel.org; agraf@suse.de; Yoder Stuart-
-> > B08248; iommu@lists.linux-foundation.org; bhelgaas@google.com; linuxppc-
-> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> > Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
-> >
-> >
-> >
-> > > -----Original Message-----
-> > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > > Sent: Monday, November 25, 2013 10:08 PM
-> > > To: Bhushan Bharat-R65777
-> > > Cc: Wood Scott-B07421; linux-pci@vger.kernel.org; agraf@suse.de; Yoder
-> > > Stuart- B08248; iommu@lists.linux-foundation.org; bhelgaas@google.com;
-> > > linuxppc- dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> > > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU
-> > > (PAMU)
-> > >
-> > > On Mon, 2013-11-25 at 05:33 +0000, Bharat Bhushan wrote:
-> > > >
-> > > > > -----Original Message-----
-> > > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > > > > Sent: Friday, November 22, 2013 2:31 AM
-> > > > > To: Wood Scott-B07421
-> > > > > Cc: Bhushan Bharat-R65777; linux-pci@vger.kernel.org;
-> > > > > agraf@suse.de; Yoder Stuart-B08248;
-> > > > > iommu@lists.linux-foundation.org; bhelgaas@google.com; linuxppc-
-> > > > > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> > > > > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale
-> > > > > IOMMU (PAMU)
-> > > > >
-> > > > > On Thu, 2013-11-21 at 14:47 -0600, Scott Wood wrote:
-> > > > > > On Thu, 2013-11-21 at 13:43 -0700, Alex Williamson wrote:
-> > > > > > > On Thu, 2013-11-21 at 11:20 +0000, Bharat Bhushan wrote:
-> > > > > > > >
-> > > > > > > > > -----Original Message-----
-> > > > > > > > > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > > > > > > > > Sent: Thursday, November 21, 2013 12:17 AM
-> > > > > > > > > To: Bhushan Bharat-R65777
-> > > > > > > > > Cc: joro@8bytes.org; bhelgaas@google.com; agraf@suse.de;
-> > > > > > > > > Wood Scott-B07421; Yoder Stuart-B08248;
-> > > > > > > > > iommu@lists.linux-foundation.org; linux-
-> > > > > > > > > pci@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> > > > > > > > > kernel@vger.kernel.org; Bhushan Bharat-R65777
-> > > > > > > > > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for
-> > > > > > > > > Freescale IOMMU (PAMU)
-> > > > > > > > >
-> > > > > > > > > Is VFIO_IOMMU_PAMU_GET_MSI_BANK_COUNT per aperture (ie.
-> > > > > > > > > each vfio user has $COUNT regions at their disposal exclusively)?
-> > > > > > > >
-> > > > > > > > Number of msi-bank count is system wide and not per
-> > > > > > > > aperture, But will be
-> > > > > setting windows for banks in the device aperture.
-> > > > > > > > So say if we are direct assigning 2 pci device (both have
-> > > > > > > > different iommu
-> > > > > group, so 2 aperture in iommu) to VM.
-> > > > > > > > Now qemu can make only one call to know how many msi-banks
-> > > > > > > > are there but
-> > > > > it must set sub-windows for all banks for both pci device in its
-> > > > > respective aperture.
-> > > > > > >
-> > > > > > > I'm still confused.  What I want to make sure of is that the
-> > > > > > > banks are independent per aperture.  For instance, if we have
-> > > > > > > two separate userspace processes operating independently and
-> > > > > > > they both chose to use msi bank zero for their device, that's
-> > > > > > > bank zero within each aperture and doesn't interfere.  Or
-> > > > > > > another way to ask is can a malicious user interfere with
-> > > > > > > other users by
-> > > using the wrong bank.
-> > > > > > > Thanks,
-> > > > > >
-> > > > > > They can interfere.
-> > > >
-> > > > Want to be sure of how they can interfere?
-> > >
-> > > What happens if more than one user selects the same MSI bank?
-> > > Minimally, wouldn't that result in the IOMMU blocking transactions
-> > > from the previous user once the new user activates their mapping?
-> >
-> > Yes and no; With current implementation yes but with a minor change no. Later in
-> > this response I will explain how.
-> >
-> > >
-> > > > >>  With this hardware, the only way to prevent that
-> > > > > > is to make sure that a bank is not shared by multiple protection
-> > contexts.
-> > > > > > For some of our users, though, I believe preventing this is less
-> > > > > > important than the performance benefit.
-> > > >
-> > > > So should we let this patch series in without protection?
-> > >
-> > > No.
-> > >
-> > > > >
-> > > > > I think we need some sort of ownership model around the msi banks then.
-> > > > > Otherwise there's nothing preventing another userspace from
-> > > > > attempting an MSI based attack on other users, or perhaps even on
-> > > > > the host.  VFIO can't allow that.  Thanks,
-> > > >
-> > > > We have very few (3 MSI bank on most of chips), so we can not assign
-> > > > one to each userspace. What we can do is host and userspace does not
-> > > > share a MSI bank while userspace will share a MSI bank.
-> > >
-> > > Then you probably need VFIO to "own" the MSI bank and program devices
-> > > into it rather than exposing the MSI banks to userspace to let them have
-> > direct access.
-> >
-> > Overall idea of exposing the details of msi regions to userspace are
-> >  1) User space can define the aperture size to fit MSI mapping in IOMMU.
-> >  2) setup iova for a MSI banks; which is just after guest memory.
-> >
-> > But currently we expose the "size" and "address" of MSI banks, passing address
-> > is of no use and can be problematic.
-> 
-> I am sorry, above information is not correct. Currently neither we expose "address" nor "size" to user space. We only expose number of MSI BANK count and userspace adds one sub-window for each bank.
-> 
-> > If we just provide the size of MSI bank to userspace then userspace cannot do
-> > anything wrong.
-> 
-> So userspace does not know address, so it cannot mmap and cause any interference by directly reading/writing.
-
-That's security through obscurity...  Couldn't the malicious user find
-out the address via other means, such as experimentation on another
-system over which they have full control?  What would happen if the user
-reads from their device's PCI config space?  Or gets the information via
-some back door in the PCI device they own?  Or pokes throughout the
-address space looking for something that generates an interrupt to its
-own device?
-
--Scott
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBEZWNlbWJlciAwNiwgMjAxMyA1OjUyIEFNDQo+IFRvOiBCaHVz
+aGFuIEJoYXJhdC1SNjU3NzcNCj4gQ2M6IEFsZXggV2lsbGlhbXNvbjsgbGludXgtcGNpQHZnZXIu
+a2VybmVsLm9yZzsgYWdyYWZAc3VzZS5kZTsgWW9kZXIgU3R1YXJ0LQ0KPiBCMDgyNDg7IGlvbW11
+QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnOyBiaGVsZ2Fhc0Bnb29nbGUuY29tOyBsaW51eHBw
+Yy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcN
+Cj4gU3ViamVjdDogUmU6IFtQQVRDSCAwLzkgdjJdIHZmaW8tcGNpOiBhZGQgc3VwcG9ydCBmb3Ig
+RnJlZXNjYWxlIElPTU1VIChQQU1VKQ0KPiANCj4gT24gVGh1LCAyMDEzLTExLTI4IGF0IDAzOjE5
+IC0wNjAwLCBCaGFyYXQgQmh1c2hhbiB3cm90ZToNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBN
+ZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+ID4gU2Vu
+dDogV2VkbmVzZGF5LCBOb3ZlbWJlciAyNywgMjAxMyA5OjM5IFBNDQo+ID4gPiBUbzogJ0FsZXgg
+V2lsbGlhbXNvbicNCj4gPiA+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXgtcGNpQHZnZXIu
+a2VybmVsLm9yZzsgYWdyYWZAc3VzZS5kZTsNCj4gPiA+IFlvZGVyIFN0dWFydC0gQjA4MjQ4OyBp
+b21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZzsNCj4gPiA+IGJoZWxnYWFzQGdvb2dsZS5j
+b207IGxpbnV4cHBjLSBkZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gPiA+IGxpbnV4LWtlcm5lbEB2
+Z2VyLmtlcm5lbC5vcmcNCj4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggMC85IHYyXSB2ZmlvLXBj
+aTogYWRkIHN1cHBvcnQgZm9yIEZyZWVzY2FsZQ0KPiA+ID4gSU9NTVUgKFBBTVUpDQo+ID4gPg0K
+PiA+ID4NCj4gPiA+DQo+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+
+IEZyb206IEFsZXggV2lsbGlhbXNvbiBbbWFpbHRvOmFsZXgud2lsbGlhbXNvbkByZWRoYXQuY29t
+XQ0KPiA+ID4gPiBTZW50OiBNb25kYXksIE5vdmVtYmVyIDI1LCAyMDEzIDEwOjA4IFBNDQo+ID4g
+PiA+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gPiA+ID4gQ2M6IFdvb2QgU2NvdHQtQjA3
+NDIxOyBsaW51eC1wY2lAdmdlci5rZXJuZWwub3JnOyBhZ3JhZkBzdXNlLmRlOw0KPiA+ID4gPiBZ
+b2Rlcg0KPiA+ID4gPiBTdHVhcnQtIEIwODI0ODsgaW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlv
+bi5vcmc7DQo+ID4gPiA+IGJoZWxnYWFzQGdvb2dsZS5jb207DQo+ID4gPiA+IGxpbnV4cHBjLSBk
+ZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiA+ID4g
+PiBTdWJqZWN0OiBSZTogW1BBVENIIDAvOSB2Ml0gdmZpby1wY2k6IGFkZCBzdXBwb3J0IGZvciBG
+cmVlc2NhbGUNCj4gPiA+ID4gSU9NTVUNCj4gPiA+ID4gKFBBTVUpDQo+ID4gPiA+DQo+ID4gPiA+
+IE9uIE1vbiwgMjAxMy0xMS0yNSBhdCAwNTozMyArMDAwMCwgQmhhcmF0IEJodXNoYW4gd3JvdGU6
+DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4g
+PiA+ID4gPiBGcm9tOiBBbGV4IFdpbGxpYW1zb24gW21haWx0bzphbGV4LndpbGxpYW1zb25AcmVk
+aGF0LmNvbV0NCj4gPiA+ID4gPiA+IFNlbnQ6IEZyaWRheSwgTm92ZW1iZXIgMjIsIDIwMTMgMjoz
+MSBBTQ0KPiA+ID4gPiA+ID4gVG86IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4gPiBDYzog
+Qmh1c2hhbiBCaGFyYXQtUjY1Nzc3OyBsaW51eC1wY2lAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4g
+PiA+ID4gYWdyYWZAc3VzZS5kZTsgWW9kZXIgU3R1YXJ0LUIwODI0ODsNCj4gPiA+ID4gPiA+IGlv
+bW11QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnOyBiaGVsZ2Fhc0Bnb29nbGUuY29tOw0KPiA+
+ID4gPiA+ID4gbGludXhwcGMtIGRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC1rZXJuZWxAdmdl
+ci5rZXJuZWwub3JnDQo+ID4gPiA+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDAvOSB2Ml0gdmZp
+by1wY2k6IGFkZCBzdXBwb3J0IGZvcg0KPiA+ID4gPiA+ID4gRnJlZXNjYWxlIElPTU1VIChQQU1V
+KQ0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IE9uIFRodSwgMjAxMy0xMS0yMSBhdCAxNDo0NyAt
+MDYwMCwgU2NvdHQgV29vZCB3cm90ZToNCj4gPiA+ID4gPiA+ID4gT24gVGh1LCAyMDEzLTExLTIx
+IGF0IDEzOjQzIC0wNzAwLCBBbGV4IFdpbGxpYW1zb24gd3JvdGU6DQo+ID4gPiA+ID4gPiA+ID4g
+T24gVGh1LCAyMDEzLTExLTIxIGF0IDExOjIwICswMDAwLCBCaGFyYXQgQmh1c2hhbiB3cm90ZToN
+Cj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVz
+c2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+ID4gPiA+IEZyb206IEFsZXggV2lsbGlhbXNvbg0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiBbbWFpbHRvOmFsZXgud2lsbGlhbXNvbkByZWRoYXQuY29tXQ0KPiA+
+ID4gPiA+ID4gPiA+ID4gPiBTZW50OiBUaHVyc2RheSwgTm92ZW1iZXIgMjEsIDIwMTMgMTI6MTcg
+QU0NCj4gPiA+ID4gPiA+ID4gPiA+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+ID4g
+PiA+ID4gPiA+ID4gPiBDYzogam9yb0A4Ynl0ZXMub3JnOyBiaGVsZ2Fhc0Bnb29nbGUuY29tOw0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiBhZ3JhZkBzdXNlLmRlOyBXb29kIFNjb3R0LUIwNzQyMTsgWW9k
+ZXIgU3R1YXJ0LUIwODI0ODsNCj4gPiA+ID4gPiA+ID4gPiA+ID4gaW9tbXVAbGlzdHMubGludXgt
+Zm91bmRhdGlvbi5vcmc7IGxpbnV4LQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiBwY2lAdmdlci5rZXJu
+ZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gPiA+ID4gPiA+ID4gPiA+
+ID4gbGludXgtIGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0K
+PiA+ID4gPiA+ID4gPiA+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDAvOSB2Ml0gdmZpby1wY2k6
+IGFkZCBzdXBwb3J0IGZvcg0KPiA+ID4gPiA+ID4gPiA+ID4gPiBGcmVlc2NhbGUgSU9NTVUgKFBB
+TVUpDQo+ID4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiA+IElzIFZGSU9fSU9N
+TVVfUEFNVV9HRVRfTVNJX0JBTktfQ09VTlQgcGVyIGFwZXJ0dXJlIChpZS4NCj4gPiA+ID4gPiA+
+ID4gPiA+ID4gZWFjaCB2ZmlvIHVzZXIgaGFzICRDT1VOVCByZWdpb25zIGF0IHRoZWlyIGRpc3Bv
+c2FsDQo+IGV4Y2x1c2l2ZWx5KT8NCj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4g
+PiBOdW1iZXIgb2YgbXNpLWJhbmsgY291bnQgaXMgc3lzdGVtIHdpZGUgYW5kIG5vdCBwZXINCj4g
+PiA+ID4gPiA+ID4gPiA+IGFwZXJ0dXJlLCBCdXQgd2lsbCBiZQ0KPiA+ID4gPiA+ID4gc2V0dGlu
+ZyB3aW5kb3dzIGZvciBiYW5rcyBpbiB0aGUgZGV2aWNlIGFwZXJ0dXJlLg0KPiA+ID4gPiA+ID4g
+PiA+ID4gU28gc2F5IGlmIHdlIGFyZSBkaXJlY3QgYXNzaWduaW5nIDIgcGNpIGRldmljZSAoYm90
+aA0KPiA+ID4gPiA+ID4gPiA+ID4gaGF2ZSBkaWZmZXJlbnQgaW9tbXUNCj4gPiA+ID4gPiA+IGdy
+b3VwLCBzbyAyIGFwZXJ0dXJlIGluIGlvbW11KSB0byBWTS4NCj4gPiA+ID4gPiA+ID4gPiA+IE5v
+dyBxZW11IGNhbiBtYWtlIG9ubHkgb25lIGNhbGwgdG8ga25vdyBob3cgbWFueQ0KPiA+ID4gPiA+
+ID4gPiA+ID4gbXNpLWJhbmtzIGFyZSB0aGVyZSBidXQNCj4gPiA+ID4gPiA+IGl0IG11c3Qgc2V0
+IHN1Yi13aW5kb3dzIGZvciBhbGwgYmFua3MgZm9yIGJvdGggcGNpIGRldmljZSBpbg0KPiA+ID4g
+PiA+ID4gaXRzIHJlc3BlY3RpdmUgYXBlcnR1cmUuDQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4g
+PiA+ID4gPiBJJ20gc3RpbGwgY29uZnVzZWQuICBXaGF0IEkgd2FudCB0byBtYWtlIHN1cmUgb2Yg
+aXMgdGhhdA0KPiA+ID4gPiA+ID4gPiA+IHRoZSBiYW5rcyBhcmUgaW5kZXBlbmRlbnQgcGVyIGFw
+ZXJ0dXJlLiAgRm9yIGluc3RhbmNlLCBpZg0KPiA+ID4gPiA+ID4gPiA+IHdlIGhhdmUgdHdvIHNl
+cGFyYXRlIHVzZXJzcGFjZSBwcm9jZXNzZXMgb3BlcmF0aW5nDQo+ID4gPiA+ID4gPiA+ID4gaW5k
+ZXBlbmRlbnRseSBhbmQgdGhleSBib3RoIGNob3NlIHRvIHVzZSBtc2kgYmFuayB6ZXJvIGZvcg0K
+PiA+ID4gPiA+ID4gPiA+IHRoZWlyIGRldmljZSwgdGhhdCdzIGJhbmsgemVybyB3aXRoaW4gZWFj
+aCBhcGVydHVyZSBhbmQNCj4gPiA+ID4gPiA+ID4gPiBkb2Vzbid0IGludGVyZmVyZS4gIE9yIGFu
+b3RoZXIgd2F5IHRvIGFzayBpcyBjYW4gYQ0KPiA+ID4gPiA+ID4gPiA+IG1hbGljaW91cyB1c2Vy
+IGludGVyZmVyZSB3aXRoIG90aGVyIHVzZXJzIGJ5DQo+ID4gPiA+IHVzaW5nIHRoZSB3cm9uZyBi
+YW5rLg0KPiA+ID4gPiA+ID4gPiA+IFRoYW5rcywNCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+
+ID4gVGhleSBjYW4gaW50ZXJmZXJlLg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gV2FudCB0byBiZSBz
+dXJlIG9mIGhvdyB0aGV5IGNhbiBpbnRlcmZlcmU/DQo+ID4gPiA+DQo+ID4gPiA+IFdoYXQgaGFw
+cGVucyBpZiBtb3JlIHRoYW4gb25lIHVzZXIgc2VsZWN0cyB0aGUgc2FtZSBNU0kgYmFuaz8NCj4g
+PiA+ID4gTWluaW1hbGx5LCB3b3VsZG4ndCB0aGF0IHJlc3VsdCBpbiB0aGUgSU9NTVUgYmxvY2tp
+bmcgdHJhbnNhY3Rpb25zDQo+ID4gPiA+IGZyb20gdGhlIHByZXZpb3VzIHVzZXIgb25jZSB0aGUg
+bmV3IHVzZXIgYWN0aXZhdGVzIHRoZWlyIG1hcHBpbmc/DQo+ID4gPg0KPiA+ID4gWWVzIGFuZCBu
+bzsgV2l0aCBjdXJyZW50IGltcGxlbWVudGF0aW9uIHllcyBidXQgd2l0aCBhIG1pbm9yIGNoYW5n
+ZQ0KPiA+ID4gbm8uIExhdGVyIGluIHRoaXMgcmVzcG9uc2UgSSB3aWxsIGV4cGxhaW4gaG93Lg0K
+PiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4gPiA+PiAgV2l0aCB0aGlzIGhhcmR3YXJlLCB0aGUgb25s
+eSB3YXkgdG8gcHJldmVudCB0aGF0DQo+ID4gPiA+ID4gPiA+IGlzIHRvIG1ha2Ugc3VyZSB0aGF0
+IGEgYmFuayBpcyBub3Qgc2hhcmVkIGJ5IG11bHRpcGxlDQo+ID4gPiA+ID4gPiA+IHByb3RlY3Rp
+b24NCj4gPiA+IGNvbnRleHRzLg0KPiA+ID4gPiA+ID4gPiBGb3Igc29tZSBvZiBvdXIgdXNlcnMs
+IHRob3VnaCwgSSBiZWxpZXZlIHByZXZlbnRpbmcgdGhpcyBpcw0KPiA+ID4gPiA+ID4gPiBsZXNz
+IGltcG9ydGFudCB0aGFuIHRoZSBwZXJmb3JtYW5jZSBiZW5lZml0Lg0KPiA+ID4gPiA+DQo+ID4g
+PiA+ID4gU28gc2hvdWxkIHdlIGxldCB0aGlzIHBhdGNoIHNlcmllcyBpbiB3aXRob3V0IHByb3Rl
+Y3Rpb24/DQo+ID4gPiA+DQo+ID4gPiA+IE5vLg0KPiA+ID4gPg0KPiA+ID4gPiA+ID4NCj4gPiA+
+ID4gPiA+IEkgdGhpbmsgd2UgbmVlZCBzb21lIHNvcnQgb2Ygb3duZXJzaGlwIG1vZGVsIGFyb3Vu
+ZCB0aGUgbXNpIGJhbmtzDQo+IHRoZW4uDQo+ID4gPiA+ID4gPiBPdGhlcndpc2UgdGhlcmUncyBu
+b3RoaW5nIHByZXZlbnRpbmcgYW5vdGhlciB1c2Vyc3BhY2UgZnJvbQ0KPiA+ID4gPiA+ID4gYXR0
+ZW1wdGluZyBhbiBNU0kgYmFzZWQgYXR0YWNrIG9uIG90aGVyIHVzZXJzLCBvciBwZXJoYXBzIGV2
+ZW4NCj4gPiA+ID4gPiA+IG9uIHRoZSBob3N0LiAgVkZJTyBjYW4ndCBhbGxvdyB0aGF0LiAgVGhh
+bmtzLA0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gV2UgaGF2ZSB2ZXJ5IGZldyAoMyBNU0kgYmFuayBv
+biBtb3N0IG9mIGNoaXBzKSwgc28gd2UgY2FuIG5vdA0KPiA+ID4gPiA+IGFzc2lnbiBvbmUgdG8g
+ZWFjaCB1c2Vyc3BhY2UuIFdoYXQgd2UgY2FuIGRvIGlzIGhvc3QgYW5kDQo+ID4gPiA+ID4gdXNl
+cnNwYWNlIGRvZXMgbm90IHNoYXJlIGEgTVNJIGJhbmsgd2hpbGUgdXNlcnNwYWNlIHdpbGwgc2hh
+cmUgYSBNU0kNCj4gYmFuay4NCj4gPiA+ID4NCj4gPiA+ID4gVGhlbiB5b3UgcHJvYmFibHkgbmVl
+ZCBWRklPIHRvICJvd24iIHRoZSBNU0kgYmFuayBhbmQgcHJvZ3JhbQ0KPiA+ID4gPiBkZXZpY2Vz
+IGludG8gaXQgcmF0aGVyIHRoYW4gZXhwb3NpbmcgdGhlIE1TSSBiYW5rcyB0byB1c2Vyc3BhY2Ug
+dG8NCj4gPiA+ID4gbGV0IHRoZW0gaGF2ZQ0KPiA+ID4gZGlyZWN0IGFjY2Vzcy4NCj4gPiA+DQo+
+ID4gPiBPdmVyYWxsIGlkZWEgb2YgZXhwb3NpbmcgdGhlIGRldGFpbHMgb2YgbXNpIHJlZ2lvbnMg
+dG8gdXNlcnNwYWNlIGFyZQ0KPiA+ID4gIDEpIFVzZXIgc3BhY2UgY2FuIGRlZmluZSB0aGUgYXBl
+cnR1cmUgc2l6ZSB0byBmaXQgTVNJIG1hcHBpbmcgaW4gSU9NTVUuDQo+ID4gPiAgMikgc2V0dXAg
+aW92YSBmb3IgYSBNU0kgYmFua3M7IHdoaWNoIGlzIGp1c3QgYWZ0ZXIgZ3Vlc3QgbWVtb3J5Lg0K
+PiA+ID4NCj4gPiA+IEJ1dCBjdXJyZW50bHkgd2UgZXhwb3NlIHRoZSAic2l6ZSIgYW5kICJhZGRy
+ZXNzIiBvZiBNU0kgYmFua3MsDQo+ID4gPiBwYXNzaW5nIGFkZHJlc3MgaXMgb2Ygbm8gdXNlIGFu
+ZCBjYW4gYmUgcHJvYmxlbWF0aWMuDQo+ID4NCj4gPiBJIGFtIHNvcnJ5LCBhYm92ZSBpbmZvcm1h
+dGlvbiBpcyBub3QgY29ycmVjdC4gQ3VycmVudGx5IG5laXRoZXIgd2UgZXhwb3NlDQo+ICJhZGRy
+ZXNzIiBub3IgInNpemUiIHRvIHVzZXIgc3BhY2UuIFdlIG9ubHkgZXhwb3NlIG51bWJlciBvZiBN
+U0kgQkFOSyBjb3VudCBhbmQNCj4gdXNlcnNwYWNlIGFkZHMgb25lIHN1Yi13aW5kb3cgZm9yIGVh
+Y2ggYmFuay4NCj4gPg0KPiA+ID4gSWYgd2UganVzdCBwcm92aWRlIHRoZSBzaXplIG9mIE1TSSBi
+YW5rIHRvIHVzZXJzcGFjZSB0aGVuIHVzZXJzcGFjZQ0KPiA+ID4gY2Fubm90IGRvIGFueXRoaW5n
+IHdyb25nLg0KPiA+DQo+ID4gU28gdXNlcnNwYWNlIGRvZXMgbm90IGtub3cgYWRkcmVzcywgc28g
+aXQgY2Fubm90IG1tYXAgYW5kIGNhdXNlIGFueQ0KPiBpbnRlcmZlcmVuY2UgYnkgZGlyZWN0bHkg
+cmVhZGluZy93cml0aW5nLg0KPiANCj4gVGhhdCdzIHNlY3VyaXR5IHRocm91Z2ggb2JzY3VyaXR5
+Li4uICBDb3VsZG4ndCB0aGUgbWFsaWNpb3VzIHVzZXIgZmluZCBvdXQgdGhlDQo+IGFkZHJlc3Mg
+dmlhIG90aGVyIG1lYW5zLCBzdWNoIGFzIGV4cGVyaW1lbnRhdGlvbiBvbiBhbm90aGVyIHN5c3Rl
+bSBvdmVyIHdoaWNoDQo+IHRoZXkgaGF2ZSBmdWxsIGNvbnRyb2w/ICBXaGF0IHdvdWxkIGhhcHBl
+biBpZiB0aGUgdXNlciByZWFkcyBmcm9tIHRoZWlyIGRldmljZSdzDQo+IFBDSSBjb25maWcgc3Bh
+Y2U/ICBPciBnZXRzIHRoZSBpbmZvcm1hdGlvbiB2aWEgc29tZSBiYWNrIGRvb3IgaW4gdGhlIFBD
+SSBkZXZpY2UNCj4gdGhleSBvd24/ICBPciBwb2tlcyB0aHJvdWdob3V0IHRoZSBhZGRyZXNzIHNw
+YWNlIGxvb2tpbmcgZm9yIHNvbWV0aGluZyB0aGF0DQo+IGdlbmVyYXRlcyBhbiBpbnRlcnJ1cHQg
+dG8gaXRzIG93biBkZXZpY2U/DQoNClNvIGhvdyB0byBzb2x2ZSB0aGlzIHByb2JsZW0sIEFueSBz
+dWdnZXN0aW9uID8NCg0KV2UgaGF2ZSB0byBtYXAgb25lIHdpbmRvdyBpbiBQQU1VIGZvciBNU0lz
+IGFuZCBhIG1hbGljaW91cyB1c2VyIGNhbiBhc2sgaXRzIGRldmljZSB0byBkbyBETUEgdG8gTVNJ
+IHdpbmRvdyByZWdpb24gd2l0aCBhbnkgcGFpciBvZiBhZGRyZXNzIGFuZCBkYXRhLCB3aGljaCBj
+YW4gbGVhZCB0byB1bmV4cGVjdGVkIE1TSXMgaW4gc3lzdGVtPw0KDQpUaGFua3MNCi1CaGFyYXQN
+Cg0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
