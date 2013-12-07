@@ -1,26 +1,32 @@
-Return-Path: <scottwood@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 976DA2C0086
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 11:33:05 +1100 (EST)
-Message-ID: <1386376365.7375.209.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/6] powerpc: fix exception clearing in e500 SPE float
- emulation
-From: Scott Wood <scottwood@freescale.com>
-To: "Joseph S. Myers" <joseph@codesourcery.com>
-Date: Fri, 6 Dec 2013 18:32:45 -0600
-In-Reply-To: <Pine.LNX.4.64.1311230053360.12354@digraph.polyomino.org.uk>
+Return-Path: <ruchika.k@servergy.com>
+Received: from mail-ie0-f177.google.com (mail-ie0-f177.google.com
+ [209.85.223.177])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5466E2C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 11:48:49 +1100 (EST)
+Received: by mail-ie0-f177.google.com with SMTP id tp5so2625724ieb.36
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Dec 2013 16:48:45 -0800 (PST)
+Received: from [10.0.0.5] (pool-71-164-229-51.dllstx.fios.verizon.net.
+ [71.164.229.51])
+ by mx.google.com with ESMTPSA id u1sm615677ige.1.2013.12.06.16.48.44
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
+ Fri, 06 Dec 2013 16:48:44 -0800 (PST)
+Message-ID: <52A2706A.7030205@servergy.com>
+Date: Fri, 06 Dec 2013 18:48:42 -0600
+From: Ruchika <ruchika.k@servergy.com>
+MIME-Version: 1.0
+CC: linuxppc-dev@lists.ozlabs.org
+Subject: questions: second of the 2 pcie controllers does not scan the bus.
 References: <Pine.LNX.4.64.1311041649250.4290@digraph.polyomino.org.uk>
  <Pine.LNX.4.64.1311041651390.4290@digraph.polyomino.org.uk>
  <1385159644.1403.532.camel@snotra.buserror.net>
  <Pine.LNX.4.64.1311230053360.12354@digraph.polyomino.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Liu Yu <yu.liu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Shan Hai <shan.hai@windriver.com>
+ <1386376365.7375.209.camel@snotra.buserror.net>
+In-Reply-To: <1386376365.7375.209.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,54 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-11-23 at 01:22 +0000, Joseph S. Myers wrote:
-> On Fri, 22 Nov 2013, Scott Wood wrote:
-> 
-> > This sounds like an incompatible change to userspace API.  What about
-> > older glibc?  What about user code that directly manipulates these bits
-> > rather than going through libc, or uses a libc other than glibc?  Where
-> > is this API requirement documented?
-> 
-> The previous EGLIBC port, and the uClibc code copied from it, is 
-> fundamentally broken as regards any use of prctl for floating-point 
-> exceptions because it didn't use the PR_FP_EXC_SW_ENABLE bit in its prctl 
-> calls (and did various worse things, such as passing a pointer when prctl 
-> expected an integer).  If you avoid anything where prctl is used, the 
-> clearing of sticky bits still means it will never give anything 
-> approximating correct exception semantics with existing kernels.  I don't 
-> believe the patch makes things any worse for existing code that doesn't 
-> try to inform the kernel of changes to sticky bits - such code may get 
-> incorrect exceptions in some cases, but it would have done so anyway in 
-> other cases.
 
-OK -- please mention this in the changelog.
+Hi,
+I am working with an p4080 based board. I am trying to get 2 PCIE 
+controllers probed properly.
 
-> This is the best API I could come up with to fix the fundamentally broken 
-> nature of what came before, taking into account that in many cases a prctl 
-> call is already needed along with userspace manipulation of exception 
-> bits.  I'm not aware of any kernel documentation where this sort of 
-> subarchitecture-specific API detail is documented.  (The API also includes 
-> such things as needing to leave the spefscr trap-enable bits set and use 
-> prctl to control whether SIGFPE results from exceptions.)
+In uboot I have no problems scanning and discovering what is connected 
+to both controllers/PCI bridges.
 
-I don't know of a formal place for it, but there should at least be a
-code comment somewhere.
+For both PCIE1/2 uboot sets up the Primary, secondary and Subordinate 
+bus numbers to 0,1,1 respectively.
 
-> > I think the impact of this could be reduced by using this mechanism only
-> > to clear bits, rather than set them.  That is, if the exception bit is
-> > unset, don't set it just because it's set in spefscr_last -- but if it's
-> > not set in spefscr_last, and the emulation code doesn't want to set it,
-> > then clear it.
-> 
-> It should already be the case in this patch that if a bit is clear in 
-> spefscr, and set in spefscr_last (i.e. userspace did not inform the kernel 
-> of clearing the bit, and no traps since then have resulted in the kernel 
-> noticing it was cleared), it won't get set unless the emulation code wants 
-> to set it.  The sole place spefscr_last is read is in the statement 
-> "__FPU_FPSCR &= ~(FP_EX_INVALID | FP_EX_UNDERFLOW) | 
-> current->thread.spefscr_last;" - if the bit is already clear in spefscr, 
-> this statement has no effect on it.
+When linux boots up and probes the controllers, PCIE1 is probed and the 
+bridge scanned properly but PCIE2 is probed at the bridge but not 
+attempted a scan.
+I see this message
+"pci 0001:02:00.0: bridge configuration invalid ([bus 01-01]), reconfiguring
+"
 
-OK -- I must have misread it before.
+I updated uboot to set the secondary and subordinate numbers to 2 (left 
+the primary number to 0) and a subsequent kernel boot scanned the bus 
+for PCIE2 successfully.
+I found these numbers to be very critical since the device tree blob 
+(bus-range) for pci is also based off these.
 
--Scott
+I'd like to get a good fix rather than the uboot hack and get better 
+understanding of the problem. If there are any pointers someone could 
+provide it would be awesome.
+
+Thank you
+Regards
+Ruchika
