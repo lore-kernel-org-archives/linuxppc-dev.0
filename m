@@ -1,37 +1,33 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp02.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 433AC2C00C7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 22:58:43 +1100 (EST)
-Received: from /spool/local
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
- Sat, 7 Dec 2013 09:58:38 -0200
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id F0BF1352006A
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 06:58:31 -0500 (EST)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rB7BwED645940880
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 7 Dec 2013 09:58:15 -0200
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rB7BwVZq001748
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 7 Dec 2013 09:58:31 -0200
-Date: Sat, 7 Dec 2013 09:58:29 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH] powernv: fix VFIO support with PHB3
-Message-ID: <20131207115829.GA32319@oc0268524204.ibm.com>
-References: <1386332504-18339-1-git-send-email-cascardo@linux.vnet.ibm.com>
- <52A272C4.1060303@ozlabs.ru>
+Return-Path: <ruchika.k@servergy.com>
+Received: from mail-ob0-f177.google.com (mail-ob0-f177.google.com
+ [209.85.214.177])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2D0F02C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Dec 2013 00:26:28 +1100 (EST)
+Received: by mail-ob0-f177.google.com with SMTP id va2so1950939obc.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Dec 2013 05:26:25 -0800 (PST)
+Received: from [10.0.0.5] (pool-71-164-229-51.dllstx.fios.verizon.net.
+ [71.164.229.51])
+ by mx.google.com with ESMTPSA id hl3sm4030738obb.0.2013.12.07.05.26.24
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
+ Sat, 07 Dec 2013 05:26:24 -0800 (PST)
+Message-ID: <52A321FF.4090802@servergy.com>
+Date: Sat, 07 Dec 2013 07:26:23 -0600
+From: Ruchika <ruchika.k@servergy.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52A272C4.1060303@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, shangw@linux.vnet.ibm.com, paulus@samba.org,
- linux-kernel@vger.kernel.org
+CC: linuxppc-dev@lists.ozlabs.org
+Subject: questions: second of the 2 pcie controllers does not scan the bus.
+References: <Pine.LNX.4.64.1311041649250.4290@digraph.polyomino.org.uk>
+ <Pine.LNX.4.64.1311041651390.4290@digraph.polyomino.org.uk>
+ <1385159644.1403.532.camel@snotra.buserror.net>
+ <Pine.LNX.4.64.1311230053360.12354@digraph.polyomino.org.uk>
+ <1386376365.7375.209.camel@snotra.buserror.net>
+ <52A2706A.7030205@servergy.com>
+In-Reply-To: <52A2706A.7030205@servergy.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,58 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Dec 07, 2013 at 11:58:44AM +1100, Alexey Kardashevskiy wrote:
-> On 12/06/2013 11:21 PM, Thadeu Lima de Souza Cascardo wrote:
-> > I have recently found out that no iommu_groups could be found under
-> > /sys/ on a P8. That prevents PCI passthrough from working.
-> > 
-> > During my investigation, I found out there seems to be a missing
-> > iommu_register_group for PHB3. The following patch seems to fix the
-> > problem. After applying it, I see iommu_groups under
-> > /sys/kernel/iommu_groups/, and can also bind vfio-pci to an adapter,
-> > which gives me a device at /dev/vfio/.
-> > 
-> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/platforms/powernv/pci-ioda.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > index 084cdfa..2c6d173 100644
-> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > @@ -720,6 +720,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
-> >  		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE;
-> >  	}
-> >  	iommu_init_table(tbl, phb->hose->node);
-> > +	iommu_register_group(tbl, pci_domain_nr(pe->pbus), pe->pe_number);
-> >  
-> >  	if (pe->pdev)
-> >  		set_iommu_table_base(&pe->pdev->dev, tbl);
-> 
-> 
-> This does not seem absolutely right - normally set_iommu_table_base() is
-> replaced with set_iommu_table_base_and_group() or you will not see some
-> devices in a group and this may make VFIO unhappy.
 
-Alexey,
-
-Your patch "[PATCH v9] PPC: POWERNV: move iommu_add_device earlier" is
-not upstream yet. It calls set_iommu_table_base_and_group properly.
-However, without calling iommu_register_group, there is no group to add
-the device to.
-
-Compare to pnv_pci_ioda_setup_dma_pe which calls iommu_register_group
-too. My patch fixes this discrepancy between IODA and IODA2.
-
-Regards.
-Cascardo.
-
-> 
-> But - if every single device gets assigned to some group, then we can push
-> this to Frobisher and let people test in on power8.
-> 
-> 
-> 
-> -- 
-> Alexey
+Any ideas/pointers anyone ?
+Thank you
+On 12/6/2013 6:48 PM, Ruchika wrote:
+>
+> Hi,
+> I am working with an p4080 based board. I am trying to get 2 PCIE
+> controllers probed properly.
+>
+> In uboot I have no problems scanning and discovering what is connected
+> to both controllers/PCI bridges.
+>
+> For both PCIE1/2 uboot sets up the Primary, secondary and Subordinate
+> bus numbers to 0,1,1 respectively.
+>
+> When linux boots up and probes the controllers, PCIE1 is probed and the
+> bridge scanned properly but PCIE2 is probed at the bridge but not
+> attempted a scan.
+> I see this message
+> "pci 0001:02:00.0: bridge configuration invalid ([bus 01-01]),
+> reconfiguring
+> "
+>
+> I updated uboot to set the secondary and subordinate numbers to 2 (left
+> the primary number to 0) and a subsequent kernel boot scanned the bus
+> for PCIE2 successfully.
+> I found these numbers to be very critical since the device tree blob
+> (bus-range) for pci is also based off these.
+>
+> I'd like to get a good fix rather than the uboot hack and get better
+> understanding of the problem. If there are any pointers someone could
+> provide it would be awesome.
+>
+> Thank you
+> Regards
+> Ruchika
+>
+>
+>
