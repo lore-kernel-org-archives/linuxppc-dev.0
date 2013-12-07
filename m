@@ -2,20 +2,20 @@ Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A399B2C007B
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 20:34:43 +1100 (EST)
-Date: Sat, 7 Dec 2013 10:34:34 +0100
+ by ozlabs.org (Postfix) with ESMTPS id 4CB962C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 20:37:57 +1100 (EST)
+Date: Sat, 7 Dec 2013 10:37:49 +0100
 From: Anatolij Gustschin <agust@denx.de>
 To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: [PATCH v6 03/17] dts: mpc512x: add clock related device tree specs
-Message-ID: <20131207103434.54a057ab@crub>
-In-Reply-To: <1385851897-23475-4-git-send-email-gsi@denx.de>
+Subject: Re: [PATCH v6 04/17] clk: mpc512x: introduce COMMON_CLK for MPC512x
+ (disabled)
+Message-ID: <20131207103749.2fa8cb77@crub>
+In-Reply-To: <1385851897-23475-5-git-send-email-gsi@denx.de>
 References: <1385851897-23475-1-git-send-email-gsi@denx.de>
- <1385851897-23475-4-git-send-email-gsi@denx.de>
+ <1385851897-23475-5-git-send-email-gsi@denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Rob Herring <rob.herring@calxeda.com>
+Cc: Mike Turquette <mturquette@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 30 Nov 2013 23:51:23 +0100
+On Sat, 30 Nov 2013 23:51:24 +0100
 Gerhard Sittig <gsi@denx.de> wrote:
 
-> this addresses the clock driver aka provider's side of clocks
-> - introduce a 'clocks' subtree with an 'osc' node for the crystal
->   or oscillator SoC input (fixed frequency)
-> - the 'clock@f00' clock-control-module node references the 'osc' for
->   its input, and is another provider for all the clocks which the
->   CCM component manages
-> - prepare for future references to clocks from peripheral nodes
->   by means of the <&clks ID> syntax and symbolic ID names which a
->   header file provides
-> - provide default values with 33MHz oscillator frequency in the
->   common include (the 66MHz IPS bus already was there), and add
->   override values for the ifm AC14xx board which deviates from
->   the reference design (25MHz xtal, 80MHz IPS bus)
+> this change implements a clock driver for the MPC512x PowerPC platform
+> which follows the COMMON_CLK approach and uses common clock drivers
+> shared with other platforms
 > 
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Stephen Warren <swarren@wwwdotorg.org>
-> Cc: Ian Campbell <ian.campbell@citrix.com>
+> this driver implements the publicly announced set of clocks (those
+> listed in the dt-bindings header file), as well as generates additional
+> 'struct clk' items where the SoC hardware cannot easily get mapped to
+> the common primitives (shared code) of the clock API, or requires
+> "intermediate clock nodes" to represent clocks that have both gates and
+> dividers
+> 
+> the previous PPC_CLOCK implementation is kept in place and remains
+> active for the moment, the newly introduced CCF clock driver will
+> receive additional support for backwards compatibility in a subsequent
+> patch before it gets enabled and will replace the PPC_CLOCK approach
+> 
+> some of the clock items get pre-enabled in the clock driver to not have
+> them automatically disabled by the underlying clock subsystem because of
+> their being unused -- this approach is desirable because
+> - some of the clocks are useful to have for diagnostics and information
+>   despite their not getting claimed by any drivers (CPU, internal and
+>   external RAM, internal busses, boot media)
+> - some of the clocks aren't claimed by their peripheral drivers yet,
+>   either because of missing driver support or because device tree specs
+>   aren't available yet (but the workarounds will get removed as the
+>   drivers get adjusted and the device tree provides the clock specs)
+> 
+> clkdev registration provides "alias names" for few clock items
+> - to not break those peripheral drivers which encode their component
+>   index into the name that is used for clock lookup (UART, SPI, USB)
+> - to not break those drivers which use names for the clock lookup which
+>   were encoded in the previous PPC_CLOCK implementation (NFC, VIU, CAN)
+> this workaround will get removed as these drivers get adjusted after
+> device tree based clock lookup has become available
+> 
+> the COMMON_CLK implementation copes with device trees which lack an
+> oscillator node (backwards compat), the REF clock is then derived from
+> the IPS bus frequency and multiplier values fetched from hardware
+> 
+> Cc: Mike Turquette <mturquette@linaro.org>
+> Cc: Anatolij Gustschin <agust@denx.de>
 > Cc: linux-arm-kernel@lists.infradead.org
-> Cc: devicetree@vger.kernel.org
-> Reviewed-by: Mike Turquette <mturquette@linaro.org> # for v3, before &osc
+> Cc: linuxppc-dev@lists.ozlabs.org
 > Signed-off-by: Gerhard Sittig <gsi@denx.de>
 > ---
->  arch/powerpc/boot/dts/ac14xx.dts   |    7 +++++++
->  arch/powerpc/boot/dts/mpc5121.dtsi |   18 +++++++++++++++++-
->  2 files changed, 24 insertions(+), 1 deletion(-)
+>  arch/powerpc/platforms/512x/Makefile          |    4 +-
+>  arch/powerpc/platforms/512x/clock-commonclk.c |  798 +++++++++++++++++++++++++
+>  include/linux/clk-provider.h                  |   16 +
+>  3 files changed, 817 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/powerpc/platforms/512x/clock-commonclk.c
 
 applied to next. Thanks!
 
