@@ -1,20 +1,20 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C445D2C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 20:59:19 +1100 (EST)
-Date: Sat, 7 Dec 2013 10:59:16 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: [PATCH v6 16/17] powerpc/mpc512x: improve DIU related clock setup
-Message-ID: <20131207105916.0d67f7f8@crub>
-In-Reply-To: <1385851897-23475-17-git-send-email-gsi@denx.de>
-References: <1385851897-23475-1-git-send-email-gsi@denx.de>
- <1385851897-23475-17-git-send-email-gsi@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id 524B72C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 21:03:59 +1100 (EST)
+Message-ID: <52A2ECE4.3050407@c-s.fr>
+Date: Sat, 07 Dec 2013 10:39:48 +0100
+From: christophe leroy <christophe.leroy@c-s.fr>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc 8xx: Loading kernels over 8Mbytes without
+ CONFIG_PIN_TLB
+References: <20131127110406.6DC8E1A504F@localhost.localdomain>
+ <1386356996.7375.120.camel@snotra.buserror.net>
+In-Reply-To: <1386356996.7375.120.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 30 Nov 2013 23:51:36 +0100
-Gerhard Sittig <gsi@denx.de> wrote:
 
-> adapt the DIU clock initialization to the COMMON_CLK approach:
-> device tree based clock lookup, prepare and unprepare for clocks,
-> work with frequencies not dividers, call the appropriate clk_*()
-> routines and don't access CCM registers
-> 
-> the "best clock" determination now completely relies on the
-> platform's clock driver to pick a frequency close to what the
-> caller requests, and merely checks whether the desired frequency
-> was met (fits the tolerance of the monitor)
-> 
-> this approach shall succeed upon first try in the usual case,
-> will test a few less desirable yet acceptable frequencies in
-> edge cases, and will fallback to "best effort" if none of the
-> previously tried frequencies pass the test
-> 
-> provide a fallback clock lookup approach in case the OF based clock
-> lookup for the DIU fails, this allows for successful operation in
-> the presence of an outdated device tree which lacks clock specs
-> 
-> Cc: Anatolij Gustschin <agust@denx.de>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Gerhard Sittig <gsi@denx.de>
-> ---
->  arch/powerpc/platforms/512x/mpc512x_shared.c |  169 ++++++++++++++------------
->  1 file changed, 92 insertions(+), 77 deletions(-)
+Le 06/12/2013 20:09, Scott Wood a écrit :
+> On Wed, 2013-11-27 at 12:04 +0100, Christophe Leroy wrote:
+>> Today, the only way to load kernels whose size is greater than 8Mbytes is to
+>> activate CONFIG_PIN_TLB. Otherwise, the physical memory initially mapped is
+>> limited to 8Mbytes. This patch sets up 24 Mbytes of initial memory regardless
+>> of whether CONFIG_PIN_TLB is active or not. It allows to load "big" kernels
+>> (for instance when activating CONFIG_LOCKDEP_SUPPORT) without having
+>> to activate CONFIG_PIN_TLB.
+> So, what happens on boards with less than 24M memory present?  Even if
+> you avoid explicitly referencing those addresses, what if there is a
+> speculative access -- or does 8xx not do that?
+>
+> -Scott
+>
 
-applied to next. Thanks!
+Function setup_initial_memory_limit() in mm/init_32.c defines the limits 
+based on the parameters given by the bootloader.
+As far as I know, the 8xx doesn't do speculative access just because an 
+area is loaded in a TLB Entry.
 
-Anatolij
+Christophe
+
+---
+Ce courrier électronique ne contient aucun virus ou logiciel malveillant parce que la protection avast! Antivirus est active.
+http://www.avast.com
