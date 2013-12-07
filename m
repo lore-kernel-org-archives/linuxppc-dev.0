@@ -1,20 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id 524B72C008F
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 21:03:59 +1100 (EST)
-Message-ID: <52A2ECE4.3050407@c-s.fr>
-Date: Sat, 07 Dec 2013 10:39:48 +0100
-From: christophe leroy <christophe.leroy@c-s.fr>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc 8xx: Loading kernels over 8Mbytes without
- CONFIG_PIN_TLB
-References: <20131127110406.6DC8E1A504F@localhost.localdomain>
- <1386356996.7375.120.camel@snotra.buserror.net>
-In-Reply-To: <1386356996.7375.120.camel@snotra.buserror.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 35DC22C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 21:05:19 +1100 (EST)
+Date: Sat, 7 Dec 2013 11:05:15 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Gerhard Sittig <gsi@denx.de>
+Subject: Re: [PATCH v6 17/17] clk: mpc512x: remove migration support
+ workarounds
+Message-ID: <20131207110515.7e534e3b@crub>
+In-Reply-To: <1385851897-23475-18-git-send-email-gsi@denx.de>
+References: <1385851897-23475-1-git-send-email-gsi@denx.de>
+ <1385851897-23475-18-git-send-email-gsi@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Mike Turquette <mturquette@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, 30 Nov 2013 23:51:37 +0100
+Gerhard Sittig <gsi@denx.de> wrote:
 
-Le 06/12/2013 20:09, Scott Wood a écrit :
-> On Wed, 2013-11-27 at 12:04 +0100, Christophe Leroy wrote:
->> Today, the only way to load kernels whose size is greater than 8Mbytes is to
->> activate CONFIG_PIN_TLB. Otherwise, the physical memory initially mapped is
->> limited to 8Mbytes. This patch sets up 24 Mbytes of initial memory regardless
->> of whether CONFIG_PIN_TLB is active or not. It allows to load "big" kernels
->> (for instance when activating CONFIG_LOCKDEP_SUPPORT) without having
->> to activate CONFIG_PIN_TLB.
-> So, what happens on boards with less than 24M memory present?  Even if
-> you avoid explicitly referencing those addresses, what if there is a
-> speculative access -- or does 8xx not do that?
->
-> -Scott
->
+> this change removes workarounds which have become obsolete after
+> migration to common clock support has completed
+> - remove clkdev registration calls (compatibility clock item aliases)
+>   after all peripheral drivers were adjusted for device tree based
+>   clock lookup
+> - remove pre-enable workarounds after all peripheral drivers were
+>   adjusted to acquire their respective clock items
+> 
+> workarounds for these clock items get removed:  FEC (ethernet), I2C,
+> PSC (UART, SPI), PSC FIFO, USB, NFC (NAND flash), VIU (video capture),
+> BDLC (CAN), CAN MCLK, DIU (video output)
+> 
+> these clkdev registered names won't be provided any longer by the
+> MPC512x platform's clock driver:  "psc%d_mclk", "mscan%d_mclk",
+> "usb%d_clk", "nfc_clk", "viu_clk", "sys_clk", "ref_clk"
+> 
+> the pre-enable workaround for PCI remains, but depends on the presence
+> of PCI related device tree nodes (disables the PCI clock in the absence
+> of PCI nodes, keeps the PCI clock enabled in the presence of nodes) --
+> moving clock acquisition into the peripheral driver isn't possible for
+> PCI because its initialization takes place before the platform clock
+> driver gets initialized, thus the clock provider isn't available then
+> 
+> Cc: Mike Turquette <mturquette@linaro.org>
+> Cc: Anatolij Gustschin <agust@denx.de>
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Gerhard Sittig <gsi@denx.de>
+> ---
+>  arch/powerpc/platforms/512x/clock-commonclk.c |   50 ++++++++-----------------
+>  1 file changed, 16 insertions(+), 34 deletions(-)
 
-Function setup_initial_memory_limit() in mm/init_32.c defines the limits 
-based on the parameters given by the bootloader.
-As far as I know, the 8xx doesn't do speculative access just because an 
-area is loaded in a TLB Entry.
+applied to next. Thanks!
 
-Christophe
-
----
-Ce courrier électronique ne contient aucun virus ou logiciel malveillant parce que la protection avast! Antivirus est active.
-http://www.avast.com
+Anatolij
