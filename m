@@ -1,25 +1,21 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
- [209.85.160.42])
+Return-Path: <ibmirkin@gmail.com>
+Received: from mail-qe0-x22c.google.com (mail-qe0-x22c.google.com
+ [IPv6:2607:f8b0:400d:c02::22c])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C617B2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 11:58:52 +1100 (EST)
-Received: by mail-pb0-f42.google.com with SMTP id uo5so2028944pbc.29
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Dec 2013 16:58:50 -0800 (PST)
-Message-ID: <52A272C4.1060303@ozlabs.ru>
-Date: Sat, 07 Dec 2013 11:58:44 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- benh@kernel.crashing.org
-Subject: Re: [PATCH] powernv: fix VFIO support with PHB3
-References: <1386332504-18339-1-git-send-email-cascardo@linux.vnet.ibm.com>
-In-Reply-To: <1386332504-18339-1-git-send-email-cascardo@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=KOI8-R
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, shangw@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 305F72C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2013 11:43:52 +1100 (EST)
+Received: by mail-qe0-f44.google.com with SMTP id nd7so1143582qeb.31
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Dec 2013 16:43:47 -0800 (PST)
+Sender: Ilia Mirkin <ibmirkin@gmail.com>
+From: Ilia Mirkin <imirkin@alum.mit.edu>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/44x: fix ocm_block allocation
+Date: Fri,  6 Dec 2013 19:43:37 -0500
+Message-Id: <1386377017-909-1-git-send-email-imirkin@alum.mit.edu>
+Cc: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>,
+ Ilia Mirkin <imirkin@alum.mit.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/06/2013 11:21 PM, Thadeu Lima de Souza Cascardo wrote:
-> I have recently found out that no iommu_groups could be found under
-> /sys/ on a P8. That prevents PCI passthrough from working.
-> 
-> During my investigation, I found out there seems to be a missing
-> iommu_register_group for PHB3. The following patch seems to fix the
-> problem. After applying it, I see iommu_groups under
-> /sys/kernel/iommu_groups/, and can also bind vfio-pci to an adapter,
-> which gives me a device at /dev/vfio/.
-> 
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 084cdfa..2c6d173 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -720,6 +720,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->  		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE;
->  	}
->  	iommu_init_table(tbl, phb->hose->node);
-> +	iommu_register_group(tbl, pci_domain_nr(pe->pbus), pe->pe_number);
->  
->  	if (pe->pdev)
->  		set_iommu_table_base(&pe->pdev->dev, tbl);
+Allocate enough memory for the ocm_block structure, not just a pointer
+to it.
 
+Signed-off-by: Ilia Mirkin <imirkin@alum.mit.edu>
+---
 
-This does not seem absolutely right - normally set_iommu_table_base() is
-replaced with set_iommu_table_base_and_group() or you will not see some
-devices in a group and this may make VFIO unhappy.
+I have neither the hardware to test nor the toolchain to even build-test
+this. However this seems like a fairly obvious fix (and I have to wonder how
+this ever worked at all). Found with spatch.
 
-But - if every single device gets assigned to some group, then we can push
-this to Frobisher and let people test in on power8.
+Actually further investigation makes it seem like this function is never
+called, perhaps it should just be removed? If it is kept around though, would
+be nice to apply this patch so that tools don't trip over this wrong code.
 
+ arch/powerpc/sysdev/ppc4xx_ocm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
+diff --git a/arch/powerpc/sysdev/ppc4xx_ocm.c b/arch/powerpc/sysdev/ppc4xx_ocm.c
+index b7c4345..85d9e37 100644
+--- a/arch/powerpc/sysdev/ppc4xx_ocm.c
++++ b/arch/powerpc/sysdev/ppc4xx_ocm.c
+@@ -339,7 +339,7 @@ void *ppc4xx_ocm_alloc(phys_addr_t *phys, int size, int align,
+ 		if (IS_ERR_VALUE(offset))
+ 			continue;
+ 
+-		ocm_blk = kzalloc(sizeof(struct ocm_block *), GFP_KERNEL);
++		ocm_blk = kzalloc(sizeof(struct ocm_block), GFP_KERNEL);
+ 		if (!ocm_blk) {
+ 			printk(KERN_ERR "PPC4XX OCM: could not allocate ocm block");
+ 			rh_free(ocm_reg->rh, offset);
 -- 
-Alexey
+1.8.3.2
