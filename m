@@ -1,33 +1,23 @@
-Return-Path: <ruchika.k@servergy.com>
-Received: from mail-ob0-f177.google.com (mail-ob0-f177.google.com
- [209.85.214.177])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2D0F02C00C6
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Dec 2013 00:26:28 +1100 (EST)
-Received: by mail-ob0-f177.google.com with SMTP id va2so1950939obc.8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Dec 2013 05:26:25 -0800 (PST)
-Received: from [10.0.0.5] (pool-71-164-229-51.dllstx.fios.verizon.net.
- [71.164.229.51])
- by mx.google.com with ESMTPSA id hl3sm4030738obb.0.2013.12.07.05.26.24
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
- Sat, 07 Dec 2013 05:26:24 -0800 (PST)
-Message-ID: <52A321FF.4090802@servergy.com>
-Date: Sat, 07 Dec 2013 07:26:23 -0600
-From: Ruchika <ruchika.k@servergy.com>
+Return-Path: <Hong.Pham@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com", Issuer "Thawte SGC CA - G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B46C62C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Dec 2013 01:05:33 +1100 (EST)
+Message-ID: <52A32B1E.9050003@windriver.com>
+Date: Sat, 7 Dec 2013 09:05:18 -0500
+From: "Hong H. Pham" <hong.pham@windriver.com>
 MIME-Version: 1.0
-CC: linuxppc-dev@lists.ozlabs.org
-Subject: questions: second of the 2 pcie controllers does not scan the bus.
-References: <Pine.LNX.4.64.1311041649250.4290@digraph.polyomino.org.uk>
- <Pine.LNX.4.64.1311041651390.4290@digraph.polyomino.org.uk>
- <1385159644.1403.532.camel@snotra.buserror.net>
- <Pine.LNX.4.64.1311230053360.12354@digraph.polyomino.org.uk>
- <1386376365.7375.209.camel@snotra.buserror.net>
- <52A2706A.7030205@servergy.com>
-In-Reply-To: <52A2706A.7030205@servergy.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, linux-rt-users
+ <linux-rt-users@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] powerpc: Fix PTE page address mismatch in pgtable
+ ctor/dtor
+References: <1386258894-21851-1-git-send-email-hong.pham@windriver.com>
+ <874n6muuw4.fsf@linux.vnet.ibm.com> <52A1F804.5000205@windriver.com>
+In-Reply-To: <52A1F804.5000205@windriver.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>, linux-stable <stable@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,42 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+There is a typo in the v2 patch, please disregard it.  The v3 patch with
+the correction will follow.
 
-Any ideas/pointers anyone ?
-Thank you
-On 12/6/2013 6:48 PM, Ruchika wrote:
+Thanks,
+Hong
+
+On 12/06/2013 11:15 AM, Hong H. Pham wrote:
+> Hi Aneesh,
 >
-> Hi,
-> I am working with an p4080 based board. I am trying to get 2 PCIE
-> controllers probed properly.
+> On 12/06/2013 05:38 AM, Aneesh Kumar K.V wrote:
 >
-> In uboot I have no problems scanning and discovering what is connected
-> to both controllers/PCI bridges.
+>> can you also specifiy the config details here. ie, 4K page size functions
+>> are broken ?
 >
-> For both PCIE1/2 uboot sets up the Primary, secondary and Subordinate
-> bus numbers to 0,1,1 respectively.
+> My PPC64 config has SMP and 4K page size enabled.  I re-tested with 64K page size,
+> and the problem is not present.
 >
-> When linux boots up and probes the controllers, PCIE1 is probed and the
-> bridge scanned properly but PCIE2 is probed at the bridge but not
-> attempted a scan.
-> I see this message
-> "pci 0001:02:00.0: bridge configuration invalid ([bus 01-01]),
-> reconfiguring
-> "
+> I have added a note that this problem affects only PPC32 and PPC64 SMP kernels.
+> On PPC64, the problem is limited to 4K page size.
 >
-> I updated uboot to set the secondary and subordinate numbers to 2 (left
-> the primary number to 0) and a subsequent kernel boot scanned the bus
-> for PCIE2 successfully.
-> I found these numbers to be very critical since the device tree blob
-> (bus-range) for pci is also based off these.
+>> make it closer to what it was before,
+>>
+>> pgtable_page_dtor(table);
+>> pgtable_free_tlb(tlb, page_address(table), 0);
+>>
+>> This is what we had before
+>>
+>> -static inline void __pte_free_tlb(struct mmu_gather *tlb, struct page *ptepage,
+>> -                                 unsigned long address)
+>> -{
+>> -       tlb_flush_pgtable(tlb, address);
+>> -       pgtable_page_dtor(ptepage);
+>> -       pgtable_free_tlb(tlb, page_address(ptepage), 0);
+>> -}
+>>
+>>
+>> -aneesh
+>>
 >
-> I'd like to get a good fix rather than the uboot hack and get better
-> understanding of the problem. If there are any pointers someone could
-> provide it would be awesome.
+> Done.
 >
-> Thank you
-> Regards
-> Ruchika
->
->
->
+> Thanks,
+> Hong
