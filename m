@@ -1,40 +1,26 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B63942C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2013 19:42:43 +1100 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 9 Dec 2013 14:12:33 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 6AE7A394004E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2013 14:12:31 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rB98gROl983454
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Dec 2013 14:12:28 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rB98gSPO016149
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Dec 2013 14:12:29 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: "Hong H. Pham" <hong.pham@windriver.com>,
- linux-rt-users <linux-rt-users@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v3] powerpc: Fix PTE page address mismatch in pgtable
- ctor/dtor
-In-Reply-To: <1386425193-24015-1-git-send-email-hong.pham@windriver.com>
-References: <874n6muuw4.fsf@linux.vnet.ibm.com>
- <1386425193-24015-1-git-send-email-hong.pham@windriver.com>
-Date: Mon, 09 Dec 2013 14:12:26 +0530
-Message-ID: <87siu2bekt.fsf@linux.vnet.ibm.com>
+Return-Path: <curieux.khetan@gmail.com>
+Received: from mail-pd0-x22d.google.com (mail-pd0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c02::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 266692C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2013 19:44:15 +1100 (EST)
+Received: by mail-pd0-f173.google.com with SMTP id p10so4805864pdj.18
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Dec 2013 00:44:13 -0800 (PST)
+Received: from [192.168.1.17] ([122.169.140.89])
+ by mx.google.com with ESMTPSA id z10sm22705339pas.6.2013.12.09.00.44.11
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
+ Mon, 09 Dec 2013 00:44:12 -0800 (PST)
+Message-ID: <52A582D5.6020205@gmail.com>
+Date: Mon, 09 Dec 2013 14:14:05 +0530
+From: Ashish <curieux.khetan@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Paul Mackerras <paulus@samba.org>, "Hong H. Pham" <hong.pham@windriver.com>,
- linux-stable <stable@vger.kernel.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: MPC8641 BASED Custom designed Board Linux  stucks after Mounting
+ cache hash table entries
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,84 +30,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Hong H. Pham" <hong.pham@windriver.com> writes:
+Hii All,
+   I am trying to port linux 2.6.34 to mpc8641d based custom designed 
+board but I am facing kernel oops after mounting hash table entries. can 
+anybody was facing this kind of issue while porting or can give me some 
+light on this. Any pointer/direction will be very helpfull. Here I am 
+showing the snapshot of the problem for more understanding this issue..
 
-> From: "Hong H. Pham" <hong.pham@windriver.com>
->
-> In pte_alloc_one(), pgtable_page_ctor() is passed an address that has
-> not been converted by page_address() to the newly allocated PTE page.
->
-> When the PTE is freed, __pte_free_tlb() calls pgtable_page_dtor()
-> with an address to the PTE page that has been converted by page_address().
-> The mismatch in the PTE's page address causes pgtable_page_dtor() to access
-> invalid memory, so resources for that PTE (such as the page lock) is not
-> properly cleaned up.
->
-> On PPC32, only SMP kernels are affected.
->
-> On PPC64, only SMP kernels with 4K page size are affected.
->
-> This bug was introduced by commit d614bb041209fd7cb5e4b35e11a7b2f6ee8f62b8
-> "powerpc: Move the pte free routines from common header".
->
-> On a preempt-rt kernel, a spinlock is dynamically allocated for each
-> PTE in pgtable_page_ctor().  When the PTE is freed, calling
-> pgtable_page_dtor() with a mismatched page address causes a memory leak,
-> as the pointer to the PTE's spinlock is bogus.
->
-> On mainline, there isn't any immediately obvious symptoms, but the
-> problem still exists here.
->
-> Fixes: d614bb041209fd7c "powerpc: Move the pte free routes from common header"
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: linux-stable <stable@vger.kernel.org> # v3.10+
-> Signed-off-by: Hong H. Pham <hong.pham@windriver.com>
+bootm 1600000 600000 1400000
+## Booting kernel from Legacy Image at 01600000 ...
+    Image Name:   Linux-2.6.34
+    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+    Data Size:    2615699 Bytes = 2.5 MiB
+    Load Address: 00000000
+    Entry Point:  00000000
+    Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 00600000 ...
+    Image Name:   rootfs
+    Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+    Data Size:    8043648 Bytes = 7.7 MiB
+    Load Address: 00000000
+    Entry Point:  00000000
+    Verifying Checksum ... OK
+## Flattened Device Tree blob at 01400000
+    Booting using the fdt blob at 0x01400000
+    Uncompressing Kernel Image ... OK
+    Loading Ramdisk to 1f6fb000, end 1fea6c80 ... OK
+    Loading Device Tree to 007fb000, end 007ff919 ... OK
+Using MPC86xx HPCN machine description
+Total memory = 512MB; using 1024kB for hash table (at cff00000)
+Linux version 2.6.34 (ashish@ashish-virtual-machine) (gcc version 4.7.2 
+(GCC) ) #1 Fri Dec 6 10:38:44 IST 2013
+Found initrd at 0xdf6fb000:0xdfea6c80
+bootconsole [udbg0] enabled
+setup_arch: bootmem
+mpc86xx_hpcn_setup_arch()
+MPC86xx HPCN board from Freescale Semiconductor
+arch: exit
+Zone PFN ranges:
+   DMA      0x00000000 -> 0x00020000
+   Normal   empty
+   HighMem  empty
+
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+     0: 0x00000000 -> 0x00020000
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 130048
+Kernel command line: mem=512m root=/dev/ram console=ttyS0,115200
+PID hash table entries: 2048 (order: 1, 8192 bytes)
+Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+Memory: 505540k/524288k available (4976k kernel code, 18748k reserved, 
+196k data, 160k bss, 192k init)
+Kernel virtual memory layout:
+   * 0xfffd0000..0xfffff000  : fixmap
+   * 0xff800000..0xffc00000  : highmem PTEs
+   * 0xff7fe000..0xff800000  : early ioremap
+   * 0xe1000000..0xff7fe000  : vmalloc & ioremap
+SLUB: Genslabs=13, HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+Hierarchical RCU implementation.
+NR_IRQS:512 nr_irqs:512
+mpic: Setting up MPIC " MPIC     " version 1.2 at f8040000, max 2 CPUs
+mpic: ISU size: 256, shift: 8, mask: ff
+mpic: Initializing for 256 sources
+clocksource: timebase mult[2000000] shift[22] registered
+Console: colour dummy device 80x25
+Mount-cache hash table entries: 512
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc00179c8
+Oops: Kernel access of bad area, sig: 11 [#1]
+MPC86xx HPCN
+last sysfs file:
+Modules linked in:
+NIP: c00179c8 LR: c00d69ec CTR: 00000008
+REGS: c0507e40 TRAP: 0300   Not tainted  (2.6.34)
+MSR: 00009032 <EE,ME,IR,DR>  CR: 84000028  XER: 00000000
+DAR: 00000000, DSISR: 40000000
+TASK = c04de410[0] 'swapper' THREAD: c0506000
+GPR00: c00d6da0 c0507ef0 c04de410 00000064 ffffffff df01d0e0 00000000 
+00000000
+GPR08: 00000000 0000000d 00000000 c0503194 44000022 f8afffff ffffffff 
+200c9000
+GPR16: fbbfdffb 00000000 00000000 00000024 00000000 1fea8b08 1fea8d24 
+00000000
+GPR24: 00000000 1fffa2e4 40000000 1ffcd66c dfffed30 00000000 00000000 
+df01d080
+NIP [c00179c8] strcmp+0x10/0x24
+LR [c00d69ec] duplicate_name+0x3c/0x74
+Call Trace:
+[c0507ef0] [c07fc440] 0xc07fc440 (unreliable)
+[c0507f00] [c00d6da0] proc_device_tree_add_node+0xfc/0x144
+[c0507f20] [c00d6ce4] proc_device_tree_add_node+0x40/0x144
+[c0507f40] [c00d6ce4] proc_device_tree_add_node+0x40/0x144
+[c0507f60] [c00d6ce4] proc_device_tree_add_node+0x40/0x144
+[c0507f80] [c00d6ce4] proc_device_tree_add_node+0x40/0x144
+[c0507fa0] [c04bdcd4] proc_device_tree_init+0x68/0x94
+[c0507fb0] [c04bd6f8] proc_root_init+0xd0/0x108
+[c0507fc0] [c04ac728] start_kernel+0x2b4/0x2cc
+[c0507ff0] [00003444] 0x3444
+Instruction dump:
+2c000000 4082fff8 38a5ffff 8c040001 2c000000 9c050001 4082fff4 4e800020
+38a3ffff 3884ffff 8c650001 2c830000 <8c040001> 7c601851 4d860020 4182ffec
+---[ end trace 31fd0ba7d8756001 ]---
+Kernel panic - not syncing: Attempted to kill the idle task!
+Rebooting in 180 seconds..
 
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-
-> ---
->  arch/powerpc/include/asm/pgalloc-32.h | 6 ++----
->  arch/powerpc/include/asm/pgalloc-64.h | 6 ++----
->  2 files changed, 4 insertions(+), 8 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/pgalloc-32.h b/arch/powerpc/include/asm/pgalloc-32.h
-> index 27b2386..842846c 100644
-> --- a/arch/powerpc/include/asm/pgalloc-32.h
-> +++ b/arch/powerpc/include/asm/pgalloc-32.h
-> @@ -84,10 +84,8 @@ static inline void pgtable_free_tlb(struct mmu_gather *tlb,
->  static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
->  				  unsigned long address)
->  {
-> -	struct page *page = page_address(table);
-> -
->  	tlb_flush_pgtable(tlb, address);
-> -	pgtable_page_dtor(page);
-> -	pgtable_free_tlb(tlb, page, 0);
-> +	pgtable_page_dtor(table);
-> +	pgtable_free_tlb(tlb, page_address(table), 0);
->  }
->  #endif /* _ASM_POWERPC_PGALLOC_32_H */
-> diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
-> index f65e27b..256d6f8 100644
-> --- a/arch/powerpc/include/asm/pgalloc-64.h
-> +++ b/arch/powerpc/include/asm/pgalloc-64.h
-> @@ -144,11 +144,9 @@ static inline void pgtable_free_tlb(struct mmu_gather *tlb,
->  static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
->  				  unsigned long address)
->  {
-> -	struct page *page = page_address(table);
-> -
->  	tlb_flush_pgtable(tlb, address);
-> -	pgtable_page_dtor(page);
-> -	pgtable_free_tlb(tlb, page, 0);
-> +	pgtable_page_dtor(table);
-> +	pgtable_free_tlb(tlb, page_address(table), 0);
->  }
->
->  #else /* if CONFIG_PPC_64K_PAGES */
-> -- 
-> 1.8.3.2
+Regards
+Ashish Kumar Khetan
