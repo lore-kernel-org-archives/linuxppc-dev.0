@@ -1,17 +1,27 @@
-Return-Path: <michael.opdenacker@free-electrons.com>
-Received: from mail.free-electrons.com (top.free-electrons.com [176.31.233.9])
- by ozlabs.org (Postfix) with ESMTP id B3BD92C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2013 16:27:50 +1100 (EST)
-From: Michael Opdenacker <michael.opdenacker@free-electrons.com>
-To: benh@kernel.crashing.org, paulus@samba.org, galak@kernel.crashing.org,
- vitb@kernel.crashing.org, marcelo@kvack.org
-Subject: [PATCH][RESEND] powerpc: remove unused REDBOOT Kconfig parameter
-Date: Mon,  9 Dec 2013 06:27:40 +0100
-Message-Id: <1386566860-19785-1-git-send-email-michael.opdenacker@free-electrons.com>
-In-Reply-To: <1383554336-3829-1-git-send-email-michael.opdenacker@free-electrons.com>
-References: <1383554336-3829-1-git-send-email-michael.opdenacker@free-electrons.com>
-Cc: Michael Opdenacker <michael.opdenacker@free-electrons.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-qe0-x22f.google.com (mail-qe0-x22f.google.com
+ [IPv6:2607:f8b0:400d:c02::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8B2462C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2013 17:17:48 +1100 (EST)
+Received: by mail-qe0-f47.google.com with SMTP id t7so2534657qeb.34
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Dec 2013 22:17:45 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1386549112.5159.4.camel@pasglop>
+References: <1386140348-7854-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <1386140348-7854-2-git-send-email-pingfank@linux.vnet.ibm.com>
+ <87a9gfva9n.fsf@linux.vnet.ibm.com>
+ <1386549112.5159.4.camel@pasglop>
+Date: Mon, 9 Dec 2013 14:17:45 +0800
+Message-ID: <CAFgQCTtJh1-2wuLueREbA6ru5cje4EcxN5yT+cU-YNSrZi9O=Q@mail.gmail.com>
+Subject: Re: [PATCH 1/3] powerpc: mm: make _PAGE_NUMA take effect
+From: Liu ping fan <kernelfans@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,54 +31,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This removes the REDBOOT Kconfig parameter,
-which was no longer used anywhere in the source code
-and Makefiles.
+On Mon, Dec 9, 2013 at 8:31 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Thu, 2013-12-05 at 16:23 +0530, Aneesh Kumar K.V wrote:
+>> Liu Ping Fan <kernelfans@gmail.com> writes:
+>>
+>> > To enable the do_numa_page(), we should not fix _PAGE_NUMA in
+>> > hash_page(), so bail out for the case of pte_numa().
+>
+> For some reason I don't have 2/3 and 3/3 in my mbox (though I do have
+> them on patchwork) so I'll reply to this one.
+>
+> Overall, your statement that this is a faster path needs to be backed up
+> with numbers.
+>
+> The code is complicated enough as it-is, such additional mess in the low
+> level hashing code requires a good justification, and also a
+> demonstration that it doesn't add overhead to the normal hash path.
+>
+For the test, is it ok to have an user application to copy page where
+all page are PG_mlocked?
 
-Signed-off-by: Michael Opdenacker <michael.opdenacker@free-electrons.com>
----
- arch/powerpc/Kconfig                | 3 ---
- arch/powerpc/platforms/83xx/Kconfig | 1 -
- arch/powerpc/platforms/8xx/Kconfig  | 1 -
- 3 files changed, 5 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b44b52c0a8f0..70dc283050b5 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -209,9 +209,6 @@ config DEFAULT_UIMAGE
- 	  Used to allow a board to specify it wants a uImage built by default
- 	default n
- 
--config REDBOOT
--	bool
--
- config ARCH_HIBERNATION_POSSIBLE
- 	bool
- 	default y
-diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index 670a033264c0..2bdc8c862c46 100644
---- a/arch/powerpc/platforms/83xx/Kconfig
-+++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -99,7 +99,6 @@ config SBC834x
- config ASP834x
- 	bool "Analogue & Micro ASP 834x"
- 	select PPC_MPC834x
--	select REDBOOT
- 	help
- 	  This enables support for the Analogue & Micro ASP 83xx
- 	  board.
-diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
-index 8dec3c0911ad..bd6f1a1cf922 100644
---- a/arch/powerpc/platforms/8xx/Kconfig
-+++ b/arch/powerpc/platforms/8xx/Kconfig
-@@ -45,7 +45,6 @@ config PPC_EP88XC
- config PPC_ADDER875
- 	bool "Analogue & Micro Adder 875"
- 	select CPM1
--	select REDBOOT
- 	help
- 	  This enables support for the Analogue & Micro Adder 875
- 	  board.
--- 
-1.8.3.2
+Thanks and regards,
+Pingfan
