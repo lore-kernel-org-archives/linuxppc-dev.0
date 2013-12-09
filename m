@@ -1,13 +1,17 @@
-Return-Path: <anton@samba.org>
-Date: Mon, 9 Dec 2013 16:03:10 +1100
-From: Anton Blanchard <anton@samba.org>
-To: timur@freescale.com, gregkh@linuxfoundation.org,
- benh@kernel.crashing.org, paulus@samba.org, dvaleev@suse.com
-Subject: [PATCH] drivers/tty: ehv_bytechan fails to build as a module
-Message-ID: <20131209160310.7f81a1bc@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <michael.opdenacker@free-electrons.com>
+Received: from mail.free-electrons.com (top.free-electrons.com [176.31.233.9])
+ by ozlabs.org (Postfix) with ESMTP id B3BD92C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2013 16:27:50 +1100 (EST)
+From: Michael Opdenacker <michael.opdenacker@free-electrons.com>
+To: benh@kernel.crashing.org, paulus@samba.org, galak@kernel.crashing.org,
+ vitb@kernel.crashing.org, marcelo@kvack.org
+Subject: [PATCH][RESEND] powerpc: remove unused REDBOOT Kconfig parameter
+Date: Mon,  9 Dec 2013 06:27:40 +0100
+Message-Id: <1386566860-19785-1-git-send-email-michael.opdenacker@free-electrons.com>
+In-Reply-To: <1383554336-3829-1-git-send-email-michael.opdenacker@free-electrons.com>
+References: <1383554336-3829-1-git-send-email-michael.opdenacker@free-electrons.com>
+Cc: Michael Opdenacker <michael.opdenacker@free-electrons.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,31 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This removes the REDBOOT Kconfig parameter,
+which was no longer used anywhere in the source code
+and Makefiles.
 
-ehv_bytechan is marked tristate but fails to build as a module:
-
-drivers/tty/ehv_bytechan.c:363:1: error: type defaults to =E2=80=98int=E2=
-=80=99 in declaration of =E2=80=98console_initcall=E2=80=99 [-Werror=3Dimpl=
-icit-int]
-
-It doesn't make much sense for a console driver to be built as
-a module, so change it to a bool.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Michael Opdenacker <michael.opdenacker@free-electrons.com>
 ---
+ arch/powerpc/Kconfig                | 3 ---
+ arch/powerpc/platforms/83xx/Kconfig | 1 -
+ arch/powerpc/platforms/8xx/Kconfig  | 1 -
+ 3 files changed, 5 deletions(-)
 
-Index: b/drivers/tty/Kconfig
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/drivers/tty/Kconfig
-+++ b/drivers/tty/Kconfig
-@@ -366,7 +366,7 @@ config TRACE_SINK
- 	  "Trace data router for MIPI P1149.7 cJTAG standard".
-=20
- config PPC_EPAPR_HV_BYTECHAN
--	tristate "ePAPR hypervisor byte channel driver"
-+	bool "ePAPR hypervisor byte channel driver"
- 	depends on PPC
- 	select EPAPR_PARAVIRT
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index b44b52c0a8f0..70dc283050b5 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -209,9 +209,6 @@ config DEFAULT_UIMAGE
+ 	  Used to allow a board to specify it wants a uImage built by default
+ 	default n
+ 
+-config REDBOOT
+-	bool
+-
+ config ARCH_HIBERNATION_POSSIBLE
+ 	bool
+ 	default y
+diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
+index 670a033264c0..2bdc8c862c46 100644
+--- a/arch/powerpc/platforms/83xx/Kconfig
++++ b/arch/powerpc/platforms/83xx/Kconfig
+@@ -99,7 +99,6 @@ config SBC834x
+ config ASP834x
+ 	bool "Analogue & Micro ASP 834x"
+ 	select PPC_MPC834x
+-	select REDBOOT
  	help
+ 	  This enables support for the Analogue & Micro ASP 83xx
+ 	  board.
+diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
+index 8dec3c0911ad..bd6f1a1cf922 100644
+--- a/arch/powerpc/platforms/8xx/Kconfig
++++ b/arch/powerpc/platforms/8xx/Kconfig
+@@ -45,7 +45,6 @@ config PPC_EP88XC
+ config PPC_ADDER875
+ 	bool "Analogue & Micro Adder 875"
+ 	select CPM1
+-	select REDBOOT
+ 	help
+ 	  This enables support for the Analogue & Micro Adder 875
+ 	  board.
+-- 
+1.8.3.2
