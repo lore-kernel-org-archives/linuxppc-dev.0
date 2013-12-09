@@ -2,20 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A75A92C00C0
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2013 17:18:10 +1100 (EST)
-Message-ID: <1386569840.5159.40.camel@pasglop>
-Subject: Re: [PATCH][RESEND] powerpc: remove unused REDBOOT Kconfig parameter
+ by ozlabs.org (Postfix) with ESMTPS id 680A02C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2013 17:19:56 +1100 (EST)
+Message-ID: <1386569986.5159.41.camel@pasglop>
+Subject: Re: [PATCH 1/3] powerpc: mm: make _PAGE_NUMA take effect
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Opdenacker <michael.opdenacker@free-electrons.com>
-Date: Mon, 09 Dec 2013 17:17:20 +1100
-In-Reply-To: <1386566860-19785-1-git-send-email-michael.opdenacker@free-electrons.com>
-References: <1383554336-3829-1-git-send-email-michael.opdenacker@free-electrons.com>
- <1386566860-19785-1-git-send-email-michael.opdenacker@free-electrons.com>
+To: Liu ping fan <kernelfans@gmail.com>
+Date: Mon, 09 Dec 2013 17:19:46 +1100
+In-Reply-To: <CAFgQCTtJh1-2wuLueREbA6ru5cje4EcxN5yT+cU-YNSrZi9O=Q@mail.gmail.com>
+References: <1386140348-7854-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <1386140348-7854-2-git-send-email-pingfank@linux.vnet.ibm.com>
+ <87a9gfva9n.fsf@linux.vnet.ibm.com> <1386549112.5159.4.camel@pasglop>
+ <CAFgQCTtJh1-2wuLueREbA6ru5cje4EcxN5yT+cU-YNSrZi9O=Q@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: marcelo@kvack.org, linux-kernel@vger.kernel.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,59 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-12-09 at 06:27 +0100, Michael Opdenacker wrote:
-> This removes the REDBOOT Kconfig parameter,
-> which was no longer used anywhere in the source code
-> and Makefiles.
+On Mon, 2013-12-09 at 14:17 +0800, Liu ping fan wrote:
+> On Mon, Dec 9, 2013 at 8:31 AM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > On Thu, 2013-12-05 at 16:23 +0530, Aneesh Kumar K.V wrote:
+> >> Liu Ping Fan <kernelfans@gmail.com> writes:
+> >>
+> >> > To enable the do_numa_page(), we should not fix _PAGE_NUMA in
+> >> > hash_page(), so bail out for the case of pte_numa().
+> >
+> > For some reason I don't have 2/3 and 3/3 in my mbox (though I do have
+> > them on patchwork) so I'll reply to this one.
+> >
+> > Overall, your statement that this is a faster path needs to be backed up
+> > with numbers.
+> >
+> > The code is complicated enough as it-is, such additional mess in the low
+> > level hashing code requires a good justification, and also a
+> > demonstration that it doesn't add overhead to the normal hash path.
+> >
+> For the test, is it ok to have an user application to copy page where
+> all page are PG_mlocked?
 
-It hasn't been lost :-) It's still in patchwork and it's even in my
-queue.
+If that specific scenario is relevant in practice, then yes, though also
+demonstrate the lack of regression with some more normal path such as a
+kernel compile.
 
 Cheers,
 Ben.
-
-> Signed-off-by: Michael Opdenacker <michael.opdenacker@free-electrons.com>
-> ---
->  arch/powerpc/Kconfig                | 3 ---
->  arch/powerpc/platforms/83xx/Kconfig | 1 -
->  arch/powerpc/platforms/8xx/Kconfig  | 1 -
->  3 files changed, 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index b44b52c0a8f0..70dc283050b5 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -209,9 +209,6 @@ config DEFAULT_UIMAGE
->  	  Used to allow a board to specify it wants a uImage built by default
->  	default n
->  
-> -config REDBOOT
-> -	bool
-> -
->  config ARCH_HIBERNATION_POSSIBLE
->  	bool
->  	default y
-> diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-> index 670a033264c0..2bdc8c862c46 100644
-> --- a/arch/powerpc/platforms/83xx/Kconfig
-> +++ b/arch/powerpc/platforms/83xx/Kconfig
-> @@ -99,7 +99,6 @@ config SBC834x
->  config ASP834x
->  	bool "Analogue & Micro ASP 834x"
->  	select PPC_MPC834x
-> -	select REDBOOT
->  	help
->  	  This enables support for the Analogue & Micro ASP 83xx
->  	  board.
-> diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
-> index 8dec3c0911ad..bd6f1a1cf922 100644
-> --- a/arch/powerpc/platforms/8xx/Kconfig
-> +++ b/arch/powerpc/platforms/8xx/Kconfig
-> @@ -45,7 +45,6 @@ config PPC_EP88XC
->  config PPC_ADDER875
->  	bool "Analogue & Micro Adder 875"
->  	select CPM1
-> -	select REDBOOT
->  	help
->  	  This enables support for the Analogue & Micro Adder 875
->  	  board.
