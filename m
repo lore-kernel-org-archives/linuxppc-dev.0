@@ -1,26 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E9B5E2C0090
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 09:50:38 +1100 (EST)
-Message-ID: <1386629419.10013.62.camel@snotra.buserror.net>
-Subject: Re: questions: second of the 2 pcie controllers does not scan the bus.
-From: Scott Wood <scottwood@freescale.com>
-To: Ruchika <ruchika.k@servergy.com>
-Date: Mon, 9 Dec 2013 16:50:19 -0600
-In-Reply-To: <52A2706A.7030205@servergy.com>
-References: <Pine.LNX.4.64.1311041649250.4290@digraph.polyomino.org.uk>
- <Pine.LNX.4.64.1311041651390.4290@digraph.polyomino.org.uk>
- <1385159644.1403.532.camel@snotra.buserror.net>
- <Pine.LNX.4.64.1311230053360.12354@digraph.polyomino.org.uk>
- <1386376365.7375.209.camel@snotra.buserror.net>
- <52A2706A.7030205@servergy.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Date: Tue, 10 Dec 2013 10:10:31 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Fix "attempt to move .org backwards" error
+Message-Id: <20131210101031.82b02468d32ddb89481b24b9@canb.auug.org.au>
+In-Reply-To: <20131209191015.22974.31604.stgit@mars>
+References: <20131209191015.22974.31604.stgit@mars>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__10_Dec_2013_10_10_31_+1100_7qir/92cL46bTkQr"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ linux-next <linux-next@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,49 +22,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-12-06 at 18:48 -0600, Ruchika wrote:
-> Hi,
-> I am working with an p4080 based board. I am trying to get 2 PCIE 
-> controllers probed properly.
-> 
-> In uboot I have no problems scanning and discovering what is connected 
-> to both controllers/PCI bridges.
-> 
-> For both PCIE1/2 uboot sets up the Primary, secondary and Subordinate 
-> bus numbers to 0,1,1 respectively.
-> 
-> When linux boots up and probes the controllers, PCIE1 is probed and the 
-> bridge scanned properly but PCIE2 is probed at the bridge but not 
-> attempted a scan.
-> I see this message
-> "pci 0001:02:00.0: bridge configuration invalid ([bus 01-01]), reconfiguring
-> "
-> 
-> I updated uboot to set the secondary and subordinate numbers to 2 (left 
-> the primary number to 0) and a subsequent kernel boot scanned the bus 
-> for PCIE2 successfully.
-> I found these numbers to be very critical since the device tree blob 
-> (bus-range) for pci is also based off these.
-> 
-> I'd like to get a good fix rather than the uboot hack and get better 
-> understanding of the problem. If there are any pointers someone could 
-> provide it would be awesome.
+--Signature=_Tue__10_Dec_2013_10_10_31_+1100_7qir/92cL46bTkQr
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This is the code that prints that:
+Hi,
 
-        /* Check if setup is sensible at all */
-        if (!pass &&
-            (primary != bus->number || secondary <= bus->number ||
-             secondary > subordinate)) {
-                dev_info(&dev->dev, "bridge configuration invalid ([bus %02x-%0
-                         secondary, subordinate);
-                broken = 1;
-        }
+On Tue, 10 Dec 2013 00:40:15 +0530 Mahesh J Salgaonkar <mahesh@linux.vnet.i=
+bm.com> wrote:
+>
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>=20
+> With recent machine check patch series changes, The exception vectors
+> starting from 0x4300 are now overflowing with allyesconfig. Fix that by
+> moving machine_check_common and machine_check_handle_early code out of
+> that region to make enough room for exception vector area.
+>=20
+> Fixes this build error reportes by Stephen:
+>=20
+> arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+> arch/powerpc/kernel/exceptions-64s.S:958: Error: attempt to move .org bac=
+kwards
+> arch/powerpc/kernel/exceptions-64s.S:959: Error: attempt to move .org bac=
+kwards
+> arch/powerpc/kernel/exceptions-64s.S:983: Error: attempt to move .org bac=
+kwards
+> arch/powerpc/kernel/exceptions-64s.S:984: Error: attempt to move .org bac=
+kwards
+> arch/powerpc/kernel/exceptions-64s.S:1003: Error: attempt to move .org ba=
+ckwards
+> arch/powerpc/kernel/exceptions-64s.S:1013: Error: attempt to move .org ba=
+ckwards
+> arch/powerpc/kernel/exceptions-64s.S:1014: Error: attempt to move .org ba=
+ckwards
+> arch/powerpc/kernel/exceptions-64s.S:1015: Error: attempt to move .org ba=
+ckwards
+> arch/powerpc/kernel/exceptions-64s.S:1016: Error: attempt to move .org ba=
+ckwards
+> arch/powerpc/kernel/exceptions-64s.S:1017: Error: attempt to move .org ba=
+ckwards
+> arch/powerpc/kernel/exceptions-64s.S:1018: Error: attempt to move .org ba=
+ckwards
+>=20
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Start by printing out more information to determine which of those
-checks is failing (e.g. what is primary and bus->number).  If it turns
-out that U-Boot is configuring the PCI bus incorrectly, send e-mail to
-the U-Boot list.  Be sure to mention what version of Linux and U-Boot
-you're using.
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
--Scott
+Works for me.  Thanks.  I will add this to linux-next today if Ben
+doesn't add it to his tree.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Tue__10_Dec_2013_10_10_31_+1100_7qir/92cL46bTkQr
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSpk3rAAoJEMDTa8Ir7ZwVUpgP/2ws9LuzBPRugUr9MLpkQG74
+LxohsEzDr1BmqFrCbQrRUOWRtjp8NljrIlKzmzRM8yWKRLCJNZS5ukRbaBUQbWSK
+bTacVhp4ea1ETTawiMCxy/OeBhqNHxQIhlA1MyHYnjTQ9WQ2k5Pe3dWAu+MtQQNT
+Rxnla6vdYKWTzsyqk6KpCkpWopnu1rOtyVRVHcKDKbBFj2XWhtSziRcbEo1sfdOk
+PhfAVP4Wm2b9ENXn0QWry5uvgbfI0vUh9fNGTovm1QG3qTfqu9CzjlwGqDOzrgF9
+y9tCwcbGVL4kPD7sTHi1l94qJNOfCQhxh4ewoV/tL/yE4x4u3GFW4PxR6Eef5QCl
+S3SZH35ex4o5/7Yh1Fk7exvPbDz9D7yDmP0ZO62KXiE9Lys4B84GTbObJm3g2XBX
+3GvlXxTcWV06c8usCLQYxyALidlKr6P2KO8V/FkM5+RZAIetcv2dlNUzV/QT2PSO
+a5yX4kxs/CqsVKLM9PvbUjXt/fR4GOyYfhClyjMqoL1l+iqvWW9If+PX5M2HSwu9
+aAWSbOgcObuy4J3FagN39uwZIPqsAeBsp+3y2shC5uK7I2OYIjpuYW0Xwl9oNTHa
+NbOgPSi+UN0plhsxSWJW8IVBJmfzXi3WYBQYVcvh1Epz0gdvhuGDjw/vWJFTjQrH
+mvo7nJ9HdagQG1yvqCUr
+=9MSl
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__10_Dec_2013_10_10_31_+1100_7qir/92cL46bTkQr--
