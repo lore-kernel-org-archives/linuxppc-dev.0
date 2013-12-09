@@ -1,23 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 680A02C007E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2013 17:19:56 +1100 (EST)
-Message-ID: <1386569986.5159.41.camel@pasglop>
-Subject: Re: [PATCH 1/3] powerpc: mm: make _PAGE_NUMA take effect
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Liu ping fan <kernelfans@gmail.com>
-Date: Mon, 09 Dec 2013 17:19:46 +1100
-In-Reply-To: <CAFgQCTtJh1-2wuLueREbA6ru5cje4EcxN5yT+cU-YNSrZi9O=Q@mail.gmail.com>
-References: <1386140348-7854-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <1386140348-7854-2-git-send-email-pingfank@linux.vnet.ibm.com>
- <87a9gfva9n.fsf@linux.vnet.ibm.com> <1386549112.5159.4.camel@pasglop>
- <CAFgQCTtJh1-2wuLueREbA6ru5cje4EcxN5yT+cU-YNSrZi9O=Q@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
+In-Reply-To: <1386153162-11225-8-git-send-email-khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH V4 07/10] powerpc,
+ lib: Add new branch instruction analysis support functions
+Message-Id: <20131209062146.6D5C12C00BF@ozlabs.org>
+Date: Mon,  9 Dec 2013 17:21:46 +1100 (EST)
+Cc: mikey@neuling.org, ak@linux.intel.com, eranian@google.com,
+ acme@ghostprotocols.net, sukadev@linux.vnet.ibm.com, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +18,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-12-09 at 14:17 +0800, Liu ping fan wrote:
-> On Mon, Dec 9, 2013 at 8:31 AM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > On Thu, 2013-12-05 at 16:23 +0530, Aneesh Kumar K.V wrote:
-> >> Liu Ping Fan <kernelfans@gmail.com> writes:
-> >>
-> >> > To enable the do_numa_page(), we should not fix _PAGE_NUMA in
-> >> > hash_page(), so bail out for the case of pte_numa().
-> >
-> > For some reason I don't have 2/3 and 3/3 in my mbox (though I do have
-> > them on patchwork) so I'll reply to this one.
-> >
-> > Overall, your statement that this is a faster path needs to be backed up
-> > with numbers.
-> >
-> > The code is complicated enough as it-is, such additional mess in the low
-> > level hashing code requires a good justification, and also a
-> > demonstration that it doesn't add overhead to the normal hash path.
-> >
-> For the test, is it ok to have an user application to copy page where
-> all page are PG_mlocked?
+On Wed, 2013-04-12 at 10:32:39 UTC, Anshuman Khandual wrote:
+> Generic powerpc branch instruction analysis support added in the code
+> patching library which will help the subsequent patch on SW based
+> filtering of branch records in perf. This patch also converts and
+> exports some of the existing local static functions through the header
+> file to be used else where.
+> 
+> diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+> index a6f8c7a..8bab417 100644
+> --- a/arch/powerpc/include/asm/code-patching.h
+> +++ b/arch/powerpc/include/asm/code-patching.h
+> @@ -22,6 +22,36 @@
+>  #define BRANCH_SET_LINK	0x1
+>  #define BRANCH_ABSOLUTE	0x2
+>  
+> +#define XL_FORM_LR  0x4C000020
+> +#define XL_FORM_CTR 0x4C000420
+> +#define XL_FORM_TAR 0x4C000460
+> +
+> +#define BO_ALWAYS    0x02800000
+> +#define BO_CTR       0x02000000
+> +#define BO_CRBI_OFF  0x00800000
+> +#define BO_CRBI_ON   0x01800000
+> +#define BO_CRBI_HINT 0x00400000
+> +
+> +/* Forms of branch instruction */
+> +int instr_is_branch_iform(unsigned int instr);
+> +int instr_is_branch_bform(unsigned int instr);
+> +int instr_is_branch_xlform(unsigned int instr);
+> +
+> +/* Classification of XL-form instruction */
+> +int is_xlform_lr(unsigned int instr);
+> +int is_xlform_ctr(unsigned int instr);
+> +int is_xlform_tar(unsigned int instr);
+> +
+> +/* Branch instruction is a call */
+> +int is_branch_link_set(unsigned int instr);
+> +
+> +/* BO field analysis (B-form or XL-form) */
+> +int is_bo_always(unsigned int instr);
+> +int is_bo_ctr(unsigned int instr);
+> +int is_bo_crbi_off(unsigned int instr);
+> +int is_bo_crbi_on(unsigned int instr);
+> +int is_bo_crbi_hint(unsigned int instr);
 
-If that specific scenario is relevant in practice, then yes, though also
-demonstrate the lack of regression with some more normal path such as a
-kernel compile.
 
-Cheers,
-Ben.
+I think this is the wrong API.
+
+We end up with all these micro checks, which don't actually encapsulate much,
+and don't implement the logic perf needs. If we had another user for this level
+of detail then it might make sense, but for a single user I think we're better
+off just implementing the semantics it wants.
+
+So that would be something more like:
+
+bool instr_is_return_branch(unsigned int instr);
+bool instr_is_conditional_branch(unsigned int instr);
+bool instr_is_func_call(unsigned int instr);
+bool instr_is_indirect_func_call(unsigned int instr);
+
+
+These would then encapsulate something like the logic in your 8/10 patch. You
+can hopefully also optimise the checking logic in each routine because you know
+the exact semantics you're implementing.
+
+cheers
