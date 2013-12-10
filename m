@@ -1,28 +1,20 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-qc0-x22e.google.com (mail-qc0-x22e.google.com
- [IPv6:2607:f8b0:400d:c01::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 66FD22C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 11:02:02 +1100 (EST)
-Received: by mail-qc0-f174.google.com with SMTP id n7so3213695qcx.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Dec 2013 16:01:58 -0800 (PST)
-Date: Mon, 9 Dec 2013 17:01:54 -0700
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Yijing Wang <wangyijing@huawei.com>
-Subject: Re: [PATCH 1/9] PCI: Use dev_is_pci() to check whether it is pci
- device
-Message-ID: <20131210000154.GE4699@google.com>
-References: <1386244373-35796-1-git-send-email-wangyijing@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1386244373-35796-1-git-send-email-wangyijing@huawei.com>
-Cc: linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-pci@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6D6F32C00A3
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Dec 2013 11:31:08 +1100 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id rBA0V2wV012366
+ for <linuxppc-dev@ozlabs.org>; Mon, 9 Dec 2013 18:31:03 -0600
+Message-ID: <1386635462.32037.44.camel@pasglop>
+Subject: [PATCH] powerpc/pseries: Don't try to register pseries cpu hotplug
+ on non-pseries
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Date: Tue, 10 Dec 2013 11:31:02 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,58 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[+cc arch lists]
+This results in oddball messages at boot on other platforms telling us
+that CPU hotplug isn't supported even when it is.
 
-On Thu, Dec 05, 2013 at 07:52:53PM +0800, Yijing Wang wrote:
-> Use dev_is_pci() instead of directly compare
-> pci_bus_type to check whether it is pci device.
-> 
-> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/platforms/pseries/hotplug-cpu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I applied all these to my pci/yijing-dev_is_pci branch for v3.14, thanks!
-
-Browse them here: http://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/log/?h=pci/yijing-dev_is_pci
-
-This should be no functional change.
-
- arch/alpha/kernel/pci_iommu.c        |    2 +-
- arch/arm/common/it8152.c             |    4 ++--
- arch/arm/mach-ixp4xx/common-pci.c    |    6 +++---
- arch/ia64/hp/common/sba_iommu.c      |    2 +-
- arch/ia64/sn/pci/pci_dma.c           |   24 ++++++++++++------------
- arch/parisc/kernel/drivers.c         |   22 +++++-----------------
- arch/powerpc/sysdev/fsl_pci.c        |    2 +-
- arch/sparc/include/asm/dma-mapping.h |   10 ++++------
- arch/sparc/kernel/iommu.c            |    2 +-
- arch/sparc/kernel/ioport.c           |    4 +---
- arch/x86/kernel/acpi/boot.c          |    4 +---
- drivers/pci/pci-acpi.c               |    2 +-
- 12 files changed, 33 insertions(+), 51 deletions(-)
-
-Bjorn
-
-> ---
->  drivers/pci/pci-acpi.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
-> index 577074e..e0431f1 100644
-> --- a/drivers/pci/pci-acpi.c
-> +++ b/drivers/pci/pci-acpi.c
-> @@ -358,7 +358,7 @@ static void pci_acpi_cleanup(struct device *dev)
->  
->  static bool pci_acpi_bus_match(struct device *dev)
->  {
-> -	return dev->bus == &pci_bus_type;
-> +	return dev_is_pci(dev);
->  }
->  
->  static struct acpi_bus_type acpi_pci_bus = {
-> -- 
-> 1.7.1
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index a8ef932..171b0c7 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -420,4 +420,4 @@ static int __init pseries_cpu_hotplug_init(void)
+ 
+ 	return 0;
+ }
+-arch_initcall(pseries_cpu_hotplug_init);
++machine_arch_initcall(pseries, pseries_cpu_hotplug_init);
