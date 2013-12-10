@@ -1,36 +1,38 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 905E52C0271
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 16:53:26 +1100 (EST)
-Message-ID: <1386654800.22974.2.camel@ul30vt.home>
-Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
-From: Alex Williamson <alex.williamson@redhat.com>
-To: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
-Date: Mon, 09 Dec 2013 22:53:20 -0700
-In-Reply-To: <326a93628a9141a9abce97b7bb4e04fd@BN1PR03MB266.namprd03.prod.outlook.com>
-References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1384973243.2879.361.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
- <1385066603.2879.414.camel@ul30vt.home>
- <1385066835.1403.489.camel@snotra.buserror.net>
- <1385067648.2879.421.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
- <1385397493.2879.557.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0723624C@039-SN2MPN1-012.039d.mgd.msft.net>
- <1386289316.7375.107.camel@snotra.buserror.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D07251EE4@039-SN2MPN1-012.039d.mgd.msft.net>
- <1386356393.7375.118.camel@snotra.buserror.net>
- <1386358226.25738.506.camel@ul30vt.home>
- <326a93628a9141a9abce97b7bb4e04fd@BN1PR03MB266.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "agraf@suse.de" <agraf@suse.de>, Stuart Yoder <stuart.yoder@freescale.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 389002C00B6
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Dec 2013 16:59:08 +1100 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 10 Dec 2013 11:29:04 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 0FDBEE0058
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Dec 2013 11:31:19 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBA5wuCp28115096
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Dec 2013 11:28:56 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBA5wxle017813
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Dec 2013 11:29:00 +0530
+Message-ID: <52A6AD61.4050408@linux.vnet.ibm.com>
+Date: Tue, 10 Dec 2013 11:27:53 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH V4 08/10] powerpc, perf: Enable SW filtering in branch
+ stack sampling framework
+References: <20131209062146.EABBE2C00C1@ozlabs.org>
+In-Reply-To: <20131209062146.EABBE2C00C1@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mikey@neuling.org, ak@linux.intel.com, linux-kernel@vger.kernel.org,
+ eranian@google.com, linuxppc-dev@ozlabs.org, acme@ghostprotocols.net,
+ sukadev@linux.vnet.ibm.com, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,84 +42,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-12-10 at 05:37 +0000, Bharat.Bhushan@freescale.com wrote:
+On 12/09/2013 11:51 AM, Michael Ellerman wrote:
+> This code was already in need of some unindentation, and now it's just
+> ridiculous.
 > 
-> > -----Original Message-----
-> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > Sent: Saturday, December 07, 2013 1:00 AM
-> > To: Wood Scott-B07421
-> > Cc: Bhushan Bharat-R65777; linux-pci@vger.kernel.org; agraf@suse.de; Yoder
-> > Stuart-B08248; iommu@lists.linux-foundation.org; bhelgaas@google.com; linuxppc-
-> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
-> > 
-> > On Fri, 2013-12-06 at 12:59 -0600, Scott Wood wrote:
-> > > On Thu, 2013-12-05 at 22:11 -0600, Bharat Bhushan wrote:
-> > > >
-> > > > > -----Original Message-----
-> > > > > From: Wood Scott-B07421
-> > > > > Sent: Friday, December 06, 2013 5:52 AM
-> > > > > To: Bhushan Bharat-R65777
-> > > > > Cc: Alex Williamson; linux-pci@vger.kernel.org; agraf@suse.de;
-> > > > > Yoder Stuart- B08248; iommu@lists.linux-foundation.org;
-> > > > > bhelgaas@google.com; linuxppc- dev@lists.ozlabs.org;
-> > > > > linux-kernel@vger.kernel.org
-> > > > > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale
-> > > > > IOMMU (PAMU)
-> > > > >
-> > > > > On Thu, 2013-11-28 at 03:19 -0600, Bharat Bhushan wrote:
-> > > > > >
-> > > > > > > -----Original Message-----
-> > > > > > > From: Bhushan Bharat-R65777
-> > > > > > > Sent: Wednesday, November 27, 2013 9:39 PM
-> > > > > > > To: 'Alex Williamson'
-> > > > > > > Cc: Wood Scott-B07421; linux-pci@vger.kernel.org;
-> > > > > > > agraf@suse.de; Yoder Stuart- B08248;
-> > > > > > > iommu@lists.linux-foundation.org; bhelgaas@google.com;
-> > > > > > > linuxppc- dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> > > > > > > Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for
-> > > > > > > Freescale IOMMU (PAMU)
-> > > > > > >
-> > > > > > > If we just provide the size of MSI bank to userspace then
-> > > > > > > userspace cannot do anything wrong.
-> > > > > >
-> > > > > > So userspace does not know address, so it cannot mmap and cause
-> > > > > > any
-> > > > > interference by directly reading/writing.
-> > > > >
-> > > > > That's security through obscurity...  Couldn't the malicious user
-> > > > > find out the address via other means, such as experimentation on
-> > > > > another system over which they have full control?  What would
-> > > > > happen if the user reads from their device's PCI config space?  Or
-> > > > > gets the information via some back door in the PCI device they
-> > > > > own?  Or pokes throughout the address space looking for something that
-> > generates an interrupt to its own device?
-> > > >
-> > > > So how to solve this problem, Any suggestion ?
-> > > >
-> > > > We have to map one window in PAMU for MSIs and a malicious user can
-> > > > ask its device to do DMA to MSI window region with any pair of
-> > > > address and data, which can lead to unexpected MSIs in system?
-> > >
-> > > I don't think there are any solutions other than to limit each bank to
-> > > one user, unless the admin turns some knob that says they're OK with
-> > > the partial loss of isolation.
-> > 
-> > Even if the admin does opt-in to an allow_unsafe_interrupts options, it should
-> > still be reasonably difficult for one guest to interfere with the other.  I
-> > don't think we want to rely on the blind luck of making the full MSI bank
-> > accessible to multiple guests and hoping they don't step on each other.
+> To start with at the beginning of this routine we have:
 > 
-> Not sure how to solve in this case (sharing MSI page)
+> while (..) {
+> 	if (!val)
+> 		break;
+> 	else {
+> 		// Bulk of the logic
+> 		...
+> 	}
+> }
 > 
-> >  That probably means that vfio needs to manage the space rather than the guest.
+> That should almost always become:
 > 
-> What you mean by " vfio needs to manage the space rather than the guest"?
+> while (..) {
+> 	if (!val)
+> 		break;
+> 
+> 	// Bulk of the logic
+> 	...
+> }
+> 
+> 
+> But in this case that's not enough. Please send a precursor patch which moves
+> this logic out into a helper function.
 
-I mean there needs to be some kernel component managing the contents of
-the MSI page rather than just handing it out to the user and hoping for
-the best.  The user API also needs to remain the same whether the user
-has the MSI page exclusively or it's shared with others (kernel or
-users).  Thanks,
+Hey Michael,
 
-Alex
+I believe this patch should be able to take care of this.
+
+commit d66d729715cabe0cfd8e34861a6afa8ad639ddf3
+Author: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date:   Tue Dec 10 11:10:06 2013 +0530
+
+    power, perf: Clean up BHRB processing
+    
+    This patch cleans up some indentation problem and re-organizes the
+    BHRB processing code with an additional helper function.
+    
+    Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 29b89e8..9ae96c5 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -400,11 +400,20 @@ static __u64 power_pmu_bhrb_to(u64 addr)
+ 	return target - (unsigned long)&instr + addr;
+ }
+ 
++void update_branch_entry(struct cpu_hw_events *cpuhw, int u_index, u64 from, u64 to, int pred)
++{
++	cpuhw->bhrb_entries[u_index].from = from;
++	cpuhw->bhrb_entries[u_index].to = to;
++	cpuhw->bhrb_entries[u_index].mispred = pred;
++	cpuhw->bhrb_entries[u_index].predicted = ~pred;
++	return;
++}
++
+ /* Processing BHRB entries */
+ void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ {
+ 	u64 val;
+-	u64 addr;
++	u64 addr, tmp;
+ 	int r_index, u_index, pred;
+ 
+ 	r_index = 0;
+@@ -415,62 +424,54 @@ void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ 		if (!val)
+ 			/* Terminal marker: End of valid BHRB entries */
+ 			break;
+-		else {
+-			addr = val & BHRB_EA;
+-			pred = val & BHRB_PREDICTION;
+ 
+-			if (!addr)
+-				/* invalid entry */
+-				continue;
++		addr = val & BHRB_EA;
++		pred = val & BHRB_PREDICTION;
+ 
+-			/* Branches are read most recent first (ie. mfbhrb 0 is
+-			 * the most recent branch).
+-			 * There are two types of valid entries:
+-			 * 1) a target entry which is the to address of a
+-			 *    computed goto like a blr,bctr,btar.  The next
+-			 *    entry read from the bhrb will be branch
+-			 *    corresponding to this target (ie. the actual
+-			 *    blr/bctr/btar instruction).
+-			 * 2) a from address which is an actual branch.  If a
+-			 *    target entry proceeds this, then this is the
+-			 *    matching branch for that target.  If this is not
+-			 *    following a target entry, then this is a branch
+-			 *    where the target is given as an immediate field
+-			 *    in the instruction (ie. an i or b form branch).
+-			 *    In this case we need to read the instruction from
+-			 *    memory to determine the target/to address.
++		if (!addr)
++			/* invalid entry */
++			continue;
++
++		/* Branches are read most recent first (ie. mfbhrb 0 is
++		 * the most recent branch).
++		 * There are two types of valid entries:
++		 * 1) a target entry which is the to address of a
++		 *    computed goto like a blr,bctr,btar.  The next
++		 *    entry read from the bhrb will be branch
++		 *    corresponding to this target (ie. the actual
++		 *    blr/bctr/btar instruction).
++		 * 2) a from address which is an actual branch.  If a
++		 *    target entry proceeds this, then this is the
++		 *    matching branch for that target.  If this is not
++		 *    following a target entry, then this is a branch
++		 *    where the target is given as an immediate field
++		 *    in the instruction (ie. an i or b form branch).
++		 *    In this case we need to read the instruction from
++		 *    memory to determine the target/to address.
++		 */
++		if (val & BHRB_TARGET) {
++			/* Target branches use two entries
++			 * (ie. computed gotos/XL form)
+ 			 */
++			tmp = addr;
+ 
++			/* Get from address in next entry */
++			val = read_bhrb(r_index++);
++			addr = val & BHRB_EA;
+ 			if (val & BHRB_TARGET) {
+-				/* Target branches use two entries
+-				 * (ie. computed gotos/XL form)
+-				 */
+-				cpuhw->bhrb_entries[u_index].to = addr;
+-				cpuhw->bhrb_entries[u_index].mispred = pred;
+-				cpuhw->bhrb_entries[u_index].predicted = ~pred;
+-
+-				/* Get from address in next entry */
+-				val = read_bhrb(r_index++);
+-				addr = val & BHRB_EA;
+-				if (val & BHRB_TARGET) {
+-					/* Shouldn't have two targets in a
+-					   row.. Reset index and try again */
+-					r_index--;
+-					addr = 0;
+-				}
+-				cpuhw->bhrb_entries[u_index].from = addr;
+-			} else {
+-				/* Branches to immediate field 
+-				   (ie I or B form) */
+-				cpuhw->bhrb_entries[u_index].from = addr;
+-				cpuhw->bhrb_entries[u_index].to =
+-					power_pmu_bhrb_to(addr);
+-				cpuhw->bhrb_entries[u_index].mispred = pred;
+-				cpuhw->bhrb_entries[u_index].predicted = ~pred;
++				/* Shouldn't have two targets in a
++				   row.. Reset index and try again */
++				r_index--;
++				addr = 0;
+ 			}
+-			u_index++;
+-
++			update_branch_entry(cpuhw, u_index, addr, tmp, pred);
++		} else {
++			/* Branches to immediate field 
++			   (ie I or B form) */
++			tmp = power_pmu_bhrb_to(addr);
++			update_branch_entry(cpuhw, u_index, addr, tmp, pred);
+ 		}
++		u_index++;
+ 	}
+ 	cpuhw->bhrb_stack.nr = u_index;
+ 	return;
