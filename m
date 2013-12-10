@@ -1,21 +1,39 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 82EA82C00B6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 16:39:39 +1100 (EST)
-Message-ID: <1386653965.32037.61.camel@pasglop>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 10 Dec 2013 16:39:25 +1100
-In-Reply-To: <CA+55aFz_VXtkX0vH+T2kGpzA90Zqys=_quJFq3fGT68YTCnBtw@mail.gmail.com>
-References: <1386640667.32037.53.camel@pasglop>
- <CA+55aFz_VXtkX0vH+T2kGpzA90Zqys=_quJFq3fGT68YTCnBtw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <Bharat.Bhushan@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0150.outbound.protection.outlook.com [207.46.163.150])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.protection.outlook.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C12792C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 16:52:53 +1100 (EST)
+From: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
+To: 'Wood Scott-B07421'
+ <IMCEAEX-_O=MMS_OU=EXTERNAL+20+28FYDIBOHF25SPDLT+29_CN=RECIPIENTS_CN=F0FAAC8D7E74473A9EE1C45B068D838A@namprd03.prod.outlook.com>,
+ "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
+Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+Date: Tue, 10 Dec 2013 05:37:14 +0000
+Message-ID: <34c6142137194b1cbd2336013ed3b10d@BN1PR03MB266.namprd03.prod.outlook.com>
+References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1384973243.2879.361.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1385066603.2879.414.camel@ul30vt.home>
+ <1385066835.1403.489.camel@snotra.buserror.net>
+ <1385067648.2879.421.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1386288052.7375.100.camel@snotra.buserror.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07251EFF@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1386357907.7375.127.camel@snotra.buserror.net>
+In-Reply-To: <1386357907.7375.127.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Stuart Yoder <stuart.yoder@freescale.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,48 +43,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-12-09 at 19:58 -0800, Linus Torvalds wrote:
-> On Mon, Dec 9, 2013 at 5:57 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> >
-> > Here are a handful of powerpc fixes for 3.13.
-> 
-> Grr.
-> 
-> I've pulled it, but looking at that history, it's just pure and utter
-> f*cking garbage.
-> 
-> It was rebased *minutes* before sending it, as far as I can tell. Why?
-
-It was *created* shortly before sending it:
-
-Basically I put that thing together as a patchwork bundle which I grew
-over this week.
-
-Today I just applied them to my git, ran my build testers, booted a
-machine to dbl check and sent. I tend to not let things linger long in
-git when it's just fixes like that.
-
-> And it has a pointless merge that you must have created with "--no-ff"
-> for no apparent good reason.
-
-Oh that's my fault. I thought you preferred that way to keep track of
-cases where I pull from somebody since then the patch don't have my
-s-o-b... my bad for misunderstanding that part of the process.
-
-> WTF? What the hell happened here, and why? As mentioned, it's in my
-> tree, but I was *this* close to just unpulling and saying "fuck that"
-> when I started looking at it.
-
-Heh sorry.
-
-Cheers,
-Ben.
-
-> 
->               Linus
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogU2F0dXJkYXksIERlY2VtYmVyIDA3LCAyMDEzIDEyOjU1IEFNDQo+IFRvOiBC
+aHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gQ2M6IEFsZXggV2lsbGlhbXNvbjsgbGludXgtcGNpQHZn
+ZXIua2VybmVsLm9yZzsgYWdyYWZAc3VzZS5kZTsgWW9kZXIgU3R1YXJ0LQ0KPiBCMDgyNDg7IGlv
+bW11QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnOyBiaGVsZ2Fhc0Bnb29nbGUuY29tOyBsaW51
+eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5v
+cmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAwLzkgdjJdIHZmaW8tcGNpOiBhZGQgc3VwcG9ydCBm
+b3IgRnJlZXNjYWxlIElPTU1VIChQQU1VKQ0KPiANCj4gT24gVGh1LCAyMDEzLTEyLTA1IGF0IDIy
+OjE3IC0wNjAwLCBCaGFyYXQgQmh1c2hhbiB3cm90ZToNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5h
+bCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiBTZW50
+OiBGcmlkYXksIERlY2VtYmVyIDA2LCAyMDEzIDU6MzEgQU0NCj4gPiA+IFRvOiBCaHVzaGFuIEJo
+YXJhdC1SNjU3NzcNCj4gPiA+IENjOiBBbGV4IFdpbGxpYW1zb247IGxpbnV4LXBjaUB2Z2VyLmtl
+cm5lbC5vcmc7IGFncmFmQHN1c2UuZGU7IFlvZGVyDQo+ID4gPiBTdHVhcnQtIEIwODI0ODsgaW9t
+bXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmc7DQo+ID4gPiBiaGVsZ2Fhc0Bnb29nbGUuY29t
+OyBsaW51eHBwYy0gZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiBsaW51eC1rZXJuZWxAdmdl
+ci5rZXJuZWwub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDAvOSB2Ml0gdmZpby1wY2k6
+IGFkZCBzdXBwb3J0IGZvciBGcmVlc2NhbGUNCj4gPiA+IElPTU1VIChQQU1VKQ0KPiA+ID4NCj4g
+PiA+IE9uIFN1biwgMjAxMy0xMS0yNCBhdCAyMzozMyAtMDYwMCwgQmhhcmF0IEJodXNoYW4gd3Jv
+dGU6DQo+ID4gPiA+DQo+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+
+ID4gPiBGcm9tOiBBbGV4IFdpbGxpYW1zb24gW21haWx0bzphbGV4LndpbGxpYW1zb25AcmVkaGF0
+LmNvbV0NCj4gPiA+ID4gPiBTZW50OiBGcmlkYXksIE5vdmVtYmVyIDIyLCAyMDEzIDI6MzEgQU0N
+Cj4gPiA+ID4gPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiBDYzogQmh1c2hhbiBC
+aGFyYXQtUjY1Nzc3OyBsaW51eC1wY2lAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gPiA+IGFncmFm
+QHN1c2UuZGU7IFlvZGVyIFN0dWFydC1CMDgyNDg7DQo+ID4gPiA+ID4gaW9tbXVAbGlzdHMubGlu
+dXgtZm91bmRhdGlvbi5vcmc7IGJoZWxnYWFzQGdvb2dsZS5jb207IGxpbnV4cHBjLQ0KPiA+ID4g
+PiA+IGRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+
+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAwLzkgdjJdIHZmaW8tcGNpOiBhZGQgc3VwcG9y
+dCBmb3IgRnJlZXNjYWxlDQo+ID4gPiA+ID4gSU9NTVUgKFBBTVUpDQo+ID4gPiA+ID4NCj4gPiA+
+ID4gPiBPbiBUaHUsIDIwMTMtMTEtMjEgYXQgMTQ6NDcgLTA2MDAsIFNjb3R0IFdvb2Qgd3JvdGU6
+DQo+ID4gPiA+ID4gPiBUaGV5IGNhbiBpbnRlcmZlcmUuDQo+ID4gPiA+DQo+ID4gPiA+IFdhbnQg
+dG8gYmUgc3VyZSBvZiBob3cgdGhleSBjYW4gaW50ZXJmZXJlPw0KPiA+ID4NCj4gPiA+IElmIG1v
+cmUgdGhhbiBvbmUgVkZJTyB1c2VyIHNoYXJlcyB0aGUgc2FtZSBNU0kgZ3JvdXAsIG9uZSBvZiB0
+aGUNCj4gPiA+IHVzZXJzIGNhbiBzZW5kIE1TSXMgdG8gYW5vdGhlciB1c2VyLCBieSB1c2luZyB0
+aGUgd3JvbmcgaW50ZXJydXB0DQo+ID4gPiB3aXRoaW4gdGhlIGJhbmsuICBVbmV4cGVjdGVkIE1T
+SXMgY291bGQgY2F1c2UgbWlzYmVoYXZpb3Igb3IgZGVuaWFsIG9mDQo+IHNlcnZpY2UuDQo+ID4g
+Pg0KPiA+ID4gPiA+PiAgV2l0aCB0aGlzIGhhcmR3YXJlLCB0aGUgb25seSB3YXkgdG8gcHJldmVu
+dCB0aGF0DQo+ID4gPiA+ID4gPiBpcyB0byBtYWtlIHN1cmUgdGhhdCBhIGJhbmsgaXMgbm90IHNo
+YXJlZCBieSBtdWx0aXBsZSBwcm90ZWN0aW9uDQo+IGNvbnRleHRzLg0KPiA+ID4gPiA+ID4gRm9y
+IHNvbWUgb2Ygb3VyIHVzZXJzLCB0aG91Z2gsIEkgYmVsaWV2ZSBwcmV2ZW50aW5nIHRoaXMgaXMN
+Cj4gPiA+ID4gPiA+IGxlc3MgaW1wb3J0YW50IHRoYW4gdGhlIHBlcmZvcm1hbmNlIGJlbmVmaXQu
+DQo+ID4gPiA+DQo+ID4gPiA+IFNvIHNob3VsZCB3ZSBsZXQgdGhpcyBwYXRjaCBzZXJpZXMgaW4g
+d2l0aG91dCBwcm90ZWN0aW9uPw0KPiA+ID4NCj4gPiA+IE5vLCB0aGVyZSBzaG91bGQgYmUgc29t
+ZSBzb3J0IG9mIG9wdC1pbiBtZWNoYW5pc20gc2ltaWxhciB0bw0KPiA+ID4gSU9NTVUtbGVzcyBW
+RklPIC0tIGJ1dCBub3QgdGhlIHNhbWUgZXhhY3Qgb25lLCBzaW5jZSBvbmUgaXMgYSBtdWNoDQo+
+ID4gPiBtb3JlIHNlcmlvdXMgbG9zcyBvZiBpc29sYXRpb24gdGhhbiB0aGUgb3RoZXIuDQo+ID4N
+Cj4gPiBDYW4geW91IHBsZWFzZSBlbGFib3JhdGUgIm9wdC1pbiBtZWNoYW5pc20iPw0KPiANCj4g
+VGhlIHN5c3RlbSBzaG91bGQgYmUgc2VjdXJlIGJ5IGRlZmF1bHQuICBJZiB0aGUgYWRtaW5pc3Ry
+YXRvciB3YW50cyB0byByZWxheA0KPiBwcm90ZWN0aW9uIGluIG9yZGVyIHRvIGFjY29tcGxpc2gg
+c29tZSBmdW5jdGlvbmFsaXR5LCB0aGF0IHNob3VsZCByZXF1aXJlIGFuDQo+IGV4cGxpY2l0IHJl
+cXVlc3Qgc3VjaCBhcyBhIHdyaXRlIHRvIGEgc3lzZnMgZmlsZS4NCj4gDQo+ID4gPiA+ID4gSSB0
+aGluayB3ZSBuZWVkIHNvbWUgc29ydCBvZiBvd25lcnNoaXAgbW9kZWwgYXJvdW5kIHRoZSBtc2kg
+YmFua3MgdGhlbi4NCj4gPiA+ID4gPiBPdGhlcndpc2UgdGhlcmUncyBub3RoaW5nIHByZXZlbnRp
+bmcgYW5vdGhlciB1c2Vyc3BhY2UgZnJvbQ0KPiA+ID4gPiA+IGF0dGVtcHRpbmcgYW4gTVNJIGJh
+c2VkIGF0dGFjayBvbiBvdGhlciB1c2Vycywgb3IgcGVyaGFwcyBldmVuDQo+ID4gPiA+ID4gb24g
+dGhlIGhvc3QuICBWRklPIGNhbid0IGFsbG93IHRoYXQuICBUaGFua3MsDQo+ID4gPiA+DQo+ID4g
+PiA+IFdlIGhhdmUgdmVyeSBmZXcgKDMgTVNJIGJhbmsgb24gbW9zdCBvZiBjaGlwcyksIHNvIHdl
+IGNhbiBub3QNCj4gPiA+ID4gYXNzaWduIG9uZSB0byBlYWNoIHVzZXJzcGFjZS4NCj4gPiA+DQo+
+ID4gPiBUaGF0IGRlcGVuZHMgb24gaG93IG1hbnkgdXNlcnMgdGhlcmUgYXJlLg0KPiA+DQo+ID4g
+V2hhdCBJIHRoaW5rIHdlIGNhbiBkbyBpczoNCj4gPiAgLSBSZXNlcnZlIG9uZSBNU0kgcmVnaW9u
+IGZvciBob3N0LiBIb3N0IHdpbGwgbm90IHNoYXJlIE1TSSByZWdpb24gd2l0aCBHdWVzdC4NCj4g
+PiAgLSBGb3IgdXB0byAyIEd1ZXN0IChNQVggbXNpIHdpdGggaG9zdCAtIDEpIGdpdmUgdGhlbiBz
+ZXBhcmF0ZSBNU0kgc3ViDQo+ID4gcmVnaW9ucw0KPiA+ICAtIEFkZGl0aW9uYWwgR3Vlc3Qgd2ls
+bCBzaGFyZSBNU0kgcmVnaW9uIHdpdGggb3RoZXIgZ3Vlc3QuDQo+ID4NCj4gPiBBbnkgYmV0dGVy
+IHN1Z2dlc3Rpb24gYXJlIG1vc3Qgd2VsY29tZS4NCj4gDQo+IElmIHRoZSBhZG1pbmlzdHJhdG9y
+IGRvZXMgbm90IG9wdCBpbnRvIHRoaXMgcGFydGlhbCBsb3NzIG9mIGlzb2xhdGlvbiwgdGhlbiBv
+bmNlDQo+IHlvdSBydW4gb3V0IG9mIE1TSSBncm91cHMsIG5ldyB1c2VycyBzaG91bGQgbm90IGJl
+IGFibGUgdG8gc2V0IHVwIE1TSXMuDQoNClNvIG1lYW4gdmZpbyBzaG91bGQgdXNlIExlZ2FjeSB3
+aGVuIG91dCBvZiBNU0kgYmFua3M/DQoNClRoYW5rcw0KLUJoYXJhdA0KDQo+IA0KPiAtU2NvdHQN
+Cj4gDQoNCg==
