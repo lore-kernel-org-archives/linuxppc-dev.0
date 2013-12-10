@@ -1,28 +1,41 @@
-Return-Path: <yinghai@kernel.org>
-Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "aserp1050.oracle.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2B50C2C00C2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 19:02:38 +1100 (EST)
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- by aserp1050.oracle.com (Sentrion-MTA-4.3.1/Sentrion-MTA-4.3.1) with ESMTP id
- rBA6tGoJ031245
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 06:55:16 GMT
-From: Yinghai Lu <yinghai@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v4 1/5] PCI: pcibus address to resource converting take bus
- instead of dev
-Date: Mon,  9 Dec 2013 22:54:40 -0800
-Message-Id: <1386658484-15774-2-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1386658484-15774-1-git-send-email-yinghai@kernel.org>
-References: <1386658484-15774-1-git-send-email-yinghai@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-pcmcia@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Guo Chao <yan@linux.vnet.ibm.com>, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
+Return-Path: <Bharat.Bhushan@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0244.outbound.protection.outlook.com [207.46.163.244])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.protection.outlook.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9D90A2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 20:09:58 +1100 (EST)
+From: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+Date: Tue, 10 Dec 2013 09:09:48 +0000
+Message-ID: <182cddd6c4cd4d01a216d468e784fe5d@BN1PR03MB266.namprd03.prod.outlook.com>
+References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1384973243.2879.361.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1385066603.2879.414.camel@ul30vt.home>
+ <1385066835.1403.489.camel@snotra.buserror.net>
+ <1385067648.2879.421.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1385397493.2879.557.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0723624C@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1386289316.7375.107.camel@snotra.buserror.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07251EE4@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1386356393.7375.118.camel@snotra.buserror.net>
+ <1386358226.25738.506.camel@ul30vt.home>
+ <326a93628a9141a9abce97b7bb4e04fd@BN1PR03MB266.namprd03.prod.outlook.com>
+ <1386654800.22974.2.camel@ul30vt.home>
+In-Reply-To: <1386654800.22974.2.camel@ul30vt.home>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "agraf@suse.de" <agraf@suse.de>, Stuart Yoder <stuart.yoder@freescale.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,503 +45,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For allocating resource under bus path, we do not have dev to pass along,
-and we only have bus to use instead.
-
--v2: drop pcibios_bus_addr_to_resource().
--v3: drop __* change requested by Bjorn.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: linux-alpha@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: sparclinux@vger.kernel.org
-Cc: linux-pcmcia@lists.infradead.org
-Cc: linux-scsi@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
----
- arch/alpha/kernel/pci-sysfs.c       |  4 ++--
- arch/powerpc/kernel/pci-common.c    |  4 ++--
- arch/powerpc/kernel/pci_of_scan.c   |  4 ++--
- arch/sparc/kernel/pci.c             |  6 +++---
- drivers/pci/host-bridge.c           | 24 +++++++++++-------------
- drivers/pci/probe.c                 | 18 +++++++++---------
- drivers/pci/quirks.c                |  2 +-
- drivers/pci/rom.c                   |  2 +-
- drivers/pci/setup-bus.c             | 16 ++++++++--------
- drivers/pci/setup-res.c             |  2 +-
- drivers/pcmcia/i82092.c             |  2 +-
- drivers/pcmcia/yenta_socket.c       |  6 +++---
- drivers/scsi/sym53c8xx_2/sym_glue.c |  5 +++--
- drivers/video/arkfb.c               |  2 +-
- drivers/video/s3fb.c                |  2 +-
- drivers/video/vt8623fb.c            |  2 +-
- include/linux/pci.h                 |  4 ++--
- 17 files changed, 52 insertions(+), 53 deletions(-)
-
-diff --git a/arch/alpha/kernel/pci-sysfs.c b/arch/alpha/kernel/pci-sysfs.c
-index 2b183b0..99e8d47 100644
---- a/arch/alpha/kernel/pci-sysfs.c
-+++ b/arch/alpha/kernel/pci-sysfs.c
-@@ -83,7 +83,7 @@ static int pci_mmap_resource(struct kobject *kobj,
- 	if (iomem_is_exclusive(res->start))
- 		return -EINVAL;
- 
--	pcibios_resource_to_bus(pdev, &bar, res);
-+	pcibios_resource_to_bus(pdev->bus, &bar, res);
- 	vma->vm_pgoff += bar.start >> (PAGE_SHIFT - (sparse ? 5 : 0));
- 	mmap_type = res->flags & IORESOURCE_MEM ? pci_mmap_mem : pci_mmap_io;
- 
-@@ -139,7 +139,7 @@ static int sparse_mem_mmap_fits(struct pci_dev *pdev, int num)
- 	long dense_offset;
- 	unsigned long sparse_size;
- 
--	pcibios_resource_to_bus(pdev, &bar, &pdev->resource[num]);
-+	pcibios_resource_to_bus(pdev->bus, &bar, &pdev->resource[num]);
- 
- 	/* All core logic chips have 4G sparse address space, except
- 	   CIA which has 16G (see xxx_SPARSE_MEM and xxx_DENSE_MEM
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index a1e3e40..d9476c1 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -835,7 +835,7 @@ static void pcibios_fixup_resources(struct pci_dev *dev)
- 		 * at 0 as unset as well, except if PCI_PROBE_ONLY is also set
- 		 * since in that case, we don't want to re-assign anything
- 		 */
--		pcibios_resource_to_bus(dev, &reg, res);
-+		pcibios_resource_to_bus(dev->bus, &reg, res);
- 		if (pci_has_flag(PCI_REASSIGN_ALL_RSRC) ||
- 		    (reg.start == 0 && !pci_has_flag(PCI_PROBE_ONLY))) {
- 			/* Only print message if not re-assigning */
-@@ -886,7 +886,7 @@ static int pcibios_uninitialized_bridge_resource(struct pci_bus *bus,
- 
- 	/* Job is a bit different between memory and IO */
- 	if (res->flags & IORESOURCE_MEM) {
--		pcibios_resource_to_bus(dev, &region, res);
-+		pcibios_resource_to_bus(dev->bus, &region, res);
- 
- 		/* If the BAR is non-0 then it's probably been initialized */
- 		if (region.start != 0)
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index ac0b034..83c26d8 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -111,7 +111,7 @@ static void of_pci_parse_addrs(struct device_node *node, struct pci_dev *dev)
- 		res->name = pci_name(dev);
- 		region.start = base;
- 		region.end = base + size - 1;
--		pcibios_bus_to_resource(dev, res, &region);
-+		pcibios_bus_to_resource(dev->bus, res, &region);
- 	}
- }
- 
-@@ -280,7 +280,7 @@ void of_scan_pci_bridge(struct pci_dev *dev)
- 		res->flags = flags;
- 		region.start = of_read_number(&ranges[1], 2);
- 		region.end = region.start + size - 1;
--		pcibios_bus_to_resource(dev, res, &region);
-+		pcibios_bus_to_resource(dev->bus, res, &region);
- 	}
- 	sprintf(bus->name, "PCI Bus %04x:%02x", pci_domain_nr(bus),
- 		bus->number);
-diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
-index cb02145..7de8d1f 100644
---- a/arch/sparc/kernel/pci.c
-+++ b/arch/sparc/kernel/pci.c
-@@ -392,7 +392,7 @@ static void apb_fake_ranges(struct pci_dev *dev,
- 	res->flags = IORESOURCE_IO;
- 	region.start = (first << 21);
- 	region.end = (last << 21) + ((1 << 21) - 1);
--	pcibios_bus_to_resource(dev, res, &region);
-+	pcibios_bus_to_resource(dev->bus, res, &region);
- 
- 	pci_read_config_byte(dev, APB_MEM_ADDRESS_MAP, &map);
- 	apb_calc_first_last(map, &first, &last);
-@@ -400,7 +400,7 @@ static void apb_fake_ranges(struct pci_dev *dev,
- 	res->flags = IORESOURCE_MEM;
- 	region.start = (first << 29);
- 	region.end = (last << 29) + ((1 << 29) - 1);
--	pcibios_bus_to_resource(dev, res, &region);
-+	pcibios_bus_to_resource(dev->bus, res, &region);
- }
- 
- static void pci_of_scan_bus(struct pci_pbm_info *pbm,
-@@ -491,7 +491,7 @@ static void of_scan_pci_bridge(struct pci_pbm_info *pbm,
- 		res->flags = flags;
- 		region.start = GET_64BIT(ranges, 1);
- 		region.end = region.start + size - 1;
--		pcibios_bus_to_resource(dev, res, &region);
-+		pcibios_bus_to_resource(dev->bus, res, &region);
- 	}
- after_ranges:
- 	sprintf(bus->name, "PCI Bus %04x:%02x", pci_domain_nr(bus),
-diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
-index a68dc61..6bcd233 100644
---- a/drivers/pci/host-bridge.c
-+++ b/drivers/pci/host-bridge.c
-@@ -9,22 +9,19 @@
- 
- #include "pci.h"
- 
--static struct pci_bus *find_pci_root_bus(struct pci_dev *dev)
-+static struct pci_bus *find_pci_root_bus(struct pci_bus *bus)
- {
--	struct pci_bus *bus;
--
--	bus = dev->bus;
- 	while (bus->parent)
- 		bus = bus->parent;
- 
- 	return bus;
- }
- 
--static struct pci_host_bridge *find_pci_host_bridge(struct pci_dev *dev)
-+static struct pci_host_bridge *find_pci_host_bridge(struct pci_bus *bus)
- {
--	struct pci_bus *bus = find_pci_root_bus(dev);
-+	struct pci_bus *root_bus = find_pci_root_bus(bus);
- 
--	return to_pci_host_bridge(bus->bridge);
-+	return to_pci_host_bridge(root_bus->bridge);
- }
- 
- void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
-@@ -40,10 +37,11 @@ static bool resource_contains(struct resource *res1, struct resource *res2)
- 	return res1->start <= res2->start && res1->end >= res2->end;
- }
- 
--void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region *region,
--			     struct resource *res)
-+void pcibios_resource_to_bus(struct pci_bus *bus,
-+				      struct pci_bus_region *region,
-+				      struct resource *res)
- {
--	struct pci_host_bridge *bridge = find_pci_host_bridge(dev);
-+	struct pci_host_bridge *bridge = find_pci_host_bridge(bus);
- 	struct pci_host_bridge_window *window;
- 	resource_size_t offset = 0;
- 
-@@ -68,10 +66,10 @@ static bool region_contains(struct pci_bus_region *region1,
- 	return region1->start <= region2->start && region1->end >= region2->end;
- }
- 
--void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
--			     struct pci_bus_region *region)
-+void pcibios_bus_to_resource(struct pci_bus *bus, struct resource *res,
-+				      struct pci_bus_region *region)
- {
--	struct pci_host_bridge *bridge = find_pci_host_bridge(dev);
-+	struct pci_host_bridge *bridge = find_pci_host_bridge(bus);
- 	struct pci_host_bridge_window *window;
- 	resource_size_t offset = 0;
- 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 38e403d..f049e3f 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -269,8 +269,8 @@ int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
- 		region.end = l + sz;
- 	}
- 
--	pcibios_bus_to_resource(dev, res, &region);
--	pcibios_resource_to_bus(dev, &inverted_region, res);
-+	pcibios_bus_to_resource(dev->bus, res, &region);
-+	pcibios_resource_to_bus(dev->bus, &inverted_region, res);
- 
- 	/*
- 	 * If "A" is a BAR value (a bus address), "bus_to_resource(A)" is
-@@ -364,7 +364,7 @@ static void pci_read_bridge_io(struct pci_bus *child)
- 		res->flags = (io_base_lo & PCI_IO_RANGE_TYPE_MASK) | IORESOURCE_IO;
- 		region.start = base;
- 		region.end = limit + io_granularity - 1;
--		pcibios_bus_to_resource(dev, res, &region);
-+		pcibios_bus_to_resource(dev->bus, res, &region);
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
- 	}
- }
-@@ -386,7 +386,7 @@ static void pci_read_bridge_mmio(struct pci_bus *child)
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
- 		region.start = base;
- 		region.end = limit + 0xfffff;
--		pcibios_bus_to_resource(dev, res, &region);
-+		pcibios_bus_to_resource(dev->bus, res, &region);
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
- 	}
- }
-@@ -436,7 +436,7 @@ static void pci_read_bridge_mmio_pref(struct pci_bus *child)
- 			res->flags |= IORESOURCE_MEM_64;
- 		region.start = base;
- 		region.end = limit + 0xfffff;
--		pcibios_bus_to_resource(dev, res, &region);
-+		pcibios_bus_to_resource(dev->bus, res, &region);
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
- 	}
- }
-@@ -1084,24 +1084,24 @@ int pci_setup_device(struct pci_dev *dev)
- 				region.end = 0x1F7;
- 				res = &dev->resource[0];
- 				res->flags = LEGACY_IO_RESOURCE;
--				pcibios_bus_to_resource(dev, res, &region);
-+				pcibios_bus_to_resource(dev->bus, res, &region);
- 				region.start = 0x3F6;
- 				region.end = 0x3F6;
- 				res = &dev->resource[1];
- 				res->flags = LEGACY_IO_RESOURCE;
--				pcibios_bus_to_resource(dev, res, &region);
-+				pcibios_bus_to_resource(dev->bus, res, &region);
- 			}
- 			if ((progif & 4) == 0) {
- 				region.start = 0x170;
- 				region.end = 0x177;
- 				res = &dev->resource[2];
- 				res->flags = LEGACY_IO_RESOURCE;
--				pcibios_bus_to_resource(dev, res, &region);
-+				pcibios_bus_to_resource(dev->bus, res, &region);
- 				region.start = 0x376;
- 				region.end = 0x376;
- 				res = &dev->resource[3];
- 				res->flags = LEGACY_IO_RESOURCE;
--				pcibios_bus_to_resource(dev, res, &region);
-+				pcibios_bus_to_resource(dev->bus, res, &region);
- 			}
- 		}
- 		break;
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 3a02717..5cb726c 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -339,7 +339,7 @@ static void quirk_io_region(struct pci_dev *dev, int port,
- 	/* Convert from PCI bus to resource space */
- 	bus_region.start = region;
- 	bus_region.end = region + size - 1;
--	pcibios_bus_to_resource(dev, res, &bus_region);
-+	pcibios_bus_to_resource(dev->bus, res, &bus_region);
- 
- 	if (!pci_claim_resource(dev, nr))
- 		dev_info(&dev->dev, "quirk: %pR claimed by %s\n", res, name);
-diff --git a/drivers/pci/rom.c b/drivers/pci/rom.c
-index c5d0a08..5d59572 100644
---- a/drivers/pci/rom.c
-+++ b/drivers/pci/rom.c
-@@ -31,7 +31,7 @@ int pci_enable_rom(struct pci_dev *pdev)
- 	if (!res->flags)
- 		return -1;
- 
--	pcibios_resource_to_bus(pdev, &region, res);
-+	pcibios_resource_to_bus(pdev->bus, &region, res);
- 	pci_read_config_dword(pdev, pdev->rom_base_reg, &rom_addr);
- 	rom_addr &= ~PCI_ROM_ADDRESS_MASK;
- 	rom_addr |= region.start | PCI_ROM_ADDRESS_ENABLE;
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 219a410..7933982 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -475,7 +475,7 @@ void pci_setup_cardbus(struct pci_bus *bus)
- 		 &bus->busn_res);
- 
- 	res = bus->resource[0];
--	pcibios_resource_to_bus(bridge, &region, res);
-+	pcibios_resource_to_bus(bridge->bus, &region, res);
- 	if (res->flags & IORESOURCE_IO) {
- 		/*
- 		 * The IO resource is allocated a range twice as large as it
-@@ -489,7 +489,7 @@ void pci_setup_cardbus(struct pci_bus *bus)
- 	}
- 
- 	res = bus->resource[1];
--	pcibios_resource_to_bus(bridge, &region, res);
-+	pcibios_resource_to_bus(bridge->bus, &region, res);
- 	if (res->flags & IORESOURCE_IO) {
- 		dev_info(&bridge->dev, "  bridge window %pR\n", res);
- 		pci_write_config_dword(bridge, PCI_CB_IO_BASE_1,
-@@ -499,7 +499,7 @@ void pci_setup_cardbus(struct pci_bus *bus)
- 	}
- 
- 	res = bus->resource[2];
--	pcibios_resource_to_bus(bridge, &region, res);
-+	pcibios_resource_to_bus(bridge->bus, &region, res);
- 	if (res->flags & IORESOURCE_MEM) {
- 		dev_info(&bridge->dev, "  bridge window %pR\n", res);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_0,
-@@ -509,7 +509,7 @@ void pci_setup_cardbus(struct pci_bus *bus)
- 	}
- 
- 	res = bus->resource[3];
--	pcibios_resource_to_bus(bridge, &region, res);
-+	pcibios_resource_to_bus(bridge->bus, &region, res);
- 	if (res->flags & IORESOURCE_MEM) {
- 		dev_info(&bridge->dev, "  bridge window %pR\n", res);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_1,
-@@ -546,7 +546,7 @@ static void pci_setup_bridge_io(struct pci_bus *bus)
- 
- 	/* Set up the top and bottom of the PCI I/O segment for this bus. */
- 	res = bus->resource[0];
--	pcibios_resource_to_bus(bridge, &region, res);
-+	pcibios_resource_to_bus(bridge->bus, &region, res);
- 	if (res->flags & IORESOURCE_IO) {
- 		pci_read_config_dword(bridge, PCI_IO_BASE, &l);
- 		l &= 0xffff0000;
-@@ -578,7 +578,7 @@ static void pci_setup_bridge_mmio(struct pci_bus *bus)
- 
- 	/* Set up the top and bottom of the PCI Memory segment for this bus. */
- 	res = bus->resource[1];
--	pcibios_resource_to_bus(bridge, &region, res);
-+	pcibios_resource_to_bus(bridge->bus, &region, res);
- 	if (res->flags & IORESOURCE_MEM) {
- 		l = (region.start >> 16) & 0xfff0;
- 		l |= region.end & 0xfff00000;
-@@ -604,7 +604,7 @@ static void pci_setup_bridge_mmio_pref(struct pci_bus *bus)
- 	/* Set up PREF base/limit. */
- 	bu = lu = 0;
- 	res = bus->resource[2];
--	pcibios_resource_to_bus(bridge, &region, res);
-+	pcibios_resource_to_bus(bridge->bus, &region, res);
- 	if (res->flags & IORESOURCE_PREFETCH) {
- 		l = (region.start >> 16) & 0xfff0;
- 		l |= region.end & 0xfff00000;
-@@ -1422,7 +1422,7 @@ static int iov_resources_unassigned(struct pci_dev *dev, void *data)
- 		if (!r->flags)
- 			continue;
- 
--		pcibios_resource_to_bus(dev, &region, r);
-+		pcibios_resource_to_bus(dev->bus, &region, r);
- 		if (!region.start) {
- 			*unassigned = true;
- 			return 1; /* return early from pci_walk_bus() */
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 83c4d3b..5c060b1 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -52,7 +52,7 @@ void pci_update_resource(struct pci_dev *dev, int resno)
- 	if (res->flags & IORESOURCE_PCI_FIXED)
- 		return;
- 
--	pcibios_resource_to_bus(dev, &region, res);
-+	pcibios_resource_to_bus(dev->bus, &region, res);
- 
- 	new = region.start | (res->flags & PCI_REGION_FLAG_MASK);
- 	if (res->flags & IORESOURCE_IO)
-diff --git a/drivers/pcmcia/i82092.c b/drivers/pcmcia/i82092.c
-index 519c4d6..7d47456 100644
---- a/drivers/pcmcia/i82092.c
-+++ b/drivers/pcmcia/i82092.c
-@@ -608,7 +608,7 @@ static int i82092aa_set_mem_map(struct pcmcia_socket *socket, struct pccard_mem_
- 	
- 	enter("i82092aa_set_mem_map");
- 
--	pcibios_resource_to_bus(sock_info->dev, &region, mem->res);
-+	pcibios_resource_to_bus(sock_info->dev->bus, &region, mem->res);
- 	
- 	map = mem->map;
- 	if (map > 4) {
-diff --git a/drivers/pcmcia/yenta_socket.c b/drivers/pcmcia/yenta_socket.c
-index dc18a3a..8485761 100644
---- a/drivers/pcmcia/yenta_socket.c
-+++ b/drivers/pcmcia/yenta_socket.c
-@@ -445,7 +445,7 @@ static int yenta_set_mem_map(struct pcmcia_socket *sock, struct pccard_mem_map *
- 	unsigned int start, stop, card_start;
- 	unsigned short word;
- 
--	pcibios_resource_to_bus(socket->dev, &region, mem->res);
-+	pcibios_resource_to_bus(socket->dev->bus, &region, mem->res);
- 
- 	map = mem->map;
- 	start = region.start;
-@@ -709,7 +709,7 @@ static int yenta_allocate_res(struct yenta_socket *socket, int nr, unsigned type
- 	region.start = config_readl(socket, addr_start) & mask;
- 	region.end = config_readl(socket, addr_end) | ~mask;
- 	if (region.start && region.end > region.start && !override_bios) {
--		pcibios_bus_to_resource(dev, res, &region);
-+		pcibios_bus_to_resource(dev->bus, res, &region);
- 		if (pci_claim_resource(dev, PCI_BRIDGE_RESOURCES + nr) == 0)
- 			return 0;
- 		dev_printk(KERN_INFO, &dev->dev,
-@@ -1033,7 +1033,7 @@ static void yenta_config_init(struct yenta_socket *socket)
- 	struct pci_dev *dev = socket->dev;
- 	struct pci_bus_region region;
- 
--	pcibios_resource_to_bus(socket->dev, &region, &dev->resource[0]);
-+	pcibios_resource_to_bus(socket->dev->bus, &region, &dev->resource[0]);
- 
- 	config_writel(socket, CB_LEGACY_MODE_BASE, 0);
- 	config_writel(socket, PCI_BASE_ADDRESS_0, region.start);
-diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
-index bac55f7..6d3ee1a 100644
---- a/drivers/scsi/sym53c8xx_2/sym_glue.c
-+++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
-@@ -1531,7 +1531,7 @@ static int sym_iomap_device(struct sym_device *device)
- 	struct pci_bus_region bus_addr;
- 	int i = 2;
- 
--	pcibios_resource_to_bus(pdev, &bus_addr, &pdev->resource[1]);
-+	pcibios_resource_to_bus(pdev->bus, &bus_addr, &pdev->resource[1]);
- 	device->mmio_base = bus_addr.start;
- 
- 	if (device->chip.features & FE_RAM) {
-@@ -1541,7 +1541,8 @@ static int sym_iomap_device(struct sym_device *device)
- 		 */
- 		if (!pdev->resource[i].flags)
- 			i++;
--		pcibios_resource_to_bus(pdev, &bus_addr, &pdev->resource[i]);
-+		pcibios_resource_to_bus(pdev->bus, &bus_addr,
-+					&pdev->resource[i]);
- 		device->ram_base = bus_addr.start;
- 	}
- 
-diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
-index a6b29bd..adc4ea2 100644
---- a/drivers/video/arkfb.c
-+++ b/drivers/video/arkfb.c
-@@ -1014,7 +1014,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 
- 	vga_res.flags = IORESOURCE_IO;
- 
--	pcibios_bus_to_resource(dev, &vga_res, &bus_reg);
-+	pcibios_bus_to_resource(dev->bus, &vga_res, &bus_reg);
- 
- 	par->state.vgabase = (void __iomem *) vga_res.start;
- 
-diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
-index 968b299..9a3f8f1 100644
---- a/drivers/video/s3fb.c
-+++ b/drivers/video/s3fb.c
-@@ -1180,7 +1180,7 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 
- 	vga_res.flags = IORESOURCE_IO;
- 
--	pcibios_bus_to_resource(dev, &vga_res, &bus_reg);
-+	pcibios_bus_to_resource(dev->bus, &vga_res, &bus_reg);
- 
- 	par->state.vgabase = (void __iomem *) vga_res.start;
- 
-diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
-index 8bc6e09..5c7cbc6 100644
---- a/drivers/video/vt8623fb.c
-+++ b/drivers/video/vt8623fb.c
-@@ -729,7 +729,7 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 
- 	vga_res.flags = IORESOURCE_IO;
- 
--	pcibios_bus_to_resource(dev, &vga_res, &bus_reg);
-+	pcibios_bus_to_resource(dev->bus, &vga_res, &bus_reg);
- 
- 	par->state.vgabase = (void __iomem *) vga_res.start;
- 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index eb8078a..da069fa 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -737,9 +737,9 @@ void pci_fixup_cardbus(struct pci_bus *);
- 
- /* Generic PCI functions used internally */
- 
--void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region *region,
-+void pcibios_resource_to_bus(struct pci_bus *bus, struct pci_bus_region *region,
- 			     struct resource *res);
--void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
-+void pcibios_bus_to_resource(struct pci_bus *bus, struct resource *res,
- 			     struct pci_bus_region *region);
- void pcibios_scan_specific_bus(int busn);
- struct pci_bus *pci_find_bus(int domain, int busnr);
--- 
-1.8.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
+IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IFR1ZXNkYXksIERl
+Y2VtYmVyIDEwLCAyMDEzIDExOjIzIEFNDQo+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4g
+Q2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51eC1wY2lAdmdlci5rZXJuZWwub3JnOyBhZ3JhZkBz
+dXNlLmRlOyBZb2RlciBTdHVhcnQtDQo+IEIwODI0ODsgaW9tbXVAbGlzdHMubGludXgtZm91bmRh
+dGlvbi5vcmc7IGJoZWxnYWFzQGdvb2dsZS5jb207IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3ps
+YWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BB
+VENIIDAvOSB2Ml0gdmZpby1wY2k6IGFkZCBzdXBwb3J0IGZvciBGcmVlc2NhbGUgSU9NTVUgKFBB
+TVUpDQo+IA0KPiBPbiBUdWUsIDIwMTMtMTItMTAgYXQgMDU6MzcgKzAwMDAsIEJoYXJhdC5CaHVz
+aGFuQGZyZWVzY2FsZS5jb20gd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQo+ID4gPiBGcm9tOiBBbGV4IFdpbGxpYW1zb24gW21haWx0bzphbGV4LndpbGxpYW1z
+b25AcmVkaGF0LmNvbV0NCj4gPiA+IFNlbnQ6IFNhdHVyZGF5LCBEZWNlbWJlciAwNywgMjAxMyAx
+OjAwIEFNDQo+ID4gPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IENjOiBCaHVzaGFuIEJo
+YXJhdC1SNjU3Nzc7IGxpbnV4LXBjaUB2Z2VyLmtlcm5lbC5vcmc7IGFncmFmQHN1c2UuZGU7DQo+
+ID4gPiBZb2RlciBTdHVhcnQtQjA4MjQ4OyBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
+ZzsNCj4gPiA+IGJoZWxnYWFzQGdvb2dsZS5jb207IGxpbnV4cHBjLSBkZXZAbGlzdHMub3psYWJz
+Lm9yZzsNCj4gPiA+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gPiA+IFN1YmplY3Q6
+IFJlOiBbUEFUQ0ggMC85IHYyXSB2ZmlvLXBjaTogYWRkIHN1cHBvcnQgZm9yIEZyZWVzY2FsZQ0K
+PiA+ID4gSU9NTVUgKFBBTVUpDQo+ID4gPg0KPiA+ID4gT24gRnJpLCAyMDEzLTEyLTA2IGF0IDEy
+OjU5IC0wNjAwLCBTY290dCBXb29kIHdyb3RlOg0KPiA+ID4gPiBPbiBUaHUsIDIwMTMtMTItMDUg
+YXQgMjI6MTEgLTA2MDAsIEJoYXJhdCBCaHVzaGFuIHdyb3RlOg0KPiA+ID4gPiA+DQo+ID4gPiA+
+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gRnJvbTogV29vZCBT
+Y290dC1CMDc0MjENCj4gPiA+ID4gPiA+IFNlbnQ6IEZyaWRheSwgRGVjZW1iZXIgMDYsIDIwMTMg
+NTo1MiBBTQ0KPiA+ID4gPiA+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+ID4gPiA+
+ID4gQ2M6IEFsZXggV2lsbGlhbXNvbjsgbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsgYWdyYWZA
+c3VzZS5kZTsNCj4gPiA+ID4gPiA+IFlvZGVyIFN0dWFydC0gQjA4MjQ4OyBpb21tdUBsaXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZzsNCj4gPiA+ID4gPiA+IGJoZWxnYWFzQGdvb2dsZS5jb207IGxp
+bnV4cHBjLSBkZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gPiA+ID4gPiA+IGxpbnV4LWtlcm5lbEB2
+Z2VyLmtlcm5lbC5vcmcNCj4gPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMC85IHYyXSB2
+ZmlvLXBjaTogYWRkIHN1cHBvcnQgZm9yDQo+ID4gPiA+ID4gPiBGcmVlc2NhbGUgSU9NTVUgKFBB
+TVUpDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gT24gVGh1LCAyMDEzLTExLTI4IGF0IDAzOjE5
+IC0wNjAwLCBCaGFyYXQgQmh1c2hhbiB3cm90ZToNCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+
+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+IEZyb206IEJo
+dXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+ID4gPiA+ID4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgTm92
+ZW1iZXIgMjcsIDIwMTMgOTozOSBQTQ0KPiA+ID4gPiA+ID4gPiA+IFRvOiAnQWxleCBXaWxsaWFt
+c29uJw0KPiA+ID4gPiA+ID4gPiA+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXgtcGNpQHZn
+ZXIua2VybmVsLm9yZzsNCj4gPiA+ID4gPiA+ID4gPiBhZ3JhZkBzdXNlLmRlOyBZb2RlciBTdHVh
+cnQtIEIwODI0ODsNCj4gPiA+ID4gPiA+ID4gPiBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9u
+Lm9yZzsgYmhlbGdhYXNAZ29vZ2xlLmNvbTsNCj4gPiA+ID4gPiA+ID4gPiBsaW51eHBwYy0gZGV2
+QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiA+ID4gPiA+ID4gbGludXgta2VybmVsQHZnZXIua2Vy
+bmVsLm9yZw0KPiA+ID4gPiA+ID4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggMC85IHYyXSB2Zmlv
+LXBjaTogYWRkIHN1cHBvcnQgZm9yDQo+ID4gPiA+ID4gPiA+ID4gRnJlZXNjYWxlIElPTU1VIChQ
+QU1VKQ0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gSWYgd2UganVzdCBwcm92aWRl
+IHRoZSBzaXplIG9mIE1TSSBiYW5rIHRvIHVzZXJzcGFjZSB0aGVuDQo+ID4gPiA+ID4gPiA+ID4g
+dXNlcnNwYWNlIGNhbm5vdCBkbyBhbnl0aGluZyB3cm9uZy4NCj4gPiA+ID4gPiA+ID4NCj4gPiA+
+ID4gPiA+ID4gU28gdXNlcnNwYWNlIGRvZXMgbm90IGtub3cgYWRkcmVzcywgc28gaXQgY2Fubm90
+IG1tYXAgYW5kDQo+ID4gPiA+ID4gPiA+IGNhdXNlIGFueQ0KPiA+ID4gPiA+ID4gaW50ZXJmZXJl
+bmNlIGJ5IGRpcmVjdGx5IHJlYWRpbmcvd3JpdGluZy4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
+PiBUaGF0J3Mgc2VjdXJpdHkgdGhyb3VnaCBvYnNjdXJpdHkuLi4gIENvdWxkbid0IHRoZSBtYWxp
+Y2lvdXMNCj4gPiA+ID4gPiA+IHVzZXIgZmluZCBvdXQgdGhlIGFkZHJlc3MgdmlhIG90aGVyIG1l
+YW5zLCBzdWNoIGFzDQo+ID4gPiA+ID4gPiBleHBlcmltZW50YXRpb24gb24gYW5vdGhlciBzeXN0
+ZW0gb3ZlciB3aGljaCB0aGV5IGhhdmUgZnVsbA0KPiA+ID4gPiA+ID4gY29udHJvbD8gIFdoYXQg
+d291bGQgaGFwcGVuIGlmIHRoZSB1c2VyIHJlYWRzIGZyb20gdGhlaXINCj4gPiA+ID4gPiA+IGRl
+dmljZSdzIFBDSSBjb25maWcgc3BhY2U/ICBPciBnZXRzIHRoZSBpbmZvcm1hdGlvbiB2aWEgc29t
+ZQ0KPiA+ID4gPiA+ID4gYmFjayBkb29yIGluIHRoZSBQQ0kgZGV2aWNlIHRoZXkgb3duPyAgT3Ig
+cG9rZXMgdGhyb3VnaG91dCB0aGUNCj4gPiA+ID4gPiA+IGFkZHJlc3Mgc3BhY2UgbG9va2luZyBm
+b3Igc29tZXRoaW5nIHRoYXQNCj4gPiA+IGdlbmVyYXRlcyBhbiBpbnRlcnJ1cHQgdG8gaXRzIG93
+biBkZXZpY2U/DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBTbyBob3cgdG8gc29sdmUgdGhpcyBwcm9i
+bGVtLCBBbnkgc3VnZ2VzdGlvbiA/DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBXZSBoYXZlIHRvIG1h
+cCBvbmUgd2luZG93IGluIFBBTVUgZm9yIE1TSXMgYW5kIGEgbWFsaWNpb3VzIHVzZXINCj4gPiA+
+ID4gPiBjYW4gYXNrIGl0cyBkZXZpY2UgdG8gZG8gRE1BIHRvIE1TSSB3aW5kb3cgcmVnaW9uIHdp
+dGggYW55IHBhaXINCj4gPiA+ID4gPiBvZiBhZGRyZXNzIGFuZCBkYXRhLCB3aGljaCBjYW4gbGVh
+ZCB0byB1bmV4cGVjdGVkIE1TSXMgaW4gc3lzdGVtPw0KPiA+ID4gPg0KPiA+ID4gPiBJIGRvbid0
+IHRoaW5rIHRoZXJlIGFyZSBhbnkgc29sdXRpb25zIG90aGVyIHRoYW4gdG8gbGltaXQgZWFjaA0K
+PiA+ID4gPiBiYW5rIHRvIG9uZSB1c2VyLCB1bmxlc3MgdGhlIGFkbWluIHR1cm5zIHNvbWUga25v
+YiB0aGF0IHNheXMNCj4gPiA+ID4gdGhleSdyZSBPSyB3aXRoIHRoZSBwYXJ0aWFsIGxvc3Mgb2Yg
+aXNvbGF0aW9uLg0KPiA+ID4NCj4gPiA+IEV2ZW4gaWYgdGhlIGFkbWluIGRvZXMgb3B0LWluIHRv
+IGFuIGFsbG93X3Vuc2FmZV9pbnRlcnJ1cHRzIG9wdGlvbnMsDQo+ID4gPiBpdCBzaG91bGQgc3Rp
+bGwgYmUgcmVhc29uYWJseSBkaWZmaWN1bHQgZm9yIG9uZSBndWVzdCB0byBpbnRlcmZlcmUNCj4g
+PiA+IHdpdGggdGhlIG90aGVyLiAgSSBkb24ndCB0aGluayB3ZSB3YW50IHRvIHJlbHkgb24gdGhl
+IGJsaW5kIGx1Y2sgb2YNCj4gPiA+IG1ha2luZyB0aGUgZnVsbCBNU0kgYmFuayBhY2Nlc3NpYmxl
+IHRvIG11bHRpcGxlIGd1ZXN0cyBhbmQgaG9waW5nIHRoZXkgZG9uJ3QNCj4gc3RlcCBvbiBlYWNo
+IG90aGVyLg0KPiA+DQo+ID4gTm90IHN1cmUgaG93IHRvIHNvbHZlIGluIHRoaXMgY2FzZSAoc2hh
+cmluZyBNU0kgcGFnZSkNCj4gPg0KPiA+ID4gIFRoYXQgcHJvYmFibHkgbWVhbnMgdGhhdCB2Zmlv
+IG5lZWRzIHRvIG1hbmFnZSB0aGUgc3BhY2UgcmF0aGVyIHRoYW4gdGhlDQo+IGd1ZXN0Lg0KPiA+
+DQo+ID4gV2hhdCB5b3UgbWVhbiBieSAiIHZmaW8gbmVlZHMgdG8gbWFuYWdlIHRoZSBzcGFjZSBy
+YXRoZXIgdGhhbiB0aGUgZ3Vlc3QiPw0KPiANCj4gSSBtZWFuIHRoZXJlIG5lZWRzIHRvIGJlIHNv
+bWUga2VybmVsIGNvbXBvbmVudCBtYW5hZ2luZyB0aGUgY29udGVudHMgb2YgdGhlIE1TSQ0KPiBw
+YWdlIHJhdGhlciB0aGFuIGp1c3QgaGFuZGluZyBpdCBvdXQgdG8gdGhlIHVzZXIgYW5kIGhvcGlu
+ZyBmb3IgdGhlIGJlc3QuICBUaGUNCj4gdXNlciBBUEkgYWxzbyBuZWVkcyB0byByZW1haW4gdGhl
+IHNhbWUgd2hldGhlciB0aGUgdXNlciBoYXMgdGhlIE1TSSBwYWdlDQo+IGV4Y2x1c2l2ZWx5IG9y
+IGl0J3Mgc2hhcmVkIHdpdGggb3RoZXJzIChrZXJuZWwgb3IgdXNlcnMpLiAgVGhhbmtzLA0KDQpX
+ZSBoYXZlIGxpbWl0ZWQgbnVtYmVyIG9mIE1TSSBiYW5rcywgc28gd2UgY2Fubm90IHByb3ZpZGUg
+ZXhwbGljaXQgTVNJIGJhbmsgdG8gZWFjaCBWTXMuDQpCZWxvdyBpcyB0aGUgc3VtbWFyeSBvZiBt
+c2kgYWxsb2NhdGlvbi9vd25lcnNoaXAgbW9kZWwgSSBhbSB0aGlua2luZyBvZjoNCg0KT3B0aW9u
+LTE6IFVzZXItc3BhY2UgYXdhcmUgb2YgTVNJIGJhbmtzDQo9PT09PT09PT0gDQoxICkgVXNlcnNw
+YWNlIHdpbGwgbWFrZSBHRVRfTVNJX1JFR0lPTihyZXF1ZXN0IG51bWJlciBvZiBNU0kgYmFua3Mp
+DQoJLSBWRklPIHdpbGwgYWxsb2NhdGUgcmVxdWVzdGVkIG51bWJlciBvZiBNU0kgYmFuazsNCgkt
+IElmIGFsbG9jYXRpb24gc3VjY2VlZCB0aGVuIHJldHVybiBudW1iZXIgb2YgYmFua3MNCgktIElm
+IGFsbG9jYXRpb24gZmFpbHMgdGhlbiBjaGVjayBvcHQtaW4gZmxhZyBzZXQgYnkgYWRtaW5pc3Ry
+YXRvciAoYWxsb3dfdW5zYWZlX2ludGVycnVwdHMpOw0KICAgICAgICAgYWxsb3dfdW5zYWZlX2lu
+dGVycnVwdHMgID09IDA7IE5vdCBhbGxvd2VkIHRvIHNoYXJlOyByZXR1cm4gRkFJTCAoLUVOT0RF
+VikNCiAgICAgICAgIGVsc2Ugc2hhcmUgTVNJIGJhbmsgb2YgYW5vdGhlciBWTS4NCg0KMikgVXNl
+cnNwYWNlIHdpbGwgYWRqdXN0IGdlb21ldHJ5IHNpemUgYXMgcGVyIG51bWJlciBvZiBiYW5rcyBh
+bmQgY2FsbHMgU0VUX0dFT01FVFJZDQoNCjMpIFVzZXJzcGFjZSB3aWxsIGRvIERNQV9NQVAgZm9y
+IGl0cyBtZW1vcnkNCg0KNCkgVXNlcnNwYWNlIHdpbGwgZG8gTVNJX01BUCBmb3IgbnVtYmVyIG9m
+IGJhbmtzIGl0IGhhdmUNCgktIE1TSV9NQVAoaW92YSwgYmFuayBudW1iZXIpOw0KCS0gU2hvdWxk
+IGlvdmEgYmUgcGFzc2VkIGJ5IHVzZXJzcGFjZSBvciBub3Q/IEkgdGhpbmsgd2Ugc2hvdWxkIHBh
+c3MgaW92YSBhcyBpdCBkb2VzIG5vdCBrbm93IGlmIHVzZXJzcGFjZSB3aWxsIGNhbGwgRE1BX01B
+UCBmb3Igc2FtZSBpb3ZhIGxhdGVyIG9uLg0KCSAgVkZJTyBjYW4gc29tZWhvdyBmaW5kIGEgbWFn
+aWMgSU9WQSB3aXRoaW4gZ2VvbWV0cnkgYnV0IHdpbGwgYXNzdW1lIHRoYXQgdXNlcnNwYWNlIHdp
+bGwgbm90IG1ha2UgRE1BX01BUCBsYXRlciBvbi4NCgkNCg0KT3B0aW9uLTI6IFVzZXJzcGFjZSB0
+cmFuc3BhcmVudCBNU0kgYmFua3MNCj09PT09PT09PSANCjEpIFVzZXJzcGFjZSBzZXR1cCBnZW9t
+ZXRyeSBvZiBpdHMgbWVtb3J5IChzYXkgY2FsbCBhcyAidXNlcnNwYWNlLWdlb21ldHJ5IikgKFNF
+VF9HRU9NRVRSWSkNCgktIFZGSU8gd2lsbCBhbGxvY2F0ZSBNU0kgYmFuay9zOyBob3cgbWFueT8/
+Lg0KCS0gRXJyb3Igb3V0IGlmIG5vdCBhdmFpbGFibGUgKHNoYXJlZCBhbmQvb3IgZXhjbHVzaXZl
+LCBzYW1lIGFzIGluIG9wdGlvbi0xIGFib3ZlKQ0KCS0gVkZJTyB3aWxsIGFkanVzdCBnZW9tZXRy
+eSBhY2NvcmRpbmdseSAoc2F5IGNhbGxlZCBhcyAiYWN0dWFsLWdlb21ldHJ5IikuDQoNCjIpIFVz
+ZXJzcGFjZSB3aWxsIGRvIERNQV9NQVAgZm9yIGl0cyBtZW1vcnkuDQoJLSBWRklPIGFsbG93cyBv
+bmx5IHdpdGhpbiAidXNlcnNwYWNlLWdlb21ldHJ5Ii4NCg0KMykgVXNlcnNwYWNlIHdpbGwgZG8g
+TVNJX01BUCBhZnRlciBhbGwgRE1BX01BUCBjb21wbGV0ZQ0KCS0gVkZJTyB3aWxsIGZpbmQgYSBt
+YWdpYyBJT1ZBIGFmdGVyICJ1c2Vyc3BhY2UtZ2VvbWV0cnkiIGJ1dCB3aXRoaW4gImFjdHVhbC1n
+ZW9tZXRyeSIuDQoJLSBBbGxvY2F0ZWQgTVNJIGJhbmsvcyBpbiBzdGVwLTEgYXJlIG1hcHBlZCBp
+biBJT01NVQ0KDQo9PT09PT09PT0NCg0KTm90ZTogSXJyZXNwZWN0aXZlIG9mIHdoaWNoIG9wdGlv
+biB3ZSB1c2UsIGEgbWFsaWNpb3VzIHVzZXJzcGFjZSBjYW4gaW50ZXJmZXJlIHdpdGggYW5vdGhl
+ciB1c2Vyc3BhY2UgYnkgcHJvZ3JhbW1pbmcgZGV2aWNlIERNQSB3cm9uZ2x5Lg0KDQpPcHRpb24t
+MSBsb29rcyBmbGV4aWJsZSBhbmQgZ29vZCB0byBtZSBidXQgb3BlbiBmb3Igc3VnZ2VzdGlvbnMu
+DQoNClRoYW5rcw0KLUJoYXJhdA0KDQoNCj4gDQo+IEFsZXgNCj4gDQo+IA0KDQo=
