@@ -1,20 +1,27 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id 255C52C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 10:05:31 +1100 (EST)
-Message-ID: <52A79E31.9070304@c-s.fr>
-Date: Wed, 11 Dec 2013 00:05:21 +0100
-From: leroy christophe <christophe.leroy@c-s.fr>
-MIME-Version: 1.0
+Return-Path: <joseph_myers@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "relay1.mentorg.com",
+ Issuer "Entrust Certification Authority - L1C" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9F7212C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 10:07:54 +1100 (EST)
+Date: Tue, 10 Dec 2013 23:07:45 +0000
+From: "Joseph S. Myers" <joseph@codesourcery.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2] powerpc 8xx: Loading kernels over 8Mbytes without
- CONFIG_PIN_TLB
-References: <20131210112945.E4E311A2BF3@localhost.localdomain>
- <1386714253.10013.123.camel@snotra.buserror.net>
-In-Reply-To: <1386714253.10013.123.camel@snotra.buserror.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Subject: [PATCHv2 1/6] powerpc: fix exception clearing in e500 SPE float
+ emulation
+In-Reply-To: <1386376365.7375.209.camel@snotra.buserror.net>
+Message-ID: <Pine.LNX.4.64.1312102305570.23521@digraph.polyomino.org.uk>
+References: <Pine.LNX.4.64.1311041649250.4290@digraph.polyomino.org.uk>
+ <Pine.LNX.4.64.1311041651390.4290@digraph.polyomino.org.uk>
+ <1385159644.1403.532.camel@snotra.buserror.net>
+ <Pine.LNX.4.64.1311230053360.12354@digraph.polyomino.org.uk>
+ <1386376365.7375.209.camel@snotra.buserror.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Sender: Joseph Myers <joseph@codesourcery.com>
+Cc: Liu Yu <yu.liu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Shan Hai <shan.hai@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,81 +31,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Joseph Myers <joseph@codesourcery.com>
 
-Le 10/12/2013 23:24, Scott Wood a écrit :
-> On Tue, 2013-12-10 at 12:29 +0100, Christophe Leroy wrote:
->> Today, the only way to load kernels whose size is greater than 8Mbytes is to
->> activate CONFIG_PIN_TLB. Otherwise, the physical memory initially mapped is
->> limited to 8Mbytes. This patch adds the capability to select the size of initial
->> memory between 8/16/24 Mbytes and this is regardless of whether CONFIG_PIN_TLB
->> is active or not. It allows to load "big" kernels (for instance when activating
->> CONFIG_LOCKDEP_SUPPORT) without having to activate CONFIG_PIN_TLB.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>
->> diff -ur a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -980,6 +980,29 @@
->>   config PIN_TLB
->>   	bool "Pinned Kernel TLBs (860 ONLY)"
->>   	depends on ADVANCED_OPTIONS && 8xx
->> +
->> +choice
->> +	prompt "Initial Data Memory Mapped on 8xx"
->> +	default 8xx_MAP_8M
->> +	depends on ADVANCED_OPTIONS && 8xx
->> +
->> +config	8xx_INIT_MAP_8M
->> +	bool "8 Mbytes"
->> +
->> +config	8xx_INIT_MAP_16M
->> +	bool "16 Mbytes"
->> +
->> +config	8xx_INIT_MAP_24M
->> +	bool "24 Mbytes"
-> Are you working with a loader that passes initial-mapped-area size in r7
-> as per ePAPR?  If so, we could rely on that at runtime.  If you're using
-> a non-ancient U-Boot, it should qualify here even if it's not fully
-> ePAPR compliant (it passes the value of the bootm_mapsize variable in
-> r7).
-Ok, let me check that. But it means that the size of the kernel I can 
-boot will depend on the initial memory mapped by uboot ? Isn't it 
-limitating ?
-Even if uboot only maps 8Mbytes, why couldn't I be allowed to boot a 
-kernel having 10 Mbytes data if I have 32 Mbytes mem on the board ?
-I don't like the idea of having to change the bootloader just because I 
-want to activate CONFIG_LOCKDEP to debug my kernel.
->
->> -#ifdef CONFIG_PIN_TLB
->> +#if defined (CONFIG_8xx_INIT_MAP_16M) || defined (CONFIG_8xx_INIT_MAP_24M)
->>   	/* Map two more 8M kernel data pages.
->>   	*/
->> +#ifdef CONFIG_PIN_TLB
->>   	addi	r10, r10, 0x0100
->>   	mtspr	SPRN_MD_CTR, r10
->> +#endif
->>   
->>   	lis	r8, KERNELBASE@h	/* Create vaddr for TLB */
->>   	addis	r8, r8, 0x0080		/* Add 8M */
->> @@ -858,15 +860,19 @@
->>   	addis	r11, r11, 0x0080	/* Add 8M */
->>   	mtspr	SPRN_MD_RPN, r11
->>   
->> +#ifdef CONFIG_8xx_INIT_MAP_24M
->> +#ifdef CONFIG_PIN_TLB
->>   	addi	r10, r10, 0x0100
->>   	mtspr	SPRN_MD_CTR, r10
->> +#endif
-> Are these ifdefs for CONFIG_PIN_TLB really needed?  It shouldn't harm
-> anything to use those entries even if they're not being pinned.
+The e500 SPE floating-point emulation code clears existing exceptions
+(__FPU_FPSCR &= ~FP_EX_MASK;) before ORing in the exceptions from the
+emulated operation.  However, these exception bits are the "sticky",
+cumulative exception bits, and should only be cleared by the user
+program setting SPEFSCR, not implicitly by any floating-point
+instruction (whether executed purely by the hardware or emulated).
+The spurious clearing of these bits shows up as missing exceptions in
+glibc testing.
 
-I'm not sure I understand your comment.
-ifdef for CONFIG_PIN_TLB was already there before, but was enclosing the 
-whole block, so 24 Mbytes were automatically mapped when you selected 
-CONFIG_PIN_TLB and only 8 Mbytes were mapped when you didn't select 
-CONFIG_PIN_TLB.
-I reduced the scope of those ifdefs so that they now apply on the 
-pinning only.
+Fixing this, however, is not as simple as just not clearing the bits,
+because while the bits may be from previous floating-point operations
+(in which case they should not be cleared), the processor can also set
+the sticky bits itself before the interrupt for an exception occurs,
+and this can happen in cases when IEEE 754 semantics are that the
+sticky bit should not be set.  Specifically, the "invalid" sticky bit
+is set in various cases with non-finite operands, where IEEE 754
+semantics do not involve raising such an exception, and the
+"underflow" sticky bit is set in cases of exact underflow, whereas
+IEEE 754 semantics are that this flag is set only for inexact
+underflow.  Thus, for correct emulation the kernel needs to know the
+setting of these two sticky bits before the instruction being
+emulated.
 
-Christophe
+When a floating-point operation raises an exception, the kernel can
+note the state of the sticky bits immediately afterwards.  Some
+<fenv.h> functions that affect the state of these bits, such as
+fesetenv and feholdexcept, need to use prctl with PR_GET_FPEXC and
+PR_SET_FPEXC anyway, and so it is natural to record the state of those
+bits during that call into the kernel and so avoid any need for a
+separate call into the kernel to inform it of a change to those bits.
+Thus, the interface I chose to use (in this patch and the glibc port)
+is that one of those prctl calls must be made after any userspace
+change to those sticky bits, other than through a floating-point
+operation that traps into the kernel anyway.  feclearexcept and
+fesetexceptflag duly make those calls, which would not be required
+were it not for this issue.
+
+The previous EGLIBC port, and the uClibc code copied from it, is
+fundamentally broken as regards any use of prctl for floating-point
+exceptions because it didn't use the PR_FP_EXC_SW_ENABLE bit in its
+prctl calls (and did various worse things, such as passing a pointer
+when prctl expected an integer).  If you avoid anything where prctl is
+used, the clearing of sticky bits still means it will never give
+anything approximating correct exception semantics with existing
+kernels.  I don't believe the patch makes things any worse for
+existing code that doesn't try to inform the kernel of changes to
+sticky bits - such code may get incorrect exceptions in some cases,
+but it would have done so anyway in other cases.
+
+Signed-off-by: Joseph Myers <joseph@codesourcery.com>
+
+---
+
+> OK -- please mention this in the changelog.
+
+The description of brokenness of existing code attempting to use
+floating-point exceptions on e500 is now included above.
+
+> I don't know of a formal place for it, but there should at least be a
+> code comment somewhere.
+
+This version now adds a comment alongside the relevant settings of
+spefscr_last.
+
+The other patches in this series (2-6) remain independent of this one
+(and as previously noted, with no dependencies except that patch 5
+depends on patch 2) and so are not resent.
+
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index fc14a38..91441d9 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -256,6 +256,8 @@ struct thread_struct {
+ 	unsigned long	evr[32];	/* upper 32-bits of SPE regs */
+ 	u64		acc;		/* Accumulator */
+ 	unsigned long	spefscr;	/* SPE & eFP status */
++	unsigned long	spefscr_last;	/* SPEFSCR value on last prctl
++					   call or trap return */
+ 	int		used_spe;	/* set if process has used spe */
+ #endif /* CONFIG_SPE */
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+@@ -317,7 +319,9 @@ struct thread_struct {
+ 	(_ALIGN_UP(sizeof(init_thread_info), 16) + (unsigned long) &init_stack)
+ 
+ #ifdef CONFIG_SPE
+-#define SPEFSCR_INIT .spefscr = SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE | SPEFSCR_FOVFE,
++#define SPEFSCR_INIT \
++	.spefscr = SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE | SPEFSCR_FOVFE, \
++	.spefscr_last = SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE | SPEFSCR_FOVFE,
+ #else
+ #define SPEFSCR_INIT
+ #endif
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 3386d8a..b08c0d0 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1175,6 +1175,19 @@ int set_fpexc_mode(struct task_struct *tsk, unsigned int val)
+ 	if (val & PR_FP_EXC_SW_ENABLE) {
+ #ifdef CONFIG_SPE
+ 		if (cpu_has_feature(CPU_FTR_SPE)) {
++			/*
++			 * When the sticky exception bits are set
++			 * directly by userspace, it must call prctl
++			 * with PR_GET_FPEXC (with PR_FP_EXC_SW_ENABLE
++			 * in the existing prctl settings) or
++			 * PR_SET_FPEXC (with PR_FP_EXC_SW_ENABLE in
++			 * the bits being set).  <fenv.h> functions
++			 * saving and restoring the whole
++			 * floating-point environment need to do so
++			 * anyway to restore the prctl settings from
++			 * the saved environment.
++			 */
++			tsk->thread.spefscr_last = mfspr(SPRN_SPEFSCR);
+ 			tsk->thread.fpexc_mode = val &
+ 				(PR_FP_EXC_SW_ENABLE | PR_FP_ALL_EXCEPT);
+ 			return 0;
+@@ -1206,9 +1219,22 @@ int get_fpexc_mode(struct task_struct *tsk, unsigned long adr)
+ 
+ 	if (tsk->thread.fpexc_mode & PR_FP_EXC_SW_ENABLE)
+ #ifdef CONFIG_SPE
+-		if (cpu_has_feature(CPU_FTR_SPE))
++		if (cpu_has_feature(CPU_FTR_SPE)) {
++			/*
++			 * When the sticky exception bits are set
++			 * directly by userspace, it must call prctl
++			 * with PR_GET_FPEXC (with PR_FP_EXC_SW_ENABLE
++			 * in the existing prctl settings) or
++			 * PR_SET_FPEXC (with PR_FP_EXC_SW_ENABLE in
++			 * the bits being set).  <fenv.h> functions
++			 * saving and restoring the whole
++			 * floating-point environment need to do so
++			 * anyway to restore the prctl settings from
++			 * the saved environment.
++			 */
++			tsk->thread.spefscr_last = mfspr(SPRN_SPEFSCR);
+ 			val = tsk->thread.fpexc_mode;
+-		else
++		} else
+ 			return -EINVAL;
+ #else
+ 		return -EINVAL;
+diff --git a/arch/powerpc/math-emu/math_efp.c b/arch/powerpc/math-emu/math_efp.c
+index a73f088..59835c6 100644
+--- a/arch/powerpc/math-emu/math_efp.c
++++ b/arch/powerpc/math-emu/math_efp.c
+@@ -630,9 +630,27 @@ update_ccr:
+ 	regs->ccr |= (IR << ((7 - ((speinsn >> 23) & 0x7)) << 2));
+ 
+ update_regs:
+-	__FPU_FPSCR &= ~FP_EX_MASK;
++	/*
++	 * If the "invalid" exception sticky bit was set by the
++	 * processor for non-finite input, but was not set before the
++	 * instruction being emulated, clear it.  Likewise for the
++	 * "underflow" bit, which may have been set by the processor
++	 * for exact underflow, not just inexact underflow when the
++	 * flag should be set for IEEE 754 semantics.  Other sticky
++	 * exceptions will only be set by the processor when they are
++	 * correct according to IEEE 754 semantics, and we must not
++	 * clear sticky bits that were already set before the emulated
++	 * instruction as they represent the user-visible sticky
++	 * exception status.  "inexact" traps to kernel are not
++	 * required for IEEE semantics and are not enabled by default,
++	 * so the "inexact" sticky bit may have been set by a previous
++	 * instruction without the kernel being aware of it.
++	 */
++	__FPU_FPSCR
++	  &= ~(FP_EX_INVALID | FP_EX_UNDERFLOW) | current->thread.spefscr_last;
+ 	__FPU_FPSCR |= (FP_CUR_EXCEPTIONS & FP_EX_MASK);
+ 	mtspr(SPRN_SPEFSCR, __FPU_FPSCR);
++	current->thread.spefscr_last = __FPU_FPSCR;
+ 
+ 	current->thread.evr[fc] = vc.wp[0];
+ 	regs->gpr[fc] = vc.wp[1];
+
+
+-- 
+Joseph S. Myers
+joseph@codesourcery.com
