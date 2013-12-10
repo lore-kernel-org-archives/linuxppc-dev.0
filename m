@@ -1,15 +1,38 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id BA1A62C0316
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 13:31:53 +1100 (EST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, scottwood@freescale.com
-Subject: [PATCH v2] powerpc 8xx: Loading kernels over 8Mbytes without
- CONFIG_PIN_TLB
-Message-Id: <20131210112945.E4E311A2BF3@localhost.localdomain>
-Date: Tue, 10 Dec 2013 12:29:45 +0100 (CET)
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 85AD62C0308
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 13:38:42 +1100 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 10 Dec 2013 21:38:21 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 315C3E0056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 21:40:37 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBAG8CZI49414378
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 21:38:13 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBAG8GsM004499
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 21:38:16 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] KVM: PPC: Use schedule instead of cond_resched
+In-Reply-To: <C3F93DB3-202A-427D-A7B6-A868F3743507@suse.de>
+References: <1386685284-3862-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <C3F93DB3-202A-427D-A7B6-A868F3743507@suse.de>
+Date: Tue, 10 Dec 2013 21:38:14 +0530
+Message-ID: <877gbcsn81.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org,
+ "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,102 +42,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Today, the only way to load kernels whose size is greater than 8Mbytes is to
-activate CONFIG_PIN_TLB. Otherwise, the physical memory initially mapped is
-limited to 8Mbytes. This patch adds the capability to select the size of initial
-memory between 8/16/24 Mbytes and this is regardless of whether CONFIG_PIN_TLB
-is active or not. It allows to load "big" kernels (for instance when activating
-CONFIG_LOCKDEP_SUPPORT) without having to activate CONFIG_PIN_TLB.
+Alexander Graf <agraf@suse.de> writes:
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> On 10.12.2013, at 15:21, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> We already checked need_resched. So we can call schedule directly
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>
+> The real fix for the issue you're seeing is
+>
+>   https://lkml.org/lkml/2013/11/28/241
 
-diff -ur a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -980,6 +980,29 @@
- config PIN_TLB
- 	bool "Pinned Kernel TLBs (860 ONLY)"
- 	depends on ADVANCED_OPTIONS && 8xx
-+
-+choice
-+	prompt "Initial Data Memory Mapped on 8xx"
-+	default 8xx_MAP_8M
-+	depends on ADVANCED_OPTIONS && 8xx
-+
-+config	8xx_INIT_MAP_8M
-+	bool "8 Mbytes"
-+
-+config	8xx_INIT_MAP_16M
-+	bool "16 Mbytes"
-+
-+config	8xx_INIT_MAP_24M
-+	bool "24 Mbytes"
-+
-+endchoice
-+
-+config 8xx_INIT_MAP
-+	hex
-+	default 0x01800000 if 8xx_INIT_MAP_24M
-+	default 0x01000000 if 8xx_INIT_MAP_16M
-+	default 0x00800000
-+
- endmenu
- 
- if PPC64
-diff -ur a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -841,11 +841,13 @@
- 	ori	r8, r8, MI_BOOTINIT|0x2 /* Inhibit cache -- Cort */
- 	mtspr	SPRN_MD_RPN, r8
- 
--#ifdef CONFIG_PIN_TLB
-+#if defined (CONFIG_8xx_INIT_MAP_16M) || defined (CONFIG_8xx_INIT_MAP_24M)
- 	/* Map two more 8M kernel data pages.
- 	*/
-+#ifdef CONFIG_PIN_TLB
- 	addi	r10, r10, 0x0100
- 	mtspr	SPRN_MD_CTR, r10
-+#endif
- 
- 	lis	r8, KERNELBASE@h	/* Create vaddr for TLB */
- 	addis	r8, r8, 0x0080		/* Add 8M */
-@@ -858,15 +860,19 @@
- 	addis	r11, r11, 0x0080	/* Add 8M */
- 	mtspr	SPRN_MD_RPN, r11
- 
-+#ifdef CONFIG_8xx_INIT_MAP_24M
-+#ifdef CONFIG_PIN_TLB
- 	addi	r10, r10, 0x0100
- 	mtspr	SPRN_MD_CTR, r10
-+#endif
- 
- 	addis	r8, r8, 0x0080		/* Add 8M */
- 	mtspr	SPRN_MD_EPN, r8
- 	mtspr	SPRN_MD_TWC, r9
- 	addis	r11, r11, 0x0080	/* Add 8M */
- 	mtspr	SPRN_MD_RPN, r11
--#endif
-+#endif /* CONFIG_8xx_INIT_MAP_24M */
-+#endif /* CONFIG_8xx_INIT_MAP_16M || CONFIG_8xx_INIT_MAP_24M */
- 
- 	/* Since the cache is enabled according to the information we
- 	 * just loaded into the TLB, invalidate and enable the caches here.
-diff -ur a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -213,12 +213,8 @@
- 	 */
- 	BUG_ON(first_memblock_base != 0);
- 
--#ifdef CONFIG_PIN_TLB
- 	/* 8xx can only access 24MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
--#else
--	/* 8xx can only access 8MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
--#endif
-+	memblock_set_current_limit(min_t(u64, first_memblock_size,
-+		CONFIG_8xx_INIT_MAP));
- }
- #endif /* CONFIG_8xx */
+True, I mentioned that in the thread
+
+https://lkml.org/lkml/2013/12/9/64
+
+But do we need to do cond_resched after we checked for need_resched() ?
+
+-aneesh
