@@ -1,25 +1,20 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 50AD92C03B9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 09:49:08 +1100 (EST)
-Date: Tue, 10 Dec 2013 23:48:51 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] KVM: PPC: Use schedule instead of cond_resched
-Message-ID: <20131210224851.GH13532@twins.programming.kicks-ass.net>
-References: <1386685284-3862-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <C3F93DB3-202A-427D-A7B6-A868F3743507@suse.de>
- <1386708771.32037.73.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1386708771.32037.73.camel@pasglop>
-Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id ABE1C2C0322
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 09:52:22 +1100 (EST)
+From: Gerhard Sittig <gsi@denx.de>
+To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Anatolij Gustschin <agust@denx.de>, Mike Turquette <mturquette@linaro.org>,
+ Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+Subject: [PATCH v1 2/4] powerpc/512x: clk: enforce even SDHC divider values
+Date: Tue, 10 Dec 2013 14:11:35 +0100
+Message-Id: <1386681097-14126-3-git-send-email-gsi@denx.de>
+In-Reply-To: <1386681097-14126-1-git-send-email-gsi@denx.de>
+References: <1386681097-14126-1-git-send-email-gsi@denx.de>
+Cc: Scott Wood <scottwood@freescale.com>, Gerhard Sittig <gsi@denx.de>,
+ Detlev Zundel <dzu@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 11, 2013 at 07:52:51AM +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-12-10 at 15:40 +0100, Alexander Graf wrote:
-> > On 10.12.2013, at 15:21, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> > 
-> > > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> > > 
-> > > We already checked need_resched. So we can call schedule directly
-> > > 
-> > > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> > 
-> > The real fix for the issue you're seeing is
-> > 
-> >   https://lkml.org/lkml/2013/11/28/241
-> > 
-> 
-> And is still not upstream.... Peter ?
+the SDHC clock is derived from CSB with a fractional divider which can
+address "quarters"; the implementation multiplies CSB by 4 and divides
+it by the (integer) divider value
 
-Yeah, I went on holidays and the patch just sat there. I'll prod Ingo
-into merging it.
+a bug in the clock domain synchronisation requires that only even
+divider values get setup; we achieve this by
+- multiplying CSB by 2 only instead of 4
+- registering with CCF the divider's bit field without bit0
+- the divider's lowest bit remains clear as this is the reset value
+  and later operations won't touch it
+
+this change keeps fully utilizing common clock primitives (needs no
+additional support logic, and avoids an excessive divider table) and
+satisfies the hardware's constraint of only supporting even divider
+values
+
+Signed-off-by: Gerhard Sittig <gsi@denx.de>
+---
+ arch/powerpc/platforms/512x/clock-commonclk.c |   16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/512x/clock-commonclk.c b/arch/powerpc/platforms/512x/clock-commonclk.c
+index 079eb1137260..b5190fcb81bb 100644
+--- a/arch/powerpc/platforms/512x/clock-commonclk.c
++++ b/arch/powerpc/platforms/512x/clock-commonclk.c
+@@ -560,9 +560,21 @@ static void mpc512x_clk_setup_clock_tree(struct device_node *np, int busfreq)
+ 	/* now setup anything below SYS and CSB and IPS */
+ 
+ 	clks[MPC512x_CLK_DDR_UG] = mpc512x_clk_factor("ddr-ug", "sys", 1, 2);
+-	clks[MPC512x_CLK_SDHC_x4] = mpc512x_clk_factor("sdhc-x4", "csb", 4, 1);
++
++	/*
++	 * the Reference Manual discusses that for SDHC only even divide
++	 * ratios are supported because clock domain synchronization
++	 * between 'per' and 'ipg' is broken;
++	 * keep the divider's bit 0 cleared (per reset value), and only
++	 * allow to setup the divider's bits 7:1, which results in that
++	 * only even divide ratios can get configured upon rate changes;
++	 * keep the "x4" name because this bit shift hack is an internal
++	 * implementation detail, the "fractional divider with quarters"
++	 * semantics remains
++	 */
++	clks[MPC512x_CLK_SDHC_x4] = mpc512x_clk_factor("sdhc-x4", "csb", 2, 1);
+ 	clks[MPC512x_CLK_SDHC_UG] = mpc512x_clk_divider("sdhc-ug", "sdhc-x4", 0,
+-							&clkregs->scfr2, 0, 8,
++							&clkregs->scfr2, 1, 7,
+ 							CLK_DIVIDER_ONE_BASED);
+ 	clks[MPC512x_CLK_DIU_x4] = mpc512x_clk_factor("diu-x4", "csb", 4, 1);
+ 	clks[MPC512x_CLK_DIU_UG] = mpc512x_clk_divider("diu-ug", "diu-x4", 0,
+-- 
+1.7.10.4
