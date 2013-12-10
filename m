@@ -1,20 +1,31 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CE8F32C009D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 10:11:59 +1100 (EST)
-From: Gerhard Sittig <gsi@denx.de>
-To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Anatolij Gustschin <agust@denx.de>, Mike Turquette <mturquette@linaro.org>,
- Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
-Subject: [PATCH v1 4/4] powerpc/512x: dts: add MPC5125 clock specs
-Date: Tue, 10 Dec 2013 14:11:37 +0100
-Message-Id: <1386681097-14126-5-git-send-email-gsi@denx.de>
-In-Reply-To: <1386681097-14126-1-git-send-email-gsi@denx.de>
-References: <1386681097-14126-1-git-send-email-gsi@denx.de>
-Cc: Scott Wood <scottwood@freescale.com>, Gerhard Sittig <gsi@denx.de>,
- Detlev Zundel <dzu@denx.de>
+Return-Path: <jonas.bonn@gmail.com>
+Received: from mail-oa0-x235.google.com (mail-oa0-x235.google.com
+ [IPv6:2607:f8b0:4003:c02::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 966172C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 19:48:37 +1100 (EST)
+Received: by mail-oa0-f53.google.com with SMTP id m1so5244605oag.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 00:48:34 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1385396045-15852-1-git-send-email-msalter@redhat.com>
+References: <1385396045-15852-1-git-send-email-msalter@redhat.com>
+Date: Tue, 10 Dec 2013 09:48:34 +0100
+Message-ID: <CACM3HyGCPMbw3t+DFFSySEytvDMnGGQMS6pVFpGbhkAoDzjhXg@mail.gmail.com>
+Subject: Re: [PATCH v2 00/11] Consolidate asm/fixmap.h files
+From: Jonas Bonn <jonas.bonn@gmail.com>
+To: Mark Salter <msalter@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ linux-mips@linux-mips.org, Michal Simek <monstr@monstr.eu>,
+ James Hogan <james.hogan@imgtec.com>, Russell King <linux@arm.linux.org.uk>,
+ Arnd Bergmann <arnd@arndb.de>, linux-hexagon@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, Richard Kuo <rkuo@codeaurora.org>,
+ microblaze-uclinux@itee.uq.edu.au, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,175 +35,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-add clock related specs to the MPC5125 "tower" board DTS
-- add clock providers (crystal/oscillator, clock control module)
-- add consumers (the CAN, SDHC, I2C, DIU, FEC, USB, PSC peripherals)
+Hi Mark,
 
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
----
- arch/powerpc/boot/dts/mpc5125twr.dts |   53 +++++++++++++++++++++++++++++++++-
- 1 file changed, 52 insertions(+), 1 deletion(-)
+Is there some reason you've excluded OpenRISC here?  Did you just miss
+it, or does the implementation diverage too much to be usable with
+your generic version?
 
-diff --git a/arch/powerpc/boot/dts/mpc5125twr.dts b/arch/powerpc/boot/dts/mpc5125twr.dts
-index 0a0fe92216ae..806479ffc607 100644
---- a/arch/powerpc/boot/dts/mpc5125twr.dts
-+++ b/arch/powerpc/boot/dts/mpc5125twr.dts
-@@ -12,6 +12,8 @@
-  * option) any later version.
-  */
- 
-+#include <dt-bindings/clock/mpc512x-clock.h>
-+
- /dts-v1/;
- 
- / {
-@@ -54,6 +56,17 @@
- 		reg = <0x30000000 0x08000>;		// 32K at 0x30000000
- 	};
- 
-+	clocks {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		osc: osc {
-+			compatible = "fixed-clock";
-+			#clock-cells = <0>;
-+			clock-frequency = <33000000>;
-+		};
-+	};
-+
- 	soc@80000000 {
- 		compatible = "fsl,mpc5121-immr";
- 		#address-cells = <1>;
-@@ -87,9 +100,12 @@
- 			reg = <0xe00 0x100>;
- 		};
- 
--		clock@f00 {	// Clock control
-+		clks: clock@f00 {	// Clock control
- 			compatible = "fsl,mpc5121-clock";
- 			reg = <0xf00 0x100>;
-+			#clock-cells = <1>;
-+			clocks = <&osc>;
-+			clock-names = "osc";
- 		};
- 
- 		pmc@1000{  // Power Management Controller
-@@ -114,18 +130,33 @@
- 			compatible = "fsl,mpc5121-mscan";
- 			interrupts = <12 0x8>;
- 			reg = <0x1300 0x80>;
-+			clocks = <&clks MPC512x_CLK_BDLC>,
-+				 <&clks MPC512x_CLK_IPS>,
-+				 <&clks MPC512x_CLK_SYS>,
-+				 <&clks MPC512x_CLK_REF>,
-+				 <&clks MPC512x_CLK_MSCAN0_MCLK>;
-+			clock-names = "ipg", "ips", "sys", "ref", "mclk";
- 		};
- 
- 		can@1380 {
- 			compatible = "fsl,mpc5121-mscan";
- 			interrupts = <13 0x8>;
- 			reg = <0x1380 0x80>;
-+			clocks = <&clks MPC512x_CLK_BDLC>,
-+				 <&clks MPC512x_CLK_IPS>,
-+				 <&clks MPC512x_CLK_SYS>,
-+				 <&clks MPC512x_CLK_REF>,
-+				 <&clks MPC512x_CLK_MSCAN1_MCLK>;
-+			clock-names = "ipg", "ips", "sys", "ref", "mclk";
- 		};
- 
- 		sdhc@1500 {
- 			compatible = "fsl,mpc5121-sdhc";
- 			interrupts = <8 0x8>;
- 			reg = <0x1500 0x100>;
-+			clocks = <&clks MPC512x_CLK_IPS>,
-+				 <&clks MPC512x_CLK_SDHC>;
-+			clock-names = "ipg", "per";
- 		};
- 
- 		i2c@1700 {
-@@ -134,6 +165,8 @@
- 			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
- 			reg = <0x1700 0x20>;
- 			interrupts = <0x9 0x8>;
-+			clocks = <&clks MPC512x_CLK_I2C>;
-+			clock-names = "ipg";
- 		};
- 
- 		i2c@1720 {
-@@ -142,6 +175,8 @@
- 			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
- 			reg = <0x1720 0x20>;
- 			interrupts = <0xa 0x8>;
-+			clocks = <&clks MPC512x_CLK_I2C>;
-+			clock-names = "ipg";
- 		};
- 
- 		i2c@1740 {
-@@ -150,6 +185,8 @@
- 			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
- 			reg = <0x1740 0x20>;
- 			interrupts = <0xb 0x8>;
-+			clocks = <&clks MPC512x_CLK_I2C>;
-+			clock-names = "ipg";
- 		};
- 
- 		i2ccontrol@1760 {
-@@ -161,6 +198,8 @@
- 			compatible = "fsl,mpc5121-diu";
- 			reg = <0x2100 0x100>;
- 			interrupts = <64 0x8>;
-+			clocks = <&clks MPC512x_CLK_DIU>;
-+			clock-names = "ipg";
- 		};
- 
- 		mdio@2800 {
-@@ -180,6 +219,8 @@
- 			interrupts = <4 0x8>;
- 			phy-handle = < &phy0 >;
- 			phy-connection-type = "rmii";
-+			clocks = <&clks MPC512x_CLK_FEC>;
-+			clock-names = "per";
- 		};
- 
- 		// IO control
-@@ -196,6 +237,8 @@
- 			interrupts = <43 0x8>;
- 			dr_mode = "host";
- 			phy_type = "ulpi";
-+			clocks = <&clks MPC512x_CLK_USB1>;
-+			clock-names = "ipg";
- 		};
- 
- 		// 5125 PSCs are not 52xx or 5121 PSC compatible
-@@ -206,6 +249,9 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC1>,
-+				 <&clks MPC512x_CLK_PSC1_MCLK>;
-+			clock-names = "ipg", "mclk";
- 		};
- 
- 		// PSC9 uart1 aka ttyPSC1
-@@ -215,12 +261,17 @@
- 			interrupts = <40 0x8>;
- 			fsl,rx-fifo-size = <16>;
- 			fsl,tx-fifo-size = <16>;
-+			clocks = <&clks MPC512x_CLK_PSC9>,
-+				 <&clks MPC512x_CLK_PSC9_MCLK>;
-+			clock-names = "ipg", "mclk";
- 		};
- 
- 		pscfifo@11f00 {
- 			compatible = "fsl,mpc5121-psc-fifo";
- 			reg = <0x11f00 0x100>;
- 			interrupts = <40 0x8>;
-+			clocks = <&clks MPC512x_CLK_PSC_FIFO>;
-+			clock-names = "ipg";
- 		};
- 
- 		dma@14000 {
+Regards,
+Jonas
+
+On 25 November 2013 17:13, Mark Salter <msalter@redhat.com> wrote:
+> Many architectures provide an asm/fixmap.h which defines support for
+> compile-time 'special' virtual mappings which need to be made before
+> paging_init() has run. This suport is also used for early ioremap
+> on x86. Much of this support is identical across the architectures.
+> This patch consolidates all of the common bits into asm-generic/fixmap.h
+> which is intended to be included from arch/*/include/asm/fixmap.h.
+>
+> This has been compiled on x86, arm, powerpc, and sh, but tested
+> on x86 only.
+>
+> This is version two of the patch series:
+>
+>    git://github.com/mosalter/linux.git#fixmap-v2
+>
+> Version 1 is here:
+>
+>    git://github.com/mosalter/linux.git#fixmap
+>
+> Changes from v1:
+>
+>   * Added acks from feedback.
+>   * Use BUILD_BUG_ON in fix_to_virt()
+>   * Fixed ARM patch to make FIXMAP_TOP inclusive of fixmap
+>     range as is the case in the other architectures.
+>
+> Mark Salter (11):
+>   Add generic fixmap.h
+>   x86: use generic fixmap.h
+>   arm: use generic fixmap.h
+>   hexagon: use generic fixmap.h
+>   metag: use generic fixmap.h
+>   microblaze: use generic fixmap.h
+>   mips: use generic fixmap.h
+>   powerpc: use generic fixmap.h
+>   sh: use generic fixmap.h
+>   tile: use generic fixmap.h
+>   um: use generic fixmap.h
+>
+>  arch/arm/include/asm/fixmap.h        | 29 +++--------
+>  arch/arm/mm/init.c                   |  2 +-
+>  arch/hexagon/include/asm/fixmap.h    | 40 +--------------
+>  arch/metag/include/asm/fixmap.h      | 32 +-----------
+>  arch/microblaze/include/asm/fixmap.h | 44 +---------------
+>  arch/mips/include/asm/fixmap.h       | 33 +-----------
+>  arch/powerpc/include/asm/fixmap.h    | 44 +---------------
+>  arch/sh/include/asm/fixmap.h         | 39 +--------------
+>  arch/tile/include/asm/fixmap.h       | 33 +-----------
+>  arch/um/include/asm/fixmap.h         | 40 +--------------
+>  arch/x86/include/asm/fixmap.h        | 59 +---------------------
+>  include/asm-generic/fixmap.h         | 97 ++++++++++++++++++++++++++++++++++++
+>  12 files changed, 118 insertions(+), 374 deletions(-)
+>  create mode 100644 include/asm-generic/fixmap.h
+>
+> --
+> 1.8.3.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
 -- 
-1.7.10.4
+Jonas Bonn
+Stockholm, Sweden
