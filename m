@@ -1,41 +1,18 @@
-Return-Path: <Bharat.Bhushan@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0244.outbound.protection.outlook.com [207.46.163.244])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.protection.outlook.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9D90A2C009A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 20:09:58 +1100 (EST)
-From: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
-Date: Tue, 10 Dec 2013 09:09:48 +0000
-Message-ID: <182cddd6c4cd4d01a216d468e784fe5d@BN1PR03MB266.namprd03.prod.outlook.com>
-References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1384973243.2879.361.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
- <1385066603.2879.414.camel@ul30vt.home>
- <1385066835.1403.489.camel@snotra.buserror.net>
- <1385067648.2879.421.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
- <1385397493.2879.557.camel@ul30vt.home>
- <6A3DF150A5B70D4F9B66A25E3F7C888D0723624C@039-SN2MPN1-012.039d.mgd.msft.net>
- <1386289316.7375.107.camel@snotra.buserror.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D07251EE4@039-SN2MPN1-012.039d.mgd.msft.net>
- <1386356393.7375.118.camel@snotra.buserror.net>
- <1386358226.25738.506.camel@ul30vt.home>
- <326a93628a9141a9abce97b7bb4e04fd@BN1PR03MB266.namprd03.prod.outlook.com>
- <1386654800.22974.2.camel@ul30vt.home>
-In-Reply-To: <1386654800.22974.2.camel@ul30vt.home>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "agraf@suse.de" <agraf@suse.de>, Stuart Yoder <stuart.yoder@freescale.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4A4782C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 20:51:29 +1100 (EST)
+From: Gerhard Sittig <gsi@denx.de>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: [PATCH v1 1/1] powerpc/512x: dts: remove misplaced IRQ spec from
+ 'soc' node (5125)
+Date: Tue, 10 Dec 2013 10:51:08 +0100
+Message-Id: <1386669068-2477-1-git-send-email-gsi@denx.de>
+Cc: devicetree@vger.kernel.org, Gerhard Sittig <gsi@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,121 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
-IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IFR1ZXNkYXksIERl
-Y2VtYmVyIDEwLCAyMDEzIDExOjIzIEFNDQo+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4g
-Q2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBsaW51eC1wY2lAdmdlci5rZXJuZWwub3JnOyBhZ3JhZkBz
-dXNlLmRlOyBZb2RlciBTdHVhcnQtDQo+IEIwODI0ODsgaW9tbXVAbGlzdHMubGludXgtZm91bmRh
-dGlvbi5vcmc7IGJoZWxnYWFzQGdvb2dsZS5jb207IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3ps
-YWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BB
-VENIIDAvOSB2Ml0gdmZpby1wY2k6IGFkZCBzdXBwb3J0IGZvciBGcmVlc2NhbGUgSU9NTVUgKFBB
-TVUpDQo+IA0KPiBPbiBUdWUsIDIwMTMtMTItMTAgYXQgMDU6MzcgKzAwMDAsIEJoYXJhdC5CaHVz
-aGFuQGZyZWVzY2FsZS5jb20gd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+ID4gPiBGcm9tOiBBbGV4IFdpbGxpYW1zb24gW21haWx0bzphbGV4LndpbGxpYW1z
-b25AcmVkaGF0LmNvbV0NCj4gPiA+IFNlbnQ6IFNhdHVyZGF5LCBEZWNlbWJlciAwNywgMjAxMyAx
-OjAwIEFNDQo+ID4gPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IENjOiBCaHVzaGFuIEJo
-YXJhdC1SNjU3Nzc7IGxpbnV4LXBjaUB2Z2VyLmtlcm5lbC5vcmc7IGFncmFmQHN1c2UuZGU7DQo+
-ID4gPiBZb2RlciBTdHVhcnQtQjA4MjQ4OyBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-ZzsNCj4gPiA+IGJoZWxnYWFzQGdvb2dsZS5jb207IGxpbnV4cHBjLSBkZXZAbGlzdHMub3psYWJz
-Lm9yZzsNCj4gPiA+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gPiA+IFN1YmplY3Q6
-IFJlOiBbUEFUQ0ggMC85IHYyXSB2ZmlvLXBjaTogYWRkIHN1cHBvcnQgZm9yIEZyZWVzY2FsZQ0K
-PiA+ID4gSU9NTVUgKFBBTVUpDQo+ID4gPg0KPiA+ID4gT24gRnJpLCAyMDEzLTEyLTA2IGF0IDEy
-OjU5IC0wNjAwLCBTY290dCBXb29kIHdyb3RlOg0KPiA+ID4gPiBPbiBUaHUsIDIwMTMtMTItMDUg
-YXQgMjI6MTEgLTA2MDAsIEJoYXJhdCBCaHVzaGFuIHdyb3RlOg0KPiA+ID4gPiA+DQo+ID4gPiA+
-ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gRnJvbTogV29vZCBT
-Y290dC1CMDc0MjENCj4gPiA+ID4gPiA+IFNlbnQ6IEZyaWRheSwgRGVjZW1iZXIgMDYsIDIwMTMg
-NTo1MiBBTQ0KPiA+ID4gPiA+ID4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+ID4gPiA+
-ID4gQ2M6IEFsZXggV2lsbGlhbXNvbjsgbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsgYWdyYWZA
-c3VzZS5kZTsNCj4gPiA+ID4gPiA+IFlvZGVyIFN0dWFydC0gQjA4MjQ4OyBpb21tdUBsaXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZzsNCj4gPiA+ID4gPiA+IGJoZWxnYWFzQGdvb2dsZS5jb207IGxp
-bnV4cHBjLSBkZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gPiA+ID4gPiA+IGxpbnV4LWtlcm5lbEB2
-Z2VyLmtlcm5lbC5vcmcNCj4gPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMC85IHYyXSB2
-ZmlvLXBjaTogYWRkIHN1cHBvcnQgZm9yDQo+ID4gPiA+ID4gPiBGcmVlc2NhbGUgSU9NTVUgKFBB
-TVUpDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gT24gVGh1LCAyMDEzLTExLTI4IGF0IDAzOjE5
-IC0wNjAwLCBCaGFyYXQgQmh1c2hhbiB3cm90ZToNCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+
-ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+IEZyb206IEJo
-dXNoYW4gQmhhcmF0LVI2NTc3Nw0KPiA+ID4gPiA+ID4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgTm92
-ZW1iZXIgMjcsIDIwMTMgOTozOSBQTQ0KPiA+ID4gPiA+ID4gPiA+IFRvOiAnQWxleCBXaWxsaWFt
-c29uJw0KPiA+ID4gPiA+ID4gPiA+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXgtcGNpQHZn
-ZXIua2VybmVsLm9yZzsNCj4gPiA+ID4gPiA+ID4gPiBhZ3JhZkBzdXNlLmRlOyBZb2RlciBTdHVh
-cnQtIEIwODI0ODsNCj4gPiA+ID4gPiA+ID4gPiBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9u
-Lm9yZzsgYmhlbGdhYXNAZ29vZ2xlLmNvbTsNCj4gPiA+ID4gPiA+ID4gPiBsaW51eHBwYy0gZGV2
-QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiA+ID4gPiA+ID4gbGludXgta2VybmVsQHZnZXIua2Vy
-bmVsLm9yZw0KPiA+ID4gPiA+ID4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggMC85IHYyXSB2Zmlv
-LXBjaTogYWRkIHN1cHBvcnQgZm9yDQo+ID4gPiA+ID4gPiA+ID4gRnJlZXNjYWxlIElPTU1VIChQ
-QU1VKQ0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gSWYgd2UganVzdCBwcm92aWRl
-IHRoZSBzaXplIG9mIE1TSSBiYW5rIHRvIHVzZXJzcGFjZSB0aGVuDQo+ID4gPiA+ID4gPiA+ID4g
-dXNlcnNwYWNlIGNhbm5vdCBkbyBhbnl0aGluZyB3cm9uZy4NCj4gPiA+ID4gPiA+ID4NCj4gPiA+
-ID4gPiA+ID4gU28gdXNlcnNwYWNlIGRvZXMgbm90IGtub3cgYWRkcmVzcywgc28gaXQgY2Fubm90
-IG1tYXAgYW5kDQo+ID4gPiA+ID4gPiA+IGNhdXNlIGFueQ0KPiA+ID4gPiA+ID4gaW50ZXJmZXJl
-bmNlIGJ5IGRpcmVjdGx5IHJlYWRpbmcvd3JpdGluZy4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
-PiBUaGF0J3Mgc2VjdXJpdHkgdGhyb3VnaCBvYnNjdXJpdHkuLi4gIENvdWxkbid0IHRoZSBtYWxp
-Y2lvdXMNCj4gPiA+ID4gPiA+IHVzZXIgZmluZCBvdXQgdGhlIGFkZHJlc3MgdmlhIG90aGVyIG1l
-YW5zLCBzdWNoIGFzDQo+ID4gPiA+ID4gPiBleHBlcmltZW50YXRpb24gb24gYW5vdGhlciBzeXN0
-ZW0gb3ZlciB3aGljaCB0aGV5IGhhdmUgZnVsbA0KPiA+ID4gPiA+ID4gY29udHJvbD8gIFdoYXQg
-d291bGQgaGFwcGVuIGlmIHRoZSB1c2VyIHJlYWRzIGZyb20gdGhlaXINCj4gPiA+ID4gPiA+IGRl
-dmljZSdzIFBDSSBjb25maWcgc3BhY2U/ICBPciBnZXRzIHRoZSBpbmZvcm1hdGlvbiB2aWEgc29t
-ZQ0KPiA+ID4gPiA+ID4gYmFjayBkb29yIGluIHRoZSBQQ0kgZGV2aWNlIHRoZXkgb3duPyAgT3Ig
-cG9rZXMgdGhyb3VnaG91dCB0aGUNCj4gPiA+ID4gPiA+IGFkZHJlc3Mgc3BhY2UgbG9va2luZyBm
-b3Igc29tZXRoaW5nIHRoYXQNCj4gPiA+IGdlbmVyYXRlcyBhbiBpbnRlcnJ1cHQgdG8gaXRzIG93
-biBkZXZpY2U/DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBTbyBob3cgdG8gc29sdmUgdGhpcyBwcm9i
-bGVtLCBBbnkgc3VnZ2VzdGlvbiA/DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBXZSBoYXZlIHRvIG1h
-cCBvbmUgd2luZG93IGluIFBBTVUgZm9yIE1TSXMgYW5kIGEgbWFsaWNpb3VzIHVzZXINCj4gPiA+
-ID4gPiBjYW4gYXNrIGl0cyBkZXZpY2UgdG8gZG8gRE1BIHRvIE1TSSB3aW5kb3cgcmVnaW9uIHdp
-dGggYW55IHBhaXINCj4gPiA+ID4gPiBvZiBhZGRyZXNzIGFuZCBkYXRhLCB3aGljaCBjYW4gbGVh
-ZCB0byB1bmV4cGVjdGVkIE1TSXMgaW4gc3lzdGVtPw0KPiA+ID4gPg0KPiA+ID4gPiBJIGRvbid0
-IHRoaW5rIHRoZXJlIGFyZSBhbnkgc29sdXRpb25zIG90aGVyIHRoYW4gdG8gbGltaXQgZWFjaA0K
-PiA+ID4gPiBiYW5rIHRvIG9uZSB1c2VyLCB1bmxlc3MgdGhlIGFkbWluIHR1cm5zIHNvbWUga25v
-YiB0aGF0IHNheXMNCj4gPiA+ID4gdGhleSdyZSBPSyB3aXRoIHRoZSBwYXJ0aWFsIGxvc3Mgb2Yg
-aXNvbGF0aW9uLg0KPiA+ID4NCj4gPiA+IEV2ZW4gaWYgdGhlIGFkbWluIGRvZXMgb3B0LWluIHRv
-IGFuIGFsbG93X3Vuc2FmZV9pbnRlcnJ1cHRzIG9wdGlvbnMsDQo+ID4gPiBpdCBzaG91bGQgc3Rp
-bGwgYmUgcmVhc29uYWJseSBkaWZmaWN1bHQgZm9yIG9uZSBndWVzdCB0byBpbnRlcmZlcmUNCj4g
-PiA+IHdpdGggdGhlIG90aGVyLiAgSSBkb24ndCB0aGluayB3ZSB3YW50IHRvIHJlbHkgb24gdGhl
-IGJsaW5kIGx1Y2sgb2YNCj4gPiA+IG1ha2luZyB0aGUgZnVsbCBNU0kgYmFuayBhY2Nlc3NpYmxl
-IHRvIG11bHRpcGxlIGd1ZXN0cyBhbmQgaG9waW5nIHRoZXkgZG9uJ3QNCj4gc3RlcCBvbiBlYWNo
-IG90aGVyLg0KPiA+DQo+ID4gTm90IHN1cmUgaG93IHRvIHNvbHZlIGluIHRoaXMgY2FzZSAoc2hh
-cmluZyBNU0kgcGFnZSkNCj4gPg0KPiA+ID4gIFRoYXQgcHJvYmFibHkgbWVhbnMgdGhhdCB2Zmlv
-IG5lZWRzIHRvIG1hbmFnZSB0aGUgc3BhY2UgcmF0aGVyIHRoYW4gdGhlDQo+IGd1ZXN0Lg0KPiA+
-DQo+ID4gV2hhdCB5b3UgbWVhbiBieSAiIHZmaW8gbmVlZHMgdG8gbWFuYWdlIHRoZSBzcGFjZSBy
-YXRoZXIgdGhhbiB0aGUgZ3Vlc3QiPw0KPiANCj4gSSBtZWFuIHRoZXJlIG5lZWRzIHRvIGJlIHNv
-bWUga2VybmVsIGNvbXBvbmVudCBtYW5hZ2luZyB0aGUgY29udGVudHMgb2YgdGhlIE1TSQ0KPiBw
-YWdlIHJhdGhlciB0aGFuIGp1c3QgaGFuZGluZyBpdCBvdXQgdG8gdGhlIHVzZXIgYW5kIGhvcGlu
-ZyBmb3IgdGhlIGJlc3QuICBUaGUNCj4gdXNlciBBUEkgYWxzbyBuZWVkcyB0byByZW1haW4gdGhl
-IHNhbWUgd2hldGhlciB0aGUgdXNlciBoYXMgdGhlIE1TSSBwYWdlDQo+IGV4Y2x1c2l2ZWx5IG9y
-IGl0J3Mgc2hhcmVkIHdpdGggb3RoZXJzIChrZXJuZWwgb3IgdXNlcnMpLiAgVGhhbmtzLA0KDQpX
-ZSBoYXZlIGxpbWl0ZWQgbnVtYmVyIG9mIE1TSSBiYW5rcywgc28gd2UgY2Fubm90IHByb3ZpZGUg
-ZXhwbGljaXQgTVNJIGJhbmsgdG8gZWFjaCBWTXMuDQpCZWxvdyBpcyB0aGUgc3VtbWFyeSBvZiBt
-c2kgYWxsb2NhdGlvbi9vd25lcnNoaXAgbW9kZWwgSSBhbSB0aGlua2luZyBvZjoNCg0KT3B0aW9u
-LTE6IFVzZXItc3BhY2UgYXdhcmUgb2YgTVNJIGJhbmtzDQo9PT09PT09PT0gDQoxICkgVXNlcnNw
-YWNlIHdpbGwgbWFrZSBHRVRfTVNJX1JFR0lPTihyZXF1ZXN0IG51bWJlciBvZiBNU0kgYmFua3Mp
-DQoJLSBWRklPIHdpbGwgYWxsb2NhdGUgcmVxdWVzdGVkIG51bWJlciBvZiBNU0kgYmFuazsNCgkt
-IElmIGFsbG9jYXRpb24gc3VjY2VlZCB0aGVuIHJldHVybiBudW1iZXIgb2YgYmFua3MNCgktIElm
-IGFsbG9jYXRpb24gZmFpbHMgdGhlbiBjaGVjayBvcHQtaW4gZmxhZyBzZXQgYnkgYWRtaW5pc3Ry
-YXRvciAoYWxsb3dfdW5zYWZlX2ludGVycnVwdHMpOw0KICAgICAgICAgYWxsb3dfdW5zYWZlX2lu
-dGVycnVwdHMgID09IDA7IE5vdCBhbGxvd2VkIHRvIHNoYXJlOyByZXR1cm4gRkFJTCAoLUVOT0RF
-VikNCiAgICAgICAgIGVsc2Ugc2hhcmUgTVNJIGJhbmsgb2YgYW5vdGhlciBWTS4NCg0KMikgVXNl
-cnNwYWNlIHdpbGwgYWRqdXN0IGdlb21ldHJ5IHNpemUgYXMgcGVyIG51bWJlciBvZiBiYW5rcyBh
-bmQgY2FsbHMgU0VUX0dFT01FVFJZDQoNCjMpIFVzZXJzcGFjZSB3aWxsIGRvIERNQV9NQVAgZm9y
-IGl0cyBtZW1vcnkNCg0KNCkgVXNlcnNwYWNlIHdpbGwgZG8gTVNJX01BUCBmb3IgbnVtYmVyIG9m
-IGJhbmtzIGl0IGhhdmUNCgktIE1TSV9NQVAoaW92YSwgYmFuayBudW1iZXIpOw0KCS0gU2hvdWxk
-IGlvdmEgYmUgcGFzc2VkIGJ5IHVzZXJzcGFjZSBvciBub3Q/IEkgdGhpbmsgd2Ugc2hvdWxkIHBh
-c3MgaW92YSBhcyBpdCBkb2VzIG5vdCBrbm93IGlmIHVzZXJzcGFjZSB3aWxsIGNhbGwgRE1BX01B
-UCBmb3Igc2FtZSBpb3ZhIGxhdGVyIG9uLg0KCSAgVkZJTyBjYW4gc29tZWhvdyBmaW5kIGEgbWFn
-aWMgSU9WQSB3aXRoaW4gZ2VvbWV0cnkgYnV0IHdpbGwgYXNzdW1lIHRoYXQgdXNlcnNwYWNlIHdp
-bGwgbm90IG1ha2UgRE1BX01BUCBsYXRlciBvbi4NCgkNCg0KT3B0aW9uLTI6IFVzZXJzcGFjZSB0
-cmFuc3BhcmVudCBNU0kgYmFua3MNCj09PT09PT09PSANCjEpIFVzZXJzcGFjZSBzZXR1cCBnZW9t
-ZXRyeSBvZiBpdHMgbWVtb3J5IChzYXkgY2FsbCBhcyAidXNlcnNwYWNlLWdlb21ldHJ5IikgKFNF
-VF9HRU9NRVRSWSkNCgktIFZGSU8gd2lsbCBhbGxvY2F0ZSBNU0kgYmFuay9zOyBob3cgbWFueT8/
-Lg0KCS0gRXJyb3Igb3V0IGlmIG5vdCBhdmFpbGFibGUgKHNoYXJlZCBhbmQvb3IgZXhjbHVzaXZl
-LCBzYW1lIGFzIGluIG9wdGlvbi0xIGFib3ZlKQ0KCS0gVkZJTyB3aWxsIGFkanVzdCBnZW9tZXRy
-eSBhY2NvcmRpbmdseSAoc2F5IGNhbGxlZCBhcyAiYWN0dWFsLWdlb21ldHJ5IikuDQoNCjIpIFVz
-ZXJzcGFjZSB3aWxsIGRvIERNQV9NQVAgZm9yIGl0cyBtZW1vcnkuDQoJLSBWRklPIGFsbG93cyBv
-bmx5IHdpdGhpbiAidXNlcnNwYWNlLWdlb21ldHJ5Ii4NCg0KMykgVXNlcnNwYWNlIHdpbGwgZG8g
-TVNJX01BUCBhZnRlciBhbGwgRE1BX01BUCBjb21wbGV0ZQ0KCS0gVkZJTyB3aWxsIGZpbmQgYSBt
-YWdpYyBJT1ZBIGFmdGVyICJ1c2Vyc3BhY2UtZ2VvbWV0cnkiIGJ1dCB3aXRoaW4gImFjdHVhbC1n
-ZW9tZXRyeSIuDQoJLSBBbGxvY2F0ZWQgTVNJIGJhbmsvcyBpbiBzdGVwLTEgYXJlIG1hcHBlZCBp
-biBJT01NVQ0KDQo9PT09PT09PT0NCg0KTm90ZTogSXJyZXNwZWN0aXZlIG9mIHdoaWNoIG9wdGlv
-biB3ZSB1c2UsIGEgbWFsaWNpb3VzIHVzZXJzcGFjZSBjYW4gaW50ZXJmZXJlIHdpdGggYW5vdGhl
-ciB1c2Vyc3BhY2UgYnkgcHJvZ3JhbW1pbmcgZGV2aWNlIERNQSB3cm9uZ2x5Lg0KDQpPcHRpb24t
-MSBsb29rcyBmbGV4aWJsZSBhbmQgZ29vZCB0byBtZSBidXQgb3BlbiBmb3Igc3VnZ2VzdGlvbnMu
-DQoNClRoYW5rcw0KLUJoYXJhdA0KDQoNCj4gDQo+IEFsZXgNCj4gDQo+IA0KDQo=
+the 'soc' node in the MPC5125 "tower" board .dts has an '#interrupt-cells'
+property although this node is not an interrupt controller
+
+remove this erroneously placed property because starting with v3.13-rc1
+lookup and resolution of 'interrupts' specs for peripherals gets misled
+(tries to use the 'soc' as the interrupt parent which fails), emits
+'no irq domain found' WARN() messages and breaks the boot process
+
+[ best viewed with 'git diff -U5' to have DT node names in the context ]
+
+Cc: Anatolij Gustschin <agust@denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org
+Signed-off-by: Gerhard Sittig <gsi@denx.de>
+
+---
+
+note that this is not a resend of the previous MPC5121 fix, but instead
+is a fix for MPC5125 along the same lines of the MPC5121 fix
+---
+ arch/powerpc/boot/dts/mpc5125twr.dts |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc5125twr.dts b/arch/powerpc/boot/dts/mpc5125twr.dts
+index 4177b62240c2..0a0fe92216ae 100644
+--- a/arch/powerpc/boot/dts/mpc5125twr.dts
++++ b/arch/powerpc/boot/dts/mpc5125twr.dts
+@@ -58,7 +58,6 @@
+ 		compatible = "fsl,mpc5121-immr";
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+-		#interrupt-cells = <2>;
+ 		ranges = <0x0 0x80000000 0x400000>;
+ 		reg = <0x80000000 0x400000>;
+ 		bus-frequency = <66000000>;	// 66 MHz ips bus
+-- 
+1.7.10.4
