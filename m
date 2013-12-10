@@ -1,33 +1,38 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ie0-x234.google.com (mail-ie0-x234.google.com
- [IPv6:2607:f8b0:4001:c03::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5FFF32C031E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 09:42:48 +1100 (EST)
-Received: by mail-ie0-f180.google.com with SMTP id tp5so9415929ieb.25
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 14:42:44 -0800 (PST)
+Return-Path: <scottwood@freescale.com>
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0187.outbound.messaging.microsoft.com [213.199.154.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 329402C0301
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 09:47:31 +1100 (EST)
+Message-ID: <1386707357.10013.114.camel@snotra.buserror.net>
+Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+From: Scott Wood <scottwood@freescale.com>
+To: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
+Date: Tue, 10 Dec 2013 14:29:17 -0600
+In-Reply-To: <34c6142137194b1cbd2336013ed3b10d@BN1PR03MB266.namprd03.prod.outlook.com>
+References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1384973243.2879.361.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1385066603.2879.414.camel@ul30vt.home>
+ <1385066835.1403.489.camel@snotra.buserror.net>
+ <1385067648.2879.421.camel@ul30vt.home>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D0722C180@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1386288052.7375.100.camel@snotra.buserror.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D07251EFF@039-SN2MPN1-012.039d.mgd.msft.net>
+ <1386357907.7375.127.camel@snotra.buserror.net>
+ <34c6142137194b1cbd2336013ed3b10d@BN1PR03MB266.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <1386647973.32037.57.camel@pasglop>
-References: <1386244373-35796-1-git-send-email-wangyijing@huawei.com>
- <20131210000154.GE4699@google.com> <1386647973.32037.57.camel@pasglop>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 10 Dec 2013 10:28:01 -0700
-Message-ID: <CAErSpo67ZB_GUrKpLbkfZs4qLe3S0eYy=oLTKg9=MSxZL2h+yw@mail.gmail.com>
-Subject: Re: [PATCH 1/9] PCI: Use dev_is_pci() to check whether it is pci
- device
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- linux-parisc@vger.kernel.org,
+Cc: Stuart Yoder <stuart.yoder@freescale.com>,
  "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- linux-alpha@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- sparclinux@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>,
- Yijing Wang <wangyijing@huawei.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm <linux-arm-kernel@lists.infradead.org>
+ Alex Williamson <alex.williamson@redhat.com>, "agraf@suse.de" <agraf@suse.de>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ 'Wood Scott-B07421' <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,20 +42,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 9, 2013 at 8:59 PM, Benjamin Herrenschmidt <benh@au1.ibm.com> wrote:
-> On Mon, 2013-12-09 at 17:01 -0700, Bjorn Helgaas wrote:
->> [+cc arch lists]
->>
->> On Thu, Dec 05, 2013 at 07:52:53PM +0800, Yijing Wang wrote:
->> > Use dev_is_pci() instead of directly compare
->> > pci_bus_type to check whether it is pci device.
->> >
->> > Signed-off-by: Yijing Wang <wangyijing@huawei.com>
->>
->> I applied all these to my pci/yijing-dev_is_pci branch for v3.14, thanks!
->>
->> Browse them here: http://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/log/?h=pci/yijing-dev_is_pci
->
-> Ah ok. I also have the powerpc one in powerpc -next, no biggie though
+My e-mail address is <scottwood@freescale.com>, not
+<IMCEAEX-_O=MMS_OU=EXTERNAL+20+28FYDIBOHF25SPDLT
++29_CN=RECIPIENTS_CN=F0FAAC8D7E74473A9EE1C45B068D838A@namprd03.prod.outlook.com>
 
-I'll drop the powerpc one.
+On Tue, 2013-12-10 at 05:37 +0000, Bharat.Bhushan@freescale.com wrote:
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Saturday, December 07, 2013 12:55 AM
+> > To: Bhushan Bharat-R65777
+> > Cc: Alex Williamson; linux-pci@vger.kernel.org; agraf@suse.de; Yoder Stuart-
+> > B08248; iommu@lists.linux-foundation.org; bhelgaas@google.com; linuxppc-
+> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+> > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+> > 
+> > If the administrator does not opt into this partial loss of isolation, then once
+> > you run out of MSI groups, new users should not be able to set up MSIs.
+> 
+> So mean vfio should use Legacy when out of MSI banks?
+
+Yes, if the administrator hasn't granted permission to share.
+
+-Scott
