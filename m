@@ -3,15 +3,20 @@ Received: from mail-out.m-online.net (mail-out.m-online.net
  [IPv6:2001:a60:0:28:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4A4782C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 20:51:29 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 72FF42C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 21:05:08 +1100 (EST)
+Date: Tue, 10 Dec 2013 11:05:01 +0100
 From: Gerhard Sittig <gsi@denx.de>
 To: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH v1 1/1] powerpc/512x: dts: remove misplaced IRQ spec from
- 'soc' node (5125)
-Date: Tue, 10 Dec 2013 10:51:08 +0100
-Message-Id: <1386669068-2477-1-git-send-email-gsi@denx.de>
-Cc: devicetree@vger.kernel.org, Gerhard Sittig <gsi@denx.de>,
+Subject: Re: [PATCH v1 1/1] powerpc/512x: dts: remove misplaced IRQ spec from
+ 'soc' node
+Message-ID: <20131210100501.GO2982@book.gsilab.sittig.org>
+References: <1386068212-11484-1-git-send-email-gsi@denx.de>
+ <20131203150432.2c326004@crub>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131203150432.2c326004@crub>
+Cc: devicetree@vger.kernel.org, matteo.facchinetti@sirius-es.it,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,40 +27,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-the 'soc' node in the MPC5125 "tower" board .dts has an '#interrupt-cells'
-property although this node is not an interrupt controller
+[ Cc: to Matteo as well ]
 
-remove this erroneously placed property because starting with v3.13-rc1
-lookup and resolution of 'interrupts' specs for peripherals gets misled
-(tries to use the 'soc' as the interrupt parent which fails), emits
-'no irq domain found' WARN() messages and breaks the boot process
+On Tue, Dec 03, 2013 at 15:04 +0100, Anatolij Gustschin wrote:
+> 
+> On Tue,  3 Dec 2013 11:56:52 +0100
+> Gerhard Sittig <gsi@denx.de> wrote:
+> 
+> > the 'soc' node in the common .dtsi for MPC5121 has an '#interrupt-cells'
+> > property although this node is not an interrupt controller
+> > 
+> > remove this erroneously placed property because starting with v3.13-rc1
+> > lookup and resolution of 'interrupts' specs for peripherals gets misled,
+> > emits 'no irq domain found' WARN() messages and breaks the boot process
+> > 
+> >   irq: no irq domain found for /soc@80000000 !
+> >   ------------[ cut here ]------------
+> >   WARNING: at /home/gsi/SRC/linux-torvalds/drivers/of/platform.c:171
+> > [ ... ]
+> > 
+> >   ...
+> >   irq: no irq domain found for /soc@80000000 !
+> >   fsl-diu-fb 80002100.display: could not get DIU IRQ
+> >   fsl-diu-fb: probe of 80002100.display failed with error -22
+> >   irq: no irq domain found for /soc@80000000 !
+> >   mpc512x_dma 80014000.dma: Error mapping IRQ!
+> >   mpc512x_dma: probe of 80014000.dma failed with error -22
+> >   ...
+> >   irq: no irq domain found for /soc@80000000 !
+> >   fs_enet: probe of 80002800.ethernet failed with error -22
+> >   ...
+> >   irq: no irq domain found for /soc@80000000 !
+> >   mpc5121-rtc 80000a00.rtc: mpc5121_rtc_probe: could not request irq: 0
+> >   mpc5121-rtc: probe of 80000a00.rtc failed with error -22
+> >   ...
+> > 
+> > [ best viewed with 'git diff -U5' to have DT node names in the context ]
+> > 
+> > Cc: Anatolij Gustschin <agust@denx.de>
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Cc: devicetree@vger.kernel.org
+> > Signed-off-by: Gerhard Sittig <gsi@denx.de>
+> > ---
+> >  arch/powerpc/boot/dts/mpc5121.dtsi |    1 -
+> >  1 file changed, 1 deletion(-)
+> 
+> applied, thanks!
 
-[ best viewed with 'git diff -U5' to have DT node names in the context ]
+FYI: I only noticed yesterday that MPC5125 suffers from the same
+issue, have sent <1386669068-2477-1-git-send-email-gsi@denx.de>
+to fix that as well.  Both patches may get squashed when going
+upstream.  Don't have a dump at hand for MPC5125 as I don't have
+access to hardware.
 
-Cc: Anatolij Gustschin <agust@denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
+Matteo, can you verify that an unpatched v3.13-rc1 (up to and
+including -rc3) won't boot, and that the patch fixes the issue
+for you?  Forgot to Cc: you on the MPC5125 patch, will bounce it
+to you.  Thanks!
 
----
 
-note that this is not a resend of the previous MPC5121 fix, but instead
-is a fix for MPC5125 along the same lines of the MPC5121 fix
----
- arch/powerpc/boot/dts/mpc5125twr.dts |    1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc5125twr.dts b/arch/powerpc/boot/dts/mpc5125twr.dts
-index 4177b62240c2..0a0fe92216ae 100644
---- a/arch/powerpc/boot/dts/mpc5125twr.dts
-+++ b/arch/powerpc/boot/dts/mpc5125twr.dts
-@@ -58,7 +58,6 @@
- 		compatible = "fsl,mpc5121-immr";
- 		#address-cells = <1>;
- 		#size-cells = <1>;
--		#interrupt-cells = <2>;
- 		ranges = <0x0 0x80000000 0x400000>;
- 		reg = <0x80000000 0x400000>;
- 		bus-frequency = <66000000>;	// 66 MHz ips bus
+virtually yours
+Gerhard Sittig
 -- 
-1.7.10.4
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
