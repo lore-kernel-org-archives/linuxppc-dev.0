@@ -1,27 +1,24 @@
-Return-Path: <joseph_myers@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "relay1.mentorg.com",
- Issuer "Entrust Certification Authority - L1C" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9F7212C0092
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 10:07:54 +1100 (EST)
-Date: Tue, 10 Dec 2013 23:07:45 +0000
-From: "Joseph S. Myers" <joseph@codesourcery.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: [PATCHv2 1/6] powerpc: fix exception clearing in e500 SPE float
- emulation
-In-Reply-To: <1386376365.7375.209.camel@snotra.buserror.net>
-Message-ID: <Pine.LNX.4.64.1312102305570.23521@digraph.polyomino.org.uk>
-References: <Pine.LNX.4.64.1311041649250.4290@digraph.polyomino.org.uk>
- <Pine.LNX.4.64.1311041651390.4290@digraph.polyomino.org.uk>
- <1385159644.1403.532.camel@snotra.buserror.net>
- <Pine.LNX.4.64.1311230053360.12354@digraph.polyomino.org.uk>
- <1386376365.7375.209.camel@snotra.buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Sender: Joseph Myers <joseph@codesourcery.com>
-Cc: Liu Yu <yu.liu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Shan Hai <shan.hai@windriver.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 583902C0343
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 10:08:44 +1100 (EST)
+Message-ID: <1386708771.32037.73.camel@pasglop>
+Subject: Re: [PATCH] KVM: PPC: Use schedule instead of cond_resched
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Date: Wed, 11 Dec 2013 07:52:51 +1100
+In-Reply-To: <C3F93DB3-202A-427D-A7B6-A868F3743507@suse.de>
+References: <1386685284-3862-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <C3F93DB3-202A-427D-A7B6-A868F3743507@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,184 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Joseph Myers <joseph@codesourcery.com>
+On Tue, 2013-12-10 at 15:40 +0100, Alexander Graf wrote:
+> On 10.12.2013, at 15:21, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> 
+> > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> > 
+> > We already checked need_resched. So we can call schedule directly
+> > 
+> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> The real fix for the issue you're seeing is
+> 
+>   https://lkml.org/lkml/2013/11/28/241
+> 
 
-The e500 SPE floating-point emulation code clears existing exceptions
-(__FPU_FPSCR &= ~FP_EX_MASK;) before ORing in the exceptions from the
-emulated operation.  However, these exception bits are the "sticky",
-cumulative exception bits, and should only be cleared by the user
-program setting SPEFSCR, not implicitly by any floating-point
-instruction (whether executed purely by the hardware or emulated).
-The spurious clearing of these bits shows up as missing exceptions in
-glibc testing.
+And is still not upstream.... Peter ?
 
-Fixing this, however, is not as simple as just not clearing the bits,
-because while the bits may be from previous floating-point operations
-(in which case they should not be cleared), the processor can also set
-the sticky bits itself before the interrupt for an exception occurs,
-and this can happen in cases when IEEE 754 semantics are that the
-sticky bit should not be set.  Specifically, the "invalid" sticky bit
-is set in various cases with non-finite operands, where IEEE 754
-semantics do not involve raising such an exception, and the
-"underflow" sticky bit is set in cases of exact underflow, whereas
-IEEE 754 semantics are that this flag is set only for inexact
-underflow.  Thus, for correct emulation the kernel needs to know the
-setting of these two sticky bits before the instruction being
-emulated.
-
-When a floating-point operation raises an exception, the kernel can
-note the state of the sticky bits immediately afterwards.  Some
-<fenv.h> functions that affect the state of these bits, such as
-fesetenv and feholdexcept, need to use prctl with PR_GET_FPEXC and
-PR_SET_FPEXC anyway, and so it is natural to record the state of those
-bits during that call into the kernel and so avoid any need for a
-separate call into the kernel to inform it of a change to those bits.
-Thus, the interface I chose to use (in this patch and the glibc port)
-is that one of those prctl calls must be made after any userspace
-change to those sticky bits, other than through a floating-point
-operation that traps into the kernel anyway.  feclearexcept and
-fesetexceptflag duly make those calls, which would not be required
-were it not for this issue.
-
-The previous EGLIBC port, and the uClibc code copied from it, is
-fundamentally broken as regards any use of prctl for floating-point
-exceptions because it didn't use the PR_FP_EXC_SW_ENABLE bit in its
-prctl calls (and did various worse things, such as passing a pointer
-when prctl expected an integer).  If you avoid anything where prctl is
-used, the clearing of sticky bits still means it will never give
-anything approximating correct exception semantics with existing
-kernels.  I don't believe the patch makes things any worse for
-existing code that doesn't try to inform the kernel of changes to
-sticky bits - such code may get incorrect exceptions in some cases,
-but it would have done so anyway in other cases.
-
-Signed-off-by: Joseph Myers <joseph@codesourcery.com>
-
----
-
-> OK -- please mention this in the changelog.
-
-The description of brokenness of existing code attempting to use
-floating-point exceptions on e500 is now included above.
-
-> I don't know of a formal place for it, but there should at least be a
-> code comment somewhere.
-
-This version now adds a comment alongside the relevant settings of
-spefscr_last.
-
-The other patches in this series (2-6) remain independent of this one
-(and as previously noted, with no dependencies except that patch 5
-depends on patch 2) and so are not resent.
-
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index fc14a38..91441d9 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -256,6 +256,8 @@ struct thread_struct {
- 	unsigned long	evr[32];	/* upper 32-bits of SPE regs */
- 	u64		acc;		/* Accumulator */
- 	unsigned long	spefscr;	/* SPE & eFP status */
-+	unsigned long	spefscr_last;	/* SPEFSCR value on last prctl
-+					   call or trap return */
- 	int		used_spe;	/* set if process has used spe */
- #endif /* CONFIG_SPE */
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-@@ -317,7 +319,9 @@ struct thread_struct {
- 	(_ALIGN_UP(sizeof(init_thread_info), 16) + (unsigned long) &init_stack)
- 
- #ifdef CONFIG_SPE
--#define SPEFSCR_INIT .spefscr = SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE | SPEFSCR_FOVFE,
-+#define SPEFSCR_INIT \
-+	.spefscr = SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE | SPEFSCR_FOVFE, \
-+	.spefscr_last = SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE | SPEFSCR_FOVFE,
- #else
- #define SPEFSCR_INIT
- #endif
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 3386d8a..b08c0d0 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1175,6 +1175,19 @@ int set_fpexc_mode(struct task_struct *tsk, unsigned int val)
- 	if (val & PR_FP_EXC_SW_ENABLE) {
- #ifdef CONFIG_SPE
- 		if (cpu_has_feature(CPU_FTR_SPE)) {
-+			/*
-+			 * When the sticky exception bits are set
-+			 * directly by userspace, it must call prctl
-+			 * with PR_GET_FPEXC (with PR_FP_EXC_SW_ENABLE
-+			 * in the existing prctl settings) or
-+			 * PR_SET_FPEXC (with PR_FP_EXC_SW_ENABLE in
-+			 * the bits being set).  <fenv.h> functions
-+			 * saving and restoring the whole
-+			 * floating-point environment need to do so
-+			 * anyway to restore the prctl settings from
-+			 * the saved environment.
-+			 */
-+			tsk->thread.spefscr_last = mfspr(SPRN_SPEFSCR);
- 			tsk->thread.fpexc_mode = val &
- 				(PR_FP_EXC_SW_ENABLE | PR_FP_ALL_EXCEPT);
- 			return 0;
-@@ -1206,9 +1219,22 @@ int get_fpexc_mode(struct task_struct *tsk, unsigned long adr)
- 
- 	if (tsk->thread.fpexc_mode & PR_FP_EXC_SW_ENABLE)
- #ifdef CONFIG_SPE
--		if (cpu_has_feature(CPU_FTR_SPE))
-+		if (cpu_has_feature(CPU_FTR_SPE)) {
-+			/*
-+			 * When the sticky exception bits are set
-+			 * directly by userspace, it must call prctl
-+			 * with PR_GET_FPEXC (with PR_FP_EXC_SW_ENABLE
-+			 * in the existing prctl settings) or
-+			 * PR_SET_FPEXC (with PR_FP_EXC_SW_ENABLE in
-+			 * the bits being set).  <fenv.h> functions
-+			 * saving and restoring the whole
-+			 * floating-point environment need to do so
-+			 * anyway to restore the prctl settings from
-+			 * the saved environment.
-+			 */
-+			tsk->thread.spefscr_last = mfspr(SPRN_SPEFSCR);
- 			val = tsk->thread.fpexc_mode;
--		else
-+		} else
- 			return -EINVAL;
- #else
- 		return -EINVAL;
-diff --git a/arch/powerpc/math-emu/math_efp.c b/arch/powerpc/math-emu/math_efp.c
-index a73f088..59835c6 100644
---- a/arch/powerpc/math-emu/math_efp.c
-+++ b/arch/powerpc/math-emu/math_efp.c
-@@ -630,9 +630,27 @@ update_ccr:
- 	regs->ccr |= (IR << ((7 - ((speinsn >> 23) & 0x7)) << 2));
- 
- update_regs:
--	__FPU_FPSCR &= ~FP_EX_MASK;
-+	/*
-+	 * If the "invalid" exception sticky bit was set by the
-+	 * processor for non-finite input, but was not set before the
-+	 * instruction being emulated, clear it.  Likewise for the
-+	 * "underflow" bit, which may have been set by the processor
-+	 * for exact underflow, not just inexact underflow when the
-+	 * flag should be set for IEEE 754 semantics.  Other sticky
-+	 * exceptions will only be set by the processor when they are
-+	 * correct according to IEEE 754 semantics, and we must not
-+	 * clear sticky bits that were already set before the emulated
-+	 * instruction as they represent the user-visible sticky
-+	 * exception status.  "inexact" traps to kernel are not
-+	 * required for IEEE semantics and are not enabled by default,
-+	 * so the "inexact" sticky bit may have been set by a previous
-+	 * instruction without the kernel being aware of it.
-+	 */
-+	__FPU_FPSCR
-+	  &= ~(FP_EX_INVALID | FP_EX_UNDERFLOW) | current->thread.spefscr_last;
- 	__FPU_FPSCR |= (FP_CUR_EXCEPTIONS & FP_EX_MASK);
- 	mtspr(SPRN_SPEFSCR, __FPU_FPSCR);
-+	current->thread.spefscr_last = __FPU_FPSCR;
- 
- 	current->thread.evr[fc] = vc.wp[0];
- 	regs->gpr[fc] = vc.wp[1];
-
-
--- 
-Joseph S. Myers
-joseph@codesourcery.com
+Cheers,
+Ben.
