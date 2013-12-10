@@ -1,17 +1,13 @@
-Return-Path: <Bharat.Bhushan@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0203.outbound.protection.outlook.com [207.46.163.203])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.protection.outlook.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8CF972C0189
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 16:53:03 +1100 (EST)
-From: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
-To: Alex Williamson <alex.williamson@redhat.com>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
-Date: Tue, 10 Dec 2013 05:37:11 +0000
-Message-ID: <326a93628a9141a9abce97b7bb4e04fd@BN1PR03MB266.namprd03.prod.outlook.com>
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 905E52C0271
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 16:53:26 +1100 (EST)
+Message-ID: <1386654800.22974.2.camel@ul30vt.home>
+Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+From: Alex Williamson <alex.williamson@redhat.com>
+To: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
+Date: Mon, 09 Dec 2013 22:53:20 -0700
+In-Reply-To: <326a93628a9141a9abce97b7bb4e04fd@BN1PR03MB266.namprd03.prod.outlook.com>
 References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
  <1384973243.2879.361.camel@ul30vt.home>
  <6A3DF150A5B70D4F9B66A25E3F7C888D0721D9AC@039-SN2MPN1-012.039d.mgd.msft.net>
@@ -25,14 +21,14 @@ References: <1384838233-24847-1-git-send-email-Bharat.Bhushan@freescale.com>
  <6A3DF150A5B70D4F9B66A25E3F7C888D07251EE4@039-SN2MPN1-012.039d.mgd.msft.net>
  <1386356393.7375.118.camel@snotra.buserror.net>
  <1386358226.25738.506.camel@ul30vt.home>
-In-Reply-To: <1386358226.25738.506.camel@ul30vt.home>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ <326a93628a9141a9abce97b7bb4e04fd@BN1PR03MB266.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
  "agraf@suse.de" <agraf@suse.de>, Stuart Yoder <stuart.yoder@freescale.com>,
- "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
  "bhelgaas@google.com" <bhelgaas@google.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Scott Wood <scottwood@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,66 +40,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQWxleCBXaWxsaWFtc29u
-IFttYWlsdG86YWxleC53aWxsaWFtc29uQHJlZGhhdC5jb21dDQo+IFNlbnQ6IFNhdHVyZGF5LCBE
-ZWNlbWJlciAwNywgMjAxMyAxOjAwIEFNDQo+IFRvOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBDYzog
-Qmh1c2hhbiBCaGFyYXQtUjY1Nzc3OyBsaW51eC1wY2lAdmdlci5rZXJuZWwub3JnOyBhZ3JhZkBz
-dXNlLmRlOyBZb2Rlcg0KPiBTdHVhcnQtQjA4MjQ4OyBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0
-aW9uLm9yZzsgYmhlbGdhYXNAZ29vZ2xlLmNvbTsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxh
-YnMub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0ggMC85IHYyXSB2ZmlvLXBjaTogYWRkIHN1cHBvcnQgZm9yIEZyZWVzY2FsZSBJT01NVSAoUEFN
-VSkNCj4gDQo+IE9uIEZyaSwgMjAxMy0xMi0wNiBhdCAxMjo1OSAtMDYwMCwgU2NvdHQgV29vZCB3
-cm90ZToNCj4gPiBPbiBUaHUsIDIwMTMtMTItMDUgYXQgMjI6MTEgLTA2MDAsIEJoYXJhdCBCaHVz
-aGFuIHdyb3RlOg0KPiA+ID4NCj4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4g
-PiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gU2VudDogRnJpZGF5LCBEZWNl
-bWJlciAwNiwgMjAxMyA1OjUyIEFNDQo+ID4gPiA+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcN
-Cj4gPiA+ID4gQ2M6IEFsZXggV2lsbGlhbXNvbjsgbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsg
-YWdyYWZAc3VzZS5kZTsNCj4gPiA+ID4gWW9kZXIgU3R1YXJ0LSBCMDgyNDg7IGlvbW11QGxpc3Rz
-LmxpbnV4LWZvdW5kYXRpb24ub3JnOw0KPiA+ID4gPiBiaGVsZ2Fhc0Bnb29nbGUuY29tOyBsaW51
-eHBwYy0gZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiA+IGxpbnV4LWtlcm5lbEB2Z2VyLmtl
-cm5lbC5vcmcNCj4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAwLzkgdjJdIHZmaW8tcGNpOiBh
-ZGQgc3VwcG9ydCBmb3IgRnJlZXNjYWxlDQo+ID4gPiA+IElPTU1VIChQQU1VKQ0KPiA+ID4gPg0K
-PiA+ID4gPiBPbiBUaHUsIDIwMTMtMTEtMjggYXQgMDM6MTkgLTA2MDAsIEJoYXJhdCBCaHVzaGFu
-IHdyb3RlOg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
-LQ0KPiA+ID4gPiA+ID4gRnJvbTogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiA+ID4gPiBT
-ZW50OiBXZWRuZXNkYXksIE5vdmVtYmVyIDI3LCAyMDEzIDk6MzkgUE0NCj4gPiA+ID4gPiA+IFRv
-OiAnQWxleCBXaWxsaWFtc29uJw0KPiA+ID4gPiA+ID4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBs
-aW51eC1wY2lAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gPiA+ID4gYWdyYWZAc3VzZS5kZTsgWW9k
-ZXIgU3R1YXJ0LSBCMDgyNDg7DQo+ID4gPiA+ID4gPiBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0
-aW9uLm9yZzsgYmhlbGdhYXNAZ29vZ2xlLmNvbTsNCj4gPiA+ID4gPiA+IGxpbnV4cHBjLSBkZXZA
-bGlzdHMub3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiA+ID4gPiA+
-ID4gU3ViamVjdDogUkU6IFtQQVRDSCAwLzkgdjJdIHZmaW8tcGNpOiBhZGQgc3VwcG9ydCBmb3IN
-Cj4gPiA+ID4gPiA+IEZyZWVzY2FsZSBJT01NVSAoUEFNVSkNCj4gPiA+ID4gPiA+DQo+ID4gPiA+
-ID4gPiBJZiB3ZSBqdXN0IHByb3ZpZGUgdGhlIHNpemUgb2YgTVNJIGJhbmsgdG8gdXNlcnNwYWNl
-IHRoZW4NCj4gPiA+ID4gPiA+IHVzZXJzcGFjZSBjYW5ub3QgZG8gYW55dGhpbmcgd3JvbmcuDQo+
-ID4gPiA+ID4NCj4gPiA+ID4gPiBTbyB1c2Vyc3BhY2UgZG9lcyBub3Qga25vdyBhZGRyZXNzLCBz
-byBpdCBjYW5ub3QgbW1hcCBhbmQgY2F1c2UNCj4gPiA+ID4gPiBhbnkNCj4gPiA+ID4gaW50ZXJm
-ZXJlbmNlIGJ5IGRpcmVjdGx5IHJlYWRpbmcvd3JpdGluZy4NCj4gPiA+ID4NCj4gPiA+ID4gVGhh
-dCdzIHNlY3VyaXR5IHRocm91Z2ggb2JzY3VyaXR5Li4uICBDb3VsZG4ndCB0aGUgbWFsaWNpb3Vz
-IHVzZXINCj4gPiA+ID4gZmluZCBvdXQgdGhlIGFkZHJlc3MgdmlhIG90aGVyIG1lYW5zLCBzdWNo
-IGFzIGV4cGVyaW1lbnRhdGlvbiBvbg0KPiA+ID4gPiBhbm90aGVyIHN5c3RlbSBvdmVyIHdoaWNo
-IHRoZXkgaGF2ZSBmdWxsIGNvbnRyb2w/ICBXaGF0IHdvdWxkDQo+ID4gPiA+IGhhcHBlbiBpZiB0
-aGUgdXNlciByZWFkcyBmcm9tIHRoZWlyIGRldmljZSdzIFBDSSBjb25maWcgc3BhY2U/ICBPcg0K
-PiA+ID4gPiBnZXRzIHRoZSBpbmZvcm1hdGlvbiB2aWEgc29tZSBiYWNrIGRvb3IgaW4gdGhlIFBD
-SSBkZXZpY2UgdGhleQ0KPiA+ID4gPiBvd24/ICBPciBwb2tlcyB0aHJvdWdob3V0IHRoZSBhZGRy
-ZXNzIHNwYWNlIGxvb2tpbmcgZm9yIHNvbWV0aGluZyB0aGF0DQo+IGdlbmVyYXRlcyBhbiBpbnRl
-cnJ1cHQgdG8gaXRzIG93biBkZXZpY2U/DQo+ID4gPg0KPiA+ID4gU28gaG93IHRvIHNvbHZlIHRo
-aXMgcHJvYmxlbSwgQW55IHN1Z2dlc3Rpb24gPw0KPiA+ID4NCj4gPiA+IFdlIGhhdmUgdG8gbWFw
-IG9uZSB3aW5kb3cgaW4gUEFNVSBmb3IgTVNJcyBhbmQgYSBtYWxpY2lvdXMgdXNlciBjYW4NCj4g
-PiA+IGFzayBpdHMgZGV2aWNlIHRvIGRvIERNQSB0byBNU0kgd2luZG93IHJlZ2lvbiB3aXRoIGFu
-eSBwYWlyIG9mDQo+ID4gPiBhZGRyZXNzIGFuZCBkYXRhLCB3aGljaCBjYW4gbGVhZCB0byB1bmV4
-cGVjdGVkIE1TSXMgaW4gc3lzdGVtPw0KPiA+DQo+ID4gSSBkb24ndCB0aGluayB0aGVyZSBhcmUg
-YW55IHNvbHV0aW9ucyBvdGhlciB0aGFuIHRvIGxpbWl0IGVhY2ggYmFuayB0bw0KPiA+IG9uZSB1
-c2VyLCB1bmxlc3MgdGhlIGFkbWluIHR1cm5zIHNvbWUga25vYiB0aGF0IHNheXMgdGhleSdyZSBP
-SyB3aXRoDQo+ID4gdGhlIHBhcnRpYWwgbG9zcyBvZiBpc29sYXRpb24uDQo+IA0KPiBFdmVuIGlm
-IHRoZSBhZG1pbiBkb2VzIG9wdC1pbiB0byBhbiBhbGxvd191bnNhZmVfaW50ZXJydXB0cyBvcHRp
-b25zLCBpdCBzaG91bGQNCj4gc3RpbGwgYmUgcmVhc29uYWJseSBkaWZmaWN1bHQgZm9yIG9uZSBn
-dWVzdCB0byBpbnRlcmZlcmUgd2l0aCB0aGUgb3RoZXIuICBJDQo+IGRvbid0IHRoaW5rIHdlIHdh
-bnQgdG8gcmVseSBvbiB0aGUgYmxpbmQgbHVjayBvZiBtYWtpbmcgdGhlIGZ1bGwgTVNJIGJhbmsN
-Cj4gYWNjZXNzaWJsZSB0byBtdWx0aXBsZSBndWVzdHMgYW5kIGhvcGluZyB0aGV5IGRvbid0IHN0
-ZXAgb24gZWFjaCBvdGhlci4NCg0KTm90IHN1cmUgaG93IHRvIHNvbHZlIGluIHRoaXMgY2FzZSAo
-c2hhcmluZyBNU0kgcGFnZSkNCg0KPiAgVGhhdCBwcm9iYWJseSBtZWFucyB0aGF0IHZmaW8gbmVl
-ZHMgdG8gbWFuYWdlIHRoZSBzcGFjZSByYXRoZXIgdGhhbiB0aGUgZ3Vlc3QuDQoNCldoYXQgeW91
-IG1lYW4gYnkgIiB2ZmlvIG5lZWRzIHRvIG1hbmFnZSB0aGUgc3BhY2UgcmF0aGVyIHRoYW4gdGhl
-IGd1ZXN0Ij8NCg0KVGhhbmtzDQotQmhhcmF0DQoNCj4gVGhhbmtzLA0KPiANCj4gQWxleA0KPiAN
-Cg0K
+On Tue, 2013-12-10 at 05:37 +0000, Bharat.Bhushan@freescale.com wrote:
+> 
+> > -----Original Message-----
+> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> > Sent: Saturday, December 07, 2013 1:00 AM
+> > To: Wood Scott-B07421
+> > Cc: Bhushan Bharat-R65777; linux-pci@vger.kernel.org; agraf@suse.de; Yoder
+> > Stuart-B08248; iommu@lists.linux-foundation.org; bhelgaas@google.com; linuxppc-
+> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+> > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale IOMMU (PAMU)
+> > 
+> > On Fri, 2013-12-06 at 12:59 -0600, Scott Wood wrote:
+> > > On Thu, 2013-12-05 at 22:11 -0600, Bharat Bhushan wrote:
+> > > >
+> > > > > -----Original Message-----
+> > > > > From: Wood Scott-B07421
+> > > > > Sent: Friday, December 06, 2013 5:52 AM
+> > > > > To: Bhushan Bharat-R65777
+> > > > > Cc: Alex Williamson; linux-pci@vger.kernel.org; agraf@suse.de;
+> > > > > Yoder Stuart- B08248; iommu@lists.linux-foundation.org;
+> > > > > bhelgaas@google.com; linuxppc- dev@lists.ozlabs.org;
+> > > > > linux-kernel@vger.kernel.org
+> > > > > Subject: Re: [PATCH 0/9 v2] vfio-pci: add support for Freescale
+> > > > > IOMMU (PAMU)
+> > > > >
+> > > > > On Thu, 2013-11-28 at 03:19 -0600, Bharat Bhushan wrote:
+> > > > > >
+> > > > > > > -----Original Message-----
+> > > > > > > From: Bhushan Bharat-R65777
+> > > > > > > Sent: Wednesday, November 27, 2013 9:39 PM
+> > > > > > > To: 'Alex Williamson'
+> > > > > > > Cc: Wood Scott-B07421; linux-pci@vger.kernel.org;
+> > > > > > > agraf@suse.de; Yoder Stuart- B08248;
+> > > > > > > iommu@lists.linux-foundation.org; bhelgaas@google.com;
+> > > > > > > linuxppc- dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+> > > > > > > Subject: RE: [PATCH 0/9 v2] vfio-pci: add support for
+> > > > > > > Freescale IOMMU (PAMU)
+> > > > > > >
+> > > > > > > If we just provide the size of MSI bank to userspace then
+> > > > > > > userspace cannot do anything wrong.
+> > > > > >
+> > > > > > So userspace does not know address, so it cannot mmap and cause
+> > > > > > any
+> > > > > interference by directly reading/writing.
+> > > > >
+> > > > > That's security through obscurity...  Couldn't the malicious user
+> > > > > find out the address via other means, such as experimentation on
+> > > > > another system over which they have full control?  What would
+> > > > > happen if the user reads from their device's PCI config space?  Or
+> > > > > gets the information via some back door in the PCI device they
+> > > > > own?  Or pokes throughout the address space looking for something that
+> > generates an interrupt to its own device?
+> > > >
+> > > > So how to solve this problem, Any suggestion ?
+> > > >
+> > > > We have to map one window in PAMU for MSIs and a malicious user can
+> > > > ask its device to do DMA to MSI window region with any pair of
+> > > > address and data, which can lead to unexpected MSIs in system?
+> > >
+> > > I don't think there are any solutions other than to limit each bank to
+> > > one user, unless the admin turns some knob that says they're OK with
+> > > the partial loss of isolation.
+> > 
+> > Even if the admin does opt-in to an allow_unsafe_interrupts options, it should
+> > still be reasonably difficult for one guest to interfere with the other.  I
+> > don't think we want to rely on the blind luck of making the full MSI bank
+> > accessible to multiple guests and hoping they don't step on each other.
+> 
+> Not sure how to solve in this case (sharing MSI page)
+> 
+> >  That probably means that vfio needs to manage the space rather than the guest.
+> 
+> What you mean by " vfio needs to manage the space rather than the guest"?
+
+I mean there needs to be some kernel component managing the contents of
+the MSI page rather than just handing it out to the user and hoping for
+the best.  The user API also needs to remain the same whether the user
+has the MSI page exclusively or it's shared with others (kernel or
+users).  Thanks,
+
+Alex
