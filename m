@@ -1,23 +1,22 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 72FF42C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 21:05:08 +1100 (EST)
-Date: Tue, 10 Dec 2013 11:05:01 +0100
-From: Gerhard Sittig <gsi@denx.de>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH v1 1/1] powerpc/512x: dts: remove misplaced IRQ spec from
- 'soc' node
-Message-ID: <20131210100501.GO2982@book.gsilab.sittig.org>
-References: <1386068212-11484-1-git-send-email-gsi@denx.de>
- <20131203150432.2c326004@crub>
+Return-Path: <hongbo.zhang@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 403C02C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 21:33:42 +1100 (EST)
+Message-ID: <52A6EDE8.5060903@freescale.com>
+Date: Tue, 10 Dec 2013 18:33:12 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131203150432.2c326004@crub>
-Cc: devicetree@vger.kernel.org, matteo.facchinetti@sirius-es.it,
- linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] DTS: DMA: Fix DMA3 interrupts
+References: <1385712446-28221-1-git-send-email-hongbo.zhang@freescale.com>
+ <1386357684.7375.124.camel@snotra.buserror.net>
+In-Reply-To: <1386357684.7375.124.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,68 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ Cc: to Matteo as well ]
+Scott,
+This issue is due to the non-continuous MPIC register, I think there is 
+two ways to fix it.
 
-On Tue, Dec 03, 2013 at 15:04 +0100, Anatolij Gustschin wrote:
-> 
-> On Tue,  3 Dec 2013 11:56:52 +0100
-> Gerhard Sittig <gsi@denx.de> wrote:
-> 
-> > the 'soc' node in the common .dtsi for MPC5121 has an '#interrupt-cells'
-> > property although this node is not an interrupt controller
-> > 
-> > remove this erroneously placed property because starting with v3.13-rc1
-> > lookup and resolution of 'interrupts' specs for peripherals gets misled,
-> > emits 'no irq domain found' WARN() messages and breaks the boot process
-> > 
-> >   irq: no irq domain found for /soc@80000000 !
-> >   ------------[ cut here ]------------
-> >   WARNING: at /home/gsi/SRC/linux-torvalds/drivers/of/platform.c:171
-> > [ ... ]
-> > 
-> >   ...
-> >   irq: no irq domain found for /soc@80000000 !
-> >   fsl-diu-fb 80002100.display: could not get DIU IRQ
-> >   fsl-diu-fb: probe of 80002100.display failed with error -22
-> >   irq: no irq domain found for /soc@80000000 !
-> >   mpc512x_dma 80014000.dma: Error mapping IRQ!
-> >   mpc512x_dma: probe of 80014000.dma failed with error -22
-> >   ...
-> >   irq: no irq domain found for /soc@80000000 !
-> >   fs_enet: probe of 80002800.ethernet failed with error -22
-> >   ...
-> >   irq: no irq domain found for /soc@80000000 !
-> >   mpc5121-rtc 80000a00.rtc: mpc5121_rtc_probe: could not request irq: 0
-> >   mpc5121-rtc: probe of 80000a00.rtc failed with error -22
-> >   ...
-> > 
-> > [ best viewed with 'git diff -U5' to have DT node names in the context ]
-> > 
-> > Cc: Anatolij Gustschin <agust@denx.de>
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Cc: devicetree@vger.kernel.org
-> > Signed-off-by: Gerhard Sittig <gsi@denx.de>
-> > ---
-> >  arch/powerpc/boot/dts/mpc5121.dtsi |    1 -
-> >  1 file changed, 1 deletion(-)
-> 
-> applied, thanks!
+The first one is as what we are discussing, in fact the Bman/Qman DT 
+author had introduced this way, and I had to follow it, it is a trick, 
+adding 208 is a bit ugly I think, and even difficult to explain it to 
+customers etc, but this way changes less codes.
 
-FYI: I only noticed yesterday that MPC5125 suffers from the same
-issue, have sent <1386669068-2477-1-git-send-email-gsi@denx.de>
-to fix that as well.  Both patches may get squashed when going
-upstream.  Don't have a dump at hand for MPC5125 as I don't have
-access to hardware.
+The second one is editing MPIC related codes without adding 208 to high 
+interrupts. The point of translate interrupt number to MPIC register 
+address is a so called 'isu' mechanism, we can do like the following 
+example codes, then the tricky adding 208 isn't needed any more.
 
-Matteo, can you verify that an unpatched v3.13-rc1 (up to and
-including -rc3) won't boot, and that the patch fixes the issue
-for you?  Forgot to Cc: you on the MPC5125 patch, will bounce it
-to you.  Thanks!
+Which one do you prefer?
+In fact I myself prefer the second, if the idea is acceptable, I will 
+send a patch instead of this one. (and also alone with the internal 
+patch decreasing 208 for the Bman/Qman)
 
+void __init corenet_ds_pic_init(void)
+{
+     ......
 
-virtually yours
-Gerhard Sittig
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+     mpic = mpic_alloc(NULL, 0, flags, 0, 512, "OpenPIC");
+     BUG_ON(mpic == NULL);
+
+// Add this start
+     for (i = 0; i < 17; i++) {
+         if (i < 11)
+             addr_off = 0x10000 + 0x20 * 16 * i;
+         else
+             addr_off = 0x13000 + 0x20 * 16 * (i - 11);  /* scape the 
+address not for interrupts */
+         mpic_assign_isu(mpic, i, mpic->paddr + addr_off);
+     }
+// Add this end
+
+     mpic_init(mpic);
+}
+
+On 12/07/2013 03:21 AM, Scott Wood wrote:
+> On Fri, 2013-11-29 at 16:07 +0800, hongbo.zhang@freescale.com wrote:
+>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+>>
+>> MPIC registers for internal interrupts is non-continous in address, any
+>> internal interrupt number greater than 159 should be added (16+208) to work.
+>> 16 is due to external interrupts as usual, 208 is due to the non-continous MPIC
+>> register space.
+>> Tested on T4240 rev2 with SRIO2 disabled.
+>>
+>> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+>> ---
+>>   arch/powerpc/boot/dts/fsl/elo3-dma-2.dtsi |   16 ++++++++--------
+>>   1 file changed, 8 insertions(+), 8 deletions(-)
+> The FSL MPIC binding should be updated to point out how this works.
+>
+> Technically it's not a change to the binding itself, since it's defined
+> in terms of register offset, but the explanatory text says "So interrupt
+> 0 is at offset 0x0, interrupt 1 is at offset 0x20, and so on." which is
+> not accurate for these new high interrupt numbers.
+>
+> -Scott
+>
+>
+>
