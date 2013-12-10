@@ -1,18 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6774A2C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2013 12:57:58 +1100 (EST)
-Message-ID: <1386640667.32037.53.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 10 Dec 2013 12:57:47 +1100
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1386640934.26691.5.camel@concordia>
+Subject: Re: [PATCH] powerpc/pseries: Don't try to register pseries cpu
+ hotplug on non-pseries
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 10 Dec 2013 13:02:14 +1100
+In-Reply-To: <1386635462.32037.44.camel@pasglop>
+References: <1386635462.32037.44.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,71 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Tue, 2013-12-10 at 11:31 +1100, Benjamin Herrenschmidt wrote:
+> This results in oddball messages at boot on other platforms telling us
+> that CPU hotplug isn't supported even when it is.
 
-Here are a handful of powerpc fixes for 3.13.
+We have a bunch more. Most are probably safe because they rely on the device
+tree but we should probably convert them anyway?
 
-The patches are reasonably trivial and self contained. Note the
-offb patches outside of arch/powerpc, they are LE fixes for our
-open-firmware "dumb" framebuffer.
+$ git grep initcall arch/powerpc/platforms/pseries/ | grep -v machine_
+arch/powerpc/platforms/pseries/dtl.c:arch_initcall(dtl_init);
+arch/powerpc/platforms/pseries/eeh_pseries.c:early_initcall(eeh_pseries_init);
+arch/powerpc/platforms/pseries/hotplug-cpu.c:arch_initcall(pseries_cpu_hotplug_init);
+arch/powerpc/platforms/pseries/hvCall_inst.c:__initcall(hcall_inst_init);
+arch/powerpc/platforms/pseries/mobility.c:device_initcall(mobility_sysfs_init);
+arch/powerpc/platforms/pseries/msi.c:arch_initcall(rtas_msi_init);
+arch/powerpc/platforms/pseries/power.c:core_initcall(pm_init);
+arch/powerpc/platforms/pseries/power.c:__initcall(apo_pm_init);
+arch/powerpc/platforms/pseries/ras.c:subsys_initcall(init_ras_IRQ);
+arch/powerpc/platforms/pseries/reconfig.c:__initcall(proc_ppc64_create_ofdt);
+arch/powerpc/platforms/pseries/rng.c:subsys_initcall(rng_init);
+arch/powerpc/platforms/pseries/setup.c:early_initcall(alloc_dispatch_log_kmem_cache);
+arch/powerpc/platforms/pseries/suspend.c:__initcall(pseries_suspend_init);
 
-Cheers,
-Ben.
-
-The following changes since commit 721cb59e9d95eb7f47ec73711ed35ef85e1ea1ca:
-
-  powerpc/windfarm: Fix XServe G5 fan control Makefile issue (2013-11-27 11:35:47 +1100)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to e641eb03ab2b0f065fa5e64b4202fb5b0441b427:
-
-  powerpc: Fix up the kdump base cap to 128M (2013-12-10 11:28:39 +1100)
-
-----------------------------------------------------------------
-Anatolij Gustschin (1):
-      powerpc/52xx: Re-enable bestcomm driver in defconfigs
-
-Cedric Le Goater (2):
-      offb: Little endian fixes
-      offb: Add palette hack for little endian
-
-Gerhard Sittig (1):
-      powerpc/512x: dts: remove misplaced IRQ spec from 'soc' node
-
-Hong H. Pham (1):
-      powerpc: Fix PTE page address mismatch in pgtable ctor/dtor
-
-Ilia Mirkin (1):
-      powerpc/44x: Fix ocm_block allocation
-
-Mahesh Salgaonkar (1):
-      powerpc: Fix up the kdump base cap to 128M
-
-Michael Ellerman (1):
-      powerpc: Fix build break with PPC_EARLY_DEBUG_BOOTX=y
-
-Olof Johansson (1):
-      powerpc/pasemi: Turn on devtmpfs in defconfig
-
-Thadeu Lima de Souza Cascardo (1):
-      powernv: Fix VFIO support with PHB3
-
- arch/powerpc/boot/dts/mpc5121.dtsi            |  1 -
- arch/powerpc/configs/52xx/cm5200_defconfig    |  3 ++-
- arch/powerpc/configs/52xx/lite5200b_defconfig |  3 ++-
- arch/powerpc/configs/52xx/motionpro_defconfig |  3 ++-
- arch/powerpc/configs/52xx/pcm030_defconfig    |  3 ++-
- arch/powerpc/configs/52xx/tqm5200_defconfig   |  3 ++-
- arch/powerpc/configs/mpc5200_defconfig        |  3 ++-
- arch/powerpc/configs/pasemi_defconfig         |  7 +++----
- arch/powerpc/include/asm/pgalloc-32.h         |  6 ++----
- arch/powerpc/include/asm/pgalloc-64.h         |  6 ++----
- arch/powerpc/kernel/machine_kexec.c           |  2 +-
- arch/powerpc/kernel/misc_64.S                 |  5 ++++-
- arch/powerpc/platforms/powernv/pci-ioda.c     |  1 +
- arch/powerpc/sysdev/ppc4xx_ocm.c              |  2 +-
- drivers/video/offb.c                          | 29 +++++++++++++++++++--------
- 15 files changed, 47 insertions(+), 30 deletions(-)
+cheers
