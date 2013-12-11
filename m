@@ -1,25 +1,25 @@
 Return-Path: <kernelfans@gmail.com>
-Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
- [IPv6:2607:f8b0:400e:c02::233])
+Received: from mail-qc0-x231.google.com (mail-qc0-x231.google.com
+ [IPv6:2607:f8b0:400d:c01::231])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2312D2C0385
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 19:47:18 +1100 (EST)
-Received: by mail-pd0-f179.google.com with SMTP id r10so9068124pdi.24
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 00:47:15 -0800 (PST)
-From: Liu Ping Fan <kernelfans@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	kvm-ppc@vger.kernel.org
-Subject: [PATCH 4/4] powernv: kvm: make the handling of _PAGE_NUMA faster for
- guest
-Date: Wed, 11 Dec 2013 16:47:54 +0800
-Message-Id: <1386751674-14136-5-git-send-email-pingfank@linux.vnet.ibm.com>
-In-Reply-To: <1386751674-14136-1-git-send-email-pingfank@linux.vnet.ibm.com>
-References: <1386751674-14136-1-git-send-email-pingfank@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Alexander Graf <agraf@suse.de>
+ by ozlabs.org (Postfix) with ESMTPS id 515382C030D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 19:50:08 +1100 (EST)
+Received: by mail-qc0-f177.google.com with SMTP id m20so4795301qcx.22
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 00:50:04 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <87a9gfva9n.fsf@linux.vnet.ibm.com>
+References: <1386140348-7854-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <1386140348-7854-2-git-send-email-pingfank@linux.vnet.ibm.com>
+ <87a9gfva9n.fsf@linux.vnet.ibm.com>
+Date: Wed, 11 Dec 2013 16:50:04 +0800
+Message-ID: <CAFgQCTtd1v+ANEy899_Tk2UmYsAL1Lxe8t6WuMxFvjXk5rtn_Q@mail.gmail.com>
+Subject: Re: [PATCH 1/3] powerpc: mm: make _PAGE_NUMA take effect
+From: Liu ping fan <kernelfans@gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,79 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The period check of _PAGE_NUMA can probably happen on the correctly
-placed page. For this case, when guest try to setup hpte in real mode,
-we try to resolve the numa fault in real mode, since the switch between
-guest context and host context costs too much.
+On Thu, Dec 5, 2013 at 6:53 PM, Aneesh Kumar K.V
+<aneesh.kumar@linux.vnet.ibm.com> wrote:
+> Liu Ping Fan <kernelfans@gmail.com> writes:
+>
+>> To enable the do_numa_page(), we should not fix _PAGE_NUMA in
+>> hash_page(), so bail out for the case of pte_numa().
+>>
+>> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/mm/hash_utils_64.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+>> index fb176e9..9bf1195 100644
+>> --- a/arch/powerpc/mm/hash_utils_64.c
+>> +++ b/arch/powerpc/mm/hash_utils_64.c
+>> @@ -1033,7 +1033,7 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+>>
+>>       /* Get PTE and page size from page tables */
+>>       ptep = find_linux_pte_or_hugepte(pgdir, ea, &hugeshift);
+>> -     if (ptep == NULL || !pte_present(*ptep)) {
+>> +     if (ptep == NULL || !pte_present(*ptep) || pte_numa(*ptep)) {
+>>               DBG_LOW(" no PTE !\n");
+>>               rc = 1;
+>>               goto bail;
+>
+> why ? , All the hash routines do check for _PAGE_PRESENT via access
+> variable.
+>
+Going through __hash_page_4K(4k on 4k HW), I do not find such check.
+Am I wrong? Or I will send out a patch to fix that.
 
-Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
----
- arch/powerpc/kvm/book3s_hv_rm_mmu.c | 32 ++++++++++++++++++++++++++++++--
- 1 file changed, 30 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index ae46052..a06b199 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -179,6 +179,11 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
- 	unsigned int writing;
- 	unsigned long mmu_seq;
- 	unsigned long rcbits;
-+	struct mm_struct *mm = kvm->mm;
-+	struct vm_area_struct *vma;
-+	int page_nid, target_nid;
-+	struct page *test_page;
-+	pte_t *ptep;
- 
- 	psize = hpte_page_size(pteh, ptel);
- 	if (!psize)
-@@ -234,8 +239,26 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
- 
- 		/* Look up the Linux PTE for the backing page */
- 		pte_size = psize;
--		pte = lookup_linux_pte(pgdir, hva, writing, &pte_size, NULL);
--		if (pte_present(pte) && !pte_numa(pte)) {
-+		pte = lookup_linux_pte(pgdir, hva, writing, &pte_size, &ptep);
-+		if (pte_present(pte)) {
-+			if (pte_numa(pte)) {
-+				/* If fail, let gup handle it */
-+				if (unlikely(!down_read_trylock(&mm->mmap_sem)))
-+					goto pte_check;
-+
-+				vma = find_vma(mm, hva);
-+				up_read(&mm->mmap_sem);
-+				test_page = pte_page(pte);
-+				page_nid = page_to_nid(test_page);
-+				target_nid = numa_migrate_prep(test_page, vma,
-+							 hva, page_nid);
-+				put_page(test_page);
-+				if (unlikely(target_nid != -1)) {
-+					/* If fail, let gup handle it */
-+					goto pte_check;
-+				}
-+			}
-+
- 			if (writing && !pte_write(pte))
- 				/* make the actual HPTE be read-only */
- 				ptel = hpte_make_readonly(ptel);
-@@ -244,6 +267,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
- 		}
- 	}
- 
-+pte_check:
- 	if (pte_size < psize)
- 		return H_PARAMETER;
- 	if (pa && pte_size > psize)
-@@ -339,6 +363,10 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
- 			pteh &= ~HPTE_V_VALID;
- 			unlock_rmap(rmap);
- 		} else {
-+			if (pte_numa(pte) && pa) {
-+				pte = pte_mknonnuma(pte);
-+				*ptep = pte;
-+			}
- 			kvmppc_add_revmap_chain(kvm, rev, rmap, pte_index,
- 						realmode);
- 			/* Only set R/C in real HPTE if already set in *rmap */
--- 
-1.8.1.4
+Thanks and regards,
+Pingfan
+> -aneesh
+>
