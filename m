@@ -1,16 +1,23 @@
 Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1386755340.15730.11.camel@pasglop>
-Subject: Re: [PATCH] powerpc: set default kernel thread priority to medium-low
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 02AD42C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 20:50:26 +1100 (EST)
+Message-ID: <1386755416.15730.12.camel@pasglop>
+Subject: Re: [PATCH 1/3] powerpc: mm: make _PAGE_NUMA take effect
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 11 Dec 2013 20:49:00 +1100
-In-Reply-To: <1386743357.27999.1.camel@concordia>
-References: <1386661163-4478-1-git-send-email-felix@linux.vnet.ibm.com>
- <1386743357.27999.1.camel@concordia>
+To: Liu ping fan <kernelfans@gmail.com>
+Date: Wed, 11 Dec 2013 20:50:16 +1100
+In-Reply-To: <CAFgQCTtd1v+ANEy899_Tk2UmYsAL1Lxe8t6WuMxFvjXk5rtn_Q@mail.gmail.com>
+References: <1386140348-7854-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <1386140348-7854-2-git-send-email-pingfank@linux.vnet.ibm.com>
+ <87a9gfva9n.fsf@linux.vnet.ibm.com>
+ <CAFgQCTtd1v+ANEy899_Tk2UmYsAL1Lxe8t6WuMxFvjXk5rtn_Q@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- Linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,30 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-12-11 at 17:29 +1100, Michael Ellerman wrote:
+On Wed, 2013-12-11 at 16:50 +0800, Liu ping fan wrote:
+> > why ? , All the hash routines do check for _PAGE_PRESENT via access
+> > variable.
+> >
+> Going through __hash_page_4K(4k on 4k HW), I do not find such check.
+> Am I wrong? Or I will send out a patch to fix that.
 
-> It would be nice if you could make an assertion about what the state of HMT
-> handling should be once your patch is applied.
-> 
-> I think it's:
-> 
->  * The kernel should use HMT_MEDIUM_LOW as it's "default" priority
->  * The kernel should use HMT_LOW as it's "low" priority
-> 
-> Which would imply:
-> 
->  * The kernel should not use HMT_MEDIUM anywhere ..
->  * Nor should it use any of the other higher HMT modes.
-> 
-> Do you agree?
-> 
-> The reason I ask is I still see HMT_MEDIUM used in a few places, and it's not
-> clear to me if that is correct.
-
-HMT_MEDIUM used to be our default no ?
-
-Also there's an open question... when doing things with interrupts off
-(or worse, in real mode) such as some KVM hcalls etc... should we on the
-contrary boost up to limit interrupt latency ?
+We pass a bitmask of flags to check which are tested by doing an "andc"
+of the PTE on that mask and checking if anything is left...
 
 Ben.
