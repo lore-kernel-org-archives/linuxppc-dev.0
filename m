@@ -1,24 +1,20 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+Return-Path: <B48286@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 15BA72C0358
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 23:10:16 +1100 (EST)
-Received: from mail131-va3 (localhost [127.0.0.1])	by
- mail131-va3-R.bigfish.com (Postfix) with ESMTP id C1A5826019A	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 12:10:11 +0000 (UTC)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 5/5] powerpc/fsl-booke: Enable T208xQDS board
-Date: Wed, 11 Dec 2013 19:19:34 +0800
-Message-ID: <1386760774-14743-5-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1386760774-14743-1-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1386760774-14743-1-git-send-email-Shengzhou.Liu@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id DBA872C00A6
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Dec 2013 20:34:44 +1100 (EST)
+From: Hou Zhiqiang <b48286@freescale.com>
+To: <linux-spi@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] spi/fsl-espi: Add Power Management support for eSPI controller
+Date: Wed, 11 Dec 2013 16:11:51 +0800
+Message-ID: <1386749511-21904-1-git-send-email-b48286@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Cc: scottwood@freescale.com, Mingkai.Hu@freescale.com, broonie@kernel.org,
+ Hou Zhiqiang <b48286@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
- arch/powerpc/platforms/85xx/Kconfig           | 2 +-
- arch/powerpc/platforms/85xx/corenet_generic.c | 4 ++++
- 2 files changed, 5 insertions(+), 1 deletion(-)
+Add PM support for eSPI controller using callback function suspend
+and resume in .driver of platform_driver.
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 4d46349..e3578b7 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -259,7 +259,7 @@ config CORENET_GENERIC
- 	  For 32bit kernel, the following boards are supported:
- 	    P2041 RDB, P3041 DS and P4080 DS
- 	  For 64bit kernel, the following boards are supported:
--	    T4240 QDS and B4 QDS
-+	    T208x QDS, T4240 QDS and B4 QDS
- 	  The following boards are supported for both 32bit and 64bit kernel:
- 	    P5020 DS and P5040 DS
+Signed-off-by: Hou Zhiqiang <b48286@freescale.com>
+---
+ drivers/spi/spi-fsl-espi.c | 57 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+
+diff --git a/drivers/spi/spi-fsl-espi.c b/drivers/spi/spi-fsl-espi.c
+index 8106006..9c3fe70 100644
+--- a/drivers/spi/spi-fsl-espi.c
++++ b/drivers/spi/spi-fsl-espi.c
+@@ -727,6 +727,59 @@ static int of_fsl_espi_remove(struct platform_device *dev)
+ 	return mpc8xxx_spi_remove(&dev->dev);
+ }
  
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index fbd871e..77fd71f 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -102,6 +102,8 @@ static const char * const boards[] __initconst = {
- 	"fsl,P4080DS",
- 	"fsl,P5020DS",
- 	"fsl,P5040DS",
-+	"fsl,T2080QDS",
-+	"fsl,T2081QDS",
- 	"fsl,T4240QDS",
- 	"fsl,B4860QDS",
- 	"fsl,B4420QDS",
-@@ -115,6 +117,8 @@ static const char * const hv_boards[] __initconst = {
- 	"fsl,P4080DS-hv",
- 	"fsl,P5020DS-hv",
- 	"fsl,P5040DS-hv",
-+	"fsl,T2080QDS-hv",
-+	"fsl,T2081QDS-hv"
- 	"fsl,T4240QDS-hv",
- 	"fsl,B4860QDS-hv",
- 	"fsl,B4420QDS-hv",
++#ifdef CONFIG_PM
++static int of_fsl_espi_suspend(struct device *dev, pm_message_t state)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct spi_master *master = platform_get_drvdata(pdev);
++	struct mpc8xxx_spi *mpc8xxx_spi;
++	struct fsl_espi_reg *reg_base;
++	u32 regval;
++
++	mpc8xxx_spi = spi_master_get_devdata(master);
++	reg_base = mpc8xxx_spi->reg_base;
++
++	regval = mpc8xxx_spi_read_reg(&reg_base->mode);
++	regval &= ~(SPMODE_ENABLE);
++	mpc8xxx_spi_write_reg(&reg_base->mode, regval);
++
++	regval = mpc8xxx_spi_read_reg(&reg_base->mode);
++
++	return 0;
++}
++
++static int of_fsl_espi_resume(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct fsl_spi_platform_data *pdata = dev_get_platdata(dev);
++	struct spi_master *master = platform_get_drvdata(pdev);
++	struct mpc8xxx_spi *mpc8xxx_spi;
++	struct fsl_espi_reg *reg_base;
++	u32 regval;
++	int i;
++
++	mpc8xxx_spi = spi_master_get_devdata(master);
++	reg_base = mpc8xxx_spi->reg_base;
++
++	/* SPI controller initializations */
++	mpc8xxx_spi_write_reg(&reg_base->mode, 0);
++	mpc8xxx_spi_write_reg(&reg_base->mask, 0);
++	mpc8xxx_spi_write_reg(&reg_base->command, 0);
++	mpc8xxx_spi_write_reg(&reg_base->event, 0xffffffff);
++
++	/* Init eSPI CS mode register */
++	for (i = 0; i < pdata->max_chipselect; i++)
++		mpc8xxx_spi_write_reg(&reg_base->csmode[i], CSMODE_INIT_VAL);
++
++	/* Enable SPI interface */
++	regval = pdata->initial_spmode | SPMODE_INIT_VAL | SPMODE_ENABLE;
++
++	mpc8xxx_spi_write_reg(&reg_base->mode, regval);
++
++	return 0;
++}
++#endif /* CONFIG_PM */
++
+ static const struct of_device_id of_fsl_espi_match[] = {
+ 	{ .compatible = "fsl,mpc8536-espi" },
+ 	{}
+@@ -738,6 +791,10 @@ static struct platform_driver fsl_espi_driver = {
+ 		.name = "fsl_espi",
+ 		.owner = THIS_MODULE,
+ 		.of_match_table = of_fsl_espi_match,
++#ifdef CONFIG_PM
++		.suspend	= of_fsl_espi_suspend,
++		.resume		= of_fsl_espi_resume,
++#endif
+ 	},
+ 	.probe		= of_fsl_espi_probe,
+ 	.remove		= of_fsl_espi_remove,
 -- 
-1.8.0
+1.8.4.1
