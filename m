@@ -1,20 +1,22 @@
-Return-Path: <B48286@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 773922C0091
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Dec 2013 20:42:22 +1100 (EST)
-From: Hou Zhiqiang <b48286@freescale.com>
-To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] mtd: m25p80: Add Power Management support
-Date: Wed, 11 Dec 2013 16:19:30 +0800
-Message-ID: <1386749970-22021-1-git-send-email-b48286@freescale.com>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B23142C00A5
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Dec 2013 01:09:37 +1100 (EST)
+Date: Wed, 11 Dec 2013 13:39:48 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Hou Zhiqiang <b48286@freescale.com>
+Message-ID: <20131211133948.GU11468@sirena.org.uk>
+References: <1386749511-21904-1-git-send-email-b48286@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Mingkai.Hu@freescale.com,
- Hou Zhiqiang <b48286@freescale.com>, dwmw2@infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="gn1ylXQ+YRNuZICZ"
+In-Reply-To: <1386749511-21904-1-git-send-email-b48286@freescale.com>
+Subject: Re: [PATCH] spi/fsl-espi: Add Power Management support for eSPI
+ controller
+Cc: linuxppc-dev@ozlabs.org, Mingkai.Hu@freescale.com, scottwood@freescale.com,
+ linux-spi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,73 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add PM support using callback function suspend and resume in .driver of
-spi_driver.
 
-Signed-off-by: Hou Zhiqiang <b48286@freescale.com>
----
- drivers/mtd/devices/m25p80.c | 37 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
+--gn1ylXQ+YRNuZICZ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index 7eda71d..b0c2b8c 100644
---- a/drivers/mtd/devices/m25p80.c
-+++ b/drivers/mtd/devices/m25p80.c
-@@ -66,6 +66,8 @@
- 
- /* Used for Spansion flashes only. */
- #define	OPCODE_BRWR		0x17	/* Bank register write */
-+#define	OPCODE_DP		0xb9	/* Enter deep power down mode */
-+#define	OPCODE_RES		0xab	/* Exit deep power down mode */
- 
- /* Status Register bits. */
- #define	SR_WIP			1	/* Write in progress */
-@@ -1128,11 +1130,46 @@ static int m25p_remove(struct spi_device *spi)
- 	return mtd_device_unregister(&flash->mtd);
- }
- 
-+#ifdef CONFIG_PM
-+static int m25p_suspend(struct device *dev, pm_message_t mesg)
-+{
-+	struct m25p *flash = dev_get_drvdata(dev);
-+	int ret;
-+
-+	flash->command[0] = OPCODE_DP;
-+	mutex_lock(&flash->lock);
-+	/* Wait until finished previous write/erase command. */
-+	ret = wait_till_ready(flash);
-+	if (ret) {
-+		mutex_unlock(&flash->lock);
-+		return ret;
-+	}
-+	ret = spi_write(flash->spi, flash->command, 1);
-+	mutex_unlock(&flash->lock);
-+
-+	return ret;
-+}
-+
-+static int m25p_resume(struct device *dev)
-+{
-+	struct m25p *flash = dev_get_drvdata(dev);
-+	int ret;
-+
-+	flash->command[0] = OPCODE_RES;
-+	ret = spi_write(flash->spi, flash->command, 1);
-+
-+	return ret;
-+}
-+#endif /* CONFIG_PM */
- 
- static struct spi_driver m25p80_driver = {
- 	.driver = {
- 		.name	= "m25p80",
- 		.owner	= THIS_MODULE,
-+#ifdef CONFIG_PM
-+		.suspend = m25p_suspend,
-+		.resume = m25p_resume,
-+#endif
- 	},
- 	.id_table	= m25p_ids,
- 	.probe	= m25p_probe,
--- 
-1.8.4.1
+On Wed, Dec 11, 2013 at 04:11:51PM +0800, Hou Zhiqiang wrote:
+
+> +#ifdef CONFIG_PM
+> +static int of_fsl_espi_suspend(struct device *dev, pm_message_t state)
+
+This should be CONFIG_PM_SLEEP.  I'd also expect to see a call to
+spi_master_suspend() here (and similarly for resume) - it won't do
+anything yet but it'd better for completeness in case we add extra
+behaviour and looking at the driver it ought to be converted to
+transfer_one_message anyway.
+
+> +#ifdef CONFIG_PM
+> +		.suspend	= of_fsl_espi_suspend,
+> +		.resume		= of_fsl_espi_resume,
+> +#endif
+
+SET_SYSTEM_SLEEP_PM_OPS().
+
+--gn1ylXQ+YRNuZICZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSqGsgAAoJELSic+t+oim9IUsP/3/H59rIAUo5xFeBDwjxRp/v
+v5k0xb/N54E/ctORFJgUFECNe/fhb0qrGo6FGWEUzlHQ03yWlZLlRNncMK9nUhP4
+pHTath8pwM8Bt25CnoEVKda/OpfsWdziocgjBRzh6Ij493uu1X6qWF+evxloMOnh
+uw1pvtN6Wzvc3l7noYqoylVdP/7cH9kDHSlWoOWLyhTodhf0PrFB8ziPoeLt6g4P
+l501BWnWUjdABslDM6/i5wiLY/GaX0LSz1O+5WdlK1MjYY/jjfKlm0ReM4OiJ6ke
+JrZrCAYrlEz+1YBUYmnGzBORxke3YsI9WJRMt9+3y8dX1hzvqFwzSPUMaGCG4hWq
+Tu3aMgXe4r4/zogQymYOuUCphFM1hF5bsxQqFO7+r+4GPtFo4nrKdN+3nz+o37oN
+GRbg4amTyu7FeLDiTodROQNKsjfA6PAeDGiMO/Izyq8Hg0M64Y6K6UJ9K2tdFwdC
+qQrNldwCQrDuerlYC/DNGLpFPxbJdrD0/ILVzIXEbZyMSNtKzaI2jr8R2Cv9aU2W
+TJuLE1+iZE3yGfGKZPARW4JXLt586ofl42XXXQpEr0DSUo98zZGLKpPHPNysTrS/
+lcLi5Z6PrqNOHRZh3dhCiEfTRVHKv0oGOyGUHQzYQkKV9AG3xzCBelFBrZCcI+WC
+h/0obP4SS+FCCizzCLPw
+=vRsf
+-----END PGP SIGNATURE-----
+
+--gn1ylXQ+YRNuZICZ--
