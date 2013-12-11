@@ -1,14 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1386743357.27999.1.camel@concordia>
-Subject: Re: [PATCH] powerpc: set default kernel thread priority to medium-low
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Date: Wed, 11 Dec 2013 17:29:17 +1100
-In-Reply-To: <1386661163-4478-1-git-send-email-felix@linux.vnet.ibm.com>
-References: <1386661163-4478-1-git-send-email-felix@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Linuxppc-dev@lists.ozlabs.org
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-oa0-x231.google.com (mail-oa0-x231.google.com
+ [IPv6:2607:f8b0:4003:c02::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6319E2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 19:46:58 +1100 (EST)
+Received: by mail-oa0-f49.google.com with SMTP id i4so6799958oah.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 00:46:53 -0800 (PST)
+From: Liu Ping Fan <kernelfans@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	kvm-ppc@vger.kernel.org
+Subject: [PATCH 0/4] powernv: kvm: numa fault improvement
+Date: Wed, 11 Dec 2013 16:47:50 +0800
+Message-Id: <1386751674-14136-1-git-send-email-pingfank@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,33 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-12-10 at 08:39 +0100, Philippe Bergheaud wrote:
-> All the important PThread locking occurs in GLIBC libpthread.so
-> 
-> For scaling to large core counts we need to stay out of the kernel and scheduler as much as possible which implies increasing the spin time in user mode. For POWER implementations with SMT this implies that user mode needs to manage SMT priority for spinning and active (in the critical region) threads.
-> 
-> Libpthread must be able to raise and lower the the SMT priority versus the default to be effective.
-> 
-> This lowers the default kernel thread priority from medium to medium-low.
+This series is based on Aneesh's series  "[PATCH -V2 0/5] powerpc: mm: Numa faults support for ppc64"
 
-Hi Philippe,
+For this series, I apply the same idea from the previous thread "[PATCH 0/3] optimize for powerpc _PAGE_NUMA"
+(for which, I still try to get a machine to show nums)
 
-It would be nice if you could make an assertion about what the state of HMT
-handling should be once your patch is applied.
+But for this series, I think that I have a good justification -- the fact of heavy cost when switching context between guest and host,
+which is  well known.
 
-I think it's:
+If my suppose is correct, will CCing kvm@vger.kernel.org from next version.
 
- * The kernel should use HMT_MEDIUM_LOW as it's "default" priority
- * The kernel should use HMT_LOW as it's "low" priority
 
-Which would imply:
+Liu Ping Fan (4):
+  mm: export numa_migrate_prep()
+  powernv: kvm: make _PAGE_NUMA take effect
+  powernv: kvm: extend input param for lookup_linux_pte
+  powernv: kvm: make the handling of _PAGE_NUMA faster for guest
 
- * The kernel should not use HMT_MEDIUM anywhere ..
- * Nor should it use any of the other higher HMT modes.
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c | 38 ++++++++++++++++++++++++++++++++++---
+ include/linux/mm.h                  |  2 ++
+ 2 files changed, 37 insertions(+), 3 deletions(-)
 
-Do you agree?
-
-The reason I ask is I still see HMT_MEDIUM used in a few places, and it's not
-clear to me if that is correct.
-
-cheers
+-- 
+1.8.1.4
