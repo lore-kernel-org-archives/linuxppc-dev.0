@@ -1,19 +1,20 @@
 Return-Path: <kernelfans@gmail.com>
-Received: from mail-ob0-x232.google.com (mail-ob0-x232.google.com
- [IPv6:2607:f8b0:4003:c01::232])
+Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
+ [IPv6:2607:f8b0:400e:c02::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com",
  Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E85A2C0355
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 19:47:13 +1100 (EST)
-Received: by mail-ob0-f178.google.com with SMTP id uz6so6695647obc.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 00:47:10 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 2312D2C0385
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 19:47:18 +1100 (EST)
+Received: by mail-pd0-f179.google.com with SMTP id r10so9068124pdi.24
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 00:47:15 -0800 (PST)
 From: Liu Ping Fan <kernelfans@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH 3/4] powernv: kvm: extend input param for lookup_linux_pte
-Date: Wed, 11 Dec 2013 16:47:53 +0800
-Message-Id: <1386751674-14136-4-git-send-email-pingfank@linux.vnet.ibm.com>
+Subject: [PATCH 4/4] powernv: kvm: make the handling of _PAGE_NUMA faster for
+ guest
+Date: Wed, 11 Dec 2013 16:47:54 +0800
+Message-Id: <1386751674-14136-5-git-send-email-pingfank@linux.vnet.ibm.com>
 In-Reply-To: <1386751674-14136-1-git-send-email-pingfank@linux.vnet.ibm.com>
 References: <1386751674-14136-1-git-send-email-pingfank@linux.vnet.ibm.com>
 Cc: Paul Mackerras <paulus@samba.org>,
@@ -28,56 +29,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It will be helpful for next patch
+The period check of _PAGE_NUMA can probably happen on the correctly
+placed page. For this case, when guest try to setup hpte in real mode,
+we try to resolve the numa fault in real mode, since the switch between
+guest context and host context costs too much.
 
 Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
 ---
-Can it be merged with the next patch?
----
- arch/powerpc/kvm/book3s_hv_rm_mmu.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c | 32 ++++++++++++++++++++++++++++++--
+ 1 file changed, 30 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index af8602d..ae46052 100644
+index ae46052..a06b199 100644
 --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
 +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -135,7 +135,8 @@ static void remove_revmap_chain(struct kvm *kvm, long pte_index,
- }
+@@ -179,6 +179,11 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 	unsigned int writing;
+ 	unsigned long mmu_seq;
+ 	unsigned long rcbits;
++	struct mm_struct *mm = kvm->mm;
++	struct vm_area_struct *vma;
++	int page_nid, target_nid;
++	struct page *test_page;
++	pte_t *ptep;
  
- static pte_t lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
--			      int writing, unsigned long *pte_sizep)
-+			      int writing, unsigned long *pte_sizep,
-+			      pte_t **ptepp)
- {
- 	pte_t *ptep;
- 	unsigned long ps = *pte_sizep;
-@@ -144,6 +145,8 @@ static pte_t lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
- 	ptep = find_linux_pte_or_hugepte(pgdir, hva, &hugepage_shift);
- 	if (!ptep)
- 		return __pte(0);
-+	if (ptepp != NULL)
-+		*ptepp = ptep;
- 	if (hugepage_shift)
- 		*pte_sizep = 1ul << hugepage_shift;
- 	else
-@@ -231,7 +234,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 	psize = hpte_page_size(pteh, ptel);
+ 	if (!psize)
+@@ -234,8 +239,26 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
  
  		/* Look up the Linux PTE for the backing page */
  		pte_size = psize;
--		pte = lookup_linux_pte(pgdir, hva, writing, &pte_size);
-+		pte = lookup_linux_pte(pgdir, hva, writing, &pte_size, NULL);
- 		if (pte_present(pte) && !pte_numa(pte)) {
+-		pte = lookup_linux_pte(pgdir, hva, writing, &pte_size, NULL);
+-		if (pte_present(pte) && !pte_numa(pte)) {
++		pte = lookup_linux_pte(pgdir, hva, writing, &pte_size, &ptep);
++		if (pte_present(pte)) {
++			if (pte_numa(pte)) {
++				/* If fail, let gup handle it */
++				if (unlikely(!down_read_trylock(&mm->mmap_sem)))
++					goto pte_check;
++
++				vma = find_vma(mm, hva);
++				up_read(&mm->mmap_sem);
++				test_page = pte_page(pte);
++				page_nid = page_to_nid(test_page);
++				target_nid = numa_migrate_prep(test_page, vma,
++							 hva, page_nid);
++				put_page(test_page);
++				if (unlikely(target_nid != -1)) {
++					/* If fail, let gup handle it */
++					goto pte_check;
++				}
++			}
++
  			if (writing && !pte_write(pte))
  				/* make the actual HPTE be read-only */
-@@ -671,7 +674,8 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 			memslot = __gfn_to_memslot(kvm_memslots(kvm), gfn);
- 			if (memslot) {
- 				hva = __gfn_to_hva_memslot(memslot, gfn);
--				pte = lookup_linux_pte(pgdir, hva, 1, &psize);
-+				pte = lookup_linux_pte(pgdir, hva, 1, &psize,
-+							NULL);
- 				if (pte_present(pte) && !pte_write(pte))
- 					r = hpte_make_readonly(r);
- 			}
+ 				ptel = hpte_make_readonly(ptel);
+@@ -244,6 +267,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 		}
+ 	}
+ 
++pte_check:
+ 	if (pte_size < psize)
+ 		return H_PARAMETER;
+ 	if (pa && pte_size > psize)
+@@ -339,6 +363,10 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 			pteh &= ~HPTE_V_VALID;
+ 			unlock_rmap(rmap);
+ 		} else {
++			if (pte_numa(pte) && pa) {
++				pte = pte_mknonnuma(pte);
++				*ptep = pte;
++			}
+ 			kvmppc_add_revmap_chain(kvm, rev, rmap, pte_index,
+ 						realmode);
+ 			/* Only set R/C in real HPTE if already set in *rmap */
 -- 
 1.8.1.4
