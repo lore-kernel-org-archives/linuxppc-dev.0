@@ -1,25 +1,16 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-qc0-x231.google.com (mail-qc0-x231.google.com
- [IPv6:2607:f8b0:400d:c01::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 515382C030D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 19:50:08 +1100 (EST)
-Received: by mail-qc0-f177.google.com with SMTP id m20so4795301qcx.22
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 00:50:04 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <87a9gfva9n.fsf@linux.vnet.ibm.com>
-References: <1386140348-7854-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <1386140348-7854-2-git-send-email-pingfank@linux.vnet.ibm.com>
- <87a9gfva9n.fsf@linux.vnet.ibm.com>
-Date: Wed, 11 Dec 2013 16:50:04 +0800
-Message-ID: <CAFgQCTtd1v+ANEy899_Tk2UmYsAL1Lxe8t6WuMxFvjXk5rtn_Q@mail.gmail.com>
-Subject: Re: [PATCH 1/3] powerpc: mm: make _PAGE_NUMA take effect
-From: Liu ping fan <kernelfans@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Message-ID: <1386755340.15730.11.camel@pasglop>
+Subject: Re: [PATCH] powerpc: set default kernel thread priority to medium-low
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 11 Dec 2013 20:49:00 +1100
+In-Reply-To: <1386743357.27999.1.camel@concordia>
+References: <1386661163-4478-1-git-send-email-felix@linux.vnet.ibm.com>
+ <1386743357.27999.1.camel@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 5, 2013 at 6:53 PM, Aneesh Kumar K.V
-<aneesh.kumar@linux.vnet.ibm.com> wrote:
-> Liu Ping Fan <kernelfans@gmail.com> writes:
->
->> To enable the do_numa_page(), we should not fix _PAGE_NUMA in
->> hash_page(), so bail out for the case of pte_numa().
->>
->> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/mm/hash_utils_64.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
->> index fb176e9..9bf1195 100644
->> --- a/arch/powerpc/mm/hash_utils_64.c
->> +++ b/arch/powerpc/mm/hash_utils_64.c
->> @@ -1033,7 +1033,7 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
->>
->>       /* Get PTE and page size from page tables */
->>       ptep = find_linux_pte_or_hugepte(pgdir, ea, &hugeshift);
->> -     if (ptep == NULL || !pte_present(*ptep)) {
->> +     if (ptep == NULL || !pte_present(*ptep) || pte_numa(*ptep)) {
->>               DBG_LOW(" no PTE !\n");
->>               rc = 1;
->>               goto bail;
->
-> why ? , All the hash routines do check for _PAGE_PRESENT via access
-> variable.
->
-Going through __hash_page_4K(4k on 4k HW), I do not find such check.
-Am I wrong? Or I will send out a patch to fix that.
+On Wed, 2013-12-11 at 17:29 +1100, Michael Ellerman wrote:
 
-Thanks and regards,
-Pingfan
-> -aneesh
->
+> It would be nice if you could make an assertion about what the state of HMT
+> handling should be once your patch is applied.
+> 
+> I think it's:
+> 
+>  * The kernel should use HMT_MEDIUM_LOW as it's "default" priority
+>  * The kernel should use HMT_LOW as it's "low" priority
+> 
+> Which would imply:
+> 
+>  * The kernel should not use HMT_MEDIUM anywhere ..
+>  * Nor should it use any of the other higher HMT modes.
+> 
+> Do you agree?
+> 
+> The reason I ask is I still see HMT_MEDIUM used in a few places, and it's not
+> clear to me if that is correct.
+
+HMT_MEDIUM used to be our default no ?
+
+Also there's an open question... when doing things with interrupts off
+(or worse, in real mode) such as some KVM hcalls etc... should we on the
+contrary boost up to limit interrupt latency ?
+
+Ben.
