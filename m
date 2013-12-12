@@ -1,22 +1,26 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 911E22C007E
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Dec 2013 22:56:47 +1100 (EST)
-Date: Thu, 12 Dec 2013 11:56:37 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Hou Zhiqiang <b48286@freescale.com>
-Message-ID: <20131212115637.GA5367@sirena.org.uk>
-References: <1386824032-19198-1-git-send-email-b48286@freescale.com>
+Return-Path: <tommusta@gmail.com>
+Received: from mail-yh0-x236.google.com (mail-yh0-x236.google.com
+ [IPv6:2607:f8b0:4002:c01::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 91C682C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 02:09:11 +1100 (EST)
+Received: by mail-yh0-f54.google.com with SMTP id z12so380046yhz.41
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 07:09:07 -0800 (PST)
+Message-ID: <52A9D17E.3000809@gmail.com>
+Date: Thu, 12 Dec 2013 09:08:46 -0600
+From: Tom Musta <tommusta@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
-In-Reply-To: <1386824032-19198-1-git-send-email-b48286@freescale.com>
-Subject: Re: [PATCH v2] spi/fsl-espi: Add Power Management support for eSPI
- controller
-Cc: linuxppc-dev@ozlabs.org, Mingkai.Hu@freescale.com, scottwood@freescale.com,
- linux-spi@vger.kernel.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [V2 PATCH 3/3] powerpc: Fix Unaligned LE Floating Point Loads
+ and Stores
+References: <1383244738-5986-1-git-send-email-tommusta@gmail.com>
+ <1383244738-5986-4-git-send-email-tommusta@gmail.com>
+ <20131211035440.GA9399@drongo> <20131211045728.GB9399@drongo>
+In-Reply-To: <20131211045728.GB9399@drongo>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 12/10/2013 10:57 PM, Paul Mackerras wrote:
+> On Wed, Dec 11, 2013 at 02:54:40PM +1100, Paul Mackerras wrote:
 
---LZvS9be/3tNcYl/X
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+>> This breaks 32-bit big-endian (as well as making the code longer and
+>> more complex).
+> 
+> And in fact none of this code will get executed in little-endian mode
+> anyway, since we still have this in the middle of emulate_step():
+> 
+> 	/*
+> 	 * Following cases are for loads and stores, so bail out
+> 	 * if we're in little-endian mode.
+> 	 */
+> 	if (regs->msr & MSR_LE)
+> 		return 0;
+> 
+> Paul.
+> 
 
-On Thu, Dec 12, 2013 at 12:53:52PM +0800, Hou Zhiqiang wrote:
-> Add PM support for eSPI controller using callback function suspend
-> and resume in .driver.pm of platform_driver.
+See patch 1/3 to explain how it becomes relevant in LE.
 
-Applied, thanks.
-
---LZvS9be/3tNcYl/X
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSqaRyAAoJELSic+t+oim9P+gP/1stgYXOpSesza6URhgW++k4
-qJlqYRIHr5xi20likZ6rbFX+Yib3PG3/E5gvHW0iWbzfIyezBFG4UP4iV+VkJ/0v
-vymNVMowXa0NbS6XbQZZuFdRMeXCUpJVCqrTzfDgF7gpv3ZS+j3jHgmjUjPBr8Ce
-3VeQ4pO0SsNuButdiW67rt0vJ6dbYU10TfcnIkpK00xcmWcDgs65SJz7MjsOWxY8
-ZOYd/l9PPuCIVDFnCrI2qt0t04+EqW9lDfSOvbx+Sc8W/8GtU00kkQEdXMbGHQFT
-xjNPrjIg9TGwIZO1WAn8A7m/TYVb4+AhgrD1X9vOgVT+PDax7uhZ8ZoNDWv6LuGW
-i8Hx2LIzhLFOHWRFG8aOuE89suADBPXlWCOpiSXSGtk0mmQCl7BCYjZ17SDPJD3j
-gfqwSoOQqt2qspYXJZH3TwvL+cKNbhGLXK18P3t5kQql8cQR16d/EV109meMfz8g
-g6nDbTXuSXVu31hE9lPiAreKuryaTD4Hzpip+R4UzXFxgLdDXil+el2fhKOpWnJr
-evzOra9SAoSurUYBi3NlHRyjQH1kARNOorkthPj9htCdklt5FJKaGyFS3NpC0XHd
-bH1keV8qXb+lKb2NFahRZxt4t1tBQKKsIPSvh6RzvHT873auWiQ5cLOEgTwsSC71
-rxLdIvg3qgsLvpFqCXJT
-=l6kK
------END PGP SIGNATURE-----
-
---LZvS9be/3tNcYl/X--
+I will take another look at the change.
