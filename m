@@ -3,9 +3,9 @@ From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org,
 	paulus@samba.org,
 	Ulrich.Weigand@de.ibm.com
-Subject: [PATCH 1/8] powerpc: PTRACE_PEEKUSR always returns FPR0
-Date: Thu, 12 Dec 2013 15:59:34 +1100
-Message-Id: <1386824381-14032-2-git-send-email-anton@samba.org>
+Subject: [PATCH 2/8] powerpc: Fix endian issue in setup-common.c
+Date: Thu, 12 Dec 2013 15:59:35 +1100
+Message-Id: <1386824381-14032-3-git-send-email-anton@samba.org>
 In-Reply-To: <1386824381-14032-1-git-send-email-anton@samba.org>
 References: <1386824381-14032-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -18,45 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+During on LE boot we see:
 
-There is a bug in using ptrace to access FPRs via PTRACE_PEEKUSR /
-PTRACE_POKEUSR. In effect, trying to access any of the FPRs always
-really accesses FPR0, which does seriously break debugging :-)
+    Partition configured for 1073741824 cpus, operating system maximum is 2048.
 
-The problem seems to have been introduced by commit 3ad26e5c4459d
-(Merge branch 'for-kvm' into next).
+Clearly missing a byteswap here.
 
-[ It is indeed a merge conflict between Paul's FPU/VSX state rework
-and my LE patches - Anton ]
-
-Signed-off-by: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/kernel/ptrace.c | 4 ++--
+ arch/powerpc/kernel/setup-common.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 75fb404..2e3d2bf 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1555,7 +1555,7 @@ long arch_ptrace(struct task_struct *child, long request,
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index febc804..bc76cc6 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -479,7 +479,7 @@ void __init smp_setup_cpu_maps(void)
+ 	if (machine_is(pseries) && firmware_has_feature(FW_FEATURE_LPAR) &&
+ 	    (dn = of_find_node_by_path("/rtas"))) {
+ 		int num_addr_cell, num_size_cell, maxcpus;
+-		const unsigned int *ireg;
++		const __be32 *ireg;
  
- 			flush_fp_to_thread(child);
- 			if (fpidx < (PT_FPSCR - PT_FPR0))
--				memcpy(&tmp, &child->thread.fp_state.fpr,
-+				memcpy(&tmp, &child->thread.TS_FPR(fpidx),
- 				       sizeof(long));
- 			else
- 				tmp = child->thread.fp_state.fpscr;
-@@ -1588,7 +1588,7 @@ long arch_ptrace(struct task_struct *child, long request,
+ 		num_addr_cell = of_n_addr_cells(dn);
+ 		num_size_cell = of_n_size_cells(dn);
+@@ -489,7 +489,7 @@ void __init smp_setup_cpu_maps(void)
+ 		if (!ireg)
+ 			goto out;
  
- 			flush_fp_to_thread(child);
- 			if (fpidx < (PT_FPSCR - PT_FPR0))
--				memcpy(&child->thread.fp_state.fpr, &data,
-+				memcpy(&child->thread.TS_FPR(fpidx), &data,
- 				       sizeof(long));
- 			else
- 				child->thread.fp_state.fpscr = data;
+-		maxcpus = ireg[num_addr_cell + num_size_cell];
++		maxcpus = be32_to_cpup(ireg + num_addr_cell + num_size_cell);
+ 
+ 		/* Double maxcpus for processors which have SMT capability */
+ 		if (cpu_has_feature(CPU_FTR_SMT))
 -- 
 1.8.3.2
