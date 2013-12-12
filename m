@@ -1,25 +1,40 @@
-Return-Path: <matteo.facchinetti@sirius-es.it>
-Received: from mx.vmgattei.com (mx.vmgattei.com [77.223.18.35])
- by ozlabs.org (Postfix) with ESMTP id EAB562C008F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 03:18:03 +1100 (EST)
-Received: from localhost (mx.vmgattei.com [127.0.0.1])
- by mx.vmgattei.com (Postfix) with ESMTP id 5683822D72
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 17:12:49 +0100 (CET)
-Received: from mx.vmgattei.com ([127.0.0.1])
- by localhost (mx.vmgattei.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id pcHWPW0Xm34B for <linuxppc-dev@lists.ozlabs.org>;
- Thu, 12 Dec 2013 17:12:49 +0100 (CET)
-Message-ID: <52A9E074.5080607@sirius-es.it>
-Date: Thu, 12 Dec 2013 17:12:36 +0100
-From: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e24smtp02.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 26CB22C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 03:41:11 +1100 (EST)
+Received: from /spool/local
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
+ Thu, 12 Dec 2013 14:41:07 -0200
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id C51193520054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 11:41:02 -0500 (EST)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBCGeg2352494436
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 14:40:44 -0200
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBCGf2CW021874
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 14:41:02 -0200
+Received: from oc0268524204.ibm.com ([9.8.8.171])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ rBCGf0fc021822
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES128-SHA bits=128 verify=NO)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 14:41:01 -0200
+Resent-Message-ID: <20131212164059.GC27808@oc0268524204.ibm.com>
+Message-ID: <52A9DA34.40905@linux.vnet.ibm.com>
+Date: Thu, 12 Dec 2013 21:15:56 +0530
+From: Rajesh B Prathipati <rprathip@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org,
- Anatolij Gustschin <agust@denx.de>, Mike Turquette <mturquette@linaro.org>
-Subject: Re: [PATCH v1 0/4] powerpc/512x: update COMMON_CLK support for MPC5125
-References: <1386681097-14126-1-git-send-email-gsi@denx.de>
-In-Reply-To: <1386681097-14126-1-git-send-email-gsi@denx.de>
+To: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, anton@au1.ibm.com
+Subject: [PATCH] powerpc: Make unaligned accesses endian-safe for powerpc
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, Detlev Zundel <dzu@denx.de>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,67 +44,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/12/2013 14:11, Gerhard Sittig wrote:
-> this series improves the previously introduced common clock support for
-> MPC512x such that SoC variants 5123 and 5125 get addressed appropriately
-> (MPC5125 turned out to be rather different from MPC5121 than I perceived
-> before -- there is much more than "just two FECs and no MBX")
-Ohhh yesss..... welcome to hell! :-)
+From: Rajesh B Prathipati <rprathip@linux.vnet.ibm.com>
 
-I report also these differences:
+The generic put_unaligned/get_unaligned macros were made endian-safe by 
+calling the appropriate endian dependent macros based on the endian type 
+of the powerpc processor.
 
-- I/O control module:
-        to do integration with linux pin-muxing subsystem
+Signed-off-by: Rajesh B Prathipati <rprathip@linux.vnet.ibm.com>
+---
+This patch applies to linux kernel version 3.12. This patch has been 
+tested and it fixes the problem with linux 3.12 USB stack.
 
-- GPIO module:
-        controller is the same of the mpc5121 but with these differences:
-        - 64 gpios divided in 2 banks
-        - input only gpios are numbers form 0 to 3 of the first bank
-        I'm finishing to write the patch... when done I'll post in ML
+--- linux/arch/powerpc/include/asm/unaligned.h.orig     2013-12-12 
+00:07:05.329073544 -0200
++++ linux/arch/powerpc/include/asm/unaligned.h  2013-12-11 
+23:56:52.918630238 -0200
+@@ -4,13 +4,18 @@
+  #ifdef __KERNEL__
 
-- NFC: one of the biggest unsolved mystery
-        Is this ip-core used in others microcontrollers? Seems to be 
-used only in mpc5125!!!
+  /*
+- * The PowerPC can do unaligned accesses itself in big endian mode.
++ * The PowerPC can do unaligned accesses itself based on its endian mode.
+   */
+  #include <linux/unaligned/access_ok.h>
+  #include <linux/unaligned/generic.h>
 
->
-> Matteo, can you verify the crystal frequency in the DTS update, please?
-Crystal frequency is ok: 33MHz.
++#ifdef __LITTLE_ENDIAN__
++#define get_unaligned  __get_unaligned_le
++#define put_unaligned  __put_unaligned_le
++#else
+  #define get_unaligned  __get_unaligned_be
+  #define put_unaligned  __put_unaligned_be
++#endif
 
-> And that v3.13-rc kernels with v6 of the COMMON_CLK introduction for
-> MPC512x plus this series for MPC5125 operate your peripherals, both with
-> an updated device tree as well as with a former device tree that lacks
-> clock specs?  Thank you!  Setting CONFIG_COMMON_CLK_DEBUG=y in your
-> .config and eyeballing /sys/kernel/debug/clk/clk_summary will help you.
->
->
-I tested all on TWR board.
+  #endif /* __KERNEL__ */
+  #endif /* _ASM_POWERPC_UNALIGNED_H */
 
-In DTS, for the moment, have to comment out this block:
--        usb@3000 {
--            compatible = "fsl,mpc5121-usb2-dr";
--            reg = <0x3000 0x400>;
--            #address-cells = <1>;
--            #size-cells = <0>;
--            interrupts = <43 0x8>;
--            dr_mode = "host";
--            phy_type = "ulpi";
--            clocks = <&clks MPC512x_CLK_USB1>;
--            clock-names = "ipg";
--        };
-Because USB controller pinout is not initialized correctly and when 
-system boot, causes a kernel panic.
-
-For the rest, kernel works correctly. For MPC5125 the patches are OK.
-
-I also check clk_summary and all clocks values are OK (except for NFC 
-clock value).
-
-I notice that there are missing clock like: gpio1, gpio2, fuse, dma,  
-wdt, pmc, rtc.
-Is this OK or should be added?
-
-
-Regards,
-
-Matteo Facchinetti
-Sirius Electronic Systems
