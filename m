@@ -1,22 +1,25 @@
-Return-Path: <geoff@infradead.org>
-Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1F6762C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 06:34:08 +1100 (EST)
-Message-ID: <1386876830.1002.4.camel@smoke>
-Subject: Re: [PATCH 2/4] kexec: Add IND_FLAGS macro
-From: Geoff Levand <geoff@infradead.org>
-To: Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
-Date: Thu, 12 Dec 2013 11:33:50 -0800
-In-Reply-To: <52A912E3.1060802@cn.fujitsu.com>
-References: <cover.1386807069.git.geoff@infradead.org>
- <3d9d024551c3c0e560d77f81926cb5774dda7067.1386807069.git.geoff@infradead.org>
- <52A912E3.1060802@cn.fujitsu.com>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0244.outbound.protection.outlook.com [207.46.163.244])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.protection.outlook.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8B45D2C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 06:48:09 +1100 (EST)
+Message-ID: <1386876720.10013.260.camel@snotra.buserror.net>
+Subject: Re: [PATCH v1 0/4] powerpc/512x: update COMMON_CLK support for MPC5125
+From: Scott Wood <scottwood@freescale.com>
+To: Sinan Akman <sinan@writeme.com>
+Date: Thu, 12 Dec 2013 13:32:00 -0600
+In-Reply-To: <52A9F685.3040204@writeme.com>
+References: <1386681097-14126-1-git-send-email-gsi@denx.de>
+ <52A9E074.5080607@sirius-es.it> <52A9F685.3040204@writeme.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- Eric Biederman <ebiederm@xmission.com>, Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
+Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
+ Gerhard Sittig <gsi@denx.de>,
+ Matteo Facchinetti <matteo.facchinetti@sirius-es.it>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Zhang,
+On Thu, 2013-12-12 at 18:46 +0100, Sinan Akman wrote:
+> Matteo Facchinetti wrote:
+> > [...]
+> > - NFC: one of the biggest unsolved mystery
+> > Is this ip-core used in others microcontrollers? Seems to be used only 
+> > in mpc5125!!!
+> I don't think that IP is used in any other FSL SoC. Scott can probably
+> confirm this for us.
 
-On Thu, 2013-12-12 at 09:35 +0800, Zhang Yanfei wrote:
-> On 12/12/2013 08:18 AM, Geoff Levand wrote:
-> > Add a new kexec preprocessor macro IND_FLAGS, which is the bitwise OR of
-> > all the possible kexec IND_ kimage_entry indirection flags.
-> > 
-> > Having this macro allows for simplified code in the prosessing of the
-> > kexec kimage_entry items.
-> 
-> Where? I didn't see any place you use this macro to help simplification.
+That's a different part of Freescale, so I don't know much about it, but
+it looks pretty similar to MXC NAND.  Back when those drivers were
+submitted I tried to get the authors of each to work together to see if
+a common driver made sense, but I got little response.
 
-As in powerpc, it allows constructions like this:
-
-  switch (entry & IND_FLAGS) {
-  case IND_DESTINATION:
-  ...
-  case IND_INDIRECTION:
-  ...
-  }
-
--Geoff
+-Scott
