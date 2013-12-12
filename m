@@ -1,14 +1,19 @@
-Return-Path: <anton@ozlabs.org>
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	Ulrich.Weigand@de.ibm.com
-Subject: [PATCH 8/8] powerpc: Fix endian issues in crash dump code
-Date: Thu, 12 Dec 2013 15:59:41 +1100
-Message-Id: <1386824381-14032-9-git-send-email-anton@samba.org>
-In-Reply-To: <1386824381-14032-1-git-send-email-anton@samba.org>
-References: <1386824381-14032-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+ by ozlabs.org (Postfix) with ESMTP id 2B7E72C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 16:29:40 +1100 (EST)
+Date: Thu, 12 Dec 2013 14:11:02 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Geoff Levand <geoff@infradead.org>
+Subject: Re: [PATCH 0/4] Minor fixes and improvements for kexec
+Message-ID: <20131212051102.GC497@verge.net.au>
+References: <cover.1386807069.git.geoff@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <cover.1386807069.git.geoff@infradead.org>
+Cc: linux-sh@vger.kernel.org, kexec@lists.infradead.org,
+ Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
+ Eric Biederman <ebiederm@xmission.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,35 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A couple more device tree properties that need byte swapping.
+On Thu, Dec 12, 2013 at 12:18:56AM +0000, Geoff Levand wrote:
+> Hi Eric,
+> 
+> Here are a few minor fixes and improvements for kexec.  Please consider.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/kernel/crash_dump.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+FWIW,
 
-diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
-index 779a78c..11c1d06 100644
---- a/arch/powerpc/kernel/crash_dump.c
-+++ b/arch/powerpc/kernel/crash_dump.c
-@@ -124,15 +124,15 @@ ssize_t copy_oldmem_page(unsigned long pfn, char *buf,
- void crash_free_reserved_phys_range(unsigned long begin, unsigned long end)
- {
- 	unsigned long addr;
--	const u32 *basep, *sizep;
-+	const __be32 *basep, *sizep;
- 	unsigned int rtas_start = 0, rtas_end = 0;
- 
- 	basep = of_get_property(rtas.dev, "linux,rtas-base", NULL);
- 	sizep = of_get_property(rtas.dev, "rtas-size", NULL);
- 
- 	if (basep && sizep) {
--		rtas_start = *basep;
--		rtas_end = *basep + *sizep;
-+		rtas_start = be32_to_cpup(basep);
-+		rtas_end = rtas_start + be32_to_cpup(sizep);
- 	}
- 
- 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
--- 
-1.8.3.2
+Reviewed-by: Simon Horman <horms@verge.net.au>
+
+> 
+> -Geoff
+> 
+> The following changes since commit 374b105797c3d4f29c685f3be535c35f5689b30e:
+> 
+>   Linux 3.13-rc3 (2013-12-06 09:34:04 -0800)
+> 
+> are available in the git repository at:
+> 
+>   git://git.linaro.org/people/geoff.levand/linux-kexec.git for-kexec
+> 
+> for you to fetch changes up to 594a3d26aac66e9668edc81d7bfb4e801575514f:
+> 
+>   sh/kexec: Fix kexec build warning (2013-12-11 16:03:27 -0800)
+> 
+> ----------------------------------------------------------------
+> Geoff Levand (4):
+>       kexec: Simplify conditional
+>       kexec: Add IND_FLAGS macro
+>       powerpc/kexec: Use global IND_FLAGS macro
+>       sh/kexec: Fix kexec build warning
+> 
+>  arch/powerpc/kernel/machine_kexec_64.c |  2 --
+>  arch/sh/kernel/machine_kexec.c         |  2 +-
+>  include/linux/kexec.h                  |  1 +
+>  kernel/kexec.c                         | 17 ++++++++++-------
+>  4 files changed, 12 insertions(+), 10 deletions(-)
+> 
+> -- 
+> 1.8.1.2
+> 
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
+> 
