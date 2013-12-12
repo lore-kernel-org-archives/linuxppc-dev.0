@@ -1,16 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1386811338.12662.3.camel@concordia>
-Subject: Re: [PATCH] powerpc: set default kernel thread priority to medium-low
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Date: Thu, 12 Dec 2013 12:22:18 +1100
-In-Reply-To: <52A83EBE.4060305@linux.vnet.ibm.com>
-References: <1386661163-4478-1-git-send-email-felix@linux.vnet.ibm.com>
- <1386743357.27999.1.camel@concordia> <1386755340.15730.11.camel@pasglop>
- <52A83EBE.4060305@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Linuxppc-dev@lists.ozlabs.org
+Return-Path: <zhangyanfei@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 0DFF62C020A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 12:44:17 +1100 (EST)
+Message-ID: <52A912E3.1060802@cn.fujitsu.com>
+Date: Thu, 12 Dec 2013 09:35:31 +0800
+From: Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
+MIME-Version: 1.0
+To: Geoff Levand <geoff@infradead.org>
+Subject: Re: [PATCH 2/4] kexec: Add IND_FLAGS macro
+References: <cover.1386807069.git.geoff@infradead.org>
+ <3d9d024551c3c0e560d77f81926cb5774dda7067.1386807069.git.geoff@infradead.org>
+In-Reply-To: <3d9d024551c3c0e560d77f81926cb5774dda7067.1386807069.git.geoff@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ Eric Biederman <ebiederm@xmission.com>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,61 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-12-11 at 11:30 +0100, Philippe Bergheaud wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Wed, 2013-12-11 at 17:29 +1100, Michael Ellerman wrote:
-> > 
-> > 
-> >>It would be nice if you could make an assertion about what the state of HMT
-> >>handling should be once your patch is applied.
-> >>
-> >>I think it's:
-> >>
-> >> * The kernel should use HMT_MEDIUM_LOW as it's "default" priority
-> >> * The kernel should use HMT_LOW as it's "low" priority
-> >>
-> >>Which would imply:
-> >>
-> >> * The kernel should not use HMT_MEDIUM anywhere ..
-> >> * Nor should it use any of the other higher HMT modes.
-> >>
-> >>Do you agree?
+Hello
 
-> Not entirely.  HT_MEDIUM might still be used by the kernel, in places where a
-> priority higher than the default is required.
+On 12/12/2013 08:18 AM, Geoff Levand wrote:
+> Add a new kexec preprocessor macro IND_FLAGS, which is the bitwise OR of
+> all the possible kexec IND_ kimage_entry indirection flags.
+> 
+> Having this macro allows for simplified code in the prosessing of the
+> kexec kimage_entry items.
 
-Right. But any code that currently uses HMT_MEDIUM is at the default level,
-whereas once your patch is applied any code still using HMT_MEDIUM will be
-boosted vs the default.
+Where? I didn't see any place you use this macro to help simplification.
 
-So any code that still uses HMT_MEDIUM after your patch seems like a bug to me.
+Thanks
+Zhang
 
-> >>The reason I ask is I still see HMT_MEDIUM used in a few places, and it's not
-> >>clear to me if that is correct.
-> > 
-> > 
-> > HMT_MEDIUM used to be our default no ?
+> 
+> Signed-off-by: Geoff Levand <geoff@infradead.org> for Huawei, Linaro
+> ---
+>  include/linux/kexec.h | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+> index d78d28a..f755ec3 100644
+> --- a/include/linux/kexec.h
+> +++ b/include/linux/kexec.h
+> @@ -67,6 +67,7 @@ typedef unsigned long kimage_entry_t;
+>  #define IND_INDIRECTION  0x2
+>  #define IND_DONE         0x4
+>  #define IND_SOURCE       0x8
+> +#define IND_FLAGS (IND_DESTINATION | IND_INDIRECTION | IND_DONE | IND_SOURCE)
+>  
+>  struct kexec_segment {
+>  	void __user *buf;
+> 
 
-> Yes, but I am not sure that all references to HMT_MEDIUM were references to
-> the default kernel priority.
 
-What were they references to? Regardless they will now have the effect of
-boosting the priority in those code sections. It would be good to understand,
-and document, any places where we still use HMT_MEDIUM and why.
-
-> > Also there's an open question... when doing things with interrupts off
-> > (or worse, in real mode) such as some KVM hcalls etc... should we on the
-> > contrary boost up to limit interrupt latency ?
-
-> Yes. I think that there are cases when one should consider using HT_MEDIUM.
-
-Or HIGH?
-
-But let's not get side-tracked on that until we've got the default sorted.
- 
-> Shouldn't we define a new macro HMT_DEFAULT, to identify explicitely where
-> the default priority is required?
-
-That might help clarify things yes.
-
-cheers
+-- 
+Thanks.
+Zhang Yanfei
