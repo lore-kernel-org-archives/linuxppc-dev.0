@@ -1,24 +1,25 @@
 Return-Path: <hongbo.zhang@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+Received: from db8outboundpool.messaging.microsoft.com
+ (mail-db8lp0185.outbound.messaging.microsoft.com [213.199.154.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8798E2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 20:46:36 +1100 (EST)
-Message-ID: <52A985E6.2040403@freescale.com>
-Date: Thu, 12 Dec 2013 17:46:14 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 2D78E2C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 20:57:33 +1100 (EST)
+Received: from mail42-db8 (localhost [127.0.0.1])	by mail42-db8-R.bigfish.com
+ (Postfix) with ESMTP id 68307B80135	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,
+ 12 Dec 2013 09:57:27 +0000 (UTC)
+Message-ID: <52A9887D.3060109@freescale.com>
+Date: Thu, 12 Dec 2013 17:57:17 +0800
 From: Hongbo Zhang <hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] DTS: DMA: Fix DMA3 interrupts
-References: <1385712446-28221-1-git-send-email-hongbo.zhang@freescale.com>	
- <1386357684.7375.124.camel@snotra.buserror.net>	
- <52A6EDE8.5060903@freescale.com>
- <1386700403.10013.109.camel@snotra.buserror.net>
-In-Reply-To: <1386700403.10013.109.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Shengzhou Liu <Shengzhou.Liu@freescale.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: Re: [PATCH 1/5] powerpc/85xx/dts: add third elo3 dma component
+References: <1386760774-14743-1-git-send-email-Shengzhou.Liu@freescale.com>
+In-Reply-To: <1386760774-14743-1-git-send-email-Shengzhou.Liu@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,76 +29,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Shengzhou,
+I canceled my patch http://patchwork.ozlabs.org/patch/295157/ because 
+the original wrong elo3-dma-2.dtsi hadn't been merged.
+But please pay attention to comments from Scott about my changes of 
+adding 208 for some interrupts, and take some actions if needed, or 
+further discussions.
 
-On 12/11/2013 02:33 AM, Scott Wood wrote:
-> On Tue, 2013-12-10 at 18:33 +0800, Hongbo Zhang wrote:
->> Scott,
->> This issue is due to the non-continuous MPIC register, I think there is
->> two ways to fix it.
->>
->> The first one is as what we are discussing, in fact the Bman/Qman DT
->> author had introduced this way, and I had to follow it, it is a trick,
->> adding 208 is a bit ugly I think, and even difficult to explain it to
->> customers etc, but this way changes less codes.
->>
->> The second one is editing MPIC related codes without adding 208 to high
->> interrupts. The point of translate interrupt number to MPIC register
->> address is a so called 'isu' mechanism, we can do like the following
->> example codes, then the tricky adding 208 isn't needed any more.
->>
->> Which one do you prefer?
->> In fact I myself prefer the second, if the idea is acceptable, I will
->> send a patch instead of this one. (and also alone with the internal
->> patch decreasing 208 for the Bman/Qman)
->>
->> void __init corenet_ds_pic_init(void)
->> {
->>       ......
->>
->>       mpic = mpic_alloc(NULL, 0, flags, 0, 512, "OpenPIC");
->>       BUG_ON(mpic == NULL);
->>
->> // Add this start
->>       for (i = 0; i < 17; i++) {
->>           if (i < 11)
->>               addr_off = 0x10000 + 0x20 * 16 * i;
->>           else
->>               addr_off = 0x13000 + 0x20 * 16 * (i - 11);  /* scape the
->> address not for interrupts */
->>           mpic_assign_isu(mpic, i, mpic->paddr + addr_off);
->>       }
->> // Add this end
->>
->>       mpic_init(mpic);
->> }
-> NACK
->
-> We already have a binding that states that the interrupt number is based
-> on the register offset, rather than whatever arbitrary numbers hardware
-> documenters decide to use next week.
->
-> While I'm not terribly happy with the usability of this, especially now
-> that it's not a simple "add 16", redefining the existing binding is not
-> OK (and in any case the code above seems obfuscatory).  If we decide to
-> do something other than continue with register offset divided by 32,
-> then we need to define a new interrupt type (similar to current defined
-> types of error interrupt, timer, and IPI) for the new numberspace -- and
-> it should be handled when decoding that type of interrupt specifier,
-> rather than with the isu mechanism.
->
-> -Scott
->
->
-Scott,
-Thanks for your comments. Since the second way isn't so good, let's 
-choose the original one.
-But we meet a small accident now.
-My patch is based on the http://patchwork.ozlabs.org/patch/291553/, 
-which had been superseded, so this thread can be closed now.
+Below comments form Scott:
+"The FSL MPIC binding should be updated to point out how this works.
+Technically it's not a change to the binding itself, since it's defined
+in terms of register offset, but the explanatory text says "So interrupt
+0 is at offset 0x0, interrupt 1 is at offset 0x20, and so on." which is
+not accurate for these new high interrupt numbers."
 
-And Shenzhou has already sent a complete dma3 dtsi patch including 
-correct interrupt numbers, http://patchwork.ozlabs.org/patch/300026/, so 
-let's focus on this patch, and I will forward your first comments of my 
-patch there.
 
-Thanks.
+On 12/11/2013 07:19 PM, Shengzhou Liu wrote:
+> Add elo3-dma-2.dtsi to support the third DMA controller.
+> This is used on T2080, T4240, etc.
+>
+> MPIC registers for internal interrupts is non-continous in address, any
+> internal interrupt number greater than 159 should be added (16+208) to work,
+> adding 16 is due to external interrupts as usual, adding 208 is due to
+> non-continous MPIC register space.
+>
+> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+> ---
+>   arch/powerpc/boot/dts/fsl/elo3-dma-2.dtsi | 82 +++++++++++++++++++++++++++++++
+>   1 file changed, 82 insertions(+)
+>   create mode 100644 arch/powerpc/boot/dts/fsl/elo3-dma-2.dtsi
+>
+> diff --git a/arch/powerpc/boot/dts/fsl/elo3-dma-2.dtsi b/arch/powerpc/boot/dts/fsl/elo3-dma-2.dtsi
+> new file mode 100644
+> index 0000000..d3cc8d0
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/fsl/elo3-dma-2.dtsi
+> @@ -0,0 +1,82 @@
+> +/*
+> + * QorIQ Elo3 DMA device tree stub [ controller @ offset 0x102300 ]
+> + *
+> + * Copyright 2013 Freescale Semiconductor Inc.
+> + *
+> + * Redistribution and use in source and binary forms, with or without
+> + * modification, are permitted provided that the following conditions are met:
+> + *     * Redistributions of source code must retain the above copyright
+> + *       notice, this list of conditions and the following disclaimer.
+> + *     * Redistributions in binary form must reproduce the above copyright
+> + *       notice, this list of conditions and the following disclaimer in the
+> + *       documentation and/or other materials provided with the distribution.
+> + *     * Neither the name of Freescale Semiconductor nor the
+> + *       names of its contributors may be used to endorse or promote products
+> + *       derived from this software without specific prior written permission.
+> + *
+> + *
+> + * ALTERNATIVELY, this software may be distributed under the terms of the
+> + * GNU General Public License ("GPL") as published by the Free Software
+> + * Foundation, either version 2 of that License or (at your option) any
+> + * later version.
+> + *
+> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
+> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
+> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+> + */
+> +
+> +dma2: dma@102300 {
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +	compatible = "fsl,elo3-dma";
+> +	reg = <0x102300 0x4>,
+> +	      <0x102600 0x4>;
+> +	ranges = <0x0 0x102100 0x500>;
+> +	dma-channel@0 {
+> +		compatible = "fsl,eloplus-dma-channel";
+> +		reg = <0x0 0x80>;
+> +		interrupts = <464 2 0 0>;
+> +	};
+> +	dma-channel@80 {
+> +		compatible = "fsl,eloplus-dma-channel";
+> +		reg = <0x80 0x80>;
+> +		interrupts = <465 2 0 0>;
+> +	};
+> +	dma-channel@100 {
+> +		compatible = "fsl,eloplus-dma-channel";
+> +		reg = <0x100 0x80>;
+> +		interrupts = <466 2 0 0>;
+> +	};
+> +	dma-channel@180 {
+> +		compatible = "fsl,eloplus-dma-channel";
+> +		reg = <0x180 0x80>;
+> +		interrupts = <467 2 0 0>;
+> +	};
+> +	dma-channel@300 {
+> +		compatible = "fsl,eloplus-dma-channel";
+> +		reg = <0x300 0x80>;
+> +		interrupts = <468 2 0 0>;
+> +	};
+> +	dma-channel@380 {
+> +		compatible = "fsl,eloplus-dma-channel";
+> +		reg = <0x380 0x80>;
+> +		interrupts = <469 2 0 0>;
+> +	};
+> +	dma-channel@400 {
+> +		compatible = "fsl,eloplus-dma-channel";
+> +		reg = <0x400 0x80>;
+> +		interrupts = <470 2 0 0>;
+> +	};
+> +	dma-channel@480 {
+> +		compatible = "fsl,eloplus-dma-channel";
+> +		reg = <0x480 0x80>;
+> +		interrupts = <471 2 0 0>;
+> +	};
+> +};
