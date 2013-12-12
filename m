@@ -1,20 +1,26 @@
-Return-Path: <B48286@freescale.com>
-Received: from db8outboundpool.messaging.microsoft.com
- (mail-db8lp0184.outbound.messaging.microsoft.com [213.199.154.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 774E62C00A1
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Dec 2013 18:01:43 +1100 (EST)
-From: Hou Zhiqiang <b48286@freescale.com>
-To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v2] mtd: m25p80: Add Power Management support
-Date: Thu, 12 Dec 2013 13:38:36 +0800
-Message-ID: <1386826716-20476-1-git-send-email-b48286@freescale.com>
+Return-Path: <felix@linux.vnet.ibm.com>
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp16.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C96372C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 18:09:56 +1100 (EST)
+Received: from /spool/local
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Thu, 12 Dec 2013 07:09:52 -0000
+Message-ID: <52A961A0.5010307@linux.vnet.ibm.com>
+Date: Thu, 12 Dec 2013 08:11:28 +0100
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Mingkai.Hu@freescale.com,
- Hou Zhiqiang <b48286@freescale.com>, dwmw2@infradead.org
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: set default kernel thread priority to medium-low
+References: <1386661163-4478-1-git-send-email-felix@linux.vnet.ibm.com>
+ <1386743357.27999.1.camel@concordia> <1386755340.15730.11.camel@pasglop>
+ <52A83EBE.4060305@linux.vnet.ibm.com> <1386811338.12662.3.camel@concordia>
+In-Reply-To: <1386811338.12662.3.camel@concordia>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,77 +30,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add PM support using callback function suspend and resume in
-.driver.pm of spi_driver.
+Michael Ellerman wrote:
+> On Wed, 2013-12-11 at 11:30 +0100, Philippe Bergheaud wrote:
+> 
+>>Benjamin Herrenschmidt wrote:
+>>
+>>>On Wed, 2013-12-11 at 17:29 +1100, Michael Ellerman wrote:
+>>>
+>>>
+>>>
+>>>>It would be nice if you could make an assertion about what the state of HMT
+>>>>handling should be once your patch is applied.
+>>>>
+>>>>I think it's:
+>>>>
+>>>>* The kernel should use HMT_MEDIUM_LOW as it's "default" priority
+>>>>* The kernel should use HMT_LOW as it's "low" priority
+>>>>
+>>>>Which would imply:
+>>>>
+>>>>* The kernel should not use HMT_MEDIUM anywhere ..
+>>>>* Nor should it use any of the other higher HMT modes.
+>>>>
+>>>>Do you agree?
+> 
+> 
+>>Not entirely.  HT_MEDIUM might still be used by the kernel, in places where a
+>>priority higher than the default is required.
+> 
+> 
+> Right. But any code that currently uses HMT_MEDIUM is at the default level,
+> whereas once your patch is applied any code still using HMT_MEDIUM will be
+> boosted vs the default.
+> 
+> So any code that still uses HMT_MEDIUM after your patch seems like a bug to me.
+> 
+> 
+>>>>The reason I ask is I still see HMT_MEDIUM used in a few places, and it's not
+>>>>clear to me if that is correct.
+>>>
+>>>
+>>>HMT_MEDIUM used to be our default no ?
+> 
+> 
+>>Yes, but I am not sure that all references to HMT_MEDIUM were references to
+>>the default kernel priority.
+> 
+> 
+> What were they references to? Regardless they will now have the effect of
+> boosting the priority in those code sections. It would be good to understand,
+> and document, any places where we still use HMT_MEDIUM and why.
+Yes. This needs to be documented.
 
-Signed-off-by: Hou Zhiqiang <b48286@freescale.com>
----
-v2:
- - Replace .driver.suspend and .driver.resume with .driver.pm
- - Use CONFIG_PM_SLEEP instead of CONFIG_PM
+> 
+>>>Also there's an open question... when doing things with interrupts off
+>>>(or worse, in real mode) such as some KVM hcalls etc... should we on the
+>>>contrary boost up to limit interrupt latency ?
+> 
+> 
+>>Yes. I think that there are cases when one should consider using HT_MEDIUM.
+> 
+> 
+> Or HIGH?
+Correct, I had not thought of that option.
 
- drivers/mtd/devices/m25p80.c | 37 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
+> But let's not get side-tracked on that until we've got the default sorted.
+> 
+> 
+>>Shouldn't we define a new macro HMT_DEFAULT, to identify explicitely where
+>>the default priority is required?
+> 
+> 
+> That might help clarify things yes.
+> 
+> cheers
+> 
+Thank you for the help. I will rework this.
 
-diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index 7eda71d..eb558e8 100644
---- a/drivers/mtd/devices/m25p80.c
-+++ b/drivers/mtd/devices/m25p80.c
-@@ -66,6 +66,8 @@
- 
- /* Used for Spansion flashes only. */
- #define	OPCODE_BRWR		0x17	/* Bank register write */
-+#define	OPCODE_DP		0xb9	/* Enter deep power down mode */
-+#define	OPCODE_RES		0xab	/* Exit deep power down mode */
- 
- /* Status Register bits. */
- #define	SR_WIP			1	/* Write in progress */
-@@ -1128,11 +1130,46 @@ static int m25p_remove(struct spi_device *spi)
- 	return mtd_device_unregister(&flash->mtd);
- }
- 
-+#ifdef CONFIG_PM_SLEEP
-+static int m25p_suspend(struct device *dev)
-+{
-+	struct m25p *flash = dev_get_drvdata(dev);
-+	int ret;
-+
-+	flash->command[0] = OPCODE_DP;
-+	mutex_lock(&flash->lock);
-+	/* Wait until finished previous write/erase command. */
-+	ret = wait_till_ready(flash);
-+	if (ret) {
-+		mutex_unlock(&flash->lock);
-+		return ret;
-+	}
-+	ret = spi_write(flash->spi, flash->command, 1);
-+	mutex_unlock(&flash->lock);
-+
-+	return ret;
-+}
-+
-+static int m25p_resume(struct device *dev)
-+{
-+	struct m25p *flash = dev_get_drvdata(dev);
-+	int ret;
-+
-+	flash->command[0] = OPCODE_RES;
-+
-+	return spi_write(flash->spi, flash->command, 1);
-+}
-+#endif /* CONFIG_PM_SLEEP */
-+
-+static const struct dev_pm_ops m25p_pm = {
-+	SET_SYSTEM_SLEEP_PM_OPS(m25p_suspend, m25p_resume)
-+};
- 
- static struct spi_driver m25p80_driver = {
- 	.driver = {
- 		.name	= "m25p80",
- 		.owner	= THIS_MODULE,
-+		.pm	= &m25p_pm,
- 	},
- 	.id_table	= m25p_ids,
- 	.probe	= m25p_probe,
--- 
-1.8.4.1
+Philippe
