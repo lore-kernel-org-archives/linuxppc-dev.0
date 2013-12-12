@@ -1,19 +1,28 @@
-Return-Path: <zhangyanfei@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 0DFF62C020A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 12:44:17 +1100 (EST)
-Message-ID: <52A912E3.1060802@cn.fujitsu.com>
-Date: Thu, 12 Dec 2013 09:35:31 +0800
-From: Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-qe0-x236.google.com (mail-qe0-x236.google.com
+ [IPv6:2607:f8b0:400d:c02::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 31E1E2C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 13:19:17 +1100 (EST)
+Received: by mail-qe0-f54.google.com with SMTP id cy11so6006686qeb.41
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2013 18:19:14 -0800 (PST)
 MIME-Version: 1.0
-To: Geoff Levand <geoff@infradead.org>
-Subject: Re: [PATCH 2/4] kexec: Add IND_FLAGS macro
-References: <cover.1386807069.git.geoff@infradead.org>
- <3d9d024551c3c0e560d77f81926cb5774dda7067.1386807069.git.geoff@infradead.org>
-In-Reply-To: <3d9d024551c3c0e560d77f81926cb5774dda7067.1386807069.git.geoff@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- Eric Biederman <ebiederm@xmission.com>, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1386755416.15730.12.camel@pasglop>
+References: <1386140348-7854-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <1386140348-7854-2-git-send-email-pingfank@linux.vnet.ibm.com>
+ <87a9gfva9n.fsf@linux.vnet.ibm.com>
+ <CAFgQCTtd1v+ANEy899_Tk2UmYsAL1Lxe8t6WuMxFvjXk5rtn_Q@mail.gmail.com>
+ <1386755416.15730.12.camel@pasglop>
+Date: Thu, 12 Dec 2013 10:19:14 +0800
+Message-ID: <CAFgQCTugyADVdrZYC0CDZBcjNOoi2Bt56Zt_5QwYBODGT0QaBw@mail.gmail.com>
+Subject: Re: [PATCH 1/3] powerpc: mm: make _PAGE_NUMA take effect
+From: Liu ping fan <kernelfans@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,41 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello
+On Wed, Dec 11, 2013 at 5:50 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Wed, 2013-12-11 at 16:50 +0800, Liu ping fan wrote:
+>> > why ? , All the hash routines do check for _PAGE_PRESENT via access
+>> > variable.
+>> >
+>> Going through __hash_page_4K(4k on 4k HW), I do not find such check.
+>> Am I wrong? Or I will send out a patch to fix that.
+>
+> We pass a bitmask of flags to check which are tested by doing an "andc"
+> of the PTE on that mask and checking if anything is left...
+>
+Oh, see it, thank you very much
 
-On 12/12/2013 08:18 AM, Geoff Levand wrote:
-> Add a new kexec preprocessor macro IND_FLAGS, which is the bitwise OR of
-> all the possible kexec IND_ kimage_entry indirection flags.
-> 
-> Having this macro allows for simplified code in the prosessing of the
-> kexec kimage_entry items.
-
-Where? I didn't see any place you use this macro to help simplification.
-
-Thanks
-Zhang
-
-> 
-> Signed-off-by: Geoff Levand <geoff@infradead.org> for Huawei, Linaro
-> ---
->  include/linux/kexec.h | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-> index d78d28a..f755ec3 100644
-> --- a/include/linux/kexec.h
-> +++ b/include/linux/kexec.h
-> @@ -67,6 +67,7 @@ typedef unsigned long kimage_entry_t;
->  #define IND_INDIRECTION  0x2
->  #define IND_DONE         0x4
->  #define IND_SOURCE       0x8
-> +#define IND_FLAGS (IND_DESTINATION | IND_INDIRECTION | IND_DONE | IND_SOURCE)
->  
->  struct kexec_segment {
->  	void __user *buf;
-> 
-
-
--- 
-Thanks.
-Zhang Yanfei
+Regards,
+Pingfan
