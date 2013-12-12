@@ -1,26 +1,25 @@
-Return-Path: <tommusta@gmail.com>
-Received: from mail-yh0-x236.google.com (mail-yh0-x236.google.com
- [IPv6:2607:f8b0:4002:c01::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 91C682C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 02:09:11 +1100 (EST)
-Received: by mail-yh0-f54.google.com with SMTP id z12so380046yhz.41
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 07:09:07 -0800 (PST)
-Message-ID: <52A9D17E.3000809@gmail.com>
-Date: Thu, 12 Dec 2013 09:08:46 -0600
-From: Tom Musta <tommusta@gmail.com>
+Return-Path: <matteo.facchinetti@sirius-es.it>
+Received: from mx.vmgattei.com (mx.vmgattei.com [77.223.18.35])
+ by ozlabs.org (Postfix) with ESMTP id EAB562C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 03:18:03 +1100 (EST)
+Received: from localhost (mx.vmgattei.com [127.0.0.1])
+ by mx.vmgattei.com (Postfix) with ESMTP id 5683822D72
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 17:12:49 +0100 (CET)
+Received: from mx.vmgattei.com ([127.0.0.1])
+ by localhost (mx.vmgattei.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id pcHWPW0Xm34B for <linuxppc-dev@lists.ozlabs.org>;
+ Thu, 12 Dec 2013 17:12:49 +0100 (CET)
+Message-ID: <52A9E074.5080607@sirius-es.it>
+Date: Thu, 12 Dec 2013 17:12:36 +0100
+From: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [V2 PATCH 3/3] powerpc: Fix Unaligned LE Floating Point Loads
- and Stores
-References: <1383244738-5986-1-git-send-email-tommusta@gmail.com>
- <1383244738-5986-4-git-send-email-tommusta@gmail.com>
- <20131211035440.GA9399@drongo> <20131211045728.GB9399@drongo>
-In-Reply-To: <20131211045728.GB9399@drongo>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ Anatolij Gustschin <agust@denx.de>, Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH v1 0/4] powerpc/512x: update COMMON_CLK support for MPC5125
+References: <1386681097-14126-1-git-send-email-gsi@denx.de>
+In-Reply-To: <1386681097-14126-1-git-send-email-gsi@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, Detlev Zundel <dzu@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,25 +29,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/10/2013 10:57 PM, Paul Mackerras wrote:
-> On Wed, Dec 11, 2013 at 02:54:40PM +1100, Paul Mackerras wrote:
+On 10/12/2013 14:11, Gerhard Sittig wrote:
+> this series improves the previously introduced common clock support for
+> MPC512x such that SoC variants 5123 and 5125 get addressed appropriately
+> (MPC5125 turned out to be rather different from MPC5121 than I perceived
+> before -- there is much more than "just two FECs and no MBX")
+Ohhh yesss..... welcome to hell! :-)
 
->> This breaks 32-bit big-endian (as well as making the code longer and
->> more complex).
-> 
-> And in fact none of this code will get executed in little-endian mode
-> anyway, since we still have this in the middle of emulate_step():
-> 
-> 	/*
-> 	 * Following cases are for loads and stores, so bail out
-> 	 * if we're in little-endian mode.
-> 	 */
-> 	if (regs->msr & MSR_LE)
-> 		return 0;
-> 
-> Paul.
-> 
+I report also these differences:
 
-See patch 1/3 to explain how it becomes relevant in LE.
+- I/O control module:
+        to do integration with linux pin-muxing subsystem
 
-I will take another look at the change.
+- GPIO module:
+        controller is the same of the mpc5121 but with these differences:
+        - 64 gpios divided in 2 banks
+        - input only gpios are numbers form 0 to 3 of the first bank
+        I'm finishing to write the patch... when done I'll post in ML
+
+- NFC: one of the biggest unsolved mystery
+        Is this ip-core used in others microcontrollers? Seems to be 
+used only in mpc5125!!!
+
+>
+> Matteo, can you verify the crystal frequency in the DTS update, please?
+Crystal frequency is ok: 33MHz.
+
+> And that v3.13-rc kernels with v6 of the COMMON_CLK introduction for
+> MPC512x plus this series for MPC5125 operate your peripherals, both with
+> an updated device tree as well as with a former device tree that lacks
+> clock specs?  Thank you!  Setting CONFIG_COMMON_CLK_DEBUG=y in your
+> .config and eyeballing /sys/kernel/debug/clk/clk_summary will help you.
+>
+>
+I tested all on TWR board.
+
+In DTS, for the moment, have to comment out this block:
+-        usb@3000 {
+-            compatible = "fsl,mpc5121-usb2-dr";
+-            reg = <0x3000 0x400>;
+-            #address-cells = <1>;
+-            #size-cells = <0>;
+-            interrupts = <43 0x8>;
+-            dr_mode = "host";
+-            phy_type = "ulpi";
+-            clocks = <&clks MPC512x_CLK_USB1>;
+-            clock-names = "ipg";
+-        };
+Because USB controller pinout is not initialized correctly and when 
+system boot, causes a kernel panic.
+
+For the rest, kernel works correctly. For MPC5125 the patches are OK.
+
+I also check clk_summary and all clocks values are OK (except for NFC 
+clock value).
+
+I notice that there are missing clock like: gpio1, gpio2, fuse, dma,  
+wdt, pmc, rtc.
+Is this OK or should be added?
+
+
+Regards,
+
+Matteo Facchinetti
+Sirius Electronic Systems
