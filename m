@@ -1,17 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1386900217.21216.8.camel@concordia>
-Subject: Re: [PATCH] powerpc: set default kernel thread priority to medium-low
+Message-ID: <1386902862.3853.0.camel@concordia>
+Subject: Re: [PATCH V4 08/10] powerpc, perf: Enable SW filtering in branch
+ stack sampling framework
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Date: Fri, 13 Dec 2013 13:03:37 +1100
-In-Reply-To: <52A961A0.5010307@linux.vnet.ibm.com>
-References: <1386661163-4478-1-git-send-email-felix@linux.vnet.ibm.com>
- <1386743357.27999.1.camel@concordia> <1386755340.15730.11.camel@pasglop>
- <52A83EBE.4060305@linux.vnet.ibm.com> <1386811338.12662.3.camel@concordia>
- <52A961A0.5010307@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Fri, 13 Dec 2013 13:47:42 +1100
+In-Reply-To: <52A9779B.1030003@linux.vnet.ibm.com>
+References: <20131209062146.EABBE2C00C1@ozlabs.org>
+ <52A6AD61.4050408@linux.vnet.ibm.com> <52A9779B.1030003@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org, ak@linux.intel.com, linux-kernel@vger.kernel.org,
+ eranian@google.com, linuxppc-dev@ozlabs.org, acme@ghostprotocols.net,
+ sukadev@linux.vnet.ibm.com, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,16 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-12-12 at 08:11 +0100, Philippe Bergheaud wrote:
-> Michael Ellerman wrote:
-> > On Wed, 2013-12-11 at 11:30 +0100, Philippe Bergheaud wrote:
+On Thu, 2013-12-12 at 14:15 +0530, Anshuman Khandual wrote:
+> On 12/10/2013 11:27 AM, Anshuman Khandual wrote:
+> > On 12/09/2013 11:51 AM, Michael Ellerman wrote:
+> >> This code was already in need of some unindentation, and now it's just
+> >> ridiculous.
+> >>
+> >> To start with at the beginning of this routine we have:
+> >>
+> >> while (..) {
+> >> 	if (!val)
+> >> 		break;
+> >> 	else {
+> >> 		// Bulk of the logic
+> >> 		...
+> >> 	}
+> >> }
+> >>
+> >> That should almost always become:
+> >>
+> >> while (..) {
+> >> 	if (!val)
+> >> 		break;
+> >>
+> >> 	// Bulk of the logic
+> >> 	...
+> >> }
+> >>
+> >>
+> >> But in this case that's not enough. Please send a precursor patch which moves
+> >> this logic out into a helper function.
 > > 
-> >>Shouldn't we define a new macro HMT_DEFAULT, to identify explicitely where
-> >>the default priority is required?
+> > Hey Michael,
 > > 
-> > 
-> > That might help clarify things yes.
->
-> Thank you for the help. I will rework this.
+> > I believe this patch should be able to take care of this.
 
-Thanks.
+...
+ 
+> Does the patch looks okay ? In which case will send it out separately. Do let
+> me know. Thank you.
+
+It's OK.
+
+Don't send it out separately, make it the first patch in your series.
+
+cheers
