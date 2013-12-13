@@ -1,22 +1,43 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0149.outbound.protection.outlook.com [207.46.163.149])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.protection.outlook.com",
- Issuer "MSIT Machine Auth CA 2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7968D2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 14:54:47 +1100 (EST)
-From: Yuantian Tang <Yuantian.Tang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH v7] clk: corenet: Adds the clock binding
-Date: Fri, 13 Dec 2013 03:39:21 +0000
-Message-ID: <9bbde68538844d4ea1d6b7688fc83317@BL2PR03MB115.namprd03.prod.outlook.com>
-References: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>
-In-Reply-To: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>
-Content-Type: text/plain; charset="gb2312"
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9C9E72C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 15:22:32 +1100 (EST)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Thu, 12 Dec 2013 23:22:30 -0500
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 1F2C26E803C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 23:22:24 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBD4MQuc9503180
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 04:22:26 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBD4MN6j004458
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 23:22:26 -0500
+Subject: [RFC PATCH] time: Support in tick broadcast framework for archs
+ without an external wakeup source
+To: peterz@infradead.org, fweisbec@gmail.com, paul.gortmaker@windriver.com,
+ paulus@samba.org, mingo@kernel.org, shangw@linux.vnet.ibm.com,
+ rafael.j.wysocki@intel.com, galak@kernel.crashing.org,
+ benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
+ linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au,
+ john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com,
+ deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
+ linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
+ schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Fri, 13 Dec 2013 09:49:01 +0530
+Message-ID: <20131213041901.17199.37383.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,117 +47,397 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-UElORy4NCg0KVGhhbmtzLA0KWXVhbnRpYW4NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
-LQ0KPiBGcm9tOiBUYW5nIFl1YW50aWFuLUIyOTk4Mw0KPiBTZW50OiAyMDEzxOoxMdTCMjDI1SDQ
-x8bayP0gMTc6MDUNCj4gVG86IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmcNCj4gQ2M6IGRldmlj
-ZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4g
-bWFyay5ydXRsYW5kQGFybS5jb207IFdvb2QgU2NvdHQtQjA3NDIxOyBncmFudC5saWtlbHlAc2Vj
-cmV0bGFiLmNhOyBUYW5nDQo+IFl1YW50aWFuLUIyOTk4MzsgVGFuZyBZdWFudGlhbi1CMjk5ODM7
-IExpIFlhbmctTGVvLVI1ODQ3Mg0KPiBTdWJqZWN0OiBbUEFUQ0ggdjddIGNsazogY29yZW5ldDog
-QWRkcyB0aGUgY2xvY2sgYmluZGluZw0KPiANCj4gRnJvbTogVGFuZyBZdWFudGlhbiA8eXVhbnRp
-YW4udGFuZ0BmcmVlc2NhbGUuY29tPg0KPiANCj4gQWRkcyB0aGUgY2xvY2sgYmluZGluZ3MgZm9y
-IEZyZWVzY2FsZSBQb3dlclBDIENvcmVOZXQgcGxhdGZvcm1zDQo+IA0KPiBTaWduZWQtb2ZmLWJ5
-OiBUYW5nIFl1YW50aWFuIDxZdWFudGlhbi5UYW5nQGZyZWVzY2FsZS5jb20+DQo+IFNpZ25lZC1v
-ZmYtYnk6IExpIFlhbmcgPGxlb2xpQGZyZWVzY2FsZS5jb20+DQo+IC0tLQ0KPiB2NzoNCj4gCS0g
-cmVmaW5lZCBzb21lIHByb3BlcnRpZXMnIGRlZmluaXRpb25zDQo+IHY2Og0KPiAJLSBzcGxpdGVk
-IHRoZSBwcmV2aW91cyBwYXRjaCBpbnRvIDIgcGFydHMsIG9uZSBpcyBmb3IgYmluZGluZyh0aGlz
-DQo+IG9uZSksDQo+IAkgIHRoZSBvdGhlciBpcyBmb3IgRFRTIG1vZGlmaWNhdGlvbih3aWxsIHN1
-Ym1pdCBvbmNlIHRoaXMgZ2V0cw0KPiBhY2NlcHRlZCkNCj4gCS0gZml4ZWQgdHlwbw0KPiAJLSBy
-ZWZpbmVkICNjbG9jay1jZWxscyBhbmQgY2xvY2stb3V0cHV0LW5hbWVzIHByb3BlcnRpZXMNCj4g
-CS0gcmVtb3ZlZCBmaXhlZC1jbG9jayBjb21wYXRpYmxlIHN0cmluZw0KPiB2NToNCj4gCS0gcmVm
-aW5lIHRoZSBiaW5kaW5nIGRvY3VtZW50DQo+IAktIHVwZGF0ZSB0aGUgY29tcGF0aWJsZSBzdHJp
-bmcNCj4gdjQ6DQo+IAktIGFkZCBiaW5kaW5nIGRvY3VtZW50DQo+IAktIHVwZGF0ZSBjb21wYXRp
-YmxlIHN0cmluZw0KPiAJLSB1cGRhdGUgdGhlIHJlZyBwcm9wZXJ0eQ0KPiB2MzoNCj4gCS0gZml4
-IHR5cG8NCj4gdjI6DQo+IAktIGFkZCB0NDI0MCwgYjQ0MjAsIGI0ODYwIHN1cHBvcnQNCj4gCS0g
-cmVtb3ZlIHBsbC80IGNsb2NrIGZyb20gcDIwNDEsIHAzMDQxIGFuZCBwNTAyMCBib2FyZA0KPiAg
-Li4uL2RldmljZXRyZWUvYmluZGluZ3MvY2xvY2svY29yZW5ldC1jbG9jay50eHQgICAgfCAxMjgN
-Cj4gKysrKysrKysrKysrKysrKysrKysrDQo+ICAxIGZpbGUgY2hhbmdlZCwgMTI4IGluc2VydGlv
-bnMoKykNCj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
-ZGluZ3MvY2xvY2svY29yZW5ldC0NCj4gY2xvY2sudHh0DQo+IA0KPiBkaWZmIC0tZ2l0IGEvRG9j
-dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Nsb2NrL2NvcmVuZXQtY2xvY2sudHh0DQo+
-IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Nsb2NrL2NvcmVuZXQtY2xvY2su
-dHh0DQo+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+IGluZGV4IDAwMDAwMDAuLjYwOWJhMmINCj4g
-LS0tIC9kZXYvbnVsbA0KPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mv
-Y2xvY2svY29yZW5ldC1jbG9jay50eHQNCj4gQEAgLTAsMCArMSwxMjggQEANCj4gKyogQ2xvY2sg
-QmxvY2sgb24gRnJlZXNjYWxlIENvcmVOZXQgUGxhdGZvcm1zDQo+ICsNCj4gK0ZyZWVzY2FsZSBD
-b3JlTmV0IGNoaXBzIHRha2UgcHJpbWFyeSBjbG9ja2luZyBpbnB1dCBmcm9tIHRoZSBleHRlcm5h
-bA0KPiArU1lTQ0xLIHNpZ25hbC4gVGhlIFNZU0NMSyBpbnB1dCAoZnJlcXVlbmN5KSBpcyBtdWx0
-aXBsaWVkIHVzaW5nDQo+ICttdWx0aXBsZSBwaGFzZSBsb2NrZWQgbG9vcHMgKFBMTCkgdG8gY3Jl
-YXRlIGEgdmFyaWV0eSBvZiBmcmVxdWVuY2llcw0KPiArd2hpY2ggY2FuIHRoZW4gYmUgcGFzc2Vk
-IHRvIGEgdmFyaWV0eSBvZiBpbnRlcm5hbCBsb2dpYywgaW5jbHVkaW5nDQo+ICtjb3JlcyBhbmQg
-cGVyaXBoZXJhbCBJUCBibG9ja3MuDQo+ICtQbGVhc2UgcmVmZXIgdG8gdGhlIFJlZmVyZW5jZSBN
-YW51YWwgZm9yIGRldGFpbHMuDQo+ICsNCj4gKzEuIENsb2NrIEJsb2NrIEJpbmRpbmcNCj4gKw0K
-PiArUmVxdWlyZWQgcHJvcGVydGllczoNCj4gKy0gY29tcGF0aWJsZTogU2hvdWxkIGNvbnRhaW4g
-YSBzcGVjaWZpYyBjbG9jayBibG9jayBjb21wYXRpYmxlIHN0cmluZw0KPiArCWFuZCBhIHNpbmds
-ZSBjaGFzc2lzIGNsb2NrIGNvbXBhdGlibGUgc3RyaW5nLg0KPiArCUNsb2NrIGJsb2NrIHN0cmlu
-Z3MgaW5jbHVkZSwgYnV0IG5vdCBsaW1pdGVkIHRvLCBvbmUgb2YgdGhlOg0KPiArCSogImZzbCxw
-MjA0MS1jbG9ja2dlbiINCj4gKwkqICJmc2wscDMwNDEtY2xvY2tnZW4iDQo+ICsJKiAiZnNsLHA0
-MDgwLWNsb2NrZ2VuIg0KPiArCSogImZzbCxwNTAyMC1jbG9ja2dlbiINCj4gKwkqICJmc2wscDUw
-NDAtY2xvY2tnZW4iDQo+ICsJKiAiZnNsLHQ0MjQwLWNsb2NrZ2VuIg0KPiArCSogImZzbCxiNDQy
-MC1jbG9ja2dlbiINCj4gKwkqICJmc2wsYjQ4NjAtY2xvY2tnZW4iDQo+ICsJQ2hhc3NpcyBjbG9j
-ayBzdHJpbmdzIGluY2x1ZGU6DQo+ICsJKiAiZnNsLHFvcmlxLWNsb2NrZ2VuLTEuMCI6IGZvciBj
-aGFzc2lzIDEuMCBjbG9ja3MNCj4gKwkqICJmc2wscW9yaXEtY2xvY2tnZW4tMi4wIjogZm9yIGNo
-YXNzaXMgMi4wIGNsb2Nrcw0KPiArLSByZWc6IE9mZnNldCBhbmQgbGVuZ3RoIG9mIHRoZSBjbG9j
-ayByZWdpc3RlciBzZXQNCj4gKw0KPiArUmVjb21tZW5kZWQgcHJvcGVydGllczoNCj4gKy0gcmFu
-Z2VzOiBBbGxvd3MgdmFsaWQgdHJhbnNsYXRpb24gYmV0d2VlbiBjaGlsZCdzIGFkZHJlc3Mgc3Bh
-Y2UgYW5kDQo+ICsJcGFyZW50J3MuIE11c3QgYmUgcHJlc2VudCBpZiB0aGUgZGV2aWNlIGhhcyBz
-dWItbm9kZXMuDQo+ICstICNhZGRyZXNzLWNlbGxzOiBTcGVjaWZpZXMgdGhlIG51bWJlciBvZiBj
-ZWxscyB1c2VkIHRvIHJlcHJlc2VudA0KPiArCXBoeXNpY2FsIGJhc2UgYWRkcmVzc2VzLiAgTXVz
-dCBiZSBwcmVzZW50IGlmIHRoZSBkZXZpY2UgaGFzDQo+ICsJc3ViLW5vZGVzIGFuZCBzZXQgdG8g
-MSBpZiBwcmVzZW50DQo+ICstICNzaXplLWNlbGxzOiBTcGVjaWZpZXMgdGhlIG51bWJlciBvZiBj
-ZWxscyB1c2VkIHRvIHJlcHJlc2VudA0KPiArCXRoZSBzaXplIG9mIGFuIGFkZHJlc3MuIE11c3Qg
-YmUgcHJlc2VudCBpZiB0aGUgZGV2aWNlIGhhcw0KPiArCXN1Yi1ub2RlcyBhbmQgc2V0IHRvIDEg
-aWYgcHJlc2VudA0KPiArDQo+ICsyLiBDbG9jayBQcm92aWRlci9Db25zdW1lciBCaW5kaW5nDQo+
-ICsNCj4gK01vc3Qgb2YgdGhlIGJpbmRpbmdzIGFyZSBmcm9tIHRoZSBjb21tb24gY2xvY2sgYmlu
-ZGluZ1sxXS4NCj4gKyBbMV0gRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Nsb2Nr
-L2Nsb2NrLWJpbmRpbmdzLnR4dA0KPiArDQo+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiArLSBj
-b21wYXRpYmxlIDogU2hvdWxkIGluY2x1ZGUgb25lIG9mIHRoZSBmb2xsb3dpbmc6DQo+ICsJKiAi
-ZnNsLHFvcmlxLWNvcmUtcGxsLTEuMCIgZm9yIGNvcmUgUExMIGNsb2NrcyAodjEuMCkNCj4gKyAg
-ICAqICJmc2wscW9yaXEtY29yZS1wbGwtMi4wIiBmb3IgY29yZSBQTEwgY2xvY2tzICh2Mi4wKQ0K
-PiArICAgICogImZzbCxxb3JpcS1jb3JlLW11eC0xLjAiIGZvciBjb3JlIG11eCBjbG9ja3MgKHYx
-LjApDQo+ICsgICAgKiAiZnNsLHFvcmlxLWNvcmUtbXV4LTIuMCIgZm9yIGNvcmUgbXV4IGNsb2Nr
-cyAodjIuMCkNCj4gKwkqICJmc2wscW9yaXEtc3lzY2xrLTEuMCI6IGZvciBpbnB1dCBzeXN0ZW0g
-Y2xvY2sgKHYxLjApDQo+ICsJKiAiZnNsLHFvcmlxLXN5c2Nsay0yLjAiOiBmb3IgaW5wdXQgc3lz
-dGVtIGNsb2NrICh2Mi4wKQ0KPiArLSAjY2xvY2stY2VsbHM6IEZyb20gY29tbW9uIGNsb2NrIGJp
-bmRpbmcuIFRoZSBudW1iZXIgb2YgY2VsbHMgaW4gYQ0KPiArCWNsb2NrLXNwZWNpZmllci4gU2hv
-dWxkIGJlIDwwPiBmb3IgImZzbCxxb3JpcS1zeXNjbGstWzEsMl0uMCINCj4gKwljbG9ja3MsIG9y
-IDwxPiBmb3IgImZzbCxxb3JpcS1jb3JlLXBsbC1bMSwyXS4wIiBjbG9ja3MuDQo+ICsJRm9yICJm
-c2wscW9yaXEtY29yZS1wbGwtWzEsMl0uMCIgY2xvY2tzLCB0aGUgc2luZ2xlDQo+ICsJY2xvY2st
-c3BlY2lmaWVyIGNlbGwgbWF5IHRha2UgdGhlIGZvbGxvd2luZyB2YWx1ZXM6DQo+ICsJKiAwIC0g
-ZXF1YWwgdG8gdGhlIFBMTCBmcmVxdWVuY3kNCj4gKwkqIDEgLSBlcXVhbCB0byB0aGUgUExMIGZy
-ZXF1ZW5jeSBkaXZpZGVkIGJ5IDINCj4gKwkqIDIgLSBlcXVhbCB0byB0aGUgUExMIGZyZXF1ZW5j
-eSBkaXZpZGVkIGJ5IDQNCj4gKw0KPiArUmVjb21tZW5kZWQgcHJvcGVydGllczoNCj4gKy0gY2xv
-Y2tzOiBTaG91bGQgYmUgdGhlIHBoYW5kbGUgb2YgaW5wdXQgcGFyZW50IGNsb2NrDQo+ICstIGNs
-b2NrLW5hbWVzOiBGcm9tIGNvbW1vbiBjbG9jayBiaW5kaW5nLCBpbmRpY2F0ZXMgdGhlIGNsb2Nr
-IG5hbWUNCj4gKy0gY2xvY2stb3V0cHV0LW5hbWVzOiBGcm9tIGNvbW1vbiBjbG9jayBiaW5kaW5n
-LCBpbmRpY2F0ZXMgdGhlIG5hbWVzIG9mDQo+ICsJb3V0cHV0IGNsb2Nrcw0KPiArLSByZWc6IFNo
-b3VsZCBiZSB0aGUgb2Zmc2V0IGFuZCBsZW5ndGggb2YgY2xvY2sgYmxvY2sgYmFzZSBhZGRyZXNz
-Lg0KPiArCVRoZSBsZW5ndGggc2hvdWxkIGJlIDQuDQo+ICsNCj4gK0V4YW1wbGUgZm9yIGNsb2Nr
-IGJsb2NrIGFuZCBjbG9jayBwcm92aWRlcjoNCj4gKy8gew0KPiArCWNsb2NrZ2VuOiBnbG9iYWwt
-dXRpbGl0aWVzQGUxMDAwIHsNCj4gKwkJY29tcGF0aWJsZSA9ICJmc2wscDUwMjAtY2xvY2tnZW4i
-LCAiZnNsLHFvcmlxLWNsb2NrZ2VuLTEuMCI7DQo+ICsJCXJhbmdlcyA9IDwweDAgMHhlMTAwMCAw
-eDEwMDA+Ow0KPiArCQlyZWcgPSA8MHhlMTAwMCAweDEwMDA+Ow0KPiArCQkjYWRkcmVzcy1jZWxs
-cyA9IDwxPjsNCj4gKwkJI3NpemUtY2VsbHMgPSA8MT47DQo+ICsNCj4gKwkJc3lzY2xrOiBzeXNj
-bGsgew0KPiArCQkJI2Nsb2NrLWNlbGxzID0gPDA+Ow0KPiArCQkJY29tcGF0aWJsZSA9ICJmc2ws
-cW9yaXEtc3lzY2xrLTEuMCI7DQo+ICsJCQljbG9jay1vdXRwdXQtbmFtZXMgPSAic3lzY2xrIjsN
-Cj4gKwkJfQ0KPiArDQo+ICsJCXBsbDA6IHBsbDBAODAwIHsNCj4gKwkJCSNjbG9jay1jZWxscyA9
-IDwxPjsNCj4gKwkJCXJlZyA9IDwweDgwMCAweDQ+Ow0KPiArCQkJY29tcGF0aWJsZSA9ICJmc2ws
-cW9yaXEtY29yZS1wbGwtMS4wIjsNCj4gKwkJCWNsb2NrcyA9IDwmc3lzY2xrPjsNCj4gKwkJCWNs
-b2NrLW91dHB1dC1uYW1lcyA9ICJwbGwwIiwgInBsbDAtZGl2MiI7DQo+ICsJCX07DQo+ICsNCj4g
-KwkJcGxsMTogcGxsMUA4MjAgew0KPiArCQkJI2Nsb2NrLWNlbGxzID0gPDE+Ow0KPiArCQkJcmVn
-ID0gPDB4ODIwIDB4ND47DQo+ICsJCQljb21wYXRpYmxlID0gImZzbCxxb3JpcS1jb3JlLXBsbC0x
-LjAiOw0KPiArCQkJY2xvY2tzID0gPCZzeXNjbGs+Ow0KPiArCQkJY2xvY2stb3V0cHV0LW5hbWVz
-ID0gInBsbDEiLCAicGxsMS1kaXYyIjsNCj4gKwkJfTsNCj4gKw0KPiArCQltdXgwOiBtdXgwQDAg
-ew0KPiArCQkJI2Nsb2NrLWNlbGxzID0gPDA+Ow0KPiArCQkJcmVnID0gPDB4MCAweDQ+Ow0KPiAr
-CQkJY29tcGF0aWJsZSA9ICJmc2wscW9yaXEtY29yZS1tdXgtMS4wIjsNCj4gKwkJCWNsb2NrcyA9
-IDwmcGxsMCAwPiwgPCZwbGwwIDE+LCA8JnBsbDEgMD4sIDwmcGxsMSAxPjsNCj4gKwkJCWNsb2Nr
-LW5hbWVzID0gInBsbDAiLCAicGxsMC1kaXYyIiwgInBsbDEiLCAicGxsMS1kaXYyIjsNCj4gKwkJ
-CWNsb2NrLW91dHB1dC1uYW1lcyA9ICJjbXV4MCI7DQo+ICsJCX07DQo+ICsNCj4gKwkJbXV4MTog
-bXV4MUAyMCB7DQo+ICsJCQkjY2xvY2stY2VsbHMgPSA8MD47DQo+ICsJCQlyZWcgPSA8MHgyMCAw
-eDQ+Ow0KPiArCQkJY29tcGF0aWJsZSA9ICJmc2wscW9yaXEtY29yZS1tdXgtMS4wIjsNCj4gKwkJ
-CWNsb2NrcyA9IDwmcGxsMCAwPiwgPCZwbGwwIDE+LCA8JnBsbDEgMD4sIDwmcGxsMSAxPjsNCj4g
-KwkJCWNsb2NrLW5hbWVzID0gInBsbDAiLCAicGxsMC1kaXYyIiwgInBsbDEiLCAicGxsMS1kaXYy
-IjsNCj4gKwkJCWNsb2NrLW91dHB1dC1uYW1lcyA9ICJjbXV4MSI7DQo+ICsJCX07DQo+ICsJfTsN
-Cj4gKyAgfQ0KPiArDQo+ICtFeGFtcGxlIGZvciBjbG9jayBjb25zdW1lcjoNCj4gKw0KPiArLyB7
-DQo+ICsJY3B1MDogUG93ZXJQQyxlNTUwMEAwIHsNCj4gKwkJLi4uDQo+ICsJCWNsb2NrcyA9IDwm
-bXV4MD47DQo+ICsJCS4uLg0KPiArCX07DQo+ICsgIH0NCj4gLS0NCj4gMS44LjANCg0K
+On some architectures, in certain CPU deep idle states the local timers stop.
+An external clock device is used to wakeup these CPUs. The kernel support for the
+wakeup of these CPUs is provided by the tick broadcast framework by using the
+external clock device as the wakeup source.
+
+However on architectures like PowerPC there is no external clock device. This
+patch includes support in the broadcast framework to handle the wakeup of the
+CPUs in deep idle states on such architectures by queuing a hrtimer on one of
+the CPUs, meant to handle the wakeup of CPUs in deep idle states. This CPU is
+identified as the bc_cpu.
+
+Each time the hrtimer expires, it is reprogrammed for the next wakeup of the
+CPUs in deep idle state after handling broadcast. However when a CPU is about
+to enter  deep idle state with its wakeup time earlier than the time at which
+the hrtimer is currently programmed, it *becomes the new bc_cpu* and restarts
+the hrtimer on itself. This way the job of doing broadcast is handed around to
+the CPUs that ask for the earliest wakeup just before entering deep idle
+state. This is consistent with what happens in cases where an external clock
+device is present. The smp affinity of this clock device is set to the CPU
+with the earliest wakeup.
+
+The important point here is that the bc_cpu cannot enter deep idle state
+since it has a hrtimer queued to wakeup the other CPUs in deep idle. Hence it
+cannot have its local timer stopped. Therefore for such a CPU, the
+BROADCAST_ENTER notification has to fail implying that it cannot enter deep
+idle state. On architectures where an external clock device is present, all
+CPUs can enter deep idle.
+
+During hotplug of the bc_cpu, the job of doing a broadcast is assigned to the
+first cpu in the broadcast mask. This newly nominated bc_cpu is woken up by
+an IPI so as to queue the above mentioned hrtimer on itself.
+
+This patch is compile tested only.
+
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+
+ include/linux/clockchips.h   |    4 +
+ kernel/time/clockevents.c    |    8 +-
+ kernel/time/tick-broadcast.c |  157 ++++++++++++++++++++++++++++++++++++++----
+ kernel/time/tick-internal.h  |    8 +-
+ 4 files changed, 153 insertions(+), 24 deletions(-)
+
+diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
+index 493aa02..bbda37b 100644
+--- a/include/linux/clockchips.h
++++ b/include/linux/clockchips.h
+@@ -186,9 +186,9 @@ static inline int tick_check_broadcast_expired(void) { return 0; }
+ #endif
+ 
+ #ifdef CONFIG_GENERIC_CLOCKEVENTS
+-extern void clockevents_notify(unsigned long reason, void *arg);
++extern int clockevents_notify(unsigned long reason, void *arg);
+ #else
+-static inline void clockevents_notify(unsigned long reason, void *arg) {}
++static inline int clockevents_notify(unsigned long reason, void *arg) {}
+ #endif
+ 
+ #else /* CONFIG_GENERIC_CLOCKEVENTS_BUILD */
+diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+index 086ad60..bbbd671 100644
+--- a/kernel/time/clockevents.c
++++ b/kernel/time/clockevents.c
+@@ -525,11 +525,11 @@ void clockevents_resume(void)
+ /**
+  * clockevents_notify - notification about relevant events
+  */
+-void clockevents_notify(unsigned long reason, void *arg)
++int clockevents_notify(unsigned long reason, void *arg)
+ {
+ 	struct clock_event_device *dev, *tmp;
+ 	unsigned long flags;
+-	int cpu;
++	int cpu, ret = 0;
+ 
+ 	raw_spin_lock_irqsave(&clockevents_lock, flags);
+ 
+@@ -542,11 +542,12 @@ void clockevents_notify(unsigned long reason, void *arg)
+ 
+ 	case CLOCK_EVT_NOTIFY_BROADCAST_ENTER:
+ 	case CLOCK_EVT_NOTIFY_BROADCAST_EXIT:
+-		tick_broadcast_oneshot_control(reason);
++		ret = tick_broadcast_oneshot_control(reason);
+ 		break;
+ 
+ 	case CLOCK_EVT_NOTIFY_CPU_DYING:
+ 		tick_handover_do_timer(arg);
++		tick_handover_bc_cpu(arg);
+ 		break;
+ 
+ 	case CLOCK_EVT_NOTIFY_SUSPEND:
+@@ -585,6 +586,7 @@ void clockevents_notify(unsigned long reason, void *arg)
+ 		break;
+ 	}
+ 	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(clockevents_notify);
+ 
+diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+index 9532690..f90b865 100644
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -20,6 +20,7 @@
+ #include <linux/sched.h>
+ #include <linux/smp.h>
+ #include <linux/module.h>
++#include <linux/slab.h>
+ 
+ #include "tick-internal.h"
+ 
+@@ -35,6 +36,10 @@ static cpumask_var_t tmpmask;
+ static DEFINE_RAW_SPINLOCK(tick_broadcast_lock);
+ static int tick_broadcast_force;
+ 
++static struct hrtimer *bc_hrtimer;
++static int bc_cpu = -1;
++static ktime_t bc_next_wakeup;
++
+ #ifdef CONFIG_TICK_ONESHOT
+ static void tick_broadcast_clear_oneshot(int cpu);
+ #else
+@@ -528,6 +533,20 @@ static int tick_broadcast_set_event(struct clock_event_device *bc, int cpu,
+ 	return ret;
+ }
+ 
++static void tick_broadcast_set_next_wakeup(int cpu, ktime_t expires, int force)
++{
++	struct clock_event_device *bc;
++
++	bc = tick_broadcast_device.evtdev;
++
++	if (bc) {
++		tick_broadcast_set_event(bc, cpu, expires, force);
++	} else {
++		hrtimer_start(bc_hrtimer, expires, HRTIMER_MODE_ABS_PINNED);
++		bc_cpu = cpu;
++	}
++}
++
+ int tick_resume_broadcast_oneshot(struct clock_event_device *bc)
+ {
+ 	clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
+@@ -558,15 +577,13 @@ void tick_check_oneshot_broadcast(int cpu)
+ /*
+  * Handle oneshot mode broadcasting
+  */
+-static void tick_handle_oneshot_broadcast(struct clock_event_device *dev)
++static int tick_oneshot_broadcast(void)
+ {
+ 	struct tick_device *td;
+ 	ktime_t now, next_event;
+ 	int cpu, next_cpu = 0;
+ 
+-	raw_spin_lock(&tick_broadcast_lock);
+-again:
+-	dev->next_event.tv64 = KTIME_MAX;
++	bc_next_wakeup.tv64 = KTIME_MAX;
+ 	next_event.tv64 = KTIME_MAX;
+ 	cpumask_clear(tmpmask);
+ 	now = ktime_get();
+@@ -620,27 +637,83 @@ again:
+ 	 * in the event mask
+ 	 */
+ 	if (next_event.tv64 != KTIME_MAX) {
+-		/*
+-		 * Rearm the broadcast device. If event expired,
+-		 * repeat the above
+-		 */
+-		if (tick_broadcast_set_event(dev, next_cpu, next_event, 0))
++		bc_next_wakeup = next_event;
++	}
++
++	return next_cpu;
++}
++
++/*
++ * Handler in oneshot mode for the external clock device
++ */
++static void tick_handle_oneshot_broadcast(struct clock_event_device *dev)
++{
++	int next_cpu;
++
++	raw_spin_lock(&tick_broadcast_lock);
++
++again:	next_cpu = tick_oneshot_broadcast();
++	/*
++	 * Rearm the broadcast device. If event expired,
++	 * repeat the above
++	 */
++	if (bc_next_wakeup.tv64 != KTIME_MAX)
++		if (tick_broadcast_set_event(dev, next_cpu, bc_next_wakeup, 0))
+ 			goto again;
++
++	raw_spin_unlock(&tick_broadcast_lock);
++}
++
++/*
++ * Handler in oneshot mode for the hrtimer queued when there is no external
++ * clock device.
++ */
++static enum hrtimer_restart handle_broadcast(struct hrtimer *hrtmr)
++{
++	ktime_t now, interval;
++	int next_cpu;
++
++	raw_spin_lock(&tick_broadcast_lock);
++	tick_oneshot_broadcast();
++
++	now = ktime_get();
++
++	if (bc_next_wakeup.tv64 != KTIME_MAX) {
++		interval = ktime_sub(bc_next_wakeup, now);
++		hrtimer_forward_now(bc_hrtimer, interval);
++		raw_spin_unlock(&tick_broadcast_lock);
++		return HRTIMER_RESTART;
+ 	}
+ 	raw_spin_unlock(&tick_broadcast_lock);
++	return HRTIMER_NORESTART;
++}
++
++/* The CPU could be asked to take over from the previous bc_cpu,
++ * if it is being hotplugged out.
++ */
++static void tick_broadcast_exit_check(int cpu)
++{
++	if (cpu == bc_cpu)
++		hrtimer_start(bc_hrtimer, bc_next_wakeup,
++				HRTIMER_MODE_ABS_PINNED);
++}
++
++static int can_enter_broadcast(int cpu)
++{
++	return cpu != bc_cpu;
+ }
+ 
+ /*
+  * Powerstate information: The system enters/leaves a state, where
+  * affected devices might stop
+  */
+-void tick_broadcast_oneshot_control(unsigned long reason)
++int tick_broadcast_oneshot_control(unsigned long reason)
+ {
+-	struct clock_event_device *bc, *dev;
++	struct clock_event_device *dev;
+ 	struct tick_device *td;
+ 	unsigned long flags;
+ 	ktime_t now;
+-	int cpu;
++	int cpu, ret = 0;
+ 
+ 	/*
+ 	 * Periodic mode does not care about the enter/exit of power
+@@ -660,7 +733,6 @@ void tick_broadcast_oneshot_control(unsigned long reason)
+ 	if (!(dev->features & CLOCK_EVT_FEAT_C3STOP))
+ 		return;
+ 
+-	bc = tick_broadcast_device.evtdev;
+ 
+ 	raw_spin_lock_irqsave(&tick_broadcast_lock, flags);
+ 	if (reason == CLOCK_EVT_NOTIFY_BROADCAST_ENTER) {
+@@ -676,12 +748,21 @@ void tick_broadcast_oneshot_control(unsigned long reason)
+ 			 * woken by the IPI right away.
+ 			 */
+ 			if (!cpumask_test_cpu(cpu, tick_broadcast_force_mask) &&
+-			    dev->next_event.tv64 < bc->next_event.tv64)
+-				tick_broadcast_set_event(bc, cpu, dev->next_event, 1);
++			    dev->next_event.tv64 < bc_next_wakeup.tv64)
++				bc_next_wakeup = dev->next_event;
++				tick_broadcast_set_next_wakeup(cpu, dev->next_event, 1);
++
++			if (!can_enter_broadcast(cpu)) {
++				cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask);
++				clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
++				ret = 1;
++			}
+ 		}
+ 	} else {
+ 		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask)) {
+ 			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
++
++			tick_broadcast_exit_check(cpu);
+ 			/*
+ 			 * The cpu which was handling the broadcast
+ 			 * timer marked this cpu in the broadcast
+@@ -746,6 +827,7 @@ void tick_broadcast_oneshot_control(unsigned long reason)
+ 	}
+ out:
+ 	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
++	return ret;
+ }
+ 
+ /*
+@@ -824,15 +906,58 @@ void tick_broadcast_switch_to_oneshot(void)
+ 
+ 	raw_spin_lock_irqsave(&tick_broadcast_lock, flags);
+ 
++	bc_next_wakeup.tv64 = KTIME_MAX;
++
+ 	tick_broadcast_device.mode = TICKDEV_MODE_ONESHOT;
+ 	bc = tick_broadcast_device.evtdev;
+-	if (bc)
++	if (bc) {
+ 		tick_broadcast_setup_oneshot(bc);
++		bc_next_wakeup = bc->next_event;
++	} else {
++		/* An alternative to tick_broadcast_device on archs which do not have
++		 * an external device
++		 */
++		bc_hrtimer = kmalloc(sizeof(*bc_hrtimer), GFP_NOWAIT);
++		hrtimer_init(bc_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS_PINNED);
++		bc_hrtimer->function = handle_broadcast;
++
++		/*
++		 * There may be CPUs waiting for periodic broadcast. We need
++		 * to set the oneshot bits for those and program the hrtimer
++		 * to fire at the next tick period.
++ 		 */
++		cpumask_copy(tmpmask, tick_broadcast_mask);
++		cpumask_clear_cpu(cpu, tmpmask);
++		cpumask_or(tick_broadcast_oneshot_mask,
++			   tick_broadcast_oneshot_mask, tmpmask);
++
++		if (!cpumask_empty(tmpmask)) {
++			tick_broadcast_init_next_event(tmpmask,
++						       tick_next_period);
++			hrtimer_start(bc_hrtimer, tick_next_period, HRTIMER_MODE_ABS_PINNED);
++			bc_next_wakeup = tick_next_period;
++		}
++	}
+ 
+ 	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
+ }
+ 
+ 
++void tick_handover_bc_cpu(int *cpup)
++{
++	struct tick_device *td;
++
++	if (*cpup == bc_cpu) {
++		int cpu = cpumask_first(tick_broadcast_oneshot_mask);
++
++		bc_cpu = (cpu < nr_cpu_ids) ? cpu : -1;
++		if (bc_cpu != -1) {
++			td = &per_cpu(tick_cpu_device, bc_cpu);
++			td->evtdev->broadcast(cpumask_of(bc_cpu));
++		}
++	}
++}
++
+ /*
+  * Remove a dead CPU from broadcasting
+  */
+diff --git a/kernel/time/tick-internal.h b/kernel/time/tick-internal.h
+index 18e71f7..1f73032 100644
+--- a/kernel/time/tick-internal.h
++++ b/kernel/time/tick-internal.h
+@@ -46,23 +46,25 @@ extern int tick_switch_to_oneshot(void (*handler)(struct clock_event_device *));
+ extern void tick_resume_oneshot(void);
+ # ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
+ extern void tick_broadcast_setup_oneshot(struct clock_event_device *bc);
+-extern void tick_broadcast_oneshot_control(unsigned long reason);
++extern int tick_broadcast_oneshot_control(unsigned long reason);
+ extern void tick_broadcast_switch_to_oneshot(void);
+ extern void tick_shutdown_broadcast_oneshot(unsigned int *cpup);
+ extern int tick_resume_broadcast_oneshot(struct clock_event_device *bc);
+ extern int tick_broadcast_oneshot_active(void);
+ extern void tick_check_oneshot_broadcast(int cpu);
++extern void tick_handover_bc_cpu(int *cpup);
+ bool tick_broadcast_oneshot_available(void);
+ # else /* BROADCAST */
+ static inline void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
+ {
+ 	BUG();
+ }
+-static inline void tick_broadcast_oneshot_control(unsigned long reason) { }
++static inline int tick_broadcast_oneshot_control(unsigned long reason) { }
+ static inline void tick_broadcast_switch_to_oneshot(void) { }
+ static inline void tick_shutdown_broadcast_oneshot(unsigned int *cpup) { }
+ static inline int tick_broadcast_oneshot_active(void) { return 0; }
+ static inline void tick_check_oneshot_broadcast(int cpu) { }
++static inline void tick_handover_bc_cpu(int *cpup) {}
+ static inline bool tick_broadcast_oneshot_available(void) { return true; }
+ # endif /* !BROADCAST */
+ 
+@@ -87,7 +89,7 @@ static inline void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
+ {
+ 	BUG();
+ }
+-static inline void tick_broadcast_oneshot_control(unsigned long reason) { }
++static inline int tick_broadcast_oneshot_control(unsigned long reason) { }
+ static inline void tick_shutdown_broadcast_oneshot(unsigned int *cpup) { }
+ static inline int tick_resume_broadcast_oneshot(struct clock_event_device *bc)
+ {
