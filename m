@@ -1,18 +1,16 @@
 Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1386902862.3853.0.camel@concordia>
-Subject: Re: [PATCH V4 08/10] powerpc, perf: Enable SW filtering in branch
- stack sampling framework
+Message-ID: <1386903031.3853.2.camel@concordia>
+Subject: Re: [PATCH 1/2] power7, perf: Make some new raw event codes
+ available in sysfs
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Fri, 13 Dec 2013 13:47:42 +1100
-In-Reply-To: <52A9779B.1030003@linux.vnet.ibm.com>
-References: <20131209062146.EABBE2C00C1@ozlabs.org>
- <52A6AD61.4050408@linux.vnet.ibm.com> <52A9779B.1030003@linux.vnet.ibm.com>
+Date: Fri, 13 Dec 2013 13:50:31 +1100
+In-Reply-To: <1381902780-2719-2-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1381902780-2719-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1381902780-2719-2-git-send-email-khandual@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: mikey@neuling.org, ak@linux.intel.com, linux-kernel@vger.kernel.org,
- eranian@google.com, linuxppc-dev@ozlabs.org, acme@ghostprotocols.net,
- sukadev@linux.vnet.ibm.com, mingo@kernel.org
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, sukadev@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,48 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-12-12 at 14:15 +0530, Anshuman Khandual wrote:
-> On 12/10/2013 11:27 AM, Anshuman Khandual wrote:
-> > On 12/09/2013 11:51 AM, Michael Ellerman wrote:
-> >> This code was already in need of some unindentation, and now it's just
-> >> ridiculous.
-> >>
-> >> To start with at the beginning of this routine we have:
-> >>
-> >> while (..) {
-> >> 	if (!val)
-> >> 		break;
-> >> 	else {
-> >> 		// Bulk of the logic
-> >> 		...
-> >> 	}
-> >> }
-> >>
-> >> That should almost always become:
-> >>
-> >> while (..) {
-> >> 	if (!val)
-> >> 		break;
-> >>
-> >> 	// Bulk of the logic
-> >> 	...
-> >> }
-> >>
-> >>
-> >> But in this case that's not enough. Please send a precursor patch which moves
-> >> this logic out into a helper function.
-> > 
-> > Hey Michael,
-> > 
-> > I believe this patch should be able to take care of this.
+On Wed, 2013-10-16 at 11:22 +0530, Anshuman Khandual wrote:
+> This patch adds some more raw event codes into the existing list
+> of event codes present in power7-events-list.h file. This tries
+> to complete the list of events supported in Power7 and matches
+> the raw event list with libpfm4 library.
 
-...
- 
-> Does the patch looks okay ? In which case will send it out separately. Do let
-> me know. Thank you.
+It's a bit annoying, but you also need to update the "ABI" document:
 
-It's OK.
+  Documentation/ABI/testing/sysfs-bus-event_source-devices-events
 
-Don't send it out separately, make it the first patch in your series.
+Please do so and resend.
 
 cheers
