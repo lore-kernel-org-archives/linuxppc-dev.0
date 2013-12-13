@@ -1,45 +1,22 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9042B2C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 16:24:52 +1100 (EST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Thu, 12 Dec 2013 22:24:50 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 4F6541FF001B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 22:24:24 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with
- ESMTP id rBD3Mqjg7733662
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 04:22:52 +0100
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBD5OjR2015441
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 22:24:47 -0700
-Message-ID: <52AA9953.9090909@linux.vnet.ibm.com>
-Date: Fri, 13 Dec 2013 10:51:23 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Return-Path: <Shengzhou.Liu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.protection.outlook.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 924352C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 16:58:45 +1100 (EST)
+From: "Shengzhou.Liu@freescale.com" <Shengzhou.Liu@freescale.com>
+To: Hongbo Zhang <hongbo.zhang@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 1/5] powerpc/85xx/dts: add third elo3 dma component
+Date: Fri, 13 Dec 2013 05:43:19 +0000
+Message-ID: <ae3fab730b4a45c0812d3ca5a89fce52@DM2PR03MB398.namprd03.prod.outlook.com>
+References: <1386760774-14743-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <52A9887D.3060109@freescale.com>
+In-Reply-To: <52A9887D.3060109@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH] time: Support in tick broadcast framework for archs
- without an external wakeup source
-References: <20131213041901.17199.37383.stgit@preeti.in.ibm.com>
- <1386911862.15730.81.camel@pasglop>
-In-Reply-To: <1386911862.15730.81.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: peterz@infradead.org, fweisbec@gmail.com, paul.gortmaker@windriver.com,
- paulus@samba.org, mingo@kernel.org, shangw@linux.vnet.ibm.com,
- rafael.j.wysocki@intel.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
- linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au,
- john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com,
- deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,30 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
 
-On 12/13/2013 10:47 AM, Benjamin Herrenschmidt wrote:
-> On Fri, 2013-12-13 at 09:49 +0530, Preeti U Murthy wrote:
->> On some architectures, in certain CPU deep idle states the local timers stop.
->> An external clock device is used to wakeup these CPUs. The kernel support for the
->> wakeup of these CPUs is provided by the tick broadcast framework by using the
->> external clock device as the wakeup source.
-> 
->> However on architectures like PowerPC there is no external clock device. 
-> 
-> Minor nit ...
-> 
-> I wouldn't make this an architectural statement. Some PowerPC's do have
-> external clock devices (for example the old MPIC interrupt controller
-> had timers). In fact, if we really need it, I'm sure we *could* find
-> something somewhere in P8 that could act as a timer, probably hijacking
-> a bit of the OCC or similar but at this stage, that's not on the radar.
-> 
-> So make it an implementation statement. "However, not all
-> implementations, such as some PowerPC ones, provide such an external
-> timer ...".
 
-Thanks for this information. I will update this going ahead.
+> -----Original Message-----
+> From: Hongbo Zhang [mailto:hongbo.zhang@freescale.com]
+> Sent: Thursday, December 12, 2013 5:57 PM
+> To: Liu Shengzhou-B36685; linuxppc-dev@lists.ozlabs.org; Wood Scott-
+> B07421
+> Subject: Re: [PATCH 1/5] powerpc/85xx/dts: add third elo3 dma component
+>=20
+> Shengzhou,
+> I canceled my patch http://patchwork.ozlabs.org/patch/295157/ because the
+> original wrong elo3-dma-2.dtsi hadn't been merged.
+> But please pay attention to comments from Scott about my changes of
+> adding 208 for some interrupts, and take some actions if needed, or
+> further discussions.
+>=20
+> Below comments form Scott:
+> "The FSL MPIC binding should be updated to point out how this works.
+> Technically it's not a change to the binding itself, since it's defined
+> in terms of register offset, but the explanatory text says "So interrupt
+> 0 is at offset 0x0, interrupt 1 is at offset 0x20, and so on." which is
+> not accurate for these new high interrupt numbers."
+>=20
+Hongbo,
+Could you update FSL MPIC binding as Scott pointed out?
 
-Regards
-Preeti U Murthy
+thanks,
+Shengzhou
