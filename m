@@ -1,41 +1,38 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 394552C009C
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 17:48:12 +1100 (EST)
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 33D742C00A6
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 19:22:01 +1100 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 13 Dec 2013 12:18:07 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2C5BDE0056
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 12:20:24 +0530 (IST)
+ Fri, 13 Dec 2013 13:51:57 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id DC12E394004E
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 13:51:52 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rBD6lwU153412088
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 12:17:58 +0530
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBD8LiGe5636358
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 13:51:45 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBD6m1JB030896
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 12:18:01 +0530
-Message-ID: <52AAAD5E.9070705@linux.vnet.ibm.com>
-Date: Fri, 13 Dec 2013 12:16:54 +0530
+ rBD8LkDO014742
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 13:51:47 +0530
+Message-ID: <52AAC356.1000308@linux.vnet.ibm.com>
+Date: Fri, 13 Dec 2013 13:50:38 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc, perf: Configure BHRB filter before enabling
- PMU interrupts
-References: <1381120226-14838-1-git-send-email-khandual@linux.vnet.ibm.com>
- <20131008042137.GE31666@concordia> <5253B26E.3020800@linux.vnet.ibm.com>
- <20131009012130.GA23780@concordia> <5254DFA8.2050100@linux.vnet.ibm.com>
- <20131009060321.GB28160@concordia> <52566A4E.2000409@linux.vnet.ibm.com>
- <20131011021131.GA26561@concordia> <52577F5C.6000704@linux.vnet.ibm.com>
- <20131014061958.GA8300@concordia> <525E166C.5070407@linux.vnet.ibm.com>
-In-Reply-To: <525E166C.5070407@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH V4 09/10] power8,
+ perf: Change BHRB branch filter configuration
+References: <20131209062147.51F822C00C5@ozlabs.org>
+In-Reply-To: <20131209062147.51F822C00C5@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org
+Cc: mikey@neuling.org, ak@linux.intel.com, linux-kernel@vger.kernel.org,
+ eranian@google.com, linuxppc-dev@ozlabs.org, acme@ghostprotocols.net,
+ sukadev@linux.vnet.ibm.com, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,34 +42,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/16/2013 10:00 AM, Anshuman Khandual wrote:
-> On 10/14/2013 11:49 AM, Michael Ellerman wrote:
->> On Fri, Oct 11, 2013 at 10:02:28AM +0530, Anshuman Khandual wrote:
->>> On 10/11/2013 07:41 AM, Michael Ellerman wrote:
->>>> On Thu, Oct 10, 2013 at 02:20:22PM +0530, Anshuman Khandual wrote:
->>>>
->>>>> Even I think this is not right. Instruction sampling should have been
->>>>> enabled before we enable PMU interrupts. Else there is a small window
->>>>> of time where we could have the PMU enabled with events (which requires
->>>>> sampling) without the sampling itself being enabled in MMCRA.
->>>>
->>>> Yes I agree. That's a separate bug, which we'll need to test on all the book3s
->>>> platforms we have perf support for.
->>>
->>> Okay, I guess any platform which supports sampling will definitely want to have
->>> it enabled before we can set the events to count on PMU. Can you think of any
->>> problem which can arise if we move it before the enabling the PMU back ? Else
->>> we can fix this easily.
->>
->> In theory it should be a trivial change. But hardware can behave in
->> strange ways, it's possible on some old chip we need to do it the
->> current way for some reason.
->>
->> So although I don't think it will be a problem, it could be, so we
->> will need to test it thoroughly.
+On 12/09/2013 11:51 AM, Michael Ellerman wrote:
 > 
-> So which are the HW chips, you would like to test this fix for possible problems ? 
+> As I said in my comments on version 3 which you ignored:
+> 
+>     I think it would be clearer if we actually checked for the possibilities we
+>     allow and let everything else fall through, eg:
+> 
+> Â Â Â Â Â Â Â Â /* Ignore user/kernel/hv bits */
+> Â Â Â Â Â Â Â Â branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
+> 
+> Â Â Â Â Â Â Â Â if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY)
+> Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â return 0;
+> 
+> Â Â Â Â Â Â Â Â if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY_CALL)
+> Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â return POWER8_MMCRA_IFM1;
+> Â 
+> Â Â Â Â Â Â Â Â if (branch_sample_type == PERF_SAMPLE_BRANCH_COND)
+> Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â return POWER8_MMCRA_IFM3;
+> Â Â Â Â Â Â Â Â 
+> Â Â Â Â Â Â Â Â return -1;
 > 
 
-Michael,
-	Any updates on this patch ?
+Hey Michael,
+
+This patch only adds support for the PERF_SAMPLE_BRANCH_COND filter, if the
+over all code flow does not clearly suggest that all combinations of any of
+these HW filters are invalid, then we can go with one more patch to clean
+that up before or after this patch but not here in this patch. Finally the
+code section here will look something like this. Does it sound good ?
+
+static u64 power8_bhrb_filter_map(u64 branch_sample_type)
+{
+        u64 pmu_bhrb_filter = 0;
+
+        /* BHRB and regular PMU events share the same privilege state
+         * filter configuration. BHRB is always recorded along with a
+         * regular PMU event. As the privilege state filter is handled
+         * in the basic PMC configuration of the accompanying regular
+         * PMU event, we ignore any separate BHRB specific request.
+         */
+
+        /* Ignore user, kernel, hv bits */
+        branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
+
+        if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY)
+                return pmu_bhrb_filter;
+
+
+        if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY_CALL) {
+                pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
+                return pmu_bhrb_filter;
+        }
+
+        if (branch_sample_type == PERF_SAMPLE_BRANCH_COND) {
+                pmu_bhrb_filter |= POWER8_MMCRA_IFM3;
+                return pmu_bhrb_filter;
+        }
+
+        /* Every thing else is unsupported */
+        return -1;
+}
