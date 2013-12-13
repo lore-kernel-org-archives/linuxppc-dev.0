@@ -1,29 +1,14 @@
-Return-Path: <SRS0=9/fIer=VU=writeme.com=sinan@yourhostingaccount.com>
-Received: from mailout07.yourhostingaccount.com
- (mailout07.yourhostingaccount.com [65.254.253.58])
- by ozlabs.org (Postfix) with ESMTP id 1F7862C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 12:00:16 +1100 (EST)
-Received: from mailscan16.yourhostingaccount.com ([10.1.15.16]
- helo=mailscan16.yourhostingaccount.com)
- by mailout07.yourhostingaccount.com with esmtp (Exim)
- id 1VrGdh-0005J3-C0
- for linuxppc-dev@lists.ozlabs.org; Thu, 12 Dec 2013 19:29:57 -0500
-Message-ID: <52AA54F5.5030909@writeme.com>
-Date: Fri, 13 Dec 2013 01:29:41 +0100
-From: Sinan Akman <sinan@writeme.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v1 0/4] powerpc/512x: update COMMON_CLK support for MPC5125
-References: <1386681097-14126-1-git-send-email-gsi@denx.de>	
- <52A9E074.5080607@sirius-es.it> <52A9F685.3040204@writeme.com>
- <1386876720.10013.260.camel@snotra.buserror.net>
-In-Reply-To: <1386876720.10013.260.camel@snotra.buserror.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Sinan Akman <sinan@writeme.com>
-Cc: Mike Turquette <mturquette@linaro.org>, Detlev Zundel <dzu@denx.de>,
- Gerhard Sittig <gsi@denx.de>,
- Matteo Facchinetti <matteo.facchinetti@sirius-es.it>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <mpe@ellerman.id.au>
+Message-ID: <1386900030.21216.7.camel@concordia>
+Subject: Re: powerpc/powernv: Framework to log critical errors on powernv.
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Date: Fri, 13 Dec 2013 13:00:30 +1100
+In-Reply-To: <52A99D47.4090503@linux.vnet.ibm.com>
+References: <52A99D47.4090503@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,26 +18,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> On Thu, 2013-12-12 at 18:46 +0100, Sinan Akman wrote:
->> Matteo Facchinetti wrote:
->>> [...]
->>> - NFC: one of the biggest unsolved mystery
->>> Is this ip-core used in others microcontrollers? Seems to be used only 
->>> in mpc5125!!!
->> I don't think that IP is used in any other FSL SoC. Scott can probably
->> confirm this for us.
+On Thu, 2013-12-12 at 16:55 +0530, Deepthi Dharwar wrote:
+> powerpc/powernv: Framework to log critical errors on powernv.
 > 
-> That's a different part of Freescale, so I don't know much about it, but
-> it looks pretty similar to MXC NAND.  Back when those drivers were
-> submitted I tried to get the authors of each to work together to see if
-> a common driver made sense, but I got little response.
+> From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+> 
+> This patch provides error logging interfaces to report critical
+> powernv error logs to FSP.
+> All the required information to dump the error is collected
+> at POWERNV level through error log interfaces
+> and then pushed on to FSP.
+> 
+> Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/opal.h                |  125 ++++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/opal-elog.c     |   59 +++++++++++
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |    1 
+>  3 files changed, 184 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index be404ea..b8d1dd4 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -134,6 +134,7 @@ extern int opal_enter_rtas(struct rtas_args *args,
+>  #define OPAL_ELOG_ACK				73
+>  #define OPAL_ELOG_RESEND			74
+>  #define OPAL_ELOG_SIZE				75
+> +#define OPAL_ELOG_SEND				87
+>  
+>  #ifndef __ASSEMBLY__
+>  
+> @@ -216,6 +217,122 @@ enum OpalPendingState {
+>  	OPAL_EVENT_PCI_ERROR		= 0x200
+>  };
+>  
+> +/* Classification of Error/Events reporting type classification
+> + * Platform Events/Errors: Report Machine Check Interrupt
+> + * INPUT_OUTPUT: Report all I/O related events/errors
+> + * RESOURCE_DEALLOC: Hotplug events and errors
+> + * MISC: Miscellanous error
+> + * Field: error_events_type
+> + */
+> +enum Error_Events {
+> +	OPAL_PLATFORM,
+> +	OPAL_INPUT_OUTPUT,
+> +	OPAL_RESOURCE_DEALLOC,
+> +	OPAL_MISC,
+> +};
+> +
+> +/* OPAL Subsystem IDs listed for reporting events/errors
+> + * Field: subsystem_id
+> + */
+> +
+> +#define OPAL_PROCESSOR_SUBSYSTEM        0x10
+> +#define OPAL_MEMORY_SUBSYSTEM           0x20
+> +#define OPAL_IO_SUBSYSTEM               0x30
+> +#define OPAL_IO_DEVICES                 0x40
+> +#define OPAL_CEC_HARDWARE               0x50
+> +#define OPAL_POWER_COOLING              0x60
+> +#define OPAL_MISC_SUBSYSTEM             0x70
+> +#define OPAL_SURVEILLANCE_ERR           0x7A
+> +#define OPAL_PLATFORM_FIRMWARE          0x80
+> +#define OPAL_SOFTWARE                   0x90
+> +#define OPAL_EXTERNAL_ENV               0xA0
+> +
+> +/* During reporting an event/error the following represents
+> + * how serious the logged event/error is. (Severity)
+> + * Field: event_sev
+> + */
+> +#define OPAL_INFO                                   0x00
+> +#define OPAL_RECOVERED_ERR_GENERAL                  0x10
+> +
+> +/* 0x2X series is to denote set of Predictive Error
+> + * 0x20 Generic predictive error
+> + * 0x21 Predictive error, degraded performance
+> + * 0x22 Predictive error, fault may be corrected after reboot
+> + * 0x23 Predictive error, fault may be corrected after reboot,
+> + * degraded performance
+> + * 0x24 Predictive error, loss of redundancy
+> + */
+> +#define OPAL_PREDICTIVE_ERR_GENERAL                         0x20
+> +#define OPAL_PREDICTIVE_ERR_DEGRADED_PERF                   0x21
+> +#define OPAL_PREDICTIVE_ERR_FAULT_RECTIFY_REBOOT            0x22
+> +#define OPAL_PREDICTIVE_ERR_FAULT_RECTIFY_BOOT_DEGRADE_PERF 0x23
+> +#define OPAL_PREDICTIVE_ERR_LOSS_OF_REDUNDANCY              0x24
+> +
+> +/* 0x4X series for Unrecoverable Error
+> + * 0x40 Generic Unrecoverable error
+> + * 0x41 Unrecoverable error bypassed with degraded performance
+> + * 0x44 Unrecoverable error bypassed with loss of redundancy
+> + * 0x45 Unrecoverable error bypassed with loss of redundancy and performance
+> + * 0x48 Unrecoverable error bypassed with loss of function
+> + */
+> +#define OPAL_UNRECOVERABLE_ERR_GENERAL                      0x40
+> +#define OPAL_UNRECOVERABLE_ERR_DEGRADE_PERF                 0x41
+> +#define OPAL_UNRECOVERABLE_ERR_LOSS_REDUNDANCY              0x44
+> +#define OPAL_UNRECOVERABLE_ERR_LOSS_REDUNDANCY_PERF         0x45
+> +#define OPAL_UNRECOVERABLE_ERR_LOSS_OF_FUNCTION             0x48
+> +
+> +/* Event Sub-type
+> + * This field provides additional information on the non-error
+> + * event type
+> + * Field: event_subtype
+> + */
+> +#define OPAL_NA                                         0x00
+> +#define OPAL_MISCELLANEOUS_INFO_ONLY                    0x01
+> +#define OPAL_PREV_REPORTED_ERR_RECTIFIED                0x10
+> +#define OPAL_SYS_RESOURCES_DECONFIG_BY_USER             0x20
+> +#define OPAL_SYS_RESOURCE_DECONFIG_PRIOR_ERR            0x21
+> +#define OPAL_RESOURCE_DEALLOC_EVENT_NOTIFY              0x22
+> +#define OPAL_CONCURRENT_MAINTENANCE_EVENT               0x40
+> +#define OPAL_CAPACITY_UPGRADE_EVENT                     0x60
+> +#define OPAL_RESOURCE_SPARING_EVENT                     0x70
+> +#define OPAL_DYNAMIC_RECONFIG_EVENT                     0x80
+> +#define OPAL_NORMAL_SYS_PLATFORM_SHUTDOWN               0xD0
+> +#define OPAL_ABNORMAL_POWER_OFF                         0xE0
 
-   OK Scott thanks for your comments. I am somewhat deep in 5125 NFC. I will
-take a look at mxc nand and see how similar they are. Who is maintaining
-mxc nand ? I might spend some time and create some common components.
-But right now I am not familiar with mxc nand.
 
-   Thanks
+None of the above seem to be used anywhere.
 
-   Sinan Akman
+cheers
