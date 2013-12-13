@@ -1,12 +1,19 @@
-Return-Path: <anton@samba.org>
-Date: Fri, 13 Dec 2013 15:53:43 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc/powernv: Fix endian issue in opal_xscom_read
-Message-ID: <20131213155343.51002455@kryten>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D6E942C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2013 15:56:13 +1100 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id rBD4u8jb000519
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2013 22:56:09 -0600
+Message-ID: <1386910566.15730.77.camel@pasglop>
+Subject: [PATCH] powerpc/powernv: Fix OPAL LPC access in Little Endian
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 13 Dec 2013 15:56:06 +1100
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,40 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+We are passing pointers to the firmware for reads, we need to properly
+convert the result as OPAL is always BE.
 
-opal_xscom_read uses a pointer to return the data so we need
-to byteswap it on LE builds.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index aded1b8..9873a26 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -811,7 +811,7 @@ int64_t opal_pci_next_error(uint64_t phb_id, uint64_t *first_frozen_pe,
- int64_t opal_pci_poll(uint64_t phb_id);
- int64_t opal_return_cpu(void);
- 
--int64_t opal_xscom_read(uint32_t gcid, uint32_t pcb_addr, uint64_t *val);
-+int64_t opal_xscom_read(uint32_t gcid, uint32_t pcb_addr, __be64 *val);
- int64_t opal_xscom_write(uint32_t gcid, uint32_t pcb_addr, uint64_t val);
- 
- int64_t opal_lpc_write(uint32_t chip_id, enum OpalLPCAddressType addr_type,
-diff --git a/arch/powerpc/platforms/powernv/opal-xscom.c b/arch/powerpc/platforms/powernv/opal-xscom.c
-index 4d99a8f..4fbf276 100644
---- a/arch/powerpc/platforms/powernv/opal-xscom.c
-+++ b/arch/powerpc/platforms/powernv/opal-xscom.c
-@@ -96,9 +96,11 @@ static int opal_scom_read(scom_map_t map, u64 reg, u64 *value)
+diff --git a/arch/powerpc/platforms/powernv/opal-lpc.c b/arch/powerpc/platforms/powernv/opal-lpc.c
+index e7e59e4..79d83ca 100644
+--- a/arch/powerpc/platforms/powernv/opal-lpc.c
++++ b/arch/powerpc/platforms/powernv/opal-lpc.c
+@@ -24,25 +24,25 @@ static int opal_lpc_chip_id = -1;
+ static u8 opal_lpc_inb(unsigned long port)
  {
- 	struct opal_scom_map *m = map;
  	int64_t rc;
-+	__be64 v;
+-	uint32_t data;
++	__be32 data;
  
- 	reg = opal_scom_unmangle(reg);
--	rc = opal_xscom_read(m->chip, m->addr + reg, (uint64_t *)__pa(value));
-+	rc = opal_xscom_read(m->chip, m->addr + reg, (__be64 *)__pa(&v));
-+	*value = be64_to_cpu(v);
- 	return opal_xscom_err_xlate(rc);
+ 	if (opal_lpc_chip_id < 0 || port > 0xffff)
+ 		return 0xff;
+ 	rc = opal_lpc_read(opal_lpc_chip_id, OPAL_LPC_IO, port, &data, 1);
+-	return rc ? 0xff : data;
++	return rc ? 0xff : be32_to_cpu(data);
  }
  
+ static __le16 __opal_lpc_inw(unsigned long port)
+ {
+ 	int64_t rc;
+-	uint32_t data;
++	__be32 data;
+ 
+ 	if (opal_lpc_chip_id < 0 || port > 0xfffe)
+ 		return 0xffff;
+ 	if (port & 1)
+ 		return (__le16)opal_lpc_inb(port) << 8 | opal_lpc_inb(port + 1);
+ 	rc = opal_lpc_read(opal_lpc_chip_id, OPAL_LPC_IO, port, &data, 2);
+-	return rc ? 0xffff : data;
++	return rc ? 0xffff : be32_to_cpu(data);
+ }
+ static u16 opal_lpc_inw(unsigned long port)
+ {
+@@ -52,7 +52,7 @@ static u16 opal_lpc_inw(unsigned long port)
+ static __le32 __opal_lpc_inl(unsigned long port)
+ {
+ 	int64_t rc;
+-	uint32_t data;
++	__be32 data;
+ 
+ 	if (opal_lpc_chip_id < 0 || port > 0xfffc)
+ 		return 0xffffffff;
+@@ -62,7 +62,7 @@ static __le32 __opal_lpc_inl(unsigned long port)
+ 		       (__le32)opal_lpc_inb(port + 2) <<  8 |
+ 			       opal_lpc_inb(port + 3);
+ 	rc = opal_lpc_read(opal_lpc_chip_id, OPAL_LPC_IO, port, &data, 4);
+-	return rc ? 0xffffffff : data;
++	return rc ? 0xffffffff : be32_to_cpu(data);
+ }
+ 
+ static u32 opal_lpc_inl(unsigned long port)
