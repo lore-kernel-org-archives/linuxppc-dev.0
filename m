@@ -1,38 +1,26 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33D742C00A6
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 19:22:01 +1100 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 13 Dec 2013 13:51:57 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id DC12E394004E
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 13:51:52 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rBD8LiGe5636358
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 13:51:45 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBD8LkDO014742
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Dec 2013 13:51:47 +0530
-Message-ID: <52AAC356.1000308@linux.vnet.ibm.com>
-Date: Fri, 13 Dec 2013 13:50:38 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.protection.outlook.com",
+ Issuer "MSIT Machine Auth CA 2" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 14B432C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2013 08:02:57 +1100 (EST)
+Message-ID: <1386968550.10013.320.camel@snotra.buserror.net>
+Subject: Re: [1/3] powerpc/vfio: Enable on POWERNV platform
+From: Scott Wood <scottwood@freescale.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Fri, 13 Dec 2013 15:02:30 -0600
+In-Reply-To: <52AA78AE.2050800@ozlabs.ru>
+References: <1369107191-28547-2-git-send-email-aik@ozlabs.ru>
+ <20131212233527.GA16929@home.buserror.net> <52AA78AE.2050800@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH V4 09/10] power8,
- perf: Change BHRB branch filter configuration
-References: <20131209062147.51F822C00C5@ozlabs.org>
-In-Reply-To: <20131209062147.51F822C00C5@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mikey@neuling.org, ak@linux.intel.com, linux-kernel@vger.kernel.org,
- eranian@google.com, linuxppc-dev@ozlabs.org, acme@ghostprotocols.net,
- sukadev@linux.vnet.ibm.com, mingo@kernel.org
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Bharat Bhushan <bharat.bhushan@freescale.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Varun Sethi <Varun.Sethi@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,64 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/09/2013 11:51 AM, Michael Ellerman wrote:
+On Fri, 2013-12-13 at 14:02 +1100, Alexey Kardashevskiy wrote:
+> On 12/13/2013 10:35 AM, Scott Wood wrote:
+> > On Tue, May 21, 2013 at 01:33:09PM +1000, Alexey Kardashevskiy wrote:
+> >> +static int iommu_add_device(struct device *dev)
+> >> +{
+> >> +	struct iommu_table *tbl;
+> >> +	int ret = 0;
+> >> +
+> >> +	if (WARN_ON(dev->iommu_group)) {
+> >> +		pr_warn("iommu_tce: device %s is already in iommu group %d, skipping\n",
+> >> +				dev_name(dev),
+> >> +				iommu_group_id(dev->iommu_group));
+> >> +		return -EBUSY;
+> >> +	}
+> > [snip]
+> >> +static int __init tce_iommu_init(void)
+> >> +{
+> >> +	struct pci_dev *pdev = NULL;
+> >> +
+> >> +	BUILD_BUG_ON(PAGE_SIZE < IOMMU_PAGE_SIZE);
+> >> +
+> >> +	for_each_pci_dev(pdev)
+> >> +		iommu_add_device(&pdev->dev);
+> >> +
+> >> +	bus_register_notifier(&pci_bus_type, &tce_iommu_bus_nb);
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +subsys_initcall_sync(tce_iommu_init);
+> > 
+> > This is missing a check to see whether the appropriate hardware is
+> > present.  This file should also be renamed to something less generic, and
+> > depend on a kconfig symbol more specific than CONFIG_PPC64.
+> > 
+> > When this is combined with CONFIG_FSL_PAMU on hardware with a PAMU, I get
+> > a bunch of those "WARN_ON(dev->iommu_group)" dumps because PAMU already
+> > got to them.  Presumably without PAMU it silently (or with just pr_debug)
+> > bails out at some other point.
 > 
-> As I said in my comments on version 3 which you ignored:
 > 
->     I think it would be clearer if we actually checked for the possibilities we
->     allow and let everything else fall through, eg:
-> 
-> Â Â Â Â Â Â Â Â /* Ignore user/kernel/hv bits */
-> Â Â Â Â Â Â Â Â branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
-> 
-> Â Â Â Â Â Â Â Â if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY)
-> Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â return 0;
-> 
-> Â Â Â Â Â Â Â Â if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY_CALL)
-> Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â return POWER8_MMCRA_IFM1;
-> Â 
-> Â Â Â Â Â Â Â Â if (branch_sample_type == PERF_SAMPLE_BRANCH_COND)
-> Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â return POWER8_MMCRA_IFM3;
-> Â Â Â Â Â Â Â Â 
-> Â Â Â Â Â Â Â Â return -1;
-> 
+> I posted (yet again) yesterday "[PATCH v11] PPC: POWERNV: move
+> iommu_add_device earlier" which should fix this. And Bharat asked many
+> times for this to get accepted :)
 
-Hey Michael,
+I still get the WARN_ONs even with that patch.  You're still registering
+the bus notifier unconditionally.
 
-This patch only adds support for the PERF_SAMPLE_BRANCH_COND filter, if the
-over all code flow does not clearly suggest that all combinations of any of
-these HW filters are invalid, then we can go with one more patch to clean
-that up before or after this patch but not here in this patch. Finally the
-code section here will look something like this. Does it sound good ?
-
-static u64 power8_bhrb_filter_map(u64 branch_sample_type)
-{
-        u64 pmu_bhrb_filter = 0;
-
-        /* BHRB and regular PMU events share the same privilege state
-         * filter configuration. BHRB is always recorded along with a
-         * regular PMU event. As the privilege state filter is handled
-         * in the basic PMC configuration of the accompanying regular
-         * PMU event, we ignore any separate BHRB specific request.
-         */
-
-        /* Ignore user, kernel, hv bits */
-        branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
-
-        if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY)
-                return pmu_bhrb_filter;
-
-
-        if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY_CALL) {
-                pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
-                return pmu_bhrb_filter;
-        }
-
-        if (branch_sample_type == PERF_SAMPLE_BRANCH_COND) {
-                pmu_bhrb_filter |= POWER8_MMCRA_IFM3;
-                return pmu_bhrb_filter;
-        }
-
-        /* Every thing else is unsupported */
-        return -1;
-}
+-Scott
