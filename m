@@ -1,21 +1,29 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id B63302C007B
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2013 12:15:49 +1100 (EST)
-Date: Sat, 14 Dec 2013 16:40:39 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Andreas Schwab <schwab@linux-m68k.org>, davem@davemloft.net
-Subject: Re: 3.13-rc1: eth0 hw csum failure on powerpc (bisected)
-In-Reply-To: <87vbz9pmud.fsf@igel.home>
-Message-ID: <alpine.DEB.2.11.1312141622230.25690@trent.utfs.org>
-References: <alpine.DEB.2.11.1311300156380.31521@trent.utfs.org>
- <alpine.DEB.2.11.1311300210360.31521@trent.utfs.org>
- <alpine.DEB.2.11.1311301314220.31521__48727.6146108799$1385846242$gmane$org@trent.utfs.org>
- <87vbz9pmud.fsf@igel.home>
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4D1E32C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2013 12:19:13 +1100 (EST)
+Message-ID: <52ACA43F.2040402@zytor.com>
+Date: Sat, 14 Dec 2013 10:32:31 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>, Alexander Graf <agraf@suse.de>
+To: Mark Salter <msalter@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/10] Kconfig: cleanup SERIO_I8042 dependencies
+References: <1387040376-26906-1-git-send-email-msalter@redhat.com>
+ <1387040376-26906-11-git-send-email-msalter@redhat.com>
+In-Reply-To: <1387040376-26906-11-git-send-email-msalter@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
+ Russell King <linux@arm.linux.org.uk>, linux-mips@linux-mips.org,
+ linux-sh@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ x86@kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mundt <lethal@linux-sh.org>,
+ Paul Mackerras <paulus@samba.org>, linux-alpha@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,54 +33,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 30 Nov 2013 at 23:05, Andreas Schwab wrote:
-> >> > [...]
-> >> >  Freeing unused kernel memory: 204K (c06ea000 - c071d000)
-> >> >  eth0: hw csum failure
-> >> >  CPU: 0 PID: 0 Comm: swapper Not tainted 3.13.0-rc2 #1
-> >> >  Call Trace:
-> >> 
-> >> Btw, full dmesg & .config:  http://nerdbynature.de/bits/3.13-rc1/
-> >
-> > Oh, this has already been reported earlier this week:
-> >
-> > https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-November/113584.html
+On 12/14/2013 08:59 AM, Mark Salter wrote:
+> Remove messy dependencies from SERIO_I8042 by having it depend on one
+> Kconfig symbol (ARCH_MIGHT_HAVE_PC_SERIO) and having architectures
+> which need it select ARCH_MIGHT_HAVE_PC_SERIO in arch/*/Kconfig.
+> New architectures are unlikely to need SERIO_I8042, so this avoids
+> having an ever growing list of architectures to exclude.
 > 
-> No solution yet, though, 3.13-rc2 is still broken.
+> Signed-off-by: Mark Salter <msalter@redhat.com>
+> CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> CC: Richard Henderson <rth@twiddle.net>
+> CC: linux-alpha@vger.kernel.org
+> CC: Russell King <linux@arm.linux.org.uk>
+> CC: linux-arm-kernel@lists.infradead.org
+> CC: Tony Luck <tony.luck@intel.com>
+> CC: Fenghua Yu <fenghua.yu@intel.com>
+> CC: linux-ia64@vger.kernel.org
+> CC: Ralf Baechle <ralf@linux-mips.org>
+> CC: linux-mips@linux-mips.org
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> CC: linuxppc-dev@lists.ozlabs.org
+> CC: Paul Mundt <lethal@linux-sh.org>
+> CC: linux-sh@vger.kernel.org
+> CC: "David S. Miller" <davem@davemloft.net>
+> CC: sparclinux@vger.kernel.org
+> CC: Guan Xuetao <gxt@mprc.pku.edu.cn>
+> CC: Ingo Molnar <mingo@redhat.com>
+> CC: Thomas Gleixner <tglx@linutronix.de>
+> CC: "H. Peter Anvin" <hpa@zytor.com>
+> CC: x86@kernel.org
 
-As 3.13-rc3 was still broken, I tried a git-bisect, resulting in:
-
-
-018c5bba052b3a383d83cf0c756da0e7bc748397 is the first bad commit
-commit 018c5bba052b3a383d83cf0c756da0e7bc748397
-Author: David S. Miller <davem@davemloft.net>
-Date:   Fri Nov 15 21:11:16 2013 -0500
-
-    net: Handle CHECKSUM_COMPLETE more adequately in pskb_trim_rcsum().
-    
-    Currently pskb_trim_rcsum() just balks on CHECKSUM_COMPLETE packets
-    and remarks them as CHECKSUM_NONE, forcing a software checksum
-    validation later.
-    
-    We have all of the mechanics available to fixup the skb->csum value,
-    even for complicated fragmented packets, via the helpers
-    skb_checksum() and csum_sub().
-    
-    So just use them.
-    
-    Based upon a suggestion by Herbert Xu.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-:040000 040000 14e295c30c2d2a1164f4eb70aaec821fbe288c01 456c666ebbb355292b683c71c85585fc6d07e852 M      include
-
-
-And sure enough, today's 3.13-rc3 with only that commit reverted boots 
-just fine on this PowerBook G4 system.
-
-Thanks,
-Christian
--- 
-BOFH excuse #152:
-
-My pony-tail hit the on/off switch on the power strip.
+Acked-by: H. Peter Anvin <hpa@linux.intel.com>
