@@ -1,16 +1,26 @@
 Return-Path: <msalter@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 5B6D92C007E
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2013 04:00:16 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 2C6992C015B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2013 04:01:07 +1100 (EST)
 From: Mark Salter <msalter@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 05/10] powerpc: select ARCH_MIGHT_HAVE_PC_SERIO
-Date: Sat, 14 Dec 2013 11:59:31 -0500
-Message-Id: <1387040376-26906-6-git-send-email-msalter@redhat.com>
+Subject: [PATCH 10/10] Kconfig: cleanup SERIO_I8042 dependencies
+Date: Sat, 14 Dec 2013 11:59:36 -0500
+Message-Id: <1387040376-26906-11-git-send-email-msalter@redhat.com>
 In-Reply-To: <1387040376-26906-1-git-send-email-msalter@redhat.com>
 References: <1387040376-26906-1-git-send-email-msalter@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Mark Salter <msalter@redhat.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>,
+ x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Mark Salter <msalter@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Richard Henderson <rth@twiddle.net>, Tony Luck <tony.luck@intel.com>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Mundt <lethal@linux-sh.org>,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,28 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Architectures which might use an i8042 for serial IO to keyboard,
-mouse, etc should select ARCH_MIGHT_HAVE_PC_SERIO.
+Remove messy dependencies from SERIO_I8042 by having it depend on one
+Kconfig symbol (ARCH_MIGHT_HAVE_PC_SERIO) and having architectures
+which need it select ARCH_MIGHT_HAVE_PC_SERIO in arch/*/Kconfig.
+New architectures are unlikely to need SERIO_I8042, so this avoids
+having an ever growing list of architectures to exclude.
 
 Signed-off-by: Mark Salter <msalter@redhat.com>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Richard Henderson <rth@twiddle.net>
+CC: linux-alpha@vger.kernel.org
+CC: Russell King <linux@arm.linux.org.uk>
+CC: linux-arm-kernel@lists.infradead.org
+CC: Tony Luck <tony.luck@intel.com>
+CC: Fenghua Yu <fenghua.yu@intel.com>
+CC: linux-ia64@vger.kernel.org
+CC: Ralf Baechle <ralf@linux-mips.org>
+CC: linux-mips@linux-mips.org
 CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 CC: Paul Mackerras <paulus@samba.org>
 CC: linuxppc-dev@lists.ozlabs.org
+CC: Paul Mundt <lethal@linux-sh.org>
+CC: linux-sh@vger.kernel.org
+CC: "David S. Miller" <davem@davemloft.net>
+CC: sparclinux@vger.kernel.org
+CC: Guan Xuetao <gxt@mprc.pku.edu.cn>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: "H. Peter Anvin" <hpa@zytor.com>
+CC: x86@kernel.org
 ---
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/input/serio/Kconfig | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b44b52c..fb75485 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -86,6 +86,7 @@ config PPC
- 	bool
+diff --git a/drivers/input/serio/Kconfig b/drivers/input/serio/Kconfig
+index 8541f94..1f5cec2 100644
+--- a/drivers/input/serio/Kconfig
++++ b/drivers/input/serio/Kconfig
+@@ -16,14 +16,19 @@ config SERIO
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called serio.
+ 
++config ARCH_MIGHT_HAVE_PC_SERIO
++	bool
++	help
++	  Select this config option from the architecture Kconfig if
++	  the architecture might use a PC serio device (i8042) to
++          communicate with keyboard, mouse, etc.
++
+ if SERIO
+ 
+ config SERIO_I8042
+ 	tristate "i8042 PC Keyboard controller"
  	default y
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
-+	select ARCH_MIGHT_HAVE_PC_SERIO
- 	select BINFMT_ELF
- 	select OF
- 	select OF_EARLY_FLATTREE
+-	depends on !PARISC && (!ARM || FOOTBRIDGE_HOST) && \
+-		   (!SUPERH || SH_CAYMAN) && !M68K && !BLACKFIN && !S390 && \
+-		   !ARC
++	depends on ARCH_MIGHT_HAVE_PC_SERIO
+ 	help
+ 	  i8042 is the chip over which the standard AT keyboard and PS/2
+ 	  mouse are connected to the computer. If you use these devices,
 -- 
 1.8.3.1
