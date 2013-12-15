@@ -1,26 +1,21 @@
-Return-Path: <msalter@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 2C6992C015B
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2013 04:01:07 +1100 (EST)
-From: Mark Salter <msalter@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 10/10] Kconfig: cleanup SERIO_I8042 dependencies
-Date: Sat, 14 Dec 2013 11:59:36 -0500
-Message-Id: <1387040376-26906-11-git-send-email-msalter@redhat.com>
-In-Reply-To: <1387040376-26906-1-git-send-email-msalter@redhat.com>
-References: <1387040376-26906-1-git-send-email-msalter@redhat.com>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>,
- x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- Mark Salter <msalter@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, Tony Luck <tony.luck@intel.com>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Ralf Baechle <ralf@linux-mips.org>, Paul Mundt <lethal@linux-sh.org>,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id B63302C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2013 12:15:49 +1100 (EST)
+Date: Sat, 14 Dec 2013 16:40:39 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Andreas Schwab <schwab@linux-m68k.org>, davem@davemloft.net
+Subject: Re: 3.13-rc1: eth0 hw csum failure on powerpc (bisected)
+In-Reply-To: <87vbz9pmud.fsf@igel.home>
+Message-ID: <alpine.DEB.2.11.1312141622230.25690@trent.utfs.org>
+References: <alpine.DEB.2.11.1311300156380.31521@trent.utfs.org>
+ <alpine.DEB.2.11.1311300210360.31521@trent.utfs.org>
+ <alpine.DEB.2.11.1311301314220.31521__48727.6146108799$1385846242$gmane$org@trent.utfs.org>
+ <87vbz9pmud.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>, Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,65 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove messy dependencies from SERIO_I8042 by having it depend on one
-Kconfig symbol (ARCH_MIGHT_HAVE_PC_SERIO) and having architectures
-which need it select ARCH_MIGHT_HAVE_PC_SERIO in arch/*/Kconfig.
-New architectures are unlikely to need SERIO_I8042, so this avoids
-having an ever growing list of architectures to exclude.
+On Sat, 30 Nov 2013 at 23:05, Andreas Schwab wrote:
+> >> > [...]
+> >> >  Freeing unused kernel memory: 204K (c06ea000 - c071d000)
+> >> >  eth0: hw csum failure
+> >> >  CPU: 0 PID: 0 Comm: swapper Not tainted 3.13.0-rc2 #1
+> >> >  Call Trace:
+> >> 
+> >> Btw, full dmesg & .config:  http://nerdbynature.de/bits/3.13-rc1/
+> >
+> > Oh, this has already been reported earlier this week:
+> >
+> > https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-November/113584.html
+> 
+> No solution yet, though, 3.13-rc2 is still broken.
 
-Signed-off-by: Mark Salter <msalter@redhat.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Richard Henderson <rth@twiddle.net>
-CC: linux-alpha@vger.kernel.org
-CC: Russell King <linux@arm.linux.org.uk>
-CC: linux-arm-kernel@lists.infradead.org
-CC: Tony Luck <tony.luck@intel.com>
-CC: Fenghua Yu <fenghua.yu@intel.com>
-CC: linux-ia64@vger.kernel.org
-CC: Ralf Baechle <ralf@linux-mips.org>
-CC: linux-mips@linux-mips.org
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: linuxppc-dev@lists.ozlabs.org
-CC: Paul Mundt <lethal@linux-sh.org>
-CC: linux-sh@vger.kernel.org
-CC: "David S. Miller" <davem@davemloft.net>
-CC: sparclinux@vger.kernel.org
-CC: Guan Xuetao <gxt@mprc.pku.edu.cn>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: "H. Peter Anvin" <hpa@zytor.com>
-CC: x86@kernel.org
----
- drivers/input/serio/Kconfig | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+As 3.13-rc3 was still broken, I tried a git-bisect, resulting in:
 
-diff --git a/drivers/input/serio/Kconfig b/drivers/input/serio/Kconfig
-index 8541f94..1f5cec2 100644
---- a/drivers/input/serio/Kconfig
-+++ b/drivers/input/serio/Kconfig
-@@ -16,14 +16,19 @@ config SERIO
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called serio.
- 
-+config ARCH_MIGHT_HAVE_PC_SERIO
-+	bool
-+	help
-+	  Select this config option from the architecture Kconfig if
-+	  the architecture might use a PC serio device (i8042) to
-+          communicate with keyboard, mouse, etc.
-+
- if SERIO
- 
- config SERIO_I8042
- 	tristate "i8042 PC Keyboard controller"
- 	default y
--	depends on !PARISC && (!ARM || FOOTBRIDGE_HOST) && \
--		   (!SUPERH || SH_CAYMAN) && !M68K && !BLACKFIN && !S390 && \
--		   !ARC
-+	depends on ARCH_MIGHT_HAVE_PC_SERIO
- 	help
- 	  i8042 is the chip over which the standard AT keyboard and PS/2
- 	  mouse are connected to the computer. If you use these devices,
+
+018c5bba052b3a383d83cf0c756da0e7bc748397 is the first bad commit
+commit 018c5bba052b3a383d83cf0c756da0e7bc748397
+Author: David S. Miller <davem@davemloft.net>
+Date:   Fri Nov 15 21:11:16 2013 -0500
+
+    net: Handle CHECKSUM_COMPLETE more adequately in pskb_trim_rcsum().
+    
+    Currently pskb_trim_rcsum() just balks on CHECKSUM_COMPLETE packets
+    and remarks them as CHECKSUM_NONE, forcing a software checksum
+    validation later.
+    
+    We have all of the mechanics available to fixup the skb->csum value,
+    even for complicated fragmented packets, via the helpers
+    skb_checksum() and csum_sub().
+    
+    So just use them.
+    
+    Based upon a suggestion by Herbert Xu.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+:040000 040000 14e295c30c2d2a1164f4eb70aaec821fbe288c01 456c666ebbb355292b683c71c85585fc6d07e852 M      include
+
+
+And sure enough, today's 3.13-rc3 with only that commit reverted boots 
+just fine on this PowerBook G4 system.
+
+Thanks,
+Christian
 -- 
-1.8.3.1
+BOFH excuse #152:
+
+My pony-tail hit the on/off switch on the power strip.
