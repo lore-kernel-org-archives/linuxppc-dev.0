@@ -1,19 +1,12 @@
-Return-Path: <cengelma@gmx.at>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 024942C009F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2013 05:51:49 +1100 (EST)
-Received: from spike ([81.217.122.98]) by mail.gmx.com (mrgmx003) with ESMTPSA
- (Nemesis) id 0MPm54-1VxCHD41wY-0051qr for
- <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2013 19:38:58 +0100
-Date: Sun, 15 Dec 2013 19:38:56 +0100
-From: Christian Engelmayer <cengelma@gmx.at>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/sysdev: Fix a mpic section mismatch for MPC85xx
-Message-ID: <20131215193856.1637accd@spike>
+Return-Path: <anton@samba.org>
+Date: Mon, 16 Dec 2013 10:47:54 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Fix endian issues in power7/8 machine check handler
+Message-ID: <20131216104754.284ed286@kryten>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +16,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Moved arch/powerpc/sysdev/mpic.c : smp_mpic_probe() out of the __init section.
-It is referenced by arch/powerpc/platforms/85xx/smp.c : smp_85xx_setup_cpu().
 
-Signed-off-by: Christian Engelmayer <cengelma@gmx.at>
+The SLB save area is shared with the hypervisor and is defined
+as big endian, so we need to byte swap on little endian builds.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/sysdev/mpic.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 0e166ed..72c1e65 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1924,7 +1924,7 @@ void smp_mpic_message_pass(int cpu, int msg)
- 		       msg * MPIC_INFO(CPU_IPI_DISPATCH_STRIDE), physmask);
- }
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index b36e777..27c93f4 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -50,12 +50,12 @@ static void flush_and_reload_slb(void)
+ 	if (!slb)
+ 		return;
  
--int __init smp_mpic_probe(void)
-+int smp_mpic_probe(void)
- {
- 	int nr_cpus;
+-	n = min_t(u32, slb->persistent, SLB_MIN_SIZE);
++	n = min_t(u32, be32_to_cpu(slb->persistent), SLB_MIN_SIZE);
  
--- 
-1.8.3.2
+ 	/* Load up the SLB entries from shadow SLB */
+ 	for (i = 0; i < n; i++) {
+-		unsigned long rb = slb->save_area[i].esid;
+-		unsigned long rs = slb->save_area[i].vsid;
++		unsigned long rb = be64_to_cpu(slb->save_area[i].esid);
++		unsigned long rs = be64_to_cpu(slb->save_area[i].vsid);
+ 
+ 		rb = (rb & ~0xFFFul) | i;
+ 		asm volatile("slbmte %0,%1" : : "r" (rs), "r" (rb));
