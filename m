@@ -1,18 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C43B42C009D
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Dec 2013 11:57:20 +1100 (EST)
-Message-ID: <1387155428.15730.179.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 16 Dec 2013 11:57:08 +1100
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by ozlabs.org (Postfix) with ESMTP id CF9702C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2013 12:27:33 +1100 (EST)
+Date: Sun, 15 Dec 2013 20:27:25 -0500 (EST)
+Message-Id: <20131215.202725.1549146673897801643.davem@davemloft.net>
+To: msalter@redhat.com
+Subject: Re: [PATCH 10/10] Kconfig: cleanup SERIO_I8042 dependencies
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1387122626.1979.136.camel@deneb.redhat.com>
+References: <52ACA43F.2040402@zytor.com>
+ <20131215103657.GB20197@core.coreip.homeip.net>
+ <1387122626.1979.136.camel@deneb.redhat.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+ sparclinux@vger.kernel.org, gxt@mprc.pku.edu.cn, linux@arm.linux.org.uk,
+ x86@kernel.org, mingo@redhat.com, fenghua.yu@intel.com, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, rth@twiddle.net, tony.luck@intel.com,
+ dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+ lethal@linux-sh.org, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,55 +31,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+From: Mark Salter <msalter@redhat.com>
+Date: Sun, 15 Dec 2013 10:50:26 -0500
 
-Here are some more powerpc fixes for 3.13.
+> On Sun, 2013-12-15 at 02:36 -0800, Dmitry Torokhov wrote:
+>> How are we going to merge this? In bulk through input tree or peacemeal
+>> through all arches first?
+>
+> They should all go together to eliminate the chance of bisect breakage.
+> Either the input tree or maybe akpm tree.
 
-Uli's patch fixes a regression in ptrace caused by a mis-merge of
-a previous LE patch. The rest are all more endian fixes, all fairly
-trivial, found during testing of 3.13-rc's.
-
-Cheers,
-Ben.
-
-The following changes since commit e641eb03ab2b0f065fa5e64b4202fb5b0441b427:
-
-  powerpc: Fix up the kdump base cap to 128M (2013-12-10 11:28:39 +1100)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 803c2d2f84da9dc2619449994af34d27148ab20d:
-
-  powerpc/powernv: Fix OPAL LPC access in Little Endian (2013-12-13 15:55:15 +1100)
-
-----------------------------------------------------------------
-Anton Blanchard (8):
-      powerpc: Fix endian issue in setup-common.c
-      powerpc: Fix topology core_id endian issue on LE builds
-      powerpc/pseries: Fix endian issues in /proc/ppc64/lparcfg
-      powerpc/pseries: Fix endian issues in nvram code
-      powerpc/pseries: Fix PCIE link speed endian issue
-      powerpc/pseries: Fix endian issues in MSI code
-      powerpc: Fix endian issues in crash dump code
-      powerpc/powernv: Fix endian issue in opal_xscom_read
-
-Benjamin Herrenschmidt (1):
-      powerpc/powernv: Fix OPAL LPC access in Little Endian
-
-Ulrich Weigand (1):
-      powerpc: PTRACE_PEEKUSR always returns FPR0
-
- arch/powerpc/include/asm/opal.h             |  4 +--
- arch/powerpc/kernel/crash_dump.c            |  6 ++--
- arch/powerpc/kernel/ptrace.c                |  4 +--
- arch/powerpc/kernel/setup-common.c          |  4 +--
- arch/powerpc/kernel/smp.c                   |  4 +--
- arch/powerpc/platforms/powernv/opal-lpc.c   | 12 ++++----
- arch/powerpc/platforms/powernv/opal-xscom.c |  4 ++-
- arch/powerpc/platforms/pseries/lparcfg.c    | 12 ++++----
- arch/powerpc/platforms/pseries/msi.c        | 28 ++++++++++--------
- arch/powerpc/platforms/pseries/nvram.c      | 46 ++++++++++++++---------------
- arch/powerpc/platforms/pseries/pci.c        |  8 ++---
- 11 files changed, 68 insertions(+), 64 deletions(-)
+This sounds good to me.
