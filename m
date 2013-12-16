@@ -1,36 +1,34 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C1DB02C00A2
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Dec 2013 16:17:30 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4083D2C009F
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Dec 2013 16:26:55 +1100 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 16 Dec 2013 15:17:25 +1000
+ Mon, 16 Dec 2013 15:26:54 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id D3E493578023
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Dec 2013 16:17:22 +1100 (EST)
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 275722CE8055
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Dec 2013 16:26:51 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rBG5HALB10289500
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Dec 2013 16:17:10 +1100
+ rBG5Q82H6816226
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Dec 2013 16:26:38 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBG5HM9N000368
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Dec 2013 16:17:22 +1100
-Subject: [PATCH] This patch adds support to read error logs from OPAL and
- export them
+ rBG5GPrO031591
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Dec 2013 16:16:26 +1100
+Subject: [PATCH] powerpc/book3s: Recover from MC in sapphire on SCOM read via
+ MMIO.
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 16 Dec 2013 10:47:20 +0530
-Message-ID: <20131216051720.30807.40785.stgit@mars.in.ibm.com>
+Date: Mon, 16 Dec 2013 10:46:24 +0530
+Message-ID: <20131216051624.30578.39646.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,419 +40,385 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-to userspace through sysfs interface /sys/firmware/opa/opal-elog.
+Detect and recover from machine check when inside opal on a special
+scom load instructions. On specific SCOM read via MMIO we may get a machine
+check exception with SRR0 pointing inside opal. To recover from MC
+in this scenario, get a recovery instruction address and return to it from
+MC.
 
-This patch buffers 128 error log records until it is consumed by userspace
-tool. This patch provides an sysfs interface '/sys/firmware/opa/opal-elog-ack'
-to user to receive an acknowledgement of successful log consumption.
+OPAL will export the machine check recoverable ranges through
+device tree node mcheck-recoverable-ranges under ibm,opal:
 
-This is what user space tool would do:
-- Read error log from /sys/firmware/opa/opal-elog.
-- Save it to the disk.
-- Send an acknowledgement on successful consumption by writing error log
-  id to /sys/firmware/opa/opal-elog-ack.
+# hexdump /proc/device-tree/ibm,opal/mcheck-recoverable-ranges
+0000000 0000 0000 3000 2804 0000 000c 0000 0000
+0000010 3000 2814 0000 0000 3000 27f0 0000 000c
+0000020 0000 0000 3000 2814 xxxx xxxx xxxx xxxx
+0000030 llll llll yyyy yyyy yyyy yyyy
+...
+...
+#
 
-Signed-off-by: Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>
+where:
+	xxxx xxxx xxxx xxxx = Starting instruction address
+	llll llll           = Length of the address range.
+	yyyy yyyy yyyy yyyy = recovery address
+
+Each recoverable address range entry is (start address, len,
+recovery address), 2 cells each for start and recovery address, 1 cell for
+len, totalling 5 cells per entry. During kernel boot time, build up the
+recovery table with the list of recovery ranges from device-tree node which
+will be used during machine check exception to recover from MMIO SCOM UE.
+
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal.h                |   11 +
- arch/powerpc/platforms/powernv/Makefile        |    2 
- arch/powerpc/platforms/powernv/opal-elog.c     |  309 ++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |    5 
- arch/powerpc/platforms/powernv/opal.c          |    2 
- 5 files changed, 328 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-elog.c
+ arch/powerpc/include/asm/machdep.h     |    3 +
+ arch/powerpc/include/asm/mce.h         |    3 +
+ arch/powerpc/include/asm/opal.h        |    3 +
+ arch/powerpc/kernel/mce.c              |    4 +
+ arch/powerpc/kernel/mce_power.c        |   37 +++++++++++-
+ arch/powerpc/kernel/prom.c             |    5 ++
+ arch/powerpc/platforms/powernv/opal.c  |  100 +++++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/setup.c |    1 
+ 8 files changed, 146 insertions(+), 10 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index ad3025d..4da6574 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -170,6 +170,9 @@ struct machdep_calls {
+ 	int		(*system_reset_exception)(struct pt_regs *regs);
+ 	int 		(*machine_check_exception)(struct pt_regs *regs);
+ 
++	/* Called during machine check exception to retrive fixup address. */
++	bool		(*mce_check_early_recovery)(struct pt_regs *regs);
++
+ 	/* Motherboard/chipset features. This is a kind of general purpose
+ 	 * hook used to control some machine specific features (like reset
+ 	 * lines, chip power control, etc...).
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index a2b8c7b..2257d1e 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -187,7 +187,8 @@ struct mce_error_info {
+ #define MCE_EVENT_DONTRELEASE	false
+ 
+ extern void save_mce_event(struct pt_regs *regs, long handled,
+-			   struct mce_error_info *mce_err, uint64_t addr);
++			   struct mce_error_info *mce_err, uint64_t nip,
++			   uint64_t addr);
+ extern int get_mce_event(struct machine_check_event *mce, bool release);
+ extern void release_mce_event(void);
+ extern void machine_check_queue_event(void);
 diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 5462fa7..723a7db 100644
+index 033c06b..5462fa7 100644
 --- a/arch/powerpc/include/asm/opal.h
 +++ b/arch/powerpc/include/asm/opal.h
-@@ -129,6 +129,11 @@ extern int opal_enter_rtas(struct rtas_args *args,
- #define OPAL_LPC_READ				67
- #define OPAL_LPC_WRITE				68
- #define OPAL_RETURN_CPU				69
-+#define OPAL_ELOG_READ				71
-+#define OPAL_ELOG_WRITE				72
-+#define OPAL_ELOG_ACK				73
-+#define OPAL_ELOG_RESEND			74
-+#define OPAL_ELOG_SIZE				75
- #define OPAL_FLASH_VALIDATE			76
- #define OPAL_FLASH_MANAGE			77
- #define OPAL_FLASH_UPDATE			78
-@@ -727,6 +732,11 @@ int64_t opal_lpc_write(uint32_t chip_id, enum OpalLPCAddressType addr_type,
- 		       uint32_t addr, uint32_t data, uint32_t sz);
- int64_t opal_lpc_read(uint32_t chip_id, enum OpalLPCAddressType addr_type,
- 		      uint32_t addr, uint32_t *data, uint32_t sz);
-+int64_t opal_read_elog(uint64_t buffer, size_t size, uint64_t log_id);
-+int64_t opal_get_elog_size(uint64_t *log_id, size_t *size, uint64_t *elog_type);
-+int64_t opal_write_elog(uint64_t buffer, uint64_t size, uint64_t offset);
-+int64_t opal_send_ack_elog(uint64_t log_id);
-+void opal_resend_pending_logs(void);
- int64_t opal_validate_flash(uint64_t buffer, uint32_t *size, uint32_t *result);
- int64_t opal_manage_flash(uint8_t op);
- int64_t opal_update_flash(uint64_t blk_list);
-@@ -761,6 +771,7 @@ extern void opal_get_rtc_time(struct rtc_time *tm);
- extern unsigned long opal_get_boot_time(void);
- extern void opal_nvram_init(void);
+@@ -733,6 +733,8 @@ int64_t opal_update_flash(uint64_t blk_list);
+ 
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname, int depth, void *data);
++extern int early_init_dt_scan_recoverable_ranges(unsigned long node,
++				 const char *uname, int depth, void *data);
+ 
+ extern int opal_get_chars(uint32_t vtermno, char *buf, int count);
+ extern int opal_put_chars(uint32_t vtermno, const char *buf, int total_len);
+@@ -761,6 +763,7 @@ extern void opal_nvram_init(void);
  extern void opal_flash_init(void);
-+extern int opal_elog_init(void);
  
  extern int opal_machine_check(struct pt_regs *regs);
- extern bool opal_mce_check_early_recovery(struct pt_regs *regs);
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 873fa13..0f692eb 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -1,6 +1,6 @@
- obj-y			+= setup.o opal-takeover.o opal-wrappers.o opal.o
- obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
--obj-y			+= rng.o
-+obj-y			+= rng.o opal-elog.o
++extern bool opal_mce_check_early_recovery(struct pt_regs *regs);
  
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
-diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
-new file mode 100644
-index 0000000..fc891ae
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-elog.c
-@@ -0,0 +1,309 @@
-+/*
-+ * Error log support on PowerNV.
-+ *
-+ * Copyright 2013 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/of.h>
-+#include <linux/slab.h>
-+#include <linux/sysfs.h>
-+#include <linux/fs.h>
-+#include <linux/vmalloc.h>
-+#include <linux/fcntl.h>
-+#include <asm/uaccess.h>
-+#include <asm/opal.h>
-+
-+/* Maximum size of a single log on FSP is 16KB */
-+#define OPAL_MAX_ERRLOG_SIZE	16384
-+
-+/* maximu number of records powernv can hold */
-+#define MAX_NUM_RECORD	128
-+
-+struct opal_err_log {
-+	struct list_head link;
-+	uint64_t opal_log_id;
-+	size_t opal_log_size;
-+	uint8_t data[OPAL_MAX_ERRLOG_SIZE];
-+};
-+
-+/* Pre-allocated temp buffer to pull error log from opal. */
-+static uint8_t err_log_data[OPAL_MAX_ERRLOG_SIZE];
-+/* Protect err_log_data buf */
-+static DEFINE_MUTEX(err_log_data_mutex);
-+
-+static uint64_t total_log_size;
-+static bool opal_log_available;
-+static LIST_HEAD(elog_list);
-+static LIST_HEAD(elog_ack_list);
-+
-+/* lock to protect elog_list and elog-ack_list. */
-+static DEFINE_SPINLOCK(opal_elog_lock);
-+
-+static DECLARE_WAIT_QUEUE_HEAD(opal_log_wait);
-+
-+/*
-+ * Interface for user to acknowledge the error log.
-+ *
-+ * Once user acknowledge the log, we delete that record entry from the
-+ * list and move it ack list.
-+ */
-+void opal_elog_ack(uint64_t ack_id)
+ extern void opal_shutdown(void);
+ 
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index c0c52ec..d6edf2b 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -64,7 +64,7 @@ static void mce_set_error_info(struct machine_check_event *mce,
+  */
+ void save_mce_event(struct pt_regs *regs, long handled,
+ 		    struct mce_error_info *mce_err,
+-		    uint64_t addr)
++		    uint64_t nip, uint64_t addr)
+ {
+ 	uint64_t srr1;
+ 	int index = __get_cpu_var(mce_nest_count)++;
+@@ -80,7 +80,7 @@ void save_mce_event(struct pt_regs *regs, long handled,
+ 
+ 	/* Populate generic machine check info */
+ 	mce->version = MCE_V1;
+-	mce->srr0 = regs->nip;
++	mce->srr0 = nip;
+ 	mce->srr1 = regs->msr;
+ 	mce->gpr3 = regs->gpr[3];
+ 	mce->in_use = 1;
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index b36e777..4317194 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -26,6 +26,7 @@
+ #include <linux/ptrace.h>
+ #include <asm/mmu.h>
+ #include <asm/mce.h>
++#include <asm/machdep.h>
+ 
+ /* flush SLBs and reload */
+ static void flush_and_reload_slb(void)
+@@ -197,13 +198,32 @@ static void mce_get_derror_p7(struct mce_error_info *mce_err, uint64_t dsisr)
+ 	}
+ }
+ 
++static long mce_handle_ue_error(struct pt_regs *regs)
 +{
-+	unsigned long flags;
-+	struct opal_err_log *record, *next;
-+	bool found = false;
-+
-+	printk(KERN_INFO "OPAL Log ACK=%llx", ack_id);
-+
-+	/* once user acknowledge a log delete record from list */
-+	spin_lock_irqsave(&opal_elog_lock, flags);
-+	list_for_each_entry_safe(record, next, &elog_list, link) {
-+		if (ack_id == record->opal_log_id) {
-+			list_del(&record->link);
-+			list_add(&record->link, &elog_ack_list);
-+			total_log_size -= OPAL_MAX_ERRLOG_SIZE;
-+			found = true;
-+			break;
-+		}
-+	}
-+	spin_unlock_irqrestore(&opal_elog_lock, flags);
-+
-+	/* Send acknowledgement to FSP */
-+	if (found)
-+		opal_send_ack_elog(ack_id);
-+	return;
-+}
-+
-+
-+static ssize_t elog_ack_store(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					const char *buf, size_t count)
-+{
-+	uint32_t log_ack_id;
-+	log_ack_id = *(uint32_t *) buf;
-+
-+	/* send acknowledgment to FSP */
-+	opal_elog_ack(log_ack_id);
-+	return 0;
-+}
-+
-+/*
-+ * Show error log records to user.
-+ */
-+static ssize_t opal_elog_show(struct file *filp, struct kobject *kobj,
-+				struct bin_attribute *bin_attr, char *buf,
-+				loff_t pos, size_t count)
-+{
-+	unsigned long flags;
-+	struct opal_err_log *record, *next;
-+	size_t size = 0;
-+	size_t data_to_copy = 0;
-+	int error = 0;
-+
-+	/* Display one log at a time. */
-+	if (count > OPAL_MAX_ERRLOG_SIZE)
-+		count = OPAL_MAX_ERRLOG_SIZE;
-+
-+	spin_lock_irqsave(&opal_elog_lock, flags);
-+	/* Align the pos to point within total errlog size. */
-+	if (total_log_size && pos > total_log_size)
-+		pos = pos % total_log_size;
++	long handled = 0;
 +
 +	/*
-+	 * if pos goes beyond total_log_size then we know we don't have any
-+	 * new record to show.
++	 * On specific SCOM read via MMIO we may get a machine check
++	 * exception with SRR0 pointing inside opal. If that is the
++	 * case OPAL may have recovery address to re-read SCOM data in
++	 * different way and hence we can recover from this MC.
 +	 */
-+	if (total_log_size == 0 || pos >= total_log_size) {
-+		opal_log_available = 0;
-+		if (filp->f_flags & O_NONBLOCK) {
-+			spin_unlock_irqrestore(&opal_elog_lock, flags);
-+			error = -EAGAIN;
-+			goto out;
-+		}
-+		spin_unlock_irqrestore(&opal_elog_lock, flags);
-+		pos = 0;
 +
-+		/* Wait until we get log from sapphire */
-+		error = wait_event_interruptible(opal_log_wait,
-+						 opal_log_available);
-+		if (error)
-+			goto out;
-+		spin_lock_irqsave(&opal_elog_lock, flags);
++	if (ppc_md.mce_check_early_recovery) {
++		if (ppc_md.mce_check_early_recovery(regs))
++			handled = 1;
 +	}
-+
-+	/*
-+	 * Show log record one by one through /sys/firmware/opal/opal_elog
-+	 */
-+	list_for_each_entry_safe(record, next, &elog_list, link) {
-+		if ((pos >= size) && (pos < (size + OPAL_MAX_ERRLOG_SIZE))) {
-+			data_to_copy = OPAL_MAX_ERRLOG_SIZE - (pos - size);
-+			if (count > data_to_copy)
-+				count = data_to_copy;
-+			memcpy(buf, record->data + (pos - size), count);
-+			error = count;
-+			break;
-+		}
-+		size += OPAL_MAX_ERRLOG_SIZE;
-+	}
-+	spin_unlock_irqrestore(&opal_elog_lock, flags);
-+out:
-+	return error;
++	return handled;
 +}
 +
-+/* Interface to read log from OPAL */
-+static void opal_elog_read(void)
-+{
-+	struct opal_err_log *record;
-+	size_t elog_size;
-+	uint64_t log_id;
-+	uint64_t elog_type;
+ long __machine_check_early_realmode_p7(struct pt_regs *regs)
+ {
+-	uint64_t srr1, addr;
++	uint64_t srr1, nip, addr;
+ 	long handled = 1;
+ 	struct mce_error_info mce_error_info = { 0 };
+ 
+ 	srr1 = regs->msr;
++	nip = regs->nip;
+ 
+ 	/*
+ 	 * Handle memory errors depending whether this was a load/store or
+@@ -221,7 +241,11 @@ long __machine_check_early_realmode_p7(struct pt_regs *regs)
+ 		addr = regs->nip;
+ 	}
+ 
+-	save_mce_event(regs, handled, &mce_error_info, addr);
++	/* Handle UE error. */
++	if (mce_error_info.error_type == MCE_ERROR_TYPE_UE)
++		handled = mce_handle_ue_error(regs);
 +
-+	unsigned long flags;
-+	int rc = 0;
++	save_mce_event(regs, handled, &mce_error_info, nip, addr);
+ 	return handled;
+ }
+ 
+@@ -263,11 +287,12 @@ static long mce_handle_derror_p8(uint64_t dsisr)
+ 
+ long __machine_check_early_realmode_p8(struct pt_regs *regs)
+ {
+-	uint64_t srr1, addr;
++	uint64_t srr1, nip, addr;
+ 	long handled = 1;
+ 	struct mce_error_info mce_error_info = { 0 };
+ 
+ 	srr1 = regs->msr;
++	nip = regs->nip;
+ 
+ 	if (P7_SRR1_MC_LOADSTORE(srr1)) {
+ 		handled = mce_handle_derror_p8(regs->dsisr);
+@@ -279,6 +304,10 @@ long __machine_check_early_realmode_p8(struct pt_regs *regs)
+ 		addr = regs->nip;
+ 	}
+ 
+-	save_mce_event(regs, handled, &mce_error_info, addr);
++	/* Handle UE error. */
++	if (mce_error_info.error_type == MCE_ERROR_TYPE_UE)
++		handled = mce_handle_ue_error(regs);
 +
-+	spin_lock_irqsave(&opal_elog_lock, flags);
-+	if (list_empty(&elog_ack_list)) {
-+		/*
-+		 * We have no more room to read logs. Ignore it for now,
-+		 * will read it later when we have enough space.
-+		 */
-+		spin_unlock_irqrestore(&opal_elog_lock, flags);
-+		return;
-+	}
++	save_mce_event(regs, handled, &mce_error_info, nip, addr);
+ 	return handled;
+ }
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index fa0ad8a..bcd84f0 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -737,6 +737,11 @@ void __init early_init_devtree(void *params)
+ 	spinning_secondaries = boot_cpu_count - 1;
+ #endif
+ 
++#ifdef CONFIG_PPC_POWERNV
++	/* Scan and build the list of machine check recoverable ranges */
++	of_scan_flat_dt(early_init_dt_scan_recoverable_ranges, NULL);
++#endif
 +
-+	/* Pull out the free node. */
-+	record = list_entry(elog_ack_list.next, struct opal_err_log, link);
-+	list_del(&record->link);
-+	spin_unlock_irqrestore(&opal_elog_lock, flags);
-+
-+	/* read log size and log ID from OPAL */
-+	rc = opal_get_elog_size(&log_id, &elog_size, &elog_type);
-+	if (rc != OPAL_SUCCESS) {
-+		pr_err("ELOG: Opal log read failed\n");
-+		return;
-+	}
-+	if (elog_size >= OPAL_MAX_ERRLOG_SIZE)
-+		elog_size  =  OPAL_MAX_ERRLOG_SIZE;
-+
-+	record->opal_log_id = log_id;
-+	record->opal_log_size = elog_size;
-+	memset(record->data, 0, sizeof(record->data));
-+
-+	mutex_lock(&err_log_data_mutex);
-+	rc = opal_read_elog(__pa(err_log_data), elog_size, log_id);
-+	if (rc != OPAL_SUCCESS) {
-+		mutex_unlock(&err_log_data_mutex);
-+		pr_err("ELOG: log read failed for log-id=%llx\n", log_id);
-+		/* put back the free node. */
-+		spin_lock_irqsave(&opal_elog_lock, flags);
-+		list_add(&record->link, &elog_ack_list);
-+		spin_unlock_irqrestore(&opal_elog_lock, flags);
-+		return;
-+	}
-+	memcpy(record->data, err_log_data, elog_size);
-+	mutex_unlock(&err_log_data_mutex);
-+
-+	spin_lock_irqsave(&opal_elog_lock, flags);
-+	list_add_tail(&record->link, &elog_list);
-+	total_log_size += OPAL_MAX_ERRLOG_SIZE;
-+	spin_unlock_irqrestore(&opal_elog_lock, flags);
-+
-+	opal_log_available = 1;
-+	wake_up_interruptible(&opal_log_wait);
-+	return;
-+}
-+
-+static void elog_work_fn(struct work_struct *work)
-+{
-+	opal_elog_read();
-+}
-+
-+static DECLARE_WORK(elog_work, elog_work_fn);
-+
-+static int elog_event(struct notifier_block *nb,
-+				unsigned long events, void *change)
-+{
-+	/* check for error log event */
-+	if (events & OPAL_EVENT_ERROR_LOG_AVAIL)
-+		schedule_work(&elog_work);
-+	return 0;
-+}
-+
-+/* Initialize sysfs file */
-+static struct kobj_attribute opal_elog_ack_attr = __ATTR(opal_elog_ack,
-+						0200, NULL, elog_ack_store);
-+
-+static struct notifier_block elog_nb = {
-+	.notifier_call  = elog_event,
-+	.next           = NULL,
-+	.priority       = 0
-+};
-+
-+static struct bin_attribute opal_elog_attr = {
-+	.attr = {.name = "opal_elog", .mode = 0400},
-+	.read = opal_elog_show,
-+};
-+
-+/*
-+ * Pre-allocate a buffer to hold handful of error logs until user space
-+ * consumes it.
-+ */
-+static int init_err_log_buffer(void)
-+{
-+	int i = 0;
-+	struct opal_err_log *buf_ptr;
-+
-+	buf_ptr = vmalloc(sizeof(struct opal_err_log) * MAX_NUM_RECORD);
-+	if (!buf_ptr) {
-+		printk(KERN_ERR "ELOG: failed to allocate memory.\n");
-+		return -ENOMEM;
-+	}
-+	memset(buf_ptr, 0, sizeof(struct opal_err_log) * MAX_NUM_RECORD);
-+
-+	/* Initialize ack list will all free nodes. */
-+	for (i = 0; i < MAX_NUM_RECORD; i++, buf_ptr++)
-+		list_add(&buf_ptr->link, &elog_ack_list);
-+	return 0;
-+}
-+
-+/* Initialize error logging */
-+int __init opal_elog_init(void)
-+{
-+	int rc = 0;
-+
-+	rc = init_err_log_buffer();
-+	if (rc)
-+		return rc;
-+
-+	rc = sysfs_create_bin_file(opal_kobj, &opal_elog_attr);
-+	if (rc) {
-+		printk(KERN_ERR "ELOG: unable to create sysfs file"
-+					"opal_elog (%d)\n", rc);
-+		return rc;
-+	}
-+
-+	rc = sysfs_create_file(opal_kobj, &opal_elog_ack_attr.attr);
-+	if (rc) {
-+		printk(KERN_ERR "ELOG: unable to create sysfs file"
-+			" opal_elog_ack (%d)\n", rc);
-+		return rc;
-+	}
-+
-+	rc = opal_notifier_register(&elog_nb);
-+	if (rc) {
-+		pr_err("%s: Can't register OPAL event notifier (%d)\n",
-+		__func__, rc);
-+		return rc;
-+	}
-+
-+	/* We are now ready to pull error logs from opal. */
-+	opal_resend_pending_logs();
-+
-+	return 0;
-+}
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index e780650..a040b02 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -123,6 +123,11 @@ OPAL_CALL(opal_xscom_write,			OPAL_XSCOM_WRITE);
- OPAL_CALL(opal_lpc_read,			OPAL_LPC_READ);
- OPAL_CALL(opal_lpc_write,			OPAL_LPC_WRITE);
- OPAL_CALL(opal_return_cpu,			OPAL_RETURN_CPU);
-+OPAL_CALL(opal_read_elog,			OPAL_ELOG_READ);
-+OPAL_CALL(opal_send_ack_elog,			OPAL_ELOG_ACK);
-+OPAL_CALL(opal_get_elog_size,			OPAL_ELOG_SIZE);
-+OPAL_CALL(opal_resend_pending_logs,		OPAL_ELOG_RESEND);
-+OPAL_CALL(opal_write_elog,			OPAL_ELOG_WRITE);
- OPAL_CALL(opal_validate_flash,			OPAL_FLASH_VALIDATE);
- OPAL_CALL(opal_manage_flash,			OPAL_FLASH_MANAGE);
- OPAL_CALL(opal_update_flash,			OPAL_FLASH_UPDATE);
+ 	DBG(" <- early_init_devtree()\n");
+ }
+ 
 diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 31053be..20e1834 100644
+index 01e74cb..31053be 100644
 --- a/arch/powerpc/platforms/powernv/opal.c
 +++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -475,6 +475,8 @@ static int __init opal_init(void)
- 	/* Create "opal" kobject under /sys/firmware */
- 	rc = opal_sysfs_init();
- 	if (rc == 0) {
-+		/* Setup error log interface */
-+		rc = opal_elog_init();
- 		/* Setup code update interface */
- 		opal_flash_init();
- 	}
+@@ -20,6 +20,7 @@
+ #include <linux/slab.h>
+ #include <linux/sched.h>
+ #include <linux/kobject.h>
++#include <linux/memblock.h>
+ #include <asm/opal.h>
+ #include <asm/firmware.h>
+ #include <asm/mce.h>
+@@ -32,8 +33,18 @@ struct kobject *opal_kobj;
+ struct opal {
+ 	u64 base;
+ 	u64 entry;
++	u64 size;
+ } opal;
+ 
++struct mcheck_recoverable_range {
++	u64 start_addr;
++	u64 end_addr;
++	u64 recover_addr;
++};
++
++static struct mcheck_recoverable_range *mc_recoverable_range;
++static int mc_recoverable_range_len;
++
+ static struct device_node *opal_node;
+ static DEFINE_SPINLOCK(opal_write_lock);
+ extern u64 opal_mc_secondary_handler[];
+@@ -47,25 +58,29 @@ static atomic_t opal_notifier_hold = ATOMIC_INIT(0);
+ int __init early_init_dt_scan_opal(unsigned long node,
+ 				   const char *uname, int depth, void *data)
+ {
+-	const void *basep, *entryp;
+-	unsigned long basesz, entrysz;
++	const void *basep, *entryp, *sizep;
++	unsigned long basesz, entrysz, runtimesz;
+ 
+ 	if (depth != 1 || strcmp(uname, "ibm,opal") != 0)
+ 		return 0;
+ 
+ 	basep  = of_get_flat_dt_prop(node, "opal-base-address", &basesz);
+ 	entryp = of_get_flat_dt_prop(node, "opal-entry-address", &entrysz);
++	sizep = of_get_flat_dt_prop(node, "opal-runtime-size", &runtimesz);
+ 
+-	if (!basep || !entryp)
++	if (!basep || !entryp || !sizep)
+ 		return 1;
+ 
+ 	opal.base = of_read_number(basep, basesz/4);
+ 	opal.entry = of_read_number(entryp, entrysz/4);
++	opal.size = of_read_number(sizep, runtimesz/4);
+ 
+ 	pr_debug("OPAL Base  = 0x%llx (basep=%p basesz=%ld)\n",
+ 		 opal.base, basep, basesz);
+ 	pr_debug("OPAL Entry = 0x%llx (entryp=%p basesz=%ld)\n",
+ 		 opal.entry, entryp, entrysz);
++	pr_debug("OPAL Entry = 0x%llx (sizep=%p runtimesz=%ld)\n",
++		 opal.size, sizep, runtimesz);
+ 
+ 	powerpc_firmware_features |= FW_FEATURE_OPAL;
+ 	if (of_flat_dt_is_compatible(node, "ibm,opal-v3")) {
+@@ -82,6 +97,53 @@ int __init early_init_dt_scan_opal(unsigned long node,
+ 	return 1;
+ }
+ 
++int __init early_init_dt_scan_recoverable_ranges(unsigned long node,
++				   const char *uname, int depth, void *data)
++{
++	unsigned long i, size;
++	const __be32 *prop;
++
++	if (depth != 1 || strcmp(uname, "ibm,opal") != 0)
++		return 0;
++
++	prop = of_get_flat_dt_prop(node, "mcheck-recoverable-ranges", &size);
++
++	if (!prop)
++		return 1;
++
++	pr_debug("Found machine check recoverable ranges.\n");
++
++	/*
++	 * Allocate a buffer to hold the MC recoverable ranges. We would be
++	 * accessing them in real mode, hence it needs to be within
++	 * RMO region.
++	 */
++	mc_recoverable_range =__va(memblock_alloc_base(size, __alignof__(u64),
++							ppc64_rma_size));
++	memset(mc_recoverable_range, 0, size);
++
++	/*
++	 * Each recoverable address entry is an (start address,len,
++	 * recover address) pair, * 2 cells each, totalling 4 cells per entry.
++	 */
++	for (i = 0; i < size / (sizeof(*prop) * 5); i++) {
++		mc_recoverable_range[i].start_addr =
++					of_read_number(prop + (i * 5) + 0, 2);
++		mc_recoverable_range[i].end_addr =
++					mc_recoverable_range[i].start_addr +
++					of_read_number(prop + (i * 5) + 2, 1);
++		mc_recoverable_range[i].recover_addr =
++					of_read_number(prop + (i * 5) + 3, 2);
++
++		pr_debug("Machine check recoverable range: %llx..%llx: %llx\n",
++				mc_recoverable_range[i].start_addr,
++				mc_recoverable_range[i].end_addr,
++				mc_recoverable_range[i].recover_addr);
++	}
++	mc_recoverable_range_len = i;
++	return 1;
++}
++
+ static int __init opal_register_exception_handlers(void)
+ {
+ #ifdef __BIG_ENDIAN__
+@@ -310,6 +372,38 @@ int opal_machine_check(struct pt_regs *regs)
+ 	return 0;
+ }
+ 
++static uint64_t find_recovery_address(uint64_t nip)
++{
++	int i;
++
++	for (i = 0; i < mc_recoverable_range_len; i++)
++		if ((nip >= mc_recoverable_range[i].start_addr) &&
++		    (nip < mc_recoverable_range[i].end_addr))
++		    return mc_recoverable_range[i].recover_addr;
++	return 0;
++}
++
++bool opal_mce_check_early_recovery(struct pt_regs *regs)
++{
++	uint64_t recover_addr = 0;
++
++	if (!opal.base || !opal.size)
++		goto out;
++
++	if ((regs->nip >= opal.base) &&
++			(regs->nip <= (opal.base + opal.size)))
++		recover_addr = find_recovery_address(regs->nip);
++
++	/*
++	 * Setup regs->nip to rfi into fixup address.
++	 */
++	if (recover_addr)
++		regs->nip = recover_addr;
++
++out:
++	return !!recover_addr;
++}
++
+ static irqreturn_t opal_interrupt(int irq, void *data)
+ {
+ 	__be64 events;
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 19884b2..96b737f 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -177,6 +177,7 @@ static void __init pnv_setup_machdep_opal(void)
+ 	ppc_md.power_off = pnv_power_off;
+ 	ppc_md.halt = pnv_halt;
+ 	ppc_md.machine_check_exception = opal_machine_check;
++	ppc_md.mce_check_early_recovery = opal_mce_check_early_recovery;
+ }
+ 
+ #ifdef CONFIG_PPC_POWERNV_RTAS
