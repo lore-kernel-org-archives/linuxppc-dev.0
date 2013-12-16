@@ -1,45 +1,32 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dmitry.torokhov@gmail.com>
+Received: from mail-pd0-x22b.google.com (mail-pd0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c02::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9B5AD2C0086
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2013 15:40:05 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Sun, 15 Dec 2013 23:40:01 -0500
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id BFC4E6E803F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2013 23:39:55 -0500 (EST)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rBG4dwd96881540
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2013 04:39:58 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBG4duoZ017807
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2013 23:39:58 -0500
-Message-ID: <52AE8356.6080200@linux.vnet.ibm.com>
-Date: Mon, 16 Dec 2013 10:06:38 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id F3AEE2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2013 15:59:19 +1100 (EST)
+Received: by mail-pd0-f171.google.com with SMTP id z10so4842529pdj.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2013 20:59:10 -0800 (PST)
+Date: Sun, 15 Dec 2013 20:59:00 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 10/10] Kconfig: cleanup SERIO_I8042 dependencies
+Message-ID: <20131216045859.GA4322@core.coreip.homeip.net>
+References: <52ACA43F.2040402@zytor.com>
+ <20131215103657.GB20197@core.coreip.homeip.net>
+ <1387122626.1979.136.camel@deneb.redhat.com>
+ <20131215.202725.1549146673897801643.davem@davemloft.net>
 MIME-Version: 1.0
-To: peterz@infradead.org, fweisbec@gmail.com, paul.gortmaker@windriver.com,
- paulus@samba.org, mingo@kernel.org, shangw@linux.vnet.ibm.com,
- rafael.j.wysocki@intel.com, galak@kernel.crashing.org,
- benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
- linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au,
- john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com,
- deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131215.202725.1549146673897801643.davem@davemloft.net>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+ sparclinux@vger.kernel.org, gxt@mprc.pku.edu.cn, linux@arm.linux.org.uk,
+ x86@kernel.org, mingo@redhat.com, msalter@redhat.com, fenghua.yu@intel.com,
+ tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, rth@twiddle.net,
+ tony.luck@intel.com, linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+ lethal@linux-sh.org, linux-alpha@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH] time: Support in tick broadcast framework for archs
- without an external wakeup source
-References: <20131213041901.17199.37383.stgit@preeti.in.ibm.com>
-In-Reply-To: <20131213041901.17199.37383.stgit@preeti.in.ibm.com>
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,426 +36,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Sun, Dec 15, 2013 at 08:27:25PM -0500, David Miller wrote:
+> From: Mark Salter <msalter@redhat.com>
+> Date: Sun, 15 Dec 2013 10:50:26 -0500
+> 
+> > On Sun, 2013-12-15 at 02:36 -0800, Dmitry Torokhov wrote:
+> >> How are we going to merge this? In bulk through input tree or peacemeal
+> >> through all arches first?
+> >
+> > They should all go together to eliminate the chance of bisect breakage.
+> > Either the input tree or maybe akpm tree.
+> 
+> This sounds good to me.
 
-The patch had some compile time fixes to be done. It was accidentally mailed
-out before doing so. Below is the right patch. Apologies for the same.
+OK, then I'll pick it up once I collect more acks from the arch
+maintainers.
 
-Thanks
-
-Regards
-Preeti U Murthy
-
------------------------------------------------------------------------------
-
-time: Support in tick broadcast framework for archs without an external wakeup source
-
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-
-On some architectures, in certain CPU deep idle states the local timers stop.
-An external clock device is used to wakeup these CPUs. The kernel support for the
-wakeup of these CPUs is provided by the tick broadcast framework by using the
-external clock device as the wakeup source.
-
-However on architectures like PowerPC there is no external clock device. This
-patch includes support in the broadcast framework to handle the wakeup of the
-CPUs in deep idle states on such architectures by queuing a hrtimer on one of
-the CPUs, meant to handle the wakeup of CPUs in deep idle states. This CPU is
-identified as the bc_cpu.
-
-Each time the hrtimer expires, it is reprogrammed for the next wakeup of the
-CPUs in deep idle state after handling broadcast. However when a CPU is about
-to enter  deep idle state with its wakeup time earlier than the time at which
-the hrtimer is currently programmed, it *becomes the new bc_cpu* and restarts
-the hrtimer on itself. This way the job of doing broadcast is handed around to
-the CPUs that ask for the earliest wakeup just before entering deep idle
-state. This is consistent with what happens in cases where an external clock
-device is present. The smp affinity of this clock device is set to the CPU
-with the earliest wakeup.
-
-The important point here is that the bc_cpu cannot enter deep idle state
-since it has a hrtimer queued to wakeup the other CPUs in deep idle. Hence it
-cannot have its local timer stopped. Therefore for such a CPU, the
-BROADCAST_ENTER notification has to fail implying that it cannot enter deep
-idle state. On architectures where an external clock device is present, all
-CPUs can enter deep idle.
-
-During hotplug of the bc_cpu, the job of doing a broadcast is assigned to the
-first cpu in the broadcast mask. This newly nominated bc_cpu is woken up by
-an IPI so as to queue the above mentioned hrtimer on itself.
-
-This patch is compile tested only.
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
- include/linux/clockchips.h   |    4 +
- kernel/time/clockevents.c    |    8 +-
- kernel/time/tick-broadcast.c |  161 +++++++++++++++++++++++++++++++++++++-----
- kernel/time/tick-internal.h  |    8 +-
- 4 files changed, 155 insertions(+), 26 deletions(-)
-
-diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
-index 493aa02..bbda37b 100644
---- a/include/linux/clockchips.h
-+++ b/include/linux/clockchips.h
-@@ -186,9 +186,9 @@ static inline int tick_check_broadcast_expired(void) { return 0; }
- #endif
- 
- #ifdef CONFIG_GENERIC_CLOCKEVENTS
--extern void clockevents_notify(unsigned long reason, void *arg);
-+extern int clockevents_notify(unsigned long reason, void *arg);
- #else
--static inline void clockevents_notify(unsigned long reason, void *arg) {}
-+static inline int clockevents_notify(unsigned long reason, void *arg) {}
- #endif
- 
- #else /* CONFIG_GENERIC_CLOCKEVENTS_BUILD */
-diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-index 086ad60..bbbd671 100644
---- a/kernel/time/clockevents.c
-+++ b/kernel/time/clockevents.c
-@@ -525,11 +525,11 @@ void clockevents_resume(void)
- /**
-  * clockevents_notify - notification about relevant events
-  */
--void clockevents_notify(unsigned long reason, void *arg)
-+int clockevents_notify(unsigned long reason, void *arg)
- {
- 	struct clock_event_device *dev, *tmp;
- 	unsigned long flags;
--	int cpu;
-+	int cpu, ret = 0;
- 
- 	raw_spin_lock_irqsave(&clockevents_lock, flags);
- 
-@@ -542,11 +542,12 @@ void clockevents_notify(unsigned long reason, void *arg)
- 
- 	case CLOCK_EVT_NOTIFY_BROADCAST_ENTER:
- 	case CLOCK_EVT_NOTIFY_BROADCAST_EXIT:
--		tick_broadcast_oneshot_control(reason);
-+		ret = tick_broadcast_oneshot_control(reason);
- 		break;
- 
- 	case CLOCK_EVT_NOTIFY_CPU_DYING:
- 		tick_handover_do_timer(arg);
-+		tick_handover_bc_cpu(arg);
- 		break;
- 
- 	case CLOCK_EVT_NOTIFY_SUSPEND:
-@@ -585,6 +586,7 @@ void clockevents_notify(unsigned long reason, void *arg)
- 		break;
- 	}
- 	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(clockevents_notify);
- 
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index 9532690..4ba8abb 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -20,6 +20,7 @@
- #include <linux/sched.h>
- #include <linux/smp.h>
- #include <linux/module.h>
-+#include <linux/slab.h>
- 
- #include "tick-internal.h"
- 
-@@ -35,6 +36,10 @@ static cpumask_var_t tmpmask;
- static DEFINE_RAW_SPINLOCK(tick_broadcast_lock);
- static int tick_broadcast_force;
- 
-+static struct hrtimer *bc_hrtimer;
-+static int bc_cpu = -1;
-+static ktime_t bc_next_wakeup;
-+
- #ifdef CONFIG_TICK_ONESHOT
- static void tick_broadcast_clear_oneshot(int cpu);
- #else
-@@ -528,6 +533,20 @@ static int tick_broadcast_set_event(struct clock_event_device *bc, int cpu,
- 	return ret;
- }
- 
-+static void tick_broadcast_set_next_wakeup(int cpu, ktime_t expires, int force)
-+{
-+	struct clock_event_device *bc;
-+
-+	bc = tick_broadcast_device.evtdev;
-+
-+	if (bc) {
-+		tick_broadcast_set_event(bc, cpu, expires, force);
-+	} else {
-+		hrtimer_start(bc_hrtimer, expires, HRTIMER_MODE_ABS_PINNED);
-+		bc_cpu = cpu;
-+	}
-+}
-+
- int tick_resume_broadcast_oneshot(struct clock_event_device *bc)
- {
- 	clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
-@@ -558,15 +577,13 @@ void tick_check_oneshot_broadcast(int cpu)
- /*
-  * Handle oneshot mode broadcasting
-  */
--static void tick_handle_oneshot_broadcast(struct clock_event_device *dev)
-+static int tick_oneshot_broadcast(void)
- {
- 	struct tick_device *td;
- 	ktime_t now, next_event;
- 	int cpu, next_cpu = 0;
- 
--	raw_spin_lock(&tick_broadcast_lock);
--again:
--	dev->next_event.tv64 = KTIME_MAX;
-+	bc_next_wakeup.tv64 = KTIME_MAX;
- 	next_event.tv64 = KTIME_MAX;
- 	cpumask_clear(tmpmask);
- 	now = ktime_get();
-@@ -620,34 +637,89 @@ again:
- 	 * in the event mask
- 	 */
- 	if (next_event.tv64 != KTIME_MAX) {
--		/*
--		 * Rearm the broadcast device. If event expired,
--		 * repeat the above
--		 */
--		if (tick_broadcast_set_event(dev, next_cpu, next_event, 0))
-+		bc_next_wakeup = next_event;
-+	}
-+
-+	return next_cpu;
-+}
-+
-+/*
-+ * Handler in oneshot mode for the external clock device
-+ */
-+static void tick_handle_oneshot_broadcast(struct clock_event_device *dev)
-+{
-+	int next_cpu;
-+
-+	raw_spin_lock(&tick_broadcast_lock);
-+
-+again:	next_cpu = tick_oneshot_broadcast();
-+	/*
-+	 * Rearm the broadcast device. If event expired,
-+	 * repeat the above
-+	 */
-+	if (bc_next_wakeup.tv64 != KTIME_MAX)
-+		if (tick_broadcast_set_event(dev, next_cpu, bc_next_wakeup, 0))
- 			goto again;
-+
-+	raw_spin_unlock(&tick_broadcast_lock);
-+}
-+
-+/*
-+ * Handler in oneshot mode for the hrtimer queued when there is no external
-+ * clock device.
-+ */
-+static enum hrtimer_restart handle_broadcast(struct hrtimer *hrtmr)
-+{
-+	ktime_t now, interval;
-+
-+	raw_spin_lock(&tick_broadcast_lock);
-+	tick_oneshot_broadcast();
-+
-+	now = ktime_get();
-+
-+	if (bc_next_wakeup.tv64 != KTIME_MAX) {
-+		interval = ktime_sub(bc_next_wakeup, now);
-+		hrtimer_forward_now(bc_hrtimer, interval);
-+		raw_spin_unlock(&tick_broadcast_lock);
-+		return HRTIMER_RESTART;
- 	}
- 	raw_spin_unlock(&tick_broadcast_lock);
-+	return HRTIMER_NORESTART;
-+}
-+
-+/* The CPU could be asked to take over from the previous bc_cpu,
-+ * if it is being hotplugged out.
-+ */
-+static void tick_broadcast_exit_check(int cpu)
-+{
-+	if (cpu == bc_cpu)
-+		hrtimer_start(bc_hrtimer, bc_next_wakeup,
-+				HRTIMER_MODE_ABS_PINNED);
-+}
-+
-+static int can_enter_broadcast(int cpu)
-+{
-+	return cpu != bc_cpu;
- }
- 
- /*
-  * Powerstate information: The system enters/leaves a state, where
-  * affected devices might stop
-  */
--void tick_broadcast_oneshot_control(unsigned long reason)
-+int tick_broadcast_oneshot_control(unsigned long reason)
- {
--	struct clock_event_device *bc, *dev;
-+	struct clock_event_device *dev;
- 	struct tick_device *td;
- 	unsigned long flags;
- 	ktime_t now;
--	int cpu;
-+	int cpu, ret = 0;
- 
- 	/*
- 	 * Periodic mode does not care about the enter/exit of power
- 	 * states
- 	 */
- 	if (tick_broadcast_device.mode == TICKDEV_MODE_PERIODIC)
--		return;
-+		return ret;
- 
- 	/*
- 	 * We are called with preemtion disabled from the depth of the
-@@ -658,9 +730,8 @@ void tick_broadcast_oneshot_control(unsigned long reason)
- 	dev = td->evtdev;
- 
- 	if (!(dev->features & CLOCK_EVT_FEAT_C3STOP))
--		return;
-+		return ret;
- 
--	bc = tick_broadcast_device.evtdev;
- 
- 	raw_spin_lock_irqsave(&tick_broadcast_lock, flags);
- 	if (reason == CLOCK_EVT_NOTIFY_BROADCAST_ENTER) {
-@@ -676,12 +747,21 @@ void tick_broadcast_oneshot_control(unsigned long reason)
- 			 * woken by the IPI right away.
- 			 */
- 			if (!cpumask_test_cpu(cpu, tick_broadcast_force_mask) &&
--			    dev->next_event.tv64 < bc->next_event.tv64)
--				tick_broadcast_set_event(bc, cpu, dev->next_event, 1);
-+			    dev->next_event.tv64 < bc_next_wakeup.tv64)
-+				bc_next_wakeup = dev->next_event;
-+				tick_broadcast_set_next_wakeup(cpu, dev->next_event, 1);
-+
-+			if (!can_enter_broadcast(cpu)) {
-+				cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask);
-+				clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
-+				ret = 1;
-+			}
- 		}
- 	} else {
- 		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask)) {
- 			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
-+
-+			tick_broadcast_exit_check(cpu);
- 			/*
- 			 * The cpu which was handling the broadcast
- 			 * timer marked this cpu in the broadcast
-@@ -746,6 +826,7 @@ void tick_broadcast_oneshot_control(unsigned long reason)
- 	}
- out:
- 	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
-+	return ret;
- }
- 
- /*
-@@ -821,18 +902,62 @@ void tick_broadcast_switch_to_oneshot(void)
- {
- 	struct clock_event_device *bc;
- 	unsigned long flags;
-+	int cpu = smp_processor_id();
- 
- 	raw_spin_lock_irqsave(&tick_broadcast_lock, flags);
- 
-+	bc_next_wakeup.tv64 = KTIME_MAX;
-+
- 	tick_broadcast_device.mode = TICKDEV_MODE_ONESHOT;
- 	bc = tick_broadcast_device.evtdev;
--	if (bc)
-+	if (bc) {
- 		tick_broadcast_setup_oneshot(bc);
-+		bc_next_wakeup = bc->next_event;
-+	} else {
-+		/* An alternative to tick_broadcast_device on archs which do not have
-+		 * an external device
-+		 */
-+		bc_hrtimer = kmalloc(sizeof(*bc_hrtimer), GFP_NOWAIT);
-+		hrtimer_init(bc_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS_PINNED);
-+		bc_hrtimer->function = handle_broadcast;
-+
-+		/*
-+		 * There may be CPUs waiting for periodic broadcast. We need
-+		 * to set the oneshot bits for those and program the hrtimer
-+		 * to fire at the next tick period.
-+ 		 */
-+		cpumask_copy(tmpmask, tick_broadcast_mask);
-+		cpumask_clear_cpu(cpu, tmpmask);
-+		cpumask_or(tick_broadcast_oneshot_mask,
-+			   tick_broadcast_oneshot_mask, tmpmask);
-+
-+		if (!cpumask_empty(tmpmask)) {
-+			tick_broadcast_init_next_event(tmpmask,
-+						       tick_next_period);
-+			hrtimer_start(bc_hrtimer, tick_next_period, HRTIMER_MODE_ABS_PINNED);
-+			bc_next_wakeup = tick_next_period;
-+		}
-+	}
- 
- 	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
- }
- 
- 
-+void tick_handover_bc_cpu(int *cpup)
-+{
-+	struct tick_device *td;
-+
-+	if (*cpup == bc_cpu) {
-+		int cpu = cpumask_first(tick_broadcast_oneshot_mask);
-+
-+		bc_cpu = (cpu < nr_cpu_ids) ? cpu : -1;
-+		if (bc_cpu != -1) {
-+			td = &per_cpu(tick_cpu_device, bc_cpu);
-+			td->evtdev->broadcast(cpumask_of(bc_cpu));
-+		}
-+	}
-+}
-+
- /*
-  * Remove a dead CPU from broadcasting
-  */
-diff --git a/kernel/time/tick-internal.h b/kernel/time/tick-internal.h
-index 18e71f7..1f73032 100644
---- a/kernel/time/tick-internal.h
-+++ b/kernel/time/tick-internal.h
-@@ -46,23 +46,25 @@ extern int tick_switch_to_oneshot(void (*handler)(struct clock_event_device *));
- extern void tick_resume_oneshot(void);
- # ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
- extern void tick_broadcast_setup_oneshot(struct clock_event_device *bc);
--extern void tick_broadcast_oneshot_control(unsigned long reason);
-+extern int tick_broadcast_oneshot_control(unsigned long reason);
- extern void tick_broadcast_switch_to_oneshot(void);
- extern void tick_shutdown_broadcast_oneshot(unsigned int *cpup);
- extern int tick_resume_broadcast_oneshot(struct clock_event_device *bc);
- extern int tick_broadcast_oneshot_active(void);
- extern void tick_check_oneshot_broadcast(int cpu);
-+extern void tick_handover_bc_cpu(int *cpup);
- bool tick_broadcast_oneshot_available(void);
- # else /* BROADCAST */
- static inline void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
- {
- 	BUG();
- }
--static inline void tick_broadcast_oneshot_control(unsigned long reason) { }
-+static inline int tick_broadcast_oneshot_control(unsigned long reason) { }
- static inline void tick_broadcast_switch_to_oneshot(void) { }
- static inline void tick_shutdown_broadcast_oneshot(unsigned int *cpup) { }
- static inline int tick_broadcast_oneshot_active(void) { return 0; }
- static inline void tick_check_oneshot_broadcast(int cpu) { }
-+static inline void tick_handover_bc_cpu(int *cpup) {}
- static inline bool tick_broadcast_oneshot_available(void) { return true; }
- # endif /* !BROADCAST */
- 
-@@ -87,7 +89,7 @@ static inline void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
- {
- 	BUG();
- }
--static inline void tick_broadcast_oneshot_control(unsigned long reason) { }
-+static inline int tick_broadcast_oneshot_control(unsigned long reason) { }
- static inline void tick_shutdown_broadcast_oneshot(unsigned int *cpup) { }
- static inline int tick_resume_broadcast_oneshot(struct clock_event_device *bc)
- {
+-- 
+Dmitry
