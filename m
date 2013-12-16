@@ -1,41 +1,40 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C5AD72C009B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2013 17:08:30 +1100 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH v5 4/4] powerpc/85xx: add sysfs for pw20 state and
- altivec idle
-Date: Mon, 16 Dec 2013 05:53:19 +0000
-Message-ID: <0ba4966fa6b54478b2885a0b97f4c2bf@BY2PR03MB191.namprd03.prod.outlook.com>
-References: <1381828871-17110-1-git-send-email-dongsheng.wang@freescale.com>
- <1381828871-17110-4-git-send-email-dongsheng.wang@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C08E4@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B1799@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C3279@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B189E@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C34C1@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B195F@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071C362B@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010B33C3@039-SN2MPN1-021.039d.mgd.msft.net>
- <1382124094.7979.885.camel@snotra.buserror.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010BBC86@039-SN2MPN1-021.039d.mgd.msft.net>
- <1383601901.25829.33.camel@snotra.buserror.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010BC83B@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071E442A@039-SN2MPN1-013.039d.mgd.msft.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010BD119@039-SN2MPN1-021.039d.mgd.msft.net>
- <1383787214.23598.96.camel@snotra.buserror.net>
- <ABB05CD9C9F68C46A5CEDC7F15439259010BF40C@039-SN2MPN1-021.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D071EEABB@039-SN2MPN1-013.039d.mgd.msft.net>
-In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D071EEABB@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 40E9F2C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2013 18:13:35 +1100 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Mon, 16 Dec 2013 12:43:13 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id A6C0F394005C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2013 12:43:07 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBG7D5UC52953138
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2013 12:43:05 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBG7D6YK019352
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2013 12:43:07 +0530
+Date: Mon, 16 Dec 2013 15:13:05 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH 6/9] powerpc/pci: Use dev_is_pci() to check whether it is
+ pci device
+Message-ID: <20131216071305.GA16842@weiyang.vnet.ibm.com>
+References: <1386244880-22300-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1386244880-22300-1-git-send-email-wangyijing@huawei.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ Hanjun Guo <guohanjun@huawei.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev@lists.ozlabs.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,43 +44,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmh1c2hhbiBCaGFyYXQt
-UjY1Nzc3DQo+IFNlbnQ6IE1vbmRheSwgTm92ZW1iZXIgMTEsIDIwMTMgMTI6MTEgUE0NCj4gVG86
-IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNDsgV29vZCBTY290dC1CMDc0MjENCj4gQ2M6IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjUgNC80XSBwb3dl
-cnBjLzg1eHg6IGFkZCBzeXNmcyBmb3IgcHcyMCBzdGF0ZSBhbmQgYWx0aXZlYw0KPiBpZGxlDQo+
-IA0KPiA+ID4gVGhvc2UgY29kZXMganVzdCBmb3IgZGlzY3VzcyB3aXRoIEJoYXJhdC4gSGUgd2Fu
-dCB0byBtYWtlIG9uZSBmbG93IGF0DQo+ID4gPiAic2hvd19wdzIwX3dhaXRfdGltZSIvIiBzaG93
-X2FsdGl2ZWNfaWRsZV93YWl0X3RpbWUiIGZ1bmN0aW9uLiBJZiB3ZQ0KPiA+ID4gZG8gdGhhdCwg
-d2UgbmVlZCB0byBpbml0aWFsaXplIHB3MjBfd3QvYWx0aXZlY19pZGxlX3d0Lg0KPiA+ID4NCj4g
-PiBJIHdpbGwga2VlcCB0aGlzIHN0dWZmIGF0ICJzaG93X3B3MjBfd2FpdF90aW1lIi8ic2hvd19h
-bHRpdmVjX2lkbGVfd2FpdF90aW1lIg0KPiA+IGFuZCBhZGQgYSBjb21tZW50IGJlZm9yZSBvdXIg
-ZGlzY3Vzc2lvbi4NCj4gPg0KPiA+IC8qDQo+ID4gICogSWYgdGhlICJ2YWx1ZSIgbGVzcyB0aGFu
-IDEwLCB0aGlzIHdpbGwgb3ZlcmZsb3cuDQo+ID4gICogRnJvbSBiZW5jaG1hcmsgdGVzdCwgdGhl
-IGRlZmF1bHQgd2FpdCBiaXQgd2lsbCBub3QgYmUgc2V0IGxlc3MgdGhhbiAxMGJpdC4NCj4gPiAg
-KiBCZWNhdXNlIDEwIGJpdCBjb3JyZXNwb25kcyB0byB0aGUgd2FpdCBlbnRyeSB0aW1lIGlzIDQz
-OTM3NTU3MzQwMTk5OTYwOShucyksDQo+ID4gICogZm9yIHdhaXQtZW50cnktaWRsZSB0aW1lIHRo
-aXMgdmFsdWUgbG9va3MgdG9vIGxvbmcsIGFuZCB3ZSBjYW5ub3QgdXNlIHRob3NlDQo+ID4gICog
-ImxvbmciIHRpbWUgYXMgYSBkZWZhdWx0IHdhaXQtZW50cnkgdGltZS4gU28gb3ZlcmZsb3cgY291
-bGQgbm90IGhhdmUNCj4gaGFwcGVuZWQNCj4gPiAgKiBhbmQgd2UgdXNlIHRoaXMgY2FsY3VsYXRp
-b24gbWV0aG9kIHRvIGdldCB3YWl0LWVudHJ5LWlkbGUgdGltZS4NCj4gPiAgKi8NCj4gDQo+IEkg
-dGhpbmsgbm93IHdlIHdpbGwgdXNlIHNhbWUgY2FsY3VsYXRpb24gY29kZSBmb3IgZGVmYXVsdCB2
-YWx1ZSBhbmQgdXNlciBzZXQNCj4gdmFsdWUsIHNvIGFkZGluZyB0aGUgY29tbWVudCBpcyBub3Qg
-c3VmZmljaWVudCwgd2Ugc2hvdWxkIGVycm9yIG91dCBmcm9tIHRoZQ0KPiBjb2RlIGlmIHZhbHVl
-IGlzIGxlc3MgdGhhbiAxMC4gQXMgZGVmYXVsdCB2YWx1ZSBpcyBub3QgbGVzcyB0aGFuIDEwIHNv
-IHRoaXMgd2lsbA0KPiBhbHdheXMgd29yayB3aXRoIGRlZmF1bHQgdmFsdWUgYnV0IGlmIHVzZXIg
-dHJpZXMgdG8gc2V0IGxlc3MgdGhhbiAxMCB0aGVuIGVycm9yDQo+IG91dCBhbmQgYXNrIHVzZXIg
-dG8gdHJ5IG1vcmUgdGhhbiA5Lg0KPiANCkFnYWluLCBvbmNlIHRoZSB1c2VyIGhhcyBzZXQgdXAg
-YSB0aW1lLCB0aGUgY29kZSB3aWxsIGdvIHRvIGFub3RoZXIgYnJhbmNoLg0KDQplbHNlIHsNCgl0
-aW1lID0gcHcyMF93dDsNCn0NCg0KV2UgZG8gc28gbXVjaCBmb3IgdGhpcyBhIGxpdHRsZSBmdW5j
-dGlvbiBwcm9jZXNzaW5nIGlzIG5vdCB3b3J0aCBpdC4gSWYgd2UgY2FuJ3QNCmFncmVlIG9uIHRo
-aXMgc3lzIGludGVyZmFjZS4gSSB3aWxsIGNoYW5nZSB0aGlzIHN5cyBpbnRlcmZhY2UgdG8gc2hv
-d19wdzIwX3dhaXRfYml0LiA6KQ0KDQpjb2RlIGUuZzoNCnN0YXRpYyBzc2l6ZV90IHNob3dfcHcy
-MF93YWl0X2JpdChzdHJ1Y3QgZGV2aWNlICpkZXYsDQogICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIHN0cnVjdCBkZXZpY2VfYXR0cmlidXRlICphdHRyLCBjaGFyICpidWYpDQp7DQogICAg
-ICAgIHUzMiBlbnRyeV9iaXQ7DQogICAgICAgIHVuc2lnbmVkIGludCBjcHUgPSBkZXYtPmlkOw0K
-DQogICAgICAgIHNtcF9jYWxsX2Z1bmN0aW9uX3NpbmdsZShjcHUsIGRvX3Nob3dfcHdybWd0Y3Iw
-LCAmZW50cnlfYml0LCAxKTsNCiAgICAgICAgZW50cnlfYml0ID0gKGVudHJ5X2JpdCAmIFBXUk1H
-VENSMF9QVzIwX0VOVCkgPj4NCiAgICAgICAgICAgICAgICBQV1JNR1RDUjBfUFcyMF9FTlRfU0hJ
-RlQ7DQoNCiAgICAgICAgcmV0dXJuIHNwcmludGYoYnVmLCAiJXVcbiIsIGVudHJ5X2JpdCk7DQp9
-DQoNCi1kb25nc2hlbmcNCg0KPiAtQmhhcmF0DQo=
+Yijing,
+
+This one looks good.
+
+While I take a look at the source code, there are around 20 places with
+similar style. Do you think it would be good to change all these places
+in one patch?
+
+On Thu, Dec 05, 2013 at 08:01:20PM +0800, Yijing Wang wrote:
+>Use PCI standard marco dev_is_pci() instead of directly compare
+>pci_bus_type to check whether it is pci device.
+>
+>Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+>---
+> arch/powerpc/sysdev/fsl_pci.c |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
+>
+>diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+>index 4dfd61d..7066e52 100644
+>--- a/arch/powerpc/sysdev/fsl_pci.c
+>+++ b/arch/powerpc/sysdev/fsl_pci.c
+>@@ -122,7 +122,7 @@ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
+> 	 * address width of the SoC such that we can address any internal
+> 	 * SoC address from across PCI if needed
+> 	 */
+>-	if ((dev->bus == &pci_bus_type) &&
+>+	if ((dev_is_pci(dev)) &&
+> 	    dma_mask >= DMA_BIT_MASK(MAX_PHYS_ADDR_BITS)) {
+> 		set_dma_ops(dev, &dma_direct_ops);
+> 		set_dma_offset(dev, pci64_dma_offset);
+>-- 
+>1.7.1
+>
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+-- 
+Richard Yang
+Help you, Help me
