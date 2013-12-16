@@ -1,27 +1,12 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by ozlabs.org (Postfix) with ESMTP id CF9702C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2013 12:27:33 +1100 (EST)
-Date: Sun, 15 Dec 2013 20:27:25 -0500 (EST)
-Message-Id: <20131215.202725.1549146673897801643.davem@davemloft.net>
-To: msalter@redhat.com
-Subject: Re: [PATCH 10/10] Kconfig: cleanup SERIO_I8042 dependencies
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1387122626.1979.136.camel@deneb.redhat.com>
-References: <52ACA43F.2040402@zytor.com>
- <20131215103657.GB20197@core.coreip.homeip.net>
- <1387122626.1979.136.camel@deneb.redhat.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
- sparclinux@vger.kernel.org, gxt@mprc.pku.edu.cn, linux@arm.linux.org.uk,
- x86@kernel.org, mingo@redhat.com, fenghua.yu@intel.com, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, rth@twiddle.net, tony.luck@intel.com,
- dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org, ralf@linux-mips.org,
- lethal@linux-sh.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: benh@kernel.crashing.org
+MIME-Version: 1.0
+Subject: [PATCH] powerpc: Fix bad stack check in exception entry
+Date: Mon, 16 Dec 2013 15:12:43 +1100
+Message-ID: <15350.1387167163@ale.ozlabs.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+ anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,14 +16,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mark Salter <msalter@redhat.com>
-Date: Sun, 15 Dec 2013 10:50:26 -0500
+In EXCEPTION_PROLOG_COMMON() we check to see if the stack pointer (r1)
+is valid when coming from the kernel.  If it's not valid, we die but
+with a nice oops message.
 
-> On Sun, 2013-12-15 at 02:36 -0800, Dmitry Torokhov wrote:
->> How are we going to merge this? In bulk through input tree or peacemeal
->> through all arches first?
->
-> They should all go together to eliminate the chance of bisect breakage.
-> Either the input tree or maybe akpm tree.
+Currently we allocate a stack frame (subtract INT_FRAME_SIZE) before we
+check to see if the stack pointer is negative.  Unfortunately, this
+won't detect a bad stack where r1 is less than INT_FRAME_SIZE.
 
-This sounds good to me.
+This patch fixes the check to compare the modified r1 with
+-INT_FRAME_SIZE.  With this, bad kernel stack pointers (including NULL
+pointers) are correctly detected again.
+
+Kudos to Paulus for finding this.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+cc: stable@vger.kernel.org
+
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 894662a..243ce69 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -284,7 +284,7 @@ do_kvm_##n:								\
+ 	subi	r1,r1,INT_FRAME_SIZE;	/* alloc frame on kernel stack	*/ \
+ 	beq-	1f;							   \
+ 	ld	r1,PACAKSAVE(r13);	/* kernel stack to use		*/ \
+-1:	cmpdi	cr1,r1,0;		/* check if r1 is in userspace	*/ \
++1:	cmpdi	cr1,r1,-INT_FRAME_SIZE;	/* check if r1 is in userspace	*/ \
+ 	blt+	cr1,3f;			/* abort if it is		*/ \
+ 	li	r1,(n);			/* will be reloaded later	*/ \
+ 	sth	r1,PACA_TRAP_SAVE(r13);					   \
