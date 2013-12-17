@@ -1,19 +1,23 @@
-Return-Path: <chaowang@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4E9282C0084
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 16:38:32 +1100 (EST)
-Date: Tue, 17 Dec 2013 13:37:30 +0800
-From: WANG Chao <chaowang@redhat.com>
-To: Geoff Levand <geoff@infradead.org>
-Subject: Re: [PATCH 0/4] Minor fixes and improvements for kexec
-Message-ID: <20131217053730.GA13848@dhcp-17-89.nay.redhat.com>
-References: <cover.1386807069.git.geoff@infradead.org>
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D8DCB2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 19:19:49 +1100 (EST)
+Received: from mail61-co9 (localhost [127.0.0.1])	by mail61-co9-R.bigfish.com
+ (Postfix) with ESMTP id 7B7FFD00080	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 17 Dec 2013 08:19:45 +0000 (UTC)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>, <Bharat.Bhushan@freescale.com>
+Subject: [PATCH v6 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0 define
+Date: Tue, 17 Dec 2013 16:16:59 +0800
+Message-ID: <1387268222-9703-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1386807069.git.geoff@infradead.org>
-Cc: linux-sh@vger.kernel.org, kexec@lists.infradead.org,
- Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
- Eric Biederman <ebiederm@xmission.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,48 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/12/13 at 12:18am, Geoff Levand wrote:
-> Hi Eric,
-> 
-> Here are a few minor fixes and improvements for kexec.  Please consider.
-> 
-> -Geoff
-> 
-> The following changes since commit 374b105797c3d4f29c685f3be535c35f5689b30e:
-> 
->   Linux 3.13-rc3 (2013-12-06 09:34:04 -0800)
-> 
-> are available in the git repository at:
-> 
->   git://git.linaro.org/people/geoff.levand/linux-kexec.git for-kexec
-> 
-> for you to fetch changes up to 594a3d26aac66e9668edc81d7bfb4e801575514f:
-> 
->   sh/kexec: Fix kexec build warning (2013-12-11 16:03:27 -0800)
-> 
-> ----------------------------------------------------------------
-> Geoff Levand (4):
->       kexec: Simplify conditional
->       kexec: Add IND_FLAGS macro
->       powerpc/kexec: Use global IND_FLAGS macro
->       sh/kexec: Fix kexec build warning
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-For this series (besides 4/4 v2):
+E6500 PVR and SPRN_PWRMGTCR0 will be used in subsequent pw20/altivec
+idle patches.
 
-Acked-by: WANG Chao <chaowang@redhat.com>
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
+*v3:
+Add bit definitions for PWRMGTCR0.
 
-> 
->  arch/powerpc/kernel/machine_kexec_64.c |  2 --
->  arch/sh/kernel/machine_kexec.c         |  2 +-
->  include/linux/kexec.h                  |  1 +
->  kernel/kexec.c                         | 17 ++++++++++-------
->  4 files changed, 12 insertions(+), 10 deletions(-)
-> 
-> -- 
-> 1.8.1.2
-> 
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+ arch/powerpc/include/asm/reg.h       | 2 ++
+ arch/powerpc/include/asm/reg_booke.h | 9 +++++++++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 64264bf..d4160ca 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1053,6 +1053,8 @@
+ #define PVR_8560	0x80200000
+ #define PVR_VER_E500V1	0x8020
+ #define PVR_VER_E500V2	0x8021
++#define PVR_VER_E6500	0x8040
++
+ /*
+  * For the 8xx processors, all of them report the same PVR family for
+  * the PowerPC core. The various versions of these processors must be
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index ed8f836..4a6457e 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -170,6 +170,7 @@
+ #define SPRN_L2CSR1	0x3FA	/* L2 Data Cache Control and Status Register 1 */
+ #define SPRN_DCCR	0x3FA	/* Data Cache Cacheability Register */
+ #define SPRN_ICCR	0x3FB	/* Instruction Cache Cacheability Register */
++#define SPRN_PWRMGTCR0	0x3FB	/* Power management control register 0 */
+ #define SPRN_SVR	0x3FF	/* System Version Register */
+ 
+ /*
+@@ -216,6 +217,14 @@
+ #define	CCR1_DPC	0x00000100 /* Disable L1 I-Cache/D-Cache parity checking */
+ #define	CCR1_TCS	0x00000080 /* Timer Clock Select */
+ 
++/* Bit definitions for PWRMGTCR0. */
++#define PWRMGTCR0_PW20_WAIT		(1 << 14) /* PW20 state enable bit */
++#define PWRMGTCR0_PW20_ENT_SHIFT	8
++#define PWRMGTCR0_PW20_ENT		0x3F00
++#define PWRMGTCR0_AV_IDLE_PD_EN		(1 << 22) /* Altivec idle enable */
++#define PWRMGTCR0_AV_IDLE_CNT_SHIFT	16
++#define PWRMGTCR0_AV_IDLE_CNT		0x3F0000
++
+ /* Bit definitions for the MCSR. */
+ #define MCSR_MCS	0x80000000 /* Machine Check Summary */
+ #define MCSR_IB		0x40000000 /* Instruction PLB Error */
+-- 
+1.8.0
