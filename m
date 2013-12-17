@@ -1,28 +1,19 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-vb0-x233.google.com (mail-vb0-x233.google.com
- [IPv6:2607:f8b0:400c:c02::233])
+Return-Path: <neorf3k@gmail.com>
+Received: from mail-wi0-x232.google.com (mail-wi0-x232.google.com
+ [IPv6:2a00:1450:400c:c05::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5E7D92C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 19:48:18 +1100 (EST)
-Received: by mail-vb0-f51.google.com with SMTP id 11so3904887vbe.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 00:48:14 -0800 (PST)
-MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <1386700403.10013.109.camel@snotra.buserror.net>
-References: <1385712446-28221-1-git-send-email-hongbo.zhang@freescale.com>
- <1386357684.7375.124.camel@snotra.buserror.net>
- <52A6EDE8.5060903@freescale.com>
- <1386700403.10013.109.camel@snotra.buserror.net>
-Date: Tue, 17 Dec 2013 16:48:14 +0800
-Message-ID: <CADRPPNRy9SLauRPy0Ucm-xffuAhA7bMsA+9X4a=8XNRaJVMH5A@mail.gmail.com>
-Subject: Re: [PATCH] DTS: DMA: Fix DMA3 interrupts
-From: Li Yang <leoli@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Hongbo Zhang <hongbo.zhang@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- lkml <linux-kernel@vger.kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 9C6B22C0084
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Dec 2013 19:59:00 +1100 (EST)
+Received: by mail-wi0-f178.google.com with SMTP id bz8so3308041wib.11
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Dec 2013 00:58:52 -0800 (PST)
+From: neorf3k <neorf3k@gmail.com>
+Content-Type: text/plain; charset=windows-1252
+Date: Tue, 17 Dec 2013 09:58:45 +0100
+Subject: Chip Select register with 8bit bus size...
+To: linuxppc-dev@ozlabs.org
+Message-Id: <589FC957-3C23-46C7-BA4D-A56732046A41@gmail.com>
+Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1822\))
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,87 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 11, 2013 at 2:33 AM, Scott Wood <scottwood@freescale.com> wrote:
-> On Tue, 2013-12-10 at 18:33 +0800, Hongbo Zhang wrote:
->> Scott,
->> This issue is due to the non-continuous MPIC register, I think there is
->> two ways to fix it.
->>
->> The first one is as what we are discussing, in fact the Bman/Qman DT
->> author had introduced this way, and I had to follow it, it is a trick,
->> adding 208 is a bit ugly I think, and even difficult to explain it to
->> customers etc, but this way changes less codes.
->>
->> The second one is editing MPIC related codes without adding 208 to high
->> interrupts. The point of translate interrupt number to MPIC register
->> address is a so called 'isu' mechanism, we can do like the following
->> example codes, then the tricky adding 208 isn't needed any more.
->>
->> Which one do you prefer?
->> In fact I myself prefer the second, if the idea is acceptable, I will
->> send a patch instead of this one. (and also alone with the internal
->> patch decreasing 208 for the Bman/Qman)
->>
->> void __init corenet_ds_pic_init(void)
->> {
->>      ......
->>
->>      mpic = mpic_alloc(NULL, 0, flags, 0, 512, "OpenPIC");
->>      BUG_ON(mpic == NULL);
->>
->> // Add this start
->>      for (i = 0; i < 17; i++) {
->>          if (i < 11)
->>              addr_off = 0x10000 + 0x20 * 16 * i;
->>          else
->>              addr_off = 0x13000 + 0x20 * 16 * (i - 11);  /* scape the
->> address not for interrupts */
->>          mpic_assign_isu(mpic, i, mpic->paddr + addr_off);
->>      }
->> // Add this end
->>
->>      mpic_init(mpic);
->> }
->
-> NACK
->
-> We already have a binding that states that the interrupt number is based
-> on the register offset, rather than whatever arbitrary numbers hardware
-> documenters decide to use next week.
->
-> While I'm not terribly happy with the usability of this, especially now
-> that it's not a simple "add 16", redefining the existing binding is not
-> OK (and in any case the code above seems obfuscatory).  If we decide to
-> do something other than continue with register offset divided by 32,
-> then we need to define a new interrupt type (similar to current defined
-> types of error interrupt, timer, and IPI) for the new numberspace -- and
-> it should be handled when decoding that type of interrupt specifier,
-> rather than with the isu mechanism.
+We have a problem to communicate with a register, CS4, at at 0x10020000. =
+In U-boot that reg has the value 0x45fab3c1, but when we try to access =
+it we get:  0x10101010 and we are not able to write too.
 
-I had to say that the current binding is terribly confusing.  I know a
-lot of people who were confused while looking into the device tree and
-I had to help them out now and then.  I even got confused for some
-time at the very beginning.  :(  If we want to keep the current
-binding, a big warning message is well deserved at the very beginning
-of the binding document to clarify that the interrupt number used in
-device tree has nothing to do with the interrupt number mentioned in
-the silicon reference manuals.  I think we should even mention the
-"add 16" magic rule also to make it more intuitive.
+With CS3 everything seems ok, we can read and write. CS3 is at: =
+0x10000000.
 
-Adding a new interrupt type for external interrupts is good to make
-the interrupt number consistent with the Reference Manuals.  But doing
-that requires changing all the device trees that used the previous
-binding, and we need a mechanism of judging which binding a device
-tree is complying to.
+The main/only differences between cs3 and cs4 are:
 
-Hongbo's proposal is not a complete fix for the readability issue.
-But it makes the "add 16" magic rule continue to work, instead of
-making it even worse by introducing the "+208" interrupts.  The DMA3
-patch is the first time that we add the "+208" interrupts in the
-device trees of mainline kernel.  It is a good time now to prevent us
-making the readability even worse while not breaking things out there.
- ISU is a standard mechanism in MPIC to deal with sparse configuration
-register space, and IMO a good fit for this situation.
+Chip Select: Lp_cs3
+Bus size: 32 bit
+Bus control: 2 wait state R/W ACK disabled
+Allocated size 32Kbyte
 
-Regards,
-Leo
+Chip Select: Lp_cs4
+Bus size: 8 bit
+Bus control: 2 wait state R/W ACK disabled
+Allocated size: 4 KByte
+
+In userspace we use:
+/*=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=
+=97=97=97=97=97=97=97=97*/
+//code from memedit.c
+int fd;
+fd =3D open("/dev/mem", O_SYNC | O_RDWR);
+mem =3D mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, offset =
+& (~4095));
+printf("/dev/mem[0x%08x] =3D 0x%08x", offset, *(unsigned =
+int*)&mem[offset & 4095]);
+
+//to write
+*((unsigned int *)&mem[offset & 4095]) =3D input;
+/*=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=
+=97=97=97=97=97=97=97=97*/
+
+In our kernel module:
+/*=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=
+=97=97=97=97=97=97=97=97*/
+#define CS4_START	 0x10020000U
+#define CS4_STOP	 0x10040000U
+#define CS4_SIZE	 0x00020000U
+#define CS3_START	 0x10000000U
+#define CS3_STOP	 0x10020000U
+#define CS3_SIZE	 0x00020000U
+
+ void __iomem *cs3_ioaddr   =3D ioremap ((volatile unsigned =
+long)(CS3_START), CS3_SIZE);
+ printk("We read value at CS3: %x \n\n\n",in_be32(cs3_ioaddr+0x0018));
+ out_be32(cs3_ioaddr+0x0018,0x00000001);
+ printk("We read written value: %x \n\n\n",in_be32(cs3_ioaddr+0x0018));
+/*=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=
+=97=97=97=97=97=97=97=97*/
+
+Platform is based on mpc5200b CPU and fpga is a Xilinx Virtex4.
+Kernel we use: 2.6.33
+
+Thanks again in advance=85
+
+Lorenzo=
