@@ -1,22 +1,19 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id CA58A2C0090
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 16:54:38 +1100 (EST)
-Message-ID: <52AFE70D.70407@c-s.fr>
-Date: Tue, 17 Dec 2013 06:54:21 +0100
-From: leroy christophe <christophe.leroy@c-s.fr>
+Return-Path: <chaowang@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 4E9282C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 16:38:32 +1100 (EST)
+Date: Tue, 17 Dec 2013 13:37:30 +0800
+From: WANG Chao <chaowang@redhat.com>
+To: Geoff Levand <geoff@infradead.org>
+Subject: Re: [PATCH 0/4] Minor fixes and improvements for kexec
+Message-ID: <20131217053730.GA13848@dhcp-17-89.nay.redhat.com>
+References: <cover.1386807069.git.geoff@infradead.org>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2] powerpc 8xx: Loading kernels over 8Mbytes without
- CONFIG_PIN_TLB
-References: <20131210112945.E4E311A2BF3@localhost.localdomain>	
- <1386714253.10013.123.camel@snotra.buserror.net> <52A79E31.9070304@c-s.fr>	
- <1386717537.10013.150.camel@snotra.buserror.net> <52A7A58F.8090705@c-s.fr>
- <1387234621.10013.408.camel@snotra.buserror.net>
-In-Reply-To: <1387234621.10013.408.camel@snotra.buserror.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <cover.1386807069.git.geoff@infradead.org>
+Cc: linux-sh@vger.kernel.org, kexec@lists.infradead.org,
+ Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
+ Eric Biederman <ebiederm@xmission.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 16/12/2013 23:57, Scott Wood a écrit :
-> On Wed, 2013-12-11 at 00:36 +0100, leroy christophe wrote:
->> Le 11/12/2013 00:18, Scott Wood a écrit :
->>> There wasn't previously an ifdef specifically around the setting of
->>> SPRN_MD_CTR.  That's new.  There was an ifdef around the entire block,
->>> which has gone away because you are now trying to map more than 8M
->>> regardless of CONFIG_PIN_TLB, but that has nothing to do with whether
->>> there should be an ifdef around SPRN_MD_CTR.
->>>
->>>
->> Euh, ok, but then we have to fix it in the whole function, not only in
->> this block. Do you think it is worth doing it ?
-> Fix what in the whole function?  I was asking what harm there would be
-> if you just remove all the CONFIG_PIN_TLB ifdefs except around the
-> actual RSV4I setting -- do we really care what value goes in MD_CTR for
-> the non-pinned case, as long as it's different for each entry?
->
->
-MD_CTR is decremented after each entry added.
-However, the function populates entry 28, then 29, then 30, then 31. At 
-the end MD_CTR has then value 30, ready to overide entry 30 then 29 then 
-28 then 27 .....
+On 12/12/13 at 12:18am, Geoff Levand wrote:
+> Hi Eric,
+> 
+> Here are a few minor fixes and improvements for kexec.  Please consider.
+> 
+> -Geoff
+> 
+> The following changes since commit 374b105797c3d4f29c685f3be535c35f5689b30e:
+> 
+>   Linux 3.13-rc3 (2013-12-06 09:34:04 -0800)
+> 
+> are available in the git repository at:
+> 
+>   git://git.linaro.org/people/geoff.levand/linux-kexec.git for-kexec
+> 
+> for you to fetch changes up to 594a3d26aac66e9668edc81d7bfb4e801575514f:
+> 
+>   sh/kexec: Fix kexec build warning (2013-12-11 16:03:27 -0800)
+> 
+> ----------------------------------------------------------------
+> Geoff Levand (4):
+>       kexec: Simplify conditional
+>       kexec: Add IND_FLAGS macro
+>       powerpc/kexec: Use global IND_FLAGS macro
+>       sh/kexec: Fix kexec build warning
 
-So I will remove all the CONFIG_PIN_TLB, but I'll also have to fix the 
-value set in MD_CTR to start from 31, won't I ?
+For this series (besides 4/4 v2):
 
-Do you have any comment/recommendation on my tentative v3 patch where I 
-have tried to implement based on the use of r7 as you recommended ?
+Acked-by: WANG Chao <chaowang@redhat.com>
 
-Christophe
+> 
+>  arch/powerpc/kernel/machine_kexec_64.c |  2 --
+>  arch/sh/kernel/machine_kexec.c         |  2 +-
+>  include/linux/kexec.h                  |  1 +
+>  kernel/kexec.c                         | 17 ++++++++++-------
+>  4 files changed, 12 insertions(+), 10 deletions(-)
+> 
+> -- 
+> 1.8.1.2
+> 
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
