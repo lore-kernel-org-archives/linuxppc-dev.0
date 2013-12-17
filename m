@@ -1,20 +1,42 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
- [IPv6:2001:44b8:8060:ff02:300:1:2:6])
- by ozlabs.org (Postfix) with ESMTP id 66F9A2C007B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 12:15:40 +1100 (EST)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Chris Ball <cjb@laptop.org>,
- linux-mmc@vger.kernel.org
-Subject: Re: [PATCH 2/8] IBM Akebono: Add a SDHCI platform driver
-Date: Tue, 17 Dec 2013 12:11:28 +1100
-Message-ID: <1449993.dLHmhtoyuX@mexican>
-In-Reply-To: <1385086116-10972-2-git-send-email-alistair@popple.id.au>
-References: <1385086057-10884-1-git-send-email-alistair@popple.id.au>
- <1385086116-10972-2-git-send-email-alistair@popple.id.au>
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E80A62C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 13:02:23 +1100 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Tue, 17 Dec 2013 12:02:22 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A87262BB0056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 13:02:20 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBH1hphG42532948
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 12:43:52 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBH22Ipo018011
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 13:02:19 +1100
+Date: Tue, 17 Dec 2013 10:02:17 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH 6/9] powerpc/pci: Use dev_is_pci() to check whether it is
+ pci device
+Message-ID: <20131217020217.GA7677@weiyang.vnet.ibm.com>
+References: <1386244880-22300-1-git-send-email-wangyijing@huawei.com>
+ <20131216071305.GA16842@weiyang.vnet.ibm.com>
+ <52AEC241.1040507@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <52AEC241.1040507@huawei.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, Hanjun Guo <guohanjun@huawei.com>,
+ linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
+ Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,140 +46,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, Dec 16, 2013 at 05:05:05PM +0800, Yijing Wang wrote:
+>On 2013/12/16 15:13, Wei Yang wrote:
+>> Yijing,
+>> 
+>> This one looks good.
+>> 
+>> While I take a look at the source code, there are around 20 places with
+>> similar style. Do you think it would be good to change all these places
+>> in one patch?
+>
+>I sent the other similar changes to related maillist, some of them (David, Greg )has been accepted,
+>and other is not. :)
+>
+>eg.
+>http://article.gmane.org/gmane.linux.kernel/1608341/match=dev_is_pci
 
-I originally sent this to the linuxppc-dev list thinking Ben H might ta=
-ke it,=20
-however it should go through the appropriate subsystem. Can someone ple=
-ase=20
-merge it into the appropriate tree (unless the are problems with it)?
+Ah, I see. Thanks :-)
 
-Thanks.
+>
+>Thanks!
+>Yijing.
+>
+>> 
+>> On Thu, Dec 05, 2013 at 08:01:20PM +0800, Yijing Wang wrote:
+>>> Use PCI standard marco dev_is_pci() instead of directly compare
+>>> pci_bus_type to check whether it is pci device.
+>>>
+>>> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+>>> ---
+>>> arch/powerpc/sysdev/fsl_pci.c |    2 +-
+>>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+>>> index 4dfd61d..7066e52 100644
+>>> --- a/arch/powerpc/sysdev/fsl_pci.c
+>>> +++ b/arch/powerpc/sysdev/fsl_pci.c
+>>> @@ -122,7 +122,7 @@ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
+>>> 	 * address width of the SoC such that we can address any internal
+>>> 	 * SoC address from across PCI if needed
+>>> 	 */
+>>> -	if ((dev->bus == &pci_bus_type) &&
+>>> +	if ((dev_is_pci(dev)) &&
+>>> 	    dma_mask >= DMA_BIT_MASK(MAX_PHYS_ADDR_BITS)) {
+>>> 		set_dma_ops(dev, &dma_direct_ops);
+>>> 		set_dma_offset(dev, pci64_dma_offset);
+>>> -- 
+>>> 1.7.1
+>>>
+>>>
+>>> _______________________________________________
+>>> Linuxppc-dev mailing list
+>>> Linuxppc-dev@lists.ozlabs.org
+>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>> 
+>
+>
+>-- 
+>Thanks!
+>Yijing
 
-Regards,
-
-Alistair
-
-On Fri, 22 Nov 2013 13:08:30 Alistair Popple wrote:
-> This patch adds a SDHCI platform driver for the new IBM PPC476GTR SoC=
-
-> which is on the Akebono board.
->=20
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
-> Cc: Chris Ball <cjb@laptop.org>
-> Cc: linux-mmc@vger.kernel.org
-> ---
->  drivers/mmc/host/Kconfig           |   12 ++++++++
->  drivers/mmc/host/Makefile          |    1 +
->  drivers/mmc/host/sdhci-of-476gtr.c |   60
-> ++++++++++++++++++++++++++++++++++++ 3 files changed, 73 insertions(+=
-)
->  create mode 100644 drivers/mmc/host/sdhci-of-476gtr.c
->=20
-> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-> index 7fc5099..14210df 100644
-> --- a/drivers/mmc/host/Kconfig
-> +++ b/drivers/mmc/host/Kconfig
-> @@ -130,6 +130,18 @@ config MMC_SDHCI_OF_HLWD
->=20
->  =09  If unsure, say N.
->=20
-> +config MMC_SDHCI_OF_476GTR
-> +=09tristate "SDHCI OF support for the IBM PPC476GTR SoC"
-> +=09depends on MMC_SDHCI_PLTFM
-> +=09depends on PPC_OF
-> +=09help
-> +=09  This selects the Secure Digital Host Controller Interface (SDHC=
-I)
-> +=09  found on the PPC476GTR SoC.
-> +
-> +=09  If you have a controller with this interface, say Y or M here.
-> +
-> +=09  If unsure, say N.
-> +
->  config MMC_SDHCI_CNS3XXX
->  =09tristate "SDHCI support on the Cavium Networks CNS3xxx SoC"
->  =09depends on ARCH_CNS3XXX
-> diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
-> index c41d0c3..92beff3 100644
-> --- a/drivers/mmc/host/Makefile
-> +++ b/drivers/mmc/host/Makefile
-> @@ -59,6 +59,7 @@ obj-$(CONFIG_MMC_SDHCI_DOVE)=09=09+=3D sdhci-dove.o=
-
->  obj-$(CONFIG_MMC_SDHCI_TEGRA)=09=09+=3D sdhci-tegra.o
->  obj-$(CONFIG_MMC_SDHCI_OF_ESDHC)=09+=3D sdhci-of-esdhc.o
->  obj-$(CONFIG_MMC_SDHCI_OF_HLWD)=09=09+=3D sdhci-of-hlwd.o
-> +obj-$(CONFIG_MMC_SDHCI_OF_476GTR)=09+=3D sdhci-of-476gtr.o
->  obj-$(CONFIG_MMC_SDHCI_BCM_KONA)=09+=3D sdhci-bcm-kona.o
->  obj-$(CONFIG_MMC_SDHCI_BCM2835)=09=09+=3D sdhci-bcm2835.o
->=20
-> diff --git a/drivers/mmc/host/sdhci-of-476gtr.c
-> b/drivers/mmc/host/sdhci-of-476gtr.c new file mode 100644
-> index 0000000..1310f8c
-> --- /dev/null
-> +++ b/drivers/mmc/host/sdhci-of-476gtr.c
-> @@ -0,0 +1,60 @@
-> +/*
-> + * drivers/mmc/host/sdhci-of-476gtr.c
-> + *
-> + * Copyright =A9 2013 Alistair Popple <alistair@popple.id.au> IBM Co=
-rporation
-> + *
-> + * Based on sdhci-of-hlwd.c
-> + *
-> + * Copyright (C) 2009 The GameCube Linux Team
-> + * Copyright (C) 2009 Albert Herranz
-> + *
-> + * This program is free software; you can redistribute it and/or mod=
-ify
-> + * it under the terms of the GNU General Public License as published=
- by
-> + * the Free Software Foundation; either version 2 of the License, or=
- (at
-> + * your option) any later version.
-> + */
-> +
-> +#include <linux/delay.h>
-> +#include <linux/module.h>
-> +#include <linux/mmc/host.h>
-> +#include "sdhci-pltfm.h"
-> +
-> +static const struct sdhci_ops sdhci_476gtr_ops =3D {
-> +};
-> +
-> +static const struct sdhci_pltfm_data sdhci_476gtr_pdata =3D {
-> +=09.ops =3D &sdhci_476gtr_ops,
-> +};
-> +
-> +static int sdhci_476gtr_probe(struct platform_device *pdev)
-> +{
-> +=09return sdhci_pltfm_register(pdev, &sdhci_476gtr_pdata, 0);
-> +}
-> +
-> +static int sdhci_476gtr_remove(struct platform_device *pdev)
-> +{
-> +=09return sdhci_pltfm_unregister(pdev);
-> +}
-> +
-> +static const struct of_device_id sdhci_476gtr_of_match[] =3D {
-> +=09{ .compatible =3D "ibm,476gtr-sdhci" },
-> +=09{ }
-> +};
-> +MODULE_DEVICE_TABLE(of, sdhci_476gtr_of_match);
-> +
-> +static struct platform_driver sdhci_476gtr_driver =3D {
-> +=09.driver =3D {
-> +=09=09.name =3D "sdhci-476gtr",
-> +=09=09.owner =3D THIS_MODULE,
-> +=09=09.of_match_table =3D sdhci_476gtr_of_match,
-> +=09=09.pm =3D SDHCI_PLTFM_PMOPS,
-> +=09},
-> +=09.probe =3D sdhci_476gtr_probe,
-> +=09.remove =3D sdhci_476gtr_remove,
-> +};
-> +
-> +module_platform_driver(sdhci_476gtr_driver);
-> +
-> +MODULE_DESCRIPTION("PPC476GTR SDHCI OF driver");
-> +MODULE_AUTHOR("Alistair Popple");
-> +MODULE_LICENSE("GPL v2");
+-- 
+Richard Yang
+Help you, Help me
