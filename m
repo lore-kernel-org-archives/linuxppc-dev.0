@@ -1,36 +1,26 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0240.outbound.protection.outlook.com [207.46.163.240])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 10D432C0089
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 04:33:04 +1100 (EST)
-Received: from /spool/local
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Tue, 17 Dec 2013 17:33:00 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 02BC51B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 17:32:05 +0000 (GMT)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rBHHWhqk42008686
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 17:32:44 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBHHWtlD006788
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 10:32:55 -0700
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
-To: grant.likely@linaro.org
-Subject: [PATCH] of/irq: Fix device_node refcount in of_irq_parse_raw()
-Date: Tue, 17 Dec 2013 18:32:53 +0100
-Message-Id: <1387301573-30502-1-git-send-email-clg@fr.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id B29732C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 06:45:25 +1100 (EST)
+Message-ID: <1387309507.10013.432.camel@snotra.buserror.net>
+Subject: Re: [PATCH] DTS: DMA: Fix DMA3 interrupts
+From: Scott Wood <scottwood@freescale.com>
+To: Li Yang <leoli@freescale.com>
+Date: Tue, 17 Dec 2013 13:45:07 -0600
+In-Reply-To: <CADRPPNRy9SLauRPy0Ucm-xffuAhA7bMsA+9X4a=8XNRaJVMH5A@mail.gmail.com>
+References: <1385712446-28221-1-git-send-email-hongbo.zhang@freescale.com>
+ <1386357684.7375.124.camel@snotra.buserror.net>
+ <52A6EDE8.5060903@freescale.com>
+ <1386700403.10013.109.camel@snotra.buserror.net>
+ <CADRPPNRy9SLauRPy0Ucm-xffuAhA7bMsA+9X4a=8XNRaJVMH5A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org
+Cc: Hongbo Zhang <hongbo.zhang@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,77 +30,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 2361613206e6, "of/irq: Refactor interrupt-map parsing" changed
-the refcount on the device_node causing an error in of_node_put():
+On Tue, 2013-12-17 at 16:48 +0800, Li Yang wrote:
+> On Wed, Dec 11, 2013 at 2:33 AM, Scott Wood <scottwood@freescale.com> wrote:
+> > On Tue, 2013-12-10 at 18:33 +0800, Hongbo Zhang wrote:
+> >> Scott,
+> >> This issue is due to the non-continuous MPIC register, I think there is
+> >> two ways to fix it.
+> >>
+> >> The first one is as what we are discussing, in fact the Bman/Qman DT
+> >> author had introduced this way, and I had to follow it, it is a trick,
+> >> adding 208 is a bit ugly I think, and even difficult to explain it to
+> >> customers etc, but this way changes less codes.
+> >>
+> >> The second one is editing MPIC related codes without adding 208 to high
+> >> interrupts. The point of translate interrupt number to MPIC register
+> >> address is a so called 'isu' mechanism, we can do like the following
+> >> example codes, then the tricky adding 208 isn't needed any more.
+> >>
+> >> Which one do you prefer?
+> >> In fact I myself prefer the second, if the idea is acceptable, I will
+> >> send a patch instead of this one. (and also alone with the internal
+> >> patch decreasing 208 for the Bman/Qman)
+> >>
+> >> void __init corenet_ds_pic_init(void)
+> >> {
+> >>      ......
+> >>
+> >>      mpic = mpic_alloc(NULL, 0, flags, 0, 512, "OpenPIC");
+> >>      BUG_ON(mpic == NULL);
+> >>
+> >> // Add this start
+> >>      for (i = 0; i < 17; i++) {
+> >>          if (i < 11)
+> >>              addr_off = 0x10000 + 0x20 * 16 * i;
+> >>          else
+> >>              addr_off = 0x13000 + 0x20 * 16 * (i - 11);  /* scape the
+> >> address not for interrupts */
+> >>          mpic_assign_isu(mpic, i, mpic->paddr + addr_off);
+> >>      }
+> >> // Add this end
+> >>
+> >>      mpic_init(mpic);
+> >> }
+> >
+> > NACK
+> >
+> > We already have a binding that states that the interrupt number is based
+> > on the register offset, rather than whatever arbitrary numbers hardware
+> > documenters decide to use next week.
+> >
+> > While I'm not terribly happy with the usability of this, especially now
+> > that it's not a simple "add 16", redefining the existing binding is not
+> > OK (and in any case the code above seems obfuscatory).  If we decide to
+> > do something other than continue with register offset divided by 32,
+> > then we need to define a new interrupt type (similar to current defined
+> > types of error interrupt, timer, and IPI) for the new numberspace -- and
+> > it should be handled when decoding that type of interrupt specifier,
+> > rather than with the isu mechanism.
+> 
+> I had to say that the current binding is terribly confusing.  I know a
+> lot of people who were confused while looking into the device tree and
+> I had to help them out now and then.  I even got confused for some
+> time at the very beginning.  :(  If we want to keep the current
+> binding, a big warning message is well deserved at the very beginning
+> of the binding document to clarify that the interrupt number used in
+> device tree has nothing to do with the interrupt number mentioned in
+> the silicon reference manuals.  I think we should even mention the
+> "add 16" magic rule also to make it more intuitive.
 
-ERROR: Bad of_node_put() on /pci@800000020000000
-CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.13.0-rc3-dirty #2
-Call Trace:
-[c00000003e403500] [c0000000000144fc] .show_stack+0x7c/0x1f0 (unreliable)
-[c00000003e4035d0] [c00000000070f250] .dump_stack+0x88/0xb4
-[c00000003e403650] [c0000000005e8768] .of_node_release+0xd8/0xf0
-[c00000003e4036e0] [c0000000005eeafc] .of_irq_parse_one+0x10c/0x280
-[c00000003e4037a0] [c0000000005efd4c] .of_irq_parse_pci+0x3c/0x1d0
-[c00000003e403840] [c000000000038240] .pcibios_setup_device+0xa0/0x2e0
-[c00000003e403910] [c0000000000398f0] .pcibios_setup_bus_devices+0x60/0xd0
-[c00000003e403990] [c00000000003b3a4] .__of_scan_bus+0x1a4/0x2b0
-[c00000003e403a80] [c00000000003a62c] .pcibios_scan_phb+0x30c/0x410
-[c00000003e403b60] [c0000000009fe430] .pcibios_init+0x7c/0xd4
+I suggested some explanatory text in another thread.
 
-This patch adjusts the refcount in the walk of the interrupt tree.
-When a match is found, there is no need to increase the refcount 
-on 'out_irq->np' as 'newpar' is already holding a ref. The refcount
-balance between 'ipar' and 'newpar' is maintained in the skiplevel:
-goto label.
+> Adding a new interrupt type for external interrupts is good to make
+> the interrupt number consistent with the Reference Manuals.  But doing
+> that requires changing all the device trees that used the previous
+> binding, 
 
-This patch also removes the usage of the device_node variable 'old' 
-which seems useless after the latest changes.
+We may want to change them all for clarity, but there's no compatibility
+issue.  Old device trees must continue to be supported.
 
-Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
----
+> and we need a mechanism of judging which binding a device
+> tree is complying to.
 
-This patch was tested on powerpc, pseries and powernv. This is a 
-new area for me so I might have missed a path. Please take a look.
+If it uses the new interrupt type number, then it's the new binding.
+Otherwise, it's the old.  The binding would only be added to, not
+changed.
 
-We could now introduce an helper routine to look for #address-cells in
-of_irq_parse_raw(). This can be the subject of another patch.
+I'm not convinced it's worth adding at this point, though -- let's add
+some helpful text to the binding and see how much that helps.
 
-Thanks,
-
-C.
-
- drivers/of/irq.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
-diff --git a/drivers/of/irq.c b/drivers/of/irq.c
-index 786b0b47fae4..27212402c532 100644
---- a/drivers/of/irq.c
-+++ b/drivers/of/irq.c
-@@ -165,7 +165,6 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
- 		if (of_get_property(ipar, "interrupt-controller", NULL) !=
- 				NULL) {
- 			pr_debug(" -> got it !\n");
--			of_node_put(old);
- 			return 0;
- 		}
- 
-@@ -250,8 +249,7 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
- 		 * Successfully parsed an interrrupt-map translation; copy new
- 		 * interrupt specifier into the out_irq structure
- 		 */
--		of_node_put(out_irq->np);
--		out_irq->np = of_node_get(newpar);
-+		out_irq->np = newpar;
- 
- 		match_array = imap - newaddrsize - newintsize;
- 		for (i = 0; i < newintsize; i++)
-@@ -268,7 +266,6 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
- 	}
-  fail:
- 	of_node_put(ipar);
--	of_node_put(out_irq->np);
- 	of_node_put(newpar);
- 
- 	return -EINVAL;
--- 
-1.7.10.4
+-Scott
