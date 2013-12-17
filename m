@@ -1,20 +1,11 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0155.outbound.protection.outlook.com [207.46.163.155])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 612E62C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 06:57:22 +1100 (EST)
-Message-ID: <1387310222.10013.439.camel@snotra.buserror.net>
-Subject: Re: [PATCH 4/5] powerpc/fsl-booke: Add initial T208x QDS board support
-From: Scott Wood <scottwood@freescale.com>
-To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Date: Tue, 17 Dec 2013 13:57:02 -0600
-In-Reply-To: <1386760774-14743-4-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1386760774-14743-1-git-send-email-Shengzhou.Liu@freescale.com>
- <1386760774-14743-4-git-send-email-Shengzhou.Liu@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Return-Path: <anton@samba.org>
+Date: Wed, 18 Dec 2013 09:29:57 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, paulmck@linux.vnet.ibm.com
+Subject: [PATCH] powerpc: Make 64-bit non-VMX __copy_tofrom_user bi-endian
+Message-ID: <20131218092957.4a12cbcf@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,83 +16,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-12-11 at 19:19 +0800, Shengzhou Liu wrote:
-> +		boardctrl: board-control@3,0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			compatible = "fsl,fpga-qixis";
-> +			reg = <3 0 0x300>;
-> +			ranges = <0 3 0 0x300>;
-> +		};
+From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Why do you have ranges and #address-cells/#size-cells here?  When would
-there ever be a child node?
+The powerpc 64-bit __copy_tofrom_user() function uses shifts to handle
+unaligned invocations.  However, these shifts were designed for
+big-endian systems: On little-endian systems, they must shift in the
+opposite direction.
 
-> +	};
-> +
-> +	memory {
-> +		device_type = "memory";
-> +	};
-> +
-> +	dcsr: dcsr@f00000000 {
-> +		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
-> +	};
-> +
-> +	soc: soc@ffe000000 {
-> +		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-> +		reg = <0xf 0xfe000000 0 0x00001000>;
-> +		spi@110000 {
-> +			flash@0 {
-> +				#address-cells = <1>;
-> +				#size-cells = <1>;
-> +				compatible = "spansion,s25sl12801";
-> +				reg = <0>;
-> +				spi-max-frequency = <40000000>; /* input clock */
-> +				partition@u-boot {
-> +					label = "SPI U-Boot";
-> +					reg = <0x00000000 0x00100000>;
-> +					read-only;
-> +				};
-> +				partition@kernel {
-> +					label = "SPI Kernel";
-> +					reg = <0x00100000 0x00500000>;
-> +					read-only;
-> +				};
-> +				partition@dtb {
-> +					label = "SPI DTB";
-> +					reg = <0x00600000 0x00100000>;
-> +					read-only;
-> +				};
-> +				partition@fs {
-> +					label = "SPI File System";
-> +					reg = <0x00700000 0x00900000>;
-> +				};
+This commit relies on the C preprocessor to insert the correct shifts
+into the assembly code.
 
-These are not valid unit addresses -- and the kernel/dtb should not be
-read-only.  Please consider fixing where you copied this from, as well.
+[ This is a rare but nasty LE issue. Most of the time we use the POWER7
+optimised __copy_tofrom_user_power7 loop, but when it hits an exception
+we fall back to the base __copy_tofrom_user loop. - Anton ]
 
-Do you really want to dedicate a whole mebibyte to the dtb, given that
-the flash is only 16 MiB total?
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Actually, let's please just stop putting partitions in the dts.  Either
-use mtdparts on the command line, or have U-Boot fill in the partition
-info (there is code in U-Boot to do this based on the mtdparts env
-variable).
-
-> diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
-> index 736d4ac..3bef74a 100644
-> --- a/arch/powerpc/include/asm/mpc85xx.h
-> +++ b/arch/powerpc/include/asm/mpc85xx.h
-> @@ -77,6 +77,8 @@
->  #define SVR_T1020	0x852100
->  #define SVR_T1021	0x852101
->  #define SVR_T1022	0x852102
-> +#define SVR_T2080	0x853000
-> +#define SVR_T2081	0x853100
->  
->  #define SVR_8610	0x80A000
->  #define SVR_8641	0x809000
-
-Why is this in the board device tree patch?
-
--Scott
+diff --git a/arch/powerpc/lib/copyuser_64.S b/arch/powerpc/lib/copyuser_64.S
+index d73a590..596a285 100644
+--- a/arch/powerpc/lib/copyuser_64.S
++++ b/arch/powerpc/lib/copyuser_64.S
+@@ -9,6 +9,14 @@
+ #include <asm/processor.h>
+ #include <asm/ppc_asm.h>
+ 
++#ifdef __BIG_ENDIAN__
++#define sLd sld		/* Shift towards low-numbered address. */
++#define sHd srd		/* Shift towards high-numbered address. */
++#else
++#define sLd srd		/* Shift towards low-numbered address. */
++#define sHd sld		/* Shift towards high-numbered address. */
++#endif
++
+ 	.align	7
+ _GLOBAL(__copy_tofrom_user)
+ BEGIN_FTR_SECTION
+@@ -118,10 +126,10 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_LD_STD)
+ 
+ 24:	ld	r9,0(r4)	/* 3+2n loads, 2+2n stores */
+ 25:	ld	r0,8(r4)
+-	sld	r6,r9,r10
++	sLd	r6,r9,r10
+ 26:	ldu	r9,16(r4)
+-	srd	r7,r0,r11
+-	sld	r8,r0,r10
++	sHd	r7,r0,r11
++	sLd	r8,r0,r10
+ 	or	r7,r7,r6
+ 	blt	cr6,79f
+ 27:	ld	r0,8(r4)
+@@ -129,35 +137,35 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_LD_STD)
+ 
+ 28:	ld	r0,0(r4)	/* 4+2n loads, 3+2n stores */
+ 29:	ldu	r9,8(r4)
+-	sld	r8,r0,r10
++	sLd	r8,r0,r10
+ 	addi	r3,r3,-8
+ 	blt	cr6,5f
+ 30:	ld	r0,8(r4)
+-	srd	r12,r9,r11
+-	sld	r6,r9,r10
++	sHd	r12,r9,r11
++	sLd	r6,r9,r10
+ 31:	ldu	r9,16(r4)
+ 	or	r12,r8,r12
+-	srd	r7,r0,r11
+-	sld	r8,r0,r10
++	sHd	r7,r0,r11
++	sLd	r8,r0,r10
+ 	addi	r3,r3,16
+ 	beq	cr6,78f
+ 
+ 1:	or	r7,r7,r6
+ 32:	ld	r0,8(r4)
+ 76:	std	r12,8(r3)
+-2:	srd	r12,r9,r11
+-	sld	r6,r9,r10
++2:	sHd	r12,r9,r11
++	sLd	r6,r9,r10
+ 33:	ldu	r9,16(r4)
+ 	or	r12,r8,r12
+ 77:	stdu	r7,16(r3)
+-	srd	r7,r0,r11
+-	sld	r8,r0,r10
++	sHd	r7,r0,r11
++	sLd	r8,r0,r10
+ 	bdnz	1b
+ 
+ 78:	std	r12,8(r3)
+ 	or	r7,r7,r6
+ 79:	std	r7,16(r3)
+-5:	srd	r12,r9,r11
++5:	sHd	r12,r9,r11
+ 	or	r12,r8,r12
+ 80:	std	r12,24(r3)
+ 	bne	6f
+@@ -165,23 +173,38 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_LD_STD)
+ 	blr
+ 6:	cmpwi	cr1,r5,8
+ 	addi	r3,r3,32
+-	sld	r9,r9,r10
++	sLd	r9,r9,r10
+ 	ble	cr1,7f
+ 34:	ld	r0,8(r4)
+-	srd	r7,r0,r11
++	sHd	r7,r0,r11
+ 	or	r9,r7,r9
+ 7:
+ 	bf	cr7*4+1,1f
++#ifdef __BIG_ENDIAN__
+ 	rotldi	r9,r9,32
++#endif
+ 94:	stw	r9,0(r3)
++#ifdef __LITTLE_ENDIAN__
++	rotrdi	r9,r9,32
++#endif
+ 	addi	r3,r3,4
+ 1:	bf	cr7*4+2,2f
++#ifdef __BIG_ENDIAN__
+ 	rotldi	r9,r9,16
++#endif
+ 95:	sth	r9,0(r3)
++#ifdef __LITTLE_ENDIAN__
++	rotrdi	r9,r9,16
++#endif
+ 	addi	r3,r3,2
+ 2:	bf	cr7*4+3,3f
++#ifdef __BIG_ENDIAN__
+ 	rotldi	r9,r9,8
++#endif
+ 96:	stb	r9,0(r3)
++#ifdef __LITTLE_ENDIAN__
++	rotrdi	r9,r9,8
++#endif
+ 3:	li	r3,0
+ 	blr
+ 
