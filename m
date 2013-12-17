@@ -1,25 +1,28 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-vb0-x233.google.com (mail-vb0-x233.google.com
+ [IPv6:2607:f8b0:400c:c02::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BE2322C0364
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 19:20:01 +1100 (EST)
-Received: from mail69-co9 (localhost [127.0.0.1])	by mail69-co9-R.bigfish.com
- (Postfix) with ESMTP id F117D320217	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,
- 17 Dec 2013 08:19:57 +0000 (UTC)
-From: Dongsheng Wang <dongsheng.wang@freescale.com>
-To: <scottwood@freescale.com>, <Bharat.Bhushan@freescale.com>
-Subject: [PATCH v6 4/4] powerpc/85xx: add sysfs for pw20 state and altivec idle
-Date: Tue, 17 Dec 2013 16:17:02 +0800
-Message-ID: <1387268222-9703-4-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1387268222-9703-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1387268222-9703-1-git-send-email-dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 5E7D92C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 19:48:18 +1100 (EST)
+Received: by mail-vb0-f51.google.com with SMTP id 11so3904887vbe.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2013 00:48:14 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>
+Sender: pku.leo@gmail.com
+In-Reply-To: <1386700403.10013.109.camel@snotra.buserror.net>
+References: <1385712446-28221-1-git-send-email-hongbo.zhang@freescale.com>
+ <1386357684.7375.124.camel@snotra.buserror.net>
+ <52A6EDE8.5060903@freescale.com>
+ <1386700403.10013.109.camel@snotra.buserror.net>
+Date: Tue, 17 Dec 2013 16:48:14 +0800
+Message-ID: <CADRPPNRy9SLauRPy0Ucm-xffuAhA7bMsA+9X4a=8XNRaJVMH5A@mail.gmail.com>
+Subject: Re: [PATCH] DTS: DMA: Fix DMA3 interrupts
+From: Li Yang <leoli@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Hongbo Zhang <hongbo.zhang@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,383 +32,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Dongsheng <dongsheng.wang@freescale.com>
+On Wed, Dec 11, 2013 at 2:33 AM, Scott Wood <scottwood@freescale.com> wrote:
+> On Tue, 2013-12-10 at 18:33 +0800, Hongbo Zhang wrote:
+>> Scott,
+>> This issue is due to the non-continuous MPIC register, I think there is
+>> two ways to fix it.
+>>
+>> The first one is as what we are discussing, in fact the Bman/Qman DT
+>> author had introduced this way, and I had to follow it, it is a trick,
+>> adding 208 is a bit ugly I think, and even difficult to explain it to
+>> customers etc, but this way changes less codes.
+>>
+>> The second one is editing MPIC related codes without adding 208 to high
+>> interrupts. The point of translate interrupt number to MPIC register
+>> address is a so called 'isu' mechanism, we can do like the following
+>> example codes, then the tricky adding 208 isn't needed any more.
+>>
+>> Which one do you prefer?
+>> In fact I myself prefer the second, if the idea is acceptable, I will
+>> send a patch instead of this one. (and also alone with the internal
+>> patch decreasing 208 for the Bman/Qman)
+>>
+>> void __init corenet_ds_pic_init(void)
+>> {
+>>      ......
+>>
+>>      mpic = mpic_alloc(NULL, 0, flags, 0, 512, "OpenPIC");
+>>      BUG_ON(mpic == NULL);
+>>
+>> // Add this start
+>>      for (i = 0; i < 17; i++) {
+>>          if (i < 11)
+>>              addr_off = 0x10000 + 0x20 * 16 * i;
+>>          else
+>>              addr_off = 0x13000 + 0x20 * 16 * (i - 11);  /* scape the
+>> address not for interrupts */
+>>          mpic_assign_isu(mpic, i, mpic->paddr + addr_off);
+>>      }
+>> // Add this end
+>>
+>>      mpic_init(mpic);
+>> }
+>
+> NACK
+>
+> We already have a binding that states that the interrupt number is based
+> on the register offset, rather than whatever arbitrary numbers hardware
+> documenters decide to use next week.
+>
+> While I'm not terribly happy with the usability of this, especially now
+> that it's not a simple "add 16", redefining the existing binding is not
+> OK (and in any case the code above seems obfuscatory).  If we decide to
+> do something other than continue with register offset divided by 32,
+> then we need to define a new interrupt type (similar to current defined
+> types of error interrupt, timer, and IPI) for the new numberspace -- and
+> it should be handled when decoding that type of interrupt specifier,
+> rather than with the isu mechanism.
 
-Add a sys interface to enable/diable pw20 state or altivec idle, and
-control the wait entry time.
+I had to say that the current binding is terribly confusing.  I know a
+lot of people who were confused while looking into the device tree and
+I had to help them out now and then.  I even got confused for some
+time at the very beginning.  :(  If we want to keep the current
+binding, a big warning message is well deserved at the very beginning
+of the binding document to clarify that the interrupt number used in
+device tree has nothing to do with the interrupt number mentioned in
+the silicon reference manuals.  I think we should even mention the
+"add 16" magic rule also to make it more intuitive.
 
-Enable/Disable interface:
-    0, disable. 1, enable.
-    /sys/devices/system/cpu/cpuX/pw20_state
-    /sys/devices/system/cpu/cpuX/altivec_idle
+Adding a new interrupt type for external interrupts is good to make
+the interrupt number consistent with the Reference Manuals.  But doing
+that requires changing all the device trees that used the previous
+binding, and we need a mechanism of judging which binding a device
+tree is complying to.
 
-Set wait time interface:(Nanosecond)
-    /sys/devices/system/cpu/cpuX/pw20_wait_time
-    /sys/devices/system/cpu/cpuX/altivec_idle_wait_time
-Example: Base on TBfreq is 41MHZ.
-    1~48(ns): TB[63]
-    49~97(ns): TB[62]
-    98~195(ns): TB[61]
-    196~390(ns): TB[60]
-    391~780(ns): TB[59]
-    781~1560(ns): TB[58]
-    ...
+Hongbo's proposal is not a complete fix for the readability issue.
+But it makes the "add 16" magic rule continue to work, instead of
+making it even worse by introducing the "+208" interrupts.  The DMA3
+patch is the first time that we add the "+208" interrupts in the
+device trees of mainline kernel.  It is a good time now to prevent us
+making the readability even worse while not breaking things out there.
+ ISU is a standard mechanism in MPIC to deal with sparse configuration
+register space, and IMO a good fit for this situation.
 
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
----
-*v6:
-Change show_pw20_wait_time/show_altivec_idle_wait_time functions implementation.
-
-*v5:
-Change get_idle_ticks_bit function implementation.
-
-*v4:
-Move code from 85xx/common.c to kernel/sysfs.c.
-
-Remove has_pw20_altivec_idle function.
-
-Change wait "entry_bit" to wait time.
-
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index b4e6676..6c92e23 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -86,6 +86,304 @@ __setup("smt-snooze-delay=", setup_smt_snooze_delay);
- 
- #endif /* CONFIG_PPC64 */
- 
-+#ifdef CONFIG_FSL_SOC
-+#define MAX_BIT				63
-+
-+static u64 pw20_wt;
-+static u64 altivec_idle_wt;
-+
-+static unsigned int get_idle_ticks_bit(u64 ns)
-+{
-+	u64 cycle;
-+
-+	if (ns >= 10000)
-+		cycle = div_u64(ns + 500, 1000) * tb_ticks_per_usec;
-+	else
-+		cycle = div_u64(ns * tb_ticks_per_usec, 1000);
-+
-+	if (!cycle)
-+		return 0;
-+
-+	return ilog2(cycle);
-+}
-+
-+static void do_show_pwrmgtcr0(void *val)
-+{
-+	u32 *value = val;
-+
-+	*value = mfspr(SPRN_PWRMGTCR0);
-+}
-+
-+static ssize_t show_pw20_state(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	u32 value;
-+	unsigned int cpu = dev->id;
-+
-+	smp_call_function_single(cpu, do_show_pwrmgtcr0, &value, 1);
-+
-+	value &= PWRMGTCR0_PW20_WAIT;
-+
-+	return sprintf(buf, "%u\n", value ? 1 : 0);
-+}
-+
-+static void do_store_pw20_state(void *val)
-+{
-+	u32 *value = val;
-+	u32 pw20_state;
-+
-+	pw20_state = mfspr(SPRN_PWRMGTCR0);
-+
-+	if (*value)
-+		pw20_state |= PWRMGTCR0_PW20_WAIT;
-+	else
-+		pw20_state &= ~PWRMGTCR0_PW20_WAIT;
-+
-+	mtspr(SPRN_PWRMGTCR0, pw20_state);
-+}
-+
-+static ssize_t store_pw20_state(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	u32 value;
-+	unsigned int cpu = dev->id;
-+
-+	if (kstrtou32(buf, 0, &value))
-+		return -EINVAL;
-+
-+	if (value > 1)
-+		return -EINVAL;
-+
-+	smp_call_function_single(cpu, do_store_pw20_state, &value, 1);
-+
-+	return count;
-+}
-+
-+static ssize_t show_pw20_wait_time(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	u32 value;
-+	u64 tb_cycle = 1;
-+	u64 time;
-+
-+	unsigned int cpu = dev->id;
-+
-+	if (!pw20_wt) {
-+		smp_call_function_single(cpu, do_show_pwrmgtcr0, &value, 1);
-+		value = (value & PWRMGTCR0_PW20_ENT) >>
-+					PWRMGTCR0_PW20_ENT_SHIFT;
-+
-+		tb_cycle = (tb_cycle << (MAX_BIT - value + 1));
-+		/* convert ms to ns */
-+		if (tb_ticks_per_usec > 1000) {
-+			time = div_u64(tb_cycle, tb_ticks_per_usec / 1000);
-+		} else {
-+			u32 rem_us;
-+
-+			time = div_u64_rem(tb_cycle, tb_ticks_per_usec,
-+						&rem_us);
-+			time = time * 1000 + rem_us * 1000 / tb_ticks_per_usec;
-+		}
-+	} else {
-+		time = pw20_wt;
-+	}
-+
-+	return sprintf(buf, "%llu\n", time > 0 ? time : 0);
-+}
-+
-+static void set_pw20_wait_entry_bit(void *val)
-+{
-+	u32 *value = val;
-+	u32 pw20_idle;
-+
-+	pw20_idle = mfspr(SPRN_PWRMGTCR0);
-+
-+	/* Set Automatic PW20 Core Idle Count */
-+	/* clear count */
-+	pw20_idle &= ~PWRMGTCR0_PW20_ENT;
-+
-+	/* set count */
-+	pw20_idle |= ((MAX_BIT - *value) << PWRMGTCR0_PW20_ENT_SHIFT);
-+
-+	mtspr(SPRN_PWRMGTCR0, pw20_idle);
-+}
-+
-+static ssize_t store_pw20_wait_time(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	u32 entry_bit;
-+	u64 value;
-+
-+	unsigned int cpu = dev->id;
-+
-+	if (kstrtou64(buf, 0, &value))
-+		return -EINVAL;
-+
-+	if (!value)
-+		return -EINVAL;
-+
-+	entry_bit = get_idle_ticks_bit(value);
-+	if (entry_bit > MAX_BIT)
-+		return -EINVAL;
-+
-+	pw20_wt = value;
-+
-+	smp_call_function_single(cpu, set_pw20_wait_entry_bit,
-+				&entry_bit, 1);
-+
-+	return count;
-+}
-+
-+static ssize_t show_altivec_idle(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	u32 value;
-+	unsigned int cpu = dev->id;
-+
-+	smp_call_function_single(cpu, do_show_pwrmgtcr0, &value, 1);
-+
-+	value &= PWRMGTCR0_AV_IDLE_PD_EN;
-+
-+	return sprintf(buf, "%u\n", value ? 1 : 0);
-+}
-+
-+static void do_store_altivec_idle(void *val)
-+{
-+	u32 *value = val;
-+	u32 altivec_idle;
-+
-+	altivec_idle = mfspr(SPRN_PWRMGTCR0);
-+
-+	if (*value)
-+		altivec_idle |= PWRMGTCR0_AV_IDLE_PD_EN;
-+	else
-+		altivec_idle &= ~PWRMGTCR0_AV_IDLE_PD_EN;
-+
-+	mtspr(SPRN_PWRMGTCR0, altivec_idle);
-+}
-+
-+static ssize_t store_altivec_idle(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	u32 value;
-+	unsigned int cpu = dev->id;
-+
-+	if (kstrtou32(buf, 0, &value))
-+		return -EINVAL;
-+
-+	if (value > 1)
-+		return -EINVAL;
-+
-+	smp_call_function_single(cpu, do_store_altivec_idle, &value, 1);
-+
-+	return count;
-+}
-+
-+static ssize_t show_altivec_idle_wait_time(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	u32 value;
-+	u64 tb_cycle = 1;
-+	u64 time;
-+
-+	unsigned int cpu = dev->id;
-+
-+	if (!altivec_idle_wt) {
-+		smp_call_function_single(cpu, do_show_pwrmgtcr0, &value, 1);
-+		value = (value & PWRMGTCR0_AV_IDLE_CNT) >>
-+					PWRMGTCR0_AV_IDLE_CNT_SHIFT;
-+
-+		tb_cycle = (tb_cycle << (MAX_BIT - value + 1));
-+		/* convert ms to ns */
-+		if (tb_ticks_per_usec > 1000) {
-+			time = div_u64(tb_cycle, tb_ticks_per_usec / 1000);
-+		} else {
-+			u32 rem_us;
-+
-+			time = div_u64_rem(tb_cycle, tb_ticks_per_usec,
-+						&rem_us);
-+			time = time * 1000 + rem_us * 1000 / tb_ticks_per_usec;
-+		}
-+	} else {
-+		time = altivec_idle_wt;
-+	}
-+
-+	return sprintf(buf, "%llu\n", time > 0 ? time : 0);
-+}
-+
-+static void set_altivec_idle_wait_entry_bit(void *val)
-+{
-+	u32 *value = val;
-+	u32 altivec_idle;
-+
-+	altivec_idle = mfspr(SPRN_PWRMGTCR0);
-+
-+	/* Set Automatic AltiVec Idle Count */
-+	/* clear count */
-+	altivec_idle &= ~PWRMGTCR0_AV_IDLE_CNT;
-+
-+	/* set count */
-+	altivec_idle |= ((MAX_BIT - *value) << PWRMGTCR0_AV_IDLE_CNT_SHIFT);
-+
-+	mtspr(SPRN_PWRMGTCR0, altivec_idle);
-+}
-+
-+static ssize_t store_altivec_idle_wait_time(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	u32 entry_bit;
-+	u64 value;
-+
-+	unsigned int cpu = dev->id;
-+
-+	if (kstrtou64(buf, 0, &value))
-+		return -EINVAL;
-+
-+	if (!value)
-+		return -EINVAL;
-+
-+	entry_bit = get_idle_ticks_bit(value);
-+	if (entry_bit > MAX_BIT)
-+		return -EINVAL;
-+
-+	altivec_idle_wt = value;
-+
-+	smp_call_function_single(cpu, set_altivec_idle_wait_entry_bit,
-+				&entry_bit, 1);
-+
-+	return count;
-+}
-+
-+/*
-+ * Enable/Disable interface:
-+ * 0, disable. 1, enable.
-+ */
-+static DEVICE_ATTR(pw20_state, 0600, show_pw20_state, store_pw20_state);
-+static DEVICE_ATTR(altivec_idle, 0600, show_altivec_idle, store_altivec_idle);
-+
-+/*
-+ * Set wait time interface:(Nanosecond)
-+ * Example: Base on TBfreq is 41MHZ.
-+ * 1~48(ns): TB[63]
-+ * 49~97(ns): TB[62]
-+ * 98~195(ns): TB[61]
-+ * 196~390(ns): TB[60]
-+ * 391~780(ns): TB[59]
-+ * 781~1560(ns): TB[58]
-+ * ...
-+ */
-+static DEVICE_ATTR(pw20_wait_time, 0600,
-+			show_pw20_wait_time,
-+			store_pw20_wait_time);
-+static DEVICE_ATTR(altivec_idle_wait_time, 0600,
-+			show_altivec_idle_wait_time,
-+			store_altivec_idle_wait_time);
-+#endif
-+
- /*
-  * Enabling PMCs will slow partition context switch times so we only do
-  * it the first time we write to the PMCs.
-@@ -421,6 +719,15 @@ static void register_cpu_online(unsigned int cpu)
- 		device_create_file(s, &dev_attr_pir);
- #endif /* CONFIG_PPC64 */
- 
-+#ifdef CONFIG_FSL_SOC
-+	if (PVR_VER(cur_cpu_spec->pvr_value) == PVR_VER_E6500) {
-+		device_create_file(s, &dev_attr_pw20_state);
-+		device_create_file(s, &dev_attr_pw20_wait_time);
-+
-+		device_create_file(s, &dev_attr_altivec_idle);
-+		device_create_file(s, &dev_attr_altivec_idle_wait_time);
-+	}
-+#endif
- 	cacheinfo_cpu_online(cpu);
- }
- 
-@@ -493,6 +800,15 @@ static void unregister_cpu_online(unsigned int cpu)
- 		device_remove_file(s, &dev_attr_pir);
- #endif /* CONFIG_PPC64 */
- 
-+#ifdef CONFIG_FSL_SOC
-+	if (PVR_VER(cur_cpu_spec->pvr_value) == PVR_VER_E6500) {
-+		device_remove_file(s, &dev_attr_pw20_state);
-+		device_remove_file(s, &dev_attr_pw20_wait_time);
-+
-+		device_remove_file(s, &dev_attr_altivec_idle);
-+		device_remove_file(s, &dev_attr_altivec_idle_wait_time);
-+	}
-+#endif
- 	cacheinfo_cpu_offline(cpu);
- }
- 
--- 
-1.8.5
+Regards,
+Leo
