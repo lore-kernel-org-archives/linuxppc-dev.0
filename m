@@ -1,29 +1,22 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-oa0-x236.google.com (mail-oa0-x236.google.com
- [IPv6:2607:f8b0:4003:c02::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B94932C00B2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 05:40:27 +1100 (EST)
-Received: by mail-oa0-f54.google.com with SMTP id h16so44938oag.27
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 10:40:24 -0800 (PST)
-Message-ID: <52B1EC15.5070606@gmail.com>
-Date: Wed, 18 Dec 2013 12:40:21 -0600
-From: Rob Herring <robherring2@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id EA97C2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 05:59:59 +1100 (EST)
+Date: Wed, 18 Dec 2013 18:59:52 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <Guangyu.Chen@freescale.com>
+Message-ID: <20131218185952.GM31886@sirena.org.uk>
+References: <1386845085-21682-1-git-send-email-Guangyu.Chen@freescale.com>
 MIME-Version: 1.0
-To: Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>,
- Arnd Bergmann <arnd@arndb.de>,
- Thierry Reding <thierry.reding@avionic-design.de>,
- Grant Likely <grant.likely@linaro.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: commit e38c0a1f breaks powerpc boards with uli1575 chip
-References: <201312171135.38576@blacky.localdomain>
-In-Reply-To: <201312171135.38576@blacky.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Alexey Lugovskoy <lugovskoy@dev.rtsoft.ru>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Dmitry Krivoschekov <dkrivoschokov@dev.rtsoft.ru>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="37nyS7qXrnu4wN2o"
+In-Reply-To: <1386845085-21682-1-git-send-email-Guangyu.Chen@freescale.com>
+Subject: Re: [RFC][PATCH v1] ASoC: fsl_ssi: Add DAI master mode support for
+ SSI on i.MX series
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ timur@tabi.org, perex@perex.cz, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,105 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[fixed DT maillist address]
 
-On 12/17/2013 01:35 AM, Nikita Yushchenko wrote:
-> Hi
-> 
-> While trying to make freescale p2020ds and  mpc8572ds boards working with mainline kernel, I faced that commit 
-> e38c0a1f (Handle #address-cells > 2 specially) breaks things with these boards.
+--37nyS7qXrnu4wN2o
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Good to see this broke in v3.7 and is just now found...
+On Thu, Dec 12, 2013 at 06:44:45PM +0800, Nicolin Chen wrote:
 
-> 
-> Both these boards have uli1575 chip.
-> Corresponding part in device tree is something like
-> 
->                 uli1575@0 {
->                         reg = <0x0 0x0 0x0 0x0 0x0>;
->                         #size-cells = <2>;
->                         #address-cells = <3>;
->                         ranges = <0x2000000 0x0 0x80000000
->                                   0x2000000 0x0 0x80000000
->                                   0x0 0x20000000
-> 
->                                   0x1000000 0x0 0x0
->                                   0x1000000 0x0 0x0
->                                   0x0 0x10000>;
->                         isa@1e {
-> ...
-> 
-> I.e. it has #address-cells = <3>
-> 
-> 
-> With commit e38c0a1f reverted, devices under uli1575 are registered correctly, e.g. for rtc
-> 
-> OF: ** translation for device /pcie@ffe09000/pcie@0/uli1575@0/isa@1e/rtc@70 **
-> OF: bus is isa (na=2, ns=1) on /pcie@ffe09000/pcie@0/uli1575@0/isa@1e
-> OF: translating address: 00000001 00000070
-> OF: parent bus is default (na=3, ns=2) on /pcie@ffe09000/pcie@0/uli1575@0
-> OF: walking ranges...
-> OF: ISA map, cp=0, s=1000, da=70
-> OF: parent translation for: 01000000 00000000 00000000
-> OF: with offset: 70
-> OF: one level translation: 00000000 00000000 00000070
-> OF: parent bus is pci (na=3, ns=2) on /pcie@ffe09000/pcie@0
-> OF: walking ranges...
-> OF: default map, cp=a0000000, s=20000000, da=70
-> OF: default map, cp=0, s=10000, da=70
-> OF: parent translation for: 01000000 00000000 00000000
-> OF: with offset: 70
-> OF: one level translation: 01000000 00000000 00000070
-> OF: parent bus is pci (na=3, ns=2) on /pcie@ffe09000
-> OF: walking ranges...
-> OF: PCI map, cp=0, s=10000, da=70
-> OF: parent translation for: 01000000 00000000 00000000
-> OF: with offset: 70
-> OF: one level translation: 01000000 00000000 00000070
-> OF: parent bus is default (na=2, ns=2) on /
-> OF: walking ranges...
-> OF: PCI map, cp=0, s=10000, da=70
-> OF: parent translation for: 00000000 ffc10000
-> OF: with offset: 70
-> OF: one level translation: 00000000 ffc10070
-> OF: reached root node
-> 
-> With commit e38c0a1f in place, address translation fails:
-> 
-> OF: ** translation for device /pcie@ffe09000/pcie@0/uli1575@0/isa@1e/rtc@70 **
-> OF: bus is isa (na=2, ns=1) on /pcie@ffe09000/pcie@0/uli1575@0/isa@1e
-> OF: translating address: 00000001 00000070
-> OF: parent bus is default (na=3, ns=2) on /pcie@ffe09000/pcie@0/uli1575@0
-> OF: walking ranges...
-> OF: ISA map, cp=0, s=1000, da=70
-> OF: parent translation for: 01000000 00000000 00000000
-> OF: with offset: 70
-> OF: one level translation: 00000000 00000000 00000070
-> OF: parent bus is pci (na=3, ns=2) on /pcie@ffe09000/pcie@0
-> OF: walking ranges...
-> OF: default map, cp=a0000000, s=20000000, da=70
-> OF: default map, cp=0, s=10000, da=70
-> OF: not found !
-> 
-> Either e38c0a1f should be reverted, or uli1575 (and perhaps other similar devices) have to be described in device 
-> trees differently.
+> +/**
+> + * fsl_ssi_set_dai_tdm_slot - set TDM slot number
+> + *
+> + * Note: This function can be only called when using SSI as DAI master
+> + */
+> +static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
+> +				u32 rx_mask, int slots, int slot_width)
+> +{
+> +	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
+> +	struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
+> +	u32 val;
 
-Reverting would break Tegra PCIe, but you should not have to change the
-DT either. So we need a solution.
+I'm a bit concernred about what this is for and why it's required - is
+it something that machine drivers have to call and if it is shouldn't
+the driver be defaulting to a sensible configuration?
 
-Is this something like this sufficient to fix it?
+--37nyS7qXrnu4wN2o
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-diff --git a/drivers/of/address.c b/drivers/of/address.c
-index 4b9317b..378aebd 100644
---- a/drivers/of/address.c
-+++ b/drivers/of/address.c
-@@ -74,7 +74,7 @@ static u64 of_bus_default_map(__be32 *addr, const
-__be32 *range,
-         * mapping doesn't specify a physical address. Rather, the address
-         * specifies an identifier that must match exactly.
-         */
--       if (na > 2 && memcmp(range, addr, na * 4) != 0)
-+       if (na > 2 && memcmp(range, addr, (na - 2) * 4) != 0)
-                return OF_BAD_ADDR;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-        if (da < cp || da >= (cp + s))
+iQIcBAEBAgAGBQJSsfClAAoJELSic+t+oim9fmYQAIVcUuSYb9weiJKugFkgjdc1
+mqC7Hi3rTk0XMFWgz8Z7O7Q496xgGA7sCyfio85/N7m7/s/aMN0LNSH9e8OG/LKl
+jQGJ1owKUL7WW9i85DLZEanViki+IcPyNpQCwiPHz9G+6eEtq5MxAGVSRGmA33tb
+dHRX+La2yNdGlhUDYMKhJYHB+1rH1idTZ16H/LFNSqSh8JSWTMlcdLX8yyRYaVqM
+NDqQpn6iP5XpZPurgzccPXjQ7cVPjvwInZo2HYQZM1WGpSP1ANg7QmdnzG/HBRmE
+I+KRznTVzj2Qj3u5/xDzmP5TlnDcLTtlIjlDlA+2BS1QPeL01Kwz9hgQEhGQ3aKP
+dqdSnK6/hMBM0NSf5uKS0Sbi8mr5TMUOyxwCYhgqE9eICKIzp3muTEZM7rm2xYs9
+L4w+HRgNe18OuYPF3WC6C7FPRMLx4yfsgKoArX2fncik9lgcakMgxCe9QpIZDmts
+rBgHCbfI70S4EAOu2T/A28dKybLVVZAp3a9OUxd2xyWItriRCeM3+RU3RbxxrVyU
+iKeZW6GoCLQbzEv5EY+cd4oinbHfOJgiQ07WgbnekKPW80tn+TbJxXVcYMJGyrEk
+iehvp6LqdEavhIa9vZAmkPMTlaw+yxz2/rNDbQAXZ1w8QYfhQ/Kf0IJk8W2LwUrP
+Ls+8wfpxMGapqQHFZSgx
+=morP
+-----END PGP SIGNATURE-----
+
+--37nyS7qXrnu4wN2o--
