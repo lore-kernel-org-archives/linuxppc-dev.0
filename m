@@ -1,38 +1,29 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ie0-x22d.google.com (mail-ie0-x22d.google.com
- [IPv6:2607:f8b0:4001:c03::22d])
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oa0-x236.google.com (mail-oa0-x236.google.com
+ [IPv6:2607:f8b0:4003:c02::236])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0ED7D2C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 05:26:42 +1100 (EST)
-Received: by mail-ie0-f173.google.com with SMTP id to1so25448ieb.32
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 10:26:38 -0800 (PST)
-Date: Wed, 18 Dec 2013 11:26:35 -0700
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Mark Lord <kernel@start.ca>
-Subject: Re: [PATCH v2 2/6] PCI/MSI: Factor out pci_get_msi_cap() interface
-Message-ID: <20131218182635.GE15119@google.com>
-References: <20130905185440.GA13175@dhcp-26-207.brq.redhat.com>
- <20130905200608.GA3846@htj.dyndns.org>
- <CAErSpo4TU2geqzY3AYsL08KimBqtfwa4iUoFHgcFt0zMTBJkHw@mail.gmail.com>
- <20130906160621.GF22763@mtj.dyndns.org>
- <20130906233205.GF12956@google.com>
- <20130909152044.GA24962@dhcp-26-207.brq.redhat.com>
- <20130916102210.GA14102@dhcp-26-207.brq.redhat.com>
- <20130917143022.GA7707@concordia>
- <20130918094759.GA2353@dhcp-26-207.brq.redhat.com>
- <52442975.9000603@start.ca>
+ by ozlabs.org (Postfix) with ESMTPS id B94932C00B2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 05:40:27 +1100 (EST)
+Received: by mail-oa0-f54.google.com with SMTP id h16so44938oag.27
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 10:40:24 -0800 (PST)
+Message-ID: <52B1EC15.5070606@gmail.com>
+Date: Wed, 18 Dec 2013 12:40:21 -0600
+From: Rob Herring <robherring2@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52442975.9000603@start.ca>
-Cc: Joerg Roedel <joro@8bytes.org>, "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Michael Ellerman <michael@ellerman.id.au>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- Alexander Gordeev <agordeev@redhat.com>, Jan Beulich <JBeulich@suse.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Tejun Heo <tj@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+To: Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Thierry Reding <thierry.reding@avionic-design.de>,
+ Grant Likely <grant.likely@linaro.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: commit e38c0a1f breaks powerpc boards with uli1575 chip
+References: <201312171135.38576@blacky.localdomain>
+In-Reply-To: <201312171135.38576@blacky.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Alexey Lugovskoy <lugovskoy@dev.rtsoft.ru>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Dmitry Krivoschekov <dkrivoschokov@dev.rtsoft.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,33 +33,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 26, 2013 at 08:32:53AM -0400, Mark Lord wrote:
-> On 13-09-18 05:48 AM, Alexander Gordeev wrote:
-> >
-> > The last pattern makes most of sense to me and could be updated with a more
-> > clear sequence - a call to (bit modified) pci_msix_table_size() followed
-> > by a call to pci_enable_msix(). I think this pattern can effectively
-> > supersede the currently recommended "loop" practice.
+[fixed DT maillist address]
+
+On 12/17/2013 01:35 AM, Nikita Yushchenko wrote:
+> Hi
 > 
-> The loop is still necessary, because there's a race between those two calls,
-> so that pci_enable_msix() can still fail due to lack of MSIX slots.
+> While trying to make freescale p2020ds and  mpc8572ds boards working with mainline kernel, I faced that commit 
+> e38c0a1f (Handle #address-cells > 2 specially) breaks things with these boards.
 
-Hi Mark,
+Good to see this broke in v3.7 and is just now found...
 
-Can you elaborate on this race?  My understanding is that
-pci_msix_table_size() depends only on the "Table Size" field in the MSI-X
-Message Control register.
+> 
+> Both these boards have uli1575 chip.
+> Corresponding part in device tree is something like
+> 
+>                 uli1575@0 {
+>                         reg = <0x0 0x0 0x0 0x0 0x0>;
+>                         #size-cells = <2>;
+>                         #address-cells = <3>;
+>                         ranges = <0x2000000 0x0 0x80000000
+>                                   0x2000000 0x0 0x80000000
+>                                   0x0 0x20000000
+> 
+>                                   0x1000000 0x0 0x0
+>                                   0x1000000 0x0 0x0
+>                                   0x0 0x10000>;
+>                         isa@1e {
+> ...
+> 
+> I.e. it has #address-cells = <3>
+> 
+> 
+> With commit e38c0a1f reverted, devices under uli1575 are registered correctly, e.g. for rtc
+> 
+> OF: ** translation for device /pcie@ffe09000/pcie@0/uli1575@0/isa@1e/rtc@70 **
+> OF: bus is isa (na=2, ns=1) on /pcie@ffe09000/pcie@0/uli1575@0/isa@1e
+> OF: translating address: 00000001 00000070
+> OF: parent bus is default (na=3, ns=2) on /pcie@ffe09000/pcie@0/uli1575@0
+> OF: walking ranges...
+> OF: ISA map, cp=0, s=1000, da=70
+> OF: parent translation for: 01000000 00000000 00000000
+> OF: with offset: 70
+> OF: one level translation: 00000000 00000000 00000070
+> OF: parent bus is pci (na=3, ns=2) on /pcie@ffe09000/pcie@0
+> OF: walking ranges...
+> OF: default map, cp=a0000000, s=20000000, da=70
+> OF: default map, cp=0, s=10000, da=70
+> OF: parent translation for: 01000000 00000000 00000000
+> OF: with offset: 70
+> OF: one level translation: 01000000 00000000 00000070
+> OF: parent bus is pci (na=3, ns=2) on /pcie@ffe09000
+> OF: walking ranges...
+> OF: PCI map, cp=0, s=10000, da=70
+> OF: parent translation for: 01000000 00000000 00000000
+> OF: with offset: 70
+> OF: one level translation: 01000000 00000000 00000070
+> OF: parent bus is default (na=2, ns=2) on /
+> OF: walking ranges...
+> OF: PCI map, cp=0, s=10000, da=70
+> OF: parent translation for: 00000000 ffc10000
+> OF: with offset: 70
+> OF: one level translation: 00000000 ffc10070
+> OF: reached root node
+> 
+> With commit e38c0a1f in place, address translation fails:
+> 
+> OF: ** translation for device /pcie@ffe09000/pcie@0/uli1575@0/isa@1e/rtc@70 **
+> OF: bus is isa (na=2, ns=1) on /pcie@ffe09000/pcie@0/uli1575@0/isa@1e
+> OF: translating address: 00000001 00000070
+> OF: parent bus is default (na=3, ns=2) on /pcie@ffe09000/pcie@0/uli1575@0
+> OF: walking ranges...
+> OF: ISA map, cp=0, s=1000, da=70
+> OF: parent translation for: 01000000 00000000 00000000
+> OF: with offset: 70
+> OF: one level translation: 00000000 00000000 00000070
+> OF: parent bus is pci (na=3, ns=2) on /pcie@ffe09000/pcie@0
+> OF: walking ranges...
+> OF: default map, cp=a0000000, s=20000000, da=70
+> OF: default map, cp=0, s=10000, da=70
+> OF: not found !
+> 
+> Either e38c0a1f should be reverted, or uli1575 (and perhaps other similar devices) have to be described in device 
+> trees differently.
 
-So if there's a concurrency problem here, it would have to be something
-like "pci_enable_msix() may not be able to configure the requested number
-of vectors because it has to allocate from a shared pool."
+Reverting would break Tegra PCIe, but you should not have to change the
+DT either. So we need a solution.
 
-If that's the case, pci_msix_table_size() wouldn't be involved at all, and
-the only question is how to coordinate between several drivers that each
-call pci_enable_msix().  I think that would have to be resolved in some
-arch hook used by the PCI core.
+Is this something like this sufficient to fix it?
 
-Maybe this is already taken care of; I just want to make sure we don't
-overlook an issue here.
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index 4b9317b..378aebd 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -74,7 +74,7 @@ static u64 of_bus_default_map(__be32 *addr, const
+__be32 *range,
+         * mapping doesn't specify a physical address. Rather, the address
+         * specifies an identifier that must match exactly.
+         */
+-       if (na > 2 && memcmp(range, addr, na * 4) != 0)
++       if (na > 2 && memcmp(range, addr, (na - 2) * 4) != 0)
+                return OF_BAD_ADDR;
 
-Bjorn
+        if (da < cp || da >= (cp + s))
