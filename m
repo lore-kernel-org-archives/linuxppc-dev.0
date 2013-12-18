@@ -1,19 +1,19 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
+ (mail-bn1lp0154.outbound.protection.outlook.com [207.46.163.154])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D25922C009D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 13:45:26 +1100 (EST)
-Message-ID: <1387334713.3140.8.camel@snotra.buserror.net>
-Subject: Re: [v6][PATCH 5/5] powerpc/book3e/kgdb: Fix a single stgep case of
- lazy IRQ
+ by ozlabs.org (Postfix) with ESMTPS id 545762C0381
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 13:45:54 +1100 (EST)
+Message-ID: <1387334740.3140.9.camel@snotra.buserror.net>
+Subject: Re: [v6][PATCH 2/5] powerpc/book3e: store crit/mc/dbg exception
+ thread info
 From: Scott Wood <scottwood@freescale.com>
 To: Tiejun Chen <tiejun.chen@windriver.com>
-Date: Tue, 17 Dec 2013 20:45:13 -0600
-In-Reply-To: <1382520685-11609-6-git-send-email-tiejun.chen@windriver.com>
+Date: Tue, 17 Dec 2013 20:45:40 -0600
+In-Reply-To: <1382520685-11609-3-git-send-email-tiejun.chen@windriver.com>
 References: <1382520685-11609-1-git-send-email-tiejun.chen@windriver.com>
- <1382520685-11609-6-git-send-email-tiejun.chen@windriver.com>
+ <1382520685-11609-3-git-send-email-tiejun.chen@windriver.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
@@ -27,54 +27,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, 2013-10-23 at 17:31 +0800, Tiejun Chen wrote:
-> In lazy EE magic, we may have a lazy interrupt occured while
-> entering kgdb, but we really don't want to replay that interrupt
-> for kgdb, so we have to clear the PACA_IRQ_HARD_DIS force to
-> make sure we can exit directly from this debug exception.
+> We need to store thread info to these exception thread info like something
+> we already did for PPC32.
 > 
 > Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-
-s/stgep/step/ in subject
-
 > ---
->  arch/powerpc/kernel/kgdb.c |    8 ++++++++
->  1 file changed, 8 insertions(+)
+>  arch/powerpc/kernel/exceptions-64e.S |   22 +++++++++++++++++++---
+>  1 file changed, 19 insertions(+), 3 deletions(-)
 > 
-> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-> index 447c14b..9872f58 100644
-> --- a/arch/powerpc/kernel/kgdb.c
-> +++ b/arch/powerpc/kernel/kgdb.c
-> @@ -185,6 +185,14 @@ static int kgdb_singlestep(struct pt_regs *regs)
->  		/* Restore current_thread_info lastly. */
->  		memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
+> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+> index 68d74b4..a55cf62 100644
+> --- a/arch/powerpc/kernel/exceptions-64e.S
+> +++ b/arch/powerpc/kernel/exceptions-64e.S
+> @@ -36,6 +36,19 @@
+>   */
+>  #define	SPECIAL_EXC_FRAME_SIZE	INT_FRAME_SIZE
 >  
-> +#ifdef CONFIG_PPC64
-> +	/*
-> +	 * Clear the PACA_IRQ_HARD_DIS from the pending mask
-> +	 * since we are about to exit this directly from debug
-> +	 * exception without any replay interrupt in lazy EE case.
-> +	 */
-> +	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
-> +#endif
->  	return 1;
->  }
+> +/* Now we only store something to exception thread info */
+> +#define	EXC_LEVEL_EXCEPTION_PROLOG(type)				\
+> +	ld	r14,PACAKSAVE(r13);					\
+> +	CURRENT_THREAD_INFO(r14, r14);					\
+> +	CURRENT_THREAD_INFO(r15, r1);					\
+> +	ld	r10,TI_FLAGS(r14);		     			\
+> +	std	r10,TI_FLAGS(r15);			     		\
+> +	ld	r10,TI_PREEMPT(r14);		     			\
+> +	std	r10,TI_PREEMPT(r15);		     			\
+> +	ld	r10,TI_TASK(r14);			     		\
+> +	std	r10,TI_TASK(r15);
+> +
+> +
+>  /* Exception prolog code for all exceptions */
+>  #define EXCEPTION_PROLOG(n, intnum, type, addition)	    		    \
+>  	mtspr	SPRN_SPRG_##type##_SCRATCH,r13;	/* get spare registers */   \
+> @@ -69,19 +82,22 @@
+>  
+>  #define CRIT_SET_KSTACK						            \
+>  	ld	r1,PACA_CRIT_STACK(r13);				    \
+> -	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
+> +	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;				    \
+> +	EXC_LEVEL_EXCEPTION_PROLOG(CRIT);
+>  #define SPRN_CRIT_SRR0	SPRN_CSRR0
+>  #define SPRN_CRIT_SRR1	SPRN_CSRR1
+>  
+>  #define DBG_SET_KSTACK						            \
+>  	ld	r1,PACA_DBG_STACK(r13);					    \
+> -	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
+> +	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;				    \
+> +	EXC_LEVEL_EXCEPTION_PROLOG(DBG);
+>  #define SPRN_DBG_SRR0	SPRN_DSRR0
+>  #define SPRN_DBG_SRR1	SPRN_DSRR1
+>  
+>  #define MC_SET_KSTACK						            \
+>  	ld	r1,PACA_MC_STACK(r13);					    \
+> -	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
+> +	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;				    \
+> +	EXC_LEVEL_EXCEPTION_PROLOG(MC);
+>  #define SPRN_MC_SRR0	SPRN_MCSRR0
+>  #define SPRN_MC_SRR1	SPRN_MCSRR1
 >  
 
-What happens to those interrupts you discarded once we get back to a
-state when they can be safely replayed?  I don't think just dropping
-them is the answer.
-
-I'm not sure what the actual problem is.  I can understand not wanting
-kgdb to cause interrupts to appear to run when the interrupted context
-has external interrupts disabled, but the replay code in entry_64.S
-doesn't run if interrupts are soft-disabled in the context to be
-returned to.  What harm does it cause to run the interrupts if we're
-returning to an EE=1 context?
-
-Does KGDB enable interrupts in its handler?  If not, how do we even get
-into the situation where there are interrupts pending when the
-interrupted context has EE soft-enabled (i.e. we went directly from a
-context where the interrupt handler should have run, to a hard-disabled
-context)?
+We should rename these if they're going to do more than set up a stack.
 
 -Scott
