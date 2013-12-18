@@ -1,21 +1,36 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E8C612C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 14:42:48 +1100 (EST)
-Message-ID: <1387338152.3140.37.camel@snotra.buserror.net>
-Subject: Re: [v3][PATCH 5/8] book3e/kexec/kdump: introduce a kexec kernel flag
-From: Scott Wood <scottwood@freescale.com>
-To: Tiejun Chen <tiejun.chen@windriver.com>
-Date: Tue, 17 Dec 2013 21:42:32 -0600
-In-Reply-To: <1373357007-30785-6-git-send-email-tiejun.chen@windriver.com>
-References: <1373357007-30785-1-git-send-email-tiejun.chen@windriver.com>
- <1373357007-30785-6-git-send-email-tiejun.chen@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id B31172C033A
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Dec 2013 14:42:53 +1100 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 18 Dec 2013 09:12:50 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 108C4394002D
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Dec 2013 09:12:48 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBI3ghHM65601640
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Dec 2013 09:12:43 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBI3gkxc008454
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Dec 2013 09:12:47 +0530
+Message-ID: <52B11972.6030206@linux.vnet.ibm.com>
+Date: Wed, 18 Dec 2013 09:11:38 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc, perf: Configure BHRB filter before enabling
+ PMU interrupts
+References: <1387332893-14407-1-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1387332893-14407-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,127 +40,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-07-09 at 16:03 +0800, Tiejun Chen wrote:
-> We need to introduce a flag to indicate we're already running
-> a kexec kernel then we can go proper path. For example, We
-> shouldn't access spin_table from the bootloader to up any secondary
-> cpu for kexec kernel, and kexec kernel already know how to jump to
-> generic_secondary_smp_init.
+On 12/18/2013 07:44 AM, Michael Ellerman wrote:
+> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 > 
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> ---
->  arch/powerpc/include/asm/smp.h    |    1 +
->  arch/powerpc/kernel/head_64.S     |   10 ++++++++++
->  arch/powerpc/kernel/misc_64.S     |    6 ++++++
->  arch/powerpc/platforms/85xx/smp.c |   20 +++++++++++++++-----
->  4 files changed, 32 insertions(+), 5 deletions(-)
+> Right now the config_bhrb() PMU specific call happens after
+> write_mmcr0(), which actually enables the PMU for event counting and
+> interrupts. So there is a small window of time where the PMU and BHRB
+> runs without the required HW branch filter (if any) enabled in BHRB.
 > 
-> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-> index ffbaabe..59165a3 100644
-> --- a/arch/powerpc/include/asm/smp.h
-> +++ b/arch/powerpc/include/asm/smp.h
-> @@ -200,6 +200,7 @@ extern void generic_secondary_thread_init(void);
->  extern unsigned long __secondary_hold_spinloop;
->  extern unsigned long __secondary_hold_acknowledge;
->  extern char __secondary_hold;
-> +extern unsigned long __run_at_kexec;
->  
->  extern void __early_start(void);
->  #endif /* __ASSEMBLY__ */
-> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-> index 7dc56be..0b46c9d 100644
-> --- a/arch/powerpc/kernel/head_64.S
-> +++ b/arch/powerpc/kernel/head_64.S
-> @@ -89,6 +89,10 @@ __secondary_hold_spinloop:
->  __secondary_hold_acknowledge:
->  	.llong	0x0
->  
-> +	.globl	__run_at_kexec
-> +__run_at_kexec:
-> +	.llong	0x0	/* Flag for the secondary kernel from kexec. */
-> +
+> This can cause some of the branch samples to be collected through BHRB
+> without any filter applied and hence affects the correctness of
+> the results. This patch moves the BHRB config function call before
+> enabling interrupts.
+> 
+> Here are some data points captured via trace prints which depicts how we
+> could get PMU interrupts with BHRB filter NOT enabled with a standard
+> perf record command line (asking for branch record information as well).
+> 
+>     $ perf record -j any_call ls
+> 
+> Before the patch:-
+> 
+>     ls-1962  [003] d...  2065.299590: .perf_event_interrupt: MMCRA: 40000000000
+>     ls-1962  [003] d...  2065.299603: .perf_event_interrupt: MMCRA: 40000000000
+>     ...
+> 
+>     All the PMU interrupts before this point did not have the requested
+>     HW branch filter enabled in the MMCRA.
+> 
+>     ls-1962  [003] d...  2065.299647: .perf_event_interrupt: MMCRA: 40040000000
+>     ls-1962  [003] d...  2065.299662: .perf_event_interrupt: MMCRA: 40040000000
+> 
+> After the patch:-
+> 
+>     ls-1850  [008] d...   190.311828: .perf_event_interrupt: MMCRA: 40040000000
+>     ls-1850  [008] d...   190.311848: .perf_event_interrupt: MMCRA: 40040000000
+> 
+>     All the PMU interrupts have the requested HW BHRB branch filter
+>     enabled in MMCRA.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> [mpe: Fixed up whitespace and cleaned up changelog]
 
-No leading underscores please -- and why does this need to be 64-bit?
-
->  #ifdef CONFIG_RELOCATABLE
->  	/* This flag is set to 1 by a loader if the kernel should run
->  	 * at the loaded address instead of the linked address.  This
-> @@ -417,6 +421,12 @@ _STATIC(__after_prom_start)
->  #if defined(CONFIG_PPC_BOOK3E)
->  	tovirt(r26,r26)			/* on booke, we already run at PAGE_OFFSET */
->  #endif
-> +#if defined(CONFIG_KEXEC) || defined(CONFIG_CRASH_DUMP)
-> +	/* If relocated we need to restore this flag on that relocated address. */
-> +	ld	r7,__run_at_kexec-_stext(r26)
-> +	std	r7,__run_at_kexec-_stext(r26)
-> +#endif
-> +
->  	lwz	r7,__run_at_load-_stext(r26)
->  #if defined(CONFIG_PPC_BOOK3E)
->  	tophys(r26,r26)			/* Restore for the remains. */
-> diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-> index 20cbb98..c89aead 100644
-> --- a/arch/powerpc/kernel/misc_64.S
-> +++ b/arch/powerpc/kernel/misc_64.S
-> @@ -619,6 +619,12 @@ _GLOBAL(kexec_sequence)
->  	bl	.copy_and_flush	/* (dest, src, copy limit, start offset) */
->  1:	/* assume normal blr return */
->  
-> +	/* notify we're going into kexec kernel for SMP. */
-> +	LOAD_REG_ADDR(r3,__run_at_kexec)
-> +	li	r4,1
-> +	std	r4,0(r3)
-> +	sync
-> +
->  	/* release other cpus to the new kernel secondary start at 0x60 */
->  	mflr	r5
->  	li	r6,1
-> diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-> index 5ced4f5..14d461b 100644
-> --- a/arch/powerpc/platforms/85xx/smp.c
-> +++ b/arch/powerpc/platforms/85xx/smp.c
-> @@ -150,6 +150,9 @@ static int smp_85xx_kick_cpu(int nr)
->  	int hw_cpu = get_hard_smp_processor_id(nr);
->  	int ioremappable;
->  	int ret = 0;
-> +#ifdef CONFIG_PPC64
-> +	unsigned long *ptr = NULL;
-> +#endif
-
-Looks like an unnecessary initialization.
-
->  
->  	WARN_ON(nr < 0 || nr >= NR_CPUS);
->  	WARN_ON(hw_cpu < 0 || hw_cpu >= NR_CPUS);
-> @@ -238,11 +241,18 @@ out:
->  #else
->  	smp_generic_kick_cpu(nr);
->  
-> -	flush_spin_table(spin_table);
-> -	out_be32(&spin_table->pir, hw_cpu);
-> -	out_be64((u64 *)(&spin_table->addr_h),
-> -	  __pa((u64)*((unsigned long long *)generic_secondary_smp_init)));
-> -	flush_spin_table(spin_table);
-> +	ptr  = (unsigned long *)((unsigned long)&__run_at_kexec);
-> +	/* We shouldn't access spin_table from the bootloader to up any
-> +	 * secondary cpu for kexec kernel, and kexec kernel already
-> +	 * know how to jump to generic_secondary_smp_init.
-> +	 */
-> +	if (!*ptr) {
-> +		flush_spin_table(spin_table);
-> +		out_be32(&spin_table->pir, hw_cpu);
-> +		out_be64((u64 *)(&spin_table->addr_h),
-> +		 __pa((u64)*((unsigned long long *)generic_secondary_smp_init)));
-> +		flush_spin_table(spin_table);
-> +	}
->  #endif
-
-Please use a more descriptive name than "ptr".
-
-How is all that different than just:
-
-	if (!__run_at_kexec) {
-		...
-	}
-
--Scott
+Thanks Michael for cleaning and resending this out.
