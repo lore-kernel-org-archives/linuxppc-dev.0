@@ -1,17 +1,11 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1387331962.19507.4.camel@concordia>
-Subject: Re: [PATCH 1/2] power7, perf: Make some new raw event codes
- available in sysfs
+Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 18 Dec 2013 12:59:22 +1100
-In-Reply-To: <52AA8D4C.6040905@linux.vnet.ibm.com>
-References: <1381902780-2719-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1381902780-2719-2-git-send-email-khandual@linux.vnet.ibm.com>
- <1386903031.3853.2.camel@concordia> <52AA8D4C.6040905@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, sukadev@linux.vnet.ibm.com
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc,
+ perf: Configure BHRB filter before enabling PMU interrupts
+Date: Wed, 18 Dec 2013 13:14:53 +1100
+Message-Id: <1387332893-14407-1-git-send-email-mpe@ellerman.id.au>
+Cc: khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,39 +15,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-12-13 at 10:00 +0530, Anshuman Khandual wrote:
-> On 12/13/2013 08:20 AM, Michael Ellerman wrote:
-> > On Wed, 2013-10-16 at 11:22 +0530, Anshuman Khandual wrote:
-> >> This patch adds some more raw event codes into the existing list
-> >> of event codes present in power7-events-list.h file. This tries
-> >> to complete the list of events supported in Power7 and matches
-> >> the raw event list with libpfm4 library.
-> > 
-> > It's a bit annoying, but you also need to update the "ABI" document:
-> 
-> What is annoying ? you need to be specific.
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
-It's annoying that we have to update the ABI document.
+Right now the config_bhrb() PMU specific call happens after
+write_mmcr0(), which actually enables the PMU for event counting and
+interrupts. So there is a small window of time where the PMU and BHRB
+runs without the required HW branch filter (if any) enabled in BHRB.
 
-> >   Documentation/ABI/testing/sysfs-bus-event_source-devices-events
-> > 
-> 
-> The events listed under the following heading are events required to do
-> CPI analysis.
+This can cause some of the branch samples to be collected through BHRB
+without any filter applied and hence affects the correctness of
+the results. This patch moves the BHRB config function call before
+enabling interrupts.
 
-No they are not, it doesn't say that anywhere in the file.
+Here are some data points captured via trace prints which depicts how we
+could get PMU interrupts with BHRB filter NOT enabled with a standard
+perf record command line (asking for branch record information as well).
 
-It happens that the events in there *now* are the CPI events, but that's because
-they are the only ones that have been added.
+    $ perf record -j any_call ls
 
-> "Description:    POWER-systems specific performance monitoring event"
-> 
-> 		  /sys/devices/cpu/events/PM_1PLUS_PPC_CMPL
->                 /sys/devices/cpu/events/PM_BRU_FIN
->                 /sys/devices/cpu/events/PM_BR_MPRED
->                 /sys/devices/cpu/events/PM_CMPLU_STALL
+Before the patch:-
 
-All events that appear in /sys/devices/cpu/events on powerpc should be listed
-in the file.
+    ls-1962  [003] d...  2065.299590: .perf_event_interrupt: MMCRA: 40000000000
+    ls-1962  [003] d...  2065.299603: .perf_event_interrupt: MMCRA: 40000000000
+    ...
 
-cheers
+    All the PMU interrupts before this point did not have the requested
+    HW branch filter enabled in the MMCRA.
+
+    ls-1962  [003] d...  2065.299647: .perf_event_interrupt: MMCRA: 40040000000
+    ls-1962  [003] d...  2065.299662: .perf_event_interrupt: MMCRA: 40040000000
+
+After the patch:-
+
+    ls-1850  [008] d...   190.311828: .perf_event_interrupt: MMCRA: 40040000000
+    ls-1850  [008] d...   190.311848: .perf_event_interrupt: MMCRA: 40040000000
+
+    All the PMU interrupts have the requested HW BHRB branch filter
+    enabled in MMCRA.
+
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+[mpe: Fixed up whitespace and cleaned up changelog]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/perf/core-book3s.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+Ben this is a bug fix so would be nice for 3.13.
+
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 29b89e8..67cf220 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1147,6 +1147,9 @@ static void power_pmu_enable(struct pmu *pmu)
+ 	mmcr0 = ebb_switch_in(ebb, cpuhw->mmcr[0]);
+ 
+ 	mb();
++	if (cpuhw->bhrb_users)
++		ppmu->config_bhrb(cpuhw->bhrb_filter);
++
+ 	write_mmcr0(cpuhw, mmcr0);
+ 
+ 	/*
+@@ -1158,8 +1161,6 @@ static void power_pmu_enable(struct pmu *pmu)
+ 	}
+ 
+  out:
+-	if (cpuhw->bhrb_users)
+-		ppmu->config_bhrb(cpuhw->bhrb_filter);
+ 
+ 	local_irq_restore(flags);
+ }
+-- 
+1.8.3.2
