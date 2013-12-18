@@ -1,38 +1,35 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D7E1D2C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 17:21:52 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id EB3A72C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 18:35:53 +1100 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Wed, 18 Dec 2013 11:51:45 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id B32CB394002D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 11:51:42 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rBI6LaXk55640204
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 11:51:37 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBI6Lel1003441
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 11:51:40 +0530
-Message-ID: <52B13EF7.2090301@linux.vnet.ibm.com>
-Date: Wed, 18 Dec 2013 11:51:43 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 18 Dec 2013 17:35:50 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 378E23578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 18:35:47 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBI7HQjh57802966
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 18:17:26 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBI7Zkp4026497
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 18:35:46 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH] powerpc: book3s: kvm: Don't abuse host r2 in exit path
+In-Reply-To: <1384178387-22993-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1384178387-22993-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 18 Dec 2013 13:05:36 +0530
+Message-ID: <87lhzilign.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc/powernv: Framework to log critical errors
- on powernv.
-References: <52AEF27F.3070202@linux.vnet.ibm.com>
- <1387334600.19507.5.camel@concordia> <52B13019.4010601@linux.vnet.ibm.com>
- <1387344458.20735.2.camel@concordia>
-In-Reply-To: <1387344458.20735.2.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,161 +39,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/18/2013 10:57 AM, Michael Ellerman wrote:
-> On Wed, 2013-12-18 at 10:48 +0530, Deepthi Dharwar wrote:
->> Hi Micheal,
->>
->> Thanks for the review.
-> 
-> No worries.
-> 
->> On 12/18/2013 08:13 AM, Michael Ellerman wrote:
->>> On Mon, 2013-12-16 at 18:00 +0530, Deepthi Dharwar wrote:
->>>> +/* All the information regarding an error/event to be reported
->>>> + * needs to populate this structure using pre-defined interfaces
->>>> + * only
->>>> + */
->>>> +struct opal_errorlog {
->>>> +
->>>> +	uint16_t component_id;
->>>> +	uint8_t error_events_type:3;
->>>
->>> Bit field?
->>>
->>>> +	uint8_t subsystem_id;
->>>> +
->>>> +	uint8_t event_sev;
->>>> +	uint8_t event_subtype;
->>>> +	uint8_t usr_scn_count; /* User section count */
->>>
->>> user_section_count;
->>>
->>>> +	uint8_t elog_origin;
->>>> +
->>>> +	uint32_t usr_scn_size; /* User section size */
->>>
->>> user_section_size;
->>>
->>>> +	uint32_t reason_code;
->>>> +	uint32_t additional_info[4];
->>>> +
->>>> +	char usr_data_dump[OPAL_LOG_MAX_DUMP];
->>>> +};
->>
->>> It looks like this goes straight to Opal, should we be using __packed ?
->>
->> Yes, this goes straight into Opal. The structure is defined such that
->> it is packed by default, this will not require compiler to pack bytes.
-> 
-> Sure, but the compiler might decide to lay it out differently for some reason.
-> You should use __packed.
 
-Ok.
+Hi Alex,
 
-> Also bitfields are essentially a big "implementation defined behaviour" sign,
-> so I would avoid using the bitfield.
+Any update on this ? We need this to got into 3.13.
 
-Yes, bitfields will be gone.
+-aneesh 
 
->>>> diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
->>>> index 58849d0..ade1e58 100644
->>>> --- a/arch/powerpc/platforms/powernv/opal-elog.c
->>>> +++ b/arch/powerpc/platforms/powernv/opal-elog.c
->>>> @@ -22,7 +23,9 @@
->>>>  /* Maximum size of a single log on FSP is 16KB */
->>>>  #define OPAL_MAX_ERRLOG_SIZE	16384
->>>>  
->>>> -/* maximu number of records powernv can hold */
->>>> +#define USR_CHAR_ARRAY_FIXED_SIZE      4
->>>
->>> What is this?
->>
->> struct User data section is mapped to a buffer. As all the structures
->> are padded, we need to subtract the same to do data manipulation.
->> Make me need to re-word it or use __packed here.
-> 
-> Yeah that's still not really clear to me, so if you can do something that is
-> more obvious that would be good.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-Sure.
-
->>>> @@ -272,6 +275,61 @@ static int init_err_log_buffer(void)
->>>>  	return 0;
->>>>  }
->>>>  
->>>> +/* Interface to be used by POWERNV to push the logs to FSP via Sapphire */
->>>> +struct opal_errorlog *elog_create(uint8_t err_evt_type, uint16_t component_id,
->>>> +		uint8_t subsystem_id, uint8_t event_sev, uint8_t  event_subtype,
->>>> +		uint32_t reason_code, uint32_t info0, uint32_t info1,
->>>> +		uint32_t info2, uint32_t info3)
->>>
->>>
->>> A call to this function is going to be just a giant list of integer values, it
->>> will not be easy to see at a glance which value goes in which field.
->>>
->>> I think you'd be better off with an elog_alloc() routine, and then you just do
->>> the initialisation explicitly so that it's obvious which value goes where:
->>>
->>> 	elog->error_events_type = FOO;
->>> 	elog->component_id = BAR;
->>> 	elog->subsystem_id = ETC;
->>>
->>
->> elog_create() will be called by all sub-systems on POWERNV platform to
->> log events and errors. I feel we are better off passing all the required
->> arguments to the interface than initialize explicitly.
->> This would have a cleaner interface to error logging by
->> 1) Removing huge amount of code duplication ( Each and every error/event
->> to be reported needs to initialise fields of the opal_errorlog struct
->> done many many times on POWERNV, results in redundant code )
-> 
-> It will be more lines of code, but it might be more readable code.
-> 
->> 2) There are chances of missing out on initialising key fields if
->> done by the user. Having an interface mandates the fields that
->> needs to populated while logging error/events.
-> 
-> I can always pass 0 :)
-
-I was referring to more on the lines of missing unintentionally :)
-
-> We will see how it looks once there are some callers.
-
-Sure. I will retain it for now. Going forward once we start adding
-users exploiting this interface, we can then take a call.
-> 
->>>> +void commit_errorlog_to_fsp(struct opal_errorlog *buf)
->>>> +{
->>>> +	opal_commit_log_to_fsp((void *)(vmalloc_to_pfn(buf) << PAGE_SHIFT));
->>>
->>> Can't fail?
->>
->> It is better to have a return here, atleast for the caller to know if
->> opal handling of the same is successful or not. I will make the required
->> change.
->>
->>>> +	kfree(buf);
->>>
->>> It's a bit rude to free buf when the caller still has a pointer to it.
->>
->> Technically, after the error log has been committed, the user is not
->> supposed to re-use or do anything with that buffer. I need to add
->> checks in all my routines if(buf != NULL), to handle the case where
->> the user by mistake is trying to use the same buffer pointer.
-> 
-> Why is the user not supposed to re-use it?
-> 
-> kfree()'ing the buffer doesn't prevent the caller from re-using it.
-
-Release the memory. Assign pointer to NULL before returning.
-All the error logging interfaces should have NULL check (to return).
-User can't do much in that case.
-
-Regards,
-Deepthi
-
-> cheers
-> 
-> 
-> 
-> 
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>
+> We don't use PACATOC for PR. Avoid updating HOST_R2 with PR
+> KVM mode when both HV and PR are enabled in the kernel. Without this we
+> get the below crash
+>
+> (qemu)
+> Unable to handle kernel paging request for data at address 0xffffffffffff8310
+> Faulting instruction address: 0xc00000000001d5a4
+> cpu 0x2: Vector: 300 (Data Access) at [c0000001dc53aef0]
+>     pc: c00000000001d5a4: .vtime_delta.isra.1+0x34/0x1d0
+>     lr: c00000000001d760: .vtime_account_system+0x20/0x60
+>     sp: c0000001dc53b170
+>    msr: 8000000000009032
+>    dar: ffffffffffff8310
+>  dsisr: 40000000
+>   current = 0xc0000001d76c62d0
+>   paca    = 0xc00000000fef1100   softe: 0        irq_happened: 0x01
+>     pid   = 4472, comm = qemu-system-ppc
+> enter ? for help
+> [c0000001dc53b200] c00000000001d760 .vtime_account_system+0x20/0x60
+> [c0000001dc53b290] c00000000008d050 .kvmppc_handle_exit_pr+0x60/0xa50
+> [c0000001dc53b340] c00000000008f51c kvm_start_lightweight+0xb4/0xc4
+> [c0000001dc53b510] c00000000008cdf0 .kvmppc_vcpu_run_pr+0x150/0x2e0
+> [c0000001dc53b9e0] c00000000008341c .kvmppc_vcpu_run+0x2c/0x40
+> [c0000001dc53ba50] c000000000080af4 .kvm_arch_vcpu_ioctl_run+0x54/0x1b0
+> [c0000001dc53bae0] c00000000007b4c8 .kvm_vcpu_ioctl+0x478/0x730
+> [c0000001dc53bca0] c0000000002140cc .do_vfs_ioctl+0x4ac/0x770
+> [c0000001dc53bd80] c0000000002143e8 .SyS_ioctl+0x58/0xb0
+> [c0000001dc53be30] c000000000009e58 syscall_exit+0x0/0x98
+> --- Exception: c00 (System Call) at 00001fffff960160
+> SP (1ffffecbe3c0) is in userspace
+>
+> These changes were originally part of
+> http://mid.gmane.org/20130806042205.GR19254@iris.ozlabs.ibm.com
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/kvm_book3s_asm.h | 1 +
+>  arch/powerpc/kernel/asm-offsets.c         | 1 +
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 7 +++----
+>  3 files changed, 5 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
+> index 0bd9348..69fe837 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s_asm.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
+> @@ -79,6 +79,7 @@ struct kvmppc_host_state {
+>  	ulong vmhandler;
+>  	ulong scratch0;
+>  	ulong scratch1;
+> +	ulong scratch2;
+>  	u8 in_guest;
+>  	u8 restore_hid5;
+>  	u8 napping;
+> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+> index 8e6ede6..841a4c8 100644
+> --- a/arch/powerpc/kernel/asm-offsets.c
+> +++ b/arch/powerpc/kernel/asm-offsets.c
+> @@ -583,6 +583,7 @@ int main(void)
+>  	HSTATE_FIELD(HSTATE_VMHANDLER, vmhandler);
+>  	HSTATE_FIELD(HSTATE_SCRATCH0, scratch0);
+>  	HSTATE_FIELD(HSTATE_SCRATCH1, scratch1);
+> +	HSTATE_FIELD(HSTATE_SCRATCH2, scratch2);
+>  	HSTATE_FIELD(HSTATE_IN_GUEST, in_guest);
+>  	HSTATE_FIELD(HSTATE_RESTORE_HID5, restore_hid5);
+>  	HSTATE_FIELD(HSTATE_NAPPING, napping);
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index 339aa5e..16f7654 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -750,15 +750,14 @@ kvmppc_interrupt_hv:
+>  	 * guest CR, R12 saved in shadow VCPU SCRATCH1/0
+>  	 * guest R13 saved in SPRN_SCRATCH0
+>  	 */
+> -	/* abuse host_r2 as third scratch area; we get r2 from PACATOC(r13) */
+> -	std	r9, HSTATE_HOST_R2(r13)
+> +	std	r9, HSTATE_SCRATCH2(r13)
+>  
+>  	lbz	r9, HSTATE_IN_GUEST(r13)
+>  	cmpwi	r9, KVM_GUEST_MODE_HOST_HV
+>  	beq	kvmppc_bad_host_intr
+>  #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+>  	cmpwi	r9, KVM_GUEST_MODE_GUEST
+> -	ld	r9, HSTATE_HOST_R2(r13)
+> +	ld	r9, HSTATE_SCRATCH2(r13)
+>  	beq	kvmppc_interrupt_pr
+>  #endif
+>  	/* We're now back in the host but in guest MMU context */
+> @@ -778,7 +777,7 @@ kvmppc_interrupt_hv:
+>  	std	r6, VCPU_GPR(R6)(r9)
+>  	std	r7, VCPU_GPR(R7)(r9)
+>  	std	r8, VCPU_GPR(R8)(r9)
+> -	ld	r0, HSTATE_HOST_R2(r13)
+> +	ld	r0, HSTATE_SCRATCH2(r13)
+>  	std	r0, VCPU_GPR(R9)(r9)
+>  	std	r10, VCPU_GPR(R10)(r9)
+>  	std	r11, VCPU_GPR(R11)(r9)
+> -- 
+> 1.8.3.2
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
