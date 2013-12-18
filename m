@@ -1,19 +1,19 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0154.outbound.protection.outlook.com [207.46.163.154])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 545762C0381
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 13:45:54 +1100 (EST)
-Message-ID: <1387334740.3140.9.camel@snotra.buserror.net>
-Subject: Re: [v6][PATCH 2/5] powerpc/book3e: store crit/mc/dbg exception
- thread info
+ by ozlabs.org (Postfix) with ESMTPS id 45F922C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2013 14:03:22 +1100 (EST)
+Message-ID: <1387335782.3140.11.camel@snotra.buserror.net>
+Subject: Re: [v3][PATCH 1/8] powerpc/book3e: rename interrupt_end_book3e
+ with __end_interrupts
 From: Scott Wood <scottwood@freescale.com>
 To: Tiejun Chen <tiejun.chen@windriver.com>
-Date: Tue, 17 Dec 2013 20:45:40 -0600
-In-Reply-To: <1382520685-11609-3-git-send-email-tiejun.chen@windriver.com>
-References: <1382520685-11609-1-git-send-email-tiejun.chen@windriver.com>
- <1382520685-11609-3-git-send-email-tiejun.chen@windriver.com>
+Date: Tue, 17 Dec 2013 21:03:02 -0600
+In-Reply-To: <1373357007-30785-2-git-send-email-tiejun.chen@windriver.com>
+References: <1373357007-30785-1-git-send-email-tiejun.chen@windriver.com>
+ <1373357007-30785-2-git-send-email-tiejun.chen@windriver.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
@@ -26,66 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-10-23 at 17:31 +0800, Tiejun Chen wrote:
-> We need to store thread info to these exception thread info like something
-> we already did for PPC32.
+On Tue, 2013-07-09 at 16:03 +0800, Tiejun Chen wrote:
+> We can rename 'interrupt_end_book3e' with '__end_interrupts' then
+> book3s/book3e can share this unique label to make sure we can use
+> this conveniently.
 > 
 > Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> ---
->  arch/powerpc/kernel/exceptions-64e.S |   22 +++++++++++++++++++---
->  1 file changed, 19 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-> index 68d74b4..a55cf62 100644
-> --- a/arch/powerpc/kernel/exceptions-64e.S
-> +++ b/arch/powerpc/kernel/exceptions-64e.S
-> @@ -36,6 +36,19 @@
->   */
->  #define	SPECIAL_EXC_FRAME_SIZE	INT_FRAME_SIZE
->  
-> +/* Now we only store something to exception thread info */
-> +#define	EXC_LEVEL_EXCEPTION_PROLOG(type)				\
-> +	ld	r14,PACAKSAVE(r13);					\
-> +	CURRENT_THREAD_INFO(r14, r14);					\
-> +	CURRENT_THREAD_INFO(r15, r1);					\
-> +	ld	r10,TI_FLAGS(r14);		     			\
-> +	std	r10,TI_FLAGS(r15);			     		\
-> +	ld	r10,TI_PREEMPT(r14);		     			\
-> +	std	r10,TI_PREEMPT(r15);		     			\
-> +	ld	r10,TI_TASK(r14);			     		\
-> +	std	r10,TI_TASK(r15);
-> +
-> +
->  /* Exception prolog code for all exceptions */
->  #define EXCEPTION_PROLOG(n, intnum, type, addition)	    		    \
->  	mtspr	SPRN_SPRG_##type##_SCRATCH,r13;	/* get spare registers */   \
-> @@ -69,19 +82,22 @@
->  
->  #define CRIT_SET_KSTACK						            \
->  	ld	r1,PACA_CRIT_STACK(r13);				    \
-> -	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-> +	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;				    \
-> +	EXC_LEVEL_EXCEPTION_PROLOG(CRIT);
->  #define SPRN_CRIT_SRR0	SPRN_CSRR0
->  #define SPRN_CRIT_SRR1	SPRN_CSRR1
->  
->  #define DBG_SET_KSTACK						            \
->  	ld	r1,PACA_DBG_STACK(r13);					    \
-> -	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-> +	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;				    \
-> +	EXC_LEVEL_EXCEPTION_PROLOG(DBG);
->  #define SPRN_DBG_SRR0	SPRN_DSRR0
->  #define SPRN_DBG_SRR1	SPRN_DSRR1
->  
->  #define MC_SET_KSTACK						            \
->  	ld	r1,PACA_MC_STACK(r13);					    \
-> -	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-> +	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;				    \
-> +	EXC_LEVEL_EXCEPTION_PROLOG(MC);
->  #define SPRN_MC_SRR0	SPRN_MCSRR0
->  #define SPRN_MC_SRR1	SPRN_MCSRR1
->  
 
-We should rename these if they're going to do more than set up a stack.
+What users of this do you plan to share between book3s and book3e?  I'm
+not seeing any existing book3s users that are obviously applicable to
+book3e -- they mainly involve copying exception vectors which we
+shouldn't need to do.
 
 -Scott
