@@ -1,17 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 19 Dec 2013 13:26:42 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH] powerpc: book3s: kvm: Use the saved dsisr and dar values
-Message-ID: <20131219022642.GB4002@iris.ozlabs.ibm.com>
-References: <1384178577-23721-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <0AB88010-F2B7-44A1-8FA9-2A40079706BB@suse.de>
+Return-Path: <guangyu.chen@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id F0CD32C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 13:31:39 +1100 (EST)
+Date: Thu, 19 Dec 2013 10:14:25 +0800
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [RFC][PATCH v1] ASoC: fsl_ssi: Add DAI master mode support for
+ SSI on i.MX series
+Message-ID: <20131219021423.GA10601@MrMyself>
+References: <1386845085-21682-1-git-send-email-Guangyu.Chen@freescale.com>
+ <20131218185952.GM31886@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0AB88010-F2B7-44A1-8FA9-2A40079706BB@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
- "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20131218185952.GM31886@sirena.org.uk>
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ timur@tabi.org, perex@perex.cz, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,47 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 18, 2013 at 10:44:08PM +0100, Alexander Graf wrote:
+On Wed, Dec 18, 2013 at 06:59:52PM +0000, Mark Brown wrote:
+> On Thu, Dec 12, 2013 at 06:44:45PM +0800, Nicolin Chen wrote:
 > 
-> On 11.11.2013, at 15:02, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> > +/**
+> > + * fsl_ssi_set_dai_tdm_slot - set TDM slot number
+> > + *
+> > + * Note: This function can be only called when using SSI as DAI master
+> > + */
+> > +static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
+> > +				u32 rx_mask, int slots, int slot_width)
+> > +{
+> > +	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
+> > +	struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
+> > +	u32 val;
 > 
-> > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> > 
-> > Don't try to compute these values.
-> > 
-> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> > ---
-> > 
-> > NOTE: I am not sure why we were originally computing dsisr and dar. So may be
-> > we need a variant of this patch. But with this and the additional patch
-> > "powerpc: book3s: PR: Enable Little Endian PR guest" I am able to get a Little Endian
-> > PR guest to boot.
-> 
-> It's quite easy to find out - git blame tells you all the history and points you to commit ca7f4203b.
-> 
-> commit ca7f4203b9b66e12d0d9968ff7dfe781f3a9695a
-> Author: Alexander Graf <agraf@suse.de>
-> Date:   Wed Mar 24 21:48:28 2010 +0100
-> 
->     KVM: PPC: Implement alignment interrupt
-> 
->     Mac OS X has some applications - namely the Finder - that require alignment
->     interrupts to work properly. So we need to implement them.
-> 
->     But the spec for 970 and 750 also looks different. While 750 requires the
->     DSISR and DAR fields to reflect some instruction bits (DSISR) and the fault
->     address (DAR), the 970 declares this as an optional feature. So we need
->     to reconstruct DSISR and DAR manually.
-> 
->     Signed-off-by: Alexander Graf <agraf@suse.de>
->     Signed-off-by: Avi Kivity <avi@redhat.com>
-> 
-> Read this as "on 970, alignment interrupts don't give us DSISR and DAR of the faulting instruction" as otherwise I wouldn't have implemented it.
+> I'm a bit concernred about what this is for and why it's required - is
+> it something that machine drivers have to call and if it is shouldn't
+> the driver be defaulting to a sensible configuration?
 
-Although it's optional, all IBM POWER cpus, and as far as I know all
-PowerPC cpus, set DAR on an alignment interrupt to the effective
-address being accessed.  You have a valid point regarding DSISR, but
-it would be nice to skip the computations where either the host CPU
-provides the bits, or the virtual CPU doesn't.
+SSI can control how many slots to generate and which slot to send data. Yes,
+the normal case, which should be defaulting to normal two slots I2S case, can
+be configured by SSI driver itself as you mentioned. I'll add it to startup().
 
-Paul.
+Then only those machine drivers using multiple slots (>2) need to call it.
+
+Thank you for the comments.
+Nicolin Chen
