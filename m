@@ -1,25 +1,38 @@
-Return-Path: <nyushchenko@dev.rtsoft.ru>
-Received: from dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
- by ozlabs.org (Postfix) with ESMTP id F03392C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 15:42:10 +1100 (EST)
-From: Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: commit e38c0a1f breaks powerpc boards with uli1575 chip
-Date: Thu, 19 Dec 2013 08:42:00 +0400
-References: <201312171135.38576@blacky.localdomain>
- <52B1EC15.5070606@gmail.com>
-In-Reply-To: <52B1EC15.5070606@gmail.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 0A6582C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 18:03:19 +1100 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 19 Dec 2013 12:32:55 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 56AACE0024
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 12:35:19 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBJ72lUL54919326
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 12:32:48 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBJ72owg012601
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 12:32:50 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] powerpc: book3s: kvm: Use the saved dsisr and dar values
+In-Reply-To: <0AB88010-F2B7-44A1-8FA9-2A40079706BB@suse.de>
+References: <1384178577-23721-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <0AB88010-F2B7-44A1-8FA9-2A40079706BB@suse.de>
+Date: Thu, 19 Dec 2013 12:32:50 +0530
+Message-ID: <87bo0d9vc5.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <201312190842.02702@blacky.localdomain>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Dmitry Krivoschekov <dkrivoschokov@dev.rtsoft.ru>,
- Alexey Lugovskoy <lugovskoy@dev.rtsoft.ru>,
- Thierry Reding <thierry.reding@avionic-design.de>,
- linux-kernel@vger.kernel.org, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org,
+ "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,35 +42,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Reverting would break Tegra PCIe, but you should not have to change the
-> DT either. So we need a solution.
+Alexander Graf <agraf@suse.de> writes:
+
+> On 11.11.2013, at 15:02, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
 >
-> Is this something like this sufficient to fix it?
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> Don't try to compute these values.
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>> 
+>> NOTE: I am not sure why we were originally computing dsisr and dar. So may be
+>> we need a variant of this patch. But with this and the additional patch
+>> "powerpc: book3s: PR: Enable Little Endian PR guest" I am able to get a Little Endian
+>> PR guest to boot.
 >
-> diff --git a/drivers/of/address.c b/drivers/of/address.c
-> index 4b9317b..378aebd 100644
-> --- a/drivers/of/address.c
-> +++ b/drivers/of/address.c
-> @@ -74,7 +74,7 @@ static u64 of_bus_default_map(__be32 *addr, const
-> __be32 *range,
->          * mapping doesn't specify a physical address. Rather, the
-> address * specifies an identifier that must match exactly.
->          */
-> -       if (na > 2 && memcmp(range, addr, na * 4) != 0)
-> +       if (na > 2 && memcmp(range, addr, (na - 2) * 4) != 0)
->                 return OF_BAD_ADDR;
+> It's quite easy to find out - git blame tells you all the history and points you to commit ca7f4203b.
 >
->         if (da < cp || da >= (cp + s))
+> commit ca7f4203b9b66e12d0d9968ff7dfe781f3a9695a
+> Author: Alexander Graf <agraf@suse.de>
+> Date:   Wed Mar 24 21:48:28 2010 +0100
+>
+>     KVM: PPC: Implement alignment interrupt
+>
+>     Mac OS X has some applications - namely the Finder - that require alignment
+>     interrupts to work properly. So we need to implement them.
+>
+>     But the spec for 970 and 750 also looks different. While 750 requires the
+>     DSISR and DAR fields to reflect some instruction bits (DSISR) and the fault
+>     address (DAR), the 970 declares this as an optional feature. So we need
+>     to reconstruct DSISR and DAR manually.
+>
+>     Signed-off-by: Alexander Graf <agraf@suse.de>
+>     Signed-off-by: Avi Kivity <avi@redhat.com>
+>
+> Read this as "on 970, alignment interrupts don't give us DSISR and DAR of the faulting instruction" as otherwise I wouldn't have implemented it.
+>
+> So this is clearly a nack on this patch :).
 
+I can possibly do a if (cpu_has_feature(CPU_FTR_ARCH_201)). But do we need
+to do that ? According to Paul we should always find DAR.
 
-No, this does not help.
-
-I've dumped the actual content of 'range' and 'addr' at the failure point 
-(i.e. ar point that returns error with e38c0a1f but passes without 
-e38c0a1f ):
-
-OF: default map, cp=0, s=10000, da=70
-range:  01 00 00 00 00 00 00 00 00 00 00 00
- addr:  00 00 00 00 00 00 00 00 00 00 00 70
-
-Nikita
+-aneesh
