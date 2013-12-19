@@ -1,23 +1,25 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F0CD32C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 13:31:39 +1100 (EST)
-Date: Thu, 19 Dec 2013 10:14:25 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC][PATCH v1] ASoC: fsl_ssi: Add DAI master mode support for
- SSI on i.MX series
-Message-ID: <20131219021423.GA10601@MrMyself>
-References: <1386845085-21682-1-git-send-email-Guangyu.Chen@freescale.com>
- <20131218185952.GM31886@sirena.org.uk>
+Return-Path: <nyushchenko@dev.rtsoft.ru>
+Received: from dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+ by ozlabs.org (Postfix) with ESMTP id F03392C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 15:42:10 +1100 (EST)
+From: Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>
+To: Rob Herring <robherring2@gmail.com>
+Subject: Re: commit e38c0a1f breaks powerpc boards with uli1575 chip
+Date: Thu, 19 Dec 2013 08:42:00 +0400
+References: <201312171135.38576@blacky.localdomain>
+ <52B1EC15.5070606@gmail.com>
+In-Reply-To: <52B1EC15.5070606@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20131218185952.GM31886@sirena.org.uk>
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
- timur@tabi.org, perex@perex.cz, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <201312190842.02702@blacky.localdomain>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Dmitry Krivoschekov <dkrivoschokov@dev.rtsoft.ru>,
+ Alexey Lugovskoy <lugovskoy@dev.rtsoft.ru>,
+ Thierry Reding <thierry.reding@avionic-design.de>,
+ linux-kernel@vger.kernel.org, Grant Likely <grant.likely@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 18, 2013 at 06:59:52PM +0000, Mark Brown wrote:
-> On Thu, Dec 12, 2013 at 06:44:45PM +0800, Nicolin Chen wrote:
-> 
-> > +/**
-> > + * fsl_ssi_set_dai_tdm_slot - set TDM slot number
-> > + *
-> > + * Note: This function can be only called when using SSI as DAI master
-> > + */
-> > +static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
-> > +				u32 rx_mask, int slots, int slot_width)
-> > +{
-> > +	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
-> > +	struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
-> > +	u32 val;
-> 
-> I'm a bit concernred about what this is for and why it's required - is
-> it something that machine drivers have to call and if it is shouldn't
-> the driver be defaulting to a sensible configuration?
+> Reverting would break Tegra PCIe, but you should not have to change the
+> DT either. So we need a solution.
+>
+> Is this something like this sufficient to fix it?
+>
+> diff --git a/drivers/of/address.c b/drivers/of/address.c
+> index 4b9317b..378aebd 100644
+> --- a/drivers/of/address.c
+> +++ b/drivers/of/address.c
+> @@ -74,7 +74,7 @@ static u64 of_bus_default_map(__be32 *addr, const
+> __be32 *range,
+>          * mapping doesn't specify a physical address. Rather, the
+> address * specifies an identifier that must match exactly.
+>          */
+> -       if (na > 2 && memcmp(range, addr, na * 4) != 0)
+> +       if (na > 2 && memcmp(range, addr, (na - 2) * 4) != 0)
+>                 return OF_BAD_ADDR;
+>
+>         if (da < cp || da >= (cp + s))
 
-SSI can control how many slots to generate and which slot to send data. Yes,
-the normal case, which should be defaulting to normal two slots I2S case, can
-be configured by SSI driver itself as you mentioned. I'll add it to startup().
 
-Then only those machine drivers using multiple slots (>2) need to call it.
+No, this does not help.
 
-Thank you for the comments.
-Nicolin Chen
+I've dumped the actual content of 'range' and 'addr' at the failure point 
+(i.e. ar point that returns error with e38c0a1f but passes without 
+e38c0a1f ):
+
+OF: default map, cp=0, s=10000, da=70
+range:  01 00 00 00 00 00 00 00 00 00 00 00
+ addr:  00 00 00 00 00 00 00 00 00 00 00 70
+
+Nikita
