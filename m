@@ -1,21 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0153.outbound.protection.outlook.com [207.46.163.153])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7823A2C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 11:50:17 +1100 (EST)
-Date: Wed, 18 Dec 2013 18:50:02 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Subject: Re: [2/2,v8] powerpc/fsl-booke: Add initial T104x_QDS board support
-Message-ID: <20131219005002.GA7370@home.buserror.net>
-References: <1380771889-2626-1-git-send-email-prabhakar@freescale.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 19 Dec 2013 13:26:42 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] powerpc: book3s: kvm: Use the saved dsisr and dar values
+Message-ID: <20131219022642.GB4002@iris.ozlabs.ibm.com>
+References: <1384178577-23721-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <0AB88010-F2B7-44A1-8FA9-2A40079706BB@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1380771889-2626-1-git-send-email-prabhakar@freescale.com>
-Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, Priyanka Jain <Priyanka.Jain@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0AB88010-F2B7-44A1-8FA9-2A40079706BB@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
+ "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,64 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 03, 2013 at 09:14:49AM +0530, Prabhakar Kushwaha wrote:
-> diff --git a/arch/powerpc/boot/dts/t104xqds.dtsi b/arch/powerpc/boot/dts/t104xqds.dtsi
-> new file mode 100644
-> index 0000000..5a518b3
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/t104xqds.dtsi
-[snip]
-> +/ {
-> +	model = "fsl,T1040QDS";
-> +	compatible = "fsl,T1040QDS";
+On Wed, Dec 18, 2013 at 10:44:08PM +0100, Alexander Graf wrote:
+> 
+> On 11.11.2013, at 15:02, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> 
+> > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> > 
+> > Don't try to compute these values.
+> > 
+> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> > ---
+> > 
+> > NOTE: I am not sure why we were originally computing dsisr and dar. So may be
+> > we need a variant of this patch. But with this and the additional patch
+> > "powerpc: book3s: PR: Enable Little Endian PR guest" I am able to get a Little Endian
+> > PR guest to boot.
+> 
+> It's quite easy to find out - git blame tells you all the history and points you to commit ca7f4203b.
+> 
+> commit ca7f4203b9b66e12d0d9968ff7dfe781f3a9695a
+> Author: Alexander Graf <agraf@suse.de>
+> Date:   Wed Mar 24 21:48:28 2010 +0100
+> 
+>     KVM: PPC: Implement alignment interrupt
+> 
+>     Mac OS X has some applications - namely the Finder - that require alignment
+>     interrupts to work properly. So we need to implement them.
+> 
+>     But the spec for 970 and 750 also looks different. While 750 requires the
+>     DSISR and DAR fields to reflect some instruction bits (DSISR) and the fault
+>     address (DAR), the 970 declares this as an optional feature. So we need
+>     to reconstruct DSISR and DAR manually.
+> 
+>     Signed-off-by: Alexander Graf <agraf@suse.de>
+>     Signed-off-by: Avi Kivity <avi@redhat.com>
+> 
+> Read this as "on 970, alignment interrupts don't give us DSISR and DAR of the faulting instruction" as otherwise I wouldn't have implemented it.
 
-Remove model/compatible; they're supplied by the includer of this file.
+Although it's optional, all IBM POWER cpus, and as far as I know all
+PowerPC cpus, set DAR on an alignment interrupt to the effective
+address being accessed.  You have a valid point regarding DSISR, but
+it would be nice to skip the computations where either the host CPU
+provides the bits, or the virtual CPU doesn't.
 
-> +		nand@2,0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			compatible = "fsl,ifc-nand";
-> +			reg = <0x2 0x0 0x10000>;
-> +
-> +			partition@0 {
-> +				/* This location must not be altered  */
-> +				/* 1MB for u-boot Bootloader Image */
-> +				reg = <0x0 0x00100000>;
-> +				label = "NAND U-Boot Image";
-> +				read-only;
-> +			};
-> +
-> +			partition@100000 {
-> +				/* 1MB for DTB Image */
-> +				reg = <0x00100000 0x00100000>;
-> +				label = "NAND DTB Image";
-> +			};
-> +
-> +			partition@200000 {
-> +				/* 10MB for Linux Kernel Image */
-> +				reg = <0x00200000 0x00A00000>;
-> +				label = "NAND Linux Kernel Image";
-> +			};
-> +
-> +			partition@C00000 {
-> +				/* 500MB for Root file System Image */
-> +				reg = <0x00c00000 0x1F400000>;
-> +				label = "NAND RFS Image";
-> +			};
-> +		};
-
-I'd really like to see us stop putting partition info in the dts files. 
-Alternatives are using the mtdparts command line option, or having U-Boot
-use the mtdparts environment variable to add partition info to the dtb
-(there's already code for this).
-
-> +		board-control@3,0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			compatible = "fsl,tetra-fpga", "fsl,fpga-qixis";
-> +			reg = <3 0 0x300>;
-> +		};
-
-Could you explain the relationship between "tetra" and "qixis"?
-
--Scott
+Paul.
