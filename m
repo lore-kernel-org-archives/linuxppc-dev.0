@@ -1,25 +1,14 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D35F72C00B5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 23:35:43 +1100 (EST)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH] powerpc: book3s: kvm: Use the saved dsisr and dar values
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <87bo0d9vc5.fsf@linux.vnet.ibm.com>
-Date: Thu, 19 Dec 2013 13:35:36 +0100
-Message-Id: <CA6C7C49-C1EC-4277-9777-650026C9127D@suse.de>
-References: <1384178577-23721-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <0AB88010-F2B7-44A1-8FA9-2A40079706BB@suse.de>
- <87bo0d9vc5.fsf@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1387459057.1305.1.camel@concordia>
+Subject: Re: [PATCH] powerpc: Make 64-bit non-VMX __copy_tofrom_user bi-endian
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anton Blanchard <anton@samba.org>
+Date: Fri, 20 Dec 2013 00:17:37 +1100
+In-Reply-To: <20131218211502.034c3eb0@kryten>
+References: <20131218092957.4a12cbcf@kryten> <20131218211502.034c3eb0@kryten>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: paulmck@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,72 +18,362 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2013-12-18 at 21:15 +1100, Anton Blanchard wrote:
+> Hi,
+> 
+> > [ This is a rare but nasty LE issue. Most of the time we use the
+> > POWER7 optimised __copy_tofrom_user_power7 loop, but when it hits an
+> > exception we fall back to the base __copy_tofrom_user loop. - Anton ]
+> 
+> To try and catch any screw ups in our ppc64 memcpy and copy_tofrom_user
+> loops, I wrote a quick test:
+> 
+> http://ozlabs.org/~anton/junkcode/validate_kernel_copyloops.tar.gz
+
+Nice! How's this look?
+
+cheers
 
 
-> Am 19.12.2013 um 08:02 schrieb "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet=
-.ibm.com>:
->=20
-> Alexander Graf <agraf@suse.de> writes:
->=20
->>> On 11.11.2013, at 15:02, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.c=
-om> wrote:
->>>=20
->>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->>>=20
->>> Don't try to compute these values.
->>>=20
->>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>> ---
->>>=20
->>> NOTE: I am not sure why we were originally computing dsisr and dar. So m=
-ay be
->>> we need a variant of this patch. But with this and the additional patch
->>> "powerpc: book3s: PR: Enable Little Endian PR guest" I am able to get a L=
-ittle Endian
->>> PR guest to boot.
->>=20
->> It's quite easy to find out - git blame tells you all the history and poi=
-nts you to commit ca7f4203b.
->>=20
->> commit ca7f4203b9b66e12d0d9968ff7dfe781f3a9695a
->> Author: Alexander Graf <agraf@suse.de>
->> Date:   Wed Mar 24 21:48:28 2010 +0100
->>=20
->>    KVM: PPC: Implement alignment interrupt
->>=20
->>    Mac OS X has some applications - namely the Finder - that require alig=
-nment
->>    interrupts to work properly. So we need to implement them.
->>=20
->>    But the spec for 970 and 750 also looks different. While 750 requires t=
-he
->>    DSISR and DAR fields to reflect some instruction bits (DSISR) and the f=
-ault
->>    address (DAR), the 970 declares this as an optional feature. So we nee=
-d
->>    to reconstruct DSISR and DAR manually.
->>=20
->>    Signed-off-by: Alexander Graf <agraf@suse.de>
->>    Signed-off-by: Avi Kivity <avi@redhat.com>
->>=20
->> Read this as "on 970, alignment interrupts don't give us DSISR and DAR of=
- the faulting instruction" as otherwise I wouldn't have implemented it.
->>=20
->> So this is clearly a nack on this patch :).
->=20
-> I can possibly do a if (cpu_has_feature(CPU_FTR_ARCH_201)). But do we need=
+selftests: Import Anton's memcpy / copy_tofrom_user tests
 
-> to do that ? According to Paul we should always find DAR.
+Turn Anton's memcpy / copy_tofrom_user test into something that can
+live in tools/testing/selftests.
 
-Paul only mentioned DAR, not DSISR. Please verify whether 970 gives us a pro=
-per DAR value - we can then remove that part.
+It requires one turd in arch/powerpc/lib/memcpy_64.S, but it's pretty
+harmless IMHO.
 
-But for DSISR I'm not convinced CPUs above 970 handle this correctly. So we w=
-ould at least need a guest cpu check to find out whether the vcpu expects a w=
-orking dsisr and emulate it then.
+We are sailing very close to the wind with the feature macros. We define
+them to nothing, which currently means we get a few extra nops and
+include the unaligned calls.
 
-I don't really fully understand the problem though. Why does the calculation=
- break at all for you?
+---
+ arch/powerpc/lib/memcpy_64.S                       |  2 +
+ tools/testing/selftests/powerpc/Makefile           |  2 +-
+ tools/testing/selftests/powerpc/copyloops/Makefile | 29 +++++++
+ .../selftests/powerpc/copyloops/asm/ppc_asm.h      | 86 +++++++++++++++++++
+ .../selftests/powerpc/copyloops/asm/processor.h    |  0
+ .../selftests/powerpc/copyloops/copyuser_64.S      |  1 +
+ .../selftests/powerpc/copyloops/copyuser_power7.S  |  1 +
+ .../selftests/powerpc/copyloops/memcpy_64.S        |  1 +
+ .../selftests/powerpc/copyloops/memcpy_power7.S    |  1 +
+ .../testing/selftests/powerpc/copyloops/validate.c | 99 ++++++++++++++++++++++
+ tools/testing/selftests/powerpc/utils.h            |  3 +
+ 11 files changed, 224 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/copyloops/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
+ create mode 100644 tools/testing/selftests/powerpc/copyloops/asm/processor.h
+ create mode 120000 tools/testing/selftests/powerpc/copyloops/copyuser_64.S
+ create mode 120000 tools/testing/selftests/powerpc/copyloops/copyuser_power7.S
+ create mode 120000 tools/testing/selftests/powerpc/copyloops/memcpy_64.S
+ create mode 120000 tools/testing/selftests/powerpc/copyloops/memcpy_power7.S
+ create mode 100644 tools/testing/selftests/powerpc/copyloops/validate.c
 
-
-Alex
+diff --git a/arch/powerpc/lib/memcpy_64.S b/arch/powerpc/lib/memcpy_64.S
+index d2bbbc8..72ad055 100644
+--- a/arch/powerpc/lib/memcpy_64.S
++++ b/arch/powerpc/lib/memcpy_64.S
+@@ -14,7 +14,9 @@ _GLOBAL(memcpy)
+ BEGIN_FTR_SECTION
+ 	std	r3,48(r1)	/* save destination pointer for return value */
+ FTR_SECTION_ELSE
++#ifndef SELFTEST
+ 	b	memcpy_power7
++#endif
+ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_VMX_COPY)
+ 	PPC_MTOCRF(0x01,r5)
+ 	cmpldi	cr1,r5,16
+diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+index bd24ae5..316194f 100644
+--- a/tools/testing/selftests/powerpc/Makefile
++++ b/tools/testing/selftests/powerpc/Makefile
+@@ -13,7 +13,7 @@ CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CUR
+ 
+ export CC CFLAGS
+ 
+-TARGETS = pmu
++TARGETS = pmu copyloops
+ 
+ endif
+ 
+diff --git a/tools/testing/selftests/powerpc/copyloops/Makefile b/tools/testing/selftests/powerpc/copyloops/Makefile
+new file mode 100644
+index 0000000..6f2d3be
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/Makefile
+@@ -0,0 +1,29 @@
++# The loops are all 64-bit code
++CFLAGS += -m64
++CFLAGS += -I$(CURDIR)
++CFLAGS += -D SELFTEST
++
++# Use our CFLAGS for the implicit .S rule
++ASFLAGS = $(CFLAGS)
++
++PROGS := copyuser_64 copyuser_power7 memcpy_64 memcpy_power7
++EXTRA_SOURCES := validate.c ../harness.c
++
++all: $(PROGS)
++
++copyuser_64:     CPPFLAGS += -D COPY_LOOP=test___copy_tofrom_user_base
++copyuser_power7: CPPFLAGS += -D COPY_LOOP=test___copy_tofrom_user_power7
++memcpy_64:       CPPFLAGS += -D COPY_LOOP=test_memcpy
++memcpy_power7:   CPPFLAGS += -D COPY_LOOP=test_memcpy_power7
++
++$(PROGS): $(EXTRA_SOURCES)
++
++run_tests: all
++	@-for PROG in $(PROGS); do \
++		./$$PROG; \
++	done;
++
++clean:
++	rm -f $(PROGS) *.o
++
++.PHONY: all run_tests clean
+diff --git a/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
+new file mode 100644
+index 0000000..ccd9c84
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
+@@ -0,0 +1,86 @@
++#include <ppc-asm.h>
++
++#define CONFIG_ALTIVEC
++
++#define r1	1
++
++#define vr0     0
++#define vr1     1
++#define vr2     2
++#define vr3     3
++#define vr4     4
++#define vr5     5
++#define vr6     6
++#define vr7     7
++#define vr8     8
++#define vr9     9
++#define vr10    10
++#define vr11    11
++#define vr12    12
++#define vr13    13
++#define vr14    14
++#define vr15    15
++#define vr16    16
++#define vr17    17
++#define vr18    18
++#define vr19    19
++#define vr20    20
++#define vr21    21
++#define vr22    22
++#define vr23    23
++#define vr24    24
++#define vr25    25
++#define vr26    26
++#define vr27    27
++#define vr28    28
++#define vr29    29
++#define vr30    30
++#define vr31    31
++
++#define R14 r14
++#define R15 r15
++#define R16 r16
++#define R17 r17
++#define R18 r18
++#define R19 r19
++#define R20 r20
++#define R21 r21
++#define R22 r22
++
++#define STACKFRAMESIZE	256
++#define STK_PARAM(i)	(48 + ((i)-3)*8)
++#define STK_REG(i)	(112 + ((i)-14)*8)
++
++#define _GLOBAL(A) FUNC_START(test_ ## A)
++
++#define PPC_MTOCRF(A, B)	mtocrf A, B
++
++FUNC_START(enter_vmx_usercopy)
++	li	r3,1
++	blr
++
++FUNC_START(exit_vmx_usercopy)
++	li	r3,0
++	blr
++
++FUNC_START(enter_vmx_copy)
++	li	r3,1
++	blr
++
++FUNC_START(exit_vmx_copy)
++	blr
++
++FUNC_START(memcpy_power7)
++	blr
++
++FUNC_START(__copy_tofrom_user_power7)
++	blr
++
++FUNC_START(__copy_tofrom_user_base)
++	blr
++
++#define BEGIN_FTR_SECTION
++#define FTR_SECTION_ELSE
++#define ALT_FTR_SECTION_END_IFCLR(x)
++#define ALT_FTR_SECTION_END(x, y)
++#define END_FTR_SECTION_IFCLR(x)
+diff --git a/tools/testing/selftests/powerpc/copyloops/asm/processor.h b/tools/testing/selftests/powerpc/copyloops/asm/processor.h
+new file mode 100644
+index 0000000..e69de29
+diff --git a/tools/testing/selftests/powerpc/copyloops/copyuser_64.S b/tools/testing/selftests/powerpc/copyloops/copyuser_64.S
+new file mode 120000
+index 0000000..f1c418a
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/copyuser_64.S
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/lib/copyuser_64.S
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/copyloops/copyuser_power7.S b/tools/testing/selftests/powerpc/copyloops/copyuser_power7.S
+new file mode 120000
+index 0000000..4786895
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/copyuser_power7.S
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/lib/copyuser_power7.S
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/copyloops/memcpy_64.S b/tools/testing/selftests/powerpc/copyloops/memcpy_64.S
+new file mode 120000
+index 0000000..cce33fb
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/memcpy_64.S
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/lib/memcpy_64.S
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/copyloops/memcpy_power7.S b/tools/testing/selftests/powerpc/copyloops/memcpy_power7.S
+new file mode 120000
+index 0000000..0d6fbfa
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/memcpy_power7.S
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/lib/memcpy_power7.S
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/copyloops/validate.c b/tools/testing/selftests/powerpc/copyloops/validate.c
+new file mode 100644
+index 0000000..1750ff5
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/validate.c
+@@ -0,0 +1,99 @@
++#include <malloc.h>
++#include <string.h>
++#include <stdlib.h>
++#include <stdbool.h>
++
++#include "../utils.h"
++
++#define MAX_LEN 8192
++#define MAX_OFFSET 16
++#define MIN_REDZONE 128
++#define BUFLEN (MAX_LEN+MAX_OFFSET+2*MIN_REDZONE)
++#define POISON 0xa5
++
++unsigned long COPY_LOOP(void *to, const void *from, unsigned long size);
++
++static void do_one(char *src, char *dst, unsigned long src_off,
++		   unsigned long dst_off, unsigned long len, void *redzone,
++		   void *fill)
++{
++	char *srcp, *dstp;
++	unsigned long ret;
++	unsigned long i;
++
++	srcp = src + MIN_REDZONE + src_off;
++	dstp = dst + MIN_REDZONE + dst_off;
++
++	memset(src, POISON, BUFLEN);
++	memset(dst, POISON, BUFLEN);
++	memcpy(srcp, fill, len);
++
++	ret = COPY_LOOP(dstp, srcp, len);
++	if (ret && ret != (unsigned long)dstp) {
++		printf("(%p,%p,%ld) returned %ld\n", dstp, srcp, len, ret);
++		abort();
++	}
++
++	if (memcmp(dstp, srcp, len)) {
++		printf("(%p,%p,%ld) miscompare\n", dstp, srcp, len);
++		printf("src: ");
++		for (i = 0; i < len; i++)
++			printf("%02x ", srcp[i]);
++		printf("\ndst: ");
++		for (i = 0; i < len; i++)
++			printf("%02x ", dstp[i]);
++		printf("\n");
++		abort();
++	}
++
++	if (memcmp(dst, redzone, dstp - dst)) {
++		printf("(%p,%p,%ld) redzone before corrupted\n",
++		       dstp, srcp, len);
++		abort();
++	}
++
++	if (memcmp(dstp+len, redzone, dst+BUFLEN-(dstp+len))) {
++		printf("(%p,%p,%ld) redzone after corrupted\n",
++		       dstp, srcp, len);
++		abort();
++	}
++}
++
++int test_copy_loop(void)
++{
++	char *src, *dst, *redzone, *fill;
++	unsigned long len, src_off, dst_off;
++	unsigned long i;
++
++	src = memalign(BUFLEN, BUFLEN);
++	dst = memalign(BUFLEN, BUFLEN);
++	redzone = malloc(BUFLEN);
++	fill = malloc(BUFLEN);
++
++	if (!src || !dst || !redzone || !fill) {
++		fprintf(stderr, "malloc failed\n");
++		exit(1);
++	}
++
++	memset(redzone, POISON, BUFLEN);
++
++	/* Fill with sequential bytes */
++	for (i = 0; i < BUFLEN; i++)
++		fill[i] = i & 0xff;
++
++	for (len = 1; len < MAX_LEN; len++) {
++		for (src_off = 0; src_off < MAX_OFFSET; src_off++) {
++			for (dst_off = 0; dst_off < MAX_OFFSET; dst_off++) {
++				do_one(src, dst, src_off, dst_off, len,
++				       redzone, fill);
++			}
++		}
++	}
++
++	return 0;
++}
++
++int main(void)
++{
++	return test_harness(test_copy_loop, str(COPY_LOOP));
++}
+diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
+index 5851c4b..0de0644 100644
+--- a/tools/testing/selftests/powerpc/utils.h
++++ b/tools/testing/selftests/powerpc/utils.h
+@@ -31,4 +31,7 @@ do {								\
+ 	}							\
+ } while (0)
+ 
++#define _str(s) #s
++#define str(s) _str(s)
++
+ #endif /* _SELFTESTS_POWERPC_UTILS_H */
+-- 
+1.8.3.2
