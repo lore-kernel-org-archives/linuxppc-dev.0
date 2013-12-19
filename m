@@ -1,30 +1,24 @@
-Return-Path: <thierry.reding@gmail.com>
-Received: from mail-bk0-x232.google.com (mail-bk0-x232.google.com
- [IPv6:2a00:1450:4008:c01::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 038462C00D2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 01:25:37 +1100 (EST)
-Received: by mail-bk0-f50.google.com with SMTP id e11so711865bkh.23
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 06:25:33 -0800 (PST)
-Date: Thu, 19 Dec 2013 15:24:02 +0100
-From: Thierry Reding <thierry.reding@gmail.com>
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: commit e38c0a1f breaks powerpc boards with uli1575 chip
-Message-ID: <20131219142400.GA13878@ulmo.nvidia.com>
-References: <201312171135.38576@blacky.localdomain>
- <52B1EC15.5070606@gmail.com>
+Return-Path: <matteo.facchinetti@sirius-es.it>
+Received: from mx.vmgattei.com (mx.vmgattei.com [77.223.18.35])
+ by ozlabs.org (Postfix) with ESMTP id 714212C0078
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 04:49:52 +1100 (EST)
+Received: from localhost (mx.vmgattei.com [127.0.0.1])
+ by mx.vmgattei.com (Postfix) with ESMTP id 4753822DF6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 18:49:48 +0100 (CET)
+Received: from mx.vmgattei.com ([127.0.0.1])
+ by localhost (mx.vmgattei.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id sESAgems82d9 for <linuxppc-dev@lists.ozlabs.org>;
+ Thu, 19 Dec 2013 18:49:48 +0100 (CET)
+Message-ID: <52B331B7.8060606@sirius-es.it>
+Date: Thu, 19 Dec 2013 18:49:43 +0100
+From: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
-In-Reply-To: <52B1EC15.5070606@gmail.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Dmitry Krivoschekov <dkrivoschokov@dev.rtsoft.ru>,
- Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>,
- Thierry Reding <thierry.reding@avionic-design.de>,
- linux-kernel@vger.kernel.org, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, Alexey Lugovskoy <lugovskoy@dev.rtsoft.ru>
+To: linuxppc-dev@lists.ozlabs.org, agust@denx.de, Gerhard Sittig <gsi@denx.de>
+Subject: Re: [PATCH] powerpc/512x: dts: disable MPC5125 usb module
+References: <1387448639-11050-1-git-send-email-matteo.facchinetti@sirius-es.it>
+ <20131219123017.GM8064@book.gsilab.sittig.org>
+In-Reply-To: <20131219123017.GM8064@book.gsilab.sittig.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,136 +28,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 19/12/2013 13:30, Gerhard Sittig wrote:
+> On Thu, Dec 19, 2013 at 11:23 +0100, Matteo Facchinetti wrote:
+>> USB controller pin-muxing is not initialized correctly and when system boot,
+>> causes a kernel panic.
+>> USB controller is also connected with a USB3320 ulpi tranciever and
+>> DTS should be includes the correct dependency for initialize and activate
+>> this component.
+>>
+>> Signed-off-by: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+>> ---
+>>   arch/powerpc/boot/dts/mpc5125twr.dts | 3 +++
+>>   1 file changed, 3 insertions(+)
+>>
+>> diff --git a/arch/powerpc/boot/dts/mpc5125twr.dts b/arch/powerpc/boot/dts/mpc5125twr.dts
+>> index 806479f..85452a7 100644
+>> --- a/arch/powerpc/boot/dts/mpc5125twr.dts
+>> +++ b/arch/powerpc/boot/dts/mpc5125twr.dts
+>> @@ -230,6 +230,9 @@
+>>   		};
+>>   
+>>   		usb@3000 {
+>> +			/* TODO correct pinmux config and fix USB3320 ulpi dependency */
+>> +			status = "disabled";
+>> +
+>>   			compatible = "fsl,mpc5121-usb2-dr";
+>>   			reg = <0x3000 0x400>;
+>>   			#address-cells = <1>;
+>> -- 
+>> 1.8.3.2
+> I agree on the change to the board dts file, but suggest to
+> reword the commit description for improved reception.
+>
+> I feel it's worth trying to phrase the subject line, the commit
+> message, and the patch such that they can get considered
+> independently from each other, as not all of them are necessarily
+> available at the same time.  Often they get looked up from
+> different perspectives, like terse listing first for orientation,
+> log with description then to determine whether to have a closer
+> look, the patch only at the end after the other checks told you
+> to look into more details.  Assuming that they always show up in
+> combination may turn out to be inaccurate.
+>
+> So I suggest some text along those lines:
+>
+>    at the moment the USB controller's pin muxing is not setup
+>    correctly and causes a kernel panic upon system startup, so
+>    disable the USB1 device tree node in the MPC5125 tower board
+>    dts file
+>
+>    the USB controller is connected to an USB3320 ULPI transceiver
+>    and the device tree should receive an update to reflect correct
+>    dependencies and required initialization data before the USB1
+>    node can get re-enabled
+>
+> Does that sound correct to you?  Does it reflect your intention,
+> or did I put something in wrong terms?
 
---vtzGhvizbBRQ85DL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, it's exactly what I tried to explain. All is right.
+Now, I learned. Thank you.
 
-On Wed, Dec 18, 2013 at 12:40:21PM -0600, Rob Herring wrote:
-> [fixed DT maillist address]
->=20
-> On 12/17/2013 01:35 AM, Nikita Yushchenko wrote:
-> > Hi
-> >=20
-> > While trying to make freescale p2020ds and  mpc8572ds boards working wi=
-th mainline kernel, I faced that commit=20
-> > e38c0a1f (Handle #address-cells > 2 specially) breaks things with these=
- boards.
->=20
-> Good to see this broke in v3.7 and is just now found...
->=20
-> >=20
-> > Both these boards have uli1575 chip.
-> > Corresponding part in device tree is something like
-> >=20
-> >                 uli1575@0 {
-> >                         reg =3D <0x0 0x0 0x0 0x0 0x0>;
-> >                         #size-cells =3D <2>;
-> >                         #address-cells =3D <3>;
-> >                         ranges =3D <0x2000000 0x0 0x80000000
-> >                                   0x2000000 0x0 0x80000000
-> >                                   0x0 0x20000000
-> >=20
-> >                                   0x1000000 0x0 0x0
-> >                                   0x1000000 0x0 0x0
-> >                                   0x0 0x10000>;
-> >                         isa@1e {
-> > ...
-> >=20
-> > I.e. it has #address-cells =3D <3>
-> >=20
-> >=20
-> > With commit e38c0a1f reverted, devices under uli1575 are registered cor=
-rectly, e.g. for rtc
-> >=20
-> > OF: ** translation for device /pcie@ffe09000/pcie@0/uli1575@0/isa@1e/rt=
-c@70 **
-> > OF: bus is isa (na=3D2, ns=3D1) on /pcie@ffe09000/pcie@0/uli1575@0/isa@=
-1e
-> > OF: translating address: 00000001 00000070
-> > OF: parent bus is default (na=3D3, ns=3D2) on /pcie@ffe09000/pcie@0/uli=
-1575@0
-> > OF: walking ranges...
-> > OF: ISA map, cp=3D0, s=3D1000, da=3D70
-> > OF: parent translation for: 01000000 00000000 00000000
-> > OF: with offset: 70
-> > OF: one level translation: 00000000 00000000 00000070
-> > OF: parent bus is pci (na=3D3, ns=3D2) on /pcie@ffe09000/pcie@0
-> > OF: walking ranges...
-> > OF: default map, cp=3Da0000000, s=3D20000000, da=3D70
-> > OF: default map, cp=3D0, s=3D10000, da=3D70
-> > OF: parent translation for: 01000000 00000000 00000000
-> > OF: with offset: 70
-> > OF: one level translation: 01000000 00000000 00000070
-> > OF: parent bus is pci (na=3D3, ns=3D2) on /pcie@ffe09000
-> > OF: walking ranges...
-> > OF: PCI map, cp=3D0, s=3D10000, da=3D70
-> > OF: parent translation for: 01000000 00000000 00000000
-> > OF: with offset: 70
-> > OF: one level translation: 01000000 00000000 00000070
-> > OF: parent bus is default (na=3D2, ns=3D2) on /
-> > OF: walking ranges...
-> > OF: PCI map, cp=3D0, s=3D10000, da=3D70
-> > OF: parent translation for: 00000000 ffc10000
-> > OF: with offset: 70
-> > OF: one level translation: 00000000 ffc10070
-> > OF: reached root node
-> >=20
-> > With commit e38c0a1f in place, address translation fails:
-> >=20
-> > OF: ** translation for device /pcie@ffe09000/pcie@0/uli1575@0/isa@1e/rt=
-c@70 **
-> > OF: bus is isa (na=3D2, ns=3D1) on /pcie@ffe09000/pcie@0/uli1575@0/isa@=
-1e
-> > OF: translating address: 00000001 00000070
-> > OF: parent bus is default (na=3D3, ns=3D2) on /pcie@ffe09000/pcie@0/uli=
-1575@0
-> > OF: walking ranges...
-> > OF: ISA map, cp=3D0, s=3D1000, da=3D70
-> > OF: parent translation for: 01000000 00000000 00000000
-> > OF: with offset: 70
-> > OF: one level translation: 00000000 00000000 00000070
-> > OF: parent bus is pci (na=3D3, ns=3D2) on /pcie@ffe09000/pcie@0
-> > OF: walking ranges...
-> > OF: default map, cp=3Da0000000, s=3D20000000, da=3D70
-> > OF: default map, cp=3D0, s=3D10000, da=3D70
-> > OF: not found !
-> >=20
-> > Either e38c0a1f should be reverted, or uli1575 (and perhaps other simil=
-ar devices) have to be described in device=20
-> > trees differently.
->=20
-> Reverting would break Tegra PCIe, but you should not have to change the
-> DT either. So we need a solution.
+> A minor nit would be that other reviewers in the past suggested
+> to put the 'status = "disabled"' line last in the list of
+> properties (right before optional children).  I don't have strong
+> feelings about this.  Putting it first might better reflect your
+> motivation of only re-enabling the node after fixing the lack or
+> inappropriateness of existing information first.
 
-We ended up merging a different address representation for Tegra PCIe
-and I've confirmed that reverting this commit doesn't cause any obvious
-regressions. I think all other drivers in drivers/pci/host ended up
-copying what we did on Tegra, so I wouldn't expect any other breakage
-either.
+I put it as first property because is very temporary and because is the 
+most important information for the moment:
+"the USB1 port doesn't works for these reasons...".
 
-Thierry
+But, I think that if this property is usually at the and of the node 
+list, it's better follow this suggestion.
 
---vtzGhvizbBRQ85DL
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Then I'll send a v2 patch with the newer description and with this change.
 
-iQIcBAEBAgAGBQJSswGAAAoJEN0jrNd/PrOhBwgQAJDizHJfZzFT1RDzdd6TKM28
-cR658qJqY+s3bAAz8te+exfItB8iuIIfBujtJVivq2mJsmQvVKJX5TPD4YwCrPKz
-Zz7BAx0XmYCoU+e2uhLN5RlFPE25fp+vGB6Py9Ri6wmrx/s5BFJuxwfaMEmrnJRO
-WZXIDY2iXx+1/Ysp4fWIMDA6yWSaP5LHeyxW5JUEs1PbDv5lTO9cZhgNiRt3Vl1P
-0QB6xIUDJ9KFBrUEy+UVqzlYF3dc4bQyWpMsOeHXAtB1bzToFT4vWbNaWW0FpTbs
-GssNqrXRnnmH4RkJJ74CDJKiZ3d4X2mldKJqclGVsIkDKzHzc5DaFzP6sqWHSwGR
-UaTyVJaiD+vCQG3HKkBhCResU3DCIdLYPNpkCr93Amgn+0Y0zqsIpTdp8h4aRLnm
-8/HNyyJLxbfyFlmOBqymb6t2LPw9JCr/wlqCHW3Q6GwE1iwVbb6Tt3qkxQfd2elZ
-PUQNJgizYl612BWAPXSJ9+bhACBjRSqZO8ZDYwjpxq6Muf2thjsTe+xcbjQSoXVZ
-Q0IcfY6vHu8+zGSpSc95T9sfQjUksv9AO00qVjX8F2NLYiOOneA9CqHwG+M0QI1U
-XnCx/mOXzYNlWhIDwMY18Adlbo39eaqUnB6MYfzAUXweyRtOCOYM5C0oMNqkJqe/
-HAVXM6+MoRDDT+jg+OYF
-=rrN2
------END PGP SIGNATURE-----
+>
+> A different matter is that I'd suggest to re-work the MPC5125
+> device tree.  It recently escaped my attention because it did not
+> share any information with the MPC5121 trees.  Comparing the
+> MPC5125 board DTS with the MPC5121 DTS include file resulted in a
+> lot of unnecessary "differences" that turned out to be whitespace
+> or comment style only, or differences in the order of nodes.
+> There were only few real differences in the information, and the
+> MPC5125 device tree appears to only describe a subset of what the
+> SoC actually contains.
+>
+> It may be worth looking into
+> - identifying common parts that are shared among the MPC5121 and
+>    MPC5125 (my recent CCF update lists differences, but does not
+>    explicitly list similarities, and is from the clocks
+>    perspective and may not cover all of the SoC components)
+> - putting those common parts into .dtsi files if possible
+> - making the MPC5125 tower board reference the DTS includes,
+>    sharing as much as possible with the other SoC variants
+>
+> This may involve another split of the mpc5121.dtsi into what's
+> common to all MPC512x variants, and what's exclusive to MPC5121
+> only.
+>
+> But that is a bigger task than the above quick adjustment, and is
+> not a required fix but just an improvement in maintainability or
+> completeness of information.  So I suggest to pick your USB1
+> disabling for -next and 3.14 now, and to address the DTS cleanup
+> and sharing later.
 
---vtzGhvizbBRQ85DL--
+It was from the first commit of mpc5125twr.dts file that I would have 
+liked to rework all mpc5xxx DTS tree.
+At the moment I have already started this task but it's better to open 
+another thread for this discussion and I agree with you that it's not a 
+priority.
+
+Now, I'm working to the NFC controller and I'm porting to linux 3.13 the 
+driver that we are using in linux 3.9.4.
+When I done a preliminary version I'll post for starting a discussion 
+about its correct integration.
+
+I think it's time to add this driver in mainline for use NFC as well.
+
+Best regards,
+Matteo Facchinetti
