@@ -1,22 +1,19 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1C37D2C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 21:48:11 +1100 (EST)
-Date: Thu, 19 Dec 2013 10:48:04 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <Guangyu.Chen@freescale.com>
-Message-ID: <20131219104804.GT31886@sirena.org.uk>
-References: <1386845085-21682-1-git-send-email-Guangyu.Chen@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 9655F2C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 23:30:28 +1100 (EST)
+Date: Thu, 19 Dec 2013 13:30:17 +0100
+From: Gerhard Sittig <gsi@denx.de>
+To: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+Subject: Re: [PATCH] powerpc/512x: dts: disable MPC5125 usb module
+Message-ID: <20131219123017.GM8064@book.gsilab.sittig.org>
+References: <1387448639-11050-1-git-send-email-matteo.facchinetti@sirius-es.it>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="QCC2I/2CckNfI+Tr"
-In-Reply-To: <1386845085-21682-1-git-send-email-Guangyu.Chen@freescale.com>
-Subject: Re: [RFC][PATCH v1] ASoC: fsl_ssi: Add DAI master mode support for
- SSI on i.MX series
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
- timur@tabi.org, perex@perex.cz, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1387448639-11050-1-git-send-email-matteo.facchinetti@sirius-es.it>
+Cc: agust@denx.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +23,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Dec 19, 2013 at 11:23 +0100, Matteo Facchinetti wrote:
+> 
+> USB controller pin-muxing is not initialized correctly and when system boot,
+> causes a kernel panic.
+> USB controller is also connected with a USB3320 ulpi tranciever and
+> DTS should be includes the correct dependency for initialize and activate
+> this component.
+> 
+> Signed-off-by: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+> ---
+>  arch/powerpc/boot/dts/mpc5125twr.dts | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/arch/powerpc/boot/dts/mpc5125twr.dts b/arch/powerpc/boot/dts/mpc5125twr.dts
+> index 806479f..85452a7 100644
+> --- a/arch/powerpc/boot/dts/mpc5125twr.dts
+> +++ b/arch/powerpc/boot/dts/mpc5125twr.dts
+> @@ -230,6 +230,9 @@
+>  		};
+>  
+>  		usb@3000 {
+> +			/* TODO correct pinmux config and fix USB3320 ulpi dependency */
+> +			status = "disabled";
+> +
+>  			compatible = "fsl,mpc5121-usb2-dr";
+>  			reg = <0x3000 0x400>;
+>  			#address-cells = <1>;
+> -- 
+> 1.8.3.2
 
---QCC2I/2CckNfI+Tr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I agree on the change to the board dts file, but suggest to
+reword the commit description for improved reception.
 
-On Thu, Dec 12, 2013 at 06:44:45PM +0800, Nicolin Chen wrote:
-> From: Nicolin Chen <b42378@freescale.com>
->=20
-> This patch adds three main functions for DAI master mode: set_dai_fmt(),
-> set_dai_sysclk() and set_dai_tdm_slot(), and one essential baud clock
-> accordingly. After appending this patch, the fsl_ssi driver on i.MX series
-> has the ability to derive LRCLK and BCLK from baud clock source so as to
-> support some audio Codecs which can only be used in slave mode.
+I feel it's worth trying to phrase the subject line, the commit
+message, and the patch such that they can get considered
+independently from each other, as not all of them are necessarily
+available at the same time.  Often they get looked up from
+different perspectives, like terse listing first for orientation,
+log with description then to determine whether to have a closer
+look, the patch only at the end after the other checks told you
+to look into more details.  Assuming that they always show up in
+combination may turn out to be inaccurate.
 
-Applied, thanks.
+So I suggest some text along those lines:
 
---QCC2I/2CckNfI+Tr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+  at the moment the USB controller's pin muxing is not setup
+  correctly and causes a kernel panic upon system startup, so
+  disable the USB1 device tree node in the MPC5125 tower board
+  dts file
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+  the USB controller is connected to an USB3320 ULPI transceiver
+  and the device tree should receive an update to reflect correct
+  dependencies and required initialization data before the USB1
+  node can get re-enabled
 
-iQIcBAEBAgAGBQJSss7hAAoJELSic+t+oim9EeYP/RDpWeDZFHzVsCBe66KpRKlH
-I8HCnRChRZz6dI10EheWrIEiYXWWZ9UkRsXXx6DphN+K5OniRU2ozogDZdewvaBj
-Y1eZk8Ho09gufRz7mWQNA+JLA6PfZ5nUWLQpIYYnv9kVDyQJ3EhGCK/izg+jVc+y
-uKVg6Lvz6DTPsWuHqNl6/Dc75y87XuAVjYiYH56X/louGm4Y//4BfFbUNqO8UxVT
-kJeUaOV2um/wiDfnuOjB3ojSiNq1AJXNWk9tl8/Jh0khXCIAj/6Zv7qeIZh9jaQI
-fZf1MVVSqWKnkAJKQhxVWLzy/GH7Abi+SHeSWMXcO9jhKdqqjt+kSis2QEFlayzV
-xuEyhLdtY3RWcyoZta4c+dySZY8IH0ahRDsbdByEcSLH1adP0vSu0/Th+Ynq7gAW
-YtK2VRoQI1z02CGP3JAWmW8hCDTOECUwMs/6TtmrcYMnrrajY8eF0kHv0ju7A3Ze
-1w0EfFOV67lTJEpWe/ruWfcbTFq+n3flvYO6TlgZA4tuS9PsYrPKJiN2YMui7+NH
-vfHjH0x8PcrT1P+UWKL+g621lhalxKvUTR/dyONRFG6seNGkHVrtKr61T27jSMXo
-Vmhvo4nxc1bubV0bsE7C3GRWdffa8dPPdgWBRsciJCqDEmK2R1vv0Xr4Ctt5xlVx
-6G520tJq91ENcWquOG/t
-=+6lW
------END PGP SIGNATURE-----
+Does that sound correct to you?  Does it reflect your intention,
+or did I put something in wrong terms?
 
---QCC2I/2CckNfI+Tr--
+A minor nit would be that other reviewers in the past suggested
+to put the 'status = "disabled"' line last in the list of
+properties (right before optional children).  I don't have strong
+feelings about this.  Putting it first might better reflect your
+motivation of only re-enabling the node after fixing the lack or
+inappropriateness of existing information first.
+
+
+A different matter is that I'd suggest to re-work the MPC5125
+device tree.  It recently escaped my attention because it did not
+share any information with the MPC5121 trees.  Comparing the
+MPC5125 board DTS with the MPC5121 DTS include file resulted in a
+lot of unnecessary "differences" that turned out to be whitespace
+or comment style only, or differences in the order of nodes.
+There were only few real differences in the information, and the
+MPC5125 device tree appears to only describe a subset of what the
+SoC actually contains.
+
+It may be worth looking into
+- identifying common parts that are shared among the MPC5121 and
+  MPC5125 (my recent CCF update lists differences, but does not
+  explicitly list similarities, and is from the clocks
+  perspective and may not cover all of the SoC components)
+- putting those common parts into .dtsi files if possible
+- making the MPC5125 tower board reference the DTS includes,
+  sharing as much as possible with the other SoC variants
+
+This may involve another split of the mpc5121.dtsi into what's
+common to all MPC512x variants, and what's exclusive to MPC5121
+only.
+
+But that is a bigger task than the above quick adjustment, and is
+not a required fix but just an improvement in maintainability or
+completeness of information.  So I suggest to pick your USB1
+disabling for -next and 3.14 now, and to address the DTS cleanup
+and sharing later.
+
+
+virtually yours
+Gerhard Sittig
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
