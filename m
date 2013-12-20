@@ -1,22 +1,26 @@
-Return-Path: <jjhiblot@gmail.com>
-Received: from mail-we0-f181.google.com (mail-we0-f181.google.com
- [74.125.82.181])
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ie0-x22e.google.com (mail-ie0-x22e.google.com
+ [IPv6:2607:f8b0:4001:c03::22e])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E29C22C0379
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 02:16:03 +1100 (EST)
-Received: by mail-we0-f181.google.com with SMTP id x55so2630803wes.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 07:15:59 -0800 (PST)
-From: jean-jacques hiblot <jjhiblot@traphandler.com>
-To: wsa@the-dreams.de
-Subject: [PATCH v3 REPOST 4/4] i2c: i2c-ibm-iic: Implements a polling mode
-Date: Fri, 20 Dec 2013 16:12:56 +0100
-Message-Id: <1387552376-12986-5-git-send-email-jjhiblot@traphandler.com>
-In-Reply-To: <1387552376-12986-1-git-send-email-jjhiblot@traphandler.com>
-References: <1387552376-12986-1-git-send-email-jjhiblot@traphandler.com>
-Cc: gregory.clement@free-electrons.com,
- jean-jacques hiblot <jjhiblot@traphandler.com>, linuxppc-dev@lists.ozlabs.org,
- linux-i2c@vger.kernel.org, jean-jacques hiblot <jjhiblot@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 7D03A2C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 03:43:23 +1100 (EST)
+Received: by mail-ie0-f174.google.com with SMTP id at1so3372376iec.19
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 08:43:20 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
+References: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Fri, 20 Dec 2013 09:42:59 -0700
+Message-ID: <CAErSpo7+8sLZVi24fi+xxTEW2_DTJ2_zUrW+vobMGsvCEFwY_Q@mail.gmail.com>
+Subject: Re: [RFC] linux/pci: move pci_platform_pm_ops to linux/pci.h
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linux PM list <linux-pm@vger.kernel.org>, roy.zang@freescale.com,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,190 +30,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: jean-jacques hiblot <jjhiblot@gmail.com>
+On Fri, Dec 20, 2013 at 3:03 AM, Dongsheng Wang
+<dongsheng.wang@freescale.com> wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+>
+> make Freescale platform use pci_platform_pm_ops struct.
 
-When no valid interrupt is defined for the controller, use polling to handle
-the transfers.
-The polling mode can also be forced with the "iic_force_poll" module parameter.
+This changelog doesn't say anything about what the patch does.
 
-Signed-off-by: jean-jacques hiblot <jjhiblot@traphandler.com>
----
- drivers/i2c/busses/i2c-ibm_iic.c | 91 ++++++++++++++++++++++++++++++++--------
- drivers/i2c/busses/i2c-ibm_iic.h |  1 +
- 2 files changed, 74 insertions(+), 18 deletions(-)
+I infer that you want to use pci_platform_pm_ops from some Freescale
+code.  This patch should be posted along with the patches that add
+that Freescale code, so we can see how you intend to use it.
 
-diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
-index 857259e..aefe228 100644
---- a/drivers/i2c/busses/i2c-ibm_iic.c
-+++ b/drivers/i2c/busses/i2c-ibm_iic.c
-@@ -336,11 +336,45 @@ static irqreturn_t iic_handler(int irq, void *dev_id)
- }
- 
- /*
-+ * Polling used when interrupt can't be used
-+ */
-+static int poll_for_end_of_transfer(struct ibm_iic_private *dev, u32 timeout)
-+{
-+	struct iic_regs __iomem *iic = dev->vaddr;
-+	u32 status;
-+	unsigned long end = jiffies + timeout;
-+
-+	while ((dev->transfer_complete == 0) &&
-+	   time_after(end, jiffies) &&
-+	   !signal_pending(current)) {
-+		status = in_8(&iic->sts);
-+		/* check if the transfer is done or an error occured */
-+		if ((status & (STS_ERR | STS_SCMP)) || !(status & STS_PT))
-+			iic_xfer_bytes(dev);
-+		/* The transfer is not complete,
-+		 * calling schedule relaxes the CPU load and allows to know
-+		 * if the process is being signaled (for abortion)
-+		 */
-+		if (dev->transfer_complete == 0)
-+			schedule();
-+	}
-+
-+	if (signal_pending(current))
-+		return -ERESTARTSYS;
-+
-+	if (dev->transfer_complete == 0)
-+		return 0;
-+
-+	return 1;
-+}
-+
-+/*
-  * Try to abort active transfer.
-  */
- static void iic_abort_xfer(struct ibm_iic_private *dev)
- {
- 	struct device *device = dev->adap.dev.parent;
-+	struct iic_regs __iomem *iic = dev->vaddr;
- 	unsigned long end;
- 
- 	DBG(dev, "aborting transfer\n");
-@@ -348,8 +382,17 @@ static void iic_abort_xfer(struct ibm_iic_private *dev)
- 	end = jiffies + 10;
- 	dev->abort = 1;
- 
--	while (time_after(end, jiffies) && !dev->transfer_complete)
--		schedule();
-+	while (time_after(end, jiffies) && !dev->transfer_complete) {
-+		u32 sts;
-+		if (dev->use_polling) {
-+			sts = in_8(&iic->sts);
-+			/* check if the transfer is done or an error occured */
-+			if ((sts & (STS_ERR | STS_SCMP)) || !(sts & STS_PT))
-+				iic_xfer_bytes(dev);
-+		}
-+		if (dev->transfer_complete == 0)
-+			schedule();
-+	}
- 
- 	if (!dev->transfer_complete) {
- 		dev_err(device, "abort operation failed\n");
-@@ -381,7 +424,8 @@ static int iic_xfer_bytes(struct ibm_iic_private *dev)
- 	if (dev->status == -ECANCELED) {
- 		DBG(dev, "abort completed\n");
- 		dev->transfer_complete = 1;
--		complete(&dev->iic_compl);
-+		if (!dev->use_polling)
-+			complete(&dev->iic_compl);
- 		return dev->status;
- 	}
- 
-@@ -400,7 +444,8 @@ static int iic_xfer_bytes(struct ibm_iic_private *dev)
- 
- 		dev->status = -EIO;
- 		dev->transfer_complete = 1;
--		complete(&dev->iic_compl);
-+		if (!dev->use_polling)
-+			complete(&dev->iic_compl);
- 		return dev->status;
- 	}
- 
-@@ -428,7 +473,8 @@ static int iic_xfer_bytes(struct ibm_iic_private *dev)
- 		if (dev->current_msg == dev->num_msgs) {
- 			DBG2(dev, "end of transfer\n");
- 			dev->transfer_complete = 1;
--			complete(&dev->iic_compl);
-+			if (!dev->use_polling)
-+				complete(&dev->iic_compl);
- 			return dev->status;
- 		}
- 		pm++;
-@@ -625,24 +671,29 @@ static int iic_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 	/* Load slave address */
- 	iic_address(dev, &msgs[0]);
- 
--	init_completion(&dev->iic_compl);
-+	if (!dev->use_polling)
-+		init_completion(&dev->iic_compl);
- 
- 	/* start the transfer */
- 	ret = iic_xfer_bytes(dev);
- 
- 	if (ret == 0) {
--		/* enable the interrupts */
--		out_8(&iic->mdcntl, MDCNTL_EINT);
--		/*  unmask the interrupts */
--		out_8(&iic->intmsk,	INTRMSK_EIMTC | INTRMSK_EITA  |
--					INTRMSK_EIIC | INTRMSK_EIHE);
--		/*  wait for the transfer to complete */
--		ret = wait_for_completion_interruptible_timeout(
--			&dev->iic_compl, num * HZ);
--		/*
--		 * we don't mask the interrupts here because we may
--		 * need them to abort the transfer gracefully
--		 */
-+		if (dev->use_polling) {
-+			ret = poll_for_end_of_transfer(dev, num * HZ);
-+		} else {
-+			/* enable the interrupts */
-+			out_8(&iic->mdcntl, MDCNTL_EINT);
-+			/*  unmask the interrupts */
-+			out_8(&iic->intmsk,	INTRMSK_EIMTC | INTRMSK_EITA  |
-+						INTRMSK_EIIC | INTRMSK_EIHE);
-+			/*  wait for the transfer to complete */
-+			ret = wait_for_completion_interruptible_timeout(
-+				&dev->iic_compl, num * HZ);
-+			/*
-+			 * we don't mask the interrupts here because we may
-+			 * need them to abort the transfer gracefully
-+			 */
-+		}
- 	}
- 
- 	if (ret == 0) {
-@@ -709,6 +760,8 @@ static int iic_request_irq(struct platform_device *ofdev,
- 	struct device_node *np = ofdev->dev.of_node;
- 	int irq;
- 
-+	dev->use_polling = 1;
-+
- 	if (iic_force_poll)
- 		return 0;
- 
-@@ -729,6 +782,8 @@ static int iic_request_irq(struct platform_device *ofdev,
- 		return 0;
- 	}
- 
-+	dev->use_polling = 0;
-+
- 	return irq;
- }
- 
-diff --git a/drivers/i2c/busses/i2c-ibm_iic.h b/drivers/i2c/busses/i2c-ibm_iic.h
-index 0ee28a9..523cfc1 100644
---- a/drivers/i2c/busses/i2c-ibm_iic.h
-+++ b/drivers/i2c/busses/i2c-ibm_iic.h
-@@ -58,6 +58,7 @@ struct ibm_iic_private {
- 	int transfer_complete;
- 	int status;
- 	int abort;
-+	int use_polling;
- 	struct completion iic_compl;
- };
- 
--- 
-1.8.4.2
+The existing use is in drivers/pci/pci-acpi.c, so it's possible that
+your new use should be added in the same way, in drivers/pci, so we
+don't have to make pci_platform_pm_ops part of the public PCI
+interface in include/linux/pci.h.
+
+That said, if Raphael thinks this makes sense, it's OK with me.
+
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ---
+>
+> If device's not set power state, we will use this interface to put the
+> device's into the correct state.
+>
+> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> index 9c91ecc..48f8b1a 100644
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -33,36 +33,6 @@ int pci_mmap_fits(struct pci_dev *pdev, int resno, struct vm_area_struct *vmai,
+>  #endif
+>  int pci_probe_reset_function(struct pci_dev *dev);
+>
+> -/**
+> - * struct pci_platform_pm_ops - Firmware PM callbacks
+> - *
+> - * @is_manageable: returns 'true' if given device is power manageable by the
+> - *                 platform firmware
+> - *
+> - * @set_state: invokes the platform firmware to set the device's power state
+> - *
+> - * @choose_state: returns PCI power state of given device preferred by the
+> - *                platform; to be used during system-wide transitions from a
+> - *                sleeping state to the working state and vice versa
+> - *
+> - * @sleep_wake: enables/disables the system wake up capability of given device
+> - *
+> - * @run_wake: enables/disables the platform to generate run-time wake-up events
+> - *             for given device (the device's wake-up capability has to be
+> - *             enabled by @sleep_wake for this feature to work)
+> - *
+> - * If given platform is generally capable of power managing PCI devices, all of
+> - * these callbacks are mandatory.
+> - */
+> -struct pci_platform_pm_ops {
+> -       bool (*is_manageable)(struct pci_dev *dev);
+> -       int (*set_state)(struct pci_dev *dev, pci_power_t state);
+> -       pci_power_t (*choose_state)(struct pci_dev *dev);
+> -       int (*sleep_wake)(struct pci_dev *dev, bool enable);
+> -       int (*run_wake)(struct pci_dev *dev, bool enable);
+> -};
+> -
+> -int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+>  void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+>  void pci_power_up(struct pci_dev *dev);
+>  void pci_disable_enabled_device(struct pci_dev *dev);
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 1084a15..20e07b8 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -365,6 +365,37 @@ struct pci_dev {
+>         size_t romlen; /* Length of ROM if it's not from the BAR */
+>  };
+>
+> +/**
+> + * struct pci_platform_pm_ops - Firmware PM callbacks
+> + *
+> + * @is_manageable: returns 'true' if given device is power manageable by the
+> + *                 platform firmware
+> + *
+> + * @set_state: invokes the platform firmware to set the device's power state
+> + *
+> + * @choose_state: returns PCI power state of given device preferred by the
+> + *                platform; to be used during system-wide transitions from a
+> + *                sleeping state to the working state and vice versa
+> + *
+> + * @sleep_wake: enables/disables the system wake up capability of given device
+> + *
+> + * @run_wake: enables/disables the platform to generate run-time wake-up events
+> + *             for given device (the device's wake-up capability has to be
+> + *             enabled by @sleep_wake for this feature to work)
+> + *
+> + * If given platform is generally capable of power managing PCI devices, all of
+> + * these callbacks are mandatory.
+> + */
+> +struct pci_platform_pm_ops {
+> +       bool (*is_manageable)(struct pci_dev *dev);
+> +       int (*set_state)(struct pci_dev *dev, pci_power_t state);
+> +       pci_power_t (*choose_state)(struct pci_dev *dev);
+> +       int (*sleep_wake)(struct pci_dev *dev, bool enable);
+> +       int (*run_wake)(struct pci_dev *dev, bool enable);
+> +};
+> +
+> +int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+> +
+>  static inline struct pci_dev *pci_physfn(struct pci_dev *dev)
+>  {
+>  #ifdef CONFIG_PCI_IOV
+> --
+> 1.8.5
+>
+>
