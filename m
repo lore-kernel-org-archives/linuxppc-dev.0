@@ -1,26 +1,43 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ie0-x22e.google.com (mail-ie0-x22e.google.com
- [IPv6:2607:f8b0:4001:c03::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <hartb@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7D03A2C0079
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 03:43:23 +1100 (EST)
-Received: by mail-ie0-f174.google.com with SMTP id at1so3372376iec.19
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 08:43:20 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 600B92C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 05:15:29 +1100 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hartb@linux.vnet.ibm.com>;
+ Fri, 20 Dec 2013 11:15:27 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2BF701FF0021
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 11:15:00 -0700 (MST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBKIFOMf10355102
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 19:15:24 +0100
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ rBKIIU4l001799
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 11:18:30 -0700
+Received: from oc3347516403.ibm.com ([9.80.82.166])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+ rBKIIR9o001671
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES128-SHA bits=128 verify=NO)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 11:18:29 -0700
+Date: Fri, 20 Dec 2013 12:15:21 -0600
+From: Brian W Hart <hartb@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powernv: eeh: fix possible buffer overrun in
+ ioda_eeh_phb_diag()
+Message-ID: <20131220181520.GA5480@oc3347516403.ibm.com>
+References: <20131219231407.GA22418@oc3347516403.ibm.com>
+ <20131220013539.GA10795@shangw.(null)>
+ <20131220015937.GA13868@shangw.(null)>
 MIME-Version: 1.0
-In-Reply-To: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 20 Dec 2013 09:42:59 -0700
-Message-ID: <CAErSpo7+8sLZVi24fi+xxTEW2_DTJ2_zUrW+vobMGsvCEFwY_Q@mail.gmail.com>
-Subject: Re: [RFC] linux/pci: move pci_platform_pm_ops to linux/pci.h
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux PM list <linux-pm@vger.kernel.org>, roy.zang@freescale.com,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Scott Wood <scottwood@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20131220015937.GA13868@shangw.(null)>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,115 +47,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 20, 2013 at 3:03 AM, Dongsheng Wang
-<dongsheng.wang@freescale.com> wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
->
-> make Freescale platform use pci_platform_pm_ops struct.
+On Fri, Dec 20, 2013 at 09:59:37AM +0800, Gavin Shan wrote:
+> On Fri, Dec 20, 2013 at 09:35:39AM +0800, Gavin Shan wrote:
+> >On Thu, Dec 19, 2013 at 05:14:07PM -0600, Brian W Hart wrote:
+> >>PHB diagnostic buffer may be smaller than PAGE_SIZE, especially when
+> >>PAGE_SIZE > 4KB.
+> >>
+> >
+> >I think you're talking about that PAGE_SIZE could be configured
+> >to have variable size (e.g. 4KB). So it's not safe to pass PAGE_SIZE
+> >to OPAL API opal_pci_get_phb_diag_data2(). Instead, we should pass
+> >PNV_PCI_DIAG_BUF_SIZE and it makes sense to me :-)
 
-This changelog doesn't say anything about what the patch does.
+Yeah, I noticed the problem because our test machine has PAGE_SIZE of
+64K with the buffer only being 8K.
 
-I infer that you want to use pci_platform_pm_ops from some Freescale
-code.  This patch should be posted along with the patches that add
-that Freescale code, so we can see how you intend to use it.
+[...]
+> Sorry, Brian. It has been fixed as part of the following commit, which
+> has been put into Ben's powerpc-next branch :-)
 
-The existing use is in drivers/pci/pci-acpi.c, so it's possible that
-your new use should be added in the same way, in drivers/pci, so we
-don't have to make pci_platform_pm_ops part of the public PCI
-interface in include/linux/pci.h.
-
-That said, if Raphael thinks this makes sense, it's OK with me.
-
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> ---
->
-> If device's not set power state, we will use this interface to put the
-> device's into the correct state.
->
-> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-> index 9c91ecc..48f8b1a 100644
-> --- a/drivers/pci/pci.h
-> +++ b/drivers/pci/pci.h
-> @@ -33,36 +33,6 @@ int pci_mmap_fits(struct pci_dev *pdev, int resno, struct vm_area_struct *vmai,
->  #endif
->  int pci_probe_reset_function(struct pci_dev *dev);
->
-> -/**
-> - * struct pci_platform_pm_ops - Firmware PM callbacks
-> - *
-> - * @is_manageable: returns 'true' if given device is power manageable by the
-> - *                 platform firmware
-> - *
-> - * @set_state: invokes the platform firmware to set the device's power state
-> - *
-> - * @choose_state: returns PCI power state of given device preferred by the
-> - *                platform; to be used during system-wide transitions from a
-> - *                sleeping state to the working state and vice versa
-> - *
-> - * @sleep_wake: enables/disables the system wake up capability of given device
-> - *
-> - * @run_wake: enables/disables the platform to generate run-time wake-up events
-> - *             for given device (the device's wake-up capability has to be
-> - *             enabled by @sleep_wake for this feature to work)
-> - *
-> - * If given platform is generally capable of power managing PCI devices, all of
-> - * these callbacks are mandatory.
-> - */
-> -struct pci_platform_pm_ops {
-> -       bool (*is_manageable)(struct pci_dev *dev);
-> -       int (*set_state)(struct pci_dev *dev, pci_power_t state);
-> -       pci_power_t (*choose_state)(struct pci_dev *dev);
-> -       int (*sleep_wake)(struct pci_dev *dev, bool enable);
-> -       int (*run_wake)(struct pci_dev *dev, bool enable);
-> -};
-> -
-> -int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
->  void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
->  void pci_power_up(struct pci_dev *dev);
->  void pci_disable_enabled_device(struct pci_dev *dev);
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 1084a15..20e07b8 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -365,6 +365,37 @@ struct pci_dev {
->         size_t romlen; /* Length of ROM if it's not from the BAR */
->  };
->
-> +/**
-> + * struct pci_platform_pm_ops - Firmware PM callbacks
-> + *
-> + * @is_manageable: returns 'true' if given device is power manageable by the
-> + *                 platform firmware
-> + *
-> + * @set_state: invokes the platform firmware to set the device's power state
-> + *
-> + * @choose_state: returns PCI power state of given device preferred by the
-> + *                platform; to be used during system-wide transitions from a
-> + *                sleeping state to the working state and vice versa
-> + *
-> + * @sleep_wake: enables/disables the system wake up capability of given device
-> + *
-> + * @run_wake: enables/disables the platform to generate run-time wake-up events
-> + *             for given device (the device's wake-up capability has to be
-> + *             enabled by @sleep_wake for this feature to work)
-> + *
-> + * If given platform is generally capable of power managing PCI devices, all of
-> + * these callbacks are mandatory.
-> + */
-> +struct pci_platform_pm_ops {
-> +       bool (*is_manageable)(struct pci_dev *dev);
-> +       int (*set_state)(struct pci_dev *dev, pci_power_t state);
-> +       pci_power_t (*choose_state)(struct pci_dev *dev);
-> +       int (*sleep_wake)(struct pci_dev *dev, bool enable);
-> +       int (*run_wake)(struct pci_dev *dev, bool enable);
-> +};
-> +
-> +int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
-> +
->  static inline struct pci_dev *pci_physfn(struct pci_dev *dev)
->  {
->  #ifdef CONFIG_PCI_IOV
-> --
-> 1.8.5
->
->
+Thank you!
