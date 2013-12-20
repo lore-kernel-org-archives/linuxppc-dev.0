@@ -1,27 +1,19 @@
-Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
- [209.85.212.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8EE742C0091
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 08:16:15 +1100 (EST)
-Received: by mail-wi0-f179.google.com with SMTP id z2so4263788wiv.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 13:16:10 -0800 (PST)
-Message-ID: <52B4B39C.2010202@linaro.org>
-Date: Fri, 20 Dec 2013 22:16:12 +0100
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- rjw@rjwysocki.net
-Subject: Re: [PATCH v2 1/9] ARM: EXYNOS: cpuidle: fix AFTR mode check
-References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
- <1387565251-7051-2-git-send-email-b.zolnierkie@samsung.com>
-In-Reply-To: <1387565251-7051-2-git-send-email-b.zolnierkie@samsung.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, kyungmin.park@samsung.com,
- Kukjin Kim <kgene.kim@samsung.com>, linuxppc-dev@lists.ozlabs.org,
- lenb@kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id E704A2C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 08:17:04 +1100 (EST)
+Date: Fri, 20 Dec 2013 22:16:56 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+Subject: Re: [PATCH v2] powerpc/512x: dts: disable MPC5125 usb module
+Message-ID: <20131220221656.70e151f7@crub>
+In-Reply-To: <1387530982-6115-1-git-send-email-matteo.facchinetti@sirius-es.it>
+References: <1387530982-6115-1-git-send-email-matteo.facchinetti@sirius-es.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: gsi@denx.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,64 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/20/2013 07:47 PM, Bartlomiej Zolnierkiewicz wrote:
-> The EXYNOS cpuidle driver code assumes that cpuidle core will handle
-> dev->state_count smaller than drv->state_count but currently this is
-> untrue (dev->state_count is used only for handling cpuidle state sysfs
-> entries and drv->state_count is used for all other cases) and will not
-> be fixed in the future as dev->state_count is planned to be removed.
->
-> Fix the issue by checking for the max supported idle state in AFTR
-> state's ->enter handler (exynos4_enter_lowpower()) and entering AFTR
-> mode only when cores other than CPU0 are offline.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
+On Fri, 20 Dec 2013 10:16:22 +0100
+Matteo Facchinetti <matteo.facchinetti@sirius-es.it> wrote:
+
+> At the moment the USB controller's pin muxing is not setup
+> correctly and causes a kernel panic upon system startup, so
+> disable the USB1 device tree node in the MPC5125 tower board
+> dts file.
+> 
+> The USB controller is connected to an USB3320 ULPI transceiver
+> and the device tree should receive an update to reflect correct
+> dependencies and required initialization data before the USB1
+> node can get re-enabled.
+> 
+> Signed-off-by: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
 > ---
->   arch/arm/mach-exynos/cpuidle.c | 8 ++------
->   1 file changed, 2 insertions(+), 6 deletions(-)
->
-> diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/cpuidle.c
-> index da65b03..f57cb91 100644
-> --- a/arch/arm/mach-exynos/cpuidle.c
-> +++ b/arch/arm/mach-exynos/cpuidle.c
-> @@ -172,8 +172,8 @@ static int exynos4_enter_lowpower(struct cpuidle_device *dev,
->   {
->   	int new_index = index;
->
-> -	/* This mode only can be entered when other core's are offline */
-> -	if (num_online_cpus() > 1)
-> +	/* AFTR can only be entered when cores other than CPU0 are offline */
-> +	if (num_online_cpus() > 1 || dev->cpu != 0)
->   		new_index = drv->safe_state_index;
->
->   	if (new_index == 0)
-> @@ -235,10 +235,6 @@ static int exynos_cpuidle_probe(struct platform_device *pdev)
->   		device = &per_cpu(exynos4_cpuidle_device, cpu_id);
->   		device->cpu = cpu_id;
->
-> -		/* Support IDLE only */
-> -		if (cpu_id != 0)
-> -			device->state_count = 1;
-> -
->   		ret = cpuidle_register_device(device);
->   		if (ret) {
->   			dev_err(&pdev->dev, "failed to register cpuidle device\n");
->
+> v2:
+> * improve the text of the commit as suggested by Gerhard Sittig <gsi@denx.de>
+> * put the 'status = "disabled"' to the last line in the list of properties
+> * rewiew the comment related to USB1 device tree node
+> ---
+>  arch/powerpc/boot/dts/mpc5125twr.dts | 5 +++++
+>  1 file changed, 5 insertions(+)
 
-Hi Bartlomiej,
+Applied to merge branch. Thanks!
 
-thanks for this cleanup. May be you can also add another patch to switch 
-to the generic cpuidle_register function ?
-
-Thanks
-   -- Daniel
-
--- 
-  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Anatolij
