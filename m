@@ -2,23 +2,22 @@ Return-Path: <b.zolnierkie@samsung.com>
 Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher RC4-MD5 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BB94F2C0376
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 05:58:12 +1100 (EST)
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
+ by ozlabs.org (Postfix) with ESMTPS id 5C0712C0312
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 05:58:13 +1100 (EST)
+Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
  by mailout3.samsung.com
  (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0MY4003I2C87QJC0@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Sat, 21 Dec 2013 03:48:07 +0900 (KST)
+ 17 2011)) with ESMTP id <0MY40053OC8BJKB0@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Sat, 21 Dec 2013 03:48:11 +0900 (KST)
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 To: rjw@rjwysocki.net
-Subject: [PATCH v2 3/9] POWERPC: pseries: cpuidle: use the common
- cpuidle_[un]register() routines
-Date: Fri, 20 Dec 2013 19:47:25 +0100
-Message-id: <1387565251-7051-4-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v2 4/9] ACPI / cpuidle: fix max idle state handling with
+ hotplug CPU support
+Date: Fri, 20 Dec 2013 19:47:26 +0100
+Message-id: <1387565251-7051-5-git-send-email-b.zolnierkie@samsung.com>
 In-reply-to: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
 References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
- linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
  b.zolnierkie@samsung.com, daniel.lezcano@linaro.org,
  linux-kernel@vger.kernel.org, kyungmin.park@samsung.com,
  linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
@@ -31,117 +30,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It is now possible to use the common cpuidle_[un]register() routines
-(instead of open-coding them) so do it.
+acpi_processor_hotplug() calls acpi_processor_setup_cpuidle_cx()
+without calling acpi_processor_setup_cpuidle_states() first so it
+is possible that dev->state_count becomes different from
+drv->state_count (in case of SMP system with unsupported C2/C3
+states + enabled CPU hotplug and num_online_cpus() becoming > 1).
+
+The driver code assumes that cpuidle core will handle such cases
+but currently this is untrue (dev->state_count is used only for
+handling cpuidle state sysfs entries and drv->state_count is used
+for all other cases) and will not be fixed in the future as
+dev->state_count is planned to be removed.
+
+Fix the issue by checking for the max supported idle state in
+C2/C3 state's ->enter handler (acpi_idle_enter_simple() for C2/C3
+and acpi_idle_enter_bm() for C3 + bm_check flag set) and setting
+the C1 state (instead of higher states) when needed.
+
+Also remove no longer needed max idle state checks from
+acpi_processor_setup_cpuidle_[states,cx]().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Cc: Len Brown <lenb@kernel.org>
 ---
- arch/powerpc/platforms/pseries/processor_idle.c | 57 ++-----------------------
- 1 file changed, 3 insertions(+), 54 deletions(-)
+ drivers/acpi/processor_idle.c | 27 ++++++++++++++-------------
+ 1 file changed, 14 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
-index 8aa8c40..94134a5 100644
---- a/arch/powerpc/platforms/pseries/processor_idle.c
-+++ b/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -28,7 +28,6 @@ struct cpuidle_driver pseries_idle_driver = {
- #define MAX_IDLE_STATE_COUNT	2
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index a0cc5ef4f..c080c99 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -783,6 +783,13 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+ 	if (unlikely(!pr))
+ 		return -EINVAL;
  
- static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
--static struct cpuidle_device __percpu *pseries_cpuidle_devices;
- static struct cpuidle_state *cpuidle_state_table;
++#ifdef CONFIG_HOTPLUG_CPU
++	if ((cx->type != ACPI_STATE_C1) && (num_online_cpus() > 1) &&
++	    !pr->flags.has_cst &&
++	    !(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED))
++		return acpi_idle_enter_c1(dev, drv, CPUIDLE_DRIVER_STATE_START);
++#endif
++
+ 	if (cx->entry_method == ACPI_CSTATE_FFH) {
+ 		if (current_set_polling_and_test())
+ 			return -EINVAL;
+@@ -829,6 +836,13 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 	if (unlikely(!pr))
+ 		return -EINVAL;
  
- static inline void idle_loop_prolog(unsigned long *in_purr)
-@@ -191,7 +190,7 @@ static int pseries_cpuidle_add_cpu_notifier(struct notifier_block *n,
- {
- 	int hotcpu = (unsigned long)hcpu;
- 	struct cpuidle_device *dev =
--			per_cpu_ptr(pseries_cpuidle_devices, hotcpu);
-+			per_cpu_ptr(cpuidle_devices, hotcpu);
++#ifdef CONFIG_HOTPLUG_CPU
++	if ((cx->type != ACPI_STATE_C1) && (num_online_cpus() > 1) &&
++	    !pr->flags.has_cst &&
++	    !(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED))
++		return acpi_idle_enter_c1(dev, drv, CPUIDLE_DRIVER_STATE_START);
++#endif
++
+ 	if (!cx->bm_sts_skip && acpi_idle_bm_check()) {
+ 		if (drv->safe_state_index >= 0) {
+ 			return drv->states[drv->safe_state_index].enter(dev,
+@@ -930,12 +944,6 @@ static int acpi_processor_setup_cpuidle_cx(struct acpi_processor *pr,
+ 		if (!cx->valid)
+ 			continue;
  
- 	if (dev && cpuidle_get_driver()) {
- 		switch (action) {
-@@ -248,48 +247,6 @@ static int pseries_cpuidle_driver_init(void)
- 	return 0;
- }
+-#ifdef CONFIG_HOTPLUG_CPU
+-		if ((cx->type != ACPI_STATE_C1) && (num_online_cpus() > 1) &&
+-		    !pr->flags.has_cst &&
+-		    !(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED))
+-			continue;
+-#endif
+ 		per_cpu(acpi_cstate[count], dev->cpu) = cx;
  
--/* pseries_idle_devices_uninit(void)
-- * unregister cpuidle devices and de-allocate memory
-- */
--static void pseries_idle_devices_uninit(void)
--{
--	int i;
--	struct cpuidle_device *dev;
+ 		count++;
+@@ -985,13 +993,6 @@ static int acpi_processor_setup_cpuidle_states(struct acpi_processor *pr)
+ 		if (!cx->valid)
+ 			continue;
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-		if ((cx->type != ACPI_STATE_C1) && (num_online_cpus() > 1) &&
+-		    !pr->flags.has_cst &&
+-		    !(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED))
+-			continue;
+-#endif
 -
--	for_each_possible_cpu(i) {
--		dev = per_cpu_ptr(pseries_cpuidle_devices, i);
--		cpuidle_unregister_device(dev);
--	}
--
--	free_percpu(pseries_cpuidle_devices);
--	return;
--}
--
--/* pseries_idle_devices_init()
-- * allocate, initialize and register cpuidle device
-- */
--static int pseries_idle_devices_init(void)
--{
--	int i;
--	struct cpuidle_device *dev;
--
--	pseries_cpuidle_devices = alloc_percpu(struct cpuidle_device);
--	if (pseries_cpuidle_devices == NULL)
--		return -ENOMEM;
--
--	for_each_possible_cpu(i) {
--		dev = per_cpu_ptr(pseries_cpuidle_devices, i);
--		dev->cpu = i;
--		if (cpuidle_register_device(dev)) {
--			printk(KERN_DEBUG \
--				"cpuidle_register_device %d failed!\n", i);
--			return -EIO;
--		}
--	}
--
--	return 0;
--}
--
- /*
-  * pseries_idle_probe()
-  * Choose state table for shared versus dedicated partition
-@@ -325,19 +282,12 @@ static int __init pseries_processor_idle_init(void)
- 		return retval;
- 
- 	pseries_cpuidle_driver_init();
--	retval = cpuidle_register_driver(&pseries_idle_driver);
-+	retval = cpuidle_register(&pseries_idle_driver, NULL);
- 	if (retval) {
- 		printk(KERN_DEBUG "Registration of pseries driver failed.\n");
- 		return retval;
- 	}
- 
--	retval = pseries_idle_devices_init();
--	if (retval) {
--		pseries_idle_devices_uninit();
--		cpuidle_unregister_driver(&pseries_idle_driver);
--		return retval;
--	}
--
- 	register_cpu_notifier(&setup_hotplug_notifier);
- 	printk(KERN_DEBUG "pseries_idle_driver registered\n");
- 
-@@ -348,8 +298,7 @@ static void __exit pseries_processor_idle_exit(void)
- {
- 
- 	unregister_cpu_notifier(&setup_hotplug_notifier);
--	pseries_idle_devices_uninit();
--	cpuidle_unregister_driver(&pseries_idle_driver);
-+	cpuidle_unregister(&pseries_idle_driver);
- 
- 	return;
- }
+ 		state = &drv->states[count];
+ 		snprintf(state->name, CPUIDLE_NAME_LEN, "C%d", i);
+ 		strncpy(state->desc, cx->desc, CPUIDLE_DESC_LEN);
 -- 
 1.8.2.3
