@@ -1,39 +1,41 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CFF7C2C00D2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 12:59:48 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id F012E2C02A6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 15:37:19 +1100 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Thu, 19 Dec 2013 20:59:45 -0500
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id A997538C8045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 20:59:39 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rBK1xfrK7340542
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 01:59:41 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBK1xfUb007093
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 20:59:41 -0500
-Date: Fri, 20 Dec 2013 09:59:37 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powernv: eeh: fix possible buffer overrun in
- ioda_eeh_phb_diag()
-Message-ID: <20131220015937.GA13868@shangw.(null)>
-References: <20131219231407.GA22418@oc3347516403.ibm.com>
- <20131220013539.GA10795@shangw.(null)>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 20 Dec 2013 10:07:13 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 599D8E0024
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 10:09:37 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBK4b1YZ2949402
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 10:07:02 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBK4b8wo001191
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 10:07:08 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] powerpc: book3s: kvm: Use the saved dsisr and dar values
+In-Reply-To: <CA6C7C49-C1EC-4277-9777-650026C9127D@suse.de>
+References: <1384178577-23721-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <0AB88010-F2B7-44A1-8FA9-2A40079706BB@suse.de>
+ <87bo0d9vc5.fsf@linux.vnet.ibm.com>
+ <CA6C7C49-C1EC-4277-9777-650026C9127D@suse.de>
+Date: Fri, 20 Dec 2013 10:07:07 +0530
+Message-ID: <8738lo9lzg.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131220013539.GA10795@shangw.(null)>
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,67 +45,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 20, 2013 at 09:35:39AM +0800, Gavin Shan wrote:
->On Thu, Dec 19, 2013 at 05:14:07PM -0600, Brian W Hart wrote:
->>PHB diagnostic buffer may be smaller than PAGE_SIZE, especially when
->>PAGE_SIZE > 4KB.
->>
->
->I think you're talking about that PAGE_SIZE could be configured
->to have variable size (e.g. 4KB). So it's not safe to pass PAGE_SIZE
->to OPAL API opal_pci_get_phb_diag_data2(). Instead, we should pass
->PNV_PCI_DIAG_BUF_SIZE and it makes sense to me :-)
->
->Also, it needs to be backported to stable kernel as well.
->
->>Signed-off-by: Brian W Hart <hartb@linux.vnet.ibm.com>
->
->Acked-by: Gavin Shan <shangw@linux.vnet.ibm.com>
->
+Alexander Graf <agraf@suse.de> writes:
 
-Sorry, Brian. It has been fixed as part of the following commit, which
-has been put into Ben's powerpc-next branch :-)
-
-commit 93aef2a789778e7ec787179fc9b34ca4885a5ef3
-
-    161  static void ioda_eeh_phb_diag(struct pci_controller *hose)
-    162  {
-    163         struct pnv_phb *phb = hose->private_data;
-    164 -       struct OpalIoPhbErrorCommon *common;
-    165         long rc;
-    166  
-    167 -       common = (struct OpalIoPhbErrorCommon *)phb->diag.blob;
-    168 -       rc = opal_pci_get_phb_diag_data2(phb->opal_id, common, PAGE_SIZE);
-    169 +       rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
-    170 +                                        PNV_PCI_DIAG_BUF_SIZE);
-
->>---
->> arch/powerpc/platforms/powernv/eeh-ioda.c | 5 +++--
->> 1 file changed, 3 insertions(+), 2 deletions(-)
->>
->>diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
->>index 02245ce..8184ef5 100644
->>--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
->>+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
->>@@ -820,14 +820,15 @@ static void ioda_eeh_phb_diag(struct pci_controller *hose)
->> 	struct OpalIoPhbErrorCommon *common;
->> 	long rc;
->>
->>-	common = (struct OpalIoPhbErrorCommon *)phb->diag.blob;
->>-	rc = opal_pci_get_phb_diag_data2(phb->opal_id, common, PAGE_SIZE);
->>+	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
->>+					 PNV_PCI_DIAG_BUF_SIZE);
->> 	if (rc != OPAL_SUCCESS) {
->> 		pr_warning("%s: Failed to get diag-data for PHB#%x (%ld)\n",
->> 			    __func__, hose->global_number, rc);
->> 		return;
->> 	}
->>
->>+	common = (struct OpalIoPhbErrorCommon *)phb->diag.blob;
->> 	switch (common->ioType) {
->> 	case OPAL_PHB_ERROR_DATA_TYPE_P7IOC:
->> 		ioda_eeh_p7ioc_phb_diag(hose, common);
+>> Am 19.12.2013 um 08:02 schrieb "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>:
+>> 
+>> Alexander Graf <agraf@suse.de> writes:
+>> 
+>>>> On 11.11.2013, at 15:02, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>>>> 
+>>>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>>>> 
+>>>> Don't try to compute these values.
+>>>> 
+>>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>>>> ---
+>>>> 
+>>>> NOTE: I am not sure why we were originally computing dsisr and dar. So may be
+>>>> we need a variant of this patch. But with this and the additional patch
+>>>> "powerpc: book3s: PR: Enable Little Endian PR guest" I am able to get a Little Endian
+>>>> PR guest to boot.
+>>> 
+>>> It's quite easy to find out - git blame tells you all the history and points you to commit ca7f4203b.
+>>> 
+>>> commit ca7f4203b9b66e12d0d9968ff7dfe781f3a9695a
+>>> Author: Alexander Graf <agraf@suse.de>
+>>> Date:   Wed Mar 24 21:48:28 2010 +0100
+>>> 
+>>>    KVM: PPC: Implement alignment interrupt
+>>> 
+>>>    Mac OS X has some applications - namely the Finder - that require alignment
+>>>    interrupts to work properly. So we need to implement them.
+>>> 
+>>>    But the spec for 970 and 750 also looks different. While 750 requires the
+>>>    DSISR and DAR fields to reflect some instruction bits (DSISR) and the fault
+>>>    address (DAR), the 970 declares this as an optional feature. So we need
+>>>    to reconstruct DSISR and DAR manually.
+>>> 
+>>>    Signed-off-by: Alexander Graf <agraf@suse.de>
+>>>    Signed-off-by: Avi Kivity <avi@redhat.com>
+>>> 
+>>> Read this as "on 970, alignment interrupts don't give us DSISR and DAR of the faulting instruction" as otherwise I wouldn't have implemented it.
+>>> 
+>>> So this is clearly a nack on this patch :).
+>> 
+>> I can possibly do a if (cpu_has_feature(CPU_FTR_ARCH_201)). But do we need
+>> to do that ? According to Paul we should always find DAR.
 >
+> Paul only mentioned DAR, not DSISR. Please verify whether 970 gives us a proper DAR value - we can then remove that part.
+>
+> But for DSISR I'm not convinced CPUs above 970 handle this
+> correctly. So we would at least need a guest cpu check to find out
+> whether the vcpu expects a working dsisr and emulate it then.
 
-Thanks,
-Gavin
+>
+> I don't really fully understand the problem though. Why does the
+> calculation break at all for you?
+
+
+IIRC this was to get little endian PR setup to work. This is to avoid
+handling new instructions, because in little endian mode we get
+alignment interrupt for a larger instructon set
+
+-aneesh
