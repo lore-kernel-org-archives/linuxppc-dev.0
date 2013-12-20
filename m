@@ -1,20 +1,20 @@
-Return-Path: <matteo.facchinetti@sirius-es.it>
-Received: from mx.vmgattei.com (mx.vmgattei.com [77.223.18.35])
- by ozlabs.org (Postfix) with ESMTP id 4EE292C009E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 20:17:19 +1100 (EST)
-Received: from localhost (mx.vmgattei.com [127.0.0.1])
- by mx.vmgattei.com (Postfix) with ESMTP id C4D2020D60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 10:17:15 +0100 (CET)
-Received: from mx.vmgattei.com ([127.0.0.1])
- by localhost (mx.vmgattei.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 2Q-SfHbC9M-a for <linuxppc-dev@lists.ozlabs.org>;
- Fri, 20 Dec 2013 10:17:15 +0100 (CET)
-From: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/512x: dts: disable MPC5125 usb module
-Date: Fri, 20 Dec 2013 10:16:22 +0100
-Message-Id: <1387530982-6115-1-git-send-email-matteo.facchinetti@sirius-es.it>
-Cc: gsi@denx.de, agust@denx.de
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id B6A332C00E5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 21:07:15 +1100 (EST)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <rjw@rjwysocki.net>, <bhelgaas@google.com>
+Subject: [RFC] linux/pci: move pci_platform_pm_ops to linux/pci.h
+Date: Fri, 20 Dec 2013 18:03:52 +0800
+Message-ID: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-pm@vger.kernel.org, roy.zang@freescale.com,
+ Wang Dongsheng <dongsheng.wang@freescale.com>, linux-pci@vger.kernel.org,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,48 +24,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment the USB controller's pin muxing is not setup
-correctly and causes a kernel panic upon system startup, so
-disable the USB1 device tree node in the MPC5125 tower board
-dts file.
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-The USB controller is connected to an USB3320 ULPI transceiver
-and the device tree should receive an update to reflect correct
-dependencies and required initialization data before the USB1
-node can get re-enabled.
+make Freescale platform use pci_platform_pm_ops struct.
 
-Signed-off-by: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 ---
-v2:
-* improve the text of the commit as suggested by Gerhard Sittig <gsi@denx.de>
-* put the 'status = "disabled"' to the last line in the list of properties
-* rewiew the comment related to USB1 device tree node
----
- arch/powerpc/boot/dts/mpc5125twr.dts | 5 +++++
- 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/boot/dts/mpc5125twr.dts b/arch/powerpc/boot/dts/mpc5125twr.dts
-index 806479f..2fa1d17 100644
---- a/arch/powerpc/boot/dts/mpc5125twr.dts
-+++ b/arch/powerpc/boot/dts/mpc5125twr.dts
-@@ -229,6 +229,10 @@
- 			reg = <0xA000 0x1000>;
- 		};
+If device's not set power state, we will use this interface to put the
+device's into the correct state.
+
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 9c91ecc..48f8b1a 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -33,36 +33,6 @@ int pci_mmap_fits(struct pci_dev *pdev, int resno, struct vm_area_struct *vmai,
+ #endif
+ int pci_probe_reset_function(struct pci_dev *dev);
  
-+		// disable USB1 port
-+		// TODO:
-+		// correct pinmux config and fix USB3320 ulpi dependency
-+		// before re-enable it
- 		usb@3000 {
- 			compatible = "fsl,mpc5121-usb2-dr";
- 			reg = <0x3000 0x400>;
-@@ -239,6 +243,7 @@
- 			phy_type = "ulpi";
- 			clocks = <&clks MPC512x_CLK_USB1>;
- 			clock-names = "ipg";
-+			status = "disabled";
- 		};
+-/**
+- * struct pci_platform_pm_ops - Firmware PM callbacks
+- *
+- * @is_manageable: returns 'true' if given device is power manageable by the
+- *                 platform firmware
+- *
+- * @set_state: invokes the platform firmware to set the device's power state
+- *
+- * @choose_state: returns PCI power state of given device preferred by the
+- *                platform; to be used during system-wide transitions from a
+- *                sleeping state to the working state and vice versa
+- *
+- * @sleep_wake: enables/disables the system wake up capability of given device
+- *
+- * @run_wake: enables/disables the platform to generate run-time wake-up events
+- *		for given device (the device's wake-up capability has to be
+- *		enabled by @sleep_wake for this feature to work)
+- *
+- * If given platform is generally capable of power managing PCI devices, all of
+- * these callbacks are mandatory.
+- */
+-struct pci_platform_pm_ops {
+-	bool (*is_manageable)(struct pci_dev *dev);
+-	int (*set_state)(struct pci_dev *dev, pci_power_t state);
+-	pci_power_t (*choose_state)(struct pci_dev *dev);
+-	int (*sleep_wake)(struct pci_dev *dev, bool enable);
+-	int (*run_wake)(struct pci_dev *dev, bool enable);
+-};
+-
+-int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+ void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+ void pci_power_up(struct pci_dev *dev);
+ void pci_disable_enabled_device(struct pci_dev *dev);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 1084a15..20e07b8 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -365,6 +365,37 @@ struct pci_dev {
+ 	size_t romlen; /* Length of ROM if it's not from the BAR */
+ };
  
- 		// 5125 PSCs are not 52xx or 5121 PSC compatible
++/**
++ * struct pci_platform_pm_ops - Firmware PM callbacks
++ *
++ * @is_manageable: returns 'true' if given device is power manageable by the
++ *                 platform firmware
++ *
++ * @set_state: invokes the platform firmware to set the device's power state
++ *
++ * @choose_state: returns PCI power state of given device preferred by the
++ *                platform; to be used during system-wide transitions from a
++ *                sleeping state to the working state and vice versa
++ *
++ * @sleep_wake: enables/disables the system wake up capability of given device
++ *
++ * @run_wake: enables/disables the platform to generate run-time wake-up events
++ *		for given device (the device's wake-up capability has to be
++ *		enabled by @sleep_wake for this feature to work)
++ *
++ * If given platform is generally capable of power managing PCI devices, all of
++ * these callbacks are mandatory.
++ */
++struct pci_platform_pm_ops {
++	bool (*is_manageable)(struct pci_dev *dev);
++	int (*set_state)(struct pci_dev *dev, pci_power_t state);
++	pci_power_t (*choose_state)(struct pci_dev *dev);
++	int (*sleep_wake)(struct pci_dev *dev, bool enable);
++	int (*run_wake)(struct pci_dev *dev, bool enable);
++};
++
++int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
++
+ static inline struct pci_dev *pci_physfn(struct pci_dev *dev)
+ {
+ #ifdef CONFIG_PCI_IOV
 -- 
-1.8.3.2
+1.8.5
