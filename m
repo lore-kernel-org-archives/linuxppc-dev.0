@@ -1,39 +1,38 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7DBC42C009E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 12:45:13 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id CFF7C2C00D2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 12:59:48 +1100 (EST)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Thu, 19 Dec 2013 18:45:10 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 238713E40055
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 18:45:08 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rBK1j5Lk9175546
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 02:45:05 +0100
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBK1j7sn026750
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 18:45:07 -0700
-Received: from shangw (shangw.cn.ibm.com [9.125.213.121])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with SMTP id
- rBK1j6lr026673
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 18:45:07 -0700
-Date: Fri, 20 Dec 2013 09:45:04 +0800
+ Thu, 19 Dec 2013 20:59:45 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id A997538C8045
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 20:59:39 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBK1xfrK7340542
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 01:59:41 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBK1xfUb007093
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2013 20:59:41 -0500
+Date: Fri, 20 Dec 2013 09:59:37 +0800
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powernv: eeh: add buffer for P7IOC hub error data
-Message-ID: <20131220014504.GB10795@shangw.(null)>
-References: <20131219231853.GB22418@oc3347516403.ibm.com>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powernv: eeh: fix possible buffer overrun in
+ ioda_eeh_phb_diag()
+Message-ID: <20131220015937.GA13868@shangw.(null)>
+References: <20131219231407.GA22418@oc3347516403.ibm.com>
+ <20131220013539.GA10795@shangw.(null)>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20131219231853.GB22418@oc3347516403.ibm.com>
+In-Reply-To: <20131220013539.GA10795@shangw.(null)>
+Cc: linuxppc-dev@lists.ozlabs.org
 Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,66 +43,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 19, 2013 at 05:18:53PM -0600, Brian W Hart wrote:
->Prevent ioda_eeh_hub_diag() from clobbering itself when called by supplying
->a buffer for P7IOC hub diagnostic data.  Take care to inform OPAL of the
->correct size for the buffer.
+On Fri, Dec 20, 2013 at 09:35:39AM +0800, Gavin Shan wrote:
+>On Thu, Dec 19, 2013 at 05:14:07PM -0600, Brian W Hart wrote:
+>>PHB diagnostic buffer may be smaller than PAGE_SIZE, especially when
+>>PAGE_SIZE > 4KB.
+>>
 >
->Signed-off-by: Brian W Hart <hartb@linux.vnet.ibm.com>
->---
+>I think you're talking about that PAGE_SIZE could be configured
+>to have variable size (e.g. 4KB). So it's not safe to pass PAGE_SIZE
+>to OPAL API opal_pci_get_phb_diag_data2(). Instead, we should pass
+>PNV_PCI_DIAG_BUF_SIZE and it makes sense to me :-)
 >
->I hope I've understood this correctly.  It looks to me like
->ioda_eeh_hub_data is effectively asking OPAL to clobber its own
->text (via 'data') when it makes the call to retrieve the hub data.
+>Also, it needs to be backported to stable kernel as well.
 >
-
-Yeah, we should have used following variable as HUB diag-data instead.
-
-static char *hub_diag = NULL;
-
-However, it's not safe to allocate page-sized buffer for "hub_diag".
-
->Added a hub diagnostic structure per-phb.  Perhaps the diagnostic
->structure better belongs in the phb->diag union, but I wasn't sure whether
->we'd need to carry the hub and PHB diag data at the same time.
+>>Signed-off-by: Brian W Hart <hartb@linux.vnet.ibm.com>
+>
+>Acked-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 >
 
-Please put hub diag-data to struct pnv_phb::diag since we don't need
-carry hub and PHB diag-data at same time. With it, please remove
-variable "hub_diag" as well.
+Sorry, Brian. It has been fixed as part of the following commit, which
+has been put into Ben's powerpc-next branch :-)
 
-> arch/powerpc/platforms/powernv/eeh-ioda.c | 4 ++--
-> arch/powerpc/platforms/powernv/pci.h      | 2 ++
-> 2 files changed, 4 insertions(+), 2 deletions(-)
+commit 93aef2a789778e7ec787179fc9b34ca4885a5ef3
+
+    161  static void ioda_eeh_phb_diag(struct pci_controller *hose)
+    162  {
+    163         struct pnv_phb *phb = hose->private_data;
+    164 -       struct OpalIoPhbErrorCommon *common;
+    165         long rc;
+    166  
+    167 -       common = (struct OpalIoPhbErrorCommon *)phb->diag.blob;
+    168 -       rc = opal_pci_get_phb_diag_data2(phb->opal_id, common, PAGE_SIZE);
+    169 +       rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
+    170 +                                        PNV_PCI_DIAG_BUF_SIZE);
+
+>>---
+>> arch/powerpc/platforms/powernv/eeh-ioda.c | 5 +++--
+>> 1 file changed, 3 insertions(+), 2 deletions(-)
+>>
+>>diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+>>index 02245ce..8184ef5 100644
+>>--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
+>>+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+>>@@ -820,14 +820,15 @@ static void ioda_eeh_phb_diag(struct pci_controller *hose)
+>> 	struct OpalIoPhbErrorCommon *common;
+>> 	long rc;
+>>
+>>-	common = (struct OpalIoPhbErrorCommon *)phb->diag.blob;
+>>-	rc = opal_pci_get_phb_diag_data2(phb->opal_id, common, PAGE_SIZE);
+>>+	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
+>>+					 PNV_PCI_DIAG_BUF_SIZE);
+>> 	if (rc != OPAL_SUCCESS) {
+>> 		pr_warning("%s: Failed to get diag-data for PHB#%x (%ld)\n",
+>> 			    __func__, hose->global_number, rc);
+>> 		return;
+>> 	}
+>>
+>>+	common = (struct OpalIoPhbErrorCommon *)phb->diag.blob;
+>> 	switch (common->ioType) {
+>> 	case OPAL_PHB_ERROR_DATA_TYPE_P7IOC:
+>> 		ioda_eeh_p7ioc_phb_diag(hose, common);
 >
->diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
->index 8184ef5..dfd9134 100644
->--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
->+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
->@@ -636,8 +636,8 @@ static void ioda_eeh_hub_diag(struct pci_controller *hose)
-> 	struct OpalIoP7IOCErrorData *data;
-> 	long rc;
->
->-	data = (struct OpalIoP7IOCErrorData *)ioda_eeh_hub_diag;
->-	rc = opal_pci_get_hub_diag_data(phb->hub_id, data, PAGE_SIZE);
->+	data = (struct OpalIoP7IOCErrorData *)&phb->p7ioc_err;
->+	rc = opal_pci_get_hub_diag_data(phb->hub_id, data, sizeof *data);
-> 	if (rc != OPAL_SUCCESS) {
-> 		pr_warning("%s: Failed to get HUB#%llx diag-data (%ld)\n",
-> 			   __func__, phb->hub_id, rc);
->diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->index 911c24e..d1b6d8c 100644
->--- a/arch/powerpc/platforms/powernv/pci.h
->+++ b/arch/powerpc/platforms/powernv/pci.h
->@@ -177,6 +177,8 @@ struct pnv_phb {
-> 		unsigned char			blob[PNV_PCI_DIAG_BUF_SIZE];
-> 		struct OpalIoP7IOCPhbErrorData	p7ioc;
-> 	} diag;
->+
->+	struct OpalIoP7IOCErrorData p7ioc_err;
-> };
->
-> extern struct pci_ops pnv_pci_ops;
 
 Thanks,
 Gavin
