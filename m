@@ -1,27 +1,39 @@
-Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-wi0-f175.google.com (mail-wi0-f175.google.com
- [209.85.212.175])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <michael_barry@ie.ibm.com>
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 91F8C2C009E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 08:52:36 +1100 (EST)
-Received: by mail-wi0-f175.google.com with SMTP id hi5so8996476wib.14
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 13:52:32 -0800 (PST)
-Message-ID: <52B4BC23.4080102@linaro.org>
-Date: Fri, 20 Dec 2013 22:52:35 +0100
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+ by ozlabs.org (Postfix) with ESMTPS id 59D512C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 10:22:35 +1100 (EST)
+Received: from /spool/local
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <michael_barry@ie.ibm.com>;
+ Fri, 20 Dec 2013 23:22:30 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 551702190056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 23:22:26 +0000 (GMT)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ rBKNMEqA41418774
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 23:22:14 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ rBKNMQ8C004068
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 16:22:26 -0700
+Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
+ [9.149.104.171])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ rBKNMQfr004065
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 16:22:26 -0700
+Subject: AUTO: Michael Barry is out of the office (returning 06/01/2014)
+From: Michael Barry <michael_barry@ie.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <OF6FA71C81.9DBF4DA6-ON80257C47.0080609F-80257C47.0080609F@ie.ibm.com>
+Date: Fri, 20 Dec 2013 23:22:13 +0000
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- rjw@rjwysocki.net
-Subject: Re: [PATCH v2 6/9] intel_idle: do C1E promotion disable quirk for
- hotplugged CPUs
-References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
- <1387565251-7051-7-git-send-email-b.zolnierkie@samsung.com>
-In-Reply-To: <1387565251-7051-7-git-send-email-b.zolnierkie@samsung.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, kyungmin.park@samsung.com,
- linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,40 +43,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/20/2013 07:47 PM, Bartlomiej Zolnierkiewicz wrote:
-> If the system is booted with some CPUs offline C1E promotion disable quirk
-> won't be applied because on_each_cpu() in intel_idle_cpuidle_driver_init()
-> operates only on online CPUs. Fix it by adding the C1E promotion disable
-> handling to intel_idle_cpu_init() (which is also called during CPU_ONLINE
-> operation).
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Cc: Len Brown <lenb@kernel.org>
 
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+I am out of the office until 06/01/2014.
 
-> ---
->   drivers/idle/intel_idle.c | 3 +++
->   1 file changed, 3 insertions(+)
->
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index 92d1206..38da3fb 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -683,6 +683,9 @@ static int intel_idle_cpu_init(int cpu)
->   	if (icpu->auto_demotion_disable_flags)
->   		smp_call_function_single(cpu, auto_demotion_disable, NULL, 1);
->
-> +	if (icpu->disable_promotion_to_c1e)
-> +		smp_call_function_single(cpu, c1e_promotion_disable, NULL, 1);
-> +
->   	return 0;
->   }
 
--- 
-  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+
+Note: This is an automated response to your message  "Linuxppc-dev Digest,
+Vol 112, Issue 84" sent on 20/12/2013 18:58:14.
+
+This is the only notification you will receive while this person is away.
