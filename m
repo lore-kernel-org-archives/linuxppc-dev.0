@@ -1,17 +1,17 @@
 Return-Path: <jjhiblot@gmail.com>
-Received: from mail-we0-f175.google.com (mail-we0-f175.google.com
- [74.125.82.175])
+Received: from mail-we0-f181.google.com (mail-we0-f181.google.com
+ [74.125.82.181])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7D1BD2C037C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 02:16:01 +1100 (EST)
-Received: by mail-we0-f175.google.com with SMTP id t60so2570643wes.20
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 07:15:57 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id E29C22C0379
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2013 02:16:03 +1100 (EST)
+Received: by mail-we0-f181.google.com with SMTP id x55so2630803wes.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Dec 2013 07:15:59 -0800 (PST)
 From: jean-jacques hiblot <jjhiblot@traphandler.com>
 To: wsa@the-dreams.de
-Subject: [PATCH v3 REPOST 3/4] i2c: i2c-ibm-iic: Implements transfer abortion
-Date: Fri, 20 Dec 2013 16:12:55 +0100
-Message-Id: <1387552376-12986-4-git-send-email-jjhiblot@traphandler.com>
+Subject: [PATCH v3 REPOST 4/4] i2c: i2c-ibm-iic: Implements a polling mode
+Date: Fri, 20 Dec 2013 16:12:56 +0100
+Message-Id: <1387552376-12986-5-git-send-email-jjhiblot@traphandler.com>
 In-Reply-To: <1387552376-12986-1-git-send-email-jjhiblot@traphandler.com>
 References: <1387552376-12986-1-git-send-email-jjhiblot@traphandler.com>
 Cc: gregory.clement@free-electrons.com,
@@ -28,244 +28,186 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: jean-jacques hiblot <jjhiblot@gmail.com>
 
-Clean-up properly when a transfer fails for whatever reason.
-Cancel the transfer when the process is signaled.
+When no valid interrupt is defined for the controller, use polling to handle
+the transfers.
+The polling mode can also be forced with the "iic_force_poll" module parameter.
 
 Signed-off-by: jean-jacques hiblot <jjhiblot@traphandler.com>
 ---
- drivers/i2c/busses/i2c-ibm_iic.c | 146 ++++++++++-----------------------------
- drivers/i2c/busses/i2c-ibm_iic.h |   2 +-
- 2 files changed, 36 insertions(+), 112 deletions(-)
+ drivers/i2c/busses/i2c-ibm_iic.c | 91 ++++++++++++++++++++++++++++++++--------
+ drivers/i2c/busses/i2c-ibm_iic.h |  1 +
+ 2 files changed, 74 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
-index a92e8f6..857259e 100644
+index 857259e..aefe228 100644
 --- a/drivers/i2c/busses/i2c-ibm_iic.c
 +++ b/drivers/i2c/busses/i2c-ibm_iic.c
-@@ -336,120 +336,25 @@ static irqreturn_t iic_handler(int irq, void *dev_id)
+@@ -336,11 +336,45 @@ static irqreturn_t iic_handler(int irq, void *dev_id)
  }
  
  /*
-- * Get master transfer result and clear errors if any.
-- * Returns the number of actually transferred bytes or error (<0)
-- */
--static int iic_xfer_result(struct ibm_iic_private* dev)
--{
--	struct iic_regs __iomem *iic = dev->vaddr;
--
--	if (unlikely(in_8(&iic->sts) & STS_ERR)){
--		DBG(dev, "xfer error, EXTSTS = 0x%02x\n",
--			in_8(&iic->extsts));
--
--		/* Clear errors and possible pending IRQs */
--		out_8(&iic->extsts, EXTSTS_IRQP | EXTSTS_IRQD |
--			EXTSTS_LA | EXTSTS_ICT | EXTSTS_XFRA);
--
--		/* Flush master data buffer */
--		out_8(&iic->mdcntl, in_8(&iic->mdcntl) | MDCNTL_FMDB);
--
--		/*
--		 * Is bus free?
--		 * If error happened during combined xfer
--		 * IIC interface is usually stuck in some strange
--		 * state, the only way out - soft reset.
--		 */
--		if ((in_8(&iic->extsts) & EXTSTS_BCS_MASK) != EXTSTS_BCS_FREE){
--			DBG(dev, "bus is stuck, resetting\n");
--			iic_dev_reset(dev);
--		}
--		return -EREMOTEIO;
--	}
--	else
--		return in_8(&iic->xfrcnt) & XFRCNT_MTC_MASK;
--}
--
--/*
++ * Polling used when interrupt can't be used
++ */
++static int poll_for_end_of_transfer(struct ibm_iic_private *dev, u32 timeout)
++{
++	struct iic_regs __iomem *iic = dev->vaddr;
++	u32 status;
++	unsigned long end = jiffies + timeout;
++
++	while ((dev->transfer_complete == 0) &&
++	   time_after(end, jiffies) &&
++	   !signal_pending(current)) {
++		status = in_8(&iic->sts);
++		/* check if the transfer is done or an error occured */
++		if ((status & (STS_ERR | STS_SCMP)) || !(status & STS_PT))
++			iic_xfer_bytes(dev);
++		/* The transfer is not complete,
++		 * calling schedule relaxes the CPU load and allows to know
++		 * if the process is being signaled (for abortion)
++		 */
++		if (dev->transfer_complete == 0)
++			schedule();
++	}
++
++	if (signal_pending(current))
++		return -ERESTARTSYS;
++
++	if (dev->transfer_complete == 0)
++		return 0;
++
++	return 1;
++}
++
++/*
   * Try to abort active transfer.
   */
--static void iic_abort_xfer(struct ibm_iic_private* dev)
-+static void iic_abort_xfer(struct ibm_iic_private *dev)
+ static void iic_abort_xfer(struct ibm_iic_private *dev)
  {
--	struct iic_regs __iomem *iic = dev->vaddr;
--	unsigned long x;
--
--	DBG(dev, "iic_abort_xfer\n");
-+	struct device *device = dev->adap.dev.parent;
-+	unsigned long end;
+ 	struct device *device = dev->adap.dev.parent;
++	struct iic_regs __iomem *iic = dev->vaddr;
+ 	unsigned long end;
  
--	out_8(&iic->cntl, CNTL_HMT);
-+	DBG(dev, "aborting transfer\n");
-+	/* transfer should be aborted within 10ms */
-+	end = jiffies + 10;
-+	dev->abort = 1;
+ 	DBG(dev, "aborting transfer\n");
+@@ -348,8 +382,17 @@ static void iic_abort_xfer(struct ibm_iic_private *dev)
+ 	end = jiffies + 10;
+ 	dev->abort = 1;
  
--	/*
--	 * Wait for the abort command to complete.
--	 * It's not worth to be optimized, just poll (timeout >= 1 tick)
--	 */
--	x = jiffies + 2;
--	while ((in_8(&iic->extsts) & EXTSTS_BCS_MASK) != EXTSTS_BCS_FREE){
--		if (time_after(jiffies, x)){
--			DBG(dev, "abort timeout, resetting...\n");
--			iic_dev_reset(dev);
--			return;
--		}
-+	while (time_after(end, jiffies) && !dev->transfer_complete)
- 		schedule();
--	}
+-	while (time_after(end, jiffies) && !dev->transfer_complete)
+-		schedule();
++	while (time_after(end, jiffies) && !dev->transfer_complete) {
++		u32 sts;
++		if (dev->use_polling) {
++			sts = in_8(&iic->sts);
++			/* check if the transfer is done or an error occured */
++			if ((sts & (STS_ERR | STS_SCMP)) || !(sts & STS_PT))
++				iic_xfer_bytes(dev);
++		}
++		if (dev->transfer_complete == 0)
++			schedule();
++	}
  
--	/* Just to clear errors */
--	iic_xfer_result(dev);
--}
--
--/*
-- * Wait for master transfer to complete.
-- * It puts current process to sleep until we get interrupt or timeout expires.
-- * Returns the number of transferred bytes or error (<0)
-- */
--static int iic_wait_for_tc(struct ibm_iic_private* dev){
--
--	struct iic_regs __iomem *iic = dev->vaddr;
--	int ret = 0;
--
--	if (dev->irq >= 0){
--		/* Interrupt mode */
--		ret = wait_event_interruptible_timeout(dev->wq,
--			!(in_8(&iic->sts) & STS_PT), dev->adap.timeout);
--
--		if (unlikely(ret < 0))
--			DBG(dev, "wait interrupted\n");
--		else if (unlikely(in_8(&iic->sts) & STS_PT)){
--			DBG(dev, "wait timeout\n");
--			ret = -ETIMEDOUT;
--		}
--	}
--	else {
--		/* Polling mode */
--		unsigned long x = jiffies + dev->adap.timeout;
--
--		while (in_8(&iic->sts) & STS_PT){
--			if (unlikely(time_after(jiffies, x))){
--				DBG(dev, "poll timeout\n");
--				ret = -ETIMEDOUT;
--				break;
--			}
--
--			if (unlikely(signal_pending(current))){
--				DBG(dev, "poll interrupted\n");
--				ret = -ERESTARTSYS;
--				break;
--			}
--			schedule();
--		}
-+	if (!dev->transfer_complete) {
-+		dev_err(device, "abort operation failed\n");
-+		iic_dev_reset(dev);
+ 	if (!dev->transfer_complete) {
+ 		dev_err(device, "abort operation failed\n");
+@@ -381,7 +424,8 @@ static int iic_xfer_bytes(struct ibm_iic_private *dev)
+ 	if (dev->status == -ECANCELED) {
+ 		DBG(dev, "abort completed\n");
+ 		dev->transfer_complete = 1;
+-		complete(&dev->iic_compl);
++		if (!dev->use_polling)
++			complete(&dev->iic_compl);
+ 		return dev->status;
  	}
--
--	if (unlikely(ret < 0))
--		iic_abort_xfer(dev);
--	else
--		ret = iic_xfer_result(dev);
--
--	DBG2(dev, "iic_wait_for_tc -> %d\n", ret);
--
--	return ret;
- }
  
- /*
-@@ -473,6 +378,13 @@ static int iic_xfer_bytes(struct ibm_iic_private *dev)
- 			    EXTSTS_ICT | EXTSTS_XFRA);
- 	out_8(&iic->sts, STS_IRQA | STS_SCMP);
+@@ -400,7 +444,8 @@ static int iic_xfer_bytes(struct ibm_iic_private *dev)
  
-+	if (dev->status == -ECANCELED) {
-+		DBG(dev, "abort completed\n");
-+		dev->transfer_complete = 1;
-+		complete(&dev->iic_compl);
-+		return dev->status;
-+	}
-+
- 	if ((status & STS_ERR) ||
- 	    (ext_status & (EXTSTS_LA | EXTSTS_ICT | EXTSTS_XFRA))) {
- 		DBG(dev, "status 0x%x\n", status);
-@@ -577,7 +489,14 @@ static int iic_xfer_bytes(struct ibm_iic_private *dev)
- 	/* actually start the transfer of the current data chunk */
- 	out_8(&iic->cntl, cntl | CNTL_PT);
+ 		dev->status = -EIO;
+ 		dev->transfer_complete = 1;
+-		complete(&dev->iic_compl);
++		if (!dev->use_polling)
++			complete(&dev->iic_compl);
+ 		return dev->status;
+ 	}
  
--	return 0;
-+	/* The transfer must be aborted. */
-+	if (dev->abort) {
-+		DBG(dev, "aborting\n");
-+		out_8(&iic->cntl, CNTL_HMT);
-+		dev->status = -ECANCELED;
-+	}
-+
-+	return dev->status;
- }
+@@ -428,7 +473,8 @@ static int iic_xfer_bytes(struct ibm_iic_private *dev)
+ 		if (dev->current_msg == dev->num_msgs) {
+ 			DBG2(dev, "end of transfer\n");
+ 			dev->transfer_complete = 1;
+-			complete(&dev->iic_compl);
++			if (!dev->use_polling)
++				complete(&dev->iic_compl);
+ 			return dev->status;
+ 		}
+ 		pm++;
+@@ -625,24 +671,29 @@ static int iic_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 	/* Load slave address */
+ 	iic_address(dev, &msgs[0]);
  
- /*
-@@ -682,6 +601,7 @@ static int iic_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 	dev->current_byte = dev->current_msg = dev->current_byte_rx = 0;
- 	dev->transfer_complete = 0;
- 	dev->status = 0;
-+	dev->abort = 0;
- 	dev->msgs = msgs;
- 	dev->num_msgs = num;
+-	init_completion(&dev->iic_compl);
++	if (!dev->use_polling)
++		init_completion(&dev->iic_compl);
  
-@@ -719,8 +639,10 @@ static int iic_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 		/*  wait for the transfer to complete */
- 		ret = wait_for_completion_interruptible_timeout(
- 			&dev->iic_compl, num * HZ);
--		/* mask the interrupts */
--		out_8(&iic->intmsk, 0);
-+		/*
-+		 * we don't mask the interrupts here because we may
-+		 * need them to abort the transfer gracefully
-+		 */
+ 	/* start the transfer */
+ 	ret = iic_xfer_bytes(dev);
+ 
+ 	if (ret == 0) {
+-		/* enable the interrupts */
+-		out_8(&iic->mdcntl, MDCNTL_EINT);
+-		/*  unmask the interrupts */
+-		out_8(&iic->intmsk,	INTRMSK_EIMTC | INTRMSK_EITA  |
+-					INTRMSK_EIIC | INTRMSK_EIHE);
+-		/*  wait for the transfer to complete */
+-		ret = wait_for_completion_interruptible_timeout(
+-			&dev->iic_compl, num * HZ);
+-		/*
+-		 * we don't mask the interrupts here because we may
+-		 * need them to abort the transfer gracefully
+-		 */
++		if (dev->use_polling) {
++			ret = poll_for_end_of_transfer(dev, num * HZ);
++		} else {
++			/* enable the interrupts */
++			out_8(&iic->mdcntl, MDCNTL_EINT);
++			/*  unmask the interrupts */
++			out_8(&iic->intmsk,	INTRMSK_EIMTC | INTRMSK_EITA  |
++						INTRMSK_EIIC | INTRMSK_EIHE);
++			/*  wait for the transfer to complete */
++			ret = wait_for_completion_interruptible_timeout(
++				&dev->iic_compl, num * HZ);
++			/*
++			 * we don't mask the interrupts here because we may
++			 * need them to abort the transfer gracefully
++			 */
++		}
  	}
  
  	if (ret == 0) {
-@@ -729,11 +651,15 @@ static int iic_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 	} else if (ret < 0) {
- 		if (ret == -ERESTARTSYS)
- 			ERR(dev, "transfer interrupted\n");
-+		iic_abort_xfer(dev);
- 	} else {
- 		/* Transfer is complete */
- 		ret = (dev->status) ? dev->status : num;
+@@ -709,6 +760,8 @@ static int iic_request_irq(struct platform_device *ofdev,
+ 	struct device_node *np = ofdev->dev.of_node;
+ 	int irq;
+ 
++	dev->use_polling = 1;
++
+ 	if (iic_force_poll)
+ 		return 0;
+ 
+@@ -729,6 +782,8 @@ static int iic_request_irq(struct platform_device *ofdev,
+ 		return 0;
  	}
  
-+	/* mask the interrupts */
-+	out_8(&iic->intmsk, 0);
++	dev->use_polling = 0;
 +
- 	return ret;
+ 	return irq;
  }
  
-@@ -832,8 +758,6 @@ static int iic_probe(struct platform_device *ofdev)
- 		goto error_cleanup;
- 	}
- 
--	init_waitqueue_head(&dev->wq);
--
- 	dev->irq = iic_request_irq(ofdev, dev);
- 	if (!dev->irq)
- 		dev_info(&ofdev->dev, "using polling mode\n");
 diff --git a/drivers/i2c/busses/i2c-ibm_iic.h b/drivers/i2c/busses/i2c-ibm_iic.h
-index 76c476a..0ee28a9 100644
+index 0ee28a9..523cfc1 100644
 --- a/drivers/i2c/busses/i2c-ibm_iic.h
 +++ b/drivers/i2c/busses/i2c-ibm_iic.h
-@@ -47,7 +47,6 @@ struct iic_regs {
- struct ibm_iic_private {
- 	struct i2c_adapter adap;
- 	struct iic_regs __iomem *vaddr;
--	wait_queue_head_t wq;
- 	int irq;
- 	int fast_mode;
- 	u8  clckdiv;
-@@ -58,6 +57,7 @@ struct ibm_iic_private {
- 	int current_byte_rx;
+@@ -58,6 +58,7 @@ struct ibm_iic_private {
  	int transfer_complete;
  	int status;
-+	int abort;
+ 	int abort;
++	int use_polling;
  	struct completion iic_compl;
  };
  
