@@ -2,13 +2,15 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B4BEE2C00B9
+ by ozlabs.org (Postfix) with ESMTPS id DBD632C00BB
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 12:24:54 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/4] powerpc: Enable ILE on pSeries without H_MODE_SET
-Date: Mon, 23 Dec 2013 02:24:41 +0100
-Message-Id: <1387761885-39599-1-git-send-email-agraf@suse.de>
+Subject: [PATCH 1/4] powerpc: Add global exports for all interrupt vectors
+Date: Mon, 23 Dec 2013 02:24:42 +0100
+Message-Id: <1387761885-39599-2-git-send-email-agraf@suse.de>
+In-Reply-To: <1387761885-39599-1-git-send-email-agraf@suse.de>
+References: <1387761885-39599-1-git-send-email-agraf@suse.de>
 Cc: Dinar Valeev <dvaleev@suse.com>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,60 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Howdy,
+We need to access every interrupt vector we can find soon, so let's
+make them all visible through names to outside code.
 
-There are a few machines out there that would be pretty ppc64le capable
-if only it wasn't for the hypervisor that's running on them.
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-The problem is that we need to run in ILE (interrupts delivered in little
-endian) mode to run our normal interrupt vectors. The hypercall to enable
-this mode is not available on PowerVM.
-
-However, we can try to be smart here. Instead of configuring the hypervisor
-to run interrupts in little endian mode, we can just bring ourselves back
-to little endian on every interrupt.
-
-We do this by patching every interrupt handler with a "branch" instruction
-at the beginning which jumps into a tiny helper that turns on MSR.LE and
-resumes the interrupt handler.
-
-This is not the most smart thing to do performance wise, but it does have
-a really nice side effect: We do not impact hypervisors that do support
-H_SET_MODE. This is important, as we want to be as fast as possible on machines
-that are supposed to run Little Endian guests.
-
-As a tiny side effect we also clobber CFAR in every interrupt, rendering
-the whole thing pretty useless. So we don't get nice and shiny perf and
-debugging helps. Oh well.
-
-Given that the alternatives to all of this would either be
-
-  a) Not run at all or
-  b) Incur performance penalties for "good" systems or
-  c) Add significant maintenance burden on us
-
-I'm quite convinced this is the way we want to go.
-
-
-Enjoy,
-
-Alex
-
-Alexander Graf (4):
-  powerpc: Add global exports for all interrupt vectors
-  powerpc: Add relocation code for fixups
-  powerpc: Add hack to make ppc64le work on hosts without ILE
-  powerpc: Don't return to BE mode when we are already there
-
- arch/powerpc/include/asm/cputable.h    |   2 +
- arch/powerpc/kernel/Makefile           |   3 +
- arch/powerpc/kernel/exceptions-64s.S   |   5 ++
- arch/powerpc/kernel/fake_ile.S         | 101 +++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/vmlinux.lds.S      |  14 +++++
- arch/powerpc/lib/feature-fixups.c      |  22 +++++++
- arch/powerpc/platforms/pseries/setup.c |  61 +++++++++++++++++++-
- 7 files changed, 207 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/kernel/fake_ile.S
-
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 9f905e4..fcd039f 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -148,6 +148,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ 				 NOTEST, 0x100)
+ 
+ 	. = 0x200
++	.globl machine_check_pSeries_1
+ machine_check_pSeries_1:
+ 	/* This is moved out of line as it can be patched by FW, but
+ 	 * some code path might still want to branch into the original
+@@ -328,24 +329,28 @@ hv_doorbell_trampoline:
+ 	 * trickery is thus necessary
+ 	 */
+ 	. = 0xf00
++	.global performance_monitor_pseries_trampoline
+ performance_monitor_pseries_trampoline:
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
+ 	b	performance_monitor_pSeries
+ 
+ 	. = 0xf20
++	.global altivec_unavailable_pseries_trampoline
+ altivec_unavailable_pseries_trampoline:
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
+ 	b	altivec_unavailable_pSeries
+ 
+ 	. = 0xf40
++	.global vsx_unavailable_pseries_trampoline
+ vsx_unavailable_pseries_trampoline:
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
+ 	b	vsx_unavailable_pSeries
+ 
+ 	. = 0xf60
++	.global facility_unavailable_trampoline
+ facility_unavailable_trampoline:
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
 -- 
 1.8.1.4
