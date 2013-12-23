@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/3] powerpc/xmon: Fix timeout loop in get_output_lock()
-Date: Mon, 23 Dec 2013 23:46:05 +1100
-Message-Id: <1387802766-7199-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 3/3] powerpc/xmon: Don't signal we've entered until we're
+ finished printing
+Date: Mon, 23 Dec 2013 23:46:06 +1100
+Message-Id: <1387802766-7199-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1387802766-7199-1-git-send-email-mpe@ellerman.id.au>
 References: <1387802766-7199-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -15,49 +16,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As far as I can tell, our 70s era timeout loop in get_output_lock() is
-generating no code.
+Currently we set our cpu's bit in cpus_in_xmon, and then we take the
+output lock and print the exception information.
 
-This leads to the hostile takeover happening more or less simultaneously
-on all cpus. The result is "interesting", some example output that is
-more readable than most:
+This can race with the master cpu entering the command loop and printing
+the backtrace. The result is that the backtrace gets garbled with
+another cpu's exception print out.
 
-    cpu 0x1: Vector: 100 (Scypsut e0mx bR:e setV)e catto xc0p:u[ c 00
-    c0:0  000t0o0V0erc0td:o5 rfc28050000]0c00 0 0  0 6t(pSrycsV1ppuot
-    uxe 1m 2 0Rx21e3:0s0ce000c00000t00)00 60602oV2SerucSayt0y 0p 1sxs
-
-Fix it by using udelay() in the timeout loop. The wait time and check
-frequency are arbitrary, but seem to work OK. We already rely on
-udelay() working so this is not a new dependency.
+Fix it by delaying the set of cpus_in_xmon until we are finished
+printing.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/xmon/xmon.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ arch/powerpc/xmon/xmon.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 500105c..051037e 100644
+index 051037e..b59f44f 100644
 --- a/arch/powerpc/xmon/xmon.c
 +++ b/arch/powerpc/xmon/xmon.c
-@@ -315,10 +315,17 @@ static void get_output_lock(void)
- 		if (last_speaker == 0)
- 			return;
+@@ -404,7 +404,6 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
+ 	}
  
--		timeout = 10000000;
-+		/*
-+		 * Wait a full second for the lock, we might be on a slow
-+		 * console, but check every 100us.
-+		 */
-+		timeout = 10000;
- 		while (xmon_speaker == last_speaker) {
--			if (--timeout > 0)
-+			if (--timeout > 0) {
-+				udelay(100);
- 				continue;
-+			}
+ 	xmon_fault_jmp[cpu] = recurse_jmp;
+-	cpumask_set_cpu(cpu, &cpus_in_xmon);
+ 
+ 	bp = NULL;
+ 	if ((regs->msr & (MSR_IR|MSR_PR|MSR_64BIT)) == (MSR_IR|MSR_64BIT))
+@@ -426,6 +425,8 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
+ 		release_output_lock();
+ 	}
+ 
++	cpumask_set_cpu(cpu, &cpus_in_xmon);
 +
- 			/* hostile takeover */
- 			prev = cmpxchg(&xmon_speaker, last_speaker, me);
- 			if (prev == last_speaker)
+  waiting:
+ 	secondary = 1;
+ 	while (secondary && !xmon_gate) {
 -- 
 1.8.3.2
