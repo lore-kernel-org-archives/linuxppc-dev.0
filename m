@@ -1,18 +1,15 @@
-Return-Path: <dingtianhong@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BBC292C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 16:16:40 +1100 (EST)
-Message-ID: <52B7C598.9010904@huawei.com>
-Date: Mon, 23 Dec 2013 13:09:44 +0800
-From: Ding Tianhong <dingtianhong@huawei.com>
-MIME-Version: 1.0
-To: Li Yang <leoli@freescale.com>, Netdev <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 02/21] net: freescale: slight optimization of addr compare
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <anton@samba.org>
+Date: Mon, 23 Dec 2013 17:38:33 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] ibmveth: Fix more little endian issues
+Message-ID: <20131223173833.0a9a6705@kryten>
+In-Reply-To: <1387762163-39662-1-git-send-email-agraf@suse.de>
+References: <1387762163-39662-1-git-send-email-agraf@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Dinar Valeev <dvaleev@suse.com>, Santiago Leon <santil@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,30 +19,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use the recently added and possibly more efficient
-ether_addr_equal_unaligned to instead of memcmp.
 
-Cc: Li Yang <leoli@freescale.com>
-Cc: netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
+Hi Alex,
+
+> The ibmveth driver is memcpy()'ing the mac address between a variable
+> (register) and memory. This assumes a certain endianness of the
+> system, so let's make that implicit assumption work again.
+
+Nice catch! I don't like how the driver has two different methods
+for creating these MAC addresses, both without comments. How does
+this look?
+
+Anton
+--
+
+The hypervisor expects MAC addresses passed in registers to be big
+endian u64. Create a helper function called ibmveth_encode_mac_addr
+which does the right thing in both big and little endian.
+
+We were storing the MAC address in a long in struct ibmveth_adapter.
+It's never used so remove it - we don't need another place in the
+driver where we create endian issues with MAC addresses.
+
+Reported-by: Alexander Graf <agraf@suse.de>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- drivers/net/ethernet/freescale/ucc_geth.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 5548b6d..88a1525 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -437,7 +437,7 @@ static void hw_add_addr_in_hash(struct ucc_geth_private *ugeth,
- 
- static inline int compare_addr(u8 **addr1, u8 **addr2)
- {
--	return memcmp(addr1, addr2, ETH_ALEN);
-+	return !ether_addr_equal_unaligned(addr1, addr2);
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 952d795..044178b 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -523,6 +523,17 @@ retry:
+ 	return rc;
  }
  
- #ifdef DEBUG
--- 
-1.8.0
++/*
++ * The hypervisor expects MAC addresses passed in registers to be
++ * big endian u64.
++ */
++static unsigned long ibmveth_encode_mac_addr(char *mac)
++{
++	unsigned long encoded = 0;
++	memcpy(((char *)&encoded) + 2, mac, ETH_ALEN);
++	return cpu_to_be64(encoded);
++}
++
+ static int ibmveth_open(struct net_device *netdev)
+ {
+ 	struct ibmveth_adapter *adapter = netdev_priv(netdev);
+@@ -580,8 +591,7 @@ static int ibmveth_open(struct net_device *netdev)
+ 	adapter->rx_queue.num_slots = rxq_entries;
+ 	adapter->rx_queue.toggle = 1;
+ 
+-	memcpy(&mac_address, netdev->dev_addr, netdev->addr_len);
+-	mac_address = mac_address >> 16;
++	mac_address = ibmveth_encode_mac_addr(netdev->dev_addr);
+ 
+ 	rxq_desc.fields.flags_len = IBMVETH_BUF_VALID |
+ 					adapter->rx_queue.queue_len;
+@@ -1184,8 +1194,8 @@ static void ibmveth_set_multicast_list(struct net_device *netdev)
+ 		/* add the addresses to the filter table */
+ 		netdev_for_each_mc_addr(ha, netdev) {
+ 			/* add the multicast address to the filter table */
+-			unsigned long mcast_addr = 0;
+-			memcpy(((char *)&mcast_addr)+2, ha->addr, ETH_ALEN);
++			unsigned long mcast_addr;
++			mcast_addr = ibmveth_encode_mac_addr(ha->addr);
+ 			lpar_rc = h_multicast_ctrl(adapter->vdev->unit_address,
+ 						   IbmVethMcastAddFilter,
+ 						   mcast_addr);
+@@ -1369,9 +1379,6 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 
+ 	netif_napi_add(netdev, &adapter->napi, ibmveth_poll, 16);
+ 
+-	adapter->mac_addr = 0;
+-	memcpy(&adapter->mac_addr, mac_addr_p, ETH_ALEN);
+-
+ 	netdev->irq = dev->irq;
+ 	netdev->netdev_ops = &ibmveth_netdev_ops;
+ 	netdev->ethtool_ops = &netdev_ethtool_ops;
+@@ -1380,7 +1387,7 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 		NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM;
+ 	netdev->features |= netdev->hw_features;
+ 
+-	memcpy(netdev->dev_addr, &adapter->mac_addr, netdev->addr_len);
++	memcpy(netdev->dev_addr, mac_addr_p, ETH_ALEN);
+ 
+ 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
+ 		struct kobject *kobj = &adapter->rx_buff_pool[i].kobj;
+diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
+index 84066ba..2c636cb 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.h
++++ b/drivers/net/ethernet/ibm/ibmveth.h
+@@ -139,7 +139,6 @@ struct ibmveth_adapter {
+     struct napi_struct napi;
+     struct net_device_stats stats;
+     unsigned int mcastFilterSize;
+-    unsigned long mac_addr;
+     void * buffer_list_addr;
+     void * filter_list_addr;
+     dma_addr_t buffer_list_dma;
