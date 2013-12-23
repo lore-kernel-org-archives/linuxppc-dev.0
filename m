@@ -1,12 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 3/3] powerpc/xmon: Don't signal we've entered until we're
- finished printing
-Date: Mon, 23 Dec 2013 23:46:06 +1100
-Message-Id: <1387802766-7199-3-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1387802766-7199-1-git-send-email-mpe@ellerman.id.au>
-References: <1387802766-7199-1-git-send-email-mpe@ellerman.id.au>
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0162.hostedemail.com
+ [216.40.44.162]) by ozlabs.org (Postfix) with ESMTP id 2F5532C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 01:57:58 +1100 (EST)
+Received: from smtprelay.hostedemail.com (ff-bigip1 [10.5.19.254])
+ by smtpgrave06.hostedemail.com (Postfix) with ESMTP id 7564F173D79
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 14:52:15 +0000 (UTC)
+Message-ID: <1387810329.22671.66.camel@joe-AO722>
+Subject: Re: [PATCH] ibmveth: Fix more little endian issues
+From: Joe Perches <joe@perches.com>
+To: Anton Blanchard <anton@samba.org>
+Date: Mon, 23 Dec 2013 06:52:09 -0800
+In-Reply-To: <20131223173833.0a9a6705@kryten>
+References: <1387762163-39662-1-git-send-email-agraf@suse.de>
+ <20131223173833.0a9a6705@kryten>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
+Cc: Dinar Valeev <dvaleev@suse.com>, linuxppc-dev@lists.ozlabs.org,
+ Alexander Graf <agraf@suse.de>, netdev@vger.kernel.org,
+ Santiago Leon <santil@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,41 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we set our cpu's bit in cpus_in_xmon, and then we take the
-output lock and print the exception information.
+On Mon, 2013-12-23 at 17:38 +1100, Anton Blanchard wrote:
+> The hypervisor expects MAC addresses passed in registers to be big
+> endian u64.
 
-This can race with the master cpu entering the command loop and printing
-the backtrace. The result is that the backtrace gets garbled with
-another cpu's exception print out.
+So maybe use __be64 declarations?
 
-Fix it by delaying the set of cpus_in_xmon until we are finished
-printing.
+> +static unsigned long ibmveth_encode_mac_addr(char *mac)
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/xmon/xmon.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+static __be64 ibmveth_encode_mac_addr(const char *mac)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 051037e..b59f44f 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -404,7 +404,6 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
- 	}
- 
- 	xmon_fault_jmp[cpu] = recurse_jmp;
--	cpumask_set_cpu(cpu, &cpus_in_xmon);
- 
- 	bp = NULL;
- 	if ((regs->msr & (MSR_IR|MSR_PR|MSR_64BIT)) == (MSR_IR|MSR_64BIT))
-@@ -426,6 +425,8 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
- 		release_output_lock();
- 	}
- 
-+	cpumask_set_cpu(cpu, &cpus_in_xmon);
-+
-  waiting:
- 	secondary = 1;
- 	while (secondary && !xmon_gate) {
--- 
-1.8.3.2
+?
+
+etc...
