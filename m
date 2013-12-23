@@ -1,9 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/3] powerpc/xmon: Don't loop forever in get_output_lock()
-Date: Mon, 23 Dec 2013 23:46:04 +1100
-Message-Id: <1387802766-7199-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/3] powerpc/xmon: Fix timeout loop in get_output_lock()
+Date: Mon, 23 Dec 2013 23:46:05 +1100
+Message-Id: <1387802766-7199-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1387802766-7199-1-git-send-email-mpe@ellerman.id.au>
+References: <1387802766-7199-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,50 +15,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Ellerman <michael@ellerman.id.au>
+As far as I can tell, our 70s era timeout loop in get_output_lock() is
+generating no code.
 
-If we enter with xmon_speaker != 0 we skip the first cmpxchg(), we also
-skip the while loop because xmon_speaker != last_speaker (0) - meaning we
-skip the second cmpxchg() also.
+This leads to the hostile takeover happening more or less simultaneously
+on all cpus. The result is "interesting", some example output that is
+more readable than most:
 
-Following that code path the compiler sees no memory barriers and so is
-within its rights to never reload xmon_speaker. The end result is we loop
-forever.
+    cpu 0x1: Vector: 100 (Scypsut e0mx bR:e setV)e catto xc0p:u[ c 00
+    c0:0  000t0o0V0erc0td:o5 rfc28050000]0c00 0 0  0 6t(pSrycsV1ppuot
+    uxe 1m 2 0Rx21e3:0s0ce000c00000t00)00 60602oV2SerucSayt0y 0p 1sxs
 
-This manifests as all cpus being in xmon ('c' command), but they refuse
-to take control when you switch to them ('c x' for cpu # x).
+Fix it by using udelay() in the timeout loop. The wait time and check
+frequency are arbitrary, but seem to work OK. We already rely on
+udelay() working so this is not a new dependency.
 
-I have seen this deadlock in practice and also checked the generated code to
-confirm this is what's happening.
-
-The simplest fix is just to always try the cmpxchg().
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/xmon/xmon.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/xmon/xmon.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index af9d346..500105c 100644
+index 500105c..051037e 100644
 --- a/arch/powerpc/xmon/xmon.c
 +++ b/arch/powerpc/xmon/xmon.c
-@@ -309,12 +309,12 @@ static void get_output_lock(void)
+@@ -315,10 +315,17 @@ static void get_output_lock(void)
+ 		if (last_speaker == 0)
+ 			return;
  
- 	if (xmon_speaker == me)
- 		return;
-+
- 	for (;;) {
--		if (xmon_speaker == 0) {
--			last_speaker = cmpxchg(&xmon_speaker, 0, me);
--			if (last_speaker == 0)
--				return;
--		}
-+		last_speaker = cmpxchg(&xmon_speaker, 0, me);
-+		if (last_speaker == 0)
-+			return;
-+
- 		timeout = 10000000;
+-		timeout = 10000000;
++		/*
++		 * Wait a full second for the lock, we might be on a slow
++		 * console, but check every 100us.
++		 */
++		timeout = 10000;
  		while (xmon_speaker == last_speaker) {
- 			if (--timeout > 0)
+-			if (--timeout > 0)
++			if (--timeout > 0) {
++				udelay(100);
+ 				continue;
++			}
++
+ 			/* hostile takeover */
+ 			prev = cmpxchg(&xmon_speaker, last_speaker, me);
+ 			if (prev == last_speaker)
 -- 
 1.8.3.2
