@@ -2,17 +2,15 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B6EBE2C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 12:24:54 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B63C12C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 12:29:30 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/4] powerpc: Add hack to make ppc64le work on hosts without
- ILE
-Date: Mon, 23 Dec 2013 02:24:44 +0100
-Message-Id: <1387761885-39599-4-git-send-email-agraf@suse.de>
-In-Reply-To: <1387761885-39599-1-git-send-email-agraf@suse.de>
-References: <1387761885-39599-1-git-send-email-agraf@suse.de>
-Cc: Dinar Valeev <dvaleev@suse.com>, Anton Blanchard <anton@samba.org>
+Subject: [PATCH] ibmveth: Fix more little endian issues
+Date: Mon, 23 Dec 2013 02:29:23 +0100
+Message-Id: <1387762163-39662-1-git-send-email-agraf@suse.de>
+Cc: Santiago Leon <santil@linux.vnet.ibm.com>, Dinar Valeev <dvaleev@suse.com>,
+ Anton Blanchard <anton@samba.org>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,253 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some hypervisors don't implement the H_SET_MODE hypercall that we
-need to set the ILE bit in LPCR which allows us to execute interrupts
-in little endian mode.
+The ibmveth driver is memcpy()'ing the mac address between a variable
+(register) and memory. This assumes a certain endianness of the
+system, so let's make that implicit assumption work again.
 
-However otherwise we would be able to run on those hypervisors just
-fine.
-
-So let's be creative. This patch creates a few small helpers that
-work without register clobbering that execute in big endian mode.
-
-Every interrupt gets patched with a branch instruction as the first
-instruction which jumps into their respective helper. That helper
-enables MSR.LE and returns back to the original interrupt.
-
-That way we can keep our interrupt handlers in little endian code
-while the hypervisor is unaware that we need them to be in little
-endian.
+This patch adds be64_to_cpu() calls to all places where the mac address
+gets memcpy()'ed into a local variable.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kernel/Makefile           |   3 +
- arch/powerpc/kernel/fake_ile.S         | 101 +++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/vmlinux.lds.S      |  14 +++++
- arch/powerpc/platforms/pseries/setup.c |  50 ++++++++++++++++
- 4 files changed, 168 insertions(+)
- create mode 100644 arch/powerpc/kernel/fake_ile.S
+ drivers/net/ethernet/ibm/ibmveth.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 445cb6e..31842e6 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -131,6 +131,9 @@ endif
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 952d795..97f4ee96 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -581,7 +581,7 @@ static int ibmveth_open(struct net_device *netdev)
+ 	adapter->rx_queue.toggle = 1;
  
- obj-$(CONFIG_EPAPR_PARAVIRT)	+= epapr_paravirt.o epapr_hcalls.o
- obj-$(CONFIG_KVM_GUEST)		+= kvm.o kvm_emul.o
-+ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
-+obj-$(CONFIG_PPC_BOOK3S_64)	+= fake_ile.o
-+endif
+ 	memcpy(&mac_address, netdev->dev_addr, netdev->addr_len);
+-	mac_address = mac_address >> 16;
++	mac_address = be64_to_cpu(mac_address) >> 16;
  
- # Disable GCOV in odd or sensitive code
- GCOV_PROFILE_prom_init.o := n
-diff --git a/arch/powerpc/kernel/fake_ile.S b/arch/powerpc/kernel/fake_ile.S
-new file mode 100644
-index 0000000..21e9bd7
---- /dev/null
-+++ b/arch/powerpc/kernel/fake_ile.S
-@@ -0,0 +1,101 @@
-+/*
-+ * PowerPC helpers for hypervisors without ILE implementation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright SUSE Linux Products GmbH 2013
-+ *
-+ * Authors: Alexander Graf <agraf@suse.de>
-+ */
-+
-+#include <asm/reg.h>
-+#include <asm/ppc_asm.h>
-+#include <asm/asm-offsets.h>
-+#include <asm/exception-64s.h>
-+
-+/* Little Endian fixups for hosts that don't support Little Endian */
-+
-+#define FAKE_ILE_HANDLER(handler, area) 			 \
-+								 \
-+/* This runs in BE mode */					 \
-+fake_ile_##handler:						 \
-+	.section __be_patch,"a"					;\
-+	.llong fake_ile_##handler				;\
-+	.previous						;\
-+	SET_SCRATCH0(r13)					;\
-+	GET_PACA(r13)						;\
-+	std     r9, area + EX_R9(r13)				;\
-+	std     r10, area + EX_R10(r13)				;\
-+	mfsrr0	r9						;\
-+	mfsrr1	r10						;\
-+	std	r9, area + EX_SRR0(r13)				;\
-+	std	r10, area + EX_R11(r13)				;\
-+	mflr	r9						;\
-+	bl	1f						;\
-+	1:							;\
-+	mflr	r10						;\
-+	mtlr	r9						;\
-+	addi	r9, r10, back_to_interrupt_##handler - 1b	;\
-+	mfmsr	r10						;\
-+	ori	r10, r10, MSR_LE				;\
-+	mtsrr0	r9						;\
-+	mtsrr1	r10						;\
-+	ld	r9, area + EX_SRR0(r13)				;\
-+	ld	r10, area + EX_R11(r13)				;\
-+	RFI							;\
-+	end_fake_ile_##handler:					;\
-+	.section __be_patch,"a"					;\
-+	.llong end_fake_ile_##handler				;\
-+	.previous						;\
-+								;\
-+/* This runs in LE mode */					 \
-+back_to_interrupt_##handler:					;\
-+	mtsrr0	r9						;\
-+	mtsrr1	r10						;\
-+	li	r9, area + EX_R9				;\
-+	li	r10, area + EX_R10				;\
-+	ldbrx	r9, r13, r9					;\
-+	ldbrx	r10, r13, r10					;\
-+	GET_SCRATCH0(r13)					;\
-+	/* This becomes the instruction we patched away */	 \
-+	patched_insn_##handler:					;\
-+	.long 0							;\
-+	b 	handler + 4					;\
-+								 \
-+	.section __fake_ile,"a"					;\
-+	.llong handler						;\
-+	.llong patched_insn_##handler				;\
-+	.llong fake_ile_##handler				;\
-+	.previous						;\
-+
-+FAKE_ILE_HANDLER(system_reset_pSeries, PACA_EXMC)
-+FAKE_ILE_HANDLER(machine_check_pSeries_1, PACA_EXMC)
-+FAKE_ILE_HANDLER(data_access_pSeries, PACA_EXGEN)
-+FAKE_ILE_HANDLER(data_access_slb_pSeries, PACA_EXSLB)
-+FAKE_ILE_HANDLER(instruction_access_pSeries, PACA_EXGEN)
-+FAKE_ILE_HANDLER(instruction_access_slb_pSeries, PACA_EXSLB)
-+FAKE_ILE_HANDLER(hardware_interrupt_pSeries, PACA_EXGEN)
-+FAKE_ILE_HANDLER(alignment_pSeries, PACA_EXGEN)
-+FAKE_ILE_HANDLER(program_check_pSeries, PACA_EXGEN)
-+FAKE_ILE_HANDLER(fp_unavailable_pSeries, PACA_EXGEN)
-+FAKE_ILE_HANDLER(decrementer_pSeries, PACA_EXGEN)
-+FAKE_ILE_HANDLER(doorbell_super_pSeries, PACA_EXGEN)
-+FAKE_ILE_HANDLER(trap_0b_pSeries, PACA_EXGEN)
-+FAKE_ILE_HANDLER(system_call_pSeries, PACA_EXGEN)
-+FAKE_ILE_HANDLER(performance_monitor_pseries_trampoline, PACA_EXGEN)
-+FAKE_ILE_HANDLER(altivec_unavailable_pseries_trampoline, PACA_EXGEN)
-+FAKE_ILE_HANDLER(vsx_unavailable_pseries_trampoline, PACA_EXGEN)
-+FAKE_ILE_HANDLER(facility_unavailable_trampoline, PACA_EXGEN)
-+FAKE_ILE_HANDLER(instruction_breakpoint_pSeries, PACA_EXGEN)
-+FAKE_ILE_HANDLER(altivec_assist_pSeries, PACA_EXGEN)
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index f096e72..7fdb7c9 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -147,6 +147,20 @@ SECTIONS
- 		*(__fw_ftr_fixup)
- 		__stop___fw_ftr_fixup = .;
- 	}
-+
-+	. = ALIGN(8);
-+	__fake_ile : AT(ADDR(__fake_ile) - LOAD_OFFSET) {
-+		__start___fake_ile = .;
-+		*(__fake_ile)
-+		__stop___fake_ile = .;
-+	}
-+
-+	. = ALIGN(8);
-+	__be_patch : AT(ADDR(__be_patch) - LOAD_OFFSET) {
-+		__start___be_patch = .;
-+		*(__be_patch)
-+		__stop___be_patch = .;
-+	}
- #endif
- 	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
- 		INIT_RAM_FS
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index c1f1908..fb5d98c 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -67,6 +67,9 @@
- #include <asm/eeh.h>
- #include <asm/reg.h>
- #include <asm/plpar_wrappers.h>
-+#include <asm/cacheflush.h>
-+#include <asm/cputable.h>
-+#include <asm/code-patching.h>
- 
- #include "pseries.h"
- 
-@@ -455,6 +458,40 @@ long pseries_big_endian_exceptions(void)
- 	}
- }
- 
-+static void swizzle_endian(u32 *start, u32 *end)
-+{
-+	for (; (long)start < (long)end; start++)
-+		patch_instruction(start, swab32(*start));
-+}
-+
-+static void fixup_missing_little_endian_exceptions(void)
-+{
-+	extern u32 *__start___fake_ile, *__stop___fake_ile;
-+	extern u32 *__start___be_patch, *__stop___be_patch;
-+	u32 **be_table = &__start___be_patch;
-+	u32 **fake_table = &__start___fake_ile;
-+
-+	/* Make our big endian code look like big endian code */
-+	for (; (long)be_table < (long)&__stop___be_patch; be_table += 2)
-+		swizzle_endian(be_table[0], be_table[1]);
-+
-+	/* Now patch the interrupt handlers to branch to our BE code */
-+	for (; (long)fake_table < (long)&__stop___fake_ile; fake_table += 3) {
-+		u32 *le_handler = fake_table[0];
-+		u32 *patched_insn = fake_table[1];
-+		u32 *be_handler = fake_table[2];
-+		u32 le_be_diff = (long)be_handler - (long)le_handler;
-+		patch_instruction(patched_insn, *le_handler);
-+		/* This patches the interrupt handler's first instruction into
-+		   a branch that jumps to our BE handler that enables MSR_LE */
-+		patch_instruction(le_handler, swab32(0x48000000 | le_be_diff));
-+		/* Make sure that feature fixups use the new address for its
-+		   code patching */
-+		relocate_fixup_entry(&__start___ftr_fixup, &__stop___ftr_fixup,
-+				     le_handler, patched_insn);
-+	}
-+}
-+
- static long pseries_little_endian_exceptions(void)
- {
- 	long rc;
-@@ -737,6 +774,19 @@ static int __init pSeries_probe(void)
- 			ppc_md.progress("H_SET_MODE LE exception fail", 0);
- 			panic("Could not enable little endian exceptions");
- 		}
-+	} else {
-+		/*
-+		 * The hypervisor we're running on does not know how to
-+		 * configure us to run interrupts in little endian mode,
-+		 * so we have to cheat a bit.
-+		 *
-+		 * This call reprograms all interrupt handlers' first
-+		 * instruction into a branch to a big endian fixup section
-+		 * which only transitions us into little endian mode, then
-+		 * returns back to the normal little endian interrupt
-+		 * handler.
-+		 */
-+		fixup_missing_little_endian_exceptions();
- 	}
- #endif
- 
+ 	rxq_desc.fields.flags_len = IBMVETH_BUF_VALID |
+ 					adapter->rx_queue.queue_len;
+@@ -1186,6 +1186,7 @@ static void ibmveth_set_multicast_list(struct net_device *netdev)
+ 			/* add the multicast address to the filter table */
+ 			unsigned long mcast_addr = 0;
+ 			memcpy(((char *)&mcast_addr)+2, ha->addr, ETH_ALEN);
++			mcast_addr = cpu_to_be64(mcast_addr);
+ 			lpar_rc = h_multicast_ctrl(adapter->vdev->unit_address,
+ 						   IbmVethMcastAddFilter,
+ 						   mcast_addr);
 -- 
 1.8.1.4
