@@ -1,21 +1,18 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x22b.google.com (mail-pd0-x22b.google.com
- [IPv6:2607:f8b0:400e:c02::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <dingtianhong@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A36F72C02C2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 18:13:58 +1100 (EST)
-Received: by mail-pd0-f171.google.com with SMTP id z10so6021678pdj.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 23:13:54 -0800 (PST)
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v4 10/10] powerpc/fsl_booke: enable the relocatable for the
- kdump kernel
-Date: Tue, 24 Dec 2013 15:12:12 +0800
-Message-Id: <1387869132-12650-11-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1387869132-12650-1-git-send-email-haokexin@gmail.com>
-References: <1387869132-12650-1-git-send-email-haokexin@gmail.com>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 1CCA32C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 22:28:44 +1100 (EST)
+Message-ID: <52B96FA2.6020709@huawei.com>
+Date: Tue, 24 Dec 2013 19:27:30 +0800
+From: Ding Tianhong <dingtianhong@huawei.com>
+MIME-Version: 1.0
+To: Li Yang <leoli@freescale.com>, Netdev <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 02/20] net: freescale: slight optimization of addr compare
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,34 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The RELOCATABLE is more flexible and without any alignment restriction.
-And it is a superset of DYNAMIC_MEMSTART. So use it by default for
-a kdump kernel.
+The function did not be used any more, so remove it.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
+Cc: Li Yang <leoli@freescale.com>
+Cc: netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
 ---
-v4: No change.
+ drivers/net/ethernet/freescale/ucc_geth.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-v3: No change.
-
-v2: A new patch in v2.
-
- arch/powerpc/Kconfig | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index f5b464c41117..569784af841c 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -399,8 +399,7 @@ config KEXEC
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel"
- 	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
--	select RELOCATABLE if PPC64 || 44x
--	select DYNAMIC_MEMSTART if FSL_BOOKE
-+	select RELOCATABLE if PPC64 || 44x || FSL_BOOKE
- 	help
- 	  Build a kernel suitable for use as a kdump capture kernel.
- 	  The same kernel binary can be used as production kernel and dump
+diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
+index 5548b6d..72291a8 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth.c
++++ b/drivers/net/ethernet/freescale/ucc_geth.c
+@@ -435,11 +435,6 @@ static void hw_add_addr_in_hash(struct ucc_geth_private *ugeth,
+ 		     QE_CR_PROTOCOL_ETHERNET, 0);
+ }
+ 
+-static inline int compare_addr(u8 **addr1, u8 **addr2)
+-{
+-	return memcmp(addr1, addr2, ETH_ALEN);
+-}
+-
+ #ifdef DEBUG
+ static void get_statistics(struct ucc_geth_private *ugeth,
+ 			   struct ucc_geth_tx_firmware_statistics *
 -- 
-1.8.3.1
+1.8.0
