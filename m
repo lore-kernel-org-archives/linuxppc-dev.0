@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pb0-f50.google.com (mail-pb0-f50.google.com
+ [209.85.160.50])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3FCC62C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 15:37:15 +1100 (EST)
-Message-ID: <1387859821.4373.10.camel@pasglop>
-Subject: Re: [PATCH] ibmveth: Fix more little endian issues
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joe Perches <joe@perches.com>
-Date: Tue, 24 Dec 2013 15:37:01 +1100
-In-Reply-To: <1387810329.22671.66.camel@joe-AO722>
-References: <1387762163-39662-1-git-send-email-agraf@suse.de>
- <20131223173833.0a9a6705@kryten> <1387810329.22671.66.camel@joe-AO722>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, Dinar Valeev <dvaleev@suse.com>,
- linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
- Anton Blanchard <anton@samba.org>, Santiago Leon <santil@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id DB7322C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 16:10:42 +1100 (EST)
+Received: by mail-pb0-f50.google.com with SMTP id rr13so6093276pbb.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 21:10:39 -0800 (PST)
+Message-ID: <52B91747.7090309@ozlabs.ru>
+Date: Tue, 24 Dec 2013 16:10:31 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] iommu: Add empty stub for iommu_group_get_by_id()
+References: <1385016074-17026-1-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1385016074-17026-1-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset=KOI8-R
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Joerg Roedel <joro@8bytes.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-12-23 at 06:52 -0800, Joe Perches wrote:
-> On Mon, 2013-12-23 at 17:38 +1100, Anton Blanchard wrote:
-> > The hypervisor expects MAC addresses passed in registers to be big
-> > endian u64.
+On 11/21/2013 05:41 PM, Alexey Kardashevskiy wrote:
+> Almost every function in include/linux/iommu.h has an empty stub
+> but the iommu_group_get_by_id() did not get one by mistake.
 > 
-> So maybe use __be64 declarations?
+> This adds an empty stub for iommu_group_get_by_id() for IOMMU_API
+> disabled config.
+
+Ping?
+
+
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  include/linux/iommu.h | 5 +++++
+>  1 file changed, 5 insertions(+)
 > 
-> > +static unsigned long ibmveth_encode_mac_addr(char *mac)
+> diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+> index 7ea319e..3c7903d 100644
+> --- a/include/linux/iommu.h
+> +++ b/include/linux/iommu.h
+> @@ -245,6 +245,11 @@ static inline struct iommu_domain *iommu_domain_alloc(struct bus_type *bus)
+>  	return NULL;
+>  }
+>  
+> +static inline struct iommu_group *iommu_group_get_by_id(int id)
+> +{
+> +	return NULL;
+> +}
+> +
+>  static inline void iommu_domain_free(struct iommu_domain *domain)
+>  {
+>  }
 > 
-> static __be64 ibmveth_encode_mac_addr(const char *mac)
 
-A register value has no endianness. Only memory content does. Especially
-talking of a MAC address which is really a byte stream.... (Yes, our
-__beXX types used without a * are borderline, but we've got used to it).
 
-In fact I find the use of 
-
-    memcpy(((char *)&encoded) + 2, mac, ETH_ALEN);
-
-Really gross :-) Yes it works with the added cpu_to_be64() but in that
-specific case, I think it would be nicer to simply load & shift into
-position the 6 bytes and avoid the endianness issue completely.
-
-Cheers,
-Ben.
+-- 
+Alexey
