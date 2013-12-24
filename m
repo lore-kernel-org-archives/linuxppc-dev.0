@@ -1,18 +1,18 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
- [IPv6:2607:f8b0:400e:c03::231])
+Received: from mail-pb0-x236.google.com (mail-pb0-x236.google.com
+ [IPv6:2607:f8b0:400e:c01::236])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 725152C0176
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 18:13:26 +1100 (EST)
-Received: by mail-pa0-f49.google.com with SMTP id kx10so6197215pab.22
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 23:13:23 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 5DC422C00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 18:13:33 +1100 (EST)
+Received: by mail-pb0-f54.google.com with SMTP id un15so6223971pbc.27
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 23:13:30 -0800 (PST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v4 04/10] powerpc: enable the relocatable support for the fsl
- booke 32bit kernel
-Date: Tue, 24 Dec 2013 15:12:06 +0800
-Message-Id: <1387869132-12650-5-git-send-email-haokexin@gmail.com>
+Subject: [PATCH v4 05/10] powerpc/fsl_booke: set the tlb entry for the kernel
+ address in AS1
+Date: Tue, 24 Dec 2013 15:12:07 +0800
+Message-Id: <1387869132-12650-6-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1387869132-12650-1-git-send-email-haokexin@gmail.com>
 References: <1387869132-12650-1-git-send-email-haokexin@gmail.com>
 Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
@@ -25,142 +25,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is based on the codes in the head_44x.S. The difference is that
-the init tlb size we used is 64M. With this patch we can only load the
-kernel at address between memstart_addr ~ memstart_addr + 64M. We will
-fix this restriction in the following patches.
+We use the tlb1 entries to map low mem to the kernel space. In the
+current code, it assumes that the first tlb entry would cover the
+kernel image. But this is not true for some special cases, such as
+when we run a relocatable kernel above the 64M or set
+CONFIG_KERNEL_START above 64M. So we choose to switch to address
+space 1 before setting these tlb entries.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
-v4: Use macro LOAD_REG_ADDR_PIC.
+v4: No change.
 
-v3:
-  * Use the 64M align.
-  * typo fix.
+v3: Typo fix.
 
-v2: Move the code to set kernstart_addr and virt_phys_offset to a c function.
-    So we can expand it easily later.
+v2: A new patch in v2.
 
- arch/powerpc/Kconfig                          |  2 +-
- arch/powerpc/kernel/fsl_booke_entry_mapping.S |  2 ++
- arch/powerpc/kernel/head_fsl_booke.S          | 34 +++++++++++++++++++++++++++
- arch/powerpc/mm/fsl_booke_mmu.c               | 28 ++++++++++++++++++++++
- 4 files changed, 65 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/head_fsl_booke.S | 81 ++++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/fsl_booke_mmu.c      |  2 +
+ arch/powerpc/mm/mmu_decl.h           |  2 +
+ 3 files changed, 85 insertions(+)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b44b52c0a8f0..f5b464c41117 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -881,7 +881,7 @@ config DYNAMIC_MEMSTART
- 
- config RELOCATABLE
- 	bool "Build a relocatable kernel"
--	depends on ADVANCED_OPTIONS && FLATMEM && 44x
-+	depends on ADVANCED_OPTIONS && FLATMEM && (44x || FSL_BOOKE)
- 	select NONSTATIC_KERNEL
- 	help
- 	  This builds a kernel image that is capable of running at the
-diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-index a92c79be2728..f22e7e44fbf3 100644
---- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-+++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-@@ -176,6 +176,8 @@ skpinv:	addi	r6,r6,1				/* Increment */
- /* 7. Jump to KERNELBASE mapping */
- 	lis	r6,(KERNELBASE & ~0xfff)@h
- 	ori	r6,r6,(KERNELBASE & ~0xfff)@l
-+	rlwinm	r7,r25,0,0x03ffffff
-+	add	r6,r7,r6
- 
- #elif defined(ENTRY_MAPPING_KEXEC_SETUP)
- /*
 diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 196950f29c00..19bd574bda9d 100644
+index 19bd574bda9d..75f0223e6d0d 100644
 --- a/arch/powerpc/kernel/head_fsl_booke.S
 +++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -73,6 +73,30 @@ _ENTRY(_start);
- 	li	r24,0			/* CPU number */
- 	li	r23,0			/* phys kernel start (high) */
+@@ -1157,6 +1157,87 @@ __secondary_hold_acknowledge:
+ #endif
  
-+#ifdef CONFIG_RELOCATABLE
-+	LOAD_REG_ADDR_PIC(r3, _stext)	/* Get our current runtime base */
+ /*
++ * Create a tlb entry with the same effective and physical address as
++ * the tlb entry used by the current running code. But set the TS to 1.
++ * Then switch to the address space 1. It will return with the r3 set to
++ * the ESEL of the new created tlb.
++ */
++_GLOBAL(switch_to_as1)
++	mflr	r5
 +
-+	/* Translate _stext address to physical, save in r23/r25 */
-+	bl	get_phys_addr
-+	mr	r23,r3
-+	mr	r25,r4
++	/* Find a entry not used */
++	mfspr	r3,SPRN_TLB1CFG
++	andi.	r3,r3,0xfff
++	mfspr	r4,SPRN_PID
++	rlwinm	r4,r4,16,0x3fff0000	/* turn PID into MAS6[SPID] */
++	mtspr	SPRN_MAS6,r4
++1:	lis	r4,0x1000		/* Set MAS0(TLBSEL) = 1 */
++	addi	r3,r3,-1
++	rlwimi	r4,r3,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r3) */
++	mtspr	SPRN_MAS0,r4
++	tlbre
++	mfspr	r4,SPRN_MAS1
++	andis.	r4,r4,MAS1_VALID@h
++	bne	1b
 +
-+	/*
-+	 * We have the runtime (virutal) address of our base.
-+	 * We calculate our shift of offset from a 64M page.
-+	 * We could map the 64M page we belong to at PAGE_OFFSET and
-+	 * get going from there.
-+	 */
-+	lis	r4,KERNELBASE@h
-+	ori	r4,r4,KERNELBASE@l
-+	rlwinm	r6,r25,0,0x3ffffff		/* r6 = PHYS_START % 64M */
-+	rlwinm	r5,r4,0,0x3ffffff		/* r5 = KERNELBASE % 64M */
-+	subf	r3,r5,r6			/* r3 = r6 - r5 */
-+	add	r3,r4,r3			/* Required Virtual Address */
++	/* Get the tlb entry used by the current running code */
++	bl	0f
++0:	mflr	r4
++	tlbsx	0,r4
 +
-+	bl	relocate
-+#endif
++	mfspr	r4,SPRN_MAS1
++	ori	r4,r4,MAS1_TS		/* Set the TS = 1 */
++	mtspr	SPRN_MAS1,r4
 +
- /* We try to not make any assumptions about how the boot loader
-  * setup or used the TLBs.  We invalidate all mappings from the
-  * boot loader and load a single entry in TLB1[0] to map the
-@@ -182,6 +206,16 @@ _ENTRY(__early_start)
- 
- 	bl	early_init
- 
-+#ifdef CONFIG_RELOCATABLE
-+#ifdef CONFIG_PHYS_64BIT
-+	mr	r3,r23
-+	mr	r4,r25
-+#else
-+	mr	r3,r25
-+#endif
-+	bl	relocate_init
-+#endif
++	mfspr	r4,SPRN_MAS0
++	rlwinm	r4,r4,0,~MAS0_ESEL_MASK
++	rlwimi	r4,r3,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r3) */
++	mtspr	SPRN_MAS0,r4
++	tlbwe
++	isync
++	sync
 +
- #ifdef CONFIG_DYNAMIC_MEMSTART
- 	lis	r3,kernstart_addr@ha
- 	la	r3,kernstart_addr@l(r3)
++	mfmsr	r4
++	ori	r4,r4,MSR_IS | MSR_DS
++	mtspr	SPRN_SRR0,r5
++	mtspr	SPRN_SRR1,r4
++	sync
++	rfi
++
++/*
++ * Restore to the address space 0 and also invalidate the tlb entry created
++ * by switch_to_as1.
++*/
++_GLOBAL(restore_to_as0)
++	mflr	r0
++
++	bl	0f
++0:	mflr	r9
++	addi	r9,r9,1f - 0b
++
++	mfmsr	r7
++	li	r8,(MSR_IS | MSR_DS)
++	andc	r7,r7,r8
++
++	mtspr	SPRN_SRR0,r9
++	mtspr	SPRN_SRR1,r7
++	sync
++	rfi
++
++	/* Invalidate the temporary tlb entry for AS1 */
++1:	lis	r9,0x1000		/* Set MAS0(TLBSEL) = 1 */
++	rlwimi	r9,r3,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r3) */
++	mtspr	SPRN_MAS0,r9
++	tlbre
++	mfspr	r9,SPRN_MAS1
++	rlwinm	r9,r9,0,2,31		/* Clear MAS1 Valid and IPPROT */
++	mtspr	SPRN_MAS1,r9
++	tlbwe
++	isync
++	mtlr	r0
++	blr
++
++/*
+  * We put a few things here that have to be page-aligned. This stuff
+  * goes at the beginning of the data segment, which is page-aligned.
+  */
 diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index 07ba45b0f07c..ce4a1163ddd3 100644
+index ce4a1163ddd3..1d54f6d35e71 100644
 --- a/arch/powerpc/mm/fsl_booke_mmu.c
 +++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -241,4 +241,32 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	/* 64M mapped initially according to head_fsl_booke.S */
- 	memblock_set_current_limit(min_t(u64, limit, 0x04000000));
- }
-+
-+#ifdef CONFIG_RELOCATABLE
-+notrace void __init relocate_init(phys_addr_t start)
-+{
-+	unsigned long base = KERNELBASE;
-+
-+	/*
-+	 * Relocatable kernel support based on processing of dynamic
-+	 * relocation entries.
-+	 * Compute the virt_phys_offset :
-+	 * virt_phys_offset = stext.run - kernstart_addr
-+	 *
-+	 * stext.run = (KERNELBASE & ~0x3ffffff) + (kernstart_addr & 0x3ffffff)
-+	 * When we relocate, we have :
-+	 *
-+	 *	(kernstart_addr & 0x3ffffff) = (stext.run & 0x3ffffff)
-+	 *
-+	 * hence:
-+	 *  virt_phys_offset = (KERNELBASE & ~0x3ffffff) -
-+	 *                              (kernstart_addr & ~0x3ffffff)
-+	 *
-+	 */
-+	kernstart_addr = start;
-+	start &= ~0x3ffffff;
-+	base &= ~0x3ffffff;
-+	virt_phys_offset = base - start;
-+}
-+#endif
+@@ -222,7 +222,9 @@ void __init adjust_total_lowmem(void)
+ 	/* adjust lowmem size to __max_low_memory */
+ 	ram = min((phys_addr_t)__max_low_memory, (phys_addr_t)total_lowmem);
+ 
++	i = switch_to_as1();
+ 	__max_low_memory = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM);
++	restore_to_as0(i);
+ 
+ 	pr_info("Memory CAM mapping: ");
+ 	for (i = 0; i < tlbcam_index - 1; i++)
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 83eb5d5f53d5..eefbf7bb4331 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -148,6 +148,8 @@ extern unsigned long calc_cam_sz(unsigned long ram, unsigned long virt,
+ extern void MMU_init_hw(void);
+ extern unsigned long mmu_mapin_ram(unsigned long top);
+ extern void adjust_total_lowmem(void);
++extern int switch_to_as1(void);
++extern void restore_to_as0(int esel);
  #endif
+ extern void loadcam_entry(unsigned int index);
+ 
 -- 
 1.8.3.1
