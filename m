@@ -1,18 +1,21 @@
-Return-Path: <dingtianhong@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-la0-x229.google.com (mail-la0-x229.google.com
+ [IPv6:2a00:1450:4010:c03::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1CCA32C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 22:28:44 +1100 (EST)
-Message-ID: <52B96FA2.6020709@huawei.com>
-Date: Tue, 24 Dec 2013 19:27:30 +0800
-From: Ding Tianhong <dingtianhong@huawei.com>
-MIME-Version: 1.0
-To: Li Yang <leoli@freescale.com>, Netdev <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 02/20] net: freescale: slight optimization of addr compare
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id A8CE72C00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 23:02:52 +1100 (EST)
+Received: by mail-la0-f41.google.com with SMTP id eo20so2900948lab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 04:02:46 -0800 (PST)
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
+ Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
+ Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
+ Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ dmaengine@vger.kernel.org, devicetree@vger.kernel.org
+Subject: [PATCH RFC v6 0/5] MPC512x DMA slave s/g support, OF DMA lookup
+Date: Tue, 24 Dec 2013 16:06:24 +0400
+Message-Id: <1387886789-20249-1-git-send-email-a13xp0p0v88@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +25,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function did not be used any more, so remove it.
+v2013/7/14 Gerhard Sittig <gsi@denx.de>:
+> this series
+> - introduces slave s/g support (that's support for DMA transfers which
+>    involve peripherals in contrast to mem-to-mem transfers)
+> - adds device tree based lookup support for DMA channels
+> - combines floating patches and related feedback which already covered
+>    several aspects of what the suggested LPB driver needs, to demonstrate
+>    how integration might be done
+> - carries Q&D SD card support to enable another DMA client during test,
+>    while this patch needs to get dropped upon pickup
 
-Cc: Li Yang <leoli@freescale.com>
-Cc: netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
----
- drivers/net/ethernet/freescale/ucc_geth.c | 5 -----
- 1 file changed, 5 deletions(-)
+Changes in v2:
+> - re-order mpc8308 related code paths for improved readability, no
+>    change in behaviour, introduction of symbolic channel names here
+>    already
+> - squash 'execute() start condition' and 'terminate all' into the
+>    introduction of 'slave s/g prep' and 'device control' support; refuse
+>    s/g lists with more than one item since slave support is operational
+>    yet proper s/g support is missing (can get addressed later)
+> - always start transfers from software on MPC8308 as there are no
+>    external request lines for peripheral flow control
+> - drop dt-bindings header file and symbolic channel names in OF nodes
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 5548b6d..72291a8 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -435,11 +435,6 @@ static void hw_add_addr_in_hash(struct ucc_geth_private *ugeth,
- 		     QE_CR_PROTOCOL_ETHERNET, 0);
- }
- 
--static inline int compare_addr(u8 **addr1, u8 **addr2)
--{
--	return memcmp(addr1, addr2, ETH_ALEN);
--}
--
- #ifdef DEBUG
- static void get_statistics(struct ucc_geth_private *ugeth,
- 			   struct ucc_geth_tx_firmware_statistics *
+Changes in v3 and v4:
+ Part 1/5:
+ - use #define instead of enum since individual channels don't require
+    special handling.
+ Part 2/5:
+ - add a flag "will_access_peripheral" to DMA transfer descriptor
+    according recommendations of Gerhard Sittig.
+    This flag is set in mpc_dma_prep_memcpy() and mpc_dma_prep_slave_sg()
+    and is evaluated in mpc_dma_execute() to choose a type of start for
+    the transfer.
+ - prevent descriptors of transfers which involve peripherals from
+    being chained together;
+    each of such transfers needs hardware initiated start.
+ - add locking while working with struct mpc_dma_chan
+    according recommendations of Lars-Peter Clausen.
+ - remove default nbytes value. Client kernel modules must set
+    src_maxburst and dst_maxburst fields of struct dma_slave_config (dmaengine.h).
+
+Changes in v5:
+ Part 2/5:
+ - add and improve comments;
+ - improve the code moving transfer descriptors from 'queued' to 'active' list
+    in mpc_dma_execute();
+ - allow mpc_dma_prep_slave_sg() to run with non-empty 'active' list;
+ - take 'mdesc' back to 'free' list in case of error in mpc_dma_prep_slave_sg();
+ - improve checks of the transfer parameters;
+ - provide the default value for 'maxburst' in mpc_dma_device_control().
+
+Changes in v6:
+ Part 2/5:
+ - remove doubtful comment;
+ - fix coding style issues;
+ - set default value for 'maxburst' to 1 which applies to most cases;
+ Part 3/5:
+ - use dma_get_slave_channel() instead of dma_request_channel()
+    in new function of_dma_xlate_by_chan_id() according recommendations of
+    Arnd Bergmann;
+ Part 4/5:
+ - set DMA_PRIVATE flag for MPC512x DMA controller since its driver relies on
+    of_dma_xlate_by_chan_id() which doesn't use dma_request_channel()
+    any more;
+ - resolve little patch conflict;
+ Part 5/5:
+ - resolve little patch conflict;
+
+> known issues:
+> - it's yet to get confirmed whether MPC8308 can use slave support or
+>    whether the DMA controller's driver shall actively reject it, the
+>    information that's available so far suggests that peripheral transfers
+>    to IP bus attached I/O is useful and shall not get blocked right away
+ - adding support for transfers which don't increment the RAM address or
+    do increment the peripheral "port's" address is easy with
+    this implementation; but which options of the common API
+    should be used for specifying such transfers?
+
+
+Alexander Popov (3):
+  dma: mpc512x: reorder mpc8308 specific instructions
+  dma: mpc512x: add support for peripheral transfers
+  dma: of: Add common xlate function for matching by channel id
+
+Gerhard Sittig (2):
+  dma: mpc512x: register for device tree channel lookup
+  HACK mmc: mxcmmc: enable clocks for the MPC512x
+
+ .../devicetree/bindings/dma/mpc512x-dma.txt        |  55 ++++
+ arch/powerpc/boot/dts/mpc5121.dtsi                 |   1 +
+ drivers/dma/mpc512x_dma.c                          | 294 +++++++++++++++++++--
+ drivers/dma/of-dma.c                               |  35 +++
+ drivers/mmc/host/mxcmmc.c                          |  42 ++-
+ include/linux/of_dma.h                             |   4 +
+ 6 files changed, 392 insertions(+), 39 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+
 -- 
-1.8.0
+1.8.4.2
