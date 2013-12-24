@@ -1,18 +1,17 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-pb0-x236.google.com (mail-pb0-x236.google.com
- [IPv6:2607:f8b0:400e:c01::236])
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5DC422C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 18:13:33 +1100 (EST)
-Received: by mail-pb0-f54.google.com with SMTP id un15so6223971pbc.27
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 23:13:30 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id ECBC52C0164
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 18:13:38 +1100 (EST)
+Received: by mail-pa0-f49.google.com with SMTP id kx10so6197420pab.22
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 23:13:36 -0800 (PST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v4 05/10] powerpc/fsl_booke: set the tlb entry for the kernel
- address in AS1
-Date: Tue, 24 Dec 2013 15:12:07 +0800
-Message-Id: <1387869132-12650-6-git-send-email-haokexin@gmail.com>
+Subject: [PATCH v4 06/10] powerpc: introduce early_get_first_memblock_info
+Date: Tue, 24 Dec 2013 15:12:08 +0800
+Message-Id: <1387869132-12650-7-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1387869132-12650-1-git-send-email-haokexin@gmail.com>
 References: <1387869132-12650-1-git-send-email-haokexin@gmail.com>
 Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
@@ -25,144 +24,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We use the tlb1 entries to map low mem to the kernel space. In the
-current code, it assumes that the first tlb entry would cover the
-kernel image. But this is not true for some special cases, such as
-when we run a relocatable kernel above the 64M or set
-CONFIG_KERNEL_START above 64M. So we choose to switch to address
-space 1 before setting these tlb entries.
+For a relocatable kernel since it can be loaded at any place, there
+is no any relation between the kernel start addr and the memstart_addr.
+So we can't calculate the memstart_addr from kernel start addr. And
+also we can't wait to do the relocation after we get the real
+memstart_addr from device tree because it is so late. So introduce
+a new function we can use to get the first memblock address and size
+in a very early stage (before machine_init).
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
 v4: No change.
 
-v3: Typo fix.
+v3: Introduce a variable to avoid to mess the memblock.
 
 v2: A new patch in v2.
 
- arch/powerpc/kernel/head_fsl_booke.S | 81 ++++++++++++++++++++++++++++++++++++
- arch/powerpc/mm/fsl_booke_mmu.c      |  2 +
- arch/powerpc/mm/mmu_decl.h           |  2 +
- 3 files changed, 85 insertions(+)
+ arch/powerpc/kernel/prom.c | 41 ++++++++++++++++++++++++++++++++++++++++-
+ include/linux/of_fdt.h     |  1 +
+ 2 files changed, 41 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 19bd574bda9d..75f0223e6d0d 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -1157,6 +1157,87 @@ __secondary_hold_acknowledge:
- #endif
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index fa0ad8aafbcc..f58c0d3aaeb4 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -523,6 +523,20 @@ static int __init early_init_dt_scan_memory_ppc(unsigned long node,
+ 	return early_init_dt_scan_memory(node, uname, depth, data);
+ }
  
- /*
-+ * Create a tlb entry with the same effective and physical address as
-+ * the tlb entry used by the current running code. But set the TS to 1.
-+ * Then switch to the address space 1. It will return with the r3 set to
-+ * the ESEL of the new created tlb.
++/*
++ * For a relocatable kernel, we need to get the memstart_addr first,
++ * then use it to calculate the virtual kernel start address. This has
++ * to happen at a very early stage (before machine_init). In this case,
++ * we just want to get the memstart_address and would not like to mess the
++ * memblock at this stage. So introduce a variable to skip the memblock_add()
++ * for this reason.
 + */
-+_GLOBAL(switch_to_as1)
-+	mflr	r5
++#ifdef CONFIG_RELOCATABLE
++static int add_mem_to_memblock = 1;
++#else
++#define add_mem_to_memblock 1
++#endif
 +
-+	/* Find a entry not used */
-+	mfspr	r3,SPRN_TLB1CFG
-+	andi.	r3,r3,0xfff
-+	mfspr	r4,SPRN_PID
-+	rlwinm	r4,r4,16,0x3fff0000	/* turn PID into MAS6[SPID] */
-+	mtspr	SPRN_MAS6,r4
-+1:	lis	r4,0x1000		/* Set MAS0(TLBSEL) = 1 */
-+	addi	r3,r3,-1
-+	rlwimi	r4,r3,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r3) */
-+	mtspr	SPRN_MAS0,r4
-+	tlbre
-+	mfspr	r4,SPRN_MAS1
-+	andis.	r4,r4,MAS1_VALID@h
-+	bne	1b
-+
-+	/* Get the tlb entry used by the current running code */
-+	bl	0f
-+0:	mflr	r4
-+	tlbsx	0,r4
-+
-+	mfspr	r4,SPRN_MAS1
-+	ori	r4,r4,MAS1_TS		/* Set the TS = 1 */
-+	mtspr	SPRN_MAS1,r4
-+
-+	mfspr	r4,SPRN_MAS0
-+	rlwinm	r4,r4,0,~MAS0_ESEL_MASK
-+	rlwimi	r4,r3,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r3) */
-+	mtspr	SPRN_MAS0,r4
-+	tlbwe
-+	isync
-+	sync
-+
-+	mfmsr	r4
-+	ori	r4,r4,MSR_IS | MSR_DS
-+	mtspr	SPRN_SRR0,r5
-+	mtspr	SPRN_SRR1,r4
-+	sync
-+	rfi
-+
+ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+ {
+ #ifdef CONFIG_PPC64
+@@ -543,7 +557,8 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+ 	}
+ 
+ 	/* Add the chunk to the MEMBLOCK list */
+-	memblock_add(base, size);
++	if (add_mem_to_memblock)
++		memblock_add(base, size);
+ }
+ 
+ static void __init early_reserve_mem_dt(void)
+@@ -740,6 +755,30 @@ void __init early_init_devtree(void *params)
+ 	DBG(" <- early_init_devtree()\n");
+ }
+ 
++#ifdef CONFIG_RELOCATABLE
 +/*
-+ * Restore to the address space 0 and also invalidate the tlb entry created
-+ * by switch_to_as1.
-+*/
-+_GLOBAL(restore_to_as0)
-+	mflr	r0
++ * This function run before early_init_devtree, so we have to init
++ * initial_boot_params.
++ */
++void __init early_get_first_memblock_info(void *params, phys_addr_t *size)
++{
++	/* Setup flat device-tree pointer */
++	initial_boot_params = params;
 +
-+	bl	0f
-+0:	mflr	r9
-+	addi	r9,r9,1f - 0b
++	/*
++	 * Scan the memory nodes and set add_mem_to_memblock to 0 to avoid
++	 * mess the memblock.
++	 */
++	add_mem_to_memblock = 0;
++	of_scan_flat_dt(early_init_dt_scan_root, NULL);
++	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
++	add_mem_to_memblock = 1;
 +
-+	mfmsr	r7
-+	li	r8,(MSR_IS | MSR_DS)
-+	andc	r7,r7,r8
++	if (size)
++		*size = first_memblock_size;
++}
++#endif
 +
-+	mtspr	SPRN_SRR0,r9
-+	mtspr	SPRN_SRR1,r7
-+	sync
-+	rfi
-+
-+	/* Invalidate the temporary tlb entry for AS1 */
-+1:	lis	r9,0x1000		/* Set MAS0(TLBSEL) = 1 */
-+	rlwimi	r9,r3,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r3) */
-+	mtspr	SPRN_MAS0,r9
-+	tlbre
-+	mfspr	r9,SPRN_MAS1
-+	rlwinm	r9,r9,0,2,31		/* Clear MAS1 Valid and IPPROT */
-+	mtspr	SPRN_MAS1,r9
-+	tlbwe
-+	isync
-+	mtlr	r0
-+	blr
-+
-+/*
-  * We put a few things here that have to be page-aligned. This stuff
-  * goes at the beginning of the data segment, which is page-aligned.
-  */
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index ce4a1163ddd3..1d54f6d35e71 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -222,7 +222,9 @@ void __init adjust_total_lowmem(void)
- 	/* adjust lowmem size to __max_low_memory */
- 	ram = min((phys_addr_t)__max_low_memory, (phys_addr_t)total_lowmem);
- 
-+	i = switch_to_as1();
- 	__max_low_memory = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM);
-+	restore_to_as0(i);
- 
- 	pr_info("Memory CAM mapping: ");
- 	for (i = 0; i < tlbcam_index - 1; i++)
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 83eb5d5f53d5..eefbf7bb4331 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -148,6 +148,8 @@ extern unsigned long calc_cam_sz(unsigned long ram, unsigned long virt,
- extern void MMU_init_hw(void);
- extern unsigned long mmu_mapin_ram(unsigned long top);
- extern void adjust_total_lowmem(void);
-+extern int switch_to_as1(void);
-+extern void restore_to_as0(int esel);
- #endif
- extern void loadcam_entry(unsigned int index);
- 
+ /*******
+  *
+  * New implementation of the OF "find" APIs, return a refcounted
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index 0beaee9dac1f..2b77058a7335 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -116,6 +116,7 @@ extern const void *of_flat_dt_match_machine(const void *default_match,
+ extern void unflatten_device_tree(void);
+ extern void unflatten_and_copy_device_tree(void);
+ extern void early_init_devtree(void *);
++extern void early_get_first_memblock_info(void *, phys_addr_t *);
+ #else /* CONFIG_OF_FLATTREE */
+ static inline const char *of_flat_dt_get_machine_name(void) { return NULL; }
+ static inline void unflatten_device_tree(void) {}
 -- 
 1.8.3.1
