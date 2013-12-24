@@ -1,19 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1387859710.15093.4.camel@concordia>
-Subject: Re: [PATCH V4 08/10] powerpc, perf: Enable SW filtering in branch
- stack sampling framework
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Tue, 24 Dec 2013 15:35:10 +1100
-In-Reply-To: <52B9049D.4020403@linux.vnet.ibm.com>
-References: <20131209062146.EABBE2C00C1@ozlabs.org>
- <52B42394.4060705@linux.vnet.ibm.com> <1387855790.15093.1.camel@concordia>
- <52B9049D.4020403@linux.vnet.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3FCC62C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 15:37:15 +1100 (EST)
+Message-ID: <1387859821.4373.10.camel@pasglop>
+Subject: Re: [PATCH] ibmveth: Fix more little endian issues
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joe Perches <joe@perches.com>
+Date: Tue, 24 Dec 2013 15:37:01 +1100
+In-Reply-To: <1387810329.22671.66.camel@joe-AO722>
+References: <1387762163-39662-1-git-send-email-agraf@suse.de>
+ <20131223173833.0a9a6705@kryten> <1387810329.22671.66.camel@joe-AO722>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: mikey@neuling.org, ak@linux.intel.com, linux-kernel@vger.kernel.org,
- eranian@google.com, linuxppc-dev@ozlabs.org, acme@ghostprotocols.net,
- sukadev@linux.vnet.ibm.com, mingo@kernel.org
+Cc: netdev@vger.kernel.org, Dinar Valeev <dvaleev@suse.com>,
+ linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
+ Anton Blanchard <anton@samba.org>, Santiago Leon <santil@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,89 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-12-24 at 09:20 +0530, Anshuman Khandual wrote:
-> On 12/24/2013 08:59 AM, Michael Ellerman wrote:
-> > On Fri, 2013-12-20 at 16:31 +0530, Anshuman Khandual wrote:
-> >> On 12/09/2013 11:51 AM, Michael Ellerman wrote:
-> >>> On Wed, 2013-04-12 at 10:32:40 UTC, Anshuman Khandual wrote:
-> >>>> +
+On Mon, 2013-12-23 at 06:52 -0800, Joe Perches wrote:
+> On Mon, 2013-12-23 at 17:38 +1100, Anton Blanchard wrote:
+> > The hypervisor expects MAC addresses passed in registers to be big
+> > endian u64.
 > 
-> >>>> +	if (bhrb_sw_filter & PERF_SAMPLE_BRANCH_COND) {
-> >>>> +
-> >>>> +		/* I-form instruction - excluded */
-> >>>> +		if (instr_is_branch_iform(*addr))
-> >>>> +			goto out;
-> >>>> +
-> >>>> +		/* B-form or XL-form instruction */
-> >>>> +		if (instr_is_branch_bform(*addr) || instr_is_branch_xlform(*addr))  {
-> >>>> +
-> >>>> +			/* Not branch always  */
-> >>>> +			if (!is_bo_always(*addr)) {
-> >>>> +
-> >>>> +				/* Conditional branch to CTR register */
-> >>>> +				if (is_bo_ctr(*addr))
-> >>>> +					goto out;
-> >>>
-> >>> We might have discussed this but why not?
-> >>
-> >> Did not get that, discuss what ?
-> > 
-> > Why are we saying a conditional branch to the CTR is not a conditional branch?
-> > 
-> > It is conditional, so I think it should be included.
+> So maybe use __be64 declarations?
+> 
+> > +static unsigned long ibmveth_encode_mac_addr(char *mac)
+> 
+> static __be64 ibmveth_encode_mac_addr(const char *mac)
 
-> I believe conditional branch to CTR register and the below conditional branch
-> with static hint are excluded when processed with BHRB PMU based filter IFM3,
-> Here the SW implemented filter try to match those exclusions, so that a user
-> should not see any difference in results whether the filter is processed
-> either in PMU or in SW.
+A register value has no endianness. Only memory content does. Especially
+talking of a MAC address which is really a byte stream.... (Yes, our
+__beXX types used without a * are borderline, but we've got used to it).
 
-OK. That's what I meant by "we might have discussed this".
+In fact I find the use of 
 
-So you need to make it very clear in the code that we are implementing the IFM3
-semantics, with a comment. Otherwise it's not obviously clear why those
-semantics make sense.
+    memcpy(((char *)&encoded) + 2, mac, ETH_ALEN);
 
-And we need to make extra sure we implement the same semantics as IFM3, which I
-don't think you do at the moment.
+Really gross :-) Yes it works with the added cpu_to_be64() but in that
+specific case, I think it would be nicer to simply load & shift into
+position the 6 bytes and avoid the endianness issue completely.
 
-The description for IFM3 is:
-
-   Do not record:
-    * b and bl instructions, 
-    * bc and bcl instructions for which the BO field indicates “Branch always.”
-   
-   For bclr, bclrl, bctr, bctrl, bctar, and bctarl instructions for which
-   the BO field indicates “Branch always,” record only one entry
-   containing the Branch target address.
-
-So I don't think your SW filter implements that part correctly. You are
-discarding all branches with "branch always" set.
-
-
-   Do not record:
-    * Branch instructions for which BO[0]=1, 
-
-This is what excludes branches to CTR. But, it's only branches to CTR that
-don't also depend on CR[BI] - we need to make that clear in the code.
-
-    * Branch instructions for which the “a” bit in the BO field is set to 1.
-
-So that's the is_bo_crbi_hint() check and rejection, but it's not related to
-CR[BI] at all.
-
-There's a note about CR[BI]:
-
-    Do not record instructions that do not depend on the value of CR[BI].
-
-But I think you've misinterpreted that. 
-
-    Do not record instructions that do not depend on the value of CR[BI].
-
-    Do     record instructions that        depend on the value of CR[BI].
-
-
-In fact the only branches that don't depend on CR[BI] are "branch always"
-branches, and branches with BO[0]=1, both of which were handled above.
-
-cheers
+Cheers,
+Ben.
