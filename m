@@ -1,17 +1,18 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
- [IPv6:2607:f8b0:400e:c02::233])
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 962872C02B0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 18:13:43 +1100 (EST)
-Received: by mail-pd0-f179.google.com with SMTP id r10so6051980pdi.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 23:13:40 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id E983D2C00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2013 18:13:47 +1100 (EST)
+Received: by mail-pa0-f48.google.com with SMTP id rd3so6217290pab.35
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Dec 2013 23:13:44 -0800 (PST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v4 07/10] powerpc/fsl_booke: introduce map_mem_in_cams_addr
-Date: Tue, 24 Dec 2013 15:12:09 +0800
-Message-Id: <1387869132-12650-8-git-send-email-haokexin@gmail.com>
+Subject: [PATCH v4 08/10] powerpc/fsl_booke: make sure PAGE_OFFSET map to
+ memstart_addr for relocatable kernel
+Date: Tue, 24 Dec 2013 15:12:10 +0800
+Message-Id: <1387869132-12650-9-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1387869132-12650-1-git-send-email-haokexin@gmail.com>
 References: <1387869132-12650-1-git-send-email-haokexin@gmail.com>
 Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
@@ -24,48 +25,254 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce this function so we can set both the physical and virtual
-address for the map in cams. This will be used by the relocation code.
+This is always true for a non-relocatable kernel. Otherwise the kernel
+would get stuck. But for a relocatable kernel, it seems a little
+complicated. When booting a relocatable kernel, we just align the
+kernel start addr to 64M and map the PAGE_OFFSET from there. The
+relocation will base on this virtual address. But if this address
+is not the same as the memstart_addr, we will have to change the
+map of PAGE_OFFSET to the real memstart_addr and do another relocation
+again.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
-v4: A new patch in v4.
+v4:
+  * Create the correct mem map in cams when booting above 64M.
+  * Don't skip the init tlb mapping for the second cpu.
 
- arch/powerpc/mm/fsl_booke_mmu.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+v3:
+  * Typo fix.
+  * Refactor relocate_init, no function change.
+  * Map only 64M memory before the second relocation.
+  * Comments update.
 
+v2: A new patch in v2.
+
+ arch/powerpc/kernel/head_fsl_booke.S | 74 +++++++++++++++++++++++++++++++++---
+ arch/powerpc/mm/fsl_booke_mmu.c      | 41 +++++++++++++++++---
+ arch/powerpc/mm/mmu_decl.h           |  2 +-
+ 3 files changed, 105 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 75f0223e6d0d..71e08dfbd1d1 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -81,6 +81,39 @@ _ENTRY(_start);
+ 	mr	r23,r3
+ 	mr	r25,r4
+ 
++	bl	0f
++0:	mflr	r8
++	addis	r3,r8,(is_second_reloc - 0b)@ha
++	lwz	r19,(is_second_reloc - 0b)@l(r3)
++
++	/* Check if this is the second relocation. */
++	cmpwi	r19,1
++	bne	1f
++
++	/*
++	 * For the second relocation, we already get the real memstart_addr
++	 * from device tree. So we will map PAGE_OFFSET to memstart_addr,
++	 * then the virtual address of start kernel should be:
++	 *          PAGE_OFFSET + (kernstart_addr - memstart_addr)
++	 * Since the offset between kernstart_addr and memstart_addr should
++	 * never be beyond 1G, so we can just use the lower 32bit of them
++	 * for the calculation.
++	 */
++	lis	r3,PAGE_OFFSET@h
++
++	addis	r4,r8,(kernstart_addr - 0b)@ha
++	addi	r4,r4,(kernstart_addr - 0b)@l
++	lwz	r5,4(r4)
++
++	addis	r6,r8,(memstart_addr - 0b)@ha
++	addi	r6,r6,(memstart_addr - 0b)@l
++	lwz	r7,4(r6)
++
++	subf	r5,r7,r5
++	add	r3,r3,r5
++	b	2f
++
++1:
+ 	/*
+ 	 * We have the runtime (virutal) address of our base.
+ 	 * We calculate our shift of offset from a 64M page.
+@@ -94,7 +127,14 @@ _ENTRY(_start);
+ 	subf	r3,r5,r6			/* r3 = r6 - r5 */
+ 	add	r3,r4,r3			/* Required Virtual Address */
+ 
+-	bl	relocate
++2:	bl	relocate
++
++	/*
++	 * For the second relocation, we already set the right tlb entries
++	 * for the kernel space, so skip the code in fsl_booke_entry_mapping.S
++	*/
++	cmpwi	r19,1
++	beq	set_ivor
+ #endif
+ 
+ /* We try to not make any assumptions about how the boot loader
+@@ -122,6 +162,7 @@ _ENTRY(__early_start)
+ #include "fsl_booke_entry_mapping.S"
+ #undef ENTRY_MAPPING_BOOT_SETUP
+ 
++set_ivor:
+ 	/* Establish the interrupt vector offsets */
+ 	SET_IVOR(0,  CriticalInput);
+ 	SET_IVOR(1,  MachineCheck);
+@@ -207,11 +248,13 @@ _ENTRY(__early_start)
+ 	bl	early_init
+ 
+ #ifdef CONFIG_RELOCATABLE
++	mr	r3,r30
++	mr	r4,r31
+ #ifdef CONFIG_PHYS_64BIT
+-	mr	r3,r23
+-	mr	r4,r25
++	mr	r5,r23
++	mr	r6,r25
+ #else
+-	mr	r3,r25
++	mr	r5,r25
+ #endif
+ 	bl	relocate_init
+ #endif
+@@ -1207,6 +1250,9 @@ _GLOBAL(switch_to_as1)
+ /*
+  * Restore to the address space 0 and also invalidate the tlb entry created
+  * by switch_to_as1.
++ * r3 - the tlb entry which should be invalidated
++ * r4 - __pa(PAGE_OFFSET in AS0) - __pa(PAGE_OFFSET in AS1)
++ * r5 - device tree virtual address. If r4 is 0, r5 is ignored.
+ */
+ _GLOBAL(restore_to_as0)
+ 	mflr	r0
+@@ -1215,7 +1261,15 @@ _GLOBAL(restore_to_as0)
+ 0:	mflr	r9
+ 	addi	r9,r9,1f - 0b
+ 
+-	mfmsr	r7
++	/*
++	 * We may map the PAGE_OFFSET in AS0 to a different physical address,
++	 * so we need calculate the right jump and device tree address based
++	 * on the offset passed by r4.
++	 */
++	subf	r9,r4,r9
++	subf	r5,r4,r5
++
++2:	mfmsr	r7
+ 	li	r8,(MSR_IS | MSR_DS)
+ 	andc	r7,r7,r8
+ 
+@@ -1234,9 +1288,19 @@ _GLOBAL(restore_to_as0)
+ 	mtspr	SPRN_MAS1,r9
+ 	tlbwe
+ 	isync
++
++	cmpwi	r4,0
++	bne	3f
+ 	mtlr	r0
+ 	blr
+ 
++	/*
++	 * The PAGE_OFFSET will map to a different physical address,
++	 * jump to _start to do another relocation again.
++	*/
++3:	mr	r3,r5
++	bl	_start
++
+ /*
+  * We put a few things here that have to be page-aligned. This stuff
+  * goes at the beginning of the data segment, which is page-aligned.
 diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index 1d54f6d35e71..ca956c83e3a2 100644
+index ca956c83e3a2..ce0c7d7db6c3 100644
 --- a/arch/powerpc/mm/fsl_booke_mmu.c
 +++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -171,11 +171,10 @@ unsigned long calc_cam_sz(unsigned long ram, unsigned long virt,
- 	return 1UL << camsize;
+@@ -231,7 +231,7 @@ void __init adjust_total_lowmem(void)
+ 
+ 	i = switch_to_as1();
+ 	__max_low_memory = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM);
+-	restore_to_as0(i);
++	restore_to_as0(i, 0, 0);
+ 
+ 	pr_info("Memory CAM mapping: ");
+ 	for (i = 0; i < tlbcam_index - 1; i++)
+@@ -252,17 +252,25 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
  }
  
--unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
-+static unsigned long map_mem_in_cams_addr(phys_addr_t phys, unsigned long virt,
-+					unsigned long ram, int max_cam_idx)
+ #ifdef CONFIG_RELOCATABLE
+-notrace void __init relocate_init(phys_addr_t start)
++int __initdata is_second_reloc;
++notrace void __init relocate_init(u64 dt_ptr, phys_addr_t start)
  {
- 	int i;
--	unsigned long virt = PAGE_OFFSET;
--	phys_addr_t phys = memstart_addr;
- 	unsigned long amount_mapped = 0;
+ 	unsigned long base = KERNELBASE;
  
- 	/* Calculate CAM values */
-@@ -195,6 +194,14 @@ unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
- 	return amount_mapped;
++	kernstart_addr = start;
++	if (is_second_reloc) {
++		virt_phys_offset = PAGE_OFFSET - memstart_addr;
++		return;
++	}
++
+ 	/*
+ 	 * Relocatable kernel support based on processing of dynamic
+-	 * relocation entries.
+-	 * Compute the virt_phys_offset :
++	 * relocation entries. Before we get the real memstart_addr,
++	 * We will compute the virt_phys_offset like this:
+ 	 * virt_phys_offset = stext.run - kernstart_addr
+ 	 *
+-	 * stext.run = (KERNELBASE & ~0x3ffffff) + (kernstart_addr & 0x3ffffff)
++	 * stext.run = (KERNELBASE & ~0x3ffffff) +
++	 *				(kernstart_addr & 0x3ffffff)
+ 	 * When we relocate, we have :
+ 	 *
+ 	 *	(kernstart_addr & 0x3ffffff) = (stext.run & 0x3ffffff)
+@@ -272,10 +280,31 @@ notrace void __init relocate_init(phys_addr_t start)
+ 	 *                              (kernstart_addr & ~0x3ffffff)
+ 	 *
+ 	 */
+-	kernstart_addr = start;
+ 	start &= ~0x3ffffff;
+ 	base &= ~0x3ffffff;
+ 	virt_phys_offset = base - start;
++	early_get_first_memblock_info(__va(dt_ptr), NULL);
++	/*
++	 * We now get the memstart_addr, then we should check if this
++	 * address is the same as what the PAGE_OFFSET map to now. If
++	 * not we have to change the map of PAGE_OFFSET to memstart_addr
++	 * and do a second relocation.
++	 */
++	if (start != memstart_addr) {
++		int n, offset = memstart_addr - start;
++
++		is_second_reloc = 1;
++		n = switch_to_as1();
++		/* map a 64M area for the second relocation */
++		if (memstart_addr > start)
++			map_mem_in_cams(0x4000000, CONFIG_LOWMEM_CAM_NUM);
++		else
++			map_mem_in_cams_addr(start, PAGE_OFFSET - offset,
++					0x4000000, CONFIG_LOWMEM_CAM_NUM);
++		restore_to_as0(n, offset, __va(dt_ptr));
++		/* We should never reach here */
++		panic("Relocation error");
++	}
  }
+ #endif
+ #endif
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index eefbf7bb4331..91da910210cb 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -149,7 +149,7 @@ extern void MMU_init_hw(void);
+ extern unsigned long mmu_mapin_ram(unsigned long top);
+ extern void adjust_total_lowmem(void);
+ extern int switch_to_as1(void);
+-extern void restore_to_as0(int esel);
++extern void restore_to_as0(int esel, int offset, void *dt_ptr);
+ #endif
+ extern void loadcam_entry(unsigned int index);
  
-+unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
-+{
-+	unsigned long virt = PAGE_OFFSET;
-+	phys_addr_t phys = memstart_addr;
-+
-+	return map_mem_in_cams_addr(phys, virt, ram, max_cam_idx);
-+}
-+
- #ifdef CONFIG_PPC32
- 
- #if defined(CONFIG_LOWMEM_CAM_NUM_BOOL) && (CONFIG_LOWMEM_CAM_NUM >= NUM_TLBCAMS)
 -- 
 1.8.3.1
