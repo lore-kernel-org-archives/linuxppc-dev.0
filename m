@@ -1,18 +1,18 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 24 Dec 2013 12:55:29 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Joe Perches <joe@perches.com>
-Subject: [PATCH] ibmveth: Fix more little endian issues
-Message-ID: <20131224125529.58970f1b@kryten>
-In-Reply-To: <1387810329.22671.66.camel@joe-AO722>
-References: <1387762163-39662-1-git-send-email-agraf@suse.de>
- <20131223173833.0a9a6705@kryten>
- <1387810329.22671.66.camel@joe-AO722>
+Return-Path: <mpe@ellerman.id.au>
+Message-ID: <1387855790.15093.1.camel@concordia>
+Subject: Re: [PATCH V4 08/10] powerpc, perf: Enable SW filtering in branch
+ stack sampling framework
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Tue, 24 Dec 2013 14:29:50 +1100
+In-Reply-To: <52B42394.4060705@linux.vnet.ibm.com>
+References: <20131209062146.EABBE2C00C1@ozlabs.org>
+ <52B42394.4060705@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Dinar Valeev <dvaleev@suse.com>, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.de>, netdev@vger.kernel.org,
- Santiago Leon <santil@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, ak@linux.intel.com, linux-kernel@vger.kernel.org,
+ eranian@google.com, linuxppc-dev@ozlabs.org, acme@ghostprotocols.net,
+ sukadev@linux.vnet.ibm.com, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,105 +22,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2013-12-20 at 16:31 +0530, Anshuman Khandual wrote:
+> On 12/09/2013 11:51 AM, Michael Ellerman wrote:
+> > On Wed, 2013-04-12 at 10:32:40 UTC, Anshuman Khandual wrote:
+> >> +
+> >> +	if (bhrb_sw_filter & PERF_SAMPLE_BRANCH_IND_CALL) {
+> >> +		/* XL-form instruction */
+> >> +		if (instr_is_branch_xlform(*addr)) {
+> >> +
+> >> +			/* LR should be set */
+> >> +			if (is_branch_link_set(*addr)) {
+> >> +				/*
+> >> +			 	 * Conditional and unconditional
+> >> +			 	 * branch to CTR.
+> >> +			 	 */
+> >> +				if (is_xlform_ctr(*addr))
+> >> +					result = true;
+> >> +
+> >> +				/*
+> >> +			 	 * Conditional and unconditional
+> >> +			 	 * branch to LR.
+> >> +			 	 */
+> >> +				if (is_xlform_lr(*addr))
+> >> +					result = true;
+> >> +
+> >> +				/*
+> >> +			 	 * Conditional and unconditional
+> >> +			 	 * branch to TAR.
+> >> +			 	 */
+> >> +				if (is_xlform_tar(*addr))
+> >> +					result = true;
+> > 
+> > What other kind of XL-Form branch is there?
+> 
+> I am not sure. Do you know of any ?
 
-The hypervisor expects MAC addresses passed in registers to be big
-endian u64. Create a helper function called ibmveth_encode_mac_addr
-which does the right thing in both big and little endian.
+That was my point. There are no other types, so you can just do:
 
-We were storing the MAC address in a long in struct ibmveth_adapter.
-It's never used so remove it - we don't need another place in the
-driver where we create endian issues with MAC addresses.
+	if (bhrb_sw_filter & PERF_SAMPLE_BRANCH_IND_CALL)
+		if (instr_is_branch_xlform(*addr) && is_branch_link_set(*addr))
+			return true;
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Reviewed-by: Alexander Graf <agraf@suse.de>
----
+> >> +	if (bhrb_sw_filter & PERF_SAMPLE_BRANCH_COND) {
+> >> +
+> >> +		/* I-form instruction - excluded */
+> >> +		if (instr_is_branch_iform(*addr))
+> >> +			goto out;
+> >> +
+> >> +		/* B-form or XL-form instruction */
+> >> +		if (instr_is_branch_bform(*addr) || instr_is_branch_xlform(*addr))  {
+> >> +
+> >> +			/* Not branch always  */
+> >> +			if (!is_bo_always(*addr)) {
+> >> +
+> >> +				/* Conditional branch to CTR register */
+> >> +				if (is_bo_ctr(*addr))
+> >> +					goto out;
+> > 
+> > We might have discussed this but why not?
+> 
+> Did not get that, discuss what ?
 
-v2: annotate with __be64 as suggested by Joe
+Why are we saying a conditional branch to the CTR is not a conditional branch?
 
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index 952d795..bb9a631 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -497,7 +497,7 @@ static void ibmveth_cleanup(struct ibmveth_adapter *adapter)
- }
+It is conditional, so I think it should be included.
+
+> >> +
+> >> +				/* CR[BI] conditional branch with static hint */
+> > 
+> > A conditional branch with a static hint is still a conditional branch?
+> 
+> No its not. 
+
+Yes it is?
+
+In fact they could be very interesting branches. Because the compiler or
+programmer has statically hinted them, if the hint is wrong they may be a major
+source of branch midpredicts.
+
+
+> >> +				if (is_bo_crbi_off(*addr) || is_bo_crbi_on(*addr)) {
+> >> +					if (is_bo_crbi_hint(*addr))
+> >> +						goto out;
+> >> +				}
+> >> +
+> >> +				result = true;
+> >> +			}
+> >> +		}
+> >> +	}
+> >> +out:
+> >> +	return result;
+> >> +}
  
- static int ibmveth_register_logical_lan(struct ibmveth_adapter *adapter,
--        union ibmveth_buf_desc rxq_desc, u64 mac_address)
-+			union ibmveth_buf_desc rxq_desc, __be64 mac_address)
- {
- 	int rc, try_again = 1;
- 
-@@ -523,10 +523,20 @@ retry:
- 	return rc;
- }
- 
-+/* The hypervisor expects MAC addresses passed in registers to be
-+ * big endian u64.
-+ */
-+static __be64 ibmveth_encode_mac_addr(char *mac)
-+{
-+	unsigned long encoded = 0;
-+	memcpy(((char *)&encoded) + 2, mac, ETH_ALEN);
-+	return cpu_to_be64(encoded);
-+}
-+
- static int ibmveth_open(struct net_device *netdev)
- {
- 	struct ibmveth_adapter *adapter = netdev_priv(netdev);
--	u64 mac_address = 0;
-+	__be64 mac_address = 0;
- 	int rxq_entries = 1;
- 	unsigned long lpar_rc;
- 	int rc;
-@@ -580,8 +590,7 @@ static int ibmveth_open(struct net_device *netdev)
- 	adapter->rx_queue.num_slots = rxq_entries;
- 	adapter->rx_queue.toggle = 1;
- 
--	memcpy(&mac_address, netdev->dev_addr, netdev->addr_len);
--	mac_address = mac_address >> 16;
-+	mac_address = ibmveth_encode_mac_addr(netdev->dev_addr);
- 
- 	rxq_desc.fields.flags_len = IBMVETH_BUF_VALID |
- 					adapter->rx_queue.queue_len;
-@@ -1184,8 +1193,8 @@ static void ibmveth_set_multicast_list(struct net_device *netdev)
- 		/* add the addresses to the filter table */
- 		netdev_for_each_mc_addr(ha, netdev) {
- 			/* add the multicast address to the filter table */
--			unsigned long mcast_addr = 0;
--			memcpy(((char *)&mcast_addr)+2, ha->addr, ETH_ALEN);
-+			__be64 mcast_addr;
-+			mcast_addr = ibmveth_encode_mac_addr(ha->addr);
- 			lpar_rc = h_multicast_ctrl(adapter->vdev->unit_address,
- 						   IbmVethMcastAddFilter,
- 						   mcast_addr);
-@@ -1369,9 +1378,6 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
- 
- 	netif_napi_add(netdev, &adapter->napi, ibmveth_poll, 16);
- 
--	adapter->mac_addr = 0;
--	memcpy(&adapter->mac_addr, mac_addr_p, ETH_ALEN);
--
- 	netdev->irq = dev->irq;
- 	netdev->netdev_ops = &ibmveth_netdev_ops;
- 	netdev->ethtool_ops = &netdev_ethtool_ops;
-@@ -1380,7 +1386,7 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
- 		NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM;
- 	netdev->features |= netdev->hw_features;
- 
--	memcpy(netdev->dev_addr, &adapter->mac_addr, netdev->addr_len);
-+	memcpy(netdev->dev_addr, mac_addr_p, ETH_ALEN);
- 
- 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
- 		struct kobject *kobj = &adapter->rx_buff_pool[i].kobj;
-diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
-index 84066ba..2c636cb 100644
---- a/drivers/net/ethernet/ibm/ibmveth.h
-+++ b/drivers/net/ethernet/ibm/ibmveth.h
-@@ -139,7 +139,6 @@ struct ibmveth_adapter {
-     struct napi_struct napi;
-     struct net_device_stats stats;
-     unsigned int mcastFilterSize;
--    unsigned long mac_addr;
-     void * buffer_list_addr;
-     void * filter_list_addr;
-     dma_addr_t buffer_list_dma;
+> >> +	} else {
+> >> +		/*
+> >> +		 * Userspace address needs to be
+> >> +		 * copied first before analysis.
+> >> +		 */
+> >> +		pagefault_disable();
+> >> +		ret =  __get_user_inatomic(instr, (unsigned int __user *)addr);
+> > 
+> > I suspect you borrowed this incantation from the callchain code. Unlike that
+> > code you don't fallback to reading the page tables directly.
+> > 
+> > I'd rather see the accessor in the callchain code made generic and have you
+> > call it here.
+> 
+> You have mentioned to take care of this issue yourself.
+
+Yes I will.
+
+cheers
