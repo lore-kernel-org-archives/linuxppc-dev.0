@@ -1,16 +1,16 @@
 Return-Path: <Li.Xiubo@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 022C82C007C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Dec 2013 15:13:30 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D16F22C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Dec 2013 16:33:23 +1100 (EST)
 From: Xiubo Li <Li.Xiubo@freescale.com>
 To: <broonie@kernel.org>
-Subject: [PATCH] ASoC: fsl_sai: Move the global registers setting to
- _dai_probe()
-Date: Wed, 25 Dec 2013 11:20:14 +0800
-Message-ID: <1387941614-7629-1-git-send-email-Li.Xiubo@freescale.com>
+Subject: [PATCH] ASoC: fsl_sai: Add disable operation for the corresponding
+ data channel.
+Date: Wed, 25 Dec 2013 12:40:04 +0800
+Message-ID: <1387946404-24029-1-git-send-email-Li.Xiubo@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
@@ -25,51 +25,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Because we cannot make sure which one of _dai_fmt() and _dai_sysclk()
-will be firstly called. So move the RCSR/TCSR and TCR1/RCR1's
-initialization to _dai_probe(), and this can make sure that before any
-of {T,R}CR{1~5} register to be set the RCSR/TCSR's RE/TE bit has been
-cleared for the hareware limitation.
+Enables/Disables the corresponding data channel for tx/rx operation.
+A channel must be enabled before its FIFO is accessed, and then disable
+it when tx/rx is stopped or idle.
 
 Signed-off-by: Xiubo Li <Li.Xiubo@freescale.com>
 ---
- sound/soc/fsl/fsl_sai.c | 17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
+ sound/soc/fsl/fsl_sai.c | 21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index b72132f..596aabb 100644
+index 596aabb..af80246 100644
 --- a/sound/soc/fsl/fsl_sai.c
 +++ b/sound/soc/fsl/fsl_sai.c
-@@ -100,11 +100,6 @@ static int fsl_sai_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
- 	if (ret)
- 		return ret;
- 
--	sai_writel(sai, 0x0, sai->base + FSL_SAI_RCSR);
--	sai_writel(sai, 0x0, sai->base + FSL_SAI_TCSR);
--	sai_writel(sai, FSL_SAI_MAXBURST_TX * 2, sai->base + FSL_SAI_TCR1);
--	sai_writel(sai, FSL_SAI_MAXBURST_RX - 1, sai->base + FSL_SAI_RCR1);
--
- 	ret = fsl_sai_set_dai_sysclk_tr(cpu_dai, clk_id, freq,
- 					FSL_FMT_TRANSMITTER);
- 	if (ret) {
-@@ -351,6 +346,18 @@ static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
- static int fsl_sai_dai_probe(struct snd_soc_dai *cpu_dai)
+@@ -124,20 +124,17 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
+ 				unsigned int fmt, int fsl_dir)
  {
- 	struct fsl_sai *sai = dev_get_drvdata(cpu_dai->dev);
-+	int ret;
-+
-+	ret = clk_prepare_enable(sai->clk);
-+	if (ret)
-+		return ret;
-+
-+	sai_writel(sai, 0x0, sai->base + FSL_SAI_RCSR);
-+	sai_writel(sai, 0x0, sai->base + FSL_SAI_TCSR);
-+	sai_writel(sai, FSL_SAI_MAXBURST_TX * 2, sai->base + FSL_SAI_TCR1);
-+	sai_writel(sai, FSL_SAI_MAXBURST_RX - 1, sai->base + FSL_SAI_RCR1);
-+
-+	clk_disable_unprepare(sai->clk);
+ 	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+-	u32 val_cr2, val_cr3, val_cr4, reg_cr2, reg_cr3, reg_cr4;
++	u32 val_cr2, val_cr4, reg_cr2, reg_cr4;
  
- 	snd_soc_dai_init_dma_data(cpu_dai, &sai->dma_params_tx,
- 				&sai->dma_params_rx);
+ 	if (fsl_dir == FSL_FMT_TRANSMITTER) {
+ 		reg_cr2 = FSL_SAI_TCR2;
+-		reg_cr3 = FSL_SAI_TCR3;
+ 		reg_cr4 = FSL_SAI_TCR4;
+ 	} else {
+ 		reg_cr2 = FSL_SAI_RCR2;
+-		reg_cr3 = FSL_SAI_RCR3;
+ 		reg_cr4 = FSL_SAI_RCR4;
+ 	}
+ 
+ 	val_cr2 = sai_readl(sai, sai->base + reg_cr2);
+-	val_cr3 = sai_readl(sai, sai->base + reg_cr3);
+ 	val_cr4 = sai_readl(sai, sai->base + reg_cr4);
+ 
+ 	if (sai->big_endian_data)
+@@ -188,13 +185,10 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
+ 		return -EINVAL;
+ 	}
+ 
+-	val_cr3 |= FSL_SAI_CR3_TRCE;
+-
+ 	if (fsl_dir == FSL_FMT_RECEIVER)
+ 		val_cr2 |= FSL_SAI_CR2_SYNC;
+ 
+ 	sai_writel(sai, val_cr2, sai->base + reg_cr2);
+-	sai_writel(sai, val_cr3, sai->base + reg_cr3);
+ 	sai_writel(sai, val_cr4, sai->base + reg_cr4);
+ 
+ 	return 0;
+@@ -278,7 +272,7 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 		struct snd_soc_dai *cpu_dai)
+ {
+ 	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+-	unsigned int tcsr, rcsr;
++	u32 tcsr, rcsr, val_cr3, reg_cr3;
+ 
+ 	tcsr = sai_readl(sai, sai->base + FSL_SAI_TCSR);
+ 	rcsr = sai_readl(sai, sai->base + FSL_SAI_RCSR);
+@@ -286,17 +280,24 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
+ 		tcsr |= FSL_SAI_CSR_FRDE;
+ 		rcsr &= ~FSL_SAI_CSR_FRDE;
++		reg_cr3 = FSL_SAI_TCR3;
+ 	} else {
+ 		rcsr |= FSL_SAI_CSR_FRDE;
+ 		tcsr &= ~FSL_SAI_CSR_FRDE;
++		reg_cr3 = FSL_SAI_RCR3;
+ 	}
+ 
++	val_cr3 = sai_readl(sai, sai->base + reg_cr3);
++
+ 	switch (cmd) {
+ 	case SNDRV_PCM_TRIGGER_START:
+ 	case SNDRV_PCM_TRIGGER_RESUME:
+ 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
+ 		tcsr |= FSL_SAI_CSR_TERE;
+ 		rcsr |= FSL_SAI_CSR_TERE;
++		val_cr3 |= FSL_SAI_CR3_TRCE;
++
++		sai_writel(sai, val_cr3, sai->base + reg_cr3);
+ 		sai_writel(sai, rcsr, sai->base + FSL_SAI_RCSR);
+ 		sai_writel(sai, tcsr, sai->base + FSL_SAI_TCSR);
+ 		break;
+@@ -308,8 +309,12 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 			tcsr &= ~FSL_SAI_CSR_TERE;
+ 			rcsr &= ~FSL_SAI_CSR_TERE;
+ 		}
++
++		val_cr3 &= ~FSL_SAI_CR3_TRCE;
++
+ 		sai_writel(sai, tcsr, sai->base + FSL_SAI_TCSR);
+ 		sai_writel(sai, rcsr, sai->base + FSL_SAI_RCSR);
++		sai_writel(sai, val_cr3, sai->base + reg_cr3);
+ 		break;
+ 	default:
+ 		return -EINVAL;
 -- 
 1.8.4
