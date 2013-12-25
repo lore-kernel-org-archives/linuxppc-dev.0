@@ -1,18 +1,19 @@
 Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 08A532C0102
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Dec 2013 22:00:18 +1100 (EST)
-Received: from mail198-ch1 (localhost [127.0.0.1])	by
- mail198-ch1-R.bigfish.com (Postfix) with ESMTP id CCC6B1201DD	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Dec 2013 11:00:13 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 33B452C00D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Dec 2013 22:00:21 +1100 (EST)
+Received: from mail91-va3 (localhost [127.0.0.1])	by mail91-va3-R.bigfish.com
+ (Postfix) with ESMTP id 76B1C600E5	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,
+ 25 Dec 2013 11:00:16 +0000 (UTC)
 From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 3/4] powerpc/fsl-booke: Add support for T2080/T2081 SoC
-Date: Wed, 25 Dec 2013 18:06:57 +0800
-Message-ID: <1387966018-10131-3-git-send-email-Shengzhou.Liu@freescale.com>
+Subject: [PATCH 4/4] powerpc/fsl-booke: Add initial T208x QDS board support
+Date: Wed, 25 Dec 2013 18:06:58 +0800
+Message-ID: <1387966018-10131-4-git-send-email-Shengzhou.Liu@freescale.com>
 In-Reply-To: <1387966018-10131-1-git-send-email-Shengzhou.Liu@freescale.com>
 References: <1387966018-10131-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
@@ -27,119 +28,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for T2080/T2081 SoC without DPAA components.
+Add support for Freescale T2080/T2081 QDS Development System Board.
+T2081QDS board shares the same PCB with T1040QDS with some differences.
 
-The T2080 SoC includes the following function and features:
-- Four dual-threaded 64-bit Power architecture e6500 cores, up to 1.8GHz
-- 2MB L2 cache and 512KB CoreNet platform cache (CPC)
-- Hierarchical interconnect fabric
-- One 32-/64-bit DDR3/3L SDRAM memory controllers with ECC and interleaving
-- Data Path Acceleration Architecture (DPAA) incorporating acceleration
-- 16 SerDes lanes up to 10.3125 GHz
-- 8 Ethernet interfaces (multiple 1G/2.5G/10G MACs)
-- High-speed peripheral interfaces
-  - Four PCI Express controllers (two PCIe 2.0 and two PCIe 3.0)
-  - Two Serial RapidIO 2.0 controllers/ports running at up to 5 GHz
-- Additional peripheral interfaces
-  - Two serial ATA (SATA 2.0) controllers
-  - Two high-speed USB 2.0 controllers with integrated PHY
-  - Enhanced secure digital host controller (SD/SDXC/eMMC)
-  - Enhanced serial peripheral interface (eSPI)
-  - Four I2C controllers
-  - Four 2-pin UARTs or two 4-pin UARTs
-  - Integrated Flash Controller supporting NAND and NOR flash
-- Three eight-channel DMA engines
-- Support for hardware virtualization and partitioning enforcement
-- QorIQ Platform's Trust Architecture 2.0
+The T2080QDS Development System is a high-performance computing,
+evaluation, and development platform that supports T2080 QorIQ
+Power Architecture processor, with following major features:
 
-T2081 is a reduced personality of T2080 without SATA, sRIO, RMan,
-Aurora, and with less SerDes lanes and ethernet interfaces.
+T2080QDS feature overview:
+Processor:
+ - T2080 SoC integrating four 64-bit dual-threads e6500 cores up to 1.8GHz
+Memory:
+ - Single memory controller capable of supporting DDR3 and DDR3-LV devices
+ - Two DDR3 memory, 4GB, Dual rank @ 1866 Mbps data rate, and ECC support
+Ethernet interfaces:
+ - Two 1Gbps RGMII on-board ports
+ - Four 10Gbps XFI on-board cages
+ - 1Gbps/2.5Gbps SGMII Riser card
+ - 10Gbps XAUI Riser card
+Accelerator:
+ - DPAA components consist of FMan, BMan, QMan, PME, DCE and SEC
+SerDes:
+ - 16 lanes up to 10.3125GHz
+ - Supports Aurora debug, PEX, SATA, SGMII, sRIO, HiGig, XFI and XAUI
+IFC:
+ - 128MB NOR Flash, 512MB NAND Flash, PromJet debug port and FPGA
+eSPI:
+ - Three SPI flash (16MB N25Q128A + 16MB EN25S64 + 512KB SST25WF040)
+USB:
+ - Two USB2.0 ports with internal PHY (one Type-A + one micro Type-AB)
+PCIE:
+ - Four PCI Express controllers (two PCIe 2.0 and two PCIe 3.0 with SR-IOV)
+SATA:
+ - Two SATA 2.0 ports on-board
+SRIO:
+ - Two Serial RapidIO 2.0 ports up to 5 GHz
+eSDHC:
+ - Supports SD/MMC/eMMC Card
+DMA:
+ - Three 8-channels DMA controllers
+I2C:
+ - Four I2C controllers.
+UART:
+ - Dual 4-pins UART serial ports
+System Logic:
+ - QIXIS-II FPGA system controll
+
+Differences between T2080 and T2081:
+  Feature               T2080 T2081
+  1G Ethernet numbers:  8     6
+  10G Ethernet numbers: 4     2
+  SerDes lanes:         16    8
+  Serial RapidIO,RMan:  2     no
+  SATA Controller:      2     no
+  Aurora:               yes   no
+  SoC Package:          896-pins 780-pins
 
 Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 ---
- arch/powerpc/boot/dts/fsl/t2080si-post.dtsi |  60 +++++
- arch/powerpc/boot/dts/fsl/t2081si-post.dtsi | 384 ++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi  | 100 ++++++++
- arch/powerpc/include/asm/mpc85xx.h          |   2 +
- 4 files changed, 546 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
+ arch/powerpc/boot/dts/t2080qds.dts            |  57 +++++++
+ arch/powerpc/boot/dts/t2081qds.dts            |  46 ++++++
+ arch/powerpc/boot/dts/t208xqds.dtsi           | 213 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/Kconfig           |   2 +-
+ arch/powerpc/platforms/85xx/corenet_generic.c |   4 +
+ 5 files changed, 321 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/boot/dts/t2080qds.dts
+ create mode 100644 arch/powerpc/boot/dts/t2081qds.dts
+ create mode 100644 arch/powerpc/boot/dts/t208xqds.dtsi
 
-diff --git a/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
+diff --git a/arch/powerpc/boot/dts/t2080qds.dts b/arch/powerpc/boot/dts/t2080qds.dts
 new file mode 100644
-index 0000000..1a902fe
+index 0000000..aa1d6d8
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
-@@ -0,0 +1,60 @@
++++ b/arch/powerpc/boot/dts/t2080qds.dts
+@@ -0,0 +1,57 @@
 +/*
-+ * T2080 Silicon/SoC Device Tree Source (post include)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "t2081si-post.dtsi"
-+
-+&soc {
-+/include/ "qoriq-sata2-0.dtsi"
-+/include/ "qoriq-sata2-1.dtsi"
-+};
-+
-+&rio {
-+	compatible = "fsl,srio";
-+	interrupts = <16 2 1 11>;
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	ranges;
-+
-+	port1 {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		cell-index = <1>;
-+	};
-+
-+	port2 {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		cell-index = <2>;
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-new file mode 100644
-index 0000000..6495fe9
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-@@ -0,0 +1,384 @@
-+/*
-+ * T2081 Silicon/SoC Device Tree Source (post include)
++ * T2080QDS Device Tree Source
 + *
 + * Copyright 2013 Freescale Semiconductor Inc.
 + *
@@ -172,474 +136,334 @@ index 0000000..6495fe9
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+&ifc {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	compatible = "fsl,ifc", "simple-bus";
-+	interrupts = <25 2 0 0>;
-+};
-+
-+/* controller at 0x240000 */
-+&pci0 {
-+	compatible = "fsl,t208x-pcie", "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <20 2 0 0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <20 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 40 1 0 0
-+			0000 0 0 2 &mpic 1 1 0 0
-+			0000 0 0 3 &mpic 2 1 0 0
-+			0000 0 0 4 &mpic 3 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x250000 */
-+&pci1 {
-+	compatible = "fsl,t208x-pcie", "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0 0xff>;
-+	interrupts = <21 2 0 0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <21 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 41 1 0 0
-+			0000 0 0 2 &mpic 5 1 0 0
-+			0000 0 0 3 &mpic 6 1 0 0
-+			0000 0 0 4 &mpic 7 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x260000 */
-+&pci2 {
-+	compatible = "fsl,t208x-pcie", "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <22 2 0 0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <22 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 42 1 0 0
-+			0000 0 0 2 &mpic 9 1 0 0
-+			0000 0 0 3 &mpic 10 1 0 0
-+			0000 0 0 4 &mpic 11 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x270000 */
-+&pci3 {
-+	compatible = "fsl,t208x-pcie", "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <23 2 0 0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <23 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 43 1 0 0
-+			0000 0 0 2 &mpic 0 1 0 0
-+			0000 0 0 3 &mpic 4 1 0 0
-+			0000 0 0 4 &mpic 8 1 0 0
-+			>;
-+	};
-+};
-+
-+&dcsr {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	compatible = "fsl,dcsr", "simple-bus";
-+
-+	dcsr-epu@0 {
-+		compatible = "fsl,t208x-dcsr-epu", "fsl,dcsr-epu";
-+		interrupts = <52 2 0 0
-+			      84 2 0 0
-+			      85 2 0 0
-+			      94 2 0 0
-+			      95 2 0 0>;
-+		reg = <0x0 0x1000>;
-+	};
-+	dcsr-npc {
-+		compatible = "fsl,t208x-dcsr-cnpc", "fsl,dcsr-cnpc";
-+		reg = <0x1000 0x1000 0x1002000 0x10000>;
-+	};
-+	dcsr-nxc@2000 {
-+		compatible = "fsl,dcsr-nxc";
-+		reg = <0x2000 0x1000>;
-+	};
-+	dcsr-corenet {
-+		compatible = "fsl,dcsr-corenet";
-+		reg = <0x8000 0x1000 0x1A000 0x1000>;
-+	};
-+	dcsr-ocn@11000 {
-+		compatible = "fsl,t208x-dcsr-ocn", "fsl,dcsr-ocn";
-+		reg = <0x11000 0x1000>;
-+	};
-+	dcsr-ddr@12000 {
-+		compatible = "fsl,dcsr-ddr";
-+		dev-handle = <&ddr1>;
-+		reg = <0x12000 0x1000>;
-+	};
-+	dcsr-nal@18000 {
-+		compatible = "fsl,t208x-dcsr-nal", "fsl,dcsr-nal";
-+		reg = <0x18000 0x1000>;
-+	};
-+	dcsr-rcpm@22000 {
-+		compatible = "fsl,t208x-dcsr-rcpm", "fsl,dcsr-rcpm";
-+		reg = <0x22000 0x1000>;
-+	};
-+	dcsr-snpc@30000 {
-+		compatible = "fsl,t208x-dcsr-snpc", "fsl,dcsr-snpc";
-+		reg = <0x30000 0x1000 0x1022000 0x10000>;
-+	};
-+	dcsr-snpc@31000 {
-+		compatible = "fsl,t208x-dcsr-snpc", "fsl,dcsr-snpc";
-+		reg = <0x31000 0x1000 0x1042000 0x10000>;
-+	};
-+	dcsr-snpc@32000 {
-+		compatible = "fsl,t208x-dcsr-snpc", "fsl,dcsr-snpc";
-+		reg = <0x32000 0x1000 0x1062000 0x10000>;
-+	};
-+	dcsr-cpu-sb-proxy@100000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu0>;
-+		reg = <0x100000 0x1000 0x101000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@108000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu1>;
-+		reg = <0x108000 0x1000 0x109000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@110000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu2>;
-+		reg = <0x110000 0x1000 0x111000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@118000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu3>;
-+		reg = <0x118000 0x1000 0x119000 0x1000>;
-+	};
-+};
-+
-+&soc {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	device_type = "soc";
-+	compatible = "simple-bus";
-+
-+	soc-sram-error {
-+		compatible = "fsl,soc-sram-error";
-+		interrupts = <16 2 1 29>;
-+	};
-+
-+	corenet-law@0 {
-+		compatible = "fsl,corenet-law";
-+		reg = <0x0 0x1000>;
-+		fsl,num-laws = <32>;
-+	};
-+
-+	ddr1: memory-controller@8000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
-+		reg = <0x8000 0x1000>;
-+		interrupts = <16 2 1 23>;
-+	};
-+
-+	cpc: l3-cache-controller@10000 {
-+		compatible = "fsl,t208x-l3-cache-controller", "cache";
-+		reg = <0x10000 0x1000
-+		       0x11000 0x1000
-+		       0x12000 0x1000>;
-+		interrupts = <16 2 1 27
-+			      16 2 1 26
-+			      16 2 1 25>;
-+	};
-+
-+	corenet-cf@18000 {
-+		compatible = "fsl,corenet2-cf";
-+		reg = <0x18000 0x1000>;
-+		interrupts = <16 2 1 31>;
-+		fsl,ccf-num-csdids = <32>;
-+		fsl,ccf-num-snoopids = <32>;
-+	};
-+
-+	iommu@20000 {
-+		compatible = "fsl,pamu-v1.0", "fsl,pamu";
-+		reg = <0x20000 0x6000>;
-+		interrupts = <
-+			24 2 0 0
-+			16 2 1 30>;
-+	};
-+
-+/include/ "qoriq-mpic4.3.dtsi"
-+
-+	guts: global-utilities@e0000 {
-+		compatible = "fsl,t208x-device-config", "fsl,qoriq-device-config-2.0";
-+		reg = <0xe0000 0xe00>;
-+		fsl,has-rstcr;
-+		fsl,liodn-bits = <12>;
-+	};
-+
-+	clockgen: global-utilities@e1000 {
-+		compatible = "fsl,t208x-clockgen", "fsl,qoriq-clockgen-2.0",
-+				   "fixed-clock";
-+		reg = <0xe1000 0x1000>;
-+		clock-output-names = "sysclk";
-+		#clock-cells = <0>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
-+		};
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
-+		};
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				      "pll1_0", "pll1_1", "pll1_2";
-+			clock-output-names = "cmux0";
-+		};
-+		mux1: mux1@20 {
-+			#clock-cells = <0>;
-+			reg = <0x20>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				      "pll1_0", "pll1_1", "pll1_2";
-+			clock-output-names = "cmux1";
-+		};
-+	};
-+
-+	rcpm: global-utilities@e2000 {
-+		compatible = "fsl,t208x-rcpm", "fsl,qoriq-rcpm-2.0";
-+		reg = <0xe2000 0x1000>;
-+	};
-+
-+	sfp: sfp@e8000 {
-+		compatible = "fsl,t208x-sfp";
-+		reg = <0xe8000 0x1000>;
-+	};
-+
-+	serdes: serdes@ea000 {
-+		compatible = "fsl,t208x-serdes";
-+		reg = <0xea000 0x4000>;
-+	};
-+
-+/include/ "elo3-dma-0.dtsi"
-+/include/ "elo3-dma-1.dtsi"
-+/include/ "elo3-dma-2.dtsi"
-+
-+/include/ "qoriq-espi-0.dtsi"
-+	spi@110000 {
-+		fsl,espi-num-chipselects = <4>;
-+	};
-+
-+/include/ "qoriq-esdhc-0.dtsi"
-+	sdhc@114000 {
-+		compatible = "fsl,t208x-esdhc", "fsl,esdhc";
-+		sdhci,auto-cmd12;
-+	};
-+/include/ "qoriq-i2c-0.dtsi"
-+/include/ "qoriq-i2c-1.dtsi"
-+/include/ "qoriq-duart-0.dtsi"
-+/include/ "qoriq-duart-1.dtsi"
-+/include/ "qoriq-gpio-0.dtsi"
-+/include/ "qoriq-gpio-1.dtsi"
-+/include/ "qoriq-gpio-2.dtsi"
-+/include/ "qoriq-gpio-3.dtsi"
-+/include/ "qoriq-usb2-mph-0.dtsi"
-+	usb0: usb@210000 {
-+		compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
-+		phy_type = "utmi";
-+		port0;
-+	};
-+/include/ "qoriq-usb2-dr-0.dtsi"
-+	usb1: usb@211000 {
-+		compatible = "fsl-usb2-dr-v2.4", "fsl-usb2-dr";
-+		dr_mode = "host";
-+		phy_type = "utmi";
-+	};
-+/include/ "qoriq-sec5.2-0.dtsi"
-+
-+	L2_1: l2-cache-controller@c20000 {
-+		/* Cluster 0 L2 cache */
-+		compatible = "fsl,t208x-l2-cache-controller";
-+		reg = <0xc20000 0x40000>;
-+		next-level-cache = <&cpc>;
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
-new file mode 100644
-index 0000000..1e5d1a4
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
-@@ -0,0 +1,100 @@
-+/*
-+ * T2080/T2081 Silicon/SoC Device Tree Source (pre include)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/dts-v1/;
-+
-+/include/ "e6500_power_isa.dtsi"
++/include/ "fsl/t208xsi-pre.dtsi"
++/include/ "t208xqds.dtsi"
 +
 +/ {
++	model = "fsl,T2080QDS";
++	compatible = "fsl,T2080QDS";
 +	#address-cells = <2>;
 +	#size-cells = <2>;
 +	interrupt-parent = <&mpic>;
 +
-+	aliases {
-+		ccsr = &soc;
-+		dcsr = &dcsr;
++	rio: rapidio@ffe0c0000 {
++		reg = <0xf 0xfe0c0000 0 0x11000>;
 +
-+		serial0 = &serial0;
-+		serial1 = &serial1;
-+		serial2 = &serial2;
-+		serial3 = &serial3;
-+
-+		crypto = &crypto;
-+		pci0 = &pci0;
-+		pci1 = &pci1;
-+		pci2 = &pci2;
-+		pci3 = &pci3;
-+		usb0 = &usb0;
-+		usb1 = &usb1;
-+		dma0 = &dma0;
-+		dma1 = &dma1;
-+		dma2 = &dma2;
-+		sdhc = &sdhc;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		/*
-+		 * Temporarily add next-level-cache info in each cpu node so
-+		 * that uboot can do L2 cache fixup. This can be removed once
-+		 * u-boot can create cpu node with cache info.
-+		 */
-+		cpu0: PowerPC,e6500@0 {
-+			device_type = "cpu";
-+			reg = <0 1>;
-+			clocks = <&mux0>;
-+			next-level-cache = <&L2_1>;
++		port1 {
++			ranges = <0 0 0xc 0x20000000 0 0x10000000>;
 +		};
-+		cpu1: PowerPC,e6500@2 {
-+			device_type = "cpu";
-+			reg = <2 3>;
-+			clocks = <&mux0>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		cpu2: PowerPC,e6500@4 {
-+			device_type = "cpu";
-+			reg = <4 5>;
-+			clocks = <&mux0>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		cpu3: PowerPC,e6500@6 {
-+			device_type = "cpu";
-+			reg = <6 7>;
-+			clocks = <&mux0>;
-+			next-level-cache = <&L2_1>;
++		port2 {
++			ranges = <0 0 0xc 0x30000000 0 0x10000000>;
 +		};
 +	};
 +};
-diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
-index 736d4ac..3bef74a 100644
---- a/arch/powerpc/include/asm/mpc85xx.h
-+++ b/arch/powerpc/include/asm/mpc85xx.h
-@@ -77,6 +77,8 @@
- #define SVR_T1020	0x852100
- #define SVR_T1021	0x852101
- #define SVR_T1022	0x852102
-+#define SVR_T2080	0x853000
-+#define SVR_T2081	0x853100
++
++/include/ "fsl/t2080si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t2081qds.dts b/arch/powerpc/boot/dts/t2081qds.dts
+new file mode 100644
+index 0000000..8ec80a7
+--- /dev/null
++++ b/arch/powerpc/boot/dts/t2081qds.dts
+@@ -0,0 +1,46 @@
++/*
++ * T2081QDS Device Tree Source
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/include/ "fsl/t208xsi-pre.dtsi"
++/include/ "t208xqds.dtsi"
++
++/ {
++	model = "fsl,T2081QDS";
++	compatible = "fsl,T2081QDS";
++	#address-cells = <2>;
++	#size-cells = <2>;
++	interrupt-parent = <&mpic>;
++};
++
++/include/ "fsl/t2081si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t208xqds.dtsi b/arch/powerpc/boot/dts/t208xqds.dtsi
+new file mode 100644
+index 0000000..54e2a1e
+--- /dev/null
++++ b/arch/powerpc/boot/dts/t208xqds.dtsi
+@@ -0,0 +1,213 @@
++/*
++ * T2080/T2081 QDS Device Tree Source
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/ {
++	model = "fsl,T2080QDS";
++	compatible = "fsl,T2080QDS";
++	#address-cells = <2>;
++	#size-cells = <2>;
++	interrupt-parent = <&mpic>;
++
++	ifc: localbus@ffe124000 {
++		reg = <0xf 0xfe124000 0 0x2000>;
++		ranges = <0 0 0xf 0xe8000000 0x08000000
++			  2 0 0xf 0xff800000 0x00010000
++			  3 0 0xf 0xffdf0000 0x00008000>;
++
++		nor@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0x0 0x0 0x8000000>;
++			bank-width = <2>;
++			device-width = <1>;
++		};
++
++		nand@2,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,ifc-nand";
++			reg = <0x2 0x0 0x10000>;
++		};
++
++		boardctrl: board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,fpga-qixis";
++			reg = <3 0 0x300>;
++			ranges = <0 3 0 0x300>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++	};
++
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
++	};
++
++	soc: soc@ffe000000 {
++		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
++		reg = <0xf 0xfe000000 0 0x00001000>;
++		spi@110000 {
++			flash@0 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				compatible = "spansion,s25sl12801";
++				reg = <0>;
++				spi-max-frequency = <40000000>; /* input clock */
++			};
++
++			flash@1 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				compatible = "sst,sst25wf040";
++				reg = <1>;
++				spi-max-frequency = <40000000>; /* input clock */
++			};
++		};
++
++		i2c@118000 {
++			pca9547@77 {
++				compatible = "nxp,pca9547";
++				reg = <0x77>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				i2c@0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x0>;
++
++					eeprom@50 {
++						compatible = "at24,24c256";
++						reg = <0x50>;
++					};
++
++					eeprom@51 {
++						compatible = "at24,24c02";
++						reg = <0x51>;
++					};
++
++					eeprom@57 {
++						compatible = "at24,24c02";
++						reg = <0x57>;
++					};
++
++					rtc@68 {
++						compatible = "dallas,ds3232";
++						reg = <0x68>;
++						interrupts = <0x1 0x1 0 0>;
++					};
++				};
++
++				i2c@1 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x1>;
++
++					eeprom@55 {
++						compatible = "at24,24c02";
++						reg = <0x55>;
++					};
++				};
++			};
++		};
++
++		sdhc@114000 {
++			voltage-ranges = <1800 1800 3300 3300>;
++		};
++	};
++
++	pci0: pcie@ffe240000 {
++		reg = <0xf 0xfe240000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x20000000
++			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x20000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci1: pcie@ffe250000 {
++		reg = <0xf 0xfe250000 0 0x10000>;
++		ranges = <0x02000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x10000000
++			  0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x20000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci2: pcie@ffe260000 {
++		reg = <0xf 0xfe260000 0 0x1000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x30000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x20000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci3: pcie@ffe270000 {
++		reg = <0xf 0xfe270000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x40000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8030000 0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x20000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++};
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 4d46349..e3578b7 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -259,7 +259,7 @@ config CORENET_GENERIC
+ 	  For 32bit kernel, the following boards are supported:
+ 	    P2041 RDB, P3041 DS and P4080 DS
+ 	  For 64bit kernel, the following boards are supported:
+-	    T4240 QDS and B4 QDS
++	    T208x QDS, T4240 QDS and B4 QDS
+ 	  The following boards are supported for both 32bit and 64bit kernel:
+ 	    P5020 DS and P5040 DS
  
- #define SVR_8610	0x80A000
- #define SVR_8641	0x809000
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index fbd871e..77fd71f 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -102,6 +102,8 @@ static const char * const boards[] __initconst = {
+ 	"fsl,P4080DS",
+ 	"fsl,P5020DS",
+ 	"fsl,P5040DS",
++	"fsl,T2080QDS",
++	"fsl,T2081QDS",
+ 	"fsl,T4240QDS",
+ 	"fsl,B4860QDS",
+ 	"fsl,B4420QDS",
+@@ -115,6 +117,8 @@ static const char * const hv_boards[] __initconst = {
+ 	"fsl,P4080DS-hv",
+ 	"fsl,P5020DS-hv",
+ 	"fsl,P5040DS-hv",
++	"fsl,T2080QDS-hv",
++	"fsl,T2081QDS-hv"
+ 	"fsl,T4240QDS-hv",
+ 	"fsl,B4860QDS-hv",
+ 	"fsl,B4420QDS-hv",
 -- 
 1.8.0
