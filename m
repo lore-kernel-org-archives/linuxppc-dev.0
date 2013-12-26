@@ -1,32 +1,20 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Li.Xiubo@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6A30F2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Dec 2013 12:29:53 +1100 (EST)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 25 Dec 2013 18:29:50 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 6C70019D803E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Dec 2013 18:29:39 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rBQ1Tg9u8061228
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Dec 2013 02:29:42 +0100
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBQ1Tkj3027600
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Dec 2013 18:29:46 -0700
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/powernv: Remove unnecessary assignment
-Date: Thu, 26 Dec 2013 09:29:40 +0800
-Message-Id: <1388021380-11387-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0A1122C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Dec 2013 14:50:47 +1100 (EST)
+From: Xiubo Li <Li.Xiubo@freescale.com>
+To: <broonie@kernel.org>
+Subject: [PATCH] ASoC: fsl_sai: Fix one bug for hardware limitation.
+Date: Thu, 26 Dec 2013 10:57:22 +0800
+Message-ID: <1388026642-1464-1-git-send-email-Li.Xiubo@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ linux-kernel@vger.kernel.org, timur@tabi.org, perex@perex.cz,
+ shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org, b47053@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,37 +24,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We don't have IO ports on PHB3 and the assignment of variable
-"iomap_off" on PHB3 is meaningless. The patch just removes the
-unnecessary assignment to the variable. The code change should
-have been part of commit c35d2a8c ("powerpc/powernv: Needn't IO
-segment map for PHB3").
+This is maybe one bug or a limitation of the hardware that the {T,R}CR2's
+Synchronous Mode bits must be set as late as possible, or the SAI device
+maybe hanged up, and there has not any explaination about this limitation
+in the SAI Data Sheet.
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Signed-off-by: Xiubo Li <Li.Xiubo@freescale.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ sound/soc/fsl/fsl_sai.c | 31 ++++++++++++++++++++++---------
+ 1 file changed, 22 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index aea45fa..703cac9 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1144,7 +1144,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index af80246..59228a10 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -62,6 +62,7 @@ static int fsl_sai_set_dai_sysclk_tr(struct snd_soc_dai *cpu_dai,
+ 		reg_cr2 = FSL_SAI_RCR2;
+ 
+ 	val_cr2 = sai_readl(sai, sai->base + reg_cr2);
++
+ 	switch (clk_id) {
+ 	case FSL_SAI_CLK_BUS:
+ 		val_cr2 &= ~FSL_SAI_CR2_MSEL_MASK;
+@@ -82,6 +83,7 @@ static int fsl_sai_set_dai_sysclk_tr(struct snd_soc_dai *cpu_dai,
+ 	default:
+ 		return -EINVAL;
+ 	}
++
+ 	sai_writel(sai, val_cr2, sai->base + reg_cr2);
+ 
+ 	return 0;
+@@ -138,14 +140,13 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
+ 	val_cr4 = sai_readl(sai, sai->base + reg_cr4);
+ 
+ 	if (sai->big_endian_data)
+-		val_cr4 |= FSL_SAI_CR4_MF;
+-	else
+ 		val_cr4 &= ~FSL_SAI_CR4_MF;
++	else
++		val_cr4 |= FSL_SAI_CR4_MF;
+ 
+ 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
+ 	case SND_SOC_DAIFMT_I2S:
+ 		val_cr4 |= FSL_SAI_CR4_FSE;
+-		val_cr4 |= FSL_SAI_CR4_FSP;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -185,9 +186,6 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (fsl_dir == FSL_FMT_RECEIVER)
+-		val_cr2 |= FSL_SAI_CR2_SYNC;
+-
+ 	sai_writel(sai, val_cr2, sai->base + reg_cr2);
+ 	sai_writel(sai, val_cr4, sai->base + reg_cr4);
+ 
+@@ -253,10 +251,11 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 	val_cr5 |= FSL_SAI_CR5_WNW(word_width);
+ 	val_cr5 |= FSL_SAI_CR5_W0W(word_width);
+ 
++	val_cr5 &= ~FSL_SAI_CR5_FBT_MASK;
+ 	if (sai->big_endian_data)
+-		val_cr5 |= FSL_SAI_CR5_FBT(word_width - 1);
+-	else
+ 		val_cr5 |= FSL_SAI_CR5_FBT(0);
++	else
++		val_cr5 |= FSL_SAI_CR5_FBT(word_width - 1);
+ 
+ 	val_cr4 |= FSL_SAI_CR4_FRSZ(channels);
+ 	val_mr = ~0UL - ((1 << channels) - 1);
+@@ -327,8 +326,22 @@ static int fsl_sai_startup(struct snd_pcm_substream *substream,
+ 		struct snd_soc_dai *cpu_dai)
  {
- 	struct pci_controller *hose;
- 	struct pnv_phb *phb;
--	unsigned long size, m32map_off, iomap_off, pemap_off;
-+	unsigned long size, m32map_off, pemap_off, iomap_off = 0;
- 	const __be64 *prop64;
- 	const __be32 *prop32;
- 	int len;
-@@ -1236,7 +1236,6 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	size = _ALIGN_UP(phb->ioda.total_pe / 8, sizeof(unsigned long));
- 	m32map_off = size;
- 	size += phb->ioda.total_pe * sizeof(phb->ioda.m32_segmap[0]);
--	iomap_off = size;
- 	if (phb->type == PNV_PHB_IODA1) {
- 		iomap_off = size;
- 		size += phb->ioda.total_pe * sizeof(phb->ioda.io_segmap[0]);
+ 	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
++	u32 val_cr2;
++	int ret;
++
++	ret = clk_prepare_enable(sai->clk);
++	if (ret)
++		return ret;
++
++	val_cr2 = sai_readl(sai, sai->base + FSL_SAI_TCR2);
++	val_cr2 &= ~FSL_SAI_CR2_SYNC;
++	sai_writel(sai, val_cr2, sai->base + FSL_SAI_TCR2);
+ 
+-	return clk_prepare_enable(sai->clk);
++	val_cr2 = sai_readl(sai, sai->base + FSL_SAI_RCR2);
++	val_cr2 |= FSL_SAI_CR2_SYNC;
++	sai_writel(sai, val_cr2, sai->base + FSL_SAI_RCR2);
++
++	return 0;
+ }
+ 
+ static void fsl_sai_shutdown(struct snd_pcm_substream *substream,
 -- 
-1.7.10.4
+1.8.4
