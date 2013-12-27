@@ -1,23 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0183.outbound.protection.outlook.com [207.46.163.183])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DECD62C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Dec 2013 09:54:12 +1100 (EST)
-Message-ID: <1388184839.21454.22.camel@snotra.buserror.net>
-Subject: Re: [PATCH 4/5] powerpc/fsl-booke: Add initial T208x QDS board support
+ by ozlabs.org (Postfix) with ESMTPS id B82472C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Dec 2013 10:59:55 +1100 (EST)
+Message-ID: <1388188783.21454.27.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/mpic_timer: fix the time calculation is not
+ accurate
 From: Scott Wood <scottwood@freescale.com>
-To: Liu Shengzhou-B36685 <Shengzhou.Liu@freescale.com>
-Date: Fri, 27 Dec 2013 16:53:59 -0600
-In-Reply-To: <1baad106bec84b5a9f8f3298e1476330@DM2PR03MB398.namprd03.prod.outlook.com>
-References: <1386760774-14743-1-git-send-email-Shengzhou.Liu@freescale.com>
- <1386760774-14743-4-git-send-email-Shengzhou.Liu@freescale.com>
- <1387310222.10013.439.camel@snotra.buserror.net>
- <1baad106bec84b5a9f8f3298e1476330@DM2PR03MB398.namprd03.prod.outlook.com>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Date: Fri, 27 Dec 2013 17:59:43 -0600
+In-Reply-To: <1387766025-46101-1-git-send-email-dongsheng.wang@freescale.com>
+References: <1387766025-46101-1-git-send-email-dongsheng.wang@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-12-20 at 00:42 -0600, Liu Shengzhou-B36685 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, December 18, 2013 3:57 AM
-> > To: Liu Shengzhou-B36685
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH 4/5] powerpc/fsl-booke: Add initial T208x QDS board
-> > support
-> > 
-> > On Wed, 2013-12-11 at 19:19 +0800, Shengzhou Liu wrote:
-> > > +		boardctrl: board-control@3,0 {
-> > > +			#address-cells = <1>;
-> > > +			#size-cells = <1>;
-> > > +			compatible = "fsl,fpga-qixis";
-> > > +			reg = <3 0 0x300>;
-> > > +			ranges = <0 3 0 0x300>;
-> > > +		};
-> > 
-> > Why do you have ranges and #address-cells/#size-cells here?  When would
-> > there ever be a child node?
+On Mon, 2013-12-23 at 10:33 +0800, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
 > 
-> [Shengzhou] There are multiple child nodes for this(in a separate DPAA-related patch, but whole DPAA module has not been upstreamed yet so far)
+> When the timer GTCCR toggle bit is inverted, we calculated the rest
+> of the time is not accurate. So we need to ignore this bit.
+> 
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> diff --git a/arch/powerpc/sysdev/mpic_timer.c b/arch/powerpc/sysdev/mpic_timer.c
+> index 22d7d57..0fb70c9 100644
+> --- a/arch/powerpc/sysdev/mpic_timer.c
+> +++ b/arch/powerpc/sysdev/mpic_timer.c
+> @@ -41,6 +41,7 @@
+>  #define MPIC_TIMER_TCR_ROVR_OFFSET	24
+>  
+>  #define TIMER_STOP			0x80000000
+> +#define GTCCR_TOG			0x80000000
+>  #define TIMERS_PER_GROUP		4
+>  #define MAX_TICKS			(~0U >> 1)
+>  #define MAX_TICKS_CASCADE		(~0U)
+> @@ -96,8 +97,15 @@ static void convert_ticks_to_time(struct timer_group_priv *priv,
+>  	time->tv_sec = (__kernel_time_t)div_u64(ticks, priv->timerfreq);
+>  	tmp_sec = (u64)time->tv_sec * (u64)priv->timerfreq;
+>  
+> -	time->tv_usec = (__kernel_suseconds_t)
+> -		div_u64((ticks - tmp_sec) * 1000000, priv->timerfreq);
+> +	time->tv_usec = 0;
+> +
+> +	/*
+> +	 * In some cases tmp_sec may be greater than ticks, because in the
+> +	 * process of calculation ticks and tmp_sec will be rounded.
+> +	 */
+> +	if (tmp_sec <= ticks)
+> +		time->tv_usec = (__kernel_suseconds_t)
+> +			div_u64((ticks - tmp_sec) * 1000000, priv->timerfreq);
 
-Those properties can be added if and when the dpaa nodes go upstream.
-They don't make sense as is.
+I don't see how this part of the patch relates to the patch description.
 
 -Scott
