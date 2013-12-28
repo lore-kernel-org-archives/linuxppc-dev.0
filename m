@@ -1,17 +1,19 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <olof@lixom.net>
+Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
+ [209.85.192.177])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 278E42C00B3
- for <linuxppc-dev@ozlabs.org>; Sat, 28 Dec 2013 23:12:59 +1100 (EST)
-Date: Sat, 28 Dec 2013 13:05:43 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull 'merge' branch of 5xxx tree
-Message-ID: <20131228130543.08a7e1c8@crub>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 139902C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Dec 2013 08:00:53 +1100 (EST)
+Received: by mail-pd0-f177.google.com with SMTP id q10so10033659pdj.22
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Dec 2013 13:00:50 -0800 (PST)
+From: Olof Johansson <olof@lixom.net>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Fix alignment of secondary cpu spin vars
+Date: Sat, 28 Dec 2013 13:01:47 -0800
+Message-Id: <1388264507-5100-1-git-send-email-olof@lixom.net>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,32 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben !
+Commit 5c0484e25ec0 ('powerpc: Endian safe trampoline') resulted in
+losing proper alignment of the spinlock variables used when booting
+secondary CPUs, causing some quite odd issues with failing to boot on
+PA Semi-based systems.
 
-Please pull two DTS fixes for MPC5125 tower board. Without
-them the v3.13-rcX kernels do not boot.
+This showed itself on ppc64_defconfig, but not on pasemi_defconfig,
+so it had gone unnoticed when I initially tested the LE patch set.
 
-Thanks,
-Anatolij
+Fix is to add explicit alignment instead of relying on good luck. :)
 
-The following changes since commit 803c2d2f84da9dc2619449994af34d27148ab20d:
+Fixes: 5c0484e25ec0 ('powerpc: Endian safe trampoline')
+Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=67811
+Signed-off-by: Olof Johansson <olof@lixom.net>
+---
+ arch/powerpc/kernel/head_64.S |    1 +
+ 1 file changed, 1 insertion(+)
 
-  powerpc/powernv: Fix OPAL LPC access in Little Endian (2013-12-13 15:55:15 +1100)
-
-are available in the git repository at:
-
-  git://git.denx.de/linux-2.6-agust.git merge
-
-for you to fetch changes up to 11daf32be9a6041a2406c2cbf76b75a9c4a6eaaa:
-
-  powerpc/512x: dts: disable MPC5125 usb module (2013-12-20 22:12:07 +0100)
-
-----------------------------------------------------------------
-Gerhard Sittig (1):
-      powerpc/512x: dts: remove misplaced IRQ spec from 'soc' node (5125)
-
-Matteo Facchinetti (1):
-      powerpc/512x: dts: disable MPC5125 usb module
-
- arch/powerpc/boot/dts/mpc5125twr.dts |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 2ae41ab..4d94477 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -80,6 +80,7 @@ END_FTR_SECTION(0, 1)
+ 	 * of the function that the cpu should jump to to continue
+ 	 * initialization.
+ 	 */
++	.balign 8
+ 	.globl  __secondary_hold_spinloop
+ __secondary_hold_spinloop:
+ 	.llong	0x0
+-- 
+1.7.10.4
