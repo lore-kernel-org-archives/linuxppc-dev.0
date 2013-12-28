@@ -1,21 +1,15 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B82472C0090
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Dec 2013 10:59:55 +1100 (EST)
-Message-ID: <1388188783.21454.27.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc/mpic_timer: fix the time calculation is not
- accurate
-From: Scott Wood <scottwood@freescale.com>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Date: Fri, 27 Dec 2013 17:59:43 -0600
-In-Reply-To: <1387766025-46101-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1387766025-46101-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id 3067C2C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Dec 2013 15:01:04 +1100 (EST)
+Date: Fri, 27 Dec 2013 20:00:57 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 3.13-rc3: BUG: soft lockup - CPU#0 stuck for 23s!
+Message-ID: <alpine.DEB.2.11.1312271942300.5808@trent.utfs.org>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, xfs@oss.sgi.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,42 +19,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-12-23 at 10:33 +0800, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> 
-> When the timer GTCCR toggle bit is inverted, we calculated the rest
-> of the time is not accurate. So we need to ignore this bit.
-> 
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> 
-> diff --git a/arch/powerpc/sysdev/mpic_timer.c b/arch/powerpc/sysdev/mpic_timer.c
-> index 22d7d57..0fb70c9 100644
-> --- a/arch/powerpc/sysdev/mpic_timer.c
-> +++ b/arch/powerpc/sysdev/mpic_timer.c
-> @@ -41,6 +41,7 @@
->  #define MPIC_TIMER_TCR_ROVR_OFFSET	24
->  
->  #define TIMER_STOP			0x80000000
-> +#define GTCCR_TOG			0x80000000
->  #define TIMERS_PER_GROUP		4
->  #define MAX_TICKS			(~0U >> 1)
->  #define MAX_TICKS_CASCADE		(~0U)
-> @@ -96,8 +97,15 @@ static void convert_ticks_to_time(struct timer_group_priv *priv,
->  	time->tv_sec = (__kernel_time_t)div_u64(ticks, priv->timerfreq);
->  	tmp_sec = (u64)time->tv_sec * (u64)priv->timerfreq;
->  
-> -	time->tv_usec = (__kernel_suseconds_t)
-> -		div_u64((ticks - tmp_sec) * 1000000, priv->timerfreq);
-> +	time->tv_usec = 0;
-> +
-> +	/*
-> +	 * In some cases tmp_sec may be greater than ticks, because in the
-> +	 * process of calculation ticks and tmp_sec will be rounded.
-> +	 */
-> +	if (tmp_sec <= ticks)
-> +		time->tv_usec = (__kernel_suseconds_t)
-> +			div_u64((ticks - tmp_sec) * 1000000, priv->timerfreq);
+I noticed that my machine locks up quite often with 3.13.-rc3.
 
-I don't see how this part of the patch relates to the patch description.
+PowerPC G4 again, but this machine was pretty much rock solid until now:
+when there's lots of disk I/O going on, the system locks up, but not 
+entirely: the calltrace is still written to netconsole (but not to its 
+local disk) and answers ping requests - but SSH login is impossible and a 
+reset is needed. The workload of the machine has not changed, when there's 
+disk I/O it means that either rsync is running or some crazy remote Java 
+application is scanning over this machine's NFS shares.
 
--Scott
+There's sometimes "xfs" mentioned in the call trace and the disk I/O is 
+all happening on the xfs mounts, that's why I Cc'ed the xfs mailing list.
+
+More details on: http://nerdbynature.de/bits/3.13-rc3/
+
+Any ideas?
+
+The most recent lockup is from today below, this time it wasn't rsync or 
+NFS but I was experimenting with xfs on a loop device, backed by a 1GB 
+file, like this:
+
+  $ dd if=/dev/zero of=/usr/local/test.img bs=1M count=1k
+  $ losetup -f /usr/local/test.img && mkfs.xfs /dev/loop0
+  $ mount -t xfs /dev/loop0 /mnt/disk
+  $ cd /mnt/disk
+  $ cp -ax / /mnt/disk       - which filled the disk
+  $ rm -rf lib/              - make some room
+  $ i=1; while true; do printf "$i "; dd if=/dev/zero of=f$i \
+        count=100 bs=100k; i=$(($i+1)); done      - filling the disk again
+
+  => and then the machine locked up.
+
+ [308783.613600] BUG: soft lockup - CPU#0 stuck for 23s! [kworker/u2:1:14542]
+ [308783.613703] Modules linked in: md5 ecb nfs i2c_powermac therm_adt746x ecryptfs arc4 b43 firewire_sbp2 usb_storage mac80211 cfg80211
+ [308783.613944] irq event stamp: 37770086
+ [308783.613980] hardirqs last  enabled at (37770085): [<c0546ff0>] _raw_spin_unlock_irq+0x30/0x60
+ [308783.614075] hardirqs last disabled at (37770086): [<c0010700>] reenable_mmu+0x30/0x88
+ [308783.614156] softirqs last  enabled at (37764418): [<c00354d4>] __do_softirq+0x168/0x1e8
+ [308783.614236] softirqs last disabled at (37764411): [<c0035990>] irq_exit+0xa4/0xc8
+ [308783.614312] CPU: 0 PID: 14542 Comm: kworker/u2:1 Not tainted 3.13.0-rc3-00365-gc48b660 #1
+ [308783.614384] Workqueue: writeback bdi_writeback_workfn  (flush-7:0)
+  
+ [308783.614454] task: e8d20bb0 ti: e0c5a000 task.ti: e0c5a000
+ [308783.614499] NIP: c0546ffc LR: c0546ff0 CTR: 00000000
+ [308783.614543] REGS: e0c5ba80 TRAP: 0901   Not tainted  (3.13.0-rc3-00365-gc48b660)
+ [308783.614596] MSR: 00009032 ,ME ,IR ,DR ,RI > CR: 444c2224  XER: 20000000
+ [308783.614739] #012GPR00: #012GPR08: 
+  
+ [308783.614998] NIP [c0546ffc] _raw_spin_unlock_irq+0x3c/0x60
+ [308783.615047] LR [c0546ff0] _raw_spin_unlock_irq+0x30/0x60
+ [308783.615089] Call Trace:
+ [308783.615121] [e0c5bb30] [c0546ff0] _raw_spin_unlock_irq+0x30/0x60  (unreliable)
+ [308783.615202] [e0c5bb40] [c009f0e4] __set_page_dirty_nobuffers+0xc8/0x144
+ [308783.615264] [e0c5bb60] [c01bec28] xfs_vm_writepage+0x90/0x57c
+ [308783.615322] [e0c5bbf0] [c009e618] __writepage+0x24/0x7c
+ [308783.615376] [e0c5bc00] [c009ec38] write_cache_pages+0x1d0/0x380
+ [308783.615433] [e0c5bca0] [c009ee34] generic_writepages+0x4c/0x70
+ [308783.615493] [e0c5bce0] [c00f9af8] __writeback_single_inode+0x34/0x12c
+ [308783.615968] [e0c5bd00] [c00f9e74] writeback_sb_inodes+0x1f4/0x344
+ [308783.616418] [e0c5bd70] [c00fa050] __writeback_inodes_wb+0x8c/0xd0
+ [308783.616864] [e0c5bda0] [c00fa258] wb_writeback+0x1c4/0x1cc
+ [308783.617306] [e0c5bdd0] [c00fae14] bdi_writeback_workfn+0x158/0x33c
+ [308783.617751] [e0c5be50] [c004906c] process_one_work+0x19c/0x3f0
+ [308783.618193] [e0c5be80] [c0049a0c] worker_thread+0x128/0x3c0
+ [308783.618630] [e0c5beb0] [c004fa8c] kthread+0xbc/0xd0
+ [308783.619071] [e0c5bf40] [c001099c] ret_from_kernel_thread+0x5c/0x64
+ [308783.619501] Instruction dump:
+ [308783.619915] 7ca802a6 
+ [308783.620437] 4bb1c681 
+
+-- 
+BOFH excuse #446:
+
+Mailer-daemon is busy burning your message in hell.
