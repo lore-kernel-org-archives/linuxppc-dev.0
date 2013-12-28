@@ -1,23 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AD7482C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Dec 2013 18:58:38 +1100 (EST)
-Message-ID: <1388217509.4373.19.camel@pasglop>
-Subject: Re: [PATCH 11/39] powerpc: endian safe trampoline
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-Date: Sat, 28 Dec 2013 18:58:29 +1100
-In-Reply-To: <CAOesGMgKjAe5VR9waKCboK+mRwVfde89x+6gew9wjiCf8mAd8A@mail.gmail.com>
-References: <1379901913-5945-1-git-send-email-anton@samba.org>
- <1379901913-5945-12-git-send-email-anton@samba.org>
- <CAOesGMgKjAe5VR9waKCboK+mRwVfde89x+6gew9wjiCf8mAd8A@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 278E42C00B3
+ for <linuxppc-dev@ozlabs.org>; Sat, 28 Dec 2013 23:12:59 +1100 (EST)
+Date: Sat, 28 Dec 2013 13:05:43 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull 'merge' branch of 5xxx tree
+Message-ID: <20131228130543.08a7e1c8@crub>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- chzigotzky@xenosoft.de
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,18 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Ben !
 
-On Fri, 2013-12-27 at 23:24 -0800, Olof Johansson wrote:
-> 
-> So, I'm really quite baffled right now. Any ideas would be welcome,
-> I'm sort of stumped. In particular since pasemi_defconfig boots fine.
+Please pull two DTS fixes for MPC5125 tower board. Without
+them the v3.13-rcX kernels do not boot.
 
-So you are coming in with "good" endian... what if you stick an
-isync in there just for fun ? I wonder if it prefetches the "bad"
-instructions and somewhat gets itself confused.
+Thanks,
+Anatolij
 
-Also did you try sticking a b . around 0x700 see if that's where it's
-going and what condition gets set ?
+The following changes since commit 803c2d2f84da9dc2619449994af34d27148ab20d:
 
-Cheers,
-Ben.
+  powerpc/powernv: Fix OPAL LPC access in Little Endian (2013-12-13 15:55:15 +1100)
+
+are available in the git repository at:
+
+  git://git.denx.de/linux-2.6-agust.git merge
+
+for you to fetch changes up to 11daf32be9a6041a2406c2cbf76b75a9c4a6eaaa:
+
+  powerpc/512x: dts: disable MPC5125 usb module (2013-12-20 22:12:07 +0100)
+
+----------------------------------------------------------------
+Gerhard Sittig (1):
+      powerpc/512x: dts: remove misplaced IRQ spec from 'soc' node (5125)
+
+Matteo Facchinetti (1):
+      powerpc/512x: dts: disable MPC5125 usb module
+
+ arch/powerpc/boot/dts/mpc5125twr.dts |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
