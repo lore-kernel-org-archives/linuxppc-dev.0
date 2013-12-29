@@ -1,19 +1,15 @@
 Return-Path: <Julia.Lawall@lip6.fr>
 From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: linux-input@vger.kernel.org
-Subject: [PATCH 0/25] fix error return code
-Date: Sun, 29 Dec 2013 23:47:15 +0100
-Message-Id: <1388357260-4843-1-git-send-email-Julia.Lawall@lip6.fr>
-Cc: cbe-oss-dev@lists.ozlabs.org,
- davinci-linux-open-source@linux.davincidsp.com,
- linux-pcmcia@lists.infradead.org, rtc-linux@googlegroups.com,
- linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+To: Geoff Levand <geoff@infradead.org>
+Subject: [PATCH 19/25]  fix error return code
+Date: Sun, 29 Dec 2013 23:47:34 +0100
+Message-Id: <1388357260-4843-20-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1388357260-4843-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <1388357260-4843-1-git-send-email-Julia.Lawall@lip6.fr>
+Cc: cbe-oss-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org,
  kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- platform-driver-x86@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
- linux-mtd@lists.infradead.org, dmaengine@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-media@vger.kernel.org
+ "James E.J. Bottomley" <JBottomley@parallels.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,5 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These patches fix cases where the return variable is not set to an error
-code in an error case.
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+
+Set the return variable to an error code as done elsewhere in the function.
+
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
+
+// <smpl>
+(
+if@p1 (\(ret < 0\|ret != 0\))
+ { ... return ret; }
+|
+ret@p1 = 0
+)
+... when != ret = e1
+    when != &ret
+*if(...)
+{
+  ... when != ret = e2
+      when forall
+ return ret;
+}
+
+// </smpl>
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
+---
+Not tested.
+
+ drivers/scsi/ps3rom.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
+index e6e2a30..04d77ce 100644
+--- a/drivers/scsi/ps3rom.c
++++ b/drivers/scsi/ps3rom.c
+@@ -387,6 +387,7 @@ static int ps3rom_probe(struct ps3_system_bus_device *_dev)
+ 	if (!host) {
+ 		dev_err(&dev->sbd.core, "%s:%u: scsi_host_alloc failed\n",
+ 			__func__, __LINE__);
++		error = -ENOMEM;
+ 		goto fail_teardown;
+ 	}
+ 
