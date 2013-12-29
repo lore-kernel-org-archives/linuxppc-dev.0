@@ -1,25 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail-qe0-f46.google.com (mail-qe0-f46.google.com
- [209.85.128.46])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2249B2C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Dec 2013 08:05:12 +1100 (EST)
-Received: by mail-qe0-f46.google.com with SMTP id a11so10350925qen.33
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Dec 2013 13:05:09 -0800 (PST)
+Return-Path: <geert.uytterhoeven@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1388264507-5100-1-git-send-email-olof@lixom.net>
-References: <1388264507-5100-1-git-send-email-olof@lixom.net>
-Date: Sat, 28 Dec 2013 13:05:08 -0800
-Message-ID: <CAOesGMhHw-G-T7ZfNsVU92ftOucCNe9shNJtA7SWzqX=dQBQng@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Fix alignment of secondary cpu spin vars
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Olof Johansson <olof@lixom.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1388357260-4843-20-git-send-email-Julia.Lawall@lip6.fr>
+References: <1388357260-4843-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1388357260-4843-20-git-send-email-Julia.Lawall@lip6.fr>
+Date: Sun, 29 Dec 2013 22:58:02 +0100
+Message-ID: <CAMuHMdWQ5oiXsL7j3T0yuDhFe6uumwcv0S1Ym-L+uTwqqAvCcA@mail.gmail.com>
+Subject: Re: [PATCH 19/25] fix error return code
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Content-Type: text/plain; charset=UTF-8
+Cc: "cbe-oss-dev@lists.ozlabs.org" <cbe-oss-dev@lists.ozlabs.org>,
+ scsi <linux-scsi@vger.kernel.org>, Geoff Levand <geoff@infradead.org>,
+ "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Anton Blanchard <anton@samba.org>
+ "James E.J. Bottomley" <JBottomley@parallels.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,24 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Dec 28, 2013 at 1:01 PM, Olof Johansson <olof@lixom.net> wrote:
-> Commit 5c0484e25ec0 ('powerpc: Endian safe trampoline') resulted in
-> losing proper alignment of the spinlock variables used when booting
-> secondary CPUs, causing some quite odd issues with failing to boot on
-> PA Semi-based systems.
+On Sun, Dec 29, 2013 at 11:47 PM, Julia Lawall <Julia.Lawall@lip6.fr> wrote:
+> From: Julia Lawall <Julia.Lawall@lip6.fr>
 >
-> This showed itself on ppc64_defconfig, but not on pasemi_defconfig,
-> so it had gone unnoticed when I initially tested the LE patch set.
+> Set the return variable to an error code as done elsewhere in the function.
 >
-> Fix is to add explicit alignment instead of relying on good luck. :)
+> A simplified version of the semantic match that finds this problem is as
+> follows: (http://coccinelle.lip6.fr/)
 >
-> Fixes: 5c0484e25ec0 ('powerpc: Endian safe trampoline')
-> Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=67811
-> Signed-off-by: Olof Johansson <olof@lixom.net>
+> // <smpl>
+> (
+> if@p1 (\(ret < 0\|ret != 0\))
+>  { ... return ret; }
+> |
+> ret@p1 = 0
+> )
+> ... when != ret = e1
+>     when != &ret
+> *if(...)
+> {
+>   ... when != ret = e2
+>       when forall
+>  return ret;
+> }
+>
+> // </smpl>
+>
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Sigh, it's not this after all. I did a clean build with this applied
-and still see failures. Something else is (also?) going on here.
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
+> ---
+> Not tested.
+>
+>  drivers/scsi/ps3rom.c |    1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
+> index e6e2a30..04d77ce 100644
+> --- a/drivers/scsi/ps3rom.c
+> +++ b/drivers/scsi/ps3rom.c
+> @@ -387,6 +387,7 @@ static int ps3rom_probe(struct ps3_system_bus_device *_dev)
+>         if (!host) {
+>                 dev_err(&dev->sbd.core, "%s:%u: scsi_host_alloc failed\n",
+>                         __func__, __LINE__);
+> +               error = -ENOMEM;
+>                 goto fail_teardown;
 
--Olof
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
