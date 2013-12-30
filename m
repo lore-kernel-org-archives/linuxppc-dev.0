@@ -1,15 +1,23 @@
-Return-Path: <w90p710@gmail.com>
-Message-ID: <52C0D251.2000400@gmail.com>
-Date: Mon, 30 Dec 2013 09:54:25 +0800
-From: wyang <w90p710@gmail.com>
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0203.outbound.protection.outlook.com [207.46.163.203])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 95F632C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 13:37:12 +1100 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, "Bharat.Bhushan@freescale.com"
+ <Bharat.Bhushan@freescale.com>
+Subject: RE: [PATCH v6 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0
+ define
+Date: Mon, 30 Dec 2013 02:37:02 +0000
+Message-ID: <792cbd6b4f0d40b2a4b7c8f106076d74@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1387268222-9703-1-git-send-email-dongsheng.wang@freescale.com>
+In-Reply-To: <1387268222-9703-1-git-send-email-dongsheng.wang@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Gavin Hu <gavin.hu.2010@gmail.com>, Linuxppc-dev@lists.ozlabs.org
-Subject: Re: [question] Can the execution of the atomtic operation instruction
- pair lwarx/stwcx be interrrupted by local HW interruptions?
-References: <CABiPGEfmEFovARBy0rwjbDpBnVeRrmvQrxgnH+32z0RLUX3Nkw@mail.gmail.com>
-In-Reply-To: <CABiPGEfmEFovARBy0rwjbDpBnVeRrmvQrxgnH+32z0RLUX3Nkw@mail.gmail.com>
-Content-Type: multipart/alternative;
- boundary="------------030800000008060101080307"
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,127 +27,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030800000008060101080307
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Scott,
 
-On 12/28/2013 01:41 PM, Gavin Hu wrote:
-> Hi
->
-> I notice that there is a pair ppc instructions lwarx and stwcx used to 
-> atomtic operation for instance, atomic_inc/atomic_dec.
->
-> In some ppc manuals, they more emphasize its mechanism is that lwarx 
-> can reseve the target memory address preventing other CORE from 
-> modifying it.
->
-> I assume that there is atomtic operation executing on the CORE0 in a 
-> multicore system. In this situation, does the CORE0 disable the local 
-> HW interrupt?
-> Can the executing process from the beginning of lwarx and end of stwcx 
-> be interrupted by HW interruptions/exceptions? Anyway, they are two 
-> assembly instructions.
+Could you apply these patches?
 
-It should just like other arch, the processor should response any 
-interrupt after the execution of a instruction, so the local HW 
-interrupt is not disabled.
+[v6,1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0 define, http://patch=
+work.ozlabs.org/patch/302045/
+[v6,2/4] powerpc/85xx: add hardware automatically enter altivec idle state,=
+ http://patchwork.ozlabs.org/patch/302046/
+[v6,3/4] powerpc/85xx: add hardware automatically enter pw20 state, http://=
+patchwork.ozlabs.org/patch/302047/
+[v6,4/4] powerpc/85xx: add sysfs for pw20 state and altivec idle, http://pa=
+tchwork.ozlabs.org/patch/302048/
 
-Thanks
-Wei
->
->  Thanks a lot!
->
-> "1:    lwarx    %0,0,%2        # atomic_inc\n\
->     addic    %0,%0,1\n"
-> "    stwcx.    %0,0,%2 \n\
->
->
-> BR
-> Gavin. Hu
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+-Dongsheng
 
-
---------------030800000008060101080307
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta content="text/html; charset=ISO-8859-1"
-      http-equiv="Content-Type">
-  </head>
-  <body text="#000000" bgcolor="#FFFFFF">
-    <div class="moz-cite-prefix">On 12/28/2013 01:41 PM, Gavin Hu wrote:<br>
-    </div>
-    <blockquote
-cite="mid:CABiPGEfmEFovARBy0rwjbDpBnVeRrmvQrxgnH+32z0RLUX3Nkw@mail.gmail.com"
-      type="cite">
-      <meta http-equiv="Content-Type" content="text/html;
-        charset=ISO-8859-1">
-      <div dir="ltr">Hi <br>
-        <div><br>
-          I notice that there is a pair ppc instructions lwarx and stwcx
-          used to atomtic operation for instance, atomic_inc/atomic_dec.<br>
-          <br>
-        </div>
-        <div>In some ppc manuals, they more emphasize its mechanism is
-          that lwarx can reseve the target memory address preventing
-          other CORE from modifying it.<br>
-          <br>
-        </div>
-        <div>I assume that there is atomtic operation executing on the
-          CORE0 in a multicore system. In this situation, does the CORE0
-          disable the local HW interrupt?<br>
-        </div>
-        <div>Can the executing process from the beginning of lwarx and
-          end of stwcx be interrupted by HW interruptions/exceptions?&nbsp;
-          Anyway, they are two assembly instructions.<br>
-        </div>
-      </div>
-    </blockquote>
-    <br>
-    It should just like other arch, the processor should response any
-    interrupt after the execution of a instruction, so the local HW
-    interrupt is not disabled.<br>
-    <br>
-    Thanks<br>
-    Wei<br>
-    <blockquote
-cite="mid:CABiPGEfmEFovARBy0rwjbDpBnVeRrmvQrxgnH+32z0RLUX3Nkw@mail.gmail.com"
-      type="cite">
-      <div dir="ltr">
-        <div>
-          <br>
-          &nbsp;Thanks a lot!<br>
-        </div>
-        <div><br>
-          "1:&nbsp;&nbsp;&nbsp; lwarx&nbsp;&nbsp;&nbsp; %0,0,%2&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; # atomic_inc\n\<br>
-          &nbsp;&nbsp;&nbsp; addic&nbsp;&nbsp;&nbsp; %0,%0,1\n"<br>
-          "&nbsp;&nbsp;&nbsp; stwcx.&nbsp;&nbsp;&nbsp; %0,0,%2 \n\<br>
-          <br>
-          <br>
-        </div>
-        <div>BR<br>
-        </div>
-        <div>Gavin. Hu<br>
-        </div>
-      </div>
-      <br>
-      <fieldset class="mimeAttachmentHeader"></fieldset>
-      <br>
-      <pre wrap="">_______________________________________________
-Linuxppc-dev mailing list
-<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.org</a>
-<a class="moz-txt-link-freetext" href="https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lists.ozlabs.org/listinfo/linuxppc-dev</a></pre>
-    </blockquote>
-    <br>
-  </body>
-</html>
-
---------------030800000008060101080307--
+> -----Original Message-----
+> From: Dongsheng Wang [mailto:dongsheng.wang@freescale.com]
+> Sent: Tuesday, December 17, 2013 4:17 PM
+> To: Wood Scott-B07421; Bhushan Bharat-R65777
+> Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> Subject: [PATCH v6 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0 def=
+ine
+>=20
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+>=20
+> E6500 PVR and SPRN_PWRMGTCR0 will be used in subsequent pw20/altivec
+> idle patches.
+>=20
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ---
+> *v3:
+> Add bit definitions for PWRMGTCR0.
+>=20
+>  arch/powerpc/include/asm/reg.h       | 2 ++
+>  arch/powerpc/include/asm/reg_booke.h | 9 +++++++++
+>  2 files changed, 11 insertions(+)
+>=20
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/re=
+g.h
+> index 64264bf..d4160ca 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -1053,6 +1053,8 @@
+>  #define PVR_8560	0x80200000
+>  #define PVR_VER_E500V1	0x8020
+>  #define PVR_VER_E500V2	0x8021
+> +#define PVR_VER_E6500	0x8040
+> +
+>  /*
+>   * For the 8xx processors, all of them report the same PVR family for
+>   * the PowerPC core. The various versions of these processors must be
+> diff --git a/arch/powerpc/include/asm/reg_booke.h
+> b/arch/powerpc/include/asm/reg_booke.h
+> index ed8f836..4a6457e 100644
+> --- a/arch/powerpc/include/asm/reg_booke.h
+> +++ b/arch/powerpc/include/asm/reg_booke.h
+> @@ -170,6 +170,7 @@
+>  #define SPRN_L2CSR1	0x3FA	/* L2 Data Cache Control and Status Register 1
+> */
+>  #define SPRN_DCCR	0x3FA	/* Data Cache Cacheability Register */
+>  #define SPRN_ICCR	0x3FB	/* Instruction Cache Cacheability Register */
+> +#define SPRN_PWRMGTCR0	0x3FB	/* Power management control register 0 */
+>  #define SPRN_SVR	0x3FF	/* System Version Register */
+>=20
+>  /*
+> @@ -216,6 +217,14 @@
+>  #define	CCR1_DPC	0x00000100 /* Disable L1 I-Cache/D-Cache parity
+> checking */
+>  #define	CCR1_TCS	0x00000080 /* Timer Clock Select */
+>=20
+> +/* Bit definitions for PWRMGTCR0. */
+> +#define PWRMGTCR0_PW20_WAIT		(1 << 14) /* PW20 state enable bit */
+> +#define PWRMGTCR0_PW20_ENT_SHIFT	8
+> +#define PWRMGTCR0_PW20_ENT		0x3F00
+> +#define PWRMGTCR0_AV_IDLE_PD_EN		(1 << 22) /* Altivec idle enable */
+> +#define PWRMGTCR0_AV_IDLE_CNT_SHIFT	16
+> +#define PWRMGTCR0_AV_IDLE_CNT		0x3F0000
+> +
+>  /* Bit definitions for the MCSR. */
+>  #define MCSR_MCS	0x80000000 /* Machine Check Summary */
+>  #define MCSR_IB		0x40000000 /* Instruction PLB Error */
+> --
+> 1.8.0
+>=20
