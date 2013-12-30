@@ -1,38 +1,23 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6D3402C00EC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 22:41:24 +1100 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 30 Dec 2013 17:11:14 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 5F747394002D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 17:11:12 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rBUBf9Kq48562256
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 17:11:10 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBUBfAkH022652
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 17:11:11 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powerpc: Add debug checks to catch invalid cpu-to-node
- mappings
-To: benh@kernel.crashing.org, paulus@samba.org, nfont@linux.vnet.ibm.com
-Date: Mon, 30 Dec 2013 17:06:04 +0530
-Message-ID: <20131230113554.11508.45801.stgit@srivatsabhat.in.ibm.com>
-In-Reply-To: <20131230113517.11508.7224.stgit@srivatsabhat.in.ibm.com>
-References: <20131230113517.11508.7224.stgit@srivatsabhat.in.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 23BF92C00C5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 23:01:21 +1100 (EST)
+Date: Mon, 30 Dec 2013 12:01:10 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Xiubo Li <Li.Xiubo@freescale.com>
+Message-ID: <20131230120110.GL31886@sirena.org.uk>
+References: <1387941614-7629-1-git-send-email-Li.Xiubo@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="ura8jf0QYTXVPAoa"
+In-Reply-To: <1387941614-7629-1-git-send-email-Li.Xiubo@freescale.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Move the global registers setting to
+ _dai_probe()
+Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
+ linux-kernel@vger.kernel.org, timur@tabi.org, perex@perex.cz,
+ shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org, b47053@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,67 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There have been some weird bugs in the past where the kernel tried to associate
-threads of the same core to different NUMA nodes, and things went haywire after
-that point (as expected).
 
-But unfortunately, root-causing such issues have been quite challenging, due to
-the lack of appropriate debug checks in the kernel. These bugs usually lead to
-some odd soft-lockups in the scheduler's build-sched-domain code in the CPU
-hotplug path, which makes it very hard to trace it back to the incorrect
-cpu-to-node mappings.
+--ura8jf0QYTXVPAoa
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-So add appropriate debug checks to catch such invalid cpu-to-node mappings
-as early as possible.
+On Wed, Dec 25, 2013 at 11:20:14AM +0800, Xiubo Li wrote:
+> Because we cannot make sure which one of _dai_fmt() and _dai_sysclk()
+> will be firstly called. So move the RCSR/TCSR and TCR1/RCR1's
+> initialization to _dai_probe(), and this can make sure that before any
+> of {T,R}CR{1~5} register to be set the RCSR/TCSR's RE/TE bit has been
+> cleared for the hareware limitation.
 
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
+Applied, thanks.
 
- arch/powerpc/mm/numa.c |   26 ++++++++++++++++++++++++--
- 1 file changed, 24 insertions(+), 2 deletions(-)
+--ura8jf0QYTXVPAoa
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 6847d50..4f50c6a 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -570,16 +570,38 @@ out:
- 	return nid;
- }
- 
-+static void verify_cpu_node_mapping(int cpu, int node)
-+{
-+	int base, sibling, i;
-+
-+	/* Verify that all the threads in the core belong to the same node */
-+	base = cpu_first_thread_sibling(cpu);
-+
-+	for (i = 0; i < threads_per_core; i++) {
-+		sibling = base + i;
-+
-+		if (sibling == cpu || cpu_is_offline(sibling))
-+			continue;
-+
-+		if (cpu_to_node(sibling) != node) {
-+			WARN(1, "CPU thread siblings %d and %d don't belong"
-+				" to the same node!\n", cpu, sibling);
-+			break;
-+		}
-+	}
-+}
-+
- static int cpu_numa_callback(struct notifier_block *nfb, unsigned long action,
- 			     void *hcpu)
- {
- 	unsigned long lcpu = (unsigned long)hcpu;
--	int ret = NOTIFY_DONE;
-+	int ret = NOTIFY_DONE, nid;
- 
- 	switch (action) {
- 	case CPU_UP_PREPARE:
- 	case CPU_UP_PREPARE_FROZEN:
--		numa_setup_cpu(lcpu);
-+		nid = numa_setup_cpu(lcpu);
-+		verify_cpu_node_mapping((int)lcpu, nid);
- 		ret = NOTIFY_OK;
- 		break;
- #ifdef CONFIG_HOTPLUG_CPU
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSwWCCAAoJELSic+t+oim9knYQAJakvpQs+x5MjjUuQY1oeO0R
+Hwqc7Zp7YJQ8M3ZK5Q0sGKi4k75gejtmQseR50fKNeiGHJJ6zaq+yyjRdhlS/gzB
+WZtq2e/vgwmYZlTLOERUq5jbCfHJXgUH+vTGTLQAC2lCh15mZC3U4WA7may9TYE1
+DjVMusxDd13EiLg9nHfnKVbEE2EMQR6xDafe0YJaOpWvq4boZlG6umKEzTZI/Vfo
+lu2fkUS4ldZX5kPdiNUfV76U7m9yPD3sE0S3IDuc56DTK4+eZUdwyBYoQatb09Oy
+coMVxivHXC4kAQ7R9kQ5woPqcRZRgGSi0HpRyDdyUV06e2G/4EC4dIT6Vz5LSAJF
+qDUpITDyvRj/J91CqvxLJ+f+JpQqfz1x0f8Of/gmydO36spTWWBlTCzLRQRWT3u4
+IV2OA86XEGAsDOMeemjS0n3QOQM7cxUeo2+10Vr9oe5eFh4+KGH7QEXfmCr4Mjp2
+hf/KXt02+1FIv+URSSsmsFkblnIkXi4gMCuez4oigm5zZ57/1M5XbMqVHrmHEM+D
+y3sO05mq3Qln0RwA25IXheK6GzrAL49C4ltdOmlzA3VeWg2g3SaNdQUQhLqpOcNo
+oLfYehd6kHxR0YYVZoHcQdH/LHz7zCIMYnXtfQTsZScu3ahzpykvj+4kw4KBmIwj
+4e+NNMxxHpsUYvyqlwX/
+=hQAc
+-----END PGP SIGNATURE-----
+
+--ura8jf0QYTXVPAoa--
