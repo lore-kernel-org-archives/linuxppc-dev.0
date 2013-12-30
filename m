@@ -2,19 +2,18 @@ Return-Path: <broonie@sirena.org.uk>
 Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 23BF92C00C5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 23:01:21 +1100 (EST)
-Date: Mon, 30 Dec 2013 12:01:10 +0000
+ by ozlabs.org (Postfix) with ESMTPS id 4C9192C00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 23:15:27 +1100 (EST)
+Date: Mon, 30 Dec 2013 12:15:20 +0000
 From: Mark Brown <broonie@kernel.org>
 To: Xiubo Li <Li.Xiubo@freescale.com>
-Message-ID: <20131230120110.GL31886@sirena.org.uk>
-References: <1387941614-7629-1-git-send-email-Li.Xiubo@freescale.com>
+Message-ID: <20131230121520.GR31886@sirena.org.uk>
+References: <1388026642-1464-1-git-send-email-Li.Xiubo@freescale.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="ura8jf0QYTXVPAoa"
-In-Reply-To: <1387941614-7629-1-git-send-email-Li.Xiubo@freescale.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Move the global registers setting to
- _dai_probe()
+ protocol="application/pgp-signature"; boundary="99FKeZQ5IARcBmLz"
+In-Reply-To: <1388026642-1464-1-git-send-email-Li.Xiubo@freescale.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Fix one bug for hardware limitation.
 Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, tiwai@suse.de,
  linux-kernel@vger.kernel.org, timur@tabi.org, perex@perex.cz,
  shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org, b47053@freescale.com
@@ -28,39 +27,67 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---ura8jf0QYTXVPAoa
+--99FKeZQ5IARcBmLz
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Dec 25, 2013 at 11:20:14AM +0800, Xiubo Li wrote:
-> Because we cannot make sure which one of _dai_fmt() and _dai_sysclk()
-> will be firstly called. So move the RCSR/TCSR and TCR1/RCR1's
-> initialization to _dai_probe(), and this can make sure that before any
-> of {T,R}CR{1~5} register to be set the RCSR/TCSR's RE/TE bit has been
-> cleared for the hareware limitation.
+On Thu, Dec 26, 2013 at 10:57:22AM +0800, Xiubo Li wrote:
+> This is maybe one bug or a limitation of the hardware that the {T,R}CR2's
+> Synchronous Mode bits must be set as late as possible, or the SAI device
+> maybe hanged up, and there has not any explaination about this limitation
+> in the SAI Data Sheet.
 
-Applied, thanks.
+If they really should be set as late as possible then I'd expect them to
+be being set in the trigger function, that's what gets called as the
+audio actually starts streaming.  This is moving it to the startup
+function which is one of the first things that happens during audio
+stream setup so presumably makes things worse.
 
---ura8jf0QYTXVPAoa
+Also...
+
+> @@ -62,6 +62,7 @@ static int fsl_sai_set_dai_sysclk_tr(struct snd_soc_dai=
+ *cpu_dai,
+>  		reg_cr2 =3D FSL_SAI_RCR2;
+> =20
+>  	val_cr2 =3D sai_readl(sai, sai->base + reg_cr2);
+> +
+>  	switch (clk_id) {
+>  	case FSL_SAI_CLK_BUS:
+>  		val_cr2 &=3D ~FSL_SAI_CR2_MSEL_MASK;
+> @@ -82,6 +83,7 @@ static int fsl_sai_set_dai_sysclk_tr(struct snd_soc_dai=
+ *cpu_dai,
+>  	default:
+>  		return -EINVAL;
+>  	}
+> +
+>  	sai_writel(sai, val_cr2, sai->base + reg_cr2);
+> =20
+>  	return 0;
+
+These appear to be unrelated changes - please send as a separate patch
+if they're useful.
+
+--99FKeZQ5IARcBmLz
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSwWCCAAoJELSic+t+oim9knYQAJakvpQs+x5MjjUuQY1oeO0R
-Hwqc7Zp7YJQ8M3ZK5Q0sGKi4k75gejtmQseR50fKNeiGHJJ6zaq+yyjRdhlS/gzB
-WZtq2e/vgwmYZlTLOERUq5jbCfHJXgUH+vTGTLQAC2lCh15mZC3U4WA7may9TYE1
-DjVMusxDd13EiLg9nHfnKVbEE2EMQR6xDafe0YJaOpWvq4boZlG6umKEzTZI/Vfo
-lu2fkUS4ldZX5kPdiNUfV76U7m9yPD3sE0S3IDuc56DTK4+eZUdwyBYoQatb09Oy
-coMVxivHXC4kAQ7R9kQ5woPqcRZRgGSi0HpRyDdyUV06e2G/4EC4dIT6Vz5LSAJF
-qDUpITDyvRj/J91CqvxLJ+f+JpQqfz1x0f8Of/gmydO36spTWWBlTCzLRQRWT3u4
-IV2OA86XEGAsDOMeemjS0n3QOQM7cxUeo2+10Vr9oe5eFh4+KGH7QEXfmCr4Mjp2
-hf/KXt02+1FIv+URSSsmsFkblnIkXi4gMCuez4oigm5zZ57/1M5XbMqVHrmHEM+D
-y3sO05mq3Qln0RwA25IXheK6GzrAL49C4ltdOmlzA3VeWg2g3SaNdQUQhLqpOcNo
-oLfYehd6kHxR0YYVZoHcQdH/LHz7zCIMYnXtfQTsZScu3ahzpykvj+4kw4KBmIwj
-4e+NNMxxHpsUYvyqlwX/
-=hQAc
+iQIcBAEBAgAGBQJSwWPVAAoJELSic+t+oim9Q9kQAJKZnwLZ5pE0ty4KCli4IzUG
+S82G1YCQqQSMkEhJkauo16yfnoFLUIFwbvEm+MRwG5TgsUeBaFjKlrlMugh3c6Q+
+9T/uIUpXrmsmTXW8mmGPUrKGppdkYxNL5+LOHqYDVi/NiceZ5guJl3ql/aInUZs/
+0EI29sF4MwYJLNHuxXf2eoWyqrwhSAc3yg4MRuzKL9CdQU11Ym3V63sgCJa8ouFU
+7n9Smpzv08yd9ZWU4PgV41gDElK5pCim1GqMDl1IKEpaO6gJItwkPdEsn0m3DxMN
+GF9K98PZXSrcd/YwCqt+BVcs2w8j37VGt+PuYBAmcLYZXHQjkPnsz3k/VkzfA/tk
+7ibJ9tihdaZiCz8+7kOv8/kqcPRV4G6/Oht6MDFz0dtpUNo9SQQ7X42PUXyomzCU
++zQAaCyRGaguUi0xfP/JBXp9c8osdBnGoVyZeFhwRfHLr/zqXGq/sm62dRXyP1Au
+LVIXIncX09RLRbiCO3IL+zWu/CHpAgUtdqYuiVOw/D+BhSF6np8qgkCwr910ZzPg
+I3XohrvOzHbQ3mvfWDcsfMe3KEDzkvXX07Gh2VPH8Uop2Wg3JVY9+f5i3xylRryt
+/2enkTFJ8dZmr5qfEMJaI5dq/pkdr/Ut8DdXBDEHieBmQoqSYbMzYA+yp6kG87CI
+vJsaQTPlYadXdGTVDFpD
+=gZsL
 -----END PGP SIGNATURE-----
 
---ura8jf0QYTXVPAoa--
+--99FKeZQ5IARcBmLz--
