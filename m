@@ -1,15 +1,22 @@
-Return-Path: <Julia.Lawall@lip6.fr>
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 19/25]  fix error return code
-Date: Sun, 29 Dec 2013 23:47:34 +0100
-Message-Id: <1388357260-4843-20-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1388357260-4843-1-git-send-email-Julia.Lawall@lip6.fr>
-References: <1388357260-4843-1-git-send-email-Julia.Lawall@lip6.fr>
-Cc: cbe-oss-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org,
- kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <JBottomley@parallels.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id EBAF42C00B6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 13:21:59 +1100 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] powerpc/mpic_timer: fix the time calculation is not
+ accurate
+Date: Mon, 30 Dec 2013 02:21:51 +0000
+Message-ID: <19fe883bcbdd4f448a3a18f5df8964a1@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1387766025-46101-1-git-send-email-dongsheng.wang@freescale.com>
+ <1388188783.21454.27.camel@snotra.buserror.net>
+In-Reply-To: <1388188783.21454.27.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,48 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-
-Set the return variable to an error code as done elsewhere in the function.
-
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
-
-// <smpl>
-(
-if@p1 (\(ret < 0\|ret != 0\))
- { ... return ret; }
-|
-ret@p1 = 0
-)
-... when != ret = e1
-    when != &ret
-*if(...)
-{
-  ... when != ret = e2
-      when forall
- return ret;
-}
-
-// </smpl>
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
----
-Not tested.
-
- drivers/scsi/ps3rom.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
-index e6e2a30..04d77ce 100644
---- a/drivers/scsi/ps3rom.c
-+++ b/drivers/scsi/ps3rom.c
-@@ -387,6 +387,7 @@ static int ps3rom_probe(struct ps3_system_bus_device *_dev)
- 	if (!host) {
- 		dev_err(&dev->sbd.core, "%s:%u: scsi_host_alloc failed\n",
- 			__func__, __LINE__);
-+		error = -ENOMEM;
- 		goto fail_teardown;
- 	}
- 
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogU2F0dXJkYXksIERlY2VtYmVyIDI4LCAyMDEzIDg6MDAgQU0NCj4gVG86IFdh
+bmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZzsgbGlu
+dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gcG93ZXJw
+Yy9tcGljX3RpbWVyOiBmaXggdGhlIHRpbWUgY2FsY3VsYXRpb24gaXMgbm90DQo+IGFjY3VyYXRl
+DQo+IA0KPiBPbiBNb24sIDIwMTMtMTItMjMgYXQgMTA6MzMgKzA4MDAsIERvbmdzaGVuZyBXYW5n
+IHdyb3RlOg0KPiA+IEZyb206IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2Nh
+bGUuY29tPg0KPiA+DQo+ID4gV2hlbiB0aGUgdGltZXIgR1RDQ1IgdG9nZ2xlIGJpdCBpcyBpbnZl
+cnRlZCwgd2UgY2FsY3VsYXRlZCB0aGUgcmVzdCBvZg0KPiA+IHRoZSB0aW1lIGlzIG5vdCBhY2N1
+cmF0ZS4gU28gd2UgbmVlZCB0byBpZ25vcmUgdGhpcyBiaXQuDQo+ID4NCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBXYW5nIERvbmdzaGVuZyA8ZG9uZ3NoZW5nLndhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPg0K
+PiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvc3lzZGV2L21waWNfdGltZXIuYw0KPiA+IGIv
+YXJjaC9wb3dlcnBjL3N5c2Rldi9tcGljX3RpbWVyLmMNCj4gPiBpbmRleCAyMmQ3ZDU3Li4wZmI3
+MGM5IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvbXBpY190aW1lci5jDQo+
+ID4gKysrIGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9tcGljX3RpbWVyLmMNCj4gPiBAQCAtNDEsNiAr
+NDEsNyBAQA0KPiA+ICAjZGVmaW5lIE1QSUNfVElNRVJfVENSX1JPVlJfT0ZGU0VUCTI0DQo+ID4N
+Cj4gPiAgI2RlZmluZSBUSU1FUl9TVE9QCQkJMHg4MDAwMDAwMA0KPiA+ICsjZGVmaW5lIEdUQ0NS
+X1RPRwkJCTB4ODAwMDAwMDANCj4gPiAgI2RlZmluZSBUSU1FUlNfUEVSX0dST1VQCQk0DQo+ID4g
+ICNkZWZpbmUgTUFYX1RJQ0tTCQkJKH4wVSA+PiAxKQ0KPiA+ICAjZGVmaW5lIE1BWF9USUNLU19D
+QVNDQURFCQkofjBVKQ0KPiA+IEBAIC05Niw4ICs5NywxNSBAQCBzdGF0aWMgdm9pZCBjb252ZXJ0
+X3RpY2tzX3RvX3RpbWUoc3RydWN0IHRpbWVyX2dyb3VwX3ByaXYNCj4gKnByaXYsDQo+ID4gIAl0
+aW1lLT50dl9zZWMgPSAoX19rZXJuZWxfdGltZV90KWRpdl91NjQodGlja3MsIHByaXYtPnRpbWVy
+ZnJlcSk7DQo+ID4gIAl0bXBfc2VjID0gKHU2NCl0aW1lLT50dl9zZWMgKiAodTY0KXByaXYtPnRp
+bWVyZnJlcTsNCj4gPg0KPiA+IC0JdGltZS0+dHZfdXNlYyA9IChfX2tlcm5lbF9zdXNlY29uZHNf
+dCkNCj4gPiAtCQlkaXZfdTY0KCh0aWNrcyAtIHRtcF9zZWMpICogMTAwMDAwMCwgcHJpdi0+dGlt
+ZXJmcmVxKTsNCj4gPiArCXRpbWUtPnR2X3VzZWMgPSAwOw0KPiA+ICsNCj4gPiArCS8qDQo+ID4g
+KwkgKiBJbiBzb21lIGNhc2VzIHRtcF9zZWMgbWF5IGJlIGdyZWF0ZXIgdGhhbiB0aWNrcywgYmVj
+YXVzZSBpbiB0aGUNCj4gPiArCSAqIHByb2Nlc3Mgb2YgY2FsY3VsYXRpb24gdGlja3MgYW5kIHRt
+cF9zZWMgd2lsbCBiZSByb3VuZGVkLg0KPiA+ICsJICovDQo+ID4gKwlpZiAodG1wX3NlYyA8PSB0
+aWNrcykNCj4gPiArCQl0aW1lLT50dl91c2VjID0gKF9fa2VybmVsX3N1c2Vjb25kc190KQ0KPiA+
+ICsJCQlkaXZfdTY0KCh0aWNrcyAtIHRtcF9zZWMpICogMTAwMDAwMCwgcHJpdi0+dGltZXJmcmVx
+KTsNCj4gDQo+IEkgZG9uJ3Qgc2VlIGhvdyB0aGlzIHBhcnQgb2YgdGhlIHBhdGNoIHJlbGF0ZXMg
+dG8gdGhlIHBhdGNoIGRlc2NyaXB0aW9uLg0KPiANClRoYW5rcywgSSBtaXNzIHRoaXMgZGVzY3Jp
+cHRpb24sIDooLg0KSSBzaG91bGQgc3BsaXQgdGhlIHBhdGNoLg0KDQotRG9uZ3NoZW5nDQoNCj4g
+LVNjb3R0DQo+IA0KDQo=
