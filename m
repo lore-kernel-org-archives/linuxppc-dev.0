@@ -1,22 +1,26 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D50CE2C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 13:39:10 +1100 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, "Chang-Ming.Huang@freescale.com"
- <Chang-Ming.Huang@freescale.com>, Roy Zang <tie-fei.zang@freescale.com>
-Subject: RE: [PATCH 1/2] powerpc/p1022ds: fix rtc compatible string
-Date: Mon, 30 Dec 2013 02:39:02 +0000
-Message-ID: <2aabe7eb4d9c4c66b8d0ce7efccbe6e7@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1387355964-39486-1-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1387355964-39486-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0BB9F2C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 14:14:42 +1100 (EST)
+Message-ID: <1388373200.4373.25.camel@pasglop>
+Subject: Re: commit e38c0a1f breaks powerpc boards with uli1575 chip
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>
+Date: Mon, 30 Dec 2013 14:13:20 +1100
+In-Reply-To: <201312190842.02702@blacky.localdomain>
+References: <201312171135.38576@blacky.localdomain>
+ <52B1EC15.5070606@gmail.com> <201312190842.02702@blacky.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Dmitry Krivoschekov <dkrivoschokov@dev.rtsoft.ru>,
+ Alexey Lugovskoy <lugovskoy@dev.rtsoft.ru>,
+ Thierry Reding <thierry.reding@avionic-design.de>,
+ linux-kernel@vger.kernel.org, Rob Herring <robherring2@gmail.com>,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+On Thu, 2013-12-19 at 08:42 +0400, Nikita Yushchenko wrote:
+> No, this does not help.
+> 
+> I've dumped the actual content of 'range' and 'addr' at the failure
+> point 
+> (i.e. ar point that returns error with e38c0a1f but passes without 
+> e38c0a1f ):
+> 
+> OF: default map, cp=0, s=10000, da=70
+> range:  01 00 00 00 00 00 00 00 00 00 00 00
+>  addr:  00 00 00 00 00 00 00 00 00 00 00 70
 
-Could you apply these patches?
+Something that has a #address-cells larger than 2, or more generally,
+an address field that contains more than a single number, must have
+a specific translation backend, like we have for PCI.
 
-[1/2] powerpc/p1022ds: fix rtc compatible string, http://patchwork.ozlabs.o=
-rg/patch/302741/
-[2/2] powerpc/p1022ds: add a interrupt for rtc node, http://patchwork.ozlab=
-s.org/patch/302742/
+This is a bit annoying but originates from the original OFW stuff on
+which this stuff is based where the bus node would provide the methods
+for translation.
 
--Dongsheng
-
-> -----Original Message-----
-> From: Dongsheng Wang [mailto:dongsheng.wang@freescale.com]
-> Sent: Wednesday, December 18, 2013 4:39 PM
-> To: Wood Scott-B07421; Huang Changming-R66093; Zang Roy-R61911
-> Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> Subject: [PATCH 1/2] powerpc/p1022ds: fix rtc compatible string
->=20
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
->=20
-> RTC Hardware(ds3232) and rtc compatible string does not match.
-> Change "dallas,ds1339" to "dallas,ds3232".
->=20
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
->=20
-> diff --git a/arch/powerpc/boot/dts/p1022ds.dtsi
-> b/arch/powerpc/boot/dts/p1022ds.dtsi
-> index 873da35..5725058 100644
-> --- a/arch/powerpc/boot/dts/p1022ds.dtsi
-> +++ b/arch/powerpc/boot/dts/p1022ds.dtsi
-> @@ -146,7 +146,7 @@
->  			 */
->  		};
->  		rtc@68 {
-> -			compatible =3D "dallas,ds1339";
-> +			compatible =3D "dallas,ds3232";
->  			reg =3D <0x68>;
->  		};
->  		adt7461@4c {
-> --
-> 1.8.5
->=20
+Cheers,
+Ben.
+ 
